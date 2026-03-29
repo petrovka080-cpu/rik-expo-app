@@ -23,6 +23,15 @@ import { decode } from "base64-arraybuffer";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
+import {
+  AUTH_LOGIN_ROUTE,
+  buildAssistantRoute,
+  buildSupplierShowcaseRoute,
+  DIRECTOR_ROUTE,
+  MARKET_AUCTIONS_ROUTE,
+  MARKET_TAB_ROUTE,
+  SUPPLIER_MAP_ROUTE,
+} from "../../src/lib/navigation/coreRoutes";
 import { supabase } from "../../src/lib/supabaseClient";
 import { getMyRole } from "../../src/lib/api/profile";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
@@ -818,7 +827,7 @@ function ProfileScreen() {
 
       if (memErr) throw memErr;
 
-      router.push("/director");
+      router.push(DIRECTOR_ROUTE);
     } catch (e: any) {
       console.warn("openCompanyCabinet error:", e?.message || e);
       Alert.alert("Кабинет компании", e?.message ?? String(e));
@@ -1021,7 +1030,7 @@ function ProfileScreen() {
         [
           {
             text: "Открыть витрину",
-            onPress: () => router.push("/supplierShowcase"),
+            onPress: () => router.push(buildSupplierShowcaseRoute()),
           },
           { text: "Ок", style: "cancel" },
         ]
@@ -1185,7 +1194,7 @@ function ProfileScreen() {
             setSigningOut(true);
             const result = await supabase.auth.signOut();
             if (result.error) throw result.error;
-            router.replace("/auth/login" as any);
+            router.replace(AUTH_LOGIN_ROUTE);
           } catch (e: any) {
             Alert.alert("Профиль", e?.message ?? String(e));
           } finally {
@@ -1407,10 +1416,7 @@ function ProfileScreen() {
       listings,
     });
 
-    router.push({
-      pathname: "/(tabs)/ai",
-      params: { prompt, autoSend: "1", context: "profile" },
-    } as any);
+    router.push(buildAssistantRoute({ prompt, autoSend: "1", context: "profile" }));
   };
 
   if (loading || !profile) {
@@ -1667,7 +1673,7 @@ function ProfileScreen() {
                   icon="storefront-outline"
                   title="Маркет и витрина"
                   subtitle="Откройте маркет, витрину поставщика и текущие объявления."
-                  onPress={() => router.push("/(tabs)/market" as any)}
+                  onPress={() => router.push(MARKET_TAB_ROUTE)}
                 />
                 <MenuActionRow
                   icon="add-circle-outline"
@@ -1679,13 +1685,13 @@ function ProfileScreen() {
                   icon="map-outline"
                   title="Карта спроса и поставщиков"
                   subtitle="Поставщики, спрос и география позиций на карте."
-                  onPress={() => router.push("/supplierMap" as any)}
+                  onPress={() => router.push(SUPPLIER_MAP_ROUTE)}
                 />
                 <MenuActionRow
                   icon="hammer-outline"
                   title="Торги"
                   subtitle="Актуальные торги, позиции и переход к деталям."
-                  onPress={() => router.push("/auctions" as any)}
+                  onPress={() => router.push(MARKET_AUCTIONS_ROUTE)}
                 />
                 <MenuActionRow
                   icon="sparkles-outline"
@@ -1993,7 +1999,7 @@ function ProfileScreen() {
 
                     <Pressable
                       style={styles.companyBtn}
-                      onPress={() => router.push("/supplierShowcase")}
+                      onPress={() => router.push(buildSupplierShowcaseRoute())}
                     >
                       <Text style={styles.companyBtnText}>
                         Открыть витрину поставщика
@@ -2009,7 +2015,7 @@ function ProfileScreen() {
                     >
                       <Pressable
                         style={[styles.companyBtn, styles.companyBtnSecondary]}
-                        onPress={() => router.push("/(tabs)/market" as any)}
+                        onPress={() => router.push(MARKET_TAB_ROUTE)}
                       >
                         <Text style={styles.companyBtnTextSecondary}>
                           Открыть маркет
@@ -2017,7 +2023,7 @@ function ProfileScreen() {
                       </Pressable>
                       <Pressable
                         style={[styles.companyBtn, styles.companyBtnSecondary]}
-                        onPress={() => router.push("/auctions" as any)}
+                        onPress={() => router.push(MARKET_AUCTIONS_ROUTE)}
                       >
                         <Text style={styles.companyBtnTextSecondary}>
                           Открыть торги

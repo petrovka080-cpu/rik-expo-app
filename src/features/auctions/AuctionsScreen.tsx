@@ -11,6 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import {
+  buildAssistantRoute,
+  buildAuctionDetailRoute,
+  buildSupplierMapRoute,
+  MARKET_TAB_ROUTE,
+} from "../../lib/navigation/coreRoutes";
 import { FlashList } from "../../ui/FlashList";
 import type { AuctionListTab, UnifiedAuctionSummary } from "./auctions.types";
 import { buildAuctionsAssistantPrompt, loadAuctionSummaries } from "./auctions.data";
@@ -90,7 +96,7 @@ export default function AuctionsScreen() {
     return (
       <Pressable
         style={styles.card}
-        onPress={() => router.push(`/auction/${item.id}` as any)}
+        onPress={() => router.push(buildAuctionDetailRoute(item.id))}
       >
         <View style={styles.cardTop}>
           <View style={styles.cardMeta}>
@@ -148,31 +154,25 @@ export default function AuctionsScreen() {
       </View>
 
       <View style={styles.routeRow}>
-        <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/market" as any)}>
+        <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_TAB_ROUTE)}>
           <Text style={styles.routeChipText}>Маркет</Text>
         </Pressable>
         <Pressable
           style={styles.routeChip}
-          onPress={() =>
-            router.push({
-              pathname: "/supplierMap",
-              params: { side: "demand" },
-            } as any)
-          }
+          onPress={() => router.push(buildSupplierMapRoute({ side: "demand" }))}
         >
           <Text style={styles.routeChipText}>Карта спроса</Text>
         </Pressable>
         <Pressable
           style={styles.routeChip}
           onPress={() =>
-            router.push({
-              pathname: "/(tabs)/ai",
-              params: {
+            router.push(
+              buildAssistantRoute({
                 context: "market",
                 prompt: buildAuctionsAssistantPrompt(tab, state.rows),
                 autoSend: "1",
-              },
-            } as any)
+              }),
+            )
           }
         >
           <Text style={styles.routeChipText}>Спросить AI</Text>

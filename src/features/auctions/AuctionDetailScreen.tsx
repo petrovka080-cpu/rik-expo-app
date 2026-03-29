@@ -13,6 +13,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import {
+  buildAssistantRoute,
+  buildSupplierMapRoute,
+  MARKET_AUCTIONS_ROUTE,
+  MARKET_TAB_ROUTE,
+} from "../../lib/navigation/coreRoutes";
 import { buildAuctionAssistantPrompt, loadAuctionDetail } from "./auctions.data";
 import type { UnifiedAuctionDetail } from "./auctions.types";
 
@@ -77,17 +83,18 @@ export default function AuctionDetailScreen() {
   };
 
   const openDemandMap = () => {
-    router.push({
-      pathname: "/supplierMap",
-      params: row?.city
-        ? {
-            side: "demand",
-            city: row.city,
-          }
-        : {
-            side: "demand",
-          },
-    } as any);
+    router.push(
+      buildSupplierMapRoute(
+        row?.city
+          ? {
+              side: "demand",
+              city: row.city,
+            }
+          : {
+              side: "demand",
+            },
+      ),
+    );
   };
 
   if (loading) {
@@ -130,10 +137,10 @@ export default function AuctionDetailScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.routeRow}>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/auctions" as any)}>
+          <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_AUCTIONS_ROUTE)}>
             <Text style={styles.routeChipText}>К торгам</Text>
           </Pressable>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/market" as any)}>
+          <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_TAB_ROUTE)}>
             <Text style={styles.routeChipText}>Маркет</Text>
           </Pressable>
           <Pressable style={styles.routeChip} onPress={openDemandMap}>
@@ -236,14 +243,13 @@ export default function AuctionDetailScreen() {
             <Pressable
               style={[styles.actionBtn, styles.secondaryBtn]}
               onPress={() =>
-                router.push({
-                  pathname: "/(tabs)/ai",
-                  params: {
+                router.push(
+                  buildAssistantRoute({
                     context: "market",
                     prompt: buildAuctionAssistantPrompt(row),
                     autoSend: "1",
-                  },
-                } as any)
+                  }),
+                )
               }
             >
               <Text style={styles.secondaryActionText}>Спросить AI</Text>

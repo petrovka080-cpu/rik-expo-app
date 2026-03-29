@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../database.types";
+import { runContainedRpc } from "./queryBoundary";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
@@ -540,10 +541,10 @@ export async function loadContractorInboxScope(params: ScopeParams): Promise<Con
     sourceKind: "rpc:contractor_inbox_scope_v1",
   });
   try {
-    const { data, error } = await params.supabaseClient.rpc("contractor_inbox_scope_v1" as never, {
+    const { data, error } = await runContainedRpc(params.supabaseClient, "contractor_inbox_scope_v1", {
       p_my_contractor_id: params.myContractorId,
       p_is_staff: params.isStaff,
-    } as never);
+    });
     if (error) throw error;
     const scope = parseInboxScope(data);
     observation.success({
@@ -579,11 +580,11 @@ export async function loadContractorFactScope(params: FactParams): Promise<Contr
     sourceKind: "rpc:contractor_fact_scope_v1",
   });
   try {
-    const { data, error } = await params.supabaseClient.rpc("contractor_fact_scope_v1" as never, {
+    const { data, error } = await runContainedRpc(params.supabaseClient, "contractor_fact_scope_v1", {
       p_work_item_id: params.workItemId,
       p_my_contractor_id: params.myContractorId,
       p_is_staff: params.isStaff,
-    } as never);
+    });
     if (error) throw error;
     if (!data) throw new Error("contractor_fact_scope_v1 returned empty payload");
     const scope = parseFactScope(data);

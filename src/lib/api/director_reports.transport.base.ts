@@ -9,6 +9,7 @@ import {
   forEachChunkParallel,
 } from "./director_reports.shared";
 import { recordDirectorReportsTransportWarning } from "./director_reports.observability";
+import { runContainedRpc } from "./queryBoundary";
 import { loadCanonicalRequestsByIds } from "./requestCanonical.read";
 
 async function runTypedRpc<TRow>(
@@ -35,7 +36,7 @@ async function runTypedRpc<TRow>(
     code?: string | null;
   } | null;
 }> {
-  const { data, error } = await supabase.rpc(fnName as never, params as never);
+  const { data, error } = await runContainedRpc<TRow[]>(supabase, fnName, params);
   return {
     data: Array.isArray(data) ? (data as TRow[]) : null,
     error: error

@@ -26,6 +26,14 @@ import {
   subscribeToListingChatMessages,
   type ChatMessage,
 } from "../../lib/chat_api";
+import {
+  buildAssistantRoute,
+  buildMarketProductRoute,
+  buildSupplierMapRoute,
+  buildSupplierShowcaseRoute,
+  MARKET_AUCTIONS_ROUTE,
+  MARKET_TAB_ROUTE,
+} from "../../lib/navigation/coreRoutes";
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
 import { buildMarketMapParams, loadMarketListingById } from "../market/marketHome.data";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
@@ -193,7 +201,7 @@ export default function ChatScreen() {
           <Text style={styles.stateText}>
             Откройте чат из карточки объявления или со страницы товара.
           </Text>
-          <Pressable style={styles.primaryButton} onPress={() => router.replace("/(tabs)/market" as any)}>
+          <Pressable style={styles.primaryButton} onPress={() => router.replace(MARKET_TAB_ROUTE)}>
             <Text style={styles.primaryButtonText}>Перейти в маркет</Text>
           </Pressable>
         </View>
@@ -219,13 +227,12 @@ export default function ChatScreen() {
           <Pressable
             style={styles.headerButton}
             onPress={() =>
-              router.push({
-                pathname: "/(tabs)/ai",
-                params: {
+              router.push(
+                buildAssistantRoute({
                   context: "market",
                   prompt: `Помоги мне вести переговоры по объявлению "${title}".`,
-                },
-              } as any)
+                }),
+              )
             }
           >
             <Ionicons name="sparkles" size={18} color={MARKET_HOME_COLORS.accentStrong} />
@@ -234,19 +241,18 @@ export default function ChatScreen() {
 
         {listing ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.routeRow}>
-            <Pressable style={styles.routeChip} onPress={() => router.push(`/product/${listing.id}` as any)}>
+            <Pressable style={styles.routeChip} onPress={() => router.push(buildMarketProductRoute(listing.id))}>
               <Text style={styles.routeChipText}>Товар</Text>
             </Pressable>
             <Pressable
               style={styles.routeChip}
               onPress={() =>
-                router.push({
-                  pathname: "/supplierShowcase",
-                  params: {
+                router.push(
+                  buildSupplierShowcaseRoute({
                     userId: listing.sellerUserId,
-                    ...(listing.sellerCompanyId ? { companyId: listing.sellerCompanyId } : {}),
-                  },
-                } as any)
+                    companyId: listing.sellerCompanyId,
+                  }),
+                )
               }
             >
               <Text style={styles.routeChipText}>Витрина</Text>
@@ -254,18 +260,19 @@ export default function ChatScreen() {
             <Pressable
               style={styles.routeChip}
               onPress={() =>
-                router.push({
-                  pathname: "/supplierMap",
-                  params: buildMarketMapParams({ side: "all", kind: "all" }, { row: listing }),
-                })
+                router.push(
+                  buildSupplierMapRoute(
+                    buildMarketMapParams({ side: "all", kind: "all" }, { row: listing }),
+                  ),
+                )
               }
             >
               <Text style={styles.routeChipText}>Карта</Text>
             </Pressable>
-            <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/market" as any)}>
+            <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_TAB_ROUTE)}>
               <Text style={styles.routeChipText}>Маркет</Text>
             </Pressable>
-            <Pressable style={styles.routeChip} onPress={() => router.push("/auctions" as any)}>
+            <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_AUCTIONS_ROUTE)}>
               <Text style={styles.routeChipText}>Торги</Text>
             </Pressable>
           </ScrollView>

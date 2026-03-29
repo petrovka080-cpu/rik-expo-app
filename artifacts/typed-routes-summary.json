@@ -1,0 +1,48 @@
+{
+  "status": "GREEN",
+  "typedRoutesEnabled": true,
+  "navBoundaryOwner": "src/lib/navigation/coreRoutes.ts",
+  "navTargets": [
+    {
+      "file": "src/features/reports/ReportsHubScreen.tsx",
+      "beforeRouteHacks": 1,
+      "afterRouteHacks": 0,
+      "delta": 1
+    },
+    {
+      "file": "src/features/chat/ChatScreen.tsx",
+      "beforeRouteHacks": 6,
+      "afterRouteHacks": 0,
+      "delta": 6
+    },
+    {
+      "file": "src/features/auctions/AuctionsScreen.tsx",
+      "beforeRouteHacks": 4,
+      "afterRouteHacks": 0,
+      "delta": 4
+    },
+    {
+      "file": "src/features/auctions/AuctionDetailScreen.tsx",
+      "beforeRouteHacks": 4,
+      "afterRouteHacks": 0,
+      "delta": 4
+    },
+    {
+      "file": "app/(tabs)/profile.tsx",
+      "beforeRouteHacks": 7,
+      "afterRouteHacks": 0,
+      "delta": 7
+    }
+  ],
+  "summary": {
+    "beforeRouteHacks": 22,
+    "afterRouteHacks": 0,
+    "removedRouteHacks": 22
+  },
+  "checks": {
+    "typedRoutesEnabled": true,
+    "coreRoutesOwnerExists": true,
+    "targetFilesImportBoundary": true,
+    "routeHackCountAfter": 0
+  }
+}

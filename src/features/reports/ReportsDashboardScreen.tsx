@@ -16,6 +16,7 @@ import { LineChart, PieChart } from "react-native-chart-kit";
 import { parseErr } from "../../lib/api/_core";
 import { getFileSystemPaths } from "../../lib/fileSystemPaths";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { runContainedRpc } from "../../lib/api/queryBoundary";
 import { buildReportsExportPdfModel } from "../../lib/pdf/pdf.builder";
 import {
   buildGeneratedPdfDescriptor,
@@ -36,7 +37,7 @@ const monthAgo = () => {
 };
 const asRows = (value: unknown): any[] => (Array.isArray(value) ? value : []);
 const runReportRpc = async <T = unknown>(fn: string, args?: Record<string, unknown>) =>
-  (await supabase.rpc(fn as never, (args ?? {}) as never)) as { data: T | null; error: unknown };
+  await runContainedRpc<T>(supabase, fn, args ?? {});
 
 type ReportRow = (string | number)[];
 type ReportSection = {

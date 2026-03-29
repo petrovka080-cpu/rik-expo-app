@@ -1,0 +1,45 @@
+{
+  "status": "GREEN",
+  "containmentOwner": "src/lib/api/queryBoundary.ts",
+  "queryTargets": [
+    {
+      "file": "src/features/reports/ReportsDashboardScreen.tsx",
+      "beforeAsNever": 1,
+      "afterAsNever": 0,
+      "delta": 1
+    },
+    {
+      "file": "src/screens/buyer/buyer.fetchers.ts",
+      "beforeAsNever": 3,
+      "afterAsNever": 0,
+      "delta": 3
+    },
+    {
+      "file": "src/lib/api/contractor.scope.service.ts",
+      "beforeAsNever": 4,
+      "afterAsNever": 0,
+      "delta": 4
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.base.ts",
+      "beforeAsNever": 2,
+      "afterAsNever": 0,
+      "delta": 2
+    }
+  ],
+  "summary": {
+    "beforeAsNever": 10,
+    "afterAsNever": 0,
+    "removedAsNever": 10
+  },
+  "checks": {
+    "containmentOwner": "src/lib/api/queryBoundary.ts",
+    "targetFilesUseBoundary": true,
+    "allowedSuppressionZone": true,
+    "remainingAsNeverOnTargets": 0,
+    "allowedCasts": [
+      "client.rpc as unknown as UnsafeRpcInvoker",
+      "(result.data ?? null) as TData | null"
+    ]
+  }
+}

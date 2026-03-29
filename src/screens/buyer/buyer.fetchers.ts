@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { BuyerInboxRow } from "../../lib/catalog_api";
+import { runContainedRpc } from "../../lib/api/queryBoundary";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
@@ -168,12 +169,12 @@ const loadBuyerInboxWindowScope = async (params: {
   search?: string | null;
 }): Promise<BuyerInboxLoadResult> => {
   const { supabase, offsetGroups, limitGroups, search } = params;
-  const { data, error } = await supabase.rpc("buyer_summary_inbox_scope_v1" as never, {
+  const { data, error } = await runContainedRpc(supabase, "buyer_summary_inbox_scope_v1", {
     p_offset: Math.max(0, offsetGroups),
     p_limit: Math.max(1, limitGroups),
     p_search: search?.trim() || null,
     p_company_id: null,
-  } as never);
+  });
   if (error) throw error;
 
   const envelope = adaptBuyerSummaryInboxScopeEnvelope(data);
@@ -299,7 +300,7 @@ async function loadBuyerBucketsDataRpcInternal(params: {
       : null;
 
   try {
-    const { data, error } = await supabase.rpc("buyer_summary_buckets_scope_v1" as never);
+    const { data, error } = await runContainedRpc(supabase, "buyer_summary_buckets_scope_v1");
     if (error) throw error;
 
     const envelope = adaptBuyerSummaryBucketsScopeEnvelope(data);

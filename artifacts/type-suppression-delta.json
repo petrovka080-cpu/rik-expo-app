@@ -1,0 +1,86 @@
+{
+  "status": "GREEN",
+  "nav": {
+    "totalBefore": 22,
+    "totalAfter": 0,
+    "targets": [
+      {
+        "file": "src/features/reports/ReportsHubScreen.tsx",
+        "before": 1,
+        "after": 0
+      },
+      {
+        "file": "src/features/chat/ChatScreen.tsx",
+        "before": 6,
+        "after": 0
+      },
+      {
+        "file": "src/features/auctions/AuctionsScreen.tsx",
+        "before": 4,
+        "after": 0
+      },
+      {
+        "file": "src/features/auctions/AuctionDetailScreen.tsx",
+        "before": 4,
+        "after": 0
+      },
+      {
+        "file": "app/(tabs)/profile.tsx",
+        "before": 7,
+        "after": 0
+      }
+    ]
+  },
+  "query": {
+    "totalBefore": 10,
+    "totalAfter": 0,
+    "targets": [
+      {
+        "file": "src/features/reports/ReportsDashboardScreen.tsx",
+        "before": 1,
+        "after": 0
+      },
+      {
+        "file": "src/screens/buyer/buyer.fetchers.ts",
+        "before": 3,
+        "after": 0
+      },
+      {
+        "file": "src/lib/api/contractor.scope.service.ts",
+        "before": 4,
+        "after": 0
+      },
+      {
+        "file": "src/lib/api/director_reports.transport.base.ts",
+        "before": 2,
+        "after": 0
+      }
+    ]
+  },
+  "allowedSuppressionZones": [
+    {
+      "file": "src/lib/api/queryBoundary.ts",
+      "reason": "Contain Supabase RPC typing gaps in one boundary instead of spreading `as never` on critical paths.",
+      "casts": [
+        "client.rpc as unknown as UnsafeRpcInvoker",
+        "(result.data ?? null) as TData | null"
+      ]
+    },
+    {
+      "file": "src/features/reports/ReportsDashboardScreen.tsx",
+      "reason": "Legacy FileSystem compat cast remains outside route/query correctness scope.",
+      "casts": [
+        "FileSystem as any"
+      ]
+    },
+    {
+      "file": "app/(tabs)/profile.tsx",
+      "reason": "Non-route profile metadata and native payload casts remain outside TЗ-9 scope.",
+      "casts": [
+        "user.user_metadata as any",
+        "encoding: \"base64\" as any",
+        "finalKind = \"mixed\" as any"
+      ]
+    }
+  ]
+}

@@ -3,13 +3,18 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import {
+  REPORTS_MODULE_ROUTES,
+  type ReportsModuleRouteKey,
+} from "../../lib/navigation/coreRoutes";
+
 type ReportModuleCard = {
   key: string;
   title: string;
   subtitle: string;
   icon: keyof typeof Ionicons.glyphMap;
   accent: string;
-  route: string;
+  routeKey: ReportsModuleRouteKey;
 };
 
 const REPORT_MODULES: ReportModuleCard[] = [
@@ -20,7 +25,7 @@ const REPORT_MODULES: ReportModuleCard[] = [
       "\u041e\u0431\u043e\u0440\u043e\u0442\u044b, \u0437\u0430\u0442\u0440\u0430\u0442\u044b, \u0434\u043e\u043b\u0433\u0438, \u0432\u043e\u0440\u043e\u043d\u043a\u0430 \u0437\u0430\u043a\u0443\u043f\u043e\u043a \u0438 \u044d\u043a\u0441\u043f\u043e\u0440\u0442 \u043e\u0442\u0447\u0435\u0442\u043e\u0432.",
     icon: "bar-chart",
     accent: "#0EA5E9",
-    route: "/reports/dashboard",
+    routeKey: "dashboard",
   },
   {
     key: "ai-assistant",
@@ -29,7 +34,7 @@ const REPORT_MODULES: ReportModuleCard[] = [
       "\u041a\u043e\u043d\u0442\u0435\u043a\u0441\u0442\u043d\u044b\u0439 \u043f\u043e\u043c\u043e\u0449\u043d\u0438\u043a \u043f\u043e \u043e\u0442\u0447\u0435\u0442\u0430\u043c \u0438 \u043c\u043e\u0434\u0443\u043b\u044f\u043c \u0431\u0435\u0437 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u043e\u0432.",
     icon: "sparkles",
     accent: "#F59E0B",
-    route: "/reports/ai-assistant",
+    routeKey: "ai-assistant",
   },
 ];
 
@@ -67,7 +72,7 @@ export default function ReportsHubScreen() {
               styles.card,
               { borderColor: module.accent, opacity: pressed ? 0.92 : 1 },
             ]}
-            onPress={() => router.push(module.route as any)}
+            onPress={() => router.push(REPORTS_MODULE_ROUTES[module.routeKey])}
           >
             <View style={[styles.iconWrap, { backgroundColor: `${module.accent}22` }]}>
               <Ionicons name={module.icon} size={24} color={module.accent} />
