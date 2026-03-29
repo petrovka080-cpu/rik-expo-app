@@ -1,5 +1,8 @@
 // src/screens/buyer/buyer.repo.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  getLatestCanonicalProposalAttachment,
+} from "../../lib/api/proposalAttachments.service";
 
 export type PropAttachmentRow = {
   id: string;
@@ -28,17 +31,17 @@ export type RepoAttachmentRow = PropAttachmentRow & {
 };
 
 export async function repoGetLatestProposalPdfAttachment(supabase: SupabaseClient, pidStr: string) {
-  const q = await supabase
-    .from("proposal_attachments")
-    .select("id, file_name")
-    .eq("proposal_id", pidStr)
-    .eq("group_key", "proposal_pdf")
-    .order("created_at", { ascending: false })
-    .limit(1);
-
-  if (q.error) throw q.error;
-  const row = (q.data && q.data[0]) || null;
-  return row ? { id: String(row.id), file_name: String(row.file_name ?? "") } : null;
+  try {
+    const latest = await getLatestCanonicalProposalAttachment(supabase, pidStr, "proposal_pdf", {
+      screen: "buyer",
+    });
+    return {
+      id: latest.row.attachmentId,
+      file_name: latest.row.fileName,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function repoGetProposalItemsForAccounting(supabase: SupabaseClient, pidStr: string) {

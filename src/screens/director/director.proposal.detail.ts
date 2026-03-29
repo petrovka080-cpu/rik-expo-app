@@ -1,6 +1,11 @@
 import { Alert } from "react-native";
 import { useCallback } from "react";
 import type React from "react";
+
+import {
+  listCanonicalProposalAttachments,
+  toProposalAttachmentLegacyRow,
+} from "../../lib/api/proposalAttachments.service";
 import type { ProposalAttachmentRow, ProposalItem } from "./director.types";
 
 type Deps = {
@@ -62,44 +67,19 @@ export function useDirectorProposalDetail({
     setPropAttErrByProp((prev) => ({ ...prev, [pid]: "" }));
 
     try {
-      let raw: Array<Record<string, unknown>> = [];
-
-      const rpc = await supabase.rpc("proposal_attachments_list", { p_proposal_id: pid });
-      if (!rpc.error && Array.isArray(rpc.data)) {
-        raw = rpc.data as Array<Record<string, unknown>>;
-      } else {
-        const q = await supabase
-          .from("proposal_attachments")
-          .select("id, proposal_id, file_name, url, group_key, created_at, bucket_id, storage_path")
-          .eq("proposal_id", pid)
-          .order("created_at", { ascending: false });
-
-        if (q.error) throw q.error;
-        raw = (q.data || []) as Array<Record<string, unknown>>;
-      }
-
-      const rows: ProposalAttachmentRow[] = [];
-      const seen = new Set<string>();
-
-      for (const r of raw) {
-        const id = String(r.id ?? "").trim();
-        if (!id) continue;
-        if (seen.has(id)) continue;
-        seen.add(id);
-
-        rows.push({
-          id,
-          proposal_id: String(r.proposal_id ?? "").trim() || pid,
-          file_name: String(r.file_name ?? "").trim() || "file",
-          url: (r.url as string | null | undefined) ?? null,
-          group_key: (r.group_key as string | null | undefined) ?? null,
-          created_at: (r.created_at as string | null | undefined) ?? null,
-          bucket_id: (r.bucket_id as string | null | undefined) ?? null,
-          storage_path: (r.storage_path as string | null | undefined) ?? null,
-        });
-      }
+      const result = await listCanonicalProposalAttachments(supabase, pid, { screen: "director" });
+      const rows: ProposalAttachmentRow[] = result.rows.map((row) => toProposalAttachmentLegacyRow(row));
 
       setPropAttByProp((prev) => ({ ...prev, [pid]: rows }));
+      setPropAttErrByProp((prev) => ({
+        ...prev,
+        [pid]:
+          result.state === "degraded" && rows.length > 0
+            ? result.errorMessage || "Вложения загружены через compatibility path."
+            : result.state === "error"
+              ? result.errorMessage || "Не удалось загрузить вложения предложения"
+              : "",
+      }));
     } catch (e: unknown) {
       const message = errText(e) || "Не удалось загрузить вложения предложения";
       if (__DEV__) console.warn("[director] loadProposalAttachments:", message);
@@ -137,7 +117,7 @@ export function useDirectorProposalDetail({
       const ids = Array.from(
         new Set(
           ((q.data || []) as Array<{ request_item_id?: string | null }>)
-            .map((r) => String(r.request_item_id || "").trim())
+            .map((row) => String(row.request_item_id || "").trim())
             .filter(Boolean),
         ),
       );
@@ -148,8 +128,8 @@ export function useDirectorProposalDetail({
       }
 
       const comment = (note || "").trim() || "Отклонено директором";
-      const payload = ids.map((rid) => ({
-        request_item_id: rid,
+      const payload = ids.map((requestItemId) => ({
+        request_item_id: requestItemId,
         decision: "rejected",
         comment,
       }));
@@ -161,14 +141,26 @@ export function useDirectorProposalDetail({
       });
       if (res.error) throw res.error;
 
-      setItemsByProp((m) => { const c = { ...m }; delete c[pidStr]; return c; });
-      setLoadedByProp((m) => { const c = { ...m }; delete c[pidStr]; return c; });
-      setPdfHtmlByProp((m) => { const c = { ...m }; delete c[pidStr]; return c; });
+      setItemsByProp((map) => {
+        const clone = { ...map };
+        delete clone[pidStr];
+        return clone;
+      });
+      setLoadedByProp((map) => {
+        const clone = { ...map };
+        delete clone[pidStr];
+        return clone;
+      });
+      setPdfHtmlByProp((map) => {
+        const clone = { ...map };
+        delete clone[pidStr];
+        return clone;
+      });
 
       await fetchProps(true);
       closeSheet();
     } catch (e: unknown) {
-      Alert.alert("Не удалось вернуть предложение", errText(e) || "Попробуйте еще раз.");
+      Alert.alert("Не удалось вернуть предложение", errText(e) || "Попробуйте ещё раз.");
     } finally {
       setPropReturnId(null);
     }

@@ -1,19 +1,25 @@
-// src/lib/files.ts
 import { Platform } from "react-native";
 
-import { supabase } from "./supabaseClient";
+import {
+  ensureProposalAttachmentUrl,
+  getLatestCanonicalProposalAttachment,
+  listCanonicalProposalAttachments,
+  toProposalAttachmentLegacyRow,
+} from "./api/proposalAttachments.service";
 import { openAppAttachment } from "./documents/attachmentOpener";
+import { supabase } from "./supabaseClient";
 
-/** Reuse uploader from rik_api.ts */
 export { uploadProposalAttachment } from "./catalog_api";
 
 type AttRow = {
-  id: number | string;
-  bucket_id: string;
-  storage_path: string;
+  id: string;
+  proposal_id: string;
+  bucket_id: string | null;
+  storage_path: string | null;
   file_name: string;
-  group_key: string;
-  created_at: string;
+  group_key: string | null;
+  created_at: string | null;
+  url: string | null;
   signed_url?: string | null;
 };
 
@@ -25,9 +31,6 @@ type SupplierFileMetaRow = {
   group_key?: string;
 };
 
-const toSupabaseError = (context: string, error: unknown) =>
-  new Error(`${context}: ${error instanceof Error ? error.message : String(error)}`);
-
 export const isPdfLike = (fileName?: string | null, url?: string | null) => {
   const name = String(fileName || "").trim().toLowerCase();
   const href = String(url || "").trim().toLowerCase();
@@ -36,10 +39,10 @@ export const isPdfLike = (fileName?: string | null, url?: string | null) => {
 
 function notFoundMsg(groupKey: string) {
   return groupKey === "invoice"
-    ? "РЎС‡РµС‚ РЅРµ РїСЂРёРєСЂРµРїР»РµРЅ"
+    ? "Счёт не прикреплён"
     : groupKey === "payment"
-      ? "РџР»Р°С‚РµР¶РЅС‹Рµ РґРѕРєСѓРјРµРЅС‚С‹ РЅРµ РЅР°Р№РґРµРЅС‹"
-      : "Р’Р»РѕР¶РµРЅРёСЏ РЅРµ РЅР°Р№РґРµРЅС‹";
+      ? "Платёжные документы не найдены"
+      : "Вложения не найдены";
 }
 
 function safeFileName(name: string | undefined) {
@@ -48,57 +51,58 @@ function safeFileName(name: string | undefined) {
 }
 
 async function webOpenBlobOrDirect(url: string, fileName?: string) {
-  const w = window.open(url, "_blank", "noopener,noreferrer");
-  if (w) return;
+  const popup = window.open(url, "_blank", "noopener,noreferrer");
+  if (popup) return;
 
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const blob = await res.blob();
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const blob = await response.blob();
     const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = fileName || "file";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName || "file";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     return;
   } catch {}
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.target = "_blank";
-  a.rel = "noopener noreferrer";
-  a.download = fileName || "file";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.download = fileName || "file";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
-const __openGuard = { t: 0, key: "" };
+const openGuard = { at: 0, key: "" };
+
 function guardOpenOnce(key: string, ms = 1200) {
   const now = Date.now();
-  if (__openGuard.key === key && now - __openGuard.t < ms) return false;
-  __openGuard.key = key;
-  __openGuard.t = now;
+  if (openGuard.key === key && now - openGuard.at < ms) return false;
+  openGuard.key = key;
+  openGuard.at = now;
   return true;
 }
 
 export async function openSignedUrlUniversal(url: string, fileName?: string) {
-  const u = String(url || "").trim();
-  if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР°");
+  const href = String(url || "").trim();
+  if (!href) throw new Error("Пустая ссылка");
 
-  const base = u.split("?")[0];
+  const base = href.split("?")[0];
   const name = String(fileName || "").trim();
   if (!guardOpenOnce(`${Platform.OS}|${base}|${name}`)) return;
 
   if (Platform.OS === "web") {
-    await webOpenBlobOrDirect(u, fileName);
+    await webOpenBlobOrDirect(href, fileName);
     return;
   }
 
-  await openAppAttachment({ url: u, fileName });
+  await openAppAttachment({ url: href, fileName });
 }
 
 export async function openAttachment(
@@ -109,51 +113,29 @@ export async function openAttachment(
   const pid = String(proposalId || "").trim();
   if (!pid) throw new Error("proposalId is empty");
 
-  let rows: AttRow[] = [];
-
-  try {
-    const { data, error } = await supabase.rpc("list_attachments", {
-      p_proposal_id: pid,
-      p_group_key: groupKey,
-    });
-    if (!error && Array.isArray(data)) rows = data as AttRow[];
-  } catch {}
+  const result = await listCanonicalProposalAttachments(supabase, pid, {
+    groupKey,
+    screen: "request",
+  });
+  const rows: AttRow[] = result.rows.map((row) => ({
+    ...toProposalAttachmentLegacyRow(row),
+    signed_url: row.fileUrl,
+  })) as AttRow[];
 
   if (!rows.length) {
-    const q = await supabase
-      .from("proposal_attachments")
-      .select("id,bucket_id,storage_path,file_name,group_key,created_at")
-      .eq("proposal_id", pid)
-      .eq("group_key", groupKey)
-      .order("created_at", { ascending: false })
-      .limit(opts?.all ? 1000 : 50);
-
-    if (!q.error && Array.isArray(q.data)) rows = q.data as AttRow[];
+    if (result.state === "empty") throw new Error(notFoundMsg(String(groupKey)));
+    throw new Error(result.errorMessage || "Attachment lookup failed");
   }
 
-  if (!rows.length) throw new Error(notFoundMsg(String(groupKey)));
-
-  rows.sort((a, b) => {
-    const atA = a?.created_at ? Date.parse(String(a.created_at)) : 0;
-    const atB = b?.created_at ? Date.parse(String(b.created_at)) : 0;
-    if (atA !== atB) return atB - atA;
-    return Number(b.id ?? 0) - Number(a.id ?? 0);
+  rows.sort((left, right) => {
+    const leftAt = left.created_at ? Date.parse(String(left.created_at)) : 0;
+    const rightAt = right.created_at ? Date.parse(String(right.created_at)) : 0;
+    if (leftAt !== rightAt) return rightAt - leftAt;
+    return Number(right.id ?? 0) - Number(left.id ?? 0);
   });
 
-  const makeSignedUrl = async (bucket: string, path: string) => {
-    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
-    if (error) throw toSupabaseError("createSignedUrl failed", error);
-    const url = data?.signedUrl;
-    if (!url) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃСЃС‹Р»РєСѓ");
-    return url;
-  };
-
   const openOne = async (row: AttRow) => {
-    const bucket = String(row.bucket_id || "").trim();
-    const path = String(row.storage_path || "").trim();
-    if (!bucket || !path) throw new Error("РџСѓСЃС‚РѕР№ bucket_id РёР»Рё storage_path");
-
-    const signedUrl = await makeSignedUrl(bucket, path);
+    const signedUrl = await ensureProposalAttachmentUrl(supabase, row, 60 * 10);
     row.signed_url = signedUrl;
     await openAppAttachment({
       url: signedUrl,
@@ -179,30 +161,18 @@ export async function getLatestProposalAttachmentPreview(
   const pid = String(proposalId || "").trim();
   if (!pid) throw new Error("proposalId is empty");
 
-  const q = await supabase
-    .from("proposal_attachments")
-    .select("id,bucket_id,storage_path,file_name,group_key,created_at")
-    .eq("proposal_id", pid)
-    .eq("group_key", groupKey)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const latest = await getLatestCanonicalProposalAttachment(supabase, pid, groupKey, {
+    screen: "request",
+  });
+  const row = {
+    ...toProposalAttachmentLegacyRow(latest.row),
+    signed_url: latest.row.fileUrl,
+  } as AttRow;
+  const url = await ensureProposalAttachmentUrl(supabase, row, 60 * 10);
 
-  if (q.error) throw toSupabaseError("proposal_attachments lookup failed", q.error);
-  const row = q.data as AttRow | null;
-  if (!row) throw new Error(notFoundMsg(String(groupKey)));
-
-  const bucket = String(row.bucket_id || "").trim();
-  const path = String(row.storage_path || "").trim();
-  if (!bucket || !path) throw new Error("bucket_id/storage_path РїСѓСЃС‚С‹Рµ");
-
-  const signed = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
-  if (signed.error) throw toSupabaseError("createSignedUrl failed", signed.error);
-  const url = String(signed.data?.signedUrl || "").trim();
-  if (!url) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ signed URL РІР»РѕР¶РµРЅРёСЏ");
   return {
     url,
-    fileName: String(row?.file_name || "document.pdf"),
+    fileName: String(row.file_name || "document.pdf"),
     row,
   };
 }
@@ -222,11 +192,11 @@ export async function uploadSupplierFile(
   const path = `${id}/${Date.now()}_${cleanName}`;
   const bucket = supabase.storage.from("supplier_files");
 
-  const up = await bucket.upload(path, file, { upsert: false, cacheControl: "3600" });
-  if (up.error) throw up.error;
+  const upload = await bucket.upload(path, file, { upsert: false, cacheControl: "3600" });
+  if (upload.error) throw upload.error;
 
-  const pub = bucket.getPublicUrl(path);
-  const url = pub?.data?.publicUrl || "";
+  const publicUrl = bucket.getPublicUrl(path);
+  const url = publicUrl?.data?.publicUrl || "";
 
   try {
     await supabase.from("supplier_files").insert({
@@ -248,18 +218,18 @@ export async function listSupplierFilesMeta(
   if (!id) return [];
 
   try {
-    let q = supabase
+    let query = supabase
       .from("supplier_files")
       .select("id,created_at,file_name,file_url,group_key")
       .eq("supplier_id", id)
       .order("created_at", { ascending: false });
 
-    if (opts?.group) q = q.eq("group_key", opts.group);
-    if (opts?.limit) q = q.limit(opts.limit);
+    if (opts?.group) query = query.eq("group_key", opts.group);
+    if (opts?.limit) query = query.limit(opts.limit);
 
-    const r = await q;
-    if (r.error) throw r.error;
-    return Array.isArray(r.data) ? (r.data as SupplierFileMetaRow[]) : [];
+    const result = await query;
+    if (result.error) throw result.error;
+    return Array.isArray(result.data) ? (result.data as SupplierFileMetaRow[]) : [];
   } catch {
     return [];
   }
@@ -277,15 +247,15 @@ export async function openSupplierFile(
     limit: opts?.all ? 1000 : 50,
   });
 
-  if (!meta.length) throw new Error("Р¤Р°Р№Р»С‹ РїРѕСЃС‚Р°РІС‰РёРєР° РЅРµ РЅР°Р№РґРµРЅС‹");
+  if (!meta.length) throw new Error("Файлы поставщика не найдены");
 
   const rows = meta
     .slice()
-    .sort((a, b) => Date.parse(String(b.created_at || 0)) - Date.parse(String(a.created_at || 0)));
+    .sort((left, right) => Date.parse(String(right.created_at || 0)) - Date.parse(String(left.created_at || 0)));
 
   const openOne = async (row: SupplierFileMetaRow) => {
     const url = String(row.file_url || "").trim();
-    if (!url) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР° РЅР° С„Р°Р№Р» РїРѕСЃС‚Р°РІС‰РёРєР°");
+    if (!url) throw new Error("Пустая ссылка на файл поставщика");
     await openAppAttachment({ url, fileName: row.file_name });
   };
 

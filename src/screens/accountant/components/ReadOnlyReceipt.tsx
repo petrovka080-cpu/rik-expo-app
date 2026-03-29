@@ -1,10 +1,11 @@
 import React from "react";
 import { Platform, Pressable, Text, View } from "react-native";
-import { S, UI } from "../ui";
-import type { AttachmentRow, Tab } from "../types";
+
 import type { AccountantInboxRow } from "../../../lib/rik_api";
 import { normalizeRuText } from "../../../lib/text/encoding";
 import { StatusBadge } from "../../../ui/StatusBadge";
+import type { AttachmentRow, AttachmentState, Tab } from "../types";
+import { S, UI } from "../ui";
 
 type ReceiptCurrent = AccountantInboxRow & {
   proposal_id?: string;
@@ -12,7 +13,43 @@ type ReceiptCurrent = AccountantInboxRow & {
   total_paid?: number | null;
 };
 
-const ru = (v: unknown, fallback = "") => normalizeRuText(String(v ?? fallback));
+const ru = (value: unknown, fallback = "") => normalizeRuText(String(value ?? fallback));
+
+function AttachmentStateBlock(props: {
+  tone: "error" | "warning";
+  title: string;
+  message: string;
+}) {
+  const palette =
+    props.tone === "error"
+      ? {
+          borderColor: "rgba(255,120,120,0.35)",
+          backgroundColor: "rgba(120,0,0,0.18)",
+          color: "#FFD2D2",
+        }
+      : {
+          borderColor: "rgba(253,224,71,0.35)",
+          backgroundColor: "rgba(120,90,0,0.16)",
+          color: "#FDE68A",
+        };
+
+  return (
+    <View
+      style={{
+        marginBottom: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: palette.borderColor,
+        backgroundColor: palette.backgroundColor,
+      }}
+    >
+      <Text style={{ color: palette.color, fontWeight: "900" }}>{props.title}</Text>
+      <Text style={{ color: palette.color, marginTop: 4 }}>{props.message}</Text>
+    </View>
+  );
+}
 
 export function ReadOnlyPaymentSummary({
   current,
@@ -119,7 +156,7 @@ export function ReadOnlyPaymentSummary({
       <View style={{ height: 12 }} />
 
       <Pressable
-        onPress={() => setShowBank((v) => !v)}
+        onPress={() => setShowBank((value) => !value)}
         style={{
           paddingVertical: 10,
           paddingHorizontal: 12,
@@ -192,6 +229,8 @@ export function ReadOnlyPaymentReceipt({
   inn,
   kpp,
   attRows,
+  attState,
+  attMessage,
   busyKey,
   onRefreshAtt,
   onOpenFile,
@@ -211,9 +250,11 @@ export function ReadOnlyPaymentReceipt({
   inn: string;
   kpp: string;
   attRows: AttachmentRow[];
+  attState: AttachmentState;
+  attMessage: string;
   busyKey: string | null;
   onRefreshAtt: () => Promise<void>;
-  onOpenFile: (f: AttachmentRow) => void;
+  onOpenFile: (file: AttachmentRow) => void;
   onOpenInvoice: () => Promise<void>;
   onOpenReport: () => Promise<void>;
   invoiceNoDraft: string;
@@ -222,8 +263,8 @@ export function ReadOnlyPaymentReceipt({
   const invNo = ru(String(current?.invoice_number ?? invoiceNoDraft ?? "").trim(), "—");
   const invDt = ru(String(current?.invoice_date ?? invoiceDateDraft ?? "").trim(), "—");
 
-  const supp = ru(String(current?.supplier ?? "—").trim(), "—");
-  const pid = String(current?.proposal_id ?? "—").trim() || "—";
+  const supplier = ru(String(current?.supplier ?? "—").trim(), "—");
+  const proposalId = String(current?.proposal_id ?? "—").trim() || "—";
 
   const inv = Number(current?.invoice_amount ?? 0);
   const paid = Number(current?.total_paid ?? 0);
@@ -243,6 +284,7 @@ export function ReadOnlyPaymentReceipt({
     isHistoryTab ||
     String(statusText).toLowerCase().startsWith("оплач") ||
     String(statusText).toLowerCase().startsWith("частич");
+  const showAttachmentEmpty = attState === "empty" && files.length === 0;
 
   const [showBank, setShowBank] = React.useState(false);
   const hasAnyBank = !!(bankName || bik || rs || inn || kpp);
@@ -253,7 +295,7 @@ export function ReadOnlyPaymentReceipt({
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <View style={{ flex: 1 }}>
             <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={1}>
-              {supp}
+              {supplier}
             </Text>
             <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={1}>
               Счёт №{invNo} • {invDt}
@@ -280,8 +322,14 @@ export function ReadOnlyPaymentReceipt({
 
         <Text style={{ color: UI.sub, fontWeight: "800" }}>
           ID:{" "}
-          <Text style={{ color: UI.text, fontWeight: "900", fontFamily: Platform.OS === "web" ? "monospace" : undefined }}>
-            {pid}
+          <Text
+            style={{
+              color: UI.text,
+              fontWeight: "900",
+              fontFamily: Platform.OS === "web" ? "monospace" : undefined,
+            }}
+          >
+            {proposalId}
           </Text>
         </Text>
 
@@ -373,15 +421,25 @@ export function ReadOnlyPaymentReceipt({
 
         <View style={{ height: 10 }} />
 
-        {files.length === 0 ? (
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет вложений</Text>
-        ) : (
+        {attState === "error" ? (
+          <AttachmentStateBlock tone="error" title="Не удалось загрузить вложения" message={attMessage} />
+        ) : null}
+
+        {attState === "degraded" ? (
+          <AttachmentStateBlock tone="warning" title="Вложения загружены в degraded mode" message={attMessage} />
+        ) : null}
+
+        {showAttachmentEmpty ? (
+          <Text style={{ color: UI.sub, fontWeight: "800" }}>{attMessage || "Вложения отсутствуют."}</Text>
+        ) : null}
+
+        {files.length > 0 ? (
           <View style={{ gap: 8 }}>
-            {files.map((f: AttachmentRow) => (
+            {files.map((file) => (
               <Pressable
-                key={String(f.id)}
+                key={String(file.id)}
                 disabled={!!busyKey}
-                onPress={() => onOpenFile(f)}
+                onPress={() => onOpenFile(file)}
                 style={{
                   paddingVertical: 10,
                   paddingHorizontal: 12,
@@ -393,12 +451,12 @@ export function ReadOnlyPaymentReceipt({
                 }}
               >
                 <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
-                  📎 {String(f.file_name ?? "file")}
+                  📎 {String(file.file_name ?? "file")}
                 </Text>
               </Pressable>
             ))}
           </View>
-        )}
+        ) : null}
 
         {showInvoiceBtn || showReportBtn ? (
           <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>
@@ -449,7 +507,7 @@ export function ReadOnlyPaymentReceipt({
 
       <View style={S.section}>
         <Pressable
-          onPress={() => setShowBank((v) => !v)}
+          onPress={() => setShowBank((value) => !value)}
           style={{
             paddingVertical: 10,
             paddingHorizontal: 12,

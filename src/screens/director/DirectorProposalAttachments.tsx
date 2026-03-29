@@ -69,7 +69,7 @@ export default function DirectorProposalAttachments({
         <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 8 }}>
           Загружаю вложения...
         </Text>
-      ) : error ? (
+      ) : error && files.length === 0 ? (
         <View
           style={{
             marginTop: 8,
@@ -85,6 +85,25 @@ export default function DirectorProposalAttachments({
             Не удалось загрузить вложения
           </Text>
           <Text style={{ color: "#FFD2D2", marginTop: 4 }}>
+            {error}
+          </Text>
+        </View>
+      ) : error ? (
+        <View
+          style={{
+            marginTop: 8,
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: "rgba(253,224,71,0.35)",
+            backgroundColor: "rgba(120,90,0,0.16)",
+          }}
+        >
+          <Text style={{ color: "#FDE68A", fontWeight: "900" }}>
+            Р’Р»РѕР¶РµРЅРёСЏ Р·Р°РіСЂСѓР¶РµРЅС‹ РІ degraded mode
+          </Text>
+          <Text style={{ color: "#FDE68A", marginTop: 4 }}>
             {error}
           </Text>
         </View>

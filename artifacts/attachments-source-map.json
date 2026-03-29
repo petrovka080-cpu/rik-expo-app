@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-03-29T04:59:05.241Z",
+  "canonicalSource": {
+    "primary": "rpc:proposal_attachments_list",
+    "compatibility": "table:proposal_attachments",
+    "writeOwner": "proposal_attachments"
+  },
+  "activeConsumers": {
+    "accountant": [
+      "src/screens/accountant/accountant.attachments.ts",
+      "src/screens/accountant/components/AccountantCardContent.tsx",
+      "src/screens/accountant/components/ReadOnlyReceipt.tsx",
+      "src/screens/accountant/useAccountantDocuments.ts"
+    ],
+    "buyer": [
+      "src/screens/buyer/useBuyerProposalAttachments.ts",
+      "src/screens/buyer/hooks/useBuyerAccountingModal.ts"
+    ],
+    "director": [
+      "src/screens/director/director.proposal.detail.ts"
+    ],
+    "shared": [
+      "src/lib/files.ts"
+    ]
+  },
+  "sourceDiscipline": {
+    "statusSpecificTruthAllowed": false,
+    "rawPayloadPatchingAllowed": false,
+    "uiMergeAllowed": false
+  }
+}

@@ -5,18 +5,24 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { openAppAttachment } from "../../lib/documents/attachmentOpener";
 import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
-import { getLatestProposalAttachmentPreview, isPdfLike } from "../../lib/files";
+import {
+  ensureProposalAttachmentUrl,
+  getLatestCanonicalProposalAttachment,
+  listCanonicalProposalAttachments,
+  toProposalAttachmentLegacyRow,
+} from "../../lib/api/proposalAttachments.service";
+import { isPdfLike } from "../../lib/files";
 import { attachFileToProposalAction } from "./buyer.attachments.actions";
 import type { PickedFile } from "./buyer.attachments.actions";
-import { repoListProposalAttachments, type PropAttachmentRow } from "./buyer.repo";
+import type { PropAttachmentRow } from "./buyer.repo";
 
 const errText = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
   return String(error ?? "");
 };
 
-const pickUrl = (x: unknown) => {
-  const row = (x as Record<string, unknown> | null) ?? null;
+const pickUrl = (value: unknown) => {
+  const row = (value as Record<string, unknown> | null) ?? null;
   return String(row?.signed_url || row?.public_url || row?.url || row?.file_url || row?.file_public_url || "").trim();
 };
 
@@ -41,8 +47,18 @@ export function useBuyerProposalAttachments(params: {
       setPropAttErrByPid((prev) => ({ ...prev, [pid]: "" }));
       setPropAttBusy(true);
       try {
-        const rows = await repoListProposalAttachments(supabase, pid);
+        const result = await listCanonicalProposalAttachments(supabase, pid, { screen: "buyer" });
+        const rows = result.rows.map((row) => toProposalAttachmentLegacyRow(row));
         setPropAttByPid((prev) => ({ ...prev, [pid]: rows }));
+        setPropAttErrByPid((prev) => ({
+          ...prev,
+          [pid]:
+            result.state === "degraded"
+              ? result.errorMessage || "Вложения загружены через compatibility path."
+              : result.state === "error"
+                ? result.errorMessage || "Не удалось загрузить вложения."
+                : "",
+        }));
       } catch (e: unknown) {
         setPropAttErrByPid((prev) => ({ ...prev, [pid]: errText(e) }));
       } finally {
@@ -57,45 +73,40 @@ export function useBuyerProposalAttachments(params: {
       try {
         let url = pickUrl(att);
         const attId = String(att?.id ?? "").trim();
-        if (!url && attId) {
-          const q = await supabase
-            .from("proposal_attachments")
-            .select("id, proposal_id, file_name, url, bucket_id, storage_path")
-            .eq("id", attId)
-            .maybeSingle();
+        const pid = String(att?.proposal_id ?? "").trim();
+        const groupKey = String(att?.group_key ?? "proposal_pdf").trim();
+        const fileName = String(att?.file_name ?? att?.name ?? "file").trim();
 
-          const row = (q?.data || null) as { proposal_id?: string | null; file_name?: string | null } | null;
-          const pid = String(row?.proposal_id || "").trim();
-          const fileName = String(row?.file_name || att?.file_name || att?.name || "file").trim();
-          if (pid) {
-            const latest = await getLatestProposalAttachmentPreview(pid, String(att?.group_key || "proposal_pdf"));
-            url = latest.url;
-            if (isPdfLike(fileName, url)) {
-              const template = createPdfDocumentDescriptor({
-                uri: url,
-                title: fileName.replace(/\.pdf$/i, "") || "Р’Р»РѕР¶РµРЅРёРµ",
-                fileName,
-                documentType: "attachment_pdf",
-                source: "attachment",
-                originModule: "buyer",
-                entityId: pid,
-              });
-              const doc = await preparePdfDocument({
-                busy,
-                supabase,
-                key: `pdf:buyer:attachment:${attId || pid}`,
-                label: "РћС‚РєСЂС‹РІР°СЋ РІР»РѕР¶РµРЅРёРµвЂ¦",
-                descriptor: template,
-                getRemoteUrl: () => url,
-              });
-              await previewPdfDocument(doc, { router });
-              return;
-            }
+        if (!url && attId) {
+          const latest = await getLatestCanonicalProposalAttachment(supabase, pid, groupKey || "proposal_pdf", {
+            screen: "buyer",
+          });
+          url = await ensureProposalAttachmentUrl(supabase, latest.row);
+          if (isPdfLike(fileName, url)) {
+            const template = createPdfDocumentDescriptor({
+              uri: url,
+              title: fileName.replace(/\.pdf$/i, "") || "Вложение",
+              fileName,
+              documentType: "attachment_pdf",
+              source: "attachment",
+              originModule: "buyer",
+              entityId: pid,
+            });
+            const doc = await preparePdfDocument({
+              busy,
+              supabase,
+              key: `pdf:buyer:attachment:${attId || pid}`,
+              label: "Открываю вложение…",
+              descriptor: template,
+              getRemoteUrl: () => url,
+            });
+            await previewPdfDocument(doc, { router });
+            return;
           }
         }
 
         if (!url) {
-          alert("Р’Р»РѕР¶РµРЅРёРµ", "РќРµС‚ СЃСЃС‹Р»РєРё РЅР° С„Р°Р№Р»");
+          alert("Вложение", "Нет ссылки на файл");
           return;
         }
 
@@ -103,10 +114,10 @@ export function useBuyerProposalAttachments(params: {
           url,
           bucketId: String(att?.bucket_id ?? "").trim() || null,
           storagePath: String(att?.storage_path ?? "").trim() || null,
-          fileName: String(att?.file_name ?? att?.name ?? "file"),
+          fileName,
         });
       } catch (e: unknown) {
-        alert("Р’Р»РѕР¶РµРЅРёРµ", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»");
+        alert("Вложение", errText(e) || "Не удалось открыть файл");
       }
     },
     [alert, busy, router, supabase],

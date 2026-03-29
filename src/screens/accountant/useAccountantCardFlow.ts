@@ -1,16 +1,26 @@
 import { Keyboard } from "react-native";
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
+
 import { supabase } from "../../lib/supabaseClient";
 import { runNextTick } from "./helpers";
-import type { AccountantInboxUiRow, AttachmentRow } from "./types";
+import type { AccountantInboxUiRow, AttachmentRow, AttachmentState } from "./types";
+
+type AttachmentCacheEntry = {
+  ts: number;
+  rows: AttachmentRow[];
+  state: AttachmentState;
+  message: string;
+};
 
 type Params = {
   load: () => Promise<void>;
   onOpenAttachments: (proposalId?: string, opts?: { silent?: boolean; force?: boolean }) => Promise<void>;
   attPidRef: { current: string | null };
-  attCacheRef: { current: Record<string, { ts: number; rows: AttachmentRow[] }> };
+  attCacheRef: { current: Record<string, AttachmentCacheEntry> };
   setAttRows: Dispatch<SetStateAction<AttachmentRow[]>>;
+  setAttState: Dispatch<SetStateAction<AttachmentState>>;
+  setAttMessage: Dispatch<SetStateAction<string>>;
   setCurrent: Dispatch<SetStateAction<AccountantInboxUiRow | null>>;
   setCardOpen: Dispatch<SetStateAction<boolean>>;
   setCurrentPaymentId: Dispatch<SetStateAction<number | null>>;
@@ -34,6 +44,8 @@ export function useAccountantCardFlow(params: Params) {
     attPidRef,
     attCacheRef,
     setAttRows,
+    setAttState,
+    setAttMessage,
     setCurrent,
     setCardOpen,
     setCurrentPaymentId,
@@ -58,7 +70,6 @@ export function useAccountantCardFlow(params: Params) {
     setFreezeWhileOpen(false);
     attPidRef.current = null;
 
-    // Keep async ordering after modal close without relying on magic delay.
     runNextTick(() => {
       void load();
     });
@@ -85,9 +96,10 @@ export function useAccountantCardFlow(params: Params) {
 
       const cached = pid ? attCacheRef.current[pid] : null;
       setAttRows(cached?.rows ?? []);
+      setAttState(cached?.state ?? "empty");
+      setAttMessage(cached?.message ?? "Вложения отсутствуют.");
 
       if (pid) {
-        // Keep post-open ordering for attachment modal/list sync without magic delay.
         runNextTick(() => {
           void onOpenAttachments(pid, { silent: true, force: false });
         });
@@ -112,7 +124,9 @@ export function useAccountantCardFlow(params: Params) {
       setAllocRows,
       setAllocSum,
       setAmount,
+      setAttMessage,
       setAttRows,
+      setAttState,
       setCardOpen,
       setCurrent,
       setFreezeWhileOpen,

@@ -273,7 +273,11 @@ function AccountantScreen() {
 
   const {
     attRows,
+    attState,
+    attMessage,
     setAttRows,
+    setAttState,
+    setAttMessage,
     attPidRef,
     attCacheRef,
     onOpenAttachments,
@@ -291,6 +295,8 @@ function AccountantScreen() {
     attPidRef,
     attCacheRef,
     setAttRows,
+    setAttState,
+    setAttMessage,
     setCurrent,
     setCardOpen,
     setCurrentPaymentId,
@@ -513,6 +519,8 @@ function AccountantScreen() {
             inn={inn}
             kpp={kpp}
             attRows={attRows}
+            attState={attState}
+            attMessage={attMessage}
             busyKey={busyKey}
             onRefreshAtt={async () => {
               const pid = String(current?.proposal_id ?? "").trim();
@@ -532,6 +540,8 @@ function AccountantScreen() {
               isHist={isHistoryTab}
               busyKey={busyKey}
               attRows={attRows}
+              attState={attState}
+              attMessage={attMessage}
               currentDisplayStatus={current?.payment_status ?? "К оплате"}
               onRefreshAtt={async () => {
                 const pid = String(current?.proposal_id ?? "").trim();

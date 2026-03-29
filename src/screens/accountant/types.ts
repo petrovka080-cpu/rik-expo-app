@@ -1,6 +1,9 @@
-﻿import type { AccountantInboxRow } from "../../lib/rik_api";
+import type { AccountantInboxRow } from "../../lib/rik_api";
+import type {
+  ProposalAttachmentLegacyRow,
+  ProposalAttachmentViewState,
+} from "../../lib/api/proposalAttachments.service";
 
-// src/screens/accountant/types.ts
 export type Tab = "К оплате" | "Частично" | "Оплачено" | "На доработке" | "История" | "Подряды";
 
 export const TABS: Tab[] = ["К оплате", "Частично", "Оплачено", "На доработке", "История", "Подряды"];
@@ -20,20 +23,12 @@ export type HistoryRow = {
   method: string | null;
   note: string | null;
   has_invoice: boolean;
-
   accountant_fio?: string | null;
   purpose?: string | null;
 };
 
-export type AttachmentRow = {
-  id: number | string;
-  file_name: string | null;
-  url?: string | null;
-  bucket_id: string | null;
-  storage_path: string | null;
-  group_key: string | null;
-  created_at?: string | null;
-};
+export type AttachmentRow = ProposalAttachmentLegacyRow;
+export type AttachmentState = ProposalAttachmentViewState;
 
 export type NotificationRow = {
   id: number | string;

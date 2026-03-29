@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-03-29T04:59:05.242Z",
+  "contractFields": [
+    "attachmentId",
+    "proposalId",
+    "ownerType",
+    "ownerId",
+    "fileName",
+    "mimeType",
+    "fileUrl",
+    "storagePath",
+    "bucketId",
+    "groupKey",
+    "createdAt",
+    "sourceKind"
+  ],
+  "sourceKinds": [
+    "canonical",
+    "compatibility"
+  ],
+  "viewStates": [
+    "ready",
+    "empty",
+    "error",
+    "degraded"
+  ],
+  "ownerTypeRules": {
+    "proposal_pdf": "proposal",
+    "invoice": "invoice",
+    "payment": "payment"
+  },
+  "structural": {
+    "serviceExportsCanonicalLoader": true,
+    "serviceUsesPrimaryRpc": true,
+    "serviceUsesCompatibilityFallback": true,
+    "accountantUsesCanonicalService": true,
+    "buyerUsesCanonicalService": true,
+    "directorUsesCanonicalService": true,
+    "filesUsesCanonicalService": true,
+    "accountantStateContract": true
+  }
+}
