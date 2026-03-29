@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-03-29T06:33:31.317Z",
+  "before": {
+    "hasGlobalBlockingGate": true,
+    "screenOwnsAuctionsFetch": true,
+    "screenOwnsFeedFetch": true,
+    "screenOwnsCapabilitiesFetch": true,
+    "screenOwnsPromiseAll": true,
+    "usesStage1Service": false,
+    "usesFeedStageService": false,
+    "feedPhaseState": false,
+    "stagedPlaceholder": false,
+    "serviceExportsStage1": false,
+    "serviceExportsFeedStage": false
+  },
+  "interpretation": {
+    "blockingShellBefore": true,
+    "screenOwnedGlueBefore": true
+  }
+}

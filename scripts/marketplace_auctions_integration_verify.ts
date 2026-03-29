@@ -98,7 +98,9 @@ async function main() {
     structural: {
       serviceExportsCanonicalLoader: serviceText.includes("export async function loadMarketplaceAuctionSummary("),
       serviceUsesCanonicalAuctionsLoader: serviceText.includes("await loadAuctionSummaries(\"active\")"),
-      screenUsesSummaryBoundary: screenText.includes("loadMarketplaceAuctionSummary"),
+      screenUsesSummaryBoundary:
+        screenText.includes("loadMarketplaceAuctionSummary") ||
+        screenText.includes("loadMarketplaceHomeStage1"),
       screenAvoidsAuctionRowsDirectly: !screenText.includes("loadAuctionSummaries"),
       screenUsesRouteContract: screenText.includes("primaryCtaRoute") && screenText.includes("MARKET_AUCTIONS_ROUTE"),
       cardUsesStatefulSummary: cardText.includes("summary.state === \"ready\"") && cardText.includes("summary.state === \"empty\""),

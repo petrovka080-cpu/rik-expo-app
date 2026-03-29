@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-03-29T06:33:31.317Z",
+  "before": {
+    "hasGlobalBlockingGate": true,
+    "screenOwnsAuctionsFetch": true,
+    "screenOwnsFeedFetch": true,
+    "screenOwnsCapabilitiesFetch": true,
+    "screenOwnsPromiseAll": true,
+    "usesStage1Service": false,
+    "usesFeedStageService": false,
+    "feedPhaseState": false,
+    "stagedPlaceholder": false,
+    "serviceExportsStage1": false,
+    "serviceExportsFeedStage": false
+  },
+  "after": {
+    "hasGlobalBlockingGate": false,
+    "screenOwnsAuctionsFetch": false,
+    "screenOwnsFeedFetch": false,
+    "screenOwnsCapabilitiesFetch": false,
+    "screenOwnsPromiseAll": false,
+    "usesStage1Service": true,
+    "usesFeedStageService": true,
+    "feedPhaseState": true,
+    "stagedPlaceholder": true,
+    "serviceExportsStage1": true,
+    "serviceExportsFeedStage": true
+  },
+  "improvements": {
+    "removedGlobalBlockingGate": true,
+    "movedFeedFetchOutOfScreen": true,
+    "movedCapabilitiesOutOfScreen": true,
+    "movedAuctionsFetchOutOfScreen": true,
+    "introducedStageServices": true,
+    "introducedFeedPhaseStates": true
+  }
+}

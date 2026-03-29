@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-03-29T06:33:31.316Z",
+  "stage1": {
+    "status": "fulfilled",
+    "state": "ready",
+    "auctionsState": "empty",
+    "activeCount": 0,
+    "pendingCount": 0,
+    "durationMs": 3638
+  },
+  "feed": {
+    "status": "fulfilled",
+    "rowCount": 13,
+    "totalCount": 13,
+    "hasMore": false,
+    "phase": "ready",
+    "durationMs": 3638
+  }
+}
