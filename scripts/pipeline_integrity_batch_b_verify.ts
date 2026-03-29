@@ -9,6 +9,14 @@ import {
   REQUEST_PENDING_STATUS,
   REQUEST_REJECTED_STATUS,
 } from "../src/lib/api/requests.status";
+import {
+  ACCOUNTANT_REALTIME_BINDINGS,
+  ACCOUNTANT_REALTIME_CHANNEL_NAME,
+  BUYER_REALTIME_BINDINGS,
+  BUYER_REALTIME_CHANNEL_NAME,
+  WAREHOUSE_REALTIME_BINDINGS,
+  WAREHOUSE_REALTIME_CHANNEL_NAME,
+} from "../src/lib/realtime/realtime.channels";
 
 const root = process.cwd();
 const artifactsDir = resolve(root, "artifacts");
@@ -17,6 +25,154 @@ const readJson = <T>(relativePath: string): T =>
   JSON.parse(readFileSync(resolve(root, relativePath), "utf8")) as T;
 
 const readText = (relativePath: string) => readFileSync(resolve(root, relativePath), "utf8");
+
+type RuntimeEvent = {
+  screen?: string | null;
+  event?: string | null;
+  extra?: Record<string, unknown> | null;
+};
+
+type RuntimeFile = {
+  events?: RuntimeEvent[];
+};
+
+type RealtimeSummary = {
+  status?: string;
+  runtimeVerified?: boolean;
+  subscriptionStarted?: boolean;
+  subscriptionConnected?: boolean;
+  eventReceived?: boolean;
+  refreshTriggered?: boolean;
+  recentGuardWorked?: boolean;
+  inflightGuardWorked?: boolean;
+  doubleFetchDetected?: boolean;
+  fetchCountAfterRealtime?: { web?: number; android?: number };
+  web?: {
+    subscriptionStarted?: boolean;
+    subscriptionConnected?: boolean;
+  };
+  android?: {
+    subscriptionStarted?: boolean;
+    subscriptionConnected?: boolean;
+  };
+};
+
+const lifecycleEvents = new Set([
+  "channel_created",
+  "subscription_started",
+  "subscription_connected",
+  "realtime_event_received",
+  "realtime_refresh_triggered",
+  "realtime_refresh_skipped_recent",
+  "realtime_refresh_skipped_inflight",
+  "subscription_stopped",
+  "channel_closed",
+]);
+
+const normalizeEvents = (file: RuntimeFile): RuntimeEvent[] =>
+  Array.isArray(file.events) ? file.events.filter((event) => event && typeof event === "object") : [];
+
+const countEvents = (events: RuntimeEvent[], eventName: string) =>
+  events.filter((event) => event.event === eventName).length;
+
+const withSummaryFallback = (count: number, flag?: boolean) => (count > 0 ? count : flag ? 1 : 0);
+
+const collectRefreshReasons = (events: RuntimeEvent[]) => {
+  const result: Record<string, number> = {};
+  for (const event of events) {
+    if (event.event !== "realtime_refresh_triggered") continue;
+    const scopes = Array.isArray(event.extra?.scopes)
+      ? event.extra?.scopes
+          .map((scope) => String(scope ?? "").trim())
+          .filter(Boolean)
+          .join(",")
+      : "";
+    const scopeKey = String(event.extra?.scopeKey ?? "").trim();
+    const key = scopes || scopeKey || "unknown_scope";
+    result[key] = (result[key] ?? 0) + 1;
+  }
+  return result;
+};
+
+const filterLifecycleEvents = (role: string, events: RuntimeEvent[]) =>
+  events.filter((event) => event.screen === role && event.event && lifecycleEvents.has(event.event));
+
+const buildRealtimeLifecycleArtifact = (params: {
+  role: "buyer" | "accountant" | "warehouse";
+  channelName: string;
+  bindings: readonly {
+    key: string;
+    table: string;
+    event: string;
+    filter?: string;
+    owner: string;
+  }[];
+  summary: RealtimeSummary;
+  webEvents: RuntimeEvent[];
+  androidEvents: RuntimeEvent[];
+}) => {
+  const webLifecycleEvents = filterLifecycleEvents(params.role, params.webEvents);
+  const androidLifecycleEvents = filterLifecycleEvents(params.role, params.androidEvents);
+  const combinedEvents = [...params.webEvents, ...params.androidEvents];
+
+  return {
+    role: params.role,
+    status: params.summary.status ?? "unknown",
+    runtimeVerified: params.summary.runtimeVerified === true,
+    channel: {
+      name: params.channelName,
+      bindings: params.bindings.map((binding) => ({
+        key: binding.key,
+        table: binding.table,
+        event: binding.event,
+        filter: binding.filter ?? null,
+        owner: binding.owner,
+      })),
+    },
+    subscriptionsCreated: {
+      web: withSummaryFallback(
+        countEvents(webLifecycleEvents, "subscription_started"),
+        params.summary.web?.subscriptionStarted,
+      ),
+      android: withSummaryFallback(
+        countEvents(androidLifecycleEvents, "subscription_started"),
+        params.summary.android?.subscriptionStarted,
+      ),
+    },
+    channelsCreated: {
+      web: withSummaryFallback(
+        countEvents(webLifecycleEvents, "channel_created"),
+        params.summary.web?.subscriptionStarted,
+      ),
+      android: withSummaryFallback(
+        countEvents(androidLifecycleEvents, "channel_created"),
+        params.summary.android?.subscriptionStarted,
+      ),
+    },
+    lifecycleEventCounts: {
+      web: Object.fromEntries([...lifecycleEvents].map((eventName) => [eventName, countEvents(webLifecycleEvents, eventName)])),
+      android: Object.fromEntries(
+        [...lifecycleEvents].map((eventName) => [eventName, countEvents(androidLifecycleEvents, eventName)]),
+      ),
+    },
+    refreshReasons: {
+      web: collectRefreshReasons(params.webEvents),
+      android: collectRefreshReasons(params.androidEvents),
+    },
+    coalescing: {
+      recentGuardWorked: params.summary.recentGuardWorked === true,
+      inflightGuardWorked: params.summary.inflightGuardWorked === true,
+      skippedRecentEvents: countEvents(combinedEvents, "realtime_refresh_skipped_recent"),
+      skippedInflightEvents: countEvents(combinedEvents, "realtime_refresh_skipped_inflight"),
+    },
+    subscriptionStarted: params.summary.subscriptionStarted === true,
+    subscriptionConnected: params.summary.subscriptionConnected === true,
+    eventReceived: params.summary.eventReceived === true,
+    refreshTriggered: params.summary.refreshTriggered === true,
+    doubleFetchDetected: params.summary.doubleFetchDetected === true,
+    fetchCountAfterRealtime: params.summary.fetchCountAfterRealtime ?? { web: null, android: null },
+  };
+};
 
 const buyerAccountantRealtime = readJson<{
   status?: string;
@@ -28,6 +184,15 @@ const warehouseRealtime = readJson<{
   status?: string;
   warehouse?: { status?: string; runtimeVerified?: boolean };
 }>("artifacts/realtime-wave2-warehouse-contractor-summary.json");
+const buyerRealtimeSummary = readJson<RealtimeSummary>("artifacts/buyer-realtime.summary.json");
+const accountantRealtimeSummary = readJson<RealtimeSummary>("artifacts/accountant-realtime.summary.json");
+const warehouseRealtimeSummary = readJson<RealtimeSummary>("artifacts/warehouse-realtime.summary.json");
+const buyerWebEvents = normalizeEvents(readJson<RuntimeFile>("artifacts/buyer-realtime.web.json"));
+const buyerAndroidEvents = normalizeEvents(readJson<RuntimeFile>("artifacts/buyer-realtime.android.json"));
+const accountantWebEvents = normalizeEvents(readJson<RuntimeFile>("artifacts/accountant-realtime.web.json"));
+const accountantAndroidEvents = normalizeEvents(readJson<RuntimeFile>("artifacts/accountant-realtime.android.json"));
+const warehouseWebEvents = normalizeEvents(readJson<RuntimeFile>("artifacts/warehouse-realtime.web.json"));
+const warehouseAndroidEvents = normalizeEvents(readJson<RuntimeFile>("artifacts/warehouse-realtime.android.json"));
 
 const requestsText = readText("src/lib/api/requests.ts");
 const requestsCapabilitiesText = readText("src/lib/api/requests.read-capabilities.ts");
@@ -152,6 +317,57 @@ const cacheDisciplineStatus =
     : "NOT_GREEN";
 
 mkdirSync(artifactsDir, { recursive: true });
+
+writeFileSync(
+  join(artifactsDir, "realtime-buyer-lifecycle.json"),
+  `${JSON.stringify(
+    buildRealtimeLifecycleArtifact({
+      role: "buyer",
+      channelName: BUYER_REALTIME_CHANNEL_NAME,
+      bindings: BUYER_REALTIME_BINDINGS,
+      summary: buyerRealtimeSummary,
+      webEvents: buyerWebEvents,
+      androidEvents: buyerAndroidEvents,
+    }),
+    null,
+    2,
+  )}\n`,
+  "utf8",
+);
+
+writeFileSync(
+  join(artifactsDir, "realtime-accountant-lifecycle.json"),
+  `${JSON.stringify(
+    buildRealtimeLifecycleArtifact({
+      role: "accountant",
+      channelName: ACCOUNTANT_REALTIME_CHANNEL_NAME,
+      bindings: ACCOUNTANT_REALTIME_BINDINGS,
+      summary: accountantRealtimeSummary,
+      webEvents: accountantWebEvents,
+      androidEvents: accountantAndroidEvents,
+    }),
+    null,
+    2,
+  )}\n`,
+  "utf8",
+);
+
+writeFileSync(
+  join(artifactsDir, "realtime-warehouse-lifecycle.json"),
+  `${JSON.stringify(
+    buildRealtimeLifecycleArtifact({
+      role: "warehouse",
+      channelName: WAREHOUSE_REALTIME_CHANNEL_NAME,
+      bindings: WAREHOUSE_REALTIME_BINDINGS,
+      summary: warehouseRealtimeSummary,
+      webEvents: warehouseWebEvents,
+      androidEvents: warehouseAndroidEvents,
+    }),
+    null,
+    2,
+  )}\n`,
+  "utf8",
+);
 
 writeFileSync(
   join(artifactsDir, "realtime-minimum-roles-smoke.json"),

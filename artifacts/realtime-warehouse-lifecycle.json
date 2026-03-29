@@ -1,0 +1,86 @@
+{
+  "role": "warehouse",
+  "status": "passed",
+  "runtimeVerified": true,
+  "channel": {
+    "name": "warehouse:screen:realtime",
+    "bindings": [
+      {
+        "key": "warehouse_incoming_items",
+        "table": "wh_incoming_items",
+        "event": "*",
+        "filter": null,
+        "owner": "table:wh_incoming_items"
+      },
+      {
+        "key": "warehouse_requests",
+        "table": "requests",
+        "event": "*",
+        "filter": null,
+        "owner": "table:requests"
+      },
+      {
+        "key": "warehouse_request_items",
+        "table": "request_items",
+        "event": "*",
+        "filter": null,
+        "owner": "table:request_items"
+      }
+    ]
+  },
+  "subscriptionsCreated": {
+    "web": 1,
+    "android": 1
+  },
+  "channelsCreated": {
+    "web": 1,
+    "android": 1
+  },
+  "lifecycleEventCounts": {
+    "web": {
+      "channel_created": 0,
+      "subscription_started": 0,
+      "subscription_connected": 1,
+      "realtime_event_received": 3,
+      "realtime_refresh_triggered": 1,
+      "realtime_refresh_skipped_recent": 1,
+      "realtime_refresh_skipped_inflight": 1,
+      "subscription_stopped": 0,
+      "channel_closed": 0
+    },
+    "android": {
+      "channel_created": 0,
+      "subscription_started": 0,
+      "subscription_connected": 0,
+      "realtime_event_received": 3,
+      "realtime_refresh_triggered": 2,
+      "realtime_refresh_skipped_recent": 0,
+      "realtime_refresh_skipped_inflight": 1,
+      "subscription_stopped": 0,
+      "channel_closed": 0
+    }
+  },
+  "refreshReasons": {
+    "web": {
+      "expense": 1
+    },
+    "android": {
+      "unknown_scope": 2
+    }
+  },
+  "coalescing": {
+    "recentGuardWorked": true,
+    "inflightGuardWorked": true,
+    "skippedRecentEvents": 1,
+    "skippedInflightEvents": 2
+  },
+  "subscriptionStarted": true,
+  "subscriptionConnected": true,
+  "eventReceived": true,
+  "refreshTriggered": true,
+  "doubleFetchDetected": false,
+  "fetchCountAfterRealtime": {
+    "web": 1,
+    "android": 1
+  }
+}
