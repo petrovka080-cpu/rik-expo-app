@@ -166,10 +166,23 @@ async function main() {
     },
   };
 
+  const currentDiscipline = {
+    stageServices:
+      after.usesStage1Service &&
+      after.usesFeedStageService &&
+      after.serviceExportsStage1 &&
+      after.serviceExportsFeedStage,
+    nonBlockingShell: !after.hasGlobalBlockingGate,
+    screenDoesNotOwnFeedFetch: !after.screenOwnsFeedFetch,
+    screenDoesNotOwnCapabilitiesFetch: !after.screenOwnsCapabilitiesFetch,
+    screenDoesNotOwnAuctionsFetch: !after.screenOwnsAuctionsFetch,
+    stagedFeedStates: after.feedPhaseState && after.stagedPlaceholder,
+  };
+
   const summary = {
     generatedAt: new Date().toISOString(),
     status:
-      Object.values(beforeAfter.improvements).every(Boolean) &&
+      Object.values(currentDiscipline).every(Boolean) &&
       stage1Result.status === "fulfilled" &&
       feedResult.status === "fulfilled" &&
       !feedResult.value.error
@@ -182,7 +195,10 @@ async function main() {
   };
 
   writeJson("artifacts/marketplace-load-baseline.json", baseline);
-  writeJson("artifacts/marketplace-load-before-after.json", beforeAfter);
+  writeJson("artifacts/marketplace-load-before-after.json", {
+    ...beforeAfter,
+    currentDiscipline,
+  });
   writeJson("artifacts/marketplace-home-smoke.json", smoke);
   writeJson("artifacts/marketplace-stage-loading-summary.json", summary);
 

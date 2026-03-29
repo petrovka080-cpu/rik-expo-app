@@ -3,7 +3,6 @@ import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { FlashList } from "../../ui/FlashList";
 import type { AuctionListTab, UnifiedAuctionSummary } from "./auctions.types";
 import { buildAuctionsAssistantPrompt, loadAuctionSummaries } from "./auctions.data";
 
@@ -200,10 +200,13 @@ export default function AuctionsScreen() {
           <Text style={styles.stateText}>Загружаем торги...</Text>
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={state.rows}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
+          estimatedItemSize={228}
+          drawDistance={640}
+          getItemType={() => "auction-card"}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl

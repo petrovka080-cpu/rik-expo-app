@@ -3,6 +3,7 @@ import { create } from "zustand";
 
 import type { MarketHomeCategoryKey, MarketHomeFilters, MarketKind, MarketSide } from "./marketHome.types";
 
+// UI-only orchestration store. Server-loaded rows stay in screen/service state.
 export type MarketUiStore = {
   activeCategory: "all" | MarketHomeCategoryKey;
   query: string;

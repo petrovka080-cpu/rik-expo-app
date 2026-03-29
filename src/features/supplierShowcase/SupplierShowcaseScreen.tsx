@@ -4,7 +4,6 @@ import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Image,
   Linking,
   ListRenderItemInfo,
@@ -16,6 +15,7 @@ import {
   View,
 } from "react-native";
 
+import { FlashList } from "../../ui/FlashList";
 import MarketFeedCard from "../market/components/MarketFeedCard";
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
 import { buildListingAssistantPrompt, buildMarketMapParams } from "../market/marketHome.data";
@@ -330,12 +330,15 @@ export default function SupplierShowcaseScreen() {
 
   return (
     <View style={styles.root}>
-      <FlatList
+      <FlashList
         data={payload.listings}
         key={numColumns}
         keyExtractor={(item) => item.id}
         renderItem={renderCard}
         numColumns={numColumns}
+        estimatedItemSize={numColumns > 1 ? 420 : 520}
+        drawDistance={860}
+        getItemType={() => "showcase-card"}
         ListHeaderComponent={header}
         ListEmptyComponent={
           <View style={styles.emptyCard}>
