@@ -9,6 +9,7 @@ export {
   fetchDirectorReportCanonicalMaterials,
   fetchDirectorReportCanonicalOptions,
   fetchDirectorReportCanonicalWorks,
+  fetchDirectorIssuePriceMaps,
   fetchIssuePriceMapByCode,
   fetchPriceByRequestItemId,
 } from "./director_reports.transport.production";

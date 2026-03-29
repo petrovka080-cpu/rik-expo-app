@@ -1,0 +1,92 @@
+{
+  "gate": "director_movement_accounting_verify",
+  "transport": {
+    "source": "transport:director_report_scope_rpc_v1",
+    "branch": "rpc_scope_v1",
+    "fallbackReason": null,
+    "pricedStage": "priced"
+  },
+  "counts": {
+    "works": 15,
+    "levels": 21,
+    "materials": 119,
+    "totalPositions": 119,
+    "withoutWorkPositions": 0
+  },
+  "cost": {
+    "issueCostTotal": 358561.39899680804,
+    "purchaseCostTotal": 0,
+    "unpricedIssuePct": 1.68,
+    "materialAmountSum": 358561.39899680804,
+    "amountParityDelta": 0
+  },
+  "priceScope": {
+    "requestedCodeCount": 20,
+    "returnedRowCount": 20,
+    "pricedRowCount": 20,
+    "pricedCodeCount": 20,
+    "sample": [
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-BITS",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      },
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-DOWEL-UD",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      },
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-FILM-COVER",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      },
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-GKL-WALL-ANGLE",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      },
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-GKL-WALL-BOARD",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      },
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-GKL-WALL-CONNECTOR",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      },
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-GKL-WALL-DAMPER",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      },
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-GKL-WALL-DOWEL-UW",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      },
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-GKL-WALL-MESH",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      },
+      {
+        "request_item_id": null,
+        "rik_code": "MAT-GKL-WALL-PRIMER",
+        "unit_price": 11,
+        "source_kind": "proposal_items/rik_code"
+      }
+    ]
+  },
+  "status": "GREEN"
+}

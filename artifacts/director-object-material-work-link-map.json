@@ -2,9 +2,9 @@
   "gate": "director_object_material_work_link_recovery",
   "selectedObjectName": "Общежитие / вахтовый городок",
   "sourceChain": {
-    "transportSource": "transport:director_report_legacy_service",
-    "transportBranch": "legacy_scope_fallback",
-    "transportFallbackReason": "invalid_payload",
+    "transportSource": "transport:director_report_scope_rpc_v1",
+    "transportBranch": "rpc_scope_v1",
+    "transportFallbackReason": null,
     "disciplineBranch": "acc_rpc",
     "disciplineChain": [
       "canonical_rpc",

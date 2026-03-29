@@ -3,7 +3,7 @@
   "objectCountSource": "warehouse_confirmed_issues",
   "objectCountValue": 8,
   "objectCountSourceExplained": true,
-  "noWorkNameCount": 118,
+  "noWorkNameCount": 0,
   "noWorkNameExplained": true,
   "unresolvedNamesCount": 100,
   "namingDiagnosticsVisible": true,

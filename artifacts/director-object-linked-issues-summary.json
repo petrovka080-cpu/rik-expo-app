@@ -13,20 +13,14 @@
     "unlinkedCount": 0
   },
   "transport": {
-    "branch": "legacy_scope_fallback",
-    "fallbackReason": "invalid_payload",
-    "disciplineWorks": 14,
+    "branch": "rpc_scope_v1",
+    "fallbackReason": null,
+    "disciplineWorks": 15,
     "disciplineLevels": 21,
     "disciplineMaterials": 119,
     "objectNames": [
       "Административное здание",
-      "Ангар",
-      "Больничный корпус",
-      "Гостиница / апарт-отель",
-      "КНС / ИТП / ЦТП / насосная",
-      "Медцентр / клиника / лаборатория",
-      "Общежитие / вахтовый городок",
-      "Паркинг открытый наземный"
+      "Без объекта"
     ]
   }
 }

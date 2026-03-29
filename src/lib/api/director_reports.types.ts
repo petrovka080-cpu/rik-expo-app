@@ -241,7 +241,10 @@ type LegacyByObjectRow = {
 type PurchaseItemPriceRow = {
   rik_code?: string | null;
   code?: string | null;
+  ref_id?: string | null;
   price?: number | string | null;
+  price_per_unit?: number | string | null;
+  amount?: number | string | null;
   qty?: number | string | null;
 };
 
@@ -254,7 +257,16 @@ type ProposalItemPriceRow = {
 type PurchaseItemRequestPriceRow = {
   request_item_id?: string | number | null;
   price?: number | string | null;
+  price_per_unit?: number | string | null;
+  amount?: number | string | null;
   qty?: number | string | null;
+};
+
+type DirectorIssuePriceScopeRow = {
+  request_item_id?: string | number | null;
+  rik_code?: string | null;
+  unit_price?: number | string | null;
+  source_kind?: string | null;
 };
 
 type WarehouseIssueFactRow = {
@@ -379,6 +391,7 @@ export type {
   PurchaseItemPriceRow,
   ProposalItemPriceRow,
   PurchaseItemRequestPriceRow,
+  DirectorIssuePriceScopeRow,
   WarehouseIssueFactRow,
   WarehouseIssueItemFactRow,
   JoinedWarehouseIssueFactRow,

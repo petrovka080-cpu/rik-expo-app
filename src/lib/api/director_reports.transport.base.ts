@@ -32,6 +32,7 @@ async function runTypedRpc<TRow>(
     | "wh_report_issued_by_object_fast"
     | "director_report_fetch_options_v1"
     | "director_report_fetch_discipline_source_rows_v1"
+    | "director_report_fetch_issue_price_scope_v1"
     | "director_report_fetch_materials_v1"
     | "director_report_fetch_works_v1"
     | "director_report_fetch_summary_v1",

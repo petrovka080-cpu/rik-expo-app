@@ -20,9 +20,8 @@ import {
 import { enrichFactRowsLevelNames, enrichFactRowsMaterialNames } from "./director_reports.naming";
 import {
   fetchDirectorReportCanonicalWorks,
+  fetchDirectorIssuePriceMaps,
   fetchFactRowsForDiscipline,
-  fetchIssuePriceMapByCode,
-  fetchPriceByRequestItemId,
 } from "./director_reports.transport";
 import {
   buildDisciplinePayloadFromFactRows,
@@ -255,10 +254,11 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(
 
   const { requestItemIds, rowCodes, costInputs } = collectDisciplinePriceInputs(rows);
   const tPrices = nowMs();
-  const [priceByCode, priceByRequestItem] = await Promise.all([
-    fetchIssuePriceMapByCode({ skipPurchaseItems: true, codes: rowCodes }),
-    fetchPriceByRequestItemId(requestItemIds),
-  ]);
+  const { priceByCode, priceByRequestItem } = await fetchDirectorIssuePriceMaps({
+    requestItemIds,
+    codes: rowCodes,
+    skipPurchaseItems: true,
+  });
   logTiming("discipline.fetch_prices", tPrices);
 
   const tCost = nowMs();

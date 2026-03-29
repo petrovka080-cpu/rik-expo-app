@@ -7,6 +7,7 @@ import type {
   LegacyByObjectRow,
   LegacyFastMaterialRow,
   ObjectLookupRow,
+  DirectorIssuePriceScopeRow,
   ProposalItemPriceRow,
   PurchaseItemPriceRow,
   PurchaseItemRequestPriceRow,
@@ -114,7 +115,10 @@ const normalizePurchaseItemPriceRow = (value: unknown): PurchaseItemPriceRow => 
   return {
     rik_code: row.rik_code == null ? null : String(row.rik_code),
     code: row.code == null ? null : String(row.code),
+    ref_id: row.ref_id == null ? null : String(row.ref_id),
     price: row.price == null ? null : (row.price as number | string),
+    price_per_unit: row.price_per_unit == null ? null : (row.price_per_unit as number | string),
+    amount: row.amount == null ? null : (row.amount as number | string),
     qty: row.qty == null ? null : (row.qty as number | string),
   };
 };
@@ -133,7 +137,22 @@ const normalizePurchaseItemRequestPriceRow = (value: unknown): PurchaseItemReque
   return {
     request_item_id: row.request_item_id == null ? null : String(row.request_item_id),
     price: row.price == null ? null : (row.price as number | string),
+    price_per_unit: row.price_per_unit == null ? null : (row.price_per_unit as number | string),
+    amount: row.amount == null ? null : (row.amount as number | string),
     qty: row.qty == null ? null : (row.qty as number | string),
+  };
+};
+
+const normalizeDirectorIssuePriceScopeRow = (value: unknown): DirectorIssuePriceScopeRow | null => {
+  const row = asRecord(value);
+  const requestItemId = row.request_item_id == null ? null : String(row.request_item_id).trim();
+  const rikCode = row.rik_code == null ? null : String(row.rik_code).trim().toUpperCase();
+  if (!requestItemId && !rikCode) return null;
+  return {
+    request_item_id: requestItemId,
+    rik_code: rikCode,
+    unit_price: row.unit_price == null ? null : (row.unit_price as number | string),
+    source_kind: row.source_kind == null ? null : String(row.source_kind),
   };
 };
 
@@ -227,6 +246,7 @@ export {
   normalizePurchaseItemPriceRow,
   normalizeProposalItemPriceRow,
   normalizePurchaseItemRequestPriceRow,
+  normalizeDirectorIssuePriceScopeRow,
   normalizeWarehouseIssueFactRow,
   normalizeWarehouseIssueItemFactRow,
   normalizeJoinedWarehouseIssueFactRow,

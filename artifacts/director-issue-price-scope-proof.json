@@ -1,0 +1,151 @@
+{
+  "gate": "director_movement_accounting_verify",
+  "requestedCodeCount": 20,
+  "returnedRowCount": 20,
+  "pricedCodeCount": 20,
+  "sampleCodes": [
+    "MAT-GKL-WALL-SCREW-SHEET",
+    "MAT-GKL-WALL-SCREW-FRAME",
+    "MAT-DOWEL-UD",
+    "MAT-GKL-WALL-PROFILE-CW",
+    "MAT-FILM-COVER",
+    "MAT-GKL-WALL-BOARD",
+    "MAT-GKL-WALL-WOOL",
+    "MAT-GKL-WALL-PUTTY-START",
+    "MAT-GKL-WALL-DOWEL-UW",
+    "MAT-GKL-WALL-PUTTY-FIN",
+    "MAT-GKL-WALL-DAMPER",
+    "MAT-GKL-WALL-CONNECTOR",
+    "MAT-GKL-WALL-PROFILE-UW",
+    "MAT-GKL-WALL-SANDPAPER",
+    "MAT-GKL-WALL-PRIMER",
+    "MAT-GKL-WALL-MESH",
+    "MAT-GKL-WALL-ANGLE",
+    "MAT-KNIFE-BLADE",
+    "MAT-BITS",
+    "MAT-GKL-WALL-SEALANT"
+  ],
+  "sampleRows": [
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-BITS",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-DOWEL-UD",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-FILM-COVER",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-ANGLE",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-BOARD",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-CONNECTOR",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-DAMPER",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-DOWEL-UW",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-MESH",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-PRIMER",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-PROFILE-CW",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-PROFILE-UW",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-PUTTY-FIN",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-PUTTY-START",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-SANDPAPER",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-SCREW-FRAME",
+      "unit_price": 10,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-SCREW-SHEET",
+      "unit_price": 10,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-SEALANT",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-GKL-WALL-WOOL",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    },
+    {
+      "request_item_id": null,
+      "rik_code": "MAT-KNIFE-BLADE",
+      "unit_price": 11,
+      "source_kind": "proposal_items/rik_code"
+    }
+  ],
+  "status": "GREEN"
+}

@@ -1,0 +1,16 @@
+{
+  "gate": "director_movement_accounting_verify",
+  "status": "GREEN",
+  "transportBranch": "rpc_scope_v1",
+  "pricedStage": "priced",
+  "issueCostTotal": 358561.39899680804,
+  "purchaseCostTotal": 0,
+  "unpricedIssuePct": 1.68,
+  "works": 15,
+  "levels": 21,
+  "materials": 119,
+  "withoutWorkPositions": 0,
+  "totalPositions": 119,
+  "amountParityDelta": 0,
+  "pricedCodeCount": 20
+}
