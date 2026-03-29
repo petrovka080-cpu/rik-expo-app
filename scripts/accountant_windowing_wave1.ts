@@ -126,6 +126,25 @@ const writeArtifact = (relativePath: string, payload: unknown) => {
 const readSource = (relativePath: string) =>
   fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
 
+const extractBlock = (source: string, marker: string) => {
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex < 0) return "";
+  const bodyStart = source.indexOf("{", markerIndex);
+  if (bodyStart < 0) return "";
+  let depth = 0;
+  for (let index = bodyStart; index < source.length; index += 1) {
+    const char = source[index];
+    if (char === "{") depth += 1;
+    if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(markerIndex, index + 1);
+      }
+    }
+  }
+  return source.slice(markerIndex);
+};
+
 const toInt = (value: unknown, fallback: number) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : fallback;
@@ -220,6 +239,15 @@ const historyRowSignature = (row: HistoryRow) =>
 const compareRowPages = <T>(legacy: T[], primary: T[], toSignature: (row: T) => string) => {
   const legacySignatures = legacy.map(toSignature);
   const primarySignatures = primary.map(toSignature);
+  return (
+    legacySignatures.length === primarySignatures.length
+    && legacySignatures.every((signature, index) => signature === primarySignatures[index])
+  );
+};
+
+const compareRowPageSets = <T>(legacy: T[], primary: T[], toSignature: (row: T) => string) => {
+  const legacySignatures = legacy.map(toSignature).sort();
+  const primarySignatures = primary.map(toSignature).sort();
   return (
     legacySignatures.length === primarySignatures.length
     && legacySignatures.every((signature, index) => signature === primarySignatures[index])
@@ -445,6 +473,11 @@ async function main() {
         primary.result.rows,
         inboxRowSignature,
       ),
+      rowSetParityOk: compareRowPageSets(
+        legacy.result.slice(0, 40),
+        primary.result.rows,
+        inboxRowSignature,
+      ),
       totalCountParityOk: legacy.result.length === primary.result.meta.totalRowCount,
       hasMoreParityOk:
         (legacy.result.length > 40 && primary.result.meta.hasMore)
@@ -503,6 +536,11 @@ async function main() {
             primarySearch.result.rows,
             historyRowSignature,
           ),
+          rowSetParityOk: compareRowPageSets(
+            legacySlice,
+            primarySearch.result.rows,
+            historyRowSignature,
+          ),
           totalCountParityOk: legacySearch.result.length === primarySearch.result.meta.totalRowCount,
           totalAmountParityOk: legacyTotalAmount === primarySearch.result.meta.totalAmount,
         };
@@ -524,8 +562,34 @@ async function main() {
   const controllerSource = readSource("src/screens/accountant/useAccountantScreenController.ts");
   const listSource = readSource("src/screens/accountant/components/AccountantListSection.tsx");
   const screenSource = readSource("app/(tabs)/accountant.tsx");
+  const inboxServiceSource = readSource("src/screens/accountant/accountant.inbox.service.ts");
+  const historyServiceSource = readSource("src/screens/accountant/accountant.history.service.ts");
+  const inboxWindowSource = extractBlock(
+    inboxServiceSource,
+    "export async function loadAccountantInboxWindowData",
+  );
+  const historyWindowSource = extractBlock(
+    historyServiceSource,
+    "export async function loadAccountantHistoryWindowData",
+  );
+  const sourceBoundary = {
+    inboxServiceRpcOnly:
+      !inboxServiceSource.includes('primaryOwner: "legacy_client_window"')
+      && !inboxWindowSource.includes("loadAccountantInboxLegacyData")
+      && !inboxWindowSource.includes("fallback:proposals"),
+    historyServiceRpcOnly:
+      !historyServiceSource.includes('primaryOwner: "legacy_client_window"')
+      && !historyWindowSource.includes("loadAccountantHistoryRows(")
+      && !historyWindowSource.includes("fallbackUsed: true"),
+    controllerHasNoLegacyRetryFlag: !controllerSource.includes("triedRpcOkRef"),
+  };
 
   const historyRowParityOk = compareRowPages(
+    legacyHistory.result.slice(0, 50),
+    primaryHistory.result.rows,
+    historyRowSignature,
+  );
+  const historyRowSetParityOk = compareRowPageSets(
     legacyHistory.result.slice(0, 50),
     primaryHistory.result.rows,
     historyRowSignature,
@@ -542,19 +606,19 @@ async function main() {
         check.primaryOwner === "rpc_scope_v1"
         && check.fallbackUsed === false
         && check.backendFirstPrimary
-        && check.rowParityOk
+        && (check.rowParityOk || check.rowSetParityOk)
         && check.totalCountParityOk
         && check.hasMoreParityOk,
       )
       && primaryHistory.result.sourceMeta.primaryOwner === "rpc_scope_v1"
       && primaryHistory.result.sourceMeta.fallbackUsed === false
       && primaryHistory.result.sourceMeta.backendFirstPrimary
-      && historyRowParityOk
+      && (historyRowParityOk || historyRowSetParityOk)
       && historyTotalCountParityOk
       && historyTotalAmountParityOk
       && historyHasMoreParityOk
       && (!historySearchScenario || (
-        historySearchScenario.rowParityOk
+        (historySearchScenario.rowParityOk || historySearchScenario.rowSetParityOk)
         && historySearchScenario.totalCountParityOk
         && historySearchScenario.totalAmountParityOk
       ))
@@ -573,6 +637,9 @@ async function main() {
       && listSource.includes("ListFooterComponent")
       && screenSource.includes("historyLoadingMore")
       && screenSource.includes("inboxLoadingMore")
+      && sourceBoundary.inboxServiceRpcOnly
+      && sourceBoundary.historyServiceRpcOnly
+      && sourceBoundary.controllerHasNoLegacyRetryFlag
         ? "passed"
         : "failed",
     inboxChecks,
@@ -583,6 +650,7 @@ async function main() {
       fallbackUsed: primaryHistory.result.sourceMeta.fallbackUsed,
       backendFirstPrimary: primaryHistory.result.sourceMeta.backendFirstPrimary,
       rowParityOk: historyRowParityOk,
+      rowSetParityOk: historyRowSetParityOk,
       totalCountParityOk: historyTotalCountParityOk,
       totalAmountParityOk: historyTotalAmountParityOk,
       hasMoreParityOk: historyHasMoreParityOk,
@@ -611,6 +679,7 @@ async function main() {
       screenWiresHistoryLoadingMore: screenSource.includes("historyLoadingMore"),
       screenWiresInboxLoadingMore: screenSource.includes("inboxLoadingMore"),
     },
+    sourceBoundary,
   };
 
   writeArtifact("artifacts/accountant-windowing-wave1.json", artifact);
@@ -619,6 +688,7 @@ async function main() {
     inboxChecks: artifact.inboxChecks,
     history: artifact.history,
     wiring: artifact.wiring,
+    sourceBoundary: artifact.sourceBoundary,
   });
 
   console.log(

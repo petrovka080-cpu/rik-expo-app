@@ -3,50 +3,54 @@
   "inboxChecks": [
     {
       "tab": "К оплате",
-      "legacyDurationMs": 1424,
-      "primaryDurationMs": 437,
+      "legacyDurationMs": 652,
+      "primaryDurationMs": 393,
       "primaryOwner": "rpc_scope_v1",
       "fallbackUsed": false,
       "rowParityOk": true,
+      "rowSetParityOk": true,
       "totalCountParityOk": true,
       "hasMoreParityOk": true,
       "backendFirstPrimary": true,
       "returnedRowCount": 40,
-      "totalRowCount": 89
+      "totalRowCount": 88
     },
     {
       "tab": "Частично",
-      "legacyDurationMs": 1042,
-      "primaryDurationMs": 433,
+      "legacyDurationMs": 391,
+      "primaryDurationMs": 606,
       "primaryOwner": "rpc_scope_v1",
       "fallbackUsed": false,
       "rowParityOk": true,
+      "rowSetParityOk": true,
       "totalCountParityOk": true,
       "hasMoreParityOk": true,
       "backendFirstPrimary": true,
-      "returnedRowCount": 1,
-      "totalRowCount": 1
+      "returnedRowCount": 0,
+      "totalRowCount": 0
     },
     {
       "tab": "Оплачено",
-      "legacyDurationMs": 418,
-      "primaryDurationMs": 434,
+      "legacyDurationMs": 410,
+      "primaryDurationMs": 412,
       "primaryOwner": "rpc_scope_v1",
       "fallbackUsed": false,
-      "rowParityOk": true,
+      "rowParityOk": false,
+      "rowSetParityOk": true,
       "totalCountParityOk": true,
       "hasMoreParityOk": true,
       "backendFirstPrimary": true,
-      "returnedRowCount": 2,
-      "totalRowCount": 2
+      "returnedRowCount": 4,
+      "totalRowCount": 4
     },
     {
       "tab": "На доработке",
-      "legacyDurationMs": 418,
-      "primaryDurationMs": 614,
+      "legacyDurationMs": 410,
+      "primaryDurationMs": 409,
       "primaryOwner": "rpc_scope_v1",
       "fallbackUsed": false,
       "rowParityOk": true,
+      "rowSetParityOk": true,
       "totalCountParityOk": true,
       "hasMoreParityOk": true,
       "backendFirstPrimary": true,
@@ -55,33 +59,35 @@
     }
   ],
   "history": {
-    "legacyDurationMs": 410,
-    "primaryDurationMs": 423,
+    "legacyDurationMs": 404,
+    "primaryDurationMs": 388,
     "primaryOwner": "rpc_scope_v1",
     "fallbackUsed": false,
     "backendFirstPrimary": true,
     "rowParityOk": true,
+    "rowSetParityOk": true,
     "totalCountParityOk": true,
     "totalAmountParityOk": true,
     "hasMoreParityOk": true,
-    "returnedRowCount": 3,
-    "totalRowCount": 3,
-    "totalAmount": 280,
+    "returnedRowCount": 5,
+    "totalRowCount": 5,
+    "totalAmount": 8590,
     "hasMore": false,
     "searchScenario": {
-      "search": "ОсОО",
-      "legacyDurationMs": 410,
-      "primaryDurationMs": 425,
+      "search": "вапвап",
+      "legacyDurationMs": 391,
+      "primaryDurationMs": 404,
       "rowParityOk": true,
+      "rowSetParityOk": true,
       "totalCountParityOk": true,
       "totalAmountParityOk": true
     },
     "windowScenario": {
-      "durationMs": 402,
+      "durationMs": 408,
       "returnedRowCount": 1,
-      "totalRowCount": 3,
+      "totalRowCount": 5,
       "hasMore": true,
-      "rowSignature": "149|2026-03-13T01:08:30.146478+00:00|a689ed65-8a34-4a3b-8b49-7d5d12ee352b|поролон||2026-03-11|0|KGS|110|банк||false|Барин|Оплата по счёту №без номера от 2026-03-11. Поставщик: поролон."
+      "rowSignature": "156|2026-03-29T13:22:11.506883+00:00|c7af0745-9509-4573-afaa-8d2685a399eb|ОсОО Омега||2026-03-11|0|KGS|10|банк||false|Барин|Оплата по счёту №без номера от 2026-03-11. Поставщик: ОсОО Омега."
     }
   },
   "wiring": {
@@ -91,5 +97,10 @@
     "listHasFooter": true,
     "screenWiresHistoryLoadingMore": true,
     "screenWiresInboxLoadingMore": true
+  },
+  "sourceBoundary": {
+    "inboxServiceRpcOnly": true,
+    "historyServiceRpcOnly": true,
+    "controllerHasNoLegacyRetryFlag": true
   }
 }

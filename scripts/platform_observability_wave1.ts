@@ -186,14 +186,15 @@ async function main() {
   });
 
   await runScenario("accountant_inbox", async () => {
-    const inbox = await accountantInboxService.loadAccountantInboxViaRpc({
+    const inbox = await accountantInboxService.loadAccountantInboxWindowData({
       tab: "К оплате",
-      triedRpcOk: true,
+      offsetRows: 0,
+      limitRows: 40,
     });
     return {
-      rows: inbox.data.length,
-      rpcFailed: inbox.rpcFailed,
-      nextTriedRpcOk: inbox.nextTriedRpcOk,
+      rows: inbox.rows.length,
+      fallbackUsed: inbox.sourceMeta.fallbackUsed,
+      primaryOwner: inbox.sourceMeta.primaryOwner,
     };
   });
 

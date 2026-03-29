@@ -47,7 +47,6 @@ export function useAccountantInboxController(params: {
   const queuedLoadRef = useRef<{ force: boolean; tab: Tab } | null>(null);
   const lastLoadedKeyRef = useRef<string | null>(null);
   const cacheByTabRef = useRef<Partial<Record<Tab, InboxWindowSnapshot>>>({});
-  const triedRpcOkRef = useRef(true);
 
   const applyPreview = useCallback((preview: InboxWindowSnapshot | null) => {
     if (preview) {
@@ -154,11 +153,9 @@ export function useAccountantInboxController(params: {
       try {
         const result = await loadAccountantInboxPage({
           tab,
-          triedRpcOk: triedRpcOkRef.current,
           offsetRows: 0,
           limitRows: ACCOUNTANT_INBOX_PAGE_SIZE,
         });
-        triedRpcOkRef.current = result.nextTriedRpcOk;
         if (seq !== loadSeqRef.current) return;
         if (tab !== tabRef.current) return;
 
@@ -287,11 +284,9 @@ export function useAccountantInboxController(params: {
     try {
       const result = await loadAccountantInboxPage({
         tab,
-        triedRpcOk: triedRpcOkRef.current,
         offsetRows: current.nextOffsetRows,
         limitRows: current.limitRows,
       });
-      triedRpcOkRef.current = result.nextTriedRpcOk;
       if (!focusedRef.current || tabRef.current !== tab) return;
       const snapshot = buildAccountantInboxSnapshot({
         previous: current,

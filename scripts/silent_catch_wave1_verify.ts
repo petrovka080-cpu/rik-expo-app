@@ -266,7 +266,6 @@ async function main() {
   const buyerBuckets = await loadBuyerBucketsData({ supabase, log: () => undefined });
   const accountantWindow = await loadAccountantInboxWindowData({
     tab: "К оплате",
-    triedRpcOk: true,
     offsetRows: 0,
     limitRows: 10,
   });

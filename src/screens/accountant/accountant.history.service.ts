@@ -40,7 +40,7 @@ export type AccountantHistoryWindowLoadResult = {
   rows: HistoryRow[];
   meta: AccountantHistoryWindowMeta;
   sourceMeta: {
-    primaryOwner: "rpc_scope_v1" | "legacy_client_window";
+    primaryOwner: "rpc_scope_v1";
     fallbackUsed: boolean;
     sourceKind: string;
     parityStatus: "not_checked";
@@ -49,7 +49,6 @@ export type AccountantHistoryWindowLoadResult = {
 };
 
 const ACCOUNTANT_HISTORY_RPC_SOURCE_KIND = "rpc:accountant_history_scope_v1";
-const ACCOUNTANT_HISTORY_LEGACY_SOURCE_KIND = "rpc:list_accountant_payments_history_v2+client_window";
 
 const toInt = (value: unknown, fallback: number) => {
   const parsed = Number(value);
@@ -127,43 +126,6 @@ export async function loadAccountantHistoryRows(params: {
   return arr;
 }
 
-const sliceAccountantHistoryRowsWindow = (params: {
-  rows: HistoryRow[];
-  offsetRows: number;
-  limitRows: number;
-  dateFrom: string;
-  dateTo: string;
-  histSearch: string;
-}): AccountantHistoryWindowLoadResult => {
-  const { rows, offsetRows, limitRows, dateFrom, dateTo, histSearch } = params;
-  const normalizedOffset = Math.max(0, offsetRows);
-  const normalizedLimit = Math.max(1, limitRows);
-  const pageRows = rows.slice(normalizedOffset, normalizedOffset + normalizedLimit);
-  const totalAmount = rows.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
-
-  return {
-    rows: pageRows,
-    meta: {
-      offsetRows: normalizedOffset,
-      limitRows: normalizedLimit,
-      returnedRowCount: pageRows.length,
-      totalRowCount: rows.length,
-      totalAmount,
-      hasMore: normalizedOffset + pageRows.length < rows.length,
-      dateFrom: toMaybeText(dateFrom),
-      dateTo: toMaybeText(dateTo),
-      search: toMaybeText(histSearch),
-    },
-    sourceMeta: {
-      primaryOwner: "legacy_client_window",
-      fallbackUsed: false,
-      sourceKind: ACCOUNTANT_HISTORY_LEGACY_SOURCE_KIND,
-      parityStatus: "not_checked",
-      backendFirstPrimary: false,
-    },
-  };
-};
-
 export async function loadAccountantHistoryWindowData(params: {
   dateFrom: string;
   dateTo: string;
@@ -222,38 +184,8 @@ export async function loadAccountantHistoryWindowData(params: {
         backendFirstPrimary: true,
       },
     };
-  } catch {
-    const legacyRows = await loadAccountantHistoryRows({
-      dateFrom,
-      dateTo,
-      histSearch,
-      toRpcDateOrNull,
-    });
-    const guarded = await filterPaymentRowsByExistingPaymentProposalLinks(
-      supabase,
-      legacyRows,
-      {
-        screen: "accountant",
-        surface: "history_legacy_window",
-        sourceKind: ACCOUNTANT_HISTORY_LEGACY_SOURCE_KIND,
-        relation: "proposal_payments.id+proposal_id",
-      },
-    );
-    const fallback = sliceAccountantHistoryRowsWindow({
-      rows: guarded.rows,
-      offsetRows,
-      limitRows,
-      dateFrom,
-      dateTo,
-      histSearch,
-    });
-    return {
-      ...fallback,
-      sourceMeta: {
-        ...fallback.sourceMeta,
-        fallbackUsed: true,
-      },
-    };
+  } catch (error) {
+    throw error;
   }
 }
 

@@ -397,44 +397,6 @@ const residuals: ResidualClientTruth[] = [
     ],
   },
   {
-    id: "accountant_inbox_legacy_window_fallback",
-    module: "accountant",
-    contour: "Accountant inbox legacy client window fallback",
-    exactFile: "src/screens/accountant/accountant.inbox.service.ts",
-    truthType: "money",
-    currentClientOwnership:
-      "Accountant inbox service still supports legacy_client_window beside rpc_scope_v1.",
-    whyRisky:
-      "Payment inbox truth and totals are backend-owned primary, but compatibility window logic keeps money-bearing list truth partially reopenable on client.",
-    requiredBackendContract: "accountant inbox scope hard cut without legacy_client_window",
-    priority: "P1",
-    state: "legacy_branch",
-    nextBatch: "Accountant inbox fallback removal",
-    evidencePaths: [
-      "src/screens/accountant/accountant.inbox.service.ts",
-      "artifacts/accountant-windowing-wave1.summary.json",
-    ],
-  },
-  {
-    id: "accountant_history_legacy_window_fallback",
-    module: "accountant",
-    contour: "Accountant history legacy client window fallback",
-    exactFile: "src/screens/accountant/accountant.history.service.ts",
-    truthType: "money",
-    currentClientOwnership:
-      "Accountant history service still carries legacy_client_window compatibility beside rpc_scope_v1.",
-    whyRisky:
-      "History totals and row ordering are already backend-windowed; keeping legacy client window logic increases drift and proof surface.",
-    requiredBackendContract: "accountant history scope hard cut without legacy_client_window",
-    priority: "P1",
-    state: "legacy_branch",
-    nextBatch: "Accountant history fallback removal",
-    evidencePaths: [
-      "src/screens/accountant/accountant.history.service.ts",
-      "artifacts/accountant-windowing-wave1.summary.json",
-    ],
-  },
-  {
     id: "accountant_payment_pdf_legacy_fallback",
     module: "accountant",
     contour: "Accountant payment PDF legacy fallback",
@@ -707,7 +669,7 @@ const moduleMap: Record<ModuleKey, ModuleOwnership> = {
     ],
     residualClientTruth: residuals.filter((item) => item.module === "accountant"),
     notes: [
-      "Accountant is backend-first for lists and totals; residual debt is limited to compatibility windows and PDF fallback paths.",
+      "Accountant is backend-first for lists and totals; residual debt is now limited to payment PDF fallback paths.",
     ],
     residualClientTruthCount: 0,
     highestResidualPriority: "none",
@@ -1054,14 +1016,10 @@ const crossCuttingRules = {
 const roadmap: RoadmapBatch[] = [
   {
     priority: "P1",
-    title: "Buyer and Accountant compatibility fallback burn-down",
+    title: "Buyer summary buckets fallback burn-down",
     module: "buyer",
-    residualIds: [
-      "buyer_summary_buckets_legacy_stitch_fallback",
-      "accountant_inbox_legacy_window_fallback",
-      "accountant_history_legacy_window_fallback",
-    ],
-    reason: "These contours are already backend-primary; the remaining work is removing legacy client window/stitch branches.",
+    residualIds: ["buyer_summary_buckets_legacy_stitch_fallback"],
+    reason: "Buyer summary buckets are already backend-primary; the remaining work is removing the legacy client stitch branch.",
   },
   {
     priority: "P1",

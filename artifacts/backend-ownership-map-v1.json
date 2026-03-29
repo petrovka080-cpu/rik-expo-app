@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T19:20:41.592Z",
+  "generatedAt": "2026-03-29T20:24:06.049Z",
   "batch": "backend_ownership_map_v1",
   "documentSections": [
     "taxonomy",
@@ -382,40 +382,6 @@
       ],
       "residualClientTruth": [
         {
-          "id": "accountant_inbox_legacy_window_fallback",
-          "module": "accountant",
-          "contour": "Accountant inbox legacy client window fallback",
-          "exactFile": "src/screens/accountant/accountant.inbox.service.ts",
-          "truthType": "money",
-          "currentClientOwnership": "Accountant inbox service still supports legacy_client_window beside rpc_scope_v1.",
-          "whyRisky": "Payment inbox truth and totals are backend-owned primary, but compatibility window logic keeps money-bearing list truth partially reopenable on client.",
-          "requiredBackendContract": "accountant inbox scope hard cut without legacy_client_window",
-          "priority": "P1",
-          "state": "legacy_branch",
-          "nextBatch": "Accountant inbox fallback removal",
-          "evidencePaths": [
-            "src/screens/accountant/accountant.inbox.service.ts",
-            "artifacts/accountant-windowing-wave1.summary.json"
-          ]
-        },
-        {
-          "id": "accountant_history_legacy_window_fallback",
-          "module": "accountant",
-          "contour": "Accountant history legacy client window fallback",
-          "exactFile": "src/screens/accountant/accountant.history.service.ts",
-          "truthType": "money",
-          "currentClientOwnership": "Accountant history service still carries legacy_client_window compatibility beside rpc_scope_v1.",
-          "whyRisky": "History totals and row ordering are already backend-windowed; keeping legacy client window logic increases drift and proof surface.",
-          "requiredBackendContract": "accountant history scope hard cut without legacy_client_window",
-          "priority": "P1",
-          "state": "legacy_branch",
-          "nextBatch": "Accountant history fallback removal",
-          "evidencePaths": [
-            "src/screens/accountant/accountant.history.service.ts",
-            "artifacts/accountant-windowing-wave1.summary.json"
-          ]
-        },
-        {
           "id": "accountant_payment_pdf_legacy_fallback",
           "module": "accountant",
           "contour": "Accountant payment PDF legacy fallback",
@@ -434,10 +400,10 @@
         }
       ],
       "notes": [
-        "Accountant is backend-first for lists and totals; residual debt is limited to compatibility windows and PDF fallback paths."
+        "Accountant is backend-first for lists and totals; residual debt is now limited to payment PDF fallback paths."
       ],
-      "residualClientTruthCount": 3,
-      "highestResidualPriority": "P1"
+      "residualClientTruthCount": 1,
+      "highestResidualPriority": "P2"
     },
     "warehouse": {
       "module": "warehouse",
@@ -867,40 +833,6 @@
       ]
     },
     {
-      "id": "accountant_inbox_legacy_window_fallback",
-      "module": "accountant",
-      "contour": "Accountant inbox legacy client window fallback",
-      "exactFile": "src/screens/accountant/accountant.inbox.service.ts",
-      "truthType": "money",
-      "currentClientOwnership": "Accountant inbox service still supports legacy_client_window beside rpc_scope_v1.",
-      "whyRisky": "Payment inbox truth and totals are backend-owned primary, but compatibility window logic keeps money-bearing list truth partially reopenable on client.",
-      "requiredBackendContract": "accountant inbox scope hard cut without legacy_client_window",
-      "priority": "P1",
-      "state": "legacy_branch",
-      "nextBatch": "Accountant inbox fallback removal",
-      "evidencePaths": [
-        "src/screens/accountant/accountant.inbox.service.ts",
-        "artifacts/accountant-windowing-wave1.summary.json"
-      ]
-    },
-    {
-      "id": "accountant_history_legacy_window_fallback",
-      "module": "accountant",
-      "contour": "Accountant history legacy client window fallback",
-      "exactFile": "src/screens/accountant/accountant.history.service.ts",
-      "truthType": "money",
-      "currentClientOwnership": "Accountant history service still carries legacy_client_window compatibility beside rpc_scope_v1.",
-      "whyRisky": "History totals and row ordering are already backend-windowed; keeping legacy client window logic increases drift and proof surface.",
-      "requiredBackendContract": "accountant history scope hard cut without legacy_client_window",
-      "priority": "P1",
-      "state": "legacy_branch",
-      "nextBatch": "Accountant history fallback removal",
-      "evidencePaths": [
-        "src/screens/accountant/accountant.history.service.ts",
-        "artifacts/accountant-windowing-wave1.summary.json"
-      ]
-    },
-    {
       "id": "accountant_payment_pdf_legacy_fallback",
       "module": "accountant",
       "contour": "Accountant payment PDF legacy fallback",
@@ -956,14 +888,12 @@
   "priorityRoadmap": [
     {
       "priority": "P1",
-      "title": "Buyer and Accountant compatibility fallback burn-down",
+      "title": "Buyer summary buckets fallback burn-down",
       "module": "buyer",
       "residualIds": [
-        "buyer_summary_buckets_legacy_stitch_fallback",
-        "accountant_inbox_legacy_window_fallback",
-        "accountant_history_legacy_window_fallback"
+        "buyer_summary_buckets_legacy_stitch_fallback"
       ],
-      "reason": "These contours are already backend-primary; the remaining work is removing legacy client window/stitch branches."
+      "reason": "Buyer summary buckets are already backend-primary; the remaining work is removing the legacy client stitch branch."
     },
     {
       "priority": "P1",
@@ -1035,8 +965,8 @@
         "displayName": "Accountant",
         "backendOwnedContours": 2,
         "clientOwnedUiContours": 5,
-        "residualClientTruthCount": 3,
-        "highestResidualPriority": "P1"
+        "residualClientTruthCount": 1,
+        "highestResidualPriority": "P2"
       },
       {
         "module": "warehouse",
@@ -1057,25 +987,25 @@
     ],
     "globalSummary": {
       "totalResidualP0": 0,
-      "totalResidualP1": 4,
+      "totalResidualP1": 2,
       "totalResidualP2": 2,
       "modulesAtRisk": [
-        "accountant",
         "buyer",
         "contractor",
+        "accountant",
         "warehouse"
       ],
       "storesSafe": true,
-      "criticalMoneyTruthOnClient": true,
+      "criticalMoneyTruthOnClient": false,
       "criticalOperationalTruthOnClient": true,
       "criticalReportTruthOnClient": true,
       "highestPriorityModules": [
         "buyer",
-        "accountant",
         "contractor",
+        "accountant",
         "warehouse"
       ],
-      "nextPriorityBatch": "Buyer and Accountant compatibility fallback burn-down"
+      "nextPriorityBatch": "Buyer summary buckets fallback burn-down"
     },
     "structuralAssertions": {
       "allRequiredArtifactsAccepted": false,
@@ -1307,50 +1237,54 @@
           "inboxChecks": [
             {
               "tab": "К оплате",
-              "legacyDurationMs": 1424,
-              "primaryDurationMs": 437,
+              "legacyDurationMs": 652,
+              "primaryDurationMs": 393,
               "primaryOwner": "rpc_scope_v1",
               "fallbackUsed": false,
               "rowParityOk": true,
+              "rowSetParityOk": true,
               "totalCountParityOk": true,
               "hasMoreParityOk": true,
               "backendFirstPrimary": true,
               "returnedRowCount": 40,
-              "totalRowCount": 89
+              "totalRowCount": 88
             },
             {
               "tab": "Частично",
-              "legacyDurationMs": 1042,
-              "primaryDurationMs": 433,
+              "legacyDurationMs": 391,
+              "primaryDurationMs": 606,
               "primaryOwner": "rpc_scope_v1",
               "fallbackUsed": false,
               "rowParityOk": true,
+              "rowSetParityOk": true,
               "totalCountParityOk": true,
               "hasMoreParityOk": true,
               "backendFirstPrimary": true,
-              "returnedRowCount": 1,
-              "totalRowCount": 1
+              "returnedRowCount": 0,
+              "totalRowCount": 0
             },
             {
               "tab": "Оплачено",
-              "legacyDurationMs": 418,
-              "primaryDurationMs": 434,
+              "legacyDurationMs": 410,
+              "primaryDurationMs": 412,
               "primaryOwner": "rpc_scope_v1",
               "fallbackUsed": false,
-              "rowParityOk": true,
+              "rowParityOk": false,
+              "rowSetParityOk": true,
               "totalCountParityOk": true,
               "hasMoreParityOk": true,
               "backendFirstPrimary": true,
-              "returnedRowCount": 2,
-              "totalRowCount": 2
+              "returnedRowCount": 4,
+              "totalRowCount": 4
             },
             {
               "tab": "На доработке",
-              "legacyDurationMs": 418,
-              "primaryDurationMs": 614,
+              "legacyDurationMs": 410,
+              "primaryDurationMs": 409,
               "primaryOwner": "rpc_scope_v1",
               "fallbackUsed": false,
               "rowParityOk": true,
+              "rowSetParityOk": true,
               "totalCountParityOk": true,
               "hasMoreParityOk": true,
               "backendFirstPrimary": true,
@@ -1359,33 +1293,35 @@
             }
           ],
           "history": {
-            "legacyDurationMs": 410,
-            "primaryDurationMs": 423,
+            "legacyDurationMs": 404,
+            "primaryDurationMs": 388,
             "primaryOwner": "rpc_scope_v1",
             "fallbackUsed": false,
             "backendFirstPrimary": true,
             "rowParityOk": true,
+            "rowSetParityOk": true,
             "totalCountParityOk": true,
             "totalAmountParityOk": true,
             "hasMoreParityOk": true,
-            "returnedRowCount": 3,
-            "totalRowCount": 3,
-            "totalAmount": 280,
+            "returnedRowCount": 5,
+            "totalRowCount": 5,
+            "totalAmount": 8590,
             "hasMore": false,
             "searchScenario": {
-              "search": "ОсОО",
-              "legacyDurationMs": 410,
-              "primaryDurationMs": 425,
+              "search": "вапвап",
+              "legacyDurationMs": 391,
+              "primaryDurationMs": 404,
               "rowParityOk": true,
+              "rowSetParityOk": true,
               "totalCountParityOk": true,
               "totalAmountParityOk": true
             },
             "windowScenario": {
-              "durationMs": 402,
+              "durationMs": 408,
               "returnedRowCount": 1,
-              "totalRowCount": 3,
+              "totalRowCount": 5,
               "hasMore": true,
-              "rowSignature": "149|2026-03-13T01:08:30.146478+00:00|a689ed65-8a34-4a3b-8b49-7d5d12ee352b|поролон||2026-03-11|0|KGS|110|банк||false|Барин|Оплата по счёту №без номера от 2026-03-11. Поставщик: поролон."
+              "rowSignature": "156|2026-03-29T13:22:11.506883+00:00|c7af0745-9509-4573-afaa-8d2685a399eb|ОсОО Омега||2026-03-11|0|KGS|10|банк||false|Барин|Оплата по счёту №без номера от 2026-03-11. Поставщик: ОсОО Омега."
             }
           },
           "wiring": {
@@ -1395,6 +1331,11 @@
             "listHasFooter": true,
             "screenWiresHistoryLoadingMore": true,
             "screenWiresInboxLoadingMore": true
+          },
+          "sourceBoundary": {
+            "inboxServiceRpcOnly": true,
+            "historyServiceRpcOnly": true,
+            "controllerHasNoLegacyRetryFlag": true
           }
         }
       },
