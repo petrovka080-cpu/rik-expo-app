@@ -314,6 +314,7 @@ export function useWarehouseScreenData() {
     reqHeadsLoading: expenseQueue.reqHeadsLoading,
     reqHeadsFetchingPage: expenseQueue.reqHeadsFetchingPage,
     reqHeadsHasMore: expenseQueue.reqHeadsHasMore,
+    reqHeadsIntegrityState: expenseQueue.reqHeadsIntegrityState,
     sortedReqHeads,
     stockSupported,
     stockFiltered,

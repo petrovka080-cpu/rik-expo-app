@@ -13,8 +13,8 @@ import {
   selectWarehouseEmptyTextStyle,
   selectWarehouseReqHeadKey,
 } from "../warehouse.list.common";
-import { selectWarehouseIssueEmptyText } from "../warehouse.tab.empty";
-import type { ReqHeadRow } from "../warehouse.types";
+import { selectWarehouseIssueBannerText, selectWarehouseIssueEmptyText } from "../warehouse.tab.empty";
+import type { ReqHeadRow, WarehouseReqHeadsIntegrityState } from "../warehouse.types";
 
 type Props = {
   data: ReqHeadRow[];
@@ -28,6 +28,7 @@ type Props = {
   listHeader: React.ReactElement;
   renderItem: ListRenderItem<ReqHeadRow>;
   loading: boolean;
+  integrityState: WarehouseReqHeadsIntegrityState;
   emptyColor: string;
 };
 
@@ -43,8 +44,10 @@ export default function WarehouseIssueTab({
   listHeader,
   renderItem,
   loading,
+  integrityState,
   emptyColor,
 }: Props) {
+  const bannerText = selectWarehouseIssueBannerText(integrityState);
   return (
     <RoleScreenLayout>
       <FlashList
@@ -63,12 +66,21 @@ export default function WarehouseIssueTab({
             <Text style={selectWarehouseEmptyTextStyle(emptyColor)}> </Text>
           ) : null
         }
-        ListHeaderComponent={listHeader}
+        ListHeaderComponent={
+          <>
+            {listHeader}
+            {bannerText ? (
+              <Text style={[selectWarehouseEmptyTextStyle(emptyColor), { paddingBottom: 8 }]}>
+                {bannerText}
+              </Text>
+            ) : null}
+          </>
+        }
         renderItem={renderItem}
         estimatedItemSize={104}
         ListEmptyComponent={
           <Text style={selectWarehouseEmptyTextStyle(emptyColor)}>
-            {selectWarehouseIssueEmptyText(loading)}
+            {selectWarehouseIssueEmptyText(loading, integrityState)}
           </Text>
         }
       />

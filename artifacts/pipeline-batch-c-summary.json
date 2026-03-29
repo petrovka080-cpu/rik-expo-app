@@ -1,0 +1,15 @@
+{
+  "status": "GREEN",
+  "scope": [
+    "C1",
+    "C2"
+  ],
+  "canonicalizationStatus": "GREEN",
+  "cooldownRedesignStatus": "GREEN",
+  "runtimeSmokeStatus": "GREEN",
+  "fullBatchCPendingScopes": [
+    "C3",
+    "C4"
+  ],
+  "fullBatchCStatus": "NOT_GREEN"
+}

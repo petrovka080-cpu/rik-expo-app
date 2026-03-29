@@ -1,7 +1,7 @@
 // src/screens/warehouse/warehouse.api.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
-import { isUuid, normMatCode, normUomId, nz, parseNum } from "./warehouse.utils";
+import type { StockRow, ReqHeadRow, ReqItemUiRow, WarehouseReqHeadsIntegrityState } from "./warehouse.types";
+import { isUuid, normMatCode, normUomId, nz, parseNum, parseReqHeaderContext } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { beginPlatformObservability, recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { isRequestVisibleInWarehouseIssueQueue } from "../../lib/requestStatus";
@@ -19,36 +19,13 @@ import {
   fetchWarehouseRequestMetaRows,
   fetchWarehouseStockViewRows,
 } from "./warehouse.api.repo";
+import {
+  compareWarehouseReqHeads,
+  createHealthyWarehouseReqHeadsIntegrityState,
+  repairWarehouseReqHeadsPage0,
+} from "./warehouse.reqHeads.repair";
 
 type UnknownRow = Record<string, unknown>;
-type RequestFallbackRow = {
-  id: string | null;
-  display_no: string | null;
-  status: string | null;
-  object_name: string | null;
-  object_type_code: string | null;
-  level_name: string | null;
-  level_code: string | null;
-  system_name: string | null;
-  system_code: string | null;
-  zone_name: string | null;
-  zone_code: string | null;
-  submitted_at: string | null;
-  created_at: string | null;
-  contractor_org: string | null;
-  subcontractor_org: string | null;
-  contractor_name: string | null;
-  subcontractor_name: string | null;
-  contractor_phone: string | null;
-  subcontractor_phone: string | null;
-  phone: string | null;
-  phone_number: string | null;
-  planned_volume: string | null;
-  volume: string | null;
-  qty_plan: string | null;
-  note: string | null;
-  comment: string | null;
-};
 type RequestItemFallbackRow = {
   request_id: string;
   request_item_id: string;
@@ -129,85 +106,6 @@ const isIssuedRequestItemStatus = (value: unknown): boolean => {
   const status = normalizeRequestItemStatus(value);
   return status.includes("выдан") || status === "done";
 };
-
-const REQUESTS_FALLBACK_SELECT = [
-  "id",
-  "display_no",
-  "status",
-  "object_name",
-  "object_type_code",
-  "level_name",
-  "level_code",
-  "system_name",
-  "system_code",
-  "zone_name",
-  "zone_code",
-  "submitted_at",
-  "created_at",
-  "contractor_name",
-  "contractor_org",
-  "subcontractor_name",
-  "subcontractor_org",
-  "contractor_phone",
-  "subcontractor_phone",
-  "phone",
-  "phone_number",
-  "planned_volume",
-  "volume",
-  "qty_plan",
-  "note",
-  "comment",
-].join(", ");
-
-const REQUESTS_FALLBACK_SELECT_MINIMAL = [
-  "id",
-  "display_no",
-  "status",
-  "object_name",
-  "object_type_code",
-  "level_code",
-  "system_code",
-  "zone_code",
-  "submitted_at",
-  "created_at",
-  "note",
-  "comment",
-].join(", ");
-
-const REQUESTS_FALLBACK_SELECT_PLANS = [
-  REQUESTS_FALLBACK_SELECT,
-  REQUESTS_FALLBACK_SELECT_MINIMAL,
-  "*",
-] as const;
-
-const normalizeRequestFallbackRow = (row: UnknownRow): RequestFallbackRow => ({
-  id: toTextOrNull(row.id),
-  display_no: toTextOrNull(row.display_no),
-  status: toTextOrNull(row.status),
-  object_name: toTextOrNull(row.object_name),
-  object_type_code: toTextOrNull(row.object_type_code),
-  level_name: toTextOrNull(row.level_name),
-  level_code: toTextOrNull(row.level_code),
-  system_name: toTextOrNull(row.system_name),
-  system_code: toTextOrNull(row.system_code),
-  zone_name: toTextOrNull(row.zone_name),
-  zone_code: toTextOrNull(row.zone_code),
-  submitted_at: toTextOrNull(row.submitted_at),
-  created_at: toTextOrNull(row.created_at),
-  contractor_name: toTextOrNull(row.contractor_name),
-  contractor_org: toTextOrNull(row.contractor_org),
-  subcontractor_name: toTextOrNull(row.subcontractor_name),
-  subcontractor_org: toTextOrNull(row.subcontractor_org),
-  contractor_phone: toTextOrNull(row.contractor_phone),
-  subcontractor_phone: toTextOrNull(row.subcontractor_phone),
-  phone: toTextOrNull(row.phone),
-  phone_number: toTextOrNull(row.phone_number),
-  planned_volume: toTextOrNull(row.planned_volume),
-  volume: toTextOrNull(row.volume),
-  qty_plan: toTextOrNull(row.qty_plan),
-  note: toTextOrNull(row.note),
-  comment: toTextOrNull(row.comment),
-});
 
 const normalizeRequestItemFallbackRow = (row: UnknownRow): RequestItemFallbackRow => ({
   request_id: String(row.request_id ?? "").trim(),
@@ -312,14 +210,22 @@ type ReqHeadsStageMetrics = {
 type ReqHeadsConvergedResult = {
   rows: ReqHeadRow[];
   metrics: Omit<ReqHeadsStageMetrics, "stage_a_ms">;
+  integrityState: WarehouseReqHeadsIntegrityState;
 };
 
-export type WarehouseReqHeadsSourceMeta = {
-  primaryOwner: "rpc_scope_v4";
-  fallbackUsed: false;
-  sourceKind: "rpc:warehouse_issue_queue_scope_v4";
-  contractVersion: string;
-};
+export type WarehouseReqHeadsSourceMeta =
+  | {
+      primaryOwner: "rpc_scope_v4";
+      fallbackUsed: false;
+      sourceKind: "rpc:warehouse_issue_queue_scope_v4";
+      contractVersion: string;
+    }
+  | {
+      primaryOwner: "legacy_converged";
+      fallbackUsed: true;
+      sourceKind: "converged:req_heads";
+      contractVersion: "legacy_converged";
+    };
 
 export type WarehouseReqHeadsWindowMeta = {
   page: number;
@@ -339,6 +245,7 @@ export type WarehouseReqHeadsFetchResult = {
   metrics: ReqHeadsStageMetrics;
   meta: WarehouseReqHeadsWindowMeta;
   sourceMeta: WarehouseReqHeadsSourceMeta;
+  integrityState: WarehouseReqHeadsIntegrityState;
 };
 
 type WarehouseReqHeadsLegacyFetchResult = {
@@ -353,6 +260,7 @@ type WarehouseReqHeadsLegacyFetchResult = {
     sourceKind: "converged:req_heads";
     contractVersion: "legacy_converged";
   };
+  integrityState: WarehouseReqHeadsIntegrityState;
 };
 
 const reqHeadsPerfNow = () =>
@@ -360,8 +268,7 @@ const reqHeadsPerfNow = () =>
     ? performance.now()
     : Date.now();
 
-const WAREHOUSE_REQ_HEADS_RPC_SOURCE_KIND: WarehouseReqHeadsSourceMeta["sourceKind"] =
-  "rpc:warehouse_issue_queue_scope_v4";
+const WAREHOUSE_REQ_HEADS_RPC_SOURCE_KIND = "rpc:warehouse_issue_queue_scope_v4" as const;
 const WAREHOUSE_REQ_HEADS_LEGACY_SOURCE_KIND = "converged:req_heads" as const;
 
 const toReqHeadsScopeKey = (page: number, pageSize: number) =>
@@ -461,76 +368,6 @@ const adaptReqHeadsRpcRow = (value: unknown, rowIndex: number): ReqHeadRow => {
     waiting_stock: requireReqHeadsBoolean(row.waiting_stock, `rows[${rowIndex}].waiting_stock`),
     all_done: requireReqHeadsBoolean(row.all_done, `rows[${rowIndex}].all_done`),
   };
-};
-
-let requestsFallbackLastHardFailAt = 0;
-let requestsFallbackLastSkipLogAt = 0;
-const REQUESTS_FALLBACK_FAIL_COOLDOWN_MS = 30000;
-
-async function tryLoadRequestsFallbackRows(
-  supabase: SupabaseClient,
-  pageSize: number,
-): Promise<RequestFallbackRow[]> {
-  const now = Date.now();
-  if (
-    requestsFallbackLastHardFailAt > 0 &&
-    now - requestsFallbackLastHardFailAt < REQUESTS_FALLBACK_FAIL_COOLDOWN_MS
-  ) {
-    if (now - requestsFallbackLastSkipLogAt > 5000) {
-      requestsFallbackLastSkipLogAt = now;
-      console.warn("[warehouse.api] requests fallback select skipped by cooldown after repeated 400 failures");
-    }
-    return [];
-  }
-
-  const fetchBySelect = async (selectCols: string) =>
-    supabase
-      .from("requests")
-      .select(selectCols)
-      .order("submitted_at", { ascending: false, nullsFirst: false })
-      .order("display_no", { ascending: false })
-      .limit(Math.max(pageSize * 6, 600));
-
-  let lastError: unknown = null;
-  for (const selectCols of REQUESTS_FALLBACK_SELECT_PLANS) {
-    const acc = await fetchBySelect(selectCols);
-    if (!acc.error && Array.isArray(acc.data)) {
-      requestsFallbackLastHardFailAt = 0;
-      requestsFallbackLastSkipLogAt = 0;
-      return asUnknownRows(acc.data).map(normalizeRequestFallbackRow);
-    }
-    lastError = acc.error ?? lastError;
-  }
-
-  requestsFallbackLastHardFailAt = Date.now();
-  const msg = String((lastError as { message?: string } | null)?.message ?? lastError ?? "unknown");
-  if (__DEV__) {
-    console.warn("[warehouse.api] requests fallback select failed:", msg);
-  }
-
-  return [];
-}
-
-const parseDisplayNo = (raw: unknown): { year: number; seq: number } => {
-  const s = String(raw ?? "").trim();
-  const m = s.match(/(\d+)\s*\/\s*(\d{4})/);
-  if (!m) return { year: 0, seq: 0 };
-  return { seq: Number(m[1] ?? 0) || 0, year: Number(m[2] ?? 0) || 0 };
-};
-
-const reqHeadSort = (a: ReqHeadRow, b: ReqHeadRow): number => {
-  const ta = a?.submitted_at ? new Date(a.submitted_at).getTime() : 0;
-  const tb = b?.submitted_at ? new Date(b.submitted_at).getTime() : 0;
-  if (tb !== ta) return tb - ta;
-
-  const pa = parseDisplayNo(a.display_no);
-  const pb = parseDisplayNo(b.display_no);
-  if (pb.year !== pa.year) return pb.year - pa.year;
-  if (pb.seq !== pa.seq) return pb.seq - pa.seq;
-
-  const ra = String(a?.request_id ?? "");
-  const rb = String(b?.request_id ?? "");
-  return rb.localeCompare(ra);
 };
 
 function finalizeReqHeadTruth(agg: Omit<ReqHeadTruth, "issue_status">): ReqHeadTruth {
@@ -834,7 +671,7 @@ async function loadApprovedViewReqHeadsWindowRows(
 
   const rows: ReqHeadRow[] = (q.data as UnknownRow[]).map(mapReqHeadViewRow);
 
-  rows.sort(reqHeadSort);
+  rows.sort(compareWarehouseReqHeads);
 
   const requestIds = Array.from(
     new Set(rows.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)),
@@ -879,57 +716,6 @@ async function loadApprovedViewReqHeadsWindow(
   return approvedRows
     .map((row) => applyReqHeadTruth(row, truthByReq[String(row.request_id ?? "").trim()]))
     .filter((row) => row.visible_in_expense_queue);
-}
-
-function parseReqHeaderContext(rawParts: (string | null | undefined)[]) {
-  const out: { contractor: string; phone: string; volume: string } = {
-    contractor: "",
-    phone: "",
-    volume: "",
-  };
-  const cleanPhone = (v: string) => {
-    const src = String(v || "").trim();
-    if (!src) return "";
-    if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
-    if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
-    const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
-    if (!m) return "";
-    const candidate = String(m[1] || "").trim();
-    const digits = candidate.replace(/[^\d]/g, "");
-    if (digits.length < 9) return "";
-    return candidate.replace(/\s+/g, "");
-  };
-  const put = (key: keyof typeof out, value: string) => {
-    const v = String(value || "").trim();
-    if (!v || out[key]) return;
-    out[key] = v;
-  };
-  const contractorKeyRe =
-    /(?:\u043f\u043e\u0434\u0440\u044f\u0434|\u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446|contractor|organization|supplier)/i;
-  const phoneKeyRe = /(?:\u0442\u0435\u043b|phone|tel)/i;
-  const volumeKeyRe = /(?:\u043e\u0431(?:\u044a|\u044c)?(?:\u0435|\u0451)?\u043c|volume)/i;
-  for (const raw of rawParts) {
-    const lines = String(raw || "")
-      .split(/[\r\n;]+/)
-      .map((x) => x.trim())
-      .filter(Boolean);
-    for (const ln of lines) {
-      const m = ln.match(/^([^:]+)\s*:\s*(.+)$/);
-      if (!m) continue;
-      const k = String(m[1] || "").trim().toLowerCase();
-      const v = String(m[2] || "").trim();
-      if (!v) continue;
-      if (!out.contractor && contractorKeyRe.test(k)) {
-        put("contractor", v);
-      } else if (!out.phone && phoneKeyRe.test(k)) {
-        const ph = cleanPhone(v);
-        if (ph) put("phone", ph);
-      } else if (!out.volume && volumeKeyRe.test(k)) {
-        put("volume", v);
-      }
-    }
-  }
-  return out;
 }
 
 async function enrichReqHeadsMeta(
@@ -1224,18 +1010,6 @@ async function loadReqHeadsConverged(
   page: number,
   pageSize: number,
 ): Promise<ReqHeadsConvergedResult> {
-  const normalizePhone = (v: string) => {
-    const src = String(v || "").trim();
-    if (!src) return "";
-    if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
-    if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
-    const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
-    if (!m) return "";
-    const candidate = String(m[1] || "").trim();
-    const digits = candidate.replace(/[^\d]/g, "");
-    if (digits.length < 9) return "";
-    return candidate.replace(/\s+/g, "");
-  };
   const stageStartedAt = reqHeadsPerfNow();
   const targetVisibleCount = Math.max(0, (page + 1) * pageSize);
   const viewChunkSize = Math.max(pageSize, 50);
@@ -1256,178 +1030,30 @@ async function loadReqHeadsConverged(
     if (windowRows.length < viewChunkSize) break;
   }
 
-  const sortedVisibleViewRows = [...visibleViewRows].sort(reqHeadSort);
-  let mergedRows = sortedVisibleViewRows;
+  let mergedRows = [...visibleViewRows].sort(compareWarehouseReqHeads);
   let fallbackMissingIdsCount = 0;
   let page0RequiredRepair = false;
+  let integrityState = createHealthyWarehouseReqHeadsIntegrityState();
 
-  // Merge recent approved requests missing from warehouse views before slicing page 0.
-  // This keeps newly approved demand visible in the expense queue even if the DB view lags.
   if (page === 0) {
     try {
-      const reqRows = await tryLoadRequestsFallbackRows(supabase, pageSize);
-
-      if (reqRows.length) {
-        const approvedReqs = reqRows
-          .filter((r) => isRequestVisibleInWarehouseIssueQueue(r?.status))
-          .map((r) => ({
-            request_id: String(r.id ?? "").trim(),
-            display_no: toTextOrNull(r.display_no),
-            object_name: toTextOrNull(r.object_name ?? r.object_type_code),
-            level_name: toTextOrNull(r.level_name ?? r.level_code),
-            system_name: toTextOrNull(r.system_name ?? r.system_code),
-            zone_name: toTextOrNull(r.zone_name ?? r.zone_code),
-            level_code: toTextOrNull(r.level_code),
-            system_code: toTextOrNull(r.system_code),
-            zone_code: toTextOrNull(r.zone_code),
-            submitted_at: toTextOrNull(r.submitted_at ?? r.created_at),
-          }))
-          .filter((r) => !!r.request_id);
-
-        if (approvedReqs.length) {
-          const missingReqIds = approvedReqs
-            .map((r) => r.request_id)
-            .filter((id) => !materializedReqIds.has(id));
-
-          fallbackMissingIdsCount = missingReqIds.length;
-          page0RequiredRepair = missingReqIds.length > 0;
-
-          if (missingReqIds.length) {
-            const reqRowsById = new Map<string, UnknownRow>();
-            for (const row of reqRows) {
-              const requestId = String(row?.id ?? "").trim();
-              if (requestId) reqRowsById.set(requestId, row);
-            }
-
-            const fallbackTruthByReq = await loadReqHeadTruthByRequestIds(supabase, missingReqIds);
-
-            const unresolvedStatReqIds = missingReqIds.filter((id) => !fallbackTruthByReq[id]);
-            const fallbackItemStatsQ = unresolvedStatReqIds.length
-              ? await supabase
-                  .from("request_items")
-                  .select("id, request_id, rik_code, name_human, uom, status, qty, note")
-                  .in("request_id", unresolvedStatReqIds)
-              : { error: null, data: [] as UnknownRow[] };
-
-            const stat: Record<
-              string,
-              { items: number; qty: number; done: number; rejected: number }
-            > = {};
-            for (const id of unresolvedStatReqIds) {
-              stat[id] = { items: 0, qty: 0, done: 0, rejected: 0 };
-            }
-
-            if (!fallbackItemStatsQ.error && Array.isArray(fallbackItemStatsQ.data)) {
-              for (const it of fallbackItemStatsQ.data as UnknownRow[]) {
-                const rid = String(it?.request_id ?? "").trim();
-                if (!rid || !stat[rid]) continue;
-                if (isRejectedRequestItemStatus(it?.status)) {
-                  stat[rid].rejected += 1;
-                  continue;
-                }
-
-                stat[rid].items += 1;
-                stat[rid].qty += Math.max(0, parseNum(it?.qty, 0));
-                if (isIssuedRequestItemStatus(it?.status)) stat[rid].done += 1;
-              }
-            }
-
-            let directFallbackTruthByReq: Record<string, ReqHeadTruth> = {};
-            if (!fallbackItemStatsQ.error && Array.isArray(fallbackItemStatsQ.data) && fallbackItemStatsQ.data.length) {
-              const normalizedFallbackRows = asUnknownRows(fallbackItemStatsQ.data).map(normalizeRequestItemFallbackRow);
-              const stockAvailability = await loadFallbackStockAvailability(supabase, normalizedFallbackRows);
-              const directFallbackRows = materializeFallbackReqItems(normalizedFallbackRows, stockAvailability);
-              directFallbackTruthByReq = aggregateReqItemUiRows(directFallbackRows);
-            }
-
-            const fallbackRows: ReqHeadRow[] = approvedReqs
-              .filter((r) => !materializedReqIds.has(r.request_id))
-              .map((r) => {
-                const reqRaw = reqRowsById.get(r.request_id) ?? null;
-                const fromReqText = parseReqHeaderContext([
-                  String(reqRaw?.note ?? ""),
-                  String(reqRaw?.comment ?? ""),
-                ]);
-                const contractor =
-                  String(
-                    reqRaw?.contractor_name ??
-                      reqRaw?.contractor_org ??
-                      reqRaw?.subcontractor_name ??
-                      reqRaw?.subcontractor_org ??
-                      "",
-                  ).trim() || fromReqText.contractor || null;
-                const phone =
-                  normalizePhone(
-                    String(
-                      reqRaw?.contractor_phone ??
-                        reqRaw?.subcontractor_phone ??
-                        reqRaw?.phone ??
-                        reqRaw?.phone_number ??
-                        "",
-                    ).trim(),
-                  ) || normalizePhone(fromReqText.phone) || null;
-                const plannedVolume =
-                  String(
-                    reqRaw?.planned_volume ??
-                      reqRaw?.volume ??
-                      reqRaw?.qty_plan ??
-                      "",
-                  ).trim() || fromReqText.volume || null;
-                const truth =
-                  fallbackTruthByReq[r.request_id] ??
-                  directFallbackTruthByReq[r.request_id] ??
-                  (() => {
-                    const s = stat[r.request_id] ?? { items: 0, qty: 0, done: 0, rejected: 0 };
-                    const readyCnt = Math.max(0, s.items - s.done - s.rejected);
-                    return finalizeReqHeadTruth({
-                      items_cnt: s.items,
-                      ready_cnt: readyCnt,
-                      done_cnt: s.done,
-                      qty_limit_sum: s.qty,
-                      qty_issued_sum: 0,
-                      qty_left_sum: s.qty,
-                      qty_can_issue_now_sum: 0,
-                      issuable_now_cnt: 0,
-                    });
-                  })();
-                return applyReqHeadTruth({
-                  request_id: r.request_id,
-                  display_no: r.display_no,
-                  object_name: r.object_name,
-                  level_code: r.level_code,
-                  system_code: r.system_code,
-                  zone_code: r.zone_code,
-                  level_name: r.level_name,
-                  system_name: r.system_name,
-                  zone_name: r.zone_name,
-                  contractor_name: contractor,
-                  contractor_phone: phone,
-                  planned_volume: plannedVolume,
-                  note: reqRaw?.note == null ? null : String(reqRaw.note),
-                  comment: reqRaw?.comment == null ? null : String(reqRaw.comment),
-                  submitted_at: r.submitted_at,
-                  items_cnt: truth.items_cnt,
-                  ready_cnt: truth.ready_cnt,
-                  done_cnt: truth.done_cnt,
-                  qty_limit_sum: truth.qty_limit_sum,
-                  qty_issued_sum: truth.qty_issued_sum,
-                  qty_left_sum: truth.qty_left_sum,
-                  qty_can_issue_now_sum: truth.qty_can_issue_now_sum,
-                  issuable_now_cnt: truth.issuable_now_cnt,
-                  issue_status: truth.issue_status,
-                }, truth);
-              })
-              .filter((r) => r.visible_in_expense_queue);
-
-            if (fallbackRows.length) {
-              mergedRows = [...sortedVisibleViewRows, ...fallbackRows].sort(reqHeadSort);
-            }
-          }
-        }
-      }
+      const repaired = await repairWarehouseReqHeadsPage0({
+        supabase,
+        pageSize,
+        viewRows: mergedRows,
+      });
+      mergedRows = repaired.rows;
+      fallbackMissingIdsCount = repaired.fallbackMissingIdsCount;
+      page0RequiredRepair = repaired.page0RequiredRepair;
+      integrityState = repaired.integrityState;
     } catch (error) {
       logWarehouseApiFallback("apiFetchReqHeads/fallback-load", error);
-      // keep view rows when fallback fails
+      integrityState = {
+        mode: mergedRows.length > 0 ? "stale_last_known_good" : "error",
+        reason: "req_heads_repair_failed",
+        message: error instanceof Error ? error.message : String(error ?? "unknown"),
+        cacheUsed: mergedRows.length > 0,
+      };
     }
   }
 
@@ -1444,6 +1070,7 @@ async function loadReqHeadsConverged(
         enriched_rows_count: enriched.enrichedRowsCount,
         page0_required_repair: page0RequiredRepair,
       },
+      integrityState,
     };
   } catch (error) {
     logWarehouseApiFallback("apiFetchReqHeads/enrich-view", error);
@@ -1455,6 +1082,7 @@ async function loadReqHeadsConverged(
         enriched_rows_count: 0,
         page0_required_repair: page0RequiredRepair,
       },
+      integrityState,
     };
   }
 }
@@ -2125,6 +1753,7 @@ async function apiFetchReqHeadsLegacyRaw(
       sourceKind: WAREHOUSE_REQ_HEADS_LEGACY_SOURCE_KIND,
       contractVersion: "legacy_converged",
     },
+    integrityState: legacy.integrityState,
   };
 }
 
@@ -2153,6 +1782,7 @@ async function apiFetchReqHeadsLegacy(
         stageB_ms: result.metrics.stage_b_ms,
         repairedMissingIdsCount: result.meta.repairedMissingIdsCount,
         hasMore: result.meta.hasMore,
+        integrityMode: result.integrityState.mode,
       },
     });
     return result;
@@ -2204,6 +1834,7 @@ async function apiFetchReqHeadsRpcRaw(
       sourceKind: WAREHOUSE_REQ_HEADS_RPC_SOURCE_KIND,
       contractVersion: meta.contractVersion,
     },
+    integrityState: createHealthyWarehouseReqHeadsIntegrityState(),
   };
 }
 
@@ -2239,14 +1870,23 @@ export async function apiFetchReqHeadsWindow(
         hasMore: result.meta.hasMore,
         repairedMissingIdsCount: result.meta.repairedMissingIdsCount,
         enrichedRowsCount: result.metrics.enriched_rows_count,
+        integrityMode: result.integrityState.mode,
       },
     });
     return result;
   } catch (error) {
-    observation.error(error, {
-      rowCount: 0,
+    const message = error instanceof Error ? error.message : String(error ?? "unknown");
+    recordPlatformObservability({
+      screen: "warehouse",
+      surface: "req_heads",
+      category: "fetch",
+      event: "fetch_req_heads_rpc_v4_failed",
+      result: "error",
+      sourceKind: WAREHOUSE_REQ_HEADS_RPC_SOURCE_KIND,
+      fallbackUsed: true,
       errorStage: "fetch_req_heads_rpc_v4",
-      fallbackUsed: false,
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: message || undefined,
       extra: {
         page,
         pageSize,
@@ -2256,7 +1896,48 @@ export async function apiFetchReqHeadsWindow(
         refresh: page === 0,
       },
     });
-    throw error;
+    try {
+      const fallbackResult = await apiFetchReqHeadsLegacy(supabase, page, pageSize);
+      observation.success({
+        rowCount: fallbackResult.rows.length,
+        sourceKind: fallbackResult.sourceMeta.sourceKind,
+        fallbackUsed: true,
+        extra: {
+          page,
+          pageSize,
+          pageOffset: fallbackResult.meta.pageOffset,
+          scopeKey: fallbackResult.meta.scopeKey,
+          contractVersion: fallbackResult.meta.contractVersion,
+          generatedAt: fallbackResult.meta.generatedAt,
+          append: page > 0,
+          refresh: page === 0,
+          primaryOwner: fallbackResult.sourceMeta.primaryOwner,
+          totalRowCount: fallbackResult.meta.totalRowCount,
+          hasMore: fallbackResult.meta.hasMore,
+          repairedMissingIdsCount: fallbackResult.meta.repairedMissingIdsCount,
+          enrichedRowsCount: fallbackResult.metrics.enriched_rows_count,
+          fallbackReason: message,
+          integrityMode: fallbackResult.integrityState.mode,
+        },
+      });
+      return fallbackResult;
+    } catch (legacyError) {
+      observation.error(legacyError, {
+        rowCount: 0,
+        errorStage: "fetch_req_heads_legacy_hard_cut",
+        fallbackUsed: true,
+        extra: {
+          page,
+          pageSize,
+          pageOffset: Math.max(0, page * pageSize),
+          scopeKey: toReqHeadsScopeKey(page, pageSize),
+          append: page > 0,
+          refresh: page === 0,
+          fallbackReason: message,
+        },
+      });
+      throw legacyError;
+    }
   }
 }
 

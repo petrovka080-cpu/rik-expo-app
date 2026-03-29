@@ -73,6 +73,7 @@ export function useWarehouseExpenseQueueSlice(params: {
     reqHeadsLoading,
     reqHeadsFetchingPage,
     reqHeadsHasMore,
+    reqHeadsIntegrityState,
     reqRefs,
     fetchReqHeads,
   } = useWarehouseReqHeads({
@@ -251,6 +252,7 @@ export function useWarehouseExpenseQueueSlice(params: {
     reqHeadsLoading,
     reqHeadsFetchingPage,
     reqHeadsHasMore,
+    reqHeadsIntegrityState,
     reqRefs,
     reqModal,
     reqItems,

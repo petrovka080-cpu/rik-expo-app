@@ -75,6 +75,7 @@ export function selectWarehouseTabContentProps(
     reqHeadsLoadingMore: data.reqHeadsFetchingPage && !data.reqHeadsLoading,
     renderReqHeadItem: deps.renderReqHeadItem,
     reqHeadsLoading: data.reqHeadsLoading,
+    reqHeadsIntegrityState: data.reqHeadsIntegrityState,
     reportsHeaderTopPad: data.HEADER_MAX + 8,
     reportsMode: data.reportsMode,
     onReportsBack: deps.onReportsBack,

@@ -143,6 +143,13 @@ export type WarehouseStockLike = StockRow & {
 
 export type ReqItemUiRowWithNote = ReqItemUiRow & { note?: string | null };
 
+export type WarehouseReqHeadsIntegrityState = {
+  mode: "healthy" | "stale_last_known_good" | "error";
+  reason: string | null;
+  message: string | null;
+  cacheUsed: boolean;
+};
+
 export type WarehouseReportRow = Record<string, unknown>;
 
 export type RpcReceiveApplyResult = {

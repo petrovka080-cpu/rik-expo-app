@@ -1,0 +1,12 @@
+{
+  "status": "GREEN",
+  "files": [
+    "src/screens/warehouse/warehouse.api.ts",
+    "src/screens/warehouse/warehouse.reqHeads.repair.ts"
+  ],
+  "primaryRpcPresent": true,
+  "explicitLegacyFallbackPresent": true,
+  "repairModulePresent": true,
+  "comparatorExportPresent": true,
+  "integrityStateContractPresent": true
+}

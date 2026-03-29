@@ -2,10 +2,11 @@ import { useCallback, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   apiFetchReqHeadsWindow,
+  type WarehouseReqHeadsFetchResult,
   type WarehouseReqHeadsSourceMeta,
   type WarehouseReqHeadsWindowMeta,
 } from "../warehouse.api";
-import type { ReqHeadRow } from "../warehouse.types";
+import type { ReqHeadRow, WarehouseReqHeadsIntegrityState } from "../warehouse.types";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import {
   isPlatformGuardCoolingDown,
@@ -27,13 +28,21 @@ type ReqHeadsSnapshot = {
   rows: ReqHeadRow[];
   pageSize: number;
   hasMore: boolean;
+  integrityState: WarehouseReqHeadsIntegrityState;
 };
 
-type ReqHeadsFetchValue = {
+type ReqHeadsFetchValue = Pick<WarehouseReqHeadsFetchResult, "integrityState"> & {
   rows: ReqHeadRow[];
   hasMore: boolean;
   meta: WarehouseReqHeadsWindowMeta;
   sourceMeta: WarehouseReqHeadsSourceMeta;
+};
+
+const HEALTHY_INTEGRITY_STATE: WarehouseReqHeadsIntegrityState = {
+  mode: "healthy",
+  reason: null,
+  message: null,
+  cacheUsed: false,
 };
 
 export function useWarehouseReqHeads(params: {
@@ -48,6 +57,8 @@ export function useWarehouseReqHeads(params: {
   const [reqHeadsLoading, setReqHeadsLoading] = useState(false);
   const [reqHeadsFetchingPage, setReqHeadsFetchingPage] = useState(false);
   const [reqHeadsHasMore, setReqHeadsHasMore] = useState(true);
+  const [reqHeadsIntegrityState, setReqHeadsIntegrityState] =
+    useState<WarehouseReqHeadsIntegrityState>(HEALTHY_INTEGRITY_STATE);
   const reqRefs = useRef({
     page: 0,
     hasMore: true,
@@ -144,6 +155,7 @@ export function useWarehouseReqHeads(params: {
           reqRefs.current.hasMore = cached.hasMore;
           setReqHeadsHasMore(reqRefs.current.hasMore);
           setReqHeads(cached.rows);
+          setReqHeadsIntegrityState(cached.integrityState);
           return;
         }
       }
@@ -176,6 +188,7 @@ export function useWarehouseReqHeads(params: {
               hasMore: result.meta.hasMore,
               meta: result.meta,
               sourceMeta: result.sourceMeta,
+              integrityState: result.integrityState,
             };
           });
           inFlightRef.current.set(requestKey, request);
@@ -187,9 +200,15 @@ export function useWarehouseReqHeads(params: {
         reqRefs.current.hasMore = hasNext;
         reqRefs.current.page = pageIndex;
         setReqHeadsHasMore(hasNext);
+        setReqHeadsIntegrityState(next.integrityState);
 
         if (pageIndex === 0) {
-          cacheRef.current = { rows, pageSize, hasMore: hasNext };
+          cacheRef.current = {
+            rows,
+            pageSize,
+            hasMore: hasNext,
+            integrityState: next.integrityState,
+          };
           setReqHeads(rows);
           recordPlatformObservability({
             screen: "warehouse",
@@ -208,6 +227,7 @@ export function useWarehouseReqHeads(params: {
               primaryOwner: next.sourceMeta.primaryOwner,
               contractVersion: next.meta.contractVersion,
               totalRowCount: next.meta.totalRowCount,
+              integrityMode: next.integrityState.mode,
             },
           });
         } else {
@@ -237,16 +257,55 @@ export function useWarehouseReqHeads(params: {
               contractVersion: next.meta.contractVersion,
               totalRowCount: next.meta.totalRowCount,
               duplicateRowCount,
+              integrityMode: next.integrityState.mode,
             },
           });
         }
       } catch (e) {
-        reqRefs.current.hasMore = false;
-        setReqHeadsHasMore(false);
         reqRefs.current.lastErrorAt = Date.now();
         if (pageIndex === 0) {
-          cacheRef.current = null;
-          setReqHeads([]);
+          const cached = cacheRef.current;
+          if (cached && cached.pageSize === pageSize) {
+            reqRefs.current.page = 0;
+            reqRefs.current.hasMore = cached.hasMore;
+            setReqHeadsHasMore(cached.hasMore);
+            setReqHeads(cached.rows);
+            setReqHeadsIntegrityState({
+              mode: "stale_last_known_good",
+              reason: "fetch_req_heads_failed",
+              message: pickErrMessage(e),
+              cacheUsed: true,
+            });
+            recordPlatformObservability({
+              screen: "warehouse",
+              surface: "req_heads_list",
+              category: "ui",
+              event: "content_ready_stale_cache",
+              result: "success",
+              rowCount: cached.rows.length,
+              fallbackUsed: true,
+              extra: {
+                pageIndex,
+                forceRefresh,
+                cachedHasMore: cached.hasMore,
+                reason: "fetch_req_heads_failed",
+              },
+            });
+          } else {
+            reqRefs.current.hasMore = false;
+            setReqHeadsHasMore(false);
+            cacheRef.current = null;
+            setReqHeads([]);
+            setReqHeadsIntegrityState({
+              mode: "error",
+              reason: "fetch_req_heads_failed",
+              message: pickErrMessage(e),
+              cacheUsed: false,
+            });
+          }
+        } else {
+          reqRefs.current.hasMore = false;
+          setReqHeadsHasMore(false);
         }
         if (__DEV__) {
           console.warn("[warehouse.reqHeads] fetch failed", {
@@ -272,6 +331,7 @@ export function useWarehouseReqHeads(params: {
     reqHeadsLoading,
     reqHeadsFetchingPage,
     reqHeadsHasMore,
+    reqHeadsIntegrityState,
     reqRefs,
     fetchReqHeads,
   };

@@ -1,16 +1,36 @@
+import type { WarehouseReqHeadsIntegrityState } from "./warehouse.types";
+
 export function selectWarehouseIncomingEmptyText() {
-  return "Нет записей в очереди склада.";
+  return "РќРµС‚ Р·Р°РїРёСЃРµР№ РІ РѕС‡РµСЂРµРґРё СЃРєР»Р°РґР°.";
 }
 
 export function selectWarehouseStockUnsupportedText() {
-  return "Раздел «Склад факт» требует view v_warehouse_fact или RPC с фактическими остатками.";
+  return "Р Р°Р·РґРµР» В«РЎРєР»Р°Рґ С„Р°РєС‚В» С‚СЂРµР±СѓРµС‚ view v_warehouse_fact РёР»Рё RPC СЃ С„Р°РєС‚РёС‡РµСЃРєРёРјРё РѕСЃС‚Р°С‚РєР°РјРё.";
 }
 
 export function selectWarehouseStockEmptyText() {
-  return "Пока нет данных по складу.";
+  return "РџРѕРєР° РЅРµС‚ РґР°РЅРЅС‹С… РїРѕ СЃРєР»Р°РґСѓ.";
 }
 
-export function selectWarehouseIssueEmptyText(loading: boolean) {
-  if (loading) return "Загрузка...";
-  return "Нет заявок для выдачи.\nПотяни вниз, чтобы обновить.";
+export function selectWarehouseIssueEmptyText(
+  loading: boolean,
+  integrityState?: WarehouseReqHeadsIntegrityState,
+) {
+  if (loading) return "Р—Р°РіСЂСѓР·РєР°...";
+  if (integrityState?.mode === "error") {
+    return "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ РѕС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РїРѕРІС‚РѕСЂРёС‚СЊ.";
+  }
+  return "РќРµС‚ Р·Р°СЏРІРѕРє РґР»СЏ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РѕР±РЅРѕРІРёС‚СЊ.";
+}
+
+export function selectWarehouseIssueBannerText(
+  integrityState?: WarehouseReqHeadsIntegrityState,
+) {
+  if (integrityState?.mode === "stale_last_known_good") {
+    return "РџРѕРєР°Р·Р°РЅС‹ РїРѕСЃР»РµРґРЅРёРµ Р·Р°РіСЂСѓР¶РµРЅРЅС‹Рµ Р·Р°СЏРІРєРё. РђРєС‚СѓР°Р»РёР·Р°С†РёСЏ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅР°.";
+  }
+  if (integrityState?.mode === "error") {
+    return "РћС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё РІСЂРµРјРµРЅРЅРѕ РЅРµ РѕР±РЅРѕРІР»РµРЅР°.";
+  }
+  return null;
 }

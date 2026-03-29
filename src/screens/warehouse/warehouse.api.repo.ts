@@ -32,6 +32,61 @@ export async function fetchWarehouseRequestItemNoteRows(
     .in("request_id", safeRequestIds);
 }
 
+export async function fetchWarehouseRequestFallbackRows(
+  supabase: SupabaseClient,
+  selectCols: string,
+  limit: number,
+) {
+  return await supabase
+    .from("requests")
+    .select(selectCols)
+    .order("submitted_at", { ascending: false, nullsFirst: false })
+    .order("display_no", { ascending: false })
+    .limit(limit);
+}
+
+export async function fetchWarehouseReqHeadTruthRows(
+  supabase: SupabaseClient,
+  requestIds: string[],
+) {
+  const safeRequestIds = requestIds.map((id) => String(id ?? "").trim()).filter(isUuid);
+  if (!safeRequestIds.length) {
+    return { data: [] as UnknownRow[], error: null };
+  }
+  return await supabase
+    .from("v_wh_issue_req_items_ui")
+    .select("request_id, request_item_id, qty_limit, qty_issued, qty_left, qty_can_issue_now")
+    .in("request_id", safeRequestIds);
+}
+
+export async function fetchWarehouseRequestItemsFallbackRows(
+  supabase: SupabaseClient,
+  requestIds: string[],
+) {
+  const safeRequestIds = requestIds.map((id) => String(id ?? "").trim()).filter(isUuid);
+  if (!safeRequestIds.length) {
+    return { data: [] as UnknownRow[], error: null };
+  }
+  return await supabase
+    .from("request_items")
+    .select("id, request_id, rik_code, name_human, uom, status, qty, note")
+    .in("request_id", safeRequestIds);
+}
+
+export async function fetchWarehouseFallbackStockRows(
+  supabase: SupabaseClient,
+  codes: string[],
+) {
+  const safeCodes = Array.from(new Set(codes.map((code) => String(code ?? "").trim()).filter(Boolean)));
+  if (!safeCodes.length) {
+    return { data: [] as UnknownRow[], error: null };
+  }
+  return await supabase
+    .from("v_warehouse_stock")
+    .select("rik_code, uom_id, qty_available")
+    .in("rik_code", safeCodes);
+}
+
 export async function fetchWarehouseStockViewRows(
   supabase: SupabaseClient,
   offset: number,

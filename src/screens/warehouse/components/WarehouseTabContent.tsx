@@ -13,6 +13,7 @@ import type {
   StockPickLine,
   StockRow,
   Tab,
+  WarehouseReqHeadsIntegrityState,
   WarehouseReportRow,
 } from "../warehouse.types";
 import {
@@ -73,6 +74,7 @@ export type WarehouseTabContentProps = {
   reqHeadsLoadingMore: boolean;
   renderReqHeadItem: ListRenderItem<ReqHeadRow>;
   reqHeadsLoading: boolean;
+  reqHeadsIntegrityState: WarehouseReqHeadsIntegrityState;
 
   reportsHeaderTopPad: number;
   reportsMode: "choice" | "issue" | "incoming";
