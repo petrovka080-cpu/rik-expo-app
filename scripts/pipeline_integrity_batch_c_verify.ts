@@ -18,6 +18,7 @@ const issueTabPath = "src/screens/warehouse/components/WarehouseIssueTab.tsx";
 const emptyTextPath = "src/screens/warehouse/warehouse.tab.empty.ts";
 const runtimeSummaryPath = "artifacts/warehouse-issue-queue-runtime.summary.json";
 const draftGcSummaryPath = "artifacts/draft-gc-summary.json";
+const fkGuardSummaryPath = "artifacts/fk-guard-summary.json";
 
 const warehouseApiText = readText(warehouseApiPath);
 const repairText = readText(repairPath);
@@ -45,6 +46,25 @@ const draftGcSummary = readJson<{
     gcPreservedNonEmptyDraft?: boolean;
   };
 }>(draftGcSummaryPath);
+const fkGuardSummary = readJson<{
+  status?: string;
+  structural?: {
+    proposalMutationGuardsPresent?: boolean;
+    proposalReadFilterPresent?: boolean;
+    accountantProposalGuardsPresent?: boolean;
+    warehouseRequestItemGuardsPresent?: boolean;
+  };
+  runtime?: {
+    requestExistsPass?: boolean;
+    proposalExistsPass?: boolean;
+    missingRequestRejected?: boolean;
+    missingProposalRejected?: boolean;
+    mismatchedRequestItemsRejected?: boolean;
+    missingRequestItemsRejected?: boolean;
+    mismatchedProposalItemsRejected?: boolean;
+    orphanProposalRowsDropped?: boolean;
+  };
+}>(fkGuardSummaryPath);
 
 const canonicalization = {
   status:
@@ -114,6 +134,27 @@ const draftGc = {
   artifact: draftGcSummaryPath,
 };
 
+const fkGuard = {
+  available: fkGuardSummary != null,
+  status:
+    fkGuardSummary?.status === "GREEN" &&
+    fkGuardSummary.structural?.proposalMutationGuardsPresent === true &&
+    fkGuardSummary.structural?.proposalReadFilterPresent === true &&
+    fkGuardSummary.structural?.accountantProposalGuardsPresent === true &&
+    fkGuardSummary.structural?.warehouseRequestItemGuardsPresent === true &&
+    fkGuardSummary.runtime?.requestExistsPass === true &&
+    fkGuardSummary.runtime?.proposalExistsPass === true &&
+    fkGuardSummary.runtime?.missingRequestRejected === true &&
+    fkGuardSummary.runtime?.missingProposalRejected === true &&
+    fkGuardSummary.runtime?.mismatchedRequestItemsRejected === true &&
+    fkGuardSummary.runtime?.missingRequestItemsRejected === true &&
+    fkGuardSummary.runtime?.mismatchedProposalItemsRejected === true &&
+    fkGuardSummary.runtime?.orphanProposalRowsDropped === true
+      ? "GREEN"
+      : "NOT_GREEN",
+  artifact: fkGuardSummaryPath,
+};
+
 mkdirSync(artifactsDir, { recursive: true });
 
 writeFileSync(
@@ -131,7 +172,8 @@ writeFileSync(
 const scopeStatus =
   canonicalization.status === "GREEN" &&
   cooldownRedesign.status === "GREEN" &&
-  draftGc.status === "GREEN"
+  draftGc.status === "GREEN" &&
+  fkGuard.status === "GREEN"
     ? "GREEN"
     : "NOT_GREEN";
 
@@ -140,13 +182,14 @@ writeFileSync(
   `${JSON.stringify(
     {
       status: scopeStatus,
-      scope: ["C1", "C2", "C3"],
+      scope: ["C1", "C2", "C3", "C4"],
       canonicalizationStatus: canonicalization.status,
       cooldownRedesignStatus: cooldownRedesign.status,
       draftGcStatus: draftGc.status,
+      fkGuardStatus: fkGuard.status,
       runtimeSmokeStatus: runtimeSmoke.status,
-      fullBatchCPendingScopes: ["C4"],
-      fullBatchCStatus: "NOT_GREEN",
+      fullBatchCPendingScopes: [],
+      fullBatchCStatus: scopeStatus,
     },
     null,
     2,
@@ -161,9 +204,10 @@ console.log(
       canonicalizationStatus: canonicalization.status,
       cooldownRedesignStatus: cooldownRedesign.status,
       draftGcStatus: draftGc.status,
+      fkGuardStatus: fkGuard.status,
       runtimeSmokeStatus: runtimeSmoke.status,
-      fullBatchCPendingScopes: ["C4"],
-      fullBatchCStatus: "NOT_GREEN",
+      fullBatchCPendingScopes: [],
+      fullBatchCStatus: scopeStatus,
     },
     null,
     2,

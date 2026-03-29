@@ -1,0 +1,19 @@
+{
+  "status": "GREEN",
+  "structural": {
+    "proposalMutationGuardsPresent": true,
+    "proposalReadFilterPresent": true,
+    "accountantProposalGuardsPresent": true,
+    "warehouseRequestItemGuardsPresent": true
+  },
+  "runtime": {
+    "requestExistsPass": true,
+    "proposalExistsPass": true,
+    "missingRequestRejected": true,
+    "missingProposalRejected": true,
+    "mismatchedRequestItemsRejected": true,
+    "missingRequestItemsRejected": true,
+    "mismatchedProposalItemsRejected": true,
+    "orphanProposalRowsDropped": true
+  }
+}

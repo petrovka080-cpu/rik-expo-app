@@ -3,14 +3,14 @@
   "scope": [
     "C1",
     "C2",
-    "C3"
+    "C3",
+    "C4"
   ],
   "canonicalizationStatus": "GREEN",
   "cooldownRedesignStatus": "GREEN",
   "draftGcStatus": "GREEN",
+  "fkGuardStatus": "GREEN",
   "runtimeSmokeStatus": "GREEN",
-  "fullBatchCPendingScopes": [
-    "C4"
-  ],
-  "fullBatchCStatus": "NOT_GREEN"
+  "fullBatchCPendingScopes": [],
+  "fullBatchCStatus": "GREEN"
 }

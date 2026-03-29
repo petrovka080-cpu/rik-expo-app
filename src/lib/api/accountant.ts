@@ -1,4 +1,5 @@
 import { client, rpcCompat } from "./_core";
+import { ensureProposalExists } from "./integrity.guards";
 import type { AccountantInboxRow } from "./types";
 import type { Database } from "../database.types";
 
@@ -29,6 +30,11 @@ export async function proposalSendToAccountant(
 ) {
   const isObj = isSendToAccountantInput(input);
   const pid = String(isObj ? input.proposalId : input);
+  await ensureProposalExists(client, pid, {
+    screen: "accountant",
+    surface: "proposal_send_to_accountant",
+    sourceKind: "mutation:proposal_send_to_accountant",
+  });
 
   const invoiceNumber = isObj ? input.invoiceNumber : undefined;
   const invoiceDateRaw = isObj ? input.invoiceDate : undefined;
@@ -61,6 +67,11 @@ export async function accountantAddPayment(input: {
   note?: string;
 }) {
   const pid = String(input.proposalId);
+  await ensureProposalExists(client, pid, {
+    screen: "accountant",
+    surface: "add_payment",
+    sourceKind: "mutation:accounting_payments",
+  });
   const amt = Number(input.amount);
   const m = input.method?.trim();
   const n = input.note?.trim();
@@ -81,6 +92,11 @@ export async function accountantReturnToBuyer(
   b?: string | null,
 ) {
   const pid = isReturnToBuyerInput(a) ? String(a.proposalId) : String(a);
+  await ensureProposalExists(client, pid, {
+    screen: "accountant",
+    surface: "return_to_buyer",
+    sourceKind: "mutation:proposal_status",
+  });
   const comment = isReturnToBuyerInput(a) ? a.comment : b;
   const c = comment?.trim();
 

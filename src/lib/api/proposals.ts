@@ -2,6 +2,10 @@ import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { beginPlatformObservability } from "../observability/platformObservability";
 import { classifyRpcCompatError, client } from "./_core";
+import {
+  ensureProposalRequestItemsIntegrity,
+  filterProposalItemsByExistingRequestLinks,
+} from "./integrity.guards";
 import type { ProposalItemRow } from "./types";
 
 const logProposalsDebug = (...args: unknown[]) => {
@@ -482,6 +486,11 @@ export async function proposalCreate(): Promise<number | string> {
 
 export async function proposalAddItems(proposalId: number | string, requestItemIds: string[]) {
   const proposalIdText = String(proposalId);
+  await ensureProposalRequestItemsIntegrity(client, proposalIdText, requestItemIds, {
+    screen: "buyer",
+    surface: "proposal_add_items",
+    sourceKind: "mutation:proposal_items",
+  });
   try {
     const { data, error } = await runProposalAddItemsRpc(proposalId, requestItemIds);
     if (error) throw error;
@@ -556,12 +565,21 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
     try {
       const rows = await loadProposalItemsFromSource(pid, sourceKind);
       if (!rows || rows.length === 0) continue;
+      const guarded = await filterProposalItemsByExistingRequestLinks(client, rows, {
+        screen: "buyer",
+        surface: "proposal_items",
+        sourceKind,
+        proposalId: pid,
+      });
       observation.success({
         sourceKind,
         fallbackUsed: sourceKind !== "view:proposal_snapshot_items",
-        rowCount: rows.length,
+        rowCount: guarded.rows.length,
+        extra: {
+          droppedOrphanRows: guarded.droppedRequestItemIds.length,
+        },
       });
-      return rows;
+      return guarded.rows;
     } catch (error) {
       lastError = error;
       logProposalsDebug(`[proposalItems/${sourceKind}]`, error instanceof Error ? error.message : String(error));
@@ -626,6 +644,17 @@ export async function proposalSetItemsMeta(
     .filter((row): row is ProposalItemInsert => Boolean(row));
 
   if (!payload.length) return true;
+
+  await ensureProposalRequestItemsIntegrity(
+    client,
+    pid,
+    payload.map((row) => String(row.request_item_id ?? "").trim()),
+    {
+      screen: "buyer",
+      surface: "proposal_set_items_meta",
+      sourceKind: "mutation:proposal_items_meta",
+    },
+  );
 
   try {
     const { error } = await client.from("proposal_items").upsert(payload, { onConflict: "proposal_id,request_item_id" });

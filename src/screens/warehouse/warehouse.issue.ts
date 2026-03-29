@@ -1,6 +1,8 @@
 // src/screens/warehouse/warehouse.issue.ts
 import type { ReqItemUiRow, ReqPickLine, StockPickLine } from "./warehouse.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../lib/database.types";
+import { ensureRequestItemsBelongToRequest } from "../../lib/api/integrity.guards";
 import { normMatCode, normUomId } from "./warehouse.utils";
 import {
   addWarehouseIssueItem,
@@ -18,7 +20,7 @@ const ensureWarehouseRpcData = <T,>(value: T | null | undefined, message: string
 };
 
 export function makeWarehouseIssueActions(args: {
-  supabase: SupabaseClient;
+  supabase: SupabaseClient<Database>;
 
   nz: (v: unknown, d?: number) => number;
   pickErr: (e: unknown) => string;
@@ -124,6 +126,17 @@ export function makeWarehouseIssueActions(args: {
     setIssueMsg({ kind: null, text: "" });
 
     try {
+      await ensureRequestItemsBelongToRequest(
+        supabase,
+        rid,
+        lines.map((line) => String(line.request_item_id ?? "").trim()),
+        {
+          screen: "warehouse",
+          surface: "issue_req_pick",
+          sourceKind: "mutation:warehouse_issue",
+        },
+      );
+
       const note = [
         "Выдача по заявке",
         input.requestDisplayNo ? `Заявка: ${input.requestDisplayNo}` : null,
@@ -349,6 +362,17 @@ export function makeWarehouseIssueActions(args: {
     setIssueMsg({ kind: null, text: "" });
 
     try {
+      await ensureRequestItemsBelongToRequest(
+        supabase,
+        requestId,
+        [requestItemId],
+        {
+          screen: "warehouse",
+          surface: "issue_request_item",
+          sourceKind: "mutation:warehouse_issue",
+        },
+      );
+
       const note = [
         "Выдача по заявке",
         (row )?.display_no ? `Заявка: ${(row ).display_no}` : null,
