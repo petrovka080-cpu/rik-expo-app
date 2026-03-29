@@ -6,6 +6,7 @@ import type {
   DisciplineRowsSource,
 } from "./director_reports.shared";
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { recordDirectorReportsSourceChain } from "./director_reports.observability";
 
 export type DirectorReportFetchStage = "options" | "report" | "discipline";
 
@@ -42,10 +43,13 @@ export type DirectorReportTrackedResult<T extends DirectorReportTrackedPayload> 
 export const trackedResult = <T extends DirectorReportTrackedPayload>(
   payload: T,
   meta: DirectorReportFetchMeta,
-): DirectorReportTrackedResult<T> => ({
-  payload,
-  meta,
-});
+): DirectorReportTrackedResult<T> => {
+  recordDirectorReportsSourceChain(meta, payload);
+  return {
+    payload,
+    meta,
+  };
+};
 
 const getDirectorReportsServiceErrorMessage = (error: unknown, fallback: string) => {
   if (error instanceof Error) {

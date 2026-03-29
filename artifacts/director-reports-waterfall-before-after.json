@@ -1,14 +1,14 @@
 {
   "before": {
-    "transportLines": 977,
-    "sequentialChunkLoops": 7,
-    "directLookupWaterfallSteps": 3
+    "transportLines": 26,
+    "sequentialChunkLoops": 0,
+    "directLookupWaterfallSteps": 0
   },
   "after": {
     "transportLines": 26,
     "familyLines": {
-      "src/lib/api/director_reports.transport.facts.ts": 169,
-      "src/lib/api/director_reports.transport.discipline.ts": 690,
+      "src/lib/api/director_reports.transport.facts.ts": 179,
+      "src/lib/api/director_reports.transport.discipline.ts": 706,
       "src/lib/api/director_reports.transport.legacy.ts": 91,
       "src/lib/api/director_reports.transport.lookups.ts": 51
     },
@@ -16,6 +16,8 @@
     "directLookupWaterfallSteps": 0,
     "sharedLookupPromiseAll": true,
     "factRequestChunkParallel": true,
-    "tablesLookupSharedLoader": true
+    "factsConditionalLinePrefetch": true,
+    "tablesLookupSharedLoader": true,
+    "tablesParallelNameResolve": true
   }
 }

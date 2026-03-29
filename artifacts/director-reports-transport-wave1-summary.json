@@ -1,8 +1,8 @@
 {
   "status": "GREEN",
   "before": {
-    "transportLines": 977,
-    "transportBytes": 32968
+    "transportLines": 26,
+    "transportBytes": 801
   },
   "after": {
     "transportLines": 26,
@@ -18,8 +18,8 @@
     "familyLines": {
       "src/lib/api/director_reports.transport.base.ts": 311,
       "src/lib/api/director_reports.transport.production.ts": 262,
-      "src/lib/api/director_reports.transport.facts.ts": 169,
-      "src/lib/api/director_reports.transport.discipline.ts": 690,
+      "src/lib/api/director_reports.transport.facts.ts": 179,
+      "src/lib/api/director_reports.transport.discipline.ts": 706,
       "src/lib/api/director_reports.transport.legacy.ts": 91,
       "src/lib/api/director_reports.transport.lookups.ts": 51
     }

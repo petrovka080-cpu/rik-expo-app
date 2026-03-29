@@ -19,7 +19,13 @@
     "batchRpcPresent": true,
     "fallbackTraceable": true,
     "noSequentialChunkLoopsInNamingOrProduction": true,
-    "migrationPresent": true
+    "migrationPresent": true,
+    "sourceChainObservabilityPresent": true,
+    "factsConditionalLinePrefetch": true,
+    "tablesParallelNameResolve": true,
+    "factsConditionalLinePrefetchImproved": true,
+    "tablesParallelNameResolveImproved": true,
+    "sourceChainObservabilityImproved": true
   },
   "smoke": {
     "transportFacadeExportsFacts": true,
@@ -27,5 +33,27 @@
     "transportFacadeExportsLegacy": true,
     "baseEmptyIssueLinesOk": true,
     "lookupHelperEmptyOk": true
+  },
+  "sourceChainSmoke": {
+    "observabilitySourceChainEventPresent": true,
+    "observabilitySourceChainExportPresent": true,
+    "trackedResultHooksSourceChain": true,
+    "reportServiceUsesTrackedResult": true,
+    "factsConditionalLinePrefetch": true,
+    "tablesParallelNameResolve": true
+  },
+  "sourceChainBeforeAfter": {
+    "factsConditionalLinePrefetch": {
+      "before": false,
+      "after": true
+    },
+    "tablesParallelNameResolve": {
+      "before": false,
+      "after": true
+    },
+    "sourceChainObservability": {
+      "before": false,
+      "after": true
+    }
   }
 }

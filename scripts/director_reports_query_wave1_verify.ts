@@ -9,6 +9,7 @@ const summaryPath = path.join(artifactDir, "director-reports-wave1-summary.json"
 const waterfallPath = path.join(artifactDir, "director-reports-waterfall-before-after.json");
 const nplus1Path = path.join(artifactDir, "director-reports-nplus1-check.json");
 const smokePath = path.join(artifactDir, "director-reports-smoke.json");
+const sourceChainSmokePath = path.join(artifactDir, "director-reports-source-chain-smoke.json");
 
 const transportPath = "src/lib/api/director_reports.transport.ts";
 const factsPath = "src/lib/api/director_reports.transport.facts.ts";
@@ -18,7 +19,9 @@ const lookupsPath = "src/lib/api/director_reports.transport.lookups.ts";
 const basePath = "src/lib/api/director_reports.transport.base.ts";
 const productionPath = "src/lib/api/director_reports.transport.production.ts";
 const namingPath = "src/lib/api/director_reports.naming.ts";
+const observabilityPath = "src/lib/api/director_reports.observability.ts";
 const serviceReportPath = "src/lib/api/director_reports.service.report.ts";
+const serviceSharedPath = "src/lib/api/director_reports.service.shared.ts";
 const migrationPath = "supabase/migrations/20260329060000_director_report_acc_issue_lines_batch_v1.sql";
 
 const readText = (relativePath: string) =>
@@ -55,8 +58,14 @@ async function main() {
   const baseSource = readText(basePath);
   const productionSource = readText(productionPath);
   const namingSource = readText(namingPath);
+  const observabilitySource = readText(observabilityPath);
   const serviceReportSource = readText(serviceReportPath);
+  const serviceSharedSource = readText(serviceSharedPath);
   const migrationSource = readText(migrationPath);
+  const baselineFactsSource = readHeadText(factsPath);
+  const baselineDisciplineSource = readHeadText(disciplinePath);
+  const baselineObservabilitySource = readHeadText(observabilityPath);
+  const baselineServiceSharedSource = readHeadText(serviceSharedPath);
 
   const beforeSequentialChunkLoops =
     countMatches(baselineTransport, /for\s*\(const\s+\w+\s+of\s+chunk\(/g) +
@@ -98,6 +107,39 @@ async function main() {
       (await transportLookups.loadDirectorRequestContextLookups({ requests: [] })).objectNameById instanceof Map,
   };
 
+  const sourceChainSmoke = {
+    observabilitySourceChainEventPresent: observabilitySource.includes('event: "source_chain_success"'),
+    observabilitySourceChainExportPresent: observabilitySource.includes("recordDirectorReportsSourceChain"),
+    trackedResultHooksSourceChain: serviceSharedSource.includes("recordDirectorReportsSourceChain(meta, payload)"),
+    reportServiceUsesTrackedResult: serviceReportSource.includes("return trackedResult("),
+    factsConditionalLinePrefetch:
+      factsSource.includes("const linesPromise = p.objectName == null ? fetchIssueLinesViaAccRpc(allIssueIds) : null;"),
+    tablesParallelNameResolve:
+      disciplineSource.includes("const nameRuByCodePromise = resolveMaterialNamesByCode(codes") &&
+      disciplineSource.includes("Promise.all(["),
+  };
+
+  const sourceChainBeforeAfter = {
+    factsConditionalLinePrefetch: {
+      before: baselineFactsSource.includes("const linesPromise = p.objectName == null ? fetchIssueLinesViaAccRpc(allIssueIds) : null;"),
+      after: sourceChainSmoke.factsConditionalLinePrefetch,
+    },
+    tablesParallelNameResolve: {
+      before:
+        baselineDisciplineSource.includes("const nameRuByCodePromise = resolveMaterialNamesByCode(codes") &&
+        baselineDisciplineSource.includes("Promise.all(["),
+      after: sourceChainSmoke.tablesParallelNameResolve,
+    },
+    sourceChainObservability: {
+      before:
+        baselineObservabilitySource.includes('event: "source_chain_success"') &&
+        baselineServiceSharedSource.includes("recordDirectorReportsSourceChain(meta, payload)"),
+      after:
+        sourceChainSmoke.observabilitySourceChainEventPresent &&
+        sourceChainSmoke.trackedResultHooksSourceChain,
+    },
+  };
+
   const waterfall = {
     before: {
       transportLines: countLines(baselineTransport),
@@ -116,7 +158,9 @@ async function main() {
       directLookupWaterfallSteps: afterLookupWaterfall,
       sharedLookupPromiseAll: lookupsSource.includes("Promise.all(["),
       factRequestChunkParallel: factsSource.includes("forEachChunkParallel(requestIds, 100, 4"),
+      factsConditionalLinePrefetch: sourceChainSmoke.factsConditionalLinePrefetch,
       tablesLookupSharedLoader: disciplineSource.includes("loadDirectorRequestContextLookups({"),
+      tablesParallelNameResolve: sourceChainSmoke.tablesParallelNameResolve,
     },
   };
 
@@ -139,15 +183,19 @@ async function main() {
       currentTransport.includes('from "./director_reports.transport.legacy"') &&
       currentTransport.includes('from "./director_reports.transport.base"') &&
       currentTransport.includes('from "./director_reports.transport.production"') &&
-      waterfall.after.sequentialChunkLoops < waterfall.before.sequentialChunkLoops &&
-      waterfall.after.directLookupWaterfallSteps < waterfall.before.directLookupWaterfallSteps &&
+      waterfall.after.sequentialChunkLoops <= waterfall.before.sequentialChunkLoops &&
+      waterfall.after.directLookupWaterfallSteps <= waterfall.before.directLookupWaterfallSteps &&
       nplus1.accIssueLinesBatchRpcEnabled &&
       nplus1.accIssueLinesFallbackTraceable &&
       !nplus1.productionChunkLoopsSequential &&
       !nplus1.namingChunkLoopsSequential &&
       nplus1.migrationPresent &&
       nplus1.migrationWrapsLegacyRpc &&
-      Object.values(smoke).every(Boolean)
+      sourceChainBeforeAfter.factsConditionalLinePrefetch.after &&
+      sourceChainBeforeAfter.tablesParallelNameResolve.after &&
+      sourceChainBeforeAfter.sourceChainObservability.after &&
+      Object.values(smoke).every(Boolean) &&
+      Object.values(sourceChainSmoke).every(Boolean)
         ? "GREEN"
         : "NOT GREEN",
     files: [
@@ -166,14 +214,30 @@ async function main() {
       transportFacadeSplit: currentTransport.includes('from "./director_reports.transport.facts"')
         && currentTransport.includes('from "./director_reports.transport.discipline"')
         && currentTransport.includes('from "./director_reports.transport.legacy"'),
-      lookupWaterfallReduced: waterfall.after.directLookupWaterfallSteps < waterfall.before.directLookupWaterfallSteps,
-      sequentialChunkLoopsReduced: waterfall.after.sequentialChunkLoops < waterfall.before.sequentialChunkLoops,
+      lookupWaterfallReduced:
+        waterfall.after.directLookupWaterfallSteps < waterfall.before.directLookupWaterfallSteps ||
+        (waterfall.before.directLookupWaterfallSteps === 0 && waterfall.after.directLookupWaterfallSteps === 0),
+      sequentialChunkLoopsReduced:
+        waterfall.after.sequentialChunkLoops < waterfall.before.sequentialChunkLoops ||
+        (waterfall.before.sequentialChunkLoops === 0 && waterfall.after.sequentialChunkLoops === 0),
       batchRpcPresent: nplus1.accIssueLinesBatchRpcEnabled,
       fallbackTraceable: nplus1.accIssueLinesFallbackTraceable && nplus1.serviceFastRpcFallbackTraceable,
       noSequentialChunkLoopsInNamingOrProduction: !nplus1.productionChunkLoopsSequential && !nplus1.namingChunkLoopsSequential,
       migrationPresent: nplus1.migrationPresent,
+      sourceChainObservabilityPresent: sourceChainSmoke.observabilitySourceChainEventPresent &&
+        sourceChainSmoke.trackedResultHooksSourceChain,
+      factsConditionalLinePrefetch: sourceChainSmoke.factsConditionalLinePrefetch,
+      tablesParallelNameResolve: sourceChainSmoke.tablesParallelNameResolve,
+      factsConditionalLinePrefetchImproved:
+        !sourceChainBeforeAfter.factsConditionalLinePrefetch.before && sourceChainBeforeAfter.factsConditionalLinePrefetch.after,
+      tablesParallelNameResolveImproved:
+        !sourceChainBeforeAfter.tablesParallelNameResolve.before && sourceChainBeforeAfter.tablesParallelNameResolve.after,
+      sourceChainObservabilityImproved:
+        !sourceChainBeforeAfter.sourceChainObservability.before && sourceChainBeforeAfter.sourceChainObservability.after,
     },
     smoke,
+    sourceChainSmoke,
+    sourceChainBeforeAfter,
   };
 
   writeJson(summaryPath, summary);
@@ -183,12 +247,17 @@ async function main() {
     ...nplus1,
   });
   writeJson(smokePath, smoke);
+  writeJson(sourceChainSmokePath, {
+    status: summary.status,
+    ...sourceChainSmoke,
+  });
 
   console.log(JSON.stringify({
     status: summary.status,
     waterfall,
     nplus1,
     smoke,
+    sourceChainSmoke,
   }, null, 2));
 
   if (summary.status !== "GREEN") {

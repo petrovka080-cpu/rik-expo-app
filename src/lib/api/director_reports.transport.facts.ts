@@ -30,6 +30,15 @@ async function fetchDirectorFactViaAccRpc(p: {
   const heads = await fetchIssueHeadsViaAccRpc({ from: p.from, to: p.to });
   if (!heads.length) return [];
 
+  const allIssueIds = Array.from(
+    new Set(
+      heads
+        .map((head) => String(head.issue_id ?? "").trim())
+        .filter((id) => id !== ""),
+    ),
+  );
+  if (!allIssueIds.length) return [];
+
   const requestIds = Array.from(
     new Set(
       heads
@@ -38,6 +47,7 @@ async function fetchDirectorFactViaAccRpc(p: {
     ),
   );
 
+  const linesPromise = p.objectName == null ? fetchIssueLinesViaAccRpc(allIssueIds) : null;
   const reqById = new Map<string, RequestLookupRow>();
   await forEachChunkParallel(requestIds, 100, 4, async (ids) => {
     try {
@@ -101,13 +111,13 @@ async function fetchDirectorFactViaAccRpc(p: {
   }
 
   if (!headCtxByIssueId.size) return [];
-
   const issueIds = Array.from(headCtxByIssueId.keys());
-  const lines = await fetchIssueLinesViaAccRpc(issueIds);
-  if (!lines.length) return [];
+  const lines = linesPromise ?? fetchIssueLinesViaAccRpc(issueIds);
+  const resolvedLines = await lines;
+  if (!resolvedLines.length) return [];
 
   const out: DirectorFactRow[] = [];
-  for (const line of lines) {
+  for (const line of resolvedLines) {
     const issueId = String(line?.issue_id ?? "").trim();
     const ctx = headCtxByIssueId.get(issueId);
     if (!ctx) continue;

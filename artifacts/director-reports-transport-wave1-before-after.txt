@@ -1,7 +1,7 @@
 Director Reports Transport Wave 1
-before_lines=977
+before_lines=26
 after_lines=26
-before_bytes=32968
+before_bytes=801
 after_bytes=801
 
 moved_to_observability:

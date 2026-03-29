@@ -82,6 +82,30 @@ async function fetchDirectorDisciplineSourceRowsViaRpc(p: {
   return rows;
 }
 
+async function resolveMaterialNamesByCode(
+  codes: string[],
+  opts?: { skip?: boolean },
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (opts?.skip || !codes.length) return out;
+
+  try {
+    const probe = await probeNameSources();
+    if (!probe.vrr) return out;
+
+    const resolved = await fetchRikNamesRuByCode(codes);
+    for (const [code, name] of resolved.entries()) {
+      if (code && name && !out.has(code)) out.set(code, name);
+    }
+  } catch (error: unknown) {
+    recordDirectorReportsTransportWarning("discipline_rows_tables_name_resolve_failed", error, {
+      codeCount: codes.length,
+    });
+  }
+
+  return out;
+}
+
 async function fetchAllFactRowsFromTables(p: {
   from: string;
   to: string;
@@ -146,6 +170,18 @@ async function fetchAllFactRowsFromTables(p: {
 
   if (!issueItems.length) return [];
 
+  const codes = Array.from(
+    new Set(
+      issueItems
+        .map((item) => String(item?.rik_code ?? "").trim().toUpperCase())
+        .filter((code) => code !== ""),
+    ),
+  );
+  const tNames = nowMs();
+  const nameRuByCodePromise = resolveMaterialNamesByCode(codes, {
+    skip: !!p.skipMaterialNameResolve,
+  });
+
   const requestItemIds = Array.from(
     new Set(
       issueItems
@@ -204,42 +240,22 @@ async function fetchAllFactRowsFromTables(p: {
   }
 
   const tLookups = nowMs();
-  const {
-    objectNameById,
-    objectTypeNameByCode,
-    systemNameByCode,
-  } = await loadDirectorRequestContextLookups({
-    requests: requestById.values(),
-    extraObjectIds: Array.from(issuesById.values()).map((issue) => issue.target_object_id),
-  });
+  const [
+    {
+      objectNameById,
+      objectTypeNameByCode,
+      systemNameByCode,
+    },
+    nameRuByCode,
+  ] = await Promise.all([
+    loadDirectorRequestContextLookups({
+      requests: requestById.values(),
+      extraObjectIds: Array.from(issuesById.values()).map((issue) => issue.target_object_id),
+    }),
+    nameRuByCodePromise,
+  ]);
   logTiming("discipline.rows.tables.request_context_lookups", tLookups);
-
-  const codes = Array.from(
-    new Set(
-      issueItems
-        .map((item) => String(item?.rik_code ?? "").trim().toUpperCase())
-        .filter((code) => code !== ""),
-    ),
-  );
-
-  const nameRuByCode = new Map<string, string>();
-  if (codes.length && !p.skipMaterialNameResolve) {
-    const tNames = nowMs();
-    try {
-      const probe = await probeNameSources();
-      if (probe.vrr) {
-        const resolved = await fetchRikNamesRuByCode(codes);
-        for (const [code, name] of resolved.entries()) {
-          if (code && name && !nameRuByCode.has(code)) nameRuByCode.set(code, name);
-        }
-      }
-    } catch (error: unknown) {
-      recordDirectorReportsTransportWarning("discipline_rows_tables_name_resolve_failed", error, {
-        codeCount: codes.length,
-      });
-    }
-    logTiming("discipline.rows.tables.name_resolve", tNames);
-  }
+  logTiming("discipline.rows.tables.name_resolve", tNames);
 
   const out: DirectorFactRow[] = [];
   for (const item of issueItems) {
