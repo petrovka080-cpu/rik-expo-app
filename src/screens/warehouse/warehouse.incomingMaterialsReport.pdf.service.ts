@@ -8,7 +8,7 @@ import {
   type PdfRpcRolloutId,
   type PdfRpcRolloutMode,
 } from "../../lib/documents/pdfRpcRollout";
-import { normalizeRuText } from "../../lib/text/encoding";
+import { isCorruptedText, normalizeRuText } from "../../lib/text/encoding";
 import { apiFetchIncomingMaterialsReportFast } from "./warehouse.api";
 
 const WAREHOUSE_INCOMING_MATERIALS_PDF_SOURCE_RPC_V1_MODE_RAW = String(
@@ -129,7 +129,7 @@ const isMissingName = (value: unknown): boolean => {
   if (/^[-\u2014\u2013\u2212]+$/.test(text)) return true;
   const lowered = text.toLowerCase();
   if (lowered === "null" || lowered === "undefined" || lowered === "n/a") return true;
-  if (lowered.includes("РѕС‚СЃСѓС‚СЃС‚РІ")) return true;
+  if (isCorruptedText(text)) return true;
   return false;
 };
 
@@ -198,7 +198,7 @@ const normalizeWarehouseIncomingMaterialsReportRow = (
     ? mappedName
     : !isMissingName(rawName)
       ? rawName
-      : (materialCode || "РџРѕР·РёС†РёСЏ");
+      : (materialCode || "Позиция");
 
   return {
     material_code: materialCode,

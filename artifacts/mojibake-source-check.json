@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T05:39:12.434Z",
+  "generatedAt": "2026-03-29T06:04:04.538Z",
   "files": [
     {
       "file": "src/lib/text/encoding.ts",
@@ -17,6 +17,11 @@
       "samples": []
     },
     {
+      "file": "src/screens/buyer/components/BuyerAccountingSheetBody.tsx",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
       "file": "src/lib/api/contractor.scope.service.ts",
       "corruptedLiteralCount": 0,
       "samples": []
@@ -28,6 +33,46 @@
     },
     {
       "file": "src/screens/director/DirectorProposalAttachments.tsx",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.tab.empty.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.service.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/pdf/pdf.proposal.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/pdf/directorProductionReport.shared.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/api/pdf_director.data.ts",
       "corruptedLiteralCount": 0,
       "samples": []
     },

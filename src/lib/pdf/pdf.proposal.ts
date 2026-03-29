@@ -9,11 +9,11 @@ const esc = (value: unknown) =>
     .replace(/"/g, "&quot;");
 
 export function renderProposalPdfHtml(model: ProposalPdfModel): string {
-  const supplierTh = model.includeSupplier ? `<th style="width:160px">РџРѕСЃС‚Р°РІС‰РёРє</th>` : ``;
+  const supplierTh = model.includeSupplier ? `<th style="width:160px">Поставщик</th>` : ``;
   const sumColspan = model.includeSupplier ? 7 : 6;
   const suppliersHtml = model.suppliers.length
     ? `
-<div class="section-title">РџРѕСЃС‚Р°РІС‰РёРєРё</div>
+<div class="section-title">Поставщики</div>
 ${model.suppliers
   .map(
     (supplier) => `
@@ -44,7 +44,7 @@ ${model.suppliers
 <td class="c-num">${index + 1}</td>
 <td class="c-name">
   ${esc(row.name)}
-  ${row.kind ? `<div class="sub">РўРёРї: ${esc(row.kind)}</div>` : ``}
+  ${row.kind ? `<div class="sub">Тип: ${esc(row.kind)}</div>` : ``}
 </td>
 <td class="c-qty">${esc(row.qtyText)}</td>
 <td class="c-uom">${esc(row.uom)}</td>
@@ -55,13 +55,13 @@ ${model.includeSupplier ? `<td class="c-supp">${esc(row.supplier)}</td>` : ``}
 </tr>`,
         )
         .join("")
-    : `<tr><td colspan="${model.includeSupplier ? 8 : 7}" class="empty">РќРµС‚ СЃС‚СЂРѕРє</td></tr>`;
+    : `<tr><td colspan="${model.includeSupplier ? 8 : 7}" class="empty">Нет строк</td></tr>`;
 
   return normalizeRuTextForHtml(`<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8"/>
-<title>РџСЂРµРґР»РѕР¶РµРЅРёРµ ${esc(model.proposalLabel)}</title>
+<title>Предложение ${esc(model.proposalLabel)}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
   :root{ --ink:#000; --muted:#222; --line:#000; --bg:#fff; }
@@ -140,11 +140,11 @@ ${model.includeSupplier ? `<td class="c-supp">${esc(row.supplier)}</td>` : ``}
 <body>
 <div class="container">
   <header>
-    <h1>РџСЂРµРґР»РѕР¶РµРЅРёРµ РЅР° Р·Р°РєСѓРїРєСѓ в„– ${esc(model.proposalLabel)}</h1>
+    <h1>Предложение на закупку № ${esc(model.proposalLabel)}</h1>
     <div class="subtitle">
-      РЎС„РѕСЂРјРёСЂРѕРІР°РЅРѕ: ${esc(model.generatedAt)}
-      ${model.approvedAt ? ` В· <b>РЈС‚РІРµСЂР¶РґРµРЅРѕ:</b> ${esc(model.approvedAt)}` : ""}
-      ${model.status ? ` В· <b>РЎС‚Р°С‚СѓСЃ:</b> ${esc(model.status)}` : ""}
+      Сформировано: ${esc(model.generatedAt)}
+      ${model.approvedAt ? ` · <b>Утверждено:</b> ${esc(model.approvedAt)}` : ""}
+      ${model.status ? ` · <b>Статус:</b> ${esc(model.status)}` : ""}
     </div>
   </header>
 
@@ -165,36 +165,36 @@ ${model.includeSupplier ? `<td class="c-supp">${esc(row.supplier)}</td>` : ``}
     <thead>
       <tr>
         <th style="width:36px">#</th>
-        <th>РќР°РёРјРµРЅРѕРІР°РЅРёРµ</th>
-        <th style="width:90px">РљРѕР»-РІРѕ</th>
-        <th style="width:70px">Р•Рґ.</th>
-        <th style="width:160px">РџСЂРёРјРµРЅРµРЅРёРµ</th>
+        <th>Наименование</th>
+        <th style="width:90px">Кол-во</th>
+        <th style="width:70px">Ед.</th>
+        <th style="width:160px">Применение</th>
         ${supplierTh}
-        <th style="width:110px">Р¦РµРЅР°</th>
-        <th style="width:120px">РЎСѓРјРјР°</th>
+        <th style="width:110px">Цена</th>
+        <th style="width:120px">Сумма</th>
       </tr>
     </thead>
     <tbody>
       ${body}
-      ${model.rows.length ? `<tr class="sumline"><td colspan="${sumColspan}" style="text-align:right">РРўРћР“Рћ</td><td style="text-align:right">${esc(model.totalText)}</td></tr>` : ""}
+      ${model.rows.length ? `<tr class="sumline"><td colspan="${sumColspan}" style="text-align:right">ИТОГО</td><td style="text-align:right">${esc(model.totalText)}</td></tr>` : ""}
     </tbody>
   </table>
 
   <div class="signs">
     <div class="sign">
-      <div><b>РЎРЅР°Р±Р¶РµРЅРµС†</b></div>
+      <div><b>Снабженец</b></div>
       <div class="line"></div>
       <div class="muted" style="margin-top:6px">/ ${esc(model.buyerFio)} /</div>
     </div>
     <div class="sign">
-      <div><b>Р”РёСЂРµРєС‚РѕСЂ</b></div>
+      <div><b>Директор</b></div>
       <div class="line"></div>
       <div class="muted" style="margin-top:6px">/  /</div>
     </div>
   </div>
 
   <div class="muted" style="margin-top:14px">
-    РЎР»СѓР¶РµР±РЅС‹Р№ ID: ${esc(model.serviceId)}
+    Служебный ID: ${esc(model.serviceId)}
   </div>
 </div>
 </body>
@@ -208,8 +208,8 @@ ${model.includeSupplier ? `<td class="c-supp">${esc(row.supplier)}</td>` : ``}
 export function renderProposalPdfErrorHtml(message: string): string {
   const safeMessage = esc(message);
   return normalizeRuTextForHtml(
-    `<!doctype html><meta charset="utf-8"/><title>РћС€РёР±РєР°</title>
-<pre style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:16px;">РћС€РёР±РєР° РїРѕРґРіРѕС‚РѕРІРєРё PDF: ${safeMessage}</pre>`,
+    `<!doctype html><meta charset="utf-8"/><title>Ошибка</title>
+<pre style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:16px;">Ошибка подготовки PDF: ${safeMessage}</pre>`,
     {
       documentType: "proposal",
       source: "director",

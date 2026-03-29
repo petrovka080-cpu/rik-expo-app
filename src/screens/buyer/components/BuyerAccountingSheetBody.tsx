@@ -69,11 +69,11 @@ export function BuyerAccountingSheetBody({
       : "";
   const invoiceLabel = isWeb
     ? invoiceUploadedName
-      ? `РЎС‡РµС‚ РїСЂРёРєСЂРµРїР»РµРЅ: ${invoiceUploadedName}`
-      : "РџСЂРёРєСЂРµРїРёС‚СЊ СЃС‡РµС‚ (PDF/JPG/PNG)"
+      ? `Счёт прикреплён: ${invoiceUploadedName}`
+      : "Прикрепить счёт (PDF/JPG/PNG)"
     : invFileName
-      ? `РЎС‡РµС‚ РїСЂРёРєСЂРµРїР»РµРЅ: ${invFileName}`
-      : "РџСЂРёРєСЂРµРїРёС‚СЊ СЃС‡РµС‚ (PDF/JPG/PNG)";
+      ? `Счёт прикреплён: ${invFileName}`
+      : "Прикрепить счёт (PDF/JPG/PNG)";
   const handlePickInvoice = React.useCallback(async () => {
     if (isWeb) {
       openInvoicePickerWeb();
@@ -90,15 +90,15 @@ export function BuyerAccountingSheetBody({
       keyboardShouldPersistTaps="handled"
     >
       <Text style={{ fontSize: 12, color: D.sub, fontWeight: "800" }}>
-        {acctProposalId ? `Р”РѕРєСѓРјРµРЅС‚: #${String(acctProposalId).slice(0, 8)}` : "Р”РѕРєСѓРјРµРЅС‚ РЅРµ РІС‹Р±СЂР°РЅ"}
+        {acctProposalId ? `Документ: #${String(acctProposalId).slice(0, 8)}` : "Документ не выбран"}
       </Text>
 
       <Text style={{ fontSize: 12, color: D.sub, marginTop: 8, fontWeight: "800" }}>
         {propDocBusy
-          ? "Р“РѕС‚РѕРІРёРј С„Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏ..."
+          ? "Готовим файл предложения..."
           : propDocAttached
-            ? `Р¤Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏ: ${propDocAttached.name}`
-            : "Р¤Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏ Р±СѓРґРµС‚ РїСЂРёРєСЂРµРїР»РµРЅ"}
+            ? `Файл предложения: ${propDocAttached.name}`
+            : "Файл предложения будет прикреплён"}
       </Text>
 
       {acctSupp ? (
@@ -114,15 +114,15 @@ export function BuyerAccountingSheetBody({
         >
           <Text style={{ fontWeight: "900", color: D.text }}>{acctSupp.name}</Text>
           <Text style={{ color: D.sub, marginTop: 6, fontWeight: "700" }}>
-            {acctSupp.inn ? `РРќРќ: ${acctSupp.inn} В· ` : ""}
-            {acctSupp.bank ? `РЎС‡РµС‚: ${acctSupp.bank} В· ` : ""}
-            {acctSupp.phone ? `РўРµР».: ${acctSupp.phone} В· ` : ""}
+            {acctSupp.inn ? `ИНН: ${acctSupp.inn} · ` : ""}
+            {acctSupp.bank ? `Счёт: ${acctSupp.bank} · ` : ""}
+            {acctSupp.phone ? `Тел.: ${acctSupp.phone} · ` : ""}
             {acctSupp.email ? `Email: ${acctSupp.email}` : ""}
           </Text>
         </View>
       ) : null}
 
-      <Text style={{ fontSize: 12, color: D.sub, marginTop: 14, fontWeight: "800" }}>РќРѕРјРµСЂ СЃС‡РµС‚Р°</Text>
+      <Text style={{ fontSize: 12, color: D.sub, marginTop: 14, fontWeight: "800" }}>Номер счёта</Text>
       <TextInput
         value={invNumber}
         onChangeText={setInvNumber}
@@ -132,7 +132,7 @@ export function BuyerAccountingSheetBody({
         ]}
       />
 
-      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Р”Р°С‚Р° (YYYY-MM-DD)</Text>
+      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Дата (YYYY-MM-DD)</Text>
       <TextInput
         value={invDate}
         onChangeText={setInvDate}
@@ -142,7 +142,7 @@ export function BuyerAccountingSheetBody({
         ]}
       />
 
-      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>РЎСѓРјРјР°</Text>
+      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Сумма</Text>
       <TextInput
         value={invAmount}
         onChangeText={setInvAmount}
@@ -153,7 +153,7 @@ export function BuyerAccountingSheetBody({
         ]}
       />
 
-      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Р’Р°Р»СЋС‚Р°</Text>
+      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Валюта</Text>
       <TextInput
         value={invCurrency}
         onChangeText={setInvCurrency}
@@ -177,14 +177,14 @@ export function BuyerAccountingSheetBody({
 
       <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
         <WideActionButton
-          label={acctBusy ? "РћС‚РїСЂР°РІР»СЏРµРј..." : "РћС‚РїСЂР°РІРёС‚СЊ"}
+          label={acctBusy ? "Отправляем..." : "Отправить"}
           variant="green"
           disabled={acctBusy}
           loading={acctBusy}
           onPress={sendToAccounting}
         />
 
-        <WideActionButton label="РћС‚РјРµРЅР°" variant="neutral" disabled={acctBusy} onPress={closeSheet} />
+        <WideActionButton label="Отмена" variant="neutral" disabled={acctBusy} onPress={closeSheet} />
       </View>
     </ScrollView>
   );

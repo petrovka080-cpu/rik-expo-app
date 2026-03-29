@@ -943,7 +943,7 @@ function pickStockDisplayName(params: {
     (nOver && !looksLikeCode(nOver) ? nOver : nOver) ||
     (nRik && !looksLikeCode(nRik) ? nRik : nRik) ||
     (nUi && !looksLikeCode(nUi) ? nUi : "") ||
-    "РІР‚вЂќ"
+    "—"
   );
 }
 
@@ -972,7 +972,7 @@ function mapTruthRowsToStockRows(
     return {
       material_id: `${code}::${uom}`,
       code: code || null,
-      name: normalizeRuText(picked || "РІР‚вЂќ"),
+      name: normalizeRuText(picked || "—"),
       uom_id: pickUom(x.uom_id) ?? null,
       qty_on_hand: avail,
       qty_reserved: 0,
@@ -2344,14 +2344,14 @@ export async function apiFetchIncomingLines(
       const nOver = String(normalizeRuText(String(overMap[key] ?? ""))).trim();
       const nRik = String(normalizeRuText(String(rikMap[key] ?? ""))).trim();
       const nUi = String(normalizeRuText(String(uiMap[key] ?? ""))).trim();
-      const nameRu = normalizeRuText(nOver || nRik || nUi || code || "РџРѕР·РёС†РёСЏ");
+      const nameRu = normalizeRuText(nOver || nRik || nUi || code || "Позиция");
 
       return {
         ...ln,
         name_ru: nameRu,
         material_name: nameRu,
         name: nameRu,
-        uom: ln.uom_id || "вЂ”",
+        uom: ln.uom_id || "—",
         qty_received: ln.qty,
       };
     });

@@ -240,10 +240,10 @@ export function prepareDirectorProductionReportPdfModelShared(
   input: DirectorProductionReportPdfInputShared,
 ): DirectorProductionReportPdfModelShared {
   const companyName = toText(input.companyName) || "RIK Construction";
-  const generatedBy = toText(input.generatedBy) || "Р”РёСЂРµРєС‚РѕСЂ";
+  const generatedBy = toText(input.generatedBy) || "Директор";
   const from = toText(input.periodFrom);
   const to = toText(input.periodTo);
-  const objectName = toText(input.objectName) || "Р’СЃРµ РѕР±СЉРµРєС‚С‹";
+  const objectName = toText(input.objectName) || "�се объекты";
   const generatedAt = new Date().toLocaleString("ru-RU");
 
   const data = parseDirectorProductionData(input.repData);
@@ -275,7 +275,7 @@ export function prepareDirectorProductionReportPdfModelShared(
     .sort((left, right) => nnum(right.qty_total) - nnum(left.qty_total))
     .slice(0, 60)
     .map((row) => ({
-      title: toText(row.name_human_ru ?? row.rik_code ?? "вЂ”"),
+      title: toText(row.name_human_ru ?? row.rik_code ?? "—"),
       qtyTotal: nnum(row.qty_total),
       uom: toText(row.uom),
       docsCount: nnum(row.docs_cnt),
@@ -285,12 +285,12 @@ export function prepareDirectorProductionReportPdfModelShared(
   const byObject = new Map<string, { docs: number; positions: number; noReq: number; noWork: number }>();
   for (const work of worksSorted) {
     for (const level of work.levels) {
-      const obj = toText(level.object_name ?? objectName ?? "Р‘РµР· РѕР±СЉРµРєС‚Р°") || "Р‘РµР· РѕР±СЉРµРєС‚Р°";
+      const obj = toText(level.object_name ?? objectName ?? "�ез объекта") || "�ез объекта";
       const current = byObject.get(obj) ?? { docs: 0, positions: 0, noReq: 0, noWork: 0 };
       current.docs += nnum(level.total_docs);
       current.positions += nnum(level.total_positions);
       current.noReq += nnum(level.free_positions);
-      if (toText(work.work_type_name).toLowerCase() === "Р±РµР· РІРёРґР° СЂР°Р±РѕС‚") {
+      if (toText(work.work_type_name).toLowerCase() === "без вида работ") {
         current.noWork += nnum(level.total_positions);
       }
       byObject.set(obj, current);
@@ -302,7 +302,7 @@ export function prepareDirectorProductionReportPdfModelShared(
     .sort((left, right) => right.positions - left.positions);
 
   const withoutWork = worksSorted
-    .filter((work) => toText(work.work_type_name).toLowerCase() === "Р±РµР· РІРёРґР° СЂР°Р±РѕС‚")
+    .filter((work) => toText(work.work_type_name).toLowerCase() === "без вида работ")
     .reduce((sum: number, work) => sum + nnum(work.total_positions), 0);
 
   const issueCost = nnum(disciplineSummary.issue_cost_total);
@@ -316,14 +316,14 @@ export function prepareDirectorProductionReportPdfModelShared(
     objectName,
     generatedAt,
     worksRows: worksTop.map((work) => ({
-      workTypeName: toText(work.work_type_name) || "вЂ”",
+      workTypeName: toText(work.work_type_name) || "—",
       totalPositions: nnum(work.total_positions),
       reqPositions: nnum(work.req_positions),
       freePositions: nnum(work.free_positions),
       totalDocs: nnum(work.total_docs),
-      isWithoutWork: toText(work.work_type_name).toLowerCase() === "Р±РµР· РІРёРґР° СЂР°Р±РѕС‚",
+      isWithoutWork: toText(work.work_type_name).toLowerCase() === "без вида работ",
     })),
-    rowsLimitedNote: worksSorted.length > worksTop.length ? `РџРѕРєР°Р·Р°РЅС‹ top ${worksTop.length} СЃС‚СЂРѕРє.` : "",
+    rowsLimitedNote: worksSorted.length > worksTop.length ? `Показаны top ${worksTop.length} строк.` : "",
     objectRows,
     materialRows,
     issuesTotal,
@@ -336,19 +336,19 @@ export function prepareDirectorProductionReportPdfModelShared(
     ratioPct,
     problemRows: [
       {
-        problem: "Р‘РµР· РІРёРґР° СЂР°Р±РѕС‚",
+        problem: "�ез вида работ",
         count: withoutWork,
-        comment: "РўСЂРµР±СѓРµС‚ РєРѕРЅС‚СЂРѕР»СЏ РёСЃС‚РѕС‡РЅРёРєР°",
+        comment: "Требует контроля источника",
       },
       {
-        problem: "Р‘РµР· Р·Р°СЏРІРєРё",
+        problem: "�ез заявки",
         count: itemsNoRequest,
-        comment: "Р•СЃС‚СЊ РІС‹РґР°С‡Рё Р±РµР· request item",
+        comment: "Есть выдачи без request item",
       },
       {
-        problem: "Р‘РµР· РѕР±СЉРµРєС‚Р°",
+        problem: "�ез объекта",
         count: issuesNoObject,
-        comment: "РџСЂРѕРІРµСЂРёС‚СЊ РїСЂРёРІСЏР·РєСѓ РѕР±СЉРµРєС‚Р°",
+        comment: "Проверить привязку объекта",
       },
     ],
   };

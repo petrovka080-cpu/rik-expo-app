@@ -38,9 +38,18 @@ const SOURCE_FILES = [
   "src/lib/text/encoding.ts",
   "src/screens/subcontracts/subcontracts.shared.ts",
   "src/screens/accountant/AccountantSubcontractTab.tsx",
+  "src/screens/buyer/components/BuyerAccountingSheetBody.tsx",
   "src/lib/api/contractor.scope.service.ts",
   "src/screens/contractor/contractor.visibilityRecovery.ts",
   "src/screens/director/DirectorProposalAttachments.tsx",
+  "src/screens/warehouse/warehouse.tab.empty.ts",
+  "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
+  "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.service.ts",
+  "src/screens/warehouse/warehouse.api.ts",
+  "src/lib/api/pdf_proposal.ts",
+  "src/lib/pdf/pdf.proposal.ts",
+  "src/lib/pdf/directorProductionReport.shared.ts",
+  "src/lib/api/pdf_director.data.ts",
   "src/lib/pdfRunner.ts",
   "src/lib/api/director_reports.transport.discipline.ts",
   "scripts/_shared/contractorCanonicalSeed.ts",
@@ -166,6 +175,10 @@ async function main() {
       "src/screens/subcontracts/subcontracts.shared.ts",
       "src/lib/api/contractor.scope.service.ts",
       "src/screens/contractor/contractor.visibilityRecovery.ts",
+      "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
+      "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.service.ts",
+      "src/lib/api/pdf_proposal.ts",
+      "src/lib/api/pdf_director.data.ts",
     ],
     canonicalStatusFilterFile: "src/lib/api/director_reports.transport.discipline.ts",
     cleanSeedFile: "scripts/_shared/contractorCanonicalSeed.ts",
@@ -193,6 +206,27 @@ async function main() {
         ?.corruptedLiteralCount === 0,
     directorAttachmentBoundaryClean:
       sourceScan.find((entry) => entry.file === "src/screens/director/DirectorProposalAttachments.tsx")
+        ?.corruptedLiteralCount === 0,
+    buyerAccountingBoundaryClean:
+      sourceScan.find((entry) => entry.file === "src/screens/buyer/components/BuyerAccountingSheetBody.tsx")
+        ?.corruptedLiteralCount === 0,
+    warehouseUiBoundaryClean:
+      sourceScan.find((entry) => entry.file === "src/screens/warehouse/warehouse.tab.empty.ts")
+        ?.corruptedLiteralCount === 0,
+    warehousePdfBoundaryClean:
+      sourceScan.find((entry) => entry.file === "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts")
+        ?.corruptedLiteralCount === 0
+      && sourceScan.find((entry) => entry.file === "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.service.ts")
+        ?.corruptedLiteralCount === 0,
+    proposalPdfBoundaryClean:
+      sourceScan.find((entry) => entry.file === "src/lib/api/pdf_proposal.ts")
+        ?.corruptedLiteralCount === 0
+      && sourceScan.find((entry) => entry.file === "src/lib/pdf/pdf.proposal.ts")
+        ?.corruptedLiteralCount === 0,
+    directorPdfBoundaryClean:
+      sourceScan.find((entry) => entry.file === "src/lib/pdf/directorProductionReport.shared.ts")
+        ?.corruptedLiteralCount === 0
+      && sourceScan.find((entry) => entry.file === "src/lib/api/pdf_director.data.ts")
         ?.corruptedLiteralCount === 0,
     pdfBoundaryClean:
       sourceScan.find((entry) => entry.file === "src/lib/pdfRunner.ts")

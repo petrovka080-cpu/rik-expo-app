@@ -91,14 +91,14 @@ function rikKindLabel(rikCode?: string | null): string {
   const p = String(rikCode ?? "").trim().toUpperCase().split("-")[0];
   switch (p) {
     case "MAT":
-      return "РњР°С‚РµСЂРёР°Р»";
+      return "Материал";
     case "WRK":
     case "WORK":
-      return "Р Р°Р±РѕС‚Р°";
+      return "РР°Р±РѕС‚Р°";
     case "SRV":
-      return "РЈСЃР»СѓРіР°";
+      return "Услуга";
     case "KIT":
-      return "РљРѕРјРїР»РµРєС‚";
+      return "Комплект";
     case "SPEC":
       return "РЎРїРµС†.";
     default:
@@ -156,10 +156,10 @@ function normalizeStatusRu(raw?: string | null) {
   const original = String(raw ?? "").trim();
   const s = original.toLowerCase();
   if (!s) return "-";
-  if (s === "draft" || s === "С‡РµСЂРЅРѕРІРёРє") return "Р§РµСЂРЅРѕРІРёРє";
-  if (s === "pending" || s === "РЅР° СѓС‚РІРµСЂР¶РґРµРЅРёРё") return "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё";
-  if (s === "approved" || s === "СѓС‚РІРµСЂР¶РґРµРЅРѕ" || s === "СѓС‚РІРµСЂР¶РґРµРЅР°") return "РЈС‚РІРµСЂР¶РґРµРЅР°";
-  if (s === "rejected" || s === "cancelled" || s === "РѕС‚РєР»РѕРЅРµРЅРѕ" || s === "РѕС‚РєР»РѕРЅРµРЅР°") return "РћС‚РєР»РѕРЅРµРЅР°";
+  if (s === "draft" || s === "черновик") return "Черновик";
+  if (s === "pending" || s === "на утверждении") return "На утверждении";
+  if (s === "approved" || s === "утверждено" || s === "утверждена") return "Утверждена";
+  if (s === "rejected" || s === "cancelled" || s === "отклонено" || s === "отклонена") return "Отклонена";
   return original || "-";
 }
 
@@ -308,18 +308,18 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
     const generatedAt = new Date().toLocaleString(locale);
 
     const leftMetaFields = [
-      { label: "РћР±СЉРµРєС‚", value: objectName || "-" },
-      { label: "Р­С‚Р°Р¶ / СѓСЂРѕРІРµРЅСЊ", value: levelName || "-" },
-      { label: "РЎРёСЃС‚РµРјР°", value: systemName || "-" },
-      { label: "Р—РѕРЅР° / СѓС‡Р°СЃС‚РѕРє", value: zoneName || "-" },
+      { label: "Объект", value: objectName || "-" },
+      { label: "Этаж / уровень", value: levelName || "-" },
+      { label: "Система", value: systemName || "-" },
+      { label: "Зона / участок", value: zoneName || "-" },
     ];
 
     const rightMetaFields = [
-      { label: "РЎРЅР°Р±Р¶РµРЅРµС†", value: buyerFio || "-" },
-      { label: "РќСѓР¶РЅРѕ Рє", value: requestNeedBy || "-" },
-      { label: "Р”Р°С‚Р° СЃРѕР·РґР°РЅРёСЏ", value: requestCreatedAt || (submittedAt ? formatDateTime(submittedAt, locale) : generatedAt) },
-      { label: "РЎС‚Р°С‚СѓСЃ", value: requestStatus || normalizeStatusRu(status) || "-" },
-      { label: "Р—Р°СЏРІРєР°", value: requestDisplayNo ? `#${requestDisplayNo}` : "-" },
+      { label: "Снабженец", value: buyerFio || "-" },
+      { label: "Нужно к", value: requestNeedBy || "-" },
+      { label: "Дата создания", value: requestCreatedAt || (submittedAt ? formatDateTime(submittedAt, locale) : generatedAt) },
+      { label: "Статус", value: requestStatus || normalizeStatusRu(status) || "-" },
+      { label: "Заявка", value: requestDisplayNo ? `#${requestDisplayNo}` : "-" },
     ];
 
     const model: ProposalPdfModel = {
@@ -331,13 +331,13 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
       rightMetaFields,
       suppliers: supplierCards.map((supplier) => {
         const meta: string[] = [];
-        if (supplier.phone) meta.push(`РўРµР».: ${supplier.phone}`);
+        if (supplier.phone) meta.push(`Тел.: ${supplier.phone}`);
         if (supplier.email) meta.push(`Email: ${supplier.email}`);
-        if (supplier.inn) meta.push(`РРќРќ: ${supplier.inn}`);
-        if (supplier.address) meta.push(`РђРґСЂРµСЃ: ${supplier.address}`);
+        if (supplier.inn) meta.push(`: ${supplier.inn}`);
+        if (supplier.address) meta.push(`Адрес: ${supplier.address}`);
         return {
           name: supplier.name,
-          metaLine: meta.filter(Boolean).join(" В· "),
+          metaLine: meta.filter(Boolean).join(" · "),
         };
       }),
       includeSupplier,
@@ -355,7 +355,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
           kind: rikKindLabel(getObjectField<string | null>(row, "rik_code")),
           qtyText: qty ? formatProposalNumber(qty, locale) : "",
           uom: String(getObjectField<string>(row, "uom") ?? ""),
-          appAndNote: [app, noteText].filter(Boolean).join(" В· "),
+          appAndNote: [app, noteText].filter(Boolean).join(" · "),
           supplier: String(getObjectField<string>(row, "supplier") ?? ""),
           priceText: price ? formatProposalNumber(price, locale) : "",
           amountText: amount ? formatProposalNumber(amount, locale) : "",

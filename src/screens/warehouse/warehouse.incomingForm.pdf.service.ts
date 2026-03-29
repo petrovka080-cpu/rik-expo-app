@@ -3,7 +3,7 @@ import {
   buildWarehouseIncomingFormHtml,
   exportWarehouseHtmlPdf,
 } from "../../lib/pdf/pdf.warehouse";
-import { normalizeRuText } from "../../lib/text/encoding";
+import { isCorruptedText, normalizeRuText } from "../../lib/text/encoding";
 import { apiFetchIncomingLines } from "./warehouse.api";
 import {
   createWarehousePdfFileName,
@@ -19,8 +19,8 @@ import {
   type PdfRpcRolloutMode,
 } from "../../lib/documents/pdfRpcRollout";
 
-const DEFAULT_ORG_NAME = "РћРћРћ В«Р РРљВ»";
-const DEFAULT_WAREHOUSE_NAME = "Р“Р»Р°РІРЅС‹Р№ СЃРєР»Р°Рґ";
+const DEFAULT_ORG_NAME = "ООО «РИК»";
+const DEFAULT_WAREHOUSE_NAME = "Главный склад";
 const WAREHOUSE_INCOMING_PDF_SOURCE_RPC_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_WAREHOUSE_INCOMING_PDF_SOURCE_RPC_V1 ?? "",
 )
@@ -198,14 +198,14 @@ const isMissingName = (value: unknown): boolean => {
   if (/^[-\u2014\u2013\u2212]+$/.test(text)) return true;
   const lowered = text.toLowerCase();
   if (lowered === "null" || lowered === "undefined" || lowered === "n/a") return true;
-  if (lowered.includes("РѕС‚СЃСѓС‚СЃС‚РІ")) return true;
+  if (isCorruptedText(text)) return true;
   return false;
 };
 
 const ensureIncomingId = (incomingId: string): string => {
   const normalized = String(incomingId ?? "").trim();
   if (!normalized) {
-    throw new Error("РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РЅРѕРјРµСЂ РїСЂРёС…РѕРґР°.");
+    throw new Error("Некорректный номер прихода.");
   }
   return normalized;
 };
@@ -219,7 +219,7 @@ const pickIncomingHead = (params: {
   const head = (repIncoming || []).find(
     (row) => String(row.incoming_id || "") === incomingId || String(row.id || "") === incomingId,
   );
-  const who = String(head?.who ?? head?.warehouseman_fio ?? warehousemanFio ?? "").trim() || "вЂ”";
+  const who = String(head?.who ?? head?.warehouseman_fio ?? warehousemanFio ?? "").trim() || "—";
 
   return head ?? {
     incoming_id: incomingId,
@@ -235,10 +235,10 @@ const normalizeWarehouseIncomingPdfLine = (
 ): WarehouseIncomingLineLike => {
   const code = String(line?.code ?? "").trim();
   const rawName = String(
-    line?.name_ru ?? line?.material_name ?? line?.name ?? code ?? "РџРѕР·РёС†РёСЏ",
+    line?.name_ru ?? line?.material_name ?? line?.name ?? code ?? "Позиция",
   ).trim();
-  const nameRu = String(normalizeRuText(rawName || code || "РџРѕР·РёС†РёСЏ")).trim() || code || "РџРѕР·РёС†РёСЏ";
-  const uom = String(line?.uom ?? line?.uom_id ?? "вЂ”").trim() || "вЂ”";
+  const nameRu = String(normalizeRuText(rawName || code || "Позиция")).trim() || code || "Позиция";
+  const uom = String(line?.uom ?? line?.uom_id ?? "—").trim() || "—";
   const qtyReceived = line?.qty_received ?? line?.qty ?? 0;
 
   return {
@@ -356,7 +356,7 @@ export async function gatherWarehouseIncomingFormPdfData(
   }
 
   if (!Array.isArray(lines) || lines.length === 0) {
-    const error = new Error("РќРµС‚ РѕРїСЂРёС…РѕРґРѕРІР°РЅРЅС‹С… РїРѕР·РёС†РёР№") as Error & { reason?: string };
+    const error = new Error("Нет оприходованных позиций") as Error & { reason?: string };
     error.reason = "empty";
     throw error;
   }
@@ -535,7 +535,7 @@ export function createWarehouseIncomingFormPdfContract(params: {
     version: 1,
     flow: "warehouse_incoming_form",
     template: "warehouse_incoming_form_v1",
-    title: `РџСЂРёС…РѕРґРЅС‹Р№ РѕСЂРґРµСЂ ${incomingId}`,
+    title: `Приходный ордер ${incomingId}`,
     fileName: createWarehousePdfFileName({
       documentType: "warehouse_document",
       title: "warehouse_incoming",

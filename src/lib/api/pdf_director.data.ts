@@ -252,7 +252,7 @@ const getNestedRecord = (value: unknown, key: string): PdfRecord | null => {
 const pickString = (...values: readonly unknown[]): string => {
   for (const value of values) {
     const normalized = String(value ?? "").trim();
-    if (normalized && normalized !== "вЂ”") return normalized;
+    if (normalized && normalized !== "—") return normalized;
   }
   return "";
 };
@@ -374,7 +374,7 @@ const invoiceTitle = (r: any) => {
 */
 const pickSupplier = (value: unknown) => {
   const { record, raw, row } = readPdfRowLayers(value);
-  return pickString(record.supplier, raw?.supplier, row?.supplier) || "вЂ”";
+  return pickString(record.supplier, raw?.supplier, row?.supplier) || "—";
 };
 
 const pickInvoiceNumber = (value: unknown) => {
@@ -420,11 +420,11 @@ const invoiceTitle = (value: unknown) => {
   if (invoiceNo) return `РЎС‡С‘С‚ в„–${invoiceNo}`;
 
   const pretty = proposalPretty(value);
-  if (pretty) return `РџСЂРµРґР»РѕР¶РµРЅРёРµ ${pretty}`;
+  if (pretty) return `Предложение ${pretty}`;
 
   const { record } = readPdfRowLayers(value);
   const proposalId = pickString(record.proposalId, record.proposal_id, record.id);
-  return proposalId ? `Р”РѕРєСѓРјРµРЅС‚ #${proposalId.slice(0, 8)}` : "Р”РѕРєСѓРјРµРЅС‚";
+  return proposalId ? `Документ #${proposalId.slice(0, 8)}` : "Документ";
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -508,7 +508,7 @@ const mapSupplierSummaryItem = (
   const paid = nnum(record.paidAmount);
   const rest = Math.max(amount - paid, 0);
   const status =
-    amount <= 0 ? "РїСЂРѕС‡РµРµ" : paid <= 0 ? "РЅРµ РѕРїР»Р°С‡РµРЅРѕ" : rest <= 0 ? "РѕРїР»Р°С‡РµРЅРѕ" : "С‡Р°СЃС‚РёС‡РЅРѕ";
+    amount <= 0 ? "прочее" : paid <= 0 ? "не оплачено" : rest <= 0 ? "оплачено" : "частично";
   const proposalId = pickString(record.proposalId, record.proposal_id, record.id);
   const overpay = proposalId ? (overpayByProposal.get(proposalId) ?? 0) : 0;
   const invoiceNo = pickInvoiceNumber(row);
@@ -518,7 +518,7 @@ const mapSupplierSummaryItem = (
     title: invoiceNo
       ? `РЎС‡С‘С‚ в„–${invoiceNo}`
       : pretty
-        ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ ${pretty}`
+        ? `Предложение ${pretty}`
         : "РЎС‡С‘С‚",
     invoiceDate: pickIso10(
       record.invoiceDate,
