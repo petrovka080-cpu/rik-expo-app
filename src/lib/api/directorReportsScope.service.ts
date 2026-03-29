@@ -288,7 +288,7 @@ const buildDirectorReportCanonicalDecorations = async (args: {
   optionsState: DirectorReportScopeOptionsState;
   report: DirectorReportScopePayload | null;
   discipline: DirectorReportScopeDisciplinePayload | null;
-  transportBranch: "rpc_scope_v1" | "canonical_scope_fallback" | "legacy_scope_fallback";
+  transportBranch: "rpc_scope_v1";
   pricedStage: "base" | "priced" | null;
 }): Promise<{
   summary: DirectorReportsCanonicalSummary;
@@ -417,7 +417,6 @@ export async function loadDirectorReportUiScope(args: {
       objectName: args.objectName,
       includeDiscipline: !!args.includeDiscipline,
       skipDisciplinePrices: args.skipDisciplinePrices,
-      legacyObjectIdByName: args.optionsState?.objectIdByName,
       bypassCache: args.bypassCache,
     });
     const optionsState = normalizeOptionsState(transportResult.options);
@@ -460,7 +459,7 @@ export async function loadDirectorReportUiScope(args: {
       rowCount: result.report?.rows?.length ?? 0,
       sourceKind: transportResult.branchMeta.transportBranch,
       cacheLayer: transportResult.fromCache ? "transport_cache" : "none",
-      fallbackUsed: transportResult.branchMeta.transportBranch !== "rpc_scope_v1",
+      fallbackUsed: false,
       extra: {
         optionsObjects: result.optionsState.objects.length,
         disciplineWorks: result.discipline?.works?.length ?? 0,

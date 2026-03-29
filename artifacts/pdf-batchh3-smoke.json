@@ -1,0 +1,208 @@
+{
+  "summary": {
+    "status": "passed",
+    "source": "rpc:pdf_director_subcontract_source_v1",
+    "sourceBranch": "rpc_v1",
+    "fallbackReason": null,
+    "selectedObjectName": "Административное здание",
+    "periodFrom": "2026-02-27",
+    "periodTo": "2026-03-29",
+    "rows": 14,
+    "assertions": {
+      "no_pdf_fallback": true
+    },
+    "error": null
+  },
+  "source": {
+    "rows": [
+      {
+        "id": "946122fd-aee9-4e17-aa02-d9d7d2ed6be4",
+        "status": "rejected",
+        "work_type": "Каменная кладка",
+        "display_no": "SUB-26-024",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": "2026-03-01T13:55:06.465+00:00",
+        "total_price": 0,
+        "submitted_at": "2026-02-28T16:36:36.705+00:00",
+        "contractor_org": "СТРОЙАРСЕНАЛ",
+        "director_comment": null
+      },
+      {
+        "id": "f7ac4340-3c3f-4da7-bd61-d2dd80bd544b",
+        "status": "rejected",
+        "work_type": "Асфальтобетон / разметка",
+        "display_no": "SUB-26-022",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": "2026-03-01T11:26:58.096+00:00",
+        "total_price": 68400,
+        "submitted_at": "2026-02-28T16:00:37.369+00:00",
+        "contractor_org": "Ромашкак",
+        "director_comment": null
+      },
+      {
+        "id": "856f9cfa-200f-4bcb-bc59-230ed3c60f0e",
+        "status": "rejected",
+        "work_type": "Окна / витражи / ПВХ/АЛЮ",
+        "display_no": "SUB-26-021",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": "2026-03-01T13:55:12.482+00:00",
+        "total_price": 68400,
+        "submitted_at": "2026-02-28T15:49:53.279+00:00",
+        "contractor_org": "Ромашкак",
+        "director_comment": null
+      },
+      {
+        "id": "b3405b4b-4ad8-4f15-a26a-f9c3fd1dd4f8",
+        "status": "rejected",
+        "work_type": "Армирование (каркасы/сетки/закладные)",
+        "display_no": "SUB-26-020",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": "2026-03-01T11:27:03.225+00:00",
+        "total_price": 54654,
+        "submitted_at": "2026-02-28T12:13:14.725+00:00",
+        "contractor_org": "выавыа",
+        "director_comment": null
+      },
+      {
+        "id": "219d0e8c-b30f-47b8-a454-0e7c33c2d14c",
+        "status": "draft",
+        "work_type": null,
+        "display_no": "SUB-26-008",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": 0,
+        "submitted_at": null,
+        "contractor_org": null,
+        "director_comment": null
+      },
+      {
+        "id": "227a5be6-7525-46fa-ae27-125767ad8382",
+        "status": "draft",
+        "work_type": null,
+        "display_no": "SUB-26-014",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": 0,
+        "submitted_at": null,
+        "contractor_org": null,
+        "director_comment": null
+      },
+      {
+        "id": "2e49b5b0-7a29-4ec9-837e-0f9f88deb5a8",
+        "status": "draft",
+        "work_type": "Армирование (каркасы/сетки/закладные)",
+        "display_no": "SUB-26-013",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": 0,
+        "submitted_at": null,
+        "contractor_org": "смисми",
+        "director_comment": null
+      },
+      {
+        "id": "4fc999a9-ad9e-472a-861e-ba8938f06d27",
+        "status": "draft",
+        "work_type": "Асфальтобетон / разметка",
+        "display_no": "SUB-26-007",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": 0,
+        "submitted_at": null,
+        "contractor_org": null,
+        "director_comment": null
+      },
+      {
+        "id": "5d0e86d1-b713-4029-8f17-31f80582c4d1",
+        "status": "draft",
+        "work_type": "Асфальтобетон / разметка",
+        "display_no": "SUB-26-019",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": null,
+        "submitted_at": null,
+        "contractor_org": "вапвап",
+        "director_comment": null
+      },
+      {
+        "id": "8395e1dd-89ad-418a-9a3d-a731118c77ed",
+        "status": "draft",
+        "work_type": null,
+        "display_no": "SUB-26-018",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": 0,
+        "submitted_at": null,
+        "contractor_org": null,
+        "director_comment": null
+      },
+      {
+        "id": "961d6772-6f80-4577-9832-98a236697b3d",
+        "status": "draft",
+        "work_type": "Асфальтобетон / разметка",
+        "display_no": "SUB-26-023",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": 64800,
+        "submitted_at": null,
+        "contractor_org": "Ромашкак",
+        "director_comment": null
+      },
+      {
+        "id": "c8482356-3ba2-4217-9c6d-9b98671b63d2",
+        "status": "draft",
+        "work_type": "Армирование (каркасы/сетки/закладные)",
+        "display_no": "SUB-26-012",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": 0,
+        "submitted_at": null,
+        "contractor_org": "смисми",
+        "director_comment": null
+      },
+      {
+        "id": "c9de0724-b0e7-464b-8427-bd9929f2a2c3",
+        "status": "draft",
+        "work_type": null,
+        "display_no": "SUB-26-011",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": 0,
+        "submitted_at": null,
+        "contractor_org": null,
+        "director_comment": null
+      },
+      {
+        "id": "fa313016-7ce7-49f6-a3b8-fa576e9c7100",
+        "status": "draft",
+        "work_type": "Асфальтобетон / разметка",
+        "display_no": "SUB-26-015",
+        "approved_at": null,
+        "object_name": "Административное здание",
+        "rejected_at": null,
+        "total_price": 0,
+        "submitted_at": null,
+        "contractor_org": null,
+        "director_comment": null
+      }
+    ],
+    "source": "rpc:pdf_director_subcontract_source_v1",
+    "branchMeta": {
+      "sourceBranch": "rpc_v1",
+      "rpcVersion": "v1",
+      "payloadShapeVersion": "v1"
+    }
+  }
+}

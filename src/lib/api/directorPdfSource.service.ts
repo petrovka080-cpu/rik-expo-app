@@ -18,6 +18,7 @@ import {
   type DirectorReportFetchMeta,
 } from "./director_reports";
 import { adaptCanonicalMaterialsPayload, adaptCanonicalWorksPayload } from "./director_reports.adapters";
+import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
 import type { DirectorDisciplinePayload, DirectorReportPayload } from "./director_reports.shared";
 import {
   fetchDirectorFinancePanelScopeV3ViaRpc,
@@ -219,6 +220,47 @@ const logDirectorPdfSourceBranch = (
     fallbackReason: branchMeta.fallbackReason ?? null,
     rpcVersion: branchMeta.rpcVersion ?? null,
     payloadShapeVersion: branchMeta.payloadShapeVersion ?? null,
+    ...extra,
+  });
+};
+
+const assertDirectorPdfRpcPrimary = (
+  id: PdfRpcRolloutId,
+  rpcMode: PdfRpcRolloutMode,
+  functionName: string,
+) => {
+  if (rpcMode === "force_off") {
+    throw new DirectorPdfSourceRpcError(
+      `${functionName} is force_off but legacy fallback branches were removed`,
+    );
+  }
+  if (rpcMode === "auto" && getPdfRpcRolloutAvailability(id) === "missing") {
+    throw new DirectorPdfSourceRpcError(
+      `${functionName} unavailable in this session and legacy fallback branches were removed`,
+    );
+  }
+};
+
+const recordDirectorPdfRpcFailure = (
+  id: PdfRpcRolloutId,
+  rpcMode: PdfRpcRolloutMode,
+  tag: string,
+  extra: Record<string, unknown>,
+  error: unknown,
+) => {
+  if (
+    rpcMode === "auto" &&
+    error instanceof DirectorPdfSourceRpcError &&
+    error.disableForSession
+  ) {
+    setPdfRpcRolloutAvailability(id, "missing", {
+      errorMessage: error.message,
+    });
+  }
+  if (!DIRECTOR_PDF_SOURCE_IS_DEV) return;
+  console.warn(tag, {
+    rpcMode,
+    errorMessage: error instanceof Error ? error.message : String(error),
     ...extra,
   });
 };
@@ -535,27 +577,11 @@ export async function getDirectorFinancePdfSource(args: {
   }>) | null;
 }): Promise<DirectorFinancePdfSource> {
   const rpcMode = DIRECTOR_FINANCE_PDF_RPC_MODE;
-
-  if (rpcMode === "force_off") {
-    const legacySource = await buildDirectorFinancePdfFallbackSource(args, "disabled");
-    logDirectorPdfSourceBranch(DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID, legacySource.source, legacySource.branchMeta, {
-      periodFrom: args.periodFrom ?? null,
-      periodTo: args.periodTo ?? null,
-    });
-    return legacySource;
-  }
-
-  if (
-    rpcMode === "auto" &&
-    getPdfRpcRolloutAvailability(DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID) === "missing"
-  ) {
-    const legacySource = await buildDirectorFinancePdfFallbackSource(args, "disabled");
-    logDirectorPdfSourceBranch(DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID, legacySource.source, legacySource.branchMeta, {
-      periodFrom: args.periodFrom ?? null,
-      periodTo: args.periodTo ?? null,
-    });
-    return legacySource;
-  }
+  assertDirectorPdfRpcPrimary(
+    DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID,
+    rpcMode,
+    "pdf_director_finance_source_v1",
+  );
 
   try {
     const rpcSource = await fetchDirectorFinancePdfSourceViaRpc(args);
@@ -570,33 +596,17 @@ export async function getDirectorFinancePdfSource(args: {
     });
     return rpcSource;
   } catch (error) {
-    const fallbackReason = getFallbackReasonForRpcError(error);
-    if (
-      rpcMode === "auto" &&
-      error instanceof DirectorPdfSourceRpcError &&
-      error.disableForSession
-    ) {
-      setPdfRpcRolloutAvailability(DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID, "missing", {
-        errorMessage: error.message,
-      });
-    }
-    if (DIRECTOR_PDF_SOURCE_IS_DEV) {
-      console.warn("[director-finance-pdf-source] rpc_v1 fallback", {
-        fallbackReason,
-        rpcMode,
+    recordDirectorPdfRpcFailure(
+      DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      "[director-finance-pdf-source] rpc_v1 failed",
+      {
         periodFrom: args.periodFrom ?? null,
         periodTo: args.periodTo ?? null,
-        errorMessage: error instanceof Error ? error.message : String(error),
-      });
-    }
-    const legacySource = await buildDirectorFinancePdfFallbackSource(args, fallbackReason);
-    logDirectorPdfSourceBranch(DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID, legacySource.source, legacySource.branchMeta, {
-      periodFrom: args.periodFrom ?? null,
-      periodTo: args.periodTo ?? null,
-      financeRows: legacySource.financeRows.length,
-      spendRows: legacySource.spendRows.length,
-    });
-    return legacySource;
+      },
+      error,
+    );
+    throw error;
   }
 }
 
@@ -740,59 +750,40 @@ export async function getDirectorProductionPdfSource(args: {
 }): Promise<DirectorProductionPdfSource> {
   const priceStage = args.preferPriceStage === "base" ? "base" : "priced";
   const rpcMode = DIRECTOR_PRODUCTION_PDF_RPC_MODE;
-
-  if (rpcMode === "force_off") {
-    const legacySource = await buildDirectorProductionPdfFallbackSource(
-      { ...args, priceStage },
-      "disabled",
-    );
-    logDirectorPdfSourceBranch(
-      DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID,
-      legacySource.source,
-      legacySource.branchMeta,
-      {
-        periodFrom: args.periodFrom ?? null,
-        periodTo: args.periodTo ?? null,
-        objectName: args.objectName ?? null,
-        priceStage,
-        reportBranch: legacySource.reportMeta?.branch ?? null,
-        disciplineBranch: legacySource.disciplineMeta?.branch ?? null,
-      },
-    );
-    return legacySource;
-  }
-
-  if (
-    rpcMode === "auto" &&
-    getPdfRpcRolloutAvailability(DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID) === "missing"
-  ) {
-    const legacySource = await buildDirectorProductionPdfFallbackSource(
-      { ...args, priceStage },
-      "disabled",
-    );
-    logDirectorPdfSourceBranch(
-      DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID,
-      legacySource.source,
-      legacySource.branchMeta,
-      {
-        periodFrom: args.periodFrom ?? null,
-        periodTo: args.periodTo ?? null,
-        objectName: args.objectName ?? null,
-        priceStage,
-        reportBranch: legacySource.reportMeta?.branch ?? null,
-        disciplineBranch: legacySource.disciplineMeta?.branch ?? null,
-      },
-    );
-    return legacySource;
-  }
+  assertDirectorPdfRpcPrimary(
+    DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID,
+    rpcMode,
+    "pdf_director_production_source_v1",
+  );
 
   try {
-    const rpcSource = await fetchDirectorProductionPdfSourceViaRpc({
-      periodFrom: args.periodFrom,
-      periodTo: args.periodTo,
-      objectName: args.objectName,
-      priceStage,
+    const transportSource = await loadDirectorReportTransportScope({
+      from: args.periodFrom ?? "",
+      to: args.periodTo ?? "",
+      objectName: args.objectName ?? null,
+      includeDiscipline: true,
+      skipDisciplinePrices: priceStage === "base",
+      bypassCache: true,
     });
+    if (!transportSource.report || !transportSource.discipline) {
+      throw new DirectorPdfSourceValidationError(
+        "invalid_payload",
+        "director production pdf source missing transport report/discipline payload",
+      );
+    }
+    const rpcSource: DirectorProductionPdfSource = {
+      repData: transportSource.report,
+      repDiscipline: transportSource.discipline,
+      source: transportSource.source,
+      branchMeta: {
+        sourceBranch: "rpc_v1",
+        rpcVersion: transportSource.branchMeta.rpcVersion ?? "v1",
+        payloadShapeVersion: "v1",
+      },
+      priceStage,
+      reportMeta: transportSource.reportMeta,
+      disciplineMeta: transportSource.disciplineMeta,
+    };
     if (rpcMode === "auto") {
       setPdfRpcRolloutAvailability(DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID, "available");
     }
@@ -811,45 +802,19 @@ export async function getDirectorProductionPdfSource(args: {
     );
     return rpcSource;
   } catch (error) {
-    const fallbackReason = getFallbackReasonForRpcError(error);
-    if (
-      rpcMode === "auto" &&
-      error instanceof DirectorPdfSourceRpcError &&
-      error.disableForSession
-    ) {
-      setPdfRpcRolloutAvailability(DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID, "missing", {
-        errorMessage: error.message,
-      });
-    }
-    if (DIRECTOR_PDF_SOURCE_IS_DEV) {
-      console.warn("[director-production-pdf-source] rpc_v1 fallback", {
-        fallbackReason,
-        rpcMode,
-        periodFrom: args.periodFrom ?? null,
-        periodTo: args.periodTo ?? null,
-        objectName: args.objectName ?? null,
-        priceStage,
-        errorMessage: error instanceof Error ? error.message : String(error),
-      });
-    }
-    const legacySource = await buildDirectorProductionPdfFallbackSource(
-      { ...args, priceStage },
-      fallbackReason,
-    );
-    logDirectorPdfSourceBranch(
+    recordDirectorPdfRpcFailure(
       DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID,
-      legacySource.source,
-      legacySource.branchMeta,
+      rpcMode,
+      "[director-production-pdf-source] rpc_v1 failed",
       {
         periodFrom: args.periodFrom ?? null,
         periodTo: args.periodTo ?? null,
         objectName: args.objectName ?? null,
         priceStage,
-        reportBranch: legacySource.reportMeta?.branch ?? null,
-        disciplineBranch: legacySource.disciplineMeta?.branch ?? null,
       },
+      error,
     );
-    return legacySource;
+    throw error;
   }
 }
 
@@ -929,41 +894,11 @@ export async function getDirectorSubcontractPdfSource(args: {
   objectName?: string | null;
 }): Promise<DirectorSubcontractPdfSource> {
   const rpcMode = DIRECTOR_SUBCONTRACT_PDF_RPC_MODE;
-
-  if (rpcMode === "force_off") {
-    const legacySource = await buildDirectorSubcontractPdfFallbackSource(args, "disabled");
-    logDirectorPdfSourceBranch(
-      DIRECTOR_SUBCONTRACT_PDF_RPC_ROLLOUT_ID,
-      legacySource.source,
-      legacySource.branchMeta,
-      {
-        periodFrom: args.periodFrom ?? null,
-        periodTo: args.periodTo ?? null,
-        objectName: args.objectName ?? null,
-        rows: legacySource.rows.length,
-      },
-    );
-    return legacySource;
-  }
-
-  if (
-    rpcMode === "auto" &&
-    getPdfRpcRolloutAvailability(DIRECTOR_SUBCONTRACT_PDF_RPC_ROLLOUT_ID) === "missing"
-  ) {
-    const legacySource = await buildDirectorSubcontractPdfFallbackSource(args, "disabled");
-    logDirectorPdfSourceBranch(
-      DIRECTOR_SUBCONTRACT_PDF_RPC_ROLLOUT_ID,
-      legacySource.source,
-      legacySource.branchMeta,
-      {
-        periodFrom: args.periodFrom ?? null,
-        periodTo: args.periodTo ?? null,
-        objectName: args.objectName ?? null,
-        rows: legacySource.rows.length,
-      },
-    );
-    return legacySource;
-  }
+  assertDirectorPdfRpcPrimary(
+    DIRECTOR_SUBCONTRACT_PDF_RPC_ROLLOUT_ID,
+    rpcMode,
+    "pdf_director_subcontract_source_v1",
+  );
 
   try {
     const rpcSource = await fetchDirectorSubcontractPdfSourceViaRpc(args);
@@ -983,38 +918,17 @@ export async function getDirectorSubcontractPdfSource(args: {
     );
     return rpcSource;
   } catch (error) {
-    const fallbackReason = getFallbackReasonForRpcError(error);
-    if (
-      rpcMode === "auto" &&
-      error instanceof DirectorPdfSourceRpcError &&
-      error.disableForSession
-    ) {
-      setPdfRpcRolloutAvailability(DIRECTOR_SUBCONTRACT_PDF_RPC_ROLLOUT_ID, "missing", {
-        errorMessage: error.message,
-      });
-    }
-    if (DIRECTOR_PDF_SOURCE_IS_DEV) {
-      console.warn("[director-subcontract-pdf-source] rpc_v1 fallback", {
-        fallbackReason,
-        rpcMode,
-        periodFrom: args.periodFrom ?? null,
-        periodTo: args.periodTo ?? null,
-        objectName: args.objectName ?? null,
-        errorMessage: error instanceof Error ? error.message : String(error),
-      });
-    }
-    const legacySource = await buildDirectorSubcontractPdfFallbackSource(args, fallbackReason);
-    logDirectorPdfSourceBranch(
+    recordDirectorPdfRpcFailure(
       DIRECTOR_SUBCONTRACT_PDF_RPC_ROLLOUT_ID,
-      legacySource.source,
-      legacySource.branchMeta,
+      rpcMode,
+      "[director-subcontract-pdf-source] rpc_v1 failed",
       {
         periodFrom: args.periodFrom ?? null,
         periodTo: args.periodTo ?? null,
         objectName: args.objectName ?? null,
-        rows: legacySource.rows.length,
       },
+      error,
     );
-    return legacySource;
+    throw error;
   }
 }

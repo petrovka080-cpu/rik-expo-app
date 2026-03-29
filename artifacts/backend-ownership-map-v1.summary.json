@@ -11,13 +11,12 @@
     "contractor"
   ],
   "allModulesCovered": true,
-  "residualClientTruthCount": 9,
+  "residualClientTruthCount": 7,
   "totalResidualP0": 0,
-  "totalResidualP1": 7,
+  "totalResidualP1": 5,
   "totalResidualP2": 2,
   "modulesAtRisk": [
     "accountant",
-    "director",
     "buyer",
     "contractor",
     "warehouse"
@@ -31,6 +30,6 @@
   "artifactsGenerated": true,
   "noBroadRewritePerformed": true,
   "allRequiredArtifactsAccepted": false,
-  "acceptedEnvironmentResidualCount": 0,
-  "nextPriorityBatch": "Director report/PDF fallback removal"
+  "acceptedEnvironmentResidualCount": 1,
+  "nextPriorityBatch": "Buyer and Accountant compatibility fallback burn-down"
 }

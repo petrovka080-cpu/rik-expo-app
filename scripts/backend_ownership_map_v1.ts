@@ -378,45 +378,6 @@ const taxonomy: TaxonomyEntry[] = [
 
 const residuals: ResidualClientTruth[] = [
   {
-    id: "director_pdf_source_legacy_fallback",
-    module: "director",
-    contour: "Director PDF source branch legacy fallback",
-    exactFile: "src/lib/api/directorPdfSource.service.ts",
-    truthType: "report",
-    currentClientOwnership:
-      "PDF source rows still allow legacy_fallback branches for finance/report payload construction.",
-    whyRisky:
-      "Export truth can drift from canonical backend report/finance scopes if UI-payload-derived fallbacks stay available.",
-    requiredBackendContract: "director PDF source contract v2 with legacy payload branches removed",
-    priority: "P1",
-    state: "legacy_branch",
-    nextBatch: "Director PDF source fallback removal",
-    evidencePaths: [
-      "src/lib/api/directorPdfSource.service.ts",
-      "artifacts/director-reports-pdf-backend-cutover.summary.json",
-      "artifacts/director-finance-backend-cutover.summary.json",
-    ],
-  },
-  {
-    id: "director_reports_transport_legacy_scope_fallback",
-    module: "director",
-    contour: "Director reports transport legacy scope fallback",
-    exactFile: "src/lib/api/directorReportsTransport.service.ts",
-    truthType: "report",
-    currentClientOwnership:
-      "Report transport still exposes canonical_scope_fallback and legacy_scope_fallback branches beside rpc_scope_v1.",
-    whyRisky:
-      "Report grouping truth is backend-owned primary, but keeping parallel legacy scope families raises future drift and maintenance cost.",
-    requiredBackendContract: "director_report_transport_scope_v1 hard remove fallback branches",
-    priority: "P1",
-    state: "legacy_branch",
-    nextBatch: "Director Reports fallback branch burn-down",
-    evidencePaths: [
-      "src/lib/api/directorReportsTransport.service.ts",
-      "artifacts/director-reports-backend-cutover.summary.json",
-    ],
-  },
-  {
     id: "buyer_inbox_legacy_window_fallback",
     module: "buyer",
     contour: "Buyer inbox legacy client window fallback",
@@ -619,8 +580,8 @@ const moduleMap: Record<ModuleKey, ModuleOwnership> = {
     ],
     residualClientTruth: residuals.filter((item) => item.module === "director"),
     notes: [
-      "Director primary ownership is already backend-first on finance, report scope and report PDF contours.",
-      "Residual risk is now compatibility fallback burn-down, not broad read-model redesign.",
+      "Director read/report/export contours are backend-primary now across finance, reports, PDF sources, and pending proposals.",
+      "No director residual client-truth families remain in this ownership map.",
     ],
     residualClientTruthCount: 0,
     highestResidualPriority: "none",
@@ -1110,16 +1071,6 @@ const crossCuttingRules = {
 };
 
 const roadmap: RoadmapBatch[] = [
-  {
-    priority: "P1",
-    title: "Director report/PDF fallback removal",
-    module: "director",
-    residualIds: [
-      "director_pdf_source_legacy_fallback",
-      "director_reports_transport_legacy_scope_fallback",
-    ],
-    reason: "Director report/export truth is backend-primary, but legacy fallback families still inflate the proof surface.",
-  },
   {
     priority: "P1",
     title: "Buyer and Accountant compatibility fallback burn-down",

@@ -1,15 +1,5 @@
 import { supabase } from "../supabaseClient";
-import {
-  fetchDirectorWarehouseReportDisciplineTracked,
-  fetchDirectorWarehouseReportOptionsTracked,
-  fetchDirectorWarehouseReportTracked,
-  type DirectorReportFetchMeta,
-} from "./director_reports";
-import {
-  fetchDirectorReportCanonicalMaterials,
-  fetchDirectorReportCanonicalOptions,
-  fetchDirectorReportCanonicalWorks,
-} from "./director_reports.transport";
+import { type DirectorReportFetchMeta } from "./director_reports";
 import {
   adaptCanonicalMaterialsPayload,
   adaptCanonicalOptionsPayload,
@@ -22,8 +12,6 @@ import type {
 } from "./director_reports.shared";
 import { trimMap } from "./director_reports.cache";
 import {
-  hasCanonicalWorksDetailLevels,
-  shouldRejectAllObjectsEmptyMaterialsPayload,
   shouldRejectScopedEmptyMaterialsPayload,
   shouldRejectTransportScopeDisciplinePayload,
 } from "./director_reports.fallbacks";
@@ -59,7 +47,7 @@ export type DirectorReportTransportScopeResult = {
   disciplineMeta: DirectorReportFetchMeta | null;
   source: string;
   branchMeta: {
-    transportBranch: "rpc_scope_v1" | "canonical_scope_fallback" | "legacy_scope_fallback";
+    transportBranch: "rpc_scope_v1";
     fallbackReason?: DirectorReportTransportScopeFallbackReason;
     rpcVersion?: "v1";
     pricedStage?: "base" | "priced" | null;
@@ -108,17 +96,6 @@ const makeTransportMeta = (
   stage,
   branch: "transport_rpc",
   chain: ["transport_rpc", "canonical_rpc"],
-  cacheLayer: "none",
-  pricedStage: stage === "discipline" ? (pricedStage ?? undefined) : undefined,
-});
-
-const makeCanonicalMeta = (
-  stage: DirectorReportFetchMeta["stage"],
-  pricedStage?: "base" | "priced" | null,
-): DirectorReportFetchMeta => ({
-  stage,
-  branch: "canonical_rpc",
-  chain: ["canonical_rpc"],
   cacheLayer: "none",
   pricedStage: stage === "discipline" ? (pricedStage ?? undefined) : undefined,
 });
@@ -187,7 +164,6 @@ const logDirectorReportTransportScope = (
   console.info("[director-report-transport]", {
     source: result.source,
     transportBranch: result.branchMeta.transportBranch,
-    fallbackReason: result.branchMeta.fallbackReason ?? null,
     rpcVersion: result.branchMeta.rpcVersion ?? null,
     pricedStage: result.branchMeta.pricedStage ?? null,
     fromCache: result.fromCache,
@@ -311,160 +287,28 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
   return result;
 }
 
-async function buildDirectorReportTransportCanonicalScope(args: {
-  from: string;
-  to: string;
-  objectName: string | null;
-  includeDiscipline: boolean;
-  skipDisciplinePrices: boolean;
-  legacyObjectIdByName?: Record<string, string | null>;
-  fallbackReason: DirectorReportTransportScopeFallbackReason;
-}): Promise<Omit<DirectorReportTransportScopeResult, "fromCache"> | null> {
-  const pricedStage =
-    args.includeDiscipline
-      ? (args.skipDisciplinePrices ? "base" : "priced")
-      : null;
-  const [options, report, discipline] = await Promise.all([
-    fetchDirectorReportCanonicalOptions({
-      from: args.from,
-      to: args.to,
-    }),
-    fetchDirectorReportCanonicalMaterials({
-      from: args.from,
-      to: args.to,
-      objectName: args.objectName,
-    }),
-    args.includeDiscipline
-      ? fetchDirectorReportCanonicalWorks({
-        from: args.from,
-        to: args.to,
-        objectName: args.objectName,
-        includeCosts: !args.skipDisciplinePrices,
-      })
-      : Promise.resolve(null),
-  ]);
-
-  const objectIdByName = {
-    ...(options?.objectIdByName ?? {}),
-    ...(args.legacyObjectIdByName ?? {}),
-  };
-  if (!options || !report) return null;
-  if (shouldRejectAllObjectsEmptyMaterialsPayload(report, args.objectName, objectIdByName)) {
-    return null;
-  }
-  if (args.includeDiscipline && (!discipline || !hasCanonicalWorksDetailLevels(discipline))) {
-    return null;
-  }
-
-  return {
-    options,
-    report,
-    discipline: args.includeDiscipline ? discipline : null,
-    optionsMeta: makeCanonicalMeta("options"),
-    reportMeta: makeCanonicalMeta("report"),
-    disciplineMeta: args.includeDiscipline ? makeCanonicalMeta("discipline", pricedStage) : null,
-    source: "transport:director_report_canonical_scope",
-    branchMeta: {
-      transportBranch: "canonical_scope_fallback",
-      fallbackReason: args.fallbackReason,
-      pricedStage,
-    },
-  };
-}
-
-async function buildDirectorReportTransportScopeFallback(args: {
-  from: string;
-  to: string;
-  objectName: string | null;
-  includeDiscipline: boolean;
-  skipDisciplinePrices: boolean;
-  legacyObjectIdByName?: Record<string, string | null>;
-  fallbackReason: DirectorReportTransportScopeFallbackReason;
-}): Promise<Omit<DirectorReportTransportScopeResult, "fromCache">> {
-  try {
-    const canonical = await buildDirectorReportTransportCanonicalScope(args);
-    if (canonical) return canonical;
-  } catch (error) {
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.warn("[director-report-transport] canonical fallback failed", {
-        errorMessage: error instanceof Error ? error.message : String(error),
-        from: args.from,
-        to: args.to,
-        objectName: args.objectName ?? null,
-      });
-    }
-  }
-
-  const optionsResult = await fetchDirectorWarehouseReportOptionsTracked({
-    from: args.from,
-    to: args.to,
-  });
-  const options = optionsResult.payload;
-  const objectIdByName = {
-    ...(options.objectIdByName ?? {}),
-    ...(args.legacyObjectIdByName ?? {}),
-  };
-  const [reportResult, disciplineResult] = await Promise.all([
-    fetchDirectorWarehouseReportTracked({
-      from: args.from,
-      to: args.to,
-      objectName: args.objectName,
-      objectIdByName,
-    }),
-    args.includeDiscipline
-      ? fetchDirectorWarehouseReportDisciplineTracked(
-        {
-          from: args.from,
-          to: args.to,
-          objectName: args.objectName,
-          objectIdByName,
-        },
-        { skipPrices: args.skipDisciplinePrices },
-      )
-      : Promise.resolve(null),
-  ]);
-
-  return {
-    options,
-    report: reportResult.payload,
-    discipline: disciplineResult?.payload ?? null,
-    optionsMeta: optionsResult.meta,
-    reportMeta: reportResult.meta,
-    disciplineMeta: disciplineResult?.meta ?? null,
-    source: "transport:director_report_legacy_service",
-    branchMeta: {
-      transportBranch: "legacy_scope_fallback",
-      fallbackReason: args.fallbackReason,
-      pricedStage: disciplineResult?.meta?.pricedStage ?? null,
-    },
-  };
-}
-
 async function loadDirectorReportTransportScopeLive(args: {
   from: string;
   to: string;
   objectName: string | null;
   includeDiscipline: boolean;
   skipDisciplinePrices: boolean;
-  legacyObjectIdByName?: Record<string, string | null>;
 }): Promise<Omit<DirectorReportTransportScopeResult, "fromCache">> {
   if (DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_MODE === "force_off") {
-    const fallback = await buildDirectorReportTransportScopeFallback({
-      ...args,
-      fallbackReason: "disabled",
-    });
-    return fallback;
+    const message =
+      "director_report_transport_scope_v1 is force_off but transport fallback branches were removed";
+    directorReportTransportScopeLastErrorMessage = message;
+    throw new DirectorReportTransportScopeRpcError(message);
   }
 
   if (
     DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_MODE === "auto" &&
     directorReportTransportScopeRpcAvailability === "missing"
   ) {
-    const fallback = await buildDirectorReportTransportScopeFallback({
-      ...args,
-      fallbackReason: "disabled",
-    });
-    return fallback;
+    throw new DirectorReportTransportScopeRpcError(
+      directorReportTransportScopeLastErrorMessage ??
+        "director_report_transport_scope_v1 unavailable in this session and fallback branches were removed",
+    );
   }
 
   try {
@@ -475,8 +319,8 @@ async function loadDirectorReportTransportScopeLive(args: {
     }
     return rpcResult;
   } catch (error) {
-    const fallbackReason =
-      error instanceof DirectorReportTransportScopeValidationError ? "invalid_payload" : "rpc_error";
+    directorReportTransportScopeLastErrorMessage =
+      error instanceof Error ? error.message : String(error);
     if (
       DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_MODE === "auto" &&
       error instanceof DirectorReportTransportScopeRpcError &&
@@ -486,19 +330,14 @@ async function loadDirectorReportTransportScopeLive(args: {
       directorReportTransportScopeLastErrorMessage = error.message;
     }
     if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.warn("[director-report-transport] scope rpc fallback", {
-        fallbackReason,
+      console.warn("[director-report-transport] scope rpc failed", {
         errorMessage: error instanceof Error ? error.message : String(error),
         from: args.from,
         to: args.to,
         objectName: args.objectName ?? null,
       });
     }
-    const fallback = await buildDirectorReportTransportScopeFallback({
-      ...args,
-      fallbackReason,
-    });
-    return fallback;
+    throw error;
   }
 }
 
@@ -508,7 +347,6 @@ export async function loadDirectorReportTransportScope(args: {
   objectName: string | null;
   includeDiscipline: boolean;
   skipDisciplinePrices: boolean;
-  legacyObjectIdByName?: Record<string, string | null>;
   bypassCache?: boolean;
 }): Promise<DirectorReportTransportScopeResult> {
   const cacheKey = buildDirectorReportTransportScopeCacheKey(args);

@@ -34,6 +34,13 @@ const run = (command: string, args: string[]) => {
 const readText = (relativePath: string) =>
   fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
 
+const extractSection = (source: string, startMarker: string, endMarker?: string) => {
+  const start = source.indexOf(startMarker);
+  if (start < 0) return "";
+  const end = endMarker ? source.indexOf(endMarker, start + startMarker.length) : -1;
+  return end >= 0 ? source.slice(start, end) : source.slice(start);
+};
+
 const readJson = (relativePath: string): SummaryLike => {
   const fullPath = path.join(projectRoot, relativePath);
   if (!fs.existsSync(fullPath)) return {};
@@ -48,39 +55,43 @@ const writeJson = (fullPath: string, payload: unknown) => {
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`);
 };
 
-const isPassedPdfSummary = (summary: SummaryLike) =>
+const isPassedSourceSummary = (summary: SummaryLike) =>
   summary.status === "passed" &&
-  summary.finalSourceKind === "remote-url" &&
-  summary.finalScheme === "https" &&
-  summary.initialScheme === "https" &&
-  summary.signedUrlStatus === 200 &&
-  Number(summary.signedUrlBytes ?? 0) > 0 &&
-  summary.error == null;
-
-const isPassedRuntimeSummary = (summary: SummaryLike) =>
-  summary.status === "passed" &&
-  summary.webPassed === true &&
-  summary.androidPassed === true &&
-  (summary.iosPassed === true || typeof summary.iosResidual === "string");
+  summary.error == null &&
+  asRecord(summary.assertions).no_pdf_fallback === true;
 
 function main() {
   const tsc = run("npx", ["tsc", "--noEmit", "--pretty", "false"]);
   const eslint = run("npx", [
     "eslint",
-    "scripts/director_reports_runtime_verify.ts",
+    "scripts/director_reports_pdf_source_smoke.ts",
     "scripts/director_reports_pdf_backend_cutover.ts",
   ]);
-  const runtime = run("npx", ["tsx", "scripts/director_reports_runtime_verify.ts"]);
-  const productionPdf = run("node", ["artifacts/pdf_batchh2_smoke.mjs"]);
-  const subcontractPdf = run("node", ["artifacts/pdf_batchh3_smoke.mjs"]);
+  const pdfSourceSmoke = run("npx", ["tsx", "scripts/director_reports_pdf_source_smoke.ts"]);
 
-  const runtimeSummary = readJson("artifacts/director-reports-runtime.summary.json");
+  const reportsCutoverSummary = readJson("artifacts/director-reports-backend-cutover.summary.json");
+  const financeSummary = readJson("artifacts/pdf-batchh-smoke.summary.json");
   const productionSummary = readJson("artifacts/pdf-batchh2-smoke.summary.json");
   const subcontractSummary = readJson("artifacts/pdf-batchh3-smoke.summary.json");
-  const productionAssertions = asRecord(productionSummary.assertions);
-  const subcontractAssertions = asRecord(subcontractSummary.assertions);
 
   const pdfServiceSource = readText("src/screens/director/director.reports.pdfService.ts");
+  const financePdfServiceSource = readText("src/screens/director/director.finance.pdfService.ts");
+  const pdfSourceServiceSource = readText("src/lib/api/directorPdfSource.service.ts");
+  const financeGetterSource = extractSection(
+    pdfSourceServiceSource,
+    "export async function getDirectorFinancePdfSource(",
+    "async function fetchDirectorProductionPdfSourceViaRpc(",
+  );
+  const productionGetterSource = extractSection(
+    pdfSourceServiceSource,
+    "export async function getDirectorProductionPdfSource(",
+    "async function fetchDirectorSubcontractPdfSourceViaRpc(",
+  );
+  const subcontractGetterSource = extractSection(
+    pdfSourceServiceSource,
+    "export async function getDirectorSubcontractPdfSource(",
+  );
+  const financePdfSource = financeSummary;
   const structural = {
     productionBackendPrimary:
       pdfServiceSource.includes("generateDirectorProductionReportPdfViaBackend") &&
@@ -88,22 +99,50 @@ function main() {
     subcontractBackendPrimary:
       pdfServiceSource.includes("generateDirectorSubcontractReportPdfViaBackend") &&
       pdfServiceSource.includes("[director.reports.pdf] subcontract backend fallback"),
-    productionFallbackUsed: productionAssertions.no_pdf_fallback !== true,
-    subcontractFallbackUsed: subcontractAssertions.no_pdf_fallback !== true,
+    financeSourcePrimary:
+      financeGetterSource.includes('assertDirectorPdfRpcPrimary(') &&
+      !financeGetterSource.includes("buildDirectorFinancePdfFallbackSource(") &&
+      !financeGetterSource.includes("return legacySource") &&
+      !financeGetterSource.includes("legacy_fallback"),
+    productionSourcePrimary:
+      productionGetterSource.includes('assertDirectorPdfRpcPrimary(') &&
+      !productionGetterSource.includes("buildDirectorProductionPdfFallbackSource(") &&
+      !productionGetterSource.includes("return legacySource") &&
+      !productionGetterSource.includes("legacy_fallback"),
+    subcontractSourcePrimary:
+      subcontractGetterSource.includes('assertDirectorPdfRpcPrimary(') &&
+      !subcontractGetterSource.includes("buildDirectorSubcontractPdfFallbackSource(") &&
+      !subcontractGetterSource.includes("return legacySource") &&
+      !subcontractGetterSource.includes("legacy_fallback"),
+    financeFallbackLocalRowsRemoved:
+      financePdfServiceSource.includes("resolveDirectorFinanceFallbackRows") &&
+      financePdfServiceSource.includes("const source = await getDirectorFinancePdfSource(") &&
+      !financePdfServiceSource.includes("client_filtered_support_rows"),
+    financeFallbackUsed:
+      financeSummary.status !== "passed" ||
+      financePdfSource.sourceBranch !== "rpc_v1",
+    productionFallbackUsed: asRecord(productionSummary.assertions).no_pdf_fallback !== true,
+    subcontractFallbackUsed: asRecord(subcontractSummary.assertions).no_pdf_fallback !== true,
   };
 
-  const productionPdfPassed = isPassedPdfSummary(productionSummary);
-  const subcontractPdfPassed = isPassedPdfSummary(subcontractSummary);
-  const runtimePassed = isPassedRuntimeSummary(runtimeSummary);
+  const financePdfPassed = isPassedSourceSummary(financeSummary);
+  const productionPdfPassed = isPassedSourceSummary(productionSummary);
+  const subcontractPdfPassed = isPassedSourceSummary(subcontractSummary);
+  const reportsCutoverPassed =
+    reportsCutoverSummary.status === "passed" && reportsCutoverSummary.gate === "GREEN";
   const gate =
     tsc.status === 0 &&
     eslint.status === 0 &&
-    runtime.status === 0 &&
-    productionPdf.status === 0 &&
-    subcontractPdf.status === 0 &&
-    runtimePassed &&
+    pdfSourceSmoke.status === 0 &&
+    reportsCutoverPassed &&
+    financePdfPassed &&
     productionPdfPassed &&
     subcontractPdfPassed &&
+    structural.financeSourcePrimary &&
+    structural.productionSourcePrimary &&
+    structural.subcontractSourcePrimary &&
+    structural.financeFallbackLocalRowsRemoved &&
+    !structural.financeFallbackUsed &&
     structural.productionBackendPrimary &&
     structural.subcontractBackendPrimary &&
     !structural.productionFallbackUsed &&
@@ -116,22 +155,18 @@ function main() {
     gate,
     tscPassed: tsc.status === 0,
     eslintPassed: eslint.status === 0,
-    runtimePassed,
+    reportsCutoverPassed,
+    financePdfPassed,
     productionPdfPassed,
     subcontractPdfPassed,
-    primaryOwnerProduction: productionSummary.renderer ? "backend_production_report_v1" : null,
-    primaryOwnerSubcontract: subcontractSummary.renderer ? "backend_subcontract_report_v1" : null,
+    primaryOwnerFinance: financeSummary.source ?? null,
+    primaryOwnerProduction: productionSummary.source ?? null,
+    primaryOwnerSubcontract: subcontractSummary.source ?? null,
+    fallbackUsedFinance: structural.financeFallbackUsed,
     fallbackUsedProduction: structural.productionFallbackUsed,
     fallbackUsedSubcontract: structural.subcontractFallbackUsed,
-    webPassed: runtimeSummary.webPassed === true && productionPdfPassed && subcontractPdfPassed,
-    androidPassed: runtimeSummary.androidPassed === true,
-    iosPassed: runtimeSummary.iosPassed === true,
-    iosResidual: typeof runtimeSummary.iosResidual === "string" ? runtimeSummary.iosResidual : null,
-    productionRenderer: productionSummary.renderer ?? null,
-    subcontractRenderer: subcontractSummary.renderer ?? null,
-    productionStoragePath: productionSummary.storagePath ?? null,
-    subcontractStoragePath: subcontractSummary.storagePath ?? null,
-    runtimeGateOk: runtimeSummary.status === "passed",
+    financePdfSource: financeSummary,
+    selectedObjectName: productionSummary.selectedObjectName ?? subcontractSummary.selectedObjectName ?? null,
   };
 
   writeJson(`${artifactBase}.json`, {
@@ -139,11 +174,10 @@ function main() {
     commands: {
       tsc,
       eslint,
-      runtime,
-      productionPdf,
-      subcontractPdf,
+      pdfSourceSmoke,
     },
-    runtimeSummary,
+    reportsCutoverSummary,
+    financeSummary,
     productionSummary,
     subcontractSummary,
     structural,

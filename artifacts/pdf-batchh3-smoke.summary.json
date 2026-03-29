@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "source": "rpc:pdf_director_subcontract_source_v1",
+  "sourceBranch": "rpc_v1",
+  "fallbackReason": null,
+  "selectedObjectName": "Административное здание",
+  "periodFrom": "2026-02-27",
+  "periodTo": "2026-03-29",
+  "rows": 14,
+  "assertions": {
+    "no_pdf_fallback": true
+  },
+  "error": null
+}

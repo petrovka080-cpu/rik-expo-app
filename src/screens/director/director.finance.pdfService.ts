@@ -63,23 +63,6 @@ async function resolveDirectorFinanceFallbackRows(args: {
   spendRows: FinSpendRow[];
   fetchSourceName: string;
 }> {
-  if (Array.isArray(args.financeRows) || Array.isArray(args.spendRows)) {
-    return {
-      financeRows: Array.isArray(args.financeRows) ? args.financeRows : [],
-      spendRows: Array.isArray(args.spendRows) ? args.spendRows : [],
-      fetchSourceName: "client_filtered_support_rows",
-    };
-  }
-
-  if (args.loadFallbackRows) {
-    const loaded = await args.loadFallbackRows();
-    return {
-      financeRows: Array.isArray(loaded.financeRows) ? loaded.financeRows : [],
-      spendRows: Array.isArray(loaded.spendRows) ? loaded.spendRows : [],
-      fetchSourceName: "client_filtered_support_rows",
-    };
-  }
-
   const source = await getDirectorFinancePdfSource({
     periodFrom: args.periodFrom,
     periodTo: args.periodTo,

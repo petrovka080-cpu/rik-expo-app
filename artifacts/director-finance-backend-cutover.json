@@ -1,0 +1,395 @@
+{
+  "status": "failed",
+  "gate": "NOT_GREEN",
+  "primaryOwner": "rpc_v3",
+  "contractVersion": "v3",
+  "fallbackUsed": true,
+  "supportRowsLoaded": false,
+  "supportRowsReason": "not_requested",
+  "backendFirstPrimary": true,
+  "summaryCompatibilityOverlay": true,
+  "sourceMeta": {
+    "financeSummary": "rpc_panel_scope_v3_canonical",
+    "spendSummary": "rpc_panel_scope_v3_canonical",
+    "financeRows": "not_loaded",
+    "spendRows": "not_loaded",
+    "panelScope": "rpc_v3",
+    "financeDisplayMode": "canonical_v3"
+  },
+  "cutoverMeta": {
+    "primaryOwner": "rpc_v3",
+    "contractVersion": "v3",
+    "supportRowsReason": "not_requested",
+    "backendFirstPrimary": true,
+    "summaryCompatibilityOverlay": true,
+    "financeMode": "canonical",
+    "financeSemantics": "invoice_level_obligations"
+  },
+  "issues": [],
+  "staticChecks": {
+    "tscPassed": true,
+    "eslintPassed": true,
+    "tscRun": {
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "eslintRun": {
+      "status": 0,
+      "stdout": "\nC:\\dev\\rik-expo-app\\scripts\\director_finance_runtime_verify.ts\n   117:7  warning  'webTextLocator' is assigned a value but never used  @typescript-eslint/no-unused-vars\n   918:3  warning  Unreachable code                                     no-unreachable\n   933:3  warning  Unreachable code                                     no-unreachable\n  1008:3  warning  Unreachable code                                     no-unreachable\n  1033:3  warning  Unreachable code                                     no-unreachable\n\nC:\\dev\\rik-expo-app\\src\\lib\\api\\directorPdfSource.service.ts\n  197:7   warning  'getFallbackReasonForRpcError' is assigned a value but never used      @typescript-eslint/no-unused-vars\n  497:16  warning  'buildDirectorFinancePdfFallbackSource' is defined but never used      @typescript-eslint/no-unused-vars\n  670:16  warning  'buildDirectorProductionPdfFallbackSource' is defined but never used   @typescript-eslint/no-unused-vars\n  836:16  warning  'buildDirectorSubcontractPdfFallbackSource' is defined but never used  @typescript-eslint/no-unused-vars\n\n✖ 9 problems (0 errors, 9 warnings)\n\n",
+      "stderr": ""
+    }
+  },
+  "runtime": {
+    "reusedExistingSummary": true,
+    "webPassed": true,
+    "androidPassed": true,
+    "iosPassed": false,
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "runtimeGateOk": true,
+    "runtimeRun": {
+      "status": 0,
+      "stdout": "Reused existing passed director finance runtime summary artifact.",
+      "stderr": ""
+    },
+    "runtimeSummary": {
+      "status": "passed",
+      "webPassed": true,
+      "androidPassed": true,
+      "iosPassed": false,
+      "runtimeVerified": true,
+      "environmentRecoveryUsed": true,
+      "gmsRecoveryUsed": false,
+      "anrRecoveryUsed": false,
+      "blankSurfaceRecovered": false,
+      "devClientBootstrapRecovered": false,
+      "platformSpecificIssues": [
+        {
+          "platform": "ios",
+          "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+        }
+      ],
+      "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+      "failureKind": "unknown",
+      "scenariosPassed": {
+        "web": {
+          "initialOpen": true,
+          "financeSurface": true,
+          "debtModal": true,
+          "supplierDetail": false
+        },
+        "android": {
+          "initialOpen": true,
+          "financeSurface": true,
+          "debtModal": true,
+          "supplierDetail": true
+        },
+        "ios": {
+          "initialOpen": false,
+          "financeSurface": false,
+          "debtModal": false,
+          "supplierDetail": false
+        }
+      },
+      "artifacts": {
+        "web": "artifacts/director-finance-web-smoke.png",
+        "android": {
+          "currentXml": "artifacts/android-director-finance-route-1.xml",
+          "currentPng": "artifacts/android-director-finance-route-1.png",
+          "financeXml": "artifacts/android-director-finance-tab-1.xml",
+          "financePng": "artifacts/android-director-finance-tab-1.png",
+          "debtModalXml": "artifacts/android-director-finance-suppliers.xml",
+          "debtModalPng": "artifacts/android-director-finance-suppliers.png",
+          "supplierDetailXml": "artifacts/android-director-finance-supplier-detail.xml",
+          "supplierDetailPng": "artifacts/android-director-finance-supplier-detail.png"
+        }
+      },
+      "gate": "director_finance_runtime_verify"
+    }
+  },
+  "panelScopeV1": {
+    "suppliers": 22,
+    "spendKinds": 4
+  },
+  "panelScopeV2": {
+    "rows": 92,
+    "pagination": {
+      "limit": 1000,
+      "offset": 0,
+      "total": 92
+    }
+  },
+  "panelScopeV3": {
+    "rows": 50,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "total": 92
+    },
+    "supplierRows": 22,
+    "meta": {
+      "owner": "backend",
+      "generatedAt": "2026-03-29T17:23:18.423Z",
+      "sourceVersion": "director_finance_panel_scope_v3",
+      "payloadShapeVersion": "v3",
+      "filtersEcho": {
+        "objectId": null,
+        "dateFrom": null,
+        "dateTo": null,
+        "dueDays": 7,
+        "criticalDays": 14
+      }
+    }
+  },
+  "summaryParity": {
+    "totalPayable": {
+      "left": 431658,
+      "right": 431658,
+      "delta": 0,
+      "match": true
+    },
+    "totalApproved": {
+      "left": 431658,
+      "right": 431658,
+      "delta": 0,
+      "match": true
+    },
+    "totalPaid": {
+      "left": 8590,
+      "right": 8590,
+      "delta": 0,
+      "match": true
+    },
+    "totalDebt": {
+      "left": 423068,
+      "right": 423068,
+      "delta": 0,
+      "match": true
+    },
+    "totalOverpayment": {
+      "left": 0,
+      "right": 0,
+      "delta": 0,
+      "match": true
+    },
+    "overdueAmount": {
+      "left": 365508,
+      "right": 365508,
+      "delta": 0,
+      "match": true
+    },
+    "criticalAmount": {
+      "left": 0,
+      "right": 0,
+      "delta": 0,
+      "match": true
+    },
+    "overdueCount": {
+      "left": 85,
+      "right": 85,
+      "delta": 0,
+      "match": true
+    },
+    "criticalCount": {
+      "left": 0,
+      "right": 0,
+      "delta": 0,
+      "match": true
+    },
+    "debtCount": {
+      "left": 86,
+      "right": 86,
+      "delta": 0,
+      "match": true
+    },
+    "partialCount": {
+      "left": 0,
+      "right": 0,
+      "delta": 0,
+      "match": true
+    },
+    "partialPaid": {
+      "left": 0,
+      "right": 0,
+      "delta": 0,
+      "match": true
+    },
+    "rowCount": {
+      "left": 92,
+      "right": 92,
+      "delta": 0,
+      "match": true
+    },
+    "supplierRowCount": {
+      "left": 22,
+      "right": 22,
+      "delta": 0,
+      "match": true
+    }
+  },
+  "spendParity": {
+    "approved": {
+      "left": 462795.45,
+      "right": 462795.45,
+      "delta": 0,
+      "match": true
+    },
+    "paid": {
+      "left": 8590,
+      "right": 8590,
+      "delta": 0,
+      "match": true
+    },
+    "toPay": {
+      "left": 454205.45,
+      "right": 454205.45,
+      "delta": 0,
+      "match": true
+    },
+    "overpay": {
+      "left": 0,
+      "right": 0,
+      "delta": 0,
+      "match": true
+    },
+    "kindRowsCount": {
+      "left": 4,
+      "right": 4,
+      "delta": 0,
+      "match": true
+    },
+    "overpaySuppliersCount": {
+      "left": 0,
+      "right": 0,
+      "delta": 0,
+      "match": true
+    }
+  },
+  "rowParity": {
+    "countParity": {
+      "left": 50,
+      "right": 50,
+      "delta": 0,
+      "match": true
+    },
+    "totalCountParity": {
+      "left": 92,
+      "right": 92,
+      "delta": 0,
+      "match": true
+    },
+    "mismatchCount": 0,
+    "fieldMismatchCounts": {
+      "requestId": 0,
+      "objectId": 0,
+      "supplierId": 0,
+      "supplierName": 0,
+      "proposalId": 0,
+      "invoiceNumber": 0,
+      "amountTotal": 0,
+      "amountPaid": 0,
+      "amountDebt": 0,
+      "dueDate": 0,
+      "isOverdue": 0,
+      "overdueDays": 0,
+      "status": 0
+    }
+  },
+  "supplierRowsParity": {
+    "countParity": {
+      "left": 22,
+      "right": 22,
+      "delta": 0,
+      "match": true
+    },
+    "mismatchCount": 0,
+    "fieldMismatchCounts": {
+      "supplierId": 0,
+      "supplierName": 0,
+      "payable": 0,
+      "paid": 0,
+      "debt": 0,
+      "overpayment": 0,
+      "overdueAmount": 0,
+      "criticalAmount": 0,
+      "invoiceCount": 0,
+      "debtCount": 0,
+      "overdueCount": 0,
+      "criticalCount": 0
+    },
+    "stableIdsPresent": true
+  },
+  "supplierScopeV2Parity": {
+    "amount": {
+      "left": 146396,
+      "right": 146396,
+      "delta": 0,
+      "match": true
+    },
+    "count": {
+      "left": 6,
+      "right": 6,
+      "delta": 0,
+      "match": true
+    },
+    "overdueCount": {
+      "left": 6,
+      "right": 6,
+      "delta": 0,
+      "match": true
+    },
+    "criticalCount": {
+      "left": 0,
+      "right": 0,
+      "delta": 0,
+      "match": true
+    },
+    "invoiceSet": {
+      "match": true,
+      "leftCount": 7,
+      "rightCount": 7,
+      "mismatchCount": 0,
+      "sampleLeft": [
+        "Предложение PR-0383/2026|60.00|0.00|60.00|1|0|2026-03-12||2026-03-19",
+        "Предложение PR-0385/2026|176.00|0.00|176.00|1|0|2026-03-12||2026-03-19",
+        "Предложение PR-0393/2026|121.00|0.00|121.00|1|0|2026-03-13||2026-03-20",
+        "Предложение PR-0401/2026|2509.00|0.00|2509.00|1|0|2026-03-18||2026-03-25",
+        "Предложение PR-0408/2026|142410.00|0.00|142410.00|1|0|2026-03-18||2026-03-25"
+      ],
+      "sampleRight": [
+        "Предложение PR-0383/2026|60.00|0.00|60.00|1|0|2026-03-12||2026-03-19",
+        "Предложение PR-0385/2026|176.00|0.00|176.00|1|0|2026-03-12||2026-03-19",
+        "Предложение PR-0393/2026|121.00|0.00|121.00|1|0|2026-03-13||2026-03-20",
+        "Предложение PR-0401/2026|2509.00|0.00|2509.00|1|0|2026-03-18||2026-03-25",
+        "Предложение PR-0408/2026|142410.00|0.00|142410.00|1|0|2026-03-18||2026-03-25"
+      ]
+    },
+    "rawOverpayment": {
+      "left": 0,
+      "right": 0,
+      "delta": 0,
+      "match": true
+    },
+    "rawVersion": "v2",
+    "rawPayloadShapeVersion": "v2",
+    "rpcError": null
+  },
+  "debtParityOk": true,
+  "overpaymentParityOk": true,
+  "overdueParityOk": true,
+  "criticalParityOk": true,
+  "clientOwnedFinanceTruthRemoved": false,
+  "contractShapeOk": true,
+  "serviceTypeHardCutOk": true,
+  "primaryScopeHardCutOk": true,
+  "supplierScopeHardCutOk": true,
+  "pdfSource": {
+    "source": "rpc:pdf_director_finance_source_v1",
+    "sourceBranch": "rpc_v1",
+    "fallbackReason": null,
+    "financeRows": 92,
+    "spendRows": 116,
+    "acceptable": true
+  },
+  "selectedSupplier": "вапвап"
+}

@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "source": "rpc:pdf_director_finance_source_v1",
+  "sourceBranch": "rpc_v1",
+  "fallbackReason": null,
+  "financeRows": 92,
+  "spendRows": 116,
+  "selectedObjectName": null,
+  "assertions": {
+    "no_pdf_fallback": true
+  },
+  "error": null
+}

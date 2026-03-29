@@ -96,6 +96,9 @@ const readJson = (fullPath: string): UnknownRecord | null => {
   return JSON.parse(fs.readFileSync(fullPath, "utf8")) as UnknownRecord;
 };
 
+const readText = (relativePath: string) =>
+  fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
+
 const isPassedRuntimeSummary = (summary: UnknownRecord | null) => summary?.status === "passed";
 
 const writeJson = (fullPath: string, payload: unknown) => {
@@ -291,6 +294,9 @@ async function main() {
   const uiScopeService = await import("../src/lib/api/directorReportsScope.service");
   const adapters = await import("../src/lib/api/director_reports.adapters");
   const supabaseModule = await import("../src/lib/supabaseClient");
+  const transportScopeServiceSource = readText("src/lib/api/directorReportsTransport.service.ts");
+  const uiScopeServiceSource = readText("src/lib/api/directorReportsScope.service.ts");
+  const readModelsSource = readText("src/screens/director/director.readModels.ts");
 
   const tscRun = runNpx(["tsc", "--noEmit", "--pretty", "false"]);
   const eslintRun = runNpx([
@@ -589,6 +595,20 @@ async function main() {
   const fallbackUsed = scenarioResults.some((result) => result.fallbackUsed);
   const contractShapeOk =
     scenarioResults.every((result) => result.rawEnvelopeOk && result.sourceVersionOk && result.disciplinePricesReady);
+  const transportServiceRpcOnly =
+    transportScopeServiceSource.includes('transportBranch: "rpc_scope_v1";') &&
+    !transportScopeServiceSource.includes("canonical_scope_fallback") &&
+    !transportScopeServiceSource.includes("legacy_scope_fallback") &&
+    !transportScopeServiceSource.includes("buildDirectorReportTransportScopeFallback(") &&
+    !transportScopeServiceSource.includes("buildDirectorReportTransportCanonicalScope(") &&
+    !transportScopeServiceSource.includes("fetchDirectorWarehouseReportTracked(") &&
+    !transportScopeServiceSource.includes("fetchDirectorReportCanonicalMaterials(") &&
+    uiScopeServiceSource.includes('transportBranch: "rpc_scope_v1";') &&
+    !uiScopeServiceSource.includes("canonical_scope_fallback") &&
+    !uiScopeServiceSource.includes("legacy_scope_fallback") &&
+    readModelsSource.includes('transportBranch: "rpc_scope_v1";') &&
+    !readModelsSource.includes("canonical_scope_fallback") &&
+    !readModelsSource.includes("legacy_scope_fallback");
   const clientOwnedReportTruthRemoved = scenarioResults.every(
     (result) =>
       result.reportOnlyOwnerOk &&
@@ -641,6 +661,7 @@ async function main() {
     primaryOwner === "transport_scope_v1" &&
     !fallbackUsed &&
     contractShapeOk &&
+    transportServiceRpcOnly &&
     defaultScopeParityOk &&
     selectedObjectScopeParityOk &&
     clientOwnedReportTruthRemoved
@@ -654,6 +675,7 @@ async function main() {
     sourceVersion: "director_report_transport_scope_v1",
     fallbackUsed,
     contractShapeOk,
+    transportServiceRpcOnly,
     clientOwnedReportTruthRemoved,
     selectedObjectName,
     scenarios: scenarioResults,
@@ -694,6 +716,7 @@ async function main() {
     sourceVersion: artifact.sourceVersion,
     fallbackUsed: artifact.fallbackUsed,
     contractShapeOk: artifact.contractShapeOk,
+    transportServiceRpcOnly: artifact.transportServiceRpcOnly,
     clientOwnedReportTruthRemoved: artifact.clientOwnedReportTruthRemoved,
     defaultScopeParityOk,
     selectedObjectScopeParityOk,

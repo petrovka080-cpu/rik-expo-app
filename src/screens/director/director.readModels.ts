@@ -170,6 +170,6 @@ export type DirectorReportsCanonicalDiagnostics = {
   objectCountSource: "warehouse_confirmed_issues" | "requests" | "mixed";
   noWorkName: DirectorReportsNoWorkDiagnostics;
   backendOwnerPreserved: boolean;
-  transportBranch: "rpc_scope_v1" | "canonical_scope_fallback" | "legacy_scope_fallback";
+  transportBranch: "rpc_scope_v1";
   pricedStage: "base" | "priced" | null;
 };
