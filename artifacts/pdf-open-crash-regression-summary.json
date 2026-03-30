@@ -8,8 +8,12 @@
       "viewerUsesNativeHandoff": true,
       "viewerNoLongerImportsWebView": true,
       "previewRouteStillCanonical": true,
-      "attachmentOpenStillNativeHandoff": true,
-      "pdfRunnerNativeHandoff": true
+      "mobileRemotePreviewUsesDirectViewerBoundary": true,
+      "attachmentRemotePdfUsesSharedAndroidBoundary": true,
+      "attachmentLocalPdfStillUsesIntent": true,
+      "pdfRunnerMobilePrepareKeepsRemoteUrl": true,
+      "pdfRunnerRemotePdfUsesSharedAndroidBoundary": true,
+      "pdfRunnerLocalPdfStillUsesIntent": true
     },
     "testChecks": {
       "jestSuccess": true,
@@ -17,6 +21,11 @@
       "viewerLocalSuccess": true,
       "invalidViewerSourceControlled": true,
       "documentActionViewerRoute": true,
+      "documentActionRemoteDirectViewerRoute": true,
+      "pdfRunnerRemoteBoundarySuccess": true,
+      "pdfRunnerRemotePreparePreserved": true,
+      "pdfRunnerRemoteExternalBoundarySuccess": true,
+      "pdfRunnerLocalExternalBoundarySuccess": true,
       "attachmentRemoteSuccess": true,
       "attachmentLocalSuccess": true,
       "attachmentInvalidControlled": true
@@ -25,11 +34,11 @@
       "directorPdfOpen": true,
       "accountantPaymentPdfOpen": true,
       "warehousePdfOpen": true,
-      "attachmentPdfViewerBoundary": true,
+      "attachmentPdfOpen": true,
       "invalidSourceControlled": true,
       "noFatalCrash": true,
       "processAliveAfterOpen": true,
-      "metroManualEvidencePresent": true
+      "liveOpenBoundaryEvidencePresent": true
     }
   },
   "tsc": {
@@ -40,7 +49,7 @@
   },
   "jest": {
     "success": true,
-    "numPassedTests": 15,
+    "numPassedTests": 19,
     "numFailedTests": 0
   }
 }

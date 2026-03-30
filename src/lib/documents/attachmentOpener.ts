@@ -1,6 +1,7 @@
 import { Linking, Platform } from "react-native";
 import * as FileSystemModule from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
+import * as IntentLauncher from "expo-intent-launcher";
 
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
@@ -19,6 +20,8 @@ export type AppAttachmentOpenInput = {
 };
 
 type AttachmentOpenMode = "open" | "share";
+const ANDROID_VIEW_ACTION = "android.intent.action.VIEW";
+const ANDROID_GRANT_READ_URI_PERMISSION = 1;
 
 type ResolvedAttachmentSource =
   | { kind: "local"; uri: string }
@@ -210,6 +213,94 @@ async function openAttachmentOnWeb(input: AppAttachmentOpenInput, source: Resolv
   }
 }
 
+export async function openAndroidViewIntent(
+  uri: string,
+  mimeType: string,
+  context: {
+    owner: "attachment-opener" | "pdf-runner";
+    fileName?: string | null;
+  },
+): Promise<void> {
+  if (Platform.OS !== "android") {
+    throw new Error("Android view intent is only available on Android");
+  }
+
+  console.info(`[${context.owner}] android_view_intent_start`, {
+    uri,
+    scheme: getUriScheme(uri),
+    mimeType,
+    fileName: context.fileName ?? null,
+  });
+
+  try {
+    const result = await IntentLauncher.startActivityAsync(ANDROID_VIEW_ACTION, {
+      data: uri,
+      flags: ANDROID_GRANT_READ_URI_PERMISSION,
+      type: mimeType,
+    });
+    console.info(`[${context.owner}] android_view_intent_ready`, {
+      uri,
+      mimeType,
+      fileName: context.fileName ?? null,
+      resultCode:
+        result && typeof result === "object" && "resultCode" in result
+          ? String((result as { resultCode?: unknown }).resultCode ?? "")
+          : "",
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error ?? "Android view intent failed");
+    console.error(`[${context.owner}] android_view_intent_failed`, {
+      uri,
+      mimeType,
+      fileName: context.fileName ?? null,
+      error: message,
+    });
+    throw error instanceof Error ? error : new Error(message);
+  }
+}
+
+export async function openAndroidRemotePdfUrl(
+  uri: string,
+  context: {
+    owner: "attachment-opener" | "pdf-runner";
+    fileName?: string | null;
+  },
+): Promise<void> {
+  if (Platform.OS !== "android") {
+    throw new Error("Android remote PDF open is only available on Android");
+  }
+
+  const normalizedUrl = String(uri || "").trim();
+  if (!isHttpUri(normalizedUrl)) {
+    throw new Error("Android remote PDF open requires an http(s) URL");
+  }
+
+  console.info(`[${context.owner}] android_remote_pdf_open_start`, {
+    uri: normalizedUrl,
+    scheme: getUriScheme(normalizedUrl),
+    fileName: context.fileName ?? null,
+  });
+
+  try {
+    await openAndroidViewIntent(normalizedUrl, "application/pdf", {
+      owner: context.owner,
+      fileName: context.fileName ?? null,
+    });
+    console.info(`[${context.owner}] android_remote_pdf_open_ready`, {
+      uri: normalizedUrl,
+      fileName: context.fileName ?? null,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error ?? "Android remote PDF open failed");
+    console.error(`[${context.owner}] android_remote_pdf_open_failed`, {
+      uri: normalizedUrl,
+      fileName: context.fileName ?? null,
+      error: message,
+    });
+    throw error instanceof Error ? error : new Error(message);
+  }
+}
+
 async function openAttachmentOnNative(localUri: string, mimeType: string, mode: AttachmentOpenMode): Promise<void> {
   if (mode === "share") {
     const canShare = await Sharing.isAvailableAsync();
@@ -223,7 +314,10 @@ async function openAttachmentOnNative(localUri: string, mimeType: string, mode: 
       throw new Error("Android attachment open requires getContentUriAsync support");
     }
     const contentUri = await FileSystemCompat.getContentUriAsync(localUri);
-    await Linking.openURL(contentUri);
+    await openAndroidViewIntent(contentUri, mimeType, {
+      owner: "attachment-opener",
+      fileName: localUri.split("/").pop() ?? null,
+    });
     return;
   }
 
@@ -243,14 +337,28 @@ async function openAttachmentOnNative(localUri: string, mimeType: string, mode: 
 export async function openAppAttachment(input: AppAttachmentOpenInput, opts?: { mode?: AttachmentOpenMode }): Promise<void> {
   const mode = opts?.mode ?? "open";
   const source = await resolveAttachmentSource(input);
+  const mimeType = guessMimeType(input.fileName, source.uri, input.mimeType);
 
   if (Platform.OS === "web") {
     await openAttachmentOnWeb(input, source);
     return;
   }
 
+  if (
+    Platform.OS === "android"
+    && mode === "open"
+    && source.kind === "remote"
+    && mimeType === "application/pdf"
+    && isHttpUri(source.uri)
+  ) {
+    await openAndroidRemotePdfUrl(source.uri, {
+      owner: "attachment-opener",
+      fileName: ensureFileNameWithExtension(input.fileName, source.uri, input.mimeType),
+    });
+    return;
+  }
+
   const localUri = await materializeAttachmentToLocalFile(input, source);
-  const mimeType = guessMimeType(input.fileName, source.uri, input.mimeType);
   await openAttachmentOnNative(localUri, mimeType, mode);
 }
 

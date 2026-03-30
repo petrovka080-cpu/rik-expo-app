@@ -8,6 +8,10 @@ import { normalizePdfFileName } from "./documents/pdfDocument";
 import { getFileSystemPaths } from "./fileSystemPaths";
 import { beginPdfLifecycleObservation } from "./pdf/pdfLifecycle";
 import { recordCatchDiscipline } from "./observability/catchDiscipline";
+import {
+  openAndroidRemotePdfUrl as openAndroidRemotePdfUrlBoundary,
+  openAndroidViewIntent,
+} from "./documents/attachmentOpener";
 import { beginPlatformObservability } from "./observability/platformObservability";
 import {
   createPdfSource,
@@ -186,8 +190,46 @@ async function openAndroidPdfContentUri(localUri: string, fileName?: string): Pr
     sourceKind: "local-file",
     fileName,
   });
-  await Linking.openURL(contentUri);
+  await openAndroidViewIntent(contentUri, "application/pdf", {
+    owner: "pdf-runner",
+    fileName: fileName ?? null,
+  });
   return contentUri;
+}
+
+async function openAndroidRemotePdfUrl(remoteUrl: string, fileName?: string): Promise<string> {
+  const normalizedUrl = normalizeRemoteUrl(remoteUrl);
+  if (!isHttpUri(normalizedUrl)) {
+    throw new Error("Android remote PDF handoff requires an http(s) URL");
+  }
+  logPdfRunnerStage("pdf_android_remote_url_open_start", {
+    uri: normalizedUrl,
+    sourceKind: "remote-url",
+    fileName,
+  });
+  try {
+    await Linking.openURL(normalizedUrl);
+    logPdfRunnerStage("pdf_android_remote_url_open_ready", {
+      uri: normalizedUrl,
+      sourceKind: "remote-url",
+      fileName,
+    });
+    return normalizedUrl;
+  } catch (error) {
+    recordPdfRunnerCatch({
+      kind: "critical_fail",
+      event: "pdf_android_remote_url_open_failed",
+      error,
+      category: "ui",
+      sourceKind: "remote-url",
+      errorStage: "open_view",
+      extra: {
+        uri: normalizedUrl,
+        fileName: fileName ?? null,
+      },
+    });
+    throw error instanceof Error ? error : new Error(String(error ?? "Android remote PDF open failed"));
+  }
 }
 
 async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogTitle = "Открыть PDF") {
@@ -285,6 +327,12 @@ export async function preparePdfExecutionSource(args: {
     fileName: args.fileName,
   });
 
+  if (Platform.OS === "android" || Platform.OS === "ios") {
+    // Keep backend-owned remote URLs intact for the mobile viewer/open boundary.
+    // Mobile preview can hand them off directly without forcing a local file session first.
+    return source;
+  }
+
   const cached = urlToLocal.get(url);
   if (cached && (await fileExists(cached))) {
     const normalizedCachedUri = normalizeLocalFileUri(cached);
@@ -363,6 +411,13 @@ export async function openPdfPreview(localUri: string, fileName?: string) {
   }
 
   if (Platform.OS === "android") {
+    if (isHttpUri(localUri)) {
+      await openAndroidRemotePdfUrlBoundary(localUri, {
+        owner: "pdf-runner",
+        fileName: fileName ?? null,
+      });
+      return;
+    }
     await openAndroidPdfContentUri(localUri, fileName);
     return;
   }
@@ -397,6 +452,13 @@ export async function openPdfExternal(localUri: string, fileName?: string) {
   }
 
   if (Platform.OS === "android") {
+    if (isHttpUri(localUri)) {
+      await openAndroidRemotePdfUrlBoundary(localUri, {
+        owner: "pdf-runner",
+        fileName: fileName ?? null,
+      });
+      return;
+    }
     await openAndroidPdfContentUri(localUri, fileName);
     return;
   }

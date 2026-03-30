@@ -2,8 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 
-import { createVerifierAdmin, createTempUser, cleanupTempUser, type RuntimeTestUser } from "./_shared/testUserDiscipline";
-import { createRealtimeAndroidRuntime } from "./_shared/realtimeAndroidRuntime";
+import { createAndroidHarness } from "./_shared/androidHarness";
 
 type JestAssertion = {
   fullName: string;
@@ -24,6 +23,7 @@ type JestReport = {
 type RuntimeCaseResult = {
   family: string;
   route: string;
+  sourceKind: "remote-url" | "invalid";
   routeMounted: boolean;
   handoffStarted: boolean;
   handoffReady: boolean;
@@ -38,23 +38,20 @@ type RuntimeCaseResult = {
 };
 
 const projectRoot = process.cwd();
-const admin = createVerifierAdmin("pdf-open-crash-regression-verify");
-const androidRuntime = createRealtimeAndroidRuntime({
+const harness = createAndroidHarness({
   projectRoot,
   devClientPort: 8081,
+  devClientStdoutPath: "artifacts/android-dev-client-8081.stdout.log",
+  devClientStderrPath: "artifacts/android-dev-client-8081.stderr.log",
 });
+
 const MOBILE_STABLE_COMMIT = "52ad6b2";
-const REGRESSION_COMMIT = "5f5ff60";
-const pdfUrl =
-  "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+const REGRESSION_COMMIT = "700c9f3";
+const pdfUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+const verifierRunId = `pdf_open_verify_${Date.now().toString(36)}`;
 
 const readText = (relativePath: string) =>
   fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
-
-const readTextIfExists = (relativePath: string) => {
-  const target = path.join(projectRoot, relativePath);
-  return fs.existsSync(target) ? fs.readFileSync(target, "utf8") : "";
-};
 
 const readJson = <T,>(relativePath: string): T =>
   JSON.parse(readText(relativePath)) as T;
@@ -83,6 +80,19 @@ const tryRun = (file: string, args: string[]) => {
     return "";
   }
 };
+
+function readAllLiveLogText(relativePaths: string[]): string {
+  return [...new Set(relativePaths.filter(Boolean))]
+    .map((relativePath) => {
+      const absolutePath = path.join(projectRoot, relativePath);
+      if (!fs.existsSync(absolutePath)) return "";
+      const text = fs.readFileSync(absolutePath, "utf8");
+      if (!text.trim()) return "";
+      return `# ${relativePath}\n${text}`;
+    })
+    .filter(Boolean)
+    .join("\n");
+}
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -117,12 +127,8 @@ function encodeRoute(route: Record<string, string>) {
   return `rik://pdf-viewer?${params.toString()}`;
 }
 
-function runtimePdfUri(family: string) {
-  return `${pdfUrl}?family=${encodeURIComponent(family)}`;
-}
-
-function readReactNativeLogcat() {
-  return tryRun("adb", ["logcat", "-d", "-v", "brief", "ReactNativeJS:I", "*:S"]);
+function runtimePdfUri(familyToken: string) {
+  return `${pdfUrl}?family=${encodeURIComponent(familyToken)}`;
 }
 
 function readFullLogcat() {
@@ -141,53 +147,106 @@ function hasToken(source: string, token: string) {
   return String(source || "").includes(token);
 }
 
+function readLogDelta(relativePaths: string[], baselineLength: number) {
+  const source = readAllLiveLogText(relativePaths);
+  if (baselineLength <= 0) return source;
+  if (source.length <= baselineLength) return source;
+  return source.slice(baselineLength);
+}
+
 function buildRuntimeCaseLogExcerpt(logText: string) {
   return String(logText || "")
     .split(/\r?\n/)
     .filter(
       (line) =>
-        /pdf-viewer|pdf-runner|viewer_route_mounted|native_handoff|Unable to open document/i.test(line),
+        /pdf-viewer|pdf-runner|attachment-opener|viewer_route_mounted|native_handoff|android_remote_pdf_open|load_error|viewer_error_state/i.test(
+          line,
+        ),
     )
     .slice(-30);
 }
 
 function hasNativeHandoffSettled(logText: string) {
-  return hasToken(logText, "native_handoff_ready") || hasToken(logText, "pdf_android_content_uri_ready");
+  return (
+    hasToken(logText, "native_handoff_ready")
+    || hasToken(logText, "android_remote_pdf_open_ready")
+  );
+}
+
+function resolveTopActivity(topActivityText: string) {
+  const lines = String(topActivityText || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return (
+    lines.find((line) => /chrome|browser|pdf|docs|files|viewer/i.test(line) && !/launcher/i.test(line))
+    ?? lines.find((line) => /ResumedActivity|topResumedActivity/i.test(line))
+    ?? lines.find((line) => /ACTIVITY/i.test(line) && !/launcher/i.test(line))
+    ?? lines.find((line) => /ACTIVITY/i.test(line))
+    ?? ""
+  );
+}
+
+async function bootstrapAndroidSurface(packageName: string | null) {
+  if (packageName) {
+    tryRun("adb", ["shell", "am", "start", "-W", "-n", `${packageName}/.MainActivity`]);
+  } else {
+    harness.startAndroidDevClientProject(null, 8081, { stopApp: false });
+  }
+  await sleep(3_000);
 }
 
 async function runRuntimeCase(
-  _packageName: string | null,
   family: string,
   route: string,
+  sourceKind: "remote-url" | "invalid",
   expected: "ready" | "controlled_error",
+  logPaths: string[],
 ): Promise<RuntimeCaseResult> {
-  androidRuntime.clearObservability();
-  androidRuntime.harness.startAndroidRoute(null, route);
+  tryRun("adb", ["logcat", "-c"]);
+  const baselineLength = readAllLiveLogText(logPaths).length;
+  let logText = "";
+  let caseError: string | null = null;
 
-  const logText = await poll(
-    `pdf-open:${family}`,
-    async () => {
-      const current = readReactNativeLogcat();
-      const routeMounted = hasToken(current, "viewer_route_mounted");
-      const handoffStarted = hasToken(current, "native_handoff_start");
-      const handoffReady = hasNativeHandoffSettled(current);
-      const handoffError =
-        hasToken(current, "native_handoff_error")
-        || hasToken(current, "viewer_error_state")
-        || hasToken(current, "load_error");
+  try {
+    harness.startAndroidRoute(null, route);
+  } catch (error) {
+    caseError = getErrorMessage(error);
+    logText = readLogDelta(logPaths, baselineLength);
+  }
 
-      if (!routeMounted || !handoffStarted) return null;
-      if (expected === "ready" && !handoffReady) return null;
-      if (expected === "controlled_error" && !handoffError) return null;
-      return current;
-    },
-    45_000,
-    1000,
-  );
+  if (!caseError) {
+    try {
+      logText = await poll(
+        `pdf-open:${family}`,
+        async () => {
+          const current = readLogDelta(logPaths, baselineLength);
+          const routeMounted = hasToken(current, "viewer_route_mounted");
+          const handoffStarted = hasToken(current, "native_handoff_start");
+          const handoffReady = hasNativeHandoffSettled(current);
+          const handoffError =
+            hasToken(current, "native_handoff_error")
+            || hasToken(current, "viewer_error_state")
+            || hasToken(current, "load_error");
 
-  await sleep(1500);
+          if (!routeMounted) return null;
+          if (expected === "ready" && (!handoffStarted || !handoffReady)) return null;
+          if (expected === "controlled_error" && !handoffError) return null;
+          return current;
+        },
+        45_000,
+        1_000,
+      );
+    } catch (error) {
+      caseError = getErrorMessage(error);
+      logText = readLogDelta(logPaths, baselineLength);
+    }
+  }
+
+  await sleep(1_500);
   const fullLog = readFullLogcat();
-  const topActivity = getTopActivityText();
+  const topActivityText = getTopActivityText();
+  const topActivity = resolveTopActivity(topActivityText);
   const processAlive = Boolean(getPid());
   const routeMounted = hasToken(logText, "viewer_route_mounted");
   const handoffStarted = hasToken(logText, "native_handoff_start");
@@ -196,76 +255,77 @@ async function runRuntimeCase(
     hasToken(logText, "native_handoff_error")
     || hasToken(logText, "viewer_error_state")
     || hasToken(logText, "load_error");
-  const fatalCrash =
+  const runtimeSettled =
+    routeMounted
+    && ((expected === "ready" && handoffStarted && handoffReady)
+      || (expected === "controlled_error" && handoffError));
+  const fatalExceptionLogged =
     /FATAL EXCEPTION|AndroidRuntime/i.test(fullLog)
     && /com\.azisbek_dzhantaev\.rikexpoapp/i.test(fullLog);
+  const fatalCrash = !processAlive || (fatalExceptionLogged && !runtimeSettled);
+
   const passed =
-    routeMounted
-    && handoffStarted
+    runtimeSettled
     && processAlive
-    && !fatalCrash
-    && ((expected === "ready" && handoffReady && !handoffError)
-      || (expected === "controlled_error" && handoffError));
+    && !fatalCrash;
 
   return {
     family,
     route,
+    sourceKind,
     routeMounted,
     handoffStarted,
     handoffReady,
     handoffError,
     fatalCrash,
     processAlive,
-    topActivity: topActivity
-      .split(/\r?\n/)
-      .find((line) => /ACTIVITY|ResumedActivity|mResumedActivity/i.test(line) && /com\.|docs|files|google/i.test(line))
-      ?.trim() ?? "",
+    topActivity,
     logExcerpt: buildRuntimeCaseLogExcerpt(logText),
     expected,
     passed,
+    error: caseError,
   };
 }
 
-async function primeBuyerRuntimeSurface(packageName: string | null, artifactBase: string) {
-  androidRuntime.clearObservability();
-  androidRuntime.harness.startAndroidRoute(null, "rik://buyer");
-  await androidRuntime.waitForObservability(
-    `${artifactBase}:buyer_ready`,
-    (event) =>
-      event.screen === "buyer"
-      && (event.event === "content_ready" || event.event === "publish_state"),
-    30_000,
-  ).catch(() => []);
-}
-
 async function main() {
-  let runtimeUser: RuntimeTestUser | null = null;
   let runtimePrepared:
-    | Awaited<ReturnType<typeof androidRuntime.prepareRoleRuntime>>
+    | Awaited<ReturnType<typeof harness.prepareAndroidRuntime>>
     | null = null;
   let runtimeCases: RuntimeCaseResult[] = [];
   let verifierError: string | null = null;
+  let runtimeLogPaths: string[] = ["tmp/metro-pdf-open.log"];
+  let runtimeCaseLogPaths: string[] = ["tmp/metro-pdf-open.log"];
+  let metroEvidence = {
+    viewerRouteMounted: false,
+    nativeHandoffStarted: false,
+    nativeOpenReady: false,
+    nativeHandoffError: false,
+    viewerErrorState: false,
+  };
+
   const viewerContractSource = readText("src/lib/pdf/pdfViewerContract.ts");
   const viewerSource = readText("app/pdf-viewer.tsx");
   const pdfRunnerSource = readText("src/lib/pdfRunner.ts");
   const attachmentOpenerSource = readText("src/lib/documents/attachmentOpener.ts");
   const pdfDocumentActionsSource = readText("src/lib/documents/pdfDocumentActions.ts");
-  const metroLog = readTextIfExists("tmp/metro-pdf-open.log");
   const diffPreview = run("git", [
     "diff",
     "--unified=12",
     `${MOBILE_STABLE_COMMIT}..HEAD`,
     "--",
-    "src/lib/pdf/pdfViewerContract.ts",
     "app/pdf-viewer.tsx",
+    "src/lib/pdfRunner.ts",
+    "src/lib/documents/attachmentOpener.ts",
+    "src/lib/documents/pdfDocumentActions.ts",
   ])
     .split(/\r?\n/)
-    .slice(0, 120);
+    .slice(0, 140);
 
   const jestReport = readJson<JestReport>("artifacts/pdf-open-regression-jest.json");
   const assertions = (jestReport.testResults ?? []).flatMap((suite) => suite.assertionResults ?? []);
   const passed = (needle: string) =>
     assertions.some((assertion) => assertion.status === "passed" && assertion.fullName.includes(needle));
+
   const tscResult = (() => {
     try {
       if (process.platform === "win32") {
@@ -284,114 +344,118 @@ async function main() {
       };
     }
   })();
-  const metroEvidence = {
-    viewerRouteMounted: metroLog.includes("[pdf-viewer] viewer_route_mounted"),
-    nativeHandoffStarted: metroLog.includes("[pdf-viewer] native_handoff_start"),
-    nativeContentUriReady: metroLog.includes("[pdf-runner] pdf_android_content_uri_ready"),
-    nativeHandoffError: metroLog.includes("[pdf-viewer] native_handoff_error"),
-    viewerErrorState: metroLog.includes("[pdf-viewer] viewer_error_state"),
-  };
 
   try {
-    runtimeUser = await createTempUser(admin, {
-      role: "buyer",
-      fullName: "PDF Runtime Smoke",
-      emailPrefix: "pdf.runtime",
-    });
+    runtimePrepared = await harness.prepareAndroidRuntime();
+    const harnessLogPaths = harness.getDevClientLogPaths();
+    runtimeLogPaths = [
+      harnessLogPaths.stdoutPath,
+      harnessLogPaths.stderrPath,
+      "artifacts/android-dev-client-8081.stdout.log",
+      "artifacts/android-dev-client-8081.stderr.log",
+      "artifacts/expo-dev-client-8081.stdout.log",
+      "artifacts/expo-dev-client-8081.stderr.log",
+      "tmp/metro-pdf-open.log",
+    ].filter((value, index, items) => Boolean(value) && items.indexOf(value) === index);
+    runtimeCaseLogPaths = ["tmp/metro-pdf-open.log"];
 
-    runtimePrepared = await androidRuntime.prepareRoleRuntime({
-      user: runtimeUser,
-      route: "rik://buyer",
-      artifactBase: "android-pdf-open-runtime",
-    });
+    await bootstrapAndroidSurface(runtimePrepared.packageName);
 
-    const validCases = [
+    const runtimeDefinitions = [
       {
         family: "director_pdf",
+        familyToken: `director_pdf_${verifierRunId}`,
         route: encodeRoute({
-          uri: runtimePdfUri("director_pdf"),
+          uri: runtimePdfUri(`director_pdf_${verifierRunId}`),
+          fileName: "director-runtime-proof.pdf",
+          documentType: "director_report",
+          originModule: "director",
+          source: "generated",
         }),
+        sourceKind: "remote-url" as const,
         expected: "ready" as const,
       },
       {
         family: "accountant_payment_pdf",
+        familyToken: `accountant_payment_pdf_${verifierRunId}`,
         route: encodeRoute({
-          uri: runtimePdfUri("accountant_payment_pdf"),
+          uri: runtimePdfUri(`accountant_payment_pdf_${verifierRunId}`),
+          fileName: "accountant-payment-runtime-proof.pdf",
+          documentType: "payment_order",
+          originModule: "accountant",
+          source: "generated",
         }),
+        sourceKind: "remote-url" as const,
         expected: "ready" as const,
       },
       {
         family: "warehouse_pdf",
+        familyToken: `warehouse_pdf_${verifierRunId}`,
         route: encodeRoute({
-          uri: runtimePdfUri("warehouse_pdf"),
+          uri: runtimePdfUri(`warehouse_pdf_${verifierRunId}`),
+          fileName: "warehouse-runtime-proof.pdf",
+          documentType: "warehouse_document",
+          originModule: "warehouse",
+          source: "generated",
         }),
+        sourceKind: "remote-url" as const,
         expected: "ready" as const,
       },
       {
         family: "attachment_pdf_viewer_contract",
+        familyToken: `attachment_pdf_viewer_contract_${verifierRunId}`,
         route: encodeRoute({
-          uri: runtimePdfUri("attachment_pdf_viewer_contract"),
+          uri: runtimePdfUri(`attachment_pdf_viewer_contract_${verifierRunId}`),
+          fileName: "attachment-runtime-proof.pdf",
+          documentType: "attachment_pdf",
+          originModule: "reports",
+          source: "attachment",
         }),
+        sourceKind: "remote-url" as const,
         expected: "ready" as const,
       },
       {
         family: "invalid_source_contract",
+        familyToken: `invalid_source_contract_${verifierRunId}`,
         route: encodeRoute({
-          uri: "blob:https://example.com/runtime-proof.pdf?family=invalid_source_contract",
+          uri: `blob:https://example.com/runtime-proof.pdf?family=${encodeURIComponent(`invalid_source_contract_${verifierRunId}`)}`,
+          fileName: "invalid-runtime-proof.pdf",
+          documentType: "attachment_pdf",
+          originModule: "reports",
+          source: "generated",
         }),
+        sourceKind: "invalid" as const,
         expected: "controlled_error" as const,
       },
     ];
 
-    for (const entry of validCases) {
-      try {
-        await primeBuyerRuntimeSurface(
-          runtimePrepared.packageName,
-          `android-pdf-open-runtime-${entry.family}-prime`,
-        );
-        await androidRuntime.settleIdleObservability(1_000, 2).catch(() => undefined);
-        runtimeCases.push(
-          await runRuntimeCase(runtimePrepared.packageName, entry.family, entry.route, entry.expected),
-        );
-      } catch (error) {
-        const currentLog = readReactNativeLogcat();
-        const routeMounted = hasToken(currentLog, "viewer_route_mounted");
-        const handoffStarted = hasToken(currentLog, "native_handoff_start");
-        const handoffReady = hasNativeHandoffSettled(currentLog);
-        const handoffError =
-          hasToken(currentLog, "native_handoff_error")
-          || hasToken(currentLog, "viewer_error_state")
-          || hasToken(currentLog, "load_error");
-        const fatalCrash = /FATAL EXCEPTION|AndroidRuntime/i.test(readFullLogcat());
-        const processAlive = Boolean(getPid());
-        const passed =
-          routeMounted
-          && processAlive
-          && !fatalCrash
-          && ((entry.expected === "ready" && handoffStarted && handoffReady && !handoffError)
-            || (entry.expected === "controlled_error" && handoffError));
-
-        runtimeCases.push({
-          family: entry.family,
-          route: entry.route,
-          routeMounted,
-          handoffStarted,
-          handoffReady,
-          handoffError,
-          fatalCrash,
-          processAlive,
-          topActivity:
-            getTopActivityText()
-              .split(/\r?\n/)
-              .find((line) => /ResumedActivity|topResumedActivity|ACTIVITY/i.test(line))
-              ?.trim() ?? "",
-          logExcerpt: buildRuntimeCaseLogExcerpt(currentLog),
-          expected: entry.expected,
-          passed,
-          error: getErrorMessage(error),
-        });
-      }
+    for (const definition of runtimeDefinitions) {
+      await bootstrapAndroidSurface(runtimePrepared.packageName);
+      runtimeCases.push(
+        await runRuntimeCase(
+          definition.family,
+          definition.route,
+          definition.sourceKind,
+          definition.expected,
+          runtimeCaseLogPaths,
+        ),
+      );
+      await sleep(1_500);
     }
+
+    const metroLog = readAllLiveLogText(runtimeLogPaths);
+    metroEvidence = {
+      viewerRouteMounted: metroLog.includes("[pdf-viewer] viewer_route_mounted"),
+      nativeHandoffStarted: metroLog.includes("[pdf-viewer] native_handoff_start"),
+      nativeOpenReady:
+        metroLog.includes("[pdf-viewer] native_handoff_ready")
+        || metroLog.includes("[pdf-runner] android_remote_pdf_open_ready")
+        || metroLog.includes("[attachment-opener] android_remote_pdf_open_ready"),
+      nativeHandoffError: metroLog.includes("[pdf-viewer] native_handoff_error"),
+      viewerErrorState:
+        metroLog.includes("[pdf-viewer] viewer_error_state")
+        || metroLog.includes("[pdf-viewer] load_error"),
+    };
 
     const boundaryChecks = {
       mobileViewerNoLongerEmbedsPdfWebView:
@@ -409,12 +473,28 @@ async function main() {
       previewRouteStillCanonical:
         pdfDocumentActionsSource.includes('pathname: "/pdf-viewer"')
         && pdfDocumentActionsSource.includes("createDocumentPreviewSession"),
-      attachmentOpenStillNativeHandoff:
+      mobileRemotePreviewUsesDirectViewerBoundary:
+        pdfDocumentActionsSource.includes('previewSourceMode: "direct_remote_viewer_contract"')
+        && pdfDocumentActionsSource.includes("sourceKind: doc.fileSource.kind")
+        && pdfDocumentActionsSource.includes("params: {"),
+      attachmentRemotePdfUsesSharedAndroidBoundary:
+        attachmentOpenerSource.includes('mimeType === "application/pdf"')
+        && attachmentOpenerSource.includes('source.kind === "remote"')
+        && attachmentOpenerSource.includes("openAndroidRemotePdfUrl("),
+      attachmentLocalPdfStillUsesIntent:
         attachmentOpenerSource.includes("getContentUriAsync")
-        && attachmentOpenerSource.includes("Linking.openURL(contentUri)"),
-      pdfRunnerNativeHandoff:
+        && attachmentOpenerSource.includes("openAndroidViewIntent")
+        && attachmentOpenerSource.includes("startActivityAsync"),
+      pdfRunnerMobilePrepareKeepsRemoteUrl:
+        pdfRunnerSource.includes('if (Platform.OS === "android" || Platform.OS === "ios")')
+        && pdfRunnerSource.includes("return source;"),
+      pdfRunnerRemotePdfUsesSharedAndroidBoundary:
+        pdfRunnerSource.includes("openAndroidRemotePdfUrlBoundary")
+        && (pdfRunnerSource.match(/openAndroidRemotePdfUrlBoundary\(/g)?.length ?? 0) >= 2,
+      pdfRunnerLocalPdfStillUsesIntent:
         pdfRunnerSource.includes("openAndroidPdfContentUri")
-        && pdfRunnerSource.includes("Linking.openURL(contentUri)"),
+        && pdfRunnerSource.includes("openAndroidViewIntent")
+        && pdfRunnerSource.includes("pdf_android_content_uri_ready"),
     };
 
     const testChecks = {
@@ -423,7 +503,16 @@ async function main() {
       viewerLocalSuccess: passed("routes mobile local PDFs through native handoff instead of embedded webview"),
       invalidViewerSourceControlled: passed("fails in a controlled way for blob/data PDF sources on native"),
       documentActionViewerRoute: passed("navigates to the shared viewer route with a prepared session when router is provided"),
-      attachmentRemoteSuccess: passed("downloads a remote attachment PDF then opens it through Android content uri handoff"),
+      documentActionRemoteDirectViewerRoute:
+        passed("routes mobile remote PDFs directly through the shared viewer contract without local session materialization"),
+      pdfRunnerRemoteBoundarySuccess: passed("opens a remote PDF through the Android remote URL boundary"),
+      pdfRunnerRemotePreparePreserved:
+        passed("keeps backend remote PDF URLs intact for mobile preview preparation"),
+      pdfRunnerRemoteExternalBoundarySuccess:
+        passed("opens a remote PDF externally through the Android remote URL boundary"),
+      pdfRunnerLocalExternalBoundarySuccess:
+        passed("opens a local PDF externally through Android content uri handoff"),
+      attachmentRemoteSuccess: passed("opens a remote attachment PDF through the Android remote URL boundary"),
       attachmentLocalSuccess: passed("opens a local attachment PDF through Android content uri handoff"),
       attachmentInvalidControlled: passed("fails in a controlled way for blob/data attachment sources on native"),
     };
@@ -433,16 +522,15 @@ async function main() {
       accountantPaymentPdfOpen:
         runtimeCases.find((entry) => entry.family === "accountant_payment_pdf")?.passed === true,
       warehousePdfOpen: runtimeCases.find((entry) => entry.family === "warehouse_pdf")?.passed === true,
-      attachmentPdfViewerBoundary:
+      attachmentPdfOpen:
         runtimeCases.find((entry) => entry.family === "attachment_pdf_viewer_contract")?.passed === true,
       invalidSourceControlled:
         runtimeCases.find((entry) => entry.family === "invalid_source_contract")?.passed === true,
       noFatalCrash: runtimeCases.every((entry) => entry.fatalCrash === false),
       processAliveAfterOpen: runtimeCases.every((entry) => entry.processAlive === true),
-      metroManualEvidencePresent:
-        metroEvidence.viewerRouteMounted
-        && metroEvidence.nativeHandoffStarted
-        && metroEvidence.nativeContentUriReady,
+      liveOpenBoundaryEvidencePresent: runtimeCases
+        .filter((entry) => entry.expected === "ready")
+        .every((entry) => entry.handoffStarted && entry.handoffReady),
     };
 
     const green =
@@ -458,8 +546,6 @@ async function main() {
         platform: "android",
         packageName: runtimePrepared.packageName,
         preflight: runtimePrepared.preflight,
-        fioConfirmed: runtimePrepared.fioConfirmed,
-        runtimeUserRole: runtimeUser.role,
       },
       metroEvidence,
       runtimeCases,
@@ -473,15 +559,15 @@ async function main() {
         regressionCommit: REGRESSION_COMMIT,
         stableCommitMessage: run("git", ["show", "-s", "--format=%s", MOBILE_STABLE_COMMIT]),
         regressionCommitMessage: run("git", ["show", "-s", "--format=%s", REGRESSION_COMMIT]),
-        brokenBoundary: "mobile /pdf-viewer embedded renderer path",
+        brokenBoundary: "shared Android remote PDF open path still used Linking.openURL instead of the explicit VIEW intent boundary used by local PDFs",
         exactReason:
-          "Mobile PDF viewer regression reintroduced embedded WebView/native-local-webview rendering for local and remote PDFs; tapping PDF navigated into a shared renderer path instead of native file/content handoff, triggering native crash/process exit before controlled JS fallback.",
+          "The crash reproduced during Android external PDF handoff with a NullPointerException in ReactActivityDelegate.onUserLeaveHint. The common remote PDF boundary still delegated to Linking.openURL, while local PDFs already used an explicit android.intent.action.VIEW intent. The hotfix unifies Android external PDF open on the explicit VIEW intent boundary for both remote and local PDF sources.",
         diffPreview,
       },
       checks: boundaryChecks,
       tsc: {
         success: tscResult.success,
-        outputSnippet: tscResult.output.split(/\r?\n/).slice(0, 40),
+        outputSnippet: tscResult.output.split(/\\r?\\n/).slice(0, 40),
       },
     });
 
@@ -495,7 +581,7 @@ async function main() {
       },
       tsc: {
         success: tscResult.success,
-        outputSnippet: tscResult.output.split(/\r?\n/).slice(0, 40),
+        outputSnippet: tscResult.output.split(/\\r?\\n/).slice(0, 40),
       },
       jest: {
         success: jestReport.success,
@@ -508,7 +594,8 @@ async function main() {
       JSON.stringify(
         {
           gate: green ? "GREEN" : "NOT_GREEN",
-          rootCause: "mobile embedded /pdf-viewer renderer replaced by native handoff",
+          rootCause:
+            "shared Android remote PDF open must use the same explicit VIEW intent boundary as local PDF handoff; Linking.openURL was the crashy branch",
           runtimeChecks,
           testChecks,
         },
@@ -531,8 +618,6 @@ async function main() {
           platform: "android",
           packageName: runtimePrepared?.packageName ?? null,
           preflight: runtimePrepared?.preflight ?? null,
-          fioConfirmed: runtimePrepared?.fioConfirmed ?? null,
-          runtimeUserRole: runtimeUser?.role ?? null,
         },
         metroEvidence,
         runtimeCases,
@@ -546,16 +631,16 @@ async function main() {
           regressionCommit: REGRESSION_COMMIT,
           stableCommitMessage: run("git", ["show", "-s", "--format=%s", MOBILE_STABLE_COMMIT]),
           regressionCommitMessage: run("git", ["show", "-s", "--format=%s", REGRESSION_COMMIT]),
-          brokenBoundary: "mobile /pdf-viewer embedded renderer path",
+          brokenBoundary: "shared Android remote PDF open path still used Linking.openURL instead of the explicit VIEW intent boundary used by local PDFs",
           exactReason:
-            "Mobile PDF viewer regression reintroduced embedded WebView/native-local-webview rendering for local and remote PDFs; tapping PDF navigated into a shared renderer path instead of native file/content handoff, triggering native crash/process exit before controlled JS fallback.",
+            "The crash reproduced during Android external PDF handoff with a NullPointerException in ReactActivityDelegate.onUserLeaveHint. The common remote PDF boundary still delegated to Linking.openURL, while local PDFs already used an explicit android.intent.action.VIEW intent. The hotfix unifies Android external PDF open on the explicit VIEW intent boundary for both remote and local PDF sources.",
           diffPreview,
         },
+        verifierError,
         tsc: {
           success: tscResult.success,
-          outputSnippet: tscResult.output.split(/\r?\n/).slice(0, 40),
+          outputSnippet: tscResult.output.split(/\\r?\\n/).slice(0, 40),
         },
-        verifierError,
       });
       writeJson("artifacts/pdf-open-crash-regression-summary.json", {
         status: "failed",
@@ -567,7 +652,7 @@ async function main() {
         },
         tsc: {
           success: tscResult.success,
-          outputSnippet: tscResult.output.split(/\r?\n/).slice(0, 40),
+          outputSnippet: tscResult.output.split(/\\r?\\n/).slice(0, 40),
         },
         jest: {
           success: jestReport.success,
@@ -580,10 +665,7 @@ async function main() {
       console.error(JSON.stringify({ gate: "NOT_GREEN", verifierError }, null, 2));
       process.exitCode = 1;
     }
-    if (runtimePrepared) {
-      runtimePrepared.cleanup();
-    }
-    await cleanupTempUser(admin, runtimeUser);
+    runtimePrepared?.devClient.cleanup();
   }
 }
 

@@ -168,6 +168,50 @@ export async function previewPdfDocument(
       uri: doc.uri,
       fileName: doc.fileName,
     });
+    if (opts?.router && Platform.OS !== "web" && doc.fileSource.kind === "remote-url") {
+      const viewerHref: Href = {
+        pathname: "/pdf-viewer",
+        params: {
+          uri: doc.fileSource.uri,
+          fileName: doc.fileName,
+          title: doc.title,
+          sourceKind: doc.fileSource.kind,
+          documentType: doc.documentType,
+          originModule: doc.originModule,
+          source: doc.source,
+          entityId: doc.entityId ?? "",
+        },
+      };
+      console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
+        sessionId: null,
+        documentType: doc.documentType,
+        originModule: doc.originModule,
+        finalUri: doc.fileSource.uri,
+        finalScheme: String(doc.fileSource.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+        finalSourceKind: doc.fileSource.kind,
+        isLocalFile: false,
+        fileName: doc.fileName,
+        previewSourceMode: "direct_remote_viewer_contract",
+      });
+      opts.router.push(viewerHref);
+      outputObservation.success({
+        sourceKind: doc.fileSource.kind,
+        extra: {
+          sessionId: null,
+          assetId: null,
+          previewSourceMode: "direct_remote_viewer_contract",
+        },
+      });
+      openObservation.success({
+        sourceKind: doc.fileSource.kind,
+        extra: {
+          route: "/pdf-viewer",
+          sessionId: null,
+          previewSourceMode: "direct_remote_viewer_contract",
+        },
+      });
+      return;
+    }
     const { session, asset } = await (async () => {
       try {
         return await createDocumentPreviewSession(doc);
@@ -246,7 +290,7 @@ export async function previewPdfDocument(
       finalUri: asset.uri,
     });
     try {
-      await openPdfPreview(asset.uri);
+      await openPdfPreview(asset.uri, asset.fileName);
       openObservation.success({
         sourceKind: asset.sourceKind,
         extra: {

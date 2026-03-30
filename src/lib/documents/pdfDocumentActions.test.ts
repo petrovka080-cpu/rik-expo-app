@@ -4,12 +4,6 @@ const mockOpenPdfShare = jest.fn();
 const mockOpenPdfExternal = jest.fn();
 const mockCreateDocumentPreviewSession = jest.fn();
 
-jest.mock("react-native", () => ({
-  Platform: {
-    OS: "web",
-  },
-}));
-
 jest.mock("../pdfRunner", () => ({
   preparePdfExecutionSource: (...args: unknown[]) => mockPreparePdfExecutionSource(...args),
   openPdfPreview: (...args: unknown[]) => mockOpenPdfPreview(...args),
@@ -21,6 +15,7 @@ jest.mock("./pdfDocumentSessions", () => ({
   createDocumentPreviewSession: (...args: unknown[]) => mockCreateDocumentPreviewSession(...args),
 }));
 
+import { Platform } from "react-native";
 import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
@@ -45,13 +40,26 @@ const baseDocument = {
 };
 
 describe("pdfDocumentActions", () => {
+  const originalPlatformOs = Platform.OS;
+
   beforeEach(() => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "web",
+    });
     mockPreparePdfExecutionSource.mockReset();
     mockOpenPdfPreview.mockReset();
     mockOpenPdfShare.mockReset();
     mockOpenPdfExternal.mockReset();
     mockCreateDocumentPreviewSession.mockReset();
     resetPlatformObservabilityEvents();
+  });
+
+  afterAll(() => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: originalPlatformOs,
+    });
   });
 
   it("prepares PDF output with typed execution source", async () => {
@@ -150,6 +158,41 @@ describe("pdfDocumentActions", () => {
           event.event === "pdf_preview_open"
           && event.result === "error"
           && event.extra?.pdfFailureType === "open_fail",
+      ),
+    ).toBe(true);
+  });
+
+  it("routes mobile remote PDFs directly through the shared viewer contract without local session materialization", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    const push = jest.fn();
+
+    await previewPdfDocument(baseDocument, {
+      router: { push },
+    });
+
+    expect(mockCreateDocumentPreviewSession).not.toHaveBeenCalled();
+    expect(push).toHaveBeenCalledWith({
+      pathname: "/pdf-viewer",
+      params: {
+        uri: "https://example.com/payment.pdf",
+        fileName: "payment.pdf",
+        title: "Payment PDF",
+        sourceKind: "remote-url",
+        documentType: "payment_order",
+        originModule: "accountant",
+        source: "generated",
+        entityId: "",
+      },
+    });
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.event === "pdf_preview_open"
+          && event.result === "success"
+          && event.extra?.previewSourceMode === "direct_remote_viewer_contract",
       ),
     ).toBe(true);
   });

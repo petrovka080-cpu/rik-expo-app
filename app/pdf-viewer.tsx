@@ -418,25 +418,6 @@ export default function PdfViewerScreen() {
         openTime: new Date().toISOString(),
       });
 
-      if (Platform.OS !== "web" && resolution.scheme === "file") {
-        try {
-          const fileInfo = await inspectLocalPdfFile(resolution.asset.uri);
-          if (cancelled) return;
-          if (fileInfo && !fileInfo.exists) {
-            markError("Document file is no longer available on this device.", "resolution");
-            return;
-          }
-        } catch (error) {
-          if (cancelled) return;
-          const message = error instanceof Error ? error.message : String(error);
-          console.error("[pdf-viewer] viewer_local_file_validation_failed", {
-            sessionId: next.session.sessionId,
-            uri: resolution.asset.uri,
-            error: message,
-          });
-        }
-      }
-
       enterLoading();
       if (resolution.kind === "resolved-native-handoff") {
         await handoffPdfPreview(resolution.asset, "primary");

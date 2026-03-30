@@ -5,6 +5,7 @@ const mockCopyAsync = jest.fn();
 const mockGetContentUriAsync = jest.fn();
 const mockShareAsync = jest.fn();
 const mockIsAvailableAsync = jest.fn();
+const mockStartActivityAsync = jest.fn();
 
 jest.mock("react-native", () => ({
   Linking: {
@@ -25,6 +26,10 @@ jest.mock("expo-file-system/legacy", () => ({
 jest.mock("expo-sharing", () => ({
   isAvailableAsync: (...args: unknown[]) => mockIsAvailableAsync(...args),
   shareAsync: (...args: unknown[]) => mockShareAsync(...args),
+}));
+
+jest.mock("expo-intent-launcher", () => ({
+  startActivityAsync: (...args: unknown[]) => mockStartActivityAsync(...args),
 }));
 
 jest.mock("../fileSystemPaths", () => ({
@@ -59,11 +64,13 @@ describe("attachmentOpener", () => {
     mockGetContentUriAsync.mockReset();
     mockShareAsync.mockReset();
     mockIsAvailableAsync.mockReset();
+    mockStartActivityAsync.mockReset();
 
     mockIsAvailableAsync.mockResolvedValue(true);
     mockGetInfoAsync.mockResolvedValue({ exists: true, size: 128 });
     mockDownloadAsync.mockImplementation(async (_url: string, target: string) => ({ uri: target }));
     mockGetContentUriAsync.mockImplementation(async (uri: string) => `content://${encodeURIComponent(uri)}`);
+    mockStartActivityAsync.mockResolvedValue({ resultCode: 0 });
   });
 
   it("opens a local attachment PDF through Android content uri handoff", async () => {
@@ -75,10 +82,15 @@ describe("attachmentOpener", () => {
 
     expect(mockDownloadAsync).not.toHaveBeenCalled();
     expect(mockGetContentUriAsync).toHaveBeenCalledWith("file:///cache/attachment.pdf");
-    expect(mockOpenUrl).toHaveBeenCalledWith("content://file%3A%2F%2F%2Fcache%2Fattachment.pdf");
+    expect(mockStartActivityAsync).toHaveBeenCalledWith("android.intent.action.VIEW", {
+      data: "content://file%3A%2F%2F%2Fcache%2Fattachment.pdf",
+      flags: 1,
+      type: "application/pdf",
+    });
+    expect(mockOpenUrl).not.toHaveBeenCalled();
   });
 
-  it("downloads a remote attachment PDF then opens it through Android content uri handoff", async () => {
+  it("opens a remote attachment PDF through the Android remote URL boundary", async () => {
     mockGetInfoAsync.mockResolvedValueOnce({ exists: false, size: 0 });
 
     await openAppAttachment({
@@ -87,9 +99,14 @@ describe("attachmentOpener", () => {
       mimeType: "application/pdf",
     });
 
-    expect(mockDownloadAsync).toHaveBeenCalled();
-    expect(mockGetContentUriAsync).toHaveBeenCalled();
-    expect(mockOpenUrl).toHaveBeenCalled();
+    expect(mockStartActivityAsync).toHaveBeenCalledWith("android.intent.action.VIEW", {
+      data: "https://example.com/attachment.pdf",
+      flags: 1,
+      type: "application/pdf",
+    });
+    expect(mockDownloadAsync).not.toHaveBeenCalled();
+    expect(mockGetContentUriAsync).not.toHaveBeenCalled();
+    expect(mockOpenUrl).not.toHaveBeenCalled();
   });
 
   it("fails in a controlled way for blob/data attachment sources on native", async () => {
@@ -101,6 +118,7 @@ describe("attachmentOpener", () => {
       }),
     ).rejects.toThrow("Attachment handoff cannot use blob/data URI on mobile");
 
+    expect(mockStartActivityAsync).not.toHaveBeenCalled();
     expect(mockOpenUrl).not.toHaveBeenCalled();
   });
 });
