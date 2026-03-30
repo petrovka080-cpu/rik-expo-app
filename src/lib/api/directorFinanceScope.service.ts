@@ -2,10 +2,10 @@ import { supabase } from "../supabaseClient";
 import { beginPlatformObservability } from "../observability/platformObservability";
 import { listAccountantInbox } from "./accountant";
 import {
-  fetchDirectorFinancePanelScopeV3ViaRpc,
+  fetchDirectorFinancePanelScopeV4ViaRpc,
   mapToFinanceRow,
   normalizeFinSpendRows,
-  type DirectorFinancePanelScopeV3,
+  type DirectorFinancePanelScopeV4,
   type FinRep,
   type FinSpendRow,
   type FinSpendSummary,
@@ -16,7 +16,7 @@ import type {
   DirectorFinanceCanonicalSemantics,
 } from "../../screens/director/director.readModels";
 
-type DirectorFinanceDisplayMode = DirectorFinancePanelScopeV3["displayMode"];
+type DirectorFinanceDisplayMode = DirectorFinancePanelScopeV4["displayMode"];
 
 export type DirectorFinanceScreenScopeIssueScope =
   | "finance_rows"
@@ -34,13 +34,13 @@ export type DirectorFinanceScreenScopeResult = {
   canonicalScope: DirectorFinanceCanonicalScope;
   finRep: FinRep;
   finSpendSummary: FinSpendSummary;
-  panelScope: DirectorFinancePanelScopeV3 | null;
+  panelScope: DirectorFinancePanelScopeV4 | null;
   financeDisplayMode: DirectorFinanceDisplayMode;
   issues: DirectorFinanceScreenScopeIssue[];
   supportRowsLoaded: boolean;
   cutoverMeta: {
-    primaryOwner: "rpc_v3";
-    contractVersion: "v3";
+    primaryOwner: "rpc_v4";
+    contractVersion: "v4";
     supportRowsReason: "not_requested";
     backendFirstPrimary: boolean;
     summaryCompatibilityOverlay: boolean;
@@ -48,11 +48,11 @@ export type DirectorFinanceScreenScopeResult = {
     financeSemantics: DirectorFinanceCanonicalSemantics;
   };
   sourceMeta: {
-    financeSummary: "rpc_panel_scope_v3_canonical" | "rpc_panel_scope_v3_fallback";
-    spendSummary: "rpc_panel_scope_v3_canonical" | "rpc_panel_scope_v3_fallback";
+    financeSummary: "rpc_panel_scope_v4_canonical";
+    spendSummary: "rpc_panel_scope_v4_canonical";
     financeRows: "legacy_accountant_inbox" | "not_loaded";
     spendRows: "legacy_spend_view" | "not_loaded";
-    panelScope: "rpc_v3";
+    panelScope: "rpc_v4";
     financeDisplayMode: DirectorFinanceDisplayMode;
   };
 };
@@ -72,7 +72,7 @@ type DirectorFinanceScreenScopeArgs = {
 };
 
 type DirectorFinancePrimaryScopeResult = {
-  panelScopeV3: DirectorFinancePanelScopeV3 | null;
+  panelScopeV4: DirectorFinancePanelScopeV4 | null;
   issues: DirectorFinanceScreenScopeIssue[];
 };
 
@@ -112,19 +112,14 @@ const isServiceKind = (value: unknown): boolean => {
   return normalized.includes("\u0443\u0441\u043b\u0443\u0433") || normalized.includes("service");
 };
 
-const buildFinanceMetricSourceMap = (
-  mode: DirectorFinanceCanonicalScope["mode"],
-): DirectorFinanceCanonicalScope["metricSourceMap"] => {
-  const obligationsSource = mode === "canonical" ? "summary_v3" : "summary_legacy";
-  const obligationsBasePath = mode === "canonical" ? "summaryV3" : "summary";
-
+const buildFinanceMetricSourceMap = (): DirectorFinanceCanonicalScope["metricSourceMap"] => {
   return [
     {
       key: "obligations_approved",
       label: "\u0423\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e \u043f\u043e \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044f\u043c",
       semantics: "invoice_level_obligations",
-      source: obligationsSource,
-      sourcePath: `${obligationsBasePath}.${mode === "canonical" ? "totalApproved" : "approved"}`,
+      source: "summary_v4",
+      sourcePath: "canonical.summary.approvedTotal",
       inclusion: {
         materials: "conditional",
         works: "conditional",
@@ -136,8 +131,8 @@ const buildFinanceMetricSourceMap = (
       key: "obligations_paid",
       label: "\u041e\u043f\u043b\u0430\u0447\u0435\u043d\u043e",
       semantics: "invoice_level_obligations",
-      source: obligationsSource,
-      sourcePath: `${obligationsBasePath}.${mode === "canonical" ? "totalPaid" : "paid"}`,
+      source: "summary_v4",
+      sourcePath: "canonical.summary.paidTotal",
       inclusion: {
         materials: "conditional",
         works: "conditional",
@@ -149,8 +144,8 @@ const buildFinanceMetricSourceMap = (
       key: "obligations_debt",
       label: "\u0414\u043e\u043b\u0433 \u043f\u043e \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044f\u043c",
       semantics: "invoice_level_obligations",
-      source: obligationsSource,
-      sourcePath: `${obligationsBasePath}.${mode === "canonical" ? "totalDebt" : "toPay"}`,
+      source: "summary_v4",
+      sourcePath: "canonical.summary.debtTotal",
       inclusion: {
         materials: "conditional",
         works: "conditional",
@@ -214,7 +209,7 @@ const buildFinanceMetricSourceMap = (
 };
 
 const buildFinanceWorkInclusionDiagnostics = (
-  panelScope: DirectorFinancePanelScopeV3,
+  panelScope: DirectorFinancePanelScopeV4,
 ): DirectorFinanceCanonicalScope["workInclusion"] => {
   const observedKinds = panelScope.spend.kindRows
     .map((row) => trimText(row.kind))
@@ -246,13 +241,12 @@ const buildFinanceUiExplainer = (): DirectorFinanceCanonicalScope["uiExplainer"]
 });
 
 const buildDirectorFinanceCanonicalScope = (
-  panelScope: DirectorFinancePanelScopeV3,
+  panelScope: DirectorFinancePanelScopeV4,
 ): DirectorFinanceCanonicalScope => {
-  const mode: DirectorFinanceCanonicalScope["mode"] =
-    panelScope.displayMode === "canonical_v3" ? "canonical" : "fallback";
+  const mode: DirectorFinanceCanonicalScope["mode"] = "canonical";
   const semantics: DirectorFinanceCanonicalSemantics = "invoice_level_obligations";
-  const sourceVersion = trimText(panelScope.meta.payloadShapeVersion || panelScope.meta.sourceVersion) || "v3";
-  const metricSourceMap = buildFinanceMetricSourceMap(mode);
+  const sourceVersion = trimText(panelScope.meta.payloadShapeVersion || panelScope.meta.sourceVersion) || "v4";
+  const metricSourceMap = buildFinanceMetricSourceMap();
   const workInclusion = buildFinanceWorkInclusionDiagnostics(panelScope);
   const uiExplainer = buildFinanceUiExplainer();
   const obligationsDebtFormulaHint =
@@ -265,25 +259,40 @@ const buildDirectorFinanceCanonicalScope = (
       mode,
       semantics,
       summary: {
-        approvedTotal: toFiniteNumber(panelScope.summaryV3.totalApproved),
-        paidTotal: toFiniteNumber(panelScope.summaryV3.totalPaid),
-        debtTotal: toFiniteNumber(panelScope.summaryV3.totalDebt),
-        overpaymentTotal: toFiniteNumber(panelScope.summaryV3.totalOverpayment),
-        overdueCount: toFiniteNumber(panelScope.summaryV3.overdueCount),
-        overdueAmount: toFiniteNumber(panelScope.summaryV3.overdueAmount),
-        criticalCount: toFiniteNumber(panelScope.summaryV3.criticalCount),
-        criticalAmount: toFiniteNumber(panelScope.summaryV3.criticalAmount),
-        debtCount: toFiniteNumber(panelScope.summaryV3.debtCount),
-        partialCount: toFiniteNumber(panelScope.summaryV3.partialCount),
-        partialPaidTotal: toFiniteNumber(panelScope.summaryV3.partialPaid),
+        approvedTotal: toFiniteNumber(panelScope.canonical.summary.approvedTotal),
+        paidTotal: toFiniteNumber(panelScope.canonical.summary.paidTotal),
+        debtTotal: toFiniteNumber(panelScope.canonical.summary.debtTotal),
+        overpaymentTotal: toFiniteNumber(panelScope.canonical.summary.overpaymentTotal),
+        overdueCount: toFiniteNumber(panelScope.canonical.summary.overdueCount),
+        overdueAmount: toFiniteNumber(panelScope.canonical.summary.overdueAmount),
+        criticalCount: toFiniteNumber(panelScope.canonical.summary.criticalCount),
+        criticalAmount: toFiniteNumber(panelScope.canonical.summary.criticalAmount),
+        debtCount: toFiniteNumber(panelScope.canonical.summary.debtCount),
+        partialCount: toFiniteNumber(panelScope.canonical.summary.partialCount),
+        partialPaidTotal: toFiniteNumber(panelScope.canonical.summary.partialPaidTotal),
       },
-      suppliers: panelScope.supplierRows.map((row) => ({
+      suppliers: panelScope.canonical.suppliers.map((row) => ({
         supplierId: trimText(row.supplierId) || null,
         supplierName: trimText(row.supplierName) || "—",
-        approvedTotal: toFiniteNumber(row.payable),
-        paidTotal: toFiniteNumber(row.paid),
-        debtTotal: toFiniteNumber(row.debt),
-        overpaymentTotal: toFiniteNumber(row.overpayment),
+        approvedTotal: toFiniteNumber(row.approvedTotal),
+        paidTotal: toFiniteNumber(row.paidTotal),
+        debtTotal: toFiniteNumber(row.debtTotal),
+        overpaymentTotal: toFiniteNumber(row.overpaymentTotal),
+        invoiceCount: toFiniteNumber(row.invoiceCount),
+        overdueCount: toFiniteNumber(row.overdueCount),
+        criticalCount: toFiniteNumber(row.criticalCount),
+        semanticsMode: semantics,
+        sourceVersion,
+      })),
+      objects: panelScope.canonical.objects.map((row) => ({
+        objectKey: trimText(row.objectKey) || "Без объекта",
+        objectId: trimText(row.objectId) || null,
+        objectCode: trimText(row.objectCode) || null,
+        objectName: trimText(row.objectName) || "Без объекта",
+        approvedTotal: toFiniteNumber(row.approvedTotal),
+        paidTotal: toFiniteNumber(row.paidTotal),
+        debtTotal: toFiniteNumber(row.debtTotal),
+        overpaymentTotal: toFiniteNumber(row.overpaymentTotal),
         invoiceCount: toFiniteNumber(row.invoiceCount),
         overdueCount: toFiniteNumber(row.overdueCount),
         criticalCount: toFiniteNumber(row.criticalCount),
@@ -292,9 +301,9 @@ const buildDirectorFinanceCanonicalScope = (
       })),
       obligations: {
         semantics: "invoice_level_obligations",
-        approved: toFiniteNumber(panelScope.summaryV3.totalApproved),
-        paid: toFiniteNumber(panelScope.summaryV3.totalPaid),
-        debt: toFiniteNumber(panelScope.summaryV3.totalDebt),
+        approved: toFiniteNumber(panelScope.canonical.summary.approvedTotal),
+        paid: toFiniteNumber(panelScope.canonical.summary.paidTotal),
+        debt: toFiniteNumber(panelScope.canonical.summary.debtTotal),
         overpaymentCompensationApplied: false,
         debtFormulaHint: obligationsDebtFormulaHint,
       },
@@ -310,14 +319,15 @@ const buildDirectorFinanceCanonicalScope = (
       workInclusion,
       uiExplainer,
       diagnostics: {
-        sourceVersion: trimText(panelScope.meta.sourceVersion) || "director_finance_panel_scope_v3",
-        payloadShapeVersion: trimText(panelScope.meta.payloadShapeVersion) || "v3",
+        sourceVersion: trimText(panelScope.meta.sourceVersion) || "director_finance_panel_scope_v4",
+        payloadShapeVersion: trimText(panelScope.meta.payloadShapeVersion) || "v4",
         usedFallback: false,
         displayMode: panelScope.displayMode,
         owner: trimText(panelScope.meta.owner) || "backend",
         generatedAt: trimText(panelScope.meta.generatedAt) || null,
-        financeSummarySource: "summary_v3",
-        supplierSource: "supplier_rows_v3",
+        financeSummarySource: "summary_v4",
+        supplierSource: "supplier_rows_v4",
+        objectSource: "object_rows_v4",
         spendSource: "panel_spend_header",
       },
     };
@@ -327,26 +337,41 @@ const buildDirectorFinanceCanonicalScope = (
     mode,
     semantics,
     summary: {
-      approvedTotal: toFiniteNumber(panelScope.summary.approved),
-      paidTotal: toFiniteNumber(panelScope.summary.paid),
-      debtTotal: toFiniteNumber(panelScope.summary.toPay),
-      overpaymentTotal: toFiniteNumber(panelScope.spend.header.overpay),
-      overdueCount: toFiniteNumber(panelScope.summary.overdueCount),
-      overdueAmount: toFiniteNumber(panelScope.summary.overdueAmount),
-      criticalCount: toFiniteNumber(panelScope.summary.criticalCount),
-      criticalAmount: toFiniteNumber(panelScope.summary.criticalAmount),
-      debtCount: toFiniteNumber(panelScope.summary.debtCount),
-      partialCount: toFiniteNumber(panelScope.summary.partialCount),
-      partialPaidTotal: toFiniteNumber(panelScope.summary.partialPaid),
+      approvedTotal: toFiniteNumber(panelScope.canonical.summary.approvedTotal),
+      paidTotal: toFiniteNumber(panelScope.canonical.summary.paidTotal),
+      debtTotal: toFiniteNumber(panelScope.canonical.summary.debtTotal),
+      overpaymentTotal: toFiniteNumber(panelScope.canonical.summary.overpaymentTotal),
+      overdueCount: toFiniteNumber(panelScope.canonical.summary.overdueCount),
+      overdueAmount: toFiniteNumber(panelScope.canonical.summary.overdueAmount),
+      criticalCount: toFiniteNumber(panelScope.canonical.summary.criticalCount),
+      criticalAmount: toFiniteNumber(panelScope.canonical.summary.criticalAmount),
+      debtCount: toFiniteNumber(panelScope.canonical.summary.debtCount),
+      partialCount: toFiniteNumber(panelScope.canonical.summary.partialCount),
+      partialPaidTotal: toFiniteNumber(panelScope.canonical.summary.partialPaidTotal),
     },
-    suppliers: panelScope.report.suppliers.map((row, index) => ({
-      supplierId: null,
-      supplierName: trimText(row.supplier) || `supplier:${index + 1}`,
-      approvedTotal: toFiniteNumber(row.approved),
-      paidTotal: toFiniteNumber(row.paid),
-      debtTotal: toFiniteNumber(row.toPay),
-      overpaymentTotal: 0,
-      invoiceCount: toFiniteNumber(row.count),
+    suppliers: panelScope.canonical.suppliers.map((row) => ({
+      supplierId: trimText(row.supplierId) || null,
+      supplierName: trimText(row.supplierName) || "вЂ”",
+      approvedTotal: toFiniteNumber(row.approvedTotal),
+      paidTotal: toFiniteNumber(row.paidTotal),
+      debtTotal: toFiniteNumber(row.debtTotal),
+      overpaymentTotal: toFiniteNumber(row.overpaymentTotal),
+      invoiceCount: toFiniteNumber(row.invoiceCount),
+      overdueCount: toFiniteNumber(row.overdueCount),
+      criticalCount: toFiniteNumber(row.criticalCount),
+      semanticsMode: semantics,
+      sourceVersion,
+    })),
+    objects: panelScope.canonical.objects.map((row) => ({
+      objectKey: trimText(row.objectKey) || "Без объекта",
+      objectId: trimText(row.objectId) || null,
+      objectCode: trimText(row.objectCode) || null,
+      objectName: trimText(row.objectName) || "Без объекта",
+      approvedTotal: toFiniteNumber(row.approvedTotal),
+      paidTotal: toFiniteNumber(row.paidTotal),
+      debtTotal: toFiniteNumber(row.debtTotal),
+      overpaymentTotal: toFiniteNumber(row.overpaymentTotal),
+      invoiceCount: toFiniteNumber(row.invoiceCount),
       overdueCount: toFiniteNumber(row.overdueCount),
       criticalCount: toFiniteNumber(row.criticalCount),
       semanticsMode: semantics,
@@ -354,9 +379,9 @@ const buildDirectorFinanceCanonicalScope = (
     })),
     obligations: {
       semantics: "invoice_level_obligations",
-      approved: toFiniteNumber(panelScope.summary.approved),
-      paid: toFiniteNumber(panelScope.summary.paid),
-      debt: toFiniteNumber(panelScope.summary.toPay),
+      approved: toFiniteNumber(panelScope.canonical.summary.approvedTotal),
+      paid: toFiniteNumber(panelScope.canonical.summary.paidTotal),
+      debt: toFiniteNumber(panelScope.canonical.summary.debtTotal),
       overpaymentCompensationApplied: false,
       debtFormulaHint: obligationsDebtFormulaHint,
     },
@@ -372,14 +397,15 @@ const buildDirectorFinanceCanonicalScope = (
     workInclusion,
     uiExplainer,
     diagnostics: {
-      sourceVersion: trimText(panelScope.meta.sourceVersion) || "director_finance_panel_scope_v3",
-      payloadShapeVersion: trimText(panelScope.meta.payloadShapeVersion) || "v3",
-      usedFallback: true,
+      sourceVersion: trimText(panelScope.meta.sourceVersion) || "director_finance_panel_scope_v4",
+      payloadShapeVersion: trimText(panelScope.meta.payloadShapeVersion) || "v4",
+      usedFallback: false,
       displayMode: panelScope.displayMode,
       owner: trimText(panelScope.meta.owner) || "backend",
       generatedAt: trimText(panelScope.meta.generatedAt) || null,
-      financeSummarySource: "summary_legacy",
-      supplierSource: "report_suppliers_legacy",
+      financeSummarySource: "summary_v4",
+      supplierSource: "supplier_rows_v4",
+      objectSource: "object_rows_v4",
       spendSource: "panel_spend_header",
     },
   };
@@ -504,10 +530,10 @@ async function loadDirectorFinancePrimaryScope(
   },
 ): Promise<DirectorFinancePrimaryScopeResult> {
   const issues: DirectorFinanceScreenScopeIssue[] = [];
-  let panelScopeV3: DirectorFinancePanelScopeV3 | null = null;
+  let panelScopeV4: DirectorFinancePanelScopeV4 | null = null;
 
   try {
-    panelScopeV3 = await fetchDirectorFinancePanelScopeV3ViaRpc({
+    panelScopeV4 = await fetchDirectorFinancePanelScopeV4ViaRpc({
       objectId: args.objectId,
       periodFromIso: args.periodFromIso,
       periodToIso: args.periodToIso,
@@ -521,7 +547,7 @@ async function loadDirectorFinancePrimaryScope(
   }
 
   return {
-    panelScopeV3,
+    panelScopeV4,
     issues,
   };
 }
@@ -534,7 +560,7 @@ export async function loadDirectorFinanceScreenScope(
     surface: "finance_panel",
     category: "fetch",
     event: "load_finance_scope",
-    sourceKind: "rpc:director_finance_panel_scope_v3",
+    sourceKind: "rpc:director_finance_panel_scope_v4",
   });
   const dueDaysDefault = Number(args.dueDaysDefault ?? 7) || 7;
   const criticalDays = Number(args.criticalDays ?? 14) || 14;
@@ -543,20 +569,20 @@ export async function loadDirectorFinanceScreenScope(
     dueDaysDefault,
     criticalDays,
   });
-  const resolvedPanelScope = primaryScope.panelScopeV3;
+  const resolvedPanelScope = primaryScope.panelScopeV4;
   const supportRowsReason = "not_requested";
   // The screen keeps a compatibility FinRep projection for existing consumers, but request truth
-  // and summary truth already come from the backend-owned v3 panel scope.
+  // and summary truth already come from the backend-owned v4 panel scope.
   const summaryCompatibilityOverlay = false;
 
   if (!resolvedPanelScope) {
     const hardCutError =
       primaryScope.issues.find((issue) => issue.scope === "panel_scope")?.error ??
-      new Error("director finance panel scope v3 unavailable");
+      new Error("director finance panel scope v4 unavailable");
     observation.error(hardCutError, {
       rowCount: 0,
       errorStage: "load_finance_scope",
-      sourceKind: "rpc:director_finance_panel_scope_v3",
+      sourceKind: "rpc:director_finance_panel_scope_v4",
       extra: {
         scopeKey: `finance:${args.objectId ?? ""}:${args.periodFromIso ?? ""}:${args.periodToIso ?? ""}`,
       },
@@ -577,8 +603,8 @@ export async function loadDirectorFinanceScreenScope(
     issues: primaryScope.issues,
     supportRowsLoaded: false,
     cutoverMeta: {
-      primaryOwner: "rpc_v3",
-      contractVersion: "v3",
+      primaryOwner: "rpc_v4",
+      contractVersion: "v4",
       supportRowsReason,
       backendFirstPrimary: true,
       summaryCompatibilityOverlay,
@@ -586,13 +612,11 @@ export async function loadDirectorFinanceScreenScope(
       financeSemantics: canonicalScope.semantics,
     },
     sourceMeta: {
-      financeSummary:
-        canonicalScope.mode === "canonical" ? "rpc_panel_scope_v3_canonical" : "rpc_panel_scope_v3_fallback",
-      spendSummary:
-        canonicalScope.mode === "canonical" ? "rpc_panel_scope_v3_canonical" : "rpc_panel_scope_v3_fallback",
+      financeSummary: "rpc_panel_scope_v4_canonical",
+      spendSummary: "rpc_panel_scope_v4_canonical",
       financeRows: "not_loaded",
       spendRows: "not_loaded",
-      panelScope: "rpc_v3",
+      panelScope: "rpc_v4",
       financeDisplayMode: resolvedPanelScope.displayMode,
     },
   };

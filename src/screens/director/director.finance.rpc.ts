@@ -4,6 +4,7 @@ import type {
   DirectorFinancePanelScope,
   DirectorFinancePanelScopeV2,
   DirectorFinancePanelScopeV3,
+  DirectorFinancePanelScopeV4,
   DirectorFinanceSummaryV2,
   FinSupplierPanelState,
   FinRep,
@@ -13,6 +14,7 @@ import {
   adaptDirectorFinancePanelScopePayload,
   adaptDirectorFinancePanelScopeV2Payload,
   adaptDirectorFinancePanelScopeV3Payload,
+  adaptDirectorFinancePanelScopeV4Payload,
   adaptDirectorFinanceSummaryPayload,
   adaptDirectorFinanceSummaryV2Payload,
   asFinanceRecord,
@@ -26,6 +28,7 @@ const FINANCE_SUMMARY_RPC_NAME = "director_finance_fetch_summary_v1";
 const FINANCE_PANEL_SCOPE_RPC_NAME = "director_finance_panel_scope_v1";
 const FINANCE_PANEL_SCOPE_V2_RPC_NAME = "director_finance_panel_scope_v2";
 const FINANCE_PANEL_SCOPE_V3_RPC_NAME = "director_finance_panel_scope_v3";
+const FINANCE_PANEL_SCOPE_V4_RPC_NAME = "director_finance_panel_scope_v4";
 const FINANCE_SUMMARY_V2_RPC_NAME = "director_finance_summary_v2";
 const FINANCE_SUPPLIER_SCOPE_RPC_NAME = "director_finance_supplier_scope_v1";
 const FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME = "director_finance_supplier_scope_v2";
@@ -53,6 +56,10 @@ const financePanelScopeV2RpcMeta: { status: FinanceRpcStatus; updatedAt: number 
   updatedAt: 0,
 };
 const financePanelScopeV3RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+  status: "unknown",
+  updatedAt: 0,
+};
+const financePanelScopeV4RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
   status: "unknown",
   updatedAt: 0,
 };
@@ -195,6 +202,40 @@ export async function fetchDirectorFinancePanelScopeV3ViaRpc(opts?: {
 
   markFinanceRpcStatus(financePanelScopeV3RpcMeta, "available");
   return adaptDirectorFinancePanelScopeV3Payload(data);
+}
+
+export async function fetchDirectorFinancePanelScopeV4ViaRpc(opts?: {
+  objectId?: string | null;
+  periodFromIso?: string | null;
+  periodToIso?: string | null;
+  dueDaysDefault?: number;
+  criticalDays?: number;
+  limit?: number;
+  offset?: number;
+}): Promise<DirectorFinancePanelScopeV4 | null> {
+  if (!canUseFinanceRpc(financePanelScopeV4RpcMeta)) return null;
+
+  const args: Database["public"]["Functions"]["director_finance_panel_scope_v4"]["Args"] = {
+    p_object_id: financeText(opts?.objectId) || undefined,
+    p_date_from: pickIso10(opts?.periodFromIso) ?? undefined,
+    p_date_to: pickIso10(opts?.periodToIso) ?? undefined,
+    p_due_days: normalizeFinanceRpcInteger(opts?.dueDaysDefault, 7),
+    p_critical_days: normalizeFinanceRpcInteger(opts?.criticalDays, 14),
+    p_limit: normalizeFinanceRpcInteger(opts?.limit, 50),
+    p_offset: Math.max(0, nnum(opts?.offset)),
+  };
+
+  const { data, error } = await supabase.rpc(FINANCE_PANEL_SCOPE_V4_RPC_NAME, args);
+  if (error) {
+    markFinanceRpcStatus(
+      financePanelScopeV4RpcMeta,
+      isMissingFinanceRpcError(error, FINANCE_PANEL_SCOPE_V4_RPC_NAME) ? "missing" : "failed",
+    );
+    throw error;
+  }
+
+  markFinanceRpcStatus(financePanelScopeV4RpcMeta, "available");
+  return adaptDirectorFinancePanelScopeV4Payload(data);
 }
 
 export async function fetchDirectorFinancePanelScopeV2ViaRpc(opts?: {

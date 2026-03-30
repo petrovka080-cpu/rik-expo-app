@@ -152,6 +152,8 @@ export type DirectorFinanceStatus = "pending" | "approved" | "paid" | "overdue";
 export type DirectorFinanceRowV2 = {
   requestId: string | null;
   objectId: string | null;
+  objectCode?: string | null;
+  objectName?: string | null;
   supplierId: string;
   supplierName: string;
   proposalId: string | null;
@@ -246,6 +248,70 @@ export type DirectorFinancePanelScopeV3 = DirectorFinancePanelScope & {
   supplierRows: DirectorFinanceSupplierRowV3[];
   meta: DirectorFinanceMetaV3;
   displayMode: "canonical_v3" | "fallback_legacy";
+};
+
+export type DirectorFinanceCanonicalSummaryV4 = {
+  approvedTotal: number;
+  paidTotal: number;
+  debtTotal: number;
+  overpaymentTotal: number;
+  overdueCount: number;
+  overdueAmount: number;
+  criticalCount: number;
+  criticalAmount: number;
+  debtCount: number;
+  partialCount: number;
+  partialPaidTotal: number;
+};
+
+export type DirectorFinanceSupplierRowV4 = {
+  supplierId: string | null;
+  supplierName: string;
+  approvedTotal: number;
+  paidTotal: number;
+  debtTotal: number;
+  overpaymentTotal: number;
+  invoiceCount: number;
+  debtCount: number;
+  overdueCount: number;
+  criticalCount: number;
+  overdueAmount: number;
+  criticalAmount: number;
+};
+
+export type DirectorFinanceObjectRowV4 = {
+  objectKey: string;
+  objectId: string | null;
+  objectCode: string | null;
+  objectName: string;
+  approvedTotal: number;
+  paidTotal: number;
+  debtTotal: number;
+  overpaymentTotal: number;
+  invoiceCount: number;
+  debtCount: number;
+  overdueCount: number;
+  criticalCount: number;
+  overdueAmount: number;
+  criticalAmount: number;
+};
+
+export type DirectorFinanceMetaV4 = DirectorFinanceMetaV3 & {
+  identitySource: string;
+  objectGroupingSource: string;
+};
+
+export type DirectorFinancePanelScopeV4 = DirectorFinancePanelScope & {
+  rows: DirectorFinanceRowV2[];
+  pagination: DirectorFinancePagination;
+  canonical: {
+    summary: DirectorFinanceCanonicalSummaryV4;
+    suppliers: DirectorFinanceSupplierRowV4[];
+    objects: DirectorFinanceObjectRowV4[];
+    spend: FinSpendSummary;
+  };
+  meta: DirectorFinanceMetaV4;
+  displayMode: "canonical_v3";
 };
 
 export type FinanceSummary = FinRep["summary"];

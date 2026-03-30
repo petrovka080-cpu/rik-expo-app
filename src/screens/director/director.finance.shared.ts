@@ -1,11 +1,16 @@
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import type {
+  DirectorFinanceCanonicalSummaryV4,
+  DirectorFinanceMetaV4,
+  DirectorFinanceObjectRowV4,
   DirectorFinanceMetaV3,
   DirectorFinancePanelScope,
   DirectorFinancePanelScopeV2,
   DirectorFinancePanelScopeV3,
+  DirectorFinancePanelScopeV4,
   DirectorFinanceRowV2,
   DirectorFinanceStatus,
+  DirectorFinanceSupplierRowV4,
   DirectorFinanceSummaryV2,
   DirectorFinanceSummaryV2Supplier,
   DirectorFinanceSummaryV3,
@@ -13,6 +18,7 @@ import type {
   FinKindSupplierRow,
   FinRep,
   FinSpendRow,
+  FinSpendSummary,
   FinSpendSummaryRow,
   FinSupplierDebt,
   FinanceRow,
@@ -365,6 +371,8 @@ const normalizeDirectorFinanceRowV2 = (value: unknown): DirectorFinanceRowV2 => 
   return {
     requestId: financeText(row.requestId) || null,
     objectId: financeText(row.objectId) || null,
+    objectCode: financeText(row.objectCode ?? row.object_code) || null,
+    objectName: financeText(row.objectName ?? row.object_name) || null,
     supplierId: financeTextOrFallback(row.supplierId, DASH),
     supplierName: financeTextOrFallback(row.supplierName, DASH),
     proposalId: financeText(row.proposalId) || null,
@@ -512,6 +520,17 @@ const adaptDirectorFinanceMetaV3Payload = (value: unknown): DirectorFinanceMetaV
   };
 };
 
+const adaptDirectorFinanceMetaV4Payload = (value: unknown): DirectorFinanceMetaV4 => {
+  const payload = asFinanceRecord(value);
+  const base = adaptDirectorFinanceMetaV3Payload(payload);
+  return {
+    ...base,
+    identitySource: financeText(payload.identitySource ?? payload.identity_source) || "request_object_identity_scope_v1",
+    objectGroupingSource:
+      financeText(payload.objectGroupingSource ?? payload.object_grouping_source) || "stable_object_refs",
+  };
+};
+
 const normalizeFinKindSupplierRow = (value: unknown): FinKindSupplierRow => {
   const row = asFinanceRecord(value);
   return {
@@ -520,6 +539,25 @@ const normalizeFinKindSupplierRow = (value: unknown): FinKindSupplierRow => {
     paid: nnum(row.paid),
     overpay: nnum(row.overpay),
     count: nnum(row.count),
+  };
+};
+
+const normalizeFinSpendSummary = (value: unknown): FinSpendSummary => {
+  const payload = asFinanceRecord(value);
+  const header = asFinanceRecord(payload.header);
+  const kindRowsPayload = payload.kindRows ?? payload.kind_rows ?? payload.kinds;
+  const overpaySuppliersPayload = payload.overpaySuppliers ?? payload.overpay_suppliers;
+  return {
+    header: {
+      approved: nnum(header.approved),
+      paid: nnum(header.paid),
+      toPay: nnum(header.toPay ?? header.to_pay),
+      overpay: nnum(header.overpay),
+    },
+    kindRows: Array.isArray(kindRowsPayload) ? kindRowsPayload.map(normalizeFinSpendSummaryRow) : [],
+    overpaySuppliers: Array.isArray(overpaySuppliersPayload)
+      ? overpaySuppliersPayload.map(normalizeFinKindSupplierRow)
+      : [],
   };
 };
 
@@ -616,6 +654,144 @@ export const adaptDirectorFinancePanelScopeV3Payload = (
     supplierRows,
     meta: adaptDirectorFinanceMetaV3Payload(payload.meta),
     displayMode: hasCanonicalSummary ? "canonical_v3" : "fallback_legacy",
+  };
+};
+
+const normalizeDirectorFinanceCanonicalSummaryV4 = (
+  value: unknown,
+): DirectorFinanceCanonicalSummaryV4 => {
+  const payload = asFinanceRecord(value);
+  return {
+    approvedTotal: nnum(payload.approvedTotal ?? payload.approved_total),
+    paidTotal: nnum(payload.paidTotal ?? payload.paid_total),
+    debtTotal: nnum(payload.debtTotal ?? payload.debt_total),
+    overpaymentTotal: nnum(payload.overpaymentTotal ?? payload.overpayment_total),
+    overdueCount: nnum(payload.overdueCount ?? payload.overdue_count),
+    overdueAmount: nnum(payload.overdueAmount ?? payload.overdue_amount),
+    criticalCount: nnum(payload.criticalCount ?? payload.critical_count),
+    criticalAmount: nnum(payload.criticalAmount ?? payload.critical_amount),
+    debtCount: nnum(payload.debtCount ?? payload.debt_count),
+    partialCount: nnum(payload.partialCount ?? payload.partial_count),
+    partialPaidTotal: nnum(payload.partialPaidTotal ?? payload.partial_paid_total),
+  };
+};
+
+const normalizeDirectorFinanceSupplierRowV4 = (
+  value: unknown,
+): DirectorFinanceSupplierRowV4 => {
+  const row = asFinanceRecord(value);
+  return {
+    supplierId: financeText(row.supplierId ?? row.supplier_id) || null,
+    supplierName: financeTextOrFallback(row.supplierName ?? row.supplier_name, DASH),
+    approvedTotal: nnum(row.approvedTotal ?? row.approved_total),
+    paidTotal: nnum(row.paidTotal ?? row.paid_total),
+    debtTotal: nnum(row.debtTotal ?? row.debt_total),
+    overpaymentTotal: nnum(row.overpaymentTotal ?? row.overpayment_total),
+    invoiceCount: nnum(row.invoiceCount ?? row.invoice_count),
+    debtCount: nnum(row.debtCount ?? row.debt_count),
+    overdueCount: nnum(row.overdueCount ?? row.overdue_count),
+    criticalCount: nnum(row.criticalCount ?? row.critical_count),
+    overdueAmount: nnum(row.overdueAmount ?? row.overdue_amount),
+    criticalAmount: nnum(row.criticalAmount ?? row.critical_amount),
+  };
+};
+
+const normalizeDirectorFinanceObjectRowV4 = (
+  value: unknown,
+): DirectorFinanceObjectRowV4 => {
+  const row = asFinanceRecord(value);
+  return {
+    objectKey: financeTextOrFallback(row.objectKey ?? row.object_key, DASH),
+    objectId: financeText(row.objectId ?? row.object_id) || null,
+    objectCode: financeText(row.objectCode ?? row.object_code) || null,
+    objectName: financeTextOrFallback(row.objectName ?? row.object_name, "Без объекта"),
+    approvedTotal: nnum(row.approvedTotal ?? row.approved_total),
+    paidTotal: nnum(row.paidTotal ?? row.paid_total),
+    debtTotal: nnum(row.debtTotal ?? row.debt_total),
+    overpaymentTotal: nnum(row.overpaymentTotal ?? row.overpayment_total),
+    invoiceCount: nnum(row.invoiceCount ?? row.invoice_count),
+    debtCount: nnum(row.debtCount ?? row.debt_count),
+    overdueCount: nnum(row.overdueCount ?? row.overdue_count),
+    criticalCount: nnum(row.criticalCount ?? row.critical_count),
+    overdueAmount: nnum(row.overdueAmount ?? row.overdue_amount),
+    criticalAmount: nnum(row.criticalAmount ?? row.critical_amount),
+  };
+};
+
+const buildDirectorFinanceCompatibilitySummaryFromV4 = (
+  summary: DirectorFinanceCanonicalSummaryV4,
+): FinRep["summary"] => ({
+  approved: nnum(summary.approvedTotal),
+  paid: nnum(summary.paidTotal),
+  partialPaid: nnum(summary.partialPaidTotal),
+  toPay: nnum(summary.debtTotal),
+  overdueCount: nnum(summary.overdueCount),
+  overdueAmount: nnum(summary.overdueAmount),
+  criticalCount: nnum(summary.criticalCount),
+  criticalAmount: nnum(summary.criticalAmount),
+  partialCount: nnum(summary.partialCount),
+  debtCount: nnum(summary.debtCount),
+});
+
+const buildDirectorFinanceCompatibilitySuppliersFromV4 = (
+  supplierRows: DirectorFinanceSupplierRowV4[],
+): FinSupplierDebt[] =>
+  [...supplierRows]
+    .map((row) => ({
+      supplier: financeTextOrFallback(row.supplierName, DASH),
+      count: nnum(row.invoiceCount),
+      approved: nnum(row.approvedTotal),
+      paid: nnum(row.paidTotal),
+      toPay: nnum(row.debtTotal),
+      overdueCount: nnum(row.overdueCount),
+      criticalCount: nnum(row.criticalCount),
+    }))
+    .sort((left, right) => right.toPay - left.toPay || left.supplier.localeCompare(right.supplier, "ru"));
+
+export const adaptDirectorFinancePanelScopeV4Payload = (
+  value: unknown,
+): DirectorFinancePanelScopeV4 => {
+  const payload = asFinanceRecord(value);
+  const documentType = financeText(payload.document_type ?? payload.documentType);
+  const version = financeText(payload.version);
+  if (documentType !== "director_finance_panel_scope") {
+    throw new Error("director_finance_panel_scope_v4 invalid document_type");
+  }
+  if (version !== "v4") {
+    throw new Error("director_finance_panel_scope_v4 invalid version");
+  }
+
+  const canonical = asFinanceRecord(payload.canonical);
+  const canonicalSummary = normalizeDirectorFinanceCanonicalSummaryV4(canonical.summary);
+  const supplierRows = Array.isArray(canonical.suppliers)
+    ? canonical.suppliers.map(normalizeDirectorFinanceSupplierRowV4)
+    : [];
+  const objectRows = Array.isArray(canonical.objects)
+    ? canonical.objects.map(normalizeDirectorFinanceObjectRowV4)
+    : [];
+  const canonicalSpend = normalizeFinSpendSummary(canonical.spend);
+  const pagination = asFinanceRecord(payload.pagination);
+
+  return {
+    summary: buildDirectorFinanceCompatibilitySummaryFromV4(canonicalSummary),
+    report: {
+      suppliers: buildDirectorFinanceCompatibilitySuppliersFromV4(supplierRows),
+    },
+    spend: canonicalSpend,
+    rows: Array.isArray(payload.rows) ? payload.rows.map(normalizeDirectorFinanceRowV2) : [],
+    pagination: {
+      limit: nnum(pagination.limit),
+      offset: nnum(pagination.offset),
+      total: nnum(pagination.total),
+    },
+    canonical: {
+      summary: canonicalSummary,
+      suppliers: supplierRows,
+      objects: objectRows,
+      spend: canonicalSpend,
+    },
+    meta: adaptDirectorFinanceMetaV4Payload(payload.meta),
+    displayMode: "canonical_v3",
   };
 };
 

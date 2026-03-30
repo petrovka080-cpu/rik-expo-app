@@ -1,0 +1,206 @@
+{
+  "status": "GREEN",
+  "generatedAt": "2026-03-30T18:28:12.758Z",
+  "oldSourceSummary": {
+    "rpc": "director_finance_panel_scope_v3",
+    "displayMode": "canonical_v3",
+    "sourceVersion": "director_finance_panel_scope_v3",
+    "rowCount": 92,
+    "supplierRowCount": 22,
+    "legacyObjectIdentityRowCount": 0,
+    "objectRowCountDerived": 0,
+    "summary": {
+      "totalPayable": 431658,
+      "totalApproved": 431658,
+      "totalPaid": 8590,
+      "totalDebt": 423068,
+      "totalOverpayment": 0,
+      "overdueAmount": 365508,
+      "criticalAmount": 0,
+      "overdueCount": 85,
+      "criticalCount": 0,
+      "debtCount": 86,
+      "partialCount": 0,
+      "partialPaid": 0,
+      "rowCount": 92,
+      "supplierRowCount": 22
+    }
+  },
+  "newSourceSummary": {
+    "rpc": "director_finance_panel_scope_v4",
+    "displayMode": "canonical_v3",
+    "sourceVersion": "director_finance_panel_scope_v4",
+    "identitySource": "request_object_identity_scope_v1",
+    "objectGroupingSource": "stable_object_refs",
+    "rowCount": 92,
+    "supplierRowCount": 22,
+    "objectRowCount": 8,
+    "summary": {
+      "approvedTotal": 431658,
+      "paidTotal": 8590,
+      "debtTotal": 423068,
+      "overpaymentTotal": 0,
+      "overdueCount": 85,
+      "overdueAmount": 365508,
+      "criticalCount": 0,
+      "criticalAmount": 0,
+      "debtCount": 86,
+      "partialCount": 0,
+      "partialPaidTotal": 0
+    }
+  },
+  "supplierTotalsOldNew": {
+    "count": {
+      "old": 22,
+      "new": 22,
+      "delta": 0,
+      "match": true
+    },
+    "approvedTotal": {
+      "old": 431658,
+      "new": 431658,
+      "delta": 0,
+      "match": true
+    },
+    "paidTotal": {
+      "old": 8590,
+      "new": 8590,
+      "delta": 0,
+      "match": true
+    },
+    "debtTotal": {
+      "old": 423068,
+      "new": 423068,
+      "delta": 0,
+      "match": true
+    },
+    "overpaymentTotal": {
+      "old": 0,
+      "new": 0,
+      "delta": 0,
+      "match": true
+    }
+  },
+  "objectTotalsOldNew": {
+    "count": {
+      "old": 8,
+      "new": 8,
+      "delta": 0,
+      "match": true
+    },
+    "approvedTotal": {
+      "old": 431658,
+      "new": 431658,
+      "delta": 0,
+      "match": true
+    },
+    "paidTotal": {
+      "old": 8590,
+      "new": 8590,
+      "delta": 0,
+      "match": true
+    },
+    "debtTotal": {
+      "old": 423068,
+      "new": 423068,
+      "delta": 0,
+      "match": true
+    },
+    "overdueAmount": {
+      "old": 365508,
+      "new": 365508,
+      "delta": 0,
+      "match": true
+    },
+    "criticalAmount": {
+      "old": 0,
+      "new": 0,
+      "delta": 0,
+      "match": true
+    }
+  },
+  "objectLegacyCoverage": {
+    "comparable": false,
+    "legacyObjectIdentityRowCount": 0,
+    "explanation": "Legacy v3 panel rows did not expose stable object identity; object parity falls back to canonical object totals versus legacy header totals."
+  },
+  "paidTotalsOldNew": {
+    "old": 8590,
+    "new": 8590,
+    "delta": 0,
+    "match": true
+  },
+  "outstandingTotalsOldNew": {
+    "old": 423068,
+    "new": 423068,
+    "delta": 0,
+    "match": true
+  },
+  "summaryParity": {
+    "approvedTotal": {
+      "old": 431658,
+      "new": 431658,
+      "delta": 0,
+      "match": true
+    },
+    "paidTotal": {
+      "old": 8590,
+      "new": 8590,
+      "delta": 0,
+      "match": true
+    },
+    "debtTotal": {
+      "old": 423068,
+      "new": 423068,
+      "delta": 0,
+      "match": true
+    },
+    "overpaymentTotal": {
+      "old": 0,
+      "new": 0,
+      "delta": 0,
+      "match": true
+    },
+    "overdueAmount": {
+      "old": 365508,
+      "new": 365508,
+      "delta": 0,
+      "match": true
+    },
+    "criticalAmount": {
+      "old": 0,
+      "new": 0,
+      "delta": 0,
+      "match": true
+    },
+    "overdueCount": {
+      "old": 85,
+      "new": 85,
+      "delta": 0,
+      "match": true
+    },
+    "criticalCount": {
+      "old": 0,
+      "new": 0,
+      "delta": 0,
+      "match": true
+    },
+    "debtCount": {
+      "old": 86,
+      "new": 86,
+      "delta": 0,
+      "match": true
+    },
+    "partialCount": {
+      "old": 0,
+      "new": 0,
+      "delta": 0,
+      "match": true
+    }
+  },
+  "supplierMismatches": [],
+  "objectMismatches": [],
+  "mismatchCategories": [],
+  "mismatchExplanations": [],
+  "safeSwitchVerdict": true
+}

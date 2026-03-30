@@ -154,7 +154,7 @@ async function main() {
   ].every((entry) => entry.match);
 
   const status =
-    scope.sourceMeta.panelScope === "rpc_v3" &&
+    scope.sourceMeta.panelScope === "rpc_v4" &&
     scope.supportRowsLoaded === false &&
     panelScopeV2 != null &&
     allNumericParity &&

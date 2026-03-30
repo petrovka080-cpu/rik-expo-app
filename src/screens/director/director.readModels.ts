@@ -11,6 +11,7 @@ export type DirectorFinanceMetricKey =
   | "spend_to_pay"
   | "spend_overpay";
 export type DirectorFinanceMetricSource =
+  | "summary_v4"
   | "summary_v3"
   | "summary_legacy"
   | "panel_spend_header";
@@ -80,6 +81,22 @@ export type DirectorFinanceCanonicalSupplierRow = {
   sourceVersion: string;
 };
 
+export type DirectorFinanceCanonicalObjectRow = {
+  objectKey: string;
+  objectId: string | null;
+  objectCode: string | null;
+  objectName: string;
+  approvedTotal: number;
+  paidTotal: number;
+  debtTotal: number;
+  overpaymentTotal: number;
+  invoiceCount: number;
+  overdueCount: number;
+  criticalCount: number;
+  semanticsMode: DirectorFinanceCanonicalSemantics;
+  sourceVersion: string;
+};
+
 export type DirectorFinanceObligationsSummary = {
   semantics: DirectorFinanceCanonicalSemantics;
   approved: number;
@@ -103,6 +120,7 @@ export type DirectorFinanceCanonicalScope = {
   semantics: DirectorFinanceCanonicalSemantics;
   summary: DirectorFinanceCanonicalSummary;
   suppliers: DirectorFinanceCanonicalSupplierRow[];
+  objects: DirectorFinanceCanonicalObjectRow[];
   obligations: DirectorFinanceObligationsSummary;
   spend: DirectorFinanceSpendTruthSummary;
   metricSourceMap: DirectorFinanceMetricSourceMapEntry[];
@@ -115,8 +133,9 @@ export type DirectorFinanceCanonicalScope = {
     displayMode: "canonical_v3" | "fallback_legacy";
     owner: string;
     generatedAt: string | null;
-    financeSummarySource: "summary_v3" | "summary_legacy";
-    supplierSource: "supplier_rows_v3" | "report_suppliers_legacy";
+    financeSummarySource: "summary_v4" | "summary_v3" | "summary_legacy";
+    supplierSource: "supplier_rows_v4" | "supplier_rows_v3" | "report_suppliers_legacy";
+    objectSource: "object_rows_v4";
     spendSource: "panel_spend_header";
   };
 };
