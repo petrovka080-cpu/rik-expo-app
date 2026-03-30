@@ -417,12 +417,6 @@ export async function getDirectorFinancePdfSource(args: {
   periodTo?: string | null;
   dueDaysDefault?: number;
   criticalDays?: number;
-  fallbackFinanceRows?: FinanceRow[] | null;
-  fallbackSpendRows?: FinSpendRow[] | null;
-  fallbackRowsLoader?: (() => Promise<{
-    financeRows: FinanceRow[];
-    spendRows: FinSpendRow[];
-  }>) | null;
 }): Promise<DirectorFinancePdfSource> {
   const rpcMode = DIRECTOR_FINANCE_PDF_RPC_MODE;
   const observation = beginPdfLifecycleObservation({

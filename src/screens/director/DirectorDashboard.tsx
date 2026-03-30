@@ -33,8 +33,6 @@ const DIRECTOR_TOP_TABS: TopTabItem[] = [
   { key: "Отчёты", label: "Отчёты" },
 ];
 
-type FinanceRow = any;
-
 type Props = {
   HEADER_MAX: number;
   HEADER_MIN: number;
@@ -72,9 +70,7 @@ type Props = {
   loadMoreProps: () => Promise<any> | void;
   rtToast: { visible: boolean; title: string; body: string; count: number };
   finLoading: boolean;
-  finRows: FinanceRow[];
   finScope: DirectorFinanceCanonicalScope | null;
-  finSpendRows: any[];
   money: (v: number) => string;
   FIN_DUE_DAYS_DEFAULT: number;
   FIN_CRITICAL_DAYS: number;

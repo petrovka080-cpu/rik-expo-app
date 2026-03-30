@@ -262,7 +262,6 @@ async function main() {
     const result = await directorFinanceScopeService.loadDirectorFinanceScreenScope({
       periodFromIso: periodFrom,
       periodToIso: periodTo,
-      includeSupportRows: false,
     });
     return {
       panelScope: result.sourceMeta.panelScope,

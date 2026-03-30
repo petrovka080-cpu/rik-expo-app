@@ -158,9 +158,7 @@ function DirectorScreen() {
         loadMoreProps={vm.data.loadMoreProps as any}
         rtToast={vm.rtToast}
         finLoading={vm.finLoading}
-        finRows={vm.finRows as any}
         finScope={vm.finScope}
-        finSpendRows={vm.finSpendRows as any}
         money={vm.money}
         FIN_DUE_DAYS_DEFAULT={7}
         FIN_CRITICAL_DAYS={14}

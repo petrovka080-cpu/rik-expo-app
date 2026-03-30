@@ -4,7 +4,6 @@ import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
-import type { DirectorFinanceSupportRowsResult } from "../../lib/api/directorFinanceScope.service";
 import {
   buildDirectorManagementReportPdfDescriptor,
   buildDirectorSupplierSummaryPdfDescriptor,
@@ -14,8 +13,6 @@ import {
   fetchDirectorFinanceSupplierScopeV2ViaRpc,
   normalizeFinSupplierInput,
   type FinKindSupplierRow,
-  type FinanceRow,
-  type FinSpendRow,
   type FinSpendSummary,
   type FinSupplierInput,
   type FinSupplierPanelState,
@@ -32,11 +29,8 @@ type Deps = {
   finPage: "home" | "debt" | "spend" | "kind" | "supplier";
   finFrom: string | null;
   finTo: string | null;
-  finRows: FinanceRow[];
-  finSpendRows: FinSpendRow[];
   finSpendSummary: FinSpendSummary;
   finLoading: boolean;
-  finSupportRowsLoaded: boolean;
   finKindName: string;
   finSupplierSelection: DirectorFinanceSupplierSelection;
   fmtDateOnly: (iso?: string | null) => string;
@@ -49,7 +43,6 @@ type Deps = {
   setFinTo: (v: string | null) => void;
   setFinPeriodOpen: (v: boolean) => void;
   fetchFinance: () => Promise<void>;
-  loadFinanceSupportRows: () => Promise<DirectorFinanceSupportRowsResult>;
   FIN_DUE_DAYS_DEFAULT: number;
   FIN_CRITICAL_DAYS: number;
 };
@@ -60,11 +53,8 @@ export function useDirectorFinancePanel({
   finPage,
   finFrom,
   finTo,
-  finRows,
-  finSpendRows,
   finSpendSummary,
   finLoading,
-  finSupportRowsLoaded,
   finKindName,
   finSupplierSelection,
   fmtDateOnly,
@@ -77,7 +67,6 @@ export function useDirectorFinancePanel({
   setFinTo,
   setFinPeriodOpen,
   fetchFinance,
-  loadFinanceSupportRows,
   FIN_DUE_DAYS_DEFAULT,
   FIN_CRITICAL_DAYS,
 }: Deps) {
@@ -200,9 +189,6 @@ export function useDirectorFinancePanel({
     const template = await buildDirectorManagementReportPdfDescriptor({
       periodFrom: finFrom,
       periodTo: finTo,
-      financeRows: finSupportRowsLoaded ? finRows : undefined,
-      spendRows: finSupportRowsLoaded ? finSpendRows : undefined,
-      loadFallbackRows: finSupportRowsLoaded ? undefined : loadFinanceSupportRows,
       dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
       criticalDays: FIN_CRITICAL_DAYS,
     });
@@ -219,11 +205,7 @@ export function useDirectorFinancePanel({
     FIN_DUE_DAYS_DEFAULT,
     busy,
     finFrom,
-    finRows,
-    finSpendRows,
-    finSupportRowsLoaded,
     finTo,
-    loadFinanceSupportRows,
     router,
     supabase,
   ]);
@@ -242,9 +224,6 @@ export function useDirectorFinancePanel({
       periodTo: finTo,
       dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
       criticalDays: FIN_CRITICAL_DAYS,
-      financeRows: finSupportRowsLoaded ? finRows : undefined,
-      spendRows: finSupportRowsLoaded ? finSpendRows : undefined,
-      loadFallbackRows: finSupportRowsLoaded ? undefined : loadFinanceSupportRows,
     });
     await prepareAndPreviewGeneratedPdf({
       busy,
@@ -259,13 +238,9 @@ export function useDirectorFinancePanel({
     FIN_DUE_DAYS_DEFAULT,
     busy,
     finFrom,
-    finRows,
-    finSpendRows,
     finSupplier,
     finSupplierSelection,
-    finSupportRowsLoaded,
     finTo,
-    loadFinanceSupportRows,
     router,
     supabase,
   ]);

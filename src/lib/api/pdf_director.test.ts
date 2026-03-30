@@ -84,15 +84,51 @@ describe("pdf_director exports", () => {
     });
 
     expect(result).toBe("https://example.com/finance.pdf");
-    expect(mockGetDirectorFinancePdfSource).toHaveBeenCalledWith(
-      expect.objectContaining({
-        periodFrom: "2026-03-01",
-        periodTo: "2026-03-30",
-      }),
-    );
+    expect(mockGetDirectorFinancePdfSource).toHaveBeenCalledWith({
+      periodFrom: "2026-03-01",
+      periodTo: "2026-03-30",
+      dueDaysDefault: 7,
+      criticalDays: 14,
+    });
     expect(mockRenderDirectorPdf).toHaveBeenCalledWith(
       expect.objectContaining({
         documentKind: "management_report",
+        source: "rpc:pdf_director_finance_source_v1",
+        sourceBranch: "rpc_v1",
+      }),
+    );
+  });
+
+  it("Director supplier summary PDF uses backend finance source contract without fallback args", async () => {
+    mockGetDirectorFinancePdfSource.mockResolvedValue({
+      financeRows: [{ id: "row-1", supplier: "Supplier A", amount: 1000 }],
+      spendRows: [{ proposal_id: "proposal-1", supplier: "Supplier A" }],
+      source: "rpc:pdf_director_finance_source_v1",
+      branchMeta: {
+        sourceBranch: "rpc_v1",
+        rpcVersion: "v1",
+        payloadShapeVersion: "v1",
+      },
+    });
+    mockBuildDirectorSupplierSummaryPdfModel.mockReturnValue({ title: "supplier-model" });
+    mockRenderDirectorSupplierSummaryPdfHtml.mockReturnValue("<html>supplier</html>");
+    mockRenderDirectorPdf.mockResolvedValue("https://example.com/supplier.pdf");
+
+    const { exportDirectorSupplierSummaryPdf } = loadSubject();
+    const result = await exportDirectorSupplierSummaryPdf({
+      supplier: "Supplier A",
+      periodFrom: "2026-03-01",
+      periodTo: "2026-03-30",
+    });
+
+    expect(result).toBe("https://example.com/supplier.pdf");
+    expect(mockGetDirectorFinancePdfSource).toHaveBeenCalledWith({
+      periodFrom: "2026-03-01",
+      periodTo: "2026-03-30",
+    });
+    expect(mockRenderDirectorPdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documentKind: "supplier_summary",
         source: "rpc:pdf_director_finance_source_v1",
         sourceBranch: "rpc_v1",
       }),

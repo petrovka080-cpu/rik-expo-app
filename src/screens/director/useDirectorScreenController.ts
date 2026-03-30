@@ -16,7 +16,6 @@ import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { fmtDateOnly } from "./director.helpers";
 import {
     loadDirectorFinanceScreenScope,
-    loadDirectorFinanceSupportRows,
 } from "../../lib/api/directorFinanceScope.service";
 import {
     type FinPage,
@@ -27,8 +26,6 @@ import {
 import {
     money as moneyHelper,
     type FinRep,
-    type FinanceRow,
-    type FinSpendRow,
     type FinSpendSummary,
 } from "./director.finance";
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
@@ -97,12 +94,9 @@ export function useDirectorScreenController() {
     const finLoading = useDirectorUiStore((state) => state.finLoading);
     const setFinLoading = useDirectorUiStore((state) => state.setFinLoading);
     const finStackRef = useRef<FinPage[]>(["home"]);
-    const [finRows, setFinRows] = useState<FinanceRow[]>([]);
-    const [finSpendRows, setFinSpendRows] = useState<FinSpendRow[]>([]);
     const [finScope, setFinScope] = useState<DirectorFinanceCanonicalScope | null>(null);
     const [finRep, setFinRep] = useState<FinRep>(EMPTY_FIN_REP);
     const [finSpendSummary, setFinSpendSummary] = useState<FinSpendSummary>(EMPTY_FIN_SPEND_SUMMARY);
-    const [finSupportRowsLoaded, setFinSupportRowsLoaded] = useState(false);
     const finPeriodOpen = useDirectorUiStore((state) => state.finPeriodOpen);
     const setFinPeriodOpen = useDirectorUiStore((state) => state.setFinPeriodOpen);
     const finFrom = useDirectorUiStore((state) => state.finFrom);
@@ -125,7 +119,6 @@ export function useDirectorScreenController() {
                 periodToIso: finTo,
                 dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
                 criticalDays: FIN_CRITICAL_DAYS,
-                includeSupportRows: false,
             });
 
             for (const issue of scope.issues) {
@@ -138,38 +131,15 @@ export function useDirectorScreenController() {
                 }
             }
 
-            setFinRows(scope.financeRows);
-            setFinSpendRows(scope.spendRows);
             setFinScope(scope.canonicalScope);
             setFinRep(scope.finRep);
             setFinSpendSummary(scope.finSpendSummary);
-            setFinSupportRowsLoaded(scope.supportRowsLoaded);
         } catch (e: unknown) {
             warnDirectorFinance("fetchFinance", e);
         } finally {
             setFinLoading(false);
         }
     }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, finFrom, finTo, setFinLoading]);
-
-    const loadFinanceSupportRows = useCallback(async () => {
-        const supportRows = await loadDirectorFinanceSupportRows({
-            periodFromIso: finFrom,
-            periodToIso: finTo,
-        });
-
-        for (const issue of supportRows.issues) {
-            if (issue.scope === "finance_rows") {
-                warnDirectorFinance("fetchFinance", issue.error);
-            } else if (issue.scope === "spend_rows") {
-                warnDirectorFinance("fetchFinSpendRows", issue.error);
-            }
-        }
-
-        setFinRows(supportRows.financeRows);
-        setFinSpendRows(supportRows.spendRows);
-        setFinSupportRowsLoaded(true);
-        return supportRows;
-    }, [finFrom, finTo]);
 
     // Navigation Logic for Finance
     const pushFin = useCallback((p: FinPage) => {
@@ -288,11 +258,10 @@ export function useDirectorScreenController() {
     });
 
     const financePanel = useDirectorFinancePanel({
-        busy, supabase, finPage, finFrom, finTo, finRows, finSpendRows, finSpendSummary, finLoading,
-        finSupportRowsLoaded,
+        busy, supabase, finPage, finFrom, finTo, finSpendSummary, finLoading,
         finKindName, finSupplierSelection, fmtDateOnly, pushFin, popFin, closeFinance,
         setFinSupplierSelection, setFinKindName, setFinFrom, setFinTo,
-        setFinPeriodOpen, fetchFinance, loadFinanceSupportRows,
+        setFinPeriodOpen, fetchFinance,
         FIN_DUE_DAYS_DEFAULT, FIN_CRITICAL_DAYS
     });
 
@@ -418,9 +387,7 @@ export function useDirectorScreenController() {
         // Finance State
         finOpen,
         finPage,
-        finRows,
         finScope,
-        finSpendRows,
         finSpendSummary,
         finRep,
         finPeriodOpen,

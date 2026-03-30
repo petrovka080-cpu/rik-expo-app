@@ -41,7 +41,7 @@ export type DirectorFinanceScreenScopeResult = {
   cutoverMeta: {
     primaryOwner: "rpc_v3";
     contractVersion: "v3";
-    supportRowsReason: "not_requested" | "explicit_include";
+    supportRowsReason: "not_requested";
     backendFirstPrimary: boolean;
     summaryCompatibilityOverlay: boolean;
     financeMode: DirectorFinanceCanonicalScope["mode"];
@@ -69,7 +69,6 @@ type DirectorFinanceScreenScopeArgs = {
   periodToIso?: string | null;
   dueDaysDefault?: number;
   criticalDays?: number;
-  includeSupportRows?: boolean;
 };
 
 type DirectorFinancePrimaryScopeResult = {
@@ -539,17 +538,13 @@ export async function loadDirectorFinanceScreenScope(
   });
   const dueDaysDefault = Number(args.dueDaysDefault ?? 7) || 7;
   const criticalDays = Number(args.criticalDays ?? 14) || 14;
-  const includeSupportRows = args.includeSupportRows === true;
-  let financeRows: FinanceRow[] = [];
-  let spendRows: FinSpendRow[] = [];
-  let supportRowsLoaded = false;
   const primaryScope = await loadDirectorFinancePrimaryScope({
     ...args,
     dueDaysDefault,
     criticalDays,
   });
   const resolvedPanelScope = primaryScope.panelScopeV3;
-  const supportRowsReason = includeSupportRows ? "explicit_include" : "not_requested";
+  const supportRowsReason = "not_requested";
   // The screen keeps a compatibility FinRep projection for existing consumers, but request truth
   // and summary truth already come from the backend-owned v3 panel scope.
   const summaryCompatibilityOverlay = false;
@@ -563,36 +558,24 @@ export async function loadDirectorFinanceScreenScope(
       errorStage: "load_finance_scope",
       sourceKind: "rpc:director_finance_panel_scope_v3",
       extra: {
-        supportRowsRequested: includeSupportRows,
         scopeKey: `finance:${args.objectId ?? ""}:${args.periodFromIso ?? ""}:${args.periodToIso ?? ""}`,
       },
     });
     throw hardCutError;
   }
 
-  if (supportRowsReason !== "not_requested") {
-    const supportRows = await loadDirectorFinanceSupportRows({
-      periodFromIso: args.periodFromIso,
-      periodToIso: args.periodToIso,
-    });
-    financeRows = supportRows.financeRows;
-    spendRows = supportRows.spendRows;
-    supportRowsLoaded = true;
-    primaryScope.issues.push(...supportRows.issues);
-  }
-
   const canonicalScope = buildDirectorFinanceCanonicalScope(resolvedPanelScope);
 
   const result: DirectorFinanceScreenScopeResult = {
-    financeRows,
-    spendRows,
+    financeRows: [],
+    spendRows: [],
     panelScope: resolvedPanelScope,
     canonicalScope,
     finRep: buildCompatibilityFinRep(canonicalScope),
     finSpendSummary: resolvedPanelScope.spend,
     financeDisplayMode: resolvedPanelScope.displayMode,
     issues: primaryScope.issues,
-    supportRowsLoaded,
+    supportRowsLoaded: false,
     cutoverMeta: {
       primaryOwner: "rpc_v3",
       contractVersion: "v3",
@@ -607,22 +590,22 @@ export async function loadDirectorFinanceScreenScope(
         canonicalScope.mode === "canonical" ? "rpc_panel_scope_v3_canonical" : "rpc_panel_scope_v3_fallback",
       spendSummary:
         canonicalScope.mode === "canonical" ? "rpc_panel_scope_v3_canonical" : "rpc_panel_scope_v3_fallback",
-      financeRows: supportRowsLoaded ? "legacy_accountant_inbox" : "not_loaded",
-      spendRows: supportRowsLoaded ? "legacy_spend_view" : "not_loaded",
+      financeRows: "not_loaded",
+      spendRows: "not_loaded",
       panelScope: "rpc_v3",
       financeDisplayMode: resolvedPanelScope.displayMode,
     },
   };
   observation.success({
-    rowCount: financeRows.length + spendRows.length,
+    rowCount: 0,
     sourceKind: result.sourceMeta.panelScope,
     fallbackUsed: false,
     extra: {
       issues: result.issues.length,
-      supportRowsLoaded,
+      supportRowsLoaded: false,
       supportRowsReason,
-      financeRows: financeRows.length,
-      spendRows: spendRows.length,
+      financeRows: 0,
+      spendRows: 0,
       financeSummary: result.sourceMeta.financeSummary,
       financeDisplayMode: result.financeDisplayMode,
       financeMode: result.cutoverMeta.financeMode,

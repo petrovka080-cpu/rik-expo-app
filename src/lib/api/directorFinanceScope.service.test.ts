@@ -169,7 +169,6 @@ describe("directorFinanceScope.service", () => {
     const result = await loadDirectorFinanceScreenScope({
       periodFromIso: null,
       periodToIso: null,
-      includeSupportRows: false,
     });
 
     expect(result.cutoverMeta.primaryOwner).toBe("rpc_v3");

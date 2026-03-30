@@ -41,7 +41,6 @@ async function main() {
     periodToIso: null,
     dueDaysDefault: DUE_DAYS_DEFAULT,
     criticalDays: CRITICAL_DAYS,
-    includeSupportRows: false,
   });
 
   const supportRows = await financeScopeService.loadDirectorFinanceSupportRows({
@@ -77,10 +76,6 @@ async function main() {
     periodTo: null,
     dueDaysDefault: DUE_DAYS_DEFAULT,
     criticalDays: CRITICAL_DAYS,
-    fallbackRowsLoader: async () => ({
-      financeRows: supportRows.financeRows,
-      spendRows: supportRows.spendRows,
-    }),
   });
 
   const summaryParity = {
