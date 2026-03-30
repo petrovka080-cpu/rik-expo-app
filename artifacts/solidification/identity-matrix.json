@@ -1,0 +1,174 @@
+{
+  "wave": "1A",
+  "generatedAt": "2026-03-30",
+  "description": "Identity and linkage strength for production-relevant entities in Wave 1A.",
+  "entries": [
+    {
+      "entity_name": "objects",
+      "entity_type": "table",
+      "primary_key": "objects.id",
+      "parent_key": null,
+      "nullable_parent": false,
+      "foreign_key_enforced": false,
+      "alt_identity_fields": ["objects.name", "objects.address"],
+      "text_based_matching": true,
+      "client_derived_relation": false,
+      "confidence": "strong",
+      "notes": "Base object entity is strong, but many consumers still use display names."
+    },
+    {
+      "entity_name": "catalog_items",
+      "entity_type": "table",
+      "primary_key": "catalog_items.id",
+      "parent_key": null,
+      "nullable_parent": false,
+      "foreign_key_enforced": false,
+      "alt_identity_fields": ["catalog_items.rik_code", "catalog_items.semantic_key", "catalog_items.name_human"],
+      "text_based_matching": true,
+      "client_derived_relation": false,
+      "confidence": "strong",
+      "notes": "Runtime often uses rik_code as the effective material identity."
+    },
+    {
+      "entity_name": "requests",
+      "entity_type": "table",
+      "primary_key": "requests.id",
+      "parent_key": "requests.object_id -> objects.id",
+      "nullable_parent": true,
+      "foreign_key_enforced": true,
+      "alt_identity_fields": [
+        "requests.display_no",
+        "requests.request_no",
+        "requests.object_name",
+        "requests.object_type_code",
+        "requests.system_code",
+        "requests.level_code",
+        "requests.zone_code"
+      ],
+      "text_based_matching": true,
+      "client_derived_relation": false,
+      "confidence": "strong",
+      "notes": "Object relation is FK-backed, but display and grouping fields still coexist."
+    },
+    {
+      "entity_name": "request_items",
+      "entity_type": "table",
+      "primary_key": "request_items.id",
+      "parent_key": "request_items.request_id -> requests.id",
+      "nullable_parent": false,
+      "foreign_key_enforced": false,
+      "alt_identity_fields": [
+        "request_items.ref_table + request_items.ref_id",
+        "request_items.rik_code",
+        "request_items.code",
+        "request_items.purchase_id"
+      ],
+      "text_based_matching": false,
+      "client_derived_relation": true,
+      "confidence": "weak",
+      "notes": "Generated DB contract exposes no explicit request_items.request_id FK even though runtime depends on the chain."
+    },
+    {
+      "entity_name": "proposals",
+      "entity_type": "table",
+      "primary_key": "proposals.id",
+      "parent_key": "proposals.request_id -> requests.id",
+      "nullable_parent": true,
+      "foreign_key_enforced": true,
+      "alt_identity_fields": ["proposals.proposal_no", "proposals.display_no", "proposals.id_short"],
+      "text_based_matching": false,
+      "client_derived_relation": false,
+      "confidence": "strong",
+      "notes": "Head link to request exists, but current create path still patches and normalizes fields client-side."
+    },
+    {
+      "entity_name": "proposal_items",
+      "entity_type": "table",
+      "primary_key": "proposal_items.id",
+      "parent_key": "proposal_items.request_item_id -> request_items.id and proposal_items.proposal_id -> proposals.id",
+      "nullable_parent": false,
+      "foreign_key_enforced": true,
+      "alt_identity_fields": [
+        "proposal_items.proposal_id_text",
+        "proposal_items.request_id",
+        "proposal_items.rik_code",
+        "proposal_items.app_code"
+      ],
+      "text_based_matching": false,
+      "client_derived_relation": false,
+      "confidence": "strong",
+      "notes": "This is the strongest part of the request-proposal chain; orphan views exist to detect breakage."
+    },
+    {
+      "entity_name": "proposal_payments",
+      "entity_type": "table",
+      "primary_key": "proposal_payments.id",
+      "parent_key": "proposal_payments.proposal_id -> proposals.id",
+      "nullable_parent": false,
+      "foreign_key_enforced": true,
+      "alt_identity_fields": ["proposal_payments.idempotency_key", "proposal_payments.paid_at"],
+      "text_based_matching": false,
+      "client_derived_relation": false,
+      "confidence": "strong",
+      "notes": "Finance identity is proposal-centric."
+    },
+    {
+      "entity_name": "proposal_payment_allocations",
+      "entity_type": "table",
+      "primary_key": "proposal_payment_allocations.id",
+      "parent_key": "proposal_payment_allocations.payment_id -> proposal_payments.id and proposal_payment_allocations.proposal_item_id -> proposal_items.id",
+      "nullable_parent": false,
+      "foreign_key_enforced": true,
+      "alt_identity_fields": ["proposal_payment_allocations.amount"],
+      "text_based_matching": false,
+      "client_derived_relation": false,
+      "confidence": "strong",
+      "notes": "Allocation truth is strongly linked to proposal items and payments."
+    },
+    {
+      "entity_name": "suppliers",
+      "entity_type": "table",
+      "primary_key": "suppliers.id",
+      "parent_key": null,
+      "nullable_parent": false,
+      "foreign_key_enforced": false,
+      "alt_identity_fields": ["suppliers.name"],
+      "text_based_matching": true,
+      "client_derived_relation": true,
+      "confidence": "weak",
+      "notes": "Current buyer proposal creation binds supplier identity by normalized name matching."
+    },
+    {
+      "entity_name": "contractors",
+      "entity_type": "table",
+      "primary_key": "contractors.id",
+      "parent_key": null,
+      "nullable_parent": false,
+      "foreign_key_enforced": false,
+      "alt_identity_fields": ["contractors.company_name"],
+      "text_based_matching": true,
+      "client_derived_relation": true,
+      "confidence": "weak",
+      "notes": "Current buyer proposal creation binds contractor identity by normalized company name."
+    },
+    {
+      "entity_name": "director_fact_row_normalized",
+      "entity_type": "derived_runtime_projection",
+      "primary_key": "derived composite",
+      "parent_key": "request/proposal/report source chain",
+      "nullable_parent": true,
+      "foreign_key_enforced": false,
+      "alt_identity_fields": [
+        "object_id_resolved",
+        "object_name_resolved",
+        "rik_code",
+        "request_id",
+        "request_item_id"
+      ],
+      "text_based_matching": true,
+      "client_derived_relation": true,
+      "confidence": "broken",
+      "notes": "Director report identity still depends on JS normalization, request lookups, and fallback sources."
+    }
+  ]
+}
