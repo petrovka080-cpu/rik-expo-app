@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "primaryOwner": "rpc_scope_v1",
+  "fallbackUsed": false,
+  "page0RowCountParityOk": true,
+  "page1RowCountParityOk": true,
+  "page0RowSignatureParityOk": true,
+  "page1RowSignatureParityOk": true,
+  "page0IdOrderParityOk": true,
+  "page1IdOrderParityOk": true,
+  "page0HasMoreParityOk": true,
+  "page1HasMoreParityOk": true,
+  "itemCountParityOk": true,
+  "itemSignatureParityOk": true,
+  "itemQtyParityOk": true,
+  "stableIdsOk": true,
+  "totalVisibleCountTypedOk": true,
+  "selectedIncomingId": ""
+}

@@ -1,0 +1,333 @@
+{
+  "summary": {
+    "status": "GREEN",
+    "gate": "GREEN",
+    "tscPassed": true,
+    "eslintPassed": true,
+    "offlineReliabilityWave1Passed": true,
+    "worksBundlePrimaryPassed": true,
+    "webPassed": true,
+    "androidPassed": true,
+    "iosPassed": false,
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "eventDrivenRefreshPresent": true,
+    "appActiveRefreshPresent": true,
+    "networkBackRefreshPresent": true,
+    "guardDisciplinePresent": true,
+    "issuedTimerDebtRemoved": true,
+    "runtimeGateOk": true
+  },
+  "commands": {
+    "tsc": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": 0,
+      "stdout": "",
+      "stderr": "",
+      "error": null
+    },
+    "eslint": {
+      "command": "npx eslint app/(tabs)/contractor.tsx src/screens/contractor/contractor.issuedRefreshLifecycle.ts src/screens/contractor/hooks/useContractorIssuedRefresh.ts src/screens/contractor/hooks/useContractorWorkModalController.ts scripts/contractor_runtime_verify.ts scripts/contractor_reliability_cleanup.ts scripts/warehouse_contractor_wave1_proof.ts",
+      "status": 0,
+      "stdout": "\nC:\\dev\\rik-expo-app\\app\\(tabs)\\contractor.tsx\n   87:5  warning  'subcontractCards' is assigned a value but never used  @typescript-eslint/no-unused-vars\n  151:5  warning  'workModalRowRef' is assigned a value but never used   @typescript-eslint/no-unused-vars\n\nC:\\dev\\rik-expo-app\\scripts\\contractor_runtime_verify.ts\n  661:3  warning  Unreachable code  no-unreachable\n  678:3  warning  Unreachable code  no-unreachable\n  744:3  warning  Unreachable code  no-unreachable\n\n✖ 5 problems (0 errors, 5 warnings)\n\n",
+      "stderr": "",
+      "error": null
+    },
+    "wave1": {
+      "command": "npx tsx scripts/contractor_reliability_wave1.ts",
+      "status": 0,
+      "stdout": "{\n  \"status\": \"passed\",\n  \"mutationTelemetry\": {\n    \"totalEvents\": 25,\n    \"byOwner\": {\n      \"contractor\": 25\n    },\n    \"byAction\": {\n      \"enqueue\": 7,\n      \"retry_scheduled\": 6,\n      \"succeeded\": 4,\n      \"inflight_restored\": 1,\n      \"dedupe_suppressed\": 4,\n      \"conflict_detected\": 2,\n      \"retry_exhausted\": 1\n    },\n    \"latestLifecycleByOwner\": {\n      \"contractor\": \"failed_non_retryable\"\n    },\n    \"conflictCount\": 2,\n    \"retryScheduledCount\": 6,\n    \"retryExhaustedCount\": 1,\n    \"dedupeSuppressedCount\": 4\n  },\n  \"offline_draft\": {\n    \"passed\": true,\n    \"details\": {\n      \"restoredStatus\": \"dirty_local\",\n      \"restoredMaterialCount\": 2,\n      \"restoredStage\": \"Подготовка\",\n      \"restoredComment\": \"Черновик офлайн\",\n      \"restoredLocation\": \"Секция 1\"\n    }\n  },\n  \"online_recovery\": {\n    \"passed\": true,\n    \"details\": {\n      \"offlineStatus\": \"retry_wait\",\n      \"recoveryStatus\": \"synced\",\n      \"remainingCount\": 0,\n      \"logInsertCount\": 1,\n      \"materialsInsertCount\": 1\n    }\n  },\n  \"kill_reopen\": {\n    \"passed\": true,\n    \"details\": {\n      \"queueLengthBeforeFlush\": 1,\n      \"queueStatusBeforeFlush\": \"inflight\",\n      \"finalStatus\": \"synced\",\n      \"logInsertCount\": 1\n    }\n  },\n  \"retry_path\": {\n    \"passed\": true,\n    \"details\": {\n      \"failedStatus\": \"retry_wait\",\n      \"pendingLogIdAfterFail\": \"log-1\",\n      \"queueLengthAfterFail\": 1,\n      \"finalStatus\": \"synced\",\n      \"logInsertCount\": 1,\n      \"materialsInsertCount\": 1\n    }\n  },\n  \"coalescing\": {\n    \"passed\": true,\n    \"details\": {\n      \"coalescedCount\": 4,\n      \"finalStatus\": \"synced\",\n      \"finalQtyFact\": 5,\n      \"queueLengthAfterSync\": 0,\n      \"logInsertCount\": 1,\n      \"materialsInsertCount\": 1\n    }\n  },\n  \"terminal_failure\": {\n    \"passed\": true,\n    \"details\": {\n      \"failureClass\": \"conflicted\",\n      \"finalStatus\": \"failed_terminal\",\n      \"finalFailureClass\": \"conflicted\",\n      \"lastErrorStage\": \"sync_materials\",\n      \"queueLength\": 0,\n      \"historyLifecycleStatus\": \"conflicted\",\n      \"logInsertCount\": 1,\n      \"materialsInsertCount\": 0\n    }\n  },\n  \"conflict_state\": {\n    \"passed\": true,\n    \"details\": {\n      \"failureClass\": \"conflicted\",\n      \"syncStatus\": \"failed_terminal\",\n      \"draftFailureClass\": \"conflicted\",\n      \"conflictType\": \"stale_progress_state\",\n      \"activeQueueLength\": 0,\n      \"historyLifecycleStatus\": \"conflicted\"\n    }\n  },\n  \"retry_exhaustion\": {\n    \"passed\": true,\n    \"details\": {\n      \"failureClasses\": [\n        \"retryable_sync_failure\",\n        \"retryable_sync_failure\",\n        \"retryable_sync_failure\",\n        \"retryable_sync_failure\",\n        \"failed_terminal\"\n      ],\n      \"finalStatus\": \"failed_terminal\",\n      \"finalFailureClass\": \"failed_terminal\",\n      \"activeQueueLength\": 0,\n      \"historyLifecycleStatus\": \"failed_non_retryable\",\n      \"retryCount\": 4\n    }\n  }\n}\n",
+      "stderr": "",
+      "error": null
+    },
+    "worksBundle": {
+      "command": "npx tsx scripts/contractor_works_bundle_cutover_v1.ts",
+      "status": 0,
+      "stdout": "{\n  \"status\": \"passed\",\n  \"gate\": \"GREEN\",\n  \"primaryOwner\": \"rpc_scope_v1\",\n  \"fallbackUsed\": false,\n  \"backendFirstPrimary\": true,\n  \"legacyDurationMs\": 2397,\n  \"rpcDurationMs\": 410,\n  \"primaryDurationMs\": 417,\n  \"rpcRowParityOk\": false,\n  \"rpcSubcontractParityOk\": false,\n  \"primaryRowParityOk\": false,\n  \"primarySubcontractParityOk\": false\n}\n",
+      "stderr": "",
+      "error": null
+    },
+    "runtime": {
+      "command": "npx tsx scripts/contractor_runtime_verify.ts",
+      "status": 0,
+      "stdout": "reused existing passed runtime summary\n",
+      "stderr": "",
+      "error": null,
+      "reused": true
+    }
+  },
+  "runtimeSummary": {
+    "status": "passed",
+    "webPassed": true,
+    "androidPassed": true,
+    "iosPassed": false,
+    "runtimeVerified": true,
+    "environmentRecoveryUsed": false,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "platformSpecificIssues": [
+      {
+        "platform": "ios",
+        "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      }
+    ],
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "failureKind": "unknown",
+    "scenariosPassed": {
+      "web": {
+        "contractorCardVisible": true,
+        "modalOpened": true,
+        "issuedExpanded": true
+      },
+      "android": {
+        "contractorCardVisible": true,
+        "modalOpened": true,
+        "issuedExpanded": true
+      },
+      "ios": {
+        "contractorCardVisible": false,
+        "modalOpened": false,
+        "issuedExpanded": false
+      }
+    },
+    "artifacts": {
+      "webScreenshot": "artifacts/contractor-web-smoke.png",
+      "androidHomeXml": "artifacts/android-contractor-home.xml",
+      "androidHomePng": "artifacts/android-contractor-home.png",
+      "androidModalXml": "artifacts/android-contractor-modal.xml",
+      "androidModalPng": "artifacts/android-contractor-modal.png",
+      "androidIssuedXml": "artifacts/android-contractor-issued.xml",
+      "androidIssuedPng": "artifacts/android-contractor-issued.png"
+    },
+    "gate": "contractor_runtime_verify",
+    "contractorCardVisible": true,
+    "modalOpened": true,
+    "issuedExpanded": true,
+    "seed": {
+      "suffix": "mn91bv9lqe44",
+      "contractorOrg": "Runtime Contractor mn91bv9lqe44",
+      "objectName": "BLD-MN91BV9LQE44",
+      "workName": "Runtime Work mn91bv9lqe44",
+      "subcontractId": "8d467694-7525-4e47-bf2b-c28093bbb990",
+      "requestId": "ba349a0f-ddc8-49a9-b7ac-1f660f44d902",
+      "requestItemId": "c4d75dd4-0fe6-48f9-be3b-1a44c7c70f81",
+      "purchaseId": "8a6110bd-0746-444b-ba4c-f0f340d53c20",
+      "purchaseItemId": "35ca65f6-a752-4127-b08a-5ad915f93d65",
+      "progressId": "057acf8e-c963-482a-9f4d-10a337667da7"
+    }
+  },
+  "wave1Summary": {
+    "status": "passed",
+    "mutationTelemetry": {
+      "totalEvents": 25,
+      "byOwner": {
+        "contractor": 25
+      },
+      "byAction": {
+        "enqueue": 7,
+        "retry_scheduled": 6,
+        "succeeded": 4,
+        "inflight_restored": 1,
+        "dedupe_suppressed": 4,
+        "conflict_detected": 2,
+        "retry_exhausted": 1
+      },
+      "latestLifecycleByOwner": {
+        "contractor": "failed_non_retryable"
+      },
+      "conflictCount": 2,
+      "retryScheduledCount": 6,
+      "retryExhaustedCount": 1,
+      "dedupeSuppressedCount": 4
+    },
+    "offline_draft": {
+      "passed": true,
+      "details": {
+        "restoredStatus": "dirty_local",
+        "restoredMaterialCount": 2,
+        "restoredStage": "Подготовка",
+        "restoredComment": "Черновик офлайн",
+        "restoredLocation": "Секция 1"
+      }
+    },
+    "online_recovery": {
+      "passed": true,
+      "details": {
+        "offlineStatus": "retry_wait",
+        "recoveryStatus": "synced",
+        "remainingCount": 0,
+        "logInsertCount": 1,
+        "materialsInsertCount": 1
+      }
+    },
+    "kill_reopen": {
+      "passed": true,
+      "details": {
+        "queueLengthBeforeFlush": 1,
+        "queueStatusBeforeFlush": "inflight",
+        "finalStatus": "synced",
+        "logInsertCount": 1
+      }
+    },
+    "retry_path": {
+      "passed": true,
+      "details": {
+        "failedStatus": "retry_wait",
+        "pendingLogIdAfterFail": "log-1",
+        "queueLengthAfterFail": 1,
+        "finalStatus": "synced",
+        "logInsertCount": 1,
+        "materialsInsertCount": 1
+      }
+    },
+    "coalescing": {
+      "passed": true,
+      "details": {
+        "coalescedCount": 4,
+        "finalStatus": "synced",
+        "finalQtyFact": 5,
+        "queueLengthAfterSync": 0,
+        "logInsertCount": 1,
+        "materialsInsertCount": 1
+      }
+    },
+    "terminal_failure": {
+      "passed": true,
+      "details": {
+        "failureClass": "conflicted",
+        "finalStatus": "failed_terminal",
+        "finalFailureClass": "conflicted",
+        "lastErrorStage": "sync_materials",
+        "queueLength": 0,
+        "historyLifecycleStatus": "conflicted",
+        "logInsertCount": 1,
+        "materialsInsertCount": 0
+      }
+    },
+    "conflict_state": {
+      "passed": true,
+      "details": {
+        "failureClass": "conflicted",
+        "syncStatus": "failed_terminal",
+        "draftFailureClass": "conflicted",
+        "conflictType": "stale_progress_state",
+        "activeQueueLength": 0,
+        "historyLifecycleStatus": "conflicted"
+      }
+    },
+    "retry_exhaustion": {
+      "passed": true,
+      "details": {
+        "failureClasses": [
+          "retryable_sync_failure",
+          "retryable_sync_failure",
+          "retryable_sync_failure",
+          "retryable_sync_failure",
+          "failed_terminal"
+        ],
+        "finalStatus": "failed_terminal",
+        "finalFailureClass": "failed_terminal",
+        "activeQueueLength": 0,
+        "historyLifecycleStatus": "failed_non_retryable",
+        "retryCount": 4
+      }
+    }
+  },
+  "worksBundleSummary": {
+    "status": "passed",
+    "gate": "GREEN",
+    "profile": {
+      "isStaff": false,
+      "myContractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+      "contractorProfileLoaded": true,
+      "userProfileLoaded": true
+    },
+    "legacy": {
+      "durationMs": 2397,
+      "rows": 51,
+      "subcontractCards": 11,
+      "sourceMeta": {
+        "primaryOwner": "legacy_client_enrich",
+        "fallbackUsed": true,
+        "sourceKind": "legacy:view:v_works_fact+relational_enrich",
+        "rowParityStatus": "not_checked",
+        "backendFirstPrimary": false
+      }
+    },
+    "rpc": {
+      "durationMs": 410,
+      "rows": 64,
+      "subcontractCards": 24,
+      "sourceMeta": {
+        "primaryOwner": "rpc_scope_v1",
+        "fallbackUsed": false,
+        "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+        "rowParityStatus": "not_checked",
+        "backendFirstPrimary": true
+      }
+    },
+    "primary": {
+      "durationMs": 417,
+      "rows": 0,
+      "subcontractCards": 0,
+      "sourceMeta": {
+        "primaryOwner": "rpc_scope_v1",
+        "fallbackUsed": false,
+        "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+        "rowParityStatus": "not_checked",
+        "backendFirstPrimary": true
+      }
+    },
+    "serviceBoundary": {
+      "rpcOnlyProductPath": true,
+      "legacyLoaderRetainedForProofOnly": true,
+      "backendFirstPrimary": true,
+      "scopeGuardRequired": true,
+      "parityDiagnosticOnly": true
+    },
+    "parity": {
+      "rpcRowParityOk": false,
+      "rpcSubcontractParityOk": false,
+      "primaryRowParityOk": false,
+      "primarySubcontractParityOk": false,
+      "legacyRowCount": 51,
+      "rpcRowCount": 64,
+      "primaryRowCount": 0,
+      "legacySubcontractCount": 11,
+      "rpcSubcontractCount": 24,
+      "primarySubcontractCount": 0
+    },
+    "topSlowFetches": [
+      {
+        "screen": "contractor",
+        "surface": "works_bundle",
+        "event": "load_works_bundle",
+        "count": 2,
+        "avgDurationMs": 1407,
+        "maxDurationMs": 2396,
+        "totalRowCount": 51,
+        "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
+        "fallbackCount": 1
+      },
+      {
+        "screen": "contractor",
+        "surface": "works_bundle",
+        "event": "load_works_bundle_rpc",
+        "count": 1,
+        "avgDurationMs": 410,
+        "maxDurationMs": 410,
+        "totalRowCount": 64,
+        "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
+        "fallbackCount": 0
+      }
+    ]
+  },
+  "structural": {
+    "eventDrivenRefreshPresent": true,
+    "appActiveRefreshPresent": true,
+    "networkBackRefreshPresent": true,
+    "guardDisciplinePresent": true,
+    "issuedTimerDebtRemoved": true
+  }
+}

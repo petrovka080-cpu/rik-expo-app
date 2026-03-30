@@ -24,7 +24,9 @@ const readSource = (relativePath: string) =>
 const guardHelperSource = readSource("src/lib/observability/platformGuardDiscipline.ts");
 const observabilitySource = readSource("src/lib/observability/platformObservability.ts");
 const buyerSource = readSource("src/screens/buyer/hooks/useBuyerLoadingController.ts");
-const accountantSource = readSource("src/screens/accountant/useAccountantScreenController.ts");
+const accountantInboxControllerSource = readSource("src/screens/accountant/useAccountantInboxController.ts");
+const accountantHistoryControllerSource = readSource("src/screens/accountant/useAccountantHistoryController.ts");
+const accountantRealtimeLifecycleSource = readSource("src/screens/accountant/accountant.realtime.lifecycle.ts");
 const warehouseLifecycleSource = readSource("src/screens/warehouse/hooks/useWarehouseLifecycle.ts");
 const warehouseReqHeadsSource = readSource("src/screens/warehouse/hooks/useWarehouseReqHeads.ts");
 const warehouseStockSource = readSource("src/screens/warehouse/hooks/useWarehouseStockData.ts");
@@ -49,7 +51,12 @@ const guardContractCheck: CheckResult = {
 const rolloutCheck: CheckResult = {
   passed:
     buyerSource.includes("getPlatformNetworkSnapshot") &&
-    accountantSource.includes("getPlatformNetworkSnapshot") &&
+    accountantInboxControllerSource.includes("getPlatformNetworkSnapshot") &&
+    accountantHistoryControllerSource.includes("getPlatformNetworkSnapshot") &&
+    accountantInboxControllerSource.includes("recordPlatformGuardSkip") &&
+    accountantHistoryControllerSource.includes("recordPlatformGuardSkip") &&
+    accountantRealtimeLifecycleSource.includes("getPlatformNetworkSnapshot") &&
+    accountantRealtimeLifecycleSource.includes("recordPlatformGuardSkip") &&
     warehouseLifecycleSource.includes("getPlatformNetworkSnapshot") &&
     warehouseReqHeadsSource.includes("getPlatformNetworkSnapshot") &&
     warehouseStockSource.includes("getPlatformNetworkSnapshot") &&
@@ -63,7 +70,13 @@ const rolloutCheck: CheckResult = {
     directorLifecycleSource.includes("recordPlatformObservability"),
   details: {
     buyerNetworkGuard: buyerSource.includes("getPlatformNetworkSnapshot"),
-    accountantNetworkGuard: accountantSource.includes("getPlatformNetworkSnapshot"),
+    accountantInboxNetworkGuard: accountantInboxControllerSource.includes("getPlatformNetworkSnapshot"),
+    accountantHistoryNetworkGuard: accountantHistoryControllerSource.includes("getPlatformNetworkSnapshot"),
+    accountantRealtimeNetworkGuard: accountantRealtimeLifecycleSource.includes("getPlatformNetworkSnapshot"),
+    accountantGuardSkipWired:
+      accountantInboxControllerSource.includes("recordPlatformGuardSkip") &&
+      accountantHistoryControllerSource.includes("recordPlatformGuardSkip") &&
+      accountantRealtimeLifecycleSource.includes("recordPlatformGuardSkip"),
     warehouseLifecycleNetworkGuard: warehouseLifecycleSource.includes("getPlatformNetworkSnapshot"),
     warehouseReqHeadsNetworkGuard: warehouseReqHeadsSource.includes("getPlatformNetworkSnapshot"),
     warehouseStockNetworkGuard: warehouseStockSource.includes("getPlatformNetworkSnapshot"),
@@ -163,7 +176,13 @@ writeFileSync(
       status: result.status,
       guardContractReady: guardContractCheck.passed,
       buyerAligned: buyerSource.includes("getPlatformNetworkSnapshot"),
-      accountantAligned: accountantSource.includes("getPlatformNetworkSnapshot"),
+      accountantAligned:
+        accountantInboxControllerSource.includes("getPlatformNetworkSnapshot") &&
+        accountantHistoryControllerSource.includes("getPlatformNetworkSnapshot") &&
+        accountantRealtimeLifecycleSource.includes("getPlatformNetworkSnapshot") &&
+        accountantInboxControllerSource.includes("recordPlatformGuardSkip") &&
+        accountantHistoryControllerSource.includes("recordPlatformGuardSkip") &&
+        accountantRealtimeLifecycleSource.includes("recordPlatformGuardSkip"),
       warehouseAligned:
         warehouseLifecycleSource.includes("getPlatformNetworkSnapshot") &&
         warehouseReqHeadsSource.includes("getPlatformNetworkSnapshot") &&

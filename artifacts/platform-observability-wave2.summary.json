@@ -1,0 +1,206 @@
+{
+  "status": "passed",
+  "targetedCutovers": {
+    "contractor": {
+      "beforeMs": 2074,
+      "afterMs": 417,
+      "owner": "rpc:contractor_works_bundle_scope_v1"
+    },
+    "warehouse": {
+      "beforeMs": 1301,
+      "afterMs": 617,
+      "owner": "rpc:warehouse_stock_scope_v2"
+    },
+    "buyer": {
+      "beforeMs": 628,
+      "afterMs": 415,
+      "owner": "rpc:buyer_summary_buckets_scope_v1"
+    },
+    "buyerInbox": {
+      "beforeMs": 435,
+      "afterMs": 431,
+      "owner": "rpc:buyer_summary_inbox_scope_v1"
+    }
+  },
+  "topComparisons": [
+    {
+      "key": "director|reports_scope|load_report_scope",
+      "screen": "director",
+      "surface": "reports_scope",
+      "event": "load_report_scope",
+      "previousDurationMs": 10810,
+      "currentDurationMs": 10810,
+      "deltaMs": 0,
+      "deltaPercent": 0,
+      "previousOwner": "rpc_scope_v1",
+      "currentOwner": "rpc_scope_v1",
+      "ownerChanged": false,
+      "fallbackPresent": false,
+      "classification": "backend_fetch_heavy",
+      "confidence": "high",
+      "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+    },
+    {
+      "key": "request|supabase_transport|request_timeout_discipline",
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "previousDurationMs": 10053,
+      "currentDurationMs": 10053,
+      "deltaMs": 0,
+      "deltaPercent": 0,
+      "previousOwner": "supabase_transport:native",
+      "currentOwner": "supabase_transport:native",
+      "ownerChanged": false,
+      "fallbackPresent": false,
+      "classification": "mixed",
+      "confidence": "low",
+      "reason": "not enough source ownership signal to classify this hotspot more narrowly"
+    },
+    {
+      "key": "warehouse|stock_list|fetch_stock",
+      "screen": "warehouse",
+      "surface": "stock_list",
+      "event": "fetch_stock",
+      "previousDurationMs": 642,
+      "currentDurationMs": 617,
+      "deltaMs": -25,
+      "deltaPercent": -4,
+      "previousOwner": "view:v_wh_balance_ledger_truth_ui",
+      "currentOwner": "rpc:warehouse_stock_scope_v2",
+      "ownerChanged": true,
+      "fallbackPresent": false,
+      "classification": "backend_fetch_heavy",
+      "confidence": "high",
+      "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+    },
+    {
+      "key": "director|finance_panel|load_finance_scope",
+      "screen": "director",
+      "surface": "finance_panel",
+      "event": "load_finance_scope",
+      "previousDurationMs": 486,
+      "currentDurationMs": 486,
+      "deltaMs": 0,
+      "deltaPercent": 0,
+      "previousOwner": "rpc_v3",
+      "currentOwner": "rpc_v3",
+      "ownerChanged": false,
+      "fallbackPresent": false,
+      "classification": "backend_fetch_heavy",
+      "confidence": "medium",
+      "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+    },
+    {
+      "key": "contractor|works_bundle|load_works_bundle",
+      "screen": "contractor",
+      "surface": "works_bundle",
+      "event": "load_works_bundle",
+      "previousDurationMs": 410,
+      "currentDurationMs": 417,
+      "deltaMs": 7,
+      "deltaPercent": 2,
+      "previousOwner": "rpc:contractor_works_bundle_scope_v1",
+      "currentOwner": "rpc:contractor_works_bundle_scope_v1",
+      "ownerChanged": false,
+      "fallbackPresent": false,
+      "classification": "backend_fetch_heavy",
+      "confidence": "medium",
+      "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+    },
+    {
+      "key": "warehouse|req_heads|fetch_req_heads",
+      "screen": "warehouse",
+      "surface": "req_heads",
+      "event": "fetch_req_heads",
+      "previousDurationMs": 399,
+      "currentDurationMs": 399,
+      "deltaMs": 0,
+      "deltaPercent": 0,
+      "previousOwner": "view:v_wh_issue_req_heads_ui",
+      "currentOwner": "view:v_wh_issue_req_heads_ui",
+      "ownerChanged": false,
+      "fallbackPresent": false,
+      "classification": "backend_fetch_heavy",
+      "confidence": "medium",
+      "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+    },
+    {
+      "key": "contractor|profile_card|load_user_profile",
+      "screen": "contractor",
+      "surface": "profile_card",
+      "event": "load_user_profile",
+      "previousDurationMs": 0,
+      "currentDurationMs": 0,
+      "deltaMs": 0,
+      "deltaPercent": null,
+      "previousOwner": "auth+table:user_profiles",
+      "currentOwner": "auth+table:user_profiles",
+      "ownerChanged": false,
+      "fallbackPresent": false,
+      "classification": "mixed",
+      "confidence": "low",
+      "reason": "not enough source ownership signal to classify this hotspot more narrowly"
+    },
+    {
+      "key": "contractor|profile_card|load_contractor_profile",
+      "screen": "contractor",
+      "surface": "profile_card",
+      "event": "load_contractor_profile",
+      "previousDurationMs": 0,
+      "currentDurationMs": 0,
+      "deltaMs": 0,
+      "deltaPercent": null,
+      "previousOwner": "auth+table:contractors",
+      "currentOwner": "auth+table:contractors",
+      "ownerChanged": false,
+      "fallbackPresent": false,
+      "classification": "mixed",
+      "confidence": "low",
+      "reason": "not enough source ownership signal to classify this hotspot more narrowly"
+    }
+  ],
+  "recommendation": {
+    "nextBestCut": "director|reports_scope|load_report_scope",
+    "reason": "backend_fetch_heavy: primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated",
+    "confidence": "high",
+    "classification": "backend_fetch_heavy",
+    "candidates": [
+      {
+        "key": "director|reports_scope|load_report_scope",
+        "currentDurationMs": 10810,
+        "classification": "backend_fetch_heavy",
+        "confidence": "high",
+        "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+      },
+      {
+        "key": "request|supabase_transport|request_timeout_discipline",
+        "currentDurationMs": 10053,
+        "classification": "mixed",
+        "confidence": "low",
+        "reason": "not enough source ownership signal to classify this hotspot more narrowly"
+      },
+      {
+        "key": "director|finance_panel|load_finance_scope",
+        "currentDurationMs": 486,
+        "classification": "backend_fetch_heavy",
+        "confidence": "medium",
+        "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+      },
+      {
+        "key": "warehouse|stock_list|fetch_stock",
+        "currentDurationMs": 617,
+        "classification": "backend_fetch_heavy",
+        "confidence": "high",
+        "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+      },
+      {
+        "key": "contractor|works_bundle|load_works_bundle",
+        "currentDurationMs": 417,
+        "classification": "backend_fetch_heavy",
+        "confidence": "medium",
+        "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+      }
+    ]
+  }
+}

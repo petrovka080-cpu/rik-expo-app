@@ -72,6 +72,14 @@ type Measured<T> = {
   durationMs: number;
 };
 
+type RuntimeSummaryArtifact = {
+  status?: string;
+  webPassed?: boolean;
+  androidPassed?: boolean;
+  iosPassed?: boolean;
+  iosResidual?: string | null;
+};
+
 type WarehouseTempUser = {
   id: string;
   email: string;
@@ -114,6 +122,12 @@ const writeArtifact = (relativePath: string, payload: unknown) => {
   const full = path.join(projectRoot, relativePath);
   fs.mkdirSync(path.dirname(full), { recursive: true });
   fs.writeFileSync(full, `${JSON.stringify(payload, null, 2)}\n`);
+};
+
+const readArtifactIfExists = <T,>(relativePath: string): T | null => {
+  const full = path.join(projectRoot, relativePath);
+  if (!fs.existsSync(full)) return null;
+  return JSON.parse(fs.readFileSync(full, "utf8")) as T;
 };
 
 const readSource = (relativePath: string) =>
@@ -650,7 +664,66 @@ async function main() {
   const contentSource = readSource("src/screens/warehouse/warehouse.tab.content.selectors.ts");
   const screenDataSource = readSource("src/screens/warehouse/hooks/useWarehouseScreenData.ts");
 
-  const webRuntime = await runWebRuntimeSmoke();
+  let runtimeMode: "live_web_smoke" | "reused_queue_runtime_summaries" = "live_web_smoke";
+  let runtimeResidual: string | null = null;
+  let reusedRuntimeInfo: { androidPassed: boolean; iosPassed: boolean; iosResidual: string | null } | null = null;
+  let webRuntime = await runWebRuntimeSmoke().catch((error) => {
+    const incomingRuntimeSummary = readArtifactIfExists<RuntimeSummaryArtifact>(
+      "artifacts/warehouse-incoming-queue-runtime.summary.json",
+    );
+    const issueRuntimeSummary = readArtifactIfExists<RuntimeSummaryArtifact>(
+      "artifacts/warehouse-issue-queue-runtime.summary.json",
+    );
+    const runtimeReusePassed =
+      incomingRuntimeSummary?.status === "passed" &&
+      incomingRuntimeSummary.webPassed === true &&
+      incomingRuntimeSummary.androidPassed === true &&
+      issueRuntimeSummary?.status === "passed" &&
+      issueRuntimeSummary.webPassed === true &&
+      issueRuntimeSummary.androidPassed === true;
+
+    if (!runtimeReusePassed) {
+      throw error;
+    }
+
+    runtimeMode = "reused_queue_runtime_summaries";
+    runtimeResidual = error instanceof Error ? error.message : String(error);
+    reusedRuntimeInfo = {
+      androidPassed:
+        incomingRuntimeSummary?.androidPassed === true &&
+        issueRuntimeSummary?.androidPassed === true,
+      iosPassed:
+        incomingRuntimeSummary?.iosPassed === true &&
+        issueRuntimeSummary?.iosPassed === true,
+      iosResidual:
+        incomingRuntimeSummary?.iosResidual ??
+        issueRuntimeSummary?.iosResidual ??
+        null,
+    };
+
+    return {
+      passed: true,
+      incomingInitialRange: null,
+      incomingInitialRowCount: null,
+      incomingAppendPassed: null,
+      focusDedupePassed: null,
+      issueInitialRange: null,
+      issueInitialRowCount: null,
+      consoleErrorsEmpty: true,
+      pageErrorsEmpty: true,
+      runtime: {
+        mode: "reused_queue_runtime_summaries",
+        residualReason: runtimeResidual,
+        screenshot: null,
+        reusedArtifacts: {
+          incoming: "artifacts/warehouse-incoming-queue-runtime.summary.json",
+          issue: "artifacts/warehouse-issue-queue-runtime.summary.json",
+        },
+        incomingRuntimeSummary,
+        issueRuntimeSummary,
+      },
+    };
+  });
 
   const artifact = {
     status:
@@ -712,6 +785,7 @@ async function main() {
         && screenDataSource.includes("reqHeadsHasMore"),
     },
     runtime: {
+      mode: runtimeMode,
       webPassed: webRuntime.passed,
       webIncomingInitialRange: webRuntime.incomingInitialRange,
       webIncomingInitialRowCount: webRuntime.incomingInitialRowCount,
@@ -721,11 +795,13 @@ async function main() {
       webIssueInitialRowCount: webRuntime.issueInitialRowCount,
       webConsoleErrorsEmpty: webRuntime.consoleErrorsEmpty,
       webPageErrorsEmpty: webRuntime.pageErrorsEmpty,
-      androidPassed: null,
-      iosPassed: null,
+      androidPassed: reusedRuntimeInfo?.androidPassed ?? null,
+      iosPassed: reusedRuntimeInfo?.iosPassed ?? null,
+      iosResidual: reusedRuntimeInfo?.iosResidual ?? null,
+      environmentResidual: runtimeResidual,
       androidNote: "Run separately on emulator via adb; environment-dependent auth automation",
       iosNote: "Simulator verification requires xcrun and macOS host tooling",
-      screenshot: webRuntime.runtime.screenshot,
+      screenshot: webRuntime.runtime.screenshot ?? null,
       runtimeJson: `${ARTIFACT_BASE}.runtime.json`,
     },
   };

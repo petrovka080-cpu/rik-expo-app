@@ -1,0 +1,640 @@
+{
+  "status": "partial",
+  "periodFrom": "2026-02-28",
+  "periodTo": "2026-03-30",
+  "scenarioResults": {
+    "warehouse_stock": {
+      "status": "passed",
+      "durationMs": 642,
+      "details": {
+        "rows": 106
+      }
+    },
+    "warehouse_req_heads": {
+      "status": "passed",
+      "durationMs": 399,
+      "details": {
+        "rows": 50
+      }
+    },
+    "buyer_summary": {
+      "status": "failed",
+      "durationMs": 0,
+      "details": {
+        "error": "Cannot read properties of undefined (reading 'rest')"
+      }
+    },
+    "accountant_inbox": {
+      "status": "failed",
+      "durationMs": 800,
+      "details": {
+        "error": "[object Object]"
+      }
+    },
+    "accountant_history": {
+      "status": "failed",
+      "durationMs": 596,
+      "details": {
+        "error": "[object Object]"
+      }
+    },
+    "contractor_profiles": {
+      "status": "passed",
+      "durationMs": 0,
+      "details": {
+        "userProfileLoaded": false,
+        "contractorProfileLoaded": false
+      }
+    },
+    "contractor_works_bundle": {
+      "status": "passed",
+      "durationMs": 411,
+      "details": {
+        "rows": 0,
+        "subcontractCards": 0,
+        "totalApproved": 24
+      }
+    },
+    "director_finance_scope": {
+      "status": "passed",
+      "durationMs": 486,
+      "details": {
+        "panelScope": "rpc_v3",
+        "financeRows": 0,
+        "spendRows": 0,
+        "issues": 0
+      }
+    },
+    "director_reports_scope": {
+      "status": "passed",
+      "durationMs": 10810,
+      "details": {
+        "optionsObjects": 8,
+        "reportRows": 100,
+        "disciplineWorks": 15,
+        "fromCache": false,
+        "reportBranch": "transport_rpc"
+      }
+    }
+  },
+  "totalEvents": 21,
+  "summary": {
+    "totalEvents": 21,
+    "fetchEvents": 21,
+    "uiEvents": 0,
+    "reloadEvents": 0,
+    "errorCount": 3,
+    "cacheHitCount": 0,
+    "overlapCount": 0,
+    "skippedCount": 0,
+    "guardReasons": [],
+    "topSlowFetches": [
+      {
+        "screen": "director",
+        "surface": "reports_scope",
+        "event": "load_report_scope",
+        "count": 1,
+        "avgDurationMs": 10810,
+        "maxDurationMs": 10810,
+        "totalRowCount": 100,
+        "lastSourceKind": "rpc_scope_v1",
+        "fallbackCount": 0
+      },
+      {
+        "screen": "request",
+        "surface": "supabase_transport",
+        "event": "request_timeout_discipline",
+        "count": 8,
+        "avgDurationMs": 1707,
+        "maxDurationMs": 10053,
+        "totalRowCount": 0,
+        "lastSourceKind": "supabase_transport:native",
+        "fallbackCount": 0
+      },
+      {
+        "screen": "warehouse",
+        "surface": "stock_list",
+        "event": "fetch_stock",
+        "count": 1,
+        "avgDurationMs": 642,
+        "maxDurationMs": 642,
+        "totalRowCount": 106,
+        "lastSourceKind": "view:v_wh_balance_ledger_truth_ui",
+        "fallbackCount": 0
+      },
+      {
+        "screen": "director",
+        "surface": "finance_panel",
+        "event": "load_finance_scope",
+        "count": 1,
+        "avgDurationMs": 486,
+        "maxDurationMs": 486,
+        "totalRowCount": 0,
+        "lastSourceKind": "rpc_v3",
+        "fallbackCount": 0
+      },
+      {
+        "screen": "contractor",
+        "surface": "works_bundle",
+        "event": "load_works_bundle",
+        "count": 1,
+        "avgDurationMs": 410,
+        "maxDurationMs": 410,
+        "totalRowCount": 0,
+        "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
+        "fallbackCount": 0
+      },
+      {
+        "screen": "warehouse",
+        "surface": "req_heads",
+        "event": "fetch_req_heads",
+        "count": 1,
+        "avgDurationMs": 399,
+        "maxDurationMs": 399,
+        "totalRowCount": 50,
+        "lastSourceKind": "view:v_wh_issue_req_heads_ui",
+        "fallbackCount": 0
+      },
+      {
+        "screen": "contractor",
+        "surface": "profile_card",
+        "event": "load_user_profile",
+        "count": 2,
+        "avgDurationMs": 0,
+        "maxDurationMs": 0,
+        "totalRowCount": 0,
+        "lastSourceKind": "auth+table:user_profiles",
+        "fallbackCount": 0
+      },
+      {
+        "screen": "contractor",
+        "surface": "profile_card",
+        "event": "load_contractor_profile",
+        "count": 2,
+        "avgDurationMs": 0,
+        "maxDurationMs": 0,
+        "totalRowCount": 0,
+        "lastSourceKind": "auth+table:contractors",
+        "fallbackCount": 0
+      }
+    ],
+    "recentErrors": [
+      {
+        "screen": "buyer",
+        "surface": "summary_inbox",
+        "event": "load_inbox_full",
+        "errorStage": "load_inbox_full_scope_v1",
+        "errorClass": "TypeError",
+        "errorMessage": "Cannot read properties of undefined (reading 'rest')"
+      },
+      {
+        "screen": "accountant",
+        "surface": "inbox_window",
+        "event": "load_inbox_primary_rpc",
+        "errorStage": "accountant_inbox_scope_v1",
+        "errorClass": null,
+        "errorMessage": "permission denied for table proposals"
+      },
+      {
+        "screen": "accountant",
+        "surface": "inbox_window",
+        "event": "load_inbox",
+        "errorStage": "accountant_inbox_scope_v1",
+        "errorClass": null,
+        "errorMessage": "permission denied for table proposals"
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "obs-1",
+      "at": 1774836756350,
+      "screen": "warehouse",
+      "surface": "stock_list",
+      "category": "fetch",
+      "event": "fetch_stock",
+      "sourceKind": "view:v_wh_balance_ledger_truth_ui",
+      "rowCount": 106,
+      "result": "success",
+      "durationMs": 642
+    },
+    {
+      "id": "obs-2",
+      "at": 1774836756749,
+      "screen": "warehouse",
+      "surface": "req_heads",
+      "category": "fetch",
+      "event": "fetch_req_heads",
+      "sourceKind": "view:v_wh_issue_req_heads_ui",
+      "rowCount": 50,
+      "result": "success",
+      "durationMs": 399
+    },
+    {
+      "id": "obs-3",
+      "at": 1774836756749,
+      "screen": "buyer",
+      "surface": "summary_inbox",
+      "category": "fetch",
+      "event": "load_inbox_full",
+      "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
+      "rowCount": 0,
+      "errorStage": "load_inbox_full_scope_v1",
+      "fallbackUsed": false,
+      "result": "error",
+      "durationMs": 0,
+      "errorClass": "TypeError",
+      "errorMessage": "Cannot read properties of undefined (reading 'rest')"
+    },
+    {
+      "id": "obs-4",
+      "at": 1774836757154,
+      "screen": "request",
+      "surface": "supabase_transport",
+      "category": "fetch",
+      "event": "request_timeout_discipline",
+      "sourceKind": "supabase_transport:native",
+      "trigger": "request",
+      "extra": {
+        "requestClass": "ui_scope_load",
+        "timeoutMs": 20000,
+        "owner": "supabase_client",
+        "operation": "accountant_inbox_scope_v1",
+        "method": "POST",
+        "urlPath": "/rest/v1/rpc/accountant_inbox_scope_v1",
+        "endpointKind": "supabase_rpc",
+        "ruleId": "rpc_ui:accountant_inbox_scope_v1",
+        "timeoutFired": false,
+        "abortReason": null,
+        "httpStatus": 200
+      },
+      "result": "success",
+      "durationMs": 404
+    },
+    {
+      "id": "obs-5",
+      "at": 1774836757549,
+      "screen": "request",
+      "surface": "supabase_transport",
+      "category": "fetch",
+      "event": "request_timeout_discipline",
+      "sourceKind": "supabase_transport:native",
+      "trigger": "request",
+      "extra": {
+        "requestClass": "ui_scope_load",
+        "timeoutMs": 20000,
+        "owner": "supabase_client",
+        "operation": "proposals",
+        "method": "GET",
+        "urlPath": "/rest/v1/proposals",
+        "endpointKind": "supabase_rest",
+        "ruleId": "rest:ui_scope_load",
+        "timeoutFired": false,
+        "abortReason": null,
+        "httpStatus": 401
+      },
+      "result": "success",
+      "durationMs": 392
+    },
+    {
+      "id": "obs-6",
+      "at": 1774836757549,
+      "screen": "accountant",
+      "surface": "inbox_window",
+      "category": "fetch",
+      "event": "load_inbox_primary_rpc",
+      "result": "error",
+      "sourceKind": "rpc:accountant_inbox_scope_v1",
+      "fallbackUsed": false,
+      "errorStage": "accountant_inbox_scope_v1",
+      "errorMessage": "permission denied for table proposals",
+      "extra": {
+        "tab": "К оплате",
+        "offsetRows": 0,
+        "limitRows": 40,
+        "mode": "primary_fail"
+      }
+    },
+    {
+      "id": "obs-7",
+      "at": 1774836757549,
+      "screen": "accountant",
+      "surface": "inbox_window",
+      "category": "fetch",
+      "event": "load_inbox",
+      "sourceKind": "rpc:accountant_inbox_scope_v1",
+      "rowCount": 0,
+      "fallbackUsed": false,
+      "errorStage": "accountant_inbox_scope_v1",
+      "extra": {
+        "tab": "К оплате",
+        "offsetRows": 0,
+        "limitRows": 40,
+        "mode": "primary_fail"
+      },
+      "result": "error",
+      "durationMs": 800,
+      "errorMessage": "permission denied for table proposals"
+    },
+    {
+      "id": "obs-8",
+      "at": 1774836758144,
+      "screen": "request",
+      "surface": "supabase_transport",
+      "category": "fetch",
+      "event": "request_timeout_discipline",
+      "sourceKind": "supabase_transport:native",
+      "trigger": "request",
+      "extra": {
+        "requestClass": "ui_scope_load",
+        "timeoutMs": 20000,
+        "owner": "supabase_client",
+        "operation": "list_accountant_payments_history_v2",
+        "method": "POST",
+        "urlPath": "/rest/v1/rpc/list_accountant_payments_history_v2",
+        "endpointKind": "supabase_rpc",
+        "ruleId": "rpc_ui:list_accountant_payments_history_v2",
+        "timeoutFired": false,
+        "abortReason": null,
+        "httpStatus": 401
+      },
+      "result": "success",
+      "durationMs": 594
+    },
+    {
+      "id": "obs-9",
+      "at": 1774836758145,
+      "screen": "contractor",
+      "surface": "profile_card",
+      "category": "fetch",
+      "event": "load_user_profile",
+      "sourceKind": "auth+table:user_profiles",
+      "rowCount": 0,
+      "result": "success",
+      "durationMs": 0
+    },
+    {
+      "id": "obs-10",
+      "at": 1774836758145,
+      "screen": "contractor",
+      "surface": "profile_card",
+      "category": "fetch",
+      "event": "load_contractor_profile",
+      "sourceKind": "auth+table:contractors",
+      "rowCount": 0,
+      "result": "success",
+      "durationMs": 0
+    },
+    {
+      "id": "obs-11",
+      "at": 1774836758145,
+      "screen": "contractor",
+      "surface": "profile_card",
+      "category": "fetch",
+      "event": "load_user_profile",
+      "sourceKind": "auth+table:user_profiles",
+      "rowCount": 0,
+      "result": "success",
+      "durationMs": 0
+    },
+    {
+      "id": "obs-12",
+      "at": 1774836758145,
+      "screen": "contractor",
+      "surface": "profile_card",
+      "category": "fetch",
+      "event": "load_contractor_profile",
+      "sourceKind": "auth+table:contractors",
+      "rowCount": 0,
+      "result": "success",
+      "durationMs": 0
+    },
+    {
+      "id": "obs-13",
+      "at": 1774836758556,
+      "screen": "contractor",
+      "surface": "works_bundle",
+      "category": "fetch",
+      "event": "load_works_bundle_scope_guard",
+      "result": "success",
+      "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+      "fallbackUsed": false,
+      "rowCount": 0,
+      "extra": {
+        "primaryOwner": "rpc_scope_v1",
+        "subcontractCards": 0,
+        "rawRows": 64,
+        "rawSubcontractCards": 24,
+        "filteredOutRows": 64,
+        "filteredOutSubcontractCards": 24,
+        "scopeGuardApplied": true
+      }
+    },
+    {
+      "id": "obs-14",
+      "at": 1774836758556,
+      "screen": "contractor",
+      "surface": "works_bundle",
+      "category": "fetch",
+      "event": "load_works_bundle",
+      "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+      "rowCount": 0,
+      "fallbackUsed": false,
+      "extra": {
+        "primaryOwner": "rpc_scope_v1",
+        "subcontractCards": 0,
+        "backendFirstPrimary": true,
+        "scopeGuardApplied": true,
+        "filteredOutRows": 64,
+        "filteredOutSubcontractCards": 24
+      },
+      "result": "success",
+      "durationMs": 410
+    },
+    {
+      "id": "obs-15",
+      "at": 1774836759037,
+      "screen": "request",
+      "surface": "supabase_transport",
+      "category": "fetch",
+      "event": "request_timeout_discipline",
+      "sourceKind": "supabase_transport:native",
+      "trigger": "request",
+      "extra": {
+        "requestClass": "ui_scope_load",
+        "timeoutMs": 20000,
+        "owner": "supabase_client",
+        "operation": "director_finance_panel_scope_v3",
+        "method": "POST",
+        "urlPath": "/rest/v1/rpc/director_finance_panel_scope_v3",
+        "endpointKind": "supabase_rpc",
+        "ruleId": "rpc_ui:director_finance_panel_scope_v3",
+        "timeoutFired": false,
+        "abortReason": null,
+        "httpStatus": 200
+      },
+      "result": "success",
+      "durationMs": 480
+    },
+    {
+      "id": "obs-16",
+      "at": 1774836759042,
+      "screen": "director",
+      "surface": "finance_panel",
+      "category": "fetch",
+      "event": "load_finance_scope",
+      "sourceKind": "rpc_v3",
+      "rowCount": 0,
+      "fallbackUsed": false,
+      "extra": {
+        "issues": 0,
+        "supportRowsLoaded": false,
+        "supportRowsReason": "not_requested",
+        "financeRows": 0,
+        "spendRows": 0,
+        "financeSummary": "rpc_panel_scope_v3_canonical",
+        "financeDisplayMode": "canonical_v3",
+        "financeMode": "canonical",
+        "financeSemantics": "invoice_level_obligations",
+        "supplierRows": 22,
+        "spendSummary": "rpc_panel_scope_v3_canonical",
+        "primaryOwner": "rpc_v3",
+        "contractVersion": "v3",
+        "summaryCompatibilityOverlay": false,
+        "owner": "backend",
+        "version": "v3",
+        "totalCount": 92,
+        "scopeKey": "finance::2026-02-28:2026-03-30"
+      },
+      "result": "success",
+      "durationMs": 486
+    },
+    {
+      "id": "obs-17",
+      "at": 1774836769095,
+      "screen": "request",
+      "surface": "supabase_transport",
+      "category": "fetch",
+      "event": "request_timeout_discipline",
+      "sourceKind": "supabase_transport:native",
+      "trigger": "request",
+      "extra": {
+        "requestClass": "heavy_report_or_pdf_or_storage",
+        "timeoutMs": 60000,
+        "owner": "supabase_client",
+        "operation": "director_report_transport_scope_v1",
+        "method": "POST",
+        "urlPath": "/rest/v1/rpc/director_report_transport_scope_v1",
+        "endpointKind": "supabase_rpc",
+        "ruleId": "rpc_heavy:director_report_transport_scope_v1",
+        "timeoutFired": false,
+        "abortReason": null,
+        "httpStatus": 200
+      },
+      "result": "success",
+      "durationMs": 10053
+    },
+    {
+      "id": "obs-18",
+      "at": 1774836769515,
+      "screen": "request",
+      "surface": "supabase_transport",
+      "category": "fetch",
+      "event": "request_timeout_discipline",
+      "sourceKind": "supabase_transport:native",
+      "trigger": "request",
+      "extra": {
+        "requestClass": "ui_scope_load",
+        "timeoutMs": 20000,
+        "owner": "supabase_client",
+        "operation": "catalog_name_overrides",
+        "method": "GET",
+        "urlPath": "/rest/v1/catalog_name_overrides",
+        "endpointKind": "supabase_rest",
+        "ruleId": "rest:ui_scope_load",
+        "timeoutFired": false,
+        "abortReason": null,
+        "httpStatus": 200
+      },
+      "result": "success",
+      "durationMs": 395
+    },
+    {
+      "id": "obs-19",
+      "at": 1774836769735,
+      "screen": "request",
+      "surface": "supabase_transport",
+      "category": "fetch",
+      "event": "request_timeout_discipline",
+      "sourceKind": "supabase_transport:native",
+      "trigger": "request",
+      "extra": {
+        "requestClass": "ui_scope_load",
+        "timeoutMs": 20000,
+        "owner": "supabase_client",
+        "operation": "v_rik_names_ru",
+        "method": "GET",
+        "urlPath": "/rest/v1/v_rik_names_ru",
+        "endpointKind": "supabase_rest",
+        "ruleId": "rest:ui_scope_load",
+        "timeoutFired": false,
+        "abortReason": null,
+        "httpStatus": 200
+      },
+      "result": "success",
+      "durationMs": 614
+    },
+    {
+      "id": "obs-20",
+      "at": 1774836769850,
+      "screen": "request",
+      "surface": "supabase_transport",
+      "category": "fetch",
+      "event": "request_timeout_discipline",
+      "sourceKind": "supabase_transport:native",
+      "trigger": "request",
+      "extra": {
+        "requestClass": "ui_scope_load",
+        "timeoutMs": 20000,
+        "owner": "supabase_client",
+        "operation": "v_wh_balance_ledger_ui",
+        "method": "GET",
+        "urlPath": "/rest/v1/v_wh_balance_ledger_ui",
+        "endpointKind": "supabase_rest",
+        "ruleId": "rest:ui_scope_load",
+        "timeoutFired": false,
+        "abortReason": null,
+        "httpStatus": 200
+      },
+      "result": "success",
+      "durationMs": 730
+    },
+    {
+      "id": "obs-21",
+      "at": 1774836769852,
+      "screen": "director",
+      "surface": "reports_scope",
+      "category": "fetch",
+      "event": "load_report_scope",
+      "sourceKind": "rpc_scope_v1",
+      "trigger": "discipline",
+      "rowCount": 100,
+      "cacheLayer": "none",
+      "fallbackUsed": false,
+      "extra": {
+        "optionsObjects": 8,
+        "disciplineWorks": 15,
+        "pricedStage": "priced",
+        "objectCountLabel": "Объекты по подтверждённым выдачам",
+        "unresolvedNamesCount": 100,
+        "noWorkNameCount": 0,
+        "objectCountSource": "warehouse_confirmed_issues",
+        "namingVrr": "ok",
+        "namingOverrides": "ok",
+        "namingLedger": "ok"
+      },
+      "result": "success",
+      "durationMs": 10810
+    }
+  ]
+}

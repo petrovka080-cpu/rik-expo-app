@@ -8,7 +8,7 @@
     "userProfileLoaded": true
   },
   "legacy": {
-    "durationMs": 2065,
+    "durationMs": 2397,
     "rows": 51,
     "subcontractCards": 11,
     "sourceMeta": {
@@ -20,9 +20,9 @@
     }
   },
   "rpc": {
-    "durationMs": 431,
-    "rows": 62,
-    "subcontractCards": 22,
+    "durationMs": 410,
+    "rows": 64,
+    "subcontractCards": 24,
     "sourceMeta": {
       "primaryOwner": "rpc_scope_v1",
       "fallbackUsed": false,
@@ -32,7 +32,7 @@
     }
   },
   "primary": {
-    "durationMs": 427,
+    "durationMs": 417,
     "rows": 0,
     "subcontractCards": 0,
     "sourceMeta": {
@@ -56,10 +56,10 @@
     "primaryRowParityOk": false,
     "primarySubcontractParityOk": false,
     "legacyRowCount": 51,
-    "rpcRowCount": 62,
+    "rpcRowCount": 64,
     "primaryRowCount": 0,
     "legacySubcontractCount": 11,
-    "rpcSubcontractCount": 22,
+    "rpcSubcontractCount": 24,
     "primarySubcontractCount": 0
   },
   "topSlowFetches": [
@@ -68,8 +68,8 @@
       "surface": "works_bundle",
       "event": "load_works_bundle",
       "count": 2,
-      "avgDurationMs": 1245,
-      "maxDurationMs": 2064,
+      "avgDurationMs": 1407,
+      "maxDurationMs": 2396,
       "totalRowCount": 51,
       "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
       "fallbackCount": 1
@@ -79,9 +79,9 @@
       "surface": "works_bundle",
       "event": "load_works_bundle_rpc",
       "count": 1,
-      "avgDurationMs": 431,
-      "maxDurationMs": 431,
-      "totalRowCount": 62,
+      "avgDurationMs": 410,
+      "maxDurationMs": 410,
+      "totalRowCount": 64,
       "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
       "fallbackCount": 0
     }

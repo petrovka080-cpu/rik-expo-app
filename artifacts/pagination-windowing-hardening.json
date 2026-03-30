@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "gate": "GREEN_WITH_NARROW_ENVIRONMENT_RESIDUAL",
+  "incoming": {
+    "primaryOwner": "view:v_wh_incoming_heads_ui",
+    "pageSize": 30,
+    "initialDurationMs": 794,
+    "appendDurationMs": 609,
+    "refreshDurationMs": 407,
+    "initialRowCount": 0,
+    "appendRowCount": 0,
+    "initialHasMore": false,
+    "appendHasMore": false,
+    "appendUniqueOk": true,
+    "refreshParityOk": true
+  },
+  "issue": {
+    "primaryOwner": "rpc:warehouse_issue_queue_scope_v4",
+    "pageSize": 80,
+    "initialDurationMs": 484,
+    "appendDurationMs": 473,
+    "refreshDurationMs": 479,
+    "initialRowCount": 50,
+    "appendRowCount": 0,
+    "initialHasMore": false,
+    "appendHasMore": false,
+    "appendUniqueOk": true,
+    "refreshParityOk": true
+  },
+  "wiring": {
+    "incomingUsesRangeQuery": false,
+    "incomingHasOfflineGuard": true,
+    "incomingHasJoinedInflight": true,
+    "incomingTracksLoadingMore": true,
+    "incomingTabHasFooter": true,
+    "issueUsesRpcPrimary": false,
+    "issueTracksHasMore": true,
+    "issueTabHasFooter": true,
+    "contentWiresIncomingWindow": true,
+    "contentWiresIssueWindow": true,
+    "screenDataWiresIssueWindow": true
+  },
+  "runtime": {
+    "mode": "reused_queue_runtime_summaries",
+    "webPassed": true,
+    "webIncomingInitialRange": null,
+    "webIncomingInitialRowCount": null,
+    "webIncomingAppendPassed": null,
+    "webFocusDedupePassed": null,
+    "webIssueInitialRange": null,
+    "webIssueInitialRowCount": null,
+    "webConsoleErrorsEmpty": true,
+    "webPageErrorsEmpty": true,
+    "androidPassed": true,
+    "iosPassed": false,
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "environmentResidual": "poll timeout: warehouse:incoming_initial",
+    "androidNote": "Run separately on emulator via adb; environment-dependent auth automation",
+    "iosNote": "Simulator verification requires xcrun and macOS host tooling",
+    "screenshot": null,
+    "runtimeJson": "artifacts/pagination-windowing-hardening.runtime.json"
+  }
+}

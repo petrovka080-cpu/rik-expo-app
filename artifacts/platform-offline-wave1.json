@@ -1,0 +1,136 @@
+{
+  "status": "passed",
+  "vocabulary": {
+    "passed": true,
+    "details": {
+      "sharedStatuses": [
+        "idle",
+        "dirty_local",
+        "queued",
+        "syncing",
+        "synced",
+        "retry_wait",
+        "failed_terminal"
+      ],
+      "sharedTriggers": [
+        "bootstrap_complete",
+        "app_active",
+        "network_back",
+        "manual_retry"
+      ],
+      "constantsExported": true,
+      "normalizedLegacyTriggers": {
+        "bootstrap": "bootstrap_complete",
+        "appActive": "app_active",
+        "networkOnline": "network_back",
+        "manual": "manual_retry"
+      }
+    }
+  },
+  "network_service": {
+    "passed": true,
+    "details": {
+      "sharedServicePresent": true,
+      "usesExpoNetworkListener": true,
+      "exposesSnapshotStore": true,
+      "exposesSubscribeApi": true,
+      "networkKnownOfflinePresent": true,
+      "appCameOnlineSinceLastOfflinePresent": true
+    }
+  },
+  "foreman_alignment": {
+    "passed": true,
+    "details": {
+      "reliabilitySummary": "passed",
+      "networkServiceWired": true,
+      "sharedSubscriptionWired": true,
+      "unifiedTriggerVocabulary": true,
+      "sharedOfflineTelemetryWired": true,
+      "directExpoNetworkRemoved": true
+    }
+  },
+  "warehouse_alignment": {
+    "passed": true,
+    "details": {
+      "reliabilitySummary": "passed",
+      "triggerVocabulary": {
+        "bootstrap_complete": true,
+        "network_back": true,
+        "app_active": true,
+        "manual_retry": true
+      },
+      "sharedNetworkServiceWired": true,
+      "sharedOfflineTelemetryWired": true,
+      "directExpoNetworkRemoved": true
+    }
+  },
+  "contractor_alignment": {
+    "passed": true,
+    "details": {
+      "reliabilitySummary": "passed",
+      "triggerVocabulary": {
+        "bootstrap_complete": true,
+        "network_back": true,
+        "app_active": true,
+        "manual_retry": true
+      },
+      "sharedNetworkServiceWired": true,
+      "sharedOfflineTelemetryWired": true,
+      "directExpoNetworkRemoved": true
+    }
+  },
+  "offline_telemetry": {
+    "passed": true,
+    "details": {
+      "helperPresent": true,
+      "summary": {
+        "totalEvents": 3,
+        "alignedContours": [
+          "warehouse_receive",
+          "contractor_progress",
+          "foreman_draft"
+        ],
+        "retryWaitCount": 1,
+        "terminalFailureCount": 0,
+        "manualRetryCount": 1,
+        "networkShortCircuitCount": 1,
+        "restoredAfterReopenCount": 1,
+        "successfulRecoveryCount": 1,
+        "contourLatestStatus": {
+          "warehouse_receive": "queued",
+          "contractor_progress": "retry_wait",
+          "foreman_draft": "synced"
+        }
+      }
+    }
+  },
+  "global_offline_host": {
+    "passed": true,
+    "details": {
+      "hostPresent": true,
+      "rootLayoutWired": true,
+      "offlineOverview": {
+        "visible": true,
+        "tone": "danger",
+        "label": "Нет связи",
+        "detail": "Изменения сохранены локально. Прораб: ждет повтор • Склад: сохранено локально",
+        "unsyncedContours": 2,
+        "syncingContours": 0,
+        "retryContours": 1,
+        "failedContours": 0,
+        "offlineContours": 2
+      },
+      "syncingOverview": {
+        "visible": true,
+        "tone": "info",
+        "label": "Синхронизация",
+        "detail": "Подрядчик: синхронизация",
+        "unsyncedContours": 1,
+        "syncingContours": 1,
+        "retryContours": 0,
+        "failedContours": 0,
+        "offlineContours": 0
+      }
+    }
+  }
+}

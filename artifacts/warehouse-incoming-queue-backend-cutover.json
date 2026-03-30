@@ -1,0 +1,192 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "primaryOwner": "rpc_scope_v1",
+  "fallbackUsed": false,
+  "page0RowCountParityOk": true,
+  "page1RowCountParityOk": true,
+  "page0RowSignatureParityOk": true,
+  "page1RowSignatureParityOk": true,
+  "page0IdOrderParityOk": true,
+  "page1IdOrderParityOk": true,
+  "page0HasMoreParityOk": true,
+  "page1HasMoreParityOk": true,
+  "itemCountParityOk": true,
+  "itemSignatureParityOk": true,
+  "itemQtyParityOk": true,
+  "stableIdsOk": true,
+  "totalVisibleCountTypedOk": true,
+  "clientOwnedIncomingTruthRemoved": true,
+  "backendContractPatchPresent": true,
+  "ownership": {
+    "queuePrimaryUsesRpc": true,
+    "itemsPrimaryUsesRpc": true,
+    "runtimeHasLegacyFallbackImports": false,
+    "queueClientStillSorts": false,
+    "itemsClientStillFilters": false,
+    "receiveUsesBackendLeft": true,
+    "cardsUseBackendLeft": true,
+    "repoHasRpcContracts": true,
+    "repoHasLegacyFallbackBranches": false,
+    "repoHardCutToRpcOnly": true
+  },
+  "runtime": {
+    "reusedExistingSummary": true,
+    "webPassed": true,
+    "androidPassed": true,
+    "iosPassed": false,
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "runtimeGateOk": true,
+    "runtimeRun": {
+      "status": 0,
+      "stdout": "Reused existing passed warehouse incoming runtime summary artifact.",
+      "stderr": ""
+    },
+    "runtimeSummary": {
+      "status": "passed",
+      "webPassed": true,
+      "androidPassed": true,
+      "iosPassed": false,
+      "runtimeVerified": true,
+      "environmentRecoveryUsed": true,
+      "gmsRecoveryUsed": false,
+      "anrRecoveryUsed": false,
+      "blankSurfaceRecovered": false,
+      "devClientBootstrapRecovered": false,
+      "platformSpecificIssues": [
+        {
+          "platform": "ios",
+          "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+        }
+      ],
+      "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+      "failureKind": "unknown",
+      "scenariosPassed": {
+        "web": {
+          "initialOpen": true,
+          "queueCorrectness": true,
+          "interactionSanity": true
+        },
+        "android": {
+          "initialOpen": true,
+          "queueCorrectness": true,
+          "interactionSanity": true
+        },
+        "ios": {
+          "initialOpen": false,
+          "queueCorrectness": false,
+          "interactionSanity": false
+        }
+      },
+      "artifacts": {
+        "webSummary": "artifacts/warehouse-incoming-queue-web-smoke.summary.json",
+        "webRuntime": "artifacts/warehouse-incoming-queue-web-smoke.json",
+        "androidCurrentXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
+        "androidCurrentPng": "artifacts/android-warehouse-incoming-queue-route-1.png",
+        "androidQueueXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
+        "androidQueuePng": "artifacts/android-warehouse-incoming-queue-route-1.png",
+        "androidModalXml": null,
+        "androidModalPng": null
+      },
+      "gate": "warehouse_incoming_queue_runtime_verify"
+    }
+  },
+  "staticChecks": {
+    "tscPassed": true,
+    "eslintPassed": true,
+    "cutoverPassed": true,
+    "tscRun": {
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "eslintRun": {
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "cutoverRun": {
+      "status": 0,
+      "stdout": "{\n  \"status\": \"passed\",\n  \"primaryOwner\": \"rpc_scope_v1\",\n  \"fallbackUsed\": false,\n  \"page0RowCountParityOk\": true,\n  \"page1RowCountParityOk\": true,\n  \"page0RowSignatureParityOk\": true,\n  \"page1RowSignatureParityOk\": true,\n  \"page0IdOrderParityOk\": true,\n  \"page1IdOrderParityOk\": true,\n  \"page0HasMoreParityOk\": true,\n  \"page1HasMoreParityOk\": true,\n  \"itemCountParityOk\": true,\n  \"itemSignatureParityOk\": true,\n  \"itemQtyParityOk\": true,\n  \"stableIdsOk\": true,\n  \"totalVisibleCountTypedOk\": true,\n  \"selectedIncomingId\": \"\"\n}\n",
+      "stderr": ""
+    }
+  },
+  "cutoverArtifact": {
+    "legacy": {
+      "page0Rows": [],
+      "page1Rows": [],
+      "page0Meta": {
+        "pageIndex": 0,
+        "pageSize": 30,
+        "pageOffset": 0,
+        "rawWindowRowCount": 0,
+        "returnedRowCount": 0,
+        "totalVisibleCount": null,
+        "hasMore": false,
+        "scopeKey": "warehouse_incoming_legacy:0:30"
+      },
+      "page1Meta": {
+        "pageIndex": 1,
+        "pageSize": 30,
+        "pageOffset": 30,
+        "rawWindowRowCount": 0,
+        "returnedRowCount": 0,
+        "totalVisibleCount": null,
+        "hasMore": false,
+        "scopeKey": "warehouse_incoming_legacy:30:30"
+      },
+      "items": [],
+      "itemsMeta": {
+        "rowCount": 0
+      }
+    },
+    "rpc": {
+      "page0Rows": [],
+      "page1Rows": [],
+      "page0Meta": {
+        "pageIndex": 0,
+        "pageSize": 30,
+        "pageOffset": 0,
+        "rawWindowRowCount": 0,
+        "returnedRowCount": 0,
+        "totalVisibleCount": 0,
+        "hasMore": false,
+        "scopeKey": "warehouse_incoming_queue_scope_v1:0:30",
+        "contractVersion": "v1"
+      },
+      "page1Meta": {
+        "pageIndex": 1,
+        "pageSize": 30,
+        "pageOffset": 30,
+        "rawWindowRowCount": 0,
+        "returnedRowCount": 0,
+        "totalVisibleCount": 0,
+        "hasMore": false,
+        "scopeKey": "warehouse_incoming_queue_scope_v1:30:30",
+        "contractVersion": "v1"
+      },
+      "items": [],
+      "itemsMeta": {
+        "rowCount": 0
+      }
+    },
+    "primaryOwner": "rpc_scope_v1",
+    "fallbackUsed": false,
+    "selectedIncomingId": "",
+    "parity": {
+      "page0RowCountParityOk": true,
+      "page1RowCountParityOk": true,
+      "page0RowSignatureParityOk": true,
+      "page1RowSignatureParityOk": true,
+      "page0IdOrderParityOk": true,
+      "page1IdOrderParityOk": true,
+      "page0HasMoreParityOk": true,
+      "page1HasMoreParityOk": true,
+      "itemCountParityOk": true,
+      "itemSignatureParityOk": true,
+      "itemQtyParityOk": true,
+      "stableIdsOk": true,
+      "totalVisibleCountTypedOk": true
+    }
+  }
+}

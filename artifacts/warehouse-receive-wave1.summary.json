@@ -1,0 +1,56 @@
+{
+  "status": "passed",
+  "explicitSubmitSemantics": true,
+  "offline_receive": {
+    "passed": true,
+    "details": {
+      "restoredStatus": "dirty_local",
+      "restoredItemCount": 2,
+      "restoredQtys": [
+        3,
+        5
+      ],
+      "pendingCount": 0,
+      "submitSemantics": "explicit_manual_submit"
+    }
+  },
+  "online_sync": {
+    "passed": true,
+    "details": {
+      "offlineStatus": "retry_wait",
+      "onlineStatus": "synced",
+      "remainingCount": 0,
+      "syncedCount": 2,
+      "lastSyncAt": 1774836383780
+    }
+  },
+  "kill_reopen": {
+    "passed": true,
+    "details": {
+      "queueLengthBeforeFlush": 1,
+      "queueStatusBeforeFlush": "inflight",
+      "finalStatus": "synced",
+      "syncedQty": 7
+    }
+  },
+  "retry": {
+    "passed": true,
+    "details": {
+      "failedStatus": "retry_wait",
+      "queueLengthAfterFail": 1,
+      "finalStatus": "synced",
+      "applyCount": 1,
+      "finalQty": 9
+    }
+  },
+  "coalescing": {
+    "passed": true,
+    "details": {
+      "queueEntryPresent": true,
+      "coalescedCount": 4,
+      "finalStatus": "synced",
+      "finalQty": 5,
+      "applyCount": 1
+    }
+  }
+}

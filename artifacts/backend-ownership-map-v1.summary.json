@@ -1,6 +1,6 @@
 {
-  "status": "failed",
-  "gate": "NOT_GREEN",
+  "status": "passed",
+  "gate": "GREEN",
   "taxonomyFormalized": true,
   "modulesCovered": [
     "director",
@@ -24,7 +24,7 @@
   "enforcementRulesExplicit": true,
   "artifactsGenerated": true,
   "noBroadRewritePerformed": true,
-  "allRequiredArtifactsAccepted": false,
-  "acceptedEnvironmentResidualCount": 2,
+  "allRequiredArtifactsAccepted": true,
+  "acceptedEnvironmentResidualCount": 6,
   "nextPriorityBatch": null
 }

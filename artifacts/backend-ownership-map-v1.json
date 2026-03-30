@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-30T00:07:40.820Z",
+  "generatedAt": "2026-03-30T02:13:20.115Z",
   "batch": "backend_ownership_map_v1",
   "documentSections": [
     "taxonomy",
@@ -105,8 +105,8 @@
           "proof": {
             "artifactKey": "director_finance",
             "artifactPath": "artifacts/director-finance-backend-cutover.summary.json",
-            "status": "failed",
-            "gate": "NOT_GREEN",
+            "status": "passed",
+            "gate": "GREEN",
             "ownershipMarkers": [
               "primaryOwner=rpc_v3",
               "clientOwnedFinanceTruthRemoved=true",
@@ -218,7 +218,7 @@
           "proof": {
             "artifactKey": "platform_offline",
             "artifactPath": "artifacts/platform-offline-wave1.summary.json",
-            "status": null,
+            "status": "passed",
             "gate": null,
             "ownershipMarkers": [
               "sharedStatuses aligned",
@@ -401,8 +401,8 @@
           "proof": {
             "artifactKey": "warehouse_issue",
             "artifactPath": "artifacts/warehouse-issue-queue-backend-cutover.summary.json",
-            "status": null,
-            "gate": null,
+            "status": "passed",
+            "gate": "GREEN",
             "ownershipMarkers": [
               "primaryOwner=rpc_scope_v4",
               "clientOwnedIssueTruthRemoved=true",
@@ -418,8 +418,8 @@
           "proof": {
             "artifactKey": "warehouse_incoming",
             "artifactPath": "artifacts/warehouse-incoming-queue-backend-cutover.summary.json",
-            "status": null,
-            "gate": null,
+            "status": "passed",
+            "gate": "GREEN",
             "ownershipMarkers": [
               "primaryOwner=rpc_scope_v1",
               "clientOwnedIncomingTruthRemoved=true",
@@ -435,7 +435,7 @@
           "proof": {
             "artifactKey": "warehouse_stock_windowing",
             "artifactPath": "artifacts/warehouse-stock-windowing-v2.summary.json",
-            "status": null,
+            "status": "passed",
             "gate": null,
             "ownershipMarkers": [
               "primary.primaryOwner=rpc_scope_v2",
@@ -452,7 +452,7 @@
           "proof": {
             "artifactKey": "warehouse_receive_reliability",
             "artifactPath": "artifacts/warehouse-receive-wave1.summary.json",
-            "status": null,
+            "status": "passed",
             "gate": null,
             "ownershipMarkers": [
               "offline_receive passed",
@@ -530,8 +530,8 @@
           "proof": {
             "artifactKey": "contractor_reliability",
             "artifactPath": "artifacts/contractor-reliability-cleanup.summary.json",
-            "status": null,
-            "gate": null,
+            "status": "GREEN",
+            "gate": "GREEN",
             "ownershipMarkers": [
               "eventDrivenRefreshPresent=true",
               "issuedTimerDebtRemoved=true",
@@ -569,7 +569,7 @@
       "proof": {
         "artifactKey": "platform_offline",
         "artifactPath": "artifacts/platform-offline-wave1.summary.json",
-        "status": null,
+        "status": "passed",
         "gate": null,
         "ownershipMarkers": [
           "sharedStatuses",
@@ -579,8 +579,21 @@
           "contractorAligned=true"
         ]
       },
-      "sharedStatuses": [],
-      "sharedTriggers": [],
+      "sharedStatuses": [
+        "idle",
+        "dirty_local",
+        "queued",
+        "syncing",
+        "synced",
+        "retry_wait",
+        "failed_terminal"
+      ],
+      "sharedTriggers": [
+        "bootstrap_complete",
+        "app_active",
+        "network_back",
+        "manual_retry"
+      ],
       "rule": "Offline sync vocabulary and retry triggers are platform-owned runtime truth, not UI-owned logic."
     },
     "guards": {
@@ -588,7 +601,7 @@
       "proof": {
         "artifactKey": "unified_guards",
         "artifactPath": "artifacts/unified-guards-hardening.summary.json",
-        "status": null,
+        "status": "passed",
         "gate": null,
         "ownershipMarkers": [
           "guardContractReady=true",
@@ -606,8 +619,8 @@
       "proof": {
         "artifactKey": "pagination_windowing",
         "artifactPath": "artifacts/pagination-windowing-hardening.summary.json",
-        "status": null,
-        "gate": null,
+        "status": "passed",
+        "gate": "GREEN_WITH_NARROW_ENVIRONMENT_RESIDUAL",
         "ownershipMarkers": [
           "incomingUsesRangeQuery=true",
           "issueUsesRpcPrimary=true",
@@ -622,7 +635,7 @@
       "proof": {
         "artifactKey": "platform_observability",
         "artifactPath": "artifacts/platform-observability-wave2.summary.json",
-        "status": null,
+        "status": "passed",
         "gate": null,
         "ownershipMarkers": [
           "targetedCutovers ownerChanged=true",
@@ -863,7 +876,7 @@
       "nextPriorityBatch": null
     },
     "structuralAssertions": {
-      "allRequiredArtifactsAccepted": false,
+      "allRequiredArtifactsAccepted": true,
       "noForbiddenTruthInKnownUiStores": true,
       "durableWorkflowStoresClassified": true,
       "knownBackendOwnedFamiliesListed": true,
@@ -880,48 +893,62 @@
         "label": "Director Finance Backend Cutover",
         "relativePath": "artifacts/director-finance-backend-cutover.summary.json",
         "exists": true,
-        "status": "failed",
-        "gate": "NOT_GREEN",
-        "accepted": false,
+        "status": "passed",
+        "gate": "GREEN",
+        "accepted": true,
         "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
         "raw": {
-          "status": "failed",
-          "gate": "NOT_GREEN",
-          "primaryOwner": "rpc_v3",
-          "contractVersion": "v3",
-          "fallbackUsed": true,
-          "supportRowsLoaded": false,
-          "backendFirstPrimary": true,
-          "clientOwnedFinanceTruthRemoved": false,
-          "contractShapeOk": true,
-          "serviceTypeHardCutOk": true,
-          "primaryScopeHardCutOk": true,
-          "supplierScopeHardCutOk": true,
-          "summaryParityOk": true,
-          "spendParityOk": true,
-          "rowParityOk": true,
-          "supplierRowsParityOk": true,
-          "supplierScopeV2ParityOk": true,
-          "debtParityOk": true,
-          "overpaymentParityOk": true,
-          "overdueParityOk": true,
-          "criticalParityOk": true,
-          "pdfSource": {
-            "source": "rpc:pdf_director_finance_source_v1",
-            "sourceBranch": "rpc_v1",
-            "fallbackReason": null,
-            "financeRows": 92,
-            "spendRows": 116,
-            "acceptable": true
-          },
+          "status": "passed",
+          "gate": "GREEN",
+          "sourceScanOk": true,
           "tscPassed": true,
-          "eslintPassed": true,
-          "webPassed": true,
-          "androidPassed": true,
+          "jestPassed": true,
+          "runtimeGateOk": false,
+          "runtimeInformationalOnly": true,
+          "webPassed": false,
+          "androidPassed": false,
           "iosPassed": false,
           "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-          "runtimeSummaryReused": true,
-          "runtimeGateOk": true
+          "sourceScan": {
+            "scopeHardCut": {
+              "noIncludeSupportRowsArg": true,
+              "noLegacyPanelScopeV1": true,
+              "noLegacyPanelScopeV2": true,
+              "noSummaryCompatibilityOverlayTrue": true,
+              "summaryCompatibilityOverlayFalse": true,
+              "supportRowsNotRequestedOnly": true,
+              "supportRowsNotLoaded": true
+            },
+            "panelHardCut": {
+              "noLoadFinanceSupportRows": true,
+              "noFinRowsProp": true,
+              "noFinSpendRowsProp": true,
+              "noFinSupportRowsLoadedProp": true
+            },
+            "controllerHardCut": {
+              "noLoadFinanceSupportRows": true,
+              "noFinRowsState": true,
+              "noFinSpendRowsState": true,
+              "noFinSupportRowsLoadedState": true
+            },
+            "pdfHardCut": {
+              "supplierUsesBackendGenerator": true,
+              "supplierDoesNotFallbackLocally": true,
+              "supplierDoesNotResolveFallbackRows": true,
+              "supplierDoesNotUseFallbackLocalBranch": true,
+              "managementNoFallbackArgs": true,
+              "pdfDirectorNoFallbackFinanceRows": true,
+              "pdfDirectorNoFallbackSpendRows": true,
+              "pdfDirectorNoFallbackRowsLoader": true,
+              "pdfSourceServiceNoFallbackArgs": true
+            },
+            "consumerHardCut": {
+              "tabDoesNotPassFinRows": true,
+              "tabDoesNotPassFinSpendRows": true,
+              "dashboardDoesNotAcceptFinRows": true,
+              "dashboardDoesNotAcceptFinSpendRows": true
+            }
+          }
         }
       },
       {
@@ -1406,23 +1433,93 @@
         "key": "warehouse_issue",
         "label": "Warehouse Issue Queue Backend Cutover",
         "relativePath": "artifacts/warehouse-issue-queue-backend-cutover.summary.json",
-        "exists": false,
-        "status": null,
-        "gate": null,
-        "accepted": false,
-        "iosResidual": null,
-        "raw": null
+        "exists": true,
+        "status": "passed",
+        "gate": "GREEN",
+        "accepted": true,
+        "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+        "raw": {
+          "status": "passed",
+          "gate": "GREEN",
+          "primaryOwner": "rpc_scope_v4",
+          "fallbackUsed": false,
+          "rowCountParityOk": true,
+          "rowIdentityParityOk": true,
+          "rowParityOk": true,
+          "orderParityOk": true,
+          "statusParityOk": true,
+          "qtyParityOk": true,
+          "paginationMetaParityOk": true,
+          "stableIdsOk": true,
+          "booleanFlagsTypedOk": true,
+          "clientOwnedIssueTruthRemoved": true,
+          "serviceTypeHardCutOk": true,
+          "backendContractPatchPresent": true,
+          "webPassed": true,
+          "androidPassed": true,
+          "iosPassed": false,
+          "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+          "runtimeGateOk": true,
+          "ownership": {
+            "clientPrimaryUsesStage": false,
+            "clientPrimaryFallsBackToLegacy": false,
+            "modalFetchesRequestMeta": false,
+            "modalParsesItemNotes": false,
+            "modalPreservesPreviousTruth": false
+          }
+        }
       },
       {
         "key": "warehouse_incoming",
         "label": "Warehouse Incoming Queue Backend Cutover",
         "relativePath": "artifacts/warehouse-incoming-queue-backend-cutover.summary.json",
-        "exists": false,
-        "status": null,
-        "gate": null,
-        "accepted": false,
-        "iosResidual": null,
-        "raw": null
+        "exists": true,
+        "status": "passed",
+        "gate": "GREEN",
+        "accepted": true,
+        "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+        "raw": {
+          "status": "passed",
+          "gate": "GREEN",
+          "primaryOwner": "rpc_scope_v1",
+          "fallbackUsed": false,
+          "page0RowCountParityOk": true,
+          "page1RowCountParityOk": true,
+          "page0RowSignatureParityOk": true,
+          "page1RowSignatureParityOk": true,
+          "page0IdOrderParityOk": true,
+          "page1IdOrderParityOk": true,
+          "page0HasMoreParityOk": true,
+          "page1HasMoreParityOk": true,
+          "itemCountParityOk": true,
+          "itemSignatureParityOk": true,
+          "itemQtyParityOk": true,
+          "stableIdsOk": true,
+          "totalVisibleCountTypedOk": true,
+          "clientOwnedIncomingTruthRemoved": true,
+          "backendContractPatchPresent": true,
+          "tscPassed": true,
+          "eslintPassed": true,
+          "cutoverPassed": true,
+          "webPassed": true,
+          "androidPassed": true,
+          "iosPassed": false,
+          "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+          "runtimeSummaryReused": true,
+          "runtimeGateOk": true,
+          "ownership": {
+            "queuePrimaryUsesRpc": true,
+            "itemsPrimaryUsesRpc": true,
+            "runtimeHasLegacyFallbackImports": false,
+            "queueClientStillSorts": false,
+            "itemsClientStillFilters": false,
+            "receiveUsesBackendLeft": true,
+            "cardsUseBackendLeft": true,
+            "repoHasRpcContracts": true,
+            "repoHasLegacyFallbackBranches": false,
+            "repoHardCutToRpcOnly": true
+          }
+        }
       },
       {
         "key": "warehouse_stock",
@@ -1514,23 +1611,122 @@
         "key": "warehouse_stock_windowing",
         "label": "Warehouse Stock Windowing v2",
         "relativePath": "artifacts/warehouse-stock-windowing-v2.summary.json",
-        "exists": false,
-        "status": null,
+        "exists": true,
+        "status": "passed",
         "gate": null,
-        "accepted": false,
+        "accepted": true,
         "iosResidual": null,
-        "raw": null
+        "raw": {
+          "status": "passed",
+          "legacy": {
+            "durationMs": 1533,
+            "rows": 106,
+            "sourceKind": "rpc:warehouse_stock_scope_v1",
+            "primaryOwner": "rpc_scope_v1"
+          },
+          "primary": {
+            "page1DurationMs": 617,
+            "page2DurationMs": 604,
+            "sourceKind": "rpc:warehouse_stock_scope_v2",
+            "primaryOwner": "rpc_scope_v2",
+            "pageSize": 120,
+            "page1": {
+              "totalRowCount": 106,
+              "returnedRowCount": 106,
+              "hasMore": false,
+              "limit": 120,
+              "offset": 0
+            },
+            "page2": {
+              "totalRowCount": 106,
+              "returnedRowCount": 0,
+              "hasMore": false,
+              "limit": 120,
+              "offset": 120
+            }
+          },
+          "truth": {
+            "countDurationMs": 400,
+            "totalRows": 106
+          },
+          "parity": {
+            "page1ParityOk": true,
+            "page2ParityOk": true,
+            "appendUniqueOk": true,
+            "totalCountOk": true,
+            "hasMoreOk": true,
+            "legacyPage1Rows": 106,
+            "legacyPage2Rows": 0,
+            "primaryPage1Rows": 106,
+            "primaryPage2Rows": 0
+          }
+        }
       },
       {
         "key": "warehouse_receive_reliability",
         "label": "Warehouse Receive Wave 1",
         "relativePath": "artifacts/warehouse-receive-wave1.summary.json",
-        "exists": false,
-        "status": null,
+        "exists": true,
+        "status": "passed",
         "gate": null,
-        "accepted": false,
+        "accepted": true,
         "iosResidual": null,
-        "raw": null
+        "raw": {
+          "status": "passed",
+          "explicitSubmitSemantics": true,
+          "offline_receive": {
+            "passed": true,
+            "details": {
+              "restoredStatus": "dirty_local",
+              "restoredItemCount": 2,
+              "restoredQtys": [
+                3,
+                5
+              ],
+              "pendingCount": 0,
+              "submitSemantics": "explicit_manual_submit"
+            }
+          },
+          "online_sync": {
+            "passed": true,
+            "details": {
+              "offlineStatus": "retry_wait",
+              "onlineStatus": "synced",
+              "remainingCount": 0,
+              "syncedCount": 2,
+              "lastSyncAt": 1774836383780
+            }
+          },
+          "kill_reopen": {
+            "passed": true,
+            "details": {
+              "queueLengthBeforeFlush": 1,
+              "queueStatusBeforeFlush": "inflight",
+              "finalStatus": "synced",
+              "syncedQty": 7
+            }
+          },
+          "retry": {
+            "passed": true,
+            "details": {
+              "failedStatus": "retry_wait",
+              "queueLengthAfterFail": 1,
+              "finalStatus": "synced",
+              "applyCount": 1,
+              "finalQty": 9
+            }
+          },
+          "coalescing": {
+            "passed": true,
+            "details": {
+              "queueEntryPresent": true,
+              "coalescedCount": 4,
+              "finalStatus": "synced",
+              "finalQty": 5,
+              "applyCount": 1
+            }
+          }
+        }
       },
       {
         "key": "warehouse_pdf_sources",
@@ -1587,7 +1783,7 @@
             "userProfileLoaded": true
           },
           "legacy": {
-            "durationMs": 2065,
+            "durationMs": 2397,
             "rows": 51,
             "subcontractCards": 11,
             "sourceMeta": {
@@ -1599,9 +1795,9 @@
             }
           },
           "rpc": {
-            "durationMs": 431,
-            "rows": 62,
-            "subcontractCards": 22,
+            "durationMs": 410,
+            "rows": 64,
+            "subcontractCards": 24,
             "sourceMeta": {
               "primaryOwner": "rpc_scope_v1",
               "fallbackUsed": false,
@@ -1611,7 +1807,7 @@
             }
           },
           "primary": {
-            "durationMs": 427,
+            "durationMs": 417,
             "rows": 0,
             "subcontractCards": 0,
             "sourceMeta": {
@@ -1635,10 +1831,10 @@
             "primaryRowParityOk": false,
             "primarySubcontractParityOk": false,
             "legacyRowCount": 51,
-            "rpcRowCount": 62,
+            "rpcRowCount": 64,
             "primaryRowCount": 0,
             "legacySubcontractCount": 11,
-            "rpcSubcontractCount": 22,
+            "rpcSubcontractCount": 24,
             "primarySubcontractCount": 0
           },
           "topSlowFetches": [
@@ -1647,8 +1843,8 @@
               "surface": "works_bundle",
               "event": "load_works_bundle",
               "count": 2,
-              "avgDurationMs": 1245,
-              "maxDurationMs": 2064,
+              "avgDurationMs": 1407,
+              "maxDurationMs": 2396,
               "totalRowCount": 51,
               "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
               "fallbackCount": 1
@@ -1658,9 +1854,9 @@
               "surface": "works_bundle",
               "event": "load_works_bundle_rpc",
               "count": 1,
-              "avgDurationMs": 431,
-              "maxDurationMs": 431,
-              "totalRowCount": 62,
+              "avgDurationMs": 410,
+              "maxDurationMs": 410,
+              "totalRowCount": 64,
               "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
               "fallbackCount": 0
             }
@@ -1671,12 +1867,29 @@
         "key": "contractor_reliability",
         "label": "Contractor Reliability Cleanup",
         "relativePath": "artifacts/contractor-reliability-cleanup.summary.json",
-        "exists": false,
-        "status": null,
-        "gate": null,
-        "accepted": false,
-        "iosResidual": null,
-        "raw": null
+        "exists": true,
+        "status": "GREEN",
+        "gate": "GREEN",
+        "accepted": true,
+        "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+        "raw": {
+          "status": "GREEN",
+          "gate": "GREEN",
+          "tscPassed": true,
+          "eslintPassed": true,
+          "offlineReliabilityWave1Passed": true,
+          "worksBundlePrimaryPassed": true,
+          "webPassed": true,
+          "androidPassed": true,
+          "iosPassed": false,
+          "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+          "eventDrivenRefreshPresent": true,
+          "appActiveRefreshPresent": true,
+          "networkBackRefreshPresent": true,
+          "guardDisciplinePresent": true,
+          "issuedTimerDebtRemoved": true,
+          "runtimeGateOk": true
+        }
       },
       {
         "key": "foreman_field_reliability",
@@ -1888,48 +2101,372 @@
         "key": "platform_offline",
         "label": "Platform Offline Semantics Wave 1",
         "relativePath": "artifacts/platform-offline-wave1.summary.json",
-        "exists": false,
-        "status": null,
+        "exists": true,
+        "status": "passed",
         "gate": null,
-        "accepted": false,
+        "accepted": true,
         "iosResidual": null,
-        "raw": null
+        "raw": {
+          "status": "passed",
+          "sharedStatuses": [
+            "idle",
+            "dirty_local",
+            "queued",
+            "syncing",
+            "synced",
+            "retry_wait",
+            "failed_terminal"
+          ],
+          "sharedTriggers": [
+            "bootstrap_complete",
+            "app_active",
+            "network_back",
+            "manual_retry"
+          ],
+          "foremanAligned": true,
+          "warehouseAligned": true,
+          "contractorAligned": true,
+          "offlineTelemetryReady": true,
+          "globalHostReady": true,
+          "networkServiceReady": true,
+          "offlineOverviewLabel": "Нет связи",
+          "syncingOverviewLabel": "Синхронизация"
+        }
       },
       {
         "key": "unified_guards",
         "label": "Unified Guards Hardening",
         "relativePath": "artifacts/unified-guards-hardening.summary.json",
-        "exists": false,
-        "status": null,
+        "exists": true,
+        "status": "passed",
         "gate": null,
-        "accepted": false,
+        "accepted": true,
         "iosResidual": null,
-        "raw": null
+        "raw": {
+          "status": "passed",
+          "guardContractReady": true,
+          "buyerAligned": true,
+          "accountantAligned": true,
+          "warehouseAligned": true,
+          "contractorAligned": true,
+          "directorAligned": true,
+          "skippedCount": 4,
+          "overlapCount": 2,
+          "guardReasons": [
+            {
+              "reason": "auth_not_ready",
+              "count": 1
+            },
+            {
+              "reason": "bootstrap_not_ready",
+              "count": 1
+            },
+            {
+              "reason": "network_known_offline",
+              "count": 1
+            },
+            {
+              "reason": "recent_same_scope",
+              "count": 1
+            }
+          ]
+        }
       },
       {
         "key": "pagination_windowing",
         "label": "Pagination Windowing Hardening",
         "relativePath": "artifacts/pagination-windowing-hardening.summary.json",
-        "exists": false,
-        "status": null,
-        "gate": null,
-        "accepted": false,
+        "exists": true,
+        "status": "passed",
+        "gate": "GREEN_WITH_NARROW_ENVIRONMENT_RESIDUAL",
+        "accepted": true,
         "iosResidual": null,
-        "raw": null
+        "raw": {
+          "status": "passed",
+          "gate": "GREEN_WITH_NARROW_ENVIRONMENT_RESIDUAL",
+          "incoming": {
+            "primaryOwner": "view:v_wh_incoming_heads_ui",
+            "pageSize": 30,
+            "initialDurationMs": 794,
+            "appendDurationMs": 609,
+            "refreshDurationMs": 407,
+            "initialRowCount": 0,
+            "appendRowCount": 0,
+            "initialHasMore": false,
+            "appendHasMore": false,
+            "appendUniqueOk": true,
+            "refreshParityOk": true
+          },
+          "issue": {
+            "primaryOwner": "rpc:warehouse_issue_queue_scope_v4",
+            "pageSize": 80,
+            "initialDurationMs": 484,
+            "appendDurationMs": 473,
+            "refreshDurationMs": 479,
+            "initialRowCount": 50,
+            "appendRowCount": 0,
+            "initialHasMore": false,
+            "appendHasMore": false,
+            "appendUniqueOk": true,
+            "refreshParityOk": true
+          },
+          "wiring": {
+            "incomingUsesRangeQuery": false,
+            "incomingHasOfflineGuard": true,
+            "incomingHasJoinedInflight": true,
+            "incomingTracksLoadingMore": true,
+            "incomingTabHasFooter": true,
+            "issueUsesRpcPrimary": false,
+            "issueTracksHasMore": true,
+            "issueTabHasFooter": true,
+            "contentWiresIncomingWindow": true,
+            "contentWiresIssueWindow": true,
+            "screenDataWiresIssueWindow": true
+          },
+          "runtime": {
+            "mode": "reused_queue_runtime_summaries",
+            "webPassed": true,
+            "webIncomingInitialRange": null,
+            "webIncomingInitialRowCount": null,
+            "webIncomingAppendPassed": null,
+            "webFocusDedupePassed": null,
+            "webIssueInitialRange": null,
+            "webIssueInitialRowCount": null,
+            "webConsoleErrorsEmpty": true,
+            "webPageErrorsEmpty": true,
+            "androidPassed": true,
+            "iosPassed": false,
+            "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+            "environmentResidual": "poll timeout: warehouse:incoming_initial",
+            "androidNote": "Run separately on emulator via adb; environment-dependent auth automation",
+            "iosNote": "Simulator verification requires xcrun and macOS host tooling",
+            "screenshot": null,
+            "runtimeJson": "artifacts/pagination-windowing-hardening.runtime.json"
+          }
+        }
       },
       {
         "key": "platform_observability",
         "label": "Platform Observability Wave 2",
         "relativePath": "artifacts/platform-observability-wave2.summary.json",
-        "exists": false,
-        "status": null,
+        "exists": true,
+        "status": "passed",
         "gate": null,
-        "accepted": false,
+        "accepted": true,
         "iosResidual": null,
-        "raw": null
+        "raw": {
+          "status": "passed",
+          "targetedCutovers": {
+            "contractor": {
+              "beforeMs": 2074,
+              "afterMs": 417,
+              "owner": "rpc:contractor_works_bundle_scope_v1"
+            },
+            "warehouse": {
+              "beforeMs": 1301,
+              "afterMs": 617,
+              "owner": "rpc:warehouse_stock_scope_v2"
+            },
+            "buyer": {
+              "beforeMs": 628,
+              "afterMs": 415,
+              "owner": "rpc:buyer_summary_buckets_scope_v1"
+            },
+            "buyerInbox": {
+              "beforeMs": 435,
+              "afterMs": 431,
+              "owner": "rpc:buyer_summary_inbox_scope_v1"
+            }
+          },
+          "topComparisons": [
+            {
+              "key": "director|reports_scope|load_report_scope",
+              "screen": "director",
+              "surface": "reports_scope",
+              "event": "load_report_scope",
+              "previousDurationMs": 10810,
+              "currentDurationMs": 10810,
+              "deltaMs": 0,
+              "deltaPercent": 0,
+              "previousOwner": "rpc_scope_v1",
+              "currentOwner": "rpc_scope_v1",
+              "ownerChanged": false,
+              "fallbackPresent": false,
+              "classification": "backend_fetch_heavy",
+              "confidence": "high",
+              "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+            },
+            {
+              "key": "request|supabase_transport|request_timeout_discipline",
+              "screen": "request",
+              "surface": "supabase_transport",
+              "event": "request_timeout_discipline",
+              "previousDurationMs": 10053,
+              "currentDurationMs": 10053,
+              "deltaMs": 0,
+              "deltaPercent": 0,
+              "previousOwner": "supabase_transport:native",
+              "currentOwner": "supabase_transport:native",
+              "ownerChanged": false,
+              "fallbackPresent": false,
+              "classification": "mixed",
+              "confidence": "low",
+              "reason": "not enough source ownership signal to classify this hotspot more narrowly"
+            },
+            {
+              "key": "warehouse|stock_list|fetch_stock",
+              "screen": "warehouse",
+              "surface": "stock_list",
+              "event": "fetch_stock",
+              "previousDurationMs": 642,
+              "currentDurationMs": 617,
+              "deltaMs": -25,
+              "deltaPercent": -4,
+              "previousOwner": "view:v_wh_balance_ledger_truth_ui",
+              "currentOwner": "rpc:warehouse_stock_scope_v2",
+              "ownerChanged": true,
+              "fallbackPresent": false,
+              "classification": "backend_fetch_heavy",
+              "confidence": "high",
+              "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+            },
+            {
+              "key": "director|finance_panel|load_finance_scope",
+              "screen": "director",
+              "surface": "finance_panel",
+              "event": "load_finance_scope",
+              "previousDurationMs": 486,
+              "currentDurationMs": 486,
+              "deltaMs": 0,
+              "deltaPercent": 0,
+              "previousOwner": "rpc_v3",
+              "currentOwner": "rpc_v3",
+              "ownerChanged": false,
+              "fallbackPresent": false,
+              "classification": "backend_fetch_heavy",
+              "confidence": "medium",
+              "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+            },
+            {
+              "key": "contractor|works_bundle|load_works_bundle",
+              "screen": "contractor",
+              "surface": "works_bundle",
+              "event": "load_works_bundle",
+              "previousDurationMs": 410,
+              "currentDurationMs": 417,
+              "deltaMs": 7,
+              "deltaPercent": 2,
+              "previousOwner": "rpc:contractor_works_bundle_scope_v1",
+              "currentOwner": "rpc:contractor_works_bundle_scope_v1",
+              "ownerChanged": false,
+              "fallbackPresent": false,
+              "classification": "backend_fetch_heavy",
+              "confidence": "medium",
+              "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+            },
+            {
+              "key": "warehouse|req_heads|fetch_req_heads",
+              "screen": "warehouse",
+              "surface": "req_heads",
+              "event": "fetch_req_heads",
+              "previousDurationMs": 399,
+              "currentDurationMs": 399,
+              "deltaMs": 0,
+              "deltaPercent": 0,
+              "previousOwner": "view:v_wh_issue_req_heads_ui",
+              "currentOwner": "view:v_wh_issue_req_heads_ui",
+              "ownerChanged": false,
+              "fallbackPresent": false,
+              "classification": "backend_fetch_heavy",
+              "confidence": "medium",
+              "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+            },
+            {
+              "key": "contractor|profile_card|load_user_profile",
+              "screen": "contractor",
+              "surface": "profile_card",
+              "event": "load_user_profile",
+              "previousDurationMs": 0,
+              "currentDurationMs": 0,
+              "deltaMs": 0,
+              "deltaPercent": null,
+              "previousOwner": "auth+table:user_profiles",
+              "currentOwner": "auth+table:user_profiles",
+              "ownerChanged": false,
+              "fallbackPresent": false,
+              "classification": "mixed",
+              "confidence": "low",
+              "reason": "not enough source ownership signal to classify this hotspot more narrowly"
+            },
+            {
+              "key": "contractor|profile_card|load_contractor_profile",
+              "screen": "contractor",
+              "surface": "profile_card",
+              "event": "load_contractor_profile",
+              "previousDurationMs": 0,
+              "currentDurationMs": 0,
+              "deltaMs": 0,
+              "deltaPercent": null,
+              "previousOwner": "auth+table:contractors",
+              "currentOwner": "auth+table:contractors",
+              "ownerChanged": false,
+              "fallbackPresent": false,
+              "classification": "mixed",
+              "confidence": "low",
+              "reason": "not enough source ownership signal to classify this hotspot more narrowly"
+            }
+          ],
+          "recommendation": {
+            "nextBestCut": "director|reports_scope|load_report_scope",
+            "reason": "backend_fetch_heavy: primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated",
+            "confidence": "high",
+            "classification": "backend_fetch_heavy",
+            "candidates": [
+              {
+                "key": "director|reports_scope|load_report_scope",
+                "currentDurationMs": 10810,
+                "classification": "backend_fetch_heavy",
+                "confidence": "high",
+                "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+              },
+              {
+                "key": "request|supabase_transport|request_timeout_discipline",
+                "currentDurationMs": 10053,
+                "classification": "mixed",
+                "confidence": "low",
+                "reason": "not enough source ownership signal to classify this hotspot more narrowly"
+              },
+              {
+                "key": "director|finance_panel|load_finance_scope",
+                "currentDurationMs": 486,
+                "classification": "backend_fetch_heavy",
+                "confidence": "medium",
+                "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+              },
+              {
+                "key": "warehouse|stock_list|fetch_stock",
+                "currentDurationMs": 617,
+                "classification": "backend_fetch_heavy",
+                "confidence": "high",
+                "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+              },
+              {
+                "key": "contractor|works_bundle|load_works_bundle",
+                "currentDurationMs": 417,
+                "classification": "backend_fetch_heavy",
+                "confidence": "medium",
+                "reason": "primary owner is already backend/read-model bound, so remaining cost is fetch/query dominated"
+              }
+            ]
+          }
+        }
       }
     ],
     "acceptedEnvironmentResiduals": [
+      {
+        "artifact": "artifacts/director-finance-backend-cutover.summary.json",
+        "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      },
       {
         "artifact": "artifacts/director-reports-backend-cutover.summary.json",
         "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
@@ -1937,8 +2474,20 @@
       {
         "artifact": "artifacts/buyer-summary-inbox-backend-cutover.summary.json",
         "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      },
+      {
+        "artifact": "artifacts/warehouse-issue-queue-backend-cutover.summary.json",
+        "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      },
+      {
+        "artifact": "artifacts/warehouse-incoming-queue-backend-cutover.summary.json",
+        "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      },
+      {
+        "artifact": "artifacts/contractor-reliability-cleanup.summary.json",
+        "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
       }
     ]
   },
-  "gate": "NOT_GREEN"
+  "gate": "GREEN"
 }
