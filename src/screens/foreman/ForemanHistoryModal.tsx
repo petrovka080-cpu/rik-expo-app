@@ -2,7 +2,7 @@ import React from "react";
 import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import { Ionicons } from "@expo/vector-icons";
-import RNModal from "react-native-modal";
+import RNModal from "../../ui/React19SafeModal";
 
 import type { ForemanRequestSummary } from "../../lib/catalog_api";
 
@@ -227,4 +227,3 @@ export default function ForemanHistoryModal(props: Props) {
     </RNModal>
   );
 }
-

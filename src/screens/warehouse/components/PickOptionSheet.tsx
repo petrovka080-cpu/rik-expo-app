@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, TextInput, Platform } from "react-native";
-import RNModal from "react-native-modal";
+import RNModal from "../../../ui/React19SafeModal";
 import { UI, s } from "../warehouse.styles";
 import type { Option } from "../warehouse.types";
 import { FlashList } from "../../../ui/FlashList";

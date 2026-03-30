@@ -1,7 +1,7 @@
 // src/screens/warehouse/components/ReqIssueModal.tsx
 import React, { useMemo } from "react";
 import { View, Text, Pressable, TextInput, Platform } from "react-native";
-import RNModal from "react-native-modal";
+import RNModal from "../../../ui/React19SafeModal";
 import { Ionicons } from "@expo/vector-icons";
 import { uomLabelRu } from "../warehouse.uom";
 

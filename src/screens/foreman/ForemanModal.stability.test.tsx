@@ -191,6 +191,65 @@ describe("Foreman modal stability", () => {
     });
   });
 
+  it("keeps web draft modal free from react-native-modal ref warnings", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "web",
+    });
+
+    const onClose = jest.fn();
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    const renderer = await renderWithAct(
+      <ForemanDraftModal
+        visible
+        onClose={onClose}
+        currentDisplayLabel="REQ-1/2026"
+        draftSyncStatusLabel="Локально"
+        draftSyncStatusDetail={null}
+        draftSyncStatusTone="neutral"
+        objectName="Object A"
+        levelName="1"
+        systemName="HVAC"
+        zoneName="Zone A"
+        items={[{ id: "item-1" } as never]}
+        renderReqItem={({ item }) => <>{String(item.id)}</>}
+        screenLock={false}
+        draftDeleteBusy={false}
+        draftSendBusy={false}
+        onDeleteDraft={async () => {}}
+        onPdf={async () => {}}
+        pdfBusy={false}
+        onSend={async () => {}}
+        availableRecoveryActions={[]}
+        onRetryNow={async () => {}}
+        onRehydrateFromServer={async () => {}}
+        onRestoreLocal={async () => {}}
+        onDiscardLocal={async () => {}}
+        onClearFailedQueue={async () => {}}
+        ui={{ text: "#fff", sub: "#999", btnNeutral: "#333" }}
+        styles={styles}
+      />,
+    );
+
+    const backdrop = renderer.root.findByProps({ testID: "react19-safe-modal-backdrop" });
+    act(() => {
+      backdrop.props.onPress();
+    });
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls.flat().join(" ")).not.toContain("TouchableWithoutFeedback");
+    expect(errorSpy.mock.calls.flat().join(" ")).not.toContain("Accessing element.ref");
+
+    warnSpy.mockRestore();
+    errorSpy.mockRestore();
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
+
   it("keeps history modal backdrop semantics stable between list and details modes", async () => {
     const onClose = jest.fn();
     const onBackToList = jest.fn();

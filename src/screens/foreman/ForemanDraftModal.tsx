@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Alert, Platform, Pressable, Text, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
-import RNModal from "react-native-modal";
+import RNModal from "../../ui/React19SafeModal";
 
 import type { ReqItemRow } from "../../lib/catalog_api";
 import type { ForemanDraftRecoveryAction } from "../../lib/offline/foremanSyncRuntime";

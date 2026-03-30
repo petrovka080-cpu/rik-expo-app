@@ -1,7 +1,7 @@
 import React from "react";
 import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
-import RNModal from "react-native-modal";
+import RNModal from "../../ui/React19SafeModal";
 import { STATUS_CONFIG, fmtAmount, type Subcontract } from "../subcontracts/subcontracts.shared";
 import { listLinkedRequestsByLink } from "./foreman.requests";
 
@@ -187,4 +187,3 @@ export default function ForemanSubcontractHistoryModal({
     </RNModal>
   );
 }
-
