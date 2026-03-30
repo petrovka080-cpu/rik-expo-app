@@ -128,7 +128,18 @@ describe("buyer submit mutation owner", () => {
     expect(deps.clearPick).toHaveBeenCalled();
     expect(deps.setTab).toHaveBeenCalledWith("pending");
     expect(deps.closeSheet).toHaveBeenCalled();
-    expect(alert).toHaveBeenCalledWith("Отправлено", "Создано предложений: 1");
+    expect(deps.apiCreateProposalsBySupplier).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.objectContaining({
+        buyerFio: "Buyer User",
+        requestId: "request-1",
+        clientMutationId: expect.any(String),
+      }),
+    );
+    expect(alert).toHaveBeenCalledWith(
+      expect.stringContaining("Отправлено"),
+      expect.stringContaining("Создано предложений: 1"),
+    );
   });
 
   it("surfaces the exact submit failure stage when director visibility breaks", async () => {
@@ -186,8 +197,24 @@ describe("buyer submit mutation owner", () => {
       }),
     ]);
     expect(alert).toHaveBeenCalledWith(
-      "Отправлено с предупреждением",
+      expect.stringContaining("Отправлено с предупреждением"),
       expect.stringContaining("Синхронизация request_items после submit"),
     );
+  });
+
+  it("does not start attachment continuation when canonical proposal commit fails", async () => {
+    const { deps, alert } = baseSubmitDeps();
+    deps.apiCreateProposalsBySupplier = jest.fn(async () => {
+      throw new Error("proposal_submit_v3_invalid_price");
+    });
+
+    const result = await handleCreateProposalsBySupplierAction(deps);
+
+    expect(isBuyerMutationFailure(result)).toBe(true);
+    if (!isBuyerMutationFailure(result)) return;
+    expect(result.failedStage).toBe("create_proposals");
+    expect(mockedUploadSupplierProposalAttachmentsMutation).not.toHaveBeenCalled();
+    expect(mockedSyncSubmittedRequestItemsStatusMutation).not.toHaveBeenCalled();
+    expect(alert).toHaveBeenCalled();
   });
 });

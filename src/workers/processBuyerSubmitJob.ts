@@ -23,6 +23,7 @@ type UploadProposalAttachment = (
 
 export type SubmitJobRow = {
   id: string;
+  client_request_id?: string | null;
   payload: Record<string, unknown> | null;
   retry_count?: number | null;
 };
@@ -106,6 +107,8 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
   // Reuses existing proposal creation logic without changing business rules.
   const result = await deps.apiCreateProposalsBySupplier(buckets, {
     buyerFio: norm(payload.buyerFio),
+    requestId: norm(payload.requestId) || null,
+    clientMutationId: norm(job.client_request_id) || norm(job.id) || null,
   });
 
   const created = Array.isArray(result?.proposals) ? result.proposals : [];

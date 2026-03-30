@@ -1,0 +1,24 @@
+{
+  "status": "GREEN",
+  "migrations": [
+    "supabase/migrations/20260330200000_proposal_creation_boundary_v3.sql",
+    "supabase/migrations/20260330201500_proposal_creation_boundary_v3_uuid_cast_fix.sql",
+    "supabase/migrations/20260330203000_proposal_creation_boundary_v3_enum_cast_fix.sql",
+    "supabase/migrations/20260330204500_proposal_creation_boundary_v3_price_regex_fix.sql",
+    "supabase/migrations/20260330205500_proposal_creation_boundary_v3_proposal_id_cast_fix.sql",
+    "supabase/migrations/20260330210000_proposal_creation_boundary_v3_request_id_cast_fix.sql",
+    "supabase/migrations/20260330211500_proposal_creation_boundary_v3_proposal_item_uuid_fix.sql",
+    "supabase/migrations/20260330213000_proposal_creation_boundary_v3_request_item_uuid_fix.sql",
+    "supabase/migrations/20260330214500_proposal_creation_boundary_v3_total_qty_generated_fix.sql"
+  ],
+  "rpc": "public.rpc_proposal_submit_v3",
+  "idempotencyTable": "public.proposal_submit_mutations_v1",
+  "primaryClientPath": "src/lib/catalog/catalog.proposalCreation.service.ts#createProposalsBySupplier",
+  "demotedLegacyHelpers": [
+    "createProposalHeadStage",
+    "linkProposalItemsStage",
+    "completeProposalCreationStage",
+    "syncProposalRequestItemStatusStage"
+  ],
+  "attachmentContinuation": "post-commit only via buyer.submit.mutation.ts and processBuyerSubmitJob.ts"
+}

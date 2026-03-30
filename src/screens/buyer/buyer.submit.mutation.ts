@@ -317,21 +317,28 @@ async function runSyncSubmitMutation(
   ids: string[],
 ): Promise<SubmitRunResult> {
   const payload = buildSupplierPayload({ ids, metaNow: p.metaNow });
+  const clientRequestId =
+    makeClientRequestId() ||
+    `buyer-submit:${String(p.requestId ?? "request").trim() || "request"}:${Date.now().toString(36)}`;
 
   tracker.markStarted("create_proposals", {
     payloadBuckets: payload.length,
     pickedCount: ids.length,
+    clientRequestId,
   });
   let result: CatalogCreateProposalsResult;
   try {
     result = await p.apiCreateProposalsBySupplier(payload, {
       buyerFio: (p.buyerFio || "").trim(),
+      requestId: p.requestId ? String(p.requestId).trim() || null : null,
+      clientMutationId: clientRequestId,
     });
   } catch (error) {
     logBuyerActionDebug("warn", "[buyer.submit] createProposalsBySupplier.failed", {
       error: errMessage(error),
       pickedIds: ids,
       payloadBuckets: payload.length,
+      clientRequestId,
     });
     return tracker.asFailure(
       "create_proposals",
@@ -341,6 +348,7 @@ async function runSyncSubmitMutation(
   }
   tracker.markCompleted("create_proposals", {
     payloadBuckets: payload.length,
+    clientRequestId,
   });
 
   const created: CreatedProposalRow[] = Array.isArray(result?.proposals) ? result.proposals : [];

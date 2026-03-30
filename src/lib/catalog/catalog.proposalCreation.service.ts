@@ -6,6 +6,8 @@ import {
   proposalCreateFull as rpcProposalCreateFull,
   proposalSnapshotItems as rpcProposalSnapshotItems,
   proposalSubmit as rpcProposalSubmit,
+  isProposalDirectorVisibleRow,
+  normalizeProposalStatus,
   type ProposalStatus,
   type ProposalSubmitVerificationResult,
 } from "../api/proposals";
@@ -37,6 +39,8 @@ export type CreateProposalsOptions = {
   buyerFio?: string | null;
   submit?: boolean;
   requestItemStatus?: string | null;
+  requestId?: string | null;
+  clientMutationId?: string | null;
 };
 
 export type CreateProposalsResult = {
@@ -52,6 +56,56 @@ export type CreateProposalsResult = {
     visible_to_director: boolean;
     submit_source: "rpc:proposal_submit" | "rpc:proposal_submit_text_v1" | null;
   }>;
+  meta?: {
+    canonical_path: "rpc:proposal_submit_v3";
+    client_mutation_id: string | null;
+    request_id: string | null;
+    idempotent_replay: boolean;
+    expected_bucket_count: number;
+    expected_item_count: number;
+    created_proposal_count: number;
+    created_item_count: number;
+    attachment_continuation_ready: boolean;
+  };
+};
+
+type ProposalAtomicSubmitRpcArgs = {
+  p_client_mutation_id: string;
+  p_buckets: ProposalBucketInput[];
+  p_buyer_fio?: string | null;
+  p_submit?: boolean;
+  p_request_item_status?: string | null;
+  p_request_id?: string | null;
+};
+
+type ProposalAtomicSubmitRpcProposalRow = {
+  bucket_index?: number | null;
+  proposal_id?: string | null;
+  proposal_no?: string | null;
+  supplier?: string | null;
+  request_item_ids?: unknown;
+  raw_status?: string | null;
+  submitted_at?: string | null;
+  sent_to_accountant_at?: string | null;
+  submit_source?: "rpc:proposal_submit" | "rpc:proposal_submit_text_v1" | null;
+};
+
+type ProposalAtomicSubmitRpcMeta = {
+  canonical_path?: string | null;
+  client_mutation_id?: string | null;
+  request_id?: string | null;
+  idempotent_replay?: boolean | null;
+  expected_bucket_count?: number | null;
+  expected_item_count?: number | null;
+  created_proposal_count?: number | null;
+  created_item_count?: number | null;
+  attachment_continuation_ready?: boolean | null;
+};
+
+type ProposalAtomicSubmitRpcResult = {
+  status?: string | null;
+  proposals?: ProposalAtomicSubmitRpcProposalRow[] | null;
+  meta?: ProposalAtomicSubmitRpcMeta | null;
 };
 
 type SupplierBindingRow = Pick<Database["public"]["Tables"]["suppliers"]["Row"], "id" | "name">;
@@ -859,6 +913,170 @@ async function syncProposalRequestItemStatusStage(
   }
 }
 
+const parseStringArray = (value: unknown): string[] =>
+  Array.isArray(value)
+    ? value
+        .map((entry) => String(entry ?? "").trim())
+        .filter(Boolean)
+    : [];
+
+const parseInteger = (value: unknown, fallback = 0): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : fallback;
+};
+
+const parseBoolean = (value: unknown): boolean => value === true;
+
+const buildProposalSubmitMutationId = (
+  buckets: ProposalBucketInput[],
+  opts: CreateProposalsOptions,
+): string => {
+  const explicit = norm(opts.clientMutationId ?? null);
+  if (explicit) return explicit;
+
+  const cryptoLike =
+    typeof globalThis !== "undefined"
+      ? (globalThis as typeof globalThis & {
+          crypto?: {
+            randomUUID?: () => string;
+            getRandomValues?: (array: Uint8Array) => Uint8Array;
+          };
+        }).crypto
+      : undefined;
+
+  if (typeof cryptoLike?.randomUUID === "function") {
+    return cryptoLike.randomUUID();
+  }
+
+  const requestId = norm(opts.requestId ?? null) || "request";
+  const bucketFingerprint = buckets
+    .map((bucket) =>
+      (bucket.request_item_ids ?? [])
+        .map((requestItemId) => String(requestItemId ?? "").trim())
+        .filter(Boolean)
+        .sort()
+        .join(","),
+    )
+    .join("|");
+  return `proposal-submit:${requestId}:${bucketFingerprint}:${Date.now().toString(36)}`;
+};
+
+const bucketSupplierLabel = (bucket: ProposalBucketInput | undefined): string => {
+  const supplier = norm(bucket?.supplier ?? null);
+  return supplier || SUPPLIER_NONE_LABEL;
+};
+
+function mapAtomicProposalSubmitResult(
+  rawResult: ProposalAtomicSubmitRpcResult,
+  buckets: ProposalBucketInput[],
+): CreateProposalsResult {
+  const proposalsRaw = Array.isArray(rawResult?.proposals) ? rawResult.proposals : [];
+  const proposals = proposalsRaw.map((proposal) => {
+    const bucketIndex = parseInteger(proposal?.bucket_index, -1);
+    const sourceBucket = bucketIndex >= 0 ? buckets[bucketIndex] : undefined;
+    const supplierText = norm(proposal?.supplier ?? null) || bucketSupplierLabel(sourceBucket);
+    const request_item_ids = (() => {
+      const fromRpc = parseStringArray(proposal?.request_item_ids);
+      if (fromRpc.length) return fromRpc;
+      return (sourceBucket?.request_item_ids ?? [])
+        .map((requestItemId) => String(requestItemId ?? "").trim())
+        .filter(Boolean);
+    })();
+    const raw_status = norm(proposal?.raw_status ?? null) || null;
+    const submitted_at = norm(proposal?.submitted_at ?? null) || null;
+    const sent_to_accountant_at = norm(proposal?.sent_to_accountant_at ?? null) || null;
+    const status = normalizeProposalStatus(raw_status);
+    const visible_to_director = isProposalDirectorVisibleRow({
+      status: raw_status,
+      submitted_at,
+      sent_to_accountant_at,
+    });
+
+    return {
+      proposal_id: norm(proposal?.proposal_id ?? null),
+      proposal_no: norm(proposal?.proposal_no ?? null) || null,
+      supplier: supplierText,
+      request_item_ids,
+      status,
+      raw_status,
+      submitted: !!submitted_at && status === "submitted",
+      submitted_at,
+      visible_to_director,
+      submit_source: proposal?.submit_source ?? (submitted_at ? "rpc:proposal_submit_text_v1" : null),
+    };
+  });
+
+  const metaSource = rawResult?.meta ?? null;
+  return {
+    proposals,
+    meta: {
+      canonical_path: "rpc:proposal_submit_v3",
+      client_mutation_id: norm(metaSource?.client_mutation_id ?? null) || null,
+      request_id: norm(metaSource?.request_id ?? null) || null,
+      idempotent_replay: parseBoolean(metaSource?.idempotent_replay),
+      expected_bucket_count: parseInteger(metaSource?.expected_bucket_count, proposals.length),
+      expected_item_count: parseInteger(
+        metaSource?.expected_item_count,
+        proposals.reduce((sum, proposal) => sum + proposal.request_item_ids.length, 0),
+      ),
+      created_proposal_count: parseInteger(metaSource?.created_proposal_count, proposals.length),
+      created_item_count: parseInteger(
+        metaSource?.created_item_count,
+        proposals.reduce((sum, proposal) => sum + proposal.request_item_ids.length, 0),
+      ),
+      attachment_continuation_ready:
+        metaSource?.attachment_continuation_ready === false ? false : true,
+    },
+  };
+}
+
+async function runAtomicProposalSubmitRpc(
+  buckets: ProposalBucketInput[],
+  opts: CreateProposalsOptions,
+): Promise<CreateProposalsResult> {
+  const args: ProposalAtomicSubmitRpcArgs = {
+    p_client_mutation_id: buildProposalSubmitMutationId(buckets, opts),
+    p_buckets: buckets,
+    p_buyer_fio: norm(opts.buyerFio ?? null) || null,
+    p_submit: opts.submit !== false,
+    p_request_item_status: norm(opts.requestItemStatus ?? null) || null,
+    p_request_id: norm(opts.requestId ?? null) || null,
+  };
+
+  const { data, error } = await supabase.rpc("rpc_proposal_submit_v3" as never, args as never);
+  if (error) throw error;
+
+  const parsed = mapAtomicProposalSubmitResult((data ?? null) as ProposalAtomicSubmitRpcResult, buckets);
+  if (!parsed.proposals.length) {
+    throw new Error("rpc_proposal_submit_v3 returned empty proposals");
+  }
+  if (parsed.proposals.some((proposal) => !proposal.proposal_id)) {
+    throw new Error("rpc_proposal_submit_v3 returned proposal without proposal_id");
+  }
+
+  const expectedBucketCount = parsed.meta?.expected_bucket_count ?? parsed.proposals.length;
+  const createdProposalCount = parsed.meta?.created_proposal_count ?? parsed.proposals.length;
+  const expectedItemCount =
+    parsed.meta?.expected_item_count ??
+    parsed.proposals.reduce((sum, proposal) => sum + proposal.request_item_ids.length, 0);
+  const createdItemCount =
+    parsed.meta?.created_item_count ??
+    parsed.proposals.reduce((sum, proposal) => sum + proposal.request_item_ids.length, 0);
+
+  if (createdProposalCount !== expectedBucketCount || parsed.proposals.length !== expectedBucketCount) {
+    throw new Error(
+      `rpc_proposal_submit_v3 proposal count mismatch: expected ${expectedBucketCount}, got ${createdProposalCount}/${parsed.proposals.length}`,
+    );
+  }
+  if (createdItemCount !== expectedItemCount) {
+    throw new Error(
+      `rpc_proposal_submit_v3 item count mismatch: expected ${expectedItemCount}, got ${createdItemCount}`,
+    );
+  }
+
+  return parsed;
+}
+
 function mapProposalCreationMutationResult(
   result: ProposalCreationMutationResult,
 ): CreateProposalsResult {
@@ -882,163 +1100,5 @@ export async function createProposalsBySupplier(
   buckets: ProposalBucketInput[],
   opts: CreateProposalsOptions = {},
 ): Promise<CreateProposalsResult> {
-  const nowMs = () =>
-    typeof performance !== "undefined" && typeof performance.now === "function"
-      ? performance.now()
-      : Date.now();
-  const perfStartedAt = nowMs();
-  const perf = {
-    preparePayload: 0,
-    groupBuckets: 0,
-    createProposalHeads: 0,
-    insertProposalItems: 0,
-    updateRequestItems: 0,
-    linkBindings: 0,
-    fetchAfterWrite: 0,
-  };
-  const runtime: ProposalCreationRuntime = {
-    dbCalls: 0,
-    proposalItemsBulkUpsertSupported: proposalItemsBulkUpsertCapabilityCache !== false,
-  };
-  const bucketPerf: Array<{
-    bucketIndex: number;
-    itemCount: number;
-    dbCalls: number;
-    createProposalHeadsMs: number;
-    fetchAfterWriteMs: number;
-    insertProposalItemsMs: number;
-    linkBindingsMs: number;
-    updateRequestItemsMs: number;
-  }> = [];
-
-  const mutationResult: ProposalCreationMutationResult = { proposals: [] };
-  const seenRequestItemIdsInRun = new Set<string>();
-
-  const groupBucketsStartedAt = nowMs();
-  const allItemIds = Array.from(
-    new Set(
-      (buckets || [])
-        .flatMap((bucket) => bucket?.request_item_ids ?? [])
-        .map((id) => String(id || "").trim())
-        .filter(Boolean),
-    ),
-  );
-  perf.groupBuckets = nowMs() - groupBucketsStartedAt;
-
-  const preparePayloadStartedAt = nowMs();
-  const preconditions = await resolveProposalCreationPreconditions(allItemIds, opts, runtime);
-  perf.preparePayload = nowMs() - preparePayloadStartedAt;
-
-  for (const [bucketIndex, bucket] of (buckets || []).entries()) {
-    const bucketDbCallsStart = runtime.dbCalls;
-    let bucketCreateProposalHeadsMs = 0;
-    let bucketFetchAfterWriteMs = 0;
-    let bucketInsertProposalItemsMs = 0;
-    let bucketLinkBindingsMs = 0;
-    let bucketUpdateRequestItemsMs = 0;
-    const prepared = prepareProposalCreationBucket(
-      bucket,
-      bucketIndex,
-      preconditions,
-      seenRequestItemIdsInRun,
-    );
-    if (!prepared) continue;
-    let createdHead: ProposalCreationHeadCreated;
-
-    try {
-      const createHeadStartedAt = nowMs();
-      createdHead = await createProposalHeadStage(prepared, preconditions, opts, runtime);
-      const createMs = nowMs() - createHeadStartedAt;
-      bucketCreateProposalHeadsMs += createMs;
-      perf.createProposalHeads += createMs;
-    } catch (error: unknown) {
-      console.warn("[catalog_api.createProposalsBySupplier] proposalCreate:", (error as Error)?.message ?? error);
-      throw error;
-    }
-
-    const insertProposalItemsStartedAt = nowMs();
-    const linked_request_item_ids = await linkProposalItemsStage(
-      createdHead.proposal_id,
-      prepared.request_item_ids,
-      runtime,
-    );
-    const insertMs = nowMs() - insertProposalItemsStartedAt;
-    bucketInsertProposalItemsMs += insertMs;
-    perf.insertProposalItems += insertMs;
-
-    const completionStartedAt = nowMs();
-    const completion = await completeProposalCreationStage(
-      createdHead.proposal_id,
-      prepared,
-      preconditions,
-      runtime,
-    );
-    const completionMs = nowMs() - completionStartedAt;
-    bucketLinkBindingsMs += completionMs;
-    perf.linkBindings += completionMs;
-
-    const updateRequestItemsStartedAt = nowMs();
-    const request_item_status_synced = await syncProposalRequestItemStatusStage(
-      prepared,
-      preconditions,
-      runtime,
-    );
-    const updateMs = nowMs() - updateRequestItemsStartedAt;
-    bucketUpdateRequestItemsMs += updateMs;
-    perf.updateRequestItems += updateMs;
-
-    bucketPerf.push({
-      bucketIndex,
-      itemCount: prepared.request_item_ids.length,
-      dbCalls: runtime.dbCalls - bucketDbCallsStart,
-      createProposalHeadsMs: Number(bucketCreateProposalHeadsMs.toFixed(1)),
-      fetchAfterWriteMs: Number(bucketFetchAfterWriteMs.toFixed(1)),
-      insertProposalItemsMs: Number(bucketInsertProposalItemsMs.toFixed(1)),
-      linkBindingsMs: Number(bucketLinkBindingsMs.toFixed(1)),
-      updateRequestItemsMs: Number(bucketUpdateRequestItemsMs.toFixed(1)),
-    });
-
-    mutationResult.proposals.push({
-      bucketIndex,
-      proposal_id: createdHead.proposal_id,
-      proposal_no: createdHead.proposal_no,
-      display_no: createdHead.display_no,
-      supplier: prepared.supplierLabel,
-      request_item_ids: prepared.request_item_ids,
-      linked_request_item_ids,
-      resolved_bindings: completion.resolved_bindings,
-      status: completion.submitVerification?.status ?? "draft",
-      raw_status: completion.submitVerification?.rawStatus ?? null,
-      submitted: completion.submitVerification != null,
-      submitted_at: completion.submitVerification?.submittedAt ?? null,
-      visible_to_director: completion.submitVerification?.visibleToDirector ?? false,
-      submit_source: completion.submitVerification?.sourceKind ?? null,
-      request_item_status_synced,
-    });
-  }
-
-  const totalCreateMs = nowMs() - perfStartedAt;
-  console.log("[catalog_api.createProposalsBySupplier][perf]", {
-    "preparePayload.ms": Number(perf.preparePayload.toFixed(1)),
-    "groupBuckets.ms": Number(perf.groupBuckets.toFixed(1)),
-    "createProposalHeads.ms": Number(perf.createProposalHeads.toFixed(1)),
-    "insertProposalItems.ms": Number(perf.insertProposalItems.toFixed(1)),
-    "updateRequestItems.ms": Number(perf.updateRequestItems.toFixed(1)),
-    "linkBindings.ms": Number(perf.linkBindings.toFixed(1)),
-    "fetchAfterWrite.ms": Number(perf.fetchAfterWrite.toFixed(1)),
-    "totalCreateProposalsBySupplier.ms": Number(totalCreateMs.toFixed(1)),
-    buckets: buckets?.length ?? 0,
-    proposalsCreated: mutationResult.proposals.length,
-    dbCalls: runtime.dbCalls,
-    bucketPerf,
-  });
-  if (!mutationResult.proposals.length) {
-    console.warn("[catalog_api.createProposalsBySupplier] no proposals created", {
-      allItemIds,
-      approvedItemIds: Array.from(preconditions.approvedItemIds),
-      bucketCount: buckets?.length ?? 0,
-    });
-  }
-
-  return mapProposalCreationMutationResult(mutationResult);
+  return await runAtomicProposalSubmitRpc(buckets, opts);
 }

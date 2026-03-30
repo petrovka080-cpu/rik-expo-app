@@ -1,0 +1,60 @@
+{
+  "status": "GREEN",
+  "generatedAt": "2026-03-30T16:18:12.711Z",
+  "canonicalPath": "rpc:proposal_submit_v3",
+  "sourceProof": {
+    "canonicalRpcPresent": true,
+    "primaryCreateUsesAtomicRpc": true,
+    "noClientHeadStageInPrimary": true,
+    "noClientItemLinkStageInPrimary": true,
+    "noClientCompletionStageInPrimary": true,
+    "noClientStatusWriteStageInPrimary": true
+  },
+  "successPath": {
+    "requestId": "721069ba-5108-45b6-8bea-1d7f2ebaf7a8",
+    "requestItemId": "09dc5396-28ff-46ff-9972-ef2adc87d819",
+    "proposalId": "39228e13-8b65-44f7-bf7e-00077f2e6620",
+    "proposal": {
+      "id": "39228e13-8b65-44f7-bf7e-00077f2e6620",
+      "proposal_no": "PR-0542/2026",
+      "display_no": "PR-0542/2026",
+      "status": "На утверждении",
+      "submitted_at": "2026-03-30T16:18:12.023385+00:00",
+      "sent_to_accountant_at": null,
+      "supplier": "ИП Желоб",
+      "request_id": "721069ba-5108-45b6-8bea-1d7f2ebaf7a8"
+    },
+    "expectedBucketCount": 1,
+    "expectedItemCount": 1,
+    "actualCreatedProposalCount": 1,
+    "actualCreatedItemCount": 1,
+    "attachmentContinuationReady": true,
+    "directorVisible": true,
+    "proposalItemsCount": 1
+  },
+  "idempotentReplay": {
+    "clientMutationId": "proposal-atomic-mnde6mbc",
+    "replayProposalId": "39228e13-8b65-44f7-bf7e-00077f2e6620",
+    "sameProposalId": true,
+    "replayFlag": true,
+    "proposalsForRequestCount": 1
+  },
+  "failurePath": {
+    "requestId": "ec4e9a20-3f2c-4e9f-8e58-e501cd02221f",
+    "requestItemId": "ed106d2e-129f-4999-a35e-18edd5c09379",
+    "error": {
+      "name": null,
+      "message": "proposal_submit_v3_invalid_price",
+      "code": "P0001",
+      "details": "{\"request_item_ids\": [\"ed106d2e-129f-4999-a35e-18edd5c09379\"], \"client_mutation_id\": \"proposal-atomic-mnde6mbc-invalid\"}",
+      "hint": null,
+      "raw": {
+        "code": "P0001",
+        "details": "{\"request_item_ids\": [\"ed106d2e-129f-4999-a35e-18edd5c09379\"], \"client_mutation_id\": \"proposal-atomic-mnde6mbc-invalid\"}",
+        "hint": null,
+        "message": "proposal_submit_v3_invalid_price"
+      }
+    },
+    "proposalsForInvalidRequestCount": 0
+  }
+}
