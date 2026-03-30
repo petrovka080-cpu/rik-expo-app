@@ -174,6 +174,11 @@ const loadBuyerInboxWindowScope = async (params: {
     p_limit: Math.max(1, limitGroups),
     p_search: search?.trim() || null,
     p_company_id: null,
+  }, {
+    screen: "buyer",
+    surface: "summary_inbox",
+    owner: "buyer.fetchers",
+    sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
   });
   if (error) throw error;
 
@@ -300,7 +305,12 @@ async function loadBuyerBucketsDataRpcInternal(params: {
       : null;
 
   try {
-    const { data, error } = await runContainedRpc(supabase, "buyer_summary_buckets_scope_v1");
+    const { data, error } = await runContainedRpc(supabase, "buyer_summary_buckets_scope_v1", undefined, {
+      screen: "buyer",
+      surface: "summary_buckets",
+      owner: "buyer.fetchers",
+      sourceKind: BUYER_BUCKETS_RPC_SOURCE_KIND,
+    });
     if (error) throw error;
 
     const envelope = adaptBuyerSummaryBucketsScopeEnvelope(data);

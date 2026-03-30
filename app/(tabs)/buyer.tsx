@@ -238,6 +238,10 @@ function BuyerScreen() {
     setInboxHasMore,
     inboxTotalCount,
     setInboxTotalCount,
+    inboxPublicationState,
+    setInboxPublicationState,
+    inboxPublicationMessage,
+    setInboxPublicationMessage,
     refreshing,
     setRefreshing,
     pending,
@@ -248,6 +252,10 @@ function BuyerScreen() {
     setRejected,
     loadingBuckets,
     setLoadingBuckets,
+    bucketsPublicationState,
+    setBucketsPublicationState,
+    bucketsPublicationMessage,
+    setBucketsPublicationMessage,
     subcontractCount,
     setSubcontractCount,
   } = useBuyerState();
@@ -302,6 +310,10 @@ function BuyerScreen() {
     supabase,
     activeTab: tab,
     searchQuery,
+    rows,
+    pending,
+    approved,
+    rejected,
     listBuyerInbox,
     preloadDisplayNos,
     preloadProposalTitles,
@@ -309,8 +321,12 @@ function BuyerScreen() {
     setLoadingInboxMore,
     setInboxHasMore,
     setInboxTotalCount,
+    setInboxPublicationState,
+    setInboxPublicationMessage,
     setRows,
     setLoadingBuckets,
+    setBucketsPublicationState,
+    setBucketsPublicationMessage,
     setPending,
     setApproved,
     setRejected,
@@ -718,6 +734,8 @@ function BuyerScreen() {
           s={s}
           tab={tab}
           data={listData}
+          publicationState={tab === "inbox" ? inboxPublicationState : bucketsPublicationState}
+          publicationMessage={tab === "inbox" ? inboxPublicationMessage : bucketsPublicationMessage}
           measuredHeaderMax={mainListHeaderPad}
           refreshing={refreshing}
           onRefresh={onRefresh}

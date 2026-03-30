@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, type Dispatch, type SetStateAc
 import { useFocusEffect } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { BuyerTab } from "../buyer.types";
+import type { BuyerPublicationState } from "./useBuyerState";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type {
@@ -34,6 +35,8 @@ type RefreshSummaryOptions = {
   showRefreshing?: boolean;
 };
 
+type BuyerSummaryPublicationScope = "inbox" | "buckets";
+
 const DEFAULT_SCOPES: BuyerSummaryScope[] = ["inbox", "buckets", "subcontracts"];
 const BUYER_INBOX_GROUP_PAGE_SIZE = 12;
 const BUYER_FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
@@ -58,6 +61,10 @@ export function useBuyerLoadingController(params: {
   supabase: SupabaseClient;
   activeTab: BuyerTab;
   searchQuery?: string;
+  rows: BuyerInboxRow[];
+  pending: BuyerProposalBucketRow[];
+  approved: BuyerProposalBucketRow[];
+  rejected: BuyerProposalBucketRow[];
   listBuyerInbox: () => Promise<BuyerInboxRow[]>;
   preloadDisplayNos: (reqIds: string[]) => void | Promise<void>;
   preloadProposalTitles: (proposalIds: string[]) => void | Promise<void>;
@@ -65,8 +72,12 @@ export function useBuyerLoadingController(params: {
   setLoadingInboxMore: (v: boolean) => void;
   setInboxHasMore: (v: boolean) => void;
   setInboxTotalCount: (count: number) => void;
+  setInboxPublicationState: Dispatch<SetStateAction<BuyerPublicationState>>;
+  setInboxPublicationMessage: Dispatch<SetStateAction<string | null>>;
   setRows: Dispatch<SetStateAction<BuyerInboxRow[]>>;
   setLoadingBuckets: (v: boolean) => void;
+  setBucketsPublicationState: Dispatch<SetStateAction<BuyerPublicationState>>;
+  setBucketsPublicationMessage: Dispatch<SetStateAction<string | null>>;
   setPending: (rows: BuyerProposalBucketRow[]) => void;
   setApproved: (rows: BuyerProposalBucketRow[]) => void;
   setRejected: (rows: BuyerProposalBucketRow[]) => void;
@@ -82,6 +93,10 @@ export function useBuyerLoadingController(params: {
     supabase,
     activeTab,
     searchQuery,
+    rows,
+    pending,
+    approved,
+    rejected,
     listBuyerInbox,
     preloadDisplayNos,
     preloadProposalTitles,
@@ -89,8 +104,12 @@ export function useBuyerLoadingController(params: {
     setLoadingInboxMore,
     setInboxHasMore,
     setInboxTotalCount,
+    setInboxPublicationState,
+    setInboxPublicationMessage,
     setRows,
     setLoadingBuckets,
+    setBucketsPublicationState,
+    setBucketsPublicationMessage,
     setPending,
     setApproved,
     setRejected,
@@ -113,6 +132,7 @@ export function useBuyerLoadingController(params: {
   const queuedInboxResetRef = useRef<BuyerSummaryRefreshReason | null>(null);
   const summaryRefreshInFlightRef = useRef(false);
   const searchKey = String(searchQuery ?? "").trim();
+  const visibleBucketRowsCount = pending.length + approved.length + rejected.length;
   const summaryService = useMemo(
     () =>
       createBuyerSummaryService({
@@ -123,6 +143,56 @@ export function useBuyerLoadingController(params: {
         log,
       }),
     [supabase, listBuyerInbox, kickMsInbox, kickMsBuckets, log],
+  );
+
+  const normalizeBuyerPublicationMessage = useCallback(
+    (scope: BuyerSummaryPublicationScope, error: unknown) => {
+      const message =
+        error instanceof Error && error.message.trim()
+          ? error.message.trim()
+          : scope === "inbox"
+            ? "Не удалось загрузить заявки снабженца."
+            : "Не удалось загрузить предложения снабженца.";
+      return message;
+    },
+    [],
+  );
+
+  const publishBuyerScopeState = useCallback(
+    (
+      scope: BuyerSummaryPublicationScope,
+      state: BuyerPublicationState,
+      message: string | null,
+      extra?: Record<string, unknown>,
+    ) => {
+      if (scope === "inbox") {
+        setInboxPublicationState(state);
+        setInboxPublicationMessage(message);
+      } else {
+        setBucketsPublicationState(state);
+        setBucketsPublicationMessage(message);
+      }
+
+      recordPlatformObservability({
+        screen: "buyer",
+        surface: scope === "inbox" ? "summary_inbox" : "summary_buckets",
+        category: "ui",
+        event: "publish_state",
+        result: state === "ready" ? "success" : "error",
+        errorMessage: message ?? undefined,
+        extra: {
+          owner: "buyer_loading_controller",
+          publishState: state,
+          ...extra,
+        },
+      });
+    },
+    [
+      setBucketsPublicationMessage,
+      setBucketsPublicationState,
+      setInboxPublicationMessage,
+      setInboxPublicationState,
+    ],
   );
 
   const applyInboxResult = useCallback(async (
@@ -166,13 +236,19 @@ export function useBuyerLoadingController(params: {
         append: Boolean(options?.append),
       },
     });
+    publishBuyerScopeState("inbox", "ready", null, {
+      hasData: inbox.rows.length > 0,
+      append: Boolean(options?.append),
+      totalGroupCount: inbox.meta.totalGroupCount,
+      sourceKind: inbox.sourceMeta.sourceKind,
+    });
     if (!inbox.requestIds.length) return;
     try {
       await preloadDisplayNos(inbox.requestIds);
     } catch {
       // no-op
     }
-  }, [preloadDisplayNos, setInboxHasMore, setInboxTotalCount, setRows]);
+  }, [preloadDisplayNos, publishBuyerScopeState, setInboxHasMore, setInboxTotalCount, setRows]);
 
   const loadInboxWindow = useCallback(async (options: {
     reason: BuyerSummaryRefreshReason;
@@ -242,6 +318,19 @@ export function useBuyerLoadingController(params: {
         });
         if (!focusedRef.current) return;
         await applyInboxResult(inbox, { append: !options.reset });
+      } catch (error) {
+        publishBuyerScopeState(
+          "inbox",
+          rows.length > 0 ? "degraded" : "error",
+          normalizeBuyerPublicationMessage("inbox", error),
+          {
+            reason: options.reason,
+            reset: options.reset,
+            search: searchKey || null,
+            hasData: rows.length > 0,
+          },
+        );
+        throw error;
       } finally {
         if (options.reset) {
           if (options.showScopeLoading) setLoadingInbox(false);
@@ -267,6 +356,9 @@ export function useBuyerLoadingController(params: {
     applyInboxResult,
     listBuyerInbox,
     log,
+    normalizeBuyerPublicationMessage,
+    publishBuyerScopeState,
+    rows.length,
     searchKey,
     setLoadingInbox,
     setLoadingInboxMore,
@@ -293,13 +385,18 @@ export function useBuyerLoadingController(params: {
         proposalIds: buckets.proposalIds.length,
       },
     });
+    publishBuyerScopeState("buckets", "ready", null, {
+      hasData: buckets.pending.length + buckets.approved.length + buckets.rejected.length > 0,
+      proposalIds: buckets.proposalIds.length,
+      sourceKind: buckets.sourceMeta.sourceKind,
+    });
     if (!buckets.proposalIds.length) return;
     try {
       await preloadProposalTitles(buckets.proposalIds);
     } catch {
       // no-op
     }
-  }, [preloadProposalTitles, setApproved, setPending, setRejected]);
+  }, [preloadProposalTitles, publishBuyerScopeState, setApproved, setPending, setRejected]);
 
   const refreshSummary = useCallback(async (options: RefreshSummaryOptions) => {
     if (!focusedRef.current) {
@@ -352,11 +449,28 @@ export function useBuyerLoadingController(params: {
       }
 
       const result = serviceScopes.length
-        ? await summaryService.load({
-            reason: options.reason,
-            scopes: serviceScopes,
-            force: options.force,
-          })
+        ? await (async () => {
+            try {
+              return await summaryService.load({
+                reason: options.reason,
+                scopes: serviceScopes,
+                force: options.force,
+              });
+            } catch (error) {
+              if (serviceScopes.includes("buckets")) {
+                publishBuyerScopeState(
+                  "buckets",
+                  visibleBucketRowsCount > 0 ? "degraded" : "error",
+                  normalizeBuyerPublicationMessage("buckets", error),
+                  {
+                    reason: options.reason,
+                    hasData: visibleBucketRowsCount > 0,
+                  },
+                );
+              }
+              throw error;
+            }
+          })()
         : {};
 
       if (!focusedRef.current) return;
@@ -377,14 +491,20 @@ export function useBuyerLoadingController(params: {
       if (options.showRefreshing) setRefreshing(false);
     }
   }, [
+    approved.length,
     applyBucketsResult,
     log,
     loadInboxWindow,
+    normalizeBuyerPublicationMessage,
+    pending.length,
+    publishBuyerScopeState,
+    rejected.length,
     setRefreshReason,
     setLoadingBuckets,
     setRefreshing,
     setSubcontractCount,
     summaryService,
+    visibleBucketRowsCount,
   ]);
 
   useBuyerRealtimeLifecycle({
@@ -422,10 +542,14 @@ export function useBuyerLoadingController(params: {
   }, [refreshSummary]);
 
   const fetchInboxNextPage = useCallback(async () => {
-    await loadInboxWindow({
-      reason: "focus",
-      reset: false,
-    });
+    try {
+      await loadInboxWindow({
+        reason: "focus",
+        reset: false,
+      });
+    } catch (error) {
+      log?.("[buyer.summary] inbox next page failed:", error instanceof Error ? error.message : String(error));
+    }
   }, [loadInboxWindow]);
 
   useFocusEffect(

@@ -50,6 +50,59 @@ describe("buyer inbox fetchers", () => {
     resetPlatformObservabilityEvents();
   });
 
+  it("keeps the shared rpc transport bound so this.rest-backed buyers do not crash", async () => {
+    const supabase = {
+      rest: { schema: "public" },
+      rpc: jest.fn(function (
+        this: { rest?: { schema?: string } },
+        _fn: string,
+        args: Record<string, unknown>,
+      ) {
+        if (!this?.rest) {
+          throw new TypeError("Cannot read properties of undefined (reading 'rest')");
+        }
+        return Promise.resolve({
+          data: buildScopeEnvelope({
+            rows: [
+              {
+                request_id: "req-rest-1",
+                request_id_old: 201,
+                request_item_id: "item-rest-1",
+                rik_code: "REST-001",
+                name_human: "Bound transport row",
+                qty: 1,
+                uom: "pcs",
+                app_code: "APP-REST-1",
+                note: null,
+                object_name: "Object Rest",
+                status: "approved",
+                created_at: "2026-03-30T13:00:00.000Z",
+              },
+            ],
+            offsetGroups: Number(args.p_offset ?? 0),
+            limitGroups: Number(args.p_limit ?? 12),
+            returnedGroupCount: 1,
+            totalGroupCount: 1,
+            hasMore: false,
+          }),
+          error: null,
+        });
+      }),
+    };
+
+    const result = await loadBuyerInboxWindowData({
+      supabase,
+      offsetGroups: 0,
+      limitGroups: 12,
+      search: null,
+      log: () => undefined,
+    });
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.request_id).toBe("req-rest-1");
+    expect(supabase.rpc).toHaveBeenCalledTimes(1);
+  });
+
   it("does not fallback to listBuyerInbox when the rpc scope fails", async () => {
     const listBuyerInbox = jest.fn(async () => []);
     const rpc = jest.fn(async () => ({
@@ -85,6 +138,48 @@ describe("buyer inbox fetchers", () => {
           event: "load_inbox",
           result: "error",
           fallbackUsed: false,
+          errorStage: "load_inbox_rpc",
+          sourceKind: "rpc:buyer_summary_inbox_scope_v1",
+        }),
+      ]),
+    );
+  });
+
+  it("fails closed on an undefined rest transport path instead of publishing empty data", async () => {
+    const supabase = {
+      rpc: jest.fn(function () {
+        if (!(this as { rest?: unknown })?.rest) {
+          throw new TypeError("Cannot read properties of undefined (reading 'rest')");
+        }
+        return Promise.resolve({ data: null, error: null });
+      }),
+    };
+
+    await expect(
+      loadBuyerInboxWindowData({
+        supabase,
+        offsetGroups: 0,
+        limitGroups: 12,
+        search: null,
+        log: () => undefined,
+      }),
+    ).rejects.toThrow("Cannot read properties of undefined (reading 'rest')");
+
+    expect(getPlatformObservabilityEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          screen: "buyer",
+          surface: "summary_inbox",
+          event: "rpc_transport_boundary_fail",
+          result: "error",
+          errorStage: "rpc_transport_call",
+          sourceKind: "rpc:buyer_summary_inbox_scope_v1",
+        }),
+        expect.objectContaining({
+          screen: "buyer",
+          surface: "summary_inbox",
+          event: "load_inbox_primary_rpc",
+          result: "error",
           errorStage: "load_inbox_rpc",
           sourceKind: "rpc:buyer_summary_inbox_scope_v1",
         }),
@@ -185,6 +280,66 @@ describe("buyer inbox fetchers", () => {
         }),
       ]),
     );
+  });
+
+  it("supports repeated buyer inbox loads for refresh/reopen without reintroducing the rest crash", async () => {
+    const supabase = {
+      rest: { schema: "public" },
+      rpc: jest.fn(function (
+        this: { rest?: { schema?: string } },
+        _fn: string,
+        args: Record<string, unknown>,
+      ) {
+        if (!this?.rest) {
+          throw new TypeError("Cannot read properties of undefined (reading 'rest')");
+        }
+        return Promise.resolve({
+          data: buildScopeEnvelope({
+            rows: [
+              {
+                request_id: `req-repeat-${String(args.p_offset ?? 0)}`,
+                request_id_old: 300 + Number(args.p_offset ?? 0),
+                request_item_id: `item-repeat-${String(args.p_offset ?? 0)}`,
+                rik_code: "REPEAT-001",
+                name_human: "Repeat-safe row",
+                qty: 1,
+                uom: "pcs",
+                app_code: "APP-REPEAT-1",
+                note: null,
+                object_name: "Object Repeat",
+                status: "approved",
+                created_at: "2026-03-30T14:00:00.000Z",
+              },
+            ],
+            offsetGroups: Number(args.p_offset ?? 0),
+            limitGroups: Number(args.p_limit ?? 12),
+            returnedGroupCount: 1,
+            totalGroupCount: 1,
+            hasMore: false,
+          }),
+          error: null,
+        });
+      }),
+    };
+
+    const first = await loadBuyerInboxWindowData({
+      supabase,
+      offsetGroups: 0,
+      limitGroups: 12,
+      search: null,
+      log: () => undefined,
+    });
+    const refresh = await loadBuyerInboxWindowData({
+      supabase,
+      offsetGroups: 0,
+      limitGroups: 12,
+      search: null,
+      log: () => undefined,
+    });
+
+    expect(first.rows).toHaveLength(1);
+    expect(refresh.rows).toHaveLength(1);
+    expect(supabase.rpc).toHaveBeenCalledTimes(2);
   });
 
   it("loads buyer buckets from the rpc scope without legacy ownership", async () => {

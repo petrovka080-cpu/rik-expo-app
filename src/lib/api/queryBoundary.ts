@@ -1,21 +1,26 @@
+import { recordPlatformObservability } from "../observability/platformObservability";
+
 type RpcTransport = {
-  rpc: unknown;
+  rpc: (
+    fn: string,
+    args?: Record<string, unknown>,
+  ) => Promise<{
+    data: unknown;
+    error: unknown;
+  }>;
 };
-type UnsafeRpcInvoker = (
-  fn: string,
-  args?: Record<string, unknown>,
-) => Promise<{
-  data: unknown;
-  error: unknown;
-}>;
 
 export type RpcBoundaryResult<TData> = {
   data: TData | null;
   error: NullableRpcErrorLike;
 };
 
-const asUnsafeRpcInvoker = (client: RpcTransport): UnsafeRpcInvoker =>
-  client.rpc as unknown as UnsafeRpcInvoker;
+export type RpcBoundaryContext = {
+  screen: "buyer" | "contractor";
+  surface: string;
+  owner: string;
+  sourceKind: string;
+};
 
 export type RpcErrorLike = {
   message?: string | null;
@@ -25,6 +30,16 @@ export type RpcErrorLike = {
 } & Error;
 
 export type NullableRpcErrorLike = RpcErrorLike | null;
+
+export class RpcTransportBoundaryError extends Error {
+  code: string | null;
+
+  constructor(message: string, code = "rpc_transport_invalid") {
+    super(message);
+    this.name = "RpcTransportBoundaryError";
+    this.code = code;
+  }
+}
 
 const asRpcErrorLike = (value: unknown): NullableRpcErrorLike => {
   if (!value) return null;
@@ -52,17 +67,71 @@ const asRpcErrorLike = (value: unknown): NullableRpcErrorLike => {
   return wrapped;
 };
 
+const asRpcTransport = (client: unknown): RpcTransport | null => {
+  if (!client || typeof client !== "object") return null;
+  const maybeRpc = (client as { rpc?: unknown }).rpc;
+  if (typeof maybeRpc !== "function") return null;
+  return client as RpcTransport;
+};
+
+const recordBoundaryFailure = (
+  context: RpcBoundaryContext | undefined,
+  fn: string,
+  error: RpcErrorLike,
+  errorStage: "rpc_transport_guard" | "rpc_transport_call",
+) => {
+  if (!context) return;
+  recordPlatformObservability({
+    screen: context.screen,
+    surface: context.surface,
+    category: "fetch",
+    event: "rpc_transport_boundary_fail",
+    result: "error",
+    sourceKind: context.sourceKind,
+    errorStage,
+    errorClass: error.name,
+    errorMessage: error.message,
+    extra: {
+      owner: context.owner,
+      rpcName: fn,
+    },
+  });
+};
+
 // Allowed suppression zone: generated Supabase RPC typings lag behind deployed RPC names.
 // Keep the cast containment here instead of spreading `as never` across feature code.
 export async function runContainedRpc<TData>(
-  client: RpcTransport,
+  client: unknown,
   fn: string,
   args?: Record<string, unknown>,
+  context?: RpcBoundaryContext,
 ): Promise<RpcBoundaryResult<TData>> {
-  const invoke = asUnsafeRpcInvoker(client);
-  const result = args == null ? await invoke(fn) : await invoke(fn, args);
-  return {
-    data: (result.data ?? null) as TData | null,
-    error: asRpcErrorLike(result.error),
-  };
+  const transport = asRpcTransport(client);
+  if (!transport) {
+    const error = new RpcTransportBoundaryError(
+      `RPC transport owner is unavailable for ${fn}`,
+    ) as RpcErrorLike;
+    recordBoundaryFailure(context, fn, error, "rpc_transport_guard");
+    return {
+      data: null,
+      error,
+    };
+  }
+
+  try {
+    const result = args == null ? await transport.rpc(fn) : await transport.rpc(fn, args);
+    return {
+      data: (result.data ?? null) as TData | null,
+      error: asRpcErrorLike(result.error),
+    };
+  } catch (error) {
+    const normalizedError =
+      asRpcErrorLike(error) ??
+      (new RpcTransportBoundaryError(`RPC invocation failed for ${fn}`) as RpcErrorLike);
+    recordBoundaryFailure(context, fn, normalizedError, "rpc_transport_call");
+    return {
+      data: null,
+      error: normalizedError,
+    };
+  }
 }

@@ -24,6 +24,9 @@ export function selectBuyerMainListData(
   return data;
 }
 
-export function selectBuyerShouldShowEmptyState(isLoading: boolean) {
-  return !isLoading;
+export function selectBuyerShouldShowEmptyState(
+  isLoading: boolean,
+  publicationState: "idle" | "ready" | "error" | "degraded" = "ready",
+) {
+  return !isLoading && publicationState === "ready";
 }

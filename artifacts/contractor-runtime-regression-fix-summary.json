@@ -1,0 +1,35 @@
+{
+  "status": "GREEN",
+  "route": "/contractor",
+  "transportOwner": "queryBoundary -> supabaseClient.rpc",
+  "scope": {
+    "contractorId": "6160cafe-e127-494f-bdcb-2a089fd96df4",
+    "contractorOrg": "Runtime Contractor MNCQCAIX9LSA",
+    "workName": "Runtime Work MNCQCAIX9LSA",
+    "objectName": "Runtime Object MNCQCAIX9LSA"
+  },
+  "repeatedPhases": [
+    {
+      "phase": "open",
+      "contractorVisible": true,
+      "workVisible": true,
+      "objectVisible": true
+    },
+    {
+      "phase": "hard_reload",
+      "contractorVisible": true,
+      "workVisible": true,
+      "objectVisible": true
+    },
+    {
+      "phase": "reopen",
+      "contractorVisible": true,
+      "workVisible": true,
+      "objectVisible": true
+    }
+  ],
+  "blockingConsoleErrors": [],
+  "pageErrors": [],
+  "restRegressionHits": [],
+  "badResponses": []
+}

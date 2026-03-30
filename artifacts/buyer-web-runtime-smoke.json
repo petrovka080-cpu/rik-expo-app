@@ -1,0 +1,757 @@
+{
+  "expected": {
+    "requestId": "e1454c16-1ad5-4d8c-9a75-96ce285ce41f",
+    "requestItemId": "243d4f55-fc08-49d8-a504-f4a173a3cea8",
+    "label": "REQ-RTBUYMNCQBK6Y61N5/2026",
+    "itemName": "RTBUYMNCQBK6Y61N5"
+  },
+  "repeatedPhases": [
+    {
+      "phase": "open",
+      "bodyHasLabel": true,
+      "bodyHasItemName": true
+    },
+    {
+      "refreshMethod": "button_refresh",
+      "phase": "refresh",
+      "bodyHasLabel": true,
+      "bodyHasItemName": true
+    },
+    {
+      "phase": "hard_reload",
+      "bodyHasLabel": true,
+      "bodyHasItemName": true
+    },
+    {
+      "phase": "reopen",
+      "bodyHasLabel": true,
+      "bodyHasItemName": true
+    }
+  ],
+  "runtime": {
+    "console": [
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "log",
+        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+      },
+      {
+        "type": "warning",
+        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+      },
+      {
+        "type": "info",
+        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] stop skipped: not running"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 704}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 705}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 712}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 711}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 708}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 806}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 517}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 610}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] starting queue worker"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] started {workerId: web:mncqbr4g:780gsd, batchSize: 10, concurrency: 4}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=suppliers ok=true rows=11"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=contractors ok=true rows=0"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=subcontracts ok=true rows=0"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=proposal_items ok=true rows=0"
+      },
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "log",
+        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+      },
+      {
+        "type": "warning",
+        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+      },
+      {
+        "type": "info",
+        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 493}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] starting queue worker"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] started {workerId: web:mncqbrzn:d9ympv, batchSize: 10, concurrency: 4}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: channel_created, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_started, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: joined_inflight, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 498}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 513}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_connected, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 515}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 521}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 524}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 531}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 497}"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=suppliers ok=true rows=11"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=contractors ok=true rows=0"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=subcontracts ok=true rows=53"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=proposal_items ok=true rows=191"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1140}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1729}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: publish_state, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1204}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 509}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 513}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 513}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_subcontracts, event: load_scope, result: cache_hit, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 542}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 494}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 528}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 559}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: publish_state, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 533}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 505}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: error, durationMs: 12}"
+      },
+      {
+        "type": "warning",
+        "text": "[buyer] loadBuyerInboxWindowData rpc error: TypeError: Failed to fetch"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox_primary_rpc, result: error, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: error, durationMs: 35}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: publish_state, result: error, durationMs: null}"
+      },
+      {
+        "type": "warning",
+        "text": "[buyer.summary] refresh failed: TypeError: Failed to fetch"
+      },
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "log",
+        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+      },
+      {
+        "type": "warning",
+        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+      },
+      {
+        "type": "info",
+        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 508}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] starting queue worker"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] started {workerId: web:mncqbwtm:zk3guu, batchSize: 10, concurrency: 4}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: channel_created, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_started, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: joined_inflight, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 494}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 511}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 514}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 514}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 528}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 525}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 530}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_connected, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 548}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1188}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: publish_state, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 490}"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=suppliers ok=true rows=11"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=contractors ok=true rows=0"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=subcontracts ok=true rows=53"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=proposal_items ok=true rows=191"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 510}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 505}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 530}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 528}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_subcontracts, event: load_scope, result: cache_hit, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 514}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 537}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 559}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: publish_state, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 490}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 509}"
+      },
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "log",
+        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+      },
+      {
+        "type": "warning",
+        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+      },
+      {
+        "type": "info",
+        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] starting queue worker"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] started {workerId: web:mncqc0dx:qom4zy, batchSize: 10, concurrency: 4}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: joined_inflight, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.channel, status: SUBSCRIBED}"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: SUBSCRIBED}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 507}"
+      },
+      {
+        "type": "info",
+        "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 6, expectedRequestStatuses: Array(2)}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 521}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 525}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 529}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 513}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 541}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 486}"
+      },
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "log",
+        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+      },
+      {
+        "type": "warning",
+        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+      },
+      {
+        "type": "info",
+        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 512}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] starting queue worker"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] started {workerId: web:mncqc369:7qedht, batchSize: 10, concurrency: 4}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: channel_created, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_started, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: joined_inflight, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 498}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 504}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 510}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 516}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 519}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_connected, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 530}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 535}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 556}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1132}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: publish_state, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 504}"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=suppliers ok=true rows=11"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=contractors ok=true rows=0"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=subcontracts ok=true rows=53"
+      },
+      {
+        "type": "info",
+        "text": "[buyer.suppliers] source=proposal_items ok=true rows=191"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 556}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 506}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 513}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_subcontracts, event: load_scope, result: cache_hit, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 536}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 510}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 539}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 564}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: publish_state, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 490}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 502}"
+      }
+    ],
+    "pageErrors": [],
+    "badResponses": []
+  }
+}

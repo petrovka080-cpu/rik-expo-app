@@ -9,6 +9,7 @@ import {
   beginPlatformObservability,
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
+import { runContainedRpc } from "../../lib/api/queryBoundary";
 
 export type ContractorWorkRow = {
   progress_id: string;
@@ -735,9 +736,14 @@ async function loadContractorWorksBundleRpcInternal(
       : null;
 
   try {
-    const { data, error } = await supabaseClient.rpc("contractor_works_bundle_scope_v1", {
+    const { data, error } = await runContainedRpc(supabaseClient, "contractor_works_bundle_scope_v1", {
       p_my_contractor_id: myContractorId || null,
       p_is_staff: isStaff,
+    }, {
+      screen: "contractor",
+      surface: "works_bundle",
+      owner: "contractor.loadWorksService",
+      sourceKind: RPC_SOURCE_KIND,
     });
     if (error) throw error;
 

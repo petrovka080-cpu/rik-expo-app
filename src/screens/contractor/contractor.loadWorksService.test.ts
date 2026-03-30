@@ -40,6 +40,73 @@ describe("contractor.loadWorksService", () => {
     resetPlatformObservabilityEvents();
   });
 
+  it("uses the shared rpc transport owner without losing this.rest", async () => {
+    const supabaseClient = {
+      rest: { schema: "public" },
+      rpc: jest.fn(function (this: { rest?: { schema?: string } }) {
+        if (!this?.rest) {
+          throw new TypeError("Cannot read properties of undefined (reading 'rest')");
+        }
+        return Promise.resolve({
+          data: buildScopeEnvelope({
+            rows: [
+              {
+                progress_id: "progress-boundary",
+                created_at: "2026-03-30T10:00:00.000Z",
+                purchase_item_id: null,
+                work_code: "WORK-B",
+                work_name: "Boundary Work",
+                object_name: "Object Boundary",
+                contractor_org: "Scoped Contractor",
+                contractor_inn: "12345678901234",
+                contractor_phone: null,
+                request_id: "request-boundary",
+                request_status: "approved",
+                contractor_job_id: "sub-boundary",
+                uom_id: "pcs",
+                qty_planned: 2,
+                qty_done: 0,
+                qty_left: 2,
+                unit_price: 140,
+                work_status: "ready",
+                contractor_id: "contractor-1",
+                started_at: null,
+                finished_at: null,
+              },
+            ],
+            subcontractCards: [
+              {
+                id: "sub-boundary",
+                status: "approved",
+                object_name: "Object Boundary",
+                work_type: "Boundary Work",
+                qty_planned: 2,
+                uom: "pcs",
+                contractor_org: "Scoped Contractor",
+                contractor_inn: "12345678901234",
+                contractor_phone: null,
+                contract_number: "CB-1",
+                contract_date: "2026-03-30",
+                created_at: "2026-03-30T10:00:00.000Z",
+                created_by: "user-1",
+              },
+            ],
+          }),
+          error: null,
+        });
+      }),
+      from: jest.fn(() => {
+        throw new Error("legacy enrich path must not be used");
+      }),
+    };
+
+    const result = await loadContractorWorksBundle(buildParams(supabaseClient));
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.subcontractCards).toHaveLength(1);
+    expect(supabaseClient.rpc).toHaveBeenCalledTimes(1);
+  });
+
   it("loads contractor works bundle from rpc_scope_v1 without legacy enrich fallback", async () => {
     const rpc = jest.fn(async () => ({
       data: buildScopeEnvelope({
@@ -116,6 +183,50 @@ describe("contractor.loadWorksService", () => {
           result: "success",
           sourceKind: "rpc:contractor_works_bundle_scope_v1",
           fallbackUsed: false,
+        }),
+      ]),
+    );
+  });
+
+  it("surfaces the exact undefined rest regression instead of silently returning empty rows", async () => {
+    const supabaseClient = {
+      rpc: jest.fn(function () {
+        if (!(this as { rest?: unknown })?.rest) {
+          throw new TypeError("Cannot read properties of undefined (reading 'rest')");
+        }
+        return Promise.resolve({ data: buildScopeEnvelope(), error: null });
+      }),
+      from: jest.fn(() => {
+        throw new Error("legacy enrich path must not be used");
+      }),
+    };
+
+    await expect(loadContractorWorksBundle(buildParams(supabaseClient))).rejects.toThrow(
+      "Cannot read properties of undefined (reading 'rest')",
+    );
+
+    expect(supabaseClient.from).not.toHaveBeenCalled();
+    expect(getPlatformObservabilityEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          screen: "contractor",
+          surface: "works_bundle",
+          event: "rpc_transport_boundary_fail",
+          result: "error",
+          errorStage: "rpc_transport_call",
+          sourceKind: "rpc:contractor_works_bundle_scope_v1",
+          extra: expect.objectContaining({
+            owner: "contractor.loadWorksService",
+            rpcName: "contractor_works_bundle_scope_v1",
+          }),
+        }),
+        expect.objectContaining({
+          screen: "contractor",
+          surface: "works_bundle",
+          event: "load_works_bundle",
+          result: "error",
+          errorStage: "load_works_bundle_rpc",
+          sourceKind: "rpc:contractor_works_bundle_scope_v1",
         }),
       ]),
     );

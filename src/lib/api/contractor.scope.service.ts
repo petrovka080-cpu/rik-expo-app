@@ -544,6 +544,11 @@ export async function loadContractorInboxScope(params: ScopeParams): Promise<Con
     const { data, error } = await runContainedRpc(params.supabaseClient, "contractor_inbox_scope_v1", {
       p_my_contractor_id: params.myContractorId,
       p_is_staff: params.isStaff,
+    }, {
+      screen: "contractor",
+      surface: "inbox_scope",
+      owner: "contractor.scope.service",
+      sourceKind: "rpc:contractor_inbox_scope_v1",
     });
     if (error) throw error;
     const scope = parseInboxScope(data);
@@ -584,6 +589,11 @@ export async function loadContractorFactScope(params: FactParams): Promise<Contr
       p_work_item_id: params.workItemId,
       p_my_contractor_id: params.myContractorId,
       p_is_staff: params.isStaff,
+    }, {
+      screen: "contractor",
+      surface: "fact_scope",
+      owner: "contractor.scope.service",
+      sourceKind: "rpc:contractor_fact_scope_v1",
     });
     if (error) throw error;
     if (!data) throw new Error("contractor_fact_scope_v1 returned empty payload");

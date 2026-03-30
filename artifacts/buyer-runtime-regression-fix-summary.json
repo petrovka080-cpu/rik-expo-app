@@ -1,0 +1,38 @@
+{
+  "status": "GREEN",
+  "route": "/buyer",
+  "transportOwner": "queryBoundary -> supabaseClient.rpc",
+  "expected": {
+    "requestId": "e1454c16-1ad5-4d8c-9a75-96ce285ce41f",
+    "requestItemId": "243d4f55-fc08-49d8-a504-f4a173a3cea8",
+    "label": "REQ-RTBUYMNCQBK6Y61N5/2026",
+    "itemName": "RTBUYMNCQBK6Y61N5"
+  },
+  "repeatedPhases": [
+    {
+      "phase": "open",
+      "bodyHasLabel": true,
+      "bodyHasItemName": true
+    },
+    {
+      "refreshMethod": "button_refresh",
+      "phase": "refresh",
+      "bodyHasLabel": true,
+      "bodyHasItemName": true
+    },
+    {
+      "phase": "hard_reload",
+      "bodyHasLabel": true,
+      "bodyHasItemName": true
+    },
+    {
+      "phase": "reopen",
+      "bodyHasLabel": true,
+      "bodyHasItemName": true
+    }
+  ],
+  "blockingConsoleErrors": [],
+  "pageErrors": [],
+  "restRegressionHits": [],
+  "badResponses": []
+}

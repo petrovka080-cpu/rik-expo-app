@@ -1,0 +1,18 @@
+{
+  "status": "GREEN",
+  "rootCause": {
+    "file": "src/lib/api/queryBoundary.ts",
+    "function": "runContainedRpc",
+    "undefinedObject": "detached client.rpc lost this.rest binding",
+    "errorSignature": "Cannot read properties of undefined (reading 'rest')",
+    "impactedRuntimePaths": [
+      "buyer.fetchers -> buyer_summary_inbox_scope_v1",
+      "buyer.fetchers -> buyer_summary_buckets_scope_v1",
+      "contractor.scope.service -> contractor_inbox_scope_v1",
+      "contractor.scope.service -> contractor_fact_scope_v1"
+    ]
+  },
+  "buyerRestRegressionGone": true,
+  "contractorRestRegressionGone": true,
+  "sharedTransportOwnerConsistent": true
+}
