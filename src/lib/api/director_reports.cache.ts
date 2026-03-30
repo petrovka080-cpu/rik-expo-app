@@ -186,8 +186,9 @@ const buildDisciplineSourceRowsRpcCacheKey = (p: { from: string; to: string }): 
 const filterDisciplineRowsByObject = (
   rows: DirectorFactRow[],
   objectName: string | null,
+  objectIdByName?: Record<string, string | null>,
 ): DirectorFactRow[] => {
-  return rows.filter((r) => matchesDirectorObjectIdentity(objectName, r));
+  return rows.filter((r) => matchesDirectorObjectIdentity(objectName, r, objectIdByName));
 };
 
 const getFreshLookupValue = <T,>(

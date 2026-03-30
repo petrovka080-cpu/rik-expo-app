@@ -1,8 +1,10 @@
 import { type DirectorReportFetchMeta } from "./director_reports";
 import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
+import { supabase } from "../supabaseClient";
 import { getMaterialNameResolutionSource, probeNameSources } from "./director_reports.naming";
 import { WITHOUT_WORK } from "./director_reports.shared";
 import { beginPlatformObservability } from "../observability/platformObservability";
+import { loadConstructionObjectCodesByNames } from "./constructionObjectIdentity.read";
 import type {
   DirectorReportsCanonicalDiagnostics,
   DirectorReportsCanonicalSummary,
@@ -161,6 +163,34 @@ const normalizeOptionsState = (value: unknown): DirectorReportScopeOptionsState 
     objectIdByName: Object.fromEntries(
       Object.entries(objectIdByNameRaw).map(([key, item]) => [key, item == null ? null : String(item)]),
     ),
+  };
+};
+
+const augmentOptionsStateWithStableObjectKeys = async (
+  optionsState: DirectorReportScopeOptionsState,
+): Promise<DirectorReportScopeOptionsState> => {
+  const namesToResolve = optionsState.objects.filter((name) => {
+    const normalized = String(name ?? "").trim();
+    return normalized !== "" && !optionsState.objectIdByName[normalized];
+  });
+  if (!namesToResolve.length) return optionsState;
+
+  const codeByName = await loadConstructionObjectCodesByNames(supabase, namesToResolve);
+  if (!codeByName.size) return optionsState;
+
+  const mergedMap: Record<string, string | null> = {
+    ...optionsState.objectIdByName,
+  };
+  for (const name of optionsState.objects) {
+    const normalized = String(name ?? "").trim();
+    if (!normalized || mergedMap[normalized]) continue;
+    const stableCode = codeByName.get(normalized) ?? null;
+    if (stableCode) mergedMap[normalized] = stableCode;
+  }
+
+  return {
+    objects: optionsState.objects,
+    objectIdByName: mergedMap,
   };
 };
 
@@ -419,7 +449,13 @@ export async function loadDirectorReportUiScope(args: {
       skipDisciplinePrices: args.skipDisciplinePrices,
       bypassCache: args.bypassCache,
     });
-    const optionsState = normalizeOptionsState(transportResult.options);
+    const rawOptionsState = normalizeOptionsState(transportResult.options);
+    let optionsState = rawOptionsState;
+    try {
+      optionsState = await augmentOptionsStateWithStableObjectKeys(rawOptionsState);
+    } catch (error) {
+      console.warn("[directorReportsScope] stable_object_key_augment_failed", error);
+    }
     const normalizedReport = normalizeReportPayload(transportResult.report);
     const normalizedDiscipline = normalizeDisciplinePayload(transportResult.discipline);
     const canonicalDecorations = await buildDirectorReportCanonicalDecorations({

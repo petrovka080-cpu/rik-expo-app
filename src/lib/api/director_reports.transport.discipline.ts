@@ -110,9 +110,13 @@ async function fetchAllFactRowsFromTables(p: {
   from: string;
   to: string;
   objectName: string | null;
+  objectIdByName?: Record<string, string | null>;
   skipMaterialNameResolve?: boolean;
 }): Promise<DirectorFactRow[]> {
   const tTotal = nowMs();
+  const selectedStableObjectKey =
+    p.objectName == null ? null : (p.objectIdByName?.[String(p.objectName).trim()] ?? null);
+  const shouldUseLegacyObjectNameFilter = p.objectName != null && !selectedStableObjectKey;
   const issuesById = new Map<string, WarehouseIssueFactRow>();
   const pageSize = 2500;
   let fromIdx = 0;
@@ -125,7 +129,7 @@ async function fetchAllFactRowsFromTables(p: {
 
     if (p.from) query = query.gte("iss_date", toRangeStart(p.from));
     if (p.to) query = query.lte("iss_date", toRangeEnd(p.to));
-    if (p.objectName != null) query = query.eq("object_name", p.objectName);
+    if (shouldUseLegacyObjectNameFilter) query = query.eq("object_name", p.objectName);
 
     query = query
       .order("iss_date", { ascending: false })
@@ -290,7 +294,7 @@ async function fetchAllFactRowsFromTables(p: {
       request_zone_name: req?.zone_code ?? null,
     });
 
-    if (!matchesDirectorObjectIdentity(p.objectName, context)) continue;
+    if (!matchesDirectorObjectIdentity(p.objectName, context, p.objectIdByName)) continue;
 
     const row = normalizeDirectorFactRow({
       issue_id: issueId,
@@ -313,9 +317,13 @@ async function fetchDisciplineFactRowsFromTables(p: {
   from: string;
   to: string;
   objectName: string | null;
+  objectIdByName?: Record<string, string | null>;
   skipMaterialNameResolve?: boolean;
 }): Promise<DirectorFactRow[]> {
   const tTotal = nowMs();
+  const selectedStableObjectKey =
+    p.objectName == null ? null : (p.objectIdByName?.[String(p.objectName).trim()] ?? null);
+  const shouldUseLegacyObjectNameFilter = p.objectName != null && !selectedStableObjectKey;
 
   const tryJoinedIssueItemsPath = async (): Promise<DirectorFactRow[] | null> => {
     const tJoined = nowMs();
@@ -331,7 +339,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
           .eq("warehouse_issues.status", "Подтверждено");
         if (p.from) query = query.gte("warehouse_issues.iss_date", toRangeStart(p.from));
         if (p.to) query = query.lte("warehouse_issues.iss_date", toRangeEnd(p.to));
-        if (p.objectName != null) query = query.eq("warehouse_issues.object_name", p.objectName);
+        if (shouldUseLegacyObjectNameFilter) query = query.eq("warehouse_issues.object_name", p.objectName);
         query = query.order("issue_id", { ascending: false }).range(fromIdx, fromIdx + pageSize - 1);
 
         const { data, error } = await query;
@@ -417,7 +425,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
 
     if (p.from) query = query.gte("iss_date", toRangeStart(p.from));
     if (p.to) query = query.lte("iss_date", toRangeEnd(p.to));
-    if (p.objectName != null) query = query.eq("object_name", p.objectName);
+    if (shouldUseLegacyObjectNameFilter) query = query.eq("object_name", p.objectName);
 
     query = query
       .order("iss_date", { ascending: false })
@@ -603,7 +611,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
       use_free_issue_object_fallback: false,
       force_without_level_when_issue_work_name: true,
     });
-    if (!matchesDirectorObjectIdentity(p.objectName, context)) continue;
+    if (!matchesDirectorObjectIdentity(p.objectName, context, p.objectIdByName)) continue;
 
     const row = normalizeDirectorFactRow({
       issue_id: issueId,
@@ -635,7 +643,12 @@ async function fetchFactRowsForDiscipline(p: {
   let rows: DirectorFactRow[] = [];
   try {
     chain.push("acc_rpc");
-    rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
+    rows = await fetchDirectorFactViaAccRpc({
+      from: p.from,
+      to: p.to,
+      objectName,
+      objectIdByName: p.objectIdByName,
+    });
     if (rows.length) return { rows, source: "acc_rpc", chain };
   } catch (error) {
     recordDirectorReportsTransportWarning("discipline_rows_acc_rpc_failed", error, {
@@ -650,7 +663,10 @@ async function fetchFactRowsForDiscipline(p: {
       chain.push("source_rpc");
       const allRows = await fetchDirectorDisciplineSourceRowsViaRpc({ from: p.from, to: p.to });
       markDisciplineSourceRpcStatus("available");
-      const filteredRows = p.objectName == null ? allRows : filterDisciplineRowsByObject(allRows, p.objectName);
+      const filteredRows =
+        p.objectName == null
+          ? allRows
+          : filterDisciplineRowsByObject(allRows, p.objectName, p.objectIdByName);
       return { rows: filteredRows, source: "source_rpc", chain };
     } catch (error: unknown) {
       if (isMissingCanonicalRpcError(error, "director_report_fetch_discipline_source_rows_v1")) {
@@ -681,6 +697,7 @@ async function fetchFactRowsForDiscipline(p: {
         from: p.from,
         to: p.to,
         objectName,
+        objectIdByName: p.objectIdByName,
         skipMaterialNameResolve: p.skipMaterialNameResolve,
       });
       if (rows.length) return { rows, source: "tables", chain };

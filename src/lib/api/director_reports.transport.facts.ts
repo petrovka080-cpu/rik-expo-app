@@ -26,6 +26,7 @@ async function fetchDirectorFactViaAccRpc(p: {
   from: string;
   to: string;
   objectName: string | null;
+  objectIdByName?: Record<string, string | null>;
 }): Promise<DirectorFactRow[]> {
   const heads = await fetchIssueHeadsViaAccRpc({ from: p.from, to: p.to });
   if (!heads.length) return [];
@@ -101,7 +102,7 @@ async function fetchDirectorFactViaAccRpc(p: {
       request_zone_name: request?.zone_code ?? null,
     });
 
-    if (!matchesDirectorObjectIdentity(p.objectName, context)) continue;
+    if (!matchesDirectorObjectIdentity(p.objectName, context, p.objectIdByName)) continue;
 
     headCtxByIssueId.set(issueId, {
       issueId,

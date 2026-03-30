@@ -60,6 +60,14 @@ const normalizeRequestLookupRow = (value: unknown): RequestLookupRow | null => {
     object_id: row.object_id == null ? null : String(row.object_id).trim(),
     object_name: row.object_name == null ? null : String(row.object_name),
     object_type_code: row.object_type_code == null ? null : String(row.object_type_code).trim(),
+    object_identity_key:
+      row.object_identity_key == null ? null : String(row.object_identity_key).trim(),
+    object_identity_name:
+      row.object_identity_name == null ? null : String(row.object_identity_name),
+    object_identity_status:
+      row.object_identity_status == null ? null : String(row.object_identity_status).trim(),
+    object_identity_source:
+      row.object_identity_source == null ? null : String(row.object_identity_source).trim(),
     system_code: row.system_code == null ? null : String(row.system_code).trim(),
     level_code: row.level_code == null ? null : String(row.level_code).trim(),
     zone_code: row.zone_code == null ? null : String(row.zone_code).trim(),

@@ -15,6 +15,10 @@ import {
   requestsSupportsSubmittedAt,
   resolveRequestsReadableColumns,
 } from "./requests.read-capabilities";
+import {
+  loadRequestObjectIdentityByRequestIds,
+  type RequestObjectIdentityScopeRow,
+} from "./constructionObjectIdentity.read";
 
 type UnknownRow = Record<string, unknown>;
 
@@ -134,6 +138,22 @@ const mergeCanonicalRequestCounts = (
       item_count_active: counts?.item_count_active ?? 0,
       item_qty_total: counts?.item_qty_total ?? 0,
       item_qty_active: counts?.item_qty_active ?? 0,
+    };
+  });
+
+const mergeRequestObjectIdentity = (
+  rows: RequestLookupRow[],
+  identityByRequestId: Map<string, RequestObjectIdentityScopeRow>,
+): RequestLookupRow[] =>
+  rows.map((row) => {
+    const identity = identityByRequestId.get(row.id);
+    if (!identity) return row;
+    return {
+      ...row,
+      object_identity_key: identity.construction_object_code ?? null,
+      object_identity_name: identity.construction_object_name ?? row.object_name ?? null,
+      object_identity_status: identity.identity_status ?? null,
+      object_identity_source: identity.identity_source ?? null,
     };
   });
 
@@ -262,14 +282,16 @@ export async function loadCanonicalRequestsByIds(
       const rows = Array.isArray(data)
         ? data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
         : [];
-      const seen = new Set(rows.map((row) => row.id));
-      for (const row of rows) {
+      const identityByRequestId = await loadRequestObjectIdentityByRequestIds(supabase, missingIds);
+      const mergedRows = mergeRequestObjectIdentity(rows, identityByRequestId);
+      const seen = new Set(mergedRows.map((row) => row.id));
+      for (const row of mergedRows) {
         setLookupValue(requestLookupCache, row.id, row);
       }
       for (const id of missingIds) {
         if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
       }
-      return rows;
+      return mergedRows;
     })();
     requestLookupInFlight.set(inFlightKey, pending);
   }
@@ -324,21 +346,26 @@ export async function loadCanonicalRequestsWindow(
   const rows = Array.isArray(data)
     ? data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
     : [];
+  const identityByRequestId = await loadRequestObjectIdentityByRequestIds(
+    supabase,
+    rows.map((row) => row.id),
+  );
+  const mergedRows = mergeRequestObjectIdentity(rows, identityByRequestId);
 
-  for (const row of rows) {
+  for (const row of mergedRows) {
     setLookupValue(requestLookupCache, row.id, row);
   }
 
   return {
     rows: includeItemCounts
       ? mergeCanonicalRequestCounts(
-          rows,
+          mergedRows,
           await loadCanonicalRequestItemCountsByRequestIds(
             supabase,
-            rows.map((row) => row.id),
+            mergedRows.map((row) => row.id),
           ),
         )
-      : rows,
+      : mergedRows,
     meta,
   };
 }

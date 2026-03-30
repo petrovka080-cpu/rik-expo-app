@@ -45,6 +45,10 @@ import {
   type DirectorReportTrackedResult,
 } from "./director_reports.service.shared";
 
+const isUuidLike = (value: string | null): boolean =>
+  value != null &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
 export async function fetchDirectorWarehouseReportTracked(p: {
   from: string;
   to: string;
@@ -58,6 +62,7 @@ export async function fetchDirectorWarehouseReportTracked(p: {
   const pTo = rpcDate(p.to, "2099-12-31");
   const selectedObjectId =
     objectIdentity == null ? null : (p.objectIdByName[objectIdentity.object_name_canonical] ?? null);
+  const selectedLegacyObjectId = isUuidLike(selectedObjectId) ? selectedObjectId : null;
   const cKey = canonicalKey("materials", pFrom, pTo, objectName);
   const chain: DirectorReportFetchBranch[] = [];
 
@@ -112,14 +117,14 @@ export async function fetchDirectorWarehouseReportTracked(p: {
     logTiming("report.canonical_materials_fallback", tCanonical);
   }
 
-  if (objectName == null || selectedObjectId != null) {
+  if (objectName == null || selectedLegacyObjectId != null) {
     const t0 = nowMs();
     chain.push("legacy_fast_rpc");
     try {
       const fast = await fetchViaLegacyRpc({
         from: pFrom,
         to: pTo,
-        objectId: selectedObjectId,
+        objectId: selectedLegacyObjectId,
         objectName,
       });
       if (shouldRejectAllObjectsEmptyMaterialsPayload(fast, objectName, p.objectIdByName)) {
@@ -142,6 +147,7 @@ export async function fetchDirectorWarehouseReportTracked(p: {
         to: pTo,
         objectName,
         selectedObjectId,
+        selectedLegacyObjectId,
       });
       logTiming("report.fast_rpc_failed_fallback", t0);
     }
@@ -151,7 +157,12 @@ export async function fetchDirectorWarehouseReportTracked(p: {
   let rowBranch: DirectorReportFetchBranch | null = null;
   chain.push("acc_rpc");
   try {
-    rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName });
+    rows = await fetchDirectorFactViaAccRpc({
+      from: pFrom,
+      to: pTo,
+      objectName,
+      objectIdByName: p.objectIdByName,
+    });
     if (rows.length) rowBranch = "acc_rpc";
   } catch (error) {
     recordDirectorReportsServiceWarning("report_acc_rpc_failed", error, {
@@ -168,7 +179,10 @@ export async function fetchDirectorWarehouseReportTracked(p: {
     try {
       const allRows = await fetchDirectorDisciplineSourceRowsViaRpc({ from: pFrom, to: pTo });
       markDisciplineSourceRpcStatus("available");
-      rows = objectName == null ? allRows : filterDisciplineRowsByObject(allRows, objectName);
+      rows =
+        objectName == null
+          ? allRows
+          : filterDisciplineRowsByObject(allRows, objectName, p.objectIdByName);
       if (rows.length) rowBranch = "source_rpc";
       logTiming("report.source_rpc", tSource);
     } catch (error: unknown) {
@@ -199,7 +213,12 @@ export async function fetchDirectorWarehouseReportTracked(p: {
   if (!rows.length) {
     chain.push("tables");
     try {
-      rows = await fetchDisciplineFactRowsFromTables({ from: pFrom, to: pTo, objectName });
+      rows = await fetchDisciplineFactRowsFromTables({
+        from: pFrom,
+        to: pTo,
+        objectName,
+        objectIdByName: p.objectIdByName,
+      });
       if (rows.length) rowBranch = "tables";
     } catch (error) {
       recordDirectorReportsServiceWarning("report_discipline_tables_failed", error, {
@@ -214,7 +233,12 @@ export async function fetchDirectorWarehouseReportTracked(p: {
   if (!rows.length) {
     chain.push("tables");
     try {
-      rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName });
+      rows = await fetchAllFactRowsFromTables({
+        from: pFrom,
+        to: pTo,
+        objectName,
+        objectIdByName: p.objectIdByName,
+      });
       if (rows.length) rowBranch = "tables";
     } catch (error) {
       recordDirectorReportsServiceWarning("report_tables_failed", error, {
@@ -261,10 +285,14 @@ export async function fetchDirectorWarehouseReportTracked(p: {
   }
 
   chain.push("legacy_fast_rpc");
+  if (objectName != null && selectedLegacyObjectId == null) {
+    throw new Error("director_report_legacy_fast_rpc_missing_uuid_object_identity");
+  }
+
   const fallback = await fetchViaLegacyRpc({
     from: pFrom,
     to: pTo,
-    objectId: selectedObjectId,
+    objectId: selectedLegacyObjectId,
     objectName,
   });
   legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(fallback) });

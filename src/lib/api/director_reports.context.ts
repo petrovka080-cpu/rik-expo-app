@@ -60,10 +60,21 @@ const getDirectorFactObjectIdentity = (
 const matchesDirectorObjectIdentity = (
   selectedObjectName: string | null,
   row: Pick<DirectorFactRowNormalized, "object_name_resolved" | "object_id_resolved">,
+  objectIdByName?: Record<string, string | null>,
 ): boolean => {
   if (selectedObjectName == null) return true;
-  const target = resolveDirectorObjectIdentity({ object_name_display: selectedObjectName });
+  const targetIdentity = resolveDirectorObjectIdentity({ object_name_display: selectedObjectName });
+  const target = resolveDirectorObjectIdentity({
+    object_name_display: selectedObjectName,
+    object_id_resolved:
+      objectIdByName?.[targetIdentity.object_name_canonical] ??
+      objectIdByName?.[selectedObjectName] ??
+      null,
+  });
   const identity = getDirectorFactObjectIdentity(row);
+  if (target.object_id_resolved && identity.object_id_resolved) {
+    return identity.object_id_resolved === target.object_id_resolved;
+  }
   return identity.object_name_canonical === target.object_name_canonical;
 };
 
@@ -322,6 +333,8 @@ const resolveDirectorFactContext = (
   const requestZoneName = String(input.request_zone_name ?? "").trim();
   const freeCtx = parseFreeIssueContext(input.issue_note ?? null);
   const request = input.request ?? null;
+  const requestIdentityKey = String(request?.object_identity_key ?? "").trim() || null;
+  const requestIdentityName = String(request?.object_identity_name ?? "").trim() || null;
 
   const itemKindRaw = String(input.item_kind ?? "").trim().toLowerCase();
   const itemKindWorkFallback =
@@ -332,6 +345,7 @@ const resolveDirectorFactContext = (
 
   const objectNameResolved =
     firstNonEmpty(
+      requestIdentityName,
       requestObjectNameById,
       request?.object_name,
       requestObjectTypeName,
@@ -358,7 +372,7 @@ const resolveDirectorFactContext = (
   return {
     request_id: requestId,
     request_item_id: requestItemId,
-    object_id_resolved: String(request?.object_id ?? "").trim() || issueObjectId,
+    object_id_resolved: requestIdentityKey || String(request?.object_id ?? "").trim() || issueObjectId,
     object_name_resolved: objectNameResolved,
     work_name_resolved: workNameResolved,
     level_name_resolved: levelNameResolved,

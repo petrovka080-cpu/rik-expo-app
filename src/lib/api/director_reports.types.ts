@@ -200,6 +200,10 @@ type RequestLookupRow = {
   object_id: string | null;
   object_name: string | null;
   object_type_code: string | null;
+  object_identity_key?: string | null;
+  object_identity_name?: string | null;
+  object_identity_status?: string | null;
+  object_identity_source?: string | null;
   system_code: string | null;
   level_code: string | null;
   zone_code: string | null;
