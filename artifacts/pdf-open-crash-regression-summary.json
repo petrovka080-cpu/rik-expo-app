@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "checks": {
+    "boundaryChecks": {
+      "mobileViewerNoLongerEmbedsPdfWebView": true,
+      "webViewerStillEmbedded": true,
+      "viewerUsesNativeHandoff": true,
+      "viewerNoLongerImportsWebView": true,
+      "previewRouteStillCanonical": true,
+      "attachmentOpenStillNativeHandoff": true,
+      "pdfRunnerNativeHandoff": true
+    },
+    "testChecks": {
+      "jestSuccess": true,
+      "viewerRemoteSuccess": true,
+      "viewerLocalSuccess": true,
+      "invalidViewerSourceControlled": true,
+      "documentActionViewerRoute": true,
+      "attachmentRemoteSuccess": true,
+      "attachmentLocalSuccess": true,
+      "attachmentInvalidControlled": true
+    },
+    "runtimeChecks": {
+      "directorPdfOpen": true,
+      "accountantPaymentPdfOpen": true,
+      "warehousePdfOpen": true,
+      "attachmentPdfViewerBoundary": true,
+      "invalidSourceControlled": true,
+      "noFatalCrash": true,
+      "processAliveAfterOpen": true,
+      "metroManualEvidencePresent": true
+    }
+  },
+  "tsc": {
+    "success": true,
+    "outputSnippet": [
+      ""
+    ]
+  },
+  "jest": {
+    "success": true,
+    "numPassedTests": 15,
+    "numFailedTests": 0
+  }
+}

@@ -10,14 +10,11 @@ import {
   preparePdfDocument,
   previewPdfDocument,
   sharePdfDocument,
+  type PdfViewerRouterLike,
 } from "../documents/pdfDocumentActions";
 import { beginPdfLifecycleObservation } from "./pdfLifecycle";
 import { normalizeRuTextForHtml } from "../text/encoding";
 import type { BusyLike } from "../pdfRunner";
-
-type PdfRouterLike = {
-  push: (href: { pathname: string; params: Record<string, string> }) => void;
-};
 
 type BuildGeneratedPdfDescriptorArgs = {
   getSource?: () => Promise<PdfSource>;
@@ -170,7 +167,7 @@ export async function prepareGeneratedPdf(
 }
 
 export async function prepareAndPreviewGeneratedPdf(args: PrepareGeneratedPdfArgs & {
-  router?: PdfRouterLike;
+  router?: PdfViewerRouterLike;
 }): Promise<DocumentDescriptor> {
   const document = await prepareGeneratedPdf(args);
   await previewPdfDocument(document, { router: args.router });

@@ -73,6 +73,44 @@ describe("pdfDocumentActions", () => {
     ).toBe(true);
   });
 
+  it("navigates to the shared viewer route with a prepared session when router is provided", async () => {
+    const push = jest.fn();
+    mockCreateDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-1",
+        assetId: "asset-1",
+        status: "ready",
+        createdAt: "2026-03-30T10:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-1",
+        uri: "file:///cache/payment.pdf",
+        fileSource: {
+          kind: "local-file",
+          uri: "file:///cache/payment.pdf",
+        },
+        sourceKind: "local-file",
+        fileName: "payment.pdf",
+        title: "Payment PDF",
+        mimeType: "application/pdf",
+        documentType: "payment_order",
+        originModule: "accountant",
+        source: "generated",
+        createdAt: "2026-03-30T10:00:00.000Z",
+      },
+    });
+
+    await previewPdfDocument(baseDocument, {
+      router: { push },
+    });
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: "/pdf-viewer",
+      params: { sessionId: "session-1" },
+    });
+    expect(mockOpenPdfPreview).not.toHaveBeenCalled();
+  });
+
   it("Open fail is visible during direct preview fallback", async () => {
     mockCreateDocumentPreviewSession.mockResolvedValueOnce({
       session: {

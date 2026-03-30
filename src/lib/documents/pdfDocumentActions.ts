@@ -1,3 +1,4 @@
+import type { Href } from "expo-router";
 import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { createDocumentPreviewSession } from "./pdfDocumentSessions";
@@ -29,6 +30,10 @@ type PreparePdfDocumentArgs = {
   descriptor: Omit<DocumentDescriptor, "uri"> & { uri?: string };
   resolveSource?: () => Promise<PdfSource> | PdfSource;
   getRemoteUrl?: () => Promise<string> | string;
+};
+
+export type PdfViewerRouterLike = {
+  push: (href: Href, options?: unknown) => void;
 };
 
 export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<DocumentDescriptor> {
@@ -119,7 +124,7 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
 export async function previewPdfDocument(
   doc: DocumentDescriptor,
   opts?: {
-    router?: { push: (href: { pathname: string; params: Record<string, string> }) => void };
+    router?: PdfViewerRouterLike;
   },
 ): Promise<void> {
   const outputObservation = beginPdfLifecycleObservation({
@@ -192,6 +197,10 @@ export async function previewPdfDocument(
       sizeBytes: asset.sizeBytes,
     });
     if (opts?.router) {
+      const viewerHref: Href = {
+        pathname: "/pdf-viewer",
+        params: { sessionId: session.sessionId },
+      };
       console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
         sessionId: session.sessionId,
         documentType: asset.documentType,
@@ -203,10 +212,7 @@ export async function previewPdfDocument(
         fileName: asset.fileName,
       });
       try {
-        opts.router.push({
-          pathname: "/pdf-viewer",
-          params: { sessionId: session.sessionId },
-        });
+        opts.router.push(viewerHref);
         openObservation.success({
           sourceKind: asset.sourceKind,
           extra: {

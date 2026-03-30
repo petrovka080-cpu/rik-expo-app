@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { WebView } from "react-native-webview";
 import * as FileSystemModule from "expo-file-system/legacy";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -27,10 +26,9 @@ import {
   sharePdfDocument,
 } from "../src/lib/documents/pdfDocumentActions";
 import {
-  getReadAccessParentUri,
+  resolvePdfViewerDirectSnapshot,
   resolvePdfViewerResolution,
   resolvePdfViewerState,
-  type PdfViewerResolution as ViewerResolution,
   type PdfViewerState as ViewerState,
 } from "../src/lib/pdf/pdfViewerContract";
 import { openPdfPreview } from "../src/lib/pdfRunner";
@@ -115,11 +113,48 @@ async function printPdfAsset(asset: DocumentAsset) {
 }
 
 export default function PdfViewerScreen() {
-  const params = useLocalSearchParams<{ sessionId?: string }>();
+  const params = useLocalSearchParams<{
+    sessionId?: string;
+    uri?: string;
+    fileName?: string;
+    title?: string;
+    sourceKind?: string;
+    documentType?: string;
+    originModule?: string;
+    source?: string;
+    entityId?: string;
+  }>();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const sessionId = React.useMemo(() => String(params.sessionId || "").trim(), [params.sessionId]);
-  const snapshot = React.useMemo(() => getDocumentSessionSnapshot(sessionId), [sessionId]);
+  const directSnapshotParams = React.useMemo(
+    () => ({
+      uri: params.uri,
+      fileName: params.fileName,
+      title: params.title,
+      sourceKind: params.sourceKind,
+      documentType: params.documentType,
+      originModule: params.originModule,
+      source: params.source,
+      entityId: params.entityId,
+    }),
+    [
+      params.documentType,
+      params.entityId,
+      params.fileName,
+      params.originModule,
+      params.source,
+      params.sourceKind,
+      params.title,
+      params.uri,
+    ],
+  );
+  const resolveSnapshot = React.useCallback(() => {
+    const registrySnapshot = getDocumentSessionSnapshot(sessionId);
+    if (registrySnapshot.session) return registrySnapshot;
+    return resolvePdfViewerDirectSnapshot(directSnapshotParams) ?? { session: null, asset: null };
+  }, [directSnapshotParams, sessionId]);
+  const snapshot = React.useMemo(() => resolveSnapshot(), [resolveSnapshot]);
   const [session, setSession] = React.useState<DocumentSession | null>(snapshot.session);
   const [asset, setAsset] = React.useState<DocumentAsset | null>(snapshot.asset);
   const [state, setState] = React.useState<ViewerState>(
@@ -129,14 +164,13 @@ export default function PdfViewerScreen() {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [isReadyToRender, setIsReadyToRender] = React.useState(false);
   const [chromeVisible, setChromeVisible] = React.useState(true);
-  const [usedExternalFallback, setUsedExternalFallback] = React.useState(false);
+  const [nativeHandoffCompleted, setNativeHandoffCompleted] = React.useState(false);
   const [loadAttempt, setLoadAttempt] = React.useState(0);
   const [webRenderUri, setWebRenderUri] = React.useState<string | null>(null);
   const openedAtRef = React.useRef<number>(Date.now());
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const renderDelayRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialAssetUriRef = React.useRef("");
-  const fallbackAttemptedRef = React.useRef(false);
   const isMountedRef = React.useRef(true);
   const webRenderUriRef = React.useRef<string | null>(null);
   const resolvedSource = React.useMemo(
@@ -199,13 +233,13 @@ export default function PdfViewerScreen() {
   }, [params.sessionId, sessionId, snapshot.asset?.uri]);
 
   const syncSnapshot = React.useCallback(() => {
-    const next = getDocumentSessionSnapshot(sessionId);
+    const next = resolveSnapshot();
     setSession(next.session);
     setAsset(next.asset);
     setErrorText(next.session?.errorMessage || "");
     setState(resolvePdfViewerState(next.session, next.asset, VIEWER_PLATFORM));
     return next;
-  }, [sessionId]);
+  }, [resolveSnapshot]);
 
   const clearLoadingTimeout = React.useCallback(() => {
     if (loadingTimeoutRef.current) {
@@ -274,41 +308,42 @@ export default function PdfViewerScreen() {
     }
   }, [clearLoadingTimeout, syncSnapshot]);
 
-  const handoffLocalPreview = React.useCallback(
-    async (resolvedAsset: DocumentAsset, trigger: "fallback" | "manual") => {
+  const handoffPdfPreview = React.useCallback(
+    async (resolvedAsset: DocumentAsset, trigger: "primary" | "manual") => {
       clearLoadingTimeout();
       clearRenderDelay();
       setMenuOpen(false);
       setErrorText("");
       setState("loading");
       setIsReadyToRender(true);
+      setNativeHandoffCompleted(false);
 
       try {
-        console.info("[pdf-viewer] local_handoff_start", {
+        console.info("[pdf-viewer] native_handoff_start", {
           sessionId,
           documentType: resolvedAsset.documentType,
           originModule: resolvedAsset.originModule,
           uri: resolvedAsset.uri,
           scheme: getUriScheme(resolvedAsset.uri),
-          sourceKind: "local-file",
+          sourceKind: resolvedAsset.sourceKind,
           trigger,
         });
         await openPdfPreview(resolvedAsset.uri, resolvedAsset.fileName);
         if (!isMountedRef.current) return;
-        setUsedExternalFallback(true);
+        setNativeHandoffCompleted(true);
         markReady();
-        console.info("[pdf-viewer] local_handoff_ready", {
+        console.info("[pdf-viewer] native_handoff_ready", {
           sessionId,
           documentType: resolvedAsset.documentType,
           originModule: resolvedAsset.originModule,
           uri: resolvedAsset.uri,
-          sourceKind: "local-file",
+          sourceKind: resolvedAsset.sourceKind,
           trigger,
         });
       } catch (error) {
         if (!isMountedRef.current) return;
         const message = error instanceof Error ? error.message : String(error);
-        console.error("[pdf-viewer] local_handoff_error", {
+        console.error("[pdf-viewer] native_handoff_error", {
           sessionId,
           documentType: resolvedAsset.documentType,
           originModule: resolvedAsset.originModule,
@@ -322,36 +357,15 @@ export default function PdfViewerScreen() {
     [clearLoadingTimeout, clearRenderDelay, markError, markReady, sessionId],
   );
 
-  const triggerEmbeddedFallback = React.useCallback(
-    async (resolvedAsset: DocumentAsset, reason: string) => {
-      if (fallbackAttemptedRef.current) {
-        markError(reason, "render");
-        return;
-      }
-      fallbackAttemptedRef.current = true;
-      console.warn("[pdf-viewer] embedded_render_failed_fallback_external", {
-        sessionId,
-        documentType: resolvedAsset.documentType,
-        originModule: resolvedAsset.originModule,
-        uri: resolvedAsset.uri,
-        sourceKind: resolvedAsset.sourceKind,
-        reason,
-      });
-      await handoffLocalPreview(resolvedAsset, "fallback");
-    },
-    [handoffLocalPreview, markError, sessionId],
-  );
-
   React.useEffect(() => {
     openedAtRef.current = Date.now();
     clearLoadingTimeout();
     clearRenderDelay();
     clearWebRenderUri();
     setIsReadyToRender(false);
-    setUsedExternalFallback(false);
+    setNativeHandoffCompleted(false);
     setChromeVisible(true);
     setMenuOpen(false);
-    fallbackAttemptedRef.current = false;
     const next = syncSnapshot();
 
     if (!next.session) {
@@ -424,6 +438,10 @@ export default function PdfViewerScreen() {
       }
 
       enterLoading();
+      if (resolution.kind === "resolved-native-handoff") {
+        await handoffPdfPreview(resolution.asset, "primary");
+        return;
+      }
       if (Platform.OS === "web" && resolution.kind === "resolved-embedded") {
         if (resolution.sourceKind === "remote-url") {
           try {
@@ -509,7 +527,7 @@ export default function PdfViewerScreen() {
     clearRenderDelay,
     clearWebRenderUri,
     enterLoading,
-    handoffLocalPreview,
+    handoffPdfPreview,
     markError,
     markReady,
     sessionId,
@@ -583,8 +601,7 @@ export default function PdfViewerScreen() {
     }
     clearWebRenderUri();
     setErrorText("");
-    setUsedExternalFallback(false);
-    fallbackAttemptedRef.current = false;
+    setNativeHandoffCompleted(false);
     setLoadAttempt((value) => value + 1);
   }, [clearWebRenderUri, syncSnapshot]);
 
@@ -615,25 +632,9 @@ export default function PdfViewerScreen() {
   const showChrome = Platform.OS === "web" ? true : chromeVisible;
   const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
   const headerHeight = headerBarHeight + (Platform.OS === "web" ? 0 : insets.top);
-  const iosWebViewContentInset =
-    Platform.OS === "ios"
-      ? {
-          top: headerHeight,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }
-      : undefined;
-  const iosWebViewContentOffset =
-    Platform.OS === "ios"
-      ? {
-          x: 0,
-          y: -headerHeight,
-        }
-      : undefined;
   const pageIndicatorText = state === "ready" ? "1 / 1" : "…";
   const showPageIndicator =
-    Boolean(asset) && resolvedSource.kind === "resolved-embedded" && !usedExternalFallback;
+    Boolean(asset) && resolvedSource.kind === "resolved-embedded";
 
   const toggleChrome = React.useCallback(() => {
     if (Platform.OS === "web") return;
@@ -765,6 +766,30 @@ export default function PdfViewerScreen() {
     if (
       resolvedSource.kind !== "resolved-embedded"
     ) {
+      if (resolvedSource.kind === "resolved-native-handoff") {
+        if (!nativeHandoffCompleted) {
+          return (
+            <View style={styles.loadingState}>
+              <ActivityIndicator size="large" color="#FFFFFF" />
+              <Text style={styles.loadingText}>Opening document...</Text>
+            </View>
+          );
+        }
+        return (
+          <Pressable style={styles.viewerBody} onPress={toggleChrome}>
+            <CenteredPanel
+              title="Document opened in PDF app"
+              subtitle="Mobile PDF preview now uses the device viewer to avoid native renderer crashes. Use Back to return to the app, or open it again from here."
+              actionLabel="Open again"
+              onAction={() => {
+                void handoffPdfPreview(resolvedSource.asset, "manual");
+              }}
+              secondaryLabel={asset ? "Share" : undefined}
+              onSecondaryAction={asset ? () => void onShare() : undefined}
+            />
+          </Pressable>
+        );
+      }
       return (
         <CenteredPanel
           title="Unable to open document"
@@ -787,23 +812,6 @@ export default function PdfViewerScreen() {
           <ActivityIndicator size="large" color="#FFFFFF" />
           <Text style={styles.loadingText}>Preparing viewer...</Text>
         </View>
-      );
-    }
-
-    if (usedExternalFallback && resolvedSource.sourceKind === "local-file") {
-      return (
-        <Pressable style={styles.viewerBody} onPress={toggleChrome}>
-          <CenteredPanel
-            title="Document opened in PDF app"
-            subtitle="Embedded preview failed, so the same local PDF file was opened through the device viewer. Use Back to return to the app, or open it again from here."
-            actionLabel="Open again"
-            onAction={() => {
-              void handoffLocalPreview(resolvedSource.asset, "manual");
-            }}
-            secondaryLabel={asset ? "Share" : undefined}
-            onSecondaryAction={asset ? () => void onShare() : undefined}
-          />
-        </Pressable>
       );
     }
 
@@ -849,115 +857,7 @@ export default function PdfViewerScreen() {
             </View>
           </View>
         ) : (
-          <WebView
-            source={source}
-            originWhitelist={["*"]}
-            allowFileAccess
-            allowFileAccessFromFileURLs
-            allowUniversalAccessFromFileURLs
-            bounces={false}
-            contentInset={iosWebViewContentInset}
-            contentOffset={iosWebViewContentOffset}
-            contentInsetAdjustmentBehavior="never"
-            automaticallyAdjustContentInsets={false}
-            nestedScrollEnabled={false}
-            overScrollMode="never"
-            scalesPageToFit
-            allowingReadAccessToURL={
-              Platform.OS === "ios" ? getReadAccessParentUri(asset.uri) : undefined
-            }
-            setSupportMultipleWindows={false}
-            onLoadStart={() => enterLoading()}
-            onLoadEnd={() => markReady()}
-            onLoad={() => {
-              console.info("[pdf-viewer] viewer_native_loaded", {
-                sessionId,
-                uri: asset.uri,
-                scheme: getUriScheme(asset.uri),
-              });
-            }}
-            onShouldStartLoadWithRequest={(request) => {
-              const requestUrl = String(request.url || "");
-              const requestScheme = getUriScheme(requestUrl);
-              const initialUrl = initialAssetUriRef.current;
-              const isInitial = requestUrl === initialUrl;
-              const isSameDocument = !!initialUrl && requestUrl.startsWith(initialUrl);
-              const allow =
-                isInitial ||
-                isSameDocument ||
-                requestUrl === "about:blank" ||
-                requestScheme === "file" ||
-                requestScheme === "http" ||
-                requestScheme === "https";
-
-              if (!allow) {
-                console.error("[pdf-viewer] blocked_mobile_navigation", {
-                  requestUrl,
-                  requestScheme,
-                  initialUrl,
-                  documentType: asset?.documentType ?? null,
-                  originModule: asset?.originModule ?? null,
-                });
-                if (resolvedSource.sourceKind === "local-file") {
-                  void triggerEmbeddedFallback(
-                    resolvedSource.asset,
-                    `Blocked unsupported mobile navigation: ${requestScheme || "unknown"}`,
-                  );
-                } else {
-                  markError(
-                    `Blocked unsupported mobile navigation: ${requestScheme || "unknown"}`,
-                    "render",
-                  );
-                }
-              }
-              return allow;
-            }}
-            onOpenWindow={(event) => {
-              console.error("[pdf-viewer] blocked_mobile_window_open", {
-                targetUrl: event.nativeEvent.targetUrl,
-                documentType: asset?.documentType ?? null,
-                originModule: asset?.originModule ?? null,
-              });
-              if (resolvedSource.sourceKind === "local-file") {
-                void triggerEmbeddedFallback(
-                  resolvedSource.asset,
-                  "Blocked external handoff during mobile preview.",
-                );
-              } else {
-                markError("Blocked external handoff during mobile preview.", "render");
-              }
-            }}
-            onHttpError={(event) => {
-              const message =
-                event.nativeEvent.description || `HTTP ${event.nativeEvent.statusCode}`;
-              console.error("[pdf-viewer] viewer_http_error", {
-                sessionId,
-                statusCode: event.nativeEvent.statusCode,
-                description: event.nativeEvent.description,
-                url: event.nativeEvent.url,
-              });
-              if (resolvedSource.sourceKind === "local-file") {
-                void triggerEmbeddedFallback(resolvedSource.asset, message);
-              } else {
-                markError(message, "render");
-              }
-            }}
-            onError={(event) => {
-              const message = event.nativeEvent.description || "WebView failed";
-              console.error("[pdf-viewer] viewer_native_error", {
-                sessionId,
-                message,
-                url: event.nativeEvent.url,
-                code: event.nativeEvent.code,
-              });
-              if (resolvedSource.sourceKind === "local-file") {
-                void triggerEmbeddedFallback(resolvedSource.asset, message);
-              } else {
-                markError(message, "render");
-              }
-            }}
-            style={styles.nativeWebView}
-          />
+          <View style={styles.viewerBody} />
         )}
       </Pressable>
     );

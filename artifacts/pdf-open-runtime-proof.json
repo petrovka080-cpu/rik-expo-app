@@ -1,0 +1,121 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "environment": {
+    "platform": "android",
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "preflight": {
+      "deviceDetected": true,
+      "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+      "reverseProxyReady": true,
+      "appCleared": false,
+      "gmsCleared": false,
+      "devClientReachable": true
+    },
+    "fioConfirmed": false,
+    "runtimeUserRole": "buyer"
+  },
+  "metroEvidence": {
+    "viewerRouteMounted": true,
+    "nativeHandoffStarted": true,
+    "nativeContentUriReady": true,
+    "nativeHandoffError": false,
+    "viewerErrorState": false
+  },
+  "runtimeCases": [
+    {
+      "family": "director_pdf",
+      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Ddirector_pdf",
+      "routeMounted": true,
+      "handoffStarted": true,
+      "handoffReady": true,
+      "handoffError": false,
+      "fatalCrash": false,
+      "processAlive": true,
+      "topActivity": "ACTIVITY com.google.android.apps.nexuslauncher/.NexusLauncherActivity e08b543 pid=(not running) userId=0 uid=10181 displayId=0(type=INTERNAL)",
+      "logExcerpt": [
+        "I/ReactNativeJS(19650): '[pdf-viewer] viewer_route_mounted', { platform: 'android',",
+        "I/ReactNativeJS(19650): '[pdf-viewer] open', { sessionId: 'direct_session_ddd0212f',",
+        "I/ReactNativeJS(19650): '[pdf-viewer] native_handoff_start', { sessionId: '',",
+        "I/ReactNativeJS(19650): '[pdf-runner] pdf_android_content_uri_ready', { stage: 'pdf_android_content_uri_ready',"
+      ],
+      "expected": "ready",
+      "passed": true
+    },
+    {
+      "family": "accountant_payment_pdf",
+      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Daccountant_payment_pdf",
+      "routeMounted": true,
+      "handoffStarted": true,
+      "handoffReady": true,
+      "handoffError": false,
+      "fatalCrash": false,
+      "processAlive": true,
+      "topActivity": "ACTIVITY com.google.android.apps.nexuslauncher/.NexusLauncherActivity e08b543 pid=(not running) userId=0 uid=10181 displayId=0(type=INTERNAL)",
+      "logExcerpt": [
+        "I/ReactNativeJS(19650): '[pdf-viewer] viewer_route_mounted', { platform: 'android',",
+        "I/ReactNativeJS(19650): '[pdf-viewer] open', { sessionId: 'direct_session_3a33737e',",
+        "I/ReactNativeJS(19650): '[pdf-viewer] native_handoff_start', { sessionId: '',",
+        "I/ReactNativeJS(19650): '[pdf-runner] pdf_android_content_uri_ready', { stage: 'pdf_android_content_uri_ready',"
+      ],
+      "expected": "ready",
+      "passed": true
+    },
+    {
+      "family": "warehouse_pdf",
+      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Dwarehouse_pdf",
+      "routeMounted": true,
+      "handoffStarted": true,
+      "handoffReady": true,
+      "handoffError": false,
+      "fatalCrash": false,
+      "processAlive": true,
+      "topActivity": "ACTIVITY com.google.android.apps.nexuslauncher/.NexusLauncherActivity e08b543 pid=21125 userId=0 uid=10181 displayId=0(type=INTERNAL)",
+      "logExcerpt": [
+        "I/ReactNativeJS(19650): '[pdf-viewer] viewer_route_mounted', { platform: 'android',",
+        "I/ReactNativeJS(19650): '[pdf-viewer] open', { sessionId: 'direct_session_26022d66',",
+        "I/ReactNativeJS(19650): '[pdf-viewer] native_handoff_start', { sessionId: '',",
+        "I/ReactNativeJS(19650): '[pdf-runner] pdf_android_content_uri_ready', { stage: 'pdf_android_content_uri_ready',"
+      ],
+      "expected": "ready",
+      "passed": true
+    },
+    {
+      "family": "attachment_pdf_viewer_contract",
+      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Dattachment_pdf_viewer_contract",
+      "routeMounted": true,
+      "handoffStarted": true,
+      "handoffReady": true,
+      "handoffError": false,
+      "fatalCrash": false,
+      "processAlive": true,
+      "topActivity": "ACTIVITY com.google.android.apps.nexuslauncher/.NexusLauncherActivity e08b543 pid=21125 userId=0 uid=10181 displayId=0(type=INTERNAL)",
+      "logExcerpt": [
+        "I/ReactNativeJS(19650): '[pdf-viewer] viewer_route_mounted', { platform: 'android',",
+        "I/ReactNativeJS(19650): '[pdf-viewer] open', { sessionId: 'direct_session_9faf9598',",
+        "I/ReactNativeJS(19650): '[pdf-viewer] native_handoff_start', { sessionId: '',",
+        "I/ReactNativeJS(19650): '[pdf-runner] pdf_android_content_uri_ready', { stage: 'pdf_android_content_uri_ready',"
+      ],
+      "expected": "ready",
+      "passed": true
+    },
+    {
+      "family": "invalid_source_contract",
+      "route": "rik://pdf-viewer?uri=blob%3Ahttps%3A%2F%2Fexample.com%2Fruntime-proof.pdf%3Ffamily%3Dinvalid_source_contract",
+      "routeMounted": true,
+      "handoffStarted": false,
+      "handoffReady": false,
+      "handoffError": true,
+      "fatalCrash": false,
+      "processAlive": true,
+      "topActivity": "ACTIVITY com.google.android.apps.nexuslauncher/.NexusLauncherActivity e08b543 pid=21125 userId=0 uid=10181 displayId=0(type=INTERNAL)",
+      "logExcerpt": [
+        "I/ReactNativeJS(19650): '[pdf-viewer] viewer_route_mounted', { platform: 'android',",
+        "E/ReactNativeJS(19650): '[pdf-viewer] load_error', { documentType: 'attachment_pdf',"
+      ],
+      "expected": "controlled_error",
+      "passed": true,
+      "error": "poll timeout: pdf-open:invalid_source_contract"
+    }
+  ]
+}

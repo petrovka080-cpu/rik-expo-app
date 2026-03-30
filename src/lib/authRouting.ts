@@ -1,9 +1,17 @@
 // src/lib/authRouting.ts
-// Маршрутизация на стартовую вкладку по роли
+// РњР°СЂС€СЂСѓС‚РёР·Р°С†РёСЏ РЅР° СЃС‚Р°СЂС‚РѕРІСѓСЋ РІРєР»Р°РґРєСѓ РїРѕ СЂРѕР»Рё
 
-export const FALLBACK_TAB = '/(tabs)/foreman';
+export type RoleHomePath =
+  | '/(tabs)/director'
+  | '/(tabs)/buyer'
+  | '/(tabs)/accountant'
+  | '/(tabs)/warehouse'
+  | '/(tabs)/security'
+  | '/(tabs)/foreman';
 
-export function pathForRole(role: string | null | undefined): string {
+export const FALLBACK_TAB: RoleHomePath = '/(tabs)/foreman';
+
+export function pathForRole(role: string | null | undefined): RoleHomePath {
   const r = (role ?? '').toLowerCase();
   switch (r) {
     case 'director':
