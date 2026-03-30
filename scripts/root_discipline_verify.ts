@@ -105,7 +105,7 @@ const allowedTrackedRootFiles = new Set([
   "tsconfig.json",
 ]);
 
-const allowedLooseRootFiles = new Set([...allowedTrackedRootFiles, ".env.local"]);
+const allowedLooseRootFiles = new Set([...allowedTrackedRootFiles, ".env.local", "expo-env.d.ts"]);
 
 const readText = (relativePath: string) =>
   fs.readFileSync(path.join(projectRoot, relativePath), "utf8");

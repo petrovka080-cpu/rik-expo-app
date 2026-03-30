@@ -24,6 +24,8 @@
     "expo-env.d.ts"
   ],
   "exclude": [
-    "migrated/**/*"
+    "diagnostics/archive/migrated/**/*",
+    "migrated/**/*",
+    "scripts/diagnostics/root-legacy/**/*"
   ]
 }

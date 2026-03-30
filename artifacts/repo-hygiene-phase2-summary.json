@@ -1,0 +1,86 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "rootCauseMap": {
+    "trackedBuildOutputsBeforeCleanup": {
+      "distAndroidTrackedCount": 47,
+      "testResultsTrackedCount": 1
+    },
+    "currentResidualRisk": [],
+    "migratedClassification": "historical_archive"
+  },
+  "rootEntries": [
+    ".editorconfig",
+    ".env.example",
+    ".env.local",
+    ".expo",
+    ".git",
+    ".gitattributes",
+    ".gitignore",
+    ".husky",
+    ".idea",
+    ".vscode",
+    "android",
+    "app",
+    "app.json",
+    "App.tsx",
+    "artifacts",
+    "assets",
+    "babel.config.js",
+    "build",
+    "db",
+    "deno.lock",
+    "diagnostics",
+    "dist",
+    "dist-android",
+    "dist-preview",
+    "dist-production",
+    "docs",
+    "eas.json",
+    "eslint.config.js",
+    "expo-env.d.ts",
+    "jest.config.js",
+    "node_modules",
+    "package-lock.json",
+    "package.json",
+    "public",
+    "README.md",
+    "scripts",
+    "src",
+    "supabase",
+    "test-results",
+    "tmp",
+    "tsconfig.json",
+    "types"
+  ],
+  "structureChecks": {
+    "rootMigratedRemoved": true,
+    "archiveMigratedExists": true,
+    "noTrackedBuildOutputs": true,
+    "noLooseRootLegacyScripts": true,
+    "criticalBoundariesPresent": true
+  },
+  "buildOutputProof": {
+    "requiredRules": {
+      "dist/": true,
+      "dist-android/": true,
+      "dist-preview/": true,
+      "dist-production/": true,
+      "dist-stale-*/": true,
+      "build/": true,
+      "test-results/": true,
+      "tmp/": true
+    },
+    "trackedBuildOutputs": {
+      "dist": 0,
+      "distAndroid": 0,
+      "distPreview": 0,
+      "distProduction": 0,
+      "build": 0,
+      "testResults": 0
+    },
+    "trackedBuildPaths": []
+  },
+  "rootStructureMapPath": "artifacts/root-structure-map.json",
+  "gitignoreBuildOutputProofPath": "artifacts/gitignore-build-output-proof.json"
+}
