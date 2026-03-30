@@ -17,6 +17,11 @@ import {
   View,
 } from "react-native";
 import { Portal } from "react-native-portalize";
+import {
+  createGlobalBusyOwner,
+  type BusyRunOpts,
+  type GlobalBusySnapshot,
+} from "./globalBusy.owner";
 
 // Blur (expo-blur)
 let BlurViewAny: any = null;
@@ -26,13 +31,6 @@ try {
 } catch {
   BlurViewAny = null;
 }
-
-type BusyRunOpts = {
-  key?: string;
-  minMs?: number;
-  label?: string;
-  message?: string;
-};
 
 export type BusyCtx = {
   key: string | null;
@@ -44,7 +42,6 @@ export type BusyCtx = {
 };
 
 const BusyContext = createContext<BusyCtx | null>(null);
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export function GlobalBusyProvider({
   children,
@@ -53,92 +50,60 @@ export function GlobalBusyProvider({
   children: React.ReactNode;
   theme: { text: string; cardBg?: string; border?: string };
 }) {
-  const [uiKey, setUiKey] = useState<string | null>(null);
-  const [label, setLabel] = useState<string>("Загрузка…");
+  const ownerRef = useRef<ReturnType<typeof createGlobalBusyOwner> | null>(null);
+  let owner = ownerRef.current;
+  if (!owner) {
+    owner = createGlobalBusyOwner();
+    ownerRef.current = owner;
+  }
+  const [snapshot, setSnapshot] = useState<GlobalBusySnapshot>(() => owner.getSnapshot());
   const [phase, setPhase] = useState<0 | 1>(0);
 
-  const activeRef = useRef<Map<string, number>>(new Map());
-  const lastShownKeyRef = useRef<string | null>(null);
-  const startedAtRef = useRef<Record<string, number>>({});
+  const show = useCallback((key?: string, label?: string) => {
+    owner.show(key, label);
+  }, [owner]);
 
-  const recomputeUiKey = useCallback(() => {
-    const keys = Array.from(activeRef.current.keys());
-    if (!keys.length) {
-      lastShownKeyRef.current = null;
-      setUiKey(null);
-      return;
-    }
-    const last = lastShownKeyRef.current;
-    const next = last && activeRef.current.has(last) ? last : keys[keys.length - 1];
-    lastShownKeyRef.current = next;
-    setUiKey(next);
-  }, []);
+  const hide = useCallback((key?: string) => {
+    owner.hide(key);
+  }, [owner]);
 
-  const show = useCallback((k?: string, l?: string) => {
-    const kk = String(k ?? "busy");
-    const nextLabel = String(l ?? "Загрузка…");
-    const prevCount = activeRef.current.get(kk) ?? 0;
-    activeRef.current.set(kk, prevCount + 1);
-    startedAtRef.current[kk] = Date.now();
-    setPhase(0);
-    setLabel(nextLabel);
-    lastShownKeyRef.current = kk;
-    setUiKey(kk);
-  }, []);
-
-  const hide = useCallback(
-    (k?: string) => {
-      const kk = String(k ?? (uiKey ?? ""));
-      if (!kk) {
-        recomputeUiKey();
-        return;
-      }
-      const prevCount = activeRef.current.get(kk) ?? 0;
-      if (prevCount <= 1) activeRef.current.delete(kk);
-      else activeRef.current.set(kk, prevCount - 1);
-      if (uiKey === kk) recomputeUiKey();
-      else if (activeRef.current.size === 0) recomputeUiKey();
-    },
-    [recomputeUiKey, uiKey]
-  );
-
-  const isBusy = useCallback((k?: string) => {
-    if (!k) return activeRef.current.size > 0;
-    return activeRef.current.has(String(k));
-  }, []);
-
-  useEffect(() => {
-    if (!uiKey) return;
-    const t = setTimeout(() => setPhase(1), 380);
-    return () => clearTimeout(t);
-  }, [uiKey]);
+  const isBusy = useCallback((key?: string) => {
+    return owner.isBusy(key);
+  }, [owner]);
 
   const run = useCallback(
     async (fn: () => Promise<any>, opts?: BusyRunOpts): Promise<any> => {
-      const k = String(opts?.key ?? "busy");
-      const minMs = Math.max(650, Number(opts?.minMs ?? 650));
-      const text = String(opts?.label ?? opts?.message ?? "Загрузка…");
-      if (activeRef.current.has(k)) return null;
-      show(k, text);
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      await sleep(60);
-      try {
-        const res = await fn();
-        return res;
-      } finally {
-        const started = startedAtRef.current[k] || Date.now();
-        const elapsed = Date.now() - started;
-        const wait = Math.max(0, minMs - elapsed);
-        if (wait) await sleep(wait);
-        hide(k);
-      }
+      return await owner.run(fn, opts);
     },
-    [show, hide]
+    [owner],
   );
 
+  useEffect(() => {
+    owner.setSnapshotListener(setSnapshot);
+    setSnapshot(owner.getSnapshot());
+    return () => {
+      owner.setSnapshotListener(null);
+      owner.dispose();
+    };
+  }, [owner]);
+
+  useEffect(() => {
+    if (!snapshot.uiKey) return;
+    setPhase(0);
+    const t = setTimeout(() => setPhase(1), 380);
+    return () => clearTimeout(t);
+  }, [snapshot.uiKey]);
+
   const value = useMemo<BusyCtx>(
-    () => ({ key: uiKey, label, show, hide, isBusy, run }),
-    [uiKey, label, show, hide, isBusy, run]
+    () => ({
+      key: snapshot.uiKey,
+      label: snapshot.label,
+      show,
+      hide,
+      isBusy,
+      run,
+    }),
+    [snapshot.uiKey, snapshot.label, show, hide, isBusy, run],
   );
 
   const canBlur = Platform.OS !== "web" && !!BlurViewAny;
@@ -148,18 +113,35 @@ export function GlobalBusyProvider({
   return (
     <BusyContext.Provider value={value}>
       {children}
-      {!!uiKey && (
+      {!!snapshot.uiKey && (
         <Portal>
           <View style={[styles.full, { zIndex: 99999, elevation: 99999 }]} pointerEvents="auto">
-            <Pressable style={StyleSheet.absoluteFillObject} onPress={() => { }} />
-            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: "#000", opacity: dimOpacity }]} />
+            <Pressable style={StyleSheet.absoluteFillObject} onPress={() => {}} />
+            <View
+              style={[
+                StyleSheet.absoluteFillObject,
+                { backgroundColor: "#000", opacity: dimOpacity },
+              ]}
+            />
             {canBlur ? (
-              <BlurViewAny intensity={blurIntensity} tint="dark" style={StyleSheet.absoluteFillObject} />
+              <BlurViewAny
+                intensity={blurIntensity}
+                tint="dark"
+                style={StyleSheet.absoluteFillObject}
+              />
             ) : null}
-            <View style={[styles.card, { backgroundColor: theme.cardBg ?? "rgba(16,24,38,0.96)", borderColor: theme.border ?? "rgba(255,255,255,0.12)" }]}>
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: theme.cardBg ?? "rgba(16,24,38,0.96)",
+                  borderColor: theme.border ?? "rgba(255,255,255,0.12)",
+                },
+              ]}
+            >
               <ActivityIndicator size="large" color={theme.text} />
               <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-                {label || "Загрузка…"}
+                {snapshot.label || "Загрузка…"}
               </Text>
               <Text style={styles.sub}>Пожалуйста, подождите</Text>
             </View>
@@ -177,7 +159,13 @@ export function useGlobalBusy() {
 }
 
 const styles = StyleSheet.create({
-  full: { flex: 1, width: "100%", height: "100%", alignItems: "center", justifyContent: "center" },
+  full: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   card: {
     width: "84%",
     maxWidth: 360,
@@ -194,5 +182,10 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   title: { fontWeight: "900", fontSize: 14, textAlign: "center" },
-  sub: { color: "rgba(255,255,255,0.70)", fontWeight: "800", fontSize: 12, textAlign: "center" },
+  sub: {
+    color: "rgba(255,255,255,0.70)",
+    fontWeight: "800",
+    fontSize: 12,
+    textAlign: "center",
+  },
 });

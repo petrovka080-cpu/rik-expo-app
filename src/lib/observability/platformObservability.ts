@@ -1,4 +1,5 @@
 type PlatformObservabilityScreen =
+  | "global_busy"
   | "warehouse"
   | "contractor"
   | "accountant"
