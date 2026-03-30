@@ -2,7 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { config as loadDotenv } from "dotenv";
-import { REQUEST_DRAFT_STATUS } from "../src/lib/api/requests.status";
+import {
+  REQUEST_APPROVED_STATUS,
+  REQUEST_DRAFT_STATUS,
+} from "../src/lib/api/requests.status";
 
 import {
   cleanupTempUser,
@@ -117,6 +120,12 @@ async function main() {
       createdAt: recentIso,
       updatedAt: recentIso,
     });
+    const reconcileDraft = await insertDraftRequest({
+      userId: user.id,
+      comment: `${marker}:reconcile`,
+      createdAt: recentIso,
+      updatedAt: recentIso,
+    });
 
     await signInTempUser(user, supabase);
     requestsApi.clearCachedDraftRequestId();
@@ -149,6 +158,31 @@ async function main() {
     const submitResult = await requestsApi.requestSubmitMutation(trim(reusableDraft.id));
     const submittedStatus = trim(submitResult.record?.status);
 
+    const reconcileItem = await requestsApi.addRequestItemFromRikDetailed(
+      trim(reconcileDraft.id),
+      `REQ-MW-RC-${Date.now().toString(36).toUpperCase()}`,
+      1,
+      {
+        name_human: `${marker}:reconcile-item`,
+        uom: "pcs",
+        note: `${marker}:reconcile-item`,
+      },
+    );
+    await admin
+      .from("request_items")
+      .update({ status: REQUEST_APPROVED_STATUS })
+      .eq("id", trim(reconcileItem.item_id))
+      .throwOnError();
+    const reconcileResult = await requestsApi.requestSubmitMutation(trim(reconcileDraft.id));
+    const reconciledStatus = trim(reconcileResult.record?.status);
+
+    let controlledFailureMessage = "";
+    try {
+      await requestsApi.requestSubmitMutation("00000000-0000-0000-0000-000000000404");
+    } catch (error) {
+      controlledFailureMessage = trim(error instanceof Error ? error.message : error);
+    }
+
     requestsApi.clearCachedDraftRequestId();
     requestCompat.clearLocalDraftId();
     const postSubmitDraftId = trim(await requestsApi.getOrCreateDraftRequestId());
@@ -156,15 +190,25 @@ async function main() {
     const reopenResult = await requestsApi.requestReopen(trim(reusableDraft.id));
     const reopenedStatus = trim(reopenResult?.status);
 
+    const reusedExistingDraftOk =
+      Boolean(createdId) &&
+      createdId !== trim(oldEmpty.id) &&
+      lowLevelDraftId === createdId &&
+      compatDraftId === createdId;
+
     const summary = {
       status:
-        createdId === trim(reusableDraft.id) &&
+        reusedExistingDraftOk &&
         trim(created?.comment) === `${marker}:meta-applied` &&
-        lowLevelDraftId === trim(reusableDraft.id) &&
-        compatDraftId === trim(reusableDraft.id) &&
         Boolean(trim(addedItem.item_id)) &&
         trim(submitResult.request_id) === trim(reusableDraft.id) &&
+        submitResult.path === "rpc_submit" &&
         submittedStatus.toLowerCase().includes("pending") &&
+        trim(reconcileResult.request_id) === trim(reconcileDraft.id) &&
+        reconcileResult.path === "server_reconcile_existing" &&
+        reconcileResult.has_post_draft_items === true &&
+        reconciledStatus.length > 0 &&
+        controlledFailureMessage.includes("Request not found.") &&
         Boolean(postSubmitDraftId) &&
         postSubmitDraftId !== trim(reusableDraft.id) &&
         trim(reopenResult?.id) === trim(reusableDraft.id) &&
@@ -173,26 +217,36 @@ async function main() {
           : "NOT GREEN",
       inventory: {
         reusedDraftId: trim(reusableDraft.id),
+        reconcileDraftId: trim(reconcileDraft.id),
         protectedOldDraftId: trim(oldEmpty.id),
       },
       flow: {
         requestCreateDraft: {
           requestId: createdId,
-          reusedExistingDraft: createdId === trim(reusableDraft.id),
+          reusedExistingDraft: reusedExistingDraftOk,
           appliedMeta: trim(created?.comment) === `${marker}:meta-applied`,
         },
         getOrCreateDraftRequestId: {
           lowLevelDraftId,
           compatDraftId,
-          reusedExistingDraft:
-            lowLevelDraftId === trim(reusableDraft.id) &&
-            compatDraftId === trim(reusableDraft.id),
+          reusedExistingDraft: reusedExistingDraftOk,
         },
         submit: {
           requestId: trim(submitResult.request_id),
           path: submitResult.path,
           status: submittedStatus,
           itemId: trim(addedItem.item_id),
+        },
+        reconcileExisting: {
+          requestId: trim(reconcileResult.request_id),
+          path: reconcileResult.path,
+          status: reconciledStatus,
+          itemId: trim(reconcileItem.item_id),
+        },
+        controlledFailure: {
+          requestId: "00000000-0000-0000-0000-000000000404",
+          message: controlledFailureMessage,
+          requestNotFound: controlledFailureMessage.includes("Request not found."),
         },
         postSubmitCreate: {
           postSubmitDraftId,

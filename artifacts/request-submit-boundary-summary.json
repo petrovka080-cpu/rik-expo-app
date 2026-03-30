@@ -1,0 +1,24 @@
+{
+  "gate": "request_submit_boundary_verify",
+  "sourceStatus": "GREEN",
+  "runtimeStatus": "GREEN",
+  "ownerProof": {
+    "atomicRpcOwnerPresent": true,
+    "noClientPostDraftProbe": true,
+    "noClientReconcilePlan": true,
+    "noClientRequestItemsSubmitProbe": true,
+    "controlledFailureSurface": true,
+    "observabilityAtomicStart": true,
+    "observabilityAtomicFailure": true
+  },
+  "liveProof": {
+    "normalSubmitPath": "rpc_submit",
+    "normalSubmitPending": true,
+    "reconcileExistingPath": "server_reconcile_existing",
+    "reconcileExistingApproved": true,
+    "controlledFailureMessage": "Request not found.",
+    "controlledRequestNotFound": true
+  },
+  "green": true,
+  "status": "GREEN"
+}

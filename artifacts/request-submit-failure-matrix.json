@@ -1,0 +1,9 @@
+{
+  "controlledFailure": {
+    "requestId": "00000000-0000-0000-0000-000000000404",
+    "message": "Request not found.",
+    "requestNotFound": true
+  },
+  "requestAtomicityStatus": "GREEN",
+  "runtimeStatus": "GREEN"
+}

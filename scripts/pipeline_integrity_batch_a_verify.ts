@@ -40,8 +40,8 @@ const proposalItemsBlock = extractBlock(
 );
 const requestSubmitBlock = extractBlock(
   requestsText,
-  "async function runRequestSubmitPrimaryStage(",
-  "export async function requestSubmitMutation(",
+  "async function runRequestSubmitAtomicStage(",
+  "function mapRequestSubmitMutationResult(",
 );
 
 const matrix = [
@@ -117,8 +117,14 @@ const requestSubmitVerification = {
   headUpdateFallbackRemoved: !requestsText.includes('"head_update_fallback"'),
   noClientHeadFallbackUpdate: !requestsText.includes("buildRequestSubmitFallbackUpdate"),
   noClientItemsPendingSyncFallback: !requestsText.includes("updateRequestItemsPendingStatus("),
-  atomicVerificationPresent: requestsText.includes("verifyAtomicRequestSubmitOutcome("),
-  rpcSubmitEmptyPayloadFails: requestsText.includes('throw new Error("[requestSubmit] request_submit returned empty payload")'),
+  legacyPostDraftBranchRemoved: !requestsText.includes('"post_draft_short_circuit"'),
+  noClientStatusProbe: !requestsText.includes("requestHasPostDraftItems("),
+  noClientReconcilePlan: !requestsText.includes("reconcileRequestHeadStatus("),
+  atomicRpcOwnerPresent: requestSubmitBlock.includes('"request_submit_atomic_v1"'),
+  atomicParserPresent: requestsText.includes("parseRequestSubmitAtomicResult("),
+  atomicErrorSurfacePresent: requestsText.includes("RequestSubmitAtomicError"),
+  noClientRequestItemsProbeInSubmitBlock: !requestSubmitBlock.includes('.from("request_items")'),
+  submitHydratesRecordAfterServerTruth: requestSubmitBlock.includes("selectRequestRecordById("),
 };
 
 const proposalCreateStatus =
@@ -146,8 +152,14 @@ const requestSubmitStatus =
   requestSubmitVerification.headUpdateFallbackRemoved &&
   requestSubmitVerification.noClientHeadFallbackUpdate &&
   requestSubmitVerification.noClientItemsPendingSyncFallback &&
-  requestSubmitVerification.atomicVerificationPresent &&
-  requestSubmitVerification.rpcSubmitEmptyPayloadFails
+  requestSubmitVerification.legacyPostDraftBranchRemoved &&
+  requestSubmitVerification.noClientStatusProbe &&
+  requestSubmitVerification.noClientReconcilePlan &&
+  requestSubmitVerification.atomicRpcOwnerPresent &&
+  requestSubmitVerification.atomicParserPresent &&
+  requestSubmitVerification.atomicErrorSurfacePresent &&
+  requestSubmitVerification.noClientRequestItemsProbeInSubmitBlock &&
+  requestSubmitVerification.submitHydratesRecordAfterServerTruth
     ? "GREEN"
     : "NOT_GREEN";
 

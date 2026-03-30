@@ -4,6 +4,12 @@
   "headUpdateFallbackRemoved": true,
   "noClientHeadFallbackUpdate": true,
   "noClientItemsPendingSyncFallback": true,
-  "atomicVerificationPresent": true,
-  "rpcSubmitEmptyPayloadFails": true
+  "legacyPostDraftBranchRemoved": true,
+  "noClientStatusProbe": true,
+  "noClientReconcilePlan": true,
+  "atomicRpcOwnerPresent": true,
+  "atomicParserPresent": true,
+  "atomicErrorSurfacePresent": true,
+  "noClientRequestItemsProbeInSubmitBlock": true,
+  "submitHydratesRecordAfterServerTruth": true
 }

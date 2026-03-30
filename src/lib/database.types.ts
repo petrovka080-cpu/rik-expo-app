@@ -18504,6 +18504,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      request_submit_atomic_v1: {
+        Args: { p_request_id_text: string }
+        Returns: Json
+      }
       request_sync_draft_v1: {
         Args: {
           p_comment?: string | null

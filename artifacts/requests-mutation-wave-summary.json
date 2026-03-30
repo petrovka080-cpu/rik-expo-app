@@ -1,32 +1,44 @@
 {
   "status": "GREEN",
   "inventory": {
-    "reusedDraftId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
-    "protectedOldDraftId": "4fddefb1-29cd-4dbb-87f2-efd2e95abd65"
+    "reusedDraftId": "af3c022b-91b8-4603-99b7-2256a166b9bd",
+    "reconcileDraftId": "619f9238-e528-449a-937e-f5d0fc823637",
+    "protectedOldDraftId": "283d5e79-a1b2-4f1a-8ff6-0d85820c4799"
   },
   "flow": {
     "requestCreateDraft": {
-      "requestId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+      "requestId": "af3c022b-91b8-4603-99b7-2256a166b9bd",
       "reusedExistingDraft": true,
       "appliedMeta": true
     },
     "getOrCreateDraftRequestId": {
-      "lowLevelDraftId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
-      "compatDraftId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+      "lowLevelDraftId": "af3c022b-91b8-4603-99b7-2256a166b9bd",
+      "compatDraftId": "af3c022b-91b8-4603-99b7-2256a166b9bd",
       "reusedExistingDraft": true
     },
     "submit": {
-      "requestId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+      "requestId": "af3c022b-91b8-4603-99b7-2256a166b9bd",
       "path": "rpc_submit",
       "status": "pending",
-      "itemId": "f94f98aa-6502-49f9-82f7-82019a224ed7"
+      "itemId": "b1ffe2d8-5a39-4366-be7d-d5c5ec27d44f"
+    },
+    "reconcileExisting": {
+      "requestId": "619f9238-e528-449a-937e-f5d0fc823637",
+      "path": "server_reconcile_existing",
+      "status": "Утверждено",
+      "itemId": "82cbd492-23e0-442f-bdc7-f8b625aa7b3f"
+    },
+    "controlledFailure": {
+      "requestId": "00000000-0000-0000-0000-000000000404",
+      "message": "Request not found.",
+      "requestNotFound": true
     },
     "postSubmitCreate": {
-      "postSubmitDraftId": "4fddefb1-29cd-4dbb-87f2-efd2e95abd65",
+      "postSubmitDraftId": "283d5e79-a1b2-4f1a-8ff6-0d85820c4799",
       "createdFreshDraft": true
     },
     "reopen": {
-      "requestId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+      "requestId": "af3c022b-91b8-4603-99b7-2256a166b9bd",
       "status": "Черновик",
       "reopenedSameRequest": true
     }

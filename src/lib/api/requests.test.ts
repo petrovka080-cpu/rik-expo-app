@@ -51,6 +51,55 @@ jest.mock("./requests.parsers", () => ({
       submitted_at: row.submitted_at ?? null,
     };
   }),
+  parseRequestSubmitAtomicResult: jest.fn((payload: Record<string, unknown> | null | undefined) => {
+    if (!payload) {
+      return {
+        ok: false,
+        requestId: "",
+        failureCode: "request_submit_failed",
+        failureMessage: "missing payload",
+        validation: null,
+        invalidItemIds: [],
+      };
+    }
+    if (payload.ok === false) {
+      return {
+        ok: false,
+        requestId: String(payload.request_id ?? payload.requestId ?? ""),
+        failureCode: String(payload.failure_code ?? payload.failureCode ?? "request_submit_failed"),
+        failureMessage: String(payload.failure_message ?? payload.failureMessage ?? "request submit failed"),
+        validation:
+          payload.validation && typeof payload.validation === "object"
+            ? (payload.validation as Record<string, unknown>)
+            : null,
+        invalidItemIds: Array.isArray(payload.invalid_item_ids ?? payload.invalidItemIds)
+          ? ((payload.invalid_item_ids ?? payload.invalidItemIds) as unknown[]).map(String)
+          : [],
+      };
+    }
+    const request =
+      payload.request && typeof payload.request === "object"
+        ? (payload.request as Record<string, unknown>)
+        : null;
+    return {
+      ok: true,
+      requestId: String(payload.request_id ?? payload.requestId ?? request?.id ?? ""),
+      submitPath: String(payload.submit_path ?? payload.submitPath ?? "rpc_submit"),
+      hasPostDraftItems: payload.has_post_draft_items === true || payload.hasPostDraftItems === true,
+      reconciled: payload.reconciled !== false,
+      record: request
+        ? {
+            id: String(request.id ?? ""),
+            status: request.status ?? null,
+            submitted_at: request.submitted_at ?? null,
+          }
+        : null,
+      verification:
+        payload.verification && typeof payload.verification === "object"
+          ? (payload.verification as Record<string, unknown>)
+          : null,
+    };
+  }),
 }));
 
 jest.mock("./requests.read-capabilities", () => ({
@@ -212,12 +261,19 @@ describe("requests mutation boundary", () => {
       if (fn === "request_find_reusable_empty_draft_v1") {
         return Promise.resolve({ data: "request-1", error: null });
       }
-      if (fn === "request_submit") {
+      if (fn === "request_submit_atomic_v1") {
         return Promise.resolve({
           data: {
-            id: "request-1",
-            status: "pending",
-            submitted_at: "2026-03-30T10:00:00.000Z",
+            ok: true,
+            request_id: "request-1",
+            submit_path: "rpc_submit",
+            has_post_draft_items: false,
+            reconciled: true,
+            request: {
+              id: "request-1",
+              status: "pending",
+              submitted_at: "2026-03-30T10:00:00.000Z",
+            },
           },
           error: null,
         });
@@ -234,14 +290,6 @@ describe("requests mutation boundary", () => {
         },
         error: null,
       },
-      {
-        data: {
-          id: "request-1",
-          status: "pending",
-          submitted_at: "2026-03-30T10:00:00.000Z",
-        },
-        error: null,
-      },
     ];
 
     mockClient.from.mockImplementation((table: string) => {
@@ -249,18 +297,6 @@ describe("requests mutation boundary", () => {
         return {
           select: jest.fn(() =>
             makeSelectChain(Promise.resolve(requestRows.shift() ?? { data: null, error: null })),
-          ),
-        };
-      }
-      if (table === "request_items") {
-        return {
-          select: jest.fn(() =>
-            makeSelectChain(
-              Promise.resolve({
-                data: [{ id: "ri-1", status: "pending" }],
-                error: null,
-              }),
-            ),
           ),
         };
       }
@@ -285,19 +321,26 @@ describe("requests mutation boundary", () => {
 
     const afterSubmit = await getOrCreateDraftRequestId();
     expect(afterSubmit).toBe("request-1");
-    expect(mockClient.rpc).toHaveBeenNthCalledWith(2, "request_submit", {
-      p_request_id: "request-1",
+    expect(mockClient.rpc).toHaveBeenNthCalledWith(2, "request_submit_atomic_v1", {
+      p_request_id_text: "request-1",
     });
   });
 
-  it("fails closed when submit verification finds request items still in draft", async () => {
+  it("uses server reconcile path for post-draft requests without client request_items probe", async () => {
     mockClient.rpc.mockImplementation((fn: string) => {
-      if (fn === "request_submit") {
+      if (fn === "request_submit_atomic_v1") {
         return Promise.resolve({
           data: {
-            id: "request-2",
-            status: "pending",
-            submitted_at: "2026-03-30T10:00:00.000Z",
+            ok: true,
+            request_id: "request-2",
+            submit_path: "server_reconcile_existing",
+            has_post_draft_items: true,
+            reconciled: true,
+            request: {
+              id: "request-2",
+              status: "approved",
+              submitted_at: "2026-03-30T10:00:00.000Z",
+            },
           },
           error: null,
         });
@@ -324,23 +367,44 @@ describe("requests mutation boundary", () => {
           ),
         };
       }
-      if (table === "request_items") {
-        return {
-          select: jest.fn(() =>
-            makeSelectChain(
-              Promise.resolve({
-                data: [{ id: "ri-draft", status: "draft" }],
-                error: null,
-              }),
-            ),
-          ),
-        };
-      }
       throw new Error(`Unexpected table ${table}`);
     });
 
-    await expect(requestSubmitMutation("request-2")).rejects.toThrow(
-      "request items not transitioned from draft",
+    const result = await requestSubmitMutation("request-2");
+
+    expect(result).toMatchObject({
+      request_id: "request-2",
+      path: "server_reconcile_existing",
+      has_post_draft_items: true,
+      reconciled: true,
+    });
+    expect(mockClient.from).toHaveBeenCalledTimes(1);
+    expect(mockClient.from).not.toHaveBeenCalledWith("request_items");
+  });
+
+  it("fails closed when atomic submit returns controlled failure", async () => {
+    mockClient.rpc.mockImplementation((fn: string) => {
+      if (fn === "request_submit_atomic_v1") {
+        return Promise.resolve({
+          data: {
+            ok: false,
+            request_id: "request-3",
+            failure_code: "reconcile_failed",
+            failure_message: "Server-side request status reconcile failed.",
+            validation: {
+              submit_path: "server_reconcile_existing",
+              expectation_mode: "mixed_terminal",
+            },
+          },
+          error: null,
+        });
+      }
+      throw new Error(`Unexpected rpc ${fn}`);
+    });
+
+    await expect(requestSubmitMutation("request-3")).rejects.toThrow(
+      "Server-side request status reconcile failed.",
     );
+    expect(mockClient.from).not.toHaveBeenCalled();
   });
 });
