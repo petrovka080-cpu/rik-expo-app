@@ -1,0 +1,134 @@
+{
+  "status": "GREEN",
+  "matrix": {
+    "requests_api": {
+      "verificationType": [
+        "service_test",
+        "runtime_smoke"
+      ],
+      "checks": {
+        "reuseFirstCreate": "passed",
+        "cachedDraftReuse": "passed",
+        "submitVerification": "passed",
+        "submitFailure": "passed",
+        "runtimeFullCycle": "passed"
+      },
+      "proofSources": [
+        "artifacts/mutation-test-wave-jest.json",
+        "artifacts/requests-mutation-wave-summary.json"
+      ]
+    },
+    "proposals_api": {
+      "verificationType": [
+        "service_test",
+        "runtime_smoke"
+      ],
+      "checks": {
+        "createReadBoundary": "passed",
+        "addItemsFailureVisible": "passed",
+        "submitFailureVisible": "passed",
+        "runtimeCreateRead": "passed"
+      },
+      "proofSources": [
+        "artifacts/mutation-test-wave-jest.json",
+        "artifacts/proposal-pipeline-summary.json"
+      ]
+    },
+    "buyer_mutation_boundary": {
+      "verificationType": [
+        "service_test",
+        "runtime_proof"
+      ],
+      "status": "GREEN",
+      "proofSources": [
+        "artifacts/buyer-mutation-boundary-summary.json",
+        "artifacts/buyer-submit-failure-matrix.json",
+        "artifacts/buyer-attachments-stage-proof.json"
+      ]
+    },
+    "accountant_payment_orchestration": {
+      "verificationType": [
+        "service_test"
+      ],
+      "checks": {
+        "openLoadReady": "passed",
+        "closeCancelsInflight": "passed",
+        "staleResponseIgnored": "passed",
+        "partialAllocationParity": "passed",
+        "fullAllocationParity": "passed",
+        "clearLifecycle": "passed",
+        "parentRerenderNoStorm": "passed",
+        "applyFailureVisible": "passed",
+        "helperNormalization": "passed",
+        "helperParity": "passed"
+      },
+      "proofSources": [
+        "artifacts/mutation-test-wave-jest.json"
+      ]
+    },
+    "warehouse_request_loaders_canonical": {
+      "verificationType": [
+        "runtime_smoke"
+      ],
+      "checks": {
+        "canonicalHeads": "passed",
+        "canonicalDetails": "passed",
+        "parity": "passed",
+        "sourceCanonical": "passed"
+      },
+      "proofSources": [
+        "artifacts/warehouse-mutation-wave-summary.json"
+      ]
+    },
+    "integrity_guards": {
+      "verificationType": [
+        "existing_runtime_proof"
+      ],
+      "checks": {
+        "runtimeGuardSummary": "passed",
+        "orphanProof": "passed"
+      },
+      "proofSources": [
+        "artifacts/fk-guard-summary.json",
+        "artifacts/orphan-detection-proof.json"
+      ]
+    },
+    "pdf_runner_service_boundaries": {
+      "verificationType": [
+        "service_test",
+        "runtime_proof"
+      ],
+      "checks": {
+        "pdfFamilyGreen": "passed",
+        "paymentSource": "passed",
+        "directorSource": "passed",
+        "renderFailVisible": "passed",
+        "openFailVisible": "passed",
+        "observabilityProof": "passed"
+      },
+      "proofSources": [
+        "artifacts/pdf-family-hardening-summary.json",
+        "artifacts/pdf-runner-observability-proof.json"
+      ]
+    },
+    "critical_observability_adapters": {
+      "verificationType": [
+        "service_test",
+        "proof"
+      ],
+      "checks": {
+        "requestPathVisible": "passed",
+        "proposalPathVisible": "passed",
+        "buyerStageVisible": "passed",
+        "paymentPathVisible": "passed",
+        "pdfPathVisible": "passed",
+        "errorBoundaryVisible": "passed"
+      },
+      "proofSources": [
+        "artifacts/mutation-test-wave-jest.json",
+        "artifacts/buyer-submit-failure-matrix.json",
+        "artifacts/pdf-runner-observability-proof.json"
+      ]
+    }
+  }
+}

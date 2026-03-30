@@ -1,0 +1,26 @@
+{
+  "status": "GREEN",
+  "finalGate": {
+    "noSilentFail": true,
+    "mutationFamiliesCovered": [
+      "requests_api",
+      "proposals_api",
+      "buyer_mutation_boundary",
+      "accountant_payment_orchestration",
+      "warehouse_request_loaders_canonical",
+      "integrity_guards",
+      "pdf_runner_service_boundaries",
+      "critical_observability_adapters"
+    ],
+    "commandCount": 9,
+    "matrixPassed": true
+  },
+  "proofs": {
+    "requestsMutationWave": "GREEN",
+    "proposalPipeline": "GREEN",
+    "buyerMutationBoundary": "GREEN",
+    "integrityGuards": "GREEN",
+    "pdfFamily": "GREEN",
+    "warehouseMutationWave": "GREEN"
+  }
+}

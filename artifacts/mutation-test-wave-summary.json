@@ -1,0 +1,64 @@
+{
+  "status": "GREEN",
+  "commandResults": [
+    {
+      "label": "tsc",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "passed"
+    },
+    {
+      "label": "buyer_mutation_jest",
+      "command": "npx jest --runInBand src/screens/buyer/buyer.submit.mutation.test.ts src/screens/buyer/buyer.attachments.mutation.test.ts src/screens/buyer/buyer.status.mutation.test.ts src/screens/buyer/buyer.rfq.rework.mutation.test.ts --json --outputFile artifacts/buyer-mutation-jest.json",
+      "status": "passed"
+    },
+    {
+      "label": "buyer_mutation_verify",
+      "command": "npx tsx scripts/buyer_mutation_boundary_verify.ts",
+      "status": "passed"
+    },
+    {
+      "label": "pdf_family_jest",
+      "command": "npx jest --runInBand src/lib/api/paymentPdf.service.test.ts src/lib/api/directorPdfSource.service.test.ts src/lib/api/pdf_director.test.ts src/lib/pdf/pdf.runner.test.ts src/lib/documents/pdfDocumentActions.test.ts src/lib/pdf/pdfViewerContract.test.ts src/lib/pdfRunner.silentCatch.test.ts --json --outputFile artifacts/pdf-family-jest.json",
+      "status": "passed"
+    },
+    {
+      "label": "pdf_family_verify",
+      "command": "npx tsx scripts/pdf_family_hardening_verify.ts",
+      "status": "passed"
+    },
+    {
+      "label": "core_mutation_jest",
+      "command": "npx jest --runInBand src/lib/api/requests.test.ts src/lib/api/proposals.silentCatch.test.ts src/screens/accountant/components/ActivePaymentForm.test.tsx src/screens/accountant/accountant.paymentForm.helpers.test.ts src/screens/accountant/useAccountantPayActions.test.tsx src/shared/ui/ScreenErrorBoundary.test.tsx --json --outputFile artifacts/mutation-test-wave-jest.json",
+      "status": "passed"
+    },
+    {
+      "label": "requests_mutation_wave_verify",
+      "command": "npx tsx scripts/requests_mutation_wave_verify.ts",
+      "status": "passed"
+    },
+    {
+      "label": "proposal_pipeline_verify",
+      "command": "npx tsx scripts/proposal_pipeline_verify.ts",
+      "status": "passed"
+    },
+    {
+      "label": "warehouse_mutation_wave_verify",
+      "command": "npx tsx scripts/warehouse_mutation_wave_verify.ts",
+      "status": "passed"
+    }
+  ],
+  "coreMutationJest": {
+    "success": true,
+    "numPassedTests": 19,
+    "numFailedTests": 0,
+    "totalAssertions": 19
+  },
+  "proofs": {
+    "requestsMutationWave": "GREEN",
+    "proposalPipeline": "GREEN",
+    "buyerMutationBoundary": "GREEN",
+    "integrityGuards": "GREEN",
+    "pdfFamily": "GREEN",
+    "warehouseMutationWave": "GREEN"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "status": "GREEN",
+  "inventory": {
+    "reusedDraftId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+    "protectedOldDraftId": "4fddefb1-29cd-4dbb-87f2-efd2e95abd65"
+  },
+  "flow": {
+    "requestCreateDraft": {
+      "requestId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+      "reusedExistingDraft": true,
+      "appliedMeta": true
+    },
+    "getOrCreateDraftRequestId": {
+      "lowLevelDraftId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+      "compatDraftId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+      "reusedExistingDraft": true
+    },
+    "submit": {
+      "requestId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+      "path": "rpc_submit",
+      "status": "pending",
+      "itemId": "f94f98aa-6502-49f9-82f7-82019a224ed7"
+    },
+    "postSubmitCreate": {
+      "postSubmitDraftId": "4fddefb1-29cd-4dbb-87f2-efd2e95abd65",
+      "createdFreshDraft": true
+    },
+    "reopen": {
+      "requestId": "54a46b23-6a9c-4b49-8053-7458f62a66b2",
+      "status": "Черновик",
+      "reopenedSameRequest": true
+    }
+  }
+}
