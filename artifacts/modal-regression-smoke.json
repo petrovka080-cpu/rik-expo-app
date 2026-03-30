@@ -1,0 +1,283 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "flows": {
+    "modalRoleJest": {
+      "numFailedTestSuites": 0,
+      "numFailedTests": 0,
+      "numPassedTestSuites": 5,
+      "numPassedTests": 7,
+      "numPendingTestSuites": 0,
+      "numPendingTests": 0,
+      "numRuntimeErrorTestSuites": 0,
+      "numTodoTests": 0,
+      "numTotalTestSuites": 5,
+      "numTotalTests": 7,
+      "openHandles": [],
+      "snapshot": {
+        "added": 0,
+        "didUpdate": false,
+        "failure": false,
+        "filesAdded": 0,
+        "filesRemoved": 0,
+        "filesRemovedList": [],
+        "filesUnmatched": 0,
+        "filesUpdated": 0,
+        "matched": 0,
+        "total": 0,
+        "unchecked": 0,
+        "uncheckedKeysByFile": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "startTime": 1774832974700,
+      "success": true,
+      "testResults": [
+        {
+          "assertionResults": [
+            {
+              "ancestorTitles": [
+                "CardModal"
+              ],
+              "duration": 436,
+              "failureDetails": [],
+              "failureMessages": [],
+              "fullName": "CardModal keeps close, backdrop and keyboard discipline stable",
+              "invocations": 1,
+              "location": null,
+              "numPassingAsserts": 9,
+              "retryReasons": [],
+              "status": "passed",
+              "title": "keeps close, backdrop and keyboard discipline stable"
+            }
+          ],
+          "endTime": 1774832975948,
+          "message": "",
+          "name": "C:\\dev\\rik-expo-app\\src\\screens\\accountant\\components\\CardModal.test.tsx",
+          "startTime": 1774832974808,
+          "status": "passed",
+          "summary": ""
+        },
+        {
+          "assertionResults": [
+            {
+              "ancestorTitles": [
+                "Foreman modal stability"
+              ],
+              "duration": 16,
+              "failureDetails": [],
+              "failureMessages": [],
+              "fullName": "Foreman modal stability keeps draft modal close and list interaction contract stable",
+              "invocations": 1,
+              "location": null,
+              "numPassingAsserts": 5,
+              "retryReasons": [],
+              "status": "passed",
+              "title": "keeps draft modal close and list interaction contract stable"
+            },
+            {
+              "ancestorTitles": [
+                "Foreman modal stability"
+              ],
+              "duration": 33,
+              "failureDetails": [],
+              "failureMessages": [],
+              "fullName": "Foreman modal stability keeps history modal backdrop semantics stable between list and details modes",
+              "invocations": 1,
+              "location": null,
+              "numPassingAsserts": 3,
+              "retryReasons": [],
+              "status": "passed",
+              "title": "keeps history modal backdrop semantics stable between list and details modes"
+            },
+            {
+              "ancestorTitles": [
+                "Foreman modal stability"
+              ],
+              "duration": 17,
+              "failureDetails": [],
+              "failureMessages": [],
+              "fullName": "Foreman modal stability keeps subcontract history modal list/details close contract stable",
+              "invocations": 1,
+              "location": null,
+              "numPassingAsserts": 4,
+              "retryReasons": [],
+              "status": "passed",
+              "title": "keeps subcontract history modal list/details close contract stable"
+            }
+          ],
+          "endTime": 1774832976911,
+          "message": "",
+          "name": "C:\\dev\\rik-expo-app\\src\\screens\\foreman\\ForemanModal.stability.test.tsx",
+          "startTime": 1774832975993,
+          "status": "passed",
+          "summary": ""
+        },
+        {
+          "assertionResults": [
+            {
+              "ancestorTitles": [
+                "DirectorFinanceCardModal"
+              ],
+              "duration": 26,
+              "failureDetails": [],
+              "failureMessages": [],
+              "fullName": "DirectorFinanceCardModal keeps close, overlay and backdrop discipline stable",
+              "invocations": 1,
+              "location": null,
+              "numPassingAsserts": 8,
+              "retryReasons": [],
+              "status": "passed",
+              "title": "keeps close, overlay and backdrop discipline stable"
+            }
+          ],
+          "endTime": 1774832977072,
+          "message": "",
+          "name": "C:\\dev\\rik-expo-app\\src\\screens\\director\\DirectorFinanceCardModal.test.tsx",
+          "startTime": 1774832976925,
+          "status": "passed",
+          "summary": ""
+        },
+        {
+          "assertionResults": [
+            {
+              "ancestorTitles": [
+                "BuyerSheetShell"
+              ],
+              "duration": 14,
+              "failureDetails": [],
+              "failureMessages": [],
+              "fullName": "BuyerSheetShell keeps native modal open/close and backdrop contract stable",
+              "invocations": 1,
+              "location": null,
+              "numPassingAsserts": 6,
+              "retryReasons": [],
+              "status": "passed",
+              "title": "keeps native modal open/close and backdrop contract stable"
+            }
+          ],
+          "endTime": 1774832977210,
+          "message": "",
+          "name": "C:\\dev\\rik-expo-app\\src\\screens\\buyer\\components\\BuyerSheetShell.test.tsx",
+          "startTime": 1774832977086,
+          "status": "passed",
+          "summary": ""
+        },
+        {
+          "assertionResults": [
+            {
+              "ancestorTitles": [
+                "WarehouseSheet"
+              ],
+              "duration": 2,
+              "failureDetails": [],
+              "failureMessages": [],
+              "fullName": "WarehouseSheet keeps native modal compatibility props stable",
+              "invocations": 1,
+              "location": null,
+              "numPassingAsserts": 5,
+              "retryReasons": [],
+              "status": "passed",
+              "title": "keeps native modal compatibility props stable"
+            }
+          ],
+          "endTime": 1774832977336,
+          "message": "",
+          "name": "C:\\dev\\rik-expo-app\\src\\screens\\warehouse\\components\\WarehouseSheet.test.tsx",
+          "startTime": 1774832977223,
+          "status": "passed",
+          "summary": ""
+        }
+      ],
+      "wasInterrupted": false
+    },
+    "accountant": {
+      "status": "GREEN",
+      "generatedAt": "2026-03-30T01:09:34.075Z",
+      "boundary": {
+        "uiThin": true,
+        "controllerOwner": true,
+        "actionObservability": true
+      },
+      "supportingTests": [
+        "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+        "src/screens/accountant/accountant.paymentForm.helpers.test.ts",
+        "src/screens/accountant/useAccountantPayActions.test.tsx"
+      ],
+      "scenarios": [
+        {
+          "name": "open_load_ready",
+          "passed": true,
+          "evidence": [
+            "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+            "src/screens/accountant/useAccountantPaymentForm.ts"
+          ]
+        },
+        {
+          "name": "close_immediately_no_stale_set_state",
+          "passed": true,
+          "evidence": [
+            "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+            "src/screens/accountant/useAccountantPaymentForm.ts"
+          ]
+        },
+        {
+          "name": "quick_reopen_fresh_data_only",
+          "passed": true,
+          "evidence": [
+            "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+            "src/screens/accountant/useAccountantPaymentForm.ts"
+          ]
+        },
+        {
+          "name": "partial_allocation_path",
+          "passed": true,
+          "evidence": [
+            "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+            "src/screens/accountant/accountant.paymentForm.helpers.test.ts"
+          ]
+        },
+        {
+          "name": "full_allocation_path",
+          "passed": true,
+          "evidence": [
+            "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+            "src/screens/accountant/accountant.paymentForm.helpers.test.ts"
+          ]
+        },
+        {
+          "name": "clear_reset_path",
+          "passed": true,
+          "evidence": [
+            "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+            "src/screens/accountant/accountant.paymentForm.helpers.test.ts"
+          ]
+        },
+        {
+          "name": "fetch_failure_visible",
+          "passed": true,
+          "evidence": [
+            "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+            "src/screens/accountant/useAccountantPaymentForm.ts"
+          ]
+        },
+        {
+          "name": "apply_failure_visible",
+          "passed": true,
+          "evidence": [
+            "src/screens/accountant/useAccountantPayActions.test.tsx",
+            "src/screens/accountant/useAccountantPayActions.ts"
+          ]
+        },
+        {
+          "name": "parent_rerender_no_refetch_storm",
+          "passed": true,
+          "evidence": [
+            "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+            "src/screens/accountant/useAccountantPaymentForm.ts"
+          ]
+        }
+      ]
+    }
+  }
+}
