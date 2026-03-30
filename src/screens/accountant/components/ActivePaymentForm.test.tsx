@@ -8,22 +8,12 @@ import {
   resetPlatformObservabilityEvents,
 } from "../../../lib/observability/platformObservability";
 
-jest.mock("../../../lib/supabaseClient", () => ({
-  supabase: {
-    from: jest.fn(),
-  },
+const mockAccountantLoadProposalFinancialState = jest.fn();
+
+jest.mock("../../../lib/api/accountant", () => ({
+  accountantLoadProposalFinancialState: (...args: unknown[]) =>
+    mockAccountantLoadProposalFinancialState(...args),
 }));
-
-const { supabase: mockSupabase } = jest.requireMock("../../../lib/supabaseClient") as {
-  supabase: {
-    from: jest.Mock;
-  };
-};
-
-type QueryResult = {
-  data: unknown;
-  error: Error | null;
-};
 
 type Deferred<T> = {
   promise: Promise<T>;
@@ -86,6 +76,69 @@ const baseCurrent = (overrides?: Record<string, unknown>) => ({
   ...overrides,
 });
 
+const baseFinancialState = (overrides?: Record<string, unknown>) => ({
+  proposalId: "proposal-1",
+  proposalStatus: "Утверждено",
+  sentToAccountantAt: "2026-03-30T10:00:00.000Z",
+  supplier: "Supplier",
+  invoice: {
+    number: "INV-1",
+    date: "2026-03-29",
+    currency: "KGS",
+    payableSource: "proposal_items_total",
+  },
+  totals: {
+    payableAmount: 130,
+    totalPaid: 20,
+    outstandingAmount: 110,
+    paymentsCount: 1,
+    paymentStatus: "Частично оплачено",
+    lastPaidAt: "2026-03-30T10:00:00.000Z",
+  },
+  eligibility: {
+    approved: true,
+    sentToAccountant: true,
+    paymentEligible: true,
+    failureCode: null,
+  },
+  allocationSummary: {
+    paidKnownSum: 20,
+    paidUnassigned: 0,
+    allocationCount: 2,
+  },
+  items: [
+    {
+      proposalItemId: "item-1",
+      nameHuman: "Line one",
+      uom: "pcs",
+      qty: 2,
+      price: 50,
+      rikCode: "MAT-1",
+      lineTotal: 100,
+      paidTotal: 20,
+      outstanding: 80,
+    },
+    {
+      proposalItemId: "item-2",
+      nameHuman: "Line two",
+      uom: "pcs",
+      qty: 1,
+      price: 30,
+      rikCode: "MAT-2",
+      lineTotal: 30,
+      paidTotal: 0,
+      outstanding: 30,
+    },
+  ],
+  meta: {
+    sourceKind: "rpc:accountant_proposal_financial_state_v1",
+    backendTruth: true,
+    legacyTotalPaid: 20,
+    legacyPaymentStatus: "Частично оплачено",
+  },
+  ...overrides,
+});
+
 function PaymentFormHarness(props: {
   current: ReturnType<typeof baseCurrent> | null;
   onAllocStatus?: jest.Mock;
@@ -96,7 +149,7 @@ function PaymentFormHarness(props: {
   const [invoiceDate, setInvoiceDate] = React.useState("2026-03-29");
   const [invMM, setInvMM] = React.useState("03");
   const [invDD, setInvDD] = React.useState("29");
-  const [accountantFio, setAccountantFio] = React.useState("Р‘СѓС…РіР°Р»С‚РµСЂ");
+  const [accountantFio, setAccountantFio] = React.useState("Бухгалтер");
   const [payKind, setPayKind] = React.useState<"bank" | "cash">("bank");
   const [amount, setAmount] = React.useState("");
   const [note, setNote] = React.useState("");
@@ -105,7 +158,9 @@ function PaymentFormHarness(props: {
   const [rs, setRs] = React.useState("");
   const [inn, setInn] = React.useState("");
   const [kpp, setKpp] = React.useState("");
-  const [allocRows, setAllocRows] = React.useState<Array<{ proposal_item_id: string; amount: number }>>([]);
+  const [allocRows, setAllocRows] = React.useState<
+    Array<{ proposal_item_id: string; amount: number }>
+  >([]);
   const [allocStatus, setAllocStatus] = React.useState({ ok: true, sum: 0 });
 
   return (
@@ -164,40 +219,6 @@ function PaymentFormHarness(props: {
   );
 }
 
-const configurePaymentQueries = (params: {
-  itemResponse: (proposalId: string) => QueryResult | Promise<QueryResult>;
-  allocationResponse: (proposalId: string) => QueryResult | Promise<QueryResult>;
-}) => {
-  const proposalItemsQuery = {
-    proposalId: "",
-    select: jest.fn(function select() {
-      return proposalItemsQuery;
-    }),
-    eq: jest.fn(function eq(_column: string, proposalId: string) {
-      proposalItemsQuery.proposalId = String(proposalId);
-      return proposalItemsQuery;
-    }),
-    order: jest.fn().mockImplementation(() => Promise.resolve(params.itemResponse(proposalItemsQuery.proposalId))),
-  };
-
-  const allocationsQuery = {
-    select: jest.fn(function select() {
-      return allocationsQuery;
-    }),
-    eq: jest.fn().mockImplementation((_column: string, proposalId: string) =>
-      Promise.resolve(params.allocationResponse(String(proposalId))),
-    ),
-  };
-
-  mockSupabase.from.mockImplementation((table: string) => {
-    if (table === "proposal_items") return proposalItemsQuery;
-    if (table === "proposal_payment_allocations") return allocationsQuery;
-    throw new Error(`Unexpected table ${table}`);
-  });
-
-  return { proposalItemsQuery, allocationsQuery };
-};
-
 describe("ActivePaymentForm", () => {
   let consoleErrorSpy: jest.SpyInstance;
 
@@ -205,7 +226,7 @@ describe("ActivePaymentForm", () => {
     const runtime = globalThis as typeof globalThis & { __DEV__?: boolean };
     runtime.__DEV__ = false;
     resetPlatformObservabilityEvents();
-    mockSupabase.from.mockReset();
+    mockAccountantLoadProposalFinancialState.mockReset();
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -213,17 +234,10 @@ describe("ActivePaymentForm", () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it("shows a visible payment data error and keeps allocation status non-ready when loads fail", async () => {
-    configurePaymentQueries({
-      itemResponse: async () => ({
-        data: null,
-        error: new Error("proposal items failed"),
-      }),
-      allocationResponse: async () => ({
-        data: null,
-        error: new Error("allocation lookup failed"),
-      }),
-    });
+  it("shows a visible payment data error when server financial state load fails", async () => {
+    mockAccountantLoadProposalFinancialState.mockRejectedValue(
+      new Error("server financial state failed"),
+    );
 
     let renderer!: ReactTestRenderer;
     await act(async () => {
@@ -231,33 +245,61 @@ describe("ActivePaymentForm", () => {
     });
     await flushAsync();
 
-    expect(() => renderer.root.findByProps({ testID: "payment-form-data-error" })).not.toThrow();
+    expect(() =>
+      renderer.root.findByProps({ testID: "payment-form-data-error" }),
+    ).not.toThrow();
 
     const events = getPlatformObservabilityEvents();
-    expect(events.some((event) => event.event === "proposal_items_load_failed")).toBe(true);
-    expect(events.some((event) => event.event === "proposal_allocations_load_failed")).toBe(true);
-
-    expect(readJsonByTestId<{ ok: boolean; sum: number }>(renderer, "harness-alloc-status")).toEqual({
+    expect(
+      events.some((event) => event.event === "proposal_financial_state_load_failed"),
+    ).toBe(true);
+    expect(
+      readJsonByTestId<{ ok: boolean; sum: number }>(renderer, "harness-alloc-status"),
+    ).toEqual({
       ok: false,
       sum: 0,
     });
   });
 
   it("opens, loads, and reaches ready state without stale placeholders", async () => {
-    configurePaymentQueries({
-      itemResponse: async () => ({
-        data: [{ id: "item-1", name_human: "Ready item", qty: 1, price: 20, uom: "pcs", rik_code: "MAT-1" }],
-        error: null,
+    mockAccountantLoadProposalFinancialState.mockResolvedValue(
+      baseFinancialState({
+        totals: {
+          payableAmount: 20,
+          totalPaid: 0,
+          outstandingAmount: 20,
+          paymentsCount: 0,
+          paymentStatus: "К оплате",
+          lastPaidAt: null,
+        },
+        allocationSummary: { paidKnownSum: 0, paidUnassigned: 0, allocationCount: 1 },
+        items: [
+          {
+            proposalItemId: "item-1",
+            nameHuman: "Ready item",
+            uom: "pcs",
+            qty: 1,
+            price: 20,
+            rikCode: "MAT-1",
+            lineTotal: 20,
+            paidTotal: 0,
+            outstanding: 20,
+          },
+        ],
       }),
-      allocationResponse: async () => ({ data: [], error: null }),
-    });
+    );
 
     let renderer!: ReactTestRenderer;
     await act(async () => {
-      renderer = TestRenderer.create(<PaymentFormHarness current={baseCurrent({ total_paid: 0, invoice_amount: 20 })} />);
+      renderer = TestRenderer.create(
+        <PaymentFormHarness current={baseCurrent({ total_paid: 0, invoice_amount: 20 })} />,
+      );
     });
     await waitForCondition(
-      () => getPlatformObservabilityEvents().some((event) => event.event === "payment_form_ready"),
+      () =>
+        getPlatformObservabilityEvents().some(
+          (event) => event.event === "payment_form_ready",
+        ),
       20,
       () =>
         getPlatformObservabilityEvents().map((event) => ({
@@ -276,13 +318,8 @@ describe("ActivePaymentForm", () => {
   });
 
   it("cancels in-flight loads on immediate close without stale state updates", async () => {
-    const itemDeferred = deferred<QueryResult>();
-    const allocationDeferred = deferred<QueryResult>();
-
-    configurePaymentQueries({
-      itemResponse: () => itemDeferred.promise,
-      allocationResponse: () => allocationDeferred.promise,
-    });
+    const financialStateDeferred = deferred<ReturnType<typeof baseFinancialState>>();
+    mockAccountantLoadProposalFinancialState.mockReturnValue(financialStateDeferred.promise);
 
     let renderer!: ReactTestRenderer;
     await act(async () => {
@@ -294,63 +331,91 @@ describe("ActivePaymentForm", () => {
       renderer.unmount();
     });
 
-    itemDeferred.resolve({
-      data: [
-        { id: "stale-item", name_human: "Stale item", qty: 1, price: 10, uom: "pcs", rik_code: "MAT-STALE" },
-      ],
-      error: null,
-    });
-    allocationDeferred.resolve({ data: [], error: null });
+    financialStateDeferred.resolve(baseFinancialState());
     await flushAsync();
 
     const events = getPlatformObservabilityEvents();
-    expect(events.some((event) => event.event === "payment_form_request_canceled")).toBe(true);
+    expect(
+      events.some((event) => event.event === "payment_form_request_canceled"),
+    ).toBe(true);
     expect(consoleErrorSpy).not.toHaveBeenCalled();
   });
 
   it("ignores stale responses after quick reopen and publishes only fresh rows", async () => {
-    const itemDeferred1 = deferred<QueryResult>();
-    const allocationDeferred1 = deferred<QueryResult>();
-    const itemDeferred2 = deferred<QueryResult>();
-    const allocationDeferred2 = deferred<QueryResult>();
+    const financialStateDeferred1 = deferred<ReturnType<typeof baseFinancialState>>();
+    const financialStateDeferred2 = deferred<ReturnType<typeof baseFinancialState>>();
 
-    configurePaymentQueries({
-      itemResponse: (proposalId) => {
-        if (proposalId === "proposal-1") return itemDeferred1.promise;
-        if (proposalId === "proposal-2") return itemDeferred2.promise;
-        throw new Error(`Unexpected proposal for items: ${proposalId}`);
-      },
-      allocationResponse: (proposalId) => {
-        if (proposalId === "proposal-1") return allocationDeferred1.promise;
-        if (proposalId === "proposal-2") return allocationDeferred2.promise;
-        throw new Error(`Unexpected proposal for allocations: ${proposalId}`);
-      },
+    mockAccountantLoadProposalFinancialState.mockImplementation((proposalId: string) => {
+      if (proposalId === "proposal-1") return financialStateDeferred1.promise;
+      if (proposalId === "proposal-2") return financialStateDeferred2.promise;
+      throw new Error(`Unexpected proposal ${proposalId}`);
     });
 
     let renderer!: ReactTestRenderer;
     await act(async () => {
-      renderer = TestRenderer.create(<PaymentFormHarness current={baseCurrent({ proposal_id: "proposal-1" })} />);
+      renderer = TestRenderer.create(
+        <PaymentFormHarness current={baseCurrent({ proposal_id: "proposal-1" })} />,
+      );
     });
     await flushAsync(1);
 
     await act(async () => {
-      renderer.update(<PaymentFormHarness current={baseCurrent({ proposal_id: "proposal-2", invoice_number: "INV-2" })} />);
+      renderer.update(
+        <PaymentFormHarness
+          current={baseCurrent({ proposal_id: "proposal-2", invoice_number: "INV-2" })}
+        />,
+      );
     });
 
-    itemDeferred1.resolve({
-      data: [{ id: "item-stale", name_human: "Stale item", qty: 1, price: 10, uom: "pcs", rik_code: "MAT-ST" }],
-      error: null,
-    });
-    allocationDeferred1.resolve({ data: [], error: null });
+    financialStateDeferred1.resolve(
+      baseFinancialState({
+        proposalId: "proposal-1",
+        items: [
+          {
+            proposalItemId: "item-stale",
+            nameHuman: "Stale item",
+            uom: "pcs",
+            qty: 1,
+            price: 10,
+            rikCode: "MAT-ST",
+            lineTotal: 10,
+            paidTotal: 0,
+            outstanding: 10,
+          },
+        ],
+      }),
+    );
     await flushAsync();
 
-    itemDeferred2.resolve({
-      data: [{ id: "item-fresh", name_human: "Fresh item", qty: 2, price: 25, uom: "pcs", rik_code: "MAT-FR" }],
-      error: null,
-    });
-    allocationDeferred2.resolve({ data: [], error: null });
+    financialStateDeferred2.resolve(
+      baseFinancialState({
+        proposalId: "proposal-2",
+        invoice: {
+          number: "INV-2",
+          date: "2026-03-29",
+          currency: "KGS",
+          payableSource: "proposal_items_total",
+        },
+        items: [
+          {
+            proposalItemId: "item-fresh",
+            nameHuman: "Fresh item",
+            uom: "pcs",
+            qty: 2,
+            price: 25,
+            rikCode: "MAT-FR",
+            lineTotal: 50,
+            paidTotal: 0,
+            outstanding: 50,
+          },
+        ],
+      }),
+    );
     await waitForCondition(
-      () => getPlatformObservabilityEvents().some((event) => event.event === "payment_form_ready"),
+      () =>
+        getPlatformObservabilityEvents().some(
+          (event) => event.event === "payment_form_ready",
+        ),
       20,
       () =>
         getPlatformObservabilityEvents().map((event) => ({
@@ -365,42 +430,31 @@ describe("ActivePaymentForm", () => {
     });
     await flushAsync();
 
-    const renderedText = renderer.root.findAllByType(Text).map((node) => flattenText(node.props.children));
+    const renderedText = renderer.root
+      .findAllByType(Text)
+      .map((node) => flattenText(node.props.children));
     expect(renderedText.some((text) => text.includes("Fresh item"))).toBe(true);
     expect(renderedText.some((text) => text.includes("Stale item"))).toBe(false);
 
     const events = getPlatformObservabilityEvents();
-    expect(events.some((event) => event.event === "payment_form_stale_response_ignored")).toBe(true);
+    expect(
+      events.some((event) => event.event === "payment_form_stale_response_ignored"),
+    ).toBe(true);
   });
 
   it("keeps partial allocation totals and residuals deterministic", async () => {
-    configurePaymentQueries({
-      itemResponse: async () => ({
-        data: [
-          { id: "item-1", name_human: "Line one", qty: 2, price: 50, uom: "pcs", rik_code: "MAT-1" },
-          { id: "item-2", name_human: "Line two", qty: 1, price: 30, uom: "pcs", rik_code: "MAT-2" },
-        ],
-        error: null,
-      }),
-      allocationResponse: async () => ({
-        data: [{ proposal_item_id: "item-1", amount: 20, proposal_payments: { proposal_id: "proposal-1" } }],
-        error: null,
-      }),
-    });
+    mockAccountantLoadProposalFinancialState.mockResolvedValue(baseFinancialState());
 
     let renderer!: ReactTestRenderer;
     await act(async () => {
       renderer = TestRenderer.create(<PaymentFormHarness current={baseCurrent()} />);
     });
     await waitForCondition(
-      () => getPlatformObservabilityEvents().some((event) => event.event === "payment_form_ready"),
-      20,
       () =>
-        getPlatformObservabilityEvents().map((event) => ({
-          event: event.event,
-          result: event.result,
-          errorMessage: event.errorMessage ?? null,
-        })),
+        getPlatformObservabilityEvents().some(
+          (event) => event.event === "payment_form_ready",
+        ),
+      20,
     );
 
     await act(async () => {
@@ -409,48 +463,43 @@ describe("ActivePaymentForm", () => {
     await flushAsync();
 
     await act(async () => {
-      renderer.root.findByProps({ testID: "payment-form-line-input-item-1" }).props.onChangeText("40");
+      renderer.root
+        .findByProps({ testID: "payment-form-line-input-item-1" })
+        .props.onChangeText("40");
     });
     await flushAsync();
 
     expect(readTextByTestId(renderer, "harness-amount")).toBe("40.00");
-    expect(readJsonByTestId<Array<{ proposal_item_id: string; amount: number }>>(renderer, "harness-alloc-rows")).toEqual([
-      { proposal_item_id: "item-1", amount: 40 },
-    ]);
-    expect(readJsonByTestId<{ ok: boolean; sum: number }>(renderer, "harness-alloc-status")).toEqual({
+    expect(
+      readJsonByTestId<Array<{ proposal_item_id: string; amount: number }>>(
+        renderer,
+        "harness-alloc-rows",
+      ),
+    ).toEqual([{ proposal_item_id: "item-1", amount: 40 }]);
+    expect(
+      readJsonByTestId<{ ok: boolean; sum: number }>(
+        renderer,
+        "harness-alloc-status",
+      ),
+    ).toEqual({
       ok: true,
       sum: 40,
     });
   });
 
   it("applies full allocation parity without changing formulas", async () => {
-    configurePaymentQueries({
-      itemResponse: async () => ({
-        data: [
-          { id: "item-1", name_human: "Line one", qty: 2, price: 50, uom: "pcs", rik_code: "MAT-1" },
-          { id: "item-2", name_human: "Line two", qty: 1, price: 30, uom: "pcs", rik_code: "MAT-2" },
-        ],
-        error: null,
-      }),
-      allocationResponse: async () => ({
-        data: [{ proposal_item_id: "item-1", amount: 20, proposal_payments: { proposal_id: "proposal-1" } }],
-        error: null,
-      }),
-    });
+    mockAccountantLoadProposalFinancialState.mockResolvedValue(baseFinancialState());
 
     let renderer!: ReactTestRenderer;
     await act(async () => {
       renderer = TestRenderer.create(<PaymentFormHarness current={baseCurrent()} />);
     });
     await waitForCondition(
-      () => getPlatformObservabilityEvents().some((event) => event.event === "payment_form_ready"),
-      20,
       () =>
-        getPlatformObservabilityEvents().map((event) => ({
-          event: event.event,
-          result: event.result,
-          errorMessage: event.errorMessage ?? null,
-        })),
+        getPlatformObservabilityEvents().some(
+          (event) => event.event === "payment_form_ready",
+        ),
+      20,
     );
 
     await act(async () => {
@@ -459,34 +508,57 @@ describe("ActivePaymentForm", () => {
     await flushAsync();
 
     expect(readTextByTestId(renderer, "harness-amount")).toBe("110.00");
-    expect(readJsonByTestId<Array<{ proposal_item_id: string; amount: number }>>(renderer, "harness-alloc-rows")).toEqual([
+    expect(
+      readJsonByTestId<Array<{ proposal_item_id: string; amount: number }>>(
+        renderer,
+        "harness-alloc-rows",
+      ),
+    ).toEqual([
       { proposal_item_id: "item-1", amount: 80 },
       { proposal_item_id: "item-2", amount: 30 },
     ]);
   });
 
   it("clears partial allocation state deterministically", async () => {
-    configurePaymentQueries({
-      itemResponse: async () => ({
-        data: [{ id: "item-1", name_human: "Line one", qty: 2, price: 50, uom: "pcs", rik_code: "MAT-1" }],
-        error: null,
+    mockAccountantLoadProposalFinancialState.mockResolvedValue(
+      baseFinancialState({
+        totals: {
+          payableAmount: 100,
+          totalPaid: 0,
+          outstandingAmount: 100,
+          paymentsCount: 0,
+          paymentStatus: "К оплате",
+          lastPaidAt: null,
+        },
+        allocationSummary: { paidKnownSum: 0, paidUnassigned: 0, allocationCount: 1 },
+        items: [
+          {
+            proposalItemId: "item-1",
+            nameHuman: "Line one",
+            uom: "pcs",
+            qty: 2,
+            price: 50,
+            rikCode: "MAT-1",
+            lineTotal: 100,
+            paidTotal: 0,
+            outstanding: 100,
+          },
+        ],
       }),
-      allocationResponse: async () => ({ data: [], error: null }),
-    });
+    );
 
     let renderer!: ReactTestRenderer;
     await act(async () => {
-      renderer = TestRenderer.create(<PaymentFormHarness current={baseCurrent({ total_paid: 0, invoice_amount: 100 })} />);
+      renderer = TestRenderer.create(
+        <PaymentFormHarness current={baseCurrent({ total_paid: 0, invoice_amount: 100 })} />,
+      );
     });
     await waitForCondition(
-      () => getPlatformObservabilityEvents().some((event) => event.event === "payment_form_ready"),
-      20,
       () =>
-        getPlatformObservabilityEvents().map((event) => ({
-          event: event.event,
-          result: event.result,
-          errorMessage: event.errorMessage ?? null,
-        })),
+        getPlatformObservabilityEvents().some(
+          (event) => event.event === "payment_form_ready",
+        ),
+      20,
     );
 
     await act(async () => {
@@ -495,7 +567,9 @@ describe("ActivePaymentForm", () => {
     await flushAsync();
 
     await act(async () => {
-      renderer.root.findByProps({ testID: "payment-form-line-input-item-1" }).props.onChangeText("35");
+      renderer.root
+        .findByProps({ testID: "payment-form-line-input-item-1" })
+        .props.onChangeText("35");
     });
     await flushAsync();
 
@@ -505,46 +579,77 @@ describe("ActivePaymentForm", () => {
     await flushAsync();
 
     expect(readTextByTestId(renderer, "harness-amount")).toBe("");
-    expect(readJsonByTestId<Array<{ proposal_item_id: string; amount: number }>>(renderer, "harness-alloc-rows")).toEqual([]);
-    expect(readJsonByTestId<{ ok: boolean; sum: number }>(renderer, "harness-alloc-status")).toEqual({
+    expect(
+      readJsonByTestId<Array<{ proposal_item_id: string; amount: number }>>(
+        renderer,
+        "harness-alloc-rows",
+      ),
+    ).toEqual([]);
+    expect(
+      readJsonByTestId<{ ok: boolean; sum: number }>(
+        renderer,
+        "harness-alloc-status",
+      ),
+    ).toEqual({
       ok: false,
       sum: 0,
     });
   });
 
   it("does not refetch on parent rerender with the same proposal", async () => {
-    const { proposalItemsQuery, allocationsQuery } = configurePaymentQueries({
-      itemResponse: async () => ({
-        data: [{ id: "item-1", name_human: "Line one", qty: 1, price: 20, uom: "pcs", rik_code: "MAT-1" }],
-        error: null,
+    mockAccountantLoadProposalFinancialState.mockResolvedValue(
+      baseFinancialState({
+        totals: {
+          payableAmount: 20,
+          totalPaid: 0,
+          outstandingAmount: 20,
+          paymentsCount: 0,
+          paymentStatus: "К оплате",
+          lastPaidAt: null,
+        },
+        allocationSummary: { paidKnownSum: 0, paidUnassigned: 0, allocationCount: 1 },
+        items: [
+          {
+            proposalItemId: "item-1",
+            nameHuman: "Line one",
+            uom: "pcs",
+            qty: 1,
+            price: 20,
+            rikCode: "MAT-1",
+            lineTotal: 20,
+            paidTotal: 0,
+            outstanding: 20,
+          },
+        ],
       }),
-      allocationResponse: async () => ({ data: [], error: null }),
-    });
+    );
 
     let renderer!: ReactTestRenderer;
     await act(async () => {
       renderer = TestRenderer.create(<PaymentFormHarness current={baseCurrent()} nonce={0} />);
     });
     await waitForCondition(
-      () => proposalItemsQuery.order.mock.calls.length === 1,
+      () => mockAccountantLoadProposalFinancialState.mock.calls.length === 1,
       20,
       () => ({
+        calls: mockAccountantLoadProposalFinancialState.mock.calls.length,
         events: getPlatformObservabilityEvents().map((event) => ({
           event: event.event,
           result: event.result,
-          errorMessage: event.errorMessage ?? null,
         })),
-        orderCalls: proposalItemsQuery.order.mock.calls.length,
-        allocationCalls: allocationsQuery.eq.mock.calls.length,
       }),
     );
 
     await act(async () => {
-      renderer.update(<PaymentFormHarness current={baseCurrent({ invoice_number: "INV-RERENDER" })} nonce={1} />);
+      renderer.update(
+        <PaymentFormHarness
+          current={baseCurrent({ invoice_number: "INV-RERENDER" })}
+          nonce={1}
+        />,
+      );
     });
     await flushAsync();
 
-    expect(proposalItemsQuery.order).toHaveBeenCalledTimes(1);
-    expect(allocationsQuery.eq).toHaveBeenCalledTimes(1);
+    expect(mockAccountantLoadProposalFinancialState).toHaveBeenCalledTimes(1);
   });
 });

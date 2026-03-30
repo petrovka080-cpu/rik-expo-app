@@ -1,0 +1,114 @@
+{
+  "canonicalReadModel": {
+    "sourceKind": "rpc:accountant_proposal_financial_state_v1",
+    "backendTruth": true
+  },
+  "partialAllocation": {
+    "proposalId": "bbc888fd-086d-4230-bb70-415059888ef9",
+    "totals": {
+      "server": {
+        "payableAmount": 100,
+        "totalPaid": 40,
+        "outstandingAmount": 60,
+        "paymentsCount": 1,
+        "paymentStatus": "Частично оплачено"
+      },
+      "canonical": {
+        "payableAmount": 100,
+        "totalPaid": 40,
+        "outstandingAmount": 60,
+        "paymentsCount": 1,
+        "allocationsCount": 2
+      },
+      "mirrors": {
+        "id": "bbc888fd-086d-4230-bb70-415059888ef9",
+        "status": "Утверждено",
+        "sentToAccountantAt": "2026-03-30T04:22:26.433+00:00",
+        "mirrorTotalPaid": 40,
+        "mirrorPaymentStatus": "Частично оплачено"
+      }
+    },
+    "parity": {
+      "payableMatch": true,
+      "totalPaidMatch": true,
+      "outstandingMatch": true,
+      "paymentsCountMatch": true,
+      "mirrorTotalPaidMatch": true,
+      "mirrorPaymentStatusMatch": true,
+      "itemParity": [
+        {
+          "proposalItemId": "1550",
+          "lineTotalMatch": true,
+          "paidTotalMatch": true,
+          "outstandingMatch": true
+        },
+        {
+          "proposalItemId": "1551",
+          "lineTotalMatch": true,
+          "paidTotalMatch": true,
+          "outstandingMatch": true
+        }
+      ],
+      "allItemParity": true
+    }
+  },
+  "fullAllocation": {
+    "proposalId": "90ff7fce-8c4a-4e6b-bd62-92880cf6c420",
+    "totals": {
+      "server": {
+        "payableAmount": 100,
+        "totalPaid": 100,
+        "outstandingAmount": 0,
+        "paymentsCount": 1,
+        "paymentStatus": "Оплачено"
+      },
+      "canonical": {
+        "payableAmount": 100,
+        "totalPaid": 100,
+        "outstandingAmount": 0,
+        "paymentsCount": 1,
+        "allocationsCount": 2
+      },
+      "mirrors": {
+        "id": "90ff7fce-8c4a-4e6b-bd62-92880cf6c420",
+        "status": "Утверждено",
+        "sentToAccountantAt": "2026-03-30T04:22:31.702+00:00",
+        "mirrorTotalPaid": 100,
+        "mirrorPaymentStatus": "Оплачено"
+      }
+    },
+    "parity": {
+      "payableMatch": true,
+      "totalPaidMatch": true,
+      "outstandingMatch": true,
+      "paymentsCountMatch": true,
+      "mirrorTotalPaidMatch": true,
+      "mirrorPaymentStatusMatch": true,
+      "itemParity": [
+        {
+          "proposalItemId": "1552",
+          "lineTotalMatch": true,
+          "paidTotalMatch": true,
+          "outstandingMatch": true
+        },
+        {
+          "proposalItemId": "1553",
+          "lineTotalMatch": true,
+          "paidTotalMatch": true,
+          "outstandingMatch": true
+        }
+      ],
+      "allItemParity": true
+    }
+  },
+  "sourceScan": {
+    "paymentFormUsesServerTruthRpc": true,
+    "paymentFormNoDirectProposalItemsFetch": true,
+    "payActionsUsesAtomicRpc": true,
+    "payActionsNoLegacyPaidAgg": true,
+    "payActionsNoClientDebtFormula": true,
+    "postSyncUsesServerTruthRpc": true,
+    "historyFlowUsesServerTruthRpc": true,
+    "noSilentCatchOnPayActions": true
+  }
+}

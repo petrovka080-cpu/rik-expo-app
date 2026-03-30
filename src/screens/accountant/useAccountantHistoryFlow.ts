@@ -1,35 +1,44 @@
 import { useCallback } from "react";
-import { fetchPaidAggByProposal, computePayStatus } from "./accountant.payment";
+
+import { accountantLoadProposalFinancialState } from "../../lib/api/accountant";
 import { mapHistoryRowToCurrentRow } from "./accountant.history.service";
-import type { HistoryRow, AccountantInboxUiRow } from "./types";
+import type { AccountantInboxUiRow, HistoryRow } from "./types";
 
 export function useAccountantHistoryFlow(params: {
-    setCurrentPaymentId: (id: number | null) => void;
-    setAccountantFio: (fio: string) => void;
-    openCard: (row: AccountantInboxUiRow) => void;
+  setCurrentPaymentId: (id: number | null) => void;
+  setAccountantFio: (fio: string) => void;
+  openCard: (row: AccountantInboxUiRow) => void;
+  safeAlert: (title: string, message: string) => void;
+  errText: (error: unknown) => string;
 }) {
-    const { setCurrentPaymentId, setAccountantFio, openCard } = params;
+  const { setCurrentPaymentId, setAccountantFio, openCard, safeAlert, errText } = params;
 
-    const onOpenHistoryRow = useCallback(async (item: HistoryRow) => {
-        setCurrentPaymentId(Number(item.payment_id));
-        setAccountantFio(String(item.accountant_fio ?? "").trim());
+  const onOpenHistoryRow = useCallback(
+    async (item: HistoryRow) => {
+      setCurrentPaymentId(Number(item.payment_id));
+      setAccountantFio(String(item.accountant_fio ?? "").trim());
 
-        let agg = { total_paid: 0, payments_count: 0, last_paid_at: 0 };
-        try {
-            agg = await fetchPaidAggByProposal(String(item.proposal_id));
-        } catch { }
-
-        const inv = Number(item.invoice_amount ?? 0);
-        const st = computePayStatus(null, inv, agg.total_paid);
-
+      try {
+        const financialState = await accountantLoadProposalFinancialState(
+          String(item.proposal_id),
+        );
         const mappedRow = mapHistoryRowToCurrentRow({
-            item,
-            totalPaid: agg.total_paid,
-            paymentsCount: agg.payments_count,
-            paymentStatus: st,
+          item,
+          totalPaid: financialState.totals.totalPaid,
+          paymentsCount: financialState.totals.paymentsCount,
+          paymentStatus:
+            financialState.totals.paymentStatus ?? "К оплате",
         });
         openCard(mappedRow);
-    }, [setCurrentPaymentId, setAccountantFio, openCard]);
+      } catch (error) {
+        safeAlert(
+          "Ошибка финансового состояния",
+          `Не удалось открыть серверное финансовое состояние предложения: ${errText(error)}`,
+        );
+      }
+    },
+    [errText, openCard, safeAlert, setAccountantFio, setCurrentPaymentId],
+  );
 
-    return { onOpenHistoryRow };
+  return { onOpenHistoryRow };
 }

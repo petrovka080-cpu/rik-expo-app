@@ -369,6 +369,9 @@ function AccountantScreen() {
     setRows,
     safeAlert,
     errText,
+    invoiceNumber: invoiceNo,
+    invoiceDate,
+    invoiceCurrency: current?.invoice_currency ?? "KGS",
   });
 
   const onReturnToBuyer = useAccountantReturnAction({
@@ -382,7 +385,13 @@ function AccountantScreen() {
     errText,
   });
 
-  const { onOpenHistoryRow } = useAccountantHistoryFlow({ setCurrentPaymentId, setAccountantFio, openCard });
+  const { onOpenHistoryRow } = useAccountantHistoryFlow({
+    setCurrentPaymentId,
+    setAccountantFio,
+    openCard,
+    safeAlert,
+    errText,
+  });
 
   const renderItem = useCallback(
     ({ item }: { item: AccountantInboxRow }) => <ListRow item={item} onPress={() => openCard(item)} />,

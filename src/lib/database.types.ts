@@ -15398,6 +15398,10 @@ export type Database = {
         }
         Returns: number
       }
+      accountant_proposal_financial_state_v1: {
+        Args: { p_proposal_id: string }
+        Returns: Json
+      }
       acc_inv_add: {
         Args: {
           p_qty_fact: number
@@ -15681,6 +15685,24 @@ export type Database = {
       accountant_return_to_buyer: {
         Args: { p_comment?: string; p_proposal_id: string }
         Returns: undefined
+      }
+      accounting_pay_invoice_v1: {
+        Args: {
+          p_accountant_fio: string
+          p_allocations?: Json
+          p_amount: number
+          p_expected_outstanding?: number
+          p_expected_total_paid?: number
+          p_invoice_amount?: number
+          p_invoice_currency?: string
+          p_invoice_date?: string
+          p_invoice_number?: string
+          p_method: string
+          p_note?: string
+          p_proposal_id: string
+          p_purpose: string
+        }
+        Returns: Json
       }
       add_alias: {
         Args: { p_alias: string; p_rik_code: string }

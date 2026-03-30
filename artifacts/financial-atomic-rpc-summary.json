@@ -1,0 +1,52 @@
+{
+  "status": "GREEN",
+  "inventory": {
+    "paymentMutationOwner": "rpc:accounting_pay_invoice_v1",
+    "financialReadOwner": "rpc:accountant_proposal_financial_state_v1",
+    "dbGuard": "trigger:trg_guard_paid_proposal_financial_revocation_v1",
+    "clientPrimaryMathRemoved": true
+  },
+  "scenarios": {
+    "happyPathApprovedProposal": {
+      "pass": true,
+      "proposalId": "bbc888fd-086d-4230-bb70-415059888ef9",
+      "paymentId": 162
+    },
+    "proposalNotApprovedRejected": {
+      "pass": true,
+      "proposalId": "da76db82-3e30-46ec-9361-59c2d6f1bed1",
+      "failureCode": "proposal_not_approved"
+    },
+    "approvalRevokedRejected": {
+      "pass": true,
+      "proposalId": "4c393b25-823b-453b-b9b4-e488d684d9c7",
+      "failureCode": "approval_revoked"
+    },
+    "concurrentPaymentControlled": {
+      "pass": true,
+      "proposalId": "522426f5-bcc9-4abb-8ed9-cad09161f744",
+      "failureCodes": [
+        "stale_financial_state"
+      ]
+    },
+    "amountExceedsOutstandingRejected": {
+      "pass": true,
+      "proposalId": "2c565c1b-1e52-414f-bb27-12d12c7659b9",
+      "failureCode": "amount_exceeds_outstanding"
+    },
+    "partialAllocationServerConsistent": {
+      "pass": true,
+      "proposalId": "bbc888fd-086d-4230-bb70-415059888ef9"
+    },
+    "fullAllocationServerConsistent": {
+      "pass": true,
+      "proposalId": "90ff7fce-8c4a-4e6b-bd62-92880cf6c420"
+    },
+    "activePaymentFormServerOwned": {
+      "pass": true
+    }
+  },
+  "noSilentFail": {
+    "pass": true
+  }
+}

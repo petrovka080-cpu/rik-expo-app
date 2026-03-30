@@ -1,20 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { accountantLoadProposalFinancialState } from "../../lib/api/accountant";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
-import { supabase } from "../../lib/supabaseClient";
 import {
   applyAllocationRow,
   buildAllocRowsSignature,
   buildFullAllocationRows,
   buildLineInputMap,
-  buildPaidAllocationState,
   derivePaymentFormState,
   getPaymentFormErrorMessage,
-  normalizePaymentFormItem,
   nnum,
   round2,
   type AccountantPaymentAllocRow,
@@ -35,31 +33,52 @@ type UseAccountantPaymentFormParams = {
 const getPaymentFormSourceKind = (proposalId: string) =>
   proposalId ? "proposal:payment_allocation_form" : "payment:manual_form";
 
-async function loadPaymentFormProposalItems(
-  proposalId: string,
-): Promise<AccountantPaymentFormItem[]> {
-  const query = await supabase
-    .from("proposal_items")
-    .select("id, name_human, uom, qty, price, rik_code")
-    .eq("proposal_id", proposalId)
-    .order("id", { ascending: true });
+const getFinancialEligibilityMessage = (failureCode: string | null) => {
+  switch (String(failureCode ?? "").trim()) {
+    case "proposal_not_approved":
+      return "Предложение не одобрено для оплаты.";
+    case "approval_revoked":
+      return "Одобрение или передача бухгалтеру были отозваны.";
+    case "already_paid":
+      return "Предложение уже полностью оплачено.";
+    case "invalid_payable_amount":
+      return "Серверное финансовое состояние предложения некорректно.";
+    case "proposal_not_found":
+      return "Предложение не найдено.";
+    default:
+      return "Серверное финансовое состояние предложения недоступно для оплаты.";
+  }
+};
 
-  if (query.error) throw query.error;
-  return Array.isArray(query.data)
-    ? query.data
-        .map(normalizePaymentFormItem)
-        .filter((row): row is AccountantPaymentFormItem => !!row)
-    : [];
-}
-
-async function loadPaymentFormPriorAllocations(proposalId: string) {
-  const query = await supabase
-    .from("proposal_payment_allocations")
-    .select("proposal_item_id, amount, proposal_payments!inner(proposal_id)")
-    .eq("proposal_payments.proposal_id", proposalId);
-
-  if (query.error) throw query.error;
-  return buildPaidAllocationState(Array.isArray(query.data) ? query.data : []);
+async function loadPaymentFormFinancialState(proposalId: string) {
+  const financialState = await accountantLoadProposalFinancialState(proposalId);
+  return {
+    current: {
+      proposal_id: financialState.proposalId,
+      supplier: financialState.supplier,
+      invoice_number: financialState.invoice.number,
+      invoice_date: financialState.invoice.date,
+      invoice_currency: financialState.invoice.currency,
+      invoice_amount: financialState.totals.payableAmount,
+      total_paid: financialState.totals.totalPaid,
+    } satisfies AccountantPaymentCurrentInvoice,
+    items: financialState.items.map(
+      (item): AccountantPaymentFormItem => ({
+        id: item.proposalItemId,
+        name_human: item.nameHuman,
+        uom: item.uom,
+        qty: item.qty,
+        price: item.price,
+        rik_code: item.rikCode,
+      }),
+    ),
+    paidByLineMap: new Map(
+      financialState.items.map((item) => [item.proposalItemId, round2(item.paidTotal)]),
+    ),
+    paidKnownSum: round2(financialState.allocationSummary.paidKnownSum),
+    paymentEligible: financialState.eligibility.paymentEligible,
+    failureCode: financialState.eligibility.failureCode,
+  };
 }
 
 export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams) {
@@ -80,9 +99,22 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
   const [itemsError, setItemsError] = useState<string | null>(null);
   const [allocationsError, setAllocationsError] = useState<string | null>(null);
   const [allocationUiError, setAllocationUiError] = useState<string | null>(null);
+  const [financialCurrent, setFinancialCurrent] =
+    useState<AccountantPaymentCurrentInvoice | null>(null);
   const [paidByLineMap, setPaidByLineMap] = useState<Map<string, number>>(new Map());
   const [paidKnownSum, setPaidKnownSum] = useState(0);
   const [lineInputs, setLineInputs] = useState<Record<string, string>>({});
+
+  const effectiveCurrent = useMemo<AccountantPaymentCurrentInvoice | null>(
+    () =>
+      current || financialCurrent
+        ? {
+            ...(current ?? {}),
+            ...(financialCurrent ?? {}),
+          }
+        : null,
+    [current, financialCurrent],
+  );
 
   const recordPaymentFormCatch = useCallback(
     (
@@ -121,7 +153,7 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
   const derived = useMemo(
     () =>
       derivePaymentFormState({
-        current,
+        current: effectiveCurrent,
         proposalId,
         mode,
         items,
@@ -133,7 +165,7 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
       }),
     [
       allocRows,
-      current,
+      effectiveCurrent,
       items,
       itemsLoading,
       mode,
@@ -206,6 +238,7 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
   useEffect(() => {
     setMode("full");
     setItems([]);
+    setFinancialCurrent(null);
     setPaidByLineMap(new Map());
     setPaidKnownSum(0);
     setItemsLoading(false);
@@ -256,10 +289,7 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
     setAllocationsError(null);
 
     void (async () => {
-      const [itemsResult, allocationsResult] = await Promise.allSettled([
-        loadPaymentFormProposalItems(proposalId),
-        loadPaymentFormPriorAllocations(proposalId),
-      ]);
+      const financialStateResult = await loadPaymentFormFinancialState(proposalId);
 
       const isCurrentRequest =
         mountedRef.current &&
@@ -283,51 +313,17 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
         return;
       }
 
-      let nextItems: AccountantPaymentFormItem[] = [];
-      let nextItemsError: string | null = null;
-      let nextPaidByLineMap = new Map<string, number>();
-      let nextPaidKnownSum = 0;
-      let nextAllocationsError: string | null = null;
-      let firstError: unknown = null;
-      let errorStage: string | undefined;
-
-      if (itemsResult.status === "fulfilled") {
-        nextItems = itemsResult.value;
-      } else {
-        firstError = itemsResult.reason;
-        errorStage = "proposal_items_load_failed";
-        nextItemsError = getPaymentFormErrorMessage(
-          itemsResult.reason,
-          "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РїРѕР·РёС†РёРё СЃС‡РµС‚Р°.",
-        );
-        recordPaymentFormCatch("critical_fail", "proposal_items_load_failed", itemsResult.reason, {
-          publishState: "error",
-          requestId,
-        });
-      }
-
-      if (allocationsResult.status === "fulfilled") {
-        nextPaidByLineMap = allocationsResult.value.paidByLineMap;
-        nextPaidKnownSum = allocationsResult.value.paidKnownSum;
-      } else {
-        if (!firstError) firstError = allocationsResult.reason;
-        if (!errorStage) errorStage = "proposal_allocations_load_failed";
-        nextAllocationsError = getPaymentFormErrorMessage(
-          allocationsResult.reason,
-          "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЂР°РЅРµРµ РїСЂРѕРІРµРґРµРЅРЅС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ.",
-        );
-        recordPaymentFormCatch(
-          "critical_fail",
-          "proposal_allocations_load_failed",
-          allocationsResult.reason,
-          {
-            publishState: "error",
-            requestId,
-          },
-        );
-      }
+      const nextItems = financialStateResult.items;
+      const nextFinancialCurrent = financialStateResult.current;
+      const nextPaidByLineMap = financialStateResult.paidByLineMap;
+      const nextPaidKnownSum = financialStateResult.paidKnownSum;
+      const nextItemsError: string | null = null;
+      const nextAllocationsError = financialStateResult.paymentEligible
+        ? null
+        : getFinancialEligibilityMessage(financialStateResult.failureCode);
 
       setItems(nextItems);
+      setFinancialCurrent(nextFinancialCurrent);
       setPaidByLineMap(nextPaidByLineMap);
       setPaidKnownSum(nextPaidKnownSum);
       setItemsError(nextItemsError);
@@ -335,13 +331,28 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
       setItemsLoading(false);
       completed = true;
 
-      if (firstError) {
-        observation.error(firstError, {
-          errorStage,
+      if (!financialStateResult.paymentEligible) {
+        const failure = new Error(
+          nextAllocationsError ?? "Server financial state rejected payment eligibility.",
+        );
+        recordPaymentFormCatch(
+          "critical_fail",
+          "proposal_financial_state_ineligible",
+          failure,
+          {
+            publishState: "error",
+            requestId,
+            failureCode: financialStateResult.failureCode,
+          },
+        );
+        observation.error(failure, {
+          errorStage: "proposal_financial_state_ineligible",
           extra: {
             proposalId,
             requestId,
             publishState: "error",
+            paymentEligible: financialStateResult.paymentEligible,
+            failureCode: financialStateResult.failureCode,
             itemsError: nextItemsError,
             allocationsError: nextAllocationsError,
           },
@@ -355,6 +366,8 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
           proposalId,
           requestId,
           paidAllocationCount: nextPaidByLineMap.size,
+          paymentEligible: financialStateResult.paymentEligible,
+          failureCode: financialStateResult.failureCode,
           publishState: "ready",
         },
       });
@@ -370,6 +383,8 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
           requestId,
           rowCount: nextItems.length,
           paidAllocationCount: nextPaidByLineMap.size,
+          paymentEligible: financialStateResult.paymentEligible,
+          failureCode: financialStateResult.failureCode,
         },
       });
     })().catch((error) => {
@@ -397,18 +412,29 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
 
       const message = getPaymentFormErrorMessage(
         error,
-        "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіРѕС‚РѕРІРёС‚СЊ РґР°РЅРЅС‹Рµ РґР»СЏ РѕРїР»Р°С‚С‹.",
+        "Не удалось загрузить серверное финансовое состояние предложения.",
       );
-      recordPaymentFormCatch("critical_fail", "payment_form_load_failed", error, {
+      recordPaymentFormCatch("critical_fail", "proposal_financial_state_load_failed", error, {
         publishState: "error",
         requestId,
       });
       setItems([]);
+      setFinancialCurrent(null);
       setPaidByLineMap(new Map());
       setPaidKnownSum(0);
       setItemsError(message);
       setAllocationsError(null);
       setItemsLoading(false);
+      observation.error(error, {
+        errorStage: "proposal_financial_state_load_failed",
+        extra: {
+          proposalId,
+          requestId,
+          publishState: "error",
+          itemsError: message,
+          allocationsError: null,
+        },
+      });
     });
 
     return () => {
@@ -481,7 +507,7 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
       } catch (error) {
         const message = getPaymentFormErrorMessage(
           error,
-          "РќРµ СѓРґР°Р»РѕСЃСЊ РїРµСЂРµСЃС‡РёС‚Р°С‚СЊ СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ РѕРїР»Р°С‚С‹.",
+          "Не удалось пересчитать распределение оплаты.",
         );
         recordPaymentFormCatch("critical_fail", "allocation_recalculation_failed", error, {
           trigger,

@@ -18,11 +18,402 @@ type ReturnToBuyerInput = {
 
 type SendToAccountantRpcArgs =
   Database["public"]["Functions"]["proposal_send_to_accountant_min"]["Args"];
-type AccountantAddPaymentV3Args =
-  Database["public"]["Functions"]["acc_add_payment_v3_uuid"]["Args"];
+type AccountantProposalFinancialStateArgs =
+  Database["public"]["Functions"]["accountant_proposal_financial_state_v1"]["Args"];
+type AccountingPayInvoiceArgs =
+  Database["public"]["Functions"]["accounting_pay_invoice_v1"]["Args"];
 export type AccountantPaymentAllocationInput = {
   proposal_item_id: string;
   amount: number;
+};
+
+export type AccountantProposalFinancialLine = {
+  proposalItemId: string;
+  nameHuman: string | null;
+  uom: string | null;
+  qty: number;
+  price: number;
+  rikCode: string | null;
+  lineTotal: number;
+  paidTotal: number;
+  outstanding: number;
+};
+
+export type AccountantProposalFinancialState = {
+  proposalId: string;
+  proposalStatus: string | null;
+  sentToAccountantAt: string | null;
+  supplier: string | null;
+  invoice: {
+    number: string | null;
+    date: string | null;
+    currency: string;
+    payableSource: string | null;
+  };
+  totals: {
+    payableAmount: number;
+    totalPaid: number;
+    outstandingAmount: number;
+    paymentsCount: number;
+    paymentStatus: string | null;
+    lastPaidAt: string | null;
+  };
+  eligibility: {
+    approved: boolean;
+    sentToAccountant: boolean;
+    paymentEligible: boolean;
+    failureCode: string | null;
+  };
+  allocationSummary: {
+    paidKnownSum: number;
+    paidUnassigned: number;
+    allocationCount: number;
+  };
+  items: AccountantProposalFinancialLine[];
+  meta: {
+    sourceKind: string;
+    backendTruth: boolean;
+    legacyTotalPaid: number;
+    legacyPaymentStatus: string | null;
+  };
+};
+
+export type AccountantPayInvoiceAtomicInput = {
+  proposalId: string | number;
+  amount: number;
+  accountantFio: string;
+  purpose: string;
+  method: string;
+  note?: string | null;
+  allocations?: AccountantPaymentAllocationInput[];
+  invoiceNumber?: string | null;
+  invoiceDate?: string | null;
+  invoiceAmount?: number | null;
+  invoiceCurrency?: string | null;
+  expectedTotalPaid?: number | null;
+  expectedOutstanding?: number | null;
+};
+
+export type AccountantPayInvoiceAtomicSuccess = {
+  ok: true;
+  proposalId: string;
+  paymentId: number;
+  allocationSummary: {
+    allocationCount: number;
+    allocatedAmount: number;
+    requestedAmount: number;
+  };
+  totalsBefore: {
+    payableAmount: number;
+    totalPaid: number;
+    outstandingAmount: number;
+    paymentStatus: string | null;
+  };
+  totalsAfter: {
+    payableAmount: number;
+    totalPaid: number;
+    outstandingAmount: number;
+    paymentStatus: string | null;
+  };
+  serverTruth: AccountantProposalFinancialState;
+};
+
+export type AccountantPayInvoiceAtomicFailure = {
+  ok: false;
+  proposalId: string;
+  failureCode: string;
+  failureMessage: string;
+  totalsBefore: {
+    payableAmount: number;
+    totalPaid: number;
+    outstandingAmount: number;
+    paymentStatus: string | null;
+  } | null;
+  validation: {
+    approved: boolean;
+    sentToAccountant: boolean;
+    paymentEligible: boolean;
+    proposalStatus: string | null;
+  } | null;
+  allocationSummary: {
+    allocationCount: number;
+    allocatedAmount: number;
+    requestedAmount: number;
+  } | null;
+};
+
+export type AccountantPayInvoiceAtomicResult =
+  | AccountantPayInvoiceAtomicSuccess
+  | AccountantPayInvoiceAtomicFailure;
+
+export class AccountantPayInvoiceAtomicError extends Error {
+  readonly code: string;
+  readonly proposalId: string;
+  readonly totalsBefore: AccountantPayInvoiceAtomicFailure["totalsBefore"];
+  readonly validation: AccountantPayInvoiceAtomicFailure["validation"];
+  readonly allocationSummary: AccountantPayInvoiceAtomicFailure["allocationSummary"];
+
+  constructor(result: AccountantPayInvoiceAtomicFailure) {
+    super(result.failureMessage || result.failureCode || "accounting_pay_invoice_v1 failed");
+    this.name = "AccountantPayInvoiceAtomicError";
+    this.code = result.failureCode;
+    this.proposalId = result.proposalId;
+    this.totalsBefore = result.totalsBefore;
+    this.validation = result.validation;
+    this.allocationSummary = result.allocationSummary;
+  }
+}
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+
+const asText = (value: unknown): string | null => {
+  const text = String(value ?? "").trim();
+  return text || null;
+};
+
+const asNumber = (value: unknown, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const asBoolean = (value: unknown) => value === true;
+
+const parseFinancialStateLine = (value: unknown): AccountantProposalFinancialLine | null => {
+  const row = asRecord(value);
+  const proposalItemId = asText(row.proposal_item_id ?? row.proposalItemId);
+  if (!proposalItemId) return null;
+  return {
+    proposalItemId,
+    nameHuman: asText(row.name_human ?? row.nameHuman),
+    uom: asText(row.uom),
+    qty: asNumber(row.qty),
+    price: asNumber(row.price),
+    rikCode: asText(row.rik_code ?? row.rikCode),
+    lineTotal: asNumber(row.line_total ?? row.lineTotal),
+    paidTotal: asNumber(row.paid_total ?? row.paidTotal),
+    outstanding: asNumber(row.outstanding),
+  };
+};
+
+export const parseAccountantProposalFinancialState = (
+  value: unknown,
+): AccountantProposalFinancialState => {
+  const payload = asRecord(value);
+  const proposal = asRecord(payload.proposal);
+  const invoice = asRecord(payload.invoice);
+  const totals = asRecord(payload.totals);
+  const eligibility = asRecord(payload.eligibility);
+  const allocationSummary = asRecord(payload.allocation_summary ?? payload.allocationSummary);
+  const meta = asRecord(payload.meta);
+  const proposalId = asText(proposal.proposal_id ?? proposal.proposalId);
+
+  if (!proposalId) {
+    throw new Error("accountant_proposal_financial_state_v1 missing proposal.proposal_id");
+  }
+
+  return {
+    proposalId,
+    proposalStatus: asText(proposal.status),
+    sentToAccountantAt: asText(proposal.sent_to_accountant_at ?? proposal.sentToAccountantAt),
+    supplier: asText(proposal.supplier),
+    invoice: {
+      number: asText(invoice.invoice_number ?? invoice.invoiceNumber),
+      date: asText(invoice.invoice_date ?? invoice.invoiceDate),
+      currency: asText(invoice.invoice_currency ?? invoice.invoiceCurrency) ?? "KGS",
+      payableSource: asText(invoice.payable_source ?? invoice.payableSource),
+    },
+    totals: {
+      payableAmount: asNumber(totals.payable_amount ?? totals.payableAmount),
+      totalPaid: asNumber(totals.total_paid ?? totals.totalPaid),
+      outstandingAmount: asNumber(totals.outstanding_amount ?? totals.outstandingAmount),
+      paymentsCount: Math.max(0, Math.trunc(asNumber(totals.payments_count ?? totals.paymentsCount))),
+      paymentStatus: asText(totals.payment_status ?? totals.paymentStatus),
+      lastPaidAt: asText(totals.last_paid_at ?? totals.lastPaidAt),
+    },
+    eligibility: {
+      approved: asBoolean(eligibility.approved),
+      sentToAccountant: asBoolean(
+        eligibility.sent_to_accountant ?? eligibility.sentToAccountant,
+      ),
+      paymentEligible: asBoolean(
+        eligibility.payment_eligible ?? eligibility.paymentEligible,
+      ),
+      failureCode: asText(eligibility.failure_code ?? eligibility.failureCode),
+    },
+    allocationSummary: {
+      paidKnownSum: asNumber(
+        allocationSummary.paid_known_sum ?? allocationSummary.paidKnownSum,
+      ),
+      paidUnassigned: asNumber(
+        allocationSummary.paid_unassigned ?? allocationSummary.paidUnassigned,
+      ),
+      allocationCount: Math.max(
+        0,
+        Math.trunc(
+          asNumber(
+            allocationSummary.allocation_count ?? allocationSummary.allocationCount,
+          ),
+        ),
+      ),
+    },
+    items: Array.isArray(payload.items)
+      ? payload.items
+          .map(parseFinancialStateLine)
+          .filter((row): row is AccountantProposalFinancialLine => !!row)
+      : [],
+    meta: {
+      sourceKind: asText(meta.source_kind ?? meta.sourceKind) ?? "rpc:accountant_proposal_financial_state_v1",
+      backendTruth: asBoolean(meta.backend_truth ?? meta.backendTruth),
+      legacyTotalPaid: asNumber(meta.legacy_total_paid ?? meta.legacyTotalPaid),
+      legacyPaymentStatus: asText(
+        meta.legacy_payment_status ?? meta.legacyPaymentStatus,
+      ),
+    },
+  };
+};
+
+export const parseAccountantPayInvoiceAtomicResult = (
+  value: unknown,
+): AccountantPayInvoiceAtomicResult => {
+  const payload = asRecord(value);
+  const proposalId = asText(payload.proposal_id ?? payload.proposalId) ?? "";
+  const ok = asBoolean(payload.ok);
+  const allocationSummaryPayload = asRecord(
+    payload.allocation_summary ?? payload.allocationSummary,
+  );
+  const totalsBeforePayload = asRecord(payload.totals_before ?? payload.totalsBefore);
+  const validationPayload = asRecord(payload.validation);
+
+  if (!ok) {
+    return {
+      ok: false,
+      proposalId,
+      failureCode: asText(payload.failure_code ?? payload.failureCode) ?? "payment_failed",
+      failureMessage:
+        asText(payload.failure_message ?? payload.failureMessage) ??
+        "Payment was rejected by server truth.",
+      totalsBefore:
+        Object.keys(totalsBeforePayload).length > 0
+          ? {
+              payableAmount: asNumber(
+                totalsBeforePayload.payable_amount ?? totalsBeforePayload.payableAmount,
+              ),
+              totalPaid: asNumber(
+                totalsBeforePayload.total_paid ?? totalsBeforePayload.totalPaid,
+              ),
+              outstandingAmount: asNumber(
+                totalsBeforePayload.outstanding_amount ??
+                  totalsBeforePayload.outstandingAmount,
+              ),
+              paymentStatus: asText(
+                totalsBeforePayload.payment_status ?? totalsBeforePayload.paymentStatus,
+              ),
+            }
+          : null,
+      validation:
+        Object.keys(validationPayload).length > 0
+          ? {
+              approved: asBoolean(validationPayload.approved),
+              sentToAccountant: asBoolean(
+                validationPayload.sent_to_accountant ??
+                  validationPayload.sentToAccountant,
+              ),
+              paymentEligible: asBoolean(
+                validationPayload.payment_eligible ??
+                  validationPayload.paymentEligible,
+              ),
+              proposalStatus: asText(
+                validationPayload.proposal_status ?? validationPayload.proposalStatus,
+              ),
+            }
+          : null,
+      allocationSummary:
+        Object.keys(allocationSummaryPayload).length > 0
+          ? {
+              allocationCount: Math.max(
+                0,
+                Math.trunc(
+                  asNumber(
+                    allocationSummaryPayload.allocation_count ??
+                      allocationSummaryPayload.allocationCount,
+                  ),
+                ),
+              ),
+              allocatedAmount: asNumber(
+                allocationSummaryPayload.allocated_amount ??
+                  allocationSummaryPayload.allocatedAmount,
+              ),
+              requestedAmount: asNumber(
+                allocationSummaryPayload.requested_amount ??
+                  allocationSummaryPayload.requestedAmount,
+              ),
+            }
+          : null,
+    };
+  }
+
+  const totalsAfterPayload = asRecord(payload.totals_after ?? payload.totalsAfter);
+  const paymentId = Number(payload.payment_id ?? payload.paymentId);
+  if (!Number.isFinite(paymentId) || paymentId <= 0) {
+    throw new Error("accounting_pay_invoice_v1 missing payment_id");
+  }
+
+  return {
+    ok: true,
+    proposalId,
+    paymentId,
+    allocationSummary: {
+      allocationCount: Math.max(
+        0,
+        Math.trunc(
+          asNumber(
+            allocationSummaryPayload.allocation_count ??
+              allocationSummaryPayload.allocationCount,
+          ),
+        ),
+      ),
+      allocatedAmount: asNumber(
+        allocationSummaryPayload.allocated_amount ??
+          allocationSummaryPayload.allocatedAmount,
+      ),
+      requestedAmount: asNumber(
+        allocationSummaryPayload.requested_amount ??
+          allocationSummaryPayload.requestedAmount,
+      ),
+    },
+    totalsBefore: {
+      payableAmount: asNumber(
+        totalsBeforePayload.payable_amount ?? totalsBeforePayload.payableAmount,
+      ),
+      totalPaid: asNumber(
+        totalsBeforePayload.total_paid ?? totalsBeforePayload.totalPaid,
+      ),
+      outstandingAmount: asNumber(
+        totalsBeforePayload.outstanding_amount ?? totalsBeforePayload.outstandingAmount,
+      ),
+      paymentStatus: asText(
+        totalsBeforePayload.payment_status ?? totalsBeforePayload.paymentStatus,
+      ),
+    },
+    totalsAfter: {
+      payableAmount: asNumber(
+        totalsAfterPayload.payable_amount ?? totalsAfterPayload.payableAmount,
+      ),
+      totalPaid: asNumber(
+        totalsAfterPayload.total_paid ?? totalsAfterPayload.totalPaid,
+      ),
+      outstandingAmount: asNumber(
+        totalsAfterPayload.outstanding_amount ?? totalsAfterPayload.outstandingAmount,
+      ),
+      paymentStatus: asText(
+        totalsAfterPayload.payment_status ?? totalsAfterPayload.paymentStatus,
+      ),
+    },
+    serverTruth: parseAccountantProposalFinancialState(
+      payload.server_truth ?? payload.serverTruth,
+    ),
+  };
 };
 
 const isSendToAccountantInput = (v: unknown): v is SendToAccountantInput =>
@@ -102,11 +493,47 @@ export async function accountantAddPaymentWithAllocations(input: {
   note?: string | null;
   allocations?: AccountantPaymentAllocationInput[];
 }): Promise<number | null> {
+  const result = await accountantPayInvoiceAtomic({
+    proposalId: input.proposalId,
+    amount: input.amount,
+    accountantFio: input.accountantFio,
+    purpose: input.purpose,
+    method: input.method,
+    note: input.note,
+    allocations: input.allocations,
+  });
+
+  return result.paymentId;
+}
+
+export async function accountantLoadProposalFinancialState(
+  proposalId: string | number,
+): Promise<AccountantProposalFinancialState> {
+  const pid = String(proposalId);
+  const proposal = await ensureProposalExists(client, pid, {
+    screen: "accountant",
+    surface: "proposal_financial_state",
+    sourceKind: "rpc:accountant_proposal_financial_state_v1",
+  });
+
+  const args: AccountantProposalFinancialStateArgs = {
+    p_proposal_id: proposal.proposalId,
+  };
+
+  const { data, error } = await client.rpc("accountant_proposal_financial_state_v1", args);
+  if (error) throw error;
+
+  return parseAccountantProposalFinancialState(data);
+}
+
+export async function accountantPayInvoiceAtomic(
+  input: AccountantPayInvoiceAtomicInput,
+): Promise<AccountantPayInvoiceAtomicSuccess> {
   const pid = String(input.proposalId);
   const proposal = await ensureProposalExists(client, pid, {
     screen: "accountant",
-    surface: "add_payment_allocated",
-    sourceKind: "mutation:accounting_payments",
+    surface: "accounting_pay_invoice_v1",
+    sourceKind: "rpc:accounting_pay_invoice_v1",
   });
 
   const allocations = (Array.isArray(input.allocations) ? input.allocations : [])
@@ -123,13 +550,13 @@ export async function accountantAddPaymentWithAllocations(input: {
       allocations.map((row) => row.proposal_item_id),
       {
         screen: "accountant",
-        surface: "add_payment_allocated",
-        sourceKind: "mutation:accounting_payments",
+        surface: "accounting_pay_invoice_v1",
+        sourceKind: "rpc:accounting_pay_invoice_v1",
       },
     );
   }
 
-  const args: AccountantAddPaymentV3Args = {
+  const args: AccountingPayInvoiceArgs = {
     p_proposal_id: proposal.proposalId,
     p_amount: Number(input.amount),
     p_accountant_fio: String(input.accountantFio ?? "").trim(),
@@ -137,13 +564,32 @@ export async function accountantAddPaymentWithAllocations(input: {
     p_method: String(input.method ?? "").trim(),
     p_note: String(input.note ?? "").trim() || undefined,
     p_allocations: allocations,
+    p_invoice_number: String(input.invoiceNumber ?? "").trim() || undefined,
+    p_invoice_date: String(input.invoiceDate ?? "").trim() || undefined,
+    p_invoice_amount:
+      typeof input.invoiceAmount === "number" && Number.isFinite(input.invoiceAmount)
+        ? Number(input.invoiceAmount)
+        : undefined,
+    p_invoice_currency: String(input.invoiceCurrency ?? "").trim() || undefined,
+    p_expected_total_paid:
+      typeof input.expectedTotalPaid === "number" && Number.isFinite(input.expectedTotalPaid)
+        ? Number(input.expectedTotalPaid)
+        : undefined,
+    p_expected_outstanding:
+      typeof input.expectedOutstanding === "number" && Number.isFinite(input.expectedOutstanding)
+        ? Number(input.expectedOutstanding)
+        : undefined,
   };
 
-  const { data, error } = await client.rpc("acc_add_payment_v3_uuid", args);
+  const { data, error } = await client.rpc("accounting_pay_invoice_v1", args);
   if (error) throw error;
 
-  const paymentId = Number(data);
-  return Number.isFinite(paymentId) ? paymentId : null;
+  const result = parseAccountantPayInvoiceAtomicResult(data);
+  if (!result.ok) {
+    throw new AccountantPayInvoiceAtomicError(result as AccountantPayInvoiceAtomicFailure);
+  }
+
+  return result;
 }
 
 export async function accountantReturnToBuyer(

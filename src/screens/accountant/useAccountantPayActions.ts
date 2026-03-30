@@ -1,12 +1,23 @@
 import { useCallback } from "react";
 import { Alert, Platform } from "react-native";
 
-import { accountantAddPaymentWithAllocations } from "../../lib/api/accountant";
+import {
+  AccountantPayInvoiceAtomicError,
+  accountantLoadProposalFinancialState,
+  accountantPayInvoiceAtomic,
+} from "../../lib/api/accountant";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
 
 type AllocRow = { proposal_item_id: string; amount: number };
-type RowBase = { proposal_id?: string | number; invoice_amount?: number | null; total_paid?: number | null };
+type RowBase = {
+  proposal_id?: string | number;
+  invoice_amount?: number | null;
+  total_paid?: number | null;
+  invoice_number?: string | null;
+  invoice_date?: string | null;
+  invoice_currency?: string | null;
+};
 
 type Params<T extends RowBase> = {
   canAct: boolean;
@@ -18,21 +29,53 @@ type Params<T extends RowBase> = {
   allocRows: AllocRow[];
   allocOk: boolean;
   purposePrefix: string;
-  persistInvoiceMetaIfNeeded: (proposalId: string) => Promise<void>;
+  persistInvoiceMetaIfNeeded?: (proposalId: string) => Promise<void>;
   afterPaymentSync: (proposalId: string) => Promise<unknown>;
   closeCard: () => void;
   setCurrentPaymentId: (id: number | null) => void;
   setRows: React.Dispatch<React.SetStateAction<T[]>>;
   safeAlert: (title: string, msg: string) => void;
   errText: (e: unknown) => string;
+  invoiceNumber?: string;
+  invoiceDate?: string;
+  invoiceCurrency?: string | null;
 };
+
+const EPS = 0.01;
 
 const paymentActionSourceKind = (proposalId: unknown) =>
   String(proposalId ?? "").trim() ? "proposal:payment_apply" : "payment:manual_form";
 
-export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
-  const EPS = 0.01;
+const getFinancialFailureMessage = (code: string | null | undefined) => {
+  switch (String(code ?? "").trim()) {
+    case "proposal_not_approved":
+      return "Предложение не одобрено для оплаты.";
+    case "approval_revoked":
+      return "Одобрение или передача бухгалтеру были отозваны.";
+    case "invalid_amount":
+      return "Сумма оплаты должна быть больше нуля.";
+    case "amount_exceeds_outstanding":
+      return "Сумма оплаты превышает серверный остаток.";
+    case "stale_financial_state":
+      return "Финансовое состояние предложения изменилось до фиксации оплаты.";
+    case "already_paid":
+      return "Предложение уже полностью оплачено.";
+    case "invalid_payable_amount":
+      return "Серверное финансовое состояние предложения некорректно.";
+    case "proposal_not_found":
+      return "Предложение не найдено.";
+    default:
+      return "Сервер отклонил оплату по финансовому состоянию предложения.";
+  }
+};
 
+const extractFailureCode = (error: unknown) =>
+  error instanceof AccountantPayInvoiceAtomicError ? error.code : null;
+
+const getPaymentMethodLabel = (payKind: "bank" | "cash") =>
+  payKind === "bank" ? "Банк" : "Нал";
+
+export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
   const recordPaymentActionCatch = useCallback(
     (
       kind: "critical_fail" | "soft_failure" | "cleanup_only" | "degraded_fallback",
@@ -52,6 +95,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         errorStage: event,
         extra: {
           proposalId: proposalId || null,
+          failureCode: extractFailureCode(error),
           ...extra,
         },
       });
@@ -71,227 +115,280 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
   const showPaymentSyncWarning = useCallback(
     (e: unknown) => {
       p.safeAlert(
-        "Р С›Р С—Р В»Р В°РЎвЂљР В° Р С—РЎР‚Р С•Р Р†Р ВµР Т‘Р ВµР Р…Р В° РЎРѓ Р С—РЎР‚Р ВµР Т‘РЎС“Р С—РЎР‚Р ВµР В¶Р Т‘Р ВµР Р…Р С‘Р ВµР С",
-        `Р СџР В»Р В°РЎвЂљРЎвЂР В¶ РЎРѓР С•РЎвЂ¦РЎР‚Р В°Р Р…РЎвЂР Р…, Р Р…Р С• Р С•Р В±Р Р…Р С•Р Р†Р В»Р ВµР Р…Р С‘Р Вµ РЎРЊР С”РЎР‚Р В°Р Р…Р В° Р Р…Р Вµ Р В·Р В°Р Р†Р ВµРЎР‚РЎв‚¬Р С‘Р В»Р С•РЎРѓРЎРЉ: ${p.errText(e)}`,
+        "Оплата проведена, но обновление экрана не завершилось",
+        `Платёж сохранён, но экран не обновился автоматически: ${p.errText(e)}`,
       );
       console.error("[accountant.payment.sync]", e);
     },
     [p],
   );
 
-  const payRest = useCallback(async () => {
-    if (!p.canAct) {
-      p.safeAlert("Р СњР ВµРЎвЂљ Р С—РЎР‚Р В°Р Р†", "Р СњРЎС“Р В¶Р Р…Р В° РЎР‚Р С•Р В»РЎРЉ Р’В«accountantР’В».");
-      return;
-    }
-    if (!p.current?.proposal_id) return;
+  const loadServerFinancialState = useCallback(async () => {
+    const proposalId = String(p.current?.proposal_id ?? "").trim();
+    if (!proposalId) throw new Error("Proposal id is required for payment.");
+    return accountantLoadProposalFinancialState(proposalId);
+  }, [p.current?.proposal_id]);
 
-    try {
-      const sum = Number(p.current?.invoice_amount ?? 0);
-      const paid = Number(p.current?.total_paid ?? 0);
-      const rest = sum > 0 ? Math.max(0, sum - paid) : 0;
-      if (!rest || rest <= 0) {
-        p.safeAlert("Р С›РЎРѓРЎвЂљР В°РЎвЂљР С•Р С”", "Р СњР ВµРЎвЂљ РЎРѓРЎС“Р СР СРЎвЂ№ Р С” Р С•Р С—Р В»Р В°РЎвЂљР Вµ.");
-        return;
+  const commitPayment = useCallback(
+    async (mode: "rest" | "partial_or_custom", requestedAmount: number) => {
+      const proposalId = String(p.current?.proposal_id ?? "").trim();
+      if (!proposalId) throw new Error("Proposal id is required for payment.");
+
+      const serverState = await loadServerFinancialState();
+      const outstanding = Number(serverState.totals.outstandingAmount ?? 0);
+      if (!serverState.eligibility.paymentEligible) {
+        throw new Error(getFinancialFailureMessage(serverState.eligibility.failureCode));
       }
-
-      const fio = p.accountantFio.trim();
-      if (!fio) {
-        p.safeAlert("Р В¤Р ВР С› Р В±РЎС“РЎвЂ¦Р С–Р В°Р В»РЎвЂљР ВµРЎР‚Р В°", "Р СџР С•Р В»Р Вµ Р С•Р В±РЎРЏР В·Р В°РЎвЂљР ВµР В»РЎРЉР Р…Р С•");
-        return;
+      if (!requestedAmount || requestedAmount <= 0) {
+        throw new Error("Сумма оплаты должна быть больше нуля.");
       }
-
-      const pidMeta = String(p.current?.proposal_id ?? "").trim();
-      if (pidMeta) await p.persistInvoiceMetaIfNeeded(pidMeta);
+      if (requestedAmount - outstanding > EPS) {
+        throw new Error(getFinancialFailureMessage("amount_exceeds_outstanding"));
+      }
 
       const observation = beginPlatformObservability({
         screen: "accountant",
         surface: "payment_form_apply",
         category: "ui",
         event: "payment_apply",
-        sourceKind: paymentActionSourceKind(pidMeta),
-        trigger: "pay_rest",
+        sourceKind: paymentActionSourceKind(proposalId),
+        trigger: mode === "rest" ? "pay_rest" : "add_payment",
         extra: {
-          proposalId: pidMeta || null,
-          mode: "rest",
+          proposalId,
+          mode,
           allocationCount: p.allocRows.length,
+          requestedAmount,
+          outstandingBefore: outstanding,
+          serverPaymentEligible: serverState.eligibility.paymentEligible,
+          serverFailureCode: serverState.eligibility.failureCode,
         },
       });
 
-      const payId = await accountantAddPaymentWithAllocations({
-        proposalId: String(p.current.proposal_id),
-        amount: rest,
-        accountantFio: fio,
-        purpose: `${p.purposePrefix} ${p.note || ""}`.trim(),
-        method: p.payKind === "bank" ? "Р В±Р В°Р Р…Р С”" : "Р Р…Р В°Р В»",
-        note: p.note?.trim() ? p.note.trim() : null,
-        allocations: p.allocRows,
-      });
-      if (payId) p.setCurrentPaymentId(Number(payId));
-
-      const pid = String(p.current?.proposal_id ?? "").trim();
       try {
-        await p.afterPaymentSync(pid);
-      } catch (e: unknown) {
-        recordPaymentActionCatch("soft_failure", "payment_apply_sync_failed", e, {
-          mode: "rest",
+        const payment = await accountantPayInvoiceAtomic({
+          proposalId,
+          amount: requestedAmount,
+          accountantFio: p.accountantFio.trim(),
+          purpose: `${p.purposePrefix} ${p.note || ""}`.trim(),
+          method: getPaymentMethodLabel(p.payKind),
+          note: p.note?.trim() ? p.note.trim() : null,
+          allocations: Array.isArray(p.allocRows) ? p.allocRows : [],
+          invoiceNumber:
+            String(p.invoiceNumber ?? p.current?.invoice_number ?? "")
+              .trim() || null,
+          invoiceDate:
+            String(p.invoiceDate ?? p.current?.invoice_date ?? "")
+              .trim() || null,
+          invoiceCurrency:
+            String(p.invoiceCurrency ?? p.current?.invoice_currency ?? "")
+              .trim() || null,
+          expectedTotalPaid: serverState.totals.totalPaid,
+          expectedOutstanding: serverState.totals.outstandingAmount,
         });
-        showPaymentSyncWarning(e);
+
+        p.setCurrentPaymentId(Number(payment.paymentId));
+
+        try {
+          await p.afterPaymentSync(proposalId);
+        } catch (error) {
+          recordPaymentActionCatch("soft_failure", "payment_apply_sync_failed", error, {
+            mode,
+            paymentId: payment.paymentId,
+            requestedAmount,
+          });
+          showPaymentSyncWarning(error);
+          return;
+        }
+
+        p.setRows((prev) => prev.filter((row) => String(row.proposal_id) !== proposalId));
+        observation.success({
+          extra: {
+            proposalId,
+            mode,
+            paymentId: payment.paymentId,
+            allocationCount: p.allocRows.length,
+            requestedAmount,
+            outstandingBefore: payment.totalsBefore.outstandingAmount,
+            outstandingAfter: payment.totalsAfter.outstandingAmount,
+            totalPaidAfter: payment.totalsAfter.totalPaid,
+            paymentStatusAfter: payment.totalsAfter.paymentStatus,
+          },
+        });
+        p.safeAlert("Оплата проведена", "Оплата успешно сохранена.");
+        p.closeCard();
+      } catch (error) {
+        observation.error(error, {
+          errorStage: "payment_apply_failed",
+          extra: {
+            proposalId,
+            mode,
+            requestedAmount,
+            failureCode: extractFailureCode(error),
+          },
+        });
+        throw error;
+      }
+    },
+    [
+      loadServerFinancialState,
+      p.accountantFio,
+      p.afterPaymentSync,
+      p.allocRows,
+      p.closeCard,
+      p.current?.invoice_currency,
+      p.current?.invoice_date,
+      p.current?.invoice_number,
+      p.current?.proposal_id,
+      p.invoiceCurrency,
+      p.invoiceDate,
+      p.invoiceNumber,
+      p.note,
+      p.payKind,
+      p.purposePrefix,
+      p.setCurrentPaymentId,
+      p.setRows,
+      p.safeAlert,
+      recordPaymentActionCatch,
+      showPaymentSyncWarning,
+    ],
+  );
+
+  const payRest = useCallback(async () => {
+    if (!p.canAct) {
+      p.safeAlert("Нет доступа", "Нужна роль accountant.");
+      return;
+    }
+    if (!p.current?.proposal_id) return;
+
+    try {
+      const fio = p.accountantFio.trim();
+      if (!fio) {
+        p.safeAlert("ФИО бухгалтера", "Поле обязательно");
         return;
       }
 
-      if (pid) p.setRows((prev) => prev.filter((r) => String(r.proposal_id) !== pid));
-      observation.success({
-        extra: {
-          proposalId: pid || null,
-          mode: "rest",
-          paymentId: payId ?? null,
-          allocationCount: p.allocRows.length,
-        },
-      });
-      p.safeAlert("Р вЂњР С•РЎвЂљР С•Р Р†Р С•", "Р С›Р С—Р В»Р В°РЎвЂљР В° Р С—РЎР‚Р С•Р Р†Р ВµР Т‘Р ВµР Р…Р В°.");
-      p.closeCard();
+      const serverState = await loadServerFinancialState();
+      const outstanding = Number(serverState.totals.outstandingAmount ?? 0);
+      if (!serverState.eligibility.paymentEligible) {
+        throw new Error(getFinancialFailureMessage(serverState.eligibility.failureCode));
+      }
+      if (!outstanding || outstanding <= 0) {
+        p.safeAlert("Оплата", "Серверный остаток уже закрыт.");
+        return;
+      }
+
+      await commitPayment("rest", outstanding);
     } catch (e: unknown) {
       recordPaymentActionCatch("critical_fail", "payment_apply_failed", e, {
         mode: "rest",
       });
-      showPaymentFailure("Р С›РЎв‚¬Р С‘Р В±Р С”Р В° Р С•Р С—Р В»Р В°РЎвЂљРЎвЂ№", e);
+      showPaymentFailure("Ошибка оплаты", e);
     }
-  }, [p, recordPaymentActionCatch, showPaymentFailure, showPaymentSyncWarning]);
+  }, [
+    commitPayment,
+    loadServerFinancialState,
+    p.accountantFio,
+    p.canAct,
+    p.current?.proposal_id,
+    p.safeAlert,
+    recordPaymentActionCatch,
+    showPaymentFailure,
+  ]);
 
   const addPayment = useCallback(async () => {
     if (!p.canAct) {
-      p.safeAlert("Р СњР ВµРЎвЂљ Р С—РЎР‚Р В°Р Р†", "Р СњРЎС“Р В¶Р Р…Р В° РЎР‚Р С•Р В»РЎРЉ Р’В«accountantР’В».");
+      p.safeAlert("Нет доступа", "Нужна роль accountant.");
       return;
     }
     if (!p.current?.proposal_id) return;
 
     const val = Number(String(p.amount).replace(",", "."));
     if (!val || val <= 0) {
-      p.safeAlert("Р вЂ™Р Р†Р ВµР Т‘Р С‘РЎвЂљР Вµ РЎРѓРЎС“Р СР СРЎС“", "Р РЋРЎС“Р СР СР В° Р С•Р С—Р В»Р В°РЎвЂљРЎвЂ№ Р Т‘Р С•Р В»Р В¶Р Р…Р В° Р В±РЎвЂ№РЎвЂљРЎРЉ Р В±Р С•Р В»РЎРЉРЎв‚¬Р Вµ 0");
+      p.safeAlert("Оплата", "Сумма оплаты должна быть больше 0.");
       return;
     }
 
     try {
       const fio = p.accountantFio.trim();
       if (!fio) {
-        p.safeAlert("Р В¤Р ВР С› Р В±РЎС“РЎвЂ¦Р С–Р В°Р В»РЎвЂљР ВµРЎР‚Р В°", "Р СџР С•Р В»Р Вµ Р С•Р В±РЎРЏР В·Р В°РЎвЂљР ВµР В»РЎРЉР Р…Р С•");
+        p.safeAlert("ФИО бухгалтера", "Поле обязательно");
         return;
       }
 
-      const inv0 = Number(p.current?.invoice_amount ?? 0);
-      const paid0 = Number(p.current?.total_paid ?? 0);
-      const rest0 = inv0 > 0 ? Math.max(0, inv0 - paid0) : 0;
+      const serverState = await loadServerFinancialState();
+      const outstanding = Number(serverState.totals.outstandingAmount ?? 0);
+      if (!serverState.eligibility.paymentEligible) {
+        throw new Error(getFinancialFailureMessage(serverState.eligibility.failureCode));
+      }
 
-      if (rest0 > EPS && Math.abs(val - rest0) <= EPS) {
+      if (outstanding > EPS && Math.abs(val - outstanding) <= EPS) {
         const ok =
           Platform.OS === "web"
-            ? window.confirm("Р РЋРЎС“Р СР СР В° РЎР‚Р В°Р Р†Р Р…Р В° Р С•РЎРѓРЎвЂљР В°РЎвЂљР С”РЎС“. Р СџРЎР‚Р С•Р Р†Р ВµРЎРѓРЎвЂљР С‘ Р С•Р С—Р В»Р В°РЎвЂљРЎС“ Р С”Р В°Р С” Р СџР С›Р вЂєР СњР Р€Р В®?")
+            ? window.confirm(
+                "Сумма равна серверному остатку. Провести оплату как полное закрытие?",
+              )
             : await new Promise<boolean>((resolve) => {
                 Alert.alert(
-                  "Р СџР С•РЎвЂЎРЎвЂљР С‘ Р С—Р С•Р В»Р Р…Р В°РЎРЏ Р С•Р С—Р В»Р В°РЎвЂљР В°",
-                  "Р РЋРЎС“Р СР СР В° РЎР‚Р В°Р Р†Р Р…Р В° Р С•РЎРѓРЎвЂљР В°РЎвЂљР С”РЎС“. Р СџРЎР‚Р С•Р Р†Р ВµРЎРѓРЎвЂљР С‘ Р С”Р В°Р С” Р С—Р С•Р В»Р Р…РЎС“РЎР‹ Р С•Р С—Р В»Р В°РЎвЂљРЎС“?",
+                  "Полная оплата",
+                  "Сумма равна серверному остатку. Провести полное закрытие оплаты?",
                   [
-                    { text: "Р СњР ВµРЎвЂљ", style: "cancel", onPress: () => resolve(false) },
-                    { text: "Р вЂќР В°", style: "default", onPress: () => resolve(true) },
+                    { text: "Нет", style: "cancel", onPress: () => resolve(false) },
+                    { text: "Да", style: "default", onPress: () => resolve(true) },
                   ],
                 );
               });
         if (ok) {
-          await payRest();
+          await commitPayment("rest", outstanding);
           return;
         }
       }
 
-      const pidMeta = String(p.current?.proposal_id ?? "").trim();
-      if (pidMeta) await p.persistInvoiceMetaIfNeeded(pidMeta);
-
-      const observation = beginPlatformObservability({
-        screen: "accountant",
-        surface: "payment_form_apply",
-        category: "ui",
-        event: "payment_apply",
-        sourceKind: paymentActionSourceKind(pidMeta),
-        trigger: "add_payment",
-        extra: {
-          proposalId: pidMeta || null,
-          mode: "partial_or_custom",
-          allocationCount: p.allocRows.length,
-        },
-      });
-
-      const payId = await accountantAddPaymentWithAllocations({
-        proposalId: String(p.current.proposal_id),
-        amount: val,
-        accountantFio: fio,
-        purpose: `${p.purposePrefix} ${p.note || ""}`.trim(),
-        method: p.payKind === "bank" ? "Р В±Р В°Р Р…Р С”" : "Р Р…Р В°Р В»",
-        note: p.note?.trim() ? p.note.trim() : null,
-        allocations: Array.isArray(p.allocRows) ? p.allocRows : [],
-      });
-      if (payId) p.setCurrentPaymentId(Number(payId));
-
-      const pid = String(p.current?.proposal_id ?? "").trim();
-      try {
-        await p.afterPaymentSync(pid);
-      } catch (e: unknown) {
-        recordPaymentActionCatch("soft_failure", "payment_apply_sync_failed", e, {
-          mode: "partial_or_custom",
-        });
-        showPaymentSyncWarning(e);
-        return;
-      }
-
-      if (pid) p.setRows((prev) => prev.filter((r) => String(r.proposal_id) !== pid));
-      observation.success({
-        extra: {
-          proposalId: pid || null,
-          mode: "partial_or_custom",
-          paymentId: payId ?? null,
-          allocationCount: p.allocRows.length,
-        },
-      });
-      p.safeAlert("Р С›Р С—Р В»Р В°РЎвЂљР В° Р Т‘Р С•Р В±Р В°Р Р†Р В»Р ВµР Р…Р В°", "Р РЋРЎвЂљР В°РЎвЂљРЎС“РЎРѓ Р С•Р В±Р Р…Р С•Р Р†Р В»РЎвЂР Р… Р С—Р С• РЎвЂћР В°Р С”РЎвЂљРЎС“ Р С•Р С—Р В»Р В°РЎвЂљРЎвЂ№.");
-      p.closeCard();
+      await commitPayment("partial_or_custom", val);
     } catch (e: unknown) {
       recordPaymentActionCatch("critical_fail", "payment_apply_failed", e, {
         mode: "partial_or_custom",
       });
-      showPaymentFailure("Р С›РЎв‚¬Р С‘Р В±Р С”Р В° Р С•Р С—Р В»Р В°РЎвЂљРЎвЂ№", e);
+      showPaymentFailure("Ошибка оплаты", e);
     }
-  }, [p, payRest, recordPaymentActionCatch, showPaymentFailure, showPaymentSyncWarning]);
+  }, [
+    commitPayment,
+    loadServerFinancialState,
+    p.accountantFio,
+    p.amount,
+    p.canAct,
+    p.current?.proposal_id,
+    p.safeAlert,
+    recordPaymentActionCatch,
+    showPaymentFailure,
+  ]);
 
   const onPayConfirm = useCallback(async () => {
     const v = Number(String(p.amount).replace(",", "."));
     if (!v || v <= 0) {
-      p.safeAlert("Р С›Р С—Р В»Р В°РЎвЂљР В°", "Р вЂ™Р Р†Р ВµР Т‘Р С‘РЎвЂљР Вµ РЎРѓРЎС“Р СР СРЎС“ Р С•Р С—Р В»Р В°РЎвЂљРЎвЂ№");
+      p.safeAlert("Оплата", "Сумма оплаты должна быть больше 0.");
       return;
     }
     if (!p.allocOk) {
       p.safeAlert(
-        "Р С›Р С—Р В»Р В°РЎвЂљР В°",
-        "Р РЋР Р…Р В°РЎвЂЎР В°Р В»Р В° РЎР‚Р В°РЎРѓР С—РЎР‚Р ВµР Т‘Р ВµР В»Р С‘РЎвЂљР Вµ РЎРѓРЎС“Р СР СРЎС“ Р С—Р С• Р С—Р С•Р В·Р С‘РЎвЂ Р С‘РЎРЏР С: РЎР‚Р В°РЎРѓР С—РЎР‚Р ВµР Т‘Р ВµР В»Р ВµР Р…Р С• Р Т‘Р С•Р В»Р В¶Р Р…Р С• Р В±РЎвЂ№РЎвЂљРЎРЉ РЎР‚Р В°Р Р†Р Р…Р С• РЎРѓРЎС“Р СР СР Вµ Р С—Р В»Р В°РЎвЂљР ВµР В¶Р В°.",
+        "Оплата",
+        "Распределение невалидно: сумма должна быть больше нуля и не превышать остаток.",
       );
       return;
     }
 
     const ok =
       Platform.OS === "web"
-        ? window.confirm(`Р СџРЎР‚Р С•Р Р†Р ВµРЎРѓРЎвЂљР С‘ Р С•Р С—Р В»Р В°РЎвЂљРЎС“ Р Р…Р В° РЎРѓРЎС“Р СР СРЎС“ ${v}?`)
+        ? window.confirm(`Провести оплату на сумму ${v}?`)
         : await new Promise<boolean>((resolve) => {
-            Alert.alert(
-              "Р СџР С•Р Т‘РЎвЂљР Р†Р ВµРЎР‚Р Т‘Р С‘РЎвЂљР Вµ Р С•Р С—Р В»Р В°РЎвЂљРЎС“",
-              `Р вЂ™РЎвЂ№ Р Р†Р Р†Р ВµР В»Р С‘ РЎРѓРЎС“Р СР СРЎС“: ${v}. Р СџРЎР‚Р С•Р Р†Р ВµРЎРѓРЎвЂљР С‘ Р С•Р С—Р В»Р В°РЎвЂљРЎС“?`,
-              [
-                { text: "Р С›РЎвЂљР СР ВµР Р…Р В°", style: "cancel", onPress: () => resolve(false) },
-                { text: "Р СџРЎР‚Р С•Р Р†Р ВµРЎРѓРЎвЂљР С‘", style: "default", onPress: () => resolve(true) },
-              ],
-            );
+            Alert.alert("Подтвердить оплату", `Сумма оплаты: ${v}. Продолжить?`, [
+              { text: "Отмена", style: "cancel", onPress: () => resolve(false) },
+              { text: "Оплатить", style: "default", onPress: () => resolve(true) },
+            ]);
           });
 
     if (!ok) return;
     await addPayment();
-  }, [p, addPayment]);
+  }, [p.allocOk, p.amount, p.safeAlert, addPayment]);
 
   return { payRest, addPayment, onPayConfirm };
 }
