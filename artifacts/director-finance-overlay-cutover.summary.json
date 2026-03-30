@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "overlayRemoved": true,
+  "primaryScopeHardCutOk": true,
+  "runtimeGateOk": true,
+  "liveRpcOk": true,
+  "summaryParityOk": true,
+  "supplierRowsV3": 22,
+  "rowsV2": 50,
+  "rowsV3": 50,
+  "metaV3": {
+    "owner": "backend",
+    "filtersEcho": {
+      "dateTo": null,
+      "dueDays": 7,
+      "dateFrom": null,
+      "objectId": null,
+      "criticalDays": 14
+    },
+    "generatedAt": "2026-03-30T00:36:42.015Z",
+    "sourceVersion": "director_finance_panel_scope_v3",
+    "spendRowsSource": "v_director_finance_spend_kinds_v3",
+    "financeRowsSource": "list_accountant_inbox_fact",
+    "payloadShapeVersion": "v3"
+  }
+}

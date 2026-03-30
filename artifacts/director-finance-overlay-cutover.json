@@ -1,0 +1,259 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "generatedAt": "2026-03-30T00:36:41.316Z",
+  "overlayRemoved": true,
+  "primaryScopeHardCutOk": true,
+  "runtimeGateOk": true,
+  "liveRpcOk": true,
+  "runtimeSummary": {
+    "status": "passed",
+    "webPassed": true,
+    "androidPassed": true,
+    "iosPassed": false,
+    "runtimeVerified": true,
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "platformSpecificIssues": [
+      {
+        "platform": "ios",
+        "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      }
+    ],
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "failureKind": "unknown",
+    "scenariosPassed": {
+      "web": {
+        "initialOpen": true,
+        "financeSurface": true,
+        "debtModal": true,
+        "supplierDetail": false
+      },
+      "android": {
+        "initialOpen": true,
+        "financeSurface": true,
+        "debtModal": true,
+        "supplierDetail": true
+      },
+      "ios": {
+        "initialOpen": false,
+        "financeSurface": false,
+        "debtModal": false,
+        "supplierDetail": false
+      }
+    },
+    "artifacts": {
+      "web": "artifacts/director-finance-web-smoke.png",
+      "android": {
+        "currentXml": "artifacts/android-director-finance-route-1.xml",
+        "currentPng": "artifacts/android-director-finance-route-1.png",
+        "financeXml": "artifacts/android-director-finance-tab-1.xml",
+        "financePng": "artifacts/android-director-finance-tab-1.png",
+        "debtModalXml": "artifacts/android-director-finance-suppliers.xml",
+        "debtModalPng": "artifacts/android-director-finance-suppliers.png",
+        "supplierDetailXml": "artifacts/android-director-finance-supplier-detail.xml",
+        "supplierDetailPng": "artifacts/android-director-finance-supplier-detail.png"
+      }
+    },
+    "gate": "director_finance_runtime_verify"
+  },
+  "metaV3": {
+    "owner": "backend",
+    "filtersEcho": {
+      "dateTo": null,
+      "dueDays": 7,
+      "dateFrom": null,
+      "objectId": null,
+      "criticalDays": 14
+    },
+    "generatedAt": "2026-03-30T00:36:42.015Z",
+    "sourceVersion": "director_finance_panel_scope_v3",
+    "spendRowsSource": "v_director_finance_spend_kinds_v3",
+    "financeRowsSource": "list_accountant_inbox_fact",
+    "payloadShapeVersion": "v3"
+  },
+  "summaryV2": {
+    "totalDebt": 423068,
+    "totalPaid": 8590,
+    "bySupplier": [
+      {
+        "debt": 146396,
+        "supplier_id": "ae9620c9e94b83d2a6ad6ca58b5a7c0b",
+        "supplier_name": "вапвап"
+      },
+      {
+        "debt": 105299,
+        "supplier_id": "690ea48e934e043c69b338a7011194dd",
+        "supplier_name": "капитал строй"
+      },
+      {
+        "debt": 60541,
+        "supplier_id": "0cc9b5105217101226d358637f23507e",
+        "supplier_name": "выавыа"
+      },
+      {
+        "debt": 26050,
+        "supplier_id": "4dd6c24c06806ccf2a553279553c60a7",
+        "supplier_name": "капитал строй 2"
+      },
+      {
+        "debt": 25476,
+        "supplier_id": "80746246f7f4b20441e49b9dfa7f00b1",
+        "supplier_name": "авпавп"
+      },
+      {
+        "debt": 16482,
+        "supplier_id": "bfc69af4f894af52fbaea62ca06d6114",
+        "supplier_name": "ОсОО Омега"
+      },
+      {
+        "debt": 13276,
+        "supplier_id": "50a07abd4bad1846d4e7d3b234a779be",
+        "supplier_name": "ИП Желоб"
+      },
+      {
+        "debt": 10041,
+        "supplier_id": "ffb14ca387a99c72abce1caeaa50f7cf",
+        "supplier_name": "мон"
+      },
+      {
+        "debt": 5620,
+        "supplier_id": "d9573e5eafadf851416b29cebd192010",
+        "supplier_name": "ТестПоставщик"
+      },
+      {
+        "debt": 4784,
+        "supplier_id": "5a3e800ececc90db69ffbf8fc8d81c77",
+        "supplier_name": "Ромашка"
+      },
+      {
+        "debt": 3976,
+        "supplier_id": "3777f610f9b1af9cde04c034875a5756",
+        "supplier_name": "ОсОО «Капитал Строй»"
+      },
+      {
+        "debt": 1650,
+        "supplier_id": "43d1243633fcabf4e67cf28f92165aee",
+        "supplier_name": "СТРОЙАРСЕНАЛ"
+      },
+      {
+        "debt": 1296,
+        "supplier_id": "7a6daf4507afc392f7e1fbecb4abcc19",
+        "supplier_name": "поролон"
+      },
+      {
+        "debt": 535,
+        "supplier_id": "2ad96227b8e53a3e4a263b04dd4c9e13",
+        "supplier_name": "апрарпар"
+      },
+      {
+        "debt": 504,
+        "supplier_id": "9c69a0f14998b67842980d18c59ccb7a",
+        "supplier_name": "рьпрьвапвап"
+      },
+      {
+        "debt": 451,
+        "supplier_id": "0ad6c3dd2b67010c95756cddeafb717e",
+        "supplier_name": "ОсОО «Бетон+»"
+      },
+      {
+        "debt": 410,
+        "supplier_id": "5d06c618a8469e7ac8aecb5e2de16274",
+        "supplier_name": "апрапр"
+      },
+      {
+        "debt": 110,
+        "supplier_id": "3303905c98632bdfdc577cb5730d07e3",
+        "supplier_name": "ждэджэ"
+      },
+      {
+        "debt": 110,
+        "supplier_id": "4b13b57e85efcd5a0e0d19f9d9f48e9d",
+        "supplier_name": "кава"
+      },
+      {
+        "debt": 40,
+        "supplier_id": "f6fc298cf60ee085a4f63f15ee96426c",
+        "supplier_name": "прапрап"
+      },
+      {
+        "debt": 11,
+        "supplier_id": "26aeabd0c99c77002e55825fbcd435af",
+        "supplier_name": "—"
+      },
+      {
+        "debt": 10,
+        "supplier_id": "e8b3930a4c2d004cee95c56115300e4f",
+        "supplier_name": "нор"
+      }
+    ],
+    "totalAmount": 431658,
+    "overdueAmount": 365508
+  },
+  "summaryV3": {
+    "rowCount": 92,
+    "debtCount": 86,
+    "totalDebt": 423068,
+    "totalPaid": 8590,
+    "partialPaid": 0,
+    "overdueCount": 85,
+    "partialCount": 0,
+    "totalPayable": 431658,
+    "criticalCount": 0,
+    "overdueAmount": 365508,
+    "totalApproved": 431658,
+    "criticalAmount": 0,
+    "supplierRowCount": 22,
+    "totalOverpayment": 0
+  },
+  "summaryParity": {
+    "totalApproved": {
+      "left": 431658,
+      "right": 431658,
+      "delta": 0,
+      "match": true
+    },
+    "totalPayable": {
+      "left": 431658,
+      "right": 431658,
+      "delta": 0,
+      "match": true
+    },
+    "totalPaid": {
+      "left": 8590,
+      "right": 8590,
+      "delta": 0,
+      "match": true
+    },
+    "totalDebt": {
+      "left": 423068,
+      "right": 423068,
+      "delta": 0,
+      "match": true
+    },
+    "overdueAmount": {
+      "left": 365508,
+      "right": 365508,
+      "delta": 0,
+      "match": true
+    },
+    "supplierRowCount": {
+      "left": 22,
+      "right": 22,
+      "delta": 0,
+      "match": true
+    },
+    "pageRowCount": {
+      "left": 50,
+      "right": 50,
+      "delta": 0,
+      "match": true
+    }
+  },
+  "supplierRowsV3": 22,
+  "rowsV2": 50,
+  "rowsV3": 50
+}

@@ -550,6 +550,9 @@ export async function loadDirectorFinanceScreenScope(
   });
   const resolvedPanelScope = primaryScope.panelScopeV3;
   const supportRowsReason = includeSupportRows ? "explicit_include" : "not_requested";
+  // The screen keeps a compatibility FinRep projection for existing consumers, but request truth
+  // and summary truth already come from the backend-owned v3 panel scope.
+  const summaryCompatibilityOverlay = false;
 
   if (!resolvedPanelScope) {
     const hardCutError =
@@ -595,7 +598,7 @@ export async function loadDirectorFinanceScreenScope(
       contractVersion: "v3",
       supportRowsReason,
       backendFirstPrimary: true,
-      summaryCompatibilityOverlay: true,
+      summaryCompatibilityOverlay,
       financeMode: canonicalScope.mode,
       financeSemantics: canonicalScope.semantics,
     },
@@ -628,7 +631,7 @@ export async function loadDirectorFinanceScreenScope(
       spendSummary: result.sourceMeta.spendSummary,
       primaryOwner: result.cutoverMeta.primaryOwner,
       contractVersion: result.cutoverMeta.contractVersion,
-      summaryCompatibilityOverlay: true,
+      summaryCompatibilityOverlay,
       owner: resolvedPanelScope.meta.owner,
       version: resolvedPanelScope.meta.payloadShapeVersion ?? resolvedPanelScope.meta.sourceVersion,
       totalCount: resolvedPanelScope.pagination.total,
