@@ -104,6 +104,10 @@ export function useDirectorProposalRow({
             total_qty: Number(row.total_qty ?? 0),
             price: row.price ?? null,
             item_kind: null,
+            request_item_integrity_state: row.request_item_integrity_state ?? "active",
+            request_item_integrity_reason: row.request_item_integrity_reason ?? null,
+            request_item_source_status: row.request_item_source_status ?? null,
+            request_item_cancelled_at: row.request_item_cancelled_at ?? null,
           }));
 
           try {

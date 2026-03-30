@@ -2,6 +2,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "../database.types";
 import { recordPlatformObservability } from "../observability/platformObservability";
+import {
+  ACTIVE_PROPOSAL_REQUEST_ITEM_INTEGRITY_STATE,
+  type ProposalRequestItemIntegrityFields,
+  type ProposalRequestItemIntegrityReason,
+  type ProposalRequestItemIntegrityRow,
+  type ProposalRequestItemIntegrityState,
+} from "./proposalIntegrity";
 import type { ProposalItemRow } from "./types";
 
 type IntegrityGuardScreen = Parameters<typeof recordPlatformObservability>[0]["screen"];
@@ -13,7 +20,10 @@ type GuardContext = {
 
 type ProposalContextRow = Pick<Database["public"]["Tables"]["proposals"]["Row"], "id" | "request_id">;
 type RequestIdRow = Pick<Database["public"]["Tables"]["requests"]["Row"], "id">;
-type RequestItemLinkRow = Pick<Database["public"]["Tables"]["request_items"]["Row"], "id" | "request_id">;
+type RequestItemLinkRow = Pick<
+  Database["public"]["Tables"]["request_items"]["Row"],
+  "id" | "request_id" | "status" | "cancelled_at"
+>;
 type ProposalItemLinkRow = Pick<Database["public"]["Tables"]["proposal_items"]["Row"], "id" | "proposal_id">;
 type ProposalPaymentLinkRow = Pick<Database["public"]["Tables"]["proposal_payments"]["Row"], "id" | "proposal_id">;
 type RequestLinkedRow = {
@@ -34,6 +44,7 @@ export type IntegrityGuardCode =
   | "missing_request"
   | "missing_proposal"
   | "missing_request_items"
+  | "cancelled_request_items"
   | "mismatched_request_items"
   | "missing_proposal_items"
   | "mismatched_proposal_items"
@@ -190,7 +201,7 @@ async function loadRequestItemLinks(
   for (const pack of chunkIds(requestItemIds, 150)) {
     const result = await supabaseClient
       .from("request_items")
-      .select("id, request_id")
+      .select("id, request_id, status, cancelled_at")
       .in("id", pack)
       .returns<RequestItemLinkRow[]>();
     if (result.error) throw result.error;
@@ -200,6 +211,68 @@ async function loadRequestItemLinks(
     }
   }
   return links;
+}
+
+const normalizeProposalRequestItemIntegrityState = (
+  value: unknown,
+): ProposalRequestItemIntegrityState => {
+  const normalized = trim(value).toLowerCase();
+  if (normalized === "source_cancelled") return "source_cancelled";
+  if (normalized === "source_missing") return "source_missing";
+  return ACTIVE_PROPOSAL_REQUEST_ITEM_INTEGRITY_STATE;
+};
+
+const normalizeProposalRequestItemIntegrityReason = (
+  value: unknown,
+): ProposalRequestItemIntegrityReason => {
+  const normalized = trim(value).toLowerCase();
+  if (normalized === "request_item_cancelled") return "request_item_cancelled";
+  if (normalized === "request_item_missing") return "request_item_missing";
+  return null;
+};
+
+const isCancelledRequestItemLink = (link: RequestItemLinkRow | undefined) => {
+  if (!link) return false;
+  if (trim(link.cancelled_at)) return true;
+  const normalizedStatus = trim(link.status).toLowerCase();
+  return (
+    normalizedStatus === "cancelled" ||
+    normalizedStatus === "canceled" ||
+    normalizedStatus === "отменена" ||
+    normalizedStatus === "отменено"
+  );
+};
+
+async function loadProposalRequestItemIntegrity(
+  supabaseClient: SupabaseClient<Database>,
+  proposalId: string,
+): Promise<Map<string, ProposalRequestItemIntegrityRow>> {
+  const normalizedProposalId = trim(proposalId);
+  const integrity = new Map<string, ProposalRequestItemIntegrityRow>();
+  if (!normalizedProposalId) return integrity;
+
+  const result = await supabaseClient.rpc("proposal_request_item_integrity_v1", {
+    p_proposal_id: normalizedProposalId,
+  });
+  if (result.error) throw result.error;
+
+  for (const rawRow of result.data ?? []) {
+    const row = rawRow as Database["public"]["Functions"]["proposal_request_item_integrity_v1"]["Returns"][number];
+    const requestItemId = trim(row.request_item_id);
+    if (!requestItemId) continue;
+    integrity.set(requestItemId, {
+      proposal_id: trim(row.proposal_id),
+      proposal_item_id: Number(row.proposal_item_id ?? 0),
+      request_item_id: requestItemId,
+      integrity_state: normalizeProposalRequestItemIntegrityState(row.integrity_state),
+      integrity_reason: normalizeProposalRequestItemIntegrityReason(row.integrity_reason),
+      request_item_exists: row.request_item_exists === true,
+      request_item_status: trim(row.request_item_status) || null,
+      request_item_cancelled_at: trim(row.request_item_cancelled_at) || null,
+    });
+  }
+
+  return integrity;
 }
 
 async function loadProposalItemLinks(
@@ -431,6 +504,37 @@ export async function ensureProposalRequestItemsIntegrity(
   }, normalizedRequestItemIds.length);
 }
 
+export async function ensureActiveProposalRequestItemsIntegrity(
+  supabaseClient: SupabaseClient<Database>,
+  proposalId: string,
+  requestItemIds: readonly string[],
+  context: GuardContext,
+): Promise<void> {
+  await ensureProposalRequestItemsIntegrity(supabaseClient, proposalId, requestItemIds, context);
+
+  const normalizedRequestItemIds = normalizeIds(requestItemIds);
+  if (!normalizedRequestItemIds.length) return;
+
+  const links = await loadRequestItemLinks(supabaseClient, normalizedRequestItemIds);
+  const cancelledRequestItemIds = normalizedRequestItemIds.filter((requestItemId) =>
+    isCancelledRequestItemLink(links.get(requestItemId)),
+  );
+  if (!cancelledRequestItemIds.length) return;
+
+  const error = new IntegrityGuardError(
+    "cancelled_request_items",
+    "Proposal links request items that are cancelled",
+    {
+      linkType: "proposal_item.request_item_id->request_items.id",
+      proposalId: trim(proposalId),
+      requestItemIds: cancelledRequestItemIds,
+      integrityState: "source_cancelled",
+    },
+  );
+  recordGuardFailure(context, error.code, error.details);
+  throw error;
+}
+
 export async function ensureProposalItemIdsBelongToProposal(
   supabaseClient: SupabaseClient<Database>,
   proposalId: string,
@@ -533,6 +637,91 @@ export async function filterProposalItemsByExistingRequestLinks(
       return !requestItemId || !droppedSet.has(requestItemId);
     }),
     droppedRequestItemIds,
+  };
+}
+
+export async function classifyProposalItemsByRequestItemIntegrity(
+  supabaseClient: SupabaseClient<Database>,
+  rows: ProposalItemRow[],
+  context: GuardContext & { proposalId: string },
+): Promise<{
+  rows: ProposalItemRow[];
+  degradedRequestItemIds: string[];
+  cancelledRequestItemIds: string[];
+  missingRequestItemIds: string[];
+}> {
+  if (!rows.length) {
+    return {
+      rows,
+      degradedRequestItemIds: [],
+      cancelledRequestItemIds: [],
+      missingRequestItemIds: [],
+    };
+  }
+
+  const integrityByRequestItemId = await loadProposalRequestItemIntegrity(
+    supabaseClient,
+    context.proposalId,
+  );
+
+  const degradedRequestItemIds: string[] = [];
+  const cancelledRequestItemIds: string[] = [];
+  const missingRequestItemIds: string[] = [];
+
+  const classifiedRows = rows.map((row) => {
+    const requestItemId = trim(row.request_item_id);
+    const integrity = requestItemId ? integrityByRequestItemId.get(requestItemId) : null;
+    const integrityState =
+      integrity?.integrity_state ??
+      (!requestItemId ? "source_missing" : ACTIVE_PROPOSAL_REQUEST_ITEM_INTEGRITY_STATE);
+    const integrityReason =
+      integrity?.integrity_reason ??
+      (!requestItemId ? "request_item_missing" : null);
+    const requestItemSourceStatus = integrity?.request_item_status ?? null;
+    const requestItemCancelledAt = integrity?.request_item_cancelled_at ?? null;
+
+    if (requestItemId && integrityState !== ACTIVE_PROPOSAL_REQUEST_ITEM_INTEGRITY_STATE) {
+      degradedRequestItemIds.push(requestItemId);
+      if (integrityState === "source_cancelled") cancelledRequestItemIds.push(requestItemId);
+      if (integrityState === "source_missing") missingRequestItemIds.push(requestItemId);
+    }
+
+    const fields: ProposalRequestItemIntegrityFields = {
+      request_item_integrity_state: integrityState,
+      request_item_integrity_reason: integrityReason,
+      request_item_source_status: requestItemSourceStatus,
+      request_item_cancelled_at: requestItemCancelledAt,
+    };
+    return { ...row, ...fields };
+  });
+
+  if (degradedRequestItemIds.length) {
+    recordPlatformObservability({
+      screen: context.screen,
+      surface: context.surface,
+      category: "fetch",
+      event: "proposal_request_item_integrity_degraded",
+      result: "error",
+      sourceKind: context.sourceKind,
+      rowCount: degradedRequestItemIds.length,
+      errorStage: "request_item_integrity",
+      errorClass: "ProposalRequestItemIntegrityDegraded",
+      errorMessage: "proposal_request_item_integrity_degraded",
+      extra: {
+        proposalId: context.proposalId,
+        degradedRequestItemIds,
+        cancelledRequestItemIds,
+        missingRequestItemIds,
+        publishState: "degraded",
+      },
+    });
+  }
+
+  return {
+    rows: classifiedRows,
+    degradedRequestItemIds,
+    cancelledRequestItemIds,
+    missingRequestItemIds,
   };
 }
 

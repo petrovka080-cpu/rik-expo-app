@@ -5,6 +5,10 @@ import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import {
+  getProposalIntegritySummaryLabel,
+  getProposalItemIntegrityLabel,
+} from "../../lib/api/proposalIntegrity";
+import {
   buildProposalAnalyticSummary,
   loadProposalAnalyticInsights,
   type ProposalAnalyticInsight,
@@ -75,6 +79,10 @@ export default function DirectorProposalSheet({
     [analyticInsights],
   );
   const bodyBottomInset = Math.max(footerHeight + 12, 24);
+  const integritySummary = React.useMemo(
+    () => getProposalIntegritySummaryLabel(items),
+    [items],
+  );
 
   const analyticSourceItems = React.useMemo(
     () =>
@@ -140,6 +148,23 @@ export default function DirectorProposalSheet({
         onRefresh={onRefreshAttachments}
         onOpenAttachment={onOpenAttachment}
       />
+
+      {integritySummary ? (
+        <View
+          style={{
+            marginBottom: 12,
+            padding: 12,
+            borderRadius: 14,
+            backgroundColor: "rgba(249,115,22,0.12)",
+            borderWidth: 1,
+            borderColor: "rgba(249,115,22,0.35)",
+          }}
+        >
+          <Text style={{ color: "#FDBA74", fontWeight: "900", fontSize: 12 }}>
+            {integritySummary}
+          </Text>
+        </View>
+      ) : null}
 
       {analyticInsightsLoading || analyticInsights.length ? (
         <View
@@ -287,6 +312,24 @@ export default function DirectorProposalSheet({
                     </View>
                   ) : null}
                 </View>
+                {getProposalItemIntegrityLabel(it) ? (
+                  <View
+                    style={{
+                      marginTop: 8,
+                      alignSelf: "flex-start",
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 999,
+                      backgroundColor: "rgba(249,115,22,0.14)",
+                      borderWidth: 1,
+                      borderColor: "rgba(249,115,22,0.35)",
+                    }}
+                  >
+                    <Text style={{ color: "#FDBA74", fontWeight: "900", fontSize: 11 }}>
+                      {getProposalItemIntegrityLabel(it)}
+                    </Text>
+                  </View>
+                ) : null}
                 <Text style={s.mobMeta}>
                   {`${it.total_qty} ${it.uom || ""}`.trim()}
                   {it.price != null ? ` · цена ${it.price}` : ""}

@@ -10,6 +10,10 @@ import {
   loadProposalAnalyticInsights,
   type ProposalAnalyticInsight,
 } from "../../../features/ai/aiAnalyticInsights";
+import {
+  getProposalIntegritySummaryLabel,
+  getProposalItemIntegrityLabel,
+} from "../../../lib/api/proposalIntegrity";
 import { isMarketplaceSourceValue } from "../../../features/market/market.contracts";
 import SectionBlock from "../../../ui/SectionBlock";
 
@@ -66,6 +70,10 @@ export function BuyerPropDetailsSheetBody({
   const analyticSummary = React.useMemo(
     () => buildProposalAnalyticSummary(analyticInsights),
     [analyticInsights],
+  );
+  const integritySummary = React.useMemo(
+    () => getProposalIntegritySummaryLabel(propViewLines),
+    [propViewLines],
   );
 
   const analyticSourceItems = React.useMemo(
@@ -198,6 +206,23 @@ export function BuyerPropDetailsSheetBody({
                 </View>
               );
             })()}
+
+            {integritySummary ? (
+              <View
+                style={{
+                  marginBottom: 16,
+                  padding: 12,
+                  borderRadius: 12,
+                  backgroundColor: "rgba(249,115,22,0.12)",
+                  borderWidth: 1,
+                  borderColor: "rgba(249,115,22,0.35)",
+                }}
+              >
+                <Text style={{ color: "#FDBA74", fontWeight: "900", fontSize: 12 }}>
+                  {integritySummary}
+                </Text>
+              </View>
+            ) : null}
 
             {analyticInsightsLoading || analyticInsights.length ? (
               <SectionBlock style={{ marginBottom: 12 }} contentStyle={{ gap: 10 }}>
@@ -345,6 +370,7 @@ export function BuyerPropDetailsSheetBody({
         renderItem={({ item: ln }) => {
           const noteRaw = String(ln?.note ?? "").trim();
           const hideNote = isReqContextNote(noteRaw) || isMarketplaceProposalLine(ln);
+          const integrityLabel = getProposalItemIntegrityLabel(ln);
 
           return (
             <View style={[s.dirMobCard, { marginHorizontal: 16, padding: 14 }]}>
@@ -352,6 +378,25 @@ export function BuyerPropDetailsSheetBody({
                 <Text style={[s.dirMobTitle, { color: D.text, fontSize: 15 }]} numberOfLines={3}>
                   {ln?.name_human || ln?.rik_code || `Позиция ${String(ln?.request_item_id || "").slice(0, 6)}`}
                 </Text>
+
+                {integrityLabel ? (
+                  <View
+                    style={{
+                      marginTop: 8,
+                      alignSelf: "flex-start",
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 999,
+                      backgroundColor: "rgba(249,115,22,0.14)",
+                      borderWidth: 1,
+                      borderColor: "rgba(249,115,22,0.35)",
+                    }}
+                  >
+                    <Text style={{ color: "#FDBA74", fontWeight: "900", fontSize: 11 }}>
+                      {integrityLabel}
+                    </Text>
+                  </View>
+                ) : null}
 
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 }}>
                   <Text style={[s.dirMobMeta, { color: UI.accent, fontSize: 14, fontWeight: "900" }]}>

@@ -19,15 +19,17 @@ jest.mock("./_core", () => ({
 
 jest.mock("./integrity.guards", () => ({
   ensureProposalRequestItemsIntegrity: jest.fn(),
-  filterProposalItemsByExistingRequestLinks: jest.fn(),
+  ensureActiveProposalRequestItemsIntegrity: jest.fn(),
+  classifyProposalItemsByRequestItemIntegrity: jest.fn(),
 }));
 
-import { proposalAddItems, proposalSubmit } from "./proposals";
+import { proposalAddItems, proposalItems, proposalSubmit } from "./proposals";
 import { supabase as mockedSupabase } from "../supabaseClient";
 import { classifyRpcCompatError, client } from "./_core";
 import {
+  classifyProposalItemsByRequestItemIntegrity,
+  ensureActiveProposalRequestItemsIntegrity,
   ensureProposalRequestItemsIntegrity,
-  filterProposalItemsByExistingRequestLinks,
 } from "./integrity.guards";
 
 describe("proposals silent catch discipline", () => {
@@ -43,8 +45,10 @@ describe("proposals silent catch discipline", () => {
   const mockClassifyRpcCompatError = classifyRpcCompatError as unknown as jest.Mock;
   const mockEnsureProposalRequestItemsIntegrity =
     ensureProposalRequestItemsIntegrity as unknown as jest.Mock;
-  const mockFilterProposalItemsByExistingRequestLinks =
-    filterProposalItemsByExistingRequestLinks as unknown as jest.Mock;
+  const mockEnsureActiveProposalRequestItemsIntegrity =
+    ensureActiveProposalRequestItemsIntegrity as unknown as jest.Mock;
+  const mockClassifyProposalItemsByRequestItemIntegrity =
+    classifyProposalItemsByRequestItemIntegrity as unknown as jest.Mock;
 
   beforeEach(() => {
     const runtime = globalThis as typeof globalThis & { __DEV__?: boolean };
@@ -56,10 +60,13 @@ describe("proposals silent catch discipline", () => {
     mockClient.from.mockReset();
     mockClassifyRpcCompatError.mockReset();
     mockEnsureProposalRequestItemsIntegrity.mockReset().mockResolvedValue(undefined);
-    mockFilterProposalItemsByExistingRequestLinks.mockReset().mockImplementation(
+    mockEnsureActiveProposalRequestItemsIntegrity.mockReset().mockResolvedValue(undefined);
+    mockClassifyProposalItemsByRequestItemIntegrity.mockReset().mockImplementation(
       async (_client: unknown, rows: unknown[]) => ({
         rows,
-        droppedRequestItemIds: [],
+        degradedRequestItemIds: [],
+        cancelledRequestItemIds: [],
+        missingRequestItemIds: [],
       }),
     );
   });
@@ -88,6 +95,14 @@ describe("proposals silent catch discipline", () => {
 
     const inserted = await proposalAddItems("proposal-1", ["ri-1", "ri-2"]);
     expect(inserted).toBe(2);
+    expect(mockEnsureActiveProposalRequestItemsIntegrity).toHaveBeenCalledWith(
+      expect.anything(),
+      "proposal-1",
+      ["ri-1", "ri-2"],
+      expect.objectContaining({
+        surface: "proposal_add_items",
+      }),
+    );
 
     const events = getPlatformObservabilityEvents();
     expect(events.some((event) => event.event === "proposal_add_items_rpc_failed")).toBe(true);
@@ -119,5 +134,109 @@ describe("proposals silent catch discipline", () => {
     );
     expect(submitError).toBeTruthy();
     expect(submitError?.sourceKind).toBe("rpc:proposal_submit_text_v1");
+  });
+
+  it("preserves degraded proposal rows instead of silently dropping them", async () => {
+    mockClient.from.mockImplementation((table: string) => {
+      if (table === "proposal_snapshot_items") {
+        return {
+          select: jest.fn(() => ({
+            eq: jest.fn(() => ({
+              order: jest.fn().mockResolvedValue({
+                data: [
+                  {
+                    id: 1,
+                    request_item_id: "ri-missing",
+                    rik_code: "MAT-1",
+                    name_human: "Broken line",
+                    uom: "pcs",
+                    app_code: "APP-1",
+                    total_qty: 2,
+                    price: 10,
+                    note: null,
+                    supplier: null,
+                  },
+                ],
+                error: null,
+              }),
+            })),
+          })),
+        };
+      }
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    mockClassifyProposalItemsByRequestItemIntegrity.mockResolvedValue({
+      rows: [
+        {
+          id: 1,
+          request_item_id: "ri-missing",
+          rik_code: "MAT-1",
+          name_human: "Broken line",
+          uom: "pcs",
+          app_code: "APP-1",
+          total_qty: 2,
+          price: 10,
+          note: null,
+          supplier: null,
+          request_item_integrity_state: "source_missing",
+          request_item_integrity_reason: "request_item_missing",
+          request_item_source_status: null,
+          request_item_cancelled_at: null,
+        },
+      ],
+      degradedRequestItemIds: ["ri-missing"],
+      cancelledRequestItemIds: [],
+      missingRequestItemIds: ["ri-missing"],
+    });
+
+    const rows = await proposalItems("proposal-degraded");
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      request_item_id: "ri-missing",
+      request_item_integrity_state: "source_missing",
+      request_item_integrity_reason: "request_item_missing",
+    });
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.event === "load_proposal_items" &&
+          event.result === "success" &&
+          event.extra?.publishState === "degraded",
+      ),
+    ).toBe(true);
+  });
+
+  it("maps integrity degraded submit failures to explicit recoverable error", async () => {
+    mockClassifyRpcCompatError.mockReturnValue({
+      kind: "integrity_guard",
+      allowNextVariant: false,
+      reason: "integrity_guard_block",
+    });
+    mockClient.rpc.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message: "proposal_request_item_integrity_degraded",
+        details: JSON.stringify({
+          proposal_id: "proposal-3",
+          total_items: 2,
+          degraded_items: 1,
+          cancelled_items: 1,
+          missing_items: 0,
+          request_item_ids: ["ri-cancelled"],
+        }),
+      },
+    });
+
+    await expect(proposalSubmit("proposal-3")).rejects.toMatchObject({
+      name: "ProposalRequestItemIntegrityDegradedError",
+      code: "proposal_request_item_integrity_degraded",
+      summary: expect.objectContaining({
+        proposalId: "proposal-3",
+        cancelledItems: 1,
+        requestItemIds: ["ri-cancelled"],
+      }),
+    });
   });
 });

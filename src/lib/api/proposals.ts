@@ -4,9 +4,11 @@ import { beginPlatformObservability } from "../observability/platformObservabili
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { classifyRpcCompatError, client } from "./_core";
 import {
+  classifyProposalItemsByRequestItemIntegrity,
+  ensureActiveProposalRequestItemsIntegrity,
   ensureProposalRequestItemsIntegrity,
-  filterProposalItemsByExistingRequestLinks,
 } from "./integrity.guards";
+import { toProposalRequestItemIntegrityDegradedError } from "./proposalIntegrity";
 import type { ProposalItemRow } from "./types";
 
 const logProposalsDebug = (...args: unknown[]) => {
@@ -644,7 +646,7 @@ export async function proposalAddItems(proposalId: number | string, requestItemI
     event: "add_proposal_items",
     sourceKind: "rpc:proposal_add_items",
   });
-  await ensureProposalRequestItemsIntegrity(client, proposalIdText, requestItemIds, {
+  await ensureActiveProposalRequestItemsIntegrity(client, proposalIdText, requestItemIds, {
     screen: "buyer",
     surface: "proposal_add_items",
     sourceKind: "mutation:proposal_items",
@@ -751,7 +753,8 @@ export async function proposalSubmit(
     });
     return verified;
   } catch (error) {
-    observation.error(error, {
+    const normalizedError = toProposalRequestItemIntegrityDegradedError(error) ?? error;
+    observation.error(normalizedError, {
       sourceKind: submitSourceKind,
       errorStage: "rpc_submit_or_verify",
       fallbackUsed: false,
@@ -759,7 +762,7 @@ export async function proposalSubmit(
         proposalId: pid,
       },
     });
-    throw error;
+    throw normalizedError;
   }
 }
 
@@ -874,7 +877,7 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
     try {
       const rows = await loadProposalItemsFromSource(pid, sourceKind);
       if (!rows || rows.length === 0) continue;
-      const guarded = await filterProposalItemsByExistingRequestLinks(client, rows, {
+      const classified = await classifyProposalItemsByRequestItemIntegrity(client, rows, {
         screen: "buyer",
         surface: "proposal_items",
         sourceKind,
@@ -883,12 +886,15 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
       observation.success({
         sourceKind,
         fallbackUsed: sourceKind !== "view:proposal_snapshot_items",
-        rowCount: guarded.rows.length,
+        rowCount: classified.rows.length,
         extra: {
-          droppedOrphanRows: guarded.droppedRequestItemIds.length,
+          degradedRequestItems: classified.degradedRequestItemIds.length,
+          cancelledRequestItems: classified.cancelledRequestItemIds.length,
+          missingRequestItems: classified.missingRequestItemIds.length,
+          publishState: classified.degradedRequestItemIds.length ? "degraded" : "ready",
         },
       });
-      return guarded.rows;
+      return classified.rows;
     } catch (error) {
       lastError = error;
       recordProposalCatch({

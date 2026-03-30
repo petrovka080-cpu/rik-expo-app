@@ -16371,6 +16371,10 @@ export type Database = {
         Args: { p_comment?: string; p_proposal_id: string }
         Returns: undefined
       }
+      director_approve_min_auto_v1: {
+        Args: { p_comment?: string | null; p_proposal_id: string }
+        Returns: undefined
+      }
       director_decide_proposal_items: {
         Args: { p_decisions: Json; p_finalize?: boolean; p_proposal_id: string }
         Returns: Json
@@ -17692,6 +17696,23 @@ export type Database = {
           rik_code: string
           total_qty: number
           uom: string
+        }[]
+      }
+      proposal_request_item_integrity_guard_v1: {
+        Args: { p_proposal_id: string }
+        Returns: Json
+      }
+      proposal_request_item_integrity_v1: {
+        Args: { p_proposal_id: string }
+        Returns: {
+          integrity_reason: string | null
+          integrity_state: string
+          proposal_id: string
+          proposal_item_id: number
+          request_item_cancelled_at: string | null
+          request_item_exists: boolean
+          request_item_id: string
+          request_item_status: string | null
         }[]
       }
       proposal_items_snapshot: {

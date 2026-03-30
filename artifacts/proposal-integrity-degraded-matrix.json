@@ -1,0 +1,37 @@
+{
+  "status": "GREEN",
+  "matrix": {
+    "active_request_item_path_unchanged": true,
+    "soft_cancel_primary_contract": true,
+    "no_request_items_hard_delete_primary_path": true,
+    "proposal_create_rejects_cancelled_source_items": true,
+    "cancelled_source_preserved_not_silently_dropped": true,
+    "hard_delete_of_linked_request_item_blocked_by_fk": true,
+    "missing_source_contract_present_for_legacy_corrupt_state": true,
+    "buyer_surface_has_degraded_truth": true,
+    "director_surface_has_degraded_truth": true,
+    "submit_blocked_on_degraded": true,
+    "approval_blocked_on_degraded": true,
+    "no_hard_fk_like_deadlock": true
+  },
+  "sourceChecks": {
+    "requestItemCancelUsesSoftUpdate": true,
+    "noRequestItemsHardDeleteInSrc": true,
+    "proposalCreateRejectsCancelledSources": true,
+    "proposalReadUsesIntegrityClassifier": true,
+    "missingSourceContractPresent": true,
+    "buyerViewLoadsIntegrityRpc": true,
+    "buyerSheetShowsDegradedState": true,
+    "directorSheetShowsDegradedState": true,
+    "directorApprovalUsesGuardedRpc": true,
+    "requestItemHardDeleteMatches": []
+  },
+  "testsExpectedToCover": [
+    "src/lib/api/proposals.silentCatch.test.ts",
+    "src/lib/api/proposalIntegrity.test.ts",
+    "src/screens/buyer/buyer.actions.test.ts",
+    "src/screens/buyer/components/BuyerPropDetailsSheetBody.test.tsx",
+    "src/screens/director/DirectorProposalContainer.test.tsx",
+    "src/screens/director/DirectorProposalSheet.test.tsx"
+  ]
+}

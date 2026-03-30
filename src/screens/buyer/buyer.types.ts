@@ -1,4 +1,5 @@
 import type { BuyerInboxRow } from "../../lib/catalog_api";
+import type { ProposalRequestItemIntegrityFields } from "../../lib/api/proposalIntegrity";
 
 export type BuyerTab = "inbox" | "pending" | "approved" | "rejected" | "subcontracts";
 export type BuyerSheetKind = "none" | "inbox" | "accounting" | "rework" | "prop_details" | "rfq";
@@ -24,7 +25,7 @@ export type ProposalHeadLite = {
   sent_to_accountant_at?: string | null;
 };
 
-export type ProposalViewLine = {
+export type ProposalViewLine = ProposalRequestItemIntegrityFields & {
   request_item_id?: string | number | null;
   app_code?: string | null;
   note?: string | null;

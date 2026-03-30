@@ -1,9 +1,11 @@
 // src/screens/buyer/buyer.repo.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../lib/database.types";
 import {
   getLatestCanonicalProposalAttachment,
 } from "../../lib/api/proposalAttachments.service";
 import { ensureProposalRequestItemsIntegrity } from "../../lib/api/integrity.guards";
+import type { ProposalRequestItemIntegrityRow } from "../../lib/api/proposalIntegrity";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 
 export type PropAttachmentRow = {
@@ -156,7 +158,7 @@ export async function repoListProposalAttachments(supabase: SupabaseClient, prop
 export async function repoGetProposalItemsForView(supabase: SupabaseClient, pidStr: string) {
   const q = await supabase
     .from("proposal_items")
-    .select("request_item_id, qty, price, supplier, note")
+    .select("request_item_id, name_human, uom, qty, rik_code, app_code, price, supplier, note")
     .eq("proposal_id", pidStr)
     .order("request_item_id", { ascending: true });
 
@@ -170,11 +172,50 @@ export async function repoGetRequestItemsByIds(supabase: SupabaseClient, ids: st
 
   const ri = await supabase
     .from("request_items")
-    .select("id, name_human, uom, qty, rik_code, app_code")
+    .select("id, name_human, uom, qty, rik_code, app_code, status, cancelled_at")
     .in("id", clean);
 
   if (ri.error) throw ri.error;
   return Array.isArray(ri.data) ? ri.data : [];
+}
+
+export async function repoGetProposalRequestItemIntegrity(
+  supabase: SupabaseClient<Database>,
+  proposalId: string,
+) {
+  const pid = String(proposalId || "").trim();
+  if (!pid) return [] as ProposalRequestItemIntegrityRow[];
+
+  const rpc = await supabase.rpc("proposal_request_item_integrity_v1", {
+    p_proposal_id: pid,
+  });
+  if (rpc.error) throw rpc.error;
+
+  return Array.isArray(rpc.data)
+    ? (rpc.data as Database["public"]["Functions"]["proposal_request_item_integrity_v1"]["Returns"])
+        .map((row) => ({
+          proposal_id: String(row.proposal_id ?? "").trim(),
+          proposal_item_id: Number(row.proposal_item_id ?? 0),
+          request_item_id: String(row.request_item_id ?? "").trim(),
+          integrity_state:
+            row.integrity_state === "source_cancelled" || row.integrity_state === "source_missing"
+              ? row.integrity_state
+              : "active",
+          integrity_reason:
+            row.integrity_reason === "request_item_cancelled" ||
+            row.integrity_reason === "request_item_missing"
+              ? row.integrity_reason
+              : null,
+          request_item_exists: row.request_item_exists === true,
+          request_item_status:
+            row.request_item_status == null ? null : String(row.request_item_status),
+          request_item_cancelled_at:
+            row.request_item_cancelled_at == null
+              ? null
+              : String(row.request_item_cancelled_at),
+        }))
+        .filter((row) => row.request_item_id)
+    : [];
 }
 export async function repoGetProposalItemLinks(supabase: SupabaseClient, proposalIds: string[]) {
   const ids = Array.from(new Set((proposalIds || []).map(String).filter(Boolean)));

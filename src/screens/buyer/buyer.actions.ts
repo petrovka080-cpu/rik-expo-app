@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   repoGetProposalItemLinks,
   repoGetProposalItemsForView,
+  repoGetProposalRequestItemIntegrity,
   repoGetRequestItemsByIds,
   repoGetRequestItemToRequestMap,
   repoSetProposalBuyerFio,
@@ -11,10 +12,17 @@ import {
 } from "./buyer.repo";
 import type { AlertFn, LogFn } from "./buyer.mutation.shared";
 import {
+  getProposalIntegritySummaryLabel,
+  isProposalItemIntegrityDegraded,
+  type ProposalRequestItemIntegrityReason,
+  type ProposalRequestItemIntegrityState,
+} from "../../lib/api/proposalIntegrity";
+import {
   errMessage,
   logBuyerSecondaryPhaseWarning,
   reportBuyerWriteFailure,
 } from "./buyer.mutation.shared";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 export { handleCreateProposalsBySupplierAction } from "./buyer.submit.mutation";
 export { sendToAccountingAction } from "./buyer.status.mutation";
@@ -35,6 +43,12 @@ type RequestItemViewRow = {
   qty?: number | null;
   rik_code?: string | null;
   app_code?: string | null;
+  status?: string | null;
+  cancelled_at?: string | null;
+  request_item_integrity_state?: "active" | "source_cancelled" | "source_missing";
+  request_item_integrity_reason?: "request_item_cancelled" | "request_item_missing" | null;
+  request_item_source_status?: string | null;
+  request_item_cancelled_at?: string | null;
 };
 
 type ProposalItemLinkRow = {
@@ -99,18 +113,58 @@ export async function openProposalViewAction(p: OpenProposalViewDeps) {
       const requestItems: RequestItemViewRow[] = await repoGetRequestItemsByIds(p.supabase, ids);
       for (const row of requestItems) byId[String(row.id)] = row;
     }
+    const integrityById = new Map(
+      (await repoGetProposalRequestItemIntegrity(p.supabase, p.pidStr)).map((row) => [
+        row.request_item_id,
+        row,
+      ]),
+    );
 
-    const merged = baseLines.map((line) => {
+    const merged: RequestItemViewRow[] = baseLines.map((line) => {
       const requestItem = byId[String(line.request_item_id)] || {};
+      const integrity = integrityById.get(String(line.request_item_id ?? "").trim());
+      const requestItemIntegrityState: ProposalRequestItemIntegrityState =
+        (integrity?.integrity_state ?? "active") as ProposalRequestItemIntegrityState;
+      const requestItemIntegrityReason: ProposalRequestItemIntegrityReason =
+        (integrity?.integrity_reason ?? null) as ProposalRequestItemIntegrityReason;
       return {
         ...line,
-        name_human: requestItem.name_human ?? null,
-        uom: requestItem.uom ?? null,
+        name_human: requestItem.name_human ?? line.name_human ?? null,
+        uom: requestItem.uom ?? line.uom ?? null,
         qty: line.qty ?? requestItem.qty ?? null,
-        rik_code: requestItem.rik_code ?? null,
-        app_code: requestItem.app_code ?? null,
+        rik_code: requestItem.rik_code ?? line.rik_code ?? null,
+        app_code: requestItem.app_code ?? line.app_code ?? null,
+        request_item_integrity_state: requestItemIntegrityState,
+        request_item_integrity_reason: requestItemIntegrityReason,
+        request_item_source_status:
+          integrity?.request_item_status ?? requestItem.status ?? null,
+        request_item_cancelled_at:
+          integrity?.request_item_cancelled_at ?? requestItem.cancelled_at ?? null,
       };
     });
+
+    const degradedLines = merged.filter((line) => isProposalItemIntegrityDegraded(line));
+    if (degradedLines.length) {
+      recordPlatformObservability({
+        screen: "buyer",
+        surface: "proposal_view",
+        category: "ui",
+        event: "proposal_view_integrity_degraded",
+        result: "error",
+        sourceKind: "rpc:proposal_request_item_integrity_v1",
+        rowCount: degradedLines.length,
+        errorStage: "request_item_integrity",
+        errorClass: "ProposalRequestItemIntegrityDegraded",
+        errorMessage: getProposalIntegritySummaryLabel(merged) ?? "proposal integrity degraded",
+        extra: {
+          proposalId: p.pidStr,
+          degradedRequestItemIds: degradedLines
+            .map((line) => String(line.request_item_id ?? "").trim())
+            .filter(Boolean),
+          publishState: "degraded",
+        },
+      });
+    }
 
     p.setPropViewLines(merged);
   } catch (error) {

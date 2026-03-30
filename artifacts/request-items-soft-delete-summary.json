@@ -1,0 +1,14 @@
+{
+  "status": "GREEN",
+  "contract": {
+    "requestItemLifecycle": "soft_cancel_primary",
+    "degradedSubmitRule": "proposal_request_item_integrity_guard_v1 rejects cancelled or missing source items",
+    "degradedApprovalRule": "director_approve_min_auto_v1 rejects cancelled or missing source items",
+    "readTruth": "proposal_request_item_integrity_v1 classifies active/source_cancelled/source_missing without dropping proposal rows"
+  },
+  "sourceChecksPassed": true,
+  "activePathOk": true,
+  "cancelledPathOk": true,
+  "missingContractOk": true,
+  "recoveryNoDeadlock": true
+}

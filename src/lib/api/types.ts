@@ -1,3 +1,5 @@
+import type { ProposalRequestItemIntegrityFields } from "./proposalIntegrity";
+
 export type CatalogItem = {
   rik_code: string;
   name_human?: string | null;
@@ -79,7 +81,7 @@ export type BuyerInboxRow = {
   last_offer_note?: string | null;
 };
 
-export type ProposalItemRow = {
+export type ProposalItemRow = ProposalRequestItemIntegrityFields & {
   id: number;
   request_item_id?: string | null;
   rik_code: string | null;

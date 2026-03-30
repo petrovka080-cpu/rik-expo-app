@@ -9,7 +9,9 @@ import {
   type ProposalStatus,
   type ProposalSubmitVerificationResult,
 } from "../api/proposals";
-import { ensureProposalRequestItemsIntegrity } from "../api/integrity.guards";
+import {
+  ensureActiveProposalRequestItemsIntegrity,
+} from "../api/integrity.guards";
 import { recordCatalogWarning } from "./catalog.observability";
 import {
   SUPPLIER_NONE_LABEL,
@@ -145,6 +147,7 @@ type RequestItemForProposalRow = {
   request_id: string | null;
   qty: number | null;
   status: string | null;
+  cancelled_at: string | null;
   kind: string | null;
   item_type: string | null;
   procurement_type: string | null;
@@ -265,6 +268,12 @@ const parsePositive = (raw: unknown): number => {
   return Number.isFinite(num) && num > 0 ? num : 0;
 };
 
+const isCancelledRequestItemSource = (row: RequestItemForProposalRow): boolean => {
+  if (String(row.cancelled_at ?? "").trim()) return true;
+  const normalizedStatus = String(row.status ?? "").trim().toLowerCase();
+  return normalizedStatus === "cancelled" || normalizedStatus === "canceled";
+};
+
 const normCounterpartyKey = (value: unknown): string =>
   String(value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
 
@@ -295,6 +304,8 @@ const parseRequestItemsForProposalRows = (value: unknown): RequestItemForProposa
         request_id: record.request_id == null ? null : String(record.request_id),
         qty: parseNumberValue(record.qty) ?? null,
         status: record.status == null ? null : String(record.status),
+        cancelled_at:
+          record.cancelled_at == null ? null : String(record.cancelled_at),
         kind: record.kind == null ? null : String(record.kind),
         item_type: record.item_type == null ? null : String(record.item_type),
         procurement_type: record.procurement_type == null ? null : String(record.procurement_type),
@@ -396,6 +407,7 @@ async function resolveProposalCreationPreconditions(
           requestId: string;
           itemStatus: string;
           requestStatus: string;
+          cancelledSource: boolean;
           approvedByItemStatus: boolean;
           approvedByRequestStatus: boolean;
           rejectedForRework: boolean;
@@ -407,6 +419,7 @@ async function resolveProposalCreationPreconditions(
           if (!itemId || !reqId) return;
           const qty = Number(row.qty ?? 0);
           const itemStatus = String(row.status ?? "");
+          const cancelledSource = isCancelledRequestItemSource(row);
           const requestStatus = reqStatusById.get(reqId) || "";
           const approvedByItemStatus = isRequestApprovedForProcurement(itemStatus);
           const approvedByRequestStatus = isRequestApprovedForProcurement(requestStatus);
@@ -433,10 +446,14 @@ async function resolveProposalCreationPreconditions(
             requestId: reqId,
             itemStatus,
             requestStatus,
+            cancelledSource,
             approvedByItemStatus,
             approvedByRequestStatus,
             rejectedForRework,
           });
+          if (cancelledSource) {
+            return;
+          }
           if (qReq.error) {
             approvedItemIds.add(itemId);
           } else if (approvedByRequestStatus || approvedByItemStatus || rejectedForRework) {
@@ -659,7 +676,7 @@ async function linkProposalItemsStage(
   }
 
   if (!added) {
-    await ensureProposalRequestItemsIntegrity(supabase, proposalId, requestItemIds, {
+    await ensureActiveProposalRequestItemsIntegrity(supabase, proposalId, requestItemIds, {
       screen: "buyer",
       surface: "catalog_proposal_link_items_fallback",
       sourceKind: "mutation:proposal_items_fallback",
@@ -685,7 +702,7 @@ async function completeProposalCreationStage(
   preconditions: ProposalCreationPreconditionsResolved,
   runtime: ProposalCreationRuntime,
 ): Promise<ProposalCreationCompletionResult> {
-  await ensureProposalRequestItemsIntegrity(supabase, proposalId, prepared.request_item_ids, {
+  await ensureActiveProposalRequestItemsIntegrity(supabase, proposalId, prepared.request_item_ids, {
     screen: "buyer",
     surface: "catalog_proposal_complete_bindings",
     sourceKind: "mutation:proposal_items_bindings",

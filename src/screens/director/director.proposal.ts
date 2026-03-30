@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
 import { generateProposalPdfDocument } from "../../lib/catalog_api";
+import { toProposalRequestItemIntegrityDegradedError } from "../../lib/api/proposalIntegrity";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import type { Database } from "../../lib/database.types";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
@@ -332,11 +333,11 @@ export function useDirectorProposalActions({
         : false;
 
       if (!alreadySent) {
-        const { error } = await supabase.rpc("director_approve_min_auto", {
+        const { error } = await supabase.rpc("director_approve_min_auto_v1", {
           p_proposal_id: pid,
           p_comment: null,
         });
-        if (error) throw error;
+        if (error) throw toProposalRequestItemIntegrityDegradedError(error) ?? error;
       }
 
       let ensuredPurchaseId: string | null = existingPurchaseId ?? null;
@@ -389,10 +390,11 @@ export function useDirectorProposalActions({
         showSuccess("Утверждено -> бухгалтер -> склад/подрядчики");
       }
     } catch (e: unknown) {
-      recordDirectorProposalCatch("critical_fail", "proposal_approve_failed", e, {
+      const normalizedError = toProposalRequestItemIntegrityDegradedError(e) ?? e;
+      recordDirectorProposalCatch("critical_fail", "proposal_approve_failed", normalizedError, {
         proposalId: pid,
       });
-      Alert.alert("Не удалось утвердить", errText(e) || "Попробуйте еще раз.");
+      Alert.alert("Не удалось утвердить", errText(normalizedError) || "Попробуйте еще раз.");
     } finally {
       delete approveInFlightRef.current[pid];
       setPropApproveId(null);

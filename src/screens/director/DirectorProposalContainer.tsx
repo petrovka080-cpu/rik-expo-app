@@ -1,5 +1,6 @@
 import React from "react";
 import { View } from "react-native";
+import { isProposalItemIntegrityDegraded } from "../../lib/api/proposalIntegrity";
 import DirectorProposalSheet from "./DirectorProposalSheet";
 import type { ProposalAttachmentRow, ProposalHead, ProposalItem, RequestMeta } from "./director.types";
 
@@ -58,12 +59,14 @@ export default function DirectorProposalContainer({
   const loaded = !!loadedByProp[pidStr];
   const items = itemsByProp[pidStr] || [];
   const isEmptyProposal = loaded && (items?.length ?? 0) === 0;
+  const hasDegradedItems = items.some((item) => isProposalItemIntegrityDegraded(item));
   const approveDisabled =
     screenLock ||
     propApproveId === pidStr ||
     propReturnId === pidStr ||
     !loaded ||
-    isEmptyProposal;
+    isEmptyProposal ||
+    hasDegradedItems;
 
   const pretty = String(propsHeads.find((x) => String(x.id) === pidStr)?.pretty ?? "").trim();
   const totalSum = (items || []).reduce((acc, it) => {

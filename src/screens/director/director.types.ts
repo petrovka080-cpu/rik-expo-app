@@ -3,6 +3,7 @@ import type {
   DirectorReportsCanonicalDiagnostics,
   DirectorReportsCanonicalSummary,
 } from "./director.readModels";
+import type { ProposalRequestItemIntegrityFields } from "../../lib/api/proposalIntegrity";
 
 // src/screens/director/director.types.ts
 export type Tab = "foreman" | "buyer";
@@ -25,7 +26,7 @@ export type Group = { request_id: number | string; items: PendingRow[] };
 
 export type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
 
-export type ProposalItem = {
+export type ProposalItem = ProposalRequestItemIntegrityFields & {
   id: number;
   request_item_id: string | null;
   rik_code: string | null;
