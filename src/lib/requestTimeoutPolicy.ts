@@ -58,6 +58,7 @@ const UI_SCOPE_RPC_PATTERNS = [
   /_source(_v\d+)?$/i,
   /^request_items_by_request$/i,
   /^proposal_attachments_list$/i,
+  /^proposal_attachment_evidence_scope_v1$/i,
   /^resolve_req_pr_map$/i,
   /^marketplace_item_scope_detail_v1$/i,
 ];

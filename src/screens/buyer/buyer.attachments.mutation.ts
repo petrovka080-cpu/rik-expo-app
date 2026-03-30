@@ -13,6 +13,7 @@ import {
   formatBuyerMutationWarnings,
   isBuyerMutationFailure,
 } from "./buyer.mutation.shared";
+import { getLatestCanonicalProposalAttachment } from "../../lib/api/proposalAttachments.service";
 
 type AlertFn = (title: string, message: string) => void;
 
@@ -217,7 +218,7 @@ export async function uploadInvoiceAttachmentMutation(params: {
 
 export async function ensureProposalHtmlAttachmentMutation(params: {
   proposalId: string;
-  supabase: Pick<SupabaseClient<any, any, any>, "from">;
+  supabase: SupabaseClient<any, any, any>;
   buildProposalPdfHtml: (proposalId: string) => Promise<string>;
   uploadProposalAttachment: UploadProposalAttachmentFn;
 }): Promise<
@@ -232,16 +233,14 @@ export async function ensureProposalHtmlAttachmentMutation(params: {
 
   try {
     tracker.markStarted("ensure_proposal_html");
-    const existing = await params.supabase
-      .from("proposal_attachments")
-      .select("id")
-      .eq("proposal_id", proposalId)
-      .eq("group_key", "proposal_pdf")
-      .limit(1);
-
-    if (!existing.error && Array.isArray(existing.data) && existing.data.length > 0) {
+    try {
+      await getLatestCanonicalProposalAttachment(params.supabase, proposalId, "proposal_pdf", {
+        screen: "buyer",
+      });
       tracker.markCompleted("ensure_proposal_html", { mode: "existing" });
       return tracker.success({ proposalId, mode: "existing" });
+    } catch {
+      // Missing canonical proposal_pdf attachment is the only case that should continue to HTML upload.
     }
 
     const html = await params.buildProposalPdfHtml(proposalId);

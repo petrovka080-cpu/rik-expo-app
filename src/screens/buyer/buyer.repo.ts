@@ -3,6 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../../lib/database.types";
 import {
   getLatestCanonicalProposalAttachment,
+  listCanonicalProposalAttachments,
+  toProposalAttachmentLegacyRow,
 } from "../../lib/api/proposalAttachments.service";
 import { ensureProposalRequestItemsIntegrity } from "../../lib/api/integrity.guards";
 import type { ProposalRequestItemIntegrityRow } from "../../lib/api/proposalIntegrity";
@@ -98,16 +100,8 @@ export async function repoListProposalAttachments(supabase: SupabaseClient, prop
   const pid = String(proposalId || "").trim();
   if (!pid) return [];
 
-  const q = await supabase
-    .from("proposal_attachments")
-    // ⚠️ НЕ добавляй сюда несуществующие поля — из-за этого и бывает 400
-    .select("id, proposal_id, file_name, url, group_key, created_at, bucket_id, storage_path")
-    .eq("proposal_id", pid)
-    .order("created_at", { ascending: false });
-
-  if (q.error) throw q.error;
-
-  const raw: RawAttachmentRow[] = Array.isArray(q.data) ? q.data : [];
+  const result = await listCanonicalProposalAttachments(supabase, pid, { screen: "buyer" });
+  const raw: RawAttachmentRow[] = result.rows.map((row) => toProposalAttachmentLegacyRow(row));
 
   const out: RepoAttachmentRow[] = [];
   for (const r of raw) {

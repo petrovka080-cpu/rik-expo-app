@@ -1,0 +1,154 @@
+{
+  "generatedAt": "2026-03-30T19:37:32.173Z",
+  "canonicalSourceUsed": "rpc:proposal_attachment_evidence_scope_v1 + rpc:proposal_attachment_evidence_attach_v1",
+  "uploadScenarioSummary": {
+    "targetProposalId": "625ce921-2564-4fca-afec-df3ead020f9e",
+    "targetProposalNo": "PR-0543/2026",
+    "markerPrefix": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/",
+    "boundAttachmentCount": 4,
+    "unboundStoragePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/unbound-orphan.pdf"
+  },
+  "linkedEntitySummary": {
+    "entityType": "proposal",
+    "entityId": "625ce921-2564-4fca-afec-df3ead020f9e",
+    "requestId": "b97607b2-4083-4edd-9fd2-7f04b17ae568",
+    "supplier": "financial-atomic-rpc:mndjmqhc:partial:supplier"
+  },
+  "evidenceKinds": [
+    {
+      "label": "buyer_supplier_quote",
+      "groupKey": "supplier_quote",
+      "expectedVisibleTo": [
+        "buyer",
+        "director",
+        "accountant"
+      ]
+    },
+    {
+      "label": "buyer_invoice_basis",
+      "groupKey": "invoice",
+      "expectedVisibleTo": [
+        "buyer",
+        "director",
+        "accountant"
+      ]
+    },
+    {
+      "label": "accountant_payment_basis",
+      "groupKey": "payment",
+      "expectedVisibleTo": [
+        "buyer",
+        "director",
+        "accountant"
+      ]
+    },
+    {
+      "label": "buyer_html_technical",
+      "groupKey": "proposal_html",
+      "expectedVisibleTo": [
+        "buyer"
+      ]
+    }
+  ],
+  "visibilityResultPerRole": {
+    "buyer": [
+      {
+        "attachmentId": "267",
+        "evidenceKind": "payment",
+        "visibilityScope": "buyer_director_accountant",
+        "createdBy": "58a92930-c549-4246-8815-7abae983f78f",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/payment.pdf"
+      },
+      {
+        "attachmentId": "266",
+        "evidenceKind": "proposal_html",
+        "visibilityScope": "buyer_only",
+        "createdBy": "0a2a9b5f-8e86-4f49-977e-c3a170397e01",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/proposal.html"
+      },
+      {
+        "attachmentId": "265",
+        "evidenceKind": "invoice",
+        "visibilityScope": "buyer_director_accountant",
+        "createdBy": "0a2a9b5f-8e86-4f49-977e-c3a170397e01",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/invoice.pdf"
+      },
+      {
+        "attachmentId": "264",
+        "evidenceKind": "supplier_quote",
+        "visibilityScope": "buyer_director_accountant",
+        "createdBy": "0a2a9b5f-8e86-4f49-977e-c3a170397e01",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/supplier-quote.pdf"
+      }
+    ],
+    "director": [
+      {
+        "attachmentId": "267",
+        "evidenceKind": "payment",
+        "visibilityScope": "buyer_director_accountant",
+        "createdBy": "58a92930-c549-4246-8815-7abae983f78f",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/payment.pdf"
+      },
+      {
+        "attachmentId": "265",
+        "evidenceKind": "invoice",
+        "visibilityScope": "buyer_director_accountant",
+        "createdBy": "0a2a9b5f-8e86-4f49-977e-c3a170397e01",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/invoice.pdf"
+      },
+      {
+        "attachmentId": "264",
+        "evidenceKind": "supplier_quote",
+        "visibilityScope": "buyer_director_accountant",
+        "createdBy": "0a2a9b5f-8e86-4f49-977e-c3a170397e01",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/supplier-quote.pdf"
+      }
+    ],
+    "accountant": [
+      {
+        "attachmentId": "267",
+        "evidenceKind": "payment",
+        "visibilityScope": "buyer_director_accountant",
+        "createdBy": "58a92930-c549-4246-8815-7abae983f78f",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/payment.pdf"
+      },
+      {
+        "attachmentId": "265",
+        "evidenceKind": "invoice",
+        "visibilityScope": "buyer_director_accountant",
+        "createdBy": "0a2a9b5f-8e86-4f49-977e-c3a170397e01",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/invoice.pdf"
+      },
+      {
+        "attachmentId": "264",
+        "evidenceKind": "supplier_quote",
+        "visibilityScope": "buyer_director_accountant",
+        "createdBy": "0a2a9b5f-8e86-4f49-977e-c3a170397e01",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/supplier-quote.pdf"
+      }
+    ],
+    "accountantBasis": [
+      {
+        "attachmentId": "264",
+        "basisKind": "supplier_quote",
+        "groupKey": "supplier_quote",
+        "storagePath": "proposals/625ce921-2564-4fca-afec-df3ead020f9e/evidence/wave1g-mndlatzr/supplier-quote.pdf"
+      }
+    ]
+  },
+  "retrievalResult": {
+    "buyerVisibleCount": 4,
+    "directorVisibleCount": 3,
+    "accountantVisibleCount": 3,
+    "accountantBasisVisibleCount": 1,
+    "persistedVisibleCount": 4
+  },
+  "orphanInvalidLinkageAttemptResult": {
+    "invalidStorageContextRejected": true,
+    "invalidStorageContextDetail": "invalid_storage_context",
+    "invalidEntityContextRejected": true,
+    "invalidEntityContextDetail": "invalid_entity_context",
+    "unboundBlobVisible": false
+  },
+  "finalStatus": "GREEN"
+}

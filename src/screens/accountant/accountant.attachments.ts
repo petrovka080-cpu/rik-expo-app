@@ -113,7 +113,7 @@ const COMMERCIAL_GROUP_CONFIG = new Map<string, CommercialGroupConfig>([
     },
   ],
 ]);
-const SURROGATE_GROUPS = new Set(["proposal_pdf", "proposal_html"]);
+const SURROGATE_EVIDENCE_KINDS = new Set(["proposal_pdf", "proposal_html"]);
 
 const emptyFilterReasons = (): Record<AccountantAttachmentFilterReason, number> => ({
   missing_locator: 0,
@@ -198,13 +198,18 @@ function mapExplicitRow(
   row: CanonicalProposalAttachmentReadModel,
   reasons: Record<AccountantAttachmentFilterReason, number>,
 ): AccountantAttachment | null {
-  const normalizedGroupKey = lower(row.groupKey);
-  if (SURROGATE_GROUPS.has(normalizedGroupKey)) {
+  const evidenceKind = lower(row.evidenceKind);
+  if (SURROGATE_EVIDENCE_KINDS.has(evidenceKind)) {
     incrementFilterReason(reasons, "surrogate_group");
     return null;
   }
 
-  const groupConfig = COMMERCIAL_GROUP_CONFIG.get(normalizedGroupKey);
+  if (row.visibilityScope !== "buyer_director_accountant" && row.visibilityScope !== "director_accountant") {
+    incrementFilterReason(reasons, "non_basis_group");
+    return null;
+  }
+
+  const groupConfig = COMMERCIAL_GROUP_CONFIG.get(evidenceKind);
   if (!groupConfig) {
     incrementFilterReason(reasons, "non_basis_group");
     return null;
@@ -222,10 +227,10 @@ function mapExplicitRow(
     attachmentId: row.attachmentId,
     proposalId: row.proposalId,
     ownerType: groupConfig.ownerType,
-    ownerId: row.proposalId,
+    ownerId: row.entityId,
     fileName: row.fileName,
     fileUrl: row.fileUrl,
-    mimeType: inferMimeType(row.fileName, row.groupKey),
+    mimeType: row.mimeType ?? inferMimeType(row.fileName, row.groupKey),
     isVisibleToAccountant: true,
     basisKind: groupConfig.basisKind,
     sourceKind: row.sourceKind,
@@ -265,7 +270,7 @@ export async function listProposalAttachments(
     return {
       rows: [],
       state: "error",
-      sourceKind: "rpc:proposal_attachments_list",
+      sourceKind: "rpc:proposal_attachment_evidence_scope_v1",
       fallbackUsed: false,
       rawCount: 0,
       mappedCount: 0,
@@ -290,7 +295,7 @@ export async function listProposalAttachments(
   const rows = sortRows(commercialRows);
   const basisGroupCounts = countGroups(rows);
   const surrogateGroupCounts = countGroups(
-    canonicalResult.rows.filter((row) => SURROGATE_GROUPS.has(lower(row.groupKey))),
+    canonicalResult.rows.filter((row) => SURROGATE_EVIDENCE_KINDS.has(lower(row.evidenceKind))),
   );
 
   const filteredCount =
@@ -367,6 +372,16 @@ export async function ensureAttachmentSignedUrl(
     proposalId: row.proposalId,
     ownerType: row.ownerType === "proposal_commercial" ? "proposal" : row.ownerType,
     ownerId: row.ownerId,
+    entityType: "proposal",
+    entityId: row.ownerId,
+    evidenceKind:
+      row.basisKind === "invoice_source"
+        ? "invoice_source"
+        : row.basisKind === "commercial_doc"
+          ? "commercial_doc"
+          : "supplier_quote",
+    createdBy: null,
+    visibilityScope: "buyer_director_accountant",
     fileName: row.fileName,
     mimeType: row.mimeType,
     fileUrl: row.fileUrl,

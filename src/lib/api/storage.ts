@@ -3,6 +3,7 @@ import * as FileSystemModule from "expo-file-system/legacy";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { supabase } from "../supabaseClient";
 import type { QueuedProposalAttachment } from "./queuedProposalAttachments";
+import { attachProposalAttachmentEvidence } from "./proposalAttachmentEvidence.api";
 const FileSystemCompat = FileSystemModule;
 
 const FILES_BUCKET = "proposal_files";
@@ -141,6 +142,11 @@ function sanitizeFilename(name: string) {
   );
 }
 
+async function removeUploadedObject(bucketId: string, storagePath: string) {
+  const removal = await supabase.storage.from(bucketId).remove([storagePath]);
+  if (removal.error) throw removal.error;
+}
+
 async function ensureReadableFileUri(rawUri: string, safeName: string): Promise<string> {
   const uri = String(rawUri || "").trim();
   if (!uri) throw new Error("uploadProposalAttachment: file uri пустой");
@@ -265,19 +271,28 @@ export async function uploadProposalAttachment(
   }
 
   const row = {
-    proposal_id: pid,
-    bucket_id: FILES_BUCKET,
-    storage_path: storagePath,
-    file_name: fileName,
-    group_key: groupKey,
-    url: null,
+    proposalId: pid,
+    bucketId: FILES_BUCKET,
+    storagePath,
+    fileName,
+    groupKey,
+    mimeType: contentType,
   };
 
-  const ins = await supabase.from("proposal_attachments").insert(row);
-  if (ins.error) {
-    throw new Error(
-      `proposal_attachments INSERT failed: ${ins.error.message}\nproposal_id=${pid}\ngroup_key=${groupKey}\nfile_name=${fileName}\npath=${storagePath}`,
-    );
+  try {
+    await attachProposalAttachmentEvidence(supabase, row);
+  } catch (error) {
+    try {
+      await removeUploadedObject(FILES_BUCKET, storagePath);
+    } catch (cleanupError) {
+      const bindMessage = error instanceof Error ? error.message : String(error ?? "");
+      const cleanupMessage =
+        cleanupError instanceof Error ? cleanupError.message : String(cleanupError ?? "");
+      throw new Error(
+        `proposal_attachment_evidence_attach_v1 failed: ${bindMessage}\nstorage_cleanup_failed=${cleanupMessage}\nproposal_id=${pid}\ngroup_key=${groupKey}\nfile_name=${fileName}\npath=${storagePath}`,
+      );
+    }
+    throw error;
   }
 }
 
@@ -362,35 +377,12 @@ export async function bindQueuedProposalAttachmentToProposal(
   if (!fileName) throw new Error("bindQueuedProposalAttachmentToProposal: file_name пустой");
   if (!groupKey) throw new Error("bindQueuedProposalAttachmentToProposal: group_key пустой");
 
-  const existing = await supabase
-    .from("proposal_attachments")
-    .select("id")
-    .eq("proposal_id", pid)
-    .eq("bucket_id", bucketId)
-    .eq("storage_path", storagePath)
-    .eq("group_key", groupKey)
-    .limit(1)
-    .maybeSingle();
-
-  if (existing.error) {
-    throw new Error(
-      `proposal_attachments SELECT failed: ${existing.error.message}\nproposal_id=${pid}\nbucket_id=${bucketId}\npath=${storagePath}`,
-    );
-  }
-  if (existing.data?.id) return;
-
-  const ins = await supabase.from("proposal_attachments").insert({
-    proposal_id: pid,
-    bucket_id: bucketId,
-    storage_path: storagePath,
-    file_name: fileName,
-    group_key: groupKey,
-    url: null,
+  await attachProposalAttachmentEvidence(supabase, {
+    proposalId: pid,
+    bucketId,
+    storagePath,
+    fileName,
+    groupKey,
+    mimeType: attachment.mimeType ?? null,
   });
-
-  if (ins.error) {
-    throw new Error(
-      `proposal_attachments INSERT failed: ${ins.error.message}\nproposal_id=${pid}\ngroup_key=${groupKey}\nfile_name=${fileName}\npath=${storagePath}`,
-    );
-  }
 }

@@ -3,8 +3,23 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../database.types";
 import { beginPlatformObservability } from "../observability/platformObservability";
 
-type ProposalAttachmentRpcRow =
-  Database["public"]["Functions"]["proposal_attachments_list"]["Returns"][number];
+type ProposalAttachmentEvidenceRpcRow = {
+  attachment_id?: string | number | null;
+  proposal_id?: string | null;
+  entity_type?: string | null;
+  entity_id?: string | null;
+  evidence_kind?: string | null;
+  created_by?: string | null;
+  visibility_scope?: string | null;
+  file_name?: string | null;
+  mime_type?: string | null;
+  file_url?: string | null;
+  storage_path?: string | null;
+  bucket_id?: string | null;
+  group_key?: string | null;
+  created_at?: string | null;
+};
+
 type ProposalAttachmentTableRow =
   Database["public"]["Tables"]["proposal_attachments"]["Row"];
 
@@ -16,11 +31,31 @@ export type AttachmentOwnerType =
   | "warehouse_issue"
   | "request";
 
+export type AttachmentEvidenceKind =
+  | "supplier_quote"
+  | "commercial_doc"
+  | "invoice"
+  | "invoice_source"
+  | "payment"
+  | "proposal_pdf"
+  | "proposal_html"
+  | "secondary_attachment";
+
+export type AttachmentVisibilityScope =
+  | "buyer_only"
+  | "buyer_director_accountant"
+  | "director_accountant";
+
 export type CanonicalProposalAttachmentReadModel = {
   attachmentId: string;
   proposalId: string;
   ownerType: AttachmentOwnerType;
   ownerId: string;
+  entityType: string;
+  entityId: string;
+  evidenceKind: AttachmentEvidenceKind;
+  createdBy: string | null;
+  visibilityScope: AttachmentVisibilityScope;
   fileName: string;
   mimeType: string | null;
   fileUrl: string | null;
@@ -59,11 +94,12 @@ type PlatformScreen = "accountant" | "buyer" | "director" | "request";
 type LoadOptions = {
   groupKey?: string | null;
   screen?: PlatformScreen;
+  viewerRole?: string | null;
   fallbackOnEmpty?: boolean;
   signedUrlTtlSec?: number;
 };
 
-const CANONICAL_SOURCE_KIND = "rpc:proposal_attachments_list";
+const CANONICAL_SOURCE_KIND = "rpc:proposal_attachment_evidence_scope_v1";
 const COMPATIBILITY_SOURCE_KIND = "table:proposal_attachments";
 
 const text = (value: unknown) => String(value ?? "").trim();
@@ -81,11 +117,57 @@ const toErrorText = (error: unknown) => {
   return "Unknown attachment error";
 };
 
-const classifyOwnerType = (groupKey: string | null): AttachmentOwnerType => {
-  const normalized = text(groupKey).toLowerCase();
-  if (normalized === "invoice") return "invoice";
-  if (normalized === "payment") return "payment";
+const classifyOwnerType = (evidenceKind: AttachmentEvidenceKind): AttachmentOwnerType => {
+  if (evidenceKind === "invoice" || evidenceKind === "invoice_source") return "invoice";
+  if (evidenceKind === "payment") return "payment";
   return "proposal";
+};
+
+const normalizeEvidenceKind = (value: unknown): AttachmentEvidenceKind => {
+  const normalized = text(value).toLowerCase();
+  switch (normalized) {
+    case "supplier_quote":
+      return "supplier_quote";
+    case "commercial_doc":
+      return "commercial_doc";
+    case "invoice_source":
+    case "invoice":
+    case "payment":
+      return normalized as AttachmentEvidenceKind;
+    case "proposal_pdf":
+      return "proposal_pdf";
+    case "proposal_html":
+      return "proposal_html";
+    default:
+      return "secondary_attachment";
+  }
+};
+
+const normalizeVisibilityScope = (value: unknown): AttachmentVisibilityScope => {
+  const normalized = text(value).toLowerCase();
+  switch (normalized) {
+    case "buyer_only":
+      return "buyer_only";
+    case "director_accountant":
+      return "director_accountant";
+    default:
+      return "buyer_director_accountant";
+  }
+};
+
+const inferViewerRole = (screen?: PlatformScreen, viewerRole?: string | null) => {
+  const explicit = text(viewerRole).toLowerCase();
+  if (explicit) return explicit;
+  switch (screen) {
+    case "accountant":
+      return "accountant";
+    case "director":
+      return "director";
+    case "buyer":
+      return "buyer";
+    default:
+      return "buyer";
+  }
 };
 
 async function ensureSignedUrl(
@@ -111,35 +193,56 @@ async function mapRows(
   client: ProposalAttachmentsClient,
   proposalId: string,
   sourceKind: "canonical" | "compatibility",
-  rows: Array<ProposalAttachmentRpcRow | ProposalAttachmentTableRow>,
+  rows: Array<ProposalAttachmentEvidenceRpcRow | ProposalAttachmentTableRow>,
   signedUrlTtlSec: number,
 ) {
   const seen = new Set<string>();
   const mapped = await Promise.all(
     rows.map(async (row) => {
-      const attachmentId = text(row.id);
+      const attachmentId =
+        "attachment_id" in row
+          ? text(row.attachment_id)
+          : text((row as ProposalAttachmentTableRow).id);
       if (!attachmentId || seen.has(attachmentId)) return null;
       seen.add(attachmentId);
 
-      const fileName = text(row.file_name) || "file";
+      const proposalRowId = text(("proposal_id" in row ? row.proposal_id : proposalId) || proposalId) || proposalId;
       const groupKey = text(row.group_key) || null;
+      const fileName = text(row.file_name) || "file";
       const bucketId = text(row.bucket_id) || null;
       const storagePath = text(row.storage_path) || null;
+      const evidenceKind = normalizeEvidenceKind("evidence_kind" in row ? row.evidence_kind : row.group_key);
+      const entityType = "entity_type" in row ? text(row.entity_type) || "proposal" : "proposal";
+      const entityId = "entity_id" in row ? text(row.entity_id) || proposalRowId : proposalRowId;
+      const createdBy = "created_by" in row ? text(row.created_by) || null : null;
+      const visibilityScope = normalizeVisibilityScope(
+        "visibility_scope" in row ? row.visibility_scope : null,
+      );
+      const mimeType = "mime_type" in row ? text(row.mime_type) || null : null;
       const fileUrl = await ensureSignedUrl(
         client,
         bucketId,
         storagePath,
-        text((row as { url?: unknown }).url) || null,
+        text(
+          "file_url" in row
+            ? row.file_url
+            : (row as { url?: unknown }).url,
+        ) || null,
         signedUrlTtlSec,
       );
 
       return {
         attachmentId,
-        proposalId,
-        ownerType: classifyOwnerType(groupKey),
-        ownerId: proposalId,
+        proposalId: proposalRowId,
+        ownerType: classifyOwnerType(evidenceKind),
+        ownerId: entityId,
+        entityType,
+        entityId,
+        evidenceKind,
+        createdBy,
+        visibilityScope,
         fileName,
-        mimeType: null,
+        mimeType,
         fileUrl,
         storagePath,
         bucketId,
@@ -153,10 +256,19 @@ async function mapRows(
   return mapped.filter((row): row is CanonicalProposalAttachmentReadModel => !!row);
 }
 
-async function loadCanonicalRows(client: ProposalAttachmentsClient, proposalId: string) {
-  const rpc = await client.rpc("proposal_attachments_list", { p_proposal_id: proposalId });
+async function loadCanonicalRows(
+  client: ProposalAttachmentsClient,
+  proposalId: string,
+  screen?: PlatformScreen,
+  viewerRole?: string | null,
+) {
+  const rpc = await client.rpc("proposal_attachment_evidence_scope_v1" as never, {
+    p_proposal_id: proposalId,
+    p_group_key: null,
+    p_viewer_role: inferViewerRole(screen, viewerRole),
+  } as never);
   if (rpc.error) throw rpc.error;
-  return Array.isArray(rpc.data) ? rpc.data : [];
+  return Array.isArray(rpc.data) ? (rpc.data as ProposalAttachmentEvidenceRpcRow[]) : [];
 }
 
 async function loadCompatibilityRows(client: ProposalAttachmentsClient, proposalId: string) {
@@ -208,14 +320,11 @@ export async function ensureProposalAttachmentUrl(
   row: CanonicalProposalAttachmentReadModel | ProposalAttachmentLegacyRow,
   signedUrlTtlSec = 60 * 60,
 ) {
-  const ready =
-    "fileUrl" in row ? text(row.fileUrl) : text(row.url);
+  const ready = "fileUrl" in row ? text(row.fileUrl) : text(row.url);
   if (ready) return ready;
 
-  const bucketId =
-    "bucketId" in row ? row.bucketId : row.bucket_id;
-  const storagePath =
-    "storagePath" in row ? row.storagePath : row.storage_path;
+  const bucketId = "bucketId" in row ? row.bucketId : row.bucket_id;
+  const storagePath = "storagePath" in row ? row.storagePath : row.storage_path;
   const signed = await ensureSignedUrl(client, bucketId ?? null, storagePath ?? null, null, signedUrlTtlSec);
   if (!signed) throw new Error("Attachment url is missing and storage path is unavailable");
   return signed;
@@ -228,16 +337,16 @@ export async function listCanonicalProposalAttachments(
 ): Promise<CanonicalProposalAttachmentLoadResult> {
   const proposalId = text(proposalIdInput);
   if (!proposalId) {
-      return {
-        rows: [],
-        state: "error",
-        sourceKind: CANONICAL_SOURCE_KIND,
-        fallbackUsed: false,
-        rawCount: 0,
-        mappedCount: 0,
-        filteredCount: 0,
-        errorMessage: "proposalId is empty",
-      };
+    return {
+      rows: [],
+      state: "error",
+      sourceKind: CANONICAL_SOURCE_KIND,
+      fallbackUsed: false,
+      rawCount: 0,
+      mappedCount: 0,
+      filteredCount: 0,
+      errorMessage: "proposalId is empty",
+    };
   }
 
   const signedUrlTtlSec = opts?.signedUrlTtlSec ?? 60 * 60;
@@ -250,6 +359,7 @@ export async function listCanonicalProposalAttachments(
     extra: {
       proposalId,
       groupKey: text(opts?.groupKey) || null,
+      viewerRole: inferViewerRole(opts?.screen, opts?.viewerRole),
     },
   });
 
@@ -258,11 +368,11 @@ export async function listCanonicalProposalAttachments(
   let primaryWasEmpty = false;
 
   try {
-    const rawRows = await loadCanonicalRows(client, proposalId);
+    const rawRows = await loadCanonicalRows(client, proposalId, opts?.screen, opts?.viewerRole);
     primaryRawCount = rawRows.length;
     const primaryRows = await mapRows(client, proposalId, "canonical", rawRows, signedUrlTtlSec);
     const filtered = filterRowsByGroupKey(primaryRows, opts?.groupKey);
-    if (filtered.rows.length > 0 || opts?.fallbackOnEmpty === false) {
+    if (filtered.rows.length > 0 || opts?.fallbackOnEmpty !== true) {
       observation.success({
         rowCount: filtered.rows.length,
         sourceKind: CANONICAL_SOURCE_KIND,
@@ -293,20 +403,19 @@ export async function listCanonicalProposalAttachments(
     const rawRows = await loadCompatibilityRows(client, proposalId);
     const compatibilityRows = await mapRows(client, proposalId, "compatibility", rawRows, signedUrlTtlSec);
     const filtered = filterRowsByGroupKey(compatibilityRows, opts?.groupKey);
-    const emptyAfterCanonicalSuccess = filtered.rows.length === 0 && primaryError == null;
     const state: ProposalAttachmentViewState =
       filtered.rows.length > 0 || primaryError ? "degraded" : "empty";
     const errorMessage =
       primaryError != null
         ? toErrorText(primaryError)
         : filtered.rows.length > 0
-          ? "Canonical attachment source returned empty rows"
+          ? "Canonical evidence source failed and compatibility rows were used."
           : null;
 
     observation.success({
       rowCount: filtered.rows.length,
-      sourceKind: emptyAfterCanonicalSuccess ? CANONICAL_SOURCE_KIND : COMPATIBILITY_SOURCE_KIND,
-      fallbackUsed: !emptyAfterCanonicalSuccess,
+      sourceKind: COMPATIBILITY_SOURCE_KIND,
+      fallbackUsed: true,
       extra: {
         proposalId,
         state,
@@ -317,9 +426,9 @@ export async function listCanonicalProposalAttachments(
     return {
       rows: filtered.rows,
       state,
-      sourceKind: emptyAfterCanonicalSuccess ? CANONICAL_SOURCE_KIND : COMPATIBILITY_SOURCE_KIND,
-      fallbackUsed: !emptyAfterCanonicalSuccess,
-      rawCount: emptyAfterCanonicalSuccess ? primaryRawCount : rawRows.length,
+      sourceKind: COMPATIBILITY_SOURCE_KIND,
+      fallbackUsed: true,
+      rawCount: rawRows.length,
       mappedCount: compatibilityRows.length,
       filteredCount: filtered.filteredCount,
       errorMessage,
