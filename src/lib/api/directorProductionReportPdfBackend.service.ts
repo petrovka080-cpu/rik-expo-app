@@ -1,5 +1,6 @@
 import { resolvePdfRenderRolloutMode, type PdfRenderRolloutMode } from "../documents/pdfRenderRollout";
 import { createPdfSource, type PdfSource } from "../pdfFileContract";
+import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "../supabaseClient";
 import {
   normalizeDirectorProductionReportPdfRequest,
@@ -153,11 +154,22 @@ async function invokeViaDirectUrl(
     }
   }
 
-  const response = await fetch(functionUrl, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(payload),
-  });
+  const response = await fetchWithRequestTimeout(
+    functionUrl,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    },
+    {
+      requestClass: "heavy_report_or_pdf_or_storage",
+      screen: "director",
+      surface: "director_pdf_backend",
+      owner: "director_pdf_backend",
+      operation: FUNCTION_NAME,
+      sourceKind: "fetch:director_pdf_backend",
+    },
+  );
   const body = await response.json().catch(() => null);
   if (!response.ok) {
     const message = String(

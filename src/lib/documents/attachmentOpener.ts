@@ -4,6 +4,7 @@ import * as Sharing from "expo-sharing";
 
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
+import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
 import { supabase } from "../supabaseClient";
 
 const FileSystemCompat = FileSystemModule;
@@ -179,7 +180,18 @@ async function openAttachmentOnWeb(input: AppAttachmentOpenInput, source: Resolv
   }
 
   try {
-    const res = await fetch(uri);
+    const res = await fetchWithRequestTimeout(
+      uri,
+      undefined,
+      {
+        requestClass: "heavy_report_or_pdf_or_storage",
+        screen: "request",
+        surface: "attachment_open",
+        owner: "attachment_open",
+        operation: "open_attachment_on_web",
+        sourceKind: "fetch:attachment_open",
+      },
+    );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);

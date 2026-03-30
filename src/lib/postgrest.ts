@@ -1,3 +1,5 @@
+import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
+
 const SB_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const SB_ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
@@ -22,7 +24,15 @@ export async function rest(url: string, init: RequestInit = {}) {
   initHeaders.forEach((value, key) => {
     headers.set(key, value);
   });
-  const res = await fetch(finalUrl, { ...init, headers });
+  const res = await fetchWithRequestTimeout(
+    finalUrl,
+    { ...init, headers },
+    {
+      screen: "request",
+      surface: "postgrest",
+      owner: "postgrest",
+    },
+  );
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`REST ${res.status}: ${text}`);

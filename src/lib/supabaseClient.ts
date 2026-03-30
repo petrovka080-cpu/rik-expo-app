@@ -8,6 +8,7 @@ import {
   SUPABASE_URL,
   isClientSupabaseEnvValid,
 } from "./env/clientSupabaseEnv";
+import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
 
 type RuntimeProcessLike = {
   env?: Record<string, string | undefined>;
@@ -144,8 +145,8 @@ function assertEnv() {
   return ok;
 }
 
-const supabaseFetch: typeof fetch | undefined = isWeb
-  ? wrapFetchWithLog("web", (input: FetchInput, init?: FetchInit) => {
+const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typeof fetch =>
+  wrapFetchWithLog(tag, (input: FetchInput, init?: FetchInit) => {
     const headers = new Headers(init?.headers || {});
 
     if (SUPABASE_ANON_KEY) {
@@ -155,23 +156,31 @@ const supabaseFetch: typeof fetch | undefined = isWeb
       }
     }
 
-    const controller = new AbortController();
-    const timeoutMs = 20_000;
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-    return window
-      .fetch(input, {
+    return fetchWithRequestTimeout(
+      input,
+      {
         ...(init ?? {}),
         headers,
-        keepalive: false,
-        cache: "no-store",
-        signal: controller.signal,
-      })
-      .finally(() => clearTimeout(timeout));
-  })
-  : undefined;
+        ...(tag === "web"
+          ? {
+              keepalive: false,
+              cache: "no-store" as RequestCache,
+            }
+          : {}),
+      },
+      {
+        fetchImpl: baseFetch,
+        screen: "request",
+        surface: "supabase_transport",
+        owner: "supabase_client",
+        sourceKind: `supabase_transport:${tag}`,
+      },
+    );
+  });
 
-const nativeFetch: typeof fetch = wrapFetchWithLog("native", fetch);
+const supabaseFetch: typeof fetch | undefined = isWeb ? buildSupabaseFetch("web", window.fetch.bind(window)) : undefined;
+
+const nativeFetch: typeof fetch = buildSupabaseFetch("native", fetch);
 
 function createMissingSupabaseClient(): SupabaseClient<Database> {
   const err =

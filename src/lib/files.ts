@@ -7,6 +7,7 @@ import {
   toProposalAttachmentLegacyRow,
 } from "./api/proposalAttachments.service";
 import { openAppAttachment } from "./documents/attachmentOpener";
+import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
 import { supabase } from "./supabaseClient";
 
 export { uploadProposalAttachment } from "./catalog_api";
@@ -55,7 +56,18 @@ async function webOpenBlobOrDirect(url: string, fileName?: string) {
   if (popup) return;
 
   try {
-    const response = await fetch(url);
+    const response = await fetchWithRequestTimeout(
+      url,
+      undefined,
+      {
+        requestClass: "heavy_report_or_pdf_or_storage",
+        screen: "request",
+        surface: "attachment_open",
+        owner: "attachment_open",
+        operation: "web_open_blob_or_direct",
+        sourceKind: "fetch:attachment_open",
+      },
+    );
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const blob = await response.blob();
     const blobUrl = URL.createObjectURL(blob);

@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-03-30T00:25:18.700Z",
+  "status": "GREEN",
+  "inventory": {
+    "primaryOwner": "src/lib/requestTimeoutPolicy.ts",
+    "transportOwners": [
+      "src/lib/supabaseClient.ts",
+      "src/lib/postgrest.ts",
+      "src/lib/api/directorProductionReportPdfBackend.service.ts",
+      "src/lib/api/directorSubcontractReportPdfBackend.service.ts",
+      "src/lib/api/directorFinanceSupplierPdfBackend.service.ts",
+      "src/lib/files.ts",
+      "src/lib/documents/attachmentOpener.ts"
+    ],
+    "priorUniversalPrimaryTimeout": "src/lib/supabaseClient.ts:20_000ms",
+    "universalHardcodedPrimaryRemoved": true,
+    "fetchBoundaryUsageCount": 14
+  },
+  "checks": [
+    {
+      "name": "lightweight_lookup_success",
+      "ok": true,
+      "details": {
+        "requestClass": "lightweight_lookup",
+        "timeoutMs": 8000,
+        "operation": "get_my_role"
+      }
+    },
+    {
+      "name": "ui_scope_load_success",
+      "ok": true,
+      "details": {
+        "requestClass": "ui_scope_load",
+        "timeoutMs": 20000,
+        "operation": "accountant_inbox_scope_v1"
+      }
+    },
+    {
+      "name": "heavy_report_or_pdf_or_storage_success",
+      "ok": true,
+      "details": {
+        "requestClass": "heavy_report_or_pdf_or_storage",
+        "timeoutMs": 60000,
+        "operation": "director-production-report-pdf"
+      }
+    },
+    {
+      "name": "mutation_request_success",
+      "ok": true,
+      "details": {
+        "requestClass": "mutation_request",
+        "timeoutMs": 30000,
+        "operation": "request_submit"
+      }
+    },
+    {
+      "name": "timeout_observability",
+      "ok": true,
+      "details": {
+        "timeoutEvent": {
+          "id": "obs-5",
+          "at": 1774830318692,
+          "screen": "request",
+          "surface": "fetch_timeout_verify",
+          "category": "fetch",
+          "event": "request_timeout_discipline",
+          "sourceKind": "supabase_rpc:lightweight_lookup",
+          "trigger": "request",
+          "extra": {
+            "requestClass": "lightweight_lookup",
+            "timeoutMs": 10,
+            "owner": "fetch_timeout_verify",
+            "operation": "get_my_role",
+            "method": "POST",
+            "urlPath": "/rpc/get_my_role",
+            "endpointKind": "supabase_rpc",
+            "ruleId": "explicit_request_class",
+            "timeoutFired": true,
+            "abortReason": "timeout",
+            "elapsedMs": 10
+          },
+          "errorStage": "timeout",
+          "result": "error",
+          "durationMs": 10,
+          "errorClass": "RequestTimeoutError",
+          "errorMessage": "fetch_timeout_verify.get_my_role request timed out after 10ms"
+        }
+      }
+    },
+    {
+      "name": "no_hidden_retry",
+      "ok": true,
+      "details": {
+        "timeoutFetchCalls": 1,
+        "timeoutErrorName": "RequestTimeoutError"
+      }
+    },
+    {
+      "name": "universal_hardcoded_timeout_removed_from_primary_owner",
+      "ok": true,
+      "details": {
+        "sourceFile": "src/lib/supabaseClient.ts"
+      }
+    },
+    {
+      "name": "shared_timeout_boundary_used_by_transport_owners",
+      "ok": true,
+      "details": {
+        "fetchBoundaryUsageCount": 14
+      }
+    }
+  ]
+}

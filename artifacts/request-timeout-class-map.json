@@ -1,0 +1,99 @@
+{
+  "generatedAt": "2026-03-30T00:25:18.694Z",
+  "policyMs": {
+    "lightweight_lookup": 8000,
+    "ui_scope_load": 20000,
+    "heavy_report_or_pdf_or_storage": 60000,
+    "mutation_request": 30000
+  },
+  "compatibilityDefault": {
+    "requestClass": "ui_scope_load",
+    "timeoutMs": 20000,
+    "reason": "fallback when no stricter request-class rule matches"
+  },
+  "classMap": {
+    "lightweight_lookup": {
+      "timeoutMs": 8000,
+      "owners": [
+        "supabase rpc exact lightweight lookups",
+        "supabase auth GET session/profile probes"
+      ],
+      "ruleExamples": [
+        "rpc:get_my_role",
+        "rpc:ensure_my_profile",
+        "rpc:rik_quick_search_typed"
+      ]
+    },
+    "ui_scope_load": {
+      "timeoutMs": 20000,
+      "owners": [
+        "supabase rest GET reads",
+        "scope/list/window/source RPC reads"
+      ],
+      "ruleExamples": [
+        "rest:get",
+        "rpc:director_pending_proposals_scope_v1",
+        "rpc:accountant_inbox_scope_v1"
+      ]
+    },
+    "heavy_report_or_pdf_or_storage": {
+      "timeoutMs": 60000,
+      "owners": [
+        "pdf/report source RPCs",
+        "storage upload/download/signed-url flows",
+        "direct PDF backend fetches"
+      ],
+      "ruleExamples": [
+        "rpc:pdf_payment_source_v1",
+        "functions:director-production-report-pdf",
+        "storage:/storage/v1/object/*"
+      ]
+    },
+    "mutation_request": {
+      "timeoutMs": 30000,
+      "owners": [
+        "write RPCs and non-GET rest mutations",
+        "auth POST flows"
+      ],
+      "ruleExamples": [
+        "rpc:request_submit",
+        "rpc:proposal_send_to_accountant_min",
+        "rest:post"
+      ]
+    }
+  },
+  "samples": {
+    "lightweight_lookup": {
+      "requestClass": "lightweight_lookup",
+      "timeoutMs": 8000,
+      "owner": "supabase_rpc",
+      "operation": "get_my_role",
+      "endpointKind": "supabase_rpc",
+      "ruleId": "rpc_exact:get_my_role"
+    },
+    "ui_scope_load": {
+      "requestClass": "ui_scope_load",
+      "timeoutMs": 20000,
+      "owner": "supabase_rpc",
+      "operation": "accountant_inbox_scope_v1",
+      "endpointKind": "supabase_rpc",
+      "ruleId": "rpc_ui:accountant_inbox_scope_v1"
+    },
+    "heavy_report_or_pdf_or_storage": {
+      "requestClass": "heavy_report_or_pdf_or_storage",
+      "timeoutMs": 60000,
+      "owner": "supabase_function",
+      "operation": "director-production-report-pdf",
+      "endpointKind": "supabase_function",
+      "ruleId": "function_heavy:director-production-report-pdf"
+    },
+    "mutation_request": {
+      "requestClass": "mutation_request",
+      "timeoutMs": 30000,
+      "owner": "supabase_rpc",
+      "operation": "request_submit",
+      "endpointKind": "supabase_rpc",
+      "ruleId": "rpc_mutation:request_submit"
+    }
+  }
+}
