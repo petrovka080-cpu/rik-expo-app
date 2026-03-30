@@ -246,6 +246,13 @@ const artifactSpecs: ArtifactSpec[] = [
     acceptedStatuses: ["passed", "GREEN"],
   },
   {
+    key: "warehouse_pdf_sources",
+    label: "Warehouse PDF Source Cutover",
+    relativePath: "artifacts/warehouse-pdf-source-cutover-v1.summary.json",
+    acceptedStatuses: ["passed", "GREEN"],
+    acceptedGates: ["GREEN"],
+  },
+  {
     key: "contractor_works_bundle",
     label: "Contractor Works Bundle Backend Cutover",
     relativePath: "artifacts/contractor-works-bundle-cutover-v1.summary.json",
@@ -383,28 +390,7 @@ const taxonomy: TaxonomyEntry[] = [
   },
 ];
 
-const residuals: ResidualClientTruth[] = [
-  {
-    id: "warehouse_pdf_legacy_fallbacks",
-    module: "warehouse",
-    contour: "Warehouse PDF source legacy fallback branches",
-    exactFile: "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
-    truthType: "report",
-    currentClientOwnership:
-      "Warehouse PDF services still keep rpc_v1 | legacy_fallback source branches for report payloads.",
-    whyRisky:
-      "Export/report source rows should converge on the same backend-owned scope discipline as queue and stock read models.",
-    requiredBackendContract: "warehouse PDF source family rpc-only cut",
-    priority: "P2",
-    state: "legacy_branch",
-    nextBatch: "Warehouse PDF source fallback removal",
-    evidencePaths: [
-      "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
-      "src/screens/warehouse/warehouse.dayMaterialsReport.pdf.service.ts",
-      "src/screens/warehouse/warehouse.objectWorkReport.pdf.service.ts",
-    ],
-  },
-];
+const residuals: ResidualClientTruth[] = [];
 
 const moduleMap: Record<ModuleKey, ModuleOwnership> = {
   director: {
@@ -686,6 +672,18 @@ const moduleMap: Record<ModuleKey, ModuleOwnership> = {
           "coalescing passed",
         ]),
       },
+      {
+        contour: "Warehouse PDF source family",
+        owner: "rpc_v1",
+        contractVersion:
+          "pdf_warehouse_incoming_source_v1 + pdf_warehouse_incoming_materials_source_v1 + pdf_warehouse_day_materials_source_v1 + pdf_warehouse_object_work_source_v1",
+        currentState: "backend_primary",
+        proof: proofRef("warehouse_pdf_sources", [
+          "primaryOwner=rpc_v1",
+          "fallbackUsed=false",
+          "warehousePdfRpcOnly=true",
+        ]),
+      },
     ],
     mandatoryBackendOwned: [
       "stock rows truth and canonical ordering",
@@ -704,7 +702,7 @@ const moduleMap: Record<ModuleKey, ModuleOwnership> = {
     residualClientTruth: residuals.filter((item) => item.module === "warehouse"),
     notes: [
       "Warehouse primary read contours are backend-owned and window-aware.",
-      "Residual work is about burning down legacy view/client-shaping compatibility branches, not reworking pagination or UI modernization.",
+      "Warehouse PDF source family is rpc-owned now and no warehouse residual client-truth families remain in this ownership map.",
     ],
     residualClientTruthCount: 0,
     highestResidualPriority: "none",
@@ -977,15 +975,7 @@ const crossCuttingRules = {
   },
 };
 
-const roadmap: RoadmapBatch[] = [
-  {
-    priority: "P2",
-    title: "PDF source family convergence",
-    module: "warehouse",
-    residualIds: ["warehouse_pdf_legacy_fallbacks"],
-    reason: "Warehouse PDF/report fallback branches remain the last residual source family still carrying legacy branches.",
-  },
-];
+const roadmap: RoadmapBatch[] = [];
 
 const enforcementRules = {
   intakeQuestions: [
@@ -1052,10 +1042,10 @@ const structuralAssertions = {
   noForbiddenTruthInKnownUiStores: storesSafe,
   durableWorkflowStoresClassified: durableWorkflowStoreAudits.every((audit) => audit.safe),
   knownBackendOwnedFamiliesListed: moduleSummaries.every((item) => item.backendOwnedContours > 0),
-  knownResidualFamiliesListed: residuals.length > 0,
+  knownResidualFamiliesListed: Array.isArray(residuals),
   allModulesCovered,
   taxonomyFormalized: taxonomy.length === 7,
-  roadmapDefined: roadmap.length > 0,
+  roadmapDefined: residuals.length === 0 || roadmap.length > 0,
   enforcementRulesExplicit: enforcementRules.intakeQuestions.length === 7,
   documentSectionsPresent: documentSections.length === 8,
 };

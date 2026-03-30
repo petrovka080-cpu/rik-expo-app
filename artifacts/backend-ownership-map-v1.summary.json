@@ -11,22 +11,20 @@
     "contractor"
   ],
   "allModulesCovered": true,
-  "residualClientTruthCount": 1,
+  "residualClientTruthCount": 0,
   "totalResidualP0": 0,
   "totalResidualP1": 0,
-  "totalResidualP2": 1,
-  "modulesAtRisk": [
-    "warehouse"
-  ],
+  "totalResidualP2": 0,
+  "modulesAtRisk": [],
   "storesSafe": true,
   "criticalMoneyTruthOnClient": false,
   "criticalOperationalTruthOnClient": false,
-  "criticalReportTruthOnClient": true,
+  "criticalReportTruthOnClient": false,
   "roadmapDefined": true,
   "enforcementRulesExplicit": true,
   "artifactsGenerated": true,
   "noBroadRewritePerformed": true,
   "allRequiredArtifactsAccepted": false,
   "acceptedEnvironmentResidualCount": 2,
-  "nextPriorityBatch": "PDF source family convergence"
+  "nextPriorityBatch": null
 }

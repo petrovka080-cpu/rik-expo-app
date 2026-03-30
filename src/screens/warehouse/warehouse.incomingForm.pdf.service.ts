@@ -4,23 +4,28 @@ import {
   exportWarehouseHtmlPdf,
 } from "../../lib/pdf/pdf.warehouse";
 import { isCorruptedText, normalizeRuText } from "../../lib/text/encoding";
-import { apiFetchIncomingLines } from "./warehouse.stock.read";
 import {
   createWarehousePdfFileName,
   type WarehousePdfOffloadContract,
 } from "./warehouse.pdf.boundary";
 import {
-  getPdfRpcRolloutAvailability,
-  recordPdfRpcRolloutBranch,
   registerPdfRpcRolloutPath,
   resolvePdfRpcRolloutMode,
   setPdfRpcRolloutAvailability,
+  type PdfRpcRolloutBranchMeta,
+  type PdfRpcRolloutFallbackReason,
   type PdfRpcRolloutId,
   type PdfRpcRolloutMode,
 } from "../../lib/documents/pdfRpcRollout";
+import { beginPdfLifecycleObservation } from "../../lib/pdf/pdfLifecycle";
+import {
+  assertWarehousePdfRpcPrimary,
+  logWarehousePdfSourceBranch,
+  recordWarehousePdfRpcFailure,
+} from "./warehouse.pdf.source.shared";
 
-const DEFAULT_ORG_NAME = "ООО «РИК»";
-const DEFAULT_WAREHOUSE_NAME = "Главный склад";
+const DEFAULT_ORG_NAME = "РћРћРћ В«Р РРљВ»";
+const DEFAULT_WAREHOUSE_NAME = "Р“Р»Р°РІРЅС‹Р№ СЃРєР»Р°Рґ";
 const WAREHOUSE_INCOMING_PDF_SOURCE_RPC_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_WAREHOUSE_INCOMING_PDF_SOURCE_RPC_V1 ?? "",
 )
@@ -39,7 +44,6 @@ type WarehouseIncomingFormPdfSourceEnvelopeV1 = {
   totals: WarehouseIncomingFormPdfRecord;
   meta?: WarehouseIncomingFormPdfRecord;
 };
-type WarehouseIncomingLegacyGatherSource = "main" | "fallback";
 type WarehouseIncomingFormSourceResult = {
   incoming: WarehouseIncomingHeadLike;
   lines: WarehouseIncomingLineLike[];
@@ -82,23 +86,9 @@ export type WarehouseIncomingFormPdfContract = WarehousePdfOffloadContract<
   "warehouse_incoming_form"
 >;
 
-export type WarehouseIncomingFormPdfSource =
-  | "rpc:pdf_warehouse_incoming_source_v1"
-  | "legacy:client_source:main"
-  | "legacy:client_source:fallback";
+export type WarehouseIncomingFormPdfSource = "rpc:pdf_warehouse_incoming_source_v1";
 
-export type WarehouseIncomingFormPdfSourceBranchMeta = {
-  sourceBranch: "rpc_v1" | "legacy_fallback";
-  fallbackReason?: "rpc_error" | "invalid_payload" | "disabled" | "missing_fields";
-  rpcVersion?: "v1";
-  payloadShapeVersion?: "v1";
-};
-
-type WarehouseIncomingFormData = {
-  incoming: WarehouseIncomingHeadLike;
-  lines: WarehouseIncomingLineLike[];
-  source: WarehouseIncomingLegacyGatherSource;
-};
+export type WarehouseIncomingFormPdfSourceBranchMeta = PdfRpcRolloutBranchMeta;
 
 type PrepareWarehouseIncomingFormPdfParams = {
   incomingId: string;
@@ -174,7 +164,7 @@ const requireArray = (value: unknown, field: string) => {
 
 const getFallbackReasonForRpcError = (
   error: unknown,
-): WarehouseIncomingFormPdfSourceBranchMeta["fallbackReason"] => {
+): PdfRpcRolloutFallbackReason => {
   if (error instanceof WarehouseIncomingPdfSourceValidationError) return error.reason;
   return "rpc_error";
 };
@@ -205,29 +195,9 @@ const isMissingName = (value: unknown): boolean => {
 const ensureIncomingId = (incomingId: string): string => {
   const normalized = String(incomingId ?? "").trim();
   if (!normalized) {
-    throw new Error("Некорректный номер прихода.");
+    throw new Error("РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РЅРѕРјРµСЂ РїСЂРёС…РѕРґР°.");
   }
   return normalized;
-};
-
-const pickIncomingHead = (params: {
-  incomingId: string;
-  repIncoming: WarehouseIncomingHeadLike[];
-  warehousemanFio: string;
-}): WarehouseIncomingHeadLike => {
-  const { incomingId, repIncoming, warehousemanFio } = params;
-  const head = (repIncoming || []).find(
-    (row) => String(row.incoming_id || "") === incomingId || String(row.id || "") === incomingId,
-  );
-  const who = String(head?.who ?? head?.warehouseman_fio ?? warehousemanFio ?? "").trim() || "—";
-
-  return head ?? {
-    incoming_id: incomingId,
-    event_dt: null,
-    display_no: `PR-${incomingId.slice(0, 8)}`,
-    warehouseman_fio: who,
-    who,
-  };
 };
 
 const normalizeWarehouseIncomingPdfLine = (
@@ -235,10 +205,10 @@ const normalizeWarehouseIncomingPdfLine = (
 ): WarehouseIncomingLineLike => {
   const code = String(line?.code ?? "").trim();
   const rawName = String(
-    line?.name_ru ?? line?.material_name ?? line?.name ?? code ?? "Позиция",
+    line?.name_ru ?? line?.material_name ?? line?.name ?? code ?? "РџРѕР·РёС†РёСЏ",
   ).trim();
-  const nameRu = String(normalizeRuText(rawName || code || "Позиция")).trim() || code || "Позиция";
-  const uom = String(line?.uom ?? line?.uom_id ?? "—").trim() || "—";
+  const nameRu = String(normalizeRuText(rawName || code || "РџРѕР·РёС†РёСЏ")).trim() || code || "РџРѕР·РёС†РёСЏ";
+  const uom = String(line?.uom ?? line?.uom_id ?? "вЂ”").trim() || "вЂ”";
   const qtyReceived = line?.qty_received ?? line?.qty ?? 0;
 
   return {
@@ -315,59 +285,6 @@ function validateWarehouseIncomingFormPdfSourceV1(
   };
 }
 
-function logWarehouseIncomingPdfSourceBranch(
-  incomingId: string,
-  meta: WarehouseIncomingFormPdfSourceBranchMeta,
-  source: WarehouseIncomingFormPdfSource,
-) {
-  recordPdfRpcRolloutBranch(WAREHOUSE_INCOMING_PDF_RPC_ROLLOUT_ID, {
-    source,
-    branchMeta: meta,
-  });
-  if (!__DEV__) return;
-  console.info("[warehouse-incoming-pdf-source]", {
-    incomingId,
-    source,
-    sourceBranch: meta.sourceBranch,
-    fallbackReason: meta.fallbackReason ?? null,
-    rpcVersion: meta.rpcVersion ?? null,
-    payloadShapeVersion: meta.payloadShapeVersion ?? null,
-  });
-}
-
-export async function gatherWarehouseIncomingFormPdfData(
-  params: PrepareWarehouseIncomingFormPdfParams,
-): Promise<WarehouseIncomingFormData> {
-  const incomingId = ensureIncomingId(params.incomingId);
-  const incoming = pickIncomingHead({
-    incomingId,
-    repIncoming: params.repIncoming,
-    warehousemanFio: params.warehousemanFio,
-  });
-
-  let source: WarehouseIncomingLegacyGatherSource = "main";
-  let lines = await apiFetchIncomingLines(params.supabase, incomingId);
-  if (!Array.isArray(lines) || lines.length === 0) {
-    source = "fallback";
-    const fallbackLines = await params.ensureIncomingLines?.(incomingId);
-    if (Array.isArray(fallbackLines)) {
-      lines = fallbackLines;
-    }
-  }
-
-  if (!Array.isArray(lines) || lines.length === 0) {
-    const error = new Error("Нет оприходованных позиций") as Error & { reason?: string };
-    error.reason = "empty";
-    throw error;
-  }
-
-  return {
-    incoming,
-    lines,
-    source,
-  };
-}
-
 export async function fetchWarehouseIncomingFormPdfSourceViaRpc(params: {
   incomingId: string;
   supabase: SupabaseClient;
@@ -404,55 +321,31 @@ export async function fetchWarehouseIncomingFormPdfSourceViaRpc(params: {
   };
 }
 
-export async function fetchWarehouseIncomingFormPdfSourceFallback(
-  params: PrepareWarehouseIncomingFormPdfParams,
-  fallbackReason: WarehouseIncomingFormPdfSourceBranchMeta["fallbackReason"] = "rpc_error",
-): Promise<WarehouseIncomingFormSourceResult> {
-  const gathered = await gatherWarehouseIncomingFormPdfData(params);
-
-  return {
-    incoming: gathered.incoming,
-    lines: gathered.lines,
-    source:
-      gathered.source === "fallback"
-        ? "legacy:client_source:fallback"
-        : "legacy:client_source:main",
-    branchMeta: {
-      sourceBranch: "legacy_fallback",
-      fallbackReason,
-      payloadShapeVersion: "v1",
-    },
-  };
-}
-
 export async function getWarehouseIncomingFormPdfSource(
   params: PrepareWarehouseIncomingFormPdfParams,
 ): Promise<WarehouseIncomingFormSourceResult> {
   const incomingId = ensureIncomingId(params.incomingId);
   const rpcMode = WAREHOUSE_INCOMING_PDF_RPC_MODE;
-
-  if (rpcMode === "force_off") {
-    const legacySource = await fetchWarehouseIncomingFormPdfSourceFallback(
-      { ...params, incomingId },
-      "disabled",
-    );
-    logWarehouseIncomingPdfSourceBranch(incomingId, legacySource.branchMeta, legacySource.source);
-    return legacySource;
-  }
-
-  if (
-    rpcMode === "auto" &&
-    getPdfRpcRolloutAvailability(WAREHOUSE_INCOMING_PDF_RPC_ROLLOUT_ID) === "missing"
-  ) {
-    const legacySource = await fetchWarehouseIncomingFormPdfSourceFallback(
-      { ...params, incomingId },
-      "disabled",
-    );
-    logWarehouseIncomingPdfSourceBranch(incomingId, legacySource.branchMeta, legacySource.source);
-    return legacySource;
-  }
+  const observation = beginPdfLifecycleObservation({
+    screen: "warehouse",
+    surface: "warehouse_pdf_source",
+    event: "warehouse_incoming_pdf_source_load",
+    stage: "source_load",
+    sourceKind: "rpc:pdf_warehouse_incoming_source_v1",
+    context: {
+      documentFamily: "warehouse_incoming_form",
+      documentType: "warehouse_document",
+      entityId: incomingId,
+      source: "rpc:pdf_warehouse_incoming_source_v1",
+    },
+  });
 
   try {
+    assertWarehousePdfRpcPrimary(
+      WAREHOUSE_INCOMING_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      "pdf_warehouse_incoming_source_v1",
+    );
     const rpcSource = await fetchWarehouseIncomingFormPdfSourceViaRpc({
       incomingId,
       supabase: params.supabase,
@@ -460,36 +353,43 @@ export async function getWarehouseIncomingFormPdfSource(
     if (rpcMode === "auto") {
       setPdfRpcRolloutAvailability(WAREHOUSE_INCOMING_PDF_RPC_ROLLOUT_ID, "available");
     }
-    logWarehouseIncomingPdfSourceBranch(incomingId, rpcSource.branchMeta, rpcSource.source);
+    logWarehousePdfSourceBranch({
+      id: WAREHOUSE_INCOMING_PDF_RPC_ROLLOUT_ID,
+      source: rpcSource.source,
+      branchMeta: rpcSource.branchMeta,
+      extra: {
+        incomingId,
+        rows: rpcSource.lines.length,
+      },
+    });
+    observation.success({
+      sourceKind: rpcSource.source,
+      rowCount: rpcSource.lines.length,
+      extra: {
+        sourceBranch: rpcSource.branchMeta.sourceBranch,
+      },
+    });
     return rpcSource;
   } catch (error) {
-    const fallbackReason = getFallbackReasonForRpcError(error);
-    if (
-      rpcMode === "auto" &&
-      error instanceof WarehouseIncomingPdfSourceRpcError &&
-      error.disableForSession
-    ) {
-      setPdfRpcRolloutAvailability(WAREHOUSE_INCOMING_PDF_RPC_ROLLOUT_ID, "missing", {
-        errorMessage: error.message,
-      });
-    }
-    if (__DEV__) {
-      console.warn("[warehouse-incoming-pdf-source] rpc_v1 fallback", {
+    recordWarehousePdfRpcFailure({
+      id: WAREHOUSE_INCOMING_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      sourceKind: "rpc:pdf_warehouse_incoming_source_v1",
+      tag: "[warehouse-incoming-pdf-source] rpc_v1 hard-fail",
+      error,
+      failureReason: getFallbackReasonForRpcError(error),
+      extra: {
         incomingId,
-        fallbackReason,
+      },
+    });
+    throw observation.error(error, {
+      fallbackMessage: "Warehouse incoming PDF source load failed",
+      extra: {
+        incomingId,
         rpcMode,
-        rpcAvailability: getPdfRpcRolloutAvailability(
-          WAREHOUSE_INCOMING_PDF_RPC_ROLLOUT_ID,
-        ),
-        errorMessage: error instanceof Error ? error.message : String(error),
-      });
-    }
-    const legacySource = await fetchWarehouseIncomingFormPdfSourceFallback(
-      { ...params, incomingId },
-      fallbackReason,
-    );
-    logWarehouseIncomingPdfSourceBranch(incomingId, legacySource.branchMeta, legacySource.source);
-    return legacySource;
+        fallbackUsed: false,
+      },
+    });
   }
 }
 
@@ -535,7 +435,7 @@ export function createWarehouseIncomingFormPdfContract(params: {
     version: 1,
     flow: "warehouse_incoming_form",
     template: "warehouse_incoming_form_v1",
-    title: `Приходный ордер ${incomingId}`,
+    title: `РџСЂРёС…РѕРґРЅС‹Р№ РѕСЂРґРµСЂ ${incomingId}`,
     fileName: createWarehousePdfFileName({
       documentType: "warehouse_document",
       title: "warehouse_incoming",

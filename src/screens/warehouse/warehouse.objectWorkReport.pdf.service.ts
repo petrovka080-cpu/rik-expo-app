@@ -1,14 +1,19 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
-  getPdfRpcRolloutAvailability,
-  recordPdfRpcRolloutBranch,
   registerPdfRpcRolloutPath,
   resolvePdfRpcRolloutMode,
   setPdfRpcRolloutAvailability,
+  type PdfRpcRolloutBranchMeta,
+  type PdfRpcRolloutFallbackReason,
   type PdfRpcRolloutId,
   type PdfRpcRolloutMode,
 } from "../../lib/documents/pdfRpcRollout";
-import { apiFetchIssuedByObjectReportFast } from "./warehouse.stock.read";
+import { beginPdfLifecycleObservation } from "../../lib/pdf/pdfLifecycle";
+import {
+  assertWarehousePdfRpcPrimary,
+  logWarehousePdfSourceBranch,
+  recordWarehousePdfRpcFailure,
+} from "./warehouse.pdf.source.shared";
 
 const WAREHOUSE_OBJECT_WORK_PDF_SOURCE_RPC_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_WAREHOUSE_OBJECT_WORK_PDF_SOURCE_RPC_V1 ?? "",
@@ -60,15 +65,9 @@ export type WarehouseObjectWorkReportPdfRange = {
 };
 
 export type WarehouseObjectWorkReportPdfSource =
-  | "rpc:pdf_warehouse_object_work_source_v1"
-  | "legacy:wh_report_issued_by_object_fast";
+  "rpc:pdf_warehouse_object_work_source_v1";
 
-export type WarehouseObjectWorkReportPdfSourceBranchMeta = {
-  sourceBranch: "rpc_v1" | "legacy_fallback";
-  fallbackReason?: "rpc_error" | "invalid_payload" | "disabled" | "missing_fields";
-  rpcVersion?: "v1";
-  payloadShapeVersion?: "v1";
-};
+export type WarehouseObjectWorkReportPdfSourceBranchMeta = PdfRpcRolloutBranchMeta;
 
 type WarehouseObjectWorkReportSource = {
   rows: WarehouseObjectWorkReportPdfRow[];
@@ -162,7 +161,7 @@ const requireArray = (value: unknown, field: string) => {
 
 const getFallbackReasonForRpcError = (
   error: unknown,
-): WarehouseObjectWorkReportPdfSourceBranchMeta["fallbackReason"] => {
+): PdfRpcRolloutFallbackReason => {
   if (error instanceof WarehouseObjectWorkPdfSourceValidationError) return error.reason;
   return "rpc_error";
 };
@@ -186,8 +185,8 @@ const normalizeWarehouseObjectWorkReportRow = (
   const row = asRecord(value);
   return {
     object_id: toText(row.object_id) || null,
-    object_name: toText(row.object_name) || "Р‘РµР· РѕР±СЉРµРєС‚Р°",
-    work_name: toText(row.work_name) || "Р‘РµР· РІРёРґР° СЂР°Р±РѕС‚",
+    object_name: toText(row.object_name) || "Р вЂР ВµР В· Р С•Р В±РЎР‰Р ВµР С”РЎвЂљР В°",
+    work_name: toText(row.work_name) || "Р вЂР ВµР В· Р Р†Р С‘Р Т‘Р В° РЎР‚Р В°Р В±Р С•РЎвЂљ",
     docs_cnt: toNumber(row.docs_cnt),
     req_cnt: toNumber(row.req_cnt),
     active_days: toNumber(row.active_days),
@@ -242,29 +241,6 @@ function validateWarehouseObjectWorkPdfSourceV1(
   };
 }
 
-function logWarehouseObjectWorkPdfSourceBranch(
-  range: WarehouseObjectWorkReportPdfRange,
-  meta: WarehouseObjectWorkReportPdfSourceBranchMeta,
-  source: WarehouseObjectWorkReportPdfSource,
-  objectId?: string | null,
-) {
-  recordPdfRpcRolloutBranch(WAREHOUSE_OBJECT_WORK_PDF_RPC_ROLLOUT_ID, {
-    source,
-    branchMeta: meta,
-  });
-  if (!__DEV__) return;
-  console.info("[warehouse-object-work-pdf-source]", {
-    source,
-    sourceBranch: meta.sourceBranch,
-    fallbackReason: meta.fallbackReason ?? null,
-    rpcVersion: meta.rpcVersion ?? null,
-    payloadShapeVersion: meta.payloadShapeVersion ?? null,
-    rangeFrom: range.rpcFrom,
-    rangeTo: range.rpcTo,
-    objectId: objectId ?? null,
-  });
-}
-
 export async function fetchWarehouseObjectWorkReportPdfSourceViaRpc(
   params: Pick<GetWarehouseObjectWorkReportPdfSourceParams, "supabase" | "range" | "objectId">,
 ): Promise<WarehouseObjectWorkReportSource> {
@@ -304,110 +280,77 @@ export async function fetchWarehouseObjectWorkReportPdfSourceViaRpc(
   };
 }
 
-export async function fetchWarehouseObjectWorkReportPdfSourceFallback(
-  params: GetWarehouseObjectWorkReportPdfSourceParams,
-  fallbackReason: WarehouseObjectWorkReportPdfSourceBranchMeta["fallbackReason"] = "rpc_error",
-): Promise<WarehouseObjectWorkReportSource> {
-  const rawRows = await apiFetchIssuedByObjectReportFast(params.supabase, {
-    from: params.range.rpcFrom,
-    to: params.range.rpcTo,
-    objectId: params.objectId ?? null,
-  });
-
-  return {
-    rows: (rawRows || []).map(normalizeWarehouseObjectWorkReportRow),
-    docsTotal: Math.max(0, Math.round(params.legacyDocsTotal)),
-    source: "legacy:wh_report_issued_by_object_fast",
-    branchMeta: {
-      sourceBranch: "legacy_fallback",
-      fallbackReason,
-      payloadShapeVersion: "v1",
-    },
-  };
-}
-
 export async function getWarehouseObjectWorkReportPdfSource(
   params: GetWarehouseObjectWorkReportPdfSourceParams,
 ): Promise<WarehouseObjectWorkReportSource> {
   const rpcMode = WAREHOUSE_OBJECT_WORK_PDF_RPC_MODE;
-
-  if (rpcMode === "force_off") {
-    const legacySource = await fetchWarehouseObjectWorkReportPdfSourceFallback(
-      params,
-      "disabled",
-    );
-    logWarehouseObjectWorkPdfSourceBranch(
-      params.range,
-      legacySource.branchMeta,
-      legacySource.source,
-      params.objectId ?? null,
-    );
-    return legacySource;
-  }
-
-  if (
-    rpcMode === "auto" &&
-    getPdfRpcRolloutAvailability(WAREHOUSE_OBJECT_WORK_PDF_RPC_ROLLOUT_ID) === "missing"
-  ) {
-    const legacySource = await fetchWarehouseObjectWorkReportPdfSourceFallback(
-      params,
-      "disabled",
-    );
-    logWarehouseObjectWorkPdfSourceBranch(
-      params.range,
-      legacySource.branchMeta,
-      legacySource.source,
-      params.objectId ?? null,
-    );
-    return legacySource;
-  }
+  const observation = beginPdfLifecycleObservation({
+    screen: "warehouse",
+    surface: "warehouse_pdf_source",
+    event: "warehouse_object_work_pdf_source_load",
+    stage: "source_load",
+    sourceKind: "rpc:pdf_warehouse_object_work_source_v1",
+    context: {
+      documentFamily: "warehouse_object_work_report",
+      documentType: "warehouse_materials",
+      source: "rpc:pdf_warehouse_object_work_source_v1",
+      entityId: params.objectId ?? null,
+    },
+  });
 
   try {
+    assertWarehousePdfRpcPrimary(
+      WAREHOUSE_OBJECT_WORK_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      "pdf_warehouse_object_work_source_v1",
+    );
     const rpcSource = await fetchWarehouseObjectWorkReportPdfSourceViaRpc(params);
     if (rpcMode === "auto") {
       setPdfRpcRolloutAvailability(WAREHOUSE_OBJECT_WORK_PDF_RPC_ROLLOUT_ID, "available");
     }
-    logWarehouseObjectWorkPdfSourceBranch(
-      params.range,
-      rpcSource.branchMeta,
-      rpcSource.source,
-      params.objectId ?? null,
-    );
-    return rpcSource;
-  } catch (error) {
-    const fallbackReason = getFallbackReasonForRpcError(error);
-    if (
-      rpcMode === "auto" &&
-      error instanceof WarehouseObjectWorkPdfSourceRpcError &&
-      error.disableForSession
-    ) {
-      setPdfRpcRolloutAvailability(WAREHOUSE_OBJECT_WORK_PDF_RPC_ROLLOUT_ID, "missing", {
-        errorMessage: error.message,
-      });
-    }
-    if (__DEV__) {
-      console.warn("[warehouse-object-work-pdf-source] rpc_v1 fallback", {
-        fallbackReason,
-        rpcMode,
-        rpcAvailability: getPdfRpcRolloutAvailability(
-          WAREHOUSE_OBJECT_WORK_PDF_RPC_ROLLOUT_ID,
-        ),
+    logWarehousePdfSourceBranch({
+      id: WAREHOUSE_OBJECT_WORK_PDF_RPC_ROLLOUT_ID,
+      source: rpcSource.source,
+      branchMeta: rpcSource.branchMeta,
+      extra: {
         rangeFrom: params.range.rpcFrom,
         rangeTo: params.range.rpcTo,
         objectId: params.objectId ?? null,
-        errorMessage: error instanceof Error ? error.message : String(error),
-      });
-    }
-    const legacySource = await fetchWarehouseObjectWorkReportPdfSourceFallback(
-      params,
-      fallbackReason,
-    );
-    logWarehouseObjectWorkPdfSourceBranch(
-      params.range,
-      legacySource.branchMeta,
-      legacySource.source,
-      params.objectId ?? null,
-    );
-    return legacySource;
+        rows: rpcSource.rows.length,
+      },
+    });
+    observation.success({
+      sourceKind: rpcSource.source,
+      rowCount: rpcSource.rows.length,
+      extra: {
+        sourceBranch: rpcSource.branchMeta.sourceBranch,
+        docsTotal: rpcSource.docsTotal,
+      },
+    });
+    return rpcSource;
+  } catch (error) {
+    recordWarehousePdfRpcFailure({
+      id: WAREHOUSE_OBJECT_WORK_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      sourceKind: "rpc:pdf_warehouse_object_work_source_v1",
+      tag: "[warehouse-object-work-pdf-source] rpc_v1 hard-fail",
+      error,
+      failureReason: getFallbackReasonForRpcError(error),
+      extra: {
+        rangeFrom: params.range.rpcFrom,
+        rangeTo: params.range.rpcTo,
+        objectId: params.objectId ?? null,
+      },
+    });
+    throw observation.error(error, {
+      fallbackMessage: "Warehouse object-work PDF source load failed",
+      extra: {
+        rangeFrom: params.range.rpcFrom,
+        rangeTo: params.range.rpcTo,
+        objectId: params.objectId ?? null,
+        rpcMode,
+        fallbackUsed: false,
+      },
+    });
   }
 }

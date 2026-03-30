@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "primaryOwner": "rpc_v1",
+  "fallbackUsed": false,
+  "sourceBoundary": {
+    "incomingFormRpcOnly": true,
+    "dayMaterialsRpcOnly": true,
+    "incomingMaterialsRpcOnly": true,
+    "objectWorkRpcOnly": true
+  },
+  "assertions": {
+    "no_pdf_fallback": true,
+    "warehousePdfRpcOnly": true,
+    "liveRpcSamplesOk": true,
+    "legacyParityOk": true
+  },
+  "parityPassedCount": 4,
+  "parityFailedCount": 0,
+  "sampledChecks": [
+    "incomingForm",
+    "incomingMaterials",
+    "dayMaterials",
+    "objectWork"
+  ]
+}

@@ -1,15 +1,20 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
-  getPdfRpcRolloutAvailability,
-  recordPdfRpcRolloutBranch,
   registerPdfRpcRolloutPath,
   resolvePdfRpcRolloutMode,
   setPdfRpcRolloutAvailability,
+  type PdfRpcRolloutBranchMeta,
+  type PdfRpcRolloutFallbackReason,
   type PdfRpcRolloutId,
   type PdfRpcRolloutMode,
 } from "../../lib/documents/pdfRpcRollout";
+import { beginPdfLifecycleObservation } from "../../lib/pdf/pdfLifecycle";
 import { normalizeRuText } from "../../lib/text/encoding";
-import { apiFetchIssuedMaterialsReportFast } from "./warehouse.stock.read";
+import {
+  assertWarehousePdfRpcPrimary,
+  logWarehousePdfSourceBranch,
+  recordWarehousePdfRpcFailure,
+} from "./warehouse.pdf.source.shared";
 
 const WAREHOUSE_DAY_MATERIALS_PDF_SOURCE_RPC_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_WAREHOUSE_DAY_MATERIALS_PDF_SOURCE_RPC_V1 ?? "",
@@ -61,15 +66,9 @@ export type WarehouseDayMaterialsReportPdfRange = {
 };
 
 export type WarehouseDayMaterialsReportPdfSource =
-  | "rpc:pdf_warehouse_day_materials_source_v1"
-  | "legacy:wh_report_issued_materials_fast";
+  "rpc:pdf_warehouse_day_materials_source_v1";
 
-export type WarehouseDayMaterialsReportPdfSourceBranchMeta = {
-  sourceBranch: "rpc_v1" | "legacy_fallback";
-  fallbackReason?: "rpc_error" | "invalid_payload" | "disabled" | "missing_fields";
-  rpcVersion?: "v1";
-  payloadShapeVersion?: "v1";
-};
+export type WarehouseDayMaterialsReportPdfSourceBranchMeta = PdfRpcRolloutBranchMeta;
 
 type WarehouseDayMaterialsReportSource = {
   rows: WarehouseDayMaterialsReportPdfRow[];
@@ -133,7 +132,7 @@ const isMissingName = (value: unknown): boolean => {
   if (/^[-\u2014\u2013\u2212]+$/.test(text)) return true;
   const lowered = text.toLowerCase();
   if (lowered === "null" || lowered === "undefined" || lowered === "n/a") return true;
-  if (lowered.includes("отсутств")) return true;
+  if (lowered.includes("РѕС‚СЃСѓС‚СЃС‚РІ")) return true;
   return false;
 };
 
@@ -170,7 +169,7 @@ const requireArray = (value: unknown, field: string) => {
 
 const getFallbackReasonForRpcError = (
   error: unknown,
-): WarehouseDayMaterialsReportPdfSourceBranchMeta["fallbackReason"] => {
+): PdfRpcRolloutFallbackReason => {
   if (error instanceof WarehouseDayMaterialsPdfSourceValidationError) return error.reason;
   return "rpc_error";
 };
@@ -196,7 +195,7 @@ const normalizeWarehouseDayMaterialsReportRow = (
   const rawName = String(normalizeRuText(String(row.material_name ?? materialCode ?? ""))).trim();
   const materialName = !isMissingName(rawName)
     ? rawName
-    : (materialCode || "Позиция");
+    : (materialCode || "РџРѕР·РёС†РёСЏ");
 
   return {
     material_code: materialCode,
@@ -256,27 +255,6 @@ function validateWarehouseDayMaterialsPdfSourceV1(
   };
 }
 
-function logWarehouseDayMaterialsPdfSourceBranch(
-  range: WarehouseDayMaterialsReportPdfRange,
-  meta: WarehouseDayMaterialsReportPdfSourceBranchMeta,
-  source: WarehouseDayMaterialsReportPdfSource,
-) {
-  recordPdfRpcRolloutBranch(WAREHOUSE_DAY_MATERIALS_PDF_RPC_ROLLOUT_ID, {
-    source,
-    branchMeta: meta,
-  });
-  if (!__DEV__) return;
-  console.info("[warehouse-day-materials-pdf-source]", {
-    source,
-    sourceBranch: meta.sourceBranch,
-    fallbackReason: meta.fallbackReason ?? null,
-    rpcVersion: meta.rpcVersion ?? null,
-    payloadShapeVersion: meta.payloadShapeVersion ?? null,
-    rangeFrom: range.rpcFrom,
-    rangeTo: range.rpcTo,
-  });
-}
-
 export async function fetchWarehouseDayMaterialsReportPdfSourceViaRpc(
   params: Pick<GetWarehouseDayMaterialsReportPdfSourceParams, "supabase" | "range">,
 ): Promise<WarehouseDayMaterialsReportSource> {
@@ -315,105 +293,73 @@ export async function fetchWarehouseDayMaterialsReportPdfSourceViaRpc(
   };
 }
 
-export async function fetchWarehouseDayMaterialsReportPdfSourceFallback(
-  params: GetWarehouseDayMaterialsReportPdfSourceParams,
-  fallbackReason: WarehouseDayMaterialsReportPdfSourceBranchMeta["fallbackReason"] = "rpc_error",
-): Promise<WarehouseDayMaterialsReportSource> {
-  const rawRows = await apiFetchIssuedMaterialsReportFast(params.supabase, {
-    from: params.range.rpcFrom,
-    to: params.range.rpcTo,
-    objectId: null,
-  });
-
-  return {
-    rows: (rawRows || []).map(normalizeWarehouseDayMaterialsReportRow),
-    docsTotal: Math.max(0, Math.round(params.legacyDocsTotal)),
-    source: "legacy:wh_report_issued_materials_fast",
-    branchMeta: {
-      sourceBranch: "legacy_fallback",
-      fallbackReason,
-      payloadShapeVersion: "v1",
-    },
-  };
-}
-
 export async function getWarehouseDayMaterialsReportPdfSource(
   params: GetWarehouseDayMaterialsReportPdfSourceParams,
 ): Promise<WarehouseDayMaterialsReportSource> {
   const rpcMode = WAREHOUSE_DAY_MATERIALS_PDF_RPC_MODE;
-
-  if (rpcMode === "force_off") {
-    const legacySource = await fetchWarehouseDayMaterialsReportPdfSourceFallback(
-      params,
-      "disabled",
-    );
-    logWarehouseDayMaterialsPdfSourceBranch(
-      params.range,
-      legacySource.branchMeta,
-      legacySource.source,
-    );
-    return legacySource;
-  }
-
-  if (
-    rpcMode === "auto" &&
-    getPdfRpcRolloutAvailability(WAREHOUSE_DAY_MATERIALS_PDF_RPC_ROLLOUT_ID) === "missing"
-  ) {
-    const legacySource = await fetchWarehouseDayMaterialsReportPdfSourceFallback(
-      params,
-      "disabled",
-    );
-    logWarehouseDayMaterialsPdfSourceBranch(
-      params.range,
-      legacySource.branchMeta,
-      legacySource.source,
-    );
-    return legacySource;
-  }
+  const observation = beginPdfLifecycleObservation({
+    screen: "warehouse",
+    surface: "warehouse_pdf_source",
+    event: "warehouse_day_materials_pdf_source_load",
+    stage: "source_load",
+    sourceKind: "rpc:pdf_warehouse_day_materials_source_v1",
+    context: {
+      documentFamily: "warehouse_day_materials_report",
+      documentType: "warehouse_materials",
+      source: "rpc:pdf_warehouse_day_materials_source_v1",
+    },
+  });
 
   try {
+    assertWarehousePdfRpcPrimary(
+      WAREHOUSE_DAY_MATERIALS_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      "pdf_warehouse_day_materials_source_v1",
+    );
     const rpcSource = await fetchWarehouseDayMaterialsReportPdfSourceViaRpc(params);
     if (rpcMode === "auto") {
       setPdfRpcRolloutAvailability(WAREHOUSE_DAY_MATERIALS_PDF_RPC_ROLLOUT_ID, "available");
     }
-    logWarehouseDayMaterialsPdfSourceBranch(
-      params.range,
-      rpcSource.branchMeta,
-      rpcSource.source,
-    );
-    return rpcSource;
-  } catch (error) {
-    const fallbackReason = getFallbackReasonForRpcError(error);
-    if (
-      rpcMode === "auto" &&
-      error instanceof WarehouseDayMaterialsPdfSourceRpcError &&
-      error.disableForSession
-    ) {
-      setPdfRpcRolloutAvailability(WAREHOUSE_DAY_MATERIALS_PDF_RPC_ROLLOUT_ID, "missing", {
-        errorMessage: error.message,
-      });
-    }
-    if (__DEV__) {
-      console.warn("[warehouse-day-materials-pdf-source] rpc_v1 fallback", {
-        fallbackReason,
-        rpcMode,
-        rpcAvailability: getPdfRpcRolloutAvailability(
-          WAREHOUSE_DAY_MATERIALS_PDF_RPC_ROLLOUT_ID,
-        ),
+    logWarehousePdfSourceBranch({
+      id: WAREHOUSE_DAY_MATERIALS_PDF_RPC_ROLLOUT_ID,
+      source: rpcSource.source,
+      branchMeta: rpcSource.branchMeta,
+      extra: {
         rangeFrom: params.range.rpcFrom,
         rangeTo: params.range.rpcTo,
-        errorMessage: error instanceof Error ? error.message : String(error),
-      });
-    }
-    const legacySource = await fetchWarehouseDayMaterialsReportPdfSourceFallback(
-      params,
-      fallbackReason,
-    );
-    logWarehouseDayMaterialsPdfSourceBranch(
-      params.range,
-      legacySource.branchMeta,
-      legacySource.source,
-    );
-    return legacySource;
+        rows: rpcSource.rows.length,
+      },
+    });
+    observation.success({
+      sourceKind: rpcSource.source,
+      rowCount: rpcSource.rows.length,
+      extra: {
+        sourceBranch: rpcSource.branchMeta.sourceBranch,
+        docsTotal: rpcSource.docsTotal,
+      },
+    });
+    return rpcSource;
+  } catch (error) {
+    recordWarehousePdfRpcFailure({
+      id: WAREHOUSE_DAY_MATERIALS_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      sourceKind: "rpc:pdf_warehouse_day_materials_source_v1",
+      tag: "[warehouse-day-materials-pdf-source] rpc_v1 hard-fail",
+      error,
+      failureReason: getFallbackReasonForRpcError(error),
+      extra: {
+        rangeFrom: params.range.rpcFrom,
+        rangeTo: params.range.rpcTo,
+      },
+    });
+    throw observation.error(error, {
+      fallbackMessage: "Warehouse day materials PDF source load failed",
+      extra: {
+        rangeFrom: params.range.rpcFrom,
+        rangeTo: params.range.rpcTo,
+        rpcMode,
+        fallbackUsed: false,
+      },
+    });
   }
 }

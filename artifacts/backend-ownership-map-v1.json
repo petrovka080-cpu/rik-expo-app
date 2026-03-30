@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T23:02:22.262Z",
+  "generatedAt": "2026-03-30T00:07:40.820Z",
   "batch": "backend_ownership_map_v1",
   "documentSections": [
     "taxonomy",
@@ -460,6 +460,23 @@
               "coalescing passed"
             ]
           }
+        },
+        {
+          "contour": "Warehouse PDF source family",
+          "owner": "rpc_v1",
+          "contractVersion": "pdf_warehouse_incoming_source_v1 + pdf_warehouse_incoming_materials_source_v1 + pdf_warehouse_day_materials_source_v1 + pdf_warehouse_object_work_source_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "warehouse_pdf_sources",
+            "artifactPath": "artifacts/warehouse-pdf-source-cutover-v1.summary.json",
+            "status": "passed",
+            "gate": "GREEN",
+            "ownershipMarkers": [
+              "primaryOwner=rpc_v1",
+              "fallbackUsed=false",
+              "warehousePdfRpcOnly=true"
+            ]
+          }
         }
       ],
       "mandatoryBackendOwned": [
@@ -476,32 +493,13 @@
         "local list expansion state",
         "purely visual sort/filter toggles"
       ],
-      "residualClientTruth": [
-        {
-          "id": "warehouse_pdf_legacy_fallbacks",
-          "module": "warehouse",
-          "contour": "Warehouse PDF source legacy fallback branches",
-          "exactFile": "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
-          "truthType": "report",
-          "currentClientOwnership": "Warehouse PDF services still keep rpc_v1 | legacy_fallback source branches for report payloads.",
-          "whyRisky": "Export/report source rows should converge on the same backend-owned scope discipline as queue and stock read models.",
-          "requiredBackendContract": "warehouse PDF source family rpc-only cut",
-          "priority": "P2",
-          "state": "legacy_branch",
-          "nextBatch": "Warehouse PDF source fallback removal",
-          "evidencePaths": [
-            "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
-            "src/screens/warehouse/warehouse.dayMaterialsReport.pdf.service.ts",
-            "src/screens/warehouse/warehouse.objectWorkReport.pdf.service.ts"
-          ]
-        }
-      ],
+      "residualClientTruth": [],
       "notes": [
         "Warehouse primary read contours are backend-owned and window-aware.",
-        "Residual work is about burning down legacy view/client-shaping compatibility branches, not reworking pagination or UI modernization."
+        "Warehouse PDF source family is rpc-owned now and no warehouse residual client-truth families remain in this ownership map."
       ],
-      "residualClientTruthCount": 1,
-      "highestResidualPriority": "P2"
+      "residualClientTruthCount": 0,
+      "highestResidualPriority": "none"
     },
     "contractor": {
       "module": "contractor",
@@ -780,37 +778,8 @@
       "rule": "PDF/export truth belongs to backend source families; client only orchestrates the render/open experience."
     }
   },
-  "residualClientTruthRegistry": [
-    {
-      "id": "warehouse_pdf_legacy_fallbacks",
-      "module": "warehouse",
-      "contour": "Warehouse PDF source legacy fallback branches",
-      "exactFile": "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
-      "truthType": "report",
-      "currentClientOwnership": "Warehouse PDF services still keep rpc_v1 | legacy_fallback source branches for report payloads.",
-      "whyRisky": "Export/report source rows should converge on the same backend-owned scope discipline as queue and stock read models.",
-      "requiredBackendContract": "warehouse PDF source family rpc-only cut",
-      "priority": "P2",
-      "state": "legacy_branch",
-      "nextBatch": "Warehouse PDF source fallback removal",
-      "evidencePaths": [
-        "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
-        "src/screens/warehouse/warehouse.dayMaterialsReport.pdf.service.ts",
-        "src/screens/warehouse/warehouse.objectWorkReport.pdf.service.ts"
-      ]
-    }
-  ],
-  "priorityRoadmap": [
-    {
-      "priority": "P2",
-      "title": "PDF source family convergence",
-      "module": "warehouse",
-      "residualIds": [
-        "warehouse_pdf_legacy_fallbacks"
-      ],
-      "reason": "Warehouse PDF/report fallback branches remain the last residual source family still carrying legacy branches."
-    }
-  ],
+  "residualClientTruthRegistry": [],
+  "priorityRoadmap": [],
   "enforcementRules": {
     "intakeQuestions": [
       "Is this business truth, operational truth, money truth, report truth, queue/runtime truth, or only UI orchestration?",
@@ -867,10 +836,10 @@
       {
         "module": "warehouse",
         "displayName": "Warehouse",
-        "backendOwnedContours": 4,
+        "backendOwnedContours": 5,
         "clientOwnedUiContours": 5,
-        "residualClientTruthCount": 1,
-        "highestResidualPriority": "P2"
+        "residualClientTruthCount": 0,
+        "highestResidualPriority": "none"
       },
       {
         "module": "contractor",
@@ -884,18 +853,14 @@
     "globalSummary": {
       "totalResidualP0": 0,
       "totalResidualP1": 0,
-      "totalResidualP2": 1,
-      "modulesAtRisk": [
-        "warehouse"
-      ],
+      "totalResidualP2": 0,
+      "modulesAtRisk": [],
       "storesSafe": true,
       "criticalMoneyTruthOnClient": false,
       "criticalOperationalTruthOnClient": false,
-      "criticalReportTruthOnClient": true,
-      "highestPriorityModules": [
-        "warehouse"
-      ],
-      "nextPriorityBatch": "PDF source family convergence"
+      "criticalReportTruthOnClient": false,
+      "highestPriorityModules": [],
+      "nextPriorityBatch": null
     },
     "structuralAssertions": {
       "allRequiredArtifactsAccepted": false,
@@ -1566,6 +1531,42 @@
         "accepted": false,
         "iosResidual": null,
         "raw": null
+      },
+      {
+        "key": "warehouse_pdf_sources",
+        "label": "Warehouse PDF Source Cutover",
+        "relativePath": "artifacts/warehouse-pdf-source-cutover-v1.summary.json",
+        "exists": true,
+        "status": "passed",
+        "gate": "GREEN",
+        "accepted": true,
+        "iosResidual": null,
+        "raw": {
+          "status": "passed",
+          "gate": "GREEN",
+          "primaryOwner": "rpc_v1",
+          "fallbackUsed": false,
+          "sourceBoundary": {
+            "incomingFormRpcOnly": true,
+            "dayMaterialsRpcOnly": true,
+            "incomingMaterialsRpcOnly": true,
+            "objectWorkRpcOnly": true
+          },
+          "assertions": {
+            "no_pdf_fallback": true,
+            "warehousePdfRpcOnly": true,
+            "liveRpcSamplesOk": true,
+            "legacyParityOk": true
+          },
+          "parityPassedCount": 4,
+          "parityFailedCount": 0,
+          "sampledChecks": [
+            "incomingForm",
+            "incomingMaterials",
+            "dayMaterials",
+            "objectWork"
+          ]
+        }
       },
       {
         "key": "contractor_works_bundle",
