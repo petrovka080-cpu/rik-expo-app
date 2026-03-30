@@ -113,6 +113,7 @@ import {
   clearCachedDraftRequestId,
   getOrCreateDraftRequestId,
   requestCreateDraft,
+  requestReopen,
   requestSubmitMutation,
 } from "./requests";
 
@@ -406,5 +407,58 @@ describe("requests mutation boundary", () => {
       "Server-side request status reconcile failed.",
     );
     expect(mockClient.from).not.toHaveBeenCalled();
+  });
+
+  it("reopens submitted request through canonical rpc boundary", async () => {
+    mockClient.rpc.mockImplementation((fn: string) => {
+      if (fn === "request_reopen_atomic_v1") {
+        return Promise.resolve({
+          data: {
+            ok: true,
+            request_id: "request-4",
+            transition_path: "rpc_reopen",
+            restored_item_count: 1,
+            request: {
+              id: "request-4",
+              status: "Черновик",
+              submitted_at: null,
+            },
+          },
+          error: null,
+        });
+      }
+      throw new Error(`Unexpected rpc ${fn}`);
+    });
+
+    mockClient.from.mockImplementation((table: string) => {
+      if (table === "requests") {
+        return {
+          select: jest.fn(() =>
+            makeSelectChain(
+              Promise.resolve({
+                data: {
+                  id: "request-4",
+                  status: "Черновик",
+                  submitted_at: null,
+                },
+                error: null,
+              }),
+            ),
+          ),
+        };
+      }
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    const record = await requestReopen("request-4");
+
+    expect(record).toMatchObject({
+      id: "request-4",
+      status: "Черновик",
+      submitted_at: null,
+    });
+    expect(mockClient.rpc).toHaveBeenCalledWith("request_reopen_atomic_v1", {
+      p_request_id_text: "request-4",
+    });
   });
 });

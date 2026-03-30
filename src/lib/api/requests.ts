@@ -41,12 +41,10 @@ type RequestDraftInsertPayload = Pick<
   | "zone_code"
 >;
 type RequestDraftUpsertPayload = Pick<RequestsTable["Insert"], "id" | "status">;
-type RequestHeadStatusUpdatePayload = Pick<RequestsTable["Update"], "status" | "submitted_at">;
 type RequestItemMetaPatch = Pick<
   RequestItemsTable["Update"],
   "status" | "note" | "app_code" | "kind" | "name_human" | "uom"
 >;
-type RequestItemRestorePatch = Pick<RequestItemsTable["Update"], "status" | "cancelled_at">;
 type RequestItemAddOpts = {
   note?: string;
   app_code?: string;
@@ -122,6 +120,23 @@ type RequestSubmitAtomicFailure = {
   invalidItemIds: string[];
 };
 
+type RequestReopenAtomicSuccess = {
+  ok: true;
+  requestId: string;
+  transitionPath: "rpc_reopen" | "already_draft";
+  restoredItemCount: number;
+  record: RequestRecord | null;
+  verification: Record<string, unknown> | null;
+};
+
+type RequestReopenAtomicFailure = {
+  ok: false;
+  requestId: string;
+  failureCode: string;
+  failureMessage: string;
+  verification: Record<string, unknown> | null;
+};
+
 class RequestSubmitAtomicError extends Error {
   readonly code: string;
   readonly requestId: string;
@@ -135,6 +150,20 @@ class RequestSubmitAtomicError extends Error {
     this.requestId = result.requestId;
     this.validation = result.validation;
     this.invalidItemIds = result.invalidItemIds;
+  }
+}
+
+class RequestReopenAtomicError extends Error {
+  readonly code: string;
+  readonly requestId: string;
+  readonly verification: Record<string, unknown> | null;
+
+  constructor(result: RequestReopenAtomicFailure) {
+    super(result.failureMessage || result.failureCode || "request_reopen_atomic_v1 failed");
+    this.name = "RequestReopenAtomicError";
+    this.code = result.failureCode;
+    this.requestId = result.requestId;
+    this.verification = result.verification;
   }
 }
 
@@ -209,8 +238,40 @@ function buildRequestSubmitAtomicArgs(requestId: string): RequestSubmitAtomicArg
   return { p_request_id_text: requestId };
 }
 
-function buildRequestItemsRestorePatch(): RequestItemRestorePatch {
-  return { status: REQUEST_DRAFT_STATUS, cancelled_at: null };
+function buildRequestReopenAtomicArgs(requestId: string): { p_request_id_text: string } {
+  return { p_request_id_text: requestId };
+}
+
+function parseRequestReopenAtomicResult(data: unknown): RequestReopenAtomicSuccess | RequestReopenAtomicFailure {
+  const payload = isRecord(data) ? data : {};
+  const ok = payload.ok === true;
+  const requestId = String(payload.request_id ?? payload.requestId ?? "").trim();
+  const verification = isRecord(payload.verification) ? payload.verification : null;
+
+  if (!ok) {
+    return {
+      ok: false,
+      requestId,
+      failureCode: String(payload.failure_code ?? payload.failureCode ?? "request_reopen_failed"),
+      failureMessage: String(
+        payload.failure_message ?? payload.failureMessage ?? "Request reopen was rejected by server truth.",
+      ),
+      verification,
+    };
+  }
+
+  const transitionPathRaw = String(payload.transition_path ?? payload.transitionPath ?? "rpc_reopen").trim();
+  const transitionPath: RequestReopenAtomicSuccess["transitionPath"] =
+    transitionPathRaw === "already_draft" ? "already_draft" : "rpc_reopen";
+
+  return {
+    ok: true,
+    requestId,
+    transitionPath,
+    restoredItemCount: Number(payload.restored_item_count ?? payload.restoredItemCount ?? 0),
+    record: mapRequestRow(payload.request),
+    verification,
+  };
 }
 
 export function clearCachedDraftRequestId() {
@@ -400,32 +461,6 @@ async function selectRequestRecordById(
 
   if (existing.error) throw existing.error;
   return existing.data ? mapRequestRow(existing.data) : null;
-}
-
-async function updateRequestHeadStatus(
-  requestFilterId: string,
-  payload: RequestHeadStatusUpdatePayload,
-  requestReadSelect: string,
-): Promise<RequestRecord | null> {
-  const upd = await client
-    .from("requests")
-    .update(payload)
-    .eq("id", requestFilterId)
-    .select(requestReadSelect)
-    .maybeSingle();
-
-  if (upd.error) throw upd.error;
-  return upd.data ? mapRequestRow(upd.data) : null;
-}
-
-async function restoreCancelledRequestItems(requestFilterId: string): Promise<void> {
-  const restorePayload = buildRequestItemsRestorePatch();
-  const restored = await client
-    .from("request_items")
-    .update(restorePayload)
-    .eq("request_id", requestFilterId)
-    .in("status", ["cancelled", "canceled"]);
-  if (restored.error) throw restored.error;
 }
 
 async function patchRequestItemMeta(itemId: string, patch: RequestItemMetaPatch): Promise<void> {
@@ -808,20 +843,36 @@ export async function requestReopen(requestId: number | string): Promise<Request
   const preconditions = await resolveRequestSubmitPreconditions(requestId);
 
   try {
-    await restoreCancelledRequestItems(preconditions.request_filter_id);
-  } catch (e) {
-    logRequestsDebug("[requestReopen/request_items restore]", parseErr(e));
-    throw e;
-  }
-
-  try {
-    return await updateRequestHeadStatus(
-      preconditions.request_filter_id,
-      { status: REQUEST_DRAFT_STATUS },
-      preconditions.request_read_select,
+    const rawClient = client as unknown as {
+      rpc: (
+        fn: "request_reopen_atomic_v1",
+        args: { p_request_id_text: string },
+      ) => Promise<{ data: unknown; error: { message?: string } | null }>;
+    };
+    const { data, error } = await rawClient.rpc(
+      "request_reopen_atomic_v1",
+      buildRequestReopenAtomicArgs(preconditions.request_id),
     );
+    if (error) throw error;
+
+    const result = parseRequestReopenAtomicResult(data);
+    if (result.ok === false) {
+      throw new RequestReopenAtomicError(result);
+    }
+
+    const hydratedRecord =
+      (preconditions.request_filter_id
+        ? await selectRequestRecordById(preconditions.request_filter_id, preconditions.request_read_select)
+        : null) ?? result.record;
+
+    if (!hydratedRecord) {
+      throw new Error("[requestReopen/rpc_atomic] request record missing after reopen");
+    }
+
+    _draftRequestIdAny = preconditions.request_filter_id;
+    return hydratedRecord;
   } catch (e) {
-    logRequestsDebug("[requestReopen/request head restore]", parseErr(e));
+    logRequestsDebug("[requestReopen/rpc_atomic]", parseErr(e));
     throw e;
   }
 }
