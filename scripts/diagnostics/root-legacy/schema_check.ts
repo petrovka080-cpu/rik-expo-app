@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
-dotenv.config({ path: 'c:/dev/rik-expo-app/.env.local' });
+dotenv.config({ path: '.env.local' });
 
 // We cannot use pg_get_functiondef via REST without execute_sql.
 // We cannot use raw SQL via REST without execute_sql.

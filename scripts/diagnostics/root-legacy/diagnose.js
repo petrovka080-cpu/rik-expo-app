@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 require("dotenv").config({ path: ".env.local" });
 const { createClient } = require("@supabase/supabase-js");
 
@@ -149,8 +150,10 @@ async function run() {
         }
     }
 
-    fs.writeFileSync('diagnostic_smeta_report.md', md);
-    console.log(`\nDiagnostic complete. Report saved to diagnostic_smeta_report.md`);
+    const outputPath = path.join('diagnostics', 'root-legacy', 'diagnostic_smeta_report.md');
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, md);
+    console.log(`\nDiagnostic complete. Report saved to ${outputPath}`);
 }
 
 run().catch(console.error).finally(() => process.exit(0));

@@ -4,6 +4,11 @@ dist/
 build/
 coverage/
 *.log
+.codex-*.log
+.expo-web-smoke.log
+.tmp-expo-*.log
+queue-worker-smoke.log
+temp-http.log
 .DS_Store
 .env*
 !.env.example
@@ -15,6 +20,8 @@ android/.gradle/
 
 # local junk
 /tmp/
+tmp/
+dist-stale-*/
 ts_errors*.txt
 final_ts_errors.txt
 *_errors*.txt

@@ -1,8 +1,9 @@
 const fs = require('fs');
+const path = require('path');
 
-const tsErrorsPath = 'ts_errors6.txt';
+const tsErrorsPath = path.join('tmp', 'root-local', 'ts_errors6.txt');
 if (!fs.existsSync(tsErrorsPath)) {
-    console.log('No ts_errors6.txt');
+    console.log(`No ${tsErrorsPath}`);
     process.exit();
 }
 
