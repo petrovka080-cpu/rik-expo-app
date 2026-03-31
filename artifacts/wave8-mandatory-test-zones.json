@@ -1,0 +1,77 @@
+{
+  "wave": "wave8-test-governance",
+  "generatedAt": "2026-03-31",
+  "zones": [
+    {
+      "name": "offline_core",
+      "modules": [
+        "src/lib/offline/mutationQueue.ts",
+        "src/lib/offline/mutationWorker.ts",
+        "src/lib/offline/mutation.retryPolicy.ts",
+        "src/lib/offline/mutation.conflict.ts"
+      ],
+      "whyMandatory": "Queue/worker regressions break retry, dedupe, conflict and recovery behavior across the product.",
+      "requiredProofWhenTouched": [
+        "targeted_jest",
+        "coverage_gate"
+      ]
+    },
+    {
+      "name": "foreman_draft_orchestration",
+      "modules": [
+        "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+        "src/screens/foreman/foreman.draftBoundary.helpers.ts",
+        "src/screens/foreman/foreman.localDraft.ts"
+      ],
+      "whyMandatory": "Draft restore/sync/submit-support failures can silently corrupt product truth.",
+      "requiredProofWhenTouched": [
+        "targeted_jest",
+        "observability_or_controlled_fallback_proof",
+        "runtime_smoke_if_semantics_change"
+      ]
+    },
+    {
+      "name": "profile_critical_behavior",
+      "modules": [
+        "src/screens/profile/profile.services.ts",
+        "src/screens/profile/hooks/useProfileDerivedState.ts",
+        "src/screens/profile/components/ProfilePrimitives.tsx",
+        "scripts/profile_stabilization_verify.ts"
+      ],
+      "whyMandatory": "Profile is user-facing, cross-platform and modal-heavy.",
+      "requiredProofWhenTouched": [
+        "targeted_jest",
+        "web_android_runtime_proof",
+        "ios_proof_or_host_blocker"
+      ]
+    },
+    {
+      "name": "db_rpc_contract_adapters",
+      "modules": [
+        "src/lib/api/queryBoundary.ts",
+        "src/lib/api/directorPdfBackendInvoker.ts",
+        "src/lib/api/directorPdfRender.service.ts",
+        "src/lib/api/pdf_director.ts"
+      ],
+      "whyMandatory": "Adapter drift can break fallback/version routing without obvious UI failure.",
+      "requiredProofWhenTouched": [
+        "targeted_contract_tests",
+        "runtime_or_caller_proof_when_routing_changes"
+      ]
+    },
+    {
+      "name": "pdf_report_orchestration",
+      "modules": [
+        "src/lib/pdf/pdf.director.templates.ts",
+        "src/lib/pdf/pdf.warehouse.ts",
+        "src/lib/documents/pdfRpcRollout.ts",
+        "src/lib/documents/pdfRenderRollout.ts"
+      ],
+      "whyMandatory": "Rollout/fallback regressions surface as broken document generation or broken open flow.",
+      "requiredProofWhenTouched": [
+        "targeted_jest",
+        "family_specific_smoke_or_runtime_proof"
+      ]
+    }
+  ]
+}

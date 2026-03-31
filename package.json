@@ -17,6 +17,7 @@
     "verify:wave4-profile-runtime": "node node_modules/tsx/dist/cli.mjs scripts/profile_stabilization_verify.ts",
     "verify:wave6-pdf": "node node_modules/jest/bin/jest.js src/lib/pdf/pdfLayerDecomposition.test.ts src/lib/api/pdf_director.test.ts src/screens/warehouse/warehouse.pdf.source.services.test.ts --runInBand --json --outputFile artifacts/wave6-pdf-layer-jest.json",
     "verify:wave7-perf": "node node_modules/jest/bin/jest.js src/lib/exports/xlsxExport.test.ts src/components/map/leafletWebCss.test.ts --runInBand --json --outputFile artifacts/wave7-perf-bundle-jest.json",
+    "verify:wave8-coverage": "node node_modules/jest/bin/jest.js src/lib/offline/mutationQueue.contract.test.ts src/lib/offline/mutationWorker.contract.test.ts src/screens/profile/profile.services.test.ts src/screens/profile/hooks/useProfileDerivedState.test.tsx src/screens/profile/components/ProfilePrimitives.test.tsx --runInBand --coverage --json --outputFile artifacts/wave8-coverage-jest.json",
     "verify:local-role-smoke": "node node_modules/tsx/dist/cli.mjs scripts/local_role_screen_access_verify.ts",
     "verify:governance:static": "npm run verify:typecheck && npm run verify:wave3-offline-core && npm run verify:wave4-profile-static && npm run verify:wave6-pdf && npm run verify:wave7-perf",
     "preflight:prod": "node scripts/preflight-prod.js",

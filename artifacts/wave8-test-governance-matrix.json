@@ -41,6 +41,15 @@
       ]
     },
     {
+      "script": "verify:wave8-coverage",
+      "command": "npm run verify:wave8-coverage",
+      "scope": "Coverage + thresholds across bounded critical governance modules",
+      "artifacts": [
+        "artifacts/wave8-coverage-jest.json",
+        "artifacts/wave8-coverage/coverage-summary.json"
+      ]
+    },
+    {
       "script": "verify:governance:static",
       "command": "npm run verify:governance:static",
       "scope": "Aggregate static governance gate",
@@ -81,6 +90,7 @@
     "Every wave must bind to an exact static gate.",
     "Runtime UI changes require an exact runtime proof command or an explicit host/harness blocker.",
     "GREEN status is invalid without runnable commands or a documented blocker.",
-    "Artifacts must stay deterministic and wave-scoped."
+    "Artifacts must stay deterministic and wave-scoped.",
+    "Critical-zone coverage is enforced through the bounded Wave 8 coverage gate, not through vanity repo-wide numbers."
   ]
 }
