@@ -1,7 +1,6 @@
 // src/screens/warehouse/warehouse.issue.ts
 import type { ReqItemUiRow, ReqPickLine, StockPickLine } from "./warehouse.types";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../../lib/database.types";
+import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import { ensureRequestItemsBelongToRequest } from "../../lib/api/integrity.guards";
 import { normMatCode, normUomId } from "./warehouse.utils";
 import {
@@ -20,7 +19,7 @@ const ensureWarehouseRpcData = <T,>(value: T | null | undefined, message: string
 };
 
 export function makeWarehouseIssueActions(args: {
-  supabase: SupabaseClient<Database>;
+  supabase: AppSupabaseClient;
 
   nz: (v: unknown, d?: number) => number;
   pickErr: (e: unknown) => string;

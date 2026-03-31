@@ -7,14 +7,13 @@ import {
 } from "../contractor.pdfService";
 import { parseActMeta, pickErr, pickFirstNonEmpty } from "../contractor.utils";
 import type { WorkLogRow } from "../types";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../../../lib/database.types";
+import type { AppSupabaseClient } from "../../../lib/dbContract.types";
 
 type WorkRowLike = ContractorPdfWorkRowLike;
 type JobHeaderLike = ContractorPdfJobHeaderLike;
 
 export function useContractorPdfActions(params: {
-  supabaseClient: SupabaseClient<Database>;
+  supabaseClient: AppSupabaseClient;
   workModalRow: WorkRowLike | null;
   jobHeader: JobHeaderLike | null;
   showErr: (error: unknown) => void;

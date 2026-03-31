@@ -1,7 +1,6 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Database } from "../../lib/database.types";
+import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
 import { shortId } from "./director.helpers";
 import { fetchDirectorPendingProposalWindow } from "./director.proposals.repo";
@@ -10,7 +9,7 @@ import { useDirectorUiStore } from "./directorUi.store";
 import type { PendingRow, ProposalHead, RequestMeta } from "./director.types";
 
 type Deps = {
-  supabase: SupabaseClient<Database>;
+  supabase: AppSupabaseClient;
 };
 
 const errText = (error: unknown): string => {

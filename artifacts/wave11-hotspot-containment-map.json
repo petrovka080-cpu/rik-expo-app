@@ -1,0 +1,59 @@
+{
+  "wave": 11,
+  "hotspots": [
+    {
+      "hotspot": "director proposal actions",
+      "old_type_path": "screen imported Database and SupabaseClient directly",
+      "new_contract_path": "AppSupabaseClient from src/lib/dbContract.types.ts",
+      "why_safe": "pure type alias substitution, no runtime logic or payload change"
+    },
+    {
+      "hotspot": "director data loader",
+      "old_type_path": "screen imported Database and SupabaseClient directly",
+      "new_contract_path": "AppSupabaseClient from src/lib/dbContract.types.ts",
+      "why_safe": "same generated client contract, narrower import surface"
+    },
+    {
+      "hotspot": "warehouse issue screen actions",
+      "old_type_path": "screen imported Database and SupabaseClient directly",
+      "new_contract_path": "AppSupabaseClient from src/lib/dbContract.types.ts",
+      "why_safe": "runtime path unchanged, only boundary alias changed"
+    },
+    {
+      "hotspot": "accountant attachments boundary",
+      "old_type_path": "runtime service alias pointed at SupabaseClient<Database>",
+      "new_contract_path": "AppSupabaseClient from src/lib/dbContract.types.ts",
+      "why_safe": "service still receives same client shape"
+    },
+    {
+      "hotspot": "contractor PDF actions hook",
+      "old_type_path": "hook imported Database and SupabaseClient directly",
+      "new_contract_path": "AppSupabaseClient from src/lib/dbContract.types.ts",
+      "why_safe": "view-layer hook no longer pulls full schema type surface"
+    },
+    {
+      "hotspot": "market home types",
+      "old_type_path": "feature types imported full Database",
+      "new_contract_path": "MarketListingRowDb and MarketListingItemsJsonDb from src/features/market/marketHome.db.ts",
+      "why_safe": "domain facade still resolves to the same generated row fields"
+    },
+    {
+      "hotspot": "market home data helpers",
+      "old_type_path": "feature helper imported generated Json directly",
+      "new_contract_path": "DbJson from src/lib/dbContract.types.ts",
+      "why_safe": "keeps Json type identical while avoiding direct generated import in runtime helper"
+    },
+    {
+      "hotspot": "auctions feature types",
+      "old_type_path": "feature types imported Database and Json directly",
+      "new_contract_path": "AuctionRowDb/TenderRowDb/TenderItemRowDb from src/features/auctions/auctions.db.ts plus DbJson from src/lib/dbContract.types.ts",
+      "why_safe": "same row contracts, clearer feature ownership"
+    },
+    {
+      "hotspot": "map contracts",
+      "old_type_path": "shared contract imported Database view row and Json directly",
+      "new_contract_path": "MarketListingsMapRowDb from src/components/map/mapContracts.db.ts plus DbJson from src/lib/dbContract.types.ts",
+      "why_safe": "same map row/view contract, reduced generated leakage into shared UI contract"
+    }
+  ]
+}

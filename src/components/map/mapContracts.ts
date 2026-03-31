@@ -1,4 +1,5 @@
-import type { Database, Json } from "../../lib/database.types";
+import type { DbJson } from "../../lib/dbContract.types";
+import type { MarketListingsMapRowDb } from "./mapContracts.db";
 
 export type ListingSide = "offer" | "demand";
 export type ListingKind = "material" | "work" | "service";
@@ -77,8 +78,7 @@ export type MapRendererProps = {
   onViewportChange: (viewport: MapViewportUpdate) => void;
 };
 
-export type MarketListingsMapRow =
-  Database["public"]["Views"]["market_listings_map"]["Row"];
+export type MarketListingsMapRow = MarketListingsMapRowDb;
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -120,7 +120,7 @@ function normalizeListingItem(value: unknown): ListingItemJson | null {
   };
 }
 
-export function normalizeListingItems(value: Json | null): ListingItemJson[] | null {
+export function normalizeListingItems(value: DbJson | null): ListingItemJson[] | null {
   if (!Array.isArray(value)) return null;
   const items = value
     .map((entry) => normalizeListingItem(entry))

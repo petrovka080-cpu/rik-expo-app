@@ -1,5 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
-import type { Json } from "../../lib/database.types";
+import type { DbJson } from "../../lib/dbContract.types";
 
 import {
   categoryUsesDedicatedBucket,
@@ -36,7 +36,7 @@ function toMaybeNumber(value: unknown): number | null {
   return null;
 }
 
-export function asListingItems(value: Json | null): MarketListingItem[] {
+export function asListingItems(value: DbJson | null): MarketListingItem[] {
   if (!Array.isArray(value)) return [];
   return value
     .map((item) => {

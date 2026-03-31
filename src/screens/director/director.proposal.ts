@@ -2,11 +2,10 @@
 import { useCallback, useRef } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateProposalPdfDocument } from "../../lib/catalog_api";
 import { toProposalRequestItemIntegrityDegradedError } from "../../lib/api/proposalIntegrity";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
-import type { Database } from "../../lib/database.types";
+import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
@@ -15,7 +14,7 @@ import type { ProposalItem } from "./director.types";
 type BusyLike = { isBusy: (key: string) => boolean };
 type Deps = {
   busy: BusyLike;
-  supabase: SupabaseClient<Database>;
+  supabase: AppSupabaseClient;
   pdfTapLockRef: React.MutableRefObject<Record<string, boolean>>;
   itemsByProp: Record<string, ProposalItem[]>;
   setItemsByProp: React.Dispatch<React.SetStateAction<Record<string, ProposalItem[]>>>;

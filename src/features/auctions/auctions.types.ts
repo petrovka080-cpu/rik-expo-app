@@ -1,8 +1,9 @@
-import type { Database, Json } from "../../lib/database.types";
+import type { DbJson } from "../../lib/dbContract.types";
+import type { AuctionRowDb, TenderItemRowDb, TenderRowDb } from "./auctions.db";
 
-export type TenderRow = Database["public"]["Tables"]["tenders"]["Row"];
-export type TenderItemRow = Database["public"]["Tables"]["tender_items"]["Row"];
-export type AuctionRow = Database["public"]["Tables"]["auctions"]["Row"];
+export type TenderRow = TenderRowDb;
+export type TenderItemRow = TenderItemRowDb;
+export type AuctionRow = AuctionRowDb;
 
 export type UnifiedAuctionItem = {
   id: string;
@@ -43,4 +44,4 @@ export type AuctionJsonItem = {
   uom?: string | null;
 };
 
-export type AuctionItemsJson = Json;
+export type AuctionItemsJson = DbJson;

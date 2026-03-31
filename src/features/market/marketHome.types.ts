@@ -1,8 +1,11 @@
 import type { ImageSourcePropType } from "react-native";
 
-import type { Database } from "../../lib/database.types";
+import type {
+  MarketListingItemsJsonDb,
+  MarketListingRowDb,
+} from "./marketHome.db";
 
-export type MarketListingRow = Database["public"]["Tables"]["market_listings"]["Row"];
+export type MarketListingRow = MarketListingRowDb;
 export type MarketMarketplaceScopeRow = {
   id: string;
   name: string | null;
@@ -24,8 +27,8 @@ export type MarketMarketplaceScopeRow = {
   contacts_phone: string | null;
   contacts_whatsapp: string | null;
   contacts_email: string | null;
-  items_json: Database["public"]["Tables"]["market_listings"]["Row"]["items_json"] | null;
-  erp_items_json: Database["public"]["Tables"]["market_listings"]["Row"]["items_json"] | null;
+  items_json: MarketListingItemsJsonDb | null;
+  erp_items_json: MarketListingItemsJsonDb | null;
   uom: string | null;
   uom_code: string | null;
   rik_code: string | null;

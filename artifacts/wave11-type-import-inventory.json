@@ -1,0 +1,329 @@
+{
+  "wave": 11,
+  "title": "Type Surface / Generated Contract Containment",
+  "summary": {
+    "direct_imports_before": 52,
+    "direct_imports_after": 43,
+    "contained_hotspots": 9,
+    "strategy": "move generated Database/Json usage down to DB-adjacent boundaries, expose AppSupabaseClient/DbJson and domain-scoped *.db.ts facades to UI/runtime"
+  },
+  "contained_hotspots": [
+    {
+      "file": "src/screens/director/director.proposal.ts",
+      "layer": "screen_runtime",
+      "old_direct_generated_import": true,
+      "new_contract_path": "src/lib/dbContract.types.ts#AppSupabaseClient",
+      "decision": "contained"
+    },
+    {
+      "file": "src/screens/director/director.data.ts",
+      "layer": "screen_runtime",
+      "old_direct_generated_import": true,
+      "new_contract_path": "src/lib/dbContract.types.ts#AppSupabaseClient",
+      "decision": "contained"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.issue.ts",
+      "layer": "screen_runtime",
+      "old_direct_generated_import": true,
+      "new_contract_path": "src/lib/dbContract.types.ts#AppSupabaseClient",
+      "decision": "contained"
+    },
+    {
+      "file": "src/screens/accountant/accountant.attachments.ts",
+      "layer": "service_runtime",
+      "old_direct_generated_import": true,
+      "new_contract_path": "src/lib/dbContract.types.ts#AppSupabaseClient",
+      "decision": "contained"
+    },
+    {
+      "file": "src/screens/contractor/hooks/useContractorPdfActions.ts",
+      "layer": "hook_runtime",
+      "old_direct_generated_import": true,
+      "new_contract_path": "src/lib/dbContract.types.ts#AppSupabaseClient",
+      "decision": "contained"
+    },
+    {
+      "file": "src/features/market/marketHome.types.ts",
+      "layer": "feature_types",
+      "old_direct_generated_import": true,
+      "new_contract_path": "src/features/market/marketHome.db.ts",
+      "decision": "contained"
+    },
+    {
+      "file": "src/features/market/marketHome.data.ts",
+      "layer": "feature_runtime",
+      "old_direct_generated_import": true,
+      "new_contract_path": "src/lib/dbContract.types.ts#DbJson",
+      "decision": "contained"
+    },
+    {
+      "file": "src/features/auctions/auctions.types.ts",
+      "layer": "feature_types",
+      "old_direct_generated_import": true,
+      "new_contract_path": "src/features/auctions/auctions.db.ts and src/lib/dbContract.types.ts#DbJson",
+      "decision": "contained"
+    },
+    {
+      "file": "src/components/map/mapContracts.ts",
+      "layer": "shared_contracts",
+      "old_direct_generated_import": true,
+      "new_contract_path": "src/components/map/mapContracts.db.ts and src/lib/dbContract.types.ts#DbJson",
+      "decision": "contained"
+    }
+  ],
+  "remaining_direct_imports": [
+    {
+      "file": "src/lib/supabaseClient.ts",
+      "layer": "db_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/server/serverSupabaseClient.ts",
+      "layer": "server_db_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/store_supabase.ts",
+      "layer": "db_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/dbContract.types.ts",
+      "layer": "type_facade_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/_core.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/requests.status.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/requests.parsers.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/requestDraftSync.service.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/integrity.guards.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/proposalAttachments.service.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/api/contractor.scope.service.ts",
+      "layer": "api_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/catalog/catalog.types.ts",
+      "layer": "catalog_contracts",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/catalog/catalog.request.service.ts",
+      "layer": "catalog_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/catalog/catalog.proposalCreation.service.ts",
+      "layer": "catalog_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/pdfRunner.ts",
+      "layer": "pdf_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "layer": "pdf_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/infra/queueLatencyMetrics.ts",
+      "layer": "infra_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "layer": "infra_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/features/market/marketHome.db.ts",
+      "layer": "domain_facade",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/features/auctions/auctions.db.ts",
+      "layer": "domain_facade",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/components/map/mapContracts.db.ts",
+      "layer": "domain_facade",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/features/market/market.repository.ts",
+      "layer": "repository",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/director/director.repository.ts",
+      "layer": "repository",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/director/director.proposals.repo.ts",
+      "layer": "repository",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "layer": "repository",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.issue.repo.ts",
+      "layer": "repository",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/contractor/contractorPdfSource.service.ts",
+      "layer": "service_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/contractor/contractor.pdfService.ts",
+      "layer": "service_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/contractor/contractor.workModalService.ts",
+      "layer": "service_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/foreman/foreman.requests.ts",
+      "layer": "service_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "layer": "repository",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "layer": "repository",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/buyer/buyer.fetchers.data.ts",
+      "layer": "repository",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/buyer/buyer.buckets.repo.data.ts",
+      "layer": "repository",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/buyer/hooks/useBuyerCounterpartyRepo.data.ts",
+      "layer": "hook_repo_boundary",
+      "direct_generated_import": true,
+      "decision": "keep_boundary"
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.ts",
+      "layer": "shared_contracts",
+      "direct_generated_import": true,
+      "decision": "defer"
+    },
+    {
+      "file": "src/features/supplierShowcase/supplierShowcase.types.ts",
+      "layer": "feature_types",
+      "direct_generated_import": true,
+      "decision": "defer"
+    }
+  ]
+}

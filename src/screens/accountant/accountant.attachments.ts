@@ -1,6 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-import type { Database } from "../../lib/database.types";
+import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import {
   ensureProposalAttachmentUrl,
   listCanonicalProposalAttachments,
@@ -8,7 +6,7 @@ import {
   type ProposalAttachmentViewState,
 } from "../../lib/api/proposalAttachments.service";
 
-type SupabaseLike = SupabaseClient<Database>;
+type SupabaseLike = AppSupabaseClient;
 
 type ProposalHeaderRow = {
   id?: string | null;
