@@ -2,7 +2,7 @@
 import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../src/lib/supabaseClient';
-import { pathForRole, FALLBACK_TAB } from '../src/lib/authRouting';
+import { postAuthPathForRole, FALLBACK_TAB } from '../src/lib/authRouting';
 import { resolveCurrentSessionRole } from '../src/lib/sessionRole';
 
 export default function Index() {
@@ -30,7 +30,7 @@ export default function Index() {
             trigger: 'index_bootstrap',
             joinInflight: false,
           });
-          href = pathForRole(roleResolution.role);
+          href = postAuthPathForRole(roleResolution.role);
         } catch {
           href = FALLBACK_TAB;
         }

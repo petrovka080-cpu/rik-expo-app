@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { supabase } from '../../src/lib/supabaseClient';
-import { pathForRole, FALLBACK_TAB } from '../../src/lib/authRouting';
+import { postAuthPathForRole, FALLBACK_TAB } from '../../src/lib/authRouting';
 import { resolveCurrentSessionRole } from '../../src/lib/sessionRole';
 
 export default function LoginScreen() {
@@ -41,7 +41,7 @@ export default function LoginScreen() {
           trigger: 'login_submit',
           joinInflight: false,
         });
-        href = pathForRole(roleResolution.role);
+        href = postAuthPathForRole(roleResolution.role);
       } catch {
         href = FALLBACK_TAB;
       }

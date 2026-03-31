@@ -30,3 +30,12 @@ export function pathForRole(role: string | null | undefined): RoleHomePath {
       return FALLBACK_TAB;
   }
 }
+
+export function shouldEnforceClientRoleRedirect(): boolean {
+  const runtime = globalThis as typeof globalThis & { __DEV__?: unknown };
+  return runtime.__DEV__ !== true;
+}
+
+export function postAuthPathForRole(role: string | null | undefined): RoleHomePath {
+  return shouldEnforceClientRoleRedirect() ? pathForRole(role) : FALLBACK_TAB;
+}
