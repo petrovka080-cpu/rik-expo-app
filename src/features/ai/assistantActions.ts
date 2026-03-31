@@ -1,5 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { asListingItems } from "../market/marketHome.data";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { supabase } from "../../lib/supabaseClient";
@@ -16,6 +14,13 @@ import { requestItemAddOrIncAndPatchMeta } from "../../screens/foreman/foreman.h
 import {
   resolveForemanQuickRequest,
 } from "../../screens/foreman/foreman.ai";
+import {
+  clearForemanAssistantSession,
+  loadForemanAssistantSession,
+  saveForemanAssistantSession,
+  type AssistantParsedItemSnapshot,
+  type ForemanAssistantSession,
+} from "./assistantStorage";
 import type { AssistantContext, AssistantRole } from "./assistant.types";
 
 type AssistantActorContext = {
@@ -29,7 +34,7 @@ type AssistantActionResult = {
   reply?: string;
 };
 
-type AssistantParsedItem = {
+type AssistantParsedItem = AssistantParsedItemSnapshot & {
   name: string;
   qty: number;
   unit: string;
@@ -70,17 +75,9 @@ const recordAssistantActionFallback = (
     },
   });
 
-type ForemanAssistantSession = {
-  draft_request_id: string | null;
-  draft_display_no: string | null;
-  pending_items: AssistantParsedItem[];
-};
-
 type ForemanItemsResolution =
   | { kind: "items"; items: AssistantParsedItem[] }
   | { kind: "clarify"; pending: AssistantParsedItem[] };
-
-const FOREMAN_SESSION_PREFIX = "gox.ai.foreman.session.v1";
 
 const CREATE_REQUEST_RE =
   /(сдела(й|ть)|созда(й|ть)|оформи|собери|добав(ь|ить)|нужн[аоы]?|надо|подготовь).{0,24}(заявк|черновик)|\b(заявк[ауеи]|черновик)\b/i;
@@ -226,48 +223,6 @@ async function loadAssistantActorContext(): Promise<AssistantActorContext | null
       || listingCompanyResult.data?.company_id
       || null,
   };
-}
-
-function buildForemanSessionKey(userId: string): string {
-  return `${FOREMAN_SESSION_PREFIX}:${userId}`;
-}
-
-async function loadForemanAssistantSession(userId: string): Promise<ForemanAssistantSession> {
-  const raw = await AsyncStorage.getItem(buildForemanSessionKey(userId));
-  if (!raw) {
-    return {
-      draft_request_id: null,
-      draft_display_no: null,
-      pending_items: [],
-    };
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as Partial<ForemanAssistantSession>;
-    return {
-      draft_request_id: parsed.draft_request_id ?? null,
-      draft_display_no: parsed.draft_display_no ?? null,
-      pending_items: Array.isArray(parsed.pending_items) ? parsed.pending_items : [],
-    };
-  } catch (error) {
-    recordAssistantActionFallback("load_foreman_session_parse_failed", error, {
-      action: "loadForemanAssistantSession",
-      storageKey: buildForemanSessionKey(userId),
-    });
-    return {
-      draft_request_id: null,
-      draft_display_no: null,
-      pending_items: [],
-    };
-  }
-}
-
-async function saveForemanAssistantSession(userId: string, session: ForemanAssistantSession): Promise<void> {
-  await AsyncStorage.setItem(buildForemanSessionKey(userId), JSON.stringify(session));
-}
-
-async function clearForemanAssistantSession(userId: string): Promise<void> {
-  await AsyncStorage.removeItem(buildForemanSessionKey(userId));
 }
 
 async function searchMarketListings(query: string, limit = 6): Promise<MarketSearchResult[]> {

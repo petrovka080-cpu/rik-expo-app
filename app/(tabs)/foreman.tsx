@@ -49,7 +49,6 @@ import {
   buildScopeNote,
   resolveStatusInfo as resolveStatusHelper,
 } from "../../src/screens/foreman/foreman.helpers";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { buildPdfFileName } from "../../src/lib/documents/pdfDocument";
 import {
   getPdfFlowErrorMessage,
@@ -69,6 +68,10 @@ import { useForemanDraftUi } from "../../src/screens/foreman/hooks/useForemanDra
 import { useForemanHistoryUi } from "../../src/screens/foreman/hooks/useForemanHistoryUi";
 import { useForemanAiQuickFlow } from "../../src/screens/foreman/hooks/useForemanAiQuickFlow";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
+import {
+  loadStoredFioState,
+  saveStoredFioState,
+} from "../../src/lib/storage/fioPersistence";
 
 type WebUiApi = {
   onZoneChange: (v: string) => void;
@@ -626,11 +629,23 @@ function ForemanScreen() {
       if (!active || fioBootstrapScopeKey === scopeKey) return;
       const sixAM = new Date();
       sixAM.setHours(6, 0, 0, 0);
-      const saved = await AsyncStorage.getItem("foreman_fio");
-      const lastConfirmStr = await AsyncStorage.getItem("foreman_confirm_ts");
-      const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
+      const {
+        currentFio,
+        history,
+        lastConfirmIso,
+      } = await loadStoredFioState({
+        screen: "foreman",
+        surface: "foreman_fio_confirm",
+        keys: {
+          currentKey: "foreman_fio",
+          confirmKey: "foreman_confirm_ts",
+          historyKey: "foreman_name_history_v1",
+        },
+      });
+      const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
       if (!active) return;
-      if (saved) setForeman(saved);
+      if (currentFio) setForeman(currentFio);
+      setForemanHistory(history);
       if (!lastConfirm || Number.isNaN(lastConfirm.getTime()) || lastConfirm < sixAM) {
         setIsFioConfirmVisible(true);
       }
@@ -643,13 +658,18 @@ function ForemanScreen() {
     setIsFioLoading(true);
     try {
       setForeman(fio);
-      const now = new Date().toISOString();
-      await Promise.all([
-        AsyncStorage.setItem("foreman_fio", fio),
-        AsyncStorage.setItem("foreman_confirm_ts", now),
-        saveForemanToHistory(fio)
-      ]);
-      setForemanHistory(await loadForemanHistory());
+      const nextHistory = await saveStoredFioState({
+        screen: "foreman",
+        surface: "foreman_fio_confirm",
+        keys: {
+          currentKey: "foreman_fio",
+          confirmKey: "foreman_confirm_ts",
+          historyKey: "foreman_name_history_v1",
+        },
+        fio,
+        history: await loadForemanHistory(),
+      });
+      setForemanHistory(nextHistory);
       const authUserResult = await supabase.auth.getUser();
       setFioBootstrapScopeKey(buildFioBootstrapScopeKey(authUserResult.data.user?.id));
       setIsFioConfirmVisible(false);

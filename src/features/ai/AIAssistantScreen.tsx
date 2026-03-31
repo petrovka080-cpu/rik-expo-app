@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -26,12 +25,15 @@ import {
   normalizeAssistantContext,
   normalizeAssistantRole,
 } from "./assistantPrompts";
+import {
+  clearAssistantMessages,
+  loadAssistantMessages,
+  saveAssistantMessages,
+} from "./assistantStorage";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
-
-const STORAGE_PREFIX = "gox.ai.chat.v1";
 
 const recordAssistantScreenFallback = (
   event: string,
@@ -64,10 +66,6 @@ function createMessage(role: AssistantMessage["role"], content: string): Assista
     content,
     createdAt: new Date().toISOString(),
   };
-}
-
-function buildStorageKey(userId: string | null): string {
-  return `${STORAGE_PREFIX}:${userId || "anonymous"}`;
 }
 
 function getRoleLabel(role: AssistantRole): string {
@@ -153,15 +151,11 @@ export default function AIAssistantScreen() {
       const nextFullName = identity.fullName;
       setFullName(nextFullName);
 
-      const storageKey = buildStorageKey(nextUserId);
-      const stored = await AsyncStorage.getItem(storageKey);
-      if (stored) {
-        const parsed = JSON.parse(stored) as AssistantMessage[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMessages(parsed);
-          setBooting(false);
-          return;
-        }
+      const stored = await loadAssistantMessages(nextUserId);
+      if (stored.length > 0) {
+        setMessages(stored);
+        setBooting(false);
+        return;
       }
 
       setMessages([createMessage("assistant", getAssistantGreeting(nextRole, nextFullName, assistantContext))]);
@@ -184,7 +178,7 @@ export default function AIAssistantScreen() {
 
   useEffect(() => {
     if (!userId || messages.length === 0) return;
-    void AsyncStorage.setItem(buildStorageKey(userId), JSON.stringify(messages.slice(-30)));
+    void saveAssistantMessages(userId, messages);
   }, [messages, userId]);
 
   useEffect(() => {
@@ -272,7 +266,7 @@ export default function AIAssistantScreen() {
   const clearChat = useCallback(async () => {
     const greeting = createMessage("assistant", getAssistantGreeting(role, fullName, assistantContext));
     setMessages([greeting]);
-    await AsyncStorage.removeItem(buildStorageKey(userId));
+    await clearAssistantMessages(userId);
   }, [assistantContext, fullName, role, userId]);
 
   useEffect(() => {

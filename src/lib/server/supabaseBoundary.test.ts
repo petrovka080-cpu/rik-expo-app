@@ -10,6 +10,8 @@ describe("supabase service role boundary", () => {
 
     expect(clientSource).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
     expect(clientSource).toContain('SUPABASE_KEY_KIND = "anon"');
+    expect(clientSource).not.toContain('eval("require")');
+    expect(clientSource).toContain('import "react-native-url-polyfill/auto";');
   });
 
   it("keeps service role inside the server-only env module", () => {

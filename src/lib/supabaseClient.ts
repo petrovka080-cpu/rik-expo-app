@@ -1,3 +1,6 @@
+import "react-native-url-polyfill/auto";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "./database.types";
@@ -8,6 +11,7 @@ import {
   SUPABASE_URL,
   isClientSupabaseEnvValid,
 } from "./env/clientSupabaseEnv";
+import { recordPlatformObservability } from "./observability/platformObservability";
 import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
 
 type RuntimeProcessLike = {
@@ -17,7 +21,6 @@ type RuntimeProcessLike = {
   };
 };
 
-type RuntimeRequire = (moduleName: string) => unknown;
 type SupabaseAuthStorage = {
   getItem(key: string): string | null | Promise<string | null>;
   setItem(key: string, value: string): void | Promise<void>;
@@ -34,27 +37,6 @@ const isWeb = typeof window !== "undefined" && typeof document !== "undefined";
 const isNodeRuntime =
   Boolean(runtimeProcess?.versions?.node) &&
   typeof window === "undefined";
-
-if (!isNodeRuntime) {
-  try {
-    const req = (0, eval)("require") as (moduleName: string) => unknown;
-    req("react-native-url-polyfill/auto");
-  } catch {
-    // Mobile/web runtime without the polyfill stays best-effort.
-  }
-}
-
-function tryLoadAsyncStorage(): SupabaseAuthStorage | undefined {
-  try {
-    const req = (0, eval)("require") as RuntimeRequire;
-    const mod = req("@react-native-async-storage/async-storage") as {
-      default?: SupabaseAuthStorage;
-    };
-    return mod.default;
-  } catch {
-    return undefined;
-  }
-}
 
 const DEBUG_SUPABASE_REST = false;
 
@@ -200,8 +182,29 @@ const authStorage = isWeb
   ? window.localStorage
   : isNodeRuntime
     ? undefined
-    : tryLoadAsyncStorage();
+    : (AsyncStorage as SupabaseAuthStorage);
 const supabaseClientFetch: typeof fetch = isWeb && supabaseFetch ? supabaseFetch : nativeFetch;
+
+const recordSupabaseAuthBootstrapFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) =>
+  recordPlatformObservability({
+    screen: "request",
+    surface: "supabase_auth_bootstrap",
+    category: "fetch",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error instanceof Error ? error.message : String(error ?? "supabase_auth_bootstrap_failed"),
+    sourceKind: "supabase_auth:getSession",
+    extra: {
+      owner: "supabase_client",
+      ...extra,
+    },
+  });
 
 export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -226,18 +229,31 @@ export async function ensureSignedIn(): Promise<boolean> {
     const session = await supabase.auth.getSession();
     if (session?.data?.session?.user) return true;
   } catch (error: unknown) {
-    if (process.env.NODE_ENV !== "production") {
-      const message = error instanceof Error ? error.message : String(error ?? "");
-      console.warn("[ensureSignedIn] session check failed:", message || error);
-    }
+    recordSupabaseAuthBootstrapFallback("ensure_signed_in_session_check_failed", error, {
+      route: "/auth/login",
+    });
   }
 
   if (!isNodeRuntime) {
     try {
       const mod = await import("expo-router");
       mod.router.replace("/auth/login");
-    } catch {
-      // Non-router runtimes stay best-effort.
+    } catch (error) {
+      recordPlatformObservability({
+        screen: "request",
+        surface: "supabase_auth_bootstrap",
+        category: "ui",
+        event: "ensure_signed_in_router_redirect_failed",
+        result: "error",
+        fallbackUsed: true,
+        errorClass: error instanceof Error ? error.name : undefined,
+        errorMessage: error instanceof Error ? error.message : String(error ?? "router_redirect_failed"),
+        sourceKind: "expo_router",
+        extra: {
+          owner: "supabase_client",
+          route: "/auth/login",
+        },
+      });
     }
   }
 
@@ -250,7 +266,8 @@ export async function currentUserId(): Promise<string | null> {
   try {
     const session = await supabase.auth.getSession();
     return session?.data?.session?.user?.id ?? null;
-  } catch {
+  } catch (error) {
+    recordSupabaseAuthBootstrapFallback("current_user_id_session_check_failed", error);
     return null;
   }
 }

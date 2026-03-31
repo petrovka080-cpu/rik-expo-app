@@ -1,6 +1,9 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
+import {
+  loadStoredFioState,
+  saveStoredFioState,
+} from "../../../lib/storage/fioPersistence";
 import { useWarehouseUiStore } from "../warehouseUi.store";
 
 type UseWarehousemanFioArgs = {
@@ -31,18 +34,27 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
     let active = true;
     (async () => {
       try {
-        const saved = await AsyncStorage.getItem("wh_warehouseman_fio");
-        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
-        const histRaw = await AsyncStorage.getItem(WAREHOUSEMAN_HISTORY_KEY);
-        const historyArr = histRaw ? JSON.parse(histRaw) : [];
+        const {
+          currentFio,
+          history,
+          lastConfirmIso,
+        } = await loadStoredFioState({
+          screen: "warehouse",
+          surface: "warehouseman_fio",
+          keys: {
+            currentKey: "wh_warehouseman_fio",
+            confirmKey: CONFIRM_TS_KEY,
+            historyKey: WAREHOUSEMAN_HISTORY_KEY,
+          },
+        });
 
         if (!active) return;
 
-        if (saved) setWarehousemanFio(saved);
-        if (Array.isArray(historyArr)) setWarehousemanHistory(historyArr);
+        if (currentFio) setWarehousemanFio(currentFio);
+        setWarehousemanHistory(history);
 
         const sixAM = getTodaySixAM();
-        const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
+        const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
         if (!lastConfirm || lastConfirm < sixAM) {
           setIsFioConfirmVisible(true);
         }
@@ -60,9 +72,17 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
   useFocusEffect(
     useCallback(() => {
       const checkFio = async () => {
-        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
+        const { lastConfirmIso } = await loadStoredFioState({
+          screen: "warehouse",
+          surface: "warehouseman_fio",
+          keys: {
+            currentKey: "wh_warehouseman_fio",
+            confirmKey: CONFIRM_TS_KEY,
+            historyKey: WAREHOUSEMAN_HISTORY_KEY,
+          },
+        });
         const sixAM = getTodaySixAM();
-        const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
+        const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
         if (!lastConfirm || lastConfirm < sixAM) {
           setIsFioConfirmVisible(true);
         }
@@ -76,16 +96,18 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
       setIsFioLoading(true);
       try {
         setWarehousemanFio(fio);
-        const now = new Date().toISOString();
-
-        const nextHist = [fio, ...warehousemanHistory.filter((x) => x !== fio)].slice(0, 12);
+        const nextHist = await saveStoredFioState({
+          screen: "warehouse",
+          surface: "warehouseman_fio",
+          keys: {
+            currentKey: "wh_warehouseman_fio",
+            confirmKey: CONFIRM_TS_KEY,
+            historyKey: WAREHOUSEMAN_HISTORY_KEY,
+          },
+          fio,
+          history: warehousemanHistory,
+        });
         setWarehousemanHistory(nextHist);
-
-        await Promise.all([
-          AsyncStorage.setItem("wh_warehouseman_fio", fio),
-          AsyncStorage.setItem(CONFIRM_TS_KEY, now),
-          AsyncStorage.setItem(WAREHOUSEMAN_HISTORY_KEY, JSON.stringify(nextHist)),
-        ]);
         setIsFioConfirmVisible(false);
       } catch (e) {
         onError?.(e);

@@ -1,7 +1,10 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import {
+  loadStoredFioState,
+  saveStoredFioState,
+} from "../../lib/storage/fioPersistence";
 
 const BUYER_FIO_KEY = "buyer_fio";
 const CONFIRM_TS_KEY = "buyer_confirm_ts";
@@ -31,17 +34,26 @@ export function useBuyerFioConfirm(params: {
     let active = true;
     (async () => {
       try {
-        const saved = await AsyncStorage.getItem(BUYER_FIO_KEY);
-        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
-        const histRaw = await AsyncStorage.getItem(BUYER_HISTORY_KEY);
-        const historyArr = histRaw ? JSON.parse(histRaw) : [];
+        const {
+          currentFio,
+          history,
+          lastConfirmIso,
+        } = await loadStoredFioState({
+          screen: "buyer",
+          surface: "buyer_fio_confirm",
+          keys: {
+            currentKey: BUYER_FIO_KEY,
+            confirmKey: CONFIRM_TS_KEY,
+            historyKey: BUYER_HISTORY_KEY,
+          },
+        });
 
         if (active) {
-          if (saved) setBuyerFio(saved);
-          if (Array.isArray(historyArr)) setBuyerHistory(historyArr);
+          if (currentFio) setBuyerFio(currentFio);
+          setBuyerHistory(history);
 
           const sixAM = getTodaySixAM();
-          const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
+          const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
           if (!lastConfirm || lastConfirm < sixAM) {
             setIsFioConfirmVisible(true);
           }
@@ -59,9 +71,17 @@ export function useBuyerFioConfirm(params: {
   useFocusEffect(
     useCallback(() => {
       const checkFio = async () => {
-        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
+        const { lastConfirmIso } = await loadStoredFioState({
+          screen: "buyer",
+          surface: "buyer_fio_confirm",
+          keys: {
+            currentKey: BUYER_FIO_KEY,
+            confirmKey: CONFIRM_TS_KEY,
+            historyKey: BUYER_HISTORY_KEY,
+          },
+        });
         const sixAM = getTodaySixAM();
-        const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
+        const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
         if (!lastConfirm || lastConfirm < sixAM) {
           setIsFioConfirmVisible(true);
         }
@@ -75,16 +95,18 @@ export function useBuyerFioConfirm(params: {
       setIsFioLoading(true);
       try {
         setBuyerFio(fio);
-        const now = new Date().toISOString();
-
-        const nextHist = [fio, ...buyerHistory.filter((x) => x !== fio)].slice(0, 12);
+        const nextHist = await saveStoredFioState({
+          screen: "buyer",
+          surface: "buyer_fio_confirm",
+          keys: {
+            currentKey: BUYER_FIO_KEY,
+            confirmKey: CONFIRM_TS_KEY,
+            historyKey: BUYER_HISTORY_KEY,
+          },
+          fio,
+          history: buyerHistory,
+        });
         setBuyerHistory(nextHist);
-
-        await Promise.all([
-          AsyncStorage.setItem(BUYER_FIO_KEY, fio),
-          AsyncStorage.setItem(CONFIRM_TS_KEY, now),
-          AsyncStorage.setItem(BUYER_HISTORY_KEY, JSON.stringify(nextHist)),
-        ]);
         setIsFioConfirmVisible(false);
       } catch (e) {
         warnBuyerFio("confirm", e);

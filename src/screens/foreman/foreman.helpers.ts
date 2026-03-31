@@ -2,10 +2,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../../lib/supabaseClient";
 import { addRequestItemFromRikDetailed } from "../../lib/api/requests";
+import { readStoredJson, writeStoredJson } from "../../lib/storage/classifiedStorage";
 import type { CalcRow, PickedRow } from "./foreman.types";
 
 export const FOREMAN_HISTORY_KEY = "foreman_name_history_v1";
 export const DISPLAY_NUMBER_RE = /^(REQ-\d{4}\/\d{4}|[A-ZА-Я]-\d{4,})$/i;
+const FOREMAN_HISTORY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const DRAFT_STATUS_KEYS = new Set(["draft", "черновик", ""]);
 export const isDraftLikeStatus = (value?: string | null) =>
@@ -195,19 +197,13 @@ export function buildScopeNote(
 }
 
 export async function loadForemanHistory(): Promise<string[]> {
-  try {
-    if (Platform.OS === "web") {
-      const raw = window.localStorage.getItem(FOREMAN_HISTORY_KEY) || "[]";
-      const arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr.filter(Boolean).map(String) : [];
-    }
-
-    const raw = await AsyncStorage.getItem(FOREMAN_HISTORY_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr.filter(Boolean).map(String) : [];
-  } catch {
-    return [];
-  }
+  const stored = await readStoredJson<string[]>({
+    screen: "foreman",
+    surface: "foreman_history",
+    key: FOREMAN_HISTORY_KEY,
+    ttlMs: FOREMAN_HISTORY_TTL_MS,
+  });
+  return Array.isArray(stored) ? stored.filter(Boolean).map(String) : [];
 }
 
 export async function saveForemanToHistory(name: string) {
@@ -217,11 +213,15 @@ export async function saveForemanToHistory(name: string) {
   const list = await loadForemanHistory();
   const next = [v, ...list.filter((x) => String(x).trim() && x !== v)].slice(0, 12);
 
-  if (Platform.OS === "web") {
-    window.localStorage.setItem(FOREMAN_HISTORY_KEY, JSON.stringify(next));
-  } else {
-    await AsyncStorage.setItem(FOREMAN_HISTORY_KEY, JSON.stringify(next));
-  }
+  await writeStoredJson(
+    {
+      screen: "foreman",
+      surface: "foreman_history",
+      key: FOREMAN_HISTORY_KEY,
+      ttlMs: FOREMAN_HISTORY_TTL_MS,
+    },
+    next,
+  );
 }
 
 export type ErrorLike = {
