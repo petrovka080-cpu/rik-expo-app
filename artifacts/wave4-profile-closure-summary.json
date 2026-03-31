@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-03-31T12:58:04.806Z",
+  "staticProof": {
+    "tscCommand": "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+    "jestCommand": "node node_modules/jest/bin/jest.js src/screens/profile/profile.services.test.ts src/screens/profile/hooks/useProfileDerivedState.test.tsx src/screens/profile/components/ProfilePrimitives.test.tsx --runInBand --json --outputFile artifacts/wave4-profile-jest.json",
+    "tscGreen": true,
+    "jestGreen": true,
+    "jestArtifact": "artifacts/wave4-profile-jest.json"
+  },
+  "web": {
+    "status": "GREEN",
+    "command": "node node_modules/tsx/dist/cli.mjs scripts/profile_stabilization_verify.ts",
+    "artifacts": {
+      "runtimeJson": "artifacts/wave4-profile-runtime.json",
+      "runtimeMd": "artifacts/wave4-profile-runtime.md"
+    }
+  },
+  "android": {
+    "status": "GREEN",
+    "command": "node node_modules/tsx/dist/cli.mjs scripts/profile_stabilization_verify.ts",
+    "artifacts": {
+      "xmlPath": "artifacts/artifacts/wave4-profile-android-final.xml",
+      "pngPath": "artifacts/artifacts/wave4-profile-android-final.png",
+      "stdoutPath": "artifacts/wave4-profile-android.stdout.log",
+      "stderrPath": "artifacts/wave4-profile-android.stderr.log",
+      "stdoutTail": "sport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 412, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 418, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 427, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 435, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 417, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 439, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 409, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 438, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 431, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 431, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 421, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 396, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 407, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 423, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 425, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 432, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n",
+      "stderrTail": ""
+    },
+    "blocker": null
+  },
+  "ios": {
+    "status": "HOST_BLOCKED",
+    "blocker": "xcrun runtime/simulator unavailable on current Windows host"
+  },
+  "finalStatus": "PARTIAL: WEB_ANDROID_GREEN_IOS_HOST_BLOCKED"
+}

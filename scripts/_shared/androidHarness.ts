@@ -493,7 +493,9 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
           nodes,
           (node) => node.clickable && node.enabled && /close app|close/i.test(`${node.text} ${node.contentDesc}`),
         );
-        if (launcherAnr && closeNode) {
+        if (launcherAnr && attempt < 2 && waitNode) {
+          tapAndroidBounds(waitNode.bounds);
+        } else if (launcherAnr && closeNode) {
           tapAndroidBounds(closeNode.bounds);
         } else if (attempt < 2 && waitNode) {
           tapAndroidBounds(waitNode.bounds);
@@ -593,7 +595,6 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         "--dev-client",
         "--host",
         "localhost",
-        "--non-interactive",
         "--port",
         String(options.devClientPort),
         "--clear",
@@ -603,6 +604,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         env: {
           ...process.env,
           BROWSER: "none",
+          CI: "1",
           EXPO_NO_TELEMETRY: "1",
         },
         stdio: ["ignore", "pipe", "pipe"],
