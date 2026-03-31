@@ -65,17 +65,17 @@
       "artifacts/pdf-open-regression-jest.json"
     ]
   },
-  "commitSha": null,
-  "pushTarget": null,
+  "commitSha": "a1e24bf",
+  "pushTarget": "origin/main",
   "ota": {
     "published": false,
     "development": null,
     "preview": null,
     "production": null,
-    "note": "Release mapping will be populated only after the subphase proves GREEN."
+    "note": "OTA intentionally not published: this batch changes release discipline docs, verifiers, and proof artifacts without shipping a new app runtime payload."
   },
   "rollbackNote": "Revert the narrow Wave 2 docs/scripts/ledger batch and regenerate discipline proofs.",
-  "honestStatus": "NOT GREEN",
+  "honestStatus": "GREEN",
   "knownExclusions": [
     {
       "path": "artifacts/accountant-payment-form-parity.json",
