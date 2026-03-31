@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-31T02:53:16.827Z",
+  "generatedAt": "2026-03-31T02:53:37.097Z",
   "batchName": "wave2-operational-hardening-subphase1",
   "ledgerPath": "artifacts/release-ledgers/wave2-operational-hardening-subphase1.json",
   "branch": "main",
@@ -10,7 +10,7 @@
   "missingRequiredProofs": [],
   "releaseMappingValid": true,
   "worktree": {
-    "dirtyCount": 38,
+    "dirtyCount": 35,
     "dirtyAssessments": [
       {
         "path": "artifacts/accountant-payment-form-parity.json",
@@ -121,12 +121,6 @@
         "accounting": "known-exclusion"
       },
       {
-        "path": "artifacts/release-ledgers/wave2-operational-hardening-subphase1.json",
-        "gitCode": " M",
-        "intrinsicKind": "release-critical",
-        "accounting": "current-batch"
-      },
-      {
         "path": "artifacts/warehouse-api-wave1-summary.json",
         "gitCode": " M",
         "intrinsicKind": "generated-allowed",
@@ -203,18 +197,6 @@
         "gitCode": "??",
         "intrinsicKind": "generated-allowed",
         "accounting": "known-exclusion"
-      },
-      {
-        "path": "artifacts/release-discipline-proof.md",
-        "gitCode": "??",
-        "intrinsicKind": "generated-allowed",
-        "accounting": "current-batch"
-      },
-      {
-        "path": "artifacts/release-discipline-summary.json",
-        "gitCode": "??",
-        "intrinsicKind": "generated-allowed",
-        "accounting": "current-batch"
       },
       {
         "path": "docs/architecture/accounting-finance-transition-map.md",

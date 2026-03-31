@@ -14,7 +14,7 @@
 - Unknown dirty paths: 0
 
 ## Worktree discipline
-- Dirty entries scanned: 38
+- Dirty entries scanned: 35
 - Known exclusions declared: 35
 
 ## Required proof artifacts
