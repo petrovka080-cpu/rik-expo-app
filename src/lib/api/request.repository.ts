@@ -5,6 +5,10 @@ import {
   requestSubmitMutation,
   type RequestSubmitMutationResult,
 } from "./requests";
+import {
+  DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
+  DIRECTOR_HANDOFF_BROADCAST_EVENT,
+} from "../realtime/realtime.channels";
 import type { RequestRecord } from "./types";
 import { supabase } from "../supabaseClient";
 
@@ -41,9 +45,6 @@ const logRequestRepository = (payload: Record<string, unknown>) => {
   console.info("[request.repository]", payload);
 };
 
-const DIRECTOR_HANDOFF_BROADCAST_CHANNEL = "director-handoff-rt";
-const DIRECTOR_HANDOFF_BROADCAST_EVENT = "foreman_request_submitted";
-
 const ensureRealtimeAuth = async () => {
   const session = await supabase.auth.getSession();
   const accessToken = session.data.session?.access_token ?? null;
@@ -62,7 +63,7 @@ const broadcastDirectorRequestSubmitted = async (
   try {
     await ensureRealtimeAuth();
     const displayNo = trim(record?.display_no) || requestId;
-    const channel = supabase.channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL, {
+    const channel = supabase.channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
       config: {
         broadcast: {
           ack: false,
@@ -84,7 +85,7 @@ const broadcastDirectorRequestSubmitted = async (
       sourcePath: command.sourcePath,
       requestId,
       submit: true,
-      broadcastChannel: DIRECTOR_HANDOFF_BROADCAST_CHANNEL,
+      broadcastChannel: DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
       broadcastEvent: DIRECTOR_HANDOFF_BROADCAST_EVENT,
       broadcastResult: result,
     });
@@ -95,7 +96,7 @@ const broadcastDirectorRequestSubmitted = async (
       sourcePath: command.sourcePath,
       requestId,
       submit: true,
-      broadcastChannel: DIRECTOR_HANDOFF_BROADCAST_CHANNEL,
+      broadcastChannel: DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
       broadcastEvent: DIRECTOR_HANDOFF_BROADCAST_EVENT,
       broadcastError: error instanceof Error ? error.message : String(error),
     });

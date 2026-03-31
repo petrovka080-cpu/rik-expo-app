@@ -1,5 +1,9 @@
 import type { Database } from "../database.types";
 import type { ReqItemRow as CatalogReqItemRow } from "../catalog_api";
+import {
+  DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
+  DIRECTOR_HANDOFF_BROADCAST_EVENT,
+} from "../realtime/realtime.channels";
 import { supabase } from "../supabaseClient";
 import { mapRequestRow } from "./requests.parsers";
 import type { RequestMeta, RequestRecord } from "./types";
@@ -9,8 +13,6 @@ type RequestDraftSyncReturns = Database["public"]["Functions"]["request_sync_dra
 
 const REQUEST_DRAFT_SYNC_RPC_V2_ENABLED =
   String(process.env.EXPO_PUBLIC_REQUEST_DRAFT_SYNC_RPC_V2 ?? "1").trim() !== "0";
-const DIRECTOR_HANDOFF_BROADCAST_CHANNEL = "director-handoff-rt";
-const DIRECTOR_HANDOFF_BROADCAST_EVENT = "foreman_request_submitted";
 
 
 export type RequestDraftSyncLineInput = {
@@ -70,7 +72,7 @@ const signalDirectorRequestSubmitted = async (params: {
   const displayNo = asTrimmedString(params.displayNo) || requestId;
   try {
     await ensureRealtimeAuth();
-    const channel = supabase.channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL, {
+    const channel = supabase.channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
       config: {
         broadcast: {
           ack: false,

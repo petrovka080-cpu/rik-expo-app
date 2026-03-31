@@ -10,6 +10,11 @@ import {
   recordPlatformGuardSkip,
 } from "../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
+import {
+  DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
+  DIRECTOR_HANDOFF_BROADCAST_EVENT,
+  DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
+} from "../../lib/realtime/realtime.channels";
 import { useDirectorUiStore } from "./directorUi.store";
 
 type RefreshState = {
@@ -46,8 +51,6 @@ const DIRECTOR_LIVE_ITEM_STATUSES = new Set([
   normalizeStatus(REQUEST_PENDING_EN),
 ]);
 
-const DIRECTOR_HANDOFF_BROADCAST_CHANNEL = "director-handoff-rt";
-const DIRECTOR_HANDOFF_BROADCAST_EVENT = "foreman_request_submitted";
 const DIRECTOR_TAB_REQUESTS = "\u0417\u0430\u044f\u0432\u043a\u0438";
 const DIRECTOR_TAB_FINANCE = "\u0424\u0438\u043d\u0430\u043d\u0441\u044b";
 const DIRECTOR_TAB_REPORTS = "\u041e\u0442\u0447\u0451\u0442\u044b";
@@ -484,7 +487,7 @@ export function useDirectorLifecycle({
       if (cancelled) return;
 
       channel = supabase
-        .channel(`notif-director-rt:${Date.now()}`)
+        .channel(DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME)
         .on(
           "postgres_changes",
           {
@@ -591,7 +594,7 @@ export function useDirectorLifecycle({
       rtChannelRef.current = channel;
 
       handoffChannel = supabase
-        .channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL, {
+        .channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
           config: {
             broadcast: {
               ack: false,
