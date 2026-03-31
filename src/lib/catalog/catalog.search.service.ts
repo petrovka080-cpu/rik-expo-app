@@ -156,19 +156,23 @@ export async function listIncomingItems(incomingId: string): Promise<IncomingIte
   return data;
 }
 
-export async function rikQuickSearch(q: string, limit = 60): Promise<RikQuickSearchItem[]> {
+export async function rikQuickSearch(
+  q: string,
+  limit = 60,
+  apps?: string[],
+): Promise<RikQuickSearchItem[]> {
   const text = norm(q);
-  if (text.length < 2) return [];
+  if (!text) return [];
 
   const pQuery = sanitizePostgrestOrTerm(text);
-  const pLimit = Math.min(limit, 100);
+  const pLimit = clamp(limit || 60, 1, 100);
 
   for (const fn of RIK_QUICK_SEARCH_RPCS) {
     try {
       const rpcArgs: CatalogSearchRpcArgs = {
         p_q: pQuery,
         p_limit: pLimit,
-        p_apps: null,
+        p_apps: apps ?? null,
       };
       const { data, error } = await runCatalogSearchRpcRaw(fn, rpcArgs);
       if (!error) {
@@ -188,6 +192,7 @@ export async function rikQuickSearch(q: string, limit = 60): Promise<RikQuickSea
           rpc: fn,
           limit: pLimit,
           queryLength: pQuery.length,
+          appsCount: Array.isArray(apps) ? apps.length : 0,
         },
       });
     }
@@ -206,6 +211,7 @@ export async function rikQuickSearch(q: string, limit = 60): Promise<RikQuickSea
         extra: {
           limit: pLimit,
           queryLength: pQuery.length,
+          appsCount: Array.isArray(apps) ? apps.length : 0,
         },
       });
     }

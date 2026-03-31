@@ -1,0 +1,40 @@
+{
+  "wave": "Wave 10: Catalog Search Compat Hardening",
+  "status": "GREEN",
+  "scope": {
+    "goal": "Route the active legacy rik quick-search shim through the canonical catalog service without changing the public compat signature.",
+    "changedFiles": [
+      "src/lib/api/rik.ts",
+      "src/lib/api/rik.test.ts",
+      "src/lib/catalog/catalog.search.service.ts",
+      "src/lib/catalog/catalog.search.service.test.ts"
+    ],
+    "notChanged": [
+      "business logic",
+      "request/proposal semantics",
+      "UI flows",
+      "RPC contracts",
+      "database schema",
+      "offline logic"
+    ]
+  },
+  "contract": {
+    "legacyApiRikEntryStillExists": true,
+    "legacyDefaultLimitPreserved": true,
+    "legacyAppsArgumentPreserved": true,
+    "activeShimSilentCatchRemoved": true,
+    "canonicalServiceOwnsFallbackObservability": true,
+    "oneCharCompatibilityPreserved": true
+  },
+  "proof": {
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+      "passed": true
+    },
+    "jest": {
+      "command": "node node_modules/jest/bin/jest.js src/lib/catalog/catalog.search.service.test.ts src/lib/api/rik.test.ts --runInBand --json --outputFile artifacts/wave10-catalog-search-jest.json",
+      "passed": true,
+      "artifact": "artifacts/wave10-catalog-search-jest.json"
+    }
+  }
+}
