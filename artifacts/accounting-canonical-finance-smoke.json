@@ -1,0 +1,164 @@
+{
+  "initialFinanceState": {
+    "proposalId": "ab6b8d46-9b2f-479e-8aef-22649f845f0f",
+    "proposalStatus": "Утверждено",
+    "sentToAccountantAt": "2026-03-31T02:45:33.766+00:00",
+    "totals": {
+      "payableAmount": 100,
+      "totalPaid": 0,
+      "outstandingAmount": 100,
+      "paymentsCount": 0,
+      "paymentStatus": "К оплате"
+    },
+    "eligibility": {
+      "approved": true,
+      "sentToAccountant": true,
+      "paymentEligible": true,
+      "failureCode": null
+    },
+    "allocationSummary": {
+      "paidKnownSum": 0,
+      "paidUnassigned": 0,
+      "allocationCount": 2
+    }
+  },
+  "approvalActionResult": {
+    "proposalId": "ab6b8d46-9b2f-479e-8aef-22649f845f0f",
+    "approved": true,
+    "sentToAccountant": true,
+    "paymentEligible": true
+  },
+  "revokeActionResult": {
+    "beforePayRejected": {
+      "proposalId": "166b19b4-d6a4-4a93-8c97-4c030f2b67c2",
+      "failureCode": "approval_revoked",
+      "paymentsCountAfterRejectedPay": 0
+    },
+    "afterCommittedPayBlocked": {
+      "message": "proposal_financial_state_locked",
+      "code": "P0001"
+    }
+  },
+  "paymentActionResult": {
+    "partialPayment": {
+      "ok": true,
+      "proposalId": "ab6b8d46-9b2f-479e-8aef-22649f845f0f",
+      "paymentId": 177,
+      "totalsBefore": {
+        "payableAmount": 100,
+        "totalPaid": 0,
+        "outstandingAmount": 100,
+        "paymentStatus": "К оплате"
+      },
+      "totalsAfter": {
+        "payableAmount": 100,
+        "totalPaid": 40,
+        "outstandingAmount": 60,
+        "paymentStatus": "Частично оплачено"
+      }
+    },
+    "fullPayment": {
+      "ok": true,
+      "proposalId": "f0d29c3f-356f-4ed7-b7f4-411dc46edc04",
+      "paymentId": 178,
+      "totalsBefore": {
+        "payableAmount": 70,
+        "totalPaid": 0,
+        "outstandingAmount": 70,
+        "paymentStatus": "К оплате"
+      },
+      "totalsAfter": {
+        "payableAmount": 70,
+        "totalPaid": 70,
+        "outstandingAmount": 0,
+        "paymentStatus": "Оплачено"
+      }
+    }
+  },
+  "paidOutstandingBeforeAfter": {
+    "partial": {
+      "before": {
+        "payableAmount": 100,
+        "totalPaid": 0,
+        "outstandingAmount": 100,
+        "paymentsCount": 0,
+        "paymentStatus": "К оплате"
+      },
+      "after": {
+        "payableAmount": 100,
+        "totalPaid": 40,
+        "outstandingAmount": 60,
+        "paymentsCount": 1,
+        "paymentStatus": "Частично оплачено"
+      }
+    },
+    "full": {
+      "before": {
+        "payableAmount": 70,
+        "totalPaid": 0,
+        "outstandingAmount": 70,
+        "paymentsCount": 0,
+        "paymentStatus": "К оплате"
+      },
+      "after": {
+        "payableAmount": 70,
+        "totalPaid": 70,
+        "outstandingAmount": 0,
+        "paymentsCount": 1,
+        "paymentStatus": "Оплачено"
+      }
+    }
+  },
+  "duplicateStaleActionResult": {
+    "successCount": 1,
+    "failureCount": 1,
+    "failureCodes": [
+      "stale_financial_state"
+    ],
+    "finalState": {
+      "payableAmount": 100,
+      "totalPaid": 30,
+      "outstandingAmount": 70,
+      "paymentsCount": 1,
+      "paymentStatus": "Частично оплачено"
+    }
+  },
+  "invalidTransitionResult": {
+    "proposalNotApproved": "proposal_not_approved",
+    "approvalRevoked": "approval_revoked"
+  },
+  "finalCanonicalState": {
+    "proposalId": "ab6b8d46-9b2f-479e-8aef-22649f845f0f",
+    "proposalStatus": "Утверждено",
+    "sentToAccountantAt": "2026-03-31T02:45:33.766+00:00",
+    "totals": {
+      "payableAmount": 100,
+      "totalPaid": 40,
+      "outstandingAmount": 60,
+      "paymentsCount": 1,
+      "paymentStatus": "Частично оплачено"
+    },
+    "eligibility": {
+      "approved": true,
+      "sentToAccountant": true,
+      "paymentEligible": true,
+      "failureCode": null
+    },
+    "allocationSummary": {
+      "paidKnownSum": 40,
+      "paidUnassigned": 0,
+      "allocationCount": 2
+    }
+  },
+  "sourceScan": {
+    "payActionsUsesCanonicalReadback": true,
+    "payActionsUsesAtomicPaymentRpc": true,
+    "payActionsNoClientOutstandingMath": true,
+    "paymentFormUsesCanonicalOutstanding": true,
+    "inboxServiceCarriesCanonicalFields": true,
+    "listAdapterUsesCanonicalOutstanding": true,
+    "screenDoesNotComputeOutstandingPrimary": true,
+    "noSilentCatchOnPayActions": true
+  },
+  "finalStatus": "GREEN"
+}

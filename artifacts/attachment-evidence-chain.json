@@ -1,0 +1,18 @@
+{
+  "id": "attachment-evidence-visibility",
+  "label": "Attachment / commercial evidence visibility",
+  "status": "GREEN",
+  "invariants": {
+    "attachmentEvidenceGreen": true,
+    "canonicalEntityLinked": true,
+    "accountantBasisVisible": true,
+    "invalidContextRejected": true,
+    "unboundBlobInvisible": true
+  },
+  "failedStep": null,
+  "failureClass": null,
+  "componentSources": [
+    "artifacts/attachment-evidence-boundary-smoke.json",
+    "artifacts/attachment-evidence-parity.json"
+  ]
+}

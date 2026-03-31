@@ -1,6 +1,6 @@
 {
   "status": "GREEN",
-  "generatedAt": "2026-03-30T18:28:12.759Z",
+  "generatedAt": "2026-03-31T02:45:29.574Z",
   "canonicalSourceUsed": "public.director_finance_panel_scope_v4",
   "requestSummary": {
     "objectId": null,
@@ -12,13 +12,13 @@
     "offset": 0
   },
   "responseSummary": {
-    "rows": 92,
-    "suppliers": 22,
-    "objects": 8,
+    "rows": 93,
+    "suppliers": 23,
+    "objects": 9,
     "pagination": {
       "limit": 500,
       "offset": 0,
-      "total": 92
+      "total": 93
     }
   },
   "clientAdapterCompatibility": {
@@ -42,7 +42,7 @@
       "financeSemantics": "invoice_level_obligations"
     },
     "canonicalSummaryApproved": 431658,
-    "canonicalObjectRows": 8
+    "canonicalObjectRows": 9
   },
   "fallbackUsageStatus": {
     "supportRowsLoaded": false,

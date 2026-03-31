@@ -1,0 +1,256 @@
+{
+  "batchName": "wave2-operational-hardening-subphase1",
+  "date": "2026-03-31",
+  "scope": [
+    "Wave 2 / Operational Hardening & Production Safety",
+    "Release Discipline + Cross-Role Regression Gate"
+  ],
+  "exactChangedFiles": [
+    "docs/architecture/wave2-release-discipline.md",
+    "docs/architecture/wave2-green-definition.md",
+    "docs/architecture/wave2-artifact-discipline.md",
+    "docs/architecture/wave2-cross-role-regression-spec.md",
+    "artifacts/release-ledgers/wave2-operational-hardening-subphase1.json",
+    "scripts/proposal_atomic_boundary_verify.ts",
+    "scripts/_shared/wave2ReleaseDiscipline.ts",
+    "scripts/_shared/wave2CrossRoleRegression.ts",
+    "scripts/wave2_release_discipline_verify.ts",
+    "scripts/wave2_cross_role_regression_verify.ts",
+    "scripts/wave2_release_discipline.test.ts",
+    "scripts/wave2_cross_role_regression.test.ts"
+  ],
+  "exactSqlMigrations": [],
+  "exactScriptsVerifiers": [
+    "scripts/wave2_release_discipline_verify.ts",
+    "scripts/wave2_cross_role_regression_verify.ts",
+    "scripts/request_lifecycle_boundary_verify.ts",
+    "scripts/proposal_atomic_boundary_verify.ts",
+    "scripts/director_canonical_fact_verify.ts",
+    "scripts/accounting_canonical_finance_verify.ts",
+    "scripts/attachment_evidence_boundary_verify.ts",
+    "scripts/pdf_open_crash_regression_verify.ts"
+  ],
+  "exactTestCommands": [
+    "npx jest --runInBand scripts/wave2_release_discipline.test.ts scripts/wave2_cross_role_regression.test.ts",
+    "npx tsc --noEmit --pretty false",
+    "npm test -- --runInBand",
+    "npx tsx scripts/wave2_cross_role_regression_verify.ts",
+    "npx tsx scripts/wave2_release_discipline_verify.ts artifacts/release-ledgers/wave2-operational-hardening-subphase1.json"
+  ],
+  "proofArtifacts": {
+    "required": [
+      "artifacts/release-discipline-summary.json",
+      "artifacts/release-discipline-proof.md",
+      "artifacts/cross-role-regression-summary.json",
+      "artifacts/cross-role-regression-proof.md"
+    ],
+    "optional": [
+      "artifacts/request-lifecycle-boundary-smoke.json",
+      "artifacts/proposal-atomic-boundary-smoke.json",
+      "artifacts/proposal-atomic-boundary-proof.md",
+      "artifacts/director-canonical-fact-smoke.json",
+      "artifacts/director-canonical-fact-parity.json",
+      "artifacts/accounting-canonical-finance-smoke.json",
+      "artifacts/accounting-canonical-finance-parity.json",
+      "artifacts/attachment-evidence-boundary-smoke.json",
+      "artifacts/attachment-evidence-parity.json",
+      "artifacts/pdf-open-runtime-proof.json",
+      "artifacts/pdf-viewer-boundary-proof.json",
+      "artifacts/request-lifecycle-chain.json",
+      "artifacts/proposal-director-accountant-chain.json",
+      "artifacts/attachment-evidence-chain.json",
+      "artifacts/pdf-runtime-chain.json"
+    ],
+    "transient": [
+      "artifacts/pdf-open-regression-jest.json"
+    ]
+  },
+  "commitSha": null,
+  "pushTarget": null,
+  "ota": {
+    "published": false,
+    "development": null,
+    "preview": null,
+    "production": null,
+    "note": "Release mapping will be populated only after the subphase proves GREEN."
+  },
+  "rollbackNote": "Revert the narrow Wave 2 docs/scripts/ledger batch and regenerate discipline proofs.",
+  "honestStatus": "NOT GREEN",
+  "knownExclusions": [
+    {
+      "path": "artifacts/accountant-payment-form-parity.json",
+      "reason": "pre-existing unrelated accounting leftovers outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/accountant-payment-form-race-proof.json",
+      "reason": "pre-existing unrelated accounting leftovers outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/accountant-payment-form-smoke.json",
+      "reason": "pre-existing unrelated accounting leftovers outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/android-buyer-summary-inbox-user.json",
+      "reason": "pre-existing unrelated runtime artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/android-director-finance-user.json",
+      "reason": "pre-existing unrelated runtime artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/buyer-mutation-jest.json",
+      "reason": "pre-existing unrelated buyer artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/buyer-summary-inbox-runtime.json",
+      "reason": "pre-existing unrelated buyer artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/buyer-summary-inbox-runtime.summary.json",
+      "reason": "pre-existing unrelated buyer artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/director-finance-runtime.json",
+      "reason": "pre-existing unrelated director artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/director-finance-runtime.summary.json",
+      "reason": "pre-existing unrelated director artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/director-finance-web-smoke.json",
+      "reason": "pre-existing unrelated director artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/director-reports-runtime.json",
+      "reason": "pre-existing unrelated director artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/director-reports-runtime.summary.json",
+      "reason": "pre-existing unrelated director artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/foreman-request-sync-runtime.json",
+      "reason": "pre-existing unrelated foreman artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/foreman-request-sync-runtime.summary.json",
+      "reason": "pre-existing unrelated foreman artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/pdf-family-hardening-summary.json",
+      "reason": "pre-existing unrelated pdf artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/pdf-family-jest.json",
+      "reason": "pre-existing unrelated pdf artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/pdf-runner-observability-proof.json",
+      "reason": "pre-existing unrelated pdf artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/warehouse-api-wave1-summary.json",
+      "reason": "pre-existing unrelated warehouse artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/warehouse-request-canonical-loader-trace.json",
+      "reason": "pre-existing unrelated warehouse artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/warehouse-request-source-parity.json",
+      "reason": "pre-existing unrelated warehouse artifact outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "src/lib/rik_api.ts",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "src/screens/accountant/accountant.inbox.service.ts",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "src/screens/accountant/accountant.paymentForm.helpers.test.ts",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "src/screens/accountant/accountant.paymentForm.helpers.ts",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "src/screens/accountant/accountant.windowing.service.test.ts",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "src/screens/accountant/presentation/accountantRowAdapters.ts",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "src/screens/accountant/useAccountantPaymentForm.ts",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "artifacts/accounting-canonical-finance-jest.json",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "artifacts/accounting-canonical-finance-proof.md",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "generated-allowed"
+    },
+    {
+      "path": "docs/architecture/accounting-finance-transition-map.md",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "scripts/accounting_canonical_finance_verify.ts",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "src/screens/accountant/presentation/accountantRowAdapters.test.ts",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    },
+    {
+      "path": "supabase/migrations/20260331110000_accounting_canonical_finance_chain_v1.sql",
+      "reason": "pre-existing unrelated accounting batch leftover outside Wave 2 scope",
+      "classification": "release-critical"
+    }
+  ]
+}

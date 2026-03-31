@@ -4,8 +4,8 @@
   "canonicalSubmitBoundary": "request_sync_draft_v2 -> request_submit_atomic_v1",
   "canonicalReopenBoundary": "request_reopen_atomic_v1",
   "draftCreateSummary": {
-    "requestId": "27eb791c-207f-48b8-b215-6d8bd24a8247",
-    "requestItemId": "81dd43c4-d185-4e37-9b8a-c0b387f413c7",
+    "requestId": "aa8e46e9-9335-47aa-8692-f0a27ccbafbc",
+    "requestItemId": "22606314-c3e5-441f-a541-430eab45c3f6",
     "requestCreated": true,
     "submitted": false,
     "lineCount": 1,
@@ -63,7 +63,7 @@
     "submittedAt": null,
     "itemStatuses": [
       {
-        "id": "81dd43c4-d185-4e37-9b8a-c0b387f413c7",
+        "id": "22606314-c3e5-441f-a541-430eab45c3f6",
         "status": "Черновик",
         "qty": 2
       }

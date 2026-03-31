@@ -10,7 +10,7 @@
     "exactReason": "The crash reproduced during Android external PDF handoff with a NullPointerException in ReactActivityDelegate.onUserLeaveHint. The common remote PDF boundary still delegated to Linking.openURL, while local PDFs already used an explicit android.intent.action.VIEW intent. The hotfix unifies Android external PDF open on the explicit VIEW intent boundary for both remote and local PDF sources.",
     "diffPreview": [
       "diff --git a/app/pdf-viewer.tsx b/app/pdf-viewer.tsx",
-      "index c0e0865..bd7e828 100644",
+      "index c0e0865..75eea52 100644",
       "--- a/app/pdf-viewer.tsx",
       "+++ b/app/pdf-viewer.tsx",
       "@@ -1,72 +1,86 @@",
@@ -118,7 +118,7 @@
       "     document.body.appendChild(link);",
       "     link.click();",
       "     document.body.removeChild(link);",
-      "@@ -90,180 +104,445 @@ async function printPdfAsset(asset: DocumentAsset) {",
+      "@@ -90,180 +104,426 @@ async function printPdfAsset(asset: DocumentAsset) {",
       "       frame.contentWindow?.focus();",
       "       frame.contentWindow?.print();",
       "       setTimeout(() => {",

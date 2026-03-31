@@ -27,8 +27,8 @@
 - Invalid payload proof checks that a rejected submit leaves `0` proposals for the seeded request.
 
 ## Idempotency proof
-- Replay used client mutation id: `proposal-atomic-mnde6mbc`.
-- First proposal id: `39228e13-8b65-44f7-bf7e-00077f2e6620`. Replay proposal id: `39228e13-8b65-44f7-bf7e-00077f2e6620`.
+- Replay used client mutation id: `proposal-atomic-mne0l4af`.
+- First proposal id: `0b558cf6-57bc-4dcf-8ee7-b2e38ceafbb2`. Replay proposal id: `0b558cf6-57bc-4dcf-8ee7-b2e38ceafbb2`.
 - Replay flag from RPC meta: `true`.
 
 ## Attachment compatibility

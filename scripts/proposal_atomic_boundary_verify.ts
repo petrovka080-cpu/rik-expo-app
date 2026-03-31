@@ -89,7 +89,7 @@ const extractBlock = (source: string, startMarker: string, endMarker: string) =>
   return source.slice(start, end);
 };
 
-async function resolveApprovedRequestStatus(admin: any) {
+async function resolveApprovedRequestState(admin: any) {
   const inbox = await admin.rpc("buyer_summary_inbox_scope_v1" as never, {
     p_offset: 0,
     p_limit: 1,
@@ -103,11 +103,27 @@ async function resolveApprovedRequestStatus(admin: any) {
   if (!first?.request_id) {
     throw new Error("buyer_summary_inbox_scope_v1 returned no request row to clone approved status");
   }
-  const statusResult = await admin.from("requests").select("status").eq("id", first.request_id).single();
+  const [statusResult, itemResult] = await Promise.all([
+    admin.from("requests").select("status").eq("id", first.request_id).single(),
+    admin
+      .from("request_items")
+      .select("status")
+      .eq("request_id", first.request_id)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .single(),
+  ]);
   if (statusResult.error) throw statusResult.error;
-  const status = text(statusResult.data?.status);
-  if (!status) throw new Error("approved request status probe returned empty status");
-  return status;
+  if (itemResult.error) throw itemResult.error;
+  const requestStatus = text(statusResult.data?.status);
+  const requestItemStatus = text(itemResult.data?.status);
+  if (!requestStatus || !requestItemStatus) {
+    throw new Error("approved request status probe returned empty request or item status");
+  }
+  return {
+    requestStatus,
+    requestItemStatus,
+  };
 }
 
 async function resolveSupplier(admin: any) {
@@ -154,6 +170,71 @@ async function loadProposal(admin: any, proposalId: string) {
     .single();
   if (result.error) throw result.error;
   return result.data as ProposalRow;
+}
+
+async function seedProposalReadyRequest(admin: any, params: {
+  marker: string;
+  qty: number;
+  requestStatus: string;
+  requestItemStatus: string;
+}) {
+  const createDraft = await admin.rpc("request_sync_draft_v2" as never, {
+    p_request_id: null,
+    p_submit: false,
+    p_foreman_name: `Wave1B Verify ${params.marker}`,
+    p_comment: `${params.marker}-draft`,
+    p_items: [
+      {
+        request_item_id: null,
+        rik_code: "WRK-MASONRY-BRICK",
+        qty: params.qty,
+        note: `${params.marker}-note`,
+        app_code: null,
+        kind: "material",
+        name_human: params.marker,
+        uom: "pcs",
+      },
+    ],
+    p_pending_delete_ids: [],
+  } as never);
+  if (createDraft.error) throw createDraft.error;
+
+  const draftPayload = (createDraft.data ?? {}) as Record<string, unknown>;
+  const draftRequest = ((draftPayload.request_payload ?? {}) as Record<string, unknown>);
+  const draftItems = Array.isArray(draftPayload.items_payload)
+    ? (draftPayload.items_payload as Array<Record<string, unknown>>)
+    : [];
+
+  const requestId = text(draftRequest.id);
+  const requestItemId = text(draftItems[0]?.id);
+  if (!requestId || !requestItemId) {
+    throw new Error("request_sync_draft_v2 draft seed returned incomplete identity");
+  }
+
+  const itemUpdate = await admin
+    .from("request_items")
+    .update({
+      status: params.requestItemStatus,
+      note: params.marker,
+      supplier: null,
+    })
+    .eq("id", requestItemId);
+  if (itemUpdate.error) throw itemUpdate.error;
+
+  const requestUpdate = await admin
+    .from("requests")
+    .update({
+      status: params.requestStatus,
+      note: params.marker,
+      object_name: params.marker,
+    })
+    .eq("id", requestId);
+  if (requestUpdate.error) throw requestUpdate.error;
+
+  return {
+    requestId,
+    requestItemId,
+  };
 }
 
 async function callProposalAtomicRpc(client: any, params: {
@@ -255,42 +336,19 @@ async function main() {
       throw directorSignIn.error ?? new Error("director sign-in returned no session");
     }
 
-    const approvedStatus = await resolveApprovedRequestStatus(admin);
+    const approvedState = await resolveApprovedRequestState(admin);
     const supplier = await resolveSupplier(admin);
     const marker = `PROP-ATOMIC-${Date.now().toString(36).toUpperCase()}`;
 
     stage = "seed_success_request";
-    const successRequest = await admin
-      .from("requests")
-      .insert({
-        status: approvedStatus,
-        display_no: `REQ-${marker}/SUCCESS`,
-        object_name: marker,
-        note: marker,
-        created_by: buyerUser.id,
-        requested_by: buyerUser.displayLabel,
-      })
-      .select("id")
-      .single();
-    if (successRequest.error) throw successRequest.error;
-    successRequestId = text(successRequest.data.id);
-    const successItem = await admin
-      .from("request_items")
-      .insert({
-        request_id: successRequestId,
-        name_human: marker,
-        qty: 1,
-        uom: "pcs",
-        rik_code: marker,
-        status: "approved",
-        kind: "material",
-        supplier: supplier.name,
-        note: marker,
-      })
-      .select("id")
-      .single();
-    if (successItem.error) throw successItem.error;
-    successRequestItemId = text(successItem.data.id);
+    const successRequestSeed = await seedProposalReadyRequest(admin, {
+      marker: `${marker}-SUCCESS`,
+      qty: 1,
+      requestStatus: approvedState.requestStatus,
+      requestItemStatus: approvedState.requestItemStatus,
+    });
+    successRequestId = successRequestSeed.requestId;
+    successRequestItemId = successRequestSeed.requestItemId;
 
     mutationId = `proposal-atomic-${Date.now().toString(36)}`;
 
@@ -347,37 +405,14 @@ async function main() {
     replayProposalId = text(replayProposal?.proposal_id);
 
     stage = "seed_invalid_request";
-    const invalidRequest = await admin
-      .from("requests")
-      .insert({
-        status: approvedStatus,
-        display_no: `REQ-${marker}/INVALID`,
-        object_name: `${marker}-INVALID`,
-        note: `${marker}-INVALID`,
-        created_by: buyerUser.id,
-        requested_by: buyerUser.displayLabel,
-      })
-      .select("id")
-      .single();
-    if (invalidRequest.error) throw invalidRequest.error;
-    invalidRequestId = text(invalidRequest.data.id);
-    const invalidItem = await admin
-      .from("request_items")
-      .insert({
-        request_id: invalidRequestId,
-        name_human: `${marker}-INVALID`,
-        qty: 1,
-        uom: "pcs",
-        rik_code: `${marker}-INVALID`,
-        status: "approved",
-        kind: "material",
-        supplier: supplier.name,
-        note: `${marker}-INVALID`,
-      })
-      .select("id")
-      .single();
-    if (invalidItem.error) throw invalidItem.error;
-    invalidRequestItemId = text(invalidItem.data.id);
+    const invalidRequestSeed = await seedProposalReadyRequest(admin, {
+      marker: `${marker}-INVALID`,
+      qty: 1,
+      requestStatus: approvedState.requestStatus,
+      requestItemStatus: approvedState.requestItemStatus,
+    });
+    invalidRequestId = invalidRequestSeed.requestId;
+    invalidRequestItemId = invalidRequestSeed.requestItemId;
 
     stage = "submit_invalid";
     try {

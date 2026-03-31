@@ -23,7 +23,7 @@
   "runtimeCases": [
     {
       "family": "director_pdf",
-      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Ddirector_pdf_pdf_open_verify_mndb4jfp&fileName=director-runtime-proof.pdf&documentType=director_report&originModule=director&source=generated",
+      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Ddirector_pdf_pdf_open_verify_mne0mnir&fileName=director-runtime-proof.pdf&documentType=director_report&originModule=director&source=generated",
       "sourceKind": "remote-url",
       "routeMounted": true,
       "handoffStarted": true,
@@ -70,7 +70,7 @@
     },
     {
       "family": "accountant_payment_pdf",
-      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Daccountant_payment_pdf_pdf_open_verify_mndb4jfp&fileName=accountant-payment-runtime-proof.pdf&documentType=payment_order&originModule=accountant&source=generated",
+      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Daccountant_payment_pdf_pdf_open_verify_mne0mnir&fileName=accountant-payment-runtime-proof.pdf&documentType=payment_order&originModule=accountant&source=generated",
       "sourceKind": "remote-url",
       "routeMounted": true,
       "handoffStarted": true,
@@ -117,7 +117,7 @@
     },
     {
       "family": "warehouse_pdf",
-      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Dwarehouse_pdf_pdf_open_verify_mndb4jfp&fileName=warehouse-runtime-proof.pdf&documentType=warehouse_document&originModule=warehouse&source=generated",
+      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Dwarehouse_pdf_pdf_open_verify_mne0mnir&fileName=warehouse-runtime-proof.pdf&documentType=warehouse_document&originModule=warehouse&source=generated",
       "sourceKind": "remote-url",
       "routeMounted": true,
       "handoffStarted": true,
@@ -164,7 +164,7 @@
     },
     {
       "family": "attachment_pdf_viewer_contract",
-      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Dattachment_pdf_viewer_contract_pdf_open_verify_mndb4jfp&fileName=attachment-runtime-proof.pdf&documentType=attachment_pdf&originModule=reports&source=attachment",
+      "route": "rik://pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf%3Ffamily%3Dattachment_pdf_viewer_contract_pdf_open_verify_mne0mnir&fileName=attachment-runtime-proof.pdf&documentType=attachment_pdf&originModule=reports&source=attachment",
       "sourceKind": "remote-url",
       "routeMounted": true,
       "handoffStarted": true,
@@ -211,7 +211,7 @@
     },
     {
       "family": "invalid_source_contract",
-      "route": "rik://pdf-viewer?uri=blob%3Ahttps%3A%2F%2Fexample.com%2Fruntime-proof.pdf%3Ffamily%3Dinvalid_source_contract_pdf_open_verify_mndb4jfp&fileName=invalid-runtime-proof.pdf&documentType=attachment_pdf&originModule=reports&source=generated",
+      "route": "rik://pdf-viewer?uri=blob%3Ahttps%3A%2F%2Fexample.com%2Fruntime-proof.pdf%3Ffamily%3Dinvalid_source_contract_pdf_open_verify_mne0mnir&fileName=invalid-runtime-proof.pdf&documentType=attachment_pdf&originModule=reports&source=generated",
       "sourceKind": "invalid",
       "routeMounted": true,
       "handoffStarted": true,
