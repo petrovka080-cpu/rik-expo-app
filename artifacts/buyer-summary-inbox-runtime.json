@@ -1,153 +1,32 @@
 {
   "web": {
-    "status": "passed",
-    "fioConfirmed": true,
-    "expectedGroupLabel": "REQ-0077/2026",
-    "inboxVisible": true,
-    "sheetOpened": true,
-    "firstItemVisible": true,
-    "consoleErrorsEmpty": true,
-    "pageErrorsEmpty": true,
-    "badResponsesEmpty": true,
-    "screenshot": "artifacts/buyer-summary-inbox-web-smoke.png",
-    "platformSpecificIssues": [],
-    "runtime": {
-      "console": [
-        {
-          "type": "info",
-          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
-        },
-        {
-          "type": "log",
-          "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
-        },
-        {
-          "type": "warning",
-          "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
-        },
-        {
-          "type": "info",
-          "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
-        },
-        {
-          "type": "info",
-          "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
-        },
-        {
-          "type": "info",
-          "text": "[queue.bootstrap] stop skipped: not running"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 831}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
-        },
-        {
-          "type": "info",
-          "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
-        },
-        {
-          "type": "info",
-          "text": "[queue.bootstrap] starting queue worker"
-        },
-        {
-          "type": "info",
-          "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
-        },
-        {
-          "type": "info",
-          "text": "[queue.worker] started {workerId: web:mnc54ged:w1xac2, batchSize: 10, concurrency: 4}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[buyer.suppliers] source=suppliers ok=true rows=11"
-        },
-        {
-          "type": "info",
-          "text": "[buyer.suppliers] source=contractors ok=true rows=0"
-        },
-        {
-          "type": "info",
-          "text": "[buyer.suppliers] source=subcontracts ok=true rows=0"
-        },
-        {
-          "type": "info",
-          "text": "[buyer.suppliers] source=proposal_items ok=true rows=0"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 601}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: summary_root, event: channel_created, result: success, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_started, result: success, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_connected, result: success, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1671}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
-        }
-      ],
-      "pageErrors": [],
-      "badResponses": [],
-      "screenshot": "artifacts/buyer-summary-inbox-web-smoke.png"
-    }
+    "status": "failed",
+    "inboxVisible": false,
+    "sheetOpened": false,
+    "platformSpecificIssues": [
+      "poll timeout: body:REQ-0077/2026|/REQ-[A-Z0-9_-]+\\/\\d{4}/i|/#\\d+/"
+    ],
+    "failureKind": "app"
   },
   "android": {
-    "status": "passed",
-    "androidPreflight": {
-      "deviceDetected": true,
-      "packageName": "com.azisbek_dzhantaev.rikexpoapp",
-      "reverseProxyReady": true,
-      "appCleared": false,
-      "gmsCleared": false,
-      "devClientReachable": true
-    },
+    "status": "failed",
+    "inboxVisible": false,
+    "sheetOpened": false,
     "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
-    "anrRecoveryUsed": false,
+    "anrRecoveryUsed": true,
     "blankSurfaceRecovered": false,
     "devClientBootstrapRecovered": false,
-    "fioConfirmed": true,
-    "inboxTabOpened": true,
-    "expectedGroupLabel": "REQ-0077/2026",
-    "inboxVisible": true,
-    "sheetOpened": true,
-    "proofMode": "ui_interaction",
-    "androidObservabilityBacked": true,
-    "androidLoadInboxObserved": true,
-    "androidContentReadyObserved": true,
-    "openedGroupLabel": "REQ-0077/2026, 1 поз., 1 позиций, ",
-    "currentXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-    "currentPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-    "inboxXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-    "inboxPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-    "sheetXml": "artifacts/android-buyer-summary-inbox-sheet.xml",
-    "sheetPng": "artifacts/android-buyer-summary-inbox-sheet.png",
-    "logcatPath": "artifacts/android-buyer-summary-inbox-logcat.txt",
-    "platformSpecificIssues": []
+    "xmlPath": "artifacts/android-buyer-summary-inbox-failure.xml",
+    "pngPath": "artifacts/android-buyer-summary-inbox-failure.png",
+    "stdoutPath": "artifacts/expo-dev-client.stdout.log",
+    "stderrPath": "artifacts/expo-dev-client.stderr.log",
+    "stdoutTail": "",
+    "stderrTail": "",
+    "platformSpecificIssues": [
+      "Command failed: adb shell uiautomator dump"
+    ],
+    "failureKind": "environment"
   },
   "ios": {
     "status": "residual",
@@ -157,34 +36,42 @@
     ]
   },
   "summary": {
-    "status": "passed",
-    "webPassed": true,
-    "androidPassed": true,
+    "status": "failed",
+    "webPassed": false,
+    "androidPassed": false,
     "iosPassed": false,
-    "runtimeVerified": true,
+    "runtimeVerified": false,
     "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
-    "anrRecoveryUsed": false,
+    "anrRecoveryUsed": true,
     "blankSurfaceRecovered": false,
     "devClientBootstrapRecovered": false,
     "platformSpecificIssues": [
+      {
+        "platform": "web",
+        "issue": "poll timeout: body:REQ-0077/2026|/REQ-[A-Z0-9_-]+\\/\\d{4}/i|/#\\d+/"
+      },
+      {
+        "platform": "android",
+        "issue": "Command failed: adb shell uiautomator dump"
+      },
       {
         "platform": "ios",
         "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
       }
     ],
     "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-    "failureKind": "unknown",
+    "failureKind": "app",
     "scenariosPassed": {
       "web": {
-        "initialOpen": true,
-        "inboxSurface": true,
-        "sheetInteraction": true
+        "initialOpen": false,
+        "inboxSurface": false,
+        "sheetInteraction": false
       },
       "android": {
-        "initialOpen": true,
-        "inboxSurface": true,
-        "sheetInteraction": true
+        "initialOpen": false,
+        "inboxSurface": false,
+        "sheetInteraction": false
       },
       "ios": {
         "initialOpen": false,
@@ -195,13 +82,21 @@
     "artifacts": {
       "webSummary": "artifacts/buyer-summary-inbox-web-smoke.summary.json",
       "webRuntime": "artifacts/buyer-summary-inbox-web-smoke.json",
-      "androidCurrentXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-      "androidCurrentPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-      "androidInboxXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-      "androidInboxPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-      "androidSheetXml": "artifacts/android-buyer-summary-inbox-sheet.xml",
-      "androidSheetPng": "artifacts/android-buyer-summary-inbox-sheet.png",
-      "androidLogcat": "artifacts/android-buyer-summary-inbox-logcat.txt"
+      "androidCurrentXml": null,
+      "androidCurrentPng": null,
+      "androidInboxXml": null,
+      "androidInboxPng": null,
+      "androidSheetXml": null,
+      "androidSheetPng": null,
+      "androidLogcat": null,
+      "androidFailure": {
+        "xmlPath": "artifacts/android-buyer-summary-inbox-failure.xml",
+        "pngPath": "artifacts/android-buyer-summary-inbox-failure.png",
+        "stdoutPath": "artifacts/expo-dev-client.stdout.log",
+        "stderrPath": "artifacts/expo-dev-client.stderr.log",
+        "stdoutTail": "",
+        "stderrTail": ""
+      }
     },
     "gate": "buyer_summary_inbox_runtime_verify",
     "subscriptionStarted": null,
@@ -210,10 +105,10 @@
     "doubleFetchDetected": null,
     "inflightGuardWorked": null,
     "recentGuardWorked": null,
-    "backendOwnerPreserved": true,
-    "androidProofMode": "ui_interaction",
-    "androidObservabilityBacked": true,
-    "androidLoadInboxObserved": true,
-    "androidContentReadyObserved": true
+    "backendOwnerPreserved": false,
+    "androidProofMode": null,
+    "androidObservabilityBacked": false,
+    "androidLoadInboxObserved": false,
+    "androidContentReadyObserved": false
   }
 }

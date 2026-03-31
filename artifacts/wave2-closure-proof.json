@@ -1,0 +1,66 @@
+{
+  "wave": "Wave 2: Silent Failure Elimination",
+  "status": "GREEN",
+  "checkedAt": "2026-03-31T10:06:00.000Z",
+  "scope": {
+    "criticalSilentSwallowReverified": true,
+    "targetedJestRunnable": true,
+    "fullTypecheckRunnable": true
+  },
+  "criticalForemanPaths": [
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "event": "terminal_local_cleanup_failed"
+    },
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "event": "restore_draft_on_focus_failed"
+    },
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "event": "restore_draft_on_app_active_failed"
+    },
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "event": "network_service_bootstrap_failed"
+    },
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "event": "restore_draft_on_network_back_failed"
+    },
+    {
+      "file": "src/screens/foreman/foreman.draftBoundary.helpers.ts",
+      "event": "request_header_meta_sync_failed"
+    },
+    {
+      "file": "src/screens/foreman/foreman.draftBoundary.helpers.ts",
+      "event": "request_details_load_failed"
+    }
+  ],
+  "anonymousSwallowPatternsRemaining": [],
+  "proof": {
+    "commands": [
+      {
+        "command": "node node_modules/jest/bin/jest.js src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts src/screens/foreman/foreman.localDraft.lifecycle.test.ts src/lib/api/requestDraftSync.service.test.ts src/lib/api/proposals.silentCatch.test.ts --runInBand --json --outputFile artifacts/wave2-silent-failure-jest.json",
+        "ok": true,
+        "artifact": "artifacts/wave2-silent-failure-jest.json"
+      },
+      {
+        "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+        "ok": true
+      }
+    ],
+    "targetedJest": {
+      "suiteCount": 4,
+      "testCount": 10,
+      "allPassing": true
+    },
+    "typecheck": {
+      "fullRepoNoEmit": true
+    }
+  },
+  "notes": [
+    "Wave 2 closure is based on runnable targeted Jest plus green full typecheck on the restored verification gate.",
+    "No additional feature changes were needed for closure; the batch only re-proved the already applied silent-failure fixes."
+  ]
+}

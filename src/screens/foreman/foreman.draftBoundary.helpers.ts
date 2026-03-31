@@ -16,6 +16,7 @@ import type {
   ForemanDraftSyncStage,
   ForemanDraftSyncStatus,
 } from "../../lib/offline/foremanSyncRuntime";
+import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { ridStr, toErrorText } from "./foreman.helpers";
 import {
   appendRowsToForemanLocalDraft,
@@ -241,11 +242,24 @@ export async function syncForemanRequestHeaderMeta(params: {
   header: ForemanDraftHeaderState;
   context: string;
 }): Promise<void> {
-  await updateRequestMeta(params.requestId, buildForemanRequestDraftMeta(params.header)).catch((error) => {
-    if (__DEV__) {
-      console.warn(`[Foreman] updateMeta err in ${params.context}:`, error);
-    }
-  });
+  try {
+    await updateRequestMeta(params.requestId, buildForemanRequestDraftMeta(params.header));
+  } catch (error) {
+    recordCatchDiscipline({
+      screen: "foreman",
+      surface: "draft_boundary",
+      event: "request_header_meta_sync_failed",
+      kind: "degraded_fallback",
+      error,
+      sourceKind: "rpc:update_request_meta",
+      errorStage: params.context || "request_header_meta_sync",
+      extra: {
+        context: params.context,
+        requestId: params.requestId,
+        fallbackReason: "keep_existing_request_header_meta",
+      },
+    });
+  }
 }
 
 export async function loadForemanRequestDetails(params: {
@@ -281,8 +295,22 @@ export async function loadForemanRequestDetails(params: {
     params.syncHeaderFromDetails(details);
     return details;
   } catch (error) {
-    if (__DEV__) {
-      console.warn("[Foreman] loadDetails:", toErrorText(error, ""));
+    recordCatchDiscipline({
+      screen: "foreman",
+      surface: "request_details",
+      event: "request_details_load_failed",
+      kind: "degraded_fallback",
+      error,
+      sourceKind: "rpc:fetch_request_details",
+      errorStage: "fetch_request_details",
+      extra: {
+        activeRequestId: params.activeRequestId,
+        fallbackReason: "clear_request_details",
+        requestId: key,
+      },
+    });
+    if (params.shouldApply?.() ?? true) {
+      params.setRequestDetails(null);
     }
     return null;
   }

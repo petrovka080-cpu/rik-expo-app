@@ -15,12 +15,15 @@ type AccountantInboxScopeRow = {
   invoice_number?: string | null;
   invoice_date?: string | null;
   invoice_amount?: number | string | null;
+  outstanding_amount?: number | string | null;
   invoice_currency?: string | null;
   payment_status?: string | null;
   total_paid?: number | string | null;
   payments_count?: number | string | null;
   has_invoice?: boolean | null;
   sent_to_accountant_at?: string | null;
+  payment_eligible?: boolean | null;
+  failure_code?: string | null;
   last_paid_at?: number | string | null;
 };
 
@@ -84,12 +87,16 @@ export const adaptAccountantInboxScopeEnvelope = (value: unknown): AccountantInb
       invoice_number: toMaybeText(item.invoice_number),
       invoice_date: toMaybeText(item.invoice_date),
       invoice_amount: toNumberOrNull(item.invoice_amount),
+      outstanding_amount: toNumberOrNull(item.outstanding_amount),
       invoice_currency: toMaybeText(item.invoice_currency) ?? "KGS",
       payment_status: toMaybeText(item.payment_status),
       total_paid: toNumberOrNull(item.total_paid) ?? 0,
       payments_count: toInt(item.payments_count, 0),
       has_invoice: Boolean(item.has_invoice),
       sent_to_accountant_at: toMaybeText(item.sent_to_accountant_at),
+      payment_eligible:
+        typeof item.payment_eligible === "boolean" ? item.payment_eligible : null,
+      failure_code: toMaybeText(item.failure_code),
       last_paid_at: toNumberOrNull(item.last_paid_at),
     });
   }

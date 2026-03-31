@@ -1,0 +1,140 @@
+﻿{
+    "wave":  "Wave 6",
+    "status":  "GREEN",
+    "warehouse":  {
+                      "before":  "src/lib/pdf/pdf.warehouse.ts",
+                      "facade":  "src/lib/pdf/pdf.warehouse.ts",
+                      "families":  [
+                                       {
+                                           "family":  "issue",
+                                           "file":  "src/lib/pdf/warehouse/issue.ts",
+                                           "exports":  [
+                                                           "buildWarehouseIssueFormHtml",
+                                                           "buildWarehouseIssuesRegisterHtml"
+                                                       ],
+                                           "shared":  [
+                                                          "WarehouseIssueHead",
+                                                          "WarehouseIssueLine",
+                                                          "cssForm29",
+                                                          "pickIssueNo",
+                                                          "pickKindLabel",
+                                                          "pickBasis",
+                                                          "pickLineNameRu",
+                                                          "pickLineUom"
+                                                      ]
+                                       },
+                                       {
+                                           "family":  "incoming",
+                                           "file":  "src/lib/pdf/warehouse/incoming.ts",
+                                           "exports":  [
+                                                           "buildWarehouseIncomingRegisterHtml",
+                                                           "buildWarehouseIncomingFormHtml",
+                                                           "buildWarehouseIncomingMaterialsReportHtml"
+                                                       ],
+                                           "shared":  [
+                                                          "cssForm29",
+                                                          "fmtDateTimeRu",
+                                                          "fmtQty",
+                                                          "nnum",
+                                                          "uomRu"
+                                                      ]
+                                       },
+                                       {
+                                           "family":  "materials_and_object_work",
+                                           "file":  "src/lib/pdf/warehouse/reports.ts",
+                                           "exports":  [
+                                                           "buildWarehouseMaterialsReportHtml",
+                                                           "buildWarehouseObjectWorkReportHtml"
+                                                       ],
+                                           "shared":  [
+                                                          "cssForm29",
+                                                          "fmtQty",
+                                                          "nnum",
+                                                          "uomRu"
+                                                      ]
+                                       },
+                                       {
+                                           "family":  "shared",
+                                           "file":  "src/lib/pdf/warehouse/shared.ts",
+                                           "exports":  [
+                                                           "WarehouseIssueHead",
+                                                           "WarehouseIssueLine",
+                                                           "exportWarehouseHtmlPdf",
+                                                           "esc",
+                                                           "nnum",
+                                                           "fmtQty",
+                                                           "fmtDateTimeRu",
+                                                           "cssForm29",
+                                                           "uomRu"
+                                                       ]
+                                       }
+                                   ]
+                  },
+    "director":  {
+                     "before":  "src/lib/pdf/pdf.director.templates.ts",
+                     "facade":  "src/lib/pdf/pdf.director.templates.ts",
+                     "families":  [
+                                      {
+                                          "family":  "finance",
+                                          "file":  "src/lib/pdf/director/finance.ts",
+                                          "exports":  [
+                                                          "renderDirectorFinancePdfHtml"
+                                                      ]
+                                      },
+                                      {
+                                          "family":  "supplier",
+                                          "file":  "src/lib/pdf/director/supplier.ts",
+                                          "exports":  [
+                                                          "renderDirectorSupplierSummaryPdfHtml",
+                                                          "renderDirectorSupplierSummaryPdfHtmlLegacy"
+                                                      ]
+                                      },
+                                      {
+                                          "family":  "management",
+                                          "file":  "src/lib/pdf/director/management.ts",
+                                          "exports":  [
+                                                          "renderDirectorManagementReportPdfHtml"
+                                                      ]
+                                      },
+                                      {
+                                          "family":  "production",
+                                          "file":  "src/lib/pdf/director/production.ts",
+                                          "exports":  [
+                                                          "renderDirectorProductionReportPdfHtml"
+                                                      ]
+                                      },
+                                      {
+                                          "family":  "subcontract",
+                                          "file":  "src/lib/pdf/director/subcontract.ts",
+                                          "exports":  [
+                                                          "renderDirectorSubcontractReportPdfHtml"
+                                                      ]
+                                      },
+                                      {
+                                          "family":  "shared",
+                                          "file":  "src/lib/pdf/director/shared.ts",
+                                          "exports":  [
+                                                          "formatMoney",
+                                                          "formatMoneyKgs",
+                                                          "renderSignaturesSection"
+                                                      ]
+                                      },
+                                      {
+                                          "family":  "shared_sections_kept",
+                                          "file":  "src/lib/pdf/pdf.director.sections.ts",
+                                          "exports":  [
+                                                          "renderDocumentShell",
+                                                          "renderTable",
+                                                          "renderTitledBoxSection",
+                                                          "renderPageFooter"
+                                                      ]
+                                      }
+                                  ]
+                 },
+    "unchanged":  [
+                      "src/lib/documents/pdfRpcRollout.ts",
+                      "src/lib/pdf/pdfViewerContract.ts",
+                      "src/lib/api/directorPdfRender.service.ts",
+                      "supabase/functions/director-pdf-render/index.ts"
+                  ]
+}

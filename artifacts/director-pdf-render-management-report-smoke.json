@@ -1,0 +1,56 @@
+{
+  "status": "GREEN",
+  "functionName": "director-pdf-render",
+  "functionUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/functions/v1/director-pdf-render",
+  "documentKind": "management_report",
+  "managementReportFunctionPostStatus": 200,
+  "managementReportSignedUrlReturned": true,
+  "readerAsyncIterableErrorCleared": true,
+  "result": {
+    "status": 200,
+    "ok": true,
+    "headers": {
+      "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+      "access-control-allow-methods": "POST, OPTIONS",
+      "access-control-allow-origin": "*",
+      "alt-svc": "h3=\":443\"; ma=86400",
+      "cf-cache-status": "DYNAMIC",
+      "cf-ray": "9e4d85176b3fc625-WAW",
+      "connection": "keep-alive",
+      "content-encoding": "gzip",
+      "content-length": "753",
+      "content-type": "application/json; charset=utf-8",
+      "date": "Tue, 31 Mar 2026 07:08:05 GMT",
+      "sb-gateway-version": "1",
+      "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+      "sb-request-id": "019d42b8-6aa9-7802-a16b-19a5037f6576",
+      "server": "cloudflare",
+      "set-cookie": "__cf_bm=yMwFgpQSBbMAoP7zKyf4fwMccNIDi8dW9W4J9WXcEE8-1774940885-1.0.1.1-j9InIlTfLJnnHgw40bLiNlyk6fWPq8pO6Hgz4zeEM.X8hg6qQx2AG4uWpdiiu4mlGno7nnPzhX8Pl6rrdrtFhw8mZBwbitwyqvKkx28Xsms; path=/; expires=Tue, 31-Mar-26 07:38:05 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "vary": "Accept-Encoding, Origin, Access-Control-Request-Headers, Access-Control-Request-Method",
+      "x-deno-execution-id": "25a19f0d-cac7-4212-8536-e2bda17d82bf",
+      "x-sb-edge-region": "eu-central-1",
+      "x-served-by": "supabase-edge-runtime"
+    },
+    "payload": {
+      "ok": true,
+      "renderVersion": "v1",
+      "renderBranch": "edge_render_v1",
+      "renderer": "browserless_puppeteer",
+      "sourceKind": "remote-url",
+      "documentKind": "management_report",
+      "bucketId": "director_pdf_exports",
+      "storagePath": "director/management_report/2026/03/31/2026-03-31T07-08-04-362Z_ce08ccb1_director_management_report_runtime_smoke.pdf",
+      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/management_report/2026/03/31/2026-03-31T07-08-04-362Z_ce08ccb1_director_management_report_runtime_smoke.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9tYW5hZ2VtZW50X3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDctMDgtMDQtMzYyWl9jZTA4Y2NiMV9kaXJlY3Rvcl9tYW5hZ2VtZW50X3JlcG9ydF9ydW50aW1lX3Ntb2tlLnBkZiIsImlhdCI6MTc3NDk0MDg4NSwiZXhwIjoxNzc0OTQ0NDg1fQ.mF_HFNbUMmbqn-s64FSoNl88eB6GTtgEe0rNEnczXtk",
+      "fileName": "director_management_report_runtime_smoke.pdf",
+      "expiresInSeconds": 3600
+    },
+    "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/management_report/2026/03/31/2026-03-31T07-08-04-362Z_ce08ccb1_director_management_report_runtime_smoke.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9tYW5hZ2VtZW50X3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDctMDgtMDQtMzYyWl9jZTA4Y2NiMV9kaXJlY3Rvcl9tYW5hZ2VtZW50X3JlcG9ydF9ydW50aW1lX3Ntb2tlLnBkZiIsImlhdCI6MTc3NDk0MDg4NSwiZXhwIjoxNzc0OTQ0NDg1fQ.mF_HFNbUMmbqn-s64FSoNl88eB6GTtgEe0rNEnczXtk",
+    "renderBranch": "edge_render_v1",
+    "errorCode": null
+  },
+  "tempUser": {
+    "id": "0edf609e-2848-4d69-b8e4-e58c29c0d12c",
+    "email": "director-pdf-render-management-report.mne9ys9vwbzd@e.com"
+  }
+}

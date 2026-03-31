@@ -1,0 +1,26 @@
+﻿{
+    "wave":  "Wave 6",
+    "status":  "GREEN",
+    "checks":  [
+                   {
+                       "command":  "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+                       "result":  "passed"
+                   },
+                   {
+                       "command":  "node node_modules/jest/bin/jest.js src/lib/pdf/pdfLayerDecomposition.test.ts src/lib/api/pdf_director.test.ts src/screens/warehouse/warehouse.pdf.source.services.test.ts --runInBand --json --outputFile artifacts/wave6-pdf-layer-jest.json",
+                       "result":  "passed",
+                       "suites":  3,
+                       "tests":  19
+                   }
+               ],
+    "typedCleanup":  [
+                         "Removed residual as any / any[] from exact decomposed PDF scope",
+                         "Kept public warehouse issue qty fields as unknown to avoid caller semantic drift while tightening local helpers and report rows"
+                     ],
+    "semanticsPreserved":  [
+                               "backend-first director PDF path unchanged",
+                               "viewer/open contract unchanged",
+                               "pdfRpcRollout behavior unchanged",
+                               "warehouse/director source RPC contracts unchanged"
+                           ]
+}

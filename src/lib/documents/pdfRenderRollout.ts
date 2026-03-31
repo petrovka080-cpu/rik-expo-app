@@ -13,7 +13,7 @@ export type PdfRenderRolloutBranchMeta = {
   renderBranch: "edge_render_v1" | "client_legacy_render";
   fallbackReason?: PdfRenderRolloutFallbackReason;
   renderVersion?: "v1";
-  renderer?: "browserless_puppeteer";
+  renderer?: "browserless_puppeteer" | "local_browser_puppeteer";
 };
 
 type PdfRenderRolloutDescriptor = {

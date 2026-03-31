@@ -1,9 +1,31 @@
 {
-  "generatedAt": "2026-03-29T14:56:39.108Z",
+  "generatedAt": "2026-03-30T00:23:25.136Z",
   "comparedCount": 10,
   "warehouseSourcePath": "canonical",
   "pass": true,
   "rows": [
+    {
+      "requestId": "7bd1ee57-578c-49f5-901c-0387bffc3d47",
+      "warehouseSourcePath": "canonical",
+      "warehouseStatus": "Утверждено",
+      "canonicalStatus": "Утверждено",
+      "directorStatus": "Утверждено",
+      "warehouseDisplayNo": "REQ-0090/2026",
+      "canonicalDisplayNo": "REQ-0090/2026",
+      "directorDisplayNo": "REQ-0090/2026",
+      "statusAligned": true
+    },
+    {
+      "requestId": "10ec358b-c6b5-4a12-b71f-5b0a65e9645a",
+      "warehouseSourcePath": "canonical",
+      "warehouseStatus": "Утверждено",
+      "canonicalStatus": "Утверждено",
+      "directorStatus": "Утверждено",
+      "warehouseDisplayNo": "REQ-0089/2026",
+      "canonicalDisplayNo": "REQ-0089/2026",
+      "directorDisplayNo": "REQ-0089/2026",
+      "statusAligned": true
+    },
     {
       "requestId": "0022c0cc-6dbb-40ed-8ae3-bd58e11bcc1e",
       "warehouseSourcePath": "canonical",
@@ -90,28 +112,6 @@
       "warehouseDisplayNo": "REQ-0078/2026",
       "canonicalDisplayNo": "REQ-0078/2026",
       "directorDisplayNo": "REQ-0078/2026",
-      "statusAligned": true
-    },
-    {
-      "requestId": "87e84d82-68eb-479f-95a6-9127eff2bf8c",
-      "warehouseSourcePath": "canonical",
-      "warehouseStatus": "К закупке",
-      "canonicalStatus": "К закупке",
-      "directorStatus": "К закупке",
-      "warehouseDisplayNo": "REQ-0077/2026",
-      "canonicalDisplayNo": "REQ-0077/2026",
-      "directorDisplayNo": "REQ-0077/2026",
-      "statusAligned": true
-    },
-    {
-      "requestId": "7dcb928d-7eb2-4d50-a02b-d609134feedb",
-      "warehouseSourcePath": "canonical",
-      "warehouseStatus": "К закупке",
-      "canonicalStatus": "К закупке",
-      "directorStatus": "К закупке",
-      "warehouseDisplayNo": "REQ-0075/2026",
-      "canonicalDisplayNo": "REQ-0075/2026",
-      "directorDisplayNo": "REQ-0075/2026",
       "statusAligned": true
     }
   ],

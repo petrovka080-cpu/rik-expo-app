@@ -71,6 +71,7 @@ export default function DirectorFinanceDebtModal(props: Props) {
   const renderSupplierRow = React.useCallback(
     ({ item }: { item: FinSupplierDebt }) => (
       <Pressable
+        testID="director-finance-debt-supplier-row"
         onPress={() => props.openSupplier(item)}
         style={[
           s.mobCard,
@@ -156,6 +157,7 @@ export default function DirectorFinanceDebtModal(props: Props) {
         ) : null}
 
         <Pressable
+          testID="director-finance-debt-suppliers-toggle"
           onPress={() => setSuppliersOpen((current) => !current)}
           style={[
             s.mobCard,

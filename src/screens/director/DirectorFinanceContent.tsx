@@ -85,7 +85,7 @@ export default function DirectorFinanceContent({
   if (finPage === "home") {
     return (
       <View>
-        <Pressable onPress={() => pushFin("debt")} style={[s.mobCard, { marginBottom: 10 }]}>
+        <Pressable testID="director-finance-home-debt-card" onPress={() => pushFin("debt")} style={[s.mobCard, { marginBottom: 10 }]}>
           <View style={s.mobMain}>
             <Text style={{ color: UI.text, fontWeight: "900" }}>{HOME_DEBT_TITLE}</Text>
             <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>

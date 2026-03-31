@@ -56,12 +56,15 @@ describe("accountant window services", () => {
             invoice_number: "INV-1",
             invoice_date: "2026-03-30",
             invoice_amount: 120,
+            outstanding_amount: 100,
             invoice_currency: "KGS",
             payment_status: "pending",
             total_paid: 20,
             payments_count: 1,
             has_invoice: true,
             sent_to_accountant_at: "2026-03-30T00:00:00Z",
+            payment_eligible: true,
+            failure_code: null,
             last_paid_at: 1711756800000,
           },
         ],
@@ -95,6 +98,12 @@ describe("accountant window services", () => {
       sourceKind: "rpc:accountant_inbox_scope_v1",
       parityStatus: "not_checked",
       backendFirstPrimary: true,
+    });
+    expect(result.rows[0]).toMatchObject({
+      proposal_id: "proposal-1",
+      outstanding_amount: 100,
+      payment_eligible: true,
+      failure_code: null,
     });
     expect(integrityGuards.filterProposalLinkedRowsByExistingProposalLinks).toHaveBeenCalledTimes(1);
   });

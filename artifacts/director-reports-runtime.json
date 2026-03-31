@@ -1,251 +1,39 @@
 {
   "web": {
-    "status": "passed",
-    "reportsHomeOpened": true,
-    "reportsModalOpened": true,
-    "reportScopeRequested": true,
-    "disciplineScopeRequested": true,
-    "reportScope200": true,
-    "disciplineScope200": true,
+    "status": "failed",
+    "reportsHomeOpened": false,
+    "reportsModalOpened": false,
+    "reportScopeRequested": false,
+    "disciplineScopeRequested": false,
+    "reportScope200": false,
+    "disciplineScope200": false,
     "reportsControlsRendered": false,
-    "workTabRendered": true,
-    "pageErrorsEmpty": true,
-    "consoleErrorsEmpty": true,
-    "badResponsesEmpty": true,
-    "screenshot": "artifacts/director-reports-web-smoke.png",
-    "platformSpecificIssues": [],
-    "bodySample": "Контроль\nЗаявки\nПодряды\nФинансы\nСклад\nОтчёты\nФакт выдачи (склад)\nПериод: Весь период\nОткрыть\nОтчёт показывает факт подтверждённых выдач со склада и дисциплину без заявки и без объекта.\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nВесь период\n\n\n\n\n\nОбновление...\nВесь период (даты)\nГотовим файл...\nСклад\nВсе\nОбъекты по подтверждённым выдачам · 8\n…\nОбъекты по подтверждённым выдачам\nСчётчик построен по подтверждённым выдачам со склада за выбранный период.\nНеразрешённых кодов: 100. Именование частично деградировало, но экран сохраняет backend-owned truth.\nИменование: объекты ok · работы ok · names ok · overrides ok · ledger ok\nМатериалы\nРаботы\nРасход / Закупки (%)\nРасход / Закупки: н/д\nПо стоимости за период\nРасход: 0 KGS · Закупки: 0 KGS\nНедостаточно цен для расчёта базы закупок.\nExcel\nВсе объекты по подтверждённым выдачам",
-    "runtime": {
-      "console": [
-        {
-          "type": "info",
-          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
-        },
-        {
-          "type": "log",
-          "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
-        },
-        {
-          "type": "warning",
-          "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
-        },
-        {
-          "type": "info",
-          "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
-        },
-        {
-          "type": "info",
-          "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
-        },
-        {
-          "type": "warning",
-          "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: visible_scope, event: refresh_scope, result: skipped, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
-        },
-        {
-          "type": "warning",
-          "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
-        },
-        {
-          "type": "info",
-          "text": "[director_works] click:open_reports"
-        },
-        {
-          "type": "info",
-          "text": "[director_works] open_reports_dispatch: 0ms"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 641}"
-        },
-        {
-          "type": "info",
-          "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: null}"
-        },
-        {
-          "type": "info",
-          "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: null}"
-        },
-        {
-          "type": "info",
-          "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 6, expectedRequestStatuses: Array(2)}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 2259}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 2210}"
-        },
-        {
-          "type": "info",
-          "text": "[director_reports] options.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_summary, event: content_ready, result: success, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[director_reports] report.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none"
-        },
-        {
-          "type": "info",
-          "text": "[director_works] tab_switch_to_works: 0ms"
-        },
-        {
-          "type": "info",
-          "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: priced}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 559}"
-        },
-        {
-          "type": "info",
-          "text": "[director_reports] options.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_summary, event: content_ready, result: success, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[director_reports] report.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_discipline, event: content_ready, result: success, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[director_reports] discipline.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none priced_stage=priced"
-        }
-      ],
-      "pageErrors": [],
-      "badResponses": [],
-      "reportRequests": [
-        {
-          "method": "POST",
-          "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/director_report_transport_scope_v1",
-          "postData": {
-            "p_from": null,
-            "p_to": null,
-            "p_object_name": null,
-            "p_include_discipline": false,
-            "p_include_costs": false
-          }
-        },
-        {
-          "method": "POST",
-          "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/director_report_transport_scope_v1",
-          "postData": {
-            "p_from": null,
-            "p_to": null,
-            "p_object_name": null,
-            "p_include_discipline": true,
-            "p_include_costs": true
-          }
-        }
-      ],
-      "reportResponses": [
-        {
-          "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/director_report_transport_scope_v1",
-          "status": 200,
-          "ok": true,
-          "includeDiscipline": false
-        },
-        {
-          "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/director_report_transport_scope_v1",
-          "status": 200,
-          "ok": true,
-          "includeDiscipline": true
-        }
-      ],
-      "screenshot": "artifacts/director-reports-web-smoke.png"
-    }
+    "workTabRendered": false,
+    "platformSpecificIssues": [
+      "poll timeout: body:Контроль|Отчёты"
+    ],
+    "failureKind": "app"
   },
   "android": {
-    "status": "passed",
-    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
-    "androidPreflight": {
-      "deviceDetected": true,
-      "packageName": "com.azisbek_dzhantaev.rikexpoapp",
-      "reverseProxyReady": true,
-      "appCleared": false,
-      "gmsCleared": false,
-      "devClientReachable": true
-    },
+    "status": "failed",
+    "reportsHomeVisible": false,
+    "reportsModalOpened": false,
+    "workTabRendered": false,
     "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
-    "anrRecoveryUsed": false,
-    "blankSurfaceRecovered": false,
+    "anrRecoveryUsed": true,
+    "blankSurfaceRecovered": true,
     "devClientBootstrapRecovered": false,
-    "reportsTabOpened": true,
-    "reportsHomeVisible": true,
-    "reportsModalOpened": true,
-    "workTabRendered": true,
-    "currentXml": "artifacts/android-director-reports-route-1.xml",
-    "currentPng": "artifacts/android-director-reports-route-1.png",
-    "reportsXml": "artifacts/android-director-reports-tab-2.xml",
-    "reportsPng": "artifacts/android-director-reports-tab-2.png",
-    "modalXml": "artifacts/android-director-reports-modal.xml",
-    "modalPng": "artifacts/android-director-reports-modal.png",
-    "worksXml": "artifacts/android-director-reports-works.xml",
-    "worksPng": "artifacts/android-director-reports-works.png",
-    "platformSpecificIssues": []
+    "xmlPath": "artifacts/android-director-reports-failure.xml",
+    "pngPath": "artifacts/android-director-reports-failure.png",
+    "stdoutPath": "artifacts/expo-dev-client.stdout.log",
+    "stderrPath": "artifacts/expo-dev-client.stderr.log",
+    "stdoutTail": "",
+    "stderrTail": "",
+    "platformSpecificIssues": [
+      "android protected route did not settle into renderable surface for rik://director"
+    ],
+    "failureKind": "auth"
   },
   "ios": {
     "status": "residual",
@@ -255,36 +43,44 @@
     ]
   },
   "summary": {
-    "status": "passed",
-    "webPassed": true,
-    "androidPassed": true,
+    "status": "failed",
+    "webPassed": false,
+    "androidPassed": false,
     "iosPassed": false,
-    "runtimeVerified": true,
+    "runtimeVerified": false,
     "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
-    "anrRecoveryUsed": false,
-    "blankSurfaceRecovered": false,
+    "anrRecoveryUsed": true,
+    "blankSurfaceRecovered": true,
     "devClientBootstrapRecovered": false,
     "platformSpecificIssues": [
+      {
+        "platform": "web",
+        "issue": "poll timeout: body:Контроль|Отчёты"
+      },
+      {
+        "platform": "android",
+        "issue": "android protected route did not settle into renderable surface for rik://director"
+      },
       {
         "platform": "ios",
         "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
       }
     ],
     "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-    "failureKind": "unknown",
+    "failureKind": "app",
     "scenariosPassed": {
       "web": {
-        "initialOpen": true,
-        "reportsModal": true,
-        "materialsScope": true,
-        "disciplineScope": true,
-        "workTab": true
+        "initialOpen": false,
+        "reportsModal": false,
+        "materialsScope": false,
+        "disciplineScope": false,
+        "workTab": false
       },
       "android": {
-        "initialOpen": true,
-        "reportsModal": true,
-        "workTab": true
+        "initialOpen": false,
+        "reportsModal": false,
+        "workTab": false
       },
       "ios": {
         "initialOpen": false,
@@ -295,14 +91,22 @@
     "artifacts": {
       "web": "artifacts/director-reports-web-smoke.png",
       "android": {
-        "currentXml": "artifacts/android-director-reports-route-1.xml",
-        "currentPng": "artifacts/android-director-reports-route-1.png",
-        "reportsXml": "artifacts/android-director-reports-tab-2.xml",
-        "reportsPng": "artifacts/android-director-reports-tab-2.png",
-        "modalXml": "artifacts/android-director-reports-modal.xml",
-        "modalPng": "artifacts/android-director-reports-modal.png",
-        "worksXml": "artifacts/android-director-reports-works.xml",
-        "worksPng": "artifacts/android-director-reports-works.png"
+        "currentXml": null,
+        "currentPng": null,
+        "reportsXml": null,
+        "reportsPng": null,
+        "modalXml": null,
+        "modalPng": null,
+        "worksXml": null,
+        "worksPng": null
+      },
+      "androidFailure": {
+        "xmlPath": "artifacts/android-director-reports-failure.xml",
+        "pngPath": "artifacts/android-director-reports-failure.png",
+        "stdoutPath": "artifacts/expo-dev-client.stdout.log",
+        "stderrPath": "artifacts/expo-dev-client.stderr.log",
+        "stdoutTail": "",
+        "stderrTail": ""
       }
     },
     "gate": "director_reports_runtime_verify"

@@ -1,34 +1,42 @@
 {
-  "status": "passed",
-  "webPassed": true,
-  "androidPassed": true,
+  "status": "failed",
+  "webPassed": false,
+  "androidPassed": false,
   "iosPassed": false,
-  "runtimeVerified": true,
+  "runtimeVerified": false,
   "environmentRecoveryUsed": true,
   "gmsRecoveryUsed": false,
-  "anrRecoveryUsed": false,
-  "blankSurfaceRecovered": false,
+  "anrRecoveryUsed": true,
+  "blankSurfaceRecovered": true,
   "devClientBootstrapRecovered": false,
   "platformSpecificIssues": [
+    {
+      "platform": "web",
+      "issue": "poll timeout: body:Контроль|Отчёты"
+    },
+    {
+      "platform": "android",
+      "issue": "android protected route did not settle into renderable surface for rik://director"
+    },
     {
       "platform": "ios",
       "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
     }
   ],
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "failureKind": "unknown",
+  "failureKind": "app",
   "scenariosPassed": {
     "web": {
-      "initialOpen": true,
-      "reportsModal": true,
-      "materialsScope": true,
-      "disciplineScope": true,
-      "workTab": true
+      "initialOpen": false,
+      "reportsModal": false,
+      "materialsScope": false,
+      "disciplineScope": false,
+      "workTab": false
     },
     "android": {
-      "initialOpen": true,
-      "reportsModal": true,
-      "workTab": true
+      "initialOpen": false,
+      "reportsModal": false,
+      "workTab": false
     },
     "ios": {
       "initialOpen": false,
@@ -39,14 +47,22 @@
   "artifacts": {
     "web": "artifacts/director-reports-web-smoke.png",
     "android": {
-      "currentXml": "artifacts/android-director-reports-route-1.xml",
-      "currentPng": "artifacts/android-director-reports-route-1.png",
-      "reportsXml": "artifacts/android-director-reports-tab-2.xml",
-      "reportsPng": "artifacts/android-director-reports-tab-2.png",
-      "modalXml": "artifacts/android-director-reports-modal.xml",
-      "modalPng": "artifacts/android-director-reports-modal.png",
-      "worksXml": "artifacts/android-director-reports-works.xml",
-      "worksPng": "artifacts/android-director-reports-works.png"
+      "currentXml": null,
+      "currentPng": null,
+      "reportsXml": null,
+      "reportsPng": null,
+      "modalXml": null,
+      "modalPng": null,
+      "worksXml": null,
+      "worksPng": null
+    },
+    "androidFailure": {
+      "xmlPath": "artifacts/android-director-reports-failure.xml",
+      "pngPath": "artifacts/android-director-reports-failure.png",
+      "stdoutPath": "artifacts/expo-dev-client.stdout.log",
+      "stderrPath": "artifacts/expo-dev-client.stderr.log",
+      "stdoutTail": "",
+      "stderrTail": ""
     }
   },
   "gate": "director_reports_runtime_verify"

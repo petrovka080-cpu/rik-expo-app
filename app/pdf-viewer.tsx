@@ -425,61 +425,21 @@ export default function PdfViewerScreen() {
       }
       if (Platform.OS === "web" && resolution.kind === "resolved-embedded") {
         if (resolution.sourceKind === "remote-url") {
-          try {
-            console.info("[pdf-viewer] web_remote_fetch_started", {
-              sessionId: next.session.sessionId,
-              documentType: resolution.asset.documentType,
-              originModule: resolution.asset.originModule,
-              uri: resolution.asset.uri,
-              scheme: resolution.scheme,
-            });
-            const response = await fetch(resolution.asset.uri);
-            if (cancelled) return;
-            if (!response.ok) {
-              markError(
-                response.statusText || `Remote PDF fetch failed with HTTP ${response.status}`,
-                "render",
-              );
-              return;
-            }
-            const pdfBlob = await response.blob();
-            if (cancelled) return;
-            if (pdfBlob.size <= 0) {
-              markError("Remote PDF fetch returned an empty document.", "render");
-              return;
-            }
-            const nextRenderUri =
-              typeof URL !== "undefined" && typeof URL.createObjectURL === "function"
-                ? URL.createObjectURL(pdfBlob)
-                : resolution.asset.uri;
-            clearWebRenderUri();
-            webRenderUriRef.current = nextRenderUri;
-            setWebRenderUri(nextRenderUri);
-            console.info("[pdf-viewer] web_remote_fetch_ready", {
-              sessionId: next.session.sessionId,
-              documentType: resolution.asset.documentType,
-              originModule: resolution.asset.originModule,
-              remoteUri: resolution.asset.uri,
-              renderUri: nextRenderUri,
-              renderScheme: getUriScheme(nextRenderUri),
-              sizeBytes: pdfBlob.size,
-            });
-            setIsReadyToRender(true);
-            markReady();
-            return;
-          } catch (error) {
-            if (cancelled) return;
-            const message = error instanceof Error ? error.message : String(error);
-            console.error("[pdf-viewer] web_remote_fetch_error", {
-              sessionId: next.session.sessionId,
-              documentType: resolution.asset.documentType,
-              originModule: resolution.asset.originModule,
-              uri: resolution.asset.uri,
-              error: message,
-            });
-            markError(message || "Remote PDF fetch failed.", "render");
-            return;
-          }
+          clearWebRenderUri();
+          webRenderUriRef.current = resolution.asset.uri;
+          setWebRenderUri(resolution.asset.uri);
+          console.info("[pdf-viewer] signedUrl", resolution.asset.uri);
+          console.info("[pdf-viewer] web_iframe_src_ready", {
+            sessionId: next.session.sessionId,
+            documentType: resolution.asset.documentType,
+            originModule: resolution.asset.originModule,
+            remoteUri: resolution.asset.uri,
+            renderUri: resolution.asset.uri,
+            renderScheme: getUriScheme(resolution.asset.uri),
+          });
+          setIsReadyToRender(true);
+          markReady();
+          return;
         }
         setWebRenderUri(resolution.asset.uri);
       }
@@ -816,6 +776,14 @@ export default function PdfViewerScreen() {
         ) : null}
 
         {Platform.OS === "web" ? (
+          (() => {
+            console.info("[pdf-viewer] web_iframe_render", {
+              sessionId,
+              documentType: asset.documentType,
+              originModule: asset.originModule,
+              iframeSrc: webEmbeddedUri || asset.uri,
+            });
+            return (
           <View style={styles.viewerBody}>
             <View
               style={[
@@ -826,8 +794,24 @@ export default function PdfViewerScreen() {
               <iframe
                 title={asset.title || "PDF"}
                 src={webEmbeddedUri || undefined}
-                onLoad={() => markReady()}
-                onError={() => markError("Web PDF frame failed to load.", "render")}
+                onLoad={() => {
+                  console.info("[pdf-viewer] web_iframe_load", {
+                    sessionId,
+                    documentType: asset.documentType,
+                    originModule: asset.originModule,
+                    uri: webEmbeddedUri || asset.uri,
+                  });
+                  markReady();
+                }}
+                onError={() => {
+                  console.error("[pdf-viewer] web_iframe_error", {
+                    sessionId,
+                    documentType: asset.documentType,
+                    originModule: asset.originModule,
+                    uri: webEmbeddedUri || asset.uri,
+                  });
+                  markError("Web PDF frame failed to load.", "render");
+                }}
                 style={{
                   width: "100%",
                   height: "100%",
@@ -837,6 +821,8 @@ export default function PdfViewerScreen() {
               />
             </View>
           </View>
+            );
+          })()
         ) : (
           <View style={styles.viewerBody} />
         )}

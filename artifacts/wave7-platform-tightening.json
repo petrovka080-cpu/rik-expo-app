@@ -1,0 +1,29 @@
+{
+  "wave": "wave7-performance-bundle-tightening",
+  "generatedAt": "2026-03-31",
+  "changes": [
+    {
+      "whatWasLeaking": "Leaflet web CSS was injected from the root layout for every web route.",
+      "tightenedBy": [
+        "app/_layout.tsx",
+        "src/components/map/MapRenderer.web.tsx",
+        "src/components/map/leafletWebCss.ts"
+      ],
+      "whySafe": "Leaflet CSS is only required when the web map renderer mounts. Moving injection next to MapRenderer.web keeps route semantics unchanged while reducing web-only pollution."
+    },
+    {
+      "whatWasLeaking": "xlsx was imported eagerly from director screens even though export is optional and web-only.",
+      "tightenedBy": [
+        "src/screens/director/director.proposal.ts",
+        "src/screens/director/director.request.ts",
+        "src/lib/runtime/loadXlsx.ts",
+        "src/lib/exports/xlsxExport.ts"
+      ],
+      "whySafe": "The public export behavior stays the same; only module loading timing changed from eager to on-demand."
+    }
+  ],
+  "notes": [
+    "MapRenderer platform split was already safe and preserved: MapRenderer.web keeps leaflet, MapRenderer.native keeps react-native-maps.",
+    "No broad web/native import rewrite was performed."
+  ]
+}

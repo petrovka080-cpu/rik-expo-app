@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T14:56:39.157Z",
+  "generatedAt": "2026-03-30T00:23:25.197Z",
   "status": "GREEN",
   "scope": {
     "requestedWarehouseApiPath": "src/lib/api/warehouse.api.ts",
@@ -11,12 +11,12 @@
       "bytes": 961
     },
     "beforeFacade": {
-      "lines": 1306,
-      "bytes": 45109
+      "lines": 40,
+      "bytes": 961
     },
     "requestReader": {
-      "lines": 1446,
-      "bytes": 49147
+      "lines": 1452,
+      "bytes": 49461
     },
     "newModules": [
       "src/lib/api/requestCanonical.read.ts",
@@ -98,7 +98,7 @@
     },
     "requestDetailsSmoke": {
       "pass": true,
-      "requestId": "0022c0cc-6dbb-40ed-8ae3-bd58e11bcc1e",
+      "requestId": "7bd1ee57-578c-49f5-901c-0387bffc3d47",
       "rowCount": 1,
       "sourcePath": "canonical",
       "sourceKind": "canonical:request_items_materialized",
@@ -123,13 +123,13 @@
       "pass": true,
       "traceCount": 2,
       "latest": {
-        "timestamp": "2026-03-29T14:56:38.706Z",
+        "timestamp": "2026-03-30T00:23:24.729Z",
         "operation": "req_items",
         "result": "success",
         "sourcePath": "canonical",
         "sourceKind": "canonical:request_items_materialized",
         "reason": "warehouse_view_missing_or_empty",
-        "requestId": "0022c0cc-6dbb-40ed-8ae3-bd58e11bcc1e",
+        "requestId": "7bd1ee57-578c-49f5-901c-0387bffc3d47",
         "page": null,
         "pageSize": null,
         "rowCount": 1,

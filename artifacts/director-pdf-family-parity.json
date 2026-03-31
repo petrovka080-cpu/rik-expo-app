@@ -1,0 +1,81 @@
+{
+  "status": "failed",
+  "sourceScan": {
+    "renderServiceCanonicalOnly": true,
+    "renderServiceAllowsParityRenderers": true,
+    "renderFunctionHasSharedCorsHelpers": true,
+    "renderFunctionHasLocalRendererFallback": true,
+    "familyEdgeFunctionsShareCorsContract": true,
+    "familyBackendServicesUseSharedInvoker": true,
+    "reportsPdfServiceNoClientFallback": true
+  },
+  "families": [
+    {
+      "family": "management_report",
+      "functionName": "director-pdf-render",
+      "renderBranch": "edge_render_v1",
+      "renderer": null,
+      "sourceKind": "",
+      "contractOk": false,
+      "corsOk": true,
+      "signedUrlReachable": false
+    },
+    {
+      "family": "supplier_summary",
+      "functionName": "director-finance-supplier-summary-pdf",
+      "renderBranch": "backend_supplier_summary_v1",
+      "renderer": "local_browser_puppeteer",
+      "sourceKind": "remote-url",
+      "contractOk": true,
+      "corsOk": true,
+      "signedUrlReachable": true
+    },
+    {
+      "family": "production_report",
+      "functionName": "director-production-report-pdf",
+      "renderBranch": "backend_production_report_v1",
+      "renderer": "local_browser_puppeteer",
+      "sourceKind": "remote-url",
+      "contractOk": true,
+      "corsOk": true,
+      "signedUrlReachable": true
+    },
+    {
+      "family": "subcontract_report",
+      "functionName": "director-subcontract-report-pdf",
+      "renderBranch": "backend_subcontract_report_v1",
+      "renderer": "local_browser_puppeteer",
+      "sourceKind": "remote-url",
+      "contractOk": true,
+      "corsOk": true,
+      "signedUrlReachable": true
+    }
+  ],
+  "iosFamilyChecks": [
+    {
+      "family": "supplier_summary",
+      "resolutionKind": "resolved-native-handoff",
+      "sourceKind": "remote-url",
+      "renderer": "native-handoff",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/supplier_summary/2026/03/31/2026-03-31T05-27-30-144Z_fd100555_director_supplier_summary_Runtime_Smoke_Supplier_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdXBwbGllcl9zdW1tYXJ5LzIwMjYvMDMvMzEvMjAyNi0wMy0zMVQwNS0yNy0zMC0xNDRaX2ZkMTAwNTU1X2RpcmVjdG9yX3N1cHBsaWVyX3N1bW1hcnlfUnVudGltZV9TbW9rZV9TdXBwbGllcl8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg1MiwiZXhwIjoxNzc0OTM4NDUyfQ.6M7EF0XU66ffJUA1BjgH8j53h6eQLBzwr-5lxgqP_Ik",
+      "safe": true
+    },
+    {
+      "family": "production_report",
+      "resolutionKind": "resolved-native-handoff",
+      "sourceKind": "remote-url",
+      "renderer": "native-handoff",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/production_report/2026/03/31/2026-03-31T05-27-52-957Z_c272f3ef_director_production_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9wcm9kdWN0aW9uX3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDUtMjctNTItOTU3Wl9jMjcyZjNlZl9kaXJlY3Rvcl9wcm9kdWN0aW9uX3JlcG9ydF8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg3NiwiZXhwIjoxNzc0OTM4NDc2fQ.bqpH3lMBkCfc5H7VYCyxqrjXFOpgarKwSN_UYaHdqNM",
+      "safe": true
+    },
+    {
+      "family": "subcontract_report",
+      "resolutionKind": "resolved-native-handoff",
+      "sourceKind": "remote-url",
+      "renderer": "native-handoff",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/subcontract_report/2026/03/31/2026-03-31T05-28-05-509Z_77fd5684_director_subcontract_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdWJjb250cmFjdF9yZXBvcnQvMjAyNi8wMy8zMS8yMDI2LTAzLTMxVDA1LTI4LTA1LTUwOVpfNzdmZDU2ODRfZGlyZWN0b3Jfc3ViY29udHJhY3RfcmVwb3J0XzIwMjYtMDMtMzEucGRmIiwiaWF0IjoxNzc0OTM0ODg4LCJleHAiOjE3NzQ5Mzg0ODh9.NhI_oaAAs49ULSk6iL8rP_74VkBOjk-Es-fcrrW7zV0",
+      "safe": true
+    }
+  ],
+  "safeSwitchVerdict": false
+}

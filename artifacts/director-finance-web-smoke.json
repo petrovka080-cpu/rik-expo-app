@@ -22,6 +22,10 @@
     },
     {
       "type": "info",
+      "text": "[queue.bootstrap] stop skipped: not running"
+    },
+    {
+      "type": "info",
       "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
     },
     {
@@ -46,7 +50,27 @@
     },
     {
       "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 798}"
+    },
+    {
+      "type": "info",
       "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
+    },
+    {
+      "type": "info",
+      "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+    },
+    {
+      "type": "info",
+      "text": "[queue.bootstrap] starting queue worker"
+    },
+    {
+      "type": "info",
+      "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+    },
+    {
+      "type": "info",
+      "text": "[queue.worker] started {workerId: web:mnchbotz:dzavn6, batchSize: 10, concurrency: 4}"
     },
     {
       "type": "info",
@@ -58,31 +82,43 @@
     },
     {
       "type": "info",
-      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+      "text": "[platform.observability] {screen: director, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
     },
     {
       "type": "info",
-      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+      "text": "[platform.observability] {screen: director, surface: finance_realtime, event: channel_created, result: success, durationMs: null}"
     },
     {
       "type": "info",
-      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+      "text": "[platform.observability] {screen: director, surface: finance_realtime, event: subscription_started, result: success, durationMs: null}"
     },
     {
       "type": "info",
-      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
-    },
-    {
-      "type": "warning",
-      "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 512}"
     },
     {
       "type": "info",
-      "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
+      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: SUBSCRIBED}"
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 630}"
+      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: SUBSCRIBED}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: director, surface: finance_realtime, event: subscription_connected, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1091}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 1176}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1094}"
     },
     {
       "type": "info",
@@ -90,15 +126,91 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 670}"
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1174}"
     },
     {
       "type": "info",
-      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: TIMED_OUT}"
+      "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 1192}"
     },
     {
       "type": "info",
-      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: TIMED_OUT}"
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 518}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 501}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 507}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 509}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 501}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 508}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 509}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 500}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 507}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 500}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 517}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 504}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 502}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 507}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 508}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 495}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 519}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 511}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 502}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 493}"
     }
   ],
   "pageErrors": [],

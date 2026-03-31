@@ -11,6 +11,7 @@ const logSupplierSummaryTelemetry = (
   stage: string,
   telemetry: DirectorFinanceSupplierPdfBackendTelemetry,
 ) => {
+  if (!__DEV__) return;
   console.info(`[director.finance.pdf] ${stage} ${JSON.stringify(telemetry)}`);
 };
 

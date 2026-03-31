@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-03-31",
+  "summary": {
+    "rpcAsNeverCount": 11,
+    "rpcAsAnyCount": 0,
+    "preferredContainment": "src/lib/api/queryBoundary.ts:84",
+    "notes": [
+      "Current repo uses direct rpc casts with 'as never'; no direct rpc 'as any' call sites were found in src.",
+      "runContainedRpc is already the preferred containment pattern and is used by buyer and contractor scope readers."
+    ]
+  },
+  "items": [
+    {
+      "file": "src/lib/catalog/catalog.proposalCreation.service.ts:1046",
+      "pattern": "supabase.rpc(\"rpc_proposal_submit_v3\" as never, args as never)",
+      "rpcName": "rpc_proposal_submit_v3",
+      "classification": "must_fix_later_high_value_canonical_mutation",
+      "laterAction": "Move to localized containment or regenerate RPC typings when the canonical submit boundary stabilizes"
+    },
+    {
+      "file": "src/lib/api/proposals.ts:278",
+      "pattern": "client.rpc(\"proposal_submit_text_v1\" as never, buildProposalSubmitTextArgs(...) as never)",
+      "rpcName": "proposal_submit_text_v1",
+      "classification": "must_fix_later_legacy_compatibility_fallback",
+      "laterAction": "Retain while legacy submit fallback exists, then move into contained boundary or remove with caller proof"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.incoming.repo.ts:187",
+      "pattern": "supabase.rpc(\"warehouse_incoming_queue_scope_v1\" as never, ... as never)",
+      "rpcName": "warehouse_incoming_queue_scope_v1",
+      "classification": "temporary_boundary_workaround",
+      "laterAction": "Prefer contained RPC boundary or typed regeneration for warehouse incoming family"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.incoming.repo.ts:217",
+      "pattern": "supabase.rpc(\"warehouse_incoming_items_scope_v1\" as never, ... as never)",
+      "rpcName": "warehouse_incoming_items_scope_v1",
+      "classification": "temporary_boundary_workaround",
+      "laterAction": "Prefer contained RPC boundary or typed regeneration for warehouse incoming family"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.nameMap.ui.ts:30",
+      "pattern": "supabase.rpc(\"warehouse_refresh_name_map_ui\" as never, payload as never)",
+      "rpcName": "warehouse_refresh_name_map_ui",
+      "classification": "temporary_boundary_workaround",
+      "laterAction": "Contain inside a shared query boundary once warehouse name-map contracts settle"
+    },
+    {
+      "file": "src/features/market/market.repository.ts:349",
+      "pattern": "supabase.rpc(\"marketplace_items_scope_page_v1\" as never, ... as never)",
+      "rpcName": "marketplace_items_scope_page_v1",
+      "classification": "temporary_boundary_workaround",
+      "laterAction": "Switch to contained RPC helper or regenerated types for marketplace scope RPCs"
+    },
+    {
+      "file": "src/features/market/market.repository.ts:414",
+      "pattern": "supabase.rpc(\"marketplace_item_scope_detail_v1\" as never, { p_listing_id: listingId } as never)",
+      "rpcName": "marketplace_item_scope_detail_v1",
+      "classification": "temporary_boundary_workaround",
+      "laterAction": "Switch to contained RPC helper or regenerated types for marketplace scope RPCs"
+    },
+    {
+      "file": "src/lib/api/foremanAiResolve.service.ts:111",
+      "pattern": "supabase.rpc(\"resolve_catalog_synonym_v1\" as never, ... as never)",
+      "rpcName": "resolve_catalog_synonym_v1",
+      "classification": "temporary_boundary_workaround",
+      "laterAction": "Move AI resolve RPCs behind contained boundary or typed regeneration"
+    },
+    {
+      "file": "src/lib/api/foremanAiResolve.service.ts:132",
+      "pattern": "supabase.rpc(\"resolve_packaging_v1\" as never, ... as never)",
+      "rpcName": "resolve_packaging_v1",
+      "classification": "temporary_boundary_workaround",
+      "laterAction": "Move AI resolve RPCs behind contained boundary or typed regeneration"
+    },
+    {
+      "file": "src/lib/api/proposalAttachments.service.ts:265",
+      "pattern": "client.rpc(\"proposal_attachment_evidence_scope_v1\" as never, ... as never)",
+      "rpcName": "proposal_attachment_evidence_scope_v1",
+      "classification": "temporary_boundary_workaround",
+      "laterAction": "Move attachment evidence scope reads behind contained RPC helper or regenerated types"
+    },
+    {
+      "file": "src/lib/api/proposalAttachmentEvidence.api.ts:90",
+      "pattern": "client.rpc(\"proposal_attachment_evidence_attach_v1\" as never, args as never)",
+      "rpcName": "proposal_attachment_evidence_attach_v1",
+      "classification": "temporary_boundary_workaround",
+      "laterAction": "Move attachment evidence attach writes behind contained RPC helper or regenerated types"
+    }
+  ],
+  "preferredContainmentExamples": [
+    {
+      "file": "src/lib/api/queryBoundary.ts:84",
+      "symbol": "runContainedRpc",
+      "classification": "approved_cast_containment_boundary"
+    },
+    {
+      "file": "src/screens/buyer/buyer.fetchers.ts:172",
+      "symbol": "runContainedRpc",
+      "classification": "good_example_of_localized_rpc_typing_boundary"
+    },
+    {
+      "file": "src/screens/contractor/contractor.loadWorksService.ts:739",
+      "symbol": "runContainedRpc",
+      "classification": "good_example_of_localized_rpc_typing_boundary"
+    }
+  ]
+}

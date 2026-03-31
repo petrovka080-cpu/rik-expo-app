@@ -1,32 +1,40 @@
 {
-  "status": "passed",
-  "webPassed": true,
-  "androidPassed": true,
+  "status": "failed",
+  "webPassed": false,
+  "androidPassed": false,
   "iosPassed": false,
-  "runtimeVerified": true,
+  "runtimeVerified": false,
   "environmentRecoveryUsed": true,
   "gmsRecoveryUsed": false,
-  "anrRecoveryUsed": false,
+  "anrRecoveryUsed": true,
   "blankSurfaceRecovered": false,
   "devClientBootstrapRecovered": false,
   "platformSpecificIssues": [
+    {
+      "platform": "web",
+      "issue": "poll timeout: body:REQ-0077/2026|/REQ-[A-Z0-9_-]+\\/\\d{4}/i|/#\\d+/"
+    },
+    {
+      "platform": "android",
+      "issue": "Command failed: adb shell uiautomator dump"
+    },
     {
       "platform": "ios",
       "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
     }
   ],
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "failureKind": "unknown",
+  "failureKind": "app",
   "scenariosPassed": {
     "web": {
-      "initialOpen": true,
-      "inboxSurface": true,
-      "sheetInteraction": true
+      "initialOpen": false,
+      "inboxSurface": false,
+      "sheetInteraction": false
     },
     "android": {
-      "initialOpen": true,
-      "inboxSurface": true,
-      "sheetInteraction": true
+      "initialOpen": false,
+      "inboxSurface": false,
+      "sheetInteraction": false
     },
     "ios": {
       "initialOpen": false,
@@ -37,13 +45,21 @@
   "artifacts": {
     "webSummary": "artifacts/buyer-summary-inbox-web-smoke.summary.json",
     "webRuntime": "artifacts/buyer-summary-inbox-web-smoke.json",
-    "androidCurrentXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-    "androidCurrentPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-    "androidInboxXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-    "androidInboxPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-    "androidSheetXml": "artifacts/android-buyer-summary-inbox-sheet.xml",
-    "androidSheetPng": "artifacts/android-buyer-summary-inbox-sheet.png",
-    "androidLogcat": "artifacts/android-buyer-summary-inbox-logcat.txt"
+    "androidCurrentXml": null,
+    "androidCurrentPng": null,
+    "androidInboxXml": null,
+    "androidInboxPng": null,
+    "androidSheetXml": null,
+    "androidSheetPng": null,
+    "androidLogcat": null,
+    "androidFailure": {
+      "xmlPath": "artifacts/android-buyer-summary-inbox-failure.xml",
+      "pngPath": "artifacts/android-buyer-summary-inbox-failure.png",
+      "stdoutPath": "artifacts/expo-dev-client.stdout.log",
+      "stderrPath": "artifacts/expo-dev-client.stderr.log",
+      "stdoutTail": "",
+      "stderrTail": ""
+    }
   },
   "gate": "buyer_summary_inbox_runtime_verify",
   "subscriptionStarted": null,
@@ -52,9 +68,9 @@
   "doubleFetchDetected": null,
   "inflightGuardWorked": null,
   "recentGuardWorked": null,
-  "backendOwnerPreserved": true,
-  "androidProofMode": "ui_interaction",
-  "androidObservabilityBacked": true,
-  "androidLoadInboxObserved": true,
-  "androidContentReadyObserved": true
+  "backendOwnerPreserved": false,
+  "androidProofMode": null,
+  "androidObservabilityBacked": false,
+  "androidLoadInboxObserved": false,
+  "androidContentReadyObserved": false
 }

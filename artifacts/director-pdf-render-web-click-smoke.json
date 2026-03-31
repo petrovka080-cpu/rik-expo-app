@@ -1,0 +1,444 @@
+{
+  "status": "GREEN",
+  "functionName": "director-pdf-render",
+  "documentKind": "management_report",
+  "managementReportRealClickPathExercised": true,
+  "managementReportFunctionPostStatus": 200,
+  "managementReportSignedUrlReturned": true,
+  "managementReportViewerOrOpenReached": true,
+  "managementReportOpened": true,
+  "nextExactBlockerIdentified": false,
+  "nextExactBlocker": null,
+  "baseUrl": "http://localhost:8081",
+  "functionCall": {
+    "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/functions/v1/director-pdf-render",
+    "status": 200,
+    "method": "POST",
+    "headers": {
+      "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+      "access-control-allow-methods": "POST, OPTIONS",
+      "access-control-allow-origin": "*",
+      "alt-svc": "h3=\":443\"; ma=86400",
+      "cf-cache-status": "DYNAMIC",
+      "cf-ray": "9e4dca83adf87a60-WAW",
+      "content-encoding": "gzip",
+      "content-length": "716",
+      "content-type": "application/json; charset=utf-8",
+      "date": "Tue, 31 Mar 2026 07:55:29 GMT",
+      "priority": "u=1,i",
+      "sb-gateway-version": "1",
+      "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+      "sb-request-id": "019d42e3-ceb0-7d31-9f06-a428e3a10534",
+      "server": "cloudflare",
+      "server-timing": "cfExtPri",
+      "set-cookie": "__cf_bm=pRggXtNZjIySD1Qcoacjp46w2_sX1JqDcy6zk1BJvOg-1774943729-1.0.1.1-y5fBaJKZhHB5ty7FdSLJEAq_zCchOgUlQCF6QehoDO4Y_bj0.UlqWbSti7D7eBfDiJ.zqJ0aZdt718o7zaEzSMvqEcsRQZ0.dsUlvJ5IVM4; path=/; expires=Tue, 31-Mar-26 08:25:29 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "vary": "Accept-Encoding, Origin, Access-Control-Request-Headers, Access-Control-Request-Method",
+      "x-deno-execution-id": "acc8b10a-5a64-4a4f-9cde-45e2d69577fb",
+      "x-sb-edge-region": "eu-central-1",
+      "x-served-by": "supabase-edge-runtime"
+    },
+    "requestHeaders": {
+      ":authority": "nxrnjywzxxfdpqmzjorh.supabase.co",
+      ":method": "POST",
+      ":path": "/functions/v1/director-pdf-render",
+      ":scheme": "https",
+      "accept": "application/json",
+      "accept-encoding": "gzip, deflate, br, zstd",
+      "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0",
+      "authorization": "Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IkMzbFhWcUFNVmtUVXhmeU4iLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL254cm5qeXd6eHhmZHBxbXpqb3JoLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIwNGY2M2FmNi02YmQxLTRiZTUtYjA0ZS02N2VmMWNjNGYzNDIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc0OTQ3MzA5LCJpYXQiOjE3NzQ5NDM3MDksImVtYWlsIjoiZGlyZWN0b3ItcGRmLXJlbmRlci13ZWItY2xpY2subW5lYm5pZ3M3MzZ3QGUuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdLCJyb2xlIjoiZGlyZWN0b3IifSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoiRGlyZWN0b3IgUERGIFJlbmRlciBXZWIgQ2xpY2sifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc3NDk0MzcwOX1dLCJzZXNzaW9uX2lkIjoiMmMzYjBhMTgtM2UzNy00OTc3LWEzNWUtMDJjNTU5ZGY1Yzk2IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.R1iKNX7ox11I0nUYPZ-25mWscVqdQYTGixkT7AS_-do",
+      "content-length": "45973",
+      "content-type": "application/json",
+      "origin": "http://localhost:8081",
+      "priority": "u=1, i",
+      "referer": "http://localhost:8081/",
+      "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"HeadlessChrome\";v=\"145\", \"Chromium\";v=\"145\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "cross-site",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36",
+      "x-client-info": "supabase-js-web/2.97.0, rik-expo-app"
+    },
+    "payload": {
+      "ok": true,
+      "renderVersion": "v1",
+      "renderBranch": "edge_render_v1",
+      "renderer": "browserless_puppeteer",
+      "sourceKind": "remote-url",
+      "documentKind": "management_report",
+      "bucketId": "director_pdf_exports",
+      "storagePath": "director/management_report/2026/03/31/2026-03-31T07-55-27-546Z_85ac3aa9_director_management_report.pdf",
+      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/management_report/2026/03/31/2026-03-31T07-55-27-546Z_85ac3aa9_director_management_report.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9tYW5hZ2VtZW50X3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDctNTUtMjctNTQ2Wl84NWFjM2FhOV9kaXJlY3Rvcl9tYW5hZ2VtZW50X3JlcG9ydC5wZGYiLCJpYXQiOjE3NzQ5NDM3MjksImV4cCI6MTc3NDk0NzMyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE",
+      "fileName": "director_management_report.pdf",
+      "expiresInSeconds": 3600
+    },
+    "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/management_report/2026/03/31/2026-03-31T07-55-27-546Z_85ac3aa9_director_management_report.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9tYW5hZ2VtZW50X3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDctNTUtMjctNTQ2Wl84NWFjM2FhOV9kaXJlY3Rvcl9tYW5hZ2VtZW50X3JlcG9ydC5wZGYiLCJpYXQiOjE3NzQ5NDM3MjksImV4cCI6MTc3NDk0NzMyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE",
+    "renderBranch": "edge_render_v1",
+    "errorCode": null,
+    "error": null
+  },
+  "route": {
+    "finalUrl": "http://localhost:8081/pdf-viewer?sessionId=session_mnebo1u3_2",
+    "routeReached": true,
+    "viewerRouteMounted": true,
+    "viewerReady": true,
+    "viewerErrorLogged": false,
+    "iframeSrc": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/management_report/2026/03/31/2026-03-31T07-55-27-546Z_85ac3aa9_director_management_report.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9tYW5hZ2VtZW50X3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDctNTUtMjctNTQ2Wl84NWFjM2FhOV9kaXJlY3Rvcl9tYW5hZ2VtZW50X3JlcG9ydC5wZGYiLCJpYXQiOjE3NzQ5NDM3MjksImV4cCI6MTc3NDk0NzMyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE",
+    "navigationLogged": true
+  },
+  "uiTrace": {
+    "debtCardClickMethod": "locator.click",
+    "financeModalOpened": true,
+    "pdfButtonFound": true,
+    "pdfButtonClicked": true,
+    "pdfButtonClickMethod": "dom.click",
+    "dialogVisiblePressables": []
+  },
+  "runtime": {
+    "console": [
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "log",
+        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+      },
+      {
+        "type": "warning",
+        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+      },
+      {
+        "type": "info",
+        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] starting queue worker"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] started {workerId: web:mnebnmuo:plvg8q, batchSize: 10, concurrency: 4}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: joined_inflight, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: finance_realtime, event: channel_created, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: finance_realtime, event: subscription_started, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.channel, status: SUBSCRIBED}"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: SUBSCRIBED}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: finance_realtime, event: subscription_connected, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 2910}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 2913}"
+      },
+      {
+        "type": "info",
+        "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 10, expectedRequestStatuses: Array(2)}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 2588}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 2611}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 525}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 3512}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 3517}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 527}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 510}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 529}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 600}"
+      },
+      {
+        "type": "info",
+        "text": "[director-pdf-source] {id: director_finance_source_v1, source: rpc:pdf_director_finance_source_v1, sourceBranch: rpc_v1, fallbackReason: null, rpcVersion: v1}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: director_pdf_source, event: director_finance_pdf_source_load, result: success, durationMs: 699}"
+      },
+      {
+        "type": "info",
+        "text": "[encoding] normalize_ru_text_started {inputType: string, stringLength: 40455, looksLikeHtml: true, documentType: director_report, source: rpc:pdf_director_finance_source_v1}"
+      },
+      {
+        "type": "warning",
+        "text": "[encoding] normalize_ru_text_skipped_large_html {stringLength: 40455, maxLength: 12000, documentType: director_report, source: rpc:pdf_director_finance_source_v1}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 521}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 536}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 512}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 510}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 594}"
+      },
+      {
+        "type": "info",
+        "text": "[director-pdf-source] {id: director_finance_source_v1, source: rpc:pdf_director_finance_source_v1, sourceBranch: rpc_v1, fallbackReason: null, rpcVersion: v1}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: director_pdf_source, event: director_finance_pdf_source_load, result: success, durationMs: 597}"
+      },
+      {
+        "type": "info",
+        "text": "[encoding] normalize_ru_text_started {inputType: string, stringLength: 40455, looksLikeHtml: true, documentType: director_report, source: rpc:pdf_director_finance_source_v1}"
+      },
+      {
+        "type": "warning",
+        "text": "[encoding] normalize_ru_text_skipped_large_html {stringLength: 40455, maxLength: 12000, documentType: director_report, source: rpc:pdf_director_finance_source_v1}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 508}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 510}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 539}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 517}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 580}"
+      },
+      {
+        "type": "info",
+        "text": "[director-pdf-source] {id: director_finance_source_v1, source: rpc:pdf_director_finance_source_v1, sourceBranch: rpc_v1, fallbackReason: null, rpcVersion: v1}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: director_pdf_source, event: director_finance_pdf_source_load, result: success, durationMs: 583}"
+      },
+      {
+        "type": "info",
+        "text": "[encoding] normalize_ru_text_started {inputType: string, stringLength: 40455, looksLikeHtml: true, documentType: director_report, source: rpc:pdf_director_finance_source_v1}"
+      },
+      {
+        "type": "warning",
+        "text": "[encoding] normalize_ru_text_skipped_large_html {stringLength: 40455, maxLength: 12000, documentType: director_report, source: rpc:pdf_director_finance_source_v1}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 520}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 11386}"
+      },
+      {
+        "type": "info",
+        "text": "[director-pdf-render] {documentKind: management_report, source: rpc:pdf_director_finance_source_v1, renderBranch: edge_render_v1, fallbackReason: null, renderVersion: v1}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: global_busy, surface: overlay_owner, event: busy_acquire, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-document-actions] prepare_requested {stage: prepare_requested, platform: web, documentType: director_report, originModule: director, sourceUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-runner] pdf_source_received {stage: pdf_source_received, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE, scheme: https, exists: undefined, sizeBytes: undefined}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-document-actions] prepare_ready {stage: prepare_ready, platform: web, documentType: director_report, originModule: director, finalUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: reports, surface: pdf_document_actions, event: pdf_output_prepare, result: success, durationMs: 1}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: global_busy, surface: overlay_owner, event: busy_run, result: success, durationMs: 652}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: global_busy, surface: overlay_owner, event: busy_release, result: success, durationMs: 653}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-document-actions] preview {stage: preview_requested, platform: web, documentType: director_report, originModule: director, scheme: https}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-document-sessions] pdf_session_asset_written {stage: pdf_session_asset_written, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE, scheme: https, exists: undefined, sizeBytes: undefined}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-document-sessions] materialized_asset {platform: web, documentType: director_report, originModule: director, source: generated, sourceKind: remote-url}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: reports, surface: pdf_document_actions, event: pdf_preview_output_prepare, result: success, durationMs: 1}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-document-actions] preview_asset {stage: preview_asset_ready, sessionId: session_mnebo1u3_2, documentType: director_report, originModule: director, sourceKind: remote-url}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-document-actions] about_to_navigate_to_viewer {sessionId: session_mnebo1u3_2, documentType: director_report, originModule: director, finalUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE, finalScheme: https}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: reports, surface: pdf_document_actions, event: pdf_preview_open, result: success, durationMs: 3}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: finance_realtime, event: channel_closed, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: finance_realtime, event: channel_closed, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: director, surface: finance_realtime, event: subscription_stopped, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+      },
+      {
+        "type": "info",
+        "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: session_mnebo1u3_2, receivedSessionId: session_mnebo1u3_2, initialUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE, initialScheme: https}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-viewer] open {sessionId: session_mnebo1u3_2, documentType: director_report, originModule: director, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE, scheme: https}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/management_report/2026/03/31/2026-03-31T07-55-27-546Z_85ac3aa9_director_management_report.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9tYW5hZ2VtZW50X3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDctNTUtMjctNTQ2Wl84NWFjM2FhOV9kaXJlY3Rvcl9tYW5hZ2VtZW50X3JlcG9ydC5wZGYiLCJpYXQiOjE3NzQ5NDM3MjksImV4cCI6MTc3NDk0NzMyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-viewer] web_iframe_src_ready {sessionId: session_mnebo1u3_2, documentType: director_report, originModule: director, remoteUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE, renderUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-viewer] ready {documentType: director_report, originModule: director, ms: 3}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mnebo1u3_2, documentType: director_report, originModule: director, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-viewer] web_iframe_render {sessionId: session_mnebo1u3_2, documentType: director_report, originModule: director, iframeSrc: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE}"
+      },
+      {
+        "type": "info",
+        "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mnebo1u3_2, documentType: director_report, originModule: director, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…MyOX0.5N-C3hYHoUOYjBaqKMNn5gucaeX0GiijPl35On7EWgE}"
+      }
+    ],
+    "pageErrors": [],
+    "badResponses": [],
+    "relevantResponses": [
+      {
+        "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/functions/v1/director-pdf-render",
+        "status": 200,
+        "method": "POST"
+      }
+    ]
+  }
+}

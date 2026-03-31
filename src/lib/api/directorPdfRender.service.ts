@@ -1,4 +1,4 @@
-import { isSupabaseEnvValid, supabase } from "../supabaseClient";
+import { isSupabaseEnvValid } from "../supabaseClient";
 import {
   getPdfRenderRolloutAvailability,
   recordPdfRenderRolloutBranch,
@@ -6,11 +6,10 @@ import {
   resolvePdfRenderRolloutMode,
   setPdfRenderRolloutAvailability,
   type PdfRenderRolloutBranchMeta,
-  type PdfRenderRolloutFallbackReason,
   type PdfRenderRolloutId,
   type PdfRenderRolloutMode,
 } from "../documents/pdfRenderRollout";
-import { renderPdfHtmlToUri } from "../pdf/pdf.runner";
+import { invokeDirectorPdfBackend } from "./directorPdfBackendInvoker";
 
 const DIRECTOR_PDF_RENDER_OFFLOAD_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_DIRECTOR_PDF_RENDER_OFFLOAD_V1 ?? "",
@@ -23,11 +22,6 @@ const DIRECTOR_PDF_RENDER_MODE: PdfRenderRolloutMode = resolvePdfRenderRolloutMo
   DIRECTOR_PDF_RENDER_OFFLOAD_V1_MODE_RAW,
 );
 const DIRECTOR_PDF_RENDER_FUNCTION = "director-pdf-render";
-
-// Keep current local/dev smoke on the proven client render path until the
-// backend PDF pilot is explicitly verified. This avoids noisy edge 5xx
-// failures in normal Expo/web proof runs without changing production behavior.
-const shouldBypassDirectorPdfEdgeInDev = () => __DEV__;
 
 registerPdfRenderRolloutPath(DIRECTOR_PDF_RENDER_ROLLOUT_ID, DIRECTOR_PDF_RENDER_MODE);
 
@@ -59,35 +53,10 @@ type DirectorPdfRenderInvokePayload = {
   };
 };
 
-type DirectorPdfRenderEdgeResponse = {
-  renderVersion?: string;
-  renderBranch?: string;
-  renderer?: string;
-  signedUrl?: string;
-  bucketId?: string;
-  storagePath?: string;
-  fileName?: string;
-  expiresInSeconds?: number;
-  error?: string;
+type DirectorPdfRenderEdgeResult = {
+  signedUrl: string;
+  renderer: "browserless_puppeteer" | "local_browser_puppeteer";
 };
-
-class DirectorPdfRenderInvokeError extends Error {
-  fallbackReason: Extract<PdfRenderRolloutFallbackReason, "function_missing" | "invoke_error" | "invalid_response">;
-  disableForSession: boolean;
-
-  constructor(
-    message: string,
-    options: {
-      fallbackReason: Extract<PdfRenderRolloutFallbackReason, "function_missing" | "invoke_error" | "invalid_response">;
-      disableForSession?: boolean;
-    },
-  ) {
-    super(message);
-    this.name = "DirectorPdfRenderInvokeError";
-    this.fallbackReason = options.fallbackReason;
-    this.disableForSession = options.disableForSession === true;
-  }
-}
 
 const toErrorMessage = (error: unknown, fallback: string) => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
@@ -98,8 +67,8 @@ const toErrorMessage = (error: unknown, fallback: string) => {
 const shouldDisableDirectorPdfRenderForSession = (error: unknown) => {
   const message = toErrorMessage(error, "").toLowerCase();
   const status =
-    error && typeof error === "object" && "status" in error
-      ? Number((error as { status?: unknown }).status)
+    error && typeof error === "object" && "httpStatus" in error
+      ? Number((error as { httpStatus?: unknown }).httpStatus)
       : NaN;
 
   if (status === 404) return true;
@@ -107,59 +76,6 @@ const shouldDisableDirectorPdfRenderForSession = (error: unknown) => {
   if (message.includes("function not found")) return true;
   if (message.includes("not found") && message.includes(DIRECTOR_PDF_RENDER_FUNCTION)) return true;
   return false;
-};
-
-const validateDirectorPdfRenderResponse = (
-  value: unknown,
-): DirectorPdfRenderEdgeResponse & {
-  renderVersion: "v1";
-  renderBranch: "edge_render_v1";
-  renderer: "browserless_puppeteer";
-  signedUrl: string;
-} => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new DirectorPdfRenderInvokeError("director-pdf-render returned non-object payload", {
-      fallbackReason: "invalid_response",
-    });
-  }
-
-  const payload = value as DirectorPdfRenderEdgeResponse;
-  const renderVersion = String(payload.renderVersion ?? "").trim();
-  const renderBranch = String(payload.renderBranch ?? "").trim();
-  const renderer = String(payload.renderer ?? "").trim();
-  const signedUrl = String(payload.signedUrl ?? "").trim();
-
-  if (renderVersion !== "v1") {
-    throw new DirectorPdfRenderInvokeError(
-      `director-pdf-render invalid renderVersion: ${renderVersion || "<empty>"}`,
-      { fallbackReason: "invalid_response" },
-    );
-  }
-  if (renderBranch !== "edge_render_v1") {
-    throw new DirectorPdfRenderInvokeError(
-      `director-pdf-render invalid renderBranch: ${renderBranch || "<empty>"}`,
-      { fallbackReason: "invalid_response" },
-    );
-  }
-  if (renderer !== "browserless_puppeteer") {
-    throw new DirectorPdfRenderInvokeError(
-      `director-pdf-render invalid renderer: ${renderer || "<empty>"}`,
-      { fallbackReason: "invalid_response" },
-    );
-  }
-  if (!signedUrl) {
-    throw new DirectorPdfRenderInvokeError("director-pdf-render missing signedUrl", {
-      fallbackReason: "invalid_response",
-    });
-  }
-
-  return {
-    ...payload,
-    renderVersion: "v1",
-    renderBranch: "edge_render_v1",
-    renderer: "browserless_puppeteer",
-    signedUrl,
-  };
 };
 
 const logDirectorPdfRenderBranch = (
@@ -184,7 +100,7 @@ const logDirectorPdfRenderBranch = (
   });
 };
 
-async function renderDirectorPdfViaEdge(args: DirectorPdfRenderArgs): Promise<string> {
+async function renderDirectorPdfViaEdge(args: DirectorPdfRenderArgs): Promise<DirectorPdfRenderEdgeResult> {
   const payload: DirectorPdfRenderInvokePayload = {
     version: "v1",
     documentKind: args.documentKind,
@@ -197,88 +113,39 @@ async function renderDirectorPdfViaEdge(args: DirectorPdfRenderArgs): Promise<st
     },
   };
 
-  const { data, error } = await supabase.functions.invoke<DirectorPdfRenderEdgeResponse>(
-    DIRECTOR_PDF_RENDER_FUNCTION,
-    {
-      body: payload,
-    },
-  );
-
-  if (error) {
-    throw new DirectorPdfRenderInvokeError(
-      `director-pdf-render failed: ${toErrorMessage(error, "Unknown edge invoke error")}`,
-      {
-        fallbackReason: shouldDisableDirectorPdfRenderForSession(error)
-          ? "function_missing"
-          : "invoke_error",
-        disableForSession: shouldDisableDirectorPdfRenderForSession(error),
-      },
-    );
-  }
-
-  if (String(data?.error ?? "").trim()) {
-    throw new DirectorPdfRenderInvokeError(
-      `director-pdf-render returned error: ${String(data?.error ?? "").trim()}`,
-      {
-        fallbackReason: "invoke_error",
-      },
-    );
-  }
-
-  const valid = validateDirectorPdfRenderResponse(data);
-  return valid.signedUrl;
-}
-
-async function renderDirectorPdfViaClientFallback(
-  args: DirectorPdfRenderArgs,
-  fallbackReason: PdfRenderRolloutFallbackReason,
-  error?: unknown,
-): Promise<string> {
-  const uri = await renderPdfHtmlToUri({
-    html: args.html,
-    documentType: args.documentType,
-    source: args.source,
+  const result = await invokeDirectorPdfBackend({
+    functionName: DIRECTOR_PDF_RENDER_FUNCTION,
+    payload,
+    expectedDocumentKind: args.documentKind,
+    expectedRenderBranch: "edge_render_v1",
+    allowedRenderers: ["browserless_puppeteer", "local_browser_puppeteer"],
+    errorPrefix: "director-pdf-render failed",
   });
-  logDirectorPdfRenderBranch(
-    args.documentKind,
-    args.source,
-    {
-      renderBranch: "client_legacy_render",
-      fallbackReason,
-      renderVersion: "v1",
-    },
-    {
-      sourceBranch: args.sourceBranch ?? null,
-      sourceFallbackReason: args.sourceFallbackReason ?? null,
-      htmlLength: args.html.length,
-      errorMessage: error ? toErrorMessage(error, "") : null,
-    },
-  );
-  return uri;
+
+  return {
+    signedUrl: result.signedUrl,
+    renderer: result.renderer,
+  };
 }
 
 export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<string> {
-  if (shouldBypassDirectorPdfEdgeInDev()) {
-    return renderDirectorPdfViaClientFallback(args, "disabled");
-  }
-
   if (DIRECTOR_PDF_RENDER_MODE === "force_off") {
-    return renderDirectorPdfViaClientFallback(args, "disabled");
+    throw new Error("director-pdf-render is force_off and no legacy fallback is allowed");
   }
 
   if (!isSupabaseEnvValid) {
-    return renderDirectorPdfViaClientFallback(args, "missing_env");
+    throw new Error("director-pdf-render missing Supabase env");
   }
 
   if (
     DIRECTOR_PDF_RENDER_MODE === "auto" &&
     getPdfRenderRolloutAvailability(DIRECTOR_PDF_RENDER_ROLLOUT_ID) === "missing"
   ) {
-    return renderDirectorPdfViaClientFallback(args, "disabled");
+    throw new Error("director-pdf-render unavailable in this session and no legacy fallback is allowed");
   }
 
   try {
-    const signedUrl = await renderDirectorPdfViaEdge(args);
+    const renderResult = await renderDirectorPdfViaEdge(args);
     if (DIRECTOR_PDF_RENDER_MODE === "auto") {
       setPdfRenderRolloutAvailability(DIRECTOR_PDF_RENDER_ROLLOUT_ID, "available");
     }
@@ -288,7 +155,7 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
       {
         renderBranch: "edge_render_v1",
         renderVersion: "v1",
-        renderer: "browserless_puppeteer",
+        renderer: renderResult.renderer,
       },
       {
         sourceBranch: args.sourceBranch ?? null,
@@ -296,28 +163,21 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
         htmlLength: args.html.length,
       },
     );
-    return signedUrl;
+    return renderResult.signedUrl;
   } catch (error) {
-    const fallbackReason =
-      error instanceof DirectorPdfRenderInvokeError ? error.fallbackReason : "invoke_error";
-    if (
-      DIRECTOR_PDF_RENDER_MODE === "auto" &&
-      error instanceof DirectorPdfRenderInvokeError &&
-      error.disableForSession
-    ) {
+    if (DIRECTOR_PDF_RENDER_MODE === "auto" && shouldDisableDirectorPdfRenderForSession(error)) {
       setPdfRenderRolloutAvailability(DIRECTOR_PDF_RENDER_ROLLOUT_ID, "missing", {
-        errorMessage: error.message,
+        errorMessage: toErrorMessage(error, "director-pdf-render failed"),
       });
     }
     if (__DEV__) {
-      console.warn("[director-pdf-render] edge_render_v1 fallback", {
+      console.warn("[director-pdf-render] edge_render_v1 failed", {
         documentKind: args.documentKind,
         source: args.source,
-        fallbackReason,
         renderMode: DIRECTOR_PDF_RENDER_MODE,
         errorMessage: toErrorMessage(error, "Unknown render error"),
       });
     }
-    return renderDirectorPdfViaClientFallback(args, fallbackReason, error);
+    throw error instanceof Error ? error : new Error(toErrorMessage(error, "director-pdf-render failed"));
   }
 }

@@ -4,7 +4,7 @@
 import "../src/lib/runtime/installWeakRefPolyfill";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Platform, LogBox } from "react-native";
-import { Slot, router, useSegments } from "expo-router";
+import { Slot, router, usePathname, useSegments } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
@@ -37,25 +37,18 @@ if (Platform.OS === "web") {
 
 export default function RootLayout() {
   const segments = useSegments();
+  const pathname = usePathname();
+  const isPdfViewerRoute = pathname === "/pdf-viewer";
 
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const [hasSession, setHasSession] = useState<boolean | null>(null);
 
   // роль сейчас напрямую не используется в _layout, но оставляем фоновой прогрев
   const initStartedRef = useRef(false);
-  // --- WEB: нормальный контейнер/скролл + leaflet css (если нужен) ---
+  // --- WEB: нормальный контейнер/скролл ---
   useEffect(() => {
     if (Platform.OS !== "web") return;
     try {
-      const id = "leaflet-css-cdn";
-      if (!document.getElementById(id)) {
-        const link = document.createElement("link");
-        link.id = id;
-        link.rel = "stylesheet";
-        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        document.head.appendChild(link);
-      }
-
       document.documentElement.style.height = "100%";
       document.body.style.height = "100%";
       document.body.style.overflow = "auto";
@@ -126,7 +119,9 @@ export default function RootLayout() {
       if (!has) {
         clearDocumentSessions();
         clearCurrentSessionRoleCache();
-        router.replace("/auth/login");
+        if (!isPdfViewerRoute) {
+          router.replace("/auth/login");
+        }
         return;
       }
 
@@ -137,16 +132,16 @@ export default function RootLayout() {
       active = false;
       listener?.subscription?.unsubscribe();
     };
-  }, [loadRoleForCurrentSession]);
+  }, [isPdfViewerRoute, loadRoleForCurrentSession]);
 
   // --- redirect только по sessionLoaded/hasSession ---
   useEffect(() => {
     if (!sessionLoaded) return;
     const inAuthStack = segments?.[0] === "auth";
 
-    if (!hasSession && !inAuthStack) router.replace("/auth/login");
+    if (!hasSession && !inAuthStack && !isPdfViewerRoute) router.replace("/auth/login");
     else if (hasSession && inAuthStack) router.replace("/");
-  }, [hasSession, sessionLoaded, segments]);
+  }, [hasSession, isPdfViewerRoute, sessionLoaded, segments]);
 
   useEffect(() => {
     if (!sessionLoaded) return;

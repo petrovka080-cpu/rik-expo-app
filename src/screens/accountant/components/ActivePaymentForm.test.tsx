@@ -65,6 +65,19 @@ const readTextByTestId = (renderer: ReactTestRenderer, testID: string) =>
 const readJsonByTestId = <T,>(renderer: ReactTestRenderer, testID: string): T =>
   JSON.parse(readTextByTestId(renderer, testID)) as T;
 
+const collectRenderedCopy = (renderer: ReactTestRenderer) => {
+  const textCopy = renderer.root
+    .findAllByType(Text)
+    .map((node) => flattenText(node.props.children))
+    .filter(Boolean);
+  const placeholderCopy = renderer.root
+    .findAllByType(TextInput)
+    .map((node) => String(node.props.placeholder ?? "").trim())
+    .filter(Boolean);
+
+  return [...textCopy, ...placeholderCopy];
+};
+
 const baseCurrent = (overrides?: Record<string, unknown>) => ({
   proposal_id: "proposal-1",
   invoice_currency: "KGS",
@@ -315,6 +328,106 @@ describe("ActivePaymentForm", () => {
         (event) => event.event === "payment_form_load" && event.result === "success",
       ),
     ).toBe(true);
+  });
+
+  it("promotes canonical server outstanding over stale current row math", async () => {
+    mockAccountantLoadProposalFinancialState.mockResolvedValue(
+      baseFinancialState({
+        totals: {
+          payableAmount: 130,
+          totalPaid: 95,
+          outstandingAmount: 35,
+          paymentsCount: 2,
+          paymentStatus: "Частично оплачено",
+          lastPaidAt: "2026-03-30T10:00:00.000Z",
+        },
+        eligibility: {
+          approved: true,
+          sentToAccountant: true,
+          paymentEligible: true,
+          failureCode: null,
+        },
+        allocationSummary: {
+          paidKnownSum: 90,
+          paidUnassigned: 5,
+          allocationCount: 2,
+        },
+      }),
+    );
+
+    let renderer!: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <PaymentFormHarness current={baseCurrent({ invoice_amount: 999, total_paid: 0 })} />,
+      );
+    });
+    await waitForCondition(
+      () =>
+        getPlatformObservabilityEvents().some(
+          (event) => event.event === "payment_form_ready",
+        ),
+      20,
+    );
+
+    expect(readTextByTestId(renderer, "payment-form-rest")).toContain("35.00");
+  });
+
+  it("renders readable payment form copy without mojibake markers", async () => {
+    mockAccountantLoadProposalFinancialState.mockResolvedValue(
+      baseFinancialState({
+        allocationSummary: {
+          paidKnownSum: 15,
+          paidUnassigned: 5,
+          allocationCount: 2,
+        },
+      }),
+    );
+
+    let renderer!: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<PaymentFormHarness current={baseCurrent()} />);
+    });
+    await waitForCondition(
+      () =>
+        getPlatformObservabilityEvents().some(
+          (event) => event.event === "payment_form_ready",
+        ),
+      20,
+    );
+
+    await act(async () => {
+      renderer.root.findByProps({ testID: "payment-form-mode-partial" }).props.onPress();
+    });
+    await flushAsync();
+
+    const copy = collectRenderedCopy(renderer).join("\n");
+
+    expect(copy).toContain("ФИО бухгалтера *");
+    expect(copy).toContain("Номер счёта (инвойса) *");
+    expect(copy).toContain("Сегодня");
+    expect(copy).toContain("Вчера");
+    expect(copy).toContain("Банк");
+    expect(copy).toContain("Нал");
+    expect(copy).toContain("Остаток к оплате");
+    expect(copy).toContain("Оплатить полностью");
+    expect(copy).toContain("Оплатить частично");
+    expect(copy).toContain("Распределение по позициям");
+    expect(copy).toContain("Сумма к оплате (авто):");
+    expect(copy).toContain("Не распределено ранее:");
+    expect(copy).toContain("Очистить");
+    expect(copy).toContain("Остаток по позиции:");
+    expect(copy).toContain("Этим платежом по позиции");
+    expect(copy).toContain("Оплачено до:");
+    expect(copy).toContain("Остаток после:");
+    expect(copy).toContain("Комментарий");
+    expect(copy).toContain("БИК");
+    expect(copy).toContain("Р/С");
+    expect(copy).toContain("ИНН");
+    expect(copy).toContain("КПП");
+    expect(copy).toContain(
+      "Сумма оплаты берётся автоматически из распределения по позициям.",
+    );
+    expect(copy).not.toMatch(/Рџ|РЎ|Рќ|вЂ|Г—|вќ|СЃ|С‡|СЏ/);
   });
 
   it("cancels in-flight loads on immediate close without stale state updates", async () => {

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
+import { ensureLeafletWebCss } from "./leafletWebCss";
 import type { ClusterListing, MapRendererProps } from "./mapContracts";
 import { zoomFromRegion } from "./pixelCluster";
 
@@ -81,6 +82,10 @@ export default function MapRendererWeb({
       });
     };
   }, [onRegionChange, onViewportChange]);
+
+  useEffect(() => {
+    ensureLeafletWebCss();
+  }, []);
 
   useEffect(() => {
     if (!hostRef.current || mapRef.current) return;

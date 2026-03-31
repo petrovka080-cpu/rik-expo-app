@@ -28,12 +28,15 @@ import {
   markForemanSnapshotQueued,
 } from "../../../lib/offline/mutationWorker";
 import {
+  classifyForemanSyncError,
   isForemanConflictAutoRecoverable,
   normalizeForemanSyncTriggerSource,
+  type ForemanDraftSyncStage,
   type ForemanDraftRecoveryAction,
 } from "../../../lib/offline/foremanSyncRuntime";
 import { selectPlatformOnlineFlag } from "../../../lib/offline/platformOffline.model";
 import type { RequestRecord } from "../../../lib/api/types";
+import { recordCatchDiscipline, type CatchDisciplineKind } from "../../../lib/observability/catchDiscipline";
 import {
   formatQtyInput,
   isDraftLikeStatus,
@@ -269,6 +272,40 @@ export function useForemanDraftBoundary({
     },
     [getDraftQueueKey],
   );
+
+  const reportDraftBoundaryFailure = useCallback((params: {
+    event: string;
+    error: unknown;
+    context?: string;
+    stage: ForemanDraftSyncStage;
+    kind?: CatchDisciplineKind;
+    sourceKind?: string;
+    extra?: Record<string, unknown>;
+  }) => {
+    const classified = classifyForemanSyncError(params.error);
+    const snapshot = localDraftSnapshotRef.current ?? getForemanDurableDraftState().snapshot;
+    const requestIdForError = ridStr(snapshot?.requestId) || ridStr(requestId) || null;
+    recordCatchDiscipline({
+      screen: "foreman",
+      surface: "draft_boundary",
+      event: params.event,
+      kind: params.kind ?? (classified.retryable ? "degraded_fallback" : "soft_failure"),
+      error: params.error,
+      sourceKind: params.sourceKind ?? "draft_boundary:auto_recover",
+      errorStage: params.stage,
+      trigger: normalizeForemanSyncTriggerSource(params.context, null, false),
+      extra: {
+        conflictType: classified.conflictType,
+        context: params.context ?? null,
+        errorCode: classified.errorCode,
+        queueDraftKey: getDraftQueueKey(snapshot),
+        requestId: requestIdForError,
+        retryable: classified.retryable,
+        ...params.extra,
+      },
+    });
+    return classified;
+  }, [getDraftQueueKey, requestId]);
 
   const persistLocalDraftSnapshot = useCallback(
     (snapshot: ForemanLocalDraftSnapshot | null) => {
@@ -1395,11 +1432,24 @@ export function useForemanDraftBoundary({
       snapshot,
       requestId: terminalRequestId,
       remoteStatus: requestDetails?.status ?? null,
-    }).catch(() => undefined);
+    }).catch((error) => {
+      reportDraftBoundaryFailure({
+        event: "terminal_local_cleanup_failed",
+        error,
+        context: "server_terminal_conflict",
+        stage: "cleanup",
+        kind: "critical_fail",
+        sourceKind: "draft_boundary:terminal_cleanup",
+        extra: {
+          remoteStatus: requestDetails?.status ?? null,
+        },
+      });
+    });
   }, [
     boundaryState.bootstrapReady,
     boundaryState.conflictType,
     clearTerminalLocalDraft,
+    reportDraftBoundaryFailure,
     requestDetails?.status,
     requestId,
   ]);
@@ -1416,8 +1466,16 @@ export function useForemanDraftBoundary({
     const wasFocused = wasScreenFocusedRef.current;
     wasScreenFocusedRef.current = isScreenFocused;
     if (!isScreenFocused || wasFocused || !boundaryState.bootstrapReady) return;
-    void restoreDraftIfNeeded("focus").catch(() => undefined);
-  }, [boundaryState.bootstrapReady, isScreenFocused, restoreDraftIfNeeded]);
+    void restoreDraftIfNeeded("focus").catch((error) => {
+      reportDraftBoundaryFailure({
+        event: "restore_draft_on_focus_failed",
+        error,
+        context: "focus",
+        stage: "recovery",
+        sourceKind: "draft_boundary:focus_restore",
+      });
+    });
+  }, [boundaryState.bootstrapReady, isScreenFocused, reportDraftBoundaryFailure, restoreDraftIfNeeded]);
 
   useEffect(() => {
     const sub = AppState.addEventListener("change", (nextState) => {
@@ -1425,11 +1483,19 @@ export function useForemanDraftBoundary({
       appStateRef.current = nextState;
       if (!boundaryState.bootstrapReady) return;
       if (prevState !== "active" && nextState === "active") {
-        void restoreDraftIfNeeded("app_active").catch(() => undefined);
+        void restoreDraftIfNeeded("app_active").catch((error) => {
+          reportDraftBoundaryFailure({
+            event: "restore_draft_on_app_active_failed",
+            error,
+            context: "app_active",
+            stage: "recovery",
+            sourceKind: "draft_boundary:app_active_restore",
+          });
+        });
       }
     });
     return () => sub.remove();
-  }, [boundaryState.bootstrapReady, restoreDraftIfNeeded]);
+  }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, restoreDraftIfNeeded]);
 
   useEffect(() => {
     let disposed = false;
@@ -1439,7 +1505,21 @@ export function useForemanDraftBoundary({
         networkOnlineRef.current = selectPlatformOnlineFlag(snapshot);
         setNetworkOnline(networkOnlineRef.current);
       })
-      .catch(() => undefined);
+      .catch((error) => {
+        if (disposed) return;
+        networkOnlineRef.current = null;
+        setNetworkOnline(null);
+        reportDraftBoundaryFailure({
+          event: "network_service_bootstrap_failed",
+          error,
+          context: "network_service_bootstrap",
+          stage: "hydrate",
+          sourceKind: "draft_boundary:network_service",
+          extra: {
+            fallbackReason: "network_online_unknown",
+          },
+        });
+      });
     const unsubscribe = subscribePlatformNetwork((state, previous) => {
       if (disposed) return;
       const nextOnline = selectPlatformOnlineFlag(state);
@@ -1448,7 +1528,15 @@ export function useForemanDraftBoundary({
       setNetworkOnline(nextOnline);
       if (!boundaryState.bootstrapReady) return;
       if (wasOnline === false && nextOnline === true) {
-        void restoreDraftIfNeeded("network_back").catch(() => undefined);
+        void restoreDraftIfNeeded("network_back").catch((error) => {
+          reportDraftBoundaryFailure({
+            event: "restore_draft_on_network_back_failed",
+            error,
+            context: "network_back",
+            stage: "recovery",
+            sourceKind: "draft_boundary:network_restore",
+          });
+        });
       }
     });
 
@@ -1456,7 +1544,7 @@ export function useForemanDraftBoundary({
       disposed = true;
       unsubscribe();
     };
-  }, [boundaryState.bootstrapReady, restoreDraftIfNeeded]);
+  }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, restoreDraftIfNeeded]);
 
   useEffect(() => {
     if (!boundaryState.bootstrapReady || !requestId || skipRemoteDraftEffects) return;

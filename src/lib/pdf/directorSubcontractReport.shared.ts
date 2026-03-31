@@ -1,4 +1,5 @@
-import { fmtDateOnly, formatDashPeriodText, nnum } from "../api/pdf_director.format";
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
+import { fmtDateOnly, formatDashPeriodText, nnum } from "../api/pdf_director.format.ts";
 
 export type DirectorSubcontractReportPdfRequest = {
   version: "v1";

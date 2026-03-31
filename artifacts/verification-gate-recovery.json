@@ -1,0 +1,73 @@
+{
+  "batch": "Wave 2.5: Verification Gate Recovery",
+  "status": "GREEN",
+  "restoredAt": "2026-03-31T09:59:00.000Z",
+  "changes": {
+    "installStateRestoredFromLockfile": true,
+    "jestBootstrapRestored": true,
+    "expoWebSmokeBootstrapRestored": true,
+    "typecheckGateRestored": true
+  },
+  "changedFiles": [
+    "jest.config.js",
+    "jest.setup.js",
+    "tsconfig.json",
+    "scripts/local_role_screen_access_verify.ts",
+    "scripts/director_dev_local_access_bootstrap.ts"
+  ],
+  "commands": [
+    {
+      "command": "npm ci --no-audit --no-fund",
+      "ok": true,
+      "purpose": "restore broken install state from existing package-lock.json"
+    },
+    {
+      "command": "node node_modules/jest/bin/jest.js src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts src/screens/foreman/foreman.localDraft.lifecycle.test.ts src/lib/api/requestDraftSync.service.test.ts src/lib/api/proposals.silentCatch.test.ts --runInBand --json --outputFile artifacts/wave2-silent-failure-jest.json",
+      "ok": true,
+      "artifact": "artifacts/wave2-silent-failure-jest.json"
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+      "ok": true
+    },
+    {
+      "command": "node node_modules/tsx/dist/cli.mjs scripts/local_role_screen_access_verify.ts",
+      "ok": true,
+      "artifact": "artifacts/local-role-screen-access-proof.json"
+    }
+  ],
+  "proof": {
+    "resolvedModules": {
+      "@jest/core": true,
+      "@expo/schema-utils": true,
+      "@expo/vector-icons": true,
+      "@react-native-async-storage/async-storage": true
+    },
+    "jest": {
+      "suiteCount": 4,
+      "testCount": 10,
+      "allPassing": true
+    },
+    "typecheck": {
+      "fullRepoNoEmit": true
+    },
+    "webSmoke": {
+      "status": "GREEN",
+      "baseUrl": "http://localhost:8081",
+      "routesOpenedInLocalDev": [
+        "/director",
+        "/buyer",
+        "/accountant",
+        "/warehouse",
+        "/contractor",
+        "/profile"
+      ],
+      "productionRedirectPreserved": true
+    }
+  },
+  "notes": [
+    "No business logic or feature semantics were changed.",
+    "The smoke verifier now terminates cleanly on Windows by killing the spawned Expo process tree.",
+    "The local route smoke now includes /profile so Wave 1 proof can be rerun on the restored gate."
+  ]
+}

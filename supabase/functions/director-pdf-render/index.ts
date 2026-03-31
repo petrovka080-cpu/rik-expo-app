@@ -3,16 +3,28 @@
 
 import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { resolveDirectorPdfRoleAccess } from "../../../src/lib/pdf/directorPdfAuth.ts";
+import {
+  createDirectorPdfErrorResponse,
+  createDirectorPdfOptionsResponse,
+  createDirectorPdfSuccessResponse,
+} from "../../../src/lib/pdf/directorPdfPlatformContract.ts";
 
 const FUNCTION_NAME = "director-pdf-render";
 const DEFAULT_BUCKET = "director_pdf_exports";
 const DEFAULT_SIGNED_URL_TTL_SECONDS = 60 * 60;
+const WINDOWS_LOCAL_BROWSER_CANDIDATES = [
+  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+  "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+  "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+];
+const UNIX_LOCAL_BROWSER_CANDIDATES = [
+  "/usr/bin/google-chrome",
+  "/usr/bin/chromium",
+  "/usr/bin/chromium-browser",
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+];
 
 const DOC_KIND_TO_STEM = {
   finance_preview: "director_finance_preview",
@@ -21,16 +33,6 @@ const DOC_KIND_TO_STEM = {
   production_report: "director_production_report",
   subcontract_report: "director_subcontract_report",
 } as const;
-
-function json(status: number, body: Record<string, unknown>) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "application/json",
-    },
-  });
-}
 
 function cleanText(value: unknown) {
   return String(value ?? "").trim();
@@ -85,6 +87,101 @@ function resolveBrowserWsEndpoint() {
   return "";
 }
 
+function resolveBrowserUrl() {
+  return cleanText(Deno.env.get("DIRECTOR_PDF_BROWSER_URL"));
+}
+
+async function resolveLocalBrowserExecutable() {
+  const explicit = cleanText(
+    Deno.env.get("DIRECTOR_PDF_LOCAL_BROWSER_EXECUTABLE") ??
+      Deno.env.get("PUPPETEER_EXECUTABLE_PATH"),
+  );
+  if (explicit) return explicit;
+
+  const candidates =
+    Deno.build.os === "windows" ? WINDOWS_LOCAL_BROWSER_CANDIDATES : UNIX_LOCAL_BROWSER_CANDIDATES;
+  for (const candidate of candidates) {
+    try {
+      await Deno.stat(candidate);
+      return candidate;
+    } catch {}
+  }
+  return "";
+}
+
+async function requireDirectorAuth(request: Request, supabaseUrl: string) {
+  const anonKey = cleanText(Deno.env.get("SUPABASE_ANON_KEY"));
+  const authHeader = cleanText(request.headers.get("Authorization"));
+
+  if (!anonKey || !authHeader) {
+    throw createDirectorPdfErrorResponse({
+      status: 401,
+      errorCode: "auth_failed",
+      error: "Unauthorized.",
+    });
+  }
+
+  const requester = createClient(supabaseUrl, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      headers: {
+        Authorization: authHeader,
+        apikey: anonKey,
+      },
+    },
+  });
+
+  const [{ data: userData, error: userError }, { data: roleData, error: roleError }] = await Promise.all([
+    requester.auth.getUser(),
+    requester.rpc("get_my_role"),
+  ]);
+
+  if (userError || !userData?.user) {
+    throw createDirectorPdfErrorResponse({
+      status: 401,
+      errorCode: "auth_failed",
+      error: "Unauthorized.",
+    });
+  }
+
+  const roleAccess = resolveDirectorPdfRoleAccess({
+    user: userData.user,
+    rpcRole: roleData,
+  });
+
+  if (!roleAccess.isDirector) {
+    console.warn(
+      `[${FUNCTION_NAME}] director auth forbidden ${JSON.stringify({
+        userId: userData.user.id,
+        appMetadataRole: roleAccess.appMetadataRole,
+        rpcRole: roleAccess.rpcRole,
+        roleError: roleError?.message ?? null,
+      })}`,
+    );
+    throw createDirectorPdfErrorResponse({
+      status: 403,
+      errorCode: "auth_failed",
+      error: "Forbidden.",
+      documentKind: "management_report",
+    });
+  }
+
+  if (roleAccess.source === "app_metadata" && roleAccess.rpcRole !== "director") {
+    console.info(
+      `[${FUNCTION_NAME}] director auth resolved from signed app_metadata ${JSON.stringify({
+        userId: userData.user.id,
+        appMetadataRole: roleAccess.appMetadataRole,
+        rpcRole: roleAccess.rpcRole,
+        roleError: roleError?.message ?? null,
+      })}`,
+    );
+  }
+
+  return {
+    userId: userData.user.id,
+  };
+}
+
 function validatePayload(raw: unknown) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     throw new Error("Invalid JSON body.");
@@ -120,6 +217,70 @@ function validatePayload(raw: unknown) {
       sourceFallbackReason: cleanText(branchDiagnostics.sourceFallbackReason) || null,
     },
   };
+}
+
+async function renderPdfBytes(html: string) {
+  const browserWsEndpoint = resolveBrowserWsEndpoint();
+  const browserUrl = browserWsEndpoint ? "" : resolveBrowserUrl();
+  const localExecutable = browserWsEndpoint || browserUrl ? "" : await resolveLocalBrowserExecutable();
+
+  let browser = null;
+  let page = null;
+
+  try {
+    if (browserWsEndpoint) {
+      browser = await puppeteer.connect({
+        browserWSEndpoint: browserWsEndpoint,
+      });
+    } else if (browserUrl) {
+      browser = await puppeteer.connect({
+        browserURL: browserUrl,
+      });
+    } else if (localExecutable) {
+      browser = await puppeteer.launch({
+        executablePath: localExecutable,
+        headless: true,
+        args: ["--no-sandbox", "--disable-dev-shm-usage"],
+      });
+    } else {
+      throw new Error("No PDF renderer is configured.");
+    }
+
+    page = await browser.newPage();
+    await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 1 });
+    await page.setContent(html, {
+      waitUntil: "load",
+    });
+
+    const client = await page.target().createCDPSession();
+    const result = await client.send("Page.printToPDF", {
+      printBackground: true,
+      preferCSSPageSize: true,
+      paperWidth: 8.27,
+      paperHeight: 11.69,
+    });
+    const base64 = cleanText(result?.data);
+    if (!base64) {
+      throw new Error("Page.printToPDF returned empty data");
+    }
+    const binary = atob(base64);
+    const pdfBytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      pdfBytes[index] = binary.charCodeAt(index);
+    }
+
+    return {
+      pdfBytes,
+      renderer: browserWsEndpoint ? "browserless_puppeteer" : "local_browser_puppeteer",
+    };
+  } finally {
+    try {
+      if (page) await page.close();
+    } catch {}
+    try {
+      if (browser) await browser.close();
+    } catch {}
+  }
 }
 
 async function uploadPdfAndSignUrl(args: {
@@ -158,20 +319,28 @@ async function uploadPdfAndSignUrl(args: {
   };
 }
 
-Deno.serve(async (request) => {
+const LOCAL_PORT = Number(Deno.env.get("PORT") ?? 8000);
+
+Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LOCAL_PORT) : 8000 }, async (request) => {
   if (request.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return createDirectorPdfOptionsResponse();
   }
 
   if (request.method !== "POST") {
-    return json(405, { error: "Method not allowed." });
+    return createDirectorPdfErrorResponse({
+      status: 405,
+      errorCode: "validation_failed",
+      error: "Method not allowed.",
+    });
   }
 
   let payload;
   try {
     payload = validatePayload(await request.json());
   } catch (error) {
-    return json(400, {
+    return createDirectorPdfErrorResponse({
+      status: 400,
+      errorCode: "validation_failed",
       error: error instanceof Error ? error.message : "Invalid JSON body.",
     });
   }
@@ -179,36 +348,44 @@ Deno.serve(async (request) => {
   const supabaseUrl = cleanText(Deno.env.get("SUPABASE_URL"));
   const serviceRoleKey = cleanText(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
   const browserWsEndpoint = resolveBrowserWsEndpoint();
+  const browserUrl = browserWsEndpoint ? "" : resolveBrowserUrl();
+  const localExecutable = browserWsEndpoint || browserUrl ? "" : await resolveLocalBrowserExecutable();
 
   if (!supabaseUrl || !serviceRoleKey) {
-    return json(500, { error: "Supabase service role env is not configured." });
+    return createDirectorPdfErrorResponse({
+      status: 500,
+      errorCode: "backend_pdf_failed",
+      error: "Supabase service role env is not configured.",
+      documentKind: payload.documentKind,
+    });
   }
-  if (!browserWsEndpoint) {
-    return json(503, { error: "Browserless WebSocket endpoint is not configured." });
+  if (!browserWsEndpoint && !browserUrl && !localExecutable) {
+    return createDirectorPdfErrorResponse({
+      status: 503,
+      errorCode: "backend_pdf_failed",
+      error: "No PDF renderer is configured.",
+      documentKind: payload.documentKind,
+    });
+  }
+
+  try {
+    await requireDirectorAuth(request, supabaseUrl);
+  } catch (response) {
+    if (response instanceof Response) return response;
+    return createDirectorPdfErrorResponse({
+      status: 401,
+      errorCode: "auth_failed",
+      error: "Unauthorized.",
+      documentKind: payload.documentKind,
+    });
   }
 
   const admin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  let browser = null;
-  let page = null;
-
   try {
-    browser = await puppeteer.connect({
-      browserWSEndpoint: browserWsEndpoint,
-    });
-    page = await browser.newPage();
-    await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 1 });
-    await page.setContent(payload.html, {
-      waitUntil: "load",
-    });
-
-    const pdfBytes = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true,
-    });
+    const { pdfBytes, renderer } = await renderPdfBytes(payload.html);
 
     const fileName = normalizePdfFileName(payload.documentKind, payload.fileName);
     const uploaded = await uploadPdfAndSignUrl({
@@ -230,10 +407,13 @@ Deno.serve(async (request) => {
       sizeBytes: pdfBytes.byteLength,
     });
 
-    return json(200, {
+    return createDirectorPdfSuccessResponse({
+      ok: true,
       renderVersion: "v1",
       renderBranch: "edge_render_v1",
-      renderer: "browserless_puppeteer",
+      renderer,
+      sourceKind: "remote-url",
+      documentKind: payload.documentKind,
       bucketId: uploaded.bucketId,
       storagePath: uploaded.storagePath,
       signedUrl: uploaded.signedUrl,
@@ -249,15 +429,12 @@ Deno.serve(async (request) => {
       sourceFallbackReason: payload.branchDiagnostics.sourceFallbackReason,
       error: error instanceof Error ? error.message : String(error),
     });
-    return json(500, {
+    return createDirectorPdfErrorResponse({
+      status: 500,
+      errorCode: "backend_pdf_failed",
       error: error instanceof Error ? error.message : "Director PDF render failed.",
+      documentKind: payload.documentKind,
+      renderBranch: "edge_render_v1",
     });
-  } finally {
-    try {
-      if (page) await page.close();
-    } catch {}
-    try {
-      if (browser) await browser.close();
-    } catch {}
   }
 });

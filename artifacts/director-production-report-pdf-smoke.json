@@ -1,0 +1,18 @@
+{
+  "status": 200,
+  "ok": true,
+  "functionName": "director-production-report-pdf",
+  "body": {
+    "ok": true,
+    "renderVersion": "v1",
+    "renderBranch": "backend_production_report_v1",
+    "renderer": "browserless_puppeteer",
+    "sourceKind": "remote-url",
+    "documentKind": "production_report",
+    "bucketId": "director_pdf_exports",
+    "storagePath": "director/production_report/2026/03/31/2026-03-31T07-36-49-901Z_3e486161_director_production_report_2026-03-31.pdf",
+    "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/production_report/2026/03/31/2026-03-31T07-36-49-901Z_3e486161_director_production_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9wcm9kdWN0aW9uX3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDctMzYtNDktOTAxWl8zZTQ4NjE2MV9kaXJlY3Rvcl9wcm9kdWN0aW9uX3JlcG9ydF8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDk0MjYxMSwiZXhwIjoxNzc0OTQ2MjExfQ.RLo7zTNZN3BEdiOcLtjksvM4pE_D0S_U6MOh34iLURo",
+    "fileName": "director_production_report_2026-03-31.pdf",
+    "expiresInSeconds": 3600
+  }
+}

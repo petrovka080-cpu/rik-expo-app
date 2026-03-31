@@ -32,7 +32,9 @@ describe("accountant.paymentForm.helpers", () => {
       current: {
         proposal_id: "proposal-1",
         invoice_amount: 130,
+        outstanding_amount: 110,
         total_paid: 20,
+        paid_unassigned: 0,
         invoice_currency: "KGS",
       },
       proposalId: "proposal-1",
@@ -59,6 +61,34 @@ describe("accountant.paymentForm.helpers", () => {
       { proposal_item_id: "item-1", amount: 80 },
       { proposal_item_id: "item-2", amount: 30 },
     ]);
+  });
+
+  it("uses canonical outstanding and paid_unassigned for proposal payment truth", () => {
+    const items = [
+      { id: "item-1", name_human: "One", qty: 2, price: 50, uom: "pcs", rik_code: "MAT-1" },
+    ];
+
+    const state = derivePaymentFormState({
+      current: {
+        proposal_id: "proposal-1",
+        invoice_amount: 999,
+        total_paid: 0,
+        outstanding_amount: 35,
+        paid_unassigned: 7,
+        invoice_currency: "KGS",
+      },
+      proposalId: "proposal-1",
+      mode: "partial",
+      items,
+      paidByLineMap: new Map(),
+      paidKnownSum: 0,
+      allocRows: [],
+      itemsLoading: false,
+      paymentDataErrorMessage: null,
+    });
+
+    expect(state.restProposal).toBe(35);
+    expect(state.paidUnassigned).toBe(7);
   });
 
   it("clamps per-line allocations to the actual residual", () => {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T14:56:39.108Z",
+  "generatedAt": "2026-03-30T00:23:25.136Z",
   "headsSourceMeta": {
     "primaryOwner": "canonical_requests",
     "sourcePath": "canonical",
@@ -18,7 +18,7 @@
   },
   "trace": [
     {
-      "timestamp": "2026-03-29T14:56:37.439Z",
+      "timestamp": "2026-03-30T00:23:23.098Z",
       "operation": "req_heads_window",
       "result": "success",
       "sourcePath": "canonical",
@@ -31,13 +31,13 @@
       "contractVersion": "request_lookup_v2"
     },
     {
-      "timestamp": "2026-03-29T14:56:38.706Z",
+      "timestamp": "2026-03-30T00:23:24.729Z",
       "operation": "req_items",
       "result": "success",
       "sourcePath": "canonical",
       "sourceKind": "canonical:request_items_materialized",
       "reason": "warehouse_view_missing_or_empty",
-      "requestId": "0022c0cc-6dbb-40ed-8ae3-bd58e11bcc1e",
+      "requestId": "7bd1ee57-578c-49f5-901c-0387bffc3d47",
       "page": null,
       "pageSize": null,
       "rowCount": 1,

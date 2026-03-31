@@ -1,3 +1,4 @@
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import { listAccountantInbox } from "./accountant";
 import { supabase } from "../supabaseClient";
 import {
@@ -11,18 +12,22 @@ import {
   money,
   nnum,
   todayIso10,
-} from "./pdf_director.format";
+} from "./pdf_director.format.ts";
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import {
   prepareDirectorProductionReportPdfModelShared,
   type DirectorProductionDiscipline,
   type DirectorProductionReportData,
-} from "../pdf/directorProductionReport.shared";
-import { prepareDirectorSubcontractReportPdfModelShared } from "../pdf/directorSubcontractReport.shared";
-import { prepareDirectorSupplierSummaryPdfModelShared } from "../pdf/directorSupplierSummary.shared";
+} from "../pdf/directorProductionReport.shared.ts";
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
+import { prepareDirectorSubcontractReportPdfModelShared } from "../pdf/directorSubcontractReport.shared.ts";
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
+import { prepareDirectorSupplierSummaryPdfModelShared } from "../pdf/directorSupplierSummary.shared.ts";
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import type {
   FinanceRow,
   FinSpendRow,
-} from "../../screens/director/director.finance";
+} from "../../screens/director/director.finance.ts";
 
 export type DirectorSupplierSummaryPdfInput = {
   supplier: string;

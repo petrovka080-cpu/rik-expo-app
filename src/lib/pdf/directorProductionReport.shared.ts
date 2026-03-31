@@ -1,4 +1,5 @@
-import { formatDashPeriodText, nnum } from "../api/pdf_director.format";
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
+import { formatDashPeriodText, nnum } from "../api/pdf_director.format.ts";
 
 export type DirectorProductionReportPdfRequest = {
   version: "v1";

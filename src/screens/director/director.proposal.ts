@@ -3,13 +3,13 @@ import { useCallback, useRef } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import * as XLSX from "xlsx";
 import { generateProposalPdfDocument } from "../../lib/catalog_api";
 import { toProposalRequestItemIntegrityDegradedError } from "../../lib/api/proposalIntegrity";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import type { Database } from "../../lib/database.types";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
+import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
 import type { ProposalItem } from "./director.types";
 
 type BusyLike = { isBusy: (key: string) => boolean };
@@ -278,23 +278,11 @@ export function useDirectorProposalActions({
         data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)])
       );
 
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(data);
-      XLSX.utils.book_append_sheet(wb, ws, sheetName);
-
-      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const blob = new Blob([wbout], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      await exportAoaWorkbookWeb({
+        data,
+        sheetName,
+        downloadName: `${sheetName}.xlsx`,
       });
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${sheetName}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     } catch (e: unknown) {
       recordDirectorProposalCatch("critical_fail", "proposal_excel_export_failed", e, {
         proposalId: pidStr,

@@ -1,0 +1,326 @@
+{
+  "status": "NOT_GREEN",
+  "webPreflightOk": true,
+  "webPostOk": false,
+  "directorPdfWebOpen": true,
+  "directorPdfAndroidOpen": false,
+  "directorPdfIosContractSafe": true,
+  "errorPathCorsPreserved": true,
+  "typedTransportErrorClassificationOk": true,
+  "invalidSourceControlled": false,
+  "noFatalCrash": true,
+  "processAliveAfterOpen": true,
+  "familyParitySafe": false,
+  "webFamilies": [
+    {
+      "family": "management_report",
+      "functionName": "director-pdf-render",
+      "optionsStatus": 204,
+      "optionsOk": true,
+      "optionsHeaders": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "date": "Tue, 31 Mar 2026 05:27:17 GMT",
+        "vary": "Origin, Access-Control-Request-Headers, Access-Control-Request-Method"
+      },
+      "postStatus": 500,
+      "postOk": false,
+      "postHeaders": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "content-encoding": "gzip",
+        "content-length": "174",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Tue, 31 Mar 2026 05:27:22 GMT",
+        "vary": "Accept-Encoding, Origin, Access-Control-Request-Headers, Access-Control-Request-Method"
+      },
+      "postPayload": {
+        "ok": false,
+        "renderVersion": "v1",
+        "errorCode": "backend_pdf_failed",
+        "error": "reader is not async iterable",
+        "documentKind": "management_report",
+        "renderBranch": "edge_render_v1"
+      },
+      "signedUrl": "",
+      "signedUrlReachable": false,
+      "contractOk": false,
+      "corsOk": true,
+      "renderer": null,
+      "renderBranch": "edge_render_v1",
+      "error": "web POST failed with HTTP 500"
+    },
+    {
+      "family": "supplier_summary",
+      "functionName": "director-finance-supplier-summary-pdf",
+      "optionsStatus": 204,
+      "optionsOk": true,
+      "optionsHeaders": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "date": "Tue, 31 Mar 2026 05:27:22 GMT",
+        "vary": "Origin, Access-Control-Request-Headers, Access-Control-Request-Method"
+      },
+      "postStatus": 200,
+      "postOk": true,
+      "postHeaders": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "content-encoding": "gzip",
+        "content-length": "1046",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Tue, 31 Mar 2026 05:27:31 GMT",
+        "vary": "Accept-Encoding, Origin, Access-Control-Request-Headers, Access-Control-Request-Method"
+      },
+      "postPayload": {
+        "ok": true,
+        "renderVersion": "v1",
+        "renderBranch": "backend_supplier_summary_v1",
+        "renderer": "local_browser_puppeteer",
+        "sourceKind": "remote-url",
+        "documentKind": "supplier_summary",
+        "bucketId": "director_pdf_exports",
+        "storagePath": "director/supplier_summary/2026/03/31/2026-03-31T05-27-30-144Z_fd100555_director_supplier_summary_Runtime_Smoke_Supplier_2026-03-31.pdf",
+        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/supplier_summary/2026/03/31/2026-03-31T05-27-30-144Z_fd100555_director_supplier_summary_Runtime_Smoke_Supplier_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdXBwbGllcl9zdW1tYXJ5LzIwMjYvMDMvMzEvMjAyNi0wMy0zMVQwNS0yNy0zMC0xNDRaX2ZkMTAwNTU1X2RpcmVjdG9yX3N1cHBsaWVyX3N1bW1hcnlfUnVudGltZV9TbW9rZV9TdXBwbGllcl8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg1MiwiZXhwIjoxNzc0OTM4NDUyfQ.6M7EF0XU66ffJUA1BjgH8j53h6eQLBzwr-5lxgqP_Ik",
+        "fileName": "director_supplier_summary_Runtime_Smoke_Supplier_2026-03-31.pdf",
+        "expiresInSeconds": 3600,
+        "telemetry": {
+          "documentKind": "director_finance_supplier_summary",
+          "sourceKind": "remote-url",
+          "fetchSourceName": "pdf_director_finance_source_v1",
+          "financeRows": 93,
+          "spendRows": 115,
+          "detailRows": 0,
+          "kindRows": 0,
+          "fetchDurationMs": 472,
+          "renderDurationMs": 1375,
+          "totalDurationMs": 1847,
+          "htmlLengthEstimate": 2734,
+          "payloadSizeEstimate": 43020,
+          "fallbackUsed": false,
+          "openStrategy": "remote-url",
+          "materializationStrategy": "viewer_remote"
+        }
+      },
+      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/supplier_summary/2026/03/31/2026-03-31T05-27-30-144Z_fd100555_director_supplier_summary_Runtime_Smoke_Supplier_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdXBwbGllcl9zdW1tYXJ5LzIwMjYvMDMvMzEvMjAyNi0wMy0zMVQwNS0yNy0zMC0xNDRaX2ZkMTAwNTU1X2RpcmVjdG9yX3N1cHBsaWVyX3N1bW1hcnlfUnVudGltZV9TbW9rZV9TdXBwbGllcl8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg1MiwiZXhwIjoxNzc0OTM4NDUyfQ.6M7EF0XU66ffJUA1BjgH8j53h6eQLBzwr-5lxgqP_Ik",
+      "signedUrlReachable": true,
+      "contractOk": true,
+      "corsOk": true,
+      "renderer": "local_browser_puppeteer",
+      "renderBranch": "backend_supplier_summary_v1",
+      "error": null
+    },
+    {
+      "family": "production_report",
+      "functionName": "director-production-report-pdf",
+      "optionsStatus": 204,
+      "optionsOk": true,
+      "optionsHeaders": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "date": "Tue, 31 Mar 2026 05:27:32 GMT",
+        "vary": "Origin, Access-Control-Request-Headers, Access-Control-Request-Method"
+      },
+      "postStatus": 200,
+      "postOk": true,
+      "postHeaders": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "content-encoding": "gzip",
+        "content-length": "743",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Tue, 31 Mar 2026 05:27:54 GMT",
+        "vary": "Accept-Encoding, Origin, Access-Control-Request-Headers, Access-Control-Request-Method"
+      },
+      "postPayload": {
+        "ok": true,
+        "renderVersion": "v1",
+        "renderBranch": "backend_production_report_v1",
+        "renderer": "local_browser_puppeteer",
+        "sourceKind": "remote-url",
+        "documentKind": "production_report",
+        "bucketId": "director_pdf_exports",
+        "storagePath": "director/production_report/2026/03/31/2026-03-31T05-27-52-957Z_c272f3ef_director_production_report_2026-03-31.pdf",
+        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/production_report/2026/03/31/2026-03-31T05-27-52-957Z_c272f3ef_director_production_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9wcm9kdWN0aW9uX3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDUtMjctNTItOTU3Wl9jMjcyZjNlZl9kaXJlY3Rvcl9wcm9kdWN0aW9uX3JlcG9ydF8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg3NiwiZXhwIjoxNzc0OTM4NDc2fQ.bqpH3lMBkCfc5H7VYCyxqrjXFOpgarKwSN_UYaHdqNM",
+        "fileName": "director_production_report_2026-03-31.pdf",
+        "expiresInSeconds": 3600
+      },
+      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/production_report/2026/03/31/2026-03-31T05-27-52-957Z_c272f3ef_director_production_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9wcm9kdWN0aW9uX3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDUtMjctNTItOTU3Wl9jMjcyZjNlZl9kaXJlY3Rvcl9wcm9kdWN0aW9uX3JlcG9ydF8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg3NiwiZXhwIjoxNzc0OTM4NDc2fQ.bqpH3lMBkCfc5H7VYCyxqrjXFOpgarKwSN_UYaHdqNM",
+      "signedUrlReachable": true,
+      "contractOk": true,
+      "corsOk": true,
+      "renderer": "local_browser_puppeteer",
+      "renderBranch": "backend_production_report_v1",
+      "error": null
+    },
+    {
+      "family": "subcontract_report",
+      "functionName": "director-subcontract-report-pdf",
+      "optionsStatus": 204,
+      "optionsOk": true,
+      "optionsHeaders": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "date": "Tue, 31 Mar 2026 05:27:56 GMT",
+        "vary": "Origin, Access-Control-Request-Headers, Access-Control-Request-Method"
+      },
+      "postStatus": 200,
+      "postOk": true,
+      "postHeaders": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, accept",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "content-encoding": "gzip",
+        "content-length": "778",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Tue, 31 Mar 2026 05:28:07 GMT",
+        "vary": "Accept-Encoding, Origin, Access-Control-Request-Headers, Access-Control-Request-Method"
+      },
+      "postPayload": {
+        "ok": true,
+        "renderVersion": "v1",
+        "renderBranch": "backend_subcontract_report_v1",
+        "renderer": "local_browser_puppeteer",
+        "sourceKind": "remote-url",
+        "documentKind": "subcontract_report",
+        "bucketId": "director_pdf_exports",
+        "storagePath": "director/subcontract_report/2026/03/31/2026-03-31T05-28-05-509Z_77fd5684_director_subcontract_report_2026-03-31.pdf",
+        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/subcontract_report/2026/03/31/2026-03-31T05-28-05-509Z_77fd5684_director_subcontract_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdWJjb250cmFjdF9yZXBvcnQvMjAyNi8wMy8zMS8yMDI2LTAzLTMxVDA1LTI4LTA1LTUwOVpfNzdmZDU2ODRfZGlyZWN0b3Jfc3ViY29udHJhY3RfcmVwb3J0XzIwMjYtMDMtMzEucGRmIiwiaWF0IjoxNzc0OTM0ODg4LCJleHAiOjE3NzQ5Mzg0ODh9.NhI_oaAAs49ULSk6iL8rP_74VkBOjk-Es-fcrrW7zV0",
+        "fileName": "director_subcontract_report_2026-03-31.pdf",
+        "expiresInSeconds": 3600
+      },
+      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/subcontract_report/2026/03/31/2026-03-31T05-28-05-509Z_77fd5684_director_subcontract_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdWJjb250cmFjdF9yZXBvcnQvMjAyNi8wMy8zMS8yMDI2LTAzLTMxVDA1LTI4LTA1LTUwOVpfNzdmZDU2ODRfZGlyZWN0b3Jfc3ViY29udHJhY3RfcmVwb3J0XzIwMjYtMDMtMzEucGRmIiwiaWF0IjoxNzc0OTM0ODg4LCJleHAiOjE3NzQ5Mzg0ODh9.NhI_oaAAs49ULSk6iL8rP_74VkBOjk-Es-fcrrW7zV0",
+      "signedUrlReachable": true,
+      "contractOk": true,
+      "corsOk": true,
+      "renderer": "local_browser_puppeteer",
+      "renderBranch": "backend_subcontract_report_v1",
+      "error": null
+    }
+  ],
+  "typedErrorDiagnostics": [
+    {
+      "caseName": "auth_failed",
+      "functionName": "director-pdf-render",
+      "status": 401,
+      "corsPreserved": true,
+      "payload": {
+        "ok": false,
+        "renderVersion": "v1",
+        "errorCode": "auth_failed",
+        "error": "Unauthorized."
+      },
+      "classifiedAs": "auth_failed",
+      "error": null
+    },
+    {
+      "caseName": "validation_failed",
+      "functionName": "director-pdf-render",
+      "status": 400,
+      "corsPreserved": true,
+      "payload": {
+        "ok": false,
+        "renderVersion": "v1",
+        "errorCode": "validation_failed",
+        "error": "documentKind is required."
+      },
+      "classifiedAs": "edge_function_http_error",
+      "error": null
+    }
+  ],
+  "iosFamilyChecks": [
+    {
+      "family": "supplier_summary",
+      "resolutionKind": "resolved-native-handoff",
+      "sourceKind": "remote-url",
+      "renderer": "native-handoff",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/supplier_summary/2026/03/31/2026-03-31T05-27-30-144Z_fd100555_director_supplier_summary_Runtime_Smoke_Supplier_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdXBwbGllcl9zdW1tYXJ5LzIwMjYvMDMvMzEvMjAyNi0wMy0zMVQwNS0yNy0zMC0xNDRaX2ZkMTAwNTU1X2RpcmVjdG9yX3N1cHBsaWVyX3N1bW1hcnlfUnVudGltZV9TbW9rZV9TdXBwbGllcl8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg1MiwiZXhwIjoxNzc0OTM4NDUyfQ.6M7EF0XU66ffJUA1BjgH8j53h6eQLBzwr-5lxgqP_Ik",
+      "safe": true
+    },
+    {
+      "family": "production_report",
+      "resolutionKind": "resolved-native-handoff",
+      "sourceKind": "remote-url",
+      "renderer": "native-handoff",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/production_report/2026/03/31/2026-03-31T05-27-52-957Z_c272f3ef_director_production_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9wcm9kdWN0aW9uX3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDUtMjctNTItOTU3Wl9jMjcyZjNlZl9kaXJlY3Rvcl9wcm9kdWN0aW9uX3JlcG9ydF8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg3NiwiZXhwIjoxNzc0OTM4NDc2fQ.bqpH3lMBkCfc5H7VYCyxqrjXFOpgarKwSN_UYaHdqNM",
+      "safe": true
+    },
+    {
+      "family": "subcontract_report",
+      "resolutionKind": "resolved-native-handoff",
+      "sourceKind": "remote-url",
+      "renderer": "native-handoff",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/subcontract_report/2026/03/31/2026-03-31T05-28-05-509Z_77fd5684_director_subcontract_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdWJjb250cmFjdF9yZXBvcnQvMjAyNi8wMy8zMS8yMDI2LTAzLTMxVDA1LTI4LTA1LTUwOVpfNzdmZDU2ODRfZGlyZWN0b3Jfc3ViY29udHJhY3RfcmVwb3J0XzIwMjYtMDMtMzEucGRmIiwiaWF0IjoxNzc0OTM0ODg4LCJleHAiOjE3NzQ5Mzg0ODh9.NhI_oaAAs49ULSk6iL8rP_74VkBOjk-Es-fcrrW7zV0",
+      "safe": true
+    }
+  ],
+  "webViewerResult": {
+    "iframeSrc": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/production_report/2026/03/31/2026-03-31T05-27-52-957Z_c272f3ef_director_production_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9wcm9kdWN0aW9uX3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDUtMjctNTItOTU3Wl9jMjcyZjNlZl9kaXJlY3Rvcl9wcm9kdWN0aW9uX3JlcG9ydF8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg3NiwiZXhwIjoxNzc0OTM4NDc2fQ.bqpH3lMBkCfc5H7VYCyxqrjXFOpgarKwSN_UYaHdqNM",
+    "fetchReady": true,
+    "viewerReady": true,
+    "blockingConsoleErrors": [],
+    "pageErrors": [],
+    "networkResponses": [
+      {
+        "url": "http://localhost:8081/pdf-viewer?uri=https%3A%2F%2Fnxrnjywzxxfdpqmzjorh.supabase.co%2Fstorage%2Fv1%2Fobject%2Fsign%2Fdirector_pdf_exports%2Fdirector%2Fproduction_report%2F2026%2F03%2F31%2F2026-03-31T05-27-52-957Z_c272f3ef_director_production_report_2026-03-31.pdf%3Ftoken%3DeyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9wcm9kdWN0aW9uX3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDUtMjctNTItOTU3Wl9jMjcyZjNlZl9kaXJlY3Rvcl9wcm9kdWN0aW9uX3JlcG9ydF8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg3NiwiZXhwIjoxNzc0OTM4NDc2fQ.bqpH3lMBkCfc5H7VYCyxqrjXFOpgarKwSN_UYaHdqNM&fileName=director-platform-hardening.pdf&title=Director%20PDF%20Runtime&sourceKind=remote-url&documentType=director_report&originModule=director&source=generated",
+        "status": 200
+      },
+      {
+        "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/production_report/2026/03/31/2026-03-31T05-27-52-957Z_c272f3ef_director_production_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9wcm9kdWN0aW9uX3JlcG9ydC8yMDI2LzAzLzMxLzIwMjYtMDMtMzFUMDUtMjctNTItOTU3Wl9jMjcyZjNlZl9kaXJlY3Rvcl9wcm9kdWN0aW9uX3JlcG9ydF8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg3NiwiZXhwIjoxNzc0OTM4NDc2fQ.bqpH3lMBkCfc5H7VYCyxqrjXFOpgarKwSN_UYaHdqNM",
+        "status": 200
+      }
+    ],
+    "openFailed": false
+  },
+  "androidDiagnostics": [
+    {
+      "family": "supplier_summary",
+      "routeMounted": false,
+      "handoffStarted": false,
+      "handoffReady": false,
+      "handoffError": false,
+      "processAlive": true,
+      "fatalCrash": false,
+      "logExcerpt": [],
+      "expected": "ready",
+      "passed": false,
+      "error": "Command failed: adb shell am start -W -a android.intent.action.VIEW -d rik://pdf-viewer?uri=https%3A%2F%2Fnxrnjywzxxfdpqmzjorh.supabase.co%2Fstorage%2Fv1%2Fobject%2Fsign%2Fdirector_pdf_exports%2Fdirector%2Fsupplier_summary%2F2026%2F03%2F31%2F2026-03-31T05-27-30-144Z_fd100555_director_supplier_summary_Runtime_Smoke_Supplier_2026-03-31.pdf%3Ftoken%3DeyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdXBwbGllcl9zdW1tYXJ5LzIwMjYvMDMvMzEvMjAyNi0wMy0zMVQwNS0yNy0zMC0xNDRaX2ZkMTAwNTU1X2RpcmVjdG9yX3N1cHBsaWVyX3N1bW1hcnlfUnVudGltZV9TbW9rZV9TdXBwbGllcl8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NDkzNDg1MiwiZXhwIjoxNzc0OTM4NDUyfQ.6M7EF0XU66ffJUA1BjgH8j53h6eQLBzwr-5lxgqP_Ik&fileName=director-platform-hardening.pdf&documentType=director_report&originModule=director&source=generated com.azisbek_dzhantaev.rikexpoapp\n/system/bin/sh: com.azisbek_dzhantaev.rikexpoapp: inaccessible or not found\r\n"
+    },
+    {
+      "family": "invalid_source",
+      "routeMounted": false,
+      "handoffStarted": false,
+      "handoffReady": false,
+      "handoffError": false,
+      "processAlive": true,
+      "fatalCrash": false,
+      "logExcerpt": [],
+      "expected": "controlled_error",
+      "passed": false,
+      "error": "Command failed: adb shell am start -W -a android.intent.action.VIEW -d rik://pdf-viewer?uri=blob%3Ahttps%3A%2F%2Fexample.com%2Fdirector-platform-hardening.pdf&fileName=director-invalid-source.pdf&documentType=director_report&originModule=director&source=generated com.azisbek_dzhantaev.rikexpoapp\n/system/bin/sh: com.azisbek_dzhantaev.rikexpoapp: inaccessible or not found\r\n"
+    }
+  ],
+  "sourceScan": {
+    "renderServiceCanonicalOnly": true,
+    "renderServiceAllowsParityRenderers": true,
+    "renderFunctionHasSharedCorsHelpers": true,
+    "renderFunctionHasLocalRendererFallback": true,
+    "familyEdgeFunctionsShareCorsContract": true,
+    "familyBackendServicesUseSharedInvoker": true,
+    "reportsPdfServiceNoClientFallback": true
+  },
+  "servedFrom": {
+    "director-pdf-render": "http://127.0.0.1:54331",
+    "director-finance-supplier-summary-pdf": "http://127.0.0.1:54332",
+    "director-production-report-pdf": "http://127.0.0.1:54333",
+    "director-subcontract-report-pdf": "http://127.0.0.1:54334"
+  },
+  "knownLimitations": []
+}

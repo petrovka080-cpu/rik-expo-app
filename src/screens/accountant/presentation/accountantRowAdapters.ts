@@ -6,6 +6,7 @@ import type { AccountantInboxRow } from "../../../lib/rik_api";
 type ListRowItem = AccountantInboxRow & {
   total_paid?: number | null;
   invoice_amount?: number | null;
+  outstanding_amount?: number | null;
   payment_status?: string | null;
   supplier?: string | null;
   invoice_number?: string | null;
@@ -14,9 +15,8 @@ type ListRowItem = AccountantInboxRow & {
 };
 
 export function mapAccountantListRowToProps(item: ListRowItem) {
-  const total = Number(item.total_paid ?? 0);
   const sum = Number(item.invoice_amount ?? 0);
-  const rest = sum > 0 ? Math.max(0, sum - total) : 0;
+  const rest = Math.max(0, Number(item.outstanding_amount ?? 0));
   const status = statusFromRaw(item.payment_status, false);
 
   const toneByStatus = {

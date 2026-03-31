@@ -29,7 +29,7 @@
   "checks": {
     "jest": {
       "success": true,
-      "numPassedTests": 14,
+      "numPassedTests": 15,
       "numFailedTests": 0
     },
     "stageChecks": {

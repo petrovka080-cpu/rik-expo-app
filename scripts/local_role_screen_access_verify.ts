@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 import { chromium, type Page } from "playwright";
 import { createClient } from "@supabase/supabase-js";
@@ -16,7 +16,7 @@ const proofPath = path.join(projectRoot, "artifacts/local-role-screen-access-pro
 const webServerStdoutPath = path.join(projectRoot, "artifacts/local-role-screen-access-web.stdout.log");
 const webServerStderrPath = path.join(projectRoot, "artifacts/local-role-screen-access-web.stderr.log");
 
-const routes = ["/director", "/buyer", "/accountant", "/warehouse", "/contractor"] as const;
+const routes = ["/director", "/buyer", "/accountant", "/warehouse", "/contractor", "/profile"] as const;
 
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
@@ -33,6 +33,18 @@ type WebServerHandle = {
   started: boolean;
   stop: () => void;
 };
+
+function stopProcessTree(child: { pid?: number; exitCode: number | null; kill: (signal?: NodeJS.Signals) => boolean }) {
+  if (child.exitCode != null) return;
+  if (process.platform === "win32" && child.pid) {
+    spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
+      stdio: "ignore",
+      windowsHide: true,
+    });
+    return;
+  }
+  child.kill("SIGTERM");
+}
 
 function writeJsonArtifact(fullPath: string, payload: unknown) {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
@@ -103,9 +115,7 @@ async function ensureLocalWebServer(): Promise<WebServerHandle> {
   return {
     started: true,
     stop: () => {
-      if (child.exitCode == null) {
-        child.kill("SIGTERM");
-      }
+      stopProcessTree(child);
     },
   };
 }

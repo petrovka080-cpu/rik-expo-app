@@ -2,10 +2,10 @@ import type React from "react";
 import { useCallback } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
-import * as XLSX from "xlsx";
 import { generateRequestPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
+import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
 import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
 import { toFilterId } from "./director.helpers";
 import type { Group, PendingRow } from "./director.types";
@@ -54,7 +54,7 @@ export function useDirectorRequestActions({
   showSuccess,
 }: Deps) {
   const router = useRouter();
-  const exportRequestExcel = useCallback((g: Group) => {
+  const exportRequestExcel = useCallback(async (g: Group) => {
     const rows = g.items;
     if (!rows.length) {
       Alert.alert("Экспорт", "Нет позиций для выгрузки.");
@@ -68,7 +68,7 @@ export function useDirectorRequestActions({
     const sheetName =
       title.replace(/[^\w\u0400-\u04FF0-9]/g, "_").slice(0, 31) || "Заявка";
 
-    const data: any[][] = [];
+    const data: Array<Array<string | number>> = [];
     data.push(["№", "Наименование", "Кол-во", "Ед. изм.", "Применение", "Примечание"]);
 
     rows.forEach((it, idx) => {
@@ -83,33 +83,20 @@ export function useDirectorRequestActions({
     });
 
     try {
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(data);
-
-      ws["!cols"] = [
-        { wch: 4 },
-        { wch: 40 },
-        { wch: 10 },
-        { wch: 10 },
-        { wch: 18 },
-        { wch: 60 },
-      ];
-
-      XLSX.utils.book_append_sheet(wb, ws, sheetName);
-      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-
       if (Platform.OS === "web") {
-        const blob = new Blob([wbout], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        await exportAoaWorkbookWeb({
+          data,
+          sheetName,
+          downloadName: `request-${title}.xlsx`,
+          columns: [
+            { wch: 4 },
+            { wch: 40 },
+            { wch: 10 },
+            { wch: 10 },
+            { wch: 18 },
+            { wch: 60 },
+          ],
         });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `request-${title}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
       } else {
         Alert.alert(
           "Экспорт",

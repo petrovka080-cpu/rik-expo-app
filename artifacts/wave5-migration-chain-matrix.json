@@ -1,0 +1,98 @@
+{
+  "generatedAt": "2026-03-31",
+  "chain": "proposal_creation_boundary_v3",
+  "activeFunction": "public.rpc_proposal_submit_v3(text, jsonb, text, boolean, text, text)",
+  "currentCanonicalMigration": "supabase/migrations/20260330214500_proposal_creation_boundary_v3_total_qty_generated_fix.sql",
+  "contextDependencies": [
+    {
+      "file": "supabase/migrations/20260329181500_proposal_submit_text_rpc_wrapper.sql",
+      "purpose": "Introduces proposal_submit_text_v1 wrapper used by rpc_proposal_submit_v3 submit stage"
+    },
+    {
+      "file": "supabase/migrations/20260330143000_request_items_soft_delete_proposal_recovery_v1.sql",
+      "purpose": "Earlier wrapper redeploy showing the same full-body replacement tendency on proposal_submit_text_v1"
+    }
+  ],
+  "migrations": [
+    {
+      "file": "supabase/migrations/20260330200000_proposal_creation_boundary_v3.sql",
+      "purpose": "Baseline canonical proposal submit boundary with idempotency ledger",
+      "repeatedBodyRedeploy": false,
+      "bodyLineCount": 668,
+      "notes": "Initial full-body introduction of rpc_proposal_submit_v3 plus grants/comment"
+    },
+    {
+      "file": "supabase/migrations/20260330201500_proposal_creation_boundary_v3_uuid_cast_fix.sql",
+      "purpose": "UUID cast fix",
+      "repeatedBodyRedeploy": true,
+      "bodyLineCount": 670,
+      "notes": "Re-declares the full function body instead of shipping a narrow follow-up change record"
+    },
+    {
+      "file": "supabase/migrations/20260330203000_proposal_creation_boundary_v3_enum_cast_fix.sql",
+      "purpose": "Enum cast fix",
+      "repeatedBodyRedeploy": true,
+      "bodyLineCount": 670,
+      "notes": "Full-body create or replace with grants/comment replay"
+    },
+    {
+      "file": "supabase/migrations/20260330204500_proposal_creation_boundary_v3_price_regex_fix.sql",
+      "purpose": "Price regex fix",
+      "repeatedBodyRedeploy": true,
+      "bodyLineCount": 670,
+      "notes": "Full-body create or replace with grants/comment replay"
+    },
+    {
+      "file": "supabase/migrations/20260330205500_proposal_creation_boundary_v3_proposal_id_cast_fix.sql",
+      "purpose": "Proposal id cast fix",
+      "repeatedBodyRedeploy": true,
+      "bodyLineCount": 670,
+      "notes": "Full-body create or replace with grants/comment replay"
+    },
+    {
+      "file": "supabase/migrations/20260330210000_proposal_creation_boundary_v3_request_id_cast_fix.sql",
+      "purpose": "Request id cast fix",
+      "repeatedBodyRedeploy": true,
+      "bodyLineCount": 670,
+      "notes": "Full-body create or replace with grants/comment replay"
+    },
+    {
+      "file": "supabase/migrations/20260330211500_proposal_creation_boundary_v3_proposal_item_uuid_fix.sql",
+      "purpose": "Proposal item UUID fix",
+      "repeatedBodyRedeploy": true,
+      "bodyLineCount": 670,
+      "notes": "Full-body create or replace with grants/comment replay"
+    },
+    {
+      "file": "supabase/migrations/20260330213000_proposal_creation_boundary_v3_request_item_uuid_fix.sql",
+      "purpose": "Request item UUID fix",
+      "repeatedBodyRedeploy": true,
+      "bodyLineCount": 668,
+      "notes": "Full-body create or replace with grants/comment replay"
+    },
+    {
+      "file": "supabase/migrations/20260330214500_proposal_creation_boundary_v3_total_qty_generated_fix.sql",
+      "purpose": "Total quantity generated fix",
+      "repeatedBodyRedeploy": true,
+      "bodyLineCount": 668,
+      "notes": "Latest full-body redeploy; this is the effective canonical body in current migration order"
+    }
+  ],
+  "summary": {
+    "baselineMigrations": 1,
+    "followupFullBodyRedeploys": 8,
+    "pattern": "repeated_full_body_function_redeploy",
+    "risk": "High maintainability cost: caller ownership and final canonical body are not obvious from the chain alone"
+  },
+  "placeholderHistory": [
+    "supabase/migrations/20260127041600_remote_history_placeholder.sql",
+    "supabase/migrations/20260127042004_remote_history_placeholder.sql",
+    "supabase/migrations/20260221065817_remote_history_placeholder.sql",
+    "supabase/migrations/20260226065626_remote_history_placeholder.sql",
+    "supabase/migrations/20260226075125_remote_history_placeholder.sql",
+    "supabase/migrations/20260226085251_remote_history_placeholder.sql",
+    "supabase/migrations/20260226085827_remote_history_placeholder.sql",
+    "supabase/migrations/20260302063944_remote_history_placeholder.sql",
+    "supabase/migrations/20260304041037_remote_history_placeholder.sql"
+  ]
+}

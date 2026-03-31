@@ -76,6 +76,7 @@ export default function DirectorFinanceSupplierModal(props: Props) {
 
         <View style={{ marginTop: 10 }}>
           <Pressable
+            testID="director-finance-supplier-pdf-button"
             disabled={props.loading}
             onPress={async () => {
               if (props.loading) return;

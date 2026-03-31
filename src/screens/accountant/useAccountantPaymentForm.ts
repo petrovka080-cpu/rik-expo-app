@@ -60,7 +60,12 @@ async function loadPaymentFormFinancialState(proposalId: string) {
       invoice_date: financialState.invoice.date,
       invoice_currency: financialState.invoice.currency,
       invoice_amount: financialState.totals.payableAmount,
+      outstanding_amount: financialState.totals.outstandingAmount,
       total_paid: financialState.totals.totalPaid,
+      paid_unassigned: financialState.allocationSummary.paidUnassigned,
+      payment_status: financialState.totals.paymentStatus,
+      payment_eligible: financialState.eligibility.paymentEligible,
+      failure_code: financialState.eligibility.failureCode,
     } satisfies AccountantPaymentCurrentInvoice,
     items: financialState.items.map(
       (item): AccountantPaymentFormItem => ({

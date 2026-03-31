@@ -9,12 +9,12 @@ import {
   prepareDirectorSupplierSummaryPdfModelShared,
   renderDirectorSupplierSummaryPdfHtmlShared,
 } from "../../../src/lib/pdf/directorSupplierSummary.shared.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { resolveDirectorPdfRoleAccess } from "../../../src/lib/pdf/directorPdfAuth.ts";
+import {
+  createDirectorPdfErrorResponse,
+  createDirectorPdfOptionsResponse,
+  createDirectorPdfSuccessResponse,
+} from "../../../src/lib/pdf/directorPdfPlatformContract.ts";
 
 const FUNCTION_NAME = "director-finance-supplier-summary-pdf";
 const DEFAULT_BUCKET = "director_pdf_exports";
@@ -40,12 +40,12 @@ type FinanceSourceEnvelope = {
 };
 
 function json(status: number, body: Record<string, unknown>) {
-  return new Response(JSON.stringify(body), {
+  return createDirectorPdfErrorResponse({
     status,
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "application/json",
-    },
+    errorCode: status === 401 || status === 403 ? "auth_failed" : status >= 500 ? "backend_pdf_failed" : "validation_failed",
+    error: String(body.error ?? "Director finance supplier summary PDF render failed."),
+    documentKind: "supplier_summary",
+    renderBranch: status >= 500 ? "backend_supplier_summary_v1" : undefined,
   });
 }
 
@@ -124,12 +124,11 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
   const authHeader = cleanText(request.headers.get("Authorization"));
 
   if (!anonKey || !authHeader) {
-    throw new Response(JSON.stringify({ error: "Unauthorized." }), {
+    throw createDirectorPdfErrorResponse({
       status: 401,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-      },
+      errorCode: "auth_failed",
+      error: "Unauthorized.",
+      documentKind: "supplier_summary",
     });
   }
 
@@ -149,24 +148,45 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
   ]);
 
   if (userError || !userData?.user) {
-    throw new Response(JSON.stringify({ error: "Unauthorized." }), {
+    throw createDirectorPdfErrorResponse({
       status: 401,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-      },
+      errorCode: "auth_failed",
+      error: "Unauthorized.",
+      documentKind: "supplier_summary",
     });
   }
 
-  const role = cleanText(roleData).toLowerCase();
-  if (roleError || role !== "director") {
-    throw new Response(JSON.stringify({ error: "Forbidden." }), {
+  const roleAccess = resolveDirectorPdfRoleAccess({
+    user: userData.user,
+    rpcRole: roleData,
+  });
+
+  if (!roleAccess.isDirector) {
+    console.warn(
+      `[${FUNCTION_NAME}] director auth forbidden ${JSON.stringify({
+        userId: userData.user.id,
+        appMetadataRole: roleAccess.appMetadataRole,
+        rpcRole: roleAccess.rpcRole,
+        roleError: roleError?.message ?? null,
+      })}`,
+    );
+    throw createDirectorPdfErrorResponse({
       status: 403,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-      },
+      errorCode: "auth_failed",
+      error: "Forbidden.",
+      documentKind: "supplier_summary",
     });
+  }
+
+  if (roleAccess.source === "app_metadata" && roleAccess.rpcRole !== "director") {
+    console.info(
+      `[${FUNCTION_NAME}] director auth resolved from signed app_metadata ${JSON.stringify({
+        userId: userData.user.id,
+        appMetadataRole: roleAccess.appMetadataRole,
+        rpcRole: roleAccess.rpcRole,
+        roleError: roleError?.message ?? null,
+      })}`,
+    );
   }
 
   return {
@@ -333,7 +353,7 @@ const LOCAL_PORT = Number(Deno.env.get("PORT") ?? 8000);
 
 Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LOCAL_PORT) : 8000 }, async (request) => {
   if (request.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return createDirectorPdfOptionsResponse();
   }
 
   if (request.method !== "POST") {
@@ -441,10 +461,13 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       telemetry,
     });
 
-    return json(200, {
+    return createDirectorPdfSuccessResponse({
+      ok: true,
       renderVersion: "v1",
       renderBranch: "backend_supplier_summary_v1",
       renderer,
+      sourceKind: "remote-url",
+      documentKind: "supplier_summary",
       bucketId: uploaded.bucketId,
       storagePath: uploaded.storagePath,
       signedUrl: uploaded.signedUrl,
@@ -461,8 +484,12 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack ?? null : null,
     });
-    return json(500, {
+    return createDirectorPdfErrorResponse({
+      status: 500,
+      errorCode: "backend_pdf_failed",
       error: error instanceof Error ? error.message : "Director finance supplier summary PDF render failed.",
+      documentKind: "supplier_summary",
+      renderBranch: "backend_supplier_summary_v1",
     });
   }
 });

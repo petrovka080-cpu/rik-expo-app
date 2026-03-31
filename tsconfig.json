@@ -13,6 +13,7 @@
     },
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "allowImportingTsExtensions": true,
     "moduleResolution": "Bundler",
     "target": "ES2020",
     "module": "ESNext"

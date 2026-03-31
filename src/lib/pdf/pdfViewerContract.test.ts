@@ -61,6 +61,30 @@ describe("pdfViewerContract", () => {
     });
   });
 
+  it("keeps the original signed URL as the web viewer canonical uri", () => {
+    const signedRemoteAsset = {
+      ...remoteAsset,
+      uri: "https://signed.example.com/document.pdf?token=proof",
+      fileSource: {
+        kind: "remote-url" as const,
+        uri: "https://signed.example.com/document.pdf?token=proof",
+      },
+    };
+
+    const resolution = resolvePdfViewerResolution({
+      session,
+      asset: signedRemoteAsset,
+      platform: "web",
+    });
+
+    expect(resolution).toMatchObject({
+      kind: "resolved-embedded",
+      sourceKind: "remote-url",
+      renderer: "web-frame",
+      canonicalUri: "https://signed.example.com/document.pdf?token=proof",
+    });
+  });
+
   it("routes mobile local PDFs through native handoff instead of embedded webview", () => {
     const resolution = resolvePdfViewerResolution({
       session,
@@ -81,6 +105,21 @@ describe("pdfViewerContract", () => {
       session,
       asset: remoteAsset,
       platform: "android",
+    });
+
+    expect(resolution).toMatchObject({
+      kind: "resolved-native-handoff",
+      sourceKind: "remote-url",
+      renderer: "native-handoff",
+      canonicalUri: remoteAsset.uri,
+    });
+  });
+
+  it("keeps iOS remote PDFs on the same native handoff contract as Android", () => {
+    const resolution = resolvePdfViewerResolution({
+      session,
+      asset: remoteAsset,
+      platform: "ios",
     });
 
     expect(resolution).toMatchObject({

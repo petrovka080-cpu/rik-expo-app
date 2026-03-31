@@ -1,3 +1,4 @@
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import type {
   CanonicalMaterialsPayloadRaw,
   CanonicalOptionsPayloadRaw,
@@ -8,7 +9,8 @@ import type {
   DirectorObjectIdentityResolved,
   DirectorReportOptions,
   DirectorReportPayload,
-} from "./director_reports.shared";
+} from "./director_reports.shared.ts";
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import {
   DASH,
   asRecord,
@@ -19,7 +21,7 @@ import {
   normWorkName,
   resolveDirectorObjectIdentity,
   toNum,
-} from "./director_reports.shared";
+} from "./director_reports.shared.ts";
 
 const unwrapRpcPayload = (data: unknown): unknown => {
   if (Array.isArray(data)) {

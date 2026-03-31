@@ -1,157 +1,36 @@
 {
   "web": {
-    "status": "passed",
-    "financeTabOpened": true,
-    "financeHomeCardsRendered": true,
-    "debtModalOpened": true,
-    "supplierToggleVisible": false,
+    "status": "failed",
+    "financeTabOpened": false,
+    "financeHomeCardsRendered": false,
+    "debtModalOpened": false,
     "supplierRowVisible": false,
-    "supplierEmptyStateVisible": false,
     "supplierDetailOpened": false,
-    "consoleErrorsEmpty": true,
-    "pageErrorsEmpty": true,
-    "badResponsesEmpty": true,
-    "screenshot": "artifacts/director-finance-web-smoke.png",
-    "platformSpecificIssues": [],
-    "runtime": {
-      "console": [
-        {
-          "type": "info",
-          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
-        },
-        {
-          "type": "log",
-          "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
-        },
-        {
-          "type": "warning",
-          "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
-        },
-        {
-          "type": "info",
-          "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
-        },
-        {
-          "type": "info",
-          "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
-        },
-        {
-          "type": "warning",
-          "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: visible_scope, event: refresh_scope, result: skipped, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
-        },
-        {
-          "type": "warning",
-          "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 630}"
-        },
-        {
-          "type": "info",
-          "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 6, expectedRequestStatuses: Array(2)}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 670}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: TIMED_OUT}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: TIMED_OUT}"
-        }
-      ],
-      "pageErrors": [],
-      "badResponses": [],
-      "screenshot": "artifacts/director-finance-web-smoke.png"
-    }
+    "platformSpecificIssues": [
+      "poll timeout: body:Контроль|РљРѕРњС‚С‚РѕР»СЊ|Финансы|Р„РёРњР°РњС‹|Обязательства|РўР±СЏР·Р°С‚РµР»СЌСЁС‚РІР°|Расходы|Р Р°СЁС…РѕР´С‹|Долги и риски|Р”РѕР»РіРё Рё СЂРѕСЁРњРѕ|Поставщики (долг)|РЏРѕСЁС‚Р°РІС‰РёРњРѕ (РёРѕР»Рі)|Долг по предложениям:|К оплате:|Р”РѕР»Рі РџРѕ РџСЂРµР´Р»РѕР¶РµРЅРёСЏР¼:|Рљ РѕРЏР»Р°С‚Рµ:"
+    ],
+    "failureKind": "app"
   },
   "android": {
-    "status": "passed",
-    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
-    "androidPreflight": {
-      "deviceDetected": true,
-      "packageName": "com.azisbek_dzhantaev.rikexpoapp",
-      "reverseProxyReady": true,
-      "appCleared": false,
-      "gmsCleared": false,
-      "devClientReachable": true
-    },
+    "status": "failed",
+    "financeHomeVisible": false,
+    "debtModalOpened": false,
+    "supplierDetailOpened": false,
     "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
-    "anrRecoveryUsed": false,
-    "blankSurfaceRecovered": false,
+    "anrRecoveryUsed": true,
+    "blankSurfaceRecovered": true,
     "devClientBootstrapRecovered": false,
-    "financeTabOpened": true,
-    "financeHomeVisible": true,
-    "debtModalOpened": true,
-    "supplierRowsVisible": true,
-    "supplierEmptyStateVisible": false,
-    "supplierDetailOpened": true,
-    "currentXml": "artifacts/android-director-finance-route-1.xml",
-    "currentPng": "artifacts/android-director-finance-route-1.png",
-    "financeXml": "artifacts/android-director-finance-tab-1.xml",
-    "financePng": "artifacts/android-director-finance-tab-1.png",
-    "debtModalXml": "artifacts/android-director-finance-suppliers.xml",
-    "debtModalPng": "artifacts/android-director-finance-suppliers.png",
-    "supplierDetailXml": "artifacts/android-director-finance-supplier-detail.xml",
-    "supplierDetailPng": "artifacts/android-director-finance-supplier-detail.png",
-    "platformSpecificIssues": []
+    "xmlPath": "artifacts/android-director-finance-failure.xml",
+    "pngPath": "artifacts/android-director-finance-failure.png",
+    "stdoutPath": "C:/dev/rik-expo-app/artifacts/director-dev-client-8081.stdout.log",
+    "stderrPath": "C:/dev/rik-expo-app/artifacts/director-dev-client-8081.stderr.log",
+    "stdoutTail": "",
+    "stderrTail": "",
+    "platformSpecificIssues": [
+      "poll timeout: android:login_complete"
+    ],
+    "failureKind": "auth"
   },
   "ios": {
     "status": "residual",
@@ -161,36 +40,44 @@
     ]
   },
   "summary": {
-    "status": "passed",
-    "webPassed": true,
-    "androidPassed": true,
+    "status": "failed",
+    "webPassed": false,
+    "androidPassed": false,
     "iosPassed": false,
-    "runtimeVerified": true,
+    "runtimeVerified": false,
     "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
-    "anrRecoveryUsed": false,
-    "blankSurfaceRecovered": false,
+    "anrRecoveryUsed": true,
+    "blankSurfaceRecovered": true,
     "devClientBootstrapRecovered": false,
     "platformSpecificIssues": [
+      {
+        "platform": "web",
+        "issue": "poll timeout: body:Контроль|РљРѕРњС‚С‚РѕР»СЊ|Финансы|Р„РёРњР°РњС‹|Обязательства|РўР±СЏР·Р°С‚РµР»СЌСЁС‚РІР°|Расходы|Р Р°СЁС…РѕР´С‹|Долги и риски|Р”РѕР»РіРё Рё СЂРѕСЁРњРѕ|Поставщики (долг)|РЏРѕСЁС‚Р°РІС‰РёРњРѕ (РёРѕР»Рі)|Долг по предложениям:|К оплате:|Р”РѕР»Рі РџРѕ РџСЂРµР´Р»РѕР¶РµРЅРёСЏР¼:|Рљ РѕРЏР»Р°С‚Рµ:"
+      },
+      {
+        "platform": "android",
+        "issue": "poll timeout: android:login_complete"
+      },
       {
         "platform": "ios",
         "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
       }
     ],
     "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-    "failureKind": "unknown",
+    "failureKind": "app",
     "scenariosPassed": {
       "web": {
-        "initialOpen": true,
-        "financeSurface": true,
-        "debtModal": true,
+        "initialOpen": false,
+        "financeSurface": false,
+        "debtModal": false,
         "supplierDetail": false
       },
       "android": {
-        "initialOpen": true,
-        "financeSurface": true,
-        "debtModal": true,
-        "supplierDetail": true
+        "initialOpen": false,
+        "financeSurface": false,
+        "debtModal": false,
+        "supplierDetail": false
       },
       "ios": {
         "initialOpen": false,
@@ -202,14 +89,22 @@
     "artifacts": {
       "web": "artifacts/director-finance-web-smoke.png",
       "android": {
-        "currentXml": "artifacts/android-director-finance-route-1.xml",
-        "currentPng": "artifacts/android-director-finance-route-1.png",
-        "financeXml": "artifacts/android-director-finance-tab-1.xml",
-        "financePng": "artifacts/android-director-finance-tab-1.png",
-        "debtModalXml": "artifacts/android-director-finance-suppliers.xml",
-        "debtModalPng": "artifacts/android-director-finance-suppliers.png",
-        "supplierDetailXml": "artifacts/android-director-finance-supplier-detail.xml",
-        "supplierDetailPng": "artifacts/android-director-finance-supplier-detail.png"
+        "currentXml": null,
+        "currentPng": null,
+        "financeXml": null,
+        "financePng": null,
+        "debtModalXml": null,
+        "debtModalPng": null,
+        "supplierDetailXml": null,
+        "supplierDetailPng": null
+      },
+      "androidFailure": {
+        "xmlPath": "artifacts/android-director-finance-failure.xml",
+        "pngPath": "artifacts/android-director-finance-failure.png",
+        "stdoutPath": "C:/dev/rik-expo-app/artifacts/director-dev-client-8081.stdout.log",
+        "stderrPath": "C:/dev/rik-expo-app/artifacts/director-dev-client-8081.stderr.log",
+        "stdoutTail": "",
+        "stderrTail": ""
       }
     },
     "gate": "director_finance_runtime_verify"

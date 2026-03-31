@@ -11,6 +11,7 @@
 - `/accountant` -> `/accountant` | redirected=false | opened=true
 - `/warehouse` -> `/warehouse` | redirected=false | opened=true
 - `/contractor` -> `/contractor` | redirected=false | opened=true
+- `/profile` -> `/profile` | redirected=false | opened=true
 
 ## Redirect policy
 - devDisablesRoleRedirect = true

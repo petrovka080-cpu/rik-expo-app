@@ -1,3 +1,4 @@
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 export type {
   DirectorReportOptions,
   DirectorReportRow,
@@ -38,8 +39,9 @@ export type {
   AccIssueHead,
   AccIssueLine,
   DisciplineRowsSource,
-} from "./director_reports.types";
+} from "./director_reports.types.ts";
 
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 export {
   toNum,
   firstNonEmpty,
@@ -60,8 +62,9 @@ export {
   normalizeJoinedWarehouseIssueItemFactRow,
   extractJoinedWarehouseIssueFactRow,
   normalizeRefSystemLookupRow,
-} from "./director_reports.normalizers";
+} from "./director_reports.normalizers.ts";
 
+// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 export {
   WITHOUT_OBJECT,
   WITHOUT_WORK,
@@ -95,4 +98,4 @@ export {
   normalizeDirectorFactRow,
   normalizeDirectorFactViewRow,
   normalizeDirectorDisciplineSourceRpcRow,
-} from "./director_reports.context";
+} from "./director_reports.context.ts";

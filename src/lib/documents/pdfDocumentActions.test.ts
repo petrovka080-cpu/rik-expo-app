@@ -119,6 +119,68 @@ describe("pdfDocumentActions", () => {
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
   });
 
+  it("keeps the web director supplier remote-url path on the shared session viewer contract", async () => {
+    const push = jest.fn();
+    const supplierDocument = {
+      ...baseDocument,
+      uri: "https://example.com/director-supplier-summary.pdf",
+      fileSource: {
+        kind: "remote-url" as const,
+        uri: "https://example.com/director-supplier-summary.pdf",
+      },
+      title: "Supplier Summary PDF",
+      fileName: "director_supplier_summary.pdf",
+      documentType: "supplier_summary" as const,
+      originModule: "director" as const,
+      entityId: "Supplier A",
+    };
+
+    mockCreateDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-supplier-1",
+        assetId: "asset-supplier-1",
+        status: "ready",
+        createdAt: "2026-03-31T06:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-supplier-1",
+        uri: "https://example.com/director-supplier-summary.pdf",
+        fileSource: {
+          kind: "remote-url",
+          uri: "https://example.com/director-supplier-summary.pdf",
+        },
+        sourceKind: "remote-url",
+        fileName: "director_supplier_summary.pdf",
+        title: "Supplier Summary PDF",
+        mimeType: "application/pdf",
+        documentType: "supplier_summary",
+        originModule: "director",
+        source: "generated",
+        entityId: "Supplier A",
+        createdAt: "2026-03-31T06:00:00.000Z",
+      },
+    });
+
+    await previewPdfDocument(supplierDocument, {
+      router: { push },
+    });
+
+    expect(mockCreateDocumentPreviewSession).toHaveBeenCalledWith(supplierDocument);
+    expect(push).toHaveBeenCalledWith({
+      pathname: "/pdf-viewer",
+      params: { sessionId: "session-supplier-1" },
+    });
+    expect(mockOpenPdfPreview).not.toHaveBeenCalled();
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.event === "pdf_preview_open" &&
+          event.result === "success" &&
+          event.extra?.sessionId === "session-supplier-1",
+      ),
+    ).toBe(true);
+  });
+
   it("Open fail is visible during direct preview fallback", async () => {
     mockCreateDocumentPreviewSession.mockResolvedValueOnce({
       session: {

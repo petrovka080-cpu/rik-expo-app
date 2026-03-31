@@ -1,10 +1,10 @@
 {
   "status": "GREEN",
-  "checkedAt": "2026-03-31T08:24:39.037Z",
+  "checkedAt": "2026-03-31T09:58:58.752Z",
   "baseUrl": "http://localhost:8081",
   "authenticatedUser": {
     "role": "foreman",
-    "email": "local-role-access-verify.mnecp4jdzi5p@e.com"
+    "email": "local-role-access-verify.mneg2b2k502d@e.com"
   },
   "routes": [
     {
@@ -13,7 +13,7 @@
       "finalPath": "/director",
       "redirected": false,
       "openedInLocalDev": true,
-      "bodySample": "Контроль Заявки Подряды Финансы Склад Отчёты Прораб Снабженец Заявки Заявок ... Позиций ...   Прораб   Директор   Снабженец   Бухгалтер   Склад   Безопасность   Маркет   Карта   Профиль   Отчеты   Подрядчик  AI"
+      "bodySample": "Контроль Заявки Подряды Финансы Склад Отчёты Прораб Снабженец Заявки Заявок 6 Позиций 10 REQ-0102/2026 31.03.2026 · позиций 1 Открыть REQ-0096/2026 30.03.2026 · позиций 1 Открыть REQ-0095/2026 30.03.2026 · позиций 1 Открыть REQ-0094/2026 30.03.2026 · позиций 1 Открыть REQ-0084/20"
     },
     {
       "route": "/buyer",
@@ -46,6 +46,14 @@
       "redirected": false,
       "openedInLocalDev": true,
       "bodySample": "Активация подрядчика Введите код активации, который выдал администратор. Активировать   Прораб   Директор   Снабженец   Бухгалтер   Склад   Безопасность   Маркет   Карта   Профиль   Отчеты   Подрядчик  AI"
+    },
+    {
+      "route": "/profile",
+      "finalUrl": "http://localhost:8081/profile",
+      "finalPath": "/profile",
+      "redirected": false,
+      "openedInLocalDev": true,
+      "bodySample": "L  Local Role Access Verify Прораб local-role-access-verify.mneg2b2k502d@e.com Профиль Личный кабинет, контакты, компания и доступ к модулям GOX. Редактировать Физическое лицо Личный профиль, объявления и контакты Компания / бизнес Кабинет компании, реквизиты и объекты Готовност"
     }
   ],
   "redirectPolicy": {

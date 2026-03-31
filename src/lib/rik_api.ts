@@ -227,12 +227,15 @@ export type AccountantInboxRow = {
   invoice_number?: string | null;
   invoice_date?: string | null;
   invoice_amount?: number | null;
+  outstanding_amount?: number | null;
   invoice_currency?: string | null;
   payment_status?: string | null;
   total_paid?: number | null;
   sent_to_accountant_at?: string | null;
   has_invoice?: boolean | null;
   payments_count?: number | null;
+  payment_eligible?: boolean | null;
+  failure_code?: string | null;
 };
 
 /** ===== Suppliers (НОВЫЕ) ===== */

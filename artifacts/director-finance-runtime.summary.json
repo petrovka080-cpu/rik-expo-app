@@ -1,34 +1,42 @@
 {
-  "status": "passed",
-  "webPassed": true,
-  "androidPassed": true,
+  "status": "failed",
+  "webPassed": false,
+  "androidPassed": false,
   "iosPassed": false,
-  "runtimeVerified": true,
+  "runtimeVerified": false,
   "environmentRecoveryUsed": true,
   "gmsRecoveryUsed": false,
-  "anrRecoveryUsed": false,
-  "blankSurfaceRecovered": false,
+  "anrRecoveryUsed": true,
+  "blankSurfaceRecovered": true,
   "devClientBootstrapRecovered": false,
   "platformSpecificIssues": [
+    {
+      "platform": "web",
+      "issue": "poll timeout: body:Контроль|РљРѕРњС‚С‚РѕР»СЊ|Финансы|Р„РёРњР°РњС‹|Обязательства|РўР±СЏР·Р°С‚РµР»СЌСЁС‚РІР°|Расходы|Р Р°СЁС…РѕР´С‹|Долги и риски|Р”РѕР»РіРё Рё СЂРѕСЁРњРѕ|Поставщики (долг)|РЏРѕСЁС‚Р°РІС‰РёРњРѕ (РёРѕР»Рі)|Долг по предложениям:|К оплате:|Р”РѕР»Рі РџРѕ РџСЂРµР´Р»РѕР¶РµРЅРёСЏР¼:|Рљ РѕРЏР»Р°С‚Рµ:"
+    },
+    {
+      "platform": "android",
+      "issue": "poll timeout: android:login_complete"
+    },
     {
       "platform": "ios",
       "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
     }
   ],
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "failureKind": "unknown",
+  "failureKind": "app",
   "scenariosPassed": {
     "web": {
-      "initialOpen": true,
-      "financeSurface": true,
-      "debtModal": true,
+      "initialOpen": false,
+      "financeSurface": false,
+      "debtModal": false,
       "supplierDetail": false
     },
     "android": {
-      "initialOpen": true,
-      "financeSurface": true,
-      "debtModal": true,
-      "supplierDetail": true
+      "initialOpen": false,
+      "financeSurface": false,
+      "debtModal": false,
+      "supplierDetail": false
     },
     "ios": {
       "initialOpen": false,
@@ -40,14 +48,22 @@
   "artifacts": {
     "web": "artifacts/director-finance-web-smoke.png",
     "android": {
-      "currentXml": "artifacts/android-director-finance-route-1.xml",
-      "currentPng": "artifacts/android-director-finance-route-1.png",
-      "financeXml": "artifacts/android-director-finance-tab-1.xml",
-      "financePng": "artifacts/android-director-finance-tab-1.png",
-      "debtModalXml": "artifacts/android-director-finance-suppliers.xml",
-      "debtModalPng": "artifacts/android-director-finance-suppliers.png",
-      "supplierDetailXml": "artifacts/android-director-finance-supplier-detail.xml",
-      "supplierDetailPng": "artifacts/android-director-finance-supplier-detail.png"
+      "currentXml": null,
+      "currentPng": null,
+      "financeXml": null,
+      "financePng": null,
+      "debtModalXml": null,
+      "debtModalPng": null,
+      "supplierDetailXml": null,
+      "supplierDetailPng": null
+    },
+    "androidFailure": {
+      "xmlPath": "artifacts/android-director-finance-failure.xml",
+      "pngPath": "artifacts/android-director-finance-failure.png",
+      "stdoutPath": "C:/dev/rik-expo-app/artifacts/director-dev-client-8081.stdout.log",
+      "stderrPath": "C:/dev/rik-expo-app/artifacts/director-dev-client-8081.stderr.log",
+      "stdoutTail": "",
+      "stderrTail": ""
     }
   },
   "gate": "director_finance_runtime_verify"

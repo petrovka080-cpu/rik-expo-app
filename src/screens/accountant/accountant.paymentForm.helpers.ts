@@ -9,7 +9,12 @@ export type AccountantPaymentCurrentInvoice = {
   proposal_id?: string | null;
   invoice_currency?: string | null;
   invoice_amount?: number | string | null;
+  outstanding_amount?: number | string | null;
   total_paid?: number | string | null;
+  paid_unassigned?: number | string | null;
+  payment_status?: string | null;
+  payment_eligible?: boolean | null;
+  failure_code?: string | null;
   invoice_number?: string | null;
   invoice_date?: string | null;
   supplier?: string | null;
@@ -183,7 +188,12 @@ export function derivePaymentFormState(params: DerivePaymentFormStateParams) {
   const cur = current?.invoice_currency || "KGS";
   const inv = Number(current?.invoice_amount ?? 0);
   const paid = Number(current?.total_paid ?? 0);
-  const restProposal = inv > 0 ? Math.max(0, inv - paid) : 0;
+  const canonicalOutstanding = nnum(current?.outstanding_amount);
+  const restProposal = params.proposalId
+    ? Math.max(0, canonicalOutstanding)
+    : inv > 0
+      ? Math.max(0, inv - paid)
+      : 0;
 
   const lineTotals = items.map((item) => round2(nnum(item.qty) * nnum(item.price)));
   const paidTotalProposal = round2(Math.max(0, nnum(current?.total_paid)));
@@ -192,7 +202,9 @@ export function derivePaymentFormState(params: DerivePaymentFormStateParams) {
     const paidLine = round2(nnum(params.paidByLineMap.get(proposalItemId) ?? 0));
     return Math.min(paidLine, lineTotals[index] || 0);
   });
-  const paidUnassigned = round2(Math.max(0, paidTotalProposal - params.paidKnownSum));
+  const paidUnassigned = params.proposalId
+    ? round2(Math.max(0, nnum(current?.paid_unassigned)))
+    : round2(Math.max(0, paidTotalProposal - params.paidKnownSum));
   const remainByLine = lineTotals.map((total, index) =>
     round2(Math.max(0, total - nnum(paidBeforeByLine[index]))),
   );

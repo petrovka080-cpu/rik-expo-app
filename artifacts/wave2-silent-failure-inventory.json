@@ -1,0 +1,115 @@
+{
+  "wave": "Wave 2: Silent Failure Elimination",
+  "status": "NOT_GREEN",
+  "criticalFixed": [
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "function": "useForemanDraftBoundary",
+      "path": "server_terminal_conflict cleanup effect",
+      "oldPattern": "clearTerminalLocalDraft(...).catch(() => undefined)",
+      "newHandling": "critical_fail observability via recordCatchDiscipline with terminal_local_cleanup_failed"
+    },
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "function": "useForemanDraftBoundary",
+      "path": "focus restore trigger",
+      "oldPattern": "restoreDraftIfNeeded(\"focus\").catch(() => undefined)",
+      "newHandling": "classified observability via restore_draft_on_focus_failed"
+    },
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "function": "useForemanDraftBoundary",
+      "path": "app active restore trigger",
+      "oldPattern": "restoreDraftIfNeeded(\"app_active\").catch(() => undefined)",
+      "newHandling": "classified observability via restore_draft_on_app_active_failed"
+    },
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "function": "useForemanDraftBoundary",
+      "path": "network bootstrap",
+      "oldPattern": "ensurePlatformNetworkService(...).catch(() => undefined)",
+      "newHandling": "observability via network_service_bootstrap_failed plus explicit fallback networkOnline=null"
+    },
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "function": "useForemanDraftBoundary",
+      "path": "network back restore trigger",
+      "oldPattern": "restoreDraftIfNeeded(\"network_back\").catch(() => undefined)",
+      "newHandling": "classified observability via restore_draft_on_network_back_failed"
+    },
+    {
+      "file": "src/screens/foreman/foreman.draftBoundary.helpers.ts",
+      "function": "syncForemanRequestHeaderMeta",
+      "path": "request header meta sync",
+      "oldPattern": "production swallow behind dev-only console.warn",
+      "newHandling": "degraded_fallback observability via request_header_meta_sync_failed"
+    },
+    {
+      "file": "src/screens/foreman/foreman.draftBoundary.helpers.ts",
+      "function": "loadForemanRequestDetails",
+      "path": "request details critical loader",
+      "oldPattern": "catch -> return null with dev-only warn, leaving stale requestDetails possible",
+      "newHandling": "degraded_fallback observability via request_details_load_failed plus controlled fallback setRequestDetails(null)"
+    }
+  ],
+  "benignLeftAsIs": [
+    {
+      "file": "src/screens/accountant/accountant.attachments.ts",
+      "path": "loadProposalHeader(client, proposalId).catch(() => null)",
+      "reason": "feeds owner-chain diagnostics only; attachment truth rows come from canonical attachment result"
+    },
+    {
+      "file": "src/screens/accountant/accountant.attachments.ts",
+      "path": "loadProposalPaymentCount(client, proposalId).catch(() => 0)",
+      "reason": "diagnostic enrichment only; does not control attachment truth or submit readiness"
+    },
+    {
+      "file": "src/lib/sessionRole.ts",
+      "path": "resolveCurrentSessionRole / warmCurrentSessionProfile catches",
+      "reason": "already instrumented through beginPlatformObservability().error(...); not a silent swallow"
+    }
+  ],
+  "outOfScope": [
+    {
+      "file": "src/lib/offline/offlineStorage.ts",
+      "reason": "safe storage adapter best-effort cleanup, not product truth"
+    },
+    {
+      "file": "src/lib/supabaseClient.ts",
+      "reason": "polyfill/router import catches are best-effort runtime glue, not draft/proposal/auth truth loss"
+    },
+    {
+      "file": "src/lib/notify.native.ts",
+      "reason": "sound cleanup only"
+    }
+  ],
+  "proof": {
+    "staticGrep": {
+      "anonymousUndefinedCatchesRemovedFromForemanBoundary": true,
+      "namedEventsPresent": [
+        "request_header_meta_sync_failed",
+        "request_details_load_failed",
+        "terminal_local_cleanup_failed",
+        "restore_draft_on_focus_failed",
+        "restore_draft_on_app_active_failed",
+        "network_service_bootstrap_failed",
+        "restore_draft_on_network_back_failed"
+      ]
+    },
+    "jest": {
+      "command": "node node_modules/jest/bin/jest.js src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts src/screens/foreman/foreman.localDraft.lifecycle.test.ts src/lib/api/requestDraftSync.service.test.ts src/lib/api/proposals.silentCatch.test.ts --runInBand --json --outputFile artifacts/wave2-silent-failure-jest.json",
+      "ok": false,
+      "blocker": "Cannot find module '@jest/core'"
+    },
+    "focusedTypecheck": {
+      "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false --skipLibCheck --moduleResolution node --module commonjs --target es2020 src/screens/foreman/foreman.draftBoundary.helpers.ts src/screens/foreman/hooks/useForemanDraftBoundary.ts src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts",
+      "ok": false,
+      "blockers": [
+        "TS5097 in src/lib/api/pdf_director.data.ts",
+        "TS5097 in src/lib/pdf/pdf.director.templates.ts",
+        "TS2307 for @react-native-async-storage/async-storage via src/lib/offline/offlineStorage.ts",
+        "TS2307 for @react-native-async-storage/async-storage via src/screens/foreman/foreman.helpers.ts"
+      ]
+    }
+  }
+}
