@@ -8,7 +8,7 @@ loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
 
 export const baseUrl = String(process.env.RIK_WEB_BASE_URL ?? "http://localhost:8081").trim();
-export const runtimeLoginLabelRe = /Р’РѕР№С‚Рё|Login/i;
+export const runtimeLoginLabelRe = /Р’РѕР№С‚Рё|Войти|Login/i;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -106,24 +106,47 @@ export async function loginWithProtectedRoute(
   const readyNeedles = options.readyNeedles ?? [];
   const unauthorizedNeedles = options.unauthorizedNeedles ?? [/Email/i, /password/i, runtimeLoginLabelRe];
 
-  await page.goto(`${baseUrl}${route}`, { waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded", timeout: 45_000 });
+  await waitForBody(page, unauthorizedNeedles, 45_000).catch(() => undefined);
+
   const body = await bodyText(page);
   const needsLogin = unauthorizedNeedles.some((needle) =>
     typeof needle === "string" ? body.includes(needle) : needle.test(body),
   );
+
   if (needsLogin) {
     const emailInput = page.locator('input[placeholder="Email"]').first();
     if ((await emailInput.count()) > 0) {
       await emailInput.fill(user.email);
       await page.locator('input[type="password"]').first().fill(user.password);
+
       const loginButton = page.getByText(runtimeLoginLabelRe).first();
       if ((await loginButton.count()) > 0) {
         await loginButton.click();
       } else {
         await page.locator('button,[role="button"],div[tabindex="0"]').first().click();
       }
+
+      await poll(
+        `login:${route}`,
+        async () => {
+          if (!page.url().includes("/auth/login")) return true;
+          const nextBody = await bodyText(page);
+          const stillUnauthorized = unauthorizedNeedles.some((needle) =>
+            typeof needle === "string" ? nextBody.includes(needle) : needle.test(nextBody),
+          );
+          return stillUnauthorized ? null : true;
+        },
+        45_000,
+        500,
+      ).catch(() => undefined);
+
+      if (!page.url().includes(route)) {
+        await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded", timeout: 45_000 });
+      }
     }
   }
+
   if (readyNeedles.length > 0) {
     await waitForBody(page, readyNeedles, 45_000);
   }
