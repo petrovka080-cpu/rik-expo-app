@@ -181,7 +181,7 @@ export default function ActivePaymentForm({
         <TextInput
           value={accountantFio}
           onChangeText={setAccountantFio}
-          placeholder="Р¤РРћ Р±СѓС…РіР°Р»С‚РµСЂР° *"
+          placeholder="ФИО бухгалтера *"
           placeholderTextColor={UI.sub}
           onFocus={(e) => scrollInputIntoView(e)}
           style={S.input(!!String(accountantFio || "").trim())}
@@ -200,7 +200,7 @@ export default function ActivePaymentForm({
             <>
               {supp0 ? (
                 <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 8 }} numberOfLines={1}>
-                  РџРѕСЃС‚Р°РІС‰РёРє: <Text style={{ color: UI.text, fontWeight: "900" }}>{supp0}</Text>
+                  Поставщик: <Text style={{ color: UI.text, fontWeight: "900" }}>{supp0}</Text>
                 </Text>
               ) : null}
 
@@ -208,7 +208,7 @@ export default function ActivePaymentForm({
                 value={invNo0}
                 onChangeText={(t) => setInvoiceNo(String(t || "").trimStart())}
                 editable={!busyKey}
-                placeholder="РќРѕРјРµСЂ СЃС‡С‘С‚Р° (РёРЅРІРѕР№СЃР°) *"
+                placeholder="Номер счёта (инвойса) *"
                 placeholderTextColor={UI.sub}
                 onFocus={(e) => scrollInputIntoView(e)}
                 style={[S.input(true), { opacity: busyKey ? 0.9 : 1 }]}
@@ -236,7 +236,7 @@ export default function ActivePaymentForm({
                     opacity: busyKey ? 0.6 : 1,
                   }}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>РЎРµРіРѕРґРЅСЏ</Text>
+                  <Text style={{ color: UI.text, fontWeight: "900" }}>Сегодня</Text>
                 </Pressable>
 
                 <Pressable
@@ -259,7 +259,7 @@ export default function ActivePaymentForm({
                     opacity: busyKey ? 0.6 : 1,
                   }}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>Р’С‡РµСЂР°</Text>
+                  <Text style={{ color: UI.text, fontWeight: "900" }}>Вчера</Text>
                 </Pressable>
               </View>
 
@@ -343,11 +343,11 @@ export default function ActivePaymentForm({
         <View style={S.section}>
           <View style={{ flexDirection: "row", gap: 8 }}>
             <Pressable disabled={!!busyKey} onPress={() => setPayKind("bank")} style={segBtn(payKind === "bank")}>
-              <Text style={{ color: UI.text, fontWeight: "900" }}>Р‘Р°РЅРє</Text>
+              <Text style={{ color: UI.text, fontWeight: "900" }}>Банк</Text>
             </Pressable>
 
             <Pressable disabled={!!busyKey} onPress={() => setPayKind("cash")} style={segBtn(payKind === "cash")}>
-              <Text style={{ color: UI.text, fontWeight: "900" }}>РќР°Р»</Text>
+              <Text style={{ color: UI.text, fontWeight: "900" }}>Нал</Text>
             </Pressable>
           </View>
 
@@ -364,7 +364,7 @@ export default function ActivePaymentForm({
                 borderColor: "rgba(255,255,255,0.12)",
               }}
             >
-              <Text style={{ color: UI.sub, fontWeight: "800" }}>РћСЃС‚Р°С‚РѕРє Рє РѕРїР»Р°С‚Рµ</Text>
+              <Text style={{ color: UI.sub, fontWeight: "800" }}>Остаток к оплате</Text>
               <Text
                 testID="payment-form-rest"
                 style={{ color: UI.text, fontWeight: "900", fontSize: 22, marginTop: 6 }}
@@ -387,7 +387,7 @@ export default function ActivePaymentForm({
               }}
             >
               <Text style={{ color: UI.text, fontWeight: "900" }}>
-                РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіРѕС‚РѕРІРёС‚СЊ РґР°РЅРЅС‹Рµ РґР»СЏ РѕРїР»Р°С‚С‹
+                Не удалось подготовить данные для оплаты
               </Text>
               <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
                 {paymentDataErrorMessage}
@@ -404,7 +404,7 @@ export default function ActivePaymentForm({
                   onPress={selectFullMode}
                   style={segBtn(mode === "full")}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>РћРїР»Р°С‚РёС‚СЊ РїРѕР»РЅРѕСЃС‚СЊСЋ</Text>
+                  <Text style={{ color: UI.text, fontWeight: "900" }}>Оплатить полностью</Text>
                 </Pressable>
 
                 <Pressable
@@ -413,7 +413,7 @@ export default function ActivePaymentForm({
                   onPress={selectPartialMode}
                   style={segBtn(mode === "partial")}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>РћРїР»Р°С‚РёС‚СЊ С‡Р°СЃС‚РёС‡РЅРѕ</Text>
+                  <Text style={{ color: UI.text, fontWeight: "900" }}>Оплатить частично</Text>
                 </Pressable>
               </View>
 
@@ -425,7 +425,7 @@ export default function ActivePaymentForm({
             <>
               <View style={pillBox()}>
                 <Text style={pillBoxTxt()}>
-                  РЎСѓРјРјР° Рє РѕРїР»Р°С‚Рµ:{" "}
+                  Сумма к оплате:{" "}
                   <Text style={{ color: UI.text, fontWeight: "900" }}>
                     {restProposal.toFixed(2)} {cur}
                   </Text>
@@ -450,10 +450,10 @@ export default function ActivePaymentForm({
               >
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontWeight: "900", color: UI.text }}>Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РїРѕ РїРѕР·РёС†РёСЏРј</Text>
+                    <Text style={{ fontWeight: "900", color: UI.text }}>Распределение по позициям</Text>
 
                     <Text testID="payment-form-alloc-sum" style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
-                      РЎСѓРјРјР° Рє РѕРїР»Р°С‚Рµ (Р°РІС‚Рѕ):{" "}
+                      Сумма к оплате (авто):{" "}
                       <Text style={{ color: UI.text, fontWeight: "900" }}>
                         {fmt2(allocSum)} {cur}
                       </Text>
@@ -461,7 +461,7 @@ export default function ActivePaymentForm({
 
                     {paidUnassigned > 0.01 ? (
                       <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
-                        РќРµ СЂР°СЃРїСЂРµРґРµР»РµРЅРѕ СЂР°РЅРµРµ:{" "}
+                        Не распределено ранее:{" "}
                         <Text style={{ color: UI.text, fontWeight: "900" }}>
                           {fmt2(paidUnassigned)} {cur}
                         </Text>
@@ -476,7 +476,7 @@ export default function ActivePaymentForm({
                       onPress={clearAlloc}
                       style={smallBtn("neutral", !!busyKey)}
                     >
-                      <Text style={{ color: UI.text, fontWeight: "900" }}>РћС‡РёСЃС‚РёС‚СЊ</Text>
+                      <Text style={{ color: UI.text, fontWeight: "900" }}>Очистить</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -485,19 +485,19 @@ export default function ActivePaymentForm({
 
                 {itemsLoading ? (
                   <Text testID="payment-form-loading" style={{ color: UI.sub, fontWeight: "800" }}>
-                    Р—Р°РіСЂСѓР¶Р°СЋ РїРѕР·РёС†РёРёвЂ¦
+                    Загружаю позиции…
                   </Text>
                 ) : paymentDataErrorMessage ? (
                   <Text style={{ color: UI.text, fontWeight: "800" }}>
-                    Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅРѕ: {paymentDataErrorMessage}
+                    Распределение временно недоступно: {paymentDataErrorMessage}
                   </Text>
                 ) : !items.length ? (
-                  <Text style={{ color: UI.sub, fontWeight: "800" }}>РќРµС‚ РїРѕР·РёС†РёР№ Сѓ СЃС‡С‘С‚Р°</Text>
+                  <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет позиций у счёта</Text>
                 ) : (
                   <View style={{ gap: 10 }}>
                     {items.map((it, idx) => {
                       const id = String(it.id);
-                      const name = String(it.name_human ?? "вЂ”");
+                      const name = String(it.name_human ?? "—");
                       const uom = String(it.uom ?? "");
                       const qty = nnum(it.qty);
                       const price = nnum(it.price);
@@ -526,21 +526,21 @@ export default function ActivePaymentForm({
                           </Text>
 
                           <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={1}>
-                            {kindOf(it)} вЂў {fmtQty(qty)} {uom} Г— {fmt2(price)}
+                            {kindOf(it)} • {fmtQty(qty)} {uom} × {fmt2(price)}
                           </Text>
 
                           <Text
                             testID={`payment-form-line-remain-${id}`}
                             style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}
                           >
-                            РћСЃС‚Р°С‚РѕРє РїРѕ РїРѕР·РёС†РёРё:{" "}
+                            Остаток по позиции:{" "}
                             <Text style={{ color: UI.text, fontWeight: "900" }}>{fmt2(remain)} {cur}</Text>
                           </Text>
 
                           <View style={{ height: 8 }} />
 
                           <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-                            Р­С‚РёРј РїР»Р°С‚РµР¶РѕРј РїРѕ РїРѕР·РёС†РёРё
+                            Этим платежом по позиции
                           </Text>
 
                           <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
@@ -583,8 +583,8 @@ export default function ActivePaymentForm({
                             testID={`payment-form-line-rest-after-${id}`}
                             style={{ color: UI.sub, fontWeight: "800", marginTop: 8 }}
                           >
-                            РћРїР»Р°С‡РµРЅРѕ РґРѕ: <Text style={{ color: UI.text, fontWeight: "900" }}>{fmt2(paidBefore)} {cur}</Text>
-                            {"  "}вЂў РћСЃС‚Р°С‚РѕРє РїРѕСЃР»Рµ: <Text style={{ color: UI.text, fontWeight: "900" }}>{fmt2(restAfter)} {cur}</Text>
+                            Оплачено до: <Text style={{ color: UI.text, fontWeight: "900" }}>{fmt2(paidBefore)} {cur}</Text>
+                            {"  "}• Остаток после: <Text style={{ color: UI.text, fontWeight: "900" }}>{fmt2(restAfter)} {cur}</Text>
                           </Text>
                         </View>
                       );
@@ -604,13 +604,13 @@ export default function ActivePaymentForm({
                     }}
                   >
                     <Text style={{ color: UI.text, fontWeight: "900" }}>
-                      вќ— Р—Р°РїРѕР»РЅРёС‚Рµ С…РѕС‚СЏ Р±С‹ РѕРґРЅСѓ РїРѕР·РёС†РёСЋ (СЃСѓРјРјР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ 0).
+                      ✕ Заполните хотя бы одну позицию (сумма должна быть больше 0).
                     </Text>
                   </View>
                 ) : null}
 
                 <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 10 }}>
-                  РЎСѓРјРјР° РѕРїР»Р°С‚С‹ Р±РµСЂС‘С‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РёР· СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ РїРѕ РїРѕР·РёС†РёСЏРј.
+                  Сумма оплаты берётся автоматически из распределения по позициям.
                 </Text>
               </View>
 
@@ -622,7 +622,7 @@ export default function ActivePaymentForm({
             value={note}
             onChangeText={setNote}
             editable={!busyKey}
-            placeholder="РљРѕРјРјРµРЅС‚Р°СЂРёР№"
+            placeholder="Комментарий"
             placeholderTextColor={UI.sub}
             autoCorrect={false}
             autoCapitalize="none"
@@ -642,7 +642,7 @@ export default function ActivePaymentForm({
                 value={bankName}
                 onChangeText={setBankName}
                 editable={!busyKey}
-                placeholder="Р‘Р°РЅРє"
+                placeholder="Банк"
                 placeholderTextColor={UI.sub}
                 autoCorrect={false}
                 autoCapitalize="none"
@@ -655,7 +655,7 @@ export default function ActivePaymentForm({
                 value={bik}
                 onChangeText={setBik}
                 editable={!busyKey}
-                placeholder="Р‘РРљ"
+                placeholder="БИК"
                 placeholderTextColor={UI.sub}
                 autoCorrect={false}
                 autoCapitalize="none"
@@ -668,7 +668,7 @@ export default function ActivePaymentForm({
                 value={rs}
                 onChangeText={setRs}
                 editable={!busyKey}
-                placeholder="Р /РЎ"
+                placeholder="Р/С"
                 placeholderTextColor={UI.sub}
                 autoCorrect={false}
                 autoCapitalize="none"
@@ -684,7 +684,7 @@ export default function ActivePaymentForm({
                     value={inn}
                     onChangeText={setInn}
                     editable={!busyKey}
-                    placeholder="РРќРќ"
+                    placeholder="ИНН"
                     placeholderTextColor={UI.sub}
                     keyboardType={kbTypeNum}
                     autoCorrect={false}
@@ -699,7 +699,7 @@ export default function ActivePaymentForm({
                     value={kpp}
                     onChangeText={setKpp}
                     editable={!busyKey}
-                    placeholder="РљРџРџ"
+                    placeholder="КПП"
                     placeholderTextColor={UI.sub}
                     autoCorrect={false}
                     autoCapitalize="none"

@@ -122,10 +122,10 @@ export const getPaymentFormErrorMessage = (error: unknown, fallback: string) => 
 
 export function kindOf(item: AccountantPaymentFormItem) {
   const code = String(item?.rik_code ?? "").toUpperCase();
-  if (code.startsWith("MAT-")) return "РњР°С‚РµСЂРёР°Р»С‹";
-  if (code.startsWith("WRK-")) return "Р Р°Р±РѕС‚С‹";
-  if (code.startsWith("SRV-") || code.startsWith("SVC-")) return "РЈСЃР»СѓРіРё";
-  return "РџСЂРѕС‡РµРµ";
+  if (code.startsWith("MAT-")) return "Материалы";
+  if (code.startsWith("WRK-")) return "Работы";
+  if (code.startsWith("SRV-") || code.startsWith("SVC-")) return "Услуги";
+  return "Прочее";
 }
 
 export function buildPaidAllocationState(rows: unknown[]) {
