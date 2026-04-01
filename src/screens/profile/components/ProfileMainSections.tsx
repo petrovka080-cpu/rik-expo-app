@@ -17,6 +17,35 @@ import { MenuActionRow, RowItem } from "./ProfilePrimitives";
 
 const styles = profileStyles;
 
+const COPY = {
+  yes: "\u0415\u0441\u0442\u044c",
+  no: "\u041d\u0435\u0442",
+  unknown: "\u041d\u0435 \u0443\u043a\u0430\u0437\u0430\u043d",
+  profileTitle: "\u041f\u0440\u043e\u0444\u0438\u043b\u044c",
+  profileSubtitle:
+    "\u041b\u0438\u0447\u043d\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435, \u0434\u043e\u0441\u0442\u0443\u043f\u044b, \u0430\u043a\u0442\u0438\u0432\u043d\u044b\u0439 \u043a\u043e\u043d\u0442\u0435\u043a\u0441\u0442 \u0438 \u0442\u0435\u043a\u0443\u0449\u0430\u044f \u0441\u0435\u0441\u0441\u0438\u044f GOX.",
+  edit: "\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c",
+  name: "\u0418\u043c\u044f",
+  phone: "\u0422\u0435\u043b\u0435\u0444\u043e\u043d",
+  city: "\u0413\u043e\u0440\u043e\u0434",
+  currentContext: "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043a\u043e\u043d\u0442\u0435\u043a\u0441\u0442",
+  companyContextPrefix: "\u0415\u0441\u0442\u044c: ",
+  openMarket: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c Market",
+  openOffice: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c Office",
+  oneContextHint:
+    "\u0414\u043e\u0441\u0442\u0443\u043f\u0435\u043d \u0442\u043e\u043b\u044c\u043a\u043e \u043e\u0434\u0438\u043d \u043a\u043e\u043d\u0442\u0435\u043a\u0441\u0442, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0442\u0435\u043b\u044c \u0441\u043a\u0440\u044b\u0442.",
+  editData: "\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0434\u0430\u043d\u043d\u044b\u0435",
+  signOutTitle: "\u0412\u044b\u0439\u0442\u0438 \u0438\u0437 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0430",
+  signOutSubtitle:
+    "\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0442\u0435\u043a\u0443\u0449\u0443\u044e \u0441\u0435\u0441\u0441\u0438\u044e \u0438 \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043d\u0430 \u044d\u043a\u0440\u0430\u043d \u0432\u0445\u043e\u0434\u0430.",
+  marketContextSubtitle:
+    "\u041f\u043e\u0438\u0441\u043a, \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440 \u0442\u043e\u0432\u0430\u0440\u043e\u0432 \u0438 \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 market flow.",
+  officeContextSubtitle:
+    "\u0420\u0430\u0431\u043e\u0447\u0438\u0435 \u0440\u043e\u043b\u0438, Office hub \u0438 ERP-\u043c\u043e\u0434\u0443\u043b\u0438.",
+  sellerEntrySubtitle:
+    "\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f, \u0441\u0442\u0430\u0442\u0443\u0441\u044b \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438 \u0438 seller tools \u0432 \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e\u043c contour.",
+} as const;
+
 type ProfileMainSectionsProps = {
   profileAvatarUrl: string | null;
   avatarLetter: string;
@@ -31,12 +60,13 @@ type ProfileMainSectionsProps = {
   officeRolesLabel: string;
   activeContextDescription: string;
   onOpenEditProfile: () => void;
+  onOpenSellerArea: () => void;
   onSelectActiveContext: (context: AppContext) => void;
   onOpenActiveContext: () => void;
   onSignOut: () => void;
 };
 
-const formatAccessValue = (value: boolean): string => (value ? "Есть" : "Нет");
+const formatAccessValue = (value: boolean): string => (value ? COPY.yes : COPY.no);
 
 export function ProfileMainSections({
   profileAvatarUrl,
@@ -52,6 +82,7 @@ export function ProfileMainSections({
   officeRolesLabel,
   activeContextDescription,
   onOpenEditProfile,
+  onOpenSellerArea,
   onSelectActiveContext,
   onOpenActiveContext,
   onSignOut,
@@ -76,11 +107,11 @@ export function ProfileMainSections({
   const contextSwitchVisible = accessModel.availableContexts.length > 1;
   const activeContextLabel = marketContextActive ? "Market" : "Office";
   const companyContextValue = company?.name?.trim()
-    ? `Есть: ${company.name.trim()}`
+    ? `${COPY.companyContextPrefix}${company.name.trim()}`
     : formatAccessValue(accessModel.hasCompanyContext);
   const activeContextCtaLabel = marketContextActive
-    ? "Открыть Market"
-    : "Открыть Office";
+    ? COPY.openMarket
+    : COPY.openOffice;
 
   return (
     <ScrollView
@@ -120,13 +151,11 @@ export function ProfileMainSections({
 
       <View style={styles.profileTitleRow}>
         <View style={styles.profileTitleMeta}>
-          <Text style={styles.profileTitle}>Профиль</Text>
-          <Text style={styles.profileTitleSubtitle}>
-            Личные данные, доступы, активный контекст и текущая сессия GOX.
-          </Text>
+          <Text style={styles.profileTitle}>{COPY.profileTitle}</Text>
+          <Text style={styles.profileTitleSubtitle}>{COPY.profileSubtitle}</Text>
         </View>
         <Pressable style={styles.profileEditButton} onPress={onOpenEditProfile}>
-          <Text style={styles.profileEditButtonText}>Редактировать</Text>
+          <Text style={styles.profileEditButtonText}>{COPY.edit}</Text>
         </Pressable>
       </View>
 
@@ -136,15 +165,15 @@ export function ProfileMainSections({
           <Text style={styles.profileSectionHeaderText}>Identity</Text>
         </View>
         <View style={styles.sectionCard}>
-          <RowItem label="Имя" value={profileName} />
+          <RowItem label={COPY.name} value={profileName} />
           <RowItem
-            label="Телефон"
-            value={profile.phone?.trim() || "Не указан"}
+            label={COPY.phone}
+            value={profile.phone?.trim() || COPY.unknown}
           />
-          <RowItem label="Email" value={profileEmail || "Не указан"} />
+          <RowItem label="Email" value={profileEmail || COPY.unknown} />
           <RowItem
-            label="Город"
-            value={profile.city?.trim() || "Не указан"}
+            label={COPY.city}
+            value={profile.city?.trim() || COPY.unknown}
             last
           />
         </View>
@@ -177,6 +206,28 @@ export function ProfileMainSections({
         </View>
       </View>
 
+      {accessModel.hasSellerCapability ? (
+        <View style={styles.section}>
+          <View style={styles.profileSectionHeader}>
+            <Ionicons name="storefront-outline" size={18} color={UI.accent} />
+            <Text style={styles.profileSectionHeaderText}>Seller Area</Text>
+          </View>
+          <Pressable
+            testID="profile-open-seller-area"
+            style={styles.profileActionCard}
+            onPress={onOpenSellerArea}
+          >
+            <View style={styles.profileActionTextWrap}>
+              <Text style={styles.profileActionTitle}>Seller tools</Text>
+              <Text style={styles.profileActionSubtitle}>
+                {COPY.sellerEntrySubtitle}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={UI.accent} />
+          </Pressable>
+        </View>
+      ) : null}
+
       <View style={styles.section}>
         <View style={styles.profileSectionHeader}>
           <Ionicons
@@ -187,7 +238,7 @@ export function ProfileMainSections({
           <Text style={styles.profileSectionHeaderText}>Active Context</Text>
         </View>
         <View style={styles.sectionCard}>
-          <RowItem label="Текущий контекст" value={activeContextLabel} />
+          <RowItem label={COPY.currentContext} value={activeContextLabel} />
           <Text style={[styles.companyText, { marginTop: 10 }]}>
             {activeContextDescription}
           </Text>
@@ -211,7 +262,7 @@ export function ProfileMainSections({
                   Market
                 </Text>
                 <Text style={styles.modeSwitchSub}>
-                  Маркетплейс, витрина и пользовательские сценарии.
+                  {COPY.marketContextSubtitle}
                 </Text>
               </Pressable>
 
@@ -232,13 +283,13 @@ export function ProfileMainSections({
                   Office
                 </Text>
                 <Text style={styles.modeSwitchSub}>
-                  Рабочие роли, Office hub и ERP-модули.
+                  {COPY.officeContextSubtitle}
                 </Text>
               </Pressable>
             </View>
           ) : (
             <Text style={[styles.chipHint, styles.chipHintSpaced]}>
-              Доступен только один контекст, поэтому переключатель скрыт.
+              {COPY.oneContextHint}
             </Text>
           )}
 
@@ -258,23 +309,23 @@ export function ProfileMainSections({
           <Text style={styles.profileSectionHeaderText}>Session</Text>
         </View>
         <View style={styles.sectionCard}>
-          <RowItem label="User ID" value={accessModel.userId || "Не указан"} />
-          <RowItem label="Account" value={profileEmail || "Не указан"} last />
+          <RowItem label="User ID" value={accessModel.userId || COPY.unknown} />
+          <RowItem label="Account" value={profileEmail || COPY.unknown} last />
           <View style={styles.companyActionsRow}>
             <Pressable
               style={[styles.companyBtn, styles.companyBtnSecondary]}
               onPress={onOpenEditProfile}
             >
               <Text style={styles.companyBtnTextSecondary}>
-                Редактировать данные
+                {COPY.editData}
               </Text>
             </Pressable>
           </View>
           <View style={[styles.companyActionsRow, styles.companyActionsRowTop]}>
             <MenuActionRow
               icon="log-out-outline"
-              title="Выйти из аккаунта"
-              subtitle="Завершить текущую сессию и вернуться на экран входа."
+              title={COPY.signOutTitle}
+              subtitle={COPY.signOutSubtitle}
               onPress={onSignOut}
               danger
               last

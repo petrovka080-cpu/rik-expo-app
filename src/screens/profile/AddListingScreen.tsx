@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Location from "expo-location";
 
 import {
@@ -12,6 +12,7 @@ import { loadStoredActiveContext } from "../../lib/appAccessContextStorage";
 import {
   buildSupplierShowcaseRoute,
   MARKET_TAB_ROUTE,
+  SELLER_ROUTE,
 } from "../../lib/navigation/coreRoutes";
 import { profileStyles } from "./profile.styles";
 import {
@@ -84,6 +85,12 @@ const getAddListingErrorMessage = (error: unknown): string =>
 
 export function AddListingScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ entry?: string | string[] }>();
+  const entrySource = Array.isArray(params.entry)
+    ? params.entry[0]
+    : params.entry;
+  const returnRoute =
+    entrySource === "seller" ? SELLER_ROUTE : MARKET_TAB_ROUTE;
 
   const [loading, setLoading] = useState(true);
   const [itemModalOpen, setItemModalOpen] = useState(false);
@@ -157,7 +164,7 @@ export function AddListingScreen() {
       } catch (error: unknown) {
         if (!alive) return;
         Alert.alert(UI_COPY.alertTitle, getAddListingErrorMessage(error));
-        router.replace(MARKET_TAB_ROUTE);
+        router.replace(returnRoute);
       } finally {
         if (alive) setLoading(false);
       }
@@ -168,7 +175,7 @@ export function AddListingScreen() {
     return () => {
       alive = false;
     };
-  }, [prepareListingForm, router]);
+  }, [prepareListingForm, returnRoute, router]);
 
   const accessModel = useMemo(
     () =>
@@ -196,7 +203,7 @@ export function AddListingScreen() {
   );
 
   const exitAddListingFlow = () => {
-    router.replace(MARKET_TAB_ROUTE);
+    router.replace(returnRoute);
   };
 
   const closeItemModal = () => {
@@ -374,7 +381,7 @@ export function AddListingScreen() {
         lng,
       });
 
-      router.replace(MARKET_TAB_ROUTE);
+      router.replace(returnRoute);
 
       Alert.alert(UI_COPY.successTitle, UI_COPY.successMessage, [
         {

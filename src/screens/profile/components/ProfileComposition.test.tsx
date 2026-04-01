@@ -62,6 +62,7 @@ const baseMainProps = () => ({
   activeContextDescription:
     "Сейчас активен Market. Office-доступ сохранён, но не выбран как текущий контекст.",
   onOpenEditProfile: jest.fn(),
+  onOpenSellerArea: jest.fn(),
   onSelectActiveContext: jest.fn(),
   onOpenActiveContext: jest.fn(),
   onSignOut: jest.fn(),
@@ -83,10 +84,14 @@ describe("Profile composition boundaries", () => {
     renderer!.root
       .findByProps({ testID: "profile-open-active-context" })
       .props.onPress();
+    renderer!.root
+      .findByProps({ testID: "profile-open-seller-area" })
+      .props.onPress();
 
     expect(props.onOpenEditProfile).toHaveBeenCalledTimes(1);
     expect(props.onSelectActiveContext).toHaveBeenCalledWith("office");
     expect(props.onOpenActiveContext).toHaveBeenCalledTimes(1);
+    expect(props.onOpenSellerArea).toHaveBeenCalledTimes(1);
   });
 
   it("hides the false context switch when only one context is available", () => {

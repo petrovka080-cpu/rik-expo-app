@@ -16,6 +16,7 @@ import {
   AUTH_LOGIN_ROUTE,
   MARKET_TAB_ROUTE,
   OFFICE_TAB_ROUTE,
+  SELLER_ROUTE,
 } from "../../lib/navigation/coreRoutes";
 import {
   getErrorMessage,
@@ -181,6 +182,10 @@ export function ProfileContent() {
     setEditProfileOpen(true);
   }, [hydrateProfileForm, profile, profileAvatarUrl]);
 
+  const openSellerArea = useCallback(() => {
+    router.push(SELLER_ROUTE);
+  }, [router]);
+
   const closeEditProfile = useCallback(() => {
     resetProfileAvatarDraft(profileAvatarUrl);
     setEditProfileOpen(false);
@@ -333,6 +338,7 @@ export function ProfileContent() {
         officeRolesLabel={officeRolesLabel}
         activeContextDescription={activeContextDescription}
         onOpenEditProfile={openEditProfile}
+        onOpenSellerArea={openSellerArea}
         onSelectActiveContext={handleSelectActiveContext}
         onOpenActiveContext={openActiveContext}
         onSignOut={handleSignOut}

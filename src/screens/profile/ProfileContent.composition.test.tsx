@@ -150,6 +150,10 @@ describe("ProfileContent composition shell", () => {
     ).toBe("Сейчас активен Office. Доступные рабочие роли: Директор.");
     expect(capturedEditModalProps).not.toBeNull();
     expect(capturedEditModalProps?.visible).toBe(false);
+    act(() => {
+      (capturedMainProps?.onOpenSellerArea as (() => void) | undefined)?.();
+    });
+    expect(mockPush).toHaveBeenCalledWith("/seller");
   });
 
   it("falls back to market context when no stored context is available", async () => {

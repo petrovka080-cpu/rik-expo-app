@@ -11,9 +11,11 @@ import type { MarketMapParams } from "../../features/market/marketHome.types";
 
 export const AUTH_LOGIN_ROUTE = "/auth/login" satisfies Href;
 export const DIRECTOR_ROUTE = "/director" satisfies Href;
+export const ADD_LISTING_ROUTE = "/(tabs)/add" satisfies Href;
 export const OFFICE_TAB_ROUTE = "/office/index" satisfies Href;
 export const REPORTS_DASHBOARD_ROUTE = "/reports/dashboard" satisfies Href;
 export const REPORTS_AI_ASSISTANT_ROUTE = "/reports/ai-assistant" satisfies Href;
+export const SELLER_ROUTE = "/seller" satisfies Href;
 export const SUPPLIER_MAP_ROUTE = "/supplierMap" satisfies Href;
 export const SUPPLIER_SHOWCASE_ROUTE = "/supplierShowcase" satisfies Href;
 
@@ -61,6 +63,16 @@ export const buildChatRoute = (params: {
         listingId: params.listingId,
       },
 });
+
+export const buildAddListingRoute = (params?: {
+  entry?: "seller";
+}): Href =>
+  params?.entry
+    ? {
+        pathname: ADD_LISTING_ROUTE,
+        params: { entry: params.entry },
+      }
+    : ADD_LISTING_ROUTE;
 
 export const buildSupplierMapRoute = (params?: MarketMapParams): Href =>
   params ? buildMarketSupplierMapRoute(params) : SUPPLIER_MAP_ROUTE;

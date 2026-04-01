@@ -10,6 +10,7 @@ type PlatformObservabilityScreen =
   | "office"
   | "ai"
   | "profile"
+  | "seller"
   | "add_listing"
   | "security"
   | "reports"

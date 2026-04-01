@@ -14,6 +14,7 @@ type ScreenBoundaryScreen =
   | "office"
   | "ai"
   | "profile"
+  | "seller"
   | "add_listing"
   | "security"
   | "reports"

@@ -12,7 +12,9 @@ describe("AddListingScreen source contract", () => {
     expect(source).toContain("loadAddListingOwnerData");
     expect(source).toContain("createMarketListing({");
     expect(source).toContain("Location.requestForegroundPermissionsAsync");
-    expect(source).toContain("router.replace(MARKET_TAB_ROUTE)");
+    expect(source).toContain("useLocalSearchParams");
+    expect(source).toContain('entrySource === "seller" ? SELLER_ROUTE : MARKET_TAB_ROUTE');
+    expect(source).toContain("router.replace(returnRoute)");
     expect(source).toContain("<ListingModal");
     expect(source).toContain("visible");
     expect(source).toContain("onRequestClose={exitAddListingFlow}");

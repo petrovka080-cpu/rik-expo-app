@@ -16,6 +16,7 @@ import {
 } from "react-native";
 
 import { FlashList } from "../../ui/FlashList";
+import { SELLER_ROUTE } from "../../lib/navigation/coreRoutes";
 import MarketFeedCard from "../market/components/MarketFeedCard";
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
 import { buildListingAssistantPrompt, buildMarketMapParams } from "../market/marketHome.data";
@@ -23,7 +24,6 @@ import {
   buildMarketProductRoute,
   buildMarketSupplierMapRoute,
   buildMarketSupplierShowcaseRoute,
-  MARKET_PROFILE_ROUTE,
   MARKET_TAB_ROUTE,
 } from "../market/market.routes";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
@@ -121,7 +121,7 @@ export default function SupplierShowcaseScreen() {
     (payload.isOwnerView ? identity.fullName : null) ||
     "Витрина поставщика";
   const city = payload.company?.city || payload.profile?.city || null;
-  const subtitle = payload.company?.industry || payload.profile?.position || "Профиль поставщика";
+  const subtitle = payload.company?.industry || payload.profile?.position || "Поставщик marketplace";
   const phone = payload.company?.phone_main || payload.profile?.phone || null;
   const whatsapp = payload.company?.phone_whatsapp || payload.profile?.whatsapp || null;
   const telegram = payload.company?.telegram || payload.profile?.telegram || null;
@@ -189,7 +189,7 @@ export default function SupplierShowcaseScreen() {
         </Pressable>
         <View style={styles.headerCopy}>
           <Text style={styles.headerTitle}>{payload.isOwnerView ? "Моя витрина" : "Витрина поставщика"}</Text>
-          <Text style={styles.headerSub}>Read-only профиль компании и объявлений на текущих данных</Text>
+          <Text style={styles.headerSub}>Read-only витрина компании и объявлений на текущих данных</Text>
         </View>
         <Pressable style={styles.aiBtn} onPress={openAssistant}>
           <Ionicons name="sparkles" size={18} color="#FFFFFF" />
@@ -212,7 +212,7 @@ export default function SupplierShowcaseScreen() {
               {city ? ` • ${city}` : ""}
             </Text>
             <Text style={styles.heroMeta}>
-              {payload.isOwnerView ? "Ваш интегрированный профиль" : "Поставщик из текущего marketplace"}
+              {payload.isOwnerView ? "Ваш seller-контур в marketplace" : "Поставщик из текущего marketplace"}
             </Text>
             {ownerEmail ? <Text style={styles.heroMeta}>{ownerEmail}</Text> : null}
           </View>
@@ -264,9 +264,9 @@ export default function SupplierShowcaseScreen() {
           {payload.isOwnerView ? (
             <Pressable
               style={[styles.actionBtn, styles.secondaryBtn]}
-              onPress={() => router.push(MARKET_PROFILE_ROUTE)}
+              onPress={() => router.push(SELLER_ROUTE)}
             >
-              <Text style={styles.secondaryBtnText}>Профиль</Text>
+              <Text style={styles.secondaryBtnText}>Seller Area</Text>
             </Pressable>
           ) : null}
           {phone ? (
