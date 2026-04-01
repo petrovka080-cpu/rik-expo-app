@@ -18,7 +18,6 @@ import { recordPlatformObservability } from "../../lib/observability/platformObs
 import { FlashList } from "../../ui/FlashList";
 import MarketAssistantBanner from "./components/MarketAssistantBanner";
 import MarketCategoryRail from "./components/MarketCategoryRail";
-import MarketContactSupplierModal from "./components/MarketContactSupplierModal";
 import MarketFeedCard from "./components/MarketFeedCard";
 import MarketHeaderBar from "./components/MarketHeaderBar";
 import MarketHeroCarousel from "./components/MarketHeroCarousel";
@@ -30,7 +29,6 @@ import {
   getCategoryLabel,
 } from "./marketHome.config";
 import {
-  buildListingAssistantPrompt,
   buildMarketAssistantPrompt,
   buildMarketMapParams,
   filterMarketHomeListings,
@@ -43,25 +41,18 @@ import {
   loadMarketplaceHomeStage1,
 } from "./marketplace.home.service";
 import {
-  addMarketplaceListingToRequest,
-  contactMarketplaceSupplier,
-  createMarketplaceProposal,
-} from "./market.repository";
-import {
   MARKET_AI_ROUTE,
   MARKET_AUCTIONS_ROUTE,
   MARKET_PROFILE_ROUTE,
   buildMarketProductRoute,
   buildMarketSupplierMapRoute,
-  buildMarketSupplierShowcaseRoute,
 } from "./market.routes";
-import type { MarketHomeListingCard, MarketRoleCapabilities } from "./marketHome.types";
+import type { MarketHomeListingCard } from "./marketHome.types";
 import { useMarketHeaderProfile } from "./useMarketHeaderProfile";
 import { useMarketUiStore } from "./marketUi.store";
 
 type FeedState = {
   listings: MarketHomeListingCard[];
-  activeDemandCount: number;
   totalCount: number;
   hasMore: boolean;
   offset: number;
@@ -71,23 +62,12 @@ type FeedPhase = "loading" | "ready" | "empty" | "error";
 
 const DEFAULT_FEED_STATE: FeedState = {
   listings: [],
-  activeDemandCount: 0,
   totalCount: 0,
   hasMore: true,
   offset: 0,
 };
 
-const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
-  role: null,
-  canAddToRequest: false,
-  canCreateProposal: false,
-};
-
 const MARKET_HOME_SURFACE = "home_feed";
-
-const trim = (value: unknown) => String(value ?? "").trim();
-const buildActionKey = (action: "contact" | "request" | "proposal", listingId: string) =>
-  `${action}:${trim(listingId)}`;
 
 export default function MarketHomeScreen() {
   const { width } = useWindowDimensions();
@@ -98,27 +78,20 @@ export default function MarketHomeScreen() {
   const query = useMarketUiStore((state) => state.query);
   const side = useMarketUiStore((state) => state.side);
   const kind = useMarketUiStore((state) => state.kind);
-  const selectedItemId = useMarketUiStore((state) => state.selectedItemId);
   const loadingMore = useMarketUiStore((state) => state.loadingMore);
   const setActiveCategory = useMarketUiStore((state) => state.setActiveCategory);
   const setQuery = useMarketUiStore((state) => state.setQuery);
   const setSide = useMarketUiStore((state) => state.setSide);
   const setKind = useMarketUiStore((state) => state.setKind);
-  const setSelectedItemId = useMarketUiStore((state) => state.setSelectedItemId);
   const setLoadingMore = useMarketUiStore((state) => state.setLoadingMore);
 
   const [feed, setFeed] = useState<FeedState>(DEFAULT_FEED_STATE);
   const [feedPhase, setFeedPhase] = useState<FeedPhase>("loading");
   const [feedErrorText, setFeedErrorText] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
   const [auctionsSummary, setAuctionsSummary] = useState<MarketplaceAuctionSummary | null>(null);
   const [auctionsLoading, setAuctionsLoading] = useState(true);
   const [feedAnchorOffset, setFeedAnchorOffset] = useState(640);
-  const [busyActionKey, setBusyActionKey] = useState<string | null>(null);
-  const [contactListing, setContactListing] = useState<MarketHomeListingCard | null>(null);
-  const [contactMessage, setContactMessage] = useState("");
-  const [contactErrorText, setContactErrorText] = useState<string | null>(null);
 
   const filters = useMemo(
     () => ({
@@ -176,10 +149,6 @@ export default function MarketHomeScreen() {
     [filters.kind, filters.side],
   );
 
-  const pushSupplierShowcase = useCallback((row: Pick<MarketHomeListingCard, "sellerUserId" | "sellerCompanyId">) => {
-    router.push(buildMarketSupplierShowcaseRoute(row.sellerUserId, row.sellerCompanyId));
-  }, []);
-
   const openAssistant = useCallback((prompt: string) => {
     router.push(MARKET_AI_ROUTE(prompt));
   }, []);
@@ -188,7 +157,6 @@ export default function MarketHomeScreen() {
     setAuctionsLoading(true);
     try {
       const stage1 = await loadMarketplaceHomeStage1();
-      setCapabilities(stage1.capabilities);
       setAuctionsSummary(stage1.auctionsSummary);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Не удалось подготовить маркет.";
@@ -201,7 +169,6 @@ export default function MarketHomeScreen() {
         errorStage: "screen_state",
         errorMessage: message,
       });
-      setCapabilities(DEFAULT_CAPABILITIES);
       setAuctionsSummary({
         activeCount: 0,
         pendingCount: 0,
@@ -231,7 +198,6 @@ export default function MarketHomeScreen() {
         );
         setFeed({
           listings: page.listings,
-          activeDemandCount: page.activeDemandCount,
           totalCount: page.totalCount,
           hasMore: page.hasMore,
           offset: page.listings.length,
@@ -267,7 +233,6 @@ export default function MarketHomeScreen() {
         });
         return {
           listings: nextListings,
-          activeDemandCount: nextPage.activeDemandCount,
           totalCount: nextPage.totalCount,
           hasMore: nextPage.hasMore,
           offset: nextListings.length,
@@ -351,118 +316,28 @@ export default function MarketHomeScreen() {
         source: listing.source,
       },
     });
-    setSelectedItemId(listing.id);
     router.push(buildMarketProductRoute(listing.id));
-  }, [setSelectedItemId]);
-
-  const handleAddToRequest = useCallback(async (listing: MarketHomeListingCard) => {
-    const actionKey = buildActionKey("request", listing.id);
-    if (busyActionKey) return;
-    setBusyActionKey(actionKey);
-    try {
-      const result = await addMarketplaceListingToRequest(listing, 1);
-      Alert.alert("Маркет", `Добавлено в заявку: ${result.addedCount} поз. Черновик ${result.requestId}.`);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Не удалось добавить товар в заявку.";
-      Alert.alert("Маркет", message);
-    } finally {
-      setBusyActionKey(null);
-    }
-  }, [busyActionKey]);
-
-  const handleCreateProposal = useCallback(async (listing: MarketHomeListingCard) => {
-    const actionKey = buildActionKey("proposal", listing.id);
-    if (busyActionKey) return;
-    setBusyActionKey(actionKey);
-    try {
-      const result = await createMarketplaceProposal(listing, 1);
-      Alert.alert("Маркет", `Предложение создано${result.proposalNo ? `: ${result.proposalNo}` : ""}.`);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Не удалось создать предложение.";
-      Alert.alert("Маркет", message);
-    } finally {
-      setBusyActionKey(null);
-    }
-  }, [busyActionKey]);
-
-  const handleOpenContactSupplier = useCallback((listing: MarketHomeListingCard) => {
-    setContactListing(listing);
-    setContactMessage(`Здравствуйте. Хочу уточнить условия по позиции "${listing.title}".`);
-    setContactErrorText(null);
   }, []);
-
-  const handleCloseContactSupplier = useCallback(() => {
-    if (busyActionKey?.startsWith("contact:")) return;
-    setContactListing(null);
-    setContactMessage("");
-    setContactErrorText(null);
-  }, [busyActionKey]);
-
-  const handleSubmitContactSupplier = useCallback(async () => {
-    if (!contactListing) return;
-    const actionKey = buildActionKey("contact", contactListing.id);
-    if (busyActionKey) return;
-    setBusyActionKey(actionKey);
-    setContactErrorText(null);
-    try {
-      await contactMarketplaceSupplier({
-        listing: contactListing,
-        message: contactMessage,
-      });
-      Alert.alert("Маркет", "Сообщение поставщику отправлено.");
-      setContactListing(null);
-      setContactMessage("");
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Не удалось отправить сообщение поставщику.";
-      setContactErrorText(message);
-    } finally {
-      setBusyActionKey(null);
-    }
-  }, [busyActionKey, contactListing, contactMessage]);
 
   const renderCard = useCallback(
     ({ item }: ListRenderItemInfo<MarketHomeListingCard>) => (
       <View style={[styles.feedCell, { width: columnWidth }]}>
         <MarketFeedCard
+          variant="market-primary"
           listing={item}
           onOpen={() => handleOpenListing(item)}
           onMapPress={() => pushSupplierMap(item)}
-          onShowcasePress={() => pushSupplierShowcase(item)}
-          onAssistantPress={() => openAssistant(buildListingAssistantPrompt(item))}
           onPhonePress={item.phone ? () => void openPhone(item.phone) : undefined}
           onWhatsAppPress={item.whatsapp ? () => void openWhatsApp(item.whatsapp) : undefined}
-          onContactSupplierPress={(item.supplierId || item.sellerUserId) ? () => handleOpenContactSupplier(item) : undefined}
-          onAddToRequestPress={
-            capabilities.canAddToRequest && item.erpItems.length
-              ? () => void handleAddToRequest(item)
-              : undefined
-          }
-          onCreateProposalPress={
-            capabilities.canCreateProposal && item.erpItems.length
-              ? () => void handleCreateProposal(item)
-              : undefined
-          }
-          contactBusy={busyActionKey === buildActionKey("contact", item.id)}
-          addToRequestBusy={busyActionKey === buildActionKey("request", item.id)}
-          createProposalBusy={busyActionKey === buildActionKey("proposal", item.id)}
-          actionsDisabled={busyActionKey != null}
         />
       </View>
     ),
     [
-      busyActionKey,
-      capabilities.canAddToRequest,
-      capabilities.canCreateProposal,
       columnWidth,
-      handleAddToRequest,
-      handleCreateProposal,
-      handleOpenContactSupplier,
       handleOpenListing,
-      openAssistant,
       openPhone,
       openWhatsApp,
       pushSupplierMap,
-      pushSupplierShowcase,
     ],
   );
 
@@ -522,10 +397,10 @@ export default function MarketHomeScreen() {
         avatarUrl={headerProfile.avatarUrl}
       />
 
-      <MarketHeroCarousel
-        banners={MARKET_HOME_BANNERS}
-        onPressBanner={(banner) => handleBannerPress(banner.action)}
-      />
+      <View style={styles.marketIntro}>
+        <Text style={styles.marketTitle}>Маркет</Text>
+        <Text style={styles.marketSubtitle}>Сначала товар, цена и продавец. Остальное ниже по экрану.</Text>
+      </View>
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Категории</Text>
@@ -547,6 +422,33 @@ export default function MarketHomeScreen() {
         onSelect={handleCategorySelect}
       />
 
+      <View style={styles.feedHeader} onLayout={(event) => setFeedAnchorOffset(event.nativeEvent.layout.y)}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.feedTitle}>{getFeedHeading(activeCategory)}</Text>
+          <Text style={styles.feedSubtitle}>{feedSubtitleText}</Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  const footer = (
+    <View style={styles.footerContent}>
+      {loadingMore ? (
+        <View style={styles.footerLoader}>
+          <ActivityIndicator color={MARKET_HOME_COLORS.accent} />
+        </View>
+      ) : null}
+
+      <View style={styles.secondarySectionHeader}>
+        <Text style={styles.secondarySectionTitle}>Дополнительно</Text>
+        <Text style={styles.secondarySectionText}>Вспомогательные сервисы и соседние сценарии рынка.</Text>
+      </View>
+
+      <MarketHeroCarousel
+        banners={MARKET_HOME_BANNERS}
+        onPressBanner={(banner) => handleBannerPress(banner.action)}
+      />
+
       <MarketTenderBanner
         summary={auctionsSummary}
         loading={auctionsLoading}
@@ -557,16 +459,6 @@ export default function MarketHomeScreen() {
         onOpenAssistant={() => openAssistant(buildMarketAssistantPrompt(filters))}
         onOpenMap={() => pushSupplierMap()}
       />
-
-      <View style={styles.feedHeader} onLayout={(event) => setFeedAnchorOffset(event.nativeEvent.layout.y)}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.feedTitle}>{getFeedHeading(activeCategory)}</Text>
-          <Text style={styles.feedSubtitle}>{feedSubtitleText}</Text>
-          {selectedItemId ? (
-            <Text style={styles.feedHint}>Открыта карточка: {selectedItemId}</Text>
-          ) : null}
-        </View>
-      </View>
     </View>
   );
 
@@ -581,13 +473,7 @@ export default function MarketHomeScreen() {
         numColumns={numColumns}
         estimatedItemSize={360}
         ListHeaderComponent={header}
-        ListFooterComponent={
-          loadingMore ? (
-            <View style={styles.footerLoader}>
-              <ActivityIndicator color={MARKET_HOME_COLORS.accent} />
-            </View>
-          ) : null
-        }
+        ListFooterComponent={footer}
         ListEmptyComponent={renderFeedPlaceholder}
         contentContainerStyle={styles.contentContainer}
         columnWrapperStyle={numColumns > 1 ? styles.feedRow : undefined}
@@ -605,17 +491,6 @@ export default function MarketHomeScreen() {
         onEndReached={() => void loadMore()}
         onEndReachedThreshold={0.35}
       />
-
-      <MarketContactSupplierModal
-        visible={contactListing != null}
-        supplierName={contactListing?.sellerDisplayName ?? "Поставщик"}
-        message={contactMessage}
-        busy={busyActionKey?.startsWith("contact:") === true}
-        errorText={contactErrorText}
-        onChangeMessage={setContactMessage}
-        onClose={handleCloseContactSupplier}
-        onSubmit={() => void handleSubmitContactSupplier()}
-      />
     </View>
   );
 }
@@ -630,7 +505,23 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
   },
   headerContent: {
-    gap: 26,
+    gap: 18,
+  },
+  marketIntro: {
+    paddingHorizontal: 20,
+    gap: 6,
+  },
+  marketTitle: {
+    color: MARKET_HOME_COLORS.text,
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: "900",
+  },
+  marketSubtitle: {
+    color: MARKET_HOME_COLORS.textSoft,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "600",
   },
   sectionHeader: {
     paddingHorizontal: 20,
@@ -667,12 +558,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-  feedHint: {
-    marginTop: 6,
-    color: MARKET_HOME_COLORS.accentStrong,
-    fontSize: 12,
-    fontWeight: "700",
-  },
   feedRow: {
     justifyContent: "space-between",
     paddingHorizontal: 20,
@@ -681,8 +566,27 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   footerLoader: {
-    paddingBottom: 12,
+    paddingBottom: 8,
     paddingTop: 4,
+  },
+  footerContent: {
+    paddingTop: 8,
+    gap: 18,
+  },
+  secondarySectionHeader: {
+    paddingHorizontal: 20,
+    gap: 4,
+  },
+  secondarySectionTitle: {
+    color: MARKET_HOME_COLORS.text,
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  secondarySectionText: {
+    color: MARKET_HOME_COLORS.textSoft,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
   },
   placeholderGrid: {
     paddingHorizontal: 20,

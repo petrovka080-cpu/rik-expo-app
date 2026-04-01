@@ -20,6 +20,7 @@ type Props = {
   addToRequestBusy?: boolean;
   createProposalBusy?: boolean;
   actionsDisabled?: boolean;
+  variant?: "full" | "market-primary";
 };
 
 export default function MarketFeedCard({
@@ -37,7 +38,15 @@ export default function MarketFeedCard({
   addToRequestBusy = false,
   createProposalBusy = false,
   actionsDisabled = false,
+  variant = "full",
 }: Props) {
+  const isMarketPrimary = variant === "market-primary";
+  const showPhoneAction = Boolean(onPhonePress);
+  const showWhatsAppAction = Boolean(onWhatsAppPress);
+  const showMapAction = !showPhoneAction || !showWhatsAppAction;
+  const showUtilityActions = !isMarketPrimary && (onMapPress || onShowcasePress || onAssistantPress || onPhonePress || onWhatsAppPress);
+  const showErpActions = !isMarketPrimary && (onContactSupplierPress || onAddToRequestPress || onCreateProposalPress);
+
   return (
     <View style={styles.shell}>
       <Pressable style={styles.cardPress} onPress={onOpen} disabled={actionsDisabled}>
@@ -72,13 +81,13 @@ export default function MarketFeedCard({
               : "Цена по запросу"}
           </Text>
 
-          {listing.stockLabel ? (
+          {!isMarketPrimary && listing.stockLabel ? (
             <Text style={styles.stockText} testID={`market_stock_${listing.id}`}>
               {listing.stockLabel}
             </Text>
           ) : null}
 
-          {listing.itemsPreview.length ? (
+          {!isMarketPrimary && listing.itemsPreview.length ? (
             <View style={styles.itemsBox}>
               {listing.itemsPreview.slice(0, 2).map((item) => (
                 <Text key={`${listing.id}:${item}`} style={styles.itemLine} numberOfLines={1}>
@@ -90,33 +99,62 @@ export default function MarketFeedCard({
         </View>
       </Pressable>
 
-      <View style={styles.actions}>
-        <Pressable style={styles.mapAction} onPress={onMapPress} disabled={actionsDisabled}>
-          <Text style={styles.mapActionText}>На карте</Text>
-        </Pressable>
-        {onShowcasePress ? (
-          <Pressable style={styles.iconActionSoft} onPress={onShowcasePress} disabled={actionsDisabled}>
-            <Ionicons name="storefront" size={16} color={MARKET_HOME_COLORS.accentStrong} />
-          </Pressable>
-        ) : null}
-        {onAssistantPress ? (
-          <Pressable style={styles.iconActionSoft} onPress={onAssistantPress} disabled={actionsDisabled}>
-            <Ionicons name="sparkles" size={16} color={MARKET_HOME_COLORS.accentStrong} />
-          </Pressable>
-        ) : null}
-        {onPhonePress ? (
-          <Pressable style={styles.iconAction} onPress={onPhonePress} disabled={actionsDisabled}>
-            <Ionicons name="call" size={16} color="#FFFFFF" />
-          </Pressable>
-        ) : null}
-        {onWhatsAppPress ? (
-          <Pressable style={[styles.iconAction, styles.whatsAction]} onPress={onWhatsAppPress} disabled={actionsDisabled}>
-            <Ionicons name="logo-whatsapp" size={16} color="#FFFFFF" />
-          </Pressable>
-        ) : null}
-      </View>
+      {isMarketPrimary ? (
+        <View style={styles.primaryActions}>
+          {showPhoneAction ? (
+            <Pressable style={[styles.primaryAction, styles.primaryCallAction]} onPress={onPhonePress} disabled={actionsDisabled}>
+              <Ionicons name="call" size={16} color="#FFFFFF" />
+              <Text style={styles.primaryActionText}>Позвонить</Text>
+            </Pressable>
+          ) : null}
+          {showWhatsAppAction ? (
+            <Pressable
+              style={[styles.primaryAction, styles.primaryWhatsAppAction]}
+              onPress={onWhatsAppPress}
+              disabled={actionsDisabled}
+            >
+              <Ionicons name="logo-whatsapp" size={16} color="#FFFFFF" />
+              <Text style={styles.primaryActionText}>WhatsApp</Text>
+            </Pressable>
+          ) : null}
+          {showMapAction ? (
+            <Pressable style={[styles.primaryAction, styles.primaryMapAction]} onPress={onMapPress} disabled={actionsDisabled}>
+              <Ionicons name="location-outline" size={16} color={MARKET_HOME_COLORS.accentStrong} />
+              <Text style={styles.primaryMapActionText}>На карте</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
 
-      {onContactSupplierPress || onAddToRequestPress || onCreateProposalPress ? (
+      {showUtilityActions ? (
+        <View style={styles.actions}>
+          <Pressable style={styles.mapAction} onPress={onMapPress} disabled={actionsDisabled}>
+            <Text style={styles.mapActionText}>На карте</Text>
+          </Pressable>
+          {onShowcasePress ? (
+            <Pressable style={styles.iconActionSoft} onPress={onShowcasePress} disabled={actionsDisabled}>
+              <Ionicons name="storefront" size={16} color={MARKET_HOME_COLORS.accentStrong} />
+            </Pressable>
+          ) : null}
+          {onAssistantPress ? (
+            <Pressable style={styles.iconActionSoft} onPress={onAssistantPress} disabled={actionsDisabled}>
+              <Ionicons name="sparkles" size={16} color={MARKET_HOME_COLORS.accentStrong} />
+            </Pressable>
+          ) : null}
+          {onPhonePress ? (
+            <Pressable style={styles.iconAction} onPress={onPhonePress} disabled={actionsDisabled}>
+              <Ionicons name="call" size={16} color="#FFFFFF" />
+            </Pressable>
+          ) : null}
+          {onWhatsAppPress ? (
+            <Pressable style={[styles.iconAction, styles.whatsAction]} onPress={onWhatsAppPress} disabled={actionsDisabled}>
+              <Ionicons name="logo-whatsapp" size={16} color="#FFFFFF" />
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+
+      {showErpActions ? (
         <View style={styles.erpActions}>
           {onContactSupplierPress ? (
             <Pressable
@@ -283,6 +321,43 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+  },
+  primaryActions: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  primaryAction: {
+    minHeight: 42,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  primaryCallAction: {
+    backgroundColor: MARKET_HOME_COLORS.accentStrong,
+  },
+  primaryWhatsAppAction: {
+    backgroundColor: MARKET_HOME_COLORS.emerald,
+  },
+  primaryMapAction: {
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+  },
+  primaryActionText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  primaryMapActionText: {
+    color: MARKET_HOME_COLORS.accentStrong,
+    fontSize: 13,
+    fontWeight: "900",
   },
   mapAction: {
     flex: 1,
