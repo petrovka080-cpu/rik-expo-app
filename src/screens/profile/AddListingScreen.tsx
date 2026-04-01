@@ -6,24 +6,24 @@ import * as Location from "expo-location";
 import {
   buildAppAccessModel,
   type AppAccessSourceSnapshot,
+  type AppContext,
 } from "../../lib/appAccessModel";
 import { loadStoredActiveContext } from "../../lib/appAccessContextStorage";
 import {
   buildSupplierShowcaseRoute,
   MARKET_TAB_ROUTE,
 } from "../../lib/navigation/coreRoutes";
-import { getErrorMessage } from "./profile.helpers";
 import { profileStyles } from "./profile.styles";
 import {
   createMarketListing,
-  loadCatalogItems,
-  loadProfileScreenData,
+  loadAddListingOwnerData,
   searchCatalogItems,
 } from "./profile.services";
 import type {
   CatalogSearchItem,
   Company,
   ListingCartItem,
+  ListingKind,
   UserProfile,
 } from "./profile.types";
 import { ListingModal } from "./components/ListingModal";
@@ -31,21 +31,69 @@ import { useListingForm } from "./hooks/useListingForm";
 
 const styles = profileStyles;
 
+const UI_COPY = {
+  loadingLabel: "\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f\u2026",
+  alertTitle: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
+  catalogFallback: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430",
+  kindHintTitle: "\u0422\u0438\u043f \u043f\u043e\u0434\u0441\u043a\u0430\u0437\u043e\u043a",
+  kindHintMessage:
+    "\u0412 \u044d\u0442\u043e\u043c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0438 \u0443\u0436\u0435 \u0435\u0441\u0442\u044c \u043f\u043e\u0437\u0438\u0446\u0438\u0438. \u0422\u0438\u043f \u043d\u0430\u0432\u0435\u0440\u0445\u0443 \u0432\u043b\u0438\u044f\u0435\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u043d\u0430 \u043f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0438 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430.",
+  selectKindTitle: "\u0422\u0438\u043f \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
+  selectKindMessage:
+    "\u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u0432\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u0438\u043f \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f: \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b, \u0443\u0441\u043b\u0443\u0433\u0438 \u0438\u043b\u0438 \u0430\u0440\u0435\u043d\u0434\u0430.",
+  itemValidationTitle: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f",
+  itemValidationMessage:
+    "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0438 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e, \u0438 \u0446\u0435\u043d\u0443 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443.",
+  missingTitle: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f.",
+  missingContacts:
+    "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0445\u043e\u0442\u044f \u0431\u044b \u043e\u0434\u0438\u043d \u043a\u043e\u043d\u0442\u0430\u043a\u0442: \u0442\u0435\u043b\u0435\u0444\u043e\u043d, WhatsApp \u0438\u043b\u0438 email.",
+  locationTitle: "\u0413\u0435\u043e\u043b\u043e\u043a\u0430\u0446\u0438\u044f",
+  locationPermissionMessage:
+    "\u0420\u0430\u0437\u0440\u0435\u0448\u0438\u0442\u0435 \u0434\u043e\u0441\u0442\u0443\u043f \u043a \u043c\u0435\u0441\u0442\u043e\u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u044e, \u0447\u0442\u043e\u0431\u044b \u0440\u0430\u0437\u043c\u0435\u0441\u0442\u0438\u0442\u044c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435 \u043d\u0430 \u043a\u0430\u0440\u0442\u0435.",
+  locationFailedMessage:
+    "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438 \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0438\u0442\u044c \u043c\u0435\u0441\u0442\u043e\u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.",
+  locationMissingCoordsMessage:
+    "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u044c \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442\u044b. \u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435 \u043d\u0435 \u0431\u0443\u0434\u0435\u0442 \u0440\u0430\u0437\u043c\u0435\u0449\u0435\u043d\u043e.",
+  successTitle: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043e",
+  successMessage:
+    "\u0412\u0430\u0448\u0435 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435 \u0443\u0436\u0435 \u0432\u0438\u0434\u043d\u043e \u0432 \u0432\u0438\u0442\u0440\u0438\u043d\u0435 \u0438 \u043d\u0430 \u043a\u0430\u0440\u0442\u0435.",
+  openShowcaseAction: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0432\u0438\u0442\u0440\u0438\u043d\u0443",
+  okAction: "\u041e\u043a",
+} as const;
+
+const normalizeLegacyAddListingError = (message: string): string => {
+  if (!message.trim()) {
+    return "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.";
+  }
+  if (message === "profile_error") {
+    return "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.";
+  }
+  if (message.includes("\u0420\u045a\u0420\u00b5 \u0420\u0405\u0420\u00b0\u0420\u2116\u0421\u2018\u0420\u00b5\u0420\u0405")) {
+    return "\u041d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c";
+  }
+  if (message.includes("\u0420\u00a6\u0420\u00b5\u0420\u0405\u0420\u00b0")) {
+    return "\u0426\u0435\u043d\u0430 \u0443\u043a\u0430\u0437\u0430\u043d\u0430 \u043d\u0435\u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u043e.";
+  }
+  return message;
+};
+
+const getAddListingErrorMessage = (error: unknown): string =>
+  normalizeLegacyAddListingError(
+    error instanceof Error ? error.message : String(error ?? "profile_error"),
+  );
+
 export function AddListingScreen() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [listingModalOpen, setListingModalOpen] = useState(false);
-  const [catalogModalOpen, setCatalogModalOpen] = useState(false);
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [savingListing, setSavingListing] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
   const [accessSourceSnapshot, setAccessSourceSnapshot] =
     useState<AppAccessSourceSnapshot | null>(null);
-  const [requestedActiveContext, setRequestedActiveContext] = useState<
-    "market" | "office" | null
-  >(null);
+  const [storedActiveContext, setStoredActiveContext] =
+    useState<AppContext | null>(null);
 
   const {
     listingForm,
@@ -53,8 +101,6 @@ export function AddListingScreen() {
     setListingCartItems,
     editingItem,
     setEditingItem,
-    catalogSearch,
-    setCatalogSearch,
     catalogResults,
     setCatalogResults,
     catalogLoading,
@@ -87,29 +133,30 @@ export function AddListingScreen() {
     const loadAll = async () => {
       try {
         setLoading(true);
-        const result = await loadProfileScreenData();
-        const storedActiveContext = await loadStoredActiveContext(result.profile.user_id);
+        const result = await loadAddListingOwnerData();
+        const nextStoredActiveContext = await loadStoredActiveContext(
+          result.profile.user_id,
+        );
         if (!alive) return;
 
         const nextAccessSnapshot = result.accessSourceSnapshot;
         const accessModel = buildAppAccessModel({
           ...nextAccessSnapshot,
-          requestedActiveContext: storedActiveContext,
+          requestedActiveContext: nextStoredActiveContext,
         });
 
         setProfile(result.profile);
         setCompany(result.company);
         setAccessSourceSnapshot(nextAccessSnapshot);
-        setRequestedActiveContext(storedActiveContext);
+        setStoredActiveContext(nextStoredActiveContext);
         prepareListingForm({
           profile: result.profile,
           company: result.company,
           activeContext: accessModel.activeContext,
         });
-        setListingModalOpen(true);
-      } catch (e: unknown) {
+      } catch (error: unknown) {
         if (!alive) return;
-        Alert.alert("Объявление", getErrorMessage(e));
+        Alert.alert(UI_COPY.alertTitle, getAddListingErrorMessage(error));
         router.replace(MARKET_TAB_ROUTE);
       } finally {
         if (alive) setLoading(false);
@@ -129,23 +176,27 @@ export function AddListingScreen() {
         userId: profile?.user_id ?? null,
         authRole: accessSourceSnapshot?.authRole ?? null,
         resolvedRole: accessSourceSnapshot?.resolvedRole ?? null,
-        usageMarket: accessSourceSnapshot?.usageMarket ?? Boolean(profile?.usage_market),
-        usageBuild: accessSourceSnapshot?.usageBuild ?? Boolean(profile?.usage_build),
+        usageMarket:
+          accessSourceSnapshot?.usageMarket ?? Boolean(profile?.usage_market),
+        usageBuild:
+          accessSourceSnapshot?.usageBuild ?? Boolean(profile?.usage_build),
         ownedCompanyId: accessSourceSnapshot?.ownedCompanyId ?? company?.id ?? null,
         companyMemberships: accessSourceSnapshot?.companyMemberships ?? [],
         listingsCount: accessSourceSnapshot?.listingsCount ?? 0,
-        requestedActiveContext,
+        requestedActiveContext: storedActiveContext,
       }),
-    [accessSourceSnapshot, company?.id, profile?.usage_build, profile?.usage_market, profile?.user_id, requestedActiveContext],
+    [
+      accessSourceSnapshot,
+      company?.id,
+      profile?.usage_build,
+      profile?.usage_market,
+      profile?.user_id,
+      storedActiveContext,
+    ],
   );
 
-  const closeListingModal = () => {
-    setListingModalOpen(false);
+  const exitAddListingFlow = () => {
     router.replace(MARKET_TAB_ROUTE);
-  };
-
-  const closeCatalogModal = () => {
-    setCatalogModalOpen(false);
   };
 
   const closeItemModal = () => {
@@ -158,7 +209,7 @@ export function AddListingScreen() {
   ): ListingCartItem => ({
     id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
     rik_code: item.rik_code,
-    name: item.name_human_ru || "Позиция каталога",
+    name: item.name_human_ru || UI_COPY.catalogFallback,
     uom: item.uom_code || "",
     qty: "",
     price: "",
@@ -166,18 +217,13 @@ export function AddListingScreen() {
     kind: listingKind ?? null,
   });
 
-  const handleListingKindChange = (
-    nextKind: "material" | "service" | "rent",
-  ) => {
+  const handleListingKindChange = (nextKind: ListingKind) => {
     if (
       listingCartItems.length > 0 &&
       listingKind &&
       listingKind !== nextKind
     ) {
-      Alert.alert(
-        "Тип подсказок",
-        "В этом объявлении уже есть позиции. Тип наверху влияет только на подсказки из каталога.",
-      );
+      Alert.alert(UI_COPY.kindHintTitle, UI_COPY.kindHintMessage);
     }
 
     setListingKind(nextKind);
@@ -194,8 +240,11 @@ export function AddListingScreen() {
       setCatalogLoading(true);
       const results = await searchCatalogItems(query, listingKind);
       setCatalogResults(results);
-    } catch (e: unknown) {
-      console.warn("searchCatalogInline error:", getErrorMessage(e));
+    } catch (error: unknown) {
+      console.warn(
+        "searchCatalogInline error:",
+        getAddListingErrorMessage(error),
+      );
     } finally {
       setCatalogLoading(false);
     }
@@ -205,28 +254,12 @@ export function AddListingScreen() {
     setListingTitle(text);
     setListingRikCode(null);
     setListingUom("");
-    setCatalogSearch(text);
     void searchCatalogInline(text);
-  };
-
-  const loadCatalog = async () => {
-    try {
-      setCatalogLoading(true);
-      const results = await loadCatalogItems(catalogSearch, listingKind);
-      setCatalogResults(results);
-    } catch (e: unknown) {
-      Alert.alert("Каталог", getErrorMessage(e));
-    } finally {
-      setCatalogLoading(false);
-    }
   };
 
   const handleInlineCatalogPick = (item: CatalogSearchItem) => {
     if (!listingKind) {
-      Alert.alert(
-        "Тип объявления",
-        "Сначала выберите тип объявления: материалы, услуги или аренда.",
-      );
+      Alert.alert(UI_COPY.selectKindTitle, UI_COPY.selectKindMessage);
       return;
     }
 
@@ -236,25 +269,6 @@ export function AddListingScreen() {
     setListingUom(base.uom || "");
     setEditingItem(base);
     setItemModalOpen(true);
-    setCatalogResults([]);
-  };
-
-  const handleCatalogModalPick = (item: CatalogSearchItem) => {
-    if (!listingKind) {
-      Alert.alert(
-        "Тип объявления",
-        "Сначала выберите тип объявления: материалы, услуги или аренда.",
-      );
-      return;
-    }
-
-    const base = buildListingCatalogItem(item);
-    setListingRikCode(base.rik_code);
-    setListingTitle(base.name);
-    setListingUom(base.uom || "");
-    setEditingItem(base);
-    setItemModalOpen(true);
-    setCatalogModalOpen(false);
     setCatalogResults([]);
   };
 
@@ -277,10 +291,7 @@ export function AddListingScreen() {
   const handleEditingItemConfirm = () => {
     if (!editingItem) return;
     if (!editingItem.qty.trim() || !editingItem.price.trim()) {
-      Alert.alert(
-        "Позиция",
-        "Укажите и количество, и цену за единицу.",
-      );
+      Alert.alert(UI_COPY.itemValidationTitle, UI_COPY.itemValidationMessage);
       return;
     }
 
@@ -296,26 +307,24 @@ export function AddListingScreen() {
   const publishListing = async () => {
     if (!profile) return;
     if (!listingTitle.trim()) {
-      Alert.alert("Объявление", "Укажите заголовок объявления.");
+      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingTitle);
       return;
     }
 
     if (!listingKind) {
-      Alert.alert(
-        "Объявление",
-        "Выберите тип объявления: материалы, услуги или аренда.",
-      );
+      Alert.alert(UI_COPY.selectKindTitle, UI_COPY.selectKindMessage);
       return;
     }
 
     try {
       setSavingListing(true);
 
-      if (!listingPhone.trim() && !listingWhatsapp.trim() && !listingEmail.trim()) {
-        Alert.alert(
-          "Объявление",
-          "Укажите хотя бы один контакт: телефон, WhatsApp или email.",
-        );
+      if (
+        !listingPhone.trim() &&
+        !listingWhatsapp.trim() &&
+        !listingEmail.trim()
+      ) {
+        Alert.alert(UI_COPY.alertTitle, UI_COPY.missingContacts);
         return;
       }
 
@@ -324,10 +333,7 @@ export function AddListingScreen() {
 
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert(
-          "Геолокация",
-          "Разрешите доступ к местоположению, чтобы разместить объявление на карте.",
-        );
+        Alert.alert(UI_COPY.locationTitle, UI_COPY.locationPermissionMessage);
         return;
       }
 
@@ -338,18 +344,12 @@ export function AddListingScreen() {
         lat = location.coords.latitude;
         lng = location.coords.longitude;
       } catch {
-        Alert.alert(
-          "Геолокация",
-          "Не удалось автоматически определить местоположение. Попробуйте ещё раз.",
-        );
+        Alert.alert(UI_COPY.locationTitle, UI_COPY.locationFailedMessage);
         return;
       }
 
       if (lat == null || lng == null) {
-        Alert.alert(
-          "Геолокация",
-          "Не удалось получить координаты. Объявление не будет размещено.",
-        );
+        Alert.alert(UI_COPY.locationTitle, UI_COPY.locationMissingCoordsMessage);
         return;
       }
 
@@ -374,22 +374,17 @@ export function AddListingScreen() {
         lng,
       });
 
-      setListingModalOpen(false);
       router.replace(MARKET_TAB_ROUTE);
 
-      Alert.alert(
-        "Объявление опубликовано",
-        "Ваше объявление уже видно в витрине и на карте.",
-        [
-          {
-            text: "Открыть витрину",
-            onPress: () => router.push(buildSupplierShowcaseRoute()),
-          },
-          { text: "Ок", style: "cancel" },
-        ],
-      );
-    } catch (e: unknown) {
-      Alert.alert("Объявление", getErrorMessage(e));
+      Alert.alert(UI_COPY.successTitle, UI_COPY.successMessage, [
+        {
+          text: UI_COPY.openShowcaseAction,
+          onPress: () => router.push(buildSupplierShowcaseRoute()),
+        },
+        { text: UI_COPY.okAction, style: "cancel" },
+      ]);
+    } catch (error: unknown) {
+      Alert.alert(UI_COPY.alertTitle, getAddListingErrorMessage(error));
     } finally {
       setSavingListing(false);
     }
@@ -399,7 +394,7 @@ export function AddListingScreen() {
     return (
       <View style={styles.center}>
         <ActivityIndicator />
-        <Text style={styles.centerText}>Подготавливаем публикацию…</Text>
+        <Text style={styles.centerText}>{UI_COPY.loadingLabel}</Text>
       </View>
     );
   }
@@ -407,17 +402,15 @@ export function AddListingScreen() {
   return (
     <View style={styles.screen}>
       <ListingModal
-        visible={listingModalOpen}
-        catalogModalOpen={catalogModalOpen}
+        visible
         itemModalOpen={itemModalOpen}
         listingForm={listingForm}
         listingCartItems={listingCartItems}
         editingItem={editingItem}
-        catalogSearch={catalogSearch}
         catalogResults={catalogResults}
         savingListing={savingListing}
         catalogLoading={catalogLoading}
-        onRequestClose={closeListingModal}
+        onRequestClose={exitAddListingFlow}
         onPublish={publishListing}
         onChangeListingKind={handleListingKindChange}
         onChangeListingTitle={handleListingTitleChange}
@@ -426,10 +419,6 @@ export function AddListingScreen() {
         onChangeListingWhatsapp={setListingWhatsapp}
         onChangeListingEmail={setListingEmail}
         onInlineCatalogPick={handleInlineCatalogPick}
-        onChangeCatalogSearch={setCatalogSearch}
-        onLoadCatalog={loadCatalog}
-        onCatalogModalClose={closeCatalogModal}
-        onCatalogModalPick={handleCatalogModalPick}
         onItemModalClose={closeItemModal}
         onChangeEditingItemCity={handleEditingItemCityChange}
         onChangeEditingItemUom={handleEditingItemUomChange}

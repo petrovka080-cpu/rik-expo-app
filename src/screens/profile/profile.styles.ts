@@ -804,15 +804,6 @@ export const profileStyles = StyleSheet.create({
     fontSize: 11,
     color: PROFILE_UI.sub,
   },
-  catalogSearchButton: {
-    alignSelf: "flex-start",
-    marginTop: 6,
-  },
-  catalogEmptyText: {
-    marginTop: 10,
-    fontSize: 12,
-    color: PROFILE_UI.sub,
-  },
   modalButtonsRow: {
     flexDirection: "row",
     justifyContent: "space-between",

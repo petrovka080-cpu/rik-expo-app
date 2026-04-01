@@ -42,7 +42,7 @@ export type Company = {
   licenses_info?: string | null;
 };
 
-export type ProfileListingKind = "material" | "service" | "rent";
+export type ListingKind = "material" | "service" | "rent";
 
 export type ListingCartItem = {
   id: string;
@@ -52,7 +52,7 @@ export type ListingCartItem = {
   qty: string;
   price: string;
   city: string | null;
-  kind: ProfileListingKind | null;
+  kind: ListingKind | null;
 };
 
 export type CatalogSearchItem = {
@@ -85,6 +85,12 @@ export type ProfileScreenLoadResult = {
   accessSourceSnapshot: AppAccessSourceSnapshot;
 };
 
+export type AddListingOwnerLoadResult = {
+  profile: UserProfile;
+  company: Company | null;
+  accessSourceSnapshot: AppAccessSourceSnapshot;
+};
+
 export type ProfileFormState = {
   profileNameInput: string;
   profilePhoneInput: string;
@@ -104,6 +110,6 @@ export type ListingFormState = {
   listingPhone: string;
   listingWhatsapp: string;
   listingEmail: string;
-  listingKind: ProfileListingKind | null;
+  listingKind: ListingKind | null;
   listingRikCode: string | null;
 };

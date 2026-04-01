@@ -22,28 +22,28 @@ describe("profile form hooks", () => {
         {
           id: "1",
           user_id: "u1",
-          full_name: "Айбек",
+          full_name: "\u0410\u0439\u0431\u0435\u043a",
           phone: "+996700000000",
-          city: "Бишкек",
+          city: "\u0411\u0438\u0448\u043a\u0435\u043a",
           usage_market: true,
           usage_build: false,
           bio: "bio",
           telegram: "@aibek",
           whatsapp: "+996700000000",
-          position: "Снабженец",
+          position: "\u0421\u043d\u0430\u0431\u0436\u0435\u043d\u0435\u0446",
         },
         "https://cdn/avatar.png",
       );
     });
 
     expect(hook.profileForm).toMatchObject({
-      profileNameInput: "Айбек",
+      profileNameInput: "\u0410\u0439\u0431\u0435\u043a",
       profilePhoneInput: "+996700000000",
-      profileCityInput: "Бишкек",
+      profileCityInput: "\u0411\u0438\u0448\u043a\u0435\u043a",
       profileBioInput: "bio",
       profileTelegramInput: "@aibek",
       profileWhatsappInput: "+996700000000",
-      profilePositionInput: "Снабженец",
+      profilePositionInput: "\u0421\u043d\u0430\u0431\u0436\u0435\u043d\u0435\u0446",
     });
     expect(hook.profileAvatarDraft).toBe("https://cdn/avatar.png");
 
@@ -71,30 +71,29 @@ describe("profile form hooks", () => {
         {
           id: "item-1",
           rik_code: "R1",
-          name: "Цемент",
-          uom: "мешок",
+          name: "\u0426\u0435\u043c\u0435\u043d\u0442",
+          uom: "\u043c\u0435\u0448\u043e\u043a",
           qty: "10",
           price: "420",
-          city: "Ош",
+          city: "\u041e\u0448",
           kind: "material",
         },
       ]);
       hook.setEditingItem({
         id: "item-2",
         rik_code: "R2",
-        name: "Песок",
-        uom: "м3",
+        name: "\u041f\u0435\u0441\u043e\u043a",
+        uom: "\u043c3",
         qty: "4",
         price: "1000",
-        city: "Бишкек",
+        city: "\u0411\u0438\u0448\u043a\u0435\u043a",
         kind: "material",
       });
-      hook.setCatalogSearch("цем");
       hook.setCatalogResults([
         {
           rik_code: "R1",
-          name_human_ru: "Цемент",
-          uom_code: "мешок",
+          name_human_ru: "\u0426\u0435\u043c\u0435\u043d\u0442",
+          uom_code: "\u043c\u0435\u0448\u043e\u043a",
           kind: "material",
         },
       ]);
@@ -102,9 +101,9 @@ describe("profile form hooks", () => {
         profile: {
           id: "1",
           user_id: "u1",
-          full_name: "Айбек",
+          full_name: "\u0410\u0439\u0431\u0435\u043a",
           phone: "+996700000000",
-          city: "Бишкек",
+          city: "\u0411\u0438\u0448\u043a\u0435\u043a",
           usage_market: true,
           usage_build: true,
           whatsapp: "+996700000111",
@@ -112,8 +111,8 @@ describe("profile form hooks", () => {
         company: {
           id: "c1",
           owner_user_id: "u1",
-          name: "ОсОО GOX",
-          city: "Каракол",
+          name: "\u041e\u0441\u041e\u041e GOX",
+          city: "\u041a\u0430\u0440\u0430\u043a\u043e\u043b",
           phone_main: "+996555000000",
         },
         activeContext: "office",
@@ -122,7 +121,7 @@ describe("profile form hooks", () => {
 
     expect(hook.listingForm).toMatchObject({
       listingTitle: "",
-      listingCity: "Каракол",
+      listingCity: "\u041a\u0430\u0440\u0430\u043a\u043e\u043b",
       listingPrice: "",
       listingUom: "",
       listingDescription: "",
@@ -134,7 +133,6 @@ describe("profile form hooks", () => {
     });
     expect(hook.listingCartItems).toEqual([]);
     expect(hook.editingItem).toBeNull();
-    expect(hook.catalogSearch).toBe("");
     expect(hook.catalogResults).toEqual([]);
   });
 });

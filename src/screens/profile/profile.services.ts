@@ -5,12 +5,13 @@ import { decode } from "base64-arraybuffer";
 import { getMyRole } from "../../lib/api/profile";
 import { supabase } from "../../lib/supabaseClient";
 import type {
+  AddListingOwnerLoadResult,
   CatalogSearchItem,
   Company,
   ListingCartItem,
   ListingFormState,
   ProfileFormState,
-  ProfileListingKind,
+  ListingKind,
   ProfilePayload,
   ProfileScreenLoadResult,
   UserProfile,
@@ -183,6 +184,18 @@ export const loadProfileScreenData =
     };
   };
 
+export const loadAddListingOwnerData =
+  async (): Promise<AddListingOwnerLoadResult> => {
+    const { profile, company, accessSourceSnapshot } =
+      await loadProfileScreenData();
+
+    return {
+      profile,
+      company,
+      accessSourceSnapshot,
+    };
+  };
+
 export const uploadProfileAvatar = async (
   userId: string,
   assetUri: string,
@@ -304,16 +317,16 @@ export const saveProfileDetails = async (params: {
 };
 
 const resolveListingKind = (
-  listingKind: ProfileListingKind | null,
+  listingKind: ListingKind | null,
   listingCartItems: ListingCartItem[],
-): ProfileListingKind | "mixed" | null => {
-  let finalKind: ProfileListingKind | "mixed" | null = listingKind;
+): ListingKind | "mixed" | null => {
+  let finalKind: ListingKind | "mixed" | null = listingKind;
   if (!finalKind && listingCartItems.length > 0) {
     const kinds = Array.from(
       new Set(
         listingCartItems
           .map((item) => item.kind)
-          .filter((kind): kind is ProfileListingKind => Boolean(kind)),
+          .filter((kind): kind is ListingKind => Boolean(kind)),
       ),
     );
     if (kinds.length === 1) {
@@ -377,7 +390,7 @@ export const createMarketListing = async (
   if (error) throw error;
 };
 
-const buildCatalogQuery = (listingKind: ProfileListingKind | null) => {
+const buildCatalogQuery = (listingKind: ListingKind | null) => {
   let query = supabase
     .from("catalog_items")
     .select("rik_code, name_human_ru, uom_code, kind");
@@ -392,7 +405,7 @@ const buildCatalogQuery = (listingKind: ProfileListingKind | null) => {
 
 export const searchCatalogItems = async (
   term: string,
-  listingKind: ProfileListingKind | null,
+  listingKind: ListingKind | null,
 ): Promise<CatalogSearchItem[]> => {
   const q = term.trim();
   if (q.length < 2) {
@@ -401,20 +414,6 @@ export const searchCatalogItems = async (
   const { data, error } = await buildCatalogQuery(listingKind)
     .ilike("name_human_ru", `%${q}%`)
     .limit(15);
-  if (error) throw error;
-  return (data ?? []) as CatalogSearchItem[];
-};
-
-export const loadCatalogItems = async (
-  term: string,
-  listingKind: ProfileListingKind | null,
-): Promise<CatalogSearchItem[]> => {
-  let query = buildCatalogQuery(listingKind).limit(50);
-  const normalizedTerm = term.trim();
-  if (normalizedTerm) {
-    query = query.ilike("name_human_ru", `%${normalizedTerm}%`);
-  }
-  const { data, error } = await query;
   if (error) throw error;
   return (data ?? []) as CatalogSearchItem[];
 };

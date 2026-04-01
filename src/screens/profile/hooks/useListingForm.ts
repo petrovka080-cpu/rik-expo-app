@@ -5,6 +5,7 @@ import type {
   CatalogSearchItem,
   Company,
   ListingCartItem,
+  ListingKind,
   ListingFormState,
   UserProfile,
 } from "../profile.types";
@@ -26,7 +27,6 @@ export function useListingForm() {
   const [listingForm, setListingForm] = useState<ListingFormState>(EMPTY_LISTING_FORM);
   const [listingCartItems, setListingCartItems] = useState<ListingCartItem[]>([]);
   const [editingItem, setEditingItem] = useState<ListingCartItem | null>(null);
-  const [catalogSearch, setCatalogSearch] = useState("");
   const [catalogResults, setCatalogResults] = useState<CatalogSearchItem[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
 
@@ -54,7 +54,7 @@ export function useListingForm() {
   const setListingEmail = useCallback((value: string) => {
     setListingForm((prev) => ({ ...prev, listingEmail: value }));
   }, []);
-  const setListingKind = useCallback((value: ListingFormState["listingKind"]) => {
+  const setListingKind = useCallback((value: ListingKind | null) => {
     setListingForm((prev) => ({ ...prev, listingKind: value }));
   }, []);
   const setListingRikCode = useCallback((value: string | null) => {
@@ -91,7 +91,6 @@ export function useListingForm() {
     });
     setListingCartItems([]);
     setEditingItem(null);
-    setCatalogSearch("");
     setCatalogResults([]);
     setCatalogLoading(false);
   }, []);
@@ -102,8 +101,6 @@ export function useListingForm() {
     setListingCartItems,
     editingItem,
     setEditingItem,
-    catalogSearch,
-    setCatalogSearch,
     catalogResults,
     setCatalogResults,
     catalogLoading,
