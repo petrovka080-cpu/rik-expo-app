@@ -45,7 +45,9 @@ export default function Index() {
     <View style={styles.splash}>
       <ActivityIndicator size="large" color="#111827" />
       <Text style={styles.text}>
-        {checking ? "Собираем ваш стартовый экран..." : "Открываем GOX..."}
+        {checking
+          ? "Собираем ваш стартовый экран..."
+          : "Открываем GOX..."}
       </Text>
     </View>
   );

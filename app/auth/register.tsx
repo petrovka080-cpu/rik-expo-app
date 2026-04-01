@@ -57,8 +57,8 @@ export default function RegisterScreen() {
       }
 
       setMessage(UI_COPY.confirmEmail);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : UI_COPY.fallbackError);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : UI_COPY.fallbackError);
     } finally {
       setLoading(false);
     }

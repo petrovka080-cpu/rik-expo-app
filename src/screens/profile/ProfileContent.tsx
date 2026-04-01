@@ -32,8 +32,8 @@ import {
   signOutProfileSession,
 } from "./profile.services";
 import type { Company, UserProfile } from "./profile.types";
-import { ProfileMainSections } from "./components/ProfileMainSections";
 import { EditProfileModal } from "./components/EditProfileModal";
+import { ProfileMainSections } from "./components/ProfileMainSections";
 import { useProfileForm } from "./hooks/useProfileForm";
 
 const styles = profileStyles;

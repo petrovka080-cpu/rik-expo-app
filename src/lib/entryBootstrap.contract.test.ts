@@ -29,4 +29,35 @@ describe("entry/bootstrap contract", () => {
     expect(registerScreen).not.toContain("resolveCurrentSessionRole");
     expect(registerScreen).not.toContain("postAuthPathForRole");
   });
+
+  it("keeps entry copy readable and aligned with the unified access hub", () => {
+    const indexScreen = readProjectFile("app/index.tsx");
+    const loginScreen = readProjectFile("app/auth/login.tsx");
+    const registerScreen = readProjectFile("app/auth/register.tsx");
+    const profileScreen = readProjectFile(
+      "src/screens/profile/ProfileContent.tsx",
+    );
+    const profileSections = readProjectFile(
+      "src/screens/profile/components/ProfileMainSections.tsx",
+    );
+
+    expect(indexScreen).toContain("Собираем ваш стартовый экран...");
+    expect(indexScreen).toContain("Открываем GOX...");
+
+    expect(loginScreen).toContain("Войти в GOX");
+    expect(loginScreen).toContain("Зарегистрироваться");
+    expect(loginScreen).toContain("Забыли пароль?");
+
+    expect(registerScreen).toContain("Создать аккаунт");
+    expect(registerScreen).toContain(
+      "После входа вы попадёте в экран доступов и следующих шагов.",
+    );
+
+    expect(profileScreen).toContain("Аккаунт GOX");
+    expect(profileScreen).toContain("Загружаем профиль...");
+
+    expect(profileSections).toContain("Что дальше");
+    expect(profileSections).toContain("Создать компанию");
+    expect(profileSections).toContain("Открыть Office и компанию");
+  });
 });

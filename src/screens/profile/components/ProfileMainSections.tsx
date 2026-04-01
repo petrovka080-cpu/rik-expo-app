@@ -238,7 +238,9 @@ export function ProfileMainSections({
       <View style={styles.section}>
         <View style={styles.profileSectionHeader}>
           <Ionicons name="compass-outline" size={18} color={UI.accent} />
-          <Text style={styles.profileSectionHeaderText}>{COPY.nextStepsTitle}</Text>
+          <Text style={styles.profileSectionHeaderText}>
+            {COPY.nextStepsTitle}
+          </Text>
         </View>
 
         {accessModel.hasMarketAccess ? (
@@ -248,7 +250,9 @@ export function ProfileMainSections({
             onPress={onOpenMarket}
           >
             <View style={styles.profileActionTextWrap}>
-              <Text style={styles.profileActionTitle}>{COPY.marketEntryTitle}</Text>
+              <Text style={styles.profileActionTitle}>
+                {COPY.marketEntryTitle}
+              </Text>
               <Text style={styles.profileActionSubtitle}>
                 {COPY.marketEntrySubtitle}
               </Text>
@@ -264,7 +268,9 @@ export function ProfileMainSections({
             onPress={onOpenAddListing}
           >
             <View style={styles.profileActionTextWrap}>
-              <Text style={styles.profileActionTitle}>{COPY.addListingTitle}</Text>
+              <Text style={styles.profileActionTitle}>
+                {COPY.addListingTitle}
+              </Text>
               <Text style={styles.profileActionSubtitle}>
                 {COPY.addListingSubtitle}
               </Text>
