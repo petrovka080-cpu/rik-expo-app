@@ -79,7 +79,9 @@ export function EditProfileModal({
                     style={styles.profileAvatarEditorImage}
                   />
                 ) : (
-                  <Text style={styles.profileAvatarEditorInitial}>{avatarLetter}</Text>
+                  <Text style={styles.profileAvatarEditorInitial}>
+                    {avatarLetter}
+                  </Text>
                 )}
               </Pressable>
 
@@ -111,7 +113,7 @@ export function EditProfileModal({
               label="Телефон"
               value={profileForm.profilePhoneInput}
               onChangeText={onChangeProfilePhone}
-              placeholder="+996…"
+              placeholder="+996..."
               keyboardType="phone-pad"
             />
 
@@ -135,7 +137,7 @@ export function EditProfileModal({
               label="Должность / роль"
               value={profileForm.profilePositionInput}
               onChangeText={onChangeProfilePosition}
-              placeholder="Директор, снабженец, прораб…"
+              placeholder="Директор, снабженец, прораб..."
             />
 
             <View style={styles.modalFieldRow}>
@@ -152,7 +154,7 @@ export function EditProfileModal({
                   label="WhatsApp"
                   value={profileForm.profileWhatsappInput}
                   onChangeText={onChangeProfileWhatsapp}
-                  placeholder="+996…"
+                  placeholder="+996..."
                   keyboardType="phone-pad"
                 />
               </View>

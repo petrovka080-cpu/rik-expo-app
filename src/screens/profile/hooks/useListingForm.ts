@@ -1,11 +1,11 @@
 import { useCallback, useState } from "react";
 
+import type { AppContext } from "../../../lib/appAccessModel";
 import type {
   CatalogSearchItem,
   Company,
   ListingCartItem,
   ListingFormState,
-  ProfileMode,
   UserProfile,
 } from "../profile.types";
 
@@ -64,14 +64,16 @@ export function useListingForm() {
   const prepareListingForm = useCallback((params: {
     profile: UserProfile;
     company: Company | null;
-    profileMode: ProfileMode;
+    activeContext: AppContext;
   }) => {
+    const useCompanyContext =
+      params.activeContext === "office" && Boolean(params.company);
     const baseCity =
-      params.profileMode === "company"
+      useCompanyContext
         ? params.company?.city || params.profile.city || ""
         : params.profile.city || "";
     const basePhone =
-      params.profileMode === "company"
+      useCompanyContext
         ? params.company?.phone_main || params.profile.phone || ""
         : params.profile.phone || "";
 

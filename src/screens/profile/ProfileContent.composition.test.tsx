@@ -6,18 +6,30 @@ import { ProfileContent } from "./ProfileContent";
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockLoadProfileScreenData = jest.fn();
-const mockBuildProfileModeFromCompany = jest.fn();
-const mockUseSegments = jest.fn(() => ["(tabs)", "profile"]);
+const mockLoadStoredActiveContext = jest.fn();
 
 let capturedMainProps: Record<string, unknown> | null = null;
-let capturedModalProps: Record<string, unknown> | null = null;
+let capturedEditModalProps: Record<string, unknown> | null = null;
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: mockPush,
     replace: mockReplace,
   }),
-  useSegments: () => mockUseSegments(),
+}));
+
+jest.mock("expo-image-picker", () => ({
+  requestMediaLibraryPermissionsAsync: jest.fn(),
+  launchImageLibraryAsync: jest.fn(),
+  MediaTypeOptions: {
+    Images: "images",
+  },
+}));
+
+jest.mock("../../lib/appAccessContextStorage", () => ({
+  loadStoredActiveContext: (...args: unknown[]) =>
+    mockLoadStoredActiveContext(...args),
+  persistActiveContext: jest.fn(),
 }));
 
 jest.mock("./components/ProfileMainSections", () => ({
@@ -33,46 +45,36 @@ jest.mock("./components/ProfileMainSections", () => ({
   },
 }));
 
-jest.mock("./components/ProfileModalStack", () => ({
-  ProfileModalStack: (props: Record<string, unknown>) => {
+jest.mock("./components/EditProfileModal", () => ({
+  EditProfileModal: (props: Record<string, unknown>) => {
     const React = require("react");
     const { Text } = require("react-native");
-    capturedModalProps = props;
+    capturedEditModalProps = props;
     return React.createElement(
       Text,
-      { testID: "profile-modal-stack" },
-      "modal-stack",
+      { testID: "profile-edit-modal" },
+      "edit-modal",
     );
   },
 }));
 
 jest.mock("./profile.services", () => ({
-  buildProfileModeFromCompany: (...args: unknown[]) =>
-    mockBuildProfileModeFromCompany(...args),
-  createCompanyInvite: jest.fn(),
-  createMarketListing: jest.fn(),
-  ensureCompanyCabinetAccess: jest.fn(),
-  loadCatalogItems: jest.fn(),
-  loadProfileScreenData: (...args: unknown[]) => mockLoadProfileScreenData(...args),
-  saveCompanyProfile: jest.fn(),
+  loadProfileScreenData: (...args: unknown[]) =>
+    mockLoadProfileScreenData(...args),
   saveProfileDetails: jest.fn(),
-  saveProfileUsage: jest.fn(),
-  searchCatalogItems: jest.fn(),
   signOutProfileSession: jest.fn(),
 }));
 
 describe("ProfileContent composition shell", () => {
   beforeEach(() => {
     capturedMainProps = null;
-    capturedModalProps = null;
+    capturedEditModalProps = null;
     mockPush.mockReset();
     mockReplace.mockReset();
-    mockBuildProfileModeFromCompany.mockReset();
     mockLoadProfileScreenData.mockReset();
-    mockUseSegments.mockReset();
-    mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
+    mockLoadStoredActiveContext.mockReset();
 
-    mockBuildProfileModeFromCompany.mockReturnValue("person");
+    mockLoadStoredActiveContext.mockResolvedValue("office");
     mockLoadProfileScreenData.mockResolvedValue({
       profile: {
         id: "profile-1",
@@ -92,12 +94,20 @@ describe("ProfileContent composition shell", () => {
       profileRole: "director",
       profileEmail: "aybek@example.com",
       profileAvatarUrl: null,
-      myListings: [],
-      profileMode: "company",
+      accessSourceSnapshot: {
+        userId: "user-1",
+        authRole: "director",
+        resolvedRole: "director",
+        usageMarket: true,
+        usageBuild: true,
+        ownedCompanyId: "company-1",
+        companyMemberships: [{ companyId: "company-1", role: "director" }],
+        listingsCount: 2,
+      },
     });
   });
 
-  it("loads screen data and delegates rendering to extracted boundaries", async () => {
+  it("loads screen data and delegates profile rendering through access model", async () => {
     let renderer: ReactTestRenderer;
 
     await act(async () => {
@@ -108,23 +118,42 @@ describe("ProfileContent composition shell", () => {
       await Promise.resolve();
     });
 
-    expect(renderer!.root.findByProps({ testID: "profile-main-sections" })).toBeTruthy();
-    expect(renderer!.root.findByProps({ testID: "profile-modal-stack" })).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "profile-main-sections" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "profile-edit-modal" }),
+    ).toBeTruthy();
 
     expect(mockLoadProfileScreenData).toHaveBeenCalledTimes(1);
-    expect(mockBuildProfileModeFromCompany).toHaveBeenCalledTimes(1);
+    expect(mockLoadStoredActiveContext).toHaveBeenCalledWith("user-1");
     expect(capturedMainProps).not.toBeNull();
     expect(capturedMainProps?.profileName).toBe("Айбек");
-    expect(capturedMainProps?.profileMode).toBe("person");
-    expect(capturedMainProps?.companyCardTitle).toBeTruthy();
-    expect(capturedModalProps).not.toBeNull();
-    expect(capturedModalProps?.editProfileOpen).toBe(false);
-    expect(capturedModalProps?.listingModalOpen).toBe(false);
-    expect(capturedModalProps?.inviteModalOpen).toBe(false);
+    expect(capturedMainProps?.roleLabel).toBe("Директор");
+    expect(capturedMainProps?.officeRolesLabel).toBe("Директор");
+    expect(
+      (
+        capturedMainProps?.accessModel as {
+          activeContext: string;
+        }
+      ).activeContext,
+    ).toBe("office");
+    expect(
+      (
+        capturedMainProps?.accessModel as {
+          availableContexts: string[];
+        }
+      ).availableContexts,
+    ).toEqual(["market", "office"]);
+    expect(
+      capturedMainProps?.activeContextDescription,
+    ).toBe("Сейчас активен Office. Доступные рабочие роли: Директор.");
+    expect(capturedEditModalProps).not.toBeNull();
+    expect(capturedEditModalProps?.visible).toBe(false);
   });
 
-  it("auto-opens the listing flow on the dedicated add route without changing the screen shell", async () => {
-    mockUseSegments.mockReturnValue(["(tabs)", "add"]);
+  it("falls back to market context when no stored context is available", async () => {
+    mockLoadStoredActiveContext.mockResolvedValue(null);
 
     let renderer: ReactTestRenderer;
 
@@ -136,8 +165,15 @@ describe("ProfileContent composition shell", () => {
       await Promise.resolve();
     });
 
-    expect(renderer!.root.findByProps({ testID: "profile-main-sections" })).toBeTruthy();
-    expect(capturedModalProps?.listingModalOpen).toBe(true);
-    expect(mockReplace).not.toHaveBeenCalled();
+    expect(
+      renderer!.root.findByProps({ testID: "profile-main-sections" }),
+    ).toBeTruthy();
+    expect(
+      (
+        capturedMainProps?.accessModel as {
+          activeContext: string;
+        }
+      ).activeContext,
+    ).toBe("market");
   });
 });

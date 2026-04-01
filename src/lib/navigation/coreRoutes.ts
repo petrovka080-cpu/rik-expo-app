@@ -11,6 +11,7 @@ import type { MarketMapParams } from "../../features/market/marketHome.types";
 
 export const AUTH_LOGIN_ROUTE = "/auth/login" satisfies Href;
 export const DIRECTOR_ROUTE = "/director" satisfies Href;
+export const OFFICE_TAB_ROUTE = "/office/index" satisfies Href;
 export const REPORTS_DASHBOARD_ROUTE = "/reports/dashboard" satisfies Href;
 export const REPORTS_AI_ASSISTANT_ROUTE = "/reports/ai-assistant" satisfies Href;
 export const SUPPLIER_MAP_ROUTE = "/supplierMap" satisfies Href;

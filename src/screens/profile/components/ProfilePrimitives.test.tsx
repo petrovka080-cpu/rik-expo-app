@@ -3,6 +3,14 @@ import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import { LabeledInput, MenuActionRow, RowItem } from "./ProfilePrimitives";
 
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: (props: { name: string }) => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(Text, null, props.name);
+  },
+}));
+
 describe("ProfilePrimitives", () => {
   it("renders menu row and row item without crashing", () => {
     const onPress = jest.fn();
@@ -42,7 +50,9 @@ describe("ProfilePrimitives", () => {
       );
     });
 
-    const input = renderer!.root.findByProps({ testID: "profile-labeled-input" });
+    const input = renderer!.root.findByProps({
+      testID: "profile-labeled-input",
+    });
     expect(input.props.value).toBe("Айбек");
   });
 });

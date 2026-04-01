@@ -1,7 +1,6 @@
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
-import { useCompanyForm } from "./useCompanyForm";
 import { useListingForm } from "./useListingForm";
 import { useProfileForm } from "./useProfileForm";
 
@@ -55,47 +54,7 @@ describe("profile form hooks", () => {
     expect(hook.profileAvatarDraft).toBe("https://cdn/avatar.png");
   });
 
-  it("hydrates company form with company and profile fallbacks", () => {
-    let hook!: ReturnType<typeof useCompanyForm>;
-
-    function Harness() {
-      hook = useCompanyForm();
-      return null;
-    }
-
-    act(() => {
-      TestRenderer.create(<Harness />);
-    });
-
-    act(() => {
-      hook.hydrateCompanyForm({
-        company: {
-          id: "c1",
-          owner_user_id: "u1",
-          name: "ОсОО GOX",
-          city: null,
-          phone_main: null,
-          contact_person: null,
-        },
-        profile: {
-          id: "1",
-          user_id: "u1",
-          full_name: "Айбек",
-          phone: "+996700000000",
-          city: "Ош",
-          usage_market: true,
-          usage_build: true,
-        },
-      });
-    });
-
-    expect(hook.companyForm.companyNameInput).toBe("ОсОО GOX");
-    expect(hook.companyForm.companyCityInput).toBe("Ош");
-    expect(hook.companyForm.companyPhoneMainInput).toBe("+996700000000");
-    expect(hook.companyForm.companyContactPersonInput).toBe("Айбек");
-  });
-
-  it("prepares listing form with mode-aware defaults and clears listing-local tail", () => {
+  it("prepares listing form with active-context defaults and clears listing-local tail", () => {
     let hook!: ReturnType<typeof useListingForm>;
 
     function Harness() {
@@ -157,7 +116,7 @@ describe("profile form hooks", () => {
           city: "Каракол",
           phone_main: "+996555000000",
         },
-        profileMode: "company",
+        activeContext: "office",
       });
     });
 

@@ -1,7 +1,7 @@
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
-import ProfileScreen from "../../src/screens/profile/ProfileScreen";
+import AddListingScreen from "../../src/screens/profile/AddListingScreen";
 
-export default withScreenErrorBoundary(ProfileScreen, {
+export default withScreenErrorBoundary(AddListingScreen, {
   screen: "profile",
   route: "/add",
 });

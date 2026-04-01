@@ -4,28 +4,25 @@ import { decode } from "base64-arraybuffer";
 
 import { getMyRole } from "../../lib/api/profile";
 import { supabase } from "../../lib/supabaseClient";
-import { getDefaultCompanyName } from "./profile.helpers";
 import type {
   CatalogSearchItem,
   Company,
-  CompanyFormState,
-  CompanyPayload,
-  InviteFormState,
   ListingCartItem,
   ListingFormState,
   ProfileFormState,
   ProfileListingKind,
-  ProfileListingRecord,
   ProfilePayload,
   ProfileScreenLoadResult,
-  ProfileMode,
   UserProfile,
 } from "./profile.types";
 
 type SupabaseCodeError = { code?: string | null };
 
 type LegacyFileSystemModule = {
-  readAsStringAsync: (uri: string, options: { encoding: "base64" }) => Promise<string>;
+  readAsStringAsync: (
+    uri: string,
+    options: { encoding: "base64" },
+  ) => Promise<string>;
 };
 
 type ProfileMetadata = {
@@ -43,7 +40,8 @@ type MarketListingInsertParams = {
   lng: number;
 };
 
-const asSupabaseCode = (error: unknown) => String((error as SupabaseCodeError | null)?.code ?? "").trim();
+const asSupabaseCode = (error: unknown) =>
+  String((error as SupabaseCodeError | null)?.code ?? "").trim();
 
 const getMetadata = (user: User): ProfileMetadata => {
   const metadata = user.user_metadata;
@@ -52,208 +50,143 @@ const getMetadata = (user: User): ProfileMetadata => {
   return {
     full_name: typeof record.full_name === "string" ? record.full_name : null,
     city: typeof record.city === "string" ? record.city : null,
-    avatar_url: typeof record.avatar_url === "string" ? record.avatar_url : null,
+    avatar_url:
+      typeof record.avatar_url === "string" ? record.avatar_url : null,
   };
+};
+
+const getMetadataRole = (user: User): string | null => {
+  const appMetadata = user.app_metadata;
+  if (appMetadata && typeof appMetadata === "object") {
+    const appRecord = appMetadata as Record<string, unknown>;
+    if (typeof appRecord.role === "string" && appRecord.role.trim()) {
+      return appRecord.role.trim();
+    }
+  }
+
+  const userMetadata = user.user_metadata;
+  if (userMetadata && typeof userMetadata === "object") {
+    const userRecord = userMetadata as Record<string, unknown>;
+    if (typeof userRecord.role === "string" && userRecord.role.trim()) {
+      return userRecord.role.trim();
+    }
+  }
+
+  return null;
 };
 
 export const loadCurrentAuthUser = async (): Promise<User> => {
   const { data, error } = await supabase.auth.getUser();
   if (error || !data?.user) {
-    throw error || new Error("РќРµ РЅР°Р№РґРµРЅ С‚РµРєСѓС‰РёР№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ");
+    throw error || new Error("Не найден текущий пользователь");
   }
   return data.user;
 };
 
-export const loadProfileScreenData = async (): Promise<ProfileScreenLoadResult> => {
-  const user = await loadCurrentAuthUser();
-  const metadata = getMetadata(user);
+export const loadProfileScreenData =
+  async (): Promise<ProfileScreenLoadResult> => {
+    const user = await loadCurrentAuthUser();
+    const metadata = getMetadata(user);
+    const metadataRole = getMetadataRole(user);
 
-  const [profileRole, profileResult, companyResult, listingsResult] = await Promise.all([
-    getMyRole(),
-    supabase.from("user_profiles").select("*").eq("user_id", user.id).maybeSingle(),
-    supabase.from("companies").select("*").eq("owner_user_id", user.id).maybeSingle(),
-    supabase
-      .from("market_listings")
-      .select("id,title,kind,city,price,status,created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(20),
-  ]);
+    const [
+      profileRole,
+      profileResult,
+      companyResult,
+      listingsResult,
+      membershipResult,
+    ] = await Promise.all([
+      getMyRole(),
+      supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("companies")
+        .select("*")
+        .eq("owner_user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("market_listings")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("company_members")
+        .select("company_id,role")
+        .eq("user_id", user.id),
+    ]);
 
-  const { data: profData, error: profErr } = profileResult;
-  if (profErr && asSupabaseCode(profErr) !== "PGRST116") {
-    throw profErr;
-  }
+    const { data: profData, error: profErr } = profileResult;
+    if (profErr && asSupabaseCode(profErr) !== "PGRST116") {
+      throw profErr;
+    }
 
-  const profile: UserProfile = profData
-    ? (profData as UserProfile)
-    : {
-        id: "",
-        user_id: user.id,
-        full_name: metadata.full_name || user.email || "РџСЂРѕС„РёР»СЊ GOX",
-        phone: user.phone ?? null,
-        city: null,
-        usage_market: true,
-        usage_build: false,
-        bio: null,
-        telegram: null,
-        whatsapp: null,
-        position: null,
-      };
+    const profile: UserProfile = profData
+      ? (profData as UserProfile)
+      : {
+          id: "",
+          user_id: user.id,
+          full_name: metadata.full_name || user.email || "Профиль GOX",
+          phone: user.phone ?? null,
+          city: null,
+          usage_market: true,
+          usage_build: false,
+          bio: null,
+          telegram: null,
+          whatsapp: null,
+          position: null,
+        };
 
-  const { data: companyData, error: companyErr } = companyResult;
-  if (companyErr && asSupabaseCode(companyErr) !== "PGRST116") {
-    throw companyErr;
-  }
+    const { data: companyData, error: companyErr } = companyResult;
+    if (companyErr && asSupabaseCode(companyErr) !== "PGRST116") {
+      throw companyErr;
+    }
 
-  const company = companyData ? (companyData as Company) : null;
-  const myListings = listingsResult.error ? [] : ((listingsResult.data ?? []) as ProfileListingRecord[]);
+    const company = companyData ? (companyData as Company) : null;
+    const listingsCount = listingsResult.error
+      ? 0
+      : Array.isArray(listingsResult.data)
+        ? listingsResult.data.length
+        : 0;
 
-  return {
-    profile,
-    company,
-    profileRole,
-    profileEmail: user.email ?? null,
-    profileAvatarUrl: metadata.avatar_url ?? null,
-    myListings,
-    profileMode: company ? "company" : "person",
+    if (membershipResult.error) {
+      throw membershipResult.error;
+    }
+
+    const companyMemberships = Array.isArray(membershipResult.data)
+      ? membershipResult.data.map((row) => ({
+          companyId:
+            typeof row?.company_id === "string" ? row.company_id : null,
+          role: typeof row?.role === "string" ? row.role : null,
+        }))
+      : [];
+
+    return {
+      profile,
+      company,
+      profileRole,
+      profileEmail: user.email ?? null,
+      profileAvatarUrl: metadata.avatar_url ?? null,
+      accessSourceSnapshot: {
+        userId: user.id,
+        authRole: metadataRole,
+        resolvedRole: profileRole,
+        usageMarket: profile.usage_market,
+        usageBuild: profile.usage_build,
+        ownedCompanyId: company?.id ?? null,
+        companyMemberships,
+        listingsCount,
+      },
+    };
   };
-};
 
-export const saveProfileUsage = async (
-  profile: UserProfile,
-  nextMarket: boolean,
-  nextBuild: boolean,
-): Promise<UserProfile> => {
-  const payload: ProfilePayload = {
-    id: profile.id || undefined,
-    user_id: profile.user_id,
-    full_name: profile.full_name,
-    phone: profile.phone,
-    city: profile.city,
-    usage_market: nextMarket,
-    usage_build: nextBuild,
-    bio: profile.bio ?? null,
-    telegram: profile.telegram ?? null,
-    whatsapp: profile.whatsapp ?? null,
-    position: profile.position ?? null,
-  };
-
-  const { data, error } = await supabase
-    .from("user_profiles")
-    .upsert(payload, { onConflict: "user_id" })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as UserProfile;
-};
-
-export const buildCompanyPayload = (params: {
-  ownerUserId: string;
-  form: CompanyFormState;
-  fallbackCompanyName: string;
-}): CompanyPayload => ({
-  owner_user_id: params.ownerUserId,
-  name: params.form.companyNameInput.trim() || params.fallbackCompanyName,
-  city: params.form.companyCityInput.trim() || null,
-  legal_form: params.form.companyLegalFormInput.trim() || null,
-  address: params.form.companyAddressInput.trim() || null,
-  industry: params.form.companyIndustryInput.trim() || null,
-  about_short: params.form.companyAboutShortInput.trim() || null,
-  phone_main: params.form.companyPhoneMainInput.trim() || null,
-  phone_whatsapp: params.form.companyPhoneWhatsAppInput.trim() || null,
-  email: params.form.companyEmailInput.trim() || null,
-  site: params.form.companySiteInput.trim() || null,
-  telegram: params.form.companyTelegramInput.trim() || null,
-  work_time: params.form.companyWorkTimeInput.trim() || null,
-  contact_person: params.form.companyContactPersonInput.trim() || null,
-  about_full: params.form.companyAboutFullInput.trim() || null,
-  services: params.form.companyServicesInput.trim() || null,
-  regions: params.form.companyRegionsInput.trim() || null,
-  clients_types: params.form.companyClientsTypesInput.trim() || null,
-  inn: params.form.companyInnInput.trim() || null,
-  bin: params.form.companyBinInput.trim() || null,
-  reg_number: params.form.companyRegNumberInput.trim() || null,
-  bank_details: params.form.companyBankDetailsInput.trim() || null,
-  licenses_info: params.form.companyLicensesInfoInput.trim() || null,
-});
-
-export const saveCompanyProfile = async (params: {
-  company: Company | null;
-  profile: UserProfile | null;
-  profileEmail: string | null;
-  form: CompanyFormState;
-}): Promise<Company> => {
-  const user = await loadCurrentAuthUser();
-  const fallbackCompanyName = getDefaultCompanyName({
-    fullName: params.profile?.full_name,
-    email: params.profileEmail,
-  });
-  const payload = buildCompanyPayload({
-    ownerUserId: user.id,
-    form: params.form,
-    fallbackCompanyName,
-  });
-
-  if (!params.company) {
-    const { data, error } = await supabase.from("companies").insert(payload).select().single();
-    if (error) throw error;
-    return data as Company;
-  }
-
-  const { data, error } = await supabase
-    .from("companies")
-    .update(payload)
-    .eq("id", params.company.id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Company;
-};
-
-export const ensureCompanyCabinetAccess = async (params: {
-  company: Company | null;
-  profile: UserProfile | null;
-  profileEmail: string | null;
-}): Promise<Company> => {
-  const user = await loadCurrentAuthUser();
-  let company = params.company;
-
-  if (!company) {
-    const companyName = getDefaultCompanyName({
-      fullName: params.profile?.full_name,
-      email: params.profileEmail,
-    });
-    const { data, error } = await supabase
-      .from("companies")
-      .insert({
-        owner_user_id: user.id,
-        name: companyName,
-        city: params.profile?.city ?? null,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    company = data as Company;
-  }
-
-  const { error } = await supabase.from("company_members").upsert(
-    {
-      company_id: company.id,
-      user_id: user.id,
-      role: "director",
-    },
-    { onConflict: "company_id,user_id" },
-  );
-  if (error) throw error;
-
-  return company;
-};
-
-export const uploadProfileAvatar = async (userId: string, assetUri: string): Promise<string> => {
+export const uploadProfileAvatar = async (
+  userId: string,
+  assetUri: string,
+): Promise<string> => {
   const timestamp = Date.now();
   let extension = "jpg";
   let contentType = "image/jpeg";
@@ -276,29 +209,40 @@ export const uploadProfileAvatar = async (userId: string, assetUri: string): Pro
     }
 
     filePath = `${userId}/${timestamp}.${extension}`;
-    const upload = await supabase.storage.from("avatars").upload(filePath, blob, {
-      contentType,
-      upsert: true,
-    });
+    const upload = await supabase.storage
+      .from("avatars")
+      .upload(filePath, blob, {
+        contentType,
+        upsert: true,
+      });
     if (upload.error) throw upload.error;
   } else {
-    const fileSystemModule = (await import("expo-file-system/legacy")) as LegacyFileSystemModule;
+    const fileSystemModule = (await import(
+      "expo-file-system/legacy"
+    )) as LegacyFileSystemModule;
     const uriExtMatch = /\.(png|jpg|jpeg|webp)$/i.exec(assetUri);
 
     if (uriExtMatch?.[1]) {
       const ext = uriExtMatch[1].toLowerCase();
       extension = ext === "jpeg" ? "jpg" : ext;
-      contentType = extension === "png" ? "image/png" : extension === "webp" ? "image/webp" : "image/jpeg";
+      contentType =
+        extension === "png"
+          ? "image/png"
+          : extension === "webp"
+            ? "image/webp"
+            : "image/jpeg";
     }
 
     filePath = `${userId}/${timestamp}.${extension}`;
     const base64 = await fileSystemModule.readAsStringAsync(assetUri, {
       encoding: "base64",
     });
-    const upload = await supabase.storage.from("avatars").upload(filePath, decode(base64), {
-      contentType,
-      upsert: true,
-    });
+    const upload = await supabase.storage
+      .from("avatars")
+      .upload(filePath, decode(base64), {
+        contentType,
+        upsert: true,
+      });
     if (upload.error) throw upload.error;
   }
 
@@ -315,8 +259,15 @@ export const saveProfileDetails = async (params: {
   form: ProfileFormState;
 }): Promise<{ profile: UserProfile; profileAvatarUrl: string | null }> => {
   let nextAvatarUrl = params.profileAvatarUrl;
-  if (params.profile.user_id && params.profileAvatarDraft && params.profileAvatarDraft !== params.profileAvatarUrl) {
-    nextAvatarUrl = await uploadProfileAvatar(params.profile.user_id, params.profileAvatarDraft);
+  if (
+    params.profile.user_id &&
+    params.profileAvatarDraft &&
+    params.profileAvatarDraft !== params.profileAvatarUrl
+  ) {
+    nextAvatarUrl = await uploadProfileAvatar(
+      params.profile.user_id,
+      params.profileAvatarDraft,
+    );
   }
 
   const payload: ProfilePayload = {
@@ -359,7 +310,11 @@ const resolveListingKind = (
   let finalKind: ProfileListingKind | "mixed" | null = listingKind;
   if (!finalKind && listingCartItems.length > 0) {
     const kinds = Array.from(
-      new Set(listingCartItems.map((item) => item.kind).filter((kind): kind is ProfileListingKind => Boolean(kind))),
+      new Set(
+        listingCartItems
+          .map((item) => item.kind)
+          .filter((kind): kind is ProfileListingKind => Boolean(kind)),
+      ),
     );
     if (kinds.length === 1) {
       finalKind = kinds[0];
@@ -370,14 +325,16 @@ const resolveListingKind = (
   return finalKind;
 };
 
-export const createMarketListing = async (params: MarketListingInsertParams): Promise<void> => {
+export const createMarketListing = async (
+  params: MarketListingInsertParams,
+): Promise<void> => {
   const priceValue = params.form.listingPrice.trim();
   let priceNumber: number | null = null;
   if (priceValue !== "") {
     const cleaned = priceValue.replace(/\s/g, "").replace(",", ".");
     const parsed = Number(cleaned);
     if (Number.isNaN(parsed)) {
-      throw new Error("Р¦РµРЅР° СѓРєР°Р·Р°РЅР° РЅРµРєРѕСЂСЂРµРєС‚РЅРѕ.");
+      throw new Error("Цена указана некорректно.");
     }
     priceNumber = parsed;
   }
@@ -392,7 +349,10 @@ export const createMarketListing = async (params: MarketListingInsertParams): Pr
     kind: item.kind,
   }));
 
-  const kind = resolveListingKind(params.form.listingKind, params.listingCartItems);
+  const kind = resolveListingKind(
+    params.form.listingKind,
+    params.listingCartItems,
+  );
 
   const { error } = await supabase.from("market_listings").insert({
     user_id: params.userId,
@@ -418,7 +378,9 @@ export const createMarketListing = async (params: MarketListingInsertParams): Pr
 };
 
 const buildCatalogQuery = (listingKind: ProfileListingKind | null) => {
-  let query = supabase.from("catalog_items").select("rik_code, name_human_ru, uom_code, kind");
+  let query = supabase
+    .from("catalog_items")
+    .select("rik_code, name_human_ru, uom_code, kind");
   if (listingKind === "material") {
     query = query.eq("kind", "material");
   }
@@ -436,7 +398,9 @@ export const searchCatalogItems = async (
   if (q.length < 2) {
     return [];
   }
-  const { data, error } = await buildCatalogQuery(listingKind).ilike("name_human_ru", `%${q}%`).limit(15);
+  const { data, error } = await buildCatalogQuery(listingKind)
+    .ilike("name_human_ru", `%${q}%`)
+    .limit(15);
   if (error) throw error;
   return (data ?? []) as CatalogSearchItem[];
 };
@@ -454,26 +418,6 @@ export const loadCatalogItems = async (
   if (error) throw error;
   return (data ?? []) as CatalogSearchItem[];
 };
-
-export const createCompanyInvite = async (params: {
-  companyId: string;
-  form: InviteFormState;
-  inviteCode: string;
-}): Promise<void> => {
-  const { error } = await supabase.from("company_invites").insert({
-    company_id: params.companyId,
-    role: params.form.inviteRole,
-    name: params.form.inviteName.trim(),
-    phone: params.form.invitePhone.trim(),
-    email: params.form.inviteEmail.trim() || null,
-    comment: params.form.inviteComment.trim() || null,
-    invite_code: params.inviteCode,
-  });
-  if (error) throw error;
-};
-
-export const buildProfileModeFromCompany = (company: Company | null): ProfileMode =>
-  company ? "company" : "person";
 
 export const signOutProfileSession = async (): Promise<void> => {
   const { error } = await supabase.auth.signOut();
