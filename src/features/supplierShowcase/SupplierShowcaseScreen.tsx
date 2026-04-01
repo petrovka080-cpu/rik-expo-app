@@ -136,7 +136,7 @@ export default function SupplierShowcaseScreen() {
       params: {
         prompt: buildSupplierShowcaseAssistantPrompt(payload),
         autoSend: "1",
-        context: "profile",
+        context: payload.isOwnerView ? "seller" : "market",
       },
     });
   }, [payload]);
@@ -189,7 +189,7 @@ export default function SupplierShowcaseScreen() {
         </Pressable>
         <View style={styles.headerCopy}>
           <Text style={styles.headerTitle}>{payload.isOwnerView ? "Моя витрина" : "Витрина поставщика"}</Text>
-          <Text style={styles.headerSub}>Read-only витрина компании и объявлений на текущих данных</Text>
+          <Text style={styles.headerSub}>Витрина компании и объявлений на текущих данных</Text>
         </View>
         <Pressable style={styles.aiBtn} onPress={openAssistant}>
           <Ionicons name="sparkles" size={18} color="#FFFFFF" />
@@ -212,7 +212,7 @@ export default function SupplierShowcaseScreen() {
               {city ? ` • ${city}` : ""}
             </Text>
             <Text style={styles.heroMeta}>
-              {payload.isOwnerView ? "Ваш seller-контур в marketplace" : "Поставщик из текущего marketplace"}
+              {payload.isOwnerView ? "Ваш кабинет продавца в marketplace" : "Поставщик из текущего marketplace"}
             </Text>
             {ownerEmail ? <Text style={styles.heroMeta}>{ownerEmail}</Text> : null}
           </View>
@@ -266,7 +266,7 @@ export default function SupplierShowcaseScreen() {
               style={[styles.actionBtn, styles.secondaryBtn]}
               onPress={() => router.push(SELLER_ROUTE)}
             >
-              <Text style={styles.secondaryBtnText}>Seller Area</Text>
+              <Text style={styles.secondaryBtnText}>Кабинет продавца</Text>
             </Pressable>
           ) : null}
           {phone ? (

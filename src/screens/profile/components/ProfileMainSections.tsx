@@ -43,7 +43,7 @@ const COPY = {
   officeContextSubtitle:
     "\u0420\u0430\u0431\u043e\u0447\u0438\u0435 \u0440\u043e\u043b\u0438, Office hub \u0438 ERP-\u043c\u043e\u0434\u0443\u043b\u0438.",
   sellerEntrySubtitle:
-    "\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f, \u0441\u0442\u0430\u0442\u0443\u0441\u044b \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438 \u0438 seller tools \u0432 \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e\u043c contour.",
+    "\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f, \u0441\u0442\u0430\u0442\u0443\u0441\u044b \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438 \u0438 \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u044b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430 \u0432 \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e\u043c \u0440\u0430\u0437\u0434\u0435\u043b\u0435.",
 } as const;
 
 type ProfileMainSectionsProps = {
@@ -210,7 +210,9 @@ export function ProfileMainSections({
         <View style={styles.section}>
           <View style={styles.profileSectionHeader}>
             <Ionicons name="storefront-outline" size={18} color={UI.accent} />
-            <Text style={styles.profileSectionHeaderText}>Seller Area</Text>
+            <Text style={styles.profileSectionHeaderText}>
+              \u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430
+            </Text>
           </View>
           <Pressable
             testID="profile-open-seller-area"
@@ -218,7 +220,9 @@ export function ProfileMainSections({
             onPress={onOpenSellerArea}
           >
             <View style={styles.profileActionTextWrap}>
-              <Text style={styles.profileActionTitle}>Seller tools</Text>
+              <Text style={styles.profileActionTitle}>
+                \u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u0430\u0431\u0438\u043d\u0435\u0442 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430
+              </Text>
               <Text style={styles.profileActionSubtitle}>
                 {COPY.sellerEntrySubtitle}
               </Text>

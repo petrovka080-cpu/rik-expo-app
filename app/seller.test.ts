@@ -26,6 +26,7 @@ describe("seller route", () => {
     expect(mockWithScreenErrorBoundary.mock.calls[0]?.[1]).toMatchObject({
       screen: "seller",
       route: "/seller",
+      title: "Не удалось открыть кабинет продавца",
     });
   });
 });
