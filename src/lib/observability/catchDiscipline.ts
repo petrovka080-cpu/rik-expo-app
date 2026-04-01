@@ -23,6 +23,11 @@ type CatchDisciplineParams = {
   logContext?: string;
 };
 
+type ReportAndSwallowParams = Omit<CatchDisciplineParams, "kind"> & {
+  kind?: Exclude<CatchDisciplineKind, "critical_fail">;
+  scope?: string;
+};
+
 const trimText = (value: unknown) => String(value ?? "").trim();
 
 const getErrorSummary = (error: unknown) => {
@@ -68,5 +73,30 @@ export function recordCatchDiscipline(params: CatchDisciplineParams) {
     errorClass: summary.errorClass ?? undefined,
     errorMessage: summary.errorMessage || undefined,
     extra,
+  });
+}
+
+export function reportAndSwallow(params: ReportAndSwallowParams) {
+  const kind = params.kind ?? "soft_failure";
+  const scope = trimText(params.scope) || `${params.screen}.${params.surface}.${params.event}`;
+  const summary = getErrorSummary(params.error);
+
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    console.warn("[catch.swallow]", {
+      scope,
+      kind,
+      errorClass: summary.errorClass,
+      errorMessage: summary.errorMessage,
+      extra: params.extra ?? {},
+    });
+  }
+
+  return recordCatchDiscipline({
+    ...params,
+    kind,
+    extra: {
+      scope,
+      ...params.extra,
+    },
   });
 }

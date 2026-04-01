@@ -43,6 +43,9 @@ type SeedEntryParams = {
   attemptCount?: number;
   retryCount?: number;
   lastErrorKind?: string;
+  nextRetryAt?: number | null;
+  mutationKind?: string;
+  triggerSource?: string;
 };
 
 const createSnapshot = (requestId: string): ForemanLocalDraftSnapshot => ({
@@ -90,11 +93,11 @@ const createSeedEntry = (params: SeedEntryParams) => ({
     draftKey: params.draftKey,
     requestId: params.draftKey,
     snapshotUpdatedAt: "snap-seed",
-    mutationKind: "background_sync",
+    mutationKind: params.mutationKind ?? "background_sync",
     localBeforeCount: 1,
     localAfterCount: 1,
     submitRequested: false,
-    triggerSource: "manual_retry",
+    triggerSource: params.triggerSource ?? "manual_retry",
   },
   createdAt: params.createdAt,
   updatedAt: params.createdAt,
@@ -106,7 +109,7 @@ const createSeedEntry = (params: SeedEntryParams) => ({
   lastError: null,
   lastErrorCode: null,
   lastErrorKind: params.lastErrorKind ?? "none",
-  nextRetryAt: null,
+  nextRetryAt: params.nextRetryAt ?? null,
   maxAttempts: 5,
 });
 
@@ -218,16 +221,23 @@ describe("mutationWorker contract", () => {
     });
 
     const result = await flushForemanMutationQueue(deps);
+    const secondFlush = await flushForemanMutationQueue(deps);
     const queue = await loadForemanMutationQueue();
     const durableState = getForemanDurableDraftState();
 
     expect(result.failed).toBe(true);
+    expect(secondFlush).toMatchObject({
+      failed: false,
+      processedCount: 0,
+      remainingCount: 0,
+    });
     expect(queue[0]).toMatchObject({
       lifecycleStatus: "failed_non_retryable",
       status: "failed",
       lastErrorKind: "network_unreachable",
     });
     expect(durableState.syncStatus).toBe("failed_terminal");
+    expect(syncSnapshot).toHaveBeenCalledTimes(1);
     expect(getOfflineMutationTelemetryEvents().map((event) => event.action)).toContain("retry_exhausted");
   });
 
@@ -337,5 +347,156 @@ describe("mutationWorker contract", () => {
     expect(queue).toHaveLength(0);
     expect(syncSnapshot).toHaveBeenCalledTimes(1);
     expect(durableState.syncStatus).toBe("synced");
+  });
+
+  it("processes multiple queued items in createdAt order when every sync succeeds", async () => {
+    const snapshot = createSnapshot("req-worker-batch");
+    await replaceForemanDurableDraftSnapshot(snapshot);
+    const storage = createMemoryOfflineStorage({
+      [MUTATION_QUEUE_STORAGE_KEY]: JSON.stringify([
+        createSeedEntry({
+          id: "batch-1",
+          draftKey: snapshot.requestId,
+          createdAt: 1,
+          mutationKind: "catalog_add",
+        }),
+        createSeedEntry({
+          id: "batch-2",
+          draftKey: snapshot.requestId,
+          createdAt: 2,
+          mutationKind: "qty_update",
+        }),
+      ]),
+    });
+    configureMutationQueue({ storage });
+
+    const seenMutationKinds: string[] = [];
+    const syncSnapshot = jest.fn(async (params: unknown) => {
+      const record = params as { mutationKind?: string };
+      seenMutationKinds.push(String(record.mutationKind ?? ""));
+      return createSyncResult(snapshot);
+    });
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+      getNetworkOnline: () => true,
+    });
+
+    const result = await flushForemanMutationQueue(deps);
+    const queue = await loadForemanMutationQueue();
+
+    expect(result).toMatchObject({
+      failed: false,
+      processedCount: 2,
+      remainingCount: 0,
+    });
+    expect(queue).toHaveLength(0);
+    expect(syncSnapshot).toHaveBeenCalledTimes(2);
+    expect(seenMutationKinds).toEqual(["catalog_add", "qty_update"]);
+  });
+
+  it("cleans orphaned queued items when no snapshot exists and avoids dispatching sync", async () => {
+    const storage = createMemoryOfflineStorage({
+      [MUTATION_QUEUE_STORAGE_KEY]: JSON.stringify([
+        createSeedEntry({
+          id: "orphan-1",
+          draftKey: "req-worker-orphan",
+          createdAt: 1,
+        }),
+      ]),
+    });
+    configureMutationQueue({ storage });
+
+    const syncSnapshot = jest.fn(async (_params: unknown) => createSyncResult(null));
+    const { deps } = createWorkerDeps({
+      snapshot: null,
+      syncSnapshot,
+      getNetworkOnline: () => true,
+    });
+
+    const result = await flushForemanMutationQueue(deps);
+    const queue = await loadForemanMutationQueue();
+    const durableState = getForemanDurableDraftState();
+    const succeededCleanupEvent = getOfflineMutationTelemetryEvents().find(
+      (event) => event.action === "succeeded" && event.extra?.reason === "missing_snapshot_cleanup",
+    );
+
+    expect(result).toMatchObject({
+      failed: false,
+      processedCount: 0,
+      remainingCount: 0,
+    });
+    expect(queue).toHaveLength(0);
+    expect(syncSnapshot).not.toHaveBeenCalled();
+    expect(durableState.syncStatus).toBe("idle");
+    expect(succeededCleanupEvent).toBeTruthy();
+  });
+
+  it("lets a later queued item sync on the next run after an earlier retryable failure", async () => {
+    const snapshot = createSnapshot("req-worker-partial");
+    await replaceForemanDurableDraftSnapshot(snapshot);
+    const storage = createMemoryOfflineStorage({
+      [MUTATION_QUEUE_STORAGE_KEY]: JSON.stringify([
+        createSeedEntry({
+          id: "partial-1",
+          draftKey: snapshot.requestId,
+          createdAt: 1,
+          mutationKind: "catalog_add",
+          triggerSource: "unknown",
+        }),
+        createSeedEntry({
+          id: "partial-2",
+          draftKey: snapshot.requestId,
+          createdAt: 2,
+          mutationKind: "qty_update",
+          triggerSource: "unknown",
+        }),
+      ]),
+    });
+    configureMutationQueue({ storage });
+
+    const syncSnapshot = jest.fn(async (_params: unknown) => createSyncResult(snapshot));
+    syncSnapshot.mockRejectedValueOnce(new Error("Network request failed"));
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+      getNetworkOnline: () => true,
+    });
+
+    const firstFlush = await flushForemanMutationQueue(deps);
+    const queueAfterFirstFlush = await loadForemanMutationQueue();
+    const secondFlush = await flushForemanMutationQueue(deps);
+    const queueAfterSecondFlush = await loadForemanMutationQueue();
+
+    expect(firstFlush).toMatchObject({
+      failed: true,
+      processedCount: 0,
+      remainingCount: 2,
+    });
+    expect(queueAfterFirstFlush).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "partial-1",
+          lifecycleStatus: "retry_scheduled",
+        }),
+        expect.objectContaining({
+          id: "partial-2",
+          lifecycleStatus: "queued",
+        }),
+      ]),
+    );
+
+    expect(secondFlush).toMatchObject({
+      failed: false,
+      processedCount: 1,
+      remainingCount: 1,
+    });
+    expect(syncSnapshot).toHaveBeenCalledTimes(2);
+    expect(queueAfterSecondFlush).toEqual([
+      expect.objectContaining({
+        id: "partial-1",
+        lifecycleStatus: "retry_scheduled",
+      }),
+    ]);
   });
 });

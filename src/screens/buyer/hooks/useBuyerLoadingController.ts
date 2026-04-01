@@ -17,6 +17,7 @@ import {
   type BuyerSummaryScope,
 } from "../buyer.summary.service";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
+import { reportAndSwallow } from "../../../lib/observability/catchDiscipline";
 import {
   isPlatformGuardCoolingDown,
   recordPlatformGuardSkip,
@@ -245,8 +246,21 @@ export function useBuyerLoadingController(params: {
     if (!inbox.requestIds.length) return;
     try {
       await preloadDisplayNos(inbox.requestIds);
-    } catch {
-      // no-op
+    } catch (error) {
+      reportAndSwallow({
+        screen: "buyer",
+        surface: "inbox_list",
+        event: "preload_display_nos_failed",
+        error,
+        kind: "soft_failure",
+        category: "ui",
+        sourceKind: "cache:display_no",
+        errorStage: "preload_display_no",
+        extra: {
+          requestIds: inbox.requestIds,
+          rowCount: inbox.rows.length,
+        },
+      });
     }
   }, [preloadDisplayNos, publishBuyerScopeState, setInboxHasMore, setInboxTotalCount, setRows]);
 
@@ -393,8 +407,21 @@ export function useBuyerLoadingController(params: {
     if (!buckets.proposalIds.length) return;
     try {
       await preloadProposalTitles(buckets.proposalIds);
-    } catch {
-      // no-op
+    } catch (error) {
+      reportAndSwallow({
+        screen: "buyer",
+        surface: "bucket_lists",
+        event: "preload_proposal_titles_failed",
+        error,
+        kind: "soft_failure",
+        category: "ui",
+        sourceKind: "cache:proposal_title",
+        errorStage: "preload_proposal_titles",
+        extra: {
+          proposalIds: buckets.proposalIds,
+          bucketRowCount: buckets.pending.length + buckets.approved.length + buckets.rejected.length,
+        },
+      });
     }
   }, [preloadProposalTitles, publishBuyerScopeState, setApproved, setPending, setRejected]);
 
@@ -484,6 +511,20 @@ export function useBuyerLoadingController(params: {
 
       hasHydratedRef.current = true;
     } catch (e: unknown) {
+      reportAndSwallow({
+        screen: "buyer",
+        surface: "summary_root",
+        event: "refresh_summary_nonfatal_failed",
+        error: e,
+        kind: "soft_failure",
+        sourceKind: "buyer_summary",
+        errorStage: "refresh_summary",
+        trigger: options.reason,
+        extra: {
+          scopes,
+          hasHydrated: hasHydratedRef.current,
+        },
+      });
       log?.("[buyer.summary] refresh failed:", e instanceof Error ? e.message : String(e));
     } finally {
       summaryRefreshInFlightRef.current = false;
@@ -548,6 +589,20 @@ export function useBuyerLoadingController(params: {
         reset: false,
       });
     } catch (error) {
+      reportAndSwallow({
+        screen: "buyer",
+        surface: "inbox_list",
+        event: "load_next_page_nonfatal_failed",
+        error,
+        kind: "soft_failure",
+        sourceKind: "buyer_inbox_pagination",
+        errorStage: "load_next_page",
+        trigger: "focus",
+        extra: {
+          offsetGroups: inboxLoadedGroupsRef.current,
+          search: searchKey || null,
+        },
+      });
       log?.("[buyer.summary] inbox next page failed:", error instanceof Error ? error.message : String(error));
     }
   }, [loadInboxWindow]);

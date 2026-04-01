@@ -119,17 +119,17 @@ async function loadProposalHistoryRows(
   rikCode: string,
   companyId?: string | null,
 ): Promise<ProposalHistoryRow[]> {
-  let query = supabase
+  if (companyId && __DEV__) {
+    console.warn("[loadProposalHistoryRows] companyId filter is ignored: proposals.company_id is absent in current schema");
+  }
+
+  const query = supabase
     .from("proposal_items")
-    .select("price, supplier, created_at, proposals!inner(company_id)")
+    .select("price, supplier, created_at")
     .eq("rik_code", rikCode)
     .not("price", "is", null)
     .order("created_at", { ascending: false })
     .limit(20);
-
-  if (companyId) {
-    query = query.eq("proposals.company_id", companyId);
-  }
 
   const { data, error } = await query;
   if (error) {

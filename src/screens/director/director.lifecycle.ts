@@ -5,6 +5,7 @@ import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS, normalizeStatus } from "../
 import { logError } from "../../lib/logError";
 import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { reportAndSwallow } from "../../lib/observability/catchDiscipline";
 import {
   isPlatformGuardCoolingDown,
   recordPlatformGuardSkip,
@@ -411,8 +412,19 @@ export function useDirectorLifecycle({
     return () => {
       try {
         subscription.remove();
-      } catch {
-        // no-op
+      } catch (error) {
+        reportAndSwallow({
+          screen: "director",
+          surface: "lifecycle_subscription",
+          event: "app_state_listener_remove_failed",
+          error,
+          kind: "cleanup_only",
+          category: "reload",
+          errorStage: "app_state_cleanup",
+          extra: {
+            scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
+          },
+        });
       }
     };
   }, [isScreenFocused, runLifecycleScopedRefresh]);
@@ -456,8 +468,16 @@ export function useDirectorLifecycle({
         supabase.removeChannel(handoffChannelRef.current);
         handoffChannelRef.current = null;
       }
-    } catch {
-      // no-op
+    } catch (error) {
+      reportAndSwallow({
+        screen: "director",
+        surface: "realtime_cleanup",
+        event: "teardown_previous_channels_failed",
+        error,
+        kind: "cleanup_only",
+        category: "reload",
+        errorStage: "realtime_setup",
+      });
     }
 
     if (!isScreenFocused) return;
@@ -631,26 +651,58 @@ export function useDirectorLifecycle({
       if (channel) {
         try {
           channel.unsubscribe();
-        } catch {
-          // no-op
+        } catch (error) {
+          reportAndSwallow({
+            screen: "director",
+            surface: "realtime_cleanup",
+            event: "screen_channel_unsubscribe_failed",
+            error,
+            kind: "cleanup_only",
+            category: "reload",
+            errorStage: "realtime_cleanup",
+          });
         }
         try {
           supabase.removeChannel(channel);
-        } catch {
-          // no-op
+        } catch (error) {
+          reportAndSwallow({
+            screen: "director",
+            surface: "realtime_cleanup",
+            event: "screen_channel_remove_failed",
+            error,
+            kind: "cleanup_only",
+            category: "reload",
+            errorStage: "realtime_cleanup",
+          });
         }
         if (rtChannelRef.current === channel) rtChannelRef.current = null;
       }
       if (handoffChannel) {
         try {
           handoffChannel.unsubscribe();
-        } catch {
-          // no-op
+        } catch (error) {
+          reportAndSwallow({
+            screen: "director",
+            surface: "realtime_cleanup",
+            event: "handoff_channel_unsubscribe_failed",
+            error,
+            kind: "cleanup_only",
+            category: "reload",
+            errorStage: "realtime_cleanup",
+          });
         }
         try {
           supabase.removeChannel(handoffChannel);
-        } catch {
-          // no-op
+        } catch (error) {
+          reportAndSwallow({
+            screen: "director",
+            surface: "realtime_cleanup",
+            event: "handoff_channel_remove_failed",
+            error,
+            kind: "cleanup_only",
+            category: "reload",
+            errorStage: "realtime_cleanup",
+          });
         }
         if (handoffChannelRef.current === handoffChannel) handoffChannelRef.current = null;
       }

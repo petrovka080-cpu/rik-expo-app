@@ -8,6 +8,7 @@ import {
   formatQtyInput,
   parseQtyValue,
 } from "../foreman.helpers";
+import { reportAndSwallow } from "../../../lib/observability/catchDiscipline";
 import type { CalcRow, PickedRow } from "../foreman.types";
 import { FOREMAN_TEXT } from "../foreman.ui";
 import type { ForemanLocalDraftSnapshot } from "../foreman.localDraft";
@@ -99,13 +100,25 @@ export function useForemanActions({
       if (typeof confirmFn === "function") {
         try {
           return confirmFn.call(globalThis, message);
-        } catch {
+        } catch (error) {
+          reportAndSwallow({
+            screen: "foreman",
+            surface: "draft_actions",
+            event: "web_confirm_bridge_failed",
+            error,
+            kind: "soft_failure",
+            category: "ui",
+            errorStage: "web_confirm",
+            extra: {
+              requestId,
+            },
+          });
           return false;
         }
       }
       return false;
     },
-    [webUi],
+    [requestId, webUi],
   );
 
   const runWebAlert = useCallback(
@@ -119,12 +132,23 @@ export function useForemanActions({
       if (typeof alertFn === "function") {
         try {
           alertFn.call(globalThis, message);
-        } catch {
-          // ignore broken browser bridge alerts
+        } catch (error) {
+          reportAndSwallow({
+            screen: "foreman",
+            surface: "draft_actions",
+            event: "web_alert_bridge_failed",
+            error,
+            kind: "cleanup_only",
+            category: "ui",
+            errorStage: "web_alert",
+            extra: {
+              requestId,
+            },
+          });
         }
       }
     },
-    [webUi],
+    [requestId, webUi],
   );
 
   const commitCatalogToDraft = useCallback(
@@ -158,7 +182,21 @@ export function useForemanActions({
             localBeforeCount: beforeLineCount,
             localAfterCount: nextSnapshot?.items.length ?? 0,
           });
-        } catch {
+        } catch (error) {
+          reportAndSwallow({
+            screen: "foreman",
+            surface: "draft_actions",
+            event: "catalog_add_sync_failed",
+            error,
+            kind: "degraded_fallback",
+            sourceKind: "local_draft_sync",
+            errorStage: "commit_catalog_to_draft",
+            extra: {
+              requestId,
+              localBeforeCount: beforeLineCount,
+              localAfterCount: nextSnapshot?.items.length ?? 0,
+            },
+          });
           showHint("Черновик сохранен", "Позиции сохранены локально и будут синхронизированы позже.");
         }
       } catch (error) {
@@ -167,7 +205,7 @@ export function useForemanActions({
         setBusy(false);
       }
     },
-    [alertError, appendLocalDraftRows, ensureEditableContext, items.length, scopeNote, setBusy, showHint, syncLocalDraftNow],
+    [alertError, appendLocalDraftRows, ensureEditableContext, items.length, requestId, scopeNote, setBusy, showHint, syncLocalDraftNow],
   );
 
   const commitQtyChange = useCallback(
@@ -204,8 +242,22 @@ export function useForemanActions({
             localBeforeCount: beforeLineCount,
             localAfterCount: nextSnapshot?.items.length ?? 0,
           });
-        } catch {
-          // local draft already persisted
+        } catch (error) {
+          reportAndSwallow({
+            screen: "foreman",
+            surface: "draft_actions",
+            event: "qty_update_sync_failed",
+            error,
+            kind: "degraded_fallback",
+            sourceKind: "local_draft_sync",
+            errorStage: "commit_qty_change",
+            extra: {
+              requestId,
+              itemId: String(item.id),
+              localBeforeCount: beforeLineCount,
+              localAfterCount: nextSnapshot?.items.length ?? 0,
+            },
+          });
         }
       } catch (error) {
         alertError(error, FOREMAN_TEXT.qtyUpdateError);
@@ -214,7 +266,7 @@ export function useForemanActions({
         setRowBusy(item.id, false);
       }
     },
-    [alertError, canEditRequestItem, isDraftActive, items.length, setQtyDrafts, setRowBusy, syncLocalDraftNow, updateLocalDraftQty],
+    [alertError, canEditRequestItem, isDraftActive, items.length, requestId, setQtyDrafts, setRowBusy, syncLocalDraftNow, updateLocalDraftQty],
   );
 
   const syncPendingQtyDrafts = useCallback(async () => {
@@ -291,8 +343,22 @@ export function useForemanActions({
             localBeforeCount: beforeLineCount,
             localAfterCount: nextSnapshot?.items.length ?? 0,
           });
-        } catch {
-          // local draft already persisted
+        } catch (error) {
+          reportAndSwallow({
+            screen: "foreman",
+            surface: "draft_actions",
+            event: "row_remove_sync_failed",
+            error,
+            kind: "degraded_fallback",
+            sourceKind: "local_draft_sync",
+            errorStage: "remove_draft_row",
+            extra: {
+              requestId,
+              itemId: String(item.id),
+              localBeforeCount: beforeLineCount,
+              localAfterCount: nextSnapshot?.items.length ?? 0,
+            },
+          });
         }
       };
 
@@ -313,7 +379,7 @@ export function useForemanActions({
         },
       ]);
     },
-    [items.length, removeLocalDraftRow, runWebAlert, runWebConfirm, syncLocalDraftNow],
+    [items.length, removeLocalDraftRow, requestId, runWebAlert, runWebConfirm, syncLocalDraftNow],
   );
 
   const handleCalcAddToRequest = useCallback(
@@ -351,7 +417,22 @@ export function useForemanActions({
             localAfterCount: nextSnapshot?.items.length ?? 0,
           });
           Alert.alert("Готово", `Добавлено позиций: ${prepared.length}`);
-        } catch {
+        } catch (error) {
+          reportAndSwallow({
+            screen: "foreman",
+            surface: "draft_actions",
+            event: "calc_add_sync_failed",
+            error,
+            kind: "degraded_fallback",
+            sourceKind: "local_draft_sync",
+            errorStage: "calc_add_to_request",
+            extra: {
+              requestId,
+              localBeforeCount: beforeLineCount,
+              localAfterCount: nextSnapshot?.items.length ?? 0,
+              preparedCount: prepared.length,
+            },
+          });
           Alert.alert("Черновик сохранен", "Позиции сохранены локально и будут синхронизированы позже.");
         }
       } catch (error) {
@@ -360,7 +441,7 @@ export function useForemanActions({
         setBusy(false);
       }
     },
-    [alertError, appendLocalDraftRows, ensureEditableContext, items.length, scopeNote, setBusy, syncLocalDraftNow],
+    [alertError, appendLocalDraftRows, ensureEditableContext, items.length, requestId, scopeNote, setBusy, syncLocalDraftNow],
   );
 
   return {

@@ -1,24 +1,19 @@
 import React from "react";
 import type { ListRenderItem, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import CalcModal from "../../components/foreman/CalcModal";
-import WorkTypePicker from "../../components/foreman/WorkTypePicker";
-import CatalogModal from "../../components/foreman/CatalogModal";
-import WarehouseFioModal from "../warehouse/components/WarehouseFioModal";
+
 import type { ReqItemRow, ForemanRequestSummary } from "../../lib/catalog_api";
 import type { ContextResolutionResult } from "./foreman.context";
 import type { FormContextUiModel } from "./foreman.locator.adapter";
 import type { RefOption } from "./foreman.types";
 import type { ForemanHeaderAttentionState } from "./foreman.headerRequirements";
-import ForemanEditorSection from "./ForemanEditorSection";
-import ForemanHistoryBar from "./ForemanHistoryBar";
-import ForemanHistoryModal from "./ForemanHistoryModal";
-import ForemanSubcontractHistoryModal from "./ForemanSubcontractHistoryModal";
-import ForemanAiQuickModal from "./ForemanAiQuickModal";
-import ForemanDraftModal from "./ForemanDraftModal";
+import {
+  ForemanMaterialsMainSections,
+  ForemanMaterialsModalStack,
+} from "./ForemanMaterialsContent.sections";
 
 type StatusInfo = { label: string; bg: string; fg: string };
 
-type Props = {
+export type ForemanMaterialsContentProps = {
   contentTopPad: number;
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   foreman: string;
@@ -136,10 +131,10 @@ type Props = {
   styles: typeof import("./foreman.styles").s;
 };
 
-export default function ForemanMaterialsContent(props: Props) {
+export default function ForemanMaterialsContent(props: ForemanMaterialsContentProps) {
   return (
     <>
-      <ForemanEditorSection
+      <ForemanMaterialsMainSections
         contentTopPad={props.contentTopPad}
         onScroll={props.onScroll}
         foreman={props.foreman}
@@ -161,17 +156,13 @@ export default function ForemanMaterialsContent(props: Props) {
         isDraftActive={props.isDraftActive}
         canStartDraftFlow={props.canStartDraftFlow}
         showHint={props.showHint}
-        setCatalogVisible={(value) => {
-          if (value) props.onOpenCatalog();
-          else props.closeCatalog();
-        }}
         busy={props.busy}
+        onOpenCatalog={props.onOpenCatalog}
+        closeCatalog={props.closeCatalog}
         onCalcPress={props.onCalcPress}
         onAiQuickPress={props.onAiQuickPress}
-        setDraftOpen={(value) => {
-          if (value) props.onOpenDraft();
-          else props.closeDraft();
-        }}
+        onOpenDraft={props.onOpenDraft}
+        closeDraft={props.closeDraft}
         currentDisplayLabel={props.currentDisplayLabel}
         itemsCount={props.itemsCount}
         draftSyncStatusLabel={props.draftSyncStatusLabel}
@@ -179,103 +170,72 @@ export default function ForemanMaterialsContent(props: Props) {
         draftSyncStatusTone={props.draftSyncStatusTone}
         draftSendBusy={props.draftSendBusy}
         headerAttention={props.headerAttention}
-        ui={props.ui}
-        styles={props.styles}
-      />
-
-      <ForemanHistoryBar
-        busy={props.busy}
         onOpenRequestHistory={props.onOpenRequestHistory}
         onOpenSubcontractHistory={props.onOpenSubcontractHistory}
-        ui={props.ui}
-        styles={props.styles}
-      />
-
-      <ForemanHistoryModal
-        visible={props.historyVisible}
-        onClose={props.closeHistory}
-        mode={props.historyMode}
-        selectedRequestId={props.historySelectedRequestId}
-        onShowDetails={props.onHistoryShowDetails}
-        onBackToList={props.onHistoryBackToList}
-        onResetView={props.onHistoryResetView}
-        loading={props.historyLoading}
-        requests={props.historyRequests}
+        historyVisible={props.historyVisible}
+        historyMode={props.historyMode}
+        historySelectedRequestId={props.historySelectedRequestId}
+        onHistoryShowDetails={props.onHistoryShowDetails}
+        onHistoryBackToList={props.onHistoryBackToList}
+        onHistoryResetView={props.onHistoryResetView}
+        historyLoading={props.historyLoading}
+        historyRequests={props.historyRequests}
         resolveStatusInfo={props.resolveStatusInfo}
-        onSelect={props.onHistorySelect}
-        onReopen={props.onHistoryReopen}
-        reopenBusyRequestId={props.historyReopenBusyId}
-        onOpenPdf={props.onOpenHistoryPdf}
-        isPdfBusy={props.isHistoryPdfBusy}
+        onHistorySelect={props.onHistorySelect}
+        onHistoryReopen={props.onHistoryReopen}
+        historyReopenBusyId={props.historyReopenBusyId}
+        onOpenHistoryPdf={props.onOpenHistoryPdf}
+        isHistoryPdfBusy={props.isHistoryPdfBusy}
         shortId={props.shortId}
-        styles={props.styles}
-      />
-
-      <ForemanSubcontractHistoryModal
-        visible={props.subcontractHistoryVisible}
-        onClose={props.closeSubcontractHistory}
-        loading={props.subcontractHistoryLoading}
-        history={props.subcontractHistory}
-        styles={props.styles}
+        closeHistory={props.closeHistory}
         ui={props.ui}
+        styles={props.styles}
       />
 
-      <CatalogModal
-        visible={props.catalogVisible}
-        onClose={props.closeCatalog}
+      <ForemanMaterialsModalStack
+        subcontractHistoryVisible={props.subcontractHistoryVisible}
+        closeSubcontractHistory={props.closeSubcontractHistory}
+        subcontractHistoryLoading={props.subcontractHistoryLoading}
+        subcontractHistory={props.subcontractHistory}
+        catalogVisible={props.catalogVisible}
+        closeCatalog={props.closeCatalog}
         rikQuickSearch={props.rikQuickSearch}
         onCommitToDraft={props.onCommitToDraft}
         onOpenDraft={props.onOpenDraft}
-        draftCount={props.itemsCount}
-      />
-
-      <WorkTypePicker
-        visible={props.workTypePickerVisible}
-        onClose={props.closeWorkTypePicker}
-        onSelect={props.onSelectWorkType}
-      />
-
-      <CalcModal
-        visible={props.calcVisible}
-        onClose={props.closeCalc}
-        onBack={props.backToWorkTypePicker}
-        workType={props.selectedWorkType}
-        onAddToRequest={props.onAddCalcToRequest}
-      />
-
-      <ForemanAiQuickModal
-        visible={props.aiQuickVisible}
-        onClose={props.closeAiQuick}
-        mode={props.aiQuickMode}
-        value={props.aiQuickText}
-        onChangeText={props.onAiQuickTextChange}
-        onParse={props.onAiQuickParse}
-        onApply={props.onAiQuickApply}
-        onBackToCompose={props.onAiQuickBackToCompose}
-        onSelectCandidate={props.onAiQuickSelectCandidate}
-        parseLoading={props.aiQuickLoading}
-        applying={props.aiQuickApplying}
-        canApply={props.aiQuickCanApply}
+        itemsCount={props.itemsCount}
+        workTypePickerVisible={props.workTypePickerVisible}
+        closeWorkTypePicker={props.closeWorkTypePicker}
+        onSelectWorkType={props.onSelectWorkType}
+        calcVisible={props.calcVisible}
+        closeCalc={props.closeCalc}
+        backToWorkTypePicker={props.backToWorkTypePicker}
+        selectedWorkType={props.selectedWorkType}
+        onAddCalcToRequest={props.onAddCalcToRequest}
+        aiQuickVisible={props.aiQuickVisible}
+        closeAiQuick={props.closeAiQuick}
+        aiQuickMode={props.aiQuickMode}
+        aiQuickText={props.aiQuickText}
+        onAiQuickTextChange={props.onAiQuickTextChange}
+        onAiQuickParse={props.onAiQuickParse}
+        onAiQuickApply={props.onAiQuickApply}
+        onAiQuickBackToCompose={props.onAiQuickBackToCompose}
+        onAiQuickSelectCandidate={props.onAiQuickSelectCandidate}
+        aiQuickLoading={props.aiQuickLoading}
+        aiQuickApplying={props.aiQuickApplying}
+        aiQuickCanApply={props.aiQuickCanApply}
         onlineConfigured={props.onlineConfigured}
-        error={props.aiQuickError}
-        notice={props.aiQuickNotice}
-        preview={props.aiQuickPreview}
-        outcomeType={props.aiQuickOutcomeType}
-        reviewGroups={props.aiQuickReviewGroups}
-        questions={props.aiQuickQuestions}
-        sessionHint={props.aiQuickSessionHint}
+        aiQuickError={props.aiQuickError}
+        aiQuickNotice={props.aiQuickNotice}
+        aiQuickPreview={props.aiQuickPreview}
+        aiQuickOutcomeType={props.aiQuickOutcomeType}
+        aiQuickReviewGroups={props.aiQuickReviewGroups}
+        aiQuickQuestions={props.aiQuickQuestions}
+        aiQuickSessionHint={props.aiQuickSessionHint}
         aiUnavailableReason={props.aiUnavailableReason}
-        degradedMode={props.aiQuickDegradedMode}
-        draftLabel={props.currentDisplayLabel}
-        draftItemsCount={props.itemsCount}
-        ui={props.ui}
-        styles={props.styles}
-      />
-
-      <ForemanDraftModal
-        visible={props.draftOpen}
-        onClose={props.closeDraft}
+        aiQuickDegradedMode={props.aiQuickDegradedMode}
         currentDisplayLabel={props.currentDisplayLabel}
+        draftOpen={props.draftOpen}
+        closeDraft={props.closeDraft}
         draftSyncStatusLabel={props.draftSyncStatusLabel}
         draftSyncStatusDetail={props.draftSyncStatusDetail}
         draftSyncStatusTone={props.draftSyncStatusTone}
@@ -291,23 +251,20 @@ export default function ForemanMaterialsContent(props: Props) {
         onDeleteDraft={props.onDeleteDraft}
         onPdf={props.onPdf}
         pdfBusy={props.pdfBusy}
-        onSend={props.onSendDraft}
-        availableRecoveryActions={props.availableDraftRecoveryActions}
-        onRetryNow={props.onRetryDraftSync}
-        onRehydrateFromServer={props.onRehydrateDraftFromServer}
-        onRestoreLocal={props.onRestoreLocalDraft}
-        onDiscardLocal={props.onDiscardLocalDraft}
-        onClearFailedQueue={props.onClearFailedQueueTail}
+        onSendDraft={props.onSendDraft}
+        availableDraftRecoveryActions={props.availableDraftRecoveryActions}
+        onRetryDraftSync={props.onRetryDraftSync}
+        onRehydrateDraftFromServer={props.onRehydrateDraftFromServer}
+        onRestoreLocalDraft={props.onRestoreLocalDraft}
+        onDiscardLocalDraft={props.onDiscardLocalDraft}
+        onClearFailedQueueTail={props.onClearFailedQueueTail}
+        isFioConfirmVisible={props.isFioConfirmVisible}
+        foreman={props.foreman}
+        handleFioConfirm={props.handleFioConfirm}
+        isFioLoading={props.isFioLoading}
+        foremanHistory={props.foremanHistory}
         ui={props.ui}
         styles={props.styles}
-      />
-
-      <WarehouseFioModal
-        visible={props.isFioConfirmVisible}
-        initialFio={props.foreman}
-        onConfirm={props.handleFioConfirm}
-        loading={props.isFioLoading}
-        history={props.foremanHistory}
       />
     </>
   );

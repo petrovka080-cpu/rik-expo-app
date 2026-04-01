@@ -1,4 +1,6 @@
 import React from "react";
+import { readFileSync } from "fs";
+import { join } from "path";
 import TestRenderer, { act } from "react-test-renderer";
 
 import { useDirectorLifecycle } from "./director.lifecycle";
@@ -194,5 +196,81 @@ describe("director realtime channel lifecycle", () => {
     expect(reopenedHandoffChannel.unsubscribe).toHaveBeenCalledTimes(1);
     expect(mockRemoveChannel).toHaveBeenCalledWith(reopenedScreenChannel);
     expect(mockRemoveChannel).toHaveBeenCalledWith(reopenedHandoffChannel);
+  });
+
+  it("keeps lifecycle teardown non-fatal while surfacing swallowed cleanup failures", async () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<Harness focused />);
+    });
+    await flushAsyncEffects();
+
+    const screenChannel = createdChannels[0];
+    const handoffChannel = createdChannels[1];
+    screenChannel.unsubscribe.mockImplementation(() => {
+      throw new Error("screen unsubscribe failed");
+    });
+    handoffChannel.unsubscribe.mockImplementation(() => {
+      throw new Error("handoff unsubscribe failed");
+    });
+    mockRemoveChannel.mockImplementation(() => {
+      throw new Error("remove failed");
+    });
+    mockAppStateRemove.mockImplementation(() => {
+      throw new Error("app state remove failed");
+    });
+
+    expect(() => {
+      act(() => {
+        renderer.unmount();
+      });
+    }).not.toThrow();
+
+    const events = mockRecordPlatformObservability.mock.calls.map(([event]) => event);
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          screen: "director",
+          surface: "lifecycle_subscription",
+          event: "app_state_listener_remove_failed",
+          result: "error",
+        }),
+        expect.objectContaining({
+          screen: "director",
+          surface: "realtime_cleanup",
+          event: "screen_channel_unsubscribe_failed",
+          result: "error",
+        }),
+        expect.objectContaining({
+          screen: "director",
+          surface: "realtime_cleanup",
+          event: "screen_channel_remove_failed",
+          result: "error",
+        }),
+        expect.objectContaining({
+          screen: "director",
+          surface: "realtime_cleanup",
+          event: "handoff_channel_unsubscribe_failed",
+          result: "error",
+        }),
+        expect.objectContaining({
+          screen: "director",
+          surface: "realtime_cleanup",
+          event: "handoff_channel_remove_failed",
+          result: "error",
+        }),
+      ]),
+    );
+  });
+
+  it("removes anonymous silent catches from director lifecycle Tier-1 cleanup paths", () => {
+    const source = readFileSync(join(__dirname, "director.lifecycle.ts"), "utf8");
+
+    expect(source).not.toContain("catch {}");
+    expect(source).toContain("app_state_listener_remove_failed");
+    expect(source).toContain("teardown_previous_channels_failed");
+    expect(source).toContain("screen_channel_unsubscribe_failed");
+    expect(source).toContain("handoff_channel_remove_failed");
   });
 });

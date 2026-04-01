@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabaseClient";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
+import { reportAndSwallow } from "../../lib/observability/catchDiscipline";
 import { renderBuyerFallbackProposalPdfHtml } from "../../lib/pdf/pdf.buyer";
 import { renderPdfHtmlToUri } from "../../lib/pdf/pdf.runner";
 
@@ -32,19 +33,57 @@ export async function buildFallbackProposalHtmlClient(pidStr: string, deps: PdfD
   try {
     const r = await deps.proposalItems(pidStr);
     rows = Array.isArray(r) ? r : [];
-  } catch {
+  } catch (error) {
+    reportAndSwallow({
+      screen: "buyer",
+      surface: "proposal_pdf_fallback",
+      event: "fallback_items_load_failed",
+      error,
+      kind: "degraded_fallback",
+      sourceKind: "rpc:proposal_items",
+      errorStage: "proposal_items",
+      extra: {
+        proposalId: pidStr,
+      },
+    });
     rows = [];
   }
 
   let pretty = "";
   try {
     pretty = (await deps.resolveProposalPrettyTitle(pidStr)) || "";
-  } catch {}
+  } catch (error) {
+    reportAndSwallow({
+      screen: "buyer",
+      surface: "proposal_pdf_fallback",
+      event: "fallback_title_resolve_failed",
+      error,
+      kind: "degraded_fallback",
+      sourceKind: "selector:proposal_pretty_title",
+      errorStage: "resolve_pretty_title",
+      extra: {
+        proposalId: pidStr,
+      },
+    });
+  }
 
   let meta: { status?: string | null; buyer_fio?: string | null; submitted_at?: string | null } = {};
   try {
     meta = (await deps.getProposalMeta(pidStr)) || {};
-  } catch {}
+  } catch (error) {
+    reportAndSwallow({
+      screen: "buyer",
+      surface: "proposal_pdf_fallback",
+      event: "fallback_meta_load_failed",
+      error,
+      kind: "degraded_fallback",
+      sourceKind: "selector:proposal_meta",
+      errorStage: "proposal_meta",
+      extra: {
+        proposalId: pidStr,
+      },
+    });
+  }
 
   return renderBuyerFallbackProposalPdfHtml({
     proposalId: pidStr,
@@ -61,7 +100,19 @@ export async function openBuyerProposalPdf(pid: string | number, deps: PdfDeps) 
     let html = "";
     try {
       html = await deps.buildProposalPdfHtml(pidStr);
-    } catch {
+    } catch (error) {
+      reportAndSwallow({
+        screen: "buyer",
+        surface: "proposal_pdf",
+        event: "primary_html_build_failed",
+        error,
+        kind: "degraded_fallback",
+        sourceKind: "html:proposal_pdf",
+        errorStage: "build_primary_html",
+        extra: {
+          proposalId: pidStr,
+        },
+      });
       html = "";
     }
 

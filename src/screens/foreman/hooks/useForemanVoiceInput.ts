@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 
+import { reportAndSwallow } from "../../../lib/observability/catchDiscipline";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 
 export type ForemanVoiceStatus =
@@ -101,7 +102,20 @@ const getNativeSpeechRecognitionModule = (): NativeSpeechRecognitionModuleLike |
       ExpoSpeechRecognitionModule?: NativeSpeechRecognitionModuleLike;
     };
     return candidate?.ExpoSpeechRecognitionModule ?? null;
-  } catch {
+  } catch (error) {
+    reportAndSwallow({
+      screen: "foreman",
+      surface: "ai_quick_voice",
+      event: "native_module_require_failed",
+      error,
+      kind: "soft_failure",
+      category: "ui",
+      sourceKind: "module:expo_speech_recognition",
+      errorStage: "require_native_voice_module",
+      extra: {
+        platform: Platform.OS,
+      },
+    });
     return null;
   }
 };
@@ -230,8 +244,19 @@ export function useForemanVoiceInput(params: {
     for (const subscription of nativeSubscriptionsRef.current) {
       try {
         subscription.remove();
-      } catch {
-        // ignore teardown failures
+      } catch (error) {
+        reportAndSwallow({
+          screen: "foreman",
+          surface: "ai_quick_voice",
+          event: "native_listener_remove_failed",
+          error,
+          kind: "cleanup_only",
+          category: "ui",
+          errorStage: "voice_listener_cleanup",
+          extra: {
+            platform: Platform.OS,
+          },
+        });
       }
     }
     nativeSubscriptionsRef.current = [];
@@ -341,8 +366,20 @@ export function useForemanVoiceInput(params: {
       for (let index = 0; index < tracks.length; index += 1) {
         try {
           tracks[index]?.stop?.();
-        } catch {
-          // ignore per-track cleanup failures
+        } catch (error) {
+          reportAndSwallow({
+            screen: "foreman",
+            surface: "ai_quick_voice",
+            event: "web_microphone_track_stop_failed",
+            error,
+            kind: "cleanup_only",
+            category: "ui",
+            errorStage: "web_microphone_permission_cleanup",
+            extra: {
+              platform: Platform.OS,
+              trackIndex: index,
+            },
+          });
         }
       }
       return { granted: true, errorCode: "", errorMessage: "" };

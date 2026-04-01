@@ -7685,6 +7685,53 @@ export type Database = {
         }
         Relationships: []
       }
+      subcontract_items: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+          qty: number
+          rik_code: string | null
+          source: string
+          status: string
+          subcontract_id: string
+          uom: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+          qty?: number
+          rik_code?: string | null
+          source?: string
+          status?: string
+          subcontract_id: string
+          uom?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+          qty?: number
+          rik_code?: string | null
+          source?: string
+          status?: string
+          subcontract_id?: string
+          uom?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_items_subcontract_id_fkey"
+            columns: ["subcontract_id"]
+            isOneToOne: false
+            referencedRelation: "subcontracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       submit_jobs: {
         Row: {
           client_request_id: string | null
@@ -19255,6 +19302,39 @@ export type Database = {
           p_work_type?: string
           p_work_zone?: string
         }
+        Returns: Json
+      }
+      subcontract_create_v1: {
+        Args: {
+          p_contract_date?: string
+          p_contract_number?: string
+          p_contractor_inn?: string
+          p_contractor_org?: string
+          p_contractor_phone?: string
+          p_contractor_rep?: string
+          p_created_by: string
+          p_date_end?: string
+          p_date_start?: string
+          p_foreman_comment?: string
+          p_foreman_name?: string
+          p_object_name?: string
+          p_price_per_unit?: number
+          p_price_type?: string
+          p_qty_planned?: number
+          p_total_price?: number
+          p_uom?: string
+          p_work_mode?: string
+          p_work_type?: string
+          p_work_zone?: string
+        }
+        Returns: Json
+      }
+      subcontract_approve_v1: {
+        Args: { p_subcontract_id: string }
+        Returns: Json
+      }
+      subcontract_reject_v1: {
+        Args: { p_director_comment?: string; p_subcontract_id: string }
         Returns: Json
       }
       submit_jobs_claim: {

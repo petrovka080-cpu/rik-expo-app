@@ -1,5 +1,19 @@
 // src/lib/catalog_api.ts
 import type { PaymentPdfDraft } from "./api/types";
+import {
+  buildProposalPdfHtml as buildProposalPdfHtmlFromApi,
+  exportProposalPdf as exportProposalPdfFromApi,
+} from "./api/pdf_proposal";
+import { exportPaymentOrderPdf as exportPaymentOrderPdfFromApi } from "./api/pdf_payment";
+import {
+  batchResolveRequestLabels as batchResolveRequestLabelsFromPdfRequest,
+  exportRequestPdf as exportRequestPdfFromApi,
+} from "./api/pdf_request";
+import {
+  generatePaymentOrderPdfDocument as generatePaymentOrderPdfDocumentDescriptor,
+  generateProposalPdfDocument as generateProposalPdfDocumentDescriptor,
+  generateRequestPdfDocument as generateRequestPdfDocumentDescriptor,
+} from "./documents/pdfDocumentGenerators";
 
 export {
   ensureRequestSmart,
@@ -81,63 +95,55 @@ export { createProposalsBySupplier } from "./catalog/catalog.proposalCreation.se
 export async function batchResolveRequestLabels(
   ids: Array<string | number>,
 ): Promise<Record<string, string>> {
-  const mod = await import("./api/pdf_request");
-  return await mod.batchResolveRequestLabels(ids);
+  return await batchResolveRequestLabelsFromPdfRequest(ids);
 }
 
 export async function exportRequestPdf(
   requestId: string,
   mode: "preview" | "share" = "preview",
 ): Promise<string> {
-  const mod = await import("./api/pdf_request");
   void mode;
-  return await mod.exportRequestPdf(requestId);
+  return await exportRequestPdfFromApi(requestId);
 }
 
 export async function generateRequestPdfDocument(requestId: string) {
-  const mod = await import("./documents/pdfDocumentGenerators");
-  return await mod.generateRequestPdfDocument({
+  return await generateRequestPdfDocumentDescriptor({
     requestId,
     originModule: "director",
   });
 }
 
 export async function buildProposalPdfHtml(proposalId: string | number): Promise<string> {
-  const mod = await import("./api/pdf_proposal");
-  return await mod.buildProposalPdfHtml(proposalId);
+  return await buildProposalPdfHtmlFromApi(proposalId);
 }
 
 export async function exportProposalPdf(
   proposalId: string | number,
   mode: "preview" | "share" = "preview",
 ): Promise<string> {
-  const mod = await import("./api/pdf_proposal");
-  return await mod.exportProposalPdf(proposalId, mode);
+  return await exportProposalPdfFromApi(proposalId, mode);
 }
 
 export async function generateProposalPdfDocument(
   proposalId: string | number,
   originModule: "buyer" | "accountant" | "director" = "buyer",
 ) {
-  const mod = await import("./documents/pdfDocumentGenerators");
-  return await mod.generateProposalPdfDocument({ proposalId, originModule });
+  return await generateProposalPdfDocumentDescriptor({ proposalId, originModule });
 }
 
 export async function exportPaymentOrderPdf(
   paymentId: string | number,
   modeOrDraft: "preview" | "share" | PaymentPdfDraft = "preview",
 ): Promise<string> {
-  const mod = await import("./api/pdf_payment");
   const draft = typeof modeOrDraft === "string" ? undefined : modeOrDraft;
-  return await mod.exportPaymentOrderPdf(Number(paymentId), draft);
+  return await exportPaymentOrderPdfFromApi(Number(paymentId), draft);
 }
 
 export async function generatePaymentOrderPdfDocument(
   paymentId: string | number,
   originModule: "accountant" | "director" = "accountant",
 ) {
-  const mod = await import("./documents/pdfDocumentGenerators");
-  return await mod.generatePaymentOrderPdfDocument({ paymentId, originModule });
+  return await generatePaymentOrderPdfDocumentDescriptor({ paymentId, originModule });
 }
 
 export async function uploadProposalAttachment(

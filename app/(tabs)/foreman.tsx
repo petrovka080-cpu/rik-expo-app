@@ -1,1097 +1,163 @@
-﻿// app/(tabs)/foreman.tsx
-
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React from "react";
 import {
-  View,
-  Text,
-  Alert,
-  Platform,
-  Pressable,
-  KeyboardAvoidingView,
   Animated,
-  ListRenderItem,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { useIsFocused } from "@react-navigation/native";
+  KeyboardAvoidingView,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import ForemanReqItemRow from "../../src/screens/foreman/ForemanReqItemRow";
+
+import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 import ForemanMaterialsContent from "../../src/screens/foreman/ForemanMaterialsContent";
 import ForemanSubcontractTab from "../../src/screens/foreman/ForemanSubcontractTab";
-import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
-import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
-import { resolveForemanContext } from "../../src/screens/foreman/foreman.context.resolver";
-import { adaptFormContext } from "../../src/screens/foreman/foreman.locator.adapter";
-import { debugForemanLogLazy } from "../../src/screens/foreman/foreman.debug";
-import {
-  resolveForemanHeaderRequirements,
-  type ForemanHeaderRequirementResult,
-} from "../../src/screens/foreman/foreman.headerRequirements";
-import { getObjectDisplayName } from "../../src/screens/foreman/foreman.options";
-import { s } from "../../src/screens/foreman/foreman.styles";
-import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "../../src/screens/foreman/foreman.ui";
-import { useForemanSubcontractHistory } from "../../src/screens/foreman/hooks/useForemanSubcontractHistory";
-import { useCollapsingHeader } from "../../src/screens/shared/useCollapsingHeader";
-import { useGlobalBusy } from '../../src/ui/GlobalBusy';
-import { supabase } from '../../src/lib/supabaseClient';
-import {
-  rikQuickSearch,
-  type ReqItemRow,
-  type ForemanRequestSummary,
-} from '../../src/lib/catalog_api';
-import { reopenRequestDraft } from "../../src/lib/api/request.repository";
-import type { RefOption } from "../../src/screens/foreman/foreman.types";
-import {
-  loadForemanHistory,
-  ridStr,
-  saveForemanToHistory,
-  shortId,
-  toErrorText,
-  buildScopeNote,
-  resolveStatusInfo as resolveStatusHelper,
-} from "../../src/screens/foreman/foreman.helpers";
-import { buildPdfFileName } from "../../src/lib/documents/pdfDocument";
-import {
-  getPdfFlowErrorMessage,
-} from "../../src/lib/documents/pdfDocumentActions";
-import { generateRequestPdfDocument } from "../../src/lib/documents/pdfDocumentGenerators";
-import { buildForemanSyncUiStatus } from "../../src/lib/offline/foremanSyncRuntime";
-import { prepareAndPreviewGeneratedPdf } from "../../src/lib/pdf/pdf.runner";
-
-import { useForemanHistory } from '../../src/screens/foreman/hooks/useForemanHistory';
-import { useForemanDisplayNo } from '../../src/screens/foreman/hooks/useForemanDisplayNo';
-import { useForemanDraftBoundary } from '../../src/screens/foreman/hooks/useForemanDraftBoundary';
-import { useForemanPdf } from '../../src/screens/foreman/hooks/useForemanPdf';
-import { useForemanActions } from '../../src/screens/foreman/hooks/useForemanActions';
-import { isForemanQuickRequestConfigured } from "../../src/screens/foreman/foreman.ai";
-import { useForemanBaseUi } from "../../src/screens/foreman/hooks/useForemanBaseUi";
-import { useForemanDraftUi } from "../../src/screens/foreman/hooks/useForemanDraftUi";
-import { useForemanHistoryUi } from "../../src/screens/foreman/hooks/useForemanHistoryUi";
-import { useForemanAiQuickFlow } from "../../src/screens/foreman/hooks/useForemanAiQuickFlow";
+import { useForemanScreenController } from "../../src/screens/foreman/useForemanScreenController";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
-import {
-  loadStoredFioState,
-  saveStoredFioState,
-} from "../../src/lib/storage/fioPersistence";
-
-type WebUiApi = {
-  onZoneChange: (v: string) => void;
-  onOpenFioModal: () => void;
-  objectType: string;
-  level: string;
-  system: string;
-  zone: string;
-  objOptions: RefOption[];
-  lvlOptions: RefOption[];
-  sysOptions: RefOption[];
-  zoneOptions: RefOption[];
-  onObjectChange: (v: string) => void;
-  onLevelChange: (v: string) => void;
-  onSystemChange: (v: string) => void;
-  ensureHeaderReady: () => boolean;
-  alert?: (msg: string) => void;
-  confirm?: (msg: string) => boolean;
-};
-
-function buildFioBootstrapScopeKey(userId?: string | null, date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${userId || "anonymous"}:${year}-${month}-${day}`;
-}
-
-declare global {
-  var webUi: WebUiApi;
-}
 
 function ForemanScreen() {
-  const gbusy = useGlobalBusy();
-  const router = useRouter();
-  const isScreenFocused = useIsFocused();
-  const [authIdentity, setAuthIdentity] = useState<{
-    fullName: string;
-    email: string;
-    phone: string;
-  }>({
-    fullName: "",
-    email: "",
-    phone: "",
-  });
-  // Safe global access for web-specific UI bridge
-  const safeWebUi = typeof webUi !== 'undefined' ? webUi : undefined;
-
-  const {
-    historyRequests,
-    historyLoading,
-    historyVisible,
-    fetchHistory,
-    closeHistory,
-  } = useForemanHistory();
-  const {
-    history: subcontractHistory,
-    historyLoading: subcontractHistoryLoading,
-    historyVisible: subcontractHistoryVisible,
-    fetchHistory: fetchSubcontractHistory,
-    closeHistory: closeSubcontractHistory,
-  } = useForemanSubcontractHistory();
-
-  const {
-    displayNoByReq,
-    setDisplayNoByReq,
-    preloadDisplayNo,
-  } = useForemanDisplayNo();
-
-  const {
-    foreman,
-    setForeman,
-    objectType,
-    level,
-    system,
-    zone,
-    requestId,
-    items,
-    qtyDrafts,
-    setQtyDrafts,
-    qtyBusyMap,
-    setRowBusy,
-    requestDetails,
-    canEditRequestItem,
-    networkOnline,
-    isDraftActive,
-    localDraftBootstrapReady,
-    draftSyncStatus,
-    draftLastSyncAt,
-    draftLastErrorAt,
-    draftLastErrorStage,
-    draftConflictType,
-    draftRetryCount,
-    pendingOperationsCount,
-    draftSyncAttentionNeeded,
-    availableDraftRecoveryActions,
-    syncLocalDraftNow,
-    retryDraftSyncNow,
-    rehydrateDraftFromServer,
-    restoreLocalDraftAfterConflict,
-    discardLocalDraftNow,
-    clearFailedQueueTailNow,
-    discardWholeDraft,
-    ensureRequestId,
-    syncRequestHeaderMeta,
-    appendLocalDraftRows,
-    updateLocalDraftQty,
-    removeLocalDraftRow,
-    openRequestById,
-    applyObjectTypeSelection,
-    applyLevelSelection,
-    applySystemSelection,
-    applyZoneSelection,
-    activeDraftOwnerId,
-  } = useForemanDraftBoundary({
-    isScreenFocused,
-    preloadDisplayNo,
-    setDisplayNoByReq,
-  });
-
-  const draftSyncUi = useMemo(
-    () =>
-      buildForemanSyncUiStatus({
-        status: draftSyncStatus,
-        conflictType: draftConflictType,
-        pendingOperationsCount,
-        lastSyncAt: draftLastSyncAt,
-        lastErrorAt: draftLastErrorAt,
-        attentionNeeded: draftSyncAttentionNeeded,
-        lastErrorStage: draftLastErrorStage,
-        retryCount: draftRetryCount,
-      }),
-    [
-      draftLastErrorAt,
-      draftLastErrorStage,
-      draftConflictType,
-      draftLastSyncAt,
-      draftRetryCount,
-      draftSyncAttentionNeeded,
-      draftSyncStatus,
-      pendingOperationsCount,
-    ],
-  );
-
-  const { runRequestPdf } = useForemanPdf(gbusy);
-
-  const {
-    isFioConfirmVisible,
-    setIsFioConfirmVisible,
-    isFioLoading,
-    setIsFioLoading,
-    fioBootstrapScopeKey,
-    setFioBootstrapScopeKey,
-    foremanHistory,
-    setForemanHistory,
-    foremanMainTab,
-    setForemanMainTab,
-    headerAttention,
-    setHeaderAttention,
-    selectedObjectName,
-    setSelectedObjectName,
-  } = useForemanBaseUi();
-  const {
-    draftOpen,
-    openDraft,
-    closeDraft,
-    busy,
-    setBusy,
-    draftDeleteBusy,
-    setDraftDeleteBusy,
-    draftSendBusy,
-    setDraftSendBusy,
-    calcVisible,
-    catalogVisible,
-    openCatalog,
-    closeCatalog,
-    workTypePickerVisible,
-    closeWorkTypePicker,
-    selectedWorkType,
-    showCalcForWorkType,
-    closeCalc,
-    backToWorkTypePicker,
-    openWorkTypePicker,
-    screenLock,
-  } = useForemanDraftUi();
-  const {
-    requestHistoryMode,
-    selectedHistoryRequestId,
-    showRequestHistoryDetails,
-    backToRequestHistoryList,
-    historyReopenBusyId,
-    setHistoryReopenBusyId,
-  } = useForemanHistoryUi();
-  const headerRequirementsRef = useRef<ForemanHeaderRequirementResult>({
-    missing: [],
-    focusKey: null,
-    message: "",
-  });
-
-  const {
-    objOptions, lvlOptions, sysOptions, zoneOptions,
-    objAllOptions, sysAllOptions,
-    appOptions,
-  } = useForemanDicts();
-
-  const refreshForemanHistory = useCallback(async () => {
-    setForemanHistory(await loadForemanHistory());
-  }, [setForemanHistory]);
-
-  useEffect(() => { refreshForemanHistory(); }, [refreshForemanHistory]);
-
-  const labelForApp = useCallback((code?: string | null) => {
-    if (!code) return '';
-    return appOptions.find((o) => o.code === code)?.label || code;
-  }, [appOptions]);
-
-  const showWebAlert = useCallback((message: string) => {
-    if (Platform.OS !== 'web') return false;
-    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
-      window.alert(message);
-      return true;
-    }
-    const alertFn = safeWebUi?.alert;
-    if (typeof alertFn === 'function') {
-      try {
-        alertFn.call(globalThis, message);
-        return true;
-      } catch {
-        return false;
-      }
-    }
-    return false;
-  }, [safeWebUi]);
-
-  const showHint = useCallback((title: string, message: string) => {
-    if (showWebAlert(`${title}\n\n${message}`)) return;
-    Alert.alert(title, message);
-  }, [showWebAlert]);
-
-  const clearHeaderAttention = useCallback(() => {
-    setHeaderAttention(null);
-  }, [setHeaderAttention]);
-
-  const activateHeaderAttention = useCallback((messageOverride?: string) => {
-    const current = headerRequirementsRef.current;
-    if (!current.missing.length) return false;
-
-    setHeaderAttention((prev) => ({
-      version: (prev?.version ?? 0) + 1,
-      missingKeys: current.missing.map((item) => item.key),
-      focusKey: current.focusKey,
-      message: messageOverride || current.message,
-    }));
-
-    if (current.focusKey === "foreman") {
-      setIsFioConfirmVisible(true);
-    }
-
-    return true;
-  }, [setHeaderAttention, setIsFioConfirmVisible]);
-
-  const ensureHeaderReady = useCallback(() => {
-    const current = headerRequirementsRef.current;
-    if (current.missing.length) {
-      activateHeaderAttention(current.message);
-      showHint(FOREMAN_TEXT.fillHeaderTitle, current.message);
-      return false;
-    }
-    return true;
-  }, [activateHeaderAttention, showHint]);
-
-  const ensureEditableContext = useCallback((opts?: { draftMessage?: string; draftFirst?: boolean }) => {
-    if (!localDraftBootstrapReady) return false;
-    const checkDraft = () => {
-      const canStartFreshDraft = !requestDetails && !ridStr(requestId);
-      if (isDraftActive || canStartFreshDraft) return true;
-      Alert.alert(FOREMAN_TEXT.readonlyTitle, opts?.draftMessage ?? FOREMAN_TEXT.readonlyHint);
-      return false;
-    };
-    if (opts?.draftFirst) return checkDraft() && ensureHeaderReady();
-    return ensureHeaderReady() && checkDraft();
-  }, [ensureHeaderReady, isDraftActive, localDraftBootstrapReady, requestDetails, requestId]);
-
-  const resolveStatusInfo = useCallback((raw?: string | null) => resolveStatusHelper(raw, REQUEST_STATUS_STYLES), []);
-
-  const labelForRequest = useCallback((rid?: string | number | null) => {
-    const key = ridStr(rid);
-    if (!key) return '';
-    if (requestId && key === ridStr(requestId)) {
-      const current = String(requestDetails?.display_no ?? '').trim();
-      if (current) return current;
-    }
-    const dn = displayNoByReq[key];
-    return (dn && dn.trim()) || `#${shortId(key)}`;
-  }, [displayNoByReq, requestDetails?.display_no, requestId]);
-
-  const alertError = useCallback((error: unknown, fallback: string) => {
-    Alert.alert(FOREMAN_TEXT.errorTitle, toErrorText(error, fallback));
-  }, []);
-
-  const finalizeAfterSubmit = useCallback(async () => {
-    await saveForemanToHistory(foreman);
-    await refreshForemanHistory();
-  }, [foreman, refreshForemanHistory]);
-
-  const ensureCanSubmitToDirector = useCallback(() => {
-    if (!ensureEditableContext({ draftFirst: true, draftMessage: FOREMAN_TEXT.submitNeedDraftHint })) return false;
-    if (!items.length) { Alert.alert(FOREMAN_TEXT.submitEmptyTitle, FOREMAN_TEXT.submitEmptyHint); return false; }
-    return true;
-  }, [ensureEditableContext, items.length]);
-
-  const displayObjectName = selectedObjectName || getObjectDisplayName(objectType, objAllOptions);
-  const objectName = displayObjectName; // Alias for backward compatibility
-
-  // --- Construction Context Engine (CCE) v2.0 Integration ---
-  const contextResult = useMemo(() => {
-    return resolveForemanContext(objectType || '', displayObjectName);
-  }, [objectType, displayObjectName]);
-
-  const { config: ctxConfig } = contextResult;
-
-  const formUi = useMemo(() => {
-    return adaptFormContext(contextResult, lvlOptions, zoneOptions);
-  }, [contextResult, lvlOptions, zoneOptions]);
-
-  // Synchronous UI State Sanitization
-  const safeLevel = useMemo(() => formUi.locator.isValidValue(level) ? level : '', [formUi.locator, level]);
-  const safeZone = useMemo(() => formUi.zone.isValidValue(zone) ? zone : '', [formUi.zone, zone]);
-
-
-  const filteredSysOptions = useMemo(() => {
-    if (!objectType) return sysOptions;
-    const items = sysOptions.map(o => !o.code ? { ...o, name: "— Весь раздел —" } : o);
-    const priority = ctxConfig.systemPriorityTags.map((t) => t.toUpperCase());
-
-    return [...items].sort((a, b) => {
-      if (!a.code || !b.code) return 0;
-      const aName = (a.name || "").toUpperCase();
-      const bName = (b.name || "").toUpperCase();
-      const score = (name: string) => priority.reduce((acc, tag) => acc + (name.includes(tag) ? 1 : 0), 0);
-      const diff = score(bName) - score(aName);
-      if (diff !== 0) return diff;
-      return 0;
-    });
-  }, [sysOptions, objectType, ctxConfig]);
-  const safeSystem = useMemo(() => filteredSysOptions.some((o) => o.code === system) ? system : "", [filteredSysOptions, system]);
-
-  const headerRequirements = useMemo(
-    () =>
-      resolveForemanHeaderRequirements({
-        foreman,
-        objectType,
-        level: safeLevel,
-        formUi,
-      }),
-    [foreman, objectType, safeLevel, formUi],
-  );
-
-  useEffect(() => {
-    headerRequirementsRef.current = headerRequirements;
-  }, [headerRequirements]);
-
-  // --- SCOPE NOTE: Unified display string using SAFE values ---
-  const levelName = useMemo(() => formUi.locator.options.find(o => o.code === safeLevel)?.name || '', [formUi.locator.options, safeLevel]);
-  const systemName = useMemo(() => filteredSysOptions.find(o => o.code === safeSystem)?.name || '', [filteredSysOptions, safeSystem]);
-  const zoneName = useMemo(() => formUi.zone.options.find(o => o.code === safeZone)?.name || '', [formUi.zone.options, safeZone]);
-
-  useEffect(() => {
-    debugForemanLogLazy("[FOREMAN_MAIN_4_FIELDS]", () => ({
-      objectName: displayObjectName,
-      objectType,
-      objectClass: contextResult?.config?.objectClass,
-
-      field1_object: {
-        label: 'Объект / Блок',
-        value: objectType,
-        selectedName: getObjectDisplayName(objectType, objAllOptions),
-        options: objOptions.map(o => ({ code: o.code, name: o.name })),
-      },
-
-      field2_locator: {
-        label: formUi?.locator?.label,
-        rawValue: level,
-        safeValue: formUi?.locator?.isValidValue(level) ? level : '',
-        selectedName: formUi?.locator?.options?.find(o => o.code === level)?.name || '',
-        options: formUi?.locator?.options?.map(o => ({ code: o.code, name: o.name })),
-      },
-
-      field3_system: {
-        label: 'Раздел / Вид работ',
-        rawValue: system,
-        safeValue: safeSystem,
-        selectedName: filteredSysOptions.find(o => o.code === safeSystem)?.name || '',
-        options: filteredSysOptions.map(o => ({ code: o.code, name: o.name })),
-      },
-
-      field4_zone: {
-        label: formUi?.zone?.label,
-        rawValue: zone,
-        safeValue: formUi?.zone?.isValidValue(zone) ? zone : '',
-        selectedName: formUi?.zone?.options?.find(o => o.code === zone)?.name || '',
-        options: formUi?.zone?.options?.map(o => ({ code: o.code, name: o.name })),
-      },
-    }));
-  }, [displayObjectName, objectType, contextResult, formUi, level, system, zone, filteredSysOptions, objOptions, objAllOptions, safeLevel, safeSystem, safeZone]);
-  const scopeNote = useMemo(() => buildScopeNote(objectName, levelName, systemName, zoneName) || '—', [objectName, levelName, systemName, zoneName]);
-
-  const canStartDraftFlow = localDraftBootstrapReady && (isDraftActive || (!requestDetails && !ridStr(requestId)));
-
-  const actions = useForemanActions({
-    requestId, scopeNote,
-    isDraftActive, canEditRequestItem, setQtyDrafts, setRowBusy, items, qtyDrafts,
-    ensureEditableContext, ensureCanSubmitToDirector, finalizeAfterSubmit,
-    showHint, setBusy, alertError,
-    appendLocalDraftRows,
-    updateLocalDraftQty,
-    removeLocalDraftRow,
-    syncLocalDraftNow,
-    webUi: safeWebUi,
-  });
-
-  const {
-    commitCatalogToDraft, syncPendingQtyDrafts,
-    submitToDirector, handleRemoveDraftRow, handleCalcAddToRequest
-  } = actions;
-
-  const handleObjectChange = useCallback((code: string) => {
-    const opt = objAllOptions.find(o => o.code === code);
-    setSelectedObjectName(opt?.name || ''); // Immediate sync for CCE
-    applyObjectTypeSelection(code, opt?.name ?? null);
-  }, [applyObjectTypeSelection, objAllOptions, setSelectedObjectName]);
-
-  const handleLevelChange = useCallback((code: string) => {
-    const opt = formUi.locator.options.find(o => o.code === code);
-    applyLevelSelection(code, opt?.name ?? null);
-  }, [applyLevelSelection, formUi.locator.options]);
-
-  const handleSystemChange = useCallback((code: string) => {
-    const opt = sysAllOptions.find(o => o.code === code);
-    applySystemSelection(code, opt?.name ?? null);
-  }, [applySystemSelection, sysAllOptions]);
-
-  const handleZoneChange = useCallback((code: string) => {
-    const opt = formUi.zone.options.find(o => o.code === code);
-    applyZoneSelection(code, opt?.name ?? null);
-  }, [applyZoneSelection, formUi.zone.options]);
-
-  // ATOMIC CONTEXT RESET: Level and Zone must follow formUi semantic rules
-  useEffect(() => {
-    if (objectType) {
-      if (level && !formUi.locator.isValidValue(level)) handleLevelChange("");
-      if (system && !filteredSysOptions.some((o) => o.code === system)) handleSystemChange("");
-      if (zone && !formUi.zone.isValidValue(zone)) handleZoneChange("");
-    }
-  }, [objectType, level, system, zone, formUi, filteredSysOptions, handleLevelChange, handleSystemChange, handleZoneChange]);
-
-  useEffect(() => {
-    if (!headerAttention) return;
-
-    const remaining = headerRequirements.missing.filter((item) => headerAttention.missingKeys.includes(item.key));
-    if (!remaining.length) {
-      setHeaderAttention(null);
-      return;
-    }
-
-    const remainingKeys = remaining.map((item) => item.key);
-    const sameKeys =
-      remainingKeys.length === headerAttention.missingKeys.length &&
-      remainingKeys.every((key, index) => key === headerAttention.missingKeys[index]);
-
-    if (
-      sameKeys &&
-      remaining[0]?.focusKey === headerAttention.focusKey &&
-      headerAttention.message === headerRequirements.message
-    ) {
-      return;
-    }
-
-    setHeaderAttention((prev) => ({
-      version: prev && prev.focusKey !== remaining[0]?.focusKey ? prev.version + 1 : prev?.version ?? 1,
-      missingKeys: remainingKeys,
-      focusKey: remaining[0]?.focusKey ?? null,
-      message: headerRequirements.message,
-    }));
-  }, [headerAttention, headerRequirements, setHeaderAttention]);
-
-  const handleHistorySelect = useCallback(async (request: ForemanRequestSummary) => {
-    await openRequestById(request.id);
-    closeHistory();
-    openDraft();
-  }, [closeHistory, openDraft, openRequestById]);
-
-  const handleHistoryReopen = useCallback(async (request: ForemanRequestSummary) => {
-    const requestKey = ridStr(request.id);
-    if (!requestKey) return;
-    setHistoryReopenBusyId(requestKey);
-    try {
-      await reopenRequestDraft({
-        requestId: requestKey,
-        sourcePath: "foreman.history.reopen",
-        draftScopeKey: requestKey,
-      });
-      await openRequestById(requestKey);
-      closeHistory();
-      openDraft();
-    } catch (error) {
-      alertError(error, "Не удалось вернуть черновик");
-    } finally {
-      setHistoryReopenBusyId(null);
-    }
-  }, [alertError, closeHistory, openDraft, openRequestById, setHistoryReopenBusyId]);
-
-  const openHistoryPdf = useCallback(async (reqId: string) => {
-    const rid = ridStr(reqId);
-    if (!rid) return;
-    try {
-      const template = await generateRequestPdfDocument({
-        requestId: rid,
-        originModule: "foreman",
-      });
-      await prepareAndPreviewGeneratedPdf({
-        busy: gbusy,
-        supabase,
-        key: `pdf:history:${rid}`,
-        label: "Готовлю PDF...",
-        descriptor: {
-          ...template,
-          title: `Заявка ${rid}`,
-          fileName: buildPdfFileName({
-            documentType: "request",
-            title: rid,
-            entityId: rid,
-          }),
-        },
-        router,
-      });
-    } catch (error) {
-      Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
-    }
-  }, [gbusy, router]);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const authUserResult = await supabase.auth.getUser();
-      const authUser = authUserResult.data.user ?? null;
-      const nextIdentity = {
-        fullName: String(authUser?.user_metadata?.full_name ?? "").trim(),
-        email: String(authUser?.email ?? "").trim(),
-        phone: String(authUser?.phone ?? authUser?.user_metadata?.phone ?? "").trim(),
-      };
-      if (active) {
-        setAuthIdentity(nextIdentity);
-      }
-      const scopeKey = buildFioBootstrapScopeKey(authUserResult.data.user?.id);
-      if (!active || fioBootstrapScopeKey === scopeKey) return;
-      const sixAM = new Date();
-      sixAM.setHours(6, 0, 0, 0);
-      const {
-        currentFio,
-        history,
-        lastConfirmIso,
-      } = await loadStoredFioState({
-        screen: "foreman",
-        surface: "foreman_fio_confirm",
-        keys: {
-          currentKey: "foreman_fio",
-          confirmKey: "foreman_confirm_ts",
-          historyKey: "foreman_name_history_v1",
-        },
-      });
-      const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
-      if (!active) return;
-      if (currentFio) setForeman(currentFio);
-      setForemanHistory(history);
-      if (!lastConfirm || Number.isNaN(lastConfirm.getTime()) || lastConfirm < sixAM) {
-        setIsFioConfirmVisible(true);
-      }
-      setFioBootstrapScopeKey(scopeKey);
-    })();
-    return () => { active = false; };
-  }, [fioBootstrapScopeKey, setFioBootstrapScopeKey, setForeman, setIsFioConfirmVisible]);
-
-  const handleFioConfirm = useCallback(async (fio: string) => {
-    setIsFioLoading(true);
-    try {
-      setForeman(fio);
-      const nextHistory = await saveStoredFioState({
-        screen: "foreman",
-        surface: "foreman_fio_confirm",
-        keys: {
-          currentKey: "foreman_fio",
-          confirmKey: "foreman_confirm_ts",
-          historyKey: "foreman_name_history_v1",
-        },
-        fio,
-        history: await loadForemanHistory(),
-      });
-      setForemanHistory(nextHistory);
-      const authUserResult = await supabase.auth.getUser();
-      setFioBootstrapScopeKey(buildFioBootstrapScopeKey(authUserResult.data.user?.id));
-      setIsFioConfirmVisible(false);
-    } finally { setIsFioLoading(false); }
-  }, [
-    setFioBootstrapScopeKey,
-    setForeman,
-    setForemanHistory,
-    setIsFioConfirmVisible,
-    setIsFioLoading,
-  ]);
-
-  const onPdf = useCallback(async () => {
-    if (!ensureHeaderReady()) return;
-    await syncPendingQtyDrafts();
-    await runRequestPdf("preview", await ensureRequestId(), requestDetails, syncRequestHeaderMeta);
-  }, [ensureHeaderReady, ensureRequestId, requestDetails, runRequestPdf, syncPendingQtyDrafts, syncRequestHeaderMeta]);
-
-  const buildReqItemMetaLine = useCallback((item: ReqItemRow) => {
-    return [`${item.qty ?? '-'} ${item.uom ?? ''}`.trim(), item.app_code ? labelForApp(item.app_code) : null].filter(Boolean).join(' · ');
-  }, [labelForApp]);
-
-  const renderReqItem: ListRenderItem<ReqItemRow> = useCallback(({ item }) => (
-    <ForemanReqItemRow
-      item={item} busy={busy} updating={!!qtyBusyMap[item.id]}
-      canEdit={canEditRequestItem(item)}
-      metaLine={buildReqItemMetaLine(item)}
-      onCancel={handleRemoveDraftRow}
-      ui={UI} styles={s}
-    />
-  ), [busy, qtyBusyMap, canEditRequestItem, buildReqItemMetaLine, handleRemoveDraftRow]);
-
-  // ---------- UI ----------
-
-  const currentDisplayLabel = useMemo(() => {
-    if (requestDetails?.display_no) return requestDetails.display_no;
-    if (requestId) return labelForRequest(requestId);
-    return 'Черновик';
-  }, [labelForRequest, requestDetails?.display_no, requestId]);
-
-  const activeDraftDisplayLabel = requestId || requestDetails?.display_no ? currentDisplayLabel : "Новый черновик";
-
-  const headerIdentityPrimary = useMemo(() => {
-    return (
-      String(foreman || "").trim() ||
-      authIdentity.fullName ||
-      authIdentity.email ||
-      authIdentity.phone ||
-      "Прораб"
-    );
-  }, [authIdentity.email, authIdentity.fullName, authIdentity.phone, foreman]);
-
-  const headerIdentitySecondary = useMemo(() => {
-    const primary = headerIdentityPrimary.trim().toLowerCase();
-    const candidates = [authIdentity.email, authIdentity.phone].map((value) => String(value || "").trim());
-    return candidates.find((value) => value && value.toLowerCase() !== primary) || "";
-  }, [authIdentity.email, authIdentity.phone, headerIdentityPrimary]);
-
-  const HEADER_MAX = 84;
-  const HEADER_MIN = 64;
-  const {
-    headerHeight,
-    titleSize,
-    headerShadow,
-    onScroll,
-    contentTopPad,
-  } = useCollapsingHeader({
-    headerMax: HEADER_MAX,
-    headerMin: HEADER_MIN,
-    contentTopOffset: 12,
-  });
-
-  const draftPdfBusy = useMemo(() => {
-    const ridKey = ridStr(requestId);
-    return gbusy.isBusy(`pdf:request:${ridKey || "draft"}`);
-  }, [gbusy, requestId]);
-
-  const handleCancelWholeDraft = useCallback(async () => {
-    setDraftDeleteBusy(true);
-    try {
-      await discardWholeDraft();
-      closeDraft();
-    } catch (e: unknown) {
-      alertError(e, FOREMAN_TEXT.deleteDraftError);
-    } finally {
-      setDraftDeleteBusy(false);
-    }
-  }, [alertError, closeDraft, discardWholeDraft, setDraftDeleteBusy]);
-
-  const handleSendDraftFromSheet = useCallback(async () => {
-    setDraftSendBusy(true);
-    try {
-      await submitToDirector();
-      closeDraft();
-    } catch (e: unknown) {
-      alertError(e, FOREMAN_TEXT.sendToDirectorError);
-    } finally {
-      setDraftSendBusy(false);
-    }
-  }, [submitToDirector, alertError, closeDraft, setDraftSendBusy]);
-
-  const handleCalcPress = useCallback(() => {
-    if (busy) return;
-    if (!ensureEditableContext()) return;
-    openWorkTypePicker();
-  }, [busy, ensureEditableContext, openWorkTypePicker]);
-
-  const {
-    aiQuickVisible,
-    aiQuickMode,
-    aiQuickText,
-    aiQuickLoading,
-    aiQuickApplying,
-    aiQuickError,
-    aiQuickNotice,
-    aiQuickPreview,
-    aiQuickOutcomeType,
-    aiQuickReviewGroups,
-    aiQuickQuestions,
-    aiQuickSessionHint,
-    aiUnavailableReason,
-    aiQuickDegradedMode,
-    aiQuickCanApply,
-    openAiQuick,
-    closeAiQuick,
-    handleAiQuickTextChange,
-    handleAiQuickBackToCompose,
-    handleAiQuickSelectCandidate,
-    handleAiQuickParse,
-    handleAiQuickApply,
-  } = useForemanAiQuickFlow({
-    headerRequirements,
-    activateHeaderAttention,
-    clearHeaderAttention,
-    showHint,
-    requestDetails,
-    isDraftActive,
-    scopeNote,
-    itemsCount: items.length,
-    appendLocalDraftRows,
-    syncLocalDraftNow,
-    activeDraftOwnerId,
-    requestId,
-    labelForRequest,
-    currentDisplayLabel: activeDraftDisplayLabel,
-    openDraft,
-    networkOnline,
-  });
-
-  const openDraftFromCatalog = useCallback(() => {
-    closeCatalog();
-    openDraft();
-  }, [closeCatalog, openDraft]);
+  const vm = useForemanScreenController();
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={vm.keyboardBehavior}
     >
-      <RoleScreenLayout style={[s.container, { backgroundColor: UI.bg }]}>
-        <View pointerEvents="none" style={s.bgGlow} />
+      <RoleScreenLayout style={[vm.styles.container, { backgroundColor: vm.ui.bg }]}>
+        <View pointerEvents="none" style={vm.styles.bgGlow} />
         <Animated.View
           style={[
-            s.cHeader,
+            vm.styles.cHeader,
             {
-              height: headerHeight,
-              shadowOpacity: headerShadow,
+              height: vm.headerHeight,
+              shadowOpacity: vm.headerShadow,
               elevation: 8,
             },
           ]}
         >
           <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Animated.Text
-                  style={[s.cTitle, { fontSize: titleSize, color: UI.text }]}
+                  style={[vm.styles.cTitle, { fontSize: vm.titleSize, color: vm.ui.text }]}
                   numberOfLines={1}
                 >
-                  {foremanMainTab === 'materials' ? 'Материалы' : foremanMainTab === 'subcontracts' ? 'Подряды' : 'Заявка'}
+                  {vm.screenTitle}
                 </Animated.Text>
                 <Pressable
-                  onPress={() => setIsFioConfirmVisible(true)}
+                  onPress={vm.openFioModal}
                   style={{ marginTop: 6, minWidth: 0 }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 10, minWidth: 0 }}>
                     <View
                       style={{
                         width: 28,
                         height: 28,
                         borderRadius: 14,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: 'rgba(255,255,255,0.08)',
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(255,255,255,0.08)",
                         borderWidth: 1,
-                        borderColor: 'rgba(255,255,255,0.12)',
+                        borderColor: "rgba(255,255,255,0.12)",
                         flexShrink: 0,
                       }}
                     >
-                      <Ionicons name="person-outline" size={16} color={UI.sub} />
+                      <Ionicons name="person-outline" size={16} color={vm.ui.sub} />
                     </View>
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text
                         numberOfLines={1}
                         ellipsizeMode="tail"
-                        style={{ color: UI.text, fontSize: 13, fontWeight: "700" }}
+                        style={{ color: vm.ui.text, fontSize: 13, fontWeight: "700" }}
                       >
-                        {headerIdentityPrimary}
+                        {vm.headerIdentityPrimary}
                       </Text>
-                      {headerIdentitySecondary ? (
+                      {vm.headerIdentitySecondary ? (
                         <Text
                           numberOfLines={1}
                           ellipsizeMode="tail"
-                          style={{ color: UI.sub, fontSize: 11, fontWeight: "600", marginTop: 2 }}
+                          style={{ color: vm.ui.sub, fontSize: 11, fontWeight: "600", marginTop: 2 }}
                         >
-                          {headerIdentitySecondary}
+                          {vm.headerIdentitySecondary}
                         </Text>
                       ) : null}
                     </View>
                   </View>
                 </Pressable>
-                {false && !!foreman && (
-                  <Pressable onPress={() => setIsFioConfirmVisible(true)}>
-                    <Text style={{ fontSize: 13, color: UI.sub, fontWeight: "500", marginTop: 4 }}>
-                      👤 {foreman}
-                    </Text>
-                  </Pressable>
-                )}
               </View>
-              {foremanMainTab ? (
+              {vm.mainTab ? (
                 <Pressable
-                  onPress={() => setForemanMainTab(null)}
+                  onPress={vm.closeMainTab}
                   style={{
                     width: 38,
                     height: 38,
                     borderRadius: 12,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(255,255,255,0.08)',
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(255,255,255,0.08)",
                     borderWidth: 1,
-                    borderColor: 'rgba(255,255,255,0.14)',
+                    borderColor: "rgba(255,255,255,0.14)",
                   }}
                 >
-                  <Text style={{ color: UI.text, fontWeight: '600', fontSize: 20, lineHeight: 22 }}>×</Text>
+                  <Text style={{ color: vm.ui.text, fontWeight: "600", fontSize: 20, lineHeight: 22 }}>×</Text>
                 </Pressable>
               ) : null}
             </View>
           </View>
         </Animated.View>
 
-        {!foremanMainTab ? (
+        {!vm.mainTab ? (
           <View
             style={{
               flex: 1,
-              paddingTop: contentTopPad + 56,
+              paddingTop: vm.contentTopPad + 56,
               paddingHorizontal: 16,
-              alignItems: 'center',
-              justifyContent: 'flex-start',
+              alignItems: "center",
+              justifyContent: "flex-start",
               gap: 14,
             }}
           >
             <Pressable
-              onPress={() => setForemanMainTab('materials')}
+              onPress={vm.openMaterialsTab}
               style={{
-                width: '100%',
+                width: "100%",
                 maxWidth: 370,
                 height: 72,
                 borderRadius: 16,
                 borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.14)',
-                backgroundColor: '#121A2A',
-                alignItems: 'center',
-                justifyContent: 'center',
+                borderColor: "rgba(255,255,255,0.14)",
+                backgroundColor: "#121A2A",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <Text style={{ color: UI.text, fontWeight: '600', fontSize: 22, lineHeight: 28 }}>[ Материалы ]</Text>
+              <Text style={{ color: vm.ui.text, fontWeight: "600", fontSize: 22, lineHeight: 28 }}>[ Материалы ]</Text>
             </Pressable>
 
             <Pressable
-              onPress={() => setForemanMainTab('subcontracts')}
+              onPress={vm.openSubcontractsTab}
               style={{
-                width: '100%',
+                width: "100%",
                 maxWidth: 370,
                 height: 72,
                 borderRadius: 16,
                 borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.14)',
-                backgroundColor: '#121A2A',
-                alignItems: 'center',
-                justifyContent: 'center',
+                borderColor: "rgba(255,255,255,0.14)",
+                backgroundColor: "#121A2A",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <Text style={{ color: UI.text, fontWeight: '600', fontSize: 22, lineHeight: 28 }}>[ Подряды ]</Text>
+              <Text style={{ color: vm.ui.text, fontWeight: "600", fontSize: 22, lineHeight: 28 }}>[ Подряды ]</Text>
             </Pressable>
           </View>
         ) : null}
 
-        {foremanMainTab === 'subcontracts' ? (
-          <ForemanSubcontractTab
-            contentTopPad={contentTopPad}
-            onScroll={onScroll}
-            dicts={{ objOptions, lvlOptions, sysOptions }}
-          />
+        {vm.mainTab === "subcontracts" ? (
+          <ForemanSubcontractTab {...vm.subcontractTabProps} />
         ) : null}
 
-        {foremanMainTab === 'materials' ? (
-          <ForemanMaterialsContent
-            contentTopPad={contentTopPad}
-            onScroll={onScroll}
-            foreman={foreman}
-            onOpenFioModal={() => setIsFioConfirmVisible(true)}
-            objectType={objectType}
-            objectDisplayName={displayObjectName}
-            level={safeLevel}
-            system={safeSystem}
-            zone={safeZone}
-            contextResult={contextResult}
-            formUi={formUi}
-            objOptions={objOptions}
-            sysOptions={filteredSysOptions}
-            onObjectChange={handleObjectChange}
-            onLevelChange={handleLevelChange}
-            onSystemChange={handleSystemChange}
-            onZoneChange={handleZoneChange}
-            ensureHeaderReady={ensureHeaderReady}
-            isDraftActive={isDraftActive}
-            canStartDraftFlow={canStartDraftFlow}
-            showHint={showHint}
-            busy={busy}
-            onOpenCatalog={openCatalog}
-            onCalcPress={handleCalcPress}
-            onAiQuickPress={openAiQuick}
-            onOpenDraft={openDraftFromCatalog}
-            currentDisplayLabel={activeDraftDisplayLabel}
-            itemsCount={items.length}
-            draftSyncStatusLabel={draftSyncUi.label}
-            draftSyncStatusDetail={draftSyncUi.detail}
-            draftSyncStatusTone={draftSyncUi.tone}
-            headerAttention={headerAttention}
-            onOpenRequestHistory={() => fetchHistory(foreman)}
-            onOpenSubcontractHistory={() => void fetchSubcontractHistory()}
-            historyVisible={historyVisible}
-            historyMode={requestHistoryMode}
-            historySelectedRequestId={selectedHistoryRequestId}
-            onHistoryShowDetails={(request) => showRequestHistoryDetails(request.id)}
-            onHistoryBackToList={backToRequestHistoryList}
-            onHistoryResetView={backToRequestHistoryList}
-            historyLoading={historyLoading}
-            historyRequests={historyRequests}
-            resolveStatusInfo={resolveStatusInfo}
-            onHistorySelect={handleHistorySelect}
-            onHistoryReopen={handleHistoryReopen}
-            historyReopenBusyId={historyReopenBusyId}
-            onOpenHistoryPdf={openHistoryPdf}
-            isHistoryPdfBusy={(key) => gbusy.isBusy(key)}
-            shortId={shortId}
-            closeHistory={closeHistory}
-            subcontractHistoryVisible={subcontractHistoryVisible}
-            closeSubcontractHistory={closeSubcontractHistory}
-            subcontractHistoryLoading={subcontractHistoryLoading}
-            subcontractHistory={subcontractHistory}
-            catalogVisible={catalogVisible}
-            closeCatalog={closeCatalog}
-            rikQuickSearch={rikQuickSearch}
-            onCommitToDraft={commitCatalogToDraft}
-            workTypePickerVisible={workTypePickerVisible}
-            closeWorkTypePicker={closeWorkTypePicker}
-            onSelectWorkType={showCalcForWorkType}
-            calcVisible={calcVisible}
-            closeCalc={closeCalc}
-            backToWorkTypePicker={backToWorkTypePicker}
-            selectedWorkType={selectedWorkType}
-            onAddCalcToRequest={handleCalcAddToRequest}
-            aiQuickVisible={aiQuickVisible}
-            aiQuickMode={aiQuickMode}
-            closeAiQuick={closeAiQuick}
-            aiQuickText={aiQuickText}
-            onAiQuickTextChange={handleAiQuickTextChange}
-            onAiQuickParse={handleAiQuickParse}
-            onAiQuickApply={handleAiQuickApply}
-            onAiQuickBackToCompose={handleAiQuickBackToCompose}
-            onAiQuickSelectCandidate={handleAiQuickSelectCandidate}
-            aiQuickLoading={aiQuickLoading}
-            aiQuickApplying={aiQuickApplying}
-            aiQuickError={aiQuickError}
-            aiQuickNotice={aiQuickNotice}
-            aiQuickPreview={aiQuickPreview}
-            aiQuickOutcomeType={aiQuickOutcomeType}
-            aiQuickReviewGroups={aiQuickReviewGroups}
-            aiQuickQuestions={aiQuickQuestions}
-            aiQuickSessionHint={aiQuickSessionHint}
-            aiUnavailableReason={aiUnavailableReason}
-            aiQuickDegradedMode={aiQuickDegradedMode}
-            aiQuickCanApply={aiQuickCanApply}
-            onlineConfigured={isForemanQuickRequestConfigured()}
-            draftOpen={draftOpen}
-            closeDraft={closeDraft}
-            objectName={objectName}
-            levelName={levelName}
-            systemName={systemName}
-            zoneName={zoneName}
-            items={items}
-            renderReqItem={renderReqItem}
-            screenLock={screenLock}
-            draftDeleteBusy={draftDeleteBusy}
-            draftSendBusy={draftSendBusy}
-            onDeleteDraft={handleCancelWholeDraft}
-            onPdf={onPdf}
-            pdfBusy={draftPdfBusy}
-            onSendDraft={handleSendDraftFromSheet}
-            availableDraftRecoveryActions={availableDraftRecoveryActions}
-            onRetryDraftSync={retryDraftSyncNow}
-            onRehydrateDraftFromServer={rehydrateDraftFromServer}
-            onRestoreLocalDraft={restoreLocalDraftAfterConflict}
-            onDiscardLocalDraft={discardLocalDraftNow}
-            onClearFailedQueueTail={clearFailedQueueTailNow}
-            isFioConfirmVisible={isFioConfirmVisible}
-            handleFioConfirm={handleFioConfirm}
-            isFioLoading={isFioLoading}
-            foremanHistory={foremanHistory}
-            ui={UI}
-            styles={s}
-          />
+        {vm.mainTab === "materials" ? (
+          <ForemanMaterialsContent {...vm.materialsContentProps} />
         ) : null}
       </RoleScreenLayout>
     </KeyboardAvoidingView>

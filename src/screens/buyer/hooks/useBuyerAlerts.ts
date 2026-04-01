@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { Alert } from "react-native";
+import { reportAndSwallow } from "../../../lib/observability/catchDiscipline";
 
 const DEFAULT_ALERT_TITLE = "Ошибка";
 const DEFAULT_ALERT_MESSAGE = "Произошла ошибка";
@@ -22,7 +23,17 @@ export function normalizeBuyerAlertPart(value: unknown, fallback: string): strin
     try {
       const json = JSON.stringify(value);
       if (json && json !== "{}" && json !== '"[object Object]"') return json;
-    } catch {}
+    } catch (error) {
+      reportAndSwallow({
+        screen: "buyer",
+        surface: "alerts",
+        event: "normalize_alert_part_failed",
+        error,
+        kind: "soft_failure",
+        category: "ui",
+        errorStage: "normalize_alert_part",
+      });
+    }
   }
   return fallback;
 }

@@ -3,6 +3,10 @@ import {
   buildGeneratedPdfDescriptor,
   createGeneratedPdfDescriptor,
 } from "../pdf/pdf.runner";
+import { exportPaymentOrderPdfContract } from "../api/pdf_payment";
+import { exportProposalPdf } from "../api/pdf_proposal";
+import { exportRequestPdf } from "../api/pdf_request";
+import { preparePaymentOrderPdf } from "../api/paymentPdf.service";
 import type { PdfSource } from "../pdfFileContract";
 
 export async function generateRequestPdfDocument(args: {
@@ -11,10 +15,9 @@ export async function generateRequestPdfDocument(args: {
   title?: string;
   originModule: DocumentDescriptor["originModule"];
 }): Promise<DocumentDescriptor> {
-  const mod = await import("../api/pdf_request");
   const requestId = String(args.requestId);
   return buildGeneratedPdfDescriptor({
-    getUri: () => mod.exportRequestPdf(requestId),
+    getUri: () => exportRequestPdf(requestId),
     title: args.title || `Request ${requestId}`,
     fileName: args.fileName,
     documentType: "request",
@@ -29,10 +32,9 @@ export async function generateProposalPdfDocument(args: {
   title?: string;
   originModule: DocumentDescriptor["originModule"];
 }): Promise<DocumentDescriptor> {
-  const mod = await import("../api/pdf_proposal");
   const proposalId = String(args.proposalId);
   return buildGeneratedPdfDescriptor({
-    getUri: () => mod.exportProposalPdf(proposalId, "preview"),
+    getUri: () => exportProposalPdf(proposalId, "preview"),
     title: args.title || `Proposal ${proposalId}`,
     fileName: args.fileName,
     documentType: "proposal",
@@ -48,17 +50,15 @@ export async function generatePaymentOrderPdfDocument(args: {
   draft?: any;
   originModule: DocumentDescriptor["originModule"];
 }): Promise<DocumentDescriptor> {
-  const mod = await import("../api/pdf_payment");
-  const service = await import("../api/paymentPdf.service");
   const paymentId = Number(args.paymentId);
-  const prepared = await service.preparePaymentOrderPdf({
+  const prepared = await preparePaymentOrderPdf({
     paymentId,
     draft: args.draft,
     title: args.title,
     fileName: args.fileName,
   });
   return buildGeneratedPdfDescriptor({
-    getUri: () => mod.exportPaymentOrderPdfContract(prepared.contract),
+    getUri: () => exportPaymentOrderPdfContract(prepared.contract),
     title: prepared.contract.title,
     fileName: prepared.contract.fileName,
     documentType: prepared.contract.documentType,

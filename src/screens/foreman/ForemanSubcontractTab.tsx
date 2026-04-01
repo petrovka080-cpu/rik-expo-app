@@ -1,16 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
-  Modal,
   Platform,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabaseClient";
-import PeriodPickerSheet from "../../components/PeriodPickerSheet";
-import CatalogModal, { type PickedRow as CatalogPickedRow } from "../../components/foreman/CatalogModal";
-import WorkTypePicker from "../../components/foreman/WorkTypePicker";
-import CalcModal from "../../components/foreman/CalcModal";
+import { type PickedRow as CatalogPickedRow } from "../../components/foreman/CatalogModal";
 import {
   rikQuickSearch,
   updateRequestMeta,
@@ -28,13 +24,9 @@ import { useRouter } from "expo-router";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { generateRequestPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
-import ForemanHistoryBar from "./ForemanHistoryBar";
-import ForemanHistoryModal from "./ForemanHistoryModal";
-import ForemanSubcontractHistoryModal from "./ForemanSubcontractHistoryModal";
 import {
-  ApprovedContractsList,
-  DraftSheetBody,
-  SubcontractDetailsModalBody,
+  ForemanSubcontractMainSections,
+  ForemanSubcontractModalStack,
 } from "./ForemanSubcontractTab.sections";
 import { s } from "./foreman.styles";
 import { REQUEST_STATUS_STYLES, UI } from "./foreman.ui";
@@ -52,10 +44,7 @@ import {
 } from "./foreman.requests";
 import { readForemanProfileName } from "./foreman.dicts.repo";
 import { useForemanHistory } from "./hooks/useForemanHistory";
-import {
-  useForemanSubcontractUiStore,
-  type SubcontractFlowScreen,
-} from "./foremanSubcontractUi.store";
+import { useForemanSubcontractUiStore, type SubcontractFlowScreen } from "./foremanSubcontractUi.store";
 
 type Props = {
   contentTopPad: number;
@@ -971,50 +960,15 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
   return (
     <View style={{ flex: 1 }}>
-      <ApprovedContractsList
+      <ForemanSubcontractMainSections
         approvedContracts={approvedContracts}
-        historyLoading={historyLoading}
+        approvedContractsLoading={historyLoading}
         contentTopPad={contentTopPad}
         onScroll={onScroll}
         objOptions={dicts.objOptions}
         sysOptions={dicts.sysOptions}
         selectedTemplateId={selectedTemplateId}
-        onSelect={acceptApprovedFromDirector}
-      />
-
-      <Modal
-        visible={subcontractDetailsVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={closeSubcontractFlow}
-        statusBarTranslucent={Platform.OS === "android"}
-      >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.45)" }}>
-          <SubcontractDetailsModalBody
-            modalHeaderTopPad={modalHeaderTopPad}
-            onClose={closeSubcontractFlow}
-            templateContract={templateContract}
-            templateObjectName={templateObjectName}
-            templateLevelName={templateLevelName}
-            templateSystemName={templateSystemName}
-            formLevelCode={form.levelCode}
-            formSystemCode={form.systemCode}
-            formZoneText={form.zoneText}
-            draftItemsCount={draftItems.length}
-            lvlOptions={dicts.lvlOptions}
-            sysOptions={dicts.sysOptions}
-            onChangeLevelCode={(value) => setField("levelCode", value)}
-            onChangeSystemCode={(value) => setField("systemCode", value)}
-            onChangeZoneText={(value) => setField("zoneText", value)}
-            onOpenCatalog={() => setSubcontractFlowScreen("catalog")}
-            onOpenCalc={() => setSubcontractFlowScreen("workType")}
-            onOpenDraft={() => setSubcontractFlowScreen("draft")}
-            displayNo={displayNo}
-          />
-        </View>
-      </Modal>
-
-      <ForemanHistoryBar
+        onSelectApprovedContract={acceptApprovedFromDirector}
         busy={saving || sending}
         onOpenRequestHistory={() => fetchRequestHistory(foremanName)}
         onOpenSubcontractHistory={() => {
@@ -1025,134 +979,105 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         styles={s}
       />
 
-      <Modal
-        visible={draftOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSubcontractFlowScreen("details")}
-        statusBarTranslucent={Platform.OS === "android"}
-      >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" }}>
-          <DraftSheetBody
-            displayNo={displayNo}
-            onClose={() => setSubcontractFlowScreen("details")}
-            objectName={objectName}
-            templateObjectName={templateObjectName}
-            levelName={levelName}
-            templateLevelName={templateLevelName}
-            systemName={systemName}
-            templateSystemName={templateSystemName}
-            zoneName={zoneName}
-            contractorName={templateContract?.contractor_org || form.contractorOrg || ""}
-            phoneName={templateContract?.contractor_phone || form.contractorPhone || ""}
-            volumeText={`${fmtAmount(templateContract?.qty_planned ?? toNum(form.qtyPlanned))} ${templateContract?.uom || form.uom || ""}`.trim()}
-            draftItems={draftItems}
-            saving={saving}
-            sending={sending}
-            requestId={requestId}
-            onRemoveDraftItem={removeDraftItem}
-            onClearDraft={() => void clearDraft()}
-            onPdf={() => void onPdf()}
-            onExcel={() => Alert.alert("Excel", "Экспорт Excel для подрядов будет добавлен.")}
-            onSendToDirector={() => void sendToDirector()}
-          />
-        </View>
-      </Modal>
-
-      <PeriodPickerSheet
-        visible={!!dateTarget}
-        onClose={() => setDateTarget(null)}
-        initialFrom={dateTarget ? String(form[dateTarget] || "") : ""}
-        initialTo={dateTarget ? String(form[dateTarget] || "") : ""}
-        onClear={() => {
+      <ForemanSubcontractModalStack
+        subcontractDetailsVisible={subcontractDetailsVisible}
+        onCloseSubcontractFlow={closeSubcontractFlow}
+        modalHeaderTopPad={modalHeaderTopPad}
+        templateContract={templateContract}
+        templateObjectName={templateObjectName}
+        templateLevelName={templateLevelName}
+        templateSystemName={templateSystemName}
+        formLevelCode={form.levelCode}
+        formSystemCode={form.systemCode}
+        formZoneText={form.zoneText}
+        draftItemsCount={draftItems.length}
+        lvlOptions={dicts.lvlOptions}
+        sysOptions={dicts.sysOptions}
+        onChangeLevelCode={(value) => setField("levelCode", value)}
+        onChangeSystemCode={(value) => setField("systemCode", value)}
+        onChangeZoneText={(value) => setField("zoneText", value)}
+        onOpenCatalog={() => setSubcontractFlowScreen("catalog")}
+        onOpenCalc={() => setSubcontractFlowScreen("workType")}
+        onOpenDraft={() => setSubcontractFlowScreen("draft")}
+        displayNo={displayNo}
+        draftOpen={draftOpen}
+        onCloseDraft={() => setSubcontractFlowScreen("details")}
+        objectName={objectName}
+        levelName={levelName}
+        systemName={systemName}
+        zoneName={zoneName}
+        contractorName={templateContract?.contractor_org || form.contractorOrg || ""}
+        phoneName={templateContract?.contractor_phone || form.contractorPhone || ""}
+        volumeText={`${fmtAmount(templateContract?.qty_planned ?? toNum(form.qtyPlanned))} ${templateContract?.uom || form.uom || ""}`.trim()}
+        draftItems={draftItems}
+        saving={saving}
+        sending={sending}
+        requestId={requestId}
+        onRemoveDraftItem={removeDraftItem}
+        onClearDraft={() => void clearDraft()}
+        onPdf={() => void onPdf()}
+        onExcel={() => Alert.alert("Excel", "Р­РєСЃРїРѕСЂС‚ Excel РґР»СЏ РїРѕРґСЂСЏРґРѕРІ Р±СѓРґРµС‚ РґРѕР±Р°РІР»РµРЅ.")}
+        onSendToDirector={() => void sendToDirector()}
+        periodPickerVisible={!!dateTarget}
+        onClosePeriodPicker={() => setDateTarget(null)}
+        periodInitialFrom={dateTarget ? String(form[dateTarget] || "") : ""}
+        periodInitialTo={dateTarget ? String(form[dateTarget] || "") : ""}
+        onClearPeriod={() => {
           if (!dateTarget) return;
           setField(dateTarget, "");
           setDateTarget(null);
         }}
-        onApply={(from) => {
+        onApplyPeriod={(from) => {
           if (!dateTarget) return;
           setField(dateTarget, String(from || ""));
           setDateTarget(null);
         }}
-        ui={{
-          cardBg: UI.cardBg,
-          text: UI.text,
-          sub: UI.sub,
-          border: "rgba(255,255,255,0.14)",
-          approve: UI.btnApprove,
-          accentBlue: "#3B82F6",
-        }}
-      />
-
-      <CatalogModal
-        visible={catalogVisible}
-        onClose={() => setSubcontractFlowScreen("details")}
+        ui={UI}
+        catalogVisible={catalogVisible}
+        onCloseCatalog={() => setSubcontractFlowScreen("details")}
         rikQuickSearch={rikQuickSearch}
-        onCommitToDraft={(rows) => void appendCatalogRows(rows)}
-        onOpenDraft={() => {
+        onCommitCatalogToDraft={(rows) => void appendCatalogRows(rows)}
+        onOpenDraftFromCatalog={() => {
           setSubcontractFlowScreen("draft");
         }}
-        draftCount={draftItems.length}
-      />
-
-      <WorkTypePicker
-        visible={workTypePickerVisible}
-        onClose={() => setSubcontractFlowScreen("details")}
-        onSelect={(wt) => {
+        workTypePickerVisible={workTypePickerVisible}
+        onCloseWorkTypePicker={() => setSubcontractFlowScreen("details")}
+        onSelectWorkType={(wt) => {
           setSelectedWorkType(wt);
           setSubcontractFlowScreen("calc");
         }}
-      />
-
-      <CalcModal
-        visible={calcVisible}
-        onClose={() => {
+        calcVisible={calcVisible}
+        onCloseCalc={() => {
           setSubcontractFlowScreen("details");
           setSelectedWorkType(null);
         }}
-        onBack={() => {
+        onBackFromCalc={() => {
           setSubcontractFlowScreen("workType");
         }}
-        workType={selectedWorkType}
-        onAddToRequest={async (rows) => {
+        selectedWorkType={selectedWorkType}
+        onAddCalcToRequest={async (rows) => {
           await appendCalcRows(rows as CalcPickedRow[]);
           setSubcontractFlowScreen("details");
           setSelectedWorkType(null);
         }}
-      />
-
-      <ForemanHistoryModal
-        visible={requestHistoryVisible}
-        onClose={closeRequestHistory}
-        mode="list"
-        selectedRequestId={null}
-        onShowDetails={(request) => void handleRequestHistorySelect(request.id)}
-        onBackToList={() => {}}
-        onResetView={() => {}}
-        loading={requestHistoryLoading}
-        requests={historyRequests}
-        resolveStatusInfo={resolveRequestStatusInfo}
-        onSelect={(request) => void handleRequestHistorySelect(request.id)}
-        onReopen={(request) => void handleRequestHistorySelect(request.id)}
-        reopenBusyRequestId={null}
-        onOpenPdf={(reqId) => void openRequestHistoryPdf(reqId)}
-        isPdfBusy={() => false}
+        requestHistoryVisible={requestHistoryVisible}
+        onCloseRequestHistory={closeRequestHistory}
+        requestHistoryLoading={requestHistoryLoading}
+        requestHistoryRequests={historyRequests}
+        resolveRequestStatusInfo={resolveRequestStatusInfo}
+        onShowRequestDetails={(request) => void handleRequestHistorySelect(request.id)}
+        onSelectRequest={(request) => void handleRequestHistorySelect(request.id)}
+        onReopenRequest={(request) => void handleRequestHistorySelect(request.id)}
+        onOpenRequestPdf={(reqId) => void openRequestHistoryPdf(reqId)}
         shortId={shortId}
         styles={s}
+        subcontractHistoryVisible={historyOpen}
+        onCloseSubcontractHistory={() => setHistoryOpen(false)}
+        subcontractHistoryLoading={historyLoading}
+        subcontractHistory={history}
       />
 
-      <ForemanSubcontractHistoryModal
-        visible={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        loading={historyLoading}
-        history={history}
-        styles={s}
-        ui={UI}
-      />
 
     </View>
   );
 }
-
-
-

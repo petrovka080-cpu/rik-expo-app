@@ -19,6 +19,7 @@ import {
 } from "./mutation.telemetry";
 
 const MUTATION_QUEUE_STORAGE_KEY = "offline_mutation_queue_v2";
+const MUTATION_QUEUE_LEGACY_STORAGE_KEY = "offline_mutation_queue_v1";
 
 type SeedEntryParams = {
   id: string;
@@ -322,5 +323,158 @@ describe("mutationQueue contract", () => {
       "terminal-24",
       "terminal-25",
     ]);
+  });
+
+  it("round-trips enqueue payload without corruption and keeps the queued entry pickable", async () => {
+    await enqueueForemanMutation({
+      draftKey: "req-queue-6",
+      requestId: "req-queue-6",
+      snapshotUpdatedAt: "snap-submit",
+      mutationKind: "submit",
+      localBeforeCount: 4,
+      localAfterCount: 0,
+      submitRequested: true,
+      triggerSource: "submit",
+    });
+
+    const [entry] = await loadForemanMutationQueue();
+    const peeked = await peekNextForemanMutation({
+      triggerSource: "submit",
+    });
+
+    expect(entry).toMatchObject({
+      type: "submit_draft",
+      lifecycleStatus: "queued",
+      status: "pending",
+      baseVersion: "snap-submit",
+      payload: {
+        draftKey: "req-queue-6",
+        requestId: "req-queue-6",
+        snapshotUpdatedAt: "snap-submit",
+        mutationKind: "submit",
+        localBeforeCount: 4,
+        localAfterCount: 0,
+        submitRequested: true,
+        triggerSource: "submit",
+      },
+    });
+    expect(peeked?.id).toBe(entry.id);
+  });
+
+  it("marks inflight mutations without mutating payload intent", async () => {
+    await enqueueForemanMutation({
+      draftKey: "req-queue-7",
+      requestId: "req-queue-7",
+      snapshotUpdatedAt: "snap-qty",
+      mutationKind: "qty_update",
+      localBeforeCount: 2,
+      localAfterCount: 5,
+      triggerSource: "manual_retry",
+    });
+
+    const [queuedEntry] = await loadForemanMutationQueue();
+    const inflight = await markForemanMutationInflight(queuedEntry.id);
+
+    expect(inflight).toMatchObject({
+      id: queuedEntry.id,
+      status: "inflight",
+      lifecycleStatus: "processing",
+      attemptCount: 1,
+      payload: {
+        draftKey: "req-queue-7",
+        mutationKind: "qty_update",
+        localBeforeCount: 2,
+        localAfterCount: 5,
+      },
+    });
+    expect(inflight?.lastAttemptAt).toEqual(expect.any(Number));
+  });
+
+  it("reads legacy queue storage and normalizes compatibility status into lifecycle truth", async () => {
+    const legacyEntry = {
+      ...createSeedEntry({
+        id: "legacy-retry",
+        draftKey: "req-queue-legacy",
+        createdAt: 1,
+        status: "failed",
+        lastErrorKind: "network_unreachable",
+        nextRetryAt: 99_999,
+        retryCount: 2,
+      }),
+      lifecycleStatus: undefined,
+    };
+    const storage = createMemoryOfflineStorage({
+      [MUTATION_QUEUE_LEGACY_STORAGE_KEY]: JSON.stringify([legacyEntry]),
+    });
+    configureMutationQueue({ storage });
+
+    const [loaded] = await loadForemanMutationQueue();
+    await enqueueForemanMutation({
+      draftKey: "req-queue-legacy-next",
+      requestId: "req-queue-legacy-next",
+      snapshotUpdatedAt: "snap-next",
+      mutationKind: "background_sync",
+      triggerSource: "manual_retry",
+    });
+
+    expect(loaded).toMatchObject({
+      id: "legacy-retry",
+      status: "failed",
+      lifecycleStatus: "retry_scheduled",
+      retryCount: 2,
+      lastErrorKind: "network_unreachable",
+      nextRetryAt: 99_999,
+    });
+    expect(storage.dump()).toEqual(
+      expect.objectContaining({
+        [MUTATION_QUEUE_STORAGE_KEY]: expect.any(String),
+      }),
+    );
+    expect(storage.dump()[MUTATION_QUEUE_LEGACY_STORAGE_KEY]).toBeUndefined();
+  });
+
+  it("picks the earliest eligible queued item while skipping deferred retries", async () => {
+    const storage = createMemoryOfflineStorage({
+      [MUTATION_QUEUE_STORAGE_KEY]: JSON.stringify([
+        createSeedEntry({
+          id: "retry-deferred",
+          draftKey: "req-queue-8",
+          createdAt: 1,
+          updatedAt: 5,
+          lifecycleStatus: "retry_scheduled",
+          status: "failed",
+          lastErrorKind: "network_unreachable",
+          nextRetryAt: 10_000,
+        }),
+        createSeedEntry({
+          id: "queued-earliest",
+          draftKey: "req-queue-8",
+          createdAt: 2,
+          updatedAt: 6,
+          mutationKind: "catalog_add",
+        }),
+        createSeedEntry({
+          id: "queued-later",
+          draftKey: "req-queue-8",
+          createdAt: 3,
+          updatedAt: 7,
+          mutationKind: "qty_update",
+        }),
+      ]),
+    });
+    configureMutationQueue({ storage });
+
+    const queue = await loadForemanMutationQueue();
+    const peeked = await peekNextForemanMutation({
+      triggerSource: "unknown",
+      now: 1_000,
+    });
+
+    expect(queue.map((entry) => entry.id)).toEqual([
+      "retry-deferred",
+      "queued-earliest",
+      "queued-later",
+    ]);
+    expect(peeked?.id).toBe("queued-earliest");
   });
 });
