@@ -18,7 +18,7 @@ type RawForemanAiResponse = {
   message?: unknown;
 };
 
-type ParsedForemanAiItem = {
+export type ParsedForemanAiItem = {
   name: string;
   qty: number;
   unit: string;
@@ -80,13 +80,13 @@ export type AiDraftOutcome =
     } & AiPartialMeta)
   | { type: "ai_unavailable"; reason: string; message: string };
 
-type ParsedForemanAiQuickResult = {
+export type ParsedForemanAiQuickResult = {
   action: ForemanAiAction;
   items: ParsedForemanAiItem[];
   message: string;
 };
 
-type RikCatalogItem = Awaited<ReturnType<typeof rikQuickSearch>>[number];
+export type RikCatalogItem = Awaited<ReturnType<typeof rikQuickSearch>>[number];
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 const RESOLVE_SCORE_THRESHOLD = 120;
@@ -366,7 +366,7 @@ const isUnitCompatible = (expectedUnit: string, catalogUnit?: string | null): bo
   return !left || !right || left === right;
 };
 
-const scoreCatalogCandidate = (input: ParsedForemanAiItem, item: RikCatalogItem): number => {
+export const scoreCatalogCandidate = (input: ParsedForemanAiItem, item: RikCatalogItem): number => {
   if (!isCatalogKindCompatible(input.kind, item)) return -1000;
   if (!isPackagingLikeUnit(input.unit) && !isUnitCompatible(input.unit, item.uom_code ?? null)) return -100;
 
@@ -461,7 +461,7 @@ const normalizeForemanAiItem = (rawItem: unknown): ParsedForemanAiItem | null =>
   };
 };
 
-const parseForemanAiResponse = (text: string): ParsedForemanAiQuickResult => {
+export const parseForemanAiResponse = (text: string): ParsedForemanAiQuickResult => {
   let parsed: RawForemanAiResponse;
   try {
     parsed = JSON.parse(cleanJsonText(text)) as RawForemanAiResponse;
@@ -521,7 +521,7 @@ export type ForemanAiResolvedInputItem = {
   specs?: string | null;
 };
 
-type ForemanQuickLocalAssistParams = {
+export type ForemanQuickLocalAssistParams = {
   prompt: string;
   lastResolvedItems?: ForemanAiQuickItem[] | null;
   networkOnline?: boolean | null;

@@ -7,8 +7,7 @@ import { generateProposalPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import {
   getPdfFlowErrorMessage,
-  preparePdfDocument,
-  previewPdfDocument,
+  prepareAndPreviewPdfDocument,
 } from "../../lib/documents/pdfDocumentActions";
 
 export function useBuyerDocuments(params: {
@@ -25,7 +24,7 @@ export function useBuyerDocuments(params: {
 
       try {
         const template = await generateProposalPdfDocument(id, "buyer");
-        const doc = await preparePdfDocument({
+        await prepareAndPreviewPdfDocument({
           busy,
           supabase,
           key: `pdf:proposal:${id}`,
@@ -40,9 +39,8 @@ export function useBuyerDocuments(params: {
             }),
           },
           getRemoteUrl: () => template.uri,
+          router,
         });
-
-        await previewPdfDocument(doc, { router });
       } catch (error) {
         Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
       }

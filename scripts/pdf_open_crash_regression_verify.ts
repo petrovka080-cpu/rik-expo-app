@@ -458,10 +458,13 @@ async function main() {
     };
 
     const boundaryChecks = {
-      mobileViewerNoLongerEmbedsPdfWebView:
-        viewerContractSource.includes('kind: "resolved-native-handoff"')
-        && !viewerContractSource.includes('renderer: "native-webview"')
-        && !viewerContractSource.includes('renderer: "native-local-webview"'),
+      androidViewerStillUsesNativeHandoffBoundary:
+        viewerContractSource.includes('platform === "ios"')
+        && viewerContractSource.includes('platform === "web"')
+        && viewerContractSource.includes('kind: "resolved-native-handoff"'),
+      iosViewerUsesEmbeddedWebView:
+        viewerContractSource.includes('platform === "ios"')
+        && viewerContractSource.includes('renderer: "native-webview"'),
       webViewerStillEmbedded:
         viewerContractSource.includes('platform === "web"')
         && viewerContractSource.includes('renderer: "web-frame"'),
@@ -469,7 +472,7 @@ async function main() {
         viewerSource.includes('console.info("[pdf-viewer] native_handoff_start"')
         && viewerSource.includes("await openPdfPreview(")
         && viewerSource.includes('console.info("[pdf-viewer] native_handoff_ready"'),
-      viewerNoLongerImportsWebView: !viewerSource.includes("react-native-webview"),
+      viewerImportsNativeWebViewForIosPreview: viewerSource.includes("react-native-webview"),
       previewRouteStillCanonical:
         pdfDocumentActionsSource.includes('pathname: "/pdf-viewer"')
         && pdfDocumentActionsSource.includes("createDocumentPreviewSession"),

@@ -47,7 +47,7 @@ export type PdfViewerResolution =
       source: PdfViewerEmbeddedSource;
       scheme: string;
       sourceKind: DocumentAsset["sourceKind"];
-      renderer: "web-frame";
+      renderer: "web-frame" | "native-webview";
       canonicalUri: string;
     };
 
@@ -272,6 +272,26 @@ export function resolvePdfViewerResolution(args: {
       scheme,
       sourceKind: assetSourceKind,
       renderer: "web-frame",
+      canonicalUri: asset.uri,
+    };
+  }
+
+  if (
+    platform === "ios"
+    && ((assetSourceKind === "local-file" || scheme === "file")
+      || (assetSourceKind === "remote-url" || scheme === "http" || scheme === "https"))
+    && isPdf
+  ) {
+    return {
+      kind: "resolved-embedded",
+      asset,
+      source: { uri: asset.uri },
+      scheme,
+      sourceKind:
+        assetSourceKind === "remote-url" || scheme === "http" || scheme === "https"
+          ? "remote-url"
+          : "local-file",
+      renderer: "native-webview",
       canonicalUri: asset.uri,
     };
   }

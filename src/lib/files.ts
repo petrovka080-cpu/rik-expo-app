@@ -7,6 +7,7 @@ import {
   toProposalAttachmentLegacyRow,
 } from "./api/proposalAttachments.service";
 import { openAppAttachment } from "./documents/attachmentOpener";
+import { reportAndSwallow } from "./observability/catchDiscipline";
 import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
 import { supabase } from "./supabaseClient";
 
@@ -51,6 +52,29 @@ function safeFileName(name: string | undefined) {
   return base.replace(/[^\p{L}\p{N}_\-(). ]+/gu, "_");
 }
 
+function reportFilesBoundary(params: {
+  event: string;
+  scope: string;
+  error: unknown;
+  kind?: "soft_failure" | "cleanup_only" | "degraded_fallback";
+  sourceKind?: string;
+  errorStage?: string;
+  extra?: Record<string, unknown>;
+}) {
+  reportAndSwallow({
+    screen: "request",
+    surface: "files_boundary",
+    event: params.event,
+    scope: params.scope,
+    error: params.error,
+    kind: params.kind ?? "soft_failure",
+    category: "fetch",
+    sourceKind: params.sourceKind ?? "files:boundary",
+    errorStage: params.errorStage ?? params.scope,
+    extra: params.extra,
+  });
+}
+
 async function webOpenBlobOrDirect(url: string, fileName?: string) {
   const popup = window.open(url, "_blank", "noopener,noreferrer");
   if (popup) return;
@@ -79,7 +103,20 @@ async function webOpenBlobOrDirect(url: string, fileName?: string) {
     document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     return;
-  } catch {}
+  } catch (error) {
+    reportFilesBoundary({
+      event: "web_open_fetch_fallback_failed",
+      scope: "files.open.webFetchFallback",
+      error,
+      kind: "degraded_fallback",
+      sourceKind: "fetch:attachment_open",
+      errorStage: "web_fetch_fallback",
+      extra: {
+        url,
+        fileName: fileName ?? null,
+      },
+    });
+  }
 
   const link = document.createElement("a");
   link.href = url;
@@ -217,7 +254,23 @@ export async function uploadSupplierFile(
       file_url: url,
       group_key: group,
     });
-  } catch {}
+  } catch (error) {
+    reportFilesBoundary({
+      event: "supplier_metadata_insert_failed",
+      scope: "files.metadata.insert",
+      error,
+      kind: "degraded_fallback",
+      sourceKind: "rest:supplier_files",
+      errorStage: "metadata_insert",
+      extra: {
+        supplierId: id,
+        group,
+        fileName: cleanName,
+        fileUrl: url || null,
+        storagePath: path,
+      },
+    });
+  }
 
   return { url, path };
 }
@@ -242,7 +295,20 @@ export async function listSupplierFilesMeta(
     const result = await query;
     if (result.error) throw result.error;
     return Array.isArray(result.data) ? (result.data as SupplierFileMetaRow[]) : [];
-  } catch {
+  } catch (error) {
+    reportFilesBoundary({
+      event: "supplier_metadata_list_failed",
+      scope: "files.metadata.list",
+      error,
+      kind: "degraded_fallback",
+      sourceKind: "rest:supplier_files",
+      errorStage: "metadata_list",
+      extra: {
+        supplierId: id,
+        group: opts?.group ?? null,
+        limit: opts?.limit ?? null,
+      },
+    });
     return [];
   }
 }

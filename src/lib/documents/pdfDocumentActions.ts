@@ -11,6 +11,13 @@ import {
 } from "../pdfRunner";
 import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
 import { createPdfSource, type PdfSource } from "../pdfFileContract";
+import {
+  beginPdfOpenVisibilityWait,
+  createPdfOpenFlowContext,
+  failPdfOpenVisible,
+  recordPdfOpenStage,
+  type PdfOpenFlowContext,
+} from "../pdf/pdfOpenFlow";
 
 export function getPdfFlowErrorMessage(error: unknown, fallback = "Could not open PDF"): string {
   if (error && typeof error === "object") {
@@ -35,6 +42,15 @@ type PreparePdfDocumentArgs = {
 export type PdfViewerRouterLike = {
   push: (href: Href, options?: unknown) => void;
 };
+
+type PreviewPdfDocumentOpts = {
+  router?: PdfViewerRouterLike;
+  openFlow?: PdfOpenFlowContext & {
+    openToken?: string;
+  };
+};
+
+const activePreviewFlows = new Map<string, Promise<DocumentDescriptor>>();
 
 export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<DocumentDescriptor> {
   const run = async () => {
@@ -123,9 +139,7 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
 
 export async function previewPdfDocument(
   doc: DocumentDescriptor,
-  opts?: {
-    router?: PdfViewerRouterLike;
-  },
+  opts?: PreviewPdfDocumentOpts,
 ): Promise<void> {
   const outputObservation = beginPdfLifecycleObservation({
     screen: "reports",
@@ -169,6 +183,23 @@ export async function previewPdfDocument(
       fileName: doc.fileName,
     });
     if (opts?.router && Platform.OS !== "web" && doc.fileSource.kind === "remote-url") {
+      recordPdfOpenStage({
+        context: opts.openFlow,
+        stage: "document_prepare_done",
+        sourceKind: doc.fileSource.kind,
+        extra: {
+          previewSourceMode: "direct_remote_viewer_contract",
+        },
+      });
+      recordPdfOpenStage({
+        context: opts.openFlow,
+        stage: "viewer_or_handoff_start",
+        sourceKind: doc.fileSource.kind,
+        extra: {
+          route: "/pdf-viewer",
+          previewSourceMode: "direct_remote_viewer_contract",
+        },
+      });
       const viewerHref: Href = {
         pathname: "/pdf-viewer",
         params: {
@@ -180,6 +211,7 @@ export async function previewPdfDocument(
           originModule: doc.originModule,
           source: doc.source,
           entityId: doc.entityId ?? "",
+          openToken: opts.openFlow?.openToken ?? "",
         },
       };
       console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
@@ -193,24 +225,35 @@ export async function previewPdfDocument(
         fileName: doc.fileName,
         previewSourceMode: "direct_remote_viewer_contract",
       });
-      opts.router.push(viewerHref);
-      outputObservation.success({
-        sourceKind: doc.fileSource.kind,
-        extra: {
-          sessionId: null,
-          assetId: null,
-          previewSourceMode: "direct_remote_viewer_contract",
-        },
-      });
-      openObservation.success({
-        sourceKind: doc.fileSource.kind,
-        extra: {
-          route: "/pdf-viewer",
-          sessionId: null,
-          previewSourceMode: "direct_remote_viewer_contract",
-        },
-      });
-      return;
+      try {
+        opts.router.push(viewerHref);
+        outputObservation.success({
+          sourceKind: doc.fileSource.kind,
+          extra: {
+            sessionId: null,
+            assetId: null,
+            previewSourceMode: "direct_remote_viewer_contract",
+          },
+        });
+        openObservation.success({
+          sourceKind: doc.fileSource.kind,
+          extra: {
+            route: "/pdf-viewer",
+            sessionId: null,
+            previewSourceMode: "direct_remote_viewer_contract",
+          },
+        });
+        return;
+      } catch (error) {
+        failPdfOpenVisible(opts.openFlow?.openToken, error, {
+          sourceKind: doc.fileSource.kind,
+          extra: {
+            route: "/pdf-viewer",
+            previewSourceMode: "direct_remote_viewer_contract",
+          },
+        });
+        throw error;
+      }
     }
     const { session, asset } = await (async () => {
       try {
@@ -221,6 +264,15 @@ export async function previewPdfDocument(
         });
       }
     })();
+    recordPdfOpenStage({
+      context: opts?.openFlow,
+      stage: "document_prepare_done",
+      sourceKind: asset.sourceKind,
+      extra: {
+        sessionId: session.sessionId,
+        assetId: asset.assetId,
+      },
+    });
     outputObservation.success({
       sourceKind: asset.sourceKind,
       extra: {
@@ -241,9 +293,21 @@ export async function previewPdfDocument(
       sizeBytes: asset.sizeBytes,
     });
     if (opts?.router) {
+      recordPdfOpenStage({
+        context: opts.openFlow,
+        stage: "viewer_or_handoff_start",
+        sourceKind: asset.sourceKind,
+        extra: {
+          route: "/pdf-viewer",
+          sessionId: session.sessionId,
+        },
+      });
       const viewerHref: Href = {
         pathname: "/pdf-viewer",
-        params: { sessionId: session.sessionId },
+        params: {
+          sessionId: session.sessionId,
+          openToken: opts.openFlow?.openToken ?? "",
+        },
       };
       console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
         sessionId: session.sessionId,
@@ -266,6 +330,13 @@ export async function previewPdfDocument(
         });
         return;
       } catch (error) {
+        failPdfOpenVisible(opts.openFlow?.openToken, error, {
+          sourceKind: asset.sourceKind,
+          extra: {
+            route: "/pdf-viewer",
+            sessionId: session.sessionId,
+          },
+        });
         const lifecycleError = openObservation.error(error, {
           fallbackMessage: "Viewer navigation failed",
           extra: {
@@ -288,6 +359,14 @@ export async function previewPdfDocument(
       documentType: asset.documentType,
       originModule: asset.originModule,
       finalUri: asset.uri,
+    });
+    recordPdfOpenStage({
+      context: opts?.openFlow,
+      stage: "viewer_or_handoff_start",
+      sourceKind: asset.sourceKind,
+      extra: {
+        openStrategy: "direct_preview",
+      },
     });
     try {
       await openPdfPreview(asset.uri, asset.fileName);
@@ -353,6 +432,145 @@ export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
       },
     });
   }
+}
+
+export async function prepareAndPreviewPdfDocument(
+  args: PreparePdfDocumentArgs & {
+    router?: PdfViewerRouterLike;
+  },
+): Promise<DocumentDescriptor> {
+  const flowKey = String(args.key || "").trim();
+  const baseContext = createPdfOpenFlowContext({
+    key: args.key,
+    label: args.label,
+    fileName: args.descriptor.fileName,
+    entityId: args.descriptor.entityId ?? null,
+    documentType: args.descriptor.documentType,
+    originModule: args.descriptor.originModule,
+  });
+
+  if (flowKey) {
+    const existing = activePreviewFlows.get(flowKey);
+    if (existing) {
+      recordPdfOpenStage({
+        context: baseContext,
+        stage: "tap_start",
+        result: "joined_inflight",
+        extra: {
+          guardReason: "owner_already_inflight",
+        },
+      });
+      return await existing;
+    }
+  }
+
+  const runFlow = async () => {
+    recordPdfOpenStage({
+      context: baseContext,
+      stage: "tap_start",
+      extra: {
+        hasBusyOwner: Boolean(args.busy?.run || args.busy?.show),
+      },
+    });
+
+    const execute = async () => {
+      recordPdfOpenStage({
+        context: baseContext,
+        stage: "busy_shown",
+      });
+      recordPdfOpenStage({
+        context: baseContext,
+        stage: "document_prepare_start",
+      });
+
+      const document = await preparePdfDocument({
+        ...args,
+        busy: undefined,
+      });
+
+      const visibilityWait = args.router ? beginPdfOpenVisibilityWait(baseContext) : null;
+
+      try {
+        await previewPdfDocument(document, {
+          router: args.router,
+          openFlow: visibilityWait
+            ? {
+                ...baseContext,
+                openToken: visibilityWait.token,
+              }
+            : baseContext,
+        });
+        if (visibilityWait) {
+          await visibilityWait.promise;
+        } else {
+          recordPdfOpenStage({
+            context: baseContext,
+            stage: "first_open_visible",
+            sourceKind: document.fileSource.kind,
+          });
+        }
+        return document;
+      } catch (error) {
+        const signalledFailure = failPdfOpenVisible(visibilityWait?.token, error, {
+          sourceKind: document.fileSource.kind,
+        });
+        if (!signalledFailure) {
+          recordPdfOpenStage({
+            context: baseContext,
+            stage: "open_failed",
+            result: "error",
+            sourceKind: document.fileSource.kind,
+            error,
+          });
+        }
+        throw error;
+      }
+    };
+
+    try {
+      if (args.busy?.run) {
+        const output = await args.busy.run(execute, {
+          key: args.key,
+          label: args.label,
+          minMs: 650,
+        });
+        if (!output) throw new Error("PDF open cancelled");
+        return output;
+      }
+
+      if (args.busy?.show && args.busy?.hide) {
+        const manualBusyKey = flowKey || "pdf:open";
+        args.busy.show(manualBusyKey, args.label);
+        try {
+          return await execute();
+        } finally {
+          if (args.busy.isBusy?.(manualBusyKey)) {
+            args.busy.hide(manualBusyKey);
+          }
+          recordPdfOpenStage({
+            context: baseContext,
+            stage: "busy_cleared",
+          });
+        }
+      }
+
+      return await execute();
+    } finally {
+      if (args.busy?.run) {
+        recordPdfOpenStage({
+          context: baseContext,
+          stage: "busy_cleared",
+        });
+      }
+    }
+  };
+
+  const promise = runFlow().finally(() => {
+    if (flowKey) activePreviewFlows.delete(flowKey);
+  });
+
+  if (flowKey) activePreviewFlows.set(flowKey, promise);
+  return await promise;
 }
 
 export async function openPdfDocumentExternal(doc: DocumentDescriptor): Promise<void> {

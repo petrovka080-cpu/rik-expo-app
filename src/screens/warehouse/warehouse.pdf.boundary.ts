@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
-import { getPdfFlowErrorMessage, preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { getPdfFlowErrorMessage, prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { generateWarehousePdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 
 export type WarehousePdfDocumentType = "warehouse_register" | "warehouse_materials" | "warehouse_document";
@@ -66,15 +66,15 @@ export function useWarehousePdfPreviewBoundary(params: {
         entityId: request.entityId,
         getUri: request.getRemoteUrl,
       });
-      const doc = await preparePdfDocument({
+      await prepareAndPreviewPdfDocument({
         busy,
         supabase,
         key: request.key,
         label: request.label,
         descriptor: template,
         getRemoteUrl: () => template.uri,
+        router,
       });
-      await previewPdfDocument(doc, { router });
     } catch (error) {
       notifyError("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
     }

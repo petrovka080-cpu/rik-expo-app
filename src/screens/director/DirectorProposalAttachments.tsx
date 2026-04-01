@@ -1,6 +1,7 @@
 import React from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 
+import { reportDirectorBoundary } from "./director.observability";
 import { UI } from "./director.styles";
 import { type ProposalAttachmentRow } from "./director.types";
 
@@ -27,7 +28,19 @@ function formatCreatedAt(value?: string | null) {
       hour: "2-digit",
       minute: "2-digit",
     }).format(parsed);
-  } catch {
+  } catch (error) {
+    reportDirectorBoundary({
+      surface: "proposal_attachments",
+      scope: "director.attachments.formatCreatedAt",
+      event: "attachment_date_format_failed",
+      error,
+      kind: "soft_failure",
+      category: "ui",
+      sourceKind: "intl:date_format",
+      extra: {
+        createdAt: iso,
+      },
+    });
     return parsed.toISOString();
   }
 }
@@ -133,6 +146,19 @@ export default function DirectorProposalAttachments({
                   try {
                     onOpenAttachment(file);
                   } catch (openError: unknown) {
+                    reportDirectorBoundary({
+                      surface: "proposal_attachments",
+                      scope: "director.attachments.openAttachment",
+                      event: "attachment_open_failed",
+                      error: openError,
+                      kind: "soft_failure",
+                      category: "ui",
+                      sourceKind: "proposal:attachment_open",
+                      extra: {
+                        attachmentId: String(file.id ?? ""),
+                        fileName: String(file.file_name ?? ""),
+                      },
+                    });
                     const message =
                       openError instanceof Error && openError.message.trim()
                         ? openError.message.trim()

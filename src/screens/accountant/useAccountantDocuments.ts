@@ -11,7 +11,7 @@ import {
 } from "../../lib/catalog_api";
 import { getLatestProposalAttachmentPreview, isPdfLike, openAttachment } from "../../lib/files";
 import { buildPdfFileName, createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { useAccountantPaymentPdfBoundary } from "./accountant.paymentPdf.boundary";
 import type { AccountantInboxUiRow } from "./types";
 
@@ -54,7 +54,7 @@ export function useAccountantDocuments(params: Params) {
     if (!pid) return;
 
     const template = await generateProposalPdfDocument(pid, "accountant");
-    const doc = await preparePdfDocument({
+    await prepareAndPreviewPdfDocument({
       busy: gbusy,
       supabase,
       key: `pdf:acc:prop:${pid}`,
@@ -69,9 +69,8 @@ export function useAccountantDocuments(params: Params) {
         }),
       },
       getRemoteUrl: () => template.uri,
+      router,
     });
-
-    await previewPdfDocument(doc, { router });
   }, [current, gbusy, router]);
 
   const onShareCard = useCallback(async () => {
@@ -108,15 +107,15 @@ export function useAccountantDocuments(params: Params) {
         originModule: "accountant",
         entityId: pid,
       });
-      const doc = await preparePdfDocument({
+      await prepareAndPreviewPdfDocument({
         busy: gbusy,
         supabase,
         key: busyKey,
         label: "Открываю документ…",
         descriptor: template,
         getRemoteUrl: () => att.url,
+        router,
       });
-      await previewPdfDocument(doc, { router });
     },
     [gbusy, router],
   );

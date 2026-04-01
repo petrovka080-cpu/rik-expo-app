@@ -1,4 +1,5 @@
 // src/screens/director/director.helpers.ts
+import { reportDirectorBoundary } from "./director.observability";
 export const toFilterId = (v: number | string | null | undefined) => {
   if (v === null || v === undefined) return null;
   const s = String(v).trim();
@@ -21,7 +22,19 @@ export const fmtDateOnly = (iso?: string | null) => {
 
   try {
     return d.toLocaleDateString("ru-RU");
-  } catch {
+  } catch (error) {
+    reportDirectorBoundary({
+      surface: "helpers",
+      scope: "director.helpers.fmtDateOnly",
+      event: "fmt_date_only_locale_failed",
+      error,
+      kind: "soft_failure",
+      category: "ui",
+      sourceKind: "intl:date_format",
+      extra: {
+        iso: s,
+      },
+    });
     return "—";
   }
 };

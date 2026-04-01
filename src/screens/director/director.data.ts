@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
 import { shortId } from "./director.helpers";
+import { reportDirectorBoundary } from "./director.observability";
 import { fetchDirectorPendingProposalWindow } from "./director.proposals.repo";
 import { fetchDirectorPendingRows } from "./director.repository";
 import { useDirectorUiStore } from "./directorUi.store";
@@ -28,13 +29,19 @@ const warnDirectorData = (
   error: unknown,
   level: "warn" | "error" = "warn",
 ) => {
-  if (!__DEV__) return;
-  const message = errText(error);
-  if (level === "error") {
-    console.error(`[director] ${scope}:`, message);
-    return;
-  }
-  console.warn(`[director] ${scope}:`, message);
+  reportDirectorBoundary({
+    surface: "data",
+    scope: `director.data.${scope}`,
+    event: `${scope}_failed`,
+    error,
+    kind: level === "error" ? "degraded_fallback" : "soft_failure",
+    category: "fetch",
+    sourceKind: "director:data",
+    extra: {
+      message: errText(error),
+      level,
+    },
+  });
 };
 
 const normalizeDirectorPendingRows = (rows: Record<string, unknown>[]): PendingRow[] =>
@@ -121,7 +128,16 @@ export function useDirectorData({ supabase }: Deps) {
           Array.isArray(q.data) && q.data.length ? (q.data[0] as Record<string, unknown>) : null;
         const hasRequestNo = !!first && Object.prototype.hasOwnProperty.call(first, "request_no");
         requestDisplaySelectModeRef.current = hasRequestNo ? "request_no+display_no" : "display_no_only";
-      } catch {
+      } catch (error) {
+        reportDirectorBoundary({
+          surface: "data",
+          scope: "director.data.resolveRequestDisplaySelectMode",
+          event: "request_display_select_mode_probe_failed",
+          error,
+          kind: "degraded_fallback",
+          category: "fetch",
+          sourceKind: "table:requests",
+        });
         requestDisplaySelectModeRef.current = "display_no_only";
       } finally {
         requestNoCapabilityInFlightRef.current = null;

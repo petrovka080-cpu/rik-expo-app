@@ -8,6 +8,7 @@ import {
 import { createPdfSource, type PdfSource } from "../pdfFileContract";
 import {
   preparePdfDocument,
+  prepareAndPreviewPdfDocument,
   previewPdfDocument,
   sharePdfDocument,
   type PdfViewerRouterLike,
@@ -169,9 +170,14 @@ export async function prepareGeneratedPdf(
 export async function prepareAndPreviewGeneratedPdf(args: PrepareGeneratedPdfArgs & {
   router?: PdfViewerRouterLike;
 }): Promise<DocumentDescriptor> {
-  const document = await prepareGeneratedPdf(args);
-  await previewPdfDocument(document, { router: args.router });
-  return document;
+  return await prepareAndPreviewPdfDocument({
+    busy: args.busy,
+    supabase: args.supabase,
+    key: args.key,
+    label: args.label,
+    descriptor: args.descriptor,
+    router: args.router,
+  });
 }
 
 export async function prepareAndShareGeneratedPdf(

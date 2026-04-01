@@ -5,8 +5,7 @@ import { generatePaymentOrderPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import {
   getPdfFlowErrorMessage,
-  preparePdfDocument,
-  previewPdfDocument,
+  prepareAndPreviewPdfDocument,
 } from "../../lib/documents/pdfDocumentActions";
 import { supabase } from "../../lib/supabaseClient";
 import { fetchLastPaymentIdByProposal } from "./accountant.payment";
@@ -68,15 +67,15 @@ export function useAccountantPaymentPdfBoundary(
           entityId: paymentId,
         }),
       };
-      const doc = await preparePdfDocument({
+      await prepareAndPreviewPdfDocument({
         busy: busy as AccountantPaymentPdfBusyLike,
         supabase,
         key: `pdf:acc:pay:${paymentId}`,
         label: "Открываю платёжное поручение…",
         descriptor,
         getRemoteUrl: () => template.uri,
+        router,
       });
-      await previewPdfDocument(doc, { router });
     } catch (error) {
       safeAlert(
         "Платёжное поручение",

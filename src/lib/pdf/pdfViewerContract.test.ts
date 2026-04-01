@@ -115,7 +115,7 @@ describe("pdfViewerContract", () => {
     });
   });
 
-  it("keeps iOS remote PDFs on the same native handoff contract as Android", () => {
+  it("keeps iOS remote PDFs on embedded preview instead of native handoff", () => {
     const resolution = resolvePdfViewerResolution({
       session,
       asset: remoteAsset,
@@ -123,10 +123,25 @@ describe("pdfViewerContract", () => {
     });
 
     expect(resolution).toMatchObject({
-      kind: "resolved-native-handoff",
+      kind: "resolved-embedded",
       sourceKind: "remote-url",
-      renderer: "native-handoff",
+      renderer: "native-webview",
       canonicalUri: remoteAsset.uri,
+    });
+  });
+
+  it("keeps iOS local PDFs on embedded preview instead of native handoff", () => {
+    const resolution = resolvePdfViewerResolution({
+      session,
+      asset: localAsset,
+      platform: "ios",
+    });
+
+    expect(resolution).toMatchObject({
+      kind: "resolved-embedded",
+      sourceKind: "local-file",
+      renderer: "native-webview",
+      canonicalUri: localAsset.uri,
     });
   });
 

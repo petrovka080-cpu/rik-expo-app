@@ -31,6 +31,10 @@ import {
   resolvePdfViewerState,
   type PdfViewerState as ViewerState,
 } from "../src/lib/pdf/pdfViewerContract";
+import {
+  failPdfOpenVisible,
+  markPdfOpenVisible,
+} from "../src/lib/pdf/pdfOpenFlow";
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
 
@@ -49,6 +53,16 @@ type FileSystemCompatShape = {
 };
 
 const FileSystemCompat: FileSystemCompatShape = FileSystemModule;
+const NativePdfWebView =
+  Platform.OS === "web"
+    ? null
+    : ((() => {
+        try {
+          return require("react-native-webview").WebView ?? null;
+        } catch {
+          return null;
+        }
+      })() as React.ComponentType<any> | null);
 
 const FALLBACK_ROUTE = "/";
 const VIEWER_BG = "#111111";
@@ -115,6 +129,7 @@ async function printPdfAsset(asset: DocumentAsset) {
 export default function PdfViewerScreen() {
   const params = useLocalSearchParams<{
     sessionId?: string;
+    openToken?: string;
     uri?: string;
     fileName?: string;
     title?: string;
@@ -127,6 +142,7 @@ export default function PdfViewerScreen() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const sessionId = React.useMemo(() => String(params.sessionId || "").trim(), [params.sessionId]);
+  const openToken = React.useMemo(() => String(params.openToken || "").trim(), [params.openToken]);
   const directSnapshotParams = React.useMemo(
     () => ({
       uri: params.uri,
@@ -173,6 +189,7 @@ export default function PdfViewerScreen() {
   const initialAssetUriRef = React.useRef("");
   const isMountedRef = React.useRef(true);
   const webRenderUriRef = React.useRef<string | null>(null);
+  const openSignalSettledRef = React.useRef(false);
   const resolvedSource = React.useMemo(
     () => resolvePdfViewerResolution({ session, asset, platform: VIEWER_PLATFORM }),
     [asset, session],
@@ -184,6 +201,10 @@ export default function PdfViewerScreen() {
       isMountedRef.current = false;
     };
   }, []);
+
+  React.useEffect(() => {
+    openSignalSettledRef.current = false;
+  }, [openToken, sessionId, loadAttempt]);
 
   const clearWebRenderUri = React.useCallback(() => {
     const current = webRenderUriRef.current;
@@ -255,6 +276,42 @@ export default function PdfViewerScreen() {
     }
   }, []);
 
+  const signalOpenVisible = React.useCallback(
+    (resolvedAsset?: DocumentAsset | null, extra?: Record<string, unknown>) => {
+      if (!openToken || openSignalSettledRef.current) return;
+      openSignalSettledRef.current = true;
+      markPdfOpenVisible(openToken, {
+        sourceKind: resolvedAsset?.sourceKind,
+        extra: {
+          sessionId,
+          documentType: resolvedAsset?.documentType ?? null,
+          originModule: resolvedAsset?.originModule ?? null,
+          fileName: resolvedAsset?.fileName ?? null,
+          ...extra,
+        },
+      });
+    },
+    [openToken, sessionId],
+  );
+
+  const signalOpenFailed = React.useCallback(
+    (message: string, extra?: Record<string, unknown>) => {
+      if (!openToken || openSignalSettledRef.current) return;
+      openSignalSettledRef.current = true;
+      failPdfOpenVisible(openToken, new Error(message), {
+        sourceKind: asset?.sourceKind,
+        extra: {
+          sessionId,
+          documentType: asset?.documentType ?? null,
+          originModule: asset?.originModule ?? null,
+          fileName: asset?.fileName ?? null,
+          ...extra,
+        },
+      });
+    },
+    [asset?.documentType, asset?.fileName, asset?.originModule, asset?.sourceKind, openToken, sessionId],
+  );
+
   const markError = React.useCallback(
     (message: string, phase: "resolution" | "render" | "timeout" | "action" = "render") => {
       clearLoadingTimeout();
@@ -275,8 +332,9 @@ export default function PdfViewerScreen() {
           error: message,
         });
       }
+      signalOpenFailed(message, { phase });
     },
-    [clearLoadingTimeout, clearRenderDelay, sessionId, syncSnapshot],
+    [clearLoadingTimeout, clearRenderDelay, sessionId, signalOpenFailed, syncSnapshot],
   );
 
   const enterLoading = React.useCallback(() => {
@@ -299,6 +357,10 @@ export default function PdfViewerScreen() {
     setErrorText("");
     setState("ready");
     if (next.session) touchDocumentSession(next.session.sessionId);
+    signalOpenVisible(next.asset, {
+      route: "/pdf-viewer",
+      state: "ready",
+    });
     if (next.asset) {
       console.info("[pdf-viewer] ready", {
         documentType: next.asset.documentType,
@@ -306,7 +368,7 @@ export default function PdfViewerScreen() {
         ms: Date.now() - openedAtRef.current,
       });
     }
-  }, [clearLoadingTimeout, syncSnapshot]);
+  }, [clearLoadingTimeout, signalOpenVisible, syncSnapshot]);
 
   const handoffPdfPreview = React.useCallback(
     async (resolvedAsset: DocumentAsset, trigger: "primary" | "manual") => {
@@ -824,7 +886,41 @@ export default function PdfViewerScreen() {
             );
           })()
         ) : (
-          <View style={styles.viewerBody} />
+          NativePdfWebView ? (
+            <NativePdfWebView
+              testID="native-pdf-webview"
+              source={source}
+              originWhitelist={["*"]}
+              style={styles.nativeWebView}
+              onLoadEnd={() => {
+                console.info("[pdf-viewer] native_webview_load_end", {
+                  sessionId,
+                  documentType: asset.documentType,
+                  originModule: asset.originModule,
+                  uri: asset.uri,
+                });
+                markReady();
+              }}
+              onError={(event: { nativeEvent?: { description?: string } }) => {
+                const message = String(event?.nativeEvent?.description || "Native PDF viewer failed to load.").trim();
+                console.error("[pdf-viewer] native_webview_error", {
+                  sessionId,
+                  documentType: asset.documentType,
+                  originModule: asset.originModule,
+                  uri: asset.uri,
+                  error: message,
+                });
+                markError(message, "render");
+              }}
+            />
+          ) : (
+            <CenteredPanel
+              title="Unable to open document"
+              subtitle="Native PDF preview is unavailable on this device."
+              actionLabel="Open externally"
+              onAction={() => void onOpenExternal()}
+            />
+          )
         )}
       </Pressable>
     );

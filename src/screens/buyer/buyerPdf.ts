@@ -3,7 +3,7 @@ import { router } from "expo-router";
 
 import { supabase } from "../../lib/supabaseClient";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import { reportAndSwallow } from "../../lib/observability/catchDiscipline";
 import { renderBuyerFallbackProposalPdfHtml } from "../../lib/pdf/pdf.buyer";
@@ -137,12 +137,14 @@ export async function openBuyerProposalPdf(pid: string | number, deps: PdfDeps) 
       originModule: "buyer",
       entityId: pidStr,
     });
-    const doc = await preparePdfDocument({
+    await prepareAndPreviewPdfDocument({
       supabase,
+      key: `pdf:buyer:proposal:${pidStr}`,
+      label: "Открываю PDF…",
       descriptor: template,
       getRemoteUrl: () => template.uri,
+      router,
     });
-    await previewPdfDocument(doc, { router });
   } catch (e: unknown) {
     const msg = e instanceof Error && e.message ? e.message : String(e);
     deps.alert("Error", msg);

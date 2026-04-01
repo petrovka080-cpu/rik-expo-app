@@ -194,7 +194,23 @@ describe("warehouse.requests.read", () => {
     mockReadWarehouseRequestSourceTrace.mockReset().mockReturnValue([]);
     mockRecordWarehouseRequestSourceTrace.mockReset();
     mockCompareWarehouseReqHeadsRepair.mockReset().mockReturnValue(0);
-    mockRepairWarehouseReqHeadsPage0.mockReset().mockImplementation((rows) => rows);
+    mockRepairWarehouseReqHeadsPage0.mockReset().mockImplementation(
+      ({ viewRows }: { viewRows: unknown[] }) => ({
+        rows: viewRows,
+        fallbackMissingIdsCount: 0,
+        page0RequiredRepair: false,
+        integrityState: {
+          mode: "healthy",
+          failureClass: null,
+          freshness: "fresh",
+          reason: null,
+          message: null,
+          cacheUsed: false,
+          cooldownActive: false,
+          cooldownReason: null,
+        },
+      }),
+    );
     mockClassifyWarehouseReqHeadsFailure.mockReset().mockReturnValue({
       failureClass: "server_failure",
       reason: "compatibility_failed",
@@ -320,6 +336,138 @@ describe("warehouse.requests.read", () => {
         screen: "warehouse",
         surface: "req_heads",
         event: "fetch_req_heads_canonical_failed",
+        fallbackUsed: true,
+      }),
+    );
+  });
+
+  it("activates degraded repair chain when canonical and compatibility paths fail", async () => {
+    mockLoadCanonicalRequestsWindow.mockRejectedValue(new Error("canonical window failed"));
+    mockLoadCanonicalRequestsByIds.mockResolvedValue({
+      rows: [{ id: "req-view-1", status: "approved" }],
+      meta: {
+        generatedAt: "2026-03-31T12:40:00.000Z",
+        contractVersion: "request_lookup_v2",
+      },
+    });
+    mockRepairWarehouseReqHeadsPage0.mockResolvedValue({
+      rows: [
+        {
+          request_id: "req-view-1",
+          request_no: null,
+          display_no: "REQ-VIEW-1",
+          request_status: null,
+          object_id: null,
+          object_name: "Object View",
+          level_code: null,
+          system_code: null,
+          zone_code: null,
+          level_name: null,
+          system_name: null,
+          zone_name: null,
+          contractor_name: null,
+          contractor_phone: null,
+          planned_volume: null,
+          note: null,
+          comment: null,
+          submitted_at: "2026-03-31T12:00:00.000Z",
+          items_cnt: 1,
+          ready_cnt: 1,
+          done_cnt: 0,
+          qty_limit_sum: 5,
+          qty_issued_sum: 0,
+          qty_left_sum: 5,
+          qty_can_issue_now_sum: 5,
+          issuable_now_cnt: 1,
+          issue_status: "READY",
+          visible_in_expense_queue: true,
+          can_issue_now: true,
+          waiting_stock: false,
+          all_done: false,
+        },
+      ],
+      fallbackMissingIdsCount: 1,
+      page0RequiredRepair: true,
+      integrityState: {
+        mode: "healthy",
+        failureClass: null,
+        freshness: "fresh",
+        reason: null,
+        message: null,
+        cacheUsed: false,
+        cooldownActive: false,
+        cooldownReason: null,
+      },
+    });
+
+    const supabase = {
+      rpc: jest.fn().mockResolvedValue({
+        data: null,
+        error: new Error("compatibility rpc failed"),
+      }),
+      from: jest.fn((table: string) => {
+        if (table === "v_wh_issue_req_heads_ui") {
+          return {
+            select: jest.fn(() => ({
+              order: jest.fn(() => ({
+                order: jest.fn(() => ({
+                  order: jest.fn(() => ({
+                    range: jest.fn().mockResolvedValue({
+                      data: [
+                        {
+                          request_id: "req-view-1",
+                          display_no: "REQ-VIEW-1",
+                          object_name: "Object View",
+                          submitted_at: "2026-03-31T12:00:00.000Z",
+                          items_cnt: 1,
+                          ready_cnt: 1,
+                          done_cnt: 0,
+                          qty_limit_sum: 5,
+                          qty_issued_sum: 0,
+                          qty_left_sum: 5,
+                          qty_can_issue_now_sum: 5,
+                          issuable_now_cnt: 1,
+                          issue_status: "READY",
+                        },
+                      ],
+                      error: null,
+                    }),
+                  })),
+                })),
+              })),
+            })),
+          };
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      }),
+    };
+
+    const result = await service.apiFetchReqHeadsWindow(supabase as never, 0, 10);
+
+    expect(result.sourceMeta).toEqual({
+      primaryOwner: "degraded_legacy_converged",
+      sourcePath: "degraded",
+      fallbackUsed: true,
+      sourceKind: "converged:req_heads",
+      contractVersion: "legacy_converged",
+      reason: "compatibility rpc failed",
+    });
+    expect(result.metrics).toEqual(
+      expect.objectContaining({
+        fallback_missing_ids_count: 1,
+        page0_required_repair: true,
+      }),
+    );
+    expect(result.meta).toEqual(
+      expect.objectContaining({
+        scopeKey: "degraded:warehouse_req_heads:0:10",
+        contractVersion: "legacy_converged",
+      }),
+    );
+    expect(mockObservationSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rowCount: 1,
+        sourceKind: "converged:req_heads",
         fallbackUsed: true,
       }),
     );

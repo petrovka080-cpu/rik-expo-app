@@ -10,7 +10,7 @@ import {
 } from "../../lib/files";
 import { supabase } from "../../lib/supabaseClient";
 import { buildPdfFileName, createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { safeAlert } from "./helpers";
 import { pickAnyFile } from "./pickAnyFile";
 
@@ -33,8 +33,10 @@ async function previewProposalAttachment(
     return;
   }
 
-  const doc = await preparePdfDocument({
+  await prepareAndPreviewPdfDocument({
     supabase,
+    key: `pdf:acc:attachment:${groupKey}:${proposalId}`,
+    label: "Открываю документ…",
     descriptor: createPdfDocumentDescriptor({
       uri: preview.url,
       title,
@@ -49,9 +51,8 @@ async function previewProposalAttachment(
       entityId: proposalId,
     }),
     getRemoteUrl: () => preview.url,
+    router,
   });
-
-  await previewPdfDocument(doc, { router });
 }
 
 export async function openProposalSourceDoc(proposalId: string): Promise<void> {

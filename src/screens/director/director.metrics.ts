@@ -1,5 +1,6 @@
 // src/screens/director/director.metrics.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { reportDirectorBoundary } from "./director.observability";
 
 export type DirectorDashMetrics = {
   // approvals
@@ -103,8 +104,16 @@ export async function loadDirectorDashMetrics(
         else if (b === "rework") out.pay_rework += 1;
       }
     }
-  } catch {
-    // no-op
+  } catch (error) {
+    reportDirectorBoundary({
+      surface: "metrics",
+      scope: "director.metrics.financeCounts",
+      event: "finance_counts_load_failed",
+      error,
+      kind: "degraded_fallback",
+      category: "fetch",
+      sourceKind: "table:proposals",
+    });
   }
 
   // ---- WAREHOUSE COUNTS (очередь прихода) ----
@@ -147,8 +156,16 @@ export async function loadDirectorDashMetrics(
       out.wh_partial = partialHeads;
       out.wh_pending = pendingHeads;
     }
-  } catch {
-    // no-op
+  } catch (error) {
+    reportDirectorBoundary({
+      surface: "metrics",
+      scope: "director.metrics.warehouseCounts",
+      event: "warehouse_counts_load_failed",
+      error,
+      kind: "degraded_fallback",
+      category: "fetch",
+      sourceKind: "view:v_wh_incoming_heads_ui",
+    });
   }
 
   return out;

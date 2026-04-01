@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { openAppAttachment } from "../../lib/documents/attachmentOpener";
 import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import {
   ensureProposalAttachmentUrl,
   getLatestCanonicalProposalAttachment,
@@ -92,15 +92,15 @@ export function useBuyerProposalAttachments(params: {
               originModule: "buyer",
               entityId: pid,
             });
-            const doc = await preparePdfDocument({
+            await prepareAndPreviewPdfDocument({
               busy,
               supabase,
               key: `pdf:buyer:attachment:${attId || pid}`,
               label: "Открываю вложение…",
               descriptor: template,
               getRemoteUrl: () => url,
+              router,
             });
-            await previewPdfDocument(doc, { router });
             return;
           }
         }

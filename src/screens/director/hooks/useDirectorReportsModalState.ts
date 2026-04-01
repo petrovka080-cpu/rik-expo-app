@@ -1,4 +1,5 @@
 import React from "react";
+import { reportDirectorBoundary } from "../director.observability";
 import type {
   RepDisciplineLevel,
   RepDisciplinePayload,
@@ -65,7 +66,16 @@ const nowMs = () => {
     return typeof performance !== "undefined" && typeof performance.now === "function"
       ? performance.now()
       : Date.now();
-  } catch {
+  } catch (error) {
+    reportDirectorBoundary({
+      surface: "reports_modal",
+      scope: "director.reportsModal.nowMs",
+      event: "reports_modal_perf_now_failed",
+      error,
+      kind: "soft_failure",
+      category: "ui",
+      sourceKind: "performance:now",
+    });
     return Date.now();
   }
 };

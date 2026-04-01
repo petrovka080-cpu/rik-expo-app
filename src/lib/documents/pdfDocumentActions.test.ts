@@ -21,7 +21,13 @@ import {
   resetPlatformObservabilityEvents,
 } from "../observability/platformObservability";
 import {
+  failPdfOpenVisible,
+  markPdfOpenVisible,
+  resetPdfOpenFlowStateForTests,
+} from "../pdf/pdfOpenFlow";
+import {
   preparePdfDocument,
+  prepareAndPreviewPdfDocument,
   previewPdfDocument,
 } from "./pdfDocumentActions";
 
@@ -39,6 +45,12 @@ const baseDocument = {
   source: "generated" as const,
 };
 
+const flushPromises = async () => {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+};
+
 describe("pdfDocumentActions", () => {
   const originalPlatformOs = Platform.OS;
 
@@ -53,6 +65,7 @@ describe("pdfDocumentActions", () => {
     mockOpenPdfExternal.mockReset();
     mockCreateDocumentPreviewSession.mockReset();
     resetPlatformObservabilityEvents();
+    resetPdfOpenFlowStateForTests();
   });
 
   afterAll(() => {
@@ -114,7 +127,10 @@ describe("pdfDocumentActions", () => {
 
     expect(push).toHaveBeenCalledWith({
       pathname: "/pdf-viewer",
-      params: { sessionId: "session-1" },
+      params: {
+        sessionId: "session-1",
+        openToken: "",
+      },
     });
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
   });
@@ -168,7 +184,10 @@ describe("pdfDocumentActions", () => {
     expect(mockCreateDocumentPreviewSession).toHaveBeenCalledWith(supplierDocument);
     expect(push).toHaveBeenCalledWith({
       pathname: "/pdf-viewer",
-      params: { sessionId: "session-supplier-1" },
+      params: {
+        sessionId: "session-supplier-1",
+        openToken: "",
+      },
     });
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
     expect(
@@ -247,6 +266,7 @@ describe("pdfDocumentActions", () => {
         originModule: "accountant",
         source: "generated",
         entityId: "",
+        openToken: "",
       },
     });
     expect(
@@ -255,6 +275,161 @@ describe("pdfDocumentActions", () => {
           event.event === "pdf_preview_open"
           && event.result === "success"
           && event.extra?.previewSourceMode === "direct_remote_viewer_contract",
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps busy active until first open visible and coalesces duplicate taps into one PDF open flow", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    mockPreparePdfExecutionSource.mockResolvedValue({
+      kind: "remote-url",
+      uri: "https://example.com/prepared.pdf",
+    });
+    const push = jest.fn();
+    const activeKeys = new Set<string>();
+    const busy = {
+      isBusy: (key?: string) => activeKeys.has(String(key || "busy")),
+      run: async <T,>(
+        fn: () => Promise<T>,
+        opts?: { key?: string },
+      ): Promise<T | null> => {
+        const key = String(opts?.key || "busy");
+        if (activeKeys.has(key)) return null;
+        activeKeys.add(key);
+        try {
+          return await fn();
+        } finally {
+          activeKeys.delete(key);
+        }
+      },
+    };
+
+    const first = prepareAndPreviewPdfDocument({
+      busy,
+      supabase: {},
+      key: "pdf:dup:1",
+      label: "Opening PDF...",
+      descriptor: baseDocument,
+      getRemoteUrl: () => baseDocument.uri,
+      router: { push },
+    });
+    const second = prepareAndPreviewPdfDocument({
+      busy,
+      supabase: {},
+      key: "pdf:dup:1",
+      label: "Opening PDF...",
+      descriptor: baseDocument,
+      getRemoteUrl: () => baseDocument.uri,
+      router: { push },
+    });
+
+    await flushPromises();
+    expect(push).toHaveBeenCalledTimes(1);
+    expect(activeKeys.has("pdf:dup:1")).toBe(true);
+    const openToken = String(push.mock.calls[0]?.[0]?.params?.openToken || "");
+    let firstSettled = false;
+    void first.then(() => {
+      firstSettled = true;
+    });
+
+    await flushPromises();
+    expect(firstSettled).toBe(false);
+
+    markPdfOpenVisible(openToken, {
+      sourceKind: "remote-url",
+    });
+
+    await expect(Promise.all([first, second])).resolves.toHaveLength(2);
+    expect(activeKeys.size).toBe(0);
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.surface === "pdf_open_family"
+          && event.event === "tap_start"
+          && event.result === "joined_inflight",
+      ),
+    ).toBe(true);
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.surface === "pdf_open_family"
+          && event.event === "first_open_visible"
+          && event.result === "success",
+      ),
+    ).toBe(true);
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.surface === "pdf_open_family"
+          && event.event === "busy_cleared"
+          && event.result === "success",
+      ),
+    ).toBe(true);
+  });
+
+  it("clears busy and reports open failure when viewer visibility fails after navigation", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    mockPreparePdfExecutionSource.mockResolvedValue({
+      kind: "remote-url",
+      uri: "https://example.com/prepared.pdf",
+    });
+    const push = jest.fn();
+    const activeKeys = new Set<string>();
+    const busy = {
+      isBusy: (key?: string) => activeKeys.has(String(key || "busy")),
+      run: async <T,>(
+        fn: () => Promise<T>,
+        opts?: { key?: string },
+      ): Promise<T | null> => {
+        const key = String(opts?.key || "busy");
+        if (activeKeys.has(key)) return null;
+        activeKeys.add(key);
+        try {
+          return await fn();
+        } finally {
+          activeKeys.delete(key);
+        }
+      },
+    };
+
+    const promise = prepareAndPreviewPdfDocument({
+      busy,
+      supabase: {},
+      key: "pdf:dup:2",
+      label: "Opening PDF...",
+      descriptor: baseDocument,
+      getRemoteUrl: () => baseDocument.uri,
+      router: { push },
+    });
+
+    await flushPromises();
+    const openToken = String(push.mock.calls[0]?.[0]?.params?.openToken || "");
+    failPdfOpenVisible(openToken, new Error("viewer failed"), {
+      sourceKind: "remote-url",
+    });
+
+    await expect(promise).rejects.toThrow("viewer failed");
+    expect(activeKeys.size).toBe(0);
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.surface === "pdf_open_family"
+          && event.event === "open_failed"
+          && event.result === "error",
+      ),
+    ).toBe(true);
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.surface === "pdf_open_family"
+          && event.event === "busy_cleared"
+          && event.result === "success",
       ),
     ).toBe(true);
   });
