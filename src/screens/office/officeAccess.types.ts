@@ -1,0 +1,52 @@
+import type { AppAccessSourceSnapshot } from "../../lib/appAccessModel";
+import type { Company, UserProfile } from "../profile/profile.types";
+
+export type OfficeAccessMember = {
+  userId: string;
+  role: string | null;
+  fullName: string | null;
+  phone: string | null;
+  createdAt: string | null;
+  isOwner: boolean;
+};
+
+export type OfficeAccessInvite = {
+  id: string;
+  inviteCode: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  role: string;
+  status: string;
+  createdAt: string;
+  expiresAt: string | null;
+  comment: string | null;
+};
+
+export type OfficeAccessScreenData = {
+  currentUserId: string;
+  profile: UserProfile;
+  profileEmail: string | null;
+  profileRole: string | null;
+  company: Company | null;
+  companyAccessRole: string | null;
+  accessSourceSnapshot: AppAccessSourceSnapshot;
+  members: OfficeAccessMember[];
+  invites: OfficeAccessInvite[];
+};
+
+export type CreateCompanyDraft = {
+  name: string;
+  city: string;
+  industry: string;
+  phoneMain: string;
+  email: string;
+};
+
+export type CreateInviteDraft = {
+  name: string;
+  phone: string;
+  email: string;
+  role: string;
+  comment: string;
+};

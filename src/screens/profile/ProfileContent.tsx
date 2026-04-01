@@ -186,6 +186,10 @@ export function ProfileContent() {
     router.push(SELLER_ROUTE);
   }, [router]);
 
+  const openOfficeAccess = useCallback(() => {
+    router.push(OFFICE_TAB_ROUTE);
+  }, [router]);
+
   const closeEditProfile = useCallback(() => {
     resetProfileAvatarDraft(profileAvatarUrl);
     setEditProfileOpen(false);
@@ -339,6 +343,7 @@ export function ProfileContent() {
         activeContextDescription={activeContextDescription}
         onOpenEditProfile={openEditProfile}
         onOpenSellerArea={openSellerArea}
+        onOpenOfficeAccess={openOfficeAccess}
         onSelectActiveContext={handleSelectActiveContext}
         onOpenActiveContext={openActiveContext}
         onSignOut={handleSignOut}

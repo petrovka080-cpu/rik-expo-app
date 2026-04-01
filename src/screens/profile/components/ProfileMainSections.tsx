@@ -31,7 +31,7 @@ const COPY = {
   currentContext: "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043a\u043e\u043d\u0442\u0435\u043a\u0441\u0442",
   companyContextPrefix: "\u0415\u0441\u0442\u044c: ",
   openMarket: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c Market",
-  openOffice: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c Office",
+  openOffice: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c Office \u0438 \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u044e",
   oneContextHint:
     "\u0414\u043e\u0441\u0442\u0443\u043f\u0435\u043d \u0442\u043e\u043b\u044c\u043a\u043e \u043e\u0434\u0438\u043d \u043a\u043e\u043d\u0442\u0435\u043a\u0441\u0442, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0442\u0435\u043b\u044c \u0441\u043a\u0440\u044b\u0442.",
   editData: "\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0434\u0430\u043d\u043d\u044b\u0435",
@@ -44,6 +44,10 @@ const COPY = {
     "\u0420\u0430\u0431\u043e\u0447\u0438\u0435 \u0440\u043e\u043b\u0438, Office hub \u0438 ERP-\u043c\u043e\u0434\u0443\u043b\u0438.",
   sellerEntrySubtitle:
     "\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f, \u0441\u0442\u0430\u0442\u0443\u0441\u044b \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438 \u0438 \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u044b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430 \u0432 \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e\u043c \u0440\u0430\u0437\u0434\u0435\u043b\u0435.",
+  officeEntryReadySubtitle:
+    "\u041a\u043e\u043c\u043f\u0430\u043d\u0438\u044f, \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438, invite-\u044b, roles \u0438 \u0432\u0445\u043e\u0434 \u0432 Office \u0432 \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e\u043c \u043a\u043e\u043d\u0442\u0443\u0440\u0435.",
+  officeEntryBootstrapSubtitle:
+    "\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u044e, \u0447\u0442\u043e\u0431\u044b \u043e\u0442\u043a\u0440\u044b\u0442\u044c Office access \u0438 \u0441\u0442\u0430\u0440\u0442\u043e\u0432\u0443\u044e \u0440\u043e\u043b\u044c \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440\u0430.",
 } as const;
 
 type ProfileMainSectionsProps = {
@@ -61,6 +65,7 @@ type ProfileMainSectionsProps = {
   activeContextDescription: string;
   onOpenEditProfile: () => void;
   onOpenSellerArea: () => void;
+  onOpenOfficeAccess: () => void;
   onSelectActiveContext: (context: AppContext) => void;
   onOpenActiveContext: () => void;
   onSignOut: () => void;
@@ -83,6 +88,7 @@ export function ProfileMainSections({
   activeContextDescription,
   onOpenEditProfile,
   onOpenSellerArea,
+  onOpenOfficeAccess,
   onSelectActiveContext,
   onOpenActiveContext,
   onSignOut,
@@ -112,6 +118,10 @@ export function ProfileMainSections({
   const activeContextCtaLabel = marketContextActive
     ? COPY.openMarket
     : COPY.openOffice;
+  const officeEntrySubtitle =
+    accessModel.hasOfficeAccess || accessModel.hasCompanyContext
+      ? COPY.officeEntryReadySubtitle
+      : COPY.officeEntryBootstrapSubtitle;
 
   return (
     <ScrollView
@@ -231,6 +241,30 @@ export function ProfileMainSections({
           </Pressable>
         </View>
       ) : null}
+
+      <View style={styles.section}>
+        <View style={styles.profileSectionHeader}>
+          <Ionicons name="briefcase-outline" size={18} color={UI.accent} />
+          <Text style={styles.profileSectionHeaderText}>
+            Office и компания
+          </Text>
+        </View>
+        <Pressable
+          testID="profile-open-office-access"
+          style={styles.profileActionCard}
+          onPress={onOpenOfficeAccess}
+        >
+          <View style={styles.profileActionTextWrap}>
+            <Text style={styles.profileActionTitle}>
+              Открыть контур Office access
+            </Text>
+            <Text style={styles.profileActionSubtitle}>
+              {officeEntrySubtitle}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={UI.accent} />
+        </Pressable>
+      </View>
 
       <View style={styles.section}>
         <View style={styles.profileSectionHeader}>

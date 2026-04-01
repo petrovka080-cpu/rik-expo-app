@@ -154,6 +154,10 @@ describe("ProfileContent composition shell", () => {
       (capturedMainProps?.onOpenSellerArea as (() => void) | undefined)?.();
     });
     expect(mockPush).toHaveBeenCalledWith("/seller");
+    act(() => {
+      (capturedMainProps?.onOpenOfficeAccess as (() => void) | undefined)?.();
+    });
+    expect(mockPush).toHaveBeenCalledWith("/office/index");
   });
 
   it("falls back to market context when no stored context is available", async () => {
