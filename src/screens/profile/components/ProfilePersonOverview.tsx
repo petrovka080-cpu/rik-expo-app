@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View, type ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { PROFILE_UI } from "../profile.helpers";
@@ -40,22 +40,31 @@ type ProfilePersonOverviewProps = {
   onOpenCompanyCard: () => void;
 };
 
-function ProfileSectionHeader(props: ProfileSectionHeaderProps) {
+const ProfileSectionHeader = React.memo(function ProfileSectionHeader(
+  props: ProfileSectionHeaderProps,
+) {
   return (
     <View style={profileStyles.profileSectionHeader}>
       <Ionicons name={props.icon} size={18} color={PROFILE_UI.accent} />
       <Text style={profileStyles.profileSectionHeaderText}>{props.title}</Text>
     </View>
   );
-}
+});
 
-export function ProfilePersonOverview(props: ProfilePersonOverviewProps) {
+export const ProfilePersonOverview = React.memo(function ProfilePersonOverview(
+  props: ProfilePersonOverviewProps,
+) {
+  const completionBarFillStyle = React.useMemo<ViewStyle>(
+    () => ({ width: `${props.profileCompletionPercent}%` }),
+    [props.profileCompletionPercent],
+  );
+
   return (
     <>
       <View style={profileStyles.section}>
         <View style={profileStyles.completionCard}>
           <View style={profileStyles.completionHeader}>
-            <View style={styles.completionHeaderMeta}>
+            <View style={profileStyles.flexOne}>
               <Text style={profileStyles.completionTitle}>Готовность профиля</Text>
               <Text style={profileStyles.completionSubtitle}>
                 Заполненный профиль лучше выглядит в системе и помогает быстрее работать с модулями GOX.
@@ -67,7 +76,7 @@ export function ProfilePersonOverview(props: ProfilePersonOverviewProps) {
             <View
               style={[
                 profileStyles.completionBarFill,
-                { width: `${props.profileCompletionPercent}%` },
+                completionBarFillStyle,
               ]}
             />
           </View>
@@ -154,10 +163,4 @@ export function ProfilePersonOverview(props: ProfilePersonOverviewProps) {
       ) : null}
     </>
   );
-}
-
-const styles = StyleSheet.create({
-  completionHeaderMeta: {
-    flex: 1,
-  },
 });

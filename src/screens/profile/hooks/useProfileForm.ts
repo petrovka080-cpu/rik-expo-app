@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import type { ProfileFormState, UserProfile } from "../profile.types";
 
@@ -16,29 +16,29 @@ export function useProfileForm() {
   const [profileForm, setProfileForm] = useState<ProfileFormState>(EMPTY_PROFILE_FORM);
   const [profileAvatarDraft, setProfileAvatarDraft] = useState<string | null>(null);
 
-  const setProfileNameInput = (value: string) => {
+  const setProfileNameInput = useCallback((value: string) => {
     setProfileForm((prev) => ({ ...prev, profileNameInput: value }));
-  };
-  const setProfilePhoneInput = (value: string) => {
+  }, []);
+  const setProfilePhoneInput = useCallback((value: string) => {
     setProfileForm((prev) => ({ ...prev, profilePhoneInput: value }));
-  };
-  const setProfileCityInput = (value: string) => {
+  }, []);
+  const setProfileCityInput = useCallback((value: string) => {
     setProfileForm((prev) => ({ ...prev, profileCityInput: value }));
-  };
-  const setProfileBioInput = (value: string) => {
+  }, []);
+  const setProfileBioInput = useCallback((value: string) => {
     setProfileForm((prev) => ({ ...prev, profileBioInput: value }));
-  };
-  const setProfileTelegramInput = (value: string) => {
+  }, []);
+  const setProfileTelegramInput = useCallback((value: string) => {
     setProfileForm((prev) => ({ ...prev, profileTelegramInput: value }));
-  };
-  const setProfileWhatsappInput = (value: string) => {
+  }, []);
+  const setProfileWhatsappInput = useCallback((value: string) => {
     setProfileForm((prev) => ({ ...prev, profileWhatsappInput: value }));
-  };
-  const setProfilePositionInput = (value: string) => {
+  }, []);
+  const setProfilePositionInput = useCallback((value: string) => {
     setProfileForm((prev) => ({ ...prev, profilePositionInput: value }));
-  };
+  }, []);
 
-  const hydrateProfileForm = (profile: UserProfile, avatarUrl: string | null) => {
+  const hydrateProfileForm = useCallback((profile: UserProfile, avatarUrl: string | null) => {
     setProfileForm({
       profileNameInput: profile.full_name || "",
       profilePhoneInput: profile.phone || "",
@@ -49,11 +49,11 @@ export function useProfileForm() {
       profilePositionInput: profile.position || "",
     });
     setProfileAvatarDraft(avatarUrl);
-  };
+  }, []);
 
-  const resetProfileAvatarDraft = (avatarUrl: string | null) => {
+  const resetProfileAvatarDraft = useCallback((avatarUrl: string | null) => {
     setProfileAvatarDraft(avatarUrl);
-  };
+  }, []);
 
   return {
     profileForm,

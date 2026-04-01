@@ -1,0 +1,57 @@
+{
+  "status": "GREEN",
+  "finalUrl": "http://localhost:8081/supplierMap",
+  "routeOpened": true,
+  "screenErrorBoundaryShown": false,
+  "leafletCssInjected": true,
+  "leafletMapMounted": true,
+  "runtime": {
+    "console": [
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "log",
+        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+      },
+      {
+        "type": "warning",
+        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+      },
+      {
+        "type": "info",
+        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.bootstrap] starting queue worker"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+      },
+      {
+        "type": "info",
+        "text": "[queue.worker] started {workerId: web:mnfewmf7:yq1mvm, batchSize: 10, concurrency: 4}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: joined_inflight, durationMs: null}"
+      }
+    ],
+    "pageErrors": [],
+    "badResponses": []
+  },
+  "relevantBadResponses": [],
+  "webServerStarted": true,
+  "failureArtifacts": null
+}

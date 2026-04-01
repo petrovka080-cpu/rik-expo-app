@@ -6,9 +6,15 @@ export const profileStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: PROFILE_UI.bg,
   },
+  scrollFill: {
+    flex: 1,
+  },
   scrollContent: {
     padding: 16,
     paddingBottom: 32,
+  },
+  flexOne: {
+    flex: 1,
   },
   center: {
     flex: 1,
@@ -399,6 +405,17 @@ export const profileStyles = StyleSheet.create({
     fontWeight: "600",
     color: PROFILE_UI.text,
   },
+  companyActionsRow: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  companyActionsRowTop: {
+    marginTop: 10,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   companySuccessBanner: {
     marginBottom: 10,
     padding: 10,
@@ -421,6 +438,9 @@ export const profileStyles = StyleSheet.create({
     marginTop: 4,
     fontSize: 11,
     color: PROFILE_UI.sub,
+  },
+  chipHintSpaced: {
+    marginTop: 8,
   },
   modeSwitchRow: {
     flexDirection: "row",
@@ -457,6 +477,10 @@ export const profileStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: PROFILE_UI.border,
     paddingVertical: 8,
+  },
+  rowItemLast: {
+    borderBottomWidth: 0,
+    paddingBottom: 0,
   },
   rowLabel: {
     fontSize: 11,
@@ -685,6 +709,9 @@ export const profileStyles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 4,
   },
+  labeledInputWrap: {
+    marginBottom: 8,
+  },
   modalInput: {
     borderRadius: 10,
     borderWidth: 1,
@@ -694,6 +721,97 @@ export const profileStyles = StyleSheet.create({
     fontSize: 14,
     color: PROFILE_UI.text,
     backgroundColor: PROFILE_UI.cardSoft,
+  },
+  modalInputBig: {
+    height: 80,
+    textAlignVertical: "top",
+  },
+  modalScrollTall: {
+    maxHeight: 430,
+  },
+  modalScrollCompany: {
+    maxHeight: 420,
+  },
+  modalScrollInvite: {
+    maxHeight: 260,
+    marginTop: 4,
+  },
+  modalScrollItem: {
+    maxHeight: 320,
+  },
+  modalScrollContent: {
+    paddingBottom: 10,
+  },
+  wizardScroll: {
+    maxHeight: 420,
+    marginTop: 10,
+  },
+  compactModalCard: {
+    maxWidth: 420,
+  },
+  modalFieldRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  modalFieldCell: {
+    flex: 1,
+  },
+  listingKindRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 8,
+  },
+  listingHelperText: {
+    fontSize: 11,
+    color: PROFILE_UI.sub,
+  },
+  listingHelperTextTight: {
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  listingHelperTextBottom: {
+    marginBottom: 4,
+  },
+  listingCartCard: {
+    marginTop: 8,
+    marginBottom: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: PROFILE_UI.border,
+    backgroundColor: PROFILE_UI.cardSoft,
+    padding: 8,
+  },
+  listingCartTitle: {
+    fontSize: 12,
+    color: PROFILE_UI.sub,
+    marginBottom: 4,
+  },
+  listingCartItem: {
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: PROFILE_UI.border,
+  },
+  listingCartItemLast: {
+    borderBottomWidth: 0,
+  },
+  listingCartItemTitle: {
+    fontSize: 13,
+    color: PROFILE_UI.text,
+    fontWeight: "600",
+  },
+  listingCartItemMeta: {
+    fontSize: 11,
+    color: PROFILE_UI.sub,
+  },
+  catalogSearchButton: {
+    alignSelf: "flex-start",
+    marginTop: 6,
+  },
+  catalogEmptyText: {
+    marginTop: 10,
+    fontSize: 12,
+    color: PROFILE_UI.sub,
   },
   modalButtonsRow: {
     flexDirection: "row",

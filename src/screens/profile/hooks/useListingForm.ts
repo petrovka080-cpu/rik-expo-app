@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import type {
   CatalogSearchItem,
@@ -30,38 +30,38 @@ export function useListingForm() {
   const [catalogResults, setCatalogResults] = useState<CatalogSearchItem[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
 
-  const setListingTitle = (value: string) => {
+  const setListingTitle = useCallback((value: string) => {
     setListingForm((prev) => ({ ...prev, listingTitle: value }));
-  };
-  const setListingCity = (value: string) => {
+  }, []);
+  const setListingCity = useCallback((value: string) => {
     setListingForm((prev) => ({ ...prev, listingCity: value }));
-  };
-  const setListingPrice = (value: string) => {
+  }, []);
+  const setListingPrice = useCallback((value: string) => {
     setListingForm((prev) => ({ ...prev, listingPrice: value }));
-  };
-  const setListingUom = (value: string) => {
+  }, []);
+  const setListingUom = useCallback((value: string) => {
     setListingForm((prev) => ({ ...prev, listingUom: value }));
-  };
-  const setListingDescription = (value: string) => {
+  }, []);
+  const setListingDescription = useCallback((value: string) => {
     setListingForm((prev) => ({ ...prev, listingDescription: value }));
-  };
-  const setListingPhone = (value: string) => {
+  }, []);
+  const setListingPhone = useCallback((value: string) => {
     setListingForm((prev) => ({ ...prev, listingPhone: value }));
-  };
-  const setListingWhatsapp = (value: string) => {
+  }, []);
+  const setListingWhatsapp = useCallback((value: string) => {
     setListingForm((prev) => ({ ...prev, listingWhatsapp: value }));
-  };
-  const setListingEmail = (value: string) => {
+  }, []);
+  const setListingEmail = useCallback((value: string) => {
     setListingForm((prev) => ({ ...prev, listingEmail: value }));
-  };
-  const setListingKind = (value: ListingFormState["listingKind"]) => {
+  }, []);
+  const setListingKind = useCallback((value: ListingFormState["listingKind"]) => {
     setListingForm((prev) => ({ ...prev, listingKind: value }));
-  };
-  const setListingRikCode = (value: string | null) => {
+  }, []);
+  const setListingRikCode = useCallback((value: string | null) => {
     setListingForm((prev) => ({ ...prev, listingRikCode: value }));
-  };
+  }, []);
 
-  const prepareListingForm = (params: {
+  const prepareListingForm = useCallback((params: {
     profile: UserProfile;
     company: Company | null;
     profileMode: ProfileMode;
@@ -92,7 +92,7 @@ export function useListingForm() {
     setCatalogSearch("");
     setCatalogResults([]);
     setCatalogLoading(false);
-  };
+  }, []);
 
   return {
     listingForm,

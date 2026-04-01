@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import type { Company, CompanyFormState, UserProfile } from "../profile.types";
 
@@ -30,74 +30,74 @@ const EMPTY_COMPANY_FORM: CompanyFormState = {
 export function useCompanyForm() {
   const [companyForm, setCompanyForm] = useState<CompanyFormState>(EMPTY_COMPANY_FORM);
 
-  const setCompanyNameInput = (value: string) => {
+  const setCompanyNameInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyNameInput: value }));
-  };
-  const setCompanyCityInput = (value: string) => {
+  }, []);
+  const setCompanyCityInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyCityInput: value }));
-  };
-  const setCompanyLegalFormInput = (value: string) => {
+  }, []);
+  const setCompanyLegalFormInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyLegalFormInput: value }));
-  };
-  const setCompanyAddressInput = (value: string) => {
+  }, []);
+  const setCompanyAddressInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyAddressInput: value }));
-  };
-  const setCompanyIndustryInput = (value: string) => {
+  }, []);
+  const setCompanyIndustryInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyIndustryInput: value }));
-  };
-  const setCompanyAboutShortInput = (value: string) => {
+  }, []);
+  const setCompanyAboutShortInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyAboutShortInput: value }));
-  };
-  const setCompanyPhoneMainInput = (value: string) => {
+  }, []);
+  const setCompanyPhoneMainInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyPhoneMainInput: value }));
-  };
-  const setCompanyPhoneWhatsAppInput = (value: string) => {
+  }, []);
+  const setCompanyPhoneWhatsAppInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyPhoneWhatsAppInput: value }));
-  };
-  const setCompanyEmailInput = (value: string) => {
+  }, []);
+  const setCompanyEmailInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyEmailInput: value }));
-  };
-  const setCompanySiteInput = (value: string) => {
+  }, []);
+  const setCompanySiteInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companySiteInput: value }));
-  };
-  const setCompanyTelegramInput = (value: string) => {
+  }, []);
+  const setCompanyTelegramInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyTelegramInput: value }));
-  };
-  const setCompanyWorkTimeInput = (value: string) => {
+  }, []);
+  const setCompanyWorkTimeInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyWorkTimeInput: value }));
-  };
-  const setCompanyContactPersonInput = (value: string) => {
+  }, []);
+  const setCompanyContactPersonInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyContactPersonInput: value }));
-  };
-  const setCompanyAboutFullInput = (value: string) => {
+  }, []);
+  const setCompanyAboutFullInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyAboutFullInput: value }));
-  };
-  const setCompanyServicesInput = (value: string) => {
+  }, []);
+  const setCompanyServicesInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyServicesInput: value }));
-  };
-  const setCompanyRegionsInput = (value: string) => {
+  }, []);
+  const setCompanyRegionsInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyRegionsInput: value }));
-  };
-  const setCompanyClientsTypesInput = (value: string) => {
+  }, []);
+  const setCompanyClientsTypesInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyClientsTypesInput: value }));
-  };
-  const setCompanyInnInput = (value: string) => {
+  }, []);
+  const setCompanyInnInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyInnInput: value }));
-  };
-  const setCompanyBinInput = (value: string) => {
+  }, []);
+  const setCompanyBinInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyBinInput: value }));
-  };
-  const setCompanyRegNumberInput = (value: string) => {
+  }, []);
+  const setCompanyRegNumberInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyRegNumberInput: value }));
-  };
-  const setCompanyBankDetailsInput = (value: string) => {
+  }, []);
+  const setCompanyBankDetailsInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyBankDetailsInput: value }));
-  };
-  const setCompanyLicensesInfoInput = (value: string) => {
+  }, []);
+  const setCompanyLicensesInfoInput = useCallback((value: string) => {
     setCompanyForm((prev) => ({ ...prev, companyLicensesInfoInput: value }));
-  };
+  }, []);
 
-  const hydrateCompanyForm = (params: {
+  const hydrateCompanyForm = useCallback((params: {
     company: Company | null;
     profile: UserProfile | null;
   }) => {
@@ -126,7 +126,7 @@ export function useCompanyForm() {
       companyBankDetailsInput: company?.bank_details || "",
       companyLicensesInfoInput: company?.licenses_info || "",
     });
-  };
+  }, []);
 
   return {
     companyForm,

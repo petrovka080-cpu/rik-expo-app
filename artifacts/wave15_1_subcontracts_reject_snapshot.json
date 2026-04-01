@@ -1,0 +1,14 @@
+{
+  "id": "9b2a4b42-e49b-46c5-8c84-63f23df60ef6",
+  "display_no": "SUB-26-036",
+  "status": "rejected",
+  "created_by": "4c569568-2ef7-4f29-9616-64c806c8e726",
+  "contractor_inn": null,
+  "foreman_name": "Wave 15.1 Fallback",
+  "object_name": "Fallback Object WAVE15_1_SUB_MNFJJ0AG",
+  "work_type": "Fallback Work",
+  "submitted_at": "2026-04-01T04:23:24.232+00:00",
+  "approved_at": null,
+  "rejected_at": "2026-04-01T04:23:31.342514+00:00",
+  "director_comment": "Wave 15.1 reject"
+}

@@ -1,9 +1,9 @@
 {
-  "checkedAt": "2026-03-31T15:01:09.582Z",
+  "checkedAt": "2026-04-01T07:18:22.548Z",
   "baseUrl": "http://localhost:8081",
   "user": {
     "role": "foreman",
-    "email": "wave4.profile.mneqsc677i5h@e.com"
+    "email": "wave4.profile.mnfppc8fh7tj@e.com"
   },
   "web": {
     "status": "GREEN",
@@ -28,7 +28,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 783}"
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 860}"
         },
         {
           "type": "info",
@@ -44,7 +44,7 @@
         },
         {
           "type": "info",
-          "text": "[queue.worker] started {workerId: web:mneqt4t6:84rsou, batchSize: 10, concurrency: 4}"
+          "text": "[queue.worker] started {workerId: web:mnfppgxu:79vccd, batchSize: 10, concurrency: 4}"
         },
         {
           "type": "info",
@@ -52,35 +52,31 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1051}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1068}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1117}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1117}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1149}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1186}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 1195}"
-        },
-        {
-          "type": "info",
           "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 510}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1127}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1187}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1226}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1244}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1336}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 1347}"
         }
       ],
       "pageErrors": [],
@@ -96,8 +92,8 @@
       "pngPath": "artifacts/artifacts/wave4-profile-android-final.png",
       "stdoutPath": "artifacts/wave4-profile-android.stdout.log",
       "stderrPath": "artifacts/wave4-profile-android.stderr.log",
-      "stdoutTail": "sport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 425, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 443, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 430, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 438, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 419, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 471, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 426, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 435, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 429, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 448, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 433, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 442, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 487, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 434, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 426, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 432, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n",
-      "stderrTail": ""
+      "stdoutTail": "sport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 443, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 450, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 424, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 454, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 532, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 470, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 439, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 422, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 515, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 496, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 460, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 435, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 432, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 461, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 492, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 454, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n",
+      "stderrTail": "PluginError: Failed to resolve plugin for module \"expo-audio\" relative to \"C:\\dev\\rik-expo-app\". Do you have node modules installed?\nPluginError: Failed to resolve plugin for module \"expo-audio\" relative to \"C:\\dev\\rik-expo-app\". Do you have node modules installed?\n"
     },
     "recovery": {
       "environmentRecoveryUsed": true,

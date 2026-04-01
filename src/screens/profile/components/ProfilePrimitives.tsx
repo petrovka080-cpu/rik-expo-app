@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LayoutAnimation, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { LayoutAnimation, Pressable, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { PROFILE_UI } from "../profile.helpers";
@@ -45,14 +45,18 @@ export function MenuActionRow(props: {
   );
 }
 
-export function RowItem(props: { label: string; value: string; last?: boolean }) {
+export const RowItem = React.memo(function RowItem(props: {
+  label: string;
+  value: string;
+  last?: boolean;
+}) {
   return (
-    <View style={[profileStyles.rowItem, props.last && { borderBottomWidth: 0, paddingBottom: 0 }]}>
+    <View style={[profileStyles.rowItem, props.last && profileStyles.rowItemLast]}>
       <Text style={profileStyles.rowLabel}>{props.label}</Text>
       <Text style={profileStyles.rowValue}>{props.value}</Text>
     </View>
   );
-}
+});
 
 export type LabeledInputProps = {
   label: string;
@@ -69,7 +73,7 @@ export function LabeledInput(props: LabeledInputProps) {
   const [focused, setFocused] = useState(false);
 
   return (
-    <View style={{ marginBottom: 8 }}>
+    <View style={profileStyles.labeledInputWrap}>
       <Text style={profileStyles.modalLabel}>{props.label}</Text>
       <TextInput
         testID={props.testID}
@@ -79,7 +83,7 @@ export function LabeledInput(props: LabeledInputProps) {
         placeholderTextColor={PROFILE_UI.sub}
         style={[
           profileStyles.modalInput,
-          props.big && { height: 80, textAlignVertical: "top" },
+          props.big && profileStyles.modalInputBig,
           focused && profileInputFocusStyle,
         ]}
         multiline={props.multiline}
@@ -96,70 +100,3 @@ export function LabeledInput(props: LabeledInputProps) {
     </View>
   );
 }
-
-export const inlineGapRow = {
-  flexDirection: "row" as const,
-  gap: 8,
-};
-
-export const inlineFlexOne = {
-  flex: 1,
-};
-
-export const inlineModalScroll = {
-  maxHeight: 430,
-};
-
-export const inlineModalScrollContent = {
-  paddingBottom: 10,
-};
-
-export const inlineCompanyModalScroll = {
-  maxHeight: 420,
-};
-
-export const inlineHelperText = {
-  fontSize: 11,
-  color: PROFILE_UI.sub,
-};
-
-export const inlineFilterRow = {
-  flexDirection: "row" as const,
-  flexWrap: "wrap" as const,
-  gap: 6,
-  marginBottom: 8,
-};
-
-export const inlineCatalogPickerButton = {
-  alignSelf: "flex-start" as const,
-  marginTop: 6,
-};
-
-export const inlineCartSummaryCard = {
-  marginTop: 8,
-  marginBottom: 8,
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: PROFILE_UI.border,
-  backgroundColor: PROFILE_UI.cardSoft,
-  padding: 8,
-};
-
-export const inlineCartItem = {
-  paddingVertical: 6,
-  borderBottomWidth: 1,
-  borderBottomColor: PROFILE_UI.border,
-};
-
-export const inlineCartTitle = {
-  fontSize: 13,
-  color: PROFILE_UI.text,
-  fontWeight: "600" as const,
-};
-
-export const inlineCartMeta = {
-  fontSize: 11,
-  color: PROFILE_UI.sub,
-};
-
-export const inlinePlatformKeyboardDismissMode = Platform.OS === "ios" ? "interactive" : "on-drag";
