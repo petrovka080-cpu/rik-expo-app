@@ -75,11 +75,7 @@ async function loadCompanyMembers(
     ? membersResult.data
     : [];
   const memberIds = Array.from(
-    new Set(
-      memberRows
-        .map((row) => normalizeText(row?.user_id))
-        .filter(Boolean),
-    ),
+    new Set(memberRows.map((row) => normalizeText(row?.user_id)).filter(Boolean)),
   );
 
   const profilesResult = memberIds.length
@@ -104,8 +100,7 @@ async function loadCompanyMembers(
       role: normalizeText(row?.role) || null,
       fullName: profile?.full_name ?? null,
       phone: profile?.phone ?? null,
-      createdAt:
-        typeof row?.created_at === "string" ? row.created_at : null,
+      createdAt: typeof row?.created_at === "string" ? row.created_at : null,
       isOwner: userId === company.owner_user_id,
     };
   });
@@ -198,16 +193,20 @@ export async function createOfficeCompany(params: {
     .maybeSingle();
   if (existingCompany.error) throw existingCompany.error;
   if (existingCompany.data?.id) {
-    throw new Error("Компания уже создана. Откройте контур компании и Office.");
+    throw new Error(
+      "Компания уже создана. Откройте контур компании и Office.",
+    );
   }
 
   const { data: companyData, error: companyError } = await supabase
     .from("companies")
-    .insert(buildCompanyInsertPayload({
-      userId: user.id,
-      profileEmail: params.profileEmail,
-      draft: params.draft,
-    }))
+    .insert(
+      buildCompanyInsertPayload({
+        userId: user.id,
+        profileEmail: params.profileEmail,
+        draft: params.draft,
+      }),
+    )
     .select("*")
     .single();
 

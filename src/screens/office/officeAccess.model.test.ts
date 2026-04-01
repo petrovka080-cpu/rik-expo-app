@@ -13,7 +13,11 @@ describe("officeAccess.model", () => {
 
   it("shows only explicitly assigned office workspaces", () => {
     const cards = filterOfficeWorkspaceCards(["director", "buyer"]);
-    expect(cards.map((card) => card.key)).toEqual(["buyer", "director", "reports"]);
+    expect(cards.map((card) => card.key)).toEqual([
+      "buyer",
+      "director",
+      "reports",
+    ]);
   });
 
   it("marks bootstrap company creation as director-only start", () => {

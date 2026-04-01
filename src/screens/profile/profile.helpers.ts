@@ -26,7 +26,8 @@ const normalizeRoleKey = (role: string | null): string =>
   String(role ?? "").trim().toLowerCase();
 
 export const getProfileRoleLabel = (role: string | null): string =>
-  PROFILE_ROLE_LABELS[normalizeRoleKey(role) as AppAccessOfficeRole] ?? "Роль GOX";
+  PROFILE_ROLE_LABELS[normalizeRoleKey(role) as AppAccessOfficeRole] ??
+  "Роль GOX";
 
 export const getProfileRoleColor = (role: string | null): string => {
   switch (normalizeRoleKey(role)) {

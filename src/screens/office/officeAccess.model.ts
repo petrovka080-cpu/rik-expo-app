@@ -95,12 +95,16 @@ const normalizeRole = (value: string | null | undefined): string =>
   String(value ?? "").trim().toLowerCase();
 
 export const joinOfficeRoleLabels = (roles: string[]): string =>
-  roles.length > 0 ? roles.map((role) => getProfileRoleLabel(role)).join(", ") : "Нет";
+  roles.length > 0
+    ? roles.map((role) => getProfileRoleLabel(role)).join(", ")
+    : "Нет";
 
 export const filterOfficeWorkspaceCards = (
   availableOfficeRoles: string[],
 ): OfficeWorkspaceCard[] => {
-  const roleSet = new Set(availableOfficeRoles.map((role) => normalizeRole(role)));
+  const roleSet = new Set(
+    availableOfficeRoles.map((role) => normalizeRole(role)),
+  );
   return OFFICE_WORKSPACE_CARDS.filter((card) =>
     card.requiredRoles.some((role) => roleSet.has(role)),
   );

@@ -134,8 +134,12 @@ describe("OfficeHubScreen", () => {
       await Promise.resolve();
     });
 
-    renderer!.root.findByProps({ testID: "office-card-director" }).props.onPress();
-    renderer!.root.findByProps({ testID: "office-card-reports" }).props.onPress();
+    renderer!.root
+      .findByProps({ testID: "office-card-director" })
+      .props.onPress();
+    renderer!.root
+      .findByProps({ testID: "office-card-reports" })
+      .props.onPress();
 
     expect(mockPush).toHaveBeenNthCalledWith(1, "/office/director");
     expect(mockPush).toHaveBeenNthCalledWith(2, "/office/reports");

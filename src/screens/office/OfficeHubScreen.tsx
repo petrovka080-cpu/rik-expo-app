@@ -86,6 +86,71 @@ const EMPTY_INVITE_DRAFT: CreateInviteDraft = {
   comment: "",
 };
 
+const COPY = {
+  alertTitle: "Office и компания",
+  loadingSubtitle: "Открываем доступ к компании и Office",
+  loadingState: "Загружаем контур доступа...",
+  loadError: "Не удалось открыть контур компании и Office.",
+  noValue: "Не указано",
+  noAccess: "Нет",
+  yesAccess: "Есть",
+  companyCreated:
+    "Компания создана. Office access открыт, стартовая роль — директор.",
+  companyCreateError: "Не удалось создать компанию.",
+  inviteCreatedTitle: "Приглашение создано",
+  inviteCreatedMessage:
+    "Роль не выдаётся автоматически. Сотрудник получит её только через invite.",
+  inviteCreateError: "Не удалось создать приглашение.",
+  roleAssignError: "Не удалось назначить роль.",
+  heroText:
+    "Profile здесь больше не управляет компанией. Этот экран владеет bootstrap, приглашениями, ролями и входом в Office.",
+  bootstrapTitle: "Bootstrap rules",
+  accessSummaryTitle: "Access summary",
+  officeRolesLabel: "Рабочие роли",
+  currentRoleLabel: "Текущая роль",
+  companyTitle: "Компания",
+  companyName: "Название",
+  companyCity: "Город",
+  companyIndustry: "Сфера",
+  companyAccess: "Ваш доступ",
+  companyIsolationHint:
+    "Компания и memberships живут отдельно от profile identity.",
+  companyCreateTitle: "Создать компанию",
+  companyCreateHint:
+    "У обычной регистрации нет office roles. Создание компании впервые откроет Office access и назначит только роль директора.",
+  companyNamePlaceholder: "Название компании",
+  companyCityPlaceholder: "Город",
+  companyIndustryPlaceholder: "Сфера",
+  companyPhonePlaceholder: "Телефон компании",
+  companyEmailPlaceholder: "Email компании",
+  companyCreateCta: "Создать компанию и получить роль директора",
+  membersTitle: "Сотрудники и membership",
+  noMemberships: "Пока нет подтверждённых memberships для этой компании.",
+  invitesTitle: "Приглашения и роли",
+  invitesHint:
+    "Роли не выдаются автоматически. Каждая новая роль появляется только через invite или явное назначение.",
+  inviteNamePlaceholder: "Имя сотрудника",
+  invitePhonePlaceholder: "Телефон",
+  inviteEmailPlaceholder: "Email (необязательно)",
+  inviteCommentPlaceholder: "Комментарий (необязательно)",
+  inviteCreateCta: "Создать invite",
+  inviteManageHint:
+    "Приглашения и назначение ролей доступны владельцу компании или директору.",
+  noInvites: "Активных приглашений пока нет.",
+  workspaceTitle: "Рабочий Office",
+  noWorkspaceRole:
+    "Office access уже открыт, но рабочая роль ещё не назначена. Вход в ERP-экраны появится после invite или explicit assignment.",
+  noOfficeAccess:
+    "Сначала создайте компанию или получите приглашение. Office access не появляется сам по себе после регистрации.",
+  memberRoleLabel: "Роль",
+  memberOwnerSuffix: " • владелец компании",
+  memberPhoneLabel: "Телефон",
+  memberAddedLabel: "Добавлен",
+  inviteCodeLabel: "Код",
+  inviteStatusLabel: "Статус",
+  inviteCreatedLabel: "Создано",
+} as const;
+
 const BOOTSTRAP_RULES = [
   "Обычная регистрация не выдаёт office roles автоматически.",
   "Первое создание компании открывает Office access и назначает только роль директора.",
@@ -93,7 +158,7 @@ const BOOTSTRAP_RULES = [
 ] as const;
 
 function formatDate(value: string | null): string {
-  if (!value) return "Не указано";
+  if (!value) return COPY.noValue;
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
   return parsed.toLocaleDateString("ru-RU");
@@ -124,14 +189,16 @@ function MemberCard(props: {
         {props.member.fullName?.trim() || props.member.userId}
       </Text>
       <Text style={styles.entityMeta}>
-        Роль: {getProfileRoleLabel(props.member.role)}
-        {props.member.isOwner ? " · владелец компании" : ""}
+        {COPY.memberRoleLabel}: {getProfileRoleLabel(props.member.role)}
+        {props.member.isOwner ? COPY.memberOwnerSuffix : ""}
       </Text>
       {props.member.phone ? (
-        <Text style={styles.entityMeta}>Телефон: {props.member.phone}</Text>
+        <Text style={styles.entityMeta}>
+          {COPY.memberPhoneLabel}: {props.member.phone}
+        </Text>
       ) : null}
       <Text style={styles.entityMeta}>
-        Добавлен: {formatDate(props.member.createdAt)}
+        {COPY.memberAddedLabel}: {formatDate(props.member.createdAt)}
       </Text>
 
       {props.canManage && !props.member.isOwner ? (
@@ -172,16 +239,22 @@ function InviteCard(props: { invite: OfficeAccessInvite }) {
     <View style={styles.entityCard}>
       <Text style={styles.entityTitle}>{props.invite.name}</Text>
       <Text style={styles.entityMeta}>
-        Роль: {getProfileRoleLabel(props.invite.role)}
+        {COPY.memberRoleLabel}: {getProfileRoleLabel(props.invite.role)}
       </Text>
-      <Text style={styles.entityMeta}>Телефон: {props.invite.phone}</Text>
+      <Text style={styles.entityMeta}>
+        {COPY.memberPhoneLabel}: {props.invite.phone}
+      </Text>
       {props.invite.email ? (
         <Text style={styles.entityMeta}>Email: {props.invite.email}</Text>
       ) : null}
-      <Text style={styles.entityMeta}>Код: {props.invite.inviteCode}</Text>
-      <Text style={styles.entityMeta}>Статус: {props.invite.status}</Text>
       <Text style={styles.entityMeta}>
-        Создано: {formatDate(props.invite.createdAt)}
+        {COPY.inviteCodeLabel}: {props.invite.inviteCode}
+      </Text>
+      <Text style={styles.entityMeta}>
+        {COPY.inviteStatusLabel}: {props.invite.status}
+      </Text>
+      <Text style={styles.entityMeta}>
+        {COPY.inviteCreatedLabel}: {formatDate(props.invite.createdAt)}
       </Text>
     </View>
   );
@@ -221,8 +294,8 @@ export default function OfficeHubScreen() {
         const message =
           error instanceof Error && error.message.trim()
             ? error.message
-            : "Не удалось открыть контур компании и Office.";
-        Alert.alert("Office и компания", message);
+            : COPY.loadError;
+        Alert.alert(COPY.alertTitle, message);
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -279,8 +352,12 @@ export default function OfficeHubScreen() {
   const currentOfficeRoleLabel = useMemo(() => {
     const role =
       data.companyAccessRole || accessModel.activeOfficeRole || data.profileRole;
-    return role ? getProfileRoleLabel(role) : "Нет";
-  }, [accessModel.activeOfficeRole, data.companyAccessRole, data.profileRole]);
+    return role ? getProfileRoleLabel(role) : COPY.noAccess;
+  }, [
+    accessModel.activeOfficeRole,
+    data.companyAccessRole,
+    data.profileRole,
+  ]);
 
   const canManageCompany = useMemo(
     () =>
@@ -306,18 +383,15 @@ export default function OfficeHubScreen() {
         profileEmail: data.profileEmail,
         draft: companyDraft,
       });
-      Alert.alert(
-        "Office и компания",
-        "Компания создана. Office access открыт, стартовая роль — директор.",
-      );
+      Alert.alert(COPY.alertTitle, COPY.companyCreated);
       setCompanyDraft(EMPTY_COMPANY_DRAFT);
       await loadScreen("refresh");
     } catch (error: unknown) {
       const message =
         error instanceof Error && error.message.trim()
           ? error.message
-          : "Не удалось создать компанию.";
-      Alert.alert("Office и компания", message);
+          : COPY.companyCreateError;
+      Alert.alert(COPY.alertTitle, message);
     } finally {
       setSavingCompany(false);
     }
@@ -331,18 +405,15 @@ export default function OfficeHubScreen() {
         companyId: data.company.id,
         draft: inviteDraft,
       });
-      Alert.alert(
-        "Приглашение создано",
-        "Роль не выдаётся автоматически. Сотрудник получит её только через invite.",
-      );
+      Alert.alert(COPY.inviteCreatedTitle, COPY.inviteCreatedMessage);
       setInviteDraft(EMPTY_INVITE_DRAFT);
       await loadScreen("refresh");
     } catch (error: unknown) {
       const message =
         error instanceof Error && error.message.trim()
           ? error.message
-          : "Не удалось создать приглашение.";
-      Alert.alert("Office и компания", message);
+          : COPY.inviteCreateError;
+      Alert.alert(COPY.alertTitle, message);
     } finally {
       setSavingInvite(false);
     }
@@ -363,8 +434,8 @@ export default function OfficeHubScreen() {
         const message =
           error instanceof Error && error.message.trim()
             ? error.message
-            : "Не удалось назначить роль.";
-        Alert.alert("Office и компания", message);
+            : COPY.roleAssignError;
+        Alert.alert(COPY.alertTitle, message);
       } finally {
         setSavingRole(null);
       }
@@ -376,13 +447,13 @@ export default function OfficeHubScreen() {
     return (
       <RoleScreenLayout
         style={styles.screen}
-        title="Office и компания"
-        subtitle="Открываем доступ к компании и Office"
+        title={COPY.alertTitle}
+        subtitle={COPY.loadingSubtitle}
         contentStyle={styles.content}
       >
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#2563EB" />
-          <Text style={styles.stateText}>Загружаем контур доступа…</Text>
+          <Text style={styles.stateText}>{COPY.loadingState}</Text>
         </View>
       </RoleScreenLayout>
     );
@@ -391,7 +462,7 @@ export default function OfficeHubScreen() {
   return (
     <RoleScreenLayout
       style={styles.screen}
-      title="Office и компания"
+      title={COPY.alertTitle}
       subtitle={entryCopy.subtitle}
       contentStyle={styles.content}
     >
@@ -409,44 +480,41 @@ export default function OfficeHubScreen() {
         <View style={styles.heroCard}>
           <Text style={styles.heroEyebrow}>{entryCopy.title}</Text>
           <Text style={styles.heroTitle}>{displayName}</Text>
-          <Text style={styles.heroText}>
-            Profile здесь больше не управляет компанией. Этот экран владеет
-            bootstrap, приглашениями, ролями и входом в Office.
-          </Text>
+          <Text style={styles.heroText}>{COPY.heroText}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Bootstrap rules</Text>
+          <Text style={styles.sectionTitle}>{COPY.bootstrapTitle}</Text>
           <View style={styles.sectionCard}>
             {BOOTSTRAP_RULES.map((rule) => (
               <Text key={rule} style={styles.ruleText}>
-                • {rule}
+                {"\u2022"} {rule}
               </Text>
             ))}
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Access summary</Text>
+          <Text style={styles.sectionTitle}>{COPY.accessSummaryTitle}</Text>
           <View style={styles.sectionCard}>
             <SummaryRow
               label="Market access"
-              value={accessModel.hasMarketAccess ? "Есть" : "Нет"}
+              value={accessModel.hasMarketAccess ? COPY.yesAccess : COPY.noAccess}
             />
             <SummaryRow
               label="Office access"
-              value={accessModel.hasOfficeAccess ? "Есть" : "Нет"}
+              value={accessModel.hasOfficeAccess ? COPY.yesAccess : COPY.noAccess}
             />
             <SummaryRow
               label="Company context"
-              value={data.company?.name || (accessModel.hasCompanyContext ? "Есть" : "Нет")}
+              value={
+                data.company?.name ||
+                (accessModel.hasCompanyContext ? COPY.yesAccess : COPY.noAccess)
+              }
             />
+            <SummaryRow label={COPY.officeRolesLabel} value={officeRolesLabel} />
             <SummaryRow
-              label="Рабочие роли"
-              value={officeRolesLabel}
-            />
-            <SummaryRow
-              label="Текущая роль"
+              label={COPY.currentRoleLabel}
               value={currentOfficeRoleLabel}
               last
             />
@@ -455,38 +523,33 @@ export default function OfficeHubScreen() {
 
         {data.company ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Компания</Text>
+            <Text style={styles.sectionTitle}>{COPY.companyTitle}</Text>
             <View style={styles.sectionCard}>
-              <SummaryRow label="Название" value={data.company.name} />
+              <SummaryRow label={COPY.companyName} value={data.company.name} />
               <SummaryRow
-                label="Город"
-                value={data.company.city || "Не указан"}
+                label={COPY.companyCity}
+                value={data.company.city || COPY.noValue}
               />
               <SummaryRow
-                label="Сфера"
-                value={data.company.industry || "Не указана"}
+                label={COPY.companyIndustry}
+                value={data.company.industry || COPY.noValue}
               />
               <SummaryRow
-                label="Ваш доступ"
+                label={COPY.companyAccess}
                 value={currentOfficeRoleLabel}
                 last
               />
-              <Text style={styles.helperText}>
-                Компания и memberships живут отдельно от profile identity.
-              </Text>
+              <Text style={styles.helperText}>{COPY.companyIsolationHint}</Text>
             </View>
           </View>
         ) : (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Создать компанию</Text>
+            <Text style={styles.sectionTitle}>{COPY.companyCreateTitle}</Text>
             <View style={styles.sectionCard}>
-              <Text style={styles.helperText}>
-                У обычной регистрации нет office roles. Создание компании впервые
-                откроет Office access и назначит только роль директора.
-              </Text>
+              <Text style={styles.helperText}>{COPY.companyCreateHint}</Text>
               <TextInput
                 testID="office-company-name"
-                placeholder="Название компании"
+                placeholder={COPY.companyNamePlaceholder}
                 placeholderTextColor="#94A3B8"
                 style={styles.input}
                 value={companyDraft.name}
@@ -495,7 +558,7 @@ export default function OfficeHubScreen() {
                 }
               />
               <TextInput
-                placeholder="Город"
+                placeholder={COPY.companyCityPlaceholder}
                 placeholderTextColor="#94A3B8"
                 style={styles.input}
                 value={companyDraft.city}
@@ -504,7 +567,7 @@ export default function OfficeHubScreen() {
                 }
               />
               <TextInput
-                placeholder="Сфера"
+                placeholder={COPY.companyIndustryPlaceholder}
                 placeholderTextColor="#94A3B8"
                 style={styles.input}
                 value={companyDraft.industry}
@@ -516,7 +579,7 @@ export default function OfficeHubScreen() {
                 }
               />
               <TextInput
-                placeholder="Телефон компании"
+                placeholder={COPY.companyPhonePlaceholder}
                 placeholderTextColor="#94A3B8"
                 style={styles.input}
                 value={companyDraft.phoneMain}
@@ -528,7 +591,7 @@ export default function OfficeHubScreen() {
                 }
               />
               <TextInput
-                placeholder="Email компании"
+                placeholder={COPY.companyEmailPlaceholder}
                 placeholderTextColor="#94A3B8"
                 style={styles.input}
                 keyboardType="email-address"
@@ -548,7 +611,7 @@ export default function OfficeHubScreen() {
                 onPress={() => void handleCreateCompany()}
               >
                 <Text style={styles.primaryButtonText}>
-                  Создать компанию и получить роль директора
+                  {COPY.companyCreateCta}
                 </Text>
               </Pressable>
             </View>
@@ -557,7 +620,7 @@ export default function OfficeHubScreen() {
 
         {data.company ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Сотрудники и membership</Text>
+            <Text style={styles.sectionTitle}>{COPY.membersTitle}</Text>
             {data.members.length > 0 ? (
               <View style={styles.entityColumn}>
                 {data.members.map((member) => (
@@ -572,9 +635,7 @@ export default function OfficeHubScreen() {
               </View>
             ) : (
               <View style={styles.sectionCard}>
-                <Text style={styles.helperText}>
-                  Пока нет подтверждённых memberships для этой компании.
-                </Text>
+                <Text style={styles.helperText}>{COPY.noMemberships}</Text>
               </View>
             )}
           </View>
@@ -582,17 +643,14 @@ export default function OfficeHubScreen() {
 
         {data.company ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Приглашения и роли</Text>
+            <Text style={styles.sectionTitle}>{COPY.invitesTitle}</Text>
             <View style={styles.sectionCard}>
-              <Text style={styles.helperText}>
-                Роли не выдаются автоматически. Каждая новая роль появляется
-                только через invite или явное назначение.
-              </Text>
+              <Text style={styles.helperText}>{COPY.invitesHint}</Text>
 
               {canManageCompany ? (
                 <>
                   <TextInput
-                    placeholder="Имя сотрудника"
+                    placeholder={COPY.inviteNamePlaceholder}
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     value={inviteDraft.name}
@@ -601,7 +659,7 @@ export default function OfficeHubScreen() {
                     }
                   />
                   <TextInput
-                    placeholder="Телефон"
+                    placeholder={COPY.invitePhonePlaceholder}
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     value={inviteDraft.phone}
@@ -610,7 +668,7 @@ export default function OfficeHubScreen() {
                     }
                   />
                   <TextInput
-                    placeholder="Email (необязательно)"
+                    placeholder={COPY.inviteEmailPlaceholder}
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     autoCapitalize="none"
@@ -651,7 +709,7 @@ export default function OfficeHubScreen() {
                     })}
                   </View>
                   <TextInput
-                    placeholder="Комментарий (необязательно)"
+                    placeholder={COPY.inviteCommentPlaceholder}
                     placeholderTextColor="#94A3B8"
                     style={[styles.input, styles.textArea]}
                     multiline
@@ -673,15 +731,12 @@ export default function OfficeHubScreen() {
                     onPress={() => void handleCreateInvite()}
                   >
                     <Text style={styles.primaryButtonText}>
-                      Создать invite
+                      {COPY.inviteCreateCta}
                     </Text>
                   </Pressable>
                 </>
               ) : (
-                <Text style={styles.helperText}>
-                  Приглашения и назначение ролей доступны владельцу компании или
-                  директору.
-                </Text>
+                <Text style={styles.helperText}>{COPY.inviteManageHint}</Text>
               )}
             </View>
 
@@ -693,16 +748,14 @@ export default function OfficeHubScreen() {
               </View>
             ) : (
               <View style={styles.sectionCard}>
-                <Text style={styles.helperText}>
-                  Активных приглашений пока нет.
-                </Text>
+                <Text style={styles.helperText}>{COPY.noInvites}</Text>
               </View>
             )}
           </View>
         ) : null}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Рабочий Office</Text>
+          <Text style={styles.sectionTitle}>{COPY.workspaceTitle}</Text>
           {accessModel.hasOfficeAccess ? (
             officeCards.length > 0 ? (
               <View style={styles.workspaceGrid}>
@@ -718,7 +771,10 @@ export default function OfficeHubScreen() {
                     ]}
                   >
                     <View
-                      style={[styles.workspaceAccent, { backgroundColor: card.tone }]}
+                      style={[
+                        styles.workspaceAccent,
+                        { backgroundColor: card.tone },
+                      ]}
                     />
                     <Text style={styles.workspaceTitle}>{card.title}</Text>
                     <Text style={styles.workspaceSubtitle}>{card.subtitle}</Text>
@@ -727,18 +783,12 @@ export default function OfficeHubScreen() {
               </View>
             ) : (
               <View style={styles.sectionCard}>
-                <Text style={styles.helperText}>
-                  Office access уже открыт, но рабочая роль ещё не назначена.
-                  Вход в ERP-экраны появится после invite или explicit assignment.
-                </Text>
+                <Text style={styles.helperText}>{COPY.noWorkspaceRole}</Text>
               </View>
             )
           ) : (
             <View style={styles.sectionCard}>
-              <Text style={styles.helperText}>
-                Сначала создайте компанию или получите приглашение. Office access
-                не появляется сам по себе после регистрации.
-              </Text>
+              <Text style={styles.helperText}>{COPY.noOfficeAccess}</Text>
             </View>
           )}
         </View>

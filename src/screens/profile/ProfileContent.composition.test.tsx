@@ -145,9 +145,9 @@ describe("ProfileContent composition shell", () => {
         }
       ).availableContexts,
     ).toEqual(["market", "office"]);
-    expect(
-      capturedMainProps?.activeContextDescription,
-    ).toBe("Сейчас активен Office. Доступные рабочие роли: Директор.");
+    expect(capturedMainProps?.activeContextDescription).toBe(
+      "Сейчас активен Office. Доступные рабочие роли: Директор.",
+    );
     expect(capturedEditModalProps).not.toBeNull();
     expect(capturedEditModalProps?.visible).toBe(false);
     act(() => {

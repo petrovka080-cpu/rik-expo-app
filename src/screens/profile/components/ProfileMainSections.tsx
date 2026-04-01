@@ -245,9 +245,7 @@ export function ProfileMainSections({
       <View style={styles.section}>
         <View style={styles.profileSectionHeader}>
           <Ionicons name="briefcase-outline" size={18} color={UI.accent} />
-          <Text style={styles.profileSectionHeaderText}>
-            Office и компания
-          </Text>
+          <Text style={styles.profileSectionHeaderText}>Office и компания</Text>
         </View>
         <Pressable
           testID="profile-open-office-access"
