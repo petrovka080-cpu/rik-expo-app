@@ -11,6 +11,7 @@ type ScreenBoundaryScreen =
   | "director"
   | "foreman"
   | "market"
+  | "office"
   | "ai"
   | "profile"
   | "security"

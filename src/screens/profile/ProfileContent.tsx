@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
 import * as Clipboard from "expo-clipboard";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
+import { useRouter, useSegments } from "expo-router";
 
 import {
   AUTH_LOGIN_ROUTE,
@@ -65,6 +65,10 @@ const styles = profileStyles;
 
 export function ProfileContent() {
   const router = useRouter();
+  const segments = useSegments();
+  const currentLeafSegment = segments[segments.length - 1] || "";
+  const isAddListingRoute = currentLeafSegment === "add";
+  const addListingRouteOpenedRef = useRef(false);
 
   const [profileMode, setProfileMode] = useState<ProfileMode>(null);
 
@@ -354,16 +358,19 @@ export function ProfileContent() {
       setSavingUsage(false);
     }
   }, [company, profile, profileEmail, router]);
-  const openListingModal = () => {
+  const openListingModal = useCallback(() => {
     if (!profile) return;
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     prepareListingForm({ profile, company, profileMode });
     setListingModalOpen(true);
-  };
-  const closeListingModal = () => {
+  }, [company, prepareListingForm, profile, profileMode]);
+  const closeListingModal = useCallback(() => {
     setListingModalOpen(false);
-  };
+    if (isAddListingRoute) {
+      router.replace(MARKET_TAB_ROUTE);
+    }
+  }, [isAddListingRoute, router]);
   const closeCatalogModal = () => {
     setCatalogModalOpen(false);
   };
@@ -486,6 +493,9 @@ export function ProfileContent() {
       });
 
       setListingModalOpen(false);
+      if (isAddListingRoute) {
+        router.replace(MARKET_TAB_ROUTE);
+      }
 
       Alert.alert(
         "Объявление опубликовано",
@@ -504,6 +514,18 @@ export function ProfileContent() {
       setSavingListing(false);
     }
   };
+  useEffect(() => {
+    if (!isAddListingRoute) {
+      addListingRouteOpenedRef.current = false;
+      return;
+    }
+    if (!profile) return;
+    if (listingModalOpen) return;
+    if (addListingRouteOpenedRef.current) return;
+    addListingRouteOpenedRef.current = true;
+    openListingModal();
+  }, [isAddListingRoute, listingModalOpen, openListingModal, profile]);
+
   const searchCatalogInline = async (term: string) => {
     const q = term.trim();
 

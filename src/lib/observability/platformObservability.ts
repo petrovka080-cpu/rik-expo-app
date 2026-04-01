@@ -7,6 +7,7 @@ type PlatformObservabilityScreen =
   | "director"
   | "foreman"
   | "market"
+  | "office"
   | "ai"
   | "profile"
   | "security"

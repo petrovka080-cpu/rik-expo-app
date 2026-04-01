@@ -7,6 +7,7 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockLoadProfileScreenData = jest.fn();
 const mockBuildProfileModeFromCompany = jest.fn();
+const mockUseSegments = jest.fn(() => ["(tabs)", "profile"]);
 
 let capturedMainProps: Record<string, unknown> | null = null;
 let capturedModalProps: Record<string, unknown> | null = null;
@@ -16,6 +17,7 @@ jest.mock("expo-router", () => ({
     push: mockPush,
     replace: mockReplace,
   }),
+  useSegments: () => mockUseSegments(),
 }));
 
 jest.mock("./components/ProfileMainSections", () => ({
@@ -67,6 +69,8 @@ describe("ProfileContent composition shell", () => {
     mockReplace.mockReset();
     mockBuildProfileModeFromCompany.mockReset();
     mockLoadProfileScreenData.mockReset();
+    mockUseSegments.mockReset();
+    mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
 
     mockBuildProfileModeFromCompany.mockReturnValue("person");
     mockLoadProfileScreenData.mockResolvedValue({
@@ -117,5 +121,23 @@ describe("ProfileContent composition shell", () => {
     expect(capturedModalProps?.editProfileOpen).toBe(false);
     expect(capturedModalProps?.listingModalOpen).toBe(false);
     expect(capturedModalProps?.inviteModalOpen).toBe(false);
+  });
+
+  it("auto-opens the listing flow on the dedicated add route without changing the screen shell", async () => {
+    mockUseSegments.mockReturnValue(["(tabs)", "add"]);
+
+    let renderer: ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<ProfileContent />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(renderer!.root.findByProps({ testID: "profile-main-sections" })).toBeTruthy();
+    expect(capturedModalProps?.listingModalOpen).toBe(true);
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 });

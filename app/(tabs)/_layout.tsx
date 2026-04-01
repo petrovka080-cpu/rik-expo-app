@@ -12,28 +12,16 @@ type TabIconName = keyof typeof Ionicons.glyphMap;
 
 function iconForRoute(name: string, focused: boolean): TabIconName {
   switch (name) {
-    case "foreman":
-      return focused ? "construct" : "construct-outline";
-    case "director":
-      return focused ? "briefcase" : "briefcase-outline";
-    case "buyer":
-      return focused ? "bag-handle" : "bag-handle-outline";
-    case "accountant":
-      return focused ? "wallet" : "wallet-outline";
-    case "warehouse":
-      return focused ? "cube" : "cube-outline";
-    case "security":
-      return focused ? "shield-checkmark" : "shield-checkmark-outline";
     case "market":
       return focused ? "storefront" : "storefront-outline";
-    case "supplierMap":
-      return focused ? "map" : "map-outline";
+    case "office":
+      return focused ? "briefcase" : "briefcase-outline";
+    case "add":
+      return focused ? "add-circle" : "add-circle-outline";
+    case "chat":
+      return focused ? "chatbubbles" : "chatbubbles-outline";
     case "profile":
       return focused ? "person-circle" : "person-circle-outline";
-    case "reports":
-      return focused ? "bar-chart" : "bar-chart-outline";
-    case "contractor":
-      return focused ? "hammer" : "hammer-outline";
     default:
       return focused ? "ellipse" : "ellipse-outline";
   }
@@ -61,6 +49,7 @@ export default function TabsLayout() {
   return (
     <View style={styles.shell}>
       <Tabs
+        initialRouteName="market"
         screenOptions={{
           headerShown: false,
           headerTitle: "",
@@ -77,74 +66,40 @@ export default function TabsLayout() {
         }}
       >
         <Tabs.Screen
-          name="foreman"
-          options={{
-            title: "Прораб",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("foreman", focused)} color={color} size={size} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="director"
-          options={{
-            title: "Директор",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("director", focused)} color={color} size={size} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="buyer"
-          options={{
-            title: "Снабженец",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("buyer", focused)} color={color} size={size} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="accountant"
-          options={{
-            title: "Бухгалтер",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("accountant", focused)} color={color} size={size} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="warehouse"
-          options={{
-            title: "Склад",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("warehouse", focused)} color={color} size={size} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="security"
-          options={{
-            title: "Безопасность",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("security", focused)} color={color} size={size} />
-            ),
-          }}
-        />
-        <Tabs.Screen
           name="market"
           options={{
-            title: "Маркет",
+            title: "Главная",
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons name={iconForRoute("market", focused)} color={color} size={size} />
             ),
           }}
         />
         <Tabs.Screen
-          name="supplierMap"
+          name="office"
           options={{
-            title: "Карта",
+            title: "Офис",
             tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("supplierMap", focused)} color={color} size={size} />
+              <Ionicons name={iconForRoute("office", focused)} color={color} size={size} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="add"
+          options={{
+            title: "+",
+            tabBarLabel: "+",
+            tabBarLabelStyle: { fontSize: 18, fontWeight: "900" },
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons name={iconForRoute("add", focused)} color={color} size={size + 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="chat"
+          options={{
+            title: "Чаты",
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons name={iconForRoute("chat", focused)} color={color} size={size} />
             ),
           }}
         />
@@ -157,29 +112,20 @@ export default function TabsLayout() {
             ),
           }}
         />
-        <Tabs.Screen
-          name="reports"
-          options={{
-            title: "Отчеты",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("reports", focused)} color={color} size={size} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="contractor"
-          options={{
-            title: "Подрядчик",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("contractor", focused)} color={color} size={size} />
-            ),
-          }}
-        />
+
+        <Tabs.Screen name="foreman" options={{ href: null }} />
+        <Tabs.Screen name="director" options={{ href: null }} />
+        <Tabs.Screen name="buyer" options={{ href: null }} />
+        <Tabs.Screen name="accountant" options={{ href: null }} />
+        <Tabs.Screen name="warehouse" options={{ href: null }} />
+        <Tabs.Screen name="security" options={{ href: null }} />
+        <Tabs.Screen name="reports" options={{ href: null }} />
+        <Tabs.Screen name="contractor" options={{ href: null }} />
+        <Tabs.Screen name="supplierMap" options={{ href: null }} />
         <Tabs.Screen name="suppliers-map" options={{ href: null }} />
         <Tabs.Screen name="auctions" options={{ href: null }} />
         <Tabs.Screen name="request/[id]" options={{ href: null }} />
         <Tabs.Screen name="ai" options={{ href: null }} />
-        <Tabs.Screen name="chat" options={{ href: null }} />
       </Tabs>
 
       {showAssistantFab ? (
