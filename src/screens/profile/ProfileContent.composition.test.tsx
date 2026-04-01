@@ -107,7 +107,7 @@ describe("ProfileContent composition shell", () => {
     });
   });
 
-  it("loads screen data and delegates profile rendering through access model", async () => {
+  it("loads screen data and exposes unified entry callbacks", async () => {
     let renderer: ReactTestRenderer;
 
     await act(async () => {
@@ -131,6 +131,7 @@ describe("ProfileContent composition shell", () => {
     expect(capturedMainProps?.profileName).toBe("Айбек");
     expect(capturedMainProps?.roleLabel).toBe("Директор");
     expect(capturedMainProps?.officeRolesLabel).toBe("Директор");
+    expect(capturedMainProps?.hasSellerAreaEntry).toBe(true);
     expect(
       (
         capturedMainProps?.accessModel as {
@@ -150,18 +151,55 @@ describe("ProfileContent composition shell", () => {
     );
     expect(capturedEditModalProps).not.toBeNull();
     expect(capturedEditModalProps?.visible).toBe(false);
+
+    act(() => {
+      (capturedMainProps?.onOpenMarket as (() => void) | undefined)?.();
+    });
+    expect(mockPush).toHaveBeenCalledWith("/(tabs)/market");
+
+    act(() => {
+      (capturedMainProps?.onOpenAddListing as (() => void) | undefined)?.();
+    });
+    expect(mockPush).toHaveBeenCalledWith("/(tabs)/add");
+
     act(() => {
       (capturedMainProps?.onOpenSellerArea as (() => void) | undefined)?.();
     });
     expect(mockPush).toHaveBeenCalledWith("/seller");
+
     act(() => {
       (capturedMainProps?.onOpenOfficeAccess as (() => void) | undefined)?.();
     });
     expect(mockPush).toHaveBeenCalledWith("/office/index");
   });
 
-  it("falls back to market context when no stored context is available", async () => {
+  it("keeps seller entry hidden when there are no own listings", async () => {
     mockLoadStoredActiveContext.mockResolvedValue(null);
+    mockLoadProfileScreenData.mockResolvedValue({
+      profile: {
+        id: "profile-1",
+        user_id: "user-1",
+        full_name: "Айбек",
+        phone: "+996700000000",
+        city: "Бишкек",
+        usage_market: true,
+        usage_build: false,
+      },
+      company: null,
+      profileRole: null,
+      profileEmail: "aybek@example.com",
+      profileAvatarUrl: null,
+      accessSourceSnapshot: {
+        userId: "user-1",
+        authRole: null,
+        resolvedRole: null,
+        usageMarket: true,
+        usageBuild: false,
+        ownedCompanyId: null,
+        companyMemberships: [],
+        listingsCount: 0,
+      },
+    });
 
     let renderer: ReactTestRenderer;
 
@@ -176,6 +214,7 @@ describe("ProfileContent composition shell", () => {
     expect(
       renderer!.root.findByProps({ testID: "profile-main-sections" }),
     ).toBeTruthy();
+    expect(capturedMainProps?.hasSellerAreaEntry).toBe(false);
     expect(
       (
         capturedMainProps?.accessModel as {

@@ -1,19 +1,7 @@
-// src/lib/authRouting.ts
-// РњР°СЂС€СЂСѓС‚РёР·Р°С†РёСЏ РЅР° СЃС‚Р°СЂС‚РѕРІСѓСЋ РІРєР»Р°РґРєСѓ РїРѕ СЂРѕР»Рё
+import { PROFILE_TAB_ROUTE } from "./navigation/coreRoutes";
 
-export type RoleHomePath = "/(tabs)/market";
+export type PostAuthEntryPath = typeof PROFILE_TAB_ROUTE;
 
-export const FALLBACK_TAB: RoleHomePath = "/(tabs)/market";
-
-export function pathForRole(_role: string | null | undefined): RoleHomePath {
-  return FALLBACK_TAB;
-}
-
-export function shouldEnforceClientRoleRedirect(): boolean {
-  const runtime = globalThis as typeof globalThis & { __DEV__?: unknown };
-  return runtime.__DEV__ !== true;
-}
-
-export function postAuthPathForRole(role: string | null | undefined): RoleHomePath {
-  return shouldEnforceClientRoleRedirect() ? pathForRole(role) : FALLBACK_TAB;
-}
+// Unified post-auth entry goes through the identity/access hub.
+// Role-specific auto-redirects are intentionally not supported anymore.
+export const POST_AUTH_ENTRY_ROUTE: PostAuthEntryPath = PROFILE_TAB_ROUTE;

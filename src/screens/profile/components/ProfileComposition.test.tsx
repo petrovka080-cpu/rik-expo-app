@@ -61,7 +61,10 @@ const baseMainProps = () => ({
   officeRolesLabel: "Директор, Снабженец",
   activeContextDescription:
     "Сейчас активен Market. Office-доступ сохранён, но не выбран как текущий контекст.",
+  hasSellerAreaEntry: true,
   onOpenEditProfile: jest.fn(),
+  onOpenMarket: jest.fn(),
+  onOpenAddListing: jest.fn(),
   onOpenSellerArea: jest.fn(),
   onOpenOfficeAccess: jest.fn(),
   onSelectActiveContext: jest.fn(),
@@ -70,7 +73,7 @@ const baseMainProps = () => ({
 });
 
 describe("Profile composition boundaries", () => {
-  it("renders identity/access sections and forwards context actions", () => {
+  it("renders entry CTAs and forwards context actions", () => {
     const props = baseMainProps();
     let renderer: ReactTestRenderer;
 
@@ -79,6 +82,12 @@ describe("Profile composition boundaries", () => {
     });
 
     renderer!.root.findByProps({ testID: "profile-edit-open" }).props.onPress();
+    renderer!.root
+      .findByProps({ testID: "profile-open-market-entry" })
+      .props.onPress();
+    renderer!.root
+      .findByProps({ testID: "profile-open-add-listing" })
+      .props.onPress();
     renderer!.root
       .findByProps({ testID: "profile-context-office" })
       .props.onPress();
@@ -93,10 +102,35 @@ describe("Profile composition boundaries", () => {
       .props.onPress();
 
     expect(props.onOpenEditProfile).toHaveBeenCalledTimes(1);
+    expect(props.onOpenMarket).toHaveBeenCalledTimes(1);
+    expect(props.onOpenAddListing).toHaveBeenCalledTimes(1);
     expect(props.onSelectActiveContext).toHaveBeenCalledWith("office");
     expect(props.onOpenActiveContext).toHaveBeenCalledTimes(1);
     expect(props.onOpenOfficeAccess).toHaveBeenCalledTimes(1);
     expect(props.onOpenSellerArea).toHaveBeenCalledTimes(1);
+    expect(
+      renderer!.root.findAll(
+        (node) =>
+          typeof node.props?.children === "string"
+          && node.props.children === "Открыть Office и компанию",
+      ),
+    ).not.toEqual([]);
+  });
+
+  it("hides seller entry when there are no seller-owned listings yet", () => {
+    const props = {
+      ...baseMainProps(),
+      hasSellerAreaEntry: false,
+    };
+    let renderer: ReactTestRenderer;
+
+    act(() => {
+      renderer = TestRenderer.create(<ProfileMainSections {...props} />);
+    });
+
+    expect(
+      renderer!.root.findAllByProps({ testID: "profile-open-seller-area" }),
+    ).toEqual([]);
   });
 
   it("hides the false context switch when only one context is available", () => {
@@ -105,6 +139,7 @@ describe("Profile composition boundaries", () => {
       accessModel: {
         ...baseAccessModel,
         hasOfficeAccess: false,
+        hasCompanyContext: false,
         availableContexts: ["market"],
         activeOfficeRole: null,
         availableOfficeRoles: [],
@@ -119,5 +154,12 @@ describe("Profile composition boundaries", () => {
     expect(
       renderer!.root.findAllByProps({ testID: "profile-context-office" }),
     ).toEqual([]);
+    expect(
+      renderer!.root.findAll(
+        (node) =>
+          typeof node.props?.children === "string"
+          && node.props.children === "Создать компанию",
+      ),
+    ).not.toEqual([]);
   });
 });

@@ -13,6 +13,7 @@ export const AUTH_LOGIN_ROUTE = "/auth/login" satisfies Href;
 export const DIRECTOR_ROUTE = "/director" satisfies Href;
 export const ADD_LISTING_ROUTE = "/(tabs)/add" satisfies Href;
 export const OFFICE_TAB_ROUTE = "/office/index" satisfies Href;
+export const PROFILE_TAB_ROUTE = "/(tabs)/profile" satisfies Href;
 export const REPORTS_DASHBOARD_ROUTE = "/reports/dashboard" satisfies Href;
 export const REPORTS_AI_ASSISTANT_ROUTE = "/reports/ai-assistant" satisfies Href;
 export const SELLER_ROUTE = "/seller" satisfies Href;

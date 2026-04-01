@@ -18,36 +18,45 @@ import { MenuActionRow, RowItem } from "./ProfilePrimitives";
 const styles = profileStyles;
 
 const COPY = {
-  yes: "\u0415\u0441\u0442\u044c",
-  no: "\u041d\u0435\u0442",
-  unknown: "\u041d\u0435 \u0443\u043a\u0430\u0437\u0430\u043d",
-  profileTitle: "\u041f\u0440\u043e\u0444\u0438\u043b\u044c",
+  yes: "Есть",
+  no: "Нет",
+  unknown: "Не указан",
+  profileTitle: "Профиль",
   profileSubtitle:
-    "\u041b\u0438\u0447\u043d\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435, \u0434\u043e\u0441\u0442\u0443\u043f\u044b, \u0430\u043a\u0442\u0438\u0432\u043d\u044b\u0439 \u043a\u043e\u043d\u0442\u0435\u043a\u0441\u0442 \u0438 \u0442\u0435\u043a\u0443\u0449\u0430\u044f \u0441\u0435\u0441\u0441\u0438\u044f GOX.",
-  edit: "\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c",
-  name: "\u0418\u043c\u044f",
-  phone: "\u0422\u0435\u043b\u0435\u0444\u043e\u043d",
-  city: "\u0413\u043e\u0440\u043e\u0434",
-  currentContext: "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043a\u043e\u043d\u0442\u0435\u043a\u0441\u0442",
-  companyContextPrefix: "\u0415\u0441\u0442\u044c: ",
-  openMarket: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c Market",
-  openOffice: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c Office \u0438 \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u044e",
+    "Личные данные, доступы, активный контекст и текущая сессия GOX.",
+  edit: "Редактировать",
+  name: "Имя",
+  phone: "Телефон",
+  city: "Город",
+  currentContext: "Текущий контекст",
+  companyContextPrefix: "Есть: ",
+  openMarket: "Открыть Market",
+  openOffice: "Открыть Office и компанию",
   oneContextHint:
-    "\u0414\u043e\u0441\u0442\u0443\u043f\u0435\u043d \u0442\u043e\u043b\u044c\u043a\u043e \u043e\u0434\u0438\u043d \u043a\u043e\u043d\u0442\u0435\u043a\u0441\u0442, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0442\u0435\u043b\u044c \u0441\u043a\u0440\u044b\u0442.",
-  editData: "\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0434\u0430\u043d\u043d\u044b\u0435",
-  signOutTitle: "\u0412\u044b\u0439\u0442\u0438 \u0438\u0437 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0430",
+    "Доступен только один контекст, поэтому переключатель скрыт.",
+  editData: "Редактировать данные",
+  signOutTitle: "Выйти из аккаунта",
   signOutSubtitle:
-    "\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0442\u0435\u043a\u0443\u0449\u0443\u044e \u0441\u0435\u0441\u0441\u0438\u044e \u0438 \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043d\u0430 \u044d\u043a\u0440\u0430\u043d \u0432\u0445\u043e\u0434\u0430.",
+    "Завершить текущую сессию и вернуться на экран входа.",
   marketContextSubtitle:
-    "\u041f\u043e\u0438\u0441\u043a, \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440 \u0442\u043e\u0432\u0430\u0440\u043e\u0432 \u0438 \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 market flow.",
-  officeContextSubtitle:
-    "\u0420\u0430\u0431\u043e\u0447\u0438\u0435 \u0440\u043e\u043b\u0438, Office hub \u0438 ERP-\u043c\u043e\u0434\u0443\u043b\u0438.",
+    "Поиск, просмотр товаров и основной market flow.",
+  officeContextSubtitle: "Рабочие роли, Office hub и ERP-модули.",
+  nextStepsTitle: "Что дальше",
+  marketEntryTitle: "Перейти в Market",
+  marketEntrySubtitle:
+    "Смотреть товары, искать по категориям и открывать карточки.",
+  addListingTitle: "Создать объявление",
+  addListingSubtitle:
+    "Опубликовать предложение в market и начать seller-сценарий.",
+  sellerEntryTitle: "Открыть кабинет продавца",
   sellerEntrySubtitle:
-    "\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f, \u0441\u0442\u0430\u0442\u0443\u0441\u044b \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438 \u0438 \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u044b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430 \u0432 \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e\u043c \u0440\u0430\u0437\u0434\u0435\u043b\u0435.",
+    "Мои объявления, статусы публикации и seller-инструменты в отдельном контуре.",
+  officeEntryReadyTitle: "Открыть Office и компанию",
   officeEntryReadySubtitle:
-    "\u041a\u043e\u043c\u043f\u0430\u043d\u0438\u044f, \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438, invite-\u044b, roles \u0438 \u0432\u0445\u043e\u0434 \u0432 Office \u0432 \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e\u043c \u043a\u043e\u043d\u0442\u0443\u0440\u0435.",
+    "Компания, сотрудники, invite-ы, роли и вход в Office живут в отдельном контуре.",
+  officeEntryBootstrapTitle: "Создать компанию",
   officeEntryBootstrapSubtitle:
-    "\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u044e, \u0447\u0442\u043e\u0431\u044b \u043e\u0442\u043a\u0440\u044b\u0442\u044c Office access \u0438 \u0441\u0442\u0430\u0440\u0442\u043e\u0432\u0443\u044e \u0440\u043e\u043b\u044c \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440\u0430.",
+    "Создайте компанию, чтобы открыть Office access и получить стартовую роль директора.",
 } as const;
 
 type ProfileMainSectionsProps = {
@@ -63,7 +72,10 @@ type ProfileMainSectionsProps = {
   accessModel: AppAccessModel;
   officeRolesLabel: string;
   activeContextDescription: string;
+  hasSellerAreaEntry: boolean;
   onOpenEditProfile: () => void;
+  onOpenMarket: () => void;
+  onOpenAddListing: () => void;
   onOpenSellerArea: () => void;
   onOpenOfficeAccess: () => void;
   onSelectActiveContext: (context: AppContext) => void;
@@ -86,7 +98,10 @@ export function ProfileMainSections({
   accessModel,
   officeRolesLabel,
   activeContextDescription,
+  hasSellerAreaEntry,
   onOpenEditProfile,
+  onOpenMarket,
+  onOpenAddListing,
   onOpenSellerArea,
   onOpenOfficeAccess,
   onSelectActiveContext,
@@ -118,6 +133,10 @@ export function ProfileMainSections({
   const activeContextCtaLabel = marketContextActive
     ? COPY.openMarket
     : COPY.openOffice;
+  const officeEntryTitle =
+    accessModel.hasOfficeAccess || accessModel.hasCompanyContext
+      ? COPY.officeEntryReadyTitle
+      : COPY.officeEntryBootstrapTitle;
   const officeEntrySubtitle =
     accessModel.hasOfficeAccess || accessModel.hasCompanyContext
       ? COPY.officeEntryReadySubtitle
@@ -216,22 +235,53 @@ export function ProfileMainSections({
         </View>
       </View>
 
-      {accessModel.hasSellerCapability ? (
-        <View style={styles.section}>
-          <View style={styles.profileSectionHeader}>
-            <Ionicons name="storefront-outline" size={18} color={UI.accent} />
-            <Text style={styles.profileSectionHeaderText}>
-              \u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430
-            </Text>
-          </View>
+      <View style={styles.section}>
+        <View style={styles.profileSectionHeader}>
+          <Ionicons name="compass-outline" size={18} color={UI.accent} />
+          <Text style={styles.profileSectionHeaderText}>{COPY.nextStepsTitle}</Text>
+        </View>
+
+        {accessModel.hasMarketAccess ? (
+          <Pressable
+            testID="profile-open-market-entry"
+            style={styles.profileActionCard}
+            onPress={onOpenMarket}
+          >
+            <View style={styles.profileActionTextWrap}>
+              <Text style={styles.profileActionTitle}>{COPY.marketEntryTitle}</Text>
+              <Text style={styles.profileActionSubtitle}>
+                {COPY.marketEntrySubtitle}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={UI.accent} />
+          </Pressable>
+        ) : null}
+
+        {accessModel.hasMarketAccess ? (
+          <Pressable
+            testID="profile-open-add-listing"
+            style={[styles.profileActionCard, styles.companyActionsRowTop]}
+            onPress={onOpenAddListing}
+          >
+            <View style={styles.profileActionTextWrap}>
+              <Text style={styles.profileActionTitle}>{COPY.addListingTitle}</Text>
+              <Text style={styles.profileActionSubtitle}>
+                {COPY.addListingSubtitle}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={UI.accent} />
+          </Pressable>
+        ) : null}
+
+        {hasSellerAreaEntry ? (
           <Pressable
             testID="profile-open-seller-area"
-            style={styles.profileActionCard}
+            style={[styles.profileActionCard, styles.companyActionsRowTop]}
             onPress={onOpenSellerArea}
           >
             <View style={styles.profileActionTextWrap}>
               <Text style={styles.profileActionTitle}>
-                \u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u0430\u0431\u0438\u043d\u0435\u0442 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430
+                {COPY.sellerEntryTitle}
               </Text>
               <Text style={styles.profileActionSubtitle}>
                 {COPY.sellerEntrySubtitle}
@@ -239,23 +289,15 @@ export function ProfileMainSections({
             </View>
             <Ionicons name="chevron-forward" size={20} color={UI.accent} />
           </Pressable>
-        </View>
-      ) : null}
+        ) : null}
 
-      <View style={styles.section}>
-        <View style={styles.profileSectionHeader}>
-          <Ionicons name="briefcase-outline" size={18} color={UI.accent} />
-          <Text style={styles.profileSectionHeaderText}>Office и компания</Text>
-        </View>
         <Pressable
           testID="profile-open-office-access"
-          style={styles.profileActionCard}
+          style={[styles.profileActionCard, styles.companyActionsRowTop]}
           onPress={onOpenOfficeAccess}
         >
           <View style={styles.profileActionTextWrap}>
-            <Text style={styles.profileActionTitle}>
-              Открыть контур Office access
-            </Text>
+            <Text style={styles.profileActionTitle}>{officeEntryTitle}</Text>
             <Text style={styles.profileActionSubtitle}>
               {officeEntrySubtitle}
             </Text>

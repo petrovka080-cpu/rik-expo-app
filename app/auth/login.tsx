@@ -1,22 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  StyleSheet,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { Link, router } from 'expo-router';
-import { supabase } from '../../src/lib/supabaseClient';
-import { postAuthPathForRole, FALLBACK_TAB } from '../../src/lib/authRouting';
-import { resolveCurrentSessionRole } from '../../src/lib/sessionRole';
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { Link, router } from "expo-router";
+
+import { POST_AUTH_ENTRY_ROUTE } from "../../src/lib/authRouting";
+import { supabase } from "../../src/lib/supabaseClient";
+
+const UI_COPY = {
+  title: "Войти в GOX",
+  passwordPlaceholder: "Пароль",
+  submit: "Войти",
+  noSession:
+    "Нет активной сессии. Проверьте почту и пароль, затем попробуйте ещё раз.",
+  fallbackError: "Не удалось войти.",
+  configError:
+    "Supabase не настроен: проверьте EXPO_PUBLIC_SUPABASE_URL и EXPO_PUBLIC_SUPABASE_ANON_KEY.",
+  register: "Зарегистрироваться",
+  reset: "Забыли пароль?",
+} as const;
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,30 +37,27 @@ export default function LoginScreen() {
     if (loading) return;
     setError(null);
     setLoading(true);
+
     try {
-      if (!supabase) throw new Error('Supabase не настроен: проверьте EXPO_PUBLIC_SUPABASE_URL/ANON_KEY.');
-      const { error: signError, data } = await supabase.auth.signInWithPassword({ email, password });
+      if (!supabase) {
+        throw new Error(UI_COPY.configError);
+      }
+
+      const { error: signError, data } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
       if (signError) throw signError;
 
       if (!data?.session) {
-        setError('Нет активной сессии. Проверьте почту и пароль.');
+        setError(UI_COPY.noSession);
         return;
       }
 
-      let href = FALLBACK_TAB;
-      try {
-        const roleResolution = await resolveCurrentSessionRole({
-          user: data.session.user,
-          trigger: 'login_submit',
-          joinInflight: false,
-        });
-        href = postAuthPathForRole(roleResolution.role);
-      } catch {
-        href = FALLBACK_TAB;
-      }
-      router.replace(href);
+      router.replace(POST_AUTH_ENTRY_ROUTE);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Не удалось войти.');
+      setError(e instanceof Error ? e.message : UI_COPY.fallbackError);
     } finally {
       setLoading(false);
     }
@@ -55,11 +65,11 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.container}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>Добро пожаловать</Text>
+        <Text style={styles.title}>{UI_COPY.title}</Text>
         <TextInput
           style={styles.input}
           autoCapitalize="none"
@@ -72,7 +82,7 @@ export default function LoginScreen() {
         <TextInput
           style={styles.input}
           secureTextEntry
-          placeholder="Пароль"
+          placeholder={UI_COPY.passwordPlaceholder}
           value={password}
           onChangeText={setPassword}
         />
@@ -80,12 +90,20 @@ export default function LoginScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Pressable style={styles.button} onPress={onSubmit} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Войти</Text>}
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>{UI_COPY.submit}</Text>
+          )}
         </Pressable>
 
         <View style={styles.linksRow}>
-          <Link href="/auth/register" style={styles.link}>Зарегистрироваться</Link>
-          <Link href="/auth/reset" style={styles.link}>Забыли пароль?</Link>
+          <Link href="/auth/register" style={styles.link}>
+            {UI_COPY.register}
+          </Link>
+          <Link href="/auth/reset" style={styles.link}>
+            {UI_COPY.reset}
+          </Link>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -95,21 +113,21 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F8FAFC',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F8FAFC",
     paddingHorizontal: 16,
   },
   card: {
-    width: '100%',
+    width: "100%",
     maxWidth: 420,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 12,
     ...Platform.select({
-      web: { boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.08)' },
+      web: { boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.08)" },
       default: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOpacity: 0.05,
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 2 },
@@ -119,14 +137,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#0F172A',
+    fontWeight: "700",
+    color: "#0F172A",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: "#E2E8F0",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -134,28 +152,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#111827',
+    backgroundColor: "#111827",
     paddingVertical: 12,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 4,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   error: {
-    color: '#DC2626',
+    color: "#DC2626",
     marginBottom: 8,
   },
   linksRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 12,
   },
   link: {
-    color: '#1D4ED8',
-    fontWeight: '600',
+    color: "#1D4ED8",
+    fontWeight: "600",
   },
 });

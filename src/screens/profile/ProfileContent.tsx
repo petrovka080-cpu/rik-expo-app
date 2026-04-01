@@ -17,6 +17,7 @@ import {
   MARKET_TAB_ROUTE,
   OFFICE_TAB_ROUTE,
   SELLER_ROUTE,
+  buildAddListingRoute,
 } from "../../lib/navigation/coreRoutes";
 import {
   getErrorMessage,
@@ -111,9 +112,9 @@ export function ProfileContent() {
         setProfileAvatarDraft(result.profileAvatarUrl);
         setAccessSourceSnapshot(result.accessSourceSnapshot);
         setRequestedActiveContext(storedActiveContext);
-      } catch (e: unknown) {
+      } catch (error: unknown) {
         if (!alive) return;
-        Alert.alert("Профиль", getErrorMessage(e));
+        Alert.alert("Профиль", getErrorMessage(error));
       } finally {
         if (alive) setLoading(false);
       }
@@ -154,6 +155,8 @@ export function ProfileContent() {
     ],
   );
 
+  const sellerListingsCount = accessSourceSnapshot?.listingsCount ?? 0;
+  const hasSellerAreaEntry = sellerListingsCount > 0;
   const displayRole = accessModel.activeOfficeRole ?? profileRole;
   const profileName = getProfileDisplayName({
     fullName: profile?.full_name,
@@ -181,6 +184,14 @@ export function ProfileContent() {
     hydrateProfileForm(profile, profileAvatarUrl);
     setEditProfileOpen(true);
   }, [hydrateProfileForm, profile, profileAvatarUrl]);
+
+  const openMarket = useCallback(() => {
+    router.push(MARKET_TAB_ROUTE);
+  }, [router]);
+
+  const openAddListing = useCallback(() => {
+    router.push(buildAddListingRoute());
+  }, [router]);
 
   const openSellerArea = useCallback(() => {
     router.push(SELLER_ROUTE);
@@ -219,10 +230,12 @@ export function ProfileContent() {
       if (!result.canceled) {
         setProfileAvatarDraft(result.assets[0]?.uri ?? null);
       }
-    } catch (e: any) {
+    } catch (error: unknown) {
       Alert.alert(
         "Профиль",
-        e?.message ?? "Не удалось выбрать изображение.",
+        error instanceof Error
+          ? error.message
+          : "Не удалось выбрать изображение.",
       );
     }
   }, [setProfileAvatarDraft]);
@@ -263,8 +276,8 @@ export function ProfileContent() {
           : prev,
       );
       setEditProfileOpen(false);
-    } catch (e: unknown) {
-      Alert.alert("Профиль", getErrorMessage(e));
+    } catch (error: unknown) {
+      Alert.alert("Профиль", getErrorMessage(error));
     } finally {
       setSavingProfile(false);
     }
@@ -309,8 +322,8 @@ export function ProfileContent() {
           try {
             await signOutProfileSession();
             router.replace(AUTH_LOGIN_ROUTE);
-          } catch (e: unknown) {
-            Alert.alert("Профиль", getErrorMessage(e));
+          } catch (error: unknown) {
+            Alert.alert("Профиль", getErrorMessage(error));
           }
         },
       },
@@ -341,7 +354,10 @@ export function ProfileContent() {
         accessModel={accessModel}
         officeRolesLabel={officeRolesLabel}
         activeContextDescription={activeContextDescription}
+        hasSellerAreaEntry={hasSellerAreaEntry}
         onOpenEditProfile={openEditProfile}
+        onOpenMarket={openMarket}
+        onOpenAddListing={openAddListing}
         onOpenSellerArea={openSellerArea}
         onOpenOfficeAccess={openOfficeAccess}
         onSelectActiveContext={handleSelectActiveContext}

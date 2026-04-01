@@ -7,7 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import { baseUrl, poll } from "./_shared/webRuntimeHarness";
 import { cleanupTempUser, createTempUser, createVerifierAdmin } from "./_shared/testUserDiscipline";
-import { shouldEnforceClientRoleRedirect } from "../src/lib/authRouting";
+import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
 
 const projectRoot = process.cwd();
 const admin = createVerifierAdmin("local-role-screen-access-verify");
@@ -179,21 +179,10 @@ async function verifyRoute(page: Page, route: typeof routes[number]) {
   };
 }
 
-function evaluateRedirectPolicyProof() {
-  const runtime = globalThis as typeof globalThis & { __DEV__?: unknown };
-  const previousDev = runtime.__DEV__;
-
-  runtime.__DEV__ = true;
-  const devResult = shouldEnforceClientRoleRedirect();
-
-  runtime.__DEV__ = false;
-  const productionLikeResult = shouldEnforceClientRoleRedirect();
-
-  runtime.__DEV__ = previousDev;
-
+function evaluateEntryPolicyProof() {
   return {
-    devDisablesRoleRedirect: devResult === false,
-    productionPreservesRoleRedirect: productionLikeResult === true,
+    postAuthEntryRoute: POST_AUTH_ENTRY_ROUTE,
+    postAuthEntryUsesAccessHub: POST_AUTH_ENTRY_ROUTE === "/(tabs)/profile",
   };
 }
 
@@ -233,12 +222,11 @@ async function main() {
       routeResults.push(await verifyRoute(page, route));
     }
 
-    const redirectPolicy = evaluateRedirectPolicyProof();
+    const entryPolicy = evaluateEntryPolicyProof();
     const payload = {
       status:
         routeResults.every((item) => item.openedInLocalDev)
-        && redirectPolicy.devDisablesRoleRedirect
-        && redirectPolicy.productionPreservesRoleRedirect
+        && entryPolicy.postAuthEntryUsesAccessHub
           ? "GREEN"
           : "NOT_GREEN",
       checkedAt: new Date().toISOString(),
@@ -248,7 +236,7 @@ async function main() {
         email: user.email,
       },
       routes: routeResults,
-      redirectPolicy,
+      entryPolicy,
     };
 
     writeJsonArtifact(smokePath, payload);
@@ -268,9 +256,9 @@ async function main() {
             `- \`${item.route}\` -> \`${item.finalPath}\` | redirected=${item.redirected ? "true" : "false"} | opened=${item.openedInLocalDev ? "true" : "false"}`,
         ),
         "",
-        "## Redirect policy",
-        `- devDisablesRoleRedirect = ${redirectPolicy.devDisablesRoleRedirect ? "true" : "false"}`,
-        `- productionPreservesRoleRedirect = ${redirectPolicy.productionPreservesRoleRedirect ? "true" : "false"}`,
+        "## Entry policy",
+        `- postAuthEntryRoute = \`${entryPolicy.postAuthEntryRoute}\``,
+        `- postAuthEntryUsesAccessHub = ${entryPolicy.postAuthEntryUsesAccessHub ? "true" : "false"}`,
       ].join("\n"),
       "utf8",
     );

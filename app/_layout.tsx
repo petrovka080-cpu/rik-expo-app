@@ -15,6 +15,7 @@ import { clearCurrentSessionRoleCache, warmCurrentSessionProfile } from "../src/
 import { ensureQueueWorker, stopQueueWorker } from "../src/workers/queueBootstrap";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
+import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
 if (Platform.OS === "web") {
   LogBox.ignoreLogs([
@@ -140,7 +141,7 @@ export default function RootLayout() {
     const inAuthStack = segments?.[0] === "auth";
 
     if (!hasSession && !inAuthStack && !isPdfViewerRoute) router.replace("/auth/login");
-    else if (hasSession && inAuthStack) router.replace("/");
+    else if (hasSession && inAuthStack) router.replace(POST_AUTH_ENTRY_ROUTE);
   }, [hasSession, isPdfViewerRoute, sessionLoaded, segments]);
 
   useEffect(() => {
