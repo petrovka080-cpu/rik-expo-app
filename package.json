@@ -70,7 +70,6 @@
     "expo-web-browser": "~15.0.10",
     "jspdf": "^2.5.2",
     "leaflet": "^1.9.4",
-    "leaflet.markercluster": "^1.5.3",
     "react": "19.1.0",
     "react-native": "0.81.5",
     "react-native-chart-kit": "^6.12.0",

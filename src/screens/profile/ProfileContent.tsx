@@ -35,8 +35,12 @@ import {
   getErrorMessage,
 } from "./profile.helpers";
 import { profileStyles } from "./profile.styles";
+import { ProfilePersonOverview } from "./components/ProfilePersonOverview";
 import { LabeledInput, MenuActionRow, RowItem } from "./components/ProfilePrimitives";
+import { useCompanyForm } from "./hooks/useCompanyForm";
 import { useProfileDerivedState } from "./hooks/useProfileDerivedState.ts";
+import { useListingForm } from "./hooks/useListingForm";
+import { useProfileForm } from "./hooks/useProfileForm";
 import {
   buildProfileModeFromCompany,
   createCompanyInvite,
@@ -80,18 +84,13 @@ export function ProfileContent() {
   const [profileRole, setProfileRole] = useState<string | null>(null);
   const [profileEmail, setProfileEmail] = useState<string | null>(null);
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
-  const [profileAvatarDraft, setProfileAvatarDraft] = useState<string | null>(null);
   const [, setSigningOut] = useState(false);
 
   // ===== Мои объявления =====
   const [myListings, setMyListings] = useState<ProfileListingRecord[]>([]);
 
   // ===== КОРЗИНА ПОЗИЦИЙ ДЛЯ ОБЪЯВЛЕНИЯ =====
-  const [listingCartItems, setListingCartItems] = useState<ListingCartItem[]>(
-    []
-  );
   const [itemModalOpen, setItemModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<ListingCartItem | null>(null);
 
   const [modeMarket, setModeMarket] = useState(true);
   const [modeBuild, setModeBuild] = useState(false);
@@ -108,47 +107,76 @@ export function ProfileContent() {
   // вкладки компании
   const [companyTab, setCompanyTab] = useState<CompanyTab>("main");
 
-  // формы профиля
-  const [profileNameInput, setProfileNameInput] = useState("");
-  const [profilePhoneInput, setProfilePhoneInput] = useState("");
-  const [profileCityInput, setProfileCityInput] = useState("");
-  const [profileBioInput, setProfileBioInput] = useState("");
-  const [profileTelegramInput, setProfileTelegramInput] = useState("");
-  const [profileWhatsappInput, setProfileWhatsappInput] = useState("");
-  const [profilePositionInput, setProfilePositionInput] = useState("");
+  const {
+    profileForm,
+    profileAvatarDraft,
+    setProfileAvatarDraft,
+    hydrateProfileForm,
+    resetProfileAvatarDraft,
+    profileNameInput,
+    setProfileNameInput,
+    profilePhoneInput,
+    setProfilePhoneInput,
+    profileCityInput,
+    setProfileCityInput,
+    profileBioInput,
+    setProfileBioInput,
+    profileTelegramInput,
+    setProfileTelegramInput,
+    profileWhatsappInput,
+    setProfileWhatsappInput,
+    profilePositionInput,
+    setProfilePositionInput,
+  } = useProfileForm();
 
-  // формы компании (используются и в wizard, и в модалке редактирования)
-  const [companyNameInput, setCompanyNameInput] = useState("");
-  const [companyCityInput, setCompanyCityInput] = useState("");
-  const [companyLegalFormInput, setCompanyLegalFormInput] = useState("");
-  const [companyAddressInput, setCompanyAddressInput] = useState("");
-  const [companyIndustryInput, setCompanyIndustryInput] = useState("");
-  const [companyAboutShortInput, setCompanyAboutShortInput] =
-    useState("");
-
-  const [companyPhoneMainInput, setCompanyPhoneMainInput] = useState("");
-  const [companyPhoneWhatsAppInput, setCompanyPhoneWhatsAppInput] =
-    useState("");
-  const [companyEmailInput, setCompanyEmailInput] = useState("");
-  const [companySiteInput, setCompanySiteInput] = useState("");
-  const [companyTelegramInput, setCompanyTelegramInput] = useState("");
-  const [companyWorkTimeInput, setCompanyWorkTimeInput] = useState("");
-  const [companyContactPersonInput, setCompanyContactPersonInput] =
-    useState("");
-
-  const [companyAboutFullInput, setCompanyAboutFullInput] = useState("");
-  const [companyServicesInput, setCompanyServicesInput] = useState("");
-  const [companyRegionsInput, setCompanyRegionsInput] = useState("");
-  const [companyClientsTypesInput, setCompanyClientsTypesInput] =
-    useState("");
-
-  const [companyInnInput, setCompanyInnInput] = useState("");
-  const [companyBinInput, setCompanyBinInput] = useState("");
-  const [companyRegNumberInput, setCompanyRegNumberInput] = useState("");
-  const [companyBankDetailsInput, setCompanyBankDetailsInput] =
-    useState("");
-  const [companyLicensesInfoInput, setCompanyLicensesInfoInput] =
-    useState("");
+  const {
+    companyForm,
+    hydrateCompanyForm,
+    companyNameInput,
+    setCompanyNameInput,
+    companyCityInput,
+    setCompanyCityInput,
+    companyLegalFormInput,
+    setCompanyLegalFormInput,
+    companyAddressInput,
+    setCompanyAddressInput,
+    companyIndustryInput,
+    setCompanyIndustryInput,
+    companyAboutShortInput,
+    setCompanyAboutShortInput,
+    companyPhoneMainInput,
+    setCompanyPhoneMainInput,
+    companyPhoneWhatsAppInput,
+    setCompanyPhoneWhatsAppInput,
+    companyEmailInput,
+    setCompanyEmailInput,
+    companySiteInput,
+    setCompanySiteInput,
+    companyTelegramInput,
+    setCompanyTelegramInput,
+    companyWorkTimeInput,
+    setCompanyWorkTimeInput,
+    companyContactPersonInput,
+    setCompanyContactPersonInput,
+    companyAboutFullInput,
+    setCompanyAboutFullInput,
+    companyServicesInput,
+    setCompanyServicesInput,
+    companyRegionsInput,
+    setCompanyRegionsInput,
+    companyClientsTypesInput,
+    setCompanyClientsTypesInput,
+    companyInnInput,
+    setCompanyInnInput,
+    companyBinInput,
+    setCompanyBinInput,
+    companyRegNumberInput,
+    setCompanyRegNumberInput,
+    companyBankDetailsInput,
+    setCompanyBankDetailsInput,
+    companyLicensesInfoInput,
+    setCompanyLicensesInfoInput,
+  } = useCompanyForm();
 
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingCompany, setSavingCompany] = useState(false);
@@ -164,25 +192,42 @@ export function ProfileContent() {
   const [inviteEmail, setInviteEmail] = useState(""); // ← ДОБАВЬ ЭТО
   // ===== ОБЪЯВЛЕНИЯ (market_listings) =====
   const [listingModalOpen, setListingModalOpen] = useState(false);
-  const [listingTitle, setListingTitle] = useState("");
-  const [listingCity, setListingCity] = useState("");
-  const [listingPrice, setListingPrice] = useState("");
-  const [listingUom, setListingUom] = useState("");
-  const [listingDescription, setListingDescription] = useState("");
-  const [listingPhone, setListingPhone] = useState("");
-  const [listingWhatsapp, setListingWhatsapp] = useState("");
-  const [listingEmail, setListingEmail] = useState("");
   const [savingListing, setSavingListing] = useState(false);
-  const [listingKind, setListingKind] =
-    useState<"material" | "service" | "rent" | null>(null);
-  const [listingRikCode, setListingRikCode] = useState<string | null>(null);
-  // ===== КАТАЛОГ (выбор позиции из catalog_items) =====
   const [catalogModalOpen, setCatalogModalOpen] = useState(false);
-  const [catalogSearch, setCatalogSearch] = useState("");
-  const [catalogResults, setCatalogResults] = useState<
-    { rik_code: string; name_human_ru: string | null; uom_code: string | null; kind: string }[]
-  >([]);
-  const [catalogLoading, setCatalogLoading] = useState(false);
+  const {
+    listingForm,
+    listingCartItems,
+    setListingCartItems,
+    editingItem,
+    setEditingItem,
+    catalogSearch,
+    setCatalogSearch,
+    catalogResults,
+    setCatalogResults,
+    catalogLoading,
+    setCatalogLoading,
+    prepareListingForm,
+    listingTitle,
+    setListingTitle,
+    listingCity,
+    setListingCity,
+    listingPrice,
+    setListingPrice,
+    listingUom,
+    setListingUom,
+    listingDescription,
+    setListingDescription,
+    listingPhone,
+    setListingPhone,
+    listingWhatsapp,
+    setListingWhatsapp,
+    listingEmail,
+    setListingEmail,
+    listingKind,
+    setListingKind,
+    listingRikCode,
+    setListingRikCode,
+  } = useListingForm();
 
   // ===== ЗАГРУЗКА ПРОФИЛЯ И КОМПАНИИ =====
   useEffect(() => {
@@ -238,42 +283,10 @@ export function ProfileContent() {
   };
   const toggleMarket = () => updateUsage(!modeMarket, modeBuild);
 
-  // ===== ХЕЛПЕР: заполнить форму компании из company/profile =====
-  const hydrateCompanyFormFromState = () => {
-    setCompanyNameInput(company?.name || "");
-    setCompanyCityInput(company?.city || profile?.city || "");
-
-    setCompanyLegalFormInput(company?.legal_form || "");
-    setCompanyAddressInput(company?.address || "");
-    setCompanyIndustryInput(company?.industry || "");
-    setCompanyAboutShortInput(company?.about_short || "");
-
-    setCompanyPhoneMainInput(company?.phone_main || profile?.phone || "");
-    setCompanyPhoneWhatsAppInput(company?.phone_whatsapp || "");
-    setCompanyEmailInput(company?.email || "");
-    setCompanySiteInput(company?.site || "");
-    setCompanyTelegramInput(company?.telegram || "");
-    setCompanyWorkTimeInput(company?.work_time || "");
-    setCompanyContactPersonInput(
-      company?.contact_person || profile?.full_name || ""
-    );
-
-    setCompanyAboutFullInput(company?.about_full || "");
-    setCompanyServicesInput(company?.services || "");
-    setCompanyRegionsInput(company?.regions || "");
-    setCompanyClientsTypesInput(company?.clients_types || "");
-
-    setCompanyInnInput(company?.inn || "");
-    setCompanyBinInput(company?.bin || "");
-    setCompanyRegNumberInput(company?.reg_number || "");
-    setCompanyBankDetailsInput(company?.bank_details || "");
-    setCompanyLicensesInfoInput(company?.licenses_info || "");
-  };
-
   // НОВАЯ ЛОГИКА: если включаем «веду бизнес» — запускаем wizard
   const handlePressBuildCard = () => {
     if (!modeBuild) {
-      hydrateCompanyFormFromState();
+      hydrateCompanyForm({ company, profile });
       setBusinessStep(1);
       setBusinessOnboardingOpen(true);
     } else {
@@ -314,30 +327,7 @@ export function ProfileContent() {
         company,
         profile,
         profileEmail,
-        form: {
-          companyNameInput,
-          companyCityInput,
-          companyLegalFormInput,
-          companyAddressInput,
-          companyIndustryInput,
-          companyAboutShortInput,
-          companyPhoneMainInput,
-          companyPhoneWhatsAppInput,
-          companyEmailInput,
-          companySiteInput,
-          companyTelegramInput,
-          companyWorkTimeInput,
-          companyContactPersonInput,
-          companyAboutFullInput,
-          companyServicesInput,
-          companyRegionsInput,
-          companyClientsTypesInput,
-          companyInnInput,
-          companyBinInput,
-          companyRegNumberInput,
-          companyBankDetailsInput,
-          companyLicensesInfoInput,
-        },
+        form: companyForm,
       });
 
       setCompany(nextCompany);
@@ -377,35 +367,7 @@ export function ProfileContent() {
     if (!profile) return;
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-
-    setListingTitle("");
-
-    // базовый город: если режим "компания" — берём город компании, иначе профиль
-    const baseCity =
-      profileMode === "company"
-        ? company?.city || profile.city || ""
-        : profile.city || "";
-
-    // базовый телефон: у компании -> company.phone_main, иначе профильный телефон
-    const basePhone =
-      profileMode === "company"
-        ? company?.phone_main || profile.phone || ""
-        : profile.phone || "";
-
-    setListingCity(baseCity);
-    setListingPrice("");
-    setListingUom("");
-    setListingDescription("");
-
-    setListingPhone(basePhone);
-    setListingWhatsapp(profile?.whatsapp || basePhone);
-    setListingEmail(""); // почту пока заполняет сам пользователь
-    setListingKind(null); // ← СБРОС ТИПА
-
-    setListingRikCode(null); // ← сбросить привязку к каталогу
-    setListingCartItems([]); // ← чистим корзину
-    setEditingItem(null);    // ← сбрасываем редактируемую позицию
-
+    prepareListingForm({ profile, company, profileMode });
     setListingModalOpen(true);
   };
 
@@ -538,19 +500,12 @@ export function ProfileContent() {
   const openEditProfile = () => {
     if (!profile) return;
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setProfileNameInput(profile.full_name || "");
-    setProfilePhoneInput(profile.phone || "");
-    setProfileCityInput(profile.city || "");
-    setProfileBioInput(profile.bio || "");
-    setProfileTelegramInput(profile.telegram || "");
-    setProfileWhatsappInput(profile.whatsapp || "");
-    setProfilePositionInput(profile.position || "");
-    setProfileAvatarDraft(profileAvatarUrl);
+    hydrateProfileForm(profile, profileAvatarUrl);
     setEditProfileOpen(true);
   };
 
   const closeEditProfile = () => {
-    setProfileAvatarDraft(profileAvatarUrl);
+    resetProfileAvatarDraft(profileAvatarUrl);
     setEditProfileOpen(false);
   };
 
@@ -609,15 +564,7 @@ export function ProfileContent() {
         profileAvatarDraft,
         modeMarket,
         modeBuild,
-        form: {
-          profileNameInput,
-          profilePhoneInput,
-          profileCityInput,
-          profileBioInput,
-          profileTelegramInput,
-          profileWhatsappInput,
-          profilePositionInput,
-        },
+        form: profileForm,
       });
 
       setProfile(result.profile);
@@ -633,7 +580,7 @@ export function ProfileContent() {
   };
   const openEditCompany = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    hydrateCompanyFormFromState();
+    hydrateCompanyForm({ company, profile });
     setCompanyTab("main");
     setEditCompanyOpen(true);
   };
@@ -645,30 +592,7 @@ export function ProfileContent() {
         company,
         profile,
         profileEmail,
-        form: {
-          companyNameInput,
-          companyCityInput,
-          companyLegalFormInput,
-          companyAddressInput,
-          companyIndustryInput,
-          companyAboutShortInput,
-          companyPhoneMainInput,
-          companyPhoneWhatsAppInput,
-          companyEmailInput,
-          companySiteInput,
-          companyTelegramInput,
-          companyWorkTimeInput,
-          companyContactPersonInput,
-          companyAboutFullInput,
-          companyServicesInput,
-          companyRegionsInput,
-          companyClientsTypesInput,
-          companyInnInput,
-          companyBinInput,
-          companyRegNumberInput,
-          companyBankDetailsInput,
-          companyLicensesInfoInput,
-        },
+        form: companyForm,
       });
 
       setCompany(nextCompany);
@@ -828,134 +752,28 @@ export function ProfileContent() {
 
         {profileMode === "person" && (
           <>
-            <View style={styles.section}>
-              <View style={styles.completionCard}>
-                <View style={styles.completionHeader}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.completionTitle}>Готовность профиля</Text>
-                    <Text style={styles.completionSubtitle}>
-                      Заполненный профиль лучше выглядит в системе и помогает быстрее работать с модулями GOX.
-                    </Text>
-                  </View>
-                  <Text style={styles.completionPercent}>{profileCompletionPercent}%</Text>
-                </View>
-                <View style={styles.completionBarTrack}>
-                  <View
-                    style={[
-                      styles.completionBarFill,
-                      { width: `${profileCompletionPercent}%` },
-                    ]}
-                  />
-                </View>
-                <View style={styles.completionList}>
-                  {profileCompletionItems.map((item) => (
-                    <View key={item.key} style={styles.completionItem}>
-                      <Ionicons
-                        name={item.done ? "checkmark-circle" : "ellipse-outline"}
-                        size={16}
-                        color={item.done ? UI.accent : UI.sub}
-                      />
-                      <Text
-                        style={[
-                          styles.completionItemText,
-                          item.done && styles.completionItemTextDone,
-                        ]}
-                      >
-                        {item.label}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-                {profileCompletionDone < profileCompletionItems.length ? (
-                  <Pressable style={styles.completionAction} onPress={openEditProfile}>
-                    <Text style={styles.completionActionText}>Заполнить профиль</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <View style={styles.profileSectionHeader}>
-                <Ionicons name="person-outline" size={18} color={UI.accent} />
-                <Text style={styles.profileSectionHeaderText}>Информация</Text>
-              </View>
-              <View style={styles.sectionCard}>
-                <RowItem label="Имя" value={profileName} />
-                <RowItem
-                  label="Телефон"
-                  value={profile?.phone?.trim() || "Не указан"}
-                />
-                <RowItem label="Email" value={profileEmail || "Не указан"} />
-                <RowItem
-                  label="Город"
-                  value={profile?.city?.trim() || company?.city?.trim() || "Не указан"}
-                />
-                <RowItem
-                  label="Компания"
-                  value={company?.name?.trim() || "Не подключена"}
-                />
-                <RowItem label="Объявления" value={listingsSummary} last />
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <View style={styles.profileSectionHeader}>
-                <Ionicons name="business-outline" size={18} color={UI.accent} />
-                <Text style={styles.profileSectionHeaderText}>Компания и команда</Text>
-              </View>
-              <Pressable
-                testID="profile-company-card"
-                accessibilityLabel="profile_company_card"
-                style={styles.profileActionCard}
-                onPress={company ? openCompanyCabinet : handlePressBuildCard}
-              >
-                <View style={styles.profileActionTextWrap}>
-                  <Text style={styles.profileActionTitle}>{companyCardTitle}</Text>
-                  <Text style={styles.profileActionSubtitle}>{companyCardSubtitle}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={UI.sub} />
-              </Pressable>
-
-              {lastInviteCode ? (
-                <View style={styles.profileHintCard}>
-                  <Text style={styles.profileHintTitle}>Последний код приглашения</Text>
-                  <Text style={styles.profileHintValue}>{lastInviteCode}</Text>
-                  <Text style={styles.profileHintSubtitle}>
-                    Используйте код для подключения сотрудников к текущей компании.
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-
-            {requisitesVisible && (
-              <View style={styles.section}>
-                <View style={styles.profileSectionHeader}>
-                  <Ionicons name="document-text-outline" size={18} color={UI.accent} />
-                  <Text style={styles.profileSectionHeaderText}>Реквизиты</Text>
-                </View>
-                <View style={styles.sectionCard}>
-                  <RowItem
-                    label="Компания"
-                    value={company?.name?.trim() || "Не указана"}
-                  />
-                  <RowItem label="ИНН" value={company?.inn?.trim() || "—"} />
-                  <RowItem label="Адрес" value={company?.address?.trim() || "—"} />
-                  <RowItem
-                    label="Банк / реквизиты"
-                    value={company?.bank_details?.trim() || "—"}
-                  />
-                  <RowItem
-                    label="Контакт"
-                    value={
-                      company?.phone_main?.trim() ||
-                      profile?.phone?.trim() ||
-                      "Не указан"
-                    }
-                    last
-                  />
-                </View>
-              </View>
-            )}
+            <ProfilePersonOverview
+              profileCompletionItems={profileCompletionItems}
+              profileCompletionDone={profileCompletionDone}
+              profileCompletionPercent={profileCompletionPercent}
+              profileName={profileName}
+              profilePhone={profile?.phone?.trim() || "Не указан"}
+              profileEmail={profileEmail || "Не указан"}
+              profileCity={profile?.city?.trim() || company?.city?.trim() || "Не указан"}
+              companyName={company?.name?.trim() || "Не подключена"}
+              listingsSummary={listingsSummary}
+              companyCardTitle={companyCardTitle}
+              companyCardSubtitle={companyCardSubtitle}
+              lastInviteCode={lastInviteCode}
+              requisitesVisible={requisitesVisible}
+              requisitesCompanyName={company?.name?.trim() || "Не указана"}
+              requisitesInn={company?.inn?.trim() || "—"}
+              requisitesAddress={company?.address?.trim() || "—"}
+              requisitesBankDetails={company?.bank_details?.trim() || "—"}
+              requisitesContact={company?.phone_main?.trim() || profile?.phone?.trim() || "Не указан"}
+              onOpenEditProfile={openEditProfile}
+              onOpenCompanyCard={company ? openCompanyCabinet : handlePressBuildCard}
+            />
 
             <View style={styles.section}>
               <View style={styles.profileSectionHeader}>

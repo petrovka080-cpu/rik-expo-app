@@ -205,7 +205,6 @@
         "npm:jest-expo@^55.0.9",
         "npm:jest@^29.7.0",
         "npm:jspdf@^2.5.2",
-        "npm:leaflet.markercluster@^1.5.3",
         "npm:leaflet@^1.9.4",
         "npm:playwright@^1.58.2",
         "npm:react-dom@19.1.0",
