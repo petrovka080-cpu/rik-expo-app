@@ -12,6 +12,7 @@ import {
 import { FlashList } from "@/src/ui/FlashList";
 import { StatusBar } from "expo-status-bar";
 import { UI, s } from "./director.styles";
+import { officeRoleChrome } from "../office/officeRoleChrome";
 import type { DirTopTab, FinPage, Group, ProposalHead } from "./director.types";
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import DirectorSubcontractTab from "./DirectorSubcontractTab";
@@ -180,7 +181,8 @@ export default function DirectorDashboard(p: Props) {
         {headerTitle}
       </Animated.Text>
 
-      <FlashList
+      <View style={[officeRoleChrome.switcherShell, { marginTop: 12 }]}>
+        <FlashList
         ref={topTabsRef}
         data={DIRECTOR_TOP_TABS}
         keyExtractor={(item) => item.key}
@@ -201,22 +203,22 @@ export default function DirectorDashboard(p: Props) {
               }}
               style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
             >
-              <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600" }}>
+              <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600", fontSize: 13 }}>
                 {item.label}
               </Text>
             </Pressable>
           );
         }}
-        contentContainerStyle={{
+        contentContainerStyle={[officeRoleChrome.switcherRow, {
           paddingTop: 2,
           paddingBottom: 2,
           alignItems: "center",
           paddingRight: 12,
-        }}
+        }]}
       />
 
       {String(p.dirTab) === "Заявки" ? (
-        <View style={{ paddingTop: 6, paddingBottom: 2, minHeight: 44, justifyContent: "center" }}>
+        <View style={{ paddingHorizontal: 12, paddingTop: 6, paddingBottom: 2, minHeight: 44, justifyContent: "center" }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             {(["foreman", "buyer"] as Tab[]).map((t) => {
               const active = p.tab === t;
@@ -226,7 +228,7 @@ export default function DirectorDashboard(p: Props) {
                   onPress={() => p.setTab(t)}
                   style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
                 >
-                  <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600" }}>
+                  <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600", fontSize: 13 }}>
                     {t === "foreman" ? "Прораб" : "Снабженец"}
                   </Text>
                 </Pressable>
@@ -235,6 +237,7 @@ export default function DirectorDashboard(p: Props) {
           </View>
         </View>
       ) : null}
+      </View>
 
       {String(p.dirTab) === "Заявки" ? (
         <Animated.View style={{ opacity: p.subOpacity }}>

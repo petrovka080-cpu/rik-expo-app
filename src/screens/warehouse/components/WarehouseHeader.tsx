@@ -1,6 +1,7 @@
 ﻿import React, { useMemo, useRef } from "react";
 import { View, Text, Pressable, ScrollView, Animated, Platform } from "react-native";
 import { UI, s } from "../warehouse.styles";
+import { officeRoleChrome } from "../../office/officeRoleChrome";
 import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
 
 type AnimNum = number | Animated.Value | Animated.AnimatedInterpolation<number>;
@@ -114,7 +115,7 @@ export default function WarehouseHeader(props: {
         </Animated.Text>
         {!!warehousemanFio && (
           <Pressable onPress={onOpenFioModal} style={{ marginTop: 4, marginBottom: 12 }}>
-            <Text style={{ fontSize: 13, color: UI.sub, fontWeight: "500", opacity: 0.9 }}>
+            <Text style={officeRoleChrome.roleMetaText}>
               {warehousemanFio}
             </Text>
           </Pressable>
@@ -122,26 +123,28 @@ export default function WarehouseHeader(props: {
         {!warehousemanFio && <View style={{ height: 12 }} />}
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 2 }}
-      >
-        {WAREHOUSE_TABS.map((t) => {
-          const active = tab === t;
-          return (
-            <Pressable
-              key={t}
-              onPress={() => onTab(t)}
-              style={[s.tab, active && s.tabActive]}
-            >
-              <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "500", fontSize: 13 }}>
-                {tabLabel(t)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      <View style={[officeRoleChrome.switcherShell, { marginHorizontal: 16, marginTop: 0 }]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={[officeRoleChrome.switcherRow, { gap: 8, paddingBottom: 2 }]}
+        >
+          {WAREHOUSE_TABS.map((t) => {
+            const active = tab === t;
+            return (
+              <Pressable
+                key={t}
+                onPress={() => onTab(t)}
+                style={[s.tab, active && s.tabActive]}
+              >
+                <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "500", fontSize: 13 }}>
+                  {tabLabel(t)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
     </View>
   );
 }

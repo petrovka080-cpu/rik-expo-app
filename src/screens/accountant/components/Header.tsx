@@ -4,6 +4,7 @@ import type { Tab } from "../types";
 import { TABS } from "../types";
 import { UI } from "../ui";
 import { SafeView } from "../helpers";
+import { officeRoleChrome, useIsOfficeRoute } from "../../office/officeRoleChrome";
 import TopRightActionBar from "../../../ui/TopRightActionBar";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -32,16 +33,20 @@ export default function Header({
   accountantFio?: string;
   onOpenFioModal?: () => void;
 }) {
+  const isOfficeRoute = useIsOfficeRoute();
+
   return (
     <SafeView style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 8 }}>
       <SafeView style={{ flexDirection: "row", alignItems: "center" }}>
         <View>
-          <Animated.Text style={{ fontSize: titleSize, fontWeight: "600", color: UI.text }}>
-            Бухгалтер
-          </Animated.Text>
+          {!isOfficeRoute ? (
+            <Animated.Text style={{ fontSize: titleSize, fontWeight: "600", color: UI.text }}>
+              Бухгалтер
+            </Animated.Text>
+          ) : null}
           {!!accountantFio && (
             <Pressable onPress={onOpenFioModal}>
-              <Text style={{ fontSize: 13, color: UI.sub, fontWeight: "500", marginTop: 4 }}>
+              <Text style={officeRoleChrome.roleMetaText}>
                 {accountantFio}
               </Text>
             </Pressable>
@@ -92,10 +97,12 @@ export default function Header({
         </View>
       ) : null}
 
-      <SafeView style={{ height: 10 }} />
-
-      <View style={{ marginTop: 8 }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 12 }}>
+      <View style={officeRoleChrome.switcherShell}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={[officeRoleChrome.switcherRow, { paddingVertical: 2 }]}
+        >
           <View style={{ flexDirection: "row" }}>
             {TABS.map((t) => {
               const active = tab === t;
@@ -107,15 +114,17 @@ export default function Header({
                       onTabPress(t);
                     }}
                     style={{
-                      paddingVertical: 8,
-                      paddingHorizontal: 12,
-                      borderRadius: 999,
-                      backgroundColor: active ? UI.tabActiveBg : UI.tabInactiveBg,
+                      height: 36,
+                      paddingHorizontal: 14,
+                      borderRadius: 18,
+                      backgroundColor: active ? UI.tabActiveBg : "rgba(255,255,255,0.04)",
                       borderWidth: 1,
-                      borderColor: active ? UI.accent : "rgba(255,255,255,0.14)",
+                      borderColor: active ? UI.accent : "rgba(255,255,255,0.10)",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    <Text style={{ color: active ? UI.tabActiveText : UI.tabInactiveText, fontWeight: "600" }}>
+                    <Text style={{ color: active ? UI.tabActiveText : UI.tabInactiveText, fontWeight: "600", fontSize: 13 }}>
                       {t}
                     </Text>
                   </Pressable>

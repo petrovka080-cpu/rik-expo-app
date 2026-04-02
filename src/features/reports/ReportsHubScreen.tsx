@@ -7,6 +7,7 @@ import {
   REPORTS_MODULE_ROUTES,
   type ReportsModuleRouteKey,
 } from "../../lib/navigation/coreRoutes";
+import { OFFICE_ROLE_UI, officeRoleChrome, useIsOfficeRoute } from "../../screens/office/officeRoleChrome";
 
 type ReportModuleCard = {
   key: string;
@@ -39,30 +40,25 @@ const REPORT_MODULES: ReportModuleCard[] = [
 ];
 
 const HERO_TITLE = "\u041e\u0442\u0447\u0435\u0442\u044b";
-const HERO_SUBTITLE =
-  "\u0412\u0445\u043e\u0434\u043d\u043e\u0439 \u044d\u043a\u0440\u0430\u043d \u043e\u0442\u0447\u0435\u0442\u043e\u0432 \u0432 donor-\u0444\u043e\u0440\u043c\u0430\u0442\u0435, \u043d\u043e \u043f\u043e\u0432\u0435\u0440\u0445 \u0442\u0435\u043a\u0443\u0449\u0438\u0445 live-\u043c\u043e\u0434\u0443\u043b\u0435\u0439 \u0438 app API.";
+const HERO_SUBTITLE = "\u041c\u043e\u0434\u0443\u043b\u0438 \u0430\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0438 \u0438 AI-\u043f\u043e\u043c\u043e\u0449\u043d\u0438\u043a \u0432 \u043e\u0434\u043d\u043e\u043c \u0432\u0445\u043e\u0434\u0435.";
 const OPEN_LABEL = "\u041e\u0442\u043a\u0440\u044b\u0442\u044c";
-const NOTE_TITLE = "\u041a\u0430\u043a \u044d\u0442\u043e \u0432\u0441\u0442\u0440\u043e\u0435\u043d\u043e";
-const NOTE_TEXT =
-  "\u0422\u0430\u0431 `\u041e\u0442\u0447\u0435\u0442\u044b` \u0442\u0435\u043f\u0435\u0440\u044c \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u043a\u0430\u043a \u0435\u0434\u0438\u043d\u044b\u0439 hub. \u0422\u0435\u043a\u0443\u0449\u0430\u044f \u0436\u0438\u0432\u0430\u044f \u0430\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430 \u043d\u0435 \u043f\u0435\u0440\u0435\u043f\u0438\u0441\u0430\u043d\u0430: \u043e\u043d\u0430 \u0432\u044b\u043d\u0435\u0441\u0435\u043d\u0430 \u0432 \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u044b\u0439 route ";
 
 export default function ReportsHubScreen() {
   const router = useRouter();
+  const isOfficeRoute = useIsOfficeRoute();
 
   return (
     <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
+      style={officeRoleChrome.screen}
+      contentContainerStyle={officeRoleChrome.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.hero}>
-        <View style={styles.heroBadge}>
-          <Ionicons name="bar-chart" size={18} color="#0EA5E9" />
-          <Text style={styles.heroBadgeText}>Reports Hub</Text>
+      {!isOfficeRoute ? (
+        <View style={styles.hero}>
+          <Text style={styles.heroTitle}>{HERO_TITLE}</Text>
+          <Text style={styles.heroSubtitle}>{HERO_SUBTITLE}</Text>
         </View>
-        <Text style={styles.heroTitle}>{HERO_TITLE}</Text>
-        <Text style={styles.heroSubtitle}>{HERO_SUBTITLE}</Text>
-      </View>
+      ) : null}
 
       <View style={styles.grid}>
         {REPORT_MODULES.map((module) => (
@@ -86,62 +82,28 @@ export default function ReportsHubScreen() {
           </Pressable>
         ))}
       </View>
-
-      <View style={styles.noteCard}>
-        <Text style={styles.noteTitle}>{NOTE_TITLE}</Text>
-        <Text style={styles.noteText}>
-          {NOTE_TEXT}
-          <Text style={styles.code}>/reports/dashboard</Text>.
-        </Text>
-      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#08111F",
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 32,
-    gap: 16,
-  },
   hero: {
     backgroundColor: "#0F172A",
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 20,
+    padding: 18,
     borderWidth: 1,
-    borderColor: "#1E293B",
-    gap: 12,
-  },
-  heroBadge: {
-    alignSelf: "flex-start",
-    flexDirection: "row",
-    alignItems: "center",
+    borderColor: OFFICE_ROLE_UI.border,
     gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "#0B2236",
-    borderWidth: 1,
-    borderColor: "#12324B",
-  },
-  heroBadgeText: {
-    color: "#BAE6FD",
-    fontSize: 12,
-    fontWeight: "700",
   },
   heroTitle: {
-    color: "#FFFFFF",
-    fontSize: 28,
-    fontWeight: "800",
+    color: OFFICE_ROLE_UI.text,
+    fontSize: 22,
+    fontWeight: "700",
   },
   heroSubtitle: {
-    color: "#94A3B8",
-    fontSize: 14,
-    lineHeight: 21,
+    color: OFFICE_ROLE_UI.sub,
+    fontSize: 13,
+    lineHeight: 19,
   },
   grid: {
     gap: 12,
@@ -150,7 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0F172A",
     borderRadius: 20,
     padding: 18,
-    borderWidth: 1.5,
+    borderWidth: 1,
     gap: 12,
   },
   iconWrap: {
@@ -178,28 +140,6 @@ const styles = StyleSheet.create({
   },
   cardAction: {
     fontSize: 14,
-    fontWeight: "700",
-  },
-  noteCard: {
-    backgroundColor: "#111827",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#1F2937",
-    padding: 18,
-    gap: 10,
-  },
-  noteTitle: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  noteText: {
-    color: "#94A3B8",
-    fontSize: 13,
-    lineHeight: 20,
-  },
-  code: {
-    color: "#E2E8F0",
     fontWeight: "700",
   },
 });
