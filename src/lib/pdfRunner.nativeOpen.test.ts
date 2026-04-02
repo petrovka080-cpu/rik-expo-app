@@ -1,10 +1,13 @@
 const mockAlert = jest.fn();
 const mockOpenUrl = jest.fn();
 const mockGetInfoAsync = jest.fn();
+const mockReadAsStringAsync = jest.fn();
 const mockDownloadAsync = jest.fn();
 const mockCopyAsync = jest.fn();
 const mockGetContentUriAsync = jest.fn();
 const mockStartActivityAsync = jest.fn();
+const mockSharingShareAsync = jest.fn();
+const mockSharingIsAvailableAsync = jest.fn();
 
 jest.mock("./supabaseClient", () => ({
   SUPABASE_ANON_KEY: "anon",
@@ -27,12 +30,13 @@ jest.mock("expo-intent-launcher", () => ({
 }));
 
 jest.mock("expo-sharing", () => ({
-  isAvailableAsync: jest.fn(),
-  shareAsync: jest.fn(),
+  isAvailableAsync: (...args: unknown[]) => mockSharingIsAvailableAsync(...args),
+  shareAsync: (...args: unknown[]) => mockSharingShareAsync(...args),
 }));
 
 jest.mock("expo-file-system/legacy", () => ({
   getInfoAsync: (...args: unknown[]) => mockGetInfoAsync(...args),
+  readAsStringAsync: (...args: unknown[]) => mockReadAsStringAsync(...args),
   downloadAsync: (...args: unknown[]) => mockDownloadAsync(...args),
   copyAsync: (...args: unknown[]) => mockCopyAsync(...args),
   getContentUriAsync: (...args: unknown[]) => mockGetContentUriAsync(...args),
@@ -49,22 +53,42 @@ jest.mock("./fileSystemPaths", () => ({
 import {
   openPdfExternal,
   openPdfPreview,
+  openPdfShare,
   preparePdfExecutionSource,
 } from "./pdfRunner";
+import { Platform } from "react-native";
 
 describe("pdfRunner native open", () => {
+  const originalPlatformOs = Platform.OS;
+
   beforeEach(() => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
     mockAlert.mockReset();
     mockOpenUrl.mockReset();
     mockGetInfoAsync.mockReset();
+    mockReadAsStringAsync.mockReset();
     mockDownloadAsync.mockReset();
     mockCopyAsync.mockReset();
     mockGetContentUriAsync.mockReset();
     mockStartActivityAsync.mockReset();
+    mockSharingShareAsync.mockReset();
+    mockSharingIsAvailableAsync.mockReset();
     mockGetInfoAsync.mockResolvedValue({ exists: true, size: 128 });
+    mockReadAsStringAsync.mockResolvedValue("JVBERi0xLjc=");
     mockGetContentUriAsync.mockImplementation(async (uri: string) => `content://${encodeURIComponent(uri)}`);
     mockDownloadAsync.mockImplementation(async (_url: string, target: string) => ({ uri: target }));
     mockStartActivityAsync.mockResolvedValue({ resultCode: 0 });
+    mockSharingIsAvailableAsync.mockResolvedValue(true);
+  });
+
+  afterAll(() => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: originalPlatformOs,
+    });
   });
 
   it("opens a local file PDF through Android content uri handoff", async () => {
@@ -143,5 +167,54 @@ describe("pdfRunner native open", () => {
     );
 
     expect(mockStartActivityAsync).not.toHaveBeenCalled();
+  });
+
+  it("blocks direct iOS preview fallback so primary preview stays on the in-app viewer route", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+
+    await expect(openPdfPreview("https://example.com/document.pdf", "document.pdf")).rejects.toThrow(
+      "iOS PDF preview must use the in-app viewer route",
+    );
+
+    expect(mockSharingShareAsync).not.toHaveBeenCalled();
+    expect(mockDownloadAsync).not.toHaveBeenCalled();
+    expect(mockGetContentUriAsync).not.toHaveBeenCalled();
+    expect(mockStartActivityAsync).not.toHaveBeenCalled();
+  });
+
+  it("shares an iOS PDF only after the handoff file validates as a real PDF", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+
+    await openPdfShare("file:///cache/document.pdf", "document.pdf");
+
+    expect(mockReadAsStringAsync).toHaveBeenCalledWith("file:///cache/document.pdf", {
+      encoding: "base64",
+      position: 0,
+      length: 24,
+    });
+    expect(mockSharingShareAsync).toHaveBeenCalledWith("file:///cache/document.pdf", expect.objectContaining({
+      mimeType: "application/pdf",
+      UTI: "com.adobe.pdf",
+    }));
+  });
+
+  it("rejects explicit iOS share when the downloaded file is HTML instead of PDF", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+    mockReadAsStringAsync.mockResolvedValueOnce("PCFET0NUWVBFIEhUTUw+");
+
+    await expect(openPdfShare("file:///cache/document.pdf", "document.pdf")).rejects.toThrow(
+      "Native handoff PDF contains HTML instead of PDF.",
+    );
+
+    expect(mockSharingShareAsync).not.toHaveBeenCalled();
   });
 });

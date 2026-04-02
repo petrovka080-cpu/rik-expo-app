@@ -1,11 +1,16 @@
 import React from "react";
 import {
   ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   Text,
+  TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { profileStyles } from "../profile.styles";
 import React19SafeModal from "../../../ui/React19SafeModal";
@@ -21,14 +26,11 @@ const styles = profileStyles;
 
 const UI_COPY = {
   modalTitle: "\u0421\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
-  modalSub:
-    "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u0438\u043f \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f, \u043d\u0430\u0447\u043d\u0438\u0442\u0435 \u0432\u0432\u043e\u0434\u0438\u0442\u044c \u043f\u043e\u0437\u0438\u0446\u0438\u044e \u0438 \u0432\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u043f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0443 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430. \u0414\u043b\u044f \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0439 \u043f\u043e\u0437\u0438\u0446\u0438\u0438 \u0443\u043a\u0430\u0436\u0438\u0442\u0435 \u0433\u043e\u0440\u043e\u0434, \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0438 \u0446\u0435\u043d\u0443, \u0437\u0430\u0442\u0435\u043c \u0434\u043e\u0431\u0430\u0432\u044c\u0442\u0435 \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u0438 \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u044b.",
+  backAction: "\u2190 \u041d\u0430\u0437\u0430\u0434",
   kindLabel: "\u0422\u0438\u043f \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
   titleLabel: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f",
   titlePlaceholder:
     "\u041d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: \u0413\u0430\u0437\u043e\u0431\u043b\u043e\u043a D500, \u043a\u0440\u043e\u0432\u043b\u044f, \u0431\u0435\u0442\u043e\u043d, \u0431\u0435\u0442\u043e\u043d\u043e\u043d\u0430\u0441\u043e\u0441\u2026",
-  helperText:
-    "\u041f\u043e\u0441\u043b\u0435 \u0432\u044b\u0431\u043e\u0440\u0430 \u0442\u0438\u043f\u0430 \u043d\u0430\u0447\u043d\u0438\u0442\u0435 \u0432\u0432\u043e\u0434\u0438\u0442\u044c \u043f\u043e\u0437\u0438\u0446\u0438\u044e. \u041d\u0438\u0436\u0435 \u043f\u043e\u044f\u0432\u044f\u0442\u0441\u044f \u0432\u0430\u0440\u0438\u0430\u043d\u0442\u044b \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430.",
   loadingCatalog: "\u0418\u0449\u0435\u043c \u0432 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0435\u2026",
   catalogFallback: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430",
   catalogUomLabel: "\u0415\u0434. \u0438\u0437\u043c.",
@@ -40,12 +42,11 @@ const UI_COPY = {
   descriptionLabel: "\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435",
   descriptionPlaceholder:
     "\u041a\u0440\u0430\u0442\u043a\u043e \u043e\u043f\u0438\u0448\u0438\u0442\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b \u0438\u043b\u0438 \u0443\u0441\u043b\u0443\u0433\u0443, \u0443\u0441\u043b\u043e\u0432\u0438\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438 \u0438 \u043e\u043f\u043b\u0430\u0442\u044b",
-  contactsLabel: "\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b \u0434\u043b\u044f \u0441\u0432\u044f\u0437\u0438",
   phoneLabel: "\u0422\u0435\u043b\u0435\u0444\u043e\u043d",
-  whatsappLabel: "WhatsApp",
-  emailLabel: "Email",
+  phonePlaceholder: "+996\u2026",
   cancelAction: "\u041e\u0442\u043c\u0435\u043d\u0430",
   publishAction: "\u041e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u0442\u044c",
+  publishingAction: "\u041f\u0443\u0431\u043b\u0438\u043a\u0443\u0435\u043c\u2026",
   itemModalTitle: "\u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u043f\u043e\u0437\u0438\u0446\u0438\u0438",
   itemModalSub:
     "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0433\u043e\u0440\u043e\u0434, \u0435\u0434\u0438\u043d\u0438\u0446\u0443 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f, \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0438 \u0446\u0435\u043d\u0443 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443 \u0434\u043b\u044f \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0439 \u043f\u043e\u0437\u0438\u0446\u0438\u0438.",
@@ -91,8 +92,6 @@ type ListingModalProps = {
   onChangeListingTitle: (value: string) => void;
   onChangeListingDescription: (value: string) => void;
   onChangeListingPhone: (value: string) => void;
-  onChangeListingWhatsapp: (value: string) => void;
-  onChangeListingEmail: (value: string) => void;
   onInlineCatalogPick: (item: CatalogSearchItem) => void;
   onItemModalClose: () => void;
   onChangeEditingItemCity: (value: string) => void;
@@ -117,8 +116,6 @@ export function ListingModal({
   onChangeListingTitle,
   onChangeListingDescription,
   onChangeListingPhone,
-  onChangeListingWhatsapp,
-  onChangeListingEmail,
   onInlineCatalogPick,
   onItemModalClose,
   onChangeEditingItemCity,
@@ -127,29 +124,70 @@ export function ListingModal({
   onChangeEditingItemPrice,
   onConfirmEditingItem,
 }: ListingModalProps) {
+  const titleInputRef = React.useRef<TextInput>(null);
+  const descriptionInputRef = React.useRef<TextInput>(null);
+  const phoneInputRef = React.useRef<TextInput>(null);
+
+  const focusDescriptionInput = () => {
+    descriptionInputRef.current?.focus();
+  };
+
+  const focusPhoneInput = () => {
+    phoneInputRef.current?.focus();
+  };
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
+  const handleRequestClose = () => {
+    if (savingListing) {
+      return;
+    }
+    onRequestClose();
+  };
+
   return (
     <>
       <React19SafeModal
         isVisible={visible}
-        onBackdropPress={onRequestClose}
-        onBackButtonPress={onRequestClose}
+        onBackdropPress={handleRequestClose}
+        onBackButtonPress={handleRequestClose}
         backdropOpacity={0.55}
         hideModalContentWhileAnimating
-        style={styles.listingModalHost}
+        style={styles.listingFullscreenHost}
       >
-        <View
-          style={[styles.modalCard, styles.modalTallCard]}
+        <SafeAreaView
+          style={styles.listingFullscreenShell}
           testID="add-listing-owner-shell"
         >
-          <Text style={styles.modalTitle}>{UI_COPY.modalTitle}</Text>
-          <Text style={styles.modalSub}>{UI_COPY.modalSub}</Text>
+          <KeyboardAvoidingView
+            style={styles.flexOne}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={0}
+          >
+            <View style={styles.listingHeader}>
+              <Pressable
+                testID="add-listing-header-back"
+                accessibilityRole="button"
+                style={styles.listingHeaderBackButton}
+                onPress={handleRequestClose}
+                disabled={savingListing}
+              >
+                <Text style={styles.listingHeaderBackText}>
+                  {UI_COPY.backAction}
+                </Text>
+              </Pressable>
+              <Text style={styles.listingHeaderTitle}>{UI_COPY.modalTitle}</Text>
+              <View style={styles.listingHeaderSpacer} />
+            </View>
 
-          <View style={styles.modalBodySection}>
             <ScrollView
-              style={styles.modalScrollTall}
-              contentContainerStyle={styles.modalScrollContent}
+              style={styles.listingFullscreenScroll}
+              contentContainerStyle={styles.listingFullscreenScrollContent}
               keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator
+              keyboardDismissMode="on-drag"
+              showsVerticalScrollIndicator={false}
             >
               <Text style={styles.modalLabel}>{UI_COPY.kindLabel}</Text>
               <View style={styles.listingKindRow}>
@@ -160,14 +198,14 @@ export function ListingModal({
                       key={option.code}
                       onPress={() => onChangeListingKind(option.code)}
                       style={[
-                        styles.filterChip,
-                        active && styles.filterChipActive,
+                        styles.listingKindChip,
+                        active && styles.listingKindChipActive,
                       ]}
                     >
                       <Text
                         style={[
-                          styles.filterChipText,
-                          active && styles.filterChipTextActive,
+                          styles.listingKindChipText,
+                          active && styles.listingKindChipTextActive,
                         ]}
                       >
                         {option.label}
@@ -178,22 +216,19 @@ export function ListingModal({
               </View>
 
               <LabeledInput
+                ref={titleInputRef}
                 label={UI_COPY.titleLabel}
                 value={listingForm.listingTitle}
                 onChangeText={onChangeListingTitle}
                 placeholder={UI_COPY.titlePlaceholder}
+                returnKeyType="next"
+                onSubmitEditing={focusDescriptionInput}
+                blurOnSubmit={false}
+                autoCapitalize="sentences"
+                autoCorrect={false}
               />
 
-              <Text
-                style={[
-                  styles.listingHelperText,
-                  styles.listingHelperTextTight,
-                ]}
-              >
-                {UI_COPY.helperText}
-              </Text>
-
-              {catalogLoading && listingForm.listingTitle.trim().length >= 2 && (
+              {catalogLoading && listingForm.listingTitle.trim().length >= 2 ? (
                 <Text
                   style={[
                     styles.listingHelperText,
@@ -202,7 +237,7 @@ export function ListingModal({
                 >
                   {UI_COPY.loadingCatalog}
                 </Text>
-              )}
+              ) : null}
 
               {catalogResults.map((item) => (
                 <Pressable
@@ -251,67 +286,69 @@ export function ListingModal({
               )}
 
               <LabeledInput
+                ref={descriptionInputRef}
                 label={UI_COPY.descriptionLabel}
                 value={listingForm.listingDescription}
                 onChangeText={onChangeListingDescription}
                 placeholder={UI_COPY.descriptionPlaceholder}
                 multiline
                 big
+                returnKeyType="next"
+                onSubmitEditing={focusPhoneInput}
+                blurOnSubmit
+                autoCapitalize="sentences"
               />
 
-              <Text style={styles.modalLabel}>{UI_COPY.contactsLabel}</Text>
-
               <LabeledInput
+                ref={phoneInputRef}
                 label={UI_COPY.phoneLabel}
                 value={listingForm.listingPhone}
                 onChangeText={onChangeListingPhone}
-                placeholder="+996\u2026"
+                placeholder={UI_COPY.phonePlaceholder}
                 keyboardType="phone-pad"
-              />
-              <LabeledInput
-                label={UI_COPY.whatsappLabel}
-                value={listingForm.listingWhatsapp}
-                onChangeText={onChangeListingWhatsapp}
-                placeholder="+996\u2026"
-                keyboardType="phone-pad"
-              />
-              <LabeledInput
-                label={UI_COPY.emailLabel}
-                value={listingForm.listingEmail}
-                onChangeText={onChangeListingEmail}
-                placeholder="user@example.com"
-                keyboardType="email-address"
+                returnKeyType="done"
+                onSubmitEditing={dismissKeyboard}
+                textContentType="telephoneNumber"
               />
             </ScrollView>
-          </View>
 
-          <View style={styles.modalButtonsRow}>
-            <Pressable
-              testID="add-listing-flow-close"
-              style={[styles.modalBtn, styles.modalBtnSecondary]}
-              onPress={onRequestClose}
-              disabled={savingListing}
-            >
-              <Text style={styles.modalBtnSecondaryText}>
-                {UI_COPY.cancelAction}
-              </Text>
-            </Pressable>
-            <Pressable
-              testID="add-listing-flow-publish"
-              style={[styles.modalBtn, styles.modalBtnPrimary]}
-              onPress={onPublish}
-              disabled={savingListing}
-            >
-              {savingListing ? (
-                <ActivityIndicator color="#0B1120" />
-              ) : (
-                <Text style={styles.modalBtnPrimaryText}>
-                  {UI_COPY.publishAction}
+            <View style={styles.listingBottomBar}>
+              <Pressable
+                testID="add-listing-flow-close"
+                style={[styles.modalBtn, styles.modalBtnSecondary]}
+                onPress={handleRequestClose}
+                disabled={savingListing}
+              >
+                <Text style={styles.modalBtnSecondaryText}>
+                  {UI_COPY.cancelAction}
                 </Text>
-              )}
-            </Pressable>
-          </View>
-        </View>
+              </Pressable>
+              <Pressable
+                testID="add-listing-flow-publish"
+                style={[
+                  styles.modalBtn,
+                  styles.modalBtnPrimary,
+                  savingListing && styles.buttonDisabled,
+                ]}
+                onPress={onPublish}
+                disabled={savingListing}
+              >
+                {savingListing ? (
+                  <View style={styles.listingBusyRow}>
+                    <ActivityIndicator color="#ffffff" size="small" />
+                    <Text style={styles.modalBtnPrimaryText}>
+                      {UI_COPY.publishingAction}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.modalBtnPrimaryText}>
+                    {UI_COPY.publishAction}
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
       </React19SafeModal>
 
       <React19SafeModal

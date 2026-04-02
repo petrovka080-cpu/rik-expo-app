@@ -22,6 +22,7 @@ import {
   type PdfSource,
   type PdfSourceKind,
 } from "./pdfFileContract";
+import { assertValidLocalPdfFile } from "./pdf/pdfSourceValidation";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
 import type { Database } from "./database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -164,19 +165,27 @@ async function ensureNativePdfHandoffUri(uri: string, fileName?: string): Promis
     localUri = String(downloaded?.uri || targetUri);
   }
 
-  const normalizedLocalUri = normalizeLocalFileUri(localUri);
+  let normalizedLocalUri = normalizeLocalFileUri(localUri);
   const info = await FileSystemCompat.getInfoAsync(normalizedLocalUri);
   if (!info?.exists) throw new Error("Native handoff source PDF file is missing");
 
-  if (/\.pdf$/i.test(normalizedLocalUri)) return normalizedLocalUri;
-
-  const paths = getFileSystemPaths();
-  const cacheDir = paths.cacheDir;
-  const targetUri = `${cacheDir}handoff_${hashString32(normalizedLocalUri)}_${safeName(fileName, normalizedLocalUri)}`;
-  if (!(await fileExists(targetUri))) {
-    await FileSystemCompat.copyAsync({ from: normalizedLocalUri, to: targetUri });
+  if (!/\.pdf$/i.test(normalizedLocalUri)) {
+    const paths = getFileSystemPaths();
+    const cacheDir = paths.cacheDir;
+    const targetUri = `${cacheDir}handoff_${hashString32(normalizedLocalUri)}_${safeName(fileName, normalizedLocalUri)}`;
+    if (!(await fileExists(targetUri))) {
+      await FileSystemCompat.copyAsync({ from: normalizedLocalUri, to: targetUri });
+    }
+    normalizedLocalUri = normalizeLocalFileUri(targetUri);
   }
-  return normalizeLocalFileUri(targetUri);
+
+  await assertValidLocalPdfFile({
+    fileSystem: FileSystemCompat,
+    uri: normalizedLocalUri,
+    failureLabel: "Native handoff PDF",
+  });
+
+  return normalizedLocalUri;
 }
 
 async function openAndroidPdfContentUri(localUri: string, fileName?: string): Promise<string> {
@@ -422,7 +431,7 @@ export async function openPdfPreview(localUri: string, fileName?: string) {
     return;
   }
 
-  await openIosPdfShareSheet(localUri, fileName, "Открыть PDF");
+  throw new Error("iOS PDF preview must use the in-app viewer route");
 }
 
 export async function openPdfShare(localUri: string, fileName?: string) {

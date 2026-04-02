@@ -221,6 +221,55 @@ describe("OfficeHubScreen", () => {
     expect(mockPush).toHaveBeenNthCalledWith(2, "/office/reports");
   });
 
+  it("keeps company summary on top, routes edit to profile company section, and moves employees to the bottom", async () => {
+    mockLoadOfficeAccessScreenData.mockResolvedValue({
+      ...directorData,
+      invites: [pendingInvite],
+      members: [
+        ...directorData.members,
+        {
+          userId: "user-2",
+          role: "foreman",
+          fullName: "Нурбек",
+          phone: "+996555000111",
+          createdAt: "2026-04-02T00:00:00.000Z",
+          isOwner: false,
+        },
+      ],
+    });
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(renderer!.root.findByProps({ testID: "office-summary" })).toBeTruthy();
+
+    const orderedSectionIds = Array.from(
+      new Set(
+        renderer!.root
+          .findAll((node) => typeof node.props.testID === "string" && node.props.testID.startsWith("office-section-"))
+          .map((node) => node.props.testID),
+      ),
+    );
+
+    expect(orderedSectionIds).toEqual([
+      "office-section-directions",
+      "office-section-company-details",
+      "office-section-invites",
+      "office-section-members",
+    ]);
+
+    await act(async () => {
+      renderer!.root.findByProps({ testID: "office-company-edit" }).props.onPress();
+    });
+
+    expect(mockPush).toHaveBeenCalledWith("/profile?section=company");
+  });
+
   it("opens a role-specific modal from contextual plus and hands invite code straight to native share", async () => {
     mockCreateOfficeInvite.mockResolvedValue({
       id: "invite-1",

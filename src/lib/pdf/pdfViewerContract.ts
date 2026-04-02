@@ -278,6 +278,26 @@ export function resolvePdfViewerResolution(args: {
   }
 
   if (
+    platform === "ios"
+    && ((assetSourceKind === "local-file" || scheme === "file")
+      || (assetSourceKind === "remote-url" || scheme === "http" || scheme === "https"))
+    && isPdf
+  ) {
+    return {
+      kind: "resolved-embedded",
+      asset,
+      source: { uri: assetUri },
+      scheme,
+      sourceKind:
+        assetSourceKind === "remote-url" || scheme === "http" || scheme === "https"
+          ? "remote-url"
+          : "local-file",
+      renderer: "native-webview",
+      canonicalUri: assetUri,
+    };
+  }
+
+  if (
     ((assetSourceKind === "local-file" || scheme === "file")
       || (assetSourceKind === "remote-url" || scheme === "http" || scheme === "https"))
     && isPdf

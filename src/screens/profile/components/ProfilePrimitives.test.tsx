@@ -21,8 +21,8 @@ describe("ProfilePrimitives", () => {
           <MenuActionRow
             testID="profile-menu-row"
             icon="person-outline"
-            title="Профиль"
-            subtitle="Открыть профиль"
+            title="Profile"
+            subtitle="Open profile"
             onPress={onPress}
           />
           <RowItem label="Email" value="user@example.com" />
@@ -36,16 +36,19 @@ describe("ProfilePrimitives", () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it("renders labeled input with provided value", () => {
+  it("passes keyboard submit props through labeled input", () => {
     const onChangeText = jest.fn();
+    const onSubmitEditing = jest.fn();
     let renderer: ReactTestRenderer;
     act(() => {
       renderer = TestRenderer.create(
         <LabeledInput
           testID="profile-labeled-input"
-          label="Имя"
-          value="Айбек"
+          label="Name"
+          value="Aibek"
           onChangeText={onChangeText}
+          returnKeyType="next"
+          onSubmitEditing={onSubmitEditing}
         />,
       );
     });
@@ -53,6 +56,8 @@ describe("ProfilePrimitives", () => {
     const input = renderer!.root.findByProps({
       testID: "profile-labeled-input",
     });
-    expect(input.props.value).toBe("Айбек");
+    expect(input.props.value).toBe("Aibek");
+    expect(input.props.returnKeyType).toBe("next");
+    expect(input.props.onSubmitEditing).toBe(onSubmitEditing);
   });
 });

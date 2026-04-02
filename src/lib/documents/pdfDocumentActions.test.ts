@@ -279,6 +279,36 @@ describe("pdfDocumentActions", () => {
     ).toBe(true);
   });
 
+  it("routes iOS remote PDFs through the in-app viewer route instead of direct preview/share", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+    const push = jest.fn();
+
+    await previewPdfDocument(baseDocument, {
+      router: { push },
+    });
+
+    expect(mockCreateDocumentPreviewSession).not.toHaveBeenCalled();
+    expect(push).toHaveBeenCalledWith({
+      pathname: "/pdf-viewer",
+      params: {
+        uri: "https://example.com/payment.pdf",
+        fileName: "payment.pdf",
+        title: "Payment PDF",
+        sourceKind: "remote-url",
+        documentType: "payment_order",
+        originModule: "accountant",
+        source: "generated",
+        entityId: "",
+        openToken: "",
+      },
+    });
+    expect(mockOpenPdfPreview).not.toHaveBeenCalled();
+    expect(mockOpenPdfShare).not.toHaveBeenCalled();
+  });
+
   it("keeps busy active until first open visible and coalesces duplicate taps into one PDF open flow", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,

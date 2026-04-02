@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { LayoutAnimation, Pressable, Text, TextInput, View } from "react-native";
+import {
+  LayoutAnimation,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+  type TextInputProps,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { PROFILE_UI } from "../profile.helpers";
@@ -67,36 +74,53 @@ export type LabeledInputProps = {
   big?: boolean;
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad" | "number-pad";
   testID?: string;
+  returnKeyType?: TextInputProps["returnKeyType"];
+  onSubmitEditing?: TextInputProps["onSubmitEditing"];
+  blurOnSubmit?: boolean;
+  autoCapitalize?: TextInputProps["autoCapitalize"];
+  autoCorrect?: boolean;
+  textContentType?: TextInputProps["textContentType"];
 };
 
-export function LabeledInput(props: LabeledInputProps) {
-  const [focused, setFocused] = useState(false);
+export const LabeledInput = React.forwardRef<TextInput, LabeledInputProps>(
+  function LabeledInput(props, forwardedRef) {
+    const [focused, setFocused] = useState(false);
 
-  return (
-    <View style={profileStyles.labeledInputWrap}>
-      <Text style={profileStyles.modalLabel}>{props.label}</Text>
-      <TextInput
-        testID={props.testID}
-        value={props.value}
-        onChangeText={props.onChangeText}
-        placeholder={props.placeholder}
-        placeholderTextColor={PROFILE_UI.sub}
-        style={[
-          profileStyles.modalInput,
-          props.big && profileStyles.modalInputBig,
-          focused && profileInputFocusStyle,
-        ]}
-        multiline={props.multiline}
-        keyboardType={props.keyboardType || "default"}
-        onFocus={() => {
-          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-          setFocused(true);
-        }}
-        onBlur={() => {
-          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-          setFocused(false);
-        }}
-      />
-    </View>
-  );
-}
+    return (
+      <View style={profileStyles.labeledInputWrap}>
+        <Text style={profileStyles.modalLabel}>{props.label}</Text>
+        <TextInput
+          ref={forwardedRef}
+          testID={props.testID}
+          value={props.value}
+          onChangeText={props.onChangeText}
+          placeholder={props.placeholder}
+          placeholderTextColor={PROFILE_UI.sub}
+          style={[
+            profileStyles.modalInput,
+            props.big && profileStyles.modalInputBig,
+            focused && profileInputFocusStyle,
+          ]}
+          multiline={props.multiline}
+          keyboardType={props.keyboardType || "default"}
+          returnKeyType={props.returnKeyType}
+          onSubmitEditing={props.onSubmitEditing}
+          blurOnSubmit={props.blurOnSubmit}
+          autoCapitalize={props.autoCapitalize}
+          autoCorrect={props.autoCorrect}
+          textContentType={props.textContentType}
+          onFocus={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setFocused(true);
+          }}
+          onBlur={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setFocused(false);
+          }}
+        />
+      </View>
+    );
+  },
+);
+
+LabeledInput.displayName = "LabeledInput";

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Location from "expo-location";
@@ -125,9 +125,7 @@ export function AddListingScreen() {
     listingPhone,
     setListingPhone,
     listingWhatsapp,
-    setListingWhatsapp,
     listingEmail,
-    setListingEmail,
     listingKind,
     setListingKind,
     listingRikCode,
@@ -202,9 +200,28 @@ export function AddListingScreen() {
     ],
   );
 
-  const exitAddListingFlow = () => {
+  const resetAndExitAddListingFlow = useCallback(() => {
+    if (profile) {
+      prepareListingForm({
+        profile,
+        company,
+        activeContext: accessModel.activeContext,
+      });
+    }
+    setItemModalOpen(false);
+    setEditingItem(null);
+    setCatalogResults([]);
     router.replace(returnRoute);
-  };
+  }, [
+    accessModel.activeContext,
+    company,
+    prepareListingForm,
+    profile,
+    returnRoute,
+    router,
+    setCatalogResults,
+    setEditingItem,
+  ]);
 
   const closeItemModal = () => {
     setItemModalOpen(false);
@@ -312,7 +329,7 @@ export function AddListingScreen() {
   };
 
   const publishListing = async () => {
-    if (!profile) return;
+    if (!profile || savingListing) return;
     if (!listingTitle.trim()) {
       Alert.alert(UI_COPY.alertTitle, UI_COPY.missingTitle);
       return;
@@ -381,7 +398,7 @@ export function AddListingScreen() {
         lng,
       });
 
-      router.replace(returnRoute);
+      resetAndExitAddListingFlow();
 
       Alert.alert(UI_COPY.successTitle, UI_COPY.successMessage, [
         {
@@ -417,14 +434,12 @@ export function AddListingScreen() {
         catalogResults={catalogResults}
         savingListing={savingListing}
         catalogLoading={catalogLoading}
-        onRequestClose={exitAddListingFlow}
+        onRequestClose={resetAndExitAddListingFlow}
         onPublish={publishListing}
         onChangeListingKind={handleListingKindChange}
         onChangeListingTitle={handleListingTitleChange}
         onChangeListingDescription={setListingDescription}
         onChangeListingPhone={setListingPhone}
-        onChangeListingWhatsapp={setListingWhatsapp}
-        onChangeListingEmail={setListingEmail}
         onInlineCatalogPick={handleInlineCatalogPick}
         onItemModalClose={closeItemModal}
         onChangeEditingItemCity={handleEditingItemCityChange}

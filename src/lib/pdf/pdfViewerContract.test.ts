@@ -115,7 +115,7 @@ describe("pdfViewerContract", () => {
     });
   });
 
-  it("routes iOS remote PDFs through native handoff instead of embedded preview", () => {
+  it("routes iOS remote PDFs through embedded native webview preview", () => {
     const resolution = resolvePdfViewerResolution({
       session,
       asset: remoteAsset,
@@ -123,14 +123,14 @@ describe("pdfViewerContract", () => {
     });
 
     expect(resolution).toMatchObject({
-      kind: "resolved-native-handoff",
+      kind: "resolved-embedded",
       sourceKind: "remote-url",
-      renderer: "native-handoff",
+      renderer: "native-webview",
       canonicalUri: remoteAsset.uri,
     });
   });
 
-  it("routes iOS local PDFs through native handoff instead of embedded preview", () => {
+  it("routes iOS local PDFs through embedded native webview preview", () => {
     const resolution = resolvePdfViewerResolution({
       session,
       asset: localAsset,
@@ -138,9 +138,9 @@ describe("pdfViewerContract", () => {
     });
 
     expect(resolution).toMatchObject({
-      kind: "resolved-native-handoff",
+      kind: "resolved-embedded",
       sourceKind: "local-file",
-      renderer: "native-handoff",
+      renderer: "native-webview",
       canonicalUri: localAsset.uri,
     });
   });

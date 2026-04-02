@@ -696,6 +696,55 @@ export const profileStyles = StyleSheet.create({
     justifyContent: "center",
     padding: 16,
   },
+  listingFullscreenHost: {
+    margin: 0,
+    alignItems: "stretch",
+    justifyContent: "flex-start",
+    padding: 0,
+  },
+  listingFullscreenShell: {
+    flex: 1,
+    backgroundColor: PROFILE_UI.bg,
+  },
+  listingHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 68,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: PROFILE_UI.border,
+    backgroundColor: PROFILE_UI.card,
+  },
+  listingHeaderBackButton: {
+    minWidth: 88,
+    paddingVertical: 8,
+    paddingRight: 8,
+  },
+  listingHeaderBackText: {
+    color: PROFILE_UI.sub,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  listingHeaderTitle: {
+    flex: 1,
+    color: PROFILE_UI.text,
+    fontSize: 20,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  listingHeaderSpacer: {
+    width: 88,
+  },
+  listingFullscreenScroll: {
+    flex: 1,
+  },
+  listingFullscreenScrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 28,
+  },
   modalTallCard: {
     maxHeight: "90%",
     minHeight: 0,
@@ -775,8 +824,28 @@ export const profileStyles = StyleSheet.create({
   listingKindRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 6,
-    marginBottom: 8,
+    gap: 8,
+    marginBottom: 12,
+  },
+  listingKindChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: PROFILE_UI.border,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: PROFILE_UI.cardSoft,
+  },
+  listingKindChipActive: {
+    backgroundColor: PROFILE_UI.accentSoft,
+    borderColor: PROFILE_UI.accent,
+  },
+  listingKindChipText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: PROFILE_UI.sub,
+  },
+  listingKindChipTextActive: {
+    color: PROFILE_UI.accent,
   },
   listingHelperText: {
     fontSize: 11,
@@ -833,10 +902,23 @@ export const profileStyles = StyleSheet.create({
     flexShrink: 0,
     zIndex: 2,
   },
-  modalBtn: {
+  listingBottomBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 999,
+    paddingTop: 12,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: PROFILE_UI.border,
+    backgroundColor: PROFILE_UI.card,
+    gap: 12,
+  },
+  modalBtn: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
     minWidth: 110,
     alignItems: "center",
     justifyContent: "center",
@@ -857,6 +939,11 @@ export const profileStyles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 14,
     fontWeight: "700",
+  },
+  listingBusyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   profileAvatarEditor: {
     flexDirection: "row",

@@ -17,7 +17,9 @@ describe("AddListingScreen source contract", () => {
     expect(source).toContain("router.replace(returnRoute)");
     expect(source).toContain("<ListingModal");
     expect(source).toContain("visible");
-    expect(source).toContain("onRequestClose={exitAddListingFlow}");
+    expect(source).toContain("resetAndExitAddListingFlow");
+    expect(source).toContain("onRequestClose={resetAndExitAddListingFlow}");
+    expect(source).toContain("if (!profile || savingListing) return;");
 
     expect(source).not.toContain("loadProfileScreenData()");
     expect(source).not.toContain("listingModalOpen");

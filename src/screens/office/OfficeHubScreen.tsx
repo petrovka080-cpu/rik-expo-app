@@ -43,7 +43,7 @@ import type {
   OfficeAccessScreenData,
 } from "./officeAccess.types";
 
-type SectionKey = "members" | "invites" | "company" | "help";
+type SectionKey = "members" | "invites" | "company";
 type Tone = "neutral" | "success" | "warning";
 type InviteFormDraft = {
   name: string;
@@ -137,6 +137,7 @@ const COPY_BASE = {
     "После создания вы сразу входите как директор и получаете все управляемые направления.",
   companyLead:
     "Карточка компании и объекта, заполненная при создании Office.",
+  companyDetailsTitle: "Реквизиты компании",
   membersTitle: "Сотрудники",
   membersLead: "Подтвержденные сотрудники и их текущие роли.",
   membersLeadWithInvites:
@@ -155,6 +156,8 @@ const COPY_BASE = {
   cancel: "Отмена",
   noMembers: "Подтвержденных сотрудников пока нет.",
   noInvites: "Ожидающих приглашений пока нет.",
+  summaryEdit: "Редактировать компанию",
+  memberActiveStatus: "active",
 } as const;
 
 const COPY = {
@@ -274,31 +277,6 @@ const formatDate = (value: string | null): string => {
     : parsed.toLocaleDateString("ru-RU");
 };
 
-function Stat(props: { label: string; value: string; tone?: Tone }) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.label}>{props.label}</Text>
-      <View
-        style={[
-          styles.pill,
-          props.tone === "success" && styles.pillSuccess,
-          props.tone === "warning" && styles.pillWarning,
-        ]}
-      >
-        <Text
-          style={[
-            styles.pillText,
-            props.tone === "success" && styles.pillTextSuccess,
-            props.tone === "warning" && styles.pillTextWarning,
-          ]}
-        >
-          {props.value}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
 function DirectionCard(props: {
   card: OfficeWorkspaceCard;
   canInvite: boolean;
@@ -377,21 +355,36 @@ function MemberCard(props: {
   savingRole: string | null;
   onAssignRole: (memberUserId: string, nextRole: string) => void;
 }) {
+  const roleLabel = getProfileRoleLabel(props.member.role);
+
   return (
     <View style={styles.entity}>
-      <Text style={styles.entityTitle}>
-        {props.member.fullName?.trim() || props.member.userId}
-      </Text>
-      <Text style={styles.entityMeta}>
-        Роль: {getProfileRoleLabel(props.member.role)}
-        {props.member.isOwner ? " • владелец компании" : ""}
-      </Text>
+      <View style={styles.entityHeader}>
+        <View style={styles.entityHeaderMain}>
+          <Text style={styles.entityTitle}>
+            {props.member.fullName?.trim() || props.member.userId}
+          </Text>
+          <Text style={styles.entityMeta}>{roleLabel}</Text>
+        </View>
+        <View style={styles.memberStatusRow}>
+          <View style={[styles.statusBadge, styles.statusActive]}>
+            <Text style={[styles.statusText, styles.statusTextActive]}>
+              {COPY.memberActiveStatus}
+            </Text>
+          </View>
+          {props.member.isOwner ? (
+            <View style={styles.statusBadge}>
+              <Text style={styles.statusText}>owner</Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
       {props.member.phone ? (
-        <Text style={styles.entityMeta}>Телефон: {props.member.phone}</Text>
+        <Text style={styles.entityMeta}>{props.member.phone}</Text>
       ) : null}
-      <Text style={styles.entityMeta}>
-        Добавлен: {formatDate(props.member.createdAt)}
-      </Text>
+      {props.member.createdAt ? (
+        <Text style={styles.entityMeta}>Добавлен: {formatDate(props.member.createdAt)}</Text>
+      ) : null}
       {props.canManage && !props.member.isOwner ? (
         <View style={styles.chips}>
           {OFFICE_ASSIGNABLE_ROLES.map((role) => {
@@ -420,16 +413,22 @@ function MemberCard(props: {
 function InviteCard(props: { invite: OfficeAccessInvite }) {
   return (
     <View style={styles.entity}>
-      <Text style={styles.entityTitle}>{props.invite.name}</Text>
-      <Text style={styles.entityMeta}>
-        Роль: {getProfileRoleLabel(props.invite.role)}
-      </Text>
-      <Text style={styles.entityMeta}>Телефон: {props.invite.phone}</Text>
+      <View style={styles.entityHeader}>
+        <View style={styles.entityHeaderMain}>
+          <Text style={styles.entityTitle}>{props.invite.name}</Text>
+          <Text style={styles.entityMeta}>{getProfileRoleLabel(props.invite.role)}</Text>
+        </View>
+        <View style={[styles.statusBadge, styles.statusPending]}>
+          <Text style={[styles.statusText, styles.statusTextPending]}>
+            {props.invite.status}
+          </Text>
+        </View>
+      </View>
+      <Text style={styles.entityMeta}>{props.invite.phone}</Text>
       {props.invite.email ? (
-        <Text style={styles.entityMeta}>Email: {props.invite.email}</Text>
+        <Text style={styles.entityMeta}>{props.invite.email}</Text>
       ) : null}
       <Text style={styles.entityMeta}>Код: {props.invite.inviteCode}</Text>
-      <Text style={styles.entityMeta}>Статус: {props.invite.status}</Text>
       <Text style={styles.entityMeta}>
         Создано: {formatDate(props.invite.createdAt)}
       </Text>
@@ -444,7 +443,6 @@ export default function OfficeHubScreen() {
     members: 0,
     invites: 0,
     company: 0,
-    help: 0,
   });
   const [data, setData] = useState<OfficeAccessScreenData>(EMPTY_DATA);
   const [loading, setLoading] = useState(true);
@@ -561,11 +559,22 @@ export default function OfficeHubScreen() {
     : data.company
       ? { label: COPY.accessPending, tone: "warning" as const }
       : { label: COPY.accessClosed, tone: "neutral" as const };
-
-  const membersLead =
-    data.invites.length > 0
-      ? `${COPY.membersLeadWithInvites} ${data.invites.length}.`
-      : COPY.membersLead;
+  const summaryMeta = useMemo(() => {
+    if (!data.company) return "";
+    return [data.company.industry, data.company.phone_main, data.company.email]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+      .join(" • ");
+  }, [data.company]);
+  const visibleCompanyDetails = useMemo(() => {
+    if (!data.company) return [];
+    return COMPANY_DETAILS.map((item) => ({
+      label: item.label,
+      value: String(item.pick(data.company) || "").trim(),
+    })).filter((item) => item.value);
+  }, [data.company]);
+  const visibleRoleLabel =
+    roleLabel && roleLabel !== COPY.noRole ? roleLabel : null;
 
   const recordOffset = useCallback(
     (key: SectionKey) => (event: LayoutChangeEvent) => {
@@ -580,6 +589,10 @@ export default function OfficeHubScreen() {
       animated: true,
     });
   }, []);
+
+  const handleEditCompany = useCallback(() => {
+    router.push("/profile?section=company");
+  }, [router]);
 
   const handleCreateCompany = useCallback(async () => {
     try {
@@ -739,7 +752,7 @@ export default function OfficeHubScreen() {
     <RoleScreenLayout
       style={styles.screen}
       title={entryCopy.title}
-      subtitle={entryCopy.subtitle}
+      subtitle={data.company ? undefined : entryCopy.subtitle}
       contentStyle={styles.fill}
     >
       <ScrollView
@@ -754,21 +767,6 @@ export default function OfficeHubScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.summary}>
-          <Text style={styles.eyebrow}>{COPY.summaryTitle}</Text>
-          <Text style={styles.company}>
-            {data.company?.name || COPY.summaryFallback}
-          </Text>
-          <View style={styles.stats}>
-            <Stat label={COPY.summaryRole} value={roleLabel || COPY.noRole} />
-            <Stat
-              label={COPY.summaryAccess}
-              value={accessStatus.label}
-              tone={accessStatus.tone}
-            />
-          </View>
-        </View>
-
         {companyFeedback ? (
           <View style={styles.notice}>
             <Text style={styles.noticeText}>{companyFeedback}</Text>
@@ -777,9 +775,53 @@ export default function OfficeHubScreen() {
 
         {data.company ? (
           <>
-            <View style={styles.section}>
+            <View testID="office-summary" style={styles.summary}>
+              <View style={styles.summaryHeader}>
+                <Text style={styles.eyebrow}>{COPY.summaryTitle}</Text>
+                <Pressable
+                  testID="office-company-edit"
+                  onPress={handleEditCompany}
+                  style={({ pressed }) => [
+                    styles.editButton,
+                    pressed && styles.pressed,
+                  ]}
+                  accessibilityLabel={COPY.summaryEdit}
+                >
+                  <Text style={styles.editButtonText}>✏️</Text>
+                </Pressable>
+              </View>
+              <Text style={styles.company}>{data.company.name}</Text>
+              {summaryMeta ? (
+                <Text style={styles.summaryMeta}>{summaryMeta}</Text>
+              ) : null}
+              <View style={styles.summaryBadges}>
+                {visibleRoleLabel ? (
+                  <View style={[styles.summaryBadge, styles.summaryBadgeRole]}>
+                    <Text style={styles.summaryBadgeText}>{visibleRoleLabel}</Text>
+                  </View>
+                ) : null}
+                <View
+                  style={[
+                    styles.summaryBadge,
+                    accessStatus.tone === "success" && styles.summaryBadgeSuccess,
+                    accessStatus.tone === "warning" && styles.summaryBadgeWarning,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.summaryBadgeText,
+                      accessStatus.tone === "success" && styles.summaryBadgeTextSuccess,
+                      accessStatus.tone === "warning" && styles.summaryBadgeTextWarning,
+                    ]}
+                  >
+                    {accessStatus.label}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View testID="office-section-directions" style={styles.section}>
               <Text style={styles.sectionTitle}>{COPY.directionsTitle}</Text>
-              <Text style={styles.helper}>{COPY.directionsLead}</Text>
               {officeCards.length > 0 ? (
                 <View style={styles.grid}>
                   {officeCards.map((card) => (
@@ -799,31 +841,33 @@ export default function OfficeHubScreen() {
               )}
             </View>
 
-            <View style={styles.section} onLayout={recordOffset("members")}>
-              <Text style={styles.sectionTitle}>{COPY.membersTitle}</Text>
-              <Text style={styles.helper}>{membersLead}</Text>
-              {data.members.length > 0 ? (
-                <View style={styles.stack}>
-                  {data.members.map((member) => (
-                    <MemberCard
-                      key={member.userId}
-                      member={member}
-                      canManage={canManageCompany}
-                      savingRole={savingRole}
-                      onAssignRole={handleAssignRole}
-                    />
+            {visibleCompanyDetails.length > 0 ? (
+              <View
+                testID="office-section-company-details"
+                style={styles.section}
+                onLayout={recordOffset("company")}
+              >
+                <Text style={styles.sectionTitle}>{COPY.companyDetailsTitle}</Text>
+                <View style={styles.panel}>
+                  {visibleCompanyDetails.map((item, index) => (
+                    <View
+                      key={item.label}
+                      style={index === visibleCompanyDetails.length - 1 ? styles.rowLast : styles.row}
+                    >
+                      <Text style={styles.label}>{item.label}</Text>
+                      <Text style={styles.value}>{item.value}</Text>
+                    </View>
                   ))}
                 </View>
-              ) : (
-                <View style={styles.panel}>
-                  <Text style={styles.helper}>{COPY.noMembers}</Text>
-                </View>
-              )}
-            </View>
+              </View>
+            ) : null}
 
-            <View style={styles.section} onLayout={recordOffset("invites")}>
+            <View
+              testID="office-section-invites"
+              style={styles.section}
+              onLayout={recordOffset("invites")}
+            >
               <Text style={styles.sectionTitle}>{COPY.invitesTitle}</Text>
-              <Text style={styles.helper}>{COPY.invitesLead}</Text>
               {inviteFeedback ? (
                 <View style={styles.notice}>
                   <Text testID="office-invite-feedback" style={styles.noticeText}>
@@ -964,22 +1008,33 @@ export default function OfficeHubScreen() {
               )}
             </View>
 
-            <View style={styles.section} onLayout={recordOffset("company")}>
-              <Text style={styles.sectionTitle}>{COPY.summaryTitle}</Text>
-              <Text style={styles.helper}>{COPY.companyLead}</Text>
-              <View style={styles.panel}>
-                {COMPANY_DETAILS.map((item) => (
-                  <View key={item.label} style={styles.row}>
-                    <Text style={styles.label}>{item.label}</Text>
-                    <Text style={styles.value}>
-                      {item.pick(data.company) || COPY.noValue}
-                    </Text>
-                  </View>
-                ))}
-              </View>
+            <View
+              testID="office-section-members"
+              style={styles.section}
+              onLayout={recordOffset("members")}
+            >
+              <Text style={styles.sectionTitle}>{COPY.membersTitle}</Text>
+              {data.members.length > 0 ? (
+                <View style={styles.stack}>
+                  {data.members.map((member) => (
+                    <MemberCard
+                      key={member.userId}
+                      member={member}
+                      canManage={canManageCompany}
+                      savingRole={savingRole}
+                      onAssignRole={handleAssignRole}
+                    />
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.panel}>
+                  <Text style={styles.helper}>{COPY.noMembers}</Text>
+                </View>
+              )}
             </View>
           </>
         ) : (
+          <>
           <View style={styles.section} onLayout={recordOffset("company")}>
             <Text style={styles.sectionTitle}>{COPY.companyCreateTitle}</Text>
             <View style={styles.panel}>
@@ -1085,18 +1140,19 @@ export default function OfficeHubScreen() {
               </Pressable>
             </View>
           </View>
-        )}
 
-        <View style={styles.section} onLayout={recordOffset("help")}>
-          <Text style={styles.sectionTitle}>{COPY.rulesTitle}</Text>
-          <View style={styles.panel}>
-            {RULES.map((rule) => (
-              <Text key={rule} style={styles.rule}>
-                • {rule}
-              </Text>
-            ))}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{COPY.rulesTitle}</Text>
+            <View style={styles.panel}>
+              {RULES.map((rule) => (
+                <Text key={rule} style={styles.rule}>
+                  • {rule}
+                </Text>
+              ))}
+            </View>
           </View>
-        </View>
+          </>
+        )}
       </ScrollView>
 
       <Modal
@@ -1208,7 +1264,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E2E8F0",
     padding: 18,
-    gap: 14,
+    gap: 12,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
   },
   eyebrow: {
     color: "#2563EB",
@@ -1218,6 +1280,38 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   company: { color: "#0F172A", fontSize: 24, fontWeight: "900" },
+  editButton: {
+    minWidth: 36,
+    minHeight: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  editButtonText: { fontSize: 16 },
+  summaryMeta: { color: "#475569", fontSize: 14, lineHeight: 20, fontWeight: "600" },
+  summaryBadges: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  summaryBadge: {
+    minHeight: 34,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryBadgeRole: {
+    borderColor: "#BFDBFE",
+    backgroundColor: "#EFF6FF",
+  },
+  summaryBadgeSuccess: { borderColor: "#BBF7D0", backgroundColor: "#F0FDF4" },
+  summaryBadgeWarning: { borderColor: "#FDE68A", backgroundColor: "#FEFCE8" },
+  summaryBadgeText: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
+  summaryBadgeTextSuccess: { color: "#166534" },
+  summaryBadgeTextWarning: { color: "#92400E" },
   stats: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   stat: { flexGrow: 1, flexBasis: 140, gap: 8 },
   label: { color: "#64748B", fontSize: 12, fontWeight: "800" },
@@ -1350,8 +1444,31 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 6,
   },
+  entityHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  entityHeaderMain: { flex: 1, gap: 4 },
   entityTitle: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
   entityMeta: { color: "#475569", fontSize: 13, lineHeight: 18 },
+  memberStatusRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  statusBadge: {
+    minHeight: 28,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statusActive: { borderColor: "#BBF7D0", backgroundColor: "#F0FDF4" },
+  statusPending: { borderColor: "#FDE68A", backgroundColor: "#FEFCE8" },
+  statusText: { color: "#334155", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
+  statusTextActive: { color: "#166534" },
+  statusTextPending: { color: "#92400E" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   chip: {
     borderRadius: 999,

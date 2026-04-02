@@ -26,15 +26,21 @@ import {
   sharePdfDocument,
 } from "../src/lib/documents/pdfDocumentActions";
 import {
+  getReadAccessParentUri,
   resolvePdfViewerDirectSnapshot,
   resolvePdfViewerResolution,
   resolvePdfViewerState,
+  type PdfViewerResolution,
   type PdfViewerState as ViewerState,
 } from "../src/lib/pdf/pdfViewerContract";
 import {
   failPdfOpenVisible,
   markPdfOpenVisible,
 } from "../src/lib/pdf/pdfOpenFlow";
+import {
+  assertValidLocalPdfFile,
+  assertValidRemotePdfResponse,
+} from "../src/lib/pdf/pdfSourceValidation";
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
 
@@ -50,6 +56,10 @@ type FileSystemInfoResult = {
 
 type FileSystemCompatShape = {
   getInfoAsync?: (uri: string) => Promise<FileSystemInfoResult | null | undefined>;
+  readAsStringAsync?: (
+    uri: string,
+    options: { encoding: "base64"; position?: number; length?: number },
+  ) => Promise<string>;
 };
 
 const FileSystemCompat: FileSystemCompatShape = FileSystemModule;
@@ -86,6 +96,28 @@ async function inspectLocalPdfFile(uri: string): Promise<ViewerFileInfo | null> 
     exists: Boolean(info?.exists),
     sizeBytes: Number.isFinite(Number(info?.size)) ? Number(info?.size) : undefined,
   };
+}
+
+async function validateEmbeddedPreviewResolution(
+  resolution: Extract<PdfViewerResolution, { kind: "resolved-embedded" }>,
+) {
+  if (Platform.OS === "web") return;
+
+  if (resolution.sourceKind === "local-file" || resolution.scheme === "file") {
+    await assertValidLocalPdfFile({
+      fileSystem: FileSystemCompat,
+      uri: resolution.asset.uri,
+      failureLabel: "PDF preview file",
+    });
+    return;
+  }
+
+  if (resolution.sourceKind === "remote-url") {
+    await assertValidRemotePdfResponse({
+      uri: resolution.asset.uri,
+      failureLabel: "PDF preview response",
+    });
+  }
 }
 
 async function downloadPdfAsset(asset: DocumentAsset) {
@@ -185,9 +217,9 @@ export default function PdfViewerScreen() {
   const [webRenderUri, setWebRenderUri] = React.useState<string | null>(null);
   const openedAtRef = React.useRef<number>(Date.now());
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const renderDelayRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialAssetUriRef = React.useRef("");
   const isMountedRef = React.useRef(true);
+  const renderFailedRef = React.useRef(false);
   const webRenderUriRef = React.useRef<string | null>(null);
   const openSignalSettledRef = React.useRef(false);
   const resolvedSource = React.useMemo(
@@ -269,13 +301,6 @@ export default function PdfViewerScreen() {
     }
   }, []);
 
-  const clearRenderDelay = React.useCallback(() => {
-    if (renderDelayRef.current) {
-      clearTimeout(renderDelayRef.current);
-      renderDelayRef.current = null;
-    }
-  }, []);
-
   const signalOpenVisible = React.useCallback(
     (resolvedAsset?: DocumentAsset | null, extra?: Record<string, unknown>) => {
       if (!openToken || openSignalSettledRef.current) return;
@@ -314,8 +339,8 @@ export default function PdfViewerScreen() {
 
   const markError = React.useCallback(
     (message: string, phase: "resolution" | "render" | "timeout" | "action" = "render") => {
+      renderFailedRef.current = true;
       clearLoadingTimeout();
-      clearRenderDelay();
       setIsReadyToRender(false);
       setErrorText(message);
       setState("error");
@@ -334,7 +359,7 @@ export default function PdfViewerScreen() {
       }
       signalOpenFailed(message, { phase });
     },
-    [clearLoadingTimeout, clearRenderDelay, sessionId, signalOpenFailed, syncSnapshot],
+    [clearLoadingTimeout, sessionId, signalOpenFailed, syncSnapshot],
   );
 
   const enterLoading = React.useCallback(() => {
@@ -373,7 +398,6 @@ export default function PdfViewerScreen() {
   const handoffPdfPreview = React.useCallback(
     async (resolvedAsset: DocumentAsset, trigger: "primary" | "manual") => {
       clearLoadingTimeout();
-      clearRenderDelay();
       setMenuOpen(false);
       setErrorText("");
       setState("loading");
@@ -416,13 +440,13 @@ export default function PdfViewerScreen() {
         markError(message, "render");
       }
     },
-    [clearLoadingTimeout, clearRenderDelay, markError, markReady, sessionId],
+    [clearLoadingTimeout, markError, markReady, sessionId],
   );
 
   React.useEffect(() => {
     openedAtRef.current = Date.now();
+    renderFailedRef.current = false;
     clearLoadingTimeout();
-    clearRenderDelay();
     clearWebRenderUri();
     setIsReadyToRender(false);
     setNativeHandoffCompleted(false);
@@ -485,6 +509,17 @@ export default function PdfViewerScreen() {
         await handoffPdfPreview(resolution.asset, "primary");
         return;
       }
+      if (Platform.OS !== "web" && resolution.kind === "resolved-embedded") {
+        try {
+          await validateEmbeddedPreviewResolution(resolution);
+        } catch (error) {
+          if (!cancelled) {
+            const message = error instanceof Error ? error.message : String(error);
+            markError(message, "resolution");
+          }
+          return;
+        }
+      }
       if (Platform.OS === "web" && resolution.kind === "resolved-embedded") {
         if (resolution.sourceKind === "remote-url") {
           clearWebRenderUri();
@@ -505,11 +540,9 @@ export default function PdfViewerScreen() {
         }
         setWebRenderUri(resolution.asset.uri);
       }
-      renderDelayRef.current = setTimeout(() => {
-        if (cancelled) return;
+      if (!cancelled) {
         setIsReadyToRender(true);
-        renderDelayRef.current = null;
-      }, Platform.OS === "ios" ? 150 : 50);
+      }
     };
 
     void prepareViewer();
@@ -523,11 +556,9 @@ export default function PdfViewerScreen() {
         scheme: getUriScheme(next.asset?.uri),
       });
       clearLoadingTimeout();
-      clearRenderDelay();
     };
   }, [
     clearLoadingTimeout,
-    clearRenderDelay,
     clearWebRenderUri,
     enterLoading,
     handoffPdfPreview,
@@ -631,6 +662,10 @@ export default function PdfViewerScreen() {
     if (resolvedSource.sourceKind === "remote-url") return webRenderUri ?? "";
     return resolvedSource.canonicalUri;
   }, [resolvedSource, webRenderUri]);
+  const nativeWebViewReadAccessUri = React.useMemo(() => {
+    if (Platform.OS === "web" || resolvedSource.kind !== "resolved-embedded") return undefined;
+    return getReadAccessParentUri(resolvedSource.asset.uri);
+  }, [resolvedSource]);
 
   const showChrome = Platform.OS === "web" ? true : chromeVisible;
   const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
@@ -774,20 +809,20 @@ export default function PdfViewerScreen() {
           return (
             <View style={styles.loadingState}>
               <ActivityIndicator size="large" color="#FFFFFF" />
-              <Text style={styles.loadingText}>Opening document...</Text>
+              <Text style={styles.loadingText}>Открывается...</Text>
             </View>
           );
         }
         return (
           <Pressable style={styles.viewerBody} onPress={toggleChrome}>
             <CenteredPanel
-              title="Document opened in PDF app"
-              subtitle="Mobile PDF preview now uses the device viewer to avoid native renderer crashes. Use Back to return to the app, or open it again from here."
-              actionLabel="Open again"
+              title="Документ открыт во внешнем PDF-приложении"
+              subtitle="Вернитесь в приложение, когда закончите, или откройте документ ещё раз отсюда."
+              actionLabel="Открыть ещё раз"
               onAction={() => {
                 void handoffPdfPreview(resolvedSource.asset, "manual");
               }}
-              secondaryLabel={asset ? "Share" : undefined}
+              secondaryLabel={asset ? "Поделиться" : undefined}
               onSecondaryAction={asset ? () => void onShare() : undefined}
             />
           </Pressable>
@@ -813,7 +848,7 @@ export default function PdfViewerScreen() {
       return (
         <View style={styles.loadingState}>
           <ActivityIndicator size="large" color="#FFFFFF" />
-          <Text style={styles.loadingText}>Preparing viewer...</Text>
+          <Text style={styles.loadingText}>Открывается...</Text>
         </View>
       );
     }
@@ -833,7 +868,7 @@ export default function PdfViewerScreen() {
         {state === "loading" ? (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color="#FFFFFF" />
-            <Text style={styles.loadingText}>Preparing document...</Text>
+            <Text style={styles.loadingText}>Открывается...</Text>
           </View>
         ) : null}
 
@@ -891,8 +926,10 @@ export default function PdfViewerScreen() {
               testID="native-pdf-webview"
               source={source}
               originWhitelist={["*"]}
+              allowingReadAccessToURL={nativeWebViewReadAccessUri}
               style={styles.nativeWebView}
               onLoadEnd={() => {
+                if (renderFailedRef.current) return;
                 console.info("[pdf-viewer] native_webview_load_end", {
                   sessionId,
                   documentType: asset.documentType,
@@ -908,6 +945,22 @@ export default function PdfViewerScreen() {
                   documentType: asset.documentType,
                   originModule: asset.originModule,
                   uri: asset.uri,
+                  error: message,
+                });
+                markError(message, "render");
+              }}
+              onHttpError={(event: { nativeEvent?: { statusCode?: number; description?: string } }) => {
+                const statusCode = Number(event?.nativeEvent?.statusCode);
+                const description = String(event?.nativeEvent?.description || "").trim();
+                const message = statusCode
+                  ? `PDF request failed (${statusCode}).`
+                  : description || "PDF request failed.";
+                console.error("[pdf-viewer] native_webview_http_error", {
+                  sessionId,
+                  documentType: asset.documentType,
+                  originModule: asset.originModule,
+                  uri: asset.uri,
+                  statusCode: Number.isFinite(statusCode) ? statusCode : null,
                   error: message,
                 });
                 markError(message, "render");

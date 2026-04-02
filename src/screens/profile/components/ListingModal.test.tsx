@@ -23,15 +23,18 @@ jest.mock("./ProfilePrimitives", () => {
   const React = require("react");
   const { View, TextInput } = require("react-native");
   return {
-    LabeledInput: (props: Record<string, unknown>) =>
+    LabeledInput: React.forwardRef((props: Record<string, unknown>, ref: unknown) =>
       React.createElement(
         View,
         { testID: `labeled-input:${String(props.label || "")}` },
         React.createElement(TextInput, {
+          ref,
           value: props.value,
           onChangeText: props.onChangeText,
+          returnKeyType: props.returnKeyType,
+          onSubmitEditing: props.onSubmitEditing,
         }),
-      ),
+      )),
   };
 });
 
@@ -82,16 +85,24 @@ describe("ListingModal", () => {
 
     const modal = renderer.root.findByProps({ testID: "safe-modal" });
     const closeButton = renderer.root.findByProps({ testID: "add-listing-flow-close" });
+    const backButton = renderer.root.findByProps({ testID: "add-listing-header-back" });
     const scroll = renderer.root.findByType(require("react-native").ScrollView);
 
-    expect(modal.props.modalProps.onBackdropPress).toBe(props.onRequestClose);
     expect(scroll.props.keyboardShouldPersistTaps).toBe("handled");
+
+    act(() => {
+      modal.props.modalProps.onBackdropPress();
+    });
+
+    act(() => {
+      backButton.props.onPress();
+    });
 
     act(() => {
       closeButton.props.onPress();
     });
 
-    expect(props.onRequestClose).toHaveBeenCalledTimes(1);
+    expect(props.onRequestClose).toHaveBeenCalledTimes(3);
   });
 
   it("keeps publish action wired while the footer stays interactive", () => {
@@ -108,5 +119,31 @@ describe("ListingModal", () => {
     });
 
     expect(props.onPublish).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows fullscreen shell and busy submit feedback without extra contact fields", () => {
+    const props = createProps();
+    props.savingListing = true;
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<ListingModal {...props} />);
+    });
+
+    expect(renderer.root.findByProps({ testID: "add-listing-owner-shell" })).toBeTruthy();
+    expect(renderer.root.findAllByProps({ testID: "labeled-input:WhatsApp" })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: "labeled-input:Email" })).toHaveLength(0);
+    expect(renderer.root.findAllByType(require("react-native").ActivityIndicator)).toHaveLength(1);
+
+    const modal = renderer.root.findByProps({ testID: "safe-modal" });
+    const closeButton = renderer.root.findByProps({ testID: "add-listing-flow-close" });
+    const backButton = renderer.root.findByProps({ testID: "add-listing-header-back" });
+
+    act(() => {
+      modal.props.modalProps.onBackdropPress();
+      backButton.props.onPress();
+      closeButton.props.onPress();
+    });
+
+    expect(props.onRequestClose).not.toHaveBeenCalled();
   });
 });
