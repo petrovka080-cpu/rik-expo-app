@@ -2,11 +2,11 @@ const mockWithScreenErrorBoundary = jest.fn(
   (_component: unknown, options: unknown) => options,
 );
 
-jest.mock("../src/shared/ui/ScreenErrorBoundary", () => ({
+jest.mock("../../src/shared/ui/ScreenErrorBoundary", () => ({
   withScreenErrorBoundary: mockWithScreenErrorBoundary,
 }));
 
-jest.mock("../src/features/seller/SellerAreaScreen", () => ({
+jest.mock("../../src/features/seller/SellerAreaScreen", () => ({
   __esModule: true,
   default: "SellerAreaScreen",
 }));
@@ -19,7 +19,7 @@ describe("seller route", () => {
 
   it("registers seller area as its own owner path", () => {
     jest.isolateModules(() => {
-      require("./seller");
+      require("../../app/seller");
     });
 
     expect(mockWithScreenErrorBoundary).toHaveBeenCalledTimes(1);

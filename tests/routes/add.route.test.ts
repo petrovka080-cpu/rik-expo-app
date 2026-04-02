@@ -19,7 +19,7 @@ describe("add tab route", () => {
 
   it("registers add-listing as its own owner path instead of profile", () => {
     jest.isolateModules(() => {
-      require("./add");
+      require("../../app/(tabs)/add");
     });
 
     expect(mockWithScreenErrorBoundary).toHaveBeenCalledTimes(1);
