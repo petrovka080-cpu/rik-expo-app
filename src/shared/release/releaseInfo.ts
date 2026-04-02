@@ -416,16 +416,32 @@ export function buildReleaseDiagnostics(snapshot: RuntimeReleaseSnapshot): Relea
   const channel = safeString(snapshot.update.channel);
   const expectedBranch = getExpectedReleaseBranch(channel);
   const runtimeVersion = safeString(snapshot.update.runtimeVersion ?? snapshot.config.runtimeVersion);
-  const updateId = safeString(snapshot.update.updateId, "embedded");
+  const rawUpdateId = safeString(snapshot.update.updateId, "");
+  const updateId =
+    rawUpdateId && rawUpdateId !== UNKNOWN
+      ? rawUpdateId
+      : snapshot.update.isEmbeddedLaunch
+        ? "embedded"
+        : UNKNOWN;
   const createdAt = safeString(snapshot.update.createdAt);
   const lastUpdateAgeHours = getAgeHours(createdAt, nowMs);
-  const launchSource = snapshot.update.isEmbeddedLaunch ? "embedded" : "ota";
+  const hasReliableOtaIdentity =
+    updateId !== UNKNOWN &&
+    updateId !== "embedded" &&
+    channel !== UNKNOWN &&
+    runtimeVersion !== UNKNOWN;
+  const launchSource = snapshot.update.isEmbeddedLaunch
+    ? "embedded"
+    : hasReliableOtaIdentity
+      ? "ota"
+      : "unknown";
   const availability = resolveUpdateAvailability(snapshot);
 
   const issues: string[] = [];
   const actions: string[] = [];
 
   const isRuntimeMismatchSuspected = runtimeVersion === UNKNOWN;
+  const isNativeBuildUnknown = snapshot.native.nativeBuildVersion === UNKNOWN;
   const isChannelMismatch =
     channel === UNKNOWN || channel === "development-client" || !isCanonicalReleaseChannel(channel);
   const isProbablyOutdated =
@@ -446,6 +462,14 @@ export function buildReleaseDiagnostics(snapshot: RuntimeReleaseSnapshot): Relea
     pushUnique(actions, "Verify runtimeVersion in app config and the installed binary lineage.");
   }
 
+  if (isNativeBuildUnknown) {
+    pushUnique(issues, "Native build version could not be determined.");
+    pushUnique(
+      actions,
+      "If this snapshot came from web/desktop, native build lineage is unavailable there by design. If this came from iOS/Android, verify the installed binary was produced by EAS Build.",
+    );
+  }
+
   if (channel === UNKNOWN) {
     pushUnique(issues, "The installed build channel is unknown.");
     pushUnique(actions, "Verify that this binary was produced by EAS Build and bound to a canonical channel.");
@@ -462,6 +486,14 @@ export function buildReleaseDiagnostics(snapshot: RuntimeReleaseSnapshot): Relea
     if (snapshot.update.emergencyLaunchReason) {
       pushUnique(actions, `Inspect emergency reason: ${snapshot.update.emergencyLaunchReason}`);
     }
+  }
+
+  if (launchSource === "unknown") {
+    pushUnique(issues, "Launch source could not be proven from the current release identity.");
+    pushUnique(
+      actions,
+      "Use the diagnostics together with a known iOS/Android EAS build; when lineage fields stay unknown, do not treat this snapshot as proof that OTA applied.",
+    );
   }
 
   if (snapshot.update.isEmbeddedLaunch) {

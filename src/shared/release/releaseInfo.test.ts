@@ -170,6 +170,30 @@ describe("releaseInfo", () => {
     expect(diagnostics.reasons).toContain("Runtime version could not be determined.");
   });
 
+  it("degrades conflicting lineage to unknown instead of pretending the launch is ota", () => {
+    const diagnostics = buildReleaseDiagnostics(
+      createSnapshot({
+        native: {
+          nativeBuildVersion: "unknown",
+        },
+        update: {
+          channel: "unknown",
+          updateId: "",
+          runtimeVersion: "unknown",
+          isEmbeddedLaunch: false,
+          lastCheckForUpdateTimeSinceRestart: "2026-04-02T11:30:00.000Z",
+        },
+      }),
+    );
+
+    expect(diagnostics.updateId).toBe("unknown");
+    expect(diagnostics.launchSource).toBe("unknown");
+    expect(diagnostics.reasons).toContain("Native build version could not be determined.");
+    expect(diagnostics.reasons).toContain(
+      "Launch source could not be proven from the current release identity.",
+    );
+  });
+
   it("keeps the OTA vs build decision matrix explicit", () => {
     expect(normalizeReleaseChangeClass("js-ui")).toBe("js-ui");
     expect(normalizeReleaseChangeClass("made-up")).toBeNull();
