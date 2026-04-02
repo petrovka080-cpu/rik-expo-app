@@ -65,6 +65,27 @@ function BlockTitle({ title }: { title: string }) {
   return <Text style={styles.blockTitle}>{title}</Text>;
 }
 
+function shouldUseSafeOtaInstructions(diagnostics: OtaDiagnostics): boolean {
+  return diagnostics.channel === "production" || diagnostics.channel === "preview";
+}
+
+function buildSafeOtaInstructionsMessage(diagnostics: OtaDiagnostics): string {
+  return [
+    "В этом release-билде ручная OTA-проверка отключена, чтобы не выбрасывать приложение.",
+    `Канал: ${diagnostics.channel}`,
+    `Runtime: ${diagnostics.runtimeVersion}`,
+    `Build: ${diagnostics.nativeBuildVersion}`,
+    "",
+    "Что делать:",
+    "1. Откройте приложение на интернете и подождите 20-30 секунд.",
+    "2. Полностью закройте приложение.",
+    "3. Откройте его снова и подождите 20-30 секунд.",
+    "4. Полностью закройте и откройте еще раз.",
+    "",
+    "Если обновление все еще не применилось, скопируйте OTA diagnostics и пришлите их.",
+  ].join("\n");
+}
+
 function BulletList(props: { items: string[]; emptyLabel: string }) {
   if (!props.items.length) {
     return <Text style={styles.listItem}>• {props.emptyLabel}</Text>;
@@ -87,6 +108,8 @@ export function ProfileOtaDiagnosticsCard() {
 
   const diagnostics = getOtaDiagnostics();
   const severityTheme = getSeverityTheme(diagnostics.severity);
+  const useSafeOtaInstructions = shouldUseSafeOtaInstructions(diagnostics);
+  const primaryButtonLabel = useSafeOtaInstructions ? "Показать шаги OTA" : "Проверить OTA сейчас";
 
   const handleCopy = async () => {
     try {
@@ -101,8 +124,16 @@ export function ProfileOtaDiagnosticsCard() {
   };
 
   const handleCheckNow = async () => {
-    setLoading(true);
     setLastActionMessage("");
+
+    if (useSafeOtaInstructions) {
+      const message = buildSafeOtaInstructionsMessage(diagnostics);
+      setLastActionMessage(message);
+      Alert.alert("OTA diagnostics", message);
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const result = await checkAndFetchOtaNow();
@@ -175,6 +206,7 @@ export function ProfileOtaDiagnosticsCard() {
 
         <View style={styles.actionsRow}>
           <Pressable
+            testID="ota-check-action"
             style={[styles.primaryButton, loading && styles.buttonDisabled]}
             onPress={handleCheckNow}
             disabled={loading}
@@ -182,11 +214,11 @@ export function ProfileOtaDiagnosticsCard() {
             {loading ? (
               <ActivityIndicator color={UI.buttonText} />
             ) : (
-              <Text style={styles.primaryButtonText}>Проверить OTA сейчас</Text>
+              <Text style={styles.primaryButtonText}>{primaryButtonLabel}</Text>
             )}
           </Pressable>
 
-          <Pressable style={styles.secondaryButton} onPress={handleCopy} disabled={loading}>
+          <Pressable testID="ota-copy-action" style={styles.secondaryButton} onPress={handleCopy} disabled={loading}>
             <Text style={styles.secondaryButtonText}>Скопировать диагностику</Text>
           </Pressable>
         </View>
