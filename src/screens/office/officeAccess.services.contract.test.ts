@@ -12,6 +12,7 @@ describe("officeAccess.services source contract", () => {
     expect(source).toContain('role: OFFICE_BOOTSTRAP_ROLE');
     expect(source).toContain('status: "pending"');
     expect(source).toContain('.from("companies")');
+    expect(source).toContain('.from("company_profiles")');
     expect(source).toContain('.from("company_members")');
     expect(source).toContain('.from("company_invites")');
     expect(source).not.toContain('role: "buyer"');

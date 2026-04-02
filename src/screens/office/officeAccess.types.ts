@@ -37,10 +37,15 @@ export type OfficeAccessScreenData = {
 
 export type CreateCompanyDraft = {
   name: string;
-  city: string;
+  legalAddress: string;
   industry: string;
+  inn: string;
   phoneMain: string;
+  additionalPhones: string[];
   email: string;
+  constructionObjectName: string;
+  siteAddress: string;
+  website: string;
 };
 
 export type CreateInviteDraft = {
@@ -49,4 +54,17 @@ export type CreateInviteDraft = {
   email: string;
   role: string;
   comment: string;
+};
+
+export type CreatedOfficeInvite = {
+  id: string;
+  companyId: string;
+  inviteCode: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  role: string;
+  status: string;
+  createdAt: string | null;
+  comment: string | null;
 };

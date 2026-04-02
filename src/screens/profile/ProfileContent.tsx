@@ -305,11 +305,12 @@ export function ProfileContent() {
   );
 
   const openActiveContext = useCallback(() => {
-    router.push(
-      accessModel.activeContext === "office"
-        ? OFFICE_TAB_ROUTE
-        : MARKET_TAB_ROUTE,
-    );
+    const push = router.push as unknown as (href: string) => void;
+    if (accessModel.activeContext === "office") {
+      push(String(OFFICE_TAB_ROUTE));
+      return;
+    }
+    push(String(MARKET_TAB_ROUTE));
   }, [accessModel.activeContext, router]);
 
   const handleSignOut = useCallback(() => {

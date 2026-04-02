@@ -12,7 +12,7 @@ import type { MarketMapParams } from "../../features/market/marketHome.types";
 export const AUTH_LOGIN_ROUTE = "/auth/login" satisfies Href;
 export const DIRECTOR_ROUTE = "/director" satisfies Href;
 export const ADD_LISTING_ROUTE = "/(tabs)/add" satisfies Href;
-export const OFFICE_TAB_ROUTE = "/office/index" satisfies Href;
+export const OFFICE_TAB_ROUTE = "/office/index" as Href;
 export const PROFILE_TAB_ROUTE = "/(tabs)/profile" satisfies Href;
 export const REPORTS_DASHBOARD_ROUTE = "/reports/dashboard" satisfies Href;
 export const REPORTS_AI_ASSISTANT_ROUTE = "/reports/ai-assistant" satisfies Href;
@@ -76,15 +76,23 @@ export const buildAddListingRoute = (params?: {
     : ADD_LISTING_ROUTE;
 
 export const buildSupplierMapRoute = (params?: MarketMapParams): Href =>
-  params ? buildMarketSupplierMapRoute(params) : SUPPLIER_MAP_ROUTE;
+{
+  if (params) {
+    return buildMarketSupplierMapRoute(params);
+  }
+  return SUPPLIER_MAP_ROUTE;
+};
 
 export const buildSupplierShowcaseRoute = (params?: {
   userId?: string | null;
   companyId?: string | null;
 }): Href =>
-  params?.userId
-    ? buildMarketSupplierShowcaseRoute(params.userId, params.companyId)
-    : SUPPLIER_SHOWCASE_ROUTE;
+{
+  if (params?.userId) {
+    return buildMarketSupplierShowcaseRoute(params.userId, params.companyId);
+  }
+  return SUPPLIER_SHOWCASE_ROUTE;
+};
 
 export {
   buildMarketProductRoute,

@@ -11,6 +11,7 @@ import {
 import type {
   CreateCompanyDraft,
   CreateInviteDraft,
+  CreatedOfficeInvite,
   OfficeAccessInvite,
   OfficeAccessMember,
   OfficeAccessScreenData,
@@ -20,6 +21,20 @@ type MemberProfileRow = {
   user_id: string;
   full_name: string | null;
   phone: string | null;
+};
+
+type CompanyInviteRow = {
+  id: string;
+  company_id: string;
+  invite_code: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  role: string;
+  status: string;
+  created_at: string;
+  expires_at: string | null;
+  comment: string | null;
 };
 
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
@@ -36,17 +51,62 @@ const buildInviteCode = (): string =>
     .slice(-4)
     .toUpperCase()}`;
 
+const buildPhoneOverflow = (phones: string[]): string | null => {
+  const normalized = phones
+    .map((phone) => normalizeText(phone))
+    .filter(Boolean)
+    .join(", ");
+  return normalized || null;
+};
+
 const buildCompanyInsertPayload = (params: {
   userId: string;
   profileEmail: string | null;
+  profileCity: string | null;
   draft: CreateCompanyDraft;
 }) => ({
   owner_user_id: params.userId,
   name: params.draft.name.trim(),
-  city: normalizeText(params.draft.city) || null,
+  city: normalizeText(params.profileCity) || null,
+  address: normalizeText(params.draft.legalAddress) || null,
   industry: normalizeText(params.draft.industry) || null,
+  inn: normalizeText(params.draft.inn) || null,
   phone_main: normalizeText(params.draft.phoneMain) || null,
+  phone_whatsapp: buildPhoneOverflow(params.draft.additionalPhones),
   email: normalizeText(params.draft.email) || params.profileEmail,
+  site: normalizeText(params.draft.website) || null,
+  about_short: normalizeText(params.draft.constructionObjectName) || null,
+  about_full: normalizeText(params.draft.siteAddress) || null,
+});
+
+const buildCompanyProfileInsertPayload = (params: {
+  companyId: string;
+  userId: string;
+  profileEmail: string | null;
+  draft: CreateCompanyDraft;
+}) => ({
+  id: params.companyId,
+  user_id: params.userId,
+  owner_user_id: params.userId,
+  name: params.draft.name.trim(),
+  inn: normalizeText(params.draft.inn) || null,
+  legal_address: normalizeText(params.draft.legalAddress) || null,
+  phone: normalizeText(params.draft.phoneMain) || null,
+  email: normalizeText(params.draft.email) || params.profileEmail,
+  site_address: normalizeText(params.draft.siteAddress) || null,
+});
+
+const mapInviteRow = (row: CompanyInviteRow): OfficeAccessInvite => ({
+  id: row.id,
+  inviteCode: row.invite_code,
+  name: row.name,
+  phone: row.phone,
+  email: row.email,
+  role: row.role,
+  status: row.status,
+  createdAt: row.created_at,
+  expiresAt: row.expires_at,
+  comment: row.comment,
 });
 
 async function loadCompanyById(companyId: string): Promise<Company | null> {
@@ -119,18 +179,7 @@ async function loadCompanyInvites(
   if (result.error) throw result.error;
 
   return Array.isArray(result.data)
-    ? result.data.map((row) => ({
-        id: row.id,
-        inviteCode: row.invite_code,
-        name: row.name,
-        phone: row.phone,
-        email: row.email,
-        role: row.role,
-        status: row.status,
-        createdAt: row.created_at,
-        expiresAt: row.expires_at,
-        comment: row.comment,
-      }))
+    ? result.data.map((row) => mapInviteRow(row as CompanyInviteRow))
     : [];
 }
 
@@ -183,7 +232,7 @@ export async function createOfficeCompany(params: {
   const user = await loadCurrentAuthUser();
   const companyName = params.draft.name.trim();
   if (!companyName) {
-    throw new Error("Укажите название компании.");
+    throw new Error("Укажите наименование компании.");
   }
 
   const existingCompany = await supabase
@@ -194,7 +243,7 @@ export async function createOfficeCompany(params: {
   if (existingCompany.error) throw existingCompany.error;
   if (existingCompany.data?.id) {
     throw new Error(
-      "Компания уже создана. Откройте контур компании и Office.",
+      "Компания уже создана. Откройте Office и продолжайте работу как директор.",
     );
   }
 
@@ -204,6 +253,7 @@ export async function createOfficeCompany(params: {
       buildCompanyInsertPayload({
         userId: user.id,
         profileEmail: params.profileEmail,
+        profileCity: params.profile.city ?? null,
         draft: params.draft,
       }),
     )
@@ -221,6 +271,16 @@ export async function createOfficeCompany(params: {
   });
   if (membershipResult.error) throw membershipResult.error;
 
+  const companyProfileResult = await supabase.from("company_profiles").insert(
+    buildCompanyProfileInsertPayload({
+      companyId: company.id,
+      userId: user.id,
+      profileEmail: params.profileEmail,
+      draft: params.draft,
+    }),
+  );
+  if (companyProfileResult.error) throw companyProfileResult.error;
+
   const profilePayload = buildOfficeBootstrapProfilePayload(params.profile);
   const profileResult = await supabase
     .from("user_profiles")
@@ -232,32 +292,51 @@ export async function createOfficeCompany(params: {
 export async function createOfficeInvite(params: {
   companyId: string;
   draft: CreateInviteDraft;
-}): Promise<void> {
+}): Promise<CreatedOfficeInvite> {
   const name = params.draft.name.trim();
   const phone = params.draft.phone.trim();
   const role = params.draft.role.trim().toLowerCase();
   if (!name) {
-    throw new Error("Укажите имя приглашённого сотрудника.");
+    throw new Error("Укажите ФИО сотрудника.");
   }
   if (!phone) {
     throw new Error("Укажите телефон для приглашения.");
   }
   if (!role) {
-    throw new Error("Выберите рабочую роль для приглашения.");
+    throw new Error("Роль приглашения должна быть зафиксирована контекстом.");
   }
 
-  const result = await supabase.from("company_invites").insert({
-    company_id: params.companyId,
-    invite_code: buildInviteCode(),
-    name,
-    phone,
-    email: normalizeText(params.draft.email) || null,
-    role,
-    status: "pending",
-    comment: normalizeText(params.draft.comment) || null,
-  });
+  const inviteCode = buildInviteCode();
+  const result = await supabase
+    .from("company_invites")
+    .insert({
+      company_id: params.companyId,
+      invite_code: inviteCode,
+      name,
+      phone,
+      email: normalizeText(params.draft.email) || null,
+      role,
+      status: "pending",
+      comment: normalizeText(params.draft.comment) || null,
+    })
+    .select("*")
+    .single();
 
   if (result.error) throw result.error;
+
+  const invite = result.data as CompanyInviteRow;
+  return {
+    id: invite.id,
+    companyId: invite.company_id,
+    inviteCode: invite.invite_code,
+    name: invite.name,
+    phone: invite.phone,
+    email: invite.email,
+    role: invite.role,
+    status: invite.status,
+    createdAt: invite.created_at ?? null,
+    comment: invite.comment,
+  };
 }
 
 export async function updateOfficeMemberRole(params: {

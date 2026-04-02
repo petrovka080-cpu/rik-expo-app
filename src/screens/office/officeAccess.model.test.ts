@@ -8,14 +8,37 @@ import {
 
 describe("officeAccess.model", () => {
   it("keeps market-only users outside false office role cards", () => {
-    expect(filterOfficeWorkspaceCards([])).toEqual([]);
+    expect(
+      filterOfficeWorkspaceCards({ availableOfficeRoles: [] }),
+    ).toEqual([]);
   });
 
   it("shows only explicitly assigned office workspaces", () => {
-    const cards = filterOfficeWorkspaceCards(["director", "buyer"]);
+    const cards = filterOfficeWorkspaceCards({
+      availableOfficeRoles: ["director", "buyer"],
+    });
     expect(cards.map((card) => card.key)).toEqual([
-      "buyer",
       "director",
+      "buyer",
+      "reports",
+    ]);
+  });
+
+  it("shows the full director-owned directions set for managed office entry", () => {
+    const cards = filterOfficeWorkspaceCards({
+      availableOfficeRoles: ["director"],
+      includeDirectorOwnedDirections: true,
+    });
+
+    expect(cards.map((card) => card.key)).toEqual([
+      "director",
+      "foreman",
+      "buyer",
+      "accountant",
+      "warehouse",
+      "contractor",
+      "security",
+      "engineer",
       "reports",
     ]);
   });
@@ -73,14 +96,20 @@ describe("officeAccess.model", () => {
       buildOfficeAccessEntryCopy({
         hasOfficeAccess: false,
         hasCompanyContext: false,
-      }).title,
-    ).toBe("Подключить Office");
+      }),
+    ).toMatchObject({
+      title: "Подключить Office",
+      subtitle: "Создайте компанию, чтобы начать работу.",
+    });
 
     expect(
       buildOfficeAccessEntryCopy({
         hasOfficeAccess: true,
         hasCompanyContext: true,
-      }).title,
-    ).toBe("Office и компания");
+      }),
+    ).toMatchObject({
+      title: "Office",
+      subtitle: "Контроль, команда и компания.",
+    });
   });
 });
