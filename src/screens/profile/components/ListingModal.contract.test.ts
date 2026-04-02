@@ -13,6 +13,8 @@ describe("ListingModal source contract", () => {
     expect(source).toContain('testID="add-listing-flow-close"');
     expect(source).toContain('testID="add-listing-flow-publish"');
     expect(source).toContain('testID="add-listing-item-confirm"');
+    expect(source).toContain("React19SafeModal");
+    expect(source).not.toContain("  Modal,");
 
     expect(source).not.toContain("profile-listing-modal");
     expect(source).not.toContain("profile-catalog-modal");

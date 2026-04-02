@@ -8,13 +8,31 @@ import {
   type WarehouseIncomingLineLike,
 } from "./warehouse.incomingForm.pdf.service";
 import {
+  buildWarehousePdfBusyKey,
   createWarehousePdfFileName,
   type WarehousePdfBusyLike,
   useWarehousePdfPreviewBoundary,
 } from "./warehouse.pdf.boundary";
+import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 
 const logWarehousePdfDebug = (...args: unknown[]) => {
   if (__DEV__) console.info(...args);
+};
+
+const requireWarehousePdfDocId = (docId: string | number) => {
+  const text = String(docId ?? "").trim();
+  if (!text) return null;
+  const numeric = Number(text);
+  if (!Number.isFinite(numeric)) return null;
+  return {
+    text,
+    numeric,
+  };
+};
+
+const requireWarehousePdfDayLabel = (dayLabel: string) => {
+  const text = String(dayLabel ?? "").trim();
+  return text || null;
 };
 
 type ReportsUiLike = {
@@ -69,7 +87,8 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
   });
 
   const onPdfDocument = useCallback(async (docId: string | number) => {
-    const pid = String(docId ?? "").trim();
+    const normalizedDocId = requireWarehousePdfDocId(docId);
+    const pid = normalizedDocId?.text ?? "";
     if (!pid) {
       notifyError("PDF", "Некорректный номер прихода.");
       return;
@@ -92,7 +111,11 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
         });
 
         await previewWarehousePdf({
-          key: `pdf: warehouse: incoming - form:${pid}`,
+          key: buildWarehousePdfBusyKey({
+            kind: "document",
+            reportsMode: "incoming",
+            docId: pid,
+          }),
           label: "Готовлю приходный ордер...",
           title: prepared.contract.title,
           fileName: prepared.contract.fileName,
@@ -111,6 +134,21 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
         const message = String(err?.message ?? "").toLowerCase();
         const reason =
           String(err?.reason ?? "").trim() || (message.includes("timeout") ? "timeout" : "build_error");
+        recordCatchDiscipline({
+          screen: "warehouse",
+          surface: "warehouse_pdf_open",
+          event: "warehouse_incoming_pdf_open_failed",
+          kind: "critical_fail",
+          error,
+          category: "ui",
+          sourceKind: "pdf:warehouse_incoming",
+          errorStage: "prepare_or_open",
+          extra: {
+            docId: pid,
+            reportsMode,
+            reason,
+          },
+        });
         console.error(`INCOMING_PDF_FAIL pr_id=${pid} reason=${reason}`, {
           errorMessage: getPdfFlowErrorMessage(error, "Incoming PDF build failed"),
         });
@@ -120,7 +158,11 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
     }
 
     await previewWarehousePdf({
-      key: `pdf: warehouse: issue - form:${pid}`,
+      key: buildWarehousePdfBusyKey({
+        kind: "document",
+        reportsMode: "issue",
+        docId: pid,
+      }),
       label: "Готовлю расходную накладную...",
       title: `Расходная накладная ${pid}`,
       fileName: createWarehousePdfFileName({
@@ -130,7 +172,7 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
       }),
       documentType: "warehouse_document",
       entityId: pid,
-      getRemoteUrl: async () => reportsUi.buildIssueHtml(Number(docId)),
+      getRemoteUrl: async () => reportsUi.buildIssueHtml(normalizedDocId?.numeric ?? Number.NaN),
     });
   }, [
     matNameByCode,
@@ -148,7 +190,12 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
   const onPdfRegister = useCallback(async () => {
     const isIncoming = reportsMode === "incoming";
     await previewWarehousePdf({
-      key: `pdf: warehouse: ${isIncoming ? "incoming" : "issues"} - register:${periodFrom || "all"}:${periodTo || "all"}`,
+      key: buildWarehousePdfBusyKey({
+        kind: "register",
+        reportsMode: isIncoming ? "incoming" : "issue",
+        periodFrom,
+        periodTo,
+      }),
       label: "Готовлю реестр...",
       title: isIncoming ? "Реестр прихода" : "Реестр расхода",
       fileName: createWarehousePdfFileName({
@@ -165,7 +212,12 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
   const onPdfMaterials = useCallback(async () => {
     const isIncoming = reportsMode === "incoming";
     await previewWarehousePdf({
-      key: `pdf: warehouse: materials:${isIncoming ? "incoming" : "issues"}:${periodFrom || "all"}:${periodTo || "all"}`,
+      key: buildWarehousePdfBusyKey({
+        kind: "materials",
+        reportsMode: isIncoming ? "incoming" : "issue",
+        periodFrom,
+        periodTo,
+      }),
       label: "Готовлю свод материалов...",
       title: isIncoming ? "Отчёт по приходу материалов" : "Отчёт по расходу материалов",
       fileName: createWarehousePdfFileName({
@@ -181,7 +233,11 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
 
   const onPdfObjectWork = useCallback(async () => {
     await previewWarehousePdf({
-      key: `pdf: warehouse: objwork:${periodFrom || "all"}:${periodTo || "all"}`,
+      key: buildWarehousePdfBusyKey({
+        kind: "object-work",
+        periodFrom,
+        periodTo,
+      }),
       label: "Готовлю отчёт по объектам...",
       title: "Отчёт по объектам и работам",
       fileName: createWarehousePdfFileName({
@@ -195,42 +251,62 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
   }, [periodFrom, periodTo, previewWarehousePdf, reportsUi]);
 
   const onPdfDayRegister = useCallback(async (dayLabel: string) => {
+    const normalizedDayLabel = requireWarehousePdfDayLabel(dayLabel);
+    if (!normalizedDayLabel) {
+      notifyError("PDF", "Invalid report day.");
+      return;
+    }
     const isIncoming = reportsMode === "incoming";
     await previewWarehousePdf({
-      key: `pdf: warehouse: day - register:${isIncoming ? "incoming" : "issues"}:${dayLabel}`,
+      key: buildWarehousePdfBusyKey({
+        kind: "day-register",
+        reportsMode: isIncoming ? "incoming" : "issue",
+        dayLabel: normalizedDayLabel,
+      }),
       label: "Готовлю дневной реестр...",
       title: isIncoming ? `Реестр прихода за ${dayLabel}` : `Реестр расхода за ${dayLabel}`,
       fileName: createWarehousePdfFileName({
         documentType: "warehouse_register",
         title: isIncoming ? "warehouse_incoming_day_register" : "warehouse_day_register",
-        entityId: String(dayLabel).trim().replace(/\s+/g, "_"),
+        entityId: normalizedDayLabel.replace(/\s+/g, "_"),
       }),
       documentType: "warehouse_register",
-      entityId: dayLabel,
+      entityId: normalizedDayLabel,
       getRemoteUrl: async () =>
-        isIncoming ? reportsUi.buildDayIncomingRegisterPdf(dayLabel) : reportsUi.buildDayRegisterPdf(dayLabel),
+        isIncoming
+          ? reportsUi.buildDayIncomingRegisterPdf(normalizedDayLabel)
+          : reportsUi.buildDayRegisterPdf(normalizedDayLabel),
     });
-  }, [previewWarehousePdf, reportsMode, reportsUi]);
+  }, [notifyError, previewWarehousePdf, reportsMode, reportsUi]);
 
   const onPdfDayMaterials = useCallback(async (dayLabel: string) => {
+    const normalizedDayLabel = requireWarehousePdfDayLabel(dayLabel);
+    if (!normalizedDayLabel) {
+      notifyError("PDF", "Invalid report day.");
+      return;
+    }
     const isIncoming = reportsMode === "incoming";
     await previewWarehousePdf({
-      key: `pdf: warehouse: day - materials:${isIncoming ? "incoming" : "issues"}:${dayLabel}`,
+      key: buildWarehousePdfBusyKey({
+        kind: "day-materials",
+        reportsMode: isIncoming ? "incoming" : "issue",
+        dayLabel: normalizedDayLabel,
+      }),
       label: "Готовлю дневной отчёт по материалам...",
       title: isIncoming ? `Материалы прихода за ${dayLabel}` : `Материалы расхода за ${dayLabel}`,
       fileName: createWarehousePdfFileName({
         documentType: "warehouse_materials",
         title: isIncoming ? "warehouse_incoming_day_materials" : "warehouse_day_materials",
-        entityId: String(dayLabel).trim().replace(/\s+/g, "_"),
+        entityId: normalizedDayLabel.replace(/\s+/g, "_"),
       }),
       documentType: "warehouse_materials",
-      entityId: dayLabel,
+      entityId: normalizedDayLabel,
       getRemoteUrl: async () =>
         isIncoming
-          ? reportsUi.buildDayIncomingMaterialsReportPdf(dayLabel)
-          : reportsUi.buildDayMaterialsReportPdf(dayLabel),
+          ? reportsUi.buildDayIncomingMaterialsReportPdf(normalizedDayLabel)
+          : reportsUi.buildDayMaterialsReportPdf(normalizedDayLabel),
     });
-  }, [previewWarehousePdf, reportsMode, reportsUi]);
+  }, [notifyError, previewWarehousePdf, reportsMode, reportsUi]);
 
   return {
     onPdfDocument,

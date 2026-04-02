@@ -9,7 +9,7 @@ jest.mock("../text/encoding", () => ({
   normalizeRuTextForHtml: (...args: unknown[]) => mockNormalizeRuTextForHtml(...args),
 }));
 
-import { renderPdfHtmlToSource } from "./pdf.runner";
+import { buildGeneratedPdfDescriptor, renderPdfHtmlToSource } from "./pdf.runner";
 import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
@@ -66,5 +66,17 @@ describe("pdf.runner lifecycle", () => {
           && event.extra?.pdfFailureType === "render_fail",
       ),
     ).toBe(true);
+  });
+
+  it("fails in a controlled way when generated PDF source uri is empty", async () => {
+    await expect(
+      buildGeneratedPdfDescriptor({
+        getSource: async () => ({ kind: "remote-url", uri: "   " } as never),
+        title: "Broken PDF",
+        fileName: "broken.pdf",
+        documentType: "payment_order",
+        originModule: "accountant",
+      }),
+    ).rejects.toThrow("Generated PDF source.uri is empty");
   });
 });

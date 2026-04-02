@@ -117,11 +117,24 @@ export default function ForemanHistoryModal(props: Props) {
             </View>
 
             <Pressable
+              testID={`foreman-history-pdf:${String(request.id).trim()}`}
               disabled={pdfBusy}
               onPress={() => props.onOpenPdf(request.id)}
-              style={[props.styles.historyPdfBtn, pdfBusy && { opacity: 0.6 }]}
+              accessibilityState={{ disabled: pdfBusy, busy: pdfBusy }}
+              style={[
+                props.styles.historyPdfBtn,
+                pdfBusy && {
+                  opacity: 0.75,
+                  borderColor: "rgba(34,197,94,0.55)",
+                  backgroundColor: "rgba(34,197,94,0.16)",
+                },
+              ]}
             >
-              <Text style={props.styles.historyPdfBtnText}>{pdfBusy ? "..." : "PDF"}</Text>
+              {pdfBusy ? (
+                <ActivityIndicator size="small" color="#E5E7EB" />
+              ) : (
+                <Text style={props.styles.historyPdfBtnText}>PDF</Text>
+              )}
             </Pressable>
 
             <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.15)" />
@@ -177,11 +190,24 @@ export default function ForemanHistoryModal(props: Props) {
                 </View>
 
                 <Pressable
+                  testID="foreman-history-details-pdf"
                   disabled={selectedPdfBusy}
                   onPress={() => props.onOpenPdf(selectedRequest.id)}
-                  style={[props.styles.historyPdfBtn, selectedPdfBusy && { opacity: 0.6 }]}
+                  accessibilityState={{ disabled: selectedPdfBusy, busy: selectedPdfBusy }}
+                  style={[
+                    props.styles.historyPdfBtn,
+                    selectedPdfBusy && {
+                      opacity: 0.75,
+                      borderColor: "rgba(34,197,94,0.55)",
+                      backgroundColor: "rgba(34,197,94,0.16)",
+                    },
+                  ]}
                 >
-                  <Text style={props.styles.historyPdfBtnText}>{selectedPdfBusy ? "..." : "PDF"}</Text>
+                  {selectedPdfBusy ? (
+                    <ActivityIndicator size="small" color="#E5E7EB" />
+                  ) : (
+                    <Text style={props.styles.historyPdfBtnText}>PDF</Text>
+                  )}
                 </Pressable>
               </View>
 

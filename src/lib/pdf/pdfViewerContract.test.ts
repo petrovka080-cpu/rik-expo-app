@@ -115,7 +115,7 @@ describe("pdfViewerContract", () => {
     });
   });
 
-  it("keeps iOS remote PDFs on embedded preview instead of native handoff", () => {
+  it("routes iOS remote PDFs through native handoff instead of embedded preview", () => {
     const resolution = resolvePdfViewerResolution({
       session,
       asset: remoteAsset,
@@ -123,14 +123,14 @@ describe("pdfViewerContract", () => {
     });
 
     expect(resolution).toMatchObject({
-      kind: "resolved-embedded",
+      kind: "resolved-native-handoff",
       sourceKind: "remote-url",
-      renderer: "native-webview",
+      renderer: "native-handoff",
       canonicalUri: remoteAsset.uri,
     });
   });
 
-  it("keeps iOS local PDFs on embedded preview instead of native handoff", () => {
+  it("routes iOS local PDFs through native handoff instead of embedded preview", () => {
     const resolution = resolvePdfViewerResolution({
       session,
       asset: localAsset,
@@ -138,9 +138,9 @@ describe("pdfViewerContract", () => {
     });
 
     expect(resolution).toMatchObject({
-      kind: "resolved-embedded",
+      kind: "resolved-native-handoff",
       sourceKind: "local-file",
-      renderer: "native-webview",
+      renderer: "native-handoff",
       canonicalUri: localAsset.uri,
     });
   });
@@ -166,6 +166,21 @@ describe("pdfViewerContract", () => {
       sourceKind: "remote-url",
       renderer: "native-handoff",
       canonicalUri: queriedRemoteAsset.uri,
+    });
+  });
+
+  it("treats assets with an empty runtime uri as missing instead of trying to preview them", () => {
+    const resolution = resolvePdfViewerResolution({
+      session,
+      asset: {
+        ...remoteAsset,
+        uri: "   ",
+      },
+      platform: "ios",
+    });
+
+    expect(resolution).toEqual({
+      kind: "missing-asset",
     });
   });
 

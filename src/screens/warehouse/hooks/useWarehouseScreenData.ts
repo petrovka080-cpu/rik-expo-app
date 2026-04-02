@@ -386,6 +386,7 @@ export function useWarehouseScreenData() {
     onPdfObjectWork,
     onPdfDayRegister,
     onPdfDayMaterials,
+    isPdfBusy: busy.isBusy,
     submitReqPick,
     submitStockPick,
   };

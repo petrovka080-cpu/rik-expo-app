@@ -1,7 +1,6 @@
 import React from "react";
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   ScrollView,
   Text,
@@ -9,6 +8,7 @@ import {
 } from "react-native";
 
 import { profileStyles } from "../profile.styles";
+import React19SafeModal from "../../../ui/React19SafeModal";
 import type {
   CatalogSearchItem,
   ListingCartItem,
@@ -129,23 +129,27 @@ export function ListingModal({
 }: ListingModalProps) {
   return (
     <>
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        onRequestClose={onRequestClose}
+      <React19SafeModal
+        isVisible={visible}
+        onBackdropPress={onRequestClose}
+        onBackButtonPress={onRequestClose}
+        backdropOpacity={0.55}
+        hideModalContentWhileAnimating
+        style={styles.listingModalHost}
       >
-        <View style={styles.modalBackdrop}>
-          <View
-            style={[styles.modalCard, styles.modalTallCard]}
-            testID="add-listing-owner-shell"
-          >
-            <Text style={styles.modalTitle}>{UI_COPY.modalTitle}</Text>
-            <Text style={styles.modalSub}>{UI_COPY.modalSub}</Text>
+        <View
+          style={[styles.modalCard, styles.modalTallCard]}
+          testID="add-listing-owner-shell"
+        >
+          <Text style={styles.modalTitle}>{UI_COPY.modalTitle}</Text>
+          <Text style={styles.modalSub}>{UI_COPY.modalSub}</Text>
 
+          <View style={styles.modalBodySection}>
             <ScrollView
               style={styles.modalScrollTall}
               contentContainerStyle={styles.modalScrollContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator
             >
               <Text style={styles.modalLabel}>{UI_COPY.kindLabel}</Text>
               <View style={styles.listingKindRow}>
@@ -279,54 +283,58 @@ export function ListingModal({
                 keyboardType="email-address"
               />
             </ScrollView>
+          </View>
 
-            <View style={styles.modalButtonsRow}>
-              <Pressable
-                testID="add-listing-flow-close"
-                style={[styles.modalBtn, styles.modalBtnSecondary]}
-                onPress={onRequestClose}
-                disabled={savingListing}
-              >
-                <Text style={styles.modalBtnSecondaryText}>
-                  {UI_COPY.cancelAction}
+          <View style={styles.modalButtonsRow}>
+            <Pressable
+              testID="add-listing-flow-close"
+              style={[styles.modalBtn, styles.modalBtnSecondary]}
+              onPress={onRequestClose}
+              disabled={savingListing}
+            >
+              <Text style={styles.modalBtnSecondaryText}>
+                {UI_COPY.cancelAction}
+              </Text>
+            </Pressable>
+            <Pressable
+              testID="add-listing-flow-publish"
+              style={[styles.modalBtn, styles.modalBtnPrimary]}
+              onPress={onPublish}
+              disabled={savingListing}
+            >
+              {savingListing ? (
+                <ActivityIndicator color="#0B1120" />
+              ) : (
+                <Text style={styles.modalBtnPrimaryText}>
+                  {UI_COPY.publishAction}
                 </Text>
-              </Pressable>
-              <Pressable
-                testID="add-listing-flow-publish"
-                style={[styles.modalBtn, styles.modalBtnPrimary]}
-                onPress={onPublish}
-                disabled={savingListing}
-              >
-                {savingListing ? (
-                  <ActivityIndicator color="#0B1120" />
-                ) : (
-                  <Text style={styles.modalBtnPrimaryText}>
-                    {UI_COPY.publishAction}
-                  </Text>
-                )}
-              </Pressable>
-            </View>
+              )}
+            </Pressable>
           </View>
         </View>
-      </Modal>
+      </React19SafeModal>
 
-      <Modal
-        visible={itemModalOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={onItemModalClose}
+      <React19SafeModal
+        isVisible={itemModalOpen}
+        onBackdropPress={onItemModalClose}
+        onBackButtonPress={onItemModalClose}
+        backdropOpacity={0.55}
+        hideModalContentWhileAnimating
+        style={styles.listingModalHost}
       >
-        <View style={styles.modalBackdrop}>
-          <View
-            style={[styles.modalCard, styles.compactModalCard]}
-            testID="add-listing-item-modal"
-          >
-            <Text style={styles.modalTitle}>{UI_COPY.itemModalTitle}</Text>
-            <Text style={styles.modalSub}>{UI_COPY.itemModalSub}</Text>
-            {editingItem && (
+        <View
+          style={[styles.modalCard, styles.compactModalCard]}
+          testID="add-listing-item-modal"
+        >
+          <Text style={styles.modalTitle}>{UI_COPY.itemModalTitle}</Text>
+          <Text style={styles.modalSub}>{UI_COPY.itemModalSub}</Text>
+          {editingItem && (
+            <View style={styles.modalBodySection}>
               <ScrollView
                 style={styles.modalScrollItem}
                 contentContainerStyle={styles.modalScrollContent}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator
               >
                 <LabeledInput
                   label={UI_COPY.cityLabel}
@@ -358,31 +366,30 @@ export function ListingModal({
                   keyboardType="numeric"
                 />
               </ScrollView>
-            )}
-
-            <View style={styles.modalButtonsRow}>
-              <Pressable
-                testID="add-listing-item-cancel"
-                style={[styles.modalBtn, styles.modalBtnSecondary]}
-                onPress={onItemModalClose}
-              >
-                <Text style={styles.modalBtnSecondaryText}>
-                  {UI_COPY.cancelAction}
-                </Text>
-              </Pressable>
-              <Pressable
-                testID="add-listing-item-confirm"
-                style={[styles.modalBtn, styles.modalBtnPrimary]}
-                onPress={onConfirmEditingItem}
-              >
-                <Text style={styles.modalBtnPrimaryText}>
-                  {UI_COPY.addAction}
-                </Text>
-              </Pressable>
             </View>
+          )}
+          <View style={styles.modalButtonsRow}>
+            <Pressable
+              testID="add-listing-item-cancel"
+              style={[styles.modalBtn, styles.modalBtnSecondary]}
+              onPress={onItemModalClose}
+            >
+              <Text style={styles.modalBtnSecondaryText}>
+                {UI_COPY.cancelAction}
+              </Text>
+            </Pressable>
+            <Pressable
+              testID="add-listing-item-confirm"
+              style={[styles.modalBtn, styles.modalBtnPrimary]}
+              onPress={onConfirmEditingItem}
+            >
+              <Text style={styles.modalBtnPrimaryText}>
+                {UI_COPY.addAction}
+              </Text>
+            </Pressable>
           </View>
         </View>
-      </Modal>
+      </React19SafeModal>
     </>
   );
 }

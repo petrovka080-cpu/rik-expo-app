@@ -249,10 +249,11 @@ export function resolvePdfViewerResolution(args: {
       errorMessage: session.errorMessage || "Preview failed to load.",
     };
   }
-  if (!asset?.uri) return { kind: "missing-asset" };
+  const assetUri = typeof asset?.uri === "string" ? asset.uri.trim() : "";
+  if (!asset || !assetUri) return { kind: "missing-asset" };
 
-  const scheme = getUriScheme(asset.uri);
-  const normalizedUriPath = String(asset.uri || "")
+  const scheme = getUriScheme(assetUri);
+  const normalizedUriPath = assetUri
     .split("#")[0]
     .split("?")[0]
     .toLowerCase();
@@ -268,31 +269,11 @@ export function resolvePdfViewerResolution(args: {
     return {
       kind: "resolved-embedded",
       asset,
-      source: { uri: asset.uri },
+      source: { uri: assetUri },
       scheme,
       sourceKind: assetSourceKind,
       renderer: "web-frame",
-      canonicalUri: asset.uri,
-    };
-  }
-
-  if (
-    platform === "ios"
-    && ((assetSourceKind === "local-file" || scheme === "file")
-      || (assetSourceKind === "remote-url" || scheme === "http" || scheme === "https"))
-    && isPdf
-  ) {
-    return {
-      kind: "resolved-embedded",
-      asset,
-      source: { uri: asset.uri },
-      scheme,
-      sourceKind:
-        assetSourceKind === "remote-url" || scheme === "http" || scheme === "https"
-          ? "remote-url"
-          : "local-file",
-      renderer: "native-webview",
-      canonicalUri: asset.uri,
+      canonicalUri: assetUri,
     };
   }
 
@@ -310,7 +291,7 @@ export function resolvePdfViewerResolution(args: {
           ? "remote-url"
           : "local-file",
       renderer: "native-handoff",
-      canonicalUri: asset.uri,
+      canonicalUri: assetUri,
     };
   }
 

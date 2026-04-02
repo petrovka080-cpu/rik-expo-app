@@ -70,6 +70,12 @@ const asRecord = (value: unknown): Record<string, unknown> =>
 
 const pickText = (value: unknown): string => String(value ?? "");
 
+const ensureWarehouseReportRows = (value: unknown, label: string): WarehouseReportPdfRow[] => {
+  if (Array.isArray(value)) return value;
+  if (value == null) return [];
+  throw new Error(`${label} returned invalid rows payload`);
+};
+
 export const toWarehouseReportNumber = (value: unknown): number => {
   if (value == null) return 0;
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
@@ -181,10 +187,10 @@ const normalizeObjectWorkReportRow = (value: unknown): WarehouseObjectWorkReport
 };
 
 export const normalizeIncomingMaterialsReportRows = (
-  rows: unknown[],
+  rows: unknown,
   nameByCode?: Record<string, string>,
 ) =>
-  rows.map((row) => {
+  ensureWarehouseReportRows(rows, "warehouse incoming materials report").map((row) => {
     const record = asRecord(row);
     const code = String(record.material_code ?? "").trim();
     const mapped = nameByCode?.[code]?.trim();
@@ -280,7 +286,7 @@ export function createWarehouseReportPdfService(params: CreateWarehouseReportPdf
     if (!head) throw new Error("Выдача не найдена");
 
     const linesAny = await ensureIssueLines(issueId);
-    const lines = (linesAny || [])
+    const lines = ensureWarehouseReportRows(linesAny, "warehouse issue PDF lines")
       .map(normalizeWarehouseIssueLine)
       .filter((row): row is WarehouseIssueLine => !!row);
     const html = buildWarehouseIssueFormHtml({
@@ -363,7 +369,9 @@ export function createWarehouseReportPdfService(params: CreateWarehouseReportPdf
       to: range.rpcTo,
       objectId: opts?.objectId ?? null,
     });
-    const rows = (rawRows || []).map(normalizeMaterialsReportRow);
+    const rows = ensureWarehouseReportRows(rawRows, "warehouse materials report").map(
+      normalizeMaterialsReportRow,
+    );
     const docsTotal = normalizedIssueHeads.length;
     const html = buildWarehouseMaterialsReportHtml({
       periodFrom: range.pdfFrom,
@@ -391,7 +399,9 @@ export function createWarehouseReportPdfService(params: CreateWarehouseReportPdf
       legacyDocsTotal: normalizedIssueHeads.length,
       objectId: opts?.objectId ?? null,
     });
-    const rows = source.rows.map(normalizeObjectWorkReportRow);
+    const rows = ensureWarehouseReportRows(source.rows, "warehouse object-work report").map(
+      normalizeObjectWorkReportRow,
+    );
     const html = buildWarehouseObjectWorkReportHtml({
       periodFrom: range.pdfFrom,
       periodTo: range.pdfTo,

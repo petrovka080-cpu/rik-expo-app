@@ -35,6 +35,23 @@ type PrepareGeneratedPdfArgs = {
   descriptor: DocumentDescriptor;
 };
 
+function ensureGeneratedPdfUri(value: unknown, label: string): string {
+  const uri = typeof value === "string" ? value.trim() : "";
+  if (!uri) {
+    throw new Error(`${label} is empty`);
+  }
+  return uri;
+}
+
+function ensureGeneratedPdfSource(source: unknown, label: string): PdfSource {
+  if (!source || typeof source !== "object" || Array.isArray(source)) {
+    throw new Error(`${label} is invalid`);
+  }
+
+  const sourceRecord = source as { uri?: unknown };
+  return createPdfSource(ensureGeneratedPdfUri(sourceRecord.uri, `${label}.uri`));
+}
+
 export async function renderPdfHtmlToUri(args: {
   html: string;
   documentType: string;
@@ -127,7 +144,9 @@ export function createGeneratedPdfDescriptor(args: {
   originModule: PdfOriginModule;
   entityId?: string | number | null;
 }): DocumentDescriptor {
-  const resolvedSource = args.fileSource ?? createPdfSource(args.uri);
+  const resolvedSource = args.fileSource
+    ? ensureGeneratedPdfSource(args.fileSource, "Generated PDF source")
+    : createPdfSource(ensureGeneratedPdfUri(args.uri, "Generated PDF URI"));
   return createPdfDocumentDescriptor({
     uri: resolvedSource.uri,
     title: args.title,
@@ -143,8 +162,8 @@ export async function buildGeneratedPdfDescriptor(
   args: BuildGeneratedPdfDescriptorArgs,
 ): Promise<DocumentDescriptor> {
   const source = args.getSource
-    ? await args.getSource()
-    : createPdfSource(await args.getUri?.());
+    ? ensureGeneratedPdfSource(await args.getSource(), "Generated PDF source")
+    : createPdfSource(ensureGeneratedPdfUri(await args.getUri?.(), "Generated PDF URI"));
   return createGeneratedPdfDescriptor({
     fileSource: source,
     title: args.title,

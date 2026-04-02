@@ -109,5 +109,6 @@ export function selectWarehouseReportsTabProps(props: WarehouseTabContentProps) 
     onPdfObjectWork: props.onPdfObjectWorkPress,
     onPdfDayRegister: props.onPdfDayRegisterPress,
     onPdfDayMaterials: props.onPdfDayMaterialsPress,
+    isPdfBusy: props.isPdfBusy,
   };
 }

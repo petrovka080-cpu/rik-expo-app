@@ -31,6 +31,7 @@ export function selectWarehouseTabContentProps(
     onPdfObjectWorkPress: () => void;
     onPdfDayRegisterPress: (day: string) => void;
     onPdfDayMaterialsPress: (day: string) => void;
+    isPdfBusy: (key: string) => boolean;
   },
 ): WarehouseTabContentProps {
   return {
@@ -96,5 +97,6 @@ export function selectWarehouseTabContentProps(
     onPdfObjectWorkPress: deps.onPdfObjectWorkPress,
     onPdfDayRegisterPress: deps.onPdfDayRegisterPress,
     onPdfDayMaterialsPress: deps.onPdfDayMaterialsPress,
+    isPdfBusy: deps.isPdfBusy,
   };
 }

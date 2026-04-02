@@ -177,6 +177,7 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     onPdfObjectWorkPress,
     onPdfDayRegisterPress,
     onPdfDayMaterialsPress,
+    isPdfBusy: data.isPdfBusy,
   });
 
   return { tabContentProps, modalsManagerProps };

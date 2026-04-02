@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { ActivityIndicator, View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 export type TopRightAction = {
@@ -7,6 +7,7 @@ export type TopRightAction = {
   icon: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
   disabled?: boolean;
+  busy?: boolean;
   ariaLabel?: string;
 };
 
@@ -30,20 +31,23 @@ function IconSquare({
   icon,
   onPress,
   disabled,
+  busy,
   ui,
   ariaLabel,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
   disabled?: boolean;
+  busy?: boolean;
   ui: TopRightUi;
   ariaLabel?: string;
 }) {
   return (
     <Pressable
       accessibilityLabel={ariaLabel}
+      accessibilityState={{ disabled: !!disabled, busy: !!busy }}
       onPress={onPress}
-      disabled={!!disabled}
+      disabled={!!disabled || !!busy}
       style={{
         width: 42,
         height: 42,
@@ -53,10 +57,14 @@ function IconSquare({
         borderWidth: 1,
         borderColor: ui.border,
         backgroundColor: ui.btnBg,
-        opacity: disabled ? 0.45 : 1,
+        opacity: disabled || busy ? 0.45 : 1,
       }}
     >
-      <Ionicons name={icon} size={18} color={ui.text} />
+      {busy ? (
+        <ActivityIndicator size="small" color={ui.text} />
+      ) : (
+        <Ionicons name={icon} size={18} color={ui.text} />
+      )}
     </Pressable>
   );
 }
@@ -78,6 +86,7 @@ export default function TopRightActionBar({ titleLeft, actions, ui, titleFontSiz
             icon={a.icon}
             onPress={a.onPress}
             disabled={a.disabled}
+            busy={a.busy}
             ui={ui}
             ariaLabel={a.ariaLabel}
           />

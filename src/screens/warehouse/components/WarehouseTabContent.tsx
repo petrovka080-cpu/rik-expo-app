@@ -102,6 +102,7 @@ export type WarehouseTabContentProps = {
   onPdfObjectWorkPress: () => void;
   onPdfDayRegisterPress: (day: string) => void;
   onPdfDayMaterialsPress: (day: string) => void;
+  isPdfBusy: (key: string) => boolean;
 };
 
 export default function WarehouseTabContent(props: WarehouseTabContentProps) {

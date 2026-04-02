@@ -688,9 +688,17 @@ export const profileStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: PROFILE_UI.border,
     padding: 16,
+    overflow: "hidden",
+  },
+  listingModalHost: {
+    margin: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
   },
   modalTallCard: {
     maxHeight: "90%",
+    minHeight: 0,
   },
   modalTitle: {
     fontSize: 18,
@@ -708,6 +716,10 @@ export const profileStyles = StyleSheet.create({
     color: PROFILE_UI.sub,
     marginTop: 8,
     marginBottom: 4,
+  },
+  modalBodySection: {
+    flexShrink: 1,
+    minHeight: 0,
   },
   labeledInputWrap: {
     marginBottom: 8,
@@ -728,6 +740,8 @@ export const profileStyles = StyleSheet.create({
   },
   modalScrollTall: {
     maxHeight: 430,
+    minHeight: 0,
+    flexShrink: 1,
   },
   modalScrollCompany: {
     maxHeight: 420,
@@ -738,6 +752,8 @@ export const profileStyles = StyleSheet.create({
   },
   modalScrollItem: {
     maxHeight: 320,
+    minHeight: 0,
+    flexShrink: 1,
   },
   modalScrollContent: {
     paddingBottom: 10,
@@ -814,6 +830,8 @@ export const profileStyles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#22C55E",
     backgroundColor: "#020617",
+    flexShrink: 0,
+    zIndex: 2,
   },
   modalBtn: {
     paddingHorizontal: 16,

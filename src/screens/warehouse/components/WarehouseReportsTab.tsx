@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { ActivityIndicator, View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,6 +11,7 @@ import ChevronIndicator from "../../../ui/ChevronIndicator";
 import { FlashList } from "../../../ui/FlashList";
 import type { TopRightAction } from "../../../ui/TopRightActionBar";
 import { UI, s } from "../warehouse.styles";
+import { buildWarehousePdfBusyKey } from "../warehouse.pdf.boundary";
 import type { WarehouseReportRow } from "../warehouse.types";
 
 type ReportDocRow = WarehouseReportRow & {
@@ -64,6 +65,7 @@ type Props = {
 
   onPdfDayRegister?: (day: string) => void | Promise<void>;
   onPdfDayMaterials?: (day: string) => void | Promise<void>;
+  isPdfBusy: (key: string) => boolean;
 };
 
 export default function WarehouseReportsTab(props: Props) {
@@ -83,6 +85,7 @@ export default function WarehouseReportsTab(props: Props) {
     onPdfDocument,
     onPdfDayRegister,
     onPdfDayMaterials,
+    isPdfBusy,
   } = props;
 
   const insets = useSafeAreaInsets();
@@ -91,23 +94,85 @@ export default function WarehouseReportsTab(props: Props) {
 
   const isIncoming = mode === "incoming";
   const dayGroups = isIncoming ? reportsUi.incomingByDay : reportsUi.vydachaByDay;
+  const registerPdfBusy = isPdfBusy(
+    buildWarehousePdfBusyKey({
+      kind: "register",
+      reportsMode: isIncoming ? "incoming" : "issue",
+      periodFrom,
+      periodTo,
+    }),
+  );
+  const materialsPdfBusy = isPdfBusy(
+    buildWarehousePdfBusyKey({
+      kind: "materials",
+      reportsMode: isIncoming ? "incoming" : "issue",
+      periodFrom,
+      periodTo,
+    }),
+  );
+  const objectWorkPdfBusy =
+    !isIncoming &&
+    isPdfBusy(
+      buildWarehousePdfBusyKey({
+        kind: "object-work",
+        periodFrom,
+        periodTo,
+      }),
+    );
   const reportActions: TopRightAction[] = useMemo(() => {
     const actions: TopRightAction[] = [
       { key: "period", icon: "calendar-outline", onPress: onOpenPeriod },
       { key: "refresh", icon: "refresh-outline", onPress: () => void onRefresh() },
-      { key: "pdf", icon: "document-text-outline", onPress: () => void onPdfRegister() },
-      { key: "mat", icon: "cube-outline", onPress: () => void onPdfMaterials() },
+      {
+        key: "pdf",
+        icon: "document-text-outline",
+        onPress: () => void onPdfRegister(),
+        disabled: registerPdfBusy,
+        busy: registerPdfBusy,
+      },
+      {
+        key: "mat",
+        icon: "cube-outline",
+        onPress: () => void onPdfMaterials(),
+        disabled: materialsPdfBusy,
+        busy: materialsPdfBusy,
+      },
     ];
     if (!isIncoming) {
-      actions.push({ key: "obj", icon: "business-outline", onPress: () => void onPdfObjectWork() });
+      actions.push({
+        key: "obj",
+        icon: "business-outline",
+        onPress: () => void onPdfObjectWork(),
+        disabled: objectWorkPdfBusy,
+        busy: objectWorkPdfBusy,
+      });
     }
     return actions;
-  }, [isIncoming, onOpenPeriod, onRefresh, onPdfRegister, onPdfMaterials, onPdfObjectWork]);
+  }, [
+    isIncoming,
+    materialsPdfBusy,
+    objectWorkPdfBusy,
+    onOpenPeriod,
+    onRefresh,
+    onPdfMaterials,
+    onPdfObjectWork,
+    onPdfRegister,
+    registerPdfBusy,
+  ]);
 
   const sectionTitle = isIncoming ? "ПРИХОДЫ ЗА ПЕРИОД" : "ВЫДАЧИ ЗА ПЕРИОД";
 
   const renderActiveDayItem = React.useCallback(({ item, index }: { item: ReportDocRow; index: number }) => {
     const docId = isIncoming ? (item.incoming_id || item.id) : item.issue_id;
+    const documentPdfBusy =
+      !!docId &&
+      isPdfBusy(
+        buildWarehousePdfBusyKey({
+          kind: "document",
+          reportsMode: isIncoming ? "incoming" : "issue",
+          docId,
+        }),
+      );
     const docNo = isIncoming
       ? (item.display_no || `PR-${String(docId).slice(0, 8)}`)
       : (item.issue_no || (Number.isFinite(docId) ? `ISSUE-${docId}` : "ISSUE-—"));
@@ -132,26 +197,37 @@ export default function WarehouseReportsTab(props: Props) {
             </View>
 
             <Pressable
+              testID={`warehouse-report-pdf:${String(docId ?? index)}`}
               hitSlop={10}
+              disabled={!docId || documentPdfBusy}
               onPress={(e) => {
                 e.stopPropagation?.();
-                if (!docId) return;
+                if (!docId || documentPdfBusy) return;
                 void onPdfDocument(docId);
               }}
+              accessibilityState={{ disabled: !docId || documentPdfBusy, busy: documentPdfBusy }}
             >
-              <Ionicons name="document-text-outline" size={20} color={UI.text} />
+              {documentPdfBusy ? (
+                <ActivityIndicator size="small" color={UI.text} />
+              ) : (
+                <Ionicons name="document-text-outline" size={20} color={UI.text} />
+              )}
             </Pressable>
           </View>
         </Pressable>
       </View>
     );
-  }, [isIncoming, onPdfDocument, reportsUi]);
+  }, [isIncoming, isPdfBusy, onPdfDocument, reportsUi]);
 
   const renderDayGroupItem = React.useCallback(({ item }: { item: ReportDayGroup }) => {
     const dayCount = item.items.length;
 
     return (
-      <Pressable onPress={() => setActiveDay(item)} style={{ marginBottom: 12, marginHorizontal: 16 }}>
+      <Pressable
+        testID={`warehouse-report-day:${item.day}`}
+        onPress={() => setActiveDay(item)}
+        style={{ marginBottom: 12, marginHorizontal: 16 }}
+      >
         <View style={s.mobCard}>
           <View style={s.mobMain}>
             <Text style={s.mobTitle}>{item.day}</Text>
@@ -166,6 +242,25 @@ export default function WarehouseReportsTab(props: Props) {
       </Pressable>
     );
   }, []);
+
+  const dayRegisterBusy =
+    !!activeDay &&
+    isPdfBusy(
+      buildWarehousePdfBusyKey({
+        kind: "day-register",
+        reportsMode: isIncoming ? "incoming" : "issue",
+        dayLabel: activeDay.day,
+      }),
+    );
+  const dayMaterialsBusy =
+    !!activeDay &&
+    isPdfBusy(
+      buildWarehousePdfBusyKey({
+        kind: "day-materials",
+        reportsMode: isIncoming ? "incoming" : "issue",
+        dayLabel: activeDay.day,
+      }),
+    );
 
   const reportsListHeader = React.useMemo(() => (
     <>
@@ -307,7 +402,12 @@ export default function WarehouseReportsTab(props: Props) {
 
           <View style={{ flexDirection: "row", gap: 8 }}>
             <Pressable
-              onPress={() => onPdfDayRegister?.(activeDay.day)}
+              testID="warehouse-day-register-pdf"
+              onPress={() => {
+                if (dayRegisterBusy) return;
+                void onPdfDayRegister?.(activeDay.day);
+              }}
+              disabled={dayRegisterBusy}
               style={{
                 width: 38,
                 height: 38,
@@ -317,14 +417,25 @@ export default function WarehouseReportsTab(props: Props) {
                 backgroundColor: "rgba(255,255,255,0.08)",
                 borderWidth: 1,
                 borderColor: "rgba(255,255,255,0.12)",
+                opacity: dayRegisterBusy ? 0.55 : 1,
               }}
               hitSlop={10}
+              accessibilityState={{ disabled: dayRegisterBusy, busy: dayRegisterBusy }}
             >
-              <Ionicons name="document-text-outline" size={18} color={UI.text} />
+              {dayRegisterBusy ? (
+                <ActivityIndicator size="small" color={UI.text} />
+              ) : (
+                <Ionicons name="document-text-outline" size={18} color={UI.text} />
+              )}
             </Pressable>
 
             <Pressable
-              onPress={() => onPdfDayMaterials?.(activeDay.day)}
+              testID="warehouse-day-materials-pdf"
+              onPress={() => {
+                if (dayMaterialsBusy) return;
+                void onPdfDayMaterials?.(activeDay.day);
+              }}
+              disabled={dayMaterialsBusy}
               style={{
                 width: 38,
                 height: 38,
@@ -334,10 +445,16 @@ export default function WarehouseReportsTab(props: Props) {
                 backgroundColor: "rgba(255,255,255,0.08)",
                 borderWidth: 1,
                 borderColor: "rgba(255,255,255,0.12)",
+                opacity: dayMaterialsBusy ? 0.55 : 1,
               }}
               hitSlop={10}
+              accessibilityState={{ disabled: dayMaterialsBusy, busy: dayMaterialsBusy }}
             >
-              <Ionicons name="cube-outline" size={18} color={UI.text} />
+              {dayMaterialsBusy ? (
+                <ActivityIndicator size="small" color={UI.text} />
+              ) : (
+                <Ionicons name="cube-outline" size={18} color={UI.text} />
+              )}
             </Pressable>
           </View>
         </View>

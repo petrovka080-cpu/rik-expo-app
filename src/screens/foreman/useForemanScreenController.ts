@@ -53,6 +53,7 @@ import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
 import { generateRequestPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import { buildForemanSyncUiStatus } from "../../lib/offline/foremanSyncRuntime";
 import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
+import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { useForemanHistory } from "./hooks/useForemanHistory";
 import { useForemanDisplayNo } from "./hooks/useForemanDisplayNo";
 import { useForemanDraftBoundary } from "./hooks/useForemanDraftBoundary";
@@ -280,6 +281,49 @@ export function useForemanScreenController() {
   const refreshForemanHistory = useCallback(async () => {
     setForemanHistory(await loadForemanHistory());
   }, [setForemanHistory]);
+
+  const openHistoryPdfSafe = useCallback(async (reqId: string) => {
+    const rid = ridStr(reqId);
+    if (!rid) return;
+    try {
+      const template = await generateRequestPdfDocument({
+        requestId: rid,
+        originModule: "foreman",
+      });
+      await prepareAndPreviewGeneratedPdf({
+        busy: gbusy,
+        supabase,
+        key: `pdf:history:${rid}`,
+        label: "Opening PDF...",
+        descriptor: {
+          ...template,
+          title: `Request ${rid}`,
+          fileName: buildPdfFileName({
+            documentType: "request",
+            title: rid,
+            entityId: rid,
+          }),
+        },
+        router,
+      });
+    } catch (error) {
+      recordCatchDiscipline({
+        screen: "foreman",
+        surface: "foreman_pdf_open",
+        event: "foreman_history_pdf_open_failed",
+        kind: "critical_fail",
+        error,
+        category: "ui",
+        sourceKind: "pdf:request",
+        errorStage: "open_view",
+        extra: {
+          requestId: rid,
+          action: "openHistoryPdf",
+        },
+      });
+      Alert.alert("PDF", getPdfFlowErrorMessage(error, "Could not open PDF"));
+    }
+  }, [gbusy, router]);
 
   useEffect(() => {
     void refreshForemanHistory();
@@ -645,6 +689,20 @@ export function useForemanScreenController() {
       closeHistory();
       openDraft();
     } catch (error) {
+      recordCatchDiscipline({
+        screen: "foreman",
+        surface: "foreman_history_reopen",
+        event: "foreman_history_reopen_failed",
+        kind: "critical_fail",
+        error,
+        category: "ui",
+        sourceKind: "foreman:request",
+        errorStage: "reopen_draft",
+        extra: {
+          requestId: requestKey,
+          action: "handleHistoryReopen",
+        },
+      });
       alertError(error, "Не удалось вернуть черновик");
     } finally {
       setHistoryReopenBusyId(null);
@@ -677,6 +735,49 @@ export function useForemanScreenController() {
       });
     } catch (error) {
       Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
+    }
+  }, [gbusy, router]);
+
+  const openHistoryPdfObserved = useCallback(async (reqId: string) => {
+    const rid = ridStr(reqId);
+    if (!rid) return;
+    try {
+      const template = await generateRequestPdfDocument({
+        requestId: rid,
+        originModule: "foreman",
+      });
+      await prepareAndPreviewGeneratedPdf({
+        busy: gbusy,
+        supabase,
+        key: `pdf:history:${rid}`,
+        label: "Р“РѕС‚РѕРІР»СЋ PDF...",
+        descriptor: {
+          ...template,
+          title: `Р—Р°СЏРІРєР° ${rid}`,
+          fileName: buildPdfFileName({
+            documentType: "request",
+            title: rid,
+            entityId: rid,
+          }),
+        },
+        router,
+      });
+    } catch (error) {
+      recordCatchDiscipline({
+        screen: "foreman",
+        surface: "foreman_pdf_open",
+        event: "foreman_history_pdf_open_failed",
+        kind: "critical_fail",
+        error,
+        category: "ui",
+        sourceKind: "pdf:request",
+        errorStage: "open_view",
+        extra: {
+          requestId: rid,
+          action: "openHistoryPdf",
+        },
+      });
+      Alert.alert("PDF", getPdfFlowErrorMessage(error, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF"));
     }
   }, [gbusy, router]);
 
@@ -986,7 +1087,7 @@ export function useForemanScreenController() {
     onHistorySelect: handleHistorySelect,
     onHistoryReopen: handleHistoryReopen,
     historyReopenBusyId,
-    onOpenHistoryPdf: openHistoryPdf,
+    onOpenHistoryPdf: openHistoryPdfSafe,
     isHistoryPdfBusy: (key) => gbusy.isBusy(key),
     shortId,
     closeHistory,

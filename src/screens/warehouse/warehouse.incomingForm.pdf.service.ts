@@ -192,6 +192,12 @@ const isMissingName = (value: unknown): boolean => {
   return false;
 };
 
+const ensureWarehouseIncomingPdfLines = (value: unknown): WarehouseIncomingLineLike[] => {
+  if (Array.isArray(value)) return value as WarehouseIncomingLineLike[];
+  if (value == null) return [];
+  throw new Error("Warehouse incoming PDF lines payload is invalid");
+};
+
 const ensureIncomingId = (incomingId: string): string => {
   const normalized = String(incomingId ?? "").trim();
   if (!normalized) {
@@ -405,7 +411,7 @@ export function shapeWarehouseIncomingFormPdfPayload(params: {
 
   return {
     incoming: params.incoming,
-    lines: (params.lines || []).map((line) => {
+    lines: ensureWarehouseIncomingPdfLines(params.lines).map((line) => {
       const code = String(line?.code ?? "").trim().toUpperCase();
       const mapped = String(params.matNameByCode?.[code] ?? "").trim();
       const raw = String(line?.name_ru ?? line?.material_name ?? line?.name ?? "").trim();

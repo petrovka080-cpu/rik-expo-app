@@ -324,6 +324,47 @@ describe("Foreman modal stability", () => {
     });
   });
 
+  it("shows a guarded busy state for history PDF actions while a document is opening", async () => {
+    const request = {
+      id: "req-1",
+      display_no: "REQ-1/2026",
+      object_name_ru: "Object A",
+      created_at: "2026-03-29T10:00:00.000Z",
+      status: "draft",
+      has_rejected: false,
+    } as never;
+
+    const renderer = await renderWithAct(
+      <ForemanHistoryModal
+        visible
+        onClose={jest.fn()}
+        mode="list"
+        selectedRequestId={null}
+        onShowDetails={jest.fn()}
+        onBackToList={jest.fn()}
+        onResetView={jest.fn()}
+        loading={false}
+        requests={[request]}
+        resolveStatusInfo={() => ({ label: "Р§РµСЂРЅРѕРІРёРє", bg: "#222", fg: "#fff" })}
+        onSelect={jest.fn()}
+        onReopen={jest.fn()}
+        reopenBusyRequestId={null}
+        onOpenPdf={jest.fn()}
+        isPdfBusy={(key) => key === "pdf:history:req-1"}
+        shortId={() => "req-1"}
+        styles={styles}
+      />,
+    );
+
+    const busyButton = renderer.root.findByProps({ testID: "foreman-history-pdf:req-1" });
+    expect(busyButton.props.disabled).toBe(true);
+    expect(busyButton.props.accessibilityState).toMatchObject({ disabled: true, busy: true });
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
+
   it("keeps subcontract history modal list/details close contract stable", async () => {
     mockListLinkedRequestsByLink.mockResolvedValue([{ id: "req-1", request_no: "REQ-1/2026" }]);
     const onClose = jest.fn();
