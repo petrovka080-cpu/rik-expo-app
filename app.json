@@ -37,6 +37,16 @@
     "web": {},
     "extra": {
       "router": {},
+      "release": {
+        "sourceOfTruthVersion": 1,
+        "runtimePolicy": "fixed",
+        "appVersionSource": "remote",
+        "channelBranchMapping": {
+          "development": "development",
+          "preview": "preview",
+          "production": "production"
+        }
+      },
       "eas": {
         "projectId": "93959cca-1c92-4b59-b80a-f1a1f5dfdf5a"
       }

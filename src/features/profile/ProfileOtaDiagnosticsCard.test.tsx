@@ -9,6 +9,7 @@ const mockClipboardSetStringAsync = jest.fn();
 const mockCheckAndFetchOtaNow = jest.fn();
 const mockGetOtaDiagnostics = jest.fn();
 const mockBuildOtaDiagnosticsText = jest.fn();
+const mockUseUpdates = jest.fn();
 
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: (props: { name: string }) => {
@@ -20,6 +21,10 @@ jest.mock("@expo/vector-icons", () => ({
 
 jest.mock("expo-clipboard", () => ({
   setStringAsync: (...args: unknown[]) => mockClipboardSetStringAsync(...args),
+}));
+
+jest.mock("expo-updates", () => ({
+  useUpdates: (...args: unknown[]) => mockUseUpdates(...args),
 }));
 
 jest.mock("@/src/lib/otaHardening", () => ({
@@ -45,6 +50,7 @@ function createDiagnostics(overrides: Partial<OtaDiagnostics> = {}): OtaDiagnost
     expectedBranch: "production",
     severity: "warning",
     issues: [],
+    reasons: [],
     actions: [],
     lastUpdateAgeHours: 1,
     isProbablyOutdated: false,
@@ -52,8 +58,32 @@ function createDiagnostics(overrides: Partial<OtaDiagnostics> = {}): OtaDiagnost
     isRuntimeMismatchSuspected: false,
     appVersion: "1.0.0",
     nativeBuild: "21",
-    launchSource: "downloaded-update",
+    launchSource: "ota",
     publishHint: "Publish to production",
+    verdict: "warning",
+    configuredAppVersion: "1.0.0",
+    configuredIosBuildNumber: "21",
+    configuredAndroidVersionCode: "21",
+    checkAutomatically: "ON_LOAD",
+    fallbackToCacheTimeout: 0,
+    appVersionSource: "remote",
+    releaseLabel: "prod-hotfix",
+    gitCommit: "abc123",
+    updateGroupId: "group-1",
+    updateMessage: "release-safe diagnostics",
+    metadataSource: "manifest-metadata",
+    metadataWarnings: [],
+    updateAvailabilityState: "not-checked",
+    updateAvailabilitySummary: "No in-session update result is available yet.",
+    availableUpdateId: "not-provided",
+    availableUpdateCreatedAt: "not-provided",
+    downloadedUpdateId: "not-provided",
+    downloadedUpdateCreatedAt: "not-provided",
+    lastCheckForUpdateTimeSinceRestart: "not-provided",
+    checkError: "not-provided",
+    downloadError: "not-provided",
+    isEmergencyLaunch: false,
+    emergencyLaunchReason: "not-provided",
     ...overrides,
   };
 }
@@ -66,7 +96,9 @@ describe("ProfileOtaDiagnosticsCard", () => {
     mockCheckAndFetchOtaNow.mockReset();
     mockGetOtaDiagnostics.mockReset();
     mockBuildOtaDiagnosticsText.mockReset();
+    mockUseUpdates.mockReset();
     mockBuildOtaDiagnosticsText.mockReturnValue("diagnostics");
+    mockUseUpdates.mockReturnValue({});
 
     alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
   });

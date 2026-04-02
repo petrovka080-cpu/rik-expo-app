@@ -1,236 +1,155 @@
 import Constants from "expo-constants";
 import * as Application from "expo-application";
 import * as Updates from "expo-updates";
+import type { UseUpdatesReturnType } from "expo-updates";
 
-export type OtaDiagnosticsSeverity = "ok" | "warning" | "error";
+import {
+  buildReleaseDiagnostics,
+  buildReleaseDiagnosticsText,
+  normalizeReleaseAppVersionSource,
+  normalizeReleaseCheckAutomatically,
+  safeString,
+} from "@/src/shared/release/releaseInfo";
+import type { ReleaseDiagnostics } from "@/src/shared/release/releaseInfo.types";
 
-export type OtaDiagnostics = {
-  channel: string;
-  runtimeVersion: string;
-  updateId: string;
-  isEmbeddedLaunch: boolean;
-  createdAt: string;
-  nativeAppVersion: string;
-  nativeBuildVersion: string;
-  updatesUrl: string;
-  projectId: string;
-  expectedBranch: string;
-  severity: OtaDiagnosticsSeverity;
-  issues: string[];
-  actions: string[];
-  lastUpdateAgeHours: number | null;
-  isProbablyOutdated: boolean;
-  isChannelMismatch: boolean;
-  isRuntimeMismatchSuspected: boolean;
-  appVersion: string;
-  nativeBuild: string;
-  launchSource: string;
-  publishHint: string;
+export type OtaDiagnosticsSeverity = ReleaseDiagnostics["severity"];
+export type OtaDiagnostics = ReleaseDiagnostics;
+
+type RuntimeManifestRecord = {
+  createdAt?: unknown;
+  metadata?: unknown;
+  extra?: unknown;
 };
 
-const CANONICAL_BRANCH_BY_CHANNEL: Record<string, string> = {
-  development: "development",
-  preview: "preview",
-  production: "production",
+type ReleaseExtraRecord = {
+  appVersionSource?: unknown;
+  release?: unknown;
 };
 
-function safeString(value: unknown, fallback = "unknown"): string {
-  if (typeof value === "string" && value.trim().length > 0) return value.trim();
-  if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  return fallback;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function pushUnique(target: string[], value: string) {
-  if (!target.includes(value)) {
-    target.push(value);
-  }
-}
-
-function getChannel(): string {
-  const rawChannel = safeString((Updates as { channel?: string }).channel, "");
-  if (rawChannel) return rawChannel;
-  return __DEV__ ? "development-client" : "unknown";
-}
-
-function getExpectedBranch(channel: string): string {
-  return CANONICAL_BRANCH_BY_CHANNEL[channel] ?? (channel && channel !== "unknown" ? channel : "unknown");
-}
-
-function getCreatedAtString(): string {
-  if (Updates.createdAt instanceof Date && !Number.isNaN(Updates.createdAt.getTime())) {
-    return Updates.createdAt.toISOString();
+function getRuntimeManifest(updatesState?: Partial<UseUpdatesReturnType>): RuntimeManifestRecord | null {
+  const currentManifest = updatesState?.currentlyRunning?.manifest;
+  if (isRecord(currentManifest)) {
+    return currentManifest as RuntimeManifestRecord;
   }
 
-  const manifest = (Updates.manifest as { createdAt?: unknown } | null | undefined) ?? undefined;
-  return safeString(manifest?.createdAt, "unknown");
+  if (isRecord(Updates.manifest)) {
+    return Updates.manifest as RuntimeManifestRecord;
+  }
+
+  return null;
 }
 
-function getAgeHours(createdAt: string): number | null {
-  if (!createdAt || createdAt === "unknown") return null;
-
-  const timestamp = Date.parse(createdAt);
-  if (Number.isNaN(timestamp)) return null;
-
-  return Math.max(0, (Date.now() - timestamp) / (1000 * 60 * 60));
-}
-
-export function getOtaDiagnostics(): OtaDiagnostics {
+function getReleaseConfigExtra(): ReleaseExtraRecord | null {
   const expoConfig = Constants.expoConfig ?? null;
-  const extra = (expoConfig?.extra ?? {}) as { eas?: { projectId?: unknown } };
+  const extra = expoConfig?.extra;
+  if (!isRecord(extra)) return null;
+  return extra as ReleaseExtraRecord;
+}
 
-  const channel = getChannel();
-  const runtimeVersion = safeString(Updates.runtimeVersion, "unknown");
-  const updateId = safeString(Updates.updateId, "embedded");
-  const isEmbeddedLaunch = Boolean(Updates.isEmbeddedLaunch);
-  const createdAt = getCreatedAtString();
-  const nativeAppVersion = safeString(
-    Application.nativeApplicationVersion ?? expoConfig?.version,
-    "unknown",
-  );
-  const nativeBuildVersion = safeString(
-    Application.nativeBuildVersion ?? expoConfig?.ios?.buildNumber ?? expoConfig?.android?.versionCode,
-    "unknown",
-  );
-  const updatesUrl = safeString(expoConfig?.updates?.url, "unknown");
-  const projectId = safeString(extra.eas?.projectId, "unknown");
-  const expectedBranch = getExpectedBranch(channel);
-  const lastUpdateAgeHours = getAgeHours(createdAt);
+function getManifestMetadata(manifest: RuntimeManifestRecord | null): Record<string, unknown> | null {
+  if (!manifest || !isRecord(manifest.metadata)) return null;
+  return manifest.metadata;
+}
 
-  const issues: string[] = [];
-  const actions: string[] = [];
+function getManifestReleaseExtra(manifest: RuntimeManifestRecord | null): Record<string, unknown> | null {
+  if (!manifest || !isRecord(manifest.extra)) return null;
+  const extra = manifest.extra;
+  if (!isRecord(extra.release)) return null;
+  return extra.release;
+}
 
-  const isRuntimeMismatchSuspected = runtimeVersion === "unknown";
-  const isChannelMismatch =
-    channel === "unknown" ||
-    channel === "development-client" ||
-    !(channel in CANONICAL_BRANCH_BY_CHANNEL);
-  const isProbablyOutdated =
-    isEmbeddedLaunch || (lastUpdateAgeHours !== null && lastUpdateAgeHours > 24);
+function getExpoConfigReleaseExtra(extra: ReleaseExtraRecord | null): Record<string, unknown> | null {
+  if (!extra || !isRecord(extra.release)) return null;
+  return extra.release;
+}
 
-  if (__DEV__) {
-    pushUnique(issues, "Приложение запущено в dev-режиме, OTA здесь не отражает production behavior.");
-    pushUnique(actions, "Проверяйте OTA на EAS build, а не в Expo development mode.");
+function toIsoString(value: unknown): string {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString();
   }
 
-  if (!Updates.isEnabled) {
-    pushUnique(issues, "expo-updates отключен для текущего запуска.");
-    pushUnique(actions, "Проверьте, что используется EAS build с включенным expo-updates.");
-  }
+  return safeString(value);
+}
 
-  if (channel === "unknown") {
-    pushUnique(issues, "Не удалось определить OTA channel текущего билда.");
-    pushUnique(actions, "Проверьте, что приложение собрано через EAS build и привязано к нужному channel.");
-  } else if (channel === "development-client") {
-    pushUnique(issues, "Запущен development client, а не release build с фиксированным OTA channel.");
-    pushUnique(actions, "Для реальной OTA-проверки используйте preview или production build.");
-  } else if (!(channel in CANONICAL_BRANCH_BY_CHANNEL)) {
-    pushUnique(
-      issues,
-      `Channel "${channel}" не входит в каноническую схему development / preview / production.`,
-    );
-    pushUnique(actions, "Сверьте channel build-а с release runbook и ожидаемой branch публикации.");
-  }
-
-  if (projectId === "unknown" || updatesUrl === "unknown") {
-    pushUnique(issues, "Не удалось прочитать updates URL или projectId.");
-    pushUnique(actions, "Проверьте app config и Expo project binding.");
-  }
-
-  if (isRuntimeMismatchSuspected) {
-    pushUnique(issues, "Не удалось определить runtimeVersion.");
-    pushUnique(actions, "Проверьте expo-updates config и runtimeVersion в app config.");
-  }
-
-  if (isEmbeddedLaunch) {
-    pushUnique(issues, "Приложение запущено со встроенного bundle, а не с примененного OTA update.");
-    pushUnique(
-      actions,
-      "Если OTA публиковался недавно, полностью закройте приложение, откройте его, затем закройте и откройте еще раз.",
-    );
-  }
-
-  if (lastUpdateAgeHours !== null && lastUpdateAgeHours > 24) {
-    pushUnique(
-      issues,
-      `Последний примененный update старше 24 часов (${Math.floor(lastUpdateAgeHours)} ч).`,
-    );
-    pushUnique(actions, `Проверьте, что update публиковался в branch "${expectedBranch}".`);
-  }
-
-  if (isProbablyOutdated) {
-    pushUnique(
-      actions,
-      "Если UI выглядит старым, сделайте два холодных перезапуска после ручной OTA-проверки.",
-    );
-  }
-
-  if (expectedBranch !== "unknown") {
-    pushUnique(actions, `Для этого билда publish нужно делать в branch "${expectedBranch}".`);
-  }
-
-  let severity: OtaDiagnosticsSeverity = "ok";
-  if (!Updates.isEnabled || projectId === "unknown" || updatesUrl === "unknown" || isRuntimeMismatchSuspected) {
-    severity = "error";
-  } else if (issues.length > 0 || isProbablyOutdated || isChannelMismatch) {
-    severity = "warning";
+function getEnvReleaseMetadata(): Partial<{
+  releaseLabel: string;
+  gitCommit: string;
+  updateGroupId: string;
+  updateMessage: string;
+}> {
+  if (typeof process === "undefined" || !process.env) {
+    return {};
   }
 
   return {
-    channel,
-    runtimeVersion,
-    updateId,
-    isEmbeddedLaunch,
-    createdAt,
-    nativeAppVersion,
-    nativeBuildVersion,
-    updatesUrl,
-    projectId,
-    expectedBranch,
-    severity,
-    issues,
-    actions,
-    lastUpdateAgeHours,
-    isProbablyOutdated,
-    isChannelMismatch,
-    isRuntimeMismatchSuspected,
-    appVersion: nativeAppVersion,
-    nativeBuild: nativeBuildVersion,
-    launchSource: isEmbeddedLaunch ? "embedded" : "downloaded-update",
-    publishHint:
-      expectedBranch !== "unknown"
-        ? `Publish to ${expectedBranch}`
-        : "Check the installed build channel before publishing OTA",
+    releaseLabel: safeString(process.env.EXPO_PUBLIC_RELEASE_LABEL, ""),
+    gitCommit: safeString(process.env.EXPO_PUBLIC_GIT_COMMIT_SHA, ""),
+    updateGroupId: safeString(process.env.EXPO_PUBLIC_UPDATE_GROUP_ID, ""),
+    updateMessage: safeString(process.env.EXPO_PUBLIC_UPDATE_MESSAGE, ""),
   };
 }
 
+export function getOtaDiagnostics(updatesState?: Partial<UseUpdatesReturnType>): OtaDiagnostics {
+  const expoConfig = Constants.expoConfig ?? null;
+  const extra = getReleaseConfigExtra();
+  const manifest = getRuntimeManifest(updatesState);
+
+  return buildReleaseDiagnostics({
+    config: {
+      appVersion: safeString(expoConfig?.version),
+      configuredIosBuildNumber: safeString(expoConfig?.ios?.buildNumber),
+      configuredAndroidVersionCode: safeString(expoConfig?.android?.versionCode),
+      runtimeVersion: safeString(Updates.runtimeVersion),
+      updatesEnabled: Updates.isEnabled,
+      updatesUrl: safeString(expoConfig?.updates?.url),
+      projectId: safeString((expoConfig?.extra as { eas?: { projectId?: unknown } } | null | undefined)?.eas?.projectId),
+      checkAutomatically: normalizeReleaseCheckAutomatically(Updates.checkAutomatically),
+      fallbackToCacheTimeout:
+        typeof expoConfig?.updates?.fallbackToCacheTimeout === "number"
+          ? expoConfig.updates.fallbackToCacheTimeout
+          : null,
+      appVersionSource: normalizeReleaseAppVersionSource(extra?.appVersionSource),
+    },
+    native: {
+      appVersion: safeString(Application.nativeApplicationVersion ?? expoConfig?.version),
+      nativeBuildVersion: safeString(
+        Application.nativeBuildVersion ?? expoConfig?.ios?.buildNumber ?? expoConfig?.android?.versionCode,
+      ),
+    },
+    update: {
+      channel: safeString(Updates.channel),
+      updateId: safeString(updatesState?.currentlyRunning?.updateId ?? Updates.updateId, "embedded"),
+      createdAt: toIsoString(updatesState?.currentlyRunning?.createdAt ?? Updates.createdAt ?? manifest?.createdAt),
+      isEmbeddedLaunch: updatesState?.currentlyRunning?.isEmbeddedLaunch ?? Boolean(Updates.isEmbeddedLaunch),
+      isEmergencyLaunch: updatesState?.currentlyRunning?.isEmergencyLaunch,
+      emergencyLaunchReason: safeString(updatesState?.currentlyRunning?.emergencyLaunchReason, ""),
+      manifestMetadata: getManifestMetadata(manifest),
+      manifestExtraRelease: getManifestReleaseExtra(manifest),
+      expoConfigRelease: getExpoConfigReleaseExtra(extra),
+      runtimeVersion: safeString(updatesState?.currentlyRunning?.runtimeVersion ?? Updates.runtimeVersion),
+      isStartupProcedureRunning: updatesState?.isStartupProcedureRunning,
+      isUpdateAvailable: updatesState?.isUpdateAvailable,
+      isUpdatePending: updatesState?.isUpdatePending,
+      isChecking: updatesState?.isChecking,
+      isDownloading: updatesState?.isDownloading,
+      availableUpdateId: safeString(updatesState?.availableUpdate?.updateId, ""),
+      availableUpdateCreatedAt: toIsoString(updatesState?.availableUpdate?.createdAt),
+      downloadedUpdateId: safeString(updatesState?.downloadedUpdate?.updateId, ""),
+      downloadedUpdateCreatedAt: toIsoString(updatesState?.downloadedUpdate?.createdAt),
+      checkError: safeString(updatesState?.checkError?.message, ""),
+      downloadError: safeString(updatesState?.downloadError?.message, ""),
+      lastCheckForUpdateTimeSinceRestart: toIsoString(updatesState?.lastCheckForUpdateTimeSinceRestart),
+    },
+    envMetadata: getEnvReleaseMetadata(),
+  });
+}
+
 export function buildOtaDiagnosticsText(diagnostics: OtaDiagnostics): string {
-  return [
-    `channel: ${diagnostics.channel}`,
-    `expectedBranch: ${diagnostics.expectedBranch}`,
-    `runtimeVersion: ${diagnostics.runtimeVersion}`,
-    `updateId: ${diagnostics.updateId}`,
-    `isEmbeddedLaunch: ${String(diagnostics.isEmbeddedLaunch)}`,
-    `createdAt: ${diagnostics.createdAt}`,
-    `nativeAppVersion: ${diagnostics.nativeAppVersion}`,
-    `nativeBuildVersion: ${diagnostics.nativeBuildVersion}`,
-    `updatesUrl: ${diagnostics.updatesUrl}`,
-    `projectId: ${diagnostics.projectId}`,
-    `severity: ${diagnostics.severity}`,
-    `lastUpdateAgeHours: ${
-      diagnostics.lastUpdateAgeHours == null ? "unknown" : diagnostics.lastUpdateAgeHours.toFixed(1)
-    }`,
-    `isProbablyOutdated: ${String(diagnostics.isProbablyOutdated)}`,
-    `isChannelMismatch: ${String(diagnostics.isChannelMismatch)}`,
-    `isRuntimeMismatchSuspected: ${String(diagnostics.isRuntimeMismatchSuspected)}`,
-    `launchSource: ${diagnostics.launchSource}`,
-    `publishHint: ${diagnostics.publishHint}`,
-    "",
-    "issues:",
-    ...(diagnostics.issues.length ? diagnostics.issues.map((issue) => `- ${issue}`) : ["- none"]),
-    "",
-    "actions:",
-    ...(diagnostics.actions.length ? diagnostics.actions.map((action) => `- ${action}`) : ["- none"]),
-  ].join("\n");
+  return buildReleaseDiagnosticsText(diagnostics);
 }
 
 export function formatOtaDiagnosticsForClipboard(diagnostics: OtaDiagnostics): string {

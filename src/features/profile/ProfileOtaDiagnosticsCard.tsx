@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import { useUpdates } from "expo-updates";
 
 import { checkAndFetchOtaNow } from "@/src/lib/otaHardening";
 import { buildOtaDiagnosticsText, getOtaDiagnostics, type OtaDiagnostics } from "@/src/lib/otaDiagnostics";
@@ -88,14 +89,14 @@ function buildSafeOtaInstructionsMessage(diagnostics: OtaDiagnostics): string {
 
 function BulletList(props: { items: string[]; emptyLabel: string }) {
   if (!props.items.length) {
-    return <Text style={styles.listItem}>• {props.emptyLabel}</Text>;
+    return <Text style={styles.listItem}>- {props.emptyLabel}</Text>;
   }
 
   return (
     <>
       {props.items.map((item, index) => (
         <Text key={`${item}-${index}`} style={styles.listItem}>
-          • {item}
+          - {item}
         </Text>
       ))}
     </>
@@ -106,7 +107,8 @@ export function ProfileOtaDiagnosticsCard() {
   const [loading, setLoading] = useState(false);
   const [lastActionMessage, setLastActionMessage] = useState("");
 
-  const diagnostics = getOtaDiagnostics();
+  const updatesState = useUpdates();
+  const diagnostics = getOtaDiagnostics(updatesState);
   const severityTheme = getSeverityTheme(diagnostics.severity);
   const useSafeOtaInstructions = shouldUseSafeOtaInstructions(diagnostics);
   const primaryButtonLabel = useSafeOtaInstructions ? "Показать шаги OTA" : "Проверить OTA сейчас";
@@ -167,6 +169,7 @@ export function ProfileOtaDiagnosticsCard() {
           <DiagnosticsRow label="Runtime" value={diagnostics.runtimeVersion} />
           <DiagnosticsRow label="Update ID" value={diagnostics.updateId} />
           <DiagnosticsRow label="Embedded launch" value={diagnostics.isEmbeddedLaunch ? "yes" : "no"} />
+          <DiagnosticsRow label="Launch source" value={diagnostics.launchSource} />
           <DiagnosticsRow label="Created at" value={diagnostics.createdAt} />
           <DiagnosticsRow
             label="Last update age"
@@ -176,8 +179,28 @@ export function ProfileOtaDiagnosticsCard() {
                 : `${Math.floor(diagnostics.lastUpdateAgeHours)} h`
             }
           />
+          <DiagnosticsRow label="Update availability" value={diagnostics.updateAvailabilitySummary} />
+          <DiagnosticsRow label="Last check" value={diagnostics.lastCheckForUpdateTimeSinceRestart} />
           <DiagnosticsRow label="App version" value={diagnostics.nativeAppVersion} />
           <DiagnosticsRow label="Build" value={diagnostics.nativeBuildVersion} />
+          <DiagnosticsRow label="Configured iOS build" value={diagnostics.configuredIosBuildNumber} />
+          <DiagnosticsRow label="Configured Android code" value={diagnostics.configuredAndroidVersionCode} />
+          <DiagnosticsRow label="App version source" value={diagnostics.appVersionSource} />
+          <DiagnosticsRow label="Check automatically" value={diagnostics.checkAutomatically} />
+          <DiagnosticsRow
+            label="Fallback timeout"
+            value={
+              diagnostics.fallbackToCacheTimeout == null
+                ? "unknown"
+                : `${diagnostics.fallbackToCacheTimeout} ms`
+            }
+          />
+          <DiagnosticsRow label="Release label" value={diagnostics.releaseLabel} />
+          <DiagnosticsRow label="Git commit" value={diagnostics.gitCommit} />
+          <DiagnosticsRow label="Update group" value={diagnostics.updateGroupId} />
+          <DiagnosticsRow label="Update message" value={diagnostics.updateMessage} />
+          <DiagnosticsRow label="Metadata source" value={diagnostics.metadataSource} />
+          <DiagnosticsRow label="Emergency launch" value={diagnostics.isEmergencyLaunch ? "yes" : "no"} />
           <DiagnosticsRow label="Outdated" value={diagnostics.isProbablyOutdated ? "yes" : "no"} />
           <DiagnosticsRow label="Project ID" value={diagnostics.projectId} />
           <DiagnosticsRow label="Updates URL" value={diagnostics.updatesUrl} last />
@@ -189,11 +212,11 @@ export function ProfileOtaDiagnosticsCard() {
           </Text>
         </View>
 
-        <BlockTitle title="Проблемы" />
-        <BulletList items={diagnostics.issues} emptyLabel="Проблем не найдено." />
+        <BlockTitle title="Reasons" />
+        <BulletList items={diagnostics.reasons} emptyLabel="No lineage risks detected." />
 
-        <BlockTitle title="Что делать" />
-        <BulletList items={diagnostics.actions} emptyLabel="Дополнительных действий не требуется." />
+        <BlockTitle title="Actions" />
+        <BulletList items={diagnostics.actions} emptyLabel="No follow-up action required." />
 
         <View style={styles.runbookCard}>
           <Text style={styles.runbookTitle}>Release runbook</Text>

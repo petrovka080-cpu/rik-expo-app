@@ -10,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import type { AppAccessModel, AppContext } from "../../../lib/appAccessModel";
+import { ProfileOtaDiagnosticsCard } from "@/src/features/profile/ProfileOtaDiagnosticsCard";
 import { PROFILE_UI as UI } from "../profile.helpers";
 import { profileStyles } from "../profile.styles";
 import type { Company, UserProfile } from "../profile.types";
@@ -416,6 +417,14 @@ export function ProfileMainSections({
             />
           </View>
         </View>
+      </View>
+
+      <View style={styles.section} testID="profile-ota-diagnostics-section">
+        <View style={styles.profileSectionHeader}>
+          <Ionicons name="cloud-download-outline" size={18} color={UI.accent} />
+          <Text style={styles.profileSectionHeaderText}>Release & OTA</Text>
+        </View>
+        <ProfileOtaDiagnosticsCard />
       </View>
 
       <Text style={styles.profileFooterText}>GOX v1.0.0</Text>

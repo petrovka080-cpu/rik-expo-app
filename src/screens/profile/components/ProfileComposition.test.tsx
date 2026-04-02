@@ -12,6 +12,18 @@ jest.mock("@expo/vector-icons", () => ({
   },
 }));
 
+jest.mock("@/src/features/profile/ProfileOtaDiagnosticsCard", () => ({
+  ProfileOtaDiagnosticsCard: () => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(
+      Text,
+      { testID: "profile-ota-diagnostics-card" },
+      "ota-diagnostics-card",
+    );
+  },
+}));
+
 const baseProfile = {
   id: "profile-1",
   user_id: "user-1",
@@ -108,6 +120,12 @@ describe("Profile composition boundaries", () => {
     expect(props.onOpenActiveContext).toHaveBeenCalledTimes(1);
     expect(props.onOpenOfficeAccess).toHaveBeenCalledTimes(1);
     expect(props.onOpenSellerArea).toHaveBeenCalledTimes(1);
+    expect(
+      renderer!.root.findByProps({ testID: "profile-ota-diagnostics-section" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "profile-ota-diagnostics-card" }),
+    ).toBeTruthy();
     expect(
       renderer!.root.findAll(
         (node) =>

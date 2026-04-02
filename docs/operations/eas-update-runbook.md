@@ -1,6 +1,11 @@
 # EAS Update Runbook
 
-Last updated: March 19, 2026
+Last updated: April 2, 2026
+
+Related docs:
+
+- `docs/operations/release-lineage-audit.md`
+- `docs/operations/release-decision-matrix.md`
 
 ## Canonical Mapping
 
@@ -34,6 +39,15 @@ npm run ota:publish:preview -- --message "preview marker 2026-03-19"
 npm run ota:publish:development -- --message "development marker 2026-03-19"
 ```
 
+## Release Verification Scripts
+
+Use the read-only scripts before publishing:
+
+```powershell
+npx tsx scripts/release/print-release-config.ts --json
+npx tsx scripts/release/check-release-discipline.ts --channel production --change-class js-ui --json
+```
+
 ## Device Verification
 
 1. Publish to the branch that matches the installed build channel.
@@ -59,24 +73,30 @@ Open `Profile` and scroll to the OTA diagnostics block. It shows:
 - `channel`
 - `severity`
 - `runtimeVersion`
+- `appVersion`
+- `nativeBuildVersion`
 - `updateId`
 - `isEmbeddedLaunch`
+- `launchSource`
 - `createdAt`
+- passive update availability state
 - last update age / probable stale state
-- app version / native build
 - expected publish branch
+- checkAutomatically / fallbackToCacheTimeout
+- optional release label / git commit / update group id when metadata is embedded
 - Expo project id / updates url
 - issue list and recommended actions
 
 Use the in-app actions:
 
-- `Проверить OTA сейчас` -> manual check + fetch without changing boot flow
+- release builds: `Показать шаги OTA` -> safe next-step guidance without triggering manual check/fetch
+- development-client only: `Проверить OTA сейчас` -> manual check + fetch without changing boot flow
 - `Скопировать диагностику` -> share the exact device state when debugging OTA behavior
 
 Severity interpretation:
 
 - `OK` -> config looks healthy, publish to the expected branch only
-- `WARNING` -> the app is probably stale, embedded, or on a non-canonical channel; do the manual OTA check and then cold restart twice
+- `WARNING` -> the app is stale, embedded, has a pending relaunch, or shows lineage mismatch signals; follow the actions block and relaunch when instructed
 - `ERROR` -> runtime/config metadata is missing or `expo-updates` is disabled; verify build config before blaming OTA publish
 
 ## Common Mistake
