@@ -111,9 +111,10 @@ export default function RootLayout() {
           setSessionLoaded(true);
           return;
         }
-        setHasSession(false);
-        clearDocumentSessions();
-        clearCurrentSessionRoleCache();
+        // Network error ≠ "no session". Keep hasSession=null so we don't
+        // force-redirect to login when the user has a cached session but
+        // the network is temporarily unavailable (e.g. weak LTE).
+        setHasSession(null);
         setSessionLoaded(true);
       }
     })();

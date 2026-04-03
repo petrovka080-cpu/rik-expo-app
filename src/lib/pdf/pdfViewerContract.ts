@@ -289,10 +289,7 @@ export function resolvePdfViewerResolution(args: {
     return {
       kind: "resolved-embedded",
       asset,
-      source: {
-        html: buildEmbeddedLocalPdfShell(assetUri),
-        baseUrl: getReadAccessParentUri(assetUri),
-      },
+      source: { uri: assetUri },
       scheme,
       sourceKind: "local-file",
       renderer: "native-webview",

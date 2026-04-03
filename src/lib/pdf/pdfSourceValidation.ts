@@ -97,11 +97,23 @@ export async function assertValidLocalPdfFile(args: {
     };
   }
 
-  const base64 = await args.fileSystem.readAsStringAsync(args.uri, {
-    encoding: "base64",
-    position: 0,
-    length: 24,
-  });
+  let base64: string;
+  try {
+    base64 = await args.fileSystem.readAsStringAsync(args.uri, {
+      encoding: "base64",
+      position: 0,
+      length: 24,
+    });
+  } catch {
+    // expo-file-system/legacy readAsStringAsync with position/length can
+    // throw an ObjC NSException on iOS that JS try/catch cannot always
+    // intercept. If the file exists and has a non-zero size, accept it
+    // without magic-byte validation rather than crashing the app.
+    return {
+      sizeBytes,
+      headerAscii: "",
+    };
+  }
   const headerAscii = decodeAsciiPrefix(base64);
 
   if (!headerAscii) {
