@@ -330,7 +330,43 @@ const recordSupabaseAuthBootstrapFallback = (
       ...extra,
     },
   });
+type SafeSessionResult = {
+  session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] | null;
+  degraded: boolean;
+};
 
+function isTimeoutLikeError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return (
+    message.includes("timed out") ||
+    message.includes("aborted") ||
+    message.includes("AbortError") ||
+    message.includes("network request failed")
+  );
+}
+
+export async function getSessionSafe(
+  extra?: Record<string, unknown>,
+): Promise<SafeSessionResult> {
+  if (!supabase) {
+    return { session: null, degraded: true };
+  }
+
+  try {
+    const result = await supabase.auth.getSession();
+    return {
+      session: result?.data?.session ?? null,
+      degraded: false,
+    };
+  } catch (error: unknown) {
+    recordSupabaseAuthBootstrapFallback("get_session_safe_failed", error, extra);
+
+    return {
+      session: null,
+      degraded: isTimeoutLikeError(error),
+    };
+  }
+}
 export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
@@ -350,14 +386,15 @@ export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
 export async function ensureSignedIn(): Promise<boolean> {
   if (!supabase) return false;
 
-  try {
-    const session = await supabase.auth.getSession();
-    if (session?.data?.session?.user) return true;
-  } catch (error: unknown) {
-    recordSupabaseAuthBootstrapFallback("ensure_signed_in_session_check_failed", error, {
-      route: "/auth/login",
-    });
-  }
+  const { session, degraded } = await getSessionSafe({
+    route: "/auth/login",
+    caller: "ensureSignedIn",
+  });
+
+  if (session?.user) return true;
+
+  // При network/timeout degradation НЕ редиректим.
+  if (degraded) return false;
 
   if (!isNodeRuntime) {
     try {
@@ -384,15 +421,12 @@ export async function ensureSignedIn(): Promise<boolean> {
 
   return false;
 }
-
 export async function currentUserId(): Promise<string | null> {
   if (!supabase) return null;
 
-  try {
-    const session = await supabase.auth.getSession();
-    return session?.data?.session?.user?.id ?? null;
-  } catch (error) {
-    recordSupabaseAuthBootstrapFallback("current_user_id_session_check_failed", error);
-    return null;
-  }
+  const { session } = await getSessionSafe({
+    caller: "currentUserId",
+  });
+
+  return session?.user?.id ?? null;
 }

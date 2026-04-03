@@ -9,8 +9,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
 import { clearAppCache } from "../src/lib/cache/clearAppCache";
-import { RequestTimeoutError } from "../src/lib/requestTimeoutPolicy";
-import { supabase } from "../src/lib/supabaseClient";
+import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
 import { clearCurrentSessionRoleCache, warmCurrentSessionProfile } from "../src/lib/sessionRole";
 import { ensureQueueWorker, stopQueueWorker } from "../src/workers/queueBootstrap";
@@ -89,33 +88,40 @@ export default function RootLayout() {
 
     (async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        if (!active) return;
+        const { session, degraded } = await getSessionSafe({
+  caller: "root_layout",
+});
+if (!active) return;
 
-        const has = Boolean(data?.session);
-        setHasSession(has);
-        setSessionLoaded(true);
+if (degraded) {
+  setHasSession(null);
+  setSessionLoaded(true);
+  return;
+}
 
-        if (has) loadRoleForCurrentSession();
-        else {
-          clearDocumentSessions();
-          clearCurrentSessionRoleCache();
-        }
+const has = Boolean(session);
+setHasSession(has);
+setSessionLoaded(true);
+
+if (has) loadRoleForCurrentSession();
+else {
+  clearDocumentSessions();
+  clearCurrentSessionRoleCache();
+}
       } catch (e: unknown) {
         if (__DEV__) {
           console.warn("[RootLayout] session load failed:", e instanceof Error ? e.message : e);
         }
         if (!active) return;
-        if (e instanceof RequestTimeoutError) {
-          setHasSession(null);
-          setSessionLoaded(true);
-          return;
-        }
-        // Network error ≠ "no session". Keep hasSession=null so we don't
-        // force-redirect to login when the user has a cached session but
-        // the network is temporarily unavailable (e.g. weak LTE).
-        setHasSession(null);
-        setSessionLoaded(true);
+
+// 🔥 НЕ считаем это logout
+setHasSession(null);
+
+// ❌ НЕ ЧИСТИМ состояние при timeout
+// clearDocumentSessions();
+// clearCurrentSessionRoleCache();
+
+setSessionLoaded(true);
       }
     })();
 
@@ -142,25 +148,33 @@ export default function RootLayout() {
     };
   }, [isPdfViewerRoute, loadRoleForCurrentSession]);
 
-  // --- redirect только по sessionLoaded/hasSession ---
   useEffect(() => {
-    if (!sessionLoaded) return;
-    const inAuthStack = segments?.[0] === "auth";
+  if (!sessionLoaded) return;
 
-    if (hasSession === false && !inAuthStack && !isPdfViewerRoute) router.replace("/auth/login");
-    else if (hasSession === true && inAuthStack) router.replace(POST_AUTH_ENTRY_ROUTE);
-  }, [hasSession, isPdfViewerRoute, sessionLoaded, segments]);
+  const inAuthStack = segments?.[0] === "auth";
+
+  if (hasSession === false && !inAuthStack && !isPdfViewerRoute) {
+    router.replace("/auth/login");
+    return;
+  }
+
+  if (hasSession === true && inAuthStack) {
+    router.replace(POST_AUTH_ENTRY_ROUTE);
+  }
+}, [hasSession, isPdfViewerRoute, sessionLoaded, segments]);
 
   useEffect(() => {
-    if (!sessionLoaded) return;
-    if (hasSession === true) {
-      ensureQueueWorker();
-      return;
-    }
-    if (hasSession === false) {
-      stopQueueWorker();
-    }
-  }, [hasSession, sessionLoaded]);
+  if (!sessionLoaded) return;
+
+  if (hasSession === true) {
+    ensureQueueWorker();
+    return;
+  }
+
+  if (hasSession === false) {
+    stopQueueWorker();
+  }
+}, [hasSession, sessionLoaded]);
 
   const APP_BG = "#0B0F14";
   const UI = {
