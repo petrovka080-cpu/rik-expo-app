@@ -38,6 +38,10 @@ import {
   markPdfOpenVisible,
 } from "../src/lib/pdf/pdfOpenFlow";
 import {
+  recordPdfCrashBreadcrumb,
+  shouldRecordPdfCrashBreadcrumbs,
+} from "../src/lib/pdf/pdfCrashBreadcrumbs";
+import {
   assertValidLocalPdfFile,
   assertValidRemotePdfResponse,
 } from "../src/lib/pdf/pdfSourceValidation";
@@ -227,6 +231,60 @@ export default function PdfViewerScreen() {
     () => resolvePdfViewerResolution({ session, asset, platform: VIEWER_PLATFORM }),
     [asset, session],
   );
+  const resolvedPreviewPath = React.useMemo(
+    () => (resolvedSource.kind === "resolved-embedded" ? resolvedSource.renderer : resolvedSource.kind),
+    [resolvedSource],
+  );
+  const diagnosticsScreen = React.useMemo(() => {
+    const origin = String(asset?.originModule ?? snapshot.asset?.originModule ?? params.originModule ?? "").trim().toLowerCase();
+    return shouldRecordPdfCrashBreadcrumbs(origin) ? origin : null;
+  }, [asset?.originModule, params.originModule, snapshot.asset?.originModule]);
+  const recordViewerBreadcrumb = React.useCallback((marker: string, overrides?: {
+    uri?: string | null;
+    uriKind?: string | null;
+    sourceKind?: string | null;
+    fileExists?: boolean | null;
+    fileSizeBytes?: number | null;
+    previewPath?: string | null;
+    errorMessage?: string | null;
+    terminalState?: "success" | "error" | null;
+    extra?: Record<string, unknown>;
+  }) => {
+    if (!diagnosticsScreen) return;
+    const currentAsset = asset ?? snapshot.asset ?? null;
+    const uri = overrides?.uri ?? currentAsset?.uri ?? null;
+    recordPdfCrashBreadcrumb({
+      marker,
+      screen: diagnosticsScreen,
+      documentType: currentAsset?.documentType ?? params.documentType,
+      originModule: currentAsset?.originModule ?? params.originModule,
+      sourceKind: overrides?.sourceKind ?? currentAsset?.sourceKind ?? params.sourceKind,
+      uriKind: overrides?.uriKind ?? getUriScheme(uri),
+      uri,
+      fileName: currentAsset?.fileName ?? params.fileName,
+      entityId: currentAsset?.entityId ?? params.entityId,
+      sessionId,
+      openToken,
+      fileExists: overrides?.fileExists,
+      fileSizeBytes: overrides?.fileSizeBytes,
+      previewPath: overrides?.previewPath ?? resolvedPreviewPath,
+      errorMessage: overrides?.errorMessage,
+      terminalState: overrides?.terminalState ?? null,
+      extra: overrides?.extra,
+    });
+  }, [
+    diagnosticsScreen,
+    asset,
+    snapshot.asset,
+    params.documentType,
+    params.originModule,
+    params.sourceKind,
+    params.fileName,
+    params.entityId,
+    sessionId,
+    openToken,
+    resolvedPreviewPath,
+  ]);
 
   React.useEffect(() => {
     isMountedRef.current = true;
@@ -283,6 +341,15 @@ export default function PdfViewerScreen() {
       receivedSessionId: params.sessionId ?? null,
       initialUri: snapshot.asset?.uri ?? null,
       initialScheme: getUriScheme(snapshot.asset?.uri),
+    });
+    recordViewerBreadcrumb("viewer_route_mounted", {
+      uri: snapshot.asset?.uri ?? params.uri ?? null,
+      uriKind: getUriScheme(snapshot.asset?.uri ?? params.uri),
+      sourceKind: snapshot.asset?.sourceKind ?? params.sourceKind ?? null,
+      previewPath: "viewer_route",
+      extra: {
+        receivedSessionId: params.sessionId ?? null,
+      },
     });
   }, [params.sessionId, sessionId, snapshot.asset?.uri]);
 
@@ -358,9 +425,21 @@ export default function PdfViewerScreen() {
           error: message,
         });
       }
+      recordViewerBreadcrumb("viewer_terminal_error", {
+        uri: next.asset?.uri ?? null,
+        uriKind: getUriScheme(next.asset?.uri),
+        sourceKind: next.asset?.sourceKind ?? null,
+        fileSizeBytes: next.asset?.sizeBytes,
+        fileExists: typeof next.asset?.sizeBytes === "number" ? true : null,
+        errorMessage: message,
+        terminalState: "error",
+        extra: {
+          phase,
+        },
+      });
       signalOpenFailed(message, { phase });
     },
-    [clearLoadingTimeout, sessionId, signalOpenFailed, syncSnapshot],
+    [clearLoadingTimeout, recordViewerBreadcrumb, sessionId, signalOpenFailed, syncSnapshot],
   );
 
   const enterLoading = React.useCallback(() => {
@@ -394,7 +473,18 @@ export default function PdfViewerScreen() {
         ms: Date.now() - openedAtRef.current,
       });
     }
-  }, [clearLoadingTimeout, signalOpenVisible, syncSnapshot]);
+    recordViewerBreadcrumb("viewer_terminal_success", {
+      uri: next.asset?.uri ?? null,
+      uriKind: getUriScheme(next.asset?.uri),
+      sourceKind: next.asset?.sourceKind ?? null,
+      fileSizeBytes: next.asset?.sizeBytes,
+      fileExists: typeof next.asset?.sizeBytes === "number" ? true : null,
+      terminalState: "success",
+      extra: {
+        state: "ready",
+      },
+    });
+  }, [clearLoadingTimeout, recordViewerBreadcrumb, signalOpenVisible, syncSnapshot]);
 
   const handoffPdfPreview = React.useCallback(
     async (resolvedAsset: DocumentAsset, trigger: "primary" | "manual") => {
@@ -504,6 +594,18 @@ export default function PdfViewerScreen() {
         renderer: resolution.renderer,
         openTime: new Date().toISOString(),
       });
+      recordViewerBreadcrumb("viewer_resolution_selected", {
+        uri: resolution.asset.uri,
+        uriKind: resolution.scheme,
+        sourceKind: resolution.sourceKind,
+        fileSizeBytes: resolution.asset.sizeBytes,
+        fileExists: typeof resolution.asset.sizeBytes === "number" ? true : null,
+        previewPath: resolution.kind === "resolved-embedded" ? resolution.renderer : resolution.kind,
+        extra: {
+          renderer: resolution.renderer,
+          resolutionKind: resolution.kind,
+        },
+      });
 
       enterLoading();
       if (resolution.kind === "resolved-native-handoff") {
@@ -511,11 +613,36 @@ export default function PdfViewerScreen() {
         return;
       }
       if (Platform.OS !== "web" && resolution.kind === "resolved-embedded") {
+        recordViewerBreadcrumb("viewer_validation_start", {
+          uri: resolution.asset.uri,
+          uriKind: resolution.scheme,
+          sourceKind: resolution.sourceKind,
+          fileSizeBytes: resolution.asset.sizeBytes,
+          fileExists: typeof resolution.asset.sizeBytes === "number" ? true : null,
+          previewPath: resolution.renderer,
+        });
         try {
           await validateEmbeddedPreviewResolution(resolution);
+          recordViewerBreadcrumb("viewer_validation_success", {
+            uri: resolution.asset.uri,
+            uriKind: resolution.scheme,
+            sourceKind: resolution.sourceKind,
+            fileSizeBytes: resolution.asset.sizeBytes,
+            fileExists: typeof resolution.asset.sizeBytes === "number" ? true : null,
+            previewPath: resolution.renderer,
+          });
         } catch (error) {
           if (!cancelled) {
             const message = error instanceof Error ? error.message : String(error);
+            recordViewerBreadcrumb("viewer_validation_failed", {
+              uri: resolution.asset.uri,
+              uriKind: resolution.scheme,
+              sourceKind: resolution.sourceKind,
+              fileSizeBytes: resolution.asset.sizeBytes,
+              fileExists: typeof resolution.asset.sizeBytes === "number" ? true : null,
+              previewPath: resolution.renderer,
+              errorMessage: message,
+            });
             markError(message, "resolution");
           }
           return;
@@ -542,6 +669,14 @@ export default function PdfViewerScreen() {
         setWebRenderUri(resolution.asset.uri);
       }
       if (!cancelled) {
+        recordViewerBreadcrumb("viewer_render_bootstrap_ready", {
+          uri: resolution.asset.uri,
+          uriKind: resolution.scheme,
+          sourceKind: resolution.sourceKind,
+          fileSizeBytes: resolution.asset.sizeBytes,
+          fileExists: typeof resolution.asset.sizeBytes === "number" ? true : null,
+          previewPath: resolution.renderer,
+        });
         setIsReadyToRender(true);
       }
     };
@@ -753,6 +888,17 @@ export default function PdfViewerScreen() {
           sizeBytes: size ?? resolvedAsset.sizeBytes,
           source,
         });
+        recordViewerBreadcrumb("viewer_before_render", {
+          uri: resolvedAsset.uri,
+          uriKind: scheme,
+          sourceKind: resolvedSource.sourceKind,
+          fileExists: exists,
+          fileSizeBytes: size ?? resolvedAsset.sizeBytes,
+          previewPath: resolvedSource.renderer,
+          extra: {
+            mimeType: resolvedAsset.mimeType,
+          },
+        });
       }
     };
 
@@ -933,6 +1079,16 @@ export default function PdfViewerScreen() {
               originWhitelist={["*"]}
               allowingReadAccessToURL={nativeWebViewReadAccessUri}
               style={styles.nativeWebView}
+              onLoadStart={() => {
+                recordViewerBreadcrumb("native_webview_load_start", {
+                  uri: asset.uri,
+                  uriKind: getUriScheme(asset.uri),
+                  sourceKind: resolvedSource.sourceKind,
+                  fileSizeBytes: asset.sizeBytes,
+                  fileExists: typeof asset.sizeBytes === "number" ? true : null,
+                  previewPath: resolvedSource.renderer,
+                });
+              }}
               onLoadEnd={() => {
                 if (renderFailedRef.current) return;
                 console.info("[pdf-viewer] native_webview_load_end", {
@@ -940,6 +1096,14 @@ export default function PdfViewerScreen() {
                   documentType: asset.documentType,
                   originModule: asset.originModule,
                   uri: asset.uri,
+                });
+                recordViewerBreadcrumb("native_webview_load_end", {
+                  uri: asset.uri,
+                  uriKind: getUriScheme(asset.uri),
+                  sourceKind: resolvedSource.sourceKind,
+                  fileSizeBytes: asset.sizeBytes,
+                  fileExists: typeof asset.sizeBytes === "number" ? true : null,
+                  previewPath: resolvedSource.renderer,
                 });
                 markReady();
               }}
@@ -951,6 +1115,15 @@ export default function PdfViewerScreen() {
                   originModule: asset.originModule,
                   uri: asset.uri,
                   error: message,
+                });
+                recordViewerBreadcrumb("native_webview_error", {
+                  uri: asset.uri,
+                  uriKind: getUriScheme(asset.uri),
+                  sourceKind: resolvedSource.sourceKind,
+                  fileSizeBytes: asset.sizeBytes,
+                  fileExists: typeof asset.sizeBytes === "number" ? true : null,
+                  previewPath: resolvedSource.renderer,
+                  errorMessage: message,
                 });
                 markError(message, "render");
               }}
@@ -967,6 +1140,18 @@ export default function PdfViewerScreen() {
                   uri: asset.uri,
                   statusCode: Number.isFinite(statusCode) ? statusCode : null,
                   error: message,
+                });
+                recordViewerBreadcrumb("native_webview_http_error", {
+                  uri: asset.uri,
+                  uriKind: getUriScheme(asset.uri),
+                  sourceKind: resolvedSource.sourceKind,
+                  fileSizeBytes: asset.sizeBytes,
+                  fileExists: typeof asset.sizeBytes === "number" ? true : null,
+                  previewPath: resolvedSource.renderer,
+                  errorMessage: message,
+                  extra: {
+                    statusCode: Number.isFinite(statusCode) ? statusCode : null,
+                  },
                 });
                 markError(message, "render");
               }}

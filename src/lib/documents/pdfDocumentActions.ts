@@ -18,6 +18,10 @@ import {
   recordPdfOpenStage,
   type PdfOpenFlowContext,
 } from "../pdf/pdfOpenFlow";
+import {
+  recordPdfCrashBreadcrumb,
+  shouldRecordPdfCrashBreadcrumbs,
+} from "../pdf/pdfCrashBreadcrumbs";
 
 export function getPdfFlowErrorMessage(error: unknown, fallback = "Could not open PDF"): string {
   if (error && typeof error === "object") {
@@ -141,6 +145,7 @@ export async function previewPdfDocument(
   doc: DocumentDescriptor,
   opts?: PreviewPdfDocumentOpts,
 ): Promise<void> {
+  const breadcrumbScreen = doc.originModule;
   const outputObservation = beginPdfLifecycleObservation({
     screen: "reports",
     surface: "pdf_document_actions",
@@ -189,6 +194,8 @@ export async function previewPdfDocument(
         sourceKind: doc.fileSource.kind,
         extra: {
           previewSourceMode: "direct_remote_viewer_contract",
+          uriKind: scheme || doc.fileSource.kind,
+          uri: doc.fileSource.uri,
         },
       });
       recordPdfOpenStage({
@@ -198,6 +205,9 @@ export async function previewPdfDocument(
         extra: {
           route: "/pdf-viewer",
           previewSourceMode: "direct_remote_viewer_contract",
+          previewPath: "direct_remote_viewer_contract",
+          uriKind: scheme || doc.fileSource.kind,
+          uri: doc.fileSource.uri,
         },
       });
       const viewerHref: Href = {
@@ -227,6 +237,24 @@ export async function previewPdfDocument(
       });
       try {
         opts.router.push(viewerHref);
+        if (shouldRecordPdfCrashBreadcrumbs(breadcrumbScreen)) {
+          recordPdfCrashBreadcrumb({
+            marker: "viewer_route_pushed",
+            screen: breadcrumbScreen,
+            documentType: doc.documentType,
+            originModule: doc.originModule,
+            sourceKind: doc.fileSource.kind,
+            uriKind: scheme || doc.fileSource.kind,
+            uri: doc.fileSource.uri,
+            fileName: doc.fileName,
+            entityId: doc.entityId,
+            openToken: opts.openFlow?.openToken,
+            previewPath: "direct_remote_viewer_contract",
+            extra: {
+              route: "/pdf-viewer",
+            },
+          });
+        }
         outputObservation.success({
           sourceKind: doc.fileSource.kind,
           extra: {
@@ -271,6 +299,10 @@ export async function previewPdfDocument(
       extra: {
         sessionId: session.sessionId,
         assetId: asset.assetId,
+        uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+        uri: asset.uri,
+        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
+        fileSizeBytes: asset.sizeBytes,
       },
     });
     outputObservation.success({
@@ -300,6 +332,11 @@ export async function previewPdfDocument(
         extra: {
           route: "/pdf-viewer",
           sessionId: session.sessionId,
+          previewPath: "session_viewer_contract",
+          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uri: asset.uri,
+          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
+          fileSizeBytes: asset.sizeBytes,
         },
       });
       const viewerHref: Href = {
@@ -321,6 +358,27 @@ export async function previewPdfDocument(
       });
       try {
         opts.router.push(viewerHref);
+        if (shouldRecordPdfCrashBreadcrumbs(breadcrumbScreen)) {
+          recordPdfCrashBreadcrumb({
+            marker: "viewer_route_pushed",
+            screen: breadcrumbScreen,
+            documentType: asset.documentType,
+            originModule: asset.originModule,
+            sourceKind: asset.sourceKind,
+            uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+            uri: asset.uri,
+            fileName: asset.fileName,
+            entityId: doc.entityId,
+            sessionId: session.sessionId,
+            openToken: opts.openFlow?.openToken,
+            fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
+            fileSizeBytes: asset.sizeBytes,
+            previewPath: "session_viewer_contract",
+            extra: {
+              route: "/pdf-viewer",
+            },
+          });
+        }
         openObservation.success({
           sourceKind: asset.sourceKind,
           extra: {

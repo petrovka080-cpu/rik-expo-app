@@ -3,6 +3,10 @@ import type {
   PdfOriginModule,
 } from "../documents/pdfDocument";
 import { recordPlatformObservability } from "../observability/platformObservability";
+import {
+  recordPdfCrashBreadcrumb,
+  shouldRecordPdfCrashBreadcrumbs,
+} from "./pdfCrashBreadcrumbs";
 
 type PdfOpenStage =
   | "tap_start"
@@ -114,9 +118,36 @@ export function createPdfOpenFlowContext(args: {
 
 export function recordPdfOpenStage(args: PdfOpenStageRecordArgs) {
   if (!args.context) return null;
+  const screen = normalizeScreen(args.context.originModule);
+  if (shouldRecordPdfCrashBreadcrumbs(screen)) {
+    recordPdfCrashBreadcrumb({
+      marker: args.stage,
+      screen,
+      documentType: args.context.documentType,
+      originModule: args.context.originModule,
+      sourceKind: trimText(args.sourceKind) || "pdf:document",
+      fileName: args.context.fileName,
+      entityId: args.context.entityId,
+      openToken: trimText(args.extra?.openToken),
+      sessionId: trimText(args.extra?.sessionId),
+      previewPath: trimText(args.extra?.previewPath ?? args.extra?.previewSourceMode ?? args.extra?.route),
+      uriKind: trimText(args.extra?.uriKind),
+      uri: args.extra?.uri,
+      fileExists: args.extra?.fileExists,
+      fileSizeBytes: args.extra?.fileSizeBytes,
+      errorMessage: getErrorShape(args.error).errorMessage,
+      terminalState:
+        args.stage === "first_open_visible"
+          ? "success"
+          : args.stage === "open_failed"
+            ? "error"
+            : null,
+      extra: args.extra,
+    });
+  }
   const errorShape = getErrorShape(args.error);
   return recordPlatformObservability({
-    screen: normalizeScreen(args.context.originModule),
+    screen,
     surface: "pdf_open_family",
     category: args.category ?? (args.stage === "document_prepare_start" || args.stage === "document_prepare_done" ? "fetch" : "ui"),
     event: args.stage,

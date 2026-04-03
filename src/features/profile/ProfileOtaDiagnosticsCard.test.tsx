@@ -10,6 +10,8 @@ const mockCheckAndFetchOtaNow = jest.fn();
 const mockGetOtaDiagnostics = jest.fn();
 const mockBuildOtaDiagnosticsText = jest.fn();
 const mockUseUpdates = jest.fn();
+const mockGetPdfCrashBreadcrumbs = jest.fn();
+const mockBuildPdfCrashBreadcrumbsText = jest.fn();
 
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: (props: { name: string }) => {
@@ -34,6 +36,11 @@ jest.mock("@/src/lib/otaHardening", () => ({
 jest.mock("@/src/lib/otaDiagnostics", () => ({
   buildOtaDiagnosticsText: (...args: unknown[]) => mockBuildOtaDiagnosticsText(...args),
   getOtaDiagnostics: (...args: unknown[]) => mockGetOtaDiagnostics(...args),
+}));
+
+jest.mock("@/src/lib/pdf/pdfCrashBreadcrumbs", () => ({
+  getPdfCrashBreadcrumbs: (...args: unknown[]) => mockGetPdfCrashBreadcrumbs(...args),
+  buildPdfCrashBreadcrumbsText: (...args: unknown[]) => mockBuildPdfCrashBreadcrumbsText(...args),
 }));
 
 function createDiagnostics(overrides: Partial<OtaDiagnostics> = {}): OtaDiagnostics {
@@ -97,7 +104,11 @@ describe("ProfileOtaDiagnosticsCard", () => {
     mockGetOtaDiagnostics.mockReset();
     mockBuildOtaDiagnosticsText.mockReset();
     mockUseUpdates.mockReset();
+    mockGetPdfCrashBreadcrumbs.mockReset();
+    mockBuildPdfCrashBreadcrumbsText.mockReset();
     mockBuildOtaDiagnosticsText.mockReturnValue("diagnostics");
+    mockGetPdfCrashBreadcrumbs.mockResolvedValue([]);
+    mockBuildPdfCrashBreadcrumbsText.mockReturnValue("breadcrumb-line");
     mockUseUpdates.mockReturnValue({});
 
     alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
@@ -160,5 +171,38 @@ describe("ProfileOtaDiagnosticsCard", () => {
 
     expect(mockCheckAndFetchOtaNow).toHaveBeenCalledTimes(1);
     expect(alertSpy).toHaveBeenCalledWith("OTA diagnostics", "Новых OTA-обновлений нет.");
+  });
+
+  it("copies diagnostics together with persisted pdf crash breadcrumbs", async () => {
+    mockGetOtaDiagnostics.mockReturnValue(createDiagnostics());
+    mockGetPdfCrashBreadcrumbs.mockResolvedValue([
+      {
+        at: "2026-04-03T10:00:00.000Z",
+        screen: "foreman",
+        marker: "viewer_validation_start",
+      },
+    ]);
+    mockBuildPdfCrashBreadcrumbsText.mockReturnValue(
+      "2026-04-03T10:00:00.000Z | foreman | viewer_validation_start",
+    );
+
+    const renderer = renderCard();
+
+    await act(async () => {
+      await renderer.root.findByProps({ testID: "ota-copy-action" }).props.onPress();
+    });
+
+    expect(mockGetPdfCrashBreadcrumbs).toHaveBeenCalledTimes(1);
+    expect(mockBuildPdfCrashBreadcrumbsText).toHaveBeenCalledWith([
+      {
+        at: "2026-04-03T10:00:00.000Z",
+        screen: "foreman",
+        marker: "viewer_validation_start",
+      },
+    ]);
+    expect(mockClipboardSetStringAsync).toHaveBeenCalledWith(
+      "diagnostics\n\npdf_crash_breadcrumbs:\n2026-04-03T10:00:00.000Z | foreman | viewer_validation_start",
+    );
+    expect(alertSpy).toHaveBeenCalledWith("OTA diagnostics", expect.any(String));
   });
 });

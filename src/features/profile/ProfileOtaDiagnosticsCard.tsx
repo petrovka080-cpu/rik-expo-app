@@ -6,6 +6,7 @@ import { useUpdates } from "expo-updates";
 
 import { checkAndFetchOtaNow } from "@/src/lib/otaHardening";
 import { buildOtaDiagnosticsText, getOtaDiagnostics, type OtaDiagnostics } from "@/src/lib/otaDiagnostics";
+import { buildPdfCrashBreadcrumbsText, getPdfCrashBreadcrumbs } from "@/src/lib/pdf/pdfCrashBreadcrumbs";
 
 const UI = {
   card: "#0F172A",
@@ -115,7 +116,12 @@ export function ProfileOtaDiagnosticsCard() {
 
   const handleCopy = async () => {
     try {
-      await Clipboard.setStringAsync(buildOtaDiagnosticsText(diagnostics));
+      const breadcrumbs = await getPdfCrashBreadcrumbs();
+      const payload = buildOtaDiagnosticsText(diagnostics)
+        + (breadcrumbs.length
+          ? `\n\npdf_crash_breadcrumbs:\n${buildPdfCrashBreadcrumbsText(breadcrumbs)}`
+          : "\n\npdf_crash_breadcrumbs:\n- none");
+      await Clipboard.setStringAsync(payload);
       setLastActionMessage("Диагностика скопирована.");
       Alert.alert("OTA diagnostics", "Диагностика скопирована.");
     } catch (error) {
