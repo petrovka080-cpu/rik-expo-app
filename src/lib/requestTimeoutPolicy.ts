@@ -343,6 +343,27 @@ const getAbortReasonText = (reason: unknown) => {
   return trimText(reason) || null;
 };
 
+function isSafeTimeoutReturnEndpoint(
+  resolved: ResolvedRequestTimeoutContext,
+): boolean {
+  return resolved.endpointKind === "supabase_auth";
+}
+
+function createTimeoutResponse(): Response {
+  return new Response(
+    JSON.stringify({
+      error: "network_timeout",
+      message: "Network timeout",
+    }),
+    {
+      status: 599,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+}
+
 export function resolveRequestTimeoutContext(
   input: Parameters<typeof fetch>[0],
   init?: Parameters<typeof fetch>[1],
@@ -511,6 +532,11 @@ export async function fetchWithRequestTimeout(
           elapsedMs,
         },
       });
+
+      if (isSafeTimeoutReturnEndpoint(resolved)) {
+        return createTimeoutResponse();
+      }
+
       throw timeoutError;
     }
 
