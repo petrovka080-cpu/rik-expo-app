@@ -4,7 +4,7 @@ import { router } from "expo-router";
 
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
 import { RequestTimeoutError } from "../src/lib/requestTimeoutPolicy";
-import { supabase } from "../src/lib/supabaseClient";
+import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
 
 export default function Index() {
   const [checking, setChecking] = useState(true);
@@ -19,10 +19,16 @@ export default function Index() {
       }
 
       try {
-        const { data } = await supabase.auth.getSession();
-        const session = data?.session;
+        const { session, degraded } = await getSessionSafe({ caller: "index_bootstrap" });
 
-        router.replace(session ? POST_AUTH_ENTRY_ROUTE : "/auth/login");
+        if (degraded) {
+          // If network is failing, we assume the user might have a cached session we can't verify 
+          // right now. We route to the main app, where _layout.tsx will keep hasSession=null
+          // and prevent an erroneous logout redirect.
+          router.replace(POST_AUTH_ENTRY_ROUTE);
+        } else {
+          router.replace(session ? POST_AUTH_ENTRY_ROUTE : "/auth/login");
+        }
       } catch (error) {
         if (__DEV__) {
           console.warn(
@@ -30,11 +36,8 @@ export default function Index() {
             error instanceof Error ? error.message : error,
           );
         }
-        router.replace(
-          error instanceof RequestTimeoutError
-            ? POST_AUTH_ENTRY_ROUTE
-            : "/auth/login",
-        );
+        // Fallback safely to entry route to avoid unintended logout
+        router.replace(POST_AUTH_ENTRY_ROUTE);
       } finally {
         if (active) setChecking(false);
       }

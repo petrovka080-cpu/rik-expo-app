@@ -131,7 +131,7 @@ const isSupabaseAuthTokenPath = (input: FetchInput, init?: FetchInit) => {
   if (getFetchMethod(input, init) !== "POST") return false;
   try {
     const url = new URL(getFetchUrl(input));
-    return url.pathname === "/auth/v1/token";
+    return url.pathname.includes("/auth/v1/token");
   } catch {
     return false;
   }
