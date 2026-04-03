@@ -12,7 +12,7 @@ import {
   isClientSupabaseEnvValid,
 } from "./env/clientSupabaseEnv";
 import { recordPlatformObservability } from "./observability/platformObservability";
-import { fetchWithRequestTimeout, REQUEST_TIMEOUT_POLICY_MS } from "./requestTimeoutPolicy";
+import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
 
 type RuntimeProcessLike = {
   env?: Record<string, string | undefined>;
@@ -39,7 +39,6 @@ const isNodeRuntime =
   typeof window === "undefined";
 
 const DEBUG_SUPABASE_REST = false;
-const SUPABASE_AUTH_TOKEN_TIMEOUT_MS = REQUEST_TIMEOUT_POLICY_MS.heavy_report_or_pdf_or_storage;
 
 export { SUPABASE_ANON_KEY, SUPABASE_HOST, SUPABASE_PROJECT_REF, SUPABASE_URL };
 export const SUPABASE_KEY_KIND = "anon";
@@ -121,20 +120,114 @@ const getFetchMethod = (input: FetchInput, init?: FetchInit) =>
     .trim()
     .toUpperCase() || "GET";
 
-const resolveSupabaseTimeoutOverride = (input: FetchInput, init?: FetchInit) => {
-  const method = getFetchMethod(input, init);
-  if (method !== "POST") return undefined;
+const nowMs = () => {
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+    return performance.now();
+  }
+  return Date.now();
+};
 
+const isSupabaseAuthTokenRequest = (input: FetchInput, init?: FetchInit) => {
+  const method = getFetchMethod(input, init);
+  if (method !== "POST") return false;
   try {
     const url = new URL(getFetchUrl(input));
-    if (url.pathname === "/auth/v1/token") {
-      return SUPABASE_AUTH_TOKEN_TIMEOUT_MS;
-    }
+    return url.pathname === "/auth/v1/token";
   } catch {
-    return undefined;
+    return false;
   }
+};
 
-  return undefined;
+const buildSupabaseAuthTokenSourceKind = (tag: "web" | "native") =>
+  `supabase_auth:token:${tag}`;
+
+const recordSupabaseAuthTokenStart = (tag: "web" | "native", method: string, urlPath: string) =>
+  recordPlatformObservability({
+    screen: "request",
+    surface: "supabase_auth_token",
+    category: "fetch",
+    event: "token_request_start",
+    result: "skipped",
+    sourceKind: buildSupabaseAuthTokenSourceKind(tag),
+    extra: {
+      owner: "supabase_client",
+      method,
+      urlPath,
+    },
+  });
+
+const recordSupabaseAuthTokenEnd = (params: {
+  tag: "web" | "native";
+  method: string;
+  urlPath: string;
+  startedAt: number;
+  result: "success" | "error";
+  httpStatus?: number;
+  error?: unknown;
+}) =>
+  recordPlatformObservability({
+    screen: "request",
+    surface: "supabase_auth_token",
+    category: "fetch",
+    event: "token_request_end",
+    result: params.result,
+    durationMs: Math.max(0, Math.round(nowMs() - params.startedAt)),
+    sourceKind: buildSupabaseAuthTokenSourceKind(params.tag),
+    errorClass: params.error instanceof Error ? params.error.name : undefined,
+    errorMessage:
+      params.error instanceof Error
+        ? params.error.message
+        : params.error != null
+          ? String(params.error)
+          : undefined,
+    extra: {
+      owner: "supabase_client",
+      method: params.method,
+      urlPath: params.urlPath,
+      httpStatus: params.httpStatus,
+    },
+  });
+
+const fetchSupabaseAuthTokenWithoutTimeout = async (
+  tag: "web" | "native",
+  baseFetch: typeof fetch,
+  input: FetchInput,
+  init: FetchInit | undefined,
+) => {
+  const method = getFetchMethod(input, init);
+  const urlPath = (() => {
+    try {
+      return new URL(getFetchUrl(input)).pathname;
+    } catch {
+      return getFetchUrl(input);
+    }
+  })();
+  const startedAt = nowMs();
+
+  recordSupabaseAuthTokenStart(tag, method, urlPath);
+
+  try {
+    const response = await baseFetch(input, init);
+    recordSupabaseAuthTokenEnd({
+      tag,
+      method,
+      urlPath,
+      startedAt,
+      result: "success",
+      httpStatus: response.status,
+    });
+    return response;
+  } catch (error) {
+    recordSupabaseAuthTokenEnd({
+      tag,
+      method,
+      urlPath,
+      startedAt,
+      result: "error",
+      error,
+    });
+    throw error;
+  }
 };
 
 function assertEnv() {
@@ -159,7 +252,16 @@ function assertEnv() {
 const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typeof fetch =>
   wrapFetchWithLog(tag, (input: FetchInput, init?: FetchInit) => {
     const headers = new Headers(init?.headers || {});
-    const timeoutMsOverride = resolveSupabaseTimeoutOverride(input, init);
+    const requestInit: FetchInit = {
+      ...(init ?? {}),
+      headers,
+      ...(tag === "web"
+        ? {
+            keepalive: false,
+            cache: "no-store" as RequestCache,
+          }
+        : {}),
+    };
 
     if (SUPABASE_ANON_KEY) {
       if (!headers.has("apikey")) headers.set("apikey", SUPABASE_ANON_KEY);
@@ -168,21 +270,15 @@ const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typ
       }
     }
 
+    if (isSupabaseAuthTokenRequest(input, requestInit)) {
+      return fetchSupabaseAuthTokenWithoutTimeout(tag, baseFetch, input, requestInit);
+    }
+
     return fetchWithRequestTimeout(
       input,
-        {
-          ...(init ?? {}),
-          headers,
-        ...(tag === "web"
-          ? {
-              keepalive: false,
-              cache: "no-store" as RequestCache,
-            }
-          : {}),
-      },
+      requestInit,
       {
         fetchImpl: baseFetch,
-        timeoutMsOverride,
         screen: "request",
         surface: "supabase_transport",
         owner: "supabase_client",

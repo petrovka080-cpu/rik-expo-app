@@ -4,10 +4,12 @@ const mockCreateClient = jest.fn();
 const mockRecordPlatformObservability = jest.fn();
 const mockFetchWithRequestTimeout = jest.fn();
 const mockRouterReplace = jest.fn();
+const mockBaseFetch = jest.fn();
 
 const originalWindow = (globalThis as typeof globalThis & { window?: unknown }).window;
 const originalDocument = (globalThis as typeof globalThis & { document?: unknown }).document;
 const originalProcess = (globalThis as typeof globalThis & { process?: unknown }).process;
+const originalFetch = globalThis.fetch;
 
 type LoadedSupabaseModule = {
   ensureSignedIn: () => Promise<boolean>;
@@ -39,6 +41,12 @@ const restoreRuntimeGlobals = () => {
   } else {
     runtime.process = originalProcess;
   }
+
+  if (typeof originalFetch === "undefined") {
+    delete runtime.fetch;
+  } else {
+    runtime.fetch = originalFetch;
+  }
 };
 
 const loadSupabaseModule = (options: {
@@ -57,6 +65,13 @@ const loadSupabaseModule = (options: {
     }),
   );
   mockRouterReplace.mockReset();
+  mockBaseFetch.mockReset().mockImplementation(async (_input, init) =>
+    Promise.resolve({
+      ok: true,
+      status: 200,
+      headers: init?.headers ?? {},
+    }),
+  );
 
   const runtime = globalThis as typeof globalThis & {
     window?: any;
@@ -71,10 +86,11 @@ const loadSupabaseModule = (options: {
         setItem: jest.fn(),
         removeItem: jest.fn(),
       },
-      fetch: jest.fn(),
+      fetch: mockBaseFetch,
     } as any;
     runtime.document = {} as any;
     runtime.process = originalProcess as any;
+    runtime.fetch = mockBaseFetch as unknown as typeof fetch;
   } else {
     delete runtime.window;
     delete runtime.document;
@@ -82,6 +98,7 @@ const loadSupabaseModule = (options: {
       env: process.env,
       versions: {},
     } as any;
+    runtime.fetch = mockBaseFetch as unknown as typeof fetch;
   }
 
   const mockSupabase = {
@@ -113,12 +130,6 @@ const loadSupabaseModule = (options: {
     recordPlatformObservability: (...args: any[]) => mockRecordPlatformObservability(...args),
   }));
   jest.doMock("./requestTimeoutPolicy", () => ({
-    REQUEST_TIMEOUT_POLICY_MS: {
-      lightweight_lookup: 8000,
-      ui_scope_load: 20000,
-      heavy_report_or_pdf_or_storage: 60000,
-      mutation_request: 30000,
-    },
     fetchWithRequestTimeout: (...args: any[]) => mockFetchWithRequestTimeout(...args),
   }));
   jest.doMock("@react-native-async-storage/async-storage", () => asyncStorageMock);
@@ -163,7 +174,7 @@ describe("supabaseClient runtime contract", () => {
     expect(options.global.fetch).toEqual(expect.any(Function));
   });
 
-  it("extends the timeout discipline for auth token exchange", async () => {
+  it("bypasses timeout discipline for auth token exchange and records transport markers", async () => {
     loadSupabaseModule({ web: false });
 
     const options = mockCreateClient.mock.calls[0]?.[2];
@@ -180,15 +191,26 @@ describe("supabaseClient runtime contract", () => {
       }),
     });
 
-    expect(mockFetchWithRequestTimeout).toHaveBeenCalledWith(
+    expect(mockFetchWithRequestTimeout).not.toHaveBeenCalled();
+    expect(mockBaseFetch).toHaveBeenCalledWith(
       "https://project.supabase.co/auth/v1/token?grant_type=password",
       expect.objectContaining({
         method: "POST",
       }),
+    );
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
       expect.objectContaining({
-        owner: "supabase_client",
-        surface: "supabase_transport",
-        timeoutMsOverride: 60000,
+        surface: "supabase_auth_token",
+        event: "token_request_start",
+        result: "skipped",
+      }),
+    );
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        surface: "supabase_auth_token",
+        event: "token_request_end",
+        result: "success",
+        durationMs: expect.any(Number),
       }),
     );
   });
