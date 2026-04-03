@@ -79,4 +79,23 @@ describe("pdf.runner lifecycle", () => {
       }),
     ).rejects.toThrow("Generated PDF source.uri is empty");
   });
+
+  it("classifies generated file URIs as local-file sources", async () => {
+    await expect(
+      buildGeneratedPdfDescriptor({
+        getUri: async () => "file:///tmp/request.pdf",
+        title: "Request PDF",
+        fileName: "request.pdf",
+        documentType: "request",
+        originModule: "foreman",
+        entityId: "REQ-1",
+      }),
+    ).resolves.toMatchObject({
+      uri: "file:///tmp/request.pdf",
+      fileSource: {
+        kind: "local-file",
+        uri: "file:///tmp/request.pdf",
+      },
+    });
+  });
 });

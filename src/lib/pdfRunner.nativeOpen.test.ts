@@ -185,7 +185,7 @@ describe("pdfRunner native open", () => {
     expect(mockStartActivityAsync).not.toHaveBeenCalled();
   });
 
-  it("shares an iOS PDF only after the handoff file validates as a real PDF", async () => {
+  it("shares an iOS PDF after safe size/existence validation without header probing", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       value: "ios",
@@ -193,26 +193,22 @@ describe("pdfRunner native open", () => {
 
     await openPdfShare("file:///cache/document.pdf", "document.pdf");
 
-    expect(mockReadAsStringAsync).toHaveBeenCalledWith("file:///cache/document.pdf", {
-      encoding: "base64",
-      position: 0,
-      length: 24,
-    });
+    expect(mockReadAsStringAsync).not.toHaveBeenCalled();
     expect(mockSharingShareAsync).toHaveBeenCalledWith("file:///cache/document.pdf", expect.objectContaining({
       mimeType: "application/pdf",
       UTI: "com.adobe.pdf",
     }));
   });
 
-  it("rejects explicit iOS share when the downloaded file is HTML instead of PDF", async () => {
+  it("rejects explicit iOS share when the handoff file is empty", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       value: "ios",
     });
-    mockReadAsStringAsync.mockResolvedValueOnce("PCFET0NUWVBFIEhUTUw+");
+    mockGetInfoAsync.mockResolvedValue({ exists: true, size: 0 });
 
     await expect(openPdfShare("file:///cache/document.pdf", "document.pdf")).rejects.toThrow(
-      "Native handoff PDF contains HTML instead of PDF.",
+      "Native handoff PDF is empty.",
     );
 
     expect(mockSharingShareAsync).not.toHaveBeenCalled();

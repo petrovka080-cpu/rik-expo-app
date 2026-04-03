@@ -183,6 +183,7 @@ async function ensureNativePdfHandoffUri(uri: string, fileName?: string): Promis
     fileSystem: FileSystemCompat,
     uri: normalizedLocalUri,
     failureLabel: "Native handoff PDF",
+    mode: Platform.OS === "ios" ? "size-only" : "content-probe",
   });
 
   return normalizedLocalUri;

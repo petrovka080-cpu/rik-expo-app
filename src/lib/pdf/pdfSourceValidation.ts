@@ -13,6 +13,8 @@ export type PdfValidationFileSystemLike = {
   ) => Promise<string>;
 };
 
+export type LocalPdfValidationMode = "size-only" | "content-probe";
+
 type FetchLike = (
   input: string,
   init?: {
@@ -70,8 +72,10 @@ export async function assertValidLocalPdfFile(args: {
   fileSystem: PdfValidationFileSystemLike;
   uri: string;
   failureLabel?: string;
+  mode?: LocalPdfValidationMode;
 }) {
   const failureLabel = args.failureLabel || "PDF file";
+  const mode = args.mode ?? "content-probe";
   if (!args.fileSystem.getInfoAsync) {
     throw new Error(`${failureLabel} storage is unavailable.`);
   }
@@ -86,7 +90,7 @@ export async function assertValidLocalPdfFile(args: {
     throw new Error(`${failureLabel} is empty.`);
   }
 
-  if (!args.fileSystem.readAsStringAsync) {
+  if (mode === "size-only" || !args.fileSystem.readAsStringAsync) {
     return {
       sizeBytes,
       headerAscii: "",

@@ -108,6 +108,7 @@ async function validateEmbeddedPreviewResolution(
       fileSystem: FileSystemCompat,
       uri: resolution.asset.uri,
       failureLabel: "PDF preview file",
+      mode: Platform.OS === "ios" ? "size-only" : "content-probe",
     });
     return;
   }

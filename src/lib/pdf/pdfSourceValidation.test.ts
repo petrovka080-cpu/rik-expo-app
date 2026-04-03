@@ -47,6 +47,25 @@ describe("pdfSourceValidation", () => {
     ).rejects.toThrow("Native handoff PDF contains HTML instead of PDF.");
   });
 
+  it("supports size-only local validation without reading file headers", async () => {
+    mockGetInfoAsync.mockResolvedValue({ exists: true, size: 128 });
+
+    await expect(
+      assertValidLocalPdfFile({
+        fileSystem: {
+          getInfoAsync: mockGetInfoAsync,
+          readAsStringAsync: mockReadAsStringAsync,
+        },
+        uri: "file:///cache/document.pdf",
+        mode: "size-only",
+      }),
+    ).resolves.toMatchObject({
+      sizeBytes: 128,
+      headerAscii: "",
+    });
+    expect(mockReadAsStringAsync).not.toHaveBeenCalled();
+  });
+
   it("accepts a remote response with PDF content-type from HEAD", async () => {
     mockFetch.mockResolvedValue({
       ok: true,
