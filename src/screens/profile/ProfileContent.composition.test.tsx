@@ -58,6 +58,18 @@ jest.mock("./components/EditProfileModal", () => ({
   },
 }));
 
+jest.mock("@/src/features/profile/ProfileOtaDiagnosticsCard", () => ({
+  ProfileOtaDiagnosticsCard: () => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(
+      Text,
+      { testID: "profile-ota-diagnostics-card" },
+      "ota-diagnostics",
+    );
+  },
+}));
+
 jest.mock("./profile.services", () => ({
   loadProfileScreenData: (...args: unknown[]) =>
     mockLoadProfileScreenData(...args),
@@ -222,5 +234,70 @@ describe("ProfileContent composition shell", () => {
         }
       ).activeContext,
     ).toBe("market");
+  });
+
+  it("shows retry shell with diagnostics when profile load fails", async () => {
+    mockLoadProfileScreenData.mockRejectedValueOnce(
+      new Error("supabase_client.user request timed out after 8000ms"),
+    );
+
+    let renderer: ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<ProfileContent />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(
+      renderer!.root.findByProps({ testID: "profile-load-error-shell" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "profile-ota-diagnostics-fallback" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "profile-ota-diagnostics-card" }),
+    ).toBeTruthy();
+
+    mockLoadProfileScreenData.mockResolvedValueOnce({
+      profile: {
+        id: "profile-1",
+        user_id: "user-1",
+        full_name: "РђР№Р±РµРє",
+        phone: "+996700000000",
+        city: "Р‘РёС€РєРµРє",
+        usage_market: true,
+        usage_build: true,
+      },
+      company: null,
+      profileRole: "director",
+      profileEmail: "aybek@example.com",
+      profileAvatarUrl: null,
+      accessSourceSnapshot: {
+        userId: "user-1",
+        authRole: "director",
+        resolvedRole: "director",
+        usageMarket: true,
+        usageBuild: true,
+        ownedCompanyId: null,
+        companyMemberships: [],
+        listingsCount: 0,
+      },
+    });
+
+    await act(async () => {
+      renderer!.root.findByProps({ testID: "profile-load-retry" }).props.onPress();
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockLoadProfileScreenData).toHaveBeenCalledTimes(2);
+    expect(
+      renderer!.root.findByProps({ testID: "profile-main-sections" }),
+    ).toBeTruthy();
   });
 });

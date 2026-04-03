@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
 import { getMyRole } from "../../lib/api/profile";
+import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
 import { supabase } from "../../lib/supabaseClient";
 import type {
   AddListingOwnerLoadResult,
@@ -77,11 +78,24 @@ const getMetadataRole = (user: User): string | null => {
 };
 
 export const loadCurrentAuthUser = async (): Promise<User> => {
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data?.user) {
-    throw error || new Error("Не найден текущий пользователь");
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) {
+      throw error || new Error("Не найден текущий пользователь");
+    }
+    return data.user;
+  } catch (error) {
+    if (!(error instanceof RequestTimeoutError)) {
+      throw error;
+    }
+
+    const { data, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !data.session?.user) {
+      throw error;
+    }
+
+    return data.session.user;
   }
-  return data.user;
 };
 
 export const loadProfileScreenData =
