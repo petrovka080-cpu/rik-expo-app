@@ -9,7 +9,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
 import { clearAppCache } from "../src/lib/cache/clearAppCache";
-import { supabase } from "../src/lib/supabaseClient";
+import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
 import { clearCurrentSessionRoleCache, warmCurrentSessionProfile } from "../src/lib/sessionRole";
 import { ensureQueueWorker, stopQueueWorker } from "../src/workers/queueBootstrap";
@@ -88,27 +88,40 @@ export default function RootLayout() {
 
     (async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        if (!active) return;
+        const { session, degraded } = await getSessionSafe({
+  caller: "root_layout",
+});
+if (!active) return;
 
-        const has = Boolean(data?.session);
-        setHasSession(has);
-        setSessionLoaded(true);
+if (degraded) {
+  setHasSession(null);
+  setSessionLoaded(true);
+  return;
+}
 
-        if (has) loadRoleForCurrentSession();
-        else {
-          clearDocumentSessions();
-          clearCurrentSessionRoleCache();
-        }
+const has = Boolean(session);
+setHasSession(has);
+setSessionLoaded(true);
+
+if (has) loadRoleForCurrentSession();
+else {
+  clearDocumentSessions();
+  clearCurrentSessionRoleCache();
+}
       } catch (e: unknown) {
         if (__DEV__) {
           console.warn("[RootLayout] session load failed:", e instanceof Error ? e.message : e);
         }
         if (!active) return;
-        setHasSession(false);
-        clearDocumentSessions();
-        clearCurrentSessionRoleCache();
-        setSessionLoaded(true);
+
+// 🔥 НЕ считаем это logout
+setHasSession(null);
+
+// ❌ НЕ ЧИСТИМ состояние при timeout
+// clearDocumentSessions();
+// clearCurrentSessionRoleCache();
+
+setSessionLoaded(true);
       }
     })();
 
@@ -135,23 +148,33 @@ export default function RootLayout() {
     };
   }, [isPdfViewerRoute, loadRoleForCurrentSession]);
 
-  // --- redirect только по sessionLoaded/hasSession ---
   useEffect(() => {
-    if (!sessionLoaded) return;
-    const inAuthStack = segments?.[0] === "auth";
+  if (!sessionLoaded) return;
 
-    if (!hasSession && !inAuthStack && !isPdfViewerRoute) router.replace("/auth/login");
-    else if (hasSession && inAuthStack) router.replace(POST_AUTH_ENTRY_ROUTE);
-  }, [hasSession, isPdfViewerRoute, sessionLoaded, segments]);
+  const inAuthStack = segments?.[0] === "auth";
+
+  if (hasSession === false && !inAuthStack && !isPdfViewerRoute) {
+    router.replace("/auth/login");
+    return;
+  }
+
+  if (hasSession === true && inAuthStack) {
+    router.replace(POST_AUTH_ENTRY_ROUTE);
+  }
+}, [hasSession, isPdfViewerRoute, sessionLoaded, segments]);
 
   useEffect(() => {
-    if (!sessionLoaded) return;
-    if (hasSession) {
-      ensureQueueWorker();
-      return;
-    }
+  if (!sessionLoaded) return;
+
+  if (hasSession === true) {
+    ensureQueueWorker();
+    return;
+  }
+
+  if (hasSession === false) {
     stopQueueWorker();
-  }, [hasSession, sessionLoaded]);
+  }
+}, [hasSession, sessionLoaded]);
 
   const APP_BG = "#0B0F14";
   const UI = {

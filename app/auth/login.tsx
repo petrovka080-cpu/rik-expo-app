@@ -12,7 +12,11 @@ import {
 import { Link, router } from "expo-router";
 
 import { POST_AUTH_ENTRY_ROUTE } from "../../src/lib/authRouting";
-import { supabase } from "../../src/lib/supabaseClient";
+import {
+  LOGIN_FALLBACK_ERROR_MESSAGE,
+  signInSafe,
+} from "../../src/lib/auth/signInSafe";
+import { isSupabaseEnvValid } from "../../src/lib/supabaseClient";
 
 const UI_COPY = {
   title: "Войти в GOX",
@@ -20,7 +24,7 @@ const UI_COPY = {
   submit: "Войти",
   noSession:
     "Нет активной сессии. Проверьте почту и пароль, затем попробуйте ещё раз.",
-  fallbackError: "Не удалось войти.",
+  fallbackError: LOGIN_FALLBACK_ERROR_MESSAGE,
   configError:
     "Supabase не настроен: проверьте EXPO_PUBLIC_SUPABASE_URL и EXPO_PUBLIC_SUPABASE_ANON_KEY.",
   register: "Зарегистрироваться",
@@ -39,25 +43,37 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-      if (!supabase) {
+      if (!isSupabaseEnvValid) {
         throw new Error(UI_COPY.configError);
       }
 
-      const { error: signError, data } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-      if (signError) throw signError;
+      const result = await signInSafe({
+        email,
+        password,
+      });
 
-      if (!data?.session) {
+      if (result.degraded) {
+        setError(result.userMessage ?? UI_COPY.fallbackError);
+        return;
+      }
+
+      if (result.error) {
+        setError(result.userMessage ?? result.error.message);
+        return;
+      }
+
+      if (!result.data?.session) {
         setError(UI_COPY.noSession);
         return;
       }
 
       router.replace(POST_AUTH_ENTRY_ROUTE);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : UI_COPY.fallbackError);
+      setError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : UI_COPY.fallbackError,
+      );
     } finally {
       setLoading(false);
     }
