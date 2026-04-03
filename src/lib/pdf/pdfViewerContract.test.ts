@@ -130,7 +130,7 @@ describe("pdfViewerContract", () => {
     });
   });
 
-  it("routes iOS local PDFs through embedded native webview preview", () => {
+  it("routes iOS local PDFs through embedded native webview preview shell", () => {
     const resolution = resolvePdfViewerResolution({
       session,
       asset: localAsset,
@@ -143,6 +143,13 @@ describe("pdfViewerContract", () => {
       renderer: "native-webview",
       canonicalUri: localAsset.uri,
     });
+    if (resolution.kind !== "resolved-embedded" || !("html" in resolution.source)) {
+      throw new Error("Expected iOS local PDF preview to use an HTML shell source");
+    }
+    expect(resolution.source.html).toContain(localAsset.uri);
+    expect(resolution.source.baseUrl).toBe(
+      "file:///data/user/0/com.azisbek_dzhantaev.rikexpoapp/cache",
+    );
   });
 
   it("treats remote signed PDF URLs with query params as native handoff PDFs on mobile", () => {

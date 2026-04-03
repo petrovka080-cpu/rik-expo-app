@@ -166,7 +166,7 @@ function escapeHtmlAttr(value: string) {
     .replaceAll(">", "&gt;");
 }
 
-export function buildAndroidLocalPdfShell(uri: string) {
+export function buildEmbeddedLocalPdfShell(uri: string) {
   const viewerUri = escapeHtmlAttr(appendPdfViewerHash(uri));
   return `<!doctype html>
 <html lang="en">
@@ -215,6 +215,10 @@ export function buildAndroidLocalPdfShell(uri: string) {
   </div>
 </body>
 </html>`;
+}
+
+export function buildAndroidLocalPdfShell(uri: string) {
+  return buildEmbeddedLocalPdfShell(uri);
 }
 
 export function getReadAccessParentUri(uri?: string | null) {
@@ -279,8 +283,26 @@ export function resolvePdfViewerResolution(args: {
 
   if (
     platform === "ios"
-    && ((assetSourceKind === "local-file" || scheme === "file")
-      || (assetSourceKind === "remote-url" || scheme === "http" || scheme === "https"))
+    && (assetSourceKind === "local-file" || scheme === "file")
+    && isPdf
+  ) {
+    return {
+      kind: "resolved-embedded",
+      asset,
+      source: {
+        html: buildEmbeddedLocalPdfShell(assetUri),
+        baseUrl: getReadAccessParentUri(assetUri),
+      },
+      scheme,
+      sourceKind: "local-file",
+      renderer: "native-webview",
+      canonicalUri: assetUri,
+    };
+  }
+
+  if (
+    platform === "ios"
+    && (assetSourceKind === "remote-url" || scheme === "http" || scheme === "https")
     && isPdf
   ) {
     return {
@@ -288,10 +310,7 @@ export function resolvePdfViewerResolution(args: {
       asset,
       source: { uri: assetUri },
       scheme,
-      sourceKind:
-        assetSourceKind === "remote-url" || scheme === "http" || scheme === "https"
-          ? "remote-url"
-          : "local-file",
+      sourceKind: "remote-url",
       renderer: "native-webview",
       canonicalUri: assetUri,
     };

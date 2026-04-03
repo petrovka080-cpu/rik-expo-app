@@ -664,6 +664,10 @@ export default function PdfViewerScreen() {
   }, [resolvedSource, webRenderUri]);
   const nativeWebViewReadAccessUri = React.useMemo(() => {
     if (Platform.OS === "web" || resolvedSource.kind !== "resolved-embedded") return undefined;
+    if ("html" in resolvedSource.source && typeof resolvedSource.source.baseUrl === "string") {
+      const baseUrl = resolvedSource.source.baseUrl.trim();
+      if (baseUrl) return baseUrl;
+    }
     return getReadAccessParentUri(resolvedSource.asset.uri);
   }, [resolvedSource]);
 
