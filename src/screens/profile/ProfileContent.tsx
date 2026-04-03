@@ -120,7 +120,6 @@ export function ProfileContent() {
       } catch (error: unknown) {
         if (!alive) return;
         setProfileLoadError(getErrorMessage(error));
-        Alert.alert("Профиль", getErrorMessage(error));
       } finally {
         if (alive) setLoading(false);
       }

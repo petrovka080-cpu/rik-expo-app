@@ -9,6 +9,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
 import { clearAppCache } from "../src/lib/cache/clearAppCache";
+import { RequestTimeoutError } from "../src/lib/requestTimeoutPolicy";
 import { supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
 import { clearCurrentSessionRoleCache, warmCurrentSessionProfile } from "../src/lib/sessionRole";
@@ -105,6 +106,11 @@ export default function RootLayout() {
           console.warn("[RootLayout] session load failed:", e instanceof Error ? e.message : e);
         }
         if (!active) return;
+        if (e instanceof RequestTimeoutError) {
+          setHasSession(null);
+          setSessionLoaded(true);
+          return;
+        }
         setHasSession(false);
         clearDocumentSessions();
         clearCurrentSessionRoleCache();
@@ -140,17 +146,19 @@ export default function RootLayout() {
     if (!sessionLoaded) return;
     const inAuthStack = segments?.[0] === "auth";
 
-    if (!hasSession && !inAuthStack && !isPdfViewerRoute) router.replace("/auth/login");
-    else if (hasSession && inAuthStack) router.replace(POST_AUTH_ENTRY_ROUTE);
+    if (hasSession === false && !inAuthStack && !isPdfViewerRoute) router.replace("/auth/login");
+    else if (hasSession === true && inAuthStack) router.replace(POST_AUTH_ENTRY_ROUTE);
   }, [hasSession, isPdfViewerRoute, sessionLoaded, segments]);
 
   useEffect(() => {
     if (!sessionLoaded) return;
-    if (hasSession) {
+    if (hasSession === true) {
       ensureQueueWorker();
       return;
     }
-    stopQueueWorker();
+    if (hasSession === false) {
+      stopQueueWorker();
+    }
   }, [hasSession, sessionLoaded]);
 
   const APP_BG = "#0B0F14";

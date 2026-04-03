@@ -1,5 +1,6 @@
 import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
+import { Alert } from "react-native";
 
 import { ProfileContent } from "./ProfileContent";
 
@@ -78,6 +79,8 @@ jest.mock("./profile.services", () => ({
 }));
 
 describe("ProfileContent composition shell", () => {
+  let alertSpy: jest.SpyInstance;
+
   beforeEach(() => {
     capturedMainProps = null;
     capturedEditModalProps = null;
@@ -117,6 +120,12 @@ describe("ProfileContent composition shell", () => {
         listingsCount: 2,
       },
     });
+
+    alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    alertSpy.mockRestore();
   });
 
   it("loads screen data and exposes unified entry callbacks", async () => {
@@ -260,6 +269,7 @@ describe("ProfileContent composition shell", () => {
     expect(
       renderer!.root.findByProps({ testID: "profile-ota-diagnostics-card" }),
     ).toBeTruthy();
+    expect(alertSpy).not.toHaveBeenCalled();
 
     mockLoadProfileScreenData.mockResolvedValueOnce({
       profile: {

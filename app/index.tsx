@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
+import { RequestTimeoutError } from "../src/lib/requestTimeoutPolicy";
 import { supabase } from "../src/lib/supabaseClient";
 
 export default function Index() {
@@ -29,7 +30,11 @@ export default function Index() {
             error instanceof Error ? error.message : error,
           );
         }
-        router.replace("/auth/login");
+        router.replace(
+          error instanceof RequestTimeoutError
+            ? POST_AUTH_ENTRY_ROUTE
+            : "/auth/login",
+        );
       } finally {
         if (active) setChecking(false);
       }
