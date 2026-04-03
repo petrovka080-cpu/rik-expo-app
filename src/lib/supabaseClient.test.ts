@@ -113,6 +113,12 @@ const loadSupabaseModule = (options: {
     recordPlatformObservability: (...args: any[]) => mockRecordPlatformObservability(...args),
   }));
   jest.doMock("./requestTimeoutPolicy", () => ({
+    REQUEST_TIMEOUT_POLICY_MS: {
+      lightweight_lookup: 8000,
+      ui_scope_load: 20000,
+      heavy_report_or_pdf_or_storage: 60000,
+      mutation_request: 30000,
+    },
     fetchWithRequestTimeout: (...args: any[]) => mockFetchWithRequestTimeout(...args),
   }));
   jest.doMock("@react-native-async-storage/async-storage", () => asyncStorageMock);
@@ -155,6 +161,36 @@ describe("supabaseClient runtime contract", () => {
     expect(options.auth.storage).toBe(asyncStorageMock);
     expect(options.auth.detectSessionInUrl).toBe(false);
     expect(options.global.fetch).toEqual(expect.any(Function));
+  });
+
+  it("extends the timeout discipline for auth token exchange", async () => {
+    loadSupabaseModule({ web: false });
+
+    const options = mockCreateClient.mock.calls[0]?.[2];
+    const clientFetch = options.global.fetch as typeof fetch;
+
+    await clientFetch("https://project.supabase.co/auth/v1/token?grant_type=password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: "user@example.com",
+        password: "secret",
+      }),
+    });
+
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledWith(
+      "https://project.supabase.co/auth/v1/token?grant_type=password",
+      expect.objectContaining({
+        method: "POST",
+      }),
+      expect.objectContaining({
+        owner: "supabase_client",
+        surface: "supabase_transport",
+        timeoutMsOverride: 60000,
+      }),
+    );
   });
 
   it("returns true from ensureSignedIn when a session user exists", async () => {

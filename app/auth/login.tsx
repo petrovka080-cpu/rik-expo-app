@@ -12,6 +12,7 @@ import {
 import { Link, router } from "expo-router";
 
 import { POST_AUTH_ENTRY_ROUTE } from "../../src/lib/authRouting";
+import { RequestTimeoutError } from "../../src/lib/requestTimeoutPolicy";
 import { supabase } from "../../src/lib/supabaseClient";
 
 const UI_COPY = {
@@ -21,6 +22,8 @@ const UI_COPY = {
   noSession:
     "Нет активной сессии. Проверьте почту и пароль, затем попробуйте ещё раз.",
   fallbackError: "Не удалось войти.",
+  timeoutError:
+    "Вход отвечает слишком долго. Проверьте интернет и попробуйте ещё раз.",
   configError:
     "Supabase не настроен: проверьте EXPO_PUBLIC_SUPABASE_URL и EXPO_PUBLIC_SUPABASE_ANON_KEY.",
   register: "Зарегистрироваться",
@@ -43,11 +46,10 @@ export default function LoginScreen() {
         throw new Error(UI_COPY.configError);
       }
 
-      const { error: signError, data } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      const { error: signError, data } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       if (signError) throw signError;
 
       if (!data?.session) {
@@ -57,7 +59,13 @@ export default function LoginScreen() {
 
       router.replace(POST_AUTH_ENTRY_ROUTE);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : UI_COPY.fallbackError);
+      setError(
+        error instanceof RequestTimeoutError
+          ? UI_COPY.timeoutError
+          : error instanceof Error
+            ? error.message
+            : UI_COPY.fallbackError,
+      );
     } finally {
       setLoading(false);
     }

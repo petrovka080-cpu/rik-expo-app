@@ -12,7 +12,7 @@ import {
   isClientSupabaseEnvValid,
 } from "./env/clientSupabaseEnv";
 import { recordPlatformObservability } from "./observability/platformObservability";
-import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
+import { fetchWithRequestTimeout, REQUEST_TIMEOUT_POLICY_MS } from "./requestTimeoutPolicy";
 
 type RuntimeProcessLike = {
   env?: Record<string, string | undefined>;
@@ -39,6 +39,7 @@ const isNodeRuntime =
   typeof window === "undefined";
 
 const DEBUG_SUPABASE_REST = false;
+const SUPABASE_AUTH_TOKEN_TIMEOUT_MS = REQUEST_TIMEOUT_POLICY_MS.heavy_report_or_pdf_or_storage;
 
 export { SUPABASE_ANON_KEY, SUPABASE_HOST, SUPABASE_PROJECT_REF, SUPABASE_URL };
 export const SUPABASE_KEY_KIND = "anon";
@@ -108,6 +109,34 @@ const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch =>
   };
 };
 
+const getFetchUrl = (input: FetchInput) => {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.toString();
+  if (input instanceof Request) return input.url;
+  return String(input ?? "");
+};
+
+const getFetchMethod = (input: FetchInput, init?: FetchInit) =>
+  String(init?.method ?? (input instanceof Request ? input.method : "GET"))
+    .trim()
+    .toUpperCase() || "GET";
+
+const resolveSupabaseTimeoutOverride = (input: FetchInput, init?: FetchInit) => {
+  const method = getFetchMethod(input, init);
+  if (method !== "POST") return undefined;
+
+  try {
+    const url = new URL(getFetchUrl(input));
+    if (url.pathname === "/auth/v1/token") {
+      return SUPABASE_AUTH_TOKEN_TIMEOUT_MS;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+};
+
 function assertEnv() {
   const ok = isClientSupabaseEnvValid();
   const looksLikeTargetProject = SUPABASE_HOST?.startsWith(`${SUPABASE_PROJECT_REF}.`);
@@ -130,6 +159,7 @@ function assertEnv() {
 const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typeof fetch =>
   wrapFetchWithLog(tag, (input: FetchInput, init?: FetchInit) => {
     const headers = new Headers(init?.headers || {});
+    const timeoutMsOverride = resolveSupabaseTimeoutOverride(input, init);
 
     if (SUPABASE_ANON_KEY) {
       if (!headers.has("apikey")) headers.set("apikey", SUPABASE_ANON_KEY);
@@ -140,9 +170,9 @@ const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typ
 
     return fetchWithRequestTimeout(
       input,
-      {
-        ...(init ?? {}),
-        headers,
+        {
+          ...(init ?? {}),
+          headers,
         ...(tag === "web"
           ? {
               keepalive: false,
@@ -152,6 +182,7 @@ const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typ
       },
       {
         fetchImpl: baseFetch,
+        timeoutMsOverride,
         screen: "request",
         surface: "supabase_transport",
         owner: "supabase_client",
