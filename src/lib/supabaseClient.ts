@@ -127,9 +127,8 @@ const nowMs = () => {
   return Date.now();
 };
 
-const isSupabaseAuthTokenRequest = (input: FetchInput, init?: FetchInit) => {
-  const method = getFetchMethod(input, init);
-  if (method !== "POST") return false;
+const isSupabaseAuthTokenPath = (input: FetchInput, init?: FetchInit) => {
+  if (getFetchMethod(input, init) !== "POST") return false;
   try {
     const url = new URL(getFetchUrl(input));
     return url.pathname === "/auth/v1/token";
@@ -137,7 +136,6 @@ const isSupabaseAuthTokenRequest = (input: FetchInput, init?: FetchInit) => {
     return false;
   }
 };
-
 const buildSupabaseAuthTokenSourceKind = (tag: "web" | "native") =>
   `supabase_auth:token:${tag}`;
 
@@ -270,7 +268,7 @@ const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typ
       }
     }
 
-    if (isSupabaseAuthTokenRequest(input, requestInit)) {
+    if (isSupabaseAuthTokenPath(input, requestInit)) {
       return fetchSupabaseAuthTokenWithoutTimeout(tag, baseFetch, input, requestInit);
     }
 

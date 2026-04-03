@@ -130,7 +130,7 @@ describe("pdfViewerContract", () => {
     });
   });
 
-  it("routes iOS local PDFs through embedded native webview preview shell", () => {
+  it("routes iOS local PDFs through embedded native webview preview using the direct file URI", () => {
     const resolution = resolvePdfViewerResolution({
       session,
       asset: localAsset,
@@ -143,13 +143,10 @@ describe("pdfViewerContract", () => {
       renderer: "native-webview",
       canonicalUri: localAsset.uri,
     });
-    if (resolution.kind !== "resolved-embedded" || !("html" in resolution.source)) {
-      throw new Error("Expected iOS local PDF preview to use an HTML shell source");
+    if (resolution.kind !== "resolved-embedded" || !("uri" in resolution.source)) {
+      throw new Error("Expected iOS local PDF preview to use a direct file URI source");
     }
-    expect(resolution.source.html).toContain(localAsset.uri);
-    expect(resolution.source.baseUrl).toBe(
-      "file:///data/user/0/com.azisbek_dzhantaev.rikexpoapp/cache",
-    );
+    expect(resolution.source.uri).toBe(localAsset.uri);
   });
 
   it("treats remote signed PDF URLs with query params as native handoff PDFs on mobile", () => {
