@@ -1,6 +1,7 @@
 import { resolvePdfRenderRolloutMode, type PdfRenderRolloutMode } from "../documents/pdfRenderRollout";
 import type { PdfSource } from "../pdfFileContract";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../supabaseClient";
+import { beginCanonicalPdfBoundary } from "../pdf/canonicalPdfObservability";
 import {
   normalizeDirectorFinanceSupplierSummaryPdfRequest,
   type DirectorFinanceSupplierSummaryPdfRequest,
@@ -68,18 +69,62 @@ export function setDirectorFinanceSupplierPdfFunctionUrlOverrideForDev(_function
 export async function generateDirectorFinanceSupplierSummaryPdfViaBackend(
   input: DirectorFinanceSupplierSummaryPdfRequest,
 ): Promise<DirectorFinanceSupplierPdfBackendResult> {
+  const boundary = beginCanonicalPdfBoundary({
+    screen: "director",
+    surface: "director_pdf_backend",
+    role: "director",
+    documentType: "supplier_summary",
+    sourceKind: "backend_payload",
+    fallbackUsed: false,
+  });
+
   if (!shouldUseBackendPilot()) {
-    throw new DirectorFinanceSupplierPdfBackendError(
+    const error = new DirectorFinanceSupplierPdfBackendError(
       "director finance supplier pdf backend pilot is disabled",
     );
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: FUNCTION_NAME,
+        documentKind: "supplier_summary",
+      },
+    });
+    throw error;
   }
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    throw new DirectorFinanceSupplierPdfBackendError(
+    const error = new DirectorFinanceSupplierPdfBackendError(
       "director finance supplier pdf backend missing Supabase env",
     );
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: FUNCTION_NAME,
+        documentKind: "supplier_summary",
+      },
+    });
+    throw error;
   }
 
   const payload = normalizeDirectorFinanceSupplierSummaryPdfRequest(input);
+  boundary.success("payload_ready", {
+    sourceKind: "backend_payload",
+    extra: {
+      documentKind: "supplier_summary",
+      supplier: payload.supplier,
+      kindName: payload.kindName ?? null,
+      periodFrom: payload.periodFrom ?? null,
+      periodTo: payload.periodTo ?? null,
+    },
+  });
+  boundary.success("backend_invoke_start", {
+    sourceKind: "backend_invoke",
+    extra: {
+      functionName: FUNCTION_NAME,
+      documentKind: "supplier_summary",
+    },
+  });
   let result;
   try {
     result = await invokeDirectorPdfBackend({
@@ -91,10 +136,41 @@ export async function generateDirectorFinanceSupplierSummaryPdfViaBackend(
       errorPrefix: "director finance supplier pdf backend failed",
     });
   } catch (error) {
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: FUNCTION_NAME,
+        documentKind: "supplier_summary",
+      },
+    });
     throw new DirectorFinanceSupplierPdfBackendError(
       error instanceof Error ? error.message : "director finance supplier pdf backend failed",
     );
   }
+
+  boundary.success("backend_invoke_success", {
+    sourceKind: result.sourceKind,
+    extra: {
+      functionName: FUNCTION_NAME,
+      documentKind: "supplier_summary",
+      renderBranch: result.renderBranch,
+      renderer: result.renderer,
+    },
+  });
+  boundary.success("pdf_storage_uploaded", {
+    sourceKind: result.sourceKind,
+    extra: {
+      bucketId: result.bucketId,
+      storagePath: result.storagePath,
+    },
+  });
+  boundary.success("signed_url_received", {
+    sourceKind: result.sourceKind,
+    extra: {
+      fileName: result.fileName,
+    },
+  });
 
   if (__DEV__) {
     console.info(

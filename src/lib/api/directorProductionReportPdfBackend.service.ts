@@ -1,6 +1,7 @@
 import { resolvePdfRenderRolloutMode, type PdfRenderRolloutMode } from "../documents/pdfRenderRollout";
 import type { PdfSource } from "../pdfFileContract";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../supabaseClient";
+import { beginCanonicalPdfBoundary } from "../pdf/canonicalPdfObservability";
 import {
   normalizeDirectorProductionReportPdfRequest,
   type DirectorProductionReportPdfRequest,
@@ -49,18 +50,64 @@ export function setDirectorProductionReportPdfFunctionUrlOverrideForDev(_functio
 export async function generateDirectorProductionReportPdfViaBackend(
   input: DirectorProductionReportPdfRequest,
 ): Promise<DirectorProductionReportPdfBackendResult> {
+  const boundary = beginCanonicalPdfBoundary({
+    screen: "director",
+    surface: "director_pdf_backend",
+    role: "director",
+    documentType: "director_report",
+    sourceKind: "backend_payload",
+    fallbackUsed: false,
+  });
+
   if (!shouldUseBackendRollout()) {
-    throw new DirectorProductionReportPdfBackendError(
+    const error = new DirectorProductionReportPdfBackendError(
       "director production report pdf backend rollout is disabled",
     );
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: FUNCTION_NAME,
+        documentKind: "production_report",
+      },
+    });
+    throw error;
   }
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    throw new DirectorProductionReportPdfBackendError(
+    const error = new DirectorProductionReportPdfBackendError(
       "director production report pdf backend missing Supabase env",
     );
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: FUNCTION_NAME,
+        documentKind: "production_report",
+      },
+    });
+    throw error;
   }
 
   const payload = normalizeDirectorProductionReportPdfRequest(input);
+  boundary.success("payload_ready", {
+    sourceKind: "backend_payload",
+    extra: {
+      documentKind: "production_report",
+      companyName: payload.companyName ?? null,
+      generatedBy: payload.generatedBy ?? null,
+      periodFrom: payload.periodFrom ?? null,
+      periodTo: payload.periodTo ?? null,
+      objectName: payload.objectName ?? null,
+      preferPriceStage: payload.preferPriceStage ?? "priced",
+    },
+  });
+  boundary.success("backend_invoke_start", {
+    sourceKind: "backend_invoke",
+    extra: {
+      functionName: FUNCTION_NAME,
+      documentKind: "production_report",
+    },
+  });
   let result;
   try {
     result = await invokeDirectorPdfBackend({
@@ -72,10 +119,41 @@ export async function generateDirectorProductionReportPdfViaBackend(
       errorPrefix: "director production report pdf backend failed",
     });
   } catch (error) {
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: FUNCTION_NAME,
+        documentKind: "production_report",
+      },
+    });
     throw new DirectorProductionReportPdfBackendError(
       error instanceof Error ? error.message : "director production report pdf backend failed",
     );
   }
+
+  boundary.success("backend_invoke_success", {
+    sourceKind: result.sourceKind,
+    extra: {
+      functionName: FUNCTION_NAME,
+      documentKind: "production_report",
+      renderBranch: result.renderBranch,
+      renderer: result.renderer,
+    },
+  });
+  boundary.success("pdf_storage_uploaded", {
+    sourceKind: result.sourceKind,
+    extra: {
+      bucketId: result.bucketId,
+      storagePath: result.storagePath,
+    },
+  });
+  boundary.success("signed_url_received", {
+    sourceKind: result.sourceKind,
+    extra: {
+      fileName: result.fileName,
+    },
+  });
 
   if (__DEV__) {
     console.info(

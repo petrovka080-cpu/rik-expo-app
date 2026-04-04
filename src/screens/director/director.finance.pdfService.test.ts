@@ -16,6 +16,7 @@ jest.mock("../../lib/api/pdf_director", () => ({
 }));
 
 const loadSubject = () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("./director.finance.pdfService") as typeof import("./director.finance.pdfService");
 
 describe("director.finance.pdfService", () => {
@@ -102,7 +103,7 @@ describe("director.finance.pdfService", () => {
     );
   });
 
-  it("builds management PDF descriptor without screen-owned fallback wiring", async () => {
+  it("builds management PDF descriptor on the canonical backend-owned contract", async () => {
     mockExportDirectorManagementReportPdf.mockResolvedValue("https://example.com/finance.pdf");
 
     const { buildDirectorManagementReportPdfDescriptor } = loadSubject();
@@ -119,5 +120,6 @@ describe("director.finance.pdfService", () => {
         getUri: expect.any(Function),
       }),
     );
+    expect(mockExportDirectorManagementReportPdf).not.toHaveBeenCalled();
   });
 });

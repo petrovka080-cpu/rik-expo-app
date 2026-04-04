@@ -20,9 +20,9 @@ export type CanonicalPdfBoundaryEvent =
   | "mobile_native_handoff_failure";
 
 type CanonicalPdfBoundaryBase = {
-  screen: "foreman" | "warehouse";
+  screen: "director" | "foreman" | "warehouse";
   surface: string;
-  role: "foreman" | "warehouse";
+  role: "director" | "foreman" | "warehouse";
   documentType: string;
   sourceKind?: string | null;
   sessionId?: string | null;

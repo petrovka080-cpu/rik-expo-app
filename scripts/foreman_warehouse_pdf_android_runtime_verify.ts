@@ -115,6 +115,21 @@ function adb(args: string[], encoding: BufferEncoding | "buffer" = "utf8") {
   return encoding === "buffer" ? (result.stdout as unknown as Buffer) : String(result.stdout ?? "");
 }
 
+function escapeAndroidInputText(value: string) {
+  return String(value ?? "")
+    .replace(/ /g, "%s")
+    .replace(/@/g, "\\@")
+    .replace(/&/g, "\\&")
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)")
+    .replace(/\|/g, "\\|")
+    .replace(/</g, "\\<")
+    .replace(/>/g, "\\>")
+    .replace(/;/g, "\\;")
+    .replace(/"/g, '\\"')
+    .replace(/'/g, "\\'");
+}
+
 function tryAdb(args: string[]) {
   try {
     return String(adb(args));
@@ -614,6 +629,100 @@ async function recoverForemanFromProfileIfNeeded(
   );
 }
 
+async function loginForemanAndroid(user: RuntimeTestUser, packageName: string | null) {
+  try {
+    const harnessScreen = await harness.loginAndroidWithProtectedRoute({
+      packageName,
+      user,
+      protectedRoute: "rik://foreman",
+      artifactBase: "android-foreman-pdf-proof",
+      successPredicate: (xml) => isForemanHome(xml) || isFioModal(xml) || isProfileScreen(xml),
+      renderablePredicate: (xml) => isLoginScreen(xml) || isForemanHome(xml) || isFioModal(xml) || isProfileScreen(xml),
+      loginScreenPredicate: isLoginScreen,
+    });
+    if (!isLoginScreen(harnessScreen.xml)) {
+      return harnessScreen;
+    }
+  } catch {
+    // Fall through to local manual login flow when the shared harness stalls on auth.
+  }
+
+  harness.startAndroidRouteSafe(packageName, "rik://foreman");
+  await sleep(1500);
+
+  let current = dumpScreen("android-foreman-pdf-proof-current");
+  if (!isLoginScreen(current.xml)) return current;
+
+  const nodes = harness.parseAndroidNodes(current.xml) as AndroidNode[];
+  const emailNode = findNode(
+    nodes,
+    (node) =>
+      /android\.widget\.EditText/i.test(node.className) &&
+      /email/i.test(`${node.text} ${node.hint}`),
+  );
+  const passwordNode = findNode(
+    nodes,
+    (node) =>
+      /android\.widget\.EditText/i.test(node.className) &&
+      (node.password || /пароль|password/i.test(`${node.text} ${node.hint}`.toLowerCase())),
+  );
+  const loginNode = findNode(
+    nodes,
+    (node) => node.clickable && /(войти|login)/i.test(`${node.text} ${node.contentDesc}`),
+  );
+
+  if (!emailNode || !passwordNode || !loginNode) {
+    throw new Error("Android foreman login controls were not found");
+  }
+
+  harness.tapAndroidBounds(emailNode.bounds);
+  await sleep(500);
+  adb(["shell", "input", "text", escapeAndroidInputText(user.email)]);
+  await sleep(500);
+
+  harness.tapAndroidBounds(passwordNode.bounds);
+  await sleep(500);
+  adb(["shell", "input", "text", escapeAndroidInputText(user.password)]);
+  await sleep(500);
+
+  adb(["shell", "input", "keyevent", "4"]);
+  await sleep(350);
+  harness.tapAndroidBounds(loginNode.bounds);
+  await sleep(350);
+  adb(["shell", "input", "keyevent", "66"]);
+  await sleep(1600);
+
+  current = await poll(
+    "android:foreman_login_complete",
+    async () => {
+      const screen = dumpScreen("android-foreman-pdf-proof-after-login");
+      if (isLoginScreen(screen.xml)) {
+        const retryLoginNode = findNode(
+          harness.parseAndroidNodes(screen.xml) as AndroidNode[],
+          (node) => node.clickable && /(войти|login)/i.test(`${node.text} ${node.contentDesc}`),
+        );
+        if (retryLoginNode) {
+          adb(["shell", "input", "keyevent", "4"]);
+          await sleep(250);
+          harness.tapAndroidBounds(retryLoginNode.bounds);
+          await sleep(250);
+          adb(["shell", "input", "keyevent", "66"]);
+        }
+        return null;
+      }
+      return screen;
+    },
+    30_000,
+    1000,
+  );
+
+  const authenticatedScreen = current;
+  harness.startAndroidRouteSafe(packageName, "rik://foreman");
+  await sleep(1500);
+  const routedScreen = dumpScreen("android-foreman-pdf-proof-routed");
+  return isLoginScreen(routedScreen.xml) ? authenticatedScreen : routedScreen;
+}
+
 async function openWarehouseReportsFromHome(
   current: AndroidScreen,
   artifactBase: string,
@@ -700,15 +809,7 @@ async function runForemanProof(): Promise<RoleProof> {
     }
     requestId = String(requestInsert.data.id);
 
-    let current = await harness.loginAndroidWithProtectedRoute({
-      packageName: runtime.packageName,
-      user,
-      protectedRoute: "rik://foreman",
-      artifactBase: "android-foreman-pdf-proof",
-      successPredicate: (xml) => isForemanHome(xml) || isFioModal(xml) || isProfileScreen(xml),
-      renderablePredicate: (xml) => isLoginScreen(xml) || isForemanHome(xml) || isFioModal(xml) || isProfileScreen(xml),
-      loginScreenPredicate: isLoginScreen,
-    });
+    let current = await loginForemanAndroid(user, runtime.packageName);
 
     current = await recoverForemanFromProfileIfNeeded(current, runtime.packageName, "android-foreman-pdf-proof");
     current = await confirmFioIfPresent(current, "android-foreman-pdf-proof", user.displayLabel);

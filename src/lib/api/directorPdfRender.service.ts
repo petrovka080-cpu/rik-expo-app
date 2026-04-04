@@ -9,6 +9,7 @@ import {
   type PdfRenderRolloutId,
   type PdfRenderRolloutMode,
 } from "../documents/pdfRenderRollout";
+import { beginCanonicalPdfBoundary } from "../pdf/canonicalPdfObservability";
 import { invokeDirectorPdfBackend } from "./directorPdfBackendInvoker";
 
 const DIRECTOR_PDF_RENDER_OFFLOAD_V1_MODE_RAW = String(
@@ -55,6 +56,9 @@ type DirectorPdfRenderInvokePayload = {
 
 type DirectorPdfRenderEdgeResult = {
   signedUrl: string;
+  bucketId: string;
+  storagePath: string;
+  fileName: string;
   renderer: "browserless_puppeteer" | "local_browser_puppeteer";
 };
 
@@ -124,31 +128,111 @@ async function renderDirectorPdfViaEdge(args: DirectorPdfRenderArgs): Promise<Di
 
   return {
     signedUrl: result.signedUrl,
+    bucketId: result.bucketId,
+    storagePath: result.storagePath,
+    fileName: result.fileName,
     renderer: result.renderer,
   };
 }
 
 export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<string> {
+  const boundary = beginCanonicalPdfBoundary({
+    screen: "director",
+    surface: "director_pdf_backend",
+    role: "director",
+    documentType: args.documentType,
+    sourceKind: "backend_payload",
+    fallbackUsed: false,
+  });
+  boundary.success("payload_ready", {
+    sourceKind: "backend_payload",
+    extra: {
+      documentKind: args.documentKind,
+      source: args.source,
+      sourceBranch: args.sourceBranch ?? null,
+      sourceFallbackReason: args.sourceFallbackReason ?? null,
+      htmlLength: args.html.length,
+    },
+  });
+
   if (DIRECTOR_PDF_RENDER_MODE === "force_off") {
-    throw new Error("director-pdf-render is force_off and no legacy fallback is allowed");
+    const error = new Error("director-pdf-render is force_off and no legacy fallback is allowed");
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: DIRECTOR_PDF_RENDER_FUNCTION,
+        documentKind: args.documentKind,
+      },
+    });
+    throw error;
   }
 
   if (!isSupabaseEnvValid) {
-    throw new Error("director-pdf-render missing Supabase env");
+    const error = new Error("director-pdf-render missing Supabase env");
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: DIRECTOR_PDF_RENDER_FUNCTION,
+        documentKind: args.documentKind,
+      },
+    });
+    throw error;
   }
 
   if (
     DIRECTOR_PDF_RENDER_MODE === "auto" &&
     getPdfRenderRolloutAvailability(DIRECTOR_PDF_RENDER_ROLLOUT_ID) === "missing"
   ) {
-    throw new Error("director-pdf-render unavailable in this session and no legacy fallback is allowed");
+    const error = new Error("director-pdf-render unavailable in this session and no legacy fallback is allowed");
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: DIRECTOR_PDF_RENDER_FUNCTION,
+        documentKind: args.documentKind,
+      },
+    });
+    throw error;
   }
+
+  boundary.success("backend_invoke_start", {
+    sourceKind: "backend_invoke",
+    extra: {
+      functionName: DIRECTOR_PDF_RENDER_FUNCTION,
+      documentKind: args.documentKind,
+      source: args.source,
+    },
+  });
 
   try {
     const renderResult = await renderDirectorPdfViaEdge(args);
     if (DIRECTOR_PDF_RENDER_MODE === "auto") {
       setPdfRenderRolloutAvailability(DIRECTOR_PDF_RENDER_ROLLOUT_ID, "available");
     }
+    boundary.success("backend_invoke_success", {
+      sourceKind: "remote-url",
+      extra: {
+        functionName: DIRECTOR_PDF_RENDER_FUNCTION,
+        documentKind: args.documentKind,
+        renderBranch: "edge_render_v1",
+        renderer: renderResult.renderer,
+      },
+    });
+    boundary.success("pdf_storage_uploaded", {
+      sourceKind: "remote-url",
+      extra: {
+        bucketId: renderResult.bucketId,
+        storagePath: renderResult.storagePath,
+      },
+    });
+    boundary.success("signed_url_received", {
+      sourceKind: "remote-url",
+      extra: {
+        fileName: renderResult.fileName,
+      },
+    });
     logDirectorPdfRenderBranch(
       args.documentKind,
       args.source,
@@ -178,6 +262,14 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
         errorMessage: toErrorMessage(error, "Unknown render error"),
       });
     }
+    boundary.error("backend_invoke_failure", error, {
+      sourceKind: "backend_invoke",
+      errorStage: "backend_invoke",
+      extra: {
+        functionName: DIRECTOR_PDF_RENDER_FUNCTION,
+        documentKind: args.documentKind,
+      },
+    });
     throw error instanceof Error ? error : new Error(toErrorMessage(error, "director-pdf-render failed"));
   }
 }
