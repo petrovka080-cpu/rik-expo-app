@@ -87,6 +87,9 @@ function ForemanScreen() {
               {vm.mainTab ? (
                 <Pressable
                   onPress={vm.closeMainTab}
+                  testID="foreman-main-tab-close"
+                  accessibilityLabel="foreman-main-tab-close"
+                  accessible
                   style={{
                     width: 38,
                     height: 38,
@@ -117,6 +120,9 @@ function ForemanScreen() {
             }}
           >
             <Pressable
+              testID="foreman-main-materials-open"
+              accessibilityLabel="foreman-main-materials-open"
+              accessible
               onPress={vm.openMaterialsTab}
               style={{
                 width: "100%",
@@ -134,6 +140,9 @@ function ForemanScreen() {
             </Pressable>
 
             <Pressable
+              testID="foreman-main-subcontracts-open"
+              accessibilityLabel="foreman-main-subcontracts-open"
+              accessible
               onPress={vm.openSubcontractsTab}
               style={{
                 width: "100%",

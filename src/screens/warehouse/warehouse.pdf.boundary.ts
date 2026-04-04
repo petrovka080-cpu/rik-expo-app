@@ -1,6 +1,5 @@
 import { useCallback } from "react";
 import { useRouter } from "expo-router";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage, prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { generateWarehousePdfDocument } from "../../lib/documents/pdfDocumentGenerators";
@@ -125,10 +124,9 @@ const normalizeWarehousePdfPreviewRequest = (
 
 export function useWarehousePdfPreviewBoundary(params: {
   busy: WarehousePdfBusyLike;
-  supabase: SupabaseClient;
   notifyError: (title: string, message?: string) => void;
 }) {
-  const { busy, supabase, notifyError } = params;
+  const { busy, notifyError } = params;
   const router = useRouter();
 
   return useCallback(async (request: WarehousePdfPreviewRequest) => {
@@ -143,7 +141,7 @@ export function useWarehousePdfPreviewBoundary(params: {
       });
       await prepareAndPreviewPdfDocument({
         busy,
-        supabase,
+        supabase: null,
         key: safeRequest.key,
         label: safeRequest.label,
         descriptor: template,
@@ -163,5 +161,5 @@ export function useWarehousePdfPreviewBoundary(params: {
       });
       notifyError("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
     }
-  }, [busy, notifyError, supabase, router]);
+  }, [busy, notifyError, router]);
 }

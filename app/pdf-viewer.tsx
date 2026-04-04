@@ -72,6 +72,7 @@ const NativePdfWebView =
     ? null
     : ((() => {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           return require("react-native-webview").WebView ?? null;
         } catch {
           return null;
@@ -227,6 +228,7 @@ export default function PdfViewerScreen() {
   const renderFailedRef = React.useRef(false);
   const webRenderUriRef = React.useRef<string | null>(null);
   const openSignalSettledRef = React.useRef(false);
+  const webIframeRenderLoggedKeyRef = React.useRef("");
   const resolvedSource = React.useMemo(
     () => resolvePdfViewerResolution({ session, asset, platform: VIEWER_PLATFORM }),
     [asset, session],
@@ -295,6 +297,7 @@ export default function PdfViewerScreen() {
 
   React.useEffect(() => {
     openSignalSettledRef.current = false;
+    webIframeRenderLoggedKeyRef.current = "";
   }, [openToken, sessionId, loadAttempt]);
 
   const clearWebRenderUri = React.useCallback(() => {
@@ -351,14 +354,35 @@ export default function PdfViewerScreen() {
         receivedSessionId: params.sessionId ?? null,
       },
     });
-  }, [params.sessionId, sessionId, snapshot.asset?.uri]);
+  }, [
+    params.sessionId,
+    params.sourceKind,
+    params.uri,
+    recordViewerBreadcrumb,
+    sessionId,
+    snapshot.asset?.sourceKind,
+    snapshot.asset?.uri,
+  ]);
 
   const syncSnapshot = React.useCallback(() => {
     const next = resolveSnapshot();
-    setSession(next.session);
-    setAsset(next.asset);
+    setSession((prev) =>
+      prev?.sessionId === next.session?.sessionId &&
+      prev?.status === next.session?.status &&
+      prev?.errorMessage === next.session?.errorMessage
+        ? prev
+        : next.session,
+    );
+    setAsset((prev) =>
+      prev?.assetId === next.asset?.assetId && prev?.uri === next.asset?.uri
+        ? prev
+        : next.asset,
+    );
     setErrorText(next.session?.errorMessage || "");
-    setState(resolvePdfViewerState(next.session, next.asset, VIEWER_PLATFORM));
+    setState((prev) => {
+      const nextState = resolvePdfViewerState(next.session, next.asset, VIEWER_PLATFORM);
+      return prev === nextState ? prev : nextState;
+    });
     return next;
   }, [resolveSnapshot]);
 
@@ -506,9 +530,6 @@ export default function PdfViewerScreen() {
           trigger,
         });
         await openPdfPreview(resolvedAsset.uri, resolvedAsset.fileName);
-        if (!isMountedRef.current) return;
-        setNativeHandoffCompleted(true);
-        markReady();
         console.info("[pdf-viewer] native_handoff_ready", {
           sessionId,
           documentType: resolvedAsset.documentType,
@@ -517,6 +538,9 @@ export default function PdfViewerScreen() {
           sourceKind: resolvedAsset.sourceKind,
           trigger,
         });
+        if (!isMountedRef.current) return;
+        setNativeHandoffCompleted(true);
+        markReady();
       } catch (error) {
         if (!isMountedRef.current) return;
         const message = error instanceof Error ? error.message : String(error);
@@ -663,7 +687,6 @@ export default function PdfViewerScreen() {
             renderScheme: getUriScheme(resolution.asset.uri),
           });
           setIsReadyToRender(true);
-          markReady();
           return;
         }
         setWebRenderUri(resolution.asset.uri);
@@ -700,6 +723,7 @@ export default function PdfViewerScreen() {
     handoffPdfPreview,
     markError,
     markReady,
+    recordViewerBreadcrumb,
     sessionId,
     syncSnapshot,
     loadAttempt,
@@ -906,7 +930,44 @@ export default function PdfViewerScreen() {
     return () => {
       cancelled = true;
     };
-  }, [resolvedSource, sessionId, source]);
+  }, [recordViewerBreadcrumb, resolvedSource, sessionId, source]);
+
+  React.useEffect(() => {
+    if (
+      Platform.OS !== "web" ||
+      !isReadyToRender ||
+      resolvedSource.kind !== "resolved-embedded" ||
+      !asset
+    ) {
+      return;
+    }
+
+    const iframeSrc = webEmbeddedUri || asset.uri;
+    const cycleKey = `${sessionId || "direct"}:${asset.assetId}:${iframeSrc}:${loadAttempt}`;
+    if (webIframeRenderLoggedKeyRef.current === cycleKey) return;
+    webIframeRenderLoggedKeyRef.current = cycleKey;
+
+    console.info("[pdf-viewer] web_iframe_render", {
+      sessionId,
+      documentType: asset.documentType,
+      originModule: asset.originModule,
+      iframeSrc,
+    });
+    recordViewerBreadcrumb("web_iframe_render", {
+      uri: iframeSrc,
+      uriKind: getUriScheme(iframeSrc),
+      sourceKind: resolvedSource.sourceKind,
+      previewPath: resolvedSource.renderer,
+    });
+  }, [
+    asset,
+    isReadyToRender,
+    loadAttempt,
+    recordViewerBreadcrumb,
+    resolvedSource,
+    sessionId,
+    webEmbeddedUri,
+  ]);
 
   const body = (() => {
     if (state === "empty") {
@@ -1024,14 +1085,6 @@ export default function PdfViewerScreen() {
         ) : null}
 
         {Platform.OS === "web" ? (
-          (() => {
-            console.info("[pdf-viewer] web_iframe_render", {
-              sessionId,
-              documentType: asset.documentType,
-              originModule: asset.originModule,
-              iframeSrc: webEmbeddedUri || asset.uri,
-            });
-            return (
           <View style={styles.viewerBody}>
             <View
               style={[
@@ -1069,8 +1122,6 @@ export default function PdfViewerScreen() {
               />
             </View>
           </View>
-            );
-          })()
         ) : (
           NativePdfWebView ? (
             <NativePdfWebView

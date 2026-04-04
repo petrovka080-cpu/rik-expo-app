@@ -1,5 +1,5 @@
-﻿import React, { useMemo, useRef } from "react";
-import { View, Text, Pressable, ScrollView, Animated, Platform } from "react-native";
+import React, { useMemo, useRef } from "react";
+import { View, Text, Pressable, ScrollView, Animated } from "react-native";
 import { UI, s } from "../warehouse.styles";
 import { officeRoleChrome } from "../../office/officeRoleChrome";
 import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
@@ -106,6 +106,12 @@ export default function WarehouseHeader(props: {
   );
 
   const headerTitle = tabDisplayByValue.get(tab) ?? String(tab);
+  const tabTestId = (t: Tab) => {
+    if (t === WAREHOUSE_TABS[0]) return "warehouse-tab-incoming";
+    if (t === WAREHOUSE_TABS[1]) return "warehouse-tab-stock";
+    if (t === WAREHOUSE_TABS[2]) return "warehouse-tab-issue";
+    return "warehouse-tab-reports";
+  };
 
   return (
     <View>
@@ -134,6 +140,9 @@ export default function WarehouseHeader(props: {
             return (
               <Pressable
                 key={t}
+                testID={tabTestId(t)}
+                accessibilityLabel={tabTestId(t)}
+                accessible
                 onPress={() => onTab(t)}
                 style={[s.tab, active && s.tabActive]}
               >

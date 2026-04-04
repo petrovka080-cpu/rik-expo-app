@@ -1,0 +1,60 @@
+import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
+import { generateForemanRequestPdfViaBackend } from "../../lib/api/foremanRequestPdfBackend.service";
+import { getUriScheme } from "../../lib/pdfFileContract";
+
+export async function buildForemanRequestPdfDescriptor(args: {
+  requestId: string;
+  generatedBy?: string | null;
+  displayNo?: string | null;
+  title?: string | null;
+}) {
+  const requestId = String(args.requestId ?? "").trim();
+  if (!requestId) {
+    throw new Error("Foreman request PDF requestId is required");
+  }
+
+  console.info("[foreman-pdf] history_descriptor_build_start", {
+    requestId,
+    generatedBy: args.generatedBy ?? null,
+    displayNo: args.displayNo ?? null,
+  });
+
+  const backend = await generateForemanRequestPdfViaBackend({
+    version: "v1",
+    role: "foreman",
+    documentType: "request",
+    requestId,
+    generatedBy: args.generatedBy ?? null,
+  });
+
+  const displayNo = String(args.displayNo ?? "").trim();
+  const title =
+    String(args.title ?? "").trim() ||
+    (displayNo ? `Заявка ${displayNo}` : `Заявка ${requestId}`);
+
+  const descriptor = await createGeneratedPdfDocument({
+    fileSource: backend.source,
+    title,
+    fileName:
+      backend.fileName ||
+      buildPdfFileName({
+        documentType: "request",
+        title: displayNo || requestId,
+        entityId: requestId,
+      }),
+    documentType: "request",
+    originModule: "foreman",
+    entityId: requestId,
+  });
+
+  console.info("[foreman-pdf] history_descriptor_ready", {
+    requestId,
+    sourceKind: descriptor.fileSource.kind,
+    uriScheme: getUriScheme(descriptor.uri),
+    uri: descriptor.uri,
+    fileName: descriptor.fileName,
+  });
+
+  return descriptor;
+}

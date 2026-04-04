@@ -27,6 +27,9 @@ export default function ForemanHistoryBar({
     <View style={[styles.stickyBar, isMobile && { paddingBottom: Math.max(insets.bottom, 10) }]}>
       <View style={styles.miniBar}>
         <Pressable
+          testID="foreman-request-history-open"
+          accessibilityLabel="foreman-request-history-open"
+          accessible
           onPress={onOpenRequestHistory}
           disabled={busy}
           hitSlop={10}
@@ -45,6 +48,9 @@ export default function ForemanHistoryBar({
         </Pressable>
 
         <Pressable
+          testID="foreman-subcontract-history-open"
+          accessibilityLabel="foreman-subcontract-history-open"
+          accessible
           onPress={onOpenSubcontractHistory}
           disabled={busy}
           hitSlop={10}

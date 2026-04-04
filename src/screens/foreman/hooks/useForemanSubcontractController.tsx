@@ -18,7 +18,6 @@ import {
 } from "../foreman.draftSync.repository";
 import { useRouter } from "expo-router";
 import { buildPdfFileName } from "../../../lib/documents/pdfDocument";
-import { generateRequestPdfDocument } from "../../../lib/documents/pdfDocumentGenerators";
 import { prepareAndPreviewGeneratedPdf } from "../../../lib/pdf/pdf.runner";
 import {
   ForemanSubcontractMainSections,
@@ -41,6 +40,7 @@ import {
 import { readForemanProfileName } from "../foreman.dicts.repo";
 import { useForemanHistory } from "./useForemanHistory";
 import { useForemanSubcontractUiStore, type SubcontractFlowScreen } from "../foremanSubcontractUi.store";
+import { buildForemanRequestPdfDescriptor } from "../foreman.requestPdf.service";
 
 export type ForemanSubcontractTabProps = {
   contentTopPad: number;
@@ -838,9 +838,11 @@ export function useForemanSubcontractController({
       Alert.alert("PDF", "Сначала создайте черновик заявки.");
       return;
     }
-    const template = await generateRequestPdfDocument({
+    const template = await buildForemanRequestPdfDescriptor({
       requestId: rid,
-      originModule: "foreman",
+      generatedBy: foremanName || null,
+      displayNo: displayNo || null,
+      title: displayNo ? `Р§РµСЂРЅРѕРІРёРє ${displayNo}` : `Р§РµСЂРЅРѕРІРёРє ${rid}`,
     });
     const title = displayNo ? `Черновик ${displayNo}` : `Черновик ${rid}`;
     await prepareAndPreviewGeneratedPdf({
@@ -858,14 +860,15 @@ export function useForemanSubcontractController({
       },
       router,
     });
-  }, [requestId, displayNo, router]);
+  }, [displayNo, foremanName, requestId, router]);
 
   const openRequestHistoryPdf = useCallback(async (reqId: string) => {
     const rid = String(reqId || "").trim();
     if (!rid) return;
-    const template = await generateRequestPdfDocument({
+    const template = await buildForemanRequestPdfDescriptor({
       requestId: rid,
-      originModule: "foreman",
+      generatedBy: foremanName || null,
+      title: `Р—Р°СЏРІРєР° ${rid}`,
     });
     await prepareAndPreviewGeneratedPdf({
       supabase,
@@ -882,7 +885,7 @@ export function useForemanSubcontractController({
       },
       router,
     });
-  }, [router]);
+  }, [foremanName, router]);
 
   const handleRequestHistorySelect = useCallback(async (reqId: string) => {
     closeRequestHistory();

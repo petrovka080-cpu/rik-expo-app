@@ -68,6 +68,8 @@ export default function WarehouseFioModal({ visible, initialFio, onConfirm, load
 
                         <View style={st.inputWrapper}>
                             <TextInput
+                                testID="warehouse-fio-input"
+                                accessibilityLabel="warehouse-fio-input"
                                 style={st.input}
                                 value={fio}
                                 onChangeText={setFio}
@@ -100,6 +102,9 @@ export default function WarehouseFioModal({ visible, initialFio, onConfirm, load
                         <View style={st.actions}>
                             {isConfirmedMode && (
                                 <Pressable
+                                    testID="warehouse-fio-change"
+                                    accessibilityLabel="warehouse-fio-change"
+                                    accessible
                                     onPress={() => setFio("")}
                                     style={[st.btn, st.btnSecondary]}
                                     disabled={loading}
@@ -109,6 +114,9 @@ export default function WarehouseFioModal({ visible, initialFio, onConfirm, load
                             )}
 
                             <Pressable
+                                testID="warehouse-fio-confirm"
+                                accessibilityLabel="warehouse-fio-confirm"
+                                accessible
                                 onPress={handleConfirm}
                                 style={[
                                     st.btn,

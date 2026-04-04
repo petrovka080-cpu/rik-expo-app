@@ -166,16 +166,13 @@ export function useWarehouseScreenData() {
 
   const pdfActions = useWarehousePdf({
     busy,
-    supabase,
-    reportsUi,
     reportsMode,
-    repIncoming,
     periodFrom,
     periodTo,
     warehousemanFio,
-    matNameByCode,
     notifyError,
     orgName: ORG_NAME,
+    warehouseName: WAREHOUSE_NAME,
   });
   const { onPdfDocument, onPdfRegister, onPdfMaterials, onPdfObjectWork, onPdfDayRegister, onPdfDayMaterials } = pdfActions;
 

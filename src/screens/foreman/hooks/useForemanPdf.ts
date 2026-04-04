@@ -5,13 +5,12 @@ import { useRouter } from "expo-router";
 import { supabase } from "../../../lib/supabaseClient";
 import type { RequestDetails } from "../../../lib/catalog_api";
 import type { BusyCtx } from "../../../ui/GlobalBusy";
-import { buildPdfFileName } from "../../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage } from "../../../lib/documents/pdfDocumentActions";
-import { generateRequestPdfDocument } from "../../../lib/documents/pdfDocumentGenerators";
 import {
   prepareAndPreviewGeneratedPdf,
   prepareAndShareGeneratedPdf,
 } from "../../../lib/pdf/pdf.runner";
+import { buildForemanRequestPdfDescriptor } from "../foreman.requestPdf.service";
 
 export function useForemanPdf(gbusy: BusyCtx) {
   const router = useRouter();
@@ -29,29 +28,21 @@ export function useForemanPdf(gbusy: BusyCtx) {
       try {
         await syncMeta(ridKey, mode === "share" ? "onPdfShare" : "onPdfExport");
 
-        const template = await generateRequestPdfDocument({
+        const descriptor = await buildForemanRequestPdfDescriptor({
           requestId: ridKey,
-          originModule: "foreman",
+          generatedBy: requestDetails?.foreman_name ?? null,
+          displayNo: requestDetails?.display_no ?? null,
+          title: requestDetails?.display_no
+            ? `Заявка ${requestDetails.display_no}`
+            : `Заявка ${ridKey}`,
         });
-        const title = requestDetails?.display_no
-          ? `Заявка ${requestDetails.display_no}`
-          : `Заявка ${ridKey}`;
-        const descriptor = {
-          ...template,
-          title,
-          fileName: buildPdfFileName({
-            documentType: "request",
-            title: requestDetails?.display_no || "zayavka",
-            entityId: ridKey,
-          }),
-        };
 
         if (mode === "share") {
           await prepareAndShareGeneratedPdf({
             busy: gbusy,
             supabase,
             key: `pdfshare:request:${ridKey}`,
-            label: "Подготавливаю файл...",
+            label: "РџРѕРґРіРѕС‚Р°РІР»РёРІР°СЋ С„Р°Р№Р»...",
             descriptor,
           });
           return;
@@ -61,12 +52,12 @@ export function useForemanPdf(gbusy: BusyCtx) {
           busy: gbusy,
           supabase,
           key: `pdf:request:${ridKey}`,
-          label: "Открываю PDF…",
+          label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
           descriptor,
           router,
         });
       } catch (error) {
-        Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
+        Alert.alert("PDF", getPdfFlowErrorMessage(error, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF"));
       }
     },
     [gbusy, router],

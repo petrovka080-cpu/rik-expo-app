@@ -225,6 +225,8 @@ export default function WarehouseReportsTab(props: Props) {
     return (
       <Pressable
         testID={`warehouse-report-day:${item.day}`}
+        accessibilityLabel={`warehouse-report-day:${item.day}`}
+        accessible
         onPress={() => setActiveDay(item)}
         style={{ marginBottom: 12, marginHorizontal: 16 }}
       >
@@ -318,6 +320,9 @@ export default function WarehouseReportsTab(props: Props) {
 
         <View style={{ gap: 12 }}>
           <Pressable
+            testID="warehouse-reports-mode-issue"
+            accessibilityLabel="warehouse-reports-mode-issue"
+            accessible
             onPress={() => onSelectMode("issue")}
             style={({ pressed }) => [
               {
@@ -335,6 +340,9 @@ export default function WarehouseReportsTab(props: Props) {
           </Pressable>
 
           <Pressable
+            testID="warehouse-reports-mode-incoming"
+            accessibilityLabel="warehouse-reports-mode-incoming"
+            accessible
             onPress={() => onSelectMode("incoming")}
             style={({ pressed }) => [
               {
@@ -372,6 +380,9 @@ export default function WarehouseReportsTab(props: Props) {
           }}
         >
           <Pressable
+            testID="warehouse-day-back"
+            accessibilityLabel="warehouse-day-back"
+            accessible
             onPress={() => setActiveDay(null)}
             style={{
               width: 42,
@@ -403,6 +414,8 @@ export default function WarehouseReportsTab(props: Props) {
           <View style={{ flexDirection: "row", gap: 8 }}>
             <Pressable
               testID="warehouse-day-register-pdf"
+              accessibilityLabel="warehouse-day-register-pdf"
+              accessible
               onPress={() => {
                 if (dayRegisterBusy) return;
                 void onPdfDayRegister?.(activeDay.day);
@@ -431,6 +444,8 @@ export default function WarehouseReportsTab(props: Props) {
 
             <Pressable
               testID="warehouse-day-materials-pdf"
+              accessibilityLabel="warehouse-day-materials-pdf"
+              accessible
               onPress={() => {
                 if (dayMaterialsBusy) return;
                 void onPdfDayMaterials?.(activeDay.day);

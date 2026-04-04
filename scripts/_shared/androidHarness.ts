@@ -14,6 +14,7 @@ const LOGIN_LABEL_RE = /Р’РѕР№С‚Рё|Login|ГђВ’ГђВѕГђВ№
 type AndroidNode = {
   text: string;
   contentDesc: string;
+  resourceId: string;
   className: string;
   clickable: boolean;
   enabled: boolean;
@@ -190,6 +191,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       nodes.push({
         text: pick("text"),
         contentDesc: pick("content-desc"),
+        resourceId: pick("resource-id"),
         className: pick("class"),
         clickable: pick("clickable") === "true",
         enabled: pick("enabled") === "true",
@@ -1084,9 +1086,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
               ) ?? refreshedPasswordNode;
             const retryLoginNode = findAndroidLoginNode(retryNodes) ?? refreshedLoginNode;
             const emailText = String(retryEmailNode?.text ?? "").trim();
-            const passwordText = String(retryPasswordNode?.text ?? "").trim();
             const emailNeedsFill = !emailText || /^email$/i.test(emailText);
-            const passwordNeedsFill = !passwordText || PASSWORD_LABEL_RE.test(passwordText);
             if (emailNeedsFill && retryEmailNode) {
               await ensureExactLoginFieldText(
                 "retry-email-empty",
@@ -1245,6 +1245,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     tapAndroidBounds,
     pressAndroidKey,
     typeAndroidText,
+    replaceAndroidFieldText,
     startAndroidDevClientProject,
     startAndroidRoute: startAndroidRouteSafe,
     startAndroidRouteSafe,

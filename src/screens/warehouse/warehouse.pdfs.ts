@@ -1,23 +1,13 @@
 import { useCallback } from "react";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
-import {
-  exportWarehouseIncomingFormPdfContract,
-  prepareWarehouseIncomingFormPdf,
-  type WarehouseIncomingHeadLike,
-  type WarehouseIncomingLineLike,
-} from "./warehouse.incomingForm.pdf.service";
+import { beginCanonicalPdfBoundary } from "../../lib/pdf/canonicalPdfObservability";
+import { generateWarehousePdfViaBackend } from "../../lib/api/warehousePdfBackend.service";
+import type { WarehousePdfRequest } from "../../lib/pdf/warehousePdf.shared";
 import {
   buildWarehousePdfBusyKey,
   createWarehousePdfFileName,
   type WarehousePdfBusyLike,
   useWarehousePdfPreviewBoundary,
 } from "./warehouse.pdf.boundary";
-import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
-
-const logWarehousePdfDebug = (...args: unknown[]) => {
-  if (__DEV__) console.info(...args);
-};
 
 const requireWarehousePdfDocId = (docId: string | number) => {
   const text = String(docId ?? "").trim();
@@ -26,7 +16,7 @@ const requireWarehousePdfDocId = (docId: string | number) => {
   if (!Number.isFinite(numeric)) return null;
   return {
     text,
-    numeric,
+    numeric: Math.trunc(numeric),
   };
 };
 
@@ -35,30 +25,12 @@ const requireWarehousePdfDayLabel = (dayLabel: string) => {
   return text || null;
 };
 
-type ReportsUiLike = {
-  ensureIncomingLines?: (incomingId: string) => Promise<WarehouseIncomingLineLike[] | null | undefined> | WarehouseIncomingLineLike[] | null | undefined;
-  buildIssueHtml: (docId: number) => Promise<string>;
-  buildIncomingRegisterHtml: () => Promise<string>;
-  buildRegisterHtml: () => Promise<string>;
-  buildIncomingMaterialsReportPdf: () => Promise<string>;
-  buildMaterialsReportPdf: () => Promise<string>;
-  buildObjectWorkReportPdf: () => Promise<string>;
-  buildDayIncomingRegisterPdf: (dayLabel: string) => Promise<string>;
-  buildDayRegisterPdf: (dayLabel: string) => Promise<string>;
-  buildDayIncomingMaterialsReportPdf: (dayLabel: string) => Promise<string>;
-  buildDayMaterialsReportPdf: (dayLabel: string) => Promise<string>;
-};
-
 type UseWarehousePdfArgs = {
   busy: WarehousePdfBusyLike;
-  supabase: SupabaseClient;
-  reportsUi: ReportsUiLike;
   reportsMode: "choice" | "issue" | "incoming";
-  repIncoming: WarehouseIncomingHeadLike[];
   periodFrom: string;
   periodTo: string;
   warehousemanFio: string;
-  matNameByCode: Record<string, string>;
   notifyError: (title: string, message?: string) => void;
   orgName: string;
   warehouseName?: string;
@@ -67,14 +39,10 @@ type UseWarehousePdfArgs = {
 export function useWarehousePdf(args: UseWarehousePdfArgs) {
   const {
     busy,
-    supabase,
-    reportsUi,
     reportsMode,
-    repIncoming,
     periodFrom,
     periodTo,
     warehousemanFio,
-    matNameByCode,
     notifyError,
     orgName,
     warehouseName,
@@ -82,82 +50,110 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
 
   const previewWarehousePdf = useWarehousePdfPreviewBoundary({
     busy,
-    supabase,
     notifyError,
   });
+
+  const previewCanonicalWarehousePdf = useCallback(async (args: {
+    key: string;
+    label: string;
+    title: string;
+    fileName: string;
+    documentType: "warehouse_document" | "warehouse_register" | "warehouse_materials";
+    entityId?: string;
+    request: WarehousePdfRequest;
+  }) => {
+    const boundary = beginCanonicalPdfBoundary({
+      screen: "warehouse",
+      surface: "warehouse_pdf_open",
+      role: "warehouse",
+      documentType: args.request.documentType,
+      sourceKind: "backend_payload",
+      fallbackUsed: false,
+    });
+
+    boundary.success("click_start", {
+      sourceKind: "backend_payload",
+      extra: {
+        documentKind: args.request.documentKind,
+        entityId: args.entityId ?? null,
+      },
+    });
+    boundary.success("busy_enter", {
+      sourceKind: "backend_payload",
+      extra: {
+        busyKey: args.key,
+        documentKind: args.request.documentKind,
+      },
+    });
+
+    await previewWarehousePdf({
+      key: args.key,
+      label: args.label,
+      title: args.title,
+      fileName: args.fileName,
+      documentType: args.documentType,
+      entityId: args.entityId,
+      getRemoteUrl: async () => {
+        const result = await generateWarehousePdfViaBackend(args.request);
+        boundary.success("viewer_open_start", {
+          sourceKind: result.sourceKind,
+          extra: {
+            documentKind: args.request.documentKind,
+            fileName: result.fileName,
+          },
+        });
+        return result.signedUrl;
+      },
+    });
+
+    boundary.success("busy_exit", {
+      sourceKind: "remote-url",
+      extra: {
+        busyKey: args.key,
+        documentKind: args.request.documentKind,
+      },
+    });
+  }, [previewWarehousePdf]);
 
   const onPdfDocument = useCallback(async (docId: string | number) => {
     const normalizedDocId = requireWarehousePdfDocId(docId);
     const pid = normalizedDocId?.text ?? "";
     if (!pid) {
-      notifyError("PDF", "Некорректный номер прихода.");
+      notifyError("PDF", "Некорректный номер документа.");
       return;
     }
 
     if (reportsMode === "incoming") {
-      const startedAt = Date.now();
-      logWarehousePdfDebug(`INCOMING_PDF_CONTRACT_START pr_id=${pid}`);
-
-      try {
-        const prepared = await prepareWarehouseIncomingFormPdf({
+      await previewCanonicalWarehousePdf({
+        key: buildWarehousePdfBusyKey({
+          kind: "document",
+          reportsMode: "incoming",
+          docId: pid,
+        }),
+        label: "Готовлю приходный ордер...",
+        title: `Приходный ордер ${pid}`,
+        fileName: createWarehousePdfFileName({
+          documentType: "warehouse_document",
+          title: "warehouse_incoming",
+          entityId: pid,
+        }),
+        documentType: "warehouse_document",
+        entityId: pid,
+        request: {
+          version: "v1",
+          role: "warehouse",
+          documentType: "warehouse_document",
+          documentKind: "incoming_form",
           incomingId: pid,
-          supabase,
-          repIncoming,
-          warehousemanFio,
-          matNameByCode,
-          orgName,
-          warehouseName,
-          ensureIncomingLines: reportsUi.ensureIncomingLines,
-        });
-
-        await previewWarehousePdf({
-          key: buildWarehousePdfBusyKey({
-            kind: "document",
-            reportsMode: "incoming",
-            docId: pid,
-          }),
-          label: "Готовлю приходный ордер...",
-          title: prepared.contract.title,
-          fileName: prepared.contract.fileName,
-          documentType: prepared.contract.documentType,
-          entityId: prepared.contract.entityId,
-          getRemoteUrl: async () => {
-            const url = await exportWarehouseIncomingFormPdfContract(prepared.contract);
-            logWarehousePdfDebug(
-              `INCOMING_PDF_OK pr_id=${pid} ms=${Date.now() - startedAt} source=${prepared.source}`,
-            );
-            return url;
-          },
-        });
-      } catch (error: unknown) {
-        const err = error as { message?: string; reason?: string };
-        const message = String(err?.message ?? "").toLowerCase();
-        const reason =
-          String(err?.reason ?? "").trim() || (message.includes("timeout") ? "timeout" : "build_error");
-        recordCatchDiscipline({
-          screen: "warehouse",
-          surface: "warehouse_pdf_open",
-          event: "warehouse_incoming_pdf_open_failed",
-          kind: "critical_fail",
-          error,
-          category: "ui",
-          sourceKind: "pdf:warehouse_incoming",
-          errorStage: "prepare_or_open",
-          extra: {
-            docId: pid,
-            reportsMode,
-            reason,
-          },
-        });
-        console.error(`INCOMING_PDF_FAIL pr_id=${pid} reason=${reason}`, {
-          errorMessage: getPdfFlowErrorMessage(error, "Incoming PDF build failed"),
-        });
-        notifyError("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
-      }
+          generatedBy: warehousemanFio || null,
+          companyName: orgName || null,
+          warehouseName: warehouseName || null,
+        },
+      });
       return;
     }
 
-    await previewWarehousePdf({
+    await previewCanonicalWarehousePdf({
       key: buildWarehousePdfBusyKey({
         kind: "document",
         reportsMode: "issue",
@@ -172,24 +168,29 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
       }),
       documentType: "warehouse_document",
       entityId: pid,
-      getRemoteUrl: async () => reportsUi.buildIssueHtml(normalizedDocId?.numeric ?? Number.NaN),
+      request: {
+        version: "v1",
+        role: "warehouse",
+        documentType: "warehouse_document",
+        documentKind: "issue_form",
+        issueId: normalizedDocId?.numeric ?? 0,
+        generatedBy: warehousemanFio || null,
+        companyName: orgName || null,
+        warehouseName: warehouseName || null,
+      },
     });
   }, [
-    matNameByCode,
     notifyError,
     orgName,
-    previewWarehousePdf,
-    repIncoming,
+    previewCanonicalWarehousePdf,
     reportsMode,
-    reportsUi,
-    supabase,
     warehouseName,
     warehousemanFio,
   ]);
 
   const onPdfRegister = useCallback(async () => {
     const isIncoming = reportsMode === "incoming";
-    await previewWarehousePdf({
+    await previewCanonicalWarehousePdf({
       key: buildWarehousePdfBusyKey({
         kind: "register",
         reportsMode: isIncoming ? "incoming" : "issue",
@@ -204,14 +205,31 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
         entityId: `${periodFrom || "all"}_${periodTo || "all"}`,
       }),
       documentType: "warehouse_register",
-      getRemoteUrl: async () =>
-        isIncoming ? reportsUi.buildIncomingRegisterHtml() : reportsUi.buildRegisterHtml(),
+      request: {
+        version: "v1",
+        role: "warehouse",
+        documentType: "warehouse_register",
+        documentKind: isIncoming ? "incoming_register" : "issue_register",
+        periodFrom: periodFrom || null,
+        periodTo: periodTo || null,
+        generatedBy: warehousemanFio || null,
+        companyName: orgName || null,
+        warehouseName: warehouseName || null,
+      },
     });
-  }, [periodFrom, periodTo, previewWarehousePdf, reportsMode, reportsUi]);
+  }, [
+    orgName,
+    periodFrom,
+    periodTo,
+    previewCanonicalWarehousePdf,
+    reportsMode,
+    warehouseName,
+    warehousemanFio,
+  ]);
 
   const onPdfMaterials = useCallback(async () => {
     const isIncoming = reportsMode === "incoming";
-    await previewWarehousePdf({
+    await previewCanonicalWarehousePdf({
       key: buildWarehousePdfBusyKey({
         kind: "materials",
         reportsMode: isIncoming ? "incoming" : "issue",
@@ -226,13 +244,30 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
         entityId: `${periodFrom || "all"}_${periodTo || "all"}`,
       }),
       documentType: "warehouse_materials",
-      getRemoteUrl: async () =>
-        isIncoming ? reportsUi.buildIncomingMaterialsReportPdf() : reportsUi.buildMaterialsReportPdf(),
+      request: {
+        version: "v1",
+        role: "warehouse",
+        documentType: "warehouse_materials",
+        documentKind: isIncoming ? "incoming_materials" : "issue_materials",
+        periodFrom: periodFrom || null,
+        periodTo: periodTo || null,
+        generatedBy: warehousemanFio || null,
+        companyName: orgName || null,
+        warehouseName: warehouseName || null,
+      },
     });
-  }, [periodFrom, periodTo, previewWarehousePdf, reportsMode, reportsUi]);
+  }, [
+    orgName,
+    periodFrom,
+    periodTo,
+    previewCanonicalWarehousePdf,
+    reportsMode,
+    warehouseName,
+    warehousemanFio,
+  ]);
 
   const onPdfObjectWork = useCallback(async () => {
-    await previewWarehousePdf({
+    await previewCanonicalWarehousePdf({
       key: buildWarehousePdfBusyKey({
         kind: "object-work",
         periodFrom,
@@ -246,9 +281,28 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
         entityId: `${periodFrom || "all"}_${periodTo || "all"}`,
       }),
       documentType: "warehouse_materials",
-      getRemoteUrl: async () => reportsUi.buildObjectWorkReportPdf(),
+      request: {
+        version: "v1",
+        role: "warehouse",
+        documentType: "warehouse_materials",
+        documentKind: "object_work",
+        periodFrom: periodFrom || null,
+        periodTo: periodTo || null,
+        objectId: null,
+        objectName: null,
+        generatedBy: warehousemanFio || null,
+        companyName: orgName || null,
+        warehouseName: warehouseName || null,
+      },
     });
-  }, [periodFrom, periodTo, previewWarehousePdf, reportsUi]);
+  }, [
+    orgName,
+    periodFrom,
+    periodTo,
+    previewCanonicalWarehousePdf,
+    warehouseName,
+    warehousemanFio,
+  ]);
 
   const onPdfDayRegister = useCallback(async (dayLabel: string) => {
     const normalizedDayLabel = requireWarehousePdfDayLabel(dayLabel);
@@ -256,28 +310,43 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
       notifyError("PDF", "Invalid report day.");
       return;
     }
+
     const isIncoming = reportsMode === "incoming";
-    await previewWarehousePdf({
+    await previewCanonicalWarehousePdf({
       key: buildWarehousePdfBusyKey({
         kind: "day-register",
         reportsMode: isIncoming ? "incoming" : "issue",
         dayLabel: normalizedDayLabel,
       }),
       label: "Готовлю дневной реестр...",
-      title: isIncoming ? `Реестр прихода за ${dayLabel}` : `Реестр расхода за ${dayLabel}`,
+      title: isIncoming ? `Приход за ${normalizedDayLabel}` : `Выдача за ${normalizedDayLabel}`,
       fileName: createWarehousePdfFileName({
         documentType: "warehouse_register",
-        title: isIncoming ? "warehouse_incoming_day_register" : "warehouse_day_register",
-        entityId: normalizedDayLabel.replace(/\s+/g, "_"),
+        title: isIncoming ? "warehouse_incoming_day_register" : "warehouse_issue_day_register",
+        entityId: normalizedDayLabel,
       }),
       documentType: "warehouse_register",
-      entityId: normalizedDayLabel,
-      getRemoteUrl: async () =>
-        isIncoming
-          ? reportsUi.buildDayIncomingRegisterPdf(normalizedDayLabel)
-          : reportsUi.buildDayRegisterPdf(normalizedDayLabel),
+      request: {
+        version: "v1",
+        role: "warehouse",
+        documentType: "warehouse_register",
+        documentKind: isIncoming ? "incoming_day_register" : "issue_day_register",
+        periodFrom: null,
+        periodTo: null,
+        dayLabel: normalizedDayLabel,
+        generatedBy: warehousemanFio || null,
+        companyName: orgName || null,
+        warehouseName: warehouseName || null,
+      },
     });
-  }, [notifyError, previewWarehousePdf, reportsMode, reportsUi]);
+  }, [
+    notifyError,
+    orgName,
+    previewCanonicalWarehousePdf,
+    reportsMode,
+    warehouseName,
+    warehousemanFio,
+  ]);
 
   const onPdfDayMaterials = useCallback(async (dayLabel: string) => {
     const normalizedDayLabel = requireWarehousePdfDayLabel(dayLabel);
@@ -285,28 +354,45 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
       notifyError("PDF", "Invalid report day.");
       return;
     }
+
     const isIncoming = reportsMode === "incoming";
-    await previewWarehousePdf({
+    await previewCanonicalWarehousePdf({
       key: buildWarehousePdfBusyKey({
         kind: "day-materials",
         reportsMode: isIncoming ? "incoming" : "issue",
         dayLabel: normalizedDayLabel,
       }),
       label: "Готовлю дневной отчёт по материалам...",
-      title: isIncoming ? `Материалы прихода за ${dayLabel}` : `Материалы расхода за ${dayLabel}`,
+      title: isIncoming
+        ? `Приход материалов за ${normalizedDayLabel}`
+        : `Расход материалов за ${normalizedDayLabel}`,
       fileName: createWarehousePdfFileName({
         documentType: "warehouse_materials",
-        title: isIncoming ? "warehouse_incoming_day_materials" : "warehouse_day_materials",
-        entityId: normalizedDayLabel.replace(/\s+/g, "_"),
+        title: isIncoming ? "warehouse_incoming_day_materials" : "warehouse_issue_day_materials",
+        entityId: normalizedDayLabel,
       }),
       documentType: "warehouse_materials",
-      entityId: normalizedDayLabel,
-      getRemoteUrl: async () =>
-        isIncoming
-          ? reportsUi.buildDayIncomingMaterialsReportPdf(normalizedDayLabel)
-          : reportsUi.buildDayMaterialsReportPdf(normalizedDayLabel),
+      request: {
+        version: "v1",
+        role: "warehouse",
+        documentType: "warehouse_materials",
+        documentKind: isIncoming ? "incoming_day_materials" : "issue_day_materials",
+        periodFrom: null,
+        periodTo: null,
+        dayLabel: normalizedDayLabel,
+        generatedBy: warehousemanFio || null,
+        companyName: orgName || null,
+        warehouseName: warehouseName || null,
+      },
     });
-  }, [notifyError, previewWarehousePdf, reportsMode, reportsUi]);
+  }, [
+    notifyError,
+    orgName,
+    previewCanonicalWarehousePdf,
+    reportsMode,
+    warehouseName,
+    warehousemanFio,
+  ]);
 
   return {
     onPdfDocument,

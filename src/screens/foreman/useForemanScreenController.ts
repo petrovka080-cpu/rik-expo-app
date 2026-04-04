@@ -50,7 +50,6 @@ import {
 } from "./foreman.helpers";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
-import { generateRequestPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import { buildForemanSyncUiStatus } from "../../lib/offline/foremanSyncRuntime";
 import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
@@ -64,6 +63,7 @@ import { useForemanBaseUi } from "./hooks/useForemanBaseUi";
 import { useForemanDraftUi } from "./hooks/useForemanDraftUi";
 import { useForemanHistoryUi } from "./hooks/useForemanHistoryUi";
 import { useForemanAiQuickFlow } from "./hooks/useForemanAiQuickFlow";
+import { buildForemanRequestPdfDescriptor } from "./foreman.requestPdf.service";
 import {
   loadStoredFioState,
   saveStoredFioState,
@@ -286,24 +286,24 @@ export function useForemanScreenController() {
     const rid = ridStr(reqId);
     if (!rid) return;
     try {
-      const template = await generateRequestPdfDocument({
+      const descriptor = await buildForemanRequestPdfDescriptor({
         requestId: rid,
-        originModule: "foreman",
+        generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
+        displayNo: requestDetails?.display_no ?? `#${shortId(rid)}`,
+        title: `Request ${rid}`,
       });
+      console.info("[foreman-pdf] history_open_descriptor", {
+        requestId: rid,
+        sourceKind: descriptor.fileSource.kind,
+        uri: descriptor.uri,
+      });
+      closeHistory();
       await prepareAndPreviewGeneratedPdf({
         busy: gbusy,
         supabase,
         key: `pdf:history:${rid}`,
         label: "Opening PDF...",
-        descriptor: {
-          ...template,
-          title: `Request ${rid}`,
-          fileName: buildPdfFileName({
-            documentType: "request",
-            title: rid,
-            entityId: rid,
-          }),
-        },
+        descriptor,
         router,
       });
     } catch (error) {
@@ -323,7 +323,14 @@ export function useForemanScreenController() {
       });
       Alert.alert("PDF", getPdfFlowErrorMessage(error, "Could not open PDF"));
     }
-  }, [gbusy, router]);
+  }, [
+    authIdentity.fullName,
+    closeHistory,
+    gbusy,
+    requestDetails?.display_no,
+    requestDetails?.foreman_name,
+    router,
+  ]);
 
   useEffect(() => {
     void refreshForemanHistory();
@@ -713,9 +720,11 @@ export function useForemanScreenController() {
     const rid = ridStr(reqId);
     if (!rid) return;
     try {
-      const template = await generateRequestPdfDocument({
+      const descriptor = await buildForemanRequestPdfDescriptor({
         requestId: rid,
-        originModule: "foreman",
+        generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
+        displayNo: labelForRequest(rid),
+        title: `Р—Р°СЏРІРєР° ${rid}`,
       });
       await prepareAndPreviewGeneratedPdf({
         busy: gbusy,
@@ -723,7 +732,7 @@ export function useForemanScreenController() {
         key: `pdf:history:${rid}`,
         label: "Готовлю PDF...",
         descriptor: {
-          ...template,
+          ...descriptor,
           title: `Заявка ${rid}`,
           fileName: buildPdfFileName({
             documentType: "request",
@@ -736,30 +745,24 @@ export function useForemanScreenController() {
     } catch (error) {
       Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
     }
-  }, [gbusy, router]);
+  }, [authIdentity.fullName, gbusy, labelForRequest, requestDetails?.foreman_name, router]);
 
   const openHistoryPdfObserved = useCallback(async (reqId: string) => {
     const rid = ridStr(reqId);
     if (!rid) return;
     try {
-      const template = await generateRequestPdfDocument({
+      const descriptor = await buildForemanRequestPdfDescriptor({
         requestId: rid,
-        originModule: "foreman",
+        generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
+        displayNo: labelForRequest(rid),
+        title: `Р вЂ”Р В°РЎРЏР Р†Р С”Р В° ${rid}`,
       });
       await prepareAndPreviewGeneratedPdf({
         busy: gbusy,
         supabase,
         key: `pdf:history:${rid}`,
         label: "Р“РѕС‚РѕРІР»СЋ PDF...",
-        descriptor: {
-          ...template,
-          title: `Р—Р°СЏРІРєР° ${rid}`,
-          fileName: buildPdfFileName({
-            documentType: "request",
-            title: rid,
-            entityId: rid,
-          }),
-        },
+        descriptor,
         router,
       });
     } catch (error) {
@@ -779,7 +782,10 @@ export function useForemanScreenController() {
       });
       Alert.alert("PDF", getPdfFlowErrorMessage(error, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF"));
     }
-  }, [gbusy, router]);
+  }, [authIdentity.fullName, gbusy, labelForRequest, requestDetails?.foreman_name, router]);
+
+  void openHistoryPdf;
+  void openHistoryPdfObserved;
 
   useEffect(() => {
     let active = true;
