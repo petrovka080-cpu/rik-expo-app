@@ -39,7 +39,7 @@ export async function bodyText(page: Page): Promise<string> {
 
 export async function waitForBody(
   page: Page,
-  needles: string | RegExp | Array<string | RegExp>,
+  needles: string | RegExp | (string | RegExp)[],
   timeoutMs = 30_000,
 ) {
   const list = Array.isArray(needles) ? needles : [needles];
@@ -66,7 +66,11 @@ export async function launchWebRuntime(): Promise<{
     badResponses: { url: string; status: number; method: string }[];
   };
 }> {
-  const browser = await chromium.launch({ headless: true });
+  const browserChannel = String(process.env.RIK_WEB_BROWSER_CHANNEL ?? "").trim().toLowerCase();
+  const browser = await chromium.launch({
+    channel: browserChannel === "msedge" ? "msedge" : undefined,
+    headless: true,
+  });
   const context = await browser.newContext();
   const page = await context.newPage();
   const runtime = {
@@ -99,8 +103,8 @@ export async function loginWithProtectedRoute(
   route: string,
   user: { email: string; password: string },
   options: {
-    readyNeedles?: Array<string | RegExp>;
-    unauthorizedNeedles?: Array<string | RegExp>;
+    readyNeedles?: (string | RegExp)[];
+    unauthorizedNeedles?: (string | RegExp)[];
   } = {},
 ) {
   const readyNeedles = options.readyNeedles ?? [];

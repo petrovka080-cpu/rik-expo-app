@@ -8,6 +8,8 @@ import type { Locator, Page, Response } from "playwright";
 import { captureWebFailureArtifact, launchWebRuntime, poll, writeJsonArtifact, baseUrl } from "./_shared/webRuntimeHarness";
 import { cleanupTempUser, createTempUser, createVerifierAdmin } from "./_shared/testUserDiscipline";
 
+process.env.RIK_WEB_BROWSER_CHANNEL ??= "msedge";
+
 const projectRoot = process.cwd();
 const admin = createVerifierAdmin("director-pdf-render-web-click-verify");
 const functionName = "director-pdf-render";
@@ -205,18 +207,6 @@ async function ensureLocalWebServer(): Promise<WebServerHandle> {
   };
 }
 
-async function findVisibleWebText(scope: LocatorScope, labels: string[]): Promise<Locator | null> {
-  const locator = scope.getByText(new RegExp(labels.map(escapeRegex).join("|"), "i"));
-  const count = await locator.count();
-  for (let index = 0; index < count; index += 1) {
-    const candidate = locator.nth(index);
-    if (await candidate.isVisible().catch(() => false)) {
-      return candidate;
-    }
-  }
-  return null;
-}
-
 async function findVisiblePressableByLabels(
   scope: LocatorScope,
   labels: string[],
@@ -305,7 +295,7 @@ async function activatePressable(
   verify?: () => Promise<boolean>,
   verifyTimeoutMs = 2_500,
 ): Promise<string | null> {
-  const attempts: Array<{ label: string; run: () => Promise<void> }> = [
+  const attempts: { label: string; run: () => Promise<void> }[] = [
     {
       label: "locator.click",
       run: async () => {
