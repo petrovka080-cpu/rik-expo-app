@@ -14,6 +14,7 @@
 - /pdf-viewer reached: true
 - iframe src present: true
 - viewer ready: true
+- success screenshot: true
 
 ## Next blocker
 - No post-function blocker remained on the exact management_report web path.

@@ -30,6 +30,7 @@ const viewerDiagnosticsPath = path.join(projectRoot, "artifacts/director-pdf-ren
 const webServerStdoutPath = path.join(projectRoot, "artifacts/director-pdf-render-web.stdout.log");
 const webServerStderrPath = path.join(projectRoot, "artifacts/director-pdf-render-web.stderr.log");
 const failureArtifactBase = path.join(projectRoot, "artifacts/director-pdf-render-web-click-failure");
+const successArtifactBase = path.join(projectRoot, "artifacts/director-pdf-render-web-click-success");
 
 const WEB_LABELS = {
   header: "Контроль",
@@ -785,7 +786,15 @@ async function main() {
         badResponses: runtime.badResponses,
         relevantResponses,
       },
+      successArtifacts: null as null | {
+        screenshot: string;
+        html: string;
+      },
     };
+
+    if (status === "GREEN") {
+      smoke.successArtifacts = await captureWebFailureArtifact(page, successArtifactBase);
+    }
 
     writeJsonArtifact(smokePath, smoke);
     writeText(
@@ -807,6 +816,7 @@ async function main() {
         `- /pdf-viewer reached: ${routeReached || viewerRouteMounted}`,
         `- iframe src present: ${Boolean(iframeSrc)}`,
         `- viewer ready: ${viewerReady}`,
+        `- success screenshot: ${status === "GREEN"}`,
         "",
         "## Next blocker",
         nextBlocker
