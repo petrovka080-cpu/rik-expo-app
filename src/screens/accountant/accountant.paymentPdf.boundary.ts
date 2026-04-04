@@ -73,7 +73,6 @@ export function useAccountantPaymentPdfBoundary(
         key: `pdf:acc:pay:${paymentId}`,
         label: "Открываю платёжное поручение…",
         descriptor,
-        getRemoteUrl: () => template.uri,
         router,
       });
     } catch (error) {

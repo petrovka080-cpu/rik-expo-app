@@ -4,6 +4,7 @@ import { UI } from "../buyerUi";
 import type { Attachment } from "../buyer.types";
 import type { StylesBag } from "./component.types";
 import { normalizeNativePickedFile } from "../../../lib/filePick";
+import { reportAndSwallow } from "../../../lib/observability/catchDiscipline";
 
 function normalizeErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) {
@@ -25,7 +26,17 @@ function normalizeErrorMessage(error: unknown, fallback: string): string {
     try {
       const json = JSON.stringify(error);
       if (json && json !== "{}") return json;
-    } catch {}
+    } catch (stringifyError) {
+      reportAndSwallow({
+        screen: "buyer",
+        surface: "attachment_picker",
+        event: "normalize_error_message_json_failed",
+        error: stringifyError,
+        kind: "cleanup_only",
+        sourceKind: "dom:file_input",
+        errorStage: "normalize_error",
+      });
+    }
   }
 
   return fallback;
@@ -59,7 +70,20 @@ export function AttachmentUploaderAny({
             const file = (input.files && input.files[0]) || null;
             try {
               input.remove();
-            } catch {}
+            } catch (error) {
+              reportAndSwallow({
+                screen: "buyer",
+                surface: "attachment_picker",
+                event: "picker_cleanup_failed",
+                error,
+                kind: "cleanup_only",
+                sourceKind: "dom:file_input",
+                errorStage: "cleanup",
+                extra: {
+                  scope: "remove_input",
+                },
+              });
+            }
             resolve(file);
           };
           input.click();

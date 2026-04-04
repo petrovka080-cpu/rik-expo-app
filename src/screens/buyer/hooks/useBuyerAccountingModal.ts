@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { repoGetLatestProposalPdfAttachment, repoGetProposalItemsForAccounting, repoGetSupplierCardByName } from "../buyer.repo";
+import { reportAndSwallow } from "../../../lib/observability/catchDiscipline";
 
 type ProposalAttachmentUploader = (
   proposalId: string,
@@ -73,6 +74,18 @@ export function useBuyerAccountingModal(params: {
         setPropDocAttached({ name });
       } catch (error) {
         warnBuyerAccountingModal("ensureProposalDocumentAttached", error);
+        reportAndSwallow({
+          screen: "buyer",
+          surface: "accounting_modal",
+          event: "proposal_document_attach_failed",
+          error,
+          kind: "soft_failure",
+          sourceKind: "proposal_html_attachment",
+          errorStage: "prepare_proposal_document",
+          extra: {
+            proposalId,
+          },
+        });
       } finally {
         setPropDocBusy(false);
       }
@@ -109,7 +122,19 @@ export function useBuyerAccountingModal(params: {
           phone: card?.phone || null,
           email: card?.email || null,
         });
-      } catch {
+      } catch (error) {
+        reportAndSwallow({
+          screen: "buyer",
+          surface: "accounting_modal",
+          event: "accounting_prefill_failed",
+          error,
+          kind: "soft_failure",
+          sourceKind: "proposal_accounting_prefill",
+          errorStage: "prefill_accounting",
+          extra: {
+            proposalId,
+          },
+        });
         setAcctSupp(null);
       }
     },

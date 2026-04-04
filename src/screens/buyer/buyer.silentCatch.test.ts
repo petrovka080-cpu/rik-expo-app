@@ -66,14 +66,26 @@ describe("buyer silent catch hardening", () => {
     const buyerPdfSource = readFileSync(join(__dirname, "buyerPdf.ts"), "utf8");
     const buyerAlertsSource = readFileSync(join(__dirname, "hooks", "useBuyerAlerts.ts"), "utf8");
     const buyerLoadingSource = readFileSync(join(__dirname, "hooks", "useBuyerLoadingController.ts"), "utf8");
+    const attachmentUploaderSource = readFileSync(join(__dirname, "components", "AttachmentUploaderAny.tsx"), "utf8");
+    const accountingModalSource = readFileSync(join(__dirname, "hooks", "useBuyerAccountingModal.ts"), "utf8");
+    const buyerDocumentsSource = readFileSync(join(__dirname, "useBuyerDocuments.ts"), "utf8");
+    const proposalAttachmentsSource = readFileSync(join(__dirname, "useBuyerProposalAttachments.ts"), "utf8");
 
     expect(buyerPdfSource).not.toContain("catch {}");
     expect(buyerAlertsSource).not.toContain("catch {}");
     expect(buyerLoadingSource).not.toContain("catch {}");
+    expect(attachmentUploaderSource).not.toContain("catch {}");
+    expect(accountingModalSource).not.toContain("catch {}");
+    expect(buyerDocumentsSource).not.toContain("getRemoteUrl: () =>");
+    expect(proposalAttachmentsSource).not.toContain("getRemoteUrl: () =>");
 
     expect(buyerPdfSource).toContain("primary_html_build_failed");
     expect(buyerAlertsSource).toContain("normalize_alert_part_failed");
     expect(buyerLoadingSource).toContain("preload_display_nos_failed");
     expect(buyerLoadingSource).toContain("preload_proposal_titles_failed");
+    expect(attachmentUploaderSource).toContain("normalize_error_message_json_failed");
+    expect(attachmentUploaderSource).toContain("picker_cleanup_failed");
+    expect(accountingModalSource).toContain("proposal_document_attach_failed");
+    expect(accountingModalSource).toContain("accounting_prefill_failed");
   });
 });

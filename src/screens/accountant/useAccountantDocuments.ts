@@ -68,7 +68,6 @@ export function useAccountantDocuments(params: Params) {
           entityId: pid,
         }),
       },
-      getRemoteUrl: () => template.uri,
       router,
     });
   }, [current, gbusy, router]);
@@ -113,7 +112,6 @@ export function useAccountantDocuments(params: Params) {
         key: busyKey,
         label: "Открываю документ…",
         descriptor: template,
-        getRemoteUrl: () => att.url,
         router,
       });
     },

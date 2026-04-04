@@ -98,7 +98,6 @@ export function useBuyerProposalAttachments(params: {
               key: `pdf:buyer:attachment:${attId || pid}`,
               label: "Открываю вложение…",
               descriptor: template,
-              getRemoteUrl: () => url,
               router,
             });
             return;

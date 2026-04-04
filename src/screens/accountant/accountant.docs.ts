@@ -50,7 +50,6 @@ async function previewProposalAttachment(
       originModule: "accountant",
       entityId: proposalId,
     }),
-    getRemoteUrl: () => preview.url,
     router,
   });
 }

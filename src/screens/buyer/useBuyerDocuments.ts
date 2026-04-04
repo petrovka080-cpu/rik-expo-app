@@ -38,7 +38,6 @@ export function useBuyerDocuments(params: {
               entityId: id,
             }),
           },
-          getRemoteUrl: () => template.uri,
           router,
         });
       } catch (error) {

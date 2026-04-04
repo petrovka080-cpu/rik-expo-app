@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { reportAndSwallow } from "../../lib/observability/catchDiscipline";
 
 export type PickedFile = {
   name?: string;
@@ -17,15 +18,29 @@ export async function pickAnyFile(): Promise<PickedFile | null> {
       input.accept = ".pdf,.jpg,.jpeg,.png";
 
       let done = false;
+      const cleanup = (scope: "remove_focus_listener" | "remove_input", task: () => void) => {
+        try {
+          task();
+        } catch (error) {
+          reportAndSwallow({
+            screen: "accountant",
+            surface: "attachment_picker",
+            event: "picker_cleanup_failed",
+            error,
+            kind: "cleanup_only",
+            sourceKind: "dom:file_input",
+            errorStage: "cleanup",
+            extra: {
+              scope,
+            },
+          });
+        }
+      };
       const finish = (val: PickedFile | null) => {
         if (done) return;
         done = true;
-        try {
-          window.removeEventListener("focus", onFocus, true);
-        } catch {}
-        try {
-          input.remove();
-        } catch {}
+        cleanup("remove_focus_listener", () => window.removeEventListener("focus", onFocus, true));
+        cleanup("remove_input", () => input.remove());
         resolve(val);
       };
 
