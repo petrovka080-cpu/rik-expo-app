@@ -19,7 +19,7 @@ import {
   type PdfOpenFlowContext,
 } from "../pdf/pdfOpenFlow";
 import {
-  recordPdfCrashBreadcrumb,
+  recordPdfCrashBreadcrumbAsync,
   shouldRecordPdfCrashBreadcrumbs,
 } from "../pdf/pdfCrashBreadcrumbs";
 
@@ -55,6 +55,29 @@ type PreviewPdfDocumentOpts = {
 };
 
 const activePreviewFlows = new Map<string, Promise<DocumentDescriptor>>();
+
+function persistCriticalPdfBreadcrumb(input: {
+  marker: string;
+  screen: unknown;
+  documentType?: unknown;
+  originModule?: unknown;
+  sourceKind?: unknown;
+  uriKind?: unknown;
+  uri?: unknown;
+  fileName?: unknown;
+  entityId?: unknown;
+  sessionId?: unknown;
+  openToken?: unknown;
+  fileExists?: unknown;
+  fileSizeBytes?: unknown;
+  previewPath?: unknown;
+  errorMessage?: unknown;
+  terminalState?: unknown;
+  extra?: Record<string, unknown>;
+}) {
+  if (!shouldRecordPdfCrashBreadcrumbs(input.screen)) return null;
+  return recordPdfCrashBreadcrumbAsync(input);
+}
 
 function requiresCanonicalRemotePdfSource(args: Pick<DocumentDescriptor, "documentType" | "originModule">) {
   const key = `${args.originModule}:${args.documentType}`;
@@ -234,6 +257,24 @@ export async function previewPdfDocument(
           uri: doc.fileSource.uri,
         },
       });
+      const preparedBreadcrumb = persistCriticalPdfBreadcrumb({
+        marker: "document_prepare_done",
+        screen: breadcrumbScreen,
+        documentType: doc.documentType,
+        originModule: doc.originModule,
+        sourceKind: doc.fileSource.kind,
+        uriKind: scheme || doc.fileSource.kind,
+        uri: doc.fileSource.uri,
+        fileName: doc.fileName,
+        entityId: doc.entityId,
+        openToken: opts.openFlow?.openToken,
+        previewPath: "direct_remote_viewer_contract",
+        extra: {
+          route: "/pdf-viewer",
+          checkpoint: "mobile_pre_navigation",
+        },
+      });
+      if (preparedBreadcrumb) await preparedBreadcrumb;
       const viewerHref: Href = {
         pathname: "/pdf-viewer",
         params: {
@@ -261,24 +302,23 @@ export async function previewPdfDocument(
       });
       try {
         opts.router.push(viewerHref);
-        if (shouldRecordPdfCrashBreadcrumbs(breadcrumbScreen)) {
-          recordPdfCrashBreadcrumb({
-            marker: "viewer_route_pushed",
-            screen: breadcrumbScreen,
-            documentType: doc.documentType,
-            originModule: doc.originModule,
-            sourceKind: doc.fileSource.kind,
-            uriKind: scheme || doc.fileSource.kind,
-            uri: doc.fileSource.uri,
-            fileName: doc.fileName,
-            entityId: doc.entityId,
-            openToken: opts.openFlow?.openToken,
-            previewPath: "direct_remote_viewer_contract",
-            extra: {
-              route: "/pdf-viewer",
-            },
-          });
-        }
+        const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_route_pushed",
+          screen: breadcrumbScreen,
+          documentType: doc.documentType,
+          originModule: doc.originModule,
+          sourceKind: doc.fileSource.kind,
+          uriKind: scheme || doc.fileSource.kind,
+          uri: doc.fileSource.uri,
+          fileName: doc.fileName,
+          entityId: doc.entityId,
+          openToken: opts.openFlow?.openToken,
+          previewPath: "direct_remote_viewer_contract",
+          extra: {
+            route: "/pdf-viewer",
+          },
+        });
+        if (pushedBreadcrumb) await pushedBreadcrumb;
         outputObservation.success({
           sourceKind: doc.fileSource.kind,
           extra: {
@@ -363,6 +403,27 @@ export async function previewPdfDocument(
           fileSizeBytes: asset.sizeBytes,
         },
       });
+      const preparedBreadcrumb = persistCriticalPdfBreadcrumb({
+        marker: "document_prepare_done",
+        screen: breadcrumbScreen,
+        documentType: asset.documentType,
+        originModule: asset.originModule,
+        sourceKind: asset.sourceKind,
+        uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+        uri: asset.uri,
+        fileName: asset.fileName,
+        entityId: doc.entityId,
+        sessionId: session.sessionId,
+        openToken: opts.openFlow?.openToken,
+        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
+        fileSizeBytes: asset.sizeBytes,
+        previewPath: "session_viewer_contract",
+        extra: {
+          route: "/pdf-viewer",
+          checkpoint: "mobile_pre_navigation",
+        },
+      });
+      if (preparedBreadcrumb) await preparedBreadcrumb;
       const viewerHref: Href = {
         pathname: "/pdf-viewer",
         params: {
@@ -382,27 +443,26 @@ export async function previewPdfDocument(
       });
       try {
         opts.router.push(viewerHref);
-        if (shouldRecordPdfCrashBreadcrumbs(breadcrumbScreen)) {
-          recordPdfCrashBreadcrumb({
-            marker: "viewer_route_pushed",
-            screen: breadcrumbScreen,
-            documentType: asset.documentType,
-            originModule: asset.originModule,
-            sourceKind: asset.sourceKind,
-            uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
-            uri: asset.uri,
-            fileName: asset.fileName,
-            entityId: doc.entityId,
-            sessionId: session.sessionId,
-            openToken: opts.openFlow?.openToken,
-            fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-            fileSizeBytes: asset.sizeBytes,
-            previewPath: "session_viewer_contract",
-            extra: {
-              route: "/pdf-viewer",
-            },
-          });
-        }
+        const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_route_pushed",
+          screen: breadcrumbScreen,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: doc.entityId,
+          sessionId: session.sessionId,
+          openToken: opts.openFlow?.openToken,
+          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
+          fileSizeBytes: asset.sizeBytes,
+          previewPath: "session_viewer_contract",
+          extra: {
+            route: "/pdf-viewer",
+          },
+        });
+        if (pushedBreadcrumb) await pushedBreadcrumb;
         openObservation.success({
           sourceKind: asset.sourceKind,
           extra: {
@@ -554,6 +614,24 @@ export async function prepareAndPreviewPdfDocument(
         hasBusyOwner: Boolean(args.busy?.run || args.busy?.show),
       },
     });
+    const tapBreadcrumb = persistCriticalPdfBreadcrumb({
+      marker: "tap_start",
+      screen: args.descriptor.originModule,
+      documentType: args.descriptor.documentType,
+      originModule: args.descriptor.originModule,
+      sourceKind: args.descriptor.fileSource?.kind ?? null,
+      uriKind:
+        String(args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? "")
+          .match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || null,
+      uri: args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null,
+      fileName: args.descriptor.fileName,
+      entityId: args.descriptor.entityId,
+      previewPath: "document_open_orchestrator",
+      extra: {
+        hasBusyOwner: Boolean(args.busy?.run || args.busy?.show),
+      },
+    });
+    if (tapBreadcrumb) await tapBreadcrumb;
 
     const execute = async () => {
       recordPdfOpenStage({

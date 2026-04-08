@@ -38,7 +38,7 @@ import {
   markPdfOpenVisible,
 } from "../src/lib/pdf/pdfOpenFlow";
 import {
-  recordPdfCrashBreadcrumb,
+  recordPdfCrashBreadcrumbAsync,
   shouldRecordPdfCrashBreadcrumbs,
 } from "../src/lib/pdf/pdfCrashBreadcrumbs";
 import {
@@ -255,7 +255,7 @@ export default function PdfViewerScreen() {
     if (!diagnosticsScreen) return;
     const currentAsset = asset ?? snapshot.asset ?? null;
     const uri = overrides?.uri ?? currentAsset?.uri ?? null;
-    recordPdfCrashBreadcrumb({
+    void recordPdfCrashBreadcrumbAsync({
       marker,
       screen: diagnosticsScreen,
       documentType: currentAsset?.documentType ?? params.documentType,
@@ -529,6 +529,18 @@ export default function PdfViewerScreen() {
           sourceKind: resolvedAsset.sourceKind,
           trigger,
         });
+        recordViewerBreadcrumb("native_open_start", {
+          uri: resolvedAsset.uri,
+          uriKind: getUriScheme(resolvedAsset.uri),
+          sourceKind: resolvedAsset.sourceKind,
+          fileSizeBytes: resolvedAsset.sizeBytes,
+          fileExists: typeof resolvedAsset.sizeBytes === "number" ? true : null,
+          previewPath: "native_handoff",
+          extra: {
+            trigger,
+            handoffType: "native_handoff",
+          },
+        });
         await openPdfPreview(resolvedAsset.uri, resolvedAsset.fileName);
         console.info("[pdf-viewer] native_handoff_ready", {
           sessionId,
@@ -537,6 +549,19 @@ export default function PdfViewerScreen() {
           uri: resolvedAsset.uri,
           sourceKind: resolvedAsset.sourceKind,
           trigger,
+        });
+        recordViewerBreadcrumb("native_open_success", {
+          uri: resolvedAsset.uri,
+          uriKind: getUriScheme(resolvedAsset.uri),
+          sourceKind: resolvedAsset.sourceKind,
+          fileSizeBytes: resolvedAsset.sizeBytes,
+          fileExists: typeof resolvedAsset.sizeBytes === "number" ? true : null,
+          previewPath: "native_handoff",
+          terminalState: "success",
+          extra: {
+            trigger,
+            handoffType: "native_handoff",
+          },
         });
         if (!isMountedRef.current) return;
         setNativeHandoffCompleted(true);
@@ -552,10 +577,24 @@ export default function PdfViewerScreen() {
           trigger,
           error: message,
         });
+        recordViewerBreadcrumb("native_open_error", {
+          uri: resolvedAsset.uri,
+          uriKind: getUriScheme(resolvedAsset.uri),
+          sourceKind: resolvedAsset.sourceKind,
+          fileSizeBytes: resolvedAsset.sizeBytes,
+          fileExists: typeof resolvedAsset.sizeBytes === "number" ? true : null,
+          previewPath: "native_handoff",
+          errorMessage: message,
+          terminalState: "error",
+          extra: {
+            trigger,
+            handoffType: "native_handoff",
+          },
+        });
         markError(message, "render");
       }
     },
-    [clearLoadingTimeout, markError, markReady, sessionId],
+    [clearLoadingTimeout, markError, markReady, recordViewerBreadcrumb, sessionId],
   );
 
   React.useEffect(() => {
@@ -1131,6 +1170,17 @@ export default function PdfViewerScreen() {
               allowingReadAccessToURL={nativeWebViewReadAccessUri}
               style={styles.nativeWebView}
               onLoadStart={() => {
+                recordViewerBreadcrumb("native_open_start", {
+                  uri: asset.uri,
+                  uriKind: getUriScheme(asset.uri),
+                  sourceKind: resolvedSource.sourceKind,
+                  fileSizeBytes: asset.sizeBytes,
+                  fileExists: typeof asset.sizeBytes === "number" ? true : null,
+                  previewPath: resolvedSource.renderer,
+                  extra: {
+                    handoffType: "native_webview",
+                  },
+                });
                 recordViewerBreadcrumb("native_webview_load_start", {
                   uri: asset.uri,
                   uriKind: getUriScheme(asset.uri),
@@ -1156,6 +1206,18 @@ export default function PdfViewerScreen() {
                   fileExists: typeof asset.sizeBytes === "number" ? true : null,
                   previewPath: resolvedSource.renderer,
                 });
+                recordViewerBreadcrumb("native_open_success", {
+                  uri: asset.uri,
+                  uriKind: getUriScheme(asset.uri),
+                  sourceKind: resolvedSource.sourceKind,
+                  fileSizeBytes: asset.sizeBytes,
+                  fileExists: typeof asset.sizeBytes === "number" ? true : null,
+                  previewPath: resolvedSource.renderer,
+                  terminalState: "success",
+                  extra: {
+                    handoffType: "native_webview",
+                  },
+                });
                 markReady();
               }}
               onError={(event: { nativeEvent?: { description?: string } }) => {
@@ -1175,6 +1237,19 @@ export default function PdfViewerScreen() {
                   fileExists: typeof asset.sizeBytes === "number" ? true : null,
                   previewPath: resolvedSource.renderer,
                   errorMessage: message,
+                });
+                recordViewerBreadcrumb("native_open_error", {
+                  uri: asset.uri,
+                  uriKind: getUriScheme(asset.uri),
+                  sourceKind: resolvedSource.sourceKind,
+                  fileSizeBytes: asset.sizeBytes,
+                  fileExists: typeof asset.sizeBytes === "number" ? true : null,
+                  previewPath: resolvedSource.renderer,
+                  errorMessage: message,
+                  terminalState: "error",
+                  extra: {
+                    handoffType: "native_webview",
+                  },
                 });
                 markError(message, "render");
               }}
@@ -1201,6 +1276,20 @@ export default function PdfViewerScreen() {
                   previewPath: resolvedSource.renderer,
                   errorMessage: message,
                   extra: {
+                    statusCode: Number.isFinite(statusCode) ? statusCode : null,
+                  },
+                });
+                recordViewerBreadcrumb("native_open_error", {
+                  uri: asset.uri,
+                  uriKind: getUriScheme(asset.uri),
+                  sourceKind: resolvedSource.sourceKind,
+                  fileSizeBytes: asset.sizeBytes,
+                  fileExists: typeof asset.sizeBytes === "number" ? true : null,
+                  previewPath: resolvedSource.renderer,
+                  errorMessage: message,
+                  terminalState: "error",
+                  extra: {
+                    handoffType: "native_webview",
                     statusCode: Number.isFinite(statusCode) ? statusCode : null,
                   },
                 });

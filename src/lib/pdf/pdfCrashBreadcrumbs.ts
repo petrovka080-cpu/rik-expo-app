@@ -76,6 +76,17 @@ async function writeRawBreadcrumbs(items: PdfCrashBreadcrumb[]) {
   }
 }
 
+function enqueueBreadcrumbWrite(entry: PdfCrashBreadcrumb) {
+  writeQueue = writeQueue
+    .catch(() => undefined)
+    .then(async () => {
+      const current = await readRawBreadcrumbs();
+      current.push(entry);
+      await writeRawBreadcrumbs(current);
+    });
+  return writeQueue;
+}
+
 export function shouldRecordPdfCrashBreadcrumbs(screen: unknown): screen is PdfCrashDiagnosticScreen {
   return normalizeScreen(screen) != null;
 }
@@ -127,13 +138,61 @@ export function recordPdfCrashBreadcrumb(input: {
     extra: input.extra,
   };
 
-  writeQueue = writeQueue
-    .catch(() => undefined)
-    .then(async () => {
-      const current = await readRawBreadcrumbs();
-      current.push(entry);
-      await writeRawBreadcrumbs(current);
-    });
+  void enqueueBreadcrumbWrite(entry);
+}
+
+export async function recordPdfCrashBreadcrumbAsync(input: {
+  marker: string;
+  screen: unknown;
+  documentType?: unknown;
+  originModule?: unknown;
+  sourceKind?: unknown;
+  uriKind?: unknown;
+  uri?: unknown;
+  fileName?: unknown;
+  entityId?: unknown;
+  sessionId?: unknown;
+  openToken?: unknown;
+  fileExists?: unknown;
+  fileSizeBytes?: unknown;
+  previewPath?: unknown;
+  errorMessage?: unknown;
+  terminalState?: unknown;
+  extra?: Record<string, unknown>;
+}) {
+  const screen = normalizeScreen(input.screen);
+  const marker = trimText(input.marker);
+  if (!screen || !marker) return;
+
+  const entry: PdfCrashBreadcrumb = {
+    at: new Date().toISOString(),
+    marker,
+    screen,
+    documentType: trimText(input.documentType),
+    originModule: trimText(input.originModule),
+    sourceKind: trimText(input.sourceKind),
+    uriKind: trimText(input.uriKind),
+    uriTail: normalizeUriTail(input.uri),
+    fileName: trimText(input.fileName),
+    entityId: trimText(input.entityId),
+    sessionId: trimText(input.sessionId),
+    openToken: trimText(input.openToken),
+    fileExists: normalizeBool(input.fileExists),
+    fileSizeBytes: normalizeNumber(input.fileSizeBytes),
+    previewPath: trimText(input.previewPath),
+    errorMessage: trimText(input.errorMessage),
+    terminalState:
+      input.terminalState === "success" || input.terminalState === "error"
+        ? input.terminalState
+        : null,
+    extra: input.extra,
+  };
+
+  await enqueueBreadcrumbWrite(entry);
+}
+
+export async function flushPdfCrashBreadcrumbWrites() {
+  await writeQueue.catch(() => undefined);
 }
 
 export async function getPdfCrashBreadcrumbs() {
