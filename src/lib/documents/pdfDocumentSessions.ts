@@ -11,6 +11,7 @@ import {
   type PdfSource,
   type PdfSourceKind,
 } from "../pdfFileContract";
+import { recordPdfCrashBreadcrumbAsync } from "../pdf/pdfCrashBreadcrumbs";
 const FileSystemCompat = FileSystemModule as any;
 
 export type DocumentAsset = {
@@ -87,6 +88,38 @@ function logMaterializeStage(
     fileName: payload.fileName ?? null,
     documentType: payload.documentType ?? null,
     originModule: payload.originModule ?? null,
+  });
+}
+
+function persistMaterializeBreadcrumb(
+  marker: string,
+  input: {
+    screen: DocumentDescriptor["originModule"];
+    documentType: DocumentDescriptor["documentType"];
+    originModule: DocumentDescriptor["originModule"];
+    sourceKind: PdfSourceKind;
+    uri?: string | null;
+    fileName?: string;
+    entityId?: string;
+    fileExists?: boolean;
+    fileSizeBytes?: number;
+    errorMessage?: string;
+  },
+) {
+  return recordPdfCrashBreadcrumbAsync({
+    marker,
+    screen: input.screen,
+    documentType: input.documentType,
+    originModule: input.originModule,
+    sourceKind: input.sourceKind,
+    uri: input.uri,
+    uriKind: getUriScheme(input.uri),
+    fileName: input.fileName,
+    entityId: input.entityId,
+    fileExists: input.fileExists,
+    fileSizeBytes: input.fileSizeBytes,
+    errorMessage: input.errorMessage,
+    previewPath: "materialize_local_pdf_asset",
   });
 }
 
@@ -255,41 +288,85 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
   let sizeBytes: number | undefined;
 
   if (Platform.OS !== "web") {
+    await persistMaterializeBreadcrumb("viewer_materialize_start", {
+      screen: doc.originModule,
+      documentType: doc.documentType,
+      originModule: doc.originModule,
+      sourceKind: rawSource.kind,
+      uri: rawUri,
+      fileName: doc.fileName,
+      entityId: doc.entityId,
+    });
     if (rawSource.kind === "blob") {
+      await persistMaterializeBreadcrumb("viewer_materialize_error", {
+        screen: doc.originModule,
+        documentType: doc.documentType,
+        originModule: doc.originModule,
+        sourceKind: rawSource.kind,
+        uri: rawUri,
+        fileName: doc.fileName,
+        entityId: doc.entityId,
+        errorMessage: "Mobile preview cannot use blob/data URI; expected a local PDF file",
+      });
       throw new Error("Mobile preview cannot use blob/data URI; expected a local PDF file");
     }
+    try {
+      const materialized = await ensureLocalPdfUri(rawSource, doc.fileName);
+      finalUri = materialized.uri;
+      finalSourceKind = materialized.sourceKind;
+      sizeBytes = materialized.sizeBytes;
 
-    const materialized = await ensureLocalPdfUri(rawSource, doc.fileName);
-    finalUri = materialized.uri;
-    finalSourceKind = materialized.sourceKind;
-    sizeBytes = materialized.sizeBytes;
+      if (getUriScheme(finalUri) !== "file") {
+        throw new Error("Mobile preview session requires a local file:// PDF asset");
+      }
 
-    if (getUriScheme(finalUri) !== "file") {
-      throw new Error("Mobile preview session requires a local file:// PDF asset");
-    }
-
-    const finalInfo = await getFileInfo(finalUri);
-    if (!finalInfo?.exists) {
-      logMaterializeStage("pdf_session_asset_exists_no", {
+      const finalInfo = await getFileInfo(finalUri);
+      if (!finalInfo?.exists) {
+        logMaterializeStage("pdf_session_asset_exists_no", {
+          uri: finalUri,
+          exists: false,
+          size: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
+          sourceKind: "local-file",
+          fileName: doc.fileName,
+          documentType: doc.documentType,
+          originModule: doc.originModule,
+        });
+        throw new Error("Mobile preview local PDF asset is missing");
+      }
+      logMaterializeStage("pdf_session_asset_exists_yes", {
         uri: finalUri,
-        exists: false,
+        exists: true,
         size: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
         sourceKind: "local-file",
         fileName: doc.fileName,
         documentType: doc.documentType,
         originModule: doc.originModule,
       });
-      throw new Error("Mobile preview local PDF asset is missing");
+      await persistMaterializeBreadcrumb("viewer_materialize_success", {
+        screen: doc.originModule,
+        documentType: doc.documentType,
+        originModule: doc.originModule,
+        sourceKind: materialized.sourceKind,
+        uri: finalUri,
+        fileName: doc.fileName,
+        entityId: doc.entityId,
+        fileExists: true,
+        fileSizeBytes: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
+      });
+    } catch (error) {
+      await persistMaterializeBreadcrumb("viewer_materialize_error", {
+        screen: doc.originModule,
+        documentType: doc.documentType,
+        originModule: doc.originModule,
+        sourceKind: rawSource.kind,
+        uri: finalUri || rawUri,
+        fileName: doc.fileName,
+        entityId: doc.entityId,
+        fileSizeBytes: sizeBytes,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
     }
-    logMaterializeStage("pdf_session_asset_exists_yes", {
-      uri: finalUri,
-      exists: true,
-      size: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
-      sourceKind: "local-file",
-      fileName: doc.fileName,
-      documentType: doc.documentType,
-      originModule: doc.originModule,
-    });
   }
 
   const assetId = makeId("asset");

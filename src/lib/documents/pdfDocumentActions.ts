@@ -51,6 +51,10 @@ export type PdfViewerRouterLike = {
   replace?: (href: Href, options?: unknown) => void;
 };
 
+function canUseInMemoryRemoteViewerShortcut(doc: DocumentDescriptor, hasRouter: boolean) {
+  return hasRouter && Platform.OS === "android" && doc.fileSource.kind === "remote-url";
+}
+
 function toSafeRouteParam(value: unknown) {
   return String(value ?? "").trim();
 }
@@ -297,7 +301,7 @@ export async function previewPdfDocument(
       uri: doc.uri,
       fileName: doc.fileName,
     });
-    if (opts?.router && Platform.OS !== "web" && doc.fileSource.kind === "remote-url") {
+    if (canUseInMemoryRemoteViewerShortcut(doc, Boolean(opts?.router))) {
       recordPdfOpenStage({
         context: opts.openFlow,
         stage: "document_prepare_done",

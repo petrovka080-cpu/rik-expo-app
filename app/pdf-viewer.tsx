@@ -669,6 +669,21 @@ export default function PdfViewerScreen() {
           resolutionKind: resolution.kind,
         },
       });
+      recordViewerBreadcrumb(
+        resolution.sourceKind === "local-file" ? "viewer_resolution_local_file" : "viewer_resolution_remote_url",
+        {
+          uri: resolution.asset.uri,
+          uriKind: resolution.scheme,
+          sourceKind: resolution.sourceKind,
+          fileSizeBytes: resolution.asset.sizeBytes,
+          fileExists: typeof resolution.asset.sizeBytes === "number" ? true : null,
+          previewPath: resolution.kind === "resolved-embedded" ? resolution.renderer : resolution.kind,
+          extra: {
+            renderer: resolution.renderer,
+            resolutionKind: resolution.kind,
+          },
+        },
+      );
 
       enterLoading();
       if (resolution.kind === "resolved-native-handoff") {
