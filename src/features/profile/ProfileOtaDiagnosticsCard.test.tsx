@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 import { Alert, Text } from "react-native";
@@ -9,7 +10,6 @@ const mockClipboardSetStringAsync = jest.fn();
 const mockCheckAndFetchOtaNow = jest.fn();
 const mockGetOtaDiagnostics = jest.fn();
 const mockBuildOtaDiagnosticsText = jest.fn();
-const mockUseUpdates = jest.fn();
 const mockGetPdfCrashBreadcrumbs = jest.fn();
 const mockBuildPdfCrashBreadcrumbsText = jest.fn();
 
@@ -23,10 +23,6 @@ jest.mock("@expo/vector-icons", () => ({
 
 jest.mock("expo-clipboard", () => ({
   setStringAsync: (...args: unknown[]) => mockClipboardSetStringAsync(...args),
-}));
-
-jest.mock("expo-updates", () => ({
-  useUpdates: (...args: unknown[]) => mockUseUpdates(...args),
 }));
 
 jest.mock("@/src/lib/otaHardening", () => ({
@@ -103,13 +99,11 @@ describe("ProfileOtaDiagnosticsCard", () => {
     mockCheckAndFetchOtaNow.mockReset();
     mockGetOtaDiagnostics.mockReset();
     mockBuildOtaDiagnosticsText.mockReset();
-    mockUseUpdates.mockReset();
     mockGetPdfCrashBreadcrumbs.mockReset();
     mockBuildPdfCrashBreadcrumbsText.mockReset();
     mockBuildOtaDiagnosticsText.mockReturnValue("diagnostics");
     mockGetPdfCrashBreadcrumbs.mockResolvedValue([]);
     mockBuildPdfCrashBreadcrumbsText.mockReturnValue("breadcrumb-line");
-    mockUseUpdates.mockReturnValue({});
 
     alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
   });
@@ -145,6 +139,14 @@ describe("ProfileOtaDiagnosticsCard", () => {
       "OTA diagnostics",
       expect.stringContaining("ручная OTA-проверка отключена"),
     );
+  });
+
+  it("reads diagnostics without eager expo-updates hook state", () => {
+    mockGetOtaDiagnostics.mockReturnValue(createDiagnostics());
+
+    renderCard();
+
+    expect(mockGetOtaDiagnostics).toHaveBeenCalledWith();
   });
 
   it("keeps manual check path available outside release channels", async () => {

@@ -13,6 +13,7 @@ import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
 import { clearCurrentSessionRoleCache, warmCurrentSessionProfile } from "../src/lib/sessionRole";
 import { ensureQueueWorker, stopQueueWorker } from "../src/workers/queueBootstrap";
+import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
@@ -46,6 +47,22 @@ export default function RootLayout() {
 
   // роль сейчас напрямую не используется в _layout, но оставляем фоновой прогрев
   const initStartedRef = useRef(false);
+  const launchMarkerRef = useRef(false);
+  const usableUiMarkerRef = useRef(false);
+  useEffect(() => {
+    if (launchMarkerRef.current) return;
+    launchMarkerRef.current = true;
+    recordPlatformObservability({
+      screen: "request",
+      surface: "startup_bootstrap",
+      category: "ui",
+      event: "app_launch_start",
+      result: "success",
+      extra: {
+        owner: "root_layout",
+      },
+    });
+  }, []);
   // --- WEB: нормальный контейнер/скролл ---
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -83,6 +100,17 @@ export default function RootLayout() {
     if (!supabase) return;
     if (initStartedRef.current) return;
     initStartedRef.current = true;
+    recordPlatformObservability({
+      screen: "request",
+      surface: "startup_bootstrap",
+      category: "ui",
+      event: "bootstrap_enter",
+      result: "success",
+      extra: {
+        owner: "root_layout",
+        pathname,
+      },
+    });
 
     let active = true;
 
@@ -94,12 +122,37 @@ export default function RootLayout() {
 if (!active) return;
 
 if (degraded) {
+  recordPlatformObservability({
+    screen: "request",
+    surface: "startup_bootstrap",
+    category: "fetch",
+    event: "auth_restore_result",
+    result: "success",
+    fallbackUsed: true,
+    extra: {
+      owner: "root_layout",
+      degraded: true,
+      hasSession: false,
+    },
+  });
   setHasSession(null);
   setSessionLoaded(true);
   return;
 }
 
 const has = Boolean(session);
+recordPlatformObservability({
+  screen: "request",
+  surface: "startup_bootstrap",
+  category: "fetch",
+  event: "auth_restore_result",
+  result: "success",
+  extra: {
+    owner: "root_layout",
+    degraded: false,
+    hasSession: has,
+  },
+});
 setHasSession(has);
 setSessionLoaded(true);
 
@@ -109,6 +162,20 @@ else {
   clearCurrentSessionRoleCache();
 }
       } catch (e: unknown) {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "fetch",
+          event: "auth_restore_result",
+          result: "error",
+          errorStage: "get_session_safe",
+          errorClass: e instanceof Error ? e.name : undefined,
+          errorMessage: e instanceof Error ? e.message : String(e ?? "startup_bootstrap_failed"),
+          fallbackUsed: true,
+          extra: {
+            owner: "root_layout",
+          },
+        });
         if (__DEV__) {
           console.warn("[RootLayout] session load failed:", e instanceof Error ? e.message : e);
         }
@@ -146,7 +213,7 @@ setSessionLoaded(true);
       active = false;
       listener?.subscription?.unsubscribe();
     };
-  }, [isPdfViewerRoute, loadRoleForCurrentSession]);
+  }, [isPdfViewerRoute, loadRoleForCurrentSession, pathname]);
 
   useEffect(() => {
   if (!sessionLoaded) return;
@@ -154,14 +221,55 @@ setSessionLoaded(true);
   const inAuthStack = segments?.[0] === "auth";
 
   if (hasSession === false && !inAuthStack && !isPdfViewerRoute) {
+    recordPlatformObservability({
+      screen: "request",
+      surface: "startup_bootstrap",
+      category: "ui",
+      event: "route_resolution_result",
+      result: "success",
+      extra: {
+        owner: "root_layout",
+        target: "/auth/login",
+        hasSession,
+      },
+    });
     router.replace("/auth/login");
     return;
   }
 
   if (hasSession === true && inAuthStack) {
+    recordPlatformObservability({
+      screen: "request",
+      surface: "startup_bootstrap",
+      category: "ui",
+      event: "route_resolution_result",
+      result: "success",
+      extra: {
+        owner: "root_layout",
+        target: POST_AUTH_ENTRY_ROUTE,
+        hasSession,
+      },
+    });
     router.replace(POST_AUTH_ENTRY_ROUTE);
   }
 }, [hasSession, isPdfViewerRoute, sessionLoaded, segments]);
+
+  useEffect(() => {
+    if (!sessionLoaded || usableUiMarkerRef.current) return;
+    usableUiMarkerRef.current = true;
+    recordPlatformObservability({
+      screen: "request",
+      surface: "startup_bootstrap",
+      category: "ui",
+      event: "first_usable_ui_ready",
+      result: "success",
+      extra: {
+        owner: "root_layout",
+        hasSession,
+        pathname,
+      },
+    });
+  }, [hasSession, pathname, sessionLoaded]);
 
   useEffect(() => {
   if (!sessionLoaded) return;

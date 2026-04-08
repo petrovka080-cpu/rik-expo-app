@@ -5,7 +5,7 @@ import { RequestTimeoutError } from "../requestTimeoutPolicy";
 import Index from "../../../app/index";
 
 const mockReplace = jest.fn();
-const mockGetSession = jest.fn();
+const mockGetSessionSafe = jest.fn();
 
 jest.mock("expo-router", () => ({
   router: {
@@ -14,21 +14,20 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("../supabaseClient", () => ({
+  getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   supabase: {
-    auth: {
-      getSession: (...args: unknown[]) => mockGetSession(...args),
-    },
+    auth: {},
   },
 }));
 
 describe("Index recovery bootstrap", () => {
   beforeEach(() => {
     mockReplace.mockReset();
-    mockGetSession.mockReset();
+    mockGetSessionSafe.mockReset();
   });
 
   it("routes to the profile hub when session bootstrap times out", async () => {
-    mockGetSession.mockRejectedValue(
+    mockGetSessionSafe.mockRejectedValue(
       new RequestTimeoutError({
         requestClass: "lightweight_lookup",
         timeoutMs: 8000,
@@ -51,9 +50,7 @@ describe("Index recovery bootstrap", () => {
   });
 
   it("still routes to login when there is explicitly no session", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: null },
-    });
+    mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
 
     await act(async () => {
       TestRenderer.create(<Index />);
