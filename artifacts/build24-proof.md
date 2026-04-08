@@ -29,14 +29,31 @@ Result: PASS
 
 ## Native build / device status
 
+## Clean release scope
+
+- Clean worktree: `c:\dev\rik-expo-app-build24-recovery`
+- Clean branch: `fix/ios-build24-startup-recovery`
+- Clean commit: `359cbe9` (`fix(ios): isolate startup recovery for build 24`)
+
+## Native build
+
+- Build command:
+  `npx eas build --platform ios --profile production --non-interactive`
+- EAS build id:
+  `a4d95b59-b766-4b84-aa7e-d896e15797c9`
+- iOS build number:
+  `24`
+- Build artifact:
+  `https://expo.dev/artifacts/eas/mmEthum4WLwwojsMyHgvuV.ipa`
+
+## Device verification
+
 Not yet completed from this host:
 
-- iOS build 24 not built in this pass
 - no real iPhone verification yet
 
 Therefore this wave remains NOT GREEN until:
 
-1. build 24 is produced
-2. first open succeeds on iPhone
-3. relaunch succeeds on iPhone
-4. cold relaunch succeeds on iPhone
+1. first open succeeds on iPhone
+2. relaunch succeeds on iPhone
+3. cold relaunch succeeds on iPhone
