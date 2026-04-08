@@ -353,6 +353,30 @@ export function createDocumentSession(asset: DocumentAsset, status: DocumentSess
   return session;
 }
 
+export function createInMemoryDocumentPreviewSession(
+  doc: DocumentDescriptor,
+): { session: DocumentSession; asset: DocumentAsset } {
+  cleanupExpiredDocumentSessions();
+  const assetId = makeId("asset");
+  const asset: DocumentAsset = {
+    assetId,
+    uri: doc.uri,
+    fileSource: doc.fileSource,
+    sourceKind: doc.fileSource.kind,
+    fileName: doc.fileName,
+    title: doc.title,
+    mimeType: doc.mimeType,
+    documentType: doc.documentType,
+    originModule: doc.originModule,
+    source: doc.source,
+    createdAt: doc.createdAt || nowIso(),
+    entityId: doc.entityId,
+  };
+  assets.set(assetId, asset);
+  const session = createDocumentSession(asset, "ready");
+  return { session, asset };
+}
+
 export async function createDocumentPreviewSession(doc: DocumentDescriptor): Promise<{ session: DocumentSession; asset: DocumentAsset }> {
   const asset = await materializePdfAsset(doc);
   const session = createDocumentSession(asset, "ready");

@@ -1,7 +1,10 @@
 import type { Href } from "expo-router";
 import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
-import { createDocumentPreviewSession } from "./pdfDocumentSessions";
+import {
+  createDocumentPreviewSession,
+  createInMemoryDocumentPreviewSession,
+} from "./pdfDocumentSessions";
 import {
   openPdfExternal,
   openPdfPreview,
@@ -257,6 +260,15 @@ export async function previewPdfDocument(
           uri: doc.fileSource.uri,
         },
       });
+      recordPdfOpenStage({
+        context: opts.openFlow,
+        stage: "viewer_route_payload_ready",
+        sourceKind: doc.fileSource.kind,
+        extra: {
+          previewSourceMode: "direct_remote_viewer_session_contract",
+          payloadMode: "session_id_only",
+        },
+      });
       const preparedBreadcrumb = persistCriticalPdfBreadcrumb({
         marker: "document_prepare_done",
         screen: breadcrumbScreen,
@@ -275,73 +287,82 @@ export async function previewPdfDocument(
         },
       });
       if (preparedBreadcrumb) await preparedBreadcrumb;
+      const { session, asset } = createInMemoryDocumentPreviewSession(doc);
       const viewerHref: Href = {
         pathname: "/pdf-viewer",
         params: {
-          uri: doc.fileSource.uri,
-          fileName: doc.fileName,
-          title: doc.title,
-          sourceKind: doc.fileSource.kind,
-          documentType: doc.documentType,
-          originModule: doc.originModule,
-          source: doc.source,
-          entityId: doc.entityId ?? "",
+          sessionId: session.sessionId,
           openToken: opts.openFlow?.openToken ?? "",
         },
       };
       console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
-        sessionId: null,
-        documentType: doc.documentType,
-        originModule: doc.originModule,
-        finalUri: doc.fileSource.uri,
-        finalScheme: String(doc.fileSource.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
-        finalSourceKind: doc.fileSource.kind,
+        sessionId: session.sessionId,
+        documentType: asset.documentType,
+        originModule: asset.originModule,
+        finalUri: asset.uri,
+        finalScheme: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+        finalSourceKind: asset.sourceKind,
         isLocalFile: false,
-        fileName: doc.fileName,
-        previewSourceMode: "direct_remote_viewer_contract",
+        fileName: asset.fileName,
+        previewSourceMode: "direct_remote_viewer_session_contract",
+        payloadMode: "session_id_only",
       });
       try {
+        recordPdfOpenStage({
+          context: opts.openFlow,
+          stage: "viewer_route_push_attempt",
+          sourceKind: asset.sourceKind,
+          extra: {
+            route: "/pdf-viewer",
+            sessionId: session.sessionId,
+            previewSourceMode: "direct_remote_viewer_session_contract",
+            payloadMode: "session_id_only",
+          },
+        });
         opts.router.push(viewerHref);
         const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
           screen: breadcrumbScreen,
-          documentType: doc.documentType,
-          originModule: doc.originModule,
-          sourceKind: doc.fileSource.kind,
-          uriKind: scheme || doc.fileSource.kind,
-          uri: doc.fileSource.uri,
-          fileName: doc.fileName,
-          entityId: doc.entityId,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: scheme || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: asset.entityId,
+          sessionId: session.sessionId,
           openToken: opts.openFlow?.openToken,
-          previewPath: "direct_remote_viewer_contract",
+          previewPath: "direct_remote_viewer_session_contract",
           extra: {
             route: "/pdf-viewer",
+            payloadMode: "session_id_only",
           },
         });
         if (pushedBreadcrumb) await pushedBreadcrumb;
         outputObservation.success({
-          sourceKind: doc.fileSource.kind,
+          sourceKind: asset.sourceKind,
           extra: {
-            sessionId: null,
-            assetId: null,
-            previewSourceMode: "direct_remote_viewer_contract",
+            sessionId: session.sessionId,
+            assetId: asset.assetId,
+            previewSourceMode: "direct_remote_viewer_session_contract",
           },
         });
         openObservation.success({
-          sourceKind: doc.fileSource.kind,
+          sourceKind: asset.sourceKind,
           extra: {
             route: "/pdf-viewer",
-            sessionId: null,
-            previewSourceMode: "direct_remote_viewer_contract",
+            sessionId: session.sessionId,
+            previewSourceMode: "direct_remote_viewer_session_contract",
           },
         });
         return;
       } catch (error) {
         failPdfOpenVisible(opts.openFlow?.openToken, error, {
-          sourceKind: doc.fileSource.kind,
+          sourceKind: asset.sourceKind,
           extra: {
             route: "/pdf-viewer",
-            previewSourceMode: "direct_remote_viewer_contract",
+            sessionId: session.sessionId,
+            previewSourceMode: "direct_remote_viewer_session_contract",
           },
         });
         throw error;

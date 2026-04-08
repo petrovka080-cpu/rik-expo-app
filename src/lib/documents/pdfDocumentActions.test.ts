@@ -4,6 +4,7 @@ const mockOpenPdfPreview = jest.fn();
 const mockOpenPdfShare = jest.fn();
 const mockOpenPdfExternal = jest.fn();
 const mockCreateDocumentPreviewSession = jest.fn();
+const mockCreateInMemoryDocumentPreviewSession = jest.fn();
 
 jest.mock("../pdfRunner", () => ({
   preparePdfExecutionSource: (...args: unknown[]) => mockPreparePdfExecutionSource(...args),
@@ -14,6 +15,8 @@ jest.mock("../pdfRunner", () => ({
 
 jest.mock("./pdfDocumentSessions", () => ({
   createDocumentPreviewSession: (...args: unknown[]) => mockCreateDocumentPreviewSession(...args),
+  createInMemoryDocumentPreviewSession: (...args: unknown[]) =>
+    mockCreateInMemoryDocumentPreviewSession(...args),
 }));
 
 import { Platform } from "react-native";
@@ -44,6 +47,7 @@ const baseDocument = {
   documentType: "payment_order" as const,
   originModule: "accountant" as const,
   source: "generated" as const,
+  entityId: undefined as string | undefined,
 };
 
 const flushPromises = async () => {
@@ -65,8 +69,31 @@ describe("pdfDocumentActions", () => {
     mockOpenPdfShare.mockReset();
     mockOpenPdfExternal.mockReset();
     mockCreateDocumentPreviewSession.mockReset();
+    mockCreateInMemoryDocumentPreviewSession.mockReset();
     resetPlatformObservabilityEvents();
     resetPdfOpenFlowStateForTests();
+    mockCreateInMemoryDocumentPreviewSession.mockImplementation((doc: typeof baseDocument) => ({
+      session: {
+        sessionId: "session-direct-1",
+        assetId: "asset-direct-1",
+        status: "ready",
+        createdAt: "2026-03-30T10:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-direct-1",
+        uri: doc.uri,
+        fileSource: doc.fileSource,
+        sourceKind: doc.fileSource.kind,
+        fileName: doc.fileName,
+        title: doc.title,
+        mimeType: doc.mimeType,
+        documentType: doc.documentType,
+        originModule: doc.originModule,
+        source: doc.source,
+        createdAt: "2026-03-30T10:00:00.000Z",
+        entityId: doc.entityId,
+      },
+    }));
   });
 
   afterAll(() => {
@@ -283,23 +310,17 @@ describe("pdfDocumentActions", () => {
     expect(push).toHaveBeenCalledWith({
       pathname: "/pdf-viewer",
       params: {
-        uri: "https://example.com/payment.pdf",
-        fileName: "payment.pdf",
-        title: "Payment PDF",
-        sourceKind: "remote-url",
-        documentType: "payment_order",
-        originModule: "accountant",
-        source: "generated",
-        entityId: "",
+        sessionId: "session-direct-1",
         openToken: "",
       },
     });
+    expect(mockCreateInMemoryDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
     expect(
       getPlatformObservabilityEvents().some(
         (event) =>
           event.event === "pdf_preview_open"
           && event.result === "success"
-          && event.extra?.previewSourceMode === "direct_remote_viewer_contract",
+          && event.extra?.previewSourceMode === "direct_remote_viewer_session_contract",
       ),
     ).toBe(true);
   });
@@ -319,17 +340,11 @@ describe("pdfDocumentActions", () => {
     expect(push).toHaveBeenCalledWith({
       pathname: "/pdf-viewer",
       params: {
-        uri: "https://example.com/payment.pdf",
-        fileName: "payment.pdf",
-        title: "Payment PDF",
-        sourceKind: "remote-url",
-        documentType: "payment_order",
-        originModule: "accountant",
-        source: "generated",
-        entityId: "",
+        sessionId: "session-direct-1",
         openToken: "",
       },
     });
+    expect(mockCreateInMemoryDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
     expect(mockOpenPdfShare).not.toHaveBeenCalled();
   });
