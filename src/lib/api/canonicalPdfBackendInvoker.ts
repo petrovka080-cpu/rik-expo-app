@@ -284,8 +284,18 @@ async function invokeCanonicalPdfBackendViaDirectFetch<TPayload>(
 ): Promise<CanonicalPdfInvokeSuccess> {
   let attempt = await invokeDirectFetchOnce(args);
   let payloadError = extractCanonicalPdfErrorPayload(attempt.data);
+  const detail = summarizeFunctionResponse(attempt.data);
+  const authLikeDetail = (detail ?? "").toLowerCase();
+  const shouldRetryAuth =
+    attempt.status === 401 ||
+    attempt.status === 403 ||
+    payloadError?.errorCode === "auth_failed" ||
+    authLikeDetail.includes("auth") ||
+    authLikeDetail.includes("forbidden") ||
+    authLikeDetail.includes("unauthorized") ||
+    authLikeDetail.includes("permission");
 
-  if ((attempt.status === 401 || payloadError?.errorCode === "auth_failed") && (await refreshSessionOnce())) {
+  if (shouldRetryAuth && (await refreshSessionOnce())) {
     attempt = await invokeDirectFetchOnce(args);
     payloadError = extractCanonicalPdfErrorPayload(attempt.data);
   }
@@ -336,7 +346,15 @@ async function invokeCanonicalPdfBackendViaSupabase<TPayload>(
   } else if (attempt.error) {
     const message = trimText(attempt.error.message);
     const status = Number((attempt.error as { context?: { status?: unknown } }).context?.status ?? NaN);
-    if (status === 401 || message.toLowerCase().includes("auth")) {
+    const lower = message.toLowerCase();
+    if (
+      status === 401 ||
+      status === 403 ||
+      lower.includes("auth") ||
+      lower.includes("forbidden") ||
+      lower.includes("unauthorized") ||
+      lower.includes("permission")
+    ) {
       const refreshed = await refreshSessionOnce();
       if (refreshed) {
         attempt = await invokeOnce(args);
@@ -356,7 +374,7 @@ async function invokeCanonicalPdfBackendViaSupabase<TPayload>(
     });
     throw new CanonicalPdfTransportError(`${args.errorPrefix}: ${message}`, {
       functionName: args.functionName,
-      code: Number.isFinite(status) && status === 401 ? "auth_failed" : "transport_error",
+      code: Number.isFinite(status) && (status === 401 || status === 403) ? "auth_failed" : "transport_error",
       httpStatus: Number.isFinite(status) ? status : null,
       transport: "supabase_functions_invoke",
       detail,

@@ -15988,6 +15988,25 @@ export type Database = {
         }[]
       }
       buyer_mark_done: { Args: { p_id: number }; Returns: undefined }
+      buyer_rfq_create_and_publish_v1: {
+        Args: {
+          p_address_place_id?: string | null
+          p_address_text?: string | null
+          p_city?: string | null
+          p_contact_email?: string | null
+          p_contact_phone?: string | null
+          p_contact_whatsapp?: string | null
+          p_deadline_at: string
+          p_delivery_days?: number | null
+          p_lat?: number | null
+          p_lng?: number | null
+          p_note?: string | null
+          p_radius_km?: number | null
+          p_request_item_ids: string[]
+          p_visibility?: string | null
+        }
+        Returns: string
+      }
       buyer_mass_send_to_accountant: {
         Args: {
           p_currency?: string

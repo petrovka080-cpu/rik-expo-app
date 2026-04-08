@@ -7,7 +7,7 @@ import {
   createCanonicalPdfOptionsResponse,
   createCanonicalPdfSuccessResponse,
 } from "../../../src/lib/pdf/canonicalPdfPlatformContract.ts";
-import { resolveCanonicalPdfRoleAccess } from "../../../src/lib/pdf/rolePdfAuth.ts";
+import { resolveWarehousePdfAccess } from "../../../src/lib/pdf/rolePdfAuth.ts";
 import {
   normalizeWarehousePdfRequest,
   type WarehousePdfRequest,
@@ -196,7 +196,11 @@ function filterHeadsByDayLabel(rows: Record<string, unknown>[], dayLabel?: strin
   });
 }
 
-async function requireWarehouseAuth(request: Request, supabaseUrl: string) {
+async function requireWarehouseAuth(
+  request: Request,
+  supabaseUrl: string,
+  context?: { documentKind?: string | null },
+) {
   const anonKey = cleanText(Deno.env.get("SUPABASE_ANON_KEY"));
   const authHeader = cleanText(request.headers.get("Authorization"));
 
@@ -220,10 +224,7 @@ async function requireWarehouseAuth(request: Request, supabaseUrl: string) {
     },
   });
 
-  const [{ data: userData, error: userError }, { data: roleData }] = await Promise.all([
-    requester.auth.getUser(),
-    requester.rpc("get_my_role"),
-  ]);
+  const { data: userData, error: userError } = await requester.auth.getUser();
 
   if (userError || !userData?.user) {
     throw createCanonicalPdfErrorResponse({
@@ -235,13 +236,28 @@ async function requireWarehouseAuth(request: Request, supabaseUrl: string) {
     });
   }
 
-  const roleAccess = resolveCanonicalPdfRoleAccess({
-    user: userData.user,
-    rpcRole: roleData,
-    expectedRole: "warehouse",
+  const requesterUserId = userData.user.id;
+  const membershipResult = await requester
+    .from("company_members")
+    .select("role, company_id")
+    .eq("user_id", requesterUserId);
+
+  const decision = resolveWarehousePdfAccess({
+    membershipRows: membershipResult.data,
   });
 
-  if (!roleAccess.allowed) {
+  if (!decision.allowed) {
+    console.log(
+      `[${FUNCTION_NAME}] warehouse membership forbidden ${JSON.stringify({
+        rejectionReason: decision.reason,
+        documentKind: context?.documentKind ?? null,
+        uid: requesterUserId,
+        email: cleanText(userData.user.email),
+        companyMemberRoles: decision.membershipRoles,
+        companyMemberIds: decision.membershipCompanyIds,
+        membershipError: membershipResult.error?.message ?? null,
+      })}`,
+    );
     throw createCanonicalPdfErrorResponse({
       status: 403,
       role: "warehouse",
@@ -252,7 +268,8 @@ async function requireWarehouseAuth(request: Request, supabaseUrl: string) {
   }
 
   return {
-    userId: userData.user.id,
+    userId: requesterUserId,
+    requester,
   };
 }
 
@@ -417,6 +434,137 @@ function buildWarehouseFileName(payload: WarehousePdfRequest) {
     }),
     payload.documentType,
   );
+}
+
+async function assertWarehouseRequesterRpcOk(args: {
+  requester: any;
+  rpcName: string;
+  rpcArgs: Record<string, unknown>;
+}) {
+  const { data, error } = await args.requester.rpc(args.rpcName, args.rpcArgs);
+  if (error) {
+    console.log(
+      `[${FUNCTION_NAME}] warehouse rpc access forbidden ${JSON.stringify({
+        rpcName: args.rpcName,
+        rpcArgs: args.rpcArgs,
+        error: error?.message ?? null,
+        code: (error as { code?: string })?.code ?? null,
+      })}`,
+    );
+    throw buildErrorResponse(403, "warehouse_document", "Forbidden.");
+  }
+  return data;
+}
+
+async function assertWarehouseSourceAccess(args: {
+  requester: any;
+  payload: WarehousePdfRequest;
+}) {
+  const { requester, payload } = args;
+  const range = buildRpcRange(payload);
+
+  switch (payload.documentKind) {
+    case "issue_form": {
+      const data = await assertWarehouseRequesterRpcOk({
+        requester,
+        rpcName: "acc_report_issues_v2",
+        rpcArgs: { p_from: null, p_to: null },
+      });
+      const visible = asArray(data)
+        .map(normalizeIssueHead)
+        .filter(Boolean)
+        .some((row) => Number(row.issue_id) === Number(payload.issueId));
+      if (!visible) {
+        console.log(
+          `[${FUNCTION_NAME}] warehouse issue not visible ${JSON.stringify({
+            issueId: payload.issueId,
+            documentKind: payload.documentKind,
+          })}`,
+        );
+        throw buildErrorResponse(403, payload.documentType, "Forbidden.");
+      }
+      return;
+    }
+    case "incoming_form": {
+      const data = await assertWarehouseRequesterRpcOk({
+        requester,
+        rpcName: "pdf_warehouse_incoming_source_v1",
+        rpcArgs: { p_incoming_id: payload.incomingId },
+      });
+      const header = asRecord(asRecord(data).header);
+      const incomingId = cleanText(header.incoming_id ?? header.id);
+      if (!incomingId) {
+        console.log(
+          `[${FUNCTION_NAME}] warehouse incoming not visible ${JSON.stringify({
+            incomingId: payload.incomingId,
+            documentKind: payload.documentKind,
+          })}`,
+        );
+        throw buildErrorResponse(403, payload.documentType, "Forbidden.");
+      }
+      return;
+    }
+    case "issue_register":
+    case "issue_day_register":
+      await assertWarehouseRequesterRpcOk({
+        requester,
+        rpcName: "acc_report_issues_v2",
+        rpcArgs: { p_from: range.rpcFrom, p_to: range.rpcTo },
+      });
+      return;
+    case "incoming_register":
+    case "incoming_day_register":
+      await assertWarehouseRequesterRpcOk({
+        requester,
+        rpcName: "acc_report_incoming_v2",
+        rpcArgs: { p_from: range.rpcFrom, p_to: range.rpcTo },
+      });
+      return;
+    case "issue_materials":
+      await assertWarehouseRequesterRpcOk({
+        requester,
+        rpcName: "wh_report_issued_materials_fast",
+        rpcArgs: {
+          p_from: range.rpcFrom,
+          p_to: range.rpcTo,
+          p_object_id: cleanText(payload.objectId) || null,
+        },
+      });
+      return;
+    case "issue_day_materials":
+      await assertWarehouseRequesterRpcOk({
+        requester,
+        rpcName: "pdf_warehouse_day_materials_source_v1",
+        rpcArgs: { p_from: range.rpcFrom, p_to: range.rpcTo },
+      });
+      return;
+    case "incoming_materials":
+    case "incoming_day_materials":
+      await assertWarehouseRequesterRpcOk({
+        requester,
+        rpcName: "pdf_warehouse_incoming_materials_source_v1",
+        rpcArgs: { p_from: range.rpcFrom, p_to: range.rpcTo },
+      });
+      return;
+    case "object_work":
+      await assertWarehouseRequesterRpcOk({
+        requester,
+        rpcName: "pdf_warehouse_object_work_source_v1",
+        rpcArgs: {
+          p_from: range.rpcFrom,
+          p_to: range.rpcTo,
+          p_object_id: cleanText(payload.objectId) || null,
+        },
+      });
+      return;
+    default:
+      console.log(
+        `[${FUNCTION_NAME}] warehouse document kind forbidden ${JSON.stringify({
+          documentKind: payload.documentKind,
+        })}`,
+      );
+      throw buildErrorResponse(403, payload.documentType, "Forbidden.");
+  }
 }
 
 async function buildWarehousePdfModel(admin: any, payload: WarehousePdfRequest) {
@@ -648,7 +796,13 @@ Deno.serve({ port: Number.isFinite(serverPort) ? serverPort : 8000 }, async (req
   }
 
   try {
-    const auth = await requireWarehouseAuth(request, supabaseUrl);
+    const auth = await requireWarehouseAuth(request, supabaseUrl, {
+      documentKind: payload.documentKind,
+    });
+    await assertWarehouseSourceAccess({
+      requester: auth.requester,
+      payload,
+    });
     const admin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });

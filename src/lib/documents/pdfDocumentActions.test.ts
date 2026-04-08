@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 const mockPreparePdfExecutionSource = jest.fn();
 const mockOpenPdfPreview = jest.fn();
 const mockOpenPdfShare = jest.fn();
@@ -92,6 +93,30 @@ describe("pdfDocumentActions", () => {
         (event) => event.event === "pdf_output_prepare" && event.result === "success",
       ),
     ).toBe(true);
+  });
+
+  it("rejects local legacy materialization for canonical role PDF families", async () => {
+    mockPreparePdfExecutionSource.mockResolvedValueOnce({
+      kind: "local-file",
+      uri: "file:///cache/director-report.pdf",
+    });
+
+    await expect(
+      preparePdfDocument({
+        supabase: {},
+        descriptor: {
+          ...baseDocument,
+          uri: "https://example.com/director-report.pdf",
+          fileSource: {
+            kind: "remote-url",
+            uri: "https://example.com/director-report.pdf",
+          },
+          fileName: "director_report.pdf",
+          documentType: "director_report",
+          originModule: "director",
+        },
+      }),
+    ).rejects.toThrow("Canonical director director_report PDF must use backend remote-url source");
   });
 
   it("navigates to the shared viewer route with a prepared session when router is provided", async () => {

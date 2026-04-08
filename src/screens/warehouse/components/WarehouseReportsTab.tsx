@@ -296,6 +296,7 @@ export default function WarehouseReportsTab(props: Props) {
               : "Весь период"
           }
           actions={reportActions}
+          testIdPrefix="warehouse-reports"
           ui={{
             text: UI.text,
             sub: UI.sub,

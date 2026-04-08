@@ -1,7 +1,7 @@
 // src/screens/warehouse/components/WarehouseSheet.tsx
 import React from "react";
 import { View, Pressable, Platform, type ViewStyle } from "react-native";
-import RNModal from "react-native-modal";
+import RNModal from "../../../ui/React19SafeModal";
 import { UI } from "../warehouse.styles";
 
 const asWebStyle = (style: Record<string, unknown>) => style as unknown as ViewStyle;

@@ -1,6 +1,8 @@
 import React from "react";
 import RNModal from "react-native-modal";
 import {
+  Modal as CoreModal,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   StyleSheet,
@@ -33,7 +35,21 @@ const flattenWebHostStyle = (style: StyleProp<ViewStyle>) => {
   return flattened ? [styles.webContentHost, flattened] : styles.webContentHost;
 };
 
+const flattenNativeHostStyle = (style: StyleProp<ViewStyle>) => {
+  const flattened = StyleSheet.flatten(style);
+  return flattened ? [styles.nativeContentHost, flattened] : styles.nativeContentHost;
+};
+
 const styles = StyleSheet.create({
+  nativeBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  nativeContentHost: {
+    flex: 1,
+  },
+  nativeRoot: {
+    flex: 1,
+  },
   webBackdrop: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -52,6 +68,8 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
       style,
       children,
       customBackdrop,
+      avoidKeyboard,
+      statusBarTranslucent,
       ...nativeProps
     },
     forwardedRef,
@@ -80,6 +98,64 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
       return () => window.removeEventListener("keydown", handleKeyDown);
     }, [isVisible, onBackdropPress, onBackButtonPress]);
 
+    if (Platform.OS === "android") {
+      const resolvedBackdropOpacity = clampBackdropOpacity(backdropOpacity);
+      const handleNativeRequestClose = () => {
+        if (typeof onBackButtonPress === "function") {
+          onBackButtonPress();
+          return;
+        }
+        onBackdropPress?.();
+      };
+
+      const content = (
+        <View
+          ref={forwardedRef as React.Ref<React.ElementRef<typeof View>>}
+          testID="react19-safe-modal-native-content"
+          pointerEvents="box-none"
+          style={flattenNativeHostStyle(style)}
+        >
+          {children}
+        </View>
+      );
+
+      return (
+        <CoreModal
+          transparent
+          visible={!!isVisible}
+          animationType="fade"
+          statusBarTranslucent={statusBarTranslucent}
+          onRequestClose={handleNativeRequestClose}
+        >
+          <View testID="react19-safe-modal-native-root" style={styles.nativeRoot} pointerEvents="box-none">
+            {React.isValidElement(customBackdrop) ? (
+              <View style={styles.nativeBackdrop}>{customBackdrop}</View>
+            ) : (
+              <Pressable
+                testID="react19-safe-modal-native-backdrop"
+                accessibilityRole="button"
+                onPress={onBackdropPress}
+                style={[
+                  styles.nativeBackdrop,
+                  {
+                    backgroundColor: `rgba(0,0,0,${resolvedBackdropOpacity})`,
+                  },
+                ]}
+              />
+            )}
+
+            {avoidKeyboard ? (
+              <KeyboardAvoidingView style={styles.nativeRoot} pointerEvents="box-none">
+                {content}
+              </KeyboardAvoidingView>
+            ) : (
+              content
+            )}
+          </View>
+        </CoreModal>
+      );
+    }
+
     if (Platform.OS !== "web") {
       return (
         <RNModal
@@ -88,6 +164,8 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
           onBackdropPress={onBackdropPress}
           onBackButtonPress={onBackButtonPress}
           backdropOpacity={backdropOpacity}
+          avoidKeyboard={avoidKeyboard}
+          statusBarTranslucent={statusBarTranslucent}
           style={style}
           customBackdrop={customBackdrop}
           {...nativeProps}

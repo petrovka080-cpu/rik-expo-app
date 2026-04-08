@@ -70,6 +70,28 @@ export async function signInSafe(params: {
     const durationMs = Math.max(0, Math.round(nowMs() - startedAt));
 
     if (error) {
+      // supabase-js catches our fetch-level RequestTimeoutError and wraps
+      // it into an AuthError object — so the outer catch block never fires
+      // on iOS. We must detect timeout here before exposing the raw message.
+      if (isTimeoutLikeError(error)) {
+        recordPlatformObservability({
+          ...LOGIN_OBSERVABILITY_BASE,
+          event: "login_submit_degraded_timeout",
+          result: "error",
+          durationMs,
+          fallbackUsed: true,
+          errorClass: error.name || "AuthError",
+          errorMessage: error.message,
+        });
+
+        return {
+          data: null,
+          error,
+          degraded: true,
+          userMessage: LOGIN_NETWORK_DEGRADED_MESSAGE,
+        };
+      }
+
       recordPlatformObservability({
         ...LOGIN_OBSERVABILITY_BASE,
         event: "login_submit_auth_error",

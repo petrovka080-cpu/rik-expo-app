@@ -1,6 +1,7 @@
 const mockGenerateDirectorPdfDocument = jest.fn();
 const mockGenerateDirectorFinanceSupplierSummaryPdfViaBackend = jest.fn();
 const mockExportDirectorManagementReportPdf = jest.fn();
+const mockCreatePdfSource = jest.fn();
 
 jest.mock("../../lib/documents/pdfDocumentGenerators", () => ({
   generateDirectorPdfDocument: (...args: unknown[]) => mockGenerateDirectorPdfDocument(...args),
@@ -15,6 +16,10 @@ jest.mock("../../lib/api/pdf_director", () => ({
   exportDirectorManagementReportPdf: (...args: unknown[]) => mockExportDirectorManagementReportPdf(...args),
 }));
 
+jest.mock("../../lib/pdfFileContract", () => ({
+  createPdfSource: (...args: unknown[]) => mockCreatePdfSource(...args),
+}));
+
 const loadSubject = () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("./director.finance.pdfService") as typeof import("./director.finance.pdfService");
@@ -25,7 +30,12 @@ describe("director.finance.pdfService", () => {
     mockGenerateDirectorPdfDocument.mockReset();
     mockGenerateDirectorFinanceSupplierSummaryPdfViaBackend.mockReset();
     mockExportDirectorManagementReportPdf.mockReset();
+    mockCreatePdfSource.mockReset();
     mockGenerateDirectorPdfDocument.mockImplementation(async (args: unknown) => args);
+    mockCreatePdfSource.mockImplementation((uri: string) => ({
+      kind: "remote-url",
+      uri,
+    }));
   });
 
   it("uses backend source for supplier summary PDF without local fallback", async () => {
@@ -107,7 +117,7 @@ describe("director.finance.pdfService", () => {
     mockExportDirectorManagementReportPdf.mockResolvedValue("https://example.com/finance.pdf");
 
     const { buildDirectorManagementReportPdfDescriptor } = loadSubject();
-    await buildDirectorManagementReportPdfDescriptor({
+    const descriptor = await buildDirectorManagementReportPdfDescriptor({
       periodFrom: "2026-03-01",
       periodTo: "2026-03-30",
       dueDaysDefault: 7,
@@ -117,9 +127,15 @@ describe("director.finance.pdfService", () => {
     expect(mockGenerateDirectorPdfDocument).toHaveBeenCalledWith(
       expect.objectContaining({
         documentType: "director_report",
-        getUri: expect.any(Function),
+        getSource: expect.any(Function),
       }),
     );
     expect(mockExportDirectorManagementReportPdf).not.toHaveBeenCalled();
+
+    await expect((((descriptor as unknown) as { getSource: () => Promise<unknown> }).getSource())).resolves.toEqual({
+      kind: "remote-url",
+      uri: "https://example.com/finance.pdf",
+    });
+    expect(mockCreatePdfSource).toHaveBeenCalledWith("https://example.com/finance.pdf");
   });
 });

@@ -61,7 +61,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.azisbekdzhantaev.rikexpoapp",
-      "buildNumber": "13",
+      "buildNumber": "23",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "Доступ к микрофону нужен для записи аудио-сообщений.",

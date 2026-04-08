@@ -46,7 +46,7 @@ export async function publishRfq(
     p_note: string | null;
   },
 ) {
-  return await supabase.rpc("rfq_create_and_publish", payload);
+  return await supabase.rpc("buyer_rfq_create_and_publish_v1", payload);
 }
 
 export async function sendProposalToAccountingMin(

@@ -39,6 +39,16 @@ const isNodeRuntime =
   typeof window === "undefined";
 
 const DEBUG_SUPABASE_REST = false;
+const DEV_FUNCTION_OVERRIDES = {
+  "foreman-request-pdf":
+    typeof process !== "undefined"
+      ? String(process.env.EXPO_PUBLIC_FOREMAN_PDF_FUNCTION_URL ?? "").trim()
+      : "",
+  "warehouse-pdf":
+    typeof process !== "undefined"
+      ? String(process.env.EXPO_PUBLIC_WAREHOUSE_PDF_FUNCTION_URL ?? "").trim()
+      : "",
+} as const;
 
 export { SUPABASE_ANON_KEY, SUPABASE_HOST, SUPABASE_PROJECT_REF, SUPABASE_URL };
 export const SUPABASE_KEY_KIND = "anon";
@@ -126,6 +136,34 @@ const nowMs = () => {
   }
   return Date.now();
 };
+
+function rewriteFunctionUrlForDev(input: FetchInput) {
+  const rawUrl = getFetchUrl(input);
+  if (!rawUrl || typeof __DEV__ === "undefined" || __DEV__ !== true) {
+    return null;
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return null;
+  }
+
+  const match = parsed.pathname.match(/\/functions\/v1\/([^/?#]+)/i);
+  if (!match) return null;
+  const functionName = String(match[1] || "").trim() as keyof typeof DEV_FUNCTION_OVERRIDES;
+  const overrideBase = DEV_FUNCTION_OVERRIDES[functionName];
+  if (!overrideBase) return null;
+
+  try {
+    const overrideUrl = new URL(overrideBase);
+    overrideUrl.search = parsed.search;
+    return overrideUrl.toString();
+  } catch {
+    return null;
+  }
+}
 
 const isSupabaseAuthTokenPath = (input: FetchInput, init?: FetchInit) => {
   if (getFetchMethod(input, init) !== "POST") return false;
@@ -249,6 +287,8 @@ function assertEnv() {
 
 const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typeof fetch =>
   wrapFetchWithLog(tag, (input: FetchInput, init?: FetchInit) => {
+    const rewrittenUrl = rewriteFunctionUrlForDev(input);
+    const effectiveInput: FetchInput = rewrittenUrl ?? input;
     const headers = new Headers(init?.headers || {});
     const requestInit: FetchInit = {
       ...(init ?? {}),
@@ -268,12 +308,12 @@ const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typ
       }
     }
 
-    if (isSupabaseAuthTokenPath(input, requestInit)) {
-      return fetchSupabaseAuthTokenWithoutTimeout(tag, baseFetch, input, requestInit);
+    if (isSupabaseAuthTokenPath(effectiveInput, requestInit)) {
+      return fetchSupabaseAuthTokenWithoutTimeout(tag, baseFetch, effectiveInput, requestInit);
     }
 
     return fetchWithRequestTimeout(
-      input,
+      effectiveInput,
       requestInit,
       {
         fetchImpl: baseFetch,

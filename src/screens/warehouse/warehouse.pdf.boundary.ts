@@ -137,7 +137,7 @@ export function useWarehousePdfPreviewBoundary(params: {
         fileName: safeRequest.fileName,
         documentType: safeRequest.documentType,
         entityId: safeRequest.entityId,
-        getUri: safeRequest.getRemoteUrl,
+        getSource: async () => createPdfSource(await safeRequest.getRemoteUrl()),
       });
       await prepareAndPreviewPdfDocument({
         busy,
@@ -145,7 +145,6 @@ export function useWarehousePdfPreviewBoundary(params: {
         key: safeRequest.key,
         label: safeRequest.label,
         descriptor: template,
-        getRemoteUrl: () => template.uri,
         router,
       });
     } catch (error) {

@@ -1,7 +1,3 @@
-jest.mock("../observability/platformObservability", () => ({
-  recordPlatformObservability: jest.fn(),
-}));
-
 import { createMemoryOfflineStorage } from "./offlineStorage";
 import {
   clearForemanMutationQueue,
@@ -31,6 +27,12 @@ import {
   getPlatformOfflineTelemetryEvents,
   resetPlatformOfflineTelemetryEvents,
 } from "./platformOffline.observability";
+import { FOREMAN_LOCAL_ONLY_REQUEST_ID } from "../../screens/foreman/foreman.localDraft.constants";
+import { recordPlatformObservability } from "../observability/platformObservability";
+
+jest.mock("../observability/platformObservability", () => ({
+  recordPlatformObservability: jest.fn(),
+}));
 
 const MUTATION_QUEUE_STORAGE_KEY = "offline_mutation_queue_v2";
 
@@ -77,6 +79,9 @@ const createSyncResult = (
   rows: [],
   submitted: null,
 });
+
+const mockedRecordPlatformObservability =
+  recordPlatformObservability as unknown as jest.Mock;
 
 const createSeedEntry = (params: SeedEntryParams) => ({
   id: params.id,
@@ -152,6 +157,7 @@ describe("mutationWorker contract", () => {
     configureStores();
     resetOfflineMutationTelemetryEvents();
     resetPlatformOfflineTelemetryEvents();
+    mockedRecordPlatformObservability.mockReset();
     await clearForemanMutationQueue();
     await clearForemanDurableDraftState();
   });
@@ -498,5 +504,108 @@ describe("mutationWorker contract", () => {
         lifecycleStatus: "retry_scheduled",
       }),
     ]);
+  });
+
+  it("rebinds a local-only submitted draft to the server request id and clears queued state", async () => {
+    const snapshot = createSnapshot(FOREMAN_LOCAL_ONLY_REQUEST_ID);
+    await replaceForemanDurableDraftSnapshot(snapshot);
+    await enqueueForemanMutation({
+      draftKey: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      requestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      snapshotUpdatedAt: snapshot.updatedAt,
+      mutationKind: "submit",
+      triggerSource: "submit",
+      submitRequested: true,
+    });
+
+    const submittedRecord = {
+      id: "server-request-123",
+      status: "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё",
+    } as never;
+    const syncSnapshot = jest.fn(async (_params: unknown) => ({
+      snapshot: null,
+      rows: [],
+      submitted: submittedRecord,
+    }));
+    const onSubmitted = jest.fn(async () => undefined);
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+      onSubmitted,
+      getNetworkOnline: () => true,
+    });
+
+    const result = await flushForemanMutationQueue(deps);
+    const queue = await loadForemanMutationQueue();
+    const durableState = getForemanDurableDraftState();
+
+    expect(result).toMatchObject({
+      failed: false,
+      processedCount: 1,
+      remainingCount: 0,
+      requestId: "server-request-123",
+      submitted: submittedRecord,
+    });
+    expect(queue).toHaveLength(0);
+    expect(onSubmitted).toHaveBeenCalledWith("server-request-123", submittedRecord);
+    expect(durableState.syncStatus).toBe("idle");
+    expect(durableState.attentionNeeded).toBe(false);
+    expect(durableState.pendingOperationsCount).toBe(0);
+  });
+
+  it("does not regress durable sync state when post-submit cleanup throws after server acceptance", async () => {
+    const snapshot = createSnapshot(FOREMAN_LOCAL_ONLY_REQUEST_ID);
+    await replaceForemanDurableDraftSnapshot(snapshot);
+    await enqueueForemanMutation({
+      draftKey: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      requestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      snapshotUpdatedAt: snapshot.updatedAt,
+      mutationKind: "submit",
+      triggerSource: "submit",
+      submitRequested: true,
+    });
+
+    const submittedRecord = {
+      id: "server-request-456",
+      status: "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё",
+    } as never;
+    const syncSnapshot = jest.fn(async (_params: unknown) => ({
+      snapshot: null,
+      rows: [],
+      submitted: submittedRecord,
+    }));
+    const onSubmitted = jest.fn(async () => {
+      throw new Error("cleanup failed");
+    });
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+      onSubmitted,
+      getNetworkOnline: () => true,
+    });
+
+    const result = await flushForemanMutationQueue(deps);
+    const durableState = getForemanDurableDraftState();
+    const queue = await loadForemanMutationQueue();
+
+    expect(result).toMatchObject({
+      failed: false,
+      processedCount: 1,
+      remainingCount: 0,
+      requestId: "server-request-456",
+    });
+    expect(queue).toHaveLength(0);
+    expect(durableState.syncStatus).toBe("idle");
+    expect(durableState.attentionNeeded).toBe(false);
+    expect(durableState.conflictType).toBe("none");
+    expect(durableState.pendingOperationsCount).toBe(0);
+    expect(mockedRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "foreman",
+        surface: "draft_sync",
+        event: "post_submit_cleanup_failed_after_server_accept",
+        result: "error",
+      }),
+    );
   });
 });

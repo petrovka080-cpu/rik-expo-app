@@ -19,6 +19,7 @@ const projectRoot = process.cwd();
 const baseUrl = String(process.env.RIK_WEB_BASE_URL ?? "http://localhost:8083").trim();
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+const roleMode = String(process.env.RIK_PDF_WEB_ROLE_MODE ?? "membership").trim().toLowerCase();
 
 if (!supabaseUrl || !anonKey) {
   throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY");
@@ -142,6 +143,101 @@ async function signInSession(user: RuntimeTestUser) {
   return signIn.data.session;
 }
 
+async function createMembershipCompany(ownerUserId: string) {
+  const result = await admin
+    .from("companies")
+    .insert({
+      owner_user_id: ownerUserId,
+      name: `Runtime PDF Company ${Date.now().toString(36).toUpperCase()}`,
+    })
+    .select("id")
+    .single();
+  if (result.error || !result.data) {
+    throw result.error ?? new Error("Failed to create PDF membership company");
+  }
+
+  const companyId = String(result.data.id);
+  const ownerMembership = await admin.from("company_members").upsert(
+    {
+      company_id: companyId,
+      user_id: ownerUserId,
+      role: "director",
+    },
+    { onConflict: "company_id,user_id" },
+  );
+  if (ownerMembership.error) throw ownerMembership.error;
+  return companyId;
+}
+
+async function attachCompanyMember(params: {
+  companyId: string;
+  userId: string;
+  role: "foreman" | "warehouse";
+}) {
+  const result = await admin.from("company_members").upsert(
+    {
+      company_id: params.companyId,
+      user_id: params.userId,
+      role: params.role,
+    },
+    { onConflict: "company_id,user_id" },
+  );
+  if (result.error) throw result.error;
+}
+
+async function readRoleProbe(user: RuntimeTestUser) {
+  const client = createClient(supabaseUrl, anonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+    global: {
+      headers: {
+        "x-client-info": "foreman-warehouse-pdf-web-runtime-role-probe",
+      },
+    },
+  });
+  const signIn = await client.auth.signInWithPassword({
+    email: user.email,
+    password: user.password,
+  });
+  if (signIn.error || !signIn.data.session) {
+    throw signIn.error ?? new Error(`signInWithPassword returned no session for ${user.email}`);
+  }
+
+  const [{ data: authUser, error: authError }, { data: rpcRole, error: rpcError }, memberships] = await Promise.all([
+    client.auth.getUser(),
+    client.rpc("get_my_role"),
+    client.from("company_members").select("company_id,role").eq("user_id", user.id),
+  ]);
+  if (authError) throw authError;
+  if (rpcError) throw rpcError;
+
+  await client.auth.signOut().catch(() => undefined);
+
+  return {
+    authUserId: String(authUser.user?.id ?? "").trim(),
+    appMetadataRole:
+      String(
+        (
+          authUser.user?.app_metadata
+          && typeof authUser.user.app_metadata === "object"
+          && "role" in authUser.user.app_metadata
+            ? (authUser.user.app_metadata as Record<string, unknown>).role
+            : ""
+        ) ?? "",
+      ).trim() || null,
+    rpcRole: String(rpcRole ?? "").trim() || null,
+    companyMemberships: Array.isArray(memberships.data)
+      ? memberships.data.map((row) => ({
+          companyId: String(row.company_id ?? "").trim() || null,
+          role: String(row.role ?? "").trim() || null,
+        }))
+      : [],
+  };
+}
+
 function attachRuntime(page: Page, functionMatcher: RegExp): PageRuntime {
   const runtime: RuntimeCapture = {
     console: [],
@@ -221,6 +317,21 @@ async function preparePage(page: Page, session: unknown) {
   );
 }
 
+async function maybeConfirmFioModal(page: Page, label: string) {
+  const input = page.getByTestId("warehouse-fio-input").first();
+  if ((await input.count().catch(() => 0)) === 0) return false;
+  await input.fill(label);
+  const confirm = page.getByTestId("warehouse-fio-confirm").first();
+  await confirm.click({ force: true });
+  await poll(
+    "fio-confirm-close",
+    async () => ((await input.count().catch(() => 0)) === 0 ? true : null),
+    45_000,
+    500,
+  );
+  return true;
+}
+
 async function waitForViewerReady(page: Page, runtime: RuntimeCapture) {
   await page.waitForURL(/\/pdf-viewer/i, { timeout: 45_000 });
   await poll(
@@ -243,16 +354,37 @@ async function saveProofArtifacts(relativeBase: string, page: Page, proof: Proof
 }
 
 async function runForemanProof(browser: Browser): Promise<ProofResult> {
+  let ownerUser: RuntimeTestUser | null = null;
+  let companyId: string | null = null;
   let user: RuntimeTestUser | null = null;
   let requestId: string | null = null;
   let page: Page | null = null;
 
   try {
     user = await createTempUser(admin, {
-      role: "foreman",
+      role: roleMode === "membership" ? "director" : "foreman",
       fullName: "Foreman Web PDF Proof",
       emailPrefix: "foreman-web-pdf-proof",
+      userProfile: {
+        usage_build: true,
+      },
     });
+    if (roleMode === "membership") {
+      ownerUser = await createTempUser(admin, {
+        role: "director",
+        fullName: "Foreman PDF Company Owner",
+        emailPrefix: "foreman-pdf-owner",
+        userProfile: {
+          usage_build: true,
+        },
+      });
+      companyId = await createMembershipCompany(ownerUser.id);
+      await attachCompanyMember({
+        companyId,
+        userId: user.id,
+        role: "foreman",
+      });
+    }
 
     const requestInsert = await admin
       .from("requests")
@@ -269,6 +401,7 @@ async function runForemanProof(browser: Browser): Promise<ProofResult> {
       throw requestInsert.error ?? new Error("Unable to insert Foreman proof request");
     }
     requestId = String(requestInsert.data.id);
+    const roleProbe = await readRoleProbe(user);
 
     const session = await signInSession(user);
     const context = await browser.newContext();
@@ -277,22 +410,27 @@ async function runForemanProof(browser: Browser): Promise<ProofResult> {
     await preparePage(page, session);
 
     await page.goto(`${baseUrl}/foreman`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-    await sleep(4_000);
-
-    let controls = page.locator('button,[role="button"],a[role="tab"],div[tabindex],input,textarea');
-    await controls.nth(1).click({ force: true });
-    await sleep(2_500);
-
-    controls = page.locator('button,[role="button"],a[role="tab"],div[tabindex],input,textarea');
-    await controls.nth(18).fill("Foreman Web PDF Proof");
-    await controls.nth(19).click({ force: true });
     await sleep(2_000);
 
-    controls = page.locator('button,[role="button"],a[role="tab"],div[tabindex],input,textarea');
-    await controls.nth(9).click({ force: true });
+    const materialsOpen = page.getByTestId("foreman-main-materials-open").first();
+    await materialsOpen.waitFor({ state: "visible", timeout: 45_000 });
+    await materialsOpen.click({ force: true });
+    await sleep(1_500);
+
+    await maybeConfirmFioModal(page, "Foreman Web PDF Proof");
+
+    const historyOpen = page.getByTestId("foreman-request-history-open").first();
+    await historyOpen.waitFor({ state: "visible", timeout: 45_000 });
+    await historyOpen.click({ force: true });
 
     const pdfButton = page.locator(`[data-testid="foreman-history-pdf:${requestId}"]`).first();
-    await pdfButton.waitFor({ state: "visible", timeout: 45_000 });
+    await poll(
+      "foreman-history-request-materialized",
+      async () => ((await pdfButton.count().catch(() => 0)) > 0 ? true : null),
+      45_000,
+      500,
+    );
+    await pdfButton.waitFor({ state: "visible", timeout: 15_000 });
     await pdfButton.click({ force: true });
 
     await waitForViewerReady(page, runtime);
@@ -327,6 +465,9 @@ async function runForemanProof(browser: Browser): Promise<ProofResult> {
       consoleTail: runtime.console.slice(-80),
       extra: {
         requestId,
+        roleMode,
+        companyId,
+        roleProbe,
         bodySample: normalizeBodyText(await page.evaluate(() => document.body.innerText || "")).slice(0, 1200),
       },
     };
@@ -342,20 +483,55 @@ async function runForemanProof(browser: Browser): Promise<ProofResult> {
         // best effort cleanup
       }
     }
+    if (companyId) {
+      try {
+        await admin.from("company_members").delete().eq("company_id", companyId);
+      } catch {
+        // best effort cleanup
+      }
+      try {
+        await admin.from("companies").delete().eq("id", companyId);
+      } catch {
+        // best effort cleanup
+      }
+    }
     await cleanupTempUser(admin, user).catch(() => undefined);
+    await cleanupTempUser(admin, ownerUser).catch(() => undefined);
   }
 }
 
 async function runWarehouseProof(browser: Browser): Promise<ProofResult> {
+  let ownerUser: RuntimeTestUser | null = null;
+  let companyId: string | null = null;
   let user: RuntimeTestUser | null = null;
   let page: Page | null = null;
 
   try {
     user = await createTempUser(admin, {
-      role: "warehouse",
+      role: roleMode === "membership" ? "director" : "warehouse",
       fullName: "Warehouse Web PDF Proof",
       emailPrefix: "warehouse-web-pdf-proof",
+      userProfile: {
+        usage_build: true,
+      },
     });
+    if (roleMode === "membership") {
+      ownerUser = await createTempUser(admin, {
+        role: "director",
+        fullName: "Warehouse PDF Company Owner",
+        emailPrefix: "warehouse-pdf-owner",
+        userProfile: {
+          usage_build: true,
+        },
+      });
+      companyId = await createMembershipCompany(ownerUser.id);
+      await attachCompanyMember({
+        companyId,
+        userId: user.id,
+        role: "warehouse",
+      });
+    }
+    const roleProbe = await readRoleProbe(user);
 
     const session = await signInSession(user);
     const context = await browser.newContext();
@@ -364,25 +540,25 @@ async function runWarehouseProof(browser: Browser): Promise<ProofResult> {
     await preparePage(page, session);
 
     await page.goto(`${baseUrl}/warehouse`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-    await sleep(3_000);
-
-    let controls = page.locator('button,[role="button"],a[role="tab"],div[tabindex],input,textarea');
-    await controls.nth(11).fill("Warehouse Web PDF Proof");
-    await controls.nth(12).click({ force: true });
-    await sleep(3_000);
-
-    controls = page.locator('button,[role="button"],a[role="tab"],div[tabindex],input,textarea');
-    await controls.nth(4).click({ force: true });
     await sleep(2_000);
 
-    controls = page.locator('button,[role="button"],a[role="tab"],div[tabindex],input,textarea');
-    await controls.nth(5).click({ force: true });
+    await maybeConfirmFioModal(page, "Warehouse Web PDF Proof");
 
-    const dayRow = page.locator('[data-testid^="warehouse-report-day:"]').first();
-    await dayRow.waitFor({ state: "visible", timeout: 45_000 });
-    await dayRow.click({ force: true });
+    const reportsTab = page.getByTestId("warehouse-tab-reports").first();
+    await reportsTab.waitFor({ state: "visible", timeout: 45_000 });
+    await reportsTab.click({ force: true });
+    await sleep(1_500);
 
-    const registerButton = page.locator('[data-testid="warehouse-day-register-pdf"]').first();
+    const issueMode = page.getByTestId("warehouse-reports-mode-issue").first();
+    const incomingMode = page.getByTestId("warehouse-reports-mode-incoming").first();
+    if ((await issueMode.count().catch(() => 0)) > 0) {
+      await issueMode.click({ force: true });
+    } else if ((await incomingMode.count().catch(() => 0)) > 0) {
+      await incomingMode.click({ force: true });
+    }
+    await sleep(2_000);
+
+    const registerButton = page.getByTestId("warehouse-reports-action-pdf").first();
     await registerButton.waitFor({ state: "visible", timeout: 45_000 });
     await registerButton.click({ force: true });
 
@@ -417,8 +593,12 @@ async function runWarehouseProof(browser: Browser): Promise<ProofResult> {
       ),
       consoleTail: runtime.console.slice(-80),
       extra: {
+        roleMode,
+        companyId,
+        roleProbe,
         bodySample: normalizeBodyText(await page.evaluate(() => document.body.innerText || "")).slice(0, 1200),
         dayRowsVisible: await page.locator('[data-testid^="warehouse-report-day:"]').count(),
+        registerButtonVisible: await page.getByTestId("warehouse-reports-action-pdf").count(),
       },
     };
 
@@ -426,7 +606,20 @@ async function runWarehouseProof(browser: Browser): Promise<ProofResult> {
     await context.close();
     return proof;
   } finally {
+    if (companyId) {
+      try {
+        await admin.from("company_members").delete().eq("company_id", companyId);
+      } catch {
+        // best effort cleanup
+      }
+      try {
+        await admin.from("companies").delete().eq("id", companyId);
+      } catch {
+        // best effort cleanup
+      }
+    }
     await cleanupTempUser(admin, user).catch(() => undefined);
+    await cleanupTempUser(admin, ownerUser).catch(() => undefined);
   }
 }
 

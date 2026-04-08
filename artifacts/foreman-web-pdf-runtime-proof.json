@@ -1,0 +1,413 @@
+{
+  "status": "GREEN",
+  "role": "foreman",
+  "checkedAt": "2026-04-08T03:43:51.314Z",
+  "baseUrl": "http://localhost:8081/office",
+  "finalUrl": "http://localhost:8081/pdf-viewer?sessionId=session_mnpi77kj_2&openToken=pdf_open_mnpi77kh_1",
+  "iframeSrc": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/foreman/request/2026/04/08/2026-04-08T03-43-47-831Z_6bd62413_request_REQ_WEB_MNPI6R4K_c4deef20-831a-42d5-b4bb-ff43d0e5f7eb.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL2ZvcmVtYW4vcmVxdWVzdC8yMDI2LzA0LzA4LzIwMjYtMDQtMDhUMDMtNDMtNDctODMxWl82YmQ2MjQxM19yZXF1ZXN0X1JFUV9XRUJfTU5QSTZSNEtfYzRkZWVmMjAtODMxYS00MmQ1LWI0YmItZmY0M2QwZTVmN2ViLnBkZiIsImlhdCI6MTc3NTYxOTgyOCwiZXhwIjoxNzc1NjIzNDI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I",
+  "eventCounts": {
+    "payload_ready": 1,
+    "backend_invoke_start": 1,
+    "backend_invoke_success": 1,
+    "signed_url_received": 1,
+    "viewer_route_mounted": 1,
+    "open": 1,
+    "viewer_before_render": 1,
+    "web_iframe_render": 1,
+    "web_iframe_load": 1,
+    "ready": 1,
+    "busy_cleared": 1
+  },
+  "pageErrors": [],
+  "badResponses": [],
+  "functionResponses": [
+    {
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/functions/v1/foreman-request-pdf",
+      "method": "POST",
+      "status": 200,
+      "headers": {
+        "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+        "content-encoding": "gzip",
+        "cf-cache-status": "DYNAMIC",
+        "sb-request-id": "019d6b30-4588-7f22-b2c0-e2cc85b26e5c",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "server-timing": "cfExtPri",
+        "date": "Wed, 08 Apr 2026 03:43:48 GMT",
+        "content-type": "application/json; charset=utf-8",
+        "vary": "Accept-Encoding",
+        "x-served-by": "supabase-edge-runtime",
+        "priority": "u=1,i",
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "cache-control": "no-store",
+        "cf-ray": "9e8e44dc0f3c02a0-WAW",
+        "x-deno-execution-id": "f491b31f-35bf-444a-956e-018e2d030d1c",
+        "access-control-allow-origin": "*",
+        "content-length": "992",
+        "x-sb-edge-region": "eu-central-1",
+        "server": "cloudflare",
+        "sb-gateway-version": "1"
+      },
+      "requestHeaders": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IkMzbFhWcUFNVmtUVXhmeU4iLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL254cm5qeXd6eHhmZHBxbXpqb3JoLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI3NmVmY2I0Zi0yMDZiLTQ3OTQtYjE0Zi1hNTIxNzkxNTdmNjQiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc1NjIzNDA5LCJpYXQiOjE3NzU2MTk4MDksImVtYWlsIjoiZm9yZW1hbi13ZWItcGRmLXByb29mLm1ucGk2bWZyZWJkckBlLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXSwicm9sZSI6ImRpcmVjdG9yIn0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWUsImZ1bGxfbmFtZSI6IkZvcmVtYW4gV2ViIFBERiBQcm9vZiJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzc1NjE5ODA5fV0sInNlc3Npb25faWQiOiJjNjA0ZTBmYy04ZThlLTQ5NmMtYTVmMS04MmNkMDMxZmY5ZDkiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.Nqc1N41qIenCAjrBdyRifIzf0R_vV_wgghma2DtHV8c",
+        "referer": "http://localhost:8081/",
+        "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Microsoft Edge\";v=\"146\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-client-info": "supabase-js-web/2.97.0, rik-expo-app",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0",
+        "accept": "application/json",
+        "content-type": "application/json",
+        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0"
+      },
+      "payload": {
+        "ok": true,
+        "version": "v1",
+        "role": "foreman",
+        "documentType": "request",
+        "sourceKind": "remote-url",
+        "bucketId": "role_pdf_exports",
+        "storagePath": "foreman/request/2026/04/08/2026-04-08T03-43-47-831Z_6bd62413_request_REQ_WEB_MNPI6R4K_c4deef20-831a-42d5-b4bb-ff43d0e5f7eb.pdf",
+        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/foreman/request/2026/04/08/2026-04-08T03-43-47-831Z_6bd62413_request_REQ_WEB_MNPI6R4K_c4deef20-831a-42d5-b4bb-ff43d0e5f7eb.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL2ZvcmVtYW4vcmVxdWVzdC8yMDI2LzA0LzA4LzIwMjYtMDQtMDhUMDMtNDMtNDctODMxWl82YmQ2MjQxM19yZXF1ZXN0X1JFUV9XRUJfTU5QSTZSNEtfYzRkZWVmMjAtODMxYS00MmQ1LWI0YmItZmY0M2QwZTVmN2ViLnBkZiIsImlhdCI6MTc3NTYxOTgyOCwiZXhwIjoxNzc1NjIzNDI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I",
+        "fileName": "request_REQ_WEB_MNPI6R4K_c4deef20-831a-42d5-b4bb-ff43d0e5f7eb.pdf",
+        "mimeType": "application/pdf",
+        "generatedAt": "2026-04-08T03:43:48.599Z",
+        "renderBranch": "backend_foreman_request_v1",
+        "renderer": "browserless_puppeteer",
+        "telemetry": {
+          "functionName": "foreman-request-pdf",
+          "requestId": "c4deef20-831a-42d5-b4bb-ff43d0e5f7eb",
+          "title": "Заявка REQ-WEB-MNPI6R4K",
+          "requestedByUserId": "76efcb4f-206b-4794-b14f-a52179157f64"
+        }
+      },
+      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/foreman/request/2026/04/08/2026-04-08T03-43-47-831Z_6bd62413_request_REQ_WEB_MNPI6R4K_c4deef20-831a-42d5-b4bb-ff43d0e5f7eb.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL2ZvcmVtYW4vcmVxdWVzdC8yMDI2LzA0LzA4LzIwMjYtMDQtMDhUMDMtNDMtNDctODMxWl82YmQ2MjQxM19yZXF1ZXN0X1JFUV9XRUJfTU5QSTZSNEtfYzRkZWVmMjAtODMxYS00MmQ1LWI0YmItZmY0M2QwZTVmN2ViLnBkZiIsImlhdCI6MTc3NTYxOTgyOCwiZXhwIjoxNzc1NjIzNDI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I",
+      "sourceKind": "remote-url"
+    }
+  ],
+  "blockingConsole": [],
+  "consoleTail": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+    },
+    {
+      "type": "warning",
+      "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+    },
+    {
+      "type": "info",
+      "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 700}"
+    },
+    {
+      "type": "info",
+      "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+    },
+    {
+      "type": "info",
+      "text": "[queue.bootstrap] starting queue worker"
+    },
+    {
+      "type": "info",
+      "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+    },
+    {
+      "type": "info",
+      "text": "[queue.worker] started {workerId: web:mnpi6uub:m3sjjj, batchSize: 10, concurrency: 4}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 515}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 517}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 522}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 522}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: joined_inflight, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 537}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 538}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 504}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 1031}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 515}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 549}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 519}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 522}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 532}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 505}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 538}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 512}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 531}"
+    },
+    {
+      "type": "info",
+      "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+    },
+    {
+      "type": "info",
+      "text": "[foreman-pdf] history_descriptor_build_start {requestId: c4deef20-831a-42d5-b4bb-ff43d0e5f7eb, generatedBy: Foreman Web PDF Proof, displayNo: #c4deef20}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: foreman_pdf_backend, event: payload_ready, result: success, durationMs: 1}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: foreman_pdf_backend, event: backend_invoke_start, result: success, durationMs: 1}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 521}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 534}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 508}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 508}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 516}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 514}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 519}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 10222}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: foreman_pdf_backend, event: backend_invoke_success, result: success, durationMs: 10225}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: foreman_pdf_backend, event: pdf_storage_uploaded, result: success, durationMs: 10225}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: foreman_pdf_backend, event: signed_url_received, result: success, durationMs: 10225}"
+    },
+    {
+      "type": "info",
+      "text": "[foreman-pdf] history_descriptor_ready {requestId: c4deef20-831a-42d5-b4bb-ff43d0e5f7eb, sourceKind: remote-url, uriScheme: https, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I, fileName: request_REQ_WEB_MNPI6R4K_c4deef20-831a-42d5-b4bb-ff43d0e5f7eb.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[foreman-pdf] history_open_descriptor {requestId: c4deef20-831a-42d5-b4bb-ff43d0e5f7eb, sourceKind: remote-url, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: pdf_open_family, event: tap_start, result: success, durationMs: 0}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: global_busy, surface: overlay_owner, event: busy_acquire, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: pdf_open_family, event: busy_shown, result: success, durationMs: 1}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: pdf_open_family, event: document_prepare_start, result: success, durationMs: 1}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-document-actions] prepare_requested {stage: prepare_requested, platform: web, documentType: request, originModule: foreman, sourceUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-runner] pdf_source_received {stage: pdf_source_received, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I, scheme: https, exists: undefined, sizeBytes: undefined}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-document-actions] prepare_ready {stage: prepare_ready, platform: web, documentType: request, originModule: foreman, finalUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: reports, surface: pdf_document_actions, event: pdf_output_prepare, result: success, durationMs: 23}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-document-actions] preview {stage: preview_requested, platform: web, documentType: request, originModule: foreman, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-document-sessions] pdf_session_asset_written {stage: pdf_session_asset_written, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I, scheme: https, exists: undefined, sizeBytes: undefined}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-document-sessions] materialized_asset {platform: web, documentType: request, originModule: foreman, source: generated, sourceKind: remote-url}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: pdf_open_family, event: document_prepare_done, result: success, durationMs: 27}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: reports, surface: pdf_document_actions, event: pdf_preview_output_prepare, result: success, durationMs: 1}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-document-actions] preview_asset {stage: preview_asset_ready, sessionId: session_mnpi77kj_2, documentType: request, originModule: foreman, sourceKind: remote-url}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: pdf_open_family, event: viewer_or_handoff_start, result: success, durationMs: 27}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-document-actions] about_to_navigate_to_viewer {sessionId: session_mnpi77kj_2, documentType: request, originModule: foreman, finalUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I, finalScheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: reports, surface: pdf_document_actions, event: pdf_preview_open, result: success, durationMs: 4}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: session_mnpi77kj_2, receivedSessionId: session_mnpi77kj_2, initialUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I, initialScheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: session_mnpi77kj_2, documentType: request, originModule: foreman, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/foreman/request/2026/04/08/2026-04-08T03-43-47-831Z_6bd62413_request_REQ_WEB_MNPI6R4K_c4deef20-831a-42d5-b4bb-ff43d0e5f7eb.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL2ZvcmVtYW4vcmVxdWVzdC8yMDI2LzA0LzA4LzIwMjYtMDQtMDhUMDMtNDMtNDctODMxWl82YmQ2MjQxM19yZXF1ZXN0X1JFUV9XRUJfTU5QSTZSNEtfYzRkZWVmMjAtODMxYS00MmQ1LWI0YmItZmY0M2QwZTVmN2ViLnBkZiIsImlhdCI6MTc3NTYxOTgyOCwiZXhwIjoxNzc1NjIzNDI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: session_mnpi77kj_2, documentType: request, originModule: foreman, remoteUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I, renderUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mnpi77kj_2, documentType: request, originModule: foreman, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: session_mnpi77kj_2, documentType: request, originModule: foreman, iframeSrc: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 528}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_load {sessionId: session_mnpi77kj_2, documentType: request, originModule: foreman, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…DI4fQ.CfY9TjwzYCgLjg5yQT22trNx2XGRgIdYXJOfnlkBh7I}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: pdf_open_family, event: first_open_visible, result: success, durationMs: 1863}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] ready {documentType: request, originModule: foreman, ms: 1820}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: global_busy, surface: overlay_owner, event: busy_run, result: success, durationMs: 1862}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: global_busy, surface: overlay_owner, event: busy_release, result: success, durationMs: 1862}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: pdf_open_family, event: busy_cleared, result: success, durationMs: 1864}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 506}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 510}"
+    }
+  ],
+  "extra": {
+    "requestId": "c4deef20-831a-42d5-b4bb-ff43d0e5f7eb",
+    "roleMode": "membership",
+    "companyId": "9f0c9c3f-597a-4634-a64c-e83d420ccb88",
+    "roleProbe": {
+      "authUserId": "76efcb4f-206b-4794-b14f-a52179157f64",
+      "appMetadataRole": "director",
+      "rpcRole": "director",
+      "companyMemberships": [
+        {
+          "companyId": "9f0c9c3f-597a-4634-a64c-e83d420ccb88",
+          "role": "foreman"
+        }
+      ]
+    },
+    "bodySample": " Request c4deef20-831a-42d5-b4bb-ff43d0e5f7eb  1 / 1"
+  }
+}

@@ -8,7 +8,7 @@ import {
   createCanonicalPdfOptionsResponse,
   createCanonicalPdfSuccessResponse,
 } from "../../../src/lib/pdf/canonicalPdfPlatformContract.ts";
-import { resolveCanonicalPdfRoleAccess } from "../../../src/lib/pdf/rolePdfAuth.ts";
+import { resolveForemanRequestPdfAccess } from "../../../src/lib/pdf/rolePdfAuth.ts";
 import {
   buildCanonicalPdfFileName,
   buildStoragePath,
@@ -174,10 +174,7 @@ async function requireForemanAuth(request: Request, supabaseUrl: string) {
     },
   });
 
-  const [{ data: userData, error: userError }, { data: roleData }] = await Promise.all([
-    requester.auth.getUser(),
-    requester.rpc("get_my_role"),
-  ]);
+  const { data: userData, error: userError } = await requester.auth.getUser();
 
   if (userError || !userData?.user) {
     throw createCanonicalPdfErrorResponse({
@@ -189,13 +186,41 @@ async function requireForemanAuth(request: Request, supabaseUrl: string) {
     });
   }
 
-  const roleAccess = resolveCanonicalPdfRoleAccess({
-    user: userData.user,
-    rpcRole: roleData,
-    expectedRole: "foreman",
-  });
+  return {
+    userId: userData.user.id,
+    requester,
+  };
+}
 
-  if (!roleAccess.allowed) {
+async function assertForemanRequestAccess(args: {
+  admin: any;
+  requestId: string;
+  userId: string;
+}) {
+  const { data, error } = await args.admin
+    .from("requests")
+    .select("id, created_by")
+    .eq("id", args.requestId)
+    .maybeSingle();
+
+  if (error || !data) {
+    console.log(
+      `[${FUNCTION_NAME}] foreman access reject ${JSON.stringify({
+        rejectionReason: "request_not_found",
+        requestFound: Boolean(data),
+        requestId: args.requestId,
+        authUid: args.userId,
+        error: error?.message ?? null,
+      })}`,
+    );
+    console.log(
+      `[${FUNCTION_NAME}] foreman request access denied ${JSON.stringify({
+        requestId: args.requestId,
+        uid: args.userId,
+        error: error?.message ?? null,
+        found: Boolean(data),
+      })}`,
+    );
     throw createCanonicalPdfErrorResponse({
       status: 403,
       role: "foreman",
@@ -205,9 +230,100 @@ async function requireForemanAuth(request: Request, supabaseUrl: string) {
     });
   }
 
-  return {
-    userId: userData.user.id,
-  };
+  const requestCreatedBy = cleanText(data.created_by);
+  const actorMemberships = await args.admin
+    .from("company_members")
+    .select("role, company_id")
+    .eq("user_id", args.userId)
+    .in("role", ["foreman", "director"]);
+
+  const creatorMemberships = requestCreatedBy
+    ? await args.admin
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", requestCreatedBy)
+    : { data: [], error: null };
+  const decision = resolveForemanRequestPdfAccess({
+    authUid: args.userId,
+    requestFound: true,
+    requestCreatedBy,
+    actorMembershipRows: actorMemberships.data,
+    creatorCompanyIds: Array.isArray(creatorMemberships.data)
+      ? creatorMemberships.data.map((row) => row.company_id)
+      : [],
+  });
+
+  if (!decision.allowed && decision.reason !== "owner_mismatch") {
+    console.log(
+      `[${FUNCTION_NAME}] foreman access reject ${JSON.stringify({
+        rejectionReason: decision.reason,
+        requestFound: true,
+        requestId: args.requestId,
+        authUid: args.userId,
+        requestCompanyId: decision.companyId,
+        requestCreatedBy,
+        membershipFound: decision.membershipFound,
+        membershipCompanyIds: decision.membershipCompanyIds,
+        membershipRoles: decision.membershipRoles,
+        creatorMembershipCompanyIds: Array.isArray(creatorMemberships.data)
+          ? creatorMemberships.data.map((row) => cleanText(row.company_id)).filter(Boolean)
+          : [],
+        sharedCompanyIds: decision.companyId ? [decision.companyId] : [],
+        isDirector: decision.isDirector,
+        ownerCheckApplied: decision.ownerCheckApplied,
+        membershipError: actorMemberships.error?.message ?? null,
+        creatorMembershipError: creatorMemberships.error?.message ?? null,
+      })}`,
+    );
+    console.log(
+      `[${FUNCTION_NAME}] foreman membership forbidden ${JSON.stringify({
+        requestId: args.requestId,
+        uid: args.userId,
+        companyId: decision.companyId,
+        membershipRoles: decision.membershipRoles,
+        membershipError: actorMemberships.error?.message ?? null,
+      })}`,
+    );
+    throw createCanonicalPdfErrorResponse({
+      status: 403,
+      role: "foreman",
+      documentType: "request",
+      errorCode: "auth_failed",
+      error: "Forbidden.",
+    });
+  }
+
+  if (!decision.allowed && decision.reason === "owner_mismatch") {
+    console.log(
+      `[${FUNCTION_NAME}] foreman access reject ${JSON.stringify({
+        rejectionReason: decision.reason,
+        requestFound: true,
+        requestId: args.requestId,
+        authUid: args.userId,
+        requestCompanyId: decision.companyId,
+        requestCreatedBy,
+        membershipFound: decision.membershipFound,
+        membershipCompanyIds: decision.membershipCompanyIds,
+        membershipRoles: decision.membershipRoles,
+        isDirector: decision.isDirector,
+        ownerCheckApplied: decision.ownerCheckApplied,
+      })}`,
+    );
+    console.log(
+      `[${FUNCTION_NAME}] foreman request owner mismatch ${JSON.stringify({
+        requestId: args.requestId,
+        uid: args.userId,
+        createdBy: cleanText(data.created_by),
+      })}`,
+    );
+    throw createCanonicalPdfErrorResponse({
+      status: 403,
+      role: "foreman",
+      documentType: "request",
+      errorCode: "auth_failed",
+      error: "Forbidden.",
+    });
+  }
 }
 
 async function loadRequestPdfModel(admin: any, requestId: string) {
@@ -340,11 +456,15 @@ Deno.serve({ port: Number.isFinite(serverPort) ? serverPort : 8000 }, async (req
       });
     }
 
-    const payload = normalizeForemanRequestPdfRequest(await request.json());
-    const auth = await requireForemanAuth(request, supabaseUrl);
-
     const admin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const payload = normalizeForemanRequestPdfRequest(await request.json());
+    const auth = await requireForemanAuth(request, supabaseUrl);
+    await assertForemanRequestAccess({
+      admin,
+      requestId: payload.requestId,
+      userId: auth.userId,
     });
 
     const model = await loadRequestPdfModel(admin, payload.requestId);

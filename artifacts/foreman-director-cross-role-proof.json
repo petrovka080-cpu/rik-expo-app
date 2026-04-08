@@ -1,0 +1,16 @@
+﻿{
+  "status": "GREEN",
+  "checkedAt": "2026-04-08T03:04:32.734Z",
+  "scenario": "director_same_company_different_creator_foreman_pdf",
+  "companyId": "19de2e3a-5a29-4278-bbcc-636a814070fd",
+  "requestId": "795e8a3a-1a8f-4ee1-9091-2d802820c2e1",
+  "requestCreatedBy": "9cce1206-be20-48a2-b23c-f7974588f252",
+  "viewerUserId": "984c99b4-0a55-4e3e-ab45-f7c1994c5537",
+  "invoke": {
+    "status": 200,
+    "sourceKind": "remote-url",
+    "signedUrlPresent": true,
+    "fileName": "request_REQ_PROOF_MNPGSGCU_795e8a3a-1a8f-4ee1-9091-2d802820c2e1.pdf",
+    "renderBranch": "backend_foreman_request_v1"
+  }
+}

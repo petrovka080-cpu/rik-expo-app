@@ -62,11 +62,19 @@ export default function DirectorSheetModal(props: Props) {
       animationType="slide"
       onRequestClose={props.onClose}
     >
-      <Pressable
-        onPress={props.onClose}
-        style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.55)" }}
-      >
-        <Pressable onPress={() => {}} style={s.sheet}>
+      <View style={{ flex: 1, justifyContent: "flex-end" }}>
+        <Pressable
+          onPress={props.onClose}
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            backgroundColor: "rgba(0,0,0,0.55)",
+          }}
+        />
+        <View style={s.sheet}>
           <View style={s.sheetHandle} />
 
           <View style={s.sheetTopBar}>
@@ -124,8 +132,8 @@ export default function DirectorSheetModal(props: Props) {
               />
             ) : null}
           </View>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }

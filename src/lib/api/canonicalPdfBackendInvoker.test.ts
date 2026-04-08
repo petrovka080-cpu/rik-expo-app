@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { invokeCanonicalPdfBackend } from "./canonicalPdfBackendInvoker";
 
 const mockFunctionsInvoke = jest.fn();
 const mockGetSession = jest.fn();
@@ -23,8 +24,6 @@ jest.mock("../requestTimeoutPolicy", () => ({
   fetchWithRequestTimeout: (...args: unknown[]) => mockFetchWithRequestTimeout(...args),
 }));
 
-let invokeCanonicalPdfBackend: typeof import("./canonicalPdfBackendInvoker").invokeCanonicalPdfBackend;
-
 const originalPlatformOs = Platform.OS;
 
 const successPayload = {
@@ -47,10 +46,6 @@ const successPayload = {
 };
 
 describe("invokeCanonicalPdfBackend", () => {
-  beforeAll(() => {
-    ({ invokeCanonicalPdfBackend } = require("./canonicalPdfBackendInvoker") as typeof import("./canonicalPdfBackendInvoker"));
-  });
-
   beforeEach(() => {
     mockFunctionsInvoke.mockReset();
     mockGetSession.mockReset();
@@ -137,5 +132,112 @@ describe("invokeCanonicalPdfBackend", () => {
     expect(mockFunctionsInvoke).toHaveBeenCalledTimes(1);
     expect(mockFetchWithRequestTimeout).not.toHaveBeenCalled();
     expect(result.fileName).toBe("request.pdf");
+  });
+
+  it("refreshes the current session once and retries web invoke on auth-like 403 errors", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "web",
+    });
+
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: "Forbidden.",
+          context: { status: 403 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: successPayload,
+        error: null,
+      });
+    mockGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: "session-token",
+        },
+      },
+    });
+    mockRefreshSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: "refreshed-session-token",
+        },
+      },
+      error: null,
+    });
+
+    const result = await invokeCanonicalPdfBackend({
+      functionName: "foreman-request-pdf",
+      payload: { requestId: "req-403" },
+      expectedRole: "foreman",
+      expectedDocumentType: "request",
+      expectedRenderBranch: "backend_foreman_request_v1",
+      errorPrefix: "foreman request pdf backend failed",
+    });
+
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(2);
+    expect(result.signedUrl).toBe(successPayload.signedUrl);
+  });
+
+  it("refreshes the current session once and retries native direct fetch on auth-like 403 responses", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "android",
+    });
+
+    mockGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: "session-token",
+        },
+      },
+    });
+    mockRefreshSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: "refreshed-session-token",
+        },
+      },
+      error: null,
+    });
+    mockFetchWithRequestTimeout
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            errorCode: "auth_failed",
+            error: "Forbidden.",
+          }),
+          {
+            status: 403,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(successPayload), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }),
+      );
+
+    const result = await invokeCanonicalPdfBackend({
+      functionName: "foreman-request-pdf",
+      payload: { requestId: "req-403-native" },
+      expectedRole: "foreman",
+      expectedDocumentType: "request",
+      expectedRenderBranch: "backend_foreman_request_v1",
+      errorPrefix: "foreman request pdf backend failed",
+    });
+
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(2);
+    expect(result.sourceKind).toBe("remote-url");
   });
 });

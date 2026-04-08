@@ -6,7 +6,8 @@ import { ListingModal } from "./ListingModal";
 jest.mock("../../../ui/React19SafeModal", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return function MockReact19SafeModal(props: Record<string, unknown>) {
+
+  function MockReact19SafeModal(props: Record<string, unknown>) {
     if (!props.isVisible) return null;
     return React.createElement(
       View,
@@ -16,14 +17,19 @@ jest.mock("../../../ui/React19SafeModal", () => {
       },
       props.children,
     );
-  };
+  }
+
+  MockReact19SafeModal.displayName = "MockReact19SafeModal";
+
+  return MockReact19SafeModal;
 });
 
 jest.mock("./ProfilePrimitives", () => {
   const React = require("react");
   const { View, TextInput } = require("react-native");
-  return {
-    LabeledInput: React.forwardRef((props: Record<string, unknown>, ref: unknown) =>
+
+  const MockLabeledInput = React.forwardRef(
+    (props: Record<string, unknown>, ref: unknown) =>
       React.createElement(
         View,
         { testID: `labeled-input:${String(props.label || "")}` },
@@ -34,7 +40,13 @@ jest.mock("./ProfilePrimitives", () => {
           returnKeyType: props.returnKeyType,
           onSubmitEditing: props.onSubmitEditing,
         }),
-      )),
+      ),
+  );
+
+  MockLabeledInput.displayName = "MockLabeledInput";
+
+  return {
+    LabeledInput: MockLabeledInput,
   };
 });
 

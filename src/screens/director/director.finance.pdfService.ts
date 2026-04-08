@@ -1,10 +1,11 @@
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { generateDirectorPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
-import { getDirectorFinancePdfSource } from "../../lib/api/directorPdfSource.service";
 import {
   generateDirectorFinanceSupplierSummaryPdfViaBackend,
   type DirectorFinanceSupplierPdfBackendTelemetry,
 } from "../../lib/api/directorFinanceSupplierPdfBackend.service";
+import { exportDirectorManagementReportPdf } from "../../lib/api/pdf_director";
+import { createPdfSource } from "../../lib/pdfFileContract";
 import { financeText } from "./director.finance";
 
 const logSupplierSummaryTelemetry = (
@@ -30,16 +31,14 @@ export async function buildDirectorManagementReportPdfDescriptor(args: {
       dateIso: args.periodTo ?? args.periodFrom ?? undefined,
     }),
     documentType: "director_report",
-    getUri: async () => {
-      const { exportDirectorManagementReportPdf } = await import("../../lib/api/pdf_director");
-      return await exportDirectorManagementReportPdf({
+    getSource: async () =>
+      createPdfSource(await exportDirectorManagementReportPdf({
         periodFrom: args.periodFrom,
         periodTo: args.periodTo,
         topN: 15,
         dueDaysDefault: args.dueDaysDefault,
         criticalDays: args.criticalDays,
-      });
-    },
+      })),
   });
 }
 

@@ -56,6 +56,29 @@ type PreviewPdfDocumentOpts = {
 
 const activePreviewFlows = new Map<string, Promise<DocumentDescriptor>>();
 
+function requiresCanonicalRemotePdfSource(args: Pick<DocumentDescriptor, "documentType" | "originModule">) {
+  const key = `${args.originModule}:${args.documentType}`;
+  return (
+    key === "foreman:request"
+    || key === "director:director_report"
+    || key === "director:supplier_summary"
+    || key === "warehouse:warehouse_document"
+    || key === "warehouse:warehouse_register"
+    || key === "warehouse:warehouse_materials"
+  );
+}
+
+function assertCanonicalRemotePdfSource(
+  descriptor: Pick<DocumentDescriptor, "documentType" | "originModule">,
+  source: PdfSource,
+) {
+  if (!requiresCanonicalRemotePdfSource(descriptor)) return;
+  if (source.kind === "remote-url") return;
+  throw new Error(
+    `Canonical ${descriptor.originModule} ${descriptor.documentType} PDF must use backend remote-url source`,
+  );
+}
+
 export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<DocumentDescriptor> {
   const run = async () => {
     const observation = beginPdfLifecycleObservation({
@@ -92,6 +115,7 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
         getRemoteUrl: args.getRemoteUrl,
         fileName: args.descriptor.fileName,
       });
+      assertCanonicalRemotePdfSource(args.descriptor, preparedSource);
       const uri = preparedSource.uri;
       console.info("[pdf-document-actions] prepare_ready", {
         stage: "prepare_ready",

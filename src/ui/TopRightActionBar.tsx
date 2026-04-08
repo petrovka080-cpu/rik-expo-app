@@ -22,6 +22,7 @@ type Props = {
   titleLeft: string;
   actions: TopRightAction[];
   ui: TopRightUi;
+  testIdPrefix?: string;
 
   // optional: если хочешь чтобы левый текст был чуть меньше/больше
   titleFontSize?: number;
@@ -69,7 +70,13 @@ function IconSquare({
   );
 }
 
-export default function TopRightActionBar({ titleLeft, actions, ui, titleFontSize = 14 }: Props) {
+export default function TopRightActionBar({
+  titleLeft,
+  actions,
+  ui,
+  testIdPrefix,
+  titleFontSize = 14,
+}: Props) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       <Text
@@ -81,15 +88,20 @@ export default function TopRightActionBar({ titleLeft, actions, ui, titleFontSiz
 
       <View style={{ flexDirection: "row", gap: 8, marginLeft: 10 }}>
         {actions.map((a) => (
-          <IconSquare
+          <View
             key={a.key}
-            icon={a.icon}
-            onPress={a.onPress}
-            disabled={a.disabled}
-            busy={a.busy}
-            ui={ui}
-            ariaLabel={a.ariaLabel}
-          />
+            testID={testIdPrefix ? `${testIdPrefix}-action-${a.key}` : undefined}
+            accessibilityLabel={testIdPrefix ? `${testIdPrefix}-action-${a.key}` : undefined}
+          >
+            <IconSquare
+              icon={a.icon}
+              onPress={a.onPress}
+              disabled={a.disabled}
+              busy={a.busy}
+              ui={ui}
+              ariaLabel={a.ariaLabel}
+            />
+          </View>
         ))}
       </View>
     </View>

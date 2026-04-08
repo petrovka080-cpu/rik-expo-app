@@ -10,6 +10,7 @@ import {
   type PlatformOfflineFailureClass,
   type PlatformOfflineQueueAction,
 } from "./platformOffline.observability";
+import { recordPlatformObservability } from "../observability/platformObservability";
 import type { PlatformOfflineSyncStatus } from "./platformOffline.model";
 import type { RequestDraftMeta } from "../../screens/foreman/foreman.types";
 import {
@@ -118,6 +119,37 @@ const toOfflineState = (isOnline: boolean | null | undefined) => {
   if (isOnline === true) return "online" as const;
   if (isOnline === false) return "offline" as const;
   return "unknown" as const;
+};
+
+const extractSubmittedRequestId = (value: unknown): string | null => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const requestId = String((value as { id?: unknown }).id ?? "").trim();
+  return requestId || null;
+};
+
+const reportPostSubmitCleanupFailure = (params: {
+  error: unknown;
+  requestId: string;
+  draftKey: string;
+  triggerSource: ForemanDraftSyncTriggerSource;
+}) => {
+  recordPlatformObservability({
+    screen: "foreman",
+    surface: "draft_sync",
+    category: "ui",
+    event: "post_submit_cleanup_failed_after_server_accept",
+    result: "error",
+    errorClass: params.error instanceof Error ? params.error.name : undefined,
+    errorMessage: params.error instanceof Error ? params.error.message : String(params.error ?? "post_submit_cleanup_failed"),
+    extra: {
+      owner: "mutation_worker",
+      requestId: params.requestId,
+      draftKey: params.draftKey,
+      triggerSource: params.triggerSource,
+      stage: "post_submit_cleanup",
+      serverAccepted: true,
+    },
+  });
 };
 
 const syncSnapshotWithWorker = async (
@@ -507,7 +539,9 @@ const runFlush = async (
         triggerSource: effectiveTriggerSource,
       });
       const result = await syncSnapshotWithWorker(deps, snapshot, entry);
-      latestRequestId = String(result.snapshot?.requestId ?? snapshot.requestId ?? "").trim() || latestRequestId;
+      const submittedRequestId = extractSubmittedRequestId(result.submitted);
+      latestRequestId =
+        String(result.snapshot?.requestId ?? submittedRequestId ?? snapshot.requestId ?? "").trim() || latestRequestId;
       latestSubmitted = (result.submitted as RequestRecord | null) ?? latestSubmitted;
 
       if (
@@ -560,7 +594,8 @@ const runFlush = async (
       await removeForemanMutationById(entry.id);
 
       const requestKeyForCleanup =
-        String(result.snapshot?.requestId ?? snapshot.requestId ?? entry.payload.requestId ?? "").trim() || null;
+        String(result.snapshot?.requestId ?? submittedRequestId ?? snapshot.requestId ?? entry.payload.requestId ?? "").trim()
+        || null;
       if (!result.snapshot && requestKeyForCleanup) {
         await clearForemanMutationsForDraft(FOREMAN_LOCAL_ONLY_REQUEST_ID);
         if (requestKeyForCleanup !== FOREMAN_LOCAL_ONLY_REQUEST_ID) {
@@ -607,7 +642,16 @@ const runFlush = async (
       });
 
       if (!result.snapshot && latestRequestId && latestSubmitted) {
-        await deps.onSubmitted?.(latestRequestId, latestSubmitted);
+        try {
+          await deps.onSubmitted?.(latestRequestId, latestSubmitted);
+        } catch (error) {
+          reportPostSubmitCleanupFailure({
+            error,
+            requestId: latestRequestId,
+            draftKey: entry.payload.draftKey,
+            triggerSource: effectiveTriggerSource,
+          });
+        }
       }
 
       processedCount += 1;
