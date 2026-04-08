@@ -5,6 +5,7 @@ const mockOpenPdfShare = jest.fn();
 const mockOpenPdfExternal = jest.fn();
 const mockCreateDocumentPreviewSession = jest.fn();
 const mockCreateInMemoryDocumentPreviewSession = jest.fn();
+const mockRootRouterReplace = jest.fn();
 
 jest.mock("../pdfRunner", () => ({
   preparePdfExecutionSource: (...args: unknown[]) => mockPreparePdfExecutionSource(...args),
@@ -17,6 +18,12 @@ jest.mock("./pdfDocumentSessions", () => ({
   createDocumentPreviewSession: (...args: unknown[]) => mockCreateDocumentPreviewSession(...args),
   createInMemoryDocumentPreviewSession: (...args: unknown[]) =>
     mockCreateInMemoryDocumentPreviewSession(...args),
+}));
+
+jest.mock("expo-router", () => ({
+  router: {
+    replace: (...args: unknown[]) => mockRootRouterReplace(...args),
+  },
 }));
 
 import { InteractionManager, Platform } from "react-native";
@@ -70,6 +77,7 @@ describe("pdfDocumentActions", () => {
     mockOpenPdfExternal.mockReset();
     mockCreateDocumentPreviewSession.mockReset();
     mockCreateInMemoryDocumentPreviewSession.mockReset();
+    mockRootRouterReplace.mockReset();
     resetPlatformObservabilityEvents();
     resetPdfOpenFlowStateForTests();
     mockCreateInMemoryDocumentPreviewSession.mockImplementation((doc: typeof baseDocument) => ({
@@ -104,6 +112,10 @@ describe("pdfDocumentActions", () => {
       callback(0);
       return 1;
     }) as typeof requestAnimationFrame;
+    jest.spyOn(global, "setTimeout").mockImplementation(((callback: (...args: unknown[]) => void) => {
+      callback();
+      return 1 as unknown as ReturnType<typeof setTimeout>;
+    }) as typeof setTimeout);
   });
 
   afterEach(() => {
@@ -192,7 +204,8 @@ describe("pdfDocumentActions", () => {
       router: { push },
     });
 
-    expect(push).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-1&openToken=");
+    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-1&openToken=");
+    expect(push).not.toHaveBeenCalled();
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
   });
 
@@ -243,7 +256,8 @@ describe("pdfDocumentActions", () => {
     });
 
     expect(mockCreateDocumentPreviewSession).toHaveBeenCalledWith(supplierDocument);
-    expect(push).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-supplier-1&openToken=");
+    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-supplier-1&openToken=");
+    expect(push).not.toHaveBeenCalled();
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
     expect(
       getPlatformObservabilityEvents().some(
@@ -310,7 +324,8 @@ describe("pdfDocumentActions", () => {
     });
 
     expect(mockCreateDocumentPreviewSession).not.toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-direct-1&openToken=");
+    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-direct-1&openToken=");
+    expect(push).not.toHaveBeenCalled();
     expect(mockCreateInMemoryDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
     expect(
       getPlatformObservabilityEvents().some(
@@ -334,7 +349,8 @@ describe("pdfDocumentActions", () => {
     });
 
     expect(mockCreateDocumentPreviewSession).not.toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-direct-1&openToken=");
+    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-direct-1&openToken=");
+    expect(push).not.toHaveBeenCalled();
     expect(mockCreateInMemoryDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
     expect(mockOpenPdfShare).not.toHaveBeenCalled();
@@ -388,9 +404,9 @@ describe("pdfDocumentActions", () => {
     });
 
     await flushPromises();
-    expect(push).toHaveBeenCalledTimes(1);
+    expect(mockRootRouterReplace).toHaveBeenCalledTimes(1);
     expect(activeKeys.has("pdf:dup:1")).toBe(true);
-    const pushedHref = String(push.mock.calls[0]?.[0] || "");
+    const pushedHref = String(mockRootRouterReplace.mock.calls[0]?.[0] || "");
     const openToken = new URL(pushedHref, "https://example.test").searchParams.get("openToken") || "";
     let firstSettled = false;
     void first.then(() => {
@@ -471,7 +487,7 @@ describe("pdfDocumentActions", () => {
     });
 
     await flushPromises();
-    const pushedHref = String(push.mock.calls[0]?.[0] || "");
+    const pushedHref = String(mockRootRouterReplace.mock.calls[0]?.[0] || "");
     const openToken = new URL(pushedHref, "https://example.test").searchParams.get("openToken") || "";
     failPdfOpenVisible(openToken, new Error("viewer failed"), {
       sourceKind: "remote-url",

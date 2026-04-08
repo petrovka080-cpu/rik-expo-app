@@ -1,4 +1,4 @@
-import type { Href } from "expo-router";
+import { router as rootRouter, type Href } from "expo-router";
 import { InteractionManager, Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 import {
@@ -48,6 +48,7 @@ type PreparePdfDocumentArgs = {
 
 export type PdfViewerRouterLike = {
   push: (href: Href, options?: unknown) => void;
+  replace?: (href: Href, options?: unknown) => void;
 };
 
 function toSafeRouteParam(value: unknown) {
@@ -71,7 +72,13 @@ async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
   await new Promise<void>((resolve, reject) => {
     const runPush = () => {
       try {
-        router.push(href);
+        if (typeof rootRouter?.replace === "function") {
+          rootRouter.replace(href);
+        } else if (typeof router.replace === "function") {
+          router.replace(href);
+        } else {
+          router.push(href);
+        }
         resolve();
       } catch (error) {
         reject(error);
@@ -80,11 +87,13 @@ async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
 
     if (typeof InteractionManager?.runAfterInteractions === "function") {
       const task = InteractionManager.runAfterInteractions(() => {
-        if (typeof requestAnimationFrame === "function") {
-          requestAnimationFrame(runPush);
-          return;
-        }
-        runPush();
+        setTimeout(() => {
+          if (typeof requestAnimationFrame === "function") {
+            requestAnimationFrame(runPush);
+            return;
+          }
+          runPush();
+        }, 0);
       });
       if (task && typeof task.cancel === "function") {
         return;
