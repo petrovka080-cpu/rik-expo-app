@@ -19,7 +19,7 @@ jest.mock("./pdfDocumentSessions", () => ({
     mockCreateInMemoryDocumentPreviewSession(...args),
 }));
 
-import { Platform } from "react-native";
+import { InteractionManager, Platform } from "react-native";
 import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
@@ -94,6 +94,21 @@ describe("pdfDocumentActions", () => {
         entityId: doc.entityId,
       },
     }));
+    jest.spyOn(InteractionManager, "runAfterInteractions").mockImplementation((callback: () => void) => {
+      callback();
+      return {
+        cancel: jest.fn(),
+      } as unknown as ReturnType<typeof InteractionManager.runAfterInteractions>;
+    });
+    global.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    }) as typeof requestAnimationFrame;
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    delete (global as Partial<typeof globalThis>).requestAnimationFrame;
   });
 
   afterAll(() => {

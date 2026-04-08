@@ -1,5 +1,5 @@
 import type { Href } from "expo-router";
-import { Platform } from "react-native";
+import { InteractionManager, Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 import {
   createDocumentPreviewSession,
@@ -65,6 +65,40 @@ function createViewerHref(sessionId: unknown, openToken: unknown) {
     safeOpenToken,
     href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}` as Href,
   };
+}
+
+async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
+  await new Promise<void>((resolve, reject) => {
+    const runPush = () => {
+      try {
+        router.push(href);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    if (typeof InteractionManager?.runAfterInteractions === "function") {
+      const task = InteractionManager.runAfterInteractions(() => {
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(runPush);
+          return;
+        }
+        runPush();
+      });
+      if (task && typeof task.cancel === "function") {
+        return;
+      }
+      return;
+    }
+
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(runPush);
+      return;
+    }
+
+    runPush();
+  });
 }
 
 type PreviewPdfDocumentOpts = {
@@ -359,7 +393,7 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
-        opts.router.push(viewerHref);
+        await pushViewerRouteSafely(opts.router, viewerHref);
         const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
           screen: breadcrumbScreen,
@@ -549,7 +583,7 @@ export async function previewPdfDocument(
             previewPath: "session_viewer_contract",
           },
         });
-        opts.router.push(viewerHref);
+        await pushViewerRouteSafely(opts.router, viewerHref);
         const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
           screen: breadcrumbScreen,
