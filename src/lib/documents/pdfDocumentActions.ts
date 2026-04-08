@@ -50,6 +50,23 @@ export type PdfViewerRouterLike = {
   push: (href: Href, options?: unknown) => void;
 };
 
+function toSafeRouteParam(value: unknown) {
+  return String(value ?? "").trim();
+}
+
+function createViewerHref(sessionId: unknown, openToken: unknown) {
+  const safeSessionId = toSafeRouteParam(sessionId);
+  const safeOpenToken = toSafeRouteParam(openToken);
+  if (!safeSessionId) {
+    throw new Error("PDF viewer navigation requires a non-empty sessionId");
+  }
+  return {
+    safeSessionId,
+    safeOpenToken,
+    href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}` as Href,
+  };
+}
+
 type PreviewPdfDocumentOpts = {
   router?: PdfViewerRouterLike;
   openFlow?: PdfOpenFlowContext & {
@@ -260,15 +277,6 @@ export async function previewPdfDocument(
           uri: doc.fileSource.uri,
         },
       });
-      recordPdfOpenStage({
-        context: opts.openFlow,
-        stage: "viewer_route_payload_ready",
-        sourceKind: doc.fileSource.kind,
-        extra: {
-          previewSourceMode: "direct_remote_viewer_session_contract",
-          payloadMode: "session_id_only",
-        },
-      });
       const preparedBreadcrumb = persistCriticalPdfBreadcrumb({
         marker: "document_prepare_done",
         screen: breadcrumbScreen,
@@ -288,15 +296,23 @@ export async function previewPdfDocument(
       });
       if (preparedBreadcrumb) await preparedBreadcrumb;
       const { session, asset } = createInMemoryDocumentPreviewSession(doc);
-      const viewerHref: Href = {
-        pathname: "/pdf-viewer",
-        params: {
-          sessionId: session.sessionId,
-          openToken: opts.openFlow?.openToken ?? "",
+      const { safeSessionId, safeOpenToken, href: viewerHref } = createViewerHref(
+        session.sessionId,
+        opts.openFlow?.openToken,
+      );
+      recordPdfOpenStage({
+        context: opts.openFlow,
+        stage: "viewer_route_payload_ready",
+        sourceKind: doc.fileSource.kind,
+        extra: {
+          previewSourceMode: "direct_remote_viewer_session_contract",
+          payloadMode: "session_id_only",
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
         },
-      };
+      });
       console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
-        sessionId: session.sessionId,
+        sessionId: safeSessionId,
         documentType: asset.documentType,
         originModule: asset.originModule,
         finalUri: asset.uri,
@@ -306,15 +322,39 @@ export async function previewPdfDocument(
         fileName: asset.fileName,
         previewSourceMode: "direct_remote_viewer_session_contract",
         payloadMode: "session_id_only",
+        routeParamsJson: JSON.stringify({
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+        }),
       });
       try {
+        const pushAttemptBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_route_push_attempt",
+          screen: breadcrumbScreen,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: scheme || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: asset.entityId,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+          previewPath: "direct_remote_viewer_session_contract",
+          extra: {
+            route: "/pdf-viewer",
+            payloadMode: "session_id_only",
+          },
+        });
+        if (pushAttemptBreadcrumb) await pushAttemptBreadcrumb;
         recordPdfOpenStage({
           context: opts.openFlow,
           stage: "viewer_route_push_attempt",
           sourceKind: asset.sourceKind,
           extra: {
             route: "/pdf-viewer",
-            sessionId: session.sessionId,
+            sessionId: safeSessionId,
+            openToken: safeOpenToken,
             previewSourceMode: "direct_remote_viewer_session_contract",
             payloadMode: "session_id_only",
           },
@@ -330,8 +370,8 @@ export async function previewPdfDocument(
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: asset.entityId,
-          sessionId: session.sessionId,
-          openToken: opts.openFlow?.openToken,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
           previewPath: "direct_remote_viewer_session_contract",
           extra: {
             route: "/pdf-viewer",
@@ -351,17 +391,31 @@ export async function previewPdfDocument(
           sourceKind: asset.sourceKind,
           extra: {
             route: "/pdf-viewer",
-            sessionId: session.sessionId,
+            sessionId: safeSessionId,
             previewSourceMode: "direct_remote_viewer_session_contract",
           },
         });
         return;
       } catch (error) {
+        recordPdfOpenStage({
+          context: opts.openFlow,
+          stage: "viewer_route_push_crash",
+          result: "error",
+          sourceKind: asset.sourceKind,
+          error,
+          extra: {
+            route: "/pdf-viewer",
+            sessionId: safeSessionId,
+            openToken: safeOpenToken,
+            previewSourceMode: "direct_remote_viewer_session_contract",
+            payloadMode: "session_id_only",
+          },
+        });
         failPdfOpenVisible(opts.openFlow?.openToken, error, {
           sourceKind: asset.sourceKind,
           extra: {
             route: "/pdf-viewer",
-            sessionId: session.sessionId,
+            sessionId: safeSessionId,
             previewSourceMode: "direct_remote_viewer_session_contract",
           },
         });
@@ -445,15 +499,12 @@ export async function previewPdfDocument(
         },
       });
       if (preparedBreadcrumb) await preparedBreadcrumb;
-      const viewerHref: Href = {
-        pathname: "/pdf-viewer",
-        params: {
-          sessionId: session.sessionId,
-          openToken: opts.openFlow?.openToken ?? "",
-        },
-      };
+      const { safeSessionId, safeOpenToken, href: viewerHref } = createViewerHref(
+        session.sessionId,
+        opts.openFlow?.openToken,
+      );
       console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
-        sessionId: session.sessionId,
+        sessionId: safeSessionId,
         documentType: asset.documentType,
         originModule: asset.originModule,
         finalUri: asset.uri,
@@ -461,8 +512,43 @@ export async function previewPdfDocument(
         finalSourceKind: asset.sourceKind,
         isLocalFile: /^file:\/\//i.test(String(asset.uri || "")),
         fileName: asset.fileName,
+        routeParamsJson: JSON.stringify({
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+        }),
       });
       try {
+        const pushAttemptBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_route_push_attempt",
+          screen: breadcrumbScreen,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: doc.entityId,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
+          fileSizeBytes: asset.sizeBytes,
+          previewPath: "session_viewer_contract",
+          extra: {
+            route: "/pdf-viewer",
+          },
+        });
+        if (pushAttemptBreadcrumb) await pushAttemptBreadcrumb;
+        recordPdfOpenStage({
+          context: opts.openFlow,
+          stage: "viewer_route_push_attempt",
+          sourceKind: asset.sourceKind,
+          extra: {
+            route: "/pdf-viewer",
+            sessionId: safeSessionId,
+            openToken: safeOpenToken,
+            previewPath: "session_viewer_contract",
+          },
+        });
         opts.router.push(viewerHref);
         const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
@@ -474,8 +560,8 @@ export async function previewPdfDocument(
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
-          sessionId: session.sessionId,
-          openToken: opts.openFlow?.openToken,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
           fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
           fileSizeBytes: asset.sizeBytes,
           previewPath: "session_viewer_contract",
@@ -488,28 +574,41 @@ export async function previewPdfDocument(
           sourceKind: asset.sourceKind,
           extra: {
             route: "/pdf-viewer",
-            sessionId: session.sessionId,
+            sessionId: safeSessionId,
           },
         });
         return;
       } catch (error) {
+        recordPdfOpenStage({
+          context: opts.openFlow,
+          stage: "viewer_route_push_crash",
+          result: "error",
+          sourceKind: asset.sourceKind,
+          error,
+          extra: {
+            route: "/pdf-viewer",
+            sessionId: safeSessionId,
+            openToken: safeOpenToken,
+            previewPath: "session_viewer_contract",
+          },
+        });
         failPdfOpenVisible(opts.openFlow?.openToken, error, {
           sourceKind: asset.sourceKind,
           extra: {
             route: "/pdf-viewer",
-            sessionId: session.sessionId,
+            sessionId: safeSessionId,
           },
         });
         const lifecycleError = openObservation.error(error, {
           fallbackMessage: "Viewer navigation failed",
           extra: {
-            sessionId: session.sessionId,
+            sessionId: safeSessionId,
           },
         });
         const message = getPdfFlowErrorMessage(lifecycleError, "Viewer navigation failed");
         console.error("[pdf-document-actions] preview_navigation_failed", {
           stage: "navigation_failed",
-          sessionId: session.sessionId,
+          sessionId: safeSessionId,
           documentType: asset.documentType,
           originModule: asset.originModule,
           errorName: error && typeof error === "object" && "name" in error ? String((error as { name?: unknown }).name || "") : "",

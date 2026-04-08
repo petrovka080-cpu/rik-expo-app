@@ -16,6 +16,7 @@ type PdfOpenStage =
   | "viewer_or_handoff_start"
   | "viewer_route_payload_ready"
   | "viewer_route_push_attempt"
+  | "viewer_route_push_crash"
   | "first_open_visible"
   | "open_failed"
   | "busy_cleared";
