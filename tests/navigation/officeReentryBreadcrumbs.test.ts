@@ -46,6 +46,15 @@ import {
   recordOfficeRouteScopeActive,
   recordOfficeRouteScopeInactive,
   recordOfficeRouteScopeSkipReason,
+  recordOfficeWarehouseEntryContentMountDone,
+  recordOfficeWarehouseEntryContentMountStart,
+  recordOfficeWarehouseEntryFailure,
+  recordOfficeWarehouseEntryFocusDone,
+  recordOfficeWarehouseEntryFocusStart,
+  recordOfficeWarehouseEntryMountDone,
+  recordOfficeWarehouseEntryMountStart,
+  recordTabWarehouseEntryMountDone,
+  recordTabWarehouseEntryMountStart,
   recordWarehouseRouteOwnerBlur,
   recordWarehouseRouteOwnerFocus,
   recordWarehouseRouteOwnerIdentity,
@@ -152,6 +161,29 @@ describe("office reentry breadcrumbs", () => {
     );
   });
 
+  it("formats office-owned warehouse entry diagnostics", () => {
+    expect(
+      buildOfficeReentryBreadcrumbsText([
+        {
+          at: "2026-04-09T10:08:00.000Z",
+          marker: "office_warehouse_entry_content_mount_done",
+          result: "success",
+          extra: {
+            route: "/office/warehouse",
+            owner: "warehouse_screen_content",
+            identity: "office_warehouse_route:ghi789",
+            pathname: "/office/warehouse",
+            segments: "(tabs)/office/warehouse",
+            routeWrapper: "office_owned_screen_entry",
+            contentOwner: "office_warehouse_route",
+          },
+        },
+      ]),
+    ).toBe(
+      "2026-04-09T10:08:00.000Z | office_warehouse_entry_content_mount_done | success | route=/office/warehouse | owner=warehouse_screen_content | identity=office_warehouse_route:ghi789 | pathname=/office/warehouse | segments=(tabs)/office/warehouse | routeWrapper=office_owned_screen_entry",
+    );
+  });
+
   it("records the expected warehouse route ownership sequence", () => {
     recordWarehouseRouteOwnerMount({
       owner: "warehouse_tab_route",
@@ -200,6 +232,135 @@ describe("office reentry breadcrumbs", () => {
       "warehouse_route_owner_focus",
       "warehouse_route_owner_blur",
       "warehouse_route_owner_unmount",
+    ]);
+  });
+
+  it("records the expected office-owned warehouse entry sequence", () => {
+    recordOfficeWarehouseEntryMountStart({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeRouteOwnerMount({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeWarehouseEntryMountDone({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeRouteOwnerIdentity({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeWarehouseEntryContentMountStart({
+      owner: "warehouse_screen_content",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeWarehouseEntryContentMountDone({
+      owner: "warehouse_screen_content",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeWarehouseEntryFocusStart({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeRouteOwnerFocus({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeWarehouseEntryFocusDone({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeWarehouseEntryFailure({
+      error: new Error("office warehouse failed"),
+      errorStage: "entry_boundary",
+      extra: {
+        owner: "office_warehouse_route",
+        route: "/office/warehouse",
+      },
+    });
+
+    expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
+      "office_warehouse_entry_mount_start",
+      "office_route_owner_mount",
+      "office_warehouse_entry_mount_done",
+      "office_route_owner_identity",
+      "office_warehouse_entry_content_mount_start",
+      "office_warehouse_entry_content_mount_done",
+      "office_warehouse_entry_focus_start",
+      "office_route_owner_focus",
+      "office_warehouse_entry_focus_done",
+      "office_warehouse_entry_failed",
+    ]);
+  });
+
+  it("records the expected top-level warehouse parity mount sequence", () => {
+    recordTabWarehouseEntryMountStart({
+      owner: "warehouse_tab_route",
+      route: "/warehouse",
+      identity: "warehouse_tab_route:def456",
+      pathname: "/warehouse",
+      segments: "(tabs)/warehouse",
+      routeWrapper: "tab_owned_screen_entry",
+    });
+    recordWarehouseRouteOwnerMount({
+      owner: "warehouse_tab_route",
+      route: "/warehouse",
+      identity: "warehouse_tab_route:def456",
+      pathname: "/warehouse",
+      segments: "(tabs)/warehouse",
+      routeWrapper: "tab_owned_screen_entry",
+    });
+    recordTabWarehouseEntryMountDone({
+      owner: "warehouse_tab_route",
+      route: "/warehouse",
+      identity: "warehouse_tab_route:def456",
+      pathname: "/warehouse",
+      segments: "(tabs)/warehouse",
+      routeWrapper: "tab_owned_screen_entry",
+    });
+
+    expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
+      "tab_warehouse_entry_mount_start",
+      "warehouse_route_owner_mount",
+      "tab_warehouse_entry_mount_done",
     ]);
   });
 

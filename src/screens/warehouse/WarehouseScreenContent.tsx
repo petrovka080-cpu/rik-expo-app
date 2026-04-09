@@ -1,6 +1,10 @@
 import React from "react";
 import { ActivityIndicator, Animated, Text, View, type ViewStyle } from "react-native";
 
+import {
+  recordOfficeWarehouseEntryContentMountDone,
+  recordOfficeWarehouseEntryContentMountStart,
+} from "../../lib/navigation/officeReentryBreadcrumbs";
 import WarehouseHeader from "./components/WarehouseHeader";
 import WarehouseModalsManager from "./components/WarehouseModalsManager";
 import WarehouseTabContent from "./components/WarehouseTabContent";
@@ -27,11 +31,39 @@ const WEB_STICKY_HEADER_STYLE = {
   overflow: "hidden",
 } as unknown as ViewStyle;
 
-export default function WarehouseScreenContent() {
+type WarehouseScreenContentProps = {
+  entryKind?: "office" | "tab";
+  entryExtra?: Record<string, unknown>;
+};
+
+export default function WarehouseScreenContent({
+  entryKind = "tab",
+  entryExtra,
+}: WarehouseScreenContentProps) {
   const vm = useWarehouseScreenController();
   const screenMode = selectWarehouseScreenMode(vm);
   const headerProps = selectWarehouseHeaderProps(vm);
   const screenStateText = selectWarehouseScreenStateText(screenMode);
+
+  React.useLayoutEffect(() => {
+    if (entryKind !== "office") return;
+    recordOfficeWarehouseEntryContentMountStart({
+      owner: "warehouse_screen_content",
+      route: "/office/warehouse",
+      entryKind,
+      ...(entryExtra ?? {}),
+    });
+  }, [entryExtra, entryKind]);
+
+  React.useEffect(() => {
+    if (entryKind !== "office") return;
+    recordOfficeWarehouseEntryContentMountDone({
+      owner: "warehouse_screen_content",
+      route: "/office/warehouse",
+      entryKind,
+      ...(entryExtra ?? {}),
+    });
+  }, [entryExtra, entryKind]);
 
   return (
     <View style={ROOT_STYLE}>

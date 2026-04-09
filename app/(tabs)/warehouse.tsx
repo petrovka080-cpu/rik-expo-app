@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useFocusEffect, usePathname, useSegments } from "expo-router";
 
 import {
+  recordTabWarehouseEntryMountDone,
+  recordTabWarehouseEntryMountStart,
   recordWarehouseRouteOwnerBlur,
   recordWarehouseRouteOwnerFocus,
   recordWarehouseRouteOwnerIdentity,
@@ -39,6 +41,14 @@ function WarehouseTabRoute() {
     [pathname, segmentsLabel],
   );
 
+  React.useLayoutEffect(() => {
+    recordTabWarehouseEntryMountStart(
+      buildRouteExtra({
+        phase: "layout_effect",
+      }),
+    );
+  }, [buildRouteExtra]);
+
   useEffect(() => {
     const identity = identityRef.current;
     recordWarehouseRouteOwnerMount({
@@ -62,6 +72,11 @@ function WarehouseTabRoute() {
   }, []);
 
   useEffect(() => {
+    recordTabWarehouseEntryMountDone(
+      buildRouteExtra({
+        phase: "effect",
+      }),
+    );
     recordWarehouseRouteOwnerIdentity(buildRouteExtra());
   }, [buildRouteExtra]);
 

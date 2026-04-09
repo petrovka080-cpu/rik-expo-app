@@ -22,6 +22,15 @@ export type OfficeReentryMarker =
   | "warehouse_route_owner_focus"
   | "warehouse_route_owner_blur"
   | "warehouse_route_owner_identity"
+  | "office_warehouse_entry_mount_start"
+  | "office_warehouse_entry_mount_done"
+  | "office_warehouse_entry_focus_start"
+  | "office_warehouse_entry_focus_done"
+  | "office_warehouse_entry_content_mount_start"
+  | "office_warehouse_entry_content_mount_done"
+  | "office_warehouse_entry_failed"
+  | "tab_warehouse_entry_mount_start"
+  | "tab_warehouse_entry_mount_done"
   | "warehouse_return_to_office_start"
   | "warehouse_return_to_office_done"
   | "office_bootstrap_initial_start"
@@ -309,6 +318,14 @@ function recordOfficeLifecycleMarker(params: {
     | "warehouse_route_owner_focus"
     | "warehouse_route_owner_blur"
     | "warehouse_route_owner_identity"
+    | "office_warehouse_entry_mount_start"
+    | "office_warehouse_entry_mount_done"
+    | "office_warehouse_entry_focus_start"
+    | "office_warehouse_entry_focus_done"
+    | "office_warehouse_entry_content_mount_start"
+    | "office_warehouse_entry_content_mount_done"
+    | "tab_warehouse_entry_mount_start"
+    | "tab_warehouse_entry_mount_done"
     | "warehouse_return_to_office_start"
     | "warehouse_return_to_office_done"
     | "office_bootstrap_initial_start"
@@ -446,6 +463,100 @@ export function recordWarehouseRouteOwnerIdentity(
 ) {
   recordOfficeLifecycleMarker({
     marker: "warehouse_route_owner_identity",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseEntryMountStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_entry_mount_start",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseEntryMountDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_entry_mount_done",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseEntryFocusStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_entry_focus_start",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseEntryFocusDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_entry_focus_done",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseEntryContentMountStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_entry_content_mount_start",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseEntryContentMountDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_entry_content_mount_done",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseEntryFailure(params: {
+  error: unknown;
+  errorStage: string;
+  extra?: Record<string, unknown>;
+}) {
+  const errorClass =
+    params.error instanceof Error ? params.error.name : undefined;
+  const errorMessage =
+    params.error instanceof Error
+      ? params.error.message
+      : String(params.error ?? "office_warehouse_entry_failed");
+
+  recordOfficeReentryMarker({
+    marker: "office_warehouse_entry_failed",
+    result: "error",
+    errorStage: params.errorStage,
+    errorClass,
+    errorMessage,
+    extra: params.extra,
+  });
+}
+
+export function recordTabWarehouseEntryMountStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "tab_warehouse_entry_mount_start",
+    extra,
+  });
+}
+
+export function recordTabWarehouseEntryMountDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "tab_warehouse_entry_mount_done",
     extra,
   });
 }
