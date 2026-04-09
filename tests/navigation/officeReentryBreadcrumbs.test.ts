@@ -1,5 +1,17 @@
 import {
   buildOfficeReentryBreadcrumbsText,
+  recordOfficeNativeAnimationFrameDone,
+  recordOfficeNativeAnimationFrameStart,
+  recordOfficeNativeCallbackFailure,
+  recordOfficeNativeContentSizeDone,
+  recordOfficeNativeContentSizeStart,
+  recordOfficeNativeFocusCallbackDone,
+  recordOfficeNativeFocusCallbackStart,
+  recordOfficeNativeInteractionDone,
+  recordOfficeNativeInteractionStart,
+  recordOfficeNativeKeyboardEvent,
+  recordOfficeNativeLayoutDone,
+  recordOfficeNativeLayoutStart,
   recordOfficePostReturnChildMountDone,
   recordOfficePostReturnChildMountStart,
   recordOfficePostReturnFocus,
@@ -33,20 +45,19 @@ describe("office reentry breadcrumbs", () => {
       buildOfficeReentryBreadcrumbsText([
         {
           at: "2026-04-09T10:00:00.000Z",
-          marker: "office_post_return_subtree_done",
+          marker: "office_native_layout_done",
           result: "success",
           extra: {
             route: "/office",
             owner: "office_hub",
             focusCycle: 3,
-            sections: "summary,directions,company_details,invites,members",
-            subtree: "members_list",
-            probe: "members",
+            callback: "section_layout:members",
+            probe: "no_layout_callbacks",
           },
         },
       ]),
     ).toBe(
-      "2026-04-09T10:00:00.000Z | office_post_return_subtree_done | success | route=/office | owner=office_hub | focusCycle=3 | sections=summary,directions,company_details,invites,members | subtree=members_list | probe=members",
+      "2026-04-09T10:00:00.000Z | office_native_layout_done | success | route=/office | owner=office_hub | focusCycle=3 | callback=section_layout:members | probe=no_layout_callbacks",
     );
   });
 
@@ -57,6 +68,11 @@ describe("office reentry breadcrumbs", () => {
     recordOfficeReentryEffectDone({ owner: "office_hub", mode: "initial" });
     recordOfficeReentryRenderSuccess({ owner: "office_hub" });
     recordOfficePostReturnFocus({ owner: "office_hub", focusCycle: 2 });
+    recordOfficeNativeFocusCallbackStart({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "useFocusEffect",
+    });
     recordOfficePostReturnChildMountStart({
       owner: "office_hub",
       focusCycle: 2,
@@ -67,6 +83,11 @@ describe("office reentry breadcrumbs", () => {
       focusCycle: 2,
       subtree: "members_list",
       probe: "members",
+    });
+    recordOfficeNativeLayoutStart({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "section_layout:summary",
     });
     recordOfficePostReturnSectionRenderStart({
       owner: "office_hub",
@@ -83,11 +104,51 @@ describe("office reentry breadcrumbs", () => {
       focusCycle: 2,
       section: "summary",
     });
+    recordOfficeNativeLayoutDone({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "section_layout:summary",
+    });
     recordOfficePostReturnSubtreeDone({
       owner: "office_hub",
       focusCycle: 2,
       subtree: "members_list",
       probe: "members",
+    });
+    recordOfficeNativeContentSizeStart({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "scroll_view:onContentSizeChange",
+    });
+    recordOfficeNativeContentSizeDone({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "scroll_view:onContentSizeChange",
+    });
+    recordOfficeNativeAnimationFrameStart({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "requestAnimationFrame",
+    });
+    recordOfficeNativeAnimationFrameDone({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "requestAnimationFrame",
+    });
+    recordOfficeNativeInteractionStart({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "InteractionManager.runAfterInteractions",
+    });
+    recordOfficeNativeInteractionDone({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "InteractionManager.runAfterInteractions",
+    });
+    recordOfficeNativeKeyboardEvent({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "Keyboard.keyboardDidShow",
     });
     recordOfficePostReturnIdleStart({ owner: "office_hub", focusCycle: 2 });
     recordOfficePostReturnIdleDone({ owner: "office_hub", focusCycle: 2 });
@@ -96,6 +157,11 @@ describe("office reentry breadcrumbs", () => {
       focusCycle: 2,
       sections: "summary,directions,invites,members",
     });
+    recordOfficeNativeFocusCallbackDone({
+      owner: "office_hub",
+      focusCycle: 2,
+      callback: "useFocusEffect",
+    });
     recordOfficePostReturnSubtreeFailure({
       error: new Error("members subtree failed"),
       errorStage: "subtree_boundary",
@@ -103,6 +169,15 @@ describe("office reentry breadcrumbs", () => {
         owner: "office_hub",
         focusCycle: 2,
         subtree: "members_list",
+      },
+    });
+    recordOfficeNativeCallbackFailure({
+      error: new Error("layout callback failed"),
+      errorStage: "layout",
+      extra: {
+        owner: "office_hub",
+        focusCycle: 2,
+        callback: "section_layout:summary",
       },
     });
     recordOfficeReentryFailure({
@@ -126,16 +201,28 @@ describe("office reentry breadcrumbs", () => {
       "office_reentry_effect_done",
       "office_reentry_render_success",
       "office_post_return_focus",
+      "office_native_focus_callback_start",
       "office_post_return_child_mount_start",
       "office_post_return_subtree_start",
+      "office_native_layout_start",
       "office_post_return_section_render_start",
       "office_post_return_layout_commit",
       "office_post_return_section_render_done",
+      "office_native_layout_done",
       "office_post_return_subtree_done",
+      "office_native_content_size_start",
+      "office_native_content_size_done",
+      "office_native_animation_frame_start",
+      "office_native_animation_frame_done",
+      "office_native_interaction_start",
+      "office_native_interaction_done",
+      "office_native_keyboard_event",
       "office_post_return_idle_start",
       "office_post_return_idle_done",
       "office_post_return_child_mount_done",
+      "office_native_focus_callback_done",
       "office_post_return_subtree_failed",
+      "office_native_callback_failed",
       "office_reentry_failed",
     ]);
     expect(events.at(-1)).toMatchObject({

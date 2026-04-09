@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   InteractionManager,
+  Keyboard,
   Linking,
   Modal,
   Pressable,
@@ -27,6 +28,18 @@ import {
   formatOfficePostReturnProbe,
   getOfficePostReturnProbe,
   normalizeOfficePostReturnProbe,
+  recordOfficeNativeAnimationFrameDone,
+  recordOfficeNativeAnimationFrameStart,
+  recordOfficeNativeCallbackFailure,
+  recordOfficeNativeContentSizeDone,
+  recordOfficeNativeContentSizeStart,
+  recordOfficeNativeFocusCallbackDone,
+  recordOfficeNativeFocusCallbackStart,
+  recordOfficeNativeInteractionDone,
+  recordOfficeNativeInteractionStart,
+  recordOfficeNativeKeyboardEvent,
+  recordOfficeNativeLayoutDone,
+  recordOfficeNativeLayoutStart,
   recordOfficeReentryComponentMount,
   recordOfficeReentryEffectDone,
   recordOfficeReentryEffectStart,
@@ -93,6 +106,15 @@ type InviteFormDraft = {
   email: string;
   comment: string;
 };
+
+const SECTION_RENDER_PROBES = [
+  "header_meta",
+  "summary",
+  "directions",
+  "company_details",
+  "invites",
+  "members",
+] as const satisfies readonly OfficePostReturnProbe[];
 
 const EMPTY_DATA: OfficeAccessScreenData = {
   currentUserId: "",
@@ -345,6 +367,10 @@ function shouldRenderCompanySection(
   probe: readonly OfficePostReturnProbe[],
 ) {
   if (probe.includes("all")) return true;
+  const hasSectionIsolationProbe = SECTION_RENDER_PROBES.some((item) =>
+    probe.includes(item),
+  );
+  if (!hasSectionIsolationProbe) return true;
 
   switch (section) {
     case "summary":
@@ -647,6 +673,28 @@ export default function OfficeHubScreen() {
   const postReturnCompletedSubtreesRef = useRef<Set<OfficePostReturnSubtree>>(
     new Set(),
   );
+  const postReturnLayoutFallbackTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const disableScrollCallbacks = activePostReturnProbe.includes(
+    "no_scroll_callbacks",
+  );
+  const disableLayoutCallbacks = activePostReturnProbe.includes(
+    "no_layout_callbacks",
+  );
+  const disableContentSizeCallbacks = activePostReturnProbe.includes(
+    "no_content_size_callbacks",
+  );
+  const disableKeyboardBridge =
+    activePostReturnProbe.includes("no_keyboard_bridge");
+  const disableInteractionManager = activePostReturnProbe.includes(
+    "no_interaction_manager",
+  );
+  const disableAnimationFrame =
+    activePostReturnProbe.includes("no_animation_frame");
+  const disableFocusPostCommit = activePostReturnProbe.includes(
+    "no_focus_post_commit",
+  );
 
   React.useEffect(() => {
     if (requestedPostReturnProbe) {
@@ -674,6 +722,79 @@ export default function OfficeHubScreen() {
       return nextExtra;
     },
     [postReturnProbeLabel],
+  );
+
+  const buildNativeCallbackExtra = useCallback(
+    (callback: string, extra?: Record<string, unknown>) =>
+      buildPostReturnExtra({
+        callback,
+        ...(extra ?? {}),
+      }),
+    [buildPostReturnExtra],
+  );
+
+  const runObservedNativeCallback = useCallback(
+    <T,>(params: {
+      callback: string;
+      phase:
+        | "focus"
+        | "layout"
+        | "content_size"
+        | "interaction"
+        | "animation_frame";
+      run: () => T;
+    }) => {
+      const extra = buildNativeCallbackExtra(params.callback);
+      try {
+        switch (params.phase) {
+          case "focus":
+            recordOfficeNativeFocusCallbackStart(extra);
+            break;
+          case "layout":
+            recordOfficeNativeLayoutStart(extra);
+            break;
+          case "content_size":
+            recordOfficeNativeContentSizeStart(extra);
+            break;
+          case "interaction":
+            recordOfficeNativeInteractionStart(extra);
+            break;
+          case "animation_frame":
+            recordOfficeNativeAnimationFrameStart(extra);
+            break;
+        }
+
+        const result = params.run();
+
+        switch (params.phase) {
+          case "focus":
+            recordOfficeNativeFocusCallbackDone(extra);
+            break;
+          case "layout":
+            recordOfficeNativeLayoutDone(extra);
+            break;
+          case "content_size":
+            recordOfficeNativeContentSizeDone(extra);
+            break;
+          case "interaction":
+            recordOfficeNativeInteractionDone(extra);
+            break;
+          case "animation_frame":
+            recordOfficeNativeAnimationFrameDone(extra);
+            break;
+        }
+
+        return result;
+      } catch (error: unknown) {
+        recordOfficeNativeCallbackFailure({
+          error,
+          errorStage: params.phase,
+          extra,
+        });
+        throw error;
+      }
+    },
+    [buildNativeCallbackExtra],
   );
 
   const recordPostReturnSubtreeStart = useCallback(
@@ -708,10 +829,27 @@ export default function OfficeHubScreen() {
   );
 
   const handleSubtreeLayout = useCallback(
-    (subtree: OfficePostReturnSubtree) => (_event: LayoutChangeEvent) => {
-      recordPostReturnSubtreeDone(subtree);
+    (
+      subtree: OfficePostReturnSubtree,
+      callback = `subtree_layout:${subtree}`,
+    ) => {
+      if (disableLayoutCallbacks) return undefined;
+
+      return (_event: LayoutChangeEvent) => {
+        runObservedNativeCallback({
+          callback,
+          phase: "layout",
+          run: () => {
+            recordPostReturnSubtreeDone(subtree);
+          },
+        });
+      };
     },
-    [recordPostReturnSubtreeDone],
+    [
+      disableLayoutCallbacks,
+      recordPostReturnSubtreeDone,
+      runObservedNativeCallback,
+    ],
   );
 
   const handleSubtreeFailure = useCallback(
@@ -740,6 +878,10 @@ export default function OfficeHubScreen() {
     postReturnFrameRef.current = null;
     postReturnInteractionRef.current?.cancel?.();
     postReturnInteractionRef.current = null;
+    if (postReturnLayoutFallbackTimeoutRef.current != null) {
+      clearTimeout(postReturnLayoutFallbackTimeoutRef.current);
+    }
+    postReturnLayoutFallbackTimeoutRef.current = null;
   }, []);
 
   const recordPostReturnSectionDone = useCallback(
@@ -782,14 +924,66 @@ export default function OfficeHubScreen() {
 
   const handleSectionLayout = useCallback(
     (section: PostReturnSectionKey, offsetKey?: SectionKey) =>
-      (event: LayoutChangeEvent) => {
-        if (offsetKey) {
-          offsetsRef.current[offsetKey] = event.nativeEvent.layout.y;
-        }
-        recordPostReturnSectionDone(section);
-      },
-    [recordPostReturnSectionDone],
+      disableLayoutCallbacks
+        ? undefined
+        : (event: LayoutChangeEvent) => {
+            runObservedNativeCallback({
+              callback: `section_layout:${section}`,
+              phase: "layout",
+              run: () => {
+                if (offsetKey) {
+                  offsetsRef.current[offsetKey] = event.nativeEvent.layout.y;
+                }
+                recordPostReturnSectionDone(section);
+              },
+            });
+          },
+    [
+      disableLayoutCallbacks,
+      recordPostReturnSectionDone,
+      runObservedNativeCallback,
+    ],
   );
+
+  const handleScrollLayout = useMemo(() => {
+    if (disableLayoutCallbacks || disableScrollCallbacks) return undefined;
+    return (event: LayoutChangeEvent) => {
+      runObservedNativeCallback({
+        callback: "scroll_view:onLayout",
+        phase: "layout",
+        run: () => {
+          void event;
+          recordPostReturnSubtreeDone("scroll_view_layout");
+        },
+      });
+    };
+  }, [
+    disableLayoutCallbacks,
+    disableScrollCallbacks,
+    recordPostReturnSubtreeDone,
+    runObservedNativeCallback,
+  ]);
+
+  const handleContentSizeChange = useMemo(() => {
+    if (disableScrollCallbacks || disableContentSizeCallbacks) return undefined;
+    return (contentWidth: number, contentHeight: number) => {
+      runObservedNativeCallback({
+        callback: "scroll_view:onContentSizeChange",
+        phase: "content_size",
+        run: () => {
+          recordPostReturnSubtreeDone("scroll_view_content", {
+            contentWidth,
+            contentHeight,
+          });
+        },
+      });
+    };
+  }, [
+    disableContentSizeCallbacks,
+    disableScrollCallbacks,
+    recordPostReturnSubtreeDone,
+    runObservedNativeCallback,
+  ]);
 
   const startPostReturnTrace = useCallback(
     (next: OfficeAccessScreenData) => {
@@ -829,6 +1023,15 @@ export default function OfficeHubScreen() {
         }),
       );
 
+      if (disableLayoutCallbacks && nextSections.length > 0) {
+        postReturnLayoutFallbackTimeoutRef.current = setTimeout(() => {
+          if (!isMountedRef.current) return;
+          nextSections.forEach((section) => {
+            recordPostReturnSectionDone(section);
+          });
+        }, 0);
+      }
+
       const finishIdle = () => {
         if (!isMountedRef.current) return;
         recordPostReturnSubtreeStart("idle_callback", {
@@ -857,8 +1060,21 @@ export default function OfficeHubScreen() {
 
       const scheduleIdle = () => {
         try {
+          if (disableInteractionManager) {
+            finishIdle();
+            return;
+          }
+
           postReturnInteractionRef.current =
-            InteractionManager.runAfterInteractions(finishIdle);
+            InteractionManager.runAfterInteractions(() =>
+              runObservedNativeCallback({
+                callback: "InteractionManager.runAfterInteractions",
+                phase: "interaction",
+                run: () => {
+                  finishIdle();
+                },
+              }),
+            );
         } catch (error: unknown) {
           recordOfficePostReturnFailure({
             error,
@@ -871,9 +1087,18 @@ export default function OfficeHubScreen() {
         }
       };
 
-      if (typeof requestAnimationFrame === "function") {
+      if (
+        !disableAnimationFrame &&
+        typeof requestAnimationFrame === "function"
+      ) {
         postReturnFrameRef.current = requestAnimationFrame(() => {
-          scheduleIdle();
+          runObservedNativeCallback({
+            callback: "requestAnimationFrame",
+            phase: "animation_frame",
+            run: () => {
+              scheduleIdle();
+            },
+          });
         });
         return;
       }
@@ -884,8 +1109,13 @@ export default function OfficeHubScreen() {
       activePostReturnProbe,
       buildPostReturnExtra,
       cancelPostReturnIdle,
+      disableAnimationFrame,
+      disableInteractionManager,
+      disableLayoutCallbacks,
       recordPostReturnSubtreeDone,
       recordPostReturnSubtreeStart,
+      recordPostReturnSectionDone,
+      runObservedNativeCallback,
     ],
   );
 
@@ -914,6 +1144,28 @@ export default function OfficeHubScreen() {
     recordPostReturnSubtreeDone,
     recordPostReturnSubtreeStart,
   ]);
+
+  React.useEffect(() => {
+    if (disableKeyboardBridge) return;
+
+    const events = [
+      "keyboardWillShow",
+      "keyboardDidShow",
+      "keyboardWillHide",
+      "keyboardDidHide",
+    ] as const;
+    const subscriptions = events.map((eventName) =>
+      Keyboard.addListener(eventName, () => {
+        recordOfficeNativeKeyboardEvent(
+          buildNativeCallbackExtra(`Keyboard.${eventName}`),
+        );
+      }),
+    );
+
+    return () => {
+      subscriptions.forEach((subscription) => subscription.remove());
+    };
+  }, [buildNativeCallbackExtra, disableKeyboardBridge]);
 
   const loadScreen = useCallback(
     async (mode: "initial" | "refresh" = "initial") => {
@@ -977,23 +1229,33 @@ export default function OfficeHubScreen() {
   useFocusEffect(
     useCallback(() => {
       focusCycleRef.current += 1;
-      recordPostReturnSubtreeStart("focus_effect_callback");
-      recordOfficePostReturnFocus(
-        buildPostReturnExtra({
-          focusCycle: focusCycleRef.current,
-        }),
-      );
+      if (!disableFocusPostCommit) {
+        runObservedNativeCallback({
+          callback: "useFocusEffect",
+          phase: "focus",
+          run: () => {
+            recordPostReturnSubtreeStart("focus_effect_callback");
+            recordOfficePostReturnFocus(
+              buildPostReturnExtra({
+                focusCycle: focusCycleRef.current,
+              }),
+            );
+            recordPostReturnSubtreeDone("focus_effect_callback");
+          },
+        });
+      }
       void loadScreen();
-      recordPostReturnSubtreeDone("focus_effect_callback");
       return () => {
         cancelPostReturnIdle();
       };
     }, [
       buildPostReturnExtra,
       cancelPostReturnIdle,
+      disableFocusPostCommit,
       loadScreen,
       recordPostReturnSubtreeDone,
       recordPostReturnSubtreeStart,
+      runObservedNativeCallback,
     ]),
   );
 
@@ -1275,13 +1537,8 @@ export default function OfficeHubScreen() {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.content}
-        onLayout={handleSubtreeLayout("scroll_view_layout")}
-        onContentSizeChange={(contentWidth, contentHeight) => {
-          recordPostReturnSubtreeDone("scroll_view_content", {
-            contentWidth,
-            contentHeight,
-          });
-        }}
+        onLayout={handleScrollLayout}
+        onContentSizeChange={handleContentSizeChange}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

@@ -1,5 +1,5 @@
 import React from "react";
-import { InteractionManager, Linking } from "react-native";
+import { InteractionManager, Keyboard, Linking } from "react-native";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import OfficeHubScreen from "./OfficeHubScreen";
@@ -28,6 +28,18 @@ const mockRecordOfficePostReturnSectionRenderStart = jest.fn();
 const mockRecordOfficePostReturnSubtreeDone = jest.fn();
 const mockRecordOfficePostReturnSubtreeFailure = jest.fn();
 const mockRecordOfficePostReturnSubtreeStart = jest.fn();
+const mockRecordOfficeNativeAnimationFrameDone = jest.fn();
+const mockRecordOfficeNativeAnimationFrameStart = jest.fn();
+const mockRecordOfficeNativeCallbackFailure = jest.fn();
+const mockRecordOfficeNativeContentSizeDone = jest.fn();
+const mockRecordOfficeNativeContentSizeStart = jest.fn();
+const mockRecordOfficeNativeFocusCallbackDone = jest.fn();
+const mockRecordOfficeNativeFocusCallbackStart = jest.fn();
+const mockRecordOfficeNativeInteractionDone = jest.fn();
+const mockRecordOfficeNativeInteractionStart = jest.fn();
+const mockRecordOfficeNativeKeyboardEvent = jest.fn();
+const mockRecordOfficeNativeLayoutDone = jest.fn();
+const mockRecordOfficeNativeLayoutStart = jest.fn();
 let mockOfficePostReturnProbe = ["all"];
 
 jest.mock("expo-router", () => {
@@ -114,6 +126,30 @@ jest.mock("../../lib/navigation/officeReentryBreadcrumbs", () => ({
     mockRecordOfficePostReturnSubtreeFailure(...args),
   recordOfficePostReturnSubtreeStart: (...args: unknown[]) =>
     mockRecordOfficePostReturnSubtreeStart(...args),
+  recordOfficeNativeAnimationFrameDone: (...args: unknown[]) =>
+    mockRecordOfficeNativeAnimationFrameDone(...args),
+  recordOfficeNativeAnimationFrameStart: (...args: unknown[]) =>
+    mockRecordOfficeNativeAnimationFrameStart(...args),
+  recordOfficeNativeCallbackFailure: (...args: unknown[]) =>
+    mockRecordOfficeNativeCallbackFailure(...args),
+  recordOfficeNativeContentSizeDone: (...args: unknown[]) =>
+    mockRecordOfficeNativeContentSizeDone(...args),
+  recordOfficeNativeContentSizeStart: (...args: unknown[]) =>
+    mockRecordOfficeNativeContentSizeStart(...args),
+  recordOfficeNativeFocusCallbackDone: (...args: unknown[]) =>
+    mockRecordOfficeNativeFocusCallbackDone(...args),
+  recordOfficeNativeFocusCallbackStart: (...args: unknown[]) =>
+    mockRecordOfficeNativeFocusCallbackStart(...args),
+  recordOfficeNativeInteractionDone: (...args: unknown[]) =>
+    mockRecordOfficeNativeInteractionDone(...args),
+  recordOfficeNativeInteractionStart: (...args: unknown[]) =>
+    mockRecordOfficeNativeInteractionStart(...args),
+  recordOfficeNativeKeyboardEvent: (...args: unknown[]) =>
+    mockRecordOfficeNativeKeyboardEvent(...args),
+  recordOfficeNativeLayoutDone: (...args: unknown[]) =>
+    mockRecordOfficeNativeLayoutDone(...args),
+  recordOfficeNativeLayoutStart: (...args: unknown[]) =>
+    mockRecordOfficeNativeLayoutStart(...args),
   setOfficePostReturnProbe: (value: string | string[] | undefined | null) => {
     if (value == null) {
       mockOfficePostReturnProbe = ["all"];
@@ -219,6 +255,7 @@ const originalCancelAnimationFrame = global.cancelAnimationFrame;
 
 describe("OfficeHubScreen", () => {
   let interactionSpy: jest.SpyInstance;
+  let keyboardSpy: jest.SpyInstance;
 
   beforeEach(() => {
     mockUseLocalSearchParams.mockReset();
@@ -247,6 +284,18 @@ describe("OfficeHubScreen", () => {
     mockRecordOfficePostReturnSubtreeDone.mockReset();
     mockRecordOfficePostReturnSubtreeFailure.mockReset();
     mockRecordOfficePostReturnSubtreeStart.mockReset();
+    mockRecordOfficeNativeAnimationFrameDone.mockReset();
+    mockRecordOfficeNativeAnimationFrameStart.mockReset();
+    mockRecordOfficeNativeCallbackFailure.mockReset();
+    mockRecordOfficeNativeContentSizeDone.mockReset();
+    mockRecordOfficeNativeContentSizeStart.mockReset();
+    mockRecordOfficeNativeFocusCallbackDone.mockReset();
+    mockRecordOfficeNativeFocusCallbackStart.mockReset();
+    mockRecordOfficeNativeInteractionDone.mockReset();
+    mockRecordOfficeNativeInteractionStart.mockReset();
+    mockRecordOfficeNativeKeyboardEvent.mockReset();
+    mockRecordOfficeNativeLayoutDone.mockReset();
+    mockRecordOfficeNativeLayoutStart.mockReset();
 
     interactionSpy = jest
       .spyOn(InteractionManager, "runAfterInteractions")
@@ -258,6 +307,12 @@ describe("OfficeHubScreen", () => {
           typeof InteractionManager.runAfterInteractions
         >;
       });
+    keyboardSpy = jest.spyOn(Keyboard, "addListener").mockImplementation(
+      () =>
+        ({
+          remove: jest.fn(),
+        }) as unknown as ReturnType<typeof Keyboard.addListener>,
+    );
 
     global.requestAnimationFrame = ((callback: FrameRequestCallback) => {
       callback(0);
@@ -268,6 +323,7 @@ describe("OfficeHubScreen", () => {
 
   afterEach(() => {
     interactionSpy.mockRestore();
+    keyboardSpy.mockRestore();
     if (originalRequestAnimationFrame) {
       global.requestAnimationFrame = originalRequestAnimationFrame;
     } else {
@@ -633,6 +689,108 @@ describe("OfficeHubScreen", () => {
         sections: "summary,directions,company_details,invites,members",
       }),
     );
+    expect(mockRecordOfficeNativeFocusCallbackStart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        callback: "useFocusEffect",
+      }),
+    );
+    expect(mockRecordOfficeNativeFocusCallbackDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        callback: "useFocusEffect",
+      }),
+    );
+    expect(mockRecordOfficeNativeAnimationFrameStart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        callback: "requestAnimationFrame",
+      }),
+    );
+    expect(mockRecordOfficeNativeAnimationFrameDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        callback: "requestAnimationFrame",
+      }),
+    );
+    expect(mockRecordOfficeNativeInteractionStart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        callback: "InteractionManager.runAfterInteractions",
+      }),
+    );
+    expect(mockRecordOfficeNativeInteractionDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        callback: "InteractionManager.runAfterInteractions",
+      }),
+    );
+    expect(mockRecordOfficeNativeContentSizeStart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        callback: "scroll_view:onContentSizeChange",
+      }),
+    );
+    expect(mockRecordOfficeNativeContentSizeDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        callback: "scroll_view:onContentSizeChange",
+      }),
+    );
+    expect(
+      new Set(
+        mockRecordOfficeNativeLayoutStart.mock.calls.map(
+          ([payload]) => payload.callback,
+        ),
+      ),
+    ).toEqual(
+      new Set([
+        "scroll_view:onLayout",
+        "section_layout:summary",
+        "section_layout:directions",
+        "section_layout:company_details",
+        "section_layout:invites",
+        "section_layout:members",
+        "subtree_layout:summary_header",
+        "subtree_layout:summary_meta",
+        "subtree_layout:summary_badges",
+        "subtree_layout:directions_cards",
+        "subtree_layout:company_details_rows",
+        "subtree_layout:invites_list",
+        "subtree_layout:members_list",
+      ]),
+    );
+    expect(
+      new Set(
+        mockRecordOfficeNativeLayoutDone.mock.calls.map(
+          ([payload]) => payload.callback,
+        ),
+      ),
+    ).toEqual(
+      new Set([
+        "scroll_view:onLayout",
+        "section_layout:summary",
+        "section_layout:directions",
+        "section_layout:company_details",
+        "section_layout:invites",
+        "section_layout:members",
+        "subtree_layout:summary_header",
+        "subtree_layout:summary_meta",
+        "subtree_layout:summary_badges",
+        "subtree_layout:directions_cards",
+        "subtree_layout:company_details_rows",
+        "subtree_layout:invites_list",
+        "subtree_layout:members_list",
+      ]),
+    );
     expect(
       new Set(
         mockRecordOfficePostReturnSubtreeStart.mock.calls.map(
@@ -679,6 +837,7 @@ describe("OfficeHubScreen", () => {
         "members_list",
       ]),
     );
+    expect(mockRecordOfficeNativeCallbackFailure).not.toHaveBeenCalled();
     expect(mockRecordOfficePostReturnSubtreeFailure).not.toHaveBeenCalled();
     expect(mockRecordOfficePostReturnFailure).not.toHaveBeenCalled();
   });
@@ -748,6 +907,60 @@ describe("OfficeHubScreen", () => {
         probe: "members",
       }),
     );
+  });
+
+  it("skips InteractionManager scheduling when the native isolation probe disables it", async () => {
+    mockUseLocalSearchParams.mockReturnValue({
+      postReturnProbe: "no_interaction_manager",
+    });
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(
+      renderer!.root.findByProps({ testID: "office-summary" }),
+    ).toBeTruthy();
+    expect(InteractionManager.runAfterInteractions).not.toHaveBeenCalled();
+    expect(mockRecordOfficeNativeInteractionStart).not.toHaveBeenCalled();
+    expect(mockRecordOfficeNativeInteractionDone).not.toHaveBeenCalled();
+    expect(mockRecordOfficePostReturnIdleDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        probe: "no_interaction_manager",
+      }),
+    );
+  });
+
+  it("removes ScrollView content size callback when the native isolation probe disables it", async () => {
+    mockUseLocalSearchParams.mockReturnValue({
+      postReturnProbe: "no_content_size_callbacks",
+    });
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const scrollNode = renderer!.root.find(
+      (node) =>
+        typeof node.props.showsVerticalScrollIndicator === "boolean" &&
+        Object.prototype.hasOwnProperty.call(node.props, "onContentSizeChange"),
+    );
+
+    expect(scrollNode.props.onContentSizeChange).toBeUndefined();
+    expect(mockRecordOfficeNativeContentSizeStart).not.toHaveBeenCalled();
+    expect(mockRecordOfficeNativeContentSizeDone).not.toHaveBeenCalled();
   });
 
   it("opens a role-specific modal from contextual plus and hands invite code straight to native share", async () => {

@@ -22,6 +22,18 @@ export type OfficeReentryMarker =
   | "office_post_return_subtree_start"
   | "office_post_return_subtree_done"
   | "office_post_return_subtree_failed"
+  | "office_native_focus_callback_start"
+  | "office_native_focus_callback_done"
+  | "office_native_layout_start"
+  | "office_native_layout_done"
+  | "office_native_content_size_start"
+  | "office_native_content_size_done"
+  | "office_native_keyboard_event"
+  | "office_native_interaction_start"
+  | "office_native_interaction_done"
+  | "office_native_animation_frame_start"
+  | "office_native_animation_frame_done"
+  | "office_native_callback_failed"
   | "office_post_return_failed";
 
 export type OfficePostReturnProbe =
@@ -31,7 +43,14 @@ export type OfficePostReturnProbe =
   | "directions"
   | "company_details"
   | "invites"
-  | "members";
+  | "members"
+  | "no_scroll_callbacks"
+  | "no_layout_callbacks"
+  | "no_content_size_callbacks"
+  | "no_keyboard_bridge"
+  | "no_interaction_manager"
+  | "no_animation_frame"
+  | "no_focus_post_commit";
 
 export type OfficePostReturnSubtree =
   | "layout_effect_mount"
@@ -80,6 +99,13 @@ const OFFICE_POST_RETURN_PROBES: readonly OfficePostReturnProbe[] = [
   "company_details",
   "invites",
   "members",
+  "no_scroll_callbacks",
+  "no_layout_callbacks",
+  "no_content_size_callbacks",
+  "no_keyboard_bridge",
+  "no_interaction_manager",
+  "no_animation_frame",
+  "no_focus_post_commit",
 ];
 
 let writeQueue = Promise.resolve();
@@ -284,6 +310,30 @@ function recordOfficePostReturnMarker(
   });
 }
 
+function recordOfficeNativeMarker(
+  marker: Extract<
+    OfficeReentryMarker,
+    | "office_native_focus_callback_start"
+    | "office_native_focus_callback_done"
+    | "office_native_layout_start"
+    | "office_native_layout_done"
+    | "office_native_content_size_start"
+    | "office_native_content_size_done"
+    | "office_native_keyboard_event"
+    | "office_native_interaction_start"
+    | "office_native_interaction_done"
+    | "office_native_animation_frame_start"
+    | "office_native_animation_frame_done"
+  >,
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeReentryMarker({
+    marker,
+    result: "success",
+    extra,
+  });
+}
+
 export function recordOfficePostReturnFocus(extra?: Record<string, unknown>) {
   recordOfficePostReturnMarker("office_post_return_focus", extra);
 }
@@ -359,6 +409,90 @@ export function recordOfficePostReturnSubtreeFailure(params: {
 
   recordOfficeReentryMarker({
     marker: "office_post_return_subtree_failed",
+    result: "error",
+    errorStage: params.errorStage,
+    errorClass,
+    errorMessage,
+    extra: params.extra,
+  });
+}
+
+export function recordOfficeNativeFocusCallbackStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeNativeMarker("office_native_focus_callback_start", extra);
+}
+
+export function recordOfficeNativeFocusCallbackDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeNativeMarker("office_native_focus_callback_done", extra);
+}
+
+export function recordOfficeNativeLayoutStart(extra?: Record<string, unknown>) {
+  recordOfficeNativeMarker("office_native_layout_start", extra);
+}
+
+export function recordOfficeNativeLayoutDone(extra?: Record<string, unknown>) {
+  recordOfficeNativeMarker("office_native_layout_done", extra);
+}
+
+export function recordOfficeNativeContentSizeStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeNativeMarker("office_native_content_size_start", extra);
+}
+
+export function recordOfficeNativeContentSizeDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeNativeMarker("office_native_content_size_done", extra);
+}
+
+export function recordOfficeNativeKeyboardEvent(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeNativeMarker("office_native_keyboard_event", extra);
+}
+
+export function recordOfficeNativeInteractionStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeNativeMarker("office_native_interaction_start", extra);
+}
+
+export function recordOfficeNativeInteractionDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeNativeMarker("office_native_interaction_done", extra);
+}
+
+export function recordOfficeNativeAnimationFrameStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeNativeMarker("office_native_animation_frame_start", extra);
+}
+
+export function recordOfficeNativeAnimationFrameDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeNativeMarker("office_native_animation_frame_done", extra);
+}
+
+export function recordOfficeNativeCallbackFailure(params: {
+  error: unknown;
+  errorStage: string;
+  extra?: Record<string, unknown>;
+}) {
+  const errorClass =
+    params.error instanceof Error ? params.error.name : undefined;
+  const errorMessage =
+    params.error instanceof Error
+      ? params.error.message
+      : String(params.error ?? "office_native_callback_failed");
+
+  recordOfficeReentryMarker({
+    marker: "office_native_callback_failed",
     result: "error",
     errorStage: params.errorStage,
     errorClass,
@@ -476,6 +610,8 @@ export function buildOfficeReentryBreadcrumbsText(
         parts.push(`section=${String(item.extra.section)}`);
       if (item.extra?.sections)
         parts.push(`sections=${String(item.extra.sections)}`);
+      if (item.extra?.callback)
+        parts.push(`callback=${String(item.extra.callback)}`);
       if (item.extra?.subtree)
         parts.push(`subtree=${String(item.extra.subtree)}`);
       if (item.extra?.probe) parts.push(`probe=${String(item.extra.probe)}`);
