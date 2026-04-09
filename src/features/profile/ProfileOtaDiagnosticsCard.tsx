@@ -4,6 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 
 import { checkAndFetchOtaNow } from "@/src/lib/otaHardening";
+import {
+  buildWarehouseBackBreadcrumbsText,
+  getWarehouseBackBreadcrumbs,
+} from "@/src/lib/navigation/warehouseBackBreadcrumbs";
 import { buildOtaDiagnosticsText, getOtaDiagnostics, type OtaDiagnostics } from "@/src/lib/otaDiagnostics";
 import { buildPdfCrashBreadcrumbsText, getPdfCrashBreadcrumbs } from "@/src/lib/pdf/pdfCrashBreadcrumbs";
 
@@ -117,12 +121,19 @@ export function ProfileOtaDiagnosticsCard() {
 
   const handleCopy = async () => {
     try {
-      const breadcrumbs = await getPdfCrashBreadcrumbs();
+      const [pdfBreadcrumbs, warehouseBackBreadcrumbs] = await Promise.all([
+        getPdfCrashBreadcrumbs(),
+        getWarehouseBackBreadcrumbs(),
+      ]);
       const payload = buildOtaDiagnosticsText(diagnostics)
-        + (breadcrumbs.length
-          ? `\n\npdf_crash_breadcrumbs:\n${buildPdfCrashBreadcrumbsText(breadcrumbs)}`
+        + (pdfBreadcrumbs.length
+          ? `\n\npdf_crash_breadcrumbs:\n${buildPdfCrashBreadcrumbsText(pdfBreadcrumbs)}`
           : "\n\npdf_crash_breadcrumbs:\n- none");
-      await Clipboard.setStringAsync(payload);
+      const fullPayload = payload
+        + (warehouseBackBreadcrumbs.length
+          ? `\n\nwarehouse_back_breadcrumbs:\n${buildWarehouseBackBreadcrumbsText(warehouseBackBreadcrumbs)}`
+          : "\n\nwarehouse_back_breadcrumbs:\n- none");
+      await Clipboard.setStringAsync(fullPayload);
       setLastActionMessage("Диагностика скопирована.");
       Alert.alert("OTA diagnostics", "Диагностика скопирована.");
     } catch (error) {

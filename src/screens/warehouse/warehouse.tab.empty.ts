@@ -1,15 +1,15 @@
 import type { WarehouseReqHeadsIntegrityState, WarehouseReqHeadsListState } from "./warehouse.types";
 
 export function selectWarehouseIncomingEmptyText() {
-  return "РќРµС‚ Р·Р°РїРёСЃРµР№ РІРѕС‡РµСЂРµРґРё СЃРєР»Р°РґР°.";
+  return "Нет записей в очереди склада.";
 }
 
 export function selectWarehouseStockUnsupportedText() {
-  return "Р Р°Р·РґРµР» В«РЎРєР»Р°Рґ С„Р°РєС‚В» С‚СЂРµР±СѓРµС‚ view v_warehouse_fact РёР»Рё RPC СЃ С„Р°РєС‚РёС‡РµСЃРєРёРјРё РѕСЃС‚Р°С‚РєР°РјРё.";
+  return "Раздел «Склад факт» требует view v_warehouse_fact или RPC с фактическими остатками.";
 }
 
 export function selectWarehouseStockEmptyText() {
-  return "РџРѕРєР° РЅРµС‚ РґР°РЅРЅС‹С… РїРѕ СЃРєР»Р°РґСѓ.";
+  return "Пока нет данных по складу.";
 }
 
 export function selectWarehouseIssueEmptyText(
@@ -17,14 +17,14 @@ export function selectWarehouseIssueEmptyText(
   listState?: WarehouseReqHeadsListState,
   integrityState?: WarehouseReqHeadsIntegrityState,
 ) {
-  if (loading) return "Р—Р°РіСЂСѓР·РєР°...";
+  if (loading) return "Загрузка...";
   if (listState?.publishState === "degraded") {
-    return "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃРІРµР¶СѓСЋ РѕС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё.\nРџРѕРєР°Р·Р°РЅРѕ РїРѕСЃР»РµРґРЅРµРµ СЃРѕС…СЂР°РЅС‘РЅРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ.";
+    return "Не удалось получить свежую очередь выдачи.\nПоказано последнее сохранённое состояние.";
   }
   if (listState?.publishState === "error" || integrityState?.mode === "error") {
-    return "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ РѕС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РїРѕРІС‚РѕСЂРёС‚СЊ.";
+    return "Не удалось обновить очередь выдачи.\nПотяни вниз, чтобы повторить.";
   }
-  return "РќРµС‚ Р·Р°СЏРІРѕРє РґР»СЏ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РѕР±РЅРѕРІРёС‚СЊ.";
+  return "Нет заявок для выдачи.\nПотяни вниз, чтобы обновить.";
 }
 
 export function selectWarehouseIssueBannerText(
@@ -32,13 +32,13 @@ export function selectWarehouseIssueBannerText(
   integrityState?: WarehouseReqHeadsIntegrityState,
 ) {
   if (listState?.publishState === "degraded") {
-    return "РџРѕРєР°Р·Р°РЅРѕ СѓСЃС‚Р°СЂРµРІС€РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ: РїРѕСЃР»РµРґРЅРёРµ СѓСЃРїРµС€РЅРѕ Р·Р°РіСЂСѓР¶РµРЅРЅС‹Рµ Р·Р°СЏРІРєРё. РђРєС‚СѓР°Р»РёР·Р°С†РёСЏ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅР°.";
+    return "Показано устаревшее состояние: последние успешно загруженные заявки. Актуализация временно недоступна.";
   }
   if (listState?.publishState === "error" || integrityState?.mode === "error") {
-    return "РћС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё РІСЂРµРјРµРЅРЅРѕ РЅРµ РѕР±РЅРѕРІР»РµРЅР°.";
+    return "Очередь выдачи временно не обновлена.";
   }
   if (integrityState?.mode === "stale_last_known_good") {
-    return "РџРѕРєР°Р·Р°РЅС‹ РїРѕСЃР»РµРґРЅРёРµ Р·Р°РіСЂСѓР¶РµРЅРЅС‹Рµ Р·Р°СЏРІРєРё. РђРєС‚СѓР°Р»РёР·Р°С†РёСЏ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅР°.";
+    return "Показаны последние загруженные заявки. Актуализация временно недоступна.";
   }
   return null;
 }
