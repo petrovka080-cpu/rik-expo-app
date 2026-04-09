@@ -1,5 +1,5 @@
 {
-  "marker": "RTACCT1774711253577",
+  "marker": null,
   "baseUrl": "http://localhost:8081",
   "runtime": {
     "console": [
@@ -33,151 +33,7 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox_page, result: skipped, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: skipped, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox_page, result: skipped, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: channel_created, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: subscription_started, result: success, durationMs: null}"
-      },
-      {
-        "type": "warning",
-        "text": "[getMyRole] TypeError: Failed to fetch"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_window, event: load_inbox_primary_rpc, result: error, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
-      },
-      {
-        "type": "log",
-        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
-      },
-      {
-        "type": "warning",
-        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
-      },
-      {
-        "type": "info",
-        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
-      },
-      {
-        "type": "info",
-        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: skipped, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox_page, result: skipped, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox_page, result: skipped, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: channel_created, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: subscription_started, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: joined_inflight, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: subscription_connected, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 543}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_window, event: load_inbox, result: success, durationMs: 588}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 589}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_event_received, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_refresh_triggered, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_event_received, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_window, event: load_inbox, result: success, durationMs: 628}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 629}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_event_received, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_refresh_skipped_recent, result: skipped, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_event_received, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_refresh_skipped_recent, result: skipped, durationMs: null}"
+        "text": "[queue.bootstrap] stop skipped: not running"
       }
     ],
     "pageErrors": [],
@@ -185,158 +41,45 @@
   },
   "events": [
     {
-      "id": "obs-13",
-      "at": 1774711254877,
-      "screen": "accountant",
-      "surface": "screen_root",
-      "category": "reload",
-      "event": "realtime_event_received",
-      "result": "success",
-      "trigger": "realtime",
-      "sourceKind": "supabase:postgres_changes",
-      "extra": {
-        "route": "/accountant",
-        "channelName": "accountant:screen:realtime",
-        "bindingKey": "accountant_proposals_sent",
-        "table": "proposals",
-        "eventType": "UPDATE",
-        "owner": "realtime_lifecycle"
-      }
-    },
-    {
-      "id": "obs-14",
-      "at": 1774711254878,
-      "screen": "accountant",
-      "surface": "screen_root",
-      "category": "reload",
-      "event": "realtime_refresh_triggered",
-      "result": "success",
-      "trigger": "realtime",
-      "sourceKind": "supabase:postgres_changes",
-      "extra": {
-        "bindingKey": "accountant_proposals_sent",
-        "table": "proposals",
-        "owner": "table:proposals",
-        "eventType": "UPDATE",
-        "scopeKey": "inbox:К оплате",
-        "lifecycleOwner": "realtime_lifecycle"
-      }
-    },
-    {
-      "id": "obs-15",
-      "at": 1774711254880,
-      "screen": "accountant",
-      "surface": "screen_root",
-      "category": "reload",
-      "event": "realtime_event_received",
-      "result": "success",
-      "trigger": "realtime",
-      "sourceKind": "supabase:postgres_changes",
-      "extra": {
-        "route": "/accountant",
-        "channelName": "accountant:screen:realtime",
-        "bindingKey": "accountant_notifications",
-        "table": "notifications",
-        "eventType": "INSERT",
-        "owner": "realtime_lifecycle"
-      }
-    },
-    {
-      "id": "obs-16",
-      "at": 1774711255507,
-      "screen": "accountant",
-      "surface": "inbox_window",
-      "category": "fetch",
-      "event": "load_inbox",
-      "sourceKind": "rpc:accountant_inbox_scope_v1",
-      "rowCount": 40,
-      "fallbackUsed": false,
-      "extra": {
-        "tab": "К оплате",
-        "returnedRowCount": 40,
-        "totalRowCount": 90
-      },
-      "result": "success",
-      "durationMs": 628
-    },
-    {
-      "id": "obs-17",
-      "at": 1774711255507,
+      "id": "obs-1",
+      "at": 1775323501576,
       "screen": "accountant",
       "surface": "inbox_list",
-      "category": "ui",
-      "event": "content_ready",
-      "result": "success",
-      "rowCount": 40,
-      "extra": {
-        "tab": "К оплате",
-        "totalRowCount": 90
-      }
-    },
-    {
-      "id": "obs-18",
-      "at": 1774711255507,
-      "screen": "accountant",
-      "surface": "inbox_list",
-      "category": "fetch",
-      "event": "load_inbox",
-      "sourceKind": "rpc:accountant_inbox_scope_v1",
-      "trigger": "realtime",
-      "rowCount": 40,
-      "fallbackUsed": false,
-      "extra": {
-        "tab": "К оплате",
-        "primaryOwner": "rpc_scope_v1",
-        "backendFirstPrimary": true,
-        "offsetRows": 0,
-        "limitRows": 40,
-        "returnedRowCount": 40,
-        "totalRowCount": 90,
-        "hasMore": true
-      },
-      "result": "success",
-      "durationMs": 629
-    },
-    {
-      "id": "obs-19",
-      "at": 1774711256275,
-      "screen": "accountant",
-      "surface": "screen_root",
       "category": "reload",
-      "event": "realtime_event_received",
-      "result": "success",
-      "trigger": "realtime",
-      "sourceKind": "supabase:postgres_changes",
-      "extra": {
-        "route": "/accountant",
-        "channelName": "accountant:screen:realtime",
-        "bindingKey": "accountant_proposals_sent",
-        "table": "proposals",
-        "eventType": "UPDATE",
-        "owner": "realtime_lifecycle"
-      }
-    },
-    {
-      "id": "obs-20",
-      "at": 1774711256276,
-      "screen": "accountant",
-      "surface": "screen_root",
-      "category": "reload",
-      "event": "realtime_refresh_skipped_recent",
+      "event": "load_inbox_page",
       "result": "skipped",
-      "trigger": "realtime",
+      "trigger": "scroll",
       "extra": {
-        "guardReason": "recent_same_scope",
-        "scopeKey": "inbox:К оплате",
+        "guardReason": "auth_not_ready",
+        "scopeKey": "accountant|inbox_list|load_inbox_page",
         "joinedInflight": false,
         "recentScopeHit": false,
         "networkKnownOffline": false,
         "authReady": true,
         "bootstrapReady": true,
         "refreshScope": null,
-        "bindingKey": "accountant_proposals_sent",
-        "table": "proposals",
-        "owner": "realtime_lifecycle"
+        "tab": "К оплате"
+      }
+    },
+    {
+      "id": "obs-2",
+      "at": 1775323501609,
+      "screen": "accountant",
+      "surface": "inbox_list",
+      "category": "reload",
+      "event": "load_inbox",
+      "result": "skipped",
+      "trigger": "focus",
+      "extra": {
+        "guardReason": "auth_not_ready",
+        "scopeKey": "accountant|inbox_list|load_inbox",
+        "joinedInflight": false,
+        "recentScopeHit": false,
+        "networkKnownOffline": false,
+        "authReady": true,
+        "bootstrapReady": true,
+        "refreshScope": null,
+        "tab": "К оплате"
       }
     }
   ]

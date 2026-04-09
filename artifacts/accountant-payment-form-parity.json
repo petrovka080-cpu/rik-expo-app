@@ -1,13 +1,13 @@
 {
-  "status": "GREEN",
-  "generatedAt": "2026-03-30T01:09:34.075Z",
+  "status": "NOT GREEN",
+  "generatedAt": "2026-04-04T17:35:55.941Z",
   "checks": [
     {
       "name": "partial_state",
-      "passed": true,
+      "passed": false,
       "details": {
         "cur": "KGS",
-        "restProposal": 110,
+        "restProposal": 0,
         "lineTotals": [
           100,
           30
@@ -57,7 +57,7 @@
       "passed": true,
       "details": {
         "cur": "KGS",
-        "restProposal": 100,
+        "restProposal": 0,
         "lineTotals": [
           100
         ],

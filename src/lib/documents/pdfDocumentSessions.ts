@@ -12,7 +12,23 @@ import {
   type PdfSourceKind,
 } from "../pdfFileContract";
 import { recordPdfCrashBreadcrumbAsync } from "../pdf/pdfCrashBreadcrumbs";
-const FileSystemCompat = FileSystemModule as any;
+import type {
+  FileInfo,
+  FileSystemDownloadResult,
+  RelocatingOptions,
+} from "expo-file-system/legacy";
+
+type FileSystemCompatBoundary = {
+  getInfoAsync(fileUri: string): Promise<FileInfo>;
+  downloadAsync(uri: string, fileUri: string): Promise<FileSystemDownloadResult>;
+  copyAsync(options: RelocatingOptions): Promise<void>;
+};
+
+const fileSystemCompat: FileSystemCompatBoundary = {
+  getInfoAsync: FileSystemModule.getInfoAsync,
+  downloadAsync: FileSystemModule.downloadAsync,
+  copyAsync: FileSystemModule.copyAsync,
+};
 
 export type DocumentAsset = {
   assetId: string;
@@ -46,6 +62,13 @@ type RegistrySnapshot = {
   session: DocumentSession | null;
   asset: DocumentAsset | null;
 };
+
+type FileInfoBoundary =
+  | FileInfo
+  | {
+      exists: false;
+      error: unknown;
+    };
 
 const SESSION_TTL_MS = 20 * 60 * 1000;
 const MAX_SESSIONS = 40;
@@ -124,28 +147,28 @@ function persistMaterializeBreadcrumb(
 }
 
 async function getFileInfo(uri: string) {
-  if (!FileSystemCompat?.getInfoAsync) return null;
-  let lastError: any;
+  let lastError: unknown;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       if (attempt > 1) await new Promise((r) => setTimeout(r, 100 * attempt));
-      const info = await FileSystemCompat.getInfoAsync(uri);
+      const info = await fileSystemCompat.getInfoAsync(uri);
       if (info) return info;
     } catch (e) {
       lastError = e;
     }
   }
-  return { exists: false, error: lastError };
+  return { exists: false, error: lastError } as FileInfoBoundary;
 }
+
+const getFileSize = (info: FileInfoBoundary | null | undefined) =>
+  info?.exists && "size" in info && Number.isFinite(Number(info.size))
+    ? Number(info.size)
+    : undefined;
 
 async function ensureLocalPdfUri(
   source: PdfSource,
   fileName: string,
 ): Promise<{ uri: string; sizeBytes?: number; sourceKind: "local-file" }> {
-  if (!FileSystemCompat) {
-    throw new Error("Mobile PDF materialization requires expo-file-system");
-  }
-
   const normalizedName = normalizePdfFileName(fileName, "document");
   const paths = getFileSystemPaths();
   const cacheDir = paths.cacheDir;
@@ -169,7 +192,7 @@ async function ensureLocalPdfUri(
       sourceKind: "remote-url",
       fileName,
     });
-    const downloaded = await FileSystemCompat.downloadAsync(source.uri, targetUri);
+    const downloaded = await fileSystemCompat.downloadAsync(source.uri, targetUri);
     const downloadedUri = normalizeLocalFileUri(String(downloaded?.uri || targetUri));
     
     const info = await getFileInfo(downloadedUri);
@@ -179,7 +202,7 @@ async function ensureLocalPdfUri(
     return {
       uri: downloadedUri,
       sourceKind: "local-file",
-      sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
+      sizeBytes: getFileSize(info),
     };
   }
 
@@ -202,21 +225,21 @@ async function ensureLocalPdfUri(
       sourceKind: "local-file",
       fileName,
     });
-    await FileSystemCompat.copyAsync({ from: sourceUri, to: targetUri });
+    await fileSystemCompat.copyAsync({ from: sourceUri, to: targetUri });
     const copiedInfo = await getFileInfo(targetUri);
     if (!copiedInfo?.exists) throw new Error("Materialized local PDF file is missing after copy");
     
     return {
       uri: targetUri,
       sourceKind: "local-file",
-      sizeBytes: Number.isFinite(Number(copiedInfo.size)) ? Number(copiedInfo.size) : undefined,
+      sizeBytes: getFileSize(copiedInfo),
     };
   }
 
   return {
     uri: sourceUri,
     sourceKind: "local-file",
-    sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
+    sizeBytes: getFileSize(info),
   };
 }
 
@@ -325,7 +348,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
         logMaterializeStage("pdf_session_asset_exists_no", {
           uri: finalUri,
           exists: false,
-          size: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
+          size: getFileSize(finalInfo),
           sourceKind: "local-file",
           fileName: doc.fileName,
           documentType: doc.documentType,
@@ -336,7 +359,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
       logMaterializeStage("pdf_session_asset_exists_yes", {
         uri: finalUri,
         exists: true,
-        size: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
+        size: getFileSize(finalInfo),
         sourceKind: "local-file",
         fileName: doc.fileName,
         documentType: doc.documentType,
@@ -351,7 +374,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
         fileName: doc.fileName,
         entityId: doc.entityId,
         fileExists: true,
-        fileSizeBytes: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
+        fileSizeBytes: getFileSize(finalInfo),
       });
     } catch (error) {
       await persistMaterializeBreadcrumb("viewer_materialize_error", {

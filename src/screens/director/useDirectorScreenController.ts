@@ -25,7 +25,6 @@ import {
 } from "./director.types";
 import {
     money as moneyHelper,
-    type FinRep,
     type FinSpendSummary,
 } from "./director.finance";
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
@@ -40,24 +39,6 @@ const warnDirectorFinance = (
         const message = error instanceof Error ? error.message : String(error ?? "");
         console.warn(`[director] ${scope}:`, message || error);
     }
-};
-
-const EMPTY_FIN_REP: FinRep = {
-    summary: {
-        approved: 0,
-        paid: 0,
-        partialPaid: 0,
-        toPay: 0,
-        overdueCount: 0,
-        overdueAmount: 0,
-        criticalCount: 0,
-        criticalAmount: 0,
-        partialCount: 0,
-        debtCount: 0,
-    },
-    report: {
-        suppliers: [],
-    },
 };
 
 const EMPTY_FIN_SPEND_SUMMARY: FinSpendSummary = {
@@ -95,7 +76,6 @@ export function useDirectorScreenController() {
     const setFinLoading = useDirectorUiStore((state) => state.setFinLoading);
     const finStackRef = useRef<FinPage[]>(["home"]);
     const [finScope, setFinScope] = useState<DirectorFinanceCanonicalScope | null>(null);
-    const [finRep, setFinRep] = useState<FinRep>(EMPTY_FIN_REP);
     const [finSpendSummary, setFinSpendSummary] = useState<FinSpendSummary>(EMPTY_FIN_SPEND_SUMMARY);
     const finPeriodOpen = useDirectorUiStore((state) => state.finPeriodOpen);
     const setFinPeriodOpen = useDirectorUiStore((state) => state.setFinPeriodOpen);
@@ -132,7 +112,6 @@ export function useDirectorScreenController() {
             }
 
             setFinScope(scope.canonicalScope);
-            setFinRep(scope.finRep);
             setFinSpendSummary(scope.finSpendSummary);
         } catch (e: unknown) {
             warnDirectorFinance("fetchFinance", e);
@@ -389,7 +368,6 @@ export function useDirectorScreenController() {
         finPage,
         finScope,
         finSpendSummary,
-        finRep,
         finPeriodOpen,
         finFrom,
         finTo,

@@ -6,7 +6,6 @@ import {
   mapToFinanceRow,
   normalizeFinSpendRows,
   type DirectorFinancePanelScopeV4,
-  type FinRep,
   type FinSpendRow,
   type FinSpendSummary,
   type FinanceRow,
@@ -32,7 +31,6 @@ export type DirectorFinanceScreenScopeResult = {
   financeRows: FinanceRow[];
   spendRows: FinSpendRow[];
   canonicalScope: DirectorFinanceCanonicalScope;
-  finRep: FinRep;
   finSpendSummary: FinSpendSummary;
   panelScope: DirectorFinancePanelScopeV4 | null;
   financeDisplayMode: DirectorFinanceDisplayMode;
@@ -411,32 +409,6 @@ const buildDirectorFinanceCanonicalScope = (
   };
 };
 
-const buildCompatibilityFinRep = (scope: DirectorFinanceCanonicalScope): FinRep => ({
-  summary: {
-    approved: scope.summary.approvedTotal,
-    paid: scope.summary.paidTotal,
-    partialPaid: scope.summary.partialPaidTotal,
-    toPay: scope.summary.debtTotal,
-    overdueCount: scope.summary.overdueCount,
-    overdueAmount: scope.summary.overdueAmount,
-    criticalCount: scope.summary.criticalCount,
-    criticalAmount: scope.summary.criticalAmount,
-    partialCount: scope.summary.partialCount,
-    debtCount: scope.summary.debtCount,
-  },
-  report: {
-    suppliers: scope.suppliers.map((row) => ({
-      supplier: row.supplierName,
-      count: row.invoiceCount,
-      approved: row.approvedTotal,
-      paid: row.paidTotal,
-      toPay: row.debtTotal,
-      overdueCount: row.overdueCount,
-      criticalCount: row.criticalCount,
-    })),
-  },
-});
-
 async function loadLegacyDirectorFinanceSpendRows(args: {
   periodFromIso?: string | null;
   periodToIso?: string | null;
@@ -571,8 +543,6 @@ export async function loadDirectorFinanceScreenScope(
   });
   const resolvedPanelScope = primaryScope.panelScopeV4;
   const supportRowsReason = "not_requested";
-  // The screen keeps a compatibility FinRep projection for existing consumers, but request truth
-  // and summary truth already come from the backend-owned v4 panel scope.
   const summaryCompatibilityOverlay = false;
 
   if (!resolvedPanelScope) {
@@ -597,7 +567,6 @@ export async function loadDirectorFinanceScreenScope(
     spendRows: [],
     panelScope: resolvedPanelScope,
     canonicalScope,
-    finRep: buildCompatibilityFinRep(canonicalScope),
     finSpendSummary: resolvedPanelScope.spend,
     financeDisplayMode: resolvedPanelScope.displayMode,
     issues: primaryScope.issues,

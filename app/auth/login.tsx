@@ -17,6 +17,7 @@ import {
   signInSafe,
 } from "../../src/lib/auth/signInSafe";
 import { isSupabaseEnvValid } from "../../src/lib/supabaseClient";
+import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
 
 const UI_COPY = {
   title: "Войти в GOX",
@@ -66,6 +67,19 @@ export default function LoginScreen() {
         setError(UI_COPY.noSession);
         return;
       }
+
+      recordPlatformObservability({
+        screen: "request",
+        surface: "auth_login",
+        category: "ui",
+        event: "login_session_present_after_signin",
+        result: "success",
+        extra: {
+          owner: "login_submit",
+          hasSession: true,
+          target: POST_AUTH_ENTRY_ROUTE,
+        },
+      });
 
       router.replace(POST_AUTH_ENTRY_ROUTE);
     } catch (error: unknown) {

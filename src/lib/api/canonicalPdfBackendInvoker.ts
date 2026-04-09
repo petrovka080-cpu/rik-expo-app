@@ -193,6 +193,13 @@ async function invokeDirectFetchOnce<TPayload>(
   const accessToken = await resolveEdgeFunctionAccessToken();
   const url = `${SUPABASE_URL}/functions/v1/${args.functionName}`;
 
+  console.info("[canonical-pdf-backend] native_fetch_start", {
+    functionName: args.functionName,
+    platform: Platform.OS,
+    hasAccessToken: Boolean(accessToken),
+    url,
+  });
+
   try {
     const response = await fetchWithRequestTimeout(
       url,
@@ -218,8 +225,38 @@ async function invokeDirectFetchOnce<TPayload>(
       },
     );
 
+    console.info("[canonical-pdf-backend] native_response_received", {
+      functionName: args.functionName,
+      platform: Platform.OS,
+      httpStatus: response.status,
+      ok: response.ok,
+      contentType: trimText(response.headers?.get?.("Content-Type")),
+    });
+
+    let data: unknown;
+    try {
+      data = await readFunctionResponseBody(response);
+    } catch (parseError) {
+      console.error("[canonical-pdf-backend] native_parse_failed", {
+        functionName: args.functionName,
+        platform: Platform.OS,
+        httpStatus: response.status,
+        parseError: parseError instanceof Error ? parseError.message : String(parseError),
+      });
+      throw parseError;
+    }
+
+    console.info("[canonical-pdf-backend] native_parse_success", {
+      functionName: args.functionName,
+      platform: Platform.OS,
+      httpStatus: response.status,
+      hasData: data != null,
+      dataType: typeof data,
+      dataOk: data && typeof data === "object" && "ok" in data ? (data as { ok?: unknown }).ok : undefined,
+    });
+
     return {
-      data: await readFunctionResponseBody(response),
+      data,
       status: response.status,
       response,
     };
@@ -229,6 +266,8 @@ async function invokeDirectFetchOnce<TPayload>(
       functionName: args.functionName,
       platform: Platform.OS,
       detail,
+      errorName: error instanceof Error ? error.name : undefined,
+      errorMessage: error instanceof Error ? error.message : String(error),
     });
     throw new CanonicalPdfTransportError(
       `${args.errorPrefix}: Failed to send a request to the Edge Function`,

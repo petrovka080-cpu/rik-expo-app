@@ -1,6 +1,8 @@
 import { Alert, Platform } from "react-native";
 import type { DocumentPickerAsset, DocumentPickerResult } from "expo-document-picker";
 
+import { reportAndSwallow } from "./observability/catchDiscipline";
+
 type PickOpts = { accept?: string };
 type NativePickerAsset = {
   name?: string | null;
@@ -11,6 +13,30 @@ type NativePickerAsset = {
   size?: number | null;
   assets?: NativePickerAsset[] | null;
 };
+
+const FILE_PICK_TITLE = "Файл";
+const FILE_PICK_FALLBACK_ERROR = "Не удалось выбрать файл";
+
+function reportFilePickBoundary(params: {
+  event: string;
+  error: unknown;
+  errorStage: string;
+  kind?: "soft_failure" | "cleanup_only" | "degraded_fallback";
+  extra?: Record<string, unknown>;
+}) {
+  reportAndSwallow({
+    screen: "request",
+    surface: "file_pick",
+    event: params.event,
+    scope: `filePick.${params.errorStage}`,
+    error: params.error,
+    kind: params.kind ?? "soft_failure",
+    category: "ui",
+    sourceKind: Platform.OS === "web" ? "dom:file_input" : "expo-document-picker",
+    errorStage: params.errorStage,
+    extra: params.extra,
+  });
+}
 
 function normalizeErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) {
@@ -32,7 +58,14 @@ function normalizeErrorMessage(error: unknown, fallback: string): string {
     try {
       const json = JSON.stringify(error);
       if (json && json !== "{}") return json;
-    } catch {}
+    } catch (stringifyError) {
+      reportFilePickBoundary({
+        event: "file_pick_error_stringify_failed",
+        error: stringifyError,
+        errorStage: "stringify_error_payload",
+        kind: "cleanup_only",
+      });
+    }
   }
 
   return fallback;
@@ -83,7 +116,14 @@ export async function pickFileAny(opts: PickOpts = {}) {
           const f = (input.files && input.files[0]) || null;
           try {
             input.remove();
-          } catch {}
+          } catch (cleanupError) {
+            reportFilePickBoundary({
+              event: "file_pick_input_cleanup_failed",
+              error: cleanupError,
+              errorStage: "web_input_cleanup",
+              kind: "cleanup_only",
+            });
+          }
           resolve(f);
         };
         input.click();
@@ -100,8 +140,18 @@ export async function pickFileAny(opts: PickOpts = {}) {
     if (res?.canceled) return null;
     const firstAsset: DocumentPickerAsset | null = res.assets?.[0] ?? null;
     return normalizeNativePickedFile(firstAsset) || null;
-  } catch (e: unknown) {
-    Alert.alert("Файл", normalizeErrorMessage(e, "Не удалось выбрать файл"));
+  } catch (error: unknown) {
+    reportFilePickBoundary({
+      event: "file_pick_failed",
+      error,
+      errorStage: "pick_file_any",
+      kind: "soft_failure",
+      extra: {
+        accept,
+        platform: Platform.OS,
+      },
+    });
+    Alert.alert(FILE_PICK_TITLE, normalizeErrorMessage(error, FILE_PICK_FALLBACK_ERROR));
     return null;
   }
 }

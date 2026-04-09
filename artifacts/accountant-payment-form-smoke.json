@@ -1,9 +1,9 @@
 {
-  "status": "GREEN",
-  "generatedAt": "2026-03-30T01:09:34.075Z",
+  "status": "NOT GREEN",
+  "generatedAt": "2026-04-04T17:35:55.941Z",
   "boundary": {
     "uiThin": true,
-    "controllerOwner": true,
+    "controllerOwner": false,
     "actionObservability": true
   },
   "supportingTests": [
@@ -62,7 +62,7 @@
     },
     {
       "name": "fetch_failure_visible",
-      "passed": true,
+      "passed": false,
       "evidence": [
         "src/screens/accountant/components/ActivePaymentForm.test.tsx",
         "src/screens/accountant/useAccountantPaymentForm.ts"
@@ -70,7 +70,7 @@
     },
     {
       "name": "apply_failure_visible",
-      "passed": true,
+      "passed": false,
       "evidence": [
         "src/screens/accountant/useAccountantPayActions.test.tsx",
         "src/screens/accountant/useAccountantPayActions.ts"

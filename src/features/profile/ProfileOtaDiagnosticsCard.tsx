@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
-import { useUpdates } from "expo-updates";
 
 import { checkAndFetchOtaNow } from "@/src/lib/otaHardening";
 import { buildOtaDiagnosticsText, getOtaDiagnostics, type OtaDiagnostics } from "@/src/lib/otaDiagnostics";
@@ -108,8 +107,10 @@ export function ProfileOtaDiagnosticsCard() {
   const [loading, setLoading] = useState(false);
   const [lastActionMessage, setLastActionMessage] = useState("");
 
-  const updatesState = useUpdates();
-  const diagnostics = getOtaDiagnostics(updatesState);
+  // Keep OTA diagnostics off the eager startup-critical path.
+  // Using the static snapshot is enough for recovery builds and avoids
+  // subscribing to expo-updates state during the first profile mount.
+  const diagnostics = getOtaDiagnostics();
   const severityTheme = getSeverityTheme(diagnostics.severity);
   const useSafeOtaInstructions = shouldUseSafeOtaInstructions(diagnostics);
   const primaryButtonLabel = useSafeOtaInstructions ? "Показать шаги OTA" : "Проверить OTA сейчас";

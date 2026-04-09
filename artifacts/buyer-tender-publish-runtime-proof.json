@@ -1,0 +1,92 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-07T09:27:45.182Z",
+  "rootCauseClosed": {
+    "staleWritePath": "buyer_rfq_create_and_publish_v1 -> get_my_role() only",
+    "fixedWritePath": "buyer_rfq_create_and_publish_v1 -> get_my_role() or company_members.role=buyer"
+  },
+  "stage": "readback_tender",
+  "buyerUser": {
+    "id": "25b36212-5aea-44c8-a121-04385f4bd8da",
+    "email": "buyer.tender.publish.mnof1ikqkmpl@e.com"
+  },
+  "roleProbe": {
+    "authUserId": "25b36212-5aea-44c8-a121-04385f4bd8da",
+    "appMetadataRole": "director",
+    "rpcRole": "director",
+    "companyMemberships": [
+      {
+        "companyId": "fe2f348b-1262-4fff-85ca-2f39543bfecc",
+        "role": "buyer"
+      }
+    ]
+  },
+  "companyId": "fe2f348b-1262-4fff-85ca-2f39543bfecc",
+  "requestSeed": {
+    "marker": "RT-RFQ-MNOF1KOQ",
+    "requestId": "06b0e549-721e-45b2-8ca2-8b947002c383",
+    "requestItemId": "c8f38edc-dcad-4736-b94d-2a82b1dcc5af",
+    "displayNo": "REQ-RT-RFQ-MNOF1KOQ/2026",
+    "approvedStatus": "К закупке"
+  },
+  "actionResult": {
+    "ok": true,
+    "family": "rfq",
+    "operation": "publish_rfq",
+    "status": "success",
+    "completedStages": [
+      "validate_selection",
+      "validate_deadline",
+      "validate_delivery_days",
+      "validate_delivery_location",
+      "validate_contacts",
+      "publish_rfq"
+    ],
+    "warnings": [],
+    "data": {
+      "tenderId": "9f53d992-770d-4208-bb7b-a0dd755789b4"
+    }
+  },
+  "busyTransitions": [
+    true,
+    false
+  ],
+  "alerts": [
+    {
+      "title": "Готово",
+      "message": "Торги опубликованы (9f53d992)"
+    }
+  ],
+  "tender": {
+    "id": "9f53d992-770d-4208-bb7b-a0dd755789b4",
+    "status": "published",
+    "mode": "rfq",
+    "created_by": "25b36212-5aea-44c8-a121-04385f4bd8da",
+    "deadline_at": "2026-04-08T09:27:43.881+00:00",
+    "contact_phone": "+996700123456",
+    "contact_email": "buyer@example.com",
+    "city": "Bishkek",
+    "address_text": "Main street 1",
+    "note": "runtime RT-RFQ-MNOF1KOQ"
+  },
+  "tenderItems": [
+    {
+      "id": "ba05bb49-2433-4c65-9149-f5b526d8670f",
+      "request_item_id": "c8f38edc-dcad-4736-b94d-2a82b1dcc5af",
+      "tender_id": "9f53d992-770d-4208-bb7b-a0dd755789b4",
+      "name_human": "RT-RFQ-MNOF1KOQ",
+      "qty": 1,
+      "uom": "pcs"
+    }
+  ],
+  "invariants": {
+    "tenderCreated": true,
+    "tenderPublished": true,
+    "tenderModeRfq": true,
+    "ownerUsesCreatedBy": true,
+    "tenderItemsLinked": true,
+    "actorRoleResolvedFromMembership": true,
+    "noUserIdColumnError": true,
+    "noForbiddenActorRoleError": true
+  }
+}

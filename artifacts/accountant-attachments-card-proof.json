@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T13:21:15.818Z",
+  "generatedAt": "2026-04-04T17:43:16.864Z",
   "contractFields": [
     "attachmentId",
     "basisKind",
@@ -49,10 +49,10 @@
     },
     {
       "tab": "history",
-      "proposalId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+      "proposalId": "0339619b-1e9a-4350-8177-d4774f86a558",
       "proposalNo": null,
       "state": "empty",
-      "sourceKind": "rpc:proposal_attachments_list",
+      "sourceKind": "rpc:proposal_attachment_evidence_scope_v1",
       "rowCount": 0,
       "fields": []
     }

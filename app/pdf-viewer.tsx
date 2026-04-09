@@ -47,6 +47,7 @@ import {
 } from "../src/lib/pdf/pdfSourceValidation";
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
+import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
 
 type ViewerFileInfo = {
   exists: boolean;
@@ -78,6 +79,8 @@ const NativePdfWebView =
           return null;
         }
       })() as React.ComponentType<any> | null);
+
+console.info("[pdf-viewer] module_loaded", { platform: Platform.OS });
 
 const FALLBACK_ROUTE = "/";
 const VIEWER_BG = "#111111";
@@ -164,7 +167,8 @@ async function printPdfAsset(asset: DocumentAsset) {
   await openPdfDocumentExternal(asset);
 }
 
-export default function PdfViewerScreen() {
+function PdfViewerScreen() {
+  console.info("[pdf-viewer] viewer_screen_enter", { platform: Platform.OS });
   const params = useLocalSearchParams<{
     sessionId?: string;
     openToken?: string;
@@ -181,6 +185,12 @@ export default function PdfViewerScreen() {
   const insets = useSafeAreaInsets();
   const sessionId = React.useMemo(() => String(params.sessionId || "").trim(), [params.sessionId]);
   const openToken = React.useMemo(() => String(params.openToken || "").trim(), [params.openToken]);
+  console.info("[pdf-viewer] viewer_params_parsed", {
+    platform: Platform.OS,
+    sessionId: String(params.sessionId || "").trim() || null,
+    openToken: String(params.openToken || "").trim() || null,
+    hasUri: Boolean(params.uri),
+  });
   const directSnapshotParams = React.useMemo(
     () => ({
       uri: params.uri,
@@ -209,6 +219,14 @@ export default function PdfViewerScreen() {
     return resolvePdfViewerDirectSnapshot(directSnapshotParams) ?? { session: null, asset: null };
   }, [directSnapshotParams, sessionId]);
   const snapshot = React.useMemo(() => resolveSnapshot(), [resolveSnapshot]);
+  console.info("[pdf-viewer] viewer_snapshot_resolved", {
+    platform: Platform.OS,
+    hasSession: Boolean(snapshot.session),
+    hasAsset: Boolean(snapshot.asset),
+    sessionId: snapshot.session?.sessionId ?? null,
+    assetUri: snapshot.asset?.uri?.slice(-40) ?? null,
+    sourceKind: snapshot.asset?.sourceKind ?? null,
+  });
   const [session, setSession] = React.useState<DocumentSession | null>(snapshot.session);
   const [asset, setAsset] = React.useState<DocumentAsset | null>(snapshot.asset);
   const [state, setState] = React.useState<ViewerState>(
@@ -1644,4 +1662,10 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.2,
   },
+});
+
+export default withScreenErrorBoundary(PdfViewerScreen, {
+  screen: "pdf_viewer",
+  route: "/pdf-viewer",
+  title: "Ошибка просмотра PDF",
 });

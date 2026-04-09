@@ -1,8 +1,8 @@
 {
   "initialFinanceState": {
-    "proposalId": "ab6b8d46-9b2f-479e-8aef-22649f845f0f",
+    "proposalId": "0339619b-1e9a-4350-8177-d4774f86a558",
     "proposalStatus": "Утверждено",
-    "sentToAccountantAt": "2026-03-31T02:45:33.766+00:00",
+    "sentToAccountantAt": "2026-04-04T17:43:12.44+00:00",
     "totals": {
       "payableAmount": 100,
       "totalPaid": 0,
@@ -23,14 +23,14 @@
     }
   },
   "approvalActionResult": {
-    "proposalId": "ab6b8d46-9b2f-479e-8aef-22649f845f0f",
+    "proposalId": "0339619b-1e9a-4350-8177-d4774f86a558",
     "approved": true,
     "sentToAccountant": true,
     "paymentEligible": true
   },
   "revokeActionResult": {
     "beforePayRejected": {
-      "proposalId": "166b19b4-d6a4-4a93-8c97-4c030f2b67c2",
+      "proposalId": "db0e5850-5b00-4fc9-85ee-271c7baa1fde",
       "failureCode": "approval_revoked",
       "paymentsCountAfterRejectedPay": 0
     },
@@ -42,8 +42,8 @@
   "paymentActionResult": {
     "partialPayment": {
       "ok": true,
-      "proposalId": "ab6b8d46-9b2f-479e-8aef-22649f845f0f",
-      "paymentId": 177,
+      "proposalId": "0339619b-1e9a-4350-8177-d4774f86a558",
+      "paymentId": 180,
       "totalsBefore": {
         "payableAmount": 100,
         "totalPaid": 0,
@@ -59,8 +59,8 @@
     },
     "fullPayment": {
       "ok": true,
-      "proposalId": "f0d29c3f-356f-4ed7-b7f4-411dc46edc04",
-      "paymentId": 178,
+      "proposalId": "d75e9da3-8319-42f4-8821-9311cd7c9384",
+      "paymentId": 181,
       "totalsBefore": {
         "payableAmount": 70,
         "totalPaid": 0,
@@ -128,9 +128,9 @@
     "approvalRevoked": "approval_revoked"
   },
   "finalCanonicalState": {
-    "proposalId": "ab6b8d46-9b2f-479e-8aef-22649f845f0f",
+    "proposalId": "0339619b-1e9a-4350-8177-d4774f86a558",
     "proposalStatus": "Утверждено",
-    "sentToAccountantAt": "2026-03-31T02:45:33.766+00:00",
+    "sentToAccountantAt": "2026-04-04T17:43:12.44+00:00",
     "totals": {
       "payableAmount": 100,
       "totalPaid": 40,

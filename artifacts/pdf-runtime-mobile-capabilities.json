@@ -1,0 +1,27 @@
+﻿{
+    "checkedAt":  "2026-04-04T07:58:47.8167291Z",
+    "host":  {
+                 "platform":  "Win32NT",
+                 "os":  "Майкрософт Windows 11 Pro",
+                 "computer":  "DESKTOP-96KH6GS"
+             },
+    "iosTools":  {
+                     "xcrun":  {
+
+                               },
+                     "idevice_id":  {
+
+                                    },
+                     "idevicesyslog":  {
+
+                                       },
+                     "ios_deploy":  {
+
+                                    }
+                 },
+    "adbDevices":  "emulator-5554\tdevice",
+    "verdict":  {
+                    "iosRuntimeProofPossibleOnHost":  false,
+                    "androidRuntimeAvailable":  true
+                }
+}

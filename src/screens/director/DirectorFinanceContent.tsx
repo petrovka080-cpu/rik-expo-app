@@ -5,7 +5,6 @@ import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import {
   money,
   type FinKindSupplierRow,
-  type FinRep,
   type FinSpendSummary,
   type FinSupplierInput,
   type FinSupplierPanelState,
@@ -20,7 +19,6 @@ import type { FinPage } from "./director.types";
 type Props = {
   finPage: FinPage;
   finLoading: boolean;
-  finRep: FinRep;
   finScope: DirectorFinanceCanonicalScope | null;
   finSpendSummary: FinSpendSummary;
   finKindName: string;
@@ -60,7 +58,6 @@ const getModeLabel = (scope: DirectorFinanceCanonicalScope | null): string =>
 export default function DirectorFinanceContent({
   finPage,
   finLoading,
-  finRep,
   finScope,
   finSpendSummary,
   finKindName,
@@ -92,7 +89,7 @@ export default function DirectorFinanceContent({
               {HOME_DEBT_BODY}
             </Text>
             <Text style={{ color: UI.sub, fontWeight: "700", marginTop: 6 }} numberOfLines={1}>
-              {`${HOME_DEBT_METRIC_PREFIX} ${money(finScope?.obligations.approved ?? finRep?.summary?.approved ?? 0)} \u00b7 ${HOME_DEBT_TOTAL_PREFIX} ${money(finScope?.obligations.debt ?? finRep?.summary?.toPay ?? 0)}`}
+              {`${HOME_DEBT_METRIC_PREFIX} ${money(finScope?.obligations.approved ?? 0)} \u00b7 ${HOME_DEBT_TOTAL_PREFIX} ${money(finScope?.obligations.debt ?? 0)}`}
             </Text>
           </View>
         </Pressable>
@@ -144,12 +141,12 @@ export default function DirectorFinanceContent({
 
   if (finPage === "debt") {
     return (
-      <DirectorFinanceDebtModal
-        loading={finLoading}
-        rep={finRep}
-        truth={finScope?.obligations ?? null}
-        diagnostics={finScope?.diagnostics ?? null}
-        workInclusion={finScope?.workInclusion ?? null}
+        <DirectorFinanceDebtModal
+          loading={finLoading}
+          canonicalScope={finScope}
+          truth={finScope?.obligations ?? null}
+          diagnostics={finScope?.diagnostics ?? null}
+          workInclusion={finScope?.workInclusion ?? null}
         money={money}
         FIN_CRITICAL_DAYS={FIN_CRITICAL_DAYS}
         openSupplier={openSupplier}
@@ -159,12 +156,11 @@ export default function DirectorFinanceContent({
 
   if (finPage === "spend") {
     return (
-      <DirectorFinanceSpendModal
-        visible={true}
-        loading={finLoading}
-        sum={finRep?.summary}
-        truth={finScope?.spend ?? null}
-        diagnostics={finScope?.diagnostics ?? null}
+        <DirectorFinanceSpendModal
+          visible={true}
+          loading={finLoading}
+          truth={finScope?.spend ?? null}
+          diagnostics={finScope?.diagnostics ?? null}
         workInclusion={finScope?.workInclusion ?? null}
         spendSummary={finSpendSummary}
         money={money}

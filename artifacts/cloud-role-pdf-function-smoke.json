@@ -1,0 +1,236 @@
+{
+  "checkedAt": "2026-04-04T08:45:46.042Z",
+  "sampleIds": {
+    "requestId": "e1f4ea2e-5629-4bfa-9f6e-9e847eb229a8",
+    "issueId": 650,
+    "incomingId": "1ffb4812-be3b-4cc7-b2a5-fa52ed6b1135"
+  },
+  "foreman": {
+    "options": {
+      "status": 204,
+      "ok": true,
+      "headers": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "9e6f0a1f389121e1-WAW",
+        "connection": "keep-alive",
+        "date": "Sat, 04 Apr 2026 08:45:54 GMT",
+        "sb-gateway-version": "1",
+        "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+        "sb-request-id": "019d57ab-8f88-7a3c-844c-760d91d54db0",
+        "server": "cloudflare",
+        "set-cookie": "__cf_bm=BWuVixDRYBF1dwgm5Ea1UG7toRihp8BfShRwf33BCKw-1775292354-1.0.1.1-MuSBodw.YYP147XEGaQXlHU6Tr326etLlNIJWmXctXRSXUtkN6dFqUveBSw5sj3yT93LL7bJvpeeEH_c9pRVPwCslImJlM6Hjc3VD3HkPdY; path=/; expires=Sat, 04-Apr-26 09:15:54 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding",
+        "x-deno-execution-id": "524285f3-a9fa-4293-9964-9aa337f5d6c2",
+        "x-sb-edge-region": "eu-central-1",
+        "x-served-by": "supabase-edge-runtime"
+      }
+    },
+    "post": {
+      "status": 200,
+      "ok": true,
+      "headers": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "9e6f0a21e8859d75-WAW",
+        "connection": "keep-alive",
+        "content-encoding": "gzip",
+        "content-length": "983",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Sat, 04 Apr 2026 08:46:05 GMT",
+        "sb-gateway-version": "1",
+        "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+        "sb-request-id": "019d57ab-913c-74df-b6cc-016a19087c7f",
+        "server": "cloudflare",
+        "set-cookie": "__cf_bm=mtj_2rKu9Dg5hcXIQOu6LpdlyPtqRPgSQdWddLZ8YYE-1775292365-1.0.1.1-1omlN4ke622icm.Tw2yQ3sEPxT88jpBVHYd4pFGalShVO1lXRhh9jW.rdM.yYAF8X8Ce.Abvk4zQzTIi_mh2l7D_fd.gqv8YKqMtJdenDLU; path=/; expires=Sat, 04-Apr-26 09:16:05 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding",
+        "x-deno-execution-id": "fb9172ac-e941-4b0f-97cf-f80623f545ba",
+        "x-sb-edge-region": "eu-central-1",
+        "x-served-by": "supabase-edge-runtime"
+      },
+      "data": {
+        "ok": true,
+        "version": "v1",
+        "role": "foreman",
+        "documentType": "request",
+        "sourceKind": "remote-url",
+        "bucketId": "role_pdf_exports",
+        "storagePath": "foreman/request/2026/04/04/2026-04-04T08-46-03-889Z_ae3a057e_request_REQ_0108_2026_e1f4ea2e-5629-4bfa-9f6e-9e847eb229a8.pdf",
+        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/foreman/request/2026/04/04/2026-04-04T08-46-03-889Z_ae3a057e_request_REQ_0108_2026_e1f4ea2e-5629-4bfa-9f6e-9e847eb229a8.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL2ZvcmVtYW4vcmVxdWVzdC8yMDI2LzA0LzA0LzIwMjYtMDQtMDRUMDgtNDYtMDMtODg5Wl9hZTNhMDU3ZV9yZXF1ZXN0X1JFUV8wMTA4XzIwMjZfZTFmNGVhMmUtNTYyOS00YmZhLTlmNmUtOWU4NDdlYjIyOWE4LnBkZiIsImlhdCI6MTc3NTI5MjM2NSwiZXhwIjoxNzc1Mjk1OTY1fQ.SWkTnt23wQfwxr0dtBMYy1R9UWAAKCz5PSviScMfzk8",
+        "fileName": "request_REQ_0108_2026_e1f4ea2e-5629-4bfa-9f6e-9e847eb229a8.pdf",
+        "mimeType": "application/pdf",
+        "generatedAt": "2026-04-04T08:46:05.545Z",
+        "renderBranch": "backend_foreman_request_v1",
+        "renderer": "browserless_puppeteer",
+        "telemetry": {
+          "functionName": "foreman-request-pdf",
+          "requestId": "e1f4ea2e-5629-4bfa-9f6e-9e847eb229a8",
+          "title": "Заявка REQ-0108/2026",
+          "requestedByUserId": "fa04824c-7fc9-4c4a-b976-ee061e69bf48"
+        }
+      }
+    }
+  },
+  "warehouseIssue": {
+    "options": {
+      "status": 204,
+      "ok": true,
+      "headers": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "9e6f0a66a88b0287-WAW",
+        "connection": "keep-alive",
+        "date": "Sat, 04 Apr 2026 08:46:06 GMT",
+        "sb-gateway-version": "1",
+        "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+        "sb-request-id": "019d57ab-bc3c-7c6e-90f4-ae3f274f5eaa",
+        "server": "cloudflare",
+        "set-cookie": "__cf_bm=XicYV6w.KCxMd3QxoXB9qERanAQzQFlvpv3oxK73oUQ-1775292366-1.0.1.1-k0RVl.1bk4JOhfW7B9RdZKIaEVrDuDmZmLzsqKXnEVi6SPJEyD5hsa1ZAhzTnlr5ZW1P4BwlED157RqtTMFdOW39e1uCaLRlN6Pi0T95Gf4; path=/; expires=Sat, 04-Apr-26 09:16:06 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding",
+        "x-deno-execution-id": "0fcdd694-7b03-4626-a9f6-fbd11035b67b",
+        "x-sb-edge-region": "eu-central-1",
+        "x-served-by": "supabase-edge-runtime"
+      }
+    },
+    "post": {
+      "status": 200,
+      "ok": true,
+      "headers": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "9e6f0a68de999d75-WAW",
+        "connection": "keep-alive",
+        "content-encoding": "gzip",
+        "content-length": "875",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Sat, 04 Apr 2026 08:46:16 GMT",
+        "sb-gateway-version": "1",
+        "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+        "sb-request-id": "019d57ab-bd8a-7bac-865a-923dc3211853",
+        "server": "cloudflare",
+        "set-cookie": "__cf_bm=3kyX5or4SEPou0MKBjfe5Io_4Sb0pas30SwizcT05ig-1775292376-1.0.1.1-v6.GVCCKcxOftH.380XJPnIks.5O1xi_VdoptxPAShCGdbTxCzL1vKS6xKTz1lNJMDFZ1sku2O2Ad3uvJLrc02IPX6sf1CAhXsKwAgH_SCU; path=/; expires=Sat, 04-Apr-26 09:16:16 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding",
+        "x-deno-execution-id": "3e1f5627-ae05-4378-819c-982024f5eead",
+        "x-sb-edge-region": "eu-central-1",
+        "x-served-by": "supabase-edge-runtime"
+      },
+      "data": {
+        "ok": true,
+        "version": "v1",
+        "role": "warehouse",
+        "documentType": "warehouse_document",
+        "sourceKind": "remote-url",
+        "bucketId": "role_pdf_exports",
+        "storagePath": "warehouse/issue_form/2026/04/04/2026-04-04T08-46-14-614Z_45c40a3e_warehouse_document_issue_form_650.pdf",
+        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/issue_form/2026/04/04/2026-04-04T08-46-14-614Z_45c40a3e_warehouse_document_issue_form_650.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pc3N1ZV9mb3JtLzIwMjYvMDQvMDQvMjAyNi0wNC0wNFQwOC00Ni0xNC02MTRaXzQ1YzQwYTNlX3dhcmVob3VzZV9kb2N1bWVudF9pc3N1ZV9mb3JtXzY1MC5wZGYiLCJpYXQiOjE3NzUyOTIzNzYsImV4cCI6MTc3NTI5NTk3Nn0.3yAMw3Ervz4mcgxG4KNXT5yX2wZ3ntBsD33ucaPg8SY",
+        "fileName": "warehouse_document_issue_form_650.pdf",
+        "mimeType": "application/pdf",
+        "generatedAt": "2026-04-04T08:46:16.216Z",
+        "renderBranch": "backend_warehouse_pdf_v1",
+        "renderer": "browserless_puppeteer",
+        "telemetry": {
+          "functionName": "warehouse-pdf",
+          "documentKind": "issue_form",
+          "requestedByUserId": "746bd1a3-03dc-431d-952e-ecfce468df06",
+          "issueId": 650
+        }
+      }
+    }
+  },
+  "warehouseIncoming": {
+    "options": {
+      "status": 204,
+      "ok": true,
+      "headers": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "9e6f0aa958d945e5-WAW",
+        "connection": "keep-alive",
+        "date": "Sat, 04 Apr 2026 08:46:16 GMT",
+        "sb-gateway-version": "1",
+        "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+        "sb-request-id": "019d57ab-e5df-7172-a1e1-4092ca1a90b9",
+        "server": "cloudflare",
+        "set-cookie": "__cf_bm=wcgrrVeHnk4EiIYwOM2kxda5w0lHTgmEN3WU9yaMLDQ-1775292376-1.0.1.1-n5_QVhS_R6ShKCFiGo6ocbn0_y4qyPFA5bgeMTFdd_CRN1zqoabe.oNH6RLq2JL.e0aludtFBSwKnnF3Y7rOV3W0l_sk0E2HIXDFGO_2p0g; path=/; expires=Sat, 04-Apr-26 09:16:16 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding",
+        "x-deno-execution-id": "9674a437-8de8-49d0-9145-5d250748fcdc",
+        "x-sb-edge-region": "eu-central-1",
+        "x-served-by": "supabase-edge-runtime"
+      }
+    },
+    "post": {
+      "status": 200,
+      "ok": true,
+      "headers": {
+        "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+        "access-control-allow-methods": "POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "9e6f0aab58869d75-WAW",
+        "connection": "keep-alive",
+        "content-encoding": "gzip",
+        "content-length": "962",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Sat, 04 Apr 2026 08:46:25 GMT",
+        "sb-gateway-version": "1",
+        "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+        "sb-request-id": "019d57ab-e722-7e3b-9d91-44e35b3eb4ce",
+        "server": "cloudflare",
+        "set-cookie": "__cf_bm=ZTeWPPo486HObQ5Fwx7V_ZxmKgRK6Nawor5Pp7vRxa0-1775292385-1.0.1.1-7EoqTsfM0tD29uc6ZJkuDNVJWtBoSwP16Mhnu0q5FzluxvjVX3DB4ueDTdpThTkWaq7YsJnoYLn2hl2gdGxZvj17zhICS9EBrqNGhoRYRU8; path=/; expires=Sat, 04-Apr-26 09:16:25 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding",
+        "x-deno-execution-id": "72b03090-a9eb-4c5a-a527-d1aef620d9fc",
+        "x-sb-edge-region": "eu-central-1",
+        "x-served-by": "supabase-edge-runtime"
+      },
+      "data": {
+        "ok": true,
+        "version": "v1",
+        "role": "warehouse",
+        "documentType": "warehouse_document",
+        "sourceKind": "remote-url",
+        "bucketId": "role_pdf_exports",
+        "storagePath": "warehouse/incoming_form/2026/04/04/2026-04-04T08-46-23-738Z_efc45383_warehouse_document_incoming_form_1ffb4812-be3b-4cc7-b2a5-fa52ed6b1135.pdf",
+        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_form/2026/04/04/2026-04-04T08-46-23-738Z_efc45383_warehouse_document_incoming_form_1ffb4812-be3b-4cc7-b2a5-fa52ed6b1135.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19mb3JtLzIwMjYvMDQvMDQvMjAyNi0wNC0wNFQwOC00Ni0yMy03MzhaX2VmYzQ1MzgzX3dhcmVob3VzZV9kb2N1bWVudF9pbmNvbWluZ19mb3JtXzFmZmI0ODEyLWJlM2ItNGNjNy1iMmE1LWZhNTJlZDZiMTEzNS5wZGYiLCJpYXQiOjE3NzUyOTIzODUsImV4cCI6MTc3NTI5NTk4NX0.itKUL85WfqdZXiFJ0FsS-KaeCdeE2EjHPP_Hw1FChOM",
+        "fileName": "warehouse_document_incoming_form_1ffb4812-be3b-4cc7-b2a5-fa52ed6b1135.pdf",
+        "mimeType": "application/pdf",
+        "generatedAt": "2026-04-04T08:46:25.336Z",
+        "renderBranch": "backend_warehouse_pdf_v1",
+        "renderer": "browserless_puppeteer",
+        "telemetry": {
+          "functionName": "warehouse-pdf",
+          "documentKind": "incoming_form",
+          "requestedByUserId": "746bd1a3-03dc-431d-952e-ecfce468df06",
+          "incomingId": "1ffb4812-be3b-4cc7-b2a5-fa52ed6b1135"
+        }
+      }
+    }
+  }
+}

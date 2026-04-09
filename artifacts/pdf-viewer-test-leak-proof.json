@@ -1,0 +1,62 @@
+{
+  "checkedAt": "2026-04-04T07:44:39.739Z",
+  "targetUrl": "http://localhost:8081/pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf&fileName=dummy.pdf&title=Dummy+PDF&sourceKind=remote-url&documentType=director_report&originModule=director&source=generated&entityId=proof-1&openToken=web-proof-open-2",
+  "finalUrl": "http://localhost:8081/pdf-viewer?uri=https%3A%2F%2Fwww.w3.org%2FWAI%2FER%2Ftests%2Fxhtml%2Ftestfiles%2Fresources%2Fpdf%2Fdummy.pdf&fileName=dummy.pdf&title=Dummy+PDF&sourceKind=remote-url&documentType=director_report&originModule=director&source=generated&entityId=proof-1&openToken=web-proof-open-2",
+  "iframeCount": 1,
+  "iframeSrc": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+  "failure": null,
+  "bodySample": " Dummy PDF  Открывается... …",
+  "matchingRequests": [],
+  "blockingConsole": [],
+  "consoleTail": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+    },
+    {
+      "type": "warning",
+      "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+    },
+    {
+      "type": "info",
+      "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: , receivedSessionId: null, initialUri: https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf, initialScheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: direct_session_eae20e08, documentType: director_report, originModule: director, uri: https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: direct_session_eae20e08, documentType: director_report, originModule: director, remoteUri: https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf, renderUri: https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: , documentType: director_report, originModule: director, uri: https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: , documentType: director_report, originModule: director, iframeSrc: https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[queue.bootstrap] stop skipped: not running"
+    }
+  ],
+  "pageErrors": [],
+  "badResponses": [],
+  "screenshotPath": "C:\\dev\\rik-expo-app\\artifacts\\pdf-viewer-test-leak-proof.png",
+  "htmlPath": "C:\\dev\\rik-expo-app\\artifacts\\pdf-viewer-test-leak-proof.html",
+  "status": "GREEN"
+}

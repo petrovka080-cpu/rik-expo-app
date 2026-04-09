@@ -1,0 +1,30 @@
+{
+  "status": "GREEN",
+  "generatedAt": "2026-04-04T17:51:46.261Z",
+  "accountant": {
+    "role": "accountant",
+    "route": "http://localhost:8081/accountant",
+    "opened": true,
+    "interactive": true,
+    "closedCleanly": true,
+    "consoleErrorsEmpty": true,
+    "pageErrorsEmpty": true,
+    "badResponsesEmpty": true,
+    "bodySample": "Бухгалтер\nAccountant Screen Verify\n\n\nК оплате\nЧастично\nОплачено\nНа доработке\nИстория\nПодряды\n93 документов • обновляй свайпом вниз\nапрарпар\nСчёт без № · —\nОстаток: 100 KGS\n100\nК ОПЛАТЕ\n\nвапвап\nСчёт без № · —\nОстаток: 1000 KGS\n1 000\nК ОПЛАТЕ\n\nОсОО КУРУЛУШ\nСчёт без № · —\nОстаток: 10 KGS\n10\nК ОПЛАТЕ\n\nбакыт\nСчёт без №",
+    "screenshot": "artifacts/accountant-screen-hardening-web-proof.png",
+    "failureArtifact": null
+  },
+  "buyer": {
+    "role": "buyer",
+    "route": "http://localhost:8081/buyer",
+    "opened": true,
+    "interactive": true,
+    "closedCleanly": true,
+    "consoleErrorsEmpty": true,
+    "pageErrorsEmpty": true,
+    "badResponsesEmpty": true,
+    "bodySample": "Снабженец\nBuyer Screen Verify\nВход\n47\nКонтроль\nГотово\nПравки\nПодряды\nСнабженец\nBuyer Screen Verify\nВход\n47\nКонтроль\nГотово\nПравки\nПодряды\n\nREQ-0109/2026\n20 поз.\n20 позиций\n\nREQ-0108/2026\n1 поз.\n1 позиций\n\nREQ-0107/2026\n1 поз.\n1 позиций\n\nREQ-0105/2026\n1 поз.\n1 позиций\n\nREQ-0104/2026\n1 поз.\n1 позиций\n\nREQ-0103/2026",
+    "screenshot": "artifacts/buyer-screen-hardening-web-proof.png",
+    "failureArtifact": null
+  }
+}

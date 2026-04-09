@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-04-04T08:01:42.063Z",
+  "finalUrl": "http://localhost:8081/pdf-viewer?uri=http%3A%2F%2F127.0.0.1%3A8898%2Fruntime-proof.pdf&fileName=runtime-proof.pdf&title=PDF%20Runtime%20Proof%20Edge&sourceKind=remote-url&documentType=director_report&originModule=director&source=generated&entityId=runtime-proof-edge&openToken=runtime-proof-open-token-edge",
+  "iframeCount": 1,
+  "iframeSrc": "http://127.0.0.1:8898/runtime-proof.pdf",
+  "overlayCleared": true,
+  "progressVisible": false,
+  "lifecycleCounts": {
+    "open": 1,
+    "viewer_before_render": 1,
+    "web_iframe_render": 1,
+    "web_iframe_load": 1,
+    "ready": 1
+  },
+  "repeatedOpenLoop": false,
+  "relevantConsole": [
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: , receivedSessionId: null, initialUri: http://127.0.0.1:8898/runtime-proof.pdf, initialScheme: http}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: direct_session_eb7dfbef, documentType: director_report, originModule: director, uri: http://127.0.0.1:8898/runtime-proof.pdf, scheme: http}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl http://127.0.0.1:8898/runtime-proof.pdf"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: direct_session_eb7dfbef, documentType: director_report, originModule: director, remoteUri: http://127.0.0.1:8898/runtime-proof.pdf, renderUri: http://127.0.0.1:8898/runtime-proof.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: , documentType: director_report, originModule: director, uri: http://127.0.0.1:8898/runtime-proof.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: , documentType: director_report, originModule: director, iframeSrc: http://127.0.0.1:8898/runtime-proof.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_load {sessionId: , documentType: director_report, originModule: director, uri: http://127.0.0.1:8898/runtime-proof.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] ready {documentType: director_report, originModule: director, ms: 574}"
+    }
+  ],
+  "pageErrors": [],
+  "badResponses": []
+}

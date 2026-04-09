@@ -13,6 +13,6 @@
 - `/contractor` -> `/contractor` | redirected=false | opened=true
 - `/profile` -> `/profile` | redirected=false | opened=true
 
-## Redirect policy
-- devDisablesRoleRedirect = true
-- productionPreservesRoleRedirect = true
+## Entry policy
+- postAuthEntryRoute = `/(tabs)/profile`
+- postAuthEntryUsesAccessHub = true

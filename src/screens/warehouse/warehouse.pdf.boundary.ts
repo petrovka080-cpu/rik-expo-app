@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useRouter } from "expo-router";
+
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage, prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { generateWarehousePdfDocument } from "../../lib/documents/pdfDocumentGenerators";
@@ -9,7 +10,7 @@ import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 export type WarehousePdfDocumentType = "warehouse_register" | "warehouse_materials" | "warehouse_document";
 
 export type WarehousePdfBusyLike = {
-  run?: <T>(
+  run?: <T,>(
     fn: () => Promise<T>,
     opts?: { key?: string; label?: string; minMs?: number },
   ) => Promise<T | null>;

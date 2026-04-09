@@ -10,6 +10,7 @@ import {
   prepareAndPreviewGeneratedPdf,
   prepareAndShareGeneratedPdf,
 } from "../../../lib/pdf/pdf.runner";
+import { recordCatchDiscipline } from "../../../lib/observability/catchDiscipline";
 import { buildForemanRequestPdfDescriptor } from "../foreman.requestPdf.service";
 
 export function useForemanPdf(gbusy: BusyCtx) {
@@ -42,7 +43,7 @@ export function useForemanPdf(gbusy: BusyCtx) {
             busy: gbusy,
             supabase,
             key: `pdfshare:request:${ridKey}`,
-            label: "РџРѕРґРіРѕС‚Р°РІР»РёРІР°СЋ С„Р°Р№Р»...",
+            label: "Подготавливаю файл...",
             descriptor,
           });
           return;
@@ -52,12 +53,26 @@ export function useForemanPdf(gbusy: BusyCtx) {
           busy: gbusy,
           supabase,
           key: `pdf:request:${ridKey}`,
-          label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+          label: "Открываю PDF…",
           descriptor,
           router,
         });
       } catch (error) {
-        Alert.alert("PDF", getPdfFlowErrorMessage(error, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF"));
+        recordCatchDiscipline({
+          screen: "foreman",
+          surface: mode === "share" ? "foreman_pdf_share" : "foreman_pdf_open",
+          event: mode === "share" ? "foreman_request_pdf_share_failed" : "foreman_request_pdf_open_failed",
+          kind: "critical_fail",
+          error,
+          category: "ui",
+          sourceKind: "pdf:request",
+          errorStage: mode === "share" ? "share" : "open_view",
+          extra: {
+            requestId: ridKey,
+            action: mode === "share" ? "runRequestPdfShare" : "runRequestPdfPreview",
+          },
+        });
+        Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
       }
     },
     [gbusy, router],

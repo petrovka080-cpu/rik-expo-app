@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
@@ -5,7 +6,7 @@ import { RequestTimeoutError } from "../requestTimeoutPolicy";
 import RootLayout from "../../../app/_layout";
 
 const mockReplace = jest.fn();
-const mockGetSession = jest.fn();
+const mockGetSessionSafe = jest.fn();
 const mockOnAuthStateChange = jest.fn();
 const mockUseSegments = jest.fn();
 const mockUsePathname = jest.fn();
@@ -50,9 +51,9 @@ jest.mock("../cache/clearAppCache", () => ({
 }));
 
 jest.mock("../supabaseClient", () => ({
+  getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   supabase: {
     auth: {
-      getSession: (...args: unknown[]) => mockGetSession(...args),
       onAuthStateChange: (...args: unknown[]) => mockOnAuthStateChange(...args),
     },
   },
@@ -77,7 +78,7 @@ jest.mock("../../workers/queueBootstrap", () => ({
 describe("RootLayout recovery bootstrap", () => {
   beforeEach(() => {
     mockReplace.mockReset();
-    mockGetSession.mockReset();
+    mockGetSessionSafe.mockReset();
     mockOnAuthStateChange.mockReset();
     mockUseSegments.mockReset();
     mockUsePathname.mockReset();
@@ -100,7 +101,7 @@ describe("RootLayout recovery bootstrap", () => {
   });
 
   it("does not redirect to login when initial session bootstrap times out", async () => {
-    mockGetSession.mockRejectedValue(
+    mockGetSessionSafe.mockRejectedValue(
       new RequestTimeoutError({
         requestClass: "lightweight_lookup",
         timeoutMs: 8000,
@@ -129,9 +130,7 @@ describe("RootLayout recovery bootstrap", () => {
   });
 
   it("still redirects to login when session bootstrap confirms no session", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: null },
-    });
+    mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
 
     await act(async () => {
       TestRenderer.create(<RootLayout />);
@@ -150,12 +149,11 @@ describe("RootLayout recovery bootstrap", () => {
   it("redirects authenticated users away from the auth stack", async () => {
     mockUseSegments.mockReturnValue(["auth", "login"]);
     mockUsePathname.mockReturnValue("/auth/login");
-    mockGetSession.mockResolvedValue({
-      data: {
-        session: {
-          user: { id: "user-1" },
-        },
+    mockGetSessionSafe.mockResolvedValue({
+      session: {
+        user: { id: "user-1" },
       },
+      degraded: false,
     });
 
     await act(async () => {
@@ -168,5 +166,63 @@ describe("RootLayout recovery bootstrap", () => {
 
     expect(mockReplace).toHaveBeenCalledWith("/(tabs)/profile");
     expect(mockEnsureQueueWorker).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not redirect to login when SIGNED_IN fires after initial null session (iOS race)", async () => {
+    // Simulate the iOS race condition:
+    // 1. getSessionSafe returns null initially (AsyncStorage is slow)
+    // 2. onAuthStateChange fires SIGNED_IN with a valid session
+    // The route guard should use the SIGNED_IN session, NOT the stale null.
+
+    let capturedAuthCallback: ((event: string, session: unknown) => void) | null = null;
+
+    mockOnAuthStateChange.mockImplementation((callback: (event: string, session: unknown) => void) => {
+      capturedAuthCallback = callback;
+      return {
+        data: {
+          subscription: {
+            unsubscribe: jest.fn(),
+          },
+        },
+      };
+    });
+
+    // Start on auth/login (user just submitted login form)
+    mockUseSegments.mockReturnValue(["auth", "login"]);
+    mockUsePathname.mockReturnValue("/auth/login");
+
+    // getSessionSafe returns null — the session hasn't been persisted yet
+    mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
+
+    let renderer: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // At this point, hasSession=false, and route guard fires router.replace("/auth/login").
+    // But user is already on auth/login so inAuthStack=true → no redirect. Good.
+    mockReplace.mockClear();
+
+    // Now simulate: login.tsx called router.replace → segments change to (tabs)/profile
+    mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
+    mockUsePathname.mockReturnValue("/(tabs)/profile");
+
+    // SIGNED_IN fires from supabase
+    await act(async () => {
+      capturedAuthCallback?.("SIGNED_IN", { user: { id: "user-1" }, access_token: "tok" });
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // The critical assertion: after SIGNED_IN, the route guard must NOT send user back to login.
+    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(mockClearDocumentSessions).not.toHaveBeenCalled();
   });
 });

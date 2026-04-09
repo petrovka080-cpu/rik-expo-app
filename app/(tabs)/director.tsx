@@ -196,7 +196,6 @@ function DirectorScreen() {
         <DirectorFinanceContent
           finPage={vm.finPage}
           finLoading={vm.finLoading}
-          finRep={vm.finRep}
           finScope={vm.finScope}
           finSpendSummary={vm.finSpendSummary}
           finKindName={vm.finKindName}

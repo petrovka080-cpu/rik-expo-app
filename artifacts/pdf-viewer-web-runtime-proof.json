@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-04-04T07:54:06.349Z",
+  "targetUrl": "http://localhost:8081/pdf-viewer?uri=http%3A%2F%2F127.0.0.1%3A8899%2Fruntime-proof.pdf&fileName=runtime-proof.pdf&title=PDF+Runtime+Proof&sourceKind=remote-url&documentType=director_report&originModule=director&source=generated&entityId=runtime-proof&openToken=runtime-proof-open-token",
+  "finalUrl": "http://localhost:8081/pdf-viewer?uri=http%3A%2F%2F127.0.0.1%3A8899%2Fruntime-proof.pdf&fileName=runtime-proof.pdf&title=PDF+Runtime+Proof&sourceKind=remote-url&documentType=director_report&originModule=director&source=generated&entityId=runtime-proof&openToken=runtime-proof-open-token",
+  "iframeSrc": null,
+  "lifecycleCounts": {
+    "open": 1,
+    "viewer_before_render": 1,
+    "web_iframe_render": 1,
+    "web_iframe_load": 0,
+    "ready": 0
+  },
+  "overlayCleared": true,
+  "repeatedOpenLoop": false,
+  "relevantConsole": [
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: , receivedSessionId: null, initialUri: http://127.0.0.1:8899/runtime-proof.pdf, initialScheme: http}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: direct_session_a71875be, documentType: director_report, originModule: director, uri: http://127.0.0.1:8899/runtime-proof.pdf, scheme: http}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl http://127.0.0.1:8899/runtime-proof.pdf"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: direct_session_a71875be, documentType: director_report, originModule: director, remoteUri: http://127.0.0.1:8899/runtime-proof.pdf, renderUri: http://127.0.0.1:8899/runtime-proof.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: , documentType: director_report, originModule: director, uri: http://127.0.0.1:8899/runtime-proof.pdf}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: , documentType: director_report, originModule: director, iframeSrc: http://127.0.0.1:8899/runtime-proof.pdf}"
+    },
+    {
+      "type": "error",
+      "text": "[pdf-viewer] load_error {documentType: director_report, originModule: director, scheme: http, platform: web, phase: timeout}"
+    }
+  ],
+  "pageErrors": [],
+  "badResponses": [],
+  "screenshotPath": "C:\\dev\\rik-expo-app\\artifacts\\pdf-viewer-web-runtime-proof.png",
+  "htmlPath": "C:\\dev\\rik-expo-app\\artifacts\\pdf-viewer-web-runtime-proof.html",
+  "status": "NOT_GREEN"
+}

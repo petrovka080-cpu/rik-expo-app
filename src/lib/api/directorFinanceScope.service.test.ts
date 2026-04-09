@@ -28,8 +28,10 @@ jest.mock("../observability/platformObservability", () => ({
   beginPlatformObservability: (...args: unknown[]) => mockBeginPlatformObservability(...args),
 }));
 
-const loadSubject = () =>
-  require("./directorFinanceScope.service") as typeof import("./directorFinanceScope.service");
+const loadSubject = () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require("./directorFinanceScope.service") as typeof import("./directorFinanceScope.service");
+};
 
 const buildPanelScopeV4 = (): import("../../screens/director/director.finance").DirectorFinancePanelScopeV4 => ({
   summary: {
@@ -219,9 +221,16 @@ describe("directorFinanceScope.service", () => {
     expect(result.cutoverMeta.summaryCompatibilityOverlay).toBe(false);
     expect(result.supportRowsLoaded).toBe(false);
     expect(result.sourceMeta.financeSummary).toBe("rpc_panel_scope_v4_canonical");
-    expect(result.finRep.summary.approved).toBe(1000);
-    expect(result.finRep.summary.toPay).toBe(300);
     expect(result.canonicalScope.summary.approvedTotal).toBe(1000);
+    expect(result.canonicalScope.obligations.approved).toBe(1000);
+    expect(result.canonicalScope.obligations.debt).toBe(300);
+    expect(result.canonicalScope.suppliers).toEqual([
+      expect.objectContaining({
+        supplierName: "Supplier A",
+        approvedTotal: 1000,
+        debtTotal: 300,
+      }),
+    ]);
     expect(result.canonicalScope.objects).toEqual([
       expect.objectContaining({
         objectCode: "OBJ-1",

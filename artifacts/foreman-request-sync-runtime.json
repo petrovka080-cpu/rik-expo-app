@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-03-30T01:29:40.177Z",
+  "generatedAt": "2026-04-05T05:36:30.884Z",
   "batch": "foreman_request_sync_runtime_verify",
   "web": {
     "status": "failed",
     "platformSpecificIssues": [
-      "foreman live smoke failed: file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:69\r\n  if (!ok) throw new Error(`clickText not found: ${needle}`);\r\n                 ^\r\n\r\nError: clickText not found: Весь корпус\r\n    at clickText (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:69:18)\r\n    at async clickAnyText (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:76:7)\r\n    at async file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:600:7\r\n    at async ensureForemanContext (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:594:5)\r\n    at async main (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:974:5)\r\n    at async file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:1258:1\r\n\r\nNode.js v20.19.6"
+      "foreman live smoke failed: file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:35\r\n  throw new Error(`poll timeout: ${label}`);\r\n        ^\r\n\r\nError: poll timeout: body_any:Контроль|Заявки\r\n    at poll (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:35:9)\r\n    at async loginDirector (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:530:3)\r\n    at async main (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:972:5)\r\n    at async file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:1258:1\r\n\r\nNode.js v20.19.6"
     ],
-    "failureKind": "app"
+    "failureKind": "auth"
   },
   "android": {
     "status": "failed",
     "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
-    "anrRecoveryUsed": true,
-    "blankSurfaceRecovered": true,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
     "devClientBootstrapRecovered": false,
     "xmlPath": "artifacts/android-foreman-request-sync-failure.xml",
     "pngPath": "artifacts/android-foreman-request-sync-failure.png",
@@ -22,7 +22,7 @@
     "stdoutTail": "",
     "stderrTail": "",
     "platformSpecificIssues": [
-      "android login did not complete for rik://foreman"
+      "poll timeout: android:dev_client_loaded"
     ],
     "failureKind": "auth"
   },

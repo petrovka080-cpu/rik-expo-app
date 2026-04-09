@@ -1,135 +1,695 @@
 {
-  "marker": "RTACCT1774711441484",
+  "marker": null,
   "events": [
     {
-      "screen": "accountant",
-      "surface": "screen_root",
-      "event": "realtime_event_received",
-      "result": "success",
-      "durationMs": null,
-      "rowCount": null,
-      "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'screen_root',\nI/ReactNativeJS( 3146):   event: 'realtime_event_received',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: null,\nI/ReactNativeJS( 3146):   rowCount: null,\nI/ReactNativeJS( 3146):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 3146):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "screen_root",
-      "event": "realtime_refresh_triggered",
-      "result": "success",
-      "durationMs": null,
-      "rowCount": null,
-      "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'screen_root',\nI/ReactNativeJS( 3146):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: null,\nI/ReactNativeJS( 3146):   rowCount: null,\nI/ReactNativeJS( 3146):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 3146):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "screen_root",
-      "event": "realtime_event_received",
-      "result": "success",
-      "durationMs": null,
-      "rowCount": null,
-      "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'screen_root',\nI/ReactNativeJS( 3146):   event: 'realtime_event_received',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: null,\nI/ReactNativeJS( 3146):   rowCount: null,\nI/ReactNativeJS( 3146):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 3146):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "inbox_window",
-      "event": "load_inbox",
-      "result": "success",
-      "durationMs": 1544,
-      "rowCount": 40,
-      "sourceKind": "rpc:accountant_inbox_scope_v1",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'inbox_window',\nI/ReactNativeJS( 3146):   event: 'load_inbox',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: 1544,\nI/ReactNativeJS( 3146):   rowCount: 40,\nI/ReactNativeJS( 3146):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS( 3146):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "inbox_list",
-      "event": "content_ready",
-      "result": "success",
-      "durationMs": null,
-      "rowCount": 40,
-      "sourceKind": null,
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'inbox_list',\nI/ReactNativeJS( 3146):   event: 'content_ready',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: null,\nI/ReactNativeJS( 3146):   rowCount: 40,\nI/ReactNativeJS( 3146):   sourceKind: null,\nI/ReactNativeJS( 3146):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "inbox_list",
-      "event": "load_inbox",
-      "result": "success",
-      "durationMs": 3219,
-      "rowCount": 40,
-      "sourceKind": "rpc:accountant_inbox_scope_v1",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'inbox_list',\nI/ReactNativeJS( 3146):   event: 'load_inbox',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: 3219,\nI/ReactNativeJS( 3146):   rowCount: 40,\nI/ReactNativeJS( 3146):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS( 3146):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "screen_root",
-      "event": "realtime_event_received",
-      "result": "success",
-      "durationMs": null,
-      "rowCount": null,
-      "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'screen_root',\nI/ReactNativeJS( 3146):   event: 'realtime_event_received',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: null,\nI/ReactNativeJS( 3146):   rowCount: null,\nI/ReactNativeJS( 3146):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 3146):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "screen_root",
-      "event": "realtime_refresh_triggered",
-      "result": "success",
-      "durationMs": null,
-      "rowCount": null,
-      "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'screen_root',\nI/ReactNativeJS( 3146):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: null,\nI/ReactNativeJS( 3146):   rowCount: null,\nI/ReactNativeJS( 3146):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 3146):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "screen_root",
-      "event": "realtime_event_received",
-      "result": "success",
-      "durationMs": null,
-      "rowCount": null,
-      "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'screen_root',\nI/ReactNativeJS( 3146):   event: 'realtime_event_received',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: null,\nI/ReactNativeJS( 3146):   rowCount: null,\nI/ReactNativeJS( 3146):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 3146):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "screen_root",
-      "event": "realtime_refresh_skipped_inflight",
-      "result": "skipped",
+      "screen": "profile",
+      "surface": "session_role",
+      "event": "warm_session_profile",
+      "result": "joined_inflight",
       "durationMs": null,
       "rowCount": null,
       "sourceKind": null,
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'screen_root',\nI/ReactNativeJS( 3146):   event: 'realtime_refresh_skipped_inflight',\nI/ReactNativeJS( 3146):   result: 'skipped',\nI/ReactNativeJS( 3146):   durationMs: null,\nI/ReactNativeJS( 3146):   rowCount: null,\nI/ReactNativeJS( 3146):   sourceKind: null,\nI/ReactNativeJS( 3146):   errorStage: null }"
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'profile',\nI/ReactNativeJS(28308):   surface: 'session_role',\nI/ReactNativeJS(28308):   event: 'warm_session_profile',\nI/ReactNativeJS(28308):   result: 'joined_inflight',\nI/ReactNativeJS(28308):   durationMs: null,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: null,\nI/ReactNativeJS(28308):   errorStage: null }"
     },
     {
-      "screen": "accountant",
-      "surface": "inbox_window",
-      "event": "load_inbox",
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
       "result": "success",
-      "durationMs": 800,
-      "rowCount": 40,
-      "sourceKind": "rpc:accountant_inbox_scope_v1",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'inbox_window',\nI/ReactNativeJS( 3146):   event: 'load_inbox',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: 800,\nI/ReactNativeJS( 3146):   rowCount: 40,\nI/ReactNativeJS( 3146):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS( 3146):   errorStage: null }"
+      "durationMs": 1363,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 1363,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
     },
     {
-      "screen": "accountant",
-      "surface": "inbox_list",
-      "event": "content_ready",
+      "screen": "profile",
+      "surface": "session_role",
+      "event": "warm_session_profile",
       "result": "success",
-      "durationMs": null,
-      "rowCount": 40,
+      "durationMs": 1531,
+      "rowCount": null,
       "sourceKind": null,
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'inbox_list',\nI/ReactNativeJS( 3146):   event: 'content_ready',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: null,\nI/ReactNativeJS( 3146):   rowCount: 40,\nI/ReactNativeJS( 3146):   sourceKind: null,\nI/ReactNativeJS( 3146):   errorStage: null }"
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'profile',\nI/ReactNativeJS(28308):   surface: 'session_role',\nI/ReactNativeJS(28308):   event: 'warm_session_profile',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 1531,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: null,\nI/ReactNativeJS(28308):   errorStage: null }"
     },
     {
-      "screen": "accountant",
-      "surface": "inbox_list",
-      "event": "load_inbox",
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
       "result": "success",
-      "durationMs": 842,
-      "rowCount": 40,
-      "sourceKind": "rpc:accountant_inbox_scope_v1",
-      "raw": "I/ReactNativeJS( 3146): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 3146):   surface: 'inbox_list',\nI/ReactNativeJS( 3146):   event: 'load_inbox',\nI/ReactNativeJS( 3146):   result: 'success',\nI/ReactNativeJS( 3146):   durationMs: 842,\nI/ReactNativeJS( 3146):   rowCount: 40,\nI/ReactNativeJS( 3146):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS( 3146):   errorStage: null }"
+      "durationMs": 1508,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 1508,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 791,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 791,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 439,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 439,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 442,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 442,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 433,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 433,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 442,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 442,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 423,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 423,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 441,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 441,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 437,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 437,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 426,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 426,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 447,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 447,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 419,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 419,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 455,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 455,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 444,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 444,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 434,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 434,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 435,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 435,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 419,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 419,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 441,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 441,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 447,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 447,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 423,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 423,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 434,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 434,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 423,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 423,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 435,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 435,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 440,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 440,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 420,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 420,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 434,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 434,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 420,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 420,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 452,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 452,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 445,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 445,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 417,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 417,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 437,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 437,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 426,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 426,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 436,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 436,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 446,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 446,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 427,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 427,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 432,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 432,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 422,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 422,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 458,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 458,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 454,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 454,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 417,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 417,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 431,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 431,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 421,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 421,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 428,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 428,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 437,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 437,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 419,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 419,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 437,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 437,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 423,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 423,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 426,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 426,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 435,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 435,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 420,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 420,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 436,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 436,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 421,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 421,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 426,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 426,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 438,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 438,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 419,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 419,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 451,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 451,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 420,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 420,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 426,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 426,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 439,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 439,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 417,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 417,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 434,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 434,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 433,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 433,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 429,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 429,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 442,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 442,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 418,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 418,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
+    },
+    {
+      "screen": "request",
+      "surface": "supabase_transport",
+      "event": "request_timeout_discipline",
+      "result": "success",
+      "durationMs": 434,
+      "rowCount": null,
+      "sourceKind": "supabase_transport:native",
+      "raw": "I/ReactNativeJS(28308): '[platform.observability]', { screen: 'request',\nI/ReactNativeJS(28308):   surface: 'supabase_transport',\nI/ReactNativeJS(28308):   event: 'request_timeout_discipline',\nI/ReactNativeJS(28308):   result: 'success',\nI/ReactNativeJS(28308):   durationMs: 434,\nI/ReactNativeJS(28308):   rowCount: null,\nI/ReactNativeJS(28308):   sourceKind: 'supabase_transport:native',\nI/ReactNativeJS(28308):   errorStage: null }"
     }
   ],
   "preflight": {
@@ -149,6 +709,6 @@
   },
   "fioConfirmed": false,
   "artifacts": {
-    "screenshot": "artifacts/android-accountant-realtime-final.png"
+    "screenshot": "artifacts/android-accountant-realtime-failure.png"
   }
 }

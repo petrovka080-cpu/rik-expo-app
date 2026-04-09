@@ -6,6 +6,7 @@ const mockPush = jest.fn();
 const mockGenerateWarehousePdfDocument = jest.fn();
 const mockPrepareAndPreviewPdfDocument = jest.fn();
 const mockCreatePdfSource = jest.fn();
+const mockRecordCatchDiscipline = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
@@ -27,15 +28,20 @@ jest.mock("../../lib/pdfFileContract", () => ({
   createPdfSource: (...args: unknown[]) => mockCreatePdfSource(...args),
 }));
 
+jest.mock("../../lib/observability/catchDiscipline", () => ({
+  recordCatchDiscipline: (...args: unknown[]) => mockRecordCatchDiscipline(...args),
+}));
+
 type HookResult = ReturnType<typeof useWarehousePdfPreviewBoundary> | null;
 
 async function renderHarness() {
   let captured: HookResult = null;
+  const notifyError = jest.fn();
 
   function Harness() {
     captured = useWarehousePdfPreviewBoundary({
       busy: {},
-      notifyError: jest.fn(),
+      notifyError,
     });
     return null;
   }
@@ -47,7 +53,7 @@ async function renderHarness() {
   if (!captured) {
     throw new Error("Warehouse boundary hook did not initialize");
   }
-  return captured;
+  return { preview: captured, notifyError };
 }
 
 describe("warehouse.pdf.boundary", () => {
@@ -56,6 +62,7 @@ describe("warehouse.pdf.boundary", () => {
     mockGenerateWarehousePdfDocument.mockReset();
     mockPrepareAndPreviewPdfDocument.mockReset();
     mockCreatePdfSource.mockReset();
+    mockRecordCatchDiscipline.mockReset();
     mockCreatePdfSource.mockImplementation((uri: string) => ({
       kind: "remote-url",
       uri,
@@ -65,7 +72,7 @@ describe("warehouse.pdf.boundary", () => {
   });
 
   it("builds warehouse preview on canonical remote PdfSource without getRemoteUrl fallback", async () => {
-    const preview = await renderHarness();
+    const { preview } = await renderHarness();
 
     await act(async () => {
       await preview({
@@ -107,5 +114,31 @@ describe("warehouse.pdf.boundary", () => {
       }),
     );
     expect(mockPrepareAndPreviewPdfDocument.mock.calls[0][0]).not.toHaveProperty("getRemoteUrl");
+  });
+
+  it("surfaces a controlled warehouse PDF error instead of failing silently", async () => {
+    mockGenerateWarehousePdfDocument.mockRejectedValue(new Error("warehouse blocked"));
+    const { preview, notifyError } = await renderHarness();
+
+    await act(async () => {
+      await preview({
+        key: "pdf:warehouse:test",
+        label: "Открываю PDF…",
+        title: "Складской PDF",
+        fileName: "warehouse.pdf",
+        documentType: "warehouse_document",
+        entityId: "77",
+        getRemoteUrl: async () => "https://example.com/warehouse.pdf",
+      });
+    });
+
+    expect(mockRecordCatchDiscipline).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "warehouse",
+        surface: "warehouse_pdf_open",
+        event: "warehouse_pdf_open_failed",
+      }),
+    );
+    expect(notifyError).toHaveBeenCalledWith("PDF", "warehouse blocked");
   });
 });

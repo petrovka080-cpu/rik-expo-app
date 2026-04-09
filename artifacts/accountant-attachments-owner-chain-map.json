@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T13:21:15.817Z",
+  "generatedAt": "2026-04-04T17:43:16.864Z",
   "proposalNo": "PR-0419/2026",
   "proposalId": "67b6f220-470d-4310-b300-30d40e261b59",
   "ownerChain": {
@@ -7,10 +7,10 @@
       "id": "67b6f220-470d-4310-b300-30d40e261b59",
       "proposal_no": "PR-0419/2026",
       "status": "Утверждено",
-      "payment_status": "К оплате",
+      "payment_status": "Оплачено",
       "sent_to_accountant_at": "2026-03-23T04:20:31.542502+00:00",
       "invoice_number": null,
-      "invoice_date": null,
+      "invoice_date": "2026-03-11",
       "created_at": "2026-03-23T04:11:07.035597+00:00"
     },
     "proposalAttachments": [
@@ -37,13 +37,28 @@
         "attachments": []
       }
     ],
-    "proposalPayments": [],
-    "paymentRpc": []
+    "proposalPayments": [
+      {
+        "id": 157,
+        "proposal_id": "67b6f220-470d-4310-b300-30d40e261b59",
+        "paid_at": "2026-03-29T13:22:35.91532+00:00",
+        "amount": 8300,
+        "created_at": "2026-03-29T13:22:35.91532+00:00"
+      }
+    ],
+    "paymentRpc": [
+      {
+        "paymentId": 157,
+        "error": null,
+        "attachmentsMetaCount": 0,
+        "attachmentsMetaSample": []
+      }
+    ]
   },
   "sentToAccountantSummary": {
-    "totalSentToAccountant": 92,
-    "withAnyAttachments": 78,
-    "withCommercialAttachmentGroups": 78,
+    "totalSentToAccountant": 98,
+    "withAnyAttachments": 82,
+    "withCommercialAttachmentGroups": 82,
     "sample": [
       {
         "proposalId": "3da6cb7f-8454-48e6-be10-b6e9f5889b89",
@@ -166,14 +181,6 @@
         }
       },
       {
-        "proposalId": "d06feacd-7eed-4245-86a0-77a3d426e860",
-        "proposalNo": "PR-0352/2026",
-        "paymentStatus": "К оплате",
-        "attachmentGroups": {
-          "supplier_quote": 1
-        }
-      },
-      {
         "proposalId": "52bf1399-ec92-4e0a-b42a-8e1525e84470",
         "proposalNo": "PR-0324/2026",
         "paymentStatus": "К оплате",
@@ -240,6 +247,14 @@
       {
         "proposalId": "97cf0844-6330-4db2-a064-ee29df2cb300",
         "proposalNo": "PR-0333/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "c3f28df9-3049-4ce4-b4fc-e51037fd3160",
+        "proposalNo": "PR-0337/2026",
         "paymentStatus": "К оплате",
         "attachmentGroups": {
           "supplier_quote": 1

@@ -1,5 +1,6 @@
 // src/lib/localCache.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { reportAndSwallow } from './observability/catchDiscipline';
 
 export type HitLite = {
   ref_table: 'rik_works'|'rik_materials';
@@ -13,14 +14,53 @@ export type HitLite = {
 const RECENTS_KEY = 'foreman.recents.v1';
 const FAVS_KEY    = 'foreman.favs.v1';
 
+function reportLocalCacheBoundary(params: {
+  event: string;
+  error: unknown;
+  errorStage: string;
+  key: string;
+}) {
+  reportAndSwallow({
+    screen: 'foreman',
+    surface: 'local_cache',
+    event: params.event,
+    scope: `foreman.localCache.${params.errorStage}`,
+    error: params.error,
+    kind: 'degraded_fallback',
+    category: 'fetch',
+    errorStage: params.errorStage,
+    sourceKind: 'async_storage',
+    extra: {
+      storageKey: params.key,
+    },
+  });
+}
+
 async function read<T>(k: string, fallback: T): Promise<T> {
   try {
     const raw = await AsyncStorage.getItem(k);
     return raw ? JSON.parse(raw) as T : fallback;
-  } catch { return fallback; }
+  } catch (error) {
+    reportLocalCacheBoundary({
+      event: 'local_cache_read_failed',
+      error,
+      errorStage: 'read',
+      key: k,
+    });
+    return fallback;
+  }
 }
 async function write<T>(k: string, v: T): Promise<void> {
-  try { await AsyncStorage.setItem(k, JSON.stringify(v)); } catch {}
+  try {
+    await AsyncStorage.setItem(k, JSON.stringify(v));
+  } catch (error) {
+    reportLocalCacheBoundary({
+      event: 'local_cache_write_failed',
+      error,
+      errorStage: 'write',
+      key: k,
+    });
+  }
 }
 
 export async function loadRecents(): Promise<HitLite[]> {

@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
-import type { FinKindSupplierRow, FinanceSummary, FinSpendSummary } from "./director.finance";
+import type { FinKindSupplierRow, FinSpendSummary } from "./director.finance";
 import { UI, s } from "./director.styles";
 
 type Props = {
@@ -13,7 +13,6 @@ type Props = {
   onOpenPeriod?: () => void;
   onRefresh?: () => void;
   onPdf?: () => void;
-  sum: FinanceSummary | null | undefined;
   truth?: DirectorFinanceCanonicalScope["spend"] | null;
   diagnostics?: DirectorFinanceCanonicalScope["diagnostics"] | null;
   workInclusion?: DirectorFinanceCanonicalScope["workInclusion"] | null;

@@ -79,30 +79,33 @@ async function main() {
   });
 
   const summaryParity = {
-    approved: compareNumber(scope.finRep.summary.approved, panelScopeV1?.summary.approved ?? computedRep.summary.approved),
-    paid: compareNumber(scope.finRep.summary.paid, panelScopeV1?.summary.paid ?? computedRep.summary.paid),
-    toPay: compareNumber(scope.finRep.summary.toPay, panelScopeV1?.summary.toPay ?? computedRep.summary.toPay),
+    approved: compareNumber(scope.canonicalScope.obligations.approved, panelScopeV1?.summary.approved ?? computedRep.summary.approved),
+    paid: compareNumber(scope.canonicalScope.obligations.paid, panelScopeV1?.summary.paid ?? computedRep.summary.paid),
+    toPay: compareNumber(scope.canonicalScope.obligations.debt, panelScopeV1?.summary.toPay ?? computedRep.summary.toPay),
     overdueCount: compareNumber(
-      scope.finRep.summary.overdueCount,
+      scope.canonicalScope.summary.overdueCount,
       panelScopeV1?.summary.overdueCount ?? computedRep.summary.overdueCount,
     ),
     overdueAmount: compareNumber(
-      scope.finRep.summary.overdueAmount,
+      scope.canonicalScope.summary.overdueAmount,
       panelScopeV1?.summary.overdueAmount ?? computedRep.summary.overdueAmount,
     ),
     criticalCount: compareNumber(
-      scope.finRep.summary.criticalCount,
+      scope.canonicalScope.summary.criticalCount,
       panelScopeV1?.summary.criticalCount ?? computedRep.summary.criticalCount,
     ),
     criticalAmount: compareNumber(
-      scope.finRep.summary.criticalAmount,
+      scope.canonicalScope.summary.criticalAmount,
       panelScopeV1?.summary.criticalAmount ?? computedRep.summary.criticalAmount,
     ),
     partialCount: compareNumber(
-      scope.finRep.summary.partialCount,
+      scope.canonicalScope.summary.partialCount,
       panelScopeV1?.summary.partialCount ?? computedRep.summary.partialCount,
     ),
-    debtCount: compareNumber(scope.finRep.summary.debtCount, panelScopeV1?.summary.debtCount ?? computedRep.summary.debtCount),
+    debtCount: compareNumber(
+      scope.canonicalScope.summary.debtCount,
+      panelScopeV1?.summary.debtCount ?? computedRep.summary.debtCount,
+    ),
   };
 
   const spendParity = {
@@ -119,14 +122,14 @@ async function main() {
 
   const supplierParity = {
     count: compareNumber(
-      scope.finRep.report.suppliers.length,
+      scope.canonicalScope.suppliers.length,
       panelScopeV1?.report.suppliers.length ?? computedRep.report.suppliers.length,
     ),
-    topFiveMatch: scope.finRep.report.suppliers.slice(0, 5).every((row, index) => {
+    topFiveMatch: scope.canonicalScope.suppliers.slice(0, 5).every((row, index) => {
       const target = panelScopeV1?.report.suppliers[index] ?? computedRep.report.suppliers[index];
       return (
-        String(row.supplier) === String(target?.supplier ?? "") &&
-        Math.abs(Number(row.toPay ?? 0) - Number(target?.toPay ?? 0)) <= 0.001
+        String(row.supplierName) === String(target?.supplier ?? "") &&
+        Math.abs(Number(row.debtTotal ?? 0) - Number(target?.toPay ?? 0)) <= 0.001
       );
     }),
   };

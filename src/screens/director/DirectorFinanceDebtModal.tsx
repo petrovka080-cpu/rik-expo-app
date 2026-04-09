@@ -4,7 +4,7 @@ import { Pressable, Text, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
-import type { FinRep, FinSupplierDebt } from "./director.finance";
+import type { FinSupplierDebt } from "./director.finance";
 import { UI, s } from "./director.styles";
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
   onOpenPeriod?: () => void;
   onRefresh?: () => void;
   onPdf?: () => void;
-  rep?: FinRep | null;
+  canonicalScope: DirectorFinanceCanonicalScope | null;
   truth?: DirectorFinanceCanonicalScope["obligations"] | null;
   diagnostics?: DirectorFinanceCanonicalScope["diagnostics"] | null;
   workInclusion?: DirectorFinanceCanonicalScope["workInclusion"] | null;
@@ -40,7 +40,6 @@ const OBLIGATIONS_WORK_NOTE =
   "\u0420\u0430\u0431\u043e\u0442\u044b \u0438 \u0443\u0441\u043b\u0443\u0433\u0438 \u0432 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u0430\u0445 \u0443\u0447\u0438\u0442\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u0441\u043b\u0435 proposal/invoice chain. \u042d\u0442\u043e\u0442 \u0431\u043b\u043e\u043a \u043d\u0435 \u0441\u043e\u0431\u0438\u0440\u0430\u0435\u0442 allocation rows.";
 
 export default function DirectorFinanceDebtModal(props: Props) {
-  const rep = props.rep;
   const [suppliersOpen, setSuppliersOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -48,18 +47,29 @@ export default function DirectorFinanceDebtModal(props: Props) {
   }, [props.visible]);
 
   const suppliers = React.useMemo<FinSupplierDebt[]>(
-    () => (Array.isArray(rep?.report?.suppliers) ? rep.report.suppliers : []),
-    [rep?.report?.suppliers],
+    () =>
+      Array.isArray(props.canonicalScope?.suppliers)
+        ? props.canonicalScope.suppliers.map((row) => ({
+            supplier: row.supplierName,
+            count: row.invoiceCount,
+            approved: row.approvedTotal,
+            paid: row.paidTotal,
+            toPay: row.debtTotal,
+            overdueCount: row.overdueCount,
+            criticalCount: row.criticalCount,
+          }))
+        : [],
+    [props.canonicalScope?.suppliers],
   );
 
-  const overdueCount = rep?.summary?.overdueCount ?? 0;
-  const overdueAmount = rep?.summary?.overdueAmount ?? 0;
-  const criticalCount = rep?.summary?.criticalCount ?? 0;
-  const criticalAmount = rep?.summary?.criticalAmount ?? 0;
-  const debtCount = rep?.summary?.debtCount ?? 0;
-  const approvedAmount = props.truth?.approved ?? rep?.summary?.approved ?? 0;
-  const paidAmount = props.truth?.paid ?? rep?.summary?.paid ?? 0;
-  const debtAmount = props.truth?.debt ?? rep?.summary?.toPay ?? 0;
+  const overdueCount = props.canonicalScope?.summary.overdueCount ?? 0;
+  const overdueAmount = props.canonicalScope?.summary.overdueAmount ?? 0;
+  const criticalCount = props.canonicalScope?.summary.criticalCount ?? 0;
+  const criticalAmount = props.canonicalScope?.summary.criticalAmount ?? 0;
+  const debtCount = props.canonicalScope?.summary.debtCount ?? 0;
+  const approvedAmount = props.truth?.approved ?? 0;
+  const paidAmount = props.truth?.paid ?? 0;
+  const debtAmount = props.truth?.debt ?? 0;
   const overduePct = pct(overdueAmount, debtAmount);
   const criticalPct = pct(criticalAmount, debtAmount);
 

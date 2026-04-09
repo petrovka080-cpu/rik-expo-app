@@ -9,10 +9,19 @@ loadDotenv({ path: ".env", override: false });
 const projectRoot = process.cwd();
 const baseUrl = String(process.env.FOREMAN_WEB_BASE_URL ?? "http://localhost:8081").trim();
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
+const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
 const serviceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
 const password = "Pass1234";
-if (!supabaseUrl || !serviceRoleKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+const supabaseProjectRef = (() => {
+  try {
+    return new URL(supabaseUrl).hostname.split(".")[0] || "";
+  } catch {
+    return "";
+  }
+})();
+const supabaseStorageKey = `sb-${supabaseProjectRef}-auth-token`;
+if (!supabaseUrl || !anonKey || !serviceRoleKey || !supabaseProjectRef) {
+  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY");
 }
 const admin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -405,14 +414,37 @@ async function confirmFioIfNeeded(page) {
     400
   );
 }
-async function loginForeman(page, user) {
-  await page.goto(`${baseUrl}/auth/login`, { waitUntil: "networkidle" });
-  const body = await bodyText(page);
-  if (body.includes("\u0412\u0445\u043E\u0434")) {
-    await page.locator('input[placeholder="Email"]').fill(user.email);
-    await page.locator('input[type="password"]').fill(user.password);
-    await clickVisibleMatcher(page, "return /\u0432\u043E\u0439\u0442\u0438/i.test(text);");
+async function signInSession(email, userPassword) {
+  const client = createClient(supabaseUrl, anonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    },
+    global: {
+      headers: {
+        "x-client-info": "foreman-post-submit-draft-rollover-wave1-signin"
+      }
+    }
+  });
+  const result = await client.auth.signInWithPassword({ email, password: userPassword });
+  if (result.error || !result.data.session) {
+    throw result.error ?? new Error(`signInWithPassword returned no session for ${email}`);
   }
+  return result.data.session;
+}
+async function loginForeman(page, user) {
+  const session = await signInSession(user.email, user.password);
+  await page.addInitScript(
+    ({ key, value }) => {
+      window.localStorage.setItem(key, value);
+    },
+    {
+      key: supabaseStorageKey,
+      value: JSON.stringify(session)
+    }
+  );
+  await page.goto(`${baseUrl}/foreman`, { waitUntil: "networkidle", timeout: 6e4 });
   await waitForBodyAny(page, ["\u0417\u0430\u044F\u0432\u043A\u0430", "\u041C\u0430\u0442\u0435\u0440\u0438\u0430\u043B\u044B"], 45e3);
   await sleep(1e3);
   const afterLoginBody = await bodyText(page);
@@ -422,6 +454,20 @@ async function loginForeman(page, user) {
     });
     await waitForBodyAny(page, ["\u041A\u0430\u0442\u0430\u043B\u043E\u0433"], 15e3);
   }
+}
+async function loginDirector(page, user) {
+  const session = await signInSession(user.email, user.password);
+  await page.addInitScript(
+    ({ key, value }) => {
+      window.localStorage.setItem(key, value);
+    },
+    {
+      key: supabaseStorageKey,
+      value: JSON.stringify(session)
+    }
+  );
+  await page.goto(`${baseUrl}/director`, { waitUntil: "networkidle", timeout: 6e4 });
+  await waitForBodyAny(page, ["\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u044C", "\u0417\u0430\u044F\u0432\u043A\u0438"], 45e3);
 }
 async function ensureMaterialsTab(page) {
   const currentBody = await bodyText(page);
@@ -765,26 +811,32 @@ async function runWebProof() {
   let successUser = null;
   let historyUser = null;
   let failureUser = null;
+  let directorUser = null;
   const runtime = {
     successForeman: createPageRuntimeCapture(),
     historyForeman: createPageRuntimeCapture(),
-    failureForeman: createPageRuntimeCapture()
+    failureForeman: createPageRuntimeCapture(),
+    director: createPageRuntimeCapture()
   };
   try {
     await ensureBaseUrlReady();
     successUser = await createTempUser("foreman", "Foreman Post Submit Success");
     historyUser = await createTempUser("foreman", "Foreman Post Submit History");
     failureUser = await createTempUser("foreman", "Foreman Post Submit Failure");
+    directorUser = await createTempUser("director", "Foreman Post Submit Director Handoff");
     browser = await chromium.launch({ headless: true });
     const successContext = await browser.newContext();
     const historyContext = await browser.newContext();
     const failureContext = await browser.newContext();
+    const directorContext = await browser.newContext();
     const successPage = await successContext.newPage();
     const historyPage = await historyContext.newPage();
     const failurePage = await failureContext.newPage();
+    const directorPage = await directorContext.newPage();
     attachPageRuntime(successPage, runtime.successForeman);
     attachPageRuntime(historyPage, runtime.historyForeman);
     attachPageRuntime(failurePage, runtime.failureForeman);
+    attachPageRuntime(directorPage, runtime.director);
     const runScenario = async (page, fn) => {
       try {
         return await fn();
@@ -802,6 +854,7 @@ async function runWebProof() {
       }
     };
     await loginForeman(successPage, successUser);
+    await loginDirector(directorPage, directorUser);
     await ensureForemanContext(successPage);
     await closeDraftModal(successPage);
     let successSubmission = null;
@@ -824,6 +877,23 @@ async function runWebProof() {
         "1"
       );
     }) : { passed: false, error: "success submission unavailable", body: "" };
+    const directorHandoff = successSubmission != null ? await runScenario(directorPage, async () => {
+      const submittedDisplayNo = String(successSubmission.submitted.display_no ?? "").trim();
+      const directorBody = await poll(
+        `director_handoff:${submittedDisplayNo}`,
+        async () => {
+          const body = await bodyText(directorPage);
+          return body.includes(submittedDisplayNo) ? body : null;
+        },
+        3e4,
+        500
+      );
+      return {
+        passed: directorBody.includes(submittedDisplayNo),
+        submittedDisplayNo,
+        body: capText(directorBody)
+      };
+    }) : { passed: false, error: "success submission unavailable", body: "" };
     await loginForeman(historyPage, historyUser);
     await ensureForemanContext(historyPage);
     await closeDraftModal(historyPage);
@@ -837,21 +907,23 @@ async function runWebProof() {
     const failedSubmitPreservesLocal = await runScenario(failurePage, async () => {
       return await runFailedSubmitPreserveLocalScenario(failurePage, failureUser);
     });
-    const pageErrorsEmpty = runtime.successForeman.pageErrors.length === 0 && runtime.historyForeman.pageErrors.length === 0 && runtime.failureForeman.pageErrors.length === 0;
-    const httpErrorsEmpty = runtime.successForeman.httpErrors.length === 0 && runtime.historyForeman.httpErrors.length === 0 && runtime.failureForeman.httpErrors.length === 0;
-    const passed = successCleanState.passed && failedSubmitPreservesLocal.passed && historyIntact.passed && noDuplicateResurrection.passed && pageErrorsEmpty && httpErrorsEmpty;
+    const pageErrorsEmpty = runtime.successForeman.pageErrors.length === 0 && runtime.historyForeman.pageErrors.length === 0 && runtime.failureForeman.pageErrors.length === 0 && runtime.director.pageErrors.length === 0;
+    const httpErrorsEmpty = runtime.successForeman.httpErrors.length === 0 && runtime.historyForeman.httpErrors.length === 0 && runtime.failureForeman.httpErrors.length === 0 && runtime.director.httpErrors.length === 0;
+    const passed = successCleanState.passed && failedSubmitPreservesLocal.passed && historyIntact.passed && directorHandoff.passed && noDuplicateResurrection.passed && pageErrorsEmpty && httpErrorsEmpty;
     return {
       status: passed ? "passed" : "failed",
       scenarios: {
         submitSuccessCleanState: successCleanState,
         failedSubmitPreservesLocal,
         historyIntact,
+        directorHandoff,
         noDuplicateResurrection
       },
       runtime: {
         successForeman: runtime.successForeman,
         historyForeman: runtime.historyForeman,
         failureForeman: runtime.failureForeman,
+        director: runtime.director,
         pageErrorsEmpty,
         httpErrorsEmpty
       },
@@ -865,6 +937,7 @@ async function runWebProof() {
       await browser.close().catch(() => {
       });
     }
+    await cleanupTempUser(directorUser);
     await cleanupTempUser(failureUser);
     await cleanupTempUser(historyUser);
     await cleanupTempUser(successUser);

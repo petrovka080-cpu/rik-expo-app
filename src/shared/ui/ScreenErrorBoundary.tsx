@@ -21,7 +21,8 @@ type ScreenBoundaryScreen =
   | "chat"
   | "auctions"
   | "supplier_map"
-  | "request";
+  | "request"
+  | "pdf_viewer";
 
 type ScreenErrorBoundaryProps = {
   children: React.ReactNode;

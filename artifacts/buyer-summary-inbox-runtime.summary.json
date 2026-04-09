@@ -6,17 +6,17 @@
   "runtimeVerified": false,
   "environmentRecoveryUsed": true,
   "gmsRecoveryUsed": false,
-  "anrRecoveryUsed": true,
+  "anrRecoveryUsed": false,
   "blankSurfaceRecovered": false,
   "devClientBootstrapRecovered": false,
   "platformSpecificIssues": [
     {
       "platform": "web",
-      "issue": "poll timeout: body:REQ-0077/2026|/REQ-[A-Z0-9_-]+\\/\\d{4}/i|/#\\d+/"
+      "issue": "poll timeout: body:REQ-0109/2026|/REQ-[A-Z0-9_-]+\\/\\d{4}/i|/#\\d+/"
     },
     {
       "platform": "android",
-      "issue": "Command failed: adb shell uiautomator dump"
+      "issue": "poll timeout: android:dev_client_loaded"
     },
     {
       "platform": "ios",

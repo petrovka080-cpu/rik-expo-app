@@ -290,7 +290,7 @@ export function useForemanScreenController() {
         requestId: rid,
         generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
         displayNo: requestDetails?.display_no ?? `#${shortId(rid)}`,
-        title: `Request ${rid}`,
+        title: `Заявка ${rid}`,
       });
       console.info("[foreman-pdf] history_open_descriptor", {
         requestId: rid,
@@ -302,7 +302,7 @@ export function useForemanScreenController() {
         busy: gbusy,
         supabase,
         key: `pdf:history:${rid}`,
-        label: "Opening PDF...",
+        label: "Открываю PDF…",
         descriptor,
         router,
       });
@@ -321,7 +321,7 @@ export function useForemanScreenController() {
           action: "openHistoryPdf",
         },
       });
-      Alert.alert("PDF", getPdfFlowErrorMessage(error, "Could not open PDF"));
+      Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
     }
   }, [
     authIdentity.fullName,
@@ -755,13 +755,13 @@ export function useForemanScreenController() {
         requestId: rid,
         generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
         displayNo: labelForRequest(rid),
-        title: `Р вЂ”Р В°РЎРЏР Р†Р С”Р В° ${rid}`,
+        title: `Заявка ${rid}`,
       });
       await prepareAndPreviewGeneratedPdf({
         busy: gbusy,
         supabase,
         key: `pdf:history:${rid}`,
-        label: "Р“РѕС‚РѕРІР»СЋ PDF...",
+        label: "Открываю PDF…",
         descriptor,
         router,
       });
@@ -780,7 +780,7 @@ export function useForemanScreenController() {
           action: "openHistoryPdf",
         },
       });
-      Alert.alert("PDF", getPdfFlowErrorMessage(error, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF"));
+      Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
     }
   }, [authIdentity.fullName, gbusy, labelForRequest, requestDetails?.foreman_name, router]);
 
