@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { useFocusEffect, usePathname, useSegments } from "expo-router";
+import { useFocusEffect, useNavigation, usePathname, useSegments } from "expo-router";
 
 import {
+  recordOfficeWarehouseBeforeRemove,
   recordOfficeWarehouseEntryFailure,
   recordOfficeWarehouseEntryFocusDone,
   recordOfficeWarehouseEntryFocusStart,
   recordOfficeWarehouseEntryMountDone,
   recordOfficeWarehouseEntryMountStart,
+  recordOfficeWarehouseUnmount,
   recordOfficeRouteOwnerIdentity,
   recordOfficeRouteOwnerBlur,
   recordOfficeRouteOwnerFocus,
@@ -60,6 +62,7 @@ class OfficeWarehouseEntryBoundary extends React.Component<
 }
 
 function OfficeWarehouseRoute() {
+  const navigation = useNavigation();
   const pathname = usePathname();
   const segments = useSegments();
   const identityRef = useRef(
@@ -106,6 +109,14 @@ function OfficeWarehouseRoute() {
       routeWrapper: "office_owned_screen_entry",
     });
     return () => {
+      recordOfficeWarehouseUnmount({
+        owner: "office_warehouse_route",
+        route: "/office/warehouse",
+        pathname: pathnameRef.current,
+        segments: segmentsRef.current,
+        identity,
+        routeWrapper: "office_owned_screen_entry",
+      });
       recordOfficeRouteOwnerUnmount({
         owner: "office_warehouse_route",
         route: "/office/warehouse",
@@ -116,6 +127,20 @@ function OfficeWarehouseRoute() {
       });
     };
   }, []);
+
+  useEffect(() => {
+    return navigation.addListener("beforeRemove", (event) => {
+      const action =
+        typeof event?.data?.action?.type === "string"
+          ? event.data.action.type
+          : "unknown_action";
+      recordOfficeWarehouseBeforeRemove(
+        buildRouteExtra({
+          action,
+        }),
+      );
+    });
+  }, [buildRouteExtra, navigation]);
 
   useEffect(() => {
     recordOfficeWarehouseEntryMountDone(

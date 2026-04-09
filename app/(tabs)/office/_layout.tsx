@@ -5,6 +5,13 @@ import { Stack, router, usePathname, useSegments } from "expo-router";
 
 import {
   markPendingOfficeRouteReplaceReceipt,
+  recordOfficeBackPathFailure,
+  recordOfficeWarehouseBackHandlerDone,
+  recordOfficeWarehouseBackHandlerStart,
+  recordOfficeWarehouseBackPressDone,
+  recordOfficeWarehouseBackPressStart,
+  recordOfficeWarehouseBackReplaceDone,
+  recordOfficeWarehouseBackReplaceStart,
   recordOfficeRouteOwnerIdentity,
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
@@ -86,6 +93,14 @@ export function performWarehouseBackNavigation(
   recordEvent: typeof recordPlatformObservability = recordPlatformObservability,
   persistBreadcrumbs: typeof recordWarehouseBackBreadcrumbsAsync = recordWarehouseBackBreadcrumbsAsync,
 ) {
+  const buildBackExtra = (extra?: Record<string, unknown>) => ({
+    owner: "office_stack_layout",
+    route: "/office/warehouse",
+    handler: "office_header_left_explicit",
+    target: OFFICE_SAFE_BACK_ROUTE,
+    method: "replace",
+    ...(extra ?? {}),
+  });
   const pendingBreadcrumbs: Parameters<typeof recordWarehouseBackBreadcrumbsAsync>[0] = [];
   const queueBreadcrumb = (entry: Parameters<typeof recordWarehouseBackBreadcrumbsAsync>[0][number]) => {
     pendingBreadcrumbs.push(entry);
@@ -148,6 +163,7 @@ export function performWarehouseBackNavigation(
       route: "/office/warehouse",
     },
   });
+  recordOfficeWarehouseBackHandlerStart(buildBackExtra());
 
   const canGoBack = hasSafeBackHistory(warehouseRouter);
   recordEvent({
@@ -301,6 +317,7 @@ export function performWarehouseBackNavigation(
   try {
     const persistAttempt = persistBreadcrumbs(pendingBreadcrumbs).catch(() => undefined);
     void persistAttempt;
+    recordOfficeWarehouseBackReplaceStart(buildBackExtra());
     recordWarehouseReturnToOfficeStart({
       owner: "office_stack_layout",
       route: "/office/warehouse",
@@ -317,6 +334,7 @@ export function performWarehouseBackNavigation(
       reason: "warehouse_explicit_office_return",
     });
     warehouseRouter.replace(OFFICE_SAFE_BACK_ROUTE);
+    recordOfficeWarehouseBackReplaceDone(buildBackExtra());
     recordWarehouseReturnToOfficeDone({
       owner: "office_stack_layout",
       route: "/office/warehouse",
@@ -348,7 +366,13 @@ export function performWarehouseBackNavigation(
         },
       },
     ]);
+    recordOfficeWarehouseBackHandlerDone(buildBackExtra());
   } catch (error) {
+    recordOfficeBackPathFailure({
+      error,
+      errorStage: "replace_call",
+      extra: buildBackExtra(),
+    });
     recordEvent({
       screen: "warehouse",
       surface: "warehouse_back",
@@ -393,7 +417,25 @@ export function renderWarehouseOfficeBackButton(props: Record<string, unknown>) 
       accessibilityRole="button"
       hitSlop={8}
       onPress={() => {
-        void performWarehouseBackNavigation(router);
+        const pressExtra = {
+          owner: "office_stack_layout",
+          route: "/office/warehouse",
+          handler: "warehouse_header_left_pressable",
+          target: OFFICE_SAFE_BACK_ROUTE,
+          method: "replace",
+        };
+        recordOfficeWarehouseBackPressStart(pressExtra);
+        try {
+          performWarehouseBackNavigation(router);
+          recordOfficeWarehouseBackPressDone(pressExtra);
+        } catch (error) {
+          recordOfficeBackPathFailure({
+            error,
+            errorStage: "press_handler",
+            extra: pressExtra,
+          });
+          throw error;
+        }
       }}
       style={styles.warehouseBackButton}
       testID="warehouse-office-safe-back"

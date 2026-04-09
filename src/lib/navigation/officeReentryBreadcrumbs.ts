@@ -29,6 +29,17 @@ export type OfficeReentryMarker =
   | "office_warehouse_entry_content_mount_start"
   | "office_warehouse_entry_content_mount_done"
   | "office_warehouse_entry_failed"
+  | "office_warehouse_back_press_start"
+  | "office_warehouse_back_press_done"
+  | "office_warehouse_back_handler_start"
+  | "office_warehouse_back_handler_done"
+  | "office_warehouse_back_replace_start"
+  | "office_warehouse_back_replace_done"
+  | "office_warehouse_before_remove"
+  | "office_warehouse_unmount"
+  | "office_index_after_return_focus"
+  | "office_index_after_return_mount"
+  | "office_back_path_failed"
   | "tab_warehouse_entry_mount_start"
   | "tab_warehouse_entry_mount_done"
   | "warehouse_return_to_office_start"
@@ -324,6 +335,16 @@ function recordOfficeLifecycleMarker(params: {
     | "office_warehouse_entry_focus_done"
     | "office_warehouse_entry_content_mount_start"
     | "office_warehouse_entry_content_mount_done"
+    | "office_warehouse_back_press_start"
+    | "office_warehouse_back_press_done"
+    | "office_warehouse_back_handler_start"
+    | "office_warehouse_back_handler_done"
+    | "office_warehouse_back_replace_start"
+    | "office_warehouse_back_replace_done"
+    | "office_warehouse_before_remove"
+    | "office_warehouse_unmount"
+    | "office_index_after_return_focus"
+    | "office_index_after_return_mount"
     | "tab_warehouse_entry_mount_start"
     | "tab_warehouse_entry_mount_done"
     | "warehouse_return_to_office_start"
@@ -535,6 +556,116 @@ export function recordOfficeWarehouseEntryFailure(params: {
 
   recordOfficeReentryMarker({
     marker: "office_warehouse_entry_failed",
+    result: "error",
+    errorStage: params.errorStage,
+    errorClass,
+    errorMessage,
+    extra: params.extra,
+  });
+}
+
+export function recordOfficeWarehouseBackPressStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_press_start",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackPressDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_press_done",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackHandlerStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_handler_start",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackHandlerDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_handler_done",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackReplaceStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_replace_start",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackReplaceDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_replace_done",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBeforeRemove(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_before_remove",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseUnmount(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_unmount",
+    extra,
+  });
+}
+
+export function recordOfficeIndexAfterReturnFocus(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_index_after_return_focus",
+    extra,
+  });
+}
+
+export function recordOfficeIndexAfterReturnMount(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_index_after_return_mount",
+    extra,
+  });
+}
+
+export function recordOfficeBackPathFailure(params: {
+  error: unknown;
+  errorStage: string;
+  extra?: Record<string, unknown>;
+}) {
+  const errorClass =
+    params.error instanceof Error ? params.error.name : undefined;
+  const errorMessage =
+    params.error instanceof Error
+      ? params.error.message
+      : String(params.error ?? "office_back_path_failed");
+
+  recordOfficeReentryMarker({
+    marker: "office_back_path_failed",
     result: "error",
     errorStage: params.errorStage,
     errorClass,
@@ -1025,6 +1156,11 @@ export function buildOfficeReentryBreadcrumbsText(
       if (item.extra?.sourceRoute)
         parts.push(`sourceRoute=${String(item.extra.sourceRoute)}`);
       if (item.extra?.target) parts.push(`target=${String(item.extra.target)}`);
+      if (item.extra?.method) parts.push(`method=${String(item.extra.method)}`);
+      if (item.extra?.handler)
+        parts.push(`handler=${String(item.extra.handler)}`);
+      if (item.extra?.action) parts.push(`action=${String(item.extra.action)}`);
+      if (item.extra?.phase) parts.push(`phase=${String(item.extra.phase)}`);
       if (item.extra?.reason) parts.push(`reason=${String(item.extra.reason)}`);
       if (item.extra?.probe) parts.push(`probe=${String(item.extra.probe)}`);
       return parts.join(" | ");

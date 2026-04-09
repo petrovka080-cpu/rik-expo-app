@@ -4,6 +4,8 @@ import { useFocusEffect, usePathname, useSegments } from "expo-router";
 import OfficeHubScreen from "../../../src/screens/office/OfficeHubScreen";
 import {
   consumePendingOfficeRouteReplaceReceipt,
+  recordOfficeIndexAfterReturnFocus,
+  recordOfficeIndexAfterReturnMount,
   recordOfficeReentryFailure,
   recordOfficeReentryStart,
   recordOfficeRouteOwnerIdentity,
@@ -82,6 +84,8 @@ function OfficeIndexRoute() {
     pathname,
     segments: segmentsLabel,
   });
+  const afterReturnMountRef = useRef<Record<string, unknown> | null>(null);
+  const afterReturnFocusRef = useRef<Record<string, unknown> | null>(null);
   const buildRouteExtra = useCallback(
     (extra?: Record<string, unknown>) => ({
       owner: "office_index_route",
@@ -143,16 +147,21 @@ function OfficeIndexRoute() {
     });
     const replaceReceipt = consumePendingOfficeRouteReplaceReceipt();
     if (replaceReceipt) {
-      recordOfficeRouteReplaceReceived({
-        owner: "office_index_route",
-        route: "/office",
-        pathname,
-        segments: segmentsLabel,
-        identity: identityRef.current,
-        routeWrapper: "office_owned_screen_entry",
-        ...replaceReceipt,
-      });
+      const afterReturnExtra = buildRouteExtra(replaceReceipt);
+      recordOfficeRouteReplaceReceived(afterReturnExtra);
+      afterReturnMountRef.current = afterReturnExtra;
+      afterReturnFocusRef.current = afterReturnExtra;
     }
+  }, [buildRouteExtra, isExactOfficePath, pathname, segmentsLabel]);
+
+  useEffect(() => {
+    if (!isExactOfficePath) return;
+
+    const afterReturnExtra = afterReturnMountRef.current;
+    if (!afterReturnExtra) return;
+
+    recordOfficeIndexAfterReturnMount(afterReturnExtra);
+    afterReturnMountRef.current = null;
   }, [isExactOfficePath, pathname, segmentsLabel]);
 
   useFocusEffect(
@@ -166,6 +175,11 @@ function OfficeIndexRoute() {
       }
 
       const identity = identityRef.current;
+      const afterReturnExtra = afterReturnFocusRef.current;
+      if (afterReturnExtra) {
+        recordOfficeIndexAfterReturnFocus(afterReturnExtra);
+        afterReturnFocusRef.current = null;
+      }
       recordOfficeRouteOwnerFocus(buildRouteExtra());
       return () => {
         recordOfficeRouteOwnerBlur({
