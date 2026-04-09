@@ -28,6 +28,14 @@ import {
   formatOfficePostReturnProbe,
   getOfficePostReturnProbe,
   normalizeOfficePostReturnProbe,
+  recordOfficeBootstrapInitialDone,
+  recordOfficeBootstrapInitialStart,
+  recordOfficeFocusRefreshDone,
+  recordOfficeFocusRefreshReason,
+  recordOfficeFocusRefreshSkipped,
+  recordOfficeFocusRefreshStart,
+  recordOfficeLoadingShellEnter,
+  recordOfficeLoadingShellSkippedOnFocusReturn,
   recordOfficeNativeAnimationFrameDone,
   recordOfficeNativeAnimationFrameStart,
   recordOfficeNativeCallbackFailure,
@@ -106,6 +114,9 @@ type InviteFormDraft = {
   email: string;
   comment: string;
 };
+type LoadScreenMode = "initial" | "refresh" | "focus_refresh";
+
+const OFFICE_FOCUS_REFRESH_TTL_MS = 60_000;
 
 const SECTION_RENDER_PROBES = [
   "header_meta",
@@ -658,6 +669,14 @@ export default function OfficeHubScreen() {
   >(null);
   const isMountedRef = useRef(true);
   const focusCycleRef = useRef(0);
+  const ownerBootstrapCompletedRef = useRef(false);
+  const initialBootstrapInFlightRef = useRef<
+    Promise<OfficeAccessScreenData | null> | null
+  >(null);
+  const focusRefreshInFlightRef = useRef<
+    Promise<OfficeAccessScreenData | null> | null
+  >(null);
+  const lastSuccessfulLoadAtRef = useRef<number>(0);
   const postReturnFrameRef = useRef<number | null>(null);
   const postReturnInteractionRef = useRef<ReturnType<
     typeof InteractionManager.runAfterInteractions
@@ -1168,83 +1187,222 @@ export default function OfficeHubScreen() {
   }, [buildNativeCallbackExtra, disableKeyboardBridge]);
 
   const loadScreen = useCallback(
-    async (mode: "initial" | "refresh" = "initial") => {
+    async ({
+      mode = "initial",
+      reason,
+    }: {
+      mode?: LoadScreenMode;
+      reason?: string;
+    } = {}) => {
+      const loadExtra = buildPostReturnExtra({
+        mode,
+        reason,
+      });
+
       if (mode === "initial") {
-        recordOfficeReentryEffectStart(
-          buildPostReturnExtra({
-            mode,
-          }),
-        );
-      }
-      if (mode === "refresh") {
+        recordOfficeBootstrapInitialStart(loadExtra);
+        recordOfficeReentryEffectStart(loadExtra);
+        recordOfficeLoadingShellEnter(loadExtra);
+        setLoading(true);
+      } else if (mode === "refresh") {
         setRefreshing(true);
       } else {
-        setLoading(true);
+        recordOfficeFocusRefreshReason(loadExtra);
+        recordOfficeLoadingShellSkippedOnFocusReturn(loadExtra);
+        recordOfficeFocusRefreshStart(loadExtra);
       }
+
       try {
         const next = await loadOfficeAccessScreenData();
+        if (!isMountedRef.current) return next;
+
         setData(next);
         setCompanyDraft((current) => ({
           ...current,
           phoneMain: current.phoneMain || next.profile.phone || "",
           email: current.email || next.profileEmail || "",
         }));
+
+        const completionExtra = buildPostReturnExtra({
+          mode,
+          reason,
+          companyId: next.company?.id ?? null,
+          availableOfficeRoles: next.accessSourceSnapshot.companyMemberships
+            .map((item) => item.role)
+            .filter(Boolean)
+            .join(","),
+        });
+
         if (mode === "initial") {
-          recordOfficeReentryEffectDone(
-            buildPostReturnExtra({
-              mode,
-              companyId: next.company?.id ?? null,
-              availableOfficeRoles: next.accessSourceSnapshot.companyMemberships
-                .map((item) => item.role)
-                .filter(Boolean)
-                .join(","),
-            }),
-          );
+          ownerBootstrapCompletedRef.current = true;
+          recordOfficeReentryEffectDone(completionExtra);
+          recordOfficeBootstrapInitialDone(completionExtra);
           startPostReturnTrace(next);
+        } else if (mode === "focus_refresh") {
+          recordOfficeFocusRefreshDone(completionExtra);
         }
+
+        lastSuccessfulLoadAtRef.current = Date.now();
+        return next;
       } catch (error: unknown) {
         if (mode === "initial") {
+          ownerBootstrapCompletedRef.current = false;
           recordOfficeReentryFailure({
             error,
             errorStage: "load_screen",
             extra: buildPostReturnExtra({
               mode,
+              reason,
+            }),
+          });
+        } else if (mode === "focus_refresh") {
+          recordOfficePostReturnFailure({
+            error,
+            errorStage: "focus_refresh",
+            extra: buildPostReturnExtra({
+              mode,
+              reason,
             }),
           });
         }
+
         Alert.alert(
           COPY.title,
           error instanceof Error && error.message.trim()
             ? error.message
             : COPY.loadError,
         );
+        return null;
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (!isMountedRef.current) return;
+        if (mode === "initial") {
+          setLoading(false);
+          return;
+        }
+        if (mode === "refresh") {
+          setRefreshing(false);
+        }
       }
     },
     [buildPostReturnExtra, startPostReturnTrace],
   );
 
+  React.useEffect(() => {
+    if (
+      ownerBootstrapCompletedRef.current ||
+      initialBootstrapInFlightRef.current
+    ) {
+      return;
+    }
+
+    const task = loadScreen({
+      mode: "initial",
+      reason: "mount_bootstrap",
+    }).finally(() => {
+      if (initialBootstrapInFlightRef.current === task) {
+        initialBootstrapInFlightRef.current = null;
+      }
+    });
+
+    initialBootstrapInFlightRef.current = task;
+  }, [loadScreen]);
+
   useFocusEffect(
     useCallback(() => {
-      focusCycleRef.current += 1;
+      if (ownerBootstrapCompletedRef.current) {
+        focusCycleRef.current += 1;
+      }
+
+      const focusExtra = buildPostReturnExtra({
+        focusCycle: focusCycleRef.current,
+      });
+
       if (!disableFocusPostCommit) {
         runObservedNativeCallback({
           callback: "useFocusEffect",
           phase: "focus",
           run: () => {
             recordPostReturnSubtreeStart("focus_effect_callback");
-            recordOfficePostReturnFocus(
-              buildPostReturnExtra({
-                focusCycle: focusCycleRef.current,
-              }),
-            );
+            recordOfficePostReturnFocus(focusExtra);
             recordPostReturnSubtreeDone("focus_effect_callback");
           },
         });
       }
-      void loadScreen();
+
+      if (!ownerBootstrapCompletedRef.current) {
+        const reason = initialBootstrapInFlightRef.current
+          ? "bootstrap_inflight"
+          : "bootstrap_pending";
+        recordOfficeFocusRefreshReason({
+          ...focusExtra,
+          reason,
+        });
+        recordOfficeFocusRefreshSkipped({
+          ...focusExtra,
+          reason,
+        });
+        return () => {
+          cancelPostReturnIdle();
+        };
+      }
+
+      if (focusRefreshInFlightRef.current) {
+        recordOfficeLoadingShellSkippedOnFocusReturn({
+          ...focusExtra,
+          reason: "joined_inflight",
+        });
+        recordOfficeFocusRefreshReason({
+          ...focusExtra,
+          reason: "joined_inflight",
+        });
+        recordOfficeFocusRefreshSkipped({
+          ...focusExtra,
+          reason: "joined_inflight",
+        });
+        return () => {
+          cancelPostReturnIdle();
+        };
+      }
+
+      const ageMs = Date.now() - lastSuccessfulLoadAtRef.current;
+      if (
+        lastSuccessfulLoadAtRef.current > 0 &&
+        ageMs < OFFICE_FOCUS_REFRESH_TTL_MS
+      ) {
+        recordOfficeLoadingShellSkippedOnFocusReturn({
+          ...focusExtra,
+          reason: "ttl_fresh",
+          ageMs,
+          ttlMs: OFFICE_FOCUS_REFRESH_TTL_MS,
+        });
+        recordOfficeFocusRefreshReason({
+          ...focusExtra,
+          reason: "ttl_fresh",
+          ageMs,
+          ttlMs: OFFICE_FOCUS_REFRESH_TTL_MS,
+        });
+        recordOfficeFocusRefreshSkipped({
+          ...focusExtra,
+          reason: "ttl_fresh",
+          ageMs,
+          ttlMs: OFFICE_FOCUS_REFRESH_TTL_MS,
+        });
+        return () => {
+          cancelPostReturnIdle();
+        };
+      }
+
+      const task = loadScreen({
+        mode: "focus_refresh",
+        reason: "stale_ttl",
+      }).finally(() => {
+        if (focusRefreshInFlightRef.current === task) {
+          focusRefreshInFlightRef.current = null;
+        }
+      });
+
+      focusRefreshInFlightRef.current = task;
+
       return () => {
         cancelPostReturnIdle();
       };
@@ -1384,7 +1542,9 @@ export default function OfficeHubScreen() {
       });
       setCompanyDraft(EMPTY_COMPANY_DRAFT);
       setCompanyFeedback(COPY.companyCreated);
-      await loadScreen("refresh");
+      await loadScreen({
+        mode: "refresh",
+      });
       scrollRef.current?.scrollTo({ y: 0, animated: true });
     } catch (error: unknown) {
       Alert.alert(
@@ -1471,7 +1631,9 @@ export default function OfficeHubScreen() {
         setInviteHandoffFeedback(null);
         setInviteFeedback(COPY.inviteManual);
       }
-      await loadScreen("refresh");
+      await loadScreen({
+        mode: "refresh",
+      });
       scrollTo("invites");
       if (shareError) Alert.alert(COPY.title, shareError);
     } catch (error: unknown) {
@@ -1496,7 +1658,9 @@ export default function OfficeHubScreen() {
           memberUserId,
           nextRole,
         });
-        await loadScreen("refresh");
+        await loadScreen({
+          mode: "refresh",
+        });
       } catch (error: unknown) {
         Alert.alert(
           COPY.title,
@@ -1542,7 +1706,11 @@ export default function OfficeHubScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => void loadScreen("refresh")}
+            onRefresh={() =>
+              void loadScreen({
+                mode: "refresh",
+              })
+            }
             tintColor="#2563EB"
           />
         }

@@ -7,9 +7,31 @@ export type OfficeReentryMarker =
   | "office_reentry_route_match"
   | "office_reentry_component_enter"
   | "office_reentry_mount"
+  | "office_route_owner_mount"
+  | "office_route_owner_unmount"
+  | "office_route_owner_focus"
+  | "office_route_owner_blur"
+  | "office_route_replace_received"
+  | "office_route_owner_identity"
+  | "office_route_identity"
+  | "warehouse_route_owner_mount"
+  | "warehouse_route_owner_unmount"
+  | "warehouse_route_owner_focus"
+  | "warehouse_route_owner_blur"
+  | "warehouse_route_owner_identity"
+  | "warehouse_return_to_office_start"
+  | "warehouse_return_to_office_done"
+  | "office_bootstrap_initial_start"
+  | "office_bootstrap_initial_done"
   | "office_reentry_effect_start"
   | "office_reentry_effect_done"
   | "office_reentry_render_success"
+  | "office_focus_refresh_skipped"
+  | "office_focus_refresh_start"
+  | "office_focus_refresh_done"
+  | "office_focus_refresh_reason"
+  | "office_loading_shell_enter"
+  | "office_loading_shell_skipped_on_focus_return"
   | "office_reentry_failed"
   | "office_post_return_idle_start"
   | "office_post_return_idle_done"
@@ -110,6 +132,7 @@ const OFFICE_POST_RETURN_PROBES: readonly OfficePostReturnProbe[] = [
 
 let writeQueue = Promise.resolve();
 let officePostReturnProbe: OfficePostReturnProbe[] = ["all"];
+let pendingOfficeRouteReplaceReceipt: Record<string, unknown> | null = null;
 
 function trimText(value: unknown) {
   const text = String(value ?? "").trim();
@@ -262,6 +285,225 @@ export function recordOfficeReentryEffectDone(extra?: Record<string, unknown>) {
     marker: "office_reentry_effect_done",
     result: "success",
     extra,
+  });
+}
+
+function recordOfficeLifecycleMarker(params: {
+  marker: Extract<
+    OfficeReentryMarker,
+    | "office_route_owner_mount"
+    | "office_route_owner_unmount"
+    | "office_route_owner_focus"
+    | "office_route_owner_blur"
+    | "office_route_replace_received"
+    | "office_route_owner_identity"
+    | "office_route_identity"
+    | "warehouse_route_owner_mount"
+    | "warehouse_route_owner_unmount"
+    | "warehouse_route_owner_focus"
+    | "warehouse_route_owner_blur"
+    | "warehouse_route_owner_identity"
+    | "warehouse_return_to_office_start"
+    | "warehouse_return_to_office_done"
+    | "office_bootstrap_initial_start"
+    | "office_bootstrap_initial_done"
+    | "office_focus_refresh_skipped"
+    | "office_focus_refresh_start"
+    | "office_focus_refresh_done"
+    | "office_focus_refresh_reason"
+    | "office_loading_shell_enter"
+    | "office_loading_shell_skipped_on_focus_return"
+  >;
+  extra?: Record<string, unknown>;
+  result?: "success" | "skipped";
+}) {
+  recordOfficeReentryMarker({
+    marker: params.marker,
+    result: params.result ?? "success",
+    extra: params.extra,
+  });
+}
+
+export function recordOfficeRouteOwnerMount(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_route_owner_mount",
+    extra,
+  });
+}
+
+export function recordOfficeRouteOwnerUnmount(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_route_owner_unmount",
+    extra,
+  });
+}
+
+export function recordOfficeRouteOwnerFocus(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_route_owner_focus",
+    extra,
+  });
+}
+
+export function recordOfficeRouteOwnerBlur(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_route_owner_blur",
+    extra,
+  });
+}
+
+export function recordOfficeRouteReplaceReceived(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_route_replace_received",
+    extra,
+  });
+}
+
+export function recordOfficeRouteOwnerIdentity(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_route_owner_identity",
+    extra,
+  });
+}
+
+export function recordOfficeRouteIdentity(extra?: Record<string, unknown>) {
+  recordOfficeRouteOwnerIdentity(extra);
+}
+
+export function recordWarehouseRouteOwnerMount(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_route_owner_mount",
+    extra,
+  });
+}
+
+export function recordWarehouseRouteOwnerUnmount(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_route_owner_unmount",
+    extra,
+  });
+}
+
+export function recordWarehouseRouteOwnerFocus(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_route_owner_focus",
+    extra,
+  });
+}
+
+export function recordWarehouseRouteOwnerBlur(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_route_owner_blur",
+    extra,
+  });
+}
+
+export function recordWarehouseRouteOwnerIdentity(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_route_owner_identity",
+    extra,
+  });
+}
+
+export function recordWarehouseReturnToOfficeStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_return_to_office_start",
+    extra,
+  });
+}
+
+export function recordWarehouseReturnToOfficeDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_return_to_office_done",
+    extra,
+  });
+}
+
+export function recordOfficeBootstrapInitialStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_bootstrap_initial_start",
+    extra,
+  });
+}
+
+export function recordOfficeBootstrapInitialDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_bootstrap_initial_done",
+    extra,
+  });
+}
+
+export function recordOfficeFocusRefreshSkipped(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_focus_refresh_skipped",
+    extra,
+    result: "skipped",
+  });
+}
+
+export function recordOfficeFocusRefreshStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_focus_refresh_start",
+    extra,
+  });
+}
+
+export function recordOfficeFocusRefreshDone(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_focus_refresh_done",
+    extra,
+  });
+}
+
+export function recordOfficeFocusRefreshReason(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_focus_refresh_reason",
+    extra,
+  });
+}
+
+export function recordOfficeLoadingShellEnter(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_loading_shell_enter",
+    extra,
+  });
+}
+
+export function recordOfficeLoadingShellSkippedOnFocusReturn(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_loading_shell_skipped_on_focus_return",
+    extra,
+    result: "skipped",
   });
 }
 
@@ -578,6 +820,18 @@ export function setOfficePostReturnProbe(
   return officePostReturnProbe;
 }
 
+export function markPendingOfficeRouteReplaceReceipt(
+  extra?: Record<string, unknown>,
+) {
+  pendingOfficeRouteReplaceReceipt = { ...(extra ?? {}) };
+}
+
+export function consumePendingOfficeRouteReplaceReceipt() {
+  const next = pendingOfficeRouteReplaceReceipt;
+  pendingOfficeRouteReplaceReceipt = null;
+  return next;
+}
+
 export function formatOfficePostReturnProbe(
   value: readonly OfficePostReturnProbe[] | null | undefined,
 ) {
@@ -614,6 +868,20 @@ export function buildOfficeReentryBreadcrumbsText(
         parts.push(`callback=${String(item.extra.callback)}`);
       if (item.extra?.subtree)
         parts.push(`subtree=${String(item.extra.subtree)}`);
+      if (item.extra?.identity)
+        parts.push(`identity=${String(item.extra.identity)}`);
+      if (item.extra?.pathname)
+        parts.push(`pathname=${String(item.extra.pathname)}`);
+      if (item.extra?.segments)
+        parts.push(`segments=${String(item.extra.segments)}`);
+      if (item.extra?.wrappedRoute)
+        parts.push(`wrappedRoute=${String(item.extra.wrappedRoute)}`);
+      if (item.extra?.routeWrapper)
+        parts.push(`routeWrapper=${String(item.extra.routeWrapper)}`);
+      if (item.extra?.sourceRoute)
+        parts.push(`sourceRoute=${String(item.extra.sourceRoute)}`);
+      if (item.extra?.target) parts.push(`target=${String(item.extra.target)}`);
+      if (item.extra?.reason) parts.push(`reason=${String(item.extra.reason)}`);
       if (item.extra?.probe) parts.push(`probe=${String(item.extra.probe)}`);
       return parts.join(" | ");
     })

@@ -11,6 +11,14 @@ const mockCreateOfficeInvite = jest.fn();
 const mockShareOfficeInviteCode = jest.fn();
 const mockCopyOfficeInviteText = jest.fn();
 const mockOpenURL = jest.spyOn(Linking, "openURL");
+const mockRecordOfficeBootstrapInitialDone = jest.fn();
+const mockRecordOfficeBootstrapInitialStart = jest.fn();
+const mockRecordOfficeFocusRefreshDone = jest.fn();
+const mockRecordOfficeFocusRefreshReason = jest.fn();
+const mockRecordOfficeFocusRefreshSkipped = jest.fn();
+const mockRecordOfficeFocusRefreshStart = jest.fn();
+const mockRecordOfficeLoadingShellEnter = jest.fn();
+const mockRecordOfficeLoadingShellSkippedOnFocusReturn = jest.fn();
 const mockRecordOfficeReentryComponentMount = jest.fn();
 const mockRecordOfficeReentryEffectDone = jest.fn();
 const mockRecordOfficeReentryEffectStart = jest.fn();
@@ -41,6 +49,19 @@ const mockRecordOfficeNativeKeyboardEvent = jest.fn();
 const mockRecordOfficeNativeLayoutDone = jest.fn();
 const mockRecordOfficeNativeLayoutStart = jest.fn();
 let mockOfficePostReturnProbe = ["all"];
+const mockFocusEffectCallbacks = new Set<() => void | (() => void)>();
+
+async function triggerFocusEffect() {
+  await act(async () => {
+    mockFocusEffectCallbacks.forEach((callback) => {
+      callback();
+    });
+  });
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
 
 jest.mock("expo-router", () => {
   const ReactRuntime = require("react");
@@ -51,7 +72,16 @@ jest.mock("expo-router", () => {
     useLocalSearchParams: (...args: unknown[]) =>
       mockUseLocalSearchParams(...args),
     useFocusEffect: (callback: () => void | (() => void)) => {
-      ReactRuntime.useEffect(() => callback(), [callback]);
+      ReactRuntime.useEffect(() => {
+        mockFocusEffectCallbacks.add(callback);
+        const cleanup = callback();
+        return () => {
+          mockFocusEffectCallbacks.delete(callback);
+          if (typeof cleanup === "function") {
+            cleanup();
+          }
+        };
+      }, [callback]);
     },
   };
 });
@@ -94,6 +124,22 @@ jest.mock("../../lib/navigation/officeReentryBreadcrumbs", () => ({
   },
   recordOfficeReentryComponentMount: (...args: unknown[]) =>
     mockRecordOfficeReentryComponentMount(...args),
+  recordOfficeBootstrapInitialDone: (...args: unknown[]) =>
+    mockRecordOfficeBootstrapInitialDone(...args),
+  recordOfficeBootstrapInitialStart: (...args: unknown[]) =>
+    mockRecordOfficeBootstrapInitialStart(...args),
+  recordOfficeFocusRefreshDone: (...args: unknown[]) =>
+    mockRecordOfficeFocusRefreshDone(...args),
+  recordOfficeFocusRefreshReason: (...args: unknown[]) =>
+    mockRecordOfficeFocusRefreshReason(...args),
+  recordOfficeFocusRefreshSkipped: (...args: unknown[]) =>
+    mockRecordOfficeFocusRefreshSkipped(...args),
+  recordOfficeFocusRefreshStart: (...args: unknown[]) =>
+    mockRecordOfficeFocusRefreshStart(...args),
+  recordOfficeLoadingShellEnter: (...args: unknown[]) =>
+    mockRecordOfficeLoadingShellEnter(...args),
+  recordOfficeLoadingShellSkippedOnFocusReturn: (...args: unknown[]) =>
+    mockRecordOfficeLoadingShellSkippedOnFocusReturn(...args),
   recordOfficeReentryEffectDone: (...args: unknown[]) =>
     mockRecordOfficeReentryEffectDone(...args),
   recordOfficeReentryEffectStart: (...args: unknown[]) =>
@@ -261,12 +307,21 @@ describe("OfficeHubScreen", () => {
     mockUseLocalSearchParams.mockReset();
     mockUseLocalSearchParams.mockReturnValue({});
     mockOfficePostReturnProbe = ["all"];
+    mockFocusEffectCallbacks.clear();
     mockPush.mockReset();
     mockLoadOfficeAccessScreenData.mockReset();
     mockCreateOfficeInvite.mockReset();
     mockShareOfficeInviteCode.mockReset();
     mockCopyOfficeInviteText.mockReset();
     mockOpenURL.mockReset();
+    mockRecordOfficeBootstrapInitialDone.mockReset();
+    mockRecordOfficeBootstrapInitialStart.mockReset();
+    mockRecordOfficeFocusRefreshDone.mockReset();
+    mockRecordOfficeFocusRefreshReason.mockReset();
+    mockRecordOfficeFocusRefreshSkipped.mockReset();
+    mockRecordOfficeFocusRefreshStart.mockReset();
+    mockRecordOfficeLoadingShellEnter.mockReset();
+    mockRecordOfficeLoadingShellSkippedOnFocusReturn.mockReset();
     mockRecordOfficeReentryComponentMount.mockReset();
     mockRecordOfficeReentryEffectDone.mockReset();
     mockRecordOfficeReentryEffectStart.mockReset();
@@ -550,43 +605,84 @@ describe("OfficeHubScreen", () => {
         owner: "office_hub",
       }),
     );
+    expect(mockRecordOfficeBootstrapInitialStart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        mode: "initial",
+        reason: "mount_bootstrap",
+      }),
+    );
     expect(mockRecordOfficeReentryEffectStart).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
         mode: "initial",
+        reason: "mount_bootstrap",
+      }),
+    );
+    expect(mockRecordOfficeLoadingShellEnter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        mode: "initial",
+        reason: "mount_bootstrap",
       }),
     );
     expect(mockRecordOfficeReentryEffectDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
         mode: "initial",
+        reason: "mount_bootstrap",
+        companyId: "company-1",
+      }),
+    );
+    expect(mockRecordOfficeBootstrapInitialDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        mode: "initial",
+        reason: "mount_bootstrap",
         companyId: "company-1",
       }),
     );
     expect(mockRecordOfficePostReturnFocus).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
       }),
     );
+    expect(mockRecordOfficeFocusRefreshReason).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 0,
+        reason: "bootstrap_inflight",
+      }),
+    );
+    expect(mockRecordOfficeFocusRefreshSkipped).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 0,
+        reason: "bootstrap_inflight",
+      }),
+    );
+    expect(mockRecordOfficeFocusRefreshStart).not.toHaveBeenCalled();
+    expect(mockRecordOfficeFocusRefreshDone).not.toHaveBeenCalled();
+    expect(mockRecordOfficeLoadingShellSkippedOnFocusReturn).not.toHaveBeenCalled();
     expect(mockRecordOfficePostReturnChildMountStart).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         sections: "summary,directions,company_details,invites,members",
       }),
     );
     expect(mockRecordOfficePostReturnIdleStart).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         sections: "summary,directions,company_details,invites,members",
       }),
     );
     expect(mockRecordOfficePostReturnIdleDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         sections: "summary,directions,company_details,invites,members",
       }),
     );
@@ -594,7 +690,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "summary",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -602,7 +698,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "directions",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -610,7 +706,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "company_details",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -618,7 +714,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "invites",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -626,7 +722,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "members",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -635,7 +731,7 @@ describe("OfficeHubScreen", () => {
     expect(mockRecordOfficePostReturnLayoutCommit).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         section: "summary",
         sections: "summary,directions,company_details,invites,members",
       }),
@@ -644,7 +740,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "summary",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -652,7 +748,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "directions",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -660,7 +756,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "company_details",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -668,7 +764,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "invites",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -676,7 +772,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "members",
           sections: "summary,directions,company_details,invites,members",
         }),
@@ -685,63 +781,63 @@ describe("OfficeHubScreen", () => {
     expect(mockRecordOfficePostReturnChildMountDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         sections: "summary,directions,company_details,invites,members",
       }),
     );
     expect(mockRecordOfficeNativeFocusCallbackStart).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         callback: "useFocusEffect",
       }),
     );
     expect(mockRecordOfficeNativeFocusCallbackDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         callback: "useFocusEffect",
       }),
     );
     expect(mockRecordOfficeNativeAnimationFrameStart).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         callback: "requestAnimationFrame",
       }),
     );
     expect(mockRecordOfficeNativeAnimationFrameDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         callback: "requestAnimationFrame",
       }),
     );
     expect(mockRecordOfficeNativeInteractionStart).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         callback: "InteractionManager.runAfterInteractions",
       }),
     );
     expect(mockRecordOfficeNativeInteractionDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         callback: "InteractionManager.runAfterInteractions",
       }),
     );
     expect(mockRecordOfficeNativeContentSizeStart).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         callback: "scroll_view:onContentSizeChange",
       }),
     );
     expect(mockRecordOfficeNativeContentSizeDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         callback: "scroll_view:onContentSizeChange",
       }),
     );
@@ -842,6 +938,126 @@ describe("OfficeHubScreen", () => {
     expect(mockRecordOfficePostReturnFailure).not.toHaveBeenCalled();
   });
 
+  it("skips full focus bootstrap on an ordinary return while the office snapshot is still fresh", async () => {
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    await act(async () => {
+      TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+
+    mockRecordOfficeFocusRefreshReason.mockClear();
+    mockRecordOfficeFocusRefreshSkipped.mockClear();
+    mockRecordOfficeLoadingShellSkippedOnFocusReturn.mockClear();
+
+    await triggerFocusEffect();
+
+    expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+    expect(mockRecordOfficeFocusRefreshReason).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        reason: "ttl_fresh",
+        ttlMs: 60000,
+      }),
+    );
+    expect(mockRecordOfficeFocusRefreshSkipped).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        reason: "ttl_fresh",
+        ttlMs: 60000,
+      }),
+    );
+    expect(mockRecordOfficeLoadingShellSkippedOnFocusReturn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        reason: "ttl_fresh",
+        ttlMs: 60000,
+      }),
+    );
+    expect(mockRecordOfficeFocusRefreshStart).not.toHaveBeenCalled();
+    expect(mockRecordOfficeFocusRefreshDone).not.toHaveBeenCalled();
+    expect(mockRecordOfficeLoadingShellEnter).toHaveBeenCalledTimes(1);
+  });
+
+  it("runs a silent focus refresh after ttl expiry without re-entering the loading shell", async () => {
+    const dateNowSpy = jest.spyOn(Date, "now");
+    let now = 1_000_000;
+    dateNowSpy.mockImplementation(() => now);
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    try {
+      await act(async () => {
+        TestRenderer.create(<OfficeHubScreen />);
+      });
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+
+      mockRecordOfficeFocusRefreshReason.mockClear();
+      mockRecordOfficeFocusRefreshSkipped.mockClear();
+      mockRecordOfficeFocusRefreshStart.mockClear();
+      mockRecordOfficeFocusRefreshDone.mockClear();
+      mockRecordOfficeLoadingShellSkippedOnFocusReturn.mockClear();
+
+      now += 61_000;
+
+      await triggerFocusEffect();
+
+      expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(2);
+      expect(mockRecordOfficeFocusRefreshReason).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          mode: "focus_refresh",
+          reason: "stale_ttl",
+        }),
+      );
+      expect(mockRecordOfficeFocusRefreshSkipped).not.toHaveBeenCalled();
+      expect(mockRecordOfficeFocusRefreshStart).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          mode: "focus_refresh",
+          reason: "stale_ttl",
+        }),
+      );
+      expect(mockRecordOfficeFocusRefreshDone).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          mode: "focus_refresh",
+          reason: "stale_ttl",
+          companyId: "company-1",
+        }),
+      );
+      expect(
+        mockRecordOfficeLoadingShellSkippedOnFocusReturn,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          mode: "focus_refresh",
+          reason: "stale_ttl",
+        }),
+      );
+      expect(mockRecordOfficeLoadingShellEnter).toHaveBeenCalledTimes(1);
+      expect(mockRecordOfficeBootstrapInitialStart).toHaveBeenCalledTimes(1);
+    } finally {
+      dateNowSpy.mockRestore();
+    }
+  });
+
   it("mounts only the requested post-return probe subtree when a debug probe is supplied", async () => {
     mockUseLocalSearchParams.mockReturnValue({ postReturnProbe: "members" });
     mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
@@ -883,7 +1099,7 @@ describe("OfficeHubScreen", () => {
     expect(mockRecordOfficePostReturnChildMountStart).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         sections: "members",
         probe: "members",
       }),
@@ -892,7 +1108,7 @@ describe("OfficeHubScreen", () => {
       [
         expect.objectContaining({
           owner: "office_hub",
-          focusCycle: 1,
+          focusCycle: 0,
           section: "members",
           sections: "members",
           probe: "members",
@@ -902,7 +1118,7 @@ describe("OfficeHubScreen", () => {
     expect(mockRecordOfficePostReturnChildMountDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         sections: "members",
         probe: "members",
       }),
@@ -932,7 +1148,7 @@ describe("OfficeHubScreen", () => {
     expect(mockRecordOfficePostReturnIdleDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
-        focusCycle: 1,
+        focusCycle: 0,
         probe: "no_interaction_manager",
       }),
     );

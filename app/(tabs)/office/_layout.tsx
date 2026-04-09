@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { HeaderBackButton } from "@react-navigation/elements";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Stack, router } from "expo-router";
+import { Stack, router, usePathname, useSegments } from "expo-router";
 
+import {
+  markPendingOfficeRouteReplaceReceipt,
+  recordOfficeRouteOwnerIdentity,
+  recordOfficeRouteOwnerMount,
+  recordOfficeRouteOwnerUnmount,
+  recordWarehouseReturnToOfficeDone,
+  recordWarehouseReturnToOfficeStart,
+} from "../../../src/lib/navigation/officeReentryBreadcrumbs";
 import { recordPlatformObservability } from "../../../src/lib/observability/platformObservability";
 import { recordWarehouseBackBreadcrumbs, recordWarehouseBackBreadcrumbsAsync } from "../../../src/lib/navigation/warehouseBackBreadcrumbs";
 import { hasSafeBackHistory, safeBack, type SafeBackRouterLike } from "../../../src/lib/navigation/safeBack";
@@ -10,6 +18,57 @@ import { hasSafeBackHistory, safeBack, type SafeBackRouterLike } from "../../../
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
 const DEFAULT_HEADER_TINT = "#0F172A";
+
+function useOfficeStackOwnerAudit() {
+  const pathname = usePathname();
+  const segments = useSegments();
+  const identityRef = useRef(
+    `office_stack_layout:${Math.random().toString(36).slice(2, 10)}`,
+  );
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
+  const segmentsLabel = useMemo(() => segments.join("/") || "none", [segments]);
+  const segmentsRef = useRef(segmentsLabel);
+  segmentsRef.current = segmentsLabel;
+  const initialSnapshotRef = useRef({
+    pathname,
+    segments: segmentsLabel,
+  });
+
+  useEffect(() => {
+    const identity = identityRef.current;
+    recordOfficeRouteOwnerMount({
+      owner: "office_stack_layout",
+      route: "/office/_layout",
+      pathname: initialSnapshotRef.current.pathname,
+      segments: initialSnapshotRef.current.segments,
+      identity,
+      routeWrapper: "office_stack_layout_entry",
+    });
+
+    return () => {
+      recordOfficeRouteOwnerUnmount({
+        owner: "office_stack_layout",
+        route: "/office/_layout",
+        pathname: pathnameRef.current,
+        segments: segmentsRef.current,
+        identity,
+        routeWrapper: "office_stack_layout_entry",
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    recordOfficeRouteOwnerIdentity({
+      owner: "office_stack_layout",
+      route: "/office/_layout",
+      pathname,
+      segments: segmentsLabel,
+      identity: identityRef.current,
+      routeWrapper: "office_stack_layout_entry",
+    });
+  }, [pathname, segmentsLabel]);
+}
 
 export function renderSafeOfficeBackButton(props: Record<string, unknown>) {
   return (
@@ -242,7 +301,29 @@ export function performWarehouseBackNavigation(
   try {
     const persistAttempt = persistBreadcrumbs(pendingBreadcrumbs).catch(() => undefined);
     void persistAttempt;
+    recordWarehouseReturnToOfficeStart({
+      owner: "office_stack_layout",
+      route: "/office/warehouse",
+      sourceRoute: "/office/warehouse",
+      target: OFFICE_SAFE_BACK_ROUTE,
+      method: "replace",
+    });
+    markPendingOfficeRouteReplaceReceipt({
+      owner: "office_stack_layout",
+      route: OFFICE_SAFE_BACK_ROUTE,
+      sourceRoute: "/office/warehouse",
+      target: OFFICE_SAFE_BACK_ROUTE,
+      method: "replace",
+      reason: "warehouse_explicit_office_return",
+    });
     warehouseRouter.replace(OFFICE_SAFE_BACK_ROUTE);
+    recordWarehouseReturnToOfficeDone({
+      owner: "office_stack_layout",
+      route: "/office/warehouse",
+      sourceRoute: "/office/warehouse",
+      target: OFFICE_SAFE_BACK_ROUTE,
+      method: "replace",
+    });
 
     recordEvent({
       screen: "warehouse",
@@ -326,6 +407,8 @@ export function renderWarehouseOfficeBackButton(props: Record<string, unknown>) 
 }
 
 export default function OfficeStackLayout() {
+  useOfficeStackOwnerAudit();
+
   return (
     <Stack
       screenOptions={{
