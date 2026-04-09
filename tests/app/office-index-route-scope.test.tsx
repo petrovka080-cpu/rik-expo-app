@@ -1,0 +1,108 @@
+import React from "react";
+import TestRenderer, { act } from "react-test-renderer";
+
+import OfficeIndexRoute from "../../app/(tabs)/office/index";
+import * as officeBreadcrumbs from "../../src/lib/navigation/officeReentryBreadcrumbs";
+
+const mockUsePathname = jest.fn();
+const mockUseSegments = jest.fn();
+
+jest.mock("expo-router", () => {
+  const ReactRuntime = require("react");
+  return {
+    useFocusEffect: (callback: () => void | (() => void)) => {
+      ReactRuntime.useEffect(() => {
+        const cleanup = callback();
+        return typeof cleanup === "function" ? cleanup : undefined;
+      }, [callback]);
+    },
+    usePathname: () => mockUsePathname(),
+    useSegments: () => mockUseSegments(),
+  };
+});
+
+jest.mock("../../src/shared/ui/ScreenErrorBoundary", () => ({
+  withScreenErrorBoundary: (Component: React.ComponentType<object>) => Component,
+}));
+
+jest.mock("../../src/screens/office/OfficeHubScreen", () => {
+  const ReactRuntime = require("react");
+  const { View } = require("react-native");
+  return {
+    __esModule: true,
+    default: function MockOfficeHubScreen(props: {
+      routeScopeActive?: boolean;
+    }) {
+      return ReactRuntime.createElement(View, {
+        testID: props.routeScopeActive
+          ? "office-hub-screen-active"
+          : "office-hub-screen-inactive",
+      });
+    },
+  };
+});
+
+jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
+  consumePendingOfficeRouteReplaceReceipt: jest.fn(() => null),
+  recordOfficeReentryFailure: jest.fn(),
+  recordOfficeReentryStart: jest.fn(),
+  recordOfficeRouteOwnerIdentity: jest.fn(),
+  recordOfficeRouteOwnerBlur: jest.fn(),
+  recordOfficeRouteOwnerFocus: jest.fn(),
+  recordOfficeRouteOwnerMount: jest.fn(),
+  recordOfficeRouteOwnerUnmount: jest.fn(),
+  recordOfficeRouteReplaceReceived: jest.fn(),
+  recordOfficeRouteScopeActive: jest.fn(),
+  recordOfficeRouteScopeInactive: jest.fn(),
+  recordOfficeRouteScopeSkipReason: jest.fn(),
+}));
+
+describe("office index route scope", () => {
+  beforeEach(() => {
+    mockUsePathname.mockReset();
+    mockUseSegments.mockReset();
+    Object.values(officeBreadcrumbs).forEach((value) => {
+      if (jest.isMockFunction(value)) {
+        value.mockClear();
+      }
+    });
+  });
+
+  it("keeps office owner passive outside exact /office", () => {
+    mockUsePathname.mockReturnValue("/office/warehouse");
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+
+    let renderer: TestRenderer.ReactTestRenderer | null = null;
+    act(() => {
+      renderer = TestRenderer.create(<OfficeIndexRoute />);
+    });
+
+    expect(
+      renderer?.root.findAllByProps({ testID: "office-hub-screen-inactive" })
+        .length,
+    ).toBeGreaterThan(0);
+    expect(officeBreadcrumbs.recordOfficeRouteScopeSkipReason).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeRouteScopeInactive).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeRouteOwnerIdentity).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeRouteOwnerFocus).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeReentryStart).not.toHaveBeenCalled();
+  });
+
+  it("activates office owner only on exact /office", () => {
+    mockUsePathname.mockReturnValue("/office");
+    mockUseSegments.mockReturnValue(["(tabs)", "office"]);
+
+    let renderer: TestRenderer.ReactTestRenderer | null = null;
+    act(() => {
+      renderer = TestRenderer.create(<OfficeIndexRoute />);
+    });
+
+    expect(
+      renderer?.root.findAllByProps({ testID: "office-hub-screen-active" })
+        .length,
+    ).toBeGreaterThan(0);
+    expect(officeBreadcrumbs.recordOfficeRouteScopeActive).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeRouteOwnerIdentity).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeReentryStart).toHaveBeenCalled();
+  });
+});

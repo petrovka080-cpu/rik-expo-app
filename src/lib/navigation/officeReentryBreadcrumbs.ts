@@ -12,6 +12,9 @@ export type OfficeReentryMarker =
   | "office_route_owner_focus"
   | "office_route_owner_blur"
   | "office_route_replace_received"
+  | "office_route_scope_active"
+  | "office_route_scope_inactive"
+  | "office_route_scope_skip_reason"
   | "office_route_owner_identity"
   | "office_route_identity"
   | "warehouse_route_owner_mount"
@@ -296,6 +299,9 @@ function recordOfficeLifecycleMarker(params: {
     | "office_route_owner_focus"
     | "office_route_owner_blur"
     | "office_route_replace_received"
+    | "office_route_scope_active"
+    | "office_route_scope_inactive"
+    | "office_route_scope_skip_reason"
     | "office_route_owner_identity"
     | "office_route_identity"
     | "warehouse_route_owner_mount"
@@ -358,6 +364,33 @@ export function recordOfficeRouteReplaceReceived(
   recordOfficeLifecycleMarker({
     marker: "office_route_replace_received",
     extra,
+  });
+}
+
+export function recordOfficeRouteScopeActive(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_route_scope_active",
+    extra,
+  });
+}
+
+export function recordOfficeRouteScopeInactive(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_route_scope_inactive",
+    extra,
+    result: "skipped",
+  });
+}
+
+export function recordOfficeRouteScopeSkipReason(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_route_scope_skip_reason",
+    extra,
+    result: "skipped",
   });
 }
 

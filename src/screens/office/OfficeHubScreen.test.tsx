@@ -987,6 +987,25 @@ describe("OfficeHubScreen", () => {
     expect(mockRecordOfficeLoadingShellEnter).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps office hub passive when route scope is inactive", async () => {
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    await act(async () => {
+      TestRenderer.create(<OfficeHubScreen routeScopeActive={false} />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockLoadOfficeAccessScreenData).not.toHaveBeenCalled();
+    expect(mockRecordOfficeBootstrapInitialStart).not.toHaveBeenCalled();
+    expect(mockRecordOfficeReentryEffectStart).not.toHaveBeenCalled();
+    expect(mockRecordOfficeReentryComponentMount).not.toHaveBeenCalled();
+    expect(mockRecordOfficeReentryRenderSuccess).not.toHaveBeenCalled();
+    expect(mockRecordOfficePostReturnFocus).not.toHaveBeenCalled();
+  });
+
   it("runs a silent focus refresh after ttl expiry without re-entering the loading shell", async () => {
     const dateNowSpy = jest.spyOn(Date, "now");
     let now = 1_000_000;

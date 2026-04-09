@@ -43,6 +43,9 @@ import {
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
   recordOfficeRouteReplaceReceived,
+  recordOfficeRouteScopeActive,
+  recordOfficeRouteScopeInactive,
+  recordOfficeRouteScopeSkipReason,
   recordWarehouseRouteOwnerBlur,
   recordWarehouseRouteOwnerFocus,
   recordWarehouseRouteOwnerIdentity,
@@ -102,6 +105,28 @@ describe("office reentry breadcrumbs", () => {
       ]),
     ).toBe(
       "2026-04-09T10:05:00.000Z | office_route_owner_identity | success | route=/office | owner=office_index_route | identity=office_index_route:abc123 | pathname=/office | segments=(tabs)/office | routeWrapper=office_owned_screen_entry",
+    );
+  });
+
+  it("formats office route scope diagnostics on inactive paths", () => {
+    expect(
+      buildOfficeReentryBreadcrumbsText([
+        {
+          at: "2026-04-09T10:07:00.000Z",
+          marker: "office_route_scope_inactive",
+          result: "skipped",
+          extra: {
+            route: "/office",
+            owner: "office_index_route",
+            pathname: "/office/warehouse",
+            segments: "(tabs)/office/warehouse",
+            reason: "non_exact_path:/office/warehouse",
+            routeWrapper: "office_owned_screen_entry",
+          },
+        },
+      ]),
+    ).toBe(
+      "2026-04-09T10:07:00.000Z | office_route_scope_inactive | skipped | route=/office | owner=office_index_route | pathname=/office/warehouse | segments=(tabs)/office/warehouse | routeWrapper=office_owned_screen_entry | reason=non_exact_path:/office/warehouse",
     );
   });
 
@@ -201,6 +226,14 @@ describe("office reentry breadcrumbs", () => {
       segments: "(tabs)/office",
       routeWrapper: "office_owned_screen_entry",
     });
+    recordOfficeRouteScopeActive({
+      owner: "office_index_route",
+      route: "/office",
+      identity: "office_index_route:abc123",
+      pathname: "/office",
+      segments: "(tabs)/office",
+      routeWrapper: "office_owned_screen_entry",
+    });
     recordOfficeRouteOwnerIdentity({
       owner: "office_index_route",
       route: "/office",
@@ -248,11 +281,36 @@ describe("office reentry breadcrumbs", () => {
       "warehouse_return_to_office_start",
       "warehouse_return_to_office_done",
       "office_route_owner_mount",
+      "office_route_scope_active",
       "office_route_owner_identity",
       "office_route_replace_received",
       "office_route_owner_focus",
       "office_route_owner_blur",
       "office_route_owner_unmount",
+    ]);
+  });
+
+  it("records office route scope passive sequence on non-office paths", () => {
+    recordOfficeRouteScopeSkipReason({
+      owner: "office_index_route",
+      route: "/office",
+      pathname: "/profile",
+      segments: "(tabs)/profile",
+      reason: "non_exact_path:/profile",
+      routeWrapper: "office_owned_screen_entry",
+    });
+    recordOfficeRouteScopeInactive({
+      owner: "office_index_route",
+      route: "/office",
+      pathname: "/profile",
+      segments: "(tabs)/profile",
+      reason: "non_exact_path:/profile",
+      routeWrapper: "office_owned_screen_entry",
+    });
+
+    expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
+      "office_route_scope_skip_reason",
+      "office_route_scope_inactive",
     ]);
   });
 

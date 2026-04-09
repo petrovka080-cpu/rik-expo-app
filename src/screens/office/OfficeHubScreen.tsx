@@ -595,6 +595,10 @@ type OfficePostReturnSubtreeBoundaryState = {
   error: Error | null;
 };
 
+type OfficeHubScreenProps = {
+  routeScopeActive?: boolean;
+};
+
 class OfficePostReturnSubtreeBoundary extends React.Component<
   OfficePostReturnSubtreeBoundaryProps,
   OfficePostReturnSubtreeBoundaryState
@@ -626,7 +630,9 @@ class OfficePostReturnSubtreeBoundary extends React.Component<
   }
 }
 
-export default function OfficeHubScreen() {
+export default function OfficeHubScreen({
+  routeScopeActive = true,
+}: OfficeHubScreenProps) {
   const router = useRouter();
   const params = useLocalSearchParams<{
     postReturnProbe?: string | string[];
@@ -1139,17 +1145,27 @@ export default function OfficeHubScreen() {
   );
 
   React.useLayoutEffect(() => {
+    if (!routeScopeActive) return;
+
     recordPostReturnSubtreeStart("layout_effect_mount");
     recordOfficeReentryComponentMount(buildPostReturnExtra());
     recordPostReturnSubtreeDone("layout_effect_mount");
   }, [
     buildPostReturnExtra,
+    routeScopeActive,
     recordPostReturnSubtreeDone,
     recordPostReturnSubtreeStart,
   ]);
 
   React.useEffect(() => {
     isMountedRef.current = true;
+    if (!routeScopeActive) {
+      return () => {
+        isMountedRef.current = false;
+        cancelPostReturnIdle();
+      };
+    }
+
     recordPostReturnSubtreeStart("render_effect_mount");
     recordOfficeReentryRenderSuccess(buildPostReturnExtra());
     recordPostReturnSubtreeDone("render_effect_mount");
@@ -1160,12 +1176,13 @@ export default function OfficeHubScreen() {
   }, [
     buildPostReturnExtra,
     cancelPostReturnIdle,
+    routeScopeActive,
     recordPostReturnSubtreeDone,
     recordPostReturnSubtreeStart,
   ]);
 
   React.useEffect(() => {
-    if (disableKeyboardBridge) return;
+    if (!routeScopeActive || disableKeyboardBridge) return;
 
     const events = [
       "keyboardWillShow",
@@ -1184,7 +1201,7 @@ export default function OfficeHubScreen() {
     return () => {
       subscriptions.forEach((subscription) => subscription.remove());
     };
-  }, [buildNativeCallbackExtra, disableKeyboardBridge]);
+  }, [buildNativeCallbackExtra, disableKeyboardBridge, routeScopeActive]);
 
   const loadScreen = useCallback(
     async ({
@@ -1288,6 +1305,10 @@ export default function OfficeHubScreen() {
   );
 
   React.useEffect(() => {
+    if (!routeScopeActive) {
+      return;
+    }
+
     if (
       ownerBootstrapCompletedRef.current ||
       initialBootstrapInFlightRef.current
@@ -1305,10 +1326,16 @@ export default function OfficeHubScreen() {
     });
 
     initialBootstrapInFlightRef.current = task;
-  }, [loadScreen]);
+  }, [loadScreen, routeScopeActive]);
 
   useFocusEffect(
     useCallback(() => {
+      if (!routeScopeActive) {
+        return () => {
+          cancelPostReturnIdle();
+        };
+      }
+
       if (ownerBootstrapCompletedRef.current) {
         focusCycleRef.current += 1;
       }
@@ -1413,6 +1440,7 @@ export default function OfficeHubScreen() {
       loadScreen,
       recordPostReturnSubtreeDone,
       recordPostReturnSubtreeStart,
+      routeScopeActive,
       runObservedNativeCallback,
     ]),
   );

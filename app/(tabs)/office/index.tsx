@@ -12,8 +12,19 @@ import {
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
   recordOfficeRouteReplaceReceived,
+  recordOfficeRouteScopeActive,
+  recordOfficeRouteScopeInactive,
+  recordOfficeRouteScopeSkipReason,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
+
+const OFFICE_EXACT_PATH = "/office";
+
+function getOfficeRouteScopeSkipReason(pathname: string | null | undefined) {
+  if (!pathname) return "pathname_unavailable";
+  if (pathname === OFFICE_EXACT_PATH) return "exact_office_path";
+  return `non_exact_path:${pathname}`;
+}
 
 type OfficeReentryCrashBoundaryProps = {
   children: React.ReactNode;
@@ -58,6 +69,7 @@ class OfficeReentryCrashBoundary extends React.Component<
 function OfficeIndexRoute() {
   const pathname = usePathname();
   const segments = useSegments();
+  const isExactOfficePath = pathname === OFFICE_EXACT_PATH;
   const identityRef = useRef(
     `office_index_route:${Math.random().toString(36).slice(2, 10)}`,
   );
@@ -106,39 +118,71 @@ function OfficeIndexRoute() {
   }, []);
 
   useEffect(() => {
-    recordOfficeRouteOwnerIdentity(buildRouteExtra());
-  }, [buildRouteExtra]);
+    if (!isExactOfficePath) {
+      const reason = getOfficeRouteScopeSkipReason(pathname);
+      const scopeExtra = buildRouteExtra({ reason });
+      recordOfficeRouteScopeSkipReason(scopeExtra);
+      recordOfficeRouteScopeInactive(scopeExtra);
+      return;
+    }
+
+    const scopeExtra = buildRouteExtra();
+    recordOfficeRouteScopeActive(scopeExtra);
+    recordOfficeRouteOwnerIdentity(scopeExtra);
+  }, [buildRouteExtra, isExactOfficePath, pathname]);
 
   useLayoutEffect(() => {
+    if (!isExactOfficePath) return;
+
     recordOfficeReentryStart({
       owner: "office_index_route",
+      pathname,
+      segments: segmentsLabel,
+      identity: identityRef.current,
+      routeWrapper: "office_owned_screen_entry",
     });
     const replaceReceipt = consumePendingOfficeRouteReplaceReceipt();
     if (replaceReceipt) {
       recordOfficeRouteReplaceReceived({
         owner: "office_index_route",
         route: "/office",
-        pathname: initialSnapshotRef.current.pathname,
-        segments: initialSnapshotRef.current.segments,
+        pathname,
+        segments: segmentsLabel,
         identity: identityRef.current,
         routeWrapper: "office_owned_screen_entry",
         ...replaceReceipt,
       });
     }
-  }, []);
+  }, [isExactOfficePath, pathname, segmentsLabel]);
 
   useFocusEffect(
     useCallback(() => {
+      if (!isExactOfficePath) {
+        const reason = getOfficeRouteScopeSkipReason(pathname);
+        const scopeExtra = buildRouteExtra({ reason });
+        recordOfficeRouteScopeSkipReason(scopeExtra);
+        recordOfficeRouteScopeInactive(scopeExtra);
+        return undefined;
+      }
+
+      const identity = identityRef.current;
       recordOfficeRouteOwnerFocus(buildRouteExtra());
       return () => {
-        recordOfficeRouteOwnerBlur(buildRouteExtra());
+        recordOfficeRouteOwnerBlur({
+          owner: "office_index_route",
+          route: "/office",
+          pathname: pathnameRef.current,
+          segments: segmentsRef.current,
+          identity,
+          routeWrapper: "office_owned_screen_entry",
+        });
       };
-    }, [buildRouteExtra]),
+    }, [buildRouteExtra, isExactOfficePath, pathname]),
   );
 
   return (
     <OfficeReentryCrashBoundary>
-      <OfficeHubScreen />
+      <OfficeHubScreen routeScopeActive={isExactOfficePath} />
     </OfficeReentryCrashBoundary>
   );
 }
