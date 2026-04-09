@@ -6,6 +6,7 @@ const mockOpenPdfExternal = jest.fn();
 const mockCreateDocumentPreviewSession = jest.fn();
 const mockCreateInMemoryDocumentPreviewSession = jest.fn();
 const mockRootRouterReplace = jest.fn();
+const mockRootRouterPush = jest.fn();
 
 jest.mock("../pdfRunner", () => ({
   preparePdfExecutionSource: (...args: unknown[]) => mockPreparePdfExecutionSource(...args),
@@ -22,6 +23,7 @@ jest.mock("./pdfDocumentSessions", () => ({
 
 jest.mock("expo-router", () => ({
   router: {
+    push: (...args: unknown[]) => mockRootRouterPush(...args),
     replace: (...args: unknown[]) => mockRootRouterReplace(...args),
   },
 }));
@@ -78,6 +80,7 @@ describe("pdfDocumentActions", () => {
     mockCreateDocumentPreviewSession.mockReset();
     mockCreateInMemoryDocumentPreviewSession.mockReset();
     mockRootRouterReplace.mockReset();
+    mockRootRouterPush.mockReset();
     resetPlatformObservabilityEvents();
     resetPdfOpenFlowStateForTests();
     mockCreateInMemoryDocumentPreviewSession.mockImplementation((doc: typeof baseDocument) => ({
@@ -374,7 +377,8 @@ describe("pdfDocumentActions", () => {
 
     expect(mockCreateInMemoryDocumentPreviewSession).not.toHaveBeenCalled();
     expect(mockCreateDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
-    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-ios-1&openToken=");
+    expect(mockRootRouterPush).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-ios-1&openToken=");
+    expect(mockRootRouterReplace).not.toHaveBeenCalled();
     expect(push).not.toHaveBeenCalled();
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
     expect(mockOpenPdfShare).not.toHaveBeenCalled();

@@ -73,6 +73,11 @@ function createViewerHref(sessionId: unknown, openToken: unknown) {
 }
 
 async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
+  console.info("[pdf-document-actions] viewer_patch_v3_navigation_call", {
+    href: String(href),
+    platform: Platform.OS,
+    patchVersion: "v3",
+  });
   console.info("[pdf-document-actions] viewer_route_push_pre_schedule", {
     href: String(href),
     platform: Platform.OS,
@@ -389,6 +394,46 @@ export async function previewPdfDocument(
         }),
       });
       try {
+        const patchActiveBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_patch_v3_active",
+          screen: breadcrumbScreen,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: scheme || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: asset.entityId,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+          previewPath: "direct_remote_viewer_session_contract",
+          extra: {
+            route: "/pdf-viewer",
+            patchVersion: "v3",
+            payloadMode: "session_id_only",
+          },
+        });
+        if (patchActiveBreadcrumb) await patchActiveBreadcrumb;
+        const patchBeforeNavigationBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_patch_v3_before_navigation",
+          screen: breadcrumbScreen,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: scheme || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: asset.entityId,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+          previewPath: "direct_remote_viewer_session_contract",
+          extra: {
+            route: "/pdf-viewer",
+            patchVersion: "v3",
+            payloadMode: "session_id_only",
+          },
+        });
+        if (patchBeforeNavigationBreadcrumb) await patchBeforeNavigationBreadcrumb;
         const pushAttemptBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_push_attempt",
           screen: breadcrumbScreen,
@@ -420,6 +465,26 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
+        const patchNavigationCallBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_patch_v3_navigation_call",
+          screen: breadcrumbScreen,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: scheme || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: asset.entityId,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+          previewPath: "direct_remote_viewer_session_contract",
+          extra: {
+            route: "/pdf-viewer",
+            patchVersion: "v3",
+            payloadMode: "session_id_only",
+          },
+        });
+        if (patchNavigationCallBreadcrumb) await patchNavigationCallBreadcrumb;
         await pushViewerRouteSafely(opts.router, viewerHref);
         const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
@@ -579,6 +644,48 @@ export async function previewPdfDocument(
         }),
       });
       try {
+        const patchActiveBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_patch_v3_active",
+          screen: breadcrumbScreen,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: doc.entityId,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
+          fileSizeBytes: asset.sizeBytes,
+          previewPath: "session_viewer_contract",
+          extra: {
+            route: "/pdf-viewer",
+            patchVersion: "v3",
+          },
+        });
+        if (patchActiveBreadcrumb) await patchActiveBreadcrumb;
+        const patchBeforeNavigationBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_patch_v3_before_navigation",
+          screen: breadcrumbScreen,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: doc.entityId,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
+          fileSizeBytes: asset.sizeBytes,
+          previewPath: "session_viewer_contract",
+          extra: {
+            route: "/pdf-viewer",
+            patchVersion: "v3",
+          },
+        });
+        if (patchBeforeNavigationBreadcrumb) await patchBeforeNavigationBreadcrumb;
         const pushAttemptBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_push_attempt",
           screen: breadcrumbScreen,
@@ -610,6 +717,27 @@ export async function previewPdfDocument(
             previewPath: "session_viewer_contract",
           },
         });
+        const patchNavigationCallBreadcrumb = persistCriticalPdfBreadcrumb({
+          marker: "viewer_patch_v3_navigation_call",
+          screen: breadcrumbScreen,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          sourceKind: asset.sourceKind,
+          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          entityId: doc.entityId,
+          sessionId: safeSessionId,
+          openToken: safeOpenToken,
+          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
+          fileSizeBytes: asset.sizeBytes,
+          previewPath: "session_viewer_contract",
+          extra: {
+            route: "/pdf-viewer",
+            patchVersion: "v3",
+          },
+        });
+        if (patchNavigationCallBreadcrumb) await patchNavigationCallBreadcrumb;
         await pushViewerRouteSafely(opts.router, viewerHref);
         const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
