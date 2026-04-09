@@ -33,6 +33,9 @@ export type OfficeReentryMarker =
   | "office_warehouse_back_press_done"
   | "office_warehouse_back_handler_start"
   | "office_warehouse_back_handler_done"
+  | "office_warehouse_back_method_selected"
+  | "office_warehouse_back_use_router_back"
+  | "office_warehouse_back_use_replace_fallback"
   | "office_warehouse_back_replace_start"
   | "office_warehouse_back_replace_done"
   | "office_warehouse_before_remove"
@@ -156,6 +159,7 @@ const OFFICE_POST_RETURN_PROBES: readonly OfficePostReturnProbe[] = [
 let writeQueue = Promise.resolve();
 let officePostReturnProbe: OfficePostReturnProbe[] = ["all"];
 let pendingOfficeRouteReplaceReceipt: Record<string, unknown> | null = null;
+let pendingOfficeRouteReturnReceipt: Record<string, unknown> | null = null;
 
 function trimText(value: unknown) {
   const text = String(value ?? "").trim();
@@ -339,6 +343,9 @@ function recordOfficeLifecycleMarker(params: {
     | "office_warehouse_back_press_done"
     | "office_warehouse_back_handler_start"
     | "office_warehouse_back_handler_done"
+    | "office_warehouse_back_method_selected"
+    | "office_warehouse_back_use_router_back"
+    | "office_warehouse_back_use_replace_fallback"
     | "office_warehouse_back_replace_start"
     | "office_warehouse_back_replace_done"
     | "office_warehouse_before_remove"
@@ -596,6 +603,33 @@ export function recordOfficeWarehouseBackHandlerDone(
 ) {
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_back_handler_done",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackMethodSelected(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_method_selected",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackUseRouterBack(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_use_router_back",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackUseReplaceFallback(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_use_replace_fallback",
     extra,
   });
 }
@@ -1099,11 +1133,24 @@ export function markPendingOfficeRouteReplaceReceipt(
   extra?: Record<string, unknown>,
 ) {
   pendingOfficeRouteReplaceReceipt = { ...(extra ?? {}) };
+  pendingOfficeRouteReturnReceipt = { ...(extra ?? {}) };
 }
 
 export function consumePendingOfficeRouteReplaceReceipt() {
   const next = pendingOfficeRouteReplaceReceipt;
   pendingOfficeRouteReplaceReceipt = null;
+  return next;
+}
+
+export function markPendingOfficeRouteReturnReceipt(
+  extra?: Record<string, unknown>,
+) {
+  pendingOfficeRouteReturnReceipt = { ...(extra ?? {}) };
+}
+
+export function consumePendingOfficeRouteReturnReceipt() {
+  const next = pendingOfficeRouteReturnReceipt;
+  pendingOfficeRouteReturnReceipt = null;
   return next;
 }
 
@@ -1161,6 +1208,8 @@ export function buildOfficeReentryBreadcrumbsText(
         parts.push(`handler=${String(item.extra.handler)}`);
       if (item.extra?.action) parts.push(`action=${String(item.extra.action)}`);
       if (item.extra?.phase) parts.push(`phase=${String(item.extra.phase)}`);
+      if (item.extra?.selectedMethod)
+        parts.push(`selectedMethod=${String(item.extra.selectedMethod)}`);
       if (item.extra?.reason) parts.push(`reason=${String(item.extra.reason)}`);
       if (item.extra?.probe) parts.push(`probe=${String(item.extra.probe)}`);
       return parts.join(" | ");

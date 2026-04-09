@@ -96,7 +96,11 @@ describe("OfficeStackLayout", () => {
       children: React.ReactNode[];
     }>;
 
-    const [backButton, title] = header.props.children as React.ReactElement[];
+    const [backButton, title] = header.props.children as [
+      React.ReactElement<{ testID: string; onPress: () => void; children: React.ReactNode }>,
+      React.ReactElement<{ children: React.ReactNode }>,
+      React.ReactElement
+    ];
 
     expect(backButton.props.testID).toBe("warehouse-office-safe-back");
     expect(typeof backButton.props.onPress).toBe("function");
@@ -104,7 +108,7 @@ describe("OfficeStackLayout", () => {
     expect(JSON.stringify(title.props.children)).toContain("Склад");
   });
 
-  it("records warehouse back breadcrumbs and forces office fallback", async () => {
+  it("records warehouse back breadcrumbs and prefers router.back when history exists", async () => {
     const recordEvent = jest.fn();
 
     await performWarehouseBackNavigation(
@@ -117,8 +121,8 @@ describe("OfficeStackLayout", () => {
       mockPersistWarehouseBackBreadcrumbs,
     );
 
-    expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
-    expect(mockBack).not.toHaveBeenCalled();
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockReplace).not.toHaveBeenCalled();
     expect(mockPersistWarehouseBackBreadcrumbs).toHaveBeenCalledTimes(1);
     expect(recordEvent.mock.calls.map(([event]) => event.event)).toEqual([
       "warehouse_back_tap",
@@ -133,6 +137,26 @@ describe("OfficeStackLayout", () => {
       "warehouse_back_fallback_selected",
       "warehouse_back_navigation_done",
     ]);
+  });
+
+  it("falls back to replace when warehouse stack history is missing", async () => {
+    const recordEvent = jest.fn();
+
+    await performWarehouseBackNavigation(
+      {
+        back: mockBack,
+        canGoBack: () => false,
+        replace: mockReplace,
+      },
+      recordEvent,
+      mockPersistWarehouseBackBreadcrumbs,
+    );
+
+    expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(recordEvent.mock.calls.map(([event]) => event.event)).toContain(
+      "warehouse_back_use_office_replace",
+    );
   });
 
   it("records warehouse back navigation failure", () => {

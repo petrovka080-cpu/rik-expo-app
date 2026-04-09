@@ -3,7 +3,7 @@ import { useFocusEffect, usePathname, useSegments } from "expo-router";
 
 import OfficeHubScreen from "../../../src/screens/office/OfficeHubScreen";
 import {
-  consumePendingOfficeRouteReplaceReceipt,
+  consumePendingOfficeRouteReturnReceipt,
   recordOfficeIndexAfterReturnFocus,
   recordOfficeIndexAfterReturnMount,
   recordOfficeReentryFailure,
@@ -145,10 +145,12 @@ function OfficeIndexRoute() {
       identity: identityRef.current,
       routeWrapper: "office_owned_screen_entry",
     });
-    const replaceReceipt = consumePendingOfficeRouteReplaceReceipt();
-    if (replaceReceipt) {
-      const afterReturnExtra = buildRouteExtra(replaceReceipt);
-      recordOfficeRouteReplaceReceived(afterReturnExtra);
+    const returnReceipt = consumePendingOfficeRouteReturnReceipt();
+    if (returnReceipt) {
+      const afterReturnExtra = buildRouteExtra(returnReceipt);
+      if (returnReceipt.method === "replace") {
+        recordOfficeRouteReplaceReceived(afterReturnExtra);
+      }
       afterReturnMountRef.current = afterReturnExtra;
       afterReturnFocusRef.current = afterReturnExtra;
     }

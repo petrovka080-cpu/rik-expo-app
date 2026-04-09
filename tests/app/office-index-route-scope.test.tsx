@@ -43,7 +43,7 @@ jest.mock("../../src/screens/office/OfficeHubScreen", () => {
 });
 
 jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
-  consumePendingOfficeRouteReplaceReceipt: jest.fn(() => null),
+  consumePendingOfficeRouteReturnReceipt: jest.fn(() => null),
   recordOfficeIndexAfterReturnFocus: jest.fn(),
   recordOfficeIndexAfterReturnMount: jest.fn(),
   recordOfficeReentryFailure: jest.fn(),
