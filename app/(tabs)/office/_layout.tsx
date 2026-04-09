@@ -24,6 +24,7 @@ import { hasSafeBackHistory, safeBack, type SafeBackRouterLike } from "../../../
 
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
+const WAREHOUSE_HEADER_TITLE = "\u0421\u043a\u043b\u0430\u0434";
 const DEFAULT_HEADER_TINT = "#0F172A";
 
 function useOfficeStackOwnerAudit() {
@@ -407,44 +408,56 @@ export function performWarehouseBackNavigation(
   }
 }
 
-export function renderWarehouseOfficeBackButton(props: Record<string, unknown>) {
-  const tintColor = typeof props.tintColor === "string" ? props.tintColor : DEFAULT_HEADER_TINT;
+function handleWarehouseOfficeBackPress() {
+  const pressExtra = {
+    owner: "office_stack_layout",
+    route: "/office/warehouse",
+    handler: "warehouse_header_js_back",
+    target: OFFICE_SAFE_BACK_ROUTE,
+    method: "replace",
+  };
+  recordOfficeWarehouseBackPressStart(pressExtra);
+  try {
+    performWarehouseBackNavigation(router);
+    recordOfficeWarehouseBackPressDone(pressExtra);
+  } catch (error) {
+    recordOfficeBackPathFailure({
+      error,
+      errorStage: "press_handler",
+      extra: pressExtra,
+    });
+    throw error;
+  }
+}
 
+export function renderWarehouseOfficeHeader() {
   return (
-    <Pressable
-      accessibilityHint="Вернуться в Офис"
-      accessibilityLabel="Офис"
-      accessibilityRole="button"
-      hitSlop={8}
-      onPress={() => {
-        const pressExtra = {
-          owner: "office_stack_layout",
-          route: "/office/warehouse",
-          handler: "warehouse_header_left_pressable",
-          target: OFFICE_SAFE_BACK_ROUTE,
-          method: "replace",
-        };
-        recordOfficeWarehouseBackPressStart(pressExtra);
-        try {
-          performWarehouseBackNavigation(router);
-          recordOfficeWarehouseBackPressDone(pressExtra);
-        } catch (error) {
-          recordOfficeBackPathFailure({
-            error,
-            errorStage: "press_handler",
-            extra: pressExtra,
-          });
-          throw error;
-        }
-      }}
-      style={styles.warehouseBackButton}
-      testID="warehouse-office-safe-back"
-    >
-      <View style={styles.warehouseBackButtonContent}>
-        <Text style={[styles.warehouseBackChevron, { color: tintColor }]}>{"‹"}</Text>
-        <Text style={[styles.warehouseBackLabel, { color: tintColor }]}>{OFFICE_BACK_LABEL}</Text>
-      </View>
-    </Pressable>
+    <View style={styles.warehouseHeaderShell}>
+      <Pressable
+        accessibilityHint="Вернуться в Офис"
+        accessibilityLabel="Офис"
+        accessibilityRole="button"
+        hitSlop={8}
+        onPress={handleWarehouseOfficeBackPress}
+        style={styles.warehouseBackButton}
+        testID="warehouse-office-safe-back"
+      >
+        <View style={styles.warehouseBackButtonContent}>
+          <Text
+            style={[styles.warehouseBackChevron, { color: DEFAULT_HEADER_TINT }]}
+          >
+            {"‹"}
+          </Text>
+          <Text style={[styles.warehouseBackLabel, { color: DEFAULT_HEADER_TINT }]}>
+            {OFFICE_BACK_LABEL}
+          </Text>
+        </View>
+      </Pressable>
+      <Text numberOfLines={1} style={styles.warehouseHeaderTitle}>
+        {WAREHOUSE_HEADER_TITLE}
+      </Text>
+      <View style={styles.warehouseHeaderSpacer} />
+    </View>
   );
 }
 
@@ -476,12 +489,12 @@ export default function OfficeStackLayout() {
       <Stack.Screen
         name="warehouse"
         options={{
-          title: "Склад",
+          title: WAREHOUSE_HEADER_TITLE,
+          header: renderWarehouseOfficeHeader,
           headerBackVisible: false,
           headerBackButtonMenuEnabled: false,
           headerBackTitle: "",
           gestureEnabled: false,
-          headerLeft: renderWarehouseOfficeBackButton,
         }}
       />
       <Stack.Screen name="contractor" options={{ title: "Подрядчик" }} />
@@ -492,10 +505,30 @@ export default function OfficeStackLayout() {
 }
 
 const styles = StyleSheet.create({
+  warehouseHeaderShell: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderBottomColor: "rgba(15,23,42,0.08)",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 56,
+    paddingHorizontal: 8,
+  },
   warehouseBackButton: {
     marginLeft: 0,
     paddingVertical: 6,
     paddingRight: 10,
+  },
+  warehouseHeaderSpacer: {
+    minWidth: 72,
+  },
+  warehouseHeaderTitle: {
+    color: "#0F172A",
+    flex: 1,
+    fontSize: 17,
+    fontWeight: "800",
+    textAlign: "center",
   },
   warehouseBackButtonContent: {
     alignItems: "center",

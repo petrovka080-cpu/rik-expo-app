@@ -7,7 +7,7 @@ import {
   OFFICE_SAFE_BACK_ROUTE,
   performWarehouseBackNavigation,
   renderSafeOfficeBackButton,
-  renderWarehouseOfficeBackButton,
+  renderWarehouseOfficeHeader,
 } from "../../app/(tabs)/office/_layout";
 
 const mockReplace = jest.fn();
@@ -82,26 +82,26 @@ describe("OfficeStackLayout", () => {
     expect(source).toContain('name="foreman"');
     expect(source).toContain('name="warehouse"');
     expect(source).toContain("headerBackTitle: OFFICE_BACK_LABEL");
-    expect(source).toContain('title: "Склад"');
+    expect(source).toContain("title: WAREHOUSE_HEADER_TITLE");
     expect(source.match(/headerLeft: renderSafeOfficeBackButton/g)).toHaveLength(1);
-    expect(source.match(/headerLeft: renderWarehouseOfficeBackButton/g)).toHaveLength(1);
+    expect(source).toContain("header: renderWarehouseOfficeHeader");
     expect(source).toContain("headerBackVisible: false");
     expect(source).toContain("headerBackButtonMenuEnabled: false");
     expect(source).toContain('headerBackTitle: ""');
     expect(source).toContain("gestureEnabled: false");
   });
 
-  it("renders the warehouse header button as an explicit pressable override", () => {
-    const header = renderWarehouseOfficeBackButton({
-      canGoBack: true,
-      tintColor: "#000000",
-      label: OFFICE_BACK_LABEL,
-      href: undefined,
-    }) as React.ReactElement<{ testID: string; onPress: () => void; children: React.ReactNode }>;
+  it("renders the warehouse header as a JS-only explicit back container", () => {
+    const header = renderWarehouseOfficeHeader() as React.ReactElement<{
+      children: React.ReactNode[];
+    }>;
 
-    expect(header.props.testID).toBe("warehouse-office-safe-back");
-    expect(typeof header.props.onPress).toBe("function");
-    expect(JSON.stringify(header.props.children)).toContain(OFFICE_BACK_LABEL);
+    const [backButton, title] = header.props.children as React.ReactElement[];
+
+    expect(backButton.props.testID).toBe("warehouse-office-safe-back");
+    expect(typeof backButton.props.onPress).toBe("function");
+    expect(JSON.stringify(backButton.props.children)).toContain(OFFICE_BACK_LABEL);
+    expect(JSON.stringify(title.props.children)).toContain("Склад");
   });
 
   it("records warehouse back breadcrumbs and forces office fallback", async () => {
