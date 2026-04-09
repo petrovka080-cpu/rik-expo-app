@@ -47,6 +47,7 @@ import {
 } from "../src/lib/pdf/pdfSourceValidation";
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
+import { safeBack } from "../src/lib/navigation/safeBack";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
 
 type ViewerFileInfo = {
@@ -872,18 +873,7 @@ function PdfViewerScreen() {
   }, [clearWebRenderUri, syncSnapshot]);
 
   const onBack = React.useCallback(() => {
-    const canGoBackRouter = typeof (router as any).canGoBack === "function"
-      ? Boolean((router as any).canGoBack())
-      : false;
-    const webHasHistory =
-      Platform.OS === "web" && typeof window !== "undefined" && window.history.length > 1;
-
-    if ((Platform.OS !== "web" && canGoBackRouter) || webHasHistory) {
-      router.back();
-      return;
-    }
-
-    router.replace(FALLBACK_ROUTE);
+    safeBack(router as typeof router & { canGoBack?: () => boolean }, FALLBACK_ROUTE);
   }, []);
 
   const source = React.useMemo(() => {

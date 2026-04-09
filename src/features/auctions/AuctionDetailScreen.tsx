@@ -19,6 +19,7 @@ import {
   MARKET_AUCTIONS_ROUTE,
   MARKET_TAB_ROUTE,
 } from "../../lib/navigation/coreRoutes";
+import { safeBack } from "../../lib/navigation/safeBack";
 import { buildAuctionAssistantPrompt, loadAuctionDetail } from "./auctions.data";
 import type { UnifiedAuctionDetail } from "./auctions.types";
 
@@ -113,7 +114,7 @@ export default function AuctionDetailScreen() {
       <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
         <View style={styles.centerState}>
           <Text style={styles.stateTitle}>Торг не найден</Text>
-          <Pressable style={styles.primaryBtn} onPress={() => router.back()}>
+          <Pressable style={styles.primaryBtn} onPress={() => safeBack(router, MARKET_AUCTIONS_ROUTE)}>
             <Text style={styles.primaryBtnText}>Назад</Text>
           </Pressable>
         </View>
@@ -124,7 +125,7 @@ export default function AuctionDetailScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <View style={styles.header}>
-        <Pressable style={styles.headerBtn} onPress={() => router.back()}>
+        <Pressable style={styles.headerBtn} onPress={() => safeBack(router, MARKET_AUCTIONS_ROUTE)}>
           <Ionicons name="arrow-back" size={20} color="#0F172A" />
         </Pressable>
         <View style={styles.headerCopy}>

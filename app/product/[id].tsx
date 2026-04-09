@@ -31,6 +31,7 @@ import {
 } from "../../src/features/market/market.routes";
 import type { MarketHomeListingCard, MarketRoleCapabilities } from "../../src/features/market/marketHome.types";
 import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
+import { safeBack } from "../../src/lib/navigation/safeBack";
 
 const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
   role: null,
@@ -190,7 +191,7 @@ export default function ProductDetailsScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.stateTitle}>Объявление не найдено</Text>
-        <Pressable style={styles.primaryBtn} onPress={() => router.back()}>
+        <Pressable style={styles.primaryBtn} onPress={() => safeBack(router, MARKET_TAB_ROUTE)}>
           <Text style={styles.primaryBtnText}>Назад</Text>
         </Pressable>
       </View>
@@ -200,7 +201,7 @@ export default function ProductDetailsScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <Pressable style={styles.backBtn} onPress={() => safeBack(router, MARKET_TAB_ROUTE)}>
           <Ionicons name="chevron-back" size={20} color={MARKET_HOME_COLORS.text} />
         </Pressable>
         <View style={styles.headerCopy}>

@@ -27,6 +27,7 @@ import {
   MARKET_TAB_ROUTE,
 } from "../market/market.routes";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
+import { safeBack } from "../../lib/navigation/safeBack";
 import {
   EMPTY_CURRENT_PROFILE_IDENTITY,
   loadCurrentProfileIdentity,
@@ -184,7 +185,7 @@ export default function SupplierShowcaseScreen() {
   const header = (
     <View style={styles.headerContent}>
       <View style={styles.headerBar}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <Pressable style={styles.backBtn} onPress={() => safeBack(router, MARKET_TAB_ROUTE)}>
           <Ionicons name="chevron-back" size={20} color={MARKET_HOME_COLORS.text} />
         </Pressable>
         <View style={styles.headerCopy}>

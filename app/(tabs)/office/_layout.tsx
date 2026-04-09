@@ -1,6 +1,7 @@
 import React from "react";
 import { HeaderBackButton } from "@react-navigation/elements";
 import { Stack, router } from "expo-router";
+import { safeBack } from "../../../src/lib/navigation/safeBack";
 
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 
@@ -9,7 +10,7 @@ export function renderSafeOfficeBackButton(props: Record<string, unknown>) {
     <HeaderBackButton
       {...props}
       label="Офис"
-      onPress={() => router.replace(OFFICE_SAFE_BACK_ROUTE)}
+      onPress={() => safeBack(router, OFFICE_SAFE_BACK_ROUTE)}
       testID="office-safe-back"
     />
   );

@@ -34,6 +34,7 @@ import {
   MARKET_AUCTIONS_ROUTE,
   MARKET_TAB_ROUTE,
 } from "../../lib/navigation/coreRoutes";
+import { safeBack } from "../../lib/navigation/safeBack";
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
 import { buildMarketMapParams, loadMarketListingById } from "../market/marketHome.data";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
@@ -213,7 +214,7 @@ export default function ChatScreen() {
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View style={styles.header}>
-          <Pressable style={styles.headerButton} onPress={() => router.back()}>
+          <Pressable style={styles.headerButton} onPress={() => safeBack(router, MARKET_TAB_ROUTE)}>
             <Ionicons name="arrow-back" size={20} color={MARKET_HOME_COLORS.text} />
           </Pressable>
 

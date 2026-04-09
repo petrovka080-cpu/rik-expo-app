@@ -34,6 +34,9 @@ import type { AssistantContext, AssistantMessage, AssistantRole } from "./assist
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { OFFICE_TAB_ROUTE, PROFILE_TAB_ROUTE } from "../../lib/navigation/coreRoutes";
+import { MARKET_TAB_ROUTE } from "../market/market.routes";
+import { safeBack } from "../../lib/navigation/safeBack";
 
 const recordAssistantScreenFallback = (
   event: string,
@@ -66,6 +69,28 @@ function createMessage(role: AssistantMessage["role"], content: string): Assista
     content,
     createdAt: new Date().toISOString(),
   };
+}
+
+function resolveAssistantBackFallback(context: AssistantContext) {
+  switch (context) {
+    case "foreman":
+    case "director":
+    case "buyer":
+    case "accountant":
+    case "warehouse":
+    case "contractor":
+    case "security":
+      return OFFICE_TAB_ROUTE;
+    case "profile":
+      return PROFILE_TAB_ROUTE;
+    case "market":
+    case "supplierMap":
+    case "request":
+    case "reports":
+    case "unknown":
+    default:
+      return MARKET_TAB_ROUTE;
+  }
 }
 
 function getRoleLabel(role: AssistantRole): string {
@@ -138,6 +163,10 @@ export default function AIAssistantScreen() {
     value: input,
     onChangeText: setInput,
   });
+  const backFallbackRoute = useMemo(
+    () => resolveAssistantBackFallback(assistantContext),
+    [assistantContext],
+  );
 
   const initialize = useCallback(async () => {
     setBooting(true);
@@ -299,7 +328,7 @@ export default function AIAssistantScreen() {
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View style={styles.header}>
-          <Pressable style={styles.headerIconButton} onPress={() => router.back()}>
+          <Pressable style={styles.headerIconButton} onPress={() => safeBack(router, backFallbackRoute)}>
             <Ionicons name="arrow-back" size={20} color="#0F172A" />
           </Pressable>
 

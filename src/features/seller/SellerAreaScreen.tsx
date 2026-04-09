@@ -15,9 +15,11 @@ import {
 
 import {
   buildAddListingRoute,
+  PROFILE_TAB_ROUTE,
   buildSupplierShowcaseRoute,
   MARKET_TAB_ROUTE,
 } from "../../lib/navigation/coreRoutes";
+import { safeBack } from "../../lib/navigation/safeBack";
 import {
   EMPTY_CURRENT_PROFILE_IDENTITY,
   loadCurrentProfileIdentity,
@@ -95,7 +97,7 @@ function formatPrice(value: number | null, unit: string | null): string {
   return `${value.toLocaleString("ru-RU")} \u0441\u043e\u043c${unit ? ` / ${unit}` : ""}`;
 }
 
-function joinMeta(parts: Array<string | null | undefined>): string {
+function joinMeta(parts: (string | null | undefined)[]): string {
   return parts.filter(Boolean).join(" • ");
 }
 
@@ -190,7 +192,7 @@ export default function SellerAreaScreen() {
         <Pressable
           testID="seller-area-back"
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => safeBack(router, PROFILE_TAB_ROUTE)}
         >
           <Ionicons name="chevron-back" size={18} color={colors.text} />
           <Text style={styles.backButtonText}>{UI.back}</Text>

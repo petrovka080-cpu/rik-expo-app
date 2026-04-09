@@ -17,6 +17,7 @@ import {
   buildSupplierMapRoute,
   MARKET_TAB_ROUTE,
 } from "../../lib/navigation/coreRoutes";
+import { safeBack } from "../../lib/navigation/safeBack";
 import { FlashList } from "../../ui/FlashList";
 import type { AuctionListTab, UnifiedAuctionSummary } from "./auctions.types";
 import { buildAuctionsAssistantPrompt, loadAuctionSummaries } from "./auctions.data";
@@ -144,7 +145,7 @@ export default function AuctionsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <View style={styles.header}>
-        <Pressable style={styles.headerBtn} onPress={() => router.back()}>
+        <Pressable style={styles.headerBtn} onPress={() => safeBack(router, MARKET_TAB_ROUTE)}>
           <Ionicons name="arrow-back" size={20} color="#0F172A" />
         </Pressable>
         <View style={styles.headerCopy}>
