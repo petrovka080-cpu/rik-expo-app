@@ -8,6 +8,9 @@ import {
   recordOfficePostReturnLayoutCommit,
   recordOfficePostReturnSectionRenderDone,
   recordOfficePostReturnSectionRenderStart,
+  recordOfficePostReturnSubtreeDone,
+  recordOfficePostReturnSubtreeFailure,
+  recordOfficePostReturnSubtreeStart,
   recordOfficeReentryComponentMount,
   recordOfficeReentryEffectDone,
   recordOfficeReentryEffectStart,
@@ -30,18 +33,20 @@ describe("office reentry breadcrumbs", () => {
       buildOfficeReentryBreadcrumbsText([
         {
           at: "2026-04-09T10:00:00.000Z",
-          marker: "office_post_return_section_render_done",
+          marker: "office_post_return_subtree_done",
           result: "success",
           extra: {
             route: "/office",
             owner: "office_hub",
             focusCycle: 3,
-            section: "members",
+            sections: "summary,directions,company_details,invites,members",
+            subtree: "members_list",
+            probe: "members",
           },
         },
       ]),
     ).toBe(
-      "2026-04-09T10:00:00.000Z | office_post_return_section_render_done | success | route=/office | owner=office_hub | focusCycle=3 | section=members",
+      "2026-04-09T10:00:00.000Z | office_post_return_subtree_done | success | route=/office | owner=office_hub | focusCycle=3 | sections=summary,directions,company_details,invites,members | subtree=members_list | probe=members",
     );
   });
 
@@ -56,6 +61,12 @@ describe("office reentry breadcrumbs", () => {
       owner: "office_hub",
       focusCycle: 2,
       sections: "summary,directions,invites,members",
+    });
+    recordOfficePostReturnSubtreeStart({
+      owner: "office_hub",
+      focusCycle: 2,
+      subtree: "members_list",
+      probe: "members",
     });
     recordOfficePostReturnSectionRenderStart({
       owner: "office_hub",
@@ -72,12 +83,27 @@ describe("office reentry breadcrumbs", () => {
       focusCycle: 2,
       section: "summary",
     });
+    recordOfficePostReturnSubtreeDone({
+      owner: "office_hub",
+      focusCycle: 2,
+      subtree: "members_list",
+      probe: "members",
+    });
     recordOfficePostReturnIdleStart({ owner: "office_hub", focusCycle: 2 });
     recordOfficePostReturnIdleDone({ owner: "office_hub", focusCycle: 2 });
     recordOfficePostReturnChildMountDone({
       owner: "office_hub",
       focusCycle: 2,
       sections: "summary,directions,invites,members",
+    });
+    recordOfficePostReturnSubtreeFailure({
+      error: new Error("members subtree failed"),
+      errorStage: "subtree_boundary",
+      extra: {
+        owner: "office_hub",
+        focusCycle: 2,
+        subtree: "members_list",
+      },
     });
     recordOfficeReentryFailure({
       error: new Error("office failed"),
@@ -101,12 +127,15 @@ describe("office reentry breadcrumbs", () => {
       "office_reentry_render_success",
       "office_post_return_focus",
       "office_post_return_child_mount_start",
+      "office_post_return_subtree_start",
       "office_post_return_section_render_start",
       "office_post_return_layout_commit",
       "office_post_return_section_render_done",
+      "office_post_return_subtree_done",
       "office_post_return_idle_start",
       "office_post_return_idle_done",
       "office_post_return_child_mount_done",
+      "office_post_return_subtree_failed",
       "office_reentry_failed",
     ]);
     expect(events.at(-1)).toMatchObject({

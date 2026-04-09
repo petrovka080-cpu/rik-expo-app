@@ -19,7 +19,36 @@ export type OfficeReentryMarker =
   | "office_post_return_child_mount_done"
   | "office_post_return_section_render_start"
   | "office_post_return_section_render_done"
+  | "office_post_return_subtree_start"
+  | "office_post_return_subtree_done"
+  | "office_post_return_subtree_failed"
   | "office_post_return_failed";
+
+export type OfficePostReturnProbe =
+  | "all"
+  | "header_meta"
+  | "summary"
+  | "directions"
+  | "company_details"
+  | "invites"
+  | "members";
+
+export type OfficePostReturnSubtree =
+  | "layout_effect_mount"
+  | "render_effect_mount"
+  | "focus_effect_callback"
+  | "idle_callback"
+  | "scroll_view_layout"
+  | "scroll_view_content"
+  | "summary_header"
+  | "summary_meta"
+  | "summary_badges"
+  | "directions_cards"
+  | "company_details_rows"
+  | "invites_handoff"
+  | "invites_list"
+  | "members_list"
+  | "invite_modal_form";
 
 export type OfficeReentryBreadcrumb = {
   at: string;
@@ -43,15 +72,27 @@ type OfficeReentryBreadcrumbInput = {
 const OFFICE_REENTRY_BREADCRUMBS_KEY = "rik_office_reentry_breadcrumbs_v1";
 const MAX_BREADCRUMBS = 80;
 const OFFICE_ROUTE = "/office";
+const OFFICE_POST_RETURN_PROBES: readonly OfficePostReturnProbe[] = [
+  "all",
+  "header_meta",
+  "summary",
+  "directions",
+  "company_details",
+  "invites",
+  "members",
+];
 
 let writeQueue = Promise.resolve();
+let officePostReturnProbe: OfficePostReturnProbe[] = ["all"];
 
 function trimText(value: unknown) {
   const text = String(value ?? "").trim();
   return text || null;
 }
 
-function normalizeEntry(input: OfficeReentryBreadcrumbInput): OfficeReentryBreadcrumb {
+function normalizeEntry(
+  input: OfficeReentryBreadcrumbInput,
+): OfficeReentryBreadcrumb {
   return {
     at: new Date().toISOString(),
     marker: input.marker,
@@ -69,7 +110,9 @@ async function readRawBreadcrumbs(): Promise<OfficeReentryBreadcrumb[]> {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item) => item && typeof item === "object") as OfficeReentryBreadcrumb[];
+    return parsed.filter(
+      (item) => item && typeof item === "object",
+    ) as OfficeReentryBreadcrumb[];
   } catch {
     return [];
   }
@@ -77,7 +120,10 @@ async function readRawBreadcrumbs(): Promise<OfficeReentryBreadcrumb[]> {
 
 async function writeRawBreadcrumbs(items: OfficeReentryBreadcrumb[]) {
   try {
-    await AsyncStorage.setItem(OFFICE_REENTRY_BREADCRUMBS_KEY, JSON.stringify(items.slice(-MAX_BREADCRUMBS)));
+    await AsyncStorage.setItem(
+      OFFICE_REENTRY_BREADCRUMBS_KEY,
+      JSON.stringify(items.slice(-MAX_BREADCRUMBS)),
+    );
   } catch {
     // Office re-entry diagnostics must never destabilize navigation.
   }
@@ -98,11 +144,15 @@ function enqueueWrite(inputs: OfficeReentryBreadcrumbInput[]) {
   return writeQueue;
 }
 
-export function recordOfficeReentryBreadcrumbs(inputs: OfficeReentryBreadcrumbInput[]) {
+export function recordOfficeReentryBreadcrumbs(
+  inputs: OfficeReentryBreadcrumbInput[],
+) {
   void enqueueWrite(inputs);
 }
 
-export async function recordOfficeReentryBreadcrumbsAsync(inputs: OfficeReentryBreadcrumbInput[]) {
+export async function recordOfficeReentryBreadcrumbsAsync(
+  inputs: OfficeReentryBreadcrumbInput[],
+) {
   await enqueueWrite(inputs);
 }
 
@@ -146,7 +196,9 @@ export function recordOfficeReentryStart(extra?: Record<string, unknown>) {
   });
 }
 
-export function recordOfficeReentryComponentMount(extra?: Record<string, unknown>) {
+export function recordOfficeReentryComponentMount(
+  extra?: Record<string, unknown>,
+) {
   recordOfficeReentryMarker({
     marker: "office_reentry_component_enter",
     result: "success",
@@ -159,7 +211,9 @@ export function recordOfficeReentryComponentMount(extra?: Record<string, unknown
   });
 }
 
-export function recordOfficeReentryRenderSuccess(extra?: Record<string, unknown>) {
+export function recordOfficeReentryRenderSuccess(
+  extra?: Record<string, unknown>,
+) {
   recordOfficeReentryMarker({
     marker: "office_reentry_render_success",
     result: "success",
@@ -167,7 +221,9 @@ export function recordOfficeReentryRenderSuccess(extra?: Record<string, unknown>
   });
 }
 
-export function recordOfficeReentryEffectStart(extra?: Record<string, unknown>) {
+export function recordOfficeReentryEffectStart(
+  extra?: Record<string, unknown>,
+) {
   recordOfficeReentryMarker({
     marker: "office_reentry_effect_start",
     result: "success",
@@ -188,8 +244,12 @@ export function recordOfficeReentryFailure(params: {
   errorStage: string;
   extra?: Record<string, unknown>;
 }) {
-  const errorClass = params.error instanceof Error ? params.error.name : undefined;
-  const errorMessage = params.error instanceof Error ? params.error.message : String(params.error ?? "office_reentry_failed");
+  const errorClass =
+    params.error instanceof Error ? params.error.name : undefined;
+  const errorMessage =
+    params.error instanceof Error
+      ? params.error.message
+      : String(params.error ?? "office_reentry_failed");
 
   recordOfficeReentryMarker({
     marker: "office_reentry_failed",
@@ -212,6 +272,8 @@ function recordOfficePostReturnMarker(
     | "office_post_return_child_mount_done"
     | "office_post_return_section_render_start"
     | "office_post_return_section_render_done"
+    | "office_post_return_subtree_start"
+    | "office_post_return_subtree_done"
   >,
   extra?: Record<string, unknown>,
 ) {
@@ -226,32 +288,83 @@ export function recordOfficePostReturnFocus(extra?: Record<string, unknown>) {
   recordOfficePostReturnMarker("office_post_return_focus", extra);
 }
 
-export function recordOfficePostReturnIdleStart(extra?: Record<string, unknown>) {
+export function recordOfficePostReturnIdleStart(
+  extra?: Record<string, unknown>,
+) {
   recordOfficePostReturnMarker("office_post_return_idle_start", extra);
 }
 
-export function recordOfficePostReturnIdleDone(extra?: Record<string, unknown>) {
+export function recordOfficePostReturnIdleDone(
+  extra?: Record<string, unknown>,
+) {
   recordOfficePostReturnMarker("office_post_return_idle_done", extra);
 }
 
-export function recordOfficePostReturnLayoutCommit(extra?: Record<string, unknown>) {
+export function recordOfficePostReturnLayoutCommit(
+  extra?: Record<string, unknown>,
+) {
   recordOfficePostReturnMarker("office_post_return_layout_commit", extra);
 }
 
-export function recordOfficePostReturnChildMountStart(extra?: Record<string, unknown>) {
+export function recordOfficePostReturnChildMountStart(
+  extra?: Record<string, unknown>,
+) {
   recordOfficePostReturnMarker("office_post_return_child_mount_start", extra);
 }
 
-export function recordOfficePostReturnChildMountDone(extra?: Record<string, unknown>) {
+export function recordOfficePostReturnChildMountDone(
+  extra?: Record<string, unknown>,
+) {
   recordOfficePostReturnMarker("office_post_return_child_mount_done", extra);
 }
 
-export function recordOfficePostReturnSectionRenderStart(extra?: Record<string, unknown>) {
-  recordOfficePostReturnMarker("office_post_return_section_render_start", extra);
+export function recordOfficePostReturnSectionRenderStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficePostReturnMarker(
+    "office_post_return_section_render_start",
+    extra,
+  );
 }
 
-export function recordOfficePostReturnSectionRenderDone(extra?: Record<string, unknown>) {
+export function recordOfficePostReturnSectionRenderDone(
+  extra?: Record<string, unknown>,
+) {
   recordOfficePostReturnMarker("office_post_return_section_render_done", extra);
+}
+
+export function recordOfficePostReturnSubtreeStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficePostReturnMarker("office_post_return_subtree_start", extra);
+}
+
+export function recordOfficePostReturnSubtreeDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficePostReturnMarker("office_post_return_subtree_done", extra);
+}
+
+export function recordOfficePostReturnSubtreeFailure(params: {
+  error: unknown;
+  errorStage: string;
+  extra?: Record<string, unknown>;
+}) {
+  const errorClass =
+    params.error instanceof Error ? params.error.name : undefined;
+  const errorMessage =
+    params.error instanceof Error
+      ? params.error.message
+      : String(params.error ?? "office_post_return_subtree_failed");
+
+  recordOfficeReentryMarker({
+    marker: "office_post_return_subtree_failed",
+    result: "error",
+    errorStage: params.errorStage,
+    errorClass,
+    errorMessage,
+    extra: params.extra,
+  });
 }
 
 export function recordOfficePostReturnFailure(params: {
@@ -259,7 +372,8 @@ export function recordOfficePostReturnFailure(params: {
   errorStage: string;
   extra?: Record<string, unknown>;
 }) {
-  const errorClass = params.error instanceof Error ? params.error.name : undefined;
+  const errorClass =
+    params.error instanceof Error ? params.error.name : undefined;
   const errorMessage =
     params.error instanceof Error
       ? params.error.message
@@ -287,23 +401,84 @@ export async function clearOfficeReentryBreadcrumbs() {
   }
 }
 
-export function buildOfficeReentryBreadcrumbsText(items: OfficeReentryBreadcrumb[]) {
+function normalizeOfficePostReturnProbeToken(
+  value: unknown,
+): OfficePostReturnProbe | null {
+  const token = String(value ?? "")
+    .trim()
+    .toLowerCase() as OfficePostReturnProbe;
+
+  return OFFICE_POST_RETURN_PROBES.includes(token) ? token : null;
+}
+
+export function normalizeOfficePostReturnProbe(
+  value: unknown,
+): OfficePostReturnProbe[] | null {
+  if (value == null) return null;
+
+  const parts = Array.isArray(value)
+    ? value
+    : String(value)
+        .split(",")
+        .map((item) => item.trim());
+  const normalized = Array.from(
+    new Set(
+      parts
+        .flatMap((item) => String(item).split(","))
+        .map((item) => normalizeOfficePostReturnProbeToken(item))
+        .filter((item): item is OfficePostReturnProbe => Boolean(item)),
+    ),
+  );
+
+  return normalized.length ? normalized : ["all"];
+}
+
+export function getOfficePostReturnProbe() {
+  return officePostReturnProbe;
+}
+
+export function setOfficePostReturnProbe(
+  value: unknown,
+): OfficePostReturnProbe[] {
+  officePostReturnProbe = normalizeOfficePostReturnProbe(value) ?? ["all"];
+  return officePostReturnProbe;
+}
+
+export function formatOfficePostReturnProbe(
+  value: readonly OfficePostReturnProbe[] | null | undefined,
+) {
+  const normalized = Array.from(
+    new Set(
+      (value ?? []).filter((item): item is OfficePostReturnProbe =>
+        Boolean(item),
+      ),
+    ),
+  );
+
+  return normalized.length ? normalized.join(",") : "all";
+}
+
+export function buildOfficeReentryBreadcrumbsText(
+  items: OfficeReentryBreadcrumb[],
+) {
   return items
     .map((item) => {
-      const parts = [
-        item.at,
-        item.marker,
-        item.result ?? "unknown-result",
-      ];
+      const parts = [item.at, item.marker, item.result ?? "unknown-result"];
       if (item.errorStage) parts.push(`stage=${item.errorStage}`);
       if (item.errorClass) parts.push(`class=${item.errorClass}`);
       if (item.errorMessage) parts.push(`error=${item.errorMessage}`);
       if (item.extra?.route) parts.push(`route=${String(item.extra.route)}`);
       if (item.extra?.owner) parts.push(`owner=${String(item.extra.owner)}`);
       if (item.extra?.mode) parts.push(`mode=${String(item.extra.mode)}`);
-      if (item.extra?.focusCycle != null) parts.push(`focusCycle=${String(item.extra.focusCycle)}`);
-      if (item.extra?.section) parts.push(`section=${String(item.extra.section)}`);
-      if (item.extra?.sections) parts.push(`sections=${String(item.extra.sections)}`);
+      if (item.extra?.focusCycle != null)
+        parts.push(`focusCycle=${String(item.extra.focusCycle)}`);
+      if (item.extra?.section)
+        parts.push(`section=${String(item.extra.section)}`);
+      if (item.extra?.sections)
+        parts.push(`sections=${String(item.extra.sections)}`);
+      if (item.extra?.subtree)
+        parts.push(`subtree=${String(item.extra.subtree)}`);
+      if (item.extra?.probe) parts.push(`probe=${String(item.extra.probe)}`);
       return parts.join(" | ");
     })
     .join("\n");

@@ -5,6 +5,7 @@ import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 import OfficeHubScreen from "./OfficeHubScreen";
 
 const mockPush = jest.fn();
+const mockUseLocalSearchParams = jest.fn();
 const mockLoadOfficeAccessScreenData = jest.fn();
 const mockCreateOfficeInvite = jest.fn();
 const mockShareOfficeInviteCode = jest.fn();
@@ -24,6 +25,10 @@ const mockRecordOfficePostReturnIdleStart = jest.fn();
 const mockRecordOfficePostReturnLayoutCommit = jest.fn();
 const mockRecordOfficePostReturnSectionRenderDone = jest.fn();
 const mockRecordOfficePostReturnSectionRenderStart = jest.fn();
+const mockRecordOfficePostReturnSubtreeDone = jest.fn();
+const mockRecordOfficePostReturnSubtreeFailure = jest.fn();
+const mockRecordOfficePostReturnSubtreeStart = jest.fn();
+let mockOfficePostReturnProbe = ["all"];
 
 jest.mock("expo-router", () => {
   const ReactRuntime = require("react");
@@ -31,6 +36,8 @@ jest.mock("expo-router", () => {
     useRouter: () => ({
       push: mockPush,
     }),
+    useLocalSearchParams: (...args: unknown[]) =>
+      mockUseLocalSearchParams(...args),
     useFocusEffect: (callback: () => void | (() => void)) => {
       ReactRuntime.useEffect(() => callback(), [callback]);
     },
@@ -56,6 +63,23 @@ jest.mock("react-native/Libraries/Modal/Modal", () => {
 });
 
 jest.mock("../../lib/navigation/officeReentryBreadcrumbs", () => ({
+  formatOfficePostReturnProbe: (value: string[] | null | undefined) =>
+    Array.isArray(value) && value.length ? value.join(",") : "all",
+  getOfficePostReturnProbe: () => mockOfficePostReturnProbe,
+  normalizeOfficePostReturnProbe: (
+    value: string | string[] | undefined | null,
+  ) => {
+    if (value == null) return null;
+    const parts = Array.isArray(value)
+      ? value
+      : String(value)
+          .split(",")
+          .map((item) => item.trim());
+    const normalized = Array.from(
+      new Set(parts.flatMap((item) => String(item).split(",")).filter(Boolean)),
+    );
+    return normalized.length ? normalized : ["all"];
+  },
   recordOfficeReentryComponentMount: (...args: unknown[]) =>
     mockRecordOfficeReentryComponentMount(...args),
   recordOfficeReentryEffectDone: (...args: unknown[]) =>
@@ -84,6 +108,30 @@ jest.mock("../../lib/navigation/officeReentryBreadcrumbs", () => ({
     mockRecordOfficePostReturnSectionRenderDone(...args),
   recordOfficePostReturnSectionRenderStart: (...args: unknown[]) =>
     mockRecordOfficePostReturnSectionRenderStart(...args),
+  recordOfficePostReturnSubtreeDone: (...args: unknown[]) =>
+    mockRecordOfficePostReturnSubtreeDone(...args),
+  recordOfficePostReturnSubtreeFailure: (...args: unknown[]) =>
+    mockRecordOfficePostReturnSubtreeFailure(...args),
+  recordOfficePostReturnSubtreeStart: (...args: unknown[]) =>
+    mockRecordOfficePostReturnSubtreeStart(...args),
+  setOfficePostReturnProbe: (value: string | string[] | undefined | null) => {
+    if (value == null) {
+      mockOfficePostReturnProbe = ["all"];
+      return mockOfficePostReturnProbe;
+    }
+    const parts = Array.isArray(value)
+      ? value
+      : String(value)
+          .split(",")
+          .map((item) => item.trim());
+    mockOfficePostReturnProbe = Array.from(
+      new Set(parts.flatMap((item) => String(item).split(",")).filter(Boolean)),
+    );
+    if (!mockOfficePostReturnProbe.length) {
+      mockOfficePostReturnProbe = ["all"];
+    }
+    return mockOfficePostReturnProbe;
+  },
 }));
 
 jest.mock("./officeAccess.services", () => ({
@@ -95,8 +143,10 @@ jest.mock("./officeAccess.services", () => ({
 }));
 
 jest.mock("./officeInviteShare", () => ({
-  shareOfficeInviteCode: (...args: unknown[]) => mockShareOfficeInviteCode(...args),
-  copyOfficeInviteText: (...args: unknown[]) => mockCopyOfficeInviteText(...args),
+  shareOfficeInviteCode: (...args: unknown[]) =>
+    mockShareOfficeInviteCode(...args),
+  copyOfficeInviteText: (...args: unknown[]) =>
+    mockCopyOfficeInviteText(...args),
 }));
 
 const directorData = {
@@ -171,6 +221,9 @@ describe("OfficeHubScreen", () => {
   let interactionSpy: jest.SpyInstance;
 
   beforeEach(() => {
+    mockUseLocalSearchParams.mockReset();
+    mockUseLocalSearchParams.mockReturnValue({});
+    mockOfficePostReturnProbe = ["all"];
     mockPush.mockReset();
     mockLoadOfficeAccessScreenData.mockReset();
     mockCreateOfficeInvite.mockReset();
@@ -191,6 +244,9 @@ describe("OfficeHubScreen", () => {
     mockRecordOfficePostReturnLayoutCommit.mockReset();
     mockRecordOfficePostReturnSectionRenderDone.mockReset();
     mockRecordOfficePostReturnSectionRenderStart.mockReset();
+    mockRecordOfficePostReturnSubtreeDone.mockReset();
+    mockRecordOfficePostReturnSubtreeFailure.mockReset();
+    mockRecordOfficePostReturnSubtreeStart.mockReset();
 
     interactionSpy = jest
       .spyOn(InteractionManager, "runAfterInteractions")
@@ -198,7 +254,9 @@ describe("OfficeHubScreen", () => {
         callback();
         return {
           cancel: jest.fn(),
-        } as unknown as ReturnType<typeof InteractionManager.runAfterInteractions>;
+        } as unknown as ReturnType<
+          typeof InteractionManager.runAfterInteractions
+        >;
       });
 
     global.requestAnimationFrame = ((callback: FrameRequestCallback) => {
@@ -264,18 +322,24 @@ describe("OfficeHubScreen", () => {
       await Promise.resolve();
     });
 
-    expect(renderer!.root.findByProps({ testID: "office-create-company" })).toBeTruthy();
-    expect(renderer!.root.findByProps({ testID: "office-company-name" })).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-create-company" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-company-name" }),
+    ).toBeTruthy();
     expect(
       renderer!.root.findByProps({ testID: "office-company-legal-address" }),
     ).toBeTruthy();
-    expect(renderer!.root.findByProps({ testID: "office-company-inn" })).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-company-inn" }),
+    ).toBeTruthy();
     expect(
       renderer!.root.findByProps({ testID: "office-add-company-phone" }),
     ).toBeTruthy();
-    expect(renderer!.root.findAllByProps({ testID: "office-card-director" })).toEqual(
-      [],
-    );
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-card-director" }),
+    ).toEqual([]);
   });
 
   it("shows director-owned directions and keeps reports navigation separate from contextual plus", async () => {
@@ -300,7 +364,9 @@ describe("OfficeHubScreen", () => {
       "engineer",
       "reports",
     ].forEach((key) => {
-      expect(renderer!.root.findByProps({ testID: `office-card-${key}` })).toBeTruthy();
+      expect(
+        renderer!.root.findByProps({ testID: `office-card-${key}` }),
+      ).toBeTruthy();
     });
 
     expect(
@@ -310,8 +376,12 @@ describe("OfficeHubScreen", () => {
       renderer!.root.findByProps({ testID: "office-direction-add-foreman" }),
     ).toBeTruthy();
 
-    renderer!.root.findByProps({ testID: "office-direction-open-director" }).props.onPress();
-    renderer!.root.findByProps({ testID: "office-direction-open-reports" }).props.onPress();
+    renderer!.root
+      .findByProps({ testID: "office-direction-open-director" })
+      .props.onPress();
+    renderer!.root
+      .findByProps({ testID: "office-direction-open-reports" })
+      .props.onPress();
 
     expect(mockPush).toHaveBeenNthCalledWith(1, "/office/director");
     expect(mockPush).toHaveBeenNthCalledWith(2, "/office/reports");
@@ -342,12 +412,18 @@ describe("OfficeHubScreen", () => {
       await Promise.resolve();
     });
 
-    expect(renderer!.root.findByProps({ testID: "office-summary" })).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-summary" }),
+    ).toBeTruthy();
 
     const orderedSectionIds = Array.from(
       new Set(
         renderer!.root
-          .findAll((node) => typeof node.props.testID === "string" && node.props.testID.startsWith("office-section-"))
+          .findAll(
+            (node) =>
+              typeof node.props.testID === "string" &&
+              node.props.testID.startsWith("office-section-"),
+          )
           .map((node) => node.props.testID),
       ),
     );
@@ -360,7 +436,9 @@ describe("OfficeHubScreen", () => {
     ]);
 
     await act(async () => {
-      renderer!.root.findByProps({ testID: "office-company-edit" }).props.onPress();
+      renderer!.root
+        .findByProps({ testID: "office-company-edit" })
+        .props.onPress();
     });
 
     expect(mockPush).toHaveBeenCalledWith("/profile?section=company");
@@ -377,9 +455,22 @@ describe("OfficeHubScreen", () => {
       await Promise.resolve();
     });
 
-    expect(renderer!.root.findAllByProps({ testID: "mock-modal-hidden" })).toEqual([]);
+    expect(
+      renderer!.root.findAllByProps({ testID: "mock-modal-hidden" }),
+    ).toEqual([]);
 
     await act(async () => {
+      renderer!.root
+        .find((node) => typeof node.props.onContentSizeChange === "function")
+        .props.onContentSizeChange(320, 860);
+      renderer!.root
+        .findAll((node) => typeof node.props.onLayout === "function")
+        .forEach((node, index) => {
+          node.props.onLayout({
+            nativeEvent: { layout: { y: (index + 1) * 20 } },
+          });
+        });
+
       [
         "office-summary",
         "office-section-directions",
@@ -393,16 +484,22 @@ describe("OfficeHubScreen", () => {
       });
     });
 
-    expect(mockRecordOfficeReentryComponentMount).toHaveBeenCalledWith({
-      owner: "office_hub",
-    });
-    expect(mockRecordOfficeReentryRenderSuccess).toHaveBeenCalledWith({
-      owner: "office_hub",
-    });
-    expect(mockRecordOfficeReentryEffectStart).toHaveBeenCalledWith({
-      owner: "office_hub",
-      mode: "initial",
-    });
+    expect(mockRecordOfficeReentryComponentMount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+      }),
+    );
+    expect(mockRecordOfficeReentryRenderSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+      }),
+    );
+    expect(mockRecordOfficeReentryEffectStart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        mode: "initial",
+      }),
+    );
     expect(mockRecordOfficeReentryEffectDone).toHaveBeenCalledWith(
       expect.objectContaining({
         owner: "office_hub",
@@ -410,121 +507,247 @@ describe("OfficeHubScreen", () => {
         companyId: "company-1",
       }),
     );
-    expect(mockRecordOfficePostReturnFocus).toHaveBeenCalledWith({
-      owner: "office_hub",
-      focusCycle: 1,
-    });
-    expect(mockRecordOfficePostReturnChildMountStart).toHaveBeenCalledWith({
-      owner: "office_hub",
-      focusCycle: 1,
-      sections: "summary,directions,company_details,invites,members",
-    });
-    expect(mockRecordOfficePostReturnIdleStart).toHaveBeenCalledWith({
-      owner: "office_hub",
-      focusCycle: 1,
-      sections: "summary,directions,company_details,invites,members",
-    });
-    expect(mockRecordOfficePostReturnIdleDone).toHaveBeenCalledWith({
-      owner: "office_hub",
-      focusCycle: 1,
-      sections: "summary,directions,company_details,invites,members",
-    });
+    expect(mockRecordOfficePostReturnFocus).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+      }),
+    );
+    expect(mockRecordOfficePostReturnChildMountStart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        sections: "summary,directions,company_details,invites,members",
+      }),
+    );
+    expect(mockRecordOfficePostReturnIdleStart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        sections: "summary,directions,company_details,invites,members",
+      }),
+    );
+    expect(mockRecordOfficePostReturnIdleDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        sections: "summary,directions,company_details,invites,members",
+      }),
+    );
     expect(mockRecordOfficePostReturnSectionRenderStart.mock.calls).toEqual([
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "summary",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "directions",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "company_details",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "invites",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "members",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
     ]);
-    expect(mockRecordOfficePostReturnLayoutCommit).toHaveBeenCalledWith({
-      owner: "office_hub",
-      focusCycle: 1,
-      section: "summary",
-      sections: "summary,directions,company_details,invites,members",
-    });
+    expect(mockRecordOfficePostReturnLayoutCommit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        section: "summary",
+        sections: "summary,directions,company_details,invites,members",
+      }),
+    );
     expect(mockRecordOfficePostReturnSectionRenderDone.mock.calls).toEqual([
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "summary",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "directions",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "company_details",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "invites",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
       [
-        {
+        expect.objectContaining({
           owner: "office_hub",
           focusCycle: 1,
           section: "members",
           sections: "summary,directions,company_details,invites,members",
-        },
+        }),
       ],
     ]);
-    expect(mockRecordOfficePostReturnChildMountDone).toHaveBeenCalledWith({
-      owner: "office_hub",
-      focusCycle: 1,
-      sections: "summary,directions,company_details,invites,members",
-    });
+    expect(mockRecordOfficePostReturnChildMountDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        sections: "summary,directions,company_details,invites,members",
+      }),
+    );
+    expect(
+      new Set(
+        mockRecordOfficePostReturnSubtreeStart.mock.calls.map(
+          ([payload]) => payload.subtree,
+        ),
+      ),
+    ).toEqual(
+      new Set([
+        "layout_effect_mount",
+        "render_effect_mount",
+        "focus_effect_callback",
+        "idle_callback",
+        "scroll_view_layout",
+        "scroll_view_content",
+        "summary_header",
+        "summary_meta",
+        "summary_badges",
+        "directions_cards",
+        "company_details_rows",
+        "invites_list",
+        "members_list",
+      ]),
+    );
+    expect(
+      new Set(
+        mockRecordOfficePostReturnSubtreeDone.mock.calls.map(
+          ([payload]) => payload.subtree,
+        ),
+      ),
+    ).toEqual(
+      new Set([
+        "layout_effect_mount",
+        "render_effect_mount",
+        "focus_effect_callback",
+        "idle_callback",
+        "scroll_view_layout",
+        "scroll_view_content",
+        "summary_header",
+        "summary_meta",
+        "summary_badges",
+        "directions_cards",
+        "company_details_rows",
+        "invites_list",
+        "members_list",
+      ]),
+    );
+    expect(mockRecordOfficePostReturnSubtreeFailure).not.toHaveBeenCalled();
     expect(mockRecordOfficePostReturnFailure).not.toHaveBeenCalled();
+  });
+
+  it("mounts only the requested post-return probe subtree when a debug probe is supplied", async () => {
+    mockUseLocalSearchParams.mockReturnValue({ postReturnProbe: "members" });
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(renderer!.root.findAllByProps({ testID: "office-summary" })).toEqual(
+      [],
+    );
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-section-directions" }),
+    ).toEqual([]);
+    expect(
+      renderer!.root.findAllByProps({
+        testID: "office-section-company-details",
+      }),
+    ).toEqual([]);
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-section-invites" }),
+    ).toEqual([]);
+    expect(
+      renderer!.root.findByProps({ testID: "office-section-members" }),
+    ).toBeTruthy();
+
+    await act(async () => {
+      renderer!.root
+        .findByProps({ testID: "office-section-members" })
+        .props.onLayout({
+          nativeEvent: { layout: { y: 40 } },
+        });
+    });
+
+    expect(mockRecordOfficePostReturnChildMountStart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        sections: "members",
+        probe: "members",
+      }),
+    );
+    expect(mockRecordOfficePostReturnSectionRenderStart.mock.calls).toEqual([
+      [
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "members",
+          sections: "members",
+          probe: "members",
+        }),
+      ],
+    ]);
+    expect(mockRecordOfficePostReturnChildMountDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        sections: "members",
+        probe: "members",
+      }),
+    );
   });
 
   it("opens a role-specific modal from contextual plus and hands invite code straight to native share", async () => {
@@ -560,24 +783,37 @@ describe("OfficeHubScreen", () => {
     });
 
     await act(async () => {
-      renderer!.root.findByProps({ testID: "office-direction-add-foreman" }).props.onPress();
+      renderer!.root
+        .findByProps({ testID: "office-direction-add-foreman" })
+        .props.onPress();
     });
 
-    expect(renderer!.root.findByProps({ testID: "office-role-invite-modal" })).toBeTruthy();
     expect(
-      String(renderer!.root.findByProps({ testID: "office-role-invite-role" }).props.children),
+      renderer!.root.findByProps({ testID: "office-role-invite-modal" }),
+    ).toBeTruthy();
+    expect(
+      String(
+        renderer!.root.findByProps({ testID: "office-role-invite-role" }).props
+          .children,
+      ),
     ).toContain("Прораб");
-    expect(renderer!.root.findAllByProps({ testID: "office-invite-role-buyer" })).toEqual(
-      [],
-    );
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-invite-role-buyer" }),
+    ).toEqual([]);
 
     await act(async () => {
-      renderer!.root.findByProps({ testID: "office-invite-name" }).props.onChangeText("Нурбек");
-      renderer!.root.findByProps({ testID: "office-invite-phone" }).props.onChangeText("+996555000111");
+      renderer!.root
+        .findByProps({ testID: "office-invite-name" })
+        .props.onChangeText("Нурбек");
+      renderer!.root
+        .findByProps({ testID: "office-invite-phone" })
+        .props.onChangeText("+996555000111");
     });
 
     await act(async () => {
-      renderer!.root.findByProps({ testID: "office-create-invite" }).props.onPress();
+      renderer!.root
+        .findByProps({ testID: "office-create-invite" })
+        .props.onPress();
     });
     await act(async () => {
       await Promise.resolve();
@@ -598,11 +834,14 @@ describe("OfficeHubScreen", () => {
       inviteCode: "GOX-FOREMAN",
     });
     expect(
-      String(renderer!.root.findByProps({ testID: "office-invite-feedback" }).props.children),
+      String(
+        renderer!.root.findByProps({ testID: "office-invite-feedback" }).props
+          .children,
+      ),
     ).toContain("Код");
-    expect(renderer!.root.findAllByProps({ testID: "office-invite-handoff" })).toEqual(
-      [],
-    );
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-invite-handoff" }),
+    ).toEqual([]);
   });
 
   it("shows an explicit desktop handoff block with copy-first actions on web flow", async () => {
@@ -626,7 +865,8 @@ describe("OfficeHubScreen", () => {
         companyName: "ACME Build",
         roleLabel: "Прораб",
         inviteCode: "GOX-FOREMAN",
-        instruction: "Установите приложение GOX Build и активируйте код: GOX-FOREMAN",
+        instruction:
+          "Установите приложение GOX Build и активируйте код: GOX-FOREMAN",
         message:
           "Вас пригласили в компанию ACME Build на роль Прораб.\nКод активации: GOX-FOREMAN",
         whatsappUrl: "https://wa.me/?text=GOX-FOREMAN",
@@ -650,54 +890,90 @@ describe("OfficeHubScreen", () => {
     });
 
     await act(async () => {
-      renderer!.root.findByProps({ testID: "office-direction-add-foreman" }).props.onPress();
+      renderer!.root
+        .findByProps({ testID: "office-direction-add-foreman" })
+        .props.onPress();
     });
     await act(async () => {
-      renderer!.root.findByProps({ testID: "office-invite-name" }).props.onChangeText("Нурбек");
-      renderer!.root.findByProps({ testID: "office-invite-phone" }).props.onChangeText("+996555000111");
+      renderer!.root
+        .findByProps({ testID: "office-invite-name" })
+        .props.onChangeText("Нурбек");
+      renderer!.root
+        .findByProps({ testID: "office-invite-phone" })
+        .props.onChangeText("+996555000111");
     });
 
     await act(async () => {
-      renderer!.root.findByProps({ testID: "office-create-invite" }).props.onPress();
+      renderer!.root
+        .findByProps({ testID: "office-create-invite" })
+        .props.onPress();
     });
     await act(async () => {
       await Promise.resolve();
       await Promise.resolve();
     });
 
-    expect(renderer!.root.findByProps({ testID: "office-invite-handoff" })).toBeTruthy();
     expect(
-      String(renderer!.root.findByProps({ testID: "office-invite-handoff-company" }).props.children),
+      renderer!.root.findByProps({ testID: "office-invite-handoff" }),
+    ).toBeTruthy();
+    expect(
+      String(
+        renderer!.root.findByProps({ testID: "office-invite-handoff-company" })
+          .props.children,
+      ),
     ).toContain("ACME Build");
     expect(
-      String(renderer!.root.findByProps({ testID: "office-invite-handoff-role" }).props.children),
+      String(
+        renderer!.root.findByProps({ testID: "office-invite-handoff-role" })
+          .props.children,
+      ),
     ).toContain("Прораб");
     expect(
-      String(renderer!.root.findByProps({ testID: "office-invite-handoff-code" }).props.children),
+      String(
+        renderer!.root.findByProps({ testID: "office-invite-handoff-code" })
+          .props.children,
+      ),
     ).toContain("GOX-FOREMAN");
 
-    expect(renderer!.root.findByProps({ testID: "office-invite-copy-code" })).toBeTruthy();
-    expect(renderer!.root.findByProps({ testID: "office-invite-copy-message" })).toBeTruthy();
-    expect(renderer!.root.findByProps({ testID: "office-invite-open-whatsapp" })).toBeTruthy();
-    expect(renderer!.root.findByProps({ testID: "office-invite-open-telegram" })).toBeTruthy();
-    expect(renderer!.root.findByProps({ testID: "office-invite-open-email" })).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-invite-copy-code" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-invite-copy-message" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-invite-open-whatsapp" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-invite-open-telegram" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-invite-open-email" }),
+    ).toBeTruthy();
 
     await act(async () => {
-      renderer!.root.findByProps({ testID: "office-invite-copy-code" }).props.onPress();
+      renderer!.root
+        .findByProps({ testID: "office-invite-copy-code" })
+        .props.onPress();
     });
 
     expect(mockCopyOfficeInviteText).toHaveBeenCalledWith("GOX-FOREMAN");
     expect(
       String(
-        renderer!.root.findByProps({ testID: "office-invite-handoff-feedback" }).props.children,
+        renderer!.root.findByProps({ testID: "office-invite-handoff-feedback" })
+          .props.children,
       ),
     ).toContain("Код скопирован");
 
     await act(async () => {
-      renderer!.root.findByProps({ testID: "office-invite-open-whatsapp" }).props.onPress();
+      renderer!.root
+        .findByProps({ testID: "office-invite-open-whatsapp" })
+        .props.onPress();
     });
 
     expect(mockOpenURL).toHaveBeenCalledWith("https://wa.me/?text=GOX-FOREMAN");
-    expect(renderer!.root.findAllByProps({ testID: "office-invite-feedback" })).toEqual([]);
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-invite-feedback" }),
+    ).toEqual([]);
   });
 });

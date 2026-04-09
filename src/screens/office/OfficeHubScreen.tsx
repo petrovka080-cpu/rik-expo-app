@@ -14,11 +14,19 @@ import {
   View,
   type LayoutChangeEvent,
 } from "react-native";
-import { useFocusEffect, useRouter, type Href } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+  type Href,
+} from "expo-router";
 
 import RoleScreenLayout from "../../components/layout/RoleScreenLayout";
 import { buildAppAccessModel } from "../../lib/appAccessModel";
 import {
+  formatOfficePostReturnProbe,
+  getOfficePostReturnProbe,
+  normalizeOfficePostReturnProbe,
   recordOfficeReentryComponentMount,
   recordOfficeReentryEffectDone,
   recordOfficeReentryEffectStart,
@@ -32,7 +40,13 @@ import {
   recordOfficePostReturnLayoutCommit,
   recordOfficePostReturnSectionRenderDone,
   recordOfficePostReturnSectionRenderStart,
+  recordOfficePostReturnSubtreeDone,
+  recordOfficePostReturnSubtreeFailure,
+  recordOfficePostReturnSubtreeStart,
   recordOfficeReentryRenderSuccess,
+  setOfficePostReturnProbe,
+  type OfficePostReturnProbe,
+  type OfficePostReturnSubtree,
 } from "../../lib/navigation/officeReentryBreadcrumbs";
 import { getProfileRoleLabel } from "../profile/profile.helpers";
 import {
@@ -69,6 +83,10 @@ type PostReturnSectionKey =
   | "members"
   | "company_create"
   | "rules";
+type CompanyPostReturnSectionKey = Extract<
+  PostReturnSectionKey,
+  "summary" | "directions" | "company_details" | "invites" | "members"
+>;
 type InviteFormDraft = {
   name: string;
   phone: string;
@@ -155,12 +173,12 @@ const COPY_BASE = {
   directionsTitle: "Управляемые направления",
   directionsLead:
     "Откройте нужный раздел для работы или добавьте сотрудника сразу через +.",
-  noDirections: "Рабочие направления появятся после подтвержденной office-роли.",
+  noDirections:
+    "Рабочие направления появятся после подтвержденной office-роли.",
   companyCreateTitle: "Создать компанию",
   companyCreateLead:
     "После создания вы сразу входите как директор и получаете все управляемые направления.",
-  companyLead:
-    "Карточка компании и объекта, заполненная при создании Office.",
+  companyLead: "Карточка компании и объекта, заполненная при создании Office.",
   companyDetailsTitle: "Реквизиты компании",
   membersTitle: "Сотрудники",
   membersLead: "Подтвержденные сотрудники и их текущие роли.",
@@ -303,9 +321,16 @@ function getVisibleCompanyDetails(
   })).filter((item) => item.value);
 }
 
-function getPostReturnSections(data: OfficeAccessScreenData): PostReturnSectionKey[] {
+function getPostReturnSections(
+  data: OfficeAccessScreenData,
+): PostReturnSectionKey[] {
   if (data.company) {
-    const sections: PostReturnSectionKey[] = ["summary", "directions", "invites", "members"];
+    const sections: PostReturnSectionKey[] = [
+      "summary",
+      "directions",
+      "invites",
+      "members",
+    ];
     if (getVisibleCompanyDetails(data.company).length > 0) {
       sections.splice(2, 0, "company_details");
     }
@@ -313,6 +338,39 @@ function getPostReturnSections(data: OfficeAccessScreenData): PostReturnSectionK
   }
 
   return ["company_create", "rules"];
+}
+
+function shouldRenderCompanySection(
+  section: CompanyPostReturnSectionKey,
+  probe: readonly OfficePostReturnProbe[],
+) {
+  if (probe.includes("all")) return true;
+
+  switch (section) {
+    case "summary":
+      return probe.includes("header_meta") || probe.includes("summary");
+    case "directions":
+      return probe.includes("directions");
+    case "company_details":
+      return probe.includes("company_details");
+    case "invites":
+      return probe.includes("invites");
+    case "members":
+      return probe.includes("members");
+    default:
+      return true;
+  }
+}
+
+function getVisiblePostReturnSections(
+  data: OfficeAccessScreenData,
+  probe: readonly OfficePostReturnProbe[],
+) {
+  return getPostReturnSections(data).filter((section) => {
+    if (!data.company) return true;
+    if (section === "company_create" || section === "rules") return true;
+    return shouldRenderCompanySection(section, probe);
+  });
 }
 
 const formatDate = (value: string | null): string => {
@@ -340,7 +398,9 @@ function DirectionCard(props: {
         <View
           style={[
             styles.accent,
-            { backgroundColor: props.card.primary ? "#FFFFFF" : props.card.tone },
+            {
+              backgroundColor: props.card.primary ? "#FFFFFF" : props.card.tone,
+            },
           ]}
         />
         {props.canInvite && props.card.inviteRole ? (
@@ -429,7 +489,9 @@ function MemberCard(props: {
         <Text style={styles.entityMeta}>{props.member.phone}</Text>
       ) : null}
       {props.member.createdAt ? (
-        <Text style={styles.entityMeta}>Добавлен: {formatDate(props.member.createdAt)}</Text>
+        <Text style={styles.entityMeta}>
+          Добавлен: {formatDate(props.member.createdAt)}
+        </Text>
       ) : null}
       {props.canManage && !props.member.isOwner ? (
         <View style={styles.chips}>
@@ -444,7 +506,9 @@ function MemberCard(props: {
                 onPress={() => props.onAssignRole(props.member.userId, role)}
                 style={[styles.chip, active && styles.chipActive]}
               >
-                <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                <Text
+                  style={[styles.chipText, active && styles.chipTextActive]}
+                >
                   {getProfileRoleLabel(role)}
                 </Text>
               </Pressable>
@@ -462,7 +526,9 @@ function InviteCard(props: { invite: OfficeAccessInvite }) {
       <View style={styles.entityHeader}>
         <View style={styles.entityHeaderMain}>
           <Text style={styles.entityTitle}>{props.invite.name}</Text>
-          <Text style={styles.entityMeta}>{getProfileRoleLabel(props.invite.role)}</Text>
+          <Text style={styles.entityMeta}>
+            {getProfileRoleLabel(props.invite.role)}
+          </Text>
         </View>
         <View style={[styles.statusBadge, styles.statusPending]}>
           <Text style={[styles.statusText, styles.statusTextPending]}>
@@ -482,8 +548,62 @@ function InviteCard(props: { invite: OfficeAccessInvite }) {
   );
 }
 
+type OfficePostReturnSubtreeBoundaryProps = {
+  children: React.ReactNode;
+  onError: (error: Error, info: React.ErrorInfo) => void;
+  onMount: () => void;
+};
+
+type OfficePostReturnSubtreeBoundaryState = {
+  error: Error | null;
+};
+
+class OfficePostReturnSubtreeBoundary extends React.Component<
+  OfficePostReturnSubtreeBoundaryProps,
+  OfficePostReturnSubtreeBoundaryState
+> {
+  state: OfficePostReturnSubtreeBoundaryState = {
+    error: null,
+  };
+
+  static getDerivedStateFromError(
+    error: Error,
+  ): Partial<OfficePostReturnSubtreeBoundaryState> {
+    return { error };
+  }
+
+  componentDidMount() {
+    this.props.onMount();
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    this.props.onError(error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      throw this.state.error;
+    }
+
+    return this.props.children;
+  }
+}
+
 export default function OfficeHubScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    postReturnProbe?: string | string[];
+  }>();
+  const requestedPostReturnProbe = useMemo(
+    () => normalizeOfficePostReturnProbe(params.postReturnProbe),
+    [params.postReturnProbe],
+  );
+  const activePostReturnProbe =
+    requestedPostReturnProbe ?? getOfficePostReturnProbe();
+  const postReturnProbeLabel = useMemo(
+    () => formatOfficePostReturnProbe(activePostReturnProbe),
+    [activePostReturnProbe],
+  );
   const scrollRef = useRef<ScrollView | null>(null);
   const offsetsRef = useRef<Record<SectionKey, number>>({
     members: 0,
@@ -498,29 +618,122 @@ export default function OfficeHubScreen() {
   const [savingRole, setSavingRole] = useState<string | null>(null);
   const [companyDraft, setCompanyDraft] =
     useState<CreateCompanyDraft>(EMPTY_COMPANY_DRAFT);
-  const [inviteDraft, setInviteDraft] = useState<InviteFormDraft>(buildInviteDraft());
+  const [inviteDraft, setInviteDraft] =
+    useState<InviteFormDraft>(buildInviteDraft());
   const [companyFeedback, setCompanyFeedback] = useState<string | null>(null);
   const [inviteFeedback, setInviteFeedback] = useState<string | null>(null);
-  const [inviteCard, setInviteCard] = useState<OfficeWorkspaceCard | null>(null);
-  const [inviteHandoff, setInviteHandoff] = useState<OfficeInviteHandoff | null>(
+  const [inviteCard, setInviteCard] = useState<OfficeWorkspaceCard | null>(
     null,
   );
-  const [inviteHandoffFeedback, setInviteHandoffFeedback] = useState<string | null>(
-    null,
-  );
+  const [inviteHandoff, setInviteHandoff] =
+    useState<OfficeInviteHandoff | null>(null);
+  const [inviteHandoffFeedback, setInviteHandoffFeedback] = useState<
+    string | null
+  >(null);
   const isMountedRef = useRef(true);
   const focusCycleRef = useRef(0);
   const postReturnFrameRef = useRef<number | null>(null);
-  const postReturnInteractionRef =
-    useRef<ReturnType<typeof InteractionManager.runAfterInteractions> | null>(null);
+  const postReturnInteractionRef = useRef<ReturnType<
+    typeof InteractionManager.runAfterInteractions
+  > | null>(null);
   const postReturnPendingSectionsRef = useRef<PostReturnSectionKey[]>([]);
-  const postReturnCommittedSectionsRef = useRef<Set<PostReturnSectionKey>>(new Set());
+  const postReturnCommittedSectionsRef = useRef<Set<PostReturnSectionKey>>(
+    new Set(),
+  );
   const postReturnLayoutCommitRef = useRef(false);
+  const postReturnStartedSubtreesRef = useRef<Set<OfficePostReturnSubtree>>(
+    new Set(),
+  );
+  const postReturnCompletedSubtreesRef = useRef<Set<OfficePostReturnSubtree>>(
+    new Set(),
+  );
+
+  React.useEffect(() => {
+    if (requestedPostReturnProbe) {
+      setOfficePostReturnProbe(requestedPostReturnProbe);
+      return;
+    }
+    if (postReturnProbeLabel !== "all") {
+      setOfficePostReturnProbe("all");
+    }
+  }, [postReturnProbeLabel, requestedPostReturnProbe]);
+
+  const buildPostReturnExtra = useCallback(
+    (extra?: Record<string, unknown>) => {
+      const nextExtra: Record<string, unknown> = {
+        owner: "office_hub",
+        focusCycle: focusCycleRef.current,
+        sections: postReturnPendingSectionsRef.current.join(",") || "none",
+        ...(extra ?? {}),
+      };
+
+      if (postReturnProbeLabel !== "all" && nextExtra.probe == null) {
+        nextExtra.probe = postReturnProbeLabel;
+      }
+
+      return nextExtra;
+    },
+    [postReturnProbeLabel],
+  );
+
+  const recordPostReturnSubtreeStart = useCallback(
+    (subtree: OfficePostReturnSubtree, extra?: Record<string, unknown>) => {
+      if (postReturnStartedSubtreesRef.current.has(subtree)) return;
+      postReturnStartedSubtreesRef.current.add(subtree);
+      recordOfficePostReturnSubtreeStart(
+        buildPostReturnExtra({
+          subtree,
+          ...(extra ?? {}),
+        }),
+      );
+    },
+    [buildPostReturnExtra],
+  );
+
+  const recordPostReturnSubtreeDone = useCallback(
+    (subtree: OfficePostReturnSubtree, extra?: Record<string, unknown>) => {
+      if (postReturnCompletedSubtreesRef.current.has(subtree)) return;
+      if (!postReturnStartedSubtreesRef.current.has(subtree)) {
+        recordPostReturnSubtreeStart(subtree, extra);
+      }
+      postReturnCompletedSubtreesRef.current.add(subtree);
+      recordOfficePostReturnSubtreeDone(
+        buildPostReturnExtra({
+          subtree,
+          ...(extra ?? {}),
+        }),
+      );
+    },
+    [buildPostReturnExtra, recordPostReturnSubtreeStart],
+  );
+
+  const handleSubtreeLayout = useCallback(
+    (subtree: OfficePostReturnSubtree) => (_event: LayoutChangeEvent) => {
+      recordPostReturnSubtreeDone(subtree);
+    },
+    [recordPostReturnSubtreeDone],
+  );
+
+  const handleSubtreeFailure = useCallback(
+    (subtree: OfficePostReturnSubtree, error: Error, info: React.ErrorInfo) => {
+      recordOfficePostReturnSubtreeFailure({
+        error,
+        errorStage: "subtree_boundary",
+        extra: buildPostReturnExtra({
+          subtree,
+          componentStack: String(info.componentStack || "")
+            .trim()
+            .slice(0, 2000),
+        }),
+      });
+    },
+    [buildPostReturnExtra],
+  );
 
   const cancelPostReturnIdle = useCallback(() => {
     if (
-      postReturnFrameRef.current != null
-      && typeof cancelAnimationFrame === "function"
+      postReturnFrameRef.current != null &&
+      typeof cancelAnimationFrame === "function"
     ) {
       cancelAnimationFrame(postReturnFrameRef.current);
     }
@@ -529,40 +742,43 @@ export default function OfficeHubScreen() {
     postReturnInteractionRef.current = null;
   }, []);
 
-  const recordPostReturnSectionDone = useCallback((section: PostReturnSectionKey) => {
-    const pendingSections = postReturnPendingSectionsRef.current;
-    if (!pendingSections.includes(section)) return;
+  const recordPostReturnSectionDone = useCallback(
+    (section: PostReturnSectionKey) => {
+      const pendingSections = postReturnPendingSectionsRef.current;
+      if (!pendingSections.includes(section)) return;
 
-    const sections = pendingSections.join(",") || "none";
-    if (!postReturnLayoutCommitRef.current) {
-      postReturnLayoutCommitRef.current = true;
-      recordOfficePostReturnLayoutCommit({
-        owner: "office_hub",
-        focusCycle: focusCycleRef.current,
-        section,
-        sections,
-      });
-    }
+      const sections = pendingSections.join(",") || "none";
+      if (!postReturnLayoutCommitRef.current) {
+        postReturnLayoutCommitRef.current = true;
+        recordOfficePostReturnLayoutCommit(
+          buildPostReturnExtra({
+            section,
+            sections,
+          }),
+        );
+      }
 
-    const committedSections = postReturnCommittedSectionsRef.current;
-    if (committedSections.has(section)) return;
+      const committedSections = postReturnCommittedSectionsRef.current;
+      if (committedSections.has(section)) return;
 
-    committedSections.add(section);
-    recordOfficePostReturnSectionRenderDone({
-      owner: "office_hub",
-      focusCycle: focusCycleRef.current,
-      section,
-      sections,
-    });
+      committedSections.add(section);
+      recordOfficePostReturnSectionRenderDone(
+        buildPostReturnExtra({
+          section,
+          sections,
+        }),
+      );
 
-    if (committedSections.size === pendingSections.length) {
-      recordOfficePostReturnChildMountDone({
-        owner: "office_hub",
-        focusCycle: focusCycleRef.current,
-        sections,
-      });
-    }
-  }, []);
+      if (committedSections.size === pendingSections.length) {
+        recordOfficePostReturnChildMountDone(
+          buildPostReturnExtra({
+            sections,
+          }),
+        );
+      }
+    },
+    [buildPostReturnExtra],
+  );
 
   const handleSectionLayout = useCallback(
     (section: PostReturnSectionKey, offsetKey?: SectionKey) =>
@@ -575,102 +791,138 @@ export default function OfficeHubScreen() {
     [recordPostReturnSectionDone],
   );
 
-  const startPostReturnTrace = useCallback((next: OfficeAccessScreenData) => {
-    const focusCycle = focusCycleRef.current;
-    const nextSections = getPostReturnSections(next);
-    const sections = nextSections.join(",") || "none";
+  const startPostReturnTrace = useCallback(
+    (next: OfficeAccessScreenData) => {
+      const focusCycle = focusCycleRef.current;
+      const nextSections = getVisiblePostReturnSections(
+        next,
+        activePostReturnProbe,
+      );
+      const sections = nextSections.join(",") || "none";
 
-    cancelPostReturnIdle();
-    postReturnPendingSectionsRef.current = nextSections;
-    postReturnCommittedSectionsRef.current = new Set();
-    postReturnLayoutCommitRef.current = false;
+      cancelPostReturnIdle();
+      postReturnPendingSectionsRef.current = nextSections;
+      postReturnCommittedSectionsRef.current = new Set();
+      postReturnLayoutCommitRef.current = false;
+      postReturnStartedSubtreesRef.current = new Set();
+      postReturnCompletedSubtreesRef.current = new Set();
 
-    recordOfficePostReturnChildMountStart({
-      owner: "office_hub",
-      focusCycle,
-      sections,
-    });
-    nextSections.forEach((section) => {
-      recordOfficePostReturnSectionRenderStart({
-        owner: "office_hub",
-        focusCycle,
-        section,
-        sections,
+      recordOfficePostReturnChildMountStart(
+        buildPostReturnExtra({
+          focusCycle,
+          sections,
+        }),
+      );
+      nextSections.forEach((section) => {
+        recordOfficePostReturnSectionRenderStart(
+          buildPostReturnExtra({
+            focusCycle,
+            section,
+            sections,
+          }),
+        );
       });
-    });
-    recordOfficePostReturnIdleStart({
-      owner: "office_hub",
-      focusCycle,
-      sections,
-    });
+      recordOfficePostReturnIdleStart(
+        buildPostReturnExtra({
+          focusCycle,
+          sections,
+        }),
+      );
 
-    const finishIdle = () => {
-      if (!isMountedRef.current) return;
-      recordOfficePostReturnIdleDone({
-        owner: "office_hub",
-        focusCycle,
-        sections,
-      });
-      if (nextSections.length === 0) {
-        recordOfficePostReturnChildMountDone({
-          owner: "office_hub",
+      const finishIdle = () => {
+        if (!isMountedRef.current) return;
+        recordPostReturnSubtreeStart("idle_callback", {
           focusCycle,
           sections,
         });
-      }
-    };
-
-    const scheduleIdle = () => {
-      try {
-        postReturnInteractionRef.current =
-          InteractionManager.runAfterInteractions(finishIdle);
-      } catch (error: unknown) {
-        recordOfficePostReturnFailure({
-          error,
-          errorStage: "post_return_idle_schedule",
-          extra: {
-            owner: "office_hub",
+        recordOfficePostReturnIdleDone(
+          buildPostReturnExtra({
             focusCycle,
             sections,
-          },
+          }),
+        );
+        recordPostReturnSubtreeDone("idle_callback", {
+          focusCycle,
+          sections,
         });
+        if (nextSections.length === 0) {
+          recordOfficePostReturnChildMountDone(
+            buildPostReturnExtra({
+              focusCycle,
+              sections,
+            }),
+          );
+        }
+      };
+
+      const scheduleIdle = () => {
+        try {
+          postReturnInteractionRef.current =
+            InteractionManager.runAfterInteractions(finishIdle);
+        } catch (error: unknown) {
+          recordOfficePostReturnFailure({
+            error,
+            errorStage: "post_return_idle_schedule",
+            extra: buildPostReturnExtra({
+              focusCycle,
+              sections,
+            }),
+          });
+        }
+      };
+
+      if (typeof requestAnimationFrame === "function") {
+        postReturnFrameRef.current = requestAnimationFrame(() => {
+          scheduleIdle();
+        });
+        return;
       }
-    };
 
-    if (typeof requestAnimationFrame === "function") {
-      postReturnFrameRef.current = requestAnimationFrame(() => {
-        scheduleIdle();
-      });
-      return;
-    }
-
-    scheduleIdle();
-  }, [cancelPostReturnIdle]);
+      scheduleIdle();
+    },
+    [
+      activePostReturnProbe,
+      buildPostReturnExtra,
+      cancelPostReturnIdle,
+      recordPostReturnSubtreeDone,
+      recordPostReturnSubtreeStart,
+    ],
+  );
 
   React.useLayoutEffect(() => {
-    recordOfficeReentryComponentMount({
-      owner: "office_hub",
-    });
-  }, []);
+    recordPostReturnSubtreeStart("layout_effect_mount");
+    recordOfficeReentryComponentMount(buildPostReturnExtra());
+    recordPostReturnSubtreeDone("layout_effect_mount");
+  }, [
+    buildPostReturnExtra,
+    recordPostReturnSubtreeDone,
+    recordPostReturnSubtreeStart,
+  ]);
 
   React.useEffect(() => {
     isMountedRef.current = true;
-    recordOfficeReentryRenderSuccess({
-      owner: "office_hub",
-    });
+    recordPostReturnSubtreeStart("render_effect_mount");
+    recordOfficeReentryRenderSuccess(buildPostReturnExtra());
+    recordPostReturnSubtreeDone("render_effect_mount");
     return () => {
       isMountedRef.current = false;
       cancelPostReturnIdle();
     };
-  }, [cancelPostReturnIdle]);
+  }, [
+    buildPostReturnExtra,
+    cancelPostReturnIdle,
+    recordPostReturnSubtreeDone,
+    recordPostReturnSubtreeStart,
+  ]);
 
   const loadScreen = useCallback(
     async (mode: "initial" | "refresh" = "initial") => {
       if (mode === "initial") {
-        recordOfficeReentryEffectStart({
-          owner: "office_hub",
-          mode,
-        });
+        recordOfficeReentryEffectStart(
+          buildPostReturnExtra({
+            mode,
+          }),
+        );
       }
       if (mode === "refresh") {
         setRefreshing(true);
@@ -686,15 +938,16 @@ export default function OfficeHubScreen() {
           email: current.email || next.profileEmail || "",
         }));
         if (mode === "initial") {
-          recordOfficeReentryEffectDone({
-            owner: "office_hub",
-            mode,
-            companyId: next.company?.id ?? null,
-            availableOfficeRoles: next.accessSourceSnapshot.companyMemberships
-              .map((item) => item.role)
-              .filter(Boolean)
-              .join(","),
-          });
+          recordOfficeReentryEffectDone(
+            buildPostReturnExtra({
+              mode,
+              companyId: next.company?.id ?? null,
+              availableOfficeRoles: next.accessSourceSnapshot.companyMemberships
+                .map((item) => item.role)
+                .filter(Boolean)
+                .join(","),
+            }),
+          );
           startPostReturnTrace(next);
         }
       } catch (error: unknown) {
@@ -702,10 +955,9 @@ export default function OfficeHubScreen() {
           recordOfficeReentryFailure({
             error,
             errorStage: "load_screen",
-            extra: {
-              owner: "office_hub",
+            extra: buildPostReturnExtra({
               mode,
-            },
+            }),
           });
         }
         Alert.alert(
@@ -719,21 +971,30 @@ export default function OfficeHubScreen() {
         setRefreshing(false);
       }
     },
-    [startPostReturnTrace],
+    [buildPostReturnExtra, startPostReturnTrace],
   );
 
   useFocusEffect(
     useCallback(() => {
       focusCycleRef.current += 1;
-      recordOfficePostReturnFocus({
-        owner: "office_hub",
-        focusCycle: focusCycleRef.current,
-      });
+      recordPostReturnSubtreeStart("focus_effect_callback");
+      recordOfficePostReturnFocus(
+        buildPostReturnExtra({
+          focusCycle: focusCycleRef.current,
+        }),
+      );
       void loadScreen();
+      recordPostReturnSubtreeDone("focus_effect_callback");
       return () => {
         cancelPostReturnIdle();
       };
-    }, [cancelPostReturnIdle, loadScreen]),
+    }, [
+      buildPostReturnExtra,
+      cancelPostReturnIdle,
+      loadScreen,
+      recordPostReturnSubtreeDone,
+      recordPostReturnSubtreeStart,
+    ]),
   );
 
   const accessModel = useMemo(
@@ -790,7 +1051,9 @@ export default function OfficeHubScreen() {
   const roleLabel = useMemo(
     () =>
       getProfileRoleLabel(
-        data.companyAccessRole || accessModel.activeOfficeRole || data.profileRole,
+        data.companyAccessRole ||
+          accessModel.activeOfficeRole ||
+          data.profileRole,
       ),
     [accessModel.activeOfficeRole, data.companyAccessRole, data.profileRole],
   );
@@ -811,8 +1074,31 @@ export default function OfficeHubScreen() {
     () => getVisibleCompanyDetails(data.company),
     [data.company],
   );
+  const visiblePostReturnSections = useMemo(
+    () => new Set(getVisiblePostReturnSections(data, activePostReturnProbe)),
+    [activePostReturnProbe, data],
+  );
   const visibleRoleLabel =
     roleLabel && roleLabel !== COPY.noRole ? roleLabel : null;
+
+  const shouldRenderCompanyPostReturnSection = useCallback(
+    (section: CompanyPostReturnSectionKey) =>
+      visiblePostReturnSections.has(section),
+    [visiblePostReturnSections],
+  );
+
+  const renderSubtreeBoundary = useCallback(
+    (subtree: OfficePostReturnSubtree, children: React.ReactNode) => (
+      <OfficePostReturnSubtreeBoundary
+        key={subtree}
+        onMount={() => recordPostReturnSubtreeStart(subtree)}
+        onError={(error, info) => handleSubtreeFailure(subtree, error, info)}
+      >
+        {children}
+      </OfficePostReturnSubtreeBoundary>
+    ),
+    [handleSubtreeFailure, recordPostReturnSubtreeStart],
+  );
 
   const scrollTo = useCallback((key: SectionKey) => {
     scrollRef.current?.scrollTo({
@@ -989,6 +1275,13 @@ export default function OfficeHubScreen() {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.content}
+        onLayout={handleSubtreeLayout("scroll_view_layout")}
+        onContentSizeChange={(contentWidth, contentHeight) => {
+          recordPostReturnSubtreeDone("scroll_view_content", {
+            contentWidth,
+            contentHeight,
+          });
+        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -1006,495 +1299,647 @@ export default function OfficeHubScreen() {
 
         {data.company ? (
           <>
-            <View
-              testID="office-summary"
-              style={styles.summary}
-              onLayout={handleSectionLayout("summary")}
-            >
-              <View style={styles.summaryHeader}>
-                <Text style={styles.eyebrow}>{COPY.summaryTitle}</Text>
-                <Pressable
-                  testID="office-company-edit"
-                  onPress={handleEditCompany}
-                  style={({ pressed }) => [
-                    styles.editButton,
-                    pressed && styles.pressed,
-                  ]}
-                  accessibilityLabel={COPY.summaryEdit}
-                >
-                  <Text style={styles.editButtonText}>✏️</Text>
-                </Pressable>
-              </View>
-              <Text style={styles.company}>{data.company.name}</Text>
-              {summaryMeta ? (
-                <Text style={styles.summaryMeta}>{summaryMeta}</Text>
-              ) : null}
-              <View style={styles.summaryBadges}>
-                {visibleRoleLabel ? (
-                  <View style={[styles.summaryBadge, styles.summaryBadgeRole]}>
-                    <Text style={styles.summaryBadgeText}>{visibleRoleLabel}</Text>
-                  </View>
-                ) : null}
-                <View
-                  style={[
-                    styles.summaryBadge,
-                    accessStatus.tone === "success" && styles.summaryBadgeSuccess,
-                    accessStatus.tone === "warning" && styles.summaryBadgeWarning,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.summaryBadgeText,
-                      accessStatus.tone === "success" && styles.summaryBadgeTextSuccess,
-                      accessStatus.tone === "warning" && styles.summaryBadgeTextWarning,
-                    ]}
+            {shouldRenderCompanyPostReturnSection("summary") ? (
+              <View
+                testID="office-summary"
+                style={styles.summary}
+                onLayout={handleSectionLayout("summary")}
+              >
+                {renderSubtreeBoundary(
+                  "summary_header",
+                  <View
+                    style={styles.summaryHeader}
+                    onLayout={handleSubtreeLayout("summary_header")}
                   >
-                    {accessStatus.label}
-                  </Text>
-                </View>
+                    <Text style={styles.eyebrow}>{COPY.summaryTitle}</Text>
+                    <Pressable
+                      testID="office-company-edit"
+                      onPress={handleEditCompany}
+                      style={({ pressed }) => [
+                        styles.editButton,
+                        pressed && styles.pressed,
+                      ]}
+                      accessibilityLabel={COPY.summaryEdit}
+                    >
+                      <Text style={styles.editButtonText}>✏️</Text>
+                    </Pressable>
+                  </View>,
+                )}
+                <Text style={styles.company}>{data.company.name}</Text>
+                {summaryMeta
+                  ? renderSubtreeBoundary(
+                      "summary_meta",
+                      <Text
+                        style={styles.summaryMeta}
+                        onLayout={handleSubtreeLayout("summary_meta")}
+                      >
+                        {summaryMeta}
+                      </Text>,
+                    )
+                  : null}
+                {renderSubtreeBoundary(
+                  "summary_badges",
+                  <View
+                    style={styles.summaryBadges}
+                    onLayout={handleSubtreeLayout("summary_badges")}
+                  >
+                    {visibleRoleLabel ? (
+                      <View
+                        style={[styles.summaryBadge, styles.summaryBadgeRole]}
+                      >
+                        <Text style={styles.summaryBadgeText}>
+                          {visibleRoleLabel}
+                        </Text>
+                      </View>
+                    ) : null}
+                    <View
+                      style={[
+                        styles.summaryBadge,
+                        accessStatus.tone === "success" &&
+                          styles.summaryBadgeSuccess,
+                        accessStatus.tone === "warning" &&
+                          styles.summaryBadgeWarning,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.summaryBadgeText,
+                          accessStatus.tone === "success" &&
+                            styles.summaryBadgeTextSuccess,
+                          accessStatus.tone === "warning" &&
+                            styles.summaryBadgeTextWarning,
+                        ]}
+                      >
+                        {accessStatus.label}
+                      </Text>
+                    </View>
+                  </View>,
+                )}
               </View>
-            </View>
+            ) : null}
 
-            <View
-              testID="office-section-directions"
-              style={styles.section}
-              onLayout={handleSectionLayout("directions")}
-            >
-              <Text style={styles.sectionTitle}>{COPY.directionsTitle}</Text>
-              {officeCards.length > 0 ? (
-                <View style={styles.grid}>
-                  {officeCards.map((card) => (
-                    <DirectionCard
-                      key={card.key}
-                      card={card}
-                      canInvite={canManageCompany}
-                      onOpen={() => card.route && router.push(card.route as Href)}
-                      onInvite={() => openInviteModal(card)}
-                    />
-                  ))}
-                </View>
-              ) : (
-                <View style={styles.panel}>
-                  <Text style={styles.helper}>{COPY.noDirections}</Text>
-                </View>
-              )}
-            </View>
+            {shouldRenderCompanyPostReturnSection("directions") ? (
+              <View
+                testID="office-section-directions"
+                style={styles.section}
+                onLayout={handleSectionLayout("directions")}
+              >
+                <Text style={styles.sectionTitle}>{COPY.directionsTitle}</Text>
+                {renderSubtreeBoundary(
+                  "directions_cards",
+                  officeCards.length > 0 ? (
+                    <View
+                      style={styles.grid}
+                      onLayout={handleSubtreeLayout("directions_cards")}
+                    >
+                      {officeCards.map((card) => (
+                        <DirectionCard
+                          key={card.key}
+                          card={card}
+                          canInvite={canManageCompany}
+                          onOpen={() =>
+                            card.route && router.push(card.route as Href)
+                          }
+                          onInvite={() => openInviteModal(card)}
+                        />
+                      ))}
+                    </View>
+                  ) : (
+                    <View
+                      style={styles.panel}
+                      onLayout={handleSubtreeLayout("directions_cards")}
+                    >
+                      <Text style={styles.helper}>{COPY.noDirections}</Text>
+                    </View>
+                  ),
+                )}
+              </View>
+            ) : null}
 
-            {visibleCompanyDetails.length > 0 ? (
+            {shouldRenderCompanyPostReturnSection("company_details") &&
+            visibleCompanyDetails.length > 0 ? (
               <View
                 testID="office-section-company-details"
                 style={styles.section}
                 onLayout={handleSectionLayout("company_details", "company")}
               >
-                <Text style={styles.sectionTitle}>{COPY.companyDetailsTitle}</Text>
-                <View style={styles.panel}>
-                  {visibleCompanyDetails.map((item, index) => (
-                    <View
-                      key={item.label}
-                      style={index === visibleCompanyDetails.length - 1 ? styles.rowLast : styles.row}
-                    >
-                      <Text style={styles.label}>{item.label}</Text>
-                      <Text style={styles.value}>{item.value}</Text>
-                    </View>
-                  ))}
-                </View>
+                <Text style={styles.sectionTitle}>
+                  {COPY.companyDetailsTitle}
+                </Text>
+                {renderSubtreeBoundary(
+                  "company_details_rows",
+                  <View
+                    style={styles.panel}
+                    onLayout={handleSubtreeLayout("company_details_rows")}
+                  >
+                    {visibleCompanyDetails.map((item, index) => (
+                      <View
+                        key={item.label}
+                        style={
+                          index === visibleCompanyDetails.length - 1
+                            ? styles.rowLast
+                            : styles.row
+                        }
+                      >
+                        <Text style={styles.label}>{item.label}</Text>
+                        <Text style={styles.value}>{item.value}</Text>
+                      </View>
+                    ))}
+                  </View>,
+                )}
               </View>
             ) : null}
 
-            <View
-              testID="office-section-invites"
-              style={styles.section}
-              onLayout={handleSectionLayout("invites", "invites")}
-            >
-              <Text style={styles.sectionTitle}>{COPY.invitesTitle}</Text>
-              {inviteFeedback ? (
-                <View style={styles.notice}>
-                  <Text testID="office-invite-feedback" style={styles.noticeText}>
-                    {inviteFeedback}
-                  </Text>
-                </View>
-              ) : null}
-              {inviteHandoff ? (
-                <View testID="office-invite-handoff" style={styles.handoff}>
-                  <Text style={styles.eyebrow}>{COPY.inviteHandoffTitle}</Text>
-                  <Text
-                    testID="office-invite-handoff-role"
-                    style={styles.handoffTitle}
-                  >
-                    {inviteHandoff.roleLabel}
-                  </Text>
-                  <Text style={styles.helper}>{COPY.inviteHandoffLead}</Text>
+            {shouldRenderCompanyPostReturnSection("invites") ? (
+              <View
+                testID="office-section-invites"
+                style={styles.section}
+                onLayout={handleSectionLayout("invites", "invites")}
+              >
+                <Text style={styles.sectionTitle}>{COPY.invitesTitle}</Text>
+                {inviteFeedback ? (
+                  <View style={styles.notice}>
+                    <Text
+                      testID="office-invite-feedback"
+                      style={styles.noticeText}
+                    >
+                      {inviteFeedback}
+                    </Text>
+                  </View>
+                ) : null}
+                {inviteHandoff
+                  ? renderSubtreeBoundary(
+                      "invites_handoff",
+                      <View
+                        testID="office-invite-handoff"
+                        style={styles.handoff}
+                        onLayout={handleSubtreeLayout("invites_handoff")}
+                      >
+                        <Text style={styles.eyebrow}>
+                          {COPY.inviteHandoffTitle}
+                        </Text>
+                        <Text
+                          testID="office-invite-handoff-role"
+                          style={styles.handoffTitle}
+                        >
+                          {inviteHandoff.roleLabel}
+                        </Text>
+                        <Text style={styles.helper}>
+                          {COPY.inviteHandoffLead}
+                        </Text>
+                        <View style={styles.panel}>
+                          <View style={styles.row}>
+                            <Text style={styles.label}>
+                              {COPY.summaryTitle}
+                            </Text>
+                            <Text
+                              testID="office-invite-handoff-company"
+                              style={styles.value}
+                            >
+                              {inviteHandoff.companyName}
+                            </Text>
+                          </View>
+                          <View style={styles.row}>
+                            <Text style={styles.label}>{COPY.summaryRole}</Text>
+                            <Text style={styles.value}>
+                              {inviteHandoff.roleLabel}
+                            </Text>
+                          </View>
+                          <View style={styles.handoffCodeBlock}>
+                            <Text style={styles.label}>Код</Text>
+                            <Text
+                              testID="office-invite-handoff-code"
+                              style={styles.handoffCode}
+                            >
+                              {inviteHandoff.inviteCode}
+                            </Text>
+                          </View>
+                          <View style={styles.rowLast}>
+                            <Text style={styles.label}>
+                              {COPY.inviteHandoffInstruction}
+                            </Text>
+                            <Text style={styles.value}>
+                              {inviteHandoff.instruction}
+                            </Text>
+                          </View>
+                        </View>
+                        {inviteHandoffFeedback ? (
+                          <View style={styles.noticeSoft}>
+                            <Text
+                              testID="office-invite-handoff-feedback"
+                              style={styles.noticeSoftText}
+                            >
+                              {inviteHandoffFeedback}
+                            </Text>
+                          </View>
+                        ) : null}
+                        <View style={styles.actionGrid}>
+                          <Pressable
+                            testID="office-invite-copy-code"
+                            onPress={() =>
+                              void handleCopyInvite(
+                                inviteHandoff.inviteCode,
+                                COPY.inviteCodeCopied,
+                              )
+                            }
+                            style={[styles.secondary, styles.actionButton]}
+                          >
+                            <Text
+                              style={[
+                                styles.secondaryText,
+                                styles.actionButtonText,
+                              ]}
+                            >
+                              {COPY.inviteCopyCode}
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            testID="office-invite-copy-message"
+                            onPress={() =>
+                              void handleCopyInvite(
+                                inviteHandoff.message,
+                                COPY.inviteMessageCopied,
+                              )
+                            }
+                            style={[styles.secondary, styles.actionButton]}
+                          >
+                            <Text
+                              style={[
+                                styles.secondaryText,
+                                styles.actionButtonText,
+                              ]}
+                            >
+                              {COPY.inviteCopyMessage}
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            testID="office-invite-open-whatsapp"
+                            onPress={() =>
+                              void handleOpenInviteChannel(
+                                inviteHandoff.whatsappUrl,
+                              )
+                            }
+                            style={[styles.secondary, styles.actionButton]}
+                          >
+                            <Text
+                              style={[
+                                styles.secondaryText,
+                                styles.actionButtonText,
+                              ]}
+                            >
+                              {COPY.inviteOpenWhatsapp}
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            testID="office-invite-open-telegram"
+                            onPress={() =>
+                              void handleOpenInviteChannel(
+                                inviteHandoff.telegramUrl,
+                              )
+                            }
+                            style={[styles.secondary, styles.actionButton]}
+                          >
+                            <Text
+                              style={[
+                                styles.secondaryText,
+                                styles.actionButtonText,
+                              ]}
+                            >
+                              {COPY.inviteOpenTelegram}
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            testID="office-invite-open-email"
+                            onPress={() =>
+                              void handleOpenInviteChannel(
+                                inviteHandoff.emailUrl,
+                              )
+                            }
+                            style={[styles.secondary, styles.actionButton]}
+                          >
+                            <Text
+                              style={[
+                                styles.secondaryText,
+                                styles.actionButtonText,
+                              ]}
+                            >
+                              {COPY.inviteOpenEmail}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>,
+                    )
+                  : null}
+                {!canManageCompany ? (
                   <View style={styles.panel}>
-                    <View style={styles.row}>
-                      <Text style={styles.label}>{COPY.summaryTitle}</Text>
-                      <Text
-                        testID="office-invite-handoff-company"
-                        style={styles.value}
-                      >
-                        {inviteHandoff.companyName}
-                      </Text>
-                    </View>
-                    <View style={styles.row}>
-                      <Text style={styles.label}>{COPY.summaryRole}</Text>
-                      <Text style={styles.value}>{inviteHandoff.roleLabel}</Text>
-                    </View>
-                    <View style={styles.handoffCodeBlock}>
-                      <Text style={styles.label}>Код</Text>
-                      <Text
-                        testID="office-invite-handoff-code"
-                        style={styles.handoffCode}
-                      >
-                        {inviteHandoff.inviteCode}
-                      </Text>
-                    </View>
-                    <View style={styles.rowLast}>
-                      <Text style={styles.label}>
-                        {COPY.inviteHandoffInstruction}
-                      </Text>
-                      <Text style={styles.value}>{inviteHandoff.instruction}</Text>
-                    </View>
+                    <Text style={styles.helper}>{COPY.invitesManageHint}</Text>
                   </View>
-                  {inviteHandoffFeedback ? (
-                    <View style={styles.noticeSoft}>
-                      <Text
-                        testID="office-invite-handoff-feedback"
-                        style={styles.noticeSoftText}
-                      >
-                        {inviteHandoffFeedback}
-                      </Text>
+                ) : null}
+                {renderSubtreeBoundary(
+                  "invites_list",
+                  data.invites.length > 0 ? (
+                    <View
+                      style={styles.stack}
+                      onLayout={handleSubtreeLayout("invites_list")}
+                    >
+                      {data.invites.map((invite) => (
+                        <InviteCard key={invite.id} invite={invite} />
+                      ))}
                     </View>
-                  ) : null}
-                  <View style={styles.actionGrid}>
-                    <Pressable
-                      testID="office-invite-copy-code"
-                      onPress={() =>
-                        void handleCopyInvite(
-                          inviteHandoff.inviteCode,
-                          COPY.inviteCodeCopied,
-                        )
-                      }
-                      style={[styles.secondary, styles.actionButton]}
+                  ) : (
+                    <View
+                      style={styles.panel}
+                      onLayout={handleSubtreeLayout("invites_list")}
                     >
-                      <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                        {COPY.inviteCopyCode}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      testID="office-invite-copy-message"
-                      onPress={() =>
-                        void handleCopyInvite(
-                          inviteHandoff.message,
-                          COPY.inviteMessageCopied,
-                        )
-                      }
-                      style={[styles.secondary, styles.actionButton]}
-                    >
-                      <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                        {COPY.inviteCopyMessage}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      testID="office-invite-open-whatsapp"
-                      onPress={() =>
-                        void handleOpenInviteChannel(inviteHandoff.whatsappUrl)
-                      }
-                      style={[styles.secondary, styles.actionButton]}
-                    >
-                      <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                        {COPY.inviteOpenWhatsapp}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      testID="office-invite-open-telegram"
-                      onPress={() =>
-                        void handleOpenInviteChannel(inviteHandoff.telegramUrl)
-                      }
-                      style={[styles.secondary, styles.actionButton]}
-                    >
-                      <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                        {COPY.inviteOpenTelegram}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      testID="office-invite-open-email"
-                      onPress={() =>
-                        void handleOpenInviteChannel(inviteHandoff.emailUrl)
-                      }
-                      style={[styles.secondary, styles.actionButton]}
-                    >
-                      <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                        {COPY.inviteOpenEmail}
-                      </Text>
-                    </Pressable>
-                  </View>
-                </View>
-              ) : null}
-              {!canManageCompany ? (
-                <View style={styles.panel}>
-                  <Text style={styles.helper}>{COPY.invitesManageHint}</Text>
-                </View>
-              ) : null}
-              {data.invites.length > 0 ? (
-                <View style={styles.stack}>
-                  {data.invites.map((invite) => (
-                    <InviteCard key={invite.id} invite={invite} />
-                  ))}
-                </View>
-              ) : (
-                <View style={styles.panel}>
-                  <Text style={styles.helper}>{COPY.noInvites}</Text>
-                </View>
-              )}
-            </View>
+                      <Text style={styles.helper}>{COPY.noInvites}</Text>
+                    </View>
+                  ),
+                )}
+              </View>
+            ) : null}
 
-            <View
-              testID="office-section-members"
-              style={styles.section}
-              onLayout={handleSectionLayout("members", "members")}
-            >
-              <Text style={styles.sectionTitle}>{COPY.membersTitle}</Text>
-              {data.members.length > 0 ? (
-                <View style={styles.stack}>
-                  {data.members.map((member) => (
-                    <MemberCard
-                      key={member.userId}
-                      member={member}
-                      canManage={canManageCompany}
-                      savingRole={savingRole}
-                      onAssignRole={handleAssignRole}
-                    />
-                  ))}
-                </View>
-              ) : (
-                <View style={styles.panel}>
-                  <Text style={styles.helper}>{COPY.noMembers}</Text>
-                </View>
-              )}
-            </View>
+            {shouldRenderCompanyPostReturnSection("members") ? (
+              <View
+                testID="office-section-members"
+                style={styles.section}
+                onLayout={handleSectionLayout("members", "members")}
+              >
+                <Text style={styles.sectionTitle}>{COPY.membersTitle}</Text>
+                {renderSubtreeBoundary(
+                  "members_list",
+                  data.members.length > 0 ? (
+                    <View
+                      style={styles.stack}
+                      onLayout={handleSubtreeLayout("members_list")}
+                    >
+                      {data.members.map((member) => (
+                        <MemberCard
+                          key={member.userId}
+                          member={member}
+                          canManage={canManageCompany}
+                          savingRole={savingRole}
+                          onAssignRole={handleAssignRole}
+                        />
+                      ))}
+                    </View>
+                  ) : (
+                    <View
+                      style={styles.panel}
+                      onLayout={handleSubtreeLayout("members_list")}
+                    >
+                      <Text style={styles.helper}>{COPY.noMembers}</Text>
+                    </View>
+                  ),
+                )}
+              </View>
+            ) : null}
           </>
         ) : (
           <>
-          <View
-            style={styles.section}
-            onLayout={handleSectionLayout("company_create", "company")}
-          >
-            <Text style={styles.sectionTitle}>{COPY.companyCreateTitle}</Text>
-            <View style={styles.panel}>
-              <Text style={styles.helper}>{COPY.companyCreateLead}</Text>
-              {COMPANY_FIELDS.map((field) => (
-                <View key={field.key} style={styles.stack}>
-                  <Text style={styles.label}>{field.label}</Text>
-                  <TextInput
-                    testID={
-                      field.key === "name"
-                        ? "office-company-name"
-                        : field.key === "legalAddress"
-                          ? "office-company-legal-address"
-                          : field.key === "inn"
-                            ? "office-company-inn"
-                            : undefined
-                    }
-                    placeholder={field.placeholder}
-                    placeholderTextColor="#94A3B8"
-                    style={[
-                      styles.input,
-                      field.key === "siteAddress" && styles.textArea,
-                    ]}
-                    autoCapitalize={
-                      field.key === "email" || field.key === "website"
-                        ? "none"
-                        : "sentences"
-                    }
-                    keyboardType={
-                      field.key === "phoneMain"
-                        ? "phone-pad"
-                        : field.key === "email"
-                          ? "email-address"
-                          : "default"
-                    }
-                    multiline={field.key === "siteAddress"}
-                    value={companyDraft[field.key]}
-                    onChangeText={(value) =>
-                      setCompanyDraft((current) => ({
-                        ...current,
-                        [field.key]: value,
-                      }))
-                    }
-                  />
-                </View>
-              ))}
-              <View style={styles.stack}>
-                <View style={styles.inline}>
-                  <Text style={styles.label}>Дополнительные телефоны</Text>
-                  <Pressable
-                    testID="office-add-company-phone"
-                    onPress={() =>
-                      setCompanyDraft((current) => ({
-                        ...current,
-                        additionalPhones: [...current.additionalPhones, ""],
-                      }))
-                    }
-                  >
-                    <Text style={styles.link}>Добавить телефон</Text>
-                  </Pressable>
-                </View>
-                {companyDraft.additionalPhones.map((phone, index) => (
-                  <View key={`phone-${index}`} style={styles.phoneRow}>
+            <View
+              style={styles.section}
+              onLayout={handleSectionLayout("company_create", "company")}
+            >
+              <Text style={styles.sectionTitle}>{COPY.companyCreateTitle}</Text>
+              <View style={styles.panel}>
+                <Text style={styles.helper}>{COPY.companyCreateLead}</Text>
+                {COMPANY_FIELDS.map((field) => (
+                  <View key={field.key} style={styles.stack}>
+                    <Text style={styles.label}>{field.label}</Text>
                     <TextInput
-                      testID={`office-company-phone-${index}`}
-                      placeholder="Дополнительный телефон"
+                      testID={
+                        field.key === "name"
+                          ? "office-company-name"
+                          : field.key === "legalAddress"
+                            ? "office-company-legal-address"
+                            : field.key === "inn"
+                              ? "office-company-inn"
+                              : undefined
+                      }
+                      placeholder={field.placeholder}
                       placeholderTextColor="#94A3B8"
-                      style={[styles.input, styles.phoneInput]}
-                      keyboardType="phone-pad"
-                      value={phone}
+                      style={[
+                        styles.input,
+                        field.key === "siteAddress" && styles.textArea,
+                      ]}
+                      autoCapitalize={
+                        field.key === "email" || field.key === "website"
+                          ? "none"
+                          : "sentences"
+                      }
+                      keyboardType={
+                        field.key === "phoneMain"
+                          ? "phone-pad"
+                          : field.key === "email"
+                            ? "email-address"
+                            : "default"
+                      }
+                      multiline={field.key === "siteAddress"}
+                      value={companyDraft[field.key]}
                       onChangeText={(value) =>
                         setCompanyDraft((current) => ({
                           ...current,
-                          additionalPhones: current.additionalPhones.map(
-                            (item, itemIndex) =>
-                              itemIndex === index ? value : item,
-                          ),
+                          [field.key]: value,
                         }))
                       }
                     />
+                  </View>
+                ))}
+                <View style={styles.stack}>
+                  <View style={styles.inline}>
+                    <Text style={styles.label}>Дополнительные телефоны</Text>
                     <Pressable
+                      testID="office-add-company-phone"
                       onPress={() =>
                         setCompanyDraft((current) => ({
                           ...current,
-                          additionalPhones: current.additionalPhones.filter(
-                            (_item, itemIndex) => itemIndex !== index,
-                          ),
+                          additionalPhones: [...current.additionalPhones, ""],
                         }))
                       }
                     >
-                      <Text style={styles.linkDanger}>Убрать</Text>
+                      <Text style={styles.link}>Добавить телефон</Text>
                     </Pressable>
                   </View>
+                  {companyDraft.additionalPhones.map((phone, index) => (
+                    <View key={`phone-${index}`} style={styles.phoneRow}>
+                      <TextInput
+                        testID={`office-company-phone-${index}`}
+                        placeholder="Дополнительный телефон"
+                        placeholderTextColor="#94A3B8"
+                        style={[styles.input, styles.phoneInput]}
+                        keyboardType="phone-pad"
+                        value={phone}
+                        onChangeText={(value) =>
+                          setCompanyDraft((current) => ({
+                            ...current,
+                            additionalPhones: current.additionalPhones.map(
+                              (item, itemIndex) =>
+                                itemIndex === index ? value : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <Pressable
+                        onPress={() =>
+                          setCompanyDraft((current) => ({
+                            ...current,
+                            additionalPhones: current.additionalPhones.filter(
+                              (_item, itemIndex) => itemIndex !== index,
+                            ),
+                          }))
+                        }
+                      >
+                        <Text style={styles.linkDanger}>Убрать</Text>
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+                <Pressable
+                  testID="office-create-company"
+                  disabled={savingCompany}
+                  onPress={() => void handleCreateCompany()}
+                  style={[styles.primary, savingCompany && styles.dim]}
+                >
+                  <Text style={styles.primaryText}>{COPY.companyCta}</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <View
+              style={styles.section}
+              onLayout={handleSectionLayout("rules")}
+            >
+              <Text style={styles.sectionTitle}>{COPY.rulesTitle}</Text>
+              <View style={styles.panel}>
+                {RULES.map((rule) => (
+                  <Text key={rule} style={styles.rule}>
+                    • {rule}
+                  </Text>
                 ))}
               </View>
-              <Pressable
-                testID="office-create-company"
-                disabled={savingCompany}
-                onPress={() => void handleCreateCompany()}
-                style={[styles.primary, savingCompany && styles.dim]}
-              >
-                <Text style={styles.primaryText}>{COPY.companyCta}</Text>
-              </Pressable>
             </View>
-          </View>
-
-          <View
-            style={styles.section}
-            onLayout={handleSectionLayout("rules")}
-          >
-            <Text style={styles.sectionTitle}>{COPY.rulesTitle}</Text>
-            <View style={styles.panel}>
-              {RULES.map((rule) => (
-                <Text key={rule} style={styles.rule}>
-                  • {rule}
-                </Text>
-              ))}
-            </View>
-          </View>
           </>
         )}
       </ScrollView>
 
       {inviteCard ? (
-      <Modal
-        transparent
-        animationType="slide"
-        visible
-        onRequestClose={() => setInviteCard(null)}
-      >
-        <View style={styles.modalWrap}>
-          <Pressable
-            style={styles.backdrop}
-            onPress={() => setInviteCard(null)}
-          />
-          <View testID="office-role-invite-modal" style={styles.sheet}>
-            <Text style={styles.eyebrow}>{COPY.inviteModalTitle}</Text>
-            <Text testID="office-role-invite-role" style={styles.sheetTitle}>
-              {inviteCard?.inviteRole
-                ? getProfileRoleLabel(inviteCard.inviteRole)
-                : COPY.noRole}
-            </Text>
-            <Text style={styles.helper}>{COPY.inviteModalLead}</Text>
-            <View style={styles.stack}>
-              <Text style={styles.label}>ФИО сотрудника</Text>
-              <TextInput
-                testID="office-invite-name"
-                placeholder="ФИО сотрудника"
-                placeholderTextColor="#94A3B8"
-                style={styles.input}
-                value={inviteDraft.name}
-                onChangeText={(value) =>
-                  setInviteDraft((current) => ({ ...current, name: value }))
-                }
-              />
-            </View>
-            <View style={styles.stack}>
-              <Text style={styles.label}>Телефон</Text>
-              <TextInput
-                testID="office-invite-phone"
-                placeholder="Телефон"
-                placeholderTextColor="#94A3B8"
-                style={styles.input}
-                keyboardType="phone-pad"
-                value={inviteDraft.phone}
-                onChangeText={(value) =>
-                  setInviteDraft((current) => ({ ...current, phone: value }))
-                }
-              />
-            </View>
-            <View style={styles.stack}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                testID="office-invite-email"
-                placeholder="Email (необязательно)"
-                placeholderTextColor="#94A3B8"
-                style={styles.input}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                value={inviteDraft.email}
-                onChangeText={(value) =>
-                  setInviteDraft((current) => ({ ...current, email: value }))
-                }
-              />
-            </View>
-            <View style={styles.stack}>
-              <Text style={styles.label}>Комментарий</Text>
-              <TextInput
-                testID="office-invite-comment"
-                placeholder="Комментарий (необязательно)"
-                placeholderTextColor="#94A3B8"
-                style={[styles.input, styles.textArea]}
-                multiline
-                value={inviteDraft.comment}
-                onChangeText={(value) =>
-                  setInviteDraft((current) => ({ ...current, comment: value }))
-                }
-              />
-            </View>
-            <View style={styles.modalActions}>
-              <Pressable
-                onPress={() => setInviteCard(null)}
-                style={styles.secondary}
+        <Modal
+          transparent
+          animationType="slide"
+          visible
+          onRequestClose={() => setInviteCard(null)}
+        >
+          <View style={styles.modalWrap}>
+            <Pressable
+              style={styles.backdrop}
+              onPress={() => setInviteCard(null)}
+            />
+            {renderSubtreeBoundary(
+              "invite_modal_form",
+              <View
+                testID="office-role-invite-modal"
+                style={styles.sheet}
+                onLayout={handleSubtreeLayout("invite_modal_form")}
               >
-                <Text style={styles.secondaryText}>{COPY.cancel}</Text>
-              </Pressable>
-              <Pressable
-                testID="office-create-invite"
-                disabled={savingInvite}
-                onPress={() => void handleCreateInvite()}
-                style={[styles.primary, styles.grow, savingInvite && styles.dim]}
-              >
-                <Text style={styles.primaryText}>{COPY.inviteCta}</Text>
-              </Pressable>
-            </View>
+                <Text style={styles.eyebrow}>{COPY.inviteModalTitle}</Text>
+                <Text
+                  testID="office-role-invite-role"
+                  style={styles.sheetTitle}
+                >
+                  {inviteCard?.inviteRole
+                    ? getProfileRoleLabel(inviteCard.inviteRole)
+                    : COPY.noRole}
+                </Text>
+                <Text style={styles.helper}>{COPY.inviteModalLead}</Text>
+                <View style={styles.stack}>
+                  <Text style={styles.label}>ФИО сотрудника</Text>
+                  <TextInput
+                    testID="office-invite-name"
+                    placeholder="ФИО сотрудника"
+                    placeholderTextColor="#94A3B8"
+                    style={styles.input}
+                    value={inviteDraft.name}
+                    onChangeText={(value) =>
+                      setInviteDraft((current) => ({ ...current, name: value }))
+                    }
+                  />
+                </View>
+                <View style={styles.stack}>
+                  <Text style={styles.label}>Телефон</Text>
+                  <TextInput
+                    testID="office-invite-phone"
+                    placeholder="Телефон"
+                    placeholderTextColor="#94A3B8"
+                    style={styles.input}
+                    keyboardType="phone-pad"
+                    value={inviteDraft.phone}
+                    onChangeText={(value) =>
+                      setInviteDraft((current) => ({
+                        ...current,
+                        phone: value,
+                      }))
+                    }
+                  />
+                </View>
+                <View style={styles.stack}>
+                  <Text style={styles.label}>Email</Text>
+                  <TextInput
+                    testID="office-invite-email"
+                    placeholder="Email (необязательно)"
+                    placeholderTextColor="#94A3B8"
+                    style={styles.input}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    value={inviteDraft.email}
+                    onChangeText={(value) =>
+                      setInviteDraft((current) => ({
+                        ...current,
+                        email: value,
+                      }))
+                    }
+                  />
+                </View>
+                <View style={styles.stack}>
+                  <Text style={styles.label}>Комментарий</Text>
+                  <TextInput
+                    testID="office-invite-comment"
+                    placeholder="Комментарий (необязательно)"
+                    placeholderTextColor="#94A3B8"
+                    style={[styles.input, styles.textArea]}
+                    multiline
+                    value={inviteDraft.comment}
+                    onChangeText={(value) =>
+                      setInviteDraft((current) => ({
+                        ...current,
+                        comment: value,
+                      }))
+                    }
+                  />
+                </View>
+                <View style={styles.modalActions}>
+                  <Pressable
+                    onPress={() => setInviteCard(null)}
+                    style={styles.secondary}
+                  >
+                    <Text style={styles.secondaryText}>{COPY.cancel}</Text>
+                  </Pressable>
+                  <Pressable
+                    testID="office-create-invite"
+                    disabled={savingInvite}
+                    onPress={() => void handleCreateInvite()}
+                    style={[
+                      styles.primary,
+                      styles.grow,
+                      savingInvite && styles.dim,
+                    ]}
+                  >
+                    <Text style={styles.primaryText}>{COPY.inviteCta}</Text>
+                  </Pressable>
+                </View>
+              </View>,
+            )}
           </View>
-        </View>
-      </Modal>
+        </Modal>
       ) : null}
     </RoleScreenLayout>
   );
@@ -1538,7 +1983,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   editButtonText: { fontSize: 16 },
-  summaryMeta: { color: "#475569", fontSize: 14, lineHeight: 20, fontWeight: "600" },
+  summaryMeta: {
+    color: "#475569",
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "600",
+  },
   summaryBadges: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   summaryBadge: {
     minHeight: 34,
@@ -1612,7 +2062,12 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.32)",
     backgroundColor: "rgba(255,255,255,0.12)",
   },
-  addText: { color: "#1D4ED8", fontSize: 20, fontWeight: "900", lineHeight: 22 },
+  addText: {
+    color: "#1D4ED8",
+    fontSize: 20,
+    fontWeight: "900",
+    lineHeight: 22,
+  },
   addTextPrimary: { color: "#FFFFFF" },
   pressed: { opacity: 0.86 },
   dim: { opacity: 0.6 },
@@ -1713,7 +2168,12 @@ const styles = StyleSheet.create({
   },
   statusActive: { borderColor: "#BBF7D0", backgroundColor: "#F0FDF4" },
   statusPending: { borderColor: "#FDE68A", backgroundColor: "#FEFCE8" },
-  statusText: { color: "#334155", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
+  statusText: {
+    color: "#334155",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
   statusTextActive: { color: "#166534" },
   statusTextPending: { color: "#92400E" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
