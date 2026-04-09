@@ -1,5 +1,5 @@
 import { router as rootRouter, type Href } from "expo-router";
-import { InteractionManager, Platform } from "react-native";
+import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 import {
   createDocumentPreviewSession,
@@ -26,7 +26,7 @@ import {
   shouldRecordPdfCrashBreadcrumbs,
 } from "../pdf/pdfCrashBreadcrumbs";
 
-export function getPdfFlowErrorMessage(error: unknown, fallback = "Could not open PDF"): string {
+export function getPdfFlowErrorMessage(error: unknown, fallback = "Не удалось открыть PDF"): string {
   if (error && typeof error === "object") {
     const maybeMessage = "message" in error ? (error as { message?: unknown }).message : undefined;
     const text = typeof maybeMessage === "string" ? maybeMessage.trim() : "";
@@ -73,44 +73,58 @@ function createViewerHref(sessionId: unknown, openToken: unknown) {
 }
 
 async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
+  console.info("[pdf-document-actions] viewer_route_push_pre_schedule", {
+    href: String(href),
+    platform: Platform.OS,
+  });
+
   await new Promise<void>((resolve, reject) => {
     const runPush = () => {
       try {
-        if (typeof rootRouter?.replace === "function") {
+        console.info("[pdf-document-actions] viewer_route_replace_start", {
+          href: String(href),
+          platform: Platform.OS,
+          method: Platform.OS === "ios" ? "push" : "replace",
+        });
+
+        if (Platform.OS === "ios") {
+          // On iOS, `replace` from inside (tabs) to a root-level route
+          // performs a cross-navigator replace that can crash UIKit's
+          // native navigation controller. `push` is a safe forward navigation.
+          if (typeof rootRouter?.push === "function") {
+            rootRouter.push(href);
+          } else {
+            router.push(href);
+          }
+        } else if (typeof rootRouter?.replace === "function") {
           rootRouter.replace(href);
         } else if (typeof router.replace === "function") {
           router.replace(href);
         } else {
           router.push(href);
         }
+
+        console.info("[pdf-document-actions] viewer_route_replace_done", {
+          href: String(href),
+          platform: Platform.OS,
+        });
         resolve();
       } catch (error) {
+        console.error("[pdf-document-actions] viewer_route_replace_crash", {
+          href: String(href),
+          platform: Platform.OS,
+          errorName: error instanceof Error ? error.name : undefined,
+          errorMessage: error instanceof Error ? error.message : String(error),
+        });
         reject(error);
       }
     };
 
-    if (typeof InteractionManager?.runAfterInteractions === "function") {
-      const task = InteractionManager.runAfterInteractions(() => {
-        setTimeout(() => {
-          if (typeof requestAnimationFrame === "function") {
-            requestAnimationFrame(runPush);
-            return;
-          }
-          runPush();
-        }, 0);
-      });
-      if (task && typeof task.cancel === "function") {
-        return;
-      }
-      return;
-    }
-
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(runPush);
-      return;
-    }
-
-    runPush();
+    // Single setTimeout(0) gives React one tick to flush state updates
+    // before navigating. Avoids the triple-deferral chain
+    // (InteractionManager → setTimeout → requestAnimationFrame) which
+    // created unpredictable timing gaps on iOS.
+    setTimeout(runPush, 0);
   });
 }
 
