@@ -86,17 +86,22 @@ describe("OfficeStackLayout", () => {
     expect(source.match(/headerLeft: renderSafeOfficeBackButton/g)).toHaveLength(1);
     expect(source.match(/headerLeft: renderWarehouseOfficeBackButton/g)).toHaveLength(1);
     expect(source).toContain("headerBackVisible: false");
+    expect(source).toContain("headerBackButtonMenuEnabled: false");
+    expect(source).toContain('headerBackTitle: ""');
+    expect(source).toContain("gestureEnabled: false");
   });
 
-  it("renders the warehouse header button with the office label", () => {
+  it("renders the warehouse header button as an explicit pressable override", () => {
     const header = renderWarehouseOfficeBackButton({
       canGoBack: true,
       tintColor: "#000000",
       label: OFFICE_BACK_LABEL,
       href: undefined,
-    }) as React.ReactElement<{ label: string }>;
+    }) as React.ReactElement<{ testID: string; onPress: () => void; children: React.ReactNode }>;
 
-    expect(header.props.label).toBe(OFFICE_BACK_LABEL);
+    expect(header.props.testID).toBe("warehouse-office-safe-back");
+    expect(typeof header.props.onPress).toBe("function");
+    expect(JSON.stringify(header.props.children)).toContain(OFFICE_BACK_LABEL);
   });
 
   it("records warehouse back breadcrumbs and forces office fallback", async () => {

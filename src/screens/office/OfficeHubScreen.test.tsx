@@ -1,5 +1,5 @@
 import React from "react";
-import { Linking } from "react-native";
+import { InteractionManager, Linking } from "react-native";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import OfficeHubScreen from "./OfficeHubScreen";
@@ -10,6 +10,20 @@ const mockCreateOfficeInvite = jest.fn();
 const mockShareOfficeInviteCode = jest.fn();
 const mockCopyOfficeInviteText = jest.fn();
 const mockOpenURL = jest.spyOn(Linking, "openURL");
+const mockRecordOfficeReentryComponentMount = jest.fn();
+const mockRecordOfficeReentryEffectDone = jest.fn();
+const mockRecordOfficeReentryEffectStart = jest.fn();
+const mockRecordOfficeReentryFailure = jest.fn();
+const mockRecordOfficeReentryRenderSuccess = jest.fn();
+const mockRecordOfficePostReturnChildMountDone = jest.fn();
+const mockRecordOfficePostReturnChildMountStart = jest.fn();
+const mockRecordOfficePostReturnFailure = jest.fn();
+const mockRecordOfficePostReturnFocus = jest.fn();
+const mockRecordOfficePostReturnIdleDone = jest.fn();
+const mockRecordOfficePostReturnIdleStart = jest.fn();
+const mockRecordOfficePostReturnLayoutCommit = jest.fn();
+const mockRecordOfficePostReturnSectionRenderDone = jest.fn();
+const mockRecordOfficePostReturnSectionRenderStart = jest.fn();
 
 jest.mock("expo-router", () => {
   const ReactRuntime = require("react");
@@ -32,11 +46,45 @@ jest.mock("react-native/Libraries/Modal/Modal", () => {
       visible?: boolean;
       children?: React.ReactNode;
     }) {
-      if (!props.visible) return null;
-      return ReactRuntime.createElement(View, { testID: "mock-modal" }, props.children);
+      return ReactRuntime.createElement(
+        View,
+        { testID: props.visible ? "mock-modal-visible" : "mock-modal-hidden" },
+        props.visible ? props.children : null,
+      );
     },
   };
 });
+
+jest.mock("../../lib/navigation/officeReentryBreadcrumbs", () => ({
+  recordOfficeReentryComponentMount: (...args: unknown[]) =>
+    mockRecordOfficeReentryComponentMount(...args),
+  recordOfficeReentryEffectDone: (...args: unknown[]) =>
+    mockRecordOfficeReentryEffectDone(...args),
+  recordOfficeReentryEffectStart: (...args: unknown[]) =>
+    mockRecordOfficeReentryEffectStart(...args),
+  recordOfficeReentryFailure: (...args: unknown[]) =>
+    mockRecordOfficeReentryFailure(...args),
+  recordOfficeReentryRenderSuccess: (...args: unknown[]) =>
+    mockRecordOfficeReentryRenderSuccess(...args),
+  recordOfficePostReturnChildMountDone: (...args: unknown[]) =>
+    mockRecordOfficePostReturnChildMountDone(...args),
+  recordOfficePostReturnChildMountStart: (...args: unknown[]) =>
+    mockRecordOfficePostReturnChildMountStart(...args),
+  recordOfficePostReturnFailure: (...args: unknown[]) =>
+    mockRecordOfficePostReturnFailure(...args),
+  recordOfficePostReturnFocus: (...args: unknown[]) =>
+    mockRecordOfficePostReturnFocus(...args),
+  recordOfficePostReturnIdleDone: (...args: unknown[]) =>
+    mockRecordOfficePostReturnIdleDone(...args),
+  recordOfficePostReturnIdleStart: (...args: unknown[]) =>
+    mockRecordOfficePostReturnIdleStart(...args),
+  recordOfficePostReturnLayoutCommit: (...args: unknown[]) =>
+    mockRecordOfficePostReturnLayoutCommit(...args),
+  recordOfficePostReturnSectionRenderDone: (...args: unknown[]) =>
+    mockRecordOfficePostReturnSectionRenderDone(...args),
+  recordOfficePostReturnSectionRenderStart: (...args: unknown[]) =>
+    mockRecordOfficePostReturnSectionRenderStart(...args),
+}));
 
 jest.mock("./officeAccess.services", () => ({
   loadOfficeAccessScreenData: (...args: unknown[]) =>
@@ -116,7 +164,12 @@ const pendingInvite = {
   comment: null,
 };
 
+const originalRequestAnimationFrame = global.requestAnimationFrame;
+const originalCancelAnimationFrame = global.cancelAnimationFrame;
+
 describe("OfficeHubScreen", () => {
+  let interactionSpy: jest.SpyInstance;
+
   beforeEach(() => {
     mockPush.mockReset();
     mockLoadOfficeAccessScreenData.mockReset();
@@ -124,6 +177,49 @@ describe("OfficeHubScreen", () => {
     mockShareOfficeInviteCode.mockReset();
     mockCopyOfficeInviteText.mockReset();
     mockOpenURL.mockReset();
+    mockRecordOfficeReentryComponentMount.mockReset();
+    mockRecordOfficeReentryEffectDone.mockReset();
+    mockRecordOfficeReentryEffectStart.mockReset();
+    mockRecordOfficeReentryFailure.mockReset();
+    mockRecordOfficeReentryRenderSuccess.mockReset();
+    mockRecordOfficePostReturnChildMountDone.mockReset();
+    mockRecordOfficePostReturnChildMountStart.mockReset();
+    mockRecordOfficePostReturnFailure.mockReset();
+    mockRecordOfficePostReturnFocus.mockReset();
+    mockRecordOfficePostReturnIdleDone.mockReset();
+    mockRecordOfficePostReturnIdleStart.mockReset();
+    mockRecordOfficePostReturnLayoutCommit.mockReset();
+    mockRecordOfficePostReturnSectionRenderDone.mockReset();
+    mockRecordOfficePostReturnSectionRenderStart.mockReset();
+
+    interactionSpy = jest
+      .spyOn(InteractionManager, "runAfterInteractions")
+      .mockImplementation((callback: () => void) => {
+        callback();
+        return {
+          cancel: jest.fn(),
+        } as unknown as ReturnType<typeof InteractionManager.runAfterInteractions>;
+      });
+
+    global.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    }) as typeof requestAnimationFrame;
+    global.cancelAnimationFrame = jest.fn() as typeof cancelAnimationFrame;
+  });
+
+  afterEach(() => {
+    interactionSpy.mockRestore();
+    if (originalRequestAnimationFrame) {
+      global.requestAnimationFrame = originalRequestAnimationFrame;
+    } else {
+      delete (global as Partial<typeof globalThis>).requestAnimationFrame;
+    }
+    if (originalCancelAnimationFrame) {
+      global.cancelAnimationFrame = originalCancelAnimationFrame;
+    } else {
+      delete (global as Partial<typeof globalThis>).cancelAnimationFrame;
+    }
   });
 
   afterAll(() => {
@@ -268,6 +364,167 @@ describe("OfficeHubScreen", () => {
     });
 
     expect(mockPush).toHaveBeenCalledWith("/profile?section=company");
+  });
+
+  it("records post-return markers and keeps the invite modal unmounted until the flow is opened", async () => {
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(renderer!.root.findAllByProps({ testID: "mock-modal-hidden" })).toEqual([]);
+
+    await act(async () => {
+      [
+        "office-summary",
+        "office-section-directions",
+        "office-section-company-details",
+        "office-section-invites",
+        "office-section-members",
+      ].forEach((testID, index) => {
+        renderer!.root.findByProps({ testID }).props.onLayout({
+          nativeEvent: { layout: { y: (index + 1) * 20 } },
+        });
+      });
+    });
+
+    expect(mockRecordOfficeReentryComponentMount).toHaveBeenCalledWith({
+      owner: "office_hub",
+    });
+    expect(mockRecordOfficeReentryRenderSuccess).toHaveBeenCalledWith({
+      owner: "office_hub",
+    });
+    expect(mockRecordOfficeReentryEffectStart).toHaveBeenCalledWith({
+      owner: "office_hub",
+      mode: "initial",
+    });
+    expect(mockRecordOfficeReentryEffectDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        mode: "initial",
+        companyId: "company-1",
+      }),
+    );
+    expect(mockRecordOfficePostReturnFocus).toHaveBeenCalledWith({
+      owner: "office_hub",
+      focusCycle: 1,
+    });
+    expect(mockRecordOfficePostReturnChildMountStart).toHaveBeenCalledWith({
+      owner: "office_hub",
+      focusCycle: 1,
+      sections: "summary,directions,company_details,invites,members",
+    });
+    expect(mockRecordOfficePostReturnIdleStart).toHaveBeenCalledWith({
+      owner: "office_hub",
+      focusCycle: 1,
+      sections: "summary,directions,company_details,invites,members",
+    });
+    expect(mockRecordOfficePostReturnIdleDone).toHaveBeenCalledWith({
+      owner: "office_hub",
+      focusCycle: 1,
+      sections: "summary,directions,company_details,invites,members",
+    });
+    expect(mockRecordOfficePostReturnSectionRenderStart.mock.calls).toEqual([
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "summary",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "directions",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "company_details",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "invites",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "members",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+    ]);
+    expect(mockRecordOfficePostReturnLayoutCommit).toHaveBeenCalledWith({
+      owner: "office_hub",
+      focusCycle: 1,
+      section: "summary",
+      sections: "summary,directions,company_details,invites,members",
+    });
+    expect(mockRecordOfficePostReturnSectionRenderDone.mock.calls).toEqual([
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "summary",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "directions",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "company_details",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "invites",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+      [
+        {
+          owner: "office_hub",
+          focusCycle: 1,
+          section: "members",
+          sections: "summary,directions,company_details,invites,members",
+        },
+      ],
+    ]);
+    expect(mockRecordOfficePostReturnChildMountDone).toHaveBeenCalledWith({
+      owner: "office_hub",
+      focusCycle: 1,
+      sections: "summary,directions,company_details,invites,members",
+    });
+    expect(mockRecordOfficePostReturnFailure).not.toHaveBeenCalled();
   });
 
   it("opens a role-specific modal from contextual plus and hands invite code straight to native share", async () => {

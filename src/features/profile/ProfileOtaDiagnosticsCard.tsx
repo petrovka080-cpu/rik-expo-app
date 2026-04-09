@@ -5,6 +5,10 @@ import * as Clipboard from "expo-clipboard";
 
 import { checkAndFetchOtaNow } from "@/src/lib/otaHardening";
 import {
+  buildOfficeReentryBreadcrumbsText,
+  getOfficeReentryBreadcrumbs,
+} from "@/src/lib/navigation/officeReentryBreadcrumbs";
+import {
   buildWarehouseBackBreadcrumbsText,
   getWarehouseBackBreadcrumbs,
 } from "@/src/lib/navigation/warehouseBackBreadcrumbs";
@@ -121,9 +125,10 @@ export function ProfileOtaDiagnosticsCard() {
 
   const handleCopy = async () => {
     try {
-      const [pdfBreadcrumbs, warehouseBackBreadcrumbs] = await Promise.all([
+      const [pdfBreadcrumbs, warehouseBackBreadcrumbs, officeReentryBreadcrumbs] = await Promise.all([
         getPdfCrashBreadcrumbs(),
         getWarehouseBackBreadcrumbs(),
+        getOfficeReentryBreadcrumbs(),
       ]);
       const payload = buildOtaDiagnosticsText(diagnostics)
         + (pdfBreadcrumbs.length
@@ -133,7 +138,11 @@ export function ProfileOtaDiagnosticsCard() {
         + (warehouseBackBreadcrumbs.length
           ? `\n\nwarehouse_back_breadcrumbs:\n${buildWarehouseBackBreadcrumbsText(warehouseBackBreadcrumbs)}`
           : "\n\nwarehouse_back_breadcrumbs:\n- none");
-      await Clipboard.setStringAsync(fullPayload);
+      const payloadWithOfficeReentry = fullPayload
+        + (officeReentryBreadcrumbs.length
+          ? `\n\noffice_reentry_breadcrumbs:\n${buildOfficeReentryBreadcrumbsText(officeReentryBreadcrumbs)}`
+          : "\n\noffice_reentry_breadcrumbs:\n- none");
+      await Clipboard.setStringAsync(payloadWithOfficeReentry);
       setLastActionMessage("Диагностика скопирована.");
       Alert.alert("OTA diagnostics", "Диагностика скопирована.");
     } catch (error) {

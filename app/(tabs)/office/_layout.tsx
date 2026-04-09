@@ -1,5 +1,6 @@
 import React from "react";
 import { HeaderBackButton } from "@react-navigation/elements";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Stack, router } from "expo-router";
 
 import { recordPlatformObservability } from "../../../src/lib/observability/platformObservability";
@@ -8,6 +9,7 @@ import { hasSafeBackHistory, safeBack, type SafeBackRouterLike } from "../../../
 
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
+const DEFAULT_HEADER_TINT = "#0F172A";
 
 export function renderSafeOfficeBackButton(props: Record<string, unknown>) {
   return (
@@ -301,15 +303,25 @@ export function performWarehouseBackNavigation(
 }
 
 export function renderWarehouseOfficeBackButton(props: Record<string, unknown>) {
+  const tintColor = typeof props.tintColor === "string" ? props.tintColor : DEFAULT_HEADER_TINT;
+
   return (
-    <HeaderBackButton
-      {...props}
-      label={OFFICE_BACK_LABEL}
+    <Pressable
+      accessibilityHint="Вернуться в Офис"
+      accessibilityLabel="Офис"
+      accessibilityRole="button"
+      hitSlop={8}
       onPress={() => {
         void performWarehouseBackNavigation(router);
       }}
+      style={styles.warehouseBackButton}
       testID="warehouse-office-safe-back"
-    />
+    >
+      <View style={styles.warehouseBackButtonContent}>
+        <Text style={[styles.warehouseBackChevron, { color: tintColor }]}>{"‹"}</Text>
+        <Text style={[styles.warehouseBackLabel, { color: tintColor }]}>{OFFICE_BACK_LABEL}</Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -341,6 +353,9 @@ export default function OfficeStackLayout() {
         options={{
           title: "Склад",
           headerBackVisible: false,
+          headerBackButtonMenuEnabled: false,
+          headerBackTitle: "",
+          gestureEnabled: false,
           headerLeft: renderWarehouseOfficeBackButton,
         }}
       />
@@ -350,3 +365,26 @@ export default function OfficeStackLayout() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  warehouseBackButton: {
+    marginLeft: 0,
+    paddingVertical: 6,
+    paddingRight: 10,
+  },
+  warehouseBackButtonContent: {
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  warehouseBackChevron: {
+    fontSize: 28,
+    fontWeight: "400",
+    lineHeight: 28,
+    marginRight: 2,
+    marginTop: -2,
+  },
+  warehouseBackLabel: {
+    fontSize: 17,
+    fontWeight: "500",
+  },
+});

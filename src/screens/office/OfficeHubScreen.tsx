@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  InteractionManager,
   Linking,
   Modal,
   Pressable,
@@ -17,6 +18,22 @@ import { useFocusEffect, useRouter, type Href } from "expo-router";
 
 import RoleScreenLayout from "../../components/layout/RoleScreenLayout";
 import { buildAppAccessModel } from "../../lib/appAccessModel";
+import {
+  recordOfficeReentryComponentMount,
+  recordOfficeReentryEffectDone,
+  recordOfficeReentryEffectStart,
+  recordOfficeReentryFailure,
+  recordOfficePostReturnChildMountDone,
+  recordOfficePostReturnChildMountStart,
+  recordOfficePostReturnFailure,
+  recordOfficePostReturnFocus,
+  recordOfficePostReturnIdleDone,
+  recordOfficePostReturnIdleStart,
+  recordOfficePostReturnLayoutCommit,
+  recordOfficePostReturnSectionRenderDone,
+  recordOfficePostReturnSectionRenderStart,
+  recordOfficeReentryRenderSuccess,
+} from "../../lib/navigation/officeReentryBreadcrumbs";
 import { getProfileRoleLabel } from "../profile/profile.helpers";
 import {
   OFFICE_ASSIGNABLE_ROLES,
@@ -44,7 +61,14 @@ import type {
 } from "./officeAccess.types";
 
 type SectionKey = "members" | "invites" | "company";
-type Tone = "neutral" | "success" | "warning";
+type PostReturnSectionKey =
+  | "summary"
+  | "directions"
+  | "company_details"
+  | "invites"
+  | "members"
+  | "company_create"
+  | "rules";
 type InviteFormDraft = {
   name: string;
   phone: string;
@@ -236,12 +260,12 @@ const COMPANY_FIELDS = [
   },
 ] as const;
 
-const COMPANY_DETAILS: ReadonlyArray<{
+const COMPANY_DETAILS: readonly {
   label: string;
   pick: (
     company: NonNullable<OfficeAccessScreenData["company"]>,
   ) => string | null | undefined;
-}> = [
+}[] = [
   { label: "Наименование компании", pick: (company) => company.name },
   { label: "Юридический адрес компании", pick: (company) => company.address },
   { label: "Сфера деятельности", pick: (company) => company.industry },
@@ -268,6 +292,28 @@ const RULES = [
   "Создание компании открывает Office и назначает только стартовую роль director.",
   "Остальные роли появляются только через приглашение или явное назначение.",
 ] as const;
+
+function getVisibleCompanyDetails(
+  company: NonNullable<OfficeAccessScreenData["company"]> | null,
+) {
+  if (!company) return [];
+  return COMPANY_DETAILS.map((item) => ({
+    label: item.label,
+    value: String(item.pick(company) || "").trim(),
+  })).filter((item) => item.value);
+}
+
+function getPostReturnSections(data: OfficeAccessScreenData): PostReturnSectionKey[] {
+  if (data.company) {
+    const sections: PostReturnSectionKey[] = ["summary", "directions", "invites", "members"];
+    if (getVisibleCompanyDetails(data.company).length > 0) {
+      sections.splice(2, 0, "company_details");
+    }
+    return sections;
+  }
+
+  return ["company_create", "rules"];
+}
 
 const formatDate = (value: string | null): string => {
   if (!value) return COPY.noValue;
@@ -462,10 +508,175 @@ export default function OfficeHubScreen() {
   const [inviteHandoffFeedback, setInviteHandoffFeedback] = useState<string | null>(
     null,
   );
+  const isMountedRef = useRef(true);
+  const focusCycleRef = useRef(0);
+  const postReturnFrameRef = useRef<number | null>(null);
+  const postReturnInteractionRef =
+    useRef<ReturnType<typeof InteractionManager.runAfterInteractions> | null>(null);
+  const postReturnPendingSectionsRef = useRef<PostReturnSectionKey[]>([]);
+  const postReturnCommittedSectionsRef = useRef<Set<PostReturnSectionKey>>(new Set());
+  const postReturnLayoutCommitRef = useRef(false);
+
+  const cancelPostReturnIdle = useCallback(() => {
+    if (
+      postReturnFrameRef.current != null
+      && typeof cancelAnimationFrame === "function"
+    ) {
+      cancelAnimationFrame(postReturnFrameRef.current);
+    }
+    postReturnFrameRef.current = null;
+    postReturnInteractionRef.current?.cancel?.();
+    postReturnInteractionRef.current = null;
+  }, []);
+
+  const recordPostReturnSectionDone = useCallback((section: PostReturnSectionKey) => {
+    const pendingSections = postReturnPendingSectionsRef.current;
+    if (!pendingSections.includes(section)) return;
+
+    const sections = pendingSections.join(",") || "none";
+    if (!postReturnLayoutCommitRef.current) {
+      postReturnLayoutCommitRef.current = true;
+      recordOfficePostReturnLayoutCommit({
+        owner: "office_hub",
+        focusCycle: focusCycleRef.current,
+        section,
+        sections,
+      });
+    }
+
+    const committedSections = postReturnCommittedSectionsRef.current;
+    if (committedSections.has(section)) return;
+
+    committedSections.add(section);
+    recordOfficePostReturnSectionRenderDone({
+      owner: "office_hub",
+      focusCycle: focusCycleRef.current,
+      section,
+      sections,
+    });
+
+    if (committedSections.size === pendingSections.length) {
+      recordOfficePostReturnChildMountDone({
+        owner: "office_hub",
+        focusCycle: focusCycleRef.current,
+        sections,
+      });
+    }
+  }, []);
+
+  const handleSectionLayout = useCallback(
+    (section: PostReturnSectionKey, offsetKey?: SectionKey) =>
+      (event: LayoutChangeEvent) => {
+        if (offsetKey) {
+          offsetsRef.current[offsetKey] = event.nativeEvent.layout.y;
+        }
+        recordPostReturnSectionDone(section);
+      },
+    [recordPostReturnSectionDone],
+  );
+
+  const startPostReturnTrace = useCallback((next: OfficeAccessScreenData) => {
+    const focusCycle = focusCycleRef.current;
+    const nextSections = getPostReturnSections(next);
+    const sections = nextSections.join(",") || "none";
+
+    cancelPostReturnIdle();
+    postReturnPendingSectionsRef.current = nextSections;
+    postReturnCommittedSectionsRef.current = new Set();
+    postReturnLayoutCommitRef.current = false;
+
+    recordOfficePostReturnChildMountStart({
+      owner: "office_hub",
+      focusCycle,
+      sections,
+    });
+    nextSections.forEach((section) => {
+      recordOfficePostReturnSectionRenderStart({
+        owner: "office_hub",
+        focusCycle,
+        section,
+        sections,
+      });
+    });
+    recordOfficePostReturnIdleStart({
+      owner: "office_hub",
+      focusCycle,
+      sections,
+    });
+
+    const finishIdle = () => {
+      if (!isMountedRef.current) return;
+      recordOfficePostReturnIdleDone({
+        owner: "office_hub",
+        focusCycle,
+        sections,
+      });
+      if (nextSections.length === 0) {
+        recordOfficePostReturnChildMountDone({
+          owner: "office_hub",
+          focusCycle,
+          sections,
+        });
+      }
+    };
+
+    const scheduleIdle = () => {
+      try {
+        postReturnInteractionRef.current =
+          InteractionManager.runAfterInteractions(finishIdle);
+      } catch (error: unknown) {
+        recordOfficePostReturnFailure({
+          error,
+          errorStage: "post_return_idle_schedule",
+          extra: {
+            owner: "office_hub",
+            focusCycle,
+            sections,
+          },
+        });
+      }
+    };
+
+    if (typeof requestAnimationFrame === "function") {
+      postReturnFrameRef.current = requestAnimationFrame(() => {
+        scheduleIdle();
+      });
+      return;
+    }
+
+    scheduleIdle();
+  }, [cancelPostReturnIdle]);
+
+  React.useLayoutEffect(() => {
+    recordOfficeReentryComponentMount({
+      owner: "office_hub",
+    });
+  }, []);
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    recordOfficeReentryRenderSuccess({
+      owner: "office_hub",
+    });
+    return () => {
+      isMountedRef.current = false;
+      cancelPostReturnIdle();
+    };
+  }, [cancelPostReturnIdle]);
 
   const loadScreen = useCallback(
     async (mode: "initial" | "refresh" = "initial") => {
-      mode === "refresh" ? setRefreshing(true) : setLoading(true);
+      if (mode === "initial") {
+        recordOfficeReentryEffectStart({
+          owner: "office_hub",
+          mode,
+        });
+      }
+      if (mode === "refresh") {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       try {
         const next = await loadOfficeAccessScreenData();
         setData(next);
@@ -474,7 +685,29 @@ export default function OfficeHubScreen() {
           phoneMain: current.phoneMain || next.profile.phone || "",
           email: current.email || next.profileEmail || "",
         }));
+        if (mode === "initial") {
+          recordOfficeReentryEffectDone({
+            owner: "office_hub",
+            mode,
+            companyId: next.company?.id ?? null,
+            availableOfficeRoles: next.accessSourceSnapshot.companyMemberships
+              .map((item) => item.role)
+              .filter(Boolean)
+              .join(","),
+          });
+          startPostReturnTrace(next);
+        }
       } catch (error: unknown) {
+        if (mode === "initial") {
+          recordOfficeReentryFailure({
+            error,
+            errorStage: "load_screen",
+            extra: {
+              owner: "office_hub",
+              mode,
+            },
+          });
+        }
         Alert.alert(
           COPY.title,
           error instanceof Error && error.message.trim()
@@ -486,13 +719,21 @@ export default function OfficeHubScreen() {
         setRefreshing(false);
       }
     },
-    [],
+    [startPostReturnTrace],
   );
 
   useFocusEffect(
     useCallback(() => {
+      focusCycleRef.current += 1;
+      recordOfficePostReturnFocus({
+        owner: "office_hub",
+        focusCycle: focusCycleRef.current,
+      });
       void loadScreen();
-    }, [loadScreen]),
+      return () => {
+        cancelPostReturnIdle();
+      };
+    }, [cancelPostReturnIdle, loadScreen]),
   );
 
   const accessModel = useMemo(
@@ -566,22 +807,12 @@ export default function OfficeHubScreen() {
       .filter(Boolean)
       .join(" • ");
   }, [data.company]);
-  const visibleCompanyDetails = useMemo(() => {
-    if (!data.company) return [];
-    return COMPANY_DETAILS.map((item) => ({
-      label: item.label,
-      value: String(item.pick(data.company) || "").trim(),
-    })).filter((item) => item.value);
-  }, [data.company]);
+  const visibleCompanyDetails = useMemo(
+    () => getVisibleCompanyDetails(data.company),
+    [data.company],
+  );
   const visibleRoleLabel =
     roleLabel && roleLabel !== COPY.noRole ? roleLabel : null;
-
-  const recordOffset = useCallback(
-    (key: SectionKey) => (event: LayoutChangeEvent) => {
-      offsetsRef.current[key] = event.nativeEvent.layout.y;
-    },
-    [],
-  );
 
   const scrollTo = useCallback((key: SectionKey) => {
     scrollRef.current?.scrollTo({
@@ -775,7 +1006,11 @@ export default function OfficeHubScreen() {
 
         {data.company ? (
           <>
-            <View testID="office-summary" style={styles.summary}>
+            <View
+              testID="office-summary"
+              style={styles.summary}
+              onLayout={handleSectionLayout("summary")}
+            >
               <View style={styles.summaryHeader}>
                 <Text style={styles.eyebrow}>{COPY.summaryTitle}</Text>
                 <Pressable
@@ -820,7 +1055,11 @@ export default function OfficeHubScreen() {
               </View>
             </View>
 
-            <View testID="office-section-directions" style={styles.section}>
+            <View
+              testID="office-section-directions"
+              style={styles.section}
+              onLayout={handleSectionLayout("directions")}
+            >
               <Text style={styles.sectionTitle}>{COPY.directionsTitle}</Text>
               {officeCards.length > 0 ? (
                 <View style={styles.grid}>
@@ -845,7 +1084,7 @@ export default function OfficeHubScreen() {
               <View
                 testID="office-section-company-details"
                 style={styles.section}
-                onLayout={recordOffset("company")}
+                onLayout={handleSectionLayout("company_details", "company")}
               >
                 <Text style={styles.sectionTitle}>{COPY.companyDetailsTitle}</Text>
                 <View style={styles.panel}>
@@ -865,7 +1104,7 @@ export default function OfficeHubScreen() {
             <View
               testID="office-section-invites"
               style={styles.section}
-              onLayout={recordOffset("invites")}
+              onLayout={handleSectionLayout("invites", "invites")}
             >
               <Text style={styles.sectionTitle}>{COPY.invitesTitle}</Text>
               {inviteFeedback ? (
@@ -1011,7 +1250,7 @@ export default function OfficeHubScreen() {
             <View
               testID="office-section-members"
               style={styles.section}
-              onLayout={recordOffset("members")}
+              onLayout={handleSectionLayout("members", "members")}
             >
               <Text style={styles.sectionTitle}>{COPY.membersTitle}</Text>
               {data.members.length > 0 ? (
@@ -1035,7 +1274,10 @@ export default function OfficeHubScreen() {
           </>
         ) : (
           <>
-          <View style={styles.section} onLayout={recordOffset("company")}>
+          <View
+            style={styles.section}
+            onLayout={handleSectionLayout("company_create", "company")}
+          >
             <Text style={styles.sectionTitle}>{COPY.companyCreateTitle}</Text>
             <View style={styles.panel}>
               <Text style={styles.helper}>{COPY.companyCreateLead}</Text>
@@ -1141,7 +1383,10 @@ export default function OfficeHubScreen() {
             </View>
           </View>
 
-          <View style={styles.section}>
+          <View
+            style={styles.section}
+            onLayout={handleSectionLayout("rules")}
+          >
             <Text style={styles.sectionTitle}>{COPY.rulesTitle}</Text>
             <View style={styles.panel}>
               {RULES.map((rule) => (
@@ -1155,10 +1400,11 @@ export default function OfficeHubScreen() {
         )}
       </ScrollView>
 
+      {inviteCard ? (
       <Modal
         transparent
         animationType="slide"
-        visible={Boolean(inviteCard)}
+        visible
         onRequestClose={() => setInviteCard(null)}
       >
         <View style={styles.modalWrap}>
@@ -1249,6 +1495,7 @@ export default function OfficeHubScreen() {
           </View>
         </View>
       </Modal>
+      ) : null}
     </RoleScreenLayout>
   );
 }

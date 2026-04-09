@@ -1,0 +1,310 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { recordPlatformObservability } from "../observability/platformObservability";
+
+export type OfficeReentryMarker =
+  | "office_reentry_start"
+  | "office_reentry_route_match"
+  | "office_reentry_component_enter"
+  | "office_reentry_mount"
+  | "office_reentry_effect_start"
+  | "office_reentry_effect_done"
+  | "office_reentry_render_success"
+  | "office_reentry_failed"
+  | "office_post_return_idle_start"
+  | "office_post_return_idle_done"
+  | "office_post_return_layout_commit"
+  | "office_post_return_focus"
+  | "office_post_return_child_mount_start"
+  | "office_post_return_child_mount_done"
+  | "office_post_return_section_render_start"
+  | "office_post_return_section_render_done"
+  | "office_post_return_failed";
+
+export type OfficeReentryBreadcrumb = {
+  at: string;
+  marker: OfficeReentryMarker;
+  result: string | null;
+  errorStage?: string | null;
+  errorClass?: string | null;
+  errorMessage?: string | null;
+  extra?: Record<string, unknown>;
+};
+
+type OfficeReentryBreadcrumbInput = {
+  marker: OfficeReentryMarker;
+  result?: unknown;
+  errorStage?: unknown;
+  errorClass?: unknown;
+  errorMessage?: unknown;
+  extra?: Record<string, unknown>;
+};
+
+const OFFICE_REENTRY_BREADCRUMBS_KEY = "rik_office_reentry_breadcrumbs_v1";
+const MAX_BREADCRUMBS = 80;
+const OFFICE_ROUTE = "/office";
+
+let writeQueue = Promise.resolve();
+
+function trimText(value: unknown) {
+  const text = String(value ?? "").trim();
+  return text || null;
+}
+
+function normalizeEntry(input: OfficeReentryBreadcrumbInput): OfficeReentryBreadcrumb {
+  return {
+    at: new Date().toISOString(),
+    marker: input.marker,
+    result: trimText(input.result ?? "success"),
+    errorStage: trimText(input.errorStage),
+    errorClass: trimText(input.errorClass),
+    errorMessage: trimText(input.errorMessage),
+    extra: input.extra,
+  };
+}
+
+async function readRawBreadcrumbs(): Promise<OfficeReentryBreadcrumb[]> {
+  try {
+    const raw = await AsyncStorage.getItem(OFFICE_REENTRY_BREADCRUMBS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item) => item && typeof item === "object") as OfficeReentryBreadcrumb[];
+  } catch {
+    return [];
+  }
+}
+
+async function writeRawBreadcrumbs(items: OfficeReentryBreadcrumb[]) {
+  try {
+    await AsyncStorage.setItem(OFFICE_REENTRY_BREADCRUMBS_KEY, JSON.stringify(items.slice(-MAX_BREADCRUMBS)));
+  } catch {
+    // Office re-entry diagnostics must never destabilize navigation.
+  }
+}
+
+function enqueueWrite(inputs: OfficeReentryBreadcrumbInput[]) {
+  const entries = inputs.map(normalizeEntry);
+  if (!entries.length) return writeQueue;
+
+  writeQueue = writeQueue
+    .catch(() => undefined)
+    .then(async () => {
+      const current = await readRawBreadcrumbs();
+      current.push(...entries);
+      await writeRawBreadcrumbs(current);
+    });
+
+  return writeQueue;
+}
+
+export function recordOfficeReentryBreadcrumbs(inputs: OfficeReentryBreadcrumbInput[]) {
+  void enqueueWrite(inputs);
+}
+
+export async function recordOfficeReentryBreadcrumbsAsync(inputs: OfficeReentryBreadcrumbInput[]) {
+  await enqueueWrite(inputs);
+}
+
+function recordOfficeReentryMarker(input: OfficeReentryBreadcrumbInput) {
+  const extra = {
+    route: OFFICE_ROUTE,
+    ...(input.extra ?? {}),
+  };
+
+  recordPlatformObservability({
+    screen: "office",
+    surface: "office_reentry",
+    category: "ui",
+    event: input.marker,
+    result:
+      input.result === "error" ||
+      input.result === "cache_hit" ||
+      input.result === "joined_inflight" ||
+      input.result === "queued_rerun" ||
+      input.result === "skipped"
+        ? input.result
+        : "success",
+    errorStage: trimText(input.errorStage) ?? undefined,
+    errorClass: trimText(input.errorClass) ?? undefined,
+    errorMessage: trimText(input.errorMessage) ?? undefined,
+    extra,
+  });
+  recordOfficeReentryBreadcrumbs([{ ...input, extra }]);
+}
+
+export function recordOfficeReentryStart(extra?: Record<string, unknown>) {
+  recordOfficeReentryMarker({
+    marker: "office_reentry_start",
+    result: "success",
+    extra,
+  });
+  recordOfficeReentryMarker({
+    marker: "office_reentry_route_match",
+    result: "success",
+    extra,
+  });
+}
+
+export function recordOfficeReentryComponentMount(extra?: Record<string, unknown>) {
+  recordOfficeReentryMarker({
+    marker: "office_reentry_component_enter",
+    result: "success",
+    extra,
+  });
+  recordOfficeReentryMarker({
+    marker: "office_reentry_mount",
+    result: "success",
+    extra,
+  });
+}
+
+export function recordOfficeReentryRenderSuccess(extra?: Record<string, unknown>) {
+  recordOfficeReentryMarker({
+    marker: "office_reentry_render_success",
+    result: "success",
+    extra,
+  });
+}
+
+export function recordOfficeReentryEffectStart(extra?: Record<string, unknown>) {
+  recordOfficeReentryMarker({
+    marker: "office_reentry_effect_start",
+    result: "success",
+    extra,
+  });
+}
+
+export function recordOfficeReentryEffectDone(extra?: Record<string, unknown>) {
+  recordOfficeReentryMarker({
+    marker: "office_reentry_effect_done",
+    result: "success",
+    extra,
+  });
+}
+
+export function recordOfficeReentryFailure(params: {
+  error: unknown;
+  errorStage: string;
+  extra?: Record<string, unknown>;
+}) {
+  const errorClass = params.error instanceof Error ? params.error.name : undefined;
+  const errorMessage = params.error instanceof Error ? params.error.message : String(params.error ?? "office_reentry_failed");
+
+  recordOfficeReentryMarker({
+    marker: "office_reentry_failed",
+    result: "error",
+    errorStage: params.errorStage,
+    errorClass,
+    errorMessage,
+    extra: params.extra,
+  });
+}
+
+function recordOfficePostReturnMarker(
+  marker: Extract<
+    OfficeReentryMarker,
+    | "office_post_return_idle_start"
+    | "office_post_return_idle_done"
+    | "office_post_return_layout_commit"
+    | "office_post_return_focus"
+    | "office_post_return_child_mount_start"
+    | "office_post_return_child_mount_done"
+    | "office_post_return_section_render_start"
+    | "office_post_return_section_render_done"
+  >,
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeReentryMarker({
+    marker,
+    result: "success",
+    extra,
+  });
+}
+
+export function recordOfficePostReturnFocus(extra?: Record<string, unknown>) {
+  recordOfficePostReturnMarker("office_post_return_focus", extra);
+}
+
+export function recordOfficePostReturnIdleStart(extra?: Record<string, unknown>) {
+  recordOfficePostReturnMarker("office_post_return_idle_start", extra);
+}
+
+export function recordOfficePostReturnIdleDone(extra?: Record<string, unknown>) {
+  recordOfficePostReturnMarker("office_post_return_idle_done", extra);
+}
+
+export function recordOfficePostReturnLayoutCommit(extra?: Record<string, unknown>) {
+  recordOfficePostReturnMarker("office_post_return_layout_commit", extra);
+}
+
+export function recordOfficePostReturnChildMountStart(extra?: Record<string, unknown>) {
+  recordOfficePostReturnMarker("office_post_return_child_mount_start", extra);
+}
+
+export function recordOfficePostReturnChildMountDone(extra?: Record<string, unknown>) {
+  recordOfficePostReturnMarker("office_post_return_child_mount_done", extra);
+}
+
+export function recordOfficePostReturnSectionRenderStart(extra?: Record<string, unknown>) {
+  recordOfficePostReturnMarker("office_post_return_section_render_start", extra);
+}
+
+export function recordOfficePostReturnSectionRenderDone(extra?: Record<string, unknown>) {
+  recordOfficePostReturnMarker("office_post_return_section_render_done", extra);
+}
+
+export function recordOfficePostReturnFailure(params: {
+  error: unknown;
+  errorStage: string;
+  extra?: Record<string, unknown>;
+}) {
+  const errorClass = params.error instanceof Error ? params.error.name : undefined;
+  const errorMessage =
+    params.error instanceof Error
+      ? params.error.message
+      : String(params.error ?? "office_post_return_failed");
+
+  recordOfficeReentryMarker({
+    marker: "office_post_return_failed",
+    result: "error",
+    errorStage: params.errorStage,
+    errorClass,
+    errorMessage,
+    extra: params.extra,
+  });
+}
+
+export async function getOfficeReentryBreadcrumbs() {
+  return await readRawBreadcrumbs();
+}
+
+export async function clearOfficeReentryBreadcrumbs() {
+  try {
+    await AsyncStorage.removeItem(OFFICE_REENTRY_BREADCRUMBS_KEY);
+  } catch {
+    // Ignore diagnostics cleanup failures.
+  }
+}
+
+export function buildOfficeReentryBreadcrumbsText(items: OfficeReentryBreadcrumb[]) {
+  return items
+    .map((item) => {
+      const parts = [
+        item.at,
+        item.marker,
+        item.result ?? "unknown-result",
+      ];
+      if (item.errorStage) parts.push(`stage=${item.errorStage}`);
+      if (item.errorClass) parts.push(`class=${item.errorClass}`);
+      if (item.errorMessage) parts.push(`error=${item.errorMessage}`);
+      if (item.extra?.route) parts.push(`route=${String(item.extra.route)}`);
+      if (item.extra?.owner) parts.push(`owner=${String(item.extra.owner)}`);
+      if (item.extra?.mode) parts.push(`mode=${String(item.extra.mode)}`);
+      if (item.extra?.focusCycle != null) parts.push(`focusCycle=${String(item.extra.focusCycle)}`);
+      if (item.extra?.section) parts.push(`section=${String(item.extra.section)}`);
+      if (item.extra?.sections) parts.push(`sections=${String(item.extra.sections)}`);
+      return parts.join(" | ");
+    })
+    .join("\n");
+}

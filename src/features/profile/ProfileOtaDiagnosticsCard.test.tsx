@@ -12,6 +12,8 @@ const mockGetOtaDiagnostics = jest.fn();
 const mockBuildOtaDiagnosticsText = jest.fn();
 const mockGetPdfCrashBreadcrumbs = jest.fn();
 const mockBuildPdfCrashBreadcrumbsText = jest.fn();
+const mockGetOfficeReentryBreadcrumbs = jest.fn();
+const mockBuildOfficeReentryBreadcrumbsText = jest.fn();
 const mockGetWarehouseBackBreadcrumbs = jest.fn();
 const mockBuildWarehouseBackBreadcrumbsText = jest.fn();
 
@@ -39,6 +41,11 @@ jest.mock("@/src/lib/otaDiagnostics", () => ({
 jest.mock("@/src/lib/pdf/pdfCrashBreadcrumbs", () => ({
   getPdfCrashBreadcrumbs: (...args: unknown[]) => mockGetPdfCrashBreadcrumbs(...args),
   buildPdfCrashBreadcrumbsText: (...args: unknown[]) => mockBuildPdfCrashBreadcrumbsText(...args),
+}));
+
+jest.mock("@/src/lib/navigation/officeReentryBreadcrumbs", () => ({
+  getOfficeReentryBreadcrumbs: (...args: unknown[]) => mockGetOfficeReentryBreadcrumbs(...args),
+  buildOfficeReentryBreadcrumbsText: (...args: unknown[]) => mockBuildOfficeReentryBreadcrumbsText(...args),
 }));
 
 jest.mock("@/src/lib/navigation/warehouseBackBreadcrumbs", () => ({
@@ -108,11 +115,15 @@ describe("ProfileOtaDiagnosticsCard", () => {
     mockBuildOtaDiagnosticsText.mockReset();
     mockGetPdfCrashBreadcrumbs.mockReset();
     mockBuildPdfCrashBreadcrumbsText.mockReset();
+    mockGetOfficeReentryBreadcrumbs.mockReset();
+    mockBuildOfficeReentryBreadcrumbsText.mockReset();
     mockGetWarehouseBackBreadcrumbs.mockReset();
     mockBuildWarehouseBackBreadcrumbsText.mockReset();
     mockBuildOtaDiagnosticsText.mockReturnValue("diagnostics");
     mockGetPdfCrashBreadcrumbs.mockResolvedValue([]);
     mockBuildPdfCrashBreadcrumbsText.mockReturnValue("breadcrumb-line");
+    mockGetOfficeReentryBreadcrumbs.mockResolvedValue([]);
+    mockBuildOfficeReentryBreadcrumbsText.mockReturnValue("office-breadcrumb-line");
     mockGetWarehouseBackBreadcrumbs.mockResolvedValue([]);
     mockBuildWarehouseBackBreadcrumbsText.mockReturnValue("warehouse-breadcrumb-line");
 
@@ -186,7 +197,7 @@ describe("ProfileOtaDiagnosticsCard", () => {
     expect(alertSpy).toHaveBeenCalledWith("OTA diagnostics", "Новых OTA-обновлений нет.");
   });
 
-  it("copies diagnostics together with persisted pdf and warehouse back breadcrumbs", async () => {
+  it("copies diagnostics together with persisted pdf, warehouse back, and office reentry breadcrumbs", async () => {
     mockGetOtaDiagnostics.mockReturnValue(createDiagnostics());
     mockGetPdfCrashBreadcrumbs.mockResolvedValue([
       {
@@ -197,6 +208,16 @@ describe("ProfileOtaDiagnosticsCard", () => {
     ]);
     mockBuildPdfCrashBreadcrumbsText.mockReturnValue(
       "2026-04-03T10:00:00.000Z | foreman | viewer_validation_start",
+    );
+    mockGetOfficeReentryBreadcrumbs.mockResolvedValue([
+      {
+        at: "2026-04-09T10:05:00.000Z",
+        marker: "office_reentry_mount",
+        result: "success",
+      },
+    ]);
+    mockBuildOfficeReentryBreadcrumbsText.mockReturnValue(
+      "2026-04-09T10:05:00.000Z | office_reentry_mount | success",
     );
     mockGetWarehouseBackBreadcrumbs.mockResolvedValue([
       {
@@ -216,12 +237,20 @@ describe("ProfileOtaDiagnosticsCard", () => {
     });
 
     expect(mockGetPdfCrashBreadcrumbs).toHaveBeenCalledTimes(1);
+    expect(mockGetOfficeReentryBreadcrumbs).toHaveBeenCalledTimes(1);
     expect(mockGetWarehouseBackBreadcrumbs).toHaveBeenCalledTimes(1);
     expect(mockBuildPdfCrashBreadcrumbsText).toHaveBeenCalledWith([
       {
         at: "2026-04-03T10:00:00.000Z",
         screen: "foreman",
         marker: "viewer_validation_start",
+      },
+    ]);
+    expect(mockBuildOfficeReentryBreadcrumbsText).toHaveBeenCalledWith([
+      {
+        at: "2026-04-09T10:05:00.000Z",
+        marker: "office_reentry_mount",
+        result: "success",
       },
     ]);
     expect(mockBuildWarehouseBackBreadcrumbsText).toHaveBeenCalledWith([
@@ -232,7 +261,7 @@ describe("ProfileOtaDiagnosticsCard", () => {
       },
     ]);
     expect(mockClipboardSetStringAsync).toHaveBeenCalledWith(
-      "diagnostics\n\npdf_crash_breadcrumbs:\n2026-04-03T10:00:00.000Z | foreman | viewer_validation_start\n\nwarehouse_back_breadcrumbs:\n2026-04-09T10:00:00.000Z | warehouse_back_navigation_call | success",
+      "diagnostics\n\npdf_crash_breadcrumbs:\n2026-04-03T10:00:00.000Z | foreman | viewer_validation_start\n\nwarehouse_back_breadcrumbs:\n2026-04-09T10:00:00.000Z | warehouse_back_navigation_call | success\n\noffice_reentry_breadcrumbs:\n2026-04-09T10:05:00.000Z | office_reentry_mount | success",
     );
     expect(alertSpy).toHaveBeenCalledWith("OTA diagnostics", expect.any(String));
   });
