@@ -1,6 +1,10 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  recordOfficeWarehouseRuntimeStateWriteAccepted,
+  recordOfficeWarehouseRuntimeStateWriteSkipped,
+} from "../../../lib/navigation/officeReentryBreadcrumbs";
+import {
   loadStoredFioState,
   saveStoredFioState,
 } from "../../../lib/storage/fioPersistence";
@@ -8,6 +12,7 @@ import { useWarehouseUiStore } from "../warehouseUi.store";
 
 type UseWarehousemanFioArgs = {
   getTodaySixAM: () => Date;
+  isScreenFocused: boolean;
   onError?: (e: unknown) => void;
 };
 
@@ -23,16 +28,67 @@ type UseWarehousemanFioResult = {
 const CONFIRM_TS_KEY = "wh_warehouseman_confirm_ts";
 const WAREHOUSEMAN_HISTORY_KEY = "wh_warehouseman_history_v1";
 
-export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFioArgs): UseWarehousemanFioResult {
+const logSuppressedPostUnmount = (scope: string, details?: Record<string, unknown>) => {
+  console.info(`[warehouse:${scope}] suppressed post-unmount`, details);
+};
+
+export function useWarehousemanFio({
+  getTodaySixAM,
+  isScreenFocused,
+  onError,
+}: UseWarehousemanFioArgs): UseWarehousemanFioResult {
   const [warehousemanFio, setWarehousemanFio] = useState("");
   const [warehousemanHistory, setWarehousemanHistory] = useState<string[]>([]);
   const isFioConfirmVisible = useWarehouseUiStore((state) => state.isFioConfirmVisible);
   const setIsFioConfirmVisible = useWarehouseUiStore((state) => state.setIsFioConfirmVisible);
   const [isFioLoading, setIsFioLoading] = useState(false);
   const mountedRef = useRef(true);
+  const focusedRef = useRef(isScreenFocused);
 
-  useEffect(() => () => {
-    mountedRef.current = false;
+  useEffect(() => {
+    focusedRef.current = isScreenFocused;
+  }, [isScreenFocused]);
+
+  const getCommitSkipReason = useCallback(() => {
+    if (!mountedRef.current) return "after_unmount";
+    if (!focusedRef.current) return "after_blur";
+    return "inactive_scope";
+  }, []);
+
+  const canCommit = useCallback(
+    () => mountedRef.current && focusedRef.current,
+    [],
+  );
+
+  const recordStateWriteAccepted = useCallback(
+    (writeTarget: string, source: string) => {
+      recordOfficeWarehouseRuntimeStateWriteAccepted({
+        owner: "warehouseman_fio",
+        route: "/office/warehouse",
+        writeTarget,
+        source,
+      });
+    },
+    [],
+  );
+
+  const recordStateWriteSkipped = useCallback(
+    (writeTarget: string, source: string) => {
+      recordOfficeWarehouseRuntimeStateWriteSkipped({
+        owner: "warehouseman_fio",
+        route: "/office/warehouse",
+        writeTarget,
+        source,
+        reason: getCommitSkipReason(),
+      });
+    },
+    [getCommitSkipReason],
+  );
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -53,7 +109,13 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
           },
         });
 
-        if (!active) return;
+        if (!active || !canCommit()) {
+          recordStateWriteSkipped("bootstrap_state", "mount_bootstrap");
+          logSuppressedPostUnmount("warehousemanFio.bootstrap", {
+            source: "mount_bootstrap",
+          });
+          return;
+        }
 
         if (currentFio) setWarehousemanFio(currentFio);
         setWarehousemanHistory(history);
@@ -63,6 +125,7 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
         if (!lastConfirm || lastConfirm < sixAM) {
           setIsFioConfirmVisible(true);
         }
+        recordStateWriteAccepted("bootstrap_state", "mount_bootstrap");
       } catch (e) {
         if (__DEV__) {
           console.warn("[warehousemanFio] load failed", e);
@@ -72,7 +135,13 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
     return () => {
       active = false;
     };
-  }, [getTodaySixAM, setIsFioConfirmVisible]);
+  }, [
+    canCommit,
+    getTodaySixAM,
+    recordStateWriteAccepted,
+    recordStateWriteSkipped,
+    setIsFioConfirmVisible,
+  ]);
 
   useFocusEffect(
     useCallback(() => {
@@ -88,14 +157,21 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
               historyKey: WAREHOUSEMAN_HISTORY_KEY,
             },
           });
-          if (!active || !mountedRef.current) return;
+          if (!active || !canCommit()) {
+            recordStateWriteSkipped("focus_confirm_visible", "focus_check");
+            logSuppressedPostUnmount("warehousemanFio.focusCheck", {
+              source: "focus_check",
+            });
+            return;
+          }
           const sixAM = getTodaySixAM();
           const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
           if (!lastConfirm || lastConfirm < sixAM) {
             setIsFioConfirmVisible(true);
+            recordStateWriteAccepted("focus_confirm_visible", "focus_check");
           }
         } catch (e) {
-          if (active && mountedRef.current) {
+          if (active && canCommit()) {
             onError?.(e);
           }
         }
@@ -104,14 +180,28 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
       return () => {
         active = false;
       };
-    }, [getTodaySixAM, onError, setIsFioConfirmVisible]),
+    }, [
+      canCommit,
+      getTodaySixAM,
+      onError,
+      recordStateWriteAccepted,
+      recordStateWriteSkipped,
+      setIsFioConfirmVisible,
+    ]),
   );
 
   const handleFioConfirm = useCallback(
     async (fio: string) => {
       setIsFioLoading(true);
       try {
-        if (!mountedRef.current) return;
+        if (!canCommit()) {
+          recordStateWriteSkipped("confirm_state", "confirm_submit");
+          logSuppressedPostUnmount("warehousemanFio.confirm", {
+            source: "confirm_submit",
+            stage: "start",
+          });
+          return;
+        }
         setWarehousemanFio(fio);
         const nextHist = await saveStoredFioState({
           screen: "warehouse",
@@ -124,20 +214,40 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
           fio,
           history: warehousemanHistory,
         });
-        if (!mountedRef.current) return;
+        if (!canCommit()) {
+          recordStateWriteSkipped("confirm_state", "confirm_submit");
+          logSuppressedPostUnmount("warehousemanFio.confirm", {
+            source: "confirm_submit",
+            stage: "persisted",
+          });
+          return;
+        }
         setWarehousemanHistory(nextHist);
         setIsFioConfirmVisible(false);
+        recordStateWriteAccepted("confirm_state", "confirm_submit");
       } catch (e) {
-        if (mountedRef.current) {
+        if (canCommit()) {
           onError?.(e);
         }
       } finally {
-        if (mountedRef.current) {
-          setIsFioLoading(false);
+        if (!canCommit()) {
+          recordStateWriteSkipped("confirm_loading", "confirm_submit");
+          logSuppressedPostUnmount("warehousemanFio.confirmLoading", {
+            source: "confirm_submit",
+          });
+          return;
         }
+        setIsFioLoading(false);
       }
     },
-    [warehousemanHistory, onError, setIsFioConfirmVisible],
+    [
+      canCommit,
+      onError,
+      recordStateWriteAccepted,
+      recordStateWriteSkipped,
+      warehousemanHistory,
+      setIsFioConfirmVisible,
+    ],
   );
 
   return {

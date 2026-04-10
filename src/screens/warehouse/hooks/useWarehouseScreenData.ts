@@ -73,7 +73,11 @@ export function useWarehouseScreenData(params: {
     isFioLoading,
     setIsFioConfirmVisible,
     handleFioConfirm,
-  } = useWarehousemanFio({ getTodaySixAM, onError: showErr });
+  } = useWarehousemanFio({
+    getTodaySixAM,
+    isScreenFocused,
+    onError: showErr,
+  });
 
   const headerApi = useWarehouseHeaderApi({ isWeb, hasSubRow: !!warehousemanFio });
   const HEADER_MAX = !!warehousemanFio ? 130 : 92;

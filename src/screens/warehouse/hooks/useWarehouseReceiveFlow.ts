@@ -37,6 +37,10 @@ import {
 } from "../warehouseReceiveQueue";
 import { flushWarehouseReceiveQueue } from "../warehouseReceiveWorker";
 
+const logSuppressedPostUnmount = (scope: string, details?: Record<string, unknown>) => {
+  console.info(`[warehouse:${scope}] suppressed post-unmount`, details);
+};
+
 type ReceiveRow = {
   incoming_item_id?: string | null;
   purchase_item_id?: string | number | null;
@@ -161,9 +165,21 @@ export function useWarehouseReceiveFlow(params: {
     [mountedRef],
   );
 
+  const ensureScreenActive = useCallback(
+    (scope: string, details?: Record<string, unknown>) => {
+      if (isScreenActive()) return true;
+      logSuppressedPostUnmount(scope, details);
+      return false;
+    },
+    [isScreenActive],
+  );
+
   const syncLocalInputFromDraft = useCallback((incomingId: string) => {
+    if (!ensureScreenActive("receiveFlow.syncLocalInputFromDraft", { incomingId })) {
+      return;
+    }
     setQtyInputByItemState(selectWarehouseReceiveQtyInputMap(incomingId));
-  }, []);
+  }, [ensureScreenActive]);
 
   const refreshWarehouseAfterSuccess = useCallback(
     async (incomingId: string) => {
@@ -172,11 +188,11 @@ export function useWarehouseReceiveFlow(params: {
         fetchStock(),
         loadItemsForHead(incomingId, true),
       ]);
-      if (trim(itemsModalIncomingId) === incomingId) {
+      if (trim(itemsModalIncomingId) === incomingId && ensureScreenActive("receiveFlow.refreshAfterSuccess", { incomingId })) {
         syncLocalInputFromDraft(incomingId);
       }
     },
-    [fetchStock, fetchToReceive, itemsModalIncomingId, loadItemsForHead, syncLocalInputFromDraft],
+    [ensureScreenActive, fetchStock, fetchToReceive, itemsModalIncomingId, loadItemsForHead, syncLocalInputFromDraft],
   );
 
   const flushQueue = useCallback(
@@ -203,6 +219,9 @@ export function useWarehouseReceiveFlow(params: {
     const queue = await enqueueWarehouseReceive(incomingId);
     const entry = queue.find((row) => row.incomingId === incomingId) ?? null;
     const pendingCount = await getWarehouseReceivePendingCount(incomingId);
+    if (!ensureScreenActive("receiveFlow.queueIncomingDraft", { incomingId })) {
+      return;
+    }
     await markWarehouseReceiveDraftQueued(incomingId, pendingCount);
     recordPlatformOfflineTelemetry({
       contourKey: "warehouse_receive",
@@ -219,7 +238,7 @@ export function useWarehouseReceiveFlow(params: {
       manualRetry: false,
       durationMs: null,
     });
-  }, []);
+  }, [ensureScreenActive]);
 
   const syncQueuedDraftIfPossible = useCallback(
     async (triggerSource: PlatformOfflineRetryTriggerSource) => {
@@ -235,7 +254,7 @@ export function useWarehouseReceiveFlow(params: {
     (async () => {
       await hydrateWarehouseReceiveDraftStore();
       if (cancelled) return;
-      if (!isScreenActive()) return;
+      if (!ensureScreenActive("receiveFlow.bootstrap.runtimeReady")) return;
       setRuntimeReady(true);
       if (activeIncomingId) {
         syncLocalInputFromDraft(activeIncomingId);
@@ -295,7 +314,7 @@ export function useWarehouseReceiveFlow(params: {
       await seedEnsureIncomingItems({ supabase, incomingId });
       if (cancelled) return;
       await loadItemsForHead(incomingId, true);
-      if (cancelled || !isScreenActive()) return;
+      if (cancelled || !ensureScreenActive("receiveFlow.itemsModal.seed", { incomingId })) return;
       syncLocalInputFromDraft(incomingId);
     })().catch((error) => {
       if (!cancelled && isScreenActive()) onError(error);
@@ -329,6 +348,9 @@ export function useWarehouseReceiveFlow(params: {
       const result = await syncQueuedDraftIfPossible("manual_retry");
       if (!result) return;
 
+      if (!ensureScreenActive("receiveFlow.manualRetry.commit", { incomingId })) {
+        return;
+      }
       syncLocalInputFromDraft(incomingId);
 
       if (result.failed) {
@@ -361,7 +383,7 @@ export function useWarehouseReceiveFlow(params: {
         `Принято позиций: ${result.lastOkCount}\nОсталось: ${result.lastLeftAfter ?? 0}`,
       );
     },
-    [notifyError, notifyInfo, setItemsModal, syncLocalInputFromDraft, syncQueuedDraftIfPossible],
+    [ensureScreenActive, notifyError, notifyInfo, setItemsModal, syncLocalInputFromDraft, syncQueuedDraftIfPossible],
   );
 
   const receiveSelectedForHead = useCallback(
@@ -371,6 +393,9 @@ export function useWarehouseReceiveFlow(params: {
 
       try {
         const freshRows = await loadItemsForHead(incomingId, true);
+        if (!ensureScreenActive("receiveFlow.receiveSelected.loadItems", { incomingId })) {
+          return;
+        }
         if (!freshRows.length) {
           notifyError(
             "Нет материалов",
@@ -385,24 +410,44 @@ export function useWarehouseReceiveFlow(params: {
           return;
         }
 
+        if (!ensureScreenActive("receiveFlow.receiveSelected.draftWrite", { incomingId })) {
+          return;
+        }
         await setWarehouseReceiveDraftItems(incomingId, selection.items);
+        if (!ensureScreenActive("receiveFlow.receiveSelected.localWrite", { incomingId })) {
+          return;
+        }
         setQtyInputByItemState(toQtyInputMap(selection.items));
 
         if (!trim(warehousemanFio)) {
+          if (!ensureScreenActive("receiveFlow.receiveSelected.fioPrompt", { incomingId })) {
+            return;
+          }
           setIsFioConfirmVisible(true);
           return;
         }
 
+        if (!ensureScreenActive("receiveFlow.receiveSelected.headStart", { incomingId })) {
+          return;
+        }
         setReceivingHeadId(incomingId);
         await queueIncomingDraft(incomingId);
         await handleManualSyncResult(incomingId);
       } catch (error) {
-        onError(error);
+        if (isScreenActive()) {
+          onError(error);
+        } else {
+          logSuppressedPostUnmount("receiveFlow.receiveSelected.error", { incomingId });
+        }
       } finally {
+        if (!ensureScreenActive("receiveFlow.receiveSelected.finally", { incomingId })) {
+          return;
+        }
         setReceivingHeadId(null);
       }
     },
     [
+      ensureScreenActive,
       handleManualSyncResult,
       loadItemsForHead,
       notifyError,
@@ -429,6 +474,9 @@ export function useWarehouseReceiveFlow(params: {
         }
 
         if (!trim(warehousemanFio)) {
+          if (!ensureScreenActive("receiveFlow.retryReceive.fioPrompt", { incomingId })) {
+            return;
+          }
           setIsFioConfirmVisible(true);
           return;
         }
@@ -459,15 +507,26 @@ export function useWarehouseReceiveFlow(params: {
           await queueIncomingDraft(incomingId);
         }
 
+        if (!ensureScreenActive("receiveFlow.retryReceive.headStart", { incomingId })) {
+          return;
+        }
         setReceivingHeadId(incomingId);
         await handleManualSyncResult(incomingId);
       } catch (error) {
-        onError(error);
+        if (isScreenActive()) {
+          onError(error);
+        } else {
+          logSuppressedPostUnmount("receiveFlow.retryReceive.error", { incomingId });
+        }
       } finally {
+        if (!ensureScreenActive("receiveFlow.retryReceive.finally", { incomingId })) {
+          return;
+        }
         setReceivingHeadId(null);
       }
     },
     [
+      ensureScreenActive,
       handleManualSyncResult,
       notifyInfo,
       onError,

@@ -51,6 +51,12 @@ export type OfficeReentryMarker =
   | "office_warehouse_back_replace_done"
   | "office_warehouse_before_remove"
   | "office_warehouse_unmount"
+  | "office_warehouse_runtime_bootstrap_start"
+  | "office_warehouse_runtime_bootstrap_done"
+  | "office_warehouse_runtime_bootstrap_skipped"
+  | "office_warehouse_runtime_commit_skipped"
+  | "office_warehouse_runtime_state_write_accepted"
+  | "office_warehouse_runtime_state_write_skipped"
   | "office_index_after_return_focus"
   | "office_index_after_return_mount"
   | "office_back_path_failed"
@@ -372,6 +378,12 @@ function recordOfficeLifecycleMarker(params: {
     | "office_warehouse_back_replace_done"
     | "office_warehouse_before_remove"
     | "office_warehouse_unmount"
+    | "office_warehouse_runtime_bootstrap_start"
+    | "office_warehouse_runtime_bootstrap_done"
+    | "office_warehouse_runtime_bootstrap_skipped"
+    | "office_warehouse_runtime_commit_skipped"
+    | "office_warehouse_runtime_state_write_accepted"
+    | "office_warehouse_runtime_state_write_skipped"
     | "office_index_after_return_focus"
     | "office_index_after_return_mount"
     | "tab_warehouse_entry_mount_start"
@@ -772,6 +784,63 @@ export function recordOfficeWarehouseUnmount(extra?: Record<string, unknown>) {
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_unmount",
     extra,
+  });
+}
+
+export function recordOfficeWarehouseRuntimeBootstrapStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_runtime_bootstrap_start",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseRuntimeBootstrapDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_runtime_bootstrap_done",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseRuntimeBootstrapSkipped(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_runtime_bootstrap_skipped",
+    extra,
+    result: "skipped",
+  });
+}
+
+export function recordOfficeWarehouseRuntimeCommitSkipped(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_runtime_commit_skipped",
+    extra,
+    result: "skipped",
+  });
+}
+
+export function recordOfficeWarehouseRuntimeStateWriteAccepted(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_runtime_state_write_accepted",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseRuntimeStateWriteSkipped(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_runtime_state_write_skipped",
+    extra,
+    result: "skipped",
   });
 }
 
@@ -1315,6 +1384,14 @@ export function buildOfficeReentryBreadcrumbsText(
         parts.push(`handler=${String(item.extra.handler)}`);
       if (item.extra?.action) parts.push(`action=${String(item.extra.action)}`);
       if (item.extra?.phase) parts.push(`phase=${String(item.extra.phase)}`);
+      if (item.extra?.source) parts.push(`source=${String(item.extra.source)}`);
+      if (item.extra?.writeTarget)
+        parts.push(`writeTarget=${String(item.extra.writeTarget)}`);
+      if (item.extra?.visibleScope)
+        parts.push(`visibleScope=${String(item.extra.visibleScope)}`);
+      if (item.extra?.skippedScope)
+        parts.push(`skippedScope=${String(item.extra.skippedScope)}`);
+      if (item.extra?.tab) parts.push(`tab=${String(item.extra.tab)}`);
       if (item.extra?.selectedMethod)
         parts.push(`selectedMethod=${String(item.extra.selectedMethod)}`);
       if (item.extra?.reason) parts.push(`reason=${String(item.extra.reason)}`);

@@ -47,6 +47,7 @@ function createDeferred<T>() {
 
 function Harness(props: {
   getTodaySixAM: () => Date;
+  isScreenFocused: boolean;
   onError?: (error: unknown) => void;
 }) {
   useWarehousemanFio(props);
@@ -74,6 +75,7 @@ describe("useWarehousemanFio", () => {
       renderer = TestRenderer.create(
         <Harness
           getTodaySixAM={() => new Date("2026-04-10T06:00:00.000Z")}
+          isScreenFocused={true}
           onError={onError}
         />,
       );
@@ -97,5 +99,70 @@ describe("useWarehousemanFio", () => {
 
     expect(mockSetIsFioConfirmVisible).not.toHaveBeenCalled();
     expect(onError).not.toHaveBeenCalled();
+  });
+
+  it("suppresses shared-store writes after blur before unmount", async () => {
+    const deferred = createDeferred<{
+      currentFio?: string;
+      history: string[];
+      lastConfirmIso: string | null;
+    }>();
+    mockLoadStoredFioState.mockReturnValue(deferred.promise);
+    const onError = jest.fn();
+
+    let renderer!: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <Harness
+          getTodaySixAM={() => new Date("2026-04-10T06:00:00.000Z")}
+          isScreenFocused={true}
+          onError={onError}
+        />,
+      );
+    });
+
+    mockSetIsFioConfirmVisible.mockClear();
+
+    await act(async () => {
+      renderer.update(
+        <Harness
+          getTodaySixAM={() => new Date("2026-04-10T06:00:00.000Z")}
+          isScreenFocused={false}
+          onError={onError}
+        />,
+      );
+    });
+
+    await act(async () => {
+      deferred.resolve({
+        currentFio: "",
+        history: [],
+        lastConfirmIso: null,
+      });
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockSetIsFioConfirmVisible).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  it("commits confirmation visibility while the screen stays focused", async () => {
+    mockLoadStoredFioState.mockResolvedValue({
+      currentFio: "",
+      history: [],
+      lastConfirmIso: null,
+    });
+
+    await act(async () => {
+      TestRenderer.create(
+        <Harness
+          getTodaySixAM={() => new Date("2026-04-10T06:00:00.000Z")}
+          isScreenFocused={true}
+        />,
+      );
+    });
+
+    expect(mockSetIsFioConfirmVisible).toHaveBeenCalledWith(true);
   });
 });
