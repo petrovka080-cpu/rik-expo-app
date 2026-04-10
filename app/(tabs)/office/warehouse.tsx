@@ -8,6 +8,9 @@ import {
   recordOfficeWarehouseEntryFocusStart,
   recordOfficeWarehouseEntryMountDone,
   recordOfficeWarehouseEntryMountStart,
+  recordOfficeWarehouseScopeActive,
+  recordOfficeWarehouseScopeInactive,
+  recordOfficeWarehouseScopeSkipReason,
   recordOfficeWarehouseUnmount,
   recordOfficeRouteOwnerIdentity,
   recordOfficeRouteOwnerBlur,
@@ -65,6 +68,7 @@ function OfficeWarehouseRoute() {
   const navigation = useNavigation();
   const pathname = usePathname();
   const segments = useSegments();
+  const isExactWarehousePath = pathname === "/office/warehouse";
   const identityRef = useRef(
     `office_warehouse_route:${Math.random().toString(36).slice(2, 10)}`,
   );
@@ -73,10 +77,6 @@ function OfficeWarehouseRoute() {
   const segmentsLabel = useMemo(() => segments.join("/") || "none", [segments]);
   const segmentsRef = useRef(segmentsLabel);
   segmentsRef.current = segmentsLabel;
-  const initialSnapshotRef = useRef({
-    pathname,
-    segments: segmentsLabel,
-  });
   const buildRouteExtra = useCallback(
     (extra?: Record<string, unknown>) => ({
       owner: "office_warehouse_route",
@@ -89,25 +89,36 @@ function OfficeWarehouseRoute() {
     }),
     [pathname, segmentsLabel],
   );
+  const scopeInactiveReason = isExactWarehousePath
+    ? null
+    : `non_exact_path:${pathname}`;
+
+  useEffect(() => {
+    if (isExactWarehousePath) {
+      recordOfficeWarehouseScopeActive(buildRouteExtra());
+      return;
+    }
+
+    const inactiveExtra = buildRouteExtra({
+      reason: scopeInactiveReason ?? "non_exact_path:unknown",
+    });
+    recordOfficeWarehouseScopeSkipReason(inactiveExtra);
+    recordOfficeWarehouseScopeInactive(inactiveExtra);
+  }, [buildRouteExtra, isExactWarehousePath, scopeInactiveReason]);
 
   React.useLayoutEffect(() => {
+    if (!isExactWarehousePath) return;
     recordOfficeWarehouseEntryMountStart(
       buildRouteExtra({
         phase: "layout_effect",
       }),
     );
-  }, [buildRouteExtra]);
+  }, [buildRouteExtra, isExactWarehousePath]);
 
   useEffect(() => {
+    if (!isExactWarehousePath) return;
     const identity = identityRef.current;
-    recordOfficeRouteOwnerMount({
-      owner: "office_warehouse_route",
-      route: "/office/warehouse",
-      pathname: initialSnapshotRef.current.pathname,
-      segments: initialSnapshotRef.current.segments,
-      identity,
-      routeWrapper: "office_owned_screen_entry",
-    });
+    recordOfficeRouteOwnerMount(buildRouteExtra({ identity }));
     return () => {
       recordOfficeWarehouseUnmount({
         owner: "office_warehouse_route",
@@ -118,17 +129,17 @@ function OfficeWarehouseRoute() {
         routeWrapper: "office_owned_screen_entry",
       });
       recordOfficeRouteOwnerUnmount({
-        owner: "office_warehouse_route",
-        route: "/office/warehouse",
-        pathname: pathnameRef.current,
-        segments: segmentsRef.current,
+        ...buildRouteExtra({
+          pathname: pathnameRef.current,
+          segments: segmentsRef.current,
+        }),
         identity,
-        routeWrapper: "office_owned_screen_entry",
       });
     };
-  }, []);
+  }, [buildRouteExtra, isExactWarehousePath]);
 
   useEffect(() => {
+    if (!isExactWarehousePath) return;
     return navigation.addListener("beforeRemove", (event) => {
       const action =
         typeof event?.data?.action?.type === "string"
@@ -140,19 +151,21 @@ function OfficeWarehouseRoute() {
         }),
       );
     });
-  }, [buildRouteExtra, navigation]);
+  }, [buildRouteExtra, isExactWarehousePath, navigation]);
 
   useEffect(() => {
+    if (!isExactWarehousePath) return;
     recordOfficeWarehouseEntryMountDone(
       buildRouteExtra({
         phase: "effect",
       }),
     );
     recordOfficeRouteOwnerIdentity(buildRouteExtra());
-  }, [buildRouteExtra]);
+  }, [buildRouteExtra, isExactWarehousePath]);
 
   useFocusEffect(
     useCallback(() => {
+      if (!isExactWarehousePath) return undefined;
       const focusExtra = buildRouteExtra();
       recordOfficeWarehouseEntryFocusStart(focusExtra);
       recordOfficeRouteOwnerFocus(buildRouteExtra());
@@ -160,8 +173,12 @@ function OfficeWarehouseRoute() {
       return () => {
         recordOfficeRouteOwnerBlur(buildRouteExtra());
       };
-    }, [buildRouteExtra]),
+    }, [buildRouteExtra, isExactWarehousePath]),
   );
+
+  if (!isExactWarehousePath) {
+    return null;
+  }
 
   return (
     <OfficeWarehouseEntryBoundary extra={buildRouteExtra()}>

@@ -28,6 +28,9 @@ export type OfficeReentryMarker =
   | "office_warehouse_entry_focus_done"
   | "office_warehouse_entry_content_mount_start"
   | "office_warehouse_entry_content_mount_done"
+  | "office_warehouse_scope_active"
+  | "office_warehouse_scope_inactive"
+  | "office_warehouse_scope_skip_reason"
   | "office_warehouse_entry_failed"
   | "office_warehouse_back_press_start"
   | "office_warehouse_back_press_done"
@@ -339,6 +342,9 @@ function recordOfficeLifecycleMarker(params: {
     | "office_warehouse_entry_focus_done"
     | "office_warehouse_entry_content_mount_start"
     | "office_warehouse_entry_content_mount_done"
+    | "office_warehouse_scope_active"
+    | "office_warehouse_scope_inactive"
+    | "office_warehouse_scope_skip_reason"
     | "office_warehouse_back_press_start"
     | "office_warehouse_back_press_done"
     | "office_warehouse_back_handler_start"
@@ -546,6 +552,35 @@ export function recordOfficeWarehouseEntryContentMountDone(
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_entry_content_mount_done",
     extra,
+  });
+}
+
+export function recordOfficeWarehouseScopeActive(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_scope_active",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseScopeInactive(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_scope_inactive",
+    extra,
+    result: "skipped",
+  });
+}
+
+export function recordOfficeWarehouseScopeSkipReason(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_scope_skip_reason",
+    extra,
+    result: "skipped",
   });
 }
 
