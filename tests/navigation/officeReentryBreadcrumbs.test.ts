@@ -57,23 +57,13 @@ import {
   recordOfficeTabOwnerBlur,
   recordOfficeTabOwnerFocus,
   recordOfficeTabOwnerUnmount,
-  recordOfficeWarehouseBackHandlerDone,
-  recordOfficeWarehouseBackHandlerStart,
-  recordOfficeWarehouseBackMethodSelected,
-  recordOfficeWarehouseBackPressDone,
-  recordOfficeWarehouseBackPressStart,
-  recordOfficeWarehouseBackReplaceDone,
-  recordOfficeWarehouseBackReplaceStart,
-  recordOfficeWarehouseBackUseReplaceFallback,
-  recordOfficeWarehouseBackUseRouterBack,
   recordOfficeWarehouseBeforeRemove,
-  recordOfficeWarehouseEntryContentMountDone,
-  recordOfficeWarehouseEntryContentMountStart,
   recordOfficeWarehouseEntryFailure,
   recordOfficeWarehouseEntryFocusDone,
   recordOfficeWarehouseEntryFocusStart,
   recordOfficeWarehouseEntryMountDone,
   recordOfficeWarehouseEntryMountStart,
+  recordOfficeWarehouseRuntimeStateWriteSkipped,
   recordOfficeWarehouseUnmount,
   recordTabWarehouseEntryMountDone,
   recordTabWarehouseEntryMountStart,
@@ -82,8 +72,6 @@ import {
   recordWarehouseRouteOwnerIdentity,
   recordWarehouseRouteOwnerMount,
   recordWarehouseRouteOwnerUnmount,
-  recordWarehouseReturnToOfficeDone,
-  recordWarehouseReturnToOfficeStart,
 } from "../../src/lib/navigation/officeReentryBreadcrumbs";
 import {
   getPlatformObservabilityEvents,
@@ -183,48 +171,26 @@ describe("office reentry breadcrumbs", () => {
     );
   });
 
-  it("formats office warehouse child-entry diagnostics", () => {
+  it("formats office warehouse runtime write suppression diagnostics", () => {
     expect(
       buildOfficeReentryBreadcrumbsText([
         {
           at: "2026-04-09T10:08:00.000Z",
-          marker: "office_warehouse_entry_content_mount_done",
-          result: "success",
+          marker: "office_warehouse_runtime_state_write_skipped",
+          result: "skipped",
           extra: {
             route: "/office/warehouse",
-            owner: "warehouse_screen_content",
-            identity: "office_warehouse_route:ghi789",
-            pathname: "/office/warehouse",
-            segments: "(tabs)/office/warehouse",
-            routeWrapper: "office_child_screen_entry",
-            wrappedRoute: "/warehouse",
-            contentOwner: "office_warehouse_route",
+            owner: "warehouseman_fio",
+            source: "mount_bootstrap",
+            writeTarget: "bootstrap_state",
+            visibleScope: "local_state",
+            skippedScope: "shared_store",
+            reason: "mount_bootstrap_local_only",
           },
         },
       ]),
     ).toBe(
-      "2026-04-09T10:08:00.000Z | office_warehouse_entry_content_mount_done | success | route=/office/warehouse | owner=warehouse_screen_content | identity=office_warehouse_route:ghi789 | pathname=/office/warehouse | segments=(tabs)/office/warehouse | wrappedRoute=/warehouse | routeWrapper=office_child_screen_entry",
-    );
-  });
-
-  it("formats explicit office warehouse back diagnostics", () => {
-    expect(
-      buildOfficeReentryBreadcrumbsText([
-        {
-          at: "2026-04-09T10:09:00.000Z",
-          marker: "office_warehouse_back_method_selected",
-          result: "success",
-          extra: {
-            route: "/office/warehouse",
-            owner: "office_stack_layout",
-            method: "back",
-            target: "/office",
-            selectedMethod: "back",
-          },
-        },
-      ]),
-    ).toBe(
-      "2026-04-09T10:09:00.000Z | office_warehouse_back_method_selected | success | route=/office/warehouse | owner=office_stack_layout | target=/office | method=back | selectedMethod=back",
+      "2026-04-09T10:08:00.000Z | office_warehouse_runtime_state_write_skipped | skipped | route=/office/warehouse | owner=warehouseman_fio | source=mount_bootstrap | writeTarget=bootstrap_state | visibleScope=local_state | skippedScope=shared_store | reason=mount_bootstrap_local_only",
     );
   });
 
@@ -344,24 +310,6 @@ describe("office reentry breadcrumbs", () => {
       routeWrapper: "office_child_screen_entry",
       wrappedRoute: "/warehouse",
     });
-    recordOfficeWarehouseEntryContentMountStart({
-      owner: "warehouse_screen_content",
-      route: "/office/warehouse",
-      identity: "office_warehouse_route:ghi789",
-      pathname: "/office/warehouse",
-      segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_child_screen_entry",
-      wrappedRoute: "/warehouse",
-    });
-    recordOfficeWarehouseEntryContentMountDone({
-      owner: "warehouse_screen_content",
-      route: "/office/warehouse",
-      identity: "office_warehouse_route:ghi789",
-      pathname: "/office/warehouse",
-      segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_child_screen_entry",
-      wrappedRoute: "/warehouse",
-    });
     recordOfficeWarehouseEntryFocusStart({
       owner: "office_warehouse_route",
       route: "/office/warehouse",
@@ -402,8 +350,6 @@ describe("office reentry breadcrumbs", () => {
       "office_warehouse_entry_mount_start",
       "office_child_entry_mount",
       "office_warehouse_entry_mount_done",
-      "office_warehouse_entry_content_mount_start",
-      "office_warehouse_entry_content_mount_done",
       "office_warehouse_entry_focus_start",
       "office_child_entry_focus",
       "office_warehouse_entry_focus_done",
@@ -445,20 +391,6 @@ describe("office reentry breadcrumbs", () => {
   });
 
   it("records the expected office route ownership sequence", () => {
-    recordWarehouseReturnToOfficeStart({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      sourceRoute: "/office/warehouse",
-      target: "/office",
-      method: "replace",
-    });
-    recordWarehouseReturnToOfficeDone({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      sourceRoute: "/office/warehouse",
-      target: "/office",
-      method: "replace",
-    });
     recordOfficeRouteOwnerMount({
       owner: "office_index_route",
       route: "/office",
@@ -519,8 +451,6 @@ describe("office reentry breadcrumbs", () => {
     });
 
     expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
-      "warehouse_return_to_office_start",
-      "warehouse_return_to_office_done",
       "office_route_owner_mount",
       "office_route_scope_active",
       "office_route_owner_identity",
@@ -531,32 +461,7 @@ describe("office reentry breadcrumbs", () => {
     ]);
   });
 
-  it("records the expected office warehouse router.back capture sequence", () => {
-    recordOfficeWarehouseBackPressStart({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      handler: "warehouse_header_js_back",
-      target: "/office",
-    });
-    recordOfficeWarehouseBackHandlerStart({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      handler: "office_header_left_explicit",
-    });
-    recordOfficeWarehouseBackMethodSelected({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      method: "back",
-      selectedMethod: "back",
-      reason: "warehouse_stack_history_available",
-    });
-    recordOfficeWarehouseBackUseRouterBack({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      method: "back",
-      selectedMethod: "back",
-      target: "/office",
-    });
+  it("records the expected office warehouse return capture sequence", () => {
     recordOfficeWarehouseBeforeRemove({
       owner: "office_warehouse_route",
       route: "/office/warehouse",
@@ -576,20 +481,6 @@ describe("office reentry breadcrumbs", () => {
       segments: "(tabs)/office/warehouse",
       wrappedRoute: "/warehouse",
       routeWrapper: "office_child_screen_entry",
-    });
-    recordOfficeWarehouseBackHandlerDone({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      handler: "office_header_left_explicit",
-      method: "back",
-      selectedMethod: "back",
-      target: "/office",
-    });
-    recordOfficeWarehouseBackPressDone({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      handler: "warehouse_header_js_back",
-      target: "/office",
     });
     recordOfficeWarehouseUnmount({
       owner: "office_warehouse_route",
@@ -642,61 +533,13 @@ describe("office reentry breadcrumbs", () => {
     });
 
     expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
-      "office_warehouse_back_press_start",
-      "office_warehouse_back_handler_start",
-      "office_warehouse_back_method_selected",
-      "office_warehouse_back_use_router_back",
       "office_warehouse_before_remove",
       "office_child_before_remove",
-      "office_warehouse_back_handler_done",
-      "office_warehouse_back_press_done",
       "office_warehouse_unmount",
       "office_child_unmount",
       "office_index_after_return_mount",
       "office_index_after_return_focus",
       "office_back_path_failed",
-    ]);
-  });
-
-  it("records the expected office warehouse replace fallback sequence", () => {
-    recordOfficeWarehouseBackMethodSelected({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      method: "replace",
-      selectedMethod: "replace_fallback",
-      reason: "warehouse_stack_history_missing",
-      target: "/office",
-    });
-    recordOfficeWarehouseBackUseReplaceFallback({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      method: "replace",
-      selectedMethod: "replace_fallback",
-      reason: "warehouse_stack_history_missing",
-      target: "/office",
-    });
-    recordOfficeWarehouseBackReplaceStart({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      handler: "office_header_left_explicit",
-      method: "replace",
-      selectedMethod: "replace_fallback",
-      target: "/office",
-    });
-    recordOfficeWarehouseBackReplaceDone({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      handler: "office_header_left_explicit",
-      method: "replace",
-      selectedMethod: "replace_fallback",
-      target: "/office",
-    });
-
-    expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
-      "office_warehouse_back_method_selected",
-      "office_warehouse_back_use_replace_fallback",
-      "office_warehouse_back_replace_start",
-      "office_warehouse_back_replace_done",
     ]);
   });
 

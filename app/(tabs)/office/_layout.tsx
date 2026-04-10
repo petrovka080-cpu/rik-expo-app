@@ -3,12 +3,14 @@ import { HeaderBackButton } from "@react-navigation/elements";
 import { Stack, router, useNavigation, usePathname, useSegments } from "expo-router";
 
 import {
+  markPendingOfficeRouteReplaceReceipt,
+  markPendingOfficeRouteReturnReceipt,
   recordOfficeLayoutBeforeRemove,
   recordOfficeRouteOwnerIdentity,
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
-import { safeBack } from "../../../src/lib/navigation/safeBack";
+import { hasSafeBackHistory, safeBack } from "../../../src/lib/navigation/safeBack";
 
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
@@ -84,16 +86,48 @@ function useOfficeStackOwnerAudit() {
   }, [navigation, pathname, segmentsLabel]);
 }
 
-export function renderSafeOfficeBackButton(props: Record<string, unknown>) {
-  return (
-    <HeaderBackButton
-      {...props}
-      label={OFFICE_BACK_LABEL}
-      onPress={() => safeBack(router, OFFICE_SAFE_BACK_ROUTE)}
-      testID="office-safe-back"
-    />
-  );
+function handleOfficeChildBack(params: {
+  sourceRoute: "/office/foreman" | "/office/warehouse";
+}) {
+  const hasHistory = hasSafeBackHistory(router);
+  const receiptExtra = {
+    sourceRoute: params.sourceRoute,
+    target: OFFICE_SAFE_BACK_ROUTE,
+    method: hasHistory ? "back" : "replace",
+    selectedMethod: hasHistory ? "back" : "replace_fallback",
+  };
+
+  if (hasHistory) {
+    markPendingOfficeRouteReturnReceipt(receiptExtra);
+  } else {
+    markPendingOfficeRouteReplaceReceipt(receiptExtra);
+  }
+
+  safeBack(router, OFFICE_SAFE_BACK_ROUTE);
 }
+
+function createSafeOfficeBackButton(
+  sourceRoute: "/office/foreman" | "/office/warehouse",
+) {
+  return function renderSafeOfficeChildBackButton(props: Record<string, unknown>) {
+    return (
+      <HeaderBackButton
+        {...props}
+        label={OFFICE_BACK_LABEL}
+        onPress={() => handleOfficeChildBack({ sourceRoute })}
+        testID="office-safe-back"
+      />
+    );
+  };
+}
+
+export const renderSafeOfficeForemanBackButton = createSafeOfficeBackButton(
+  "/office/foreman",
+);
+export const renderSafeOfficeWarehouseBackButton = createSafeOfficeBackButton(
+  "/office/warehouse",
+);
+export const renderSafeOfficeBackButton = renderSafeOfficeForemanBackButton;
 
 export default function OfficeStackLayout() {
   useOfficeStackOwnerAudit();
@@ -114,7 +148,7 @@ export default function OfficeStackLayout() {
         name="foreman"
         options={{
           title: "\u041f\u0440\u043e\u0440\u0430\u0431",
-          headerLeft: renderSafeOfficeBackButton,
+          headerLeft: renderSafeOfficeForemanBackButton,
         }}
       />
       <Stack.Screen name="buyer" options={{ title: "\u0421\u043d\u0430\u0431\u0436\u0435\u043d\u0435\u0446" }} />
@@ -124,7 +158,7 @@ export default function OfficeStackLayout() {
         name="warehouse"
         options={{
           title: WAREHOUSE_HEADER_TITLE,
-          headerLeft: renderSafeOfficeBackButton,
+          headerLeft: renderSafeOfficeWarehouseBackButton,
         }}
       />
       <Stack.Screen name="contractor" options={{ title: "\u041f\u043e\u0434\u0440\u044f\u0434\u0447\u0438\u043a" }} />

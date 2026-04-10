@@ -13,8 +13,10 @@ import {
 import WarehouseScreenContent from "../../src/screens/warehouse/WarehouseScreenContent";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
-export function WarehouseScreen() {
-  return <WarehouseScreenContent />;
+type WarehouseScreenProps = React.ComponentProps<typeof WarehouseScreenContent>;
+
+export function WarehouseScreen(props: WarehouseScreenProps) {
+  return <WarehouseScreenContent {...props} />;
 }
 
 function WarehouseTabRoute() {

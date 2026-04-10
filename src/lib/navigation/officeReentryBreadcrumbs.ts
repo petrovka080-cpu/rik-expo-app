@@ -34,21 +34,10 @@ export type OfficeReentryMarker =
   | "office_warehouse_entry_mount_done"
   | "office_warehouse_entry_focus_start"
   | "office_warehouse_entry_focus_done"
-  | "office_warehouse_entry_content_mount_start"
-  | "office_warehouse_entry_content_mount_done"
   | "office_warehouse_scope_active"
   | "office_warehouse_scope_inactive"
   | "office_warehouse_scope_skip_reason"
   | "office_warehouse_entry_failed"
-  | "office_warehouse_back_press_start"
-  | "office_warehouse_back_press_done"
-  | "office_warehouse_back_handler_start"
-  | "office_warehouse_back_handler_done"
-  | "office_warehouse_back_method_selected"
-  | "office_warehouse_back_use_router_back"
-  | "office_warehouse_back_use_replace_fallback"
-  | "office_warehouse_back_replace_start"
-  | "office_warehouse_back_replace_done"
   | "office_warehouse_before_remove"
   | "office_warehouse_unmount"
   | "office_warehouse_runtime_bootstrap_start"
@@ -62,8 +51,6 @@ export type OfficeReentryMarker =
   | "office_back_path_failed"
   | "tab_warehouse_entry_mount_start"
   | "tab_warehouse_entry_mount_done"
-  | "warehouse_return_to_office_start"
-  | "warehouse_return_to_office_done"
   | "office_bootstrap_initial_start"
   | "office_bootstrap_initial_done"
   | "office_reentry_effect_start"
@@ -362,20 +349,9 @@ function recordOfficeLifecycleMarker(params: {
     | "office_warehouse_entry_mount_done"
     | "office_warehouse_entry_focus_start"
     | "office_warehouse_entry_focus_done"
-    | "office_warehouse_entry_content_mount_start"
-    | "office_warehouse_entry_content_mount_done"
     | "office_warehouse_scope_active"
     | "office_warehouse_scope_inactive"
     | "office_warehouse_scope_skip_reason"
-    | "office_warehouse_back_press_start"
-    | "office_warehouse_back_press_done"
-    | "office_warehouse_back_handler_start"
-    | "office_warehouse_back_handler_done"
-    | "office_warehouse_back_method_selected"
-    | "office_warehouse_back_use_router_back"
-    | "office_warehouse_back_use_replace_fallback"
-    | "office_warehouse_back_replace_start"
-    | "office_warehouse_back_replace_done"
     | "office_warehouse_before_remove"
     | "office_warehouse_unmount"
     | "office_warehouse_runtime_bootstrap_start"
@@ -388,8 +364,6 @@ function recordOfficeLifecycleMarker(params: {
     | "office_index_after_return_mount"
     | "tab_warehouse_entry_mount_start"
     | "tab_warehouse_entry_mount_done"
-    | "warehouse_return_to_office_start"
-    | "warehouse_return_to_office_done"
     | "office_bootstrap_initial_start"
     | "office_bootstrap_initial_done"
     | "office_focus_refresh_skipped"
@@ -621,24 +595,6 @@ export function recordOfficeWarehouseEntryFocusDone(
   });
 }
 
-export function recordOfficeWarehouseEntryContentMountStart(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_entry_content_mount_start",
-    extra,
-  });
-}
-
-export function recordOfficeWarehouseEntryContentMountDone(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_entry_content_mount_done",
-    extra,
-  });
-}
-
 export function recordOfficeWarehouseScopeActive(
   extra?: Record<string, unknown>,
 ) {
@@ -687,87 +643,6 @@ export function recordOfficeWarehouseEntryFailure(params: {
     errorClass,
     errorMessage,
     extra: params.extra,
-  });
-}
-
-export function recordOfficeWarehouseBackPressStart(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_back_press_start",
-    extra,
-  });
-}
-
-export function recordOfficeWarehouseBackPressDone(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_back_press_done",
-    extra,
-  });
-}
-
-export function recordOfficeWarehouseBackHandlerStart(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_back_handler_start",
-    extra,
-  });
-}
-
-export function recordOfficeWarehouseBackHandlerDone(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_back_handler_done",
-    extra,
-  });
-}
-
-export function recordOfficeWarehouseBackMethodSelected(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_back_method_selected",
-    extra,
-  });
-}
-
-export function recordOfficeWarehouseBackUseRouterBack(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_back_use_router_back",
-    extra,
-  });
-}
-
-export function recordOfficeWarehouseBackUseReplaceFallback(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_back_use_replace_fallback",
-    extra,
-  });
-}
-
-export function recordOfficeWarehouseBackReplaceStart(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_back_replace_start",
-    extra,
-  });
-}
-
-export function recordOfficeWarehouseBackReplaceDone(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_warehouse_back_replace_done",
-    extra,
   });
 }
 
@@ -898,24 +773,6 @@ export function recordTabWarehouseEntryMountDone(
 ) {
   recordOfficeLifecycleMarker({
     marker: "tab_warehouse_entry_mount_done",
-    extra,
-  });
-}
-
-export function recordWarehouseReturnToOfficeStart(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_return_to_office_start",
-    extra,
-  });
-}
-
-export function recordWarehouseReturnToOfficeDone(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_return_to_office_done",
     extra,
   });
 }
