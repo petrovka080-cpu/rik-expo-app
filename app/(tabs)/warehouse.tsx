@@ -13,6 +13,10 @@ import {
 import WarehouseScreenContent from "../../src/screens/warehouse/WarehouseScreenContent";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
+export function WarehouseScreen() {
+  return <WarehouseScreenContent />;
+}
+
 function WarehouseTabRoute() {
   const pathname = usePathname();
   const segments = useSegments();
@@ -89,7 +93,7 @@ function WarehouseTabRoute() {
     }, [buildRouteExtra]),
   );
 
-  return <WarehouseScreenContent />;
+  return <WarehouseScreen />;
 }
 
 export default withScreenErrorBoundary(WarehouseTabRoute, {

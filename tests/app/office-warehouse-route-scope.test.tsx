@@ -1,4 +1,6 @@
 import React from "react";
+import fs from "fs";
+import path from "path";
 import TestRenderer, { act } from "react-test-renderer";
 
 import OfficeWarehouseRoute from "../../app/(tabs)/office/warehouse";
@@ -7,7 +9,7 @@ import * as officeBreadcrumbs from "../../src/lib/navigation/officeReentryBreadc
 const mockUsePathname = jest.fn();
 const mockUseSegments = jest.fn();
 const mockAddListener: jest.Mock = jest.fn(() => jest.fn());
-const mockWarehouseScreenContent = jest.fn((_props?: Record<string, unknown>) => null);
+const mockWarehouseScreen = jest.fn((_props?: Record<string, unknown>) => null);
 
 jest.mock("expo-router", () => {
   const ReactRuntime = jest.requireActual("react");
@@ -31,17 +33,16 @@ jest.mock("../../src/shared/ui/ScreenErrorBoundary", () => ({
   withScreenErrorBoundary: (Component: React.ComponentType<object>) => Component,
 }));
 
-jest.mock("../../src/screens/warehouse/WarehouseScreenContent", () => {
+jest.mock("../../app/(tabs)/warehouse", () => {
   const ReactRuntime = jest.requireActual("react");
   const { View } = jest.requireActual("react-native");
   return {
-    __esModule: true,
-    default: function MockWarehouseScreenContent(
+    WarehouseScreen: function MockWarehouseScreen(
       props: Record<string, unknown>,
     ) {
-      mockWarehouseScreenContent(props);
+      mockWarehouseScreen(props);
       return ReactRuntime.createElement(View, {
-        testID: "warehouse-screen-content",
+        testID: "warehouse-screen",
       });
     },
   };
@@ -60,7 +61,7 @@ describe("office warehouse child route entry", () => {
     mockUseSegments.mockReset();
     mockAddListener.mockReset();
     mockAddListener.mockReturnValue(jest.fn());
-    mockWarehouseScreenContent.mockReset();
+    mockWarehouseScreen.mockReset();
     Object.values(officeBreadcrumbs).forEach((value) => {
       if (jest.isMockFunction(value)) {
         value.mockClear();
@@ -78,30 +79,34 @@ describe("office warehouse child route entry", () => {
     });
 
     expect(
-      renderer?.root.findAllByProps({ testID: "warehouse-screen-content" }).length,
+      renderer?.root.findAllByProps({ testID: "warehouse-screen" }).length,
     ).toBeGreaterThan(0);
     expect(officeBreadcrumbs.recordOfficeChildEntryMount).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildEntryFocus).toHaveBeenCalled();
-    expect(mockAddListener).not.toHaveBeenCalled();
-    expect(mockWarehouseScreenContent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        entryKind: "office",
-        entryExtra: expect.objectContaining({
-          owner: "office_warehouse_route",
-          route: "/office/warehouse",
-          wrappedRoute: "/warehouse",
-          routeWrapper: "office_child_screen_entry",
-        }),
-      }),
+    expect(mockAddListener).toHaveBeenCalledWith(
+      "beforeRemove",
+      expect.any(Function),
     );
-    expect(mockWarehouseScreenContent).toHaveBeenCalledWith(
-      expect.not.objectContaining({
-        entryExtra: expect.objectContaining({
-          contentOwner: expect.anything(),
-        }),
-      }),
-    );
-    expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).not.toHaveBeenCalled();
+    expect(mockWarehouseScreen).toHaveBeenCalled();
+    const warehouseScreenProps = mockWarehouseScreen.mock.calls[0]?.[0] as
+      | Record<string, unknown>
+      | undefined;
+    expect(warehouseScreenProps).toBeDefined();
+    expect(warehouseScreenProps).not.toHaveProperty("entryKind");
+    expect(warehouseScreenProps).not.toHaveProperty("entryExtra");
+
+    const beforeRemoveListener = mockAddListener.mock.calls[0]?.[1];
+    expect(typeof beforeRemoveListener).toBe("function");
+    act(() => {
+      beforeRemoveListener({
+        data: {
+          action: {
+            type: "GO_BACK",
+          },
+        },
+      });
+    });
+    expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).toHaveBeenCalled();
 
     act(() => {
       renderer?.unmount();
@@ -123,7 +128,7 @@ describe("office warehouse child route entry", () => {
         value.mockClear();
       }
     });
-    mockWarehouseScreenContent.mockClear();
+    mockWarehouseScreen.mockClear();
 
     act(() => {
       renderer?.update(<OfficeWarehouseRoute />);
@@ -132,7 +137,7 @@ describe("office warehouse child route entry", () => {
     expect(officeBreadcrumbs.recordOfficeChildEntryMount).not.toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildUnmount).not.toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildEntryFocus).not.toHaveBeenCalled();
-    expect(mockWarehouseScreenContent).toHaveBeenCalledTimes(1);
+    expect(mockWarehouseScreen).toHaveBeenCalledTimes(1);
 
     act(() => {
       renderer?.unmount();
@@ -167,5 +172,24 @@ describe("office warehouse child route entry", () => {
     act(() => {
       renderer?.unmount();
     });
+  });
+
+  it("matches the same reexport contract used by working office child routes", () => {
+    const warehouseSource = fs.readFileSync(
+      path.join(__dirname, "../../app/(tabs)/office/warehouse.tsx"),
+      "utf8",
+    );
+    const foremanSource = fs.readFileSync(
+      path.join(__dirname, "../../app/(tabs)/office/foreman.tsx"),
+      "utf8",
+    );
+
+    expect(warehouseSource).toContain('import { WarehouseScreen } from "../warehouse";');
+    expect(warehouseSource).not.toContain("WarehouseScreenContent");
+    expect(warehouseSource).not.toContain("entryKind=");
+    expect(warehouseSource).not.toContain("entryExtra=");
+    expect(foremanSource).toContain('import { ForemanScreen } from "../foreman";');
+    expect(warehouseSource).toContain("useOfficeChildRouteAudit({");
+    expect(warehouseSource).toContain("return <WarehouseScreen />;");
   });
 });

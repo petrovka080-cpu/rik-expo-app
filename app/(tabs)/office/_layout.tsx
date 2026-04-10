@@ -13,7 +13,6 @@ import { safeBack } from "../../../src/lib/navigation/safeBack";
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
 const WAREHOUSE_HEADER_TITLE = "\u0421\u043a\u043b\u0430\u0434";
-const ENABLE_OFFICE_BEFORE_REMOVE_DIAGNOSTICS = false;
 
 function useOfficeStackOwnerAudit() {
   const navigation = useNavigation();
@@ -67,9 +66,6 @@ function useOfficeStackOwnerAudit() {
   }, [pathname, segmentsLabel]);
 
   useEffect(() => {
-    if (!ENABLE_OFFICE_BEFORE_REMOVE_DIAGNOSTICS) {
-      return undefined;
-    }
     return navigation.addListener("beforeRemove", (event) => {
       const action =
         typeof event?.data?.action?.type === "string"
