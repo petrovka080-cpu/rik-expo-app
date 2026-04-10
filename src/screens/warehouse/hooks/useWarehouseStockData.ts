@@ -6,6 +6,7 @@ import type { StockRow } from "../warehouse.types";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import { recordPlatformGuardSkip } from "../../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
+import { useWarehouseUnmountSafety } from "./useWarehouseUnmountSafety";
 
 const NAME_MAP_ENQUEUE_TTL_MS = 60_000;
 const STOCK_PAGE_SIZE = 120;
@@ -28,6 +29,7 @@ export function useWarehouseStockData(params: {
 }) {
   const { supabase, search } = params;
   const searchKey = String(search ?? "").trim();
+  const unmountSafety = useWarehouseUnmountSafety("warehouse_stock_data");
 
   const [stock, setStock] = useState<StockRow[]>([]);
   const [stockSupported, setStockSupported] = useState<null | boolean>(null);
@@ -84,8 +86,26 @@ export function useWarehouseStockData(params: {
       overrideCodes: options.overrideCodes,
     })
       .then((enrichedRows) => {
-        if (stockFetchSeqRef.current !== options.fetchSeq) return;
-        setStock((previous) => (options.append ? mergeStockRows(previous, enrichedRows) : enrichedRows));
+        if (
+          stockFetchSeqRef.current !== options.fetchSeq ||
+          !unmountSafety.shouldHandleAsyncResult({
+            resource: "late_stock_name_enrichment",
+            reason: options.append ? "append" : "reset",
+          })
+        ) {
+          return;
+        }
+        unmountSafety.guardStateUpdate(
+          () => {
+            setStock((previous) =>
+              options.append ? mergeStockRows(previous, enrichedRows) : enrichedRows,
+            );
+          },
+          {
+            resource: "late_stock_name_publish",
+            reason: options.append ? "append" : "reset",
+          },
+        );
         recordPlatformObservability({
           screen: "warehouse",
           surface: "stock_list",
@@ -101,7 +121,7 @@ export function useWarehouseStockData(params: {
           console.warn("[fetchStock] late rik enrichment error", error);
         }
       });
-  }, [supabase]);
+  }, [supabase, unmountSafety]);
 
   const runFetch = useCallback(async (options: {
     reset: boolean;
@@ -113,9 +133,25 @@ export function useWarehouseStockData(params: {
     const append = !options.reset && !searchCompat;
 
     if (options.reset) {
-      setStockLoadingMore(false);
+      unmountSafety.guardStateUpdate(
+        () => {
+          setStockLoadingMore(false);
+        },
+        {
+          resource: "stock_loading_more_reset",
+          reason: options.reason,
+        },
+      );
     } else {
-      setStockLoadingMore(true);
+      unmountSafety.guardStateUpdate(
+        () => {
+          setStockLoadingMore(true);
+        },
+        {
+          resource: "stock_loading_more_start",
+          reason: options.reason,
+        },
+      );
     }
 
     const fetchSeq = stockFetchSeqRef.current + 1;
@@ -123,10 +159,26 @@ export function useWarehouseStockData(params: {
 
     try {
       const result = await apiFetchStock(supabase, offset, limit);
+      if (
+        !unmountSafety.shouldHandleAsyncResult({
+          resource: "fetch_stock_result",
+          reason: options.reason,
+        })
+      ) {
+        return;
+      }
       const nextRows = result.rows || [];
 
-      setStock((previous) => (append ? mergeStockRows(previous, nextRows) : nextRows));
-      setStockSupported(result.supported);
+      unmountSafety.guardStateUpdate(
+        () => {
+          setStock((previous) => (append ? mergeStockRows(previous, nextRows) : nextRows));
+          setStockSupported(result.supported);
+        },
+        {
+          resource: "stock_publish_rows",
+          reason: options.reason,
+        },
+      );
 
       const totalCount =
         searchCompat
@@ -136,8 +188,16 @@ export function useWarehouseStockData(params: {
       loadedCountRef.current = append ? loadedCountRef.current + nextRows.length : nextRows.length;
       hasMoreRef.current = searchCompat ? false : result.meta.hasMore;
 
-      setStockCount(totalCount);
-      setStockHasMore(hasMoreRef.current);
+      unmountSafety.guardStateUpdate(
+        () => {
+          setStockCount(totalCount);
+          setStockHasMore(hasMoreRef.current);
+        },
+        {
+          resource: "stock_publish_meta",
+          reason: options.reason,
+        },
+      );
 
       recordPlatformObservability({
         screen: "warehouse",
@@ -203,22 +263,39 @@ export function useWarehouseStockData(params: {
       }
     } finally {
       if (!options.reset) {
-        setStockLoadingMore(false);
+        unmountSafety.guardStateUpdate(
+          () => {
+            setStockLoadingMore(false);
+          },
+          {
+            resource: "stock_loading_more_finish",
+            reason: options.reason,
+          },
+        );
       }
 
-      stockFetchInFlightRef.current = null;
-      const queuedReset = queuedResetRef.current;
-      const queuedAppend = queuedAppendRef.current;
-      queuedResetRef.current = false;
-      queuedAppendRef.current = false;
+        stockFetchInFlightRef.current = null;
+        const queuedReset = queuedResetRef.current;
+        const queuedAppend = queuedAppendRef.current;
+        queuedResetRef.current = false;
+        queuedAppendRef.current = false;
 
-      if (queuedReset) {
-        void fetchStockRef.current?.({ reset: true, reason: "refresh" });
-      } else if (queuedAppend && hasMoreRef.current && !searchKey) {
+        if (
+          !unmountSafety.shouldHandleAsyncResult({
+            resource: "stock_fetch_rerun_dispatch",
+            reason: options.reason,
+          })
+        ) {
+          return;
+        }
+
+        if (queuedReset) {
+          void fetchStockRef.current?.({ reset: true, reason: "refresh" });
+        } else if (queuedAppend && hasMoreRef.current && !searchKey) {
         void fetchStockNextPageRef.current?.();
       }
     }
-  }, [applyLateEnrichment, searchKey, selectCodesToRefresh, supabase]);
+  }, [applyLateEnrichment, searchKey, selectCodesToRefresh, supabase, unmountSafety]);
 
   const fetchStock = useCallback(async (options?: {
     reset?: boolean;
@@ -279,6 +356,20 @@ export function useWarehouseStockData(params: {
     fetchStockRef.current = fetchStock;
     fetchStockNextPageRef.current = fetchStockNextPage;
   }, [fetchStock, fetchStockNextPage]);
+
+  useEffect(
+    () => () => {
+      unmountSafety.runInteractionCleanup(() => {
+        stockFetchInFlightRef.current = null;
+        queuedResetRef.current = false;
+        queuedAppendRef.current = false;
+      }, {
+        resource: "stock_fetch_refs_reset",
+        reason: "warehouse_route_unmount",
+      });
+    },
+    [unmountSafety],
+  );
 
   useEffect(() => {
     if (!searchInitializedRef.current) {

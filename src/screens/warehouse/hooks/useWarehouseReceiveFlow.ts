@@ -30,6 +30,7 @@ import {
   getWarehouseReceiveQueueEntry,
 } from "../warehouseReceiveQueue";
 import { flushWarehouseReceiveQueue } from "../warehouseReceiveWorker";
+import { useWarehouseUnmountSafety } from "./useWarehouseUnmountSafety";
 
 type ReceiveRow = {
   incoming_item_id?: string | null;
@@ -141,10 +142,19 @@ export function useWarehouseReceiveFlow(params: {
   const [runtimeReady, setRuntimeReady] = useState(false);
   const networkOnlineRef = useRef<boolean | null>(null);
   const appStateRef = useRef(AppState.currentState);
+  const unmountSafety = useWarehouseUnmountSafety("warehouse_receive_flow");
 
   const syncLocalInputFromDraft = useCallback((incomingId: string) => {
-    setQtyInputByItemState(selectWarehouseReceiveQtyInputMap(incomingId));
-  }, []);
+    unmountSafety.guardStateUpdate(
+      () => {
+        setQtyInputByItemState(selectWarehouseReceiveQtyInputMap(incomingId));
+      },
+      {
+        resource: "qty_input_from_draft",
+        reason: incomingId || "missing_incoming_id",
+      },
+    );
+  }, [unmountSafety]);
 
   const refreshWarehouseAfterSuccess = useCallback(
     async (incomingId: string) => {
@@ -153,11 +163,26 @@ export function useWarehouseReceiveFlow(params: {
         fetchStock(),
         loadItemsForHead(incomingId, true),
       ]);
+      if (
+        !unmountSafety.shouldHandleAsyncResult({
+          resource: "refresh_after_success",
+          reason: incomingId,
+        })
+      ) {
+        return;
+      }
       if (trim(itemsModalIncomingId) === incomingId) {
         syncLocalInputFromDraft(incomingId);
       }
     },
-    [fetchStock, fetchToReceive, itemsModalIncomingId, loadItemsForHead, syncLocalInputFromDraft],
+    [
+      fetchStock,
+      fetchToReceive,
+      itemsModalIncomingId,
+      loadItemsForHead,
+      syncLocalInputFromDraft,
+      unmountSafety,
+    ],
   );
 
   const flushQueue = useCallback(
@@ -215,13 +240,34 @@ export function useWarehouseReceiveFlow(params: {
 
     (async () => {
       await hydrateWarehouseReceiveDraftStore();
-      if (cancelled) return;
-      setRuntimeReady(true);
+      if (
+        cancelled ||
+        !unmountSafety.shouldHandleAsyncResult({
+          resource: "hydrate_receive_draft_store",
+        })
+      ) {
+        return;
+      }
+      unmountSafety.guardStateUpdate(
+        () => {
+          setRuntimeReady(true);
+        },
+        {
+          resource: "set_runtime_ready",
+        },
+      );
       if (activeIncomingId) {
         syncLocalInputFromDraft(activeIncomingId);
       }
       const snapshot = await ensurePlatformNetworkService();
-      if (cancelled) return;
+      if (
+        cancelled ||
+        !unmountSafety.shouldHandleAsyncResult({
+          resource: "platform_network_bootstrap",
+        })
+      ) {
+        return;
+      }
       networkOnlineRef.current = selectPlatformOnlineFlag(snapshot);
       void syncQueuedDraftIfPossible("bootstrap_complete");
     })().catch((error) => {
@@ -231,7 +277,13 @@ export function useWarehouseReceiveFlow(params: {
     return () => {
       cancelled = true;
     };
-  }, [activeIncomingId, onError, syncLocalInputFromDraft, syncQueuedDraftIfPossible]);
+  }, [
+    activeIncomingId,
+    onError,
+    syncLocalInputFromDraft,
+    syncQueuedDraftIfPossible,
+    unmountSafety,
+  ]);
 
   useEffect(() => {
     if (!runtimeReady) return;
@@ -246,9 +298,11 @@ export function useWarehouseReceiveFlow(params: {
     });
 
     return () => {
-      unsubscribe();
+      unmountSafety.runSubscriptionCleanup(unsubscribe, {
+        resource: "platform_network_subscription",
+      });
     };
-  }, [runtimeReady, syncQueuedDraftIfPossible]);
+  }, [runtimeReady, syncQueuedDraftIfPossible, unmountSafety]);
 
   useEffect(() => {
     if (!runtimeReady) return;
@@ -259,22 +313,49 @@ export function useWarehouseReceiveFlow(params: {
         void syncQueuedDraftIfPossible("app_active");
       }
     });
-    return () => sub.remove();
-  }, [runtimeReady, syncQueuedDraftIfPossible]);
+    return () =>
+      unmountSafety.runSubscriptionCleanup(() => sub.remove(), {
+        resource: "app_state_subscription",
+      });
+  }, [runtimeReady, syncQueuedDraftIfPossible, unmountSafety]);
 
   useEffect(() => {
     const incomingId = trim(itemsModalIncomingId);
     if (!incomingId) {
-      setQtyInputByItemState({});
+      unmountSafety.guardStateUpdate(
+        () => {
+          setQtyInputByItemState({});
+        },
+        {
+          resource: "items_modal_qty_reset",
+          reason: "missing_incoming_id",
+        },
+      );
       return;
     }
 
     let cancelled = false;
     (async () => {
       await seedEnsureIncomingItems({ supabase, incomingId });
-      if (cancelled) return;
+      if (
+        cancelled ||
+        !unmountSafety.shouldHandleAsyncResult({
+          resource: "seed_incoming_items",
+          reason: incomingId,
+        })
+      ) {
+        return;
+      }
       await loadItemsForHead(incomingId, true);
-      if (cancelled) return;
+      if (
+        cancelled ||
+        !unmountSafety.shouldHandleAsyncResult({
+          resource: "load_items_for_head",
+          reason: incomingId,
+        })
+      ) {
+        return;
+      }
       syncLocalInputFromDraft(incomingId);
     })().catch((error) => {
       if (!cancelled) onError(error);
@@ -283,7 +364,14 @@ export function useWarehouseReceiveFlow(params: {
     return () => {
       cancelled = true;
     };
-  }, [itemsModalIncomingId, loadItemsForHead, onError, supabase, syncLocalInputFromDraft]);
+  }, [
+    itemsModalIncomingId,
+    loadItemsForHead,
+    onError,
+    supabase,
+    syncLocalInputFromDraft,
+    unmountSafety,
+  ]);
 
   useEffect(() => {
     if (!activeIncomingId) return;
@@ -307,6 +395,14 @@ export function useWarehouseReceiveFlow(params: {
     async (incomingId: string) => {
       const result = await syncQueuedDraftIfPossible("manual_retry");
       if (!result) return;
+      if (
+        !unmountSafety.shouldHandleAsyncResult({
+          resource: "manual_sync_result",
+          reason: incomingId,
+        })
+      ) {
+        return;
+      }
 
       syncLocalInputFromDraft(incomingId);
 
@@ -340,7 +436,14 @@ export function useWarehouseReceiveFlow(params: {
         `Принято позиций: ${result.lastOkCount}\nОсталось: ${result.lastLeftAfter ?? 0}`,
       );
     },
-    [notifyError, notifyInfo, setItemsModal, syncLocalInputFromDraft, syncQueuedDraftIfPossible],
+    [
+      notifyError,
+      notifyInfo,
+      setItemsModal,
+      syncLocalInputFromDraft,
+      syncQueuedDraftIfPossible,
+      unmountSafety,
+    ],
   );
 
   const receiveSelectedForHead = useCallback(
@@ -350,6 +453,14 @@ export function useWarehouseReceiveFlow(params: {
 
       try {
         const freshRows = await loadItemsForHead(incomingId, true);
+        if (
+          !unmountSafety.shouldHandleAsyncResult({
+            resource: "receive_selected_load_items",
+            reason: incomingId,
+          })
+        ) {
+          return;
+        }
         if (!freshRows.length) {
           notifyError(
             "Нет материалов",
@@ -365,20 +476,60 @@ export function useWarehouseReceiveFlow(params: {
         }
 
         await setWarehouseReceiveDraftItems(incomingId, selection.items);
-        setQtyInputByItemState(toQtyInputMap(selection.items));
+        if (
+          !unmountSafety.shouldHandleAsyncResult({
+            resource: "receive_selected_persist_draft",
+            reason: incomingId,
+          })
+        ) {
+          return;
+        }
+        unmountSafety.guardStateUpdate(
+          () => {
+            setQtyInputByItemState(toQtyInputMap(selection.items));
+          },
+          {
+            resource: "receive_selected_qty_input",
+            reason: incomingId,
+          },
+        );
 
         if (!trim(warehousemanFio)) {
-          setIsFioConfirmVisible(true);
+          unmountSafety.guardStateUpdate(
+            () => {
+              setIsFioConfirmVisible(true);
+            },
+            {
+              resource: "receive_selected_fio_modal",
+              reason: incomingId,
+            },
+          );
           return;
         }
 
-        setReceivingHeadId(incomingId);
+        unmountSafety.guardStateUpdate(
+          () => {
+            setReceivingHeadId(incomingId);
+          },
+          {
+            resource: "receive_selected_head_start",
+            reason: incomingId,
+          },
+        );
         await queueIncomingDraft(incomingId);
         await handleManualSyncResult(incomingId);
       } catch (error) {
         onError(error);
       } finally {
-        setReceivingHeadId(null);
+        unmountSafety.guardStateUpdate(
+          () => {
+            setReceivingHeadId(null);
+          },
+          {
+            resource: "receive_selected_head_finish",
+            reason: incomingId,
+          },
+        );
       }
     },
     [
@@ -391,6 +542,7 @@ export function useWarehouseReceiveFlow(params: {
       queueIncomingDraft,
       setIsFioConfirmVisible,
       setReceivingHeadId,
+      unmountSafety,
       warehousemanFio,
     ],
   );
@@ -408,7 +560,15 @@ export function useWarehouseReceiveFlow(params: {
         }
 
         if (!trim(warehousemanFio)) {
-          setIsFioConfirmVisible(true);
+          unmountSafety.guardStateUpdate(
+            () => {
+              setIsFioConfirmVisible(true);
+            },
+            {
+              resource: "retry_receive_fio_modal",
+              reason: incomingId,
+            },
+          );
           return;
         }
 
@@ -438,12 +598,28 @@ export function useWarehouseReceiveFlow(params: {
           await queueIncomingDraft(incomingId);
         }
 
-        setReceivingHeadId(incomingId);
+        unmountSafety.guardStateUpdate(
+          () => {
+            setReceivingHeadId(incomingId);
+          },
+          {
+            resource: "retry_receive_head_start",
+            reason: incomingId,
+          },
+        );
         await handleManualSyncResult(incomingId);
       } catch (error) {
         onError(error);
       } finally {
-        setReceivingHeadId(null);
+        unmountSafety.guardStateUpdate(
+          () => {
+            setReceivingHeadId(null);
+          },
+          {
+            resource: "retry_receive_head_finish",
+            reason: incomingId,
+          },
+        );
       }
     },
     [
@@ -453,6 +629,7 @@ export function useWarehouseReceiveFlow(params: {
       queueIncomingDraft,
       setIsFioConfirmVisible,
       setReceivingHeadId,
+      unmountSafety,
       warehousemanFio,
     ],
   );

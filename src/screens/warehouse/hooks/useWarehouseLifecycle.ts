@@ -6,6 +6,7 @@ import {
   recordPlatformGuardSkip,
 } from "../../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
+import { useWarehouseUnmountSafety } from "./useWarehouseUnmountSafety";
 
 const TAB_INCOMING = WAREHOUSE_TABS[0];
 const TAB_STOCK_FACT = WAREHOUSE_TABS[1];
@@ -32,6 +33,7 @@ export function useWarehouseLifecycle(params: {
   const didInitLoadRef = useRef(false);
   const focusRefreshInFlightRef = useRef<Promise<void> | null>(null);
   const lastFocusRefreshAtRef = useRef(0);
+  const unmountSafety = useWarehouseUnmountSafety("warehouse_lifecycle");
 
   const loadAll = useCallback(async () => {
     const networkSnapshot = getPlatformNetworkSnapshot();
@@ -47,17 +49,41 @@ export function useWarehouseLifecycle(params: {
       });
       return;
     }
-    setLoading(true);
+    unmountSafety.guardStateUpdate(
+      () => {
+        setLoading(true);
+      },
+      {
+        resource: "load_all_loading_start",
+        reason: "initial_bootstrap",
+      },
+    );
     try {
       const [incomingRes, stockRes] = await Promise.allSettled([fetchToReceive(), fetchStock()]);
+      if (
+        !unmountSafety.shouldHandleAsyncResult({
+          resource: "load_all_settle",
+          reason: "initial_bootstrap",
+        })
+      ) {
+        return;
+      }
       if (incomingRes.status === "rejected") throw incomingRes.reason;
       if (stockRes.status === "rejected") throw stockRes.reason;
     } catch (e) {
       onError(e);
     } finally {
-      setLoading(false);
+      unmountSafety.guardStateUpdate(
+        () => {
+          setLoading(false);
+        },
+        {
+          resource: "load_all_loading_finish",
+          reason: "initial_bootstrap",
+        },
+      );
     }
-  }, [setLoading, fetchToReceive, fetchStock, onError]);
+  }, [setLoading, fetchToReceive, fetchStock, onError, unmountSafety]);
 
   useEffect(() => {
     if (didInitLoadRef.current) return;
@@ -68,6 +94,18 @@ export function useWarehouseLifecycle(params: {
       lastFocusRefreshAtRef.current = Date.now();
     });
   }, [loadAll]);
+
+  useEffect(
+    () => () => {
+      unmountSafety.runInteractionCleanup(() => {
+        focusRefreshInFlightRef.current = null;
+      }, {
+        resource: "focus_refresh_inflight_ref",
+        reason: "warehouse_route_unmount",
+      });
+    },
+    [unmountSafety],
+  );
 
   const refreshActiveTab = useCallback(async () => {
     if (tab === TAB_INCOMING) {
@@ -128,7 +166,16 @@ export function useWarehouseLifecycle(params: {
       }
 
       const task = refreshActiveTab()
-        .catch((e) => onError(e))
+        .catch((e) => {
+          if (
+            unmountSafety.shouldHandleAsyncResult({
+              resource: "focus_refresh_error",
+              reason: String(tab),
+            })
+          ) {
+            onError(e);
+          }
+        })
         .finally(() => {
           if (focusRefreshInFlightRef.current === task) {
             focusRefreshInFlightRef.current = null;
@@ -137,6 +184,6 @@ export function useWarehouseLifecycle(params: {
       focusRefreshInFlightRef.current = task;
       lastFocusRefreshAtRef.current = now;
       return undefined;
-    }, [refreshActiveTab, onError, tab]),
+    }, [refreshActiveTab, onError, tab, unmountSafety]),
   );
 }

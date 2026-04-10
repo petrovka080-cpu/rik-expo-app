@@ -13,6 +13,7 @@ import {
   WAREHOUSE_REALTIME_CHANNEL_NAME,
 } from "../../lib/realtime/realtime.channels";
 import { WAREHOUSE_TABS, type Tab } from "./warehouse.types";
+import { useWarehouseUnmountSafety } from "./hooks/useWarehouseUnmountSafety";
 
 const TAB_INCOMING = WAREHOUSE_TABS[0];
 const TAB_EXPENSE = WAREHOUSE_TABS[2];
@@ -31,6 +32,8 @@ export function useWarehouseRealtimeLifecycle(params: {
   const isIncomingRefreshInFlightRef = useRef(params.isIncomingRefreshInFlight);
   const isExpenseRefreshInFlightRef = useRef(params.isExpenseRefreshInFlight);
   const lastRealtimeAtByScopeRef = useRef<Record<string, number>>({});
+  const focusActiveRef = useRef(false);
+  const unmountSafety = useWarehouseUnmountSafety("warehouse_realtime_lifecycle");
 
   useEffect(() => {
     tabRef.current = params.tab;
@@ -49,6 +52,7 @@ export function useWarehouseRealtimeLifecycle(params: {
   }, [params.isExpenseRefreshInFlight]);
 
   const bindRealtime = useCallback(() => {
+    focusActiveRef.current = true;
     const detach = subscribeChannel({
       name: WAREHOUSE_REALTIME_CHANNEL_NAME,
       scope: "warehouse",
@@ -56,6 +60,15 @@ export function useWarehouseRealtimeLifecycle(params: {
       surface: "screen_root",
       bindings: WAREHOUSE_REALTIME_BINDINGS,
       onEvent: ({ binding, payload }) => {
+        if (
+          !focusActiveRef.current ||
+          !unmountSafety.shouldHandleAsyncResult({
+            resource: "realtime_event_dispatch",
+            reason: binding.key,
+          })
+        ) {
+          return;
+        }
         const currentTab = tabRef.current;
         const wantsIncoming = binding.key === "warehouse_incoming_items";
         const scopeKey = wantsIncoming ? "incoming" : "expense";
@@ -164,9 +177,13 @@ export function useWarehouseRealtimeLifecycle(params: {
     });
 
     return () => {
-      detach();
+      focusActiveRef.current = false;
+      unmountSafety.runSubscriptionCleanup(detach, {
+        resource: "realtime_channel_detach",
+        reason: WAREHOUSE_REALTIME_CHANNEL_NAME,
+      });
     };
-  }, []);
+  }, [unmountSafety]);
 
   useFocusEffect(bindRealtime);
 }

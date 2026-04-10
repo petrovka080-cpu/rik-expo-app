@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { useWarehouseUnmountSafety } from "./useWarehouseUnmountSafety";
 
 type FetchToReceiveFn = (
   page?: number,
@@ -35,6 +36,7 @@ export function useWarehouseFetchRefs(params: {
   const stockRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
   const reqHeadsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
   const reportsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const unmountSafety = useWarehouseUnmountSafety("warehouse_fetch_refs");
 
   useEffect(() => {
     fetchToReceiveRef.current = fetchToReceive;
@@ -48,6 +50,21 @@ export function useWarehouseFetchRefs(params: {
   useEffect(() => {
     fetchReportsRef.current = fetchReports;
   }, [fetchReports]);
+
+  useEffect(
+    () => () => {
+      unmountSafety.runInteractionCleanup(() => {
+        incomingRefreshRef.current = { inFlight: null, rerunQueued: false, rerunForce: false };
+        stockRefreshRef.current = { inFlight: null, rerunQueued: false, rerunForce: false };
+        reqHeadsRefreshRef.current = { inFlight: null, rerunQueued: false, rerunForce: false };
+        reportsRefreshRef.current = { inFlight: null, rerunQueued: false, rerunForce: false };
+      }, {
+        resource: "refresh_refs_reset",
+        reason: "warehouse_route_unmount",
+      });
+    },
+    [unmountSafety],
+  );
 
   const runRefresh = useCallback(
     (
@@ -72,6 +89,15 @@ export function useWarehouseFetchRefs(params: {
             await refresh(nextForce);
           } finally {
             stateRef.current.inFlight = null;
+            if (
+              !unmountSafety.shouldHandleAsyncResult({
+                resource: "queued_refresh_dispatch",
+              })
+            ) {
+              stateRef.current.rerunQueued = false;
+              stateRef.current.rerunForce = false;
+              return;
+            }
             if (stateRef.current.rerunQueued) {
               const rerunForce = stateRef.current.rerunForce;
               stateRef.current.rerunQueued = false;
@@ -86,7 +112,7 @@ export function useWarehouseFetchRefs(params: {
 
       return start(force);
     },
-    [],
+    [unmountSafety],
   );
 
   const callFetchToReceive = useCallback((page?: number) => {

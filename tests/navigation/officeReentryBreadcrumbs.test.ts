@@ -84,6 +84,14 @@ import {
   recordWarehouseRouteOwnerUnmount,
   recordWarehouseReturnToOfficeDone,
   recordWarehouseReturnToOfficeStart,
+  recordWarehouseAsyncAbort,
+  recordWarehouseCleanupError,
+  recordWarehouseInteractionCleanup,
+  recordWarehouseStateUpdateBlockedAfterUnmount,
+  recordWarehouseSubscriptionCleanup,
+  recordWarehouseTimerCleanup,
+  recordWarehouseUnmountCleanupDone,
+  recordWarehouseUnmountCleanupStart,
 } from "../../src/lib/navigation/officeReentryBreadcrumbs";
 import {
   getPlatformObservabilityEvents,
@@ -224,6 +232,29 @@ describe("office reentry breadcrumbs", () => {
       ]),
     ).toBe(
       "2026-04-09T10:09:00.000Z | office_warehouse_back_method_selected | success | route=/office/warehouse | owner=office_stack_layout | target=/office | method=back | selectedMethod=back",
+    );
+  });
+
+  it("formats warehouse cleanup diagnostics", () => {
+    expect(
+      buildOfficeReentryBreadcrumbsText([
+        {
+          at: "2026-04-10T10:10:00.000Z",
+          marker: "warehouse_state_update_blocked_after_unmount",
+          result: "skipped",
+          extra: {
+            route: "/office/warehouse",
+            owner: "warehouse_receive_flow",
+            pathname: "/office/warehouse",
+            segments: "(tabs)/office/warehouse",
+            routeWrapper: "warehouse_unmount_safety",
+            resource: "set_runtime_ready",
+            reason: "warehouse_route_unmount",
+          },
+        },
+      ]),
+    ).toBe(
+      "2026-04-10T10:10:00.000Z | warehouse_state_update_blocked_after_unmount | skipped | route=/office/warehouse | owner=warehouse_receive_flow | pathname=/office/warehouse | segments=(tabs)/office/warehouse | routeWrapper=warehouse_unmount_safety | resource=set_runtime_ready | reason=warehouse_route_unmount",
     );
   });
 
@@ -672,6 +703,90 @@ describe("office reentry breadcrumbs", () => {
       "office_warehouse_back_use_replace_fallback",
       "office_warehouse_back_replace_start",
       "office_warehouse_back_replace_done",
+    ]);
+  });
+
+  it("records warehouse cleanup safety markers", () => {
+    recordWarehouseUnmountCleanupStart({
+      owner: "warehouse_receive_flow",
+      route: "/office/warehouse",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "warehouse_unmount_safety",
+      resource: "receive_flow_cleanup",
+    });
+    recordWarehouseSubscriptionCleanup({
+      owner: "warehouse_receive_flow",
+      route: "/office/warehouse",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "warehouse_unmount_safety",
+      resource: "platform_network_subscription",
+    });
+    recordWarehouseTimerCleanup({
+      owner: "warehouse_fetch_refs",
+      route: "/office/warehouse",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "warehouse_unmount_safety",
+      resource: "queued_refresh_timer",
+    });
+    recordWarehouseInteractionCleanup({
+      owner: "warehouse_realtime_lifecycle",
+      route: "/office/warehouse",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "warehouse_unmount_safety",
+      resource: "realtime_channel_detach",
+    });
+    recordWarehouseAsyncAbort({
+      owner: "warehouse_stock_data",
+      route: "/office/warehouse",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "warehouse_unmount_safety",
+      resource: "stock_fetch_rerun_dispatch",
+      reason: "refresh",
+    });
+    recordWarehouseStateUpdateBlockedAfterUnmount({
+      owner: "warehouse_incoming",
+      route: "/office/warehouse",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "warehouse_unmount_safety",
+      resource: "incoming_fetch_loading_finish",
+      reason: "refresh",
+    });
+    recordWarehouseCleanupError({
+      error: new Error("cleanup failed"),
+      errorStage: "warehouse_realtime_lifecycle:subscription_cleanup",
+      extra: {
+        owner: "warehouse_realtime_lifecycle",
+        route: "/office/warehouse",
+        pathname: "/office/warehouse",
+        segments: "(tabs)/office/warehouse",
+        routeWrapper: "warehouse_unmount_safety",
+        resource: "realtime_channel_detach",
+      },
+    });
+    recordWarehouseUnmountCleanupDone({
+      owner: "warehouse_receive_flow",
+      route: "/office/warehouse",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      routeWrapper: "warehouse_unmount_safety",
+      resource: "receive_flow_cleanup",
+    });
+
+    expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
+      "warehouse_unmount_cleanup_start",
+      "warehouse_subscription_cleanup",
+      "warehouse_timer_cleanup",
+      "warehouse_interaction_cleanup",
+      "warehouse_async_abort",
+      "warehouse_state_update_blocked_after_unmount",
+      "warehouse_cleanup_error",
+      "warehouse_unmount_cleanup_done",
     ]);
   });
 

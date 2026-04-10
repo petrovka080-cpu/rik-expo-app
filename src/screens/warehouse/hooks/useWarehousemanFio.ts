@@ -5,6 +5,7 @@ import {
   saveStoredFioState,
 } from "../../../lib/storage/fioPersistence";
 import { useWarehouseUiStore } from "../warehouseUi.store";
+import { useWarehouseUnmountSafety } from "./useWarehouseUnmountSafety";
 
 type UseWarehousemanFioArgs = {
   getTodaySixAM: () => Date;
@@ -29,6 +30,7 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
   const isFioConfirmVisible = useWarehouseUiStore((state) => state.isFioConfirmVisible);
   const setIsFioConfirmVisible = useWarehouseUiStore((state) => state.setIsFioConfirmVisible);
   const [isFioLoading, setIsFioLoading] = useState(false);
+  const unmountSafety = useWarehouseUnmountSafety("warehouseman_fio");
 
   useEffect(() => {
     let active = true;
@@ -48,15 +50,45 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
           },
         });
 
-        if (!active) return;
+        if (
+          !active ||
+          !unmountSafety.shouldHandleAsyncResult({
+            resource: "load_stored_fio_state",
+          })
+        ) {
+          return;
+        }
 
-        if (currentFio) setWarehousemanFio(currentFio);
-        setWarehousemanHistory(history);
+        if (currentFio) {
+          unmountSafety.guardStateUpdate(
+            () => {
+              setWarehousemanFio(currentFio);
+            },
+            {
+              resource: "apply_current_fio",
+            },
+          );
+        }
+        unmountSafety.guardStateUpdate(
+          () => {
+            setWarehousemanHistory(history);
+          },
+          {
+            resource: "apply_fio_history",
+          },
+        );
 
         const sixAM = getTodaySixAM();
         const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
         if (!lastConfirm || lastConfirm < sixAM) {
-          setIsFioConfirmVisible(true);
+          unmountSafety.guardStateUpdate(
+            () => {
+              setIsFioConfirmVisible(true);
+            },
+            {
+              resource: "show_fio_confirm_after_load",
+            },
+          );
         }
       } catch (e) {
         if (__DEV__) {
@@ -67,10 +99,11 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
     return () => {
       active = false;
     };
-  }, [getTodaySixAM, setIsFioConfirmVisible]);
+  }, [getTodaySixAM, setIsFioConfirmVisible, unmountSafety]);
 
   useFocusEffect(
     useCallback(() => {
+      let active = true;
       const checkFio = async () => {
         const { lastConfirmIso } = await loadStoredFioState({
           screen: "warehouse",
@@ -81,21 +114,58 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
             historyKey: WAREHOUSEMAN_HISTORY_KEY,
           },
         });
+        if (
+          !active ||
+          !unmountSafety.shouldHandleAsyncResult({
+            resource: "focus_check_fio",
+          })
+        ) {
+          return;
+        }
         const sixAM = getTodaySixAM();
         const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
         if (!lastConfirm || lastConfirm < sixAM) {
-          setIsFioConfirmVisible(true);
+          unmountSafety.guardStateUpdate(
+            () => {
+              setIsFioConfirmVisible(true);
+            },
+            {
+              resource: "show_fio_confirm_on_focus",
+            },
+          );
         }
       };
-      void checkFio();
-    }, [getTodaySixAM, setIsFioConfirmVisible]),
+      void checkFio().catch((error) => {
+        if (active) {
+          onError?.(error);
+        }
+      });
+      return () => {
+        active = false;
+      };
+    }, [getTodaySixAM, onError, setIsFioConfirmVisible, unmountSafety]),
   );
 
   const handleFioConfirm = useCallback(
     async (fio: string) => {
-      setIsFioLoading(true);
+      unmountSafety.guardStateUpdate(
+        () => {
+          setIsFioLoading(true);
+        },
+        {
+          resource: "fio_confirm_loading_start",
+          reason: "submit",
+        },
+      );
       try {
-        setWarehousemanFio(fio);
+        unmountSafety.guardStateUpdate(
+          () => {
+            setWarehousemanFio(fio);
+          },
+          {
+            resource: "fio_confirm_apply_value",
+          },
+        );
         const nextHist = await saveStoredFioState({
           screen: "warehouse",
           surface: "warehouseman_fio",
@@ -107,15 +177,37 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
           fio,
           history: warehousemanHistory,
         });
-        setWarehousemanHistory(nextHist);
-        setIsFioConfirmVisible(false);
+        if (
+          !unmountSafety.shouldHandleAsyncResult({
+            resource: "save_stored_fio_state",
+          })
+        ) {
+          return;
+        }
+        unmountSafety.guardStateUpdate(
+          () => {
+            setWarehousemanHistory(nextHist);
+            setIsFioConfirmVisible(false);
+          },
+          {
+            resource: "fio_confirm_apply_result",
+          },
+        );
       } catch (e) {
         onError?.(e);
       } finally {
-        setIsFioLoading(false);
+        unmountSafety.guardStateUpdate(
+          () => {
+            setIsFioLoading(false);
+          },
+          {
+            resource: "fio_confirm_loading_finish",
+            reason: "submit",
+          },
+        );
       }
     },
-    [warehousemanHistory, onError, setIsFioConfirmVisible],
+    [warehousemanHistory, onError, setIsFioConfirmVisible, unmountSafety],
   );
 
   return {
