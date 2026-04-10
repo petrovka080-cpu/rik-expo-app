@@ -1,11 +1,15 @@
 import React from "react";
 
 import WarehouseScreenContent from "../../../src/screens/warehouse/WarehouseScreenContent";
-import { useOfficeWarehouseChildRouteAudit } from "./_childRouteAudit";
+import { useOfficeChildRouteAudit } from "./_childRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 
 function OfficeWarehouseRoute() {
-  const entryExtra = useOfficeWarehouseChildRouteAudit();
+  const entryExtra = useOfficeChildRouteAudit({
+    owner: "office_warehouse_route",
+    route: "/office/warehouse",
+    wrappedRoute: "/warehouse",
+  });
 
   return (
     <WarehouseScreenContent

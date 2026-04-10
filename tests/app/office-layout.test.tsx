@@ -5,15 +5,12 @@ import path from "path";
 import {
   OFFICE_BACK_LABEL,
   OFFICE_SAFE_BACK_ROUTE,
-  performWarehouseBackNavigation,
   renderSafeOfficeBackButton,
-  renderWarehouseOfficeHeader,
 } from "../../app/(tabs)/office/_layout";
 
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
 const mockCanGoBack = jest.fn(() => false);
-const mockPersistWarehouseBackBreadcrumbs = jest.fn(() => Promise.resolve());
 
 jest.mock("expo-router", () => {
   return {
@@ -37,8 +34,6 @@ describe("OfficeStackLayout", () => {
     mockReplace.mockReset();
     mockBack.mockReset();
     mockCanGoBack.mockReset();
-    mockPersistWarehouseBackBreadcrumbs.mockReset();
-    mockPersistWarehouseBackBreadcrumbs.mockResolvedValue(undefined);
     mockCanGoBack.mockReturnValue(false);
   });
 
@@ -73,7 +68,7 @@ describe("OfficeStackLayout", () => {
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
-  it("binds warehouse to its own explicit back handler and disables native auto-back", () => {
+  it("binds warehouse to the same shared office child back contract as foreman", () => {
     const source = fs.readFileSync(
       path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
       "utf8",
@@ -83,102 +78,13 @@ describe("OfficeStackLayout", () => {
     expect(source).toContain('name="warehouse"');
     expect(source).toContain("headerBackTitle: OFFICE_BACK_LABEL");
     expect(source).toContain("title: WAREHOUSE_HEADER_TITLE");
-    expect(source.match(/headerLeft: renderSafeOfficeBackButton/g)).toHaveLength(1);
-    expect(source).toContain("header: renderWarehouseOfficeHeader");
-    expect(source).toContain("headerBackVisible: false");
-    expect(source).toContain("headerBackButtonMenuEnabled: false");
-    expect(source).toContain('headerBackTitle: ""');
-    expect(source).toContain("gestureEnabled: false");
-  });
-
-  it("renders the warehouse header as a JS-only explicit back container", () => {
-    const header = renderWarehouseOfficeHeader() as React.ReactElement<{
-      children: React.ReactNode[];
-    }>;
-
-    const [backButton, title] = header.props.children as [
-      React.ReactElement<{ testID: string; onPress: () => void; children: React.ReactNode }>,
-      React.ReactElement<{ children: React.ReactNode }>,
-      React.ReactElement
-    ];
-
-    expect(backButton.props.testID).toBe("warehouse-office-safe-back");
-    expect(typeof backButton.props.onPress).toBe("function");
-    expect(JSON.stringify(backButton.props.children)).toContain(OFFICE_BACK_LABEL);
-    expect(JSON.stringify(title.props.children)).toContain("Склад");
-  });
-
-  it("records warehouse back breadcrumbs and uses deterministic replace even when history exists", async () => {
-    const recordEvent = jest.fn();
-
-    await performWarehouseBackNavigation(
-      {
-        back: mockBack,
-        canGoBack: () => true,
-        replace: mockReplace,
-      },
-      recordEvent,
-      mockPersistWarehouseBackBreadcrumbs,
-    );
-
-    expect(mockBack).not.toHaveBeenCalled();
-    expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
-    expect(mockPersistWarehouseBackBreadcrumbs).toHaveBeenCalledTimes(1);
-    expect(recordEvent.mock.calls.map(([event]) => event.event)).toEqual([
-      "warehouse_back_tap",
-      "warehouse_back_handler_enter",
-      "warehouse_back_handler_selected",
-      "warehouse_back_native_auto_back_blocked",
-      "warehouse_back_use_router_back",
-      "warehouse_back_use_office_push",
-      "warehouse_back_use_office_replace",
-      "warehouse_back_navigation_call",
-      "warehouse_back_fallback_selected",
-      "warehouse_back_navigation_done",
-    ]);
-  });
-
-  it("uses the same deterministic replace path when history is missing", async () => {
-    const recordEvent = jest.fn();
-
-    await performWarehouseBackNavigation(
-      {
-        back: mockBack,
-        canGoBack: () => false,
-        replace: mockReplace,
-      },
-      recordEvent,
-      mockPersistWarehouseBackBreadcrumbs,
-    );
-
-    expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
-    expect(mockBack).not.toHaveBeenCalled();
-    expect(recordEvent.mock.calls.map(([event]) => event.event)).not.toContain(
-      "warehouse_back_can_go_back_false",
-    );
-    expect(recordEvent.mock.calls.map(([event]) => event.event)).toContain("warehouse_back_use_office_replace");
-  });
-
-  it("records warehouse back navigation failure", () => {
-    const recordEvent = jest.fn();
-    const failure = new Error("warehouse nav failed");
-
-    expect(() =>
-      performWarehouseBackNavigation(
-        {
-          back: mockBack,
-          canGoBack: () => false,
-          replace: () => {
-            throw failure;
-          },
-        },
-        recordEvent,
-        mockPersistWarehouseBackBreadcrumbs,
-      ),
-    ).toThrow("warehouse nav failed");
-
-    expect(recordEvent.mock.calls.map(([event]) => event.event)).toContain(
-      "warehouse_back_navigation_failed",
-    );
+    expect(source.match(/headerLeft: renderSafeOfficeBackButton/g)).toHaveLength(2);
+    expect(source).not.toContain("performWarehouseBackNavigation");
+    expect(source).not.toContain("renderWarehouseOfficeHeader");
+    expect(source).not.toContain("markPendingOfficeRouteReturnReceipt");
+    expect(source).not.toContain("headerBackVisible: false");
+    expect(source).not.toContain("headerBackButtonMenuEnabled: false");
+    expect(source).not.toContain('headerBackTitle: ""');
+    expect(source).not.toContain("gestureEnabled: false");
   });
 });

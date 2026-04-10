@@ -52,12 +52,6 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeChildEntryFocus: jest.fn(),
   recordOfficeChildEntryMount: jest.fn(),
   recordOfficeChildUnmount: jest.fn(),
-  recordOfficeWarehouseBeforeRemove: jest.fn(),
-  recordOfficeWarehouseEntryFocusDone: jest.fn(),
-  recordOfficeWarehouseEntryFocusStart: jest.fn(),
-  recordOfficeWarehouseEntryMountDone: jest.fn(),
-  recordOfficeWarehouseEntryMountStart: jest.fn(),
-  recordOfficeWarehouseUnmount: jest.fn(),
 }));
 
 describe("office warehouse child route entry", () => {
@@ -74,7 +68,7 @@ describe("office warehouse child route entry", () => {
     });
   });
 
-  it("uses the shared office child wrapper model for /office/warehouse", () => {
+  it("uses the shared office child wrapper contract for /office/warehouse", () => {
     mockUsePathname.mockReturnValue("/office/warehouse");
     mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
 
@@ -87,11 +81,7 @@ describe("office warehouse child route entry", () => {
       renderer?.root.findAllByProps({ testID: "warehouse-screen-content" }).length,
     ).toBeGreaterThan(0);
     expect(officeBreadcrumbs.recordOfficeChildEntryMount).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountStart).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountDone).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildEntryFocus).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusStart).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusDone).toHaveBeenCalled();
     expect(mockAddListener).toHaveBeenCalledWith(
       "beforeRemove",
       expect.any(Function),
@@ -104,7 +94,13 @@ describe("office warehouse child route entry", () => {
           route: "/office/warehouse",
           wrappedRoute: "/warehouse",
           routeWrapper: "office_child_screen_entry",
-          contentOwner: "office_warehouse_route",
+        }),
+      }),
+    );
+    expect(mockWarehouseScreenContent).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        entryExtra: expect.objectContaining({
+          contentOwner: expect.anything(),
         }),
       }),
     );
@@ -121,13 +117,11 @@ describe("office warehouse child route entry", () => {
       });
     });
     expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseBeforeRemove).toHaveBeenCalled();
 
     act(() => {
       renderer?.unmount();
     });
     expect(officeBreadcrumbs.recordOfficeChildUnmount).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).toHaveBeenCalled();
   });
 
   it("does not emit a fake unmount-remount cycle on a plain rerender", () => {
@@ -151,13 +145,8 @@ describe("office warehouse child route entry", () => {
     });
 
     expect(officeBreadcrumbs.recordOfficeChildEntryMount).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountStart).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountDone).not.toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildUnmount).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).not.toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildEntryFocus).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusStart).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusDone).not.toHaveBeenCalled();
     expect(mockWarehouseScreenContent).toHaveBeenCalledTimes(1);
 
     act(() => {
@@ -187,13 +176,8 @@ describe("office warehouse child route entry", () => {
     });
 
     expect(officeBreadcrumbs.recordOfficeChildEntryMount).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountStart).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountDone).not.toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildUnmount).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).not.toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildEntryFocus).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusStart).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusDone).not.toHaveBeenCalled();
 
     act(() => {
       renderer?.unmount();

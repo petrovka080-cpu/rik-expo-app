@@ -11,12 +11,6 @@ import {
   recordOfficeChildEntryFocus,
   recordOfficeChildEntryMount,
   recordOfficeChildUnmount,
-  recordOfficeWarehouseBeforeRemove,
-  recordOfficeWarehouseEntryFocusDone,
-  recordOfficeWarehouseEntryFocusStart,
-  recordOfficeWarehouseEntryMountDone,
-  recordOfficeWarehouseEntryMountStart,
-  recordOfficeWarehouseUnmount,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
 
 type OfficeChildRouteAuditExtra = {
@@ -180,32 +174,4 @@ export function useOfficeChildRouteAudit({
   );
 
   return resolvedEntryExtra;
-}
-
-export function useOfficeWarehouseChildRouteAudit() {
-  const warehouseEntryExtra = useMemo(
-    () => ({
-      contentOwner: "office_warehouse_route",
-    }),
-    [],
-  );
-  const warehouseDiagnostics = useMemo<OfficeChildRouteDiagnostics>(
-    () => ({
-      onLayoutMount: recordOfficeWarehouseEntryMountStart,
-      onMount: recordOfficeWarehouseEntryMountDone,
-      onFocusStart: recordOfficeWarehouseEntryFocusStart,
-      onFocusDone: recordOfficeWarehouseEntryFocusDone,
-      onBeforeRemove: recordOfficeWarehouseBeforeRemove,
-      onUnmount: recordOfficeWarehouseUnmount,
-    }),
-    [],
-  );
-
-  return useOfficeChildRouteAudit({
-    owner: "office_warehouse_route",
-    route: "/office/warehouse",
-    wrappedRoute: "/warehouse",
-    entryExtra: warehouseEntryExtra,
-    diagnostics: warehouseDiagnostics,
-  });
 }
