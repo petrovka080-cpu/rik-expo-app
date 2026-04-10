@@ -1173,6 +1173,38 @@ describe("OfficeHubScreen", () => {
     );
   });
 
+  it("records and swallows focus callback failures during office reentry", async () => {
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+    mockRecordOfficePostReturnFocus.mockImplementationOnce(() => {
+      throw new Error("focus callback crash");
+    });
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(
+      renderer!.root.findByProps({ testID: "office-summary" }),
+    ).toBeTruthy();
+    expect(mockRecordOfficeNativeCallbackFailure).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.any(Error),
+        errorStage: "focus",
+        extra: expect.objectContaining({
+          owner: "office_hub",
+          callback: "useFocusEffect",
+          focusCycle: 0,
+        }),
+      }),
+    );
+    expect(mockRecordOfficeBootstrapInitialDone).toHaveBeenCalled();
+  });
+
   it("removes ScrollView content size callback when the native isolation probe disables it", async () => {
     mockUseLocalSearchParams.mockReturnValue({
       postReturnProbe: "no_content_size_callbacks",

@@ -768,7 +768,7 @@ export default function OfficeHubScreen({
         | "interaction"
         | "animation_frame";
       run: () => T;
-    }) => {
+    }): T | undefined => {
       const extra = buildNativeCallbackExtra(params.callback);
       try {
         switch (params.phase) {
@@ -816,7 +816,9 @@ export default function OfficeHubScreen({
           errorStage: params.phase,
           extra,
         });
-        throw error;
+        // Post-return diagnostics must never escalate an observed native
+        // callback failure into a fatal navigation crash.
+        return undefined;
       }
     },
     [buildNativeCallbackExtra],
