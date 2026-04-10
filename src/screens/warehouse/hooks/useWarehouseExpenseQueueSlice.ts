@@ -1,4 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+
+const useMountedRef = () => {
+  const ref = useRef(true);
+  useEffect(() => () => { ref.current = false; }, []);
+  return ref;
+};
 import { useFocusEffect } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -66,6 +72,7 @@ export function useWarehouseExpenseQueueSlice(params: {
   onError: (error: unknown) => void;
 }) {
   const { supabase, tab, pageSize, reqPickUi, onError } = params;
+  const mountedRef = useMountedRef();
 
   const [reqModal, setReqModal] = useState<ReqHeadRow | null>(null);
   const {
@@ -118,7 +125,7 @@ export function useWarehouseExpenseQueueSlice(params: {
             hasActivatedExpenseRef.current = true;
           } finally {
             refreshStateRef.current.inFlight = null;
-            if (refreshStateRef.current.rerunQueued) {
+            if (refreshStateRef.current.rerunQueued && mountedRef.current) {
               const rerunForce = refreshStateRef.current.rerunForce;
               refreshStateRef.current.rerunQueued = false;
               refreshStateRef.current.rerunForce = false;
@@ -240,6 +247,7 @@ export function useWarehouseExpenseQueueSlice(params: {
   );
 
   useEffect(() => {
+    if (!mountedRef.current) return;
     setReqModal((prev) => {
       if (!prev) return prev;
       const updated = reqHeads.find((row) => String(row.request_id) === String(prev.request_id));

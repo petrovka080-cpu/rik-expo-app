@@ -1,4 +1,10 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+const useMountedRef = () => {
+  const ref = useRef(true);
+  useEffect(() => () => { ref.current = false; }, []);
+  return ref;
+};
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   apiFetchReqHeadsWindow,
@@ -73,6 +79,7 @@ export function useWarehouseReqHeads(params: {
 }) {
   const { supabase, pageSize } = params;
   const FORCE_REFRESH_MIN_INTERVAL_MS = 1200;
+  const mountedRef = useMountedRef();
 
   const [reqHeads, setReqHeads] = useState<ReqHeadRow[]>([]);
   const [reqHeadsLoading, setReqHeadsLoading] = useState(false);
@@ -330,8 +337,8 @@ export function useWarehouseReqHeads(params: {
       }
 
       reqRefs.current.fetching = true;
-      setReqHeadsFetchingPage(true);
-      if (pageIndex === 0) setReqHeadsLoading(true);
+      if (mountedRef.current) setReqHeadsFetchingPage(true);
+      if (pageIndex === 0 && mountedRef.current) setReqHeadsLoading(true);
 
       try {
         const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
@@ -513,8 +520,10 @@ export function useWarehouseReqHeads(params: {
         const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
         inFlightRef.current.delete(requestKey);
         reqRefs.current.fetching = false;
-        setReqHeadsFetchingPage(false);
-        if (pageIndex === 0) setReqHeadsLoading(false);
+        if (mountedRef.current) {
+          setReqHeadsFetchingPage(false);
+          if (pageIndex === 0) setReqHeadsLoading(false);
+        }
       }
     },
     [publishReqHeadsPage0, supabase, pageSize],

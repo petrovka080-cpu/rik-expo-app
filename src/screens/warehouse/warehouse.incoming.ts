@@ -1,5 +1,11 @@
 // src/screens/warehouse/warehouse.incoming.ts
 import { useCallback, useEffect, useRef, useState } from "react";
+
+const useMountedRef = () => {
+  const ref = useRef(true);
+  useEffect(() => () => { ref.current = false; }, []);
+  return ref;
+};
 import type { IncomingRow, ItemRow } from "./warehouse.types";
 import {
   fetchWarehouseIncomingHeadsWindow,
@@ -14,6 +20,7 @@ import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.se
 
 // РјР°Р»РµРЅСЊРєРёРµ СѓС‚РёР»РёС‚С‹ (Р»РѕРєР°Р»СЊРЅРѕ РІ РјРѕРґСѓР»Рµ)
 export function useWarehouseIncoming() {
+  const mountedRef = useMountedRef();
   const [toReceive, setToReceive] = useState<IncomingRow[]>([]);
   const [incomingCount, setIncomingCount] = useState(0);
   const [toReceiveLoading, setToReceiveLoading] = useState(false);
@@ -103,6 +110,7 @@ export function useWarehouseIncoming() {
         setToReceiveHasMore(hasNext);
         setToReceivePage(pageIndex);
 
+        if (!mountedRef.current) return;
         if (pageIndex === 0) {
           toReceiveRef.current = queue;
           setToReceive(queue);
@@ -178,9 +186,11 @@ export function useWarehouseIncoming() {
       } finally {
         toReceiveFetchMutexRef.current = false;
         toReceiveFetchTaskRef.current = null;
-        setToReceiveIsFetching(false);
-        setToReceiveFetchingPage(false);
-        if (pageIndex === 0) setToReceiveLoading(false);
+        if (mountedRef.current) {
+          setToReceiveIsFetching(false);
+          setToReceiveFetchingPage(false);
+          if (pageIndex === 0) setToReceiveLoading(false);
+        }
       }
     })();
 
@@ -209,7 +219,9 @@ export function useWarehouseIncoming() {
       const result = await fetchWarehouseIncomingItemsWindow(incomingId);
 
       const rows = (result?.rows ?? []) as ItemRow[];
-      setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: rows }));
+      if (mountedRef.current) {
+        setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: rows }));
+      }
 
       observation.success({
         rowCount: rows.length,
@@ -238,7 +250,9 @@ export function useWarehouseIncoming() {
       if (__DEV__) {
         console.warn("[warehouse.incoming] warehouse_incoming_items_scope_v1 failed:", error);
       }
-      setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: [] }));
+      if (mountedRef.current) {
+        setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: [] }));
+      }
       return [] as ItemRow[];
     }
   }, []);

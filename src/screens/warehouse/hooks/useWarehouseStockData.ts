@@ -1,4 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+
+const useMountedRef = () => {
+  const ref = useRef(true);
+  useEffect(() => () => { ref.current = false; }, []);
+  return ref;
+};
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { apiEnrichStockNamesFromRikRu, apiFetchStock } from "../warehouse.stock.read";
 import { scheduleWarehouseNameMapRefresh } from "../warehouse.nameMap.ui";
@@ -28,6 +34,7 @@ export function useWarehouseStockData(params: {
 }) {
   const { supabase, search } = params;
   const searchKey = String(search ?? "").trim();
+  const mountedRef = useMountedRef();
 
   const [stock, setStock] = useState<StockRow[]>([]);
   const [stockSupported, setStockSupported] = useState<null | boolean>(null);
@@ -85,6 +92,7 @@ export function useWarehouseStockData(params: {
     })
       .then((enrichedRows) => {
         if (stockFetchSeqRef.current !== options.fetchSeq) return;
+        if (!mountedRef.current) return;
         setStock((previous) => (options.append ? mergeStockRows(previous, enrichedRows) : enrichedRows));
         recordPlatformObservability({
           screen: "warehouse",
@@ -125,6 +133,7 @@ export function useWarehouseStockData(params: {
       const result = await apiFetchStock(supabase, offset, limit);
       const nextRows = result.rows || [];
 
+      if (!mountedRef.current) return;
       setStock((previous) => (append ? mergeStockRows(previous, nextRows) : nextRows));
       setStockSupported(result.supported);
 
@@ -202,6 +211,7 @@ export function useWarehouseStockData(params: {
         console.warn("[fetchStock] error", error);
       }
     } finally {
+      if (!mountedRef.current) return;
       if (!options.reset) {
         setStockLoadingMore(false);
       }

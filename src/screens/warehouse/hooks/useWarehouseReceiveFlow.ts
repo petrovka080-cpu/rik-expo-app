@@ -1,4 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const useMountedRef = () => {
+  const ref = useRef(true);
+  useEffect(() => () => { ref.current = false; }, []);
+  return ref;
+};
 import { AppState } from "react-native";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -130,6 +136,7 @@ export function useWarehouseReceiveFlow(params: {
   } = params;
 
   const [qtyInputByItem, setQtyInputByItemState] = useState<Record<string, string>>({});
+  const mountedRef = useMountedRef();
   const receiveDrafts = useWarehouseReceiveDraftStore((state) => state.drafts);
   const activeIncomingId = trim(itemsModalIncomingId);
   const activeDraft = useWarehouseReceiveDraftStore(
@@ -216,6 +223,7 @@ export function useWarehouseReceiveFlow(params: {
     (async () => {
       await hydrateWarehouseReceiveDraftStore();
       if (cancelled) return;
+      if (!mountedRef.current) return;
       setRuntimeReady(true);
       if (activeIncomingId) {
         syncLocalInputFromDraft(activeIncomingId);
@@ -240,7 +248,7 @@ export function useWarehouseReceiveFlow(params: {
       const nextOnline = selectPlatformOnlineFlag(state);
       const wasOnline = selectPlatformOnlineFlag(previous);
       networkOnlineRef.current = nextOnline;
-      if (wasOnline === false && nextOnline === true) {
+      if (wasOnline === false && nextOnline === true && mountedRef.current) {
         void syncQueuedDraftIfPossible("network_back");
       }
     });
@@ -255,7 +263,7 @@ export function useWarehouseReceiveFlow(params: {
     const sub = AppState.addEventListener("change", (nextState) => {
       const prevState = appStateRef.current;
       appStateRef.current = nextState;
-      if (prevState !== "active" && nextState === "active") {
+      if (prevState !== "active" && nextState === "active" && mountedRef.current) {
         void syncQueuedDraftIfPossible("app_active");
       }
     });

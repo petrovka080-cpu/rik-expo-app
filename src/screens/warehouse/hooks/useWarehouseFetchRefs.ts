@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
 
+const useMountedRef = () => {
+  const ref = useRef(true);
+  useEffect(() => () => { ref.current = false; }, []);
+  return ref;
+};
+
 type FetchToReceiveFn = (
   page?: number,
   forceRefresh?: boolean,
@@ -26,6 +32,7 @@ export function useWarehouseFetchRefs(params: {
   fetchReports: FetchReportsFn;
 }) {
   const { fetchToReceive, fetchStock, fetchReqHeads, fetchReports } = params;
+  const mountedRef = useMountedRef();
 
   const fetchToReceiveRef = useRef(fetchToReceive);
   const fetchStockRef = useRef(fetchStock);
@@ -72,7 +79,7 @@ export function useWarehouseFetchRefs(params: {
             await refresh(nextForce);
           } finally {
             stateRef.current.inFlight = null;
-            if (stateRef.current.rerunQueued) {
+            if (stateRef.current.rerunQueued && mountedRef.current) {
               const rerunForce = stateRef.current.rerunForce;
               stateRef.current.rerunQueued = false;
               stateRef.current.rerunForce = false;
