@@ -17,6 +17,9 @@ import { recordPlatformObservability } from "../src/lib/observability/platformOb
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
+
+const AUTH_EXIT_SESSION_SETTLE_WINDOW_MS = 2500;
+const AUTH_EXIT_SESSION_POLL_INTERVAL_MS = 200;
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
 if (Platform.OS === "web") {
   LogBox.ignoreLogs([
@@ -49,10 +52,43 @@ export default function RootLayout() {
   const initStartedRef = useRef(false);
   const launchMarkerRef = useRef(false);
   const usableUiMarkerRef = useRef(false);
+  const hasSessionRef = useRef<boolean | null>(null);
+  hasSessionRef.current = hasSession;
   const pathnameRef = useRef(pathname);
   pathnameRef.current = pathname;
   const isPdfViewerRouteRef = useRef(isPdfViewerRoute);
   isPdfViewerRouteRef.current = isPdfViewerRoute;
+  const previousInAuthStackRef = useRef(segments?.[0] === "auth");
+  const authExitAtRef = useRef<number | null>(null);
+  const authExitSessionProbeTokenRef = useRef(0);
+  const authExitSessionProbeInFlightRef = useRef(false);
+  const recordAuthGateEvent = useCallback(
+    (
+      event: string,
+      result: "success" | "error" | "skipped",
+      extra?: Record<string, unknown>,
+    ) => {
+      recordPlatformObservability({
+        screen: "request",
+        surface: "auth_session_gate",
+        category: "ui",
+        event,
+        result,
+        extra: {
+          owner: "root_layout",
+          pathname: pathnameRef.current,
+          inAuthStack: previousInAuthStackRef.current,
+          ...(extra ?? {}),
+        },
+      });
+    },
+    [],
+  );
+  const resetPendingAuthExitSessionProbe = useCallback(() => {
+    authExitAtRef.current = null;
+    authExitSessionProbeInFlightRef.current = false;
+    authExitSessionProbeTokenRef.current += 1;
+  }, []);
   useEffect(() => {
     if (launchMarkerRef.current) return;
     launchMarkerRef.current = true;
@@ -86,6 +122,26 @@ export default function RootLayout() {
   useEffect(() => {
     void clearAppCache();
   }, []);
+
+  useEffect(() => {
+    const inAuthStack = segments?.[0] === "auth";
+    const wasInAuthStack = previousInAuthStackRef.current;
+
+    if (wasInAuthStack && !inAuthStack) {
+      authExitAtRef.current = Date.now();
+      authExitSessionProbeInFlightRef.current = false;
+      authExitSessionProbeTokenRef.current += 1;
+      recordAuthGateEvent("post_auth_route_decision", "skipped", {
+        reason: "auth_stack_exit_session_settle_pending",
+        target: POST_AUTH_ENTRY_ROUTE,
+      });
+    } else if (inAuthStack) {
+      authExitAtRef.current = null;
+      authExitSessionProbeInFlightRef.current = false;
+    }
+
+    previousInAuthStackRef.current = inAuthStack;
+  }, [recordAuthGateEvent, segments]);
 
   // --- роль/профиль грузим в фоне, НЕ блокируя вход ---
   const loadRoleForCurrentSession = useCallback(async () => {
@@ -198,6 +254,8 @@ setSessionLoaded(true);
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       const has = Boolean(session);
+      const isTerminalSignOut =
+        event === "SIGNED_OUT" || String(event) === "USER_DELETED";
 
       recordPlatformObservability({
         screen: "request",
@@ -216,18 +274,38 @@ setSessionLoaded(true);
         console.info(`[RootLayout] onAuthStateChange: ${event}, hasSession=${has}`);
       }
 
-      setHasSession(has);
       setSessionLoaded(true);
 
       if (!has) {
+        if (!isTerminalSignOut) {
+          recordAuthGateEvent("auth_gate_transient_no_session", "skipped", {
+            authEvent: event,
+            hadSession: hasSessionRef.current === true,
+            reason: "non_terminal_auth_event",
+          });
+          if (hasSessionRef.current !== true) {
+            setHasSession(false);
+          }
+          return;
+        }
+
+        resetPendingAuthExitSessionProbe();
+        setHasSession(false);
         clearDocumentSessions();
         clearCurrentSessionRoleCache();
         if (!isPdfViewerRouteRef.current) {
+          recordAuthGateEvent("auth_gate_login_redirect", "success", {
+            authEvent: event,
+            target: "/auth/login",
+            reason: "terminal_sign_out",
+          });
           router.replace("/auth/login");
         }
         return;
       }
 
+      resetPendingAuthExitSessionProbe();
+      setHasSession(true);
       loadRoleForCurrentSession();
     });
 
@@ -235,46 +313,161 @@ setSessionLoaded(true);
       active = false;
       listener?.subscription?.unsubscribe();
     };
-  }, [loadRoleForCurrentSession]);
+  }, [loadRoleForCurrentSession, recordAuthGateEvent, resetPendingAuthExitSessionProbe]);
 
   useEffect(() => {
-  if (!sessionLoaded) return;
+    if (!sessionLoaded) return;
 
-  const inAuthStack = segments?.[0] === "auth";
+    const inAuthStack = segments?.[0] === "auth";
+    const authExitAgeMs =
+      authExitAtRef.current == null ? null : Date.now() - authExitAtRef.current;
+    const shouldSettlePostAuthSession =
+      hasSession === false &&
+      !inAuthStack &&
+      !isPdfViewerRouteRef.current &&
+      authExitAgeMs != null &&
+      authExitAgeMs <= AUTH_EXIT_SESSION_SETTLE_WINDOW_MS;
 
-  if (hasSession === false && !inAuthStack && !isPdfViewerRouteRef.current) {
-    recordPlatformObservability({
-      screen: "request",
-      surface: "startup_bootstrap",
-      category: "ui",
-      event: "route_resolution_result",
-      result: "success",
-      extra: {
-        owner: "root_layout",
+    if (shouldSettlePostAuthSession) {
+      if (!authExitSessionProbeInFlightRef.current) {
+        authExitSessionProbeInFlightRef.current = true;
+        const probeToken = authExitSessionProbeTokenRef.current + 1;
+        authExitSessionProbeTokenRef.current = probeToken;
+        recordPlatformObservability({
+          screen: "request",
+          surface: "auth_session_gate",
+          category: "fetch",
+          event: "auth_gate_session_settle_start",
+          result: "skipped",
+          extra: {
+            owner: "root_layout",
+            pathname,
+            target: POST_AUTH_ENTRY_ROUTE,
+            reason: "recent_auth_stack_exit",
+          },
+        });
+
+        void (async () => {
+          let settledSession: Awaited<ReturnType<typeof getSessionSafe>>["session"] =
+            null;
+          let degraded = false;
+          const startedAt = Date.now();
+
+          while (Date.now() - startedAt <= AUTH_EXIT_SESSION_SETTLE_WINDOW_MS) {
+            const result = await getSessionSafe({
+              caller: "root_layout_post_auth_exit",
+            });
+
+            if (probeToken !== authExitSessionProbeTokenRef.current) return;
+
+            settledSession = result.session;
+            degraded = result.degraded;
+
+            if (settledSession || degraded) break;
+
+            await new Promise((resolve) =>
+              setTimeout(resolve, AUTH_EXIT_SESSION_POLL_INTERVAL_MS),
+            );
+          }
+
+          if (probeToken !== authExitSessionProbeTokenRef.current) return;
+
+          authExitSessionProbeInFlightRef.current = false;
+
+          if (settledSession) {
+            authExitAtRef.current = null;
+            recordPlatformObservability({
+              screen: "request",
+              surface: "auth_session_gate",
+              category: "fetch",
+              event: "auth_gate_session_settle_result",
+              result: "success",
+              extra: {
+                owner: "root_layout",
+                hasSession: true,
+                reason: "session_visible_after_auth_exit",
+              },
+            });
+            setHasSession(true);
+            return;
+          }
+
+          authExitAtRef.current = null;
+
+          if (degraded) {
+            recordPlatformObservability({
+              screen: "request",
+              surface: "auth_session_gate",
+              category: "fetch",
+              event: "auth_gate_degraded_path",
+              result: "skipped",
+              extra: {
+                owner: "root_layout",
+                reason: "post_auth_session_read_degraded",
+              },
+            });
+            setHasSession(null);
+            return;
+          }
+
+          recordAuthGateEvent("auth_gate_login_redirect", "success", {
+            target: "/auth/login",
+            reason: "post_auth_session_absent_after_settle",
+          });
+          router.replace("/auth/login");
+        })();
+      }
+
+      recordAuthGateEvent("auth_gate_login_redirect_suppressed", "skipped", {
         target: "/auth/login",
-        hasSession,
-      },
-    });
-    router.replace("/auth/login");
-    return;
-  }
+        reason: "post_auth_session_settle_inflight",
+      });
+      return;
+    }
 
-  if (hasSession === true && inAuthStack) {
-    recordPlatformObservability({
-      screen: "request",
-      surface: "startup_bootstrap",
-      category: "ui",
-      event: "route_resolution_result",
-      result: "success",
-      extra: {
-        owner: "root_layout",
-        target: POST_AUTH_ENTRY_ROUTE,
-        hasSession,
-      },
-    });
-    router.replace(POST_AUTH_ENTRY_ROUTE);
-  }
-}, [hasSession, sessionLoaded, segments]);
+    if (hasSession === false && !inAuthStack && !isPdfViewerRouteRef.current) {
+      recordPlatformObservability({
+        screen: "request",
+        surface: "auth_session_gate",
+        category: "ui",
+        event: "auth_gate_login_redirect",
+        result: "success",
+        extra: {
+          owner: "root_layout",
+          target: "/auth/login",
+          hasSession,
+          reason: "confirmed_no_session",
+        },
+      });
+      router.replace("/auth/login");
+      return;
+    }
+
+    if (hasSession === true && inAuthStack) {
+      recordPlatformObservability({
+        screen: "request",
+        surface: "startup_bootstrap",
+        category: "ui",
+        event: "route_resolution_result",
+        result: "success",
+        extra: {
+          owner: "root_layout",
+          target: POST_AUTH_ENTRY_ROUTE,
+          hasSession,
+          reason: "session_present_in_auth_stack",
+        },
+      });
+      resetPendingAuthExitSessionProbe();
+      router.replace(POST_AUTH_ENTRY_ROUTE);
+    }
+  }, [
+    hasSession,
+    pathname,
+    recordAuthGateEvent,
+    resetPendingAuthExitSessionProbe,
+    sessionLoaded,
+    segments,
+  ]);
 
   useEffect(() => {
     if (!sessionLoaded || usableUiMarkerRef.current) return;

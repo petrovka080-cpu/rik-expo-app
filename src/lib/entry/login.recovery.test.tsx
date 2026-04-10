@@ -2,6 +2,7 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 import { Text, TextInput } from "react-native";
 
+import { LOGIN_NETWORK_DEGRADED_MESSAGE } from "../auth/signInSafe";
 import { RequestTimeoutError } from "../requestTimeoutPolicy";
 import LoginScreen from "../../../app/auth/login";
 
@@ -20,6 +21,8 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("../supabaseClient", () => ({
+  getSessionSafe: jest.fn(),
+  isSupabaseEnvValid: true,
   supabase: {
     auth: {
       signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args),
@@ -69,7 +72,7 @@ describe("LoginScreen recovery", () => {
       .findAllByType(Text)
       .map((node) => String(node.props.children ?? ""));
 
-    expect(texts.join(" ")).toContain("Вход отвечает слишком долго");
+    expect(texts.join(" ")).toContain(LOGIN_NETWORK_DEGRADED_MESSAGE);
     expect(texts.join(" ")).not.toContain("supabase_client.token request timed out");
     expect(mockReplace).not.toHaveBeenCalled();
   });

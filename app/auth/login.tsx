@@ -16,8 +16,11 @@ import {
   LOGIN_FALLBACK_ERROR_MESSAGE,
   signInSafe,
 } from "../../src/lib/auth/signInSafe";
-import { isSupabaseEnvValid } from "../../src/lib/supabaseClient";
+import { getSessionSafe, isSupabaseEnvValid } from "../../src/lib/supabaseClient";
 import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
+
+const POST_AUTH_SESSION_SETTLE_WINDOW_MS = 2500;
+const POST_AUTH_SESSION_POLL_INTERVAL_MS = 200;
 
 const UI_COPY = {
   title: "Войти в GOX",
@@ -25,6 +28,8 @@ const UI_COPY = {
   submit: "Войти",
   noSession:
     "Нет активной сессии. Проверьте почту и пароль, затем попробуйте ещё раз.",
+  sessionSettling:
+    "Сессия ещё закрепляется. Попробуйте ещё раз.",
   fallbackError: LOGIN_FALLBACK_ERROR_MESSAGE,
   configError:
     "Supabase не настроен: проверьте EXPO_PUBLIC_SUPABASE_URL и EXPO_PUBLIC_SUPABASE_ANON_KEY.",
@@ -32,11 +37,98 @@ const UI_COPY = {
   reset: "Забыли пароль?",
 } as const;
 
+type ReadableSessionResult = {
+  sessionVisible: boolean;
+  degraded: boolean;
+};
+
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const waitForReadableSession = async (): Promise<ReadableSessionResult> => {
+    const startedAt = Date.now();
+
+    recordPlatformObservability({
+      screen: "request",
+      surface: "auth_login",
+      category: "fetch",
+      event: "login_post_auth_session_settle_start",
+      result: "skipped",
+      extra: {
+        owner: "login_submit",
+        target: POST_AUTH_ENTRY_ROUTE,
+      },
+    });
+
+    while (Date.now() - startedAt <= POST_AUTH_SESSION_SETTLE_WINDOW_MS) {
+      const sessionResult = await getSessionSafe({
+        caller: "login_post_signin",
+      });
+
+      if (sessionResult.session?.user) {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "auth_login",
+          category: "fetch",
+          event: "login_post_auth_session_settle_result",
+          result: "success",
+          extra: {
+            owner: "login_submit",
+            target: POST_AUTH_ENTRY_ROUTE,
+            reason: "session_visible_before_auth_exit",
+          },
+        });
+        return {
+          sessionVisible: true,
+          degraded: false,
+        };
+      }
+
+      if (sessionResult.degraded) {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "auth_login",
+          category: "fetch",
+          event: "login_post_auth_session_settle_result",
+          result: "skipped",
+          extra: {
+            owner: "login_submit",
+            target: POST_AUTH_ENTRY_ROUTE,
+            reason: "session_read_degraded",
+          },
+        });
+        return {
+          sessionVisible: false,
+          degraded: true,
+        };
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, POST_AUTH_SESSION_POLL_INTERVAL_MS),
+      );
+    }
+
+    recordPlatformObservability({
+      screen: "request",
+      surface: "auth_login",
+      category: "fetch",
+      event: "login_post_auth_session_settle_result",
+      result: "error",
+      extra: {
+        owner: "login_submit",
+        target: POST_AUTH_ENTRY_ROUTE,
+        reason: "session_absent_after_settle",
+      },
+    });
+
+    return {
+      sessionVisible: false,
+      degraded: false,
+    };
+  };
 
   const onSubmit = async () => {
     if (loading) return;
@@ -68,6 +160,17 @@ export default function LoginScreen() {
         return;
       }
 
+      const settledSession = await waitForReadableSession();
+
+      if (!settledSession.sessionVisible) {
+        setError(
+          settledSession.degraded
+            ? result.userMessage ?? UI_COPY.fallbackError
+            : UI_COPY.sessionSettling,
+        );
+        return;
+      }
+
       recordPlatformObservability({
         screen: "request",
         surface: "auth_login",
@@ -81,11 +184,24 @@ export default function LoginScreen() {
         },
       });
 
+      recordPlatformObservability({
+        screen: "request",
+        surface: "auth_login",
+        category: "ui",
+        event: "login_post_auth_route_decision",
+        result: "success",
+        extra: {
+          owner: "login_submit",
+          target: POST_AUTH_ENTRY_ROUTE,
+          reason: "session_settled",
+        },
+      });
+
       router.replace(POST_AUTH_ENTRY_ROUTE);
-    } catch (error: unknown) {
+    } catch (submitError: unknown) {
       setError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        submitError instanceof Error && submitError.message.trim()
+          ? submitError.message
           : UI_COPY.fallbackError,
       );
     } finally {

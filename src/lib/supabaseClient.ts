@@ -370,6 +370,51 @@ const recordSupabaseAuthBootstrapFallback = (
       ...extra,
     },
   });
+
+const recordAuthSessionReadStart = (extra?: Record<string, unknown>) =>
+  recordPlatformObservability({
+    screen: "request",
+    surface: "auth_session_gate",
+    category: "fetch",
+    event: "auth_session_read_start",
+    result: "skipped",
+    sourceKind: "supabase_auth:getSession",
+    extra: {
+      owner: "supabase_client",
+      ...(extra ?? {}),
+    },
+  });
+
+const recordAuthSessionReadResult = (params: {
+  result: "success" | "error";
+  degraded: boolean;
+  hasSession: boolean;
+  error?: unknown;
+  extra?: Record<string, unknown>;
+}) =>
+  recordPlatformObservability({
+    screen: "request",
+    surface: "auth_session_gate",
+    category: "fetch",
+    event: "auth_session_read_result",
+    result: params.result,
+    fallbackUsed: params.degraded || undefined,
+    errorClass: params.error instanceof Error ? params.error.name : undefined,
+    errorMessage:
+      params.error instanceof Error
+        ? params.error.message
+        : params.error != null
+          ? String(params.error)
+          : undefined,
+    sourceKind: "supabase_auth:getSession",
+    extra: {
+      owner: "supabase_client",
+      degraded: params.degraded,
+      hasSession: params.hasSession,
+      ...(params.extra ?? {}),
+    },
+  });
+
 type SafeSessionResult = {
   session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] | null;
   degraded: boolean;
@@ -389,17 +434,42 @@ export async function getSessionSafe(
   extra?: Record<string, unknown>,
 ): Promise<SafeSessionResult> {
   if (!supabase) {
+    recordAuthSessionReadResult({
+      result: "error",
+      degraded: true,
+      hasSession: false,
+      extra: {
+        ...(extra ?? {}),
+        reason: "supabase_missing",
+      },
+    });
     return { session: null, degraded: true };
   }
 
+  recordAuthSessionReadStart(extra);
+
   try {
     const result = await supabase.auth.getSession();
+    const session = result?.data?.session ?? null;
+    recordAuthSessionReadResult({
+      result: "success",
+      degraded: false,
+      hasSession: Boolean(session),
+      extra,
+    });
     return {
-      session: result?.data?.session ?? null,
+      session,
       degraded: false,
     };
   } catch (error: unknown) {
     recordSupabaseAuthBootstrapFallback("get_session_safe_failed", error, extra);
+    recordAuthSessionReadResult({
+      result: "error",
+      degraded: isTimeoutLikeError(error),
+      hasSession: false,
+      error,
+      extra,
+    });
 
     return {
       session: null,

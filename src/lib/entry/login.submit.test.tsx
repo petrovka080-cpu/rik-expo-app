@@ -7,6 +7,7 @@ import { POST_AUTH_ENTRY_ROUTE } from "../authRouting";
 
 const mockReplace = jest.fn();
 const mockSignInSafe = jest.fn();
+const mockGetSessionSafe = jest.fn();
 
 jest.mock("expo-router", () => ({
   Link: ({ children }: { children: React.ReactNode }) => children,
@@ -21,6 +22,7 @@ jest.mock("../auth/signInSafe", () => ({
 }));
 
 jest.mock("../supabaseClient", () => ({
+  getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   isSupabaseEnvValid: true,
 }));
 
@@ -35,6 +37,15 @@ describe("LoginScreen submit handling", () => {
   beforeEach(() => {
     mockReplace.mockReset();
     mockSignInSafe.mockReset();
+    mockGetSessionSafe.mockReset();
+    mockGetSessionSafe.mockResolvedValue({
+      session: { user: { id: "user-1" }, access_token: "token" },
+      degraded: false,
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it("shows a controlled network message instead of the raw transport timeout", async () => {
@@ -160,15 +171,22 @@ describe("LoginScreen submit handling", () => {
     expect(findSubmitButton(renderer!).props.disabled).toBe(false);
   });
 
-  it("routes on success and clears the loading state in the normal path", async () => {
+  it("waits for a readable session before routing after sign-in", async () => {
+    jest.useFakeTimers();
     mockSignInSafe.mockResolvedValue({
       data: {
-        session: { access_token: "token" },
+        session: { access_token: "token", user: { id: "user-1" } },
       },
       error: null,
       degraded: false,
       userMessage: null,
     });
+    mockGetSessionSafe
+      .mockResolvedValueOnce({ session: null, degraded: false })
+      .mockResolvedValueOnce({
+        session: { user: { id: "user-1" }, access_token: "token" },
+        degraded: false,
+      });
 
     let renderer: TestRenderer.ReactTestRenderer;
 
@@ -184,11 +202,83 @@ describe("LoginScreen submit handling", () => {
       inputs[1]?.props.onChangeText("secret");
     });
 
+    let submitPromise: Promise<void> | undefined;
+
     await act(async () => {
-      await button.props.onPress();
+      submitPromise = button.props.onPress();
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockGetSessionSafe).toHaveBeenNthCalledWith(1, {
+      caller: "login_post_signin",
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(POST_AUTH_SESSION_POLL_INTERVAL_MS);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await submitPromise;
     });
 
     expect(mockReplace).toHaveBeenCalledWith(POST_AUTH_ENTRY_ROUTE);
     expect(findSubmitButton(renderer!).props.disabled).toBe(false);
   });
+
+  it("shows a controlled message when session persistence does not settle after sign-in", async () => {
+    jest.useFakeTimers();
+    mockSignInSafe.mockResolvedValue({
+      data: {
+        session: { access_token: "token", user: { id: "user-1" } },
+      },
+      error: null,
+      degraded: false,
+      userMessage: null,
+    });
+    mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
+
+    let renderer: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<LoginScreen />);
+    });
+
+    const inputs = renderer!.root.findAllByType(TextInput);
+    const button = findSubmitButton(renderer!);
+
+    act(() => {
+      inputs[0]?.props.onChangeText("petrovka080@gmail.com");
+      inputs[1]?.props.onChangeText("secret");
+    });
+
+    let submitPromise: Promise<void> | undefined;
+
+    await act(async () => {
+      submitPromise = button.props.onPress();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(3_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await submitPromise;
+    });
+
+    const textContent = renderer!.root
+      .findAllByType(Text)
+      .map((node) => String(node.props.children ?? ""))
+      .join(" ");
+
+    expect(textContent).toContain("Сессия ещё закрепляется. Попробуйте ещё раз.");
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
 });
+
+const POST_AUTH_SESSION_POLL_INTERVAL_MS = 200;

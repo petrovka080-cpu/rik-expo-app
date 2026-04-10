@@ -243,8 +243,16 @@ describe("supabaseClient runtime contract", () => {
       expect.objectContaining({
         screen: "request",
         surface: "supabase_auth_bootstrap",
-        event: "ensure_signed_in_session_check_failed",
+        event: "get_session_safe_failed",
         fallbackUsed: true,
+      }),
+    );
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "request",
+        surface: "auth_session_gate",
+        event: "auth_session_read_result",
+        result: "error",
       }),
     );
   });
@@ -260,8 +268,16 @@ describe("supabaseClient runtime contract", () => {
       expect.objectContaining({
         screen: "request",
         surface: "supabase_auth_bootstrap",
-        event: "current_user_id_session_check_failed",
+        event: "get_session_safe_failed",
         fallbackUsed: true,
+      }),
+    );
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "request",
+        surface: "auth_session_gate",
+        event: "auth_session_read_result",
+        result: "error",
       }),
     );
   });

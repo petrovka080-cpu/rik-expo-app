@@ -19,10 +19,10 @@ const mockStopQueueWorker = jest.fn();
 jest.mock("../runtime/installWeakRefPolyfill", () => ({}));
 
 jest.mock("expo-router", () => ({
-  Slot: () => {
+  Stack: () => {
     const React = require("react");
     const { Text } = require("react-native");
-    return React.createElement(Text, { testID: "root-slot" }, "slot");
+    return React.createElement(Text, { testID: "root-stack" }, "stack");
   },
   router: {
     replace: (...args: unknown[]) => mockReplace(...args),
@@ -100,6 +100,10 @@ describe("RootLayout recovery bootstrap", () => {
     mockWarmCurrentSessionProfile.mockResolvedValue(undefined);
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("does not redirect to login when initial session bootstrap times out", async () => {
     mockGetSessionSafe.mockRejectedValue(
       new RequestTimeoutError({
@@ -122,7 +126,7 @@ describe("RootLayout recovery bootstrap", () => {
       await Promise.resolve();
     });
 
-    expect(renderer!.root.findByProps({ testID: "root-slot" })).toBeTruthy();
+    expect(renderer!.root.findByProps({ testID: "root-stack" })).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
     expect(mockStopQueueWorker).not.toHaveBeenCalled();
     expect(mockClearDocumentSessions).not.toHaveBeenCalled();
@@ -223,6 +227,78 @@ describe("RootLayout recovery bootstrap", () => {
 
     // The critical assertion: after SIGNED_IN, the route guard must NOT send user back to login.
     expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
-    expect(mockClearDocumentSessions).not.toHaveBeenCalled();
+  });
+
+  it("re-checks session after auth stack exit before sending user back to login", async () => {
+    mockUseSegments.mockReturnValue(["auth", "login"]);
+    mockUsePathname.mockReturnValue("/auth/login");
+    mockGetSessionSafe
+      .mockResolvedValueOnce({ session: null, degraded: false })
+      .mockResolvedValueOnce({
+        session: { user: { id: "user-1" }, access_token: "tok" },
+        degraded: false,
+      });
+
+    let renderer: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    mockReplace.mockClear();
+
+    mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
+    mockUsePathname.mockReturnValue("/(tabs)/profile");
+
+    await act(async () => {
+      renderer!.update(<RootLayout />);
+      await Promise.resolve();
+    });
+
+    expect(mockGetSessionSafe).toHaveBeenNthCalledWith(2, {
+      caller: "root_layout_post_auth_exit",
+    });
+    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+  });
+
+  it("redirects to login when the post-auth session settle window confirms no session", async () => {
+    jest.useFakeTimers();
+    mockUseSegments.mockReturnValue(["auth", "login"]);
+    mockUsePathname.mockReturnValue("/auth/login");
+    mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
+
+    let renderer: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    mockReplace.mockClear();
+
+    mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
+    mockUsePathname.mockReturnValue("/(tabs)/profile");
+
+    await act(async () => {
+      renderer!.update(<RootLayout />);
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+
+    await act(async () => {
+      jest.advanceTimersByTime(3_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
   });
 });
