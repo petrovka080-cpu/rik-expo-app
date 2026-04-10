@@ -233,22 +233,53 @@ describe("useWarehousemanFio", () => {
     );
   });
 
-  it("commits confirmation visibility while the screen stays focused", async () => {
+  it("keeps mount bootstrap local-only and lets focus_check commit confirmation visibility", async () => {
     mockLoadStoredFioState.mockResolvedValue({
-      currentFio: "",
-      history: [],
+      currentFio: "Ivan",
+      history: ["Ivan"],
       lastConfirmIso: null,
     });
+
+    let latestSnapshot: ReturnType<typeof useWarehousemanFio> | null = null;
 
     await act(async () => {
       TestRenderer.create(
         <Harness
           getTodaySixAM={() => new Date("2026-04-10T06:00:00.000Z")}
           isScreenFocused={true}
+          onSnapshot={(snapshot) => {
+            latestSnapshot = snapshot;
+          }}
         />,
       );
     });
 
+    expect(latestSnapshot?.warehousemanFio).toBe("Ivan");
+    expect(latestSnapshot?.warehousemanHistory).toEqual(["Ivan"]);
     expect(mockSetIsFioConfirmVisible).toHaveBeenCalledWith(true);
+    expect(mockRecordStateWriteAccepted).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "warehouseman_fio",
+        writeTarget: "bootstrap_state",
+        source: "mount_bootstrap",
+      }),
+    );
+    expect(mockRecordStateWriteSkipped).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "warehouseman_fio",
+        writeTarget: "bootstrap_state",
+        source: "mount_bootstrap",
+        reason: "mount_bootstrap_local_only",
+        visibleScope: "local_state",
+        skippedScope: "shared_store",
+      }),
+    );
+    expect(mockRecordStateWriteAccepted).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "warehouseman_fio",
+        writeTarget: "focus_confirm_visible",
+        source: "focus_check",
+      }),
+    );
   });
 });

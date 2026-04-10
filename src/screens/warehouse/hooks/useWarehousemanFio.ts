@@ -70,13 +70,19 @@ export function useWarehousemanFio({
   );
 
   const recordStateWriteSkipped = useCallback(
-    (writeTarget: string, source: string) => {
+    (
+      writeTarget: string,
+      source: string,
+      reason = getCommitSkipReason(),
+      extra?: Record<string, unknown>,
+    ) => {
       recordOfficeWarehouseRuntimeStateWriteSkipped({
         owner: "warehouseman_fio",
         route: "/office/warehouse",
         writeTarget,
         source,
-        reason: getCommitSkipReason(),
+        reason,
+        ...(extra ?? {}),
       });
     },
     [getCommitSkipReason],
@@ -96,7 +102,6 @@ export function useWarehousemanFio({
         const {
           currentFio,
           history,
-          lastConfirmIso,
         } = await loadStoredFioState({
           screen: "warehouse",
           surface: "warehouseman_fio",
@@ -117,13 +122,15 @@ export function useWarehousemanFio({
 
         if (currentFio) setWarehousemanFio(currentFio);
         setWarehousemanHistory(history);
-
-        const sixAM = getTodaySixAM();
-        const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
-        if (!lastConfirm || lastConfirm < sixAM) {
-          setIsFioConfirmVisible(true);
-        }
-        recordStateWriteAccepted("bootstrap_state", "mount_bootstrap");
+        recordStateWriteSkipped(
+          "bootstrap_state",
+          "mount_bootstrap",
+          "mount_bootstrap_local_only",
+          {
+            visibleScope: "local_state",
+            skippedScope: "shared_store",
+          },
+        );
       } catch (e) {
         if (__DEV__) {
           console.warn("[warehousemanFio] load failed", e);
@@ -135,10 +142,7 @@ export function useWarehousemanFio({
     };
   }, [
     canCommit,
-    getTodaySixAM,
-    recordStateWriteAccepted,
     recordStateWriteSkipped,
-    setIsFioConfirmVisible,
   ]);
 
   useFocusEffect(
