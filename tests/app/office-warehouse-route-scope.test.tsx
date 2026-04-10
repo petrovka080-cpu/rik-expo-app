@@ -10,10 +10,14 @@ const mockUsePathname = jest.fn();
 const mockUseSegments = jest.fn();
 const mockAddListener: jest.Mock = jest.fn(() => jest.fn());
 const mockWarehouseScreen = jest.fn((_props?: Record<string, unknown>) => null);
+const mockReplace = jest.fn();
 
 jest.mock("expo-router", () => {
   const ReactRuntime = jest.requireActual("react");
   return {
+    router: {
+      replace: (...args: unknown[]) => mockReplace(...args),
+    },
     useFocusEffect: (callback: () => void | (() => void)) => {
       ReactRuntime.useEffect(() => {
         const cleanup = callback();
@@ -49,10 +53,25 @@ jest.mock("../../app/(tabs)/warehouse", () => {
 });
 
 jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
+  markPendingOfficeRouteReturnReceipt: jest.fn(),
+  recordOfficeBackPathFailure: jest.fn(),
   recordOfficeChildBeforeRemove: jest.fn(),
   recordOfficeChildEntryFocus: jest.fn(),
   recordOfficeChildEntryMount: jest.fn(),
   recordOfficeChildUnmount: jest.fn(),
+  recordOfficeWarehouseBackHandlerDone: jest.fn(),
+  recordOfficeWarehouseBackHandlerStart: jest.fn(),
+  recordOfficeWarehouseBackMethodSelected: jest.fn(),
+  recordOfficeWarehouseBackPressDone: jest.fn(),
+  recordOfficeWarehouseBackPressStart: jest.fn(),
+  recordOfficeWarehouseBackReplaceDone: jest.fn(),
+  recordOfficeWarehouseBackReplaceStart: jest.fn(),
+  recordOfficeWarehouseBackUseReplaceFallback: jest.fn(),
+  recordOfficeWarehouseBeforeRemove: jest.fn(),
+  recordWarehouseBackSourceCustomHeader: jest.fn(),
+  recordWarehouseBackSourceGoBackGuard: jest.fn(),
+  recordWarehouseReturnToOfficeDone: jest.fn(),
+  recordWarehouseReturnToOfficeStart: jest.fn(),
 }));
 
 describe("office warehouse child route entry", () => {
@@ -62,6 +81,7 @@ describe("office warehouse child route entry", () => {
     mockAddListener.mockReset();
     mockAddListener.mockReturnValue(jest.fn());
     mockWarehouseScreen.mockReset();
+    mockReplace.mockReset();
     Object.values(officeBreadcrumbs).forEach((value) => {
       if (jest.isMockFunction(value)) {
         value.mockClear();
@@ -99,6 +119,7 @@ describe("office warehouse child route entry", () => {
     expect(typeof beforeRemoveListener).toBe("function");
     act(() => {
       beforeRemoveListener({
+        preventDefault: jest.fn(),
         data: {
           action: {
             type: "GO_BACK",
@@ -106,7 +127,21 @@ describe("office warehouse child route entry", () => {
         },
       });
     });
-    expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "REPLACE",
+        reason: "go_back_intercepted",
+        trigger: "go_back_guard",
+      }),
+    );
+    expect(officeBreadcrumbs.recordOfficeWarehouseBeforeRemove).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "REPLACE",
+        reason: "go_back_intercepted",
+        trigger: "go_back_guard",
+      }),
+    );
+    expect(mockReplace).toHaveBeenCalledWith("/office");
 
     act(() => {
       renderer?.unmount();
@@ -174,7 +209,7 @@ describe("office warehouse child route entry", () => {
     });
   });
 
-  it("matches the same reexport contract used by working office child routes", () => {
+  it("keeps the same route wrapper but hard-blocks GO_BACK via deterministic replace", () => {
     const warehouseSource = fs.readFileSync(
       path.join(__dirname, "../../app/(tabs)/office/warehouse.tsx"),
       "utf8",
@@ -189,6 +224,6 @@ describe("office warehouse child route entry", () => {
     expect(foremanSource).toContain('import { ForemanScreen } from "../foreman";');
     expect(warehouseSource).toContain("useOfficeChildRouteAudit({");
     expect(warehouseSource).toContain("return <WarehouseScreen />;");
-    expect(warehouseSource).not.toContain("performWarehouseDeterministicOfficeReturn");
+    expect(warehouseSource).toContain("performWarehouseDeterministicOfficeReturn");
   });
 });
