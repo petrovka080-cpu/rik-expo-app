@@ -23,7 +23,7 @@ import {
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
 import { recordPlatformObservability } from "../../../src/lib/observability/platformObservability";
 import { recordWarehouseBackBreadcrumbs, recordWarehouseBackBreadcrumbsAsync } from "../../../src/lib/navigation/warehouseBackBreadcrumbs";
-import { hasSafeBackHistory, safeBack, type SafeBackRouterLike } from "../../../src/lib/navigation/safeBack";
+import { safeBack, type SafeBackRouterLike } from "../../../src/lib/navigation/safeBack";
 
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
@@ -168,7 +168,9 @@ export function performWarehouseBackNavigation(
   });
   recordOfficeWarehouseBackHandlerStart(buildBackExtra());
 
-  const canGoBack = hasSafeBackHistory(warehouseRouter);
+  const canGoBack = typeof warehouseRouter.canGoBack === "function"
+    ? Boolean(warehouseRouter.canGoBack())
+    : false;
   recordEvent({
     screen: "warehouse",
     surface: "warehouse_back",
