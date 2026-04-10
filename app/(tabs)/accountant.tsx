@@ -82,7 +82,7 @@ const getErrorText = (e: unknown) => {
   return x?.message ?? x?.error_description ?? x?.details ?? String(e);
 };
 
-function AccountantScreen() {
+export function AccountantScreen() {
   const insets = useSafeAreaInsets();
   const gbusy = useGlobalBusy();
   const { busyKey, run: runAction } = useBusyAction({

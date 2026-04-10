@@ -108,7 +108,7 @@ import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary
 const isWeb = Platform.OS === 'web';
 
 
-function BuyerScreen() {
+export function BuyerScreen() {
   const busy = useGlobalBusy();
   const { alertUser: screenAlertUser } = useBuyerAlerts();
   const tab = useBuyerStore((state) => state.activeTab);

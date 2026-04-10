@@ -1,7 +1,19 @@
 import React from "react";
 
-import ContractorRoute from "../contractor";
+import { ContractorScreen } from "../contractor";
+import { useOfficeChildRouteAudit } from "./_childRouteAudit";
+import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 
-export default function OfficeContractorRoute() {
-  return <ContractorRoute />;
+function OfficeContractorRoute() {
+  useOfficeChildRouteAudit({
+    owner: "office_contractor_route",
+    route: "/office/contractor",
+    wrappedRoute: "/contractor",
+  });
+  return <ContractorScreen />;
 }
+
+export default withScreenErrorBoundary(OfficeContractorRoute, {
+  screen: "contractor",
+  route: "/office/contractor",
+});

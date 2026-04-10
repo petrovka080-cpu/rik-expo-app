@@ -1,12 +1,17 @@
 import "../global.css";
 
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs, router, useSegments } from "expo-router";
-import React from "react";
+import { Tabs, router, usePathname, useSegments } from "expo-router";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import AssistantFab from "../../src/features/ai/AssistantFab";
+import {
+  recordOfficeTabOwnerBlur,
+  recordOfficeTabOwnerFocus,
+  recordOfficeTabOwnerUnmount,
+} from "../../src/lib/navigation/officeReentryBreadcrumbs";
 
 type TabIconName = keyof typeof Ionicons.glyphMap;
 
@@ -35,16 +40,73 @@ function resolveAssistantContext(segments: string[]): string {
   return leaf || "unknown";
 }
 
+function isOfficeTabPath(pathname: string | null | undefined) {
+  return pathname === "/office" || String(pathname ?? "").startsWith("/office/");
+}
+
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
   const segments = useSegments();
   const isWeb = Platform.OS === "web";
+  const segmentsLabel = useMemo(() => segments.join("/") || "none", [segments]);
+  const identityRef = useRef(
+    `office_tab_owner:${Math.random().toString(36).slice(2, 10)}`,
+  );
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
+  const segmentsRef = useRef(segmentsLabel);
+  segmentsRef.current = segmentsLabel;
+  const wasOfficePathRef = useRef(isOfficeTabPath(pathname));
 
   const tabHeight = 56;
   const bottomInset = isWeb ? 0 : (insets.bottom || 0);
   const leafSegment = segments[segments.length - 1];
   const assistantContext = resolveAssistantContext(segments);
   const showAssistantFab = leafSegment !== "ai" && leafSegment !== "chat";
+  const officeTabExtra = useMemo(
+    () => ({
+      owner: "office_tab_owner",
+      route: "/(tabs)",
+      pathname,
+      segments: segmentsLabel,
+      identity: identityRef.current,
+      routeWrapper: "tabs_root_entry",
+      target: "/office",
+    }),
+    [pathname, segmentsLabel],
+  );
+
+  useEffect(() => {
+    const isOfficePath = isOfficeTabPath(pathname);
+    const wasOfficePath = wasOfficePathRef.current;
+
+    if (!wasOfficePath && isOfficePath) {
+      recordOfficeTabOwnerFocus(officeTabExtra);
+    } else if (wasOfficePath && !isOfficePath) {
+      recordOfficeTabOwnerBlur({
+        ...officeTabExtra,
+        reason: `left_office_subtree:${pathname ?? "unknown"}`,
+      });
+    }
+
+    wasOfficePathRef.current = isOfficePath;
+  }, [officeTabExtra, pathname]);
+
+  useEffect(() => {
+    const identity = identityRef.current;
+    return () => {
+      recordOfficeTabOwnerUnmount({
+        owner: "office_tab_owner",
+        route: "/(tabs)",
+        pathname: pathnameRef.current,
+        segments: segmentsRef.current,
+        identity,
+        routeWrapper: "tabs_root_entry",
+        target: "/office",
+      });
+    };
+  }, []);
 
   return (
     <View style={styles.shell}>

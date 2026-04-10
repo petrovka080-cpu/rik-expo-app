@@ -7,7 +7,7 @@ import {
 import { supabase } from '../../src/lib/supabaseClient';
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
-function SecurityScreen() {
+export function SecurityScreen() {
   const [enrolling, setEnrolling] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [unenrolling, setUnenrolling] = useState(false);

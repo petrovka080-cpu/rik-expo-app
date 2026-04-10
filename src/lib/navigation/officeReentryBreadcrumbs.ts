@@ -17,6 +17,14 @@ export type OfficeReentryMarker =
   | "office_route_scope_skip_reason"
   | "office_route_owner_identity"
   | "office_route_identity"
+  | "office_child_entry_mount"
+  | "office_child_entry_focus"
+  | "office_child_before_remove"
+  | "office_child_unmount"
+  | "office_layout_before_remove"
+  | "office_tab_owner_focus"
+  | "office_tab_owner_blur"
+  | "office_tab_owner_unmount"
   | "warehouse_route_owner_mount"
   | "warehouse_route_owner_unmount"
   | "warehouse_route_owner_focus"
@@ -331,6 +339,14 @@ function recordOfficeLifecycleMarker(params: {
     | "office_route_scope_skip_reason"
     | "office_route_owner_identity"
     | "office_route_identity"
+    | "office_child_entry_mount"
+    | "office_child_entry_focus"
+    | "office_child_before_remove"
+    | "office_child_unmount"
+    | "office_layout_before_remove"
+    | "office_tab_owner_focus"
+    | "office_tab_owner_blur"
+    | "office_tab_owner_unmount"
     | "warehouse_route_owner_mount"
     | "warehouse_route_owner_unmount"
     | "warehouse_route_owner_focus"
@@ -454,6 +470,62 @@ export function recordOfficeRouteOwnerIdentity(extra?: Record<string, unknown>) 
 
 export function recordOfficeRouteIdentity(extra?: Record<string, unknown>) {
   recordOfficeRouteOwnerIdentity(extra);
+}
+
+export function recordOfficeChildEntryMount(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_child_entry_mount",
+    extra,
+  });
+}
+
+export function recordOfficeChildEntryFocus(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_child_entry_focus",
+    extra,
+  });
+}
+
+export function recordOfficeChildBeforeRemove(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_child_before_remove",
+    extra,
+  });
+}
+
+export function recordOfficeChildUnmount(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_child_unmount",
+    extra,
+  });
+}
+
+export function recordOfficeLayoutBeforeRemove(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_layout_before_remove",
+    extra,
+  });
+}
+
+export function recordOfficeTabOwnerFocus(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_tab_owner_focus",
+    extra,
+  });
+}
+
+export function recordOfficeTabOwnerBlur(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_tab_owner_blur",
+    extra,
+  });
+}
+
+export function recordOfficeTabOwnerUnmount(extra?: Record<string, unknown>) {
+  recordOfficeLifecycleMarker({
+    marker: "office_tab_owner_unmount",
+    extra,
+  });
 }
 
 export function recordWarehouseRouteOwnerMount(

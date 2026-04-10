@@ -1,7 +1,19 @@
 import React from "react";
 
-import SecurityRoute from "../security";
+import { SecurityScreen } from "../security";
+import { useOfficeChildRouteAudit } from "./_childRouteAudit";
+import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 
-export default function OfficeSecurityRoute() {
-  return <SecurityRoute />;
+function OfficeSecurityRoute() {
+  useOfficeChildRouteAudit({
+    owner: "office_security_route",
+    route: "/office/security",
+    wrappedRoute: "/security",
+  });
+  return <SecurityScreen />;
 }
+
+export default withScreenErrorBoundary(OfficeSecurityRoute, {
+  screen: "security",
+  route: "/office/security",
+});

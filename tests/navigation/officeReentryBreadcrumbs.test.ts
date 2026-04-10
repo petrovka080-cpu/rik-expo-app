@@ -3,6 +3,10 @@ import {
   recordOfficeBackPathFailure,
   recordOfficeBootstrapInitialDone,
   recordOfficeBootstrapInitialStart,
+  recordOfficeChildBeforeRemove,
+  recordOfficeChildEntryFocus,
+  recordOfficeChildEntryMount,
+  recordOfficeChildUnmount,
   recordOfficeFocusRefreshDone,
   recordOfficeFocusRefreshReason,
   recordOfficeFocusRefreshSkipped,
@@ -49,6 +53,10 @@ import {
   recordOfficeRouteScopeActive,
   recordOfficeRouteScopeInactive,
   recordOfficeRouteScopeSkipReason,
+  recordOfficeLayoutBeforeRemove,
+  recordOfficeTabOwnerBlur,
+  recordOfficeTabOwnerFocus,
+  recordOfficeTabOwnerUnmount,
   recordOfficeWarehouseBackHandlerDone,
   recordOfficeWarehouseBackHandlerStart,
   recordOfficeWarehouseBackMethodSelected,
@@ -216,6 +224,43 @@ describe("office reentry breadcrumbs", () => {
       ]),
     ).toBe(
       "2026-04-09T10:09:00.000Z | office_warehouse_back_method_selected | success | route=/office/warehouse | owner=office_stack_layout | target=/office | method=back | selectedMethod=back",
+    );
+  });
+
+  it("formats office child and tab-owner diagnostics", () => {
+    expect(
+      buildOfficeReentryBreadcrumbsText([
+        {
+          at: "2026-04-10T09:00:00.000Z",
+          marker: "office_child_entry_mount",
+          result: "success",
+          extra: {
+            route: "/office/foreman",
+            owner: "office_foreman_route",
+            identity: "office_foreman_route:abc123",
+            pathname: "/office/foreman",
+            segments: "(tabs)/office/foreman",
+            routeWrapper: "office_child_screen_entry",
+            wrappedRoute: "/foreman",
+          },
+        },
+        {
+          at: "2026-04-10T09:01:00.000Z",
+          marker: "office_tab_owner_blur",
+          result: "success",
+          extra: {
+            route: "/(tabs)",
+            owner: "office_tab_owner",
+            pathname: "/profile",
+            segments: "(tabs)/profile",
+            routeWrapper: "tabs_root_entry",
+            reason: "left_office_subtree:/profile",
+            target: "/office",
+          },
+        },
+      ]),
+    ).toBe(
+      "2026-04-10T09:00:00.000Z | office_child_entry_mount | success | route=/office/foreman | owner=office_foreman_route | identity=office_foreman_route:abc123 | pathname=/office/foreman | segments=(tabs)/office/foreman | wrappedRoute=/foreman | routeWrapper=office_child_screen_entry\n2026-04-10T09:01:00.000Z | office_tab_owner_blur | success | route=/(tabs) | owner=office_tab_owner | pathname=/profile | segments=(tabs)/profile | routeWrapper=tabs_root_entry | target=/office | reason=left_office_subtree:/profile",
     );
   });
 
@@ -627,6 +672,94 @@ describe("office reentry breadcrumbs", () => {
       "office_warehouse_back_use_replace_fallback",
       "office_warehouse_back_replace_start",
       "office_warehouse_back_replace_done",
+    ]);
+  });
+
+  it("records comparative office child and owner teardown markers", () => {
+    recordOfficeChildEntryMount({
+      owner: "office_foreman_route",
+      route: "/office/foreman",
+      identity: "office_foreman_route:abc123",
+      pathname: "/office/foreman",
+      segments: "(tabs)/office/foreman",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/foreman",
+    });
+    recordOfficeChildEntryFocus({
+      owner: "office_foreman_route",
+      route: "/office/foreman",
+      identity: "office_foreman_route:abc123",
+      pathname: "/office/foreman",
+      segments: "(tabs)/office/foreman",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/foreman",
+    });
+    recordOfficeChildBeforeRemove({
+      owner: "office_foreman_route",
+      route: "/office/foreman",
+      identity: "office_foreman_route:abc123",
+      pathname: "/office/foreman",
+      segments: "(tabs)/office/foreman",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/foreman",
+      action: "GO_BACK",
+    });
+    recordOfficeChildUnmount({
+      owner: "office_foreman_route",
+      route: "/office/foreman",
+      identity: "office_foreman_route:abc123",
+      pathname: "/office",
+      segments: "(tabs)/office",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/foreman",
+    });
+    recordOfficeLayoutBeforeRemove({
+      owner: "office_stack_layout",
+      route: "/office/_layout",
+      identity: "office_stack_layout:def456",
+      pathname: "/office/foreman",
+      segments: "(tabs)/office/foreman",
+      routeWrapper: "office_stack_layout_entry",
+      action: "GO_BACK",
+    });
+    recordOfficeTabOwnerFocus({
+      owner: "office_tab_owner",
+      route: "/(tabs)",
+      identity: "office_tab_owner:ghi789",
+      pathname: "/office",
+      segments: "(tabs)/office",
+      routeWrapper: "tabs_root_entry",
+      target: "/office",
+    });
+    recordOfficeTabOwnerBlur({
+      owner: "office_tab_owner",
+      route: "/(tabs)",
+      identity: "office_tab_owner:ghi789",
+      pathname: "/profile",
+      segments: "(tabs)/profile",
+      routeWrapper: "tabs_root_entry",
+      target: "/office",
+      reason: "left_office_subtree:/profile",
+    });
+    recordOfficeTabOwnerUnmount({
+      owner: "office_tab_owner",
+      route: "/(tabs)",
+      identity: "office_tab_owner:ghi789",
+      pathname: "/profile",
+      segments: "(tabs)/profile",
+      routeWrapper: "tabs_root_entry",
+      target: "/office",
+    });
+
+    expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
+      "office_child_entry_mount",
+      "office_child_entry_focus",
+      "office_child_before_remove",
+      "office_child_unmount",
+      "office_layout_before_remove",
+      "office_tab_owner_focus",
+      "office_tab_owner_blur",
+      "office_tab_owner_unmount",
     ]);
   });
 

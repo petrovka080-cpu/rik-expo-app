@@ -64,7 +64,7 @@ const UI_TEXT = {
 } as const;
 
 // ---- MAIN SCREEN ----
-function ContractorScreen() {
+export function ContractorScreen() {
   const insets = useSafeAreaInsets();
   const modalHeaderTopPad = Platform.OS === "web" ? 16 : (insets.top + 10);
   const sheetHeaderTopPad = Platform.OS === "web" ? 12 : 12 + Math.min(insets.top, 20);

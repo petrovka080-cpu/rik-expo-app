@@ -3,11 +3,11 @@ import React from "react";
 import ReportsHubScreen from "../../src/features/reports/ReportsHubScreen";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
-function ReportsRoute() {
+export function ReportsScreen() {
   return <ReportsHubScreen />;
 }
 
-export default withScreenErrorBoundary(ReportsRoute, {
+export default withScreenErrorBoundary(ReportsScreen, {
   screen: "reports",
   route: "/reports",
 });

@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { HeaderBackButton } from "@react-navigation/elements";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Stack, router, usePathname, useSegments } from "expo-router";
+import { Stack, router, useNavigation, usePathname, useSegments } from "expo-router";
 
 import {
   recordOfficeBackPathFailure,
+  recordOfficeLayoutBeforeRemove,
   recordOfficeWarehouseBackHandlerDone,
   recordOfficeWarehouseBackHandlerStart,
   recordOfficeWarehouseBackMethodSelected,
@@ -31,6 +32,7 @@ const WAREHOUSE_HEADER_TITLE = "\u0421\u043a\u043b\u0430\u0434";
 const DEFAULT_HEADER_TINT = "#0F172A";
 
 function useOfficeStackOwnerAudit() {
+  const navigation = useNavigation();
   const pathname = usePathname();
   const segments = useSegments();
   const identityRef = useRef(
@@ -79,6 +81,24 @@ function useOfficeStackOwnerAudit() {
       routeWrapper: "office_stack_layout_entry",
     });
   }, [pathname, segmentsLabel]);
+
+  useEffect(() => {
+    return navigation.addListener("beforeRemove", (event) => {
+      const action =
+        typeof event?.data?.action?.type === "string"
+          ? event.data.action.type
+          : "unknown_action";
+      recordOfficeLayoutBeforeRemove({
+        owner: "office_stack_layout",
+        route: "/office/_layout",
+        pathname,
+        segments: segmentsLabel,
+        identity: identityRef.current,
+        routeWrapper: "office_stack_layout_entry",
+        action,
+      });
+    });
+  }, [navigation, pathname, segmentsLabel]);
 }
 
 export function renderSafeOfficeBackButton(props: Record<string, unknown>) {

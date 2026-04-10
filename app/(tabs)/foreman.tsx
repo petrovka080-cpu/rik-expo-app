@@ -14,7 +14,7 @@ import ForemanSubcontractTab from "../../src/screens/foreman/ForemanSubcontractT
 import { useForemanScreenController } from "../../src/screens/foreman/useForemanScreenController";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
-function ForemanScreen() {
+export function ForemanScreen() {
   const vm = useForemanScreenController();
 
   return (

@@ -23,7 +23,7 @@ import { prepareAndPreviewGeneratedPdf } from "../../src/lib/pdf/pdf.runner";
 import { exportDirectorSubcontractReportPdf } from "../../src/lib/api/pdf_director";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
-function DirectorScreen() {
+export function DirectorScreen() {
   const vm = useDirectorScreenController();
   const busy = useGlobalBusy();
   const router = useRouter();
