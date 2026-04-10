@@ -44,10 +44,7 @@ export function useWarehousemanFio({
   const [isFioLoading, setIsFioLoading] = useState(false);
   const mountedRef = useRef(true);
   const focusedRef = useRef(isScreenFocused);
-
-  useEffect(() => {
-    focusedRef.current = isScreenFocused;
-  }, [isScreenFocused]);
+  focusedRef.current = isScreenFocused;
 
   const getCommitSkipReason = useCallback(() => {
     if (!mountedRef.current) return "after_unmount";
@@ -87,6 +84,7 @@ export function useWarehousemanFio({
 
   useEffect(() => {
     return () => {
+      focusedRef.current = false;
       mountedRef.current = false;
     };
   }, []);
