@@ -118,6 +118,11 @@ type LoadScreenMode = "initial" | "refresh" | "focus_refresh";
 
 const OFFICE_FOCUS_REFRESH_TTL_MS = 60_000;
 
+type OfficeHubBootstrapSnapshot = {
+  data: OfficeAccessScreenData;
+  loadedAt: number;
+};
+
 const SECTION_RENDER_PROBES = [
   "header_meta",
   "summary",
@@ -168,6 +173,42 @@ const EMPTY_COMPANY_DRAFT: CreateCompanyDraft = {
   siteAddress: "",
   website: "",
 };
+
+let officeHubBootstrapSnapshot: OfficeHubBootstrapSnapshot | null = null;
+
+function buildOfficeBootstrapCompanyDraft(
+  data: OfficeAccessScreenData,
+): CreateCompanyDraft {
+  return {
+    ...EMPTY_COMPANY_DRAFT,
+    phoneMain: data.profile.phone || "",
+    email: data.profileEmail || "",
+  };
+}
+
+function getFreshOfficeHubBootstrapSnapshot(now = Date.now()) {
+  if (!officeHubBootstrapSnapshot) return null;
+  if (now - officeHubBootstrapSnapshot.loadedAt >= OFFICE_FOCUS_REFRESH_TTL_MS) {
+    officeHubBootstrapSnapshot = null;
+    return null;
+  }
+  return officeHubBootstrapSnapshot;
+}
+
+function primeOfficeHubBootstrapSnapshot(
+  data: OfficeAccessScreenData,
+  loadedAt = Date.now(),
+) {
+  officeHubBootstrapSnapshot = {
+    data,
+    loadedAt,
+  };
+  return officeHubBootstrapSnapshot;
+}
+
+export function __resetOfficeHubBootstrapSnapshotForTests() {
+  officeHubBootstrapSnapshot = null;
+}
 
 const buildInviteDraft = (): InviteFormDraft => ({
   name: "",
@@ -633,6 +674,10 @@ class OfficePostReturnSubtreeBoundary extends React.Component<
 export default function OfficeHubScreen({
   routeScopeActive = true,
 }: OfficeHubScreenProps) {
+  const initialBootstrapSnapshotRef = useRef<OfficeHubBootstrapSnapshot | null>(
+    getFreshOfficeHubBootstrapSnapshot(),
+  );
+  const initialBootstrapSnapshot = initialBootstrapSnapshotRef.current;
   const router = useRouter();
   const params = useLocalSearchParams<{
     postReturnProbe?: string | string[];
@@ -653,14 +698,20 @@ export default function OfficeHubScreen({
     invites: 0,
     company: 0,
   });
-  const [data, setData] = useState<OfficeAccessScreenData>(EMPTY_DATA);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<OfficeAccessScreenData>(
+    () => initialBootstrapSnapshot?.data ?? EMPTY_DATA,
+  );
+  const [loading, setLoading] = useState(() => !initialBootstrapSnapshot);
   const [refreshing, setRefreshing] = useState(false);
   const [savingCompany, setSavingCompany] = useState(false);
   const [savingInvite, setSavingInvite] = useState(false);
   const [savingRole, setSavingRole] = useState<string | null>(null);
-  const [companyDraft, setCompanyDraft] =
-    useState<CreateCompanyDraft>(EMPTY_COMPANY_DRAFT);
+  const [companyDraft, setCompanyDraft] = useState<CreateCompanyDraft>(
+    () =>
+      initialBootstrapSnapshot
+        ? buildOfficeBootstrapCompanyDraft(initialBootstrapSnapshot.data)
+        : EMPTY_COMPANY_DRAFT,
+  );
   const [inviteDraft, setInviteDraft] =
     useState<InviteFormDraft>(buildInviteDraft());
   const [companyFeedback, setCompanyFeedback] = useState<string | null>(null);
@@ -675,14 +726,16 @@ export default function OfficeHubScreen({
   >(null);
   const isMountedRef = useRef(true);
   const focusCycleRef = useRef(0);
-  const ownerBootstrapCompletedRef = useRef(false);
+  const ownerBootstrapCompletedRef = useRef(Boolean(initialBootstrapSnapshot));
   const initialBootstrapInFlightRef = useRef<
     Promise<OfficeAccessScreenData | null> | null
   >(null);
   const focusRefreshInFlightRef = useRef<
     Promise<OfficeAccessScreenData | null> | null
   >(null);
-  const lastSuccessfulLoadAtRef = useRef<number>(0);
+  const lastSuccessfulLoadAtRef = useRef<number>(
+    initialBootstrapSnapshot?.loadedAt ?? 0,
+  );
   const postReturnFrameRef = useRef<number | null>(null);
   const postReturnInteractionRef = useRef<ReturnType<
     typeof InteractionManager.runAfterInteractions
@@ -1235,12 +1288,14 @@ export default function OfficeHubScreen({
         const next = await loadOfficeAccessScreenData();
         if (!isMountedRef.current) return next;
 
+        const loadedAt = Date.now();
         setData(next);
         setCompanyDraft((current) => ({
           ...current,
           phoneMain: current.phoneMain || next.profile.phone || "",
           email: current.email || next.profileEmail || "",
         }));
+        primeOfficeHubBootstrapSnapshot(next, loadedAt);
 
         const completionExtra = buildPostReturnExtra({
           mode,
@@ -1261,11 +1316,12 @@ export default function OfficeHubScreen({
           recordOfficeFocusRefreshDone(completionExtra);
         }
 
-        lastSuccessfulLoadAtRef.current = Date.now();
+        lastSuccessfulLoadAtRef.current = loadedAt;
         return next;
       } catch (error: unknown) {
         if (mode === "initial") {
           ownerBootstrapCompletedRef.current = false;
+          officeHubBootstrapSnapshot = null;
           recordOfficeReentryFailure({
             error,
             errorStage: "load_screen",

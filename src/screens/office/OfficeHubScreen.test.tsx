@@ -2,7 +2,9 @@ import React from "react";
 import { InteractionManager, Keyboard, Linking } from "react-native";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
-import OfficeHubScreen from "./OfficeHubScreen";
+import OfficeHubScreen, {
+  __resetOfficeHubBootstrapSnapshotForTests,
+} from "./OfficeHubScreen";
 
 const mockPush = jest.fn();
 const mockUseLocalSearchParams = jest.fn();
@@ -304,6 +306,7 @@ describe("OfficeHubScreen", () => {
   let keyboardSpy: jest.SpyInstance;
 
   beforeEach(() => {
+    __resetOfficeHubBootstrapSnapshotForTests();
     mockUseLocalSearchParams.mockReset();
     mockUseLocalSearchParams.mockReturnValue({});
     mockOfficePostReturnProbe = ["all"];
@@ -985,6 +988,77 @@ describe("OfficeHubScreen", () => {
     expect(mockRecordOfficeFocusRefreshStart).not.toHaveBeenCalled();
     expect(mockRecordOfficeFocusRefreshDone).not.toHaveBeenCalled();
     expect(mockRecordOfficeLoadingShellEnter).toHaveBeenCalledTimes(1);
+  });
+
+  it("reuses a fresh office snapshot on remount and skips mount bootstrap", async () => {
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+
+    mockRecordOfficeBootstrapInitialStart.mockClear();
+    mockRecordOfficeBootstrapInitialDone.mockClear();
+    mockRecordOfficeReentryEffectStart.mockClear();
+    mockRecordOfficeReentryEffectDone.mockClear();
+    mockRecordOfficeLoadingShellEnter.mockClear();
+    mockRecordOfficeLoadingShellSkippedOnFocusReturn.mockClear();
+    mockRecordOfficeFocusRefreshReason.mockClear();
+    mockRecordOfficeFocusRefreshSkipped.mockClear();
+    mockRecordOfficeFocusRefreshStart.mockClear();
+    mockRecordOfficeFocusRefreshDone.mockClear();
+
+    await act(async () => {
+      renderer!.unmount();
+    });
+
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+    expect(mockRecordOfficeBootstrapInitialStart).not.toHaveBeenCalled();
+    expect(mockRecordOfficeBootstrapInitialDone).not.toHaveBeenCalled();
+    expect(mockRecordOfficeReentryEffectStart).not.toHaveBeenCalled();
+    expect(mockRecordOfficeReentryEffectDone).not.toHaveBeenCalled();
+    expect(mockRecordOfficeLoadingShellEnter).not.toHaveBeenCalled();
+    expect(mockRecordOfficeLoadingShellSkippedOnFocusReturn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        reason: "ttl_fresh",
+        ttlMs: 60000,
+      }),
+    );
+    expect(mockRecordOfficeFocusRefreshReason).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        reason: "ttl_fresh",
+        ttlMs: 60000,
+      }),
+    );
+    expect(mockRecordOfficeFocusRefreshSkipped).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "office_hub",
+        focusCycle: 1,
+        reason: "ttl_fresh",
+        ttlMs: 60000,
+      }),
+    );
+    expect(mockRecordOfficeFocusRefreshStart).not.toHaveBeenCalled();
+    expect(mockRecordOfficeFocusRefreshDone).not.toHaveBeenCalled();
   });
 
   it("keeps office hub passive when route scope is inactive", async () => {
