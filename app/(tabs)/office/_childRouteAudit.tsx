@@ -24,14 +24,7 @@ type OfficeChildRouteAuditExtra = {
 };
 
 type OfficeChildRouteDiagnostics = {
-  onBeforeRemove?: (
-    extra: OfficeChildRouteAuditExtra & {
-      action: string;
-      actionSource?: string;
-      actionTarget?: string;
-      preventDefault: () => void;
-    },
-  ) => void;
+  onBeforeRemove?: (extra: OfficeChildRouteAuditExtra & { action: string }) => void;
   onFocusDone?: (extra: OfficeChildRouteAuditExtra) => void;
   onFocusStart?: (extra: OfficeChildRouteAuditExtra) => void;
   onLayoutMount?: (extra: OfficeChildRouteAuditExtra & { phase: "layout_effect" }) => void;
@@ -162,34 +155,11 @@ export function useOfficeChildRouteAudit({
         typeof event?.data?.action?.type === "string"
           ? event.data.action.type
           : "unknown_action";
-      const actionSource =
-        typeof event?.data?.action?.source === "string"
-          ? event.data.action.source
-          : undefined;
-      const actionTarget =
-        typeof event?.data?.action?.target === "string"
-          ? event.data.action.target
-          : undefined;
       const beforeRemoveExtra = buildCurrentExtra({
         action,
-        actionSource,
-        actionTarget,
       }) as OfficeChildRouteAuditExtra & { action: string };
-      const preventDefault = () => {
-        const eventWithPreventDefault = event as {
-          preventDefault?: () => void;
-        };
-        if (typeof eventWithPreventDefault.preventDefault === "function") {
-          eventWithPreventDefault.preventDefault();
-        }
-      };
       recordOfficeChildBeforeRemove(beforeRemoveExtra);
-      diagnosticsRef.current?.onBeforeRemove?.({
-        ...beforeRemoveExtra,
-        actionSource,
-        actionTarget,
-        preventDefault,
-      });
+      diagnosticsRef.current?.onBeforeRemove?.(beforeRemoveExtra);
     });
   }, [buildCurrentExtra, navigation]);
 

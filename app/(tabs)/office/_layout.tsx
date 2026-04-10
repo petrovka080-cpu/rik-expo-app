@@ -9,18 +9,9 @@ import {
   recordOfficeRouteOwnerUnmount,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
 import { safeBack } from "../../../src/lib/navigation/safeBack";
-import {
-  OFFICE_BACK_LABEL,
-  OFFICE_SAFE_BACK_ROUTE,
-  renderWarehouseExplicitBackButton,
-} from "./_warehouseBack";
 
-export {
-  OFFICE_BACK_LABEL,
-  OFFICE_SAFE_BACK_ROUTE,
-  renderWarehouseExplicitBackButton,
-} from "./_warehouseBack";
-
+export const OFFICE_SAFE_BACK_ROUTE = "/office";
+export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
 const WAREHOUSE_HEADER_TITLE = "\u0421\u043a\u043b\u0430\u0434";
 
 function useOfficeStackOwnerAudit() {
@@ -133,10 +124,7 @@ export default function OfficeStackLayout() {
         name="warehouse"
         options={{
           title: WAREHOUSE_HEADER_TITLE,
-          headerLeft: renderWarehouseExplicitBackButton,
-          headerBackVisible: false,
-          headerBackButtonMenuEnabled: false,
-          gestureEnabled: false,
+          headerLeft: renderSafeOfficeBackButton,
         }}
       />
       <Stack.Screen name="contractor" options={{ title: "\u041f\u043e\u0434\u0440\u044f\u0434\u0447\u0438\u043a" }} />
