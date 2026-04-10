@@ -46,6 +46,27 @@ type OfficeChildRouteAuditParams = {
   wrappedRoute: string;
 };
 
+function buildOfficeChildRouteAuditExtra(params: {
+  extra?: Record<string, unknown>;
+  identity: string;
+  owner: string;
+  pathname: string;
+  route: string;
+  segments: string;
+  wrappedRoute: string;
+}): OfficeChildRouteAuditExtra & Record<string, unknown> {
+  return {
+    owner: params.owner,
+    route: params.route,
+    pathname: params.pathname,
+    segments: params.segments,
+    identity: params.identity,
+    wrappedRoute: params.wrappedRoute,
+    routeWrapper: "office_child_screen_entry",
+    ...(params.extra ?? {}),
+  };
+}
+
 export function useOfficeChildRouteAudit({
   diagnostics,
   entryExtra,
@@ -68,27 +89,28 @@ export function useOfficeChildRouteAudit({
     pathname,
     segments: segmentsLabel,
   });
+  const diagnosticsRef = useRef(diagnostics);
+  diagnosticsRef.current = diagnostics;
 
   const buildExtra = useCallback(
-    (extra?: Record<string, unknown>): OfficeChildRouteAuditExtra & Record<string, unknown> => ({
-      owner,
-      route,
-      pathname,
-      segments: segmentsLabel,
-      identity: identityRef.current,
-      wrappedRoute,
-      routeWrapper: "office_child_screen_entry" as const,
-      ...(extra ?? {}),
-    }),
-    [owner, pathname, route, segmentsLabel, wrappedRoute],
+    (
+      snapshot: { pathname: string; segments: string },
+      extra?: Record<string, unknown>,
+    ): OfficeChildRouteAuditExtra & Record<string, unknown> =>
+      buildOfficeChildRouteAuditExtra({
+        owner,
+        route,
+        pathname: snapshot.pathname,
+        segments: snapshot.segments,
+        identity: identityRef.current,
+        wrappedRoute,
+        extra,
+      }),
+    [owner, route, wrappedRoute],
   );
   const buildInitialExtra = useCallback(
     (extra?: Record<string, unknown>) =>
-      buildExtra({
-        pathname: initialSnapshotRef.current.pathname,
-        segments: initialSnapshotRef.current.segments,
-        ...(extra ?? {}),
-      }),
+      buildExtra(initialSnapshotRef.current, extra),
     [buildExtra],
   );
   const buildCurrentExtra = useCallback(
@@ -96,31 +118,31 @@ export function useOfficeChildRouteAudit({
       buildExtra({
         pathname: pathnameRef.current,
         segments: segmentsRef.current,
-        ...(extra ?? {}),
-      }),
+      }, extra),
     [buildExtra],
   );
   const resolvedEntryExtra = useMemo(
     () =>
       buildExtra({
-        ...(entryExtra ?? {}),
-      }),
+        pathname: initialSnapshotRef.current.pathname,
+        segments: initialSnapshotRef.current.segments,
+      }, entryExtra),
     [buildExtra, entryExtra],
   );
 
   useLayoutEffect(() => {
-    diagnostics?.onLayoutMount?.(
+    diagnosticsRef.current?.onLayoutMount?.(
       buildInitialExtra({
         phase: "layout_effect",
       }) as OfficeChildRouteAuditExtra & { phase: "layout_effect" },
     );
-  }, [buildInitialExtra, diagnostics]);
+  }, [buildInitialExtra]);
 
   useEffect(() => {
     recordOfficeChildEntryMount(
       buildInitialExtra(),
     );
-    diagnostics?.onMount?.(
+    diagnosticsRef.current?.onMount?.(
       buildInitialExtra({
         phase: "effect",
       }) as OfficeChildRouteAuditExtra & { phase: "effect" },
@@ -129,9 +151,9 @@ export function useOfficeChildRouteAudit({
     return () => {
       const unmountExtra = buildCurrentExtra();
       recordOfficeChildUnmount(unmountExtra);
-      diagnostics?.onUnmount?.(unmountExtra);
+      diagnosticsRef.current?.onUnmount?.(unmountExtra);
     };
-  }, [buildCurrentExtra, buildInitialExtra, diagnostics]);
+  }, [buildCurrentExtra, buildInitialExtra]);
 
   useEffect(() => {
     return navigation.addListener("beforeRemove", (event) => {
@@ -139,42 +161,51 @@ export function useOfficeChildRouteAudit({
         typeof event?.data?.action?.type === "string"
           ? event.data.action.type
           : "unknown_action";
-      const beforeRemoveExtra = buildExtra({
+      const beforeRemoveExtra = buildCurrentExtra({
         action,
       }) as OfficeChildRouteAuditExtra & { action: string };
       recordOfficeChildBeforeRemove(beforeRemoveExtra);
-      diagnostics?.onBeforeRemove?.(beforeRemoveExtra);
+      diagnosticsRef.current?.onBeforeRemove?.(beforeRemoveExtra);
     });
-  }, [buildExtra, diagnostics, navigation]);
+  }, [buildCurrentExtra, navigation]);
 
   useFocusEffect(
     useCallback(() => {
-      const focusExtra = buildExtra();
-      diagnostics?.onFocusStart?.(focusExtra);
+      const focusExtra = buildCurrentExtra();
+      diagnosticsRef.current?.onFocusStart?.(focusExtra);
       recordOfficeChildEntryFocus(focusExtra);
-      diagnostics?.onFocusDone?.(focusExtra);
+      diagnosticsRef.current?.onFocusDone?.(focusExtra);
       return undefined;
-    }, [buildExtra, diagnostics]),
+    }, [buildCurrentExtra]),
   );
 
   return resolvedEntryExtra;
 }
 
 export function useOfficeWarehouseChildRouteAudit() {
-  return useOfficeChildRouteAudit({
-    owner: "office_warehouse_route",
-    route: "/office/warehouse",
-    wrappedRoute: "/warehouse",
-    entryExtra: {
+  const warehouseEntryExtra = useMemo(
+    () => ({
       contentOwner: "office_warehouse_route",
-    },
-    diagnostics: {
+    }),
+    [],
+  );
+  const warehouseDiagnostics = useMemo<OfficeChildRouteDiagnostics>(
+    () => ({
       onLayoutMount: recordOfficeWarehouseEntryMountStart,
       onMount: recordOfficeWarehouseEntryMountDone,
       onFocusStart: recordOfficeWarehouseEntryFocusStart,
       onFocusDone: recordOfficeWarehouseEntryFocusDone,
       onBeforeRemove: recordOfficeWarehouseBeforeRemove,
       onUnmount: recordOfficeWarehouseUnmount,
-    },
+    }),
+    [],
+  );
+
+  return useOfficeChildRouteAudit({
+    owner: "office_warehouse_route",
+    route: "/office/warehouse",
+    wrappedRoute: "/warehouse",
+    entryExtra: warehouseEntryExtra,
+    diagnostics: warehouseDiagnostics,
   });
 }

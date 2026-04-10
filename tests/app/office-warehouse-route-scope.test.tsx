@@ -129,4 +129,74 @@ describe("office warehouse child route entry", () => {
     expect(officeBreadcrumbs.recordOfficeChildUnmount).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).toHaveBeenCalled();
   });
+
+  it("does not emit a fake unmount-remount cycle on a plain rerender", () => {
+    mockUsePathname.mockReturnValue("/office/warehouse");
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+
+    let renderer: TestRenderer.ReactTestRenderer | null = null;
+    act(() => {
+      renderer = TestRenderer.create(<OfficeWarehouseRoute />);
+    });
+
+    Object.values(officeBreadcrumbs).forEach((value) => {
+      if (jest.isMockFunction(value)) {
+        value.mockClear();
+      }
+    });
+    mockWarehouseScreenContent.mockClear();
+
+    act(() => {
+      renderer?.update(<OfficeWarehouseRoute />);
+    });
+
+    expect(officeBreadcrumbs.recordOfficeChildEntryMount).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountStart).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountDone).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeChildUnmount).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeChildEntryFocus).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusStart).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusDone).not.toHaveBeenCalled();
+    expect(mockWarehouseScreenContent).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      renderer?.unmount();
+    });
+  });
+
+  it("does not emit a fake unmount-remount cycle when entry segments settle", () => {
+    mockUsePathname.mockReturnValue("/office/warehouse");
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+
+    let renderer: TestRenderer.ReactTestRenderer | null = null;
+    act(() => {
+      renderer = TestRenderer.create(<OfficeWarehouseRoute />);
+    });
+
+    Object.values(officeBreadcrumbs).forEach((value) => {
+      if (jest.isMockFunction(value)) {
+        value.mockClear();
+      }
+    });
+
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "_layout", "warehouse"]);
+
+    act(() => {
+      renderer?.update(<OfficeWarehouseRoute />);
+    });
+
+    expect(officeBreadcrumbs.recordOfficeChildEntryMount).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountStart).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountDone).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeChildUnmount).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeChildEntryFocus).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusStart).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusDone).not.toHaveBeenCalled();
+
+    act(() => {
+      renderer?.unmount();
+    });
+  });
 });
