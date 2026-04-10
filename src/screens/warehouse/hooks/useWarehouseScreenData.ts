@@ -42,7 +42,10 @@ function isRecipientRequiredTab(tab: Tab) {
   return tab === TAB_EXPENSE || tab === TAB_STOCK_FACT;
 }
 
-export function useWarehouseScreenData() {
+export function useWarehouseScreenData(params: {
+  isScreenFocused: boolean;
+}) {
+  const { isScreenFocused } = params;
   const busy = useGlobalBusy();
   const notifyInfo = useCallback((title: string, message?: string) => {
     showToast.info(title, message);
@@ -200,6 +203,7 @@ export function useWarehouseScreenData() {
   const expenseQueue = useWarehouseExpenseQueueSlice({
     supabase,
     tab,
+    isScreenFocused,
     pageSize: REQ_PAGE_SIZE,
     reqPickUi,
     onError: showErr,
@@ -268,6 +272,7 @@ export function useWarehouseScreenData() {
     canRetryActiveReceive,
   } = useWarehouseReceiveFlow({
     supabase,
+    isScreenFocused,
     itemsModalIncomingId: itemsModal?.incomingId,
     loadItemsForHead: incoming.loadItemsForHead,
     fetchToReceive: incoming.fetchToReceive,
@@ -282,6 +287,7 @@ export function useWarehouseScreenData() {
   });
 
   return {
+    isScreenFocused,
     isWeb,
     tab,
     onTabChange,

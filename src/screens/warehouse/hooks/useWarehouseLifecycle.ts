@@ -20,6 +20,7 @@ const WAREHOUSE_FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
 
 export function useWarehouseLifecycle(params: {
   tab: Tab;
+  isScreenFocused: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   fetchToReceive: () => Promise<void>;
   fetchStock: () => Promise<void>;
@@ -28,6 +29,7 @@ export function useWarehouseLifecycle(params: {
 }) {
   const {
     tab,
+    isScreenFocused,
     setLoading,
     fetchToReceive,
     fetchStock,
@@ -36,9 +38,19 @@ export function useWarehouseLifecycle(params: {
   } = params;
 
   const mountedRef = useMountedRef();
+  const focusedRef = useRef(isScreenFocused);
   const didInitLoadRef = useRef(false);
   const focusRefreshInFlightRef = useRef<Promise<void> | null>(null);
   const lastFocusRefreshAtRef = useRef(0);
+
+  useEffect(() => {
+    focusedRef.current = isScreenFocused;
+  }, [isScreenFocused]);
+
+  const isScreenActive = useCallback(
+    () => mountedRef.current && focusedRef.current,
+    [mountedRef],
+  );
 
   const loadAll = useCallback(async () => {
     const networkSnapshot = getPlatformNetworkSnapshot();
@@ -54,21 +66,21 @@ export function useWarehouseLifecycle(params: {
       });
       return;
     }
-    if (!mountedRef.current) return;
+    if (!isScreenActive()) return;
     setLoading(true);
     try {
       const [incomingRes, stockRes] = await Promise.allSettled([fetchToReceive(), fetchStock()]);
-      if (!mountedRef.current) return;
+      if (!isScreenActive()) return;
       if (incomingRes.status === "rejected") throw incomingRes.reason;
       if (stockRes.status === "rejected") throw stockRes.reason;
     } catch (e) {
-      if (!mountedRef.current) return;
+      if (!isScreenActive()) return;
       onError(e);
     } finally {
-      if (!mountedRef.current) return;
+      if (!isScreenActive()) return;
       setLoading(false);
     }
-  }, [fetchStock, fetchToReceive, mountedRef, onError, setLoading]);
+  }, [fetchStock, fetchToReceive, isScreenActive, onError, setLoading]);
 
   useEffect(() => {
     if (didInitLoadRef.current) return;
@@ -77,13 +89,13 @@ export function useWarehouseLifecycle(params: {
     lastFocusRefreshAtRef.current = Date.now();
     let cancelled = false;
     void loadAll().finally(() => {
-      if (cancelled || !mountedRef.current) return;
+      if (cancelled || !isScreenActive()) return;
       lastFocusRefreshAtRef.current = Date.now();
     });
     return () => {
       cancelled = true;
     };
-  }, [loadAll, mountedRef]);
+  }, [isScreenActive, loadAll]);
 
   const refreshActiveTab = useCallback(async () => {
     if (tab === TAB_INCOMING) {
@@ -146,7 +158,7 @@ export function useWarehouseLifecycle(params: {
 
       const task = refreshActiveTab()
         .catch((e) => {
-          if (!active || !mountedRef.current) return;
+          if (!active || !isScreenActive()) return;
           onError(e);
         })
         .finally(() => {
@@ -159,6 +171,6 @@ export function useWarehouseLifecycle(params: {
       return () => {
         active = false;
       };
-    }, [mountedRef, onError, refreshActiveTab, tab]),
+    }, [isScreenActive, onError, refreshActiveTab, tab]),
   );
 }

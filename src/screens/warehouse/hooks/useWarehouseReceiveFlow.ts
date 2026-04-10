@@ -101,6 +101,7 @@ const buildReceiveSelection = (rows: ReceiveRow[], qtyInputByItem: Record<string
 
 export function useWarehouseReceiveFlow(params: {
   supabase: SupabaseClient;
+  isScreenFocused: boolean;
   itemsModalIncomingId: string | null | undefined;
   loadItemsForHead: (incomingId: string, force?: boolean) => Promise<ReceiveRow[]>;
   fetchToReceive: () => Promise<void>;
@@ -122,6 +123,7 @@ export function useWarehouseReceiveFlow(params: {
 }) {
   const {
     supabase,
+    isScreenFocused,
     itemsModalIncomingId,
     loadItemsForHead,
     fetchToReceive,
@@ -137,6 +139,7 @@ export function useWarehouseReceiveFlow(params: {
 
   const [qtyInputByItem, setQtyInputByItemState] = useState<Record<string, string>>({});
   const mountedRef = useMountedRef();
+  const focusedRef = useRef(isScreenFocused);
   const receiveDrafts = useWarehouseReceiveDraftStore((state) => state.drafts);
   const activeIncomingId = trim(itemsModalIncomingId);
   const activeDraft = useWarehouseReceiveDraftStore(
@@ -148,6 +151,15 @@ export function useWarehouseReceiveFlow(params: {
   const [runtimeReady, setRuntimeReady] = useState(false);
   const networkOnlineRef = useRef<boolean | null>(null);
   const appStateRef = useRef(AppState.currentState);
+
+  useEffect(() => {
+    focusedRef.current = isScreenFocused;
+  }, [isScreenFocused]);
+
+  const isScreenActive = useCallback(
+    () => mountedRef.current && focusedRef.current,
+    [mountedRef],
+  );
 
   const syncLocalInputFromDraft = useCallback((incomingId: string) => {
     setQtyInputByItemState(selectWarehouseReceiveQtyInputMap(incomingId));
@@ -223,7 +235,7 @@ export function useWarehouseReceiveFlow(params: {
     (async () => {
       await hydrateWarehouseReceiveDraftStore();
       if (cancelled) return;
-      if (!mountedRef.current) return;
+      if (!isScreenActive()) return;
       setRuntimeReady(true);
       if (activeIncomingId) {
         syncLocalInputFromDraft(activeIncomingId);
@@ -231,15 +243,16 @@ export function useWarehouseReceiveFlow(params: {
       const snapshot = await ensurePlatformNetworkService();
       if (cancelled) return;
       networkOnlineRef.current = selectPlatformOnlineFlag(snapshot);
+      if (!focusedRef.current) return;
       void syncQueuedDraftIfPossible("bootstrap_complete");
     })().catch((error) => {
-      if (!cancelled) onError(error);
+      if (!cancelled && isScreenActive()) onError(error);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [activeIncomingId, onError, syncLocalInputFromDraft, syncQueuedDraftIfPossible]);
+  }, [activeIncomingId, isScreenActive, onError, syncLocalInputFromDraft, syncQueuedDraftIfPossible]);
 
   useEffect(() => {
     if (!runtimeReady) return;
@@ -248,7 +261,7 @@ export function useWarehouseReceiveFlow(params: {
       const nextOnline = selectPlatformOnlineFlag(state);
       const wasOnline = selectPlatformOnlineFlag(previous);
       networkOnlineRef.current = nextOnline;
-      if (wasOnline === false && nextOnline === true && mountedRef.current) {
+      if (wasOnline === false && nextOnline === true && isScreenActive()) {
         void syncQueuedDraftIfPossible("network_back");
       }
     });
@@ -256,19 +269,19 @@ export function useWarehouseReceiveFlow(params: {
     return () => {
       unsubscribe();
     };
-  }, [runtimeReady, syncQueuedDraftIfPossible]);
+  }, [isScreenActive, runtimeReady, syncQueuedDraftIfPossible]);
 
   useEffect(() => {
     if (!runtimeReady) return;
     const sub = AppState.addEventListener("change", (nextState) => {
       const prevState = appStateRef.current;
       appStateRef.current = nextState;
-      if (prevState !== "active" && nextState === "active" && mountedRef.current) {
+      if (prevState !== "active" && nextState === "active" && isScreenActive()) {
         void syncQueuedDraftIfPossible("app_active");
       }
     });
     return () => sub.remove();
-  }, [runtimeReady, syncQueuedDraftIfPossible]);
+  }, [isScreenActive, runtimeReady, syncQueuedDraftIfPossible]);
 
   useEffect(() => {
     const incomingId = trim(itemsModalIncomingId);
@@ -282,16 +295,16 @@ export function useWarehouseReceiveFlow(params: {
       await seedEnsureIncomingItems({ supabase, incomingId });
       if (cancelled) return;
       await loadItemsForHead(incomingId, true);
-      if (cancelled) return;
+      if (cancelled || !isScreenActive()) return;
       syncLocalInputFromDraft(incomingId);
     })().catch((error) => {
-      if (!cancelled) onError(error);
+      if (!cancelled && isScreenActive()) onError(error);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [itemsModalIncomingId, loadItemsForHead, onError, supabase, syncLocalInputFromDraft]);
+  }, [isScreenActive, itemsModalIncomingId, loadItemsForHead, onError, supabase, syncLocalInputFromDraft]);
 
   useEffect(() => {
     if (!activeIncomingId) return;

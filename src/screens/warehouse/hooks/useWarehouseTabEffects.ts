@@ -5,16 +5,18 @@ const TAB_REPORTS = WAREHOUSE_TABS[3];
 
 export function useWarehouseTabEffects(params: {
   tab: Tab;
+  isScreenFocused: boolean;
   periodFrom: string;
   periodTo: string;
   fetchReports: () => Promise<void>;
   onError: (e: unknown) => void;
 }) {
-  const { tab, periodFrom, periodTo, fetchReports, onError } = params;
+  const { tab, isScreenFocused, periodFrom, periodTo, fetchReports, onError } = params;
   const reportsInFlightRef = useRef<Promise<void> | null>(null);
   const reportsLastKeyRef = useRef("");
 
   useEffect(() => {
+    if (!isScreenFocused) return;
     if (tab !== TAB_REPORTS) return;
     const key = `${periodFrom || ""}|${periodTo || ""}`;
     if (reportsInFlightRef.current && reportsLastKeyRef.current === key) return;
@@ -27,6 +29,6 @@ export function useWarehouseTabEffects(params: {
       });
 
     reportsInFlightRef.current = task;
-  }, [tab, periodFrom, periodTo, fetchReports, onError]);
+  }, [fetchReports, isScreenFocused, onError, periodFrom, periodTo, tab]);
 }
 

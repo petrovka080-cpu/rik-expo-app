@@ -44,6 +44,7 @@ function createDeferred<T>() {
 
 function Harness(props: {
   tab: (typeof WAREHOUSE_TABS)[number];
+  isScreenFocused: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   fetchToReceive: () => Promise<void>;
   fetchStock: () => Promise<void>;
@@ -75,6 +76,7 @@ describe("useWarehouseLifecycle", () => {
       renderer = TestRenderer.create(
         <Harness
           tab={WAREHOUSE_TABS[0]}
+          isScreenFocused={true}
           setLoading={setLoading}
           fetchToReceive={() => fetchToReceive.promise}
           fetchStock={() => fetchStock.promise}
@@ -114,6 +116,7 @@ describe("useWarehouseLifecycle", () => {
       renderer = TestRenderer.create(
         <Harness
           tab={WAREHOUSE_TABS[0]}
+          isScreenFocused={true}
           setLoading={setLoading}
           fetchToReceive={() => fetchToReceive.promise}
           fetchStock={() => fetchStock.promise}
@@ -131,6 +134,55 @@ describe("useWarehouseLifecycle", () => {
 
     await act(async () => {
       fetchToReceive.reject(failure);
+      fetchStock.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(setLoading).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  it("suppresses completion after blur before unmount", async () => {
+    const fetchToReceive = createDeferred<void>();
+    const fetchStock = createDeferred<void>();
+    const setLoading = jest.fn();
+    const onError = jest.fn();
+
+    let renderer!: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <Harness
+          tab={WAREHOUSE_TABS[0]}
+          isScreenFocused={true}
+          setLoading={setLoading}
+          fetchToReceive={() => fetchToReceive.promise}
+          fetchStock={() => fetchStock.promise}
+          fetchReports={jest.fn().mockResolvedValue(undefined)}
+          onError={onError}
+        />,
+      );
+    });
+
+    expect(setLoading).toHaveBeenCalledWith(true);
+    setLoading.mockClear();
+
+    await act(async () => {
+      renderer.update(
+        <Harness
+          tab={WAREHOUSE_TABS[0]}
+          isScreenFocused={false}
+          setLoading={setLoading}
+          fetchToReceive={() => fetchToReceive.promise}
+          fetchStock={() => fetchStock.promise}
+          fetchReports={jest.fn().mockResolvedValue(undefined)}
+          onError={onError}
+        />,
+      );
+    });
+
+    await act(async () => {
+      fetchToReceive.resolve();
       fetchStock.resolve();
       await Promise.resolve();
       await Promise.resolve();

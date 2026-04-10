@@ -17,6 +17,7 @@ import { selectWarehouseTabContentProps } from "../warehouse.tab.content.selecto
 export function useWarehouseScreenActions(data: WarehouseScreenData) {
   useWarehouseLifecycle({
     tab: data.tab,
+    isScreenFocused: data.isScreenFocused,
     setLoading: data.setLoading,
     fetchToReceive: data.callFetchToReceive,
     fetchStock: data.callFetchStock,
@@ -26,6 +27,7 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
 
   useWarehouseTabEffects({
     tab: data.tab,
+    isScreenFocused: data.isScreenFocused,
     periodFrom: data.periodFrom,
     periodTo: data.periodTo,
     fetchReports: data.fetchReports,

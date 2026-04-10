@@ -67,11 +67,12 @@ const reqModalFieldsEqual = (left: ReqHeadRow, right: ReqHeadRow): boolean =>
 export function useWarehouseExpenseQueueSlice(params: {
   supabase: SupabaseClient;
   tab: Tab;
+  isScreenFocused: boolean;
   pageSize: number;
   reqPickUi: ReqPickUiLike;
   onError: (error: unknown) => void;
 }) {
-  const { supabase, tab, pageSize, reqPickUi, onError } = params;
+  const { supabase, tab, isScreenFocused, pageSize, reqPickUi, onError } = params;
   const mountedRef = useMountedRef();
 
   const [reqModal, setReqModal] = useState<ReqHeadRow | null>(null);
@@ -169,6 +170,16 @@ export function useWarehouseExpenseQueueSlice(params: {
   }, [fetchReqHeads, reqRefs]);
 
   useEffect(() => {
+    if (!isScreenFocused) {
+      recordPlatformGuardSkip("not_focused", {
+        screen: "warehouse",
+        surface: "req_heads",
+        event: "refresh_expense_queue",
+        trigger: "tab",
+        extra: { tab },
+      });
+      return;
+    }
     if (tab !== TAB_EXPENSE) {
       recordPlatformGuardSkip("inactive_tab", {
         screen: "warehouse",
@@ -203,7 +214,7 @@ export function useWarehouseExpenseQueueSlice(params: {
       force: hasActivatedExpenseRef.current,
       reason: "tab",
     }).catch((error) => onError(error));
-  }, [onError, refreshExpenseQueue, tab]);
+  }, [isScreenFocused, onError, refreshExpenseQueue, tab]);
 
   useFocusEffect(
     useCallback(() => {
