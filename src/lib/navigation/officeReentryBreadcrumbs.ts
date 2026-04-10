@@ -51,14 +51,6 @@ export type OfficeReentryMarker =
   | "office_warehouse_back_replace_done"
   | "office_warehouse_before_remove"
   | "office_warehouse_unmount"
-  | "warehouse_unmount_cleanup_start"
-  | "warehouse_unmount_cleanup_done"
-  | "warehouse_subscription_cleanup"
-  | "warehouse_timer_cleanup"
-  | "warehouse_interaction_cleanup"
-  | "warehouse_async_abort"
-  | "warehouse_state_update_blocked_after_unmount"
-  | "warehouse_cleanup_error"
   | "office_index_after_return_focus"
   | "office_index_after_return_mount"
   | "office_back_path_failed"
@@ -380,13 +372,6 @@ function recordOfficeLifecycleMarker(params: {
     | "office_warehouse_back_replace_done"
     | "office_warehouse_before_remove"
     | "office_warehouse_unmount"
-    | "warehouse_unmount_cleanup_start"
-    | "warehouse_unmount_cleanup_done"
-    | "warehouse_subscription_cleanup"
-    | "warehouse_timer_cleanup"
-    | "warehouse_interaction_cleanup"
-    | "warehouse_async_abort"
-    | "warehouse_state_update_blocked_after_unmount"
     | "office_index_after_return_focus"
     | "office_index_after_return_mount"
     | "tab_warehouse_entry_mount_start"
@@ -787,89 +772,6 @@ export function recordOfficeWarehouseUnmount(extra?: Record<string, unknown>) {
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_unmount",
     extra,
-  });
-}
-
-export function recordWarehouseUnmountCleanupStart(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_unmount_cleanup_start",
-    extra,
-  });
-}
-
-export function recordWarehouseUnmountCleanupDone(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_unmount_cleanup_done",
-    extra,
-  });
-}
-
-export function recordWarehouseSubscriptionCleanup(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_subscription_cleanup",
-    extra,
-  });
-}
-
-export function recordWarehouseTimerCleanup(extra?: Record<string, unknown>) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_timer_cleanup",
-    extra,
-  });
-}
-
-export function recordWarehouseInteractionCleanup(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_interaction_cleanup",
-    extra,
-  });
-}
-
-export function recordWarehouseAsyncAbort(extra?: Record<string, unknown>) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_async_abort",
-    extra,
-    result: "skipped",
-  });
-}
-
-export function recordWarehouseStateUpdateBlockedAfterUnmount(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_state_update_blocked_after_unmount",
-    extra,
-    result: "skipped",
-  });
-}
-
-export function recordWarehouseCleanupError(params: {
-  error: unknown;
-  errorStage: string;
-  extra?: Record<string, unknown>;
-}) {
-  const errorClass =
-    params.error instanceof Error ? params.error.name : undefined;
-  const errorMessage =
-    params.error instanceof Error
-      ? params.error.message
-      : String(params.error ?? "warehouse_cleanup_error");
-
-  recordOfficeReentryMarker({
-    marker: "warehouse_cleanup_error",
-    result: "error",
-    errorStage: params.errorStage,
-    errorClass,
-    errorMessage,
-    extra: params.extra,
   });
 }
 
@@ -1415,8 +1317,6 @@ export function buildOfficeReentryBreadcrumbsText(
       if (item.extra?.phase) parts.push(`phase=${String(item.extra.phase)}`);
       if (item.extra?.selectedMethod)
         parts.push(`selectedMethod=${String(item.extra.selectedMethod)}`);
-      if (item.extra?.resource)
-        parts.push(`resource=${String(item.extra.resource)}`);
       if (item.extra?.reason) parts.push(`reason=${String(item.extra.reason)}`);
       if (item.extra?.probe) parts.push(`probe=${String(item.extra.probe)}`);
       return parts.join(" | ");

@@ -11,7 +11,6 @@ import {
 } from "../../lib/observability/platformObservability";
 import { recordPlatformGuardSkip } from "../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
-import { useWarehouseUnmountSafety } from "./hooks/useWarehouseUnmountSafety";
 
 // РјР°Р»РµРЅСЊРєРёРµ СѓС‚РёР»РёС‚С‹ (Р»РѕРєР°Р»СЊРЅРѕ РІ РјРѕРґСѓР»Рµ)
 export function useWarehouseIncoming() {
@@ -27,7 +26,6 @@ export function useWarehouseIncoming() {
   const toReceivePageRef = useRef(0);
   const toReceiveHasMoreRef = useRef(true);
   const PAGE_SIZE = 30;
-  const unmountSafety = useWarehouseUnmountSafety("warehouse_incoming");
 
   const [itemsByHead, setItemsByHead] = useState<Record<string, ItemRow[]>>({});
   const itemsByHeadRef = useRef<Record<string, ItemRow[]>>({});
@@ -91,72 +89,32 @@ export function useWarehouseIncoming() {
 
     const task = (async () => {
       toReceiveFetchMutexRef.current = true;
-      unmountSafety.guardStateUpdate(
-        () => {
-          setToReceiveIsFetching(true);
-          setToReceiveFetchingPage(pageIndex > 0);
-          if (pageIndex === 0) setToReceiveLoading(true);
-        },
-        {
-          resource: "incoming_fetch_loading_start",
-          reason,
-        },
-      );
+      setToReceiveIsFetching(true);
+      setToReceiveFetchingPage(pageIndex > 0);
+      if (pageIndex === 0) setToReceiveLoading(true);
 
       try {
         const result = await fetchWarehouseIncomingHeadsWindow(pageIndex, PAGE_SIZE);
-        if (
-          !unmountSafety.shouldHandleAsyncResult({
-            resource: "incoming_fetch_window_result",
-            reason,
-          })
-        ) {
-          return;
-        }
 
         const queue = (result?.rows ?? []) as IncomingRow[];
         const hasNext = result?.meta.hasMore === true;
         toReceiveHasMoreRef.current = hasNext;
         toReceivePageRef.current = pageIndex;
-        unmountSafety.guardStateUpdate(
-          () => {
-            setToReceiveHasMore(hasNext);
-            setToReceivePage(pageIndex);
-          },
-          {
-            resource: "incoming_page_state",
-            reason,
-          },
-        );
+        setToReceiveHasMore(hasNext);
+        setToReceivePage(pageIndex);
 
         if (pageIndex === 0) {
           toReceiveRef.current = queue;
-          unmountSafety.guardStateUpdate(
-            () => {
-              setToReceive(queue);
-              setIncomingCount(queue.length);
-            },
-            {
-              resource: "incoming_page_publish",
-              reason,
-            },
-          );
+          setToReceive(queue);
+          setIncomingCount(queue.length);
         } else {
           const prevRows = toReceiveRef.current;
           const prevIds = new Set(prevRows.map((row) => String(row.incoming_id ?? "").trim()));
           const next = queue.filter((row) => !prevIds.has(String(row.incoming_id ?? "").trim()));
           const merged = [...prevRows, ...next];
           toReceiveRef.current = merged;
-          unmountSafety.guardStateUpdate(
-            () => {
-              setToReceive(merged);
-              setIncomingCount(merged.length);
-            },
-            {
-              resource: "incoming_append_publish",
-              reason,
-            },
-          );
+          setToReceive(merged);
+          setIncomingCount(merged.length);
         }
 
         observation.success({
@@ -212,39 +170,23 @@ export function useWarehouseIncoming() {
           console.warn("[warehouse.incoming] warehouse_incoming_queue_scope_v1 failed:", e);
         }
         if (pageIndex === 0) {
-          unmountSafety.guardStateUpdate(
-            () => {
-              setToReceive([]);
-              setIncomingCount(0);
-              setToReceiveHasMore(false);
-            },
-            {
-              resource: "incoming_error_publish",
-              reason,
-            },
-          );
+          setToReceive([]);
+          setIncomingCount(0);
+          setToReceiveHasMore(false);
           toReceiveHasMoreRef.current = false;
         }
       } finally {
         toReceiveFetchMutexRef.current = false;
         toReceiveFetchTaskRef.current = null;
-        unmountSafety.guardStateUpdate(
-          () => {
-            setToReceiveIsFetching(false);
-            setToReceiveFetchingPage(false);
-            if (pageIndex === 0) setToReceiveLoading(false);
-          },
-          {
-            resource: "incoming_fetch_loading_finish",
-            reason,
-          },
-        );
+        setToReceiveIsFetching(false);
+        setToReceiveFetchingPage(false);
+        if (pageIndex === 0) setToReceiveLoading(false);
       }
     })();
 
     toReceiveFetchTaskRef.current = task;
     await task;
-  }, [unmountSafety]);
+  }, []);
 
   const loadItemsForHead = useCallback(async (incomingId: string, force = false) => {
     if (!incomingId) return [] as ItemRow[];
@@ -265,25 +207,9 @@ export function useWarehouseIncoming() {
 
     try {
       const result = await fetchWarehouseIncomingItemsWindow(incomingId);
-      if (
-        !unmountSafety.shouldHandleAsyncResult({
-          resource: "incoming_items_result",
-          reason: incomingId,
-        })
-      ) {
-        return [] as ItemRow[];
-      }
 
       const rows = (result?.rows ?? []) as ItemRow[];
-      unmountSafety.guardStateUpdate(
-        () => {
-          setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: rows }));
-        },
-        {
-          resource: "incoming_items_publish",
-          reason: incomingId,
-        },
-      );
+      setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: rows }));
 
       observation.success({
         rowCount: rows.length,
@@ -312,18 +238,10 @@ export function useWarehouseIncoming() {
       if (__DEV__) {
         console.warn("[warehouse.incoming] warehouse_incoming_items_scope_v1 failed:", error);
       }
-      unmountSafety.guardStateUpdate(
-        () => {
-          setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: [] }));
-        },
-        {
-          resource: "incoming_items_error_publish",
-          reason: incomingId,
-        },
-      );
+      setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: [] }));
       return [] as ItemRow[];
     }
-  }, [unmountSafety]);
+  }, []);
 
   // РЅР°СЂСѓР¶Сѓ РѕС‚РґР°С‘Рј РІСЃС‘, С‡С‚Рѕ РЅСѓР¶РЅРѕ СЌРєСЂР°РЅСѓ
   return {
