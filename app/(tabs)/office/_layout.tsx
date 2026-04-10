@@ -14,7 +14,6 @@ import {
   recordOfficeWarehouseBackReplaceDone,
   recordOfficeWarehouseBackReplaceStart,
   recordOfficeWarehouseBackUseReplaceFallback,
-  recordOfficeWarehouseBackUseRouterBack,
   recordOfficeRouteOwnerIdentity,
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
@@ -117,6 +116,8 @@ export function performWarehouseBackNavigation(
   recordEvent: typeof recordPlatformObservability = recordPlatformObservability,
   persistBreadcrumbs: typeof recordWarehouseBackBreadcrumbsAsync = recordWarehouseBackBreadcrumbsAsync,
 ) {
+  const selectedMethod = "replace";
+  const selectionReason = "deterministic_office_return";
   const buildBackExtra = (extra?: Record<string, unknown>) => ({
     owner: "office_stack_layout",
     route: "/office/warehouse",
@@ -188,9 +189,6 @@ export function performWarehouseBackNavigation(
   });
   recordOfficeWarehouseBackHandlerStart(buildBackExtra());
 
-  const canGoBack = typeof warehouseRouter.canGoBack === "function"
-    ? Boolean(warehouseRouter.canGoBack())
-    : false;
   recordEvent({
     screen: "warehouse",
     surface: "warehouse_back",
@@ -218,44 +216,21 @@ export function performWarehouseBackNavigation(
     screen: "warehouse",
     surface: "warehouse_back",
     category: "ui",
-    event: canGoBack ? "warehouse_back_can_go_back_true" : "warehouse_back_can_go_back_false",
-    result: "success",
-    extra: {
-      route: "/office/warehouse",
-      fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
-    },
-  });
-  queueBreadcrumb({
-    marker: canGoBack ? "warehouse_back_can_go_back_true" : "warehouse_back_can_go_back_false",
-    result: "success",
-    extra: {
-      route: "/office/warehouse",
-      fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
-    },
-  });
-  recordEvent({
-    screen: "warehouse",
-    surface: "warehouse_back",
-    category: "ui",
     event: "warehouse_back_use_router_back",
-    result: canGoBack ? "success" : "skipped",
+    result: "skipped",
     extra: {
       route: "/office/warehouse",
-      reason: canGoBack
-        ? "warehouse_stack_history_available"
-        : "warehouse_stack_history_missing",
-      selectedMethod: canGoBack ? "back" : "replace_fallback",
+      reason: selectionReason,
+      selectedMethod,
     },
   });
   queueBreadcrumb({
     marker: "warehouse_back_use_router_back",
-    result: canGoBack ? "success" : "skipped",
+    result: "skipped",
     extra: {
       route: "/office/warehouse",
-      reason: canGoBack
-        ? "warehouse_stack_history_available"
-        : "warehouse_stack_history_missing",
-      selectedMethod: canGoBack ? "back" : "replace_fallback",
+      reason: selectionReason,
+      selectedMethod,
     },
   });
   recordEvent({
@@ -267,7 +242,7 @@ export function performWarehouseBackNavigation(
     extra: {
       route: "/office/warehouse",
       reason: "push_not_used_for_office_return",
-      selectedMethod: canGoBack ? "back" : "replace_fallback",
+      selectedMethod,
     },
   });
   queueBreadcrumb({
@@ -276,7 +251,7 @@ export function performWarehouseBackNavigation(
     extra: {
       route: "/office/warehouse",
       reason: "push_not_used_for_office_return",
-      selectedMethod: canGoBack ? "back" : "replace_fallback",
+      selectedMethod,
     },
   });
   recordEvent({
@@ -284,57 +259,39 @@ export function performWarehouseBackNavigation(
     surface: "warehouse_back",
     category: "ui",
     event: "warehouse_back_use_office_replace",
-    result: canGoBack ? "skipped" : "success",
+    result: "success",
     extra: {
       route: "/office/warehouse",
       fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
-      reason: canGoBack
-        ? "router_back_selected"
-        : "warehouse_stack_history_missing",
-      selectedMethod: canGoBack ? "back" : "replace_fallback",
+      reason: selectionReason,
+      selectedMethod,
     },
   });
   queueBreadcrumb({
     marker: "warehouse_back_use_office_replace",
-    result: canGoBack ? "skipped" : "success",
+    result: "success",
     extra: {
       route: "/office/warehouse",
       fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
-      reason: canGoBack
-        ? "router_back_selected"
-        : "warehouse_stack_history_missing",
-      selectedMethod: canGoBack ? "back" : "replace_fallback",
+      reason: selectionReason,
+      selectedMethod,
     },
   });
 
-  const selectedMethod = canGoBack ? "back" : "replace_fallback";
   recordOfficeWarehouseBackMethodSelected(
     buildBackExtra({
-      method: canGoBack ? "back" : "replace",
+      method: "replace",
       selectedMethod,
-      reason: canGoBack
-        ? "warehouse_stack_history_available"
-        : "warehouse_stack_history_missing",
+      reason: selectionReason,
     }),
   );
-
-  if (canGoBack) {
-    recordOfficeWarehouseBackUseRouterBack(
-      buildBackExtra({
-        method: "back",
-        selectedMethod,
-        reason: "warehouse_stack_history_available",
-      }),
-    );
-  } else {
-    recordOfficeWarehouseBackUseReplaceFallback(
-      buildBackExtra({
-        method: "replace",
-        selectedMethod,
-        reason: "warehouse_stack_history_missing",
-      }),
-    );
-  }
+  recordOfficeWarehouseBackUseReplaceFallback(
+    buildBackExtra({
+      method: "replace",
+      selectedMethod,
+      reason: selectionReason,
+    }),
+  );
 
   try {
     const persistAttempt = persistBreadcrumbs(pendingBreadcrumbs).catch(() => undefined);
@@ -344,126 +301,80 @@ export function performWarehouseBackNavigation(
       route: "/office/warehouse",
       sourceRoute: "/office/warehouse",
       target: OFFICE_SAFE_BACK_ROUTE,
-      method: canGoBack ? "back" : "replace",
+      method: "replace",
     });
     markPendingOfficeRouteReturnReceipt({
       owner: "office_stack_layout",
       route: OFFICE_SAFE_BACK_ROUTE,
       sourceRoute: "/office/warehouse",
       target: OFFICE_SAFE_BACK_ROUTE,
-      method: canGoBack ? "back" : "replace",
-      reason: canGoBack
-        ? "warehouse_stack_pop_return"
-        : "warehouse_replace_fallback_return",
+      method: "replace",
+      reason: "warehouse_deterministic_office_return",
       selectedMethod,
     });
-    if (canGoBack) {
-      recordEvent({
-        screen: "warehouse",
-        surface: "warehouse_back",
-        category: "ui",
-        event: "warehouse_back_navigation_call",
-        result: "success",
-        extra: {
-          route: "/office/warehouse",
-          method: "back",
-          target: OFFICE_SAFE_BACK_ROUTE,
-        },
-      });
-      queueBreadcrumb({
-        marker: "warehouse_back_navigation_call",
-        result: "success",
-        extra: {
-          route: "/office/warehouse",
-          method: "back",
-          target: OFFICE_SAFE_BACK_ROUTE,
-        },
-      });
-      recordEvent({
-        screen: "warehouse",
-        surface: "warehouse_back",
-        category: "ui",
-        event: "warehouse_back_fallback_selected",
-        result: "skipped",
-        extra: {
-          route: "/office/warehouse",
-          fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
-          method: "back",
-        },
-      });
-      queueBreadcrumb({
-        marker: "warehouse_back_fallback_selected",
-        result: "skipped",
-        extra: {
-          route: "/office/warehouse",
-          fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
-          method: "back",
-        },
-      });
-      warehouseRouter.back();
-    } else {
-      recordOfficeWarehouseBackReplaceStart(
-        buildBackExtra({
-          method: "replace",
-          selectedMethod,
-        }),
-      );
-      recordEvent({
-        screen: "warehouse",
-        surface: "warehouse_back",
-        category: "ui",
-        event: "warehouse_back_navigation_call",
-        result: "success",
-        extra: {
-          route: "/office/warehouse",
-          method: "replace",
-          target: OFFICE_SAFE_BACK_ROUTE,
-        },
-      });
-      queueBreadcrumb({
-        marker: "warehouse_back_navigation_call",
-        result: "success",
-        extra: {
-          route: "/office/warehouse",
-          method: "replace",
-          target: OFFICE_SAFE_BACK_ROUTE,
-        },
-      });
-      recordEvent({
-        screen: "warehouse",
-        surface: "warehouse_back",
-        category: "ui",
-        event: "warehouse_back_fallback_selected",
-        result: "success",
-        extra: {
-          route: "/office/warehouse",
-          fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
-          method: "replace",
-        },
-      });
-      queueBreadcrumb({
-        marker: "warehouse_back_fallback_selected",
-        result: "success",
-        extra: {
-          route: "/office/warehouse",
-          fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
-          method: "replace",
-        },
-      });
-      warehouseRouter.replace(OFFICE_SAFE_BACK_ROUTE);
-      recordOfficeWarehouseBackReplaceDone(
-        buildBackExtra({
-          method: "replace",
-          selectedMethod,
-        }),
-      );
-    }
+    recordOfficeWarehouseBackReplaceStart(
+      buildBackExtra({
+        method: "replace",
+        selectedMethod,
+      }),
+    );
+    recordEvent({
+      screen: "warehouse",
+      surface: "warehouse_back",
+      category: "ui",
+      event: "warehouse_back_navigation_call",
+      result: "success",
+      extra: {
+        route: "/office/warehouse",
+        method: "replace",
+        target: OFFICE_SAFE_BACK_ROUTE,
+      },
+    });
+    queueBreadcrumb({
+      marker: "warehouse_back_navigation_call",
+      result: "success",
+      extra: {
+        route: "/office/warehouse",
+        method: "replace",
+        target: OFFICE_SAFE_BACK_ROUTE,
+      },
+    });
+    recordEvent({
+      screen: "warehouse",
+      surface: "warehouse_back",
+      category: "ui",
+      event: "warehouse_back_fallback_selected",
+      result: "success",
+      extra: {
+        route: "/office/warehouse",
+        fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
+        method: "replace",
+        reason: selectionReason,
+      },
+    });
+    queueBreadcrumb({
+      marker: "warehouse_back_fallback_selected",
+      result: "success",
+      extra: {
+        route: "/office/warehouse",
+        fallbackRoute: OFFICE_SAFE_BACK_ROUTE,
+        method: "replace",
+        reason: selectionReason,
+      },
+    });
+    warehouseRouter.replace(OFFICE_SAFE_BACK_ROUTE);
+    recordOfficeWarehouseBackReplaceDone(
+      buildBackExtra({
+        method: "replace",
+        selectedMethod,
+      }),
+    );
     recordWarehouseReturnToOfficeDone({
       owner: "office_stack_layout",
       route: "/office/warehouse",
       sourceRoute: "/office/warehouse",
       target: OFFICE_SAFE_BACK_ROUTE,
-      method: canGoBack ? "back" : "replace",
+      method: "replace",
     });
 
     recordEvent({
@@ -474,7 +385,7 @@ export function performWarehouseBackNavigation(
       result: "success",
       extra: {
         route: "/office/warehouse",
-        method: canGoBack ? "back" : "replace",
+        method: "replace",
         target: OFFICE_SAFE_BACK_ROUTE,
       },
     });
@@ -484,23 +395,23 @@ export function performWarehouseBackNavigation(
         result: "success",
         extra: {
           route: "/office/warehouse",
-          method: canGoBack ? "back" : "replace",
+          method: "replace",
           target: OFFICE_SAFE_BACK_ROUTE,
         },
       },
     ]);
     recordOfficeWarehouseBackHandlerDone(
       buildBackExtra({
-        method: canGoBack ? "back" : "replace",
+        method: "replace",
         selectedMethod,
       }),
     );
   } catch (error) {
     recordOfficeBackPathFailure({
       error,
-      errorStage: canGoBack ? "router_back_call" : "replace_call",
+      errorStage: "replace_call",
       extra: buildBackExtra({
-        method: canGoBack ? "back" : "replace",
+        method: "replace",
         selectedMethod,
       }),
     });
@@ -515,7 +426,7 @@ export function performWarehouseBackNavigation(
       errorMessage: error instanceof Error ? error.message : String(error ?? "warehouse_back_failed"),
       extra: {
         route: "/office/warehouse",
-        method: canGoBack ? "back" : "replace",
+        method: "replace",
         target: OFFICE_SAFE_BACK_ROUTE,
       },
     });
@@ -529,7 +440,7 @@ export function performWarehouseBackNavigation(
         errorMessage: error instanceof Error ? error.message : String(error ?? "warehouse_back_failed"),
         extra: {
           route: "/office/warehouse",
-          method: canGoBack ? "back" : "replace",
+          method: "replace",
           target: OFFICE_SAFE_BACK_ROUTE,
         },
       },

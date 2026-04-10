@@ -108,7 +108,7 @@ describe("OfficeStackLayout", () => {
     expect(JSON.stringify(title.props.children)).toContain("Склад");
   });
 
-  it("records warehouse back breadcrumbs and prefers router.back when history exists", async () => {
+  it("records warehouse back breadcrumbs and uses deterministic replace even when history exists", async () => {
     const recordEvent = jest.fn();
 
     await performWarehouseBackNavigation(
@@ -121,15 +121,14 @@ describe("OfficeStackLayout", () => {
       mockPersistWarehouseBackBreadcrumbs,
     );
 
-    expect(mockBack).toHaveBeenCalledTimes(1);
-    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
     expect(mockPersistWarehouseBackBreadcrumbs).toHaveBeenCalledTimes(1);
     expect(recordEvent.mock.calls.map(([event]) => event.event)).toEqual([
       "warehouse_back_tap",
       "warehouse_back_handler_enter",
       "warehouse_back_handler_selected",
       "warehouse_back_native_auto_back_blocked",
-      "warehouse_back_can_go_back_true",
       "warehouse_back_use_router_back",
       "warehouse_back_use_office_push",
       "warehouse_back_use_office_replace",
@@ -139,7 +138,7 @@ describe("OfficeStackLayout", () => {
     ]);
   });
 
-  it("falls back to replace when warehouse stack history is missing", async () => {
+  it("uses the same deterministic replace path when history is missing", async () => {
     const recordEvent = jest.fn();
 
     await performWarehouseBackNavigation(
@@ -154,9 +153,10 @@ describe("OfficeStackLayout", () => {
 
     expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
     expect(mockBack).not.toHaveBeenCalled();
-    expect(recordEvent.mock.calls.map(([event]) => event.event)).toContain(
-      "warehouse_back_use_office_replace",
+    expect(recordEvent.mock.calls.map(([event]) => event.event)).not.toContain(
+      "warehouse_back_can_go_back_false",
     );
+    expect(recordEvent.mock.calls.map(([event]) => event.event)).toContain("warehouse_back_use_office_replace");
   });
 
   it("records warehouse back navigation failure", () => {
