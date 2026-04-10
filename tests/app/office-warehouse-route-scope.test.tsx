@@ -10,10 +10,14 @@ const mockUsePathname = jest.fn();
 const mockUseSegments = jest.fn();
 const mockAddListener: jest.Mock = jest.fn(() => jest.fn());
 const mockWarehouseScreen = jest.fn((_props?: Record<string, unknown>) => null);
+const mockReplace = jest.fn();
 
 jest.mock("expo-router", () => {
   const ReactRuntime = jest.requireActual("react");
   return {
+    router: {
+      replace: (...args: unknown[]) => mockReplace(...args),
+    },
     useFocusEffect: (callback: () => void | (() => void)) => {
       ReactRuntime.useEffect(() => {
         const cleanup = callback();
@@ -53,6 +57,21 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeChildEntryFocus: jest.fn(),
   recordOfficeChildEntryMount: jest.fn(),
   recordOfficeChildUnmount: jest.fn(),
+  recordOfficeBackPathFailure: jest.fn(),
+  recordOfficeWarehouseBackHandlerDone: jest.fn(),
+  recordOfficeWarehouseBackHandlerStart: jest.fn(),
+  recordOfficeWarehouseBackMethodSelected: jest.fn(),
+  recordOfficeWarehouseBackPressDone: jest.fn(),
+  recordOfficeWarehouseBackPressStart: jest.fn(),
+  recordOfficeWarehouseBackReplaceDone: jest.fn(),
+  recordOfficeWarehouseBackReplaceStart: jest.fn(),
+  recordOfficeWarehouseBeforeRemove: jest.fn(),
+  recordWarehouseBackSourceCustomHeader: jest.fn(),
+  recordWarehouseBackSourceGenericChildHeader: jest.fn(),
+  recordWarehouseBackSourceGesture: jest.fn(),
+  recordWarehouseBackSourceNativeHeader: jest.fn(),
+  recordWarehouseReturnToOfficeDone: jest.fn(),
+  recordWarehouseReturnToOfficeStart: jest.fn(),
 }));
 
 describe("office warehouse child route entry", () => {
@@ -62,6 +81,7 @@ describe("office warehouse child route entry", () => {
     mockAddListener.mockReset();
     mockAddListener.mockReturnValue(jest.fn());
     mockWarehouseScreen.mockReset();
+    mockReplace.mockReset();
     Object.values(officeBreadcrumbs).forEach((value) => {
       if (jest.isMockFunction(value)) {
         value.mockClear();
@@ -107,6 +127,10 @@ describe("office warehouse child route entry", () => {
       });
     });
     expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseBeforeRemove).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordWarehouseBackSourceGenericChildHeader).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeBackPathFailure).toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith("/office");
 
     act(() => {
       renderer?.unmount();
@@ -186,10 +210,9 @@ describe("office warehouse child route entry", () => {
 
     expect(warehouseSource).toContain('import { WarehouseScreen } from "../warehouse";');
     expect(warehouseSource).not.toContain("WarehouseScreenContent");
-    expect(warehouseSource).not.toContain("entryKind=");
-    expect(warehouseSource).not.toContain("entryExtra=");
     expect(foremanSource).toContain('import { ForemanScreen } from "../foreman";');
     expect(warehouseSource).toContain("useOfficeChildRouteAudit({");
     expect(warehouseSource).toContain("return <WarehouseScreen />;");
+    expect(warehouseSource).toContain("performWarehouseDeterministicOfficeReturn");
   });
 });

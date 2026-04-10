@@ -51,6 +51,10 @@ export type OfficeReentryMarker =
   | "office_warehouse_back_replace_done"
   | "office_warehouse_before_remove"
   | "office_warehouse_unmount"
+  | "warehouse_back_source_custom_header"
+  | "warehouse_back_source_native_header"
+  | "warehouse_back_source_gesture"
+  | "warehouse_back_source_generic_child_header"
   | "office_index_after_return_focus"
   | "office_index_after_return_mount"
   | "office_back_path_failed"
@@ -372,6 +376,10 @@ function recordOfficeLifecycleMarker(params: {
     | "office_warehouse_back_replace_done"
     | "office_warehouse_before_remove"
     | "office_warehouse_unmount"
+    | "warehouse_back_source_custom_header"
+    | "warehouse_back_source_native_header"
+    | "warehouse_back_source_gesture"
+    | "warehouse_back_source_generic_child_header"
     | "office_index_after_return_focus"
     | "office_index_after_return_mount"
     | "tab_warehouse_entry_mount_start"
@@ -771,6 +779,42 @@ export function recordOfficeWarehouseBeforeRemove(
 export function recordOfficeWarehouseUnmount(extra?: Record<string, unknown>) {
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_unmount",
+    extra,
+  });
+}
+
+export function recordWarehouseBackSourceCustomHeader(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_back_source_custom_header",
+    extra,
+  });
+}
+
+export function recordWarehouseBackSourceNativeHeader(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_back_source_native_header",
+    extra,
+  });
+}
+
+export function recordWarehouseBackSourceGesture(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_back_source_gesture",
+    extra,
+  });
+}
+
+export function recordWarehouseBackSourceGenericChildHeader(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "warehouse_back_source_generic_child_header",
     extra,
   });
 }
@@ -1313,7 +1357,14 @@ export function buildOfficeReentryBreadcrumbsText(
       if (item.extra?.method) parts.push(`method=${String(item.extra.method)}`);
       if (item.extra?.handler)
         parts.push(`handler=${String(item.extra.handler)}`);
+      if (item.extra?.source) parts.push(`source=${String(item.extra.source)}`);
+      if (item.extra?.trigger)
+        parts.push(`trigger=${String(item.extra.trigger)}`);
       if (item.extra?.action) parts.push(`action=${String(item.extra.action)}`);
+      if (item.extra?.actionSource)
+        parts.push(`actionSource=${String(item.extra.actionSource)}`);
+      if (item.extra?.actionTarget)
+        parts.push(`actionTarget=${String(item.extra.actionTarget)}`);
       if (item.extra?.phase) parts.push(`phase=${String(item.extra.phase)}`);
       if (item.extra?.selectedMethod)
         parts.push(`selectedMethod=${String(item.extra.selectedMethod)}`);
