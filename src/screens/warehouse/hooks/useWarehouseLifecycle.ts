@@ -7,6 +7,12 @@ import {
 } from "../../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 
+const useMountedRef = () => {
+  const ref = useRef(true);
+  useEffect(() => () => { ref.current = false; }, []);
+  return ref;
+};
+
 const TAB_INCOMING = WAREHOUSE_TABS[0];
 const TAB_STOCK_FACT = WAREHOUSE_TABS[1];
 const TAB_REPORTS = WAREHOUSE_TABS[3];
@@ -29,6 +35,7 @@ export function useWarehouseLifecycle(params: {
     onError,
   } = params;
 
+  const mountedRef = useMountedRef();
   const didInitLoadRef = useRef(false);
   const focusRefreshInFlightRef = useRef<Promise<void> | null>(null);
   const lastFocusRefreshAtRef = useRef(0);
@@ -47,27 +54,36 @@ export function useWarehouseLifecycle(params: {
       });
       return;
     }
+    if (!mountedRef.current) return;
     setLoading(true);
     try {
       const [incomingRes, stockRes] = await Promise.allSettled([fetchToReceive(), fetchStock()]);
+      if (!mountedRef.current) return;
       if (incomingRes.status === "rejected") throw incomingRes.reason;
       if (stockRes.status === "rejected") throw stockRes.reason;
     } catch (e) {
+      if (!mountedRef.current) return;
       onError(e);
     } finally {
+      if (!mountedRef.current) return;
       setLoading(false);
     }
-  }, [setLoading, fetchToReceive, fetchStock, onError]);
+  }, [fetchStock, fetchToReceive, mountedRef, onError, setLoading]);
 
   useEffect(() => {
     if (didInitLoadRef.current) return;
     didInitLoadRef.current = true;
     // Prevent an immediate focus-refresh from duplicating the initial bootstrap fetches.
     lastFocusRefreshAtRef.current = Date.now();
+    let cancelled = false;
     void loadAll().finally(() => {
+      if (cancelled || !mountedRef.current) return;
       lastFocusRefreshAtRef.current = Date.now();
     });
-  }, [loadAll]);
+    return () => {
+      cancelled = true;
+    };
+  }, [loadAll, mountedRef]);
 
   const refreshActiveTab = useCallback(async () => {
     if (tab === TAB_INCOMING) {
@@ -85,6 +101,7 @@ export function useWarehouseLifecycle(params: {
 
   useFocusEffect(
     useCallback(() => {
+      let active = true;
       const now = Date.now();
       const networkSnapshot = getPlatformNetworkSnapshot();
       if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
@@ -128,7 +145,10 @@ export function useWarehouseLifecycle(params: {
       }
 
       const task = refreshActiveTab()
-        .catch((e) => onError(e))
+        .catch((e) => {
+          if (!active || !mountedRef.current) return;
+          onError(e);
+        })
         .finally(() => {
           if (focusRefreshInFlightRef.current === task) {
             focusRefreshInFlightRef.current = null;
@@ -136,7 +156,9 @@ export function useWarehouseLifecycle(params: {
         });
       focusRefreshInFlightRef.current = task;
       lastFocusRefreshAtRef.current = now;
-      return undefined;
-    }, [refreshActiveTab, onError, tab]),
+      return () => {
+        active = false;
+      };
+    }, [mountedRef, onError, refreshActiveTab, tab]),
   );
 }
