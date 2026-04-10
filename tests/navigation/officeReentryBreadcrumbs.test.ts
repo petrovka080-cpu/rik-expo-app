@@ -183,7 +183,7 @@ describe("office reentry breadcrumbs", () => {
     );
   });
 
-  it("formats office-owned warehouse entry diagnostics", () => {
+  it("formats office warehouse child-entry diagnostics", () => {
     expect(
       buildOfficeReentryBreadcrumbsText([
         {
@@ -196,13 +196,14 @@ describe("office reentry breadcrumbs", () => {
             identity: "office_warehouse_route:ghi789",
             pathname: "/office/warehouse",
             segments: "(tabs)/office/warehouse",
-            routeWrapper: "office_owned_screen_entry",
+            routeWrapper: "office_child_screen_entry",
+            wrappedRoute: "/warehouse",
             contentOwner: "office_warehouse_route",
           },
         },
       ]),
     ).toBe(
-      "2026-04-09T10:08:00.000Z | office_warehouse_entry_content_mount_done | success | route=/office/warehouse | owner=warehouse_screen_content | identity=office_warehouse_route:ghi789 | pathname=/office/warehouse | segments=(tabs)/office/warehouse | routeWrapper=office_owned_screen_entry",
+      "2026-04-09T10:08:00.000Z | office_warehouse_entry_content_mount_done | success | route=/office/warehouse | owner=warehouse_screen_content | identity=office_warehouse_route:ghi789 | pathname=/office/warehouse | segments=(tabs)/office/warehouse | wrappedRoute=/warehouse | routeWrapper=office_child_screen_entry",
     );
   });
 
@@ -315,22 +316,24 @@ describe("office reentry breadcrumbs", () => {
     ]);
   });
 
-  it("records the expected office-owned warehouse entry sequence", () => {
+  it("records the expected office warehouse child-entry overlay sequence", () => {
     recordOfficeWarehouseEntryMountStart({
       owner: "office_warehouse_route",
       route: "/office/warehouse",
       identity: "office_warehouse_route:ghi789",
       pathname: "/office/warehouse",
       segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_owned_screen_entry",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/warehouse",
     });
-    recordOfficeRouteOwnerMount({
+    recordOfficeChildEntryMount({
       owner: "office_warehouse_route",
       route: "/office/warehouse",
       identity: "office_warehouse_route:ghi789",
       pathname: "/office/warehouse",
       segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_owned_screen_entry",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/warehouse",
     });
     recordOfficeWarehouseEntryMountDone({
       owner: "office_warehouse_route",
@@ -338,15 +341,8 @@ describe("office reentry breadcrumbs", () => {
       identity: "office_warehouse_route:ghi789",
       pathname: "/office/warehouse",
       segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_owned_screen_entry",
-    });
-    recordOfficeRouteOwnerIdentity({
-      owner: "office_warehouse_route",
-      route: "/office/warehouse",
-      identity: "office_warehouse_route:ghi789",
-      pathname: "/office/warehouse",
-      segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_owned_screen_entry",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/warehouse",
     });
     recordOfficeWarehouseEntryContentMountStart({
       owner: "warehouse_screen_content",
@@ -354,7 +350,8 @@ describe("office reentry breadcrumbs", () => {
       identity: "office_warehouse_route:ghi789",
       pathname: "/office/warehouse",
       segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_owned_screen_entry",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/warehouse",
     });
     recordOfficeWarehouseEntryContentMountDone({
       owner: "warehouse_screen_content",
@@ -362,7 +359,8 @@ describe("office reentry breadcrumbs", () => {
       identity: "office_warehouse_route:ghi789",
       pathname: "/office/warehouse",
       segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_owned_screen_entry",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/warehouse",
     });
     recordOfficeWarehouseEntryFocusStart({
       owner: "office_warehouse_route",
@@ -370,15 +368,17 @@ describe("office reentry breadcrumbs", () => {
       identity: "office_warehouse_route:ghi789",
       pathname: "/office/warehouse",
       segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_owned_screen_entry",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/warehouse",
     });
-    recordOfficeRouteOwnerFocus({
+    recordOfficeChildEntryFocus({
       owner: "office_warehouse_route",
       route: "/office/warehouse",
       identity: "office_warehouse_route:ghi789",
       pathname: "/office/warehouse",
       segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_owned_screen_entry",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/warehouse",
     });
     recordOfficeWarehouseEntryFocusDone({
       owner: "office_warehouse_route",
@@ -386,7 +386,8 @@ describe("office reentry breadcrumbs", () => {
       identity: "office_warehouse_route:ghi789",
       pathname: "/office/warehouse",
       segments: "(tabs)/office/warehouse",
-      routeWrapper: "office_owned_screen_entry",
+      routeWrapper: "office_child_screen_entry",
+      wrappedRoute: "/warehouse",
     });
     recordOfficeWarehouseEntryFailure({
       error: new Error("office warehouse failed"),
@@ -399,13 +400,12 @@ describe("office reentry breadcrumbs", () => {
 
     expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
       "office_warehouse_entry_mount_start",
-      "office_route_owner_mount",
+      "office_child_entry_mount",
       "office_warehouse_entry_mount_done",
-      "office_route_owner_identity",
       "office_warehouse_entry_content_mount_start",
       "office_warehouse_entry_content_mount_done",
       "office_warehouse_entry_focus_start",
-      "office_route_owner_focus",
+      "office_child_entry_focus",
       "office_warehouse_entry_focus_done",
       "office_warehouse_entry_failed",
     ]);
@@ -560,9 +560,22 @@ describe("office reentry breadcrumbs", () => {
     recordOfficeWarehouseBeforeRemove({
       owner: "office_warehouse_route",
       route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
       action: "GO_BACK",
       pathname: "/office/warehouse",
       segments: "(tabs)/office/warehouse",
+      wrappedRoute: "/warehouse",
+      routeWrapper: "office_child_screen_entry",
+    });
+    recordOfficeChildBeforeRemove({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      identity: "office_warehouse_route:ghi789",
+      action: "GO_BACK",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      wrappedRoute: "/warehouse",
+      routeWrapper: "office_child_screen_entry",
     });
     recordOfficeWarehouseBackHandlerDone({
       owner: "office_stack_layout",
@@ -584,7 +597,17 @@ describe("office reentry breadcrumbs", () => {
       pathname: "/office",
       segments: "(tabs)/office",
       identity: "office_warehouse_route:ghi789",
-      routeWrapper: "office_owned_screen_entry",
+      wrappedRoute: "/warehouse",
+      routeWrapper: "office_child_screen_entry",
+    });
+    recordOfficeChildUnmount({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      pathname: "/office",
+      segments: "(tabs)/office",
+      identity: "office_warehouse_route:ghi789",
+      wrappedRoute: "/warehouse",
+      routeWrapper: "office_child_screen_entry",
     });
     recordOfficeIndexAfterReturnMount({
       owner: "office_index_route",
@@ -624,9 +647,11 @@ describe("office reentry breadcrumbs", () => {
       "office_warehouse_back_method_selected",
       "office_warehouse_back_use_router_back",
       "office_warehouse_before_remove",
+      "office_child_before_remove",
       "office_warehouse_back_handler_done",
       "office_warehouse_back_press_done",
       "office_warehouse_unmount",
+      "office_child_unmount",
       "office_index_after_return_mount",
       "office_index_after_return_focus",
       "office_back_path_failed",

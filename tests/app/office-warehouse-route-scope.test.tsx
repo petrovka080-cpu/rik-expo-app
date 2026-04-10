@@ -7,6 +7,7 @@ import * as officeBreadcrumbs from "../../src/lib/navigation/officeReentryBreadc
 const mockUsePathname = jest.fn();
 const mockUseSegments = jest.fn();
 const mockAddListener: jest.Mock = jest.fn(() => jest.fn());
+const mockWarehouseScreenContent = jest.fn((_props?: Record<string, unknown>) => null);
 
 jest.mock("expo-router", () => {
   const ReactRuntime = jest.requireActual("react");
@@ -35,7 +36,10 @@ jest.mock("../../src/screens/warehouse/WarehouseScreenContent", () => {
   const { View } = jest.requireActual("react-native");
   return {
     __esModule: true,
-    default: function MockWarehouseScreenContent() {
+    default: function MockWarehouseScreenContent(
+      props: Record<string, unknown>,
+    ) {
+      mockWarehouseScreenContent(props);
       return ReactRuntime.createElement(View, {
         testID: "warehouse-screen-content",
       });
@@ -44,29 +48,25 @@ jest.mock("../../src/screens/warehouse/WarehouseScreenContent", () => {
 });
 
 jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
+  recordOfficeChildBeforeRemove: jest.fn(),
+  recordOfficeChildEntryFocus: jest.fn(),
+  recordOfficeChildEntryMount: jest.fn(),
+  recordOfficeChildUnmount: jest.fn(),
   recordOfficeWarehouseBeforeRemove: jest.fn(),
-  recordOfficeWarehouseEntryFailure: jest.fn(),
   recordOfficeWarehouseEntryFocusDone: jest.fn(),
   recordOfficeWarehouseEntryFocusStart: jest.fn(),
   recordOfficeWarehouseEntryMountDone: jest.fn(),
   recordOfficeWarehouseEntryMountStart: jest.fn(),
-  recordOfficeWarehouseScopeActive: jest.fn(),
-  recordOfficeWarehouseScopeInactive: jest.fn(),
-  recordOfficeWarehouseScopeSkipReason: jest.fn(),
   recordOfficeWarehouseUnmount: jest.fn(),
-  recordOfficeRouteOwnerIdentity: jest.fn(),
-  recordOfficeRouteOwnerBlur: jest.fn(),
-  recordOfficeRouteOwnerFocus: jest.fn(),
-  recordOfficeRouteOwnerMount: jest.fn(),
-  recordOfficeRouteOwnerUnmount: jest.fn(),
 }));
 
-describe("office warehouse route scope", () => {
+describe("office warehouse child route entry", () => {
   beforeEach(() => {
     mockUsePathname.mockReset();
     mockUseSegments.mockReset();
     mockAddListener.mockReset();
     mockAddListener.mockReturnValue(jest.fn());
+    mockWarehouseScreenContent.mockReset();
     Object.values(officeBreadcrumbs).forEach((value) => {
       if (jest.isMockFunction(value)) {
         value.mockClear();
@@ -74,7 +74,7 @@ describe("office warehouse route scope", () => {
     });
   });
 
-  it("keeps office warehouse entry active only on exact /office/warehouse", () => {
+  it("uses the shared office child wrapper model for /office/warehouse", () => {
     mockUsePathname.mockReturnValue("/office/warehouse");
     mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
 
@@ -86,37 +86,47 @@ describe("office warehouse route scope", () => {
     expect(
       renderer?.root.findAllByProps({ testID: "warehouse-screen-content" }).length,
     ).toBeGreaterThan(0);
-    expect(officeBreadcrumbs.recordOfficeWarehouseScopeActive).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeChildEntryMount).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountStart).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountDone).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeChildEntryFocus).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusStart).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusDone).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeRouteOwnerIdentity).toHaveBeenCalled();
     expect(mockAddListener).toHaveBeenCalledWith(
       "beforeRemove",
       expect.any(Function),
     );
-  });
+    expect(mockWarehouseScreenContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entryKind: "office",
+        entryExtra: expect.objectContaining({
+          owner: "office_warehouse_route",
+          route: "/office/warehouse",
+          wrappedRoute: "/warehouse",
+          routeWrapper: "office_child_screen_entry",
+          contentOwner: "office_warehouse_route",
+        }),
+      }),
+    );
 
-  it("keeps office warehouse entry passive on foreign paths", () => {
-    mockUsePathname.mockReturnValue("/profile");
-    mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
-
-    let renderer: TestRenderer.ReactTestRenderer | null = null;
+    const beforeRemoveListener = mockAddListener.mock.calls[0]?.[1];
+    expect(typeof beforeRemoveListener).toBe("function");
     act(() => {
-      renderer = TestRenderer.create(<OfficeWarehouseRoute />);
+      beforeRemoveListener({
+        data: {
+          action: {
+            type: "GO_BACK",
+          },
+        },
+      });
     });
+    expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseBeforeRemove).toHaveBeenCalled();
 
-    expect(
-      renderer?.root.findAllByProps({ testID: "warehouse-screen-content" }).length,
-    ).toBe(0);
-    expect(officeBreadcrumbs.recordOfficeWarehouseScopeSkipReason).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseScopeInactive).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountStart).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryMountDone).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusStart).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeWarehouseEntryFocusDone).not.toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeRouteOwnerIdentity).not.toHaveBeenCalled();
-    expect(mockAddListener).not.toHaveBeenCalled();
+    act(() => {
+      renderer?.unmount();
+    });
+    expect(officeBreadcrumbs.recordOfficeChildUnmount).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).toHaveBeenCalled();
   });
 });
