@@ -13,6 +13,8 @@ import {
   recordOfficeChildUnmount,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
 
+const ENABLE_OFFICE_CHILD_BEFORE_REMOVE_DIAGNOSTICS = false;
+
 type OfficeChildRouteAuditExtra = {
   owner: string;
   route: string;
@@ -150,6 +152,9 @@ export function useOfficeChildRouteAudit({
   }, [buildCurrentExtra, buildInitialExtra]);
 
   useEffect(() => {
+    if (!ENABLE_OFFICE_CHILD_BEFORE_REMOVE_DIAGNOSTICS) {
+      return undefined;
+    }
     return navigation.addListener("beforeRemove", (event) => {
       const action =
         typeof event?.data?.action?.type === "string"

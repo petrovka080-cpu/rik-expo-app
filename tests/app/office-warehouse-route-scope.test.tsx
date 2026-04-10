@@ -82,10 +82,7 @@ describe("office warehouse child route entry", () => {
     ).toBeGreaterThan(0);
     expect(officeBreadcrumbs.recordOfficeChildEntryMount).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildEntryFocus).toHaveBeenCalled();
-    expect(mockAddListener).toHaveBeenCalledWith(
-      "beforeRemove",
-      expect.any(Function),
-    );
+    expect(mockAddListener).not.toHaveBeenCalled();
     expect(mockWarehouseScreenContent).toHaveBeenCalledWith(
       expect.objectContaining({
         entryKind: "office",
@@ -104,19 +101,7 @@ describe("office warehouse child route entry", () => {
         }),
       }),
     );
-
-    const beforeRemoveListener = mockAddListener.mock.calls[0]?.[1];
-    expect(typeof beforeRemoveListener).toBe("function");
-    act(() => {
-      beforeRemoveListener({
-        data: {
-          action: {
-            type: "GO_BACK",
-          },
-        },
-      });
-    });
-    expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).not.toHaveBeenCalled();
 
     act(() => {
       renderer?.unmount();
