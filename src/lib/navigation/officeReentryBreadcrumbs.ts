@@ -49,8 +49,6 @@ export type OfficeReentryMarker =
   | "office_warehouse_back_use_replace_fallback"
   | "office_warehouse_back_replace_start"
   | "office_warehouse_back_replace_done"
-  | "warehouse_back_source_custom_header"
-  | "warehouse_back_source_go_back_guard"
   | "office_warehouse_before_remove"
   | "office_warehouse_unmount"
   | "office_index_after_return_focus"
@@ -372,8 +370,6 @@ function recordOfficeLifecycleMarker(params: {
     | "office_warehouse_back_use_replace_fallback"
     | "office_warehouse_back_replace_start"
     | "office_warehouse_back_replace_done"
-    | "warehouse_back_source_custom_header"
-    | "warehouse_back_source_go_back_guard"
     | "office_warehouse_before_remove"
     | "office_warehouse_unmount"
     | "office_index_after_return_focus"
@@ -759,24 +755,6 @@ export function recordOfficeWarehouseBackReplaceDone(
 ) {
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_back_replace_done",
-    extra,
-  });
-}
-
-export function recordWarehouseBackSourceCustomHeader(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_back_source_custom_header",
-    extra,
-  });
-}
-
-export function recordWarehouseBackSourceGoBackGuard(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "warehouse_back_source_go_back_guard",
     extra,
   });
 }
@@ -1336,12 +1314,6 @@ export function buildOfficeReentryBreadcrumbsText(
       if (item.extra?.handler)
         parts.push(`handler=${String(item.extra.handler)}`);
       if (item.extra?.action) parts.push(`action=${String(item.extra.action)}`);
-      if (item.extra?.source) parts.push(`source=${String(item.extra.source)}`);
-      if (item.extra?.trigger) parts.push(`trigger=${String(item.extra.trigger)}`);
-      if (item.extra?.actionSource)
-        parts.push(`actionSource=${String(item.extra.actionSource)}`);
-      if (item.extra?.actionTarget)
-        parts.push(`actionTarget=${String(item.extra.actionTarget)}`);
       if (item.extra?.phase) parts.push(`phase=${String(item.extra.phase)}`);
       if (item.extra?.selectedMethod)
         parts.push(`selectedMethod=${String(item.extra.selectedMethod)}`);

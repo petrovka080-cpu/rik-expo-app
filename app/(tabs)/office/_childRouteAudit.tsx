@@ -23,28 +23,8 @@ type OfficeChildRouteAuditExtra = {
   routeWrapper: "office_child_screen_entry";
 };
 
-type OfficeChildBeforeRemoveEvent = {
-  data?: {
-    action?: {
-      source?: string;
-      target?: string;
-      type?: string;
-    };
-  };
-  preventDefault?: () => void;
-};
-
-type OfficeChildBeforeRemoveOutcome = {
-  action?: string;
-  extra?: Record<string, unknown>;
-  skipDefaultBreadcrumb?: boolean;
-};
-
 type OfficeChildRouteDiagnostics = {
-  onBeforeRemove?: (
-    event: OfficeChildBeforeRemoveEvent,
-    extra: OfficeChildRouteAuditExtra & { action: string },
-  ) => OfficeChildBeforeRemoveOutcome | void;
+  onBeforeRemove?: (extra: OfficeChildRouteAuditExtra & { action: string }) => void;
   onFocusDone?: (extra: OfficeChildRouteAuditExtra) => void;
   onFocusStart?: (extra: OfficeChildRouteAuditExtra) => void;
   onLayoutMount?: (extra: OfficeChildRouteAuditExtra & { phase: "layout_effect" }) => void;
@@ -171,36 +151,15 @@ export function useOfficeChildRouteAudit({
 
   useEffect(() => {
     return navigation.addListener("beforeRemove", (event) => {
-      const rawAction =
+      const action =
         typeof event?.data?.action?.type === "string"
           ? event.data.action.type
           : "unknown_action";
-      const actionSource =
-        typeof event?.data?.action?.source === "string"
-          ? event.data.action.source
-          : undefined;
-      const actionTarget =
-        typeof event?.data?.action?.target === "string"
-          ? event.data.action.target
-          : undefined;
-      const initialBeforeRemoveExtra = buildCurrentExtra({
-        action: rawAction,
-        actionSource,
-        actionTarget,
-      }) as OfficeChildRouteAuditExtra & { action: string };
-      const outcome =
-        diagnosticsRef.current?.onBeforeRemove?.(event, initialBeforeRemoveExtra);
-      const resolvedOutcome: OfficeChildBeforeRemoveOutcome | undefined =
-        typeof outcome === "undefined" ? undefined : outcome;
       const beforeRemoveExtra = buildCurrentExtra({
-        action: resolvedOutcome?.action ?? rawAction,
-        actionSource,
-        actionTarget,
-        ...(resolvedOutcome?.extra ?? {}),
+        action,
       }) as OfficeChildRouteAuditExtra & { action: string };
-      if (!resolvedOutcome?.skipDefaultBreadcrumb) {
-        recordOfficeChildBeforeRemove(beforeRemoveExtra);
-      }
+      recordOfficeChildBeforeRemove(beforeRemoveExtra);
+      diagnosticsRef.current?.onBeforeRemove?.(beforeRemoveExtra);
     });
   }, [buildCurrentExtra, navigation]);
 
