@@ -1,5 +1,5 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   loadStoredFioState,
   saveStoredFioState,
@@ -29,6 +29,11 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
   const isFioConfirmVisible = useWarehouseUiStore((state) => state.isFioConfirmVisible);
   const setIsFioConfirmVisible = useWarehouseUiStore((state) => state.setIsFioConfirmVisible);
   const [isFioLoading, setIsFioLoading] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -71,30 +76,42 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
 
   useFocusEffect(
     useCallback(() => {
+      let active = true;
       const checkFio = async () => {
-        const { lastConfirmIso } = await loadStoredFioState({
-          screen: "warehouse",
-          surface: "warehouseman_fio",
-          keys: {
-            currentKey: "wh_warehouseman_fio",
-            confirmKey: CONFIRM_TS_KEY,
-            historyKey: WAREHOUSEMAN_HISTORY_KEY,
-          },
-        });
-        const sixAM = getTodaySixAM();
-        const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
-        if (!lastConfirm || lastConfirm < sixAM) {
-          setIsFioConfirmVisible(true);
+        try {
+          const { lastConfirmIso } = await loadStoredFioState({
+            screen: "warehouse",
+            surface: "warehouseman_fio",
+            keys: {
+              currentKey: "wh_warehouseman_fio",
+              confirmKey: CONFIRM_TS_KEY,
+              historyKey: WAREHOUSEMAN_HISTORY_KEY,
+            },
+          });
+          if (!active || !mountedRef.current) return;
+          const sixAM = getTodaySixAM();
+          const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
+          if (!lastConfirm || lastConfirm < sixAM) {
+            setIsFioConfirmVisible(true);
+          }
+        } catch (e) {
+          if (active && mountedRef.current) {
+            onError?.(e);
+          }
         }
       };
       void checkFio();
-    }, [getTodaySixAM, setIsFioConfirmVisible]),
+      return () => {
+        active = false;
+      };
+    }, [getTodaySixAM, onError, setIsFioConfirmVisible]),
   );
 
   const handleFioConfirm = useCallback(
     async (fio: string) => {
       setIsFioLoading(true);
       try {
+        if (!mountedRef.current) return;
         setWarehousemanFio(fio);
         const nextHist = await saveStoredFioState({
           screen: "warehouse",
@@ -107,12 +124,17 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
           fio,
           history: warehousemanHistory,
         });
+        if (!mountedRef.current) return;
         setWarehousemanHistory(nextHist);
         setIsFioConfirmVisible(false);
       } catch (e) {
-        onError?.(e);
+        if (mountedRef.current) {
+          onError?.(e);
+        }
       } finally {
-        setIsFioLoading(false);
+        if (mountedRef.current) {
+          setIsFioLoading(false);
+        }
       }
     },
     [warehousemanHistory, onError, setIsFioConfirmVisible],

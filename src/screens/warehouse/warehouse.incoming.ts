@@ -107,10 +107,9 @@ export function useWarehouseIncoming() {
         const hasNext = result?.meta.hasMore === true;
         toReceiveHasMoreRef.current = hasNext;
         toReceivePageRef.current = pageIndex;
+        if (!mountedRef.current) return;
         setToReceiveHasMore(hasNext);
         setToReceivePage(pageIndex);
-
-        if (!mountedRef.current) return;
         if (pageIndex === 0) {
           toReceiveRef.current = queue;
           setToReceive(queue);
@@ -177,7 +176,7 @@ export function useWarehouseIncoming() {
         if (__DEV__) {
           console.warn("[warehouse.incoming] warehouse_incoming_queue_scope_v1 failed:", e);
         }
-        if (pageIndex === 0) {
+        if (pageIndex === 0 && mountedRef.current) {
           setToReceive([]);
           setIncomingCount(0);
           setToReceiveHasMore(false);
