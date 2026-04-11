@@ -43,7 +43,6 @@ function PayActionsHarness(props: {
   setCurrentPaymentId: jest.Mock;
   setRows: jest.Mock;
   afterPaymentSync: jest.Mock;
-  persistInvoiceMetaIfNeeded: jest.Mock;
 }) {
   const { addPayment } = useAccountantPayActions({
     canAct: true,
@@ -62,7 +61,6 @@ function PayActionsHarness(props: {
     allocRows: [{ proposal_item_id: "item-1", amount: 10 }],
     allocOk: true,
     purposePrefix: "Payment",
-    persistInvoiceMetaIfNeeded: props.persistInvoiceMetaIfNeeded,
     afterPaymentSync: props.afterPaymentSync,
     closeCard: props.closeCard,
     setCurrentPaymentId: props.setCurrentPaymentId,
@@ -131,7 +129,6 @@ describe("useAccountantPayActions", () => {
     const setCurrentPaymentId = jest.fn();
     const setRows = jest.fn();
     const afterPaymentSync = jest.fn().mockResolvedValue(undefined);
-    const persistInvoiceMetaIfNeeded = jest.fn().mockResolvedValue(undefined);
 
     let renderer!: ReturnType<typeof TestRenderer.create>;
     await act(async () => {
@@ -142,7 +139,6 @@ describe("useAccountantPayActions", () => {
           setCurrentPaymentId={setCurrentPaymentId}
           setRows={setRows}
           afterPaymentSync={afterPaymentSync}
-          persistInvoiceMetaIfNeeded={persistInvoiceMetaIfNeeded}
         />,
       );
     });
@@ -215,7 +211,6 @@ describe("useAccountantPayActions", () => {
     const setCurrentPaymentId = jest.fn();
     const setRows = jest.fn();
     const afterPaymentSync = jest.fn().mockResolvedValue(undefined);
-    const persistInvoiceMetaIfNeeded = jest.fn().mockResolvedValue(undefined);
 
     let renderer!: ReturnType<typeof TestRenderer.create>;
     await act(async () => {
@@ -226,7 +221,6 @@ describe("useAccountantPayActions", () => {
           setCurrentPaymentId={setCurrentPaymentId}
           setRows={setRows}
           afterPaymentSync={afterPaymentSync}
-          persistInvoiceMetaIfNeeded={persistInvoiceMetaIfNeeded}
         />,
       );
     });
@@ -293,7 +287,6 @@ describe("useAccountantPayActions", () => {
     const setCurrentPaymentId = jest.fn();
     const setRows = jest.fn();
     const afterPaymentSync = jest.fn().mockRejectedValue(new Error("refresh failed"));
-    const persistInvoiceMetaIfNeeded = jest.fn().mockResolvedValue(undefined);
 
     let renderer!: ReturnType<typeof TestRenderer.create>;
     await act(async () => {
@@ -304,7 +297,6 @@ describe("useAccountantPayActions", () => {
           setCurrentPaymentId={setCurrentPaymentId}
           setRows={setRows}
           afterPaymentSync={afterPaymentSync}
-          persistInvoiceMetaIfNeeded={persistInvoiceMetaIfNeeded}
         />,
       );
     });

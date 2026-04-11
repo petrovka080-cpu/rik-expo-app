@@ -29,7 +29,6 @@ type Params<T extends RowBase> = {
   allocRows: AllocRow[];
   allocOk: boolean;
   purposePrefix: string;
-  persistInvoiceMetaIfNeeded?: (proposalId: string) => Promise<void>;
   afterPaymentSync: (proposalId: string) => Promise<unknown>;
   closeCard: () => void;
   setCurrentPaymentId: (id: number | null) => void;

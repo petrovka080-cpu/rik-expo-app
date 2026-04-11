@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react";
+import React, { memo } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import TopRightActionBar from "../../../ui/TopRightActionBar";
 import type { HistoryRow } from "../types";
@@ -11,10 +11,9 @@ type UiShape = {
 };
 
 type HistoryHeaderProps = {
-  rows: HistoryRow[];
-  totalCount?: number;
-  totalAmount?: number;
-  totalCurrency?: string;
+  totalCount: number;
+  totalAmount: number;
+  totalCurrency: string;
   dateFrom: string;
   dateTo: string;
   searchValue: string;
@@ -25,7 +24,6 @@ type HistoryHeaderProps = {
 };
 
 export const HistoryHeader = memo(function HistoryHeader({
-  rows,
   totalCount,
   totalAmount,
   totalCurrency,
@@ -37,10 +35,6 @@ export const HistoryHeader = memo(function HistoryHeader({
   onRefresh,
   ui,
 }: HistoryHeaderProps) {
-  const visibleTotal = useMemo(() => (rows || []).reduce((s, r) => s + Number(r?.amount ?? 0), 0), [rows]);
-  const total = typeof totalAmount === "number" ? totalAmount : visibleTotal;
-  const cur = totalCurrency ?? rows?.[0]?.invoice_currency ?? "KGS";
-  const count = typeof totalCount === "number" ? totalCount : rows.length;
   const periodTitle =
     String(dateFrom || "").trim() || String(dateTo || "").trim()
       ? `${String(dateFrom || "—")} -> ${String(dateTo || "—")}`
@@ -77,8 +71,8 @@ export const HistoryHeader = memo(function HistoryHeader({
       <View style={{ height: 10 }} />
       <View style={{ paddingBottom: 4 }}>
         <Text style={{ color: ui.sub, fontWeight: "500" }}>
-          Найдено: <Text style={{ fontWeight: "600", color: ui.text }}>{count}</Text>
-          {"  "}• Сумма: <Text style={{ fontWeight: "600", color: ui.text }}>{total.toFixed(2)} {cur}</Text>
+          Найдено: <Text style={{ fontWeight: "600", color: ui.text }}>{totalCount}</Text>
+          {"  "}• Сумма: <Text style={{ fontWeight: "600", color: ui.text }}>{totalAmount.toFixed(2)} {totalCurrency}</Text>
         </Text>
       </View>
     </View>

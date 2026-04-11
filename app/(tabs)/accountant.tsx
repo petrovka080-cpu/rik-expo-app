@@ -58,9 +58,6 @@ import { useAccountantFioConfirm } from "../../src/screens/accountant/useAccount
 import { useAccountantPostPaymentSync } from "../../src/screens/accountant/useAccountantPostPaymentSync";
 import { useAccountantPayActions } from "../../src/screens/accountant/useAccountantPayActions";
 import { useAccountantReturnAction } from "../../src/screens/accountant/useAccountantReturnAction";
-import {
-  persistInvoiceMetaIfNeeded as persistInvoiceMetaIfNeededService,
-} from "../../src/screens/accountant/accountant.payment";
 import { useAccountantScreenController } from "../../src/screens/accountant/useAccountantScreenController";
 import { AccountantCardContent } from "../../src/screens/accountant/components/AccountantCardContent";
 import { useAccountantHeaderAnimation } from "../../src/screens/accountant/useAccountantHeaderAnimation";
@@ -334,15 +331,6 @@ export function AccountantScreen() {
     getErrorText,
   });
 
-  const persistInvoiceMetaIfNeeded = useCallback(async (proposalId: string) => {
-    await persistInvoiceMetaIfNeededService({
-      proposalId,
-      invoiceNo,
-      invoiceDate,
-      toRpcDateOrNull,
-    });
-  }, [invoiceNo, invoiceDate]);
-
   const afterPaymentSync = useAccountantPostPaymentSync({
     current,
     setTab,
@@ -362,7 +350,6 @@ export function AccountantScreen() {
     allocRows,
     allocOk,
     purposePrefix,
-    persistInvoiceMetaIfNeeded,
     afterPaymentSync,
     closeCard,
     setCurrentPaymentId,
@@ -401,7 +388,6 @@ export function AccountantScreen() {
   const historyHeader = useMemo(
     () => (
       <HistoryHeader
-        rows={historyRows}
         totalCount={historyTotalCount}
         totalAmount={historyTotalAmount}
         totalCurrency={historyCurrency}
@@ -415,7 +401,6 @@ export function AccountantScreen() {
       />
     ),
     [
-      historyRows,
       historyTotalCount,
       historyTotalAmount,
       historyCurrency,
