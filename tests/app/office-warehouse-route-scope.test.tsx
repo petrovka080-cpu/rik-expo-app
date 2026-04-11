@@ -80,6 +80,8 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeChildEntryFocus: jest.fn(),
   recordOfficeChildEntryMount: jest.fn(),
   recordOfficeChildUnmount: jest.fn(),
+  recordOfficeRouteOwnerUnmount: jest.fn(),
+  recordOfficeTabOwnerUnmount: jest.fn(),
   recordOfficeWarehouseCleanupDone: jest.fn(),
   recordOfficeWarehouseCleanupStart: jest.fn(),
   recordOfficeWarehouseBeforeRemove: jest.fn(),
@@ -245,6 +247,43 @@ describe("office warehouse child route entry", () => {
     act(() => {
       renderer?.unmount();
     });
+  });
+
+  it("does not tear down office owners during a warehouse GO_BACK cycle", () => {
+    mockUsePathname.mockReturnValue("/office/warehouse");
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+
+    let renderer: TestRenderer.ReactTestRenderer | null = null;
+    act(() => {
+      renderer = TestRenderer.create(<OfficeWarehouseRoute />);
+    });
+
+    const beforeRemoveListener = mockAddListener.mock.calls[0]?.[1];
+    expect(typeof beforeRemoveListener).toBe("function");
+
+    act(() => {
+      beforeRemoveListener({
+        data: {
+          action: {
+            type: "GO_BACK",
+          },
+        },
+      });
+    });
+
+    expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseBeforeRemove).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeTabOwnerUnmount).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeRouteOwnerUnmount).not.toHaveBeenCalled();
+
+    act(() => {
+      renderer?.unmount();
+    });
+
+    expect(officeBreadcrumbs.recordOfficeChildUnmount).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeTabOwnerUnmount).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeRouteOwnerUnmount).not.toHaveBeenCalled();
   });
 
   it("matches the same reexport contract used by working office child routes", () => {
