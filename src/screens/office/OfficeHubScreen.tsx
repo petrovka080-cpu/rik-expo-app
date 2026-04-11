@@ -1229,8 +1229,9 @@ export default function OfficeHubScreen({
   ]);
 
   React.useEffect(() => {
-    isMountedRef.current = true;
+    isMountedRef.current = routeScopeActive;
     if (!routeScopeActive) {
+      cancelPostReturnIdle();
       return () => {
         isMountedRef.current = false;
         cancelPostReturnIdle();

@@ -1085,6 +1085,38 @@ describe("OfficeHubScreen", () => {
     expect(mockRecordOfficePostReturnFocus).not.toHaveBeenCalled();
   });
 
+  it("does not commit a pending bootstrap after route scope becomes inactive", async () => {
+    let resolveLoad: (value: typeof directorData) => void = () => undefined;
+    mockLoadOfficeAccessScreenData.mockImplementation(
+      () =>
+        new Promise<typeof directorData>((resolve) => {
+          resolveLoad = resolve;
+        }),
+    );
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+
+    expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      renderer!.update(<OfficeHubScreen routeScopeActive={false} />);
+    });
+    await act(async () => {
+      resolveLoad(directorData);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockRecordOfficeBootstrapInitialDone).not.toHaveBeenCalled();
+    expect(mockRecordOfficeReentryEffectDone).not.toHaveBeenCalled();
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-summary" }),
+    ).toEqual([]);
+  });
+
   it("runs a silent focus refresh after ttl expiry without re-entering the loading shell", async () => {
     const dateNowSpy = jest.spyOn(Date, "now");
     let now = 1_000_000;
