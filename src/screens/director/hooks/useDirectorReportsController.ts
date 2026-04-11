@@ -21,6 +21,11 @@ import {
   type DirectorObservedBranchMeta,
   type DirectorReportsBranchStage,
 } from "../directorReports.store";
+import {
+  clearDirectorReportsInFlight,
+  resolveDirectorReportsInFlight,
+  type DirectorReportsInFlightEntry,
+} from "../directorReportsInFlight";
 
 type Deps = {
   fmtDateOnly: (iso?: string | null) => string;
@@ -66,6 +71,31 @@ const recordDirectorReportsWarning = (
       owner: "reports_controller",
       severity: "warn",
       ...extra,
+    },
+  });
+};
+
+const recordDirectorReportsInFlight = (
+  event: "reports_inflight_joined" | "reports_inflight_stale_dropped",
+  params: {
+    stage: "report" | "discipline" | "options";
+    key: string;
+    reqId?: number;
+    staleReqId?: number;
+    currentReqId?: number;
+  },
+) => {
+  recordPlatformObservability({
+    screen: "director",
+    surface: "reports_controller",
+    category: "fetch",
+    event,
+    result: event === "reports_inflight_joined" ? "joined_inflight" : "skipped",
+    sourceKind: "director_reports_scope",
+    extra: {
+      module: "useDirectorReportsController",
+      owner: "reports_controller",
+      ...params,
     },
   });
 };
@@ -144,9 +174,9 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const optionsReqSeqRef = useRef(0);
   const disciplineReqSeqRef = useRef(0);
   const scopeLoadSeqRef = useRef(0);
-  const inFlightReportRef = useRef<Map<string, Promise<void>>>(new Map());
-  const inFlightDisciplineRef = useRef<Map<string, Promise<void>>>(new Map());
-  const inFlightOptionsRef = useRef<Map<string, Promise<void>>>(new Map());
+  const inFlightReportRef = useRef<Map<string, DirectorReportsInFlightEntry>>(new Map());
+  const inFlightDisciplineRef = useRef<Map<string, DirectorReportsInFlightEntry>>(new Map());
+  const inFlightOptionsRef = useRef<Map<string, DirectorReportsInFlightEntry>>(new Map());
   const lastDisciplineLoadKeyRef = useRef<string>("");
   const disciplinePricesReadyRef = useRef<Set<string>>(new Set());
 
@@ -340,10 +370,23 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const objectName = objectNameArg === undefined ? repObjectName : objectNameArg;
     const key = reportKey(from, to, objectName ?? null, repOptObjectIdByName);
-    const inFlight = inFlightReportRef.current.get(key);
-    if (inFlight) {
-      await inFlight;
+    const inFlight = resolveDirectorReportsInFlight(inFlightReportRef.current, key, reportReqSeqRef.current);
+    if (inFlight.action === "join") {
+      recordDirectorReportsInFlight("reports_inflight_joined", {
+        stage: "report",
+        key,
+        reqId: inFlight.reqId,
+      });
+      await inFlight.promise;
       return;
+    }
+    if (inFlight.action === "drop_stale") {
+      recordDirectorReportsInFlight("reports_inflight_stale_dropped", {
+        stage: "report",
+        key,
+        staleReqId: inFlight.staleReqId,
+        currentReqId: inFlight.currentReqId,
+      });
     }
 
     const reqId = ++reportReqSeqRef.current;
@@ -377,11 +420,11 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           Alert.alert("Не удалось получить отчёт", message);
         }
       } finally {
-        inFlightReportRef.current.delete(key);
+        clearDirectorReportsInFlight(inFlightReportRef.current, key, reqId);
         if (!opts?.background && reqId === reportReqSeqRef.current) setRepLoading(false);
       }
     })();
-    inFlightReportRef.current.set(key, task);
+    inFlightReportRef.current.set(key, { reqId, promise: task });
     await task;
   }, [commitOptionsState, commitReportState, currentOptionsState, loadReportScope, repFrom, repObjectName, repOptObjectIdByName, repTo, reportKey, setRepLoading]);
 
@@ -435,11 +478,24 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       logTiming("api:discipline:cache_hit", totalStart);
       return;
     }
-    const inFlight = inFlightDisciplineRef.current.get(key);
-    if (inFlight) {
-      await inFlight;
+    const inFlight = resolveDirectorReportsInFlight(inFlightDisciplineRef.current, key, disciplineReqSeqRef.current);
+    if (inFlight.action === "join") {
+      recordDirectorReportsInFlight("reports_inflight_joined", {
+        stage: "discipline",
+        key,
+        reqId: inFlight.reqId,
+      });
+      await inFlight.promise;
       logTiming("api:discipline:join_inflight", totalStart);
       return;
+    }
+    if (inFlight.action === "drop_stale") {
+      recordDirectorReportsInFlight("reports_inflight_stale_dropped", {
+        stage: "discipline",
+        key,
+        staleReqId: inFlight.staleReqId,
+        currentReqId: inFlight.currentReqId,
+      });
     }
 
     const reqId = ++disciplineReqSeqRef.current;
@@ -524,12 +580,12 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           Alert.alert("Не удалось получить дисциплины", message);
         }
       } finally {
-        inFlightDisciplineRef.current.delete(key);
+        clearDirectorReportsInFlight(inFlightDisciplineRef.current, key, reqId);
         if (!opts?.background && reqId === disciplineReqSeqRef.current) setRepLoading(false);
         logTiming("api:discipline:total", totalStart);
       }
     })();
-    inFlightDisciplineRef.current.set(key, task);
+    inFlightDisciplineRef.current.set(key, { reqId, promise: task });
     await task;
   }, [commitDisciplineState, commitOptionsState, disciplineKey, loadReportScope, logTiming, makeOptionsState, nowMs, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepDisciplinePriceLoading, setRepLoading]);
 
@@ -590,10 +646,23 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const key = optionsKey(from, to);
-    const inFlight = inFlightOptionsRef.current.get(key);
-    if (inFlight) {
-      await inFlight;
+    const inFlight = resolveDirectorReportsInFlight(inFlightOptionsRef.current, key, optionsReqSeqRef.current);
+    if (inFlight.action === "join") {
+      recordDirectorReportsInFlight("reports_inflight_joined", {
+        stage: "options",
+        key,
+        reqId: inFlight.reqId,
+      });
+      await inFlight.promise;
       return;
+    }
+    if (inFlight.action === "drop_stale") {
+      recordDirectorReportsInFlight("reports_inflight_stale_dropped", {
+        stage: "options",
+        key,
+        staleReqId: inFlight.staleReqId,
+        currentReqId: inFlight.currentReqId,
+      });
     }
 
     const reqId = ++optionsReqSeqRef.current;
@@ -620,11 +689,11 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         setRepOptObjects([]);
         setRepOptObjectIdByName({});
       } finally {
-        inFlightOptionsRef.current.delete(key);
+        clearDirectorReportsInFlight(inFlightOptionsRef.current, key, reqId);
         if (reqId === optionsReqSeqRef.current) setRepOptLoading(false);
       }
     })();
-    inFlightOptionsRef.current.set(key, task);
+    inFlightOptionsRef.current.set(key, { reqId, promise: task });
     await task;
   }, [commitOptionsState, currentOptionsState, loadReportScope, optionsKey, repFrom, repObjectName, repTo, setRepOptLoading]);
 
