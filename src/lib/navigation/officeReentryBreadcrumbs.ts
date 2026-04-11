@@ -42,17 +42,6 @@ export type OfficeReentryMarker =
   | "office_warehouse_unmount"
   | "office_warehouse_back_press_start"
   | "office_warehouse_back_press_done"
-  | "office_warehouse_back_handler_enter"
-  | "office_warehouse_back_method_select_start"
-  | "office_warehouse_back_method_select_done"
-  | "office_warehouse_back_can_go_back_check_start"
-  | "office_warehouse_back_can_go_back_check_done"
-  | "office_warehouse_back_receipt_mark_start"
-  | "office_warehouse_back_receipt_mark_done"
-  | "office_warehouse_back_router_back_call_start"
-  | "office_warehouse_back_router_back_call_done"
-  | "office_warehouse_back_router_replace_call_start"
-  | "office_warehouse_back_router_replace_call_done"
   | "office_warehouse_cleanup_start"
   | "office_warehouse_cleanup_done"
   | "office_warehouse_runtime_bootstrap_start"
@@ -277,35 +266,6 @@ function recordOfficeReentryMarker(input: OfficeReentryBreadcrumbInput) {
     extra,
   });
   recordOfficeReentryBreadcrumbs([{ ...input, extra }]);
-}
-
-async function recordOfficeReentryMarkerAsync(
-  input: OfficeReentryBreadcrumbInput,
-) {
-  const extra = {
-    route: OFFICE_ROUTE,
-    ...(input.extra ?? {}),
-  };
-
-  recordPlatformObservability({
-    screen: "office",
-    surface: "office_reentry",
-    category: "ui",
-    event: input.marker,
-    result:
-      input.result === "error" ||
-      input.result === "cache_hit" ||
-      input.result === "joined_inflight" ||
-      input.result === "queued_rerun" ||
-      input.result === "skipped"
-        ? input.result
-        : "success",
-    errorStage: trimText(input.errorStage) ?? undefined,
-    errorClass: trimText(input.errorClass) ?? undefined,
-    errorMessage: trimText(input.errorMessage) ?? undefined,
-    extra,
-  });
-  await recordOfficeReentryBreadcrumbsAsync([{ ...input, extra }]);
 }
 
 export function recordOfficeReentryStart(extra?: Record<string, unknown>) {
@@ -720,45 +680,11 @@ export function recordOfficeWarehouseBackPressStart(
   });
 }
 
-export async function recordOfficeWarehouseBackPressStartAsync(
-  extra?: Record<string, unknown>,
-) {
-  await recordOfficeReentryMarkerAsync({
-    marker: "office_warehouse_back_press_start",
-    result: "success",
-    extra,
-  });
-}
-
 export function recordOfficeWarehouseBackPressDone(
   extra?: Record<string, unknown>,
 ) {
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_back_press_done",
-    extra,
-  });
-}
-
-export async function recordOfficeWarehouseBackHandlerStepAsync(
-  marker: Extract<
-    OfficeReentryMarker,
-    | "office_warehouse_back_handler_enter"
-    | "office_warehouse_back_method_select_start"
-    | "office_warehouse_back_method_select_done"
-    | "office_warehouse_back_can_go_back_check_start"
-    | "office_warehouse_back_can_go_back_check_done"
-    | "office_warehouse_back_receipt_mark_start"
-    | "office_warehouse_back_receipt_mark_done"
-    | "office_warehouse_back_router_back_call_start"
-    | "office_warehouse_back_router_back_call_done"
-    | "office_warehouse_back_router_replace_call_start"
-    | "office_warehouse_back_router_replace_call_done"
-  >,
-  extra?: Record<string, unknown>,
-) {
-  await recordOfficeReentryMarkerAsync({
-    marker,
-    result: "success",
     extra,
   });
 }

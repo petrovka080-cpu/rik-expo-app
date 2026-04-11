@@ -151,4 +151,37 @@ describe("OfficeStackLayout", () => {
     expect(source).not.toContain("headerBackButtonMenuEnabled: false");
     expect(source).not.toContain("gestureEnabled: false");
   });
+
+  it("keeps warehouse back logs free of replace navigation markers", () => {
+    const layoutSource = fs.readFileSync(
+      path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
+      "utf8",
+    );
+    const breadcrumbsSource = fs.readFileSync(
+      path.join(
+        __dirname,
+        "../../src/lib/navigation/officeReentryBreadcrumbs.ts",
+      ),
+      "utf8",
+    );
+    const warehouseBackMarkerStart = breadcrumbsSource.indexOf(
+      'office_warehouse_back_press_start',
+    );
+    const warehouseBackMarkerEnd = breadcrumbsSource.indexOf(
+      'office_warehouse_cleanup_start',
+    );
+    const logs = [
+      layoutSource,
+      breadcrumbsSource.slice(warehouseBackMarkerStart, warehouseBackMarkerEnd),
+    ].join("\n");
+
+    expect(logs).not.toContain("replace");
+    expect(logs).not.toContain("router_replace");
+    expect(logs).not.toContain(
+      "office_warehouse_back_router_replace_call_start",
+    );
+    expect(logs).not.toContain(
+      "office_warehouse_back_router_replace_call_done",
+    );
+  });
 });
