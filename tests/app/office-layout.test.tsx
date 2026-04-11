@@ -131,8 +131,8 @@ describe("OfficeStackLayout", () => {
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
-  it("marks a durable pending office replace receipt when warehouse falls back to replace", async () => {
-    mockCanGoBack.mockReturnValue(false);
+  it("uses a durable replace safety override for warehouse even when history exists", async () => {
+    mockCanGoBack.mockReturnValue(true);
 
     const header = renderSafeOfficeWarehouseBackButton({
       canGoBack: true,
@@ -150,14 +150,14 @@ describe("OfficeStackLayout", () => {
       sourceRoute: "/office/warehouse",
       target: OFFICE_SAFE_BACK_ROUTE,
       method: "replace",
-      selectedMethod: "replace_fallback",
+      selectedMethod: "replace_safety_override",
       handler: "safe_back_header",
     });
     expect(mockMarkPendingOfficeRouteReplaceReceipt).toHaveBeenCalledWith({
       sourceRoute: "/office/warehouse",
       target: OFFICE_SAFE_BACK_ROUTE,
       method: "replace",
-      selectedMethod: "replace_fallback",
+      selectedMethod: "replace_safety_override",
     });
     expect(mockRecordOfficeWarehouseBackPressDone).toHaveBeenCalledWith({
       owner: "office_stack_layout",
@@ -165,16 +165,16 @@ describe("OfficeStackLayout", () => {
       sourceRoute: "/office/warehouse",
       target: OFFICE_SAFE_BACK_ROUTE,
       method: "replace",
-      selectedMethod: "replace_fallback",
+      selectedMethod: "replace_safety_override",
       handler: "safe_back_header",
     });
     expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
     expect(mockBack).not.toHaveBeenCalled();
-    expect(mockCanGoBack).toHaveBeenCalledTimes(1);
+    expect(mockCanGoBack).not.toHaveBeenCalled();
     expect(mockRecordOfficeWarehouseBackHandlerStepAsync).toHaveBeenCalledWith(
       "office_warehouse_back_router_replace_call_start",
       expect.objectContaining({
-        selectedMethod: "replace_fallback",
+        selectedMethod: "replace_safety_override",
         handler: "safe_back_header",
       }),
     );
@@ -204,22 +204,24 @@ describe("OfficeStackLayout", () => {
       route: "/office/warehouse",
       sourceRoute: "/office/warehouse",
       target: OFFICE_SAFE_BACK_ROUTE,
-      method: "back",
-      selectedMethod: "back",
+      method: "replace",
+      selectedMethod: "replace_safety_override",
       handler: "safe_back_header",
     });
     expect(mockBack).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
     expect(mockRecordOfficeWarehouseBackPressDone).not.toHaveBeenCalled();
 
     resolveStartMarker?.();
     await flushBackHandler();
 
-    expect(mockBack).toHaveBeenCalledTimes(1);
-    expect(mockCanGoBack).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(mockCanGoBack).not.toHaveBeenCalled();
     expect(mockRecordOfficeWarehouseBackHandlerStepAsync).toHaveBeenCalledWith(
-      "office_warehouse_back_router_back_call_start",
+      "office_warehouse_back_router_replace_call_start",
       expect.objectContaining({
-        selectedMethod: "back",
+        selectedMethod: "replace_safety_override",
         handler: "safe_back_header",
       }),
     );
@@ -228,8 +230,8 @@ describe("OfficeStackLayout", () => {
       route: "/office/warehouse",
       sourceRoute: "/office/warehouse",
       target: OFFICE_SAFE_BACK_ROUTE,
-      method: "back",
-      selectedMethod: "back",
+      method: "replace",
+      selectedMethod: "replace_safety_override",
       handler: "safe_back_header",
     });
   });

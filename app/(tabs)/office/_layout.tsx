@@ -112,29 +112,18 @@ async function handleOfficeChildBack(params: {
         "office_warehouse_back_method_select_start",
         baseMarkerExtra,
       );
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_can_go_back_check_start",
-        baseMarkerExtra,
-      );
-    }
 
-    const hasHistory = hasSafeBackHistory(router);
-    const receiptExtra = {
-      sourceRoute: params.sourceRoute,
-      target: OFFICE_SAFE_BACK_ROUTE,
-      method: hasHistory ? "back" : "replace",
-      selectedMethod: hasHistory ? "back" : "replace_fallback",
-    };
-    const markerExtra = {
-      ...baseMarkerExtra,
-      ...receiptExtra,
-    };
+      const receiptExtra = {
+        sourceRoute: params.sourceRoute,
+        target: OFFICE_SAFE_BACK_ROUTE,
+        method: "replace",
+        selectedMethod: "replace_safety_override",
+      };
+      const markerExtra = {
+        ...baseMarkerExtra,
+        ...receiptExtra,
+      };
 
-    if (isWarehouse) {
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_can_go_back_check_done",
-        markerExtra,
-      );
       await recordOfficeWarehouseBackHandlerStepAsync(
         "office_warehouse_back_method_select_done",
         markerExtra,
@@ -144,7 +133,33 @@ async function handleOfficeChildBack(params: {
         "office_warehouse_back_receipt_mark_start",
         markerExtra,
       );
+
+      markPendingOfficeRouteReplaceReceipt(receiptExtra);
+
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_receipt_mark_done",
+        markerExtra,
+      );
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_router_replace_call_start",
+        markerExtra,
+      );
+      router.replace(OFFICE_SAFE_BACK_ROUTE);
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_router_replace_call_done",
+        markerExtra,
+      );
+      recordOfficeWarehouseBackPressDone(markerExtra);
+      return;
     }
+
+    const hasHistory = hasSafeBackHistory(router);
+    const receiptExtra = {
+      sourceRoute: params.sourceRoute,
+      target: OFFICE_SAFE_BACK_ROUTE,
+      method: hasHistory ? "back" : "replace",
+      selectedMethod: hasHistory ? "back" : "replace_fallback",
+    };
 
     if (hasHistory) {
       markPendingOfficeRouteReturnReceipt(receiptExtra);
@@ -152,45 +167,10 @@ async function handleOfficeChildBack(params: {
       markPendingOfficeRouteReplaceReceipt(receiptExtra);
     }
 
-    if (isWarehouse) {
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_receipt_mark_done",
-        markerExtra,
-      );
-    }
-
     if (hasHistory) {
-      if (isWarehouse) {
-        await recordOfficeWarehouseBackHandlerStepAsync(
-          "office_warehouse_back_router_back_call_start",
-          markerExtra,
-        );
-      }
       router.back();
-      if (isWarehouse) {
-        await recordOfficeWarehouseBackHandlerStepAsync(
-          "office_warehouse_back_router_back_call_done",
-          markerExtra,
-        );
-      }
     } else {
-      if (isWarehouse) {
-        await recordOfficeWarehouseBackHandlerStepAsync(
-          "office_warehouse_back_router_replace_call_start",
-          markerExtra,
-        );
-      }
       router.replace(OFFICE_SAFE_BACK_ROUTE);
-      if (isWarehouse) {
-        await recordOfficeWarehouseBackHandlerStepAsync(
-          "office_warehouse_back_router_replace_call_done",
-          markerExtra,
-        );
-      }
-    }
-
-    if (isWarehouse) {
-      recordOfficeWarehouseBackPressDone(markerExtra);
     }
   } catch (error) {
     recordOfficeBackPathFailure({
