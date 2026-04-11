@@ -143,6 +143,11 @@ describe("PdfViewerScreen web lifecycle", () => {
     });
 
     const iframe = renderer!.root.find((node) => node.type === "iframe");
+    expect(String(iframe.props["data-render-key"])).toContain("pdf-render:");
+    expect(String(iframe.props["data-render-key"])).toContain(":direct_asset_");
+    expect(String(iframe.props["data-render-key"])).not.toContain(
+      "example.com",
+    );
 
     const infoTextsBeforeLoad = infoSpy.mock.calls.map((call) =>
       String(call[0] ?? ""),

@@ -36,6 +36,7 @@ import {
   type PdfViewerResolution,
   type PdfViewerState as ViewerState,
 } from "../src/lib/pdf/pdfViewerContract";
+import { createPdfViewerRenderInstanceKey } from "../src/lib/pdf/pdfViewerRenderLifecycle";
 import {
   failPdfOpenVisible,
   markPdfOpenVisible,
@@ -1212,6 +1213,27 @@ function PdfViewerScreen() {
     }
     return getReadAccessParentUri(resolvedSource.asset.uri);
   }, [resolvedSource]);
+  const renderInstanceKey = React.useMemo(() => {
+    if (!asset || resolvedSource.kind !== "resolved-embedded") {
+      return createPdfViewerRenderInstanceKey({
+        platform: VIEWER_PLATFORM,
+        sessionId,
+        loadAttempt,
+      });
+    }
+    return createPdfViewerRenderInstanceKey({
+      platform: VIEWER_PLATFORM,
+      sessionId,
+      assetId: asset.assetId,
+      uri: asset.uri,
+      renderUri:
+        Platform.OS === "web"
+          ? webEmbeddedUri || asset.uri
+          : resolvedSource.canonicalUri,
+      renderer: resolvedSource.renderer,
+      loadAttempt,
+    });
+  }, [asset, loadAttempt, resolvedSource, sessionId, webEmbeddedUri]);
 
   const showChrome = Platform.OS === "web" ? true : chromeVisible;
   const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
@@ -1368,18 +1390,23 @@ function PdfViewerScreen() {
       documentType: asset.documentType,
       originModule: asset.originModule,
       iframeSrc,
+      renderInstanceKey,
     });
     recordViewerBreadcrumb("web_iframe_render", {
       uri: iframeSrc,
       uriKind: getUriScheme(iframeSrc),
       sourceKind: resolvedSource.sourceKind,
       previewPath: resolvedSource.renderer,
+      extra: {
+        renderInstanceKey,
+      },
     });
   }, [
     asset,
     isReadyToRender,
     loadAttempt,
     recordViewerBreadcrumb,
+    renderInstanceKey,
     resolvedSource,
     sessionId,
     webEmbeddedUri,
@@ -1517,6 +1544,8 @@ function PdfViewerScreen() {
               ]}
             >
               <iframe
+                key={renderInstanceKey}
+                data-render-key={renderInstanceKey}
                 title={asset.title || "PDF"}
                 src={webEmbeddedUri || undefined}
                 onLoad={() => {
@@ -1548,6 +1577,7 @@ function PdfViewerScreen() {
           </View>
         ) : NativePdfWebView ? (
           <NativePdfWebView
+            key={renderInstanceKey}
             testID="native-pdf-webview"
             source={source}
             originWhitelist={["*"]}
