@@ -1,7 +1,7 @@
 import React from "react";
 
 import { AccountantScreen } from "../accountant";
-import { useOfficeChildRouteAudit } from "./_childRouteAudit";
+import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 
 function OfficeAccountantRoute() {

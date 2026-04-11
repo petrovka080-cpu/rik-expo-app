@@ -9,6 +9,10 @@ import {
   normalizeWarehouseIssueHead,
   type WarehouseReportPdfRow,
 } from "./warehouse.reportPdf.service";
+import {
+  isWarehouseScreenActive,
+  type WarehouseScreenActiveRef,
+} from "./hooks/useWarehouseScreenActivity";
 
 type BusyLike = unknown;
 type SupabaseLike = SupabaseClient;
@@ -23,18 +27,27 @@ export function useWarehouseReports(args: {
   orgName: string;
   warehouseName: string;
   issueLinesById: Record<string, WarehouseReportPdfRow[]>;
-  setIssueLinesById: (updater: (prev: Record<string, WarehouseReportPdfRow[]>) => Record<string, WarehouseReportPdfRow[]>) => void;
+  setIssueLinesById: (
+    updater: (
+      prev: Record<string, WarehouseReportPdfRow[]>,
+    ) => Record<string, WarehouseReportPdfRow[]>,
+  ) => void;
   issueLinesLoadingId: number | null;
   setIssueLinesLoadingId: (value: number | null) => void;
   issueDetailsId: number | null;
   setIssueDetailsId: (value: number | null) => void;
   incomingLinesById: Record<string, WarehouseReportPdfRow[]>;
-  setIncomingLinesById: (updater: (prev: Record<string, WarehouseReportPdfRow[]>) => Record<string, WarehouseReportPdfRow[]>) => void;
+  setIncomingLinesById: (
+    updater: (
+      prev: Record<string, WarehouseReportPdfRow[]>,
+    ) => Record<string, WarehouseReportPdfRow[]>,
+  ) => void;
   incomingLinesLoadingId: string | null;
   setIncomingLinesLoadingId: (value: string | null) => void;
   incomingDetailsId: string | null;
   setIncomingDetailsId: (value: string | null) => void;
   nameByCode?: Record<string, string>;
+  screenActiveRef?: WarehouseScreenActiveRef;
 }) {
   const {
     supabase,
@@ -53,6 +66,7 @@ export function useWarehouseReports(args: {
     setIncomingLinesLoadingId,
     setIncomingDetailsId,
     nameByCode,
+    screenActiveRef,
   } = args;
 
   const normalizedIssueHeads = useMemo(
@@ -62,7 +76,9 @@ export function useWarehouseReports(args: {
         .filter(
           (
             row,
-          ): row is NonNullable<ReturnType<typeof normalizeWarehouseIssueHead>> => row !== null,
+          ): row is NonNullable<
+            ReturnType<typeof normalizeWarehouseIssueHead>
+          > => row !== null,
         ),
     [repIssues],
   );
@@ -71,9 +87,8 @@ export function useWarehouseReports(args: {
       (repIncoming || [])
         .map(normalizeIncomingHead)
         .filter(
-          (
-            row,
-          ): row is NonNullable<ReturnType<typeof normalizeIncomingHead>> => row !== null,
+          (row): row is NonNullable<ReturnType<typeof normalizeIncomingHead>> =>
+            row !== null,
         ),
     [repIncoming],
   );
@@ -112,55 +127,106 @@ export function useWarehouseReports(args: {
     }));
   }, [normalizedIncomingHeads]);
 
-  const ensureIssueLines = useCallback(async (issueId: number): Promise<WarehouseReportPdfRow[]> => {
-    const key = String(issueId);
-    const cached = issueLinesById?.[key];
-    if (Array.isArray(cached) && cached.length > 0) return cached;
+  const ensureIssueLines = useCallback(
+    async (issueId: number): Promise<WarehouseReportPdfRow[]> => {
+      const key = String(issueId);
+      const cached = issueLinesById?.[key];
+      if (Array.isArray(cached) && cached.length > 0) return cached;
+      if (!isWarehouseScreenActive(screenActiveRef)) return [];
 
-    setIssueLinesLoadingId(issueId);
-    try {
-      const lines = await fetchWarehouseIssueLines(supabase, issueId);
-      setIssueLinesById((prev) => ({ ...(prev || {}), [key]: lines }));
-      return lines;
-    } finally {
-      setIssueLinesLoadingId(null);
-    }
-  }, [issueLinesById, setIssueLinesById, setIssueLinesLoadingId, supabase]);
+      setIssueLinesLoadingId(issueId);
+      try {
+        const lines = await fetchWarehouseIssueLines(supabase, issueId);
+        if (!isWarehouseScreenActive(screenActiveRef)) return lines;
+        setIssueLinesById((prev) => ({ ...(prev || {}), [key]: lines }));
+        return lines;
+      } finally {
+        if (isWarehouseScreenActive(screenActiveRef)) {
+          setIssueLinesLoadingId(null);
+        }
+      }
+    },
+    [
+      issueLinesById,
+      screenActiveRef,
+      setIssueLinesById,
+      setIssueLinesLoadingId,
+      supabase,
+    ],
+  );
 
-  const ensureIncomingLines = useCallback(async (incomingId: string): Promise<WarehouseReportPdfRow[]> => {
-    const cached = incomingLinesById?.[incomingId];
-    if (Array.isArray(cached) && cached.length > 0) return cached;
+  const ensureIncomingLines = useCallback(
+    async (incomingId: string): Promise<WarehouseReportPdfRow[]> => {
+      const cached = incomingLinesById?.[incomingId];
+      if (Array.isArray(cached) && cached.length > 0) return cached;
+      if (!isWarehouseScreenActive(screenActiveRef)) return [];
 
-    setIncomingLinesLoadingId(incomingId);
-    try {
-      const lines = await apiFetchIncomingLines(supabase, incomingId);
-      setIncomingLinesById((prev) => ({ ...(prev || {}), [incomingId]: lines }));
-      return lines;
-    } finally {
-      setIncomingLinesLoadingId(null);
-    }
-  }, [incomingLinesById, setIncomingLinesById, setIncomingLinesLoadingId, supabase]);
+      setIncomingLinesLoadingId(incomingId);
+      try {
+        const lines = await apiFetchIncomingLines(supabase, incomingId);
+        if (!isWarehouseScreenActive(screenActiveRef)) return lines;
+        setIncomingLinesById((prev) => ({
+          ...(prev || {}),
+          [incomingId]: lines,
+        }));
+        return lines;
+      } finally {
+        if (isWarehouseScreenActive(screenActiveRef)) {
+          setIncomingLinesLoadingId(null);
+        }
+      }
+    },
+    [
+      incomingLinesById,
+      screenActiveRef,
+      setIncomingLinesById,
+      setIncomingLinesLoadingId,
+      supabase,
+    ],
+  );
 
-  const openIncomingDetails = useCallback(async (incomingId: string) => {
-    setIncomingDetailsId(incomingId);
-    await ensureIncomingLines(incomingId);
-  }, [ensureIncomingLines, setIncomingDetailsId]);
+  const openIncomingDetails = useCallback(
+    async (incomingId: string) => {
+      if (!isWarehouseScreenActive(screenActiveRef)) return;
+      setIncomingDetailsId(incomingId);
+      await ensureIncomingLines(incomingId);
+    },
+    [ensureIncomingLines, screenActiveRef, setIncomingDetailsId],
+  );
 
   const closeIncomingDetails = useCallback(() => {
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
     setIncomingDetailsId(null);
-  }, [setIncomingDetailsId]);
+  }, [screenActiveRef, setIncomingDetailsId]);
 
-  const openIssueDetails = useCallback(async (issueId: number) => {
-    setIssueDetailsId(issueId);
-    await ensureIssueLines(issueId);
-  }, [ensureIssueLines, setIssueDetailsId]);
+  const openIssueDetails = useCallback(
+    async (issueId: number) => {
+      if (!isWarehouseScreenActive(screenActiveRef)) return;
+      setIssueDetailsId(issueId);
+      await ensureIssueLines(issueId);
+    },
+    [ensureIssueLines, screenActiveRef, setIssueDetailsId],
+  );
 
   const closeIssueDetails = useCallback(() => {
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
     setIssueDetailsId(null);
-  }, [setIssueDetailsId]);
+  }, [screenActiveRef, setIssueDetailsId]);
 
-  const pdfBuilders = useMemo(() =>
-    createWarehouseReportPdfService({
+  const pdfBuilders = useMemo(
+    () =>
+      createWarehouseReportPdfService({
+        supabase,
+        normalizedIssueHeads,
+        normalizedIncomingHeads,
+        periodFrom,
+        periodTo,
+        orgName,
+        warehouseName,
+        nameByCode,
+        ensureIssueLines,
+      }),
+    [
       supabase,
       normalizedIssueHeads,
       normalizedIncomingHeads,
@@ -170,17 +236,8 @@ export function useWarehouseReports(args: {
       warehouseName,
       nameByCode,
       ensureIssueLines,
-    }), [
-      supabase,
-      normalizedIssueHeads,
-      normalizedIncomingHeads,
-      periodFrom,
-      periodTo,
-      orgName,
-      warehouseName,
-      nameByCode,
-      ensureIssueLines,
-    ]);
+    ],
+  );
 
   return {
     vydachaByDay,
@@ -192,6 +249,7 @@ export function useWarehouseReports(args: {
     openIncomingDetails,
     closeIncomingDetails,
     ...pdfBuilders,
-    apiFetchIncomingLines: (client: SupabaseClient, incomingId: string) => apiFetchIncomingLines(client, incomingId),
+    apiFetchIncomingLines: (client: SupabaseClient, incomingId: string) =>
+      apiFetchIncomingLines(client, incomingId),
   };
 }

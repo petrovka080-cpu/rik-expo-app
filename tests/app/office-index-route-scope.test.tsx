@@ -57,7 +57,6 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeRouteOwnerFocus: jest.fn(),
   recordOfficeRouteOwnerMount: jest.fn(),
   recordOfficeRouteOwnerUnmount: jest.fn(),
-  recordOfficeRouteReplaceReceived: jest.fn(),
   recordOfficeRouteScopeActive: jest.fn(),
   recordOfficeRouteScopeInactive: jest.fn(),
   recordOfficeRouteScopeSkipReason: jest.fn(),
@@ -121,7 +120,6 @@ describe("office index route scope", () => {
       sourceRoute: "/office/warehouse",
       target: "/office",
       method: "back",
-      selectedMethod: "back",
     });
 
     let renderer: TestRenderer.ReactTestRenderer | null = null;
@@ -142,6 +140,5 @@ describe("office index route scope", () => {
         target: "/office",
       }),
     );
-    expect(officeBreadcrumbs.recordOfficeRouteReplaceReceived).not.toHaveBeenCalled();
   });
 });

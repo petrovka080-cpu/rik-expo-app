@@ -1,6 +1,12 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { HeaderBackButton } from "@react-navigation/elements";
-import { Stack, router, useNavigation, usePathname, useSegments } from "expo-router";
+import {
+  router,
+  Stack,
+  useNavigation,
+  usePathname,
+  useSegments,
+} from "expo-router";
 
 import {
   markPendingOfficeRouteReturnReceipt,
@@ -13,7 +19,15 @@ import {
 
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
+export const unstable_settings = {
+  initialRouteName: "index",
+};
+
 const WAREHOUSE_HEADER_TITLE = "\u0421\u043a\u043b\u0430\u0434";
+type OfficeChildBackSourceRoute = "/office/foreman" | "/office/warehouse";
+type OfficeHeaderBackButtonProps = Record<string, unknown> & {
+  onPress?: (...args: unknown[]) => void;
+};
 
 function useOfficeStackOwnerAudit() {
   const navigation = useNavigation();
@@ -86,18 +100,21 @@ function useOfficeStackOwnerAudit() {
 }
 
 function handleOfficeChildBack(params: {
-  sourceRoute: "/office/foreman" | "/office/warehouse";
+  nativeOnPress: unknown;
+  nativePressArgs: unknown[];
+  sourceRoute: OfficeChildBackSourceRoute;
 }) {
-  const receiptExtra = {
-    sourceRoute: params.sourceRoute,
-    target: OFFICE_SAFE_BACK_ROUTE,
-    method: "back",
-    selectedMethod: "back",
-  };
+  let method =
+    typeof params.nativeOnPress === "function"
+      ? "native_header_back"
+      : "router_back_fallback";
 
   try {
-    markPendingOfficeRouteReturnReceipt(receiptExtra);
-    router.back();
+    if (typeof params.nativeOnPress === "function") {
+      params.nativeOnPress(...params.nativePressArgs);
+    } else {
+      router.back();
+    }
   } catch (error) {
     recordOfficeBackPathFailure({
       error,
@@ -107,38 +124,53 @@ function handleOfficeChildBack(params: {
         route: params.sourceRoute,
         sourceRoute: params.sourceRoute,
         target: OFFICE_SAFE_BACK_ROUTE,
+        method,
         handler: "safe_back_header",
       },
     });
-    throw error;
+    router.back();
+    method = "router_back_fallback";
   }
+
+  markPendingOfficeRouteReturnReceipt({
+    sourceRoute: params.sourceRoute,
+    target: OFFICE_SAFE_BACK_ROUTE,
+    method,
+  });
 }
 
-function createSafeOfficeBackButton(
-  sourceRoute: "/office/foreman" | "/office/warehouse",
+export function renderSafeOfficeChildBackButton(
+  sourceRoute: OfficeChildBackSourceRoute,
+  props: OfficeHeaderBackButtonProps,
 ) {
-  return function renderSafeOfficeChildBackButton(props: Record<string, unknown>) {
-    return (
-      <HeaderBackButton
-        {...props}
-        label={OFFICE_BACK_LABEL}
-        onPress={() => {
-          handleOfficeChildBack({ sourceRoute });
-        }}
-        testID="office-safe-back"
-      />
-    );
-  };
+  return (
+    <HeaderBackButton
+      {...props}
+      label={OFFICE_BACK_LABEL}
+      onPress={(...nativePressArgs: unknown[]) => {
+        handleOfficeChildBack({
+          nativeOnPress: props.onPress,
+          nativePressArgs,
+          sourceRoute,
+        });
+      }}
+      testID="office-safe-back"
+    />
+  );
 }
 
-export const renderSafeOfficeForemanBackButton = createSafeOfficeBackButton(
-  "/office/foreman",
-);
+export function renderSafeOfficeForemanBackButton(
+  props: OfficeHeaderBackButtonProps,
+) {
+  return renderSafeOfficeChildBackButton("/office/foreman", props);
+}
+
 export const renderSafeOfficeBackButton = renderSafeOfficeForemanBackButton;
 
 const safeOfficeChildBackButtons = {
   foreman: renderSafeOfficeForemanBackButton,
-  warehouse: createSafeOfficeBackButton("/office/warehouse"),
+  warehouse: (props: OfficeHeaderBackButtonProps) =>
+    renderSafeOfficeChildBackButton("/office/warehouse", props),
 };
 
 export default function OfficeStackLayout() {
@@ -163,9 +195,22 @@ export default function OfficeStackLayout() {
           headerLeft: safeOfficeChildBackButtons.foreman,
         }}
       />
-      <Stack.Screen name="buyer" options={{ title: "\u0421\u043d\u0430\u0431\u0436\u0435\u043d\u0435\u0446" }} />
-      <Stack.Screen name="director" options={{ title: "\u0414\u0438\u0440\u0435\u043a\u0442\u043e\u0440" }} />
-      <Stack.Screen name="accountant" options={{ title: "\u0411\u0443\u0445\u0433\u0430\u043b\u0442\u0435\u0440" }} />
+      <Stack.Screen
+        name="buyer"
+        options={{
+          title: "\u0421\u043d\u0430\u0431\u0436\u0435\u043d\u0435\u0446",
+        }}
+      />
+      <Stack.Screen
+        name="director"
+        options={{ title: "\u0414\u0438\u0440\u0435\u043a\u0442\u043e\u0440" }}
+      />
+      <Stack.Screen
+        name="accountant"
+        options={{
+          title: "\u0411\u0443\u0445\u0433\u0430\u043b\u0442\u0435\u0440",
+        }}
+      />
       <Stack.Screen
         name="warehouse"
         options={{
@@ -173,9 +218,23 @@ export default function OfficeStackLayout() {
           headerLeft: safeOfficeChildBackButtons.warehouse,
         }}
       />
-      <Stack.Screen name="contractor" options={{ title: "\u041f\u043e\u0434\u0440\u044f\u0434\u0447\u0438\u043a" }} />
-      <Stack.Screen name="reports" options={{ title: "\u041e\u0442\u0447\u0451\u0442\u044b" }} />
-      <Stack.Screen name="security" options={{ title: "\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u044c" }} />
+      <Stack.Screen
+        name="contractor"
+        options={{
+          title: "\u041f\u043e\u0434\u0440\u044f\u0434\u0447\u0438\u043a",
+        }}
+      />
+      <Stack.Screen
+        name="reports"
+        options={{ title: "\u041e\u0442\u0447\u0451\u0442\u044b" }}
+      />
+      <Stack.Screen
+        name="security"
+        options={{
+          title:
+            "\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u044c",
+        }}
+      />
     </Stack>
   );
 }

@@ -7,12 +7,17 @@ import {
   recordPdfCrashBreadcrumb,
   shouldRecordPdfCrashBreadcrumbs,
 } from "./pdfCrashBreadcrumbs";
+import {
+  recordPdfCriticalPathEvent,
+  type PdfCriticalPathEvent,
+} from "./pdfCriticalPath";
 
 type PdfOpenStage =
   | "tap_start"
   | "busy_shown"
   | "document_prepare_start"
   | "document_prepare_done"
+  | "document_prepare_fail"
   | "viewer_or_handoff_start"
   | "viewer_route_payload_ready"
   | "viewer_route_push_attempt"
@@ -64,7 +69,10 @@ const pendingVisibility = new Map<string, PdfOpenPendingVisibility>();
 let tokenSeq = 0;
 
 const nowMs = () => {
-  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+  if (
+    typeof performance !== "undefined" &&
+    typeof performance.now === "function"
+  ) {
     return performance.now();
   }
   return Date.now();
@@ -100,6 +108,18 @@ const getErrorShape = (error: unknown) => {
   };
 };
 
+const PDF_CRITICAL_EVENT_BY_STAGE: Partial<
+  Record<PdfOpenStage, PdfCriticalPathEvent>
+> = {
+  tap_start: "pdf_open_tap",
+  document_prepare_start: "pdf_prepare_start",
+  document_prepare_done: "pdf_prepare_success",
+  document_prepare_fail: "pdf_prepare_fail",
+  viewer_route_push_attempt: "pdf_viewer_route_push",
+  first_open_visible: "pdf_terminal_success",
+  open_failed: "pdf_terminal_fail",
+};
+
 export function createPdfOpenFlowContext(args: {
   key?: string;
   label?: string;
@@ -122,6 +142,39 @@ export function createPdfOpenFlowContext(args: {
 export function recordPdfOpenStage(args: PdfOpenStageRecordArgs) {
   if (!args.context) return null;
   const screen = normalizeScreen(args.context.originModule);
+  const criticalEvent = PDF_CRITICAL_EVENT_BY_STAGE[args.stage];
+  if (criticalEvent) {
+    recordPdfCriticalPathEvent({
+      event: criticalEvent,
+      screen,
+      result: args.result,
+      category:
+        args.category ??
+        (args.stage === "document_prepare_start" ||
+        args.stage === "document_prepare_done" ||
+        args.stage === "document_prepare_fail"
+          ? "fetch"
+          : "ui"),
+      sourceKind: args.sourceKind,
+      error: args.error,
+      documentType: args.context.documentType,
+      originModule: args.context.originModule,
+      entityId: args.context.entityId,
+      fileName: args.context.fileName,
+      sessionId: args.extra?.sessionId,
+      openToken: args.extra?.openToken,
+      uri: args.extra?.uri,
+      uriKind: args.extra?.uriKind,
+      previewPath: args.extra?.previewPath ?? args.extra?.previewSourceMode,
+      terminalState:
+        args.stage === "first_open_visible"
+          ? "success"
+          : args.stage === "open_failed"
+            ? "error"
+            : null,
+      extra: args.extra,
+    });
+  }
   if (shouldRecordPdfCrashBreadcrumbs(screen)) {
     recordPdfCrashBreadcrumb({
       marker: args.stage,
@@ -133,7 +186,11 @@ export function recordPdfOpenStage(args: PdfOpenStageRecordArgs) {
       entityId: args.context.entityId,
       openToken: trimText(args.extra?.openToken),
       sessionId: trimText(args.extra?.sessionId),
-      previewPath: trimText(args.extra?.previewPath ?? args.extra?.previewSourceMode ?? args.extra?.route),
+      previewPath: trimText(
+        args.extra?.previewPath ??
+          args.extra?.previewSourceMode ??
+          args.extra?.route,
+      ),
       uriKind: trimText(args.extra?.uriKind),
       uri: args.extra?.uri,
       fileExists: args.extra?.fileExists,
@@ -152,7 +209,12 @@ export function recordPdfOpenStage(args: PdfOpenStageRecordArgs) {
   return recordPlatformObservability({
     screen,
     surface: "pdf_open_family",
-    category: args.category ?? (args.stage === "document_prepare_start" || args.stage === "document_prepare_done" ? "fetch" : "ui"),
+    category:
+      args.category ??
+      (args.stage === "document_prepare_start" ||
+      args.stage === "document_prepare_done"
+        ? "fetch"
+        : "ui"),
     event: args.stage,
     result: args.result ?? "success",
     durationMs: Math.max(0, Math.round(nowMs() - args.context.startedAt)),

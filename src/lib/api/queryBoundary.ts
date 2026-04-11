@@ -1,4 +1,5 @@
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { normalizeAppError, type AppError } from "../errors/appError";
 
 type RpcTransport = {
   rpc: (
@@ -13,6 +14,7 @@ type RpcTransport = {
 export type RpcBoundaryResult<TData> = {
   data: TData | null;
   error: NullableRpcErrorLike;
+  appError: AppError | null;
 };
 
 export type RpcBoundaryContext = {
@@ -81,6 +83,7 @@ const recordBoundaryFailure = (
   errorStage: "rpc_transport_guard" | "rpc_transport_call",
 ) => {
   if (!context) return;
+  const appError = normalizeAppError(error, `rpc:${fn}:${errorStage}`, "fatal");
   recordPlatformObservability({
     screen: context.screen,
     surface: context.surface,
@@ -89,11 +92,14 @@ const recordBoundaryFailure = (
     result: "error",
     sourceKind: context.sourceKind,
     errorStage,
-    errorClass: error.name,
-    errorMessage: error.message,
+    errorClass: appError.code,
+    errorMessage: appError.message,
     extra: {
       owner: context.owner,
       rpcName: fn,
+      appErrorCode: appError.code,
+      appErrorContext: appError.context,
+      appErrorSeverity: appError.severity,
     },
   });
 };
@@ -115,23 +121,35 @@ export async function runContainedRpc<TData>(
     return {
       data: null,
       error,
+      appError: normalizeAppError(error, `rpc:${fn}:transport_guard`, "fatal"),
     };
   }
 
   try {
-    const result = args == null ? await transport.rpc(fn) : await transport.rpc(fn, args);
+    const result =
+      args == null ? await transport.rpc(fn) : await transport.rpc(fn, args);
     return {
       data: (result.data ?? null) as TData | null,
       error: asRpcErrorLike(result.error),
+      appError: result.error
+        ? normalizeAppError(result.error, `rpc:${fn}:result_error`, "fatal")
+        : null,
     };
   } catch (error) {
     const normalizedError =
       asRpcErrorLike(error) ??
-      (new RpcTransportBoundaryError(`RPC invocation failed for ${fn}`) as RpcErrorLike);
+      (new RpcTransportBoundaryError(
+        `RPC invocation failed for ${fn}`,
+      ) as RpcErrorLike);
     recordBoundaryFailure(context, fn, normalizedError, "rpc_transport_call");
     return {
       data: null,
       error: normalizedError,
+      appError: normalizeAppError(
+        normalizedError,
+        `rpc:${fn}:transport_call`,
+        "fatal",
+      ),
     };
   }
 }

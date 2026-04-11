@@ -11,6 +11,11 @@ import {
   fetchWarehouseRefRows,
   probeWarehouseObjectTypes,
 } from "./warehouse.dicts.repo";
+import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./hooks/useWarehouseScreenActivity";
 
 type DictRow = Record<string, unknown>;
 const asRows = (data: unknown): DictRow[] => {
@@ -18,34 +23,44 @@ const asRows = (data: unknown): DictRow[] => {
   return data.filter((x): x is DictRow => typeof x === "object" && x !== null);
 };
 
-export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
+export function useWarehouseDicts(
+  supabase: SupabaseClient,
+  tab: Tab,
+  options?: { screenActiveRef?: WarehouseScreenActiveRef },
+) {
+  const screenActiveRef = useWarehouseFallbackActiveRef(
+    options?.screenActiveRef,
+  );
   const [objectList, setObjectList] = useState<Option[]>([]);
   const [levelList, setLevelList] = useState<Option[]>([]);
   const [systemList, setSystemList] = useState<Option[]>([]);
   const [zoneList, setZoneList] = useState<Option[]>([]);
   const [recipientList, setRecipientList] = useState<Option[]>([]);
 
-  const tryOptions = useCallback(async (table: string, columns: string[]) => {
-    const q = await fetchWarehouseDictRows(supabase, table, columns);
-    if (q.error || !Array.isArray(q.data)) return [] as Option[];
-    const opts: Option[] = [];
-    for (const r of asRows(q.data)) {
-      const id = String(r.id ?? r.uuid ?? "");
-      const label = String(
-        r.name ??
-        r.title ??
-        r.object_name ??
-        r.fio ??
-        r.full_name ??
-        r.email ??
-        r.username ??
-        r.login ??
-        "",
-      );
-      if (id && label) opts.push({ id, label });
-    }
-    return opts;
-  }, [supabase]);
+  const tryOptions = useCallback(
+    async (table: string, columns: string[]) => {
+      const q = await fetchWarehouseDictRows(supabase, table, columns);
+      if (q.error || !Array.isArray(q.data)) return [] as Option[];
+      const opts: Option[] = [];
+      for (const r of asRows(q.data)) {
+        const id = String(r.id ?? r.uuid ?? "");
+        const label = String(
+          r.name ??
+            r.title ??
+            r.object_name ??
+            r.fio ??
+            r.full_name ??
+            r.email ??
+            r.username ??
+            r.login ??
+            "",
+        );
+        if (id && label) opts.push({ id, label });
+      }
+      return opts;
+    },
+    [supabase],
+  );
 
   const tryRefOptions = useCallback(
     async (table: string, opts?: { order?: string }) => {
@@ -63,11 +78,11 @@ export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
         const id = String(r.code ?? "").trim();
         const label = String(
           r.display_name ??
-          r.name_human_ru ??
-          r.name_ru ??
-          r.name ??
-          r.code ??
-          "",
+            r.name_human_ru ??
+            r.name_ru ??
+            r.name ??
+            r.code ??
+            "",
         ).trim();
 
         if (id && label) out.push({ id, label });
@@ -91,6 +106,7 @@ export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
     }
 
     const opts = await tryRefOptions("ref_object_types", { order: "name" });
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
 
     const cleaned = (opts || []).filter((o) => {
       const t = String(o.label ?? "").toLowerCase();
@@ -101,37 +117,55 @@ export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
     });
 
     setObjectList(cleaned);
-  }, [supabase, tryRefOptions]);
+  }, [screenActiveRef, supabase, tryRefOptions]);
 
   const loadRecipients = useCallback(async () => {
     const opts = await tryOptions("profiles", ["id", "full_name"]);
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
     setRecipientList(opts);
-  }, [tryOptions]);
+  }, [screenActiveRef, tryOptions]);
 
   const loadLevels = useCallback(async () => {
-    setLevelList(await tryRefOptions("ref_levels"));
-  }, [tryRefOptions]);
+    const opts = await tryRefOptions("ref_levels");
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
+    setLevelList(opts);
+  }, [screenActiveRef, tryRefOptions]);
 
   const loadSystems = useCallback(async () => {
-    setSystemList(await tryRefOptions("ref_systems"));
-  }, [tryRefOptions]);
+    const opts = await tryRefOptions("ref_systems");
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
+    setSystemList(opts);
+  }, [screenActiveRef, tryRefOptions]);
 
   const loadZones = useCallback(async () => {
-    setZoneList(await tryRefOptions("ref_zones"));
-  }, [tryRefOptions]);
+    const opts = await tryRefOptions("ref_zones");
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
+    setZoneList(opts);
+  }, [screenActiveRef, tryRefOptions]);
 
   const dictsLoadedRef = useRef(false);
 
   useEffect(() => {
     if ((tab === "Расход" || tab === "Склад факт") && !dictsLoadedRef.current) {
       dictsLoadedRef.current = true;
-      loadObjects().catch((e) => showErr(e));
-      loadLevels().catch((e) => showErr(e));
-      loadSystems().catch((e) => showErr(e));
-      loadZones().catch((e) => showErr(e));
-      loadRecipients().catch((e) => showErr(e));
+      const showActiveErr = (e: unknown) => {
+        if (isWarehouseScreenActive(screenActiveRef)) showErr(e);
+      };
+      loadObjects().catch(showActiveErr);
+      loadLevels().catch(showActiveErr);
+      loadSystems().catch(showActiveErr);
+      loadZones().catch(showActiveErr);
+      loadRecipients().catch(showActiveErr);
     }
-  }, [tab, loadObjects, loadLevels, loadSystems, loadZones, loadRecipients]);
+  }, [
+    tab,
+    loadObjects,
+    loadLevels,
+    loadSystems,
+    loadZones,
+    loadRecipients,
+    screenActiveRef,
+  ]);
 
   return {
     objectList,

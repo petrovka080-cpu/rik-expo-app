@@ -53,7 +53,6 @@ import {
   recordOfficeRouteOwnerFocus,
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
-  recordOfficeRouteReplaceReceived,
   recordOfficeRouteScopeActive,
   recordOfficeRouteScopeInactive,
   recordOfficeRouteScopeSkipReason,
@@ -120,7 +119,6 @@ describe("office reentry breadcrumbs", () => {
       sourceRoute: "/office/warehouse",
       target: "/office",
       method: "back",
-      selectedMethod: "back",
     };
 
     markPendingOfficeRouteReturnReceipt(receipt);
@@ -467,16 +465,6 @@ describe("office reentry breadcrumbs", () => {
       segments: "(tabs)/office",
       routeWrapper: "office_owned_screen_entry",
     });
-    recordOfficeRouteReplaceReceived({
-      owner: "office_index_route",
-      route: "/office",
-      identity: "office_index_route:abc123",
-      pathname: "/office",
-      segments: "(tabs)/office",
-      sourceRoute: "/office/legacy-replace",
-      target: "/office",
-      reason: "legacy_replace_receipt",
-    });
     recordOfficeRouteOwnerFocus({
       owner: "office_index_route",
       route: "/office",
@@ -506,7 +494,6 @@ describe("office reentry breadcrumbs", () => {
       "office_route_owner_mount",
       "office_route_scope_active",
       "office_route_owner_identity",
-      "office_route_replace_received",
       "office_route_owner_focus",
       "office_route_owner_blur",
       "office_route_owner_unmount",
@@ -520,7 +507,6 @@ describe("office reentry breadcrumbs", () => {
       sourceRoute: "/office/warehouse",
       target: "/office",
       method: "back",
-      selectedMethod: "back",
       handler: "safe_back_header",
     });
     recordOfficeWarehouseBackPressDone({
@@ -529,7 +515,6 @@ describe("office reentry breadcrumbs", () => {
       sourceRoute: "/office/warehouse",
       target: "/office",
       method: "back",
-      selectedMethod: "back",
       handler: "safe_back_header",
     });
     recordOfficeWarehouseBeforeRemove({
@@ -590,7 +575,6 @@ describe("office reentry breadcrumbs", () => {
       sourceRoute: "/office/warehouse",
       target: "/office",
       method: "back",
-      selectedMethod: "back",
     });
     recordOfficeIndexAfterReturnFocus({
       owner: "office_index_route",
@@ -600,7 +584,6 @@ describe("office reentry breadcrumbs", () => {
       sourceRoute: "/office/warehouse",
       target: "/office",
       method: "back",
-      selectedMethod: "back",
     });
     recordOfficeBackPathFailure({
       error: new Error("router back failed"),
@@ -609,7 +592,6 @@ describe("office reentry breadcrumbs", () => {
         owner: "office_stack_layout",
         route: "/office/warehouse",
         method: "back",
-        selectedMethod: "back",
         target: "/office",
       },
     });
@@ -796,7 +778,6 @@ describe("office reentry breadcrumbs", () => {
     expect(warehouse).toEqual(expectedWarmReturn);
     expect(warehouse).not.toContain("office_tab_owner_unmount");
     expect(warehouse).not.toContain("office_route_owner_unmount");
-    expect(warehouse).not.toContain("office_route_replace_received");
   });
 
   it("records office route scope passive sequence on non-office paths", () => {

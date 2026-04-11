@@ -3,6 +3,10 @@ import TestRenderer, { act } from "react-test-renderer";
 import { Platform } from "react-native";
 
 import PdfViewerScreen from "../../app/pdf-viewer";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../../src/lib/observability/platformObservability";
 
 const mockUseLocalSearchParams = jest.fn();
 const mockRouterBack = jest.fn();
@@ -18,7 +22,8 @@ jest.mock("expo-router", () => ({
     back: (...args: unknown[]) => mockRouterBack(...args),
     replace: (...args: unknown[]) => mockRouterReplace(...args),
   },
-  useLocalSearchParams: (...args: unknown[]) => mockUseLocalSearchParams(...args),
+  useLocalSearchParams: (...args: unknown[]) =>
+    mockUseLocalSearchParams(...args),
 }));
 
 jest.mock("react-native-safe-area-context", () => ({
@@ -28,16 +33,21 @@ jest.mock("react-native-safe-area-context", () => ({
 
 jest.mock("@expo/vector-icons", () => {
   const mockReact = jest.requireActual("react") as typeof import("react");
-  const { Text: MockText } = jest.requireActual("react-native") as typeof import("react-native");
+  const { Text: MockText } = jest.requireActual(
+    "react-native",
+  ) as typeof import("react-native");
   return {
-    Ionicons: ({ name }: { name: string }) => mockReact.createElement(MockText, null, name),
+    Ionicons: ({ name }: { name: string }) =>
+      mockReact.createElement(MockText, null, name),
   };
 });
 
 jest.mock("../../src/lib/documents/pdfDocumentSessions", () => ({
   failDocumentSession: (...args: unknown[]) => mockFailDocumentSession(...args),
-  getDocumentSessionSnapshot: (...args: unknown[]) => mockGetDocumentSessionSnapshot(...args),
-  touchDocumentSession: (...args: unknown[]) => mockTouchDocumentSession(...args),
+  getDocumentSessionSnapshot: (...args: unknown[]) =>
+    mockGetDocumentSessionSnapshot(...args),
+  touchDocumentSession: (...args: unknown[]) =>
+    mockTouchDocumentSession(...args),
 }));
 
 jest.mock("../../src/lib/documents/pdfDocumentActions", () => ({
@@ -86,6 +96,7 @@ describe("PdfViewerScreen web lifecycle", () => {
     mockFailDocumentSession.mockReset();
     mockMarkPdfOpenVisible.mockReset();
     mockFailPdfOpenVisible.mockReset();
+    resetPlatformObservabilityEvents();
 
     Object.defineProperty(Platform, "OS", {
       configurable: true,
@@ -133,24 +144,84 @@ describe("PdfViewerScreen web lifecycle", () => {
 
     const iframe = renderer!.root.find((node) => node.type === "iframe");
 
-    const infoTextsBeforeLoad = infoSpy.mock.calls.map((call) => String(call[0] ?? ""));
-    expect(infoTextsBeforeLoad.filter((text) => text.includes("[pdf-viewer] open"))).toHaveLength(1);
-    expect(infoTextsBeforeLoad.filter((text) => text.includes("[pdf-viewer] viewer_before_render"))).toHaveLength(1);
-    expect(infoTextsBeforeLoad.filter((text) => text.includes("[pdf-viewer] web_iframe_render"))).toHaveLength(1);
-    expect(infoTextsBeforeLoad.filter((text) => text.includes("[pdf-viewer] ready"))).toHaveLength(0);
+    const infoTextsBeforeLoad = infoSpy.mock.calls.map((call) =>
+      String(call[0] ?? ""),
+    );
+    expect(
+      infoTextsBeforeLoad.filter((text) => text.includes("[pdf-viewer] open")),
+    ).toHaveLength(1);
+    expect(
+      infoTextsBeforeLoad.filter((text) =>
+        text.includes("[pdf-viewer] viewer_before_render"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      infoTextsBeforeLoad.filter((text) =>
+        text.includes("[pdf-viewer] web_iframe_render"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      infoTextsBeforeLoad.filter((text) => text.includes("[pdf-viewer] ready")),
+    ).toHaveLength(0);
 
     await act(async () => {
       iframe.props.onLoad();
       await flush();
     });
 
-    const infoTextsAfterLoad = infoSpy.mock.calls.map((call) => String(call[0] ?? ""));
-    expect(infoTextsAfterLoad.filter((text) => text.includes("[pdf-viewer] open"))).toHaveLength(1);
-    expect(infoTextsAfterLoad.filter((text) => text.includes("[pdf-viewer] viewer_before_render"))).toHaveLength(1);
-    expect(infoTextsAfterLoad.filter((text) => text.includes("[pdf-viewer] web_iframe_render"))).toHaveLength(1);
-    expect(infoTextsAfterLoad.filter((text) => text.includes("[pdf-viewer] web_iframe_load"))).toHaveLength(1);
-    expect(infoTextsAfterLoad.filter((text) => text.includes("[pdf-viewer] ready"))).toHaveLength(1);
+    const infoTextsAfterLoad = infoSpy.mock.calls.map((call) =>
+      String(call[0] ?? ""),
+    );
+    expect(
+      infoTextsAfterLoad.filter((text) => text.includes("[pdf-viewer] open")),
+    ).toHaveLength(1);
+    expect(
+      infoTextsAfterLoad.filter((text) =>
+        text.includes("[pdf-viewer] viewer_before_render"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      infoTextsAfterLoad.filter((text) =>
+        text.includes("[pdf-viewer] web_iframe_render"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      infoTextsAfterLoad.filter((text) =>
+        text.includes("[pdf-viewer] web_iframe_load"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      infoTextsAfterLoad.filter((text) => text.includes("[pdf-viewer] ready")),
+    ).toHaveLength(1);
     expect(errorSpy).not.toHaveBeenCalled();
+    expect(getPlatformObservabilityEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          screen: "pdf_viewer",
+          surface: "pdf_critical_path",
+          event: "pdf_viewer_mounted",
+          result: "success",
+        }),
+        expect.objectContaining({
+          screen: "director",
+          surface: "pdf_critical_path",
+          event: "pdf_render_start",
+          result: "success",
+        }),
+        expect.objectContaining({
+          screen: "director",
+          surface: "pdf_critical_path",
+          event: "pdf_render_success",
+          result: "success",
+        }),
+        expect.objectContaining({
+          screen: "director",
+          surface: "pdf_critical_path",
+          event: "pdf_terminal_success",
+          result: "success",
+        }),
+      ]),
+    );
 
     infoSpy.mockRestore();
     errorSpy.mockRestore();

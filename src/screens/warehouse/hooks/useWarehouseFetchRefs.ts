@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
 
-const useMountedRef = () => {
-  const ref = useRef(true);
-  useEffect(() => () => { ref.current = false; }, []);
-  return ref;
-};
+import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./useWarehouseScreenActivity";
 
 type FetchToReceiveFn = (
   page?: number,
@@ -12,7 +12,10 @@ type FetchToReceiveFn = (
   reason?: "initial" | "append" | "refresh" | "realtime",
 ) => Promise<void>;
 type FetchStockFn = () => Promise<void>;
-type FetchReqHeadsFn = (pageIndex?: number, forceRefresh?: boolean) => Promise<void>;
+type FetchReqHeadsFn = (
+  pageIndex?: number,
+  forceRefresh?: boolean,
+) => Promise<void>;
 type FetchReportsFn = () => Promise<void>;
 
 type RefreshState = {
@@ -30,18 +33,35 @@ export function useWarehouseFetchRefs(params: {
   fetchStock: FetchStockFn;
   fetchReqHeads: FetchReqHeadsFn;
   fetchReports: FetchReportsFn;
+  screenActiveRef?: WarehouseScreenActiveRef;
 }) {
   const { fetchToReceive, fetchStock, fetchReqHeads, fetchReports } = params;
-  const mountedRef = useMountedRef();
+  const screenActiveRef = useWarehouseFallbackActiveRef(params.screenActiveRef);
 
   const fetchToReceiveRef = useRef(fetchToReceive);
   const fetchStockRef = useRef(fetchStock);
   const fetchReqHeadsRef = useRef(fetchReqHeads);
   const fetchReportsRef = useRef(fetchReports);
-  const incomingRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
-  const stockRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
-  const reqHeadsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
-  const reportsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const incomingRefreshRef = useRef<RefreshState>({
+    inFlight: null,
+    rerunQueued: false,
+    rerunForce: false,
+  });
+  const stockRefreshRef = useRef<RefreshState>({
+    inFlight: null,
+    rerunQueued: false,
+    rerunForce: false,
+  });
+  const reqHeadsRefreshRef = useRef<RefreshState>({
+    inFlight: null,
+    rerunQueued: false,
+    rerunForce: false,
+  });
+  const reportsRefreshRef = useRef<RefreshState>({
+    inFlight: null,
+    rerunQueued: false,
+    rerunForce: false,
+  });
 
   useEffect(() => {
     fetchToReceiveRef.current = fetchToReceive;
@@ -62,6 +82,12 @@ export function useWarehouseFetchRefs(params: {
       refresh: (force?: boolean) => Promise<void>,
       options?: { force?: boolean; queueOnOverlap?: boolean },
     ) => {
+      if (!isWarehouseScreenActive(screenActiveRef)) {
+        stateRef.current.rerunQueued = false;
+        stateRef.current.rerunForce = false;
+        return Promise.resolve();
+      }
+
       const force = !!options?.force;
       if (stateRef.current.inFlight) {
         if (force) {
@@ -76,14 +102,21 @@ export function useWarehouseFetchRefs(params: {
       const start = (nextForce: boolean) => {
         const task = (async () => {
           try {
+            if (!isWarehouseScreenActive(screenActiveRef)) return;
             await refresh(nextForce);
           } finally {
             stateRef.current.inFlight = null;
-            if (stateRef.current.rerunQueued && mountedRef.current) {
+            if (
+              stateRef.current.rerunQueued &&
+              isWarehouseScreenActive(screenActiveRef)
+            ) {
               const rerunForce = stateRef.current.rerunForce;
               stateRef.current.rerunQueued = false;
               stateRef.current.rerunForce = false;
               void start(rerunForce);
+            } else if (!isWarehouseScreenActive(screenActiveRef)) {
+              stateRef.current.rerunQueued = false;
+              stateRef.current.rerunForce = false;
             }
           }
         })();
@@ -93,27 +126,47 @@ export function useWarehouseFetchRefs(params: {
 
       return start(force);
     },
-    [],
+    [screenActiveRef],
   );
 
-  const callFetchToReceive = useCallback((page?: number) => {
-    if ((page ?? 0) > 0) return fetchToReceiveRef.current(page, false, "append");
-    return runRefresh(incomingRefreshRef, () => fetchToReceiveRef.current(0, false, "refresh"), { queueOnOverlap: true });
-  }, [runRefresh]);
+  const callFetchToReceive = useCallback(
+    (page?: number) => {
+      if (!isWarehouseScreenActive(screenActiveRef)) return Promise.resolve();
+      if ((page ?? 0) > 0)
+        return fetchToReceiveRef.current(page, false, "append");
+      return runRefresh(
+        incomingRefreshRef,
+        () => fetchToReceiveRef.current(0, false, "refresh"),
+        { queueOnOverlap: true },
+      );
+    },
+    [runRefresh, screenActiveRef],
+  );
   const callFetchStock = useCallback(() => {
-    return runRefresh(stockRefreshRef, () => fetchStockRef.current(), { queueOnOverlap: true });
-  }, [runRefresh]);
-  const callFetchReqHeads = useCallback((pageIndex?: number, forceRefresh?: boolean) => {
-    if ((pageIndex ?? 0) > 0) return fetchReqHeadsRef.current(pageIndex, forceRefresh);
-    return runRefresh(
-      reqHeadsRefreshRef,
-      (nextForce) => fetchReqHeadsRef.current(0, nextForce),
-      { force: !!forceRefresh, queueOnOverlap: true },
-    );
-  }, [runRefresh]);
+    if (!isWarehouseScreenActive(screenActiveRef)) return Promise.resolve();
+    return runRefresh(stockRefreshRef, () => fetchStockRef.current(), {
+      queueOnOverlap: true,
+    });
+  }, [runRefresh, screenActiveRef]);
+  const callFetchReqHeads = useCallback(
+    (pageIndex?: number, forceRefresh?: boolean) => {
+      if (!isWarehouseScreenActive(screenActiveRef)) return Promise.resolve();
+      if ((pageIndex ?? 0) > 0)
+        return fetchReqHeadsRef.current(pageIndex, forceRefresh);
+      return runRefresh(
+        reqHeadsRefreshRef,
+        (nextForce) => fetchReqHeadsRef.current(0, nextForce),
+        { force: !!forceRefresh, queueOnOverlap: true },
+      );
+    },
+    [runRefresh, screenActiveRef],
+  );
   const callFetchReports = useCallback(() => {
-    return runRefresh(reportsRefreshRef, () => fetchReportsRef.current(), { queueOnOverlap: true });
-  }, [runRefresh]);
+    if (!isWarehouseScreenActive(screenActiveRef)) return Promise.resolve();
+    return runRefresh(reportsRefreshRef, () => fetchReportsRef.current(), {
+      queueOnOverlap: true,
+    });
+  }, [runRefresh, screenActiveRef]);
 
   return {
     callFetchToReceive,

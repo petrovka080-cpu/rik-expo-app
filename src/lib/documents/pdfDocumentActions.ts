@@ -26,9 +26,13 @@ import {
   shouldRecordPdfCrashBreadcrumbs,
 } from "../pdf/pdfCrashBreadcrumbs";
 
-export function getPdfFlowErrorMessage(error: unknown, fallback = "Не удалось открыть PDF"): string {
+export function getPdfFlowErrorMessage(
+  error: unknown,
+  fallback = "Не удалось открыть PDF",
+): string {
   if (error && typeof error === "object") {
-    const maybeMessage = "message" in error ? (error as { message?: unknown }).message : undefined;
+    const maybeMessage =
+      "message" in error ? (error as { message?: unknown }).message : undefined;
     const text = typeof maybeMessage === "string" ? maybeMessage.trim() : "";
     if (text) return text;
   }
@@ -51,8 +55,15 @@ export type PdfViewerRouterLike = {
   replace?: (href: Href, options?: unknown) => void;
 };
 
-function canUseInMemoryRemoteViewerShortcut(doc: DocumentDescriptor, hasRouter: boolean) {
-  return hasRouter && Platform.OS === "android" && doc.fileSource.kind === "remote-url";
+function canUseInMemoryRemoteViewerShortcut(
+  doc: DocumentDescriptor,
+  hasRouter: boolean,
+) {
+  return (
+    hasRouter &&
+    Platform.OS === "android" &&
+    doc.fileSource.kind === "remote-url"
+  );
 }
 
 function toSafeRouteParam(value: unknown) {
@@ -165,15 +176,17 @@ function persistCriticalPdfBreadcrumb(input: {
   return recordPdfCrashBreadcrumbAsync(input);
 }
 
-function requiresCanonicalRemotePdfSource(args: Pick<DocumentDescriptor, "documentType" | "originModule">) {
+function requiresCanonicalRemotePdfSource(
+  args: Pick<DocumentDescriptor, "documentType" | "originModule">,
+) {
   const key = `${args.originModule}:${args.documentType}`;
   return (
-    key === "foreman:request"
-    || key === "director:director_report"
-    || key === "director:supplier_summary"
-    || key === "warehouse:warehouse_document"
-    || key === "warehouse:warehouse_register"
-    || key === "warehouse:warehouse_materials"
+    key === "foreman:request" ||
+    key === "director:director_report" ||
+    key === "director:supplier_summary" ||
+    key === "warehouse:warehouse_document" ||
+    key === "warehouse:warehouse_register" ||
+    key === "warehouse:warehouse_materials"
   );
 }
 
@@ -188,7 +201,9 @@ function assertCanonicalRemotePdfSource(
   );
 }
 
-export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<DocumentDescriptor> {
+export async function preparePdfDocument(
+  args: PreparePdfDocumentArgs,
+): Promise<DocumentDescriptor> {
   const run = async () => {
     const observation = beginPdfLifecycleObservation({
       screen: "reports",
@@ -219,7 +234,9 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
         supabase: args.supabase,
         source:
           args.descriptor.fileSource ??
-          (args.descriptor.uri ? createPdfSource(args.descriptor.uri) : undefined),
+          (args.descriptor.uri
+            ? createPdfSource(args.descriptor.uri)
+            : undefined),
         resolveSource: args.resolveSource,
         getRemoteUrl: args.getRemoteUrl,
         fileName: args.descriptor.fileName,
@@ -232,7 +249,10 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
         documentType: args.descriptor.documentType,
         originModule: args.descriptor.originModule,
         finalUri: uri,
-        finalScheme: String(uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+        finalScheme:
+          String(uri || "")
+            .match(/^([a-z0-9+.-]+):/i)?.[1]
+            ?.toLowerCase() || "",
         finalSourceKind: preparedSource.kind,
         fileName: args.descriptor.fileName,
       });
@@ -247,17 +267,25 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
       const lifecycleError = observation.error(error, {
         fallbackMessage: "PDF preparation failed",
       });
-      const message = getPdfFlowErrorMessage(lifecycleError, "PDF preparation failed");
+      const message = getPdfFlowErrorMessage(
+        lifecycleError,
+        "PDF preparation failed",
+      );
       console.error("[pdf-document-actions] prepare_failed", {
         stage: "prepare_failed",
         platform: Platform.OS,
         documentType: args.descriptor.documentType,
         originModule: args.descriptor.originModule,
         fileName: args.descriptor.fileName,
-        errorName: error && typeof error === "object" && "name" in error ? String((error as { name?: unknown }).name || "") : "",
+        errorName:
+          error && typeof error === "object" && "name" in error
+            ? String((error as { name?: unknown }).name || "")
+            : "",
         errorMessage: message,
       });
-      throw lifecycleError instanceof Error ? lifecycleError : new Error(message);
+      throw lifecycleError instanceof Error
+        ? lifecycleError
+        : new Error(message);
     }
   };
 
@@ -310,7 +338,10 @@ export async function previewPdfDocument(
     },
   });
   try {
-    const scheme = String(doc.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "";
+    const scheme =
+      String(doc.uri || "")
+        .match(/^([a-z0-9+.-]+):/i)?.[1]
+        ?.toLowerCase() || "";
     console.info("[pdf-document-actions] preview", {
       stage: "preview_requested",
       platform: Platform.OS,
@@ -362,10 +393,11 @@ export async function previewPdfDocument(
       });
       if (preparedBreadcrumb) await preparedBreadcrumb;
       const { session, asset } = createInMemoryDocumentPreviewSession(doc);
-      const { safeSessionId, safeOpenToken, href: viewerHref } = createViewerHref(
-        session.sessionId,
-        opts.openFlow?.openToken,
-      );
+      const {
+        safeSessionId,
+        safeOpenToken,
+        href: viewerHref,
+      } = createViewerHref(session.sessionId, opts.openFlow?.openToken);
       recordPdfOpenStage({
         context: opts.openFlow,
         stage: "viewer_route_payload_ready",
@@ -382,7 +414,10 @@ export async function previewPdfDocument(
         documentType: asset.documentType,
         originModule: asset.originModule,
         finalUri: asset.uri,
-        finalScheme: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+        finalScheme:
+          String(asset.uri || "")
+            .match(/^([a-z0-9+.-]+):/i)?.[1]
+            ?.toLowerCase() || "",
         finalSourceKind: asset.sourceKind,
         isLocalFile: false,
         fileName: asset.fileName,
@@ -433,7 +468,8 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
-        if (patchBeforeNavigationBreadcrumb) await patchBeforeNavigationBreadcrumb;
+        if (patchBeforeNavigationBreadcrumb)
+          await patchBeforeNavigationBreadcrumb;
         const pushAttemptBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_push_attempt",
           screen: breadcrumbScreen,
@@ -564,7 +600,10 @@ export async function previewPdfDocument(
       extra: {
         sessionId: session.sessionId,
         assetId: asset.assetId,
-        uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+        uriKind:
+          String(asset.uri || "")
+            .match(/^([a-z0-9+.-]+):/i)?.[1]
+            ?.toLowerCase() || asset.sourceKind,
         uri: asset.uri,
         fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
         fileSizeBytes: asset.sizeBytes,
@@ -584,7 +623,10 @@ export async function previewPdfDocument(
       originModule: asset.originModule,
       sourceKind: asset.sourceKind,
       uri: asset.uri,
-      scheme: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+      scheme:
+        String(asset.uri || "")
+          .match(/^([a-z0-9+.-]+):/i)?.[1]
+          ?.toLowerCase() || "",
       fileName: asset.fileName,
       exists: typeof asset.sizeBytes === "number" ? true : undefined,
       sizeBytes: asset.sizeBytes,
@@ -598,7 +640,10 @@ export async function previewPdfDocument(
           route: "/pdf-viewer",
           sessionId: session.sessionId,
           previewPath: "session_viewer_contract",
-          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uriKind:
+            String(asset.uri || "")
+              .match(/^([a-z0-9+.-]+):/i)?.[1]
+              ?.toLowerCase() || asset.sourceKind,
           uri: asset.uri,
           fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
           fileSizeBytes: asset.sizeBytes,
@@ -610,7 +655,10 @@ export async function previewPdfDocument(
         documentType: asset.documentType,
         originModule: asset.originModule,
         sourceKind: asset.sourceKind,
-        uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+        uriKind:
+          String(asset.uri || "")
+            .match(/^([a-z0-9+.-]+):/i)?.[1]
+            ?.toLowerCase() || asset.sourceKind,
         uri: asset.uri,
         fileName: asset.fileName,
         entityId: doc.entityId,
@@ -625,16 +673,20 @@ export async function previewPdfDocument(
         },
       });
       if (preparedBreadcrumb) await preparedBreadcrumb;
-      const { safeSessionId, safeOpenToken, href: viewerHref } = createViewerHref(
-        session.sessionId,
-        opts.openFlow?.openToken,
-      );
+      const {
+        safeSessionId,
+        safeOpenToken,
+        href: viewerHref,
+      } = createViewerHref(session.sessionId, opts.openFlow?.openToken);
       console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
         sessionId: safeSessionId,
         documentType: asset.documentType,
         originModule: asset.originModule,
         finalUri: asset.uri,
-        finalScheme: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+        finalScheme:
+          String(asset.uri || "")
+            .match(/^([a-z0-9+.-]+):/i)?.[1]
+            ?.toLowerCase() || "",
         finalSourceKind: asset.sourceKind,
         isLocalFile: /^file:\/\//i.test(String(asset.uri || "")),
         fileName: asset.fileName,
@@ -650,7 +702,10 @@ export async function previewPdfDocument(
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uriKind:
+            String(asset.uri || "")
+              .match(/^([a-z0-9+.-]+):/i)?.[1]
+              ?.toLowerCase() || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -671,7 +726,10 @@ export async function previewPdfDocument(
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uriKind:
+            String(asset.uri || "")
+              .match(/^([a-z0-9+.-]+):/i)?.[1]
+              ?.toLowerCase() || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -685,14 +743,18 @@ export async function previewPdfDocument(
             patchVersion: "v3",
           },
         });
-        if (patchBeforeNavigationBreadcrumb) await patchBeforeNavigationBreadcrumb;
+        if (patchBeforeNavigationBreadcrumb)
+          await patchBeforeNavigationBreadcrumb;
         const pushAttemptBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_push_attempt",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uriKind:
+            String(asset.uri || "")
+              .match(/^([a-z0-9+.-]+):/i)?.[1]
+              ?.toLowerCase() || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -723,7 +785,10 @@ export async function previewPdfDocument(
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uriKind:
+            String(asset.uri || "")
+              .match(/^([a-z0-9+.-]+):/i)?.[1]
+              ?.toLowerCase() || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -745,7 +810,10 @@ export async function previewPdfDocument(
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || asset.sourceKind,
+          uriKind:
+            String(asset.uri || "")
+              .match(/^([a-z0-9+.-]+):/i)?.[1]
+              ?.toLowerCase() || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -794,16 +862,24 @@ export async function previewPdfDocument(
             sessionId: safeSessionId,
           },
         });
-        const message = getPdfFlowErrorMessage(lifecycleError, "Viewer navigation failed");
+        const message = getPdfFlowErrorMessage(
+          lifecycleError,
+          "Viewer navigation failed",
+        );
         console.error("[pdf-document-actions] preview_navigation_failed", {
           stage: "navigation_failed",
           sessionId: safeSessionId,
           documentType: asset.documentType,
           originModule: asset.originModule,
-          errorName: error && typeof error === "object" && "name" in error ? String((error as { name?: unknown }).name || "") : "",
+          errorName:
+            error && typeof error === "object" && "name" in error
+              ? String((error as { name?: unknown }).name || "")
+              : "",
           errorMessage: message,
         });
-        throw lifecycleError instanceof Error ? lifecycleError : new Error(message);
+        throw lifecycleError instanceof Error
+          ? lifecycleError
+          : new Error(message);
       }
     }
     console.warn("[pdf-document-actions] preview_without_router_fallback", {
@@ -837,7 +913,10 @@ export async function previewPdfDocument(
     }
   } catch (error) {
     const lifecycleError = error;
-    const message = getPdfFlowErrorMessage(lifecycleError, "PDF preview failed");
+    const message = getPdfFlowErrorMessage(
+      lifecycleError,
+      "PDF preview failed",
+    );
     console.error("[pdf-document-actions] preview_failed", {
       stage: "preview_failed",
       platform: Platform.OS,
@@ -845,7 +924,10 @@ export async function previewPdfDocument(
       originModule: doc.originModule,
       fileName: doc.fileName,
       uri: doc.uri,
-      errorName: error && typeof error === "object" && "name" in error ? String((error as { name?: unknown }).name || "") : "",
+      errorName:
+        error && typeof error === "object" && "name" in error
+          ? String((error as { name?: unknown }).name || "")
+          : "",
       errorMessage: message,
     });
     throw lifecycleError instanceof Error ? lifecycleError : new Error(message);
@@ -931,7 +1013,8 @@ export async function prepareAndPreviewPdfDocument(
       sourceKind: args.descriptor.fileSource?.kind ?? null,
       uriKind:
         String(args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? "")
-          .match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || null,
+          .match(/^([a-z0-9+.-]+):/i)?.[1]
+          ?.toLowerCase() || null,
       uri: args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null,
       fileName: args.descriptor.fileName,
       entityId: args.descriptor.entityId,
@@ -952,12 +1035,30 @@ export async function prepareAndPreviewPdfDocument(
         stage: "document_prepare_start",
       });
 
-      const document = await preparePdfDocument({
-        ...args,
-        busy: undefined,
-      });
+      let document: DocumentDescriptor;
+      try {
+        document = await preparePdfDocument({
+          ...args,
+          busy: undefined,
+        });
+      } catch (error) {
+        recordPdfOpenStage({
+          context: baseContext,
+          stage: "document_prepare_fail",
+          result: "error",
+          sourceKind: args.descriptor.fileSource?.kind ?? "pdf:document",
+          error,
+          extra: {
+            source:
+              args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null,
+          },
+        });
+        throw error;
+      }
 
-      const visibilityWait = args.router ? beginPdfOpenVisibilityWait(baseContext) : null;
+      const visibilityWait = args.router
+        ? beginPdfOpenVisibilityWait(baseContext)
+        : null;
 
       try {
         await previewPdfDocument(document, {
@@ -980,9 +1081,13 @@ export async function prepareAndPreviewPdfDocument(
         }
         return document;
       } catch (error) {
-        const signalledFailure = failPdfOpenVisible(visibilityWait?.token, error, {
-          sourceKind: document.fileSource.kind,
-        });
+        const signalledFailure = failPdfOpenVisible(
+          visibilityWait?.token,
+          error,
+          {
+            sourceKind: document.fileSource.kind,
+          },
+        );
         if (!signalledFailure) {
           recordPdfOpenStage({
             context: baseContext,
@@ -1042,7 +1147,9 @@ export async function prepareAndPreviewPdfDocument(
   return await promise;
 }
 
-export async function openPdfDocumentExternal(doc: DocumentDescriptor): Promise<void> {
+export async function openPdfDocumentExternal(
+  doc: DocumentDescriptor,
+): Promise<void> {
   const observation = beginPdfLifecycleObservation({
     screen: "reports",
     surface: "pdf_document_actions",

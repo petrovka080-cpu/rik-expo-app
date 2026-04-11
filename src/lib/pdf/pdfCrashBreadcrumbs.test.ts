@@ -19,6 +19,10 @@ import {
   recordPdfCrashBreadcrumb,
   recordPdfCrashBreadcrumbAsync,
 } from "./pdfCrashBreadcrumbs";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../observability/platformObservability";
 
 describe("pdfCrashBreadcrumbs", () => {
   beforeEach(async () => {
@@ -28,6 +32,7 @@ describe("pdfCrashBreadcrumbs", () => {
     mockGetItem.mockResolvedValue(null);
     mockSetItem.mockResolvedValue(undefined);
     mockRemoveItem.mockResolvedValue(undefined);
+    resetPlatformObservabilityEvents();
     await clearPdfCrashBreadcrumbs();
     await flushPdfCrashBreadcrumbWrites();
   });
@@ -45,7 +50,9 @@ describe("pdfCrashBreadcrumbs", () => {
     });
 
     expect(mockSetItem).toHaveBeenCalledTimes(1);
-    const savedItems = JSON.parse(String(mockSetItem.mock.calls[0]?.[1] ?? "[]"));
+    const savedItems = JSON.parse(
+      String(mockSetItem.mock.calls[0]?.[1] ?? "[]"),
+    );
     expect(savedItems).toHaveLength(1);
     expect(savedItems[0]).toMatchObject({
       marker: "viewer_route_pushed",
@@ -71,13 +78,39 @@ describe("pdfCrashBreadcrumbs", () => {
     await flushPdfCrashBreadcrumbWrites();
 
     expect(mockSetItem).toHaveBeenCalledTimes(1);
-    mockGetItem.mockResolvedValue(String(mockSetItem.mock.calls[0]?.[1] ?? "[]"));
+    mockGetItem.mockResolvedValue(
+      String(mockSetItem.mock.calls[0]?.[1] ?? "[]"),
+    );
 
     await expect(getPdfCrashBreadcrumbs()).resolves.toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           marker: "tap_start",
           screen: "warehouse",
+        }),
+      ]),
+    );
+  });
+
+  it("logs breadcrumb storage failures without destabilizing the PDF path", async () => {
+    mockSetItem.mockRejectedValueOnce(new Error("storage full"));
+
+    await recordPdfCrashBreadcrumbAsync({
+      marker: "pdf_open_tap",
+      screen: "warehouse",
+      documentType: "warehouse_register",
+      originModule: "warehouse",
+    });
+
+    expect(getPlatformObservabilityEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          screen: "pdf_viewer",
+          surface: "pdf_crash_breadcrumbs",
+          event: "pdf_breadcrumb_write_failed",
+          result: "error",
+          errorClass: "error",
+          errorMessage: "storage full",
         }),
       ]),
     );

@@ -2,16 +2,15 @@ import { useCallback, useEffect, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
 import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./useWarehouseScreenActivity";
+import {
   isPlatformGuardCoolingDown,
   recordPlatformGuardSkip,
 } from "../../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
-
-const useMountedRef = () => {
-  const ref = useRef(true);
-  useEffect(() => () => { ref.current = false; }, []);
-  return ref;
-};
 
 const TAB_INCOMING = WAREHOUSE_TABS[0];
 const TAB_STOCK_FACT = WAREHOUSE_TABS[1];
@@ -25,6 +24,7 @@ export function useWarehouseLifecycle(params: {
   fetchToReceive: () => Promise<void>;
   fetchStock: () => Promise<void>;
   fetchReports: () => Promise<void>;
+  screenActiveRef?: WarehouseScreenActiveRef;
   onError: (e: unknown) => void;
 }) {
   const {
@@ -34,10 +34,13 @@ export function useWarehouseLifecycle(params: {
     fetchToReceive,
     fetchStock,
     fetchReports,
+    screenActiveRef: externalScreenActiveRef,
     onError,
   } = params;
 
-  const mountedRef = useMountedRef();
+  const screenActiveRef = useWarehouseFallbackActiveRef(
+    externalScreenActiveRef,
+  );
   const focusedRef = useRef(isScreenFocused);
   const didInitLoadRef = useRef(false);
   const focusRefreshInFlightRef = useRef<Promise<void> | null>(null);
@@ -48,8 +51,8 @@ export function useWarehouseLifecycle(params: {
   }, [isScreenFocused]);
 
   const isScreenActive = useCallback(
-    () => mountedRef.current && focusedRef.current,
-    [mountedRef],
+    () => isWarehouseScreenActive(screenActiveRef) && focusedRef.current,
+    [screenActiveRef],
   );
 
   const loadAll = useCallback(async () => {
@@ -69,7 +72,10 @@ export function useWarehouseLifecycle(params: {
     if (!isScreenActive()) return;
     setLoading(true);
     try {
-      const [incomingRes, stockRes] = await Promise.allSettled([fetchToReceive(), fetchStock()]);
+      const [incomingRes, stockRes] = await Promise.allSettled([
+        fetchToReceive(),
+        fetchStock(),
+      ]);
       if (!isScreenActive()) return;
       if (incomingRes.status === "rejected") throw incomingRes.reason;
       if (stockRes.status === "rejected") throw stockRes.reason;

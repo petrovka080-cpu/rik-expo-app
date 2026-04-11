@@ -1,8 +1,16 @@
 import { useCallback, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { apiFetchIncomingReports, apiFetchReports } from "../warehouse.stock.read";
+import {
+  apiFetchIncomingReports,
+  apiFetchReports,
+} from "../warehouse.stock.read";
 import type { StockRow, WarehouseReportRow } from "../warehouse.types";
+import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./useWarehouseScreenActivity";
 
 const REPORTS_CACHE_TTL_MS = 60 * 1000;
 
@@ -18,8 +26,10 @@ export function useWarehouseReportsData(params: {
   supabase: SupabaseClient;
   periodFrom: string;
   periodTo: string;
+  screenActiveRef?: WarehouseScreenActiveRef;
 }) {
   const { supabase, periodFrom, periodTo } = params;
+  const screenActiveRef = useWarehouseFallbackActiveRef(params.screenActiveRef);
 
   const [repStock, setRepStock] = useState<StockRow[]>([]);
   const [repMov, setRepMov] = useState<WarehouseReportRow[]>([]);
@@ -37,6 +47,7 @@ export function useWarehouseReportsData(params: {
       const key = `${from}|${to}`;
       const hit = reportsCacheRef.current.get(key);
       if (hit && Date.now() - hit.ts <= REPORTS_CACHE_TTL_MS) {
+        if (!isWarehouseScreenActive(screenActiveRef)) return;
         setRepStock(hit.repStock);
         setRepMov(hit.repMov);
         setRepIssues(hit.repIssues);
@@ -50,6 +61,7 @@ export function useWarehouseReportsData(params: {
         return;
       }
 
+      if (!isWarehouseScreenActive(screenActiveRef)) return;
       const reqId = ++reportsReqSeqRef.current;
       const task = (async () => {
         const [r, inc] = await Promise.all([
@@ -57,6 +69,7 @@ export function useWarehouseReportsData(params: {
           apiFetchIncomingReports(supabase, { from, to }),
         ]);
         if (reqId !== reportsReqSeqRef.current) return;
+        if (!isWarehouseScreenActive(screenActiveRef)) return;
 
         const next = {
           ts: Date.now(),
@@ -77,7 +90,7 @@ export function useWarehouseReportsData(params: {
       reportsInFlightRef.current.set(key, task);
       await task;
     },
-    [supabase, periodFrom, periodTo],
+    [supabase, periodFrom, periodTo, screenActiveRef],
   );
 
   return {

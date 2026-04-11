@@ -15,11 +15,11 @@ describe("queryBoundary", () => {
       error: null,
     }));
 
-    const result = await runContainedRpc<{ ok: boolean; fn: string; args?: Record<string, unknown> }>(
-      { rpc },
-      "buyer_summary_inbox_scope_v1",
-      { p_offset: 0, p_limit: 50 },
-    );
+    const result = await runContainedRpc<{
+      ok: boolean;
+      fn: string;
+      args?: Record<string, unknown>;
+    }>({ rpc }, "buyer_summary_inbox_scope_v1", { p_offset: 0, p_limit: 50 });
 
     expect(rpc).toHaveBeenCalledWith("buyer_summary_inbox_scope_v1", {
       p_offset: 0,
@@ -32,6 +32,7 @@ describe("queryBoundary", () => {
         args: { p_offset: 0, p_limit: 50 },
       },
       error: null,
+      appError: null,
     });
   });
 
@@ -44,7 +45,9 @@ describe("queryBoundary", () => {
         args?: Record<string, unknown>,
       ) {
         if (!this?.rest) {
-          throw new TypeError("Cannot read properties of undefined (reading 'rest')");
+          throw new TypeError(
+            "Cannot read properties of undefined (reading 'rest')",
+          );
         }
         return Promise.resolve({
           data: {
@@ -76,6 +79,7 @@ describe("queryBoundary", () => {
       args: { p_offset: 12, p_limit: 12 },
       restBaseUrl: "https://example.test",
     });
+    expect(result.appError).toBeNull();
   });
 
   it("normalizes unknown rpc errors into a predictable shape", async () => {
@@ -89,7 +93,10 @@ describe("queryBoundary", () => {
       },
     }));
 
-    const result = await runContainedRpc<null>({ rpc }, "contractor_inbox_scope_v1");
+    const result = await runContainedRpc<null>(
+      { rpc },
+      "contractor_inbox_scope_v1",
+    );
 
     expect(result.data).toBeNull();
     expect(result.error).toBeInstanceOf(Error);
@@ -97,6 +104,12 @@ describe("queryBoundary", () => {
     expect(result.error?.code).toBe("PGRST001");
     expect(result.error?.details).toBe("details");
     expect(result.error?.hint).toBe("hint");
+    expect(result.appError).toMatchObject({
+      code: "pgrst001",
+      context: "rpc:contractor_inbox_scope_v1:result_error",
+      severity: "fatal",
+      message: "rpc failed",
+    });
   });
 
   it("fails fast and logs boundary observability when the transport owner is invalid", async () => {
@@ -114,7 +127,13 @@ describe("queryBoundary", () => {
 
     expect(result.data).toBeNull();
     expect(result.error).toBeInstanceOf(Error);
-    expect(result.error?.message).toContain("RPC transport owner is unavailable");
+    expect(result.error?.message).toContain(
+      "RPC transport owner is unavailable",
+    );
+    expect(result.appError).toMatchObject({
+      context: "rpc:contractor_inbox_scope_v1:transport_guard",
+      severity: "fatal",
+    });
     expect(getPlatformObservabilityEvents()).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

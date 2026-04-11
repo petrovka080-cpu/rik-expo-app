@@ -1189,7 +1189,6 @@ describe("OfficeHubScreen", () => {
               sourceRoute: "/office/warehouse",
               target: "/office",
               method: "back",
-              selectedMethod: "back",
             }}
           />,
         );
@@ -1267,7 +1266,6 @@ describe("OfficeHubScreen", () => {
         sourceRoute: "/office/warehouse",
         target: "/office",
         method: "back",
-        selectedMethod: "back",
       });
 
       await triggerFocusEffect();

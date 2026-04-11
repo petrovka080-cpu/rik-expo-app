@@ -11,7 +11,6 @@ export type OfficeReentryMarker =
   | "office_route_owner_unmount"
   | "office_route_owner_focus"
   | "office_route_owner_blur"
-  | "office_route_replace_received"
   | "office_route_scope_active"
   | "office_route_scope_inactive"
   | "office_route_scope_skip_reason"
@@ -166,7 +165,6 @@ const OFFICE_POST_RETURN_PROBES: readonly OfficePostReturnProbe[] = [
 
 let writeQueue = Promise.resolve();
 let officePostReturnProbe: OfficePostReturnProbe[] = ["all"];
-let pendingOfficeRouteReplaceReceipt: Record<string, unknown> | null = null;
 let pendingOfficeRouteReturnReceipt: Record<string, unknown> | null = null;
 let recentOfficeRouteReturnReceipt: Record<string, unknown> | null = null;
 
@@ -331,7 +329,6 @@ function recordOfficeLifecycleMarker(params: {
     | "office_route_owner_unmount"
     | "office_route_owner_focus"
     | "office_route_owner_blur"
-    | "office_route_replace_received"
     | "office_route_scope_active"
     | "office_route_scope_inactive"
     | "office_route_scope_skip_reason"
@@ -416,15 +413,6 @@ export function recordOfficeRouteOwnerFocus(extra?: Record<string, unknown>) {
 export function recordOfficeRouteOwnerBlur(extra?: Record<string, unknown>) {
   recordOfficeLifecycleMarker({
     marker: "office_route_owner_blur",
-    extra,
-  });
-}
-
-export function recordOfficeRouteReplaceReceived(
-  extra?: Record<string, unknown>,
-) {
-  recordOfficeLifecycleMarker({
-    marker: "office_route_replace_received",
     extra,
   });
 }
@@ -1207,21 +1195,6 @@ export function setOfficePostReturnProbe(
   return officePostReturnProbe;
 }
 
-export function markPendingOfficeRouteReplaceReceipt(
-  extra?: Record<string, unknown>,
-) {
-  const receipt = { ...(extra ?? {}) };
-  pendingOfficeRouteReplaceReceipt = receipt;
-  pendingOfficeRouteReturnReceipt = receipt;
-  recentOfficeRouteReturnReceipt = receipt;
-}
-
-export function consumePendingOfficeRouteReplaceReceipt() {
-  const next = pendingOfficeRouteReplaceReceipt;
-  pendingOfficeRouteReplaceReceipt = null;
-  return next;
-}
-
 export function markPendingOfficeRouteReturnReceipt(
   extra?: Record<string, unknown>,
 ) {
@@ -1252,8 +1225,7 @@ function isSameOfficeRouteReturnReceipt(
     left === right ||
     (left.sourceRoute === right.sourceRoute &&
       left.target === right.target &&
-      left.method === right.method &&
-      left.selectedMethod === right.selectedMethod)
+      left.method === right.method)
   );
 }
 
@@ -1339,8 +1311,6 @@ export function buildOfficeReentryBreadcrumbsText(
       if (item.extra?.skippedScope)
         parts.push(`skippedScope=${String(item.extra.skippedScope)}`);
       if (item.extra?.tab) parts.push(`tab=${String(item.extra.tab)}`);
-      if (item.extra?.selectedMethod)
-        parts.push(`selectedMethod=${String(item.extra.selectedMethod)}`);
       if (item.extra?.reason) parts.push(`reason=${String(item.extra.reason)}`);
       if (item.extra?.probe) parts.push(`probe=${String(item.extra.probe)}`);
       return parts.join(" | ");

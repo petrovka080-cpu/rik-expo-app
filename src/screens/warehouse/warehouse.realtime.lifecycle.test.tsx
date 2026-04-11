@@ -7,6 +7,7 @@ import {
   WAREHOUSE_REALTIME_CHANNEL_NAME,
 } from "../../lib/realtime/realtime.channels";
 import { WAREHOUSE_TABS } from "./warehouse.types";
+import type { WarehouseScreenActiveRef } from "./hooks/useWarehouseScreenActivity";
 
 const mockSubscribeChannel = jest.fn();
 const mockGetPlatformNetworkSnapshot = jest.fn();
@@ -28,16 +29,20 @@ jest.mock("../../lib/realtime/realtime.client", () => ({
 }));
 
 jest.mock("../../lib/offline/platformNetwork.service", () => ({
-  getPlatformNetworkSnapshot: (...args: unknown[]) => mockGetPlatformNetworkSnapshot(...args),
+  getPlatformNetworkSnapshot: (...args: unknown[]) =>
+    mockGetPlatformNetworkSnapshot(...args),
 }));
 
 jest.mock("../../lib/observability/platformObservability", () => ({
-  recordPlatformObservability: (...args: unknown[]) => mockRecordPlatformObservability(...args),
+  recordPlatformObservability: (...args: unknown[]) =>
+    mockRecordPlatformObservability(...args),
 }));
 
 jest.mock("../../lib/observability/platformGuardDiscipline", () => ({
-  isPlatformGuardCoolingDown: (...args: unknown[]) => mockIsPlatformGuardCoolingDown(...args),
-  recordPlatformGuardSkip: (...args: unknown[]) => mockRecordPlatformGuardSkip(...args),
+  isPlatformGuardCoolingDown: (...args: unknown[]) =>
+    mockIsPlatformGuardCoolingDown(...args),
+  recordPlatformGuardSkip: (...args: unknown[]) =>
+    mockRecordPlatformGuardSkip(...args),
 }));
 
 function Harness(props: {
@@ -46,6 +51,7 @@ function Harness(props: {
   refreshExpense: () => Promise<void>;
   isIncomingRefreshInFlight: () => boolean;
   isExpenseRefreshInFlight: () => boolean;
+  screenActiveRef?: WarehouseScreenActiveRef;
 }) {
   useWarehouseRealtimeLifecycle(props);
   return null;
@@ -66,10 +72,12 @@ describe("useWarehouseRealtimeLifecycle", () => {
   it("refreshes the incoming scope on the matching tab and cleans up on unmount", async () => {
     const detach = jest.fn();
     let capturedConfig: Record<string, unknown> | null = null;
-    mockSubscribeChannel.mockImplementation((config: Record<string, unknown>) => {
-      capturedConfig = config;
-      return detach;
-    });
+    mockSubscribeChannel.mockImplementation(
+      (config: Record<string, unknown>) => {
+        capturedConfig = config;
+        return detach;
+      },
+    );
 
     const refreshIncoming = jest.fn().mockResolvedValue(undefined);
     const refreshExpense = jest.fn().mockResolvedValue(undefined);
@@ -91,7 +99,7 @@ describe("useWarehouseRealtimeLifecycle", () => {
       expect.objectContaining({
         name: WAREHOUSE_REALTIME_CHANNEL_NAME,
         scope: "warehouse",
-        route: "/warehouse",
+        route: "/office/warehouse",
         surface: "screen_root",
         bindings: WAREHOUSE_REALTIME_BINDINGS,
       }),
@@ -214,5 +222,48 @@ describe("useWarehouseRealtimeLifecycle", () => {
     });
 
     expect(detachSecond).toHaveBeenCalledTimes(1);
+  });
+
+  it("suppresses realtime refreshes after the warehouse screen is inactive", async () => {
+    const detach = jest.fn();
+    let capturedConfig: Record<string, unknown> | null = null;
+    mockSubscribeChannel.mockImplementation(
+      (config: Record<string, unknown>) => {
+        capturedConfig = config;
+        return detach;
+      },
+    );
+
+    const refreshIncoming = jest.fn().mockResolvedValue(undefined);
+    const refreshExpense = jest.fn().mockResolvedValue(undefined);
+    const screenActiveRef = { current: false };
+
+    await act(async () => {
+      TestRenderer.create(
+        <Harness
+          tab={WAREHOUSE_TABS[0]}
+          refreshIncoming={refreshIncoming}
+          refreshExpense={refreshExpense}
+          isIncomingRefreshInFlight={() => false}
+          isExpenseRefreshInFlight={() => false}
+          screenActiveRef={screenActiveRef}
+        />,
+      );
+    });
+
+    await act(async () => {
+      (capturedConfig?.onEvent as Function)?.({
+        binding: {
+          key: "warehouse_incoming_items",
+          table: "incoming_items",
+          owner: "warehouse_realtime",
+        },
+        payload: { eventType: "UPDATE" },
+      });
+      await Promise.resolve();
+    });
+
+    expect(refreshIncoming).not.toHaveBeenCalled();
+    expect(refreshExpense).not.toHaveBeenCalled();
   });
 });

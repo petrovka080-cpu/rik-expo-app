@@ -15,6 +15,7 @@ const mockClearCurrentSessionRoleCache = jest.fn();
 const mockWarmCurrentSessionProfile = jest.fn();
 const mockEnsureQueueWorker = jest.fn();
 const mockStopQueueWorker = jest.fn();
+const mockRecordPlatformObservability = jest.fn();
 
 jest.mock("../runtime/installWeakRefPolyfill", () => ({}));
 
@@ -60,7 +61,8 @@ jest.mock("../supabaseClient", () => ({
 }));
 
 jest.mock("../documents/pdfDocumentSessions", () => ({
-  clearDocumentSessions: (...args: unknown[]) => mockClearDocumentSessions(...args),
+  clearDocumentSessions: (...args: unknown[]) =>
+    mockClearDocumentSessions(...args),
 }));
 
 jest.mock("../sessionRole", () => ({
@@ -75,6 +77,11 @@ jest.mock("../../workers/queueBootstrap", () => ({
   stopQueueWorker: (...args: unknown[]) => mockStopQueueWorker(...args),
 }));
 
+jest.mock("../observability/platformObservability", () => ({
+  recordPlatformObservability: (...args: unknown[]) =>
+    mockRecordPlatformObservability(...args),
+}));
+
 describe("RootLayout recovery bootstrap", () => {
   beforeEach(() => {
     mockReplace.mockReset();
@@ -87,6 +94,7 @@ describe("RootLayout recovery bootstrap", () => {
     mockWarmCurrentSessionProfile.mockReset();
     mockEnsureQueueWorker.mockReset();
     mockStopQueueWorker.mockReset();
+    mockRecordPlatformObservability.mockReset();
 
     mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
     mockUsePathname.mockReturnValue("/(tabs)/profile");
@@ -131,9 +139,17 @@ describe("RootLayout recovery bootstrap", () => {
     expect(mockStopQueueWorker).not.toHaveBeenCalled();
     expect(mockClearDocumentSessions).not.toHaveBeenCalled();
     expect(mockClearCurrentSessionRoleCache).not.toHaveBeenCalled();
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "auth_check_timeout",
+        result: "skipped",
+      }),
+    );
   });
 
   it("still redirects to login when session bootstrap confirms no session", async () => {
+    mockUseSegments.mockReturnValue([]);
+    mockUsePathname.mockReturnValue("/");
     mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
 
     await act(async () => {
@@ -148,6 +164,34 @@ describe("RootLayout recovery bootstrap", () => {
     expect(mockStopQueueWorker).toHaveBeenCalledTimes(1);
     expect(mockClearDocumentSessions).toHaveBeenCalledTimes(1);
     expect(mockClearCurrentSessionRoleCache).toHaveBeenCalledTimes(1);
+  });
+
+  it("blocks login redirect when a protected app route gets a null bootstrap session", async () => {
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+    mockUsePathname.mockReturnValue("/office/warehouse");
+    mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
+
+    await act(async () => {
+      TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(mockStopQueueWorker).not.toHaveBeenCalled();
+    expect(mockClearDocumentSessions).not.toHaveBeenCalled();
+    expect(mockClearCurrentSessionRoleCache).not.toHaveBeenCalled();
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "auth_redirect_blocked",
+        result: "skipped",
+        extra: expect.objectContaining({
+          reason: "bootstrap_no_session_on_protected_route",
+        }),
+      }),
+    );
   });
 
   it("redirects authenticated users away from the auth stack", async () => {
@@ -178,18 +222,22 @@ describe("RootLayout recovery bootstrap", () => {
     // 2. onAuthStateChange fires SIGNED_IN with a valid session
     // The route guard should use the SIGNED_IN session, NOT the stale null.
 
-    let capturedAuthCallback: ((event: string, session: unknown) => void) | null = null;
+    let capturedAuthCallback:
+      | ((event: string, session: unknown) => void)
+      | null = null;
 
-    mockOnAuthStateChange.mockImplementation((callback: (event: string, session: unknown) => void) => {
-      capturedAuthCallback = callback;
-      return {
-        data: {
-          subscription: {
-            unsubscribe: jest.fn(),
+    mockOnAuthStateChange.mockImplementation(
+      (callback: (event: string, session: unknown) => void) => {
+        capturedAuthCallback = callback;
+        return {
+          data: {
+            subscription: {
+              unsubscribe: jest.fn(),
+            },
           },
-        },
-      };
-    });
+        };
+      },
+    );
 
     // Start on auth/login (user just submitted login form)
     mockUseSegments.mockReturnValue(["auth", "login"]);
@@ -218,7 +266,10 @@ describe("RootLayout recovery bootstrap", () => {
 
     // SIGNED_IN fires from supabase
     await act(async () => {
-      capturedAuthCallback?.("SIGNED_IN", { user: { id: "user-1" }, access_token: "tok" });
+      capturedAuthCallback?.("SIGNED_IN", {
+        user: { id: "user-1" },
+        access_token: "tok",
+      });
     });
 
     await act(async () => {
@@ -227,6 +278,60 @@ describe("RootLayout recovery bootstrap", () => {
 
     // The critical assertion: after SIGNED_IN, the route guard must NOT send user back to login.
     expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+  });
+
+  it("treats non-terminal null auth events as unknown on office routes", async () => {
+    let capturedAuthCallback:
+      | ((event: string, session: unknown) => void)
+      | null = null;
+
+    mockOnAuthStateChange.mockImplementation(
+      (callback: (event: string, session: unknown) => void) => {
+        capturedAuthCallback = callback;
+        return {
+          data: {
+            subscription: {
+              unsubscribe: jest.fn(),
+            },
+          },
+        };
+      },
+    );
+
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+    mockUsePathname.mockReturnValue("/office/warehouse");
+    mockGetSessionSafe.mockResolvedValue({
+      session: {
+        user: { id: "user-1" },
+      },
+      degraded: false,
+    });
+
+    await act(async () => {
+      TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    mockReplace.mockClear();
+
+    await act(async () => {
+      capturedAuthCallback?.("INITIAL_SESSION", null);
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "auth_redirect_blocked",
+        result: "skipped",
+        extra: expect.objectContaining({
+          reason: "non_terminal_auth_event",
+        }),
+      }),
+    );
   });
 
   it("re-checks session after auth stack exit before sending user back to login", async () => {

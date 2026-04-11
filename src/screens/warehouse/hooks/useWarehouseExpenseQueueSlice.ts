@@ -1,10 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-
-const useMountedRef = () => {
-  const ref = useRef(true);
-  useEffect(() => () => { ref.current = false; }, []);
-  return ref;
-};
 import { useFocusEffect } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -16,6 +10,11 @@ import {
   isPlatformGuardCoolingDown,
   recordPlatformGuardSkip,
 } from "../../../lib/observability/platformGuardDiscipline";
+import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./useWarehouseScreenActivity";
 
 const TAB_EXPENSE = WAREHOUSE_TABS[2];
 const FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
@@ -30,7 +29,9 @@ type RefreshState = {
 type RefreshReason = "tab" | "focus" | "manual" | "issue" | "realtime";
 
 type ReqPickUiLike = {
-  setReqQtyInputByItem: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  setReqQtyInputByItem: React.Dispatch<
+    React.SetStateAction<Record<string, string>>
+  >;
   clearReqPick: () => void;
 };
 
@@ -70,10 +71,12 @@ export function useWarehouseExpenseQueueSlice(params: {
   isScreenFocused: boolean;
   pageSize: number;
   reqPickUi: ReqPickUiLike;
+  screenActiveRef?: WarehouseScreenActiveRef;
   onError: (error: unknown) => void;
 }) {
-  const { supabase, tab, isScreenFocused, pageSize, reqPickUi, onError } = params;
-  const mountedRef = useMountedRef();
+  const { supabase, tab, isScreenFocused, pageSize, reqPickUi, onError } =
+    params;
+  const screenActiveRef = useWarehouseFallbackActiveRef(params.screenActiveRef);
 
   const [reqModal, setReqModal] = useState<ReqHeadRow | null>(null);
   const {
@@ -88,6 +91,7 @@ export function useWarehouseExpenseQueueSlice(params: {
   } = useWarehouseReqHeads({
     supabase,
     pageSize,
+    screenActiveRef,
   });
   const {
     reqItems,
@@ -95,13 +99,14 @@ export function useWarehouseExpenseQueueSlice(params: {
     reqItemsLoading,
     setReqItemsLoading,
     fetchReqItems,
-  } = useWarehouseReqItemsData({ supabase });
+  } = useWarehouseReqItemsData({ supabase, screenActiveRef });
   const { openReq, closeReq } = useWarehouseReqModalFlow({
     supabase,
     reqPickUi,
     setReqModal,
     setReqItems,
     setReqItemsLoading,
+    screenActiveRef,
     onError,
   });
 
@@ -118,25 +123,41 @@ export function useWarehouseExpenseQueueSlice(params: {
     (options?: { force?: boolean; reason?: RefreshReason }) => {
       const force = !!options?.force;
       const reason = options?.reason ?? "manual";
+      if (!isWarehouseScreenActive(screenActiveRef)) {
+        refreshStateRef.current.rerunQueued = false;
+        refreshStateRef.current.rerunForce = false;
+        return Promise.resolve();
+      }
 
       const startRefresh = (nextForce: boolean) => {
         const task = (async () => {
           try {
+            if (!isWarehouseScreenActive(screenActiveRef)) return;
             await fetchReqHeads(0, nextForce);
+            if (!isWarehouseScreenActive(screenActiveRef)) return;
             hasActivatedExpenseRef.current = true;
           } finally {
             refreshStateRef.current.inFlight = null;
-            if (refreshStateRef.current.rerunQueued && mountedRef.current) {
+            if (
+              refreshStateRef.current.rerunQueued &&
+              isWarehouseScreenActive(screenActiveRef)
+            ) {
               const rerunForce = refreshStateRef.current.rerunForce;
               refreshStateRef.current.rerunQueued = false;
               refreshStateRef.current.rerunForce = false;
               void startRefresh(rerunForce);
+            } else if (!isWarehouseScreenActive(screenActiveRef)) {
+              refreshStateRef.current.rerunQueued = false;
+              refreshStateRef.current.rerunForce = false;
             }
           }
         })();
 
         if (__DEV__) {
-          console.info("[warehouse.expenseQueue] refresh", { force: nextForce, reason });
+          console.info("[warehouse.expenseQueue] refresh", {
+            force: nextForce,
+            reason,
+          });
         }
 
         refreshStateRef.current.inFlight = task;
@@ -145,16 +166,18 @@ export function useWarehouseExpenseQueueSlice(params: {
 
       if (refreshStateRef.current.inFlight) {
         refreshStateRef.current.rerunQueued = true;
-        refreshStateRef.current.rerunForce = refreshStateRef.current.rerunForce || force;
+        refreshStateRef.current.rerunForce =
+          refreshStateRef.current.rerunForce || force;
         return refreshStateRef.current.inFlight;
       }
 
       return startRefresh(force);
     },
-    [fetchReqHeads],
+    [fetchReqHeads, screenActiveRef],
   );
 
   const onReqEndReached = useCallback(() => {
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
     if (!reqRefs.current.hasMore) {
       recordPlatformGuardSkip("no_more_pages", {
         screen: "warehouse",
@@ -167,7 +190,7 @@ export function useWarehouseExpenseQueueSlice(params: {
     }
     if (reqRefs.current.fetching) return;
     void fetchReqHeads(reqRefs.current.page + 1);
-  }, [fetchReqHeads, reqRefs]);
+  }, [fetchReqHeads, reqRefs, screenActiveRef]);
 
   useEffect(() => {
     if (!isScreenFocused) {
@@ -213,8 +236,10 @@ export function useWarehouseExpenseQueueSlice(params: {
     void refreshExpenseQueue({
       force: hasActivatedExpenseRef.current,
       reason: "tab",
-    }).catch((error) => onError(error));
-  }, [isScreenFocused, onError, refreshExpenseQueue, tab]);
+    }).catch((error) => {
+      if (isWarehouseScreenActive(screenActiveRef)) onError(error);
+    });
+  }, [isScreenFocused, onError, refreshExpenseQueue, screenActiveRef, tab]);
 
   useFocusEffect(
     useCallback(() => {
@@ -251,21 +276,25 @@ export function useWarehouseExpenseQueueSlice(params: {
       void refreshExpenseQueue({
         force: hasActivatedExpenseRef.current,
         reason: "focus",
-      }).catch((error) => onError(error));
+      }).catch((error) => {
+        if (isWarehouseScreenActive(screenActiveRef)) onError(error);
+      });
 
       return undefined;
-    }, [onError, refreshExpenseQueue, tab]),
+    }, [onError, refreshExpenseQueue, screenActiveRef, tab]),
   );
 
   useEffect(() => {
-    if (!mountedRef.current) return;
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
     setReqModal((prev) => {
       if (!prev) return prev;
-      const updated = reqHeads.find((row) => String(row.request_id) === String(prev.request_id));
+      const updated = reqHeads.find(
+        (row) => String(row.request_id) === String(prev.request_id),
+      );
       if (!updated) return prev;
       return reqModalFieldsEqual(prev, updated) ? prev : updated;
     });
-  }, [reqHeads]);
+  }, [reqHeads, screenActiveRef]);
 
   return {
     reqHeads,
@@ -289,4 +318,6 @@ export function useWarehouseExpenseQueueSlice(params: {
   };
 }
 
-export type WarehouseExpenseQueueSlice = ReturnType<typeof useWarehouseExpenseQueueSlice>;
+export type WarehouseExpenseQueueSlice = ReturnType<
+  typeof useWarehouseExpenseQueueSlice
+>;

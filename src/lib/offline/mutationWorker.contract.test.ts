@@ -6,9 +6,7 @@ import {
   loadForemanMutationQueue,
   markForemanMutationInflight,
 } from "./mutationQueue";
-import {
-  flushForemanMutationQueue,
-} from "./mutationWorker";
+import { flushForemanMutationQueue } from "./mutationWorker";
 import {
   clearForemanDurableDraftState,
   configureForemanDurableDraftStore,
@@ -135,14 +133,18 @@ const createWorkerDeps = (options: {
     deps: {
       getSnapshot: () => currentSnapshot,
       buildRequestDraftMeta: () => ({}) as never,
-      persistSnapshot: jest.fn(async (snapshot: ForemanLocalDraftSnapshot | null) => {
-        currentSnapshot = snapshot;
-        await replaceForemanDurableDraftSnapshot(snapshot);
-      }),
-      applySnapshotToBoundary: jest.fn(async (snapshot: ForemanLocalDraftSnapshot | null) => {
-        currentSnapshot = snapshot;
-        await replaceForemanDurableDraftSnapshot(snapshot);
-      }),
+      persistSnapshot: jest.fn(
+        async (snapshot: ForemanLocalDraftSnapshot | null) => {
+          currentSnapshot = snapshot;
+          await replaceForemanDurableDraftSnapshot(snapshot);
+        },
+      ),
+      applySnapshotToBoundary: jest.fn(
+        async (snapshot: ForemanLocalDraftSnapshot | null) => {
+          currentSnapshot = snapshot;
+          await replaceForemanDurableDraftSnapshot(snapshot);
+        },
+      ),
       onSubmitted: options.onSubmitted,
       getNetworkOnline: options.getNetworkOnline,
       inspectRemoteDraft: options.inspectRemoteDraft,
@@ -198,8 +200,14 @@ describe("mutationWorker contract", () => {
     });
     expect(queue[0].nextRetryAt).toEqual(expect.any(Number));
     expect(durableState.syncStatus).toBe("retry_wait");
-    expect(getOfflineMutationTelemetryEvents().map((event) => event.action)).toContain("retry_scheduled");
-    expect(getPlatformOfflineTelemetryEvents().some((event) => event.syncStatus === "retry_wait")).toBe(true);
+    expect(
+      getOfflineMutationTelemetryEvents().map((event) => event.action),
+    ).toContain("retry_scheduled");
+    expect(
+      getPlatformOfflineTelemetryEvents().some(
+        (event) => event.syncStatus === "retry_wait",
+      ),
+    ).toBe(true);
   });
 
   it("turns exhausted retries into failed_non_retryable terminal state", async () => {
@@ -244,7 +252,9 @@ describe("mutationWorker contract", () => {
     });
     expect(durableState.syncStatus).toBe("failed_terminal");
     expect(syncSnapshot).toHaveBeenCalledTimes(1);
-    expect(getOfflineMutationTelemetryEvents().map((event) => event.action)).toContain("retry_exhausted");
+    expect(
+      getOfflineMutationTelemetryEvents().map((event) => event.action),
+    ).toContain("retry_exhausted");
   });
 
   it("turns stale/conflict failures into conflicted queue state", async () => {
@@ -279,7 +289,56 @@ describe("mutationWorker contract", () => {
     });
     expect(durableState.syncStatus).toBe("failed_terminal");
     expect(durableState.conflictType).toBe("stale_local_snapshot");
-    expect(getOfflineMutationTelemetryEvents().map((event) => event.action)).toContain("conflict_detected");
+    expect(
+      getOfflineMutationTelemetryEvents().map((event) => event.action),
+    ).toContain("conflict_detected");
+  });
+
+  it("surfaces best-effort remote inspection failures instead of swallowing them", async () => {
+    const snapshot = createSnapshot("req-worker-inspect-fail");
+    await replaceForemanDurableDraftSnapshot(snapshot);
+    await enqueueForemanMutation({
+      draftKey: snapshot.requestId,
+      requestId: snapshot.requestId,
+      snapshotUpdatedAt: snapshot.updatedAt,
+      mutationKind: "qty_update",
+      triggerSource: "manual_retry",
+    });
+
+    const syncSnapshot = jest.fn(async (_params: unknown) => {
+      throw new Error("Version mismatch against remote draft");
+    });
+    const inspectRemoteDraft = jest.fn(async () => {
+      throw Object.assign(new Error("remote read failed"), {
+        code: "PGRST500",
+      });
+    });
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+      inspectRemoteDraft,
+      getNetworkOnline: () => true,
+    });
+
+    const result = await flushForemanMutationQueue(deps);
+
+    expect(result.failed).toBe(true);
+    expect(inspectRemoteDraft).toHaveBeenCalledTimes(1);
+    expect(mockedRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "foreman",
+        surface: "offline_mutation_worker",
+        event: "remote_draft_inspection_failed",
+        result: "error",
+        sourceKind: "offline:foreman_draft",
+        errorClass: "pgrst500",
+        errorMessage: "remote read failed",
+        extra: expect.objectContaining({
+          requestId: snapshot.requestId,
+          appErrorSeverity: "warn",
+        }),
+      }),
+    );
   });
 
   it("restores stuck processing mutations before retrying them through the worker", async () => {
@@ -295,7 +354,9 @@ describe("mutationWorker contract", () => {
     const [queuedEntry] = await loadForemanMutationQueue();
     await markForemanMutationInflight(queuedEntry.id);
 
-    const syncSnapshot = jest.fn(async (_params: unknown) => createSyncResult(snapshot));
+    const syncSnapshot = jest.fn(async (_params: unknown) =>
+      createSyncResult(snapshot),
+    );
     const { deps } = createWorkerDeps({
       snapshot,
       syncSnapshot,
@@ -312,9 +373,9 @@ describe("mutationWorker contract", () => {
     });
     expect(queue).toHaveLength(0);
     expect(syncSnapshot).toHaveBeenCalledTimes(1);
-    expect(getOfflineMutationTelemetryEvents().map((event) => event.action)).toEqual(
-      expect.arrayContaining(["inflight_restored", "succeeded"]),
-    );
+    expect(
+      getOfflineMutationTelemetryEvents().map((event) => event.action),
+    ).toEqual(expect.arrayContaining(["inflight_restored", "succeeded"]));
   });
 
   it("removes completed mutations from active processing and does not reprocess them on the next flush", async () => {
@@ -328,7 +389,9 @@ describe("mutationWorker contract", () => {
       triggerSource: "manual_retry",
     });
 
-    const syncSnapshot = jest.fn(async (_params: unknown) => createSyncResult(snapshot));
+    const syncSnapshot = jest.fn(async (_params: unknown) =>
+      createSyncResult(snapshot),
+    );
     const { deps } = createWorkerDeps({
       snapshot,
       syncSnapshot,
@@ -413,7 +476,9 @@ describe("mutationWorker contract", () => {
     });
     configureMutationQueue({ storage });
 
-    const syncSnapshot = jest.fn(async (_params: unknown) => createSyncResult(null));
+    const syncSnapshot = jest.fn(async (_params: unknown) =>
+      createSyncResult(null),
+    );
     const { deps } = createWorkerDeps({
       snapshot: null,
       syncSnapshot,
@@ -424,7 +489,9 @@ describe("mutationWorker contract", () => {
     const queue = await loadForemanMutationQueue();
     const durableState = getForemanDurableDraftState();
     const succeededCleanupEvent = getOfflineMutationTelemetryEvents().find(
-      (event) => event.action === "succeeded" && event.extra?.reason === "missing_snapshot_cleanup",
+      (event) =>
+        event.action === "succeeded" &&
+        event.extra?.reason === "missing_snapshot_cleanup",
     );
 
     expect(result).toMatchObject({
@@ -461,7 +528,9 @@ describe("mutationWorker contract", () => {
     });
     configureMutationQueue({ storage });
 
-    const syncSnapshot = jest.fn(async (_params: unknown) => createSyncResult(snapshot));
+    const syncSnapshot = jest.fn(async (_params: unknown) =>
+      createSyncResult(snapshot),
+    );
     syncSnapshot.mockRejectedValueOnce(new Error("Network request failed"));
     const { deps } = createWorkerDeps({
       snapshot,
@@ -547,7 +616,10 @@ describe("mutationWorker contract", () => {
       submitted: submittedRecord,
     });
     expect(queue).toHaveLength(0);
-    expect(onSubmitted).toHaveBeenCalledWith("server-request-123", submittedRecord);
+    expect(onSubmitted).toHaveBeenCalledWith(
+      "server-request-123",
+      submittedRecord,
+    );
     expect(durableState.syncStatus).toBe("idle");
     expect(durableState.attentionNeeded).toBe(false);
     expect(durableState.pendingOperationsCount).toBe(0);

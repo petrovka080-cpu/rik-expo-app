@@ -22,6 +22,7 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     fetchToReceive: data.callFetchToReceive,
     fetchStock: data.callFetchStock,
     fetchReports: data.callFetchReports,
+    screenActiveRef: data.screenActiveRef,
     onError: showErr,
   });
 
@@ -31,6 +32,7 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     periodFrom: data.periodFrom,
     periodTo: data.periodTo,
     fetchReports: data.fetchReports,
+    screenActiveRef: data.screenActiveRef,
     onError: showErr,
   });
 
@@ -56,18 +58,28 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     setPeriodTo: data.setPeriodTo,
     setRepPeriodOpen: data.setRepPeriodOpen,
     fetchReports: data.fetchReports,
+    screenActiveRef: data.screenActiveRef,
   });
 
-  const onPickOption = useCallback((opt: { id: string; label: string }) => {
-    if (data.pickModal.what === "recipient") {
-      void data.rec.commitRecipient(opt.label);
-      data.closePick();
-      return;
-    }
-    data.applyPick(opt);
-  }, [data]);
+  const onPickOption = useCallback(
+    (opt: { id: string; label: string }) => {
+      if (data.pickModal.what === "recipient") {
+        void data.rec.commitRecipient(opt.label);
+        data.closePick();
+        return;
+      }
+      data.applyPick(opt);
+    },
+    [data],
+  );
 
-  const { listContentStyle, listRefreshControl, listOnScroll, listScrollEventThrottle, fmtRuDate } = useWarehouseListUi({
+  const {
+    listContentStyle,
+    listRefreshControl,
+    listOnScroll,
+    listScrollEventThrottle,
+    fmtRuDate,
+  } = useWarehouseListUi({
     headerMax: data.HEADER_MAX,
     refreshing: data.refreshing,
     onRefresh: data.onRefresh,
@@ -90,6 +102,7 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     commitRecipient: data.rec.commitRecipient,
     closeIncomingDetailsRaw: data.reportsUi.closeIncomingDetails,
     receiveSelectedForHead: data.receiveSelectedForHead,
+    screenActiveRef: data.screenActiveRef,
   });
 
   const {
@@ -115,23 +128,34 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     onPdfDayMaterials: data.onPdfDayMaterials,
   });
 
-  const getReceiveStatusText = useCallback((incomingId: string) => {
-    const status = data.receiveStatusByIncomingId[String(incomingId ?? "").trim()];
-    if (!status) return null;
-    if (status.tone === "neutral" || status.tone === "success") return null;
-    return status.label;
-  }, [data.receiveStatusByIncomingId]);
+  const getReceiveStatusText = useCallback(
+    (incomingId: string) => {
+      const status =
+        data.receiveStatusByIncomingId[String(incomingId ?? "").trim()];
+      if (!status) return null;
+      if (status.tone === "neutral" || status.tone === "success") return null;
+      return status.label;
+    },
+    [data.receiveStatusByIncomingId],
+  );
 
-  const { renderReqHeadItem, renderIncomingItem, renderStockItem } = useWarehouseRenderers({
-    openReq: data.openReq,
-    fmtRuDate,
-    openItemsModal: data.openItemsModal,
-    getReceiveStatusText,
-    getPickedQty: data.stockPickUi.getPickedQty,
-    openStockIssue: data.stockPickUi.openStockIssue,
-  });
+  const { renderReqHeadItem, renderIncomingItem, renderStockItem } =
+    useWarehouseRenderers({
+      openReq: data.openReq,
+      fmtRuDate,
+      openItemsModal: data.openItemsModal,
+      getReceiveStatusText,
+      getPickedQty: data.stockPickUi.getPickedQty,
+      openStockIssue: data.stockPickUi.openStockIssue,
+    });
 
-  const { onPickObject, onPickLevel, onPickSystem, onPickZone, onOpenRecipientModal } = useWarehousePickerActions({
+  const {
+    onPickObject,
+    onPickLevel,
+    onPickSystem,
+    onPickZone,
+    onOpenRecipientModal,
+  } = useWarehousePickerActions({
     setPickModal: data.setPickModal,
     setIsRecipientModalVisible: data.setIsRecipientModalVisible,
   });
@@ -149,7 +173,7 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
       pickOptions,
       pickTitle,
       onPickRecipient,
-    })
+    }),
   );
 
   const tabContentProps = selectWarehouseTabContentProps(data, {

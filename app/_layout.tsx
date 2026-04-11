@@ -1,6 +1,5 @@
 // app/_layout.tsx  (PROD — Stack root for native iOS navigation support)
 
-
 import "../src/lib/runtime/installWeakRefPolyfill";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Platform, LogBox } from "react-native";
@@ -11,8 +10,14 @@ import { Host } from "react-native-portalize";
 import { clearAppCache } from "../src/lib/cache/clearAppCache";
 import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
-import { clearCurrentSessionRoleCache, warmCurrentSessionProfile } from "../src/lib/sessionRole";
-import { ensureQueueWorker, stopQueueWorker } from "../src/workers/queueBootstrap";
+import {
+  clearCurrentSessionRoleCache,
+  warmCurrentSessionProfile,
+} from "../src/lib/sessionRole";
+import {
+  ensureQueueWorker,
+  stopQueueWorker,
+} from "../src/workers/queueBootstrap";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
@@ -20,6 +25,34 @@ import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
 
 const AUTH_EXIT_SESSION_SETTLE_WINDOW_MS = 2500;
 const AUTH_EXIT_SESSION_POLL_INTERVAL_MS = 200;
+
+function isTimeoutLikeAuthError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return (
+    message.includes("timed out") ||
+    message.includes("aborted") ||
+    message.includes("AbortError") ||
+    message.includes("network request failed")
+  );
+}
+
+function isAuthStackRoute(segments: readonly string[] | undefined) {
+  return segments?.[0] === "auth";
+}
+
+function isRootEntryPath(pathname: string | null | undefined) {
+  return !pathname || pathname === "/" || pathname === "/index";
+}
+
+function isProtectedAppRoute(
+  pathname: string | null | undefined,
+  segments: readonly string[] | undefined,
+) {
+  if (isRootEntryPath(pathname)) return false;
+  if (isAuthStackRoute(segments)) return false;
+  if (String(pathname ?? "").startsWith("/auth")) return false;
+  return true;
+}
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
 if (Platform.OS === "web") {
   LogBox.ignoreLogs([
@@ -62,6 +95,28 @@ export default function RootLayout() {
   const authExitAtRef = useRef<number | null>(null);
   const authExitSessionProbeTokenRef = useRef(0);
   const authExitSessionProbeInFlightRef = useRef(false);
+  const recordAuthCheckEvent = useCallback(
+    (
+      event: string,
+      result: "success" | "error" | "skipped",
+      extra?: Record<string, unknown>,
+    ) => {
+      recordPlatformObservability({
+        screen: "request",
+        surface: "auth_session_gate",
+        category: "fetch",
+        event,
+        result,
+        extra: {
+          owner: "root_layout",
+          pathname: pathnameRef.current,
+          inAuthStack: previousInAuthStackRef.current,
+          ...(extra ?? {}),
+        },
+      });
+    },
+    [],
+  );
   const recordAuthGateEvent = useCallback(
     (
       event: string,
@@ -83,6 +138,28 @@ export default function RootLayout() {
       });
     },
     [],
+  );
+  const recordAuthRedirectBlocked = useCallback(
+    (reason: string, extra?: Record<string, unknown>) => {
+      recordAuthGateEvent("auth_redirect_blocked", "skipped", {
+        target: "/auth/login",
+        reason,
+        ...(extra ?? {}),
+      });
+    },
+    [recordAuthGateEvent],
+  );
+  const recordAuthRedirectTriggered = useCallback(
+    (reason: string, extra?: Record<string, unknown>) => {
+      const payload = {
+        target: "/auth/login",
+        reason,
+        ...(extra ?? {}),
+      };
+      recordAuthGateEvent("auth_redirect_triggered", "success", payload);
+      recordAuthGateEvent("auth_gate_login_redirect", "success", payload);
+    },
+    [recordAuthGateEvent],
   );
   const resetPendingAuthExitSessionProbe = useCallback(() => {
     authExitAtRef.current = null;
@@ -150,7 +227,10 @@ export default function RootLayout() {
       await warmCurrentSessionProfile("root_layout");
     } catch (e: unknown) {
       if (__DEV__) {
-        console.warn("[RootLayout] role load failed:", e instanceof Error ? e.message : e);
+        console.warn(
+          "[RootLayout] role load failed:",
+          e instanceof Error ? e.message : e,
+        );
       }
     }
   }, []);
@@ -176,52 +256,91 @@ export default function RootLayout() {
 
     (async () => {
       try {
+        recordAuthCheckEvent("auth_check_start", "skipped", {
+          caller: "root_layout",
+        });
         const { session, degraded } = await getSessionSafe({
-  caller: "root_layout",
-});
-if (!active) return;
+          caller: "root_layout",
+        });
+        if (!active) return;
 
-if (degraded) {
-  recordPlatformObservability({
-    screen: "request",
-    surface: "startup_bootstrap",
-    category: "fetch",
-    event: "auth_restore_result",
-    result: "success",
-    fallbackUsed: true,
-    extra: {
-      owner: "root_layout",
-      degraded: true,
-      hasSession: false,
-    },
-  });
-  setHasSession(null);
-  setSessionLoaded(true);
-  return;
-}
+        recordAuthCheckEvent("auth_check_result", "success", {
+          caller: "root_layout",
+          degraded,
+          hasSession: Boolean(session),
+        });
 
-const has = Boolean(session);
-recordPlatformObservability({
-  screen: "request",
-  surface: "startup_bootstrap",
-  category: "fetch",
-  event: "auth_restore_result",
-  result: "success",
-  extra: {
-    owner: "root_layout",
-    degraded: false,
-    hasSession: has,
-  },
-});
-setHasSession(has);
-setSessionLoaded(true);
+        if (degraded) {
+          recordAuthCheckEvent("auth_check_timeout", "skipped", {
+            caller: "root_layout",
+            degraded: true,
+            reason: "degraded_session_read",
+          });
+          recordPlatformObservability({
+            screen: "request",
+            surface: "startup_bootstrap",
+            category: "fetch",
+            event: "auth_restore_result",
+            result: "success",
+            fallbackUsed: true,
+            extra: {
+              owner: "root_layout",
+              degraded: true,
+              hasSession: false,
+            },
+          });
+          setHasSession(null);
+          setSessionLoaded(true);
+          return;
+        }
 
-if (has) loadRoleForCurrentSession();
-else {
-  clearDocumentSessions();
-  clearCurrentSessionRoleCache();
-}
+        const has = Boolean(session);
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "fetch",
+          event: "auth_restore_result",
+          result: "success",
+          extra: {
+            owner: "root_layout",
+            degraded: false,
+            hasSession: has,
+          },
+        });
+
+        if (!has && isProtectedAppRoute(pathnameRef.current, segments)) {
+          recordAuthRedirectBlocked("protected_app_route_session_unknown", {
+            caller: "root_layout",
+            reason: "bootstrap_no_session_on_protected_route",
+          });
+          setHasSession(null);
+          setSessionLoaded(true);
+          return;
+        }
+
+        setHasSession(has);
+        setSessionLoaded(true);
+
+        if (has) loadRoleForCurrentSession();
+        else {
+          clearDocumentSessions();
+          clearCurrentSessionRoleCache();
+        }
       } catch (e: unknown) {
+        const timeoutLike = isTimeoutLikeAuthError(e);
+        recordAuthCheckEvent(
+          timeoutLike ? "auth_check_timeout" : "auth_check_result",
+          timeoutLike ? "skipped" : "error",
+          {
+            caller: "root_layout",
+            degraded: true,
+            errorClass: e instanceof Error ? e.name : undefined,
+            errorMessage:
+              e instanceof Error
+                ? e.message
+                : String(e ?? "startup_bootstrap_failed"),
+          },
+        );
         recordPlatformObservability({
           screen: "request",
           surface: "startup_bootstrap",
@@ -230,90 +349,108 @@ else {
           result: "error",
           errorStage: "get_session_safe",
           errorClass: e instanceof Error ? e.name : undefined,
-          errorMessage: e instanceof Error ? e.message : String(e ?? "startup_bootstrap_failed"),
+          errorMessage:
+            e instanceof Error
+              ? e.message
+              : String(e ?? "startup_bootstrap_failed"),
           fallbackUsed: true,
           extra: {
             owner: "root_layout",
           },
         });
         if (__DEV__) {
-          console.warn("[RootLayout] session load failed:", e instanceof Error ? e.message : e);
+          console.warn(
+            "[RootLayout] session load failed:",
+            e instanceof Error ? e.message : e,
+          );
         }
         if (!active) return;
 
-// 🔥 НЕ считаем это logout
-setHasSession(null);
+        // 🔥 НЕ считаем это logout
+        setHasSession(null);
 
-// ❌ НЕ ЧИСТИМ состояние при timeout
-// clearDocumentSessions();
-// clearCurrentSessionRoleCache();
+        // ❌ НЕ ЧИСТИМ состояние при timeout
+        // clearDocumentSessions();
+        // clearCurrentSessionRoleCache();
 
-setSessionLoaded(true);
+        setSessionLoaded(true);
       }
     })();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      const has = Boolean(session);
-      const isTerminalSignOut =
-        event === "SIGNED_OUT" || String(event) === "USER_DELETED";
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        const has = Boolean(session);
+        const isTerminalSignOut =
+          event === "SIGNED_OUT" || String(event) === "USER_DELETED";
 
-      recordPlatformObservability({
-        screen: "request",
-        surface: "startup_bootstrap",
-        category: "ui",
-        event: "auth_state_change_event",
-        result: "success",
-        extra: {
-          owner: "root_layout",
-          authEvent: event,
-          hasSession: has,
-        },
-      });
-
-      if (__DEV__) {
-        console.info(`[RootLayout] onAuthStateChange: ${event}, hasSession=${has}`);
-      }
-
-      setSessionLoaded(true);
-
-      if (!has) {
-        if (!isTerminalSignOut) {
-          recordAuthGateEvent("auth_gate_transient_no_session", "skipped", {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "ui",
+          event: "auth_state_change_event",
+          result: "success",
+          extra: {
+            owner: "root_layout",
             authEvent: event,
-            hadSession: hasSessionRef.current === true,
-            reason: "non_terminal_auth_event",
-          });
-          if (hasSessionRef.current !== true) {
-            setHasSession(false);
+            hasSession: has,
+          },
+        });
+
+        if (__DEV__) {
+          console.info(
+            `[RootLayout] onAuthStateChange: ${event}, hasSession=${has}`,
+          );
+        }
+
+        setSessionLoaded(true);
+
+        if (!has) {
+          if (!isTerminalSignOut) {
+            recordAuthGateEvent("auth_gate_transient_no_session", "skipped", {
+              authEvent: event,
+              hadSession: hasSessionRef.current === true,
+              reason: "non_terminal_auth_event",
+            });
+            recordAuthRedirectBlocked("non_terminal_auth_event", {
+              authEvent: event,
+              hadSession: hasSessionRef.current === true,
+            });
+            setHasSession(null);
+            return;
+          }
+
+          resetPendingAuthExitSessionProbe();
+          setHasSession(false);
+          clearDocumentSessions();
+          clearCurrentSessionRoleCache();
+          if (!isPdfViewerRouteRef.current) {
+            recordAuthRedirectTriggered("terminal_sign_out", {
+              authEvent: event,
+            });
+            router.replace("/auth/login");
           }
           return;
         }
 
         resetPendingAuthExitSessionProbe();
-        setHasSession(false);
-        clearDocumentSessions();
-        clearCurrentSessionRoleCache();
-        if (!isPdfViewerRouteRef.current) {
-          recordAuthGateEvent("auth_gate_login_redirect", "success", {
-            authEvent: event,
-            target: "/auth/login",
-            reason: "terminal_sign_out",
-          });
-          router.replace("/auth/login");
-        }
-        return;
-      }
-
-      resetPendingAuthExitSessionProbe();
-      setHasSession(true);
-      loadRoleForCurrentSession();
-    });
+        setHasSession(true);
+        loadRoleForCurrentSession();
+      },
+    );
 
     return () => {
       active = false;
       listener?.subscription?.unsubscribe();
     };
-  }, [loadRoleForCurrentSession, recordAuthGateEvent, resetPendingAuthExitSessionProbe]);
+  }, [
+    loadRoleForCurrentSession,
+    recordAuthCheckEvent,
+    recordAuthGateEvent,
+    recordAuthRedirectBlocked,
+    recordAuthRedirectTriggered,
+    resetPendingAuthExitSessionProbe,
+    segments,
+  ]);
 
   useEffect(() => {
     if (!sessionLoaded) return;
@@ -348,10 +485,16 @@ setSessionLoaded(true);
         });
 
         void (async () => {
-          let settledSession: Awaited<ReturnType<typeof getSessionSafe>>["session"] =
-            null;
+          let settledSession: Awaited<
+            ReturnType<typeof getSessionSafe>
+          >["session"] = null;
           let degraded = false;
           const startedAt = Date.now();
+
+          recordAuthCheckEvent("auth_check_start", "skipped", {
+            caller: "root_layout_post_auth_exit",
+            reason: "recent_auth_stack_exit",
+          });
 
           while (Date.now() - startedAt <= AUTH_EXIT_SESSION_SETTLE_WINDOW_MS) {
             const result = await getSessionSafe({
@@ -362,6 +505,20 @@ setSessionLoaded(true);
 
             settledSession = result.session;
             degraded = result.degraded;
+
+            recordAuthCheckEvent("auth_check_result", "success", {
+              caller: "root_layout_post_auth_exit",
+              degraded,
+              hasSession: Boolean(settledSession),
+            });
+
+            if (degraded) {
+              recordAuthCheckEvent("auth_check_timeout", "skipped", {
+                caller: "root_layout_post_auth_exit",
+                degraded: true,
+                reason: "degraded_session_read",
+              });
+            }
 
             if (settledSession || degraded) break;
 
@@ -410,10 +567,7 @@ setSessionLoaded(true);
             return;
           }
 
-          recordAuthGateEvent("auth_gate_login_redirect", "success", {
-            target: "/auth/login",
-            reason: "post_auth_session_absent_after_settle",
-          });
+          recordAuthRedirectTriggered("post_auth_session_absent_after_settle");
           router.replace("/auth/login");
         })();
       }
@@ -426,18 +580,17 @@ setSessionLoaded(true);
     }
 
     if (hasSession === false && !inAuthStack && !isPdfViewerRouteRef.current) {
-      recordPlatformObservability({
-        screen: "request",
-        surface: "auth_session_gate",
-        category: "ui",
-        event: "auth_gate_login_redirect",
-        result: "success",
-        extra: {
-          owner: "root_layout",
-          target: "/auth/login",
+      if (isProtectedAppRoute(pathname, segments)) {
+        recordAuthRedirectBlocked("protected_app_route_session_unknown", {
           hasSession,
-          reason: "confirmed_no_session",
-        },
+          source: "confirmed_no_session_guard",
+        });
+        setHasSession(null);
+        return;
+      }
+
+      recordAuthRedirectTriggered("confirmed_no_session", {
+        hasSession,
       });
       router.replace("/auth/login");
       return;
@@ -463,6 +616,9 @@ setSessionLoaded(true);
   }, [
     hasSession,
     pathname,
+    recordAuthCheckEvent,
+    recordAuthRedirectBlocked,
+    recordAuthRedirectTriggered,
     recordAuthGateEvent,
     resetPendingAuthExitSessionProbe,
     sessionLoaded,
@@ -487,17 +643,17 @@ setSessionLoaded(true);
   }, [hasSession, pathname, sessionLoaded]);
 
   useEffect(() => {
-  if (!sessionLoaded) return;
+    if (!sessionLoaded) return;
 
-  if (hasSession === true) {
-    ensureQueueWorker();
-    return;
-  }
+    if (hasSession === true) {
+      ensureQueueWorker();
+      return;
+    }
 
-  if (hasSession === false) {
-    stopQueueWorker();
-  }
-}, [hasSession, sessionLoaded]);
+    if (hasSession === false) {
+      stopQueueWorker();
+    }
+  }, [hasSession, sessionLoaded]);
 
   const APP_BG = "#0B0F14";
   const UI = {
@@ -521,5 +677,4 @@ setSessionLoaded(true);
       </Host>
     </SafeAreaProvider>
   );
-
 }

@@ -2,8 +2,17 @@ import { useCallback, useMemo } from "react";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { makeWarehouseIssueActions, type IssueMsg } from "../warehouse.issue";
-import type { ReqItemUiRow, ReqPickLine, StockPickLine } from "../warehouse.types";
+import type {
+  ReqItemUiRow,
+  ReqPickLine,
+  StockPickLine,
+} from "../warehouse.types";
 import { nz, pickErr } from "../warehouse.utils";
+import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./useWarehouseScreenActivity";
 
 export function useWarehouseIssueFlow(params: {
   supabase: SupabaseClient;
@@ -29,6 +38,7 @@ export function useWarehouseIssueFlow(params: {
   setIsRecipientModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setIssueBusy: React.Dispatch<React.SetStateAction<boolean>>;
   setIssueMsg: React.Dispatch<React.SetStateAction<IssueMsg>>;
+  screenActiveRef?: WarehouseScreenActiveRef;
 }) {
   const {
     supabase,
@@ -54,7 +64,37 @@ export function useWarehouseIssueFlow(params: {
     setIsRecipientModalVisible,
     setIssueBusy,
     setIssueMsg,
+    screenActiveRef: externalScreenActiveRef,
   } = params;
+  const screenActiveRef = useWarehouseFallbackActiveRef(
+    externalScreenActiveRef,
+  );
+
+  const setIssueBusyIfActive = useCallback(
+    (value: boolean) => {
+      if (isWarehouseScreenActive(screenActiveRef)) setIssueBusy(value);
+    },
+    [screenActiveRef, setIssueBusy],
+  );
+  const setIssueMsgIfActive = useCallback(
+    (value: IssueMsg) => {
+      if (isWarehouseScreenActive(screenActiveRef)) setIssueMsg(value);
+    },
+    [screenActiveRef, setIssueMsg],
+  );
+  const clearStockPickIfActive = useCallback(() => {
+    if (isWarehouseScreenActive(screenActiveRef)) clearStockPick();
+  }, [clearStockPick, screenActiveRef]);
+  const clearReqPickIfActive = useCallback(() => {
+    if (isWarehouseScreenActive(screenActiveRef)) clearReqPick();
+  }, [clearReqPick, screenActiveRef]);
+  const clearReqQtyInputIfActive = useCallback(
+    (requestItemId: string) => {
+      if (isWarehouseScreenActive(screenActiveRef))
+        clearReqQtyInput(requestItemId);
+    },
+    [clearReqQtyInput, screenActiveRef],
+  );
 
   const issueActions = useMemo(() => {
     return makeWarehouseIssueActions({
@@ -71,16 +111,17 @@ export function useWarehouseIssueFlow(params: {
       getAvailableByCode,
       getAvailableByCodeUom,
       getMaterialNameByCode,
-      setIssueBusy,
-      setIssueMsg,
-      clearStockPick: () => clearStockPick(),
-      clearReqPick: () => clearReqPick(),
-      clearReqQtyInput: (requestItemId: string) => clearReqQtyInput(String(requestItemId)),
+      setIssueBusy: setIssueBusyIfActive,
+      setIssueMsg: setIssueMsgIfActive,
+      clearStockPick: clearStockPickIfActive,
+      clearReqPick: clearReqPickIfActive,
+      clearReqQtyInput: (requestItemId: string) =>
+        clearReqQtyInputIfActive(String(requestItemId)),
     });
   }, [
-    clearReqPick,
-    clearReqQtyInput,
-    clearStockPick,
+    clearReqPickIfActive,
+    clearReqQtyInputIfActive,
+    clearStockPickIfActive,
     fetchReqHeads,
     fetchReqItems,
     fetchStock,
@@ -89,8 +130,8 @@ export function useWarehouseIssueFlow(params: {
     getMaterialNameByCode,
     objectLabel,
     recipientText,
-    setIssueBusy,
-    setIssueMsg,
+    setIssueBusyIfActive,
+    setIssueMsgIfActive,
     scopeLabel,
     supabase,
     warehousemanFio,
@@ -98,12 +139,14 @@ export function useWarehouseIssueFlow(params: {
 
   const submitReqPick = useCallback(async () => {
     const rid = String(reqModalRequestId ?? "").trim();
+    if (!isWarehouseScreenActive(screenActiveRef)) return false;
     if (!rid) {
       setIssueMsg({ kind: "error", text: "Заявка не выбрана" });
       return;
     }
 
     if (!recipientText.trim()) {
+      if (!isWarehouseScreenActive(screenActiveRef)) return false;
       setIsRecipientModalVisible(true);
       return;
     }
@@ -115,7 +158,7 @@ export function useWarehouseIssueFlow(params: {
       reqItems,
     });
 
-    if (ok) closeReq();
+    if (ok && isWarehouseScreenActive(screenActiveRef)) closeReq();
   }, [
     closeReq,
     issueActions,
@@ -124,17 +167,25 @@ export function useWarehouseIssueFlow(params: {
     reqModalDisplayNo,
     reqModalRequestId,
     reqPick,
+    screenActiveRef,
     setIssueMsg,
     setIsRecipientModalVisible,
   ]);
 
   const submitStockPick = useCallback(async () => {
+    if (!isWarehouseScreenActive(screenActiveRef)) return false;
     if (!recipientText.trim()) {
       setIsRecipientModalVisible(true);
       return;
     }
     await issueActions.submitStockPick({ stockPick });
-  }, [issueActions, recipientText, setIsRecipientModalVisible, stockPick]);
+  }, [
+    issueActions,
+    recipientText,
+    screenActiveRef,
+    setIsRecipientModalVisible,
+    stockPick,
+  ]);
 
   return {
     submitReqPick,

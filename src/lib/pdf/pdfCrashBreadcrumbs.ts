@@ -1,5 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import {
+  errorResult,
+  normalizeAppError,
+  okResult,
+  type AppError,
+  type Result,
+} from "../errors/appError";
+import { recordPlatformObservability } from "../observability/platformObservability";
+
 type PdfCrashDiagnosticScreen = "foreman" | "warehouse";
 type PdfCrashTerminalState = "success" | "error";
 
@@ -51,28 +60,84 @@ function normalizeBool(value: unknown) {
 }
 
 function normalizeScreen(value: unknown): PdfCrashDiagnosticScreen | null {
-  const text = String(value ?? "").trim().toLowerCase();
+  const text = String(value ?? "")
+    .trim()
+    .toLowerCase();
   if (text === "foreman" || text === "warehouse") return text;
   return null;
 }
 
-async function readRawBreadcrumbs(): Promise<PdfCrashBreadcrumb[]> {
+function recordBreadcrumbStorageFailure(params: {
+  event: string;
+  error: AppError;
+}) {
+  recordPlatformObservability({
+    screen: "pdf_viewer",
+    surface: "pdf_crash_breadcrumbs",
+    category: "reload",
+    event: params.event,
+    result: "error",
+    sourceKind: "async_storage:pdf_crash_breadcrumbs",
+    errorStage: params.error.context,
+    errorClass: params.error.code,
+    errorMessage: params.error.message,
+    extra: {
+      appErrorCode: params.error.code,
+      appErrorContext: params.error.context,
+      appErrorSeverity: params.error.severity,
+    },
+  });
+}
+
+async function readRawBreadcrumbsResult(): Promise<
+  Result<PdfCrashBreadcrumb[]>
+> {
   try {
     const raw = await AsyncStorage.getItem(PDF_CRASH_BREADCRUMBS_KEY);
-    if (!raw) return [];
+    if (!raw) return okResult([]);
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item) => item && typeof item === "object") as PdfCrashBreadcrumb[];
-  } catch {
-    return [];
+    if (!Array.isArray(parsed)) return okResult([]);
+    return okResult(
+      parsed.filter(
+        (item) => item && typeof item === "object",
+      ) as PdfCrashBreadcrumb[],
+    );
+  } catch (error) {
+    return errorResult(error, "pdf_crash_breadcrumbs_read", "warn");
+  }
+}
+
+async function readRawBreadcrumbs(): Promise<PdfCrashBreadcrumb[]> {
+  const result = await readRawBreadcrumbsResult();
+  if (result.ok === true) return result.data;
+  recordBreadcrumbStorageFailure({
+    event: "pdf_breadcrumb_read_failed",
+    error: result.error,
+  });
+  return [];
+}
+
+async function writeRawBreadcrumbsResult(
+  items: PdfCrashBreadcrumb[],
+): Promise<Result<null>> {
+  try {
+    await AsyncStorage.setItem(
+      PDF_CRASH_BREADCRUMBS_KEY,
+      JSON.stringify(items.slice(-MAX_BREADCRUMBS)),
+    );
+    return okResult(null);
+  } catch (error) {
+    return errorResult(error, "pdf_crash_breadcrumbs_write", "warn");
   }
 }
 
 async function writeRawBreadcrumbs(items: PdfCrashBreadcrumb[]) {
-  try {
-    await AsyncStorage.setItem(PDF_CRASH_BREADCRUMBS_KEY, JSON.stringify(items.slice(-MAX_BREADCRUMBS)));
-  } catch {
-    // Diagnostics must never destabilize the PDF path.
+  const result = await writeRawBreadcrumbsResult(items);
+  if (result.ok === false) {
+    recordBreadcrumbStorageFailure({
+      event: "pdf_breadcrumb_write_failed",
+      error: result.error,
+    });
   }
 }
 
@@ -87,7 +152,9 @@ function enqueueBreadcrumbWrite(entry: PdfCrashBreadcrumb) {
   return writeQueue;
 }
 
-export function shouldRecordPdfCrashBreadcrumbs(screen: unknown): screen is PdfCrashDiagnosticScreen {
+export function shouldRecordPdfCrashBreadcrumbs(
+  screen: unknown,
+): screen is PdfCrashDiagnosticScreen {
   return normalizeScreen(screen) != null;
 }
 
@@ -202,8 +269,11 @@ export async function getPdfCrashBreadcrumbs() {
 export async function clearPdfCrashBreadcrumbs() {
   try {
     await AsyncStorage.removeItem(PDF_CRASH_BREADCRUMBS_KEY);
-  } catch {
-    // Ignore diagnostics cleanup failures.
+  } catch (error) {
+    recordBreadcrumbStorageFailure({
+      event: "pdf_breadcrumb_clear_failed",
+      error: normalizeAppError(error, "pdf_crash_breadcrumbs_clear", "warn"),
+    });
   }
 }
 
@@ -218,7 +288,8 @@ export function buildPdfCrashBreadcrumbsText(items: PdfCrashBreadcrumb[]) {
       item.uriKind ?? "unknown-uri",
       item.previewPath ?? "unknown-preview",
     ];
-    if (item.fileExists != null) parts.push(`exists=${String(item.fileExists)}`);
+    if (item.fileExists != null)
+      parts.push(`exists=${String(item.fileExists)}`);
     if (item.fileSizeBytes != null) parts.push(`size=${item.fileSizeBytes}`);
     if (item.terminalState) parts.push(`terminal=${item.terminalState}`);
     if (item.errorMessage) parts.push(`error=${item.errorMessage}`);

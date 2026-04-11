@@ -9,10 +9,16 @@ import {
   saveStoredFioState,
 } from "../../../lib/storage/fioPersistence";
 import { useWarehouseUiStore } from "../warehouseUi.store";
+import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./useWarehouseScreenActivity";
 
 type UseWarehousemanFioArgs = {
   getTodaySixAM: () => Date;
   isScreenFocused: boolean;
+  screenActiveRef?: WarehouseScreenActiveRef;
   onError?: (e: unknown) => void;
 };
 
@@ -35,8 +41,10 @@ const logSuppressedPostUnmount = (scope: string, details?: Record<string, unknow
 export function useWarehousemanFio({
   getTodaySixAM,
   isScreenFocused,
+  screenActiveRef: externalScreenActiveRef,
   onError,
 }: UseWarehousemanFioArgs): UseWarehousemanFioResult {
+  const screenActiveRef = useWarehouseFallbackActiveRef(externalScreenActiveRef);
   const [warehousemanFio, setWarehousemanFio] = useState("");
   const [warehousemanHistory, setWarehousemanHistory] = useState<string[]>([]);
   const isFioConfirmVisible = useWarehouseUiStore((state) => state.isFioConfirmVisible);
@@ -47,14 +55,14 @@ export function useWarehousemanFio({
   focusedRef.current = isScreenFocused;
 
   const getCommitSkipReason = useCallback(() => {
-    if (!mountedRef.current) return "after_unmount";
+    if (!mountedRef.current || !isWarehouseScreenActive(screenActiveRef)) return "after_unmount";
     if (!focusedRef.current) return "after_blur";
     return "inactive_scope";
-  }, []);
+  }, [screenActiveRef]);
 
   const canCommit = useCallback(
-    () => mountedRef.current && focusedRef.current,
-    [],
+    () => mountedRef.current && focusedRef.current && isWarehouseScreenActive(screenActiveRef),
+    [screenActiveRef],
   );
 
   const recordStateWriteAccepted = useCallback(
@@ -194,6 +202,10 @@ export function useWarehousemanFio({
 
   const handleFioConfirm = useCallback(
     async (fio: string) => {
+      if (!canCommit()) {
+        recordStateWriteSkipped("confirm_loading", "confirm_submit");
+        return;
+      }
       setIsFioLoading(true);
       try {
         if (!canCommit()) {

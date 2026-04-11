@@ -11,7 +11,7 @@ import {
   recordOfficeChildEntryFocus,
   recordOfficeChildEntryMount,
   recordOfficeChildUnmount,
-} from "../../../src/lib/navigation/officeReentryBreadcrumbs";
+} from "./officeReentryBreadcrumbs";
 
 type OfficeChildRouteAuditExtra = {
   owner: string;
@@ -109,18 +109,24 @@ export function useOfficeChildRouteAudit({
   );
   const buildCurrentExtra = useCallback(
     (extra?: Record<string, unknown>) =>
-      buildExtra({
-        pathname: pathnameRef.current,
-        segments: segmentsRef.current,
-      }, extra),
+      buildExtra(
+        {
+          pathname: pathnameRef.current,
+          segments: segmentsRef.current,
+        },
+        extra,
+      ),
     [buildExtra],
   );
   const resolvedEntryExtra = useMemo(
     () =>
-      buildExtra({
-        pathname: initialSnapshotRef.current.pathname,
-        segments: initialSnapshotRef.current.segments,
-      }, entryExtra),
+      buildExtra(
+        {
+          pathname: initialSnapshotRef.current.pathname,
+          segments: initialSnapshotRef.current.segments,
+        },
+        entryExtra,
+      ),
     [buildExtra, entryExtra],
   );
 
@@ -133,9 +139,7 @@ export function useOfficeChildRouteAudit({
   }, [buildInitialExtra]);
 
   useEffect(() => {
-    recordOfficeChildEntryMount(
-      buildInitialExtra(),
-    );
+    recordOfficeChildEntryMount(buildInitialExtra());
     diagnosticsRef.current?.onMount?.(
       buildInitialExtra({
         phase: "effect",

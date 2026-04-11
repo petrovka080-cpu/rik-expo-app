@@ -2,6 +2,8 @@ import * as Network from "expo-network";
 import { createStore } from "zustand/vanilla";
 import { useStore } from "zustand";
 
+import { normalizeAppError } from "../errors/appError";
+import { recordPlatformObservability } from "../observability/platformObservability";
 import { recordPlatformOfflineTelemetry } from "./platformOffline.observability";
 import {
   normalizePlatformOfflineState,
@@ -22,13 +24,17 @@ const initialState: PlatformNetworkSnapshot = {
   updatedAt: null,
 };
 
-export const platformNetworkStore = createStore<PlatformNetworkSnapshot>(() => initialState);
+export const platformNetworkStore = createStore<PlatformNetworkSnapshot>(
+  () => initialState,
+);
 
 let serviceStarted = false;
 let bootstrapPromise: Promise<PlatformNetworkSnapshot> | null = null;
 
 const normalizeConnectionKind = (value: unknown): PlatformConnectionKind => {
-  const text = String(value ?? "").trim().toLowerCase();
+  const text = String(value ?? "")
+    .trim()
+    .toLowerCase();
   return text || null;
 };
 
@@ -43,11 +49,14 @@ const applyNetworkSnapshot = (params: {
     isInternetReachable: params.isInternetReachable,
   });
   const now = Date.now();
-  const recovered = previous.offlineState === "offline" && nextOfflineState === "online";
+  const recovered =
+    previous.offlineState === "offline" && nextOfflineState === "online";
   const appCameOnlineSinceLastOffline =
     nextOfflineState === "offline"
       ? false
-      : recovered || (previous.appCameOnlineSinceLastOffline && nextOfflineState === "online");
+      : recovered ||
+        (previous.appCameOnlineSinceLastOffline &&
+          nextOfflineState === "online");
 
   const next: PlatformNetworkSnapshot = {
     hydrated: true,
@@ -66,7 +75,8 @@ const applyNetworkSnapshot = (params: {
   if (
     previous.offlineState !== next.offlineState ||
     previous.networkKnownOffline !== next.networkKnownOffline ||
-    previous.appCameOnlineSinceLastOffline !== next.appCameOnlineSinceLastOffline
+    previous.appCameOnlineSinceLastOffline !==
+      next.appCameOnlineSinceLastOffline
   ) {
     recordPlatformOfflineTelemetry({
       contourKey: "platform_network",
@@ -95,7 +105,28 @@ const refreshNetworkSnapshot = async (): Promise<PlatformNetworkSnapshot> => {
       isInternetReachable: snapshot.isInternetReachable ?? null,
       connectionKind: normalizeConnectionKind(snapshot.type),
     });
-  } catch {
+  } catch (error) {
+    const appError = normalizeAppError(
+      error,
+      "platform_network_snapshot_refresh",
+      "warn",
+    );
+    recordPlatformObservability({
+      screen: "request",
+      surface: "platform_network",
+      category: "reload",
+      event: "network_snapshot_refresh_failed",
+      result: "error",
+      sourceKind: "expo-network:getNetworkStateAsync",
+      errorStage: appError.context,
+      errorClass: appError.code,
+      errorMessage: appError.message,
+      extra: {
+        appErrorCode: appError.code,
+        appErrorContext: appError.context,
+        appErrorSeverity: appError.severity,
+      },
+    });
     const previous = platformNetworkStore.getState();
     const next: PlatformNetworkSnapshot = {
       ...previous,
@@ -108,31 +139,35 @@ const refreshNetworkSnapshot = async (): Promise<PlatformNetworkSnapshot> => {
   }
 };
 
-export const ensurePlatformNetworkService = async (): Promise<PlatformNetworkSnapshot> => {
-  if (!bootstrapPromise) {
-    bootstrapPromise = refreshNetworkSnapshot();
-  }
+export const ensurePlatformNetworkService =
+  async (): Promise<PlatformNetworkSnapshot> => {
+    if (!bootstrapPromise) {
+      bootstrapPromise = refreshNetworkSnapshot();
+    }
 
-  if (!serviceStarted) {
-    serviceStarted = true;
-    Network.addNetworkStateListener((snapshot) => {
-      applyNetworkSnapshot({
-        isConnected: snapshot.isConnected ?? null,
-        isInternetReachable: snapshot.isInternetReachable ?? null,
-        connectionKind: normalizeConnectionKind(snapshot.type),
+    if (!serviceStarted) {
+      serviceStarted = true;
+      Network.addNetworkStateListener((snapshot) => {
+        applyNetworkSnapshot({
+          isConnected: snapshot.isConnected ?? null,
+          isInternetReachable: snapshot.isInternetReachable ?? null,
+          connectionKind: normalizeConnectionKind(snapshot.type),
+        });
       });
-    });
-  }
+    }
 
-  return await bootstrapPromise;
-};
+    return await bootstrapPromise;
+  };
 
 export const getPlatformNetworkSnapshot = () => platformNetworkStore.getState();
 
 export const subscribePlatformNetwork = (
-  listener: (state: PlatformNetworkSnapshot, previous: PlatformNetworkSnapshot) => void,
+  listener: (
+    state: PlatformNetworkSnapshot,
+    previous: PlatformNetworkSnapshot,
+  ) => void,
 ) => platformNetworkStore.subscribe(listener);
 
-export const usePlatformNetworkStore = <T,>(
+export const usePlatformNetworkStore = <T>(
   selector: (state: PlatformNetworkSnapshot) => T,
 ) => useStore(platformNetworkStore, selector);

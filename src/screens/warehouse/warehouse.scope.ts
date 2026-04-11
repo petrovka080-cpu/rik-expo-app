@@ -5,8 +5,18 @@
 import { useCallback, useEffect, useMemo } from "react";
 import type { Option } from "./warehouse.types";
 import { useWarehouseUiStore } from "./warehouseUi.store";
+import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./hooks/useWarehouseScreenActivity";
 
-export function useWarehouseScope() {
+export function useWarehouseScope(params?: {
+  screenActiveRef?: WarehouseScreenActiveRef;
+}) {
+  const screenActiveRef = useWarehouseFallbackActiveRef(
+    params?.screenActiveRef,
+  );
   const objectOpt = useWarehouseUiStore((state) => state.objectOpt);
   const setObjectOpt = useWarehouseUiStore((state) => state.setObjectOpt);
   const levelOpt = useWarehouseUiStore((state) => state.levelOpt);
@@ -21,36 +31,64 @@ export function useWarehouseScope() {
   const setPickFilter = useWarehouseUiStore((state) => state.setPickFilter);
 
   const closePick = useCallback(() => {
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
     setPickModal({ what: null });
     setPickFilter("");
-  }, [setPickFilter, setPickModal]);
+  }, [screenActiveRef, setPickFilter, setPickModal]);
 
   const applyPick = useCallback(
     (opt: Option) => {
+      if (!isWarehouseScreenActive(screenActiveRef)) return;
       if (pickModal.what === "object") setObjectOpt(opt);
       if (pickModal.what === "level") setLevelOpt(opt);
       if (pickModal.what === "system") setSystemOpt(opt);
       if (pickModal.what === "zone") setZoneOpt(opt);
       closePick();
     },
-    [closePick, pickModal.what, setLevelOpt, setObjectOpt, setSystemOpt, setZoneOpt],
+    [
+      closePick,
+      pickModal.what,
+      screenActiveRef,
+      setLevelOpt,
+      setObjectOpt,
+      setSystemOpt,
+      setZoneOpt,
+    ],
   );
 
   // Reset cascade: object -> level -> system/zone
   useEffect(() => {
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
     if (!objectOpt?.id) {
       if (levelOpt) setLevelOpt(null);
       if (systemOpt) setSystemOpt(null);
       if (zoneOpt) setZoneOpt(null);
     }
-  }, [levelOpt, objectOpt?.id, setLevelOpt, setSystemOpt, setZoneOpt, systemOpt, zoneOpt]);
+  }, [
+    levelOpt,
+    objectOpt?.id,
+    screenActiveRef,
+    setLevelOpt,
+    setSystemOpt,
+    setZoneOpt,
+    systemOpt,
+    zoneOpt,
+  ]);
 
   useEffect(() => {
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
     if (!levelOpt?.id) {
       if (systemOpt) setSystemOpt(null);
       if (zoneOpt) setZoneOpt(null);
     }
-  }, [levelOpt?.id, setSystemOpt, setZoneOpt, systemOpt, zoneOpt]);
+  }, [
+    levelOpt?.id,
+    screenActiveRef,
+    setSystemOpt,
+    setZoneOpt,
+    systemOpt,
+    zoneOpt,
+  ]);
 
   const scopeLabel = useMemo(() => {
     const lvl = String(levelOpt?.label ?? "").trim();
@@ -67,7 +105,10 @@ export function useWarehouseScope() {
 
   const scopeOpt = useMemo<Option | null>(() => {
     if (!levelOpt?.id) return null;
-    return { id: String(levelOpt.id), label: scopeLabel || String(levelOpt.label ?? "") };
+    return {
+      id: String(levelOpt.id),
+      label: scopeLabel || String(levelOpt.label ?? ""),
+    };
   }, [levelOpt, scopeLabel]);
 
   return {

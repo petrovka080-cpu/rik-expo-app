@@ -13,7 +13,11 @@ import { useStockAvailability } from "../warehouse.availability";
 import { useWarehousePdf } from "../warehouse.pdfs";
 import { useWarehouseDicts } from "../warehouse.dicts";
 import { useWarehouseScope } from "../warehouse.scope";
-import { WAREHOUSE_TABS, type Tab, type WarehouseStockLike } from "../warehouse.types";
+import {
+  WAREHOUSE_TABS,
+  type Tab,
+  type WarehouseStockLike,
+} from "../warehouse.types";
 import { nz, showErr } from "../warehouse.utils";
 import { useWarehousemanFio } from "./useWarehousemanFio";
 import { useWarehouseKeyboard } from "./useWarehouseKeyboard";
@@ -31,11 +35,18 @@ import { useWarehouseReportState } from "./useWarehouseReportState";
 import { useWarehouseExpenseQueueSlice } from "./useWarehouseExpenseQueueSlice";
 import { useWarehouseUiStore } from "../warehouseUi.store";
 import { useWarehouseRealtimeLifecycle } from "../warehouse.realtime.lifecycle";
+import {
+  isWarehouseScreenActive,
+  type WarehouseScreenActiveRef,
+} from "./useWarehouseScreenActivity";
 
 const ORG_NAME = "";
 const REQ_PAGE_SIZE = 80;
-const TAB_STOCK_FACT = WAREHOUSE_TABS[1] ?? ("\u0421\u043A\u043B\u0430\u0434 \u0444\u0430\u043A\u0442" as Tab);
-const TAB_EXPENSE = WAREHOUSE_TABS[2] ?? ("\u0420\u0430\u0441\u0445\u043E\u0434" as Tab);
+const TAB_STOCK_FACT =
+  WAREHOUSE_TABS[1] ??
+  ("\u0421\u043A\u043B\u0430\u0434 \u0444\u0430\u043A\u0442" as Tab);
+const TAB_EXPENSE =
+  WAREHOUSE_TABS[2] ?? ("\u0420\u0430\u0441\u0445\u043E\u0434" as Tab);
 const WAREHOUSE_NAME = "\u0421\u043A\u043B\u0430\u0434";
 
 function isRecipientRequiredTab(tab: Tab) {
@@ -44,8 +55,9 @@ function isRecipientRequiredTab(tab: Tab) {
 
 export function useWarehouseScreenData(params: {
   isScreenFocused: boolean;
+  screenActiveRef: WarehouseScreenActiveRef;
 }) {
-  const { isScreenFocused } = params;
+  const { isScreenFocused, screenActiveRef } = params;
   const busy = useGlobalBusy();
   const notifyInfo = useCallback((title: string, message?: string) => {
     showToast.info(title, message);
@@ -56,7 +68,7 @@ export function useWarehouseScreenData(params: {
   const tab = useWarehouseUiStore((state) => state.tab);
   const setTab = useWarehouseUiStore((state) => state.setTab);
 
-  const incoming = useWarehouseIncoming();
+  const incoming = useWarehouseIncoming({ screenActiveRef });
   const { stockSearch, setStockSearch, stockSearchDeb } = useWarehouseSearch();
 
   const getTodaySixAM = useCallback(() => {
@@ -76,12 +88,16 @@ export function useWarehouseScreenData(params: {
   } = useWarehousemanFio({
     getTodaySixAM,
     isScreenFocused,
+    screenActiveRef,
     onError: showErr,
   });
 
-  const headerApi = useWarehouseHeaderApi({ isWeb, hasSubRow: !!warehousemanFio });
+  const headerApi = useWarehouseHeaderApi({
+    isWeb,
+    hasSubRow: !!warehousemanFio,
+  });
   const HEADER_MAX = !!warehousemanFio ? 130 : 92;
-  const { kbH } = useWarehouseKeyboard();
+  const { kbH } = useWarehouseKeyboard({ screenActiveRef });
   const {
     isRecipientModalVisible,
     setIsRecipientModalVisible,
@@ -93,7 +109,7 @@ export function useWarehouseScreenData(params: {
     setIncomingDetailsId,
     repPeriodOpen,
     setRepPeriodOpen,
-  } = useWarehouseModals();
+  } = useWarehouseModals({ screenActiveRef });
 
   const {
     itemsModal,
@@ -101,7 +117,7 @@ export function useWarehouseScreenData(params: {
     openItemsModal,
     receivingHeadId,
     setReceivingHeadId,
-  } = useWarehouseIncomingItemsModal();
+  } = useWarehouseIncomingItemsModal({ screenActiveRef });
   const {
     stock,
     stockSupported,
@@ -113,14 +129,19 @@ export function useWarehouseScreenData(params: {
   } = useWarehouseStockData({
     supabase,
     search: stockSearchDeb,
+    screenActiveRef,
   });
   const matNameByCode = useMemo(() => {
     const map: Record<string, string> = {};
     for (const row of stock as WarehouseStockLike[]) {
-      const code = String(row?.rik_code ?? row?.code ?? row?.material_code ?? "")
+      const code = String(
+        row?.rik_code ?? row?.code ?? row?.material_code ?? "",
+      )
         .trim()
         .toUpperCase();
-      const name = String(row?.name_human ?? row?.name ?? row?.item_name_ru ?? "").trim();
+      const name = String(
+        row?.name_human ?? row?.name ?? row?.item_name_ru ?? "",
+      ).trim();
       if (code && name && !map[code]) {
         map[code] = name;
       }
@@ -142,11 +163,13 @@ export function useWarehouseScreenData(params: {
     periodTo,
     setPeriodTo,
   } = useWarehouseReportState();
-  const { repStock, repMov, repIssues, repIncoming, fetchReports } = useWarehouseReportsData({
-    supabase,
-    periodFrom,
-    periodTo,
-  });
+  const { repStock, repMov, repIssues, repIncoming, fetchReports } =
+    useWarehouseReportsData({
+      supabase,
+      periodFrom,
+      periodTo,
+      screenActiveRef,
+    });
   const reportsUi = useWarehouseReports({
     busy,
     supabase,
@@ -169,6 +192,7 @@ export function useWarehouseScreenData(params: {
     setIncomingDetailsId,
     nameByCode: matNameByCode,
     repIncoming,
+    screenActiveRef,
   });
 
   const pdfActions = useWarehousePdf({
@@ -181,35 +205,78 @@ export function useWarehouseScreenData(params: {
     orgName: ORG_NAME,
     warehouseName: WAREHOUSE_NAME,
   });
-  const { onPdfDocument, onPdfRegister, onPdfMaterials, onPdfObjectWork, onPdfDayRegister, onPdfDayMaterials } = pdfActions;
+  const {
+    onPdfDocument,
+    onPdfRegister,
+    onPdfMaterials,
+    onPdfObjectWork,
+    onPdfDayRegister,
+    onPdfDayMaterials,
+  } = pdfActions;
 
-  const scope = useWarehouseScope();
-  const { objectOpt, levelOpt, systemOpt, zoneOpt, scopeLabel, scopeOpt, pickModal, pickFilter, setPickFilter, closePick, applyPick, setPickModal } = scope;
+  const scope = useWarehouseScope({ screenActiveRef });
+  const {
+    objectOpt,
+    levelOpt,
+    systemOpt,
+    zoneOpt,
+    scopeLabel,
+    scopeOpt,
+    pickModal,
+    pickFilter,
+    setPickFilter,
+    closePick,
+    applyPick,
+    setPickModal,
+  } = scope;
 
-  const dicts = useWarehouseDicts(supabase, tab);
+  const dicts = useWarehouseDicts(supabase, tab, { screenActiveRef });
   const { objectList, levelList, systemList, zoneList, recipientList } = dicts;
-  const rec = useWarehouseRecipient({ enabled: isRecipientRequiredTab(tab), recipientList });
+  const rec = useWarehouseRecipient({
+    enabled: isRecipientRequiredTab(tab),
+    recipientList,
+    screenActiveRef,
+  });
 
-  const onTabChange = useCallback((nextTab: Tab) => {
-    setTab(nextTab);
-    if (isRecipientRequiredTab(nextTab)) setIsRecipientModalVisible(true);
-  }, [setIsRecipientModalVisible, setTab]);
+  const onTabChange = useCallback(
+    (nextTab: Tab) => {
+      if (!isWarehouseScreenActive(screenActiveRef)) return;
+      setTab(nextTab);
+      if (isRecipientRequiredTab(nextTab)) setIsRecipientModalVisible(true);
+    },
+    [screenActiveRef, setIsRecipientModalVisible, setTab],
+  );
 
   const availability = useStockAvailability(stock, matNameByCode);
   const getAvailableByCode = availability.getAvailableByCode;
   const getAvailableByCodeUom = availability.getAvailableByCodeUom;
   const getMaterialNameByCode = availability.getMaterialNameByCode;
   const [issueBusy, setIssueBusy] = useState(false);
-  const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: string }>({ kind: null, text: "" });
+  const [issueMsg, setIssueMsg] = useState<{
+    kind: "error" | "ok" | null;
+    text: string;
+  }>({ kind: null, text: "" });
 
-  const reqPickUi = useWarehouseReqPick({ nz, setIssueMsg, getAvailableByCode, getAvailableByCodeUom });
-  const stockPickUi = useWarehouseStockPick({ nz, rec, objectOpt, workTypeOpt: scopeOpt, setIssueMsg });
+  const reqPickUi = useWarehouseReqPick({
+    nz,
+    setIssueMsg,
+    getAvailableByCode,
+    getAvailableByCodeUom,
+  });
+  const stockPickUi = useWarehouseStockPick({
+    nz,
+    rec,
+    objectOpt,
+    workTypeOpt: scopeOpt,
+    setIssueMsg,
+  });
   const expenseQueue = useWarehouseExpenseQueueSlice({
     supabase,
     tab,
     isScreenFocused,
     pageSize: REQ_PAGE_SIZE,
     reqPickUi,
+    screenActiveRef,
     onError: showErr,
   });
   const { sortedReqHeads, stockFiltered } = useWarehouseDerived({
@@ -225,7 +292,8 @@ export function useWarehouseScreenData(params: {
     warehousemanFio,
     fetchStock,
     fetchReqItems: expenseQueue.fetchReqItems,
-    fetchReqHeads: () => expenseQueue.refreshExpenseQueue({ force: true, reason: "issue" }),
+    fetchReqHeads: () =>
+      expenseQueue.refreshExpenseQueue({ force: true, reason: "issue" }),
     getAvailableByCode,
     getAvailableByCodeUom,
     getMaterialNameByCode,
@@ -241,28 +309,35 @@ export function useWarehouseScreenData(params: {
     setIsRecipientModalVisible,
     setIssueBusy,
     setIssueMsg,
+    screenActiveRef,
   });
 
-  const { callFetchToReceive, callFetchStock, callFetchReports } = useWarehouseFetchRefs({
-    fetchToReceive: incoming.fetchToReceive,
-    fetchStock,
-    fetchReqHeads: expenseQueue.fetchReqHeads,
-    fetchReports,
-  });
+  const { callFetchToReceive, callFetchStock, callFetchReports } =
+    useWarehouseFetchRefs({
+      fetchToReceive: incoming.fetchToReceive,
+      fetchStock,
+      fetchReqHeads: expenseQueue.fetchReqHeads,
+      fetchReports,
+      screenActiveRef,
+    });
 
   useWarehouseRealtimeLifecycle({
     tab,
     refreshIncoming: () => incoming.fetchToReceive(0, true, "realtime"),
-    refreshExpense: () => expenseQueue.refreshExpenseQueue({ force: true, reason: "realtime" }),
+    refreshExpense: () =>
+      expenseQueue.refreshExpenseQueue({ force: true, reason: "realtime" }),
     isIncomingRefreshInFlight: () => incoming.toReceiveIsFetching,
     isExpenseRefreshInFlight: () => expenseQueue.reqRefs.current.fetching,
+    screenActiveRef,
   });
   const { loading, setLoading, refreshing, onRefresh } = useWarehouseState({
     tab,
     fetchToReceive: callFetchToReceive,
     fetchStock: callFetchStock,
     fetchReports: callFetchReports,
-    refreshExpenseQueue: () => expenseQueue.refreshExpenseQueue({ force: true, reason: "manual" }),
+    refreshExpenseQueue: () =>
+      expenseQueue.refreshExpenseQueue({ force: true, reason: "manual" }),
+    screenActiveRef,
     onError: showErr,
   });
 
@@ -287,11 +362,13 @@ export function useWarehouseScreenData(params: {
     setItemsModal,
     notifyInfo,
     notifyError,
+    screenActiveRef,
     onError: showErr,
   });
 
   return {
     isScreenFocused,
+    screenActiveRef,
     isWeb,
     tab,
     onTabChange,

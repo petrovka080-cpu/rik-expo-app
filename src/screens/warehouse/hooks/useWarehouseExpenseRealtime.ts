@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
+import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./useWarehouseScreenActivity";
 
 const TAB_EXPENSE = WAREHOUSE_TABS[2];
 
@@ -13,13 +18,16 @@ export function useWarehouseExpenseRealtime(params: {
   supabase: SupabaseClient;
   tab: Tab;
   fetchReqHeadsForce: () => Promise<void>;
+  screenActiveRef?: WarehouseScreenActiveRef;
 }) {
   const { supabase, tab, fetchReqHeadsForce } = params;
+  const screenActiveRef = useWarehouseFallbackActiveRef(params.screenActiveRef);
   const inFlightRef = useRef<Promise<void> | null>(null);
   const pendingRefreshRef = useRef(false);
 
   useEffect(() => {
     const triggerRefresh = () => {
+      if (!isWarehouseScreenActive(screenActiveRef)) return;
       if (inFlightRef.current) {
         pendingRefreshRef.current = true;
         return;
@@ -27,9 +35,14 @@ export function useWarehouseExpenseRealtime(params: {
 
       const task = fetchReqHeadsForce().finally(() => {
         if (inFlightRef.current === task) inFlightRef.current = null;
-        if (pendingRefreshRef.current) {
+        if (
+          pendingRefreshRef.current &&
+          isWarehouseScreenActive(screenActiveRef)
+        ) {
           pendingRefreshRef.current = false;
           triggerRefresh();
+        } else if (!isWarehouseScreenActive(screenActiveRef)) {
+          pendingRefreshRef.current = false;
         }
       });
       inFlightRef.current = task;
@@ -42,12 +55,36 @@ export function useWarehouseExpenseRealtime(params: {
 
     const ch = supabase
       .channel("warehouse-expense-rt")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "requests" }, triggerRefresh)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "requests" }, triggerRefresh)
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "requests" }, triggerRefresh)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "request_items" }, triggerRefresh)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "request_items" }, triggerRefresh)
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "request_items" }, triggerRefresh)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "requests" },
+        triggerRefresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "requests" },
+        triggerRefresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "requests" },
+        triggerRefresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "request_items" },
+        triggerRefresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "request_items" },
+        triggerRefresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "request_items" },
+        triggerRefresh,
+      )
       .subscribe();
 
     return () => {
@@ -63,6 +100,5 @@ export function useWarehouseExpenseRealtime(params: {
         logWarehouseExpenseRealtimeFallback("removeChannel", error);
       }
     };
-  }, [supabase, tab, fetchReqHeadsForce]);
+  }, [supabase, tab, fetchReqHeadsForce, screenActiveRef]);
 }
-

@@ -41,7 +41,9 @@ function resolveAssistantContext(segments: string[]): string {
 }
 
 function isOfficeTabPath(pathname: string | null | undefined) {
-  return pathname === "/office" || String(pathname ?? "").startsWith("/office/");
+  return (
+    pathname === "/office" || String(pathname ?? "").startsWith("/office/")
+  );
 }
 
 export default function TabsLayout() {
@@ -60,7 +62,7 @@ export default function TabsLayout() {
   const wasOfficePathRef = useRef(isOfficeTabPath(pathname));
 
   const tabHeight = 56;
-  const bottomInset = isWeb ? 0 : (insets.bottom || 0);
+  const bottomInset = isWeb ? 0 : insets.bottom || 0;
   const leafSegment = segments[segments.length - 1];
   const assistantContext = resolveAssistantContext(segments);
   const showAssistantFab = leafSegment !== "ai" && leafSegment !== "chat";
@@ -132,7 +134,11 @@ export default function TabsLayout() {
           options={{
             title: "Главная",
             tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("market", focused)} color={color} size={size} />
+              <Ionicons
+                name={iconForRoute("market", focused)}
+                color={color}
+                size={size}
+              />
             ),
           }}
         />
@@ -141,7 +147,11 @@ export default function TabsLayout() {
           options={{
             title: "Офис",
             tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("office", focused)} color={color} size={size} />
+              <Ionicons
+                name={iconForRoute("office", focused)}
+                color={color}
+                size={size}
+              />
             ),
           }}
         />
@@ -152,7 +162,11 @@ export default function TabsLayout() {
             tabBarLabel: "+",
             tabBarLabelStyle: { fontSize: 18, fontWeight: "900" },
             tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("add", focused)} color={color} size={size + 2} />
+              <Ionicons
+                name={iconForRoute("add", focused)}
+                color={color}
+                size={size + 2}
+              />
             ),
           }}
         />
@@ -161,7 +175,11 @@ export default function TabsLayout() {
           options={{
             title: "Чаты",
             tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("chat", focused)} color={color} size={size} />
+              <Ionicons
+                name={iconForRoute("chat", focused)}
+                color={color}
+                size={size}
+              />
             ),
           }}
         />
@@ -170,7 +188,11 @@ export default function TabsLayout() {
           options={{
             title: "Профиль",
             tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons name={iconForRoute("profile", focused)} color={color} size={size} />
+              <Ionicons
+                name={iconForRoute("profile", focused)}
+                color={color}
+                size={size}
+              />
             ),
           }}
         />
@@ -179,7 +201,6 @@ export default function TabsLayout() {
         <Tabs.Screen name="director" options={{ href: null }} />
         <Tabs.Screen name="buyer" options={{ href: null }} />
         <Tabs.Screen name="accountant" options={{ href: null }} />
-        <Tabs.Screen name="warehouse" options={{ href: null }} />
         <Tabs.Screen name="security" options={{ href: null }} />
         <Tabs.Screen name="reports" options={{ href: null }} />
         <Tabs.Screen name="contractor" options={{ href: null }} />

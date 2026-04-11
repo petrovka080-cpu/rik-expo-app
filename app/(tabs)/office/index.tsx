@@ -14,7 +14,6 @@ import {
   recordOfficeRouteOwnerFocus,
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
-  recordOfficeRouteReplaceReceived,
   recordOfficeRouteScopeActive,
   recordOfficeRouteScopeInactive,
   recordOfficeRouteScopeSkipReason,
@@ -153,9 +152,6 @@ function OfficeIndexRoute() {
     const returnReceipt = consumePendingOfficeRouteReturnReceipt();
     if (returnReceipt) {
       const afterReturnExtra = buildRouteExtra(returnReceipt);
-      if (returnReceipt.method === "replace") {
-        recordOfficeRouteReplaceReceived(afterReturnExtra);
-      }
       afterReturnMountRef.current = afterReturnExtra;
       afterReturnFocusRef.current = afterReturnExtra;
       setOfficeReturnReceipt(afterReturnExtra);

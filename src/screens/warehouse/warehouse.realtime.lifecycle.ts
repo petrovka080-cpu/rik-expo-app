@@ -13,6 +13,11 @@ import {
   WAREHOUSE_REALTIME_CHANNEL_NAME,
 } from "../../lib/realtime/realtime.channels";
 import { WAREHOUSE_TABS, type Tab } from "./warehouse.types";
+import {
+  isWarehouseScreenActive,
+  useWarehouseFallbackActiveRef,
+  type WarehouseScreenActiveRef,
+} from "./hooks/useWarehouseScreenActivity";
 
 const TAB_INCOMING = WAREHOUSE_TABS[0];
 const TAB_EXPENSE = WAREHOUSE_TABS[2];
@@ -24,7 +29,9 @@ export function useWarehouseRealtimeLifecycle(params: {
   refreshExpense: () => Promise<void>;
   isIncomingRefreshInFlight: () => boolean;
   isExpenseRefreshInFlight: () => boolean;
+  screenActiveRef?: WarehouseScreenActiveRef;
 }) {
+  const screenActiveRef = useWarehouseFallbackActiveRef(params.screenActiveRef);
   const tabRef = useRef(params.tab);
   const refreshIncomingRef = useRef(params.refreshIncoming);
   const refreshExpenseRef = useRef(params.refreshExpense);
@@ -52,10 +59,11 @@ export function useWarehouseRealtimeLifecycle(params: {
     const detach = subscribeChannel({
       name: WAREHOUSE_REALTIME_CHANNEL_NAME,
       scope: "warehouse",
-      route: "/warehouse",
+      route: "/office/warehouse",
       surface: "screen_root",
       bindings: WAREHOUSE_REALTIME_BINDINGS,
       onEvent: ({ binding, payload }) => {
+        if (!isWarehouseScreenActive(screenActiveRef)) return;
         const currentTab = tabRef.current;
         const wantsIncoming = binding.key === "warehouse_incoming_items";
         const scopeKey = wantsIncoming ? "incoming" : "expense";
@@ -158,15 +166,19 @@ export function useWarehouseRealtimeLifecycle(params: {
             lifecycleOwner: "realtime_lifecycle",
           },
         });
-        const refresh = wantsIncoming ? refreshIncomingRef.current : refreshExpenseRef.current;
-        void refresh();
+        const refresh = wantsIncoming
+          ? refreshIncomingRef.current
+          : refreshExpenseRef.current;
+        if (isWarehouseScreenActive(screenActiveRef)) {
+          void refresh();
+        }
       },
     });
 
     return () => {
       detach();
     };
-  }, []);
+  }, [screenActiveRef]);
 
   useFocusEffect(bindRealtime);
 }
