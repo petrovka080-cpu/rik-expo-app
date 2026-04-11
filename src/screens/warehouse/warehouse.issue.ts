@@ -4,11 +4,8 @@ import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import { ensureRequestItemsBelongToRequest } from "../../lib/api/integrity.guards";
 import { normMatCode, normUomId } from "./warehouse.utils";
 import {
-  addWarehouseIssueItem,
-  addWarehouseIssueItems,
-  commitWarehouseIssue,
-  createWarehouseIssue,
   issueWarehouseFreeAtomic,
+  issueWarehouseRequestAtomic,
 } from "./warehouse.issue.repo";
 
 export type IssueMsg = { kind: "error" | "ok" | null; text: string };
@@ -20,6 +17,30 @@ const ensureWarehouseRpcData = <T,>(value: T | null | undefined, message: string
 
 const DUPLICATE_ISSUE_SUBMIT_MESSAGE =
   "\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u044f \u0443\u0436\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f. \u0414\u043e\u0436\u0434\u0438\u0442\u0435\u0441\u044c \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0438\u044f.";
+
+const buildWarehouseIssueMutationId = (kind: "req_pick" | "request_item"): string => {
+  const cryptoLike =
+    typeof globalThis !== "undefined"
+      ? (globalThis as typeof globalThis & {
+          crypto?: {
+            randomUUID?: () => string;
+            getRandomValues?: (array: Uint8Array) => Uint8Array;
+          };
+        }).crypto
+      : undefined;
+
+  if (typeof cryptoLike?.randomUUID === "function") {
+    return cryptoLike.randomUUID();
+  }
+
+  if (typeof cryptoLike?.getRandomValues === "function") {
+    const bytes = cryptoLike.getRandomValues(new Uint8Array(8));
+    const suffix = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return `warehouse-issue:${kind}:${Date.now().toString(36)}:${suffix}`;
+  }
+
+  return `warehouse-issue:${kind}:${Date.now().toString(36)}:${Math.random().toString(36).slice(2)}`;
+};
 
 export function makeWarehouseIssueActions(args: {
   supabase: AppSupabaseClient;
@@ -175,18 +196,6 @@ export function makeWarehouseIssueActions(args: {
       ]
         .filter(Boolean)
         .join(" · ");
-
-      const r1 = await createWarehouseIssue(supabase, {
-        p_who: who,
-        p_note: note,
-        p_request_id: rid,
-        p_object_name: getObjName(),
-        p_work_name: getWorkName(),
-      });
-      if (r1.error) throw r1.error;
-      const issueId = Number(
-        ensureWarehouseRpcData(r1.data, "Не удалось создать документ выдачи по заявке"),
-      );
       const byId: Record<string, ReqItemUiRow> = {};
       const issueLines: {
         rik_code: string;
@@ -233,14 +242,17 @@ export function makeWarehouseIssueActions(args: {
         }
       }
 
-      const r2 = await addWarehouseIssueItems(supabase, {
-        p_issue_id: issueId,
+      const r = await issueWarehouseRequestAtomic(supabase, {
+        p_who: who,
+        p_note: note,
+        p_request_id: rid,
+        p_object_name: getObjName(),
+        p_work_name: getWorkName(),
         p_lines: issueLines,
+        p_client_mutation_id: buildWarehouseIssueMutationId("req_pick"),
       });
-      if (r2.error) throw r2.error;
-
-      const r3 = await commitWarehouseIssue(supabase, issueId);
-      if (r3.error) throw r3.error;
+      if (r.error) throw r.error;
+      ensureWarehouseRpcData(r.data ?? true, "Сервер не подтвердил выдачу по заявке");
 
       clearReqPick();
 
@@ -420,32 +432,27 @@ export function makeWarehouseIssueActions(args: {
         .filter(Boolean)
         .join(" · ");
 
-      const r1 = await createWarehouseIssue(supabase, {
+      const uomCode = String((row )?.uom ?? "").trim();
+      if (!uomCode) throw new Error(`Пустой uom у ${(row )?.rik_code}`);
+
+      const r = await issueWarehouseRequestAtomic(supabase, {
         p_who: who,
         p_note: note,
         p_request_id: requestId,
         p_object_name: getObjName(),
         p_work_name: getWorkName(),
+        p_lines: [
+          {
+            rik_code: (row ).rik_code,
+            uom_id: uomCode,
+            qty,
+            request_item_id: requestItemId,
+          },
+        ],
+        p_client_mutation_id: buildWarehouseIssueMutationId("request_item"),
       });
-      if (r1.error) throw r1.error;
-      const issueId = Number(
-        ensureWarehouseRpcData(r1.data, "Не удалось создать документ точечной выдачи"),
-      );
-
-      const uomCode = String((row )?.uom ?? "").trim();
-      if (!uomCode) throw new Error(`Пустой uom у ${(row )?.rik_code}`);
-
-      const r2 = await addWarehouseIssueItem(supabase, {
-        p_issue_id: issueId,
-        p_rik_code: (row ).rik_code,
-        p_uom_id: uomCode,
-        p_qty: qty,
-        p_request_item_id: requestItemId,
-      });
-      if (r2.error) throw r2.error;
-
-      const r3 = await commitWarehouseIssue(supabase, issueId);
-      if (r3.error) throw r3.error;
+      if (r.error) throw r.error;
+      ensureWarehouseRpcData(r.data ?? true, "Сервер не подтвердил точечную выдачу");
 
       await refreshAfterIssueCommit(requestId);
 

@@ -19686,6 +19686,18 @@ export type Database = {
         }
         Returns: number
       }
+      wh_issue_request_atomic_v1: {
+        Args: {
+          p_client_mutation_id: string
+          p_lines: Json
+          p_note: string
+          p_object_name?: string | null
+          p_request_id: string
+          p_who: string
+          p_work_name?: string | null
+        }
+        Returns: Json
+      }
       warehouse_issue_queue_scope_v1: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: Json
