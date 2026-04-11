@@ -54,6 +54,12 @@ import {
   resetPdfNativeHandoffGuard,
 } from "../src/lib/pdf/pdfNativeHandoffGuard";
 import {
+  armPdfViewerLoadingTimeout,
+  cancelPdfViewerLoadingTimeout,
+  createPdfViewerLoadingTimeoutGuardState,
+  shouldCommitPdfViewerLoadingTimeout,
+} from "../src/lib/pdf/pdfViewerLoadingTimeoutGuard";
+import {
   assertValidLocalPdfFile,
   assertValidRemotePdfResponse,
 } from "../src/lib/pdf/pdfSourceValidation";
@@ -300,6 +306,9 @@ function PdfViewerScreen() {
   const nativeHandoffGuardRef = React.useRef(
     createPdfNativeHandoffGuardState(),
   );
+  const loadingTimeoutGuardRef = React.useRef(
+    createPdfViewerLoadingTimeoutGuardState(),
+  );
   const resolvedSource = React.useMemo(
     () =>
       resolvePdfViewerResolution({ session, asset, platform: VIEWER_PLATFORM }),
@@ -514,6 +523,7 @@ function PdfViewerScreen() {
       clearTimeout(loadingTimeoutRef.current);
       loadingTimeoutRef.current = null;
     }
+    cancelPdfViewerLoadingTimeout(loadingTimeoutGuardRef.current);
   }, []);
 
   const signalOpenVisible = React.useCallback(
@@ -662,7 +672,18 @@ function PdfViewerScreen() {
     }
     touchDocumentSession(next.session.sessionId);
     setState("loading");
+    const timeoutCycle = armPdfViewerLoadingTimeout(
+      loadingTimeoutGuardRef.current,
+    );
     loadingTimeoutRef.current = setTimeout(() => {
+      if (
+        !shouldCommitPdfViewerLoadingTimeout(
+          loadingTimeoutGuardRef.current,
+          timeoutCycle,
+        )
+      ) {
+        return;
+      }
       markError("Document loading timed out.", "timeout");
     }, 15000);
   }, [clearLoadingTimeout, markError, syncSnapshot]);
