@@ -497,83 +497,125 @@ export default function RootLayout() {
           >["session"] = null;
           let degraded = false;
 
-          recordAuthCheckEvent("auth_check_start", "skipped", {
-            caller: "root_layout_post_auth_exit",
-            reason: "recent_auth_stack_exit",
-            settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
-          });
-
-          await new Promise((resolve) =>
-            setTimeout(resolve, AUTH_EXIT_SESSION_SETTLE_WINDOW_MS),
-          );
-
-          if (probeToken !== authExitSessionProbeTokenRef.current) return;
-
-          const result = await getSessionSafe({
-            caller: "root_layout_post_auth_exit",
-          });
-
-          if (probeToken !== authExitSessionProbeTokenRef.current) return;
-
-          settledSession = result.session;
-          degraded = result.degraded;
-
-          recordAuthCheckEvent("auth_check_result", "success", {
-            caller: "root_layout_post_auth_exit",
-            degraded,
-            hasSession: Boolean(settledSession),
-            settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
-          });
-
-          if (degraded) {
-            recordAuthCheckEvent("auth_check_timeout", "skipped", {
+          try {
+            recordAuthCheckEvent("auth_check_start", "skipped", {
               caller: "root_layout_post_auth_exit",
-              degraded: true,
-              reason: "degraded_session_read",
+              reason: "recent_auth_stack_exit",
               settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
             });
-          }
 
-          authExitSessionProbeInFlightRef.current = false;
+            await new Promise((resolve) =>
+              setTimeout(resolve, AUTH_EXIT_SESSION_SETTLE_WINDOW_MS),
+            );
 
-          if (settledSession) {
+            if (probeToken !== authExitSessionProbeTokenRef.current) return;
+
+            const result = await getSessionSafe({
+              caller: "root_layout_post_auth_exit",
+            });
+
+            if (probeToken !== authExitSessionProbeTokenRef.current) return;
+
+            settledSession = result.session;
+            degraded = result.degraded;
+
+            recordAuthCheckEvent("auth_check_result", "success", {
+              caller: "root_layout_post_auth_exit",
+              degraded,
+              hasSession: Boolean(settledSession),
+              settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
+            });
+
+            if (degraded) {
+              recordAuthCheckEvent("auth_check_timeout", "skipped", {
+                caller: "root_layout_post_auth_exit",
+                degraded: true,
+                reason: "degraded_session_read",
+                settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
+              });
+            }
+
+            authExitSessionProbeInFlightRef.current = false;
+
+            if (settledSession) {
+              authExitAtRef.current = null;
+              recordPlatformObservability({
+                screen: "request",
+                surface: "auth_session_gate",
+                category: "fetch",
+                event: "auth_gate_session_settle_result",
+                result: "success",
+                extra: {
+                  owner: "root_layout",
+                  hasSession: true,
+                  reason: "session_visible_after_auth_exit",
+                },
+              });
+              setHasSession(true);
+              return;
+            }
+
             authExitAtRef.current = null;
+
+            if (degraded) {
+              recordPlatformObservability({
+                screen: "request",
+                surface: "auth_session_gate",
+                category: "fetch",
+                event: "auth_gate_degraded_path",
+                result: "skipped",
+                extra: {
+                  owner: "root_layout",
+                  reason: "post_auth_session_read_degraded",
+                },
+              });
+              setHasSession(null);
+              return;
+            }
+
+            recordAuthRedirectTriggered("post_auth_session_absent_after_settle");
+            router.replace("/auth/login");
+          } catch (e: unknown) {
+            if (probeToken !== authExitSessionProbeTokenRef.current) return;
+
+            const timeoutLike = isTimeoutLikeAuthError(e);
+            authExitSessionProbeInFlightRef.current = false;
+            authExitAtRef.current = null;
+            recordAuthCheckEvent(
+              timeoutLike ? "auth_check_timeout" : "auth_check_result",
+              timeoutLike ? "skipped" : "error",
+              {
+                caller: "root_layout_post_auth_exit",
+                degraded: true,
+                reason: "post_auth_session_read_failed",
+                settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
+                errorClass: e instanceof Error ? e.name : undefined,
+                errorMessage:
+                  e instanceof Error
+                    ? e.message
+                    : String(e ?? "post_auth_session_read_failed"),
+              },
+            );
             recordPlatformObservability({
               screen: "request",
               surface: "auth_session_gate",
               category: "fetch",
               event: "auth_gate_session_settle_result",
-              result: "success",
+              result: "error",
+              errorStage: "post_auth_session_read",
+              errorClass: e instanceof Error ? e.name : undefined,
+              errorMessage:
+                e instanceof Error
+                  ? e.message
+                  : String(e ?? "post_auth_session_read_failed"),
+              fallbackUsed: true,
               extra: {
                 owner: "root_layout",
-                hasSession: true,
-                reason: "session_visible_after_auth_exit",
-              },
-            });
-            setHasSession(true);
-            return;
-          }
-
-          authExitAtRef.current = null;
-
-          if (degraded) {
-            recordPlatformObservability({
-              screen: "request",
-              surface: "auth_session_gate",
-              category: "fetch",
-              event: "auth_gate_degraded_path",
-              result: "skipped",
-              extra: {
-                owner: "root_layout",
-                reason: "post_auth_session_read_degraded",
+                reason: "post_auth_session_read_failed",
               },
             });
             setHasSession(null);
-            return;
           }
-
-          recordAuthRedirectTriggered("post_auth_session_absent_after_settle");
-          router.replace("/auth/login");
         })();
       }
 

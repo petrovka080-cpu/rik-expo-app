@@ -416,6 +416,58 @@ describe("RootLayout recovery bootstrap", () => {
     expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
   });
 
+  it("keeps post-auth settle read failures controlled without redirecting to login", async () => {
+    jest.useFakeTimers();
+    mockUseSegments.mockReturnValue(["auth", "login"]);
+    mockUsePathname.mockReturnValue("/auth/login");
+    mockGetSessionSafe
+      .mockResolvedValueOnce({ session: null, degraded: false })
+      .mockRejectedValueOnce(new Error("settle read failed"));
+
+    let renderer: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    mockReplace.mockClear();
+
+    mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
+    mockUsePathname.mockReturnValue("/(tabs)/profile");
+
+    await act(async () => {
+      renderer!.update(<RootLayout />);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(3_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockGetSessionSafe).toHaveBeenNthCalledWith(2, {
+      caller: "root_layout_post_auth_exit",
+    });
+    expect(mockGetSessionSafe).toHaveBeenCalledTimes(2);
+    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "auth_gate_session_settle_result",
+        result: "error",
+        errorStage: "post_auth_session_read",
+        fallbackUsed: true,
+        extra: expect.objectContaining({
+          reason: "post_auth_session_read_failed",
+        }),
+      }),
+    );
+  });
+
   it("redirects to login when the post-auth session settle window confirms no session", async () => {
     jest.useFakeTimers();
     mockUseSegments.mockReturnValue(["auth", "login"]);
