@@ -97,6 +97,25 @@ async function fileExists(uri: string): Promise<boolean> {
   }
 }
 
+function getFileInfoSize(info: Awaited<ReturnType<typeof FileSystemCompat.getInfoAsync>> | null | undefined) {
+  if (!info || !("size" in info)) return undefined;
+  const size = Number(info.size);
+  return Number.isFinite(size) ? size : undefined;
+}
+
+async function assertLocalAttachmentReady(uri: string): Promise<string> {
+  const normalized = normalizeLocalFileUri(uri);
+  const info = await FileSystemCompat.getInfoAsync(normalized);
+  if (!info?.exists) {
+    throw new Error("Attachment handoff file is missing.");
+  }
+  const sizeBytes = getFileInfoSize(info);
+  if (sizeBytes !== undefined && sizeBytes <= 0) {
+    throw new Error("Attachment handoff file is empty.");
+  }
+  return normalized;
+}
+
 async function resolveAttachmentSource(input: AppAttachmentOpenInput): Promise<ResolvedAttachmentSource> {
   const localUri = String(input.localUri || "").trim();
   if (localUri && getUriScheme(localUri) === "file") {
@@ -135,13 +154,13 @@ async function materializeAttachmentToLocalFile(input: AppAttachmentOpenInput, s
   if (source.kind === "local") {
     const normalized = normalizeLocalFileUri(source.uri);
     if (normalized.toLowerCase().endsWith(`/${fileName.toLowerCase()}`) || normalized.toLowerCase().endsWith(`\\${fileName.toLowerCase()}`)) {
-      return normalized;
+      return assertLocalAttachmentReady(normalized);
     }
     const target = `${cacheDir}attachment_${hashString32(normalized)}_${fileName}`;
     if (!(await fileExists(target))) {
       await FileSystemCompat.copyAsync({ from: normalized, to: target });
     }
-    return normalizeLocalFileUri(target);
+    return assertLocalAttachmentReady(target);
   }
 
   const scheme = getUriScheme(source.uri);
@@ -157,7 +176,7 @@ async function materializeAttachmentToLocalFile(input: AppAttachmentOpenInput, s
     const downloaded = await FileSystemCompat.downloadAsync(source.uri, target);
     if (!String(downloaded?.uri || "").trim()) throw new Error("Attachment download failed");
   }
-  return normalizeLocalFileUri(target);
+  return assertLocalAttachmentReady(target);
 }
 
 async function openAttachmentOnWeb(input: AppAttachmentOpenInput, source: ResolvedAttachmentSource): Promise<void> {

@@ -55,8 +55,17 @@ jest.mock("../supabaseClient", () => ({
 
 import { openAppAttachment } from "./attachmentOpener";
 
+const getMockPlatform = () =>
+  (jest.requireMock("react-native") as { Platform: { OS: string } }).Platform;
+
 describe("attachmentOpener", () => {
+  const originalPlatformOs = getMockPlatform().OS;
+
   beforeEach(() => {
+    Object.defineProperty(getMockPlatform(), "OS", {
+      configurable: true,
+      value: "android",
+    });
     mockOpenUrl.mockReset();
     mockGetInfoAsync.mockReset();
     mockDownloadAsync.mockReset();
@@ -71,6 +80,13 @@ describe("attachmentOpener", () => {
     mockDownloadAsync.mockImplementation(async (_url: string, target: string) => ({ uri: target }));
     mockGetContentUriAsync.mockImplementation(async (uri: string) => `content://${encodeURIComponent(uri)}`);
     mockStartActivityAsync.mockResolvedValue({ resultCode: 0 });
+  });
+
+  afterAll(() => {
+    Object.defineProperty(getMockPlatform(), "OS", {
+      configurable: true,
+      value: originalPlatformOs,
+    });
   });
 
   it("opens a local attachment PDF through Android content uri handoff", async () => {
@@ -120,5 +136,41 @@ describe("attachmentOpener", () => {
 
     expect(mockStartActivityAsync).not.toHaveBeenCalled();
     expect(mockOpenUrl).not.toHaveBeenCalled();
+  });
+
+  it("blocks iOS attachment share/open handoff when the local file is empty", async () => {
+    Object.defineProperty(getMockPlatform(), "OS", {
+      configurable: true,
+      value: "ios",
+    });
+    mockGetInfoAsync.mockResolvedValue({ exists: true, size: 0 });
+
+    await expect(
+      openAppAttachment({
+        localUri: "file:///cache/attachment.pdf",
+        fileName: "attachment.pdf",
+        mimeType: "application/pdf",
+      }),
+    ).rejects.toThrow("Attachment handoff file is empty.");
+
+    expect(mockShareAsync).not.toHaveBeenCalled();
+    expect(mockOpenUrl).not.toHaveBeenCalled();
+  });
+
+  it("blocks native attachment handoff when a downloaded file is missing", async () => {
+    mockGetInfoAsync.mockResolvedValue({ exists: false, size: 0 });
+
+    await expect(
+      openAppAttachment({
+        url: "https://example.com/image.png",
+        fileName: "image.png",
+        mimeType: "image/png",
+      }),
+    ).rejects.toThrow("Attachment handoff file is missing.");
+
+    expect(mockDownloadAsync).toHaveBeenCalled();
+    expect(mockGetContentUriAsync).not.toHaveBeenCalled();
+    expect(mockStartActivityAsync).not.toHaveBeenCalled();
+    expect(mockShareAsync).not.toHaveBeenCalled();
   });
 });
