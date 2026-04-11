@@ -18,6 +18,9 @@ const ensureWarehouseRpcData = <T,>(value: T | null | undefined, message: string
   return value;
 };
 
+const DUPLICATE_ISSUE_SUBMIT_MESSAGE =
+  "\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u044f \u0443\u0436\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f. \u0414\u043e\u0436\u0434\u0438\u0442\u0435\u0441\u044c \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0438\u044f.";
+
 export function makeWarehouseIssueActions(args: {
   supabase: AppSupabaseClient;
 
@@ -83,6 +86,34 @@ export function makeWarehouseIssueActions(args: {
 
   const getObjName = () => toNull(getObjectLabel?.());
   const getWorkName = () => toNull(getWorkLabel?.());
+  let reqPickInFlight = false;
+  let stockPickInFlight = false;
+  let requestItemInFlight = false;
+
+  const tryBeginIssueSubmit = (kind: "req_pick" | "stock_pick" | "request_item") => {
+    const busy =
+      kind === "req_pick"
+        ? reqPickInFlight
+        : kind === "stock_pick"
+          ? stockPickInFlight
+          : requestItemInFlight;
+    if (busy) {
+      setIssueMsg({ kind: "error", text: DUPLICATE_ISSUE_SUBMIT_MESSAGE });
+      return false;
+    }
+
+    if (kind === "req_pick") reqPickInFlight = true;
+    else if (kind === "stock_pick") stockPickInFlight = true;
+    else requestItemInFlight = true;
+    return true;
+  };
+
+  const endIssueSubmit = (kind: "req_pick" | "stock_pick" | "request_item") => {
+    if (kind === "req_pick") reqPickInFlight = false;
+    else if (kind === "stock_pick") stockPickInFlight = false;
+    else requestItemInFlight = false;
+  };
+
   const refreshAfterIssueCommit = async (requestId?: string | null) => {
     const refreshTasks: Promise<unknown>[] = [fetchStock(), fetchReqHeads()];
     const rid = String(requestId ?? "").trim();
@@ -121,6 +152,7 @@ export function makeWarehouseIssueActions(args: {
       return false;
     }
 
+    if (!tryBeginIssueSubmit("req_pick")) return false;
     setIssueBusy(true);
     setIssueMsg({ kind: null, text: "" });
 
@@ -156,12 +188,12 @@ export function makeWarehouseIssueActions(args: {
         ensureWarehouseRpcData(r1.data, "Не удалось создать документ выдачи по заявке"),
       );
       const byId: Record<string, ReqItemUiRow> = {};
-      const issueLines: Array<{
+      const issueLines: {
         rik_code: string;
         uom_id: string;
         qty: number;
         request_item_id: string | null;
-      }> = [];
+      }[] = [];
       for (const it of input.reqItems || []) byId[String(it.request_item_id)] = it;
 
       for (const ln of lines) {
@@ -227,6 +259,7 @@ export function makeWarehouseIssueActions(args: {
       setIssueMsg({ kind: "error", text: pickErr(e) });
       return false;
     } finally {
+      endIssueSubmit("req_pick");
       setIssueBusy(false);
     }
   }
@@ -247,6 +280,7 @@ export function makeWarehouseIssueActions(args: {
       return false;
     }
 
+    if (!tryBeginIssueSubmit("stock_pick")) return false;
     setIssueBusy(true);
     setIssueMsg({ kind: null, text: "" });
 
@@ -326,6 +360,7 @@ export function makeWarehouseIssueActions(args: {
       setIssueMsg({ kind: "error", text: pickErr(e) });
       return false;
     } finally {
+      endIssueSubmit("stock_pick");
       setIssueBusy(false);
     }
   }
@@ -357,6 +392,7 @@ export function makeWarehouseIssueActions(args: {
       return false;
     }
 
+    if (!tryBeginIssueSubmit("request_item")) return false;
     setIssueBusy(true);
     setIssueMsg({ kind: null, text: "" });
 
@@ -425,6 +461,7 @@ export function makeWarehouseIssueActions(args: {
       setIssueMsg({ kind: "error", text: pickErr(e) });
       return false;
     } finally {
+      endIssueSubmit("request_item");
       setIssueBusy(false);
     }
   }
