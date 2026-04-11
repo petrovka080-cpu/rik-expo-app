@@ -37,6 +37,7 @@ import {
   type PdfViewerState as ViewerState,
 } from "../src/lib/pdf/pdfViewerContract";
 import { createPdfViewerRenderInstanceKey } from "../src/lib/pdf/pdfViewerRenderLifecycle";
+import { resolvePdfViewerWebRenderUriCleanup } from "../src/lib/pdf/pdfViewerWebRenderUriCleanup";
 import {
   failPdfOpenVisible,
   markPdfOpenVisible,
@@ -401,17 +402,20 @@ function PdfViewerScreen() {
     resetPdfNativeHandoffGuard(nativeHandoffGuardRef.current);
   }, [openToken, sessionId, loadAttempt]);
 
-  const clearWebRenderUri = React.useCallback(() => {
+  const clearWebRenderUri = React.useCallback((options?: { commitState?: boolean }) => {
     const current = webRenderUriRef.current;
+    const cleanup = resolvePdfViewerWebRenderUriCleanup({
+      platform: Platform.OS,
+      uri: current,
+      commitState: options?.commitState,
+    });
     if (
-      Platform.OS === "web" &&
-      current &&
-      current.startsWith("blob:") &&
+      cleanup.revokeUri &&
       typeof URL !== "undefined" &&
       typeof URL.revokeObjectURL === "function"
     ) {
       try {
-        URL.revokeObjectURL(current);
+        URL.revokeObjectURL(cleanup.revokeUri);
       } catch (error) {
         recordCatchDiscipline({
           screen: "reports",
@@ -429,12 +433,12 @@ function PdfViewerScreen() {
       }
     }
     webRenderUriRef.current = null;
-    setWebRenderUri(null);
+    if (cleanup.shouldCommitState) setWebRenderUri(null);
   }, []);
 
   React.useEffect(() => {
     return () => {
-      clearWebRenderUri();
+      clearWebRenderUri({ commitState: false });
     };
   }, [clearWebRenderUri]);
 
