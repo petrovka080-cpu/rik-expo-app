@@ -6,18 +6,13 @@ import {
   OFFICE_BACK_LABEL,
   OFFICE_SAFE_BACK_ROUTE,
   renderSafeOfficeForemanBackButton,
-  renderSafeOfficeWarehouseBackButton,
   renderSafeOfficeBackButton,
 } from "../../app/(tabs)/office/_layout";
 
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
 const mockCanGoBack = jest.fn(() => false);
-const mockMarkPendingOfficeRouteReplaceReceipt = jest.fn();
 const mockMarkPendingOfficeRouteReturnReceipt = jest.fn();
-const mockRecordOfficeWarehouseBackHandlerStepAsync = jest.fn();
-const mockRecordOfficeWarehouseBackPressStartAsync = jest.fn();
-const mockRecordOfficeWarehouseBackPressDone = jest.fn();
 const mockRecordOfficeBackPathFailure = jest.fn();
 
 jest.mock("expo-router", () => {
@@ -38,8 +33,6 @@ jest.mock("@react-navigation/elements", () => ({
 }));
 
 jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
-  markPendingOfficeRouteReplaceReceipt: (...args: unknown[]) =>
-    mockMarkPendingOfficeRouteReplaceReceipt(...args),
   markPendingOfficeRouteReturnReceipt: (...args: unknown[]) =>
     mockMarkPendingOfficeRouteReturnReceipt(...args),
   recordOfficeBackPathFailure: (...args: unknown[]) =>
@@ -48,12 +41,6 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeRouteOwnerIdentity: jest.fn(),
   recordOfficeRouteOwnerMount: jest.fn(),
   recordOfficeRouteOwnerUnmount: jest.fn(),
-  recordOfficeWarehouseBackHandlerStepAsync: (...args: unknown[]) =>
-    mockRecordOfficeWarehouseBackHandlerStepAsync(...args),
-  recordOfficeWarehouseBackPressDone: (...args: unknown[]) =>
-    mockRecordOfficeWarehouseBackPressDone(...args),
-  recordOfficeWarehouseBackPressStartAsync: (...args: unknown[]) =>
-    mockRecordOfficeWarehouseBackPressStartAsync(...args),
 }));
 
 describe("OfficeStackLayout", () => {
@@ -62,23 +49,11 @@ describe("OfficeStackLayout", () => {
     mockBack.mockReset();
     mockCanGoBack.mockReset();
     mockCanGoBack.mockReturnValue(false);
-    mockMarkPendingOfficeRouteReplaceReceipt.mockReset();
     mockMarkPendingOfficeRouteReturnReceipt.mockReset();
-    mockRecordOfficeWarehouseBackHandlerStepAsync.mockReset();
-    mockRecordOfficeWarehouseBackHandlerStepAsync.mockResolvedValue(undefined);
-    mockRecordOfficeWarehouseBackPressStartAsync.mockReset();
-    mockRecordOfficeWarehouseBackPressStartAsync.mockResolvedValue(undefined);
-    mockRecordOfficeWarehouseBackPressDone.mockReset();
     mockRecordOfficeBackPathFailure.mockReset();
   });
 
-  async function flushBackHandler(cycles = 14) {
-    for (let index = 0; index < cycles; index += 1) {
-      await Promise.resolve();
-    }
-  }
-
-  it("uses office fallback when history is missing", () => {
+  it("uses router.back without replace fallback", () => {
     const header = renderSafeOfficeBackButton({
       canGoBack: true,
       tintColor: "#000000",
@@ -89,11 +64,12 @@ describe("OfficeStackLayout", () => {
     expect(header.props.label).toBe(OFFICE_BACK_LABEL);
     header.props.onPress();
 
-    expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
-    expect(mockBack).not.toHaveBeenCalled();
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockCanGoBack).not.toHaveBeenCalled();
   });
 
-  it("uses router.back when office history exists", () => {
+  it("does not inspect history before using router.back", () => {
     mockCanGoBack.mockReturnValue(true);
 
     const header = renderSafeOfficeBackButton({
@@ -107,6 +83,7 @@ describe("OfficeStackLayout", () => {
 
     expect(mockBack).toHaveBeenCalledTimes(1);
     expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockCanGoBack).not.toHaveBeenCalled();
   });
 
   it("marks a pending office return receipt when foreman uses router.back", () => {
@@ -131,112 +108,7 @@ describe("OfficeStackLayout", () => {
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
-  it("uses a durable replace safety override for warehouse even when history exists", async () => {
-    mockCanGoBack.mockReturnValue(true);
-
-    const header = renderSafeOfficeWarehouseBackButton({
-      canGoBack: true,
-      tintColor: "#000000",
-      label: OFFICE_BACK_LABEL,
-      href: undefined,
-    }) as React.ReactElement<{ onPress: () => void }>;
-
-    header.props.onPress();
-    await flushBackHandler();
-
-    expect(mockRecordOfficeWarehouseBackPressStartAsync).toHaveBeenCalledWith({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      sourceRoute: "/office/warehouse",
-      target: OFFICE_SAFE_BACK_ROUTE,
-      method: "replace",
-      selectedMethod: "replace_safety_override",
-      handler: "safe_back_header",
-    });
-    expect(mockMarkPendingOfficeRouteReplaceReceipt).toHaveBeenCalledWith({
-      sourceRoute: "/office/warehouse",
-      target: OFFICE_SAFE_BACK_ROUTE,
-      method: "replace",
-      selectedMethod: "replace_safety_override",
-    });
-    expect(mockRecordOfficeWarehouseBackPressDone).toHaveBeenCalledWith({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      sourceRoute: "/office/warehouse",
-      target: OFFICE_SAFE_BACK_ROUTE,
-      method: "replace",
-      selectedMethod: "replace_safety_override",
-      handler: "safe_back_header",
-    });
-    expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
-    expect(mockBack).not.toHaveBeenCalled();
-    expect(mockCanGoBack).not.toHaveBeenCalled();
-    expect(mockRecordOfficeWarehouseBackHandlerStepAsync).toHaveBeenCalledWith(
-      "office_warehouse_back_router_replace_call_start",
-      expect.objectContaining({
-        selectedMethod: "replace_safety_override",
-        handler: "safe_back_header",
-      }),
-    );
-  });
-
-  it("does not navigate warehouse back before the start marker is persisted", async () => {
-    let resolveStartMarker: (() => void) | null = null;
-    mockCanGoBack.mockReturnValue(true);
-    mockRecordOfficeWarehouseBackPressStartAsync.mockReturnValueOnce(
-      new Promise<void>((resolve) => {
-        resolveStartMarker = resolve;
-      }),
-    );
-
-    const header = renderSafeOfficeWarehouseBackButton({
-      canGoBack: true,
-      tintColor: "#000000",
-      label: OFFICE_BACK_LABEL,
-      href: undefined,
-    }) as React.ReactElement<{ onPress: () => void }>;
-
-    header.props.onPress();
-    await flushBackHandler();
-
-    expect(mockRecordOfficeWarehouseBackPressStartAsync).toHaveBeenCalledWith({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      sourceRoute: "/office/warehouse",
-      target: OFFICE_SAFE_BACK_ROUTE,
-      method: "replace",
-      selectedMethod: "replace_safety_override",
-      handler: "safe_back_header",
-    });
-    expect(mockBack).not.toHaveBeenCalled();
-    expect(mockReplace).not.toHaveBeenCalled();
-    expect(mockRecordOfficeWarehouseBackPressDone).not.toHaveBeenCalled();
-
-    resolveStartMarker?.();
-    await flushBackHandler();
-
-    expect(mockReplace).toHaveBeenCalledWith(OFFICE_SAFE_BACK_ROUTE);
-    expect(mockBack).not.toHaveBeenCalled();
-    expect(mockCanGoBack).not.toHaveBeenCalled();
-    expect(mockRecordOfficeWarehouseBackHandlerStepAsync).toHaveBeenCalledWith(
-      "office_warehouse_back_router_replace_call_start",
-      expect.objectContaining({
-        selectedMethod: "replace_safety_override",
-        handler: "safe_back_header",
-      }),
-    );
-    expect(mockRecordOfficeWarehouseBackPressDone).toHaveBeenCalledWith({
-      owner: "office_stack_layout",
-      route: "/office/warehouse",
-      sourceRoute: "/office/warehouse",
-      target: OFFICE_SAFE_BACK_ROUTE,
-      method: "replace",
-      selectedMethod: "replace_safety_override",
-      handler: "safe_back_header",
-    });
-  });
-
-  it("does not emit warehouse-specific back markers for foreman", () => {
+  it("does not emit warehouse-specific back markers", () => {
     mockCanGoBack.mockReturnValue(true);
 
     const header = renderSafeOfficeForemanBackButton({
@@ -248,8 +120,6 @@ describe("OfficeStackLayout", () => {
 
     header.props.onPress();
 
-    expect(mockRecordOfficeWarehouseBackPressStartAsync).not.toHaveBeenCalled();
-    expect(mockRecordOfficeWarehouseBackPressDone).not.toHaveBeenCalled();
     expect(mockRecordOfficeBackPathFailure).not.toHaveBeenCalled();
   });
 
@@ -263,11 +133,19 @@ describe("OfficeStackLayout", () => {
     expect(source).toContain('name="warehouse"');
     expect(source).toContain("headerBackTitle: OFFICE_BACK_LABEL");
     expect(source).toContain("title: WAREHOUSE_HEADER_TITLE");
-    expect(source).toContain("headerLeft: renderSafeOfficeForemanBackButton");
-    expect(source).toContain("headerLeft: renderSafeOfficeWarehouseBackButton");
-    expect(source).toContain("recordOfficeWarehouseBackHandlerStepAsync");
-    expect(source).toContain("recordOfficeWarehouseBackPressStartAsync");
-    expect(source).toContain("recordOfficeWarehouseBackPressDone");
+    expect(source).toContain('foreman: renderSafeOfficeForemanBackButton');
+    expect(source).toContain(
+      'warehouse: createSafeOfficeBackButton("/office/warehouse")',
+    );
+    expect(source).toContain("headerLeft: safeOfficeChildBackButtons.foreman");
+    expect(source).toContain("headerLeft: safeOfficeChildBackButtons.warehouse");
+    expect(source).not.toContain("renderSafeOfficeWarehouseBackButton");
+    expect(source).not.toContain("isWarehouse");
+    expect(source).not.toContain("replace_safety_override");
+    expect(source).not.toContain("router.replace(OFFICE_SAFE_BACK_ROUTE)");
+    expect(source).not.toContain("recordOfficeWarehouseBackHandlerStepAsync");
+    expect(source).not.toContain("recordOfficeWarehouseBackPressStartAsync");
+    expect(source).not.toContain("recordOfficeWarehouseBackPressDone");
     expect(source).not.toContain("recordWarehouseReturnToOffice");
     expect(source).not.toContain("headerBackVisible: false");
     expect(source).not.toContain("headerBackButtonMenuEnabled: false");

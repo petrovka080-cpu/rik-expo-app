@@ -3,18 +3,13 @@ import { HeaderBackButton } from "@react-navigation/elements";
 import { Stack, router, useNavigation, usePathname, useSegments } from "expo-router";
 
 import {
-  markPendingOfficeRouteReplaceReceipt,
   markPendingOfficeRouteReturnReceipt,
   recordOfficeBackPathFailure,
   recordOfficeLayoutBeforeRemove,
   recordOfficeRouteOwnerIdentity,
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
-  recordOfficeWarehouseBackHandlerStepAsync,
-  recordOfficeWarehouseBackPressDone,
-  recordOfficeWarehouseBackPressStartAsync,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
-import { hasSafeBackHistory } from "../../../src/lib/navigation/safeBack";
 
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
@@ -90,95 +85,29 @@ function useOfficeStackOwnerAudit() {
   }, [navigation, pathname, segmentsLabel]);
 }
 
-async function handleOfficeChildBack(params: {
+function handleOfficeChildBack(params: {
   sourceRoute: "/office/foreman" | "/office/warehouse";
 }) {
-  const isWarehouse = params.sourceRoute === "/office/warehouse";
-  const baseMarkerExtra = {
-    owner: "office_stack_layout",
-    route: params.sourceRoute,
-    target: OFFICE_SAFE_BACK_ROUTE,
+  const receiptExtra = {
     sourceRoute: params.sourceRoute,
-    handler: "safe_back_header",
+    target: OFFICE_SAFE_BACK_ROUTE,
+    method: "back",
+    selectedMethod: "back",
   };
 
   try {
-    if (isWarehouse) {
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_handler_enter",
-        baseMarkerExtra,
-      );
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_method_select_start",
-        baseMarkerExtra,
-      );
-
-      const receiptExtra = {
-        sourceRoute: params.sourceRoute,
-        target: OFFICE_SAFE_BACK_ROUTE,
-        method: "replace",
-        selectedMethod: "replace_safety_override",
-      };
-      const markerExtra = {
-        ...baseMarkerExtra,
-        ...receiptExtra,
-      };
-
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_method_select_done",
-        markerExtra,
-      );
-      await recordOfficeWarehouseBackPressStartAsync(markerExtra);
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_receipt_mark_start",
-        markerExtra,
-      );
-
-      markPendingOfficeRouteReplaceReceipt(receiptExtra);
-
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_receipt_mark_done",
-        markerExtra,
-      );
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_router_replace_call_start",
-        markerExtra,
-      );
-      router.replace(OFFICE_SAFE_BACK_ROUTE);
-      await recordOfficeWarehouseBackHandlerStepAsync(
-        "office_warehouse_back_router_replace_call_done",
-        markerExtra,
-      );
-      recordOfficeWarehouseBackPressDone(markerExtra);
-      return;
-    }
-
-    const hasHistory = hasSafeBackHistory(router);
-    const receiptExtra = {
-      sourceRoute: params.sourceRoute,
-      target: OFFICE_SAFE_BACK_ROUTE,
-      method: hasHistory ? "back" : "replace",
-      selectedMethod: hasHistory ? "back" : "replace_fallback",
-    };
-
-    if (hasHistory) {
-      markPendingOfficeRouteReturnReceipt(receiptExtra);
-    } else {
-      markPendingOfficeRouteReplaceReceipt(receiptExtra);
-    }
-
-    if (hasHistory) {
-      router.back();
-    } else {
-      router.replace(OFFICE_SAFE_BACK_ROUTE);
-    }
+    markPendingOfficeRouteReturnReceipt(receiptExtra);
+    router.back();
   } catch (error) {
     recordOfficeBackPathFailure({
       error,
       errorStage: "safe_back_header_press",
       extra: {
-        ...baseMarkerExtra,
+        owner: "office_stack_layout",
+        route: params.sourceRoute,
         sourceRoute: params.sourceRoute,
+        target: OFFICE_SAFE_BACK_ROUTE,
+        handler: "safe_back_header",
       },
     });
     throw error;
@@ -194,7 +123,7 @@ function createSafeOfficeBackButton(
         {...props}
         label={OFFICE_BACK_LABEL}
         onPress={() => {
-          void handleOfficeChildBack({ sourceRoute });
+          handleOfficeChildBack({ sourceRoute });
         }}
         testID="office-safe-back"
       />
@@ -205,10 +134,12 @@ function createSafeOfficeBackButton(
 export const renderSafeOfficeForemanBackButton = createSafeOfficeBackButton(
   "/office/foreman",
 );
-export const renderSafeOfficeWarehouseBackButton = createSafeOfficeBackButton(
-  "/office/warehouse",
-);
 export const renderSafeOfficeBackButton = renderSafeOfficeForemanBackButton;
+
+const safeOfficeChildBackButtons = {
+  foreman: renderSafeOfficeForemanBackButton,
+  warehouse: createSafeOfficeBackButton("/office/warehouse"),
+};
 
 export default function OfficeStackLayout() {
   useOfficeStackOwnerAudit();
@@ -229,7 +160,7 @@ export default function OfficeStackLayout() {
         name="foreman"
         options={{
           title: "\u041f\u0440\u043e\u0440\u0430\u0431",
-          headerLeft: renderSafeOfficeForemanBackButton,
+          headerLeft: safeOfficeChildBackButtons.foreman,
         }}
       />
       <Stack.Screen name="buyer" options={{ title: "\u0421\u043d\u0430\u0431\u0436\u0435\u043d\u0435\u0446" }} />
@@ -239,7 +170,7 @@ export default function OfficeStackLayout() {
         name="warehouse"
         options={{
           title: WAREHOUSE_HEADER_TITLE,
-          headerLeft: renderSafeOfficeWarehouseBackButton,
+          headerLeft: safeOfficeChildBackButtons.warehouse,
         }}
       />
       <Stack.Screen name="contractor" options={{ title: "\u041f\u043e\u0434\u0440\u044f\u0434\u0447\u0438\u043a" }} />
