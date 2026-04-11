@@ -3,6 +3,7 @@ import L from "leaflet";
 import { ensureLeafletWebCss } from "./leafletWebCss";
 import type { ClusterListing, MapRendererProps } from "./mapContracts";
 import { zoomFromRegion } from "./pixelCluster";
+import { recordSwallowedError } from "../../lib/observability/swallowedError";
 
 const UI = { border: "#1F2937", demand: "#EF4444" };
 const FILL_STYLE: React.CSSProperties = { position: "absolute", inset: "0" };
@@ -119,7 +120,17 @@ export default function MapRendererWeb({
         map.off("moveend", emitViewport);
         map.off("zoomend", emitViewport);
         map.remove();
-      } catch {}
+      } catch (error) {
+        recordSwallowedError({
+          screen: "supplier_map",
+          surface: "map_renderer",
+          event: "map_leaflet_dispose_failed",
+          error,
+          kind: "cleanup_only",
+          sourceKind: "leaflet:web",
+          errorStage: "dispose",
+        });
+      }
       mapRef.current = null;
     };
   }, [emitViewport, region.latitude, region.longitude]);
@@ -153,7 +164,17 @@ export default function MapRendererWeb({
       if (myMarkerRef.current) {
         try {
           map.removeLayer(myMarkerRef.current);
-        } catch {}
+        } catch (error) {
+          recordSwallowedError({
+            screen: "supplier_map",
+            surface: "map_renderer",
+            event: "map_my_location_marker_remove_failed",
+            error,
+            kind: "cleanup_only",
+            sourceKind: "leaflet:web",
+            errorStage: "remove_my_location_marker",
+          });
+        }
         myMarkerRef.current = null;
       }
       return;
@@ -237,7 +258,17 @@ export default function MapRendererWeb({
     Object.values(markersRef.current).forEach((marker) => {
       try {
         map.removeLayer(marker);
-      } catch {}
+      } catch (error) {
+        recordSwallowedError({
+          screen: "supplier_map",
+          surface: "map_renderer",
+          event: "map_listing_marker_remove_failed",
+          error,
+          kind: "cleanup_only",
+          sourceKind: "leaflet:web",
+          errorStage: "remove_listing_marker",
+        });
+      }
     });
     markersRef.current = {};
 

@@ -13,6 +13,7 @@ type PlatformObservabilityScreen =
   | "seller"
   | "add_listing"
   | "security"
+  | "notifications"
   | "reports"
   | "chat"
   | "auctions"
