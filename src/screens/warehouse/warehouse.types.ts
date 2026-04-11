@@ -187,6 +187,8 @@ export type RpcReceiveApplyResult = {
   ok?: number | string | null;
   fail?: number | string | null;
   left_after?: number | string | null;
+  client_mutation_id?: string | null;
+  idempotent_replay?: boolean | null;
 };
 
 export type ReportsUiLike = {

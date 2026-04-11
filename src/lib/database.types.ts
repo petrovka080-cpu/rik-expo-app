@@ -19712,6 +19712,7 @@ export type Database = {
       }
       wh_receive_apply_ui: {
         Args: {
+          p_client_mutation_id?: string
           p_incoming_id: string
           p_items: Json
           p_note?: string

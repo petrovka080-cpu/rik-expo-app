@@ -14,6 +14,7 @@ import {
   configureWarehouseReceiveQueue,
   enqueueWarehouseReceive,
   loadWarehouseReceiveQueue,
+  markWarehouseReceiveQueueInflight,
 } from "./warehouseReceiveQueue";
 import { flushWarehouseReceiveQueue } from "./warehouseReceiveWorker";
 
@@ -94,6 +95,13 @@ describe("warehouse receive worker", () => {
       "receive apply did not start",
     );
     expect(applyReceive).toHaveBeenCalledTimes(1);
+    const queueEntry = (await loadWarehouseReceiveQueue())[0];
+    expect(applyReceive).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clientMutationId: queueEntry?.id,
+        incomingId: "incoming-1",
+      }),
+    );
 
     deferred.resolve({ data: { ok: 1, fail: 0, left_after: 0 }, error: null });
     const [firstResult, secondResult] = await Promise.all([first, second]);
@@ -138,6 +146,36 @@ describe("warehouse receive worker", () => {
           errorMessage: "refresh failed",
         }),
       ]),
+    );
+  });
+
+  it("keeps the same clientMutationId when an inflight receive is restored after restart", async () => {
+    await seedReceiveDraft("incoming-restore");
+    const queued = (await loadWarehouseReceiveQueue())[0];
+    expect(queued).toBeTruthy();
+    await markWarehouseReceiveQueueInflight(queued?.id ?? "");
+
+    const applyReceive = jest.fn(async () => ({
+      data: { ok: 1, fail: 0, left_after: 0 },
+      error: null,
+    }));
+
+    const result = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+      },
+      "app_active",
+    );
+
+    expect(result.failed).toBe(false);
+    expect(applyReceive).toHaveBeenCalledTimes(1);
+    expect(applyReceive).toHaveBeenCalledWith(
+      expect.objectContaining({
+        incomingId: "incoming-restore",
+        clientMutationId: queued?.id,
+      }),
     );
   });
 });

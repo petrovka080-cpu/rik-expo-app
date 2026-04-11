@@ -242,12 +242,14 @@ export function useWarehouseReceiveFlow(params: {
                 incomingId,
                 items,
                 warehousemanFio: fio,
+                clientMutationId,
               }) =>
                 await applyWarehouseReceive({
                   supabase,
                   incomingId,
                   items,
                   warehousemanFio: fio,
+                  clientMutationId,
                 }),
               refreshAfterSuccess: refreshWarehouseAfterSuccess,
               getNetworkOnline: () => networkOnlineRef.current,

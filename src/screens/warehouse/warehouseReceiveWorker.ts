@@ -42,6 +42,7 @@ type WarehouseReceiveWorkerDeps = {
     incomingId: string;
     items: { purchase_item_id: string; qty: number }[];
     warehousemanFio: string;
+    clientMutationId: string;
   }) => Promise<{ data: RpcReceiveApplyResult | null; error: { message?: string | null } | null }>;
   refreshAfterSuccess?: (incomingId: string) => Promise<void>;
   getNetworkOnline?: () => boolean | null;
@@ -209,6 +210,7 @@ const runFlush = async (
         incomingId: entry.incomingId,
         items: payload,
         warehousemanFio,
+        clientMutationId: inflight.id,
       });
 
       if (error) throw new Error(trim(error.message) || "receive_apply_failed");
