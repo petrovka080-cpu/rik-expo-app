@@ -335,6 +335,7 @@ describe("RootLayout recovery bootstrap", () => {
   });
 
   it("re-checks session after auth stack exit before sending user back to login", async () => {
+    jest.useFakeTimers();
     mockUseSegments.mockReturnValue(["auth", "login"]);
     mockUsePathname.mockReturnValue("/auth/login");
     mockGetSessionSafe
@@ -364,9 +365,18 @@ describe("RootLayout recovery bootstrap", () => {
       await Promise.resolve();
     });
 
+    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+
+    await act(async () => {
+      jest.advanceTimersByTime(3_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
     expect(mockGetSessionSafe).toHaveBeenNthCalledWith(2, {
       caller: "root_layout_post_auth_exit",
     });
+    expect(mockGetSessionSafe).toHaveBeenCalledTimes(2);
     expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
   });
 
@@ -404,6 +414,7 @@ describe("RootLayout recovery bootstrap", () => {
       await Promise.resolve();
     });
 
+    expect(mockGetSessionSafe).toHaveBeenCalledTimes(2);
     expect(mockReplace).toHaveBeenCalledWith("/auth/login");
   });
 });

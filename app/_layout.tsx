@@ -24,7 +24,6 @@ import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHo
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
 
 const AUTH_EXIT_SESSION_SETTLE_WINDOW_MS = 2500;
-const AUTH_EXIT_SESSION_POLL_INTERVAL_MS = 200;
 
 function isTimeoutLikeAuthError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? "");
@@ -489,45 +488,43 @@ export default function RootLayout() {
             ReturnType<typeof getSessionSafe>
           >["session"] = null;
           let degraded = false;
-          const startedAt = Date.now();
 
           recordAuthCheckEvent("auth_check_start", "skipped", {
             caller: "root_layout_post_auth_exit",
             reason: "recent_auth_stack_exit",
+            settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
           });
 
-          while (Date.now() - startedAt <= AUTH_EXIT_SESSION_SETTLE_WINDOW_MS) {
-            const result = await getSessionSafe({
-              caller: "root_layout_post_auth_exit",
-            });
-
-            if (probeToken !== authExitSessionProbeTokenRef.current) return;
-
-            settledSession = result.session;
-            degraded = result.degraded;
-
-            recordAuthCheckEvent("auth_check_result", "success", {
-              caller: "root_layout_post_auth_exit",
-              degraded,
-              hasSession: Boolean(settledSession),
-            });
-
-            if (degraded) {
-              recordAuthCheckEvent("auth_check_timeout", "skipped", {
-                caller: "root_layout_post_auth_exit",
-                degraded: true,
-                reason: "degraded_session_read",
-              });
-            }
-
-            if (settledSession || degraded) break;
-
-            await new Promise((resolve) =>
-              setTimeout(resolve, AUTH_EXIT_SESSION_POLL_INTERVAL_MS),
-            );
-          }
+          await new Promise((resolve) =>
+            setTimeout(resolve, AUTH_EXIT_SESSION_SETTLE_WINDOW_MS),
+          );
 
           if (probeToken !== authExitSessionProbeTokenRef.current) return;
+
+          const result = await getSessionSafe({
+            caller: "root_layout_post_auth_exit",
+          });
+
+          if (probeToken !== authExitSessionProbeTokenRef.current) return;
+
+          settledSession = result.session;
+          degraded = result.degraded;
+
+          recordAuthCheckEvent("auth_check_result", "success", {
+            caller: "root_layout_post_auth_exit",
+            degraded,
+            hasSession: Boolean(settledSession),
+            settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
+          });
+
+          if (degraded) {
+            recordAuthCheckEvent("auth_check_timeout", "skipped", {
+              caller: "root_layout_post_auth_exit",
+              degraded: true,
+              reason: "degraded_session_read",
+              settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
+            });
+          }
 
           authExitSessionProbeInFlightRef.current = false;
 
