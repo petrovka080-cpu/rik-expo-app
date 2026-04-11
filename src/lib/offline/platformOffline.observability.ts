@@ -17,6 +17,7 @@ export type PlatformOfflineQueueAction =
   | "reset_inflight"
   | "sync_start"
   | "sync_success"
+  | "refresh_after_success_failed"
   | "sync_retry_wait"
   | "sync_failed_terminal"
   | "manual_retry";
@@ -24,6 +25,7 @@ export type PlatformOfflineQueueAction =
 export type PlatformOfflineFailureClass =
   | "none"
   | "offline_wait"
+  | "ui_refresh_failure"
   | "retryable_sync_failure"
   | "failed_terminal";
 
@@ -43,6 +45,7 @@ export type PlatformOfflineTelemetryEvent = {
   restoredAfterReopen: boolean;
   manualRetry: boolean;
   durationMs: number | null;
+  errorMessage?: string | null;
 };
 
 export type PlatformOfflineTelemetrySummary = {

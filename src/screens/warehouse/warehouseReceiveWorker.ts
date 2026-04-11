@@ -256,8 +256,25 @@ const runFlush = async (
       if (deps.refreshAfterSuccess) {
         try {
           await deps.refreshAfterSuccess(entry.incomingId);
-        } catch {
+        } catch (error) {
+          const refreshErrorMessage = toErrorText(error);
           // The receive operation already succeeded on the server. UI refresh can recover later.
+          recordPlatformOfflineTelemetry({
+            contourKey: "warehouse_receive",
+            entityKey: entry.incomingId,
+            syncStatus: snapshotChangedWhileSyncing ? "queued" : "synced",
+            queueAction: "refresh_after_success_failed",
+            coalesced: inflight.coalescedCount > 0,
+            retryCount: inflight.retryCount,
+            pendingCount: snapshotChangedWhileSyncing ? await getWarehouseReceivePendingCount(entry.incomingId) : 0,
+            failureClass: "ui_refresh_failure",
+            triggerKind: triggerSource,
+            networkKnownOffline: deps.getNetworkOnline?.() === false,
+            restoredAfterReopen: restoredInflightCount > 0,
+            manualRetry: triggerSource === "manual_retry",
+            durationMs: Date.now() - startedAt,
+            errorMessage: refreshErrorMessage,
+          });
         }
       }
     } catch (error) {
