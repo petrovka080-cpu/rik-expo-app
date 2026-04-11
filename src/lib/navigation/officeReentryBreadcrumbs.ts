@@ -42,6 +42,17 @@ export type OfficeReentryMarker =
   | "office_warehouse_unmount"
   | "office_warehouse_back_press_start"
   | "office_warehouse_back_press_done"
+  | "office_warehouse_back_handler_enter"
+  | "office_warehouse_back_method_select_start"
+  | "office_warehouse_back_method_select_done"
+  | "office_warehouse_back_can_go_back_check_start"
+  | "office_warehouse_back_can_go_back_check_done"
+  | "office_warehouse_back_receipt_mark_start"
+  | "office_warehouse_back_receipt_mark_done"
+  | "office_warehouse_back_router_back_call_start"
+  | "office_warehouse_back_router_back_call_done"
+  | "office_warehouse_back_router_replace_call_start"
+  | "office_warehouse_back_router_replace_call_done"
   | "office_warehouse_cleanup_start"
   | "office_warehouse_cleanup_done"
   | "office_warehouse_runtime_bootstrap_start"
@@ -724,6 +735,30 @@ export function recordOfficeWarehouseBackPressDone(
 ) {
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_back_press_done",
+    extra,
+  });
+}
+
+export async function recordOfficeWarehouseBackHandlerStepAsync(
+  marker: Extract<
+    OfficeReentryMarker,
+    | "office_warehouse_back_handler_enter"
+    | "office_warehouse_back_method_select_start"
+    | "office_warehouse_back_method_select_done"
+    | "office_warehouse_back_can_go_back_check_start"
+    | "office_warehouse_back_can_go_back_check_done"
+    | "office_warehouse_back_receipt_mark_start"
+    | "office_warehouse_back_receipt_mark_done"
+    | "office_warehouse_back_router_back_call_start"
+    | "office_warehouse_back_router_back_call_done"
+    | "office_warehouse_back_router_replace_call_start"
+    | "office_warehouse_back_router_replace_call_done"
+  >,
+  extra?: Record<string, unknown>,
+) {
+  await recordOfficeReentryMarkerAsync({
+    marker,
+    result: "success",
     extra,
   });
 }

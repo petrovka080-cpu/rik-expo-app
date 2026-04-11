@@ -10,10 +10,11 @@ import {
   recordOfficeRouteOwnerIdentity,
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
+  recordOfficeWarehouseBackHandlerStepAsync,
   recordOfficeWarehouseBackPressDone,
   recordOfficeWarehouseBackPressStartAsync,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
-import { hasSafeBackHistory, safeBack } from "../../../src/lib/navigation/safeBack";
+import { hasSafeBackHistory } from "../../../src/lib/navigation/safeBack";
 
 export const OFFICE_SAFE_BACK_ROUTE = "/office";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
@@ -92,23 +93,57 @@ function useOfficeStackOwnerAudit() {
 async function handleOfficeChildBack(params: {
   sourceRoute: "/office/foreman" | "/office/warehouse";
 }) {
-  const hasHistory = hasSafeBackHistory(router);
-  const receiptExtra = {
-    sourceRoute: params.sourceRoute,
-    target: OFFICE_SAFE_BACK_ROUTE,
-    method: hasHistory ? "back" : "replace",
-    selectedMethod: hasHistory ? "back" : "replace_fallback",
-  };
-  const markerExtra = {
-    ...receiptExtra,
+  const isWarehouse = params.sourceRoute === "/office/warehouse";
+  const baseMarkerExtra = {
     owner: "office_stack_layout",
     route: params.sourceRoute,
+    target: OFFICE_SAFE_BACK_ROUTE,
+    sourceRoute: params.sourceRoute,
     handler: "safe_back_header",
   };
 
   try {
-    if (params.sourceRoute === "/office/warehouse") {
+    if (isWarehouse) {
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_handler_enter",
+        baseMarkerExtra,
+      );
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_method_select_start",
+        baseMarkerExtra,
+      );
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_can_go_back_check_start",
+        baseMarkerExtra,
+      );
+    }
+
+    const hasHistory = hasSafeBackHistory(router);
+    const receiptExtra = {
+      sourceRoute: params.sourceRoute,
+      target: OFFICE_SAFE_BACK_ROUTE,
+      method: hasHistory ? "back" : "replace",
+      selectedMethod: hasHistory ? "back" : "replace_fallback",
+    };
+    const markerExtra = {
+      ...baseMarkerExtra,
+      ...receiptExtra,
+    };
+
+    if (isWarehouse) {
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_can_go_back_check_done",
+        markerExtra,
+      );
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_method_select_done",
+        markerExtra,
+      );
       await recordOfficeWarehouseBackPressStartAsync(markerExtra);
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_receipt_mark_start",
+        markerExtra,
+      );
     }
 
     if (hasHistory) {
@@ -117,16 +152,54 @@ async function handleOfficeChildBack(params: {
       markPendingOfficeRouteReplaceReceipt(receiptExtra);
     }
 
-    safeBack(router, OFFICE_SAFE_BACK_ROUTE);
+    if (isWarehouse) {
+      await recordOfficeWarehouseBackHandlerStepAsync(
+        "office_warehouse_back_receipt_mark_done",
+        markerExtra,
+      );
+    }
 
-    if (params.sourceRoute === "/office/warehouse") {
+    if (hasHistory) {
+      if (isWarehouse) {
+        await recordOfficeWarehouseBackHandlerStepAsync(
+          "office_warehouse_back_router_back_call_start",
+          markerExtra,
+        );
+      }
+      router.back();
+      if (isWarehouse) {
+        await recordOfficeWarehouseBackHandlerStepAsync(
+          "office_warehouse_back_router_back_call_done",
+          markerExtra,
+        );
+      }
+    } else {
+      if (isWarehouse) {
+        await recordOfficeWarehouseBackHandlerStepAsync(
+          "office_warehouse_back_router_replace_call_start",
+          markerExtra,
+        );
+      }
+      router.replace(OFFICE_SAFE_BACK_ROUTE);
+      if (isWarehouse) {
+        await recordOfficeWarehouseBackHandlerStepAsync(
+          "office_warehouse_back_router_replace_call_done",
+          markerExtra,
+        );
+      }
+    }
+
+    if (isWarehouse) {
       recordOfficeWarehouseBackPressDone(markerExtra);
     }
   } catch (error) {
     recordOfficeBackPathFailure({
       error,
       errorStage: "safe_back_header_press",
-      extra: markerExtra,
+      extra: {
+        ...baseMarkerExtra,
+        sourceRoute: params.sourceRoute,
+      },
     });
     throw error;
   }
