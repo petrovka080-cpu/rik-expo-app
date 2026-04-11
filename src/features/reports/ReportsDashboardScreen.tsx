@@ -10,12 +10,10 @@ import {
   TextInput,
   View,
 } from "react-native";
-import * as FileSystem from "expo-file-system";
-import * as Sharing from "expo-sharing";
 import { LineChart, PieChart } from "react-native-chart-kit";
 import { parseErr } from "../../lib/api/_core";
-import { getFileSystemPaths } from "../../lib/fileSystemPaths";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { shareLocalTextExport } from "../../lib/exports/localTextExport";
 import { runContainedRpc } from "../../lib/api/queryBoundary";
 import { buildReportsExportPdfModel } from "../../lib/pdf/pdf.builder";
 import {
@@ -26,7 +24,6 @@ import {
 import { renderReportsExportPdfHtml } from "../../lib/pdf/pdf.template";
 import { supabase } from "../../lib/supabaseClient";
 
-const FileSystemCompat = FileSystem as any;
 const w = Dimensions.get("window").width;
 const fmt = (n: any) => Number(n ?? 0).toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 const today = () => new Date().toISOString().slice(0, 10);
@@ -117,10 +114,13 @@ export default function ReportsDashboardScreen() {
         pipe.map((x) => [humanStatus(x.status), x.cnt]),
       );
 
-      const { cacheDir } = getFileSystemPaths();
-      const path = `${cacheDir}reports.csv`;
-      await FileSystemCompat.writeAsStringAsync(path, csv, { encoding: "utf8" });
-      await Sharing.shareAsync(path);
+      const result = await shareLocalTextExport({
+        fileName: "reports.csv",
+        content: csv,
+        mimeType: "text/csv",
+        surface: "reports_csv_export",
+      });
+      if (result.ok === false) throw new Error(result.error.message);
     } catch (e: any) {
       Alert.alert("Не удалось экспортировать CSV", e.message);
     }
