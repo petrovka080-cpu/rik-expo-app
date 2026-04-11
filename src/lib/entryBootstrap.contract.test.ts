@@ -30,6 +30,15 @@ describe("entry/bootstrap contract", () => {
     expect(registerScreen).not.toContain("postAuthPathForRole");
   });
 
+  it("keeps root layout bootstrap setup failures observable", () => {
+    const rootLayout = readProjectFile("app/_layout.tsx");
+
+    expect(rootLayout).toContain("applyRootLayoutWebContainerStyle");
+    expect(rootLayout).toContain("web_root_container_style_failed");
+    expect(rootLayout).toContain("role_profile_warm_failed");
+    expect(rootLayout).not.toContain("catch {}");
+  });
+
   it("keeps entry copy readable and aligned with the unified access hub", () => {
     const indexScreen = readProjectFile("app/index.tsx");
     const loginScreen = readProjectFile("app/auth/login.tsx");

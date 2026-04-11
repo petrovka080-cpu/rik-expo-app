@@ -216,6 +216,42 @@ describe("RootLayout recovery bootstrap", () => {
     expect(mockEnsureQueueWorker).toHaveBeenCalledTimes(1);
   });
 
+  it("records background role warm failures without blocking authenticated entry", async () => {
+    mockUseSegments.mockReturnValue(["auth", "login"]);
+    mockUsePathname.mockReturnValue("/auth/login");
+    mockGetSessionSafe.mockResolvedValue({
+      session: {
+        user: { id: "user-1" },
+      },
+      degraded: false,
+    });
+    mockWarmCurrentSessionProfile.mockRejectedValue(
+      new Error("profile cache unavailable"),
+    );
+
+    await act(async () => {
+      TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith("/(tabs)/profile");
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "role_profile_warm_failed",
+        result: "error",
+        extra: expect.objectContaining({
+          caller: "root_layout",
+          errorStage: "warm_current_session_profile",
+          fallbackUsed: true,
+        }),
+      }),
+    );
+  });
+
   it("does not redirect to login when SIGNED_IN fires after initial null session (iOS race)", async () => {
     // Simulate the iOS race condition:
     // 1. getSessionSafe returns null initially (AsyncStorage is slow)

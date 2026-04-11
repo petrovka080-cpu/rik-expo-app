@@ -22,6 +22,7 @@ import { recordPlatformObservability } from "../src/lib/observability/platformOb
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
+import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWebContainer";
 
 const AUTH_EXIT_SESSION_SETTLE_WINDOW_MS = 2500;
 
@@ -182,18 +183,17 @@ export default function RootLayout() {
   // --- WEB: нормальный контейнер/скролл ---
   useEffect(() => {
     if (Platform.OS !== "web") return;
-    try {
-      document.documentElement.style.height = "100%";
-      document.body.style.height = "100%";
-      document.body.style.overflow = "auto";
-
-      const root = document.getElementById("root");
-      if (root) {
-        (root as any).style.height = "100%";
-        (root as any).style.overflow = "auto";
-      }
-    } catch {}
-  }, []);
+    const result = applyRootLayoutWebContainerStyle(document);
+    if (result.ok === false) {
+      recordAuthGateEvent("web_root_container_style_failed", "error", {
+        caller: "root_layout",
+        errorStage: "web_root_container_setup",
+        errorClass: result.errorClass,
+        errorMessage: result.errorMessage,
+        fallbackUsed: true,
+      });
+    }
+  }, [recordAuthGateEvent]);
 
   useEffect(() => {
     void clearAppCache();
@@ -225,6 +225,14 @@ export default function RootLayout() {
     try {
       await warmCurrentSessionProfile("root_layout");
     } catch (e: unknown) {
+      recordAuthCheckEvent("role_profile_warm_failed", "error", {
+        caller: "root_layout",
+        errorStage: "warm_current_session_profile",
+        errorClass: e instanceof Error ? e.name : undefined,
+        errorMessage:
+          e instanceof Error ? e.message : String(e ?? "role_profile_warm_failed"),
+        fallbackUsed: true,
+      });
       if (__DEV__) {
         console.warn(
           "[RootLayout] role load failed:",
@@ -232,7 +240,7 @@ export default function RootLayout() {
         );
       }
     }
-  }, []);
+  }, [recordAuthCheckEvent]);
 
   // --- INIT: читаем session один раз, роль — фоном ---
   useEffect(() => {
