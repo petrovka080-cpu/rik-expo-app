@@ -10,6 +10,8 @@ import {
 } from "../../app/(tabs)/office/_layout";
 
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
+const mockReset = jest.fn();
 const mockBack = jest.fn();
 const mockCanGoBack = jest.fn(() => false);
 const mockMarkPendingOfficeRouteReturnReceipt = jest.fn();
@@ -23,7 +25,9 @@ jest.mock("expo-router", () => {
     router: {
       back: (...args: unknown[]) => mockBack(...args),
       canGoBack: () => mockCanGoBack(),
+      push: (...args: unknown[]) => mockPush(...args),
       replace: (...args: unknown[]) => mockReplace(...args),
+      reset: (...args: unknown[]) => mockReset(...args),
     },
   };
 });
@@ -46,6 +50,8 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
 describe("OfficeStackLayout", () => {
   beforeEach(() => {
     mockReplace.mockReset();
+    mockPush.mockReset();
+    mockReset.mockReset();
     mockBack.mockReset();
     mockCanGoBack.mockReset();
     mockCanGoBack.mockReturnValue(false);
@@ -66,6 +72,8 @@ describe("OfficeStackLayout", () => {
 
     expect(mockBack).toHaveBeenCalledTimes(1);
     expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReset).not.toHaveBeenCalled();
     expect(mockCanGoBack).not.toHaveBeenCalled();
   });
 
@@ -83,6 +91,8 @@ describe("OfficeStackLayout", () => {
 
     expect(mockBack).toHaveBeenCalledTimes(1);
     expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReset).not.toHaveBeenCalled();
     expect(mockCanGoBack).not.toHaveBeenCalled();
   });
 
@@ -106,6 +116,29 @@ describe("OfficeStackLayout", () => {
     });
     expect(mockBack).toHaveBeenCalledTimes(1);
     expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReset).not.toHaveBeenCalled();
+  });
+
+  it("keeps the shared office child back handler synchronous and single-path", () => {
+    const source = fs.readFileSync(
+      path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
+      "utf8",
+    );
+    const handlerStart = source.indexOf("function handleOfficeChildBack");
+    const handlerEnd = source.indexOf("function createSafeOfficeBackButton");
+    const handlerSource = source.slice(handlerStart, handlerEnd);
+
+    expect(handlerStart).toBeGreaterThanOrEqual(0);
+    expect(handlerEnd).toBeGreaterThan(handlerStart);
+    expect(handlerSource).not.toMatch(/\basync\b/);
+    expect(handlerSource).not.toMatch(/\bawait\b/);
+    expect(handlerSource).not.toContain("safeBack(");
+    expect(handlerSource).not.toContain("canGoBack");
+    expect(handlerSource).not.toContain("router.replace");
+    expect(handlerSource).not.toContain("router.push");
+    expect(handlerSource).not.toMatch(/\.reset\(/);
+    expect(handlerSource.match(/router\.back\(/g) ?? []).toHaveLength(1);
   });
 
   it("does not emit warehouse-specific back markers", () => {
@@ -141,8 +174,14 @@ describe("OfficeStackLayout", () => {
     expect(source).toContain("headerLeft: safeOfficeChildBackButtons.warehouse");
     expect(source).not.toContain("renderSafeOfficeWarehouseBackButton");
     expect(source).not.toContain("isWarehouse");
+    expect(source).not.toContain('sourceRoute === "/office/warehouse"');
+    expect(source).not.toContain('sourceRoute !== "/office/warehouse"');
+    expect(source).not.toMatch(/if\s*\([^)]*warehouse/i);
+    expect(source).not.toMatch(/switch\s*\([^)]*warehouse/i);
     expect(source).not.toContain("replace_safety_override");
     expect(source).not.toContain("router.replace(OFFICE_SAFE_BACK_ROUTE)");
+    expect(source).not.toContain("router.push");
+    expect(source).not.toMatch(/\.reset\(/);
     expect(source).not.toContain("recordOfficeWarehouseBackHandlerStepAsync");
     expect(source).not.toContain("recordOfficeWarehouseBackPressStartAsync");
     expect(source).not.toContain("recordOfficeWarehouseBackPressDone");

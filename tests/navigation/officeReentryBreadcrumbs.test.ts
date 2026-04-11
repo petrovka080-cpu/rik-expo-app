@@ -473,9 +473,9 @@ describe("office reentry breadcrumbs", () => {
       identity: "office_index_route:abc123",
       pathname: "/office",
       segments: "(tabs)/office",
-      sourceRoute: "/office/warehouse",
+      sourceRoute: "/office/legacy-replace",
       target: "/office",
-      reason: "warehouse_explicit_office_return",
+      reason: "legacy_replace_receipt",
     });
     recordOfficeRouteOwnerFocus({
       owner: "office_index_route",
@@ -715,6 +715,88 @@ describe("office reentry breadcrumbs", () => {
       "office_tab_owner_blur",
       "office_tab_owner_unmount",
     ]);
+  });
+
+  it("records the same healthy warm-return marker classes for warehouse, foreman, and accountant", () => {
+    const recordHealthyWarmReturn = (params: {
+      owner: string;
+      route: string;
+      wrappedRoute: string;
+    }) => {
+      recordOfficeChildBeforeRemove({
+        owner: params.owner,
+        route: params.route,
+        identity: `${params.owner}:abc123`,
+        pathname: params.route,
+        segments: `(tabs)${params.route}`,
+        routeWrapper: "office_child_screen_entry",
+        wrappedRoute: params.wrappedRoute,
+        action: "GO_BACK",
+      });
+      recordOfficeChildUnmount({
+        owner: params.owner,
+        route: params.route,
+        identity: `${params.owner}:abc123`,
+        pathname: "/office",
+        segments: "(tabs)/office",
+        routeWrapper: "office_child_screen_entry",
+        wrappedRoute: params.wrappedRoute,
+      });
+      recordOfficePostReturnFocus({
+        owner: "office_hub",
+        focusCycle: 2,
+        sourceRoute: params.route,
+      });
+      recordOfficeLoadingShellSkippedOnFocusReturn({
+        owner: "office_hub",
+        focusCycle: 2,
+        reason: "ttl_fresh",
+        sourceRoute: params.route,
+      });
+      recordOfficeFocusRefreshSkipped({
+        owner: "office_hub",
+        focusCycle: 2,
+        reason: "ttl_fresh",
+        sourceRoute: params.route,
+      });
+    };
+
+    recordHealthyWarmReturn({
+      owner: "office_foreman_route",
+      route: "/office/foreman",
+      wrappedRoute: "/foreman",
+    });
+    const foreman = getPlatformObservabilityEvents().map((event) => event.event);
+
+    resetPlatformObservabilityEvents();
+    recordHealthyWarmReturn({
+      owner: "office_accountant_route",
+      route: "/office/accountant",
+      wrappedRoute: "/accountant",
+    });
+    const accountant = getPlatformObservabilityEvents().map((event) => event.event);
+
+    resetPlatformObservabilityEvents();
+    recordHealthyWarmReturn({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      wrappedRoute: "/warehouse",
+    });
+    const warehouse = getPlatformObservabilityEvents().map((event) => event.event);
+
+    const expectedWarmReturn = [
+      "office_child_before_remove",
+      "office_child_unmount",
+      "office_post_return_focus",
+      "office_loading_shell_skipped_on_focus_return",
+      "office_focus_refresh_skipped",
+    ];
+    expect(foreman).toEqual(expectedWarmReturn);
+    expect(accountant).toEqual(expectedWarmReturn);
+    expect(warehouse).toEqual(expectedWarmReturn);
+    expect(warehouse).not.toContain("office_tab_owner_unmount");
+    expect(warehouse).not.toContain("office_route_owner_unmount");
+    expect(warehouse).not.toContain("office_route_replace_received");
   });
 
   it("records office route scope passive sequence on non-office paths", () => {

@@ -142,5 +142,6 @@ describe("office index route scope", () => {
         target: "/office",
       }),
     );
+    expect(officeBreadcrumbs.recordOfficeRouteReplaceReceived).not.toHaveBeenCalled();
   });
 });
