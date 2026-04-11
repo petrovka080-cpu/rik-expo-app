@@ -857,22 +857,24 @@ function PdfViewerScreen() {
         });
         if (!isMountedRef.current) return;
         if (trigger === "primary") {
-          completePdfNativeHandoff(
+          const completed = completePdfNativeHandoff(
             nativeHandoffGuardRef.current,
             handoffKey,
             "success",
           );
+          if (!completed) return;
         }
         setNativeHandoffCompleted(true);
         markReady();
       } catch (error) {
         if (!isMountedRef.current) return;
         if (trigger === "primary") {
-          completePdfNativeHandoff(
+          const completed = completePdfNativeHandoff(
             nativeHandoffGuardRef.current,
             handoffKey,
             "failure",
           );
+          if (!completed) return;
         }
         const message = error instanceof Error ? error.message : String(error);
         console.error("[pdf-viewer] native_handoff_error", {

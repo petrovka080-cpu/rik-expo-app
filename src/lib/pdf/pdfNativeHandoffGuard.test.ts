@@ -47,4 +47,19 @@ describe("pdfNativeHandoffGuard", () => {
     completePdfNativeHandoff(state, key, "failure");
     expect(beginPdfNativeHandoff(state, key)).toBe("start");
   });
+
+  it("ignores stale completion after a viewer cycle reset", () => {
+    const state = createPdfNativeHandoffGuardState();
+    const key = createPdfNativeHandoffKey({
+      assetId: "asset-1",
+      sessionId: "session-1",
+      uri: "https://example.com/file.pdf",
+    });
+
+    expect(beginPdfNativeHandoff(state, key)).toBe("start");
+    resetPdfNativeHandoffGuard(state);
+
+    expect(completePdfNativeHandoff(state, key, "success")).toBe(false);
+    expect(beginPdfNativeHandoff(state, key)).toBe("start");
+  });
 });

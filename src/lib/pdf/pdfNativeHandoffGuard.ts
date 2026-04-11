@@ -37,13 +37,14 @@ export function completePdfNativeHandoff(
   state: PdfNativeHandoffGuardState,
   handoffKey: string,
   result: "success" | "failure",
-) {
-  if (state.inFlightKey === handoffKey) {
-    state.inFlightKey = "";
-  }
+): boolean {
+  if (state.inFlightKey !== handoffKey) return false;
+
+  state.inFlightKey = "";
   if (result === "success") {
     state.settledKey = handoffKey;
   }
+  return true;
 }
 
 export function resetPdfNativeHandoffGuard(
