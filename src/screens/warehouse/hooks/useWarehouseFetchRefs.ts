@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
+import { normalizeAppError } from "../../../lib/errors/appError";
+import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import {
   isWarehouseScreenActive,
   useWarehouseFallbackActiveRef,
@@ -26,6 +28,34 @@ type RefreshState = {
 
 type RefreshStateRef = {
   current: RefreshState;
+};
+
+type RefreshMeta = {
+  surface: string;
+  event: string;
+  sourceKind: string;
+};
+
+const recordQueuedRefreshFailure = (error: unknown, meta: RefreshMeta) => {
+  const appError = normalizeAppError(
+    error,
+    `warehouse.${meta.surface}.${meta.event}.queued_rerun`,
+  );
+  recordPlatformObservability({
+    screen: "warehouse",
+    surface: meta.surface,
+    category: "reload",
+    event: meta.event,
+    result: "error",
+    sourceKind: meta.sourceKind,
+    errorStage: "queued_rerun",
+    errorClass: appError.code,
+    errorMessage: appError.message,
+    extra: {
+      context: appError.context,
+      severity: appError.severity,
+    },
+  });
 };
 
 export function useWarehouseFetchRefs(params: {
@@ -80,6 +110,7 @@ export function useWarehouseFetchRefs(params: {
     (
       stateRef: RefreshStateRef,
       refresh: (force?: boolean) => Promise<void>,
+      meta: RefreshMeta,
       options?: { force?: boolean; queueOnOverlap?: boolean },
     ) => {
       if (!isWarehouseScreenActive(screenActiveRef)) {
@@ -113,7 +144,11 @@ export function useWarehouseFetchRefs(params: {
               const rerunForce = stateRef.current.rerunForce;
               stateRef.current.rerunQueued = false;
               stateRef.current.rerunForce = false;
-              void start(rerunForce);
+              void start(rerunForce).catch((error) => {
+                if (isWarehouseScreenActive(screenActiveRef)) {
+                  recordQueuedRefreshFailure(error, meta);
+                }
+              });
             } else if (!isWarehouseScreenActive(screenActiveRef)) {
               stateRef.current.rerunQueued = false;
               stateRef.current.rerunForce = false;
@@ -137,6 +172,11 @@ export function useWarehouseFetchRefs(params: {
       return runRefresh(
         incomingRefreshRef,
         () => fetchToReceiveRef.current(0, false, "refresh"),
+        {
+          surface: "incoming_materials",
+          event: "refresh_to_receive",
+          sourceKind: "fetchToReceive",
+        },
         { queueOnOverlap: true },
       );
     },
@@ -144,9 +184,18 @@ export function useWarehouseFetchRefs(params: {
   );
   const callFetchStock = useCallback(() => {
     if (!isWarehouseScreenActive(screenActiveRef)) return Promise.resolve();
-    return runRefresh(stockRefreshRef, () => fetchStockRef.current(), {
-      queueOnOverlap: true,
-    });
+    return runRefresh(
+      stockRefreshRef,
+      () => fetchStockRef.current(),
+      {
+        surface: "stock",
+        event: "refresh_stock",
+        sourceKind: "fetchStock",
+      },
+      {
+        queueOnOverlap: true,
+      },
+    );
   }, [runRefresh, screenActiveRef]);
   const callFetchReqHeads = useCallback(
     (pageIndex?: number, forceRefresh?: boolean) => {
@@ -156,6 +205,11 @@ export function useWarehouseFetchRefs(params: {
       return runRefresh(
         reqHeadsRefreshRef,
         (nextForce) => fetchReqHeadsRef.current(0, nextForce),
+        {
+          surface: "req_heads",
+          event: "refresh_req_heads",
+          sourceKind: "fetchReqHeads",
+        },
         { force: !!forceRefresh, queueOnOverlap: true },
       );
     },
@@ -163,9 +217,18 @@ export function useWarehouseFetchRefs(params: {
   );
   const callFetchReports = useCallback(() => {
     if (!isWarehouseScreenActive(screenActiveRef)) return Promise.resolve();
-    return runRefresh(reportsRefreshRef, () => fetchReportsRef.current(), {
-      queueOnOverlap: true,
-    });
+    return runRefresh(
+      reportsRefreshRef,
+      () => fetchReportsRef.current(),
+      {
+        surface: "reports",
+        event: "refresh_reports",
+        sourceKind: "fetchReports",
+      },
+      {
+        queueOnOverlap: true,
+      },
+    );
   }, [runRefresh, screenActiveRef]);
 
   return {

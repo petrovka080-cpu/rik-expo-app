@@ -5,6 +5,7 @@ import { useWarehouseFetchRefs } from "./useWarehouseFetchRefs";
 import { useWarehouseReportsData } from "./useWarehouseReportsData";
 import { useWarehouseReqItemsData } from "./useWarehouseReqItemsData";
 import type { WarehouseScreenActiveRef } from "./useWarehouseScreenActivity";
+import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import {
   apiFetchIncomingReports,
   apiFetchReports,
@@ -20,6 +21,10 @@ jest.mock("../warehouse.requests.read", () => ({
   apiFetchReqItems: jest.fn(),
 }));
 
+jest.mock("../../../lib/observability/platformObservability", () => ({
+  recordPlatformObservability: jest.fn(),
+}));
+
 const mockApiFetchReports = apiFetchReports as jest.MockedFunction<
   typeof apiFetchReports
 >;
@@ -30,6 +35,10 @@ const mockApiFetchIncomingReports =
 const mockApiFetchReqItems = apiFetchReqItems as jest.MockedFunction<
   typeof apiFetchReqItems
 >;
+const mockRecordPlatformObservability =
+  recordPlatformObservability as jest.MockedFunction<
+    typeof recordPlatformObservability
+  >;
 
 const createActiveRef = (active = true): WarehouseScreenActiveRef => ({
   current: active,
@@ -79,6 +88,63 @@ describe("warehouse post-unmount guards", () => {
     });
 
     expect(fetchStock).toHaveBeenCalledTimes(1);
+  });
+
+  it("records queued refresh rerun failures instead of leaving them unhandled", async () => {
+    const activeRef = createActiveRef(true);
+    let releaseStock!: () => void;
+    const fetchStock = jest
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            releaseStock = resolve;
+          }),
+      )
+      .mockRejectedValueOnce(new Error("queued stock refresh failed"));
+    let api: ReturnType<typeof useWarehouseFetchRefs> | null = null;
+
+    function Harness() {
+      api = useWarehouseFetchRefs({
+        fetchToReceive: jest.fn(async () => undefined),
+        fetchStock,
+        fetchReqHeads: jest.fn(async () => undefined),
+        fetchReports: jest.fn(async () => undefined),
+        screenActiveRef: activeRef,
+      });
+      return null;
+    }
+
+    act(() => {
+      TestRenderer.create(<Harness />);
+    });
+
+    const first = api?.callFetchStock() ?? Promise.resolve();
+    const joined = api?.callFetchStock() ?? Promise.resolve();
+    expect(fetchStock).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      releaseStock();
+      await first;
+      await joined;
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(fetchStock).toHaveBeenCalledTimes(2);
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "warehouse",
+        surface: "stock",
+        category: "reload",
+        event: "refresh_stock",
+        result: "error",
+        sourceKind: "fetchStock",
+        errorStage: "queued_rerun",
+        errorClass: "error",
+        errorMessage: "queued stock refresh failed",
+      }),
+    );
   });
 
   it("does not commit warehouse reports after the screen becomes inactive", async () => {
