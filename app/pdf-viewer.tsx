@@ -37,6 +37,7 @@ import {
   type PdfViewerState as ViewerState,
 } from "../src/lib/pdf/pdfViewerContract";
 import { createPdfViewerRenderInstanceKey } from "../src/lib/pdf/pdfViewerRenderLifecycle";
+import { shouldCommitPdfViewerRenderEvent } from "../src/lib/pdf/pdfViewerRenderEventGuard";
 import { resolvePdfViewerWebRenderUriCleanup } from "../src/lib/pdf/pdfViewerWebRenderUriCleanup";
 import {
   failPdfOpenVisible,
@@ -304,6 +305,7 @@ function PdfViewerScreen() {
   const webRenderUriRef = React.useRef<string | null>(null);
   const openSignalSettledRef = React.useRef(false);
   const webIframeRenderLoggedKeyRef = React.useRef("");
+  const activeRenderInstanceKeyRef = React.useRef("");
   const nativeHandoffGuardRef = React.useRef(
     createPdfNativeHandoffGuardState(),
   );
@@ -1262,6 +1264,19 @@ function PdfViewerScreen() {
     });
   }, [asset, loadAttempt, resolvedSource, sessionId, webEmbeddedUri]);
 
+  React.useLayoutEffect(() => {
+    activeRenderInstanceKeyRef.current = renderInstanceKey;
+  }, [renderInstanceKey]);
+
+  const isActiveRenderEvent = React.useCallback(
+    (eventRenderInstanceKey: string) =>
+      shouldCommitPdfViewerRenderEvent({
+        activeRenderInstanceKey: activeRenderInstanceKeyRef.current,
+        eventRenderInstanceKey,
+      }),
+    [],
+  );
+
   const showChrome = Platform.OS === "web" ? true : chromeVisible;
   const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
   const headerHeight =
@@ -1576,6 +1591,7 @@ function PdfViewerScreen() {
                 title={asset.title || "PDF"}
                 src={webEmbeddedUri || undefined}
                 onLoad={() => {
+                  if (!isActiveRenderEvent(renderInstanceKey)) return;
                   console.info("[pdf-viewer] web_iframe_load", {
                     sessionId,
                     documentType: asset.documentType,
@@ -1585,6 +1601,7 @@ function PdfViewerScreen() {
                   markReady();
                 }}
                 onError={() => {
+                  if (!isActiveRenderEvent(renderInstanceKey)) return;
                   console.error("[pdf-viewer] web_iframe_error", {
                     sessionId,
                     documentType: asset.documentType,
@@ -1632,6 +1649,7 @@ function PdfViewerScreen() {
               });
             }}
             onLoadEnd={() => {
+              if (!isActiveRenderEvent(renderInstanceKey)) return;
               if (renderFailedRef.current) return;
               console.info("[pdf-viewer] native_webview_load_end", {
                 sessionId,
@@ -1662,6 +1680,7 @@ function PdfViewerScreen() {
               markReady();
             }}
             onError={(event: { nativeEvent?: { description?: string } }) => {
+              if (!isActiveRenderEvent(renderInstanceKey)) return;
               const message = String(
                 event?.nativeEvent?.description ||
                   "Native PDF viewer failed to load.",
@@ -1700,6 +1719,7 @@ function PdfViewerScreen() {
             onHttpError={(event: {
               nativeEvent?: { statusCode?: number; description?: string };
             }) => {
+              if (!isActiveRenderEvent(renderInstanceKey)) return;
               const statusCode = Number(event?.nativeEvent?.statusCode);
               const description = String(
                 event?.nativeEvent?.description || "",
