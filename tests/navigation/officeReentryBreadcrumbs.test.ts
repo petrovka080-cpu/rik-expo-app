@@ -1,5 +1,9 @@
 import {
   buildOfficeReentryBreadcrumbsText,
+  clearPendingOfficeRouteReturnReceipt,
+  consumePendingOfficeRouteReturnReceipt,
+  markPendingOfficeRouteReturnReceipt,
+  peekPendingOfficeRouteReturnReceipt,
   recordOfficeBackPathFailure,
   recordOfficeBootstrapInitialDone,
   recordOfficeBootstrapInitialStart,
@@ -58,6 +62,10 @@ import {
   recordOfficeTabOwnerFocus,
   recordOfficeTabOwnerUnmount,
   recordOfficeWarehouseBeforeRemove,
+  recordOfficeWarehouseBackPressDone,
+  recordOfficeWarehouseBackPressStart,
+  recordOfficeWarehouseCleanupDone,
+  recordOfficeWarehouseCleanupStart,
   recordOfficeWarehouseEntryFailure,
   recordOfficeWarehouseEntryFocusDone,
   recordOfficeWarehouseEntryFocusStart,
@@ -103,6 +111,30 @@ describe("office reentry breadcrumbs", () => {
     ).toBe(
       "2026-04-09T10:00:00.000Z | office_native_layout_done | success | route=/office | owner=office_hub | focusCycle=3 | callback=section_layout:members | reason=ttl_fresh | probe=no_layout_callbacks",
     );
+  });
+
+  it("keeps the office return receipt readable until the return focus settles", () => {
+    clearPendingOfficeRouteReturnReceipt();
+
+    const receipt = {
+      sourceRoute: "/office/warehouse",
+      target: "/office",
+      method: "back",
+      selectedMethod: "back",
+    };
+
+    markPendingOfficeRouteReturnReceipt(receipt);
+
+    expect(peekPendingOfficeRouteReturnReceipt()).toEqual(receipt);
+    expect(consumePendingOfficeRouteReturnReceipt()).toEqual(receipt);
+    expect(peekPendingOfficeRouteReturnReceipt()).toEqual(receipt);
+
+    clearPendingOfficeRouteReturnReceipt({
+      ...receipt,
+      owner: "office_index_route",
+    });
+
+    expect(peekPendingOfficeRouteReturnReceipt()).toBeNull();
   });
 
   it("formats route-owner diagnostics with identity context", () => {
@@ -191,6 +223,26 @@ describe("office reentry breadcrumbs", () => {
       ]),
     ).toBe(
       "2026-04-09T10:08:00.000Z | office_warehouse_runtime_state_write_skipped | skipped | route=/office/warehouse | owner=warehouseman_fio | source=mount_bootstrap | writeTarget=bootstrap_state | visibleScope=local_state | skippedScope=shared_store | reason=mount_bootstrap_local_only",
+    );
+  });
+
+  it("formats warehouse cleanup diagnostics with UI state context", () => {
+    expect(
+      buildOfficeReentryBreadcrumbsText([
+        {
+          at: "2026-04-10T10:08:00.000Z",
+          marker: "office_warehouse_cleanup_start",
+          result: "success",
+          extra: {
+            route: "/office/warehouse",
+            owner: "office_warehouse_route",
+            reason: "unmount",
+            hadOpenUi: true,
+          },
+        },
+      ]),
+    ).toBe(
+      "2026-04-10T10:08:00.000Z | office_warehouse_cleanup_start | success | route=/office/warehouse | owner=office_warehouse_route | hadOpenUi=true | reason=unmount",
     );
   });
 
@@ -462,6 +514,24 @@ describe("office reentry breadcrumbs", () => {
   });
 
   it("records the expected office warehouse return capture sequence", () => {
+    recordOfficeWarehouseBackPressStart({
+      owner: "office_stack_layout",
+      route: "/office/warehouse",
+      sourceRoute: "/office/warehouse",
+      target: "/office",
+      method: "back",
+      selectedMethod: "back",
+      handler: "safe_back_header",
+    });
+    recordOfficeWarehouseBackPressDone({
+      owner: "office_stack_layout",
+      route: "/office/warehouse",
+      sourceRoute: "/office/warehouse",
+      target: "/office",
+      method: "back",
+      selectedMethod: "back",
+      handler: "safe_back_header",
+    });
     recordOfficeWarehouseBeforeRemove({
       owner: "office_warehouse_route",
       route: "/office/warehouse",
@@ -490,6 +560,18 @@ describe("office reentry breadcrumbs", () => {
       identity: "office_warehouse_route:ghi789",
       wrappedRoute: "/warehouse",
       routeWrapper: "office_child_screen_entry",
+    });
+    recordOfficeWarehouseCleanupStart({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      reason: "unmount",
+      hadOpenUi: true,
+    });
+    recordOfficeWarehouseCleanupDone({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      reason: "unmount",
+      hadOpenUi: true,
     });
     recordOfficeChildUnmount({
       owner: "office_warehouse_route",
@@ -533,9 +615,13 @@ describe("office reentry breadcrumbs", () => {
     });
 
     expect(getPlatformObservabilityEvents().map((event) => event.event)).toEqual([
+      "office_warehouse_back_press_start",
+      "office_warehouse_back_press_done",
       "office_warehouse_before_remove",
       "office_child_before_remove",
       "office_warehouse_unmount",
+      "office_warehouse_cleanup_start",
+      "office_warehouse_cleanup_done",
       "office_child_unmount",
       "office_index_after_return_mount",
       "office_index_after_return_focus",

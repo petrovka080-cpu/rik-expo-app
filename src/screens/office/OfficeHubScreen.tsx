@@ -28,6 +28,7 @@ import {
   formatOfficePostReturnProbe,
   getOfficePostReturnProbe,
   normalizeOfficePostReturnProbe,
+  peekPendingOfficeRouteReturnReceipt,
   recordOfficeBootstrapInitialDone,
   recordOfficeBootstrapInitialStart,
   recordOfficeFocusRefreshDone,
@@ -637,8 +638,18 @@ type OfficePostReturnSubtreeBoundaryState = {
 };
 
 type OfficeHubScreenProps = {
+  officeReturnReceipt?: Record<string, unknown> | null;
   routeScopeActive?: boolean;
 };
+
+function isWarehouseOfficeReturnReceipt(
+  receipt: Record<string, unknown> | null | undefined,
+) {
+  return (
+    receipt?.sourceRoute === "/office/warehouse" &&
+    receipt?.target === "/office"
+  );
+}
 
 class OfficePostReturnSubtreeBoundary extends React.Component<
   OfficePostReturnSubtreeBoundaryProps,
@@ -672,6 +683,7 @@ class OfficePostReturnSubtreeBoundary extends React.Component<
 }
 
 export default function OfficeHubScreen({
+  officeReturnReceipt = null,
   routeScopeActive = true,
 }: OfficeHubScreenProps) {
   const initialBootstrapSnapshotRef = useRef<OfficeHubBootstrapSnapshot | null>(
@@ -733,6 +745,10 @@ export default function OfficeHubScreen({
   const focusRefreshInFlightRef = useRef<
     Promise<OfficeAccessScreenData | null> | null
   >(null);
+  const processedWarmOfficeReturnReceiptRef = useRef<Record<
+    string,
+    unknown
+  > | null>(null);
   const lastSuccessfulLoadAtRef = useRef<number>(
     initialBootstrapSnapshot?.loadedAt ?? 0,
   );
@@ -1449,6 +1465,36 @@ export default function OfficeHubScreen({
         };
       }
 
+      const pendingOfficeReturnReceipt = peekPendingOfficeRouteReturnReceipt();
+      const warmOfficeReturnReceipt = isWarehouseOfficeReturnReceipt(
+        officeReturnReceipt,
+      )
+        ? officeReturnReceipt
+        : pendingOfficeReturnReceipt;
+
+      if (
+        isWarehouseOfficeReturnReceipt(warmOfficeReturnReceipt) &&
+        processedWarmOfficeReturnReceiptRef.current !== warmOfficeReturnReceipt
+      ) {
+        processedWarmOfficeReturnReceiptRef.current = warmOfficeReturnReceipt;
+        const ageMs = Date.now() - lastSuccessfulLoadAtRef.current;
+        const warmReturnExtra = {
+          ...focusExtra,
+          reason: "ttl_fresh",
+          ageMs,
+          ttlMs: OFFICE_FOCUS_REFRESH_TTL_MS,
+          freshnessSource: "warehouse_return_receipt",
+          sourceRoute: warmOfficeReturnReceipt.sourceRoute,
+          target: warmOfficeReturnReceipt.target,
+        };
+        recordOfficeLoadingShellSkippedOnFocusReturn(warmReturnExtra);
+        recordOfficeFocusRefreshReason(warmReturnExtra);
+        recordOfficeFocusRefreshSkipped(warmReturnExtra);
+        return () => {
+          cancelPostReturnIdle();
+        };
+      }
+
       const ageMs = Date.now() - lastSuccessfulLoadAtRef.current;
       if (
         lastSuccessfulLoadAtRef.current > 0 &&
@@ -1496,6 +1542,7 @@ export default function OfficeHubScreen({
       cancelPostReturnIdle,
       disableFocusPostCommit,
       loadScreen,
+      officeReturnReceipt,
       recordPostReturnSubtreeDone,
       recordPostReturnSubtreeStart,
       routeScopeActive,

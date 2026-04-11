@@ -80,6 +80,8 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeChildEntryFocus: jest.fn(),
   recordOfficeChildEntryMount: jest.fn(),
   recordOfficeChildUnmount: jest.fn(),
+  recordOfficeWarehouseCleanupDone: jest.fn(),
+  recordOfficeWarehouseCleanupStart: jest.fn(),
   recordOfficeWarehouseBeforeRemove: jest.fn(),
   recordOfficeWarehouseUnmount: jest.fn(),
 }));
@@ -149,6 +151,33 @@ describe("office warehouse child route entry", () => {
     });
     expect(officeBreadcrumbs.recordOfficeWarehouseBeforeRemove).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildBeforeRemove).toHaveBeenCalled();
+    expect(mockWarehouseUiStoreState.setIsFioConfirmVisible).not.toHaveBeenCalled();
+    expect(mockWarehouseUiStoreState.setIsRecipientModalVisible).not.toHaveBeenCalled();
+    expect(mockWarehouseUiStoreState.setPickModal).not.toHaveBeenCalled();
+    expect(mockWarehouseUiStoreState.setItemsModal).not.toHaveBeenCalled();
+    expect(mockWarehouseUiStoreState.setIssueDetailsId).not.toHaveBeenCalled();
+    expect(mockWarehouseUiStoreState.setIncomingDetailsId).not.toHaveBeenCalled();
+    expect(mockWarehouseUiStoreState.setRepPeriodOpen).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseCleanupStart).not.toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseCleanupDone).not.toHaveBeenCalled();
+
+    act(() => {
+      renderer?.unmount();
+    });
+    expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeChildUnmount).toHaveBeenCalled();
+    expect(officeBreadcrumbs.recordOfficeWarehouseCleanupStart).toHaveBeenCalledWith({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      reason: "unmount",
+      hadOpenUi: true,
+    });
+    expect(officeBreadcrumbs.recordOfficeWarehouseCleanupDone).toHaveBeenCalledWith({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      reason: "unmount",
+      hadOpenUi: true,
+    });
     expect(mockWarehouseUiStoreState.setIsFioConfirmVisible).toHaveBeenCalledWith(false);
     expect(mockWarehouseUiStoreState.setIsRecipientModalVisible).toHaveBeenCalledWith(false);
     expect(mockWarehouseUiStoreState.setPickModal).toHaveBeenCalledWith({ what: null });
@@ -156,12 +185,6 @@ describe("office warehouse child route entry", () => {
     expect(mockWarehouseUiStoreState.setIssueDetailsId).toHaveBeenCalledWith(null);
     expect(mockWarehouseUiStoreState.setIncomingDetailsId).toHaveBeenCalledWith(null);
     expect(mockWarehouseUiStoreState.setRepPeriodOpen).toHaveBeenCalledWith(false);
-
-    act(() => {
-      renderer?.unmount();
-    });
-    expect(officeBreadcrumbs.recordOfficeWarehouseUnmount).toHaveBeenCalled();
-    expect(officeBreadcrumbs.recordOfficeChildUnmount).toHaveBeenCalled();
   });
 
   it("does not emit a fake unmount-remount cycle on a plain rerender", () => {

@@ -40,6 +40,10 @@ export type OfficeReentryMarker =
   | "office_warehouse_entry_failed"
   | "office_warehouse_before_remove"
   | "office_warehouse_unmount"
+  | "office_warehouse_back_press_start"
+  | "office_warehouse_back_press_done"
+  | "office_warehouse_cleanup_start"
+  | "office_warehouse_cleanup_done"
   | "office_warehouse_runtime_bootstrap_start"
   | "office_warehouse_runtime_bootstrap_done"
   | "office_warehouse_runtime_bootstrap_skipped"
@@ -164,6 +168,7 @@ let writeQueue = Promise.resolve();
 let officePostReturnProbe: OfficePostReturnProbe[] = ["all"];
 let pendingOfficeRouteReplaceReceipt: Record<string, unknown> | null = null;
 let pendingOfficeRouteReturnReceipt: Record<string, unknown> | null = null;
+let recentOfficeRouteReturnReceipt: Record<string, unknown> | null = null;
 
 function trimText(value: unknown) {
   const text = String(value ?? "").trim();
@@ -354,6 +359,10 @@ function recordOfficeLifecycleMarker(params: {
     | "office_warehouse_scope_skip_reason"
     | "office_warehouse_before_remove"
     | "office_warehouse_unmount"
+    | "office_warehouse_back_press_start"
+    | "office_warehouse_back_press_done"
+    | "office_warehouse_cleanup_start"
+    | "office_warehouse_cleanup_done"
     | "office_warehouse_runtime_bootstrap_start"
     | "office_warehouse_runtime_bootstrap_done"
     | "office_warehouse_runtime_bootstrap_skipped"
@@ -658,6 +667,42 @@ export function recordOfficeWarehouseBeforeRemove(
 export function recordOfficeWarehouseUnmount(extra?: Record<string, unknown>) {
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_unmount",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackPressStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_press_start",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseBackPressDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_back_press_done",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseCleanupStart(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_cleanup_start",
+    extra,
+  });
+}
+
+export function recordOfficeWarehouseCleanupDone(
+  extra?: Record<string, unknown>,
+) {
+  recordOfficeLifecycleMarker({
+    marker: "office_warehouse_cleanup_done",
     extra,
   });
 }
@@ -1165,8 +1210,10 @@ export function setOfficePostReturnProbe(
 export function markPendingOfficeRouteReplaceReceipt(
   extra?: Record<string, unknown>,
 ) {
-  pendingOfficeRouteReplaceReceipt = { ...(extra ?? {}) };
-  pendingOfficeRouteReturnReceipt = { ...(extra ?? {}) };
+  const receipt = { ...(extra ?? {}) };
+  pendingOfficeRouteReplaceReceipt = receipt;
+  pendingOfficeRouteReturnReceipt = receipt;
+  recentOfficeRouteReturnReceipt = receipt;
 }
 
 export function consumePendingOfficeRouteReplaceReceipt() {
@@ -1178,13 +1225,54 @@ export function consumePendingOfficeRouteReplaceReceipt() {
 export function markPendingOfficeRouteReturnReceipt(
   extra?: Record<string, unknown>,
 ) {
-  pendingOfficeRouteReturnReceipt = { ...(extra ?? {}) };
+  const receipt = { ...(extra ?? {}) };
+  pendingOfficeRouteReturnReceipt = receipt;
+  recentOfficeRouteReturnReceipt = receipt;
 }
 
 export function consumePendingOfficeRouteReturnReceipt() {
   const next = pendingOfficeRouteReturnReceipt;
   pendingOfficeRouteReturnReceipt = null;
+  if (next) {
+    recentOfficeRouteReturnReceipt = next;
+  }
   return next;
+}
+
+export function peekPendingOfficeRouteReturnReceipt() {
+  return pendingOfficeRouteReturnReceipt ?? recentOfficeRouteReturnReceipt;
+}
+
+function isSameOfficeRouteReturnReceipt(
+  left: Record<string, unknown> | null | undefined,
+  right: Record<string, unknown> | null | undefined,
+) {
+  if (!left || !right) return false;
+  return (
+    left === right ||
+    (left.sourceRoute === right.sourceRoute &&
+      left.target === right.target &&
+      left.method === right.method &&
+      left.selectedMethod === right.selectedMethod)
+  );
+}
+
+export function clearPendingOfficeRouteReturnReceipt(
+  receipt?: Record<string, unknown> | null,
+) {
+  const target = receipt ?? recentOfficeRouteReturnReceipt;
+  if (!target) {
+    pendingOfficeRouteReturnReceipt = null;
+    recentOfficeRouteReturnReceipt = null;
+    return;
+  }
+
+  if (isSameOfficeRouteReturnReceipt(pendingOfficeRouteReturnReceipt, target)) {
+    pendingOfficeRouteReturnReceipt = null;
+  }
+  if (isSameOfficeRouteReturnReceipt(recentOfficeRouteReturnReceipt, target)) {
+    recentOfficeRouteReturnReceipt = null;
+  }
 }
 
 export function formatOfficePostReturnProbe(
@@ -1244,6 +1332,8 @@ export function buildOfficeReentryBreadcrumbsText(
       if (item.extra?.source) parts.push(`source=${String(item.extra.source)}`);
       if (item.extra?.writeTarget)
         parts.push(`writeTarget=${String(item.extra.writeTarget)}`);
+      if (item.extra?.hadOpenUi != null)
+        parts.push(`hadOpenUi=${String(item.extra.hadOpenUi)}`);
       if (item.extra?.visibleScope)
         parts.push(`visibleScope=${String(item.extra.visibleScope)}`);
       if (item.extra?.skippedScope)

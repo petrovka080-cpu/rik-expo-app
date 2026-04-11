@@ -31,9 +31,12 @@ jest.mock("../../src/screens/office/OfficeHubScreen", () => {
   return {
     __esModule: true,
     default: function MockOfficeHubScreen(props: {
+      officeReturnReceipt?: Record<string, unknown> | null;
       routeScopeActive?: boolean;
     }) {
       return ReactRuntime.createElement(View, {
+        officeReturnSourceRoute:
+          props.officeReturnReceipt?.sourceRoute ?? "none",
         testID: props.routeScopeActive
           ? "office-hub-screen-active"
           : "office-hub-screen-inactive",
@@ -43,6 +46,7 @@ jest.mock("../../src/screens/office/OfficeHubScreen", () => {
 });
 
 jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
+  clearPendingOfficeRouteReturnReceipt: jest.fn(),
   consumePendingOfficeRouteReturnReceipt: jest.fn(() => null),
   recordOfficeIndexAfterReturnFocus: jest.fn(),
   recordOfficeIndexAfterReturnMount: jest.fn(),
@@ -106,5 +110,37 @@ describe("office index route scope", () => {
     expect(officeBreadcrumbs.recordOfficeRouteScopeActive).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeRouteOwnerIdentity).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeReentryStart).toHaveBeenCalled();
+  });
+
+  it("passes a consumed warehouse return receipt into OfficeHubScreen", () => {
+    mockUsePathname.mockReturnValue("/office");
+    mockUseSegments.mockReturnValue(["(tabs)", "office"]);
+    (
+      officeBreadcrumbs.consumePendingOfficeRouteReturnReceipt as jest.Mock
+    ).mockReturnValueOnce({
+      sourceRoute: "/office/warehouse",
+      target: "/office",
+      method: "back",
+      selectedMethod: "back",
+    });
+
+    let renderer: TestRenderer.ReactTestRenderer | null = null;
+    act(() => {
+      renderer = TestRenderer.create(<OfficeIndexRoute />);
+    });
+
+    expect(
+      renderer?.root.findAllByProps({
+        officeReturnSourceRoute: "/office/warehouse",
+      }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      officeBreadcrumbs.clearPendingOfficeRouteReturnReceipt,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceRoute: "/office/warehouse",
+        target: "/office",
+      }),
+    );
   });
 });

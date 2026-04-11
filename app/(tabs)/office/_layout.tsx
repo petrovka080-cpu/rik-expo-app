@@ -5,10 +5,13 @@ import { Stack, router, useNavigation, usePathname, useSegments } from "expo-rou
 import {
   markPendingOfficeRouteReplaceReceipt,
   markPendingOfficeRouteReturnReceipt,
+  recordOfficeBackPathFailure,
   recordOfficeLayoutBeforeRemove,
   recordOfficeRouteOwnerIdentity,
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
+  recordOfficeWarehouseBackPressDone,
+  recordOfficeWarehouseBackPressStart,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
 import { hasSafeBackHistory, safeBack } from "../../../src/lib/navigation/safeBack";
 
@@ -96,14 +99,37 @@ function handleOfficeChildBack(params: {
     method: hasHistory ? "back" : "replace",
     selectedMethod: hasHistory ? "back" : "replace_fallback",
   };
+  const markerExtra = {
+    ...receiptExtra,
+    owner: "office_stack_layout",
+    route: params.sourceRoute,
+    handler: "safe_back_header",
+  };
 
-  if (hasHistory) {
-    markPendingOfficeRouteReturnReceipt(receiptExtra);
-  } else {
-    markPendingOfficeRouteReplaceReceipt(receiptExtra);
+  try {
+    if (params.sourceRoute === "/office/warehouse") {
+      recordOfficeWarehouseBackPressStart(markerExtra);
+    }
+
+    if (hasHistory) {
+      markPendingOfficeRouteReturnReceipt(receiptExtra);
+    } else {
+      markPendingOfficeRouteReplaceReceipt(receiptExtra);
+    }
+
+    safeBack(router, OFFICE_SAFE_BACK_ROUTE);
+
+    if (params.sourceRoute === "/office/warehouse") {
+      recordOfficeWarehouseBackPressDone(markerExtra);
+    }
+  } catch (error) {
+    recordOfficeBackPathFailure({
+      error,
+      errorStage: "safe_back_header_press",
+      extra: markerExtra,
+    });
+    throw error;
   }
-
-  safeBack(router, OFFICE_SAFE_BACK_ROUTE);
 }
 
 function createSafeOfficeBackButton(

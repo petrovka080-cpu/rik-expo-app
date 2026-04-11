@@ -3,6 +3,7 @@ import { useFocusEffect, usePathname, useSegments } from "expo-router";
 
 import OfficeHubScreen from "../../../src/screens/office/OfficeHubScreen";
 import {
+  clearPendingOfficeRouteReturnReceipt,
   consumePendingOfficeRouteReturnReceipt,
   recordOfficeIndexAfterReturnFocus,
   recordOfficeIndexAfterReturnMount,
@@ -72,6 +73,10 @@ function OfficeIndexRoute() {
   const pathname = usePathname();
   const segments = useSegments();
   const isExactOfficePath = pathname === OFFICE_EXACT_PATH;
+  const [officeReturnReceipt, setOfficeReturnReceipt] = React.useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const identityRef = useRef(
     `office_index_route:${Math.random().toString(36).slice(2, 10)}`,
   );
@@ -153,6 +158,7 @@ function OfficeIndexRoute() {
       }
       afterReturnMountRef.current = afterReturnExtra;
       afterReturnFocusRef.current = afterReturnExtra;
+      setOfficeReturnReceipt(afterReturnExtra);
     }
   }, [buildRouteExtra, isExactOfficePath, pathname, segmentsLabel]);
 
@@ -181,6 +187,7 @@ function OfficeIndexRoute() {
       if (afterReturnExtra) {
         recordOfficeIndexAfterReturnFocus(afterReturnExtra);
         afterReturnFocusRef.current = null;
+        clearPendingOfficeRouteReturnReceipt(afterReturnExtra);
       }
       recordOfficeRouteOwnerFocus(buildRouteExtra());
       return () => {
@@ -198,7 +205,10 @@ function OfficeIndexRoute() {
 
   return (
     <OfficeReentryCrashBoundary>
-      <OfficeHubScreen routeScopeActive={isExactOfficePath} />
+      <OfficeHubScreen
+        officeReturnReceipt={officeReturnReceipt}
+        routeScopeActive={isExactOfficePath}
+      />
     </OfficeReentryCrashBoundary>
   );
 }

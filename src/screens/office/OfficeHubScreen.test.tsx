@@ -50,6 +50,7 @@ const mockRecordOfficeNativeInteractionStart = jest.fn();
 const mockRecordOfficeNativeKeyboardEvent = jest.fn();
 const mockRecordOfficeNativeLayoutDone = jest.fn();
 const mockRecordOfficeNativeLayoutStart = jest.fn();
+const mockPeekPendingOfficeRouteReturnReceipt = jest.fn();
 let mockOfficePostReturnProbe = ["all"];
 const mockFocusEffectCallbacks = new Set<() => void | (() => void)>();
 
@@ -124,6 +125,8 @@ jest.mock("../../lib/navigation/officeReentryBreadcrumbs", () => ({
     );
     return normalized.length ? normalized : ["all"];
   },
+  peekPendingOfficeRouteReturnReceipt: (...args: unknown[]) =>
+    mockPeekPendingOfficeRouteReturnReceipt(...args),
   recordOfficeReentryComponentMount: (...args: unknown[]) =>
     mockRecordOfficeReentryComponentMount(...args),
   recordOfficeBootstrapInitialDone: (...args: unknown[]) =>
@@ -354,6 +357,8 @@ describe("OfficeHubScreen", () => {
     mockRecordOfficeNativeKeyboardEvent.mockReset();
     mockRecordOfficeNativeLayoutDone.mockReset();
     mockRecordOfficeNativeLayoutStart.mockReset();
+    mockPeekPendingOfficeRouteReturnReceipt.mockReset();
+    mockPeekPendingOfficeRouteReturnReceipt.mockReturnValue(null);
 
     interactionSpy = jest
       .spyOn(InteractionManager, "runAfterInteractions")
@@ -1146,6 +1151,162 @@ describe("OfficeHubScreen", () => {
       );
       expect(mockRecordOfficeLoadingShellEnter).toHaveBeenCalledTimes(1);
       expect(mockRecordOfficeBootstrapInitialStart).toHaveBeenCalledTimes(1);
+    } finally {
+      dateNowSpy.mockRestore();
+    }
+  });
+
+  it("keeps warehouse child return warm even when the office ttl age has expired", async () => {
+    const dateNowSpy = jest.spyOn(Date, "now");
+    let now = 1_000_000;
+    dateNowSpy.mockImplementation(() => now);
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    try {
+      let renderer: ReactTestRenderer;
+      await act(async () => {
+        renderer = TestRenderer.create(<OfficeHubScreen />);
+      });
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+
+      mockRecordOfficeFocusRefreshReason.mockClear();
+      mockRecordOfficeFocusRefreshSkipped.mockClear();
+      mockRecordOfficeFocusRefreshStart.mockClear();
+      mockRecordOfficeFocusRefreshDone.mockClear();
+      mockRecordOfficeLoadingShellSkippedOnFocusReturn.mockClear();
+
+      now += 61_000;
+
+      await act(async () => {
+        renderer!.update(
+          <OfficeHubScreen
+            officeReturnReceipt={{
+              sourceRoute: "/office/warehouse",
+              target: "/office",
+              method: "back",
+              selectedMethod: "back",
+            }}
+          />,
+        );
+      });
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+      expect(
+        mockRecordOfficeLoadingShellSkippedOnFocusReturn,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          reason: "ttl_fresh",
+          ttlMs: 60000,
+          freshnessSource: "warehouse_return_receipt",
+          sourceRoute: "/office/warehouse",
+        }),
+      );
+      expect(mockRecordOfficeFocusRefreshReason).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          reason: "ttl_fresh",
+          ttlMs: 60000,
+          freshnessSource: "warehouse_return_receipt",
+          sourceRoute: "/office/warehouse",
+        }),
+      );
+      expect(mockRecordOfficeFocusRefreshSkipped).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          reason: "ttl_fresh",
+          ttlMs: 60000,
+          freshnessSource: "warehouse_return_receipt",
+          sourceRoute: "/office/warehouse",
+        }),
+      );
+      expect(mockRecordOfficeFocusRefreshStart).not.toHaveBeenCalled();
+      expect(mockRecordOfficeFocusRefreshDone).not.toHaveBeenCalled();
+    } finally {
+      dateNowSpy.mockRestore();
+    }
+  });
+
+  it("uses a pending warehouse return receipt before route state props settle", async () => {
+    const dateNowSpy = jest.spyOn(Date, "now");
+    let now = 1_000_000;
+    dateNowSpy.mockImplementation(() => now);
+    mockLoadOfficeAccessScreenData.mockResolvedValue(directorData);
+
+    try {
+      await act(async () => {
+        TestRenderer.create(<OfficeHubScreen />);
+      });
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+
+      mockRecordOfficeFocusRefreshReason.mockClear();
+      mockRecordOfficeFocusRefreshSkipped.mockClear();
+      mockRecordOfficeFocusRefreshStart.mockClear();
+      mockRecordOfficeFocusRefreshDone.mockClear();
+      mockRecordOfficeLoadingShellSkippedOnFocusReturn.mockClear();
+
+      now += 61_000;
+      mockPeekPendingOfficeRouteReturnReceipt.mockReturnValue({
+        sourceRoute: "/office/warehouse",
+        target: "/office",
+        method: "back",
+        selectedMethod: "back",
+      });
+
+      await triggerFocusEffect();
+
+      expect(mockLoadOfficeAccessScreenData).toHaveBeenCalledTimes(1);
+      expect(
+        mockRecordOfficeLoadingShellSkippedOnFocusReturn,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          reason: "ttl_fresh",
+          ttlMs: 60000,
+          freshnessSource: "warehouse_return_receipt",
+          sourceRoute: "/office/warehouse",
+        }),
+      );
+      expect(mockRecordOfficeFocusRefreshReason).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          reason: "ttl_fresh",
+          ttlMs: 60000,
+          freshnessSource: "warehouse_return_receipt",
+          sourceRoute: "/office/warehouse",
+        }),
+      );
+      expect(mockRecordOfficeFocusRefreshSkipped).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: "office_hub",
+          focusCycle: 1,
+          reason: "ttl_fresh",
+          ttlMs: 60000,
+          freshnessSource: "warehouse_return_receipt",
+          sourceRoute: "/office/warehouse",
+        }),
+      );
+      expect(mockRecordOfficeFocusRefreshStart).not.toHaveBeenCalled();
+      expect(mockRecordOfficeFocusRefreshDone).not.toHaveBeenCalled();
     } finally {
       dateNowSpy.mockRestore();
     }

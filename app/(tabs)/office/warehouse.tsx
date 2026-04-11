@@ -3,6 +3,8 @@ import React, { useCallback, useRef } from "react";
 import { WarehouseScreen } from "../warehouse";
 import { useOfficeChildRouteAudit } from "./_childRouteAudit";
 import {
+  recordOfficeWarehouseCleanupDone,
+  recordOfficeWarehouseCleanupStart,
   recordOfficeWarehouseBeforeRemove,
   recordOfficeWarehouseUnmount,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
@@ -11,9 +13,8 @@ import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBound
 
 function OfficeWarehouseRoute() {
   const cleanupDoneRef = useRef(false);
-  const cleanupRouteUiState = useCallback((reason: "before_remove" | "unmount") => {
+  const cleanupRouteUiState = useCallback((reason: "unmount") => {
     if (cleanupDoneRef.current) return;
-    cleanupDoneRef.current = true;
 
     const state = useWarehouseUiStore.getState();
     const hadOpenUi =
@@ -25,6 +26,14 @@ function OfficeWarehouseRoute() {
       state.incomingDetailsId != null ||
       state.repPeriodOpen;
 
+    recordOfficeWarehouseCleanupStart({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      reason,
+      hadOpenUi,
+    });
+
+    cleanupDoneRef.current = true;
     state.setIsFioConfirmVisible(false);
     state.setIsRecipientModalVisible(false);
     state.setPickModal({ what: null });
@@ -32,6 +41,13 @@ function OfficeWarehouseRoute() {
     state.setIssueDetailsId(null);
     state.setIncomingDetailsId(null);
     state.setRepPeriodOpen(false);
+
+    recordOfficeWarehouseCleanupDone({
+      owner: "office_warehouse_route",
+      route: "/office/warehouse",
+      reason,
+      hadOpenUi,
+    });
 
     if (hadOpenUi) {
       console.info("[warehouse:officeRoute] suppressed post-unmount", {
@@ -48,7 +64,6 @@ function OfficeWarehouseRoute() {
     diagnostics: {
       onBeforeRemove: (extra) => {
         recordOfficeWarehouseBeforeRemove(extra);
-        cleanupRouteUiState("before_remove");
       },
       onUnmount: (extra) => {
         recordOfficeWarehouseUnmount(extra);
