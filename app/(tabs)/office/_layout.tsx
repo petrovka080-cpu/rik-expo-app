@@ -11,7 +11,7 @@ import {
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
   recordOfficeWarehouseBackPressDone,
-  recordOfficeWarehouseBackPressStart,
+  recordOfficeWarehouseBackPressStartAsync,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
 import { hasSafeBackHistory, safeBack } from "../../../src/lib/navigation/safeBack";
 
@@ -89,7 +89,7 @@ function useOfficeStackOwnerAudit() {
   }, [navigation, pathname, segmentsLabel]);
 }
 
-function handleOfficeChildBack(params: {
+async function handleOfficeChildBack(params: {
   sourceRoute: "/office/foreman" | "/office/warehouse";
 }) {
   const hasHistory = hasSafeBackHistory(router);
@@ -108,7 +108,7 @@ function handleOfficeChildBack(params: {
 
   try {
     if (params.sourceRoute === "/office/warehouse") {
-      recordOfficeWarehouseBackPressStart(markerExtra);
+      await recordOfficeWarehouseBackPressStartAsync(markerExtra);
     }
 
     if (hasHistory) {
@@ -140,7 +140,9 @@ function createSafeOfficeBackButton(
       <HeaderBackButton
         {...props}
         label={OFFICE_BACK_LABEL}
-        onPress={() => handleOfficeChildBack({ sourceRoute })}
+        onPress={() => {
+          void handleOfficeChildBack({ sourceRoute });
+        }}
         testID="office-safe-back"
       />
     );

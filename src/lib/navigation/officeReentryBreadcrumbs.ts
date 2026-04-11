@@ -268,6 +268,35 @@ function recordOfficeReentryMarker(input: OfficeReentryBreadcrumbInput) {
   recordOfficeReentryBreadcrumbs([{ ...input, extra }]);
 }
 
+async function recordOfficeReentryMarkerAsync(
+  input: OfficeReentryBreadcrumbInput,
+) {
+  const extra = {
+    route: OFFICE_ROUTE,
+    ...(input.extra ?? {}),
+  };
+
+  recordPlatformObservability({
+    screen: "office",
+    surface: "office_reentry",
+    category: "ui",
+    event: input.marker,
+    result:
+      input.result === "error" ||
+      input.result === "cache_hit" ||
+      input.result === "joined_inflight" ||
+      input.result === "queued_rerun" ||
+      input.result === "skipped"
+        ? input.result
+        : "success",
+    errorStage: trimText(input.errorStage) ?? undefined,
+    errorClass: trimText(input.errorClass) ?? undefined,
+    errorMessage: trimText(input.errorMessage) ?? undefined,
+    extra,
+  });
+  await recordOfficeReentryBreadcrumbsAsync([{ ...input, extra }]);
+}
+
 export function recordOfficeReentryStart(extra?: Record<string, unknown>) {
   recordOfficeReentryMarker({
     marker: "office_reentry_start",
@@ -676,6 +705,16 @@ export function recordOfficeWarehouseBackPressStart(
 ) {
   recordOfficeLifecycleMarker({
     marker: "office_warehouse_back_press_start",
+    extra,
+  });
+}
+
+export async function recordOfficeWarehouseBackPressStartAsync(
+  extra?: Record<string, unknown>,
+) {
+  await recordOfficeReentryMarkerAsync({
+    marker: "office_warehouse_back_press_start",
+    result: "success",
     extra,
   });
 }
