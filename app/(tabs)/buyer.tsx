@@ -7,6 +7,7 @@ import {
   TextInput
 } from 'react-native';
 import { useLatest } from "../../src/lib/useLatest";
+import { recordSwallowedError } from "../../src/lib/observability/swallowedError";
 import IconSquareButton from "../../src/ui/IconSquareButton";
 import SendPrimaryButton from "../../src/ui/SendPrimaryButton";
 import { pickFileAny } from "../../src/lib/filePick";
@@ -293,7 +294,18 @@ export function BuyerScreen() {
 
   const tabsScrollRef = useRef<ScrollView | null>(null);
   const scrollTabsToStart = useCallback((animated = true) => {
-    try { tabsScrollRef.current?.scrollTo?.({ x: 0, y: 0, animated }); } catch { }
+    try {
+      tabsScrollRef.current?.scrollTo?.({ x: 0, y: 0, animated });
+    } catch (error) {
+      recordSwallowedError({
+        screen: "buyer",
+        surface: "buyer_tabs",
+        event: "buyer_tabs_scroll_to_start_failed",
+        error,
+        sourceKind: "ui:tabs",
+        errorStage: "scroll_to_start",
+      });
+    }
   }, []);
 
   const [propDocAttached, setPropDocAttached] = useState<{ name: string; url?: string } | null>(null);
