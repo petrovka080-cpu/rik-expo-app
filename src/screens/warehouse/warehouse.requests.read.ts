@@ -7,9 +7,7 @@ import {
 import type { ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import {
   WAREHOUSE_REQ_HEADS_CANONICAL_SOURCE_KIND,
-  WAREHOUSE_REQ_HEADS_RPC_SOURCE_KIND,
   WAREHOUSE_REQ_ITEMS_CANONICAL_SOURCE_KIND,
-  WAREHOUSE_REQ_ITEMS_VIEW_SOURCE_KIND,
   clearWarehouseRequestSourceTrace,
   readWarehouseRequestSourceTrace,
   recordReqHeadsTrace,
@@ -20,16 +18,11 @@ import {
   type WarehouseReqHeadsSourceMeta,
   type WarehouseReqHeadsWindowMeta,
   type WarehouseReqItemsFetchResult,
-  type WarehouseReqItemsSourceMeta,
 } from "./warehouse.requests.read.shared";
 import {
   apiFetchReqHeadsCanonicalRaw,
-  apiFetchReqHeadsCompatibilityRaw,
   apiFetchReqItemsCanonicalRaw,
-  apiFetchReqItemsCompatibilityRaw,
-  apiFetchReqItemsDegradedDirectRaw,
 } from "./warehouse.requests.read.canonical";
-import { apiFetchReqHeadsDegradedRaw } from "./warehouse.requests.read.repair";
 
 export type {
   WarehouseReqHeadsFetchResult,
@@ -82,9 +75,8 @@ export async function apiFetchReqHeadsWindow(
       },
     });
     return result;
-  } catch (canonicalError) {
-    const canonicalMessage =
-      canonicalError instanceof Error ? canonicalError.message : String(canonicalError ?? "unknown");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error ?? "unknown");
     recordReqHeadsTrace({
       result: "error",
       sourcePath: "canonical",
@@ -92,8 +84,8 @@ export async function apiFetchReqHeadsWindow(
       page,
       pageSize,
       rowCount: null,
-      contractVersion: "request_lookup_v2",
-      reason: canonicalMessage,
+      contractVersion: null,
+      reason: message,
     });
     recordPlatformObservability({
       screen: "warehouse",
@@ -102,101 +94,17 @@ export async function apiFetchReqHeadsWindow(
       event: "fetch_req_heads_canonical_failed",
       result: "error",
       sourceKind: WAREHOUSE_REQ_HEADS_CANONICAL_SOURCE_KIND,
-      fallbackUsed: true,
-      errorStage: "fetch_req_heads_canonical",
-      errorClass: canonicalError instanceof Error ? canonicalError.name : undefined,
-      errorMessage: canonicalMessage,
+      fallbackUsed: false,
+      errorStage: "fetch_req_heads_canonical_rpc",
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: message,
       extra: {
         page,
         pageSize,
         pageOffset: Math.max(0, page * pageSize),
       },
     });
-
-    try {
-      const compatibility = await apiFetchReqHeadsCompatibilityRaw(
-        supabase,
-        page,
-        pageSize,
-        canonicalMessage,
-      );
-      recordReqHeadsTrace({
-        result: "success",
-        sourcePath: compatibility.sourceMeta.sourcePath,
-        sourceKind: compatibility.sourceMeta.sourceKind,
-        page,
-        pageSize,
-        rowCount: compatibility.rows.length,
-        contractVersion: compatibility.sourceMeta.contractVersion,
-        reason: canonicalMessage,
-      });
-      observation.success({
-        rowCount: compatibility.rows.length,
-        sourceKind: compatibility.sourceMeta.sourceKind,
-        fallbackUsed: true,
-        extra: {
-          page,
-          pageSize,
-          pageOffset: compatibility.meta.pageOffset,
-          scopeKey: compatibility.meta.scopeKey,
-          contractVersion: compatibility.meta.contractVersion,
-          generatedAt: compatibility.meta.generatedAt,
-          primaryOwner: compatibility.sourceMeta.primaryOwner,
-          sourcePath: compatibility.sourceMeta.sourcePath,
-          totalRowCount: compatibility.meta.totalRowCount,
-          hasMore: compatibility.meta.hasMore,
-          fallbackReason: canonicalMessage,
-          integrityMode: compatibility.integrityState.mode,
-        },
-      });
-      return compatibility;
-    } catch (compatibilityError) {
-      const compatibilityMessage =
-        compatibilityError instanceof Error
-          ? compatibilityError.message
-          : String(compatibilityError ?? "unknown");
-      recordReqHeadsTrace({
-        result: "error",
-        sourcePath: "compatibility",
-        sourceKind: WAREHOUSE_REQ_HEADS_RPC_SOURCE_KIND,
-        page,
-        pageSize,
-        rowCount: null,
-        contractVersion: "v4",
-        reason: compatibilityMessage,
-      });
-      const degraded = await apiFetchReqHeadsDegradedRaw(supabase, page, pageSize, compatibilityMessage);
-      recordReqHeadsTrace({
-        result: "success",
-        sourcePath: degraded.sourceMeta.sourcePath,
-        sourceKind: degraded.sourceMeta.sourceKind,
-        page,
-        pageSize,
-        rowCount: degraded.rows.length,
-        contractVersion: degraded.sourceMeta.contractVersion,
-        reason: compatibilityMessage,
-      });
-      observation.success({
-        rowCount: degraded.rows.length,
-        sourceKind: degraded.sourceMeta.sourceKind,
-        fallbackUsed: true,
-        extra: {
-          page,
-          pageSize,
-          pageOffset: degraded.meta.pageOffset,
-          scopeKey: degraded.meta.scopeKey,
-          contractVersion: degraded.meta.contractVersion,
-          generatedAt: degraded.meta.generatedAt,
-          primaryOwner: degraded.sourceMeta.primaryOwner,
-          sourcePath: degraded.sourceMeta.sourcePath,
-          totalRowCount: degraded.meta.totalRowCount,
-          hasMore: degraded.meta.hasMore,
-          fallbackReason: compatibilityMessage,
-          integrityMode: degraded.integrityState.mode,
-        },
-      });
-      return degraded;
-    }
+    throw error;
   }
 }
 
@@ -249,11 +157,11 @@ export async function apiFetchReqItemsDetailed(
     return {
       rows: [],
       sourceMeta: {
-        primaryOwner: "canonical_requests",
+        primaryOwner: "canonical_issue_items_rpc",
         sourcePath: "canonical",
         fallbackUsed: false,
         sourceKind: WAREHOUSE_REQ_ITEMS_CANONICAL_SOURCE_KIND,
-        contractVersion: "request_lookup_v2",
+        contractVersion: "v1",
         reason: null,
       },
       meta: {
@@ -261,7 +169,7 @@ export async function apiFetchReqItemsDetailed(
         returnedRowCount: 0,
         scopeKey: `canonical:warehouse_req_items:${requestIdValue}`,
         generatedAt: new Date().toISOString(),
-        contractVersion: "request_lookup_v2",
+        contractVersion: "v1",
       },
     };
   }
@@ -278,64 +186,18 @@ export async function apiFetchReqItemsDetailed(
       reason: canonical.sourceMeta.reason,
     });
     return canonical;
-  } catch (canonicalError) {
-    const canonicalMessage =
-      canonicalError instanceof Error ? canonicalError.message : String(canonicalError ?? "unknown");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error ?? "unknown");
     recordReqItemsTrace({
       result: "error",
       sourcePath: "canonical",
       sourceKind: WAREHOUSE_REQ_ITEMS_CANONICAL_SOURCE_KIND,
       requestId: requestIdValue,
       rowCount: null,
-      contractVersion: "request_lookup_v2",
-      reason: canonicalMessage,
+      contractVersion: null,
+      reason: message,
     });
-    try {
-      const compatibility = await apiFetchReqItemsCompatibilityRaw(
-        supabase,
-        requestIdValue,
-        canonicalMessage,
-      );
-      recordReqItemsTrace({
-        result: "success",
-        sourcePath: compatibility.sourceMeta.sourcePath,
-        sourceKind: compatibility.sourceMeta.sourceKind,
-        requestId: requestIdValue,
-        rowCount: compatibility.rows.length,
-        contractVersion: compatibility.sourceMeta.contractVersion,
-        reason: canonicalMessage,
-      });
-      return compatibility;
-    } catch (compatibilityError) {
-      const compatibilityMessage =
-        compatibilityError instanceof Error
-          ? compatibilityError.message
-          : String(compatibilityError ?? "unknown");
-      recordReqItemsTrace({
-        result: "error",
-        sourcePath: "compatibility",
-        sourceKind: WAREHOUSE_REQ_ITEMS_VIEW_SOURCE_KIND,
-        requestId: requestIdValue,
-        rowCount: null,
-        contractVersion: "view_ui_v1",
-        reason: compatibilityMessage,
-      });
-      const degraded = await apiFetchReqItemsDegradedDirectRaw(
-        supabase,
-        requestIdValue,
-        compatibilityMessage,
-      );
-      recordReqItemsTrace({
-        result: "success",
-        sourcePath: degraded.sourceMeta.sourcePath,
-        sourceKind: degraded.sourceMeta.sourceKind,
-        requestId: requestIdValue,
-        rowCount: degraded.rows.length,
-        contractVersion: degraded.sourceMeta.contractVersion,
-        reason: compatibilityMessage,
-      });
-      return degraded;
-    }
+    throw error;
   }
 }
 

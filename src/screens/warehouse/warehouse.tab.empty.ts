@@ -1,15 +1,15 @@
 import type { WarehouseReqHeadsIntegrityState, WarehouseReqHeadsListState } from "./warehouse.types";
 
 export function selectWarehouseIncomingEmptyText() {
-  return "Нет записей в очереди склада.";
+  return "РќРµС‚ Р·Р°РїРёСЃРµР№ РІ РѕС‡РµСЂРµРґРё СЃРєР»Р°РґР°.";
 }
 
 export function selectWarehouseStockUnsupportedText() {
-  return "Раздел «Склад факт» требует view v_warehouse_fact или RPC с фактическими остатками.";
+  return "Р Р°Р·РґРµР» В«РЎРєР»Р°Рґ С„Р°РєС‚В» С‚СЂРµР±СѓРµС‚ view v_warehouse_fact РёР»Рё RPC СЃ С„Р°РєС‚РёС‡РµСЃРєРёРјРё РѕСЃС‚Р°С‚РєР°РјРё.";
 }
 
 export function selectWarehouseStockEmptyText() {
-  return "Пока нет данных по складу.";
+  return "РџРѕРєР° РЅРµС‚ РґР°РЅРЅС‹С… РїРѕ СЃРєР»Р°РґСѓ.";
 }
 
 export function selectWarehouseIssueEmptyText(
@@ -17,28 +17,19 @@ export function selectWarehouseIssueEmptyText(
   listState?: WarehouseReqHeadsListState,
   integrityState?: WarehouseReqHeadsIntegrityState,
 ) {
-  if (loading) return "Загрузка...";
-  if (listState?.publishState === "degraded") {
-    return "Не удалось получить свежую очередь выдачи.\nПоказано последнее сохранённое состояние.";
-  }
+  if (loading) return "Р—Р°РіСЂСѓР·РєР°...";
   if (listState?.publishState === "error" || integrityState?.mode === "error") {
-    return "Не удалось обновить очередь выдачи.\nПотяни вниз, чтобы повторить.";
+    return "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ РѕС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РїРѕРІС‚РѕСЂРёС‚СЊ.";
   }
-  return "Нет заявок для выдачи.\nПотяни вниз, чтобы обновить.";
+  return "РќРµС‚ Р·Р°СЏРІРѕРє РґР»СЏ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РѕР±РЅРѕРІРёС‚СЊ.";
 }
 
 export function selectWarehouseIssueBannerText(
   listState?: WarehouseReqHeadsListState,
   integrityState?: WarehouseReqHeadsIntegrityState,
 ) {
-  if (listState?.publishState === "degraded") {
-    return "Показано устаревшее состояние: последние успешно загруженные заявки. Актуализация временно недоступна.";
-  }
   if (listState?.publishState === "error" || integrityState?.mode === "error") {
-    return "Очередь выдачи временно не обновлена.";
-  }
-  if (integrityState?.mode === "stale_last_known_good") {
-    return "Показаны последние загруженные заявки. Актуализация временно недоступна.";
+    return "РћС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё РІСЂРµРјРµРЅРЅРѕ РЅРµ РѕР±РЅРѕРІР»РµРЅР°.";
   }
   return null;
 }

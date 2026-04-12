@@ -13,10 +13,10 @@ import {
   fetchDirectorFinanceSupplierScopeV2ViaRpc,
   normalizeFinSupplierInput,
   type FinKindSupplierRow,
-  type FinSpendSummary,
   type FinSupplierInput,
   type FinSupplierPanelState,
 } from "./director.finance";
+import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import type { DirectorFinanceSupplierSelection } from "./directorUi.store";
 
 type BusyLike = { isBusy: (key: string) => boolean };
@@ -29,7 +29,7 @@ type Deps = {
   finPage: "home" | "debt" | "spend" | "kind" | "supplier";
   finFrom: string | null;
   finTo: string | null;
-  finSpendSummary: FinSpendSummary;
+  finScope: DirectorFinanceCanonicalScope | null;
   finLoading: boolean;
   finKindName: string;
   finSupplierSelection: DirectorFinanceSupplierSelection;
@@ -53,7 +53,7 @@ export function useDirectorFinancePanel({
   finPage,
   finFrom,
   finTo,
-  finSpendSummary,
+  finScope,
   finLoading,
   finKindName,
   finSupplierSelection,
@@ -76,10 +76,11 @@ export function useDirectorFinancePanel({
 
   const finKindList = useMemo<FinKindSupplierRow[]>(() => {
     const kindName = financeText(finKindName);
+    const spendBreakdown = finScope?.spendBreakdown ?? null;
     if (!kindName) return [];
-    if (kindName === OVERPAY_KIND) return finSpendSummary.overpaySuppliers;
-    return finSpendSummary.kindRows.find((row) => row.kind === kindName)?.suppliers ?? [];
-  }, [finKindName, finSpendSummary]);
+    if (kindName === OVERPAY_KIND) return spendBreakdown?.overpaySuppliers ?? [];
+    return spendBreakdown?.kindRows.find((row) => row.kind === kindName)?.suppliers ?? [];
+  }, [finKindName, finScope]);
 
   const loadSupplierScope = useCallback(
     async (selection: DirectorFinanceSupplierSelection, opts?: { suppressErrors?: boolean }) => {

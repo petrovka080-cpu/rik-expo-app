@@ -23,8 +23,6 @@ export function useWarehouseIssueFlow(params: {
   fetchStock: () => Promise<void>;
   fetchReqItems: (rid: string) => Promise<void>;
   fetchReqHeads: () => Promise<void>;
-  getAvailableByCode: (code: string) => number;
-  getAvailableByCodeUom: (code: string, uomId: string | null) => number;
   getMaterialNameByCode: (code: string) => string | null;
   clearStockPick: () => void;
   clearReqPick: () => void;
@@ -49,8 +47,6 @@ export function useWarehouseIssueFlow(params: {
     fetchStock,
     fetchReqItems,
     fetchReqHeads,
-    getAvailableByCode,
-    getAvailableByCodeUom,
     getMaterialNameByCode,
     clearStockPick,
     clearReqPick,
@@ -108,8 +104,6 @@ export function useWarehouseIssueFlow(params: {
       fetchStock,
       fetchReqItems,
       fetchReqHeads,
-      getAvailableByCode,
-      getAvailableByCodeUom,
       getMaterialNameByCode,
       setIssueBusy: setIssueBusyIfActive,
       setIssueMsg: setIssueMsgIfActive,
@@ -125,8 +119,6 @@ export function useWarehouseIssueFlow(params: {
     fetchReqHeads,
     fetchReqItems,
     fetchStock,
-    getAvailableByCode,
-    getAvailableByCodeUom,
     getMaterialNameByCode,
     objectLabel,
     recipientText,

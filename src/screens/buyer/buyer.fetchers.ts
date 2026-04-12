@@ -8,7 +8,9 @@ import {
 import {
   adaptBuyerSummaryInboxScopeEnvelope,
   adaptBuyerSummaryBucketsScopeEnvelope,
+  withBuyerBucketCanonicalCount,
   type BuyerProposalBucketRow,
+  type BuyerSummaryBucketCounts,
 } from "./buyer.fetchers.data";
 
 export type { BuyerProposalBucketRow } from "./buyer.fetchers.data";
@@ -65,6 +67,7 @@ export type BuyerBucketsLoadResult = {
   pending: BuyerProposalBucketRow[];
   approved: BuyerProposalBucketRow[];
   rejected: BuyerProposalBucketRow[];
+  counts: BuyerSummaryBucketCounts;
   proposalIds: string[];
   meta?: Record<string, unknown>;
   sourceMeta: {
@@ -315,9 +318,10 @@ async function loadBuyerBucketsDataRpcInternal(params: {
 
     const envelope = adaptBuyerSummaryBucketsScopeEnvelope(data);
     const result: BuyerBucketsLoadResult = {
-      pending: envelope.pending,
-      approved: envelope.approved,
-      rejected: envelope.rejected,
+      pending: withBuyerBucketCanonicalCount(envelope.pending, envelope.counts.pendingCount),
+      approved: withBuyerBucketCanonicalCount(envelope.approved, envelope.counts.approvedCount),
+      rejected: withBuyerBucketCanonicalCount(envelope.rejected, envelope.counts.rejectedCount),
+      counts: envelope.counts,
       proposalIds: uniqIds([
         ...envelope.pending.map((row) => row.id),
         ...envelope.approved.map((row) => row.id),
@@ -341,6 +345,9 @@ async function loadBuyerBucketsDataRpcInternal(params: {
         pending: result.pending.length,
         approved: result.approved.length,
         rejected: result.rejected.length,
+        pendingCount: result.counts.pendingCount,
+        approvedCount: result.counts.approvedCount,
+        rejectedCount: result.counts.rejectedCount,
         proposalIds: result.proposalIds.length,
         primaryOwner: "rpc_scope_v1",
         bucketCount: [result.pending, result.approved, result.rejected].filter((rows) => rows.length > 0).length,
@@ -388,6 +395,9 @@ export async function loadBuyerBucketsData(params: {
         pending: result.pending.length,
         approved: result.approved.length,
         rejected: result.rejected.length,
+        pendingCount: result.counts.pendingCount,
+        approvedCount: result.counts.approvedCount,
+        rejectedCount: result.counts.rejectedCount,
         proposalIds: result.proposalIds.length,
         primaryOwner: result.sourceMeta.primaryOwner,
         backendFirstPrimary: result.sourceMeta.backendFirstPrimary,

@@ -57,8 +57,6 @@ const createIssueActions = () => {
     fetchStock,
     fetchReqItems,
     fetchReqHeads,
-    getAvailableByCode: () => 10,
-    getAvailableByCodeUom: () => 10,
     getMaterialNameByCode: (code) => `Material ${code}`,
     setIssueBusy,
     setIssueMsg,

@@ -10,12 +10,25 @@ export type BuyerProposalBucketRow = {
   items_cnt?: number;
 };
 
+const BUYER_BUCKET_CANONICAL_COUNT_KEY = "__buyerCanonicalTotalCount";
+
+export type BuyerProposalBucketRows = BuyerProposalBucketRow[] & {
+  [BUYER_BUCKET_CANONICAL_COUNT_KEY]?: number;
+};
+
+export type BuyerSummaryBucketCounts = {
+  pendingCount: number;
+  approvedCount: number;
+  rejectedCount: number;
+};
+
 export type BuyerSummaryBucketsScopeEnvelope = {
   document_type: string;
   version: string;
   pending: BuyerProposalBucketRow[];
   approved: BuyerProposalBucketRow[];
   rejected: BuyerProposalBucketRow[];
+  counts: BuyerSummaryBucketCounts;
   meta: Record<string, unknown>;
 };
 
@@ -51,10 +64,37 @@ const asNumber = (value: unknown): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const asRequiredCount = (value: unknown, field: string): number => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error(`buyer_summary_buckets_scope_v1 missing canonical ${field}`);
+  }
+  return Math.trunc(parsed);
+};
+
 const asMaybeNumber = (value: unknown): number | undefined => {
   if (value == null || value === "") return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+export const withBuyerBucketCanonicalCount = (
+  rows: BuyerProposalBucketRow[],
+  count: number,
+): BuyerProposalBucketRows => {
+  const next = [...rows] as BuyerProposalBucketRows;
+  Object.defineProperty(next, BUYER_BUCKET_CANONICAL_COUNT_KEY, {
+    value: Math.max(0, Math.trunc(Number(count) || 0)),
+    enumerable: false,
+    configurable: false,
+    writable: false,
+  });
+  return next;
+};
+
+export const readBuyerBucketCanonicalCount = (rows: BuyerProposalBucketRow[]): number => {
+  const count = (rows as BuyerProposalBucketRows)[BUYER_BUCKET_CANONICAL_COUNT_KEY];
+  return Number.isFinite(Number(count)) ? Math.max(0, Math.trunc(Number(count))) : 0;
 };
 
 export const mapProposalSummaryRows = (
@@ -181,13 +221,20 @@ export const adaptBuyerSummaryBucketsScopeEnvelope = (
   raw: unknown,
 ): BuyerSummaryBucketsScopeEnvelope => {
   const root = asRecord(raw) ?? {};
+  const meta = asRecord(root.meta) ?? {};
+  const counts = {
+    pendingCount: asRequiredCount(meta.pending_count, "meta.pending_count"),
+    approvedCount: asRequiredCount(meta.approved_count, "meta.approved_count"),
+    rejectedCount: asRequiredCount(meta.rejected_count, "meta.rejected_count"),
+  };
   return {
     document_type: asText(root.document_type),
     version: asText(root.version),
     pending: mapScopeSummaryRows(root.pending),
     approved: mapScopeSummaryRows(root.approved),
     rejected: mapScopeRejectedRows(root.rejected),
-    meta: asRecord(root.meta) ?? {},
+    counts,
+    meta,
   };
 };
 

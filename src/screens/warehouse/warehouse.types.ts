@@ -152,14 +152,14 @@ export type WarehouseReqHeadsFailureClass =
   | "transport_transient_failure"
   | "server_failure";
 
-export type WarehouseReqHeadsPublishState = "ready" | "empty" | "error" | "degraded";
+export type WarehouseReqHeadsPublishState = "ready" | "empty" | "error";
 
 export type WarehouseReqHeadsFreshness = "fresh" | "stale";
 
-export type WarehouseReqHeadsCooldownReason = "failure_backoff" | "requests_fallback_backoff";
+export type WarehouseReqHeadsCooldownReason = "failure_backoff";
 
 export type WarehouseReqHeadsIntegrityState = {
-  mode: "healthy" | "stale_last_known_good" | "error";
+  mode: "healthy" | "error";
   failureClass: WarehouseReqHeadsFailureClass | null;
   freshness: WarehouseReqHeadsFreshness;
   reason: string | null;
@@ -176,7 +176,6 @@ export type WarehouseReqHeadsListState = {
   reason: string | null;
   message: string | null;
   rowCount: number;
-  lastKnownGoodUsed: boolean;
   cooldownActive: boolean;
   cooldownReason: WarehouseReqHeadsCooldownReason | null;
 };

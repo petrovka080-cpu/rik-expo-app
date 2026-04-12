@@ -29,6 +29,9 @@ const admin = createClient(supabaseUrl, supabaseKey, {
 const artifactBase = "artifacts/warehouse-issue-queue-runtime";
 const webArtifactBase = "artifacts/warehouse-issue-queue-web-smoke";
 const androidDevClientPort = Number(process.env.WAREHOUSE_ANDROID_DEV_PORT ?? "8081");
+const shouldRunWebRuntime = process.env.WAREHOUSE_RUNTIME_WEB === "1";
+const webWarehouseRoute = "/office/warehouse";
+const androidWarehouseRoute = "rik:///office/warehouse";
 
 const LABELS = {
   tabs: ["К приходу", "Склад факт", "Расход", "Отчёты"],
@@ -155,7 +158,7 @@ async function waitForBody(page: import("playwright").Page, needles: string | st
 }
 
 async function loginWarehouse(page: import("playwright").Page, user: TempUser) {
-  await page.goto(`${baseUrl}/warehouse`, { waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}${webWarehouseRoute}`, { waitUntil: "networkidle" });
   const emailInput = page.locator('input[placeholder="Email"]').first();
   if ((await emailInput.count()) > 0) {
     await emailInput.fill(user.email);
@@ -379,6 +382,7 @@ const findAndroidFioInputNode = (nodes: AndroidNode[]): AndroidNode | null =>
   );
 
 const findAndroidFioActionNode = (nodes: AndroidNode[]): AndroidNode | null =>
+  findAndroidNode(nodes, (node) => node.clickable && node.contentDesc === "warehouse-fio-confirm") ??
   findAndroidNode(
     nodes,
     (node) => node.clickable && /Сохранить|Подтвердить/i.test(`${node.text} ${node.contentDesc}`),
@@ -395,6 +399,9 @@ const ANDROID_ISSUE_EMPTY_LABELS = [ISSUE_EMPTY_TEXT, "РќРµС‚ Р·Р°Р�
 const isAndroidFioModal = (xml: string) =>
   /Фамилия Имя Отчество/i.test(xml) && /Сохранить|Подтвердить/i.test(xml);
 
+const isAndroidRecipientModal = (xml: string) =>
+  xml.includes("android.widget.EditText") && !isAndroidLoginScreen(xml) && !isAndroidFioModal(xml);
+
 const isAndroidIncomingSurface = (xml: string) => /PR-\d+\/\d{4}/.test(xml);
 
 const isAndroidIssueEmptyState = (xml: string) =>
@@ -403,6 +410,11 @@ const isAndroidIssueEmptyState = (xml: string) =>
 const isAndroidIssueQueueSurface = (xml: string) =>
   /REQ-\d+\/\d{4}/.test(xml) ||
   isAndroidIssueEmptyState(xml) ||
+  matchesAndroidLabel(xml, ANDROID_LABELS.recipientPrompt) ||
+  xml.includes(LABELS.issueModalTitle);
+
+const isAndroidIssueActiveSurface = (xml: string) =>
+  /REQ-\d+\/\d{4}/.test(xml) ||
   matchesAndroidLabel(xml, ANDROID_LABELS.recipientPrompt) ||
   xml.includes(LABELS.issueModalTitle);
 
@@ -436,12 +448,15 @@ const findAndroidTopTab = (nodes: AndroidNode[], labels: readonly string[]): And
 
 async function ensureAndroidExpenseTab(current: ReturnType<typeof dumpAndroidScreen>) {
   let screen = current;
-  if (isAndroidIssueQueueSurface(screen.xml) || !isAndroidIncomingSurface(screen.xml)) {
+  if (isAndroidIssueActiveSurface(screen.xml)) {
     return { screen, switched: true, issue: null as string | null };
   }
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    let tab = findAndroidTopTab(parseAndroidNodes(screen.xml), ANDROID_LABELS.expenseTab);
+    const nodes = parseAndroidNodes(screen.xml);
+    let tab =
+      findAndroidNode(nodes, (node) => node.clickable && node.enabled && node.contentDesc === "warehouse-tab-issue") ??
+      findAndroidTopTab(nodes, ANDROID_LABELS.expenseTab);
     if (!tab) {
       if (attempt === 0) {
         execFileSync("adb", ["shell", "input", "keyevent", "4"], {
@@ -450,10 +465,15 @@ async function ensureAndroidExpenseTab(current: ReturnType<typeof dumpAndroidScr
         });
         await sleep(1000);
         screen = dumpAndroidScreen("android-warehouse-issue-queue-current");
-        if (isAndroidIssueQueueSurface(screen.xml) || !isAndroidIncomingSurface(screen.xml)) {
+        if (isAndroidIssueActiveSurface(screen.xml)) {
           return { screen, switched: true, issue: null as string | null };
         }
-        tab = findAndroidTopTab(parseAndroidNodes(screen.xml), ANDROID_LABELS.expenseTab);
+        const retryNodes = parseAndroidNodes(screen.xml);
+        tab =
+          findAndroidNode(
+            retryNodes,
+            (node) => node.clickable && node.enabled && node.contentDesc === "warehouse-tab-issue",
+          ) ?? findAndroidTopTab(retryNodes, ANDROID_LABELS.expenseTab);
       }
     }
 
@@ -473,7 +493,7 @@ async function ensureAndroidExpenseTab(current: ReturnType<typeof dumpAndroidScr
         `android:warehouse_expense_tab:${attempt + 1}`,
         async () => {
           const next = dumpAndroidScreen(`android-warehouse-issue-queue-tab-${attempt + 1}`);
-          return isAndroidIssueQueueSurface(next.xml) || !isAndroidIncomingSurface(next.xml) ? next : null;
+          return isAndroidIssueActiveSurface(next.xml) || isAndroidIssueEmptyState(next.xml) ? next : null;
         },
         15_000,
         1000,
@@ -482,7 +502,7 @@ async function ensureAndroidExpenseTab(current: ReturnType<typeof dumpAndroidScr
       screen = dumpAndroidScreen(`android-warehouse-issue-queue-tab-${attempt + 1}-timeout`);
     }
 
-    if (isAndroidIssueQueueSurface(screen.xml) || !isAndroidIncomingSurface(screen.xml)) {
+    if (isAndroidIssueActiveSurface(screen.xml) || isAndroidIssueEmptyState(screen.xml)) {
       return { screen, switched: true, issue: null as string | null };
     }
   }
@@ -495,13 +515,17 @@ async function ensureAndroidExpenseTab(current: ReturnType<typeof dumpAndroidScr
 }
 
 async function loginWarehouseAndroid(user: TempUser) {
-  writeArtifact("artifacts/android-warehouse-issue-queue-user.json", user);
+  writeArtifact("artifacts/android-warehouse-issue-queue-user.json", {
+    ...user,
+    email: "[redacted-temp-user]",
+    password: "[redacted]",
+  });
   const packageName = detectAndroidPackage();
   try {
     const harnessScreen = await androidHarness.loginAndroidWithProtectedRoute({
       packageName,
       user,
-      protectedRoute: "rik://warehouse",
+      protectedRoute: androidWarehouseRoute,
       artifactBase: "android-warehouse-issue-queue",
       successPredicate: (xml) => isAndroidIssueQueueSurface(xml) || isAndroidFioModal(xml),
       renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidIssueQueueSurface(xml) || isAndroidFioModal(xml) || isAndroidIncomingSurface(xml),
@@ -515,7 +539,7 @@ async function loginWarehouseAndroid(user: TempUser) {
   }
   execFileSync(
     "adb",
-    ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", "rik://warehouse", "com.azisbek_dzhantaev.rikexpoapp"],
+    ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", androidWarehouseRoute, "com.azisbek_dzhantaev.rikexpoapp"],
     { cwd: projectRoot, stdio: "pipe" },
   );
   await sleep(1500);
@@ -584,7 +608,7 @@ async function loginWarehouseAndroid(user: TempUser) {
 
   execFileSync(
     "adb",
-    ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", "rik://warehouse", "com.azisbek_dzhantaev.rikexpoapp"],
+    ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", androidWarehouseRoute, "com.azisbek_dzhantaev.rikexpoapp"],
     { cwd: projectRoot, stdio: "pipe" },
   );
   await sleep(1500);
@@ -683,7 +707,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
   const devClient = await androidHarness.ensureAndroidDevClientServer();
   try {
     const packageName = detectAndroidPackage();
-    const preflight = androidHarness.runAndroidPreflight({ packageName });
+    const preflight = androidHarness.runAndroidPreflight({ packageName, clearApp: true });
     await androidHarness.warmAndroidDevClientBundle(androidDevClientPort);
     user = await createTempUser(process.env.WAREHOUSE_WAVE1_ROLE || "warehouse", "Warehouse Queue Android");
     const current = await loginWarehouseAndroid(user);
@@ -712,6 +736,67 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     if (expenseTab.issue) {
       platformSpecificIssues.push(expenseTab.issue);
     }
+
+  if (isAndroidRecipientModal(workingXml)) {
+    const inputNode = findAndroidNode(
+      parseAndroidNodes(workingXml),
+      (node) => node.enabled && /android\.widget\.EditText/i.test(node.className),
+    );
+    if (inputNode) {
+      tapAndroidBounds(inputNode.bounds);
+      await sleep(400);
+      execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText("Warehouse Queue Recipient")], {
+        cwd: projectRoot,
+        stdio: "pipe",
+      });
+      await sleep(500);
+      execFileSync("adb", ["shell", "input", "keyevent", "66"], {
+        cwd: projectRoot,
+        stdio: "pipe",
+      });
+      await sleep(900);
+      let recipientScreen = dumpAndroidScreen("android-warehouse-issue-queue-after-recipient");
+      if (isAndroidRecipientModal(recipientScreen.xml)) {
+        const candidate = findFirstRecipientCandidate(parseAndroidNodes(recipientScreen.xml));
+        const center = candidate ? parseBoundsCenter(candidate.bounds) : null;
+        if (center) {
+          execFileSync("adb", ["shell", "input", "tap", String(center.x), String(center.y)], {
+            cwd: projectRoot,
+            stdio: "pipe",
+          });
+          await sleep(1200);
+          recipientScreen = dumpAndroidScreen("android-warehouse-issue-queue-after-recipient");
+        }
+      }
+      if (!isAndroidRecipientModal(recipientScreen.xml)) {
+        recipientChosen = true;
+        workingScreen = recipientScreen;
+        workingXml = recipientScreen.xml;
+      }
+    }
+  }
+
+  const recipientNodes = parseAndroidNodes(workingXml);
+  const recipientCandidate = findFirstRecipientCandidate(recipientNodes);
+  const recipientModalVisible =
+    recipientCandidate != null &&
+    workingXml.includes("android.widget.EditText") &&
+    !isAndroidLoginScreen(workingXml) &&
+    !isAndroidFioModal(workingXml);
+
+  if (recipientModalVisible) {
+    const center = parseBoundsCenter(recipientCandidate.bounds);
+    if (center) {
+      execFileSync("adb", ["shell", "input", "tap", String(center.x), String(center.y)], {
+        cwd: projectRoot,
+        stdio: "pipe",
+      });
+      await sleep(1200);
+      recipientChosen = true;
+      workingScreen = dumpAndroidScreen("android-warehouse-issue-queue-after-recipient");
+      workingXml = workingScreen.xml;
+    }
+  }
 
   if (workingXml.includes("Кто получает?")) {
     const candidate = findFirstRecipientCandidate(parseAndroidNodes(workingXml));
@@ -849,12 +934,20 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) =>
-    createFailurePlatformResult("web", error, {
-      queueRowsVisible: false,
-      modalOpened: false,
-    }),
-  );
+  const web = shouldRunWebRuntime
+    ? await runWebRuntime().catch((error) =>
+        createFailurePlatformResult("web", error, {
+          queueRowsVisible: false,
+          modalOpened: false,
+        }),
+      )
+    : {
+        status: "skipped",
+        queueRowsVisible: false,
+        modalOpened: false,
+        platformSpecificIssues: [],
+        skipReason: "web smoke is not part of this Android WAVE 1-FINAL proof",
+      };
   const android = await runAndroidRuntime().catch((error) => {
     const artifacts = androidHarness.captureFailureArtifacts("android-warehouse-issue-queue-failure");
     return createFailurePlatformResult("android", error, {
@@ -902,8 +995,14 @@ async function main() {
       androidModalXml: androidRecord.modalXml ?? null,
       androidModalPng: androidRecord.modalPng ?? null,
     },
+    requiredPlatforms: {
+      web: shouldRunWebRuntime,
+      android: true,
+      ios: true,
+    },
     extra: {
       gate: "warehouse_issue_queue_runtime_verify",
+      webSkipped: !shouldRunWebRuntime,
     },
   });
 

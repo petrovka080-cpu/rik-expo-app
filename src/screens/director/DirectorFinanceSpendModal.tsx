@@ -16,7 +16,7 @@ type Props = {
   truth?: DirectorFinanceCanonicalScope["spend"] | null;
   diagnostics?: DirectorFinanceCanonicalScope["diagnostics"] | null;
   workInclusion?: DirectorFinanceCanonicalScope["workInclusion"] | null;
-  spendSummary: FinSpendSummary;
+  spendBreakdown: FinSpendSummary | null;
   money: (v: number) => string;
   onOpenKind?: (kindName: string, list: FinKindSupplierRow[]) => void;
 };
@@ -41,13 +41,14 @@ export default function DirectorFinanceSpendModal(props: Props) {
   }, []);
 
   const openOverpayAsKind = React.useCallback(() => {
-    props.onOpenKind?.(OVERPAY_KIND, props.spendSummary.overpaySuppliers);
+    props.onOpenKind?.(OVERPAY_KIND, props.spendBreakdown?.overpaySuppliers ?? []);
   }, [props]);
 
-  const approved = props.truth?.approved ?? props.spendSummary.header.approved;
-  const paid = props.truth?.paid ?? props.spendSummary.header.paid;
-  const toPay = props.truth?.toPay ?? props.spendSummary.header.toPay;
-  const overpay = props.truth?.overpay ?? props.spendSummary.header.overpay;
+  const approved = props.spendBreakdown?.header.approved ?? 0;
+  const paid = props.spendBreakdown?.header.paid ?? 0;
+  const toPay = props.spendBreakdown?.header.toPay ?? 0;
+  const overpay = props.spendBreakdown?.header.overpay ?? 0;
+  const kindRows = props.spendBreakdown?.kindRows ?? [];
   const observedKindsLabel = React.useMemo(() => {
     const kinds = Array.isArray(props.workInclusion?.observedKinds)
       ? props.workInclusion.observedKinds.filter((value) => String(value ?? "").trim().length > 0)
@@ -133,10 +134,10 @@ export default function DirectorFinanceSpendModal(props: Props) {
 
         {kindsOpen ? (
           <View style={{ marginTop: 10 }}>
-            {!props.spendSummary.kindRows.length ? (
+            {!kindRows.length ? (
               <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>
             ) : (
-              props.spendSummary.kindRows.map((row) => (
+              kindRows.map((row) => (
                 <Pressable
                   key={row.kind}
                   onPress={() => props.onOpenKind?.(row.kind, row.suppliers)}

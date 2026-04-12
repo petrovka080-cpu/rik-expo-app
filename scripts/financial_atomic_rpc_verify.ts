@@ -92,6 +92,9 @@ type ParsedPayResult =
       ok: true;
       proposalId: string;
       paymentId: number;
+      clientMutationId: string | null;
+      outcome: string | null;
+      idempotentReplay: boolean;
       totalsBefore: {
         payableAmount: number;
         totalPaid: number;
@@ -109,6 +112,9 @@ type ParsedPayResult =
   | {
       ok: false;
       proposalId: string;
+      clientMutationId: string | null;
+      outcome: string | null;
+      idempotentReplay: boolean;
       failureCode: string;
       failureMessage: string;
       totalsBefore: {
@@ -184,6 +190,9 @@ const parsePayResult = (value: unknown): ParsedPayResult => {
     return {
       ok: false,
       proposalId: trim(payload.proposal_id),
+      clientMutationId: trim(payload.client_mutation_id) || null,
+      outcome: trim(payload.outcome) || null,
+      idempotentReplay: toBoolean(payload.idempotent_replay),
       failureCode: trim(payload.failure_code),
       failureMessage: trim(payload.failure_message),
       totalsBefore:
@@ -212,6 +221,9 @@ const parsePayResult = (value: unknown): ParsedPayResult => {
     ok: true,
     proposalId: trim(payload.proposal_id),
     paymentId: Math.trunc(toNumber(payload.payment_id)),
+    clientMutationId: trim(payload.client_mutation_id) || null,
+    outcome: trim(payload.outcome) || null,
+    idempotentReplay: toBoolean(payload.idempotent_replay),
     totalsBefore: {
       payableAmount: round2(totalsBefore.payable_amount),
       totalPaid: round2(totalsBefore.total_paid),
@@ -232,7 +244,7 @@ async function insertRequest(marker: string) {
   const result = await admin
     .from("requests")
     .insert({
-      status: "Утверждено",
+      status: "Черновик",
       comment: `${marker}:request`,
       object_name: marker,
       note: marker,
@@ -407,7 +419,13 @@ async function payInvoice(params: {
   invoiceNumber?: string;
   invoiceDate?: string;
   invoiceCurrency?: string;
+  clientMutationId?: string;
 }) {
+  const clientMutationId =
+    params.clientMutationId ||
+    `financial-verify:${params.proposalId}:${Date.now().toString(36)}:${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
   const rpc = await admin.rpc("accounting_pay_invoice_v1", {
     p_proposal_id: params.proposalId,
     p_amount: params.amount,
@@ -422,6 +440,7 @@ async function payInvoice(params: {
     p_invoice_currency: params.invoiceCurrency ?? "KGS",
     p_expected_total_paid: params.expectedTotalPaid ?? undefined,
     p_expected_outstanding: params.expectedOutstanding ?? undefined,
+    p_client_mutation_id: clientMutationId,
   });
   if (rpc.error) throw rpc.error;
   return parsePayResult(rpc.data);
@@ -551,6 +570,10 @@ function readSourceScan() {
     path.join(projectRoot, "src/screens/accountant/useAccountantPayActions.ts"),
     "utf8",
   );
+  const accountantApiSource = fs.readFileSync(
+    path.join(projectRoot, "src/lib/api/accountant.ts"),
+    "utf8",
+  );
   const postSyncSource = fs.readFileSync(
     path.join(projectRoot, "src/screens/accountant/useAccountantPostPaymentSync.ts"),
     "utf8",
@@ -566,8 +589,10 @@ function readSourceScan() {
       !paymentFormSource.includes('.from("proposal_items")') &&
       !paymentFormSource.includes('.from("proposal_payment_allocations")'),
     payActionsUsesAtomicRpc: payActionsSource.includes("accountantPayInvoiceAtomic"),
+    payActionsPassesClientMutationId: payActionsSource.includes("clientMutationId: pendingIntent.clientMutationId"),
     payActionsNoLegacyPaidAgg: !payActionsSource.includes("fetchPaidAggByProposal"),
     payActionsNoClientDebtFormula: !/invoice_amount\s*-\s*total_paid/.test(payActionsSource),
+    legacyAddPaymentPathDisabled: accountantApiSource.includes("accountantAddPayment legacy payment path is disabled"),
     postSyncUsesServerTruthRpc: postSyncSource.includes("accountantLoadProposalFinancialState"),
     historyFlowUsesServerTruthRpc: historyFlowSource.includes("accountantLoadProposalFinancialState"),
     noSilentCatchOnPayActions: !payActionsSource.includes("catch {}"),
@@ -587,6 +612,11 @@ async function cleanupSeedRows(requestIds: string[], proposalIds: string[]) {
   const filteredProposalIds = proposalIds.map(trim).filter(Boolean);
   const filteredRequestIds = requestIds.map(trim).filter(Boolean);
   if (filteredProposalIds.length) {
+    await (admin as any)
+      .from("accounting_pay_invoice_mutations_v1")
+      .delete()
+      .in("proposal_id", filteredProposalIds);
+
     const paymentIdsResult = await admin
       .from("proposal_payments")
       .select("id")
@@ -770,6 +800,44 @@ async function main() {
     const concurrentCanonical = await readCanonicalParity(concurrentSeed.proposalId);
     const concurrentParity = compareParity(concurrentAfter, concurrentCanonical);
 
+    const idempotentSeed = await seedFinancialProposal({
+      marker: `${markerBase}:idempotent`,
+      status: "Утверждено",
+      sentToAccountant: true,
+      lines: [{ qty: 1, price: 100 }],
+    });
+    requestIds.push(idempotentSeed.requestId);
+    proposalIds.push(idempotentSeed.proposalId);
+    const idempotentBefore = await loadFinancialState(idempotentSeed.proposalId);
+    const idempotentMutationId = `${markerBase}:idempotent-payment`;
+    const idempotentPayload = {
+      proposalId: idempotentSeed.proposalId,
+      amount: 30,
+      allocations: [
+        {
+          proposal_item_id: idempotentSeed.proposalItems[0].proposalItemId,
+          amount: 30,
+        },
+      ],
+      expectedTotalPaid: idempotentBefore.totals.totalPaid,
+      expectedOutstanding: idempotentBefore.totals.outstandingAmount,
+      clientMutationId: idempotentMutationId,
+    };
+    const idempotentFirst = await payInvoice(idempotentPayload);
+    const idempotentReplay = await payInvoice(idempotentPayload);
+    const idempotentConflict = await payInvoice({
+      ...idempotentPayload,
+      amount: 31,
+      allocations: [
+        {
+          proposal_item_id: idempotentSeed.proposalItems[0].proposalItemId,
+          amount: 31,
+        },
+      ],
+    });
+    const idempotentAfter = await loadFinancialState(idempotentSeed.proposalId);
+    const idempotentPaymentsCount = await countProposalPayments(idempotentSeed.proposalId);
+
     const exceedSeed = await seedFinancialProposal({
       marker: `${markerBase}:exceeds`,
       status: "Утверждено",
@@ -827,6 +895,32 @@ async function main() {
           concurrentParity.totalPaidMatch &&
           concurrentParity.outstandingMatch,
       },
+      idempotentReplay: {
+        proposalId: idempotentSeed.proposalId,
+        clientMutationId: idempotentMutationId,
+        firstOk: idempotentFirst.ok,
+        replayOk: idempotentReplay.ok,
+        samePaymentId:
+          idempotentFirst.ok &&
+          idempotentReplay.ok &&
+          idempotentReplay.paymentId === idempotentFirst.paymentId,
+        replayFlag: idempotentReplay.ok ? idempotentReplay.idempotentReplay : false,
+        replayOutcome: idempotentReplay.outcome,
+        conflictRejected: !idempotentConflict.ok,
+        conflictCode: failureCodeOf(idempotentConflict),
+        conflictOutcome: idempotentConflict.outcome,
+        paymentsCount: idempotentPaymentsCount,
+        totalPaidAfter: idempotentAfter.totals.totalPaid,
+        noDuplicateEffect:
+          idempotentFirst.ok &&
+          idempotentReplay.ok &&
+          idempotentReplay.paymentId === idempotentFirst.paymentId &&
+          idempotentReplay.idempotentReplay === true &&
+          !idempotentConflict.ok &&
+          failureCodeOf(idempotentConflict) === "accounting_pay_invoice_v1_idempotency_conflict" &&
+          idempotentPaymentsCount === 1 &&
+          approxEqual(idempotentAfter.totals.totalPaid, 30),
+      },
       revokeAfterCommittedPayment: {
         proposalId: partialSeed.proposalId,
         blocked: Boolean(revokeAfterPayError?.message),
@@ -881,6 +975,7 @@ async function main() {
         !exceedsResult.ok &&
         failureCodeOf(exceedsResult) === "amount_exceeds_outstanding" &&
         raceProof.concurrentPayment.controlledNoCorruption &&
+        raceProof.idempotentReplay.noDuplicateEffect &&
         raceProof.revokeAfterCommittedPayment.blocked &&
         raceProof.revokeAfterCommittedPayment.stateStillApproved &&
         raceProof.revokeAfterCommittedPayment.stateStillSentToAccountant &&
@@ -901,8 +996,10 @@ async function main() {
         sourceScan.paymentFormUsesServerTruthRpc &&
         sourceScan.paymentFormNoDirectProposalItemsFetch &&
         sourceScan.payActionsUsesAtomicRpc &&
+        sourceScan.payActionsPassesClientMutationId &&
         sourceScan.payActionsNoLegacyPaidAgg &&
         sourceScan.payActionsNoClientDebtFormula &&
+        sourceScan.legacyAddPaymentPathDisabled &&
         sourceScan.postSyncUsesServerTruthRpc &&
         sourceScan.historyFlowUsesServerTruthRpc &&
         sourceScan.noSilentCatchOnPayActions
@@ -938,6 +1035,13 @@ async function main() {
           proposalId: concurrentSeed.proposalId,
           failureCodes: raceProof.concurrentPayment.failureCodes,
         },
+        idempotentReplayControlled: {
+          pass: raceProof.idempotentReplay.noDuplicateEffect,
+          proposalId: idempotentSeed.proposalId,
+          clientMutationId: idempotentMutationId,
+          replayOutcome: raceProof.idempotentReplay.replayOutcome,
+          conflictCode: raceProof.idempotentReplay.conflictCode,
+        },
         amountExceedsOutstandingRejected: {
           pass: !exceedsResult.ok && failureCodeOf(exceedsResult) === "amount_exceeds_outstanding",
           proposalId: exceedSeed.proposalId,
@@ -962,6 +1066,7 @@ async function main() {
             sourceScan.paymentFormUsesServerTruthRpc &&
             sourceScan.paymentFormNoDirectProposalItemsFetch &&
             sourceScan.payActionsUsesAtomicRpc &&
+            sourceScan.payActionsPassesClientMutationId &&
             sourceScan.payActionsNoClientDebtFormula,
         },
       },

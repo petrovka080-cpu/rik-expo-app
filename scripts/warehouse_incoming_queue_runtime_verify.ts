@@ -30,6 +30,9 @@ const artifactBase = "artifacts/warehouse-incoming-queue-runtime";
 const webArtifactBase = "artifacts/warehouse-incoming-queue-web-smoke";
 const cutoverArtifactPath = path.join(projectRoot, "artifacts/warehouse-incoming-queue-cutover-v1.json");
 const androidDevClientPort = Number(process.env.WAREHOUSE_ANDROID_DEV_PORT ?? "8081");
+const shouldRunWebRuntime = process.env.WAREHOUSE_RUNTIME_WEB === "1";
+const webWarehouseRoute = "/office/warehouse";
+const androidWarehouseRoute = "rik:///office/warehouse";
 
 const LABELS = {
   tabs: ["К приходу", "Склад факт", "Расход", "Отчёты"],
@@ -204,7 +207,7 @@ async function waitForBody(page: import("playwright").Page, needles: string | Re
 }
 
 async function loginWarehouse(page: import("playwright").Page, user: TempUser) {
-  await page.goto(`${baseUrl}/warehouse`, { waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}${webWarehouseRoute}`, { waitUntil: "networkidle" });
   const emailInput = page.locator('input[placeholder="Email"]').first();
   if ((await emailInput.count()) > 0) {
     await emailInput.fill(user.email);
@@ -421,6 +424,7 @@ const findAndroidFioInputNode = (nodes: AndroidNode[]): AndroidNode | null =>
   );
 
 const findAndroidFioActionNode = (nodes: AndroidNode[]): AndroidNode | null =>
+  findAndroidNode(nodes, (node) => node.clickable && node.contentDesc === "warehouse-fio-confirm") ??
   findAndroidNode(
     nodes,
     (node) => node.clickable && /Сохранить|Подтвердить/i.test(`${node.text} ${node.contentDesc}`),
@@ -529,13 +533,17 @@ async function ensureAndroidIncomingTab(current: ReturnType<typeof dumpAndroidSc
 }
 
 async function loginWarehouseAndroid(user: TempUser) {
-  writeArtifact("artifacts/android-warehouse-incoming-queue-user.json", user);
+  writeArtifact("artifacts/android-warehouse-incoming-queue-user.json", {
+    ...user,
+    email: "[redacted-temp-user]",
+    password: "[redacted]",
+  });
   const packageName = detectAndroidPackage();
   try {
     const harnessScreen = await androidHarness.loginAndroidWithProtectedRoute({
       packageName,
       user,
-      protectedRoute: "rik://warehouse",
+      protectedRoute: androidWarehouseRoute,
       artifactBase: "android-warehouse-incoming-queue",
       successPredicate: (xml) => isAndroidIncomingHome(xml) || isAndroidFioModal(xml) || isAndroidIncomingModal(xml),
       renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidIncomingHome(xml) || isAndroidFioModal(xml) || isAndroidIncomingModal(xml),
@@ -549,7 +557,7 @@ async function loginWarehouseAndroid(user: TempUser) {
   }
   execFileSync(
     "adb",
-    ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", "rik://warehouse", "com.azisbek_dzhantaev.rikexpoapp"],
+    ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", androidWarehouseRoute, "com.azisbek_dzhantaev.rikexpoapp"],
     { cwd: projectRoot, stdio: "pipe" },
   );
   await sleep(1500);
@@ -645,7 +653,7 @@ async function loginWarehouseAndroid(user: TempUser) {
 
   execFileSync(
     "adb",
-    ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", "rik://warehouse", "com.azisbek_dzhantaev.rikexpoapp"],
+    ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", androidWarehouseRoute, "com.azisbek_dzhantaev.rikexpoapp"],
     { cwd: projectRoot, stdio: "pipe" },
   );
   await sleep(1500);
@@ -727,7 +735,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     user = await createTempUser(process.env.WAREHOUSE_WAVE1_ROLE || "warehouse", "Warehouse Incoming Android");
     const expected = await loadExpectedIncomingContext();
     const packageName = detectAndroidPackage();
-    const preflight = androidHarness.runAndroidPreflight({ packageName });
+    const preflight = androidHarness.runAndroidPreflight({ packageName, clearApp: true });
     await androidHarness.warmAndroidDevClientBundle(androidDevClientPort);
     const current = await loginWarehouseAndroid(user);
     const fioState = await confirmAndroidWarehouseFio(current);
@@ -853,14 +861,24 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) =>
-    createFailurePlatformResult("web", error, {
-      incomingRowsVisible: false,
-      emptyStateVisible: false,
-      modalOpened: false,
-      expectedHasRows: true,
-    }),
-  );
+  const web = shouldRunWebRuntime
+    ? await runWebRuntime().catch((error) =>
+        createFailurePlatformResult("web", error, {
+          incomingRowsVisible: false,
+          emptyStateVisible: false,
+          modalOpened: false,
+          expectedHasRows: true,
+        }),
+      )
+    : {
+        status: "skipped",
+        incomingRowsVisible: false,
+        emptyStateVisible: false,
+        modalOpened: false,
+        expectedHasRows: true,
+        platformSpecificIssues: [],
+        skipReason: "web smoke is not part of this Android WAVE 1-FINAL proof",
+      };
   const android = await runAndroidRuntime().catch((error) => {
     const artifacts = androidHarness.captureFailureArtifacts("android-warehouse-incoming-queue-failure");
     return createFailurePlatformResult("android", error, {
@@ -905,8 +923,14 @@ async function main() {
       androidModalXml: typeof androidRecord.modalXml === "string" ? androidRecord.modalXml : null,
       androidModalPng: typeof androidRecord.modalPng === "string" ? androidRecord.modalPng : null,
     },
+    requiredPlatforms: {
+      web: shouldRunWebRuntime,
+      android: true,
+      ios: true,
+    },
     extra: {
       gate: "warehouse_incoming_queue_runtime_verify",
+      webSkipped: !shouldRunWebRuntime,
     },
   });
 

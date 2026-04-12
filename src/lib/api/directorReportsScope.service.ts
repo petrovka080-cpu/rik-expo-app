@@ -1,14 +1,13 @@
 import { type DirectorReportFetchMeta } from "./director_reports";
 import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
 import { supabase } from "../supabaseClient";
-import { getMaterialNameResolutionSource, probeNameSources } from "./director_reports.naming";
-import { WITHOUT_WORK } from "./director_reports.shared";
 import { beginPlatformObservability } from "../observability/platformObservability";
 import { loadConstructionObjectCodesByNames } from "./constructionObjectIdentity.read";
 import type {
   DirectorReportsCanonicalDiagnostics,
   DirectorReportsCanonicalSummary,
   DirectorNamingHealthStatus,
+  DirectorNamingProbeCacheMode,
   DirectorNamingSourceStatus,
 } from "../../screens/director/director.readModels";
 
@@ -129,30 +128,241 @@ const textOrUndefined = (value: unknown): string | undefined => {
   return text || undefined;
 };
 
-const toUniqueSortedList = (values: Iterable<string>): string[] =>
-  Array.from(new Set(Array.from(values).map((value) => String(value ?? "").trim()).filter(Boolean))).sort((left, right) =>
-    left.localeCompare(right, "ru"),
-  );
+class DirectorReportsCanonicalPayloadError extends Error {}
 
-const normalizeKey = (value: unknown): string => String(value ?? "").trim().toLowerCase();
-
-const isWithoutWorkBucket = (workTypeName: unknown): boolean =>
-  normalizeKey(workTypeName).startsWith(normalizeKey(WITHOUT_WORK));
-
-const toNamingHealthStatus = (
-  status: DirectorNamingSourceStatus,
-): DirectorNamingHealthStatus => {
-  if (status === "ok") return "ok";
-  if (status === "missing") return "degraded";
-  return "failed";
+const requireCanonicalRecord = (value: unknown, field: string): Record<string, unknown> => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new DirectorReportsCanonicalPayloadError(
+      `director_report_transport_scope_v1 missing canonical ${field}`,
+    );
+  }
+  return value as Record<string, unknown>;
 };
 
-const toCompositeNamingHealthStatus = (
-  statuses: DirectorNamingSourceStatus[],
-): DirectorNamingHealthStatus => {
-  if (statuses.some((status) => status === "ok")) return "ok";
-  if (statuses.some((status) => status === "missing")) return "degraded";
-  return "failed";
+const canonicalText = (value: unknown, field: string): string => {
+  const text = String(value ?? "").trim();
+  if (!text) {
+    throw new DirectorReportsCanonicalPayloadError(
+      `director_report_transport_scope_v1 missing canonical ${field}`,
+    );
+  }
+  return text;
+};
+
+const canonicalNumber = (value: unknown, field: string): number => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    throw new DirectorReportsCanonicalPayloadError(
+      `director_report_transport_scope_v1 invalid canonical ${field}`,
+    );
+  }
+  return numeric;
+};
+
+const canonicalBoolean = (value: unknown, field: string): boolean => {
+  if (typeof value !== "boolean") {
+    throw new DirectorReportsCanonicalPayloadError(
+      `director_report_transport_scope_v1 invalid canonical ${field}`,
+    );
+  }
+  return value;
+};
+
+const canonicalNamingSourceStatus = (value: unknown, field: string): DirectorNamingSourceStatus => {
+  const status = canonicalText(value, field);
+  if (status === "ok" || status === "failed" || status === "missing") return status;
+  throw new DirectorReportsCanonicalPayloadError(
+    `director_report_transport_scope_v1 invalid canonical ${field}`,
+  );
+};
+
+const canonicalNamingHealthStatus = (value: unknown, field: string): DirectorNamingHealthStatus => {
+  const status = canonicalText(value, field);
+  if (status === "ok" || status === "degraded" || status === "failed") return status;
+  throw new DirectorReportsCanonicalPayloadError(
+    `director_report_transport_scope_v1 invalid canonical ${field}`,
+  );
+};
+
+const canonicalProbeCacheMode = (value: unknown, field: string): DirectorNamingProbeCacheMode => {
+  const mode = canonicalText(value, field);
+  if (mode === "live" || mode === "cached_positive" || mode === "cached_negative") return mode;
+  throw new DirectorReportsCanonicalPayloadError(
+    `director_report_transport_scope_v1 invalid canonical ${field}`,
+  );
+};
+
+const canonicalStringArray = (value: unknown, field: string): string[] => {
+  if (!Array.isArray(value)) {
+    throw new DirectorReportsCanonicalPayloadError(
+      `director_report_transport_scope_v1 invalid canonical ${field}`,
+    );
+  }
+  return value.map((item) => String(item ?? "").trim()).filter(Boolean);
+};
+
+const normalizeDirectorReportsCanonicalSummary = (
+  value: unknown,
+): DirectorReportsCanonicalSummary => {
+  const record = requireCanonicalRecord(value, "canonical_summary");
+  return {
+    objectCount: canonicalNumber(record.objectCount, "canonical_summary.objectCount"),
+    objectCountLabel: canonicalText(record.objectCountLabel, "canonical_summary.objectCountLabel"),
+    objectCountExplanation: canonicalText(
+      record.objectCountExplanation,
+      "canonical_summary.objectCountExplanation",
+    ),
+    confirmedWarehouseObjectCount: canonicalNumber(
+      record.confirmedWarehouseObjectCount,
+      "canonical_summary.confirmedWarehouseObjectCount",
+    ),
+    displayObjectCount: canonicalNumber(record.displayObjectCount, "canonical_summary.displayObjectCount"),
+    displayObjectCountLabel: canonicalText(
+      record.displayObjectCountLabel,
+      "canonical_summary.displayObjectCountLabel",
+    ),
+    displayObjectCountExplanation: canonicalText(
+      record.displayObjectCountExplanation,
+      "canonical_summary.displayObjectCountExplanation",
+    ),
+    noWorkNameCount: canonicalNumber(record.noWorkNameCount, "canonical_summary.noWorkNameCount"),
+    noWorkNameExplanation: canonicalText(
+      record.noWorkNameExplanation,
+      "canonical_summary.noWorkNameExplanation",
+    ),
+    unresolvedNamesCount: canonicalNumber(
+      record.unresolvedNamesCount,
+      "canonical_summary.unresolvedNamesCount",
+    ),
+  };
+};
+
+const normalizeDirectorReportsCanonicalDiagnostics = (
+  value: unknown,
+): DirectorReportsCanonicalDiagnostics => {
+  const record = requireCanonicalRecord(value, "canonical_diagnostics");
+  const naming = requireCanonicalRecord(record.naming, "canonical_diagnostics.naming");
+  const noWorkName = requireCanonicalRecord(record.noWorkName, "canonical_diagnostics.noWorkName");
+  const objectCountSource = canonicalText(
+    record.objectCountSource,
+    "canonical_diagnostics.objectCountSource",
+  );
+  if (objectCountSource !== "warehouse_confirmed_issues") {
+    throw new DirectorReportsCanonicalPayloadError(
+      "director_report_transport_scope_v1 invalid canonical canonical_diagnostics.objectCountSource",
+    );
+  }
+  const noWorkNameSource = canonicalText(
+    noWorkName.source,
+    "canonical_diagnostics.noWorkName.source",
+  );
+  if (noWorkNameSource !== "warehouse_issues") {
+    throw new DirectorReportsCanonicalPayloadError(
+      "director_report_transport_scope_v1 invalid canonical canonical_diagnostics.noWorkName.source",
+    );
+  }
+  const transportBranch = canonicalText(
+    record.transportBranch,
+    "canonical_diagnostics.transportBranch",
+  );
+  if (transportBranch !== "rpc_scope_v1") {
+    throw new DirectorReportsCanonicalPayloadError(
+      "director_report_transport_scope_v1 invalid canonical canonical_diagnostics.transportBranch",
+    );
+  }
+  const pricedStageRaw = record.pricedStage == null ? null : canonicalText(record.pricedStage, "canonical_diagnostics.pricedStage");
+  if (pricedStageRaw !== null && pricedStageRaw !== "base" && pricedStageRaw !== "priced") {
+    throw new DirectorReportsCanonicalPayloadError(
+      "director_report_transport_scope_v1 invalid canonical canonical_diagnostics.pricedStage",
+    );
+  }
+  const pricedStage: "base" | "priced" | null =
+    pricedStageRaw === "base" || pricedStageRaw === "priced" ? pricedStageRaw : null;
+  const backendOwnerPreserved = canonicalBoolean(
+    record.backendOwnerPreserved,
+    "canonical_diagnostics.backendOwnerPreserved",
+  );
+  if (!backendOwnerPreserved) {
+    throw new DirectorReportsCanonicalPayloadError(
+      "director_report_transport_scope_v1 canonical diagnostics are not backend-owned",
+    );
+  }
+  return {
+    naming: {
+      vrr: canonicalNamingSourceStatus(naming.vrr, "canonical_diagnostics.naming.vrr"),
+      overrides: canonicalNamingSourceStatus(
+        naming.overrides,
+        "canonical_diagnostics.naming.overrides",
+      ),
+      ledger: canonicalNamingSourceStatus(naming.ledger, "canonical_diagnostics.naming.ledger"),
+      objectNamingSourceStatus: canonicalNamingHealthStatus(
+        naming.objectNamingSourceStatus,
+        "canonical_diagnostics.naming.objectNamingSourceStatus",
+      ),
+      workNamingSourceStatus: canonicalNamingHealthStatus(
+        naming.workNamingSourceStatus,
+        "canonical_diagnostics.naming.workNamingSourceStatus",
+      ),
+      balanceViewStatus: canonicalNamingHealthStatus(
+        naming.balanceViewStatus,
+        "canonical_diagnostics.naming.balanceViewStatus",
+      ),
+      namesViewStatus: canonicalNamingHealthStatus(
+        naming.namesViewStatus,
+        "canonical_diagnostics.naming.namesViewStatus",
+      ),
+      overridesStatus: canonicalNamingHealthStatus(
+        naming.overridesStatus,
+        "canonical_diagnostics.naming.overridesStatus",
+      ),
+      resolvedNames: canonicalNumber(naming.resolvedNames, "canonical_diagnostics.naming.resolvedNames"),
+      unresolvedCodes: canonicalStringArray(
+        naming.unresolvedCodes,
+        "canonical_diagnostics.naming.unresolvedCodes",
+      ),
+      lastProbeAt: naming.lastProbeAt == null ? null : canonicalText(naming.lastProbeAt, "canonical_diagnostics.naming.lastProbeAt"),
+      probeCacheMode: canonicalProbeCacheMode(
+        naming.probeCacheMode,
+        "canonical_diagnostics.naming.probeCacheMode",
+      ),
+    },
+    objectCountSource,
+    noWorkName: {
+      workNameMissingCount: canonicalNumber(
+        noWorkName.workNameMissingCount,
+        "canonical_diagnostics.noWorkName.workNameMissingCount",
+      ),
+      workNameResolvedCount: canonicalNumber(
+        noWorkName.workNameResolvedCount,
+        "canonical_diagnostics.noWorkName.workNameResolvedCount",
+      ),
+      itemsWithoutWorkName: canonicalNumber(
+        noWorkName.itemsWithoutWorkName,
+        "canonical_diagnostics.noWorkName.itemsWithoutWorkName",
+      ),
+      locationsWithoutWorkName: canonicalNumber(
+        noWorkName.locationsWithoutWorkName,
+        "canonical_diagnostics.noWorkName.locationsWithoutWorkName",
+      ),
+      share: canonicalNumber(noWorkName.share, "canonical_diagnostics.noWorkName.share"),
+      source: noWorkNameSource,
+      fallbackApplied: canonicalBoolean(
+        noWorkName.fallbackApplied,
+        "canonical_diagnostics.noWorkName.fallbackApplied",
+      ),
+      canResolveFromSource: canonicalBoolean(
+        noWorkName.canResolveFromSource,
+        "canonical_diagnostics.noWorkName.canResolveFromSource",
+      ),
+      explanation: canonicalText(
+        noWorkName.explanation,
+        "canonical_diagnostics.noWorkName.explanation",
+      ),
+    },
+    backendOwnerPreserved,
+    transportBranch,
+    pricedStage,
+  };
 };
 
 const normalizeOptionsState = (value: unknown): DirectorReportScopeOptionsState => {
@@ -314,102 +524,18 @@ const normalizeReportPayload = (payload: unknown): DirectorReportScopePayload | 
   };
 };
 
-const buildDirectorReportCanonicalDecorations = async (args: {
-  optionsState: DirectorReportScopeOptionsState;
-  report: DirectorReportScopePayload | null;
-  discipline: DirectorReportScopeDisciplinePayload | null;
-  transportBranch: "rpc_scope_v1";
-  pricedStage: "base" | "priced" | null;
-}): Promise<{
+const normalizeDirectorReportCanonicalDecorations = (args: {
+  summaryPayload: unknown;
+  diagnosticsPayload: unknown;
+}): {
   summary: DirectorReportsCanonicalSummary;
   diagnostics: DirectorReportsCanonicalDiagnostics;
-}> => {
-  const rows = Array.isArray(args.report?.rows) ? args.report.rows : [];
-  const works = Array.isArray(args.discipline?.works) ? args.discipline.works : [];
-  const objectCount = args.optionsState.objects.length;
-  const namingProbe = await probeNameSources();
-
-  const unresolvedCodes = new Set<string>();
-  const resolvedCodes = new Set<string>();
-  for (const row of rows) {
-    const code = String(row.rik_code ?? "").trim().toUpperCase();
-    if (!code) continue;
-    const resolvedName = String(row.name_human_ru ?? "").trim();
-    const source = getMaterialNameResolutionSource(code);
-    if (!resolvedName || resolvedName.toUpperCase() === code || source === "unresolved_code_fallback") {
-      unresolvedCodes.add(code);
-      continue;
-    }
-    resolvedCodes.add(code);
-  }
-
-  const missingWorks = works.filter((work) => isWithoutWorkBucket(work.work_type_name));
-  const itemsWithoutWorkName = missingWorks.reduce((sum, work) => sum + toFiniteNumber(work.total_positions), 0);
-  const totalWorkPositions = works.reduce((sum, work) => sum + toFiniteNumber(work.total_positions), 0);
-  const locationsWithoutWorkName = missingWorks.reduce(
-    (sum, work) => sum + Math.max(toFiniteNumber(work.location_count), Array.isArray(work.levels) ? work.levels.length : 0),
-    0,
-  );
-  const noWorkShare =
-    totalWorkPositions > 0
-      ? Math.round((itemsWithoutWorkName / totalWorkPositions) * 10000) / 100
-      : 0;
-  const objectCountExplanation = "Счётчик построен по подтверждённым выдачам со склада за выбранный период.";
-  const noWorkNameExplanation =
-    "Вид работ не был указан при подтверждённой выдаче. Это пробел исходных данных, а не ошибка интерфейса.";
-
+} => {
+  const summary = normalizeDirectorReportsCanonicalSummary(args.summaryPayload);
+  const diagnostics = normalizeDirectorReportsCanonicalDiagnostics(args.diagnosticsPayload);
   return {
-    summary: {
-      objectCount,
-      objectCountLabel: "Объекты по подтверждённым выдачам",
-      confirmedWarehouseObjectCount: objectCount,
-      displayObjectCount: objectCount,
-      objectCountExplanation,
-      displayObjectCountExplanation: objectCountExplanation,
-      displayObjectCountLabel: "Объекты по подтверждённым выдачам",
-      noWorkNameCount: itemsWithoutWorkName,
-      noWorkNameExplanation: noWorkNameExplanation,
-      unresolvedNamesCount: unresolvedCodes.size,
-    },
-    diagnostics: {
-      naming: {
-        vrr: namingProbe.statuses.vrr,
-        overrides: namingProbe.statuses.overrides,
-        ledger: namingProbe.statuses.ledger,
-        objectNamingSourceStatus: toCompositeNamingHealthStatus([
-          namingProbe.statuses.vrr,
-          namingProbe.statuses.overrides,
-          namingProbe.statuses.ledger,
-        ]),
-        workNamingSourceStatus: toCompositeNamingHealthStatus([
-          namingProbe.statuses.vrr,
-          namingProbe.statuses.overrides,
-          namingProbe.statuses.ledger,
-        ]),
-        balanceViewStatus: toNamingHealthStatus(namingProbe.statuses.ledger),
-        namesViewStatus: toNamingHealthStatus(namingProbe.statuses.vrr),
-        overridesStatus: toNamingHealthStatus(namingProbe.statuses.overrides),
-        resolvedNames: resolvedCodes.size,
-        unresolvedCodes: toUniqueSortedList(unresolvedCodes),
-        lastProbeAt: namingProbe.lastProbeAt,
-        probeCacheMode: namingProbe.probeCacheMode,
-      },
-      objectCountSource: "warehouse_confirmed_issues",
-      noWorkName: {
-        workNameMissingCount: missingWorks.length,
-        workNameResolvedCount: Math.max(works.length - missingWorks.length, 0),
-        itemsWithoutWorkName,
-        locationsWithoutWorkName,
-        share: noWorkShare,
-        source: "warehouse_issues",
-        fallbackApplied: false,
-        canResolveFromSource: false,
-        explanation: noWorkNameExplanation,
-      },
-      backendOwnerPreserved: true,
-      transportBranch: args.transportBranch,
-      pricedStage: args.pricedStage,
-    },
+    summary,
+    diagnostics,
   };
 };
 
@@ -458,12 +584,9 @@ export async function loadDirectorReportUiScope(args: {
     }
     const normalizedReport = normalizeReportPayload(transportResult.report);
     const normalizedDiscipline = normalizeDisciplinePayload(transportResult.discipline);
-    const canonicalDecorations = await buildDirectorReportCanonicalDecorations({
-      optionsState,
-      report: normalizedReport,
-      discipline: normalizedDiscipline,
-      transportBranch: transportResult.branchMeta.transportBranch,
-      pricedStage: transportResult.branchMeta.pricedStage ?? null,
+    const canonicalDecorations = normalizeDirectorReportCanonicalDecorations({
+      summaryPayload: transportResult.canonicalSummaryPayload,
+      diagnosticsPayload: transportResult.canonicalDiagnosticsPayload,
     });
     const reportWithCanonicalMeta =
       normalizedReport == null
@@ -497,7 +620,7 @@ export async function loadDirectorReportUiScope(args: {
       cacheLayer: transportResult.fromCache ? "transport_cache" : "none",
       fallbackUsed: false,
       extra: {
-        optionsObjects: result.optionsState.objects.length,
+        optionsObjects: canonicalDecorations.summary.displayObjectCount,
         disciplineWorks: result.discipline?.works?.length ?? 0,
         pricedStage: transportResult.branchMeta.pricedStage ?? null,
         objectCountLabel: canonicalDecorations.summary.displayObjectCountLabel,

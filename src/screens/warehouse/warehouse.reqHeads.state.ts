@@ -1,4 +1,3 @@
-import type { WarehouseRequestSourcePath } from "./warehouse.cache";
 import type {
   ReqHeadRow,
   WarehouseReqHeadsCooldownReason,
@@ -7,7 +6,6 @@ import type {
   WarehouseReqHeadsIntegrityState,
   WarehouseReqHeadsListState,
 } from "./warehouse.types";
-import { classifyWarehouseReqHeadsFailure } from "./warehouse.reqHeads.failure";
 
 export type WarehouseReqHeadsStateTraceEntry = {
   timestamp: string;
@@ -16,7 +14,6 @@ export type WarehouseReqHeadsStateTraceEntry = {
   freshness: WarehouseReqHeadsFreshness;
   failureClass: WarehouseReqHeadsFailureClass | null;
   rowCount: number;
-  lastKnownGoodUsed: boolean;
   cooldownActive: boolean;
   cooldownReason: WarehouseReqHeadsCooldownReason | null;
   reason: string | null;
@@ -36,7 +33,6 @@ export type WarehouseReqHeadsPrimaryPublishDecision = {
   hasMore: boolean;
   integrityState: WarehouseReqHeadsIntegrityState;
   listState: WarehouseReqHeadsListState;
-  usedLastKnownGood: boolean;
   falseEmptyPrevented: boolean;
 };
 
@@ -99,21 +95,6 @@ export function deriveWarehouseReqHeadsListState(params: {
       reason: null,
       message: null,
       rowCount,
-      lastKnownGoodUsed: false,
-      cooldownActive: params.integrityState.cooldownActive,
-      cooldownReason: params.integrityState.cooldownReason,
-    };
-  }
-
-  if (params.integrityState.mode === "stale_last_known_good") {
-    return {
-      publishState: "degraded",
-      freshness: "stale",
-      failureClass: params.integrityState.failureClass,
-      reason: params.integrityState.reason,
-      message: params.integrityState.message,
-      rowCount,
-      lastKnownGoodUsed: params.integrityState.cacheUsed,
       cooldownActive: params.integrityState.cooldownActive,
       cooldownReason: params.integrityState.cooldownReason,
     };
@@ -126,7 +107,6 @@ export function deriveWarehouseReqHeadsListState(params: {
     reason: params.integrityState.reason,
     message: params.integrityState.message,
     rowCount,
-    lastKnownGoodUsed: false,
     cooldownActive: params.integrityState.cooldownActive,
     cooldownReason: params.integrityState.cooldownReason,
   };
@@ -159,59 +139,7 @@ export function resolveWarehouseReqHeadsPrimaryPublish(params: {
   rows: ReqHeadRow[];
   hasMore: boolean;
   integrityState: WarehouseReqHeadsIntegrityState;
-  sourcePath: WarehouseRequestSourcePath;
-  sourceReason?: string | null;
-  lastKnownGood?: { rows: ReqHeadRow[]; hasMore: boolean } | null;
 }): WarehouseReqHeadsPrimaryPublishDecision {
-  if (
-    params.integrityState.mode === "healthy" &&
-    params.sourcePath !== "canonical" &&
-    params.rows.length === 0
-  ) {
-    const failure = classifyWarehouseReqHeadsFailure(
-      params.sourceReason ?? "compatibility_empty_not_primary",
-    );
-    if (params.lastKnownGood) {
-      const integrityState = createWarehouseReqHeadsIntegrityState({
-        mode: "stale_last_known_good",
-        failureClass: failure.failureClass,
-        reason: "non_primary_empty_not_publishable",
-        message: params.sourceReason ?? "compatibility path returned empty after primary failure",
-        cacheUsed: true,
-      });
-      return {
-        rows: params.lastKnownGood.rows,
-        hasMore: params.lastKnownGood.hasMore,
-        integrityState,
-        listState: deriveWarehouseReqHeadsListState({
-          rows: params.lastKnownGood.rows,
-          integrityState,
-        }),
-        usedLastKnownGood: true,
-        falseEmptyPrevented: true,
-      };
-    }
-
-    const integrityState = createWarehouseReqHeadsIntegrityState({
-      mode: "error",
-      failureClass: failure.failureClass,
-      reason: "non_primary_empty_not_publishable",
-      message: params.sourceReason ?? "compatibility path returned empty after primary failure",
-      cacheUsed: false,
-    });
-    return {
-      rows: [],
-      hasMore: false,
-      integrityState,
-      listState: deriveWarehouseReqHeadsListState({
-        rows: [],
-        integrityState,
-      }),
-      usedLastKnownGood: false,
-      falseEmptyPrevented: true,
-    };
-  }
-
   return {
     rows: params.rows,
     hasMore: params.hasMore,
@@ -220,7 +148,6 @@ export function resolveWarehouseReqHeadsPrimaryPublish(params: {
       rows: params.rows,
       integrityState: params.integrityState,
     }),
-    usedLastKnownGood: false,
     falseEmptyPrevented: false,
   };
 }

@@ -41,11 +41,9 @@ async function main() {
     "money",
     "mapToFinanceRow",
     "normalizeFinSpendRows",
-    "computeFinanceRep",
-    "computeFinanceByKind",
-    "computeFinanceSpendSummary",
-    "computeFinanceSupplierPanel",
+    "normalizeFinSupplierInput",
     "fetchDirectorFinancePanelScopeV3ViaRpc",
+    "fetchDirectorFinancePanelScopeV4ViaRpc",
     "fetchDirectorFinanceSummaryViaRpc",
     "fetchDirectorFinanceSupplierScopeV2ViaRpc",
   ];

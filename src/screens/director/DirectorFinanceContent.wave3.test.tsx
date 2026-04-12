@@ -4,7 +4,6 @@ import TestRenderer, { act } from "react-test-renderer";
 
 import DirectorFinanceContent from "./DirectorFinanceContent";
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
-import type { FinSpendSummary } from "./director.finance";
 
 jest.mock("./director.finance", () => ({
   money: (value: number) => String(Number(value ?? 0)),
@@ -89,6 +88,16 @@ const canonicalScope: DirectorFinanceCanonicalScope = {
     overpay: 0,
     allocationCoverageHint: "Spend hint",
   },
+  spendBreakdown: {
+    header: {
+      approved: 777,
+      paid: 555,
+      toPay: 222,
+      overpay: 0,
+    },
+    kindRows: [],
+    overpaySuppliers: [],
+  },
   metricSourceMap: [],
   workInclusion: {
     spendRowsSource: "v_director_finance_spend_kinds_v3",
@@ -123,21 +132,9 @@ const canonicalScope: DirectorFinanceCanonicalScope = {
   },
 };
 
-const finSpendSummary: FinSpendSummary = {
-  header: {
-    approved: 777,
-    paid: 555,
-    toPay: 222,
-    overpay: 0,
-  },
-  kindRows: [],
-  overpaySuppliers: [],
-};
-
 const baseProps = {
   finLoading: false,
   finScope: canonicalScope,
-  finSpendSummary,
   finKindName: "",
   finKindList: [],
   finSupplier: null,

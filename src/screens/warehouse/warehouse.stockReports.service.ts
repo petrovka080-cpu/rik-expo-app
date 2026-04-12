@@ -174,11 +174,9 @@ async function loadNameMapLedgerUi(
 }
 
 export type WarehouseStockSourceMeta = {
-  primaryOwner: "rpc_scope_v2" | "rpc_scope_v1";
+  primaryOwner: "rpc_scope_v2";
   fallbackUsed: boolean;
-  sourceKind:
-    | "rpc:warehouse_stock_scope_v2"
-    | "rpc:warehouse_stock_scope_v1";
+  sourceKind: "rpc:warehouse_stock_scope_v2";
 };
 
 export type WarehouseStockWindowMeta = {
@@ -206,7 +204,7 @@ export type WarehouseStockFetchResult = {
 
 type WarehouseStockScopeEnvelope = {
   document_type: "warehouse_stock_scope";
-  version: "v1" | "v2";
+  version: "v2";
   rows: StockRow[];
   meta: Record<string, unknown>;
 };
@@ -220,8 +218,6 @@ class WarehouseStockScopeValidationError extends Error {
 
 const WAREHOUSE_STOCK_RPC_V2_SOURCE_KIND: WarehouseStockSourceMeta["sourceKind"] =
   "rpc:warehouse_stock_scope_v2";
-const WAREHOUSE_STOCK_RPC_SOURCE_KIND: WarehouseStockSourceMeta["sourceKind"] =
-  "rpc:warehouse_stock_scope_v1";
 
 const requireWarehouseRecord = (value: unknown, scope: string): Record<string, unknown> => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -259,7 +255,7 @@ function adaptWarehouseStockScopeEnvelope(value: unknown): WarehouseStockScopeEn
     );
   }
   const version = requireWarehouseString(root.version, "version", "warehouse_stock_scope");
-  if (version !== "v1" && version !== "v2") {
+  if (version !== "v2") {
     throw new WarehouseStockScopeValidationError(`warehouse_stock_scope invalid version: ${version}`);
   }
 
@@ -287,7 +283,7 @@ function adaptWarehouseStockScopeEnvelope(value: unknown): WarehouseStockScopeEn
 
   return {
     document_type: "warehouse_stock_scope",
-    version: version as "v1" | "v2",
+    version: "v2",
     rows,
     meta: requireWarehouseRecord(root.meta ?? {}, "warehouse_stock_scope.meta"),
   };
@@ -377,64 +373,6 @@ export async function apiFetchStockRpcV2(
   }
 }
 
-export async function apiFetchStockRpc(
-  supabase: SupabaseClient,
-  offset: number = 0,
-  limit: number = 400,
-): Promise<WarehouseStockFetchResult> {
-  const observation = beginPlatformObservability({
-    screen: "warehouse",
-    surface: "stock_list",
-    category: "fetch",
-    event: "fetch_stock_rpc",
-    sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
-  });
-
-  try {
-    const { data, error } = await supabase.rpc("warehouse_stock_scope_v1", {
-      p_limit: limit,
-      p_offset: offset,
-    });
-    if (error) throw error;
-
-    const envelope = adaptWarehouseStockScopeEnvelope(data);
-    const result: WarehouseStockFetchResult = {
-      supported: true,
-      rows: envelope.rows,
-      rikDeferredCodes: [],
-      overrideCodes: [],
-      missingProjectionCodes: [],
-      projectionAvailable: true,
-      projectionHitCount: envelope.rows.length,
-      projectionMissCount: 0,
-      projectionReadMs: 0,
-      fallbackReadMs: 0,
-      meta: adaptWarehouseStockWindowMeta(envelope.meta, offset, limit),
-      sourceMeta: {
-        primaryOwner: "rpc_scope_v1",
-        fallbackUsed: false,
-        sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
-      },
-    };
-    observation.success({
-      rowCount: result.rows.length,
-      sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
-      fallbackUsed: false,
-      extra: {
-        primaryOwner: "rpc_scope_v1",
-      },
-    });
-    return result;
-  } catch (error) {
-    observation.error(error, {
-      rowCount: 0,
-      errorStage: "fetch_stock_rpc",
-      sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
-    });
-    throw error;
-  }
-}
-
 export async function apiFetchStock(
   supabase: SupabaseClient,
   offset: number = 0,
@@ -473,50 +411,14 @@ export async function apiFetchStock(
       errorStage: "fetch_stock_rpc_v2",
       errorClass: error instanceof Error ? error.name : undefined,
       errorMessage: message || undefined,
-      fallbackUsed: true,
+      fallbackUsed: false,
     });
-    try {
-      const result = await apiFetchStockRpc(supabase, offset, limit);
-      const fallbackResult: WarehouseStockFetchResult = {
-        ...result,
-        sourceMeta: {
-          ...result.sourceMeta,
-          fallbackUsed: true,
-        },
-      };
-      observation.success({
-        rowCount: fallbackResult.rows.length,
-        sourceKind: fallbackResult.sourceMeta.sourceKind,
-        fallbackUsed: true,
-        extra: {
-          primaryOwner: fallbackResult.sourceMeta.primaryOwner,
-          fallbackReason: message,
-          totalRowCount: fallbackResult.meta.totalRowCount,
-          hasMore: fallbackResult.meta.hasMore,
-        },
-      });
-      return fallbackResult;
-    } catch (v1Error) {
-      const v1Message = v1Error instanceof Error ? v1Error.message : String(v1Error ?? "");
-      recordPlatformObservability({
-        screen: "warehouse",
-        surface: "stock_list",
-        category: "fetch",
-        event: "fetch_stock_primary_rpc_v1",
-        result: "error",
-        sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
-        errorStage: "fetch_stock_rpc",
-        errorClass: v1Error instanceof Error ? v1Error.name : undefined,
-        errorMessage: v1Message || undefined,
-        fallbackUsed: true,
-      });
-      observation.error(v1Error, {
-        rowCount: 0,
-        errorStage: "fetch_stock_rpc_v1_hard_cut",
-        sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
-      });
-      throw v1Error;
-    }
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "fetch_stock_rpc_v2",
+      sourceKind: WAREHOUSE_STOCK_RPC_V2_SOURCE_KIND,
+    });
+    throw error;
   }
 }
 

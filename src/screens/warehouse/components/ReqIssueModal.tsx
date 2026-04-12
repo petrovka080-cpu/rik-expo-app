@@ -86,42 +86,7 @@ function CloseSquare({
   );
 }
 
-const pickText = (a: unknown, b: unknown): string | null => {
-  const sa = String(a ?? "").trim();
-  if (sa) return sa;
-  const sb = String(b ?? "").trim();
-  return sb || null;
-};
-
 // ✅ дедуп по request_item_id: берём “самую сильную” строку
-function dedupeReqItems(rows: ReqItemUiRow[], nzFn: (v: unknown, d?: number) => number): ReqItemUiRow[] {
-  const byId: Record<string, ReqItemUiRow> = {};
-  for (const it of rows || []) {
-    const id = String(it?.request_item_id ?? "").trim();
-    if (!id) continue;
-
-    const prev = byId[id];
-    if (!prev) {
-      byId[id] = it;
-      continue;
-    }
-
-    const merged: ReqItemUiRow = {
-      ...prev,
-      name_human: pickText(prev.name_human, it.name_human) ?? prev.name_human,
-      rik_code: pickText(prev.rik_code, it.rik_code) ?? prev.rik_code,
-      uom: pickText(prev.uom, it.uom),
-      qty_limit: Math.max(nzFn(prev.qty_limit, 0), nzFn(it.qty_limit, 0)),
-      qty_issued: Math.max(nzFn(prev.qty_issued, 0), nzFn(it.qty_issued, 0)),
-      qty_left: Math.max(nzFn(prev.qty_left, 0), nzFn(it.qty_left, 0)),
-      qty_available: Math.max(nzFn(prev.qty_available, 0), nzFn(it.qty_available, 0)),
-      qty_can_issue_now: Math.max(nzFn(prev.qty_can_issue_now, 0), nzFn(it.qty_can_issue_now, 0)),
-    };
-    byId[id] = merged;
-  }
-  return Object.values(byId);
-}
-
 function parseHeaderMeta(raw: string): { contractor: string; phone: string; volume: string } {
   const out = { contractor: "", phone: "", volume: "" };
   const normalizePhone = (v: string) => {
@@ -236,11 +201,7 @@ export default function ReqIssueModal(props: Props) {
 
   // ✅ 1) фильтр по qty_left > 0
   // ✅ 2) дедуп по request_item_id (иначе троит + warning по key)
-  const rows = useMemo(() => {
-    const base = (reqItems || []).filter((it) => nz(it.qty_left, 0) > 0);
-    const uniq = dedupeReqItems(base, nz);
-    return uniq;
-  }, [reqItems]);
+  const rows = useMemo(() => (reqItems || []).filter((it) => nz(it.qty_left, 0) > 0), [reqItems]);
 
   return (
     <RNModal

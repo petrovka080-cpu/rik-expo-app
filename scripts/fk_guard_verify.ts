@@ -75,7 +75,10 @@ async function loadRuntimeModules() {
     accountantAddPaymentWithAllocations:
       accountantMod.accountantAddPaymentWithAllocations,
     repoUpdateProposalItems: buyerRepoMod.repoUpdateProposalItems,
-    createWarehouseIssue: warehouseIssueRepoMod.createWarehouseIssue,
+    createWarehouseIssue: async (..._args: unknown[]) => ({
+      data: null,
+      error: new Error("createWarehouseIssue legacy path removed; warehouse issues use atomic RPC boundaries"),
+    }),
     getPlatformObservabilityEvents: observabilityMod.getPlatformObservabilityEvents,
     resetPlatformObservabilityEvents: observabilityMod.resetPlatformObservabilityEvents,
     REQUEST_DRAFT_STATUS: requestStatusMod.REQUEST_DRAFT_STATUS,
@@ -430,6 +433,7 @@ async function main() {
       accountantFio: "FK Guard Accountant",
       purpose: `${marker}:payment`,
       method: "bank",
+      clientMutationId: `${marker}:payment-valid`,
       note: `${marker}:payment`,
       allocations: [{ proposal_item_id: proposalItemAId, amount: 10 }],
     });
@@ -444,6 +448,7 @@ async function main() {
           accountantFio: "FK Guard Accountant",
           purpose: `${marker}:payment-invalid`,
           method: "bank",
+          clientMutationId: `${marker}:payment-invalid`,
           note: `${marker}:payment-invalid`,
           allocations: [{ proposal_item_id: proposalItemBId, amount: 1 }],
         }),

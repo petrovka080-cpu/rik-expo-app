@@ -59,8 +59,6 @@ export function makeWarehouseIssueActions(args: {
   fetchReqItems: (rid: string) => Promise<void>;
   fetchReqHeads: () => Promise<void>;
 
-  getAvailableByCode: (code: string) => number;
-  getAvailableByCodeUom?: (code: string, uomId: string | null) => number;
   getMaterialNameByCode?: (code: string) => string | null;
 
   // UI callbacks
@@ -86,8 +84,6 @@ export function makeWarehouseIssueActions(args: {
     fetchReqItems,
     fetchReqHeads,
 
-    getAvailableByCode,
-    getAvailableByCodeUom,
     getMaterialNameByCode,
 
     setIssueBusy,
@@ -102,9 +98,6 @@ export function makeWarehouseIssueActions(args: {
     const s = String(v ?? "").trim();
     return s ? s : null;
   };
-  const buildCodeUomKey = (code: string, uomId: string | null) =>
-    `${normMatCode(code)}::${normUomId(uomId ?? "") || "-"}`;
-
   const getObjName = () => toNull(getObjectLabel?.());
   const getWorkName = () => toNull(getWorkLabel?.());
   let reqPickInFlight = false;
@@ -297,37 +290,6 @@ export function makeWarehouseIssueActions(args: {
     setIssueMsg({ kind: null, text: "" });
 
     try {
-      // Validate cumulative quantity by code+uom before sending batch to RPC.
-      const groupedQty: Record<string, number> = {};
-      const groupedName: Record<string, string> = {};
-      for (const ln of lines) {
-        const code = normMatCode(String(ln.code ?? ""));
-        const uom = normUomId((ln ).uom_id ?? null);
-        const k = buildCodeUomKey(code, uom);
-        groupedQty[k] = nz(groupedQty[k], 0) + nz(ln.qty, 0);
-        groupedName[k] =
-          String((ln ).name ?? "").trim() ||
-          String(getMaterialNameByCode?.(code) ?? "").trim() ||
-          code;
-      }
-
-      for (const k of Object.keys(groupedQty)) {
-        const [code, uomRaw] = k.split("::");
-        const uom = uomRaw && uomRaw !== "-" ? uomRaw : null;
-        const want = nz(groupedQty[k], 0);
-        const can =
-          typeof getAvailableByCodeUom === "function"
-            ? nz(getAvailableByCodeUom(code, uom), 0)
-            : nz(getAvailableByCode(code), 0);
-        if (want > can) {
-          setIssueMsg({
-            kind: "error",
-            text: `Недостаточно на складе: ${groupedName[k]} (доступно ${can}, выбрано ${want})`,
-          });
-          return false;
-        }
-      }
-
       const payloadLines = lines.map((l) => ({
         rik_code: normMatCode(l.code),
         uom_id: normUomId((l ).uom_id ?? null),

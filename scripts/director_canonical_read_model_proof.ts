@@ -4,12 +4,6 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 
-import {
-  adaptCanonicalMaterialsPayload,
-  adaptCanonicalOptionsPayload,
-  adaptCanonicalWorksPayload,
-} from "../src/lib/api/director_reports.adapters";
-
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
 
@@ -31,20 +25,16 @@ const financeOutPath = path.join(artifactsDir, "director-finance-canonical-proof
 const reportsOutPath = path.join(artifactsDir, "director-reports-canonical-proof.json");
 const summaryOutPath = path.join(artifactsDir, "director-canonical-read-model.summary.json");
 
-const WITHOUT_WORK = "Без вида работ";
-
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 
-const asArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
-
 const unwrapRpcPayload = (value: unknown): Record<string, unknown> => {
-  if (Array.isArray(value)) {
-    const first = value[0];
-    return asRecord(first);
-  }
+  if (Array.isArray(value)) return asRecord(value[0]);
   return asRecord(value);
 };
+
+const asArray = (value: unknown): Record<string, unknown>[] =>
+  Array.isArray(value) ? value.map(asRecord) : [];
 
 const toFiniteNumber = (value: unknown): number => {
   const numeric = Number(value ?? 0);
@@ -53,47 +43,9 @@ const toFiniteNumber = (value: unknown): number => {
 
 const text = (value: unknown): string => String(value ?? "").trim();
 
-const normalizeKey = (value: unknown): string => text(value).toLowerCase();
-
-const isWithoutWorkBucket = (value: unknown): boolean =>
-  normalizeKey(value).startsWith(normalizeKey(WITHOUT_WORK));
-
-const uniqueSorted = (values: Iterable<string>): string[] =>
-  Array.from(new Set(Array.from(values).map((value) => text(value)).filter(Boolean))).sort((left, right) =>
-    left.localeCompare(right, "ru"),
-  );
-
 const writeJson = (fullPath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
-};
-
-const isMissingSourceError = (error: unknown, sourceName: string): boolean => {
-  const record = asRecord(error);
-  const message = String(record.message ?? error ?? "").toLowerCase();
-  const details = String(record.details ?? "").toLowerCase();
-  const hint = String(record.hint ?? "").toLowerCase();
-  const code = String(record.code ?? "").toLowerCase();
-  const source = sourceName.toLowerCase();
-  const combined = `${message} ${details} ${hint}`;
-  return (
-    code === "42p01" ||
-    code === "pgrst205" ||
-    (combined.includes(source) && (combined.includes("does not exist") || combined.includes("relation") || combined.includes("missing")))
-  );
-};
-
-const probeSourceStatus = async (
-  source: "v_rik_names_ru" | "catalog_name_overrides" | "v_wh_balance_ledger_ui",
-  selectCols: string,
-): Promise<"ok" | "failed" | "missing"> => {
-  try {
-    const result = await admin.from(source).select(selectCols).limit(1);
-    if (!result.error) return "ok";
-    return isMissingSourceError(result.error, source) ? "missing" : "failed";
-  } catch (error) {
-    return isMissingSourceError(error, source) ? "missing" : "failed";
-  }
 };
 
 const readJsonIfPresent = (relativePath: string): unknown | null => {
@@ -102,8 +54,16 @@ const readJsonIfPresent = (relativePath: string): unknown | null => {
   return JSON.parse(fs.readFileSync(fullPath, "utf8"));
 };
 
+const requireRecord = (value: unknown, name: string): Record<string, unknown> => {
+  const record = asRecord(value);
+  if (!Object.keys(record).length) {
+    throw new Error(`${name} is missing from canonical backend payload`);
+  }
+  return record;
+};
+
 async function buildFinanceProof() {
-  const { data, error } = await admin.rpc("director_finance_panel_scope_v3", {
+  const { data, error } = await admin.rpc("director_finance_panel_scope_v4", {
     p_object_id: null,
     p_date_from: null,
     p_date_to: null,
@@ -115,40 +75,24 @@ async function buildFinanceProof() {
   if (error) throw error;
 
   const payload = unwrapRpcPayload(data);
-  const displayModeRaw = text(payload.display_mode ?? payload.displayMode);
-  const mode = displayModeRaw === "canonical_v3" ? "canonical" : "fallback";
-  const semantics = mode === "canonical" ? "allocation" : "invoice";
-  const summaryV3 = asRecord(payload.summary_v3 ?? payload.summaryV3);
-  const legacySummary = asRecord(payload.summary);
-  const supplierRows = asArray(payload.supplier_rows ?? payload.supplierRows).map(asRecord);
-  const legacySuppliers = asArray(asRecord(payload.report).suppliers).map(asRecord);
-  const meta = asRecord(payload.meta);
+  const canonical = requireRecord(payload.canonical, "director_finance_panel_scope_v4.canonical");
+  const summaryV4 = requireRecord(canonical.summary, "director_finance_panel_scope_v4.canonical.summary");
+  const supplierRows = asArray(canonical.suppliers);
+  const objectRows = asArray(canonical.objects);
+  const spend = requireRecord(canonical.spend, "director_finance_panel_scope_v4.canonical.spend");
+  const spendHeader = requireRecord(spend.header, "director_finance_panel_scope_v4.canonical.spend.header");
+  const spendKindRows = asArray(spend.kindRows);
+  const meta = requireRecord(payload.meta, "director_finance_panel_scope_v4.meta");
+  const mode = "canonical";
+  const semantics = "invoice_level_obligations";
 
-  const approvedTotal =
-    mode === "canonical"
-      ? toFiniteNumber(summaryV3.total_approved ?? summaryV3.totalApproved)
-      : toFiniteNumber(legacySummary.approved);
-  const paidTotal =
-    mode === "canonical"
-      ? toFiniteNumber(summaryV3.total_paid ?? summaryV3.totalPaid)
-      : toFiniteNumber(legacySummary.paid);
-  const debtTotal =
-    mode === "canonical"
-      ? toFiniteNumber(summaryV3.total_debt ?? summaryV3.totalDebt)
-      : toFiniteNumber(legacySummary.toPay);
+  const approvedTotal = toFiniteNumber(summaryV4.approvedTotal);
+  const paidTotal = toFiniteNumber(summaryV4.paidTotal);
+  const debtTotal = toFiniteNumber(summaryV4.debtTotal);
 
-  const supplierApprovedTotal = (mode === "canonical" ? supplierRows : legacySuppliers).reduce(
-    (sum, row) => sum + toFiniteNumber(mode === "canonical" ? row.payable : row.approved),
-    0,
-  );
-  const supplierPaidTotal = (mode === "canonical" ? supplierRows : legacySuppliers).reduce(
-    (sum, row) => sum + toFiniteNumber(mode === "canonical" ? row.paid : row.paid),
-    0,
-  );
-  const supplierDebtTotal = (mode === "canonical" ? supplierRows : legacySuppliers).reduce(
-    (sum, row) => sum + toFiniteNumber(mode === "canonical" ? row.debt : row.toPay),
-    0,
-  );
+  const supplierApprovedTotal = supplierRows.reduce((sum, row) => sum + toFiniteNumber(row.approvedTotal), 0);
+  const supplierPaidTotal = supplierRows.reduce((sum, row) => sum + toFiniteNumber(row.paidTotal), 0);
+  const supplierDebtTotal = supplierRows.reduce((sum, row) => sum + toFiniteNumber(row.debtTotal), 0);
 
   const parityDelta = {
     approved: Number((approvedTotal - supplierApprovedTotal).toFixed(2)),
@@ -157,18 +101,26 @@ async function buildFinanceProof() {
   };
 
   return {
-    owner: "rpc:director_finance_panel_scope_v3",
+    owner: "rpc:director_finance_panel_scope_v4",
     mode,
     semantics,
-    displayMode: displayModeRaw || "fallback_legacy",
-    summarySourceFields:
-      mode === "canonical"
-        ? ["summary_v3.total_approved", "summary_v3.total_paid", "summary_v3.total_debt"]
-        : ["summary.approved", "summary.paid", "summary.toPay"],
-    supplierSourceFields:
-      mode === "canonical"
-        ? ["supplier_rows[].payable", "supplier_rows[].paid", "supplier_rows[].debt"]
-        : ["report.suppliers[].approved", "report.suppliers[].paid", "report.suppliers[].toPay"],
+    displayMode: text(meta.displayMode) || "canonical_v3",
+    summarySourceFields: [
+      "canonical.summary.approvedTotal",
+      "canonical.summary.paidTotal",
+      "canonical.summary.debtTotal",
+    ],
+    supplierSourceFields: [
+      "canonical.suppliers[].approvedTotal",
+      "canonical.suppliers[].paidTotal",
+      "canonical.suppliers[].debtTotal",
+    ],
+    spendSourceFields: [
+      "canonical.spend.header.approved",
+      "canonical.spend.header.paid",
+      "canonical.spend.header.toPay",
+      "canonical.spend.header.overpay",
+    ],
     headerTotals: {
       approvedTotal,
       paidTotal,
@@ -182,11 +134,19 @@ async function buildFinanceProof() {
     parityDelta,
     mixedSourceRenderingRemoved: true,
     diagnostics: {
-      sourceVersion: text(meta.source_version ?? meta.sourceVersion) || "director_finance_panel_scope_v3",
-      payloadShapeVersion: text(meta.payload_shape_version ?? meta.payloadShapeVersion) || "v3",
+      sourceVersion: text(meta.source_version ?? meta.sourceVersion) || "director_finance_panel_scope_v4",
+      payloadShapeVersion: text(meta.payload_shape_version ?? meta.payloadShapeVersion) || "v4",
       owner: text(meta.owner) || "backend",
       generatedAt: text(meta.generated_at ?? meta.generatedAt) || null,
-      supplierRowCount: mode === "canonical" ? supplierRows.length : legacySuppliers.length,
+      supplierRowCount: supplierRows.length,
+      objectRowCount: objectRows.length,
+      spendKindRowCount: spendKindRows.length,
+      spendHeader: {
+        approved: toFiniteNumber(spendHeader.approved),
+        paid: toFiniteNumber(spendHeader.paid),
+        toPay: toFiniteNumber(spendHeader.toPay),
+        overpay: toFiniteNumber(spendHeader.overpay),
+      },
     },
   };
 }
@@ -197,81 +157,53 @@ async function buildReportsProof() {
     p_to: null,
     p_object_name: null,
     p_include_discipline: true,
-    p_include_costs: true,
+    p_include_costs: false,
   });
   if (error) throw error;
 
   const envelope = unwrapRpcPayload(data);
-  const options = adaptCanonicalOptionsPayload(envelope.options_payload);
-  const report = adaptCanonicalMaterialsPayload(envelope.report_payload);
-  const discipline =
-    envelope.discipline_payload == null ? null : adaptCanonicalWorksPayload(envelope.discipline_payload);
-  if (!options || !report) {
-    throw new Error("director_report_transport_scope_v1 returned invalid payload");
-  }
+  const summary = requireRecord(envelope.canonical_summary, "canonical_summary");
+  const diagnostics = requireRecord(envelope.canonical_diagnostics, "canonical_diagnostics");
+  const naming = requireRecord(diagnostics.naming, "canonical_diagnostics.naming");
+  const noWorkName = requireRecord(diagnostics.noWorkName, "canonical_diagnostics.noWorkName");
 
-  const rows = Array.isArray(report.rows) ? report.rows : [];
-  const works = Array.isArray(discipline?.works) ? discipline.works : [];
-  const unresolvedCodes = uniqueSorted(
-    rows
-      .filter((row) => {
-        const code = text(row.rik_code).toUpperCase();
-        const name = text(row.name_human_ru);
-        return !!code && (!name || name.toUpperCase() === code);
-      })
-      .map((row) => text(row.rik_code).toUpperCase()),
-  );
-  const missingWorks = works.filter((work) => isWithoutWorkBucket(work.work_type_name));
-  const itemsWithoutWorkName = missingWorks.reduce((sum, work) => sum + toFiniteNumber(work.total_positions), 0);
-  const locationsWithoutWorkName = missingWorks.reduce(
-    (sum, work) => sum + Math.max(toFiniteNumber(work.location_count), Array.isArray(work.levels) ? work.levels.length : 0),
-    0,
-  );
-  const namingStatus = {
-    vrr: await probeSourceStatus("v_rik_names_ru", "code,name_ru"),
-    overrides: await probeSourceStatus("catalog_name_overrides", "code,name_ru"),
-    ledger: await probeSourceStatus("v_wh_balance_ledger_ui", "code,name"),
-  };
+  if (diagnostics.backendOwnerPreserved !== true) {
+    throw new Error("director_report_transport_scope_v1 canonical diagnostics are not backend-owned");
+  }
 
   return {
     owner: "rpc:director_report_transport_scope_v1",
-    transportBranch: "rpc_scope_v1",
+    transportBranch: text(diagnostics.transportBranch),
     summarySourceFields: {
-      objectCount: "options.objects.length",
-      unresolvedNamesCount: "report.rows filtered by unresolved code/name parity",
-      noWorkNameCount: "discipline.works without work_name summed by total_positions",
+      objectCount: "canonical_summary.displayObjectCount",
+      unresolvedNamesCount: "canonical_summary.unresolvedNamesCount",
+      noWorkNameCount: "canonical_summary.noWorkNameCount",
     },
     objectCount: {
-      value: options.objects.length,
-      label: "Объекты по подтверждённым выдачам",
-      source: "warehouse_confirmed_issues",
+      value: toFiniteNumber(summary.displayObjectCount),
+      label: text(summary.displayObjectCountLabel),
+      source: text(diagnostics.objectCountSource),
     },
     unresolvedNames: {
-      count: unresolvedCodes.length,
-      unresolvedCodes,
+      count: toFiniteNumber(summary.unresolvedNamesCount),
+      unresolvedCodes: Array.isArray(naming.unresolvedCodes) ? naming.unresolvedCodes.map(text) : [],
     },
     noWorkName: {
-      workNameMissingCount: missingWorks.length,
-      workNameResolvedCount: Math.max(works.length - missingWorks.length, 0),
-      itemsWithoutWorkName,
-      locationsWithoutWorkName,
-      canResolveFromSource: false,
+      workNameMissingCount: toFiniteNumber(noWorkName.workNameMissingCount),
+      workNameResolvedCount: toFiniteNumber(noWorkName.workNameResolvedCount),
+      itemsWithoutWorkName: toFiniteNumber(noWorkName.itemsWithoutWorkName),
+      locationsWithoutWorkName: toFiniteNumber(noWorkName.locationsWithoutWorkName),
+      canResolveFromSource: noWorkName.canResolveFromSource === true,
     },
     namingDiagnostics: {
-      ...namingStatus,
-      resolvedNames: uniqueSorted(
-        rows
-          .filter((row) => {
-            const code = text(row.rik_code).toUpperCase();
-            const name = text(row.name_human_ru);
-            return !!code && !!name && name.toUpperCase() !== code;
-          })
-          .map((row) => text(row.rik_code).toUpperCase()),
-      ).length,
-      unresolvedCodes,
+      vrr: text(naming.vrr),
+      overrides: text(naming.overrides),
+      ledger: text(naming.ledger),
+      resolvedNames: toFiniteNumber(naming.resolvedNames),
+      unresolvedCodes: Array.isArray(naming.unresolvedCodes) ? naming.unresolvedCodes.map(text) : [],
     },
-    backendOwnerPreserved: true,
-    pricedStage: text(envelope.priced_stage) || "priced",
+    backendOwnerPreserved: diagnostics.backendOwnerPreserved === true,
+    pricedStage: text(diagnostics.pricedStage ?? envelope.priced_stage) || "priced",
   };
 }
 
@@ -301,6 +233,9 @@ async function main() {
       reports: reportsRuntime,
     },
     green:
+      finance.mode === "canonical" &&
+      finance.diagnostics.owner === "backend" &&
+      finance.diagnostics.sourceVersion === "director_finance_panel_scope_v4" &&
       Math.abs(finance.parityDelta.approved) < 0.01 &&
       Math.abs(finance.parityDelta.paid) < 0.01 &&
       Math.abs(finance.parityDelta.debt) < 0.01 &&
@@ -313,4 +248,7 @@ async function main() {
   console.log(JSON.stringify(summary, null, 2));
 }
 
-void main();
+void main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

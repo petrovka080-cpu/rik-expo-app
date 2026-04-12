@@ -25,7 +25,6 @@ import {
 } from "./director.types";
 import {
     money as moneyHelper,
-    type FinSpendSummary,
 } from "./director.finance";
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import { useIsFocused } from "@react-navigation/native";
@@ -39,17 +38,6 @@ const warnDirectorFinance = (
         const message = error instanceof Error ? error.message : String(error ?? "");
         console.warn(`[director] ${scope}:`, message || error);
     }
-};
-
-const EMPTY_FIN_SPEND_SUMMARY: FinSpendSummary = {
-    header: {
-        approved: 0,
-        paid: 0,
-        toPay: 0,
-        overpay: 0,
-    },
-    kindRows: [],
-    overpaySuppliers: [],
 };
 
 const DIRECTOR_FINANCE_TAB = "\u0424\u0438\u043d\u0430\u043d\u0441\u044b";
@@ -76,7 +64,6 @@ export function useDirectorScreenController() {
     const setFinLoading = useDirectorUiStore((state) => state.setFinLoading);
     const finStackRef = useRef<FinPage[]>(["home"]);
     const [finScope, setFinScope] = useState<DirectorFinanceCanonicalScope | null>(null);
-    const [finSpendSummary, setFinSpendSummary] = useState<FinSpendSummary>(EMPTY_FIN_SPEND_SUMMARY);
     const finPeriodOpen = useDirectorUiStore((state) => state.finPeriodOpen);
     const setFinPeriodOpen = useDirectorUiStore((state) => state.setFinPeriodOpen);
     const finFrom = useDirectorUiStore((state) => state.finFrom);
@@ -112,7 +99,6 @@ export function useDirectorScreenController() {
             }
 
             setFinScope(scope.canonicalScope);
-            setFinSpendSummary(scope.finSpendSummary);
         } catch (e: unknown) {
             warnDirectorFinance("fetchFinance", e);
         } finally {
@@ -237,7 +223,7 @@ export function useDirectorScreenController() {
     });
 
     const financePanel = useDirectorFinancePanel({
-        busy, supabase, finPage, finFrom, finTo, finSpendSummary, finLoading,
+        busy, supabase, finPage, finFrom, finTo, finScope, finLoading,
         finKindName, finSupplierSelection, fmtDateOnly, pushFin, popFin, closeFinance,
         setFinSupplierSelection, setFinKindName, setFinFrom, setFinTo,
         setFinPeriodOpen, fetchFinance,
@@ -367,7 +353,6 @@ export function useDirectorScreenController() {
         finOpen,
         finPage,
         finScope,
-        finSpendSummary,
         finPeriodOpen,
         finFrom,
         finTo,

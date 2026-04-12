@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { Alert, Platform } from "react-native";
 
 import {
@@ -42,6 +42,84 @@ type Params<T extends RowBase> = {
 
 const EPS = 0.01;
 
+type PaymentIntent = {
+  signature: string;
+  clientMutationId: string;
+  serverState: Awaited<ReturnType<typeof accountantLoadProposalFinancialState>>;
+};
+
+const roundMoney = (value: unknown) => Math.round((Number(value) || 0) * 100) / 100;
+
+const stableStringify = (value: unknown): string => {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableStringify(record[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+};
+
+const hashString32 = (input: string): string => {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(16);
+};
+
+const makePaymentMutationId = (signature: string): string => {
+  const cryptoLike =
+    typeof globalThis !== "undefined"
+      ? (globalThis as typeof globalThis & {
+          crypto?: {
+            randomUUID?: () => string;
+          };
+        }).crypto
+      : undefined;
+  const unique =
+    typeof cryptoLike?.randomUUID === "function"
+      ? cryptoLike.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  return `accountant-payment:${hashString32(signature)}:${unique}`;
+};
+
+const buildPaymentIntentSignature = (params: {
+  proposalId: string;
+  mode: "rest" | "partial_or_custom";
+  requestedAmount: number;
+  accountantFio: string;
+  payKind: "bank" | "cash";
+  purposePrefix: string;
+  note: string;
+  allocRows: AllocRow[];
+  invoiceNumber?: string | null;
+  invoiceDate?: string | null;
+  invoiceCurrency?: string | null;
+}) =>
+  stableStringify({
+    proposalId: params.proposalId,
+    mode: params.mode,
+    requestedAmount: roundMoney(params.requestedAmount),
+    accountantFio: params.accountantFio.trim(),
+    method: getPaymentMethodLabel(params.payKind),
+    purpose: `${params.purposePrefix} ${params.note || ""}`.trim(),
+    note: params.note?.trim() || null,
+    allocations: (Array.isArray(params.allocRows) ? params.allocRows : [])
+      .map((row) => ({
+        proposal_item_id: String(row?.proposal_item_id ?? "").trim(),
+        amount: roundMoney(row?.amount),
+      }))
+      .filter((row) => row.proposal_item_id && row.amount > 0)
+      .sort((left, right) => left.proposal_item_id.localeCompare(right.proposal_item_id)),
+    invoiceNumber: String(params.invoiceNumber ?? "").trim() || null,
+    invoiceDate: String(params.invoiceDate ?? "").trim() || null,
+    invoiceCurrency: String(params.invoiceCurrency ?? "").trim() || null,
+  });
+
 const paymentActionSourceKind = (proposalId: unknown) =>
   String(proposalId ?? "").trim() ? "proposal:payment_apply" : "payment:manual_form";
 
@@ -75,6 +153,8 @@ const getPaymentMethodLabel = (payKind: "bank" | "cash") =>
   payKind === "bank" ? "Банк" : "Нал";
 
 export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
+  const pendingPaymentIntentRef = useRef<PaymentIntent | null>(null);
+
   const recordPaymentActionCatch = useCallback(
     (
       kind: "critical_fail" | "soft_failure" | "cleanup_only" | "degraded_fallback",
@@ -133,7 +213,24 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       const proposalId = String(p.current?.proposal_id ?? "").trim();
       if (!proposalId) throw new Error("Proposal id is required for payment.");
 
-      const serverState = await loadServerFinancialState();
+      const intentSignature = buildPaymentIntentSignature({
+        proposalId,
+        mode,
+        requestedAmount,
+        accountantFio: p.accountantFio,
+        payKind: p.payKind,
+        purposePrefix: p.purposePrefix,
+        note: p.note,
+        allocRows: p.allocRows,
+        invoiceNumber: p.invoiceNumber ?? p.current?.invoice_number ?? null,
+        invoiceDate: p.invoiceDate ?? p.current?.invoice_date ?? null,
+        invoiceCurrency: p.invoiceCurrency ?? p.current?.invoice_currency ?? null,
+      });
+      let pendingIntent = pendingPaymentIntentRef.current;
+      const serverState =
+        pendingIntent?.signature === intentSignature
+          ? pendingIntent.serverState
+          : await loadServerFinancialState();
       const outstanding = Number(serverState.totals.outstandingAmount ?? 0);
       if (!serverState.eligibility.paymentEligible) {
         throw new Error(getFinancialFailureMessage(serverState.eligibility.failureCode));
@@ -143,6 +240,15 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       }
       if (requestedAmount - outstanding > EPS) {
         throw new Error(getFinancialFailureMessage("amount_exceeds_outstanding"));
+      }
+
+      if (!pendingIntent || pendingIntent.signature !== intentSignature) {
+        pendingIntent = {
+          signature: intentSignature,
+          clientMutationId: makePaymentMutationId(intentSignature),
+          serverState,
+        };
+        pendingPaymentIntentRef.current = pendingIntent;
       }
 
       const observation = beginPlatformObservability({
@@ -160,6 +266,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
           outstandingBefore: outstanding,
           serverPaymentEligible: serverState.eligibility.paymentEligible,
           serverFailureCode: serverState.eligibility.failureCode,
+          clientMutationId: pendingIntent.clientMutationId,
         },
       });
 
@@ -170,6 +277,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
           accountantFio: p.accountantFio.trim(),
           purpose: `${p.purposePrefix} ${p.note || ""}`.trim(),
           method: getPaymentMethodLabel(p.payKind),
+          clientMutationId: pendingIntent.clientMutationId,
           note: p.note?.trim() ? p.note.trim() : null,
           allocations: Array.isArray(p.allocRows) ? p.allocRows : [],
           invoiceNumber:
@@ -184,6 +292,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
           expectedTotalPaid: serverState.totals.totalPaid,
           expectedOutstanding: serverState.totals.outstandingAmount,
         });
+        pendingPaymentIntentRef.current = null;
 
         p.setCurrentPaymentId(Number(payment.paymentId));
 
@@ -194,6 +303,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
             mode,
             paymentId: payment.paymentId,
             requestedAmount,
+            clientMutationId: payment.clientMutationId,
           });
           showPaymentSyncWarning(error);
           return;
@@ -205,6 +315,9 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
             proposalId,
             mode,
             paymentId: payment.paymentId,
+            clientMutationId: payment.clientMutationId,
+            mutationOutcome: payment.outcome,
+            idempotentReplay: payment.idempotentReplay,
             allocationCount: p.allocRows.length,
             requestedAmount,
             outstandingBefore: payment.totalsBefore.outstandingAmount,
@@ -216,12 +329,16 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         p.safeAlert("Оплата проведена", "Оплата успешно сохранена.");
         p.closeCard();
       } catch (error) {
+        if (error instanceof AccountantPayInvoiceAtomicError) {
+          pendingPaymentIntentRef.current = null;
+        }
         observation.error(error, {
           errorStage: "payment_apply_failed",
           extra: {
             proposalId,
             mode,
             requestedAmount,
+            clientMutationId: pendingIntent.clientMutationId,
             failureCode: extractFailureCode(error),
           },
         });

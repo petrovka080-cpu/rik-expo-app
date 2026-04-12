@@ -1,14 +1,7 @@
-import { supabase } from "../supabaseClient";
 import { beginPlatformObservability } from "../observability/platformObservability";
-import { listAccountantInbox } from "./accountant";
 import {
   fetchDirectorFinancePanelScopeV4ViaRpc,
-  mapToFinanceRow,
-  normalizeFinSpendRows,
   type DirectorFinancePanelScopeV4,
-  type FinSpendRow,
-  type FinSpendSummary,
-  type FinanceRow,
 } from "../../screens/director/director.finance";
 import type {
   DirectorFinanceCanonicalScope,
@@ -28,10 +21,7 @@ export type DirectorFinanceScreenScopeIssue = {
 };
 
 export type DirectorFinanceScreenScopeResult = {
-  financeRows: FinanceRow[];
-  spendRows: FinSpendRow[];
   canonicalScope: DirectorFinanceCanonicalScope;
-  finSpendSummary: FinSpendSummary;
   panelScope: DirectorFinancePanelScopeV4 | null;
   financeDisplayMode: DirectorFinanceDisplayMode;
   issues: DirectorFinanceScreenScopeIssue[];
@@ -53,12 +43,6 @@ export type DirectorFinanceScreenScopeResult = {
     panelScope: "rpc_v4";
     financeDisplayMode: DirectorFinanceDisplayMode;
   };
-};
-
-export type DirectorFinanceSupportRowsResult = {
-  financeRows: FinanceRow[];
-  spendRows: FinSpendRow[];
-  issues: DirectorFinanceScreenScopeIssue[];
 };
 
 type DirectorFinanceScreenScopeArgs = {
@@ -313,6 +297,7 @@ const buildDirectorFinanceCanonicalScope = (
         overpay: toFiniteNumber(panelScope.spend.header.overpay),
         allocationCoverageHint: spendAllocationCoverageHint,
       },
+      spendBreakdown: panelScope.spend,
       metricSourceMap,
       workInclusion,
       uiExplainer,
@@ -391,6 +376,7 @@ const buildDirectorFinanceCanonicalScope = (
       overpay: toFiniteNumber(panelScope.spend.header.overpay),
       allocationCoverageHint: spendAllocationCoverageHint,
     },
+    spendBreakdown: panelScope.spend,
     metricSourceMap,
     workInclusion,
     uiExplainer,
@@ -408,92 +394,6 @@ const buildDirectorFinanceCanonicalScope = (
     },
   };
 };
-
-async function loadLegacyDirectorFinanceSpendRows(args: {
-  periodFromIso?: string | null;
-  periodToIso?: string | null;
-}): Promise<FinSpendRow[]> {
-  let query = supabase
-    .from("v_director_finance_spend_kinds_v3")
-    .select(
-      "proposal_id,proposal_no,supplier,kind_code,kind_name,approved_alloc,paid_alloc,paid_alloc_cap,overpay_alloc,director_approved_at",
-    );
-
-  if (args.periodFromIso) query = query.gte("director_approved_at", args.periodFromIso);
-  if (args.periodToIso) query = query.lte("director_approved_at", args.periodToIso);
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return normalizeFinSpendRows(data);
-}
-
-async function loadLegacyDirectorFinanceRows(): Promise<FinanceRow[]> {
-  const list = await listAccountantInbox();
-  return (Array.isArray(list) ? list : [])
-    .map(mapToFinanceRow)
-    .filter((row) => !!row && !!row.id)
-    .filter((row) => Number.isFinite(Number(row.amount)));
-}
-
-export async function loadDirectorFinanceSupportRows(args: {
-  periodFromIso?: string | null;
-  periodToIso?: string | null;
-}): Promise<DirectorFinanceSupportRowsResult> {
-  const observation = beginPlatformObservability({
-    screen: "director",
-    surface: "finance_support_rows",
-    category: "fetch",
-    event: "load_finance_support_rows",
-    sourceKind: "legacy:accountant_inbox+spend_view",
-  });
-  try {
-    const issues: DirectorFinanceScreenScopeIssue[] = [];
-
-    const [financeRowsResult, spendRowsResult] = await Promise.allSettled([
-      loadLegacyDirectorFinanceRows(),
-      loadLegacyDirectorFinanceSpendRows({
-        periodFromIso: args.periodFromIso,
-        periodToIso: args.periodToIso,
-      }),
-    ]);
-
-    const financeRows = financeRowsResult.status === "fulfilled" ? financeRowsResult.value : [];
-    const spendRows = spendRowsResult.status === "fulfilled" ? spendRowsResult.value : [];
-
-    if (financeRowsResult.status === "rejected") {
-      issues.push({ scope: "finance_rows", error: financeRowsResult.reason });
-    }
-    if (spendRowsResult.status === "rejected") {
-      issues.push({ scope: "spend_rows", error: spendRowsResult.reason });
-    }
-
-    if (financeRowsResult.status === "rejected" && spendRowsResult.status === "rejected") {
-      throw financeRowsResult.reason ?? spendRowsResult.reason;
-    }
-
-    const result = {
-      financeRows,
-      spendRows,
-      issues,
-    };
-    observation.success({
-      rowCount: financeRows.length + spendRows.length,
-      fallbackUsed: issues.length > 0,
-      extra: {
-        financeRows: financeRows.length,
-        spendRows: spendRows.length,
-        issues: issues.length,
-      },
-    });
-    return result;
-  } catch (error) {
-    observation.error(error, {
-      rowCount: 0,
-      errorStage: "load_finance_support_rows",
-    });
-    throw error;
-  }
-}
 
 async function loadDirectorFinancePrimaryScope(
   args: DirectorFinanceScreenScopeArgs & {
@@ -563,11 +463,8 @@ export async function loadDirectorFinanceScreenScope(
   const canonicalScope = buildDirectorFinanceCanonicalScope(resolvedPanelScope);
 
   const result: DirectorFinanceScreenScopeResult = {
-    financeRows: [],
-    spendRows: [],
     panelScope: resolvedPanelScope,
     canonicalScope,
-    finSpendSummary: resolvedPanelScope.spend,
     financeDisplayMode: resolvedPanelScope.displayMode,
     issues: primaryScope.issues,
     supportRowsLoaded: false,

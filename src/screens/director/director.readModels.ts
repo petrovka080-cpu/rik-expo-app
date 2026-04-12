@@ -1,3 +1,5 @@
+import type { FinSpendSummary } from "./director.finance.types";
+
 export type DirectorFinanceCanonicalMode = "canonical" | "fallback";
 export type DirectorFinanceCanonicalSemantics = "invoice_level_obligations";
 export type DirectorFinanceSpendSemantics = "allocation_level_spend";
@@ -123,6 +125,7 @@ export type DirectorFinanceCanonicalScope = {
   objects: DirectorFinanceCanonicalObjectRow[];
   obligations: DirectorFinanceObligationsSummary;
   spend: DirectorFinanceSpendTruthSummary;
+  spendBreakdown: FinSpendSummary;
   metricSourceMap: DirectorFinanceMetricSourceMapEntry[];
   workInclusion: DirectorFinanceWorkInclusionDiagnostics;
   uiExplainer: DirectorFinanceUiExplainer;

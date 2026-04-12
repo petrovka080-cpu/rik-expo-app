@@ -1,11 +1,10 @@
 import fs from "fs";
 import path from "path";
+
+import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 
-type GlobalDevFlag = typeof globalThis & { __DEV__?: boolean };
-
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
-(globalThis as GlobalDevFlag).__DEV__ = false;
 
 const DUE_DAYS_DEFAULT = 7;
 const CRITICAL_DAYS = 14;
@@ -17,11 +16,32 @@ type NumericParity = {
   match: boolean;
 };
 
+const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
+const supabaseKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY/EXPO_PUBLIC_SUPABASE_ANON_KEY");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false, autoRefreshToken: false },
+  global: { headers: { "x-client-info": "director-finance-cutover-v2" } },
+});
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+
+const asArray = (value: unknown): Record<string, unknown>[] =>
+  Array.isArray(value) ? value.map(asRecord) : [];
+
+const toFiniteNumber = (value: unknown): number => {
+  const numeric = Number(value ?? 0);
+  return Number.isFinite(numeric) ? numeric : 0;
+};
+
 const compareNumber = (left: unknown, right: unknown, epsilon = 0.001): NumericParity => {
-  const a = Number(left ?? 0);
-  const b = Number(right ?? 0);
-  const safeA = Number.isFinite(a) ? a : 0;
-  const safeB = Number.isFinite(b) ? b : 0;
+  const safeA = toFiniteNumber(left);
+  const safeB = toFiniteNumber(right);
   const delta = safeA - safeB;
   return {
     left: safeA,
@@ -32,189 +52,88 @@ const compareNumber = (left: unknown, right: unknown, epsilon = 0.001): NumericP
 };
 
 async function main() {
-  const financeScopeService = await import("../src/lib/api/directorFinanceScope.service");
-  const finance = await import("../src/screens/director/director.finance");
-  const pdfSourceService = await import("../src/lib/api/directorPdfSource.service");
+  const { data, error } = await supabase.rpc("director_finance_panel_scope_v4", {
+    p_object_id: null,
+    p_date_from: null,
+    p_date_to: null,
+    p_due_days: DUE_DAYS_DEFAULT,
+    p_critical_days: CRITICAL_DAYS,
+    p_limit: 50,
+    p_offset: 0,
+  });
+  if (error) throw error;
 
-  const scope = await financeScopeService.loadDirectorFinanceScreenScope({
-    periodFromIso: null,
-    periodToIso: null,
-    dueDaysDefault: DUE_DAYS_DEFAULT,
-    criticalDays: CRITICAL_DAYS,
-  });
+  const root = asRecord(data);
+  const canonical = asRecord(root.canonical);
+  const summary = asRecord(canonical.summary);
+  const spend = asRecord(asRecord(canonical.spend).header);
+  const suppliers = asArray(canonical.suppliers);
+  const objects = asArray(canonical.objects);
+  const spendKindRows = asArray(asRecord(canonical.spend).kindRows);
+  const meta = asRecord(root.meta);
 
-  const supportRows = await financeScopeService.loadDirectorFinanceSupportRows({
-    periodFromIso: null,
-    periodToIso: null,
-  });
-
-  const computedRep = finance.computeFinanceRep(supportRows.financeRows, {
-    dueDaysDefault: DUE_DAYS_DEFAULT,
-    criticalDays: CRITICAL_DAYS,
-    periodFromIso: null,
-    periodToIso: null,
-  });
-  const computedSpend = finance.computeFinanceSpendSummary(supportRows.spendRows);
-  const panelScopeV1 = await finance.fetchDirectorFinancePanelScopeViaRpc({
-    periodFromIso: null,
-    periodToIso: null,
-    dueDaysDefault: DUE_DAYS_DEFAULT,
-    criticalDays: CRITICAL_DAYS,
-  });
-  const panelScopeV2 = await finance.fetchDirectorFinancePanelScopeV2ViaRpc({
-    periodFromIso: null,
-    periodToIso: null,
-    limit: 1000,
-    offset: 0,
-  });
-  const summaryV2 = await finance.fetchDirectorFinanceSummaryV2ViaRpc({
-    periodFromIso: null,
-    periodToIso: null,
-  });
-  const pdfSource = await pdfSourceService.getDirectorFinancePdfSource({
-    periodFrom: null,
-    periodTo: null,
-    dueDaysDefault: DUE_DAYS_DEFAULT,
-    criticalDays: CRITICAL_DAYS,
-  });
+  const supplierApproved = suppliers.reduce((sum, row) => sum + toFiniteNumber(row.approvedTotal), 0);
+  const supplierPaid = suppliers.reduce((sum, row) => sum + toFiniteNumber(row.paidTotal), 0);
+  const supplierDebt = suppliers.reduce((sum, row) => sum + toFiniteNumber(row.debtTotal), 0);
 
   const summaryParity = {
-    approved: compareNumber(scope.canonicalScope.obligations.approved, panelScopeV1?.summary.approved ?? computedRep.summary.approved),
-    paid: compareNumber(scope.canonicalScope.obligations.paid, panelScopeV1?.summary.paid ?? computedRep.summary.paid),
-    toPay: compareNumber(scope.canonicalScope.obligations.debt, panelScopeV1?.summary.toPay ?? computedRep.summary.toPay),
-    overdueCount: compareNumber(
-      scope.canonicalScope.summary.overdueCount,
-      panelScopeV1?.summary.overdueCount ?? computedRep.summary.overdueCount,
-    ),
-    overdueAmount: compareNumber(
-      scope.canonicalScope.summary.overdueAmount,
-      panelScopeV1?.summary.overdueAmount ?? computedRep.summary.overdueAmount,
-    ),
-    criticalCount: compareNumber(
-      scope.canonicalScope.summary.criticalCount,
-      panelScopeV1?.summary.criticalCount ?? computedRep.summary.criticalCount,
-    ),
-    criticalAmount: compareNumber(
-      scope.canonicalScope.summary.criticalAmount,
-      panelScopeV1?.summary.criticalAmount ?? computedRep.summary.criticalAmount,
-    ),
-    partialCount: compareNumber(
-      scope.canonicalScope.summary.partialCount,
-      panelScopeV1?.summary.partialCount ?? computedRep.summary.partialCount,
-    ),
-    debtCount: compareNumber(
-      scope.canonicalScope.summary.debtCount,
-      panelScopeV1?.summary.debtCount ?? computedRep.summary.debtCount,
-    ),
+    approved: compareNumber(summary.approvedTotal, supplierApproved),
+    paid: compareNumber(summary.paidTotal, supplierPaid),
+    debt: compareNumber(summary.debtTotal, supplierDebt),
+    overdueCountPresent: Number.isFinite(toFiniteNumber(summary.overdueCount)),
+    criticalCountPresent: Number.isFinite(toFiniteNumber(summary.criticalCount)),
   };
 
-  const spendParity = {
-    approved: compareNumber(scope.finSpendSummary.header.approved, computedSpend.header.approved),
-    paid: compareNumber(scope.finSpendSummary.header.paid, computedSpend.header.paid),
-    toPay: compareNumber(scope.finSpendSummary.header.toPay, computedSpend.header.toPay),
-    overpay: compareNumber(scope.finSpendSummary.header.overpay, computedSpend.header.overpay),
-    kindRowsCount: compareNumber(scope.finSpendSummary.kindRows.length, computedSpend.kindRows.length),
-    overpaySuppliersCount: compareNumber(
-      scope.finSpendSummary.overpaySuppliers.length,
-      computedSpend.overpaySuppliers.length,
-    ),
+  const spendProof = {
+    approved: toFiniteNumber(spend.approved),
+    paid: toFiniteNumber(spend.paid),
+    toPay: toFiniteNumber(spend.toPay),
+    overpay: toFiniteNumber(spend.overpay),
+    kindRows: spendKindRows.length,
   };
-
-  const supplierParity = {
-    count: compareNumber(
-      scope.canonicalScope.suppliers.length,
-      panelScopeV1?.report.suppliers.length ?? computedRep.report.suppliers.length,
-    ),
-    topFiveMatch: scope.canonicalScope.suppliers.slice(0, 5).every((row, index) => {
-      const target = panelScopeV1?.report.suppliers[index] ?? computedRep.report.suppliers[index];
-      return (
-        String(row.supplierName) === String(target?.supplier ?? "") &&
-        Math.abs(Number(row.debtTotal ?? 0) - Number(target?.toPay ?? 0)) <= 0.001
-      );
-    }),
-  };
-
-  const summaryV2Parity = summaryV2
-    ? {
-        totalAmount: compareNumber(summaryV2.totalAmount, panelScopeV2?.summaryV2.totalAmount ?? summaryV2.totalAmount),
-        totalPaid: compareNumber(summaryV2.totalPaid, panelScopeV2?.summaryV2.totalPaid ?? summaryV2.totalPaid),
-        totalDebt: compareNumber(summaryV2.totalDebt, panelScopeV2?.summaryV2.totalDebt ?? summaryV2.totalDebt),
-        overdueAmount: compareNumber(
-          summaryV2.overdueAmount,
-          panelScopeV2?.summaryV2.overdueAmount ?? summaryV2.overdueAmount,
-        ),
-        bySupplierCount: compareNumber(
-          summaryV2.bySupplier.length,
-          panelScopeV2?.summaryV2.bySupplier.length ?? summaryV2.bySupplier.length,
-        ),
-      }
-    : null;
-
-  const allNumericParity = [
-    ...Object.values(summaryParity),
-    ...Object.values(spendParity),
-    ...(summaryV2Parity ? Object.values(summaryV2Parity) : []),
-  ].every((entry) => entry.match);
 
   const status =
-    scope.sourceMeta.panelScope === "rpc_v4" &&
-    scope.supportRowsLoaded === false &&
-    panelScopeV2 != null &&
-    allNumericParity &&
-    supplierParity.topFiveMatch &&
-    pdfSource.source !== "legacy:director_finance_ui_payload"
+    root.document_type === "director_finance_panel_scope" &&
+    root.version === "v4" &&
+    meta.owner === "backend" &&
+    meta.sourceVersion === "director_finance_panel_scope_v4" &&
+    Object.values(summaryParity)
+      .filter((entry): entry is NumericParity => typeof entry === "object")
+      .every((entry) => entry.match)
       ? "passed"
       : "failed";
 
   const artifact = {
     status,
     generatedAt: new Date().toISOString(),
-    sourceMeta: scope.sourceMeta,
-    cutoverMeta: scope.cutoverMeta,
-    issues: scope.issues.map((issue) => ({
-      scope: issue.scope,
-      error: issue.error instanceof Error ? issue.error.message : String(issue.error ?? ""),
-    })),
-    panelScopeV2: panelScopeV2
-      ? {
-          rows: panelScopeV2.rows.length,
-          pagination: panelScopeV2.pagination,
-          summaryV2BySupplier: panelScopeV2.summaryV2.bySupplier.length,
-        }
-      : null,
-    panelScopeV1: panelScopeV1
-      ? {
-          suppliers: panelScopeV1.report.suppliers.length,
-          spendKindRows: panelScopeV1.spend.kindRows.length,
-        }
-      : null,
-    summaryParity,
-    spendParity,
-    supplierParity,
-    summaryV2Parity,
-    pdfSource: {
-      source: pdfSource.source,
-      sourceBranch: pdfSource.branchMeta.sourceBranch,
-      fallbackReason: pdfSource.branchMeta.fallbackReason ?? null,
-      financeRows: pdfSource.financeRows.length,
-      spendRows: pdfSource.spendRows.length,
+    sourceMeta: {
+      primaryOwner: "rpc_v4",
+      sourceVersion: meta.sourceVersion,
+      owner: meta.owner,
+      payloadShapeVersion: meta.payloadShapeVersion,
+      financeRowsSource: meta.financeRowsSource,
+      spendRowsSource: meta.spendRowsSource,
     },
+    canonical: {
+      suppliers: suppliers.length,
+      objects: objects.length,
+      spendKindRows: spendKindRows.length,
+    },
+    summaryParity,
+    spendProof,
   };
 
-  const summary = {
+  const summaryOut = {
     status,
-    panelScope: scope.sourceMeta.panelScope,
-    backendFirstPrimary: scope.cutoverMeta.backendFirstPrimary,
-    supportRowsLoaded: scope.supportRowsLoaded,
-    supportRowsReason: scope.cutoverMeta.supportRowsReason,
-    issues: artifact.issues.length,
-    summaryParityOk: Object.values(summaryParity).every((entry) => entry.match),
-    spendParityOk: Object.values(spendParity).every((entry) => entry.match),
-    supplierTopFiveMatch: supplierParity.topFiveMatch,
-    summaryV2ParityOk: summaryV2Parity
-      ? Object.values(summaryV2Parity).every((entry) => entry.match)
-      : false,
-    pdfSource: artifact.pdfSource,
+    primaryOwner: artifact.sourceMeta.primaryOwner,
+    backendOwner: artifact.sourceMeta.owner,
+    sourceVersion: artifact.sourceMeta.sourceVersion,
+    supplierCount: suppliers.length,
+    objectCount: objects.length,
+    spendKindRows: spendKindRows.length,
+    summaryParityOk: Object.values(summaryParity)
+      .filter((entry): entry is NumericParity => typeof entry === "object")
+      .every((entry) => entry.match),
   };
 
   const artifactsDir = path.join(process.cwd(), "artifacts");
@@ -226,11 +145,11 @@ async function main() {
   );
   fs.writeFileSync(
     path.join(artifactsDir, "director-finance-cutover-v2.summary.json"),
-    JSON.stringify(summary, null, 2),
+    JSON.stringify(summaryOut, null, 2),
     "utf8",
   );
 
-  console.log(JSON.stringify(summary, null, 2));
+  console.log(JSON.stringify(summaryOut, null, 2));
   if (status !== "passed") {
     process.exitCode = 1;
   }

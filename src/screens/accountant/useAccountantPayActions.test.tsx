@@ -155,6 +155,7 @@ describe("useAccountantPayActions", () => {
       expect.objectContaining({
         proposalId: "proposal-1",
         amount: 10,
+        clientMutationId: expect.stringMatching(/^accountant-payment:/),
         expectedTotalPaid: 0,
         expectedOutstanding: 100,
       }),
@@ -168,6 +169,88 @@ describe("useAccountantPayActions", () => {
     expect(
       events.some((event) => event.event === "payment_apply" && event.result === "success"),
     ).toBe(false);
+  });
+
+  it("reuses the same clientMutationId when an uncertain payment result is retried", async () => {
+    mockAccountantLoadProposalFinancialState.mockResolvedValue({
+      proposalId: "proposal-1",
+      totals: {
+        payableAmount: 100,
+        totalPaid: 20,
+        outstandingAmount: 80,
+        paymentsCount: 1,
+        paymentStatus: "Частично оплачено",
+        lastPaidAt: null,
+      },
+      eligibility: {
+        approved: true,
+        sentToAccountant: true,
+        paymentEligible: true,
+        failureCode: null,
+      },
+    });
+    mockAccountantPayInvoiceAtomic
+      .mockRejectedValueOnce(new Error("network timeout after commit uncertainty"))
+      .mockResolvedValueOnce({
+        ok: true,
+        proposalId: "proposal-1",
+        paymentId: 90,
+        clientMutationId: "accountant-payment:test-retry",
+        idempotentReplay: true,
+        outcome: "idempotent_replay",
+        totalsBefore: {
+          payableAmount: 100,
+          totalPaid: 20,
+          outstandingAmount: 80,
+          paymentStatus: "Частично оплачено",
+        },
+        totalsAfter: {
+          payableAmount: 100,
+          totalPaid: 30,
+          outstandingAmount: 70,
+          paymentStatus: "Частично оплачено",
+        },
+      });
+
+    const safeAlert = jest.fn();
+    const closeCard = jest.fn();
+    const setCurrentPaymentId = jest.fn();
+    const setRows = jest.fn();
+    const afterPaymentSync = jest.fn().mockResolvedValue(undefined);
+
+    let renderer!: ReturnType<typeof TestRenderer.create>;
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <PayActionsHarness
+          safeAlert={safeAlert}
+          closeCard={closeCard}
+          setCurrentPaymentId={setCurrentPaymentId}
+          setRows={setRows}
+          afterPaymentSync={afterPaymentSync}
+        />,
+      );
+    });
+
+    await act(async () => {
+      renderer.root.findByProps({ testID: "pay-actions-trigger" }).props.onPress();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      renderer.root.findByProps({ testID: "pay-actions-trigger" }).props.onPress();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockAccountantPayInvoiceAtomic).toHaveBeenCalledTimes(2);
+    const firstMutationId = mockAccountantPayInvoiceAtomic.mock.calls[0][0].clientMutationId;
+    const secondMutationId = mockAccountantPayInvoiceAtomic.mock.calls[1][0].clientMutationId;
+    expect(firstMutationId).toEqual(expect.stringMatching(/^accountant-payment:/));
+    expect(secondMutationId).toBe(firstMutationId);
+    expect(setCurrentPaymentId).toHaveBeenCalledWith(90);
+    expect(closeCard).toHaveBeenCalled();
   });
 
   it("uses server outstanding truth and only closes after atomic rpc + post sync succeed", async () => {
@@ -192,6 +275,9 @@ describe("useAccountantPayActions", () => {
       ok: true,
       proposalId: "proposal-1",
       paymentId: 77,
+      clientMutationId: "accountant-payment:test-success",
+      idempotentReplay: false,
+      outcome: "success",
       totalsBefore: {
         payableAmount: 100,
         totalPaid: 20,
@@ -236,6 +322,7 @@ describe("useAccountantPayActions", () => {
       expect.objectContaining({
         proposalId: "proposal-1",
         amount: 10,
+        clientMutationId: expect.stringMatching(/^accountant-payment:/),
         expectedTotalPaid: 20,
         expectedOutstanding: 80,
       }),
@@ -268,6 +355,9 @@ describe("useAccountantPayActions", () => {
       ok: true,
       proposalId: "proposal-1",
       paymentId: 88,
+      clientMutationId: "accountant-payment:test-sync-warning",
+      idempotentReplay: false,
+      outcome: "success",
       totalsBefore: {
         payableAmount: 100,
         totalPaid: 20,

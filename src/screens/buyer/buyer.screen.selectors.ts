@@ -1,4 +1,5 @@
 import type { BuyerProposalBucketRow } from "./buyer.fetchers";
+import { readBuyerBucketCanonicalCount } from "./buyer.fetchers.data";
 import type { BuyerGroup } from "./buyer.types";
 
 export type BuyerTabCounts = {
@@ -10,19 +11,19 @@ export type BuyerTabCounts = {
 };
 
 export function selectBuyerTabCounts(params: {
-  groups: BuyerGroup[];
+  groups?: BuyerGroup[];
   pending: BuyerProposalBucketRow[];
   approved: BuyerProposalBucketRow[];
   rejected: BuyerProposalBucketRow[];
   subcontractCount?: number | null;
   inboxTotalCount?: number | null;
 }): BuyerTabCounts {
-  const { groups, pending, approved, rejected, subcontractCount, inboxTotalCount } = params;
+  const { pending, approved, rejected, subcontractCount, inboxTotalCount } = params;
   return {
-    inboxCount: Math.max(0, inboxTotalCount ?? groups.length),
-    pendingCount: pending.length,
-    approvedCount: approved.length,
-    rejectedCount: rejected.length,
+    inboxCount: Math.max(0, inboxTotalCount ?? 0),
+    pendingCount: readBuyerBucketCanonicalCount(pending),
+    approvedCount: readBuyerBucketCanonicalCount(approved),
+    rejectedCount: readBuyerBucketCanonicalCount(rejected),
     subcontractCount: Math.max(0, subcontractCount ?? 0),
   };
 }

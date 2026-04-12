@@ -21,7 +21,9 @@ type SendToAccountantRpcArgs =
 type AccountantProposalFinancialStateArgs =
   Database["public"]["Functions"]["accountant_proposal_financial_state_v1"]["Args"];
 type AccountingPayInvoiceArgs =
-  Database["public"]["Functions"]["accounting_pay_invoice_v1"]["Args"];
+  Database["public"]["Functions"]["accounting_pay_invoice_v1"]["Args"] & {
+    p_client_mutation_id: string;
+  };
 export type AccountantPaymentAllocationInput = {
   proposal_item_id: string;
   amount: number;
@@ -84,6 +86,7 @@ export type AccountantPayInvoiceAtomicInput = {
   accountantFio: string;
   purpose: string;
   method: string;
+  clientMutationId: string;
   note?: string | null;
   allocations?: AccountantPaymentAllocationInput[];
   invoiceNumber?: string | null;
@@ -98,6 +101,10 @@ export type AccountantPayInvoiceAtomicSuccess = {
   ok: true;
   proposalId: string;
   paymentId: number;
+  clientMutationId: string | null;
+  idempotentReplay: boolean;
+  outcome: "success" | "idempotent_replay";
+  originalOutcome: string | null;
   allocationSummary: {
     allocationCount: number;
     allocatedAmount: number;
@@ -121,6 +128,9 @@ export type AccountantPayInvoiceAtomicSuccess = {
 export type AccountantPayInvoiceAtomicFailure = {
   ok: false;
   proposalId: string;
+  clientMutationId: string | null;
+  idempotentReplay: boolean;
+  outcome: "controlled_fail" | "idempotency_conflict" | "idempotent_replay";
   failureCode: string;
   failureMessage: string;
   totalsBefore: {
@@ -149,6 +159,9 @@ export type AccountantPayInvoiceAtomicResult =
 export class AccountantPayInvoiceAtomicError extends Error {
   readonly code: string;
   readonly proposalId: string;
+  readonly clientMutationId: string | null;
+  readonly outcome: AccountantPayInvoiceAtomicFailure["outcome"];
+  readonly idempotentReplay: boolean;
   readonly totalsBefore: AccountantPayInvoiceAtomicFailure["totalsBefore"];
   readonly validation: AccountantPayInvoiceAtomicFailure["validation"];
   readonly allocationSummary: AccountantPayInvoiceAtomicFailure["allocationSummary"];
@@ -158,6 +171,9 @@ export class AccountantPayInvoiceAtomicError extends Error {
     this.name = "AccountantPayInvoiceAtomicError";
     this.code = result.failureCode;
     this.proposalId = result.proposalId;
+    this.clientMutationId = result.clientMutationId;
+    this.outcome = result.outcome;
+    this.idempotentReplay = result.idempotentReplay;
     this.totalsBefore = result.totalsBefore;
     this.validation = result.validation;
     this.allocationSummary = result.allocationSummary;
@@ -279,6 +295,9 @@ export const parseAccountantPayInvoiceAtomicResult = (
   const payload = asRecord(value);
   const proposalId = asText(payload.proposal_id ?? payload.proposalId) ?? "";
   const ok = asBoolean(payload.ok);
+  const outcome = asText(payload.outcome) ?? (ok ? "success" : "controlled_fail");
+  const idempotentReplay = asBoolean(payload.idempotent_replay ?? payload.idempotentReplay);
+  const clientMutationId = asText(payload.client_mutation_id ?? payload.clientMutationId);
   const allocationSummaryPayload = asRecord(
     payload.allocation_summary ?? payload.allocationSummary,
   );
@@ -289,6 +308,14 @@ export const parseAccountantPayInvoiceAtomicResult = (
     return {
       ok: false,
       proposalId,
+      clientMutationId,
+      idempotentReplay,
+      outcome:
+        outcome === "idempotency_conflict"
+          ? "idempotency_conflict"
+          : outcome === "idempotent_replay" || idempotentReplay
+            ? "idempotent_replay"
+          : "controlled_fail",
       failureCode: asText(payload.failure_code ?? payload.failureCode) ?? "payment_failed",
       failureMessage:
         asText(payload.failure_message ?? payload.failureMessage) ??
@@ -363,6 +390,10 @@ export const parseAccountantPayInvoiceAtomicResult = (
     ok: true,
     proposalId,
     paymentId,
+    clientMutationId,
+    idempotentReplay,
+    outcome: idempotentReplay ? "idempotent_replay" : "success",
+    originalOutcome: asText(payload.original_outcome ?? payload.originalOutcome),
     allocationSummary: {
       allocationCount: Math.max(
         0,
@@ -463,25 +494,10 @@ export async function accountantAddPayment(input: {
   method?: string;
   note?: string;
 }) {
-  const pid = String(input.proposalId);
-  await ensureProposalExists(client, pid, {
-    screen: "accountant",
-    surface: "add_payment",
-    sourceKind: "mutation:accounting_payments",
-  });
-  const amt = Number(input.amount);
-  const m = input.method?.trim();
-  const n = input.note?.trim();
-
-  const argsP = { p_proposal_id: pid, p_amount: amt, ...(m ? { p_method: m } : {}), ...(n ? { p_note: n } : {}) };
-  const argsRaw = { proposal_id: pid, amount: amt, ...(m ? { method: m } : {}), ...(n ? { note: n } : {}) };
-
-  await rpcCompat<void>([
-    { fn: "acc_add_payment_min", args: argsP },
-    { fn: "acc_add_payment_min_compat", args: argsRaw },
-    { fn: "acc_add_payment_min_uuid", args: argsP },
-  ]);
-  return true;
+  void input;
+  throw new Error(
+    "accountantAddPayment legacy payment path is disabled; use accountantPayInvoiceAtomic with clientMutationId.",
+  );
 }
 
 export async function accountantAddPaymentWithAllocations(input: {
@@ -490,6 +506,7 @@ export async function accountantAddPaymentWithAllocations(input: {
   accountantFio: string;
   purpose: string;
   method: string;
+  clientMutationId: string;
   note?: string | null;
   allocations?: AccountantPaymentAllocationInput[];
 }): Promise<number | null> {
@@ -499,6 +516,7 @@ export async function accountantAddPaymentWithAllocations(input: {
     accountantFio: input.accountantFio,
     purpose: input.purpose,
     method: input.method,
+    clientMutationId: input.clientMutationId,
     note: input.note,
     allocations: input.allocations,
   });
@@ -562,6 +580,7 @@ export async function accountantPayInvoiceAtomic(
     p_accountant_fio: String(input.accountantFio ?? "").trim(),
     p_purpose: String(input.purpose ?? "").trim(),
     p_method: String(input.method ?? "").trim(),
+    p_client_mutation_id: String(input.clientMutationId ?? "").trim(),
     p_note: String(input.note ?? "").trim() || undefined,
     p_allocations: allocations,
     p_invoice_number: String(input.invoiceNumber ?? "").trim() || undefined,

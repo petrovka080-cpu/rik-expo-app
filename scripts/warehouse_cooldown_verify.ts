@@ -105,7 +105,6 @@ async function main() {
     rows: [],
     hasMore: false,
     integrityState: createHealthyWarehouseReqHeadsIntegrityState(),
-    sourcePath: "canonical",
   });
   pushScenario(scenarios, "real_empty_data_scenario", realEmpty.listState.publishState === "empty", {
     publishState: realEmpty.listState.publishState,
@@ -167,28 +166,21 @@ async function main() {
     },
   );
 
-  const staleReuse = resolveWarehouseReqHeadsPrimaryPublish({
-    rows: [],
-    hasMore: false,
+  const canonicalReady = resolveWarehouseReqHeadsPrimaryPublish({
+    rows: sampleRows,
+    hasMore: true,
     integrityState: createHealthyWarehouseReqHeadsIntegrityState(),
-    sourcePath: "compatibility",
-    sourceReason: "Failed to fetch",
-    lastKnownGood: {
-      rows: sampleRows,
-      hasMore: true,
-    },
   });
   pushScenario(
     scenarios,
-    "stale_last_known_good_reuse_scenario",
-    staleReuse.listState.publishState === "degraded" &&
-      staleReuse.listState.lastKnownGoodUsed === true &&
-      staleReuse.rows.length === sampleRows.length,
+    "canonical_ready_data_scenario",
+    canonicalReady.listState.publishState === "ready" &&
+      canonicalReady.rows.length === sampleRows.length &&
+      canonicalReady.falseEmptyPrevented === false,
     {
-      publishState: staleReuse.listState.publishState,
-      lastKnownGoodUsed: staleReuse.listState.lastKnownGoodUsed,
-      rowCount: staleReuse.rows.length,
-      falseEmptyPrevented: staleReuse.falseEmptyPrevented,
+      publishState: canonicalReady.listState.publishState,
+      rowCount: canonicalReady.rows.length,
+      falseEmptyPrevented: canonicalReady.falseEmptyPrevented,
     },
   );
 
@@ -260,7 +252,7 @@ async function main() {
     },
   );
 
-  const sortedReadyFirst = [...staleReuse.rows].sort((left, right) => {
+  const sortedReadyFirst = [...canonicalReady.rows].sort((left, right) => {
     const readyA = Math.max(0, Number(left.ready_cnt ?? 0));
     const readyB = Math.max(0, Number(right.ready_cnt ?? 0));
     if (readyA > 0 && readyB === 0) return -1;
@@ -270,22 +262,19 @@ async function main() {
   pushScenario(
     scenarios,
     "filters_sorting_regression_check",
-    staleReuse.rows[0]?.request_id === sampleRows[0]?.request_id &&
-      staleReuse.rows[1]?.request_id === sampleRows[1]?.request_id &&
+    canonicalReady.rows[0]?.request_id === sampleRows[0]?.request_id &&
+      canonicalReady.rows[1]?.request_id === sampleRows[1]?.request_id &&
       sortedReadyFirst[0]?.request_id === "req-ready",
     {
-      inputOrder: staleReuse.rows.map((row) => ({ requestId: row.request_id, readyCnt: row.ready_cnt })),
+      inputOrder: canonicalReady.rows.map((row) => ({ requestId: row.request_id, readyCnt: row.ready_cnt })),
       sortedOrder: sortedReadyFirst.map((row) => ({ requestId: row.request_id, readyCnt: row.ready_cnt })),
     },
   );
 
-  const nonPrimaryEmptyWithoutSnapshot = resolveWarehouseReqHeadsPrimaryPublish({
+  const canonicalEmptyRepeat = resolveWarehouseReqHeadsPrimaryPublish({
     rows: [],
     hasMore: false,
     integrityState: createHealthyWarehouseReqHeadsIntegrityState(),
-    sourcePath: "compatibility",
-    sourceReason: "warehouse_issue_queue_scope_v4 contract mismatch: rows must be an array",
-    lastKnownGood: null,
   });
 
   const emptyVsErrorProof = {
@@ -293,10 +282,10 @@ async function main() {
       publishState: realEmpty.listState.publishState,
       failureClass: realEmpty.listState.failureClass,
     },
-    nonPrimaryEmptyWithoutSnapshot: {
-      publishState: nonPrimaryEmptyWithoutSnapshot.listState.publishState,
-      failureClass: nonPrimaryEmptyWithoutSnapshot.listState.failureClass,
-      falseEmptyPrevented: nonPrimaryEmptyWithoutSnapshot.falseEmptyPrevented,
+    repeatedCanonicalEmpty: {
+      publishState: canonicalEmptyRepeat.listState.publishState,
+      failureClass: canonicalEmptyRepeat.listState.failureClass,
+      falseEmptyPrevented: canonicalEmptyRepeat.falseEmptyPrevented,
     },
     schemaFailure: {
       publishState: schemaFailure.listState.publishState,
@@ -316,24 +305,18 @@ async function main() {
     },
   };
 
-  const lastKnownGoodProof = {
-    degradedWithSnapshot: {
-      publishState: staleReuse.listState.publishState,
-      lastKnownGoodUsed: staleReuse.listState.lastKnownGoodUsed,
-      rowCount: staleReuse.rows.length,
-      falseEmptyPrevented: staleReuse.falseEmptyPrevented,
+  const noLastKnownGoodProof = {
+    legacyLastKnownGoodRemoved: true,
+    canonicalReady: {
+      publishState: canonicalReady.listState.publishState,
+      rowCount: canonicalReady.rows.length,
+      falseEmptyPrevented: canonicalReady.falseEmptyPrevented,
     },
-    degradedEmptySnapshot: resolveWarehouseReqHeadsPrimaryPublish({
-      rows: [],
-      hasMore: false,
-      integrityState: createHealthyWarehouseReqHeadsIntegrityState(),
-      sourcePath: "compatibility",
-      sourceReason: "Failed to fetch",
-      lastKnownGood: {
-        rows: [],
-        hasMore: false,
-      },
-    }),
+    canonicalEmpty: {
+      publishState: canonicalEmptyRepeat.listState.publishState,
+      rowCount: canonicalEmptyRepeat.rows.length,
+      falseEmptyPrevented: canonicalEmptyRepeat.falseEmptyPrevented,
+    },
     manualRefreshCooldown: {
       active: manualRefreshCooldown.active,
       remainingMs: manualRefreshCooldown.remainingMs,
@@ -364,7 +347,7 @@ async function main() {
   );
   writeFileSync(
     resolve(artifactsDir, "warehouse-last-known-good-proof.json"),
-    JSON.stringify(lastKnownGoodProof, null, 2),
+    JSON.stringify(noLastKnownGoodProof, null, 2),
     "utf8",
   );
 

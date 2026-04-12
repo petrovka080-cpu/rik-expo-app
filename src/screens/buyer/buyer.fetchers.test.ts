@@ -42,7 +42,12 @@ const buildBucketsEnvelope = (params: {
   pending: params.pending ?? [],
   approved: params.approved ?? [],
   rejected: params.rejected ?? [],
-  meta: params.meta ?? {},
+  meta: {
+    pending_count: params.pending?.length ?? 0,
+    approved_count: params.approved?.length ?? 0,
+    rejected_count: params.rejected?.length ?? 0,
+    ...(params.meta ?? {}),
+  },
 });
 
 describe("buyer inbox fetchers", () => {
@@ -388,6 +393,11 @@ describe("buyer inbox fetchers", () => {
     expect(result.pending).toHaveLength(1);
     expect(result.approved).toHaveLength(1);
     expect(result.rejected).toHaveLength(1);
+    expect(result.counts).toEqual({
+      pendingCount: 1,
+      approvedCount: 1,
+      rejectedCount: 1,
+    });
     expect(result.proposalIds).toEqual([
       "proposal-pending",
       "proposal-approved",

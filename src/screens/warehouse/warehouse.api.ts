@@ -34,6 +34,5 @@ export {
   apiFetchIssuedMaterialsReportFast,
   apiFetchReports,
   apiFetchStock,
-  apiFetchStockRpc,
   apiFetchStockRpcV2,
 } from "./warehouse.stock.read";

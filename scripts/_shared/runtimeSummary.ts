@@ -57,11 +57,24 @@ export function buildRuntimeSummary(params: {
   web: RuntimePlatformResult;
   android: RuntimePlatformResult;
   ios: RuntimePlatformResult;
+  requiredPlatforms?: {
+    web?: boolean;
+    android?: boolean;
+    ios?: boolean;
+  };
   scenariosPassed?: Record<string, unknown>;
   artifacts?: Record<string, unknown>;
   extra?: Record<string, unknown>;
 }): Record<string, unknown> {
   const { web, android, ios, scenariosPassed, artifacts, extra } = params;
+  const requiredPlatforms = {
+    web: params.requiredPlatforms?.web ?? true,
+    android: params.requiredPlatforms?.android ?? true,
+    ios: params.requiredPlatforms?.ios ?? true,
+  };
+  const webOk = requiredPlatforms.web ? web.status === "passed" : true;
+  const androidOk = requiredPlatforms.android ? android.status === "passed" : true;
+  const iosOk = requiredPlatforms.ios ? ios.status === "passed" || ios.status === "residual" : true;
   const platformSpecificIssues = collectPlatformIssues(web, android, ios);
   const iosResidual = typeof ios.iosResidual === "string" ? ios.iosResidual : null;
   const artifactPayload =
@@ -111,16 +124,11 @@ export function buildRuntimeSummary(params: {
     });
 
   return {
-    status:
-      web.status === "passed" &&
-      android.status === "passed" &&
-      (ios.status === "passed" || ios.status === "residual")
-        ? "passed"
-        : "failed",
+    status: webOk && androidOk && iosOk ? "passed" : "failed",
     webPassed: web.status === "passed",
     androidPassed: android.status === "passed",
     iosPassed: ios.status === "passed",
-    runtimeVerified: web.status === "passed" && android.status === "passed",
+    runtimeVerified: webOk && androidOk,
     environmentRecoveryUsed: android.environmentRecoveryUsed === true,
     gmsRecoveryUsed: android.gmsRecoveryUsed === true,
     anrRecoveryUsed: android.anrRecoveryUsed === true,

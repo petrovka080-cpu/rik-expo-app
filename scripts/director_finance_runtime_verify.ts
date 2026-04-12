@@ -30,6 +30,7 @@ const runtimeOutPath = path.join(projectRoot, "artifacts/director-finance-runtim
 const runtimeSummaryOutPath = path.join(projectRoot, "artifacts/director-finance-runtime.summary.json");
 const webArtifactBase = "artifacts/director-finance-web-smoke";
 const androidDevClientPort = Number(process.env.DIRECTOR_ANDROID_DEV_PORT ?? "8081");
+const androidOnlyRuntime = process.env.WAVE3_ANDROID_ONLY === "1" || process.env.RUNTIME_ANDROID_ONLY === "1";
 const androidDevClientStdoutPath = path.join(projectRoot, `artifacts/director-dev-client-${androidDevClientPort}.stdout.log`);
 const androidDevClientStderrPath = path.join(projectRoot, `artifacts/director-dev-client-${androidDevClientPort}.stderr.log`);
 
@@ -1094,7 +1095,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
   try {
     const devClient = await ensureAndroidDevClientServer();
     const packageName = detectAndroidPackage();
-    const preflight = androidHarness.runAndroidPreflight({ packageName });
+    const preflight = androidHarness.runAndroidPreflight({ packageName, clearApp: true });
     user = await createTempUser(process.env.DIRECTOR_WEB_ROLE || "director", "Director Finance Android");
     try {
       await warmAndroidDevClientBundle(devClient.port);
@@ -1231,15 +1232,20 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) =>
-    createFailurePlatformResult("web", error, {
-      financeTabOpened: false,
-      financeHomeCardsRendered: false,
-      debtModalOpened: false,
-      supplierRowVisible: false,
-      supplierDetailOpened: false,
-    }),
-  );
+  const web = androidOnlyRuntime
+    ? {
+        status: "residual",
+        platformSpecificIssues: ["web runtime skipped: WAVE 3 requires Android proof; web auth harness is out of scope"],
+      }
+    : await runWebRuntime().catch((error) =>
+        createFailurePlatformResult("web", error, {
+          financeTabOpened: false,
+          financeHomeCardsRendered: false,
+          debtModalOpened: false,
+          supplierRowVisible: false,
+          supplierDetailOpened: false,
+        }),
+      );
   const android = await runAndroidRuntime().catch((error) => {
     const artifacts = androidHarness.captureFailureArtifacts("android-director-finance-failure");
     return createFailurePlatformResult("android", error, {
@@ -1257,6 +1263,11 @@ async function main() {
     web,
     android,
     ios,
+    requiredPlatforms: {
+      web: !androidOnlyRuntime,
+      android: true,
+      ios: false,
+    },
     scenariosPassed: {
       web: {
         initialOpen: web.financeTabOpened === true,

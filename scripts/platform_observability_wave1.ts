@@ -265,8 +265,9 @@ async function main() {
     });
     return {
       panelScope: result.sourceMeta.panelScope,
-      financeRows: result.financeRows.length,
-      spendRows: result.spendRows.length,
+      suppliers: result.canonicalScope.suppliers.length,
+      objects: result.canonicalScope.objects.length,
+      spendKindRows: result.canonicalScope.spendBreakdown.kindRows.length,
       issues: result.issues.length,
     };
   });

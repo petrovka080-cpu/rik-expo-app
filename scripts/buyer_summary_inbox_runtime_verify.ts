@@ -18,6 +18,7 @@ const admin = createVerifierAdmin("buyer-summary-inbox-runtime-verify");
 const artifactBase = "artifacts/buyer-summary-inbox-runtime";
 const webArtifactBase = "artifacts/buyer-summary-inbox-web-smoke";
 const androidDevClientPort = Number(process.env.BUYER_ANDROID_DEV_PORT ?? "8081");
+const androidOnlyRuntime = process.env.WAVE3_ANDROID_ONLY === "1" || process.env.RUNTIME_ANDROID_ONLY === "1";
 
 const LABELS = {
   title: "Снабженец",
@@ -39,12 +40,15 @@ type TempUser = RuntimeTestUser;
 
 type AndroidNode = {
   text: string;
+  resourceId: string;
   contentDesc: string;
   className: string;
   clickable: boolean;
   enabled: boolean;
+  focused: boolean;
   bounds: string;
   hint: string;
+  password: boolean;
 };
 
 type ExpectedInboxGroup = {
@@ -423,12 +427,15 @@ const parseAndroidNodes = (xml: string): AndroidNode[] => {
     };
     nodes.push({
       text: pick("text"),
+      resourceId: pick("resource-id"),
       contentDesc: pick("content-desc"),
       className: pick("class"),
       clickable: pick("clickable") === "true",
       enabled: pick("enabled") === "true",
+      focused: pick("focused") === "true",
       bounds: pick("bounds"),
       hint: pick("hint"),
+      password: pick("password") === "true",
     });
   }
   return nodes;
@@ -486,13 +493,22 @@ const detectAndroidPackage = (): string | null => {
 };
 
 const startAndroidBuyerRoute = (packageName: string | null) => {
-  const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", "rik://buyer"];
+  const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", "rik:///office/buyer"];
   if (packageName) args.push(packageName);
   execFileSync("adb", args, { cwd: projectRoot, stdio: "pipe" });
 };
 
 const buildAndroidDevClientDeepLink = (port: number) =>
   `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(`http://127.0.0.1:${port}`)}`;
+
+const BUYER_ANDROID_ROUTES = [
+  "rik:///office/buyer",
+  "rik://office/buyer",
+  "rik:///%28tabs%29/office/buyer",
+  "rik://buyer",
+  "rik:///buyer",
+  "rik:///%28tabs%29/buyer",
+];
 
 const ensureAndroidReverseProxy = (port: number) => {
   execFileSync("adb", ["reverse", `tcp:${port}`, `tcp:${port}`], {
@@ -544,6 +560,15 @@ const findAndroidFioInputNode = (nodes: AndroidNode[]): AndroidNode | null =>
   );
 
 const findAndroidFioActionNode = (nodes: AndroidNode[]): AndroidNode | null => {
+  const byTestId = findAndroidNode(
+    nodes,
+    (node) =>
+      node.clickable &&
+      node.enabled &&
+      /warehouse-fio-confirm/i.test(`${node.resourceId} ${node.contentDesc}`),
+  );
+  if (byTestId) return byTestId;
+
   const labeled = findAndroidNode(
     nodes,
     (node) =>
@@ -560,7 +585,7 @@ const findAndroidFioActionNode = (nodes: AndroidNode[]): AndroidNode | null => {
       if (!raw) return false;
       const top = Number(raw[2]);
       const width = Number(raw[3]) - Number(raw[1]);
-      return top >= 1200 && width >= 500;
+      return top >= 1200 && width >= 380;
     }) ?? null
   );
 };
@@ -743,14 +768,17 @@ async function settleAndroidBuyerRoute(
 ) {
   let screen = await androidHarness.dismissAndroidInterruptions(current, `${artifactBase}-interrupt`);
   screen = await dismissAndroidDevMenuIfPresent(screen, artifactBase);
+  const alreadyAtBuyerTarget =
+    isAndroidBuyerHome(screen.xml) || isAndroidInboxSurface(screen.xml, "") || isAndroidFioModal(screen.xml);
   if (
+    !alreadyAtBuyerTarget ||
     isAndroidDevLauncherHome(screen.xml) ||
     androidHarness.isAndroidLauncherHome(screen.xml) ||
     androidHarness.isAndroidBlankAppSurface(screen.xml)
   ) {
     screen = await androidHarness.openAndroidRoute({
       packageName,
-      routes: ["rik://buyer", "rik:///buyer", "rik:///%28tabs%29/buyer"],
+      routes: BUYER_ANDROID_ROUTES,
       artifactBase,
       predicate: (xml) => isAndroidBuyerHome(xml) || isAndroidInboxSurface(xml, "") || isAndroidFioModal(xml),
       renderablePredicate: (xml) =>
@@ -778,7 +806,7 @@ async function confirmAndroidBuyerFio(current: ReturnType<typeof dumpAndroidScre
 
   tapAndroidBounds(inputNode.bounds);
   await sleep(400);
-  androidHarness.typeAndroidText("Buyer Inbox Android");
+  await androidHarness.replaceAndroidFieldText(inputNode, "Buyer Inbox Android");
   await sleep(500);
   execFileSync("adb", ["shell", "input", "keyevent", "4"], {
     cwd: projectRoot,
@@ -839,7 +867,7 @@ async function loginBuyerAndroid(user: TempUser, packageName: string | null) {
   let current = await androidHarness.loginAndroidWithProtectedRoute({
     packageName,
     user,
-    protectedRoute: "rik://buyer",
+    protectedRoute: "rik:///office/buyer",
     artifactBase: "android-buyer-summary-inbox",
     successPredicate: (xml) => isAndroidBuyerHome(xml) || isAndroidInboxSurface(xml, "") || isAndroidFioModal(xml),
     renderablePredicate: (xml) =>
@@ -960,7 +988,7 @@ async function loginBuyerAndroid(user: TempUser, packageName: string | null) {
   current = await androidHarness
     .openAndroidRoute({
       packageName,
-      routes: ["rik://buyer", "rik:///buyer", "rik:///%28tabs%29/buyer"],
+      routes: BUYER_ANDROID_ROUTES,
       artifactBase: "android-buyer-summary-inbox-route",
       predicate: (xml) => isAndroidBuyerHome(xml) || isAndroidInboxSurface(xml, "") || isAndroidFioModal(xml),
       renderablePredicate: (xml) =>
@@ -1032,7 +1060,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     const expected = await loadExpectedInboxGroup();
     if (!expected) throw new Error("Buyer inbox scope returned no rows for Android runtime verification");
 
-    const prepared = await androidHarness.prepareAndroidRuntime();
+    const prepared = await androidHarness.prepareAndroidRuntime({ clearApp: true });
     devClient = prepared.devClient;
     const packageName = prepared.packageName;
     const preflight = prepared.preflight;
@@ -1169,12 +1197,17 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) =>
-    createFailurePlatformResult("web", error, {
-      inboxVisible: false,
-      sheetOpened: false,
-    }),
-  );
+  const web = androidOnlyRuntime
+    ? {
+        status: "residual",
+        platformSpecificIssues: ["web runtime skipped: WAVE 3 requires Android proof; web auth harness is out of scope"],
+      }
+    : await runWebRuntime().catch((error) =>
+        createFailurePlatformResult("web", error, {
+          inboxVisible: false,
+          sheetOpened: false,
+        }),
+      );
   const android = await runAndroidRuntime().catch((error) => {
     const artifacts = androidHarness.captureFailureArtifacts("android-buyer-summary-inbox-failure");
     return createFailurePlatformResult("android", error, {
@@ -1190,6 +1223,11 @@ async function main() {
     web,
     android,
     ios,
+    requiredPlatforms: {
+      web: !androidOnlyRuntime,
+      android: true,
+      ios: false,
+    },
     scenariosPassed: {
       web: {
         initialOpen: web.inboxVisible === true,

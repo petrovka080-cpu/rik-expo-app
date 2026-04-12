@@ -4,12 +4,6 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 
-import {
-  adaptCanonicalMaterialsPayload,
-  adaptCanonicalOptionsPayload,
-  adaptCanonicalWorksPayload,
-} from "../src/lib/api/director_reports.adapters";
-
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
 
@@ -30,8 +24,6 @@ const admin = createClient(supabaseUrl, supabaseKey, {
   global: { headers: { "x-client-info": "director-reports-truth-verify" } },
 });
 
-const WITHOUT_WORK = "без вида работ";
-
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 
@@ -42,7 +34,10 @@ const unwrapRpcPayload = (value: unknown): Record<string, unknown> => {
 
 const text = (value: unknown): string => String(value ?? "").trim();
 
-const normalizeKey = (value: unknown) => text(value).toLowerCase();
+const toFiniteNumber = (value: unknown): number => {
+  const numeric = Number(value ?? 0);
+  return Number.isFinite(numeric) ? numeric : 0;
+};
 
 const writeJson = (fullPath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
@@ -54,59 +49,63 @@ const readFiles = (relativePaths: string[]) =>
     .map((relativePath) => fs.readFileSync(path.join(projectRoot, relativePath), "utf8"))
     .join("\n");
 
+const requireRecord = (value: unknown, name: string): Record<string, unknown> => {
+  const record = asRecord(value);
+  if (!Object.keys(record).length) {
+    throw new Error(`${name} is missing from director_report_transport_scope_v1`);
+  }
+  return record;
+};
+
 async function main() {
   const { data, error } = await admin.rpc("director_report_transport_scope_v1", {
     p_from: null,
     p_to: null,
     p_object_name: null,
     p_include_discipline: true,
-    p_include_costs: true,
+    p_include_costs: false,
   });
   if (error) throw error;
 
   const envelope = unwrapRpcPayload(data);
-  const options = adaptCanonicalOptionsPayload(envelope.options_payload);
-  const report = adaptCanonicalMaterialsPayload(envelope.report_payload);
-  const discipline = envelope.discipline_payload == null ? null : adaptCanonicalWorksPayload(envelope.discipline_payload);
-  if (!options || !report) {
-    throw new Error("director_report_transport_scope_v1 returned invalid payload");
-  }
-
-  const unresolvedNamesCount = (Array.isArray(report.rows) ? report.rows : []).filter((row) => {
-    const code = text(row.rik_code).toUpperCase();
-    const name = text(row.name_human_ru).toUpperCase();
-    return !!code && (!name || name === code);
-  }).length;
-
-  const works = Array.isArray(discipline?.works) ? discipline.works : [];
-  const noWorkNameCount = works
-    .filter((work) => normalizeKey(work.work_type_name).startsWith(WITHOUT_WORK))
-    .reduce((sum, work) => sum + Number(work.total_positions || 0), 0);
+  const canonicalSummary = requireRecord(envelope.canonical_summary, "canonical_summary");
+  const canonicalDiagnostics = requireRecord(envelope.canonical_diagnostics, "canonical_diagnostics");
+  const naming = requireRecord(canonicalDiagnostics.naming, "canonical_diagnostics.naming");
+  const noWorkName = requireRecord(canonicalDiagnostics.noWorkName, "canonical_diagnostics.noWorkName");
 
   const uiSource = readFiles([
     "src/lib/api/directorReportsScope.service.ts",
-    "src/lib/api/director_reports.naming.ts",
     "src/screens/director/DirectorReportsModal.tsx",
     "src/screens/director/hooks/useDirectorReportsModalState.ts",
   ]);
 
+  const clientRecomputeRemoved =
+    !uiSource.includes("buildDirectorReportCanonicalDecorations") &&
+    !uiSource.includes("probeNameSources") &&
+    !uiSource.includes("getMaterialNameResolutionSource") &&
+    !uiSource.includes("optionsState.objects.length");
+
   const detail = {
     gate: "director_reports_truth_verify",
-    objectCountSource: "warehouse_confirmed_issues",
-    objectCountValue: Array.isArray(options.objects) ? options.objects.length : 0,
-    objectCountSourceExplained:
-      uiSource.includes("по подтверждённым выдачам") &&
-      uiSource.includes("Счётчик построен по подтверждённым выдачам"),
-    noWorkNameCount,
-    noWorkNameExplained:
-      uiSource.includes("Без вида работ") &&
-      uiSource.includes("Вид работ не был указан при подтверждённой выдаче"),
-    unresolvedNamesCount,
+    objectCountSource: text(canonicalDiagnostics.objectCountSource),
+    objectCountValue: toFiniteNumber(canonicalSummary.displayObjectCount),
+    objectCountSourceExplained: text(canonicalSummary.displayObjectCountExplanation).length > 0,
+    noWorkNameCount: toFiniteNumber(canonicalSummary.noWorkNameCount),
+    noWorkNameExplained: text(canonicalSummary.noWorkNameExplanation).length > 0,
+    unresolvedNamesCount: toFiniteNumber(canonicalSummary.unresolvedNamesCount),
     namingDiagnosticsVisible:
-      uiSource.includes("objectNamingSourceStatus") &&
-      uiSource.includes("workNamingSourceStatus") &&
-      uiSource.includes("probeCacheMode"),
-    backendOwnerPreserved: true,
+      text(naming.objectNamingSourceStatus).length > 0 &&
+      text(naming.workNamingSourceStatus).length > 0 &&
+      text(naming.probeCacheMode).length > 0,
+    noWorkDiagnostics: {
+      workNameMissingCount: toFiniteNumber(noWorkName.workNameMissingCount),
+      workNameResolvedCount: toFiniteNumber(noWorkName.workNameResolvedCount),
+      itemsWithoutWorkName: toFiniteNumber(noWorkName.itemsWithoutWorkName),
+      locationsWithoutWorkName: toFiniteNumber(noWorkName.locationsWithoutWorkName),
+      fallbackApplied: noWorkName.fallbackApplied === true,
+    },
+    backendOwnerPreserved: canonicalDiagnostics.backendOwnerPreserved === true,
+    clientRecomputeRemoved,
     logicChanged: false,
   } as const;
 
@@ -116,12 +115,15 @@ async function main() {
     noWorkNameExplained: detail.noWorkNameExplained,
     namingDiagnosticsVisible: detail.namingDiagnosticsVisible,
     backendOwnerPreserved: detail.backendOwnerPreserved,
+    clientRecomputeRemoved: detail.clientRecomputeRemoved,
     logicChanged: detail.logicChanged,
     green:
+      detail.objectCountSource === "warehouse_confirmed_issues" &&
       detail.objectCountSourceExplained &&
       detail.noWorkNameExplained &&
       detail.namingDiagnosticsVisible &&
       detail.backendOwnerPreserved &&
+      detail.clientRecomputeRemoved &&
       detail.logicChanged === false,
   };
 
@@ -130,4 +132,7 @@ async function main() {
   console.log(JSON.stringify(summary, null, 2));
 }
 
-void main();
+void main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

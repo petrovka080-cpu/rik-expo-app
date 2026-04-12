@@ -5,7 +5,6 @@ import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import {
   money,
   type FinKindSupplierRow,
-  type FinSpendSummary,
   type FinSupplierInput,
   type FinSupplierPanelState,
 } from "./director.finance";
@@ -20,7 +19,6 @@ type Props = {
   finPage: FinPage;
   finLoading: boolean;
   finScope: DirectorFinanceCanonicalScope | null;
-  finSpendSummary: FinSpendSummary;
   finKindName: string;
   finKindList: FinKindSupplierRow[];
   finSupplier: FinSupplierPanelState | null;
@@ -59,7 +57,6 @@ export default function DirectorFinanceContent({
   finPage,
   finLoading,
   finScope,
-  finSpendSummary,
   finKindName,
   finKindList,
   finSupplier,
@@ -72,6 +69,7 @@ export default function DirectorFinanceContent({
   onSupplierPdf,
   fmtDateOnly,
 }: Props) {
+  const spendBreakdown = finScope?.spendBreakdown ?? null;
   const observedKindsLabel = React.useMemo(() => {
     const kinds = Array.isArray(finScope?.workInclusion?.observedKinds)
       ? finScope.workInclusion.observedKinds.filter((value) => String(value ?? "").trim().length > 0)
@@ -101,7 +99,7 @@ export default function DirectorFinanceContent({
               {HOME_SPEND_BODY}
             </Text>
             <Text style={{ color: UI.sub, fontWeight: "700", marginTop: 6 }} numberOfLines={1}>
-              {`${HOME_SPEND_METRIC_PREFIX} ${money(finScope?.spend.approved ?? finSpendSummary.header.approved)} \u00b7 ${HOME_SPEND_TOTAL_PREFIX} ${money(finScope?.spend.toPay ?? finSpendSummary.header.toPay)}`}
+              {`${HOME_SPEND_METRIC_PREFIX} ${money(spendBreakdown?.header.approved ?? 0)} \u00b7 ${HOME_SPEND_TOTAL_PREFIX} ${money(spendBreakdown?.header.toPay ?? 0)}`}
             </Text>
           </View>
         </Pressable>
@@ -162,7 +160,7 @@ export default function DirectorFinanceContent({
           truth={finScope?.spend ?? null}
           diagnostics={finScope?.diagnostics ?? null}
         workInclusion={finScope?.workInclusion ?? null}
-        spendSummary={finSpendSummary}
+        spendBreakdown={spendBreakdown}
         money={money}
         onOpenKind={openFinKind}
       />

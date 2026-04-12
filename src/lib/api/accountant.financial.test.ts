@@ -126,6 +126,9 @@ describe("accountant financial rpc boundary", () => {
         ok: true,
         proposal_id: "proposal-1",
         payment_id: 77,
+        client_mutation_id: "pay-1",
+        idempotent_replay: false,
+        outcome: "success",
         allocation_summary: {
           allocation_count: 1,
           allocated_amount: 10,
@@ -192,6 +195,7 @@ describe("accountant financial rpc boundary", () => {
       amount: 10,
       accountantFio: "Accountant",
       purpose: "Payment",
+      clientMutationId: "pay-1",
       method: "Банк",
       allocations: [{ proposal_item_id: "item-1", amount: 10 }],
       expectedTotalPaid: 20,
@@ -210,6 +214,7 @@ describe("accountant financial rpc boundary", () => {
       expect.objectContaining({
         p_proposal_id: "proposal-1",
         p_amount: 10,
+        p_client_mutation_id: "pay-1",
         p_expected_total_paid: 20,
         p_expected_outstanding: 80,
       }),
@@ -217,6 +222,9 @@ describe("accountant financial rpc boundary", () => {
     expect(result).toMatchObject({
       ok: true,
       paymentId: 77,
+      clientMutationId: "pay-1",
+      idempotentReplay: false,
+      outcome: "success",
       totalsAfter: {
         totalPaid: 30,
         outstandingAmount: 70,
@@ -261,6 +269,7 @@ describe("accountant financial rpc boundary", () => {
         amount: 90,
         accountantFio: "Accountant",
         purpose: "Payment",
+        clientMutationId: "pay-rejected",
         method: "Банк",
         allocations: [{ proposal_item_id: "item-1", amount: 90 }],
       }),

@@ -197,7 +197,6 @@ export function DirectorScreen() {
           finPage={vm.finPage}
           finLoading={vm.finLoading}
           finScope={vm.finScope}
-          finSpendSummary={vm.finSpendSummary}
           finKindName={vm.finKindName}
           finKindList={vm.finKindList}
           finSupplier={vm.finSupplier}

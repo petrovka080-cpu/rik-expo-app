@@ -15738,6 +15738,7 @@ export type Database = {
           p_accountant_fio: string
           p_allocations?: Json
           p_amount: number
+          p_client_mutation_id?: string
           p_expected_outstanding?: number
           p_expected_total_paid?: number
           p_invoice_amount?: number

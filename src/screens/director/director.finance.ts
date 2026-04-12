@@ -49,10 +49,6 @@ export {
 } from "./director.finance.shared";
 
 export {
-  computeFinanceByKind,
-  computeFinanceRep,
-  computeFinanceSpendSummary,
-  computeFinanceSupplierPanel,
   normalizeFinSupplierInput,
 } from "./director.finance.compute";
 

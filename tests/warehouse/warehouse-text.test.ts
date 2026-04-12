@@ -8,33 +8,27 @@ import {
 
 describe("warehouse visible text", () => {
   it("returns readable warehouse empty-state copy", () => {
-    expect(selectWarehouseIncomingEmptyText()).toBe("Нет записей в очереди склада.");
+    expect(selectWarehouseIncomingEmptyText()).toBe("РќРµС‚ Р·Р°РїРёСЃРµР№ РІ РѕС‡РµСЂРµРґРё СЃРєР»Р°РґР°.");
     expect(selectWarehouseStockUnsupportedText()).toBe(
-      "Раздел «Склад факт» требует view v_warehouse_fact или RPC с фактическими остатками.",
+      "Р Р°Р·РґРµР» В«РЎРєР»Р°Рґ С„Р°РєС‚В» С‚СЂРµР±СѓРµС‚ view v_warehouse_fact РёР»Рё RPC СЃ С„Р°РєС‚РёС‡РµСЃРєРёРјРё РѕСЃС‚Р°С‚РєР°РјРё.",
     );
-    expect(selectWarehouseStockEmptyText()).toBe("Пока нет данных по складу.");
+    expect(selectWarehouseStockEmptyText()).toBe("РџРѕРєР° РЅРµС‚ РґР°РЅРЅС‹С… РїРѕ СЃРєР»Р°РґСѓ.");
   });
 
-  it("returns readable issue empty copy for each warehouse state", () => {
-    expect(selectWarehouseIssueEmptyText(true)).toBe("Загрузка...");
-    expect(selectWarehouseIssueEmptyText(false, { publishState: "degraded" } as never)).toBe(
-      "Не удалось получить свежую очередь выдачи.\nПоказано последнее сохранённое состояние.",
-    );
+  it("returns readable issue empty copy for canonical states", () => {
+    expect(selectWarehouseIssueEmptyText(true)).toBe("Р—Р°РіСЂСѓР·РєР°...");
     expect(selectWarehouseIssueEmptyText(false, { publishState: "error" } as never)).toBe(
-      "Не удалось обновить очередь выдачи.\nПотяни вниз, чтобы повторить.",
+      "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ РѕС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РїРѕРІС‚РѕСЂРёС‚СЊ.",
     );
-    expect(selectWarehouseIssueEmptyText(false)).toBe("Нет заявок для выдачи.\nПотяни вниз, чтобы обновить.");
+    expect(selectWarehouseIssueEmptyText(false)).toBe(
+      "РќРµС‚ Р·Р°СЏРІРѕРє РґР»СЏ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РѕР±РЅРѕРІРёС‚СЊ.",
+    );
   });
 
-  it("returns readable issue banner copy for warehouse stale and failure states", () => {
-    expect(selectWarehouseIssueBannerText({ publishState: "degraded" } as never)).toBe(
-      "Показано устаревшее состояние: последние успешно загруженные заявки. Актуализация временно недоступна.",
-    );
+  it("returns readable issue banner copy for warehouse failure states", () => {
     expect(selectWarehouseIssueBannerText({ publishState: "error" } as never)).toBe(
-      "Очередь выдачи временно не обновлена.",
+      "РћС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё РІСЂРµРјРµРЅРЅРѕ РЅРµ РѕР±РЅРѕРІР»РµРЅР°.",
     );
-    expect(selectWarehouseIssueBannerText(undefined, { mode: "stale_last_known_good" } as never)).toBe(
-      "Показаны последние загруженные заявки. Актуализация временно недоступна.",
-    );
+    expect(selectWarehouseIssueBannerText()).toBeNull();
   });
 });

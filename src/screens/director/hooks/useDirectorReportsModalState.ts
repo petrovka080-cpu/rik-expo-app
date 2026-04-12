@@ -103,7 +103,7 @@ export function useDirectorReportsModalState({
   const issuesNoObj = toFiniteNumber(kpi?.issues_without_object ?? kpi?.issues_no_obj);
   const itemsTotal = toFiniteNumber(kpi?.items_total);
   const itemsNoReq = toFiniteNumber(kpi?.items_without_request ?? kpi?.items_free);
-  const objectCount = toFiniteNumber(summary?.displayObjectCount ?? objectOptions.length);
+  const objectCount = toFiniteNumber(summary?.displayObjectCount);
   const objectCountLabel = textOrFallback(summary?.displayObjectCountLabel, "Объекты по подтверждённым выдачам");
   const unresolvedNamesCount = toFiniteNumber(summary?.unresolvedNamesCount);
   const noWorkNameCount = toFiniteNumber(summary?.noWorkNameCount);

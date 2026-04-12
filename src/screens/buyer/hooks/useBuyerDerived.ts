@@ -125,13 +125,12 @@ export function useBuyerDerived({
   const tabCounts = useMemo(
     () =>
       selectBuyerTabCounts({
-        groups,
         inboxTotalCount,
         pending,
         approved,
         rejected,
       }),
-    [groups, inboxTotalCount, pending, approved, rejected]
+    [inboxTotalCount, pending, approved, rejected]
   );
 
   return {

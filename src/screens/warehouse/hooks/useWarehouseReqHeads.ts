@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   apiFetchReqHeadsWindow,
@@ -50,14 +50,6 @@ const logReqHeadsMetrics = (
   console.info(`[warehouse.reqHeads] ${scope}`, details);
 };
 
-type ReqHeadsSnapshot = {
-  rows: ReqHeadRow[];
-  pageSize: number;
-  hasMore: boolean;
-  integrityState: WarehouseReqHeadsIntegrityState;
-  listState: WarehouseReqHeadsListState;
-};
-
 type ReqHeadsFetchValue = Pick<
   WarehouseReqHeadsFetchResult,
   "integrityState"
@@ -107,8 +99,6 @@ export function useWarehouseReqHeads(params: {
     lastForceStartAt: 0,
     lastForceSkipLogAt: 0,
   });
-  const publishedSnapshotRef = useRef<ReqHeadsSnapshot | null>(null);
-  const lastKnownGoodSnapshotRef = useRef<ReqHeadsSnapshot | null>(null);
   const inFlightRef = useRef(new Map<string, Promise<ReqHeadsFetchValue>>());
 
   const publishReqHeadsPage0 = useCallback(
@@ -141,18 +131,6 @@ export function useWarehouseReqHeads(params: {
       setReqHeadsIntegrityState(params.integrityState);
       setReqHeadsListState(listState);
 
-      const snapshot: ReqHeadsSnapshot = {
-        rows,
-        pageSize,
-        hasMore: params.hasMore,
-        integrityState: params.integrityState,
-        listState,
-      };
-      publishedSnapshotRef.current = snapshot;
-      if (params.integrityState.mode === "healthy") {
-        lastKnownGoodSnapshotRef.current = snapshot;
-      }
-
       recordWarehouseReqHeadsStateTrace({
         timestamp: new Date().toISOString(),
         stage: params.stage ?? "publish",
@@ -160,7 +138,6 @@ export function useWarehouseReqHeads(params: {
         freshness: listState.freshness,
         failureClass: listState.failureClass,
         rowCount: listState.rowCount,
-        lastKnownGoodUsed: listState.lastKnownGoodUsed,
         cooldownActive: listState.cooldownActive,
         cooldownReason: listState.cooldownReason,
         reason: listState.reason,
@@ -186,15 +163,13 @@ export function useWarehouseReqHeads(params: {
         sourceKind: params.sourceMeta?.sourceKind,
         fallbackUsed:
           params.sourceMeta?.fallbackUsed ??
-          (listState.publishState === "degraded" ||
-            listState.publishState === "error"),
+          listState.publishState === "error",
         errorStage: listState.reason ?? undefined,
         errorClass: listState.failureClass ?? undefined,
         errorMessage: listState.message ?? undefined,
         extra: {
           publishState: listState.publishState,
           freshness: listState.freshness,
-          lastKnownGoodUsed: listState.lastKnownGoodUsed,
           cooldownActive: listState.cooldownActive,
           cooldownReason: listState.cooldownReason,
           pageSize,
@@ -283,29 +258,19 @@ export function useWarehouseReqHeads(params: {
             }
           }
 
-          const published = publishedSnapshotRef.current;
           const throttledIntegrity = createWarehouseReqHeadsIntegrityState({
-            mode:
-              published?.integrityState.mode === "healthy"
-                ? "error"
-                : (published?.integrityState.mode ?? "error"),
+            mode: "error",
             failureClass:
-              reqRefs.current.lastFailureClass ??
-              published?.integrityState.failureClass ??
-              "server_failure",
-            reason:
-              published?.integrityState.reason ?? "fetch_req_heads_throttled",
-            message: published?.integrityState.message ?? null,
-            cacheUsed:
-              published?.integrityState.cacheUsed === true ||
-              published?.listState.lastKnownGoodUsed === true,
-            freshness: published?.integrityState.freshness,
+              reqRefs.current.lastFailureClass ?? "server_failure",
+            reason: "fetch_req_heads_throttled",
+            message: null,
+            cacheUsed: false,
             cooldownActive: true,
             cooldownReason: cooldownDecision.cooldownReason,
           });
           publishReqHeadsPage0({
-            rows: published?.rows ?? [],
-            hasMore: published?.hasMore ?? false,
+            rows: [],
+            hasMore: false,
             integrityState: throttledIntegrity,
             trigger,
             event: "content_throttled",
@@ -345,26 +310,6 @@ export function useWarehouseReqHeads(params: {
         });
         return;
       }
-      if (pageIndex === 0 && !forceRefresh) {
-        const cached = publishedSnapshotRef.current;
-        if (
-          cached &&
-          cached.pageSize === pageSize &&
-          cached.integrityState.mode === "healthy"
-        ) {
-          publishReqHeadsPage0({
-            rows: cached.rows,
-            hasMore: cached.hasMore,
-            integrityState: cached.integrityState,
-            trigger,
-            event: "content_cache_hit",
-            result: "cache_hit",
-            extra: { pageIndex, forceRefresh },
-          });
-          return;
-        }
-      }
-
       reqRefs.current.fetching = true;
       if (isWarehouseScreenActive(screenActiveRef))
         setReqHeadsFetchingPage(true);
@@ -415,16 +360,6 @@ export function useWarehouseReqHeads(params: {
             rows,
             hasMore: hasNext,
             integrityState: next.integrityState,
-            sourcePath: next.sourceMeta.sourcePath,
-            sourceReason: next.sourceMeta.reason,
-            lastKnownGood:
-              lastKnownGoodSnapshotRef.current &&
-              lastKnownGoodSnapshotRef.current.pageSize === pageSize
-                ? {
-                    rows: lastKnownGoodSnapshotRef.current.rows,
-                    hasMore: lastKnownGoodSnapshotRef.current.hasMore,
-                  }
-                : null,
           });
 
           if (publishDecision.integrityState.mode === "healthy") {
@@ -492,8 +427,7 @@ export function useWarehouseReqHeads(params: {
               totalRowCount: next.meta.totalRowCount,
               duplicateRowCount,
               integrityMode: next.integrityState.mode,
-              publishState:
-                publishedSnapshotRef.current?.listState.publishState ?? null,
+              publishState: null,
             },
           });
         }
@@ -504,50 +438,25 @@ export function useWarehouseReqHeads(params: {
           reqRefs.current.lastFailureAt = Date.now();
           reqRefs.current.lastFailureClass = failure.failureClass;
           reqRefs.current.lastFailureRetryAfterMs = failure.retryAfterMs;
-          const lastKnownGood = lastKnownGoodSnapshotRef.current;
-          if (lastKnownGood && lastKnownGood.pageSize === pageSize) {
-            const integrityState = createWarehouseReqHeadsIntegrityState({
-              mode: "stale_last_known_good",
+          publishReqHeadsPage0({
+            rows: [],
+            hasMore: false,
+            integrityState: createWarehouseReqHeadsIntegrityState({
+              mode: "error",
               failureClass: failure.failureClass,
               reason: "fetch_req_heads_failed",
               message: pickErrMessage(e),
-              cacheUsed: true,
-            });
-            publishReqHeadsPage0({
-              rows: lastKnownGood.rows,
-              hasMore: lastKnownGood.hasMore,
-              integrityState,
-              trigger,
-              event: "content_ready_stale_cache",
-              result: "cache_hit",
-              extra: {
-                pageIndex,
-                forceRefresh,
-                cachedHasMore: lastKnownGood.hasMore,
-                retryAfterMs: failure.retryAfterMs,
-              },
-            });
-          } else {
-            publishReqHeadsPage0({
-              rows: [],
-              hasMore: false,
-              integrityState: createWarehouseReqHeadsIntegrityState({
-                mode: "error",
-                failureClass: failure.failureClass,
-                reason: "fetch_req_heads_failed",
-                message: pickErrMessage(e),
-                cacheUsed: false,
-              }),
-              trigger,
-              event: "content_error",
-              result: "error",
-              extra: {
-                pageIndex,
-                forceRefresh,
-                retryAfterMs: failure.retryAfterMs,
-              },
-            });
-          }
+              cacheUsed: false,
+            }),
+            trigger,
+            event: "content_error",
+            result: "error",
+            extra: {
+              pageIndex,
+              forceRefresh,
+              retryAfterMs: failure.retryAfterMs,
+            },
+          });
         } else {
           reqRefs.current.hasMore = false;
           setReqHeadsHasMore(false);

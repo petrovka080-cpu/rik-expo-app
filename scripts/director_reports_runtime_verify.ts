@@ -30,6 +30,7 @@ const runtimeOutPath = path.join(projectRoot, "artifacts/director-reports-runtim
 const runtimeSummaryOutPath = path.join(projectRoot, "artifacts/director-reports-runtime.summary.json");
 const webArtifactBase = "artifacts/director-reports-web-smoke";
 const androidDevClientPort = Number(process.env.DIRECTOR_ANDROID_DEV_PORT ?? "8081");
+const androidOnlyRuntime = process.env.WAVE3_ANDROID_ONLY === "1" || process.env.RUNTIME_ANDROID_ONLY === "1";
 
 const WEB_LABELS = {
   email: "Email",
@@ -59,6 +60,31 @@ const ANDROID_LABELS = {
   locationsLabel: ["Локации", "Р›РѕРєР°С†РёРё"],
   close: ["Закрыть", "Р—Р°РєСЂС‹С‚СЊ"],
 };
+
+const ANDROID_CONTROL_HEADER_LABELS = [
+  "\u041a\u043e\u043d\u0442\u0440\u043e\u043b\u044c",
+  "РљРѕРЅС‚СЂРѕР»СЊ",
+  "Р С™Р С•Р Р…РЎвЂљРЎР‚Р С•Р В»РЎРЉ",
+];
+const ANDROID_RENDERABLE_DIRECTOR_TAB_LABELS = [
+  "\u0417\u0430\u044f\u0432\u043a\u0438",
+  "\u0424\u0438\u043d\u0430\u043d\u0441\u044b",
+  "\u0421\u043a\u043b\u0430\u0434",
+  "Р—Р°СЏРІРєРё",
+  "Р¤РёРЅР°РЅСЃС‹",
+  "РЎРєР»Р°Рґ",
+];
+
+ANDROID_LABELS.reportsTab.push("\u041e\u0442\u0447\u0451\u0442\u044b", "\u041e\u0442\u0447\u0435\u0442\u044b");
+ANDROID_LABELS.cardTitle.push("\u0424\u0430\u043a\u0442 \u0432\u044b\u0434\u0430\u0447\u0438 (\u0441\u043a\u043b\u0430\u0434)");
+ANDROID_LABELS.open.push("\u041e\u0442\u043a\u0440\u044b\u0442\u044c");
+ANDROID_LABELS.materialsTab.push("\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b");
+ANDROID_LABELS.worksTab.push("\u0420\u0430\u0431\u043e\u0442\u044b");
+ANDROID_LABELS.objectFilter.push("\u041e\u0431\u044a\u0435\u043a\u0442\u044b");
+ANDROID_LABELS.disciplineHeader.push("\u0420\u0430\u0441\u0445\u043e\u0434 / \u0417\u0430\u043a\u0443\u043f\u043a\u0438");
+ANDROID_LABELS.positionsLabel.push("\u041f\u043e\u0437\u0438\u0446\u0438\u0438");
+ANDROID_LABELS.locationsLabel.push("\u041b\u043e\u043a\u0430\u0446\u0438\u0438");
+ANDROID_LABELS.close.push("\u0417\u0430\u043a\u0440\u044b\u0442\u044c");
 
 type TempUser = {
   id: string;
@@ -538,6 +564,11 @@ const isAndroidReportsHome = (xml: string) =>
 const isAndroidDirectorControlHome = (xml: string) =>
   /Контроль|РљРѕРЅС‚СЂРѕР»СЊ/i.test(xml) && matchesAndroidLabel(xml, ANDROID_LABELS.reportsTab);
 
+const isAndroidDirectorControlShell = (xml: string) =>
+  matchesAndroidLabel(xml, ANDROID_CONTROL_HEADER_LABELS) &&
+  (matchesAndroidLabel(xml, ANDROID_LABELS.reportsTab) ||
+    matchesAndroidLabel(xml, ANDROID_RENDERABLE_DIRECTOR_TAB_LABELS));
+
 const isAndroidReportsModal = (xml: string) =>
   matchesAndroidLabel(xml, ANDROID_LABELS.materialsTab) &&
   matchesAndroidLabel(xml, ANDROID_LABELS.worksTab) &&
@@ -548,6 +579,10 @@ const isAndroidReportsDisciplineView = (xml: string) =>
   (matchesAndroidLabel(xml, ANDROID_LABELS.disciplineHeader) ||
     matchesAndroidLabel(xml, ANDROID_LABELS.positionsLabel) ||
     matchesAndroidLabel(xml, ANDROID_LABELS.locationsLabel));
+
+const isAndroidReportsBusy = (xml: string) =>
+  xml.includes("\u041e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0435...") ||
+  xml.includes("\u0413\u043e\u0442\u043e\u0432\u0438\u043c \u0444\u0430\u0439\u043b...");
 
 async function dismissAndroidClosableOverlays(current: ReturnType<typeof dumpAndroidScreen>) {
   let screen = current;
@@ -579,8 +614,8 @@ async function loginDirectorAndroid(user: TempUser, packageName: string | null) 
       user,
       protectedRoute: "rik://director",
       artifactBase: "android-director-reports",
-      successPredicate: (xml) => isAndroidDirectorControlHome(xml) || isAndroidReportsModal(xml),
-      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidDirectorControlHome(xml) || isAndroidReportsModal(xml),
+      successPredicate: (xml) => isAndroidDirectorControlShell(xml) || isAndroidReportsModal(xml),
+      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidDirectorControlShell(xml) || isAndroidReportsModal(xml),
       loginScreenPredicate: isAndroidLoginScreen,
     });
     return dismissAndroidClosableOverlays(current);
@@ -719,7 +754,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
   const devClient = await androidHarness.ensureAndroidDevClientServer();
   try {
     const packageName = detectAndroidPackage();
-    const preflight = androidHarness.runAndroidPreflight({ packageName });
+    const preflight = androidHarness.runAndroidPreflight({ packageName, clearApp: true });
     await androidHarness.warmAndroidDevClientBundle(androidDevClientPort);
     user = await createTempUser(process.env.DIRECTOR_WEB_ROLE || "director", "Director Reports Android");
     const current = await loginDirectorAndroid(user, packageName);
@@ -777,6 +812,16 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
       ).catch(() => dumpAndroidScreen("android-director-reports-modal-timeout"));
     }
 
+    reportsModal = await poll(
+      "android:director_reports_modal_ready",
+      async () => {
+        const next = dumpAndroidScreen("android-director-reports-modal-ready");
+        return isAndroidReportsModal(next.xml) && !isAndroidReportsBusy(next.xml) ? next : null;
+      },
+      60_000,
+      1000,
+    ).catch(() => reportsModal);
+
     const worksTabNode = findAndroidLabelNode(parseAndroidNodes(reportsModal.xml), ANDROID_LABELS.worksTab);
     let worksScreen = reportsModal;
     let workTabRendered = isAndroidReportsDisciplineView(reportsModal.xml);
@@ -793,6 +838,24 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
         1000,
       ).catch(() => dumpAndroidScreen("android-director-reports-works-timeout"));
       workTabRendered = isAndroidReportsDisciplineView(worksScreen.xml);
+    }
+
+    if (worksTabNode && !workTabRendered) {
+      const retryNode = findAndroidLabelNode(parseAndroidNodes(worksScreen.xml), ANDROID_LABELS.worksTab);
+      if (retryNode) {
+        tapAndroidBounds(retryNode.bounds);
+        await sleep(1200);
+        worksScreen = await poll(
+          "android:director_reports_works_retry",
+          async () => {
+            const next = dumpAndroidScreen("android-director-reports-works-retry");
+            return isAndroidReportsDisciplineView(next.xml) ? next : null;
+          },
+          35_000,
+          1000,
+        ).catch(() => worksScreen);
+        workTabRendered = isAndroidReportsDisciplineView(worksScreen.xml);
+      }
     }
 
     if (!worksTabNode) {
@@ -846,18 +909,23 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) =>
-    createFailurePlatformResult("web", error, {
-      reportsHomeOpened: false,
-      reportsModalOpened: false,
-      reportScopeRequested: false,
-      disciplineScopeRequested: false,
-      reportScope200: false,
-      disciplineScope200: false,
-      reportsControlsRendered: false,
-      workTabRendered: false,
-    }),
-  );
+  const web = androidOnlyRuntime
+    ? {
+        status: "residual",
+        platformSpecificIssues: ["web runtime skipped: WAVE 3 requires Android proof; web auth harness is out of scope"],
+      }
+    : await runWebRuntime().catch((error) =>
+        createFailurePlatformResult("web", error, {
+          reportsHomeOpened: false,
+          reportsModalOpened: false,
+          reportScopeRequested: false,
+          disciplineScopeRequested: false,
+          reportScope200: false,
+          disciplineScope200: false,
+          reportsControlsRendered: false,
+          workTabRendered: false,
+        }),
+      );
   const android = await runAndroidRuntime().catch((error) => {
     const artifacts = androidHarness.captureFailureArtifacts("android-director-reports-failure");
     return createFailurePlatformResult("android", error, {
@@ -875,6 +943,11 @@ async function main() {
     web,
     android,
     ios,
+    requiredPlatforms: {
+      web: !androidOnlyRuntime,
+      android: true,
+      ios: false,
+    },
     scenariosPassed: {
       web: {
         initialOpen: web.reportsHomeOpened === true,

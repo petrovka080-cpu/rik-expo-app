@@ -17,6 +17,5 @@ export {
   apiFetchIssuedMaterialsReportFast,
   apiFetchReports,
   apiFetchStock,
-  apiFetchStockRpc,
   apiFetchStockRpcV2,
 } from "./warehouse.stockReports.service";

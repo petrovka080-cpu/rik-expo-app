@@ -248,8 +248,6 @@ export function useWarehouseScreenData(params: {
   );
 
   const availability = useStockAvailability(stock, matNameByCode);
-  const getAvailableByCode = availability.getAvailableByCode;
-  const getAvailableByCodeUom = availability.getAvailableByCodeUom;
   const getMaterialNameByCode = availability.getMaterialNameByCode;
   const [issueBusy, setIssueBusy] = useState(false);
   const [issueMsg, setIssueMsg] = useState<{
@@ -260,8 +258,6 @@ export function useWarehouseScreenData(params: {
   const reqPickUi = useWarehouseReqPick({
     nz,
     setIssueMsg,
-    getAvailableByCode,
-    getAvailableByCodeUom,
   });
   const stockPickUi = useWarehouseStockPick({
     nz,
@@ -294,8 +290,6 @@ export function useWarehouseScreenData(params: {
     fetchReqItems: expenseQueue.fetchReqItems,
     fetchReqHeads: () =>
       expenseQueue.refreshExpenseQueue({ force: true, reason: "issue" }),
-    getAvailableByCode,
-    getAvailableByCodeUom,
     getMaterialNameByCode,
     clearStockPick: stockPickUi.clearStockPick,
     clearReqPick: reqPickUi.clearReqPick,

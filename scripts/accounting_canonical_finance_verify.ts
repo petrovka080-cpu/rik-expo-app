@@ -383,7 +383,13 @@ async function payInvoice(params: {
   allocations?: Array<{ proposal_item_id: string; amount: number }>;
   expectedTotalPaid?: number | null;
   expectedOutstanding?: number | null;
+  clientMutationId?: string;
 }) {
+  const clientMutationId =
+    params.clientMutationId ||
+    `accounting-finance-verify:${params.proposalId}:${Date.now().toString(36)}:${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
   const rpc = await admin.rpc("accounting_pay_invoice_v1", {
     p_proposal_id: params.proposalId,
     p_amount: params.amount,
@@ -397,6 +403,7 @@ async function payInvoice(params: {
     p_invoice_currency: "KGS",
     p_expected_total_paid: params.expectedTotalPaid ?? undefined,
     p_expected_outstanding: params.expectedOutstanding ?? undefined,
+    p_client_mutation_id: clientMutationId,
   });
   if (rpc.error) throw rpc.error;
   return parsePayResult(rpc.data);
@@ -454,6 +461,11 @@ function readSourceScan() {
 
 async function cleanupSeedRows(requestIds: string[], proposalIds: string[]) {
   if (proposalIds.length) {
+    await (admin as any)
+      .from("accounting_pay_invoice_mutations_v1")
+      .delete()
+      .in("proposal_id", proposalIds);
+
     const paymentIdsResult = await admin
       .from("proposal_payments")
       .select("id")

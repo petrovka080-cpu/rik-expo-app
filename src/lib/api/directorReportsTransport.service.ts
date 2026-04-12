@@ -35,6 +35,8 @@ type DirectorReportTransportScopeEnvelopeV1 = {
   options_payload: unknown;
   report_payload: unknown;
   discipline_payload?: unknown | null;
+  canonical_summary?: unknown;
+  canonical_diagnostics?: unknown;
   priced_stage?: "base" | "priced" | null;
 };
 
@@ -42,6 +44,8 @@ export type DirectorReportTransportScopeResult = {
   options: DirectorReportOptions;
   report: DirectorReportPayload | null;
   discipline: DirectorDisciplinePayload | null;
+  canonicalSummaryPayload: unknown;
+  canonicalDiagnosticsPayload: unknown;
   optionsMeta: DirectorReportFetchMeta;
   reportMeta: DirectorReportFetchMeta;
   disciplineMeta: DirectorReportFetchMeta | null;
@@ -149,6 +153,8 @@ const validateScopeEnvelopeV1 = (value: unknown): DirectorReportTransportScopeEn
     options_payload: root.options_payload,
     report_payload: root.report_payload,
     discipline_payload: root.discipline_payload ?? null,
+    canonical_summary: root.canonical_summary,
+    canonical_diagnostics: root.canonical_diagnostics,
     priced_stage:
       root.priced_stage === "base" || root.priced_stage === "priced"
         ? root.priced_stage
@@ -274,6 +280,8 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
     options,
     report,
     discipline,
+    canonicalSummaryPayload: envelope.canonical_summary,
+    canonicalDiagnosticsPayload: envelope.canonical_diagnostics,
     optionsMeta: makeTransportMeta("options"),
     reportMeta: makeTransportMeta("report"),
     disciplineMeta: args.includeDiscipline ? makeTransportMeta("discipline", pricedStage) : null,
