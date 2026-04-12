@@ -19686,6 +19686,17 @@ export type Database = {
         }
         Returns: number
       }
+      wh_issue_free_atomic_v5: {
+        Args: {
+          p_client_mutation_id: string
+          p_lines: Json
+          p_note?: string | null
+          p_object_name?: string | null
+          p_who: string
+          p_work_name?: string | null
+        }
+        Returns: Json
+      }
       wh_issue_request_atomic_v1: {
         Args: {
           p_client_mutation_id: string

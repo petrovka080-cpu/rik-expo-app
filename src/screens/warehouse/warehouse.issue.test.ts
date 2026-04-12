@@ -213,6 +213,38 @@ describe("makeWarehouseIssueActions duplicate submit guards", () => {
     await expect(first).resolves.toBe(true);
   });
 
+  it("submits free-stock issue through idempotent atomic server boundary", async () => {
+    const { actions } = createIssueActions();
+    const input = {
+      stockPick: {
+        line1: {
+          pick_key: "MAT-1::pcs",
+          code: "MAT-1",
+          name: "Material 1",
+          uom_id: "pcs",
+          qty: 1,
+        },
+      },
+    } as never;
+
+    await expect(actions.submitStockPick(input)).resolves.toBe(true);
+
+    expect(issueWarehouseFreeAtomic).toHaveBeenCalledTimes(1);
+    expect(issueWarehouseFreeAtomic).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        p_lines: [
+          {
+            rik_code: "MAT-1",
+            uom_id: "pcs",
+            qty: 1,
+          },
+        ],
+        p_client_mutation_id: expect.any(String),
+      }),
+    );
+  });
+
   it("blocks repeat submit while single request-item issue is in flight", async () => {
     const deferred = createDeferred<{ data: number; error: null }>();
     (issueWarehouseRequestAtomic as jest.Mock).mockReturnValueOnce(deferred.promise);

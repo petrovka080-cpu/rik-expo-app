@@ -18,7 +18,7 @@ const ensureWarehouseRpcData = <T,>(value: T | null | undefined, message: string
 const DUPLICATE_ISSUE_SUBMIT_MESSAGE =
   "\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u044f \u0443\u0436\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f. \u0414\u043e\u0436\u0434\u0438\u0442\u0435\u0441\u044c \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0438\u044f.";
 
-const buildWarehouseIssueMutationId = (kind: "req_pick" | "request_item"): string => {
+const buildWarehouseIssueMutationId = (kind: "req_pick" | "stock_pick" | "request_item"): string => {
   const cryptoLike =
     typeof globalThis !== "undefined"
       ? (globalThis as typeof globalThis & {
@@ -340,6 +340,7 @@ export function makeWarehouseIssueActions(args: {
         p_work_name: getWorkName(),
         p_note: getWarehousemanFio() ? `Кладовщик: ${getWarehousemanFio()}` : null,
         p_lines: payloadLines,
+        p_client_mutation_id: buildWarehouseIssueMutationId("stock_pick"),
       });
 
       if (r.error) {
