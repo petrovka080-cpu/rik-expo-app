@@ -512,15 +512,27 @@ describe("useForemanScreenController", () => {
     });
   });
 
-  it("keeps the route file as a thin controller consumer instead of a hidden orchestration hub", () => {
+  it("keeps the route thin while the src screen owns foreman orchestration", () => {
     const routeSource = readFileSync(
       join(__dirname, "..", "..", "..", "app", "(tabs)", "foreman.tsx"),
       "utf8",
     );
+    const screenSource = readFileSync(
+      join(__dirname, "ForemanScreen.tsx"),
+      "utf8",
+    );
 
-    expect(routeSource).toContain("useForemanScreenController");
-    expect(routeSource).toContain("<ForemanMaterialsContent {...vm.materialsContentProps} />");
-    expect(routeSource).toContain("<ForemanSubcontractTab {...vm.subcontractTabProps} />");
+    expect(routeSource).toContain(
+      'import { ForemanScreen } from "../../src/screens/foreman/ForemanScreen";',
+    );
+    expect(routeSource).toContain("withScreenErrorBoundary");
+    expect(routeSource).not.toContain("useForemanScreenController");
+    expect(routeSource).not.toContain("ForemanMaterialsContent");
+    expect(routeSource).not.toContain("ForemanSubcontractTab");
+
+    expect(screenSource).toContain("useForemanScreenController");
+    expect(screenSource).toContain("<ForemanMaterialsContent {...vm.materialsContentProps} />");
+    expect(screenSource).toContain("<ForemanSubcontractTab {...vm.subcontractTabProps} />");
     expect(routeSource).not.toContain("useForemanDraftBoundary");
     expect(routeSource).not.toContain("useForemanHistory(");
     expect(routeSource).not.toContain("useForemanSubcontractHistory");

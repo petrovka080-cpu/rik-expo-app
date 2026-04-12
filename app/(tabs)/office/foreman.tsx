@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ForemanScreen } from "../foreman";
+import { ForemanScreen } from "../../../src/screens/foreman/ForemanScreen";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 

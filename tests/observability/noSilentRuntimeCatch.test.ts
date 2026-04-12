@@ -8,7 +8,7 @@ const auditedRuntimeFiles = [
   "src/lib/notify.native.ts",
   "src/lib/notify.web.ts",
   "src/components/map/MapRenderer.web.tsx",
-  "app/(tabs)/buyer.tsx",
+  "src/screens/buyer/BuyerScreen.tsx",
 ];
 
 describe("audited runtime silent catches", () => {

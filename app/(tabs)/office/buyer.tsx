@@ -1,6 +1,6 @@
 import React from "react";
 
-import { BuyerScreen } from "../buyer";
+import { BuyerScreen } from "../../../src/screens/buyer/BuyerScreen";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 

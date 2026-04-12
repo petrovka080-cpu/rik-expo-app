@@ -241,7 +241,7 @@ describe("office warehouse child route entry", () => {
       'import WarehouseScreenContent from "../../../src/screens/warehouse/WarehouseScreenContent";',
     );
     expect(foremanSource).toContain(
-      'import { ForemanScreen } from "../foreman";',
+      'import { ForemanScreen } from "../../../src/screens/foreman/ForemanScreen";',
     );
     expect(warehouseSource).toContain("useOfficeChildRouteAudit({");
     expect(warehouseSource).toContain("return <WarehouseScreenContent />;");

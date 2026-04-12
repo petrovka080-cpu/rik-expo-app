@@ -1,6 +1,6 @@
 import React from "react";
 
-import { DirectorScreen } from "../director";
+import { DirectorScreen } from "../../../src/screens/director/DirectorScreen";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 

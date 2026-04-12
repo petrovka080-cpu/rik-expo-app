@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ContractorScreen } from "../contractor";
+import { ContractorScreen } from "../../../src/screens/contractor/ContractorScreen";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 

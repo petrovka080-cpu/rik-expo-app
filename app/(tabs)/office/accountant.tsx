@@ -1,6 +1,6 @@
 import React from "react";
 
-import { AccountantScreen } from "../accountant";
+import { AccountantScreen } from "../../../src/screens/accountant/AccountantScreen";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 

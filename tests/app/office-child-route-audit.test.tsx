@@ -26,16 +26,13 @@ jest.mock("expo-router", () => {
   };
 });
 
-jest.mock("../../app/(tabs)/foreman", () => {
+jest.mock("../../src/screens/foreman/ForemanScreen", () => {
   const ReactRuntime = jest.requireActual("react");
   const { View } = jest.requireActual("react-native");
   return {
     __esModule: true,
     ForemanScreen: function MockForemanScreen() {
       return ReactRuntime.createElement(View, { testID: "foreman-route" });
-    },
-    default: function UnexpectedDefaultForemanRoute() {
-      throw new Error("office child route should not render top-level route default export");
     },
   };
 });
