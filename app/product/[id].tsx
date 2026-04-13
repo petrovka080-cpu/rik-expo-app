@@ -45,7 +45,8 @@ const MARKET_ALERT_TITLE = "Маркет";
 
 function ProductDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const rawId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const id = typeof rawId === "string" ? rawId.trim() : undefined;
   const [row, setRow] = useState<MarketHomeListingCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
