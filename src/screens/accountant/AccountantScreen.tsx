@@ -379,8 +379,8 @@ export function AccountantScreen() {
     errText,
   });
 
-  const renderItem = useCallback(
-    ({ item }: { item: AccountantInboxRow }) => <ListRow item={item} onPress={() => openCard(item)} />,
+  const renderInboxRow = useCallback(
+    (item: AccountantInboxRow) => <ListRow item={item} onPress={() => openCard(item)} />,
     [openCard]
   );
 
@@ -412,8 +412,8 @@ export function AccountantScreen() {
     ]
   );
 
-  const renderHistoryItem = useCallback(
-    ({ item }: { item: HistoryRow }) => (
+  const renderHistoryRow = useCallback(
+    (item: HistoryRow) => (
       <HistoryRowCard item={item} onOpen={onOpenHistoryRow} ui={{ cardBg: UI.cardBg, text: UI.text, sub: UI.sub }} />
     ),
     [onOpenHistoryRow]
@@ -461,8 +461,8 @@ export function AccountantScreen() {
           onEndReached={loadMoreInbox}
           onScroll={onListScroll}
           contentTopPad={HEADER_MAX + 16}
-          onRenderHistory={(row) => renderHistoryItem({ item: row })}
-          onRenderInbox={(row) => renderItem({ item: row })}
+          onRenderHistory={renderHistoryRow}
+          onRenderInbox={renderInboxRow}
           uiTextColor={UI.text} uiSubColor={UI.sub}
         />
       )}

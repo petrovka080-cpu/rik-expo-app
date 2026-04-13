@@ -9,11 +9,13 @@ import {
 } from "react-native";
 import { FlashList } from "../../../ui/FlashList";
 import type { HistoryRow } from "../types";
-
-type InboxRowBase = { proposal_id?: string | number };
-type ListItem<TInbox extends InboxRowBase> =
-  | { __kind: "history"; data: HistoryRow }
-  | { __kind: "inbox"; data: TInbox };
+import {
+  buildAccountantListModel,
+  getAccountantListEstimatedItemSize,
+  getAccountantListItemKey,
+  type AccountantInboxListRowBase,
+  type AccountantListItem,
+} from "../accountant.listModel";
 
 export function AccountantEmptyState({
   title,
@@ -35,7 +37,7 @@ export function AccountantEmptyState({
   );
 }
 
-export function AccountantListBlock<TInbox extends InboxRowBase>({
+export function AccountantListBlock<TInbox extends AccountantInboxListRowBase>({
   isHistory,
   historyRows,
   rows,
@@ -82,9 +84,23 @@ export function AccountantListBlock<TInbox extends InboxRowBase>({
   uiTextColor: string;
   uiSubColor: string;
 }) {
-  const data: ListItem<TInbox>[] = isHistory
-    ? historyRows.map((row) => ({ __kind: "history" as const, data: row }))
-    : rows.map((row) => ({ __kind: "inbox" as const, data: row }));
+  const data = React.useMemo(
+    () => buildAccountantListModel({ isHistory, historyRows, rows }),
+    [historyRows, isHistory, rows],
+  );
+
+  const keyExtractor = React.useCallback(
+    (item: AccountantListItem<TInbox>, index: number) => getAccountantListItemKey(item, index),
+    [],
+  );
+
+  const renderItem = React.useCallback(
+    ({ item }: { item: AccountantListItem<TInbox> }) => {
+      if (item.__kind === "history") return onRenderHistory(item.data);
+      return onRenderInbox(item.data);
+    },
+    [onRenderHistory, onRenderInbox],
+  );
 
   const footer = isHistory ? (
     historyLoadingMore ? (
@@ -107,18 +123,13 @@ export function AccountantListBlock<TInbox extends InboxRowBase>({
   );
 
   return (
-    <FlashList<ListItem<TInbox>>
+    <FlashList<AccountantListItem<TInbox>>
       style={{ flex: 1 }}
       data={data}
-      estimatedItemSize={isHistory ? 112 : 128}
-      keyExtractor={(item) =>
-        item.__kind === "history" ? String(item.data.payment_id) : String(item.data.proposal_id ?? "")
-      }
+      estimatedItemSize={getAccountantListEstimatedItemSize(isHistory)}
+      keyExtractor={keyExtractor}
       ListHeaderComponent={isHistory ? historyHeader : null}
-      renderItem={({ item }) => {
-        if (item.__kind === "history") return onRenderHistory(item.data);
-        return onRenderInbox(item.data);
-      }}
+      renderItem={renderItem}
       refreshControl={
         <RefreshControl
           refreshing={isHistory ? historyRefreshing : refreshing}
