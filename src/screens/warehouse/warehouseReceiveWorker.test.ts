@@ -3,6 +3,7 @@ import {
   getPlatformOfflineTelemetryEvents,
   resetPlatformOfflineTelemetryEvents,
 } from "../../lib/offline/platformOffline.observability";
+import { resetOfflineReplayCoordinatorForTests } from "../../lib/offline/offlineReplayCoordinator";
 import {
   clearWarehouseReceiveDraftStore,
   configureWarehouseReceiveDraftStore,
@@ -16,7 +17,10 @@ import {
   loadWarehouseReceiveQueue,
   markWarehouseReceiveQueueInflight,
 } from "./warehouseReceiveQueue";
-import { flushWarehouseReceiveQueue } from "./warehouseReceiveWorker";
+import {
+  WAREHOUSE_RECEIVE_REPLAY_POLICY,
+  flushWarehouseReceiveQueue,
+} from "./warehouseReceiveWorker";
 
 const seedReceiveDraft = async (incomingId = "incoming-1") => {
   await setWarehouseReceiveDraftItems(incomingId, [
@@ -57,11 +61,22 @@ const createDeferred = <T,>() => {
 
 describe("warehouse receive worker", () => {
   beforeEach(async () => {
+    resetOfflineReplayCoordinatorForTests();
     configureWarehouseReceiveQueue({ storage: createMemoryOfflineStorage() });
     configureWarehouseReceiveDraftStore({ storage: createMemoryOfflineStorage() });
     resetPlatformOfflineTelemetryEvents();
     await clearWarehouseReceiveQueue();
     await clearWarehouseReceiveDraftStore();
+  });
+
+  it("declares a serial FIFO replay policy owned by the worker", () => {
+    expect(WAREHOUSE_RECEIVE_REPLAY_POLICY).toMatchObject({
+      queueKey: "warehouse_receive",
+      owner: "warehouse_receive_worker",
+      concurrencyLimit: 1,
+      ordering: "created_at_fifo",
+      backpressure: "coalesce_triggers_and_rerun_once",
+    });
   });
 
   it("does not duplicate receive apply while a flush is already in flight", async () => {

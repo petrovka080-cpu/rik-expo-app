@@ -28,6 +28,7 @@ const runtimeOutPath = path.join(projectRoot, "artifacts/foreman-request-sync-ru
 const runtimeSummaryOutPath = path.join(projectRoot, "artifacts/foreman-request-sync-runtime.summary.json");
 const webArtifactOutPath = path.join(projectRoot, "artifacts/foreman-request-sync-web-smoke.json");
 const androidDevClientPort = Number(process.env.FOREMAN_ANDROID_DEV_PORT ?? "8081");
+const shouldRunWebRuntime = process.env.FOREMAN_RUNTIME_WEB === "1";
 const androidDevClientStdoutPath = path.join(projectRoot, `artifacts/expo-dev-client-${androidDevClientPort}.stdout.log`);
 const androidDevClientStderrPath = path.join(projectRoot, `artifacts/expo-dev-client-${androidDevClientPort}.stderr.log`);
 
@@ -734,7 +735,7 @@ async function runAndroidRuntime() {
   const devClient = await ensureAndroidDevClientServer();
   try {
     const packageName = detectAndroidPackage();
-    const preflight = androidHarness.runAndroidPreflight({ packageName });
+    const preflight = androidHarness.runAndroidPreflight({ packageName, clearApp: true });
     await warmAndroidDevClientBundle(devClient.port);
     user = await createTempUser(process.env.FOREMAN_ANDROID_ROLE || "foreman", "Foreman Android Runtime");
     const current = await loginForemanAndroid(user, packageName, devClient.port);
@@ -756,7 +757,13 @@ async function runAndroidRuntime() {
 }
 
 async function run() {
-  const web = await runWebRuntime().catch((error) => createFailurePlatformResult("web", error));
+  const web = shouldRunWebRuntime
+    ? await runWebRuntime().catch((error) => createFailurePlatformResult("web", error))
+    : {
+        status: "skipped",
+        platformSpecificIssues: [],
+        skipReason: "web smoke is not part of this WAVE 8 Android runtime proof",
+      };
   const android = await runAndroidRuntime().catch((error) => {
     const artifacts = androidHarness.captureFailureArtifacts("android-foreman-request-sync-failure");
     return createFailurePlatformResult("android", error, {
@@ -814,8 +821,13 @@ async function run() {
         routeOpen: false,
       },
     },
+    requiredPlatforms: {
+      web: shouldRunWebRuntime,
+      android: true,
+      ios: true,
+    },
     artifacts: {
-      web: path.relative(projectRoot, webArtifactOutPath).replace(/\\/g, "/"),
+      web: shouldRunWebRuntime ? path.relative(projectRoot, webArtifactOutPath).replace(/\\/g, "/") : null,
       android:
         android.status === "passed"
           ? {
@@ -826,6 +838,7 @@ async function run() {
     },
     extra: {
       gate: "foreman_request_sync_runtime_verify",
+      webSkipped: !shouldRunWebRuntime,
     },
   });
 

@@ -40,6 +40,10 @@ import {
 } from "./mutation.retryPolicy";
 import { recordOfflineMutationEvent } from "./mutation.telemetry";
 import type { OfflineMutationErrorKind } from "./mutation.types";
+import {
+  requestOfflineReplay,
+  type OfflineReplayPolicy,
+} from "./offlineReplayCoordinator";
 
 type ContractorProgressWorkerTriggerSource = PlatformOfflineRetryTriggerSource;
 
@@ -70,9 +74,14 @@ type ContractorProgressFailureAssessment = {
   errorCode: string;
 };
 
-let flushInFlight: Promise<ContractorProgressWorkerResult> | null = null;
-
 const CONTRACTOR_RETRY_POLICY = getOfflineMutationRetryPolicy("contractor_default");
+export const CONTRACTOR_PROGRESS_REPLAY_POLICY = {
+  queueKey: "contractor_progress",
+  owner: "contractor_progress_worker",
+  concurrencyLimit: 1,
+  ordering: "created_at_fifo",
+  backpressure: "coalesce_triggers_and_rerun_once",
+} as const satisfies OfflineReplayPolicy;
 
 const trim = (value: unknown) => String(value ?? "").trim();
 
@@ -564,13 +573,13 @@ export const flushContractorProgressQueue = async (
   deps: ContractorProgressWorkerDeps,
   triggerSource: ContractorProgressWorkerTriggerSource,
 ): Promise<ContractorProgressWorkerResult> => {
-  if (flushInFlight) {
-    return await flushInFlight;
-  }
-
-  flushInFlight = runFlush(deps, triggerSource).finally(() => {
-    flushInFlight = null;
-  });
-
-  return await flushInFlight;
+  return await requestOfflineReplay(
+    CONTRACTOR_PROGRESS_REPLAY_POLICY,
+    triggerSource,
+    async (scheduledTriggerSource) =>
+      await runFlush(
+        deps,
+        scheduledTriggerSource as ContractorProgressWorkerTriggerSource,
+      ),
+  );
 };

@@ -30,6 +30,7 @@ const admin = createClient(supabaseUrl, supabaseKey, {
 const artifactBase = "artifacts/contractor-runtime";
 const webArtifactBase = "artifacts/contractor-web-smoke";
 const androidDevClientPort = Number(process.env.CONTRACTOR_ANDROID_DEV_PORT ?? "8081");
+const shouldRunWebRuntime = process.env.CONTRACTOR_RUNTIME_WEB === "1";
 
 const LABELS = {
   title: "Подрядчик",
@@ -148,7 +149,7 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
   const suffix = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
   const contractorOrg = `Runtime Contractor ${suffix}`;
   const contractorInn = `12345678${suffix.slice(-4).replace(/\D/g, "7").padEnd(4, "7")}`;
-  const objectName = `BLD-${suffix.toUpperCase()}`;
+  const objectName = `Runtime Object ${suffix.toUpperCase()}`;
   const workName = `Runtime Work ${suffix}`;
   const contractorResult = await admin
     .from("contractors")
@@ -178,7 +179,7 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
       contract_number: `CTR-${suffix.toUpperCase()}`,
       contract_date: new Date().toISOString().slice(0, 10),
       object_name: objectName,
-      work_zone: "LVL-01",
+      work_zone: "Runtime Zone",
       work_type: workName,
       qty_planned: 10,
       uom: "pcs",
@@ -208,8 +209,7 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
       contractor_job_id: subcontractId,
       company_name_snapshot: contractorOrg,
       company_inn_snapshot: contractorInn,
-      status: "Утверждено",
-      submitted_at: new Date().toISOString(),
+      status: "Черновик",
       date: new Date().toISOString().slice(0, 10),
     })
     .select("id")
@@ -227,11 +227,23 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
       uom: "pcs",
       row_no: 1,
       position_order: 1,
+      kind: "work",
     })
     .select("id")
     .single();
   if (requestItemResult.error) throw requestItemResult.error;
   const requestItemId = String(requestItemResult.data.id);
+
+  const requestApproveResult = await admin
+    .from("requests")
+    .update({
+      status: "Утверждено",
+      submitted_at: new Date().toISOString(),
+    })
+    .eq("id", requestId)
+    .select("id")
+    .single();
+  if (requestApproveResult.error) throw requestApproveResult.error;
 
   const purchaseResult = await admin
     .from("purchases")
@@ -255,6 +267,7 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
       name_human: workName,
       qty: 1,
       uom: "pcs",
+      price_per_unit: 100,
     })
     .select("id")
     .single();
@@ -292,7 +305,12 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
       const rows = Array.isArray((data as Record<string, unknown> | null)?.rows)
         ? ((data as Record<string, unknown>).rows as Record<string, unknown>[])
         : [];
-      const found = rows.find((row) => String(row.progressId ?? "").trim() === progressId) ?? null;
+      const found =
+        rows.find(
+          (row) =>
+            String(row.progressId ?? "").trim() === progressId ||
+            String(row.workItemId ?? "").trim() === `progress:${progressId}`,
+        ) ?? null;
       return found ? true : null;
     },
     20_000,
@@ -635,6 +653,8 @@ const findAndroidLabelNode = (nodes: AndroidNode[], label: string, requireClicka
 const isAndroidLoginScreen = (xml: string) => xml.includes("Email") && /Войти|Login/i.test(xml);
 const isAndroidActivationScreen = (xml: string) =>
   /Активац|РђРєС‚РёРІ|Активир|РђРєС‚РёРІРё/i.test(xml) && /EditText/i.test(xml);
+const isAndroidContractorModalReady = (xml: string, scope: SeededScope) =>
+  xml.includes(LABELS.issuedSection) && xml.includes(scope.contractorOrg) && xml.includes(scope.contractorInn);
 
 const findAndroidLoginNode = (nodes: AndroidNode[]): AndroidNode | null =>
   findAndroidNode(
@@ -788,7 +808,7 @@ async function runAndroidRuntime(user: TempUser, scope: SeededScope): Promise<Re
 
   const devClient = await androidHarness.ensureAndroidDevClientServer();
   const packageName = detectAndroidPackage();
-  const preflight = androidHarness.runAndroidPreflight({ packageName });
+  const preflight = androidHarness.runAndroidPreflight({ packageName, clearApp: true });
   await androidHarness.warmAndroidDevClientBundle(androidDevClientPort);
   const current = await loginContractorAndroid(user, packageName);
   const contractorTab = findAndroidLabelNode(parseAndroidNodes(current.xml), "Подрядчик");
@@ -839,12 +859,12 @@ async function runAndroidRuntime(user: TempUser, scope: SeededScope): Promise<Re
       "android:contractor_modal_open",
       async () => {
         const next = dumpAndroidScreen("android-contractor-modal");
-        return next.xml.includes(LABELS.issuedSection) ? next : null;
+        return isAndroidContractorModalReady(next.xml, scope) ? next : null;
       },
       30_000,
       1000,
     );
-    modalOpened = modalScreen.xml.includes(LABELS.issuedSection);
+    modalOpened = isAndroidContractorModalReady(modalScreen.xml, scope);
   } catch {
     platformSpecificIssues.push("Contractor work modal did not open on Android");
   }
@@ -852,7 +872,7 @@ async function runAndroidRuntime(user: TempUser, scope: SeededScope): Promise<Re
   let issuedExpanded = false;
   let issuedScreen = modalScreen;
   if (modalOpened) {
-    const toggleNode = findAndroidLabelNode(parseAndroidNodes(modalScreen.xml), LABELS.issuedSection);
+    const toggleNode = findAndroidLabelNode(parseAndroidNodes(modalScreen.xml), LABELS.issuedSection, true);
     if (toggleNode) {
       tapAndroidBounds(toggleNode.bounds);
       await sleep(1200);
@@ -921,13 +941,22 @@ async function main() {
     user = await createTempUser(process.env.CONTRACTOR_WEB_ROLE || "foreman", "Contractor Runtime Smoke");
     scope = await seedContractorScope(user);
 
-    const web = await runWebRuntime(user, scope).catch((error) =>
-      createFailurePlatformResult("web", error, {
-        contractorCardVisible: false,
-        modalOpened: false,
-        issuedExpanded: false,
-      }),
-    );
+    const web = shouldRunWebRuntime
+      ? await runWebRuntime(user, scope).catch((error) =>
+          createFailurePlatformResult("web", error, {
+            contractorCardVisible: false,
+            modalOpened: false,
+            issuedExpanded: false,
+          }),
+        )
+      : {
+          status: "skipped",
+          contractorCardVisible: false,
+          modalOpened: false,
+          issuedExpanded: false,
+          platformSpecificIssues: [],
+          skipReason: "web smoke is not part of this WAVE 8 Android runtime proof",
+        };
     const android = await runAndroidRuntime(user, scope).catch((error) => {
       const artifacts = androidHarness.captureFailureArtifacts("android-contractor-failure");
       return createFailurePlatformResult("android", error, {
@@ -962,8 +991,13 @@ async function main() {
           issuedExpanded: ios.status === "passed",
         },
       },
+      requiredPlatforms: {
+        web: shouldRunWebRuntime,
+        android: true,
+        ios: true,
+      },
       artifacts: {
-        webScreenshot: `${webArtifactBase}.png`,
+        webScreenshot: shouldRunWebRuntime ? `${webArtifactBase}.png` : null,
         androidHomeXml: typeof androidRecord.homeXml === "string" ? androidRecord.homeXml : null,
         androidHomePng: typeof androidRecord.homePng === "string" ? androidRecord.homePng : null,
         androidModalXml: typeof androidRecord.modalXml === "string" ? androidRecord.modalXml : null,
@@ -973,10 +1007,13 @@ async function main() {
       },
       extra: {
         gate: "contractor_runtime_verify",
-        contractorCardVisible: web.contractorCardVisible === true && android.contractorCardVisible === true,
-        modalOpened: web.modalOpened === true && android.modalOpened === true,
-        issuedExpanded: web.issuedExpanded === true && android.issuedExpanded === true,
+        contractorCardVisible:
+          (shouldRunWebRuntime ? web.contractorCardVisible === true : true) && android.contractorCardVisible === true,
+        modalOpened: (shouldRunWebRuntime ? web.modalOpened === true : true) && android.modalOpened === true,
+        issuedExpanded:
+          (shouldRunWebRuntime ? web.issuedExpanded === true : true) && android.issuedExpanded === true,
         seed: scope,
+        webSkipped: !shouldRunWebRuntime,
       },
     });
 

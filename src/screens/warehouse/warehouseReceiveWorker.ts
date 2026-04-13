@@ -2,6 +2,10 @@ import type { RpcReceiveApplyResult } from "./warehouse.types";
 import type { PlatformOfflineRetryTriggerSource } from "../../lib/offline/platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "../../lib/offline/platformOffline.observability";
 import {
+  requestOfflineReplay,
+  type OfflineReplayPolicy,
+} from "../../lib/offline/offlineReplayCoordinator";
+import {
   getWarehouseReceiveDraft,
   markWarehouseReceiveDraftQueued,
   markWarehouseReceiveDraftRetryWait,
@@ -48,9 +52,14 @@ type WarehouseReceiveWorkerDeps = {
   getNetworkOnline?: () => boolean | null;
 };
 
-let flushInFlight: Promise<WarehouseReceiveWorkerResult> | null = null;
-
 const trim = (value: unknown) => String(value ?? "").trim();
+export const WAREHOUSE_RECEIVE_REPLAY_POLICY = {
+  queueKey: "warehouse_receive",
+  owner: "warehouse_receive_worker",
+  concurrencyLimit: 1,
+  ordering: "created_at_fifo",
+  backpressure: "coalesce_triggers_and_rerun_once",
+} as const satisfies OfflineReplayPolicy;
 
 const serializeDraftItems = (draft: WarehouseReceiveDraftRecord | null) =>
   JSON.stringify(
@@ -321,13 +330,13 @@ export const flushWarehouseReceiveQueue = async (
   deps: WarehouseReceiveWorkerDeps,
   triggerSource: WarehouseReceiveWorkerTriggerSource,
 ): Promise<WarehouseReceiveWorkerResult> => {
-  if (flushInFlight) {
-    return await flushInFlight;
-  }
-
-  flushInFlight = runFlush(deps, triggerSource).finally(() => {
-    flushInFlight = null;
-  });
-
-  return await flushInFlight;
+  return await requestOfflineReplay(
+    WAREHOUSE_RECEIVE_REPLAY_POLICY,
+    triggerSource,
+    async (scheduledTriggerSource) =>
+      await runFlush(
+        deps,
+        scheduledTriggerSource as WarehouseReceiveWorkerTriggerSource,
+      ),
+  );
 };

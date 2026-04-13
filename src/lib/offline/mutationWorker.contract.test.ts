@@ -6,7 +6,11 @@ import {
   loadForemanMutationQueue,
   markForemanMutationInflight,
 } from "./mutationQueue";
-import { flushForemanMutationQueue } from "./mutationWorker";
+import {
+  FOREMAN_MUTATION_REPLAY_POLICY,
+  flushForemanMutationQueue,
+} from "./mutationWorker";
+import { resetOfflineReplayCoordinatorForTests } from "./offlineReplayCoordinator";
 import {
   clearForemanDurableDraftState,
   configureForemanDurableDraftStore,
@@ -80,6 +84,29 @@ const createSyncResult = (
 
 const mockedRecordPlatformObservability =
   recordPlatformObservability as unknown as jest.Mock;
+
+const waitUntil = async (predicate: () => boolean, message: string) => {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  throw new Error(message);
+};
+
+const createDeferred = <T,>() => {
+  let resolveValue!: (value: T) => void;
+  let rejectValue!: (error: unknown) => void;
+  const promise = new Promise<T>((resolve, reject) => {
+    resolveValue = resolve;
+    rejectValue = reject;
+  });
+
+  return {
+    promise,
+    resolve: resolveValue,
+    reject: rejectValue,
+  };
+};
 
 const createSeedEntry = (params: SeedEntryParams) => ({
   id: params.id,
@@ -156,12 +183,70 @@ const createWorkerDeps = (options: {
 
 describe("mutationWorker contract", () => {
   beforeEach(async () => {
+    resetOfflineReplayCoordinatorForTests();
     configureStores();
     resetOfflineMutationTelemetryEvents();
     resetPlatformOfflineTelemetryEvents();
     mockedRecordPlatformObservability.mockReset();
     await clearForemanMutationQueue();
     await clearForemanDurableDraftState();
+  });
+
+  it("declares a serial FIFO replay policy owned by the mutation worker", () => {
+    expect(FOREMAN_MUTATION_REPLAY_POLICY).toMatchObject({
+      queueKey: "foreman_draft",
+      owner: "foreman_mutation_worker",
+      concurrencyLimit: 1,
+      ordering: "created_at_fifo",
+      backpressure: "coalesce_triggers_and_rerun_once",
+    });
+  });
+
+  it("does not run parallel draft sync when reconnect and manual retry collide", async () => {
+    const snapshot = createSnapshot("req-worker-serial");
+    await replaceForemanDurableDraftSnapshot(snapshot);
+    await enqueueForemanMutation({
+      draftKey: snapshot.requestId,
+      requestId: snapshot.requestId,
+      snapshotUpdatedAt: snapshot.updatedAt,
+      mutationKind: "background_sync",
+      triggerSource: "network_back",
+    });
+
+    const deferred = createDeferred<ForemanLocalDraftSyncResult>();
+    let active = 0;
+    let maxActive = 0;
+    const syncSnapshot = jest.fn(async (_params: unknown) => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      try {
+        return await deferred.promise;
+      } finally {
+        active -= 1;
+      }
+    });
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+      getNetworkOnline: () => true,
+    });
+
+    const first = flushForemanMutationQueue(deps, "network_back");
+    const second = flushForemanMutationQueue(deps, "manual_retry");
+
+    await waitUntil(
+      () => syncSnapshot.mock.calls.length === 1,
+      "draft sync did not start",
+    );
+    expect(syncSnapshot).toHaveBeenCalledTimes(1);
+
+    deferred.resolve(createSyncResult(snapshot));
+    const [firstResult, secondResult] = await Promise.all([first, second]);
+
+    expect(firstResult.failed).toBe(false);
+    expect(secondResult.failed).toBe(false);
+    expect(maxActive).toBe(1);
+    expect(await loadForemanMutationQueue()).toEqual([]);
   });
 
   it("turns retryable sync failures into retry_scheduled queue state", async () => {

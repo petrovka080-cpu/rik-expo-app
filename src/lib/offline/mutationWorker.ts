@@ -50,6 +50,10 @@ import {
   resolveOfflineMutationFailureDecision,
 } from "./mutation.retryPolicy";
 import { recordOfflineMutationEvent } from "./mutation.telemetry";
+import {
+  requestOfflineReplay,
+  type OfflineReplayPolicy,
+} from "./offlineReplayCoordinator";
 
 type ForemanMutationWorkerResult = {
   processedCount: number;
@@ -108,8 +112,14 @@ type ForemanMutationWorkerDeps = {
 const toErrorText = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
-let flushInFlight: Promise<ForemanMutationWorkerResult> | null = null;
 const FOREMAN_RETRY_POLICY = getOfflineMutationRetryPolicy("foreman_default");
+export const FOREMAN_MUTATION_REPLAY_POLICY = {
+  queueKey: "foreman_draft",
+  owner: "foreman_mutation_worker",
+  concurrencyLimit: 1,
+  ordering: "created_at_fifo",
+  backpressure: "coalesce_triggers_and_rerun_once",
+} as const satisfies OfflineReplayPolicy;
 
 const getDraftKeyFromSnapshot = (snapshot: ForemanLocalDraftSnapshot | null) =>
   String(snapshot?.requestId ?? FOREMAN_LOCAL_ONLY_REQUEST_ID).trim() ||
@@ -800,15 +810,16 @@ export const flushForemanMutationQueue = async (
   deps: ForemanMutationWorkerDeps,
   triggerSource?: ForemanDraftSyncTriggerSource | null,
 ): Promise<ForemanMutationWorkerResult> => {
-  if (flushInFlight) {
-    return await flushInFlight;
-  }
-
-  flushInFlight = runFlush(deps, triggerSource).finally(() => {
-    flushInFlight = null;
-  });
-
-  return await flushInFlight;
+  const initialTriggerSource = triggerSource ?? "unknown";
+  return await requestOfflineReplay(
+    FOREMAN_MUTATION_REPLAY_POLICY,
+    initialTriggerSource,
+    async (scheduledTriggerSource) =>
+      await runFlush(
+        deps,
+        scheduledTriggerSource as ForemanDraftSyncTriggerSource,
+      ),
+  );
 };
 
 export const markForemanSnapshotQueued = async (
