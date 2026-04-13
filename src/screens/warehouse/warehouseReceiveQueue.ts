@@ -4,6 +4,7 @@ import {
   writeJsonToStorage,
   type OfflineStorageAdapter,
 } from "../../lib/offline/offlineStorage";
+import { createSerializedQueuePersistence } from "../../lib/offline/queuePersistenceSerializer";
 
 export type WarehouseReceiveQueueStatus = "pending" | "inflight" | "failed";
 
@@ -22,6 +23,7 @@ export type WarehouseReceiveQueueEntry = {
 const STORAGE_KEY = "warehouse_receive_queue_v1";
 
 let storageAdapter: OfflineStorageAdapter = createDefaultOfflineStorage();
+const queuePersistence = createSerializedQueuePersistence();
 
 const trim = (value: unknown) => String(value ?? "").trim();
 
@@ -68,20 +70,25 @@ export const configureWarehouseReceiveQueue = (options?: {
   storage?: OfflineStorageAdapter;
 }) => {
   storageAdapter = options?.storage ?? createDefaultOfflineStorage();
+  queuePersistence.reset();
 };
 
-export const loadWarehouseReceiveQueue = async () => await loadQueueInternal();
+export const loadWarehouseReceiveQueue = async () => await queuePersistence.run(loadQueueInternal);
 
 export const clearWarehouseReceiveQueue = async (): Promise<WarehouseReceiveQueueEntry[]> => {
-  await saveQueueInternal([]);
-  return [];
+  return await queuePersistence.run(async () => {
+    await saveQueueInternal([]);
+    return [];
+  });
 };
 
 export const getWarehouseReceivePendingCount = async (incomingId?: string | null): Promise<number> => {
-  const queue = await loadQueueInternal();
-  const key = trim(incomingId);
-  if (!key) return queue.length;
-  return queue.filter((entry) => entry.incomingId === key).length;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const key = trim(incomingId);
+    if (!key) return queue.length;
+    return queue.filter((entry) => entry.incomingId === key).length;
+  });
 };
 
 export const getWarehouseReceiveQueueEntry = async (
@@ -89,130 +96,146 @@ export const getWarehouseReceiveQueueEntry = async (
 ): Promise<WarehouseReceiveQueueEntry | null> => {
   const key = trim(incomingId);
   if (!key) return null;
-  const queue = await loadQueueInternal();
-  return queue.find((entry) => entry.incomingId === key) ?? null;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    return queue.find((entry) => entry.incomingId === key) ?? null;
+  });
 };
 
 export const resetInflightWarehouseReceiveQueue = async (): Promise<WarehouseReceiveQueueEntry[]> => {
-  const queue = await loadQueueInternal();
-  const next = queue.map((entry) =>
-    entry.status === "inflight"
-      ? {
-          ...entry,
-          status: "pending" as const,
-          updatedAt: Date.now(),
-        }
-      : entry,
-  );
-  await saveQueueInternal(next);
-  return next;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const next = queue.map((entry) =>
+      entry.status === "inflight"
+        ? {
+            ...entry,
+            status: "pending" as const,
+            updatedAt: Date.now(),
+          }
+        : entry,
+    );
+    await saveQueueInternal(next);
+    return next;
+  });
 };
 
 export const enqueueWarehouseReceive = async (incomingId: string): Promise<WarehouseReceiveQueueEntry[]> => {
   const key = trim(incomingId);
-  if (!key) return await loadQueueInternal();
+  return await queuePersistence.run(async () => {
+    if (!key) return await loadQueueInternal();
 
-  const queue = await loadQueueInternal();
-  const existingIndex = queue.findIndex((entry) => entry.incomingId === key);
-  const now = Date.now();
+    const queue = await loadQueueInternal();
+    const existingIndex = queue.findIndex((entry) => entry.incomingId === key);
+    const now = Date.now();
 
-  if (existingIndex >= 0) {
-    const existing = queue[existingIndex];
-    if (existing.status === "inflight") {
-      return queue;
+    if (existingIndex >= 0) {
+      const existing = queue[existingIndex];
+      if (existing.status === "inflight") {
+        return queue;
+      }
+
+      const next = [...queue];
+      next[existingIndex] = {
+        ...existing,
+        status: "pending",
+        retryCount: 0,
+        coalescedCount: existing.coalescedCount + 1,
+        lastError: null,
+        updatedAt: now,
+      };
+      await saveQueueInternal(next);
+      return next;
     }
 
-    const next = [...queue];
-    next[existingIndex] = {
-      ...existing,
+    const nextEntry: WarehouseReceiveQueueEntry = {
+      id: createQueueId(),
+      incomingId: key,
+      type: "receive_apply",
+      createdAt: now,
       status: "pending",
       retryCount: 0,
-      coalescedCount: existing.coalescedCount + 1,
+      coalescedCount: 0,
       lastError: null,
       updatedAt: now,
     };
+
+    const next = [...queue, nextEntry].sort((left, right) => left.createdAt - right.createdAt);
     await saveQueueInternal(next);
     return next;
-  }
-
-  const nextEntry: WarehouseReceiveQueueEntry = {
-    id: createQueueId(),
-    incomingId: key,
-    type: "receive_apply",
-    createdAt: now,
-    status: "pending",
-    retryCount: 0,
-    coalescedCount: 0,
-    lastError: null,
-    updatedAt: now,
-  };
-
-  const next = [...queue, nextEntry].sort((left, right) => left.createdAt - right.createdAt);
-  await saveQueueInternal(next);
-  return next;
+  });
 };
 
 export const peekNextWarehouseReceiveQueueEntry = async (): Promise<WarehouseReceiveQueueEntry | null> => {
-  const queue = await loadQueueInternal();
-  return queue.find((entry) => entry.status === "pending" || entry.status === "failed") ?? null;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    return queue.find((entry) => entry.status === "pending" || entry.status === "failed") ?? null;
+  });
 };
 
 export const markWarehouseReceiveQueueInflight = async (
   queueId: string,
 ): Promise<WarehouseReceiveQueueEntry | null> => {
-  const queue = await loadQueueInternal();
-  const now = Date.now();
-  let nextEntry: WarehouseReceiveQueueEntry | null = null;
-  const next = queue.map((entry) => {
-    if (entry.id !== queueId) return entry;
-    nextEntry = {
-      ...entry,
-      status: "inflight",
-      updatedAt: now,
-    };
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const now = Date.now();
+    let nextEntry: WarehouseReceiveQueueEntry | null = null;
+    const next = queue.map((entry) => {
+      if (entry.id !== queueId) return entry;
+      nextEntry = {
+        ...entry,
+        status: "inflight",
+        updatedAt: now,
+      };
+      return nextEntry;
+    });
+    await saveQueueInternal(next);
     return nextEntry;
   });
-  await saveQueueInternal(next);
-  return nextEntry;
 };
 
 export const markWarehouseReceiveQueueFailed = async (
   queueId: string,
   errorMessage: string,
 ): Promise<WarehouseReceiveQueueEntry | null> => {
-  const queue = await loadQueueInternal();
-  const now = Date.now();
-  let nextEntry: WarehouseReceiveQueueEntry | null = null;
-  const next = queue.map((entry) => {
-    if (entry.id !== queueId) return entry;
-    nextEntry = {
-      ...entry,
-      status: "failed",
-      retryCount: entry.retryCount + 1,
-      lastError: trim(errorMessage) || null,
-      updatedAt: now,
-    };
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const now = Date.now();
+    let nextEntry: WarehouseReceiveQueueEntry | null = null;
+    const next = queue.map((entry) => {
+      if (entry.id !== queueId) return entry;
+      nextEntry = {
+        ...entry,
+        status: "failed",
+        retryCount: entry.retryCount + 1,
+        lastError: trim(errorMessage) || null,
+        updatedAt: now,
+      };
+      return nextEntry;
+    });
+    await saveQueueInternal(next);
     return nextEntry;
   });
-  await saveQueueInternal(next);
-  return nextEntry;
 };
 
 export const removeWarehouseReceiveQueueEntry = async (
   queueId: string,
 ): Promise<WarehouseReceiveQueueEntry[]> => {
-  const queue = await loadQueueInternal();
-  const next = queue.filter((entry) => entry.id !== queueId);
-  await saveQueueInternal(next);
-  return next;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const next = queue.filter((entry) => entry.id !== queueId);
+    await saveQueueInternal(next);
+    return next;
+  });
 };
 
 export const clearWarehouseReceiveQueueForIncoming = async (
   incomingId: string,
 ): Promise<WarehouseReceiveQueueEntry[]> => {
   const key = trim(incomingId);
-  const queue = await loadQueueInternal();
-  const next = queue.filter((entry) => entry.incomingId !== key);
-  await saveQueueInternal(next);
-  return next;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const next = queue.filter((entry) => entry.incomingId !== key);
+    await saveQueueInternal(next);
+    return next;
+  });
 };

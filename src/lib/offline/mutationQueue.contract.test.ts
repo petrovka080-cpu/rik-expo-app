@@ -2,7 +2,7 @@ jest.mock("../observability/platformObservability", () => ({
   recordPlatformObservability: jest.fn(),
 }));
 
-import { createMemoryOfflineStorage } from "./offlineStorage";
+import { createMemoryOfflineStorage, type MemoryOfflineStorageAdapter } from "./offlineStorage";
 import {
   clearForemanMutationQueue,
   configureMutationQueue,
@@ -10,7 +10,9 @@ import {
   getForemanMutationQueueSummary,
   loadForemanMutationQueue,
   markForemanMutationInflight,
+  markForemanMutationRetryScheduled,
   peekNextForemanMutation,
+  removeForemanMutationById,
   resetInflightForemanMutations,
 } from "./mutationQueue";
 import {
@@ -20,6 +22,60 @@ import {
 
 const MUTATION_QUEUE_STORAGE_KEY = "offline_mutation_queue_v2";
 const MUTATION_QUEUE_LEGACY_STORAGE_KEY = "offline_mutation_queue_v1";
+
+type ObservedMemoryOfflineStorage = MemoryOfflineStorageAdapter & {
+  maxActiveWrites: () => number;
+};
+
+const yieldToScheduler = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+};
+
+const createObservedMemoryOfflineStorage = (
+  seed?: Record<string, string>,
+): ObservedMemoryOfflineStorage => {
+  const storage = createMemoryOfflineStorage(seed);
+  let activeWrites = 0;
+  let maxActiveWrites = 0;
+
+  const trackWrite = async (write: () => Promise<void>) => {
+    activeWrites += 1;
+    maxActiveWrites = Math.max(maxActiveWrites, activeWrites);
+    try {
+      await yieldToScheduler();
+      await write();
+    } finally {
+      activeWrites -= 1;
+    }
+  };
+
+  return {
+    async getItem(key) {
+      return await storage.getItem(key);
+    },
+    async setItem(key, value) {
+      await trackWrite(async () => {
+        await storage.setItem(key, value);
+      });
+    },
+    async removeItem(key) {
+      await trackWrite(async () => {
+        await storage.removeItem(key);
+      });
+    },
+    dump: storage.dump,
+    maxActiveWrites: () => maxActiveWrites,
+  };
+};
+
+const enqueueBackgroundSync = async (draftKey: string) =>
+  await enqueueForemanMutation({
+    draftKey,
+    requestId: draftKey,
+    snapshotUpdatedAt: `snap-${draftKey}`,
+    mutationKind: "background_sync",
+    triggerSource: "manual_retry",
+  });
 
 type SeedEntryParams = {
   id: string;
@@ -476,5 +532,77 @@ describe("mutationQueue contract", () => {
       "queued-later",
     ]);
     expect(peeked?.id).toBe("queued-earliest");
+  });
+
+  it("serializes parallel enqueue writes without dropping queue entries", async () => {
+    const storage = createObservedMemoryOfflineStorage();
+    configureMutationQueue({ storage });
+
+    await Promise.all([
+      enqueueBackgroundSync("req-atomic-enqueue-1"),
+      enqueueBackgroundSync("req-atomic-enqueue-2"),
+      enqueueBackgroundSync("req-atomic-enqueue-3"),
+    ]);
+
+    const queue = await loadForemanMutationQueue();
+
+    expect(queue.map((entry) => entry.payload.draftKey).sort()).toEqual([
+      "req-atomic-enqueue-1",
+      "req-atomic-enqueue-2",
+      "req-atomic-enqueue-3",
+    ]);
+    expect(storage.maxActiveWrites()).toBe(1);
+  });
+
+  it("serializes enqueue plus inflight metadata so stale snapshots cannot overwrite either side", async () => {
+    const storage = createObservedMemoryOfflineStorage();
+    configureMutationQueue({ storage });
+    await enqueueBackgroundSync("req-atomic-inflight");
+    const [queuedEntry] = await loadForemanMutationQueue();
+
+    await Promise.all([
+      markForemanMutationInflight(queuedEntry.id),
+      enqueueBackgroundSync("req-atomic-during-inflight"),
+    ]);
+
+    const queue = await loadForemanMutationQueue();
+
+    expect(queue).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: queuedEntry.id,
+          lifecycleStatus: "processing",
+          status: "inflight",
+        }),
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            draftKey: "req-atomic-during-inflight",
+          }),
+          lifecycleStatus: "queued",
+        }),
+      ]),
+    );
+    expect(storage.maxActiveWrites()).toBe(1);
+  });
+
+  it("serializes retry metadata and remove/complete writes without resurrecting stale queue entries", async () => {
+    const storage = createObservedMemoryOfflineStorage();
+    configureMutationQueue({ storage });
+    await enqueueBackgroundSync("req-atomic-remove");
+    const [queuedEntry] = await loadForemanMutationQueue();
+
+    await Promise.all([
+      markForemanMutationRetryScheduled({
+        mutationId: queuedEntry.id,
+        errorMessage: "offline",
+        errorCode: "network",
+        errorKind: "network_unreachable",
+        nextRetryAt: Date.now() + 1_000,
+      }),
+      removeForemanMutationById(queuedEntry.id),
+    ]);
+
+    expect(await loadForemanMutationQueue()).toEqual([]);
+    expect(storage.maxActiveWrites()).toBe(1);
   });
 });

@@ -4,6 +4,7 @@ import {
   writeJsonToStorage,
   type OfflineStorageAdapter,
 } from "./offlineStorage";
+import { createSerializedQueuePersistence } from "./queuePersistenceSerializer";
 import type { ForemanDraftSyncTriggerSource } from "./foremanSyncRuntime";
 import type { ForemanDraftMutationKind } from "../../screens/foreman/foreman.draftBoundary.helpers";
 import {
@@ -63,6 +64,7 @@ const MUTATION_QUEUE_LEGACY_STORAGE_KEY = "offline_mutation_queue_v1";
 const FINAL_HISTORY_LIMIT = 20;
 
 let storageAdapter: OfflineStorageAdapter = createDefaultOfflineStorage();
+const queuePersistence = createSerializedQueuePersistence();
 
 const trim = (value: unknown) => String(value ?? "").trim();
 
@@ -228,15 +230,17 @@ const updateQueueEntry = async (
   mutationId: string,
   updater: (entry: ForemanMutationQueueEntry) => ForemanMutationQueueEntry,
 ) => {
-  const queue = await loadQueueInternal();
-  let nextEntry: ForemanMutationQueueEntry | null = null;
-  const next = queue.map((entry) => {
-    if (entry.id !== mutationId) return entry;
-    nextEntry = updater(entry);
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    let nextEntry: ForemanMutationQueueEntry | null = null;
+    const next = queue.map((entry) => {
+      if (entry.id !== mutationId) return entry;
+      nextEntry = updater(entry);
+      return nextEntry;
+    });
+    await saveQueueInternal(next);
     return nextEntry;
   });
-  await saveQueueInternal(next);
-  return nextEntry;
 };
 
 const isActiveForDraftCount = (entry: ForemanMutationQueueEntry) =>
@@ -302,86 +306,97 @@ const createEntry = (params: {
 
 export const configureMutationQueue = (options?: { storage?: OfflineStorageAdapter }) => {
   storageAdapter = options?.storage ?? createDefaultOfflineStorage();
+  queuePersistence.reset();
 };
 
-export const loadForemanMutationQueue = async () => await loadQueueInternal();
+export const loadForemanMutationQueue = async () => await queuePersistence.run(loadQueueInternal);
 
 export const clearForemanMutationQueue = async () => {
-  await saveQueueInternal([]);
+  await queuePersistence.run(async () => {
+    await saveQueueInternal([]);
+  });
 };
 
 export const getForemanPendingMutationCount = async (draftKey?: string | null): Promise<number> => {
-  const queue = await loadQueueInternal();
-  const key = trim(draftKey);
-  const filtered = key ? queue.filter((entry) => entry.payload.draftKey === key) : queue;
-  return filtered.filter(isActiveForDraftCount).length;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const key = trim(draftKey);
+    const filtered = key ? queue.filter((entry) => entry.payload.draftKey === key) : queue;
+    return filtered.filter(isActiveForDraftCount).length;
+  });
 };
 
 export const getForemanPendingMutationCountForDraftKeys = async (
   draftKeys: (string | null | undefined)[],
 ): Promise<number> => {
   const keys = uniqueDraftKeys(draftKeys);
-  if (!keys.length) return await getForemanPendingMutationCount();
-  const queue = await loadQueueInternal();
-  return queue.filter((entry) => keys.includes(entry.payload.draftKey) && isActiveForDraftCount(entry)).length;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    if (!keys.length) return queue.filter(isActiveForDraftCount).length;
+    return queue.filter((entry) => keys.includes(entry.payload.draftKey) && isActiveForDraftCount(entry)).length;
+  });
 };
 
 export const getForemanMutationQueueSummary = async (
   draftKeys?: (string | null | undefined)[],
 ): Promise<ForemanMutationQueueSummary> => {
-  const queue = await loadQueueInternal();
-  const keys = uniqueDraftKeys(draftKeys ?? []);
-  const filtered = keys.length ? queue.filter((entry) => keys.includes(entry.payload.draftKey)) : queue;
-  return {
-    totalCount: filtered.length,
-    activeCount: filtered.filter((entry) => isOfflineMutationActiveLifecycleStatus(entry.lifecycleStatus)).length,
-    pendingCount: filtered.filter((entry) => entry.status === "pending").length,
-    inflightCount: filtered.filter((entry) => entry.status === "inflight").length,
-    failedCount: filtered.filter((entry) => entry.status === "failed").length,
-    retryScheduledCount: filtered.filter((entry) => entry.lifecycleStatus === "retry_scheduled").length,
-    conflictedCount: filtered.filter((entry) => entry.lifecycleStatus === "conflicted").length,
-    failedNonRetryableCount: filtered.filter((entry) => entry.lifecycleStatus === "failed_non_retryable").length,
-    coalescedCount: filtered.reduce((sum, entry) => sum + entry.coalescedCount, 0),
-  };
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const keys = uniqueDraftKeys(draftKeys ?? []);
+    const filtered = keys.length ? queue.filter((entry) => keys.includes(entry.payload.draftKey)) : queue;
+    return {
+      totalCount: filtered.length,
+      activeCount: filtered.filter((entry) => isOfflineMutationActiveLifecycleStatus(entry.lifecycleStatus)).length,
+      pendingCount: filtered.filter((entry) => entry.status === "pending").length,
+      inflightCount: filtered.filter((entry) => entry.status === "inflight").length,
+      failedCount: filtered.filter((entry) => entry.status === "failed").length,
+      retryScheduledCount: filtered.filter((entry) => entry.lifecycleStatus === "retry_scheduled").length,
+      conflictedCount: filtered.filter((entry) => entry.lifecycleStatus === "conflicted").length,
+      failedNonRetryableCount: filtered.filter((entry) => entry.lifecycleStatus === "failed_non_retryable").length,
+      coalescedCount: filtered.reduce((sum, entry) => sum + entry.coalescedCount, 0),
+    };
+  });
 };
 
 export const resetInflightForemanMutations = async (): Promise<ForemanMutationQueueEntry[]> => {
-  const queue = await loadQueueInternal();
-  const now = Date.now();
-  const next = queue.map((entry) =>
-    entry.lifecycleStatus === "processing"
-      ? {
-          ...entry,
-          status: "pending" as const,
-          lifecycleStatus: "queued" as const,
-          updatedAt: now,
-        }
-      : entry,
-  );
-  const restored = next.filter(
-    (entry, index) =>
-      entry.lifecycleStatus === "queued" && queue[index]?.lifecycleStatus === "processing",
-  );
-  for (const entry of restored) {
-    recordOfflineMutationEvent({
-      owner: "foreman",
-      entityId: entry.entityId,
-      mutationId: entry.id,
-      dedupeKey: entry.dedupeKey,
-      lifecycleStatus: entry.lifecycleStatus,
-      action: "inflight_restored",
-      attemptCount: entry.attemptCount,
-      retryCount: entry.retryCount,
-      triggerSource: entry.payload.triggerSource,
-      errorKind: entry.lastErrorKind,
-      errorCode: entry.lastErrorCode,
-      nextRetryAt: entry.nextRetryAt,
-      coalescedCount: entry.coalescedCount,
-      extra: null,
-    });
-  }
-  await saveQueueInternal(next);
-  return next;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const now = Date.now();
+    const next = queue.map((entry) =>
+      entry.lifecycleStatus === "processing"
+        ? {
+            ...entry,
+            status: "pending" as const,
+            lifecycleStatus: "queued" as const,
+            updatedAt: now,
+          }
+        : entry,
+    );
+    const restored = next.filter(
+      (entry, index) =>
+        entry.lifecycleStatus === "queued" && queue[index]?.lifecycleStatus === "processing",
+    );
+    for (const entry of restored) {
+      recordOfflineMutationEvent({
+        owner: "foreman",
+        entityId: entry.entityId,
+        mutationId: entry.id,
+        dedupeKey: entry.dedupeKey,
+        lifecycleStatus: entry.lifecycleStatus,
+        action: "inflight_restored",
+        attemptCount: entry.attemptCount,
+        retryCount: entry.retryCount,
+        triggerSource: entry.payload.triggerSource,
+        errorKind: entry.lastErrorKind,
+        errorCode: entry.lastErrorCode,
+        nextRetryAt: entry.nextRetryAt,
+        coalescedCount: entry.coalescedCount,
+        extra: null,
+      });
+    }
+    await saveQueueInternal(next);
+    return next;
+  });
 };
 
 export const enqueueForemanMutation = async (params: {
@@ -395,142 +410,148 @@ export const enqueueForemanMutation = async (params: {
   triggerSource?: ForemanDraftSyncTriggerSource;
 }): Promise<ForemanMutationQueueEntry[]> => {
   const draftKey = trim(params.draftKey);
-  if (!draftKey) {
-    return await loadQueueInternal();
-  }
+  return await queuePersistence.run(async () => {
+    if (!draftKey) {
+      return await loadQueueInternal();
+    }
 
-  const queue = await loadQueueInternal();
-  const nextEntry = createEntry({
-    ...params,
-    draftKey,
-  });
-  const sameDraft = (entry: ForemanMutationQueueEntry) =>
-    entry.scope === "foreman_draft" && entry.payload.draftKey === draftKey;
+    const queue = await loadQueueInternal();
+    const nextEntry = createEntry({
+      ...params,
+      draftKey,
+    });
+    const sameDraft = (entry: ForemanMutationQueueEntry) =>
+      entry.scope === "foreman_draft" && entry.payload.draftKey === draftKey;
 
-  const exactDuplicateIndex = queue.findIndex((entry) => entry.dedupeKey === nextEntry.dedupeKey);
-  if (exactDuplicateIndex >= 0) {
-    const existing = queue[exactDuplicateIndex];
-    const updated = {
-      ...existing,
-      payload: nextEntry.payload,
-      type: nextEntry.type,
-      entityId: draftKey,
-      baseVersion: nextEntry.baseVersion,
-      coalescedCount: existing.coalescedCount + 1,
-      lifecycleStatus:
-        existing.lifecycleStatus === "processing" ? existing.lifecycleStatus : ("queued" as const),
-      status: existing.lifecycleStatus === "processing" ? existing.status : ("pending" as const),
-      lastError: existing.lifecycleStatus === "processing" ? existing.lastError : null,
-      lastErrorCode: existing.lifecycleStatus === "processing" ? existing.lastErrorCode : null,
-      lastErrorKind: existing.lifecycleStatus === "processing" ? existing.lastErrorKind : "none",
-      nextRetryAt: existing.lifecycleStatus === "processing" ? existing.nextRetryAt : null,
-      retryCount: existing.lifecycleStatus === "processing" ? existing.retryCount : 0,
-      updatedAt: Date.now(),
-    };
-    const next = [...queue];
-    next[exactDuplicateIndex] = updated;
-    await saveQueueInternal(next);
+    const exactDuplicateIndex = queue.findIndex((entry) => entry.dedupeKey === nextEntry.dedupeKey);
+    if (exactDuplicateIndex >= 0) {
+      const existing = queue[exactDuplicateIndex];
+      const updated = {
+        ...existing,
+        payload: nextEntry.payload,
+        type: nextEntry.type,
+        entityId: draftKey,
+        baseVersion: nextEntry.baseVersion,
+        coalescedCount: existing.coalescedCount + 1,
+        lifecycleStatus:
+          existing.lifecycleStatus === "processing" ? existing.lifecycleStatus : ("queued" as const),
+        status: existing.lifecycleStatus === "processing" ? existing.status : ("pending" as const),
+        lastError: existing.lifecycleStatus === "processing" ? existing.lastError : null,
+        lastErrorCode: existing.lifecycleStatus === "processing" ? existing.lastErrorCode : null,
+        lastErrorKind: existing.lifecycleStatus === "processing" ? existing.lastErrorKind : "none",
+        nextRetryAt: existing.lifecycleStatus === "processing" ? existing.nextRetryAt : null,
+        retryCount: existing.lifecycleStatus === "processing" ? existing.retryCount : 0,
+        updatedAt: Date.now(),
+      };
+      const next = [...queue];
+      next[exactDuplicateIndex] = updated;
+      await saveQueueInternal(next);
+      recordOfflineMutationEvent({
+        owner: "foreman",
+        entityId: updated.entityId,
+        mutationId: updated.id,
+        dedupeKey: updated.dedupeKey,
+        lifecycleStatus: updated.lifecycleStatus,
+        action: "dedupe_suppressed",
+        attemptCount: updated.attemptCount,
+        retryCount: updated.retryCount,
+        triggerSource: updated.payload.triggerSource,
+        errorKind: updated.lastErrorKind,
+        errorCode: updated.lastErrorCode,
+        nextRetryAt: updated.nextRetryAt,
+        coalescedCount: updated.coalescedCount,
+        extra: {
+          mutationKind: updated.payload.mutationKind,
+        },
+      });
+      return next;
+    }
+
+    let nextQueue = queue;
+    if (isTerminalMutation(nextEntry.type)) {
+      const coalescedEntries = queue.filter(
+        (entry) => sameDraft(entry) && isMergeableLifecycleStatus(entry.lifecycleStatus),
+      );
+      nextEntry.coalescedCount = coalescedEntries.reduce((sum, entry) => sum + entry.coalescedCount + 1, 0);
+      nextQueue = queue.filter(
+        (entry) => !(sameDraft(entry) && isMergeableLifecycleStatus(entry.lifecycleStatus)),
+      );
+      nextQueue.push(nextEntry);
+    } else {
+      const mergeIndex = nextQueue.findIndex(
+        (entry) => sameDraft(entry) && isMergeableLifecycleStatus(entry.lifecycleStatus),
+      );
+      if (mergeIndex >= 0) {
+        nextQueue = [...nextQueue];
+        nextQueue[mergeIndex] = {
+          ...nextQueue[mergeIndex],
+          type: nextEntry.type,
+          dedupeKey: nextEntry.dedupeKey,
+          baseVersion: nextEntry.baseVersion,
+          entityId: draftKey,
+          coalescedCount: nextQueue[mergeIndex].coalescedCount + 1,
+          payload: nextEntry.payload,
+          status: "pending",
+          lifecycleStatus: "queued",
+          retryCount: 0,
+          lastError: null,
+          lastErrorCode: null,
+          lastErrorKind: "none",
+          lastAttemptAt: null,
+          nextRetryAt: null,
+          updatedAt: nextEntry.updatedAt,
+        };
+      } else {
+        nextQueue = [...nextQueue, nextEntry];
+      }
+    }
+
+    nextQueue.sort((left, right) => left.createdAt - right.createdAt);
+    await saveQueueInternal(nextQueue);
+    const queuedEntry =
+      nextQueue.find((entry) => entry.dedupeKey === nextEntry.dedupeKey) ??
+      nextQueue.find((entry) => entry.entityId === draftKey) ??
+      nextEntry;
     recordOfflineMutationEvent({
       owner: "foreman",
-      entityId: updated.entityId,
-      mutationId: updated.id,
-      dedupeKey: updated.dedupeKey,
-      lifecycleStatus: updated.lifecycleStatus,
-      action: "dedupe_suppressed",
-      attemptCount: updated.attemptCount,
-      retryCount: updated.retryCount,
-      triggerSource: updated.payload.triggerSource,
-      errorKind: updated.lastErrorKind,
-      errorCode: updated.lastErrorCode,
-      nextRetryAt: updated.nextRetryAt,
-      coalescedCount: updated.coalescedCount,
+      entityId: queuedEntry.entityId,
+      mutationId: queuedEntry.id,
+      dedupeKey: queuedEntry.dedupeKey,
+      lifecycleStatus: queuedEntry.lifecycleStatus,
+      action: queuedEntry.coalescedCount > 0 ? "dedupe_suppressed" : "enqueue",
+      attemptCount: queuedEntry.attemptCount,
+      retryCount: queuedEntry.retryCount,
+      triggerSource: queuedEntry.payload.triggerSource,
+      errorKind: queuedEntry.lastErrorKind,
+      errorCode: queuedEntry.lastErrorCode,
+      nextRetryAt: queuedEntry.nextRetryAt,
+      coalescedCount: queuedEntry.coalescedCount,
       extra: {
-        mutationKind: updated.payload.mutationKind,
+        mutationKind: queuedEntry.payload.mutationKind,
+        submitRequested: queuedEntry.payload.submitRequested,
       },
     });
-    return next;
-  }
-
-  let nextQueue = queue;
-  if (isTerminalMutation(nextEntry.type)) {
-    const coalescedEntries = queue.filter(
-      (entry) => sameDraft(entry) && isMergeableLifecycleStatus(entry.lifecycleStatus),
-    );
-    nextEntry.coalescedCount = coalescedEntries.reduce((sum, entry) => sum + entry.coalescedCount + 1, 0);
-    nextQueue = queue.filter(
-      (entry) => !(sameDraft(entry) && isMergeableLifecycleStatus(entry.lifecycleStatus)),
-    );
-    nextQueue.push(nextEntry);
-  } else {
-    const mergeIndex = nextQueue.findIndex(
-      (entry) => sameDraft(entry) && isMergeableLifecycleStatus(entry.lifecycleStatus),
-    );
-    if (mergeIndex >= 0) {
-      nextQueue = [...nextQueue];
-      nextQueue[mergeIndex] = {
-        ...nextQueue[mergeIndex],
-        type: nextEntry.type,
-        dedupeKey: nextEntry.dedupeKey,
-        baseVersion: nextEntry.baseVersion,
-        entityId: draftKey,
-        coalescedCount: nextQueue[mergeIndex].coalescedCount + 1,
-        payload: nextEntry.payload,
-        status: "pending",
-        lifecycleStatus: "queued",
-        retryCount: 0,
-        lastError: null,
-        lastErrorCode: null,
-        lastErrorKind: "none",
-        lastAttemptAt: null,
-        nextRetryAt: null,
-        updatedAt: nextEntry.updatedAt,
-      };
-    } else {
-      nextQueue = [...nextQueue, nextEntry];
-    }
-  }
-
-  nextQueue.sort((left, right) => left.createdAt - right.createdAt);
-  await saveQueueInternal(nextQueue);
-  const queuedEntry =
-    nextQueue.find((entry) => entry.dedupeKey === nextEntry.dedupeKey) ??
-    nextQueue.find((entry) => entry.entityId === draftKey) ??
-    nextEntry;
-  recordOfflineMutationEvent({
-    owner: "foreman",
-    entityId: queuedEntry.entityId,
-    mutationId: queuedEntry.id,
-    dedupeKey: queuedEntry.dedupeKey,
-    lifecycleStatus: queuedEntry.lifecycleStatus,
-    action: queuedEntry.coalescedCount > 0 ? "dedupe_suppressed" : "enqueue",
-    attemptCount: queuedEntry.attemptCount,
-    retryCount: queuedEntry.retryCount,
-    triggerSource: queuedEntry.payload.triggerSource,
-    errorKind: queuedEntry.lastErrorKind,
-    errorCode: queuedEntry.lastErrorCode,
-    nextRetryAt: queuedEntry.nextRetryAt,
-    coalescedCount: queuedEntry.coalescedCount,
-    extra: {
-      mutationKind: queuedEntry.payload.mutationKind,
-      submitRequested: queuedEntry.payload.submitRequested,
-    },
+    return nextQueue;
   });
-  return nextQueue;
 };
 
 export const removeForemanMutationById = async (mutationId: string): Promise<ForemanMutationQueueEntry[]> => {
-  const queue = await loadQueueInternal();
-  const next = queue.filter((entry) => entry.id !== mutationId);
-  await saveQueueInternal(next);
-  return next;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const next = queue.filter((entry) => entry.id !== mutationId);
+    await saveQueueInternal(next);
+    return next;
+  });
 };
 
 export const clearForemanMutationsForDraft = async (draftKey: string): Promise<ForemanMutationQueueEntry[]> => {
   const key = trim(draftKey);
-  const queue = await loadQueueInternal();
-  const next = queue.filter((entry) => entry.payload.draftKey !== key);
-  await saveQueueInternal(next);
-  return next;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const next = queue.filter((entry) => entry.payload.draftKey !== key);
+    await saveQueueInternal(next);
+    return next;
+  });
 };
 
 export const rekeyForemanMutations = async (
@@ -539,57 +560,61 @@ export const rekeyForemanMutations = async (
 ): Promise<ForemanMutationQueueEntry[]> => {
   const fromKey = trim(fromDraftKey);
   const toKey = trim(toDraftKey);
-  if (!fromKey || !toKey || fromKey === toKey) {
-    return await loadQueueInternal();
-  }
+  return await queuePersistence.run(async () => {
+    if (!fromKey || !toKey || fromKey === toKey) {
+      return await loadQueueInternal();
+    }
 
-  const queue = await loadQueueInternal();
-  const next = queue.map((entry) =>
-    entry.payload.draftKey === fromKey
-      ? {
-          ...entry,
-          entityId: toKey,
-          dedupeKey: entry.dedupeKey.replace(fromKey, toKey),
-          payload: {
-            ...entry.payload,
-            draftKey: toKey,
-            requestId: trim(entry.payload.requestId) || toKey,
-          },
-          updatedAt: Date.now(),
-        }
-      : entry,
-  );
-  await saveQueueInternal(next);
-  return next;
+    const queue = await loadQueueInternal();
+    const next = queue.map((entry) =>
+      entry.payload.draftKey === fromKey
+        ? {
+            ...entry,
+            entityId: toKey,
+            dedupeKey: entry.dedupeKey.replace(fromKey, toKey),
+            payload: {
+              ...entry.payload,
+              draftKey: toKey,
+              requestId: trim(entry.payload.requestId) || toKey,
+            },
+            updatedAt: Date.now(),
+          }
+        : entry,
+    );
+    await saveQueueInternal(next);
+    return next;
+  });
 };
 
 export const peekNextForemanMutation = async (options?: {
   triggerSource?: ForemanDraftSyncTriggerSource | null;
   now?: number;
 }): Promise<ForemanMutationQueueEntry | null> => {
-  const queue = await loadQueueInternal();
-  const now = Number.isFinite(options?.now ?? NaN) ? Number(options?.now) : Date.now();
-  for (const entry of queue) {
-    if (!isProcessableLifecycleStatus(entry.lifecycleStatus)) continue;
-    if (
-      options?.triggerSource === "network_back" &&
-      entry.lifecycleStatus === "retry_scheduled" &&
-      entry.lastErrorKind === "network_unreachable"
-    ) {
-      return entry;
+  return await queuePersistence.run(async () => {
+    const queue = await loadQueueInternal();
+    const now = Number.isFinite(options?.now ?? NaN) ? Number(options?.now) : Date.now();
+    for (const entry of queue) {
+      if (!isProcessableLifecycleStatus(entry.lifecycleStatus)) continue;
+      if (
+        options?.triggerSource === "network_back" &&
+        entry.lifecycleStatus === "retry_scheduled" &&
+        entry.lastErrorKind === "network_unreachable"
+      ) {
+        return entry;
+      }
+      if (
+        shouldProcessOfflineMutationNow({
+          lifecycleStatus: entry.lifecycleStatus,
+          nextRetryAt: entry.nextRetryAt,
+          triggerSource: options?.triggerSource ?? entry.payload.triggerSource,
+          now,
+        })
+      ) {
+        return entry;
+      }
     }
-    if (
-      shouldProcessOfflineMutationNow({
-        lifecycleStatus: entry.lifecycleStatus,
-        nextRetryAt: entry.nextRetryAt,
-        triggerSource: options?.triggerSource ?? entry.payload.triggerSource,
-        now,
-      })
-    ) {
-      return entry;
-    }
-  }
-  return null;
+    return null;
+  });
 };
 
 export const markForemanMutationInflight = async (
