@@ -1,8 +1,9 @@
-﻿import { recordPlatformObservability } from "../observability/platformObservability";
+import { recordPlatformObservability } from "../observability/platformObservability";
 
 export type CatalogObservabilityMode = "fail" | "degraded" | "fallback";
 
 const catalogOnceWarnings = new Set<string>();
+const MAX_CATALOG_ONCE_WARNINGS = 500;
 
 export const getCatalogErrorMessage = (error: unknown, fallback: string) => {
   if (error instanceof Error) {
@@ -45,7 +46,13 @@ export const recordCatalogWarning = (params: {
   const message = getCatalogErrorMessage(error, operation);
   const dedupeKey = onceKey ? `${onceKey}:${message}` : null;
   if (dedupeKey && catalogOnceWarnings.has(dedupeKey)) return;
-  if (dedupeKey) catalogOnceWarnings.add(dedupeKey);
+  if (dedupeKey) {
+    catalogOnceWarnings.add(dedupeKey);
+    if (catalogOnceWarnings.size > MAX_CATALOG_ONCE_WARNINGS) {
+      const first = catalogOnceWarnings.values().next().value;
+      if (first !== undefined) catalogOnceWarnings.delete(first);
+    }
+  }
 
   if (__DEV__) console.warn("[catalog]", { event, operation, mode, message, ...extra });
   recordPlatformObservability({

@@ -1,5 +1,6 @@
-﻿import { supabase } from "../supabaseClient";
+import { supabase } from "../supabaseClient";
 import { normalizeRuText } from "../text/encoding";
+import { trimMapSize, trimSetSize } from "../cache/boundedCacheUtils";
 import type { DirectorNamingProbeCacheMode, DirectorNamingSourceStatus } from "../../screens/director/director.readModels";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import type { CodeNameRow, DirectorFactRow, ObjectLookupRow, RikNameLookupRow } from "./director_reports.shared";
@@ -220,6 +221,7 @@ const NAME_SOURCES_PROBE_POSITIVE_TTL_MS = 5 * 60 * 1000;
 const NAME_SOURCES_PROBE_NEGATIVE_TTL_MS = 60 * 1000;
 
 let nameSourcesProbeCache: NameSourcesProbeCacheEntry | null = null;
+const MAX_MATERIAL_NAME_CACHE_SIZE = 2000;
 const materialNameResolveCache = new Map<string, string>();
 const materialNameResolveMissCache = new Set<string>();
 const materialNameResolveInFlight = new Map<string, Promise<Map<string, string>>>();
@@ -466,12 +468,15 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
     materialNameResolveCache.set(code, name);
     materialNameResolveMissCache.delete(code);
   }
+  trimMapSize(materialNameResolveCache, MAX_MATERIAL_NAME_CACHE_SIZE);
   for (const code of missingCodes) {
     if (!resolvedMissing.has(code)) {
       materialNameResolveMissCache.add(code);
       materialNameResolveSourceCache.set(code, "unresolved_code_fallback");
     }
   }
+  trimSetSize(materialNameResolveMissCache, MAX_MATERIAL_NAME_CACHE_SIZE);
+  trimMapSize(materialNameResolveSourceCache, MAX_MATERIAL_NAME_CACHE_SIZE);
 
   return out;
 }

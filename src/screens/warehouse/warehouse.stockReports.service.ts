@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { normalizeRuText } from "../../lib/text/encoding";
+import { trimMapSize } from "../../lib/cache/boundedCacheUtils";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
@@ -35,6 +36,7 @@ type NameMapCacheEntry = {
 };
 
 const WAREHOUSE_STOCK_REFERENCE_TTL_MS = 5 * 60 * 1000;
+const MAX_NAME_MAP_CACHE_SIZE = 200;
 const warehouseNameMapCache = new Map<string, NameMapCacheEntry>();
 
 const logWarehouseApiFallback = (scope: string, error: unknown) => {
@@ -61,6 +63,7 @@ const getNameMapCacheEntry = (key: string): NameMapCacheEntry => {
   if (!entry) {
     entry = { value: null, expiresAt: 0, promise: null };
     warehouseNameMapCache.set(key, entry);
+    trimMapSize(warehouseNameMapCache, MAX_NAME_MAP_CACHE_SIZE);
   }
   return entry;
 };

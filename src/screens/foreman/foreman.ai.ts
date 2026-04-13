@@ -1,4 +1,4 @@
-﻿import {
+import {
   isAiBackendAvailable,
   requestAiGeneratedText,
 } from "../../lib/ai/aiRepository";
@@ -147,6 +147,7 @@ const logForemanAi = (payload: Record<string, unknown>) => {
 };
 
 const foremanAiWarnedErrors = new Set<string>();
+const MAX_AI_WARNED_ERRORS = 200;
 
 const recordForemanAiDegradedOnce = (
   event: string,
@@ -157,6 +158,10 @@ const recordForemanAiDegradedOnce = (
   const key = `${event}:${message}`;
   if (foremanAiWarnedErrors.has(key)) return;
   foremanAiWarnedErrors.add(key);
+  if (foremanAiWarnedErrors.size > MAX_AI_WARNED_ERRORS) {
+    const first = foremanAiWarnedErrors.values().next().value;
+    if (first !== undefined) foremanAiWarnedErrors.delete(first);
+  }
   if (__DEV__) console.warn("[foreman.ai]", { event, message, ...extra });
   recordPlatformObservability({
     screen: "ai",
