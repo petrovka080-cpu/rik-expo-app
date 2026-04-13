@@ -32,6 +32,7 @@ import {
 import type { MarketHomeListingCard, MarketRoleCapabilities } from "../../src/features/market/marketHome.types";
 import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
 import { safeBack } from "../../src/lib/navigation/safeBack";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
   role: null,
@@ -42,7 +43,7 @@ const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
 const MARKET_PRODUCT_SURFACE = "product_details";
 const MARKET_ALERT_TITLE = "Маркет";
 
-export default function ProductDetailsScreen() {
+function ProductDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [row, setRow] = useState<MarketHomeListingCard | null>(null);
@@ -690,4 +691,10 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "800",
   },
+});
+
+export default withScreenErrorBoundary(ProductDetailsScreen, {
+  screen: "product",
+  route: "/product/[id]",
+  title: "Не удалось открыть объявление",
 });

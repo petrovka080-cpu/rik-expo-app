@@ -19,7 +19,8 @@ type PlatformObservabilityScreen =
   | "auctions"
   | "supplier_map"
   | "request"
-  | "pdf_viewer";
+  | "pdf_viewer"
+  | "product";
 
 type PlatformObservabilityCategory = "fetch" | "ui" | "reload";
 
