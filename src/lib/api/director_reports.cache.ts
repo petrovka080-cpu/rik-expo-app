@@ -1,4 +1,4 @@
-﻿import type { DirectorFactRow, DisciplineRowsSource, RequestLookupRow } from "./director_reports.shared";
+import type { DirectorFactRow, DisciplineRowsSource, RequestLookupRow } from "./director_reports.shared";
 import { asRecord, matchesDirectorObjectIdentity, resolveDirectorObjectIdentity } from "./director_reports.shared";
 
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
@@ -113,9 +113,9 @@ const canUseOptionsRpc = (): boolean => {
 
 const nowMs = () => {
   try {
-    // RN/web/Node compatibility
-    // @ts-ignore
-    return typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    // RN/web/Node compatibility — performance may not be available in all runtimes
+    const perf = typeof performance !== "undefined" ? performance : undefined;
+    return typeof perf?.now === "function" ? perf.now() : Date.now();
   } catch {
     return Date.now();
   }

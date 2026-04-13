@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Platform, Pressable, Text, TextInput, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
@@ -145,7 +145,6 @@ export default function PeriodPickerSheet({
         justifyContent: "flex-end",
         // реально поверх
         zIndex: 99999999,
-        // @ts-ignore
         elevation: 99999999,
       }}
     >

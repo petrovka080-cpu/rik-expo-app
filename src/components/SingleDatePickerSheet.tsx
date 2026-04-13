@@ -80,7 +80,6 @@ export default function SingleDatePickerSheet({
                 bottom: 0,
                 justifyContent: "flex-end",
                 zIndex: 99999999,
-                // @ts-ignore
                 elevation: 99999999,
             }}
         >
