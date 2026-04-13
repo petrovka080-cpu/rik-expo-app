@@ -3,10 +3,10 @@
     "publishState": "empty",
     "failureClass": null
   },
-  "nonPrimaryEmptyWithoutSnapshot": {
-    "publishState": "error",
-    "failureClass": "schema_incompatibility",
-    "falseEmptyPrevented": true
+  "repeatedCanonicalEmpty": {
+    "publishState": "empty",
+    "failureClass": null,
+    "falseEmptyPrevented": false
   },
   "schemaFailure": {
     "publishState": "error",

@@ -4,7 +4,7 @@
     "backendTruth": true
   },
   "partialAllocation": {
-    "proposalId": "bbc888fd-086d-4230-bb70-415059888ef9",
+    "proposalId": "b71fd5d1-bd1e-4748-9047-8a150bb83491",
     "totals": {
       "server": {
         "payableAmount": 100,
@@ -21,9 +21,9 @@
         "allocationsCount": 2
       },
       "mirrors": {
-        "id": "bbc888fd-086d-4230-bb70-415059888ef9",
+        "id": "b71fd5d1-bd1e-4748-9047-8a150bb83491",
         "status": "Утверждено",
-        "sentToAccountantAt": "2026-03-30T04:22:26.433+00:00",
+        "sentToAccountantAt": "2026-04-12T07:19:45.84+00:00",
         "mirrorTotalPaid": 40,
         "mirrorPaymentStatus": "Частично оплачено"
       }
@@ -37,13 +37,13 @@
       "mirrorPaymentStatusMatch": true,
       "itemParity": [
         {
-          "proposalItemId": "1550",
+          "proposalItemId": "1656",
           "lineTotalMatch": true,
           "paidTotalMatch": true,
           "outstandingMatch": true
         },
         {
-          "proposalItemId": "1551",
+          "proposalItemId": "1657",
           "lineTotalMatch": true,
           "paidTotalMatch": true,
           "outstandingMatch": true
@@ -53,7 +53,7 @@
     }
   },
   "fullAllocation": {
-    "proposalId": "90ff7fce-8c4a-4e6b-bd62-92880cf6c420",
+    "proposalId": "723f1ebe-b591-4283-b1e4-02c32306db72",
     "totals": {
       "server": {
         "payableAmount": 100,
@@ -70,9 +70,9 @@
         "allocationsCount": 2
       },
       "mirrors": {
-        "id": "90ff7fce-8c4a-4e6b-bd62-92880cf6c420",
+        "id": "723f1ebe-b591-4283-b1e4-02c32306db72",
         "status": "Утверждено",
-        "sentToAccountantAt": "2026-03-30T04:22:31.702+00:00",
+        "sentToAccountantAt": "2026-04-12T07:19:51.16+00:00",
         "mirrorTotalPaid": 100,
         "mirrorPaymentStatus": "Оплачено"
       }
@@ -86,13 +86,13 @@
       "mirrorPaymentStatusMatch": true,
       "itemParity": [
         {
-          "proposalItemId": "1552",
+          "proposalItemId": "1658",
           "lineTotalMatch": true,
           "paidTotalMatch": true,
           "outstandingMatch": true
         },
         {
-          "proposalItemId": "1553",
+          "proposalItemId": "1659",
           "lineTotalMatch": true,
           "paidTotalMatch": true,
           "outstandingMatch": true
@@ -105,8 +105,10 @@
     "paymentFormUsesServerTruthRpc": true,
     "paymentFormNoDirectProposalItemsFetch": true,
     "payActionsUsesAtomicRpc": true,
+    "payActionsPassesClientMutationId": true,
     "payActionsNoLegacyPaidAgg": true,
     "payActionsNoClientDebtFormula": true,
+    "legacyAddPaymentPathDisabled": true,
     "postSyncUsesServerTruthRpc": true,
     "historyFlowUsesServerTruthRpc": true,
     "noSilentCatchOnPayActions": true

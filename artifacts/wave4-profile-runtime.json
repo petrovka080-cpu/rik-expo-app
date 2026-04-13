@@ -1,12 +1,12 @@
 {
-  "checkedAt": "2026-04-01T07:18:22.548Z",
+  "checkedAt": "2026-04-13T06:58:18.844Z",
   "baseUrl": "http://localhost:8081",
   "user": {
     "role": "foreman",
-    "email": "wave4.profile.mnfppc8fh7tj@e.com"
+    "email": "wave4.profile.mnwu86nxdnwq@e.com"
   },
   "web": {
-    "status": "GREEN",
+    "status": "NOT_GREEN",
     "finalUrl": "http://localhost:8081/profile",
     "runtime": {
       "console": [
@@ -28,7 +28,43 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 860}"
+          "text": "[pdf-viewer] module_loaded {platform: web}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: startup_bootstrap, event: app_launch_start, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: startup_bootstrap, event: bootstrap_enter, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: auth_session_gate, event: auth_check_start, result: skipped, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: auth_session_gate, event: auth_session_read_start, result: skipped, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 3558}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: auth_session_gate, event: auth_session_read_result, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: auth_session_gate, event: auth_check_result, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: startup_bootstrap, event: auth_restore_result, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: startup_bootstrap, event: first_usable_ui_ready, result: success, durationMs: null}"
         },
         {
           "type": "info",
@@ -44,7 +80,15 @@
         },
         {
           "type": "info",
-          "text": "[queue.worker] started {workerId: web:mnfppgxu:79vccd, batchSize: 10, concurrency: 4}"
+          "text": "[queue.worker] started {workerId: web:mnwu8dj6:07wszg, batchSize: 10, concurrency: 4}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: startup_bootstrap, event: auth_state_change_event, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[RootLayout] onAuthStateChange: INITIAL_SESSION, hasSession=true"
         },
         {
           "type": "info",
@@ -52,54 +96,147 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 510}"
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 548}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1127}"
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 550}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1187}"
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1154}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1226}"
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1158}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1244}"
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 1163}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1336}"
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1158}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 1347}"
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1180}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 1197}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 535}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 533}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 532}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 531}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 533}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 602}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 535}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 554}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 525}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 534}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 531}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 527}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 544}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 537}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 526}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 556}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 529}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 528}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 553}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 559}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: request, surface: supabase_transport, event: request_timeout_discipline, result: success, durationMs: 557}"
         }
       ],
       "pageErrors": [],
       "badResponses": []
     },
-    "artifacts": null
+    "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"profile-listing-open\"]')\u001b[22m\n",
+    "artifacts": {
+      "screenshot": "artifacts/wave4-profile-web.png",
+      "html": "artifacts/wave4-profile-web.html"
+    }
   },
   "android": {
-    "status": "GREEN",
+    "status": "NOT_GREEN",
     "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "error": "poll timeout: wave4-profile:android-profile-tab",
     "artifacts": {
-      "xmlPath": "artifacts/artifacts/wave4-profile-android-final.xml",
-      "pngPath": "artifacts/artifacts/wave4-profile-android-final.png",
+      "xmlPath": "artifacts/artifacts/wave4-profile-android-failure.xml",
+      "pngPath": "artifacts/artifacts/wave4-profile-android-failure.png",
       "stdoutPath": "artifacts/wave4-profile-android.stdout.log",
       "stderrPath": "artifacts/wave4-profile-android.stderr.log",
-      "stdoutTail": "sport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 443, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 450, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 424, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 454, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 532, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 470, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 439, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 422, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 515, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 496, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 460, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 435, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 432, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 461, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 492, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 454, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n",
-      "stderrTail": "PluginError: Failed to resolve plugin for module \"expo-audio\" relative to \"C:\\dev\\rik-expo-app\". Do you have node modules installed?\nPluginError: Failed to resolve plugin for module \"expo-audio\" relative to \"C:\\dev\\rik-expo-app\". Do you have node modules installed?\n"
+      "stdoutTail": "rStage\": null, \"event\": \"login_submit_started\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_auth:signInWithPassword\", \"surface\": \"auth_login\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"token_request_start\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_auth:token:native\", \"surface\": \"supabase_auth_token\"}\n INFO  [platform.observability] {\"durationMs\": 1358, \"errorStage\": null, \"event\": \"token_request_end\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_auth:token:native\", \"surface\": \"supabase_auth_token\"}\n INFO  [platform.observability] {\"durationMs\": 1438, \"errorStage\": null, \"event\": \"login_submit_success\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_auth:signInWithPassword\", \"surface\": \"auth_login\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"login_post_auth_session_settle_start\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_login\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_session_read_start\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_auth:getSession\", \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_session_read_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_auth:getSession\", \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"login_post_auth_session_settle_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_login\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"login_session_present_after_signin\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_login\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"login_post_auth_route_decision\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_login\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"post_auth_route_decision\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": 482, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 483, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 539, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 533, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 570, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n INFO  [platform.observability] {\"durationMs\": 551, \"errorStage\": null, \"event\": \"request_timeout_discipline\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_transport:native\", \"surface\": \"supabase_transport\"}\n",
+      "stderrTail": ""
     },
     "recovery": {
       "environmentRecoveryUsed": true,
       "gmsRecoveryUsed": false,
       "anrRecoveryUsed": false,
-      "blankSurfaceRecovered": false,
+      "blankSurfaceRecovered": true,
       "devClientBootstrapRecovered": false
     }
   },
@@ -108,5 +245,5 @@
     "status": null,
     "error": null
   },
-  "status": "PARTIAL: WEB_ANDROID_GREEN_IOS_HOST_BLOCKED"
+  "status": "NOT_GREEN"
 }

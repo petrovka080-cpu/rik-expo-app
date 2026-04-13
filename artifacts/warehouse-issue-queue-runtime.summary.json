@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "webPassed": true,
+  "webPassed": false,
   "androidPassed": true,
   "iosPassed": false,
   "runtimeVerified": true,
@@ -19,9 +19,9 @@
   "failureKind": "unknown",
   "scenariosPassed": {
     "web": {
-      "initialOpen": true,
-      "queueCorrectness": true,
-      "interactionSanity": true,
+      "initialOpen": false,
+      "queueCorrectness": false,
+      "interactionSanity": false,
       "refreshLifecycle": true
     },
     "android": {
@@ -44,8 +44,9 @@
     "androidCurrentPng": "artifacts/android-warehouse-issue-queue-route-1.png",
     "androidAfterRecipientXml": "artifacts/android-warehouse-issue-queue-after-recipient.xml",
     "androidAfterRecipientPng": "artifacts/android-warehouse-issue-queue-after-recipient.png",
-    "androidModalXml": null,
-    "androidModalPng": null
+    "androidModalXml": "artifacts/android-warehouse-issue-queue-modal.xml",
+    "androidModalPng": "artifacts/android-warehouse-issue-queue-modal.png"
   },
-  "gate": "warehouse_issue_queue_runtime_verify"
+  "gate": "warehouse_issue_queue_runtime_verify",
+  "webSkipped": true
 }

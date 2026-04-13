@@ -1,13 +1,13 @@
 {
   "revokeBeforePay": {
-    "proposalId": "4c393b25-823b-453b-b9b4-e488d684d9c7",
+    "proposalId": "866ca907-7444-49e4-aef3-5ee434fc4771",
     "rejected": true,
     "failureCode": "approval_revoked",
     "paymentsCountAfterRejectedPay": 0,
     "noHalfSuccess": true
   },
   "concurrentPayment": {
-    "proposalId": "522426f5-bcc9-4abb-8ed9-cad09161f744",
+    "proposalId": "0adadc76-a1aa-49b9-b795-b6a1ca193708",
     "successCount": 1,
     "failureCount": 1,
     "failureCodes": [
@@ -15,8 +15,23 @@
     ],
     "controlledNoCorruption": true
   },
+  "idempotentReplay": {
+    "proposalId": "524b1170-169c-449a-a5c4-7c88b239080b",
+    "clientMutationId": "financial-atomic-rpc:mnvfoagi:idempotent-payment",
+    "firstOk": true,
+    "replayOk": true,
+    "samePaymentId": true,
+    "replayFlag": true,
+    "replayOutcome": "idempotent_replay",
+    "conflictRejected": true,
+    "conflictCode": "accounting_pay_invoice_v1_idempotency_conflict",
+    "conflictOutcome": "idempotency_conflict",
+    "paymentsCount": 1,
+    "totalPaidAfter": 30,
+    "noDuplicateEffect": true
+  },
   "revokeAfterCommittedPayment": {
-    "proposalId": "bbc888fd-086d-4230-bb70-415059888ef9",
+    "proposalId": "b71fd5d1-bd1e-4748-9047-8a150bb83491",
     "blocked": true,
     "errorMessage": "proposal_financial_state_locked",
     "errorCode": "P0001",

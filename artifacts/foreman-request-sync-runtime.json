@@ -1,30 +1,29 @@
 {
-  "generatedAt": "2026-04-05T05:36:30.884Z",
+  "generatedAt": "2026-04-13T08:26:37.481Z",
   "batch": "foreman_request_sync_runtime_verify",
   "web": {
-    "status": "failed",
-    "platformSpecificIssues": [
-      "foreman live smoke failed: file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:35\r\n  throw new Error(`poll timeout: ${label}`);\r\n        ^\r\n\r\nError: poll timeout: body_any:Контроль|Заявки\r\n    at poll (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:35:9)\r\n    at async loginDirector (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:530:3)\r\n    at async main (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:972:5)\r\n    at async file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:1258:1\r\n\r\nNode.js v20.19.6"
-    ],
-    "failureKind": "auth"
+    "status": "skipped",
+    "platformSpecificIssues": [],
+    "skipReason": "web smoke is not part of this WAVE 8 Android runtime proof"
   },
   "android": {
-    "status": "failed",
+    "status": "passed",
+    "routeOpen": true,
+    "androidPreflight": {
+      "deviceDetected": true,
+      "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+      "reverseProxyReady": true,
+      "appCleared": true,
+      "gmsCleared": false,
+      "devClientReachable": true
+    },
     "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,
     "devClientBootstrapRecovered": false,
-    "xmlPath": "artifacts/android-foreman-request-sync-failure.xml",
-    "pngPath": "artifacts/android-foreman-request-sync-failure.png",
-    "stdoutPath": "C:/dev/rik-expo-app/artifacts/expo-dev-client-8081.stdout.log",
-    "stderrPath": "C:/dev/rik-expo-app/artifacts/expo-dev-client-8081.stderr.log",
-    "stdoutTail": "",
-    "stderrTail": "",
-    "platformSpecificIssues": [
-      "poll timeout: android:dev_client_loaded"
-    ],
-    "failureKind": "auth"
+    "currentXml": "artifacts/android-foreman-request-sync-route-1.xml",
+    "currentPng": "artifacts/android-foreman-request-sync-route-1.png"
   },
   "ios": {
     "status": "residual",

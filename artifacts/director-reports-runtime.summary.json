@@ -1,22 +1,18 @@
 {
-  "status": "failed",
+  "status": "passed",
   "webPassed": false,
-  "androidPassed": false,
+  "androidPassed": true,
   "iosPassed": false,
-  "runtimeVerified": false,
+  "runtimeVerified": true,
   "environmentRecoveryUsed": true,
   "gmsRecoveryUsed": false,
-  "anrRecoveryUsed": true,
-  "blankSurfaceRecovered": true,
+  "anrRecoveryUsed": false,
+  "blankSurfaceRecovered": false,
   "devClientBootstrapRecovered": false,
   "platformSpecificIssues": [
     {
       "platform": "web",
-      "issue": "poll timeout: body:Контроль|Отчёты"
-    },
-    {
-      "platform": "android",
-      "issue": "android protected route did not settle into renderable surface for rik://director"
+      "issue": "web runtime skipped: WAVE 3 requires Android proof; web auth harness is out of scope"
     },
     {
       "platform": "ios",
@@ -24,7 +20,7 @@
     }
   ],
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "failureKind": "app",
+  "failureKind": "auth",
   "scenariosPassed": {
     "web": {
       "initialOpen": false,
@@ -34,9 +30,9 @@
       "workTab": false
     },
     "android": {
-      "initialOpen": false,
-      "reportsModal": false,
-      "workTab": false
+      "initialOpen": true,
+      "reportsModal": true,
+      "workTab": true
     },
     "ios": {
       "initialOpen": false,
@@ -47,22 +43,14 @@
   "artifacts": {
     "web": "artifacts/director-reports-web-smoke.png",
     "android": {
-      "currentXml": null,
-      "currentPng": null,
-      "reportsXml": null,
-      "reportsPng": null,
-      "modalXml": null,
-      "modalPng": null,
-      "worksXml": null,
-      "worksPng": null
-    },
-    "androidFailure": {
-      "xmlPath": "artifacts/android-director-reports-failure.xml",
-      "pngPath": "artifacts/android-director-reports-failure.png",
-      "stdoutPath": "artifacts/expo-dev-client.stdout.log",
-      "stderrPath": "artifacts/expo-dev-client.stderr.log",
-      "stdoutTail": "",
-      "stderrTail": ""
+      "currentXml": "artifacts/android-director-reports-route-1.xml",
+      "currentPng": "artifacts/android-director-reports-route-1.png",
+      "reportsXml": "artifacts/android-director-reports-tab-2.xml",
+      "reportsPng": "artifacts/android-director-reports-tab-2.png",
+      "modalXml": "artifacts/android-director-reports-modal-ready.xml",
+      "modalPng": "artifacts/android-director-reports-modal-ready.png",
+      "worksXml": "artifacts/android-director-reports-works.xml",
+      "worksPng": "artifacts/android-director-reports-works.png"
     }
   },
   "gate": "director_reports_runtime_verify"

@@ -1,6 +1,8 @@
 {
-  "id": "d0be72a0-9699-4a28-a1ca-bb4fe69f766a",
-  "email": "wimnbvqisp9jmc@e.com",
-  "password": "Pass1234",
-  "role": "warehouse"
+  "id": "ab8bc359-6a5a-4e97-957f-371bcc20a134",
+  "email": "[redacted-temp-user]",
+  "password": "[redacted]",
+  "role": "warehouse",
+  "companyId": "5c406ebd-59ea-4a37-bbf1-3ae0f21f2fba",
+  "companyOwnerId": "e57c88e9-b5c9-41fd-bc6a-bb04ac36273e"
 }

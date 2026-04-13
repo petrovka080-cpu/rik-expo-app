@@ -1,9 +1,9 @@
 # Wave 4 Profile Runtime Proof
 
-- Web: GREEN
-- Android: GREEN
+- Web: NOT_GREEN
+- Android: NOT_GREEN
 - iOS host support: unavailable
-- Final status: PARTIAL: WEB_ANDROID_GREEN_IOS_HOST_BLOCKED
+- Final status: NOT_GREEN
 
 ## Notes
 - Web final URL: http://localhost:8081/profile

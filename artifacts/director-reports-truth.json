@@ -5,8 +5,16 @@
   "objectCountSourceExplained": true,
   "noWorkNameCount": 0,
   "noWorkNameExplained": true,
-  "unresolvedNamesCount": 100,
+  "unresolvedNamesCount": 103,
   "namingDiagnosticsVisible": true,
+  "noWorkDiagnostics": {
+    "workNameMissingCount": 0,
+    "workNameResolvedCount": 15,
+    "itemsWithoutWorkName": 0,
+    "locationsWithoutWorkName": 0,
+    "fallbackApplied": false
+  },
   "backendOwnerPreserved": true,
+  "clientRecomputeRemoved": true,
   "logicChanged": false
 }

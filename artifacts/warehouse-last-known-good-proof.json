@@ -1,36 +1,14 @@
 {
-  "degradedWithSnapshot": {
-    "publishState": "degraded",
-    "lastKnownGoodUsed": true,
+  "legacyLastKnownGoodRemoved": true,
+  "canonicalReady": {
+    "publishState": "ready",
     "rowCount": 2,
-    "falseEmptyPrevented": true
+    "falseEmptyPrevented": false
   },
-  "degradedEmptySnapshot": {
-    "rows": [],
-    "hasMore": false,
-    "integrityState": {
-      "mode": "stale_last_known_good",
-      "failureClass": "transport_transient_failure",
-      "freshness": "stale",
-      "reason": "non_primary_empty_not_publishable",
-      "message": "Failed to fetch",
-      "cacheUsed": true,
-      "cooldownActive": false,
-      "cooldownReason": null
-    },
-    "listState": {
-      "publishState": "degraded",
-      "freshness": "stale",
-      "failureClass": "transport_transient_failure",
-      "reason": "non_primary_empty_not_publishable",
-      "message": "Failed to fetch",
-      "rowCount": 0,
-      "lastKnownGoodUsed": true,
-      "cooldownActive": false,
-      "cooldownReason": null
-    },
-    "usedLastKnownGood": true,
-    "falseEmptyPrevented": true
+  "canonicalEmpty": {
+    "publishState": "empty",
+    "rowCount": 0,
+    "falseEmptyPrevented": false
   },
   "manualRefreshCooldown": {
     "active": true,

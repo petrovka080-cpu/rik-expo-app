@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "webPassed": true,
+  "webPassed": false,
   "androidPassed": true,
   "iosPassed": false,
   "runtimeVerified": true,
@@ -19,9 +19,9 @@
   "failureKind": "unknown",
   "scenariosPassed": {
     "web": {
-      "initialOpen": true,
-      "queueCorrectness": true,
-      "interactionSanity": true
+      "initialOpen": false,
+      "queueCorrectness": false,
+      "interactionSanity": false
     },
     "android": {
       "initialOpen": true,
@@ -37,12 +37,13 @@
   "artifacts": {
     "webSummary": "artifacts/warehouse-incoming-queue-web-smoke.summary.json",
     "webRuntime": "artifacts/warehouse-incoming-queue-web-smoke.json",
-    "androidCurrentXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
-    "androidCurrentPng": "artifacts/android-warehouse-incoming-queue-route-1.png",
-    "androidQueueXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
-    "androidQueuePng": "artifacts/android-warehouse-incoming-queue-route-1.png",
+    "androidCurrentXml": "artifacts/android-warehouse-incoming-queue-after-fio-storage-seed-route-2.xml",
+    "androidCurrentPng": "artifacts/android-warehouse-incoming-queue-after-fio-storage-seed-route-2.png",
+    "androidQueueXml": "artifacts/android-warehouse-incoming-queue-after-fio-storage-seed-route-2.xml",
+    "androidQueuePng": "artifacts/android-warehouse-incoming-queue-after-fio-storage-seed-route-2.png",
     "androidModalXml": null,
     "androidModalPng": null
   },
-  "gate": "warehouse_incoming_queue_runtime_verify"
+  "gate": "warehouse_incoming_queue_runtime_verify",
+  "webSkipped": true
 }

@@ -1,14 +1,15 @@
 {
-  "status": "passed",
-  "gate": "GREEN",
+  "status": "failed",
+  "gate": "NOT_GREEN",
   "checks": {
     "boundaryChecks": {
-      "mobileViewerNoLongerEmbedsPdfWebView": true,
+      "androidViewerStillUsesNativeHandoffBoundary": true,
+      "iosViewerUsesEmbeddedWebView": true,
       "webViewerStillEmbedded": true,
       "viewerUsesNativeHandoff": true,
-      "viewerNoLongerImportsWebView": true,
-      "previewRouteStillCanonical": true,
-      "mobileRemotePreviewUsesDirectViewerBoundary": true,
+      "viewerImportsNativeWebViewForIosPreview": true,
+      "previewRouteStillCanonical": false,
+      "mobileRemotePreviewUsesDirectViewerBoundary": false,
       "attachmentRemotePdfUsesSharedAndroidBoundary": true,
       "attachmentLocalPdfStillUsesIntent": true,
       "pdfRunnerMobilePrepareKeepsRemoteUrl": true,

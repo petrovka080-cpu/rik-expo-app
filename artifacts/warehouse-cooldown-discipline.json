@@ -47,13 +47,12 @@
       }
     },
     {
-      "id": "stale_last_known_good_reuse_scenario",
+      "id": "canonical_ready_data_scenario",
       "passed": true,
       "details": {
-        "publishState": "degraded",
-        "lastKnownGoodUsed": true,
+        "publishState": "ready",
         "rowCount": 2,
-        "falseEmptyPrevented": true
+        "falseEmptyPrevented": false
       }
     },
     {

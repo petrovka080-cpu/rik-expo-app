@@ -1,9 +1,9 @@
 {
   "gate": "director_canonical_read_model_proof",
   "finance": {
-    "mode": "fallback",
-    "semantics": "invoice",
-    "sourceVersion": "director_finance_panel_scope_v3",
+    "mode": "canonical",
+    "semantics": "invoice_level_obligations",
+    "sourceVersion": "director_finance_panel_scope_v4",
     "parityDelta": {
       "approved": 0,
       "paid": 0,
@@ -13,15 +13,15 @@
   },
   "reports": {
     "objectCountSource": "warehouse_confirmed_issues",
-    "objectCountLabel": "Объекты по подтверждённым выдачам",
-    "unresolvedNamesCount": 100,
-    "noWorkNameCount": 118,
+    "objectCountLabel": "РћР±СЉРµРєС‚С‹ РїРѕ РїРѕРґС‚РІРµСЂР¶РґС‘РЅРЅС‹Рј РІС‹РґР°С‡Р°Рј",
+    "unresolvedNamesCount": 103,
+    "noWorkNameCount": 0,
     "backendOwnerPreserved": true
   },
   "runtime": {
     "finance": {
       "status": "passed",
-      "webPassed": true,
+      "webPassed": false,
       "androidPassed": true,
       "iosPassed": false,
       "runtimeVerified": true,
@@ -32,18 +32,22 @@
       "devClientBootstrapRecovered": false,
       "platformSpecificIssues": [
         {
+          "platform": "web",
+          "issue": "web runtime skipped: WAVE 3 requires Android proof; web auth harness is out of scope"
+        },
+        {
           "platform": "ios",
           "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
         }
       ],
       "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-      "failureKind": "unknown",
+      "failureKind": "auth",
       "scenariosPassed": {
         "web": {
-          "initialOpen": true,
-          "financeSurface": true,
-          "debtModal": true,
-          "supplierDetail": true
+          "initialOpen": false,
+          "financeSurface": false,
+          "debtModal": false,
+          "supplierDetail": false
         },
         "android": {
           "initialOpen": true,
@@ -75,7 +79,7 @@
     },
     "reports": {
       "status": "passed",
-      "webPassed": true,
+      "webPassed": false,
       "androidPassed": true,
       "iosPassed": false,
       "runtimeVerified": true,
@@ -86,19 +90,23 @@
       "devClientBootstrapRecovered": false,
       "platformSpecificIssues": [
         {
+          "platform": "web",
+          "issue": "web runtime skipped: WAVE 3 requires Android proof; web auth harness is out of scope"
+        },
+        {
           "platform": "ios",
           "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
         }
       ],
       "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-      "failureKind": "unknown",
+      "failureKind": "auth",
       "scenariosPassed": {
         "web": {
-          "initialOpen": true,
-          "reportsModal": true,
-          "materialsScope": true,
-          "disciplineScope": true,
-          "workTab": true
+          "initialOpen": false,
+          "reportsModal": false,
+          "materialsScope": false,
+          "disciplineScope": false,
+          "workTab": false
         },
         "android": {
           "initialOpen": true,
@@ -118,8 +126,8 @@
           "currentPng": "artifacts/android-director-reports-route-1.png",
           "reportsXml": "artifacts/android-director-reports-tab-2.xml",
           "reportsPng": "artifacts/android-director-reports-tab-2.png",
-          "modalXml": "artifacts/android-director-reports-modal.xml",
-          "modalPng": "artifacts/android-director-reports-modal.png",
+          "modalXml": "artifacts/android-director-reports-modal-ready.xml",
+          "modalPng": "artifacts/android-director-reports-modal-ready.png",
           "worksXml": "artifacts/android-director-reports-works.xml",
           "worksPng": "artifacts/android-director-reports-works.png"
         }

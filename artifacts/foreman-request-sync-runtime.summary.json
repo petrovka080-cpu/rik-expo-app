@@ -1,9 +1,9 @@
 {
-  "status": "failed",
+  "status": "passed",
   "webPassed": false,
-  "androidPassed": false,
+  "androidPassed": true,
   "iosPassed": false,
-  "runtimeVerified": false,
+  "runtimeVerified": true,
   "environmentRecoveryUsed": true,
   "gmsRecoveryUsed": false,
   "anrRecoveryUsed": false,
@@ -11,20 +11,12 @@
   "devClientBootstrapRecovered": false,
   "platformSpecificIssues": [
     {
-      "platform": "web",
-      "issue": "foreman live smoke failed: file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:35\r\n  throw new Error(`poll timeout: ${label}`);\r\n        ^\r\n\r\nError: poll timeout: body_any:Контроль|Заявки\r\n    at poll (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:35:9)\r\n    at async loginDirector (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:530:3)\r\n    at async main (file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:972:5)\r\n    at async file:///C:/dev/rik-expo-app/scripts/foreman_request_sync_web_smoke.mjs:1258:1\r\n\r\nNode.js v20.19.6"
-    },
-    {
-      "platform": "android",
-      "issue": "poll timeout: android:dev_client_loaded"
-    },
-    {
       "platform": "ios",
       "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
     }
   ],
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "failureKind": "auth",
+  "failureKind": "unknown",
   "scenariosPassed": {
     "web": {
       "materialsCrud": false,
@@ -33,23 +25,19 @@
       "directorHandoff": false
     },
     "android": {
-      "routeOpen": false
+      "routeOpen": true
     },
     "ios": {
       "routeOpen": false
     }
   },
   "artifacts": {
-    "web": "artifacts/foreman-request-sync-web-smoke.json",
-    "android": null,
-    "androidFailure": {
-      "xmlPath": "artifacts/android-foreman-request-sync-failure.xml",
-      "pngPath": "artifacts/android-foreman-request-sync-failure.png",
-      "stdoutPath": "C:/dev/rik-expo-app/artifacts/expo-dev-client-8081.stdout.log",
-      "stderrPath": "C:/dev/rik-expo-app/artifacts/expo-dev-client-8081.stderr.log",
-      "stdoutTail": "",
-      "stderrTail": ""
+    "web": null,
+    "android": {
+      "currentXml": "artifacts/android-foreman-request-sync-route-1.xml",
+      "currentPng": "artifacts/android-foreman-request-sync-route-1.png"
     }
   },
-  "gate": "foreman_request_sync_runtime_verify"
+  "gate": "foreman_request_sync_runtime_verify",
+  "webSkipped": true
 }

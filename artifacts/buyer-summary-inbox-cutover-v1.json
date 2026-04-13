@@ -5,8 +5,8 @@
       {
         "stageName": "base_rpc",
         "sourceOwner": "rpc:list_buyer_inbox",
-        "durationMs": 682,
-        "rowCount": 137,
+        "durationMs": 1010,
+        "rowCount": 191,
         "requiredForFirstPaint": true,
         "canBeLazy": false,
         "fallbackCapable": true,
@@ -15,8 +15,8 @@
       {
         "stageName": "request_status_gate",
         "sourceOwner": "table:requests",
-        "durationMs": 417,
-        "rowCount": 44,
+        "durationMs": 437,
+        "rowCount": 70,
         "requiredForFirstPaint": true,
         "canBeLazy": false,
         "fallbackCapable": false,
@@ -25,7 +25,7 @@
       {
         "stageName": "proposal_lifecycle_links",
         "sourceOwner": "view:proposal_items_view",
-        "durationMs": 411,
+        "durationMs": 418,
         "rowCount": 16,
         "requiredForFirstPaint": false,
         "canBeLazy": true,
@@ -35,7 +35,7 @@
       {
         "stageName": "proposal_lifecycle_summary",
         "sourceOwner": "view:v_proposals_summary",
-        "durationMs": 413,
+        "durationMs": 431,
         "rowCount": 16,
         "requiredForFirstPaint": false,
         "canBeLazy": true,
@@ -45,7 +45,7 @@
       {
         "stageName": "reject_context",
         "sourceOwner": "table:proposal_items",
-        "durationMs": 403,
+        "durationMs": 421,
         "rowCount": 3,
         "requiredForFirstPaint": false,
         "canBeLazy": true,
@@ -55,8 +55,8 @@
       {
         "stageName": "client_group_window",
         "sourceOwner": "client:selectGroups+matchesBuyerSearchQuery",
-        "durationMs": 0,
-        "rowCount": 34,
+        "durationMs": 1,
+        "rowCount": 18,
         "requiredForFirstPaint": true,
         "canBeLazy": false,
         "fallbackCapable": false,
@@ -75,11 +75,11 @@
     ]
   },
   "legacy": {
-    "durationMs": 2330,
-    "loadDurationMs": 2330,
-    "windowDurationMs": 0,
-    "rows": 34,
-    "groups": 38,
+    "durationMs": 2721,
+    "loadDurationMs": 2720,
+    "windowDurationMs": 1,
+    "rows": 18,
+    "groups": 62,
     "sourceMeta": {
       "primaryOwner": "legacy_client_group_window",
       "fallbackUsed": false,
@@ -91,15 +91,15 @@
       "offsetGroups": 0,
       "limitGroups": 12,
       "returnedGroupCount": 12,
-      "totalGroupCount": 38,
+      "totalGroupCount": 62,
       "hasMore": true,
       "search": null
     }
   },
   "primary": {
-    "durationMs": 431,
-    "rows": 34,
-    "groups": 38,
+    "durationMs": 445,
+    "rows": 18,
+    "groups": 62,
     "sourceMeta": {
       "primaryOwner": "rpc_scope_v1",
       "fallbackUsed": false,
@@ -111,7 +111,7 @@
       "offsetGroups": 0,
       "limitGroups": 12,
       "returnedGroupCount": 12,
-      "totalGroupCount": 38,
+      "totalGroupCount": 62,
       "hasMore": true,
       "search": null
     }
@@ -122,42 +122,42 @@
     "totalGroupCountParityOk": true,
     "returnedGroupCountParityOk": true,
     "hasMoreParityOk": true,
-    "legacyGroupCount": 38,
-    "primaryGroupCount": 38,
+    "legacyGroupCount": 62,
+    "primaryGroupCount": 62,
     "legacyReturnedGroups": 12,
     "primaryReturnedGroups": 12,
-    "legacyRows": 34,
-    "primaryRows": 34
+    "legacyRows": 18,
+    "primaryRows": 18
   },
   "searchScenario": {
-    "search": "MAT-RO",
+    "search": "MAT-CO",
     "legacyDurationMs": 0,
-    "primaryDurationMs": 433,
+    "primaryDurationMs": 455,
     "parity": {
       "requestGroupOrderParityOk": true,
       "rowSignatureParityOk": true,
       "totalGroupCountParityOk": true,
       "returnedGroupCountParityOk": true,
       "hasMoreParityOk": true,
-      "legacyGroupCount": 6,
-      "primaryGroupCount": 6,
-      "legacyReturnedGroups": 6,
-      "primaryReturnedGroups": 6,
-      "legacyRows": 20,
-      "primaryRows": 20
+      "legacyGroupCount": 8,
+      "primaryGroupCount": 8,
+      "legacyReturnedGroups": 8,
+      "primaryReturnedGroups": 8,
+      "legacyRows": 48,
+      "primaryRows": 48
     },
     "fallbackUsed": false
   },
   "events": [
     {
       "id": "obs-1",
-      "at": 1774812016617,
+      "at": 1775983493980,
       "screen": "buyer",
       "surface": "summary_inbox",
       "category": "fetch",
       "event": "load_inbox",
       "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
-      "rowCount": 34,
+      "rowCount": 18,
       "fallbackUsed": false,
       "extra": {
         "primaryOwner": "rpc_scope_v1",
@@ -166,36 +166,36 @@
         "offsetGroups": 0,
         "limitGroups": 12,
         "returnedGroupCount": 12,
-        "totalGroupCount": 38,
+        "totalGroupCount": 62,
         "hasMore": true,
         "search": null
       },
       "result": "success",
-      "durationMs": 431
+      "durationMs": 445
     },
     {
       "id": "obs-2",
-      "at": 1774812017051,
+      "at": 1775983494436,
       "screen": "buyer",
       "surface": "summary_inbox",
       "category": "fetch",
       "event": "load_inbox",
       "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
-      "rowCount": 20,
+      "rowCount": 48,
       "fallbackUsed": false,
       "extra": {
         "primaryOwner": "rpc_scope_v1",
         "backendFirstPrimary": true,
-        "requestIds": 6,
+        "requestIds": 8,
         "offsetGroups": 0,
         "limitGroups": 12,
-        "returnedGroupCount": 6,
-        "totalGroupCount": 6,
+        "returnedGroupCount": 8,
+        "totalGroupCount": 8,
         "hasMore": false,
-        "search": "mat-ro"
+        "search": "mat-co"
       },
       "result": "success",
-      "durationMs": 433
+      "durationMs": 454
     }
   ],
   "summary": {
@@ -214,9 +214,9 @@
         "surface": "summary_inbox",
         "event": "load_inbox",
         "count": 2,
-        "avgDurationMs": 432,
-        "maxDurationMs": 433,
-        "totalRowCount": 54,
+        "avgDurationMs": 450,
+        "maxDurationMs": 454,
+        "totalRowCount": 66,
         "lastSourceKind": "rpc:buyer_summary_inbox_scope_v1",
         "fallbackCount": 0
       }

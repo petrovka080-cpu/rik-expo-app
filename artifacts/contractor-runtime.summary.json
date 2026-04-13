@@ -1,10 +1,10 @@
 {
   "status": "passed",
-  "webPassed": true,
+  "webPassed": false,
   "androidPassed": true,
   "iosPassed": false,
   "runtimeVerified": true,
-  "environmentRecoveryUsed": false,
+  "environmentRecoveryUsed": true,
   "gmsRecoveryUsed": false,
   "anrRecoveryUsed": false,
   "blankSurfaceRecovered": false,
@@ -19,9 +19,9 @@
   "failureKind": "unknown",
   "scenariosPassed": {
     "web": {
-      "contractorCardVisible": true,
-      "modalOpened": true,
-      "issuedExpanded": true
+      "contractorCardVisible": false,
+      "modalOpened": false,
+      "issuedExpanded": false
     },
     "android": {
       "contractorCardVisible": true,
@@ -35,7 +35,7 @@
     }
   },
   "artifacts": {
-    "webScreenshot": "artifacts/contractor-web-smoke.png",
+    "webScreenshot": null,
     "androidHomeXml": "artifacts/android-contractor-home.xml",
     "androidHomePng": "artifacts/android-contractor-home.png",
     "androidModalXml": "artifacts/android-contractor-modal.xml",
@@ -48,15 +48,18 @@
   "modalOpened": true,
   "issuedExpanded": true,
   "seed": {
-    "suffix": "mn91bv9lqe44",
-    "contractorOrg": "Runtime Contractor mn91bv9lqe44",
-    "objectName": "BLD-MN91BV9LQE44",
-    "workName": "Runtime Work mn91bv9lqe44",
-    "subcontractId": "8d467694-7525-4e47-bf2b-c28093bbb990",
-    "requestId": "ba349a0f-ddc8-49a9-b7ac-1f660f44d902",
-    "requestItemId": "c4d75dd4-0fe6-48f9-be3b-1a44c7c70f81",
-    "purchaseId": "8a6110bd-0746-444b-ba4c-f0f340d53c20",
-    "purchaseItemId": "35ca65f6-a752-4127-b08a-5ad915f93d65",
-    "progressId": "057acf8e-c963-482a-9f4d-10a337667da7"
-  }
+    "suffix": "mnwxiff9zqcc",
+    "contractorId": "884181c8-e1b1-47f1-b858-3d8d259cb934",
+    "contractorInn": "123456787777",
+    "contractorOrg": "Runtime Contractor mnwxiff9zqcc",
+    "objectName": "Runtime Object MNWXIFF9ZQCC",
+    "workName": "Runtime Work mnwxiff9zqcc",
+    "subcontractId": "c3d107d7-0040-4edc-a038-b15330db7122",
+    "requestId": "f60ad69c-36d4-48f9-a0b1-a5041cd9401d",
+    "requestItemId": "513f05a0-bf61-42fa-9543-6da0b205be6a",
+    "purchaseId": "2d469dd5-d0e9-4a8e-8912-e4a9c5999446",
+    "purchaseItemId": "a1c09d15-ed7a-415c-8ba6-f97abb2d2b38",
+    "progressId": "4d8188ba-e546-4616-8372-cb4ef39ff983"
+  },
+  "webSkipped": true
 }

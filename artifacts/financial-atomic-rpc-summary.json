@@ -9,38 +9,45 @@
   "scenarios": {
     "happyPathApprovedProposal": {
       "pass": true,
-      "proposalId": "bbc888fd-086d-4230-bb70-415059888ef9",
-      "paymentId": 162
+      "proposalId": "b71fd5d1-bd1e-4748-9047-8a150bb83491",
+      "paymentId": 197
     },
     "proposalNotApprovedRejected": {
       "pass": true,
-      "proposalId": "da76db82-3e30-46ec-9361-59c2d6f1bed1",
+      "proposalId": "2230a78b-b503-4c81-ab24-20314a87a700",
       "failureCode": "proposal_not_approved"
     },
     "approvalRevokedRejected": {
       "pass": true,
-      "proposalId": "4c393b25-823b-453b-b9b4-e488d684d9c7",
+      "proposalId": "866ca907-7444-49e4-aef3-5ee434fc4771",
       "failureCode": "approval_revoked"
     },
     "concurrentPaymentControlled": {
       "pass": true,
-      "proposalId": "522426f5-bcc9-4abb-8ed9-cad09161f744",
+      "proposalId": "0adadc76-a1aa-49b9-b795-b6a1ca193708",
       "failureCodes": [
         "stale_financial_state"
       ]
     },
+    "idempotentReplayControlled": {
+      "pass": true,
+      "proposalId": "524b1170-169c-449a-a5c4-7c88b239080b",
+      "clientMutationId": "financial-atomic-rpc:mnvfoagi:idempotent-payment",
+      "replayOutcome": "idempotent_replay",
+      "conflictCode": "accounting_pay_invoice_v1_idempotency_conflict"
+    },
     "amountExceedsOutstandingRejected": {
       "pass": true,
-      "proposalId": "2c565c1b-1e52-414f-bb27-12d12c7659b9",
+      "proposalId": "92a8b61b-e7a6-4b36-af5c-dafe622b16a6",
       "failureCode": "amount_exceeds_outstanding"
     },
     "partialAllocationServerConsistent": {
       "pass": true,
-      "proposalId": "bbc888fd-086d-4230-bb70-415059888ef9"
+      "proposalId": "b71fd5d1-bd1e-4748-9047-8a150bb83491"
     },
     "fullAllocationServerConsistent": {
       "pass": true,
-      "proposalId": "90ff7fce-8c4a-4e6b-bd62-92880cf6c420"
+      "proposalId": "723f1ebe-b591-4283-b1e4-02c32306db72"
     },
     "activePaymentFormServerOwned": {
       "pass": true

@@ -1,27 +1,33 @@
 {
-  "owner": "rpc:director_finance_panel_scope_v3",
-  "mode": "fallback",
-  "semantics": "invoice",
-  "displayMode": "fallback_legacy",
+  "owner": "rpc:director_finance_panel_scope_v4",
+  "mode": "canonical",
+  "semantics": "invoice_level_obligations",
+  "displayMode": "canonical_v3",
   "summarySourceFields": [
-    "summary.approved",
-    "summary.paid",
-    "summary.toPay"
+    "canonical.summary.approvedTotal",
+    "canonical.summary.paidTotal",
+    "canonical.summary.debtTotal"
   ],
   "supplierSourceFields": [
-    "report.suppliers[].approved",
-    "report.suppliers[].paid",
-    "report.suppliers[].toPay"
+    "canonical.suppliers[].approvedTotal",
+    "canonical.suppliers[].paidTotal",
+    "canonical.suppliers[].debtTotal"
+  ],
+  "spendSourceFields": [
+    "canonical.spend.header.approved",
+    "canonical.spend.header.paid",
+    "canonical.spend.header.toPay",
+    "canonical.spend.header.overpay"
   ],
   "headerTotals": {
-    "approvedTotal": 431658,
-    "paidTotal": 280,
-    "debtTotal": 431378
+    "approvedTotal": 433768,
+    "paidTotal": 8590,
+    "debtTotal": 425178
   },
   "supplierTotals": {
-    "approvedTotal": 431658,
-    "paidTotal": 280,
-    "debtTotal": 431378
+    "approvedTotal": 433768,
+    "paidTotal": 8590,
+    "debtTotal": 425178
   },
   "parityDelta": {
     "approved": 0,
@@ -30,10 +36,18 @@
   },
   "mixedSourceRenderingRemoved": true,
   "diagnostics": {
-    "sourceVersion": "director_finance_panel_scope_v3",
-    "payloadShapeVersion": "v3",
+    "sourceVersion": "director_finance_panel_scope_v4",
+    "payloadShapeVersion": "v4",
     "owner": "backend",
-    "generatedAt": "2026-03-28T04:10:04.855Z",
-    "supplierRowCount": 22
+    "generatedAt": "2026-04-12T08:44:56.641Z",
+    "supplierRowCount": 25,
+    "objectRowCount": 10,
+    "spendKindRowCount": 4,
+    "spendHeader": {
+      "approved": 462795.45,
+      "paid": 8590,
+      "toPay": 454205.45,
+      "overpay": 0
+    }
   }
 }

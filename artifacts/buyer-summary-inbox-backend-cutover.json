@@ -1,6 +1,6 @@
 {
-  "status": "passed",
-  "gate": "GREEN",
+  "status": "failed",
+  "gate": "NOT_GREEN",
   "primaryOwner": "rpc_scope_v1",
   "fallbackUsed": false,
   "backendFirstPrimary": true,
@@ -10,10 +10,10 @@
   "returnedGroupCountParityOk": true,
   "hasMoreParityOk": true,
   "searchScenarioParityOk": true,
-  "clientOwnedInboxTruthMateriallyRemoved": true,
+  "clientOwnedInboxTruthMateriallyRemoved": false,
   "backendContractPatchPresent": true,
   "ownership": {
-    "fetchersUseRpcScope": true,
+    "fetchersUseRpcScope": false,
     "fetchersDeclareRpcOwner": true,
     "legacyWindowTokensRemoved": true,
     "summaryServiceUsesRpcWrapper": true,
@@ -21,36 +21,40 @@
     "typedAdapterPresent": true
   },
   "runtime": {
-    "reusedExistingSummary": true,
+    "reusedExistingSummary": false,
     "webPassed": true,
-    "androidPassed": true,
+    "androidPassed": false,
     "iosPassed": false,
     "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-    "runtimeGateOk": true,
+    "runtimeGateOk": false,
     "runtimeRun": {
-      "status": 0,
-      "stdout": "Reused existing passed buyer summary inbox runtime summary artifact.",
+      "status": 1,
+      "stdout": "{\n  \"status\": \"failed\",\n  \"webPassed\": true,\n  \"androidPassed\": false,\n  \"iosPassed\": false,\n  \"runtimeVerified\": false,\n  \"environmentRecoveryUsed\": false,\n  \"gmsRecoveryUsed\": false,\n  \"anrRecoveryUsed\": false,\n  \"blankSurfaceRecovered\": false,\n  \"devClientBootstrapRecovered\": false,\n  \"platformSpecificIssues\": [\n    {\n      \"platform\": \"android\",\n      \"issue\": \"poll timeout: android:dev_client_loaded\"\n    },\n    {\n      \"platform\": \"ios\",\n      \"issue\": \"xcrun is unavailable on this host; iOS simulator cannot be started from Windows\"\n    }\n  ],\n  \"iosResidual\": \"xcrun is unavailable on this host; iOS simulator cannot be started from Windows\",\n  \"failureKind\": \"auth\",\n  \"scenariosPassed\": {\n    \"web\": {\n      \"initialOpen\": true,\n      \"inboxSurface\": true,\n      \"sheetInteraction\": true\n    },\n    \"android\": {\n      \"initialOpen\": false,\n      \"inboxSurface\": false,\n      \"sheetInteraction\": false\n    },\n    \"ios\": {\n      \"initialOpen\": false,\n      \"inboxSurface\": false,\n      \"sheetInteraction\": false\n    }\n  },\n  \"artifacts\": {\n    \"webSummary\": \"artifacts/buyer-summary-inbox-web-smoke.summary.json\",\n    \"webRuntime\": \"artifacts/buyer-summary-inbox-web-smoke.json\",\n    \"androidCurrentXml\": null,\n    \"androidCurrentPng\": null,\n    \"androidInboxXml\": null,\n    \"androidInboxPng\": null,\n    \"androidSheetXml\": null,\n    \"androidSheetPng\": null,\n    \"androidLogcat\": null,\n    \"androidFailure\": {\n      \"xmlPath\": \"artifacts/android-buyer-summary-inbox-failure.xml\",\n      \"pngPath\": \"artifacts/android-buyer-summary-inbox-failure.png\",\n      \"stdoutPath\": \"artifacts/expo-dev-client.stdout.log\",\n      \"stderrPath\": \"artifacts/expo-dev-client.stderr.log\",\n      \"stdoutTail\": \"Starting project at C:\\\\dev\\\\rik-expo-app\\nMetro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.\\nStarting Metro Bundler\\nwarning: Bundler cache is empty, rebuilding (this may take a minute)\\nWaiting on http://localhost:8081\\nLogs for your project will appear below.\\nAndroid node_modules\\\\expo-router\\\\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)\\nAndroid node_modules\\\\expo-router\\\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% ( 82/178)\\nAndroid node_modules\\\\expo-router\\\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% (376/740)\\nAndroid node_modules\\\\expo-router\\\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% ( 693/1207)\\nAndroid node_modules\\\\expo-router\\\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% (1061/1504)\\nAndroid node_modules\\\\expo-router\\\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% (1294/1681)\\nAndroid node_modules\\\\expo-router\\\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 73.0% (1692/1981)\\nAndroid node_modules\\\\expo-router\\\\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 92.2% (2111/2199)\\nAndroid Bundled 27035ms node_modules\\\\expo-router\\\\entry.js (2329 modules)\\n WARN  [expo-av]: Expo AV has been deprecated and will be removed in SDK 54. Use the `expo-audio` and `expo-video` packages to replace the required functionality.\\n INFO  [jobQueue.env] {\\\"EXPO_PUBLIC_JOB_QUEUE_ENABLED\\\": \\\"true\\\", \\\"JOB_QUEUE_ENABLED\\\": true}\\n INFO  [pdf-viewer] module_loaded {\\\"platform\\\": \\\"android\\\"}\\n WARN  The app is running using the Legacy Architecture. The Legacy Architecture is deprecated and will be removed in a future version of React Native. Please consider migrating to the New Architecture. For more information, please see https://reactnative.dev/blog/2024/10/23/the-new-architecture-is-here\\n INFO  [platform.observability] {\\\"durationMs\\\": null, \\\"errorStage\\\": null, \\\"event\\\": \\\"bootstrap_enter\\\", \\\"result\\\": \\\"success\\\", \\\"rowCount\\\": null, \\\"screen\\\": \\\"request\\\", \\\"sourceKind\\\": null, \\\"surface\\\": \\\"startup_bootstrap\\\"}\\n INFO  [platform.observability] {\\\"durationMs\\\": null, \\\"errorStage\\\": null, \\\"event\\\": \\\"app_launch_start\\\", \\\"result\\\": \\\"success\\\", \\\"rowCount\\\": null, \\\"screen\\\": \\\"request\\\", \\\"sourceKind\\\": null, \\\"surface\\\": \\\"startup_bootstrap\\\"}\\n INFO  [fs-paths] fs_paths_resolved {\\\"cacheDir\\\": \\\"file:///data/user/0/com.azisbek_dzhantaev.rikexpoapp/cache/\\\", \\\"documentDir\\\": \\\"file:///data/user/0/com.azisbek_dzhantaev.rikexpoapp/files/\\\"}\\n INFO  [platform.observability] {\\\"durationMs\\\": null, \\\"errorStage\\\": null, \\\"event\\\": \\\"bootstrap_enter\\\", \\\"result\\\": \\\"success\\\", \\\"rowCount\\\": null, \\\"screen\\\": \\\"request\\\", \\\"sourceKind\\\": null, \\\"surface\\\": \\\"startup_bootstrap\\\"}\\n INFO  [platform.observability] {\\\"durationMs\\\": null, \\\"errorStage\\\": null, \\\"event\\\": \\\"auth_restore_result\\\", \\\"result\\\": \\\"success\\\", \\\"rowCount\\\": null, \\\"screen\\\": \\\"request\\\", \\\"sourceKind\\\": null, \\\"surface\\\": \\\"startup_bootstrap\\\"}\\n INFO  [platform.observability] {\\\"durationMs\\\": null, \\\"errorStage\\\": null, \\\"event\\\": \\\"auth_restore_result\\\", \\\"result\\\": \\\"success\\\", \\\"rowCount\\\": null, \\\"screen\\\": \\\"request\\\", \\\"sourceKind\\\": null, \\\"surface\\\": \\\"startup_bootstrap\\\"}\\n INFO  [platform.observability] {\\\"durationMs\\\": null, \\\"errorStage\\\": null, \\\"event\\\": \\\"route_resolution_result\\\", \\\"result\\\": \\\"success\\\", \\\"rowCount\\\": null, \\\"screen\\\": \\\"request\\\", \\\"sourceKind\\\": null, \\\"surface\\\": \\\"startup_bootstrap\\\"}\\n INFO  [platform.observability] {\\\"durationMs\\\": null, \\\"errorStage\\\": null, \\\"event\\\": \\\"route_resolution_result\\\", \\\"result\\\": \\\"success\\\", \\\"rowCount\\\": null, \\\"screen\\\": \\\"request\\\", \\\"sourceKind\\\": null, \\\"surface\\\": \\\"startup_bootstrap\\\"}\\n INFO  [platform.observability] {\\\"durationMs\\\": null, \\\"errorStage\\\": null, \\\"event\\\": \\\"first_usable_ui_ready\\\", \\\"result\\\": \\\"success\\\", \\\"rowCount\\\": null, \\\"screen\\\": \\\"request\\\", \\\"sourceKind\\\": null, \\\"surface\\\": \\\"startup_bootstrap\\\"}\\n INFO  [queue.bootstrap] stop skipped: not running\\n INFO  [platform.observability] {\\\"durationMs\\\": null, \\\"errorStage\\\": null, \\\"event\\\": \\\"auth_state_change_event\\\", \\\"result\\\": \\\"success\\\", \\\"rowCount\\\": null, \\\"screen\\\": \\\"request\\\", \\\"sourceKind\\\": null, \\\"surface\\\": \\\"startup_bootstrap\\\"}\\n INFO  [RootLayout] onAuthStateChange: INITIAL_SESSION, hasSession=false\\n\",\n      \"stderrTail\": \"\"\n    }\n  },\n  \"gate\": \"buyer_summary_inbox_runtime_verify\",\n  \"subscriptionStarted\": null,\n  \"eventReceived\": null,\n  \"refreshTriggered\": null,\n  \"doubleFetchDetected\": null,\n  \"inflightGuardWorked\": null,\n  \"recentGuardWorked\": null,\n  \"backendOwnerPreserved\": false,\n  \"androidProofMode\": null,\n  \"androidObservabilityBacked\": false,\n  \"androidLoadInboxObserved\": false,\n  \"androidContentReadyObserved\": false\n}\n",
       "stderr": ""
     },
     "runtimeSummary": {
-      "status": "passed",
+      "status": "failed",
       "webPassed": true,
-      "androidPassed": true,
+      "androidPassed": false,
       "iosPassed": false,
-      "runtimeVerified": true,
-      "environmentRecoveryUsed": true,
+      "runtimeVerified": false,
+      "environmentRecoveryUsed": false,
       "gmsRecoveryUsed": false,
       "anrRecoveryUsed": false,
       "blankSurfaceRecovered": false,
       "devClientBootstrapRecovered": false,
       "platformSpecificIssues": [
         {
+          "platform": "android",
+          "issue": "poll timeout: android:dev_client_loaded"
+        },
+        {
           "platform": "ios",
           "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
         }
       ],
       "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-      "failureKind": "unknown",
+      "failureKind": "auth",
       "scenariosPassed": {
         "web": {
           "initialOpen": true,
@@ -58,9 +62,9 @@
           "sheetInteraction": true
         },
         "android": {
-          "initialOpen": true,
-          "inboxSurface": true,
-          "sheetInteraction": true
+          "initialOpen": false,
+          "inboxSurface": false,
+          "sheetInteraction": false
         },
         "ios": {
           "initialOpen": false,
@@ -71,13 +75,21 @@
       "artifacts": {
         "webSummary": "artifacts/buyer-summary-inbox-web-smoke.summary.json",
         "webRuntime": "artifacts/buyer-summary-inbox-web-smoke.json",
-        "androidCurrentXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-        "androidCurrentPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-        "androidInboxXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-        "androidInboxPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-        "androidSheetXml": "artifacts/android-buyer-summary-inbox-sheet.xml",
-        "androidSheetPng": "artifacts/android-buyer-summary-inbox-sheet.png",
-        "androidLogcat": "artifacts/android-buyer-summary-inbox-logcat.txt"
+        "androidCurrentXml": null,
+        "androidCurrentPng": null,
+        "androidInboxXml": null,
+        "androidInboxPng": null,
+        "androidSheetXml": null,
+        "androidSheetPng": null,
+        "androidLogcat": null,
+        "androidFailure": {
+          "xmlPath": "artifacts/android-buyer-summary-inbox-failure.xml",
+          "pngPath": "artifacts/android-buyer-summary-inbox-failure.png",
+          "stdoutPath": "artifacts/expo-dev-client.stdout.log",
+          "stderrPath": "artifacts/expo-dev-client.stderr.log",
+          "stdoutTail": "Starting project at C:\\dev\\rik-expo-app\nMetro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.\nStarting Metro Bundler\nwarning: Bundler cache is empty, rebuilding (this may take a minute)\nWaiting on http://localhost:8081\nLogs for your project will appear below.\nAndroid node_modules\\expo-router\\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)\nAndroid node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% ( 82/178)\nAndroid node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% (376/740)\nAndroid node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% ( 693/1207)\nAndroid node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% (1061/1504)\nAndroid node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% (1294/1681)\nAndroid node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 73.0% (1692/1981)\nAndroid node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 92.2% (2111/2199)\nAndroid Bundled 27035ms node_modules\\expo-router\\entry.js (2329 modules)\n WARN  [expo-av]: Expo AV has been deprecated and will be removed in SDK 54. Use the `expo-audio` and `expo-video` packages to replace the required functionality.\n INFO  [jobQueue.env] {\"EXPO_PUBLIC_JOB_QUEUE_ENABLED\": \"true\", \"JOB_QUEUE_ENABLED\": true}\n INFO  [pdf-viewer] module_loaded {\"platform\": \"android\"}\n WARN  The app is running using the Legacy Architecture. The Legacy Architecture is deprecated and will be removed in a future version of React Native. Please consider migrating to the New Architecture. For more information, please see https://reactnative.dev/blog/2024/10/23/the-new-architecture-is-here\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"bootstrap_enter\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"app_launch_start\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [fs-paths] fs_paths_resolved {\"cacheDir\": \"file:///data/user/0/com.azisbek_dzhantaev.rikexpoapp/cache/\", \"documentDir\": \"file:///data/user/0/com.azisbek_dzhantaev.rikexpoapp/files/\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"bootstrap_enter\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_restore_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_restore_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"route_resolution_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"route_resolution_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"first_usable_ui_ready\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [queue.bootstrap] stop skipped: not running\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_state_change_event\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [RootLayout] onAuthStateChange: INITIAL_SESSION, hasSession=false\n",
+          "stderrTail": ""
+        }
       },
       "gate": "buyer_summary_inbox_runtime_verify",
       "subscriptionStarted": null,
@@ -86,11 +98,11 @@
       "doubleFetchDetected": null,
       "inflightGuardWorked": null,
       "recentGuardWorked": null,
-      "backendOwnerPreserved": true,
-      "androidProofMode": "ui_interaction",
-      "androidObservabilityBacked": true,
-      "androidLoadInboxObserved": true,
-      "androidContentReadyObserved": true
+      "backendOwnerPreserved": false,
+      "androidProofMode": null,
+      "androidObservabilityBacked": false,
+      "androidLoadInboxObserved": false,
+      "androidContentReadyObserved": false
     }
   },
   "staticChecks": {
@@ -104,12 +116,12 @@
     },
     "eslintRun": {
       "status": 0,
-      "stdout": "\nC:\\dev\\rik-expo-app\\scripts\\buyer_summary_inbox_runtime_verify.ts\n  477:7   warning  'detectAndroidPackage' is assigned a value but never used    @typescript-eslint/no-unused-vars\n  488:7   warning  'startAndroidBuyerRoute' is assigned a value but never used  @typescript-eslint/no-unused-vars\n  504:7   warning  'resetAndroidAppState' is assigned a value but never used    @typescript-eslint/no-unused-vars\n  661:16  warning  'ensureAndroidDevClientLoaded' is defined but never used     @typescript-eslint/no-unused-vars\n\nC:\\dev\\rik-expo-app\\src\\screens\\buyer\\hooks\\useBuyerLoadingController.ts\n  49:7  warning  'getProposalChangeScopes' is assigned a value but never used  @typescript-eslint/no-unused-vars\n\n✖ 5 problems (0 errors, 5 warnings)\n\n",
+      "stdout": "\nC:\\dev\\rik-expo-app\\scripts\\buyer_summary_inbox_runtime_verify.ts\n  477:7   warning  'detectAndroidPackage' is assigned a value but never used    @typescript-eslint/no-unused-vars\n  488:7   warning  'startAndroidBuyerRoute' is assigned a value but never used  @typescript-eslint/no-unused-vars\n  504:7   warning  'resetAndroidAppState' is assigned a value but never used    @typescript-eslint/no-unused-vars\n  661:16  warning  'ensureAndroidDevClientLoaded' is defined but never used     @typescript-eslint/no-unused-vars\n\nC:\\dev\\rik-expo-app\\src\\screens\\buyer\\hooks\\useBuyerLoadingController.ts\n   53:7  warning  'getProposalChangeScopes' is assigned a value but never used                                                                                                         @typescript-eslint/no-unused-vars\n  534:6  warning  React Hook useCallback has unnecessary dependencies: 'approved.length', 'pending.length', and 'rejected.length'. Either exclude them or remove the dependency array  react-hooks/exhaustive-deps\n  608:6  warning  React Hook useCallback has missing dependencies: 'log' and 'searchKey'. Either include them or remove the dependency array                                           react-hooks/exhaustive-deps\n\n✖ 7 problems (0 errors, 7 warnings)\n\n",
       "stderr": ""
     },
     "cutoverRun": {
       "status": 0,
-      "stdout": "{\n  \"status\": \"passed\",\n  \"primaryOwner\": \"rpc_scope_v1\",\n  \"fallbackUsed\": false,\n  \"legacyDurationMs\": 2330,\n  \"primaryDurationMs\": 431,\n  \"requestGroupOrderParityOk\": true,\n  \"rowSignatureParityOk\": true,\n  \"totalGroupCountParityOk\": true,\n  \"hasMoreParityOk\": true\n}\n",
+      "stdout": "{\n  \"status\": \"passed\",\n  \"primaryOwner\": \"rpc_scope_v1\",\n  \"fallbackUsed\": false,\n  \"legacyDurationMs\": 2683,\n  \"primaryDurationMs\": 443,\n  \"requestGroupOrderParityOk\": true,\n  \"rowSignatureParityOk\": true,\n  \"totalGroupCountParityOk\": true,\n  \"hasMoreParityOk\": true\n}\n",
       "stderr": ""
     }
   },
@@ -120,8 +132,8 @@
         {
           "stageName": "base_rpc",
           "sourceOwner": "rpc:list_buyer_inbox",
-          "durationMs": 682,
-          "rowCount": 137,
+          "durationMs": 1000,
+          "rowCount": 191,
           "requiredForFirstPaint": true,
           "canBeLazy": false,
           "fallbackCapable": true,
@@ -130,8 +142,8 @@
         {
           "stageName": "request_status_gate",
           "sourceOwner": "table:requests",
-          "durationMs": 417,
-          "rowCount": 44,
+          "durationMs": 428,
+          "rowCount": 70,
           "requiredForFirstPaint": true,
           "canBeLazy": false,
           "fallbackCapable": false,
@@ -140,7 +152,7 @@
         {
           "stageName": "proposal_lifecycle_links",
           "sourceOwner": "view:proposal_items_view",
-          "durationMs": 411,
+          "durationMs": 418,
           "rowCount": 16,
           "requiredForFirstPaint": false,
           "canBeLazy": true,
@@ -150,7 +162,7 @@
         {
           "stageName": "proposal_lifecycle_summary",
           "sourceOwner": "view:v_proposals_summary",
-          "durationMs": 413,
+          "durationMs": 409,
           "rowCount": 16,
           "requiredForFirstPaint": false,
           "canBeLazy": true,
@@ -160,7 +172,7 @@
         {
           "stageName": "reject_context",
           "sourceOwner": "table:proposal_items",
-          "durationMs": 403,
+          "durationMs": 426,
           "rowCount": 3,
           "requiredForFirstPaint": false,
           "canBeLazy": true,
@@ -171,7 +183,7 @@
           "stageName": "client_group_window",
           "sourceOwner": "client:selectGroups+matchesBuyerSearchQuery",
           "durationMs": 0,
-          "rowCount": 34,
+          "rowCount": 18,
           "requiredForFirstPaint": true,
           "canBeLazy": false,
           "fallbackCapable": false,
@@ -190,11 +202,11 @@
       ]
     },
     "legacy": {
-      "durationMs": 2330,
-      "loadDurationMs": 2330,
+      "durationMs": 2683,
+      "loadDurationMs": 2683,
       "windowDurationMs": 0,
-      "rows": 34,
-      "groups": 38,
+      "rows": 18,
+      "groups": 62,
       "sourceMeta": {
         "primaryOwner": "legacy_client_group_window",
         "fallbackUsed": false,
@@ -206,15 +218,15 @@
         "offsetGroups": 0,
         "limitGroups": 12,
         "returnedGroupCount": 12,
-        "totalGroupCount": 38,
+        "totalGroupCount": 62,
         "hasMore": true,
         "search": null
       }
     },
     "primary": {
-      "durationMs": 431,
-      "rows": 34,
-      "groups": 38,
+      "durationMs": 443,
+      "rows": 18,
+      "groups": 62,
       "sourceMeta": {
         "primaryOwner": "rpc_scope_v1",
         "fallbackUsed": false,
@@ -226,7 +238,7 @@
         "offsetGroups": 0,
         "limitGroups": 12,
         "returnedGroupCount": 12,
-        "totalGroupCount": 38,
+        "totalGroupCount": 62,
         "hasMore": true,
         "search": null
       }
@@ -237,42 +249,42 @@
       "totalGroupCountParityOk": true,
       "returnedGroupCountParityOk": true,
       "hasMoreParityOk": true,
-      "legacyGroupCount": 38,
-      "primaryGroupCount": 38,
+      "legacyGroupCount": 62,
+      "primaryGroupCount": 62,
       "legacyReturnedGroups": 12,
       "primaryReturnedGroups": 12,
-      "legacyRows": 34,
-      "primaryRows": 34
+      "legacyRows": 18,
+      "primaryRows": 18
     },
     "searchScenario": {
-      "search": "MAT-RO",
+      "search": "MAT-CO",
       "legacyDurationMs": 0,
-      "primaryDurationMs": 433,
+      "primaryDurationMs": 439,
       "parity": {
         "requestGroupOrderParityOk": true,
         "rowSignatureParityOk": true,
         "totalGroupCountParityOk": true,
         "returnedGroupCountParityOk": true,
         "hasMoreParityOk": true,
-        "legacyGroupCount": 6,
-        "primaryGroupCount": 6,
-        "legacyReturnedGroups": 6,
-        "primaryReturnedGroups": 6,
-        "legacyRows": 20,
-        "primaryRows": 20
+        "legacyGroupCount": 8,
+        "primaryGroupCount": 8,
+        "legacyReturnedGroups": 8,
+        "primaryReturnedGroups": 8,
+        "legacyRows": 48,
+        "primaryRows": 48
       },
       "fallbackUsed": false
     },
     "events": [
       {
         "id": "obs-1",
-        "at": 1774812016617,
+        "at": 1775980418545,
         "screen": "buyer",
         "surface": "summary_inbox",
         "category": "fetch",
         "event": "load_inbox",
         "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
-        "rowCount": 34,
+        "rowCount": 18,
         "fallbackUsed": false,
         "extra": {
           "primaryOwner": "rpc_scope_v1",
@@ -281,36 +293,36 @@
           "offsetGroups": 0,
           "limitGroups": 12,
           "returnedGroupCount": 12,
-          "totalGroupCount": 38,
+          "totalGroupCount": 62,
           "hasMore": true,
           "search": null
         },
         "result": "success",
-        "durationMs": 431
+        "durationMs": 443
       },
       {
         "id": "obs-2",
-        "at": 1774812017051,
+        "at": 1775980418985,
         "screen": "buyer",
         "surface": "summary_inbox",
         "category": "fetch",
         "event": "load_inbox",
         "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
-        "rowCount": 20,
+        "rowCount": 48,
         "fallbackUsed": false,
         "extra": {
           "primaryOwner": "rpc_scope_v1",
           "backendFirstPrimary": true,
-          "requestIds": 6,
+          "requestIds": 8,
           "offsetGroups": 0,
           "limitGroups": 12,
-          "returnedGroupCount": 6,
-          "totalGroupCount": 6,
+          "returnedGroupCount": 8,
+          "totalGroupCount": 8,
           "hasMore": false,
-          "search": "mat-ro"
+          "search": "mat-co"
         },
         "result": "success",
-        "durationMs": 433
+        "durationMs": 439
       }
     ],
     "summary": {
@@ -329,9 +341,9 @@
           "surface": "summary_inbox",
           "event": "load_inbox",
           "count": 2,
-          "avgDurationMs": 432,
-          "maxDurationMs": 433,
-          "totalRowCount": 54,
+          "avgDurationMs": 441,
+          "maxDurationMs": 443,
+          "totalRowCount": 66,
           "lastSourceKind": "rpc:buyer_summary_inbox_scope_v1",
           "fallbackCount": 0
         }

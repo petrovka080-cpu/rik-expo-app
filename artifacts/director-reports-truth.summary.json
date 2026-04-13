@@ -4,6 +4,7 @@
   "noWorkNameExplained": true,
   "namingDiagnosticsVisible": true,
   "backendOwnerPreserved": true,
+  "clientRecomputeRemoved": true,
   "logicChanged": false,
   "green": true
 }

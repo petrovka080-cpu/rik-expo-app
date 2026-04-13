@@ -2,17 +2,17 @@
   "owner": "rpc:director_report_transport_scope_v1",
   "transportBranch": "rpc_scope_v1",
   "summarySourceFields": {
-    "objectCount": "options.objects.length",
-    "unresolvedNamesCount": "report.rows filtered by unresolved code/name parity",
-    "noWorkNameCount": "discipline.works without work_name summed by total_positions"
+    "objectCount": "canonical_summary.displayObjectCount",
+    "unresolvedNamesCount": "canonical_summary.unresolvedNamesCount",
+    "noWorkNameCount": "canonical_summary.noWorkNameCount"
   },
   "objectCount": {
     "value": 8,
-    "label": "Объекты по подтверждённым выдачам",
+    "label": "РћР±СЉРµРєС‚С‹ РїРѕ РїРѕРґС‚РІРµСЂР¶РґС‘РЅРЅС‹Рј РІС‹РґР°С‡Р°Рј",
     "source": "warehouse_confirmed_issues"
   },
   "unresolvedNames": {
-    "count": 100,
+    "count": 103,
     "unresolvedCodes": [
       "MAT-AC-BRACKETS",
       "MAT-ADHESIVE-BLOCK",
@@ -92,6 +92,7 @@
       "MAT-PUTTY-FINISH",
       "MAT-RCD",
       "MAT-REBAR-STEEL-8",
+      "MAT-ROOF-ROLLED-INSULATION",
       "MAT-ROOF-SHINGLE-CNTRBAT-40X50",
       "MAT-ROOF-SHINGLE-LATH-25X100",
       "MAT-ROOF-SHINGLE-MASTIC",
@@ -101,12 +102,14 @@
       "MAT-ROOF-SHINGLE-RIDGE",
       "MAT-ROOF-SHINGLE-SHEET",
       "MAT-ROOF-UNDERLAY",
+      "MAT-ROOF-VB-90-1.5X50",
       "MAT-SAND-SET",
       "MAT-SELFLEVEL",
       "MAT-SPLIT-12K",
       "MAT-SPLIT-9K",
       "MAT-SWITCH-1G",
       "MAT-TAPE-MASK",
+      "MAT-TAPE-MASK-48MMX50M",
       "MAT-TOOLS-SET",
       "MAT-TRASH-BAGS",
       "MAT-VIBRO-ANCHOR-SET",
@@ -117,9 +120,9 @@
     ]
   },
   "noWorkName": {
-    "workNameMissingCount": 1,
-    "workNameResolvedCount": 1,
-    "itemsWithoutWorkName": 118,
+    "workNameMissingCount": 0,
+    "workNameResolvedCount": 15,
+    "itemsWithoutWorkName": 0,
     "locationsWithoutWorkName": 0,
     "canResolveFromSource": false
   },
@@ -207,6 +210,7 @@
       "MAT-PUTTY-FINISH",
       "MAT-RCD",
       "MAT-REBAR-STEEL-8",
+      "MAT-ROOF-ROLLED-INSULATION",
       "MAT-ROOF-SHINGLE-CNTRBAT-40X50",
       "MAT-ROOF-SHINGLE-LATH-25X100",
       "MAT-ROOF-SHINGLE-MASTIC",
@@ -216,12 +220,14 @@
       "MAT-ROOF-SHINGLE-RIDGE",
       "MAT-ROOF-SHINGLE-SHEET",
       "MAT-ROOF-UNDERLAY",
+      "MAT-ROOF-VB-90-1.5X50",
       "MAT-SAND-SET",
       "MAT-SELFLEVEL",
       "MAT-SPLIT-12K",
       "MAT-SPLIT-9K",
       "MAT-SWITCH-1G",
       "MAT-TAPE-MASK",
+      "MAT-TAPE-MASK-48MMX50M",
       "MAT-TOOLS-SET",
       "MAT-TRASH-BAGS",
       "MAT-VIBRO-ANCHOR-SET",
@@ -232,5 +238,5 @@
     ]
   },
   "backendOwnerPreserved": true,
-  "pricedStage": "priced"
+  "pricedStage": "base"
 }
