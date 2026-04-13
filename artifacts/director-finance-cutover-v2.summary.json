@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "primaryOwner": "rpc_v4",
+  "backendOwner": "backend",
+  "sourceVersion": "director_finance_panel_scope_v4",
+  "supplierCount": 25,
+  "objectCount": 10,
+  "spendKindRows": 4,
+  "summaryParityOk": true
+}

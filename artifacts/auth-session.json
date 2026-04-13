@@ -1,0 +1,50 @@
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6IkMzbFhWcUFNVmtUVXhmeU4iLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL254cm5qeXd6eHhmZHBxbXpqb3JoLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIzZWZlYzU3MC0wYWJhLTRmMTMtOWMzMC1lN2E4YjQzYzJlMzQiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc1ODI2MzI3LCJpYXQiOjE3NzU4MjI3MjcsImVtYWlsIjoib3d2LnV4cmIwQGUuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdLCJyb2xlIjoiZGlyZWN0b3IifSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoiT1dWIFZlcmlmeSJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzc1ODIyNzI3fV0sInNlc3Npb25faWQiOiJkNTlkYjlhZC04YjhjLTRjZDEtYTI2Yi1hZTA2NDMyMThlNmUiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.dXKaStRvmI12RIkeU0wz-j_53fq5cB8afyUL7gKcIy4",
+  "token_type": "bearer",
+  "expires_in": 3600,
+  "expires_at": 1775826327,
+  "refresh_token": "pmzvqb2t46fx",
+  "user": {
+    "id": "3efec570-0aba-4f13-9c30-e7a8b43c2e34",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "owv.uxrb0@e.com",
+    "email_confirmed_at": "2026-04-10T12:03:41.587881Z",
+    "phone": "",
+    "confirmed_at": "2026-04-10T12:03:41.587881Z",
+    "last_sign_in_at": "2026-04-10T12:05:27.555227096Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ],
+      "role": "director"
+    },
+    "user_metadata": {
+      "email_verified": true,
+      "full_name": "OWV Verify"
+    },
+    "identities": [
+      {
+        "identity_id": "9b91b3e3-2fcd-49a2-8392-204b0564cd0a",
+        "id": "3efec570-0aba-4f13-9c30-e7a8b43c2e34",
+        "user_id": "3efec570-0aba-4f13-9c30-e7a8b43c2e34",
+        "identity_data": {
+          "email": "owv.uxrb0@e.com",
+          "email_verified": false,
+          "phone_verified": false,
+          "sub": "3efec570-0aba-4f13-9c30-e7a8b43c2e34"
+        },
+        "provider": "email",
+        "last_sign_in_at": "2026-04-10T12:03:41.584976Z",
+        "created_at": "2026-04-10T12:03:41.585031Z",
+        "updated_at": "2026-04-10T12:03:41.585031Z",
+        "email": "owv.uxrb0@e.com"
+      }
+    ],
+    "created_at": "2026-04-10T12:03:41.582243Z",
+    "updated_at": "2026-04-10T12:05:27.557639Z",
+    "is_anonymous": false
+  },
+  "weak_password": null
+}

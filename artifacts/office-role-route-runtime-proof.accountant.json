@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "routeProofPassed": true,
+  "noFatalException": true,
+  "fatalLines": [],
+  "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+  "androidPreflight": {
+    "deviceDetected": true,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "reverseProxyReady": true,
+    "appCleared": true,
+    "gmsCleared": false,
+    "devClientReachable": true
+  },
+  "recovery": {
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false
+  },
+  "roles": [
+    {
+      "role": "accountant",
+      "route": "rik:///office/accountant",
+      "status": "passed",
+      "surfaceMatched": true,
+      "xmlPath": "artifacts/artifacts/office-role-route-accountant-fio-after-confirm.xml",
+      "pngPath": "artifacts/artifacts/office-role-route-accountant-fio-after-confirm.png",
+      "matchedLabels": [
+        "Бухгалтер",
+        "Excel"
+      ],
+      "platformSpecificIssues": []
+    }
+  ]
+}

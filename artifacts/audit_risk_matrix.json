@@ -1,0 +1,50 @@
+[
+  {
+    "id": "AUTH_LAYOUT_POLLING_WATCHDOG",
+    "severity": "CRITICAL",
+    "area": "auth",
+    "file": "app/_layout.tsx",
+    "impact": "Watchdog timeout (SIGKILL/SIGABRT) on iOS and UI thread freeze due to 200ms while-loop active polling.",
+    "repro": "Slow network during post-auth back-navigation."
+  },
+  {
+    "id": "PDF_IOS_SHAREASYNC_SIGABRT",
+    "severity": "CRITICAL",
+    "area": "pdf",
+    "file": "src/lib/pdfRunner.ts",
+    "impact": "iOS native crash (SIGABRT) due to Sharing.shareAsync handling large base64 over the bridge instead of file:// URI.",
+    "repro": "Open heavy PDF file on iOS device."
+  },
+  {
+    "id": "PDF_VIEWER_MEMORY_PRESSURE",
+    "severity": "HIGH",
+    "area": "pdf",
+    "file": "app/pdf-viewer.tsx",
+    "impact": "OOM crash on WebViews rendering massive PDFs (file is 1589 lines God object holding too much state).",
+    "repro": "Tap multiple PDF views sequentially without proper cleanup."
+  },
+  {
+    "id": "OFFICE_HUB_COUPLING",
+    "severity": "HIGH",
+    "area": "navigation",
+    "file": "src/screens/office/OfficeHubScreen.tsx",
+    "impact": "Navigation state loss and slow rerenders (2644 lines God object, routing all roles).",
+    "repro": "Navigate Office -> Warehouse -> Office."
+  },
+  {
+    "id": "DATA_RACE_CONDITION_PROMISES",
+    "severity": "HIGH",
+    "area": "data",
+    "file": "src/screens/director/hooks/useDirectorReportsController.ts",
+    "impact": "Stale closures and memory leaks due to manual in-flight Request Maps tied to React Refs.",
+    "repro": "Rapidly switch scopes or tabs in Director Reports."
+  },
+  {
+    "id": "SILENT_CATCH_DATA_LOSS",
+    "severity": "MEDIUM",
+    "area": "observability",
+    "file": "app/_layout.tsx",
+    "impact": "Loss of critical session restore failures in Web/Native initialization.",
+    "repro": "Corrupt AsyncStorage payload."
+  }
+]

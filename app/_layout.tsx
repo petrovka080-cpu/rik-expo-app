@@ -9,15 +9,9 @@ import { Host } from "react-native-portalize";
 
 import { clearAppCache } from "../src/lib/cache/clearAppCache";
 import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
-import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
-import { clearPdfRunnerSessionState } from "../src/lib/pdfRunner";
-import { resetOfflineReplayCoordinator } from "../src/lib/offline/offlineReplayCoordinator";
-import { clearRealtimeSessionState } from "../src/lib/realtime/realtime.client";
 import {
-  clearCurrentSessionRoleCache,
   warmCurrentSessionProfile,
 } from "../src/lib/sessionRole";
-import { clearOfficeHubBootstrapSnapshot } from "../src/screens/office/officeHubBootstrapSnapshot";
 import {
   ensureQueueWorker,
   stopQueueWorker,
@@ -27,7 +21,8 @@ import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
 import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWebContainer";
-import { AppQueryProvider, resetQueryCache } from "../src/lib/query/queryClient";
+import { AppQueryProvider } from "../src/lib/query/queryClient";
+import { resetSessionBoundary } from "../src/lib/session/sessionBoundary";
 
 const AUTH_EXIT_SESSION_SETTLE_WINDOW_MS = 2500;
 
@@ -171,33 +166,10 @@ export default function RootLayout() {
     authExitSessionProbeInFlightRef.current = false;
     authExitSessionProbeTokenRef.current += 1;
   }, []);
-  const clearSessionBoundaryState = useCallback(async (reason: string) => {
-    clearDocumentSessions();
-    clearCurrentSessionRoleCache();
-    clearPdfRunnerSessionState();
-    clearOfficeHubBootstrapSnapshot();
-    resetOfflineReplayCoordinator();
-    clearRealtimeSessionState();
-    resetQueryCache();
-    try {
-      await clearAppCache({ mode: "session", owner: `root_layout:${reason}` });
-    } catch (purgeError) {
-      recordPlatformObservability({
-        screen: "request",
-        surface: "auth_session_gate",
-        category: "ui",
-        event: "session_cache_purge_failed",
-        result: "error",
-        errorStage: "clear_app_cache",
-        errorClass: purgeError instanceof Error ? purgeError.name : "Unknown",
-        errorMessage: purgeError instanceof Error ? purgeError.message : String(purgeError),
-        extra: {
-          owner: "root_layout",
-          reason,
-        },
-      });
-    }
-  }, []);
+  const clearSessionBoundaryState = useCallback(
+    (reason: string) => resetSessionBoundary(reason),
+    [],
+  );
   useEffect(() => {
     if (launchMarkerRef.current) return;
     launchMarkerRef.current = true;

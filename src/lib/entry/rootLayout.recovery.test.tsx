@@ -20,6 +20,10 @@ const mockWarmCurrentSessionProfile = jest.fn();
 const mockEnsureQueueWorker = jest.fn();
 const mockStopQueueWorker = jest.fn();
 const mockRecordPlatformObservability = jest.fn();
+const mockClearCachedDraftRequestId = jest.fn();
+const mockClearLocalDraftId = jest.fn();
+const mockInvalidateRequestsReadCapabilitiesCache = jest.fn();
+const mockResetQueryCache = jest.fn();
 
 jest.mock("../runtime/installWeakRefPolyfill", () => ({}));
 
@@ -101,6 +105,31 @@ jest.mock("../observability/platformObservability", () => ({
     mockRecordPlatformObservability(...args),
 }));
 
+jest.mock("../api/requests", () => ({
+  clearCachedDraftRequestId: (...args: unknown[]) =>
+    mockClearCachedDraftRequestId(...args),
+}));
+
+jest.mock("../catalog/catalog.request.service", () => ({
+  clearLocalDraftId: (...args: unknown[]) =>
+    mockClearLocalDraftId(...args),
+}));
+
+jest.mock("../api/requests.read-capabilities", () => ({
+  invalidateRequestsReadCapabilitiesCache: (...args: unknown[]) =>
+    mockInvalidateRequestsReadCapabilitiesCache(...args),
+}));
+
+jest.mock("../query/queryClient", () => ({
+  AppQueryProvider: ({ children }: { children: React.ReactNode }) => children,
+  resetQueryCache: (...args: unknown[]) =>
+    mockResetQueryCache(...args),
+}));
+
+jest.mock("../realtime/realtime.client", () => ({
+  clearRealtimeSessionState: jest.fn(),
+}));
+
 describe("RootLayout recovery bootstrap", () => {
   beforeEach(() => {
     mockReplace.mockReset();
@@ -118,6 +147,10 @@ describe("RootLayout recovery bootstrap", () => {
     mockEnsureQueueWorker.mockReset();
     mockStopQueueWorker.mockReset();
     mockRecordPlatformObservability.mockReset();
+    mockClearCachedDraftRequestId.mockReset();
+    mockClearLocalDraftId.mockReset();
+    mockInvalidateRequestsReadCapabilitiesCache.mockReset();
+    mockResetQueryCache.mockReset();
 
     mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
     mockUsePathname.mockReturnValue("/(tabs)/profile");
@@ -193,7 +226,7 @@ describe("RootLayout recovery bootstrap", () => {
     expect(mockResetOfflineReplayCoordinator).toHaveBeenCalledTimes(1);
     expect(mockClearAppCache).toHaveBeenCalledWith({
       mode: "session",
-      owner: "root_layout:bootstrap_no_session",
+      owner: "session_boundary:bootstrap_no_session",
     });
   });
 
@@ -236,7 +269,7 @@ describe("RootLayout recovery bootstrap", () => {
     expect(mockResetOfflineReplayCoordinator).toHaveBeenCalledTimes(1);
     expect(mockClearAppCache).toHaveBeenCalledWith({
       mode: "session",
-      owner: "root_layout:terminal_sign_out",
+      owner: "session_boundary:terminal_sign_out",
     });
   });
 

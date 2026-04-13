@@ -1,0 +1,12 @@
+﻿{
+    "status":  "GREEN",
+    "platform":  "android",
+    "device":  "emulator-5554 / Medium_Phone_API_36.1",
+    "package":  "com.azisbek_dzhantaev.rikexpoapp",
+    "processAlive":  true,
+    "processLine":  "u0_a213       7646   466   43079236 400420 0                   0 S com.azisbek_dzhantaev.rikexpoapp",
+    "fatalPatternMatches":  0,
+    "metroPort":  8090,
+    "scenario":  "dev-client launch smoke after PDF viewer render instance key change, after emulator restart",
+    "checkedAt":  "2026-04-11T18:55:07.9719657+06:00"
+}

@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "routeProofPassed": true,
+  "noFatalException": true,
+  "fatalLines": [],
+  "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+  "androidPreflight": {
+    "deviceDetected": true,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "reverseProxyReady": true,
+    "appCleared": true,
+    "gmsCleared": false,
+    "devClientReachable": true
+  },
+  "recovery": {
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false
+  },
+  "roles": [
+    {
+      "role": "contractor",
+      "route": "rik:///office/contractor",
+      "status": "passed",
+      "surfaceMatched": true,
+      "fioGateReached": false,
+      "fioGateError": null,
+      "xmlPath": "artifacts/artifacts/office-role-route-contractor-after-login.xml",
+      "pngPath": "artifacts/artifacts/office-role-route-contractor-after-login.png",
+      "matchedLabels": [
+        "Подрядчик"
+      ],
+      "platformSpecificIssues": []
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-11T20:58:04.9237016+06:00",
+  "platform": "Android emulator",
+  "package": "com.azisbek_dzhantaev.rikexpoapp",
+  "scenario": "fresh dev-client root auth post-auth settle boundary smoke after validation pass",
+  "processAlive": true,
+  "process": "7954",
+  "focus": [
+    "mCurrentFocus=Window{ff9548 u0 com.azisbek_dzhantaev.rikexpoapp/com.azisbek_dzhantaev.rikexpoapp.MainActivity}",
+    "mFocusedApp=ActivityRecord{120814253 u0 com.azisbek_dzhantaev.rikexpoapp/.MainActivity t151}"
+  ],
+  "devClientUrl": "exp+rik-expo-app://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8097",
+  "metroPort": 8097,
+  "runningMainSeen": true,
+  "bootstrapSeen": true,
+  "authGateSeen": true,
+  "loginVisible": true,
+  "fatalPatternMatches": 0,
+  "fatalMatches": [],
+  "screenXmlPath": "artifacts/auth-settle-screen.xml",
+  "logExcerpt": [
+    "04-11 14:56:41.495 I/ReactNativeJS( 7954): Running \"main\" with {\"rootTag\":11}",
+    "04-11 14:56:43.415 I/ReactNativeJS( 7954): event: 'bootstrap_enter'",
+    "04-11 14:56:43.418 I/ReactNativeJS( 7954): surface: 'auth_session_gate'",
+    "04-11 14:56:43.536 I/ReactNativeJS( 7954): event: 'auth_session_read_result'",
+    "04-11 14:56:43.545 I/ReactNativeJS( 7954): event: 'auth_restore_result'",
+    "04-11 14:56:43.549 I/ReactNativeJS( 7954): event: 'route_resolution_result'"
+  ],
+  "uiProof": {
+    "hasEmail": true,
+    "hasGox": true,
+    "hasLoginButton": true,
+    "hasPassword": true
+  }
+}
