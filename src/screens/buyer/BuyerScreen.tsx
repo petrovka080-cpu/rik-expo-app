@@ -7,7 +7,6 @@ import {
   TextInput
 } from 'react-native';
 import { useLatest } from "../../lib/useLatest";
-import { recordSwallowedError } from "../../lib/observability/swallowedError";
 import IconSquareButton from "../../ui/IconSquareButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import { pickFileAny } from "../../lib/filePick";
@@ -78,6 +77,7 @@ import { useBuyerRequestLabels } from "./hooks/useBuyerRequestLabels";
 import { useTimedToast } from "./hooks/useTimedToast";
 import { useBuyerTotals } from "./hooks/useBuyerTotals";
 import { useBuyerSelectionActions } from "./hooks/useBuyerSelectionActions";
+import { reportBuyerTabsScrollToStartFailure } from "./buyer.observability";
 import { useBuyerSelection } from "./hooks/useBuyerSelection";
 import { useBuyerState } from "./hooks/useBuyerState";
 import { useBuyerLoadingController } from "./hooks/useBuyerLoadingController";
@@ -296,14 +296,7 @@ export function BuyerScreen() {
     try {
       tabsScrollRef.current?.scrollTo?.({ x: 0, y: 0, animated });
     } catch (error) {
-      recordSwallowedError({
-        screen: "buyer",
-        surface: "buyer_tabs",
-        event: "buyer_tabs_scroll_to_start_failed",
-        error,
-        sourceKind: "ui:tabs",
-        errorStage: "scroll_to_start",
-      });
+      reportBuyerTabsScrollToStartFailure(error);
     }
   }, []);
 

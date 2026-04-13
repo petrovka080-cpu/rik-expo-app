@@ -10,6 +10,7 @@ jest.mock("../../lib/observability/catchDiscipline", () => ({
   reportAndSwallow: (params: unknown) => mockReportAndSwallow(params),
 }));
 
+import { reportDirectorTopTabsScrollFailure } from "./director.observability";
 import { fmtDateOnly } from "./director.helpers";
 import { loadDirectorDashMetrics } from "./director.metrics";
 import DirectorProposalAttachments from "./DirectorProposalAttachments";
@@ -132,6 +133,24 @@ describe("director observability hardening", () => {
       }),
     );
     expect(Alert.alert).toHaveBeenCalledWith(expect.any(String), "open failed");
+  });
+
+  it("routes dashboard top-tab scroll failures through the director boundary", () => {
+    const error = new Error("scroll failed");
+
+    reportDirectorTopTabsScrollFailure(error);
+
+    expect(mockReportAndSwallow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "director",
+        surface: "dashboard_top_tabs",
+        event: "director_top_tabs_scroll_failed",
+        scope: "director.dashboard.topTabs.scrollToOffset",
+        category: "ui",
+        sourceKind: "ui:top_tabs",
+        errorStage: "scroll_to_offset",
+      }),
+    );
   });
 
   it("removes bare catches from the targeted director residual files", () => {

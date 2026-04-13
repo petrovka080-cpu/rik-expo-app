@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { accountantLoadProposalFinancialState } from "../../lib/api/accountant";
-import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import {
-  beginPlatformObservability,
-  recordPlatformObservability,
-} from "../../lib/observability/platformObservability";
+  beginAccountantPaymentFormLoad,
+  recordAccountantPaymentFormCatch,
+  recordAccountantPaymentFormClosed,
+  recordAccountantPaymentFormOpened,
+  recordAccountantPaymentFormReady,
+  recordAccountantPaymentFormRequestCanceled,
+  recordAccountantPaymentFormRequestStarted,
+  recordAccountantPaymentFormStaleResponseIgnored,
+} from "./accountant.paymentForm.observability";
 import {
   applyAllocationRow,
   buildAllocRowsSignature,
@@ -90,6 +95,10 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
   const { current, amount, setAmount, allocRows, setAllocRows, onAllocStatus } = params;
   const proposalId = String(current?.proposal_id ?? "").trim();
   const sourceKind = getPaymentFormSourceKind(proposalId);
+  const observabilityContext = useMemo(
+    () => ({ proposalId, sourceKind }),
+    [proposalId, sourceKind],
+  );
   const mountedRef = useRef(true);
   const requestSeqRef = useRef(0);
   const proposalIdRef = useRef(proposalId);
@@ -128,22 +137,9 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
       error: unknown,
       extra?: Record<string, unknown>,
     ) => {
-      recordCatchDiscipline({
-        screen: "accountant",
-        surface: "active_payment_form",
-        event,
-        kind,
-        error,
-        category: event.includes("callback") ? "ui" : "fetch",
-        sourceKind,
-        errorStage: event,
-        extra: {
-          proposalId: proposalId || null,
-          ...extra,
-        },
-      });
+      recordAccountantPaymentFormCatch(observabilityContext, kind, event, error, extra);
     },
-    [proposalId, sourceKind],
+    [observabilityContext],
   );
 
   const paymentDataErrorMessage = useMemo(
@@ -213,32 +209,12 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
   }, []);
 
   useEffect(() => {
-    recordPlatformObservability({
-      screen: "accountant",
-      surface: "payment_form",
-      category: "ui",
-      event: "payment_form_opened",
-      result: "success",
-      sourceKind,
-      extra: {
-        proposalId: proposalId || null,
-      },
-    });
+    recordAccountantPaymentFormOpened(observabilityContext);
 
     return () => {
-      recordPlatformObservability({
-        screen: "accountant",
-        surface: "payment_form",
-        category: "ui",
-        event: "payment_form_closed",
-        result: "success",
-        sourceKind,
-        extra: {
-          proposalId: proposalId || null,
-        },
-      });
+      recordAccountantPaymentFormClosed(observabilityContext);
     };
-  }, [proposalId, sourceKind]);
+  }, [observabilityContext]);
 
   useEffect(() => {
     setMode("full");
@@ -262,32 +238,14 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
     const requestId = requestSeqRef.current + 1;
     requestSeqRef.current = requestId;
     let completed = false;
+    const requestObservabilityContext = {
+      ...observabilityContext,
+      requestId,
+    };
 
-    recordPlatformObservability({
-      screen: "accountant",
-      surface: "payment_form",
-      category: "fetch",
-      event: "payment_form_request_started",
-      result: "success",
-      sourceKind,
-      extra: {
-        proposalId,
-        requestId,
-      },
-    });
+    recordAccountantPaymentFormRequestStarted(requestObservabilityContext);
 
-    const observation = beginPlatformObservability({
-      screen: "accountant",
-      surface: "payment_form",
-      category: "fetch",
-      event: "payment_form_load",
-      sourceKind,
-      trigger: "open",
-      extra: {
-        proposalId,
-        requestId,
-      },
-    });
+    const observation = beginAccountantPaymentFormLoad(requestObservabilityContext);
 
     setItemsLoading(true);
     setItemsError(null);
@@ -302,19 +260,7 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
         requestSeqRef.current === requestId;
 
       if (!isCurrentRequest) {
-        recordPlatformObservability({
-          screen: "accountant",
-          surface: "payment_form",
-          category: "fetch",
-          event: "payment_form_stale_response_ignored",
-          result: "skipped",
-          sourceKind,
-          extra: {
-            proposalId,
-            requestId,
-            guardReason: "stale_response_ignored",
-          },
-        });
+        recordAccountantPaymentFormStaleResponseIgnored(requestObservabilityContext);
         return;
       }
 
@@ -376,21 +322,11 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
           publishState: "ready",
         },
       });
-      recordPlatformObservability({
-        screen: "accountant",
-        surface: "payment_form",
-        category: "ui",
-        event: "payment_form_ready",
-        result: "success",
-        sourceKind,
-        extra: {
-          proposalId,
-          requestId,
-          rowCount: nextItems.length,
-          paidAllocationCount: nextPaidByLineMap.size,
-          paymentEligible: financialStateResult.paymentEligible,
-          failureCode: financialStateResult.failureCode,
-        },
+      recordAccountantPaymentFormReady(requestObservabilityContext, {
+        rowCount: nextItems.length,
+        paidAllocationCount: nextPaidByLineMap.size,
+        paymentEligible: financialStateResult.paymentEligible,
+        failureCode: financialStateResult.failureCode,
       });
     })().catch((error) => {
       const isCurrentRequest =
@@ -399,19 +335,7 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
         requestSeqRef.current === requestId;
 
       if (!isCurrentRequest) {
-        recordPlatformObservability({
-          screen: "accountant",
-          surface: "payment_form",
-          category: "fetch",
-          event: "payment_form_stale_response_ignored",
-          result: "skipped",
-          sourceKind,
-          extra: {
-            proposalId,
-            requestId,
-            guardReason: "stale_response_ignored",
-          },
-        });
+        recordAccountantPaymentFormStaleResponseIgnored(requestObservabilityContext);
         return;
       }
 
@@ -444,22 +368,10 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
 
     return () => {
       if (!completed) {
-        recordPlatformObservability({
-          screen: "accountant",
-          surface: "payment_form",
-          category: "fetch",
-          event: "payment_form_request_canceled",
-          result: "skipped",
-          sourceKind,
-          extra: {
-            proposalId,
-            requestId,
-            guardReason: "lifecycle_cleanup",
-          },
-        });
+        recordAccountantPaymentFormRequestCanceled(requestObservabilityContext);
       }
     };
-  }, [proposalId, recordPaymentFormCatch, sourceKind]);
+  }, [observabilityContext, proposalId, recordPaymentFormCatch]);
 
   useEffect(() => {
     const signature = buildAllocRowsSignature(allocRows);

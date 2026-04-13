@@ -28,3 +28,15 @@ export function reportDirectorBoundary(params: DirectorBoundaryParams) {
     extra: params.extra,
   });
 }
+
+export function reportDirectorTopTabsScrollFailure(error: unknown) {
+  return reportDirectorBoundary({
+    surface: "dashboard_top_tabs",
+    scope: "director.dashboard.topTabs.scrollToOffset",
+    event: "director_top_tabs_scroll_failed",
+    error,
+    category: "ui",
+    sourceKind: "ui:top_tabs",
+    errorStage: "scroll_to_offset",
+  });
+}

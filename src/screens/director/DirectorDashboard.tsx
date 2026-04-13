@@ -16,7 +16,7 @@ import { officeRoleChrome } from "../office/officeRoleChrome";
 import type { DirTopTab, FinPage, Group, ProposalHead } from "./director.types";
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import DirectorSubcontractTab from "./DirectorSubcontractTab";
-import { recordSwallowedError } from "../../lib/observability/swallowedError";
+import { reportDirectorTopTabsScrollFailure } from "./director.observability";
 
 type Tab = "foreman" | "buyer";
 type TopTabItem = { key: DirTopTab; label: string };
@@ -107,14 +107,7 @@ export default function DirectorDashboard(p: Props) {
     try {
       sv.scrollToOffset({ offset: Math.max(0, rec.x - 12), animated: true });
     } catch (error) {
-      recordSwallowedError({
-        screen: "director",
-        surface: "dashboard_top_tabs",
-        event: "director_top_tabs_scroll_failed",
-        error,
-        sourceKind: "ui:top_tabs",
-        errorStage: "scroll_to_offset",
-      });
+      reportDirectorTopTabsScrollFailure(error);
     }
   }, [p.dirTab]);
 
