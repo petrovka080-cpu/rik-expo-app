@@ -6,6 +6,8 @@ build/
 test-results/
 coverage/
 *.log
+hs_err_pid*.log
+replay_pid*.log
 .codex-*.log
 .expo-web-smoke.log
 .tmp-expo-*.log
@@ -20,14 +22,18 @@ android/app/build/
 android/build/
 android/.gradle/
 
-# Legacy diagnostics and build dist
+# Build distribution artifacts (all variants)
+dist-export-*/
 dist-production/
 dist-preview/
+dist-stale-*/
+
+# Legacy diagnostics
 diagnostics/root-legacy/
-# local junk
+
+# Local junk
 /tmp/
 tmp/
-dist-stale-*/
 ts_errors*.txt
 final_ts_errors.txt
 *_errors*.txt

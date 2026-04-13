@@ -28,6 +28,7 @@ import type { Database } from "./database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 const FileSystemCompat = FileSystemModule;
+export const IOS_PDF_SHARE_MAX_BYTES = 50 * 1024 * 1024;
 type PdfSupabaseLike = Pick<SupabaseClient<Database>, "auth">;
 export type BusyLike = {
   run?: <T>(
@@ -41,6 +42,11 @@ export type BusyLike = {
 
 const urlToLocal = new Map<string, string>();
 const activeRuns = new Set<string>();
+
+export function clearPdfRunnerSessionState() {
+  urlToLocal.clear();
+  activeRuns.clear();
+}
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) {
@@ -244,6 +250,68 @@ async function openAndroidRemotePdfUrl(remoteUrl: string, fileName?: string): Pr
 
 async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogTitle = "Открыть PDF") {
   const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
+  if (getUriScheme(handoffUri) !== "file") {
+    throw new Error("iOS PDF share requires a local file:// handoff.");
+  }
+  const info = await FileSystemCompat.getInfoAsync(handoffUri);
+  const sizeBytes = getFileInfoSize(info);
+  if (!Number.isFinite(sizeBytes) || !sizeBytes || sizeBytes <= 0) {
+    throw new Error("iOS PDF share file is empty.");
+  }
+  if (sizeBytes > IOS_PDF_SHARE_MAX_BYTES) {
+    logPdfRunnerStage("pdf_ios_share_size_guard_triggered", {
+      uri: handoffUri,
+      exists: true,
+      size: sizeBytes,
+      sourceKind: "local-file",
+      fileName,
+    });
+    recordPdfRunnerCatch({
+      kind: "degraded_fallback",
+      event: "pdf_ios_share_size_guard_triggered",
+      error: new Error(`PDF file too large for share sheet: ${sizeBytes} bytes`),
+      category: "ui",
+      sourceKind: "local-file",
+      errorStage: "ios_share_size_guard",
+      extra: { sizeBytes, maxBytes: IOS_PDF_SHARE_MAX_BYTES, fileName: fileName ?? null },
+    });
+    await new Promise<void>((resolve) => {
+      Alert.alert(
+        "Большой файл",
+        `PDF слишком большой для предпросмотра (${Math.round(sizeBytes / 1024 / 1024)} МБ). Открыть через системный просмотрщик?`,
+        [
+          { text: "Отмена", style: "cancel", onPress: () => resolve() },
+          {
+            text: "Открыть",
+            onPress: async () => {
+              try {
+                await Linking.openURL(handoffUri);
+              } catch (linkError) {
+                recordPdfRunnerCatch({
+                  kind: "critical_fail",
+                  event: "pdf_ios_share_size_guard_linking_failed",
+                  error: linkError,
+                  category: "ui",
+                  sourceKind: "local-file",
+                  errorStage: "ios_share_size_guard_fallback",
+                  extra: { uri: handoffUri, fileName: fileName ?? null },
+                });
+              }
+              resolve();
+            },
+          },
+        ],
+      );
+    });
+    return;
+  }
+  logPdfRunnerStage("pdf_ios_share_handoff_ready", {
+    uri: handoffUri,
+    exists: Boolean(info?.exists),
+    size: sizeBytes,
+    sourceKind: "local-file",
+    fileName,
+  });
   const canShare = await Sharing.isAvailableAsync();
   if (!canShare) {
     throw new Error("Sharing is unavailable on this device");
@@ -442,6 +510,11 @@ export async function openPdfShare(localUri: string, fileName?: string) {
       Alert.alert("PDF", "Разреши всплывающие окна (pop-up).");
       throw new Error("PDF popup window was blocked");
     }
+    return;
+  }
+
+  if (Platform.OS === "ios") {
+    await openIosPdfShareSheet(localUri, fileName, "Поделиться PDF");
     return;
   }
 

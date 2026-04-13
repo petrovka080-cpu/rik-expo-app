@@ -2,16 +2,15 @@ module.exports = {
   preset: "jest-expo",
   setupFiles: ["<rootDir>/jest.setup.js"],
   collectCoverageFrom: [
-    "<rootDir>/src/lib/offline/mutationQueue.ts",
-    "<rootDir>/src/lib/offline/mutationWorker.ts",
-    "<rootDir>/src/lib/offline/mutation.retryPolicy.ts",
-    "<rootDir>/src/lib/offline/mutation.conflict.ts",
-    "<rootDir>/src/screens/profile/profile.services.ts",
-    "<rootDir>/src/screens/profile/hooks/useProfileDerivedState.ts",
-    "<rootDir>/src/screens/profile/components/ProfilePrimitives.tsx",
+    "<rootDir>/src/**/*.{ts,tsx}",
+    "!<rootDir>/src/lib/database.types.ts",
+    "!<rootDir>/src/**/*.test.{ts,tsx}",
+    "!<rootDir>/src/**/*.styles.{ts,tsx}",
+    "!<rootDir>/src/**/*.types.{ts,tsx}",
+    "!<rootDir>/src/dev/**",
   ],
-  coverageDirectory: "<rootDir>/artifacts/wave8-coverage",
-  coverageReporters: ["json-summary", "text-summary"],
+  coverageDirectory: "<rootDir>/coverage",
+  coverageReporters: ["json-summary", "text-summary", "lcov"],
   coverageThreshold: {
     global: {
       statements: 60,
@@ -20,5 +19,5 @@ module.exports = {
       lines: 60,
     },
   },
-  testPathIgnorePatterns: ["/node_modules/", "/dist/", "/.expo/"],
+  testPathIgnorePatterns: ["/node_modules/", "/dist/", "/dist-export-*/", "/.expo/"],
 };

@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# ──────────────────────────────────────────────────
+# Pre-commit gate: typecheck + affected tests
+# Enterprise-grade: prevents broken types and
+# failing tests from entering the main branch.
+# ──────────────────────────────────────────────────
+
+echo "[pre-commit] Running TypeScript type check..."
+npx tsc --noEmit --incremental 2>&1
+TSC_EXIT=$?
+
+if [ $TSC_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ TypeScript type check failed. Fix type errors before committing."
+  exit 1
+fi
+
+echo "[pre-commit] Running tests on changed files..."
+npx jest --bail --passWithNoTests --changedSince=HEAD~1 2>&1
+JEST_EXIT=$?
+
+if [ $JEST_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ Tests failed. Fix failing tests before committing."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed."

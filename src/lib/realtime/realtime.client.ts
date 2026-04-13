@@ -31,6 +31,29 @@ let activeChannelSeq = 0;
 let realtimeAuthPromise: Promise<void> | null = null;
 let realtimeAuthToken = "";
 
+/**
+ * Resets all module-level realtime state at session boundary (logout / session change).
+ * Gracefully unsubscribes active channels before clearing state.
+ */
+export function clearRealtimeSessionState() {
+  for (const [name, entry] of activeChannels) {
+    try {
+      entry.channel.unsubscribe();
+    } catch (_) {
+      // best-effort cleanup at session boundary
+    }
+    try {
+      supabase.removeChannel(entry.channel);
+    } catch (_) {
+      // best-effort cleanup at session boundary
+    }
+  }
+  activeChannels.clear();
+  activeChannelSeq = 0;
+  realtimeAuthPromise = null;
+  realtimeAuthToken = "";
+}
+
 const recordCleanupError = (params: {
   scope: RealtimeScope;
   route: string;

@@ -10,10 +10,14 @@ import { Host } from "react-native-portalize";
 import { clearAppCache } from "../src/lib/cache/clearAppCache";
 import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
+import { clearPdfRunnerSessionState } from "../src/lib/pdfRunner";
+import { resetOfflineReplayCoordinator } from "../src/lib/offline/offlineReplayCoordinator";
+import { clearRealtimeSessionState } from "../src/lib/realtime/realtime.client";
 import {
   clearCurrentSessionRoleCache,
   warmCurrentSessionProfile,
 } from "../src/lib/sessionRole";
+import { clearOfficeHubBootstrapSnapshot } from "../src/screens/office/officeHubBootstrapSnapshot";
 import {
   ensureQueueWorker,
   stopQueueWorker,
@@ -165,6 +169,32 @@ export default function RootLayout() {
     authExitAtRef.current = null;
     authExitSessionProbeInFlightRef.current = false;
     authExitSessionProbeTokenRef.current += 1;
+  }, []);
+  const clearSessionBoundaryState = useCallback(async (reason: string) => {
+    clearDocumentSessions();
+    clearCurrentSessionRoleCache();
+    clearPdfRunnerSessionState();
+    clearOfficeHubBootstrapSnapshot();
+    resetOfflineReplayCoordinator();
+    clearRealtimeSessionState();
+    try {
+      await clearAppCache({ mode: "session", owner: `root_layout:${reason}` });
+    } catch (purgeError) {
+      recordPlatformObservability({
+        screen: "request",
+        surface: "auth_session_gate",
+        category: "ui",
+        event: "session_cache_purge_failed",
+        result: "error",
+        errorStage: "clear_app_cache",
+        errorClass: purgeError instanceof Error ? purgeError.name : "Unknown",
+        errorMessage: purgeError instanceof Error ? purgeError.message : String(purgeError),
+        extra: {
+          owner: "root_layout",
+          reason,
+        },
+      });
+    }
   }, []);
   useEffect(() => {
     if (launchMarkerRef.current) return;
@@ -330,8 +360,7 @@ export default function RootLayout() {
 
         if (has) loadRoleForCurrentSession();
         else {
-          clearDocumentSessions();
-          clearCurrentSessionRoleCache();
+          await clearSessionBoundaryState("bootstrap_no_session");
         }
       } catch (e: unknown) {
         const timeoutLike = isTimeoutLikeAuthError(e);
@@ -385,7 +414,7 @@ export default function RootLayout() {
     })();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         const has = Boolean(session);
         const isTerminalSignOut =
           event === "SIGNED_OUT" || String(event) === "USER_DELETED";
@@ -428,8 +457,7 @@ export default function RootLayout() {
 
           resetPendingAuthExitSessionProbe();
           setHasSession(false);
-          clearDocumentSessions();
-          clearCurrentSessionRoleCache();
+          await clearSessionBoundaryState("terminal_sign_out");
           if (!isPdfViewerRouteRef.current) {
             recordAuthRedirectTriggered("terminal_sign_out", {
               authEvent: event,
@@ -450,6 +478,7 @@ export default function RootLayout() {
       listener?.subscription?.unsubscribe();
     };
   }, [
+    clearSessionBoundaryState,
     loadRoleForCurrentSession,
     recordAuthCheckEvent,
     recordAuthGateEvent,

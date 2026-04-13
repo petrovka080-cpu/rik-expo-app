@@ -51,6 +51,7 @@ jest.mock("./fileSystemPaths", () => ({
 }));
 
 import {
+  IOS_PDF_SHARE_MAX_BYTES,
   openPdfExternal,
   openPdfPreview,
   openPdfShare,
@@ -198,6 +199,61 @@ describe("pdfRunner native open", () => {
       mimeType: "application/pdf",
       UTI: "com.adobe.pdf",
     }));
+  });
+
+  it("blocks oversized iOS PDF share before native handoff", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+    mockGetInfoAsync.mockResolvedValue({
+      exists: true,
+      size: IOS_PDF_SHARE_MAX_BYTES + 1,
+    });
+
+    // Simulate user pressing "Отмена" in the Alert
+    mockAlert.mockImplementation((_title: string, _msg: string, buttons: any[]) => {
+      const cancel = buttons.find((b: any) => b.style === "cancel");
+      cancel?.onPress?.();
+    });
+
+    // Should NOT throw — uses Alert fallback instead
+    await openPdfShare("file:///cache/document.pdf", "document.pdf");
+
+    expect(mockSharingShareAsync).not.toHaveBeenCalled();
+    expect(mockAlert).toHaveBeenCalledWith(
+      "Большой файл",
+      expect.stringContaining("МБ"),
+      expect.any(Array),
+    );
+  });
+
+  it("uses the guarded iOS share path for remote share downloads", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+    mockGetInfoAsync.mockResolvedValue({
+      exists: true,
+      size: IOS_PDF_SHARE_MAX_BYTES + 1,
+    });
+
+    // Simulate user pressing "Открыть" in the Alert
+    mockOpenUrl.mockResolvedValue(undefined);
+    mockAlert.mockImplementation((_title: string, _msg: string, buttons: any[]) => {
+      const openBtn = buttons.find((b: any) => b.text === "Открыть");
+      openBtn?.onPress?.();
+    });
+
+    await openPdfShare("https://example.com/document.pdf", "document.pdf");
+
+    expect(mockDownloadAsync).toHaveBeenCalledWith(
+      "https://example.com/document.pdf",
+      expect.stringContaining("handoff_"),
+    );
+    expect(mockSharingShareAsync).not.toHaveBeenCalled();
+    expect(mockAlert).toHaveBeenCalled();
+    expect(mockOpenUrl).toHaveBeenCalled();
   });
 
   it("rejects explicit iOS share when the handoff file is empty", async () => {
