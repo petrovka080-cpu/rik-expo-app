@@ -27,6 +27,7 @@ import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
 import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWebContainer";
+import { AppQueryProvider, resetQueryCache } from "../src/lib/query/queryClient";
 
 const AUTH_EXIT_SESSION_SETTLE_WINDOW_MS = 2500;
 
@@ -177,6 +178,7 @@ export default function RootLayout() {
     clearOfficeHubBootstrapSnapshot();
     resetOfflineReplayCoordinator();
     clearRealtimeSessionState();
+    resetQueryCache();
     try {
       await clearAppCache({ mode: "session", owner: `root_layout:${reason}` });
     } catch (purgeError) {
@@ -739,18 +741,20 @@ export default function RootLayout() {
   };
 
   return (
-    <SafeAreaProvider>
-      <Host>
-        <GlobalBusyProvider theme={UI}>
-          <SafeAreaView
-            style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
-            edges={Platform.OS === "web" ? [] : ["top"]}
-          >
-            <PlatformOfflineStatusHost />
-            <Stack screenOptions={{ headerShown: false }} />
-          </SafeAreaView>
-        </GlobalBusyProvider>
-      </Host>
-    </SafeAreaProvider>
+    <AppQueryProvider>
+      <SafeAreaProvider>
+        <Host>
+          <GlobalBusyProvider theme={UI}>
+            <SafeAreaView
+              style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
+              edges={Platform.OS === "web" ? [] : ["top"]}
+            >
+              <PlatformOfflineStatusHost />
+              <Stack screenOptions={{ headerShown: false }} />
+            </SafeAreaView>
+          </GlobalBusyProvider>
+        </Host>
+      </SafeAreaProvider>
+    </AppQueryProvider>
   );
 }
