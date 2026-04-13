@@ -103,6 +103,7 @@ export const useContractorProgressDraftStore = create<ContractorProgressDraftSto
 const trim = (value: unknown) => String(value ?? "").trim();
 
 const normalizeNullableNumber = (value: unknown): number | null => {
+  if (value == null || trim(value) === "") return null;
   const next = Number(value);
   return Number.isFinite(next) ? next : null;
 };
@@ -146,6 +147,17 @@ const hasMeaningfulFields = (fields: ContractorProgressDraftFields | null | unde
   Boolean(trim(fields?.comment)) ||
   Boolean(trim(fields?.location)) ||
   Boolean(trim(fields?.selectedDate));
+
+const shouldPersistDraft = (draft: ContractorProgressDraftRecord): boolean => {
+  if (hasMeaningfulFields(draft.fields)) return true;
+  if (draft.materials.length > 0) return true;
+  if (draft.pendingCount > 0) return true;
+  if (draft.pendingLogId) return true;
+  if (draft.syncStatus === "dirty_local") return true;
+  if (draft.syncStatus === "queued" || draft.syncStatus === "syncing" || draft.syncStatus === "retry_wait") return true;
+  if (draft.syncStatus === "failed_terminal") return true;
+  return false;
+};
 
 const createBaseDraft = (progressId: string): ContractorProgressDraftRecord => ({
   progressId,
@@ -241,18 +253,30 @@ const normalizeDraft = (
   };
 };
 
+const pruneDraftsForPersistence = (
+  drafts: Record<string, ContractorProgressDraftRecord>,
+): Record<string, ContractorProgressDraftRecord> =>
+  Object.fromEntries(
+    Object.entries(drafts)
+      .map(([progressId, record]) => [trim(progressId), normalizeDraft(progressId, record)] as const)
+      .filter(([progressId, record]) => Boolean(progressId) && shouldPersistDraft(record)),
+  );
+
 const persistState = async (state: ContractorProgressDraftStoreState) => {
+  const drafts = pruneDraftsForPersistence(state.drafts);
   const payload: PersistedContractorProgressDraftStore = {
     version: 2,
-    drafts: state.drafts,
+    drafts,
   };
 
   if (!Object.keys(payload.drafts).length) {
     await storageAdapter.removeItem(STORAGE_KEY);
+    await storageAdapter.removeItem(LEGACY_STORAGE_KEY);
     return;
   }
 
   await writeJsonToStorage(storageAdapter, STORAGE_KEY, payload);
+  await storageAdapter.removeItem(LEGACY_STORAGE_KEY);
 };
 
 const setAndPersistState = async (next: ContractorProgressDraftStoreState) => {
@@ -276,6 +300,7 @@ export const hydrateContractorProgressDraftStore = async (): Promise<ContractorP
     storageAdapter,
     STORAGE_KEY,
   );
+  const loadedFromLegacy = loaded == null;
   const legacyLoaded =
     loaded ??
     (await readJsonFromStorage<Partial<PersistedContractorProgressDraftStore>>(
@@ -283,12 +308,13 @@ export const hydrateContractorProgressDraftStore = async (): Promise<ContractorP
       LEGACY_STORAGE_KEY,
     ));
   const draftsRaw = legacyLoaded?.drafts ?? {};
-  const drafts = Object.fromEntries(
+  const normalizedDrafts = Object.fromEntries(
     Object.entries(draftsRaw).map(([progressId, record]) => [
       trim(progressId),
       normalizeDraft(progressId, record ?? {}),
     ]),
   );
+  const drafts = pruneDraftsForPersistence(normalizedDrafts);
 
   const next: ContractorProgressDraftStoreState = {
     hydrated: true,
@@ -296,6 +322,11 @@ export const hydrateContractorProgressDraftStore = async (): Promise<ContractorP
   };
 
   useContractorProgressDraftStore.setState(next);
+  if (loadedFromLegacy || Object.keys(normalizedDrafts).length !== Object.keys(drafts).length) {
+    await persistState(next);
+  } else if (loaded != null) {
+    await storageAdapter.removeItem(LEGACY_STORAGE_KEY);
+  }
   return next;
 };
 

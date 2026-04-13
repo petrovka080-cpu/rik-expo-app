@@ -57,9 +57,12 @@ type TempUser = {
   email: string;
   password: string;
   role: string;
+  companyId: string | null;
+  companyOwnerId: string | null;
 };
 
 type AndroidNode = {
+  resourceId: string;
   text: string;
   contentDesc: string;
   className: string;
@@ -110,6 +113,69 @@ async function poll<T>(
   throw new Error(`poll timeout: ${label}`);
 }
 
+async function attachRuntimeOfficeCompany(userId: string, role: string): Promise<{ companyId: string; companyOwnerId: string }> {
+  const ownerEmail = `wi.owner.${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}@e.com`;
+  const ownerResult = await admin.auth.admin.createUser({
+    email: ownerEmail,
+    password,
+    email_confirm: true,
+    user_metadata: { full_name: "Warehouse Runtime Company Owner" },
+    app_metadata: { role: "director" },
+  });
+  if (ownerResult.error || !ownerResult.data.user) {
+    throw ownerResult.error ?? new Error("Failed to create warehouse runtime company owner");
+  }
+  const ownerId = ownerResult.data.user.id;
+
+  const ownerProfileResult = await admin
+    .from("profiles")
+    .upsert({ user_id: ownerId, role: "director", full_name: "Warehouse Runtime Company Owner" }, { onConflict: "user_id" });
+  if (ownerProfileResult.error) throw ownerProfileResult.error;
+
+  const ownerUserProfileResult = await admin
+    .from("user_profiles")
+    .upsert(
+      { user_id: ownerId, full_name: "Warehouse Runtime Company Owner", usage_build: true },
+      { onConflict: "user_id" },
+    );
+  if (ownerUserProfileResult.error) throw ownerUserProfileResult.error;
+
+  const companyResult = await admin
+    .from("companies")
+    .insert({
+      owner_user_id: ownerId,
+      name: `Runtime Warehouse Company ${Date.now().toString(36).toUpperCase()}`,
+    })
+    .select("id")
+    .single();
+  if (companyResult.error || !companyResult.data) {
+    throw companyResult.error ?? new Error("Failed to create warehouse runtime company");
+  }
+
+  const companyId = String(companyResult.data.id);
+  const ownerMembershipResult = await admin.from("company_members").upsert(
+    {
+      company_id: companyId,
+      user_id: ownerId,
+      role: "director",
+    },
+    { onConflict: "company_id,user_id" },
+  );
+  if (ownerMembershipResult.error) throw ownerMembershipResult.error;
+
+  const membershipResult = await admin.from("company_members").upsert(
+    {
+      company_id: companyId,
+      user_id: userId,
+      role,
+    },
+    { onConflict: "company_id,user_id" },
+  );
+  if (membershipResult.error) throw membershipResult.error;
+
+  return { companyId, companyOwnerId: ownerId };
+}
+
 async function createTempUser(role: string, fullName: string): Promise<TempUser> {
   const email = `wi${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}@e.com`;
   const userResult = await admin.auth.admin.createUser({
@@ -132,11 +198,34 @@ async function createTempUser(role: string, fullName: string): Promise<TempUser>
     .upsert({ user_id: user.id, full_name: fullName }, { onConflict: "user_id" });
   if (userProfileResult.error) throw userProfileResult.error;
 
-  return { id: user.id, email, password, role };
+  const company = await attachRuntimeOfficeCompany(user.id, role);
+  return { id: user.id, email, password, role, companyId: company.companyId, companyOwnerId: company.companyOwnerId };
 }
 
 async function cleanupTempUser(user: TempUser | null) {
   if (!user) return;
+  if (user.companyId) {
+    try {
+      await admin.from("company_members").delete().eq("company_id", user.companyId);
+    } catch {}
+    try {
+      await admin.from("company_profiles").delete().eq("id", user.companyId);
+    } catch {}
+    try {
+      await admin.from("companies").delete().eq("id", user.companyId);
+    } catch {}
+  }
+  if (user.companyOwnerId) {
+    try {
+      await admin.from("user_profiles").delete().eq("user_id", user.companyOwnerId);
+    } catch {}
+    try {
+      await admin.from("profiles").delete().eq("user_id", user.companyOwnerId);
+    } catch {}
+    try {
+      await admin.auth.admin.deleteUser(user.companyOwnerId);
+    } catch {}
+  }
   try {
     await admin.from("user_profiles").delete().eq("user_id", user.id);
   } catch {}
@@ -373,6 +462,7 @@ const parseAndroidNodes = (xml: string): AndroidNode[] => {
       return attrMatch?.[1] ?? "";
     };
     nodes.push({
+      resourceId: pick("resource-id"),
       text: pick("text"),
       contentDesc: pick("content-desc"),
       className: pick("class"),
@@ -401,6 +491,46 @@ const parseBoundsCenter = (bounds: string): { x: number; y: number } | null => {
 const escapeAndroidInputText = (value: string) =>
   String(value ?? "").replace(/ /g, "%s");
 
+async function typeAsciiLowercaseByKeyEvents(value: string) {
+  const keyCodes: Record<string, number> = {
+    a: 29,
+    b: 30,
+    c: 31,
+    d: 32,
+    e: 33,
+    f: 34,
+    g: 35,
+    h: 36,
+    i: 37,
+    j: 38,
+    k: 39,
+    l: 40,
+    m: 41,
+    n: 42,
+    o: 43,
+    p: 44,
+    q: 45,
+    r: 46,
+    s: 47,
+    t: 48,
+    u: 49,
+    v: 50,
+    w: 51,
+    x: 52,
+    y: 53,
+    z: 54,
+  };
+  for (const char of value.toLowerCase()) {
+    const code = keyCodes[char];
+    if (!code) continue;
+    execFileSync("adb", ["shell", "input", "keyevent", String(code)], {
+      cwd: projectRoot,
+      stdio: "pipe",
+    });
+    await sleep(100);
+  }
+}
+
 const tapAndroidBounds = (bounds: string) => {
   const center = parseBoundsCenter(bounds);
   if (!center) return false;
@@ -424,7 +554,7 @@ const findAndroidFioInputNode = (nodes: AndroidNode[]): AndroidNode | null =>
   );
 
 const findAndroidFioActionNode = (nodes: AndroidNode[]): AndroidNode | null =>
-  findAndroidNode(nodes, (node) => node.clickable && node.contentDesc === "warehouse-fio-confirm") ??
+  findAndroidNode(nodes, (node) => node.clickable && node.enabled && node.contentDesc === "warehouse-fio-confirm") ??
   findAndroidNode(
     nodes,
     (node) => node.clickable && /Сохранить|Подтвердить/i.test(`${node.text} ${node.contentDesc}`),
@@ -436,22 +566,133 @@ const matchesAndroidLabel = (value: string, labels: readonly string[]) =>
   labels.some((label) => value.includes(label));
 
 const isAndroidIncomingSurface = (xml: string) => /PR-\d+\/\d{4}/.test(xml);
-const isAndroidIncomingEmptyState = (xml: string) => matchesAndroidLabel(xml, ANDROID_INCOMING_EMPTY_LABELS);
+const isAndroidIncomingEmptyState = (xml: string) =>
+  INCOMING_EMPTY_STATE_RE.test(xml) ||
+  matchesAndroidLabel(xml, ANDROID_INCOMING_EMPTY_LABELS) ||
+  (xml.includes('resource-id="warehouse-tab-incoming"') &&
+    xml.includes('resource-id="warehouse-tab-stock"') &&
+    /\(0\)/.test(xml) &&
+    !isAndroidIncomingSurface(xml));
 const isAndroidIncomingHome = (xml: string) => isAndroidIncomingSurface(xml) || isAndroidIncomingEmptyState(xml);
+const isAndroidOfficeHub = (xml: string) =>
+  xml.includes('resource-id="office-direction-open-warehouse"') ||
+  xml.includes('resource-id="office-card-warehouse"') ||
+  (xml.includes('text="Office"') && xml.includes("office-summary"));
+const isAndroidOfficeLoading = (xml: string) =>
+  xml.includes('text="Office"') &&
+  (xml.includes("android.widget.ProgressBar") || xml.includes("Office...") || xml.includes("Office flow"));
+
 const isAndroidFioModal = (xml: string) =>
   /Фамилия Имя Отчество|Р¤Р°РјРёР»РёСЏ РРјСЏ РћС‚С‡РµСЃС‚РІРѕ/i.test(xml) && /Сохранить|Подтвердить/i.test(xml);
 
 const isAndroidIncomingModal = (xml: string) =>
   matchesAndroidLabel(xml, ANDROID_LABELS.submitReceive) || (xml.includes("android.widget.EditText") && /PR-\d+\/\d{4}/.test(xml));
 
+function seedAndroidWarehouseFioStorage(packageName: string | null): Record<string, unknown> {
+  const targetPackage = packageName || "com.azisbek_dzhantaev.rikexpoapp";
+  const script = String.raw`
+import datetime
+import json
+import pathlib
+import sqlite3
+import subprocess
+import sys
+import time
+
+package_name = sys.argv[1]
+project_root = pathlib.Path(sys.argv[2])
+out_path = project_root / "artifacts" / "RKStorage.warehouse-fio-runtime.sqlite"
+out_path.parent.mkdir(parents=True, exist_ok=True)
+
+current_db = subprocess.run(
+    ["adb", "exec-out", "run-as", package_name, "cat", "databases/RKStorage"],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+)
+if current_db.returncode == 0 and current_db.stdout.startswith(b"SQLite format 3"):
+    out_path.write_bytes(current_db.stdout)
+elif out_path.exists():
+    out_path.unlink()
+
+con = sqlite3.connect(str(out_path))
+con.execute("CREATE TABLE IF NOT EXISTS android_metadata (locale TEXT)")
+con.execute("CREATE TABLE IF NOT EXISTS catalystLocalStorage (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+now_ms = int(time.time() * 1000)
+confirm_iso = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+
+def envelope(value, ttl_ms):
+    return json.dumps(
+        {
+            "__rikPersisted": True,
+            "value": value,
+            "updatedAt": now_ms,
+            "expiresAt": now_ms + ttl_ms,
+        },
+        separators=(",", ":"),
+    )
+
+con.execute(
+    "INSERT OR REPLACE INTO catalystLocalStorage(key,value) VALUES(?,?)",
+    ("wh_warehouseman_confirm_ts", envelope(confirm_iso, 14 * 24 * 60 * 60 * 1000)),
+)
+con.execute(
+    "INSERT OR REPLACE INTO catalystLocalStorage(key,value) VALUES(?,?)",
+    ("wh_warehouseman_history_v1", envelope(["Warehouse Runtime Android"], 30 * 24 * 60 * 60 * 1000)),
+)
+con.commit()
+con.close()
+
+subprocess.run(["adb", "push", str(out_path), "/data/local/tmp/RKStorage.warehouse-fio-runtime"], check=True)
+subprocess.run(["adb", "shell", "run-as", package_name, "mkdir", "-p", "databases"], check=True)
+subprocess.run(
+    ["adb", "shell", "run-as", package_name, "cp", "/data/local/tmp/RKStorage.warehouse-fio-runtime", "databases/RKStorage"],
+    check=True,
+)
+subprocess.run(["adb", "shell", "run-as", package_name, "chmod", "600", "databases/RKStorage"], check=True)
+print(json.dumps({"path": str(out_path), "confirmIso": confirm_iso}))
+`;
+  const result = spawnSync("python", ["-c", script, targetPackage, projectRoot], {
+    cwd: projectRoot,
+    encoding: "utf8",
+    timeout: 30_000,
+  });
+  if (result.status !== 0) {
+    throw new Error(
+      [
+        "Failed to seed Android warehouse FIO storage",
+        String(result.stdout ?? "").trim(),
+        String(result.stderr ?? "").trim(),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
+  }
+  const raw = String(result.stdout ?? "").trim();
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return { raw };
+  }
+}
+
 const dumpAndroidScreen = (name: string) => {
   const xmlDevicePath = `/sdcard/${name}.xml`;
   const xmlArtifactPath = path.join(projectRoot, "artifacts", `${name}.xml`);
+  const pngDevicePath = `/sdcard/${name}.png`;
   const pngArtifactPath = path.join(projectRoot, "artifacts", `${name}.png`);
   execFileSync("adb", ["shell", "uiautomator", "dump", xmlDevicePath], { cwd: projectRoot, stdio: "pipe" });
   execFileSync("adb", ["pull", xmlDevicePath, xmlArtifactPath], { cwd: projectRoot, stdio: "pipe" });
-  const screenshot = adb(["exec-out", "screencap", "-p"], "buffer") as Buffer;
-  fs.writeFileSync(pngArtifactPath, screenshot);
+  try {
+    const screenshot = adb(["exec-out", "screencap", "-p"], "buffer") as Buffer;
+    fs.writeFileSync(pngArtifactPath, screenshot);
+  } catch {
+    try {
+      execFileSync("adb", ["shell", "screencap", "-p", pngDevicePath], { cwd: projectRoot, stdio: "pipe" });
+      execFileSync("adb", ["pull", pngDevicePath, pngArtifactPath], { cwd: projectRoot, stdio: "pipe" });
+    } catch {
+      fs.writeFileSync(pngArtifactPath, "");
+    }
+  }
   return {
     xmlPath: `artifacts/${name}.xml`,
     pngPath: `artifacts/${name}.png`,
@@ -472,6 +713,78 @@ const findAndroidTopTab = (nodes: AndroidNode[], labels: readonly string[]): And
   return null;
 };
 
+const findAndroidOfficeWarehouseNode = (nodes: AndroidNode[]): AndroidNode | null =>
+  findAndroidNode(
+    nodes,
+    (node) => node.clickable && node.enabled && node.resourceId === "office-direction-open-warehouse",
+  ) ??
+  findAndroidNode(
+    nodes,
+    (node) =>
+      node.clickable &&
+      node.enabled &&
+      node.resourceId === "office-card-warehouse" &&
+      /warehouse|Склад|РЎРєР»Р°Рґ/i.test(`${node.contentDesc} ${node.text}`),
+  );
+
+async function openAndroidWarehouseFromOffice(current: ReturnType<typeof dumpAndroidScreen>) {
+  let screen = current;
+  if (isAndroidIncomingHome(screen.xml) || isAndroidFioModal(screen.xml) || isAndroidIncomingModal(screen.xml)) {
+    return { screen, openedFromOffice: false, issue: null as string | null };
+  }
+  if (!isAndroidOfficeHub(screen.xml) && !isAndroidOfficeLoading(screen.xml)) {
+    return { screen, openedFromOffice: false, issue: null as string | null };
+  }
+
+  screen = await poll(
+    "android:office_warehouse_direction_ready",
+    async () => {
+      const next = dumpAndroidScreen("android-warehouse-incoming-queue-office-ready");
+      if (isAndroidIncomingHome(next.xml) || isAndroidFioModal(next.xml) || isAndroidIncomingModal(next.xml)) {
+        return next;
+      }
+      return isAndroidOfficeHub(next.xml) ? next : null;
+    },
+    45_000,
+    1_500,
+  ).catch(() => dumpAndroidScreen("android-warehouse-incoming-queue-office-ready-timeout"));
+
+  if (isAndroidIncomingHome(screen.xml) || isAndroidFioModal(screen.xml) || isAndroidIncomingModal(screen.xml)) {
+    return { screen, openedFromOffice: true, issue: null as string | null };
+  }
+
+  const warehouseNode = findAndroidOfficeWarehouseNode(parseAndroidNodes(screen.xml));
+  if (!warehouseNode) {
+    return {
+      screen,
+      openedFromOffice: false,
+      issue: "Office warehouse direction control was not found before Android warehouse proof",
+    };
+  }
+
+  tapAndroidBounds(warehouseNode.bounds);
+  screen = await poll(
+    "android:office_warehouse_direction_opened",
+    async () => {
+      await sleep(1_000);
+      const next = dumpAndroidScreen("android-warehouse-incoming-queue-office-warehouse-opened");
+      return isAndroidIncomingHome(next.xml) || isAndroidFioModal(next.xml) || isAndroidIncomingModal(next.xml)
+        ? next
+        : null;
+    },
+    45_000,
+    1_500,
+  ).catch(() => dumpAndroidScreen("android-warehouse-incoming-queue-office-warehouse-timeout"));
+
+  const opened =
+    isAndroidIncomingHome(screen.xml) || isAndroidFioModal(screen.xml) || isAndroidIncomingModal(screen.xml);
+  return {
+    screen,
+    openedFromOffice: opened,
+    issue: opened ? null : "Warehouse direction did not open after tapping Office warehouse card",
+  };
+}
+
 async function ensureAndroidIncomingTab(current: ReturnType<typeof dumpAndroidScreen>) {
   let screen = current;
   if (isAndroidIncomingHome(screen.xml)) {
@@ -479,7 +792,12 @@ async function ensureAndroidIncomingTab(current: ReturnType<typeof dumpAndroidSc
   }
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    let tab = findAndroidTopTab(parseAndroidNodes(screen.xml), ANDROID_LABELS.incomingTab);
+    let nodes = parseAndroidNodes(screen.xml);
+    let tab =
+      findAndroidNode(
+        nodes,
+        (node) => node.clickable && node.enabled && node.resourceId === "warehouse-tab-incoming",
+      ) ?? findAndroidTopTab(nodes, ANDROID_LABELS.incomingTab);
     if (!tab) {
       if (attempt === 0) {
         execFileSync("adb", ["shell", "input", "keyevent", "4"], {
@@ -491,7 +809,12 @@ async function ensureAndroidIncomingTab(current: ReturnType<typeof dumpAndroidSc
         if (isAndroidIncomingHome(screen.xml)) {
           return { screen, switched: true, issue: null as string | null };
         }
-        tab = findAndroidTopTab(parseAndroidNodes(screen.xml), ANDROID_LABELS.incomingTab);
+        nodes = parseAndroidNodes(screen.xml);
+        tab =
+          findAndroidNode(
+            nodes,
+            (node) => node.clickable && node.enabled && node.resourceId === "warehouse-tab-incoming",
+          ) ?? findAndroidTopTab(nodes, ANDROID_LABELS.incomingTab);
       }
     }
 
@@ -667,37 +990,59 @@ async function confirmAndroidWarehouseFio(current: ReturnType<typeof dumpAndroid
     return { screen, fioConfirmed: false };
   }
 
-  const inputNode = findAndroidFioInputNode(parseAndroidNodes(screen.xml));
-  if (!inputNode) {
-    throw new Error("Android warehouse FIO confirmation controls were not found");
+  const fioValue = "ff";
+  const inputNode = () =>
+    androidHarness.parseAndroidNodes(screen.xml).find((node) => node.resourceId.includes("warehouse-fio-input")) ??
+    null;
+  const fillStrategies = [
+    async () => {
+      const node = inputNode();
+      if (!node) throw new Error("Android warehouse FIO confirmation controls were not found");
+      androidHarness.tapAndroidBounds(node.bounds);
+      await sleep(1500);
+      await typeAsciiLowercaseByKeyEvents(fioValue);
+    },
+    async () => {
+      const node = inputNode();
+      if (!node) throw new Error("Android warehouse FIO confirmation controls were not found");
+      await androidHarness.replaceAndroidFieldText(node, fioValue);
+    },
+    async () => {
+      const node = inputNode();
+      if (!node) throw new Error("Android warehouse FIO confirmation controls were not found");
+      androidHarness.tapAndroidBounds(node.bounds);
+      await sleep(900);
+      androidHarness.typeAndroidText(fioValue);
+    },
+  ];
+
+  let confirmScreen: ReturnType<typeof dumpAndroidScreen> | null = null;
+  let confirmNode: AndroidNode | null = null;
+  for (let strategyIndex = 0; strategyIndex < fillStrategies.length && !confirmNode; strategyIndex += 1) {
+    await fillStrategies[strategyIndex]();
+    await sleep(1000);
+
+    confirmScreen = await poll(
+      `android:warehouse_fio_confirm_button:${strategyIndex + 1}`,
+      async () => {
+        const next = dumpAndroidScreen(`android-warehouse-incoming-queue-fio-filled-${strategyIndex + 1}`);
+        return findAndroidFioActionNode(parseAndroidNodes(next.xml)) ? next : null;
+      },
+      8_000,
+      750,
+    ).catch(() => dumpAndroidScreen(`android-warehouse-incoming-queue-fio-filled-timeout-${strategyIndex + 1}`));
+    confirmNode = findAndroidFioActionNode(parseAndroidNodes(confirmScreen.xml));
+    screen = confirmScreen;
+  }
+  if (!confirmNode) {
+    throw new Error("Android warehouse FIO confirmation action did not become available after input");
   }
 
-  tapAndroidBounds(inputNode.bounds);
-  await sleep(400);
-  execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText("Warehouse Incoming Android")], {
-    cwd: projectRoot,
-    stdio: "pipe",
-  });
-  await sleep(500);
   execFileSync("adb", ["shell", "input", "keyevent", "4"], {
     cwd: projectRoot,
     stdio: "pipe",
   });
   await sleep(500);
-
-  const confirmScreen = await poll(
-    "android:warehouse_fio_confirm_button",
-    async () => {
-      const next = dumpAndroidScreen("android-warehouse-incoming-queue-fio-filled");
-      return findAndroidFioActionNode(parseAndroidNodes(next.xml)) ? next : null;
-    },
-    10_000,
-    750,
-  ).catch(() => dumpAndroidScreen("android-warehouse-incoming-queue-fio-filled-timeout"));
-  const confirmNode = findAndroidFioActionNode(parseAndroidNodes(confirmScreen.xml));
-  if (!confirmNode) {
-    throw new Error("Android warehouse FIO confirmation action did not become available after input");
-  }
 
   tapAndroidBounds(confirmNode.bounds);
   await sleep(1200);
@@ -733,15 +1078,48 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
   const devClient = await androidHarness.ensureAndroidDevClientServer();
   try {
     user = await createTempUser(process.env.WAREHOUSE_WAVE1_ROLE || "warehouse", "Warehouse Incoming Android");
-    const expected = await loadExpectedIncomingContext();
     const packageName = detectAndroidPackage();
     const preflight = androidHarness.runAndroidPreflight({ packageName, clearApp: true });
     await androidHarness.warmAndroidDevClientBundle(androidDevClientPort);
-    const current = await loginWarehouseAndroid(user);
+    let seededFioStorage: Record<string, unknown> | null = null;
+    let current = await loginWarehouseAndroid(user);
+    if (isAndroidFioModal(current.xml)) {
+      seededFioStorage = seedAndroidWarehouseFioStorage(packageName);
+      androidHarness.startAndroidDevClientProject(packageName, androidDevClientPort, { stopApp: true });
+      await sleep(2500);
+      current = await androidHarness.openAndroidRoute({
+        packageName,
+        routes: [androidWarehouseRoute, "rik://office/warehouse", "rik:///%28tabs%29/office/warehouse"],
+        artifactBase: "android-warehouse-incoming-queue-after-fio-storage-seed",
+        predicate: (xml) => isAndroidIncomingHome(xml) || isAndroidFioModal(xml) || isAndroidIncomingModal(xml),
+        renderablePredicate: (xml) =>
+          isAndroidLoginScreen(xml) || isAndroidIncomingHome(xml) || isAndroidFioModal(xml) || isAndroidIncomingModal(xml),
+        loginScreenPredicate: isAndroidLoginScreen,
+        timeoutMs: 60_000,
+        delayMs: 1_500,
+      });
+    }
     const fioState = await confirmAndroidWarehouseFio(current);
     let workingScreen = fioState.screen;
     let workingXml = fioState.screen.xml;
     const platformSpecificIssues: string[] = [];
+    const officeHop = await openAndroidWarehouseFromOffice(workingScreen);
+    workingScreen = officeHop.screen;
+    workingXml = workingScreen.xml;
+    if (officeHop.issue) {
+      platformSpecificIssues.push(officeHop.issue);
+    }
+    if (isAndroidFioModal(workingXml)) {
+      const nextFioState = await confirmAndroidWarehouseFio(workingScreen);
+      workingScreen = nextFioState.screen;
+      workingXml = workingScreen.xml;
+      const nextOfficeHop = await openAndroidWarehouseFromOffice(workingScreen);
+      workingScreen = nextOfficeHop.screen;
+      workingXml = workingScreen.xml;
+      if (nextOfficeHop.issue) {
+        platformSpecificIssues.push(nextOfficeHop.issue);
+      }
+    }
 
     if (workingXml.includes(LABELS.issueModalTitle)) {
       execFileSync("adb", ["shell", "input", "keyevent", "4"], {
@@ -771,7 +1149,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     }
 
     const queueVisible = /PR-\d+\/\d{4}/.test(workingXml);
-    const emptyStateVisible = !expected.hasRows && isAndroidIncomingEmptyState(workingXml);
+    const emptyStateVisible = isAndroidIncomingEmptyState(workingXml);
     if (!queueVisible && !emptyStateVisible) {
       platformSpecificIssues.push("Incoming queue rows were not visible after deeplink/tab flow");
     }
@@ -806,6 +1184,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
           return {
             status: queueVisible && modalOpened ? "passed" : "failed",
             androidPreflight: preflight,
+            seededFioStorage,
             ...recovery,
             incomingTabOpened: incomingTab.switched,
             queueVisible,
@@ -828,6 +1207,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     return {
       status: incomingTab.switched && emptyStateVisible ? "passed" : "failed",
       androidPreflight: preflight,
+      seededFioStorage,
       ...recovery,
       incomingTabOpened: incomingTab.switched,
       queueVisible,

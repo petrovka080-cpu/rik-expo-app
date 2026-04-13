@@ -80,10 +80,29 @@ const normalizeDraft = (incomingId: string, value: Partial<WarehouseReceiveDraft
   };
 };
 
+const shouldPersistDraft = (draft: WarehouseReceiveDraftRecord): boolean => {
+  if (draft.items.length > 0) return true;
+  if (draft.pendingCount > 0) return true;
+  if (draft.status === "dirty_local") return true;
+  if (draft.status === "queued" || draft.status === "syncing" || draft.status === "retry_wait") return true;
+  if (draft.status === "failed_terminal") return true;
+  return false;
+};
+
+const pruneDraftsForPersistence = (
+  drafts: Record<string, WarehouseReceiveDraftRecord>,
+): Record<string, WarehouseReceiveDraftRecord> =>
+  Object.fromEntries(
+    Object.entries(drafts)
+      .map(([incomingId, record]) => [trim(incomingId), normalizeDraft(incomingId, record)] as const)
+      .filter(([incomingId, record]) => Boolean(incomingId) && shouldPersistDraft(record)),
+  );
+
 const persistState = async (state: WarehouseReceiveDraftStoreState) => {
+  const drafts = pruneDraftsForPersistence(state.drafts);
   const payload: PersistedWarehouseReceiveDraftStore = {
     version: 1,
-    drafts: state.drafts,
+    drafts,
   };
 
   if (!Object.keys(payload.drafts).length) {
@@ -113,9 +132,10 @@ export const configureWarehouseReceiveDraftStore = (options?: {
 export const hydrateWarehouseReceiveDraftStore = async (): Promise<WarehouseReceiveDraftStoreState> => {
   const loaded = await readJsonFromStorage<Partial<PersistedWarehouseReceiveDraftStore>>(storageAdapter, STORAGE_KEY);
   const draftsRaw = loaded?.drafts ?? {};
-  const drafts = Object.fromEntries(
+  const normalizedDrafts = Object.fromEntries(
     Object.entries(draftsRaw).map(([incomingId, record]) => [trim(incomingId), normalizeDraft(incomingId, record ?? {})]),
   );
+  const drafts = pruneDraftsForPersistence(normalizedDrafts);
 
   const next: WarehouseReceiveDraftStoreState = {
     hydrated: true,
@@ -123,6 +143,9 @@ export const hydrateWarehouseReceiveDraftStore = async (): Promise<WarehouseRece
   };
 
   useWarehouseReceiveDraftStore.setState(next);
+  if (Object.keys(normalizedDrafts).length !== Object.keys(drafts).length) {
+    await persistState(next);
+  }
   return next;
 };
 
