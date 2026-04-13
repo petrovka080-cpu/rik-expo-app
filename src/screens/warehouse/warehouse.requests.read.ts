@@ -23,6 +23,7 @@ import {
   apiFetchReqHeadsCanonicalRaw,
   apiFetchReqItemsCanonicalRaw,
 } from "./warehouse.requests.read.canonical";
+import { isAbortError } from "../../lib/requestCancellation";
 
 export type {
   WarehouseReqHeadsFetchResult,
@@ -36,6 +37,7 @@ export async function apiFetchReqHeadsWindow(
   supabase: SupabaseClient,
   page: number = 0,
   pageSize: number = 50,
+  options?: { signal?: AbortSignal | null },
 ): Promise<WarehouseReqHeadsFetchResult> {
   const observation = beginPlatformObservability({
     screen: "warehouse",
@@ -46,7 +48,12 @@ export async function apiFetchReqHeadsWindow(
   });
 
   try {
-    const result = await apiFetchReqHeadsCanonicalRaw(supabase, page, pageSize);
+    const result = await apiFetchReqHeadsCanonicalRaw(
+      supabase,
+      page,
+      pageSize,
+      { signal: options?.signal },
+    );
     recordReqHeadsTrace({
       result: "success",
       sourcePath: result.sourceMeta.sourcePath,
@@ -76,6 +83,7 @@ export async function apiFetchReqHeadsWindow(
     });
     return result;
   } catch (error) {
+    if (isAbortError(error)) throw error;
     const message = error instanceof Error ? error.message : String(error ?? "unknown");
     recordReqHeadsTrace({
       result: "error",

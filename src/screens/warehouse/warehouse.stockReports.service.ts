@@ -6,6 +6,10 @@ import {
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import {
+  isAbortError,
+  throwIfAborted,
+} from "../../lib/requestCancellation";
+import {
   asUnknownRows,
   fetchWarehouseIncomingLedgerRows,
   fetchWarehouseIncomingLineRows,
@@ -463,13 +467,17 @@ export async function apiFetchReports(
   supabase: SupabaseClient,
   periodFrom?: string,
   periodTo?: string,
+  options?: { signal?: AbortSignal | null },
 ): Promise<{ supported: boolean; repStock: StockRow[]; repMov: UnknownRow[]; repIssues: UnknownRow[] }> {
   try {
+    throwIfAborted(options?.signal);
     const { stock, movement, issues } = await fetchWarehouseReportsBundle(
       supabase,
       periodFrom,
       periodTo,
+      { signal: options?.signal },
     );
+    throwIfAborted(options?.signal);
 
     return {
       supported: true,
@@ -478,6 +486,7 @@ export async function apiFetchReports(
       repIssues: !issues.error && Array.isArray(issues.data) ? (issues.data as UnknownRow[]) : [],
     };
   } catch (error) {
+    if (isAbortError(error)) throw error;
     logWarehouseApiFallback("apiFetchReports", error);
     return { supported: false, repStock: [], repMov: [], repIssues: [] };
   }
@@ -547,11 +556,14 @@ export async function apiFetchIssuedByObjectReportFast(
 export async function apiFetchIncomingReports(
   supabase: SupabaseClient,
   params: { from?: string | null; to?: string | null },
+  options?: { signal?: AbortSignal | null },
 ): Promise<UnknownRow[]> {
+  throwIfAborted(options?.signal);
   const response = await fetchWarehouseIncomingReportRows(supabase, {
     from: normDateArg(params.from),
     to: normDateArg(params.to),
-  });
+  }, { signal: options?.signal });
+  throwIfAborted(options?.signal);
 
   if (!response.error && Array.isArray(response.data)) return response.data as UnknownRow[];
   return [];

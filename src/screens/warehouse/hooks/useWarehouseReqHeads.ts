@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   apiFetchReqHeadsWindow,
@@ -31,6 +31,11 @@ import {
 } from "../../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 import {
+  abortController,
+  isAbortError,
+  throwIfAborted,
+} from "../../../lib/requestCancellation";
+import {
   isWarehouseScreenActive,
   useWarehouseFallbackActiveRef,
   type WarehouseScreenActiveRef,
@@ -58,6 +63,11 @@ type ReqHeadsFetchValue = Pick<
   hasMore: boolean;
   meta: WarehouseReqHeadsWindowMeta;
   sourceMeta: WarehouseReqHeadsSourceMeta;
+};
+
+type ReqHeadsRequestSlot = {
+  key: string;
+  controller: AbortController;
 };
 
 const cloneReqHeadsRows = (rows: ReqHeadRow[]) =>
@@ -99,7 +109,15 @@ export function useWarehouseReqHeads(params: {
     lastForceStartAt: 0,
     lastForceSkipLogAt: 0,
   });
-  const inFlightRef = useRef(new Map<string, Promise<ReqHeadsFetchValue>>());
+  const requestRef = useRef<ReqHeadsRequestSlot | null>(null);
+
+  const abortReqHeadsRequest = useCallback((reason: string) => {
+    abortController(requestRef.current?.controller, reason);
+  }, []);
+
+  useEffect(() => () => {
+    abortReqHeadsRequest("warehouse request heads unmounted");
+  }, [abortReqHeadsRequest]);
 
   const publishReqHeadsPage0 = useCallback(
     (params: {
@@ -315,39 +333,43 @@ export function useWarehouseReqHeads(params: {
         setReqHeadsFetchingPage(true);
       if (pageIndex === 0 && isWarehouseScreenActive(screenActiveRef))
         setReqHeadsLoading(true);
+      const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
+      abortReqHeadsRequest("warehouse request heads superseded");
+      const requestSlot: ReqHeadsRequestSlot = {
+        key: requestKey,
+        controller: new AbortController(),
+      };
+      requestRef.current = requestSlot;
+      const { signal } = requestSlot.controller;
 
       try {
-        const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
-        let request = inFlightRef.current.get(requestKey);
-        if (!request) {
-          request = apiFetchReqHeadsWindow(supabase, pageIndex, pageSize).then(
-            (result) => {
-              logReqHeadsMetrics("window_fetch", {
-                pageIndex,
-                pageSize,
-                forceRefresh,
-                rowCount: result.rows.length,
-                totalRowCount: result.meta.totalRowCount,
-                hasMore: result.meta.hasMore,
-                primaryOwner: result.sourceMeta.primaryOwner,
-                sourceKind: result.sourceMeta.sourceKind,
-                contractVersion: result.meta.contractVersion,
-                scopeKey: result.meta.scopeKey,
-                pageOffset: result.meta.pageOffset,
-                repairedMissingIdsCount: result.meta.repairedMissingIdsCount,
-              });
-              return {
-                rows: result.rows,
-                hasMore: result.meta.hasMore,
-                meta: result.meta,
-                sourceMeta: result.sourceMeta,
-                integrityState: result.integrityState,
-              };
-            },
-          );
-          inFlightRef.current.set(requestKey, request);
-        }
-        const next = await request;
+        throwIfAborted(signal);
+        const result = await apiFetchReqHeadsWindow(supabase, pageIndex, pageSize, {
+          signal,
+        });
+        throwIfAborted(signal);
+        if (requestRef.current !== requestSlot) return;
+        logReqHeadsMetrics("window_fetch", {
+          pageIndex,
+          pageSize,
+          forceRefresh,
+          rowCount: result.rows.length,
+          totalRowCount: result.meta.totalRowCount,
+          hasMore: result.meta.hasMore,
+          primaryOwner: result.sourceMeta.primaryOwner,
+          sourceKind: result.sourceMeta.sourceKind,
+          contractVersion: result.meta.contractVersion,
+          scopeKey: result.meta.scopeKey,
+          pageOffset: result.meta.pageOffset,
+          repairedMissingIdsCount: result.meta.repairedMissingIdsCount,
+        });
+        const next: ReqHeadsFetchValue = {
+          rows: result.rows,
+          hasMore: result.meta.hasMore,
+          meta: result.meta,
+          sourceMeta: result.sourceMeta,
+          integrityState: result.integrityState,
+        };
         if (!isWarehouseScreenActive(screenActiveRef)) return;
         const rows = next.rows;
 
@@ -432,6 +454,7 @@ export function useWarehouseReqHeads(params: {
           });
         }
       } catch (e) {
+        if (isAbortError(e) || requestRef.current !== requestSlot) return;
         if (!isWarehouseScreenActive(screenActiveRef)) return;
         const failure = classifyWarehouseReqHeadsFailure(e);
         if (pageIndex === 0) {
@@ -471,8 +494,9 @@ export function useWarehouseReqHeads(params: {
         }
         throw e;
       } finally {
-        const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
-        inFlightRef.current.delete(requestKey);
+        if (requestRef.current === requestSlot) {
+          requestRef.current = null;
+        }
         reqRefs.current.fetching = false;
         if (isWarehouseScreenActive(screenActiveRef)) {
           setReqHeadsFetchingPage(false);
@@ -480,7 +504,7 @@ export function useWarehouseReqHeads(params: {
         }
       }
     },
-    [publishReqHeadsPage0, screenActiveRef, supabase, pageSize],
+    [abortReqHeadsRequest, publishReqHeadsPage0, screenActiveRef, supabase, pageSize],
   );
 
   return {

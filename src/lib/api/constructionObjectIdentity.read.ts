@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  applySupabaseAbortSignal,
+  throwIfAborted,
+} from "../requestCancellation";
 
 type ConstructionObjectLookupRow = {
   construction_object_code: string | null;
@@ -50,15 +54,21 @@ const normalizeRequestObjectIdentityScopeRow = (
 export async function loadConstructionObjectCodesByNames(
   supabase: SupabaseClient,
   namesRaw: string[],
+  options?: { signal?: AbortSignal | null },
 ): Promise<Map<string, string>> {
   const names = Array.from(new Set(namesRaw.map((value) => String(value ?? "").trim()).filter(Boolean)));
   const out = new Map<string, string>();
   if (!names.length) return out;
 
-  const { data, error } = await supabase
-    .from("construction_object_identity_lookup_v1")
-    .select("construction_object_code, construction_object_name")
-    .in("construction_object_name", names);
+  throwIfAborted(options?.signal);
+  const { data, error } = await applySupabaseAbortSignal(
+    supabase
+      .from("construction_object_identity_lookup_v1")
+      .select("construction_object_code, construction_object_name")
+      .in("construction_object_name", names),
+    options?.signal,
+  );
+  throwIfAborted(options?.signal);
 
   if (error) throw error;
 

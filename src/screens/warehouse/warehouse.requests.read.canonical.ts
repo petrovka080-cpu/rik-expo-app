@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  applySupabaseAbortSignal,
+  throwIfAborted,
+} from "../../lib/requestCancellation";
 
 import { createHealthyWarehouseReqHeadsIntegrityState } from "./warehouse.reqHeads.state";
 import { parseNum } from "./warehouse.request.utils";
@@ -90,12 +94,18 @@ export async function apiFetchReqHeadsCanonicalRaw(
   supabase: SupabaseClient,
   page: number,
   pageSize: number,
+  options?: { signal?: AbortSignal | null },
 ): Promise<WarehouseReqHeadsFetchResult> {
   const offset = Math.max(0, page * pageSize);
-  const { data, error } = await supabase.rpc("warehouse_issue_queue_scope_v4", {
-    p_offset: offset,
-    p_limit: pageSize,
-  });
+  throwIfAborted(options?.signal);
+  const { data, error } = await applySupabaseAbortSignal(
+    supabase.rpc("warehouse_issue_queue_scope_v4", {
+      p_offset: offset,
+      p_limit: pageSize,
+    }),
+    options?.signal,
+  );
+  throwIfAborted(options?.signal);
   if (error) throw error;
 
   const rows = requireRpcRows(data, "warehouse_issue_queue_scope_v4").map((row, index) =>

@@ -1,5 +1,12 @@
 import { Alert } from "react-native";
-import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MutableRefObject,
+} from "react";
 import {
   type DirectorReportFetchMeta,
 } from "../../../lib/api/director_reports";
@@ -10,6 +17,11 @@ import {
   type DirectorReportScopeOptionsState,
   type DirectorReportScopePayload,
 } from "../../../lib/api/directorReportsScope.service";
+import {
+  abortController,
+  isAbortError,
+  throwIfAborted,
+} from "../../../lib/requestCancellation";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import type {
   RepDisciplinePayload,
@@ -21,17 +33,18 @@ import {
   type DirectorObservedBranchMeta,
   type DirectorReportsBranchStage,
 } from "../directorReports.store";
-import {
-  clearDirectorReportsInFlight,
-  resolveDirectorReportsInFlight,
-  type DirectorReportsInFlightEntry,
-} from "../directorReportsInFlight";
 
 type Deps = {
   fmtDateOnly: (iso?: string | null) => string;
 };
 
 type ReportOptionsState = DirectorReportScopeOptionsState;
+
+type DirectorReportsRequestSlot = {
+  key: string;
+  reqId: number;
+  controller: AbortController;
+};
 
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 
@@ -71,31 +84,6 @@ const recordDirectorReportsWarning = (
       owner: "reports_controller",
       severity: "warn",
       ...extra,
-    },
-  });
-};
-
-const recordDirectorReportsInFlight = (
-  event: "reports_inflight_joined" | "reports_inflight_stale_dropped",
-  params: {
-    stage: "report" | "discipline" | "options";
-    key: string;
-    reqId?: number;
-    staleReqId?: number;
-    currentReqId?: number;
-  },
-) => {
-  recordPlatformObservability({
-    screen: "director",
-    surface: "reports_controller",
-    category: "fetch",
-    event,
-    result: event === "reports_inflight_joined" ? "joined_inflight" : "skipped",
-    sourceKind: "director_reports_scope",
-    extra: {
-      module: "useDirectorReportsController",
-      owner: "reports_controller",
-      ...params,
     },
   });
 };
@@ -149,6 +137,34 @@ const minusDays = (days: number) => {
 const deriveDisciplineMeta = (meta: DirectorReportFetchMeta | null): DirectorReportFetchMeta | null =>
   meta ? { ...meta, stage: "discipline", pricedStage: meta.pricedStage ?? "priced" } : null;
 
+const startDirectorReportsRequest = (
+  ref: MutableRefObject<DirectorReportsRequestSlot | null>,
+  key: string,
+  reqId: number,
+  reason: string,
+): DirectorReportsRequestSlot => {
+  abortController(ref.current?.controller, reason);
+  const slot: DirectorReportsRequestSlot = {
+    key,
+    reqId,
+    controller: new AbortController(),
+  };
+  ref.current = slot;
+  return slot;
+};
+
+const isActiveDirectorReportsRequest = (
+  ref: MutableRefObject<DirectorReportsRequestSlot | null>,
+  slot: DirectorReportsRequestSlot,
+) => ref.current === slot && !slot.controller.signal.aborted;
+
+const clearDirectorReportsRequest = (
+  ref: MutableRefObject<DirectorReportsRequestSlot | null>,
+  slot: DirectorReportsRequestSlot,
+) => {
+  if (ref.current === slot) ref.current = null;
+};
+
 export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const repTab = useDirectorReportsUiStore((state) => state.repTab);
   const repFrom = useDirectorReportsUiStore((state) => state.repFrom);
@@ -174,11 +190,19 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const optionsReqSeqRef = useRef(0);
   const disciplineReqSeqRef = useRef(0);
   const scopeLoadSeqRef = useRef(0);
-  const inFlightReportRef = useRef<Map<string, DirectorReportsInFlightEntry>>(new Map());
-  const inFlightDisciplineRef = useRef<Map<string, DirectorReportsInFlightEntry>>(new Map());
-  const inFlightOptionsRef = useRef<Map<string, DirectorReportsInFlightEntry>>(new Map());
+  const reportRequestRef = useRef<DirectorReportsRequestSlot | null>(null);
+  const disciplineRequestRef = useRef<DirectorReportsRequestSlot | null>(null);
+  const optionsRequestRef = useRef<DirectorReportsRequestSlot | null>(null);
+  const scopeRequestRef = useRef<DirectorReportsRequestSlot | null>(null);
   const lastDisciplineLoadKeyRef = useRef<string>("");
   const disciplinePricesReadyRef = useRef<Set<string>>(new Set());
+
+  const abortActiveRequests = useCallback((reason: string) => {
+    abortController(reportRequestRef.current?.controller, reason);
+    abortController(disciplineRequestRef.current?.controller, reason);
+    abortController(optionsRequestRef.current?.controller, reason);
+    abortController(scopeRequestRef.current?.controller, reason);
+  }, []);
 
   const nowMs = useCallback(() => {
     try {
@@ -325,12 +349,17 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       : "Весь период";
   }, [fmtDateOnly, repFrom, repTo]);
 
-  const beginScopeRefresh = useCallback(() => {
+  const beginScopeRefresh = useCallback((reason: string = "director reports scope changed") => {
+    abortActiveRequests(reason);
     optionsReqSeqRef.current += 1;
     reportReqSeqRef.current += 1;
     disciplineReqSeqRef.current += 1;
     return ++scopeLoadSeqRef.current;
-  }, []);
+  }, [abortActiveRequests]);
+
+  useEffect(() => () => {
+    beginScopeRefresh("director reports controller unmounted");
+  }, [beginScopeRefresh]);
 
   const loadReportScope = useCallback(async (args: {
     from: string;
@@ -340,6 +369,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     includeDiscipline?: boolean;
     skipDisciplinePrices: boolean;
     bypassCache?: boolean;
+    signal?: AbortSignal | null;
   }) => loadDirectorReportUiScope(args), []);
 
   const commitLoadedScope = useCallback((scopeLoad: DirectorReportScopeLoadResult, opts?: { includeDiscipline: boolean }) => {
@@ -370,29 +400,18 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const objectName = objectNameArg === undefined ? repObjectName : objectNameArg;
     const key = reportKey(from, to, objectName ?? null, repOptObjectIdByName);
-    const inFlight = resolveDirectorReportsInFlight(inFlightReportRef.current, key, reportReqSeqRef.current);
-    if (inFlight.action === "join") {
-      recordDirectorReportsInFlight("reports_inflight_joined", {
-        stage: "report",
-        key,
-        reqId: inFlight.reqId,
-      });
-      await inFlight.promise;
-      return;
-    }
-    if (inFlight.action === "drop_stale") {
-      recordDirectorReportsInFlight("reports_inflight_stale_dropped", {
-        stage: "report",
-        key,
-        staleReqId: inFlight.staleReqId,
-        currentReqId: inFlight.currentReqId,
-      });
-    }
-
     const reqId = ++reportReqSeqRef.current;
+    const requestSlot = startDirectorReportsRequest(
+      reportRequestRef,
+      key,
+      reqId,
+      "director report superseded",
+    );
+    const { signal } = requestSlot.controller;
     const task = (async () => {
       if (!opts?.background) setRepLoading(true);
       try {
+        throwIfAborted(signal);
         const scopeLoad = await loadReportScope({
           from,
           to,
@@ -400,8 +419,13 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           optionsState: currentOptionsState,
           includeDiscipline: false,
           skipDisciplinePrices: true,
+          signal,
         });
-        if (reqId !== reportReqSeqRef.current) return;
+        throwIfAborted(signal);
+        if (
+          reqId !== reportReqSeqRef.current ||
+          !isActiveDirectorReportsRequest(reportRequestRef, requestSlot)
+        ) return;
         commitOptionsState(scopeLoad.optionsKey, scopeLoad.optionsState, scopeLoad.optionsMeta, {
           fromCache: scopeLoad.optionsFromCache,
         });
@@ -410,7 +434,11 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           fromCache: scopeLoad.reportFromCache,
         });
       } catch (e: unknown) {
-        if (reqId !== reportReqSeqRef.current) return;
+        if (
+          isAbortError(e) ||
+          reqId !== reportReqSeqRef.current ||
+          !isActiveDirectorReportsRequest(reportRequestRef, requestSlot)
+        ) return;
         const message = getErrorMessage(e, "Не удалось получить отчёт");
         if (__DEV__) {
           console.warn("[director] fetchReport:", message);
@@ -420,11 +448,10 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           Alert.alert("Не удалось получить отчёт", message);
         }
       } finally {
-        clearDirectorReportsInFlight(inFlightReportRef.current, key, reqId);
-        if (!opts?.background && reqId === reportReqSeqRef.current) setRepLoading(false);
+        clearDirectorReportsRequest(reportRequestRef, requestSlot);
+        if (!opts?.background && reqId === reportReqSeqRef.current && !signal.aborted) setRepLoading(false);
       }
     })();
-    inFlightReportRef.current.set(key, { reqId, promise: task });
     await task;
   }, [commitOptionsState, commitReportState, currentOptionsState, loadReportScope, repFrom, repObjectName, repOptObjectIdByName, repTo, reportKey, setRepLoading]);
 
@@ -443,9 +470,17 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     if (hasCurrentState) {
       const pricesReady = disciplinePricesReadyRef.current.has(key);
       if (!pricesReady) {
-        const activeReqId = disciplineReqSeqRef.current;
+        const activeReqId = ++disciplineReqSeqRef.current;
+        const requestSlot = startDirectorReportsRequest(
+          disciplineRequestRef,
+          key,
+          activeReqId,
+          "director discipline price refresh superseded",
+        );
+        const { signal } = requestSlot.controller;
         void (async () => {
           try {
+            throwIfAborted(signal);
             const pricedScope = await loadReportScope({
               from,
               to,
@@ -453,8 +488,13 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
               optionsState: makeOptionsState(objectIdByName),
               includeDiscipline: true,
               skipDisciplinePrices: false,
+              signal,
             });
-            if (activeReqId !== disciplineReqSeqRef.current) return;
+            throwIfAborted(signal);
+            if (
+              activeReqId !== disciplineReqSeqRef.current ||
+              !isActiveDirectorReportsRequest(disciplineRequestRef, requestSlot)
+            ) return;
             if (pricedScope.discipline) {
               commitOptionsState(pricedScope.optionsKey, pricedScope.optionsState, pricedScope.optionsMeta, {
                 fromCache: pricedScope.optionsFromCache,
@@ -465,45 +505,36 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
               });
             }
           } catch (error) {
+            if (isAbortError(error)) return;
             recordDirectorReportsWarning("reports_priced_scope_refresh_failed", error, {
               fallbackUsed: "base_payload_kept",
               stage: "discipline_priced_refresh",
               objectName: objectName ?? null,
             });
           } finally {
-            if (activeReqId === disciplineReqSeqRef.current) setRepDisciplinePriceLoading(false);
+            clearDirectorReportsRequest(disciplineRequestRef, requestSlot);
+            if (activeReqId === disciplineReqSeqRef.current && !signal.aborted) setRepDisciplinePriceLoading(false);
           }
         })();
       }
       logTiming("api:discipline:cache_hit", totalStart);
       return;
     }
-    const inFlight = resolveDirectorReportsInFlight(inFlightDisciplineRef.current, key, disciplineReqSeqRef.current);
-    if (inFlight.action === "join") {
-      recordDirectorReportsInFlight("reports_inflight_joined", {
-        stage: "discipline",
-        key,
-        reqId: inFlight.reqId,
-      });
-      await inFlight.promise;
-      logTiming("api:discipline:join_inflight", totalStart);
-      return;
-    }
-    if (inFlight.action === "drop_stale") {
-      recordDirectorReportsInFlight("reports_inflight_stale_dropped", {
-        stage: "discipline",
-        key,
-        staleReqId: inFlight.staleReqId,
-        currentReqId: inFlight.currentReqId,
-      });
-    }
-
     const reqId = ++disciplineReqSeqRef.current;
+    const requestSlot = startDirectorReportsRequest(
+      disciplineRequestRef,
+      key,
+      reqId,
+      "director discipline superseded",
+    );
+    const { signal } = requestSlot.controller;
+    let pricingContinues = false;
     const task = (async () => {
       if (!opts?.background) setRepLoading(true);
       setRepDisciplinePriceLoading(true);
       try {
         const apiStart = nowMs();
+        throwIfAborted(signal);
         const baseScope = await loadReportScope({
           from,
           to,
@@ -511,9 +542,14 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           optionsState: makeOptionsState(objectIdByName),
           includeDiscipline: true,
           skipDisciplinePrices: true,
+          signal,
         });
+        throwIfAborted(signal);
         logTiming("api:discipline:network_done", apiStart);
-        if (reqId !== disciplineReqSeqRef.current) return;
+        if (
+          reqId !== disciplineReqSeqRef.current ||
+          !isActiveDirectorReportsRequest(disciplineRequestRef, requestSlot)
+        ) return;
         commitOptionsState(baseScope.optionsKey, baseScope.optionsState, baseScope.optionsMeta, {
           fromCache: baseScope.optionsFromCache,
         });
@@ -529,15 +565,17 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
             );
           }
         }
-        if (!opts?.background && reqId === disciplineReqSeqRef.current) setRepLoading(false);
+        if (!opts?.background && reqId === disciplineReqSeqRef.current && !signal.aborted) setRepLoading(false);
 
         if (baseScope.disciplinePricesReady) {
-          if (reqId === disciplineReqSeqRef.current) setRepDisciplinePriceLoading(false);
+          if (reqId === disciplineReqSeqRef.current && !signal.aborted) setRepDisciplinePriceLoading(false);
           return;
         }
 
+        pricingContinues = true;
         void (async () => {
           try {
+            throwIfAborted(signal);
             const fullScope = await loadReportScope({
               from,
               to,
@@ -545,8 +583,13 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
               optionsState: makeOptionsState(objectIdByName),
               includeDiscipline: true,
               skipDisciplinePrices: false,
+              signal,
             });
-            if (reqId !== disciplineReqSeqRef.current) return;
+            throwIfAborted(signal);
+            if (
+              reqId !== disciplineReqSeqRef.current ||
+              !isActiveDirectorReportsRequest(disciplineRequestRef, requestSlot)
+            ) return;
             if (fullScope.discipline) {
               commitOptionsState(fullScope.optionsKey, fullScope.optionsState, fullScope.optionsMeta, {
                 fromCache: fullScope.optionsFromCache,
@@ -563,13 +606,19 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
               }
             }
           } catch (e: unknown) {
+            if (isAbortError(e)) return;
             if (REPORTS_TIMING) console.warn("[director_works] prices_stage_failed:", getErrorMessage(e, "prices stage failed"));
           } finally {
-            if (reqId === disciplineReqSeqRef.current) setRepDisciplinePriceLoading(false);
+            clearDirectorReportsRequest(disciplineRequestRef, requestSlot);
+            if (reqId === disciplineReqSeqRef.current && !signal.aborted) setRepDisciplinePriceLoading(false);
           }
         })();
       } catch (e: unknown) {
-        if (reqId !== disciplineReqSeqRef.current) return;
+        if (
+          isAbortError(e) ||
+          reqId !== disciplineReqSeqRef.current ||
+          !isActiveDirectorReportsRequest(disciplineRequestRef, requestSlot)
+        ) return;
         const message = getErrorMessage(e, "Не удалось получить дисциплины");
         if (__DEV__) {
           console.warn("[director] fetchDiscipline:", message);
@@ -580,12 +629,11 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           Alert.alert("Не удалось получить дисциплины", message);
         }
       } finally {
-        clearDirectorReportsInFlight(inFlightDisciplineRef.current, key, reqId);
-        if (!opts?.background && reqId === disciplineReqSeqRef.current) setRepLoading(false);
+        if (!pricingContinues) clearDirectorReportsRequest(disciplineRequestRef, requestSlot);
+        if (!opts?.background && reqId === disciplineReqSeqRef.current && !signal.aborted) setRepLoading(false);
         logTiming("api:discipline:total", totalStart);
       }
     })();
-    inFlightDisciplineRef.current.set(key, { reqId, promise: task });
     await task;
   }, [commitDisciplineState, commitOptionsState, disciplineKey, loadReportScope, logTiming, makeOptionsState, nowMs, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepDisciplinePriceLoading, setRepLoading]);
 
@@ -594,12 +642,20 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const scopeReqId = beginScopeRefresh();
     const activeTab = modeOverride ?? repTab;
+    const requestSlot = startDirectorReportsRequest(
+      scopeRequestRef,
+      `${from}|${to}|${String(objectName ?? "")}|${activeTab}`,
+      scopeReqId,
+      "director scope refresh superseded",
+    );
+    const { signal } = requestSlot.controller;
     const includeDiscipline = activeTab === "discipline";
 
     resetRepBranchMeta();
     setRepOptLoading(true);
     setRepLoading(true);
     try {
+      throwIfAborted(signal);
       const scopeLoad = await loadReportScope({
         from,
         to,
@@ -607,8 +663,13 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         optionsState: currentOptionsState,
         includeDiscipline,
         skipDisciplinePrices: !includeDiscipline,
+        signal,
       });
-      if (scopeReqId !== scopeLoadSeqRef.current) return;
+      throwIfAborted(signal);
+      if (
+        scopeReqId !== scopeLoadSeqRef.current ||
+        !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
+      ) return;
       commitLoadedScope(scopeLoad, { includeDiscipline });
       if (includeDiscipline && scopeLoad.discipline && !scopeLoad.disciplinePricesReady) {
         void fetchDiscipline(objectName, {
@@ -622,7 +683,11 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         });
       }
     } catch (e: unknown) {
-      if (scopeReqId !== scopeLoadSeqRef.current) return;
+      if (
+        isAbortError(e) ||
+        scopeReqId !== scopeLoadSeqRef.current ||
+        !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
+      ) return;
       const message = getErrorMessage(e, "Не удалось пересчитать отчёт");
       if (__DEV__) {
         console.warn("[director] syncScopeBothModes:", message);
@@ -630,7 +695,8 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       setRepData(null);
       Alert.alert("Не удалось пересчитать отчёт", message);
     } finally {
-      if (scopeReqId === scopeLoadSeqRef.current) {
+      clearDirectorReportsRequest(scopeRequestRef, requestSlot);
+      if (scopeReqId === scopeLoadSeqRef.current && !signal.aborted) {
         setRepOptLoading(false);
         setRepLoading(false);
       }
@@ -646,29 +712,18 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const key = optionsKey(from, to);
-    const inFlight = resolveDirectorReportsInFlight(inFlightOptionsRef.current, key, optionsReqSeqRef.current);
-    if (inFlight.action === "join") {
-      recordDirectorReportsInFlight("reports_inflight_joined", {
-        stage: "options",
-        key,
-        reqId: inFlight.reqId,
-      });
-      await inFlight.promise;
-      return;
-    }
-    if (inFlight.action === "drop_stale") {
-      recordDirectorReportsInFlight("reports_inflight_stale_dropped", {
-        stage: "options",
-        key,
-        staleReqId: inFlight.staleReqId,
-        currentReqId: inFlight.currentReqId,
-      });
-    }
-
     const reqId = ++optionsReqSeqRef.current;
+    const requestSlot = startDirectorReportsRequest(
+      optionsRequestRef,
+      key,
+      reqId,
+      "director report options superseded",
+    );
+    const { signal } = requestSlot.controller;
     const task = (async () => {
       setRepOptLoading(true);
       try {
+        throwIfAborted(signal);
         const result = await loadReportScope({
           from,
           to,
@@ -676,24 +731,32 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           optionsState: currentOptionsState,
           includeDiscipline: false,
           skipDisciplinePrices: true,
+          signal,
         });
-        if (reqId !== optionsReqSeqRef.current) return;
+        throwIfAborted(signal);
+        if (
+          reqId !== optionsReqSeqRef.current ||
+          !isActiveDirectorReportsRequest(optionsRequestRef, requestSlot)
+        ) return;
         commitOptionsState(key, result.optionsState, result.optionsMeta, {
           fromCache: result.optionsFromCache,
         });
       } catch (e: unknown) {
-        if (reqId !== optionsReqSeqRef.current) return;
+        if (
+          isAbortError(e) ||
+          reqId !== optionsReqSeqRef.current ||
+          !isActiveDirectorReportsRequest(optionsRequestRef, requestSlot)
+        ) return;
         if (__DEV__) {
           console.warn("[director] fetchReportOptions:", getErrorMessage(e, "Не удалось получить опции отчётов"));
         }
         setRepOptObjects([]);
         setRepOptObjectIdByName({});
       } finally {
-        clearDirectorReportsInFlight(inFlightOptionsRef.current, key, reqId);
-        if (reqId === optionsReqSeqRef.current) setRepOptLoading(false);
+        clearDirectorReportsRequest(optionsRequestRef, requestSlot);
+        if (reqId === optionsReqSeqRef.current && !signal.aborted) setRepOptLoading(false);
       }
     })();
-    inFlightOptionsRef.current.set(key, { reqId, promise: task });
     await task;
   }, [commitOptionsState, currentOptionsState, loadReportScope, optionsKey, repFrom, repObjectName, repTo, setRepOptLoading]);
 
@@ -704,19 +767,32 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const from = nextFrom ? String(nextFrom).slice(0, 10) : "";
     const to = nextTo ? String(nextTo).slice(0, 10) : "";
     const scopeReqId = beginScopeRefresh();
+    const requestSlot = startDirectorReportsRequest(
+      scopeRequestRef,
+      `${from}|${to}|period|${repTab}`,
+      scopeReqId,
+      "director report period superseded",
+    );
+    const { signal } = requestSlot.controller;
 
     resetRepBranchMeta();
     setRepOptLoading(true);
     setRepLoading(true);
     try {
+      throwIfAborted(signal);
       const scopeLoad = await loadReportScope({
         from,
         to,
         objectName: null,
         includeDiscipline: repTab === "discipline",
         skipDisciplinePrices: repTab !== "discipline",
+        signal,
       });
-      if (scopeReqId !== scopeLoadSeqRef.current) return;
+      throwIfAborted(signal);
+      if (
+        scopeReqId !== scopeLoadSeqRef.current ||
+        !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
+      ) return;
       commitLoadedScope(scopeLoad, { includeDiscipline: repTab === "discipline" });
       if (repTab === "discipline" && scopeLoad.discipline && !scopeLoad.disciplinePricesReady) {
         void fetchDiscipline(null, {
@@ -725,7 +801,11 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         });
       }
     } catch (e: unknown) {
-      if (scopeReqId !== scopeLoadSeqRef.current) return;
+      if (
+        isAbortError(e) ||
+        scopeReqId !== scopeLoadSeqRef.current ||
+        !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
+      ) return;
       const message = getErrorMessage(e, "Не удалось пересчитать отчёт");
       if (__DEV__) {
         console.warn("[director] applyReportPeriod:", message);
@@ -735,7 +815,8 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       setRepOptObjectIdByName({});
       Alert.alert("Не удалось пересчитать отчёт", message);
     } finally {
-      if (scopeReqId === scopeLoadSeqRef.current) {
+      clearDirectorReportsRequest(scopeRequestRef, requestSlot);
+      if (scopeReqId === scopeLoadSeqRef.current && !signal.aborted) {
         setRepOptLoading(false);
         setRepLoading(false);
       }
@@ -753,11 +834,19 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const currentObject = repObjectName ?? null;
     const scopeReqId = beginScopeRefresh();
+    const requestSlot = startDirectorReportsRequest(
+      scopeRequestRef,
+      `${from}|${to}|${String(currentObject ?? "")}|refresh|${repTab}`,
+      scopeReqId,
+      "director report refresh superseded",
+    );
+    const { signal } = requestSlot.controller;
 
     resetRepBranchMeta();
     setRepOptLoading(true);
     setRepLoading(true);
     try {
+      throwIfAborted(signal);
       const scopeLoad = await loadReportScope({
         from,
         to,
@@ -766,8 +855,13 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         includeDiscipline: repTab === "discipline",
         skipDisciplinePrices: repTab !== "discipline",
         bypassCache: true,
+        signal,
       });
-      if (scopeReqId !== scopeLoadSeqRef.current) return;
+      throwIfAborted(signal);
+      if (
+        scopeReqId !== scopeLoadSeqRef.current ||
+        !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
+      ) return;
       commitLoadedScope(scopeLoad, { includeDiscipline: repTab === "discipline" });
       if (repTab === "discipline" && scopeLoad.discipline && !scopeLoad.disciplinePricesReady) {
         void fetchDiscipline(currentObject, {
@@ -776,7 +870,11 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         });
       }
     } catch (e: unknown) {
-      if (scopeReqId !== scopeLoadSeqRef.current) return;
+      if (
+        isAbortError(e) ||
+        scopeReqId !== scopeLoadSeqRef.current ||
+        !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
+      ) return;
       const message = getErrorMessage(e, "Не удалось обновить отчёт");
       if (__DEV__) {
         console.warn("[director] refreshReports:", message);
@@ -784,7 +882,8 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       setRepData(null);
       Alert.alert("Не удалось обновить отчёт", message);
     } finally {
-      if (scopeReqId === scopeLoadSeqRef.current) {
+      clearDirectorReportsRequest(scopeRequestRef, requestSlot);
+      if (scopeReqId === scopeLoadSeqRef.current && !signal.aborted) {
         setRepOptLoading(false);
         setRepLoading(false);
       }
@@ -811,6 +910,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       logTiming("tab_switch_to_works", switchStart);
       return;
     }
+    abortController(disciplineRequestRef.current?.controller, "director reports tab changed");
     void fetchReport(undefined, { background: true });
   }, [disciplineKey, fetchReport, logTiming, nowMs, repData, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepTabState, syncScopeBothModes]);
 
@@ -822,12 +922,20 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const currentObject = repObjectName ?? null;
     const scopeReqId = beginScopeRefresh();
+    const requestSlot = startDirectorReportsRequest(
+      scopeRequestRef,
+      `${from}|${to}|${String(currentObject ?? "")}|open`,
+      scopeReqId,
+      "director reports open superseded",
+    );
+    const { signal } = requestSlot.controller;
 
     resetRepBranchMeta();
     setRepOptLoading(true);
     setRepLoading(true);
     void (async () => {
       try {
+        throwIfAborted(signal);
         const scopeLoad = await loadReportScope({
           from,
           to,
@@ -835,11 +943,20 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           optionsState: currentOptionsState,
           includeDiscipline: false,
           skipDisciplinePrices: true,
+          signal,
         });
-        if (scopeReqId !== scopeLoadSeqRef.current) return;
+        throwIfAborted(signal);
+        if (
+          scopeReqId !== scopeLoadSeqRef.current ||
+          !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
+        ) return;
         commitLoadedScope(scopeLoad, { includeDiscipline: false });
       } catch (e: unknown) {
-        if (scopeReqId !== scopeLoadSeqRef.current) return;
+        if (
+          isAbortError(e) ||
+          scopeReqId !== scopeLoadSeqRef.current ||
+          !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
+        ) return;
         const message = getErrorMessage(e, "Не удалось получить отчёт");
         if (__DEV__) {
           console.warn("[director] openReports:", message);
@@ -847,7 +964,8 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         setRepData(null);
         Alert.alert("Не удалось получить отчёт", message);
       } finally {
-        if (scopeReqId === scopeLoadSeqRef.current) {
+        clearDirectorReportsRequest(scopeRequestRef, requestSlot);
+        if (scopeReqId === scopeLoadSeqRef.current && !signal.aborted) {
           setRepOptLoading(false);
           setRepLoading(false);
         }

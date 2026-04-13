@@ -3,6 +3,10 @@ import { loadDirectorReportTransportScope } from "./directorReportsTransport.ser
 import { supabase } from "../supabaseClient";
 import { beginPlatformObservability } from "../observability/platformObservability";
 import { loadConstructionObjectCodesByNames } from "./constructionObjectIdentity.read";
+import {
+  isAbortError,
+  throwIfAborted,
+} from "../requestCancellation";
 import type {
   DirectorReportsCanonicalDiagnostics,
   DirectorReportsCanonicalSummary,
@@ -378,6 +382,7 @@ const normalizeOptionsState = (value: unknown): DirectorReportScopeOptionsState 
 
 const augmentOptionsStateWithStableObjectKeys = async (
   optionsState: DirectorReportScopeOptionsState,
+  signal?: AbortSignal | null,
 ): Promise<DirectorReportScopeOptionsState> => {
   const namesToResolve = optionsState.objects.filter((name) => {
     const normalized = String(name ?? "").trim();
@@ -385,7 +390,11 @@ const augmentOptionsStateWithStableObjectKeys = async (
   });
   if (!namesToResolve.length) return optionsState;
 
-  const codeByName = await loadConstructionObjectCodesByNames(supabase, namesToResolve);
+  throwIfAborted(signal);
+  const codeByName = await loadConstructionObjectCodesByNames(supabase, namesToResolve, {
+    signal,
+  });
+  throwIfAborted(signal);
   if (!codeByName.size) return optionsState;
 
   const mergedMap: Record<string, string | null> = {
@@ -557,6 +566,7 @@ export async function loadDirectorReportUiScope(args: {
   includeDiscipline?: boolean;
   skipDisciplinePrices: boolean;
   bypassCache?: boolean;
+  signal?: AbortSignal | null;
 }): Promise<DirectorReportScopeLoadResult> {
   const observation = beginPlatformObservability({
     screen: "director",
@@ -567,6 +577,7 @@ export async function loadDirectorReportUiScope(args: {
     trigger: args.includeDiscipline ? "discipline" : "report",
   });
   try {
+    throwIfAborted(args.signal);
     const transportResult = await loadDirectorReportTransportScope({
       from: args.from,
       to: args.to,
@@ -574,14 +585,18 @@ export async function loadDirectorReportUiScope(args: {
       includeDiscipline: !!args.includeDiscipline,
       skipDisciplinePrices: args.skipDisciplinePrices,
       bypassCache: args.bypassCache,
+      signal: args.signal,
     });
+    throwIfAborted(args.signal);
     const rawOptionsState = normalizeOptionsState(transportResult.options);
     let optionsState = rawOptionsState;
     try {
-      optionsState = await augmentOptionsStateWithStableObjectKeys(rawOptionsState);
+      optionsState = await augmentOptionsStateWithStableObjectKeys(rawOptionsState, args.signal);
     } catch (error) {
+      if (isAbortError(error)) throw error;
       console.warn("[directorReportsScope] stable_object_key_augment_failed", error);
     }
+    throwIfAborted(args.signal);
     const normalizedReport = normalizeReportPayload(transportResult.report);
     const normalizedDiscipline = normalizeDisciplinePayload(transportResult.discipline);
     const canonicalDecorations = normalizeDirectorReportCanonicalDecorations({
@@ -634,6 +649,7 @@ export async function loadDirectorReportUiScope(args: {
     });
     return result;
   } catch (error) {
+    if (isAbortError(error)) throw error;
     observation.error(error, {
       rowCount: 0,
       errorStage: "load_report_scope",

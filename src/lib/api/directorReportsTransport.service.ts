@@ -1,4 +1,9 @@
 import { supabase } from "../supabaseClient";
+import {
+  applySupabaseAbortSignal,
+  isAbortError,
+  throwIfAborted,
+} from "../requestCancellation";
 import { type DirectorReportFetchMeta } from "./director_reports";
 import {
   adaptCanonicalMaterialsPayload,
@@ -230,14 +235,20 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
   objectName: string | null;
   includeDiscipline: boolean;
   skipDisciplinePrices: boolean;
+  signal?: AbortSignal | null;
 }): Promise<Omit<DirectorReportTransportScopeResult, "fromCache">> {
-  const { data, error } = await supabase.rpc("director_report_transport_scope_v1", {
-    p_from: args.from || null,
-    p_to: args.to || null,
-    p_object_name: args.objectName ?? null,
-    p_include_discipline: args.includeDiscipline,
-    p_include_costs: args.includeDiscipline ? !args.skipDisciplinePrices : false,
-  });
+  throwIfAborted(args.signal);
+  const { data, error } = await applySupabaseAbortSignal(
+    supabase.rpc("director_report_transport_scope_v1", {
+      p_from: args.from || null,
+      p_to: args.to || null,
+      p_object_name: args.objectName ?? null,
+      p_include_discipline: args.includeDiscipline,
+      p_include_costs: args.includeDiscipline ? !args.skipDisciplinePrices : false,
+    }),
+    args.signal,
+  );
+  throwIfAborted(args.signal);
 
   if (error) {
     throw new DirectorReportTransportScopeRpcError(
@@ -301,6 +312,7 @@ async function loadDirectorReportTransportScopeLive(args: {
   objectName: string | null;
   includeDiscipline: boolean;
   skipDisciplinePrices: boolean;
+  signal?: AbortSignal | null;
 }): Promise<Omit<DirectorReportTransportScopeResult, "fromCache">> {
   if (DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_MODE === "force_off") {
     const message =
@@ -320,13 +332,16 @@ async function loadDirectorReportTransportScopeLive(args: {
   }
 
   try {
+    throwIfAborted(args.signal);
     const rpcResult = await fetchDirectorReportTransportScopeViaRpc(args);
+    throwIfAborted(args.signal);
     if (DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_MODE === "auto") {
       directorReportTransportScopeRpcAvailability = "available";
       directorReportTransportScopeLastErrorMessage = null;
     }
     return rpcResult;
   } catch (error) {
+    if (isAbortError(error)) throw error;
     directorReportTransportScopeLastErrorMessage =
       error instanceof Error ? error.message : String(error);
     if (
@@ -356,11 +371,13 @@ export async function loadDirectorReportTransportScope(args: {
   includeDiscipline: boolean;
   skipDisciplinePrices: boolean;
   bypassCache?: boolean;
+  signal?: AbortSignal | null;
 }): Promise<DirectorReportTransportScopeResult> {
   const cacheKey = buildDirectorReportTransportScopeCacheKey(args);
   if (!args.bypassCache) {
     const cached = getCachedDirectorReportTransportScope(cacheKey);
     if (cached) {
+      throwIfAborted(args.signal);
       const cachedResult: DirectorReportTransportScopeResult = {
         ...cached,
         fromCache: true,
@@ -372,7 +389,7 @@ export async function loadDirectorReportTransportScope(args: {
       });
       return cachedResult;
     }
-    const inFlight = directorReportTransportScopeInFlight.get(cacheKey);
+    const inFlight = args.signal ? null : directorReportTransportScopeInFlight.get(cacheKey);
     if (inFlight) {
       const joined = await inFlight;
       const result: DirectorReportTransportScopeResult = {
@@ -390,9 +407,12 @@ export async function loadDirectorReportTransportScope(args: {
   }
 
   const task = loadDirectorReportTransportScopeLive(args);
-  directorReportTransportScopeInFlight.set(cacheKey, task);
+  if (!args.signal) {
+    directorReportTransportScopeInFlight.set(cacheKey, task);
+  }
   try {
     const live = await task;
+    throwIfAborted(args.signal);
     setCachedDirectorReportTransportScope(cacheKey, live);
     const result: DirectorReportTransportScopeResult = {
       ...live,
@@ -405,9 +425,11 @@ export async function loadDirectorReportTransportScope(args: {
     });
     return result;
   } finally {
-    const activeTask = directorReportTransportScopeInFlight.get(cacheKey);
-    if (activeTask === task) {
-      directorReportTransportScopeInFlight.delete(cacheKey);
+    if (!args.signal) {
+      const activeTask = directorReportTransportScopeInFlight.get(cacheKey);
+      if (activeTask === task) {
+        directorReportTransportScopeInFlight.delete(cacheKey);
+      }
     }
   }
 }

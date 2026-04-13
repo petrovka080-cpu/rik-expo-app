@@ -1,10 +1,15 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   apiFetchIncomingReports,
   apiFetchReports,
 } from "../warehouse.stock.read";
+import {
+  abortController,
+  isAbortError,
+  throwIfAborted,
+} from "../../../lib/requestCancellation";
 import type { StockRow, WarehouseReportRow } from "../warehouse.types";
 import {
   isWarehouseScreenActive,
@@ -22,6 +27,12 @@ type ReportsCacheEntry = {
   repIncoming: WarehouseReportRow[];
 };
 
+type ReportsRequestSlot = {
+  key: string;
+  reqId: number;
+  controller: AbortController;
+};
+
 export function useWarehouseReportsData(params: {
   supabase: SupabaseClient;
   periodFrom: string;
@@ -37,8 +48,17 @@ export function useWarehouseReportsData(params: {
   const [repIncoming, setRepIncoming] = useState<WarehouseReportRow[]>([]);
 
   const reportsReqSeqRef = useRef(0);
-  const reportsInFlightRef = useRef<Map<string, Promise<void>>>(new Map());
+  const reportsRequestRef = useRef<ReportsRequestSlot | null>(null);
   const reportsCacheRef = useRef<Map<string, ReportsCacheEntry>>(new Map());
+
+  const abortReportsRequest = useCallback((reason: string) => {
+    abortController(reportsRequestRef.current?.controller, reason);
+  }, []);
+
+  useEffect(() => () => {
+    abortReportsRequest("warehouse reports unmounted");
+    reportsReqSeqRef.current += 1;
+  }, [abortReportsRequest]);
 
   const fetchReports = useCallback(
     async (opts?: { from?: string; to?: string }) => {
@@ -47,6 +67,8 @@ export function useWarehouseReportsData(params: {
       const key = `${from}|${to}`;
       const hit = reportsCacheRef.current.get(key);
       if (hit && Date.now() - hit.ts <= REPORTS_CACHE_TTL_MS) {
+        abortReportsRequest("warehouse reports cache hit superseded request");
+        reportsReqSeqRef.current += 1;
         if (!isWarehouseScreenActive(screenActiveRef)) return;
         setRepStock(hit.repStock);
         setRepMov(hit.repMov);
@@ -55,42 +77,59 @@ export function useWarehouseReportsData(params: {
         return;
       }
 
-      const inFlight = reportsInFlightRef.current.get(key);
-      if (inFlight) {
-        await inFlight;
-        return;
-      }
-
       if (!isWarehouseScreenActive(screenActiveRef)) return;
       const reqId = ++reportsReqSeqRef.current;
+      abortReportsRequest("warehouse reports request superseded");
+      const requestSlot: ReportsRequestSlot = {
+        key,
+        reqId,
+        controller: new AbortController(),
+      };
+      reportsRequestRef.current = requestSlot;
+      const { signal } = requestSlot.controller;
       const task = (async () => {
-        const [r, inc] = await Promise.all([
-          apiFetchReports(supabase, from, to),
-          apiFetchIncomingReports(supabase, { from, to }),
-        ]);
-        if (reqId !== reportsReqSeqRef.current) return;
-        if (!isWarehouseScreenActive(screenActiveRef)) return;
+        try {
+          throwIfAborted(signal);
+          const [r, inc] = await Promise.all([
+            apiFetchReports(supabase, from, to, { signal }),
+            apiFetchIncomingReports(supabase, { from, to }, { signal }),
+          ]);
+          throwIfAborted(signal);
+          if (
+            reqId !== reportsReqSeqRef.current ||
+            reportsRequestRef.current !== requestSlot
+          ) return;
+          if (!isWarehouseScreenActive(screenActiveRef)) return;
 
-        const next = {
-          ts: Date.now(),
-          repStock: r.repStock || [],
-          repMov: r.repMov || [],
-          repIssues: r.repIssues || [],
-          repIncoming: (inc as WarehouseReportRow[]) || [],
-        };
-        reportsCacheRef.current.set(key, next);
-        setRepStock(next.repStock);
-        setRepMov(next.repMov);
-        setRepIssues(next.repIssues);
-        setRepIncoming(next.repIncoming);
+          const next = {
+            ts: Date.now(),
+            repStock: r.repStock || [],
+            repMov: r.repMov || [],
+            repIssues: r.repIssues || [],
+            repIncoming: (inc as WarehouseReportRow[]) || [],
+          };
+          reportsCacheRef.current.set(key, next);
+          setRepStock(next.repStock);
+          setRepMov(next.repMov);
+          setRepIssues(next.repIssues);
+          setRepIncoming(next.repIncoming);
+        } catch (error) {
+          if (
+            isAbortError(error) ||
+            reqId !== reportsReqSeqRef.current ||
+            reportsRequestRef.current !== requestSlot
+          ) return;
+          throw error;
+        }
       })().finally(() => {
-        reportsInFlightRef.current.delete(key);
+        if (reportsRequestRef.current === requestSlot) {
+          reportsRequestRef.current = null;
+        }
       });
 
-      reportsInFlightRef.current.set(key, task);
       await task;
     },
-    [supabase, periodFrom, periodTo, screenActiveRef],
+    [abortReportsRequest, supabase, periodFrom, periodTo, screenActiveRef],
   );
 
   return {
