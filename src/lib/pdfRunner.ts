@@ -1,4 +1,4 @@
-// src/lib/pdfRunner.ts
+﻿// src/lib/pdfRunner.ts
 
 import { Alert, Linking, Platform } from "react-native";
 import * as Sharing from "expo-sharing";
@@ -90,7 +90,7 @@ function logPdfRunnerStage(
     fileName?: string;
   },
 ) {
-  console.info(`[pdf-runner] ${stage}`, {
+  if (__DEV__) console.info(`[pdf-runner] ${stage}`, {
     stage,
     uri: payload.uri ?? null,
     scheme: getUriScheme(payload.uri),

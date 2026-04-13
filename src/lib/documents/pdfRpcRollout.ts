@@ -1,4 +1,4 @@
-export type PdfRpcRolloutId =
+﻿export type PdfRpcRolloutId =
   | "payment_pdf_source_v1"
   | "warehouse_incoming_source_v1"
   | "warehouse_incoming_materials_source_v1"
@@ -294,7 +294,7 @@ export function printPdfRpcRolloutApplyPlan(ids?: PdfRpcRolloutId[]) {
   if (typeof console.table === "function") {
     console.table(plan);
   } else {
-    console.info("[pdf-rpc-rollout-apply-plan]", plan);
+    if (__DEV__) console.info("[pdf-rpc-rollout-apply-plan]", plan);
   }
   return plan;
 }
@@ -317,7 +317,7 @@ export function printPdfRpcRolloutSmokeChecklist(ids?: PdfRpcRolloutId[]) {
   if (typeof console.table === "function") {
     console.table(checklist);
   } else {
-    console.info("[pdf-rpc-rollout-smoke-checklist]", checklist);
+    if (__DEV__) console.info("[pdf-rpc-rollout-smoke-checklist]", checklist);
   }
   return checklist;
 }
@@ -344,7 +344,7 @@ export function printPdfRpcRolloutSummary(ids?: PdfRpcRolloutId[]) {
   if (typeof console.table === "function") {
     console.table(snapshot);
   } else {
-    console.info("[pdf-rpc-rollout]", snapshot);
+    if (__DEV__) console.info("[pdf-rpc-rollout]", snapshot);
   }
 
   return snapshot;

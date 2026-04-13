@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient";
+﻿import { supabase } from "../supabaseClient";
 import type {
   DirectorDisciplineSourceRpcRow,
   DirectorFactRow,
@@ -390,13 +390,13 @@ async function fetchDisciplineFactRowsFromTables(p: {
       }
 
       if (REPORTS_TIMING) {
-        console.info(`[director_reports] discipline.rows.light.counts(joined): issue_items=${totalIssueItems} final_rows=${out.length}`);
+        if (__DEV__) console.info(`[director_reports] discipline.rows.light.counts(joined): issue_items=${totalIssueItems} final_rows=${out.length}`);
       }
       logTiming("discipline.rows.light.joined.total", tJoined);
       return out;
     } catch (error: unknown) {
       if (REPORTS_TIMING) {
-        console.info(`[director_reports] discipline.rows.light.joined.failed: ${(error as Error)?.message ?? error}`);
+        if (__DEV__) console.info(`[director_reports] discipline.rows.light.joined.failed: ${(error as Error)?.message ?? error}`);
       }
       recordDirectorReportsTransportWarning("discipline_rows_joined_failed", error, {
         from: p.from,
@@ -444,7 +444,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     if (fromIdx > 500000) break;
   }
   logTiming("discipline.rows.light.issues_scan", tTotal);
-  if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: issues=${issuesById.size}`);
+  if (__DEV__) if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: issues=${issuesById.size}`);
 
   if (!issuesById.size) return [];
   const issueIds = Array.from(issuesById.keys());
@@ -467,7 +467,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     }
   });
   logTiming("discipline.rows.light.issue_items", tIssueItems);
-  if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: issue_items=${issueItems.length}`);
+  if (__DEV__) if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: issue_items=${issueItems.length}`);
   if (!issueItems.length) return [];
 
   const issuesMissingWork = new Set<string>();
@@ -511,7 +511,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
       }
     });
     logTiming("discipline.rows.light.request_items", tReqItems);
-    if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: request_items=${requestItemIds.length}`);
+    if (__DEV__) if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: request_items=${requestItemIds.length}`);
   }
 
   const requestIds = Array.from(
@@ -537,7 +537,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
       }
     });
     logTiming("discipline.rows.light.requests", tReq);
-    if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: requests=${requestIds.length}`);
+    if (__DEV__) if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: requests=${requestIds.length}`);
   }
 
   const systemCodes = Array.from(
@@ -626,7 +626,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     if (row) out.push(row);
   }
   logTiming("discipline.rows.light.build", tBuild);
-  if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: final_rows=${out.length}`);
+  if (__DEV__) if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: final_rows=${out.length}`);
   logTiming("discipline.rows.light.total", tTotal);
   return out;
 }

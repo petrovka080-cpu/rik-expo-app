@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient";
+﻿import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { isRequestApprovedForProcurement } from "../requestStatus";
 import {
@@ -254,7 +254,7 @@ async function loadProposalItemsBindingColumns(): Promise<ProposalItemsBindingCo
       contractor_id: cols.has("contractor_id"),
     };
   } catch (error: unknown) {
-    console.warn(
+    if (__DEV__) console.warn(
       "[catalog_api.createProposalsBySupplier] proposal_items columns probe:",
       (error as Error)?.message ?? error,
     );
@@ -412,7 +412,7 @@ async function loadCounterpartyBinding(): Promise<CounterpartyBinding> {
       }
     }
   } catch (error: unknown) {
-    console.warn("[catalog_api.createProposalsBySupplier] suppliers binding load:", (error as Error)?.message ?? error);
+    if (__DEV__) console.warn("[catalog_api.createProposalsBySupplier] suppliers binding load:", (error as Error)?.message ?? error);
   }
 
   try {
@@ -425,7 +425,7 @@ async function loadCounterpartyBinding(): Promise<CounterpartyBinding> {
       }
     }
   } catch (error: unknown) {
-    console.warn("[catalog_api.createProposalsBySupplier] contractors binding load:", (error as Error)?.message ?? error);
+    if (__DEV__) console.warn("[catalog_api.createProposalsBySupplier] contractors binding load:", (error as Error)?.message ?? error);
   }
 
   return { supplierIdByName, contractorIdByName };
@@ -483,7 +483,7 @@ async function resolveProposalCreationPreconditions(
             const legacyKindRaw = row.item_type ?? row.procurement_type ?? null;
             kind = parseProposalKind(legacyKindRaw);
             if (kind !== "unknown") {
-              console.warn(
+              if (__DEV__) console.warn(
                 `[catalog_api.createProposalsBySupplier] request_items.kind missing, legacy type used for item ${itemId}`,
               );
             }
@@ -515,14 +515,14 @@ async function resolveProposalCreationPreconditions(
           }
         });
 
-        console.info("[catalog_api.createProposalsBySupplier] approval gate", {
+        if (__DEV__) console.info("[catalog_api.createProposalsBySupplier] approval gate", {
           allItemIds,
           approvedItemIds: Array.from(approvedItemIds),
           rows: gateDebugRows,
         });
       }
     } catch (error: unknown) {
-      console.warn("[catalog_api.createProposalsBySupplier] request approval gate:", (error as Error)?.message ?? error);
+      if (__DEV__) console.warn("[catalog_api.createProposalsBySupplier] request approval gate:", (error as Error)?.message ?? error);
       allItemIds.forEach((id) => approvedItemIds.add(id));
     }
   }
@@ -555,7 +555,7 @@ function prepareProposalCreationBucket(
     .map((id) => String(id || "").trim())
     .filter((id) => !!id && !preconditions.approvedItemIds.has(id));
   if (filteredOutIds.length) {
-    console.warn("[catalog_api.createProposalsBySupplier] bucket filtered ids", {
+    if (__DEV__) console.warn("[catalog_api.createProposalsBySupplier] bucket filtered ids", {
       bucketIndex,
       supplier: bucket?.supplier ?? null,
       filteredOutIds,
@@ -681,7 +681,7 @@ async function createProposalHeadStage(
   if (requestIdsForBucket.length === 1) {
     headerPatch.request_id = requestIdsForBucket[0];
   } else if (requestIdsForBucket.length > 1) {
-    console.warn(
+    if (__DEV__) console.warn(
       "[catalog_api.createProposalsBySupplier] proposal head has multiple request_ids; request_id patch skipped",
       {
         proposalId: proposal_id,
@@ -704,7 +704,7 @@ async function createProposalHeadStage(
     }
     const displayPatch = await supabase.from("proposals").update(patch).eq("id", proposal_id);
     if (displayPatch.error) {
-      console.warn(
+      if (__DEV__) console.warn(
         "[catalog_api.createProposalsBySupplier] proposal metadata patch:",
         displayPatch.error.message,
       );
@@ -726,7 +726,7 @@ async function linkProposalItemsStage(
     runtime.dbCalls += 1;
     added = await rpcProposalAddItems(proposalId, requestItemIds);
   } catch (error: unknown) {
-    console.warn("[catalog_api.createProposalsBySupplier] proposalAddItems:", (error as Error)?.message ?? error);
+    if (__DEV__) console.warn("[catalog_api.createProposalsBySupplier] proposalAddItems:", (error as Error)?.message ?? error);
   }
 
   if (!added) {
@@ -767,7 +767,7 @@ async function completeProposalCreationStage(
       runtime.dbCalls += 1;
       await rpcProposalSnapshotItems(proposalId, prepared.metaRows);
     } catch (error: unknown) {
-      console.warn("[catalog_api.createProposalsBySupplier] proposalSnapshotItems:", (error as Error)?.message ?? error);
+      if (__DEV__) console.warn("[catalog_api.createProposalsBySupplier] proposalSnapshotItems:", (error as Error)?.message ?? error);
     }
   }
 
@@ -803,7 +803,7 @@ async function completeProposalCreationStage(
         runtime.proposalItemsBulkUpsertSupported = false;
         proposalItemsBulkUpsertCapabilityCache = false;
       }
-      console.warn(
+      if (__DEV__) console.warn(
         "[catalog_api.createProposalsBySupplier] proposal_items bulk upsert failed; fallback to row updates:",
         (error as Error)?.message ?? error,
       );
@@ -837,7 +837,7 @@ async function completeProposalCreationStage(
                   !preconditions.proposalItemsBindingCols.contractor_id))
             ) {
               bindingColumnsWarned = true;
-              console.warn(
+              if (__DEV__) console.warn(
                 "[catalog_api.createProposalsBySupplier] proposal_items binding columns are missing in schema; storing text binding only",
               );
             }
@@ -849,13 +849,13 @@ async function completeProposalCreationStage(
               .eq("proposal_id", proposalId)
               .eq("request_item_id", row.request_item_id);
             if (error) {
-              console.warn(
+              if (__DEV__) console.warn(
                 "[catalog_api.createProposalsBySupplier] proposal_items canonical binding update:",
                 error.message,
               );
             }
           } catch (error: unknown) {
-            console.warn(
+            if (__DEV__) console.warn(
               "[catalog_api.createProposalsBySupplier] proposal_items canonical binding update ex:",
               (error as Error)?.message ?? error,
             );

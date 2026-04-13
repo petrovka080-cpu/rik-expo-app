@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppState } from "react-native";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -40,7 +40,7 @@ const logSuppressedPostUnmount = (
   scope: string,
   details?: Record<string, unknown>,
 ) => {
-  console.info(`[warehouse:${scope}] suppressed post-unmount`, details);
+  if (__DEV__) console.info(`[warehouse:${scope}] suppressed post-unmount`, details);
 };
 
 type ReceiveRow = {

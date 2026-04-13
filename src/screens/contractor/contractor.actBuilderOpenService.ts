@@ -1,4 +1,4 @@
-import { fetchRequestScopeRows } from "./contractor.data";
+﻿import { fetchRequestScopeRows } from "./contractor.data";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import type { ContractorWorkRow } from "./contractor.loadWorksService";
 
@@ -110,7 +110,7 @@ export async function ensureActBuilderWorkMaterials(params: Params): Promise<{
     });
     return { materials, fatalError: null };
   } catch (e) {
-    console.warn("[ensureActBuilderWorkMaterials] fallback failed:", e);
+    if (__DEV__) console.warn("[ensureActBuilderWorkMaterials] fallback failed:", e);
     return { materials: currentMaterials || [], fatalError: null };
   }
 }

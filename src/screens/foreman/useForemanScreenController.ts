@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   useCallback,
   useEffect,
   useMemo,
@@ -292,7 +292,7 @@ export function useForemanScreenController() {
         displayNo: requestDetails?.display_no ?? `#${shortId(rid)}`,
         title: `Заявка ${rid}`,
       });
-      console.info("[foreman-pdf] history_open_descriptor", {
+      if (__DEV__) console.info("[foreman-pdf] history_open_descriptor", {
         requestId: rid,
         sourceKind: descriptor.fileSource.kind,
         uri: descriptor.uri,

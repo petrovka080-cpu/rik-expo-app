@@ -159,6 +159,10 @@ export function getOfflineReplayOwnerSnapshot(
   };
 }
 
-export function resetOfflineReplayCoordinatorForTests() {
+export function resetOfflineReplayCoordinator() {
   states.clear();
+}
+
+export function resetOfflineReplayCoordinatorForTests() {
+  resetOfflineReplayCoordinator();
 }

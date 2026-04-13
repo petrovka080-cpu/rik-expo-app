@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+﻿import { useCallback, useMemo } from "react";
 import {
   generateHistoryPdfForLog,
   generateSummaryPdfForWork,
@@ -35,7 +35,7 @@ export function useContractorPdfActions(params: {
         pickFirstNonEmpty,
       });
     } catch (error) {
-      console.warn("[PDF aggregated] error", error);
+      if (__DEV__) console.warn("[PDF aggregated] error", error);
       showErr(error);
     }
   }, [supabaseClient, workModalRow, jobHeader, showErr]);

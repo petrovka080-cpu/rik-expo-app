@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+﻿import { useCallback, useRef } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import {
   loadCurrentContractorProfile,
@@ -213,7 +213,7 @@ export function useContractorScreenData(params: Params) {
       });
     } catch (error) {
       if (reqSeq !== loadWorksSeqRef.current) return;
-      console.error("loadWorks exception:", error);
+      if (__DEV__) console.error("loadWorks exception:", error);
       setRows([]);
       setSubcontractCards([]);
       setInboxRows(loadEmptyInboxRows());

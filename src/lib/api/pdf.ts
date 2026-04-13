@@ -1,4 +1,4 @@
-import { Platform } from "react-native";
+﻿import { Platform } from "react-native";
 import * as Print from "expo-print";
 import type { FilePrintResult } from "expo-print";
 import { File, Paths } from "expo-file-system";
@@ -108,7 +108,7 @@ export async function openHtmlAsPdfUniversal(
       error && typeof error === "object" && "message" in error && typeof (error as { message?: unknown }).message === "string"
         ? String((error as { message?: unknown }).message || "").trim()
         : String(error ?? "").trim() || "PDF generation failed";
-    console.error("[pdf-api] native_print_failed", {
+    if (__DEV__) console.error("[pdf-api] native_print_failed", {
       stage: "native_print_failed",
       platform: Platform.OS,
       htmlLength: String(html || "").length,

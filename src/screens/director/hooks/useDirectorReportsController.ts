@@ -1,4 +1,4 @@
-import { Alert } from "react-native";
+﻿import { Alert } from "react-native";
 import {
   useCallback,
   useEffect,
@@ -67,7 +67,7 @@ const recordDirectorReportsWarning = (
   extra?: Record<string, unknown>,
 ) => {
   const message = getErrorMessage(error, event);
-  console.warn("[director_reports.controller]", { event, message, ...extra });
+  if (__DEV__) console.warn("[director_reports.controller]", { event, message, ...extra });
   recordPlatformObservability({
     screen: "director",
     surface: "reports",
@@ -222,7 +222,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const logTiming = useCallback((label: string, startedAt: number) => {
     if (!REPORTS_TIMING) return;
     const ms = Math.round(nowMs() - startedAt);
-    console.info(`[director_works] ${label}: ${ms}ms`);
+    if (__DEV__) console.info(`[director_works] ${label}: ${ms}ms`);
   }, [nowMs]);
 
   const observeBranch = useCallback((
@@ -244,7 +244,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       const cacheNote = observed.fromCache ? "transport_cache" : observed.cacheLayer;
       const pricedNote = observed.pricedStage ? ` priced_stage=${observed.pricedStage}` : "";
       const rowsSourceNote = observed.rowsSource ? ` rows_source=${observed.rowsSource}` : "";
-      console.info(
+      if (__DEV__) console.info(
         `[director_reports] ${stage}.branch: branch=${observed.branch} chain=${chain || "none"} cache=${cacheNote}${pricedNote}${rowsSourceNote}`,
       );
     }
@@ -465,7 +465,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const objectName = objectNameArg === undefined ? repObjectName : objectNameArg;
     const objectIdByName = opts?.objectIdByNameOverride ?? repOptObjectIdByName;
     const key = disciplineKey(from, to, objectName ?? null, objectIdByName);
-    if (REPORTS_TIMING) console.info(`[director_works] api:discipline:start key=${key}`);
+    if (__DEV__) if (REPORTS_TIMING) console.info(`[director_works] api:discipline:start key=${key}`);
     const hasCurrentState = lastDisciplineLoadKeyRef.current === key && repDiscipline != null;
     if (hasCurrentState) {
       const pricesReady = disciplinePricesReadyRef.current.has(key);
@@ -560,7 +560,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           });
           if (REPORTS_TIMING) {
             const summary = summarizeRepDiscipline(baseScope.discipline);
-            console.info(
+            if (__DEV__) console.info(
               `[director_works] api:discipline:base_ready works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
             );
           }
@@ -600,14 +600,14 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
               });
               if (REPORTS_TIMING) {
                 const summary = summarizeRepDiscipline(fullScope.discipline);
-                console.info(
+                if (__DEV__) console.info(
                   `[director_works] api:discipline:priced_ready works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
                 );
               }
             }
           } catch (e: unknown) {
             if (isAbortError(e)) return;
-            if (REPORTS_TIMING) console.warn("[director_works] prices_stage_failed:", getErrorMessage(e, "prices stage failed"));
+            if (__DEV__) if (REPORTS_TIMING) console.warn("[director_works] prices_stage_failed:", getErrorMessage(e, "prices stage failed"));
           } finally {
             clearDirectorReportsRequest(disciplineRequestRef, requestSlot);
             if (reqId === disciplineReqSeqRef.current && !signal.aborted) setRepDisciplinePriceLoading(false);
@@ -900,7 +900,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       const hasReady = !!(repDiscipline || repData?.discipline);
 
       if (hasReady) {
-        if (REPORTS_TIMING) console.info("[director_works] render_ready:from_cached_payload");
+        if (__DEV__) if (REPORTS_TIMING) console.info("[director_works] render_ready:from_cached_payload");
         if (lastDisciplineLoadKeyRef.current !== key) {
           void syncScopeBothModes(repObjectName ?? null, "discipline");
         }
@@ -916,7 +916,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
 
   const openReports = useCallback(() => {
     const startedAt = nowMs();
-    if (REPORTS_TIMING) console.info("[director_works] click:open_reports");
+    if (__DEV__) if (REPORTS_TIMING) console.info("[director_works] click:open_reports");
     setRepTabState("materials");
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";

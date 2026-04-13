@@ -1,4 +1,4 @@
-import type { DirectorDisciplinePayload } from "./director_reports.shared";
+﻿import type { DirectorDisciplinePayload } from "./director_reports.shared";
 import { rpcDate, toNum } from "./director_reports.shared";
 import {
   DIVERGENCE_LOG_TTL_MS,
@@ -69,7 +69,7 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(
       if (canonical) {
         const hasDetailLevels = hasCanonicalWorksDetailLevels(canonical);
         if (REPORTS_TIMING && !hasDetailLevels) {
-          console.info("[director_reports] discipline.canonical_works.rejected_without_semantic_drilldown");
+          if (__DEV__) console.info("[director_reports] discipline.canonical_works.rejected_without_semantic_drilldown");
         }
         if (!hasDetailLevels) canonical = null;
       }
@@ -109,7 +109,7 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(
         markCanonicalRpcStatus("works", "failed");
       }
       if (REPORTS_TIMING) {
-        console.info(`[director_reports] discipline.canonical_works.failed: ${(error as Error)?.message ?? error}`);
+        if (__DEV__) console.info(`[director_reports] discipline.canonical_works.failed: ${(error as Error)?.message ?? error}`);
       }
     }
     logTiming("discipline.canonical_works_fallback", tCanonical);
@@ -159,7 +159,7 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(
       });
       trimMap(disciplineRowsCache);
       if (REPORTS_TIMING) {
-        console.info(
+        if (__DEV__) console.info(
           `[director_reports] discipline.rows.cache_slice: object=${String(p.objectName)} rows=${slicedRows.length}`,
         );
       }
@@ -187,7 +187,7 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(
   let rows = rowsResult.rows;
   logTiming("discipline.fetch_rows", tRows);
   if (REPORTS_TIMING) {
-    console.info(`[director_reports] discipline.rows_source: ${rowsResult.source} rows=${rows.length}`);
+    if (__DEV__) console.info(`[director_reports] discipline.rows_source: ${rowsResult.source} rows=${rows.length}`);
   }
 
   try {
@@ -196,7 +196,7 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(
       rows = await enrichFactRowsMaterialNames(rows);
       logTiming("discipline.enrich_material_names", tNames);
     } else if (REPORTS_TIMING) {
-      console.info(
+      if (__DEV__) console.info(
         `[director_reports] discipline.enrich_material_names: skipped_${opts?.skipPrices ? "in_first_stage" : "for_tables_source"}`,
       );
     }
@@ -214,7 +214,7 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(
       rows = await enrichFactRowsLevelNames(rows);
       logTiming("discipline.enrich_level_names", tLevels);
     } else if (REPORTS_TIMING) {
-      console.info("[director_reports] discipline.enrich_level_names: skipped_in_first_stage");
+      if (__DEV__) console.info("[director_reports] discipline.enrich_level_names: skipped_in_first_stage");
     }
   } catch (error) {
     recordDirectorReportsServiceWarning("discipline_enrich_level_names_failed", error, {
@@ -237,7 +237,7 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(
     trimMap(legacyWorksSnapshotCache);
     if (REPORTS_TIMING) {
       const summary = summarizeDisciplinePayload(payload);
-      console.info(
+      if (__DEV__) console.info(
         `[director_reports] discipline.base_ready: works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
       );
     }
@@ -292,7 +292,7 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(
 
   if (REPORTS_TIMING) {
     const summary = summarizeDisciplinePayload(payload);
-    console.info(
+    if (__DEV__) console.info(
       `[director_reports] discipline.priced_ready: works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
     );
   }

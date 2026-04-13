@@ -474,12 +474,12 @@ async function main() {
         && viewerSource.includes('console.info("[pdf-viewer] native_handoff_ready"'),
       viewerImportsNativeWebViewForIosPreview: viewerSource.includes("react-native-webview"),
       previewRouteStillCanonical:
-        pdfDocumentActionsSource.includes('pathname: "/pdf-viewer"')
+        pdfDocumentActionsSource.includes('route: "/pdf-viewer"')
         && pdfDocumentActionsSource.includes("createDocumentPreviewSession"),
       mobileRemotePreviewUsesDirectViewerBoundary:
         pdfDocumentActionsSource.includes('previewSourceMode: "direct_remote_viewer_contract"')
-        && pdfDocumentActionsSource.includes("sourceKind: doc.fileSource.kind")
-        && pdfDocumentActionsSource.includes("params: {"),
+        && pdfDocumentActionsSource.includes("createInMemoryDocumentPreviewSession(doc)")
+        && pdfDocumentActionsSource.includes("createViewerHref("),
       attachmentRemotePdfUsesSharedAndroidBoundary:
         attachmentOpenerSource.includes('mimeType === "application/pdf"')
         && attachmentOpenerSource.includes('source.kind === "remote"')

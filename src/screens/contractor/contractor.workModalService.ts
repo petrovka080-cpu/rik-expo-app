@@ -683,7 +683,7 @@ export async function loadInitialWorkMaterialsForModal(
         defaults = asArray(q2.data as WorkDefaultMaterialRow[]).map(normalizeWorkDefaultMaterialRow);
       }
     } else {
-      console.warn("[work_seed_defaults_auto] error:", seed.error.message);
+      if (__DEV__) console.warn("[work_seed_defaults_auto] error:", seed.error.message);
     }
   }
 

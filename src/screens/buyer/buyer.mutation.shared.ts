@@ -1,4 +1,4 @@
-import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+﻿import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 export type AlertFn = (title: string, message: string) => void;
 export type FileLike = File | Blob | {
@@ -393,5 +393,5 @@ export const logBuyerSecondaryPhaseWarning = (scope: string, error: unknown) => 
     },
   });
   if (!isDevRuntime()) return;
-  console.warn(`[buyer.secondary] ${scope}: ${errMessage(error)}`);
+  if (__DEV__) console.warn(`[buyer.secondary] ${scope}: ${errMessage(error)}`);
 };

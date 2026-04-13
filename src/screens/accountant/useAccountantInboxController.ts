@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type MutableRefObject } from "react";
+﻿import { useCallback, useRef, useState, type MutableRefObject } from "react";
 
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
 import {
@@ -197,7 +197,7 @@ export function useAccountantInboxController(params: {
         });
         lastLoadedKeyRef.current = key;
       } catch (error: unknown) {
-        console.error("[accountant load]", errorMessage(error));
+        if (__DEV__) console.error("[accountant load]", errorMessage(error));
         observation.error(error, {
           rowCount: 0,
           errorStage: "load_inbox_scope_v1",
@@ -313,7 +313,7 @@ export function useAccountantInboxController(params: {
         },
       });
     } catch (error: unknown) {
-      console.error("[accountant load more]", errorMessage(error));
+      if (__DEV__) console.error("[accountant load more]", errorMessage(error));
       observation.error(error, {
         rowCount: 0,
         errorStage: "load_inbox_scope_v1_page",

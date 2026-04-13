@@ -1,4 +1,4 @@
-import { useFocusEffect } from "expo-router";
+﻿import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
@@ -49,7 +49,7 @@ export function useAccountantFioConfirm(params: {
           }
         }
       } catch (e) {
-        console.warn("[accountantFio] load session failed", e);
+        if (__DEV__) console.warn("[accountantFio] load session failed", e);
       }
     })();
     return () => {
@@ -96,7 +96,7 @@ export function useAccountantFioConfirm(params: {
         setAccountantHistory(nextHist);
         setIsFioConfirmVisible(false);
       } catch (e) {
-        console.warn(e);
+        if (__DEV__) console.warn(e);
       } finally {
         setIsFioLoading(false);
       }

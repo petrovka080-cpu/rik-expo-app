@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   ProposalBucketInput,
   CreateProposalsOptions as CatalogCreateProposalsOptions,
@@ -95,7 +95,7 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
     };
   });
 
-  console.info("[buyer.worker] submit intent", {
+  if (__DEV__) console.info("[buyer.worker] submit intent", {
     jobId: job.id,
     requestId: norm(payload.requestId) || null,
     selectedRowCount: requestItemIds.length,
@@ -143,7 +143,7 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
       const proposalId = proposalIdBySupplierKey.get(supplierKey);
       if (!proposalId) {
         missingSupplierKeys.add(supplierKey);
-        console.warn("[buyer.worker] queue attachment skipped: no final proposal", {
+        if (__DEV__) console.warn("[buyer.worker] queue attachment skipped: no final proposal", {
           jobId: job.id,
           supplierKey,
           fileName: attachment.fileName ?? null,
@@ -155,12 +155,12 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
     }
 
     if (missingSupplierKeys.size) {
-      console.warn("[buyer.worker] attachment binding completed with skipped suppliers", {
+      if (__DEV__) console.warn("[buyer.worker] attachment binding completed with skipped suppliers", {
         jobId: job.id,
         skippedSupplierKeys: Array.from(missingSupplierKeys),
       });
     }
   }
 
-  console.info("[buyer.worker] jobProcessingMs=", Date.now() - t0, "jobType=buyer_submit_proposal", "retryCount=", Number(job.retry_count || 0));
+  if (__DEV__) console.info("[buyer.worker] jobProcessingMs=", Date.now() - t0, "jobType=buyer_submit_proposal", "retryCount=", Number(job.retry_count || 0));
 }

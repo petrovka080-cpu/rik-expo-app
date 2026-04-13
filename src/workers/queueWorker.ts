@@ -1,4 +1,4 @@
-import {
+﻿import {
   supabase,
   SUPABASE_HOST,
   SUPABASE_KEY_KIND,
@@ -167,7 +167,7 @@ async function markCompactedDuplicatesCompleted(
             duplicateJobId: id,
           },
         });
-        console.warn("[queue.worker] compacted duplicate completion failed", {
+        if (__DEV__) console.warn("[queue.worker] compacted duplicate completion failed", {
           workerId,
           keptJobId: group.job.id,
           duplicateJobId: id,
@@ -200,7 +200,7 @@ async function processOne(
           jobProcessingMs: Date.now() - t0,
         },
       });
-      console.warn(
+      if (__DEV__) console.warn(
         "[queue.worker] completion persistence failed after dispatch",
         {
           workerId,
@@ -213,7 +213,7 @@ async function processOne(
       );
       throw completionError;
     }
-    console.info("[queue.worker] job done", {
+    if (__DEV__) console.info("[queue.worker] job done", {
       workerId,
       jobId: job.id,
       jobType: job.job_type,
@@ -235,7 +235,7 @@ async function processOne(
           jobProcessingMs: Date.now() - t0,
         },
       });
-      console.warn("[queue.worker] job failed", {
+      if (__DEV__) console.warn("[queue.worker] job failed", {
         workerId,
         jobId: job.id,
         jobType: job.job_type,
@@ -255,7 +255,7 @@ async function processOne(
           jobProcessingMs: Date.now() - t0,
         },
       });
-      console.error("[queue.worker] failure persistence failed", {
+      if (__DEV__) console.error("[queue.worker] failure persistence failed", {
         workerId,
         jobId: job.id,
         jobType: job.job_type,
@@ -282,7 +282,7 @@ async function processBatch(
     deps.queueApi,
   );
   if (compactedDuplicates.duplicateCount > 0) {
-    console.info("[queue.worker] compacted duplicates processed", {
+    if (__DEV__) console.info("[queue.worker] compacted duplicates processed", {
       workerId,
       duplicateCount: compactedDuplicates.duplicateCount,
       failedCount: compactedDuplicates.failedCount,
@@ -311,7 +311,7 @@ export function startQueueWorker(
 ): QueueWorkerHandle {
   const deps = resolveQueueWorkerDeps(depsInput);
 
-  console.info("[queue.worker] init", {
+  if (__DEV__) console.info("[queue.worker] init", {
     JOB_QUEUE_ENABLED,
     WORKER_BATCH_SIZE,
     WORKER_CONCURRENCY,
@@ -321,7 +321,7 @@ export function startQueueWorker(
   });
 
   if (!JOB_QUEUE_ENABLED) {
-    console.info("[queue.worker] disabled (JOB_QUEUE_ENABLED=false)");
+    if (__DEV__) console.info("[queue.worker] disabled (JOB_QUEUE_ENABLED=false)");
     return { stop: () => undefined };
   }
 
@@ -338,7 +338,7 @@ export function startQueueWorker(
   });
 
   void (async () => {
-    console.info("[queue.worker] started", {
+    if (__DEV__) console.info("[queue.worker] started", {
       workerId,
       batchSize,
       concurrency,
@@ -349,14 +349,14 @@ export function startQueueWorker(
         recoveryTick += 1;
         if (recoveryTick % 10 === 0) {
           if (queueVerbose) {
-            console.info("[queue.worker] recover tick", {
+            if (__DEV__) console.info("[queue.worker] recover tick", {
               workerId,
               recoveryTick,
             });
           }
           const recovered = await deps.queueApi.recoverStuckSubmitJobs();
           if (recovered > 0) {
-            console.warn("[queue.worker] recovered stuck jobs", {
+            if (__DEV__) console.warn("[queue.worker] recovered stuck jobs", {
               recovered,
               workerId,
             });
@@ -369,7 +369,7 @@ export function startQueueWorker(
           batchSize,
         );
         if (claimed.length > 0 || queueVerbose) {
-          console.info("[queue.worker] claim result", {
+          if (__DEV__) console.info("[queue.worker] claim result", {
             workerId,
             claimed: claimed.length,
           });
@@ -382,7 +382,7 @@ export function startQueueWorker(
 
         loopPhase = "compaction_delay";
         if (queueVerbose) {
-          console.info("[queue.worker] compaction delay", {
+          if (__DEV__) console.info("[queue.worker] compaction delay", {
             workerId,
             COMPACTION_DELAY_MS,
           });
@@ -390,7 +390,7 @@ export function startQueueWorker(
         await sleep(COMPACTION_DELAY_MS);
 
         loopPhase = "process_batch";
-        console.info("[queue.worker] processing batch", {
+        if (__DEV__) console.info("[queue.worker] processing batch", {
           workerId,
           claimed: claimed.length,
           concurrency,
@@ -403,7 +403,7 @@ export function startQueueWorker(
           workerId,
           phase: loopPhase,
         });
-        console.warn("[queue.worker] loop error", {
+        if (__DEV__) console.warn("[queue.worker] loop error", {
           workerId,
           phase: loopPhase,
           error: queueErrorText(error),
@@ -417,7 +417,7 @@ export function startQueueWorker(
     stop: () => {
       stopped = true;
       metrics.stop();
-      console.info("[queue.worker] stopped", { workerId });
+      if (__DEV__) console.info("[queue.worker] stopped", { workerId });
     },
   };
 }

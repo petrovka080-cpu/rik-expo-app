@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   Modal,
   View,
@@ -75,7 +75,7 @@ export default function CatalogSearchModal({
 
       const { data, error } = await query;
       if (error) {
-        console.warn("CatalogSearchModal:", error.message);
+        if (__DEV__) console.warn("CatalogSearchModal:", error.message);
         setRows([]);
         return;
       }

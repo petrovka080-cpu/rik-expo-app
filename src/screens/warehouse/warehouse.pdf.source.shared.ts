@@ -1,4 +1,4 @@
-import {
+﻿import {
   getPdfRpcRolloutAvailability,
   recordPdfRpcRolloutBranch,
   setPdfRpcRolloutAvailability,
@@ -37,7 +37,7 @@ export const logWarehousePdfSourceBranch = (args: {
     branchMeta: args.branchMeta,
   });
   if (!WAREHOUSE_PDF_SOURCE_IS_DEV) return;
-  console.info("[warehouse-pdf-source]", {
+  if (__DEV__) console.info("[warehouse-pdf-source]", {
     id: args.id,
     source: args.source,
     sourceBranch: args.branchMeta.sourceBranch,
@@ -91,7 +91,7 @@ export const recordWarehousePdfRpcFailure = (args: {
   });
 
   if (!WAREHOUSE_PDF_SOURCE_IS_DEV) return;
-  console.warn(args.tag, {
+  if (__DEV__) console.warn(args.tag, {
     failureReason: args.failureReason,
     rpcMode: args.rpcMode,
     rpcAvailability: getPdfRpcRolloutAvailability(args.id),

@@ -1,4 +1,4 @@
-import { createPdfSource, type PdfSource } from "../pdfFileContract";
+﻿import { createPdfSource, type PdfSource } from "../pdfFileContract";
 import { Platform } from "react-native";
 import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "../supabaseClient";
@@ -193,7 +193,7 @@ async function invokeDirectFetchOnce<TPayload>(
   const accessToken = await resolveEdgeFunctionAccessToken();
   const url = `${SUPABASE_URL}/functions/v1/${args.functionName}`;
 
-  console.info("[canonical-pdf-backend] native_fetch_start", {
+  if (__DEV__) console.info("[canonical-pdf-backend] native_fetch_start", {
     functionName: args.functionName,
     platform: Platform.OS,
     hasAccessToken: Boolean(accessToken),
@@ -225,7 +225,7 @@ async function invokeDirectFetchOnce<TPayload>(
       },
     );
 
-    console.info("[canonical-pdf-backend] native_response_received", {
+    if (__DEV__) console.info("[canonical-pdf-backend] native_response_received", {
       functionName: args.functionName,
       platform: Platform.OS,
       httpStatus: response.status,
@@ -237,7 +237,7 @@ async function invokeDirectFetchOnce<TPayload>(
     try {
       data = await readFunctionResponseBody(response);
     } catch (parseError) {
-      console.error("[canonical-pdf-backend] native_parse_failed", {
+      if (__DEV__) console.error("[canonical-pdf-backend] native_parse_failed", {
         functionName: args.functionName,
         platform: Platform.OS,
         httpStatus: response.status,
@@ -246,7 +246,7 @@ async function invokeDirectFetchOnce<TPayload>(
       throw parseError;
     }
 
-    console.info("[canonical-pdf-backend] native_parse_success", {
+    if (__DEV__) console.info("[canonical-pdf-backend] native_parse_success", {
       functionName: args.functionName,
       platform: Platform.OS,
       httpStatus: response.status,
@@ -262,7 +262,7 @@ async function invokeDirectFetchOnce<TPayload>(
     };
   } catch (error) {
     const detail = extractTransportErrorDetail(error);
-    console.error("[canonical-pdf-backend] direct_fetch_failed", {
+    if (__DEV__) console.error("[canonical-pdf-backend] direct_fetch_failed", {
       functionName: args.functionName,
       platform: Platform.OS,
       detail,
@@ -341,7 +341,7 @@ async function invokeCanonicalPdfBackendViaDirectFetch<TPayload>(
 
   if (!attempt.response.ok) {
     const detail = summarizeFunctionResponse(attempt.data);
-    console.error("[canonical-pdf-backend] direct_fetch_http_failure", {
+    if (__DEV__) console.error("[canonical-pdf-backend] direct_fetch_http_failure", {
       functionName: args.functionName,
       platform: Platform.OS,
       httpStatus: attempt.status,
@@ -405,7 +405,7 @@ async function invokeCanonicalPdfBackendViaSupabase<TPayload>(
     const message = trimText(attempt.error.message) || "canonical pdf backend invoke failed";
     const status = Number((attempt.error as { context?: { status?: unknown } }).context?.status ?? NaN);
     const detail = extractTransportErrorDetail(attempt.error);
-    console.error("[canonical-pdf-backend] supabase_invoke_failed", {
+    if (__DEV__) console.error("[canonical-pdf-backend] supabase_invoke_failed", {
       functionName: args.functionName,
       platform: Platform.OS,
       httpStatus: Number.isFinite(status) ? status : null,

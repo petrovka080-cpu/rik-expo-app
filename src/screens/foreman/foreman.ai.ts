@@ -1,4 +1,4 @@
-import {
+﻿import {
   isAiBackendAvailable,
   requestAiGeneratedText,
 } from "../../lib/ai/aiRepository";
@@ -157,7 +157,7 @@ const recordForemanAiDegradedOnce = (
   const key = `${event}:${message}`;
   if (foremanAiWarnedErrors.has(key)) return;
   foremanAiWarnedErrors.add(key);
-  console.warn("[foreman.ai]", { event, message, ...extra });
+  if (__DEV__) console.warn("[foreman.ai]", { event, message, ...extra });
   recordPlatformObservability({
     screen: "ai",
     surface: "foreman_quick_request",

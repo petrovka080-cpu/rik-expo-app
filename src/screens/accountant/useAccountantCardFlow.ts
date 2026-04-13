@@ -1,4 +1,4 @@
-import { Keyboard } from "react-native";
+﻿import { Keyboard } from "react-native";
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -111,7 +111,7 @@ export function useAccountantCardFlow(params: Params) {
           const fio = String(data?.user?.user_metadata?.full_name ?? data?.user?.user_metadata?.name ?? "").trim();
           if (fio) setAccountantFio((prev) => (prev?.trim() ? prev : fio));
         } catch (e) {
-          console.warn("[useAccountantCardFlow] auth.getUser failed", e);
+          if (__DEV__) console.warn("[useAccountantCardFlow] auth.getUser failed", e);
         }
       })();
     },

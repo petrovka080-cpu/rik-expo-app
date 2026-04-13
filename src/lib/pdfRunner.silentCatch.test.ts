@@ -38,7 +38,7 @@ jest.mock("./fileSystemPaths", () => ({
   })),
 }));
 
-import { runPdfTop } from "./pdfRunner";
+import { clearPdfRunnerSessionState, runPdfTop } from "./pdfRunner";
 import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
@@ -85,4 +85,73 @@ describe("runPdfTop", () => {
       ),
     ).toBe(true);
   });
+
+  it("clears the active run guard on session boundary reset", async () => {
+    const runtime = globalThis as typeof globalThis & { window?: any };
+    const firstUrl = createDeferred<string>();
+    const secondUrl = createDeferred<string>();
+    const open = jest.fn(() => ({
+      document: {
+        open: jest.fn(),
+        write: jest.fn(),
+        close: jest.fn(),
+      },
+      location: {
+        replace: jest.fn(),
+        href: "",
+      },
+      focus: jest.fn(),
+      close: jest.fn(),
+    }));
+    runtime.window = { open };
+
+    const baseArgs = {
+      supabase: {
+        auth: {
+          getSession: jest.fn(),
+        },
+      } as never,
+      key: "pdf:test:session-reset",
+      label: "Opening PDF",
+      mode: "preview" as const,
+      fileName: "proposal.pdf",
+    };
+
+    const firstRun = runPdfTop({
+      ...baseArgs,
+      getRemoteUrl: () => firstUrl.promise,
+    });
+    await Promise.resolve();
+
+    await runPdfTop({
+      ...baseArgs,
+      getRemoteUrl: () => "https://example.com/skipped.pdf",
+    });
+    expect(open).toHaveBeenCalledTimes(1);
+
+    clearPdfRunnerSessionState();
+
+    const secondRun = runPdfTop({
+      ...baseArgs,
+      getRemoteUrl: () => secondUrl.promise,
+    });
+    await Promise.resolve();
+    expect(open).toHaveBeenCalledTimes(2);
+
+    firstUrl.resolve("https://example.com/first.pdf");
+    secondUrl.resolve("https://example.com/second.pdf");
+
+    await expect(Promise.all([firstRun, secondRun])).resolves.toEqual([
+      undefined,
+      undefined,
+    ]);
+  });
 });
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((next) => {
+    resolve = next;
+  });
+  return { promise, resolve };
+}

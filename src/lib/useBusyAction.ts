@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+﻿import { useCallback, useState } from 'react';
 
 type Opts = {
   timeoutMs?: number;
@@ -25,7 +25,7 @@ export function useBusyAction(opts?: Opts) {
         ]);
       } catch (e) {
         // покажем ошибку в консоль и наружу
-        console.error('[useBusyAction]', key, e);
+        if (__DEV__) console.error('[useBusyAction]', key, e);
         opts?.onError?.(e);
       } finally {
         setBusyKey(null);

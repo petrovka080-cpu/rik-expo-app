@@ -1,4 +1,4 @@
-import { recordPlatformObservability } from "../observability/platformObservability";
+﻿import { recordPlatformObservability } from "../observability/platformObservability";
 
 type DirectorReportsSourceChainMeta = {
   stage: "options" | "report" | "discipline";
@@ -29,7 +29,7 @@ const recordDirectorReportsTransportWarning = (
   extra?: Record<string, unknown>,
 ) => {
   const message = getDirectorReportsTransportErrorMessage(error, event);
-  console.warn("[director_reports.transport]", { event, message, ...extra });
+  if (__DEV__) console.warn("[director_reports.transport]", { event, message, ...extra });
   recordPlatformObservability({
     screen: "director",
     surface: "reports_transport",

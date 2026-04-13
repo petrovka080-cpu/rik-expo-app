@@ -1,4 +1,4 @@
-import { recordPlatformObservability } from "../observability/platformObservability";
+﻿import { recordPlatformObservability } from "../observability/platformObservability";
 
 export type CatalogObservabilityMode = "fail" | "degraded" | "fallback";
 
@@ -47,7 +47,7 @@ export const recordCatalogWarning = (params: {
   if (dedupeKey && catalogOnceWarnings.has(dedupeKey)) return;
   if (dedupeKey) catalogOnceWarnings.add(dedupeKey);
 
-  console.warn("[catalog]", { event, operation, mode, message, ...extra });
+  if (__DEV__) console.warn("[catalog]", { event, operation, mode, message, ...extra });
   recordPlatformObservability({
     screen,
     surface,

@@ -1,4 +1,4 @@
-import { useFocusEffect } from "expo-router";
+﻿import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   recordOfficeWarehouseRuntimeStateWriteAccepted,
@@ -35,7 +35,7 @@ const CONFIRM_TS_KEY = "wh_warehouseman_confirm_ts";
 const WAREHOUSEMAN_HISTORY_KEY = "wh_warehouseman_history_v1";
 
 const logSuppressedPostUnmount = (scope: string, details?: Record<string, unknown>) => {
-  console.info(`[warehouse:${scope}] suppressed post-unmount`, details);
+  if (__DEV__) console.info(`[warehouse:${scope}] suppressed post-unmount`, details);
 };
 
 export function useWarehousemanFio({

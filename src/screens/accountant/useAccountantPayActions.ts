@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+﻿import { useCallback, useRef } from "react";
 import { Alert, Platform } from "react-native";
 
 import {
@@ -186,7 +186,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
     (title: string, e: unknown) => {
       const msg = p.errText(e);
       p.safeAlert(title, msg);
-      console.error("[accountant.payment]", msg);
+      if (__DEV__) console.error("[accountant.payment]", msg);
     },
     [p],
   );
@@ -197,7 +197,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         "Оплата проведена, но обновление экрана не завершилось",
         `Платёж сохранён, но экран не обновился автоматически: ${p.errText(e)}`,
       );
-      console.error("[accountant.payment.sync]", e);
+      if (__DEV__) console.error("[accountant.payment.sync]", e);
     },
     [p],
   );

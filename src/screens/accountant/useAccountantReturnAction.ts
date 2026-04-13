@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+﻿import { useCallback } from "react";
 import { runAccountantReturnToBuyerChain } from "./accountant.return.service";
 
 type RowBase = { proposal_id?: string | number };
@@ -30,7 +30,7 @@ export function useAccountantReturnAction<T extends RowBase>(p: Params<T>) {
     } catch (e: unknown) {
       const msg = p.errText(e);
       p.safeAlert("Ошибка возврата", msg);
-      console.error("[return_to_buyer chain failed]", msg);
+      if (__DEV__) console.error("[return_to_buyer chain failed]", msg);
       return;
     }
 

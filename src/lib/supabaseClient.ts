@@ -1,4 +1,4 @@
-import "react-native-url-polyfill/auto";
+﻿import "react-native-url-polyfill/auto";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -95,14 +95,14 @@ const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch =>
     const fixedUrl = fixNakedTimestamp(originalUrl);
 
     if (DEBUG_SUPABASE_REST && fixedUrl !== originalUrl) {
-      console.warn(`${tag} SUPABASE REST: fixed naked timestamp`, {
+      if (__DEV__) console.warn(`${tag} SUPABASE REST: fixed naked timestamp`, {
         before: originalUrl,
         after: fixedUrl,
       });
     }
 
     if (DEBUG_SUPABASE_REST && fixedUrl.includes("/rest/v1/")) {
-      console.log(`${tag} SUPABASE REST:`, fixedUrl);
+      if (__DEV__) console.log(`${tag} SUPABASE REST:`, fixedUrl);
     }
 
     let patchedInput: FetchInput = fixedUrl;
@@ -271,7 +271,7 @@ function assertEnv() {
   const looksLikeTargetProject = SUPABASE_HOST?.startsWith(`${SUPABASE_PROJECT_REF}.`);
 
   if (ok && !looksLikeTargetProject) {
-    console.warn(
+    if (__DEV__) console.warn(
       `[supabaseClient] SUPABASE_URL host ("${SUPABASE_HOST}") does not match ref ${SUPABASE_PROJECT_REF}.`,
     );
   }
@@ -279,7 +279,7 @@ function assertEnv() {
   if (!ok) {
     const message =
       "[supabaseClient] Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
-    if (process.env.NODE_ENV !== "production") console.warn(message);
+    if (__DEV__) if (process.env.NODE_ENV !== "production") console.warn(message);
   }
 
   return ok;

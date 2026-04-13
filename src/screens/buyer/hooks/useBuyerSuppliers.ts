@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 
 import {
   loadBuyerCounterpartyData,
@@ -17,7 +17,7 @@ const logBuyerSuppliersDiag = (diag: BuyerCounterpartySourceDiag) => {
     );
     return;
   }
-  console.info(`[buyer.suppliers] source=${diag.source} ok=true rows=${diag.rows}`);
+  if (__DEV__) console.info(`[buyer.suppliers] source=${diag.source} ok=true rows=${diag.rows}`);
 };
 
 const warnBuyerSuppliers = (error: unknown) => {

@@ -1,4 +1,4 @@
-import type { Database } from "../database.types";
+﻿import type { Database } from "../database.types";
 import type { ReqItemRow as CatalogReqItemRow } from "../catalog_api";
 import {
   DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
@@ -110,7 +110,7 @@ const signalDirectorRequestSubmitted = async (params: {
         }
       });
     });
-    console.info("[request-draft-sync.signal]", {
+    if (__DEV__) console.info("[request-draft-sync.signal]", {
       kind: "broadcast",
       sourcePath: params.sourcePath,
       requestId,
@@ -119,7 +119,7 @@ const signalDirectorRequestSubmitted = async (params: {
     });
     void supabase.removeChannel(channel);
   } catch (error) {
-    console.warn("[request-draft-sync.signal]", {
+    if (__DEV__) console.warn("[request-draft-sync.signal]", {
       kind: "broadcast_error",
       sourcePath: params.sourcePath,
       requestId,
@@ -139,7 +139,7 @@ const signalDirectorRequestSubmitted = async (params: {
         source_path: params.sourcePath,
       },
     });
-    console.info("[request-draft-sync.signal]", {
+    if (__DEV__) console.info("[request-draft-sync.signal]", {
       kind: insertResult.error ? "notification_error" : "notification",
       sourcePath: params.sourcePath,
       requestId,
@@ -147,7 +147,7 @@ const signalDirectorRequestSubmitted = async (params: {
       error: insertResult.error?.message ?? null,
     });
   } catch (error) {
-    console.warn("[request-draft-sync.signal]", {
+    if (__DEV__) console.warn("[request-draft-sync.signal]", {
       kind: "notification_error",
       sourcePath: params.sourcePath,
       requestId,
@@ -277,8 +277,8 @@ export async function syncRequestDraftViaRpc(params: {
   }
 
   const items = parseItemsPayload(envelope.items_payload);
-  console.log("[draft-sync] source=rpc_v2");
-  console.info("[request-draft-sync]", {
+  if (__DEV__) console.log("[draft-sync] source=rpc_v2");
+  if (__DEV__) console.info("[request-draft-sync]", {
     sourceBranch: "rpc_v2",
     requestId: request.id,
     submitted: envelope.submitted,

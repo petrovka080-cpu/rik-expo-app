@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -235,7 +235,7 @@ export default function CatalogModal(props: {
       showToast(`Добавлено: ${title}`);
       setQtyByCode(p => ({ ...p, [code]: '' }));
     } catch (e) {
-      console.warn('Commit error:', e);
+      if (__DEV__) console.warn('Commit error:', e);
     } finally {
       setAddBusyByCode(p => ({ ...p, [code]: false }));
     }

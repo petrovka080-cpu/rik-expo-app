@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database, Json } from "../database.types";
 import { supabase } from "../supabaseClient";
@@ -222,7 +222,7 @@ const IS_DEV_RUNTIME =
 export const JOB_QUEUE_ENABLED = toBool(JOB_QUEUE_ENABLED_RAW ?? "false");
 
 if (IS_DEV_RUNTIME) {
-  console.info("[jobQueue.env]", {
+  if (__DEV__) console.info("[jobQueue.env]", {
     EXPO_PUBLIC_JOB_QUEUE_ENABLED: JOB_QUEUE_ENABLED_RAW ?? null,
     JOB_QUEUE_ENABLED,
   });

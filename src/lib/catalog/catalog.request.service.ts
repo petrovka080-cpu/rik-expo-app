@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient";
+﻿import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import {
   clearCachedDraftRequestId,
@@ -424,7 +424,7 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
   } catch (error: unknown) {
     const msg = String((error as Error)?.message ?? "").toLowerCase();
     if (!msg.includes("permission denied")) {
-      console.warn("[catalog_api.getOrCreateDraftRequestId] draft check:", (error as Error)?.message ?? error);
+      if (__DEV__) console.warn("[catalog_api.getOrCreateDraftRequestId] draft check:", (error as Error)?.message ?? error);
     }
     return false;
   }
@@ -505,7 +505,7 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
       return id;
     }
   } catch (error: unknown) {
-    console.warn("[catalog_api.getOrCreateDraftRequestId]", error instanceof Error ? error.message : error);
+    if (__DEV__) console.warn("[catalog_api.getOrCreateDraftRequestId]", error instanceof Error ? error.message : error);
     throw error;
   }
 
@@ -557,7 +557,7 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   } catch (error: unknown) {
     const msg = String((error as Error)?.message ?? "").toLowerCase();
     if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-      console.warn("[catalog_api.fetchRequestDisplayNo] requests:", (error as Error)?.message ?? error);
+      if (__DEV__) console.warn("[catalog_api.fetchRequestDisplayNo] requests:", (error as Error)?.message ?? error);
     }
   }
 
@@ -574,7 +574,7 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
     } catch (error: unknown) {
       const msg = String((error as Error)?.message ?? "");
       if (!msg.includes("function") && !msg.includes("does not exist")) {
-        console.warn(`[catalog_api.fetchRequestDisplayNo] rpc ${fn}:`, (error as Error)?.message ?? error);
+        if (__DEV__) console.warn(`[catalog_api.fetchRequestDisplayNo] rpc ${fn}:`, (error as Error)?.message ?? error);
       }
     }
   }
@@ -594,7 +594,7 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
     } catch (error: unknown) {
       const msg = String((error as Error)?.message ?? "").toLowerCase();
       if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        console.warn(`[catalog_api.fetchRequestDisplayNo] ${src}:`, (error as Error)?.message ?? error);
+        if (__DEV__) console.warn(`[catalog_api.fetchRequestDisplayNo] ${src}:`, (error as Error)?.message ?? error);
       }
     }
   }
@@ -626,13 +626,13 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
     if (error) {
       const msg = String(error.message || "").toLowerCase();
       if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        console.warn("[catalog_api.fetchRequestDetails] requests:", error.message);
+        if (__DEV__) console.warn("[catalog_api.fetchRequestDetails] requests:", error.message);
       }
     }
   } catch (error: unknown) {
     const msg = String((error as Error)?.message ?? "").toLowerCase();
     if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-      console.warn("[catalog_api.fetchRequestDetails] requests:", (error as Error)?.message ?? error);
+      if (__DEV__) console.warn("[catalog_api.fetchRequestDetails] requests:", (error as Error)?.message ?? error);
     }
   }
 
@@ -647,13 +647,13 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
       if (error) {
         const msg = String(error.message || "").toLowerCase();
         if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-          console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, error.message);
+          if (__DEV__) console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, error.message);
         }
       }
     } catch (error: unknown) {
       const msg = String((error as Error)?.message ?? "").toLowerCase();
       if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, (error as Error)?.message ?? error);
+        if (__DEV__) console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, (error as Error)?.message ?? error);
       }
     }
   }
@@ -731,14 +731,14 @@ export async function updateRequestMeta(
       if (Object.keys(fallbackPayload).length) {
         const fallbackRes = await supabase.from("requests").update(fallbackPayload).eq("id", id);
         if (fallbackRes.error) {
-          console.warn("[catalog_api.updateRequestMeta][patch400.fallback]", {
+          if (__DEV__) console.warn("[catalog_api.updateRequestMeta][patch400.fallback]", {
             request_id: id,
             payload: fallbackPayload,
             error: getCompatErrorInfo(fallbackRes.error),
           });
         }
         if (primaryErr) {
-          console.warn("[catalog_api.updateRequestMeta][patch400.primary]", {
+          if (__DEV__) console.warn("[catalog_api.updateRequestMeta][patch400.primary]", {
             request_id: id,
             payload: primaryPayload,
             error: getCompatErrorInfo(primaryErr),
@@ -749,13 +749,13 @@ export async function updateRequestMeta(
     }
 
     if (error) {
-      console.warn("[catalog_api.updateRequestMeta] table requests:", error.message);
+      if (__DEV__) console.warn("[catalog_api.updateRequestMeta] table requests:", error.message);
       return false;
     }
 
     return true;
   } catch (error: unknown) {
-    console.warn(
+    if (__DEV__) console.warn(
       "[catalog_api.updateRequestMeta] table requests:",
       error instanceof Error ? error.message : error,
     );
@@ -779,7 +779,7 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
       .order("id", { ascending: true });
 
     if (error) {
-      console.warn("[catalog_api.listRequestItems] request_items:", error.message);
+      if (__DEV__) console.warn("[catalog_api.listRequestItems] request_items:", error.message);
       return [];
     }
 
@@ -798,7 +798,7 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
 
     return guarded.rows.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
   } catch (error: unknown) {
-    console.warn("[catalog_api.listRequestItems] request_items:", (error as Error)?.message ?? error);
+    if (__DEV__) console.warn("[catalog_api.listRequestItems] request_items:", (error as Error)?.message ?? error);
     return [];
   }
 }
@@ -905,7 +905,7 @@ export async function listForemanRequests(
   const mergedById = new Map<string, RequestListMergedRow>();
   for (const result of results) {
     if (result.error) {
-      console.warn("[listForemanRequests]", result.error.message);
+      if (__DEV__) console.warn("[listForemanRequests]", result.error.message);
       continue;
     }
     if (!Array.isArray(result.data)) continue;
@@ -1043,7 +1043,7 @@ export async function requestItemCancel(requestItemId: string) {
     .eq("id", requestItemId);
 
   if (error) {
-    console.error("[requestItemCancel]", error);
+    if (__DEV__) console.error("[requestItemCancel]", error);
     throw error;
   }
 

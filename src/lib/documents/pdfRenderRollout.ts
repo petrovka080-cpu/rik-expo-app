@@ -1,4 +1,4 @@
-export type PdfRenderRolloutId = "director_render_v1";
+﻿export type PdfRenderRolloutId = "director_render_v1";
 
 export type PdfRenderRolloutMode = "force_on" | "force_off" | "auto";
 export type PdfRenderRolloutAvailability = "unknown" | "available" | "missing";
@@ -208,7 +208,7 @@ export function printPdfRenderRolloutSummary(ids?: PdfRenderRolloutId[]) {
   if (typeof console.table === "function") {
     console.table(snapshot);
   } else {
-    console.info("[pdf-render-rollout]", snapshot);
+    if (__DEV__) console.info("[pdf-render-rollout]", snapshot);
   }
 
   return snapshot;

@@ -1,4 +1,4 @@
-import { fetchSubmitJobMetrics, JOB_QUEUE_ENABLED } from "./jobQueue";
+﻿import { fetchSubmitJobMetrics, JOB_QUEUE_ENABLED } from "./jobQueue";
 import { fetchQueueLatencyMetrics, type QueueLatencyMetrics } from "./queueLatencyMetrics";
 import type { SubmitJobMetrics } from "./jobQueue";
 
@@ -26,7 +26,7 @@ export function startQueueMetricsLoop(
       const oldestPendingMs = latency.oldestPendingAt
         ? Math.max(0, Date.now() - new Date(latency.oldestPendingAt).getTime())
         : 0;
-      console.info("[queue.metrics]", {
+      if (__DEV__) console.info("[queue.metrics]", {
         pending: m.pending,
         processing: m.processing,
         failed: m.failed,
@@ -35,7 +35,7 @@ export function startQueueMetricsLoop(
         queueWaitMs: latency.queueWaitMs,
       });
     } catch (e: any) {
-      console.warn("[queue.metrics] failed:", String(e?.message ?? e));
+      if (__DEV__) console.warn("[queue.metrics] failed:", String(e?.message ?? e));
     } finally {
       if (!stopped) timer = setTimeout(tick, intervalMs);
     }

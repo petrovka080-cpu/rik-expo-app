@@ -1,4 +1,4 @@
-import type { DirectorFactRow, DisciplineRowsSource, RequestLookupRow } from "./director_reports.shared";
+﻿import type { DirectorFactRow, DisciplineRowsSource, RequestLookupRow } from "./director_reports.shared";
 import { asRecord, matchesDirectorObjectIdentity, resolveDirectorObjectIdentity } from "./director_reports.shared";
 
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
@@ -124,7 +124,7 @@ const nowMs = () => {
 const logTiming = (label: string, startedAt: number) => {
   if (!REPORTS_TIMING) return;
   const ms = Math.round(nowMs() - startedAt);
-  console.info(`[director_reports] ${label}: ${ms}ms`);
+  if (__DEV__) console.info(`[director_reports] ${label}: ${ms}ms`);
 };
 
 const REQUESTS_SELECT_PLANS = [
@@ -233,7 +233,7 @@ const maybeLogDivergence = (key: string, details: Record<string, unknown>) => {
   if (Date.now() - seenAt < DIVERGENCE_LOG_TTL_MS) return;
   divergenceLogSeen.set(key, Date.now());
   trimMap(divergenceLogSeen);
-  console.warn("[director_reports] canonical_divergence", { key, ...details });
+  if (__DEV__) console.warn("[director_reports] canonical_divergence", { key, ...details });
 };
 
 export {

@@ -1,4 +1,4 @@
-import { loadWorkLogRows } from "./contractor.data";
+﻿import { loadWorkLogRows } from "./contractor.data";
 import {
   resolveContractorJobIdForRow,
   resolveRequestIdForRow,
@@ -32,7 +32,7 @@ export function createWorkModalDataController(params: {
     try {
       return await loadWorkLogRows(supabaseClient, progressId, normText);
     } catch (e) {
-      console.warn("[loadWorkLog] error", e);
+      if (__DEV__) console.warn("[loadWorkLog] error", e);
       return [];
     }
   };
@@ -60,7 +60,7 @@ export function createWorkModalDataController(params: {
         normText,
       });
     } catch (e) {
-      console.warn("[loadIssuedToday] error:", e);
+      if (__DEV__) console.warn("[loadIssuedToday] error:", e);
       return {
         issuedItems: [] as IssuedItemRow[],
         linkedReqCards: [] as LinkedReqCard[],

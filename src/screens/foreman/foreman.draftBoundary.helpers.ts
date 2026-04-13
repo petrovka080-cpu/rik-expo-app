@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+﻿import type { Dispatch, SetStateAction } from "react";
 
 import {
   clearCachedDraftRequestId,
@@ -477,7 +477,7 @@ export async function runForemanDraftSyncCycle(params: {
     syncPayloadLineCount === 0 &&
     (mutationKind === "catalog_add" || mutationKind === "calc_add" || mutationKind === "ai_local_add")
   ) {
-    console.warn("[foreman.draft.sync] zero-line payload for add mutation", {
+    if (__DEV__) console.warn("[foreman.draft.sync] zero-line payload for add mutation", {
       mutationKind,
       context: params.options?.context ?? null,
       requestId: activeRequestId,
@@ -535,7 +535,7 @@ export async function runForemanDraftSyncCycle(params: {
       submitted: (result.submitted as RequestRecord | null) ?? null,
     };
   } catch (error) {
-    console.warn("[foreman.draft.sync] sync failed", {
+    if (__DEV__) console.warn("[foreman.draft.sync] sync failed", {
       mutationKind,
       context: params.options?.context ?? null,
       requestId: activeRequestId,

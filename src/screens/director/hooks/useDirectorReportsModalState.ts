@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { reportDirectorBoundary } from "../director.observability";
 import type {
   RepDisciplineLevel,
@@ -246,7 +246,7 @@ export function useDirectorReportsModalState({
     if (detailOpenTraceRef.current?.kind !== "work") return;
     const duration = Math.round(nowMs() - detailOpenTraceRef.current.startedAt);
     detailOpenTraceRef.current = null;
-    console.info(
+    if (__DEV__) console.info(
       `[director_works] detail_open:work duration_ms=${duration} levels=${sortedWorkLevels.length} top_materials=${topWorkMaterials.length}`,
     );
   }, [sortedWorkLevels.length, topWorkMaterials.length, workModal]);
@@ -256,7 +256,7 @@ export function useDirectorReportsModalState({
     if (detailOpenTraceRef.current?.kind !== "level") return;
     const duration = Math.round(nowMs() - detailOpenTraceRef.current.startedAt);
     detailOpenTraceRef.current = null;
-    console.info(
+    if (__DEV__) console.info(
       `[director_works] detail_open:level duration_ms=${duration} materials=${sortedLevelMaterials.length}`,
     );
   }, [levelModal, sortedLevelMaterials.length]);

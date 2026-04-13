@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import type { Database } from "../../lib/database.types";
 import { loadAggregatedWorkSummary } from "./contractor.data";
@@ -111,7 +111,7 @@ export async function generateSummaryPdfForWork(params: {
     });
     return;
   } catch (error) {
-    console.warn("[contractor.pdf] summary rpc source fallback", {
+    if (__DEV__) console.warn("[contractor.pdf] summary rpc source fallback", {
       progressId: workModalRow.progress_id,
       errorMessage: error instanceof Error ? error.message : String(error),
     });
@@ -193,7 +193,7 @@ export async function generateHistoryPdfForLog(params: {
     });
     return;
   } catch (error) {
-    console.warn("[contractor.pdf] history rpc source fallback", {
+    if (__DEV__) console.warn("[contractor.pdf] history rpc source fallback", {
       progressId: workModalRow.progress_id,
       logId: log.id,
       errorMessage: error instanceof Error ? error.message : String(error),

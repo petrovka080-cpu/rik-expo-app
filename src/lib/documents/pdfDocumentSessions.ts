@@ -1,4 +1,4 @@
-import { Platform } from "react-native";
+﻿import { Platform } from "react-native";
 import * as FileSystemModule from "expo-file-system/legacy";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { normalizePdfFileName } from "./pdfDocument";
@@ -101,7 +101,7 @@ function logMaterializeStage(
     originModule?: string;
   },
 ) {
-  console.info(`[pdf-document-sessions] ${stage}`, {
+  if (__DEV__) console.info(`[pdf-document-sessions] ${stage}`, {
     stage,
     uri: payload.uri ?? null,
     scheme: getUriScheme(payload.uri),
@@ -421,7 +421,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
     documentType: asset.documentType,
     originModule: asset.originModule,
   });
-  console.info("[pdf-document-sessions] materialized_asset", {
+  if (__DEV__) console.info("[pdf-document-sessions] materialized_asset", {
     platform: Platform.OS,
     documentType: asset.documentType,
     originModule: asset.originModule,

@@ -1,4 +1,4 @@
-import { type DirectorReportFetchMeta } from "./director_reports";
+﻿import { type DirectorReportFetchMeta } from "./director_reports";
 import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
 import { supabase } from "../supabaseClient";
 import { beginPlatformObservability } from "../observability/platformObservability";
@@ -594,7 +594,7 @@ export async function loadDirectorReportUiScope(args: {
       optionsState = await augmentOptionsStateWithStableObjectKeys(rawOptionsState, args.signal);
     } catch (error) {
       if (isAbortError(error)) throw error;
-      console.warn("[directorReportsScope] stable_object_key_augment_failed", error);
+      if (__DEV__) console.warn("[directorReportsScope] stable_object_key_augment_failed", error);
     }
     throwIfAborted(args.signal);
     const normalizedReport = normalizeReportPayload(transportResult.report);

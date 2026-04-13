@@ -1,6 +1,7 @@
 import {
   getOfflineReplayOwnerSnapshot,
   requestOfflineReplay,
+  resetOfflineReplayCoordinator,
   resetOfflineReplayCoordinatorForTests,
   type OfflineReplayPolicy,
 } from "./offlineReplayCoordinator";
@@ -106,5 +107,23 @@ describe("offlineReplayCoordinator", () => {
     expect(() =>
       requestOfflineReplay(unsafePolicy, "manual_retry", async () => 1),
     ).toThrow("must be serial");
+  });
+
+  it("clears coordinator owner state on a session boundary reset", async () => {
+    await requestOfflineReplay(TEST_POLICY, "manual_retry", async () => "ok");
+
+    expect(getOfflineReplayOwnerSnapshot("test_queue").runCount).toBe(1);
+
+    resetOfflineReplayCoordinator();
+
+    expect(getOfflineReplayOwnerSnapshot("test_queue")).toEqual({
+      queueKey: "test_queue",
+      active: false,
+      running: false,
+      pending: false,
+      currentTriggerSource: null,
+      pendingTriggerSource: null,
+      runCount: 0,
+    });
   });
 });

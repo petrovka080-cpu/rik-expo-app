@@ -1,4 +1,4 @@
-import process from "node:process";
+﻿import process from "node:process";
 
 import { SUPABASE_HOST, SUPABASE_PROJECT_REF, SUPABASE_URL } from "../env/clientSupabaseEnv";
 
@@ -19,7 +19,7 @@ export function assertServerSupabaseEnv(): void {
   const looksLikeTargetProject = SERVER_SUPABASE_HOST?.startsWith(`${SUPABASE_PROJECT_REF}.`);
 
   if (ok && !looksLikeTargetProject) {
-    console.warn(
+    if (__DEV__) console.warn(
       `[serverSupabaseEnv] SUPABASE_URL host ("${SERVER_SUPABASE_HOST}") does not match ref ${SUPABASE_PROJECT_REF}.`,
     );
   }

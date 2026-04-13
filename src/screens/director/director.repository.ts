@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../../lib/database.types";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
 import type { PendingRow } from "./director.types";
@@ -38,7 +38,7 @@ const warnDirectorRepository = (
     console.error(`[director.repository] ${scope}:`, message);
     return;
   }
-  console.warn(`[director.repository] ${scope}:`, message);
+  if (__DEV__) console.warn(`[director.repository] ${scope}:`, message);
 };
 
 const logDirectorRepository = (payload: Record<string, unknown>) => {

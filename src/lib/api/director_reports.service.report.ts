@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   DirectorFactRow,
   DirectorReportPayload,
 } from "./director_reports.shared";
@@ -111,7 +111,7 @@ export async function fetchDirectorWarehouseReportTracked(p: {
         markCanonicalRpcStatus("materials", "failed");
       }
       if (REPORTS_TIMING) {
-        console.info(`[director_reports] report.canonical_materials.failed: ${(error as Error)?.message ?? error}`);
+        if (__DEV__) console.info(`[director_reports] report.canonical_materials.failed: ${(error as Error)?.message ?? error}`);
       }
     }
     logTiming("report.canonical_materials_fallback", tCanonical);

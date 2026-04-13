@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { notifList, notifMarkRead } from "../../lib/catalog_api";
@@ -68,7 +68,7 @@ export function useAccountantNotifications(params: {
       await notifMarkRead("accountant");
       setNotifs([]);
     } catch (e) {
-      console.error("[useAccountantNotifications] markAllRead failed", e);
+      if (__DEV__) console.error("[useAccountantNotifications] markAllRead failed", e);
     }
     setBellOpen(false);
   }, []);

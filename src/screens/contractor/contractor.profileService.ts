@@ -1,4 +1,4 @@
-import { beginPlatformObservability } from "../../lib/observability/platformObservability";
+﻿import { beginPlatformObservability } from "../../lib/observability/platformObservability";
 
 export type ContractorUserProfile = {
   id: string;
@@ -85,7 +85,7 @@ export async function loadCurrentContractorProfile(params: {
     .maybeSingle();
 
   if (error && error.code !== "PGRST116") {
-    console.error("[contractor] loadContractor error:", error.message);
+    if (__DEV__) console.error("[contractor] loadContractor error:", error.message);
     observation.error(error, {
       rowCount: 0,
       errorStage: "table:contractors",

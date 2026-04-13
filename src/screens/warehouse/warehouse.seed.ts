@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
 
 type Supa = SupabaseClient;
 
@@ -46,7 +46,7 @@ const toNum = (v: unknown): number => {
 
 const warnWarehouseSeed = (scope: string, error: unknown) => {
   const message = error instanceof Error ? error.message : String(error ?? "");
-  console.warn(`[warehouse.seed] ${scope}:`, message || error);
+  if (__DEV__) console.warn(`[warehouse.seed] ${scope}:`, message || error);
 };
 
 async function getPurchaseIdByIncoming(supabase: Supa, incomingId: string): Promise<string | null> {
@@ -92,12 +92,12 @@ async function reseedIncomingItems(
     .order("id", { ascending: true });
 
   if (pi.error) {
-    console.warn("[seed] select purchase_items error:", pi.error.message);
+    if (__DEV__) console.warn("[seed] select purchase_items error:", pi.error.message);
     return false;
   }
 
   if (Array.isArray(pi.data) && pi.data.length === 0) {
-    console.warn("[seed] purchase_items empty в†’ seed from proposal_snapshot_items");
+    if (__DEV__) console.warn("[seed] purchase_items empty в†’ seed from proposal_snapshot_items");
 
     const link = await supabase
       .from("purchases")
@@ -107,7 +107,7 @@ async function reseedIncomingItems(
 
     const propId = !link.error && link.data?.proposal_id ? String(link.data.proposal_id) : null;
     if (!propId) {
-      console.warn("[seed] purchases.proposal_id not found", link.error?.message);
+      if (__DEV__) console.warn("[seed] purchases.proposal_id not found", link.error?.message);
       return false;
     }
 
@@ -117,7 +117,7 @@ async function reseedIncomingItems(
       .eq("proposal_id", propId);
 
     if (snap.error || !Array.isArray(snap.data) || snap.data.length === 0) {
-      console.warn("[seed] snapshot empty", snap.error?.message);
+      if (__DEV__) console.warn("[seed] snapshot empty", snap.error?.message);
       return false;
     }
 
@@ -168,13 +168,13 @@ async function reseedIncomingItems(
       .filter((x): x is NonNullable<typeof x> => Boolean(x));
 
     if (piToInsert.length === 0) {
-      console.warn("[seed] nothing to seed into purchase_items");
+      if (__DEV__) console.warn("[seed] nothing to seed into purchase_items");
       return false;
     }
 
     const insPI = await supabase.from("purchase_items").insert(piToInsert);
     if (insPI.error) {
-      console.warn("[seed] purchase_items insert error:", insPI.error.message);
+      if (__DEV__) console.warn("[seed] purchase_items insert error:", insPI.error.message);
       return false;
     }
 
@@ -200,7 +200,7 @@ async function reseedIncomingItems(
       .order("id", { ascending: true });
 
     if (pi.error) {
-      console.warn("[seed] reselect purchase_items error:", pi.error.message);
+      if (__DEV__) console.warn("[seed] reselect purchase_items error:", pi.error.message);
       return false;
     }
   }
@@ -282,7 +282,7 @@ async function reseedIncomingItems(
   });
 
   if (ins.error) {
-    console.warn("[seed] wh_incoming_items upsert error:", ins.error.message);
+    if (__DEV__) console.warn("[seed] wh_incoming_items upsert error:", ins.error.message);
     return false;
   }
 

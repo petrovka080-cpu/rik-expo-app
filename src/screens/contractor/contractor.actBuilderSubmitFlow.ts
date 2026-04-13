@@ -1,4 +1,4 @@
-import { generateActPdf } from "./contractorPdf";
+﻿import { generateActPdf } from "./contractorPdf";
 import {
   fetchRequestScopeRows,
   getProgressIdsForSubcontract,
@@ -172,7 +172,7 @@ export async function submitActBuilderFlow(params: {
   }
 
   if (actBuilderSelectedMatCount > 0 && selectedMaterials.length === 0) {
-    console.error("CRITICAL: UI shows selected materials but payload is empty!", {
+    if (__DEV__) console.error("CRITICAL: UI shows selected materials but payload is empty!", {
       actBuilderSelectedMatCount,
       actBuilderItemsCount: actBuilderItems.length,
     });
@@ -237,7 +237,7 @@ export async function submitActBuilderFlow(params: {
     });
 
     if (!persistResult.logSaved) {
-      console.warn("[submitActBuilder] log save failed:", persistResult.logError);
+      if (__DEV__) console.warn("[submitActBuilder] log save failed:", persistResult.logError);
       return {
         ok: true,
         closeActBuilder: true,
@@ -247,7 +247,7 @@ export async function submitActBuilderFlow(params: {
       };
     }
     if (!persistResult.materialsSaved) {
-      console.warn("[submitActBuilder] materials save failed:", persistResult.materialsError);
+      if (__DEV__) console.warn("[submitActBuilder] materials save failed:", persistResult.materialsError);
       return {
         ok: true,
         closeActBuilder: true,

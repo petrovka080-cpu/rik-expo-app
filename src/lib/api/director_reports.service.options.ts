@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   DirectorFactRow,
   DirectorReportOptions,
 } from "./director_reports.shared";
@@ -62,7 +62,7 @@ export async function fetchDirectorWarehouseReportOptionsTracked(p: {
         markOptionsRpcStatus("failed");
       }
       if (REPORTS_TIMING) {
-        console.info(`[director_reports] options.rpc.failed: ${(error as Error)?.message ?? error}`);
+        if (__DEV__) console.info(`[director_reports] options.rpc.failed: ${(error as Error)?.message ?? error}`);
       }
     }
     logTiming("options.rpc_fallback", t0);

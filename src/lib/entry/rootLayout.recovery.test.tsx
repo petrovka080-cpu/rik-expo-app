@@ -10,8 +10,12 @@ const mockGetSessionSafe = jest.fn();
 const mockOnAuthStateChange = jest.fn();
 const mockUseSegments = jest.fn();
 const mockUsePathname = jest.fn();
+const mockClearAppCache = jest.fn();
 const mockClearDocumentSessions = jest.fn();
 const mockClearCurrentSessionRoleCache = jest.fn();
+const mockClearPdfRunnerSessionState = jest.fn();
+const mockResetOfflineReplayCoordinator = jest.fn();
+const mockClearOfficeHubBootstrapSnapshot = jest.fn();
 const mockWarmCurrentSessionProfile = jest.fn();
 const mockEnsureQueueWorker = jest.fn();
 const mockStopQueueWorker = jest.fn();
@@ -48,7 +52,7 @@ jest.mock("../../ui/GlobalBusy", () => ({
 jest.mock("../../components/PlatformOfflineStatusHost", () => () => null);
 
 jest.mock("../cache/clearAppCache", () => ({
-  clearAppCache: jest.fn(),
+  clearAppCache: (...args: unknown[]) => mockClearAppCache(...args),
 }));
 
 jest.mock("../supabaseClient", () => ({
@@ -65,11 +69,26 @@ jest.mock("../documents/pdfDocumentSessions", () => ({
     mockClearDocumentSessions(...args),
 }));
 
+jest.mock("../pdfRunner", () => ({
+  clearPdfRunnerSessionState: (...args: unknown[]) =>
+    mockClearPdfRunnerSessionState(...args),
+}));
+
+jest.mock("../offline/offlineReplayCoordinator", () => ({
+  resetOfflineReplayCoordinator: (...args: unknown[]) =>
+    mockResetOfflineReplayCoordinator(...args),
+}));
+
 jest.mock("../sessionRole", () => ({
   clearCurrentSessionRoleCache: (...args: unknown[]) =>
     mockClearCurrentSessionRoleCache(...args),
   warmCurrentSessionProfile: (...args: unknown[]) =>
     mockWarmCurrentSessionProfile(...args),
+}));
+
+jest.mock("../../screens/office/officeHubBootstrapSnapshot", () => ({
+  clearOfficeHubBootstrapSnapshot: (...args: unknown[]) =>
+    mockClearOfficeHubBootstrapSnapshot(...args),
 }));
 
 jest.mock("../../workers/queueBootstrap", () => ({
@@ -89,8 +108,12 @@ describe("RootLayout recovery bootstrap", () => {
     mockOnAuthStateChange.mockReset();
     mockUseSegments.mockReset();
     mockUsePathname.mockReset();
+    mockClearAppCache.mockReset();
     mockClearDocumentSessions.mockReset();
     mockClearCurrentSessionRoleCache.mockReset();
+    mockClearPdfRunnerSessionState.mockReset();
+    mockResetOfflineReplayCoordinator.mockReset();
+    mockClearOfficeHubBootstrapSnapshot.mockReset();
     mockWarmCurrentSessionProfile.mockReset();
     mockEnsureQueueWorker.mockReset();
     mockStopQueueWorker.mockReset();
@@ -105,6 +128,7 @@ describe("RootLayout recovery bootstrap", () => {
         },
       },
     });
+    mockClearAppCache.mockResolvedValue(undefined);
     mockWarmCurrentSessionProfile.mockResolvedValue(undefined);
   });
 
@@ -164,6 +188,56 @@ describe("RootLayout recovery bootstrap", () => {
     expect(mockStopQueueWorker).toHaveBeenCalledTimes(1);
     expect(mockClearDocumentSessions).toHaveBeenCalledTimes(1);
     expect(mockClearCurrentSessionRoleCache).toHaveBeenCalledTimes(1);
+    expect(mockClearPdfRunnerSessionState).toHaveBeenCalledTimes(1);
+    expect(mockClearOfficeHubBootstrapSnapshot).toHaveBeenCalledTimes(1);
+    expect(mockResetOfflineReplayCoordinator).toHaveBeenCalledTimes(1);
+    expect(mockClearAppCache).toHaveBeenCalledWith({
+      mode: "session",
+      owner: "root_layout:bootstrap_no_session",
+    });
+  });
+
+  it("purges session-owned local state on terminal sign out", async () => {
+    let capturedAuthCallback:
+      | ((event: string, session: unknown) => void)
+      | null = null;
+
+    mockOnAuthStateChange.mockImplementation(
+      (callback: (event: string, session: unknown) => void) => {
+        capturedAuthCallback = callback;
+        return {
+          data: {
+            subscription: {
+              unsubscribe: jest.fn(),
+            },
+          },
+        };
+      },
+    );
+    mockGetSessionSafe.mockResolvedValue({
+      session: { user: { id: "user-1" }, access_token: "tok" },
+      degraded: false,
+    });
+
+    await act(async () => {
+      TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+      capturedAuthCallback?.("SIGNED_OUT", null);
+      await Promise.resolve();
+    });
+
+    expect(mockClearDocumentSessions).toHaveBeenCalledTimes(1);
+    expect(mockClearCurrentSessionRoleCache).toHaveBeenCalledTimes(1);
+    expect(mockClearPdfRunnerSessionState).toHaveBeenCalledTimes(1);
+    expect(mockClearOfficeHubBootstrapSnapshot).toHaveBeenCalledTimes(1);
+    expect(mockResetOfflineReplayCoordinator).toHaveBeenCalledTimes(1);
+    expect(mockClearAppCache).toHaveBeenCalledWith({
+      mode: "session",
+      owner: "root_layout:terminal_sign_out",
+    });
   });
 
   it("blocks login redirect when a protected app route gets a null bootstrap session", async () => {

@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
+﻿import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 
 type Params = {
@@ -30,7 +30,7 @@ export function useContractorWorkSearchController(params: Params) {
         });
         if (seq !== seqRef.current) return;
         if (error) {
-          console.warn("[material_search/catalog_search] error:", error.message);
+          if (__DEV__) console.warn("[material_search/catalog_search] error:", error.message);
           return;
         }
         if (!Array.isArray(data)) return;
@@ -38,7 +38,7 @@ export function useContractorWorkSearchController(params: Params) {
       } catch (e: unknown) {
         if (seq !== seqRef.current) return;
         const message = e instanceof Error ? e.message : String(e);
-        console.warn("[material_search/catalog_search] exception:", message);
+        if (__DEV__) console.warn("[material_search/catalog_search] exception:", message);
       }
     },
     [mapCatalogSearchToWorkMaterials, supabaseClient]

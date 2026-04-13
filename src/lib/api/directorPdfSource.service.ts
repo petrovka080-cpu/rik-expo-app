@@ -1,4 +1,4 @@
-import {
+﻿import {
   getPdfRpcRolloutAvailability,
   recordPdfRpcRolloutBranch,
   registerPdfRpcRolloutPath,
@@ -206,7 +206,7 @@ const logDirectorPdfSourceBranch = (
     branchMeta,
   });
   if (!DIRECTOR_PDF_SOURCE_IS_DEV) return;
-  console.info("[director-pdf-source]", {
+  if (__DEV__) console.info("[director-pdf-source]", {
     id,
     source,
     sourceBranch: branchMeta.sourceBranch,
@@ -270,7 +270,7 @@ const recordDirectorPdfRpcFailure = (
     },
   });
   if (!DIRECTOR_PDF_SOURCE_IS_DEV) return;
-  console.warn(tag, {
+  if (__DEV__) console.warn(tag, {
     failureReason,
     rpcMode,
     errorMessage: error instanceof Error ? error.message : String(error),

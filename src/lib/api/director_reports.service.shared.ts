@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   DirectorDisciplinePayload,
   DirectorFactRow,
   DirectorReportOptions,
@@ -71,7 +71,7 @@ export const recordDirectorReportsServiceWarning = (
   extra?: Record<string, unknown>,
 ) => {
   const message = getDirectorReportsServiceErrorMessage(error, event);
-  console.warn("[director_reports.service]", { event, message, ...extra });
+  if (__DEV__) console.warn("[director_reports.service]", { event, message, ...extra });
   recordPlatformObservability({
     screen: "director",
     surface: "reports_service",

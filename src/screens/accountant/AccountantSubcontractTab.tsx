@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+﻿import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -39,7 +39,7 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
       const rows = await listAccountantSubcontracts();
       setItems(rows);
     } catch (error) {
-      console.warn("[AccountantSubcontractTab] load error:", error);
+      if (__DEV__) console.warn("[AccountantSubcontractTab] load error:", error);
     } finally {
       setLoading(false);
     }

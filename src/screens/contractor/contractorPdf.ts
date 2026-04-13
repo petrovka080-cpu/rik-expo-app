@@ -1,4 +1,4 @@
-import { Alert } from "react-native";
+﻿import { Alert } from "react-native";
 
 import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
 import {
@@ -21,7 +21,7 @@ export async function generateActPdf(args: GenerateActPdfArgs) {
     await previewContractorActPdfDocument(descriptor);
   } catch (error: unknown) {
     const message = getPdfFlowErrorMessage(error, "Не удалось открыть PDF");
-    console.warn("[contractor-pdf] generate_failed", { errorMessage: message });
+    if (__DEV__) console.warn("[contractor-pdf] generate_failed", { errorMessage: message });
     Alert.alert("Ошибка PDF", message);
   }
 }

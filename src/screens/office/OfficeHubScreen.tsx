@@ -95,6 +95,15 @@ import type {
   OfficeAccessMember,
   OfficeAccessScreenData,
 } from "./officeAccess.types";
+import {
+  clearOfficeHubBootstrapSnapshot,
+  getFreshOfficeHubBootstrapSnapshot,
+  OFFICE_FOCUS_REFRESH_TTL_MS,
+  primeOfficeHubBootstrapSnapshot,
+  type OfficeHubBootstrapSnapshot,
+} from "./officeHubBootstrapSnapshot";
+
+export { __resetOfficeHubBootstrapSnapshotForTests } from "./officeHubBootstrapSnapshot";
 
 type SectionKey = "members" | "invites" | "company";
 type PostReturnSectionKey =
@@ -116,13 +125,6 @@ type InviteFormDraft = {
   comment: string;
 };
 type LoadScreenMode = "initial" | "refresh" | "focus_refresh";
-
-const OFFICE_FOCUS_REFRESH_TTL_MS = 60_000;
-
-type OfficeHubBootstrapSnapshot = {
-  data: OfficeAccessScreenData;
-  loadedAt: number;
-};
 
 const SECTION_RENDER_PROBES = [
   "header_meta",
@@ -175,8 +177,6 @@ const EMPTY_COMPANY_DRAFT: CreateCompanyDraft = {
   website: "",
 };
 
-let officeHubBootstrapSnapshot: OfficeHubBootstrapSnapshot | null = null;
-
 function buildOfficeBootstrapCompanyDraft(
   data: OfficeAccessScreenData,
 ): CreateCompanyDraft {
@@ -185,30 +185,6 @@ function buildOfficeBootstrapCompanyDraft(
     phoneMain: data.profile.phone || "",
     email: data.profileEmail || "",
   };
-}
-
-function getFreshOfficeHubBootstrapSnapshot(now = Date.now()) {
-  if (!officeHubBootstrapSnapshot) return null;
-  if (now - officeHubBootstrapSnapshot.loadedAt >= OFFICE_FOCUS_REFRESH_TTL_MS) {
-    officeHubBootstrapSnapshot = null;
-    return null;
-  }
-  return officeHubBootstrapSnapshot;
-}
-
-function primeOfficeHubBootstrapSnapshot(
-  data: OfficeAccessScreenData,
-  loadedAt = Date.now(),
-) {
-  officeHubBootstrapSnapshot = {
-    data,
-    loadedAt,
-  };
-  return officeHubBootstrapSnapshot;
-}
-
-export function __resetOfficeHubBootstrapSnapshotForTests() {
-  officeHubBootstrapSnapshot = null;
 }
 
 const buildInviteDraft = (): InviteFormDraft => ({
@@ -1338,7 +1314,7 @@ export default function OfficeHubScreen({
       } catch (error: unknown) {
         if (mode === "initial") {
           ownerBootstrapCompletedRef.current = false;
-          officeHubBootstrapSnapshot = null;
+          clearOfficeHubBootstrapSnapshot();
           recordOfficeReentryFailure({
             error,
             errorStage: "load_screen",

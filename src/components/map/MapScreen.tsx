@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Modal,
@@ -174,7 +174,7 @@ export default function MapScreen() {
         .limit(2000);
 
       if (error) {
-        console.warn("MapScreen load error:", error.message);
+        if (__DEV__) console.warn("MapScreen load error:", error.message);
         return;
       }
 

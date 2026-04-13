@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Location from "expo-location";
@@ -265,7 +265,7 @@ export function AddListingScreen() {
       const results = await searchCatalogItems(query, listingKind);
       setCatalogResults(results);
     } catch (error: unknown) {
-      console.warn(
+      if (__DEV__) console.warn(
         "searchCatalogInline error:",
         getAddListingErrorMessage(error),
       );

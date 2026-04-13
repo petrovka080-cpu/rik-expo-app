@@ -1,4 +1,4 @@
-import { router as rootRouter, type Href } from "expo-router";
+﻿import { router as rootRouter, type Href } from "expo-router";
 import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 import {
@@ -84,12 +84,12 @@ function createViewerHref(sessionId: unknown, openToken: unknown) {
 }
 
 async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
-  console.info("[pdf-document-actions] viewer_patch_v3_navigation_call", {
+  if (__DEV__) console.info("[pdf-document-actions] viewer_patch_v3_navigation_call", {
     href: String(href),
     platform: Platform.OS,
     patchVersion: "v3",
   });
-  console.info("[pdf-document-actions] viewer_route_push_pre_schedule", {
+  if (__DEV__) console.info("[pdf-document-actions] viewer_route_push_pre_schedule", {
     href: String(href),
     platform: Platform.OS,
   });
@@ -97,7 +97,7 @@ async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
   await new Promise<void>((resolve, reject) => {
     const runPush = () => {
       try {
-        console.info("[pdf-document-actions] viewer_route_replace_start", {
+        if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_start", {
           href: String(href),
           platform: Platform.OS,
           method: Platform.OS === "ios" ? "push" : "replace",
@@ -120,13 +120,13 @@ async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
           router.push(href);
         }
 
-        console.info("[pdf-document-actions] viewer_route_replace_done", {
+        if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_done", {
           href: String(href),
           platform: Platform.OS,
         });
         resolve();
       } catch (error) {
-        console.error("[pdf-document-actions] viewer_route_replace_crash", {
+        if (__DEV__) console.error("[pdf-document-actions] viewer_route_replace_crash", {
           href: String(href),
           platform: Platform.OS,
           errorName: error instanceof Error ? error.name : undefined,
@@ -221,7 +221,7 @@ export async function preparePdfDocument(
       },
     });
     try {
-      console.info("[pdf-document-actions] prepare_requested", {
+      if (__DEV__) console.info("[pdf-document-actions] prepare_requested", {
         stage: "prepare_requested",
         platform: Platform.OS,
         documentType: args.descriptor.documentType,
@@ -243,7 +243,7 @@ export async function preparePdfDocument(
       });
       assertCanonicalRemotePdfSource(args.descriptor, preparedSource);
       const uri = preparedSource.uri;
-      console.info("[pdf-document-actions] prepare_ready", {
+      if (__DEV__) console.info("[pdf-document-actions] prepare_ready", {
         stage: "prepare_ready",
         platform: Platform.OS,
         documentType: args.descriptor.documentType,
@@ -271,7 +271,7 @@ export async function preparePdfDocument(
         lifecycleError,
         "PDF preparation failed",
       );
-      console.error("[pdf-document-actions] prepare_failed", {
+      if (__DEV__) console.error("[pdf-document-actions] prepare_failed", {
         stage: "prepare_failed",
         platform: Platform.OS,
         documentType: args.descriptor.documentType,
@@ -342,7 +342,7 @@ export async function previewPdfDocument(
       String(doc.uri || "")
         .match(/^([a-z0-9+.-]+):/i)?.[1]
         ?.toLowerCase() || "";
-    console.info("[pdf-document-actions] preview", {
+    if (__DEV__) console.info("[pdf-document-actions] preview", {
       stage: "preview_requested",
       platform: Platform.OS,
       documentType: doc.documentType,
@@ -409,7 +409,7 @@ export async function previewPdfDocument(
           openToken: safeOpenToken,
         },
       });
-      console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
+      if (__DEV__) console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
         sessionId: safeSessionId,
         documentType: asset.documentType,
         originModule: asset.originModule,
@@ -616,7 +616,7 @@ export async function previewPdfDocument(
         assetId: asset.assetId,
       },
     });
-    console.info("[pdf-document-actions] preview_asset", {
+    if (__DEV__) console.info("[pdf-document-actions] preview_asset", {
       stage: "preview_asset_ready",
       sessionId: session.sessionId,
       documentType: asset.documentType,
@@ -678,7 +678,7 @@ export async function previewPdfDocument(
         safeOpenToken,
         href: viewerHref,
       } = createViewerHref(session.sessionId, opts.openFlow?.openToken);
-      console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
+      if (__DEV__) console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
         sessionId: safeSessionId,
         documentType: asset.documentType,
         originModule: asset.originModule,
@@ -866,7 +866,7 @@ export async function previewPdfDocument(
           lifecycleError,
           "Viewer navigation failed",
         );
-        console.error("[pdf-document-actions] preview_navigation_failed", {
+        if (__DEV__) console.error("[pdf-document-actions] preview_navigation_failed", {
           stage: "navigation_failed",
           sessionId: safeSessionId,
           documentType: asset.documentType,
@@ -882,7 +882,7 @@ export async function previewPdfDocument(
           : new Error(message);
       }
     }
-    console.warn("[pdf-document-actions] preview_without_router_fallback", {
+    if (__DEV__) console.warn("[pdf-document-actions] preview_without_router_fallback", {
       documentType: asset.documentType,
       originModule: asset.originModule,
       finalUri: asset.uri,
@@ -917,7 +917,7 @@ export async function previewPdfDocument(
       lifecycleError,
       "PDF preview failed",
     );
-    console.error("[pdf-document-actions] preview_failed", {
+    if (__DEV__) console.error("[pdf-document-actions] preview_failed", {
       stage: "preview_failed",
       platform: Platform.OS,
       documentType: doc.documentType,

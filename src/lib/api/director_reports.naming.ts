@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient";
+﻿import { supabase } from "../supabaseClient";
 import { normalizeRuText } from "../text/encoding";
 import type { DirectorNamingProbeCacheMode, DirectorNamingSourceStatus } from "../../screens/director/director.readModels";
 import { recordPlatformObservability } from "../observability/platformObservability";
@@ -227,7 +227,7 @@ const materialNameResolveSourceCache = new Map<string, MaterialNameResolutionSou
 
 const warnDirectorNaming = (operation: string, source: string, error: unknown) => {
   const message = error instanceof Error ? error.message : String(error ?? "unknown_error");
-  console.warn("[director_reports.naming]", { operation, source, message });
+  if (__DEV__) console.warn("[director_reports.naming]", { operation, source, message });
   recordPlatformObservability({
     screen: "director",
     surface: "reports_naming",

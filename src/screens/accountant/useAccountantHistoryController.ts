@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type MutableRefObject } from "react";
+﻿import { useCallback, useRef, useState, type MutableRefObject } from "react";
 
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
 import {
@@ -209,7 +209,7 @@ export function useAccountantHistoryController(params: {
         });
         lastLoadedHistKeyRef.current = key;
       } catch (error: unknown) {
-        console.error("[history load]", errorMessage(error));
+        if (__DEV__) console.error("[history load]", errorMessage(error));
         observation.error(error, {
           rowCount: 0,
           errorStage: "load_history_scope_v1",
@@ -342,7 +342,7 @@ export function useAccountantHistoryController(params: {
         },
       });
     } catch (error: unknown) {
-      console.error("[history load more]", errorMessage(error));
+      if (__DEV__) console.error("[history load more]", errorMessage(error));
       observation.error(error, {
         rowCount: 0,
         errorStage: "load_history_scope_v1_page",

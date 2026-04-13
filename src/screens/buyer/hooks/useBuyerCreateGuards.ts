@@ -90,7 +90,7 @@ export function useBuyerCreateGuards(params: {
       });
     }
 
-    console.info("[buyer.validatePicked]", {
+    if (__DEV__) console.info("[buyer.validatePicked]", {
       pickedCount: pickedSnapshot.length,
       pickedSnapshot,
       missingSupplierCount,
@@ -113,10 +113,10 @@ export function useBuyerCreateGuards(params: {
           .filter(Boolean)
           .join("\n"),
       );
-      console.info("[buyer.validatePicked] blocked");
+      if (__DEV__) console.info("[buyer.validatePicked] blocked");
       return false;
     }
-    console.info("[buyer.validatePicked] passed");
+    if (__DEV__) console.info("[buyer.validatePicked] passed");
     return true;
   }, [groups, picked, meta, attachments, formatRequestDisplay, alertUser]);
 

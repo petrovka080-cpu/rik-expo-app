@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+﻿import { supabase } from "./supabaseClient";
 
 type PriceHistoryItem = {
   date: string;
@@ -86,7 +86,7 @@ export async function loadAiConfig(id = "procurement_system_prompt"): Promise<st
     .maybeSingle();
 
   if (error) {
-    console.warn("[loadAiConfig]", error.message || error);
+    if (__DEV__) console.warn("[loadAiConfig]", error.message || error);
     return null;
   }
 
@@ -108,7 +108,7 @@ export async function saveAiReport(input: SaveAiReportInput): Promise<boolean> {
   } as never);
 
   if (error) {
-    console.warn("[saveAiReport]", error.message || error);
+    if (__DEV__) console.warn("[saveAiReport]", error.message || error);
     return false;
   }
 
@@ -133,7 +133,7 @@ async function loadProposalHistoryRows(
 
   const { data, error } = await query;
   if (error) {
-    console.warn("[loadProposalHistoryRows]", error.message || error);
+    if (__DEV__) console.warn("[loadProposalHistoryRows]", error.message || error);
     return [];
   }
 

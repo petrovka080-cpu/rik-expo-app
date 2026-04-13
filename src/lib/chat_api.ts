@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+﻿import { supabase } from "./supabaseClient";
 
 export type ChatMessageType = "text" | "photo" | "voice" | "file" | "system";
 
@@ -228,7 +228,7 @@ export async function markListingChatMessagesRead(messages: ChatMessage[]): Prom
       .eq("id", message.id);
 
     if (error && !isChatBackendMissingError(error)) {
-      console.warn("[markListingChatMessagesRead]", error.message || error);
+      if (__DEV__) console.warn("[markListingChatMessagesRead]", error.message || error);
     }
   }
 }

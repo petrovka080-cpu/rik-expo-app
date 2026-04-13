@@ -1,4 +1,4 @@
-// src/components/foreman/CalcModal.tsx
+﻿// src/components/foreman/CalcModal.tsx
 // PROD UI. Бизнес-логика не изменена.
 // FIX: footer не двигается вместе с клавиатурой (всегда внизу)
 // FIX: двигается только контент (ScrollView), инпуты прокручиваются выше footer
@@ -667,13 +667,13 @@ useEffect(() => {
       });
 
       if (error) {
-        console.error("[CalcModal][rpc_calc_work_kit]", { payload, error });
+        if (__DEV__) console.error("[CalcModal][rpc_calc_work_kit]", { payload, error });
         throw error;
       }
 
       setRows(Array.isArray(data) ? data.map((row) => normalizeCalcRow(row as CalcRpcRow)) : []);
     } catch (e: unknown) {
-      console.error("[CalcModal]", e);
+      if (__DEV__) console.error("[CalcModal]", e);
       Alert.alert("Ошибка", "Не удалось выполнить расчет. Проверьте параметры и попробуйте еще раз.");
       setRows(null);
     } finally {

@@ -1,4 +1,4 @@
-import { Linking, Platform } from "react-native";
+﻿import { Linking, Platform } from "react-native";
 import * as FileSystemModule from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import * as IntentLauncher from "expo-intent-launcher";
@@ -244,7 +244,7 @@ export async function openAndroidViewIntent(
     throw new Error("Android view intent is only available on Android");
   }
 
-  console.info(`[${context.owner}] android_view_intent_start`, {
+  if (__DEV__) console.info(`[${context.owner}] android_view_intent_start`, {
     uri,
     scheme: getUriScheme(uri),
     mimeType,
@@ -257,7 +257,7 @@ export async function openAndroidViewIntent(
       flags: ANDROID_GRANT_READ_URI_PERMISSION,
       type: mimeType,
     });
-    console.info(`[${context.owner}] android_view_intent_ready`, {
+    if (__DEV__) console.info(`[${context.owner}] android_view_intent_ready`, {
       uri,
       mimeType,
       fileName: context.fileName ?? null,
@@ -268,7 +268,7 @@ export async function openAndroidViewIntent(
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error ?? "Android view intent failed");
-    console.error(`[${context.owner}] android_view_intent_failed`, {
+    if (__DEV__) console.error(`[${context.owner}] android_view_intent_failed`, {
       uri,
       mimeType,
       fileName: context.fileName ?? null,
@@ -294,7 +294,7 @@ export async function openAndroidRemotePdfUrl(
     throw new Error("Android remote PDF open requires an http(s) URL");
   }
 
-  console.info(`[${context.owner}] android_remote_pdf_open_start`, {
+  if (__DEV__) console.info(`[${context.owner}] android_remote_pdf_open_start`, {
     uri: normalizedUrl,
     scheme: getUriScheme(normalizedUrl),
     fileName: context.fileName ?? null,
@@ -305,13 +305,13 @@ export async function openAndroidRemotePdfUrl(
       owner: context.owner,
       fileName: context.fileName ?? null,
     });
-    console.info(`[${context.owner}] android_remote_pdf_open_ready`, {
+    if (__DEV__) console.info(`[${context.owner}] android_remote_pdf_open_ready`, {
       uri: normalizedUrl,
       fileName: context.fileName ?? null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error ?? "Android remote PDF open failed");
-    console.error(`[${context.owner}] android_remote_pdf_open_failed`, {
+    if (__DEV__) console.error(`[${context.owner}] android_remote_pdf_open_failed`, {
       uri: normalizedUrl,
       fileName: context.fileName ?? null,
       error: message,

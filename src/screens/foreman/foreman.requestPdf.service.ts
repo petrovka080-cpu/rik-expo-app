@@ -1,4 +1,4 @@
-import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+﻿import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import { generateForemanRequestPdfViaBackend } from "../../lib/api/foremanRequestPdfBackend.service";
 import { getUriScheme } from "../../lib/pdfFileContract";
@@ -14,7 +14,7 @@ export async function buildForemanRequestPdfDescriptor(args: {
     throw new Error("Foreman request PDF requestId is required");
   }
 
-  console.info("[foreman-pdf] history_descriptor_build_start", {
+  if (__DEV__) console.info("[foreman-pdf] history_descriptor_build_start", {
     requestId,
     generatedBy: args.generatedBy ?? null,
     displayNo: args.displayNo ?? null,
@@ -48,7 +48,7 @@ export async function buildForemanRequestPdfDescriptor(args: {
     entityId: requestId,
   });
 
-  console.info("[foreman-pdf] history_descriptor_ready", {
+  if (__DEV__) console.info("[foreman-pdf] history_descriptor_ready", {
     requestId,
     sourceKind: descriptor.fileSource.kind,
     uriScheme: getUriScheme(descriptor.uri),

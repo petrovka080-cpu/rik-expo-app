@@ -92,7 +92,7 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
 
         setRows(Array.from(deduped.values()));
       } catch (e) {
-        console.error('[WorkTypePicker]', e);
+        if (__DEV__) console.error('[WorkTypePicker]', e);
         setRows([]);
         setError('Не удалось получить список работ');
       } finally {

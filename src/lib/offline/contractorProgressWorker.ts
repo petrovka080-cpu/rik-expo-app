@@ -1,4 +1,4 @@
-import {
+﻿import {
   clearContractorProgressQueueForProgress,
   enqueueContractorProgress,
   getContractorProgressPendingCount,
@@ -559,7 +559,7 @@ const runFlush = async (
         try {
           await deps.refreshAfterSuccess(entry.progressId);
         } catch (error) {
-          console.warn("[contractor.offline] refreshAfterSuccess failed", error);
+          if (__DEV__) console.warn("[contractor.offline] refreshAfterSuccess failed", error);
         }
       }
     } catch (error) {
