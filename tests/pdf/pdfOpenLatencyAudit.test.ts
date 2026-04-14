@@ -120,3 +120,44 @@ describe("L-PERF: exact bottleneck elimination verification", () => {
     expect(actionsSource).not.toContain("650");
   });
 });
+
+describe("L-PERF FIX-3: InteractionManager is conditional on modal dismiss", () => {
+  it("InteractionManager.runAfterInteractions is gated by hadModalDismiss", () => {
+    // Must contain: hadModalDismiss && typeof InteractionManager
+    expect(actionsSource).toMatch(
+      /hadModalDismiss\s*&&\s*typeof InteractionManager/,
+    );
+  });
+
+  it("hadModalDismiss flag is derived from onBeforeNavigate", () => {
+    expect(actionsSource).toContain(
+      'const hadModalDismiss = typeof onBeforeNavigate === "function"',
+    );
+  });
+
+  it("non-modal path uses Promise.resolve microtask (not setTimeout)", () => {
+    expect(actionsSource).toContain("Promise.resolve().then(runPush)");
+  });
+
+  it("L-PERF comment explains the conditional InteractionManager", () => {
+    expect(actionsSource).toContain("L-PERF: Only wait for InteractionManager");
+  });
+
+  it("no unconditional InteractionManager.runAfterInteractions remains", () => {
+    // Verify the actual invocation line contains the hadModalDismiss guard.
+    // We look for lines containing the actual call pattern (with opening paren).
+    const lines = actionsSource.split("\n");
+    const invocationLines = lines.filter((line) => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("//") || trimmed.startsWith("*")) return false;
+      return trimmed.includes("InteractionManager.runAfterInteractions(");
+    });
+    expect(invocationLines.length).toBeGreaterThan(0);
+    for (const line of invocationLines) {
+      // The line before or the same condition block must contain hadModalDismiss
+      const lineIdx = lines.indexOf(line);
+      const contextBlock = lines.slice(Math.max(0, lineIdx - 2), lineIdx + 1).join("\n");
+      expect(contextBlock).toContain("hadModalDismiss");
+    }
+  });
+});
