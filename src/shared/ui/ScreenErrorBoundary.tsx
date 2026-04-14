@@ -23,7 +23,11 @@ type ScreenBoundaryScreen =
   | "supplier_map"
   | "request"
   | "pdf_viewer"
-  | "product";
+  | "product"
+  | "auction_detail"
+  | "supplier_showcase"
+  | "calculator"
+  | "reports_dashboard";
 
 type ScreenErrorBoundaryProps = {
   children: React.ReactNode;
