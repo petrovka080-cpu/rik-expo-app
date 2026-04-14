@@ -1,4 +1,4 @@
-﻿import { Alert } from "react-native";
+import { Alert } from "react-native";
 import {
   useCallback,
   useEffect,
@@ -22,6 +22,7 @@ import {
   isAbortError,
   throwIfAborted,
 } from "../../../lib/requestCancellation";
+import { useDirectorReportOptionsQuery } from "./useDirectorReportOptionsQuery";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import type {
   RepDisciplinePayload,
@@ -708,57 +709,40 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     await syncScopeBothModes(obj);
   }, [setRepObjectName, syncScopeBothModes]);
 
+  // ── Wave 2 real migration: fetchReportOptions → React Query ──
+  // The query hook owns fetch, dedup, abort, and caching for the options path.
+  // When query data arrives, we commit it into controller state via effect.
+  const reportOptionsQuery = useDirectorReportOptionsQuery({
+    periodFrom: repFrom ?? "",
+    periodTo: repTo ?? "",
+    objectName: repObjectName ?? null,
+    currentOptionsState,
+    enabled: false, // manual trigger only — options are loaded on demand
+  });
+
   const fetchReportOptions = useCallback(async () => {
-    const from = repFrom ? String(repFrom).slice(0, 10) : "";
-    const to = repTo ? String(repTo).slice(0, 10) : "";
-    const key = optionsKey(from, to);
-    const reqId = ++optionsReqSeqRef.current;
-    const requestSlot = startDirectorReportsRequest(
-      optionsRequestRef,
-      key,
-      reqId,
-      "director report options superseded",
-    );
-    const { signal } = requestSlot.controller;
-    const task = (async () => {
-      setRepOptLoading(true);
-      try {
-        throwIfAborted(signal);
-        const result = await loadReportScope({
-          from,
-          to,
-          objectName: repObjectName ?? null,
-          optionsState: currentOptionsState,
-          includeDiscipline: false,
-          skipDisciplinePrices: true,
-          signal,
-        });
-        throwIfAborted(signal);
-        if (
-          reqId !== optionsReqSeqRef.current ||
-          !isActiveDirectorReportsRequest(optionsRequestRef, requestSlot)
-        ) return;
-        commitOptionsState(key, result.optionsState, result.optionsMeta, {
-          fromCache: result.optionsFromCache,
-        });
-      } catch (e: unknown) {
-        if (
-          isAbortError(e) ||
-          reqId !== optionsReqSeqRef.current ||
-          !isActiveDirectorReportsRequest(optionsRequestRef, requestSlot)
-        ) return;
-        if (__DEV__) {
-          console.warn("[director] fetchReportOptions:", getErrorMessage(e, "Не удалось получить опции отчётов"));
-        }
-        setRepOptObjects([]);
-        setRepOptObjectIdByName({});
-      } finally {
-        clearDirectorReportsRequest(optionsRequestRef, requestSlot);
-        if (reqId === optionsReqSeqRef.current && !signal.aborted) setRepOptLoading(false);
+    setRepOptLoading(true);
+    try {
+      const result = await reportOptionsQuery.refetch();
+      if (result.data) {
+        commitOptionsState(
+          result.data.optionsKey,
+          result.data.optionsState,
+          result.data.optionsMeta,
+          { fromCache: result.data.optionsFromCache },
+        );
       }
-    })();
-    await task;
-  }, [commitOptionsState, currentOptionsState, loadReportScope, optionsKey, repFrom, repObjectName, repTo, setRepOptLoading]);
+    } catch (e: unknown) {
+      if (isAbortError(e)) return;
+      if (__DEV__) {
+        console.warn("[director] fetchReportOptions:", getErrorMessage(e, "Не удалось получить опции отчётов"));
+      }
+      setRepOptObjects([]);
+      setRepOptObjectIdByName({});
+    } finally {
+      setRepOptLoading(false);
+    }
+  }, [commitOptionsState, reportOptionsQuery, setRepOptLoading]);
 
   const applyReportPeriod = useCallback(async (nextFrom: string | null, nextTo: string | null) => {
     setReportPeriodState(nextFrom, nextTo);

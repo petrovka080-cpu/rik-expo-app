@@ -1,6 +1,7 @@
 import React from "react";
 import { Alert } from "react-native";
 import TestRenderer, { act } from "react-test-renderer";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { loadDirectorReportUiScope } from "../../../lib/api/directorReportsScope.service";
 import { useDirectorReportsUiStore } from "../directorReports.store";
@@ -98,9 +99,10 @@ describe("useDirectorReportsController cancellation discipline", () => {
       return null;
     }
 
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
     let renderer!: TestRenderer.ReactTestRenderer;
     act(() => {
-      renderer = TestRenderer.create(<Harness />);
+      renderer = TestRenderer.create(<QueryClientProvider client={qc}><Harness /></QueryClientProvider>);
     });
 
     let first: Promise<void> = Promise.resolve();
@@ -153,9 +155,10 @@ describe("useDirectorReportsController cancellation discipline", () => {
       return null;
     }
 
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
     let renderer!: TestRenderer.ReactTestRenderer;
     act(() => {
-      renderer = TestRenderer.create(<Harness />);
+      renderer = TestRenderer.create(<QueryClientProvider client={qc}><Harness /></QueryClientProvider>);
     });
 
     let task: Promise<void> = Promise.resolve();
