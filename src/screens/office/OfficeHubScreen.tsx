@@ -52,14 +52,13 @@ import {
   type OfficeWorkspaceCard,
 } from "./officeAccess.model";
 import {
-  createOfficeCompany,
   loadOfficeAccessScreenData,
   updateOfficeMemberRole,
 } from "./officeAccess.services";
 
 import { useOfficeInviteFlow } from "./useOfficeInviteFlow";
+import { useOfficeCompanySection } from "./useOfficeCompanySection";
 import type {
-  CreateCompanyDraft,
   OfficeAccessScreenData,
 } from "./officeAccess.types";
 import {
@@ -87,8 +86,6 @@ import {
 } from "./officeHub.constants";
 import { DirectionCard, MemberCard, InviteCard } from "./officeHub.cards";
 import {
-  EMPTY_COMPANY_DRAFT,
-  buildOfficeBootstrapCompanyDraft,
   isWarehouseOfficeReturnReceipt,
   OfficePostReturnSubtreeBoundary,
   type OfficeHubScreenProps,
@@ -132,15 +129,7 @@ export default function OfficeHubScreen({
   );
   const [loading, setLoading] = useState(() => !initialBootstrapSnapshot);
   const [refreshing, setRefreshing] = useState(false);
-  const [savingCompany, setSavingCompany] = useState(false);
   const [savingRole, setSavingRole] = useState<string | null>(null);
-  const [companyDraft, setCompanyDraft] = useState<CreateCompanyDraft>(
-    () =>
-      initialBootstrapSnapshot
-        ? buildOfficeBootstrapCompanyDraft(initialBootstrapSnapshot.data)
-        : EMPTY_COMPANY_DRAFT,
-  );
-  const [companyFeedback, setCompanyFeedback] = useState<string | null>(null);
 
   const isMountedRef = useRef(true);
   const focusCycleRef = useRef(0);
@@ -226,11 +215,7 @@ export default function OfficeHubScreen({
 
         const loadedAt = Date.now();
         setData(next);
-        setCompanyDraft((current) => ({
-          ...current,
-          phoneMain: current.phoneMain || next.profile.phone || "",
-          email: current.email || next.profileEmail || "",
-        }));
+        company.syncDraftFromData(next);
         primeOfficeHubBootstrapSnapshot(next, loadedAt);
 
         const completionExtra = buildPostReturnExtra({
@@ -580,36 +565,13 @@ export default function OfficeHubScreen({
     });
   }, []);
 
-  const handleEditCompany = useCallback(() => {
-    router.push("/profile?section=company");
-  }, [router]);
-
-  const handleCreateCompany = useCallback(async () => {
-    try {
-      setSavingCompany(true);
-      setCompanyFeedback(null);
-      await createOfficeCompany({
-        profile: data.profile,
-        profileEmail: data.profileEmail,
-        draft: companyDraft,
-      });
-      setCompanyDraft(EMPTY_COMPANY_DRAFT);
-      setCompanyFeedback(COPY.companyCreated);
-      await loadScreen({
-        mode: "refresh",
-      });
-      scrollRef.current?.scrollTo({ y: 0, animated: true });
-    } catch (error: unknown) {
-      Alert.alert(
-        COPY.title,
-        error instanceof Error && error.message.trim()
-          ? error.message
-          : COPY.companyError,
-      );
-    } finally {
-      setSavingCompany(false);
-    }
-  }, [companyDraft, data.profile, data.profileEmail, loadScreen]);
+  const company = useOfficeCompanySection({
+    profile: data.profile,
+    profileEmail: data.profileEmail,
+    loadScreen,
+    scrollRef,
+    initialBootstrapSnapshot,
+  });
 
   const invite = useOfficeInviteFlow({
     company: data.company,
@@ -685,9 +647,9 @@ export default function OfficeHubScreen({
         }
         showsVerticalScrollIndicator={false}
       >
-        {companyFeedback ? (
+        {company.companyFeedback ? (
           <View style={styles.notice}>
-            <Text style={styles.noticeText}>{companyFeedback}</Text>
+            <Text style={styles.noticeText}>{company.companyFeedback}</Text>
           </View>
         ) : null}
 
@@ -708,7 +670,7 @@ export default function OfficeHubScreen({
                     <Text style={styles.eyebrow}>{COPY.summaryTitle}</Text>
                     <Pressable
                       testID="office-company-edit"
-                      onPress={handleEditCompany}
+                      onPress={company.handleEditCompany}
                       style={({ pressed }) => [
                         styles.editButton,
                         pressed && styles.pressed,
@@ -1129,9 +1091,9 @@ export default function OfficeHubScreen({
                             : "default"
                       }
                       multiline={field.key === "siteAddress"}
-                      value={companyDraft[field.key]}
+                      value={company.companyDraft[field.key]}
                       onChangeText={(value) =>
-                        setCompanyDraft((current) => ({
+                        company.setCompanyDraft((current) => ({
                           ...current,
                           [field.key]: value,
                         }))
@@ -1145,7 +1107,7 @@ export default function OfficeHubScreen({
                     <Pressable
                       testID="office-add-company-phone"
                       onPress={() =>
-                        setCompanyDraft((current) => ({
+                        company.setCompanyDraft((current) => ({
                           ...current,
                           additionalPhones: [...current.additionalPhones, ""],
                         }))
@@ -1154,7 +1116,7 @@ export default function OfficeHubScreen({
                       <Text style={styles.link}>Р”РѕР±Р°РІРёС‚СЊ С‚РµР»РµС„РѕРЅ</Text>
                     </Pressable>
                   </View>
-                  {companyDraft.additionalPhones.map((phone, index) => (
+                  {company.companyDraft.additionalPhones.map((phone, index) => (
                     <View key={`phone-${index}`} style={styles.phoneRow}>
                       <TextInput
                         testID={`office-company-phone-${index}`}
@@ -1164,7 +1126,7 @@ export default function OfficeHubScreen({
                         keyboardType="phone-pad"
                         value={phone}
                         onChangeText={(value) =>
-                          setCompanyDraft((current) => ({
+                          company.setCompanyDraft((current) => ({
                             ...current,
                             additionalPhones: current.additionalPhones.map(
                               (item, itemIndex) =>
@@ -1175,7 +1137,7 @@ export default function OfficeHubScreen({
                       />
                       <Pressable
                         onPress={() =>
-                          setCompanyDraft((current) => ({
+                          company.setCompanyDraft((current) => ({
                             ...current,
                             additionalPhones: current.additionalPhones.filter(
                               (_item, itemIndex) => itemIndex !== index,
@@ -1190,9 +1152,9 @@ export default function OfficeHubScreen({
                 </View>
                 <Pressable
                   testID="office-create-company"
-                  disabled={savingCompany}
-                  onPress={() => void handleCreateCompany()}
-                  style={[styles.primary, savingCompany && styles.dim]}
+                  disabled={company.savingCompany}
+                  onPress={() => void company.handleCreateCompany()}
+                  style={[styles.primary, company.savingCompany && styles.dim]}
                 >
                   <Text style={styles.primaryText}>{COPY.companyCta}</Text>
                 </Pressable>
