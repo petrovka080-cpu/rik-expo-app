@@ -540,4 +540,209 @@ describe("pdfDocumentActions", () => {
       ),
     ).toBe(true);
   });
+
+  it("blocks oversized PDF on iOS without pushing viewer route (P3 regression shield)", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+    const push = jest.fn();
+    mockCreateDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-oversize-1",
+        assetId: "asset-oversize-1",
+        status: "ready",
+        createdAt: "2026-04-14T10:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-oversize-1",
+        uri: "file:///cache/huge.pdf",
+        fileSource: {
+          kind: "local-file",
+          uri: "file:///cache/huge.pdf",
+        },
+        sourceKind: "local-file",
+        fileName: "huge.pdf",
+        title: "Huge PDF",
+        mimeType: "application/pdf",
+        documentType: "request",
+        originModule: "foreman",
+        source: "generated",
+        createdAt: "2026-04-14T10:00:00.000Z",
+        sizeBytes: 20 * 1024 * 1024, // 20 MB — over 15 MB limit
+      },
+    });
+
+    await expect(
+      previewPdfDocument(baseDocument, { router: { push } }),
+    ).rejects.toThrow("PDF file too large for iOS preview");
+
+    // Viewer route must NOT be pushed
+    expect(mockRootRouterPush).not.toHaveBeenCalled();
+    expect(mockRootRouterReplace).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
+    expect(mockOpenPdfPreview).not.toHaveBeenCalled();
+
+    // Observability event emitted
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.event === "ios_pdf_viewer_oversize_blocked"
+          && event.result === "error",
+      ),
+    ).toBe(true);
+  });
+
+  it("allows normal-sized PDF on iOS through to viewer route (P3 regression shield)", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+    const push = jest.fn();
+    mockCreateDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-normal-1",
+        assetId: "asset-normal-1",
+        status: "ready",
+        createdAt: "2026-04-14T10:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-normal-1",
+        uri: "file:///cache/normal.pdf",
+        fileSource: {
+          kind: "local-file",
+          uri: "file:///cache/normal.pdf",
+        },
+        sourceKind: "local-file",
+        fileName: "normal.pdf",
+        title: "Normal PDF",
+        mimeType: "application/pdf",
+        documentType: "request",
+        originModule: "foreman",
+        source: "generated",
+        createdAt: "2026-04-14T10:00:00.000Z",
+        sizeBytes: 5 * 1024 * 1024, // 5 MB — well within limit
+      },
+    });
+
+    await previewPdfDocument(baseDocument, { router: { push } });
+
+    // Viewer route MUST be pushed on iOS
+    expect(mockRootRouterPush).toHaveBeenCalledTimes(1);
+    expect(mockRootRouterPush).toHaveBeenCalledWith(
+      expect.stringContaining("/pdf-viewer?sessionId=session-normal-1"),
+    );
+
+    // No oversize event
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) => event.event === "ios_pdf_viewer_oversize_blocked",
+      ),
+    ).toBe(false);
+  });
+
+  it("calls onBeforeNavigate callback before viewer route push (modal-aware contract)", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+    const push = jest.fn();
+    const callOrder: string[] = [];
+    const onBeforeNavigate = jest.fn(async () => {
+      callOrder.push("onBeforeNavigate");
+    });
+    mockRootRouterPush.mockImplementation(() => {
+      callOrder.push("push");
+    });
+    mockCreateDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-modal-1",
+        assetId: "asset-modal-1",
+        status: "ready",
+        createdAt: "2026-04-14T10:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-modal-1",
+        uri: "file:///cache/modal.pdf",
+        fileSource: {
+          kind: "local-file",
+          uri: "file:///cache/modal.pdf",
+        },
+        sourceKind: "local-file",
+        fileName: "modal.pdf",
+        title: "Modal PDF",
+        mimeType: "application/pdf",
+        documentType: "payment_order",
+        originModule: "accountant",
+        source: "generated",
+        createdAt: "2026-04-14T10:00:00.000Z",
+        sizeBytes: 2 * 1024 * 1024,
+      },
+    });
+
+    await previewPdfDocument(baseDocument, {
+      router: { push },
+      onBeforeNavigate,
+    });
+
+    expect(onBeforeNavigate).toHaveBeenCalledTimes(1);
+    // onBeforeNavigate must fire BEFORE push
+    expect(callOrder.indexOf("onBeforeNavigate")).toBeLessThan(
+      callOrder.indexOf("push"),
+    );
+  });
+
+  it("does not block oversized PDF on Android (size guard is iOS-only)", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    const push = jest.fn();
+    // On Android, remote-url docs go through the direct in-memory path
+    // which doesn't have sizeBytes. Use a local-file source to test.
+    const localDoc = {
+      ...baseDocument,
+      fileSource: {
+        kind: "local-file" as const,
+        uri: "file:///cache/huge-android.pdf",
+      },
+    };
+    mockCreateDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-android-big-1",
+        assetId: "asset-android-big-1",
+        status: "ready",
+        createdAt: "2026-04-14T10:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-android-big-1",
+        uri: "file:///cache/huge-android.pdf",
+        fileSource: {
+          kind: "local-file",
+          uri: "file:///cache/huge-android.pdf",
+        },
+        sourceKind: "local-file",
+        fileName: "huge.pdf",
+        title: "Huge PDF",
+        mimeType: "application/pdf",
+        documentType: "request",
+        originModule: "foreman",
+        source: "generated",
+        createdAt: "2026-04-14T10:00:00.000Z",
+        sizeBytes: 50 * 1024 * 1024, // 50 MB — would be blocked on iOS
+      },
+    });
+
+    // Should NOT throw on Android
+    await previewPdfDocument(localDoc, { router: { push } });
+
+    // Route MUST be pushed (replace is used on Android)
+    expect(mockRootRouterReplace).toHaveBeenCalledTimes(1);
+    // No oversize event
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) => event.event === "ios_pdf_viewer_oversize_blocked",
+      ),
+    ).toBe(false);
+  });
 });
