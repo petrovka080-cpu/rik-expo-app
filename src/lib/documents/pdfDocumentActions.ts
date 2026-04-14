@@ -1,4 +1,4 @@
-﻿import { router as rootRouter, type Href } from "expo-router";
+import { router as rootRouter, type Href } from "expo-router";
 import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 import {
@@ -68,6 +68,14 @@ function canUseInMemoryRemoteViewerShortcut(
 
 function toSafeRouteParam(value: unknown) {
   return String(value ?? "").trim();
+}
+
+function extractUriScheme(uri: unknown): string {
+  return (
+    String(uri || "")
+      .match(/^([a-z0-9+.-]+):/i)?.[1]
+      ?.toLowerCase() || ""
+  );
 }
 
 function createViewerHref(sessionId: unknown, openToken: unknown) {
@@ -249,10 +257,7 @@ export async function preparePdfDocument(
         documentType: args.descriptor.documentType,
         originModule: args.descriptor.originModule,
         finalUri: uri,
-        finalScheme:
-          String(uri || "")
-            .match(/^([a-z0-9+.-]+):/i)?.[1]
-            ?.toLowerCase() || "",
+        finalScheme: extractUriScheme(uri),
         finalSourceKind: preparedSource.kind,
         fileName: args.descriptor.fileName,
       });
@@ -338,10 +343,7 @@ export async function previewPdfDocument(
     },
   });
   try {
-    const scheme =
-      String(doc.uri || "")
-        .match(/^([a-z0-9+.-]+):/i)?.[1]
-        ?.toLowerCase() || "";
+    const scheme = extractUriScheme(doc.uri);
     if (__DEV__) console.info("[pdf-document-actions] preview", {
       stage: "preview_requested",
       platform: Platform.OS,
@@ -414,10 +416,7 @@ export async function previewPdfDocument(
         documentType: asset.documentType,
         originModule: asset.originModule,
         finalUri: asset.uri,
-        finalScheme:
-          String(asset.uri || "")
-            .match(/^([a-z0-9+.-]+):/i)?.[1]
-            ?.toLowerCase() || "",
+        finalScheme: extractUriScheme(asset.uri),
         finalSourceKind: asset.sourceKind,
         isLocalFile: false,
         fileName: asset.fileName,
@@ -600,10 +599,7 @@ export async function previewPdfDocument(
       extra: {
         sessionId: session.sessionId,
         assetId: asset.assetId,
-        uriKind:
-          String(asset.uri || "")
-            .match(/^([a-z0-9+.-]+):/i)?.[1]
-            ?.toLowerCase() || asset.sourceKind,
+        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
         uri: asset.uri,
         fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
         fileSizeBytes: asset.sizeBytes,
@@ -623,10 +619,7 @@ export async function previewPdfDocument(
       originModule: asset.originModule,
       sourceKind: asset.sourceKind,
       uri: asset.uri,
-      scheme:
-        String(asset.uri || "")
-          .match(/^([a-z0-9+.-]+):/i)?.[1]
-          ?.toLowerCase() || "",
+      scheme: extractUriScheme(asset.uri),
       fileName: asset.fileName,
       exists: typeof asset.sizeBytes === "number" ? true : undefined,
       sizeBytes: asset.sizeBytes,
@@ -640,10 +633,7 @@ export async function previewPdfDocument(
           route: "/pdf-viewer",
           sessionId: session.sessionId,
           previewPath: "session_viewer_contract",
-          uriKind:
-            String(asset.uri || "")
-              .match(/^([a-z0-9+.-]+):/i)?.[1]
-              ?.toLowerCase() || asset.sourceKind,
+          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
           uri: asset.uri,
           fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
           fileSizeBytes: asset.sizeBytes,
@@ -655,10 +645,7 @@ export async function previewPdfDocument(
         documentType: asset.documentType,
         originModule: asset.originModule,
         sourceKind: asset.sourceKind,
-        uriKind:
-          String(asset.uri || "")
-            .match(/^([a-z0-9+.-]+):/i)?.[1]
-            ?.toLowerCase() || asset.sourceKind,
+        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
         uri: asset.uri,
         fileName: asset.fileName,
         entityId: doc.entityId,
@@ -683,10 +670,7 @@ export async function previewPdfDocument(
         documentType: asset.documentType,
         originModule: asset.originModule,
         finalUri: asset.uri,
-        finalScheme:
-          String(asset.uri || "")
-            .match(/^([a-z0-9+.-]+):/i)?.[1]
-            ?.toLowerCase() || "",
+        finalScheme: extractUriScheme(asset.uri),
         finalSourceKind: asset.sourceKind,
         isLocalFile: /^file:\/\//i.test(String(asset.uri || "")),
         fileName: asset.fileName,
@@ -702,10 +686,7 @@ export async function previewPdfDocument(
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind:
-            String(asset.uri || "")
-              .match(/^([a-z0-9+.-]+):/i)?.[1]
-              ?.toLowerCase() || asset.sourceKind,
+          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -726,10 +707,7 @@ export async function previewPdfDocument(
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind:
-            String(asset.uri || "")
-              .match(/^([a-z0-9+.-]+):/i)?.[1]
-              ?.toLowerCase() || asset.sourceKind,
+          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -751,10 +729,7 @@ export async function previewPdfDocument(
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind:
-            String(asset.uri || "")
-              .match(/^([a-z0-9+.-]+):/i)?.[1]
-              ?.toLowerCase() || asset.sourceKind,
+          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -785,10 +760,7 @@ export async function previewPdfDocument(
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind:
-            String(asset.uri || "")
-              .match(/^([a-z0-9+.-]+):/i)?.[1]
-              ?.toLowerCase() || asset.sourceKind,
+          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -810,10 +782,7 @@ export async function previewPdfDocument(
           documentType: asset.documentType,
           originModule: asset.originModule,
           sourceKind: asset.sourceKind,
-          uriKind:
-            String(asset.uri || "")
-              .match(/^([a-z0-9+.-]+):/i)?.[1]
-              ?.toLowerCase() || asset.sourceKind,
+          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
           uri: asset.uri,
           fileName: asset.fileName,
           entityId: doc.entityId,
@@ -1012,9 +981,7 @@ export async function prepareAndPreviewPdfDocument(
       originModule: args.descriptor.originModule,
       sourceKind: args.descriptor.fileSource?.kind ?? null,
       uriKind:
-        String(args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? "")
-          .match(/^([a-z0-9+.-]+):/i)?.[1]
-          ?.toLowerCase() || null,
+        extractUriScheme(args.descriptor.uri ?? args.descriptor.fileSource?.uri) || null,
       uri: args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null,
       fileName: args.descriptor.fileName,
       entityId: args.descriptor.entityId,
