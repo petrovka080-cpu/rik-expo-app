@@ -22,17 +22,16 @@ import {
   type PdfOpenFlowContext,
 } from "../pdf/pdfOpenFlow";
 import {
-  recordPdfCrashBreadcrumbAsync,
+  recordPdfCrashBreadcrumb,
   shouldRecordPdfCrashBreadcrumbs,
 } from "../pdf/pdfCrashBreadcrumbs";
 import {
   checkPdfMobilePreviewEligibility,
   recordPdfPreviewOversizeBlocked,
 } from "../pdf/pdfMobilePreviewSizeGuard";
-
 export function getPdfFlowErrorMessage(
   error: unknown,
-  fallback = "Не удалось открыть PDF",
+  fallback = "Р СњР Вµ РЎС“Р Т‘Р В°Р В»Р С•РЎРѓРЎРЉ Р С•РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ PDF",
 ): string {
   if (error && typeof error === "object") {
     const maybeMessage =
@@ -43,7 +42,6 @@ export function getPdfFlowErrorMessage(
   const text = String(error ?? "").trim();
   return text && text !== "[object Object]" ? text : fallback;
 }
-
 type PreparePdfDocumentArgs = {
   busy?: BusyLike;
   supabase: any;
@@ -53,12 +51,10 @@ type PreparePdfDocumentArgs = {
   resolveSource?: () => Promise<PdfSource> | PdfSource;
   getRemoteUrl?: () => Promise<string> | string;
 };
-
 export type PdfViewerRouterLike = {
   push: (href: Href, options?: unknown) => void;
   replace?: (href: Href, options?: unknown) => void;
 };
-
 function canUseInMemoryRemoteViewerShortcut(
   doc: DocumentDescriptor,
   hasRouter: boolean,
@@ -69,11 +65,9 @@ function canUseInMemoryRemoteViewerShortcut(
     doc.fileSource.kind === "remote-url"
   );
 }
-
 function toSafeRouteParam(value: unknown) {
   return String(value ?? "").trim();
 }
-
 function extractUriScheme(uri: unknown): string {
   return (
     String(uri || "")
@@ -81,7 +75,6 @@ function extractUriScheme(uri: unknown): string {
       ?.toLowerCase() || ""
   );
 }
-
 function createViewerHref(sessionId: unknown, openToken: unknown) {
   const safeSessionId = toSafeRouteParam(sessionId);
   const safeOpenToken = toSafeRouteParam(openToken);
@@ -94,7 +87,6 @@ function createViewerHref(sessionId: unknown, openToken: unknown) {
     href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}` as Href,
   };
 }
-
 async function pushViewerRouteSafely(
   router: PdfViewerRouterLike,
   href: Href,
@@ -109,7 +101,6 @@ async function pushViewerRouteSafely(
     href: String(href),
     platform: Platform.OS,
   });
-
   // Dismiss any active native Modal BEFORE navigating.
   // React Native <Modal> renders at the native window level (UIWindow on iOS),
   // which physically sits above the entire navigation Stack. If a Modal is
@@ -125,7 +116,6 @@ async function pushViewerRouteSafely(
       if (__DEV__) console.warn("[pdf-document-actions] onBeforeNavigate error (non-fatal)", error);
     }
   }
-
   await new Promise<void>((resolve, reject) => {
     const runPush = () => {
       try {
@@ -134,7 +124,6 @@ async function pushViewerRouteSafely(
           platform: Platform.OS,
           method: Platform.OS === "ios" ? "push" : "replace",
         });
-
         if (Platform.OS === "ios") {
           // On iOS, `replace` from inside (tabs) to a root-level route
           // performs a cross-navigator replace that can crash UIKit's
@@ -151,7 +140,6 @@ async function pushViewerRouteSafely(
         } else {
           router.push(href);
         }
-
         if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_done", {
           href: String(href),
           platform: Platform.OS,
@@ -167,10 +155,9 @@ async function pushViewerRouteSafely(
         reject(error);
       }
     };
-
     // InteractionManager.runAfterInteractions waits for ALL in-flight UI
-    // transitions — screen animations, Modal dismiss animations, and any
-    // other Animated interactions — to fully settle before executing the
+    // transitions РІР‚вЂќ screen animations, Modal dismiss animations, and any
+    // other Animated interactions РІР‚вЂќ to fully settle before executing the
     // navigation push. This is used on ALL platforms (not just iOS) to
     // guarantee the Modal is fully dismissed before the PDF viewer route
     // is pushed, without any hardcoded timing delays.
@@ -181,18 +168,15 @@ async function pushViewerRouteSafely(
     }
   });
 }
-
 type PreviewPdfDocumentOpts = {
   router?: PdfViewerRouterLike;
   openFlow?: PdfOpenFlowContext & {
     openToken?: string;
   };
-  /** Called before router.push — use to dismiss native Modals that sit above the navigation Stack. */
+  /** Called before router.push РІР‚вЂќ use to dismiss native Modals that sit above the navigation Stack. */
   onBeforeNavigate?: (() => void | Promise<void>) | null;
 };
-
 const activePreviewFlows = new Map<string, Promise<DocumentDescriptor>>();
-
 function persistCriticalPdfBreadcrumb(input: {
   marker: string;
   screen: unknown;
@@ -211,11 +195,13 @@ function persistCriticalPdfBreadcrumb(input: {
   errorMessage?: unknown;
   terminalState?: unknown;
   extra?: Record<string, unknown>;
-}) {
-  if (!shouldRecordPdfCrashBreadcrumbs(input.screen)) return null;
-  return recordPdfCrashBreadcrumbAsync(input);
+}): void {
+  if (!shouldRecordPdfCrashBreadcrumbs(input.screen)) return;
+  // L-PERF: fire-and-forget РІР‚вЂќ breadcrumbs must NOT block the critical open path.
+  // Previously each await did 2 AsyncStorage I/O ops (read+write), and 6 sequential
+  // awaits on the critical path added 12 I/O ops before the viewer route push.
+  recordPdfCrashBreadcrumb(input);
 }
-
 function requiresCanonicalRemotePdfSource(
   args: Pick<DocumentDescriptor, "documentType" | "originModule">,
 ) {
@@ -229,7 +215,6 @@ function requiresCanonicalRemotePdfSource(
     key === "warehouse:warehouse_materials"
   );
 }
-
 function assertCanonicalRemotePdfSource(
   descriptor: Pick<DocumentDescriptor, "documentType" | "originModule">,
   source: PdfSource,
@@ -240,7 +225,6 @@ function assertCanonicalRemotePdfSource(
     `Canonical ${descriptor.originModule} ${descriptor.documentType} PDF must use backend remote-url source`,
   );
 }
-
 export async function preparePdfDocument(
   args: PreparePdfDocumentArgs,
 ): Promise<DocumentDescriptor> {
@@ -325,20 +309,17 @@ export async function preparePdfDocument(
         : new Error(message);
     }
   };
-
   if (args.busy?.run) {
     const out = await args.busy.run(run, {
       key: args.key,
       label: args.label,
-      minMs: 650,
+      minMs: 200,
     });
     if (!out) throw new Error("PDF preparation cancelled");
     return out;
   }
-
   return await run();
 }
-
 export async function previewPdfDocument(
   doc: DocumentDescriptor,
   opts?: PreviewPdfDocumentOpts,
@@ -408,7 +389,7 @@ export async function previewPdfDocument(
           uri: doc.fileSource.uri,
         },
       });
-      const preparedBreadcrumb = persistCriticalPdfBreadcrumb({
+      persistCriticalPdfBreadcrumb({
         marker: "document_prepare_done",
         screen: breadcrumbScreen,
         documentType: doc.documentType,
@@ -425,7 +406,6 @@ export async function previewPdfDocument(
           checkpoint: "mobile_pre_navigation",
         },
       });
-      if (preparedBreadcrumb) await preparedBreadcrumb;
       const { session, asset } = createInMemoryDocumentPreviewSession(doc);
       const {
         safeSessionId,
@@ -460,7 +440,7 @@ export async function previewPdfDocument(
         }),
       });
       try {
-        const patchActiveBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_patch_v3_active",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -479,8 +459,7 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
-        if (patchActiveBreadcrumb) await patchActiveBreadcrumb;
-        const patchBeforeNavigationBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_patch_v3_before_navigation",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -499,9 +478,7 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
-        if (patchBeforeNavigationBreadcrumb)
-          await patchBeforeNavigationBreadcrumb;
-        const pushAttemptBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_route_push_attempt",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -519,7 +496,6 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
-        if (pushAttemptBreadcrumb) await pushAttemptBreadcrumb;
         recordPdfOpenStage({
           context: opts.openFlow,
           stage: "viewer_route_push_attempt",
@@ -532,7 +508,7 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
-        const patchNavigationCallBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_patch_v3_navigation_call",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -551,9 +527,8 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
-        if (patchNavigationCallBreadcrumb) await patchNavigationCallBreadcrumb;
         await pushViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
-        const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -571,7 +546,6 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
-        if (pushedBreadcrumb) await pushedBreadcrumb;
         outputObservation.success({
           sourceKind: asset.sourceKind,
           extra: {
@@ -656,7 +630,7 @@ export async function previewPdfDocument(
       exists: typeof asset.sizeBytes === "number" ? true : undefined,
       sizeBytes: asset.sizeBytes,
     });
-    // ── iOS oversize guard ──────────────────────────────────────────────
+    // РІвЂќР‚РІвЂќР‚ iOS oversize guard РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
     // Must fire BEFORE the viewer route push. If the file is too large for
     // the iOS in-app viewer, we throw IosPdfOversizeError which bubbles to
     // the busy handler for proper cleanup and user-facing Alert.
@@ -677,7 +651,7 @@ export async function previewPdfDocument(
         fileName: asset.fileName,
       });
     }
-    // ────────────────────────────────────────────────────────────────────
+    // РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
     if (opts?.router) {
       recordPdfOpenStage({
         context: opts.openFlow,
@@ -693,7 +667,7 @@ export async function previewPdfDocument(
           fileSizeBytes: asset.sizeBytes,
         },
       });
-      const preparedBreadcrumb = persistCriticalPdfBreadcrumb({
+      persistCriticalPdfBreadcrumb({
         marker: "document_prepare_done",
         screen: breadcrumbScreen,
         documentType: asset.documentType,
@@ -713,7 +687,6 @@ export async function previewPdfDocument(
           checkpoint: "mobile_pre_navigation",
         },
       });
-      if (preparedBreadcrumb) await preparedBreadcrumb;
       const {
         safeSessionId,
         safeOpenToken,
@@ -734,7 +707,7 @@ export async function previewPdfDocument(
         }),
       });
       try {
-        const patchActiveBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_patch_v3_active",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -754,8 +727,7 @@ export async function previewPdfDocument(
             patchVersion: "v3",
           },
         });
-        if (patchActiveBreadcrumb) await patchActiveBreadcrumb;
-        const patchBeforeNavigationBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_patch_v3_before_navigation",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -775,9 +747,7 @@ export async function previewPdfDocument(
             patchVersion: "v3",
           },
         });
-        if (patchBeforeNavigationBreadcrumb)
-          await patchBeforeNavigationBreadcrumb;
-        const pushAttemptBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_route_push_attempt",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -796,7 +766,6 @@ export async function previewPdfDocument(
             route: "/pdf-viewer",
           },
         });
-        if (pushAttemptBreadcrumb) await pushAttemptBreadcrumb;
         recordPdfOpenStage({
           context: opts.openFlow,
           stage: "viewer_route_push_attempt",
@@ -808,7 +777,7 @@ export async function previewPdfDocument(
             previewPath: "session_viewer_contract",
           },
         });
-        const patchNavigationCallBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_patch_v3_navigation_call",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -828,9 +797,8 @@ export async function previewPdfDocument(
             patchVersion: "v3",
           },
         });
-        if (patchNavigationCallBreadcrumb) await patchNavigationCallBreadcrumb;
         await pushViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
-        const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
+        persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
           screen: breadcrumbScreen,
           documentType: asset.documentType,
@@ -849,7 +817,6 @@ export async function previewPdfDocument(
             route: "/pdf-viewer",
           },
         });
-        if (pushedBreadcrumb) await pushedBreadcrumb;
         openObservation.success({
           sourceKind: asset.sourceKind,
           extra: {
@@ -956,7 +923,6 @@ export async function previewPdfDocument(
     throw lifecycleError instanceof Error ? lifecycleError : new Error(message);
   }
 }
-
 export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
   const observation = beginPdfLifecycleObservation({
     screen: "reports",
@@ -989,11 +955,10 @@ export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
     });
   }
 }
-
 export async function prepareAndPreviewPdfDocument(
   args: PreparePdfDocumentArgs & {
     router?: PdfViewerRouterLike;
-    /** Called before router.push — use to dismiss native Modals that sit above the navigation Stack. */
+    /** Called before router.push РІР‚вЂќ use to dismiss native Modals that sit above the navigation Stack. */
     onBeforeNavigate?: (() => void | Promise<void>) | null;
   },
 ): Promise<DocumentDescriptor> {
@@ -1006,7 +971,6 @@ export async function prepareAndPreviewPdfDocument(
     documentType: args.descriptor.documentType,
     originModule: args.descriptor.originModule,
   });
-
   if (flowKey) {
     const existing = activePreviewFlows.get(flowKey);
     if (existing) {
@@ -1021,7 +985,6 @@ export async function prepareAndPreviewPdfDocument(
       return await existing;
     }
   }
-
   const runFlow = async () => {
     recordPdfOpenStage({
       context: baseContext,
@@ -1030,7 +993,7 @@ export async function prepareAndPreviewPdfDocument(
         hasBusyOwner: Boolean(args.busy?.run || args.busy?.show),
       },
     });
-    const tapBreadcrumb = persistCriticalPdfBreadcrumb({
+    persistCriticalPdfBreadcrumb({
       marker: "tap_start",
       screen: args.descriptor.originModule,
       documentType: args.descriptor.documentType,
@@ -1046,8 +1009,6 @@ export async function prepareAndPreviewPdfDocument(
         hasBusyOwner: Boolean(args.busy?.run || args.busy?.show),
       },
     });
-    if (tapBreadcrumb) await tapBreadcrumb;
-
     const execute = async () => {
       recordPdfOpenStage({
         context: baseContext,
@@ -1057,7 +1018,6 @@ export async function prepareAndPreviewPdfDocument(
         context: baseContext,
         stage: "document_prepare_start",
       });
-
       let document: DocumentDescriptor;
       try {
         document = await preparePdfDocument({
@@ -1078,11 +1038,9 @@ export async function prepareAndPreviewPdfDocument(
         });
         throw error;
       }
-
       const visibilityWait = args.router
         ? beginPdfOpenVisibilityWait(baseContext)
         : null;
-
       try {
         await previewPdfDocument(document, {
           router: args.router,
@@ -1124,18 +1082,16 @@ export async function prepareAndPreviewPdfDocument(
         throw error;
       }
     };
-
     try {
       if (args.busy?.run) {
         const output = await args.busy.run(execute, {
           key: args.key,
           label: args.label,
-          minMs: 650,
+          minMs: 200,
         });
         if (!output) throw new Error("PDF open cancelled");
         return output;
       }
-
       if (args.busy?.show && args.busy?.hide) {
         const manualBusyKey = flowKey || "pdf:open";
         args.busy.show(manualBusyKey, args.label);
@@ -1151,7 +1107,6 @@ export async function prepareAndPreviewPdfDocument(
           });
         }
       }
-
       return await execute();
     } finally {
       if (args.busy?.run) {
@@ -1162,15 +1117,12 @@ export async function prepareAndPreviewPdfDocument(
       }
     }
   };
-
   const promise = runFlow().finally(() => {
     if (flowKey) activePreviewFlows.delete(flowKey);
   });
-
   if (flowKey) activePreviewFlows.set(flowKey, promise);
   return await promise;
 }
-
 export async function openPdfDocumentExternal(
   doc: DocumentDescriptor,
 ): Promise<void> {
