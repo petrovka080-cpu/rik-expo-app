@@ -299,4 +299,87 @@ describe("OfficeStackLayout", () => {
     // No warehouse-specific branching
     expect(handlerSource).not.toContain("warehouse");
   });
+
+  describe("rapid back regression (N2)", () => {
+    const allChildRoutes: Array<"/office/foreman" | "/office/warehouse"> = [
+      "/office/foreman",
+      "/office/warehouse",
+    ];
+
+    it.each(allChildRoutes)(
+      "5× rapid back from %s always uses explicit navigate",
+      (sourceRoute) => {
+        const header = renderSafeOfficeChildBackButton(sourceRoute, {
+          canGoBack: true,
+          tintColor: "#000000",
+          label: OFFICE_BACK_LABEL,
+          href: undefined,
+          onPress: mockNativeBack,
+        }) as React.ReactElement<{ onPress: () => void }>;
+
+        // Press back 5 times rapidly
+        for (let i = 0; i < 5; i++) {
+          header.props.onPress();
+        }
+
+        // All 5 calls should use navigate, no leakage
+        expect(mockNavigate).toHaveBeenCalledTimes(5);
+        for (let i = 0; i < 5; i++) {
+          expect(mockNavigate).toHaveBeenNthCalledWith(i + 1, "/office");
+        }
+        expect(mockBack).not.toHaveBeenCalled();
+        expect(mockNativeBack).not.toHaveBeenCalled();
+        expect(mockReplace).not.toHaveBeenCalled();
+        expect(mockPush).not.toHaveBeenCalled();
+        expect(mockReset).not.toHaveBeenCalled();
+      },
+    );
+
+    it("5× rapid back never calls router.back even with canGoBack=true", () => {
+      mockCanGoBack.mockReturnValue(true);
+
+      const header = renderSafeOfficeChildBackButton("/office/foreman", {
+        canGoBack: true,
+        tintColor: "#000000",
+        label: OFFICE_BACK_LABEL,
+        href: undefined,
+        onPress: mockNativeBack,
+      }) as React.ReactElement<{ onPress: () => void }>;
+
+      for (let i = 0; i < 5; i++) {
+        header.props.onPress();
+      }
+
+      expect(mockNavigate).toHaveBeenCalledTimes(5);
+      expect(mockBack).not.toHaveBeenCalled();
+      expect(mockNativeBack).not.toHaveBeenCalled();
+    });
+
+    it("rapid back with intermittent navigate failure falls back to replace", () => {
+      let callCount = 0;
+      mockNavigate.mockImplementation(() => {
+        callCount++;
+        if (callCount === 3) throw new Error("transient failure");
+      });
+
+      const header = renderSafeOfficeChildBackButton("/office/warehouse", {
+        canGoBack: true,
+        tintColor: "#000000",
+        label: OFFICE_BACK_LABEL,
+        href: undefined,
+        onPress: mockNativeBack,
+      }) as React.ReactElement<{ onPress: () => void }>;
+
+      for (let i = 0; i < 5; i++) {
+        expect(() => header.props.onPress()).not.toThrow();
+      }
+
+      // 5 navigate calls, but 3rd failed → 1 replace fallback
+      expect(mockNavigate).toHaveBeenCalledTimes(5);
+      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith("/office");
+      expect(mockBack).not.toHaveBeenCalled();
+      expect(mockNativeBack).not.toHaveBeenCalled();
+    });
+  });
 });
