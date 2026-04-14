@@ -188,12 +188,12 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const [repOptObjects, setRepOptObjects] = useState<string[]>([]);
   const [repOptObjectIdByName, setRepOptObjectIdByName] = useState<Record<string, string | null>>({});
   const reportReqSeqRef = useRef(0);
-  const optionsReqSeqRef = useRef(0);
+  // optionsReqSeqRef removed — options fetch now owned by useDirectorReportOptionsQuery (React Query)
   const disciplineReqSeqRef = useRef(0);
   const scopeLoadSeqRef = useRef(0);
   const reportRequestRef = useRef<DirectorReportsRequestSlot | null>(null);
   const disciplineRequestRef = useRef<DirectorReportsRequestSlot | null>(null);
-  const optionsRequestRef = useRef<DirectorReportsRequestSlot | null>(null);
+  // optionsRequestRef removed — options fetch now owned by useDirectorReportOptionsQuery (React Query)
   const scopeRequestRef = useRef<DirectorReportsRequestSlot | null>(null);
   const lastDisciplineLoadKeyRef = useRef<string>("");
   const disciplinePricesReadyRef = useRef<Set<string>>(new Set());
@@ -201,7 +201,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const abortActiveRequests = useCallback((reason: string) => {
     abortController(reportRequestRef.current?.controller, reason);
     abortController(disciplineRequestRef.current?.controller, reason);
-    abortController(optionsRequestRef.current?.controller, reason);
+    // optionsRequestRef abort removed — options fetch abort now handled by React Query
     abortController(scopeRequestRef.current?.controller, reason);
   }, []);
 
@@ -352,7 +352,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
 
   const beginScopeRefresh = useCallback((reason: string = "director reports scope changed") => {
     abortActiveRequests(reason);
-    optionsReqSeqRef.current += 1;
+    // optionsReqSeqRef increment removed — options dedup now handled by React Query
     reportReqSeqRef.current += 1;
     disciplineReqSeqRef.current += 1;
     return ++scopeLoadSeqRef.current;
