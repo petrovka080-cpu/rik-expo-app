@@ -138,11 +138,11 @@ const observeChannelStatus = (params: {
     result: ok ? "success" : "error",
     trigger: "realtime",
     sourceKind: "supabase:realtime",
-      extra: {
-        route: params.route,
-        channelName: params.channelName,
-        status: params.status,
-        owner: "realtime_lifecycle",
+    extra: {
+      route: params.route,
+      channelName: params.channelName,
+      status: params.status,
+      owner: "realtime_lifecycle",
     },
   });
 };
