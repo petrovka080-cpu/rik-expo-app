@@ -19,7 +19,7 @@ import {
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { generateDirectorPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
-import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
+import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { exportDirectorSubcontractReportPdf } from "../../lib/api/pdf_director";
 
 export function DirectorScreen() {
@@ -27,6 +27,7 @@ export function DirectorScreen() {
   const busy = useGlobalBusy();
   const router = useRouter();
   const reportsCompanyName = String((globalThis as any)?.process?.env?.EXPO_PUBLIC_COMPANY_NAME ?? "RIK Construction");
+  const reportsPdfOpener = createModalAwarePdfOpener(vm.reports.closeReports);
 
   const onExportProductionPdf = React.useCallback(async () => {
     const template = await buildDirectorProductionReportPdfDescriptor({
@@ -39,14 +40,13 @@ export function DirectorScreen() {
       repDiscipline: vm.reports.repDiscipline,
       preferPriceStage: vm.reports.repDisciplinePriceLoading ? "base" : "priced",
     });
-    await prepareAndPreviewGeneratedPdf({
+    await reportsPdfOpener.prepareAndPreview({
       busy,
       supabase,
       key: "pdf:director:reports:production",
       label: "Открываю PDF...",
       descriptor: template,
       router,
-      onBeforeNavigate: vm.reports.closeReports,
     });
   }, [
     busy,
@@ -80,14 +80,13 @@ export function DirectorScreen() {
         });
       },
     });
-    await prepareAndPreviewGeneratedPdf({
+    await reportsPdfOpener.prepareAndPreview({
       busy,
       supabase,
       key: "pdf:director:reports:subcontract",
       label: "Открываю PDF...",
       descriptor: template,
       router,
-      onBeforeNavigate: vm.reports.closeReports,
     });
   }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
 
@@ -99,14 +98,13 @@ export function DirectorScreen() {
       periodTo: vm.reports.repTo,
       objectName: vm.reports.repObjectName,
     });
-    await prepareAndPreviewGeneratedPdf({
+    await reportsPdfOpener.prepareAndPreview({
       busy,
       supabase,
       key: "pdf:director:reports:subcontract",
       label: "Открываю PDF...",
       descriptor: template,
       router,
-      onBeforeNavigate: vm.reports.closeReports,
     });
   }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
   void onExportSubcontractPdfLegacy;

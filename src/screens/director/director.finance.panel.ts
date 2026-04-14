@@ -2,7 +2,7 @@ import { Alert } from "react-native";
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
+import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
 import {
   buildDirectorManagementReportPdfDescriptor,
@@ -71,6 +71,7 @@ export function useDirectorFinancePanel({
   FIN_CRITICAL_DAYS,
 }: Deps) {
   const router = useRouter();
+  const pdfOpener = createModalAwarePdfOpener(closeFinance);
   const [finSupplier, setFinSupplier] = useState<FinSupplierPanelState | null>(null);
   const [finSupplierLoading, setFinSupplierLoading] = useState(false);
 
@@ -193,14 +194,13 @@ export function useDirectorFinancePanel({
       dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
       criticalDays: FIN_CRITICAL_DAYS,
     });
-    await prepareAndPreviewGeneratedPdf({
+    await pdfOpener.prepareAndPreview({
       busy,
       supabase,
       key: "pdf:director:finance",
       label: "Открываю PDF...",
       descriptor: template,
       router,
-      onBeforeNavigate: closeFinance,
     });
   }, [
     FIN_CRITICAL_DAYS,
@@ -227,14 +227,13 @@ export function useDirectorFinancePanel({
       dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
       criticalDays: FIN_CRITICAL_DAYS,
     });
-    await prepareAndPreviewGeneratedPdf({
+    await pdfOpener.prepareAndPreview({
       busy,
       supabase,
       key: `pdf:director:supplier:${supName}`,
       label: "Открываю PDF...",
       descriptor: template,
       router,
-      onBeforeNavigate: closeFinance,
     });
   }, [
     FIN_CRITICAL_DAYS,

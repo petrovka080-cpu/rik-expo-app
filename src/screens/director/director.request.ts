@@ -6,7 +6,7 @@ import { generateRequestPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
-import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
+import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { toFilterId } from "./director.helpers";
 import type { Group, PendingRow } from "./director.types";
 
@@ -54,6 +54,7 @@ export function useDirectorRequestActions({
   showSuccess,
 }: Deps) {
   const router = useRouter();
+  const pdfOpener = createModalAwarePdfOpener(closeSheet);
   const exportRequestExcel = useCallback(async (g: Group) => {
     const rows = g.items;
     if (!rows.length) {
@@ -115,7 +116,7 @@ export function useDirectorRequestActions({
     try {
       const title = labelForRequest(g.request_id) || `Request ${rid}`;
       const template = await generateRequestPdfDocument(rid);
-      await prepareAndPreviewGeneratedPdf({
+      await pdfOpener.prepareAndPreview({
         busy,
         supabase,
         key: `pdf:req:${rid}`,
@@ -130,12 +131,11 @@ export function useDirectorRequestActions({
           }),
         },
         router,
-        onBeforeNavigate: closeSheet,
       });
     } catch (error) {
       Alert.alert("Не удалось открыть PDF", getPdfFlowErrorMessage(error, "Попробуйте еще раз."));
     }
-  }, [busy, supabase, labelForRequest, router]);
+  }, [busy, supabase, labelForRequest, router, pdfOpener]);
 
   const isRequestPdfBusy = useCallback((g: Group) => {
     const rid = String(g?.request_id ?? "").trim();

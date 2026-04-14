@@ -209,3 +209,38 @@ export async function prepareAndShareGeneratedPdf(
   await sharePdfDocument(document);
   return document;
 }
+
+/**
+ * Creates a PDF opener that is pre-wired with a modal dismiss function.
+ *
+ * This is the SINGLE OWNER BOUNDARY for the "dismiss modal → open PDF" flow.
+ * Each hook/scope that opens PDFs from inside a native Modal creates ONE
+ * opener via this factory, binding its dismiss function. All PDF opens within
+ * that scope go through the returned `prepareAndPreview` method — no manual
+ * `onBeforeNavigate` wiring needed at each call site.
+ *
+ * @example
+ * ```ts
+ * const pdfOpener = createModalAwarePdfOpener(closeSheet);
+ * // Later, inside any PDF handler:
+ * await pdfOpener.prepareAndPreview({ busy, supabase, key, label, descriptor, router });
+ * ```
+ */
+export function createModalAwarePdfOpener(
+  dismiss: (() => void | Promise<void>) | null | undefined,
+) {
+  return {
+    /**
+     * Prepare and preview a generated PDF. If a dismiss callback was provided,
+     * it will be invoked automatically before navigation to ensure the native
+     * Modal is closed before the PDF viewer route is pushed.
+     */
+    prepareAndPreview: (
+      args: PrepareGeneratedPdfArgs & { router?: PdfViewerRouterLike },
+    ): Promise<DocumentDescriptor> =>
+      prepareAndPreviewGeneratedPdf({
+        ...args,
+        onBeforeNavigate: dismiss,
+      }),
+  };
+}

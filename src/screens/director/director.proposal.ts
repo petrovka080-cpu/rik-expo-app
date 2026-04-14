@@ -7,7 +7,7 @@ import { toProposalRequestItemIntegrityDegradedError } from "../../lib/api/propo
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
-import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
+import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
 import type { ProposalItem } from "./director.types";
 
@@ -62,6 +62,7 @@ export function useDirectorProposalActions({
   showSuccess,
 }: Deps) {
   const router = useRouter();
+  const pdfOpener = createModalAwarePdfOpener(closeSheet);
   const approveInFlightRef = useRef<Record<string, boolean>>({});
   const approveDoneAtRef = useRef<Record<string, number>>({});
   const APPROVE_DONE_COOLDOWN_MS = 15_000;
@@ -223,7 +224,7 @@ export function useDirectorProposalActions({
     try {
       const template = await generateProposalPdfDocument(pidStr, "director");
       const title = `Предложение ${pidStr.slice(0, 8)}`;
-      await prepareAndPreviewGeneratedPdf({
+      await pdfOpener.prepareAndPreview({
         busy,
         supabase,
         key: pdfKey,
@@ -238,7 +239,6 @@ export function useDirectorProposalActions({
           }),
         },
         router,
-        onBeforeNavigate: closeSheet,
       });
     } catch (e: unknown) {
       if (String(errText(e) || "").toLowerCase().includes("busy")) {
@@ -254,7 +254,7 @@ export function useDirectorProposalActions({
     } finally {
       delete pdfTapLockRef.current[pdfKey];
     }
-  }, [busy, supabase, isProposalPdfBusy, pdfTapLockRef, router]);
+  }, [busy, supabase, isProposalPdfBusy, pdfTapLockRef, router, pdfOpener]);
 
   const exportProposalExcel = useCallback(async (pidStr: string, pretty: string, items: ProposalItem[], screenLocked: boolean) => {
     if (screenLocked) return;
