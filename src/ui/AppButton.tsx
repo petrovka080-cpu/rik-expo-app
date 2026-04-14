@@ -84,7 +84,7 @@ export default function AppButton({
       disabled={isDisabled}
       style={({ pressed }) => [
         {
-          width: w as any,
+          width: w,
           height: h,
           borderRadius: r,
           alignItems: "center",
@@ -96,7 +96,7 @@ export default function AppButton({
           paddingHorizontal: pad.px,
           paddingVertical: pad.py,
         },
-        style as any,
+        style,
       ]}
     >
       {loading ? (

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Pressable, ViewStyle, StyleProp } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -37,7 +37,7 @@ export default function CloseIconButton({
           justifyContent: "center",
           opacity: disabled ? 0.4 : pressed ? 0.6 : 1,
         },
-        style as any,
+        style,
       ]}
     >
       <Ionicons name="close" size={size} color={color} />
