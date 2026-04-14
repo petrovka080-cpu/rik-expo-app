@@ -186,8 +186,13 @@ function mapSupplierSummaryItem(
   row: SupplierSummaryRow,
   overpayByProposal: Map<string, number>,
 ): SupplierSummaryItem {
-  const amount = nnum(row.amount);
-  const paid = nnum(row.paidAmount);
+  // Finance rows may arrive as either:
+  // (a) normalized FinanceRow objects (via mapToFinanceRow) with .amount / .paidAmount, or
+  // (b) raw list_accountant_inbox_fact rows with .invoice_amount / .total_paid.
+  // Accept both shapes to prevent zero-value reporting when the backend Edge Function
+  // passes raw RPC output directly without client-side normalization.
+  const amount = nnum(row.amount ?? row.invoice_amount ?? row.invoiceAmount);
+  const paid = nnum(row.paidAmount ?? row.total_paid ?? row.totalPaid ?? row.paid_amount);
   const rest = Math.max(amount - paid, 0);
   const status =
     amount <= 0 ? "прочее" : paid <= 0 ? "не оплачено" : rest <= 0 ? "оплачено" : "частично";
