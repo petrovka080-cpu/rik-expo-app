@@ -59,6 +59,7 @@ function Harness(props: {
 
 describe("useWarehouseRealtimeLifecycle", () => {
   beforeEach(() => {
+    jest.useFakeTimers();
     mockSubscribeChannel.mockReset();
     mockGetPlatformNetworkSnapshot.mockReset().mockReturnValue({
       hydrated: false,
@@ -67,6 +68,10 @@ describe("useWarehouseRealtimeLifecycle", () => {
     mockRecordPlatformObservability.mockReset();
     mockRecordPlatformGuardSkip.mockReset();
     mockIsPlatformGuardCoolingDown.mockReset().mockReturnValue(false);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it("refreshes the incoming scope on the matching tab and cleans up on unmount", async () => {
@@ -131,6 +136,8 @@ describe("useWarehouseRealtimeLifecycle", () => {
       renderer.unmount();
     });
 
+    // P0: detach is now deferred via setTimeout(0)
+    jest.runAllTimers();
     expect(detach).toHaveBeenCalledTimes(1);
   });
 
@@ -189,6 +196,9 @@ describe("useWarehouseRealtimeLifecycle", () => {
       renderer.unmount();
     });
 
+    // P0: detach is now deferred via setTimeout(0)
+    jest.runAllTimers();
+
     await act(async () => {
       renderer = TestRenderer.create(
         <Harness
@@ -221,6 +231,8 @@ describe("useWarehouseRealtimeLifecycle", () => {
       renderer.unmount();
     });
 
+    // P0: detach is now deferred via setTimeout(0)
+    jest.runAllTimers();
     expect(detachSecond).toHaveBeenCalledTimes(1);
   });
 

@@ -212,17 +212,43 @@ async function writeRawBreadcrumbs(items: OfficeReentryBreadcrumb[]) {
   }
 }
 
+/**
+ * Batched breadcrumb write queue.
+ *
+ * CRITICAL (P0): Each enqueueWrite used to do its own AsyncStorage.getItem +
+ * AsyncStorage.setItem cycle (2 native bridge calls). During a back transition
+ * from an Office child route, 6-10 markers fire in the same React cleanup tick,
+ * producing 12-20 serialized native bridge calls while the native view hierarchy
+ * is being torn down. The last call could hit a deallocated native module →
+ * SIGABRT (Signal 6).
+ *
+ * Fix: Collect all markers within the same tick into `pendingBatch`, then flush
+ * once per microtask. This reduces bridge calls from O(2N) to O(2) per tick.
+ */
+let pendingBatch: OfficeReentryBreadcrumb[] = [];
+let flushScheduled = false;
+
 function enqueueWrite(inputs: OfficeReentryBreadcrumbInput[]) {
   const entries = inputs.map(normalizeEntry);
   if (!entries.length) return writeQueue;
 
-  writeQueue = writeQueue
-    .catch(() => undefined)
-    .then(async () => {
-      const current = await readRawBreadcrumbs();
-      current.push(...entries);
-      await writeRawBreadcrumbs(current);
-    });
+  pendingBatch.push(...entries);
+
+  if (!flushScheduled) {
+    flushScheduled = true;
+    writeQueue = writeQueue
+      .catch(() => undefined)
+      .then(() => Promise.resolve())
+      .then(async () => {
+        const batch = pendingBatch;
+        pendingBatch = [];
+        flushScheduled = false;
+        if (!batch.length) return;
+        const current = await readRawBreadcrumbs();
+        current.push(...batch);
+        await writeRawBreadcrumbs(current);
+      });
+  }
 
   return writeQueue;
 }

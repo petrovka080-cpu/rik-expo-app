@@ -176,7 +176,9 @@ export function useWarehouseRealtimeLifecycle(params: {
     });
 
     return () => {
-      detach();
+      // P0: Defer channel detach to avoid native WebSocket close during React
+      // teardown. detach() is idempotent — calling after channel is gone is a no-op.
+      setTimeout(detach, 0);
     };
   }, [screenActiveRef]);
 
