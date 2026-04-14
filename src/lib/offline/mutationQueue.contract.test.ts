@@ -605,4 +605,81 @@ describe("mutationQueue contract", () => {
     expect(await loadForemanMutationQueue()).toEqual([]);
     expect(storage.maxActiveWrites()).toBe(1);
   });
+
+  it("releases the queue lock after a storage write error so subsequent operations succeed (N2)", async () => {
+    let writeCallCount = 0;
+    const storage = createObservedMemoryOfflineStorage();
+    const originalSetItem = storage.setItem.bind(storage);
+
+    // First write fails, subsequent writes succeed
+    storage.setItem = async (key: string, value: string) => {
+      writeCallCount++;
+      if (writeCallCount === 1) throw new Error("storage write failed");
+      await originalSetItem(key, value);
+    };
+
+    configureMutationQueue({ storage });
+
+    // First enqueue will fail because setItem throws
+    await expect(
+      enqueueBackgroundSync("req-error-release-1"),
+    ).rejects.toThrow("storage write failed");
+
+    // Restore normal behavior
+    storage.setItem = originalSetItem;
+
+    // Subsequent enqueue must succeed (lock was released)
+    await enqueueBackgroundSync("req-error-release-2");
+
+    const queue = await loadForemanMutationQueue();
+    expect(queue.some((e) => e.payload.draftKey === "req-error-release-2")).toBe(true);
+  });
+
+  it("rapid repeated enqueue + load cycle produces deterministic results (N2)", async () => {
+    const storage = createObservedMemoryOfflineStorage();
+    configureMutationQueue({ storage });
+
+    // Fire 10 rapid enqueue + load pairs without awaiting between
+    const results = await Promise.all(
+      Array.from({ length: 10 }, (_, i) =>
+        (async () => {
+          await enqueueBackgroundSync(`req-rapid-${i}`);
+          const queue = await loadForemanMutationQueue();
+          return queue.length;
+        })(),
+      ),
+    );
+
+    // Final queue should have exactly 10 entries (all coalesce to different draftKeys)
+    const finalQueue = await loadForemanMutationQueue();
+    expect(finalQueue).toHaveLength(10);
+
+    // Each length must be between 1 and 10 (monotonically non-decreasing when serial)
+    for (const len of results) {
+      expect(len).toBeGreaterThanOrEqual(1);
+      expect(len).toBeLessThanOrEqual(10);
+    }
+    expect(storage.maxActiveWrites()).toBe(1);
+  });
+
+  it("snapshot remains valid after reconfigure (simulated app reload) (N2)", async () => {
+    const storage = createObservedMemoryOfflineStorage();
+    configureMutationQueue({ storage });
+
+    await enqueueBackgroundSync("req-reload-1");
+    await enqueueBackgroundSync("req-reload-2");
+
+    // Simulate app reload — reconfigure with same storage
+    configureMutationQueue({ storage });
+
+    const queue = await loadForemanMutationQueue();
+    expect(queue.map((e) => e.payload.draftKey).sort()).toEqual([
+      "req-reload-1",
+      "req-reload-2",
+    ]);
+    // Can still enqueue after reload
+    await enqueueBackgroundSync("req-reload-3");
+    const afterReload = await loadForemanMutationQueue();
+    expect(afterReload).toHaveLength(3);
+  });
 });

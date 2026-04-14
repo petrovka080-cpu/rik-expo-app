@@ -25,6 +25,10 @@ import {
   recordPdfCrashBreadcrumbAsync,
   shouldRecordPdfCrashBreadcrumbs,
 } from "../pdf/pdfCrashBreadcrumbs";
+import {
+  checkPdfMobilePreviewEligibility,
+  recordPdfPreviewOversizeBlocked,
+} from "../pdf/pdfMobilePreviewSizeGuard";
 
 export function getPdfFlowErrorMessage(
   error: unknown,
@@ -652,6 +656,28 @@ export async function previewPdfDocument(
       exists: typeof asset.sizeBytes === "number" ? true : undefined,
       sizeBytes: asset.sizeBytes,
     });
+    // ── iOS oversize guard ──────────────────────────────────────────────
+    // Must fire BEFORE the viewer route push. If the file is too large for
+    // the iOS in-app viewer, we throw IosPdfOversizeError which bubbles to
+    // the busy handler for proper cleanup and user-facing Alert.
+    const sizeEligibility = checkPdfMobilePreviewEligibility({
+      platform: Platform.OS,
+      sizeBytes: asset.sizeBytes,
+      documentType: asset.documentType,
+      originModule: asset.originModule,
+      fileName: asset.fileName,
+    });
+    if (!sizeEligibility.eligible) {
+      const blocked = sizeEligibility as { eligible: false; sizeBytes: number; limitBytes: number };
+      throw recordPdfPreviewOversizeBlocked({
+        sizeBytes: blocked.sizeBytes,
+        limitBytes: blocked.limitBytes,
+        documentType: asset.documentType,
+        originModule: asset.originModule,
+        fileName: asset.fileName,
+      });
+    }
+    // ────────────────────────────────────────────────────────────────────
     if (opts?.router) {
       recordPdfOpenStage({
         context: opts.openFlow,
