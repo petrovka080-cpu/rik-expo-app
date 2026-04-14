@@ -22,10 +22,7 @@ import {
   type DocumentAsset,
   type DocumentSession,
 } from "../src/lib/documents/pdfDocumentSessions";
-import {
-  openPdfDocumentExternal,
-  sharePdfDocument,
-} from "../src/lib/documents/pdfDocumentActions";
+
 
 import {
   getReadAccessParentUri,
@@ -75,10 +72,9 @@ import {
   getUriScheme,
   inspectLocalPdfFile,
   validateEmbeddedPreviewResolution,
-  downloadPdfAsset,
-  printPdfAsset,
   FileSystemCompat,
 } from "../src/lib/pdf/pdfViewer.helpers";
+import { usePdfViewerActions } from "../src/lib/pdf/usePdfViewerActions";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
 import { safeBack } from "../src/lib/navigation/safeBack";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
@@ -1049,63 +1045,12 @@ function PdfViewerScreen() {
     loadAttempt,
   ]);
 
-  const onShare = React.useCallback(async () => {
-    if (!asset) return;
-    try {
-      await sharePdfDocument(asset);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      markError(message);
-      console.error("[pdf-viewer] share_error", {
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        error: message,
-      });
-    } finally {
-      setMenuOpen(false);
-    }
-  }, [asset, markError]);
+  const { onShare, onOpenExternal, onDownload, onPrint } = usePdfViewerActions({
+    asset,
+    markError,
+    setMenuOpen,
+  });
 
-  const onOpenExternal = React.useCallback(async () => {
-    if (!asset) return;
-    try {
-      await openPdfDocumentExternal(asset);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      markError(message);
-      console.error("[pdf-viewer] external_open_error", {
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        error: message,
-      });
-    } finally {
-      setMenuOpen(false);
-    }
-  }, [asset, markError]);
-
-  const onDownload = React.useCallback(async () => {
-    if (!asset) return;
-    try {
-      await downloadPdfAsset(asset);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      markError(message);
-    } finally {
-      setMenuOpen(false);
-    }
-  }, [asset, markError]);
-
-  const onPrint = React.useCallback(async () => {
-    if (!asset) return;
-    try {
-      await printPdfAsset(asset);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      markError(message);
-    } finally {
-      setMenuOpen(false);
-    }
-  }, [asset, markError]);
 
   const onRetry = React.useCallback(() => {
     const next = syncSnapshot();
