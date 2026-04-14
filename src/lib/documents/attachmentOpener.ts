@@ -1,4 +1,4 @@
-﻿import { Linking, Platform } from "react-native";
+import { Alert, Linking, Platform } from "react-native";
 import * as FileSystemModule from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import * as IntentLauncher from "expo-intent-launcher";
@@ -7,6 +7,86 @@ import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
 import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
 import { supabase } from "../supabaseClient";
+import { recordPlatformObservability } from "../observability/platformObservability";
+
+/**
+ * Maximum file size (in bytes) for iOS Sharing.shareAsync.
+ * Files larger than this trigger a controlled fallback instead of
+ * risking a native crash. 15 MB chosen based on observed iOS
+ * share sheet stability threshold.
+ */
+export const IOS_PDF_SHARE_SIZE_LIMIT = 15 * 1024 * 1024;
+
+export class IosPdfOversizeError extends Error {
+  sizeBytes: number;
+  limitBytes: number;
+  action: "preview" | "share";
+
+  constructor(sizeBytes: number, limitBytes: number, action: "preview" | "share") {
+    super(`PDF file too large for iOS ${action}: ${sizeBytes} bytes (limit: ${limitBytes})`);
+    this.name = "IosPdfOversizeError";
+    this.sizeBytes = sizeBytes;
+    this.limitBytes = limitBytes;
+    this.action = action;
+  }
+}
+
+async function assertIosSizeGuard(
+  localUri: string,
+  action: "preview" | "share",
+): Promise<void> {
+  if (Platform.OS !== "ios") return;
+
+  try {
+    const info = await FileSystemCompat.getInfoAsync(localUri);
+    const sizeBytes = getFileInfoSize(info);
+    if (sizeBytes === undefined) return; // size unknown — allow through
+    if (sizeBytes <= IOS_PDF_SHARE_SIZE_LIMIT) return; // within limit
+
+    recordPlatformObservability({
+      screen: "request",
+      surface: "attachment_open",
+      category: "ui",
+      event: "ios_pdf_oversize_guard_triggered",
+      result: "error",
+      sourceKind: "pdf:ios_size_guard",
+      errorStage: "ios_oversize",
+      errorClass: "IosPdfOversizeError",
+      errorMessage: `size=${sizeBytes} limit=${IOS_PDF_SHARE_SIZE_LIMIT} action=${action}`,
+      extra: {
+        sizeBytes,
+        limitBytes: IOS_PDF_SHARE_SIZE_LIMIT,
+        action,
+        localUri,
+      },
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      Alert.alert(
+        "File too large",
+        `This file (${Math.round(sizeBytes / (1024 * 1024))} MB) is too large to ${action} directly. You can try opening it in the browser instead.`,
+        [
+          { text: "Cancel", style: "cancel", onPress: () => reject(new IosPdfOversizeError(sizeBytes, IOS_PDF_SHARE_SIZE_LIMIT, action)) },
+          {
+            text: "Open in Browser",
+            onPress: async () => {
+              try {
+                await Linking.openURL(localUri);
+                resolve();
+              } catch (e) {
+                reject(e);
+              }
+            },
+          },
+        ],
+        { cancelable: true, onDismiss: () => reject(new IosPdfOversizeError(sizeBytes, IOS_PDF_SHARE_SIZE_LIMIT, action)) },
+      );
+    });
+  } catch (error) {
+    if (error instanceof IosPdfOversizeError) throw error;
+    // size check itself failed — allow through to avoid blocking legitimate files
+  }
+}
 
 const FileSystemCompat = FileSystemModule;
 
@@ -322,6 +402,7 @@ export async function openAndroidRemotePdfUrl(
 
 async function openAttachmentOnNative(localUri: string, mimeType: string, mode: AttachmentOpenMode): Promise<void> {
   if (mode === "share") {
+    await assertIosSizeGuard(localUri, "share");
     const canShare = await Sharing.isAvailableAsync();
     if (!canShare) throw new Error("Sharing is unavailable on this device");
     await Sharing.shareAsync(localUri, { mimeType, dialogTitle: "Share attachment" });
@@ -340,6 +421,7 @@ async function openAttachmentOnNative(localUri: string, mimeType: string, mode: 
     return;
   }
 
+  await assertIosSizeGuard(localUri, "preview");
   const canShare = await Sharing.isAvailableAsync();
   if (canShare) {
     await Sharing.shareAsync(localUri, { mimeType, dialogTitle: "Open attachment" });
