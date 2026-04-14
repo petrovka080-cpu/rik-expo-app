@@ -1,3 +1,5 @@
+import { logger } from "../logger";
+
 const CP1251_EXTRA_CODEPOINTS: [number, number][] = [
   [0x80, 0x0402], [0x81, 0x0403], [0x82, 0x201a], [0x83, 0x0453], [0x84, 0x201e], [0x85, 0x2026], [0x86, 0x2020], [0x87, 0x2021],
   [0x88, 0x20ac], [0x89, 0x2030], [0x8a, 0x0409], [0x8b, 0x2039], [0x8c, 0x040a], [0x8d, 0x040c], [0x8e, 0x040b], [0x8f, 0x040f],
@@ -166,15 +168,15 @@ type NormalizeRuHtmlOptions = {
 };
 
 const logEncodingDebug = (...args: unknown[]) => {
-  if (typeof __DEV__ !== "undefined" && __DEV__) console.info(...args);
+  logger.info("encoding", ...args);
 };
 
 const warnEncodingDebug = (...args: unknown[]) => {
-  if (typeof __DEV__ !== "undefined" && __DEV__) console.warn(...args);
+  logger.warn("encoding", ...args);
 };
 
 const errorEncodingDebug = (...args: unknown[]) => {
-  if (typeof __DEV__ !== "undefined" && __DEV__) console.error(...args);
+  logger.error("encoding", ...args);
 };
 
 const looksLikeHtmlDocument = (input: string) =>

@@ -1,5 +1,5 @@
 import { router as rootRouter, type Href } from "expo-router";
-import { Platform } from "react-native";
+import { InteractionManager, Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 import {
   createDocumentPreviewSession,
@@ -144,11 +144,16 @@ async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
       }
     };
 
-    // Single setTimeout(0) gives React one tick to flush state updates
-    // before navigating. Avoids the triple-deferral chain
-    // (InteractionManager → setTimeout → requestAnimationFrame) which
-    // created unpredictable timing gaps on iOS.
-    setTimeout(runPush, 0);
+    // On iOS, InteractionManager.runAfterInteractions ensures the push
+    // happens after all in-flight UI transitions (screen animations,
+    // modal presentations) have settled. Without this, the pushed
+    // PDF viewer can end up rendered behind the current screen.
+    // On Android/web, a single setTimeout(0) tick is sufficient.
+    if (Platform.OS === "ios" && typeof InteractionManager?.runAfterInteractions === "function") {
+      InteractionManager.runAfterInteractions(runPush);
+    } else {
+      setTimeout(runPush, 0);
+    }
   });
 }
 

@@ -1,5 +1,6 @@
 import React from "react";
 import type { ReactNode } from "react";
+import { logger } from "../../lib/logger";
 import {
   StyleSheet,
   Text,
@@ -44,8 +45,8 @@ export default function RoleScreenLayout({
   subtitleStyle,
 }: RoleScreenLayoutProps) {
   const hasDefaultHeader = Boolean(title || subtitle);
-  if (__DEV__ && (children == null || children === false)) {
-    console.warn("RoleScreenLayout used without content");
+  if (children == null || children === false) {
+    logger.warn("RoleScreenLayout", "used without content");
   }
 
   return (

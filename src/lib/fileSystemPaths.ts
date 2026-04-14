@@ -1,5 +1,6 @@
-﻿import * as FileSystemModule from "expo-file-system/legacy";
+import * as FileSystemModule from "expo-file-system/legacy";
 import { Paths } from "expo-file-system";
+import { logger } from "./logger";
 
 type FileSystemPaths = {
   cacheDir: string;
@@ -34,7 +35,7 @@ export function getFileSystemPaths(): FileSystemPaths {
 
     if (!hasLoggedResolvedPaths) {
       hasLoggedResolvedPaths = true;
-      if (__DEV__) console.info("[fs-paths] fs_paths_resolved", {
+      logger.info("fs-paths", "fs_paths_resolved", {
         cacheDir,
         documentDir,
       });
@@ -43,7 +44,7 @@ export function getFileSystemPaths(): FileSystemPaths {
     return { cacheDir, documentDir };
   } catch {
     const availableKeys = Object.keys(FileSystemModule || {}).join(", ");
-    if (__DEV__) console.warn("[fs-paths] Paths missing from FileSystemModule", {
+    logger.warn("fs-paths", "Paths missing from FileSystemModule", {
       availableKeys,
     });
     // Fallback if Paths is missing (common in some Expo versions or on Web)

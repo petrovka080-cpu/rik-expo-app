@@ -1,5 +1,6 @@
 import React from "react";
 import { FlatList, type FlatListProps } from "react-native";
+import { logger } from "../lib/logger";
 
 type CompatOverrideItemLayout<T> = (
   layout: { size?: number; span?: number },
@@ -62,9 +63,9 @@ const CompatFlashListInner = <T,>(
     }
   }
 
-  if (__DEV__ && !didLogLegacyFallback) {
+  if (!didLogLegacyFallback) {
     didLogLegacyFallback = true;
-    console.info("[flash-list.compat] legacy architecture fallback -> FlatList");
+    logger.info("flash-list.compat", "legacy architecture fallback -> FlatList");
   }
 
   return <FlatList ref={ref} {...rest} />;

@@ -1,4 +1,4 @@
-import { Alert, Linking, Platform } from "react-native";
+import { Alert, InteractionManager, Linking, Platform } from "react-native";
 import * as FileSystemModule from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import * as IntentLauncher from "expo-intent-launcher";
@@ -405,6 +405,12 @@ async function openAttachmentOnNative(localUri: string, mimeType: string, mode: 
     await assertIosSizeGuard(localUri, "share");
     const canShare = await Sharing.isAvailableAsync();
     if (!canShare) throw new Error("Sharing is unavailable on this device");
+    // Ensure iOS share sheet appears on top of the current screen
+    if (Platform.OS === "ios" && typeof InteractionManager?.runAfterInteractions === "function") {
+      await new Promise<void>((resolve) => {
+        InteractionManager.runAfterInteractions(() => resolve());
+      });
+    }
     await Sharing.shareAsync(localUri, { mimeType, dialogTitle: "Share attachment" });
     return;
   }
@@ -424,6 +430,12 @@ async function openAttachmentOnNative(localUri: string, mimeType: string, mode: 
   await assertIosSizeGuard(localUri, "preview");
   const canShare = await Sharing.isAvailableAsync();
   if (canShare) {
+    // Ensure iOS share sheet appears on top of the current screen
+    if (Platform.OS === "ios" && typeof InteractionManager?.runAfterInteractions === "function") {
+      await new Promise<void>((resolve) => {
+        InteractionManager.runAfterInteractions(() => resolve());
+      });
+    }
     await Sharing.shareAsync(localUri, { mimeType, dialogTitle: "Open attachment" });
     return;
   }

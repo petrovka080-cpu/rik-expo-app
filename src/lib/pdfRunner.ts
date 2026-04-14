@@ -1,6 +1,6 @@
-﻿// src/lib/pdfRunner.ts
+// src/lib/pdfRunner.ts
 
-import { Alert, Linking, Platform } from "react-native";
+import { Alert, InteractionManager, Linking, Platform } from "react-native";
 import * as Sharing from "expo-sharing";
 import * as FileSystemModule from "expo-file-system/legacy";
 
@@ -63,6 +63,22 @@ function getErrorMessage(error: unknown, fallback: string): string {
 const uiYield = async (ms = 0) => {
   await new Promise<void>((resolve) => setTimeout(resolve, ms));
 };
+
+/**
+ * Wait for all in-flight UI transitions (screen animations, modal
+ * presentations) to settle. On iOS this prevents share sheets
+ * and navigation pushes from appearing behind the current screen.
+ * Falls back to immediate resolve when InteractionManager is unavailable
+ * (Jest, web, or missing native module).
+ */
+const waitForInteractions = (): Promise<void> =>
+  new Promise<void>((resolve) => {
+    if (typeof InteractionManager?.runAfterInteractions === "function") {
+      InteractionManager.runAfterInteractions(() => resolve());
+    } else {
+      resolve();
+    }
+  });
 
 const withTimeout = async <T,>(p: Promise<T>, ms: number, msg: string): Promise<T> => {
   let t: ReturnType<typeof setTimeout> | undefined;
@@ -316,6 +332,11 @@ async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogT
   if (!canShare) {
     throw new Error("Sharing is unavailable on this device");
   }
+  // Wait for all in-flight UI transitions (screen animations, modal
+  // presentations) to settle before presenting the iOS share sheet.
+  // Without this, the UIActivityViewController can appear behind the
+  // current screen when triggered during a navigation transition.
+  await waitForInteractions();
   await Sharing.shareAsync(handoffUri, {
     mimeType: "application/pdf",
     UTI: "com.adobe.pdf",

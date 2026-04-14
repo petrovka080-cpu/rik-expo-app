@@ -1,5 +1,6 @@
-﻿// src/ui/IconSquareButton.tsx
+// src/ui/IconSquareButton.tsx
 import React, { useCallback, useMemo, useRef } from "react";
+import { logger } from "../lib/logger";
 import {
   ActivityIndicator,
   Animated,
@@ -84,8 +85,7 @@ export default function IconSquareButton({
     try {
       await onPress?.();
     } catch (e) {
-      // eslint-disable-next-line no-console
-      if (__DEV__) console.error("IconSquareButton onPress error:", e);
+      logger.error("IconSquareButton", "onPress error:", e);
     }
   }, [isDisabled, onPress]);
 
