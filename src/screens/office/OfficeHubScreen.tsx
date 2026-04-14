@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+﻿import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +9,6 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -121,87 +120,17 @@ import {
   formatDate,
 } from "./officeHub.constants";
 import { DirectionCard, MemberCard, InviteCard } from "./officeHub.cards";
+import {
+  EMPTY_COMPANY_DRAFT,
+  buildOfficeBootstrapCompanyDraft,
+  isWarehouseOfficeReturnReceipt,
+  OfficePostReturnSubtreeBoundary,
+  type OfficeHubScreenProps,
+} from "./officeHub.helpers";
+import { styles } from "./officeHub.styles";
 
 export { __resetOfficeHubBootstrapSnapshotForTests } from "./officeHubBootstrapSnapshot";
 
-const EMPTY_COMPANY_DRAFT: CreateCompanyDraft = {
-  name: "",
-  legalAddress: "",
-  industry: "",
-  inn: "",
-  phoneMain: "",
-  additionalPhones: [],
-  email: "",
-  constructionObjectName: "",
-  siteAddress: "",
-  website: "",
-};
-
-function buildOfficeBootstrapCompanyDraft(
-  data: OfficeAccessScreenData,
-): CreateCompanyDraft {
-  return {
-    ...EMPTY_COMPANY_DRAFT,
-    phoneMain: data.profile.phone || "",
-    email: data.profileEmail || "",
-  };
-}
-
-
-type OfficePostReturnSubtreeBoundaryProps = {
-  children: React.ReactNode;
-  onError: (error: Error, info: React.ErrorInfo) => void;
-  onMount: () => void;
-};
-
-type OfficePostReturnSubtreeBoundaryState = {
-  error: Error | null;
-};
-
-type OfficeHubScreenProps = {
-  officeReturnReceipt?: Record<string, unknown> | null;
-  routeScopeActive?: boolean;
-};
-
-function isWarehouseOfficeReturnReceipt(
-  receipt: Record<string, unknown> | null | undefined,
-) {
-  return (
-    receipt?.sourceRoute === "/office/warehouse" &&
-    receipt?.target === "/office"
-  );
-}
-
-class OfficePostReturnSubtreeBoundary extends React.Component<
-  OfficePostReturnSubtreeBoundaryProps,
-  OfficePostReturnSubtreeBoundaryState
-> {
-  state: OfficePostReturnSubtreeBoundaryState = {
-    error: null,
-  };
-
-  static getDerivedStateFromError(
-    error: Error,
-  ): Partial<OfficePostReturnSubtreeBoundaryState> {
-    return { error };
-  }
-
-  componentDidMount() {
-    this.props.onMount();
-  }
-
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    this.props.onError(error, info);
-  }
-
-  render() {
-    if (this.state.error) {
-      throw this.state.error;
-    }
-
-    return this.props.children;
-  }
-}
 
 export default function OfficeHubScreen({
   officeReturnReceipt = null,
@@ -1143,7 +1072,7 @@ export default function OfficeHubScreen({
     return [data.company.industry, data.company.phone_main, data.company.email]
       .map((value) => String(value || "").trim())
       .filter(Boolean)
-      .join(" • ");
+      .join(" вЂў ");
   }, [data.company]);
   const visibleCompanyDetails = useMemo(
     () => getVisibleCompanyDetails(data.company),
@@ -1401,7 +1330,7 @@ export default function OfficeHubScreen({
                       ]}
                       accessibilityLabel={COPY.summaryEdit}
                     >
-                      <Text style={styles.editButtonText}>✏️</Text>
+                      <Text style={styles.editButtonText}>вњЏпёЏ</Text>
                     </Pressable>
                   </View>,
                 )}
@@ -1586,7 +1515,7 @@ export default function OfficeHubScreen({
                             </Text>
                           </View>
                           <View style={styles.handoffCodeBlock}>
-                            <Text style={styles.label}>Код</Text>
+                            <Text style={styles.label}>РљРѕРґ</Text>
                             <Text
                               testID="office-invite-handoff-code"
                               style={styles.handoffCode}
@@ -1827,7 +1756,7 @@ export default function OfficeHubScreen({
                 ))}
                 <View style={styles.stack}>
                   <View style={styles.inline}>
-                    <Text style={styles.label}>Дополнительные телефоны</Text>
+                    <Text style={styles.label}>Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ С‚РµР»РµС„РѕРЅС‹</Text>
                     <Pressable
                       testID="office-add-company-phone"
                       onPress={() =>
@@ -1837,14 +1766,14 @@ export default function OfficeHubScreen({
                         }))
                       }
                     >
-                      <Text style={styles.link}>Добавить телефон</Text>
+                      <Text style={styles.link}>Р”РѕР±Р°РІРёС‚СЊ С‚РµР»РµС„РѕРЅ</Text>
                     </Pressable>
                   </View>
                   {companyDraft.additionalPhones.map((phone, index) => (
                     <View key={`phone-${index}`} style={styles.phoneRow}>
                       <TextInput
                         testID={`office-company-phone-${index}`}
-                        placeholder="Дополнительный телефон"
+                        placeholder="Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№ С‚РµР»РµС„РѕРЅ"
                         placeholderTextColor="#94A3B8"
                         style={[styles.input, styles.phoneInput]}
                         keyboardType="phone-pad"
@@ -1869,7 +1798,7 @@ export default function OfficeHubScreen({
                           }))
                         }
                       >
-                        <Text style={styles.linkDanger}>Убрать</Text>
+                        <Text style={styles.linkDanger}>РЈР±СЂР°С‚СЊ</Text>
                       </Pressable>
                     </View>
                   ))}
@@ -1893,7 +1822,7 @@ export default function OfficeHubScreen({
               <View style={styles.panel}>
                 {RULES.map((rule) => (
                   <Text key={rule} style={styles.rule}>
-                    • {rule}
+                    вЂў {rule}
                   </Text>
                 ))}
               </View>
@@ -1932,10 +1861,10 @@ export default function OfficeHubScreen({
                 </Text>
                 <Text style={styles.helper}>{COPY.inviteModalLead}</Text>
                 <View style={styles.stack}>
-                  <Text style={styles.label}>ФИО сотрудника</Text>
+                  <Text style={styles.label}>Р¤РРћ СЃРѕС‚СЂСѓРґРЅРёРєР°</Text>
                   <TextInput
                     testID="office-invite-name"
-                    placeholder="ФИО сотрудника"
+                    placeholder="Р¤РРћ СЃРѕС‚СЂСѓРґРЅРёРєР°"
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     value={inviteDraft.name}
@@ -1945,10 +1874,10 @@ export default function OfficeHubScreen({
                   />
                 </View>
                 <View style={styles.stack}>
-                  <Text style={styles.label}>Телефон</Text>
+                  <Text style={styles.label}>РўРµР»РµС„РѕРЅ</Text>
                   <TextInput
                     testID="office-invite-phone"
-                    placeholder="Телефон"
+                    placeholder="РўРµР»РµС„РѕРЅ"
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     keyboardType="phone-pad"
@@ -1965,7 +1894,7 @@ export default function OfficeHubScreen({
                   <Text style={styles.label}>Email</Text>
                   <TextInput
                     testID="office-invite-email"
-                    placeholder="Email (необязательно)"
+                    placeholder="Email (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)"
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     autoCapitalize="none"
@@ -1980,10 +1909,10 @@ export default function OfficeHubScreen({
                   />
                 </View>
                 <View style={styles.stack}>
-                  <Text style={styles.label}>Комментарий</Text>
+                  <Text style={styles.label}>РљРѕРјРјРµРЅС‚Р°СЂРёР№</Text>
                   <TextInput
                     testID="office-invite-comment"
-                    placeholder="Комментарий (необязательно)"
+                    placeholder="РљРѕРјРјРµРЅС‚Р°СЂРёР№ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)"
                     placeholderTextColor="#94A3B8"
                     style={[styles.input, styles.textArea]}
                     multiline
@@ -2025,317 +1954,3 @@ export default function OfficeHubScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#F8FAFC" },
-  fill: { flex: 1 },
-  content: { paddingHorizontal: 16, paddingBottom: 24, gap: 16 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
-  summary: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    padding: 18,
-    gap: 12,
-  },
-  summaryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  eyebrow: {
-    color: "#2563EB",
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  company: { color: "#0F172A", fontSize: 24, fontWeight: "900" },
-  editButton: {
-    minWidth: 36,
-    minHeight: 36,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  editButtonText: { fontSize: 16 },
-  summaryMeta: {
-    color: "#475569",
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-  },
-  summaryBadges: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  summaryBadge: {
-    minHeight: 34,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  summaryBadgeRole: {
-    borderColor: "#BFDBFE",
-    backgroundColor: "#EFF6FF",
-  },
-  summaryBadgeSuccess: { borderColor: "#BBF7D0", backgroundColor: "#F0FDF4" },
-  summaryBadgeWarning: { borderColor: "#FDE68A", backgroundColor: "#FEFCE8" },
-  summaryBadgeText: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
-  summaryBadgeTextSuccess: { color: "#166534" },
-  summaryBadgeTextWarning: { color: "#92400E" },
-  stats: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  stat: { flexGrow: 1, flexBasis: 140, gap: 8 },
-  label: { color: "#64748B", fontSize: 12, fontWeight: "800" },
-  pill: {
-    minHeight: 48,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    backgroundColor: "#F8FAFC",
-    paddingHorizontal: 14,
-    justifyContent: "center",
-  },
-  pillSuccess: { borderColor: "#BBF7D0", backgroundColor: "#F0FDF4" },
-  pillWarning: { borderColor: "#FDE68A", backgroundColor: "#FEFCE8" },
-  pillText: { color: "#0F172A", fontSize: 14, fontWeight: "800" },
-  pillTextSuccess: { color: "#166534" },
-  pillTextWarning: { color: "#92400E" },
-  section: { gap: 8 },
-  sectionTitle: { color: "#0F172A", fontSize: 18, fontWeight: "800" },
-  helper: { color: "#475569", fontSize: 13, lineHeight: 19 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  card: {
-    flexBasis: "48%",
-    flexGrow: 1,
-    minHeight: 150,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: "#D8E2F0",
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    gap: 14,
-  },
-  cardPrimary: { backgroundColor: "#0F766E", borderColor: "#0F766E" },
-  cardHead: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  accent: { width: 44, height: 6, borderRadius: 999 },
-  add: {
-    minWidth: 34,
-    minHeight: 34,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-    backgroundColor: "#EFF6FF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  addPrimary: {
-    borderColor: "rgba(255,255,255,0.32)",
-    backgroundColor: "rgba(255,255,255,0.12)",
-  },
-  addText: {
-    color: "#1D4ED8",
-    fontSize: 20,
-    fontWeight: "900",
-    lineHeight: 22,
-  },
-  addTextPrimary: { color: "#FFFFFF" },
-  pressed: { opacity: 0.86 },
-  dim: { opacity: 0.6 },
-  stack: { gap: 10 },
-  cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  cardTitlePrimary: { color: "#FFFFFF" },
-  cardSubtitle: {
-    color: "#475569",
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "600",
-  },
-  cardSubtitlePrimary: { color: "rgba(255,255,255,0.88)" },
-  panel: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    padding: 16,
-    gap: 12,
-  },
-  handoff: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-    padding: 16,
-    gap: 12,
-  },
-  handoffTitle: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  handoffCodeBlock: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    backgroundColor: "#F0FDF4",
-    padding: 14,
-    gap: 6,
-  },
-  handoffCode: {
-    color: "#166534",
-    fontSize: 24,
-    fontWeight: "900",
-    letterSpacing: 0.6,
-  },
-  notice: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    backgroundColor: "#F0FDF4",
-    padding: 14,
-  },
-  noticeText: {
-    color: "#166534",
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "700",
-  },
-  noticeSoft: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#F8FAFC",
-    padding: 14,
-  },
-  noticeSoftText: {
-    color: "#0F172A",
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "700",
-  },
-  entity: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    padding: 16,
-    gap: 6,
-  },
-  entityHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  entityHeaderMain: { flex: 1, gap: 4 },
-  entityTitle: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  entityMeta: { color: "#475569", fontSize: 13, lineHeight: 18 },
-  memberStatusRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  statusBadge: {
-    minHeight: 28,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#F8FAFC",
-    paddingHorizontal: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusActive: { borderColor: "#BBF7D0", backgroundColor: "#F0FDF4" },
-  statusPending: { borderColor: "#FDE68A", backgroundColor: "#FEFCE8" },
-  statusText: {
-    color: "#334155",
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase",
-  },
-  statusTextActive: { color: "#166534" },
-  statusTextPending: { color: "#92400E" },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  chip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#F8FAFC",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  chipActive: { borderColor: "#0F766E", backgroundColor: "#ECFDF5" },
-  chipText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  chipTextActive: { color: "#0F766E" },
-  row: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
-    gap: 4,
-  },
-  rowLast: { paddingTop: 10, gap: 4 },
-  value: { color: "#0F172A", fontSize: 14, lineHeight: 20, fontWeight: "600" },
-  input: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: "#0F172A",
-    fontSize: 15,
-  },
-  textArea: { minHeight: 96, textAlignVertical: "top" },
-  inline: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  link: { color: "#1D4ED8", fontSize: 12, fontWeight: "800" },
-  linkDanger: { color: "#B91C1C", fontSize: 12, fontWeight: "800" },
-  phoneRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  phoneInput: { flex: 1 },
-  primary: {
-    minHeight: 48,
-    borderRadius: 16,
-    backgroundColor: "#0F766E",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 16,
-  },
-  primaryText: { color: "#FFFFFF", fontSize: 14, fontWeight: "900" },
-  secondary: {
-    minHeight: 48,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 16,
-  },
-  secondaryText: { color: "#0F172A", fontSize: 14, fontWeight: "800" },
-  actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  actionButton: { flexGrow: 1, flexBasis: 180 },
-  actionButtonText: { textAlign: "center" },
-  grow: { flex: 1 },
-  rule: { color: "#475569", fontSize: 13, lineHeight: 19 },
-  modalWrap: { flex: 1, justifyContent: "flex-end" },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(15, 23, 42, 0.4)",
-  },
-  sheet: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 28,
-    gap: 12,
-  },
-  sheetTitle: { color: "#0F172A", fontSize: 24, fontWeight: "900" },
-  modalActions: { flexDirection: "row", gap: 10, marginTop: 8 },
-});
