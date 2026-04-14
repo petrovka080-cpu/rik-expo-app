@@ -3,8 +3,6 @@ import {
   ActivityIndicator,
   Platform,
   Pressable,
-  ScrollView,
-  StyleSheet,
   Text,
   useWindowDimensions,
   View,
@@ -14,7 +12,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import * as FileSystemModule from "expo-file-system/legacy";
+
 import { Ionicons } from "@expo/vector-icons";
 
 import {
@@ -28,6 +26,7 @@ import {
   openPdfDocumentExternal,
   sharePdfDocument,
 } from "../src/lib/documents/pdfDocumentActions";
+
 import {
   getReadAccessParentUri,
   resolvePdfViewerDirectSnapshot,
@@ -61,36 +60,30 @@ import {
   createPdfViewerLoadingTimeoutGuardState,
   shouldCommitPdfViewerLoadingTimeout,
 } from "../src/lib/pdf/pdfViewerLoadingTimeoutGuard";
-import {
-  assertValidLocalPdfFile,
-  assertValidRemotePdfResponse,
-} from "../src/lib/pdf/pdfSourceValidation";
+
 import { openPdfPreview } from "../src/lib/pdfRunner";
+import {
+  FALLBACK_ROUTE,
+  VIEWER_BG,
+  VIEWER_BORDER,
+  VIEWER_TEXT,
+  VIEWER_PLATFORM,
+} from "../src/lib/pdf/pdfViewer.constants";
+import { styles } from "../src/lib/pdf/pdfViewer.styles";
+import { MenuAction, EmptyState, CenteredPanel } from "../src/lib/pdf/pdfViewer.components";
+import {
+  getUriScheme,
+  inspectLocalPdfFile,
+  validateEmbeddedPreviewResolution,
+  downloadPdfAsset,
+  printPdfAsset,
+  FileSystemCompat,
+} from "../src/lib/pdf/pdfViewer.helpers";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
 import { safeBack } from "../src/lib/navigation/safeBack";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
 
-type ViewerFileInfo = {
-  exists: boolean;
-  sizeBytes?: number;
-};
 
-type FileSystemInfoResult = {
-  exists?: unknown;
-  size?: unknown;
-};
-
-type FileSystemCompatShape = {
-  getInfoAsync?: (
-    uri: string,
-  ) => Promise<FileSystemInfoResult | null | undefined>;
-  readAsStringAsync?: (
-    uri: string,
-    options: { encoding: "base64"; position?: number; length?: number },
-  ) => Promise<string>;
-};
-
-const FileSystemCompat: FileSystemCompatShape = FileSystemModule;
 const NativePdfWebView =
   Platform.OS === "web"
     ? null
@@ -115,95 +108,9 @@ const NativePdfWebView =
 
 console.info("[pdf-viewer] module_loaded", { platform: Platform.OS });
 
-const FALLBACK_ROUTE = "/";
-const VIEWER_BG = "#111111";
-const VIEWER_HEADER_BG = "rgba(17,17,17,0.94)";
-const VIEWER_BORDER = "rgba(255,255,255,0.08)";
-const VIEWER_TEXT = "#F8FAFC";
-const VIEWER_SUBTLE = "rgba(255,255,255,0.72)";
-const VIEWER_DIM = "rgba(255,255,255,0.52)";
-const VIEWER_PLATFORM =
-  Platform.OS === "web" ? "web" : Platform.OS === "android" ? "android" : "ios";
 
-function getUriScheme(uri?: string | null) {
-  const value = String(uri || "").trim();
-  const match = value.match(/^([a-z0-9+.-]+):/i);
-  return match?.[1]?.toLowerCase() || "";
-}
 
-async function inspectLocalPdfFile(
-  uri: string,
-): Promise<ViewerFileInfo | null> {
-  if (!FileSystemCompat.getInfoAsync) return null;
-  const info = await FileSystemCompat.getInfoAsync(uri);
-  return {
-    exists: Boolean(info?.exists),
-    sizeBytes: Number.isFinite(Number(info?.size))
-      ? Number(info?.size)
-      : undefined,
-  };
-}
 
-async function validateEmbeddedPreviewResolution(
-  resolution: Extract<PdfViewerResolution, { kind: "resolved-embedded" }>,
-) {
-  if (Platform.OS === "web") return;
-
-  if (resolution.sourceKind === "local-file" || resolution.scheme === "file") {
-    await assertValidLocalPdfFile({
-      fileSystem: FileSystemCompat,
-      uri: resolution.asset.uri,
-      failureLabel: "PDF preview file",
-      mode: Platform.OS === "ios" ? "size-only" : "content-probe",
-    });
-    return;
-  }
-
-  if (resolution.sourceKind === "remote-url") {
-    await assertValidRemotePdfResponse({
-      uri: resolution.asset.uri,
-      failureLabel: "PDF preview response",
-    });
-  }
-}
-
-async function downloadPdfAsset(asset: DocumentAsset) {
-  if (Platform.OS === "web") {
-    if (typeof document === "undefined") return;
-    const link = document.createElement("a");
-    link.href = asset.uri;
-    link.download = asset.fileName || `${asset.title || "document"}.pdf`;
-    link.rel = "noopener";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    return;
-  }
-  await sharePdfDocument(asset);
-}
-
-async function printPdfAsset(asset: DocumentAsset) {
-  if (Platform.OS === "web") {
-    if (typeof document === "undefined") return;
-    const frame = document.createElement("iframe");
-    frame.style.position = "fixed";
-    frame.style.width = "0";
-    frame.style.height = "0";
-    frame.style.opacity = "0";
-    frame.style.pointerEvents = "none";
-    frame.src = asset.uri;
-    document.body.appendChild(frame);
-    frame.onload = () => {
-      frame.contentWindow?.focus();
-      frame.contentWindow?.print();
-      setTimeout(() => {
-        document.body.removeChild(frame);
-      }, 1200);
-    };
-    return;
-  }
-  await openPdfDocumentExternal(asset);
-}
 
 function PdfViewerScreen() {
   console.info("[pdf-viewer] viewer_screen_enter", { platform: Platform.OS });
@@ -1281,7 +1188,7 @@ function PdfViewerScreen() {
   const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
   const headerHeight =
     headerBarHeight + (Platform.OS === "web" ? 0 : insets.top);
-  const pageIndicatorText = state === "ready" ? "1 / 1" : "…";
+  const pageIndicatorText = state === "ready" ? "1 / 1" : "вЂ¦";
   const showPageIndicator =
     Boolean(asset) && resolvedSource.kind === "resolved-embedded";
 
@@ -1509,20 +1416,20 @@ function PdfViewerScreen() {
           return (
             <View style={styles.loadingState}>
               <ActivityIndicator size="large" color="#FFFFFF" />
-              <Text style={styles.loadingText}>Открывается...</Text>
+              <Text style={styles.loadingText}>РћС‚РєСЂС‹РІР°РµС‚СЃСЏ...</Text>
             </View>
           );
         }
         return (
           <Pressable style={styles.viewerBody} onPress={toggleChrome}>
             <CenteredPanel
-              title="Документ открыт во внешнем PDF-приложении"
-              subtitle="Вернитесь в приложение, когда закончите, или откройте документ ещё раз отсюда."
-              actionLabel="Открыть ещё раз"
+              title="Р”РѕРєСѓРјРµРЅС‚ РѕС‚РєСЂС‹С‚ РІРѕ РІРЅРµС€РЅРµРј PDF-РїСЂРёР»РѕР¶РµРЅРёРё"
+              subtitle="Р’РµСЂРЅРёС‚РµСЃСЊ РІ РїСЂРёР»РѕР¶РµРЅРёРµ, РєРѕРіРґР° Р·Р°РєРѕРЅС‡РёС‚Рµ, РёР»Рё РѕС‚РєСЂРѕР№С‚Рµ РґРѕРєСѓРјРµРЅС‚ РµС‰С‘ СЂР°Р· РѕС‚СЃСЋРґР°."
+              actionLabel="РћС‚РєСЂС‹С‚СЊ РµС‰С‘ СЂР°Р·"
               onAction={() => {
                 void handoffPdfPreview(resolvedSource.asset, "manual");
               }}
-              secondaryLabel={asset ? "Поделиться" : undefined}
+              secondaryLabel={asset ? "РџРѕРґРµР»РёС‚СЊСЃСЏ" : undefined}
               onSecondaryAction={asset ? () => void onShare() : undefined}
             />
           </Pressable>
@@ -1548,7 +1455,7 @@ function PdfViewerScreen() {
       return (
         <View style={styles.loadingState}>
           <ActivityIndicator size="large" color="#FFFFFF" />
-          <Text style={styles.loadingText}>Открывается...</Text>
+          <Text style={styles.loadingText}>РћС‚РєСЂС‹РІР°РµС‚СЃСЏ...</Text>
         </View>
       );
     }
@@ -1573,7 +1480,7 @@ function PdfViewerScreen() {
         {state === "loading" ? (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color="#FFFFFF" />
-            <Text style={styles.loadingText}>Открывается...</Text>
+            <Text style={styles.loadingText}>РћС‚РєСЂС‹РІР°РµС‚СЃСЏ...</Text>
           </View>
         ) : null}
 
@@ -1866,280 +1773,10 @@ function PdfViewerScreen() {
   );
 }
 
-function MenuAction({
-  icon,
-  label,
-  onPress,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable onPress={onPress} style={styles.menuAction}>
-      <Ionicons name={icon} size={18} color={VIEWER_TEXT} />
-      <Text style={styles.menuActionText}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {
-  return <CenteredPanel title={title} subtitle={subtitle} />;
-}
-
-function CenteredPanel({
-  title,
-  subtitle,
-  actionLabel,
-  onAction,
-  secondaryLabel,
-  onSecondaryAction,
-}: {
-  title: string;
-  subtitle: string;
-  actionLabel?: string;
-  onAction?: () => void;
-  secondaryLabel?: string;
-  onSecondaryAction?: () => void;
-}) {
-  return (
-    <ScrollView
-      contentContainerStyle={{
-        flexGrow: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: 28,
-        backgroundColor: VIEWER_BG,
-      }}
-    >
-      <Text
-        style={{
-          color: VIEWER_TEXT,
-          fontSize: 22,
-          fontWeight: "800",
-          textAlign: "center",
-        }}
-      >
-        {title}
-      </Text>
-      <Text
-        style={{
-          color: VIEWER_SUBTLE,
-          fontSize: 14,
-          textAlign: "center",
-          marginTop: 10,
-          maxWidth: 420,
-          lineHeight: 20,
-        }}
-      >
-        {subtitle}
-      </Text>
-      {actionLabel && onAction ? (
-        <Pressable
-          onPress={onAction}
-          style={{
-            marginTop: 18,
-            height: 42,
-            paddingHorizontal: 16,
-            borderRadius: 12,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "rgba(255,255,255,0.12)",
-            borderWidth: 1,
-            borderColor: VIEWER_BORDER,
-          }}
-        >
-          <Text style={{ color: VIEWER_TEXT, fontWeight: "800" }}>
-            {actionLabel}
-          </Text>
-        </Pressable>
-      ) : null}
-      {secondaryLabel && onSecondaryAction ? (
-        <Pressable
-          onPress={onSecondaryAction}
-          style={{
-            marginTop: 10,
-            height: 42,
-            paddingHorizontal: 16,
-            borderRadius: 12,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "rgba(255,255,255,0.06)",
-            borderWidth: 1,
-            borderColor: VIEWER_BORDER,
-          }}
-        >
-          <Text style={{ color: VIEWER_TEXT, fontWeight: "800" }}>
-            {secondaryLabel}
-          </Text>
-        </Pressable>
-      ) : null}
-      {Platform.OS === "web" ? (
-        <Text style={{ color: VIEWER_DIM, fontSize: 12, marginTop: 14 }}>
-          Web preview uses in-app iframe rendering.
-        </Text>
-      ) : null}
-    </ScrollView>
-  );
-}
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: VIEWER_BG,
-  },
-  screenRoot: {
-    flex: 1,
-    backgroundColor: VIEWER_BG,
-    overflow: "hidden",
-  },
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: VIEWER_BORDER,
-    backgroundColor: VIEWER_HEADER_BG,
-    zIndex: 8,
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTitleWrap: {
-    flex: 1,
-    minWidth: 0,
-    paddingHorizontal: 8,
-  },
-  headerTitle: {
-    color: VIEWER_TEXT,
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  menuAnchor: {
-    position: "relative",
-  },
-  menu: {
-    position: "absolute",
-    top: 40,
-    right: 0,
-    width: 220,
-    borderRadius: 16,
-    paddingVertical: 6,
-    backgroundColor: "rgba(22,22,22,0.98)",
-    borderWidth: 1,
-    borderColor: VIEWER_BORDER,
-    zIndex: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 12,
-  },
-  menuAction: {
-    minHeight: 42,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  menuActionText: {
-    color: VIEWER_TEXT,
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  chromeVisible: {
-    opacity: 1,
-  },
-  chromeHidden: {
-    opacity: 0,
-  },
-  documentStage: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: VIEWER_BG,
-    overflow: "hidden",
-  },
-  viewerBody: {
-    flex: 1,
-    backgroundColor: VIEWER_BG,
-    overflow: "hidden",
-  },
-  webFrameWrap: {
-    flex: 1,
-    width: "100%",
-    alignSelf: "center",
-    backgroundColor: VIEWER_BG,
-  },
-  nativeWebView: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: VIEWER_BG,
-  },
-  loadingState: {
-    flex: 1,
-    backgroundColor: VIEWER_BG,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingOverlay: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 2,
-    backgroundColor: "rgba(17,17,17,0.16)",
-  },
-  loadingText: {
-    color: VIEWER_TEXT,
-    marginTop: 12,
-    fontWeight: "700",
-  },
-  pageIndicatorWrap: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 18,
-    alignItems: "center",
-  },
-  pageIndicatorVisible: {
-    opacity: 1,
-  },
-  pageIndicatorHidden: {
-    opacity: 0.18,
-  },
-  pageIndicator: {
-    minWidth: 54,
-    height: 28,
-    paddingHorizontal: 10,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.42)",
-  },
-  pageIndicatorText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.2,
-  },
-});
 
 export default withScreenErrorBoundary(PdfViewerScreen, {
   screen: "pdf_viewer",
   route: "/pdf-viewer",
   title: "Ошибка просмотра PDF",
 });
+
