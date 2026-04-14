@@ -104,21 +104,19 @@ function handleOfficeChildBack(params: {
   nativePressArgs: unknown[];
   sourceRoute: OfficeChildBackSourceRoute;
 }) {
-  let method =
-    typeof params.nativeOnPress === "function"
-      ? "native_header_back"
-      : "router_back_fallback";
+  let method = "explicit_navigate";
 
   try {
-    if (typeof params.nativeOnPress === "function") {
-      params.nativeOnPress(...params.nativePressArgs);
-    } else {
-      router.back();
-    }
+    // NAV-P0: Use explicit navigation to /office instead of router.back()
+    // or nativeOnPress. The previous approach (router.back / nativeOnPress)
+    // could propagate the back action beyond the office stack to the tabs
+    // navigator, causing the entire office tab (and its children) to unmount.
+    // With explicit navigation, we always land on /office.
+    router.navigate("/office");
   } catch (error) {
     recordOfficeBackPathFailure({
       error,
-      errorStage: "safe_back_header_press",
+      errorStage: "safe_back_navigate",
       extra: {
         owner: "office_stack_layout",
         route: params.sourceRoute,
@@ -128,8 +126,12 @@ function handleOfficeChildBack(params: {
         handler: "safe_back_header",
       },
     });
-    router.back();
-    method = "router_back_fallback";
+    try {
+      router.replace("/office");
+      method = "router_replace_fallback";
+    } catch {
+      // Navigation is in a critically bad state — no more we can do.
+    }
   }
 
   markPendingOfficeRouteReturnReceipt({

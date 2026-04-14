@@ -459,7 +459,13 @@ export default function RootLayout() {
     recordAuthRedirectBlocked,
     recordAuthRedirectTriggered,
     resetPendingAuthExitSessionProbe,
-    segments,
+    // NAV-P0: segments was here but MUST NOT be a dependency.
+    // The initStartedRef guard prevents re-initialization, but with segments
+    // as a dep, every navigation change triggers cleanup (unsubscribes auth
+    // listener) then re-runs the effect (which returns early due to guard,
+    // leaving auth listener permanently dead). This caused stale hasSession
+    // state that could trigger auth redirect on back navigation, unmounting
+    // the entire tabs tree → SIGABRT.
   ]);
 
   useEffect(() => {

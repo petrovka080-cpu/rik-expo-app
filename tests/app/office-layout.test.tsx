@@ -13,6 +13,7 @@ import {
 
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
+const mockNavigate = jest.fn();
 const mockReset = jest.fn();
 const mockBack = jest.fn();
 const mockNativeBack = jest.fn();
@@ -31,6 +32,7 @@ jest.mock("expo-router", () => {
       canGoBack: () => mockCanGoBack(),
       push: (...args: unknown[]) => mockPush(...args),
       replace: (...args: unknown[]) => mockReplace(...args),
+      navigate: (...args: unknown[]) => mockNavigate(...args),
       reset: (...args: unknown[]) => mockReset(...args),
     },
   };
@@ -55,6 +57,7 @@ describe("OfficeStackLayout", () => {
   beforeEach(() => {
     mockReplace.mockReset();
     mockPush.mockReset();
+    mockNavigate.mockReset();
     mockReset.mockReset();
     mockBack.mockReset();
     mockNativeBack.mockReset();
@@ -64,7 +67,7 @@ describe("OfficeStackLayout", () => {
     mockRecordOfficeBackPathFailure.mockReset();
   });
 
-  it("uses the native stack header back action without replace fallback", () => {
+  it("uses explicit navigation to /office (NAV-P0)", () => {
     const header = renderSafeOfficeBackButton({
       canGoBack: true,
       tintColor: "#000000",
@@ -76,12 +79,14 @@ describe("OfficeStackLayout", () => {
     expect(header.props.label).toBe(OFFICE_BACK_LABEL);
     header.props.onPress();
 
-    expect(mockNativeBack).toHaveBeenCalledTimes(1);
+    // NAV-P0: nativeOnPress is no longer called — we use router.navigate
+    expect(mockNavigate).toHaveBeenCalledWith("/office");
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+    expect(mockNativeBack).not.toHaveBeenCalled();
     expect(mockBack).not.toHaveBeenCalled();
     expect(mockReplace).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockReset).not.toHaveBeenCalled();
-    expect(mockCanGoBack).not.toHaveBeenCalled();
   });
 
   it("anchors office child routes on the warm office index screen", () => {
@@ -90,30 +95,7 @@ describe("OfficeStackLayout", () => {
     });
   });
 
-  it("does not inspect history before using native header back", () => {
-    mockCanGoBack.mockReturnValue(true);
-
-    const header = renderSafeOfficeBackButton({
-      canGoBack: true,
-      tintColor: "#000000",
-      label: OFFICE_BACK_LABEL,
-      href: undefined,
-      onPress: mockNativeBack,
-    }) as React.ReactElement<{ onPress: () => void }>;
-
-    header.props.onPress();
-
-    expect(mockNativeBack).toHaveBeenCalledTimes(1);
-    expect(mockBack).not.toHaveBeenCalled();
-    expect(mockReplace).not.toHaveBeenCalled();
-    expect(mockPush).not.toHaveBeenCalled();
-    expect(mockReset).not.toHaveBeenCalled();
-    expect(mockCanGoBack).not.toHaveBeenCalled();
-  });
-
-  it("marks a pending office return receipt when foreman uses native header back", () => {
-    mockCanGoBack.mockReturnValue(true);
-
+  it("marks a pending office return receipt for foreman", () => {
     const header = renderSafeOfficeForemanBackButton({
       canGoBack: true,
       tintColor: "#000000",
@@ -127,19 +109,15 @@ describe("OfficeStackLayout", () => {
     expect(mockMarkPendingOfficeRouteReturnReceipt).toHaveBeenCalledWith({
       sourceRoute: "/office/foreman",
       target: OFFICE_SAFE_BACK_ROUTE,
-      method: "native_header_back",
+      method: "explicit_navigate",
     });
-    expect(mockNativeBack).toHaveBeenCalledTimes(1);
-    expect(mockBack).not.toHaveBeenCalled();
-    expect(mockNativeBack.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+    expect(mockNavigate.mock.invocationCallOrder[0]).toBeLessThan(
       mockMarkPendingOfficeRouteReturnReceipt.mock.invocationCallOrder[0],
     );
-    expect(mockReplace).not.toHaveBeenCalled();
-    expect(mockPush).not.toHaveBeenCalled();
-    expect(mockReset).not.toHaveBeenCalled();
   });
 
-  it("keeps the shared office child back handler synchronous with a safe fallback", () => {
+  it("keeps the shared office child back handler synchronous with explicit navigation", () => {
     const source = fs.readFileSync(
       path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
       "utf8",
@@ -157,23 +135,16 @@ describe("OfficeStackLayout", () => {
     expect(handlerSource).not.toContain("safeBack(");
     expect(handlerSource).not.toContain("canGoBack");
     expect(handlerSource).not.toMatch(/selected\s*Method/);
-    expect(handlerSource).not.toContain("router.replace");
+    // NAV-P0: router.navigate("/office") is the primary navigation method
+    expect(handlerSource).toContain('router.navigate("/office")');
+    // router.replace is the crash-safe fallback only
+    expect(handlerSource).toContain('router.replace("/office")');
     expect(handlerSource).not.toContain("router.push");
     expect(handlerSource).not.toMatch(/\.reset\(/);
-    expect(handlerSource).toContain(
-      "params.nativeOnPress(...params.nativePressArgs);",
-    );
-    expect(handlerSource).toContain("router.back();");
-    expect(handlerSource.indexOf("params.nativeOnPress(")).toBeLessThan(
-      handlerSource.indexOf("markPendingOfficeRouteReturnReceipt({"),
-    );
-    expect(handlerSource.indexOf("router.back();")).toBeLessThan(
-      handlerSource.indexOf("markPendingOfficeRouteReturnReceipt({"),
-    );
   });
 
   it.each(officeChildBackRoutes)(
-    "%s uses the shared native header office child contract",
+    "%s uses the shared explicit navigate office child contract",
     (sourceRoute) => {
       const header = renderSafeOfficeChildBackButton(sourceRoute, {
         canGoBack: false,
@@ -185,78 +156,28 @@ describe("OfficeStackLayout", () => {
 
       header.props.onPress();
 
-      expect(mockNativeBack).toHaveBeenCalledTimes(1);
+      // NAV-P0: always uses explicit navigate, never nativeOnPress
+      expect(mockNavigate).toHaveBeenCalledWith("/office");
+      expect(mockNativeBack).not.toHaveBeenCalled();
       expect(mockBack).not.toHaveBeenCalled();
       expect(mockReplace).not.toHaveBeenCalled();
       expect(mockPush).not.toHaveBeenCalled();
       expect(mockReset).not.toHaveBeenCalled();
-      expect(mockCanGoBack).not.toHaveBeenCalled();
       expect(mockMarkPendingOfficeRouteReturnReceipt).toHaveBeenCalledWith({
         sourceRoute,
         target: OFFICE_SAFE_BACK_ROUTE,
-        method: "native_header_back",
+        method: "explicit_navigate",
       });
-      expect(mockNativeBack.mock.invocationCallOrder[0]).toBeLessThan(
+      expect(mockNavigate.mock.invocationCallOrder[0]).toBeLessThan(
         mockMarkPendingOfficeRouteReturnReceipt.mock.invocationCallOrder[0],
       );
     },
   );
 
-  it("warehouse prefers native header back when it is available", () => {
-    const header = renderSafeOfficeChildBackButton("/office/warehouse", {
-      canGoBack: false,
-      tintColor: "#000000",
-      label: OFFICE_BACK_LABEL,
-      href: undefined,
-      onPress: mockNativeBack,
-    }) as React.ReactElement<{ onPress: () => void }>;
-
-    header.props.onPress();
-
-    expect(mockReplace).not.toHaveBeenCalled();
-    expect(mockPush).not.toHaveBeenCalled();
-    expect(mockNativeBack).toHaveBeenCalledTimes(1);
-    expect(mockBack).not.toHaveBeenCalled();
-    expect(mockCanGoBack).not.toHaveBeenCalled();
-    expect(mockMarkPendingOfficeRouteReturnReceipt).toHaveBeenCalledWith({
-      sourceRoute: "/office/warehouse",
-      target: OFFICE_SAFE_BACK_ROUTE,
-      method: "native_header_back",
-    });
-    expect(mockNativeBack.mock.invocationCallOrder[0]).toBeLessThan(
-      mockMarkPendingOfficeRouteReturnReceipt.mock.invocationCallOrder[0],
-    );
-  });
-
-  it("falls back to router.back when the native header action is missing", () => {
-    const header = renderSafeOfficeChildBackButton("/office/warehouse", {
-      canGoBack: false,
-      tintColor: "#000000",
-      label: OFFICE_BACK_LABEL,
-      href: undefined,
-    }) as React.ReactElement<{ onPress: () => void }>;
-
-    header.props.onPress();
-
-    expect(mockBack).toHaveBeenCalledTimes(1);
-    expect(mockReplace).not.toHaveBeenCalled();
-    expect(mockPush).not.toHaveBeenCalled();
-    expect(mockReset).not.toHaveBeenCalled();
-    expect(mockRecordOfficeBackPathFailure).not.toHaveBeenCalled();
-    expect(mockMarkPendingOfficeRouteReturnReceipt).toHaveBeenCalledWith({
-      sourceRoute: "/office/warehouse",
-      target: OFFICE_SAFE_BACK_ROUTE,
-      method: "router_back_fallback",
-    });
-    expect(mockBack.mock.invocationCallOrder[0]).toBeLessThan(
-      mockMarkPendingOfficeRouteReturnReceipt.mock.invocationCallOrder[0],
-    );
-  });
-
-  it("falls back to router.back when the native header action throws", () => {
-    const nativeError = new Error("native back unavailable");
-    mockNativeBack.mockImplementationOnce(() => {
-      throw nativeError;
+  it("falls back to router.replace when router.navigate throws", () => {
+    const navigateError = new Error("navigate unavailable");
+    mockNavigate.mockImplementationOnce(() => {
+      throw navigateError;
     });
 
     const header = renderSafeOfficeChildBackButton("/office/warehouse", {
@@ -269,19 +190,19 @@ describe("OfficeStackLayout", () => {
 
     expect(() => header.props.onPress()).not.toThrow();
 
-    expect(mockNativeBack).toHaveBeenCalledTimes(1);
-    expect(mockBack).toHaveBeenCalledTimes(1);
-    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith("/office");
+    expect(mockBack).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockReset).not.toHaveBeenCalled();
     expect(mockRecordOfficeBackPathFailure).toHaveBeenCalledWith(
       expect.objectContaining({
-        error: nativeError,
-        errorStage: "safe_back_header_press",
+        error: navigateError,
+        errorStage: "safe_back_navigate",
         extra: expect.objectContaining({
           sourceRoute: "/office/warehouse",
           target: OFFICE_SAFE_BACK_ROUTE,
-          method: "native_header_back",
+          method: "explicit_navigate",
           handler: "safe_back_header",
         }),
       }),
@@ -289,13 +210,11 @@ describe("OfficeStackLayout", () => {
     expect(mockMarkPendingOfficeRouteReturnReceipt).toHaveBeenCalledWith({
       sourceRoute: "/office/warehouse",
       target: OFFICE_SAFE_BACK_ROUTE,
-      method: "router_back_fallback",
+      method: "router_replace_fallback",
     });
   });
 
   it("does not emit warehouse-specific back markers", () => {
-    mockCanGoBack.mockReturnValue(true);
-
     const header = renderSafeOfficeForemanBackButton({
       canGoBack: true,
       tintColor: "#000000",
@@ -336,12 +255,7 @@ describe("OfficeStackLayout", () => {
     expect(source).not.toContain('sourceRoute !== "/office/warehouse"');
     expect(source).not.toMatch(/if\s*\([^)]*warehouse/i);
     expect(source).not.toMatch(/switch\s*\([^)]*warehouse/i);
-    expect(source).not.toContain(["replace", "safety", "override"].join("_"));
-    expect(source).not.toContain(
-      `router.replace(${["OFFICE", "SAFE", "BACK", "ROUTE"].join("_")})`,
-    );
     expect(source).not.toContain("router.push");
-    expect(source).toContain("router.back();");
     expect(source).not.toMatch(/\.reset\(/);
     expect(source).not.toContain("recordOfficeWarehouseBackHandlerStepAsync");
     expect(source).not.toContain("recordOfficeWarehouseBackPressStartAsync");
@@ -368,36 +282,21 @@ describe("OfficeStackLayout", () => {
     expect(accountantSource).not.toContain("router.replace");
   });
 
-  it("keeps warehouse back logs free of replace navigation markers", () => {
-    const layoutSource = fs.readFileSync(
+  it("warehouse is navigated back with the same explicit method as foreman (NAV-P0)", () => {
+    const source = fs.readFileSync(
       path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
       "utf8",
     );
-    const breadcrumbsSource = fs.readFileSync(
-      path.join(
-        __dirname,
-        "../../src/lib/navigation/officeReentryBreadcrumbs.ts",
-      ),
-      "utf8",
-    );
-    const warehouseBackMarkerStart = breadcrumbsSource.indexOf(
-      "office_warehouse_back_press_start",
-    );
-    const warehouseBackMarkerEnd = breadcrumbsSource.indexOf(
-      "office_warehouse_cleanup_start",
-    );
-    const logs = [
-      layoutSource,
-      breadcrumbsSource.slice(warehouseBackMarkerStart, warehouseBackMarkerEnd),
-    ].join("\n");
 
-    expect(logs).not.toContain("replace");
-    expect(logs).not.toContain("router_replace");
-    expect(logs).not.toContain(
-      "office_warehouse_back_router_replace_call_start",
+    // NAV-P0: The handler uses router.navigate as primary, router.replace as fallback
+    const handlerStart = source.indexOf("function handleOfficeChildBack");
+    const handlerEnd = source.indexOf(
+      "export function renderSafeOfficeChildBackButton",
     );
-    expect(logs).not.toContain(
-      "office_warehouse_back_router_replace_call_done",
-    );
+    const handlerSource = source.slice(handlerStart, handlerEnd);
+
+    expect(handlerSource).toContain('router.navigate("/office")');
+    // No warehouse-specific branching
+    expect(handlerSource).not.toContain("warehouse");
   });
 });
