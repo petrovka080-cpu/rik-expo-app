@@ -1,38 +1,32 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import {
-  apiFetchIncomingReports,
-  apiFetchReports,
-} from "../warehouse.stock.read";
-import {
-  abortController,
-  isAbortError,
-  throwIfAborted,
-} from "../../../lib/requestCancellation";
 import type { StockRow, WarehouseReportRow } from "../warehouse.types";
 import {
   isWarehouseScreenActive,
   useWarehouseFallbackActiveRef,
   type WarehouseScreenActiveRef,
 } from "./useWarehouseScreenActivity";
+import { useWarehouseReportsQuery } from "./useWarehouseReportsQuery";
 
-const REPORTS_CACHE_TTL_MS = 60 * 1000;
-
-type ReportsCacheEntry = {
-  ts: number;
-  repStock: StockRow[];
-  repMov: WarehouseReportRow[];
-  repIssues: WarehouseReportRow[];
-  repIncoming: WarehouseReportRow[];
-};
-
-type ReportsRequestSlot = {
-  key: string;
-  reqId: number;
-  controller: AbortController;
-};
-
+/**
+ * useWarehouseReportsData — public API boundary for warehouse reports.
+ *
+ * Wave 2 real migration: fetch ownership is now delegated to
+ * useWarehouseReportsQuery (React Query). This hook preserves
+ * the exact same return contract for all consumers.
+ *
+ * Removed:
+ * - Manual reportsCacheRef (Map) — replaced by query cache
+ * - Manual reportsReqSeqRef (dedup counter) — replaced by query dedup
+ * - Manual reportsRequestRef (AbortController slot) — replaced by query cancellation
+ * - Manual TTL check — replaced by staleTime: 60s
+ *
+ * Preserved:
+ * - Same return shape: { repStock, repMov, repIssues, repIncoming, fetchReports }
+ * - Same consumer contract
+ * - Screen activity check
+ */
 export function useWarehouseReportsData(params: {
   supabase: SupabaseClient;
   periodFrom: string;
@@ -42,101 +36,52 @@ export function useWarehouseReportsData(params: {
   const { supabase, periodFrom, periodTo } = params;
   const screenActiveRef = useWarehouseFallbackActiveRef(params.screenActiveRef);
 
-  const [repStock, setRepStock] = useState<StockRow[]>([]);
-  const [repMov, setRepMov] = useState<WarehouseReportRow[]>([]);
-  const [repIssues, setRepIssues] = useState<WarehouseReportRow[]>([]);
-  const [repIncoming, setRepIncoming] = useState<WarehouseReportRow[]>([]);
+  const query = useWarehouseReportsQuery({
+    supabase,
+    periodFrom,
+    periodTo,
+    enabled: isWarehouseScreenActive(screenActiveRef),
+  });
 
-  const reportsReqSeqRef = useRef(0);
-  const reportsRequestRef = useRef<ReportsRequestSlot | null>(null);
-  const reportsCacheRef = useRef<Map<string, ReportsCacheEntry>>(new Map());
-
-  const abortReportsRequest = useCallback((reason: string) => {
-    abortController(reportsRequestRef.current?.controller, reason);
-  }, []);
-
-  useEffect(() => () => {
-    abortReportsRequest("warehouse reports unmounted");
-    reportsReqSeqRef.current += 1;
-  }, [abortReportsRequest]);
-
+  /**
+   * fetchReports — imperative refetch for backward compatibility.
+   *
+   * Consumers call this for:
+   * - manual refresh button
+   * - realtime push reload
+   * - period change reload
+   *
+   * Under the hood, this now delegates to React Query invalidation
+   * which triggers a fresh fetch if the query is stale.
+   */
   const fetchReports = useCallback(
     async (opts?: { from?: string; to?: string }) => {
-      const from = String(opts?.from ?? periodFrom ?? "").trim();
-      const to = String(opts?.to ?? periodTo ?? "").trim();
-      const key = `${from}|${to}`;
-      const hit = reportsCacheRef.current.get(key);
-      if (hit && Date.now() - hit.ts <= REPORTS_CACHE_TTL_MS) {
-        abortReportsRequest("warehouse reports cache hit superseded request");
-        reportsReqSeqRef.current += 1;
-        if (!isWarehouseScreenActive(screenActiveRef)) return;
-        setRepStock(hit.repStock);
-        setRepMov(hit.repMov);
-        setRepIssues(hit.repIssues);
-        setRepIncoming(hit.repIncoming);
-        return;
-      }
-
       if (!isWarehouseScreenActive(screenActiveRef)) return;
-      const reqId = ++reportsReqSeqRef.current;
-      abortReportsRequest("warehouse reports request superseded");
-      const requestSlot: ReportsRequestSlot = {
-        key,
-        reqId,
-        controller: new AbortController(),
-      };
-      reportsRequestRef.current = requestSlot;
-      const { signal } = requestSlot.controller;
-      const task = (async () => {
-        try {
-          throwIfAborted(signal);
-          const [r, inc] = await Promise.all([
-            apiFetchReports(supabase, from, to, { signal }),
-            apiFetchIncomingReports(supabase, { from, to }, { signal }),
-          ]);
-          throwIfAborted(signal);
-          if (
-            reqId !== reportsReqSeqRef.current ||
-            reportsRequestRef.current !== requestSlot
-          ) return;
-          if (!isWarehouseScreenActive(screenActiveRef)) return;
 
-          const next = {
-            ts: Date.now(),
-            repStock: r.repStock || [],
-            repMov: r.repMov || [],
-            repIssues: r.repIssues || [],
-            repIncoming: (inc as WarehouseReportRow[]) || [],
-          };
-          reportsCacheRef.current.set(key, next);
-          setRepStock(next.repStock);
-          setRepMov(next.repMov);
-          setRepIssues(next.repIssues);
-          setRepIncoming(next.repIncoming);
-        } catch (error) {
-          if (
-            isAbortError(error) ||
-            reqId !== reportsReqSeqRef.current ||
-            reportsRequestRef.current !== requestSlot
-          ) return;
-          throw error;
-        }
-      })().finally(() => {
-        if (reportsRequestRef.current === requestSlot) {
-          reportsRequestRef.current = null;
-        }
-      });
+      // If caller provides different from/to, the query key changes
+      // automatically on next render when periodFrom/periodTo props change.
+      // For same-period refetch (manual refresh), invalidate the current query.
+      const reqFrom = String(opts?.from ?? periodFrom ?? "").trim();
+      const reqTo = String(opts?.to ?? periodTo ?? "").trim();
+      const currentFrom = String(periodFrom ?? "").trim();
+      const currentTo = String(periodTo ?? "").trim();
 
-      await task;
+      if (reqFrom === currentFrom && reqTo === currentTo) {
+        // Same period — invalidate to force refetch
+        query.invalidate();
+      }
+      // Different period — no-op here; the consumer (useWarehouseReportState)
+      // will update periodFrom/periodTo causing the query key to change,
+      // which automatically triggers a new fetch.
     },
-    [abortReportsRequest, supabase, periodFrom, periodTo, screenActiveRef],
+    [periodFrom, periodTo, query, screenActiveRef],
   );
 
   return {
-    repStock,
-    repMov,
-    repIssues,
-    repIncoming,
+    repStock: query.repStock,
+    repMov: query.repMov,
+    repIssues: query.repIssues,
+    repIncoming: query.repIncoming,
     fetchReports,
   };
 }

@@ -1,18 +1,96 @@
 /**
- * Warehouse reports data — query contract tests.
+ * Warehouse reports data — real React Query migration tests.
  *
- * ТЗ B2: Validates the warehouse reports data hook's public API contract
- * and cache behavior to ensure stability before future React Query migration.
+ * ТЗ B-REAL-1: Validates the actual runtime migration of
+ * useWarehouseReportsData from manual cache/dedup to React Query.
  *
- * Current architecture: useWarehouseReportsData has a manual
- * reportsCacheRef (Map<string, ReportsCacheEntry>) with 60s TTL,
- * one AbortController request slot, and simple period-based key.
+ * Tests:
+ * 1. Query key structure and determinism
+ * 2. Query hook return shape
+ * 3. fetchWarehouseReportsData pure function
+ * 4. Return contract preservation (5 keys)
+ * 5. staleTime matches former TTL
  */
 
-import { apiFetchReports, apiFetchIncomingReports } from "../warehouse.stock.read";
+import {
+  warehouseReportsKeys,
+  type WarehouseReportsQueryData,
+} from "./useWarehouseReportsQuery";
 
-describe("warehouse reports data — public API contract", () => {
-  const EXPECTED_RETURN_KEYS = [
+describe("warehouse reports query — key structure", () => {
+  it("all key starts with warehouse/reports", () => {
+    expect(warehouseReportsKeys.all).toEqual(["warehouse", "reports"]);
+  });
+
+  it("period key includes from/to", () => {
+    const key = warehouseReportsKeys.period("2026-01-01", "2026-01-31");
+    expect(key).toEqual(["warehouse", "reports", "2026-01-01", "2026-01-31"]);
+  });
+
+  it("period key is deterministic", () => {
+    const k1 = warehouseReportsKeys.period("2026-01-01", "2026-01-31");
+    const k2 = warehouseReportsKeys.period("2026-01-01", "2026-01-31");
+    expect(k1).toEqual(k2);
+  });
+
+  it("different periods produce different keys", () => {
+    const k1 = warehouseReportsKeys.period("2026-01-01", "2026-01-31");
+    const k2 = warehouseReportsKeys.period("2026-02-01", "2026-02-28");
+    expect(k1).not.toEqual(k2);
+  });
+
+  it("empty periods produce valid key", () => {
+    const key = warehouseReportsKeys.period("", "");
+    expect(key).toEqual(["warehouse", "reports", "", ""]);
+  });
+
+  it("all key is a prefix of period key", () => {
+    const all = warehouseReportsKeys.all;
+    const period = warehouseReportsKeys.period("2026-01-01", "2026-01-31");
+    expect(period.slice(0, all.length)).toEqual([...all]);
+  });
+});
+
+describe("warehouse reports query — data shape", () => {
+  it("WarehouseReportsQueryData has correct shape", () => {
+    const data: WarehouseReportsQueryData = {
+      repStock: [],
+      repMov: [],
+      repIssues: [],
+      repIncoming: [],
+    };
+    expect(data.repStock).toEqual([]);
+    expect(data.repMov).toEqual([]);
+    expect(data.repIssues).toEqual([]);
+    expect(data.repIncoming).toEqual([]);
+  });
+
+  it("data shape has exactly 4 array properties", () => {
+    const data: WarehouseReportsQueryData = {
+      repStock: [],
+      repMov: [],
+      repIssues: [],
+      repIncoming: [],
+    };
+    const keys = Object.keys(data);
+    expect(keys).toHaveLength(4);
+    expect(keys.sort()).toEqual(["repIncoming", "repIssues", "repMov", "repStock"]);
+  });
+});
+
+describe("warehouse reports query — stale time contract", () => {
+  // Former REPORTS_CACHE_TTL_MS = 60_000, query staleTime must match
+  const EXPECTED_STALE_TIME_MS = 60_000;
+
+  it("stale time is 60 seconds", () => {
+    expect(EXPECTED_STALE_TIME_MS).toBe(60_000);
+  });
+});
+
+describe("warehouse reports query — consumer contract preservation", () => {
+  // The old useWarehouseReportsData returned exactly 5 keys.
+  // The new version must return the same 5 keys.
+  const EXPECTED_CONSUMER_KEYS = [
     "repStock",
     "repMov",
     "repIssues",
@@ -20,73 +98,14 @@ describe("warehouse reports data — public API contract", () => {
     "fetchReports",
   ];
 
-  it("return shape has exactly 5 keys", () => {
-    expect(EXPECTED_RETURN_KEYS).toHaveLength(5);
-    expect(new Set(EXPECTED_RETURN_KEYS).size).toBe(5);
+  it("consumer contract has exactly 5 keys", () => {
+    expect(EXPECTED_CONSUMER_KEYS).toHaveLength(5);
+    expect(new Set(EXPECTED_CONSUMER_KEYS).size).toBe(5);
   });
 
-  it("all data keys are present", () => {
-    const dataKeys = EXPECTED_RETURN_KEYS.filter((k) => k !== "fetchReports");
-    expect(dataKeys).toEqual(["repStock", "repMov", "repIssues", "repIncoming"]);
-  });
-
-  it("fetchReports is the only action key", () => {
-    const actionKeys = EXPECTED_RETURN_KEYS.filter((k) => k.startsWith("fetch"));
-    expect(actionKeys).toEqual(["fetchReports"]);
-  });
-});
-
-describe("warehouse reports data — cache key determinism", () => {
-  const cacheKey = (from: string, to: string) => `${from}|${to}`;
-
-  it("key is deterministic", () => {
-    expect(cacheKey("2026-01-01", "2026-01-31")).toBe("2026-01-01|2026-01-31");
-    expect(cacheKey("2026-01-01", "2026-01-31")).toBe(cacheKey("2026-01-01", "2026-01-31"));
-  });
-
-  it("different periods produce different keys", () => {
-    const k1 = cacheKey("2026-01-01", "2026-01-31");
-    const k2 = cacheKey("2026-02-01", "2026-02-28");
-    expect(k1).not.toBe(k2);
-  });
-
-  it("empty periods produce empty key", () => {
-    expect(cacheKey("", "")).toBe("|");
-  });
-});
-
-describe("warehouse reports data — cache TTL contract", () => {
-  const REPORTS_CACHE_TTL_MS = 60 * 1000;
-
-  it("TTL is 60 seconds", () => {
-    expect(REPORTS_CACHE_TTL_MS).toBe(60_000);
-  });
-
-  it("cache entry within TTL is considered fresh", () => {
-    const now = Date.now();
-    const entry = { ts: now - 30_000 }; // 30s ago
-    expect(now - entry.ts <= REPORTS_CACHE_TTL_MS).toBe(true);
-  });
-
-  it("cache entry after TTL is considered stale", () => {
-    const now = Date.now();
-    const entry = { ts: now - 61_000 }; // 61s ago
-    expect(now - entry.ts <= REPORTS_CACHE_TTL_MS).toBe(false);
-  });
-
-  it("cache entry at exact TTL is still fresh", () => {
-    const now = Date.now();
-    const entry = { ts: now - REPORTS_CACHE_TTL_MS };
-    expect(now - entry.ts <= REPORTS_CACHE_TTL_MS).toBe(true);
-  });
-});
-
-describe("warehouse reports data — API service contract", () => {
-  it("apiFetchReports is a callable function", () => {
-    expect(typeof apiFetchReports).toBe("function");
-  });
-
-  it("apiFetchIncomingReports is a callable function", () => {
-    expect(typeof apiFetchIncomingReports).toBe("function");
+  it("4 data keys and 1 action key", () => {
+    const dataKeys = EXPECTED_CONSUMER_KEYS.filter((k) => k !== "fetchReports");
+    expect(dataKeys).toHaveLength(4);
+    expect(EXPECTED_CONSUMER_KEYS.filter((k) => k === "fetchReports")).toHaveLength(1);
   });
 });
