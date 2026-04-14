@@ -716,7 +716,7 @@ export default function RootLayout() {
     <AppQueryProvider>
       <SafeAreaProvider>
         <Host>
-          <GlobalBusyProvider theme={UI}>
+          <GlobalBusyProvider theme={UI} suppressOverlay={isPdfViewerRoute}>
             <SafeAreaView
               style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
               edges={Platform.OS === "web" ? [] : ["top"]}

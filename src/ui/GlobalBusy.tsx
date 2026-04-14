@@ -46,9 +46,11 @@ const BusyContext = createContext<BusyCtx | null>(null);
 export function GlobalBusyProvider({
   children,
   theme,
+  suppressOverlay = false,
 }: {
   children: React.ReactNode;
   theme: { text: string; cardBg?: string; border?: string };
+  suppressOverlay?: boolean;
 }) {
   const ownerRef = useRef<ReturnType<typeof createGlobalBusyOwner> | null>(null);
   let owner = ownerRef.current;
@@ -113,7 +115,7 @@ export function GlobalBusyProvider({
   return (
     <BusyContext.Provider value={value}>
       {children}
-      {!!snapshot.uiKey && (
+      {!!snapshot.uiKey && !suppressOverlay && (
         <Portal>
           <View style={[styles.full, { zIndex: 99999, elevation: 99999 }]} pointerEvents="auto">
             <Pressable style={StyleSheet.absoluteFillObject} onPress={() => {}} />
