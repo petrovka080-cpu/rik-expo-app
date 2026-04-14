@@ -110,17 +110,16 @@ async function pushViewerRouteSafely(
   // React Native <Modal> renders at the native window level (UIWindow on iOS),
   // which physically sits above the entire navigation Stack. If a Modal is
   // still visible when router.push fires, the PDF viewer screen will appear
-  // underneath the Modal. Calling onBeforeNavigate here gives callers the
-  // chance to set their modal-visible state to false so the native dismiss
-  // animation can begin before the push.
+  // underneath the Modal. Calling onBeforeNavigate here sets the modal-visible
+  // state to false, which triggers the native dismiss animation. The subsequent
+  // InteractionManager.runAfterInteractions call then waits for that animation
+  // (an Animated interaction) to fully settle before executing the push.
   if (typeof onBeforeNavigate === "function") {
     try {
       await Promise.resolve(onBeforeNavigate());
     } catch (error) {
       if (__DEV__) console.warn("[pdf-document-actions] onBeforeNavigate error (non-fatal)", error);
     }
-    // Allow one frame for the native modal dismiss animation to start.
-    await new Promise<void>((r) => setTimeout(r, Platform.OS === "ios" ? 350 : 100));
   }
 
   await new Promise<void>((resolve, reject) => {
@@ -165,12 +164,13 @@ async function pushViewerRouteSafely(
       }
     };
 
-    // On iOS, InteractionManager.runAfterInteractions ensures the push
-    // happens after all in-flight UI transitions (screen animations,
-    // modal presentations) have settled. Without this, the pushed
-    // PDF viewer can end up rendered behind the current screen.
-    // On Android/web, a single setTimeout(0) tick is sufficient.
-    if (Platform.OS === "ios" && typeof InteractionManager?.runAfterInteractions === "function") {
+    // InteractionManager.runAfterInteractions waits for ALL in-flight UI
+    // transitions — screen animations, Modal dismiss animations, and any
+    // other Animated interactions — to fully settle before executing the
+    // navigation push. This is used on ALL platforms (not just iOS) to
+    // guarantee the Modal is fully dismissed before the PDF viewer route
+    // is pushed, without any hardcoded timing delays.
+    if (typeof InteractionManager?.runAfterInteractions === "function") {
       InteractionManager.runAfterInteractions(runPush);
     } else {
       setTimeout(runPush, 0);

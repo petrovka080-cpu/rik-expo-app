@@ -191,8 +191,32 @@ function mapSupplierSummaryItem(
   // (b) raw list_accountant_inbox_fact rows with .invoice_amount / .total_paid.
   // Accept both shapes to prevent zero-value reporting when the backend Edge Function
   // passes raw RPC output directly without client-side normalization.
-  const amount = nnum(row.amount ?? row.invoice_amount ?? row.invoiceAmount);
-  const paid = nnum(row.paidAmount ?? row.total_paid ?? row.totalPaid ?? row.paid_amount);
+  const amountDirect = row.amount;
+  const paidDirect = row.paidAmount;
+  const amount = nnum(amountDirect ?? row.invoice_amount ?? row.invoiceAmount);
+  const paid = nnum(paidDirect ?? row.total_paid ?? row.totalPaid ?? row.paid_amount);
+
+  // Warn when fallback field names are used — indicates the caller is passing
+  // raw RPC rows instead of normalized FinanceRow objects. This helps track
+  // data contract mismatches without silently masking them.
+  if (amountDirect == null && amount !== 0) {
+    if (typeof console?.warn === "function") {
+      console.warn("[pdf-finance-mapping-fallback] amount resolved via fallback field", {
+        proposalId: proposalIdOf(row),
+        resolvedAmount: amount,
+        fieldUsed: row.invoice_amount != null ? "invoice_amount" : "invoiceAmount",
+      });
+    }
+  }
+  if (paidDirect == null && paid !== 0) {
+    if (typeof console?.warn === "function") {
+      console.warn("[pdf-finance-mapping-fallback] paid resolved via fallback field", {
+        proposalId: proposalIdOf(row),
+        resolvedPaid: paid,
+        fieldUsed: row.total_paid != null ? "total_paid" : row.totalPaid != null ? "totalPaid" : "paid_amount",
+      });
+    }
+  }
   const rest = Math.max(amount - paid, 0);
   const status =
     amount <= 0 ? "прочее" : paid <= 0 ? "не оплачено" : rest <= 0 ? "оплачено" : "частично";
