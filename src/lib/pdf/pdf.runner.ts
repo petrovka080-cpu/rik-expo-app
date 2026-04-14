@@ -188,6 +188,8 @@ export async function prepareGeneratedPdf(
 
 export async function prepareAndPreviewGeneratedPdf(args: PrepareGeneratedPdfArgs & {
   router?: PdfViewerRouterLike;
+  /** Called before router.push — use to dismiss native Modals that sit above the navigation Stack. */
+  onBeforeNavigate?: (() => void | Promise<void>) | null;
 }): Promise<DocumentDescriptor> {
   return await prepareAndPreviewPdfDocument({
     busy: args.busy,
@@ -196,6 +198,7 @@ export async function prepareAndPreviewGeneratedPdf(args: PrepareGeneratedPdfArg
     label: args.label,
     descriptor: args.descriptor,
     router: args.router,
+    onBeforeNavigate: args.onBeforeNavigate,
   });
 }
 

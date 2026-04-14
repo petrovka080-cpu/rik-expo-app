@@ -91,7 +91,11 @@ function createViewerHref(sessionId: unknown, openToken: unknown) {
   };
 }
 
-async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
+async function pushViewerRouteSafely(
+  router: PdfViewerRouterLike,
+  href: Href,
+  onBeforeNavigate?: (() => void | Promise<void>) | null,
+) {
   if (__DEV__) console.info("[pdf-document-actions] viewer_patch_v3_navigation_call", {
     href: String(href),
     platform: Platform.OS,
@@ -101,6 +105,23 @@ async function pushViewerRouteSafely(router: PdfViewerRouterLike, href: Href) {
     href: String(href),
     platform: Platform.OS,
   });
+
+  // Dismiss any active native Modal BEFORE navigating.
+  // React Native <Modal> renders at the native window level (UIWindow on iOS),
+  // which physically sits above the entire navigation Stack. If a Modal is
+  // still visible when router.push fires, the PDF viewer screen will appear
+  // underneath the Modal. Calling onBeforeNavigate here gives callers the
+  // chance to set their modal-visible state to false so the native dismiss
+  // animation can begin before the push.
+  if (typeof onBeforeNavigate === "function") {
+    try {
+      await Promise.resolve(onBeforeNavigate());
+    } catch (error) {
+      if (__DEV__) console.warn("[pdf-document-actions] onBeforeNavigate error (non-fatal)", error);
+    }
+    // Allow one frame for the native modal dismiss animation to start.
+    await new Promise<void>((r) => setTimeout(r, Platform.OS === "ios" ? 350 : 100));
+  }
 
   await new Promise<void>((resolve, reject) => {
     const runPush = () => {
@@ -162,6 +183,8 @@ type PreviewPdfDocumentOpts = {
   openFlow?: PdfOpenFlowContext & {
     openToken?: string;
   };
+  /** Called before router.push — use to dismiss native Modals that sit above the navigation Stack. */
+  onBeforeNavigate?: (() => void | Promise<void>) | null;
 };
 
 const activePreviewFlows = new Map<string, Promise<DocumentDescriptor>>();
@@ -525,7 +548,7 @@ export async function previewPdfDocument(
           },
         });
         if (patchNavigationCallBreadcrumb) await patchNavigationCallBreadcrumb;
-        await pushViewerRouteSafely(opts.router, viewerHref);
+        await pushViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
         const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
           screen: breadcrumbScreen,
@@ -780,7 +803,7 @@ export async function previewPdfDocument(
           },
         });
         if (patchNavigationCallBreadcrumb) await patchNavigationCallBreadcrumb;
-        await pushViewerRouteSafely(opts.router, viewerHref);
+        await pushViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
         const pushedBreadcrumb = persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
           screen: breadcrumbScreen,
@@ -944,6 +967,8 @@ export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
 export async function prepareAndPreviewPdfDocument(
   args: PreparePdfDocumentArgs & {
     router?: PdfViewerRouterLike;
+    /** Called before router.push — use to dismiss native Modals that sit above the navigation Stack. */
+    onBeforeNavigate?: (() => void | Promise<void>) | null;
   },
 ): Promise<DocumentDescriptor> {
   const flowKey = String(args.key || "").trim();
@@ -1035,6 +1060,7 @@ export async function prepareAndPreviewPdfDocument(
       try {
         await previewPdfDocument(document, {
           router: args.router,
+          onBeforeNavigate: args.onBeforeNavigate,
           openFlow: visibilityWait
             ? {
                 ...baseContext,

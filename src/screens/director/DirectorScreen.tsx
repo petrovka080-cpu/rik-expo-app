@@ -46,6 +46,7 @@ export function DirectorScreen() {
       label: "Открываю PDF...",
       descriptor: template,
       router,
+      onBeforeNavigate: vm.reports.closeReports,
     });
   }, [
     busy,
@@ -86,6 +87,7 @@ export function DirectorScreen() {
       label: "Открываю PDF...",
       descriptor: template,
       router,
+      onBeforeNavigate: vm.reports.closeReports,
     });
   }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
 
@@ -104,6 +106,7 @@ export function DirectorScreen() {
       label: "Открываю PDF...",
       descriptor: template,
       router,
+      onBeforeNavigate: vm.reports.closeReports,
     });
   }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
   void onExportSubcontractPdfLegacy;

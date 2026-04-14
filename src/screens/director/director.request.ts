@@ -130,6 +130,7 @@ export function useDirectorRequestActions({
           }),
         },
         router,
+        onBeforeNavigate: closeSheet,
       });
     } catch (error) {
       Alert.alert("Не удалось открыть PDF", getPdfFlowErrorMessage(error, "Попробуйте еще раз."));

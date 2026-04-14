@@ -1,4 +1,4 @@
-﻿import type React from "react";
+import type React from "react";
 import { useCallback, useRef } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
@@ -238,6 +238,7 @@ export function useDirectorProposalActions({
           }),
         },
         router,
+        onBeforeNavigate: closeSheet,
       });
     } catch (e: unknown) {
       if (String(errText(e) || "").toLowerCase().includes("busy")) {

@@ -200,6 +200,7 @@ export function useDirectorFinancePanel({
       label: "Открываю PDF...",
       descriptor: template,
       router,
+      onBeforeNavigate: closeFinance,
     });
   }, [
     FIN_CRITICAL_DAYS,
@@ -233,6 +234,7 @@ export function useDirectorFinancePanel({
       label: "Открываю PDF...",
       descriptor: template,
       router,
+      onBeforeNavigate: closeFinance,
     });
   }, [
     FIN_CRITICAL_DAYS,
