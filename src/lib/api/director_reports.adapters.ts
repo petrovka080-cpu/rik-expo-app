@@ -1,4 +1,3 @@
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import type {
   CanonicalMaterialsPayloadRaw,
   CanonicalOptionsPayloadRaw,
@@ -10,7 +9,6 @@ import type {
   DirectorReportOptions,
   DirectorReportPayload,
 } from "./director_reports.shared.ts";
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import {
   DASH,
   asRecord,

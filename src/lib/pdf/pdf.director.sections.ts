@@ -1,4 +1,3 @@
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import { esc } from "../api/pdf_director.format.ts";
 
 type DocumentShellOptions = {

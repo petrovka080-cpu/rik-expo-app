@@ -1,7 +1,5 @@
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import { normalizeRuText } from "../text/encoding.ts";
 
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import type {
   CodeNameRow,
   JoinedWarehouseIssueFactRow,

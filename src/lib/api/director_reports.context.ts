@@ -1,7 +1,5 @@
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import { normalizeRuText } from "../text/encoding.ts";
 
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import type {
   DirectorFactContextInput,
   DirectorFactContextResolved,
@@ -13,7 +11,6 @@ import type {
   DirectorDisciplineSourceRpcRow,
   RequestLookupRow,
 } from "./director_reports.types.ts";
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import { asRecord, firstNonEmpty, toNum } from "./director_reports.normalizers.ts";
 
 const WITHOUT_OBJECT = "Без объекта";

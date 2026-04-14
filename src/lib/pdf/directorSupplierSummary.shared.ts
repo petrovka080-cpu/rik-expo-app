@@ -1,6 +1,4 @@
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import { esc, fmtDateOnly, formatArrowPeriodText, formatPaidRangeText, joinBulletParts, money, nnum } from "../api/pdf_director.format.ts";
-// @ts-ignore TS5097: Supabase Edge/Deno runtime requires explicit .ts extensions here.
 import { joinHtml, renderBox, renderDocumentShell, renderInlineKpiRow, renderLabelValueCell, renderMuted, renderPageFooter, renderTable, renderTag } from "./pdf.director.sections.ts";
 
 export type DirectorFinanceSupplierSummaryPdfRequest = {

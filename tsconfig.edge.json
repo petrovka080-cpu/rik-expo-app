@@ -1,0 +1,37 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "moduleResolution": "Bundler",
+    "target": "ES2020",
+    "module": "ESNext",
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src/lib/pdf/canonicalPdfPlatformContract.ts",
+    "src/lib/pdf/directorPdfAuth.ts",
+    "src/lib/pdf/directorPdfPlatformContract.ts",
+    "src/lib/pdf/directorProductionReport.shared.ts",
+    "src/lib/pdf/directorSubcontractReport.shared.ts",
+    "src/lib/pdf/directorSupplierSummary.shared.ts",
+    "src/lib/pdf/foremanRequestPdf.shared.ts",
+    "src/lib/pdf/pdf.director.templates.ts",
+    "src/lib/pdf/pdf.director.sections.ts",
+    "src/lib/pdf/rolePdfAuth.ts",
+    "src/lib/pdf/warehousePdf.shared.ts",
+    "src/lib/api/director_reports.adapters.ts",
+    "src/lib/api/director_reports.context.ts",
+    "src/lib/api/director_reports.normalizers.ts",
+    "src/lib/api/director_reports.shared.ts",
+    "src/lib/api/pdf_director.data.ts"
+  ],
+  "exclude": [
+    "supabase/functions/**/*",
+    "node_modules"
+  ]
+}
