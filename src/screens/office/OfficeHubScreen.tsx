@@ -53,11 +53,11 @@ import {
 } from "./officeAccess.model";
 import {
   loadOfficeAccessScreenData,
-  updateOfficeMemberRole,
 } from "./officeAccess.services";
 
 import { useOfficeInviteFlow } from "./useOfficeInviteFlow";
 import { useOfficeCompanySection } from "./useOfficeCompanySection";
+import { useOfficeMembersSection } from "./useOfficeMembersSection";
 import type {
   OfficeAccessScreenData,
 } from "./officeAccess.types";
@@ -129,7 +129,6 @@ export default function OfficeHubScreen({
   );
   const [loading, setLoading] = useState(() => !initialBootstrapSnapshot);
   const [refreshing, setRefreshing] = useState(false);
-  const [savingRole, setSavingRole] = useState<string | null>(null);
 
   const isMountedRef = useRef(true);
   const focusCycleRef = useRef(0);
@@ -579,32 +578,10 @@ export default function OfficeHubScreen({
     scrollTo,
   });
 
-  const handleAssignRole = useCallback(
-    async (memberUserId: string, nextRole: string) => {
-      if (!data.company) return;
-      try {
-        setSavingRole(`${memberUserId}:${nextRole}`);
-        await updateOfficeMemberRole({
-          companyId: data.company.id,
-          memberUserId,
-          nextRole,
-        });
-        await loadScreen({
-          mode: "refresh",
-        });
-      } catch (error: unknown) {
-        Alert.alert(
-          COPY.title,
-          error instanceof Error && error.message.trim()
-            ? error.message
-            : COPY.roleAssignError,
-        );
-      } finally {
-        setSavingRole(null);
-      }
-    },
-    [data.company, loadScreen],
-  );
+  const members = useOfficeMembersSection({
+    company: data.company,
+    loadScreen,
+  });
 
   if (loading) {
     return (
@@ -1033,8 +1010,8 @@ export default function OfficeHubScreen({
                           key={member.userId}
                           member={member}
                           canManage={canManageCompany}
-                          savingRole={savingRole}
-                          onAssignRole={handleAssignRole}
+                          savingRole={members.savingRole}
+                          onAssignRole={members.handleAssignRole}
                         />
                       ))}
                     </View>
