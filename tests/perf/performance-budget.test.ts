@@ -1,0 +1,106 @@
+/**
+ * Performance budget discipline tests.
+ *
+ * WAVE O: Establishes measurable, repeatable performance baselines
+ * for the heaviest screens and ensures they stay within thresholds.
+ *
+ * These are architectural budget tests — they catch scope creep early,
+ * before it becomes a runtime performance regression.
+ *
+ * Thresholds are set ~20% above the current measured baseline so they
+ * only fail if something meaningfully worsens.
+ */
+
+import * as fs from "fs";
+import * as path from "path";
+
+const SRC = path.resolve(__dirname, "../../src");
+
+function getFileStats(relativePath: string) {
+  const fullPath = path.join(SRC, relativePath);
+  const content = fs.readFileSync(fullPath, "utf8");
+  const sizeKB = Math.round(content.length / 1024);
+  const importCount = (content.match(/^import\s/gm) || []).length;
+  const lineCount = content.split("\n").length;
+  return { sizeKB, importCount, lineCount };
+}
+
+describe("performance budget — screen size", () => {
+  // Baseline 2026-04-14:
+  //   OfficeHubScreen.tsx: 76KB, 14 imports
+  //   BuyerScreen.tsx: 30KB, 63 imports
+  //   BuyerSubcontractTab.tsx: 27KB, 12 imports
+  //   useForemanSubcontractController.tsx: 40KB, 20 imports
+
+  const budgets: {
+    file: string;
+    maxSizeKB: number;
+    maxImports: number;
+    maxLines: number;
+  }[] = [
+    {
+      file: "screens/office/OfficeHubScreen.tsx",
+      maxSizeKB: 90,   // baseline: 76KB
+      maxImports: 20,   // baseline: 14
+      maxLines: 2400,   // ~20% headroom
+    },
+    {
+      file: "screens/buyer/BuyerScreen.tsx",
+      maxSizeKB: 36,   // baseline: 30KB
+      maxImports: 75,   // baseline: 63 (high but existing)
+      maxLines: 1000,
+    },
+    {
+      file: "screens/buyer/BuyerSubcontractTab.tsx",
+      maxSizeKB: 32,   // baseline: 27KB
+      maxImports: 18,   // baseline: 12
+      maxLines: 1000,
+    },
+    {
+      file: "screens/foreman/hooks/useForemanSubcontractController.tsx",
+      maxSizeKB: 48,   // baseline: 40KB
+      maxImports: 25,   // baseline: 20
+      maxLines: 1200,
+    },
+  ];
+
+  for (const budget of budgets) {
+    describe(path.basename(budget.file), () => {
+      const stats = getFileStats(budget.file);
+
+      it(`size ≤ ${budget.maxSizeKB}KB (current: ${stats.sizeKB}KB)`, () => {
+        expect(stats.sizeKB).toBeLessThanOrEqual(budget.maxSizeKB);
+      });
+
+      it(`imports ≤ ${budget.maxImports} (current: ${stats.importCount})`, () => {
+        expect(stats.importCount).toBeLessThanOrEqual(budget.maxImports);
+      });
+
+      it(`lines ≤ ${budget.maxLines} (current: ${stats.lineCount})`, () => {
+        expect(stats.lineCount).toBeLessThanOrEqual(budget.maxLines);
+      });
+    });
+  }
+});
+
+describe("performance budget — bundle module count", () => {
+  // Metro reported 2405 modules on 2026-04-14
+  // Threshold: alert if source file count grows beyond ~20% above baseline
+  it("source module count within budget", () => {
+    const tsFiles = countFilesRecursive(SRC, /\.tsx?$/);
+    // Baseline: 1008 source files. Threshold: 1200
+    expect(tsFiles).toBeLessThanOrEqual(1200);
+  });
+});
+
+function countFilesRecursive(dir: string, pattern: RegExp): number {
+  let count = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      count += countFilesRecursive(path.join(dir, entry.name), pattern);
+    } else if (pattern.test(entry.name)) {
+      count++;
+    }
+  }
+  return count;
+}
