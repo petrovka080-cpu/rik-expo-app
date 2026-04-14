@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Modal,
@@ -33,6 +33,7 @@ import type {
   MyLoc,
 } from "./mapContracts";
 import { normalizeMarketListingRow } from "./mapContracts";
+import { useMapListingsQuery } from "./useMapListingsQuery";
 
 import {
   buildIndex,
@@ -92,7 +93,7 @@ export default function MapScreen() {
     focusId?: string | string[];
   }>();
 
-  const [listings, setListings] = useState<MarketListing[]>([]);
+  const { listings } = useMapListingsQuery();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [clusterMode, setClusterMode] = useState<{
@@ -164,29 +165,7 @@ export default function MapScreen() {
     };
   }, []);
 
-  // ===== load listings =====
-  useEffect(() => {
-    const load = async () => {
-      const { data, error } = await supabase
-        .from("market_listings_map")
-        .select("id,title,price,city,lat,lng,kind,items_json,side,status,catalog_item_ids")
-        .eq("status", "active")
-        .limit(2000);
 
-      if (error) {
-        if (__DEV__) console.warn("MapScreen load error:", error.message);
-        return;
-      }
-
-      const normalized = (data || [])
-        .map((row) => normalizeMarketListingRow(row))
-        .filter((row): row is MarketListing => Boolean(row));
-
-      setListings(normalized);
-    };
-
-    load();
-  }, []);
 
   useEffect(() => {
     setFilters((prev) => ({
