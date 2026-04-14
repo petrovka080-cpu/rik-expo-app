@@ -4,7 +4,6 @@ import {
   Alert,
   InteractionManager,
   Keyboard,
-  Linking,
   Modal,
   Pressable,
   RefreshControl,
@@ -54,19 +53,13 @@ import {
 } from "./officeAccess.model";
 import {
   createOfficeCompany,
-  createOfficeInvite,
   loadOfficeAccessScreenData,
   updateOfficeMemberRole,
 } from "./officeAccess.services";
-import {
-  copyOfficeInviteText,
-  shareOfficeInviteCode,
-  type OfficeInviteHandoff,
-} from "./officeInviteShare";
+
+import { useOfficeInviteFlow } from "./useOfficeInviteFlow";
 import type {
   CreateCompanyDraft,
-  OfficeAccessInvite,
-  OfficeAccessMember,
   OfficeAccessScreenData,
 } from "./officeAccess.types";
 import {
@@ -80,14 +73,12 @@ import {
   type SectionKey,
   type PostReturnSectionKey,
   type CompanyPostReturnSectionKey,
-  type InviteFormDraft,
   type LoadScreenMode,
   SECTION_RENDER_PROBES,
   EMPTY_DATA,
   COPY,
   COMPANY_FIELDS,
   RULES,
-  buildInviteDraft,
   getVisibleCompanyDetails,
   getPostReturnSections,
   shouldRenderCompanySection,
@@ -142,7 +133,6 @@ export default function OfficeHubScreen({
   const [loading, setLoading] = useState(() => !initialBootstrapSnapshot);
   const [refreshing, setRefreshing] = useState(false);
   const [savingCompany, setSavingCompany] = useState(false);
-  const [savingInvite, setSavingInvite] = useState(false);
   const [savingRole, setSavingRole] = useState<string | null>(null);
   const [companyDraft, setCompanyDraft] = useState<CreateCompanyDraft>(
     () =>
@@ -150,18 +140,8 @@ export default function OfficeHubScreen({
         ? buildOfficeBootstrapCompanyDraft(initialBootstrapSnapshot.data)
         : EMPTY_COMPANY_DRAFT,
   );
-  const [inviteDraft, setInviteDraft] =
-    useState<InviteFormDraft>(buildInviteDraft());
   const [companyFeedback, setCompanyFeedback] = useState<string | null>(null);
-  const [inviteFeedback, setInviteFeedback] = useState<string | null>(null);
-  const [inviteCard, setInviteCard] = useState<OfficeWorkspaceCard | null>(
-    null,
-  );
-  const [inviteHandoff, setInviteHandoff] =
-    useState<OfficeInviteHandoff | null>(null);
-  const [inviteHandoffFeedback, setInviteHandoffFeedback] = useState<
-    string | null
-  >(null);
+
   const isMountedRef = useRef(true);
   const focusCycleRef = useRef(0);
   const ownerBootstrapCompletedRef = useRef(Boolean(initialBootstrapSnapshot));
@@ -631,95 +611,11 @@ export default function OfficeHubScreen({
     }
   }, [companyDraft, data.profile, data.profileEmail, loadScreen]);
 
-  const openInviteModal = useCallback((card: OfficeWorkspaceCard) => {
-    if (!card.inviteRole) return;
-    setInviteFeedback(null);
-    setInviteHandoffFeedback(null);
-    setInviteDraft(buildInviteDraft());
-    setInviteCard(card);
-  }, []);
-
-  const handleCopyInvite = useCallback(
-    async (value: string, feedback: string) => {
-      try {
-        await copyOfficeInviteText(value);
-        setInviteHandoffFeedback(feedback);
-      } catch (error: unknown) {
-        Alert.alert(
-          COPY.title,
-          error instanceof Error && error.message.trim()
-            ? error.message
-            : COPY.inviteCopyError,
-        );
-      }
-    },
-    [],
-  );
-
-  const handleOpenInviteChannel = useCallback(async (url: string) => {
-    try {
-      await Linking.openURL(url);
-    } catch (error: unknown) {
-      Alert.alert(
-        COPY.title,
-        error instanceof Error && error.message.trim()
-          ? error.message
-          : COPY.inviteOpenError,
-      );
-    }
-  }, []);
-
-  const handleCreateInvite = useCallback(async () => {
-    if (!data.company || !inviteCard?.inviteRole) return;
-    try {
-      setSavingInvite(true);
-      const created = await createOfficeInvite({
-        companyId: data.company.id,
-        draft: { ...inviteDraft, role: inviteCard.inviteRole },
-      });
-      setInviteCard(null);
-      setInviteDraft(buildInviteDraft());
-      let shareError: string | null = null;
-      try {
-        const shareResult = await shareOfficeInviteCode({
-          companyName: data.company.name,
-          role: created.role,
-          inviteCode: created.inviteCode,
-        });
-        if (shareResult.kind === "web-handoff") {
-          setInviteHandoff(shareResult.handoff);
-          setInviteHandoffFeedback(null);
-          setInviteFeedback(null);
-        } else {
-          setInviteHandoff(null);
-          setInviteHandoffFeedback(null);
-          setInviteFeedback(COPY.inviteShared);
-        }
-      } catch (error: unknown) {
-        shareError =
-          error instanceof Error && error.message.trim()
-            ? error.message
-            : COPY.inviteShareError;
-        setInviteHandoff(null);
-        setInviteHandoffFeedback(null);
-        setInviteFeedback(COPY.inviteManual);
-      }
-      await loadScreen({
-        mode: "refresh",
-      });
-      scrollTo("invites");
-      if (shareError) Alert.alert(COPY.title, shareError);
-    } catch (error: unknown) {
-      Alert.alert(
-        COPY.title,
-        error instanceof Error && error.message.trim()
-          ? error.message
-          : COPY.inviteError,
-      );
-    } finally {
-      setSavingInvite(false);
-    }
-  }, [data.company, inviteCard, inviteDraft, loadScreen, scrollTo]);
+  const invite = useOfficeInviteFlow({
+    company: data.company,
+    loadScreen,
+    scrollTo,
+  });
 
   const handleAssignRole = useCallback(
     async (memberUserId: string, nextRole: string) => {
@@ -898,7 +794,7 @@ export default function OfficeHubScreen({
                           onOpen={() =>
                             card.route && router.push(card.route as Href)
                           }
-                          onInvite={() => openInviteModal(card)}
+                          onInvite={() => invite.openInviteModal(card)}
                         />
                       ))}
                     </View>
@@ -955,17 +851,17 @@ export default function OfficeHubScreen({
                 onLayout={handleSectionLayout("invites", "invites")}
               >
                 <Text style={styles.sectionTitle}>{COPY.invitesTitle}</Text>
-                {inviteFeedback ? (
+                {invite.inviteFeedback ? (
                   <View style={styles.notice}>
                     <Text
                       testID="office-invite-feedback"
                       style={styles.noticeText}
                     >
-                      {inviteFeedback}
+                      {invite.inviteFeedback}
                     </Text>
                   </View>
                 ) : null}
-                {inviteHandoff
+                {invite.inviteHandoff
                   ? renderSubtreeBoundary(
                       "invites_handoff",
                       <View
@@ -980,7 +876,7 @@ export default function OfficeHubScreen({
                           testID="office-invite-handoff-role"
                           style={styles.handoffTitle}
                         >
-                          {inviteHandoff.roleLabel}
+                          {invite.inviteHandoff.roleLabel}
                         </Text>
                         <Text style={styles.helper}>
                           {COPY.inviteHandoffLead}
@@ -994,13 +890,13 @@ export default function OfficeHubScreen({
                               testID="office-invite-handoff-company"
                               style={styles.value}
                             >
-                              {inviteHandoff.companyName}
+                              {invite.inviteHandoff.companyName}
                             </Text>
                           </View>
                           <View style={styles.row}>
                             <Text style={styles.label}>{COPY.summaryRole}</Text>
                             <Text style={styles.value}>
-                              {inviteHandoff.roleLabel}
+                              {invite.inviteHandoff.roleLabel}
                             </Text>
                           </View>
                           <View style={styles.handoffCodeBlock}>
@@ -1009,7 +905,7 @@ export default function OfficeHubScreen({
                               testID="office-invite-handoff-code"
                               style={styles.handoffCode}
                             >
-                              {inviteHandoff.inviteCode}
+                              {invite.inviteHandoff.inviteCode}
                             </Text>
                           </View>
                           <View style={styles.rowLast}>
@@ -1017,17 +913,17 @@ export default function OfficeHubScreen({
                               {COPY.inviteHandoffInstruction}
                             </Text>
                             <Text style={styles.value}>
-                              {inviteHandoff.instruction}
+                              {invite.inviteHandoff.instruction}
                             </Text>
                           </View>
                         </View>
-                        {inviteHandoffFeedback ? (
+                        {invite.inviteHandoffFeedback ? (
                           <View style={styles.noticeSoft}>
                             <Text
                               testID="office-invite-handoff-feedback"
                               style={styles.noticeSoftText}
                             >
-                              {inviteHandoffFeedback}
+                              {invite.inviteHandoffFeedback}
                             </Text>
                           </View>
                         ) : null}
@@ -1035,8 +931,8 @@ export default function OfficeHubScreen({
                           <Pressable
                             testID="office-invite-copy-code"
                             onPress={() =>
-                              void handleCopyInvite(
-                                inviteHandoff.inviteCode,
+                              void invite.handleCopyInvite(
+                                invite.inviteHandoff.inviteCode,
                                 COPY.inviteCodeCopied,
                               )
                             }
@@ -1054,8 +950,8 @@ export default function OfficeHubScreen({
                           <Pressable
                             testID="office-invite-copy-message"
                             onPress={() =>
-                              void handleCopyInvite(
-                                inviteHandoff.message,
+                              void invite.handleCopyInvite(
+                                invite.inviteHandoff.message,
                                 COPY.inviteMessageCopied,
                               )
                             }
@@ -1073,8 +969,8 @@ export default function OfficeHubScreen({
                           <Pressable
                             testID="office-invite-open-whatsapp"
                             onPress={() =>
-                              void handleOpenInviteChannel(
-                                inviteHandoff.whatsappUrl,
+                              void invite.handleOpenInviteChannel(
+                                invite.inviteHandoff.whatsappUrl,
                               )
                             }
                             style={[styles.secondary, styles.actionButton]}
@@ -1091,8 +987,8 @@ export default function OfficeHubScreen({
                           <Pressable
                             testID="office-invite-open-telegram"
                             onPress={() =>
-                              void handleOpenInviteChannel(
-                                inviteHandoff.telegramUrl,
+                              void invite.handleOpenInviteChannel(
+                                invite.inviteHandoff.telegramUrl,
                               )
                             }
                             style={[styles.secondary, styles.actionButton]}
@@ -1109,8 +1005,8 @@ export default function OfficeHubScreen({
                           <Pressable
                             testID="office-invite-open-email"
                             onPress={() =>
-                              void handleOpenInviteChannel(
-                                inviteHandoff.emailUrl,
+                              void invite.handleOpenInviteChannel(
+                                invite.inviteHandoff.emailUrl,
                               )
                             }
                             style={[styles.secondary, styles.actionButton]}
@@ -1320,17 +1216,17 @@ export default function OfficeHubScreen({
         )}
       </ScrollView>
 
-      {inviteCard ? (
+      {invite.inviteCard ? (
         <Modal
           transparent
           animationType="slide"
           visible
-          onRequestClose={() => setInviteCard(null)}
+          onRequestClose={() => invite.closeInviteModal()}
         >
           <View style={styles.modalWrap}>
             <Pressable
               style={styles.backdrop}
-              onPress={() => setInviteCard(null)}
+              onPress={() => invite.closeInviteModal()}
             />
             {renderSubtreeBoundary(
               "invite_modal_form",
@@ -1344,8 +1240,8 @@ export default function OfficeHubScreen({
                   testID="office-role-invite-role"
                   style={styles.sheetTitle}
                 >
-                  {inviteCard?.inviteRole
-                    ? getProfileRoleLabel(inviteCard.inviteRole)
+                  {invite.inviteCard?.inviteRole
+                    ? getProfileRoleLabel(invite.inviteCard.inviteRole)
                     : COPY.noRole}
                 </Text>
                 <Text style={styles.helper}>{COPY.inviteModalLead}</Text>
@@ -1356,9 +1252,9 @@ export default function OfficeHubScreen({
                     placeholder="Р¤РРћ СЃРѕС‚СЂСѓРґРЅРёРєР°"
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
-                    value={inviteDraft.name}
+                    value={invite.inviteDraft.name}
                     onChangeText={(value) =>
-                      setInviteDraft((current) => ({ ...current, name: value }))
+                      invite.setInviteDraft((current) => ({ ...current, name: value }))
                     }
                   />
                 </View>
@@ -1370,9 +1266,9 @@ export default function OfficeHubScreen({
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     keyboardType="phone-pad"
-                    value={inviteDraft.phone}
+                    value={invite.inviteDraft.phone}
                     onChangeText={(value) =>
-                      setInviteDraft((current) => ({
+                      invite.setInviteDraft((current) => ({
                         ...current,
                         phone: value,
                       }))
@@ -1388,9 +1284,9 @@ export default function OfficeHubScreen({
                     style={styles.input}
                     autoCapitalize="none"
                     keyboardType="email-address"
-                    value={inviteDraft.email}
+                    value={invite.inviteDraft.email}
                     onChangeText={(value) =>
-                      setInviteDraft((current) => ({
+                      invite.setInviteDraft((current) => ({
                         ...current,
                         email: value,
                       }))
@@ -1405,9 +1301,9 @@ export default function OfficeHubScreen({
                     placeholderTextColor="#94A3B8"
                     style={[styles.input, styles.textArea]}
                     multiline
-                    value={inviteDraft.comment}
+                    value={invite.inviteDraft.comment}
                     onChangeText={(value) =>
-                      setInviteDraft((current) => ({
+                      invite.setInviteDraft((current) => ({
                         ...current,
                         comment: value,
                       }))
@@ -1416,19 +1312,19 @@ export default function OfficeHubScreen({
                 </View>
                 <View style={styles.modalActions}>
                   <Pressable
-                    onPress={() => setInviteCard(null)}
+                    onPress={() => invite.closeInviteModal()}
                     style={styles.secondary}
                   >
                     <Text style={styles.secondaryText}>{COPY.cancel}</Text>
                   </Pressable>
                   <Pressable
                     testID="office-create-invite"
-                    disabled={savingInvite}
-                    onPress={() => void handleCreateInvite()}
+                    disabled={invite.savingInvite}
+                    onPress={() => void invite.handleCreateInvite()}
                     style={[
                       styles.primary,
                       styles.grow,
-                      savingInvite && styles.dim,
+                      invite.savingInvite && styles.dim,
                     ]}
                   >
                     <Text style={styles.primaryText}>{COPY.inviteCta}</Text>
@@ -1442,4 +1338,5 @@ export default function OfficeHubScreen({
     </RoleScreenLayout>
   );
 }
+
 
