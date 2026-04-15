@@ -1,4 +1,4 @@
-﻿import { useCallback, useRef, useState, type MutableRefObject } from "react";
+import { useCallback, useRef, useState, type MutableRefObject } from "react";
 
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
 import {

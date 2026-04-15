@@ -1,6 +1,17 @@
 import fs from "fs";
 import path from "path";
 
+import {
+  beginAccountantPaymentFormLoad,
+  recordAccountantPaymentFormCatch,
+  recordAccountantPaymentFormClosed,
+  recordAccountantPaymentFormOpened,
+  recordAccountantPaymentFormReady,
+  recordAccountantPaymentFormRequestCanceled,
+  recordAccountantPaymentFormRequestStarted,
+  recordAccountantPaymentFormStaleResponseIgnored,
+} from "./accountant.paymentForm.observability";
+
 const mockRecordCatchDiscipline = jest.fn((params: unknown) => params);
 const mockRecordPlatformObservability = jest.fn((params: unknown) => params);
 const mockObservation = {
@@ -20,17 +31,6 @@ jest.mock("../../lib/observability/platformObservability", () => ({
   beginPlatformObservability: (params: unknown) => mockBeginPlatformObservability(params),
   recordPlatformObservability: (params: unknown) => mockRecordPlatformObservability(params),
 }));
-
-import {
-  beginAccountantPaymentFormLoad,
-  recordAccountantPaymentFormCatch,
-  recordAccountantPaymentFormClosed,
-  recordAccountantPaymentFormOpened,
-  recordAccountantPaymentFormReady,
-  recordAccountantPaymentFormRequestCanceled,
-  recordAccountantPaymentFormRequestStarted,
-  recordAccountantPaymentFormStaleResponseIgnored,
-} from "./accountant.paymentForm.observability";
 
 const context = {
   proposalId: "proposal-1",

@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { notifList, notifMarkRead } from "../../lib/catalog_api";

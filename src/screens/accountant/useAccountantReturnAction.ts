@@ -1,4 +1,4 @@
-﻿import { useCallback } from "react";
+import { useCallback } from "react";
 import { runAccountantReturnToBuyerChain } from "./accountant.return.service";
 
 type RowBase = { proposal_id?: string | number };

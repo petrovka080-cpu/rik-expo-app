@@ -1,4 +1,4 @@
-﻿import { normalizeRuText } from "../../lib/text/encoding";
+import { normalizeRuText } from "../../lib/text/encoding";
 
 export type PaymentStatusKind = "K_PAY" | "PART" | "PAID" | "REWORK" | "UNKNOWN";
 

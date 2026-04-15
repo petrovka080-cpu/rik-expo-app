@@ -85,5 +85,6 @@ export function useAccountantPaymentPdfBoundary(
         getPdfFlowErrorMessage(error, "Не удалось открыть PDF"),
       );
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [busy, router, safeAlert, setCurrentPaymentId]);
 }

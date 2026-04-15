@@ -1,4 +1,4 @@
-﻿import { Keyboard } from "react-native";
+import { Keyboard } from "react-native";
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -30,7 +30,7 @@ type Params = {
   setSupplierName: Dispatch<SetStateAction<string>>;
   setAmount: Dispatch<SetStateAction<string>>;
   setNote: Dispatch<SetStateAction<string>>;
-  setAllocRows: Dispatch<SetStateAction<Array<{ proposal_item_id: string; amount: number }>>>;
+  setAllocRows: Dispatch<SetStateAction<{ proposal_item_id: string; amount: number }[]>>;
   setAllocOk: Dispatch<SetStateAction<boolean>>;
   setAllocSum: Dispatch<SetStateAction<number>>;
   setPayKind: Dispatch<SetStateAction<"bank" | "cash">>;

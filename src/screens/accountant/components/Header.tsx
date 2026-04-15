@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Animated, Pressable, ScrollView, Text, View } from "react-native";
 import type { Tab } from "../types";
 import { TABS } from "../types";

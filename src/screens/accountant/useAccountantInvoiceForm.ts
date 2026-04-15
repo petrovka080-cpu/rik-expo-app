@@ -9,6 +9,7 @@ export function useAccountantInvoiceForm(params: {
     current: AccountantInboxUiRow | null;
     toRpcDateOrNull: (v: string) => string | null;
 }) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { current, toRpcDateOrNull } = params;
 
     const [invoiceNo, setInvoiceNo] = useState("");
@@ -25,7 +26,7 @@ export function useAccountantInvoiceForm(params: {
     const [amount, setAmount] = useState<string>('');
     const [note, setNote] = useState<string>('');
 
-    const [allocRows, setAllocRows] = useState<Array<{ proposal_item_id: string; amount: number }>>([]);
+    const [allocRows, setAllocRows] = useState<{ proposal_item_id: string; amount: number }[]>([]);
     const [allocOk, setAllocOk] = useState(true);
     const [allocSum, setAllocSum] = useState(0);
 

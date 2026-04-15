@@ -172,7 +172,7 @@ function PaymentFormHarness(props: {
   const [inn, setInn] = React.useState("");
   const [kpp, setKpp] = React.useState("");
   const [allocRows, setAllocRows] = React.useState<
-    Array<{ proposal_item_id: string; amount: number }>
+    { proposal_item_id: string; amount: number }[]
   >([]);
   const [allocStatus, setAllocStatus] = React.useState({ ok: true, sum: 0 });
 
@@ -584,7 +584,7 @@ describe("ActivePaymentForm", () => {
 
     expect(readTextByTestId(renderer, "harness-amount")).toBe("40.00");
     expect(
-      readJsonByTestId<Array<{ proposal_item_id: string; amount: number }>>(
+      readJsonByTestId<{ proposal_item_id: string; amount: number }[]>(
         renderer,
         "harness-alloc-rows",
       ),
@@ -622,7 +622,7 @@ describe("ActivePaymentForm", () => {
 
     expect(readTextByTestId(renderer, "harness-amount")).toBe("110.00");
     expect(
-      readJsonByTestId<Array<{ proposal_item_id: string; amount: number }>>(
+      readJsonByTestId<{ proposal_item_id: string; amount: number }[]>(
         renderer,
         "harness-alloc-rows",
       ),
@@ -693,7 +693,7 @@ describe("ActivePaymentForm", () => {
 
     expect(readTextByTestId(renderer, "harness-amount")).toBe("");
     expect(
-      readJsonByTestId<Array<{ proposal_item_id: string; amount: number }>>(
+      readJsonByTestId<{ proposal_item_id: string; amount: number }[]>(
         renderer,
         "harness-alloc-rows",
       ),

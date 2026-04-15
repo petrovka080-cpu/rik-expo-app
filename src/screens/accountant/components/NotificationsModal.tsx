@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { UI } from "../ui";
 import { SafeView } from "../helpers";

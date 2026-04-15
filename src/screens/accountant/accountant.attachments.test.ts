@@ -1,3 +1,6 @@
+import { listCanonicalProposalAttachments } from "../../lib/api/proposalAttachments.service";
+import { listProposalAttachments } from "./accountant.attachments";
+
 jest.mock("../../lib/api/proposalAttachments.service", () => {
   const actual = jest.requireActual("../../lib/api/proposalAttachments.service");
   return {
@@ -5,9 +8,6 @@ jest.mock("../../lib/api/proposalAttachments.service", () => {
     listCanonicalProposalAttachments: jest.fn(),
   };
 });
-
-import { listCanonicalProposalAttachments } from "../../lib/api/proposalAttachments.service";
-import { listProposalAttachments } from "./accountant.attachments";
 
 const mockedListCanonicalProposalAttachments =
   listCanonicalProposalAttachments as jest.MockedFunction<typeof listCanonicalProposalAttachments>;

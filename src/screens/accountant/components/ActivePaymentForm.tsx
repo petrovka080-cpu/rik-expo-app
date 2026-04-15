@@ -67,11 +67,13 @@ export default function ActivePaymentForm({
   current,
   supplierName,
   invoiceNo,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   invoiceDate,
   INV_PREFIX,
   invMM,
   invDD,
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setSupplierName,
   setInvoiceNo,
   setInvoiceDate,

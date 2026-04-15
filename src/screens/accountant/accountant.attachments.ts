@@ -152,7 +152,7 @@ const inferMimeType = (fileName: string, groupKey: string | null): string | null
   return null;
 };
 
-const countGroups = (rows: Array<{ groupKey?: string | null }>) => {
+const countGroups = (rows: { groupKey?: string | null }[]) => {
   const counts: Record<string, number> = {};
   for (const row of rows) {
     const key = text(row.groupKey) || "ungrouped";

@@ -1,4 +1,4 @@
-﻿import { TABS, type Tab } from "./types";
+import { TABS, type Tab } from "./types";
 import { normalizePaymentStatusKind } from "./accountant.status";
 
 export function filterRowsByTab<T extends { payment_status?: string | null }>(rows: T[], tab: Tab): T[] {

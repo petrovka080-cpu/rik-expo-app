@@ -9,6 +9,7 @@ import { supabase, SUPABASE_ANON_KEY } from "../../lib/supabaseClient";
 import type { AccountantInboxRow } from "../../lib/rik_api";
 import type { StatusKey } from "./types";
 import { normalizePaymentStatusKind } from "./accountant.status";
+import { logger } from "../../lib/logger";
 
 export function toRpcDateOrNull(v: string) {
   const s = String(v || "").trim();
@@ -24,7 +25,7 @@ export function toRpcDateOrNull(v: string) {
 }
 
 export const DLOG = (...args: unknown[]) => {
-  if (__DEV__) console.log(...args);
+  if (__DEV__) logger.info("log", ...args);
 };
 
 export const safeAlert = (title: string, msg?: string) => {

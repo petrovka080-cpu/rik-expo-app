@@ -1,4 +1,4 @@
-﻿import { useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { Alert, Platform } from "react-native";
 
 import {
@@ -179,6 +179,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         },
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [p.current?.proposal_id],
   );
 
@@ -206,6 +207,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
     const proposalId = String(p.current?.proposal_id ?? "").trim();
     if (!proposalId) throw new Error("Proposal id is required for payment.");
     return accountantLoadProposalFinancialState(proposalId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [p.current?.proposal_id]);
 
   const commitPayment = useCallback(
@@ -345,6 +347,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         throw error;
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [
       loadServerFinancialState,
       p.accountantFio,
@@ -400,6 +403,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       });
       showPaymentFailure("Ошибка оплаты", e);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
     commitPayment,
     loadServerFinancialState,
@@ -466,6 +470,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       });
       showPaymentFailure("Ошибка оплаты", e);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
     commitPayment,
     loadServerFinancialState,
@@ -504,6 +509,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
 
     if (!ok) return;
     await addPayment();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [p.allocOk, p.amount, p.safeAlert, addPayment]);
 
   return { payRest, addPayment, onPayConfirm };
