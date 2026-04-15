@@ -86,7 +86,7 @@ export function useDirectorProposalActions({
     });
   };
 
-  const proposalSentToAccountant = useCallback(async (proposalId: string): Promise<boolean> => {
+  const _proposalSentToAccountant = useCallback(async (proposalId: string): Promise<boolean> => {
     const plans = [
       "sent_to_accountant_at,status",
       "sent_to_accountant_at",
@@ -112,7 +112,7 @@ export function useDirectorProposalActions({
     return false;
   }, [supabase]);
 
-  const getPurchaseIdByProposal = useCallback(async (proposalId: string): Promise<string | null> => {
+  const _getPurchaseIdByProposal = useCallback(async (proposalId: string): Promise<string | null> => {
     try {
       const q = await supabase
         .from("purchases")
@@ -131,7 +131,7 @@ export function useDirectorProposalActions({
     }
   }, [supabase]);
 
-  const hasIncomingByPurchase = useCallback(async (purchaseId: string): Promise<boolean> => {
+  const _hasIncomingByPurchase = useCallback(async (purchaseId: string): Promise<boolean> => {
     try {
       const q = await supabase
         .from("wh_incoming")
@@ -309,70 +309,56 @@ export function useDirectorProposalActions({
       return;
     }
 
+    const clientMutationId = `dap_${pid}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
     try {
       approveInFlightRef.current[pid] = true;
       setPropApproveId(pid);
 
-      const [alreadySent, existingPurchaseId] = await Promise.all([
-        proposalSentToAccountant(pid),
-        getPurchaseIdByProposal(pid),
-      ]);
-      const hasIncoming = existingPurchaseId
-        ? await hasIncomingByPurchase(existingPurchaseId)
-        : false;
+      recordDirectorProposalCatch("cleanup_only", "director_pipeline_start", null, {
+        proposalId: pid,
+        clientMutationId,
+      });
 
-      if (!alreadySent) {
-        const { error } = await supabase.rpc("director_approve_min_auto_v1", {
-          p_proposal_id: pid,
-          p_comment: null,
-        });
-        if (error) throw toProposalRequestItemIntegrityDegradedError(error) ?? error;
-      }
+      const { data, error } = await supabase.rpc("director_approve_pipeline_v1", {
+        p_proposal_id: pid,
+        p_comment: null,
+        p_invoice_currency: "KGS",
+        p_client_mutation_id: clientMutationId,
+      });
 
-      let ensuredPurchaseId: string | null = existingPurchaseId ?? null;
-      if (!existingPurchaseId || !hasIncoming) {
-        const rInc = await supabase.rpc("ensure_purchase_and_incoming_strict", {
-          p_proposal_id: pid,
-        });
-        if (rInc?.error) throw rInc.error;
-        const rpcPurchaseId = pickMaybeId(rInc?.data, "purchase_id");
-        ensuredPurchaseId = rpcPurchaseId || ensuredPurchaseId;
-      }
+      if (error) throw toProposalRequestItemIntegrityDegradedError(error) ?? error;
 
-      let workSeedErrorMessage: string | null = null;
-      try {
-        if (ensuredPurchaseId) {
-          const rW = await supabase.rpc("work_seed_from_purchase", { p_purchase_id: ensuredPurchaseId });
-          if (rW.error) {
-            workSeedErrorMessage = errText(rW.error) || "Не удалось подготовить работы по закупке.";
-            if (__DEV__) console.warn("[work_seed_from_purchase] error:", rW.error.message);
-          }
-        }
-      } catch (e: unknown) {
-        workSeedErrorMessage = errText(e) || "Не удалось подготовить работы по закупке.";
-        recordDirectorProposalCatch("soft_failure", "proposal_work_seed_failed", e, {
+      const result = asRecord(data);
+      if (result && result.ok === false) {
+        const failureMessage = pickTrimmedString(result.failure_message) || "Не удалось утвердить предложение.";
+        recordDirectorProposalCatch("critical_fail", "director_pipeline_error", new Error(failureMessage), {
           proposalId: pid,
-          purchaseId: ensuredPurchaseId,
+          clientMutationId,
+          failureCode: pickTrimmedString(result.failure_code),
         });
+        throw new Error(failureMessage);
       }
 
-      if (!alreadySent) {
-        const { error: accErr } = await supabase.rpc("proposal_send_to_accountant_min", {
-          p_proposal_id: pid,
-          p_invoice_number: null,
-          p_invoice_date: null,
-          p_invoice_amount: null,
-          p_invoice_currency: "KGS",
-        });
-        if (accErr) throw accErr;
-      }
+      const workSeedOk = result ? result.work_seed_ok !== false : true;
+      const workSeedError = result ? pickTrimmedString(result.work_seed_error) : null;
+      const idempotentReplay = result ? result.idempotent_replay === true : false;
+
+      recordDirectorProposalCatch("cleanup_only", "director_pipeline_success", null, {
+        proposalId: pid,
+        clientMutationId,
+        purchaseId: result ? pickTrimmedString(result.purchase_id) : null,
+        workSeedOk,
+        idempotentReplay,
+      });
 
       await refreshDirectorApprovalViews();
       approveDoneAtRef.current[pid] = Date.now();
-      if (workSeedErrorMessage) {
+
+      if (!workSeedOk && workSeedError) {
         Alert.alert(
           "Утверждено с предупреждением",
-          `Предложение утверждено и отправлено дальше, но подготовка работ не завершилась: ${workSeedErrorMessage}`,
+          `Предложение утверждено и отправлено дальше, но подготовка работ не завершилась: ${workSeedError}`,
         );
       } else {
         closeSheet();
@@ -382,24 +368,19 @@ export function useDirectorProposalActions({
       const normalizedError = toProposalRequestItemIntegrityDegradedError(e) ?? e;
       recordDirectorProposalCatch("critical_fail", "proposal_approve_failed", normalizedError, {
         proposalId: pid,
+        clientMutationId,
       });
       Alert.alert("Не удалось утвердить", errText(normalizedError) || "Попробуйте еще раз.");
     } finally {
       delete approveInFlightRef.current[pid];
       setPropApproveId(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
     supabase,
     setPropApproveId,
-    fetchProps,
-    fetchRows,
     closeSheet,
     showSuccess,
     refreshDirectorApprovalViews,
-    proposalSentToAccountant,
-    getPurchaseIdByProposal,
-    hasIncomingByPurchase,
   ]);
 
   return {

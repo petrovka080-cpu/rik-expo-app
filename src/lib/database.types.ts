@@ -16442,6 +16442,22 @@ export type Database = {
         Args: { p_comment?: string | null; p_proposal_id: string }
         Returns: undefined
       }
+      director_approve_pipeline_v1: {
+        Args: {
+          p_proposal_id: string
+          p_comment?: string | null
+          p_invoice_currency?: string
+          p_client_mutation_id?: string | null
+        }
+        Returns: Json
+      }
+      director_approve_request_v1: {
+        Args: {
+          p_request_id: string
+          p_client_mutation_id?: string | null
+        }
+        Returns: Json
+      }
       director_decide_proposal_items: {
         Args: { p_decisions: Json; p_finalize?: boolean; p_proposal_id: string }
         Returns: Json

@@ -196,19 +196,20 @@ export function useDirectorRequestActions({
       if (reqId == null) throw new Error("request_id пустой");
 
       const reqIdStr = String(reqId);
+      const clientMutationId = `dar_${reqIdStr}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-      const updItems = await supabase
-        .from("request_items")
-        .update({ status: "К закупке" })
-        .eq("request_id", reqIdStr)
-        .neq("status", "Отклонено");
-      if (updItems.error) throw updItems.error;
+      const { data, error } = await supabase.rpc("director_approve_request_v1", {
+        p_request_id: reqIdStr,
+        p_client_mutation_id: clientMutationId,
+      });
 
-      const updReq = await supabase
-        .from("requests")
-        .update({ status: "К закупке" })
-        .eq("id", reqIdStr);
-      if (updReq.error) throw updReq.error;
+      if (error) throw error;
+
+      const result = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
+      if (result && result.ok === false) {
+        const failureMessage = String(result.failure_message ?? "Не удалось утвердить заявку");
+        throw new Error(failureMessage);
+      }
 
       const reqIdCmp = String(g.request_id ?? "");
       setRows((prev) => prev.filter((r) => String(r.request_id ?? "") !== reqIdCmp));
