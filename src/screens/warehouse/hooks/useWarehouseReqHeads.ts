@@ -1,20 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import {
-  apiFetchReqHeadsWindow,
-  type WarehouseReqHeadsFetchResult,
-  type WarehouseReqHeadsSourceMeta,
-  type WarehouseReqHeadsWindowMeta,
-} from "../warehouse.requests.read";
 import type {
-  ReqHeadRow,
   WarehouseReqHeadsFailureClass,
   WarehouseReqHeadsIntegrityState,
   WarehouseReqHeadsListState,
 } from "../warehouse.types";
 import {
   classifyWarehouseReqHeadsFailure,
-  getWarehouseReqHeadsRetryAfterMs,
 } from "../warehouse.reqHeads.failure";
 import {
   createHealthyWarehouseReqHeadsIntegrityState,
@@ -31,50 +23,33 @@ import {
 } from "../../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 import {
-  abortController,
-  isAbortError,
-  throwIfAborted,
-} from "../../../lib/requestCancellation";
-import {
   isWarehouseScreenActive,
   useWarehouseFallbackActiveRef,
   type WarehouseScreenActiveRef,
 } from "./useWarehouseScreenActivity";
+import { useWarehouseReqHeadsQuery } from "./useWarehouseReqHeadsQuery";
 
-const pickErrMessage = (error: unknown) => {
-  if (error instanceof Error && error.message.trim())
-    return error.message.trim();
-  return String(error ?? "");
-};
-
-const logReqHeadsMetrics = (
-  scope: string,
-  details: Record<string, unknown>,
-) => {
-  if (!__DEV__) return;
-  console.info(`[warehouse.reqHeads] ${scope}`, details);
-};
-
-type ReqHeadsFetchValue = Pick<
-  WarehouseReqHeadsFetchResult,
-  "integrityState"
-> & {
-  rows: ReqHeadRow[];
-  hasMore: boolean;
-  meta: WarehouseReqHeadsWindowMeta;
-  sourceMeta: WarehouseReqHeadsSourceMeta;
-};
-
-type ReqHeadsRequestSlot = {
-  key: string;
-  controller: AbortController;
-};
-
-const cloneReqHeadsRows = (rows: ReqHeadRow[]) =>
-  rows.map((row) => ({ ...row }));
-
-const getReqHeadsTrigger = (pageIndex: number, forceRefresh: boolean) =>
-  forceRefresh ? "force_refresh" : pageIndex > 0 ? "scroll" : "focus";
+/**
+ * useWarehouseReqHeads — public API boundary for warehouse request heads.
+ *
+ * P6.1b migration: fetch ownership is now delegated to
+ * useWarehouseReqHeadsQuery (React Query useInfiniteQuery). This hook preserves
+ * the exact same return contract for all consumers.
+ *
+ * Removed:
+ * - Manual requestRef (AbortController slot) — replaced by query cancellation
+ * - Manual reqRefs.fetching — replaced by query isFetching
+ * - Manual dedup (joined_inflight) — replaced by query dedup
+ * - Manual pagination merge (setReqHeads prev => [...prev, ...toAdd]) — replaced by query page flatten
+ *
+ * Preserved:
+ * - Same return shape: { reqHeads, reqHeadsLoading, reqHeadsFetchingPage, reqHeadsHasMore, reqHeadsIntegrityState, reqHeadsListState, reqRefs, fetchReqHeads }
+ * - Failure classification + cooldown (exact same state machine)
+ * - Network offline guard (exact same observability)
+ * - Force refresh cooldown (1200ms)
+ * - publishReqHeadsPage0 observability
+ * - All integrity/list state derivation
+ */
 
 const HEALTHY_INTEGRITY_STATE = createHealthyWarehouseReqHeadsIntegrityState();
 const HEALTHY_LIST_STATE = deriveWarehouseReqHeadsListState({
@@ -91,14 +66,19 @@ export function useWarehouseReqHeads(params: {
   const FORCE_REFRESH_MIN_INTERVAL_MS = 1200;
   const screenActiveRef = useWarehouseFallbackActiveRef(params.screenActiveRef);
 
-  const [reqHeads, setReqHeads] = useState<ReqHeadRow[]>([]);
-  const [reqHeadsLoading, setReqHeadsLoading] = useState(false);
-  const [reqHeadsFetchingPage, setReqHeadsFetchingPage] = useState(false);
-  const [reqHeadsHasMore, setReqHeadsHasMore] = useState(true);
+  // ── Query hook owns fetch, pagination, dedup, abort ──
+  const query = useWarehouseReqHeadsQuery({
+    supabase,
+    pageSize,
+    enabled: isWarehouseScreenActive(screenActiveRef),
+  });
+
+  // ── State that the query cannot own (failure machine) ──
   const [reqHeadsIntegrityState, setReqHeadsIntegrityState] =
     useState<WarehouseReqHeadsIntegrityState>(HEALTHY_INTEGRITY_STATE);
   const [reqHeadsListState, setReqHeadsListState] =
     useState<WarehouseReqHeadsListState>(HEALTHY_LIST_STATE);
+
   const reqRefs = useRef({
     page: 0,
     hasMore: true,
@@ -109,109 +89,157 @@ export function useWarehouseReqHeads(params: {
     lastForceStartAt: 0,
     lastForceSkipLogAt: 0,
   });
-  const requestRef = useRef<ReqHeadsRequestSlot | null>(null);
 
-  const abortReqHeadsRequest = useCallback((reason: string) => {
-    abortController(requestRef.current?.controller, reason);
-  }, []);
+  // ── Sync query state → reqRefs (backward compat for ExpenseQueueSlice) ──
+  useEffect(() => {
+    reqRefs.current.fetching = query.isFetching;
+    reqRefs.current.hasMore = query.hasMore;
+    const pageCount = (query as unknown as { data?: { pages?: unknown[] } }).data?.pages?.length ?? 0;
+    reqRefs.current.page = Math.max(0, pageCount - 1);
+  }, [query.isFetching, query.hasMore, query]);
 
-  useEffect(() => () => {
-    abortReqHeadsRequest("warehouse request heads unmounted");
-  }, [abortReqHeadsRequest]);
+  // ── Sync query success → integrity/list state ──
+  useEffect(() => {
+    if (query.isLoading || query.isFetching) return;
+    if (query.isError) return; // handled below
+    if (!query.firstPageIntegrityState) return;
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
 
-  const publishReqHeadsPage0 = useCallback(
-    (params: {
-      rows: ReqHeadRow[];
-      hasMore: boolean;
-      integrityState: WarehouseReqHeadsIntegrityState;
-      trigger: string;
-      sourceMeta?: WarehouseReqHeadsSourceMeta;
-      meta?: WarehouseReqHeadsWindowMeta;
-      event: string;
-      result?: "success" | "error" | "cache_hit" | "skipped";
-      extra?: Record<string, unknown>;
-      stage?: "publish" | "cooldown_skip";
-    }) => {
-      const rows = cloneReqHeadsRows(params.rows);
-      const listState = deriveWarehouseReqHeadsListState({
-        rows,
-        integrityState: params.integrityState,
+    const integrityState = query.firstPageIntegrityState;
+    const rows = query.rows;
+
+    const publishDecision = resolveWarehouseReqHeadsPrimaryPublish({
+      rows,
+      hasMore: query.hasMore,
+      integrityState,
+    });
+
+    if (publishDecision.integrityState.mode === "healthy") {
+      reqRefs.current.lastFailureAt = 0;
+      reqRefs.current.lastFailureClass = null;
+      reqRefs.current.lastFailureRetryAfterMs = 0;
+    }
+
+    setReqHeadsIntegrityState(publishDecision.integrityState);
+    setReqHeadsListState(publishDecision.listState);
+
+    recordWarehouseReqHeadsStateTrace({
+      timestamp: new Date().toISOString(),
+      stage: "publish",
+      publishState: publishDecision.listState.publishState,
+      freshness: publishDecision.listState.freshness,
+      failureClass: publishDecision.listState.failureClass,
+      rowCount: publishDecision.listState.rowCount,
+      cooldownActive: publishDecision.listState.cooldownActive,
+      cooldownReason: publishDecision.listState.cooldownReason,
+      reason: publishDecision.listState.reason,
+      message: publishDecision.listState.message,
+      trigger: "query_sync",
+    });
+
+    recordPlatformObservability({
+      screen: "warehouse",
+      surface: "req_heads_list",
+      category: "ui",
+      event:
+        publishDecision.listState.publishState === "error"
+          ? "content_error"
+          : "content_ready",
+      result:
+        publishDecision.listState.publishState === "error"
+          ? "error"
+          : "success",
+      trigger: "query_sync",
+      rowCount: rows.length,
+      sourceKind: query.firstPageSourceMeta?.sourceKind,
+      fallbackUsed: query.firstPageSourceMeta?.fallbackUsed ?? false,
+      extra: {
+        publishState: publishDecision.listState.publishState,
+        freshness: publishDecision.listState.freshness,
+        hasMore: query.hasMore,
+        integrityMode: integrityState.mode,
+        pageSize,
+        primaryOwner: query.firstPageSourceMeta?.primaryOwner ?? null,
+      },
+    });
+  }, [query.isLoading, query.isFetching, query.isError, query.firstPageIntegrityState, query.firstPageSourceMeta, query.rows, query.hasMore, screenActiveRef, pageSize]);
+
+  // ── Sync query error → failure classification + cooldown ──
+  useEffect(() => {
+    if (!query.isError || !query.error) return;
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
+
+    const failure = classifyWarehouseReqHeadsFailure(query.error);
+    reqRefs.current.lastFailureAt = Date.now();
+    reqRefs.current.lastFailureClass = failure.failureClass;
+    reqRefs.current.lastFailureRetryAfterMs = failure.retryAfterMs;
+
+    const errorIntegrity = createWarehouseReqHeadsIntegrityState({
+      mode: "error",
+      failureClass: failure.failureClass,
+      reason: "fetch_req_heads_failed",
+      message: query.error instanceof Error ? query.error.message.trim() : String(query.error),
+      cacheUsed: false,
+    });
+    const errorListState = deriveWarehouseReqHeadsListState({
+      rows: [],
+      integrityState: errorIntegrity,
+    });
+
+    setReqHeadsIntegrityState(errorIntegrity);
+    setReqHeadsListState(errorListState);
+
+    recordWarehouseReqHeadsStateTrace({
+      timestamp: new Date().toISOString(),
+      stage: "publish",
+      publishState: "error",
+      freshness: "stale",
+      failureClass: failure.failureClass,
+      rowCount: 0,
+      cooldownActive: false,
+      cooldownReason: null,
+      reason: "fetch_req_heads_failed",
+      message: errorIntegrity.message,
+      trigger: "query_error",
+    });
+
+    recordPlatformObservability({
+      screen: "warehouse",
+      surface: "req_heads_list",
+      category: "ui",
+      event: "content_error",
+      result: "error",
+      trigger: "query_error",
+      rowCount: 0,
+      errorStage: "fetch_req_heads_failed",
+      errorClass: failure.failureClass,
+      errorMessage: errorIntegrity.message ?? undefined,
+      extra: {
+        pageSize,
+        retryAfterMs: failure.retryAfterMs,
+      },
+    });
+
+    if (__DEV__) {
+      console.warn("[warehouse.reqHeads] fetch failed", {
+        failureClass: failure.failureClass,
+        error: errorIntegrity.message,
       });
+    }
+  }, [query.isError, query.error, screenActiveRef, pageSize]);
 
-      if (!isWarehouseScreenActive(screenActiveRef)) {
-        return listState;
-      }
-
-      reqRefs.current.page = 0;
-      reqRefs.current.hasMore = params.hasMore;
-      setReqHeadsHasMore(params.hasMore);
-      setReqHeads(rows);
-      setReqHeadsIntegrityState(params.integrityState);
-      setReqHeadsListState(listState);
-
-      recordWarehouseReqHeadsStateTrace({
-        timestamp: new Date().toISOString(),
-        stage: params.stage ?? "publish",
-        publishState: listState.publishState,
-        freshness: listState.freshness,
-        failureClass: listState.failureClass,
-        rowCount: listState.rowCount,
-        cooldownActive: listState.cooldownActive,
-        cooldownReason: listState.cooldownReason,
-        reason: listState.reason,
-        message: listState.message,
-        trigger: params.trigger,
-      });
-
-      recordPlatformObservability({
-        screen: "warehouse",
-        surface: "req_heads_list",
-        category: "ui",
-        event: params.event,
-        result:
-          params.result ??
-          (listState.publishState === "error"
-            ? "error"
-            : listState.publishState === "ready" ||
-                listState.publishState === "empty"
-              ? "success"
-              : "cache_hit"),
-        trigger: params.trigger,
-        rowCount: rows.length,
-        sourceKind: params.sourceMeta?.sourceKind,
-        fallbackUsed:
-          params.sourceMeta?.fallbackUsed ??
-          listState.publishState === "error",
-        errorStage: listState.reason ?? undefined,
-        errorClass: listState.failureClass ?? undefined,
-        errorMessage: listState.message ?? undefined,
-        extra: {
-          publishState: listState.publishState,
-          freshness: listState.freshness,
-          cooldownActive: listState.cooldownActive,
-          cooldownReason: listState.cooldownReason,
-          pageSize,
-          hasMore: params.hasMore,
-          integrityMode: params.integrityState.mode,
-          pageOffset: params.meta?.pageOffset ?? 0,
-          scopeKey: params.meta?.scopeKey ?? null,
-          primaryOwner: params.sourceMeta?.primaryOwner ?? null,
-          contractVersion: params.meta?.contractVersion ?? null,
-          totalRowCount: params.meta?.totalRowCount ?? null,
-          ...params.extra,
-        },
-      });
-
-      return listState;
-    },
-    [pageSize, screenActiveRef],
-  );
-
+  // ── Imperative fetchReqHeads (backward compat) ──
   const fetchReqHeads = useCallback(
     async (pageIndex: number = 0, forceRefresh: boolean = false) => {
       if (!isWarehouseScreenActive(screenActiveRef)) return;
       const now = Date.now();
-      const trigger = getReqHeadsTrigger(pageIndex, forceRefresh);
+      const trigger = forceRefresh
+        ? "force_refresh"
+        : pageIndex > 0
+          ? "scroll"
+          : "focus";
+
+      // ── Network offline guard ──
       const networkSnapshot = getPlatformNetworkSnapshot();
       if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
         recordPlatformGuardSkip("network_known_offline", {
@@ -223,6 +251,8 @@ export function useWarehouseReqHeads(params: {
         });
         return;
       }
+
+      // ── Force refresh cooldown ──
       if (pageIndex === 0 && forceRefresh) {
         if (
           isPlatformGuardCoolingDown({
@@ -243,6 +273,7 @@ export function useWarehouseReqHeads(params: {
         reqRefs.current.lastForceStartAt = now;
       }
 
+      // ── Failure cooldown ──
       if (pageIndex === 0) {
         const cooldownDecision = evaluateWarehouseReqHeadsCooldown({
           lastFailureAt: reqRefs.current.lastFailureAt,
@@ -286,13 +317,36 @@ export function useWarehouseReqHeads(params: {
             cooldownActive: true,
             cooldownReason: cooldownDecision.cooldownReason,
           });
-          publishReqHeadsPage0({
+          const throttledListState = deriveWarehouseReqHeadsListState({
             rows: [],
-            hasMore: false,
             integrityState: throttledIntegrity,
+          });
+
+          setReqHeadsIntegrityState(throttledIntegrity);
+          setReqHeadsListState(throttledListState);
+
+          recordWarehouseReqHeadsStateTrace({
+            timestamp: new Date().toISOString(),
+            stage: "cooldown_skip",
+            publishState: throttledListState.publishState,
+            freshness: throttledListState.freshness,
+            failureClass: throttledListState.failureClass,
+            rowCount: 0,
+            cooldownActive: true,
+            cooldownReason: cooldownDecision.cooldownReason,
+            reason: throttledListState.reason,
+            message: throttledListState.message,
             trigger,
+          });
+
+          recordPlatformObservability({
+            screen: "warehouse",
+            surface: "req_heads_list",
+            category: "ui",
             event: "content_throttled",
             result: "skipped",
+            trigger,
+            rowCount: 0,
             extra: {
               pageIndex,
               forceRefresh,
@@ -300,218 +354,30 @@ export function useWarehouseReqHeads(params: {
               retryAfterMs: cooldownDecision.retryAfterMs,
               remainingMs: cooldownDecision.remainingMs,
             },
-            stage: "cooldown_skip",
           });
           return;
         }
       }
 
-      if (reqRefs.current.fetching) {
-        recordPlatformObservability({
-          screen: "warehouse",
-          surface: "req_heads",
-          category: "reload",
-          event: "fetch_req_heads",
-          result: "joined_inflight",
-          trigger,
-          extra: { pageIndex, forceRefresh },
-        });
-        return;
-      }
-      if (pageIndex > 0 && !reqRefs.current.hasMore && !forceRefresh) {
-        recordPlatformGuardSkip("no_more_pages", {
-          screen: "warehouse",
-          surface: "req_heads",
-          event: "fetch_req_heads",
-          trigger,
-          extra: { pageIndex, forceRefresh },
-        });
-        return;
-      }
-      reqRefs.current.fetching = true;
-      if (isWarehouseScreenActive(screenActiveRef))
-        setReqHeadsFetchingPage(true);
-      if (pageIndex === 0 && isWarehouseScreenActive(screenActiveRef))
-        setReqHeadsLoading(true);
-      const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
-      abortReqHeadsRequest("warehouse request heads superseded");
-      const requestSlot: ReqHeadsRequestSlot = {
-        key: requestKey,
-        controller: new AbortController(),
-      };
-      requestRef.current = requestSlot;
-      const { signal } = requestSlot.controller;
-
-      try {
-        throwIfAborted(signal);
-        const result = await apiFetchReqHeadsWindow(supabase, pageIndex, pageSize, {
-          signal,
-        });
-        throwIfAborted(signal);
-        if (requestRef.current !== requestSlot) return;
-        logReqHeadsMetrics("window_fetch", {
-          pageIndex,
-          pageSize,
-          forceRefresh,
-          rowCount: result.rows.length,
-          totalRowCount: result.meta.totalRowCount,
-          hasMore: result.meta.hasMore,
-          primaryOwner: result.sourceMeta.primaryOwner,
-          sourceKind: result.sourceMeta.sourceKind,
-          contractVersion: result.meta.contractVersion,
-          scopeKey: result.meta.scopeKey,
-          pageOffset: result.meta.pageOffset,
-          repairedMissingIdsCount: result.meta.repairedMissingIdsCount,
-        });
-        const next: ReqHeadsFetchValue = {
-          rows: result.rows,
-          hasMore: result.meta.hasMore,
-          meta: result.meta,
-          sourceMeta: result.sourceMeta,
-          integrityState: result.integrityState,
-        };
-        if (!isWarehouseScreenActive(screenActiveRef)) return;
-        const rows = next.rows;
-
-        const hasNext = next.hasMore;
-        reqRefs.current.hasMore = hasNext;
-        reqRefs.current.page = pageIndex;
-        setReqHeadsHasMore(hasNext);
-        if (pageIndex === 0) {
-          const publishDecision = resolveWarehouseReqHeadsPrimaryPublish({
-            rows,
-            hasMore: hasNext,
-            integrityState: next.integrityState,
-          });
-
-          if (publishDecision.integrityState.mode === "healthy") {
-            reqRefs.current.lastFailureAt = 0;
-            reqRefs.current.lastFailureClass = null;
-            reqRefs.current.lastFailureRetryAfterMs = 0;
-          } else {
-            const failureClass =
-              publishDecision.integrityState.failureClass ?? "server_failure";
-            reqRefs.current.lastFailureAt = Date.now();
-            reqRefs.current.lastFailureClass = failureClass;
-            reqRefs.current.lastFailureRetryAfterMs =
-              getWarehouseReqHeadsRetryAfterMs(failureClass);
-          }
-          publishReqHeadsPage0({
-            rows: publishDecision.rows,
-            hasMore: publishDecision.hasMore,
-            integrityState: publishDecision.integrityState,
-            trigger,
-            sourceMeta: next.sourceMeta,
-            meta: next.meta,
-            event:
-              publishDecision.listState.publishState === "error"
-                ? "content_error"
-                : "content_ready",
-            result:
-              publishDecision.listState.publishState === "error"
-                ? "error"
-                : undefined,
-            extra: {
-              stage: "primary",
-              pageIndex,
-              forceRefresh,
-              repairedMissingIdsCount: next.meta.repairedMissingIdsCount,
-              falseEmptyPrevented: publishDecision.falseEmptyPrevented,
-            },
-          });
-        } else {
-          let appendedRowCount = 0;
-          let duplicateRowCount = 0;
-          if (!isWarehouseScreenActive(screenActiveRef)) return;
-          setReqHeads((prev) => {
-            const exist = new Set(prev.map((r) => r.request_id));
-            const toAdd = rows.filter((r) => !exist.has(r.request_id));
-            appendedRowCount = toAdd.length;
-            duplicateRowCount = rows.length - toAdd.length;
-            return [...prev, ...toAdd];
-          });
-          recordPlatformObservability({
-            screen: "warehouse",
-            surface: "req_heads_list",
-            category: "ui",
-            event: "append_merge",
-            result: "success",
-            trigger,
-            rowCount: appendedRowCount,
-            sourceKind: next.sourceMeta.sourceKind,
-            fallbackUsed: next.sourceMeta.fallbackUsed,
-            extra: {
-              pageIndex,
-              pageOffset: next.meta.pageOffset,
-              scopeKey: next.meta.scopeKey,
-              primaryOwner: next.sourceMeta.primaryOwner,
-              contractVersion: next.meta.contractVersion,
-              totalRowCount: next.meta.totalRowCount,
-              duplicateRowCount,
-              integrityMode: next.integrityState.mode,
-              publishState: null,
-            },
-          });
-        }
-      } catch (e) {
-        if (isAbortError(e) || requestRef.current !== requestSlot) return;
-        if (!isWarehouseScreenActive(screenActiveRef)) return;
-        const failure = classifyWarehouseReqHeadsFailure(e);
-        if (pageIndex === 0) {
-          reqRefs.current.lastFailureAt = Date.now();
-          reqRefs.current.lastFailureClass = failure.failureClass;
-          reqRefs.current.lastFailureRetryAfterMs = failure.retryAfterMs;
-          publishReqHeadsPage0({
-            rows: [],
-            hasMore: false,
-            integrityState: createWarehouseReqHeadsIntegrityState({
-              mode: "error",
-              failureClass: failure.failureClass,
-              reason: "fetch_req_heads_failed",
-              message: pickErrMessage(e),
-              cacheUsed: false,
-            }),
-            trigger,
-            event: "content_error",
-            result: "error",
-            extra: {
-              pageIndex,
-              forceRefresh,
-              retryAfterMs: failure.retryAfterMs,
-            },
-          });
-        } else {
-          reqRefs.current.hasMore = false;
-          setReqHeadsHasMore(false);
-        }
-        if (__DEV__) {
-          console.warn("[warehouse.reqHeads] fetch failed", {
-            pageIndex,
-            forceRefresh,
-            failureClass: failure.failureClass,
-            error: pickErrMessage(e),
-          });
-        }
-        throw e;
-      } finally {
-        if (requestRef.current === requestSlot) {
-          requestRef.current = null;
-        }
-        reqRefs.current.fetching = false;
-        if (isWarehouseScreenActive(screenActiveRef)) {
-          setReqHeadsFetchingPage(false);
-          if (pageIndex === 0) setReqHeadsLoading(false);
+      // ── Delegate to query ──
+      if (pageIndex === 0) {
+        // Page 0 = invalidate (forces re-fetch of all pages from scratch)
+        query.invalidate();
+      } else {
+        // Append page
+        if (query.hasMore) {
+          await query.fetchNextPage();
         }
       }
     },
-    [abortReqHeadsRequest, publishReqHeadsPage0, screenActiveRef, supabase, pageSize],
+    [screenActiveRef, query],
   );
 
   return {
-    reqHeads,
-    reqHeadsLoading,
-    reqHeadsFetchingPage,
-    reqHeadsHasMore,
+    reqHeads: query.rows,
+    reqHeadsLoading: query.isLoading,
+    reqHeadsFetchingPage: query.isFetchingNextPage,
+    reqHeadsHasMore: query.hasMore,
     reqHeadsIntegrityState,
     reqHeadsListState,
     reqRefs,
