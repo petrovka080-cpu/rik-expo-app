@@ -7,10 +7,8 @@ import type { BuyerPublicationState } from "./useBuyerState";
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type {
   BuyerBucketsLoadResult,
-  BuyerInboxLoadResult,
   BuyerProposalBucketRow,
 } from "../buyer.fetchers";
-import { loadBuyerInboxWindowData } from "../buyer.fetchers";
 import {
   createBuyerSummaryService,
   type BuyerSummaryRefreshReason,
@@ -24,6 +22,28 @@ import {
 } from "../../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 import { useBuyerRealtimeLifecycle } from "../buyer.realtime.lifecycle";
+import { useBuyerInboxQuery } from "../useBuyerInboxQuery";
+
+/**
+ * useBuyerLoadingController — orchestrates buyer data loading.
+ *
+ * P6.3 migration: inbox window loading is now delegated to
+ * useBuyerInboxQuery (React Query useInfiniteQuery).
+ *
+ * Removed:
+ * - Manual inboxLoadInFlightRef (inflight join) — replaced by query dedup
+ * - Manual queuedInboxResetRef (queue-on-overlap) — replaced by query invalidation
+ * - Manual inboxLoadedGroupsRef (pagination state) — replaced by query page tracking
+ * - Manual inboxTotalGroupsRef (pagination state) — replaced by query page tracking
+ * - Manual inboxHasMoreRef (pagination state) — replaced by query page tracking
+ *
+ * Preserved:
+ * - Same return shape (5 keys)
+ * - Focus/network guards
+ * - Summary service for buckets/subcontracts
+ * - Realtime lifecycle
+ * - All observability events
+ */
 
 type AlertFn = (title: string, message?: string) => void;
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
@@ -39,7 +59,6 @@ type RefreshSummaryOptions = {
 type BuyerSummaryPublicationScope = "inbox" | "buckets";
 
 const DEFAULT_SCOPES: BuyerSummaryScope[] = ["inbox", "buckets", "subcontracts"];
-const BUYER_INBOX_GROUP_PAGE_SIZE = 12;
 const BUYER_FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
 
 const getVisibleScopes = (activeTab: BuyerTab): BuyerSummaryScope[] => {
@@ -126,14 +145,107 @@ export function useBuyerLoadingController(params: {
   const focusedRef = useRef(false);
   const hasHydratedRef = useRef(false);
   const lastFocusRefreshAtRef = useRef(0);
-  const inboxLoadedGroupsRef = useRef(0);
-  const inboxTotalGroupsRef = useRef(0);
-  const inboxHasMoreRef = useRef(false);
-  const inboxLoadInFlightRef = useRef<Promise<void> | null>(null);
-  const queuedInboxResetRef = useRef<BuyerSummaryRefreshReason | null>(null);
   const summaryRefreshInFlightRef = useRef(false);
   const searchKey = String(searchQuery ?? "").trim();
   const visibleBucketRowsCount = pending.length + approved.length + rejected.length;
+
+  // ── React Query inbox ──
+  const inboxQuery = useBuyerInboxQuery({
+    supabase,
+    listBuyerInbox,
+    searchQuery: searchKey,
+    enabled: focusedRef.current,
+    log,
+  });
+
+  // ── Sync query data → parent setters ──
+  const prevInboxRowCountRef = useRef(-1);
+  useEffect(() => {
+    if (inboxQuery.isLoading || inboxQuery.rows.length === prevInboxRowCountRef.current) return;
+    prevInboxRowCountRef.current = inboxQuery.rows.length;
+    setRows(inboxQuery.rows);
+    setInboxHasMore(inboxQuery.hasMore);
+    setInboxTotalCount(inboxQuery.totalGroupCount);
+
+    if (inboxQuery.lastPageMeta && inboxQuery.lastPageSourceMeta) {
+      recordPlatformObservability({
+        screen: "buyer",
+        surface: "inbox_list",
+        category: "ui",
+        event: "content_ready",
+        result: "success",
+        rowCount: inboxQuery.rows.length,
+        sourceKind: inboxQuery.lastPageSourceMeta.sourceKind,
+        fallbackUsed: inboxQuery.lastPageSourceMeta.fallbackUsed,
+        extra: {
+          primaryOwner: inboxQuery.lastPageSourceMeta.primaryOwner,
+          backendFirstPrimary: inboxQuery.lastPageSourceMeta.backendFirstPrimary,
+          totalGroupCount: inboxQuery.totalGroupCount,
+          hasMore: inboxQuery.hasMore,
+          search: inboxQuery.lastPageMeta.search,
+        },
+      });
+      setInboxPublicationState("ready");
+      setInboxPublicationMessage(null);
+    }
+
+    // Preload display nos
+    if (inboxQuery.requestIds.length) {
+      void (async () => {
+        try {
+          await preloadDisplayNos(inboxQuery.requestIds);
+        } catch (error) {
+          reportAndSwallow({
+            screen: "buyer",
+            surface: "inbox_list",
+            event: "preload_display_nos_failed",
+            error,
+            kind: "soft_failure",
+            category: "ui",
+            sourceKind: "cache:display_no",
+            errorStage: "preload_display_no",
+            extra: { requestIds: inboxQuery.requestIds, rowCount: inboxQuery.rows.length },
+          });
+        }
+      })();
+    }
+  }, [
+    inboxQuery.isLoading,
+    inboxQuery.rows,
+    inboxQuery.hasMore,
+    inboxQuery.totalGroupCount,
+    inboxQuery.requestIds,
+    inboxQuery.lastPageMeta,
+    inboxQuery.lastPageSourceMeta,
+    preloadDisplayNos,
+    setInboxHasMore,
+    setInboxPublicationMessage,
+    setInboxPublicationState,
+    setInboxTotalCount,
+    setRows,
+  ]);
+
+  // ── Sync loading states ──
+  useEffect(() => {
+    setLoadingInbox(inboxQuery.isLoading);
+  }, [inboxQuery.isLoading, setLoadingInbox]);
+
+  useEffect(() => {
+    setLoadingInboxMore(inboxQuery.isFetchingNextPage);
+  }, [inboxQuery.isFetchingNextPage, setLoadingInboxMore]);
+
+  // ── Sync error state ──
+  useEffect(() => {
+    if (inboxQuery.isError && inboxQuery.error) {
+      const errorMsg =
+        inboxQuery.error instanceof Error && inboxQuery.error.message.trim()
+          ? inboxQuery.error.message.trim()
+          : "Не удалось загрузить заявки снабженца.";
+      setInboxPublicationState(rows.length > 0 ? "degraded" : "error");
+      setInboxPublicationMessage(errorMsg);
+    }
+  }, [inboxQuery.isError, inboxQuery.error, rows.length, setInboxPublicationMessage, setInboxPublicationState]);
+
   const summaryService = useMemo(
     () =>
       createBuyerSummaryService({
@@ -195,189 +307,6 @@ export function useBuyerLoadingController(params: {
       setInboxPublicationState,
     ],
   );
-
-  const applyInboxResult = useCallback(async (
-    inbox: BuyerInboxLoadResult,
-    options?: { append?: boolean },
-  ) => {
-    setRows((previous) => {
-      if (!options?.append) return inbox.rows;
-      const seen = new Set(previous.map((row) => String(row.request_item_id ?? "").trim()).filter(Boolean));
-      const appended = inbox.rows.filter((row) => {
-        const key = String(row.request_item_id ?? "").trim();
-        if (!key || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      return previous.concat(appended);
-    });
-    inboxLoadedGroupsRef.current = inbox.meta.offsetGroups + inbox.meta.returnedGroupCount;
-    inboxTotalGroupsRef.current = inbox.meta.totalGroupCount;
-    inboxHasMoreRef.current = inbox.meta.hasMore;
-    setInboxHasMore(inbox.meta.hasMore);
-    setInboxTotalCount(inbox.meta.totalGroupCount);
-    recordPlatformObservability({
-      screen: "buyer",
-      surface: "inbox_list",
-      category: "ui",
-      event: "content_ready",
-      result: "success",
-      rowCount: inbox.rows.length,
-      sourceKind: inbox.sourceMeta.sourceKind,
-      fallbackUsed: inbox.sourceMeta.fallbackUsed,
-      extra: {
-        primaryOwner: inbox.sourceMeta.primaryOwner,
-        backendFirstPrimary: inbox.sourceMeta.backendFirstPrimary,
-        offsetGroups: inbox.meta.offsetGroups,
-        limitGroups: inbox.meta.limitGroups,
-        returnedGroupCount: inbox.meta.returnedGroupCount,
-        totalGroupCount: inbox.meta.totalGroupCount,
-        hasMore: inbox.meta.hasMore,
-        search: inbox.meta.search,
-        append: Boolean(options?.append),
-      },
-    });
-    publishBuyerScopeState("inbox", "ready", null, {
-      hasData: inbox.rows.length > 0,
-      append: Boolean(options?.append),
-      totalGroupCount: inbox.meta.totalGroupCount,
-      sourceKind: inbox.sourceMeta.sourceKind,
-    });
-    if (!inbox.requestIds.length) return;
-    try {
-      await preloadDisplayNos(inbox.requestIds);
-    } catch (error) {
-      reportAndSwallow({
-        screen: "buyer",
-        surface: "inbox_list",
-        event: "preload_display_nos_failed",
-        error,
-        kind: "soft_failure",
-        category: "ui",
-        sourceKind: "cache:display_no",
-        errorStage: "preload_display_no",
-        extra: {
-          requestIds: inbox.requestIds,
-          rowCount: inbox.rows.length,
-        },
-      });
-    }
-  }, [preloadDisplayNos, publishBuyerScopeState, setInboxHasMore, setInboxTotalCount, setRows]);
-
-  const loadInboxWindow = useCallback(async (options: {
-    reason: BuyerSummaryRefreshReason;
-    reset: boolean;
-    showScopeLoading?: boolean;
-  }) => {
-    if (!focusedRef.current) {
-      recordPlatformGuardSkip("not_focused", {
-        screen: "buyer",
-        surface: "summary_inbox",
-        event: "load_inbox",
-        trigger: options.reason,
-      });
-      return;
-    }
-    if (!options.reset && !inboxHasMoreRef.current) {
-      recordPlatformGuardSkip("no_more_pages", {
-        screen: "buyer",
-        surface: "summary_inbox",
-        event: "load_inbox",
-        trigger: options.reason,
-        extra: {
-          offsetGroups: inboxLoadedGroupsRef.current,
-        },
-      });
-      return;
-    }
-    const networkSnapshot = getPlatformNetworkSnapshot();
-    if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
-      recordPlatformGuardSkip("network_known_offline", {
-        screen: "buyer",
-        surface: "summary_inbox",
-        event: "load_inbox",
-        trigger: options.reason,
-        extra: {
-          offsetGroups: options.reset ? 0 : inboxLoadedGroupsRef.current,
-          search: searchKey || null,
-          networkKnownOffline: true,
-        },
-      });
-      return;
-    }
-
-    if (inboxLoadInFlightRef.current) {
-      if (options.reset) {
-        queuedInboxResetRef.current = options.reason;
-      }
-      return;
-    }
-
-    const offsetGroups = options.reset ? 0 : inboxLoadedGroupsRef.current;
-    const task = (async () => {
-      if (options.reset) {
-        if (options.showScopeLoading) setLoadingInbox(true);
-      } else {
-        setLoadingInboxMore(true);
-      }
-
-      try {
-        const inbox = await loadBuyerInboxWindowData({
-          supabase,
-          listBuyerInbox,
-          offsetGroups,
-          limitGroups: BUYER_INBOX_GROUP_PAGE_SIZE,
-          search: searchKey || null,
-          log,
-        });
-        if (!focusedRef.current) return;
-        await applyInboxResult(inbox, { append: !options.reset });
-      } catch (error) {
-        publishBuyerScopeState(
-          "inbox",
-          rows.length > 0 ? "degraded" : "error",
-          normalizeBuyerPublicationMessage("inbox", error),
-          {
-            reason: options.reason,
-            reset: options.reset,
-            search: searchKey || null,
-            hasData: rows.length > 0,
-          },
-        );
-        throw error;
-      } finally {
-        if (options.reset) {
-          if (options.showScopeLoading) setLoadingInbox(false);
-        } else {
-          setLoadingInboxMore(false);
-        }
-        inboxLoadInFlightRef.current = null;
-        const queuedResetReason = queuedInboxResetRef.current;
-        queuedInboxResetRef.current = null;
-        if (queuedResetReason && focusedRef.current) {
-          void loadInboxWindow({
-            reason: queuedResetReason,
-            reset: true,
-            showScopeLoading: false,
-          });
-        }
-      }
-    })();
-
-    inboxLoadInFlightRef.current = task;
-    await task;
-  }, [
-    applyInboxResult,
-    listBuyerInbox,
-    log,
-    normalizeBuyerPublicationMessage,
-    publishBuyerScopeState,
-    rows.length,
-    searchKey,
-    setLoadingInbox,
-    setLoadingInboxMore,
-    supabase,
-  ]);
 
   const applyBucketsResult = useCallback(async (buckets: BuyerBucketsLoadResult) => {
     setPending(buckets.pending);
@@ -467,12 +396,13 @@ export function useBuyerLoadingController(params: {
     if (showBucketsLoading) setLoadingBuckets(true);
 
     try {
+      // ── Inbox: delegate to React Query ──
       if (wantsInbox) {
-        await loadInboxWindow({
-          reason: options.reason,
-          reset: true,
-          showScopeLoading: !!options.showScopeLoading,
-        });
+        if (options.force) {
+          inboxQuery.invalidate();
+        } else {
+          void inboxQuery.refetch();
+        }
       }
 
       const result = serviceScopes.length
@@ -535,8 +465,8 @@ export function useBuyerLoadingController(params: {
   }, [
     approved.length,
     applyBucketsResult,
+    inboxQuery,
     log,
-    loadInboxWindow,
     normalizeBuyerPublicationMessage,
     pending.length,
     publishBuyerScopeState,
@@ -556,7 +486,7 @@ export function useBuyerLoadingController(params: {
     onRefreshScopes: async (next) => {
       await refreshSummary(next);
     },
-    isRefreshInFlight: () => summaryRefreshInFlightRef.current || inboxLoadInFlightRef.current != null,
+    isRefreshInFlight: () => summaryRefreshInFlightRef.current || inboxQuery.isFetching,
   });
 
   const fetchInbox = useCallback(async () => {
@@ -584,11 +514,37 @@ export function useBuyerLoadingController(params: {
   }, [refreshSummary]);
 
   const fetchInboxNextPage = useCallback(async () => {
-    try {
-      await loadInboxWindow({
-        reason: "focus",
-        reset: false,
+    if (!focusedRef.current) {
+      recordPlatformGuardSkip("not_focused", {
+        screen: "buyer",
+        surface: "summary_inbox",
+        event: "load_inbox",
+        trigger: "focus",
       });
+      return;
+    }
+    if (!inboxQuery.hasMore) {
+      recordPlatformGuardSkip("no_more_pages", {
+        screen: "buyer",
+        surface: "summary_inbox",
+        event: "load_inbox",
+        trigger: "focus",
+      });
+      return;
+    }
+    const networkSnapshot = getPlatformNetworkSnapshot();
+    if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
+      recordPlatformGuardSkip("network_known_offline", {
+        screen: "buyer",
+        surface: "summary_inbox",
+        event: "load_inbox",
+        trigger: "focus",
+        extra: { networkKnownOffline: true },
+      });
+      return;
+    }
+    try {
+      await inboxQuery.fetchNextPage();
     } catch (error) {
       reportAndSwallow({
         screen: "buyer",
@@ -600,14 +556,12 @@ export function useBuyerLoadingController(params: {
         errorStage: "load_next_page",
         trigger: "focus",
         extra: {
-          offsetGroups: inboxLoadedGroupsRef.current,
           search: searchKey || null,
         },
       });
       log?.("[buyer.summary] inbox next page failed:", error instanceof Error ? error.message : String(error));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-  }, [loadInboxWindow]);
+  }, [inboxQuery, log, searchKey]);
 
   useFocusEffect(
     useCallback(() => {
@@ -648,12 +602,11 @@ export function useBuyerLoadingController(params: {
     if (!focusedRef.current) return;
     if (activeTab !== "inbox") return;
     if (!hasHydratedRef.current) return;
-    void loadInboxWindow({
-      reason: "focus",
-      reset: true,
-      showScopeLoading: false,
-    });
-  }, [activeTab, loadInboxWindow, searchKey]);
+    // When search changes, the query key changes and React Query re-fetches automatically.
+    // Just invalidate to force fresh data.
+    inboxQuery.invalidate();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- search key drives reload
+  }, [activeTab, searchKey]);
 
   const onRefresh = useCallback(async () => {
     await refreshSummary({
