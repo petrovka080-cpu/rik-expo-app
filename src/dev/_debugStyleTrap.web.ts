@@ -11,12 +11,14 @@ React.createElement = function (type: any, props: any, ...children: any[]) {
     reported = true;
     try {
       // печатаем виновника: тег, props.style и стек (чтобы увидеть файл/строку)
-      console.error(
-        "[STYLE-ARRAY→DOM] tag =", type,
-        "\nstyle =", props.style,
-        "\nstack =",
-        new Error().stack
-      );
+      if (__DEV__) {
+        console.error(
+          "[STYLE-ARRAY→DOM] tag =", type,
+          "\nstyle =", props.style,
+          "\nstack =",
+          new Error().stack
+        );
+      }
     } catch {}
   }
   return orig(type, props, ...children);

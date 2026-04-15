@@ -26,6 +26,6 @@ if (typeof document !== "undefined") {
 
   // маркер — чтобы видеть, что гард точно активен
   // eslint-disable-next-line no-console
-  console.log("[webStyleGuard] ACTIVE (flatten-all)");
+  if (__DEV__) console.log("[webStyleGuard] ACTIVE (flatten-all)");
 }
 

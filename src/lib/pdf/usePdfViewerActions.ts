@@ -12,6 +12,7 @@
  */
 
 import React from "react";
+import { logger } from "../logger";
 import {
   openPdfDocumentExternal,
   sharePdfDocument,
@@ -33,7 +34,7 @@ export function usePdfViewerActions(params: {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       markError(message);
-      console.error("[pdf-viewer] share_error", {
+      logger.error("pdf-viewer", "share_error", {
         documentType: asset.documentType,
         originModule: asset.originModule,
         error: message,
@@ -50,7 +51,7 @@ export function usePdfViewerActions(params: {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       markError(message);
-      console.error("[pdf-viewer] external_open_error", {
+      logger.error("pdf-viewer", "external_open_error", {
         documentType: asset.documentType,
         originModule: asset.originModule,
         error: message,

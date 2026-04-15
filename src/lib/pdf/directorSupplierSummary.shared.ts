@@ -1,5 +1,6 @@
 import { esc, fmtDateOnly, formatArrowPeriodText, formatPaidRangeText, joinBulletParts, money, nnum } from "../api/pdf_director.format.ts";
 import { joinHtml, renderBox, renderDocumentShell, renderInlineKpiRow, renderLabelValueCell, renderMuted, renderPageFooter, renderTable, renderTag } from "./pdf.director.sections.ts";
+import { logger } from "../logger";
 
 export type DirectorFinanceSupplierSummaryPdfRequest = {
   version: "v1";
@@ -200,22 +201,18 @@ function mapSupplierSummaryItem(
   // raw RPC rows instead of normalized FinanceRow objects. This helps track
   // data contract mismatches without silently masking them.
   if (amountDirect == null && amount !== 0) {
-    if (typeof console?.warn === "function") {
-      console.warn("[pdf-finance-mapping-fallback] amount resolved via fallback field", {
-        proposalId: proposalIdOf(row),
-        resolvedAmount: amount,
-        fieldUsed: row.invoice_amount != null ? "invoice_amount" : "invoiceAmount",
-      });
-    }
+    logger.warn("pdf-finance-mapping-fallback", "amount resolved via fallback field", {
+      proposalId: proposalIdOf(row),
+      resolvedAmount: amount,
+      fieldUsed: row.invoice_amount != null ? "invoice_amount" : "invoiceAmount",
+    });
   }
   if (paidDirect == null && paid !== 0) {
-    if (typeof console?.warn === "function") {
-      console.warn("[pdf-finance-mapping-fallback] paid resolved via fallback field", {
-        proposalId: proposalIdOf(row),
-        resolvedPaid: paid,
-        fieldUsed: row.total_paid != null ? "total_paid" : row.totalPaid != null ? "totalPaid" : "paid_amount",
-      });
-    }
+    logger.warn("pdf-finance-mapping-fallback", "paid resolved via fallback field", {
+      proposalId: proposalIdOf(row),
+      resolvedPaid: paid,
+      fieldUsed: row.total_paid != null ? "total_paid" : row.totalPaid != null ? "totalPaid" : "paid_amount",
+    });
   }
   const rest = Math.max(amount - paid, 0);
   const status =
