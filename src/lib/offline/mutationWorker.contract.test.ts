@@ -408,7 +408,10 @@ describe("mutationWorker contract", () => {
     const result = await flushForemanMutationQueue(deps);
 
     expect(result.failed).toBe(true);
-    expect(inspectRemoteDraft).toHaveBeenCalledTimes(1);
+    // P6.3e: inspectRemoteDraft is now called twice — once in the
+    // pre-sync terminal guard (which throws non-fatally here) and
+    // once in deriveConflictFromFailure during finalizeFailure.
+    expect(inspectRemoteDraft).toHaveBeenCalledTimes(2);
     expect(mockedRecordPlatformObservability).toHaveBeenCalledWith(
       expect.objectContaining({
         screen: "foreman",

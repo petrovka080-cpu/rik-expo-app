@@ -418,6 +418,67 @@ const runFlush = async (
     const effectiveTriggerSource =
       triggerSourceOverride ?? entry.payload.triggerSource;
 
+    // ── P6.3e: Terminal-request guard ──────────────────────────
+    // Before attempting to sync, check if the request is already terminal
+    // on the server. If so, remove the mutation and clean up instead of
+    // syncing — which would fail and write recovery state back into the
+    // durable store, overwriting any prior cleanup.
+    const requestIdForGuard =
+      String(snapshot?.requestId ?? entry.payload.requestId ?? "").trim() || null;
+    if (requestIdForGuard && deps.inspectRemoteDraft) {
+      try {
+        const remoteInspection = await deps.inspectRemoteDraft({
+          requestId: requestIdForGuard,
+          localSnapshot: snapshot,
+        });
+        if (remoteInspection.isTerminal) {
+          if (__DEV__) {
+            console.info("[foreman.mutation-worker] skipping terminal request", {
+              requestId: requestIdForGuard,
+              remoteStatus: remoteInspection.status,
+            });
+          }
+          await removeForemanMutationById(entry.id);
+          // Clear all remaining mutations for this draft key
+          await clearForemanMutationsForDraft(entry.payload.draftKey);
+          if (
+            requestIdForGuard !== FOREMAN_LOCAL_ONLY_REQUEST_ID &&
+            entry.payload.draftKey !== requestIdForGuard
+          ) {
+            await clearForemanMutationsForDraft(requestIdForGuard);
+          }
+          await patchForemanDurableDraftRecoveryState({
+            snapshot: null,
+            syncStatus: "idle",
+            pendingOperationsCount: 0,
+            queueDraftKey: null,
+            requestIdKnown: false,
+            attentionNeeded: false,
+            conflictType: "none",
+            lastConflictAt: null,
+            recoverableLocalSnapshot: null,
+            lastError: null,
+            lastErrorAt: null,
+            lastErrorStage: null,
+            retryCount: 0,
+            repeatedFailureStageCount: 0,
+            lastTriggerSource: effectiveTriggerSource,
+            lastSyncAt: Date.now(),
+          });
+          return {
+            processedCount,
+            remainingCount: 0,
+            requestId: requestIdForGuard,
+            submitted: latestSubmitted,
+            failed: false,
+            errorMessage: null,
+          };
+        }
+      } catch {
+        // Remote inspection failure is non-fatal; proceed with normal sync.
+      }
+    }
+
     await markForemanDurableDraftSyncStarted(pendingBefore, {
       queueDraftKey: entry.payload.draftKey,
       triggerSource: effectiveTriggerSource,

@@ -1393,6 +1393,47 @@ export function useForemanDraftBoundary({
         const pendingOperationsCount = await getForemanPendingMutationCountForDraftKeys(
           getDraftQueueKeys(durableSnapshot),
         );
+
+        // ── P6.3e: Reconciliation MUST run BEFORE re-enqueue ──────────
+        // Previous order: enqueue first, reconcile second. This caused
+        // the mutation worker to pick up the enqueued mutation concurrently,
+        // fail against the terminal server state, and write recovery state
+        // back into the durable store — overwriting the reconciliation cleanup.
+        // Now we check remote status FIRST then decide whether to enqueue.
+        if (ridStr(durableSnapshot.requestId)) {
+          const reconciledRequestId = ridStr(durableSnapshot.requestId)!;
+          try {
+            if (options?.cancelled?.()) return;
+            const remoteDetails = await fetchRequestDetails(reconciledRequestId);
+            const remoteStatus = remoteDetails?.status ?? null;
+            if (remoteStatus && !isDraftLikeStatus(remoteStatus)) {
+              if (__DEV__) {
+                console.info("[foreman.bootstrap-reconciliation] clearing stale draft (pre-enqueue)", {
+                  requestId: reconciledRequestId,
+                  remoteStatus,
+                  localSnapshotItems: durableSnapshot.items.length,
+                  submitRequested: durableSnapshot.submitRequested,
+                });
+              }
+              await clearTerminalLocalDraft({
+                snapshot: durableSnapshot,
+                requestId: reconciledRequestId,
+                remoteStatus,
+              });
+              await refreshBoundarySyncState(null);
+              return;
+            }
+          } catch {
+            // Network failure during reconciliation is non-fatal.
+            if (__DEV__) {
+              console.info("[foreman.bootstrap-reconciliation] skipped (network error)", {
+                requestId: reconciledRequestId,
+              });
+            }
+          }
+        }
+
+        // Only re-enqueue if reconciliation didn't clear the draft
         if (
           pendingOperationsCount === 0 &&
           isForemanConflictAutoRecoverable(getForemanDurableDraftState().conflictType) &&
@@ -1416,52 +1457,6 @@ export function useForemanDraftBoundary({
             queueDraftKey: getDraftQueueKey(durableSnapshot),
             triggerSource: "bootstrap_complete",
           });
-        }
-      }
-
-      // ── P6.3a: Post-bootstrap reconciliation ──────────────────────────
-      // If the restored snapshot references a known requestId, check
-      // the server to see if the request has already moved past draft
-      // status (submitted, approved, etc.). If so, the local draft is
-      // stale and must be cleared to prevent phantom draft cards,
-      // "needs attention" banners, and stale sync indicators.
-      if (
-        durableSnapshot &&
-        hasForemanLocalDraftContent(durableSnapshot) &&
-        ridStr(durableSnapshot.requestId)
-      ) {
-        const reconciledRequestId = ridStr(durableSnapshot.requestId)!;
-        try {
-          if (options?.cancelled?.()) return;
-          const remoteDetails = await fetchRequestDetails(reconciledRequestId);
-          const remoteStatus = remoteDetails?.status ?? null;
-          if (remoteStatus && !isDraftLikeStatus(remoteStatus)) {
-            // Server says this request is no longer a draft — clear stale local state
-            if (__DEV__) {
-              console.info("[foreman.bootstrap-reconciliation] clearing stale draft", {
-                requestId: reconciledRequestId,
-                remoteStatus,
-                localSnapshotItems: durableSnapshot.items.length,
-                submitRequested: durableSnapshot.submitRequested,
-              });
-            }
-            await clearTerminalLocalDraft({
-              snapshot: durableSnapshot,
-              requestId: reconciledRequestId,
-              remoteStatus,
-            });
-            // After clearing, durableSnapshot is no longer valid
-            await refreshBoundarySyncState(null);
-            return;
-          }
-        } catch {
-          // Network failure during reconciliation is non-fatal.
-          // The stale state will be caught on next bootstrap or sync attempt.
-          if (__DEV__) {
-            console.info("[foreman.bootstrap-reconciliation] skipped (network error)", {
-              requestId: reconciledRequestId,
-            });
-          }
         }
       }
 
