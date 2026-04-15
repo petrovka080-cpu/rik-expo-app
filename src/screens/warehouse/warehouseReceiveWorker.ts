@@ -2,6 +2,10 @@ import type { RpcReceiveApplyResult } from "./warehouse.types";
 import type { PlatformOfflineRetryTriggerSource } from "../../lib/offline/platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "../../lib/offline/platformOffline.observability";
 import {
+  shouldClearLocalRecoveryState,
+  type PlatformTerminalTruth,
+} from "../../lib/offline/platformTerminalRecovery";
+import {
   requestOfflineReplay,
   type OfflineReplayPolicy,
 } from "../../lib/offline/offlineReplayCoordinator";
@@ -25,6 +29,7 @@ import {
   removeWarehouseReceiveQueueEntry,
   resetInflightWarehouseReceiveQueue,
 } from "./warehouseReceiveQueue";
+import { clearWarehouseReceiveLocalRecovery } from "./warehouse.terminalRecovery";
 
 type WarehouseReceiveWorkerTriggerSource = PlatformOfflineRetryTriggerSource;
 
@@ -50,6 +55,9 @@ type WarehouseReceiveWorkerDeps = {
   }) => Promise<{ data: RpcReceiveApplyResult | null; error: { message?: string | null } | null }>;
   refreshAfterSuccess?: (incomingId: string) => Promise<void>;
   getNetworkOnline?: () => boolean | null;
+  inspectRemoteReceive?: (
+    incomingId: string,
+  ) => Promise<PlatformTerminalTruth | null | undefined>;
 };
 
 const trim = (value: unknown) => String(value ?? "").trim();
@@ -159,6 +167,69 @@ const runFlush = async (
         lastLeftAfter,
         triggerSource,
       };
+    }
+
+    if (deps.inspectRemoteReceive) {
+      try {
+        const remoteTruth = await deps.inspectRemoteReceive(entry.incomingId);
+        if (shouldClearLocalRecoveryState({ remoteTruth })) {
+          await clearWarehouseReceiveLocalRecovery(entry.incomingId);
+          recordPlatformOfflineTelemetry({
+            contourKey: "warehouse_receive",
+            entityKey: entry.incomingId,
+            syncStatus: "synced",
+            queueAction: "sync_success",
+            coalesced: inflight.coalescedCount > 0,
+            retryCount: inflight.retryCount,
+            pendingCount: 0,
+            failureClass: "none",
+            triggerKind: triggerSource,
+            networkKnownOffline: deps.getNetworkOnline?.() === false,
+            restoredAfterReopen: restoredInflightCount > 0,
+            manualRetry: triggerSource === "manual_retry",
+            durationMs: null,
+            errorMessage: remoteTruth?.reason ?? "terminal_remote_cleanup",
+          });
+          processedCount += 1;
+          lastIncomingId = entry.incomingId;
+          continue;
+        }
+      } catch (error) {
+        const message = toErrorText(error);
+        await markWarehouseReceiveQueueFailed(entry.id, message);
+        await markWarehouseReceiveDraftRetryWait(
+          entry.incomingId,
+          message,
+          await getWarehouseReceivePendingCount(entry.incomingId),
+        );
+        recordPlatformOfflineTelemetry({
+          contourKey: "warehouse_receive",
+          entityKey: entry.incomingId,
+          syncStatus: "retry_wait",
+          queueAction: "sync_retry_wait",
+          coalesced: inflight.coalescedCount > 0,
+          retryCount: inflight.retryCount + 1,
+          pendingCount: await getWarehouseReceivePendingCount(entry.incomingId),
+          failureClass: "retryable_sync_failure",
+          triggerKind: triggerSource,
+          networkKnownOffline: deps.getNetworkOnline?.() === false,
+          restoredAfterReopen: false,
+          manualRetry: triggerSource === "manual_retry",
+          durationMs: null,
+          errorMessage: message,
+        });
+        return {
+          processedCount,
+          remainingCount: await getWarehouseReceivePendingCount(),
+          failed: true,
+          errorMessage: message,
+          lastIncomingId,
+          lastOkCount,
+          lastFailCount,
+          lastLeftAfter,
+          triggerSource,
+        };
+      }
     }
 
     const warehousemanFio = trim(deps.getWarehousemanFio());

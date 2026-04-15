@@ -12,12 +12,14 @@ import {
 import { resetOfflineReplayCoordinatorForTests } from "./offlineReplayCoordinator";
 import {
   clearContractorProgressDraftStore,
+  clearContractorProgressDraftForProgress,
   configureContractorProgressDraftStore,
   getContractorProgressDraft,
   patchContractorProgressDraftContext,
   setContractorProgressDraftFields,
   setContractorProgressDraftMaterials,
 } from "../../screens/contractor/contractor.progressDraft.store";
+import { clearContractorProgressLocalRecovery } from "../../screens/contractor/contractor.terminalRecovery";
 
 const mockEnsureWorkProgressSubmission = jest.fn();
 
@@ -147,5 +149,91 @@ describe("contractorProgressWorker replay discipline", () => {
     expect(maxActive).toBe(1);
     expect(await loadContractorProgressQueue()).toEqual([]);
     expect(getContractorProgressDraft("progress-1")?.syncStatus).toBe("synced");
+  });
+
+  it("cleanup removes progress draft and queue entry for terminal work", async () => {
+    await seedProgressDraft("progress-terminal");
+
+    const result = await clearContractorProgressLocalRecovery("progress-terminal");
+
+    expect(result).toMatchObject({
+      kind: "contractor_progress",
+      entityId: "progress-terminal",
+      cleared: true,
+      clearedOwners: [
+        "contractor_progress_queue_v2",
+        "contractor_progress_draft_store_v2",
+      ],
+    });
+    expect(getContractorProgressDraft("progress-terminal")).toBeNull();
+    expect(await loadContractorProgressQueue()).toEqual([]);
+  });
+
+  it("removing one progress draft leaves unrelated local recovery untouched", async () => {
+    await seedProgressDraft("progress-terminal");
+    await seedProgressDraft("progress-active");
+
+    await clearContractorProgressDraftForProgress("progress-terminal");
+
+    expect(getContractorProgressDraft("progress-terminal")).toBeNull();
+    expect(getContractorProgressDraft("progress-active")).toBeTruthy();
+  });
+
+  it("app active flush clears terminal progress recovery instead of submitting it", async () => {
+    await seedProgressDraft("progress-terminal");
+    mockEnsureWorkProgressSubmission.mockResolvedValue({
+      ok: true,
+      logId: "log-terminal",
+    });
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+        inspectRemoteProgress: async () => ({
+          kind: "contractor_progress",
+          entityId: "progress-terminal",
+          terminal: true,
+          reason: "work_closed_on_server",
+        }),
+      },
+      "app_active",
+    );
+
+    expect(result.failed).toBe(false);
+    expect(mockEnsureWorkProgressSubmission).not.toHaveBeenCalled();
+    expect(getContractorProgressDraft("progress-terminal")).toBeNull();
+    expect(await loadContractorProgressQueue()).toEqual([]);
+  });
+
+  it("worker still processes active progress recovery when remote truth is not terminal", async () => {
+    await seedProgressDraft("progress-active");
+    mockEnsureWorkProgressSubmission.mockResolvedValue({
+      ok: true,
+      logId: "log-active",
+    });
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+        inspectRemoteProgress: async () => ({
+          kind: "contractor_progress",
+          entityId: "progress-active",
+          terminal: false,
+          status: "ready",
+          remainingCount: 1,
+        }),
+      },
+      "network_back",
+    );
+
+    expect(result.failed).toBe(false);
+    expect(mockEnsureWorkProgressSubmission).toHaveBeenCalledTimes(1);
+    expect(getContractorProgressDraft("progress-active")?.syncStatus).toBe("synced");
   });
 });

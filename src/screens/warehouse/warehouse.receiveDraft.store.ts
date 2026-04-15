@@ -155,6 +155,30 @@ export const clearWarehouseReceiveDraftStore = async (): Promise<WarehouseReceiv
     drafts: {},
   });
 
+export const clearWarehouseReceiveDraftForIncoming = async (
+  incomingId: string,
+): Promise<WarehouseReceiveDraftStoreState> => {
+  const key = trim(incomingId);
+  if (!key) return useWarehouseReceiveDraftStore.getState();
+
+  return await updateDrafts((state) => {
+    if (!state.drafts[key]) {
+      return {
+        ...state,
+        hydrated: true,
+      };
+    }
+
+    const nextDrafts = { ...state.drafts };
+    delete nextDrafts[key];
+    return {
+      ...state,
+      hydrated: true,
+      drafts: nextDrafts,
+    };
+  });
+};
+
 export const getWarehouseReceiveDraft = (incomingId: string): WarehouseReceiveDraftRecord | null => {
   const key = trim(incomingId);
   if (!key) return null;

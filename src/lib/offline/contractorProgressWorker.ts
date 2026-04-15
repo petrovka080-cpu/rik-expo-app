@@ -44,6 +44,11 @@ import {
   requestOfflineReplay,
   type OfflineReplayPolicy,
 } from "./offlineReplayCoordinator";
+import {
+  shouldClearLocalRecoveryState,
+  type PlatformTerminalTruth,
+} from "./platformTerminalRecovery";
+import { clearContractorProgressLocalRecovery } from "../../screens/contractor/contractor.terminalRecovery";
 
 type ContractorProgressWorkerTriggerSource = PlatformOfflineRetryTriggerSource;
 
@@ -63,6 +68,9 @@ type ContractorProgressWorkerDeps = {
   pickFirstNonEmpty: (...values: any[]) => string | null;
   refreshAfterSuccess?: (progressId: string) => Promise<void>;
   getNetworkOnline?: () => boolean | null;
+  inspectRemoteProgress?: (
+    progressId: string,
+  ) => Promise<PlatformTerminalTruth | null | undefined>;
 };
 
 type ContractorProgressFailureAssessment = {
@@ -285,6 +293,115 @@ const runFlush = async (
         lastErrorStage: "sync_rpc",
         triggerSource,
       };
+    }
+
+    if (deps.inspectRemoteProgress) {
+      try {
+        const remoteTruth = await deps.inspectRemoteProgress(entry.progressId);
+        if (shouldClearLocalRecoveryState({ remoteTruth })) {
+          await clearContractorProgressLocalRecovery(entry.progressId);
+          recordPlatformOfflineTelemetry({
+            contourKey: "contractor_progress",
+            entityKey: entry.progressId,
+            syncStatus: "synced",
+            queueAction: "sync_success",
+            coalesced: inflight.coalescedCount > 0,
+            retryCount: inflight.retryCount,
+            pendingCount: 0,
+            failureClass: "none",
+            triggerKind: triggerSource,
+            networkKnownOffline: deps.getNetworkOnline?.() === false,
+            restoredAfterReopen: restoredInflightCount > 0,
+            manualRetry: triggerSource === "manual_retry",
+            durationMs: null,
+            errorMessage: remoteTruth?.reason ?? "terminal_remote_cleanup",
+          });
+          processedCount += 1;
+          lastProgressId = entry.progressId;
+          continue;
+        }
+      } catch (error) {
+        const failure = classifyContractorProgressFailure(error);
+        const decision = resolveOfflineMutationFailureDecision({
+          policy: CONTRACTOR_RETRY_POLICY,
+          attemptCount: inflight.attemptCount,
+          retryable: failure.retryable,
+          conflicted: failure.conflictType !== "none",
+          errorKind: failure.errorKind,
+        });
+        if (decision.lifecycleStatus === "retry_scheduled") {
+          await markContractorProgressQueueRetryScheduled({
+            queueId: entry.id,
+            errorMessage: failure.errorMessage,
+            errorCode: failure.errorCode,
+            errorKind: failure.errorKind,
+            nextRetryAt: decision.nextRetryAt,
+          });
+          await markContractorProgressRetryWait(entry.progressId, {
+            errorMessage: failure.errorMessage,
+            errorStage: "terminal_preflight",
+            pendingCount: await getContractorProgressPendingCount(entry.progressId),
+            failureClass: failure.failureClass === "offline_wait" ? "offline_wait" : "retryable_sync_failure",
+            errorKind: failure.errorKind,
+            errorCode: failure.errorCode,
+            nextRetryAt: decision.nextRetryAt,
+          });
+        } else {
+          await markContractorProgressQueueFailedNonRetryable({
+            queueId: entry.id,
+            errorMessage: failure.errorMessage,
+            errorCode: failure.errorCode,
+            errorKind: failure.errorKind,
+            exhausted: decision.retryExhausted,
+          });
+          await markContractorProgressFailedTerminal(entry.progressId, {
+            errorMessage: failure.errorMessage,
+            errorStage: "terminal_preflight",
+            failureClass: failure.failureClass === "conflicted" ? "conflicted" : "failed_terminal",
+            conflictType: failure.conflictType,
+            errorKind: failure.errorKind,
+            errorCode: failure.errorCode,
+          });
+        }
+        recordPlatformOfflineTelemetry({
+          contourKey: "contractor_progress",
+          entityKey: entry.progressId,
+          syncStatus: decision.lifecycleStatus === "retry_scheduled" ? "retry_wait" : "failed_terminal",
+          queueAction: decision.lifecycleStatus === "retry_scheduled" ? "sync_retry_wait" : "sync_failed_terminal",
+          coalesced: inflight.coalescedCount > 0,
+          retryCount: decision.lifecycleStatus === "retry_scheduled" ? inflight.retryCount + 1 : inflight.retryCount,
+          pendingCount: await getContractorProgressPendingCount(entry.progressId),
+          failureClass:
+            decision.lifecycleStatus === "retry_scheduled"
+              ? failure.failureClass === "offline_wait"
+                ? "offline_wait"
+                : "retryable_sync_failure"
+              : "failed_terminal",
+          triggerKind: triggerSource,
+          networkKnownOffline: deps.getNetworkOnline?.() === false,
+          restoredAfterReopen: false,
+          manualRetry: triggerSource === "manual_retry",
+          durationMs: null,
+          errorMessage: failure.errorMessage,
+        });
+        return {
+          processedCount,
+          remainingCount: await getContractorProgressPendingCount(),
+          failed: true,
+          errorMessage: failure.errorMessage,
+          failureClass:
+            decision.lifecycleStatus === "retry_scheduled"
+              ? failure.failureClass === "offline_wait"
+                ? "offline_wait"
+                : "retryable_sync_failure"
+              : failure.failureClass === "conflicted"
+                ? "conflicted"
+                : "failed_terminal",
+          lastProgressId,
+          lastErrorStage: "terminal_preflight",
+          triggerSource,
+        };
+      }
     }
 
     const draftBefore = getContractorProgressDraft(entry.progressId);

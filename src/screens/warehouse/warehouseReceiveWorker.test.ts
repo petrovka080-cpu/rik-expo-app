@@ -6,6 +6,7 @@ import {
 import { resetOfflineReplayCoordinatorForTests } from "../../lib/offline/offlineReplayCoordinator";
 import {
   clearWarehouseReceiveDraftStore,
+  clearWarehouseReceiveDraftForIncoming,
   configureWarehouseReceiveDraftStore,
   getWarehouseReceiveDraft,
   setWarehouseReceiveDraftItems,
@@ -21,6 +22,7 @@ import {
   WAREHOUSE_RECEIVE_REPLAY_POLICY,
   flushWarehouseReceiveQueue,
 } from "./warehouseReceiveWorker";
+import { clearWarehouseReceiveLocalRecovery } from "./warehouse.terminalRecovery";
 
 const seedReceiveDraft = async (incomingId = "incoming-1") => {
   await setWarehouseReceiveDraftItems(incomingId, [
@@ -192,5 +194,88 @@ describe("warehouse receive worker", () => {
         clientMutationId: queued?.id,
       }),
     );
+  });
+
+  it("cleanup removes receive draft and queue entry for terminal incoming", async () => {
+    await seedReceiveDraft("incoming-terminal");
+
+    const result = await clearWarehouseReceiveLocalRecovery("incoming-terminal");
+
+    expect(result).toMatchObject({
+      kind: "warehouse_receive",
+      entityId: "incoming-terminal",
+      cleared: true,
+      clearedOwners: [
+        "warehouse_receive_queue_v1",
+        "warehouse_receive_draft_store_v1",
+      ],
+    });
+    expect(getWarehouseReceiveDraft("incoming-terminal")).toBeNull();
+    expect(await loadWarehouseReceiveQueue()).toEqual([]);
+  });
+
+  it("removing one receive draft leaves unrelated local recovery untouched", async () => {
+    await seedReceiveDraft("incoming-terminal");
+    await seedReceiveDraft("incoming-active");
+
+    await clearWarehouseReceiveDraftForIncoming("incoming-terminal");
+
+    expect(getWarehouseReceiveDraft("incoming-terminal")).toBeNull();
+    expect(getWarehouseReceiveDraft("incoming-active")).toBeTruthy();
+  });
+
+  it("bootstrap flush clears terminal receive recovery instead of applying it", async () => {
+    await seedReceiveDraft("incoming-terminal");
+    const applyReceive = jest.fn(async () => ({
+      data: { ok: 1, fail: 0, left_after: 0 },
+      error: null,
+    }));
+
+    const result = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+        inspectRemoteReceive: async () => ({
+          kind: "warehouse_receive",
+          entityId: "incoming-terminal",
+          terminal: true,
+          reason: "receive_completed_on_server",
+        }),
+      },
+      "bootstrap_complete",
+    );
+
+    expect(result.failed).toBe(false);
+    expect(applyReceive).not.toHaveBeenCalled();
+    expect(getWarehouseReceiveDraft("incoming-terminal")).toBeNull();
+    expect(await loadWarehouseReceiveQueue()).toEqual([]);
+  });
+
+  it("worker still processes active receive recovery when remote truth is not terminal", async () => {
+    await seedReceiveDraft("incoming-active");
+    const applyReceive = jest.fn(async () => ({
+      data: { ok: 1, fail: 0, left_after: 0 },
+      error: null,
+    }));
+
+    const result = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+        inspectRemoteReceive: async () => ({
+          kind: "warehouse_receive",
+          entityId: "incoming-active",
+          terminal: false,
+          remainingCount: 2,
+        }),
+      },
+      "network_back",
+    );
+
+    expect(result.failed).toBe(false);
+    expect(applyReceive).toHaveBeenCalledTimes(1);
+    expect(getWarehouseReceiveDraft("incoming-active")?.status).toBe("synced");
   });
 });

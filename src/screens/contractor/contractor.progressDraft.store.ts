@@ -336,6 +336,30 @@ export const clearContractorProgressDraftStore = async (): Promise<ContractorPro
     drafts: {},
   });
 
+export const clearContractorProgressDraftForProgress = async (
+  progressId: string,
+): Promise<ContractorProgressDraftStoreState> => {
+  const key = trim(progressId);
+  if (!key) return useContractorProgressDraftStore.getState();
+
+  return await updateDrafts((state) => {
+    if (!state.drafts[key]) {
+      return {
+        ...state,
+        hydrated: true,
+      };
+    }
+
+    const nextDrafts = { ...state.drafts };
+    delete nextDrafts[key];
+    return {
+      ...state,
+      hydrated: true,
+      drafts: nextDrafts,
+    };
+  });
+};
+
 export const getContractorProgressDraft = (progressId: string): ContractorProgressDraftRecord | null => {
   const key = trim(progressId);
   if (!key) return null;

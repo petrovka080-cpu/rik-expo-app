@@ -32,7 +32,7 @@ import {
   getContractorProgressQueueEntry,
 } from "../../../lib/offline/contractorProgressQueue";
 import { flushContractorProgressQueue } from "../../../lib/offline/contractorProgressWorker";
-import { pickErr } from "../contractor.utils";
+import { isActiveWork, pickErr } from "../contractor.utils";
 
 type JobHeaderLike = {
   object_name?: string | null;
@@ -169,6 +169,9 @@ export function useContractorProgressReliability(params: {
   } = params;
 
   const activeProgressId = trim(workModalRow?.progress_id);
+  const activeProgressIdRef = useRef(activeProgressId);
+  const workModalRowRef = useRef(workModalRow);
+  const workModalReadOnlyRef = useRef(workModalReadOnly);
   const activeDraft = useContractorProgressDraftStore(
     useCallback(
       (state) => (activeProgressId ? state.drafts[activeProgressId] ?? null : null),
@@ -179,6 +182,9 @@ export function useContractorProgressReliability(params: {
   const networkOnlineRef = useRef<boolean | null>(null);
   const appStateRef = useRef(AppState.currentState);
   const applyingDraftRef = useRef(false);
+  activeProgressIdRef.current = activeProgressId;
+  workModalRowRef.current = workModalRow;
+  workModalReadOnlyRef.current = workModalReadOnly;
 
   const flushQueue = useCallback(
     async (triggerSource: PlatformOfflineRetryTriggerSource) =>
@@ -190,6 +196,26 @@ export function useContractorProgressReliability(params: {
             await reloadContractorScreenData();
           },
           getNetworkOnline: () => networkOnlineRef.current,
+          inspectRemoteProgress: async (progressId) => {
+            const entityId = trim(progressId);
+            const currentRow = workModalRowRef.current;
+            if (!entityId || entityId !== activeProgressIdRef.current || !currentRow) {
+              return null;
+            }
+            const active = isActiveWork(currentRow);
+            return {
+              kind: "contractor_progress",
+              entityId,
+              status: currentRow.work_status,
+              remainingCount: Number(currentRow.qty_left ?? 0),
+              terminal: workModalReadOnlyRef.current || !active,
+              reason: workModalReadOnlyRef.current
+                ? "work_modal_read_only"
+                : active
+                  ? "work_active"
+                  : "work_not_active",
+            };
+          },
         },
         triggerSource,
       ),
