@@ -12,6 +12,15 @@ module.exports = defineConfig([
     // until more files migrate to the logger boundary.
     rules: {
       "no-console": ["warn", { allow: ["info", "warn", "error"] }],
+      // Allow _-prefixed vars (standard TS convention for intentionally unused bindings)
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
   {
@@ -23,6 +32,31 @@ module.exports = defineConfig([
     ],
     rules: {
       "no-console": "off",
+    },
+  },
+  {
+    // Test files: jest.requireActual() and inline require() are standard Jest patterns.
+    files: [
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "tests/**",
+    ],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
+    // Platform-conditional require(): these files use require() for
+    // platform-specific module loading (web vs native splits).
+    files: [
+      "src/components/map/MapRenderer.tsx",
+      "src/dev/_debugStyleTrap.web.ts",
+      "src/dev/_webStyleGuard.tsx",
+      "src/ui/GlobalBusy.tsx",
+      "src/lib/notify.ts",
+    ],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 ]);
