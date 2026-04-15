@@ -1353,6 +1353,14 @@ export function useForemanDraftBoundary({
             lastTriggerSource: "bootstrap_complete",
             lastSyncAt: staleDurableState.lastSyncAt,
           });
+          // P6.3c: Also clear React-level draft state (items, requestDetails,
+          // requestId, header). Without this, isDraftActive stays true because
+          // requestDetails still holds the old "draft" status, and the persist
+          // effect at line ~1497 rebuilds & re-persists the stale snapshot.
+          setActiveDraftOwnerId(undefined, { resetSubmitted: true });
+          resetDraftState();
+          localDraftSnapshotRef.current = null;
+          setLocalDraftSnapshot(null);
           await refreshBoundarySyncState(null);
           return;
         }
@@ -1469,6 +1477,7 @@ export function useForemanDraftBoundary({
       loadItems,
       patchBoundaryState,
       refreshBoundarySyncState,
+      resetDraftState,
       setDisplayNoByReq,
       setActiveDraftOwnerId,
       setRequestIdState,
