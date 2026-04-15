@@ -413,4 +413,103 @@ describe("useAccountantPayActions", () => {
       events.some((event) => event.event === "payment_apply" && event.result === "success"),
     ).toBe(false);
   });
+
+  it("blocks concurrent double-tap from firing two RPC calls (isSubmittingRef guard)", async () => {
+    let resolvePayment!: (value: unknown) => void;
+    const paymentPromise = new Promise((resolve) => {
+      resolvePayment = resolve;
+    });
+
+    mockAccountantLoadProposalFinancialState.mockResolvedValue({
+      proposalId: "proposal-1",
+      totals: {
+        payableAmount: 100,
+        totalPaid: 0,
+        outstandingAmount: 100,
+        paymentsCount: 0,
+        paymentStatus: "К оплате",
+        lastPaidAt: null,
+      },
+      eligibility: {
+        approved: true,
+        sentToAccountant: true,
+        paymentEligible: true,
+        failureCode: null,
+      },
+    });
+    mockAccountantPayInvoiceAtomic.mockReturnValue(paymentPromise);
+
+    const safeAlert = jest.fn();
+    const closeCard = jest.fn();
+    const setCurrentPaymentId = jest.fn();
+    const setRows = jest.fn();
+    const afterPaymentSync = jest.fn().mockResolvedValue(undefined);
+
+    let renderer!: ReturnType<typeof TestRenderer.create>;
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <PayActionsHarness
+          safeAlert={safeAlert}
+          closeCard={closeCard}
+          setCurrentPaymentId={setCurrentPaymentId}
+          setRows={setRows}
+          afterPaymentSync={afterPaymentSync}
+        />,
+      );
+    });
+
+    // Fire first tap (starts RPC, hangs on paymentPromise)
+    await act(async () => {
+      renderer.root.findByProps({ testID: "pay-actions-trigger" }).props.onPress();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // Fire second tap while first is still in-flight
+    await act(async () => {
+      renderer.root.findByProps({ testID: "pay-actions-trigger" }).props.onPress();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // Only 1 RPC call should have been made (second was suppressed)
+    expect(mockAccountantPayInvoiceAtomic).toHaveBeenCalledTimes(1);
+
+    // Resolve the first payment
+    resolvePayment({
+      ok: true,
+      proposalId: "proposal-1",
+      paymentId: 99,
+      clientMutationId: "accountant-payment:test-double-tap",
+      idempotentReplay: false,
+      outcome: "success",
+      totalsBefore: {
+        payableAmount: 100,
+        totalPaid: 0,
+        outstandingAmount: 100,
+        paymentStatus: "К оплате",
+      },
+      totalsAfter: {
+        payableAmount: 100,
+        totalPaid: 10,
+        outstandingAmount: 90,
+        paymentStatus: "Частично оплачено",
+      },
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // First payment succeeded normally
+    expect(setCurrentPaymentId).toHaveBeenCalledWith(99);
+    expect(closeCard).toHaveBeenCalled();
+
+    // Still only 1 RPC call total
+    expect(mockAccountantPayInvoiceAtomic).toHaveBeenCalledTimes(1);
+  });
 });

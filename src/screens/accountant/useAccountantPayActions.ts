@@ -154,6 +154,7 @@ const getPaymentMethodLabel = (payKind: "bank" | "cash") =>
 
 export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
   const pendingPaymentIntentRef = useRef<PaymentIntent | null>(null);
+  const isSubmittingRef = useRef(false);
 
   const recordPaymentActionCatch = useCallback(
     (
@@ -212,6 +213,11 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
 
   const commitPayment = useCallback(
     async (mode: "rest" | "partial_or_custom", requestedAmount: number) => {
+      if (isSubmittingRef.current) {
+        if (__DEV__) console.warn("[accountant.payment] duplicate submit suppressed (in-flight)");
+        return;
+      }
+
       const proposalId = String(p.current?.proposal_id ?? "").trim();
       if (!proposalId) throw new Error("Proposal id is required for payment.");
 
@@ -273,6 +279,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       });
 
       try {
+        isSubmittingRef.current = true;
         const payment = await accountantPayInvoiceAtomic({
           proposalId,
           amount: requestedAmount,
@@ -345,6 +352,8 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
           },
         });
         throw error;
+      } finally {
+        isSubmittingRef.current = false;
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
