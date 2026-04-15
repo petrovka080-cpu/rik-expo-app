@@ -20,6 +20,7 @@ import type {
   DirectorReportScopePayload,
   DirectorReportScopeDisciplinePayload,
   DirectorReportFetchMeta,
+  DirectorReportsScopeQueryData,
 } from "./directorReports.query.types";
 
 /** Adapted options data from a scope load result. */
@@ -87,3 +88,15 @@ export const adaptDisciplineFromScope = (
     fromCache: scopeLoad.disciplineFromCache,
   };
 };
+
+/**
+ * Extract the full controller-facing reports scope data.
+ */
+export const adaptDirectorReportsScopeQueryData = (
+  scopeLoad: DirectorReportScopeLoadResult,
+): DirectorReportsScopeQueryData => ({
+  scopeLoad,
+  options: adaptOptionsFromScope(scopeLoad),
+  report: adaptReportFromScope(scopeLoad),
+  discipline: adaptDisciplineFromScope(scopeLoad),
+});

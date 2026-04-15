@@ -8,6 +8,8 @@ import {
   buildDirectorReportsOptionsKey,
   buildDirectorReportsScopeKey,
   buildDirectorDisciplineKey,
+  directorReportsKeys,
+  normalizeDirectorReportsScopeQueryParams,
 } from "./directorReports.query.key";
 
 describe("buildDirectorReportsOptionsKey", () => {
@@ -84,5 +86,75 @@ describe("buildDirectorDisciplineKey", () => {
     const scopeKey = buildDirectorReportsScopeKey("2026-01-01", "2026-01-31", "Obj1", map);
     const discKey = buildDirectorDisciplineKey("2026-01-01", "2026-01-31", "Obj1", map);
     expect(scopeKey).toBe(discKey);
+  });
+});
+
+describe("directorReportsKeys", () => {
+  it("uses an isolated director reports namespace", () => {
+    expect(directorReportsKeys.all).toEqual(["director", "reports"]);
+  });
+
+  it("builds a scope key from the existing string scope key", () => {
+    expect(
+      directorReportsKeys.scope({
+        from: "2026-01-01",
+        to: "2026-01-31",
+        objectName: "Obj1",
+        objectIdByName: { Obj1: "id-1" },
+        includeDiscipline: false,
+        skipDisciplinePrices: true,
+      }),
+    ).toEqual([
+      "director",
+      "reports",
+      "scope",
+      "2026-01-01|2026-01-31|Obj1|id-1",
+      "materials",
+      "base",
+      "cache",
+    ]);
+  });
+
+  it("separates priced discipline and bypass refresh boundaries", () => {
+    expect(
+      directorReportsKeys.scope({
+        from: "2026-01-01",
+        to: "2026-01-31",
+        objectName: "Obj1",
+        objectIdByName: { Obj1: "id-1" },
+        includeDiscipline: true,
+        skipDisciplinePrices: false,
+        bypassCache: true,
+      }),
+    ).toEqual([
+      "director",
+      "reports",
+      "scope",
+      "2026-01-01|2026-01-31|Obj1|id-1",
+      "discipline",
+      "priced",
+      "bypass",
+    ]);
+  });
+
+  it("normalizes dates and object name for query params", () => {
+    expect(
+      normalizeDirectorReportsScopeQueryParams({
+        from: "2026-01-01T10:20:30.000Z",
+        to: null,
+        objectName: " Obj1 ",
+        objectIdByName: { Obj1: "id-1" },
+        includeDiscipline: true,
+        skipDisciplinePrices: false,
+      }),
+    ).toEqual({
+      from: "2026-01-01",
+      to: "",
+      objectName: "Obj1",
+      objectIdByName: { Obj1: "id-1" },
+      includeDiscipline: true,
+      skipDisciplinePrices: false,
+      bypassCache: false,
+    });
   });
 });

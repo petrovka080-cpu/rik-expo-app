@@ -9,6 +9,7 @@ import {
   adaptOptionsFromScope,
   adaptReportFromScope,
   adaptDisciplineFromScope,
+  adaptDirectorReportsScopeQueryData,
 } from "./directorReports.query.adapter";
 import type { DirectorReportScopeLoadResult } from "./directorReports.query.types";
 
@@ -124,5 +125,38 @@ describe("adaptDisciplineFromScope", () => {
     });
     const result = adaptDisciplineFromScope(scope);
     expect(result!.pricesReady).toBe(false);
+  });
+});
+
+describe("adaptDirectorReportsScopeQueryData", () => {
+  it("preserves the original scope load and adapted slices", () => {
+    const discipline = {
+      summary: {
+        total_qty: 100,
+        total_docs: 10,
+        total_positions: 50,
+        pct_without_work: 5,
+        pct_without_level: 3,
+        pct_without_request: 2,
+        issue_cost_total: 1000,
+        purchase_cost_total: 2000,
+        issue_to_purchase_pct: 50,
+        unpriced_issue_pct: 10,
+      },
+      works: [],
+    };
+    const scope = createMinimalScopeResult({
+      discipline,
+      disciplinePricesReady: true,
+      disciplineFromCache: true,
+    });
+
+    const result = adaptDirectorReportsScopeQueryData(scope);
+
+    expect(result.scopeLoad).toBe(scope);
+    expect(result.options.key).toBe(scope.optionsKey);
+    expect(result.report.payload).toBe(scope.report);
+    expect(result.discipline?.payload).toBe(discipline);
+    expect(result.discipline?.pricesReady).toBe(true);
   });
 });

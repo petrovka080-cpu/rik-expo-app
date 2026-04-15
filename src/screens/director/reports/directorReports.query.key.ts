@@ -12,7 +12,42 @@
  * - null/undefined normalized to empty string
  */
 
-import type { DirectorReportsScopeKey } from "./directorReports.query.types";
+import type {
+  DirectorReportsScopeKey,
+  DirectorReportsScopeQueryParams,
+} from "./directorReports.query.types";
+
+const normalizeDateKeyPart = (value: string | null | undefined): string => {
+  const text = String(value ?? "").trim();
+  return text ? text.slice(0, 10) : "";
+};
+
+const normalizeObjectNameKeyPart = (value: string | null | undefined): string | null => {
+  const text = String(value ?? "").trim();
+  return text || null;
+};
+
+export type NormalizedDirectorReportsScopeQueryParams = {
+  readonly from: string;
+  readonly to: string;
+  readonly objectName: string | null;
+  readonly objectIdByName: Record<string, string | null>;
+  readonly includeDiscipline: boolean;
+  readonly skipDisciplinePrices: boolean;
+  readonly bypassCache: boolean;
+};
+
+export const normalizeDirectorReportsScopeQueryParams = (
+  params: DirectorReportsScopeQueryParams,
+): NormalizedDirectorReportsScopeQueryParams => ({
+  from: normalizeDateKeyPart(params.from),
+  to: normalizeDateKeyPart(params.to),
+  objectName: normalizeObjectNameKeyPart(params.objectName),
+  objectIdByName: params.objectIdByName ?? params.optionsState?.objectIdByName ?? {},
+  includeDiscipline: params.includeDiscipline === true,
+  skipDisciplinePrices: params.skipDisciplinePrices,
+  bypassCache: params.bypassCache === true,
+});
 
 /**
  * Build the options-level cache key for a given period.
@@ -40,3 +75,25 @@ export const buildDirectorReportsScopeKey = (
  * Separated as an alias for semantic clarity at call sites.
  */
 export const buildDirectorDisciplineKey = buildDirectorReportsScopeKey;
+
+export const directorReportsKeys = {
+  all: ["director", "reports"] as const,
+  scope: (params: DirectorReportsScopeQueryParams) => {
+    const normalized = normalizeDirectorReportsScopeQueryParams(params);
+    const scopeKey = buildDirectorReportsScopeKey(
+      normalized.from,
+      normalized.to,
+      normalized.objectName,
+      normalized.objectIdByName,
+    );
+    return [
+      "director",
+      "reports",
+      "scope",
+      scopeKey,
+      normalized.includeDiscipline ? "discipline" : "materials",
+      normalized.skipDisciplinePrices ? "base" : "priced",
+      normalized.bypassCache ? "bypass" : "cache",
+    ] as const;
+  },
+} as const;

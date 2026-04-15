@@ -1,3 +1,8 @@
+import type {
+  DirectorReportScopeLoadResult,
+  DirectorReportScopeOptionsState,
+} from "../../../lib/api/directorReportsScope.service";
+
 /**
  * directorReports.query.types.ts
  *
@@ -32,3 +37,22 @@ export type DirectorReportsScopeParams = {
  * Type alias for cache/dependency keys produced by key-builders.
  */
 export type DirectorReportsScopeKey = string;
+
+export type DirectorReportsScopeQueryParams = {
+  readonly from: string | null | undefined;
+  readonly to: string | null | undefined;
+  readonly objectName: string | null;
+  readonly objectIdByName?: Record<string, string | null>;
+  readonly optionsState?: DirectorReportScopeOptionsState | null;
+  readonly includeDiscipline?: boolean;
+  readonly skipDisciplinePrices: boolean;
+  readonly bypassCache?: boolean;
+  readonly signal?: AbortSignal | null;
+};
+
+export type DirectorReportsScopeQueryData = {
+  readonly scopeLoad: DirectorReportScopeLoadResult;
+  readonly options: import("./directorReports.query.adapter").AdaptedOptionsData;
+  readonly report: import("./directorReports.query.adapter").AdaptedReportData;
+  readonly discipline: import("./directorReports.query.adapter").AdaptedDisciplineData | null;
+};

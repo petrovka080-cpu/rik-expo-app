@@ -6,10 +6,6 @@ import {
   useState,
 } from "react";
 import {
-  loadDirectorReportUiScope,
-  type DirectorReportScopeOptionsState,
-} from "../../../lib/api/directorReportsScope.service";
-import {
   abortController,
   isAbortError,
   throwIfAborted,
@@ -39,6 +35,7 @@ import { REPORTS_TIMING, nowMs, logTiming } from "../reports/directorReports.tim
 import { summarizeRepDiscipline, isoDate, minusDays } from "../reports/directorReports.helpers";
 import { useDirectorReportsCommit } from "../reports/useDirectorReportsCommit";
 import { useDirectorReportsDerived } from "../reports/useDirectorReportsDerived";
+import { useDirectorReportsQuery } from "../reports/useDirectorReportsQuery";
 import {
   emitQueryStart,
   emitQuerySuccess,
@@ -89,6 +86,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const scopeRequestRef = useRef<DirectorReportsRequestSlot | null>(null);
   const lastDisciplineLoadKeyRef = useRef<string>("");
   const disciplinePricesReadyRef = useRef<Set<string>>(new Set());
+  const reportsQuery = useDirectorReportsQuery();
 
   const abortActiveRequests = useCallback((reason: string) => {
     abortController(reportRequestRef.current?.controller, reason);
@@ -138,16 +136,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     beginScopeRefresh("director reports controller unmounted");
   }, [beginScopeRefresh]);
 
-  const loadReportScope = useCallback(async (args: {
-    from: string;
-    to: string;
-    objectName: string | null;
-    optionsState?: DirectorReportScopeOptionsState | null;
-    includeDiscipline?: boolean;
-    skipDisciplinePrices: boolean;
-    bypassCache?: boolean;
-    signal?: AbortSignal | null;
-  }) => loadDirectorReportUiScope(args), []);
+  const loadReportScope = reportsQuery.loadReportsScope;
 
   // commitLoadedScope is now provided by useDirectorReportsCommit
 
