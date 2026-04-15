@@ -22,10 +22,6 @@ type Tab = "foreman" | "buyer";
 type TopTabItem = { key: DirTopTab; label: string };
 
 type TopTabsListRef = { scrollToOffset?: (params: { offset: number; animated?: boolean }) => void };
-type ReportsOpenProps = Props & {
-  openReports?: () => void;
-  reportsPeriodShort?: string;
-};
 
 const DIRECTOR_TOP_TABS: TopTabItem[] = [
   { key: "Заявки", label: "Заявки" },
@@ -38,11 +34,11 @@ const DIRECTOR_TOP_TABS: TopTabItem[] = [
 type Props = {
   HEADER_MAX: number;
   HEADER_MIN: number;
-  onScroll: any;
-  headerHeight: any;
-  headerShadow: any;
-  titleSize: any;
-  subOpacity: any;
+  onScroll: (...args: unknown[]) => void;
+  headerHeight: Animated.AnimatedInterpolation<number> | number;
+  headerShadow: Animated.AnimatedInterpolation<number> | number;
+  titleSize: Animated.AnimatedInterpolation<number> | number;
+  subOpacity: Animated.AnimatedInterpolation<number> | number;
   headerTopInset?: number;
   onHeaderMeasured?: (h: number) => void;
   dirTab: DirTopTab;
@@ -60,23 +56,23 @@ type Props = {
   foremanPositionsCount: number;
   buyerPropsCount: number;
   buyerPositionsCount: number;
-  labelForRequest: (rid: any) => string;
+  labelForRequest: (rid: number | string | null | undefined) => string;
   fmtDateOnly: (iso?: string | null) => string;
   submittedAtByReq: Record<string, string>;
   openRequestSheet: (g: Group) => void;
   ProposalRow: React.ComponentType<{ p: ProposalHead; screenLock: boolean }>;
   screenLock: boolean;
-  ensureSignedIn: () => Promise<any>;
-  fetchRows: (force?: boolean) => Promise<any>;
-  fetchProps: (force?: boolean) => Promise<any>;
-  loadMoreProps: () => Promise<any> | void;
+  ensureSignedIn: () => Promise<boolean>;
+  fetchRows: (force?: boolean) => Promise<void>;
+  fetchProps: (force?: boolean) => Promise<void>;
+  loadMoreProps: () => Promise<void> | void;
   rtToast: { visible: boolean; title: string; body: string; count: number };
   finLoading: boolean;
   finScope: DirectorFinanceCanonicalScope | null;
   money: (v: number) => string;
   FIN_DUE_DAYS_DEFAULT: number;
   FIN_CRITICAL_DAYS: number;
-  fetchFinance: () => Promise<any>;
+  fetchFinance: () => Promise<void>;
   finFrom?: string | null;
   finTo?: string | null;
   openFinancePage: (page: FinPage) => void;
@@ -94,7 +90,7 @@ export default function DirectorDashboard(p: Props) {
   const topTabsRef = React.useRef<FlatList<TopTabItem> | null>(null);
   const topTabXRef = React.useRef<Record<string, { x: number; w: number }>>({});
 
-  const onTopTabLayout = React.useCallback((key: string, e: any) => {
+  const onTopTabLayout = React.useCallback((key: string, e: { nativeEvent?: { layout?: { x?: number; width?: number } } }) => {
     const x = Number(e?.nativeEvent?.layout?.x ?? 0);
     const w = Number(e?.nativeEvent?.layout?.width ?? 0);
     topTabXRef.current[key] = { x, w };
@@ -495,7 +491,7 @@ export default function DirectorDashboard(p: Props) {
       ) : (
         <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
           <Pressable
-            onPress={() => (p as ReportsOpenProps).openReports?.()}
+            onPress={() => p.openReports?.()}
             style={[s.mobCard, { marginBottom: 12 }]}
           >
             <View style={s.mobMain}>
@@ -503,8 +499,8 @@ export default function DirectorDashboard(p: Props) {
                 Факт выдачи (склад)
               </Text>
               <Text style={s.mobMeta} numberOfLines={2}>
-                {(p as ReportsOpenProps).reportsPeriodShort
-                  ? `Период: ${(p as ReportsOpenProps).reportsPeriodShort}`
+                {p.reportsPeriodShort
+                  ? `Период: ${p.reportsPeriodShort}`
                   : "Период: 30 дней"}
               </Text>
             </View>

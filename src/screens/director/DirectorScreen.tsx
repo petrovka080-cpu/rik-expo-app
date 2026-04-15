@@ -26,7 +26,7 @@ export function DirectorScreen() {
   const vm = useDirectorScreenController();
   const busy = useGlobalBusy();
   const router = useRouter();
-  const reportsCompanyName = String((globalThis as any)?.process?.env?.EXPO_PUBLIC_COMPANY_NAME ?? "RIK Construction");
+  const reportsCompanyName = process.env.EXPO_PUBLIC_COMPANY_NAME ?? "RIK Construction";
   // D-MODAL-PDF: Stabilize the opener — avoid recreating on every render.
   const reportsPdfOpener = React.useMemo(
     () => createModalAwarePdfOpener(vm.reports.closeReports),
@@ -140,8 +140,8 @@ export function DirectorScreen() {
         tab={vm.tab}
         setTab={vm.setTab}
         closeSheet={vm.closeSheet}
-        groups={vm.groups as any}
-        propsHeads={vm.data.propsHeads as any}
+        groups={vm.groups}
+        propsHeads={vm.data.propsHeads}
         propsHasMore={vm.data.propsHasMore}
         loadingPropsMore={vm.data.loadingPropsMore}
         loadingRows={vm.data.loadingRows}
@@ -150,26 +150,26 @@ export function DirectorScreen() {
         foremanPositionsCount={vm.data.rows.length}
         buyerPropsCount={vm.data.buyerPropsCount}
         buyerPositionsCount={vm.data.buyerPositionsCount}
-        labelForRequest={(rid: any) => vm.data.labelForRequest(rid)}
+        labelForRequest={vm.data.labelForRequest}
         fmtDateOnly={vm.fmtDateOnly}
         submittedAtByReq={vm.data.submittedAtByReq}
-        openRequestSheet={vm.openRequestSheet as any}
-        ProposalRow={vm.propRow.ProposalRow as any}
+        openRequestSheet={vm.openRequestSheet}
+        ProposalRow={vm.propRow.ProposalRow}
         screenLock={vm.screenLock}
         ensureSignedIn={ensureSignedIn}
-        fetchRows={vm.data.fetchRows as any}
-        fetchProps={vm.data.fetchProps as any}
-        loadMoreProps={vm.data.loadMoreProps as any}
+        fetchRows={vm.data.fetchRows}
+        fetchProps={vm.data.fetchProps}
+        loadMoreProps={vm.data.loadMoreProps}
         rtToast={vm.rtToast}
         finLoading={vm.finLoading}
         finScope={vm.finScope}
         money={vm.money}
         FIN_DUE_DAYS_DEFAULT={7}
         FIN_CRITICAL_DAYS={14}
-        fetchFinance={vm.financePanel.fetchFinance as any}
+        fetchFinance={vm.financePanel.fetchFinance}
         finFrom={vm.finFrom}
         finTo={vm.finTo}
-        openFinancePage={(page: any) => vm.openFinancePage(page)}
+        openFinancePage={vm.openFinancePage}
         openReports={() => void vm.reports.openReports()}
         reportsPeriodShort={vm.reports.repPeriodShort}
       />
