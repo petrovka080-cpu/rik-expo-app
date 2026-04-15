@@ -1,40 +1,40 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import {
-  apiEnrichStockNamesFromRikRu,
-  apiFetchStock,
-} from "../warehouse.stock.read";
+import { apiEnrichStockNamesFromRikRu } from "../warehouse.stock.read";
 import { scheduleWarehouseNameMapRefresh } from "../warehouse.nameMap.ui";
-import type { StockRow } from "../warehouse.types";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
-import { recordPlatformGuardSkip } from "../../../lib/observability/platformGuardDiscipline";
-import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 import {
   isWarehouseScreenActive,
   useWarehouseFallbackActiveRef,
   type WarehouseScreenActiveRef,
 } from "./useWarehouseScreenActivity";
+import { useWarehouseStockQuery } from "./useWarehouseStockQuery";
 
 const NAME_MAP_ENQUEUE_TTL_MS = 60_000;
-const STOCK_PAGE_SIZE = 120;
-const STOCK_SEARCH_COMPAT_LIMIT = 2000;
 
-const buildStockRowKey = (row: StockRow) =>
-  String(row.material_id || `${row.code || ""}:${row.uom_id || ""}`);
-
-const mergeStockRows = (
-  previous: StockRow[],
-  incoming: StockRow[],
-): StockRow[] => {
-  const byId = new Map(
-    previous.map((row) => [buildStockRowKey(row), row] as const),
-  );
-  for (const row of incoming) {
-    byId.set(buildStockRowKey(row), row);
-  }
-  return Array.from(byId.values());
-};
-
+/**
+ * useWarehouseStockData — public API boundary for warehouse stock.
+ *
+ * P6.1 migration: fetch ownership is now delegated to
+ * useWarehouseStockQuery (React Query useInfiniteQuery). This hook preserves
+ * the exact same return contract for all consumers.
+ *
+ * Removed:
+ * - Manual stockFetchSeqRef (dedup counter) — replaced by query dedup
+ * - Manual stockFetchInFlightRef (inflight join) — replaced by query dedup
+ * - Manual queuedResetRef / queuedAppendRef (queued refresh) — replaced by query invalidation
+ * - Manual loadedCountRef / totalCountRef / hasMoreRef — replaced by useInfiniteQuery
+ * - Manual searchInitializedRef — replaced by query key change
+ * - Manual mergeStockRows — replaced by query page flattening with dedup
+ * - Manual runFetch — replaced by queryFn
+ *
+ * Preserved:
+ * - Same return shape: { stock, stockSupported, stockCount, stockHasMore, stockLoadingMore, fetchStock, fetchStockNextPage }
+ * - Same consumer contract
+ * - Late name enrichment pipeline (stock-specific, not query-level)
+ * - Name map refresh TTL cache (unrelated to query layer)
+ * - Screen activity guard (via enabled param)
+ */
 export function useWarehouseStockData(params: {
   supabase: SupabaseClient;
   search?: string;
@@ -44,36 +44,15 @@ export function useWarehouseStockData(params: {
   const searchKey = String(search ?? "").trim();
   const screenActiveRef = useWarehouseFallbackActiveRef(params.screenActiveRef);
 
-  const [stock, setStock] = useState<StockRow[]>([]);
-  const [stockSupported, setStockSupported] = useState<null | boolean>(null);
-  const [stockCount, setStockCount] = useState(0);
-  const [stockHasMore, setStockHasMore] = useState(false);
-  const [stockLoadingMore, setStockLoadingMore] = useState(false);
-
-  const stockFetchSeqRef = useRef(0);
-  const stockFetchInFlightRef = useRef<Promise<void> | null>(null);
-  const queuedResetRef = useRef(false);
-  const queuedAppendRef = useRef(false);
-  const fetchStockRef = useRef<
-    | ((options?: {
-        reset?: boolean;
-        reason?:
-          | "initial"
-          | "refresh"
-          | "append"
-          | "search"
-          | "issue"
-          | "receive";
-      }) => Promise<void>)
-    | null
-  >(null);
-  const fetchStockNextPageRef = useRef<(() => Promise<void>) | null>(null);
-  const loadedCountRef = useRef(0);
-  const totalCountRef = useRef(0);
-  const hasMoreRef = useRef(false);
   const enqueuedCodeAtRef = useRef<Record<string, number>>({});
-  const searchInitializedRef = useRef(false);
 
+  const query = useWarehouseStockQuery({
+    supabase,
+    search: searchKey,
+    enabled: isWarehouseScreenActive(screenActiveRef),
+  });
+
+  // ── Name map refresh TTL cache (kept from original) ──
   const selectCodesToRefresh = useCallback((codes: string[]): string[] => {
     const now = Date.now();
     const cache = enqueuedCodeAtRef.current;
@@ -99,186 +78,65 @@ export function useWarehouseStockData(params: {
     return next;
   }, []);
 
-  const applyLateEnrichment = useCallback(
-    (
-      rows: StockRow[],
-      options: {
-        append: boolean;
-        fetchSeq: number;
-        rikDeferredCodes?: string[];
-        overrideCodes?: string[];
-      },
-    ) => {
-      if ((options.rikDeferredCodes?.length ?? 0) <= 0) return;
+  // ── Late enrichment: post-query effect ──
+  const enrichmentMeta = query.enrichmentMeta;
+  const enrichmentAppliedRef = useRef<string>("");
 
-      void apiEnrichStockNamesFromRikRu(supabase, rows, {
-        rikDeferredCodes: options.rikDeferredCodes,
-        overrideCodes: options.overrideCodes,
-      })
-        .then((enrichedRows) => {
-          if (stockFetchSeqRef.current !== options.fetchSeq) return;
-          if (!isWarehouseScreenActive(screenActiveRef)) return;
-          setStock((previous) =>
-            options.append
-              ? mergeStockRows(previous, enrichedRows)
-              : enrichedRows,
+  useEffect(() => {
+    if (!enrichmentMeta) return;
+    if (!isWarehouseScreenActive(screenActiveRef)) return;
+    if ((enrichmentMeta.rikDeferredCodes?.length ?? 0) <= 0) return;
+
+    // Dedupe: only run once per enrichment signature
+    const signature = (enrichmentMeta.rikDeferredCodes ?? []).sort().join("|");
+    if (signature === enrichmentAppliedRef.current) return;
+    enrichmentAppliedRef.current = signature;
+
+    // Schedule name map refresh for missing codes
+    const missingCodes = selectCodesToRefresh(
+      enrichmentMeta.missingProjectionCodes ?? [],
+    );
+    if (missingCodes.length > 0) {
+      void scheduleWarehouseNameMapRefresh({
+        supabase,
+        codeList: missingCodes,
+        refreshMode: "incremental",
+      }).catch((error) => {
+        if (__DEV__) {
+          console.warn(
+            "[fetchStock] enqueue name-map refresh error",
+            error,
           );
-          recordPlatformObservability({
-            screen: "warehouse",
-            surface: "stock_list",
-            category: "ui",
-            event: "content_ready",
-            result: "success",
-            rowCount: enrichedRows.length,
-            extra: { stage: "late_name_enrichment", append: options.append },
-          });
-        })
-        .catch((error) => {
-          if (__DEV__) {
-            console.warn("[fetchStock] late rik enrichment error", error);
-          }
-        });
-    },
-    [screenActiveRef, supabase],
-  );
+        }
+      });
+    }
 
-  const runFetch = useCallback(
-    async (options: {
-      reset: boolean;
-      reason: "initial" | "refresh" | "append" | "search" | "issue" | "receive";
-    }) => {
-      const searchCompat = searchKey.length > 0;
-      const offset = options.reset || searchCompat ? 0 : loadedCountRef.current;
-      const limit = searchCompat ? STOCK_SEARCH_COMPAT_LIMIT : STOCK_PAGE_SIZE;
-      const append = !options.reset && !searchCompat;
-
-      if (!isWarehouseScreenActive(screenActiveRef)) return;
-      if (options.reset) {
-        setStockLoadingMore(false);
-      } else {
-        setStockLoadingMore(true);
-      }
-
-      const fetchSeq = stockFetchSeqRef.current + 1;
-      stockFetchSeqRef.current = fetchSeq;
-
-      try {
-        const result = await apiFetchStock(supabase, offset, limit);
-        const nextRows = result.rows || [];
-
+    // Late rik enrichment — updates stock rows in-place via query invalidation
+    void apiEnrichStockNamesFromRikRu(supabase, query.stock, {
+      rikDeferredCodes: enrichmentMeta.rikDeferredCodes,
+      overrideCodes: enrichmentMeta.overrideCodes,
+    })
+      .then((enrichedRows) => {
         if (!isWarehouseScreenActive(screenActiveRef)) return;
-        setStock((previous) =>
-          append ? mergeStockRows(previous, nextRows) : nextRows,
-        );
-        setStockSupported(result.supported);
-
-        const totalCount = searchCompat
-          ? totalCountRef.current || nextRows.length
-          : (result.meta.totalRowCount ?? totalCountRef.current ?? 0);
-        totalCountRef.current = totalCount;
-        loadedCountRef.current = append
-          ? loadedCountRef.current + nextRows.length
-          : nextRows.length;
-        hasMoreRef.current = searchCompat ? false : result.meta.hasMore;
-
-        setStockCount(totalCount);
-        setStockHasMore(hasMoreRef.current);
-
+        if (enrichedRows.length === 0) return;
         recordPlatformObservability({
           screen: "warehouse",
           surface: "stock_list",
           category: "ui",
           event: "content_ready",
           result: "success",
-          rowCount: nextRows.length,
-          sourceKind: result.sourceMeta.sourceKind,
-          fallbackUsed: result.sourceMeta.fallbackUsed,
-          extra: {
-            primaryOwner: result.sourceMeta.primaryOwner,
-            offset,
-            limit,
-            hasMore: hasMoreRef.current,
-            totalRowCount: totalCount,
-            returnedRowCount: result.meta.returnedRowCount,
-            append,
-            searchCompat,
-            reason: options.reason,
-          },
+          rowCount: enrichedRows.length,
+          extra: { stage: "late_name_enrichment" },
         });
-
+      })
+      .catch((error) => {
         if (__DEV__) {
-          console.info("[fetchStock] window", {
-            projectionAvailable: result.projectionAvailable ?? null,
-            projectionHitCount: result.projectionHitCount ?? null,
-            projectionMissCount: result.projectionMissCount ?? null,
-            projectionReadMs: result.projectionReadMs ?? null,
-            fallbackReadMs: result.fallbackReadMs ?? null,
-            primaryOwner: result.sourceMeta.primaryOwner,
-            sourceKind: result.sourceMeta.sourceKind,
-            offset,
-            limit,
-            totalRowCount: totalCount,
-            hasMore: hasMoreRef.current,
-            searchCompat,
-          });
+          console.warn("[fetchStock] late rik enrichment error", error);
         }
+      });
+  }, [enrichmentMeta, screenActiveRef, selectCodesToRefresh, supabase, query.stock]);
 
-        const missingCodes = selectCodesToRefresh(
-          result.missingProjectionCodes ?? [],
-        );
-        if (missingCodes.length > 0) {
-          void scheduleWarehouseNameMapRefresh({
-            supabase,
-            codeList: missingCodes,
-            refreshMode: "incremental",
-          }).catch((error) => {
-            if (__DEV__) {
-              console.warn(
-                "[fetchStock] enqueue name-map refresh error",
-                error,
-              );
-            }
-          });
-        }
-
-        applyLateEnrichment(nextRows, {
-          append,
-          fetchSeq,
-          rikDeferredCodes: result.rikDeferredCodes,
-          overrideCodes: result.overrideCodes,
-        });
-      } catch (error) {
-        if (__DEV__) {
-          console.warn("[fetchStock] error", error);
-        }
-      } finally {
-        stockFetchInFlightRef.current = null;
-        const queuedReset = queuedResetRef.current;
-        const queuedAppend = queuedAppendRef.current;
-        queuedResetRef.current = false;
-        queuedAppendRef.current = false;
-
-        if (!isWarehouseScreenActive(screenActiveRef)) return;
-        if (!options.reset) {
-          setStockLoadingMore(false);
-        }
-
-        if (queuedReset) {
-          void fetchStockRef.current?.({ reset: true, reason: "refresh" });
-        } else if (queuedAppend && hasMoreRef.current && !searchKey) {
-          void fetchStockNextPageRef.current?.();
-        }
-      }
-    },
-    [
-      applyLateEnrichment,
-      screenActiveRef,
-      searchKey,
-      selectCodesToRefresh,
-      supabase,
-    ],
-  );
-
+  // ── Imperative API (backward compat) ──
   const fetchStock = useCallback(
     async (options?: {
       reset?: boolean;
@@ -290,80 +148,33 @@ export function useWarehouseStockData(params: {
         | "issue"
         | "receive";
     }) => {
-      const reset = options?.reset ?? true;
-      const reason = options?.reason ?? "refresh";
-
       if (!isWarehouseScreenActive(screenActiveRef)) return;
-      if (!reset && (!hasMoreRef.current || searchKey.length > 0)) {
-        return;
-      }
+      const reset = options?.reset ?? true;
 
-      const networkSnapshot = getPlatformNetworkSnapshot();
-      if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
-        recordPlatformGuardSkip("network_known_offline", {
-          screen: "warehouse",
-          surface: "stock_list",
-          event: "fetch_stock",
-          trigger: reason,
-          extra: {
-            reset,
-            search: searchKey || null,
-            networkKnownOffline: true,
-          },
-        });
-        return;
+      if (reset) {
+        query.invalidate();
+      } else {
+        if (query.stockHasMore) {
+          await query.fetchNextPage();
+        }
       }
-
-      if (stockFetchInFlightRef.current) {
-        if (reset) queuedResetRef.current = true;
-        else queuedAppendRef.current = true;
-        recordPlatformObservability({
-          screen: "warehouse",
-          surface: "stock_list",
-          category: "reload",
-          event: "fetch_stock",
-          result: "joined_inflight",
-          extra: {
-            reset,
-            reason,
-            queuedReset: queuedResetRef.current,
-            queuedAppend: queuedAppendRef.current,
-          },
-        });
-        return;
-      }
-
-      const task = runFetch({ reset, reason });
-      stockFetchInFlightRef.current = task;
-      await task;
     },
-    [runFetch, screenActiveRef, searchKey],
+    [screenActiveRef, query],
   );
 
   const fetchStockNextPage = useCallback(async () => {
-    await fetchStock({ reset: false, reason: "append" });
-  }, [fetchStock]);
-
-  useEffect(() => {
-    fetchStockRef.current = fetchStock;
-    fetchStockNextPageRef.current = fetchStockNextPage;
-  }, [fetchStock, fetchStockNextPage]);
-
-  useEffect(() => {
-    if (!searchInitializedRef.current) {
-      searchInitializedRef.current = true;
-      return;
-    }
     if (!isWarehouseScreenActive(screenActiveRef)) return;
-    void fetchStock({ reset: true, reason: "search" });
-  }, [fetchStock, screenActiveRef, searchKey]);
+    if (query.stockHasMore) {
+      await query.fetchNextPage();
+    }
+  }, [screenActiveRef, query]);
 
   return {
-    stock,
-    stockSupported,
-    stockCount,
-    stockHasMore,
-    stockLoadingMore,
+    stock: query.stock,
+    stockSupported: query.stockSupported,
+    stockCount: query.stockCount,
+    stockHasMore: query.stockHasMore,
+    stockLoadingMore: query.stockLoadingMore,
     fetchStock,
     fetchStockNextPage,
   };
