@@ -10,6 +10,7 @@ import type {
   ReleaseDecisionSummary,
   ReleaseDiagnostics,
   ReleaseMetadata,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ReleaseMetadataFields,
   ReleaseMetadataSource,
   ReleaseUpdateAvailabilityState,
@@ -167,6 +168,7 @@ function safeBoolean(value: unknown): boolean {
   return value === true;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function safeNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   return null;

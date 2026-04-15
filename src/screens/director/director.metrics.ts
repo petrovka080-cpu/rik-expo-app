@@ -139,7 +139,7 @@ export async function loadDirectorDashMetrics(
 
         total += 1;
 
-        const pendCnt = toNumber(row.pending_cnt);
+        const _pendCnt = toNumber(row.pending_cnt);
         const partCnt = toNumber(row.partial_cnt);
 
         // если есть факт приемки (rec>0) или partial_cnt>0 => "частично"

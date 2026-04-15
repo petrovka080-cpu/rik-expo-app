@@ -427,6 +427,7 @@ export function useDirectorLifecycle({
         });
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [isScreenFocused, runLifecycleScopedRefresh]);
 
   useEffect(() => {

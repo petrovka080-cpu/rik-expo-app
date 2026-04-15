@@ -84,7 +84,7 @@ describe("useDirectorReportsController cancellation discipline", () => {
 
   it("aborts an older director report request and keeps the newer response authoritative", async () => {
     const signals: AbortSignal[] = [];
-    const resolvers: Array<() => void> = [];
+    const resolvers: (() => void)[] = [];
     mockLoadDirectorReportUiScope.mockImplementation(((args) => {
       signals.push(args.signal as AbortSignal);
       const code = String(args.objectName ?? "all");

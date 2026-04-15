@@ -21,7 +21,7 @@ jest.mock("../../lib/pdfFileContract", () => ({
 }));
 
 const loadSubject = () =>
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   require("./director.finance.pdfService") as typeof import("./director.finance.pdfService");
 
 describe("director.finance.pdfService", () => {

@@ -124,7 +124,7 @@ export function useDirectorProposalRow({
                 const mapKind: Record<string, string> = {};
                 const mapNote: Record<string, string> = {};
 
-                for (const rr of qKinds.data as Array<{ id?: string | null; item_kind?: string | null; note?: string | null }>) {
+                for (const rr of qKinds.data as { id?: string | null; item_kind?: string | null; note?: string | null }[]) {
                   const id = String(rr.id ?? "").trim();
                   const k = String(rr.item_kind ?? "").trim();
                   const n = String(rr.note ?? "").trim();

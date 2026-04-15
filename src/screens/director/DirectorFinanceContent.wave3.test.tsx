@@ -10,9 +10,9 @@ jest.mock("./director.finance", () => ({
 }));
 
 jest.mock("@/src/ui/FlashList", () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const mockReact = require("react");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const mockReactNative = require("react-native");
   return {
     FlashList: function MockFlashList(props: {

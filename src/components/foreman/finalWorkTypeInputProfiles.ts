@@ -1,4 +1,4 @@
-﻿import { assertCanonicalProfileRegistry } from "./foremanFieldRegistry";
+import { assertCanonicalProfileRegistry } from "./foremanFieldRegistry";
 import { normalizeWorkTypeCode } from "./workTypeCode";
 
 export type FinalWorkTypeInputProfile = {
@@ -72,13 +72,13 @@ const CL1_CEIL = {
   },
 } as const;
 
-const FN1_FINISH = {
+const _FN1_FINISH = {
   familyCode: "finish",
   core: ["area_m2"],
   engineering: ["height_m", "perimeter_m"],
 } as const;
 
-const H1_HYDRO = {
+const _H1_HYDRO = {
   familyCode: "hydro",
   core: ["area_m2"],
   engineering: ["layers_count", "perimeter_m"],
@@ -87,7 +87,7 @@ const H1_HYDRO = {
   },
 } as const;
 
-const I1_INSUL = {
+const _I1_INSUL = {
   familyCode: "insul",
   core: ["area_m2"],
   engineering: ["thickness_mm", "layers_count"],

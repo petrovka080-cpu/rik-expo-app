@@ -70,7 +70,7 @@ export function useDirectorRequestActions({
     const sheetName =
       title.replace(/[^\w\u0400-\u04FF0-9]/g, "_").slice(0, 31) || "Заявка";
 
-    const data: Array<Array<string | number>> = [];
+    const data: (string | number)[][] = [];
     data.push(["№", "Наименование", "Кол-во", "Ед. изм.", "Применение", "Примечание"]);
 
     rows.forEach((it, idx) => {

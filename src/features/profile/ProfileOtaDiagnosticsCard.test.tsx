@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
+ 
 import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 import { Alert, Text } from "react-native";

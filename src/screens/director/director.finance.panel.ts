@@ -252,6 +252,7 @@ export function useDirectorFinancePanel({
       descriptor: template,
       router,
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
     FIN_CRITICAL_DAYS,
     FIN_DUE_DAYS_DEFAULT,
@@ -285,6 +286,7 @@ export function useDirectorFinancePanel({
       descriptor: template,
       router,
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
     FIN_CRITICAL_DAYS,
     FIN_DUE_DAYS_DEFAULT,

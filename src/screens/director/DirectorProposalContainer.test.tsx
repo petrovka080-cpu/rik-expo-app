@@ -3,7 +3,7 @@ import TestRenderer, { act } from "react-test-renderer";
 
 import DirectorProposalContainer from "./DirectorProposalContainer";
 
-const mockCapturedProps: Array<Record<string, unknown>> = [];
+const mockCapturedProps: Record<string, unknown>[] = [];
 
 jest.mock("./DirectorProposalSheet", () => {
   return function MockDirectorProposalSheet(props: Record<string, unknown>) {

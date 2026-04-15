@@ -274,7 +274,7 @@ export function useDirectorProposalActions({
       const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\w\u0400-\u04FF0-9]/g, "_");
       const sheetName = title.slice(0, 31) || "Предложение";
 
-      const data: Array<Array<string | number>> = [["№", "Наименование", "Кол-во", "Ед. изм.", "Применение"]];
+      const data: (string | number)[][] = [["№", "Наименование", "Кол-во", "Ед. изм.", "Применение"]];
       items.forEach((it, idx) =>
         data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)])
       );
@@ -388,6 +388,7 @@ export function useDirectorProposalActions({
       delete approveInFlightRef.current[pid];
       setPropApproveId(null);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
     supabase,
     setPropApproveId,

@@ -1,16 +1,16 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import TestRenderer, { act } from "react-test-renderer";
 
 import DirectorFinanceSpendModal from "./DirectorFinanceSpendModal";
 import type { FinSpendSummary } from "./director.finance";
 
-const flashListRenderCalls: Array<{ dataLength: number }> = [];
+const flashListRenderCalls: { dataLength: number }[] = [];
 
 jest.mock("@/src/ui/FlashList", () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const mockReact = require("react");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const mockReactNative = require("react-native");
   return {
     FlashList: function MockFlashList(props: {

@@ -42,7 +42,7 @@ jest.mock("../../ui/TopRightActionBar", () => {
   return function MockTopRightActionBar({
     actions,
   }: {
-    actions: Array<{ key: string; onPress: () => void; ariaLabel?: string }>;
+    actions: { key: string; onPress: () => void; ariaLabel?: string }[];
   }) {
     return React.createElement(
       View,

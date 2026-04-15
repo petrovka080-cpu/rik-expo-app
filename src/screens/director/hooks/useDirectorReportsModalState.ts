@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { reportDirectorBoundary } from "../director.observability";
 import type {
   RepDisciplineLevel,

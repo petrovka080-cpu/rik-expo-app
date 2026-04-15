@@ -151,7 +151,7 @@ export function useDirectorProposalDetail({
 
       const ids = Array.from(
         new Set(
-          ((q.data || []) as Array<{ request_item_id?: string | null }>)
+          ((q.data || []) as { request_item_id?: string | null }[])
             .map((row) => String(row.request_item_id || "").trim())
             .filter(Boolean),
         ),

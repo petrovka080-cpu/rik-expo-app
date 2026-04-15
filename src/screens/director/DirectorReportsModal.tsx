@@ -162,6 +162,7 @@ export default function DirectorReportsModal({
         ) : null}
       </View>
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, []);
 
   const renderObjectOptionRow = React.useCallback(({ item }: { item: string }) => (

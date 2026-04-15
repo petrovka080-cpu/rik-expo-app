@@ -6,7 +6,6 @@
  * 2. Android modal dismiss path has settle delay
  * 3. createModalAwarePdfOpener passes dismiss callback correctly
  */
-import { Platform } from "react-native";
 
 // ─── Test: activePreviewFlows TTL ──────────────────────────────────
 //
@@ -17,6 +16,7 @@ import { Platform } from "react-native";
 // prepareAndPreviewPdfDocument function behavior.
 
 describe("D-MODAL-PDF: activePreviewFlows TTL", () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let prepareAndPreviewPdfDocument: typeof import("../../lib/documents/pdfDocumentActions").prepareAndPreviewPdfDocument;
 
   beforeEach(() => {

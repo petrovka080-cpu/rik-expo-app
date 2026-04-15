@@ -18,7 +18,8 @@ const mockRecordPlatformObservability = jest.fn();
 const mockRecordPlatformGuardSkip = jest.fn();
 const mockGetPlatformNetworkSnapshot = jest.fn();
 const mockAppStateRemove = jest.fn();
-const mockAppStateListener = jest.fn((type?: string, listener?: unknown) => ({ remove: mockAppStateRemove }));
+
+const mockAppStateListener = jest.fn((_type?: string, _listener?: unknown) => ({ remove: mockAppStateRemove }));
 const mockLogError = jest.fn();
 
 type MockRealtimeChannel = {

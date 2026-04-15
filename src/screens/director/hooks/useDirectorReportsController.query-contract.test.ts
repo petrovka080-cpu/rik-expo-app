@@ -17,16 +17,15 @@
  */
 
 import { loadDirectorReportUiScope } from "../../../lib/api/directorReportsScope.service";
+import {
+  buildDirectorReportsOptionsKey,
+  buildDirectorReportsScopeKey,
+} from "../reports/directorReports.query.key";
 
 describe("director reports controller — query key determinism", () => {
-  const optionsKey = (from: string, to: string) => `${from}|${to}`;
-  const reportKey = (
-    from: string,
-    to: string,
-    objectName: string | null,
-    objectMap: Record<string, string | null>,
-  ) =>
-    `${from}|${to}|${String(objectName ?? "")}|${String(objectName == null ? "" : (objectMap?.[objectName] ?? ""))}`;
+  const optionsKey = buildDirectorReportsOptionsKey;
+  const reportKey = buildDirectorReportsScopeKey;
+
 
   it("optionsKey is deterministic", () => {
     expect(optionsKey("2026-01-01", "2026-01-31")).toBe("2026-01-01|2026-01-31");

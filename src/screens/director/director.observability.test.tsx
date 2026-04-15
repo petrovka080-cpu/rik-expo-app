@@ -2,18 +2,18 @@ import fs from "fs";
 import path from "path";
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
-import { Alert, Pressable } from "react-native";
+import { Alert } from "react-native";
+
+import { reportDirectorTopTabsScrollFailure } from "./director.observability";
+import { fmtDateOnly } from "./director.helpers";
+import { loadDirectorDashMetrics } from "./director.metrics";
+import DirectorProposalAttachments from "./DirectorProposalAttachments";
 
 const mockReportAndSwallow = jest.fn();
 
 jest.mock("../../lib/observability/catchDiscipline", () => ({
   reportAndSwallow: (params: unknown) => mockReportAndSwallow(params),
 }));
-
-import { reportDirectorTopTabsScrollFailure } from "./director.observability";
-import { fmtDateOnly } from "./director.helpers";
-import { loadDirectorDashMetrics } from "./director.metrics";
-import DirectorProposalAttachments from "./DirectorProposalAttachments";
 
 describe("director observability hardening", () => {
   beforeEach(() => {
