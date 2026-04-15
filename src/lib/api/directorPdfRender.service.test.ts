@@ -34,7 +34,7 @@ jest.mock("../observability/platformObservability", () => ({
 }));
 
 const loadSubject = () =>
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   require("./directorPdfRender.service") as typeof import("./directorPdfRender.service");
 
 const makeEdgeResult = (signedUrl: string) => ({

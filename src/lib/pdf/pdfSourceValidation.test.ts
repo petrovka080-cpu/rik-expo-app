@@ -1,11 +1,11 @@
-const mockGetInfoAsync = jest.fn();
-const mockReadAsStringAsync = jest.fn();
-const mockFetch = jest.fn();
-
 import {
   assertValidLocalPdfFile,
   assertValidRemotePdfResponse,
 } from "./pdfSourceValidation";
+
+const mockGetInfoAsync = jest.fn();
+const mockReadAsStringAsync = jest.fn();
+const mockFetch = jest.fn();
 
 describe("pdfSourceValidation", () => {
   beforeEach(() => {

@@ -1,3 +1,5 @@
+import { openAppAttachment } from "./attachmentOpener";
+
 const mockOpenUrl = jest.fn();
 const mockGetInfoAsync = jest.fn();
 const mockDownloadAsync = jest.fn();
@@ -52,8 +54,6 @@ jest.mock("../supabaseClient", () => ({
     },
   },
 }));
-
-import { openAppAttachment } from "./attachmentOpener";
 
 const getMockPlatform = () =>
   (jest.requireMock("react-native") as { Platform: { OS: string } }).Platform;

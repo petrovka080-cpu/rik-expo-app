@@ -1,4 +1,4 @@
-﻿import { esc } from "../../api/pdf_director.format";
+import { esc } from "../../api/pdf_director.format";
 import type { DirectorFinancePreviewPdfModel } from "../../api/pdf_director.data";
 import { joinHtml, renderDocumentShell, renderMuted } from "../pdf.director.sections";
 const FINANCE_PREVIEW_STYLES = `

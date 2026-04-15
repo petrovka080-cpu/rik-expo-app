@@ -1,4 +1,4 @@
-﻿import { Platform } from "react-native";
+import { Platform } from "react-native";
 import * as Print from "expo-print";
 import type { FilePrintResult } from "expo-print";
 import { File, Paths } from "expo-file-system";
@@ -8,6 +8,7 @@ type OpenDocOpts = { share?: boolean };
 
 const logPdfDebug = (level: "info" | "warn", message: string, payload: Record<string, unknown>) => {
   if (!__DEV__) return;
+  // eslint-disable-next-line no-console
   console[level](message, payload);
 };
 

@@ -224,7 +224,7 @@ export async function resolveRequestLabel(rid: string | number): Promise<string>
   return /^\d+$/.test(id) ? `#${id}` : `#${id.slice(0, 8)}`;
 }
 
-export async function batchResolveRequestLabels(ids: Array<string | number>): Promise<Record<string, string>> {
+export async function batchResolveRequestLabels(ids: (string | number)[]): Promise<Record<string, string>> {
   const uniqueIds = Array.from(new Set(ids.map((value) => String(value ?? "").trim()).filter(Boolean)));
   if (!uniqueIds.length) return {};
   try {
@@ -412,11 +412,11 @@ export function buildDirectorSubcontractReportPdfModel(
 
 export function buildReportsExportPdfModel(args: {
   title: string;
-  sections: Array<{
+  sections: {
     title: string;
     columns: string[];
-    rows: Array<Array<string | number>>;
-  }>;
+    rows: (string | number)[][];
+  }[];
 }): ReportsExportPdfModel {
   return {
     title: String(args.title || "").trim() || "Отчёт",

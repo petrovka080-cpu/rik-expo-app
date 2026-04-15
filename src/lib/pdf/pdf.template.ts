@@ -169,7 +169,7 @@ export function renderRequestPdfHtml(model: RequestPdfModel): string {
 </html>`;
 }
 
-const renderReportsTable = (title: string, columns: string[], rows: Array<Array<string | number>>) => `
+const renderReportsTable = (title: string, columns: string[], rows: (string | number)[][]) => `
   <h3>${esc(title)}</h3>
   <table>
     <thead>

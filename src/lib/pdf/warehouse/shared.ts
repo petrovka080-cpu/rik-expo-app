@@ -1,4 +1,4 @@
-﻿// src/lib/pdf/pdf.warehouse.ts
+// src/lib/pdf/pdf.warehouse.ts
 import { normalizeRuText, normalizeRuTextForHtml } from "../../text/encoding";
 import { renderPdfHtmlToUri } from "../pdf.runner";
 

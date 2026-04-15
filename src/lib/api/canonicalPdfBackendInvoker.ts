@@ -1,4 +1,4 @@
-﻿import { createPdfSource, type PdfSource } from "../pdfFileContract";
+import { createPdfSource, type PdfSource } from "../pdfFileContract";
 import { Platform } from "react-native";
 import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "../supabaseClient";

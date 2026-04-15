@@ -47,7 +47,7 @@ export type RequestPdfModel = {
 export type ReportsExportPdfSectionModel = {
   title: string;
   columns: string[];
-  rows: Array<Array<string | number>>;
+  rows: (string | number)[][];
 };
 
 export type ReportsExportPdfModel = {

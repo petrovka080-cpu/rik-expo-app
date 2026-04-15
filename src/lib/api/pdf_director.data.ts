@@ -442,7 +442,7 @@ const buildSupplierDatesText = (row: {
     row.dueDate ? `срок ${fmtDateOnly(row.dueDate)}` : "",
   ]) || "—";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 /* legacy untyped supplier pdf mapper
   row: any,
   overpayByProposal: Map<string, number>,
@@ -499,7 +499,7 @@ const buildSupplierDatesText = (row: {
 };
 
 */
-const mapSupplierSummaryItem = (
+const _mapSupplierSummaryItem = (
   row: unknown,
   overpayByProposal: Map<string, number>,
 ) => {

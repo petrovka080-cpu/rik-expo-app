@@ -229,6 +229,7 @@ async function openAndroidPdfContentUri(localUri: string, fileName?: string): Pr
   return contentUri;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function openAndroidRemotePdfUrl(remoteUrl: string, fileName?: string): Promise<string> {
   const normalizedUrl = normalizeRemoteUrl(remoteUrl);
   if (!isHttpUri(normalizedUrl)) {

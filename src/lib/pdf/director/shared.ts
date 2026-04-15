@@ -1,4 +1,4 @@
-﻿import { esc, money } from "../../api/pdf_director.format";
+import { esc, money } from "../../api/pdf_director.format";
 import { renderTitledBoxSection } from "../pdf.director.sections";
 
 export const formatMoney = (value: number) => esc(money(value));

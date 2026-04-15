@@ -1,4 +1,4 @@
-﻿import { esc } from "../../api/pdf_director.format";
+import { esc } from "../../api/pdf_director.format";
 import type { DirectorSubcontractReportPdfModel } from "../../api/pdf_director.data";
 import {
   joinHtml,

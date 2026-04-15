@@ -84,6 +84,7 @@ describe("directorPdfBackendInvoker", () => {
       error: null,
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { invokeDirectorPdfBackend, DirectorPdfTransportError } = loadSubject();
 
     await expect(

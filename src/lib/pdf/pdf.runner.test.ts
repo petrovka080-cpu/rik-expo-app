@@ -1,3 +1,9 @@
+import { buildGeneratedPdfDescriptor, renderPdfHtmlToSource } from "./pdf.runner";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../observability/platformObservability";
+
 const mockOpenHtmlAsPdfUniversal = jest.fn();
 const mockNormalizeRuTextForHtml = jest.fn();
 
@@ -8,12 +14,6 @@ jest.mock("../api/pdf", () => ({
 jest.mock("../text/encoding", () => ({
   normalizeRuTextForHtml: (...args: unknown[]) => mockNormalizeRuTextForHtml(...args),
 }));
-
-import { buildGeneratedPdfDescriptor, renderPdfHtmlToSource } from "./pdf.runner";
-import {
-  getPlatformObservabilityEvents,
-  resetPlatformObservabilityEvents,
-} from "../observability/platformObservability";
 
 describe("pdf.runner lifecycle", () => {
   beforeEach(() => {

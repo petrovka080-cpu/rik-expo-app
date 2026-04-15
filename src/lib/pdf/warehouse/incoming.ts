@@ -1,4 +1,4 @@
-﻿import {
+import {
   cssForm29,
   esc,
   fmtDateTimeRu,

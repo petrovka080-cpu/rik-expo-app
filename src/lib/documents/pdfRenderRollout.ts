@@ -1,4 +1,4 @@
-﻿export type PdfRenderRolloutId = "director_render_v1";
+export type PdfRenderRolloutId = "director_render_v1";
 
 export type PdfRenderRolloutMode = "force_on" | "force_off" | "auto";
 export type PdfRenderRolloutAvailability = "unknown" | "available" | "missing";
@@ -205,7 +205,9 @@ export function printPdfRenderRolloutSummary(ids?: PdfRenderRolloutId[]) {
     lastUpdatedAt: item.lastUpdatedAt,
   }));
 
+  // eslint-disable-next-line no-console
   if (typeof console.table === "function") {
+    // eslint-disable-next-line no-console
     console.table(snapshot);
   } else {
     if (__DEV__) console.info("[pdf-render-rollout]", snapshot);

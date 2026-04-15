@@ -509,6 +509,7 @@ export async function getDirectorFinancePdfSource(args: {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function fetchDirectorProductionPdfSourceViaRpc(args: {
   periodFrom?: string | null;
   periodTo?: string | null;

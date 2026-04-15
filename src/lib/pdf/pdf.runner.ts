@@ -9,6 +9,7 @@ import { createPdfSource, type PdfSource } from "../pdfFileContract";
 import {
   preparePdfDocument,
   prepareAndPreviewPdfDocument,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   previewPdfDocument,
   sharePdfDocument,
   type PdfViewerRouterLike,
