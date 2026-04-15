@@ -979,6 +979,20 @@ export function useForemanDraftBoundary({
       localSnapshot: currentSnapshot,
     });
 
+    if (remote.isTerminal) {
+      await clearTerminalLocalDraft({
+        snapshot: currentSnapshot,
+        requestId: targetRequestId,
+        remoteStatus: remote.details?.status ?? null,
+      });
+      await pushRecoveryTelemetry({
+        recoveryAction: "rehydrate_server",
+        result: "success",
+        conflictType: "none",
+      });
+      return;
+    }
+
     await clearForemanMutationsForDraft(FOREMAN_LOCAL_ONLY_REQUEST_ID);
     await clearForemanMutationsForDraft(targetRequestId);
 
@@ -1046,6 +1060,7 @@ export function useForemanDraftBoundary({
     });
   }, [
     applyLocalDraftSnapshotToBoundary,
+    clearTerminalLocalDraft,
     loadItems,
     persistLocalDraftSnapshot,
     pushRecoveryTelemetry,
@@ -1115,6 +1130,19 @@ export function useForemanDraftBoundary({
         requestId: targetRequestId,
         localSnapshot: currentSnapshot,
       });
+      if (remote.isTerminal) {
+        await clearTerminalLocalDraft({
+          snapshot: currentSnapshot,
+          requestId: targetRequestId,
+          remoteStatus: remote.details?.status ?? null,
+        });
+        await pushRecoveryTelemetry({
+          recoveryAction: "discard_local",
+          result: "success",
+          conflictType: "none",
+        });
+        return;
+      }
       if (remote.snapshot) {
         setActiveDraftOwnerId(remote.snapshot.ownerId, { resetSubmitted: true });
         applyLocalDraftSnapshotToBoundary(remote.snapshot, {
@@ -1202,6 +1230,7 @@ export function useForemanDraftBoundary({
   }, [
     applyLocalDraftSnapshotToBoundary,
     clearDraftCache,
+    clearTerminalLocalDraft,
     loadItems,
     persistLocalDraftSnapshot,
     pushRecoveryTelemetry,
@@ -1326,6 +1355,18 @@ export function useForemanDraftBoundary({
         requestId: id,
         localSnapshot: localDraftSnapshotRef.current,
       });
+      if (remote.isTerminal) {
+        const durableState = getForemanDurableDraftState();
+        await clearTerminalLocalDraft({
+          snapshot:
+            localDraftSnapshotRef.current ??
+            durableState.snapshot ??
+            durableState.recoverableLocalSnapshot,
+          requestId: id,
+          remoteStatus: remote.details?.status ?? null,
+        });
+        return null;
+      }
       if (remote.snapshot) {
         applyLocalDraftSnapshotToBoundary(remote.snapshot, {
           restoreHeader: true,
@@ -1347,6 +1388,7 @@ export function useForemanDraftBoundary({
     },
     [
       applyLocalDraftSnapshotToBoundary,
+      clearTerminalLocalDraft,
       loadItems,
       persistLocalDraftSnapshot,
       refreshBoundarySyncState,

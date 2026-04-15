@@ -233,7 +233,7 @@ const readCatalogLegacyView = (relation: CatalogDynamicReadLegacySource) =>
     name: CatalogDynamicReadLegacySource,
   ) => {
     select(columns: string): {
-      eq(column: "id", value: string): {
+      eq(column: "id" | "display_no", value: string): {
         maybeSingle(): CatalogDynamicReadResponse;
       };
     };
@@ -243,20 +243,21 @@ const selectCatalogDynamicReadSingle = async (
   relation: CatalogDynamicReadSource,
   columns: string,
   id: string,
+  matchColumn: "id" | "display_no" = "id",
 ): CatalogDynamicReadResponse => {
   switch (relation) {
     case "request_display":
-      return await supabase.from("request_display").select(columns).eq("id", id).maybeSingle();
+      return await supabase.from("request_display").select(columns).eq(matchColumn, id).maybeSingle();
     case "vi_requests_display":
-      return await readCatalogLegacyView("vi_requests_display").select(columns).eq("id", id).maybeSingle();
+      return await readCatalogLegacyView("vi_requests_display").select(columns).eq(matchColumn, id).maybeSingle();
     case "vi_requests":
-      return await readCatalogLegacyView("vi_requests").select(columns).eq("id", id).maybeSingle();
+      return await readCatalogLegacyView("vi_requests").select(columns).eq(matchColumn, id).maybeSingle();
     case "v_requests_display":
-      return await supabase.from("v_requests_display").select(columns).eq("id", id).maybeSingle();
+      return await supabase.from("v_requests_display").select(columns).eq(matchColumn, id).maybeSingle();
     case "v_request_pdf_header":
-      return await supabase.from("v_request_pdf_header").select(columns).eq("id", id).maybeSingle();
+      return await supabase.from("v_request_pdf_header").select(columns).eq(matchColumn, id).maybeSingle();
     case "requests":
-      return await supabase.from("requests").select(columns).eq("id", id).maybeSingle();
+      return await supabase.from("requests").select(columns).eq(matchColumn, id).maybeSingle();
   }
 };
 
@@ -605,18 +606,18 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
 export async function fetchRequestDetails(requestId: string): Promise<RequestDetails | null> {
   const id = norm(requestId);
   if (!id) return null;
+  const requestDetailsSelect =
+    `id,status,display_no,year,seq,created_at,need_by,comment,foreman_name,
+     object_type_code,level_code,system_code,zone_code,
+     object:ref_object_types(*),
+     level:ref_levels(*),
+     system:ref_systems(*),
+     zone:ref_zones(*)`;
 
   try {
     const { data, error } = await supabase
       .from("requests")
-      .select(
-        `id,status,display_no,year,seq,created_at,need_by,comment,foreman_name,
-         object_type_code,level_code,system_code,zone_code,
-         object:ref_object_types(*),
-         level:ref_levels(*),
-         system:ref_systems(*),
-         zone:ref_zones(*)`,
-      )
+      .select(requestDetailsSelect)
       .eq("id", id)
       .maybeSingle();
     if (!error && data) {
@@ -654,6 +655,50 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
       const msg = String((error as Error)?.message ?? "").toLowerCase();
       if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
         if (__DEV__) console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, (error as Error)?.message ?? error);
+      }
+    }
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("requests")
+      .select(requestDetailsSelect)
+      .eq("display_no", id)
+      .maybeSingle();
+    if (!error && data) {
+      const mapped = mapDetailsFromRow(data);
+      if (mapped) return mapped;
+    }
+    if (error) {
+      const msg = String(error.message || "").toLowerCase();
+      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+        if (__DEV__) console.warn("[catalog_api.fetchRequestDetails] requests.display_no:", error.message);
+      }
+    }
+  } catch (error: unknown) {
+    const msg = String((error as Error)?.message ?? "").toLowerCase();
+    if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+      if (__DEV__) console.warn("[catalog_api.fetchRequestDetails] requests.display_no:", (error as Error)?.message ?? error);
+    }
+  }
+
+  for (const view of views) {
+    try {
+      const { data, error } = await selectCatalogDynamicReadSingle(view, "*", id, "display_no");
+      if (!error && data) {
+        const mapped = mapDetailsFromRow(data);
+        if (mapped) return mapped;
+      }
+      if (error) {
+        const msg = String(error.message || "").toLowerCase();
+        if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+          if (__DEV__) console.warn(`[catalog_api.fetchRequestDetails] ${view}.display_no:`, error.message);
+        }
+      }
+    } catch (error: unknown) {
+      const msg = String((error as Error)?.message ?? "").toLowerCase();
+      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+        if (__DEV__) console.warn(`[catalog_api.fetchRequestDetails] ${view}.display_no:`, (error as Error)?.message ?? error);
       }
     }
   }

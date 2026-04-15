@@ -8,8 +8,11 @@ import { isDraftLikeStatus, ridStr } from "./foreman.helpers";
 
 export type ForemanTerminalRecoverySource =
   | "active_snapshot"
+  | "active_snapshot_display"
   | "durable_snapshot"
+  | "durable_snapshot_display"
   | "recoverable_snapshot"
+  | "recoverable_snapshot_display"
   | "active_request"
   | "queue_key";
 
@@ -93,6 +96,11 @@ export const collectForemanTerminalRecoveryCandidates = (params: {
   ) => {
     if (!snapshot || !hasForemanLocalDraftContent(snapshot)) return;
     add(snapshot.requestId, source, snapshot);
+    add(
+      snapshot.displayNo,
+      `${source}_display` as ForemanTerminalRecoverySource,
+      snapshot,
+    );
   };
 
   addSnapshot(params.activeSnapshot, "active_snapshot");
@@ -122,6 +130,7 @@ export const collectForemanTerminalCleanupDraftKeys = (params: {
   add(params.queueDraftKey);
   for (const snapshot of params.snapshots ?? []) {
     add(snapshot?.requestId);
+    add(snapshot?.displayNo);
   }
 
   return Array.from(keys);

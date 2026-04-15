@@ -41,6 +41,7 @@ import { reopenRequestDraft } from "../../lib/api/request.repository";
 import type { RefOption } from "./foreman.types";
 import {
   buildScopeNote,
+  isDraftLikeStatus,
   loadForemanHistory,
   resolveStatusInfo as resolveStatusHelper,
   ridStr,
@@ -679,9 +680,9 @@ export function useForemanScreenController() {
   }, [headerAttention, headerRequirements, setHeaderAttention]);
 
   const handleHistorySelect = useCallback(async (request: ForemanRequestSummary) => {
-    await openRequestById(request.id);
+    const openedDraftId = await openRequestById(request.id);
     closeHistory();
-    openDraft();
+    if (openedDraftId) openDraft();
   }, [closeHistory, openDraft, openRequestById]);
 
   const handleHistoryReopen = useCallback(async (request: ForemanRequestSummary) => {
@@ -694,9 +695,9 @@ export function useForemanScreenController() {
         sourcePath: "foreman.history.reopen",
         draftScopeKey: requestKey,
       });
-      await openRequestById(requestKey);
+      const openedDraftId = await openRequestById(requestKey);
       closeHistory();
-      openDraft();
+      if (openedDraftId) openDraft();
     } catch (error) {
       recordCatchDiscipline({
         screen: "foreman",
@@ -912,9 +913,22 @@ export function useForemanScreenController() {
     return "Черновик";
   }, [labelForRequest, requestDetails?.display_no, requestId]);
 
-  const activeDraftDisplayLabel = requestId || requestDetails?.display_no
-    ? currentDisplayLabel
-    : "Новый черновик";
+  const currentRequestIsTerminal = Boolean(requestDetails?.status && !isDraftLikeStatus(requestDetails.status));
+  const terminalReadOnlyDraftSurface = currentRequestIsTerminal && !isDraftActive;
+  const activeDraftDisplayLabel = terminalReadOnlyDraftSurface
+    ? "Новый черновик"
+    : requestId || requestDetails?.display_no
+      ? currentDisplayLabel
+      : "Новый черновик";
+  const draftSurfaceItems = terminalReadOnlyDraftSurface ? [] : items;
+  const safeDraftSyncUi = terminalReadOnlyDraftSurface
+    ? {
+        label: "Local draft ready",
+        detail: null,
+        tone: "neutral" as const,
+      }
+    : draftSyncUi;
+  const safeDraftRecoveryActions = terminalReadOnlyDraftSurface ? [] : availableDraftRecoveryActions;
 
   const headerIdentityPrimary = useMemo(() => {
     return (
@@ -1077,10 +1091,10 @@ export function useForemanScreenController() {
     onAiQuickPress: openAiQuick,
     onOpenDraft: openDraftFromCatalog,
     currentDisplayLabel: activeDraftDisplayLabel,
-    itemsCount: items.length,
-    draftSyncStatusLabel: draftSyncUi.label,
-    draftSyncStatusDetail: draftSyncUi.detail,
-    draftSyncStatusTone: draftSyncUi.tone,
+    itemsCount: draftSurfaceItems.length,
+    draftSyncStatusLabel: safeDraftSyncUi.label,
+    draftSyncStatusDetail: safeDraftSyncUi.detail,
+    draftSyncStatusTone: safeDraftSyncUi.tone,
     draftSendBusy,
     headerAttention,
     onOpenRequestHistory: () => fetchHistory(foreman),
@@ -1145,7 +1159,7 @@ export function useForemanScreenController() {
     levelName,
     systemName,
     zoneName,
-    items,
+    items: draftSurfaceItems,
     renderReqItem,
     screenLock,
     draftDeleteBusy,
@@ -1153,7 +1167,7 @@ export function useForemanScreenController() {
     onPdf,
     pdfBusy: draftPdfBusy,
     onSendDraft: handleSendDraftFromSheet,
-    availableDraftRecoveryActions,
+    availableDraftRecoveryActions: safeDraftRecoveryActions,
     onRetryDraftSync: retryDraftSyncNow,
     onRehydrateDraftFromServer: rehydrateDraftFromServer,
     onRestoreLocalDraft: restoreLocalDraftAfterConflict,

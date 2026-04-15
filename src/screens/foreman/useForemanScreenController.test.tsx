@@ -57,6 +57,7 @@ const mockGetUser = jest.fn().mockResolvedValue({
     },
   },
 });
+let mockDraftBoundaryOverrides: Record<string, unknown> = {};
 
 jest.mock("react-native", () => ({
   Alert: {
@@ -224,6 +225,8 @@ jest.mock("../../lib/api/request.repository", () => ({
 jest.mock("./foreman.helpers", () => ({
   buildScopeNote: (objectName: string, levelName: string, systemName: string, zoneName: string) =>
     [objectName, levelName, systemName, zoneName].filter(Boolean).join(" / "),
+  isDraftLikeStatus: (value?: string | null) =>
+    new Set(["", "draft", "черновик"]).has(String(value ?? "").trim().toLowerCase()),
   loadForemanHistory: (...args: unknown[]) => mockLoadForemanHistory(...args),
   resolveStatusInfo: () => ({ label: "Черновик", bg: "#111", fg: "#fff" }),
   ridStr: (value: unknown) => String(value ?? "").trim(),
@@ -310,6 +313,7 @@ jest.mock("./hooks/useForemanDraftBoundary", () => ({
     applySystemSelection: mockApplySystemSelection,
     applyZoneSelection: mockApplyZoneSelection,
     activeDraftOwnerId: "owner-1",
+    ...mockDraftBoundaryOverrides,
   }),
 }));
 
@@ -446,6 +450,8 @@ describe("useForemanScreenController", () => {
     mockSubmitToDirector.mockResolvedValue(undefined);
     mockSyncPendingQtyDrafts.mockResolvedValue(undefined);
     mockRunRequestPdf.mockResolvedValue(undefined);
+    mockOpenRequestById.mockResolvedValue(undefined);
+    mockDraftBoundaryOverrides = {};
     mockLoadForemanHistory.mockResolvedValue(["Foreman One"]);
     mockLoadStoredFioState.mockResolvedValue({
       currentFio: "",
@@ -506,6 +512,67 @@ describe("useForemanScreenController", () => {
     expect(mockSubmitToDirector).toHaveBeenCalledTimes(1);
     expect(mockCloseDraft).toHaveBeenCalledTimes(1);
     expect(mockSetDraftSendBusy).toHaveBeenLastCalledWith(false);
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  it("does not expose a terminal request as the active recoverable draft surface", async () => {
+    mockDraftBoundaryOverrides = {
+      requestId: "req-0121",
+      requestDetails: {
+        id: "req-0121",
+        status: "approved",
+        display_no: "REQ-0121/2026",
+      },
+      isDraftActive: false,
+      items: [{ id: "row-terminal", request_id: "req-0121", qty: 2, uom: "pcs", app_code: "app-1", name_human: "Brick" }],
+      draftSyncStatus: "failed_terminal",
+      draftConflictType: "server_terminal_conflict",
+      draftSyncAttentionNeeded: true,
+      availableDraftRecoveryActions: ["restore_local", "discard_local", "clear_failed_queue"],
+    };
+    let vm: ControllerVm = null;
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vm = value; }} />);
+    });
+    await flushAsync();
+
+    expect(vm?.materialsContentProps.currentDisplayLabel).toBe("Новый черновик");
+    expect(vm?.materialsContentProps.items).toEqual([]);
+    expect(vm?.materialsContentProps.itemsCount).toBe(0);
+    expect(vm?.materialsContentProps.availableDraftRecoveryActions).toEqual([]);
+    expect(vm?.materialsContentProps.draftSyncStatusTone).toBe("neutral");
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  it("does not open the draft recovery modal when history selection resolves to terminal cleanup", async () => {
+    mockOpenRequestById.mockResolvedValueOnce(null);
+    let vm: ControllerVm = null;
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vm = value; }} />);
+    });
+    await flushAsync();
+    mockOpenDraft.mockClear();
+
+    await act(async () => {
+      await vm?.materialsContentProps.onHistorySelect({
+        id: "req-0121",
+        display_no: "REQ-0121/2026",
+        status: "approved",
+      });
+    });
+
+    expect(mockOpenRequestById).toHaveBeenCalledWith("req-0121");
+    expect(mockOpenDraft).not.toHaveBeenCalled();
 
     await act(async () => {
       renderer.unmount();

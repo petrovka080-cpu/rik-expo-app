@@ -109,6 +109,7 @@ describe("P6.3e foreman terminal recovery contract", () => {
     expect(isForemanTerminalRemoteStatus("approved")).toBe(true);
     expect(candidates).toEqual([
       { requestId: "req-0121", snapshot: stale, source: "durable_snapshot" },
+      { requestId: "REQ-0121/2026", snapshot: stale, source: "durable_snapshot_display" },
     ]);
   });
 
@@ -131,6 +132,7 @@ describe("P6.3e foreman terminal recovery contract", () => {
 
     expect(candidates).toEqual([
       { requestId: "req-0121", snapshot: recoverable, source: "recoverable_snapshot" },
+      { requestId: "REQ-0121/2026", snapshot: recoverable, source: "recoverable_snapshot_display" },
     ]);
 
     const overview = summarizePlatformOfflineOverview({
@@ -160,7 +162,31 @@ describe("P6.3e foreman terminal recovery contract", () => {
         snapshots: [active, recoverable],
         queueDraftKey: "req-0121",
       }).sort(),
-    ).toEqual([FOREMAN_LOCAL_ONLY_REQUEST_ID, "req-0121", "req-0121-recovery"].sort());
+    ).toEqual([FOREMAN_LOCAL_ONLY_REQUEST_ID, "REQ-0121/2026", "req-0121", "req-0121-recovery"].sort());
+  });
+
+  it("display-number keyed terminal recovery entries are selected for cleanup", () => {
+    const stale = {
+      ...snapshot(""),
+      displayNo: "REQ-0121/2026",
+    };
+    const state = durable({
+      snapshot: stale,
+      syncStatus: "failed_terminal",
+      attentionNeeded: true,
+    });
+
+    const candidates = collectForemanTerminalRecoveryCandidates({
+      durableSnapshot: state.snapshot,
+      recoverableSnapshot: null,
+      activeRequestId: null,
+      queueDraftKey: null,
+      hasRecoverySignal: hasForemanDurableRecoverySignal(state),
+    });
+
+    expect(candidates).toEqual([
+      { requestId: "REQ-0121/2026", snapshot: stale, source: "durable_snapshot_display" },
+    ]);
   });
 
   it("reset terminal durable state has no recovery modal actions", () => {
