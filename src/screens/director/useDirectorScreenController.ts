@@ -14,9 +14,8 @@ import { useDirectorFinanceRealtimeLifecycle } from "./director.finance.realtime
 import { useDirectorReportsRealtimeLifecycle } from "./director.reports.realtime.lifecycle";
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { fmtDateOnly } from "./director.helpers";
-import {
-    loadDirectorFinanceScreenScope,
-} from "../../lib/api/directorFinanceScope.service";
+import { useDirectorFinanceQuery } from "./finance/useDirectorFinanceQuery";
+import type { DirectorFinanceScreenScopeIssue } from "./finance/directorFinance.query.types";
 import {
     type FinPage,
     type Group,
@@ -26,7 +25,6 @@ import {
 import {
     money as moneyHelper,
 } from "./director.finance";
-import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import { useIsFocused } from "@react-navigation/native";
 import { useDirectorUiStore } from "./directorUi.store";
 
@@ -60,10 +58,7 @@ export function useDirectorScreenController() {
     const setFinOpen = useDirectorUiStore((state) => state.setFinOpen);
     const finPage = useDirectorUiStore((state) => state.finPage);
     const setFinPage = useDirectorUiStore((state) => state.setFinPage);
-    const finLoading = useDirectorUiStore((state) => state.finLoading);
-    const setFinLoading = useDirectorUiStore((state) => state.setFinLoading);
     const finStackRef = useRef<FinPage[]>(["home"]);
-    const [finScope, setFinScope] = useState<DirectorFinanceCanonicalScope | null>(null);
     const finPeriodOpen = useDirectorUiStore((state) => state.finPeriodOpen);
     const setFinPeriodOpen = useDirectorUiStore((state) => state.setFinPeriodOpen);
     const finFrom = useDirectorUiStore((state) => state.finFrom);
@@ -78,33 +73,30 @@ export function useDirectorScreenController() {
     const FIN_DUE_DAYS_DEFAULT = 7;
     const FIN_CRITICAL_DAYS = 14;
 
-    const fetchFinance = useCallback(async () => {
-        setFinLoading(true);
-        try {
-            const scope = await loadDirectorFinanceScreenScope({
-                periodFromIso: finFrom,
-                periodToIso: finTo,
-                dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
-                criticalDays: FIN_CRITICAL_DAYS,
-            });
-
-            for (const issue of scope.issues) {
-                if (issue.scope === "finance_rows") {
-                    warnDirectorFinance("fetchFinance", issue.error);
-                } else if (issue.scope === "spend_rows") {
-                    warnDirectorFinance("fetchFinSpendRows", issue.error);
-                } else {
-                    warnDirectorFinance("fetchFinancePanelScope", issue.error);
-                }
-            }
-
-            setFinScope(scope.canonicalScope);
-        } catch (e: unknown) {
-            warnDirectorFinance("fetchFinance", e);
-        } finally {
-            setFinLoading(false);
+    const handleDirectorFinanceIssue = useCallback((issue: DirectorFinanceScreenScopeIssue) => {
+        if (issue.scope === "finance_rows") {
+            warnDirectorFinance("fetchFinance", issue.error);
+        } else if (issue.scope === "spend_rows") {
+            warnDirectorFinance("fetchFinSpendRows", issue.error);
+        } else {
+            warnDirectorFinance("fetchFinancePanelScope", issue.error);
         }
-    }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, finFrom, finTo, setFinLoading]);
+    }, []);
+    const handleDirectorFinanceError = useCallback((error: unknown) => {
+        warnDirectorFinance("fetchFinance", error);
+    }, []);
+    const financeQuery = useDirectorFinanceQuery({
+        periodFromIso: finFrom,
+        periodToIso: finTo,
+        dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+        criticalDays: FIN_CRITICAL_DAYS,
+        enabled: isScreenFocused && dirTab === DIRECTOR_FINANCE_TAB,
+        onIssue: handleDirectorFinanceIssue,
+        onError: handleDirectorFinanceError,
+    });
+    const finScope = financeQuery.finScope;
+    const finLoading = financeQuery.finLoading;
+    const fetchFinance = financeQuery.refreshFinance;
 
     // Navigation Logic for Finance
     const pushFin = useCallback((p: FinPage) => {
