@@ -120,4 +120,31 @@ describe("P6.3a — bootstrap draft reconciliation", () => {
       expect(staleDraft.submitRequested).toBe(true);
     });
   });
+
+  describe("P6.3c — live foreground UI cleanup rules", () => {
+    const shouldClearLiveState = (
+      currentStatus: string | null,
+      hasStaleState: boolean,
+    ) => {
+      const isTerminalStatus = Boolean(currentStatus && !isDraftLikeStatus(currentStatus));
+      return isTerminalStatus && hasStaleState;
+    };
+
+    it("terminal remote status clears top banner", () => {
+      expect(shouldClearLiveState("approved", true)).toBe(true);
+    });
+
+    it("terminal remote status clears draft card", () => {
+      expect(shouldClearLiveState("submitted", true)).toBe(true);
+    });
+
+    it("terminal remote status clears attention/retry metadata", () => {
+      expect(shouldClearLiveState("На рассмотрении", true)).toBe(true);
+    });
+
+    it("real offline pending still shows banner/card", () => {
+      expect(shouldClearLiveState("draft", true)).toBe(false);
+      expect(shouldClearLiveState(null, true)).toBe(false);
+    });
+  });
 });
