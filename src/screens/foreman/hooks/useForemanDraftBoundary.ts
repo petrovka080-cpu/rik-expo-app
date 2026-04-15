@@ -44,6 +44,12 @@ import {
   ridStr,
 } from "../foreman.helpers";
 import {
+  collectForemanTerminalCleanupDraftKeys,
+  collectForemanTerminalRecoveryCandidates,
+  hasForemanDurableRecoverySignal,
+  isForemanTerminalRemoteStatus,
+} from "../foreman.terminalRecovery";
+import {
   FOREMAN_LOCAL_ONLY_REQUEST_ID,
   buildFreshForemanLocalDraftSnapshot,
   buildForemanLocalDraftSnapshot,
@@ -651,7 +657,25 @@ export function useForemanDraftBoundary({
       requestId: string;
       remoteStatus?: string | null;
     }) => {
-      const snapshot = options.snapshot ?? localDraftSnapshotRef.current ?? getForemanDurableDraftState().snapshot;
+      const durableState = getForemanDurableDraftState();
+      const snapshot =
+        options.snapshot ??
+        localDraftSnapshotRef.current ??
+        durableState.snapshot ??
+        durableState.recoverableLocalSnapshot;
+      const cleanupKeys = collectForemanTerminalCleanupDraftKeys({
+        requestId: options.requestId,
+        snapshots: [
+          snapshot,
+          localDraftSnapshotRef.current,
+          durableState.snapshot,
+          durableState.recoverableLocalSnapshot,
+        ],
+        queueDraftKey: durableState.queueDraftKey,
+      });
+      for (const key of cleanupKeys) {
+        await clearForemanMutationsForDraft(key);
+      }
       await clearDraftCache({
         snapshot,
         requestId: options.requestId,
@@ -694,6 +718,48 @@ export function useForemanDraftBoundary({
       }
     },
     [clearDraftCache, refreshBoundarySyncState, resetDraftState, setActiveDraftOwnerId],
+  );
+
+  const clearTerminalRecoveryOwnerIfNeeded = useCallback(
+    async (context: string, options?: { cancelled?: () => boolean }) => {
+      const durableState = getForemanDurableDraftState();
+      const candidates = collectForemanTerminalRecoveryCandidates({
+        activeSnapshot: localDraftSnapshotRef.current,
+        durableSnapshot: durableState.snapshot,
+        recoverableSnapshot: durableState.recoverableLocalSnapshot,
+        activeRequestId: requestId,
+        queueDraftKey: durableState.queueDraftKey,
+        hasRecoverySignal: hasForemanDurableRecoverySignal(durableState),
+      });
+
+      for (const candidate of candidates) {
+        if (options?.cancelled?.()) return true;
+        try {
+          const remoteDetails = await fetchRequestDetails(candidate.requestId);
+          const remoteStatus = remoteDetails?.status ?? null;
+          if (!isForemanTerminalRemoteStatus(remoteStatus)) continue;
+          if (__DEV__) {
+            console.info("[foreman.terminal-recovery] clearing request-bound recovery owner", {
+              requestId: candidate.requestId,
+              remoteStatus,
+              source: candidate.source,
+              context,
+            });
+          }
+          await clearTerminalLocalDraft({
+            snapshot: candidate.snapshot,
+            requestId: candidate.requestId,
+            remoteStatus,
+          });
+          return true;
+        } catch {
+          // Network failure during reconciliation is non-fatal.
+        }
+      }
+
+      return false;
+    },
+    [clearTerminalLocalDraft, requestId],
   );
 
   const syncLocalDraftNow = useCallback(
@@ -1308,6 +1374,8 @@ export function useForemanDraftBoundary({
       });
       if (options?.cancelled?.()) return;
 
+      if (await clearTerminalRecoveryOwnerIfNeeded("bootstrap_complete", options)) return;
+
       const durableSnapshot = getForemanDurableDraftState().snapshot;
 
       // ── P6.3a: Reset stale sync metadata when bootstrap cleared the snapshot ──
@@ -1467,6 +1535,7 @@ export function useForemanDraftBoundary({
       applyLocalDraftSnapshotToBoundary,
       clearDraftCache,
       clearTerminalLocalDraft,
+      clearTerminalRecoveryOwnerIfNeeded,
       getDraftQueueKey,
       getDraftQueueKeys,
       loadItems,
@@ -1483,6 +1552,7 @@ export function useForemanDraftBoundary({
   const restoreDraftIfNeeded = useCallback(
     async (context: string) => {
       if (!boundaryState.bootstrapReady) return;
+      if (await clearTerminalRecoveryOwnerIfNeeded(context)) return;
 
       // ── P6.3d: On focus/foreground, check if active snapshot's request
       // is already terminal on the server. skipRemoteDraftEffects prevents
@@ -1518,7 +1588,12 @@ export function useForemanDraftBoundary({
       if (!isForemanConflictAutoRecoverable(durableState.conflictType)) return;
       await syncLocalDraftNow({ context });
     },
-    [boundaryState.bootstrapReady, clearTerminalLocalDraft, syncLocalDraftNow],
+    [
+      boundaryState.bootstrapReady,
+      clearTerminalLocalDraft,
+      clearTerminalRecoveryOwnerIfNeeded,
+      syncLocalDraftNow,
+    ],
   );
 
   const detailsRequestId = ridStr(requestDetails?.id);
@@ -1572,8 +1647,10 @@ export function useForemanDraftBoundary({
     if (!boundaryState.bootstrapReady) return;
 
     const durableState = getForemanDurableDraftState();
-    const snapshot = localDraftSnapshotRef.current ?? durableState.snapshot;
+    const snapshot =
+      localDraftSnapshotRef.current ?? durableState.snapshot ?? durableState.recoverableLocalSnapshot;
     const snapshotId = ridStr(snapshot?.requestId);
+    const recoverableId = ridStr(durableState.recoverableLocalSnapshot?.requestId);
     const activeId = ridStr(requestId);
     const currentStatus = requestDetails?.status;
 
@@ -1584,7 +1661,7 @@ export function useForemanDraftBoundary({
 
     let terminalRequestId: string | null = null;
     if (isTerminalConflict) {
-      terminalRequestId = snapshotId || activeId || null;
+      terminalRequestId = snapshotId || recoverableId || activeId || null;
     } else if (isTerminalStatus && snapshotId === activeId) {
       terminalRequestId = activeId || null;
     } else if (isTerminalStatus && activeId) {
@@ -1599,7 +1676,12 @@ export function useForemanDraftBoundary({
       durableState.conflictType !== "none" ||
       durableState.pendingOperationsCount > 0 ||
       durableState.retryCount > 0 ||
-      Boolean(snapshot && hasForemanLocalDraftContent(snapshot));
+      Boolean(snapshot && hasForemanLocalDraftContent(snapshot)) ||
+      Boolean(
+        durableState.recoverableLocalSnapshot &&
+          hasForemanLocalDraftContent(durableState.recoverableLocalSnapshot),
+      ) ||
+      durableState.availableRecoveryActions.length > 0;
 
     if (!hasStaleState) return;
 
