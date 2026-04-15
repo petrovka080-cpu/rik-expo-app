@@ -142,7 +142,7 @@ describe("director role PDF backends", () => {
           : null,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const subject = require(testCase.modulePath) as Record<string, (...args: unknown[]) => Promise<unknown>>;
     const result = await subject[testCase.exportName](testCase.input);
 
@@ -195,7 +195,7 @@ describe("director role PDF backends", () => {
   it.each(cases)("surfaces backend failures for $label without silent fallback", async (testCase) => {
     mockInvokeDirectorPdfBackend.mockRejectedValue(new Error(`${testCase.expectedDocumentKind} failed`));
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const subject = require(testCase.modulePath) as Record<string, (...args: unknown[]) => Promise<unknown>>;
 
     await expect(subject[testCase.exportName](testCase.input)).rejects.toThrow(`${testCase.expectedDocumentKind} failed`);

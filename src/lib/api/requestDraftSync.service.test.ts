@@ -1,3 +1,6 @@
+import { supabase } from "../supabaseClient";
+import { syncRequestDraftViaRpc } from "./requestDraftSync.service";
+
 jest.mock("../supabaseClient", () => ({
   supabase: {
     auth: {
@@ -16,9 +19,6 @@ jest.mock("../supabaseClient", () => ({
 jest.mock("./requests.parsers", () => ({
   mapRequestRow: jest.fn(),
 }));
-
-import { supabase } from "../supabaseClient";
-import { syncRequestDraftViaRpc } from "./requestDraftSync.service";
 
 const mockSupabase = supabase as unknown as {
   rpc: jest.Mock;

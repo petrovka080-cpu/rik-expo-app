@@ -169,7 +169,7 @@ export function classifyRpcCompatError(error: unknown): RpcCompatErrorDecision {
 
 // rpcCompat как у тебя, но “в ядре”
 export async function rpcCompat<T = unknown>(
-  variants: ReadonlyArray<RpcVariant>,
+  variants: readonly RpcVariant[],
 ): Promise<T> {
   const runRpc = async <TName extends RpcName>(variant: RpcVariant<TName>) => {
     if ("args" in variant && variant.args !== undefined) {

@@ -6,7 +6,7 @@ import {
 
 describe("ensureLeafletWebCss", () => {
   it("injects leaflet css once into the current document", () => {
-    const appended: Array<Record<string, unknown>> = [];
+    const appended: Record<string, unknown>[] = [];
     const fakeDocument = {
       getElementById: jest.fn((id: string) =>
         appended.find((node) => node.id === id) ?? null,

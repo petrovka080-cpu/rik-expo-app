@@ -61,10 +61,10 @@ const UI_COPY = {
   addAction: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c",
 } as const;
 
-const LISTING_KIND_OPTIONS: Array<{
+const LISTING_KIND_OPTIONS: {
   code: ListingKind;
   label: string;
-}> = [
+}[] = [
   { code: "material", label: "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b" },
   { code: "service", label: "\u0423\u0441\u043b\u0443\u0433\u0438" },
   { code: "rent", label: "\u0410\u0440\u0435\u043d\u0434\u0430" },

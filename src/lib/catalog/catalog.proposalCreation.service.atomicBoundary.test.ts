@@ -1,12 +1,12 @@
+import { supabase } from "../supabaseClient";
+import { createProposalsBySupplier } from "./catalog.proposalCreation.service";
+
 jest.mock("../supabaseClient", () => ({
   supabase: {
     rpc: jest.fn(),
     from: jest.fn(),
   },
 }));
-
-import { supabase } from "../supabaseClient";
-import { createProposalsBySupplier } from "./catalog.proposalCreation.service";
 
 const mockedSupabase = supabase as unknown as {
   rpc: jest.Mock;

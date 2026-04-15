@@ -44,7 +44,7 @@ const mapSupplierRow = (raw: SupplierTableRow | SuppliersListRpcRow): Supplier |
   };
 };
 
-export const mapSupplierRows = (rows: Array<SupplierTableRow | SuppliersListRpcRow>): Supplier[] =>
+export const mapSupplierRows = (rows: (SupplierTableRow | SuppliersListRpcRow)[]): Supplier[] =>
   rows
     .map(mapSupplierRow)
     .filter((row): row is Supplier => !!row)
@@ -69,7 +69,7 @@ const mapCatalogSearchRow = (
 };
 
 export const mapCatalogSearchRows = (
-  rows: Array<CatalogSearchRpcRow | CatalogSearchFallbackRow>,
+  rows: (CatalogSearchRpcRow | CatalogSearchFallbackRow)[],
 ): CatalogItem[] =>
   rows
     .map(mapCatalogSearchRow)

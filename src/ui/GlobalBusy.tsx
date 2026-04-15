@@ -26,7 +26,7 @@ import {
 // Blur (expo-blur)
 let BlurViewAny: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+   
   BlurViewAny = require("expo-blur")?.BlurView ?? null;
 } catch {
   BlurViewAny = null;

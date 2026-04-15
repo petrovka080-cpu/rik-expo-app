@@ -1,4 +1,4 @@
-﻿import { type DirectorReportFetchMeta } from "./director_reports";
+import { type DirectorReportFetchMeta } from "./director_reports";
 import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
 import { supabase } from "../supabaseClient";
 import { beginPlatformObservability } from "../observability/platformObservability";

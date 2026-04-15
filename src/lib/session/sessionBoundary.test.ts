@@ -4,6 +4,8 @@
  * WAVE H: Verifies that resetSessionBoundary calls ALL registered cleaners.
  */
 
+import { resetSessionBoundary } from "./sessionBoundary";
+
 const mockClearDocumentSessions = jest.fn();
 const mockClearCurrentSessionRoleCache = jest.fn();
 const mockClearPdfRunnerSessionState = jest.fn();
@@ -76,8 +78,6 @@ jest.mock("../observability/platformObservability", () => ({
   recordPlatformObservability: (...args: unknown[]) =>
     mockRecordPlatformObservability(...args),
 }));
-
-import { resetSessionBoundary } from "./sessionBoundary";
 
 describe("resetSessionBoundary", () => {
   beforeEach(() => {

@@ -301,7 +301,7 @@ describe("OfficeStackLayout", () => {
   });
 
   describe("rapid back regression (N2)", () => {
-    const allChildRoutes: Array<"/office/foreman" | "/office/warehouse"> = [
+    const allChildRoutes: ("/office/foreman" | "/office/warehouse")[] = [
       "/office/foreman",
       "/office/warehouse",
     ];

@@ -19,9 +19,8 @@ import { useRouter } from "expo-router";
 import { createOfficeCompany } from "./officeAccess.services";
 import type { OfficeAccessScreenData, CreateCompanyDraft } from "./officeAccess.types";
 import { COPY, type LoadScreenMode } from "./officeHub.constants";
-import { EMPTY_COMPANY_DRAFT } from "./officeHub.helpers";
+import { EMPTY_COMPANY_DRAFT , buildOfficeBootstrapCompanyDraft } from "./officeHub.helpers";
 import type { OfficeHubBootstrapSnapshot } from "./officeHubBootstrapSnapshot";
-import { buildOfficeBootstrapCompanyDraft } from "./officeHub.helpers";
 import type { ScrollView } from "react-native";
 
 // ---------------------------------------------------------------------------

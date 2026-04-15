@@ -1,4 +1,4 @@
-﻿import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database, Json } from "../database.types";
 import { supabase } from "../supabaseClient";
@@ -49,7 +49,9 @@ type SubmitJobsUpdate = Database["public"]["Tables"]["submit_jobs"]["Update"];
 type SubmitJobsClaimRpcArgs = Database["public"]["Functions"]["submit_jobs_claim"]["Args"];
 type SubmitJobsClaimRpcRow = Database["public"]["Functions"]["submit_jobs_claim"]["Returns"][number];
 type SubmitJobsRecoverStuckRpcReturns = Database["public"]["Functions"]["submit_jobs_recover_stuck"]["Returns"];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SubmitJobsMarkCompletedRpcArgs = Database["public"]["Functions"]["submit_jobs_mark_completed"]["Args"];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SubmitJobsMarkFailedRpcArgs = Database["public"]["Functions"]["submit_jobs_mark_failed"]["Args"];
 type SubmitJobsMetricsRpcRow = Database["public"]["Functions"]["submit_jobs_metrics"]["Returns"][number];
 type SubmitJobsClaimLegacyArgs = {

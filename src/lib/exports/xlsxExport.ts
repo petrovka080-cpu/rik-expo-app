@@ -3,7 +3,7 @@ import { loadXlsx } from "../runtime/loadXlsx";
 type WorkbookColumn = { wch: number };
 
 type ExportAoaWorkbookWebArgs = {
-  data: Array<Array<string | number>>;
+  data: (string | number)[][];
   sheetName: string;
   downloadName: string;
   columns?: WorkbookColumn[];

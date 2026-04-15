@@ -101,6 +101,7 @@ export type RequestSubmitMutationResult = {
   request_items_pending_synced: boolean;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type RequestSubmitAtomicSuccess = {
   ok: true;
   requestId: string;

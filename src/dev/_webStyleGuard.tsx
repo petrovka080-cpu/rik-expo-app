@@ -1,7 +1,7 @@
 // web-only: гарантированно расплющиваем style-массивы на ЛЮБОМ элементе
 // Это исполняется только в браузере. На iOS/Android (Hermes) кода не будет.
 if (typeof document !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+   
   const React = require("react");
   const origCreateElement = React.createElement;
 

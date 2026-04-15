@@ -37,7 +37,7 @@ jest.mock("../../src/lib/supabaseClient", () => ({
 }));
 
 // Lazy-load after mocks
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const Index = require("../../app/index").default;
 
 describe("Index redirect safety (N3)", () => {

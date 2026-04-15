@@ -84,6 +84,7 @@ describe("queuePersistenceSerializer — dedicated mutex (N2)", () => {
     const counter = { value: 0 };
 
     // Fire 20 rapid increment operations
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const promises = Array.from({ length: 20 }, (_, i) =>
       mutex.run(async () => {
         const before = counter.value;

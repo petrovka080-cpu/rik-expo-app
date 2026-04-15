@@ -174,6 +174,7 @@ describe("mutation queue mutex — lifecycle integration", () => {
     let activeCount = 0;
     let maxActive = 0;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const operation = (name: string) =>
       mutex.run(async () => {
         activeCount++;

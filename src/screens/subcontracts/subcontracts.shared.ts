@@ -485,13 +485,13 @@ export const STATUS_CONFIG: Record<SubcontractStatus, { label: string; bg: strin
   closed: { label: "Р—Р°РєСЂС‹С‚Р°", bg: "#F1F5F9", fg: "#64748B" },
 };
 
-export const WORK_MODE_OPTIONS: Array<{ value: SubcontractWorkMode; label: string }> = [
+export const WORK_MODE_OPTIONS: { value: SubcontractWorkMode; label: string }[] = [
   { value: "labor_only", label: "РўРѕР»СЊРєРѕ СЂР°Р±РѕС‡РёРµ" },
   { value: "turnkey", label: "РџРѕРґ РєР»СЋС‡" },
   { value: "mixed", label: "РЎРјРµС€Р°РЅРЅС‹Р№" },
 ];
 
-export const PRICE_TYPE_OPTIONS: Array<{ value: SubcontractPriceType; label: string }> = [
+export const PRICE_TYPE_OPTIONS: { value: SubcontractPriceType; label: string }[] = [
   { value: "by_volume", label: "Р—Р° РѕР±СЉС‘Рј" },
   { value: "by_shift", label: "Р—Р° СЃРјРµРЅСѓ" },
   { value: "by_hour", label: "Р—Р° С‡Р°СЃ" },

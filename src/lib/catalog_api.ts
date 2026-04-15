@@ -93,7 +93,7 @@ export type {
 export { createProposalsBySupplier } from "./catalog/catalog.proposalCreation.service";
 
 export async function batchResolveRequestLabels(
-  ids: Array<string | number>,
+  ids: (string | number)[],
 ): Promise<Record<string, string>> {
   return await batchResolveRequestLabelsFromPdfRequest(ids);
 }

@@ -1,3 +1,12 @@
+import {
+  IOS_PDF_SHARE_MAX_BYTES,
+  openPdfExternal,
+  openPdfPreview,
+  openPdfShare,
+  preparePdfExecutionSource,
+} from "./pdfRunner";
+import { Platform } from "react-native";
+
 const mockAlert = jest.fn();
 const mockOpenUrl = jest.fn();
 const mockGetInfoAsync = jest.fn();
@@ -49,15 +58,6 @@ jest.mock("./fileSystemPaths", () => ({
     legacyDocumentDirectory: "file:///documents/",
   })),
 }));
-
-import {
-  IOS_PDF_SHARE_MAX_BYTES,
-  openPdfExternal,
-  openPdfPreview,
-  openPdfShare,
-  preparePdfExecutionSource,
-} from "./pdfRunner";
-import { Platform } from "react-native";
 
 describe("pdfRunner native open", () => {
   const originalPlatformOs = Platform.OS;

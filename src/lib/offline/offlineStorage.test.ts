@@ -1,9 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-jest.mock("../logError", () => ({
-  logError: jest.fn(),
-}));
-
 import {
   configureOfflineStorageTestHarness,
   createDefaultOfflineStorage,
@@ -13,6 +9,10 @@ import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
 } from "../observability/platformObservability";
+
+jest.mock("../logError", () => ({
+  logError: jest.fn(),
+}));
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
   __esModule: true,

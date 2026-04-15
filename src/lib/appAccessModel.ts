@@ -85,7 +85,7 @@ const normalizeContext = (value: unknown): AppContext | null => {
   return null;
 };
 
-const uniqueStrings = (values: Array<string | null | undefined>): string[] => {
+const uniqueStrings = (values: (string | null | undefined)[]): string[] => {
   const seen = new Set<string>();
   const out: string[] = [];
   values.forEach((value) => {

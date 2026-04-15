@@ -73,7 +73,7 @@ describe("O2: warehouse reports query boundary contract", () => {
       repIssues: [],
       repIncoming: [],
     };
-    for (const key of Object.keys(data) as Array<keyof WarehouseReportsQueryData>) {
+    for (const key of Object.keys(data) as (keyof WarehouseReportsQueryData)[]) {
       expect(Array.isArray(data[key])).toBe(true);
       expect(data[key]).toHaveLength(0);
     }

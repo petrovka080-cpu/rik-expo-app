@@ -17,6 +17,7 @@ import {
   createPdfDocumentDescriptor,
   type PdfDocumentType,
   type PdfOriginModule,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type DocumentDescriptor,
 } from "../../src/lib/documents/pdfDocument";
 

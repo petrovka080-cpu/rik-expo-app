@@ -1,4 +1,4 @@
-﻿import { Platform } from "react-native";
+import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system/legacy";
 import { getFileSystemPaths } from "../fileSystemPaths";
 

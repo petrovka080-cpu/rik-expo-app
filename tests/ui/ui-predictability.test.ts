@@ -93,7 +93,7 @@ describe("UI predictability — foreman AI panel cluster", () => {
   });
 
   it("pushAiQuickSessionTurn respects history limit", () => {
-    const store = useForemanUiStore.getState();
+    const _store = useForemanUiStore.getState();
     for (let i = 0; i < 10; i++) {
       useForemanUiStore.getState().pushAiQuickSessionTurn({
         prompt: `prompt ${i}`,

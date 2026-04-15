@@ -32,7 +32,6 @@ import type {
   MarketListing,
   MyLoc,
 } from "./mapContracts";
-import { normalizeMarketListingRow } from "./mapContracts";
 import { useMapListingsQuery } from "./useMapListingsQuery";
 
 import {

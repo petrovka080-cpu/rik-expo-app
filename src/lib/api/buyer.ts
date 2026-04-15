@@ -1,4 +1,4 @@
-﻿import { client, parseErr } from "./_core";
+import { client, parseErr } from "./_core";
 import type { BuyerInboxRow } from "./types";
 import { isRequestApprovedForProcurement } from "../requestStatus";
 import { normalizeRuText } from "../text/encoding";
@@ -72,7 +72,7 @@ const isProcurementReadyItemStatus = (value: unknown): boolean => {
   return isApprovedForBuyer(value);
 };
 
-const rowTimestampMs = (...values: Array<string | null | undefined>): number => {
+const rowTimestampMs = (...values: (string | null | undefined)[]): number => {
   for (const value of values) {
     const raw = String(value ?? "").trim();
     if (!raw) continue;
@@ -328,7 +328,7 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
         kind: r.kind ?? null,
         request_status: String(r.requests?.status ?? r.request_status ?? ""),
       };
-    }) as Array<BuyerInboxRow & { request_status?: string }>;
+    }) as (BuyerInboxRow & { request_status?: string })[];
     const gatedRows = await filterInboxByRequestStatus(rows as BuyerInboxRow[]);
     return await enrichRejectedRows(gatedRows);
   } catch (err) {

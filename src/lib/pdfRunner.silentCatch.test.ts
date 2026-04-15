@@ -1,3 +1,9 @@
+import { clearPdfRunnerSessionState, runPdfTop } from "./pdfRunner";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "./observability/platformObservability";
+
 const mockAlert = jest.fn();
 const mockOpenUrl = jest.fn();
 
@@ -37,12 +43,6 @@ jest.mock("./fileSystemPaths", () => ({
     legacyDocumentDirectory: "/tmp/",
   })),
 }));
-
-import { clearPdfRunnerSessionState, runPdfTop } from "./pdfRunner";
-import {
-  getPlatformObservabilityEvents,
-  resetPlatformObservabilityEvents,
-} from "./observability/platformObservability";
 
 describe("runPdfTop", () => {
   let consoleErrorSpy: jest.SpyInstance;

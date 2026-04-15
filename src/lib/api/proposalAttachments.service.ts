@@ -193,7 +193,7 @@ async function mapRows(
   client: ProposalAttachmentsClient,
   proposalId: string,
   sourceKind: "canonical" | "compatibility",
-  rows: Array<ProposalAttachmentEvidenceRpcRow | ProposalAttachmentTableRow>,
+  rows: (ProposalAttachmentEvidenceRpcRow | ProposalAttachmentTableRow)[],
   signedUrlTtlSec: number,
 ) {
   const seen = new Set<string>();

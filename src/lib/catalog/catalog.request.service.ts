@@ -1,4 +1,4 @@
-﻿import { supabase } from "../supabaseClient";
+import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import {
   clearCachedDraftRequestId,
@@ -10,7 +10,7 @@ import {
   asLooseRecord,
   asUnknownRecord,
   clamp,
-  isObjectLike,
+  
   norm,
   parseNumberValue,
   pickFirstString,
@@ -878,7 +878,7 @@ export async function listForemanRequests(
      system:ref_systems(*),
      zone:ref_zones(*)`;
 
-  const results: Array<{ data: unknown; error: { message?: string } | null }> = [];
+  const results: { data: unknown; error: { message?: string } | null }[] = [];
   if (name) {
     results.push(
       await supabase

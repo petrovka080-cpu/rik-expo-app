@@ -1,4 +1,4 @@
-﻿import {
+import {
   supabase,
   SUPABASE_HOST,
   SUPABASE_KEY_KIND,

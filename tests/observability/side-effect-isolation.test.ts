@@ -6,7 +6,7 @@
  * are reported, swallowed, and observed without phantom invocations.
  */
 
-import { recordPlatformObservability, getPlatformObservabilityEvents, resetPlatformObservabilityEvents } from "../../src/lib/observability/platformObservability";
+import { getPlatformObservabilityEvents, resetPlatformObservabilityEvents } from "../../src/lib/observability/platformObservability";
 import { recordCatchDiscipline, reportAndSwallow } from "../../src/lib/observability/catchDiscipline";
 
 describe("side-effect isolation — catchDiscipline", () => {

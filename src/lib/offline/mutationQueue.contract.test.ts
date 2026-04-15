@@ -1,7 +1,3 @@
-jest.mock("../observability/platformObservability", () => ({
-  recordPlatformObservability: jest.fn(),
-}));
-
 import { createMemoryOfflineStorage, type MemoryOfflineStorageAdapter } from "./offlineStorage";
 import {
   clearForemanMutationQueue,
@@ -19,6 +15,10 @@ import {
   getOfflineMutationTelemetryEvents,
   resetOfflineMutationTelemetryEvents,
 } from "./mutation.telemetry";
+
+jest.mock("../observability/platformObservability", () => ({
+  recordPlatformObservability: jest.fn(),
+}));
 
 const MUTATION_QUEUE_STORAGE_KEY = "offline_mutation_queue_v2";
 const MUTATION_QUEUE_LEGACY_STORAGE_KEY = "offline_mutation_queue_v1";

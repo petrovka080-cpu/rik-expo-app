@@ -48,7 +48,7 @@ type Props = {
 };
 
 type ViewabilityChange = {
-  viewableItems: Array<ViewToken & { item?: Row }>;
+  viewableItems: (ViewToken & { item?: Row })[];
 };
 
 function readMovementY(event: GestureResponderEvent): number {

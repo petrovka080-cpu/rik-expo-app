@@ -1,3 +1,14 @@
+import { client } from "./_core";
+import {
+  AccountantPayInvoiceAtomicError,
+  accountantLoadProposalFinancialState,
+  accountantPayInvoiceAtomic,
+} from "./accountant";
+import {
+  ensureProposalExists,
+  ensureProposalItemIdsBelongToProposal,
+} from "./integrity.guards";
+
 jest.mock("./_core", () => ({
   client: {
     rpc: jest.fn(),
@@ -9,17 +20,6 @@ jest.mock("./integrity.guards", () => ({
   ensureProposalExists: jest.fn(),
   ensureProposalItemIdsBelongToProposal: jest.fn(),
 }));
-
-import { client } from "./_core";
-import {
-  AccountantPayInvoiceAtomicError,
-  accountantLoadProposalFinancialState,
-  accountantPayInvoiceAtomic,
-} from "./accountant";
-import {
-  ensureProposalExists,
-  ensureProposalItemIdsBelongToProposal,
-} from "./integrity.guards";
 
 const mockClient = client as unknown as {
   rpc: jest.Mock;

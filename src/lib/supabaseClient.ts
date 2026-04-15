@@ -1,4 +1,4 @@
-﻿import "react-native-url-polyfill/auto";
+import "react-native-url-polyfill/auto";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -13,6 +13,7 @@ import {
 } from "./env/clientSupabaseEnv";
 import { recordPlatformObservability } from "./observability/platformObservability";
 import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
+import { logger } from "./logger";
 
 type RuntimeProcessLike = {
   env?: Record<string, string | undefined>;
@@ -102,7 +103,7 @@ const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch =>
     }
 
     if (DEBUG_SUPABASE_REST && fixedUrl.includes("/rest/v1/")) {
-      if (__DEV__) console.log(`${tag} SUPABASE REST:`, fixedUrl);
+      if (__DEV__) logger.info("log", `${tag} SUPABASE REST:`, fixedUrl);
     }
 
     let patchedInput: FetchInput = fixedUrl;

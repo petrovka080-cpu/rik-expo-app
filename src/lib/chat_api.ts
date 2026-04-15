@@ -1,4 +1,4 @@
-﻿import { supabase } from "./supabaseClient";
+import { supabase } from "./supabaseClient";
 
 export type ChatMessageType = "text" | "photo" | "voice" | "file" | "system";
 

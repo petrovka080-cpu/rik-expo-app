@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
+ 
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
@@ -389,7 +389,8 @@ describe("RootLayout recovery bootstrap", () => {
     // getSessionSafe returns null — the session hasn't been persisted yet
     mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
 
-    let renderer: TestRenderer.ReactTestRenderer;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+let renderer: TestRenderer.ReactTestRenderer;
 
     await act(async () => {
       renderer = TestRenderer.create(<RootLayout />);

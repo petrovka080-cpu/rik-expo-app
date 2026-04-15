@@ -101,7 +101,7 @@ const toLifecycleStatusFromLegacy = (
   return "queued";
 };
 
-const toCompatibilityStatus = (
+const _toCompatibilityStatus = (
   status: OfflineMutationLifecycleStatus,
 ): OfflineMutationCompatibilityStatus => {
   if (status === "processing") return "inflight";

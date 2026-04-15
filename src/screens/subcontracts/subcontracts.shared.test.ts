@@ -1,16 +1,16 @@
-jest.mock("../../lib/supabaseClient", () => ({
-  supabase: {
-    from: jest.fn(),
-    rpc: jest.fn(),
-  },
-}));
-
 import { supabase } from "../../lib/supabaseClient";
 import {
   approveSubcontract,
   createSubcontractDraftWithPatch,
   rejectSubcontract,
 } from "./subcontracts.shared";
+
+jest.mock("../../lib/supabaseClient", () => ({
+  supabase: {
+    from: jest.fn(),
+    rpc: jest.fn(),
+  },
+}));
 
 type RpcError = { message?: string; code?: string } | null;
 

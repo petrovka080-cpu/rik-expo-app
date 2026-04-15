@@ -1,4 +1,4 @@
-﻿import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   ProposalBucketInput,
   CreateProposalsOptions as CatalogCreateProposalsOptions,

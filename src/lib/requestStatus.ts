@@ -1,4 +1,4 @@
-﻿import { normalizeRuText } from "./text/encoding";
+import { normalizeRuText } from "./text/encoding";
 
 export function normalizeStatusToken(raw: unknown): string {
   return String(normalizeRuText(String(raw ?? "")) ?? "")

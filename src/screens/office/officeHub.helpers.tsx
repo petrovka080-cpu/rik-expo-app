@@ -9,8 +9,7 @@
  */
 
 import React from "react";
-import type { OfficeAccessScreenData } from "./officeAccess.types";
-import type { CreateCompanyDraft } from "./officeAccess.types";
+import type { OfficeAccessScreenData , CreateCompanyDraft } from "./officeAccess.types";
 
 export const EMPTY_COMPANY_DRAFT: CreateCompanyDraft = {
   name: "",

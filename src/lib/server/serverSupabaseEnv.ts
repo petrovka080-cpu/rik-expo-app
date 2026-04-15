@@ -1,4 +1,4 @@
-﻿import process from "node:process";
+import process from "node:process";
 
 import { SUPABASE_HOST, SUPABASE_PROJECT_REF, SUPABASE_URL } from "../env/clientSupabaseEnv";
 

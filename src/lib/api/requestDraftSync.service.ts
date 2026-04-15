@@ -1,4 +1,4 @@
-﻿import type { Database } from "../database.types";
+import type { Database } from "../database.types";
 import type { ReqItemRow as CatalogReqItemRow } from "../catalog_api";
 import {
   DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
@@ -7,6 +7,7 @@ import {
 import { supabase } from "../supabaseClient";
 import { mapRequestRow } from "./requests.parsers";
 import type { RequestMeta, RequestRecord } from "./types";
+import { logger } from "../logger";
 
 type RequestDraftSyncArgsV2 = Database["public"]["Functions"]["request_sync_draft_v2"]["Args"];
 type RequestDraftSyncReturns = Database["public"]["Functions"]["request_sync_draft_v2"]["Returns"];
@@ -277,7 +278,7 @@ export async function syncRequestDraftViaRpc(params: {
   }
 
   const items = parseItemsPayload(envelope.items_payload);
-  if (__DEV__) console.log("[draft-sync] source=rpc_v2");
+  if (__DEV__) logger.info("log", "[draft-sync] source=rpc_v2");
   if (__DEV__) console.info("[request-draft-sync]", {
     sourceBranch: "rpc_v2",
     requestId: request.id,

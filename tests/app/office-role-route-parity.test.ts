@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const appTabsDir = path.join(__dirname, "../../app/(tabs)");
-const srcScreensDir = path.join(__dirname, "../../src/screens");
+const _srcScreensDir = path.join(__dirname, "../../src/screens");
 
 const roleRoutes = [
   {

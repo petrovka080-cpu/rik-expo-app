@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
+ 
 /**
  * NAV-P0 regression: Auth listener lifecycle.
  *

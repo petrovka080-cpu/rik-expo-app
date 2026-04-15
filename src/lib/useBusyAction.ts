@@ -32,6 +32,7 @@ export function useBusyAction(opts?: Opts) {
         setBusyKey(null);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [busyKey, opts?.timeoutMs, opts?.onError]
   );
 

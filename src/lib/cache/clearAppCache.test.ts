@@ -1,3 +1,5 @@
+import { clearAppCache } from "./clearAppCache";
+
 const mockReadDirectoryAsync = jest.fn();
 const mockGetInfoAsync = jest.fn();
 const mockDeleteAsync = jest.fn();
@@ -20,8 +22,6 @@ jest.mock("../fileSystemPaths", () => ({
     documentDir: "file:///documents/",
   })),
 }));
-
-import { clearAppCache } from "./clearAppCache";
 
 describe("clearAppCache", () => {
   const nowMs = Date.UTC(2026, 3, 13, 12, 0, 0);

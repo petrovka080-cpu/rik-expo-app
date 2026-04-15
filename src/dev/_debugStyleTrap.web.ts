@@ -1,6 +1,6 @@
 // ловит ТОЛЬКО web. ищет style-массивы на сырых DOM-тегах и логирует источник
 // удалишь после фикса
-/* eslint-disable @typescript-eslint/no-var-requires */
+ 
 const React = require("react");
 const orig = React.createElement;
 

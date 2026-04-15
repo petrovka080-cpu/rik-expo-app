@@ -3,6 +3,17 @@ import {
   resetPlatformObservabilityEvents,
 } from "../observability/platformObservability";
 
+import { supabase } from "../supabaseClient";
+import { client } from "./_core";
+import { ensureRequestExists } from "./integrity.guards";
+import {
+  clearCachedDraftRequestId,
+  getOrCreateDraftRequestId,
+  requestCreateDraft,
+  requestReopen,
+  requestSubmitMutation,
+} from "./requests";
+
 jest.mock("../supabaseClient", () => ({
   supabase: {
     auth: {
@@ -105,17 +116,6 @@ jest.mock("./requests.parsers", () => ({
 jest.mock("./requests.read-capabilities", () => ({
   buildRequestSelectSchemaSafe: jest.fn(async () => "id,status,submitted_at"),
 }));
-
-import { supabase } from "../supabaseClient";
-import { client } from "./_core";
-import { ensureRequestExists } from "./integrity.guards";
-import {
-  clearCachedDraftRequestId,
-  getOrCreateDraftRequestId,
-  requestCreateDraft,
-  requestReopen,
-  requestSubmitMutation,
-} from "./requests";
 
 type MockResult<T> = Promise<{ data: T; error: Error | null }>;
 

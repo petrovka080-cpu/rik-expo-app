@@ -236,7 +236,7 @@ const extractOperationName = (endpointKind: RequestTimeoutEndpointKind, pathname
   return parts[parts.length - 1] ?? "fetch";
 };
 
-const matchesAny = (value: string, patterns: ReadonlyArray<RegExp>) =>
+const matchesAny = (value: string, patterns: readonly RegExp[]) =>
   patterns.some((pattern) => pattern.test(value));
 
 const classifyRpcRequest = (operation: string): { requestClass: RequestTimeoutClass; ruleId: string } => {

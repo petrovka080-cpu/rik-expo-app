@@ -13,7 +13,7 @@ describe("logger boundary", () => {
     const spy = jest.spyOn(console, "info").mockImplementation(() => {});
 
     // Re-import to pick up __DEV__ change
-    const { logger: devLogger } = jest.requireActual("./logger") as typeof import("./logger");
+    const { logger: _devLogger } = jest.requireActual("./logger") as typeof import("./logger");
     // Since isDev is captured at module load, we test the exported logger directly
     // which was loaded with whatever __DEV__ was at test start
     logger.info("test-tag", "hello", { key: "value" });

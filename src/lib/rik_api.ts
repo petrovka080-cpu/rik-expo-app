@@ -116,7 +116,7 @@ export function normalizeUuid(raw: string | null | undefined) {
 
 /** ===== Legacy shim: proposalDecide ===== */
 declare global {
-  // eslint-disable-next-line no-var
+   
   var proposalDecide: ((...args: any[]) => Promise<void>) | undefined;
 }
 export const proposalDecide: (...args: any[]) => Promise<void> =
@@ -253,7 +253,7 @@ export type Supplier = {
   notes?: string | null;
 };
 
-const toFilterId = (v: number | string) => {
+const _toFilterId = (v: number | string) => {
   const raw = String(v ?? '').trim().replace(/^#/, '');
   if (!raw) return null;
 

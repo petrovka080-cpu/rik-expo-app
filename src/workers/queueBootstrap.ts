@@ -1,4 +1,4 @@
-﻿import { startQueueWorker, type QueueWorkerHandle } from "./queueWorker";
+import { startQueueWorker, type QueueWorkerHandle } from "./queueWorker";
 import { JOB_QUEUE_ENABLED } from "../lib/infra/jobQueue";
 
 let workerHandle: QueueWorkerHandle | null = null;

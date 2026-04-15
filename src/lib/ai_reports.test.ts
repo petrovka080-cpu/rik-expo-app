@@ -1,3 +1,6 @@
+import { supabase } from "./supabaseClient";
+import { analyzePriceHistory } from "./ai_reports";
+
 const selectSpy = jest.fn();
 const eqSpy = jest.fn();
 const notSpy = jest.fn();
@@ -9,9 +12,6 @@ jest.mock("./supabaseClient", () => ({
     from: jest.fn(),
   },
 }));
-
-import { supabase } from "./supabaseClient";
-import { analyzePriceHistory } from "./ai_reports";
 
 type QueryResult = {
   data: unknown;

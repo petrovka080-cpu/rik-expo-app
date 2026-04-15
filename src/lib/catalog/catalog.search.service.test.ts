@@ -1,3 +1,7 @@
+import { recordCatalogWarning } from "./catalog.observability";
+import { loadRikQuickSearchFallbackRows, runCatalogSearchRpcRaw } from "./catalog.transport";
+import { rikQuickSearch } from "./catalog.search.service";
+
 jest.mock("./catalog.transport", () => ({
   RIK_QUICK_SEARCH_RPCS: ["rik_quick_ru", "rik_quick_search_typed", "rik_quick_search"],
   runCatalogSearchRpcRaw: jest.fn(),
@@ -11,10 +15,6 @@ jest.mock("./catalog.transport", () => ({
 jest.mock("./catalog.observability", () => ({
   recordCatalogWarning: jest.fn(),
 }));
-
-import { recordCatalogWarning } from "./catalog.observability";
-import { loadRikQuickSearchFallbackRows, runCatalogSearchRpcRaw } from "./catalog.transport";
-import { rikQuickSearch } from "./catalog.search.service";
 
 const mockRunCatalogSearchRpcRaw = runCatalogSearchRpcRaw as jest.Mock;
 const mockLoadRikQuickSearchFallbackRows = loadRikQuickSearchFallbackRows as jest.Mock;

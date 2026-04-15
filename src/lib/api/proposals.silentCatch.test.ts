@@ -3,6 +3,15 @@ import {
   resetPlatformObservabilityEvents,
 } from "../observability/platformObservability";
 
+import { proposalAddItems, proposalItems, proposalSubmit } from "./proposals";
+import { supabase as mockedSupabase } from "../supabaseClient";
+import { classifyRpcCompatError, client } from "./_core";
+import {
+  classifyProposalItemsByRequestItemIntegrity,
+  ensureActiveProposalRequestItemsIntegrity,
+  ensureProposalRequestItemsIntegrity,
+} from "./integrity.guards";
+
 jest.mock("../supabaseClient", () => ({
   supabase: {
     rpc: jest.fn(),
@@ -22,15 +31,6 @@ jest.mock("./integrity.guards", () => ({
   ensureActiveProposalRequestItemsIntegrity: jest.fn(),
   classifyProposalItemsByRequestItemIntegrity: jest.fn(),
 }));
-
-import { proposalAddItems, proposalItems, proposalSubmit } from "./proposals";
-import { supabase as mockedSupabase } from "../supabaseClient";
-import { classifyRpcCompatError, client } from "./_core";
-import {
-  classifyProposalItemsByRequestItemIntegrity,
-  ensureActiveProposalRequestItemsIntegrity,
-  ensureProposalRequestItemsIntegrity,
-} from "./integrity.guards";
 
 describe("proposals silent catch discipline", () => {
   let consoleErrorSpy: jest.SpyInstance;

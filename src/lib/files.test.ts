@@ -1,3 +1,14 @@
+import { Platform } from "react-native";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "./observability/platformObservability";
+import {
+  listSupplierFilesMeta,
+  openSignedUrlUniversal,
+  uploadSupplierFile,
+} from "./files";
+
 const mockOpenAppAttachment = jest.fn();
 const mockFetchWithRequestTimeout = jest.fn();
 const mockStorageUpload = jest.fn();
@@ -55,17 +66,6 @@ jest.mock("./supabaseClient", () => {
     },
   };
 });
-
-import { Platform } from "react-native";
-import {
-  getPlatformObservabilityEvents,
-  resetPlatformObservabilityEvents,
-} from "./observability/platformObservability";
-import {
-  listSupplierFilesMeta,
-  openSignedUrlUniversal,
-  uploadSupplierFile,
-} from "./files";
 
 const runtime = globalThis as typeof globalThis & { __DEV__?: boolean };
 

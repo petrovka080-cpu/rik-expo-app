@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   DirectorFactRow,
   DirectorReportOptions,
 } from "./director_reports.shared";

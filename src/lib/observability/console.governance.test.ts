@@ -166,7 +166,7 @@ describe("Console Governance", () => {
     // Baseline: ~325 calls (all guarded or in boundary files).
     // If this grows significantly, investigate.
     // This is informational, not a hard test — just log it.
-    // eslint-disable-next-line no-console
+     
     if (__DEV__) console.info(`[console-governance] total non-test console calls: ${total}`);
     expect(total).toBeGreaterThan(0); // sanity: we do have some console calls
     expect(total).toBeLessThan(500); // ceiling: don't let it grow unbounded

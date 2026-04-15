@@ -8,9 +8,9 @@ import type { MapRendererProps } from "./mapContracts";
 
 const MapRenderer =
   Platform.OS === "web"
-    ? // eslint-disable-next-line @typescript-eslint/no-var-requires
+    ?  
       require("./MapRenderer.web").default
-    : // eslint-disable-next-line @typescript-eslint/no-var-requires
+    :  
       require("./MapRenderer.native").default;
 
 export default MapRenderer as ComponentType<MapRendererProps>;

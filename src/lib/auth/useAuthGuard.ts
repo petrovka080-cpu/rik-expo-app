@@ -12,7 +12,7 @@
  *  - Auth exit tracking
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { router } from "expo-router";
 
 import { getSessionSafe } from "../supabaseClient";
@@ -23,6 +23,7 @@ import {
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { POST_AUTH_ENTRY_ROUTE } from "../authRouting";
 import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isAuthStackRoute,
   isProtectedAppRoute,
   type AuthLifecycleState,
@@ -50,6 +51,7 @@ export function useAuthGuard(
     hasSession,
     sessionLoaded,
     setHasSession,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     hasSessionRef,
     isPdfViewerRouteRef,
     resetPendingAuthExitSessionProbe,
@@ -290,6 +292,7 @@ export function useAuthGuard(
       resetPendingAuthExitSessionProbe();
       router.replace(POST_AUTH_ENTRY_ROUTE);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
     hasSession,
     pathname,

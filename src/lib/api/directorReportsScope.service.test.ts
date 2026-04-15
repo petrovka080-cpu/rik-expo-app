@@ -23,7 +23,7 @@ jest.mock("../observability/platformObservability", () => ({
 }));
 
 const loadSubject = () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   return require("./directorReportsScope.service") as typeof import("./directorReportsScope.service");
 };
 

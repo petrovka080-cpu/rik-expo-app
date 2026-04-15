@@ -1,4 +1,4 @@
-﻿import type { DirectorDisciplinePayload } from "./director_reports.shared";
+import type { DirectorDisciplinePayload } from "./director_reports.shared";
 import { rpcDate, toNum } from "./director_reports.shared";
 import {
   DIVERGENCE_LOG_TTL_MS,

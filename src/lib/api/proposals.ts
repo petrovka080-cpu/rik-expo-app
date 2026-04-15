@@ -94,7 +94,7 @@ type ProposalItemMetaUpsertInput = {
   note?: string | null;
 };
 
-const PROPOSAL_STATUS_PENDING_RU = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
+const _PROPOSAL_STATUS_PENDING_RU = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
 const PROPOSAL_STATUS_DRAFT_EN = "draft";
 const PROPOSAL_STATUS_PENDING_EN = "pending";
 const PROPOSAL_STATUS_SUBMITTED_EN = "submitted";

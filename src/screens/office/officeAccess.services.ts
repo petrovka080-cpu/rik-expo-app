@@ -39,10 +39,10 @@ type CompanyInviteRow = {
 
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
 
-const firstMembershipCompanyId = (memberships: Array<{
+const firstMembershipCompanyId = (memberships: {
   companyId: string | null;
   role: string | null;
-}>): string | null =>
+}[]): string | null =>
   memberships.find((item) => normalizeText(item.companyId))?.companyId ?? null;
 
 const buildInviteCode = (): string =>

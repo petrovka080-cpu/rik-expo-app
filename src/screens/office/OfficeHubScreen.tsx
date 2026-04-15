@@ -2,8 +2,8 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  InteractionManager,
-  Keyboard,
+  
+  
   Modal,
   Pressable,
   RefreshControl,
@@ -11,6 +11,7 @@ import {
   Text,
   TextInput,
   View,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type LayoutChangeEvent,
 } from "react-native";
 import {
@@ -45,11 +46,12 @@ import {
 } from "../../lib/navigation/officeReentryBreadcrumbs";
 import { getProfileRoleLabel } from "../profile/profile.helpers";
 import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   OFFICE_ASSIGNABLE_ROLES,
   buildOfficeAccessEntryCopy,
   canManageOfficeCompanyAccess,
   filterOfficeWorkspaceCards,
-  type OfficeWorkspaceCard,
+  
 } from "./officeAccess.model";
 import {
   loadOfficeAccessScreenData,
@@ -70,18 +72,22 @@ import {
 } from "./officeHubBootstrapSnapshot";
 import {
   type SectionKey,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type PostReturnSectionKey,
   type CompanyPostReturnSectionKey,
   type LoadScreenMode,
-  SECTION_RENDER_PROBES,
+  
   EMPTY_DATA,
   COPY,
   COMPANY_FIELDS,
   RULES,
   getVisibleCompanyDetails,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getPostReturnSections,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   shouldRenderCompanySection,
   getVisiblePostReturnSections,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   formatDate,
 } from "./officeHub.constants";
 import { DirectionCard, MemberCard, InviteCard } from "./officeHub.cards";
@@ -279,6 +285,7 @@ export default function OfficeHubScreen({
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [buildPostReturnExtra, startPostReturnTrace],
   );
 

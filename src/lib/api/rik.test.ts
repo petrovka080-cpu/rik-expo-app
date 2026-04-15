@@ -1,9 +1,9 @@
+import { rikQuickSearch as runCanonicalRikQuickSearch } from "../catalog/catalog.search.service";
+import { rikQuickSearch } from "./rik";
+
 jest.mock("../catalog/catalog.search.service", () => ({
   rikQuickSearch: jest.fn(),
 }));
-
-import { rikQuickSearch as runCanonicalRikQuickSearch } from "../catalog/catalog.search.service";
-import { rikQuickSearch } from "./rik";
 
 const mockRunCanonicalRikQuickSearch = runCanonicalRikQuickSearch as jest.Mock;
 

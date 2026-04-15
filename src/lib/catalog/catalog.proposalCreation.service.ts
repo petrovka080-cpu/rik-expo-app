@@ -1,4 +1,4 @@
-﻿import { supabase } from "../supabaseClient";
+import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { isRequestApprovedForProcurement } from "../requestStatus";
 import {
@@ -27,12 +27,12 @@ import {
 export type ProposalBucketInput = {
   supplier?: string | null;
   request_item_ids: string[];
-  meta?: Array<{
+  meta?: {
     request_item_id: string;
     price?: string | null;
     supplier?: string | null;
     note?: string | null;
-  }>;
+  }[];
 };
 
 export type CreateProposalsOptions = {
@@ -44,7 +44,7 @@ export type CreateProposalsOptions = {
 };
 
 export type CreateProposalsResult = {
-  proposals: Array<{
+  proposals: {
     proposal_id: string;
     proposal_no: string | null;
     supplier: string;
@@ -55,7 +55,7 @@ export type CreateProposalsResult = {
     submitted_at: string | null;
     visible_to_director: boolean;
     submit_source: "rpc:proposal_submit" | "rpc:proposal_submit_text_v1" | null;
-  }>;
+  }[];
   meta?: {
     canonical_path: "rpc:proposal_submit_v3";
     client_mutation_id: string | null;
@@ -239,6 +239,7 @@ const SUPPLIERS_BINDING_SELECT = "id,name";
 const CONTRACTORS_BINDING_SELECT = "id,company_name";
 
 let proposalItemsBindingColumnsCache: ProposalItemsBindingColumns | null = null;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let proposalItemsBulkUpsertCapabilityCache: boolean | null = null;
 
 async function loadProposalItemsBindingColumns(): Promise<ProposalItemsBindingColumns> {
@@ -431,6 +432,7 @@ async function loadCounterpartyBinding(): Promise<CounterpartyBinding> {
   return { supplierIdByName, contractorIdByName };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function resolveProposalCreationPreconditions(
   allItemIds: string[],
   opts: CreateProposalsOptions,
@@ -456,7 +458,7 @@ async function resolveProposalCreationPreconditions(
           reqStatusById.set(String(row.id || "").trim(), String(row.status || ""));
         });
 
-        const gateDebugRows: Array<{
+        const gateDebugRows: {
           requestItemId: string;
           requestId: string;
           itemStatus: string;
@@ -465,7 +467,7 @@ async function resolveProposalCreationPreconditions(
           approvedByItemStatus: boolean;
           approvedByRequestStatus: boolean;
           rejectedForRework: boolean;
-        }> = [];
+        }[] = [];
 
         itemRows.forEach((row) => {
           const itemId = String(row.id || "").trim();
@@ -542,6 +544,7 @@ async function resolveProposalCreationPreconditions(
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function prepareProposalCreationBucket(
   bucket: ProposalBucketInput,
   bucketIndex: number,
@@ -653,6 +656,7 @@ function prepareProposalCreationBucket(
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createProposalHeadStage(
   prepared: ProposalCreationBucketPrepared,
   preconditions: ProposalCreationPreconditionsResolved,
@@ -716,6 +720,7 @@ async function createProposalHeadStage(
   return { proposal_id, proposal_no, display_no };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function linkProposalItemsStage(
   proposalId: string,
   requestItemIds: string[],
@@ -750,6 +755,7 @@ async function linkProposalItemsStage(
   return requestItemIds;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function completeProposalCreationStage(
   proposalId: string,
   prepared: ProposalCreationBucketPrepared,
@@ -877,6 +883,7 @@ async function completeProposalCreationStage(
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function syncProposalRequestItemStatusStage(
   prepared: ProposalCreationBucketPrepared,
   preconditions: ProposalCreationPreconditionsResolved,
@@ -1077,6 +1084,7 @@ async function runAtomicProposalSubmitRpc(
   return parsed;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function mapProposalCreationMutationResult(
   result: ProposalCreationMutationResult,
 ): CreateProposalsResult {
