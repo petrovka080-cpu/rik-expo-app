@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 type Props = {

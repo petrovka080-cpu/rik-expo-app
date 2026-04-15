@@ -2,8 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import { Ionicons } from "@expo/vector-icons";
-import type { ReqItemRow } from "../../lib/catalog_api";
-import type { ForemanRequestSummary } from "../../lib/catalog_api";
+import type { ReqItemRow , ForemanRequestSummary } from "../../lib/catalog_api";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import CatalogModal, { type PickedRow as CatalogPickedRow } from "../../components/foreman/CatalogModal";
 import CalcModal from "../../components/foreman/CalcModal";
@@ -568,7 +567,7 @@ export function ForemanSubcontractModalStack(props: {
   onCloseCalc: () => void;
   onBackFromCalc: () => void;
   selectedWorkType: SubcontractSelectedWorkType;
-  onAddCalcToRequest: (rows: Array<Record<string, unknown>>) => void | Promise<void>;
+  onAddCalcToRequest: (rows: Record<string, unknown>[]) => void | Promise<void>;
   requestHistoryVisible: boolean;
   onCloseRequestHistory: () => void;
   requestHistoryLoading: boolean;

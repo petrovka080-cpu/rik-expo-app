@@ -41,7 +41,7 @@ export type WorkModalBootstrapResult = {
   jobHeader: ContractorJobHeader | null;
   objectNameOverride: string | null;
   workLog: WorkLogRow[];
-  workStageOptions: Array<{ code: string; name: string }>;
+  workStageOptions: { code: string; name: string }[];
   initialMaterials: WorkMaterialRow[];
   warehouseIssuesState: WarehouseIssuesPanelState;
 };
@@ -57,7 +57,7 @@ type Params = {
 
 type HeaderLoadResult = { header: ContractorJobHeader | null; objectNameOverride: string | null };
 
-const firstNonEmpty = (...values: Array<unknown>): string | null => {
+const firstNonEmpty = (...values: unknown[]): string | null => {
   for (const value of values) {
     const normalized = String(value || "").trim();
     if (normalized) return normalized;
@@ -183,7 +183,7 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
           action: "loadWorkStageOptions",
           fallbackAction: "empty_stage_options",
         });
-        return [] as Array<{ code: string; name: string }>;
+        return [] as { code: string; name: string }[];
       }),
       readOnly
         ? Promise.resolve([] as WorkMaterialRow[])
@@ -203,7 +203,7 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
     const [factScope, workLog, workStageOptions, initialMaterials] = bundle as [
       ContractorFactScope | null,
       WorkLogRow[],
-      Array<{ code: string; name: string }>,
+      { code: string; name: string }[],
       WorkMaterialRow[],
     ];
     const headerResult: HeaderLoadResult = factScope

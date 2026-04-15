@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Text, View } from "react-native";
 import type { ActBuilderItem } from "../types";
 import ActBuilderMaterialRow from "./ActBuilderMaterialRow";

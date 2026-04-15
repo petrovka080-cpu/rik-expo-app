@@ -4,13 +4,13 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 import { View } from "react-native";
 
+import ForemanSubcontractTab from "./ForemanSubcontractTab";
+
 const mockUseForemanSubcontractController = jest.fn();
 
 jest.mock("./hooks/useForemanSubcontractController", () => ({
   useForemanSubcontractController: (props: unknown) => mockUseForemanSubcontractController(props),
 }));
-
-import ForemanSubcontractTab from "./ForemanSubcontractTab";
 
 describe("ForemanSubcontractTab controller extraction", () => {
   beforeEach(() => {

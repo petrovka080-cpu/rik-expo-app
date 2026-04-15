@@ -131,7 +131,7 @@ describe("useContractorRealtimeLifecycle", () => {
   it("resubscribes cleanly on remount and skips refresh while hidden", async () => {
     const detachFirst = jest.fn();
     const detachSecond = jest.fn();
-    const configs: Array<Record<string, unknown>> = [];
+    const configs: Record<string, unknown>[] = [];
     mockSubscribeChannel
       .mockImplementationOnce((config: Record<string, unknown>) => {
         configs.push(config);

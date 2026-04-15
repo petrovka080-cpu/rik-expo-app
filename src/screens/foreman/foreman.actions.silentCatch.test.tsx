@@ -21,7 +21,7 @@ jest.mock("react-native", () => ({
 
 jest.mock("./foreman.helpers", () => ({
   aggCalcRows: (rows: unknown[]) => rows,
-  aggPickedRows: (rows: Array<{ rik_code: string; name: string; qty: string; uom?: string | null; app_code?: string | null; kind?: string | null }>) =>
+  aggPickedRows: (rows: { rik_code: string; name: string; qty: string; uom?: string | null; app_code?: string | null; kind?: string | null }[]) =>
     rows.map((row) => ({
       base: {
         rik_code: row.rik_code,

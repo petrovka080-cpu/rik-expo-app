@@ -4,7 +4,7 @@ import TestRenderer, { act } from "react-test-renderer";
 import type { ForemanRequestSummary, ReqItemRow } from "../../lib/catalog_api";
 import { s as styles } from "./foreman.styles";
 import { UI } from "./foreman.ui";
-import type { PickedRow, CalcRow } from "./foreman.types";
+import type { PickedRow } from "./foreman.types";
 import type { Subcontract } from "../subcontracts/subcontracts.shared";
 import {
   ApprovedContractsList,
@@ -308,7 +308,7 @@ const makeModalStackProps = (): React.ComponentProps<typeof ForemanSubcontractMo
   onCloseCalc: jest.fn(),
   onBackFromCalc: jest.fn(),
   selectedWorkType: { code: "WT-1", name: "Монтаж" },
-  onAddCalcToRequest: jest.fn(async (_rows: Array<Record<string, unknown>>) => {}),
+  onAddCalcToRequest: jest.fn(async (_rows: Record<string, unknown>[]) => {}),
   requestHistoryVisible: true,
   onCloseRequestHistory: jest.fn(),
   requestHistoryLoading: false,
@@ -376,7 +376,7 @@ describe("ForemanSubcontractTab sections", () => {
     };
     const calcModalProps = latestCalcModalProps as {
       onBack: () => void;
-      onAddToRequest: (rows: Array<Record<string, unknown>>) => Promise<void>;
+      onAddToRequest: (rows: Record<string, unknown>[]) => Promise<void>;
     };
     const historyModalProps = latestHistoryModalProps as {
       mode: "list";

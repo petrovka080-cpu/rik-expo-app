@@ -1,4 +1,4 @@
-﻿import { useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import {
   loadCurrentContractorProfile,
@@ -23,6 +23,7 @@ import {
   resolveContractorScreenContract,
   type ContractorScreenContract,
 } from "../contractor.visibilityRecovery";
+import { logger } from "../../../lib/logger";
 
 type Params = {
   supabaseClient: any;
@@ -167,7 +168,7 @@ export function useContractorScreenData(params: Params) {
       setInboxRows(effectiveInboxRows);
       setScreenContract(screenContract);
       if (__DEV__) {
-        console.log("[contractor.loadWorks] debug-filter", {
+        logger.info("log", "[contractor.loadWorks] debug-filter", {
           isStaff: bundle.debug.isStaff,
           subcontractsFound: bundle.debug.subcontractsFound,
           totalApproved: bundle.debug.totalApproved,

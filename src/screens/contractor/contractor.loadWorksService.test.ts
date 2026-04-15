@@ -5,8 +5,8 @@ import {
 import { loadContractorWorksBundle } from "./contractor.loadWorksService";
 
 const buildScopeEnvelope = (params?: {
-  rows?: Array<Record<string, unknown>>;
-  subcontractCards?: Array<Record<string, unknown>>;
+  rows?: Record<string, unknown>[];
+  subcontractCards?: Record<string, unknown>[];
   meta?: Record<string, unknown>;
 }) => ({
   document_type: "contractor_works_bundle_scope",

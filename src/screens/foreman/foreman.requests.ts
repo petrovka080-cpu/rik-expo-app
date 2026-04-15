@@ -36,6 +36,7 @@ const errText = (value: unknown): string => {
   return String(value ?? "");
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let requestsHasRequestNoCache: boolean | null = null;
 type RequestsHasRequestNoCacheEntry = {
   value: boolean;

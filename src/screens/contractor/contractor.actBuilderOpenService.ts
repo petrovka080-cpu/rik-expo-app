@@ -1,4 +1,4 @@
-﻿import { fetchRequestScopeRows } from "./contractor.data";
+import { fetchRequestScopeRows } from "./contractor.data";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import type { ContractorWorkRow } from "./contractor.loadWorksService";
 

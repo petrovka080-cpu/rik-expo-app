@@ -1,6 +1,3 @@
-﻿import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { supabase } from "../../lib/supabaseClient";
 import { addRequestItemFromRikDetailed } from "../../lib/api/requests";
 import { readStoredJson, writeStoredJson } from "../../lib/storage/classifiedStorage";
 import type { CalcRow, PickedRow } from "./foreman.types";
@@ -151,9 +148,9 @@ export async function runPool<T, R>(
   items: T[],
   limit: number,
   worker: (item: T, index: number) => Promise<R>,
-): Promise<Array<{ ok: true; value: R } | { ok: false; error: unknown }>> {
+): Promise<({ ok: true; value: R } | { ok: false; error: unknown })[]> {
   const n = Math.max(1, Math.min(20, Number(limit) || 6));
-  const results: Array<{ ok: true; value: R } | { ok: false; error: unknown }> = new Array(items.length);
+  const results: ({ ok: true; value: R } | { ok: false; error: unknown })[] = new Array(items.length);
 
   let i = 0;
   const next = async () => {

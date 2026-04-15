@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { normalizeRuText } from "../../../lib/text/encoding";

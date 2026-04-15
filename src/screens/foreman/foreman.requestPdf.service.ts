@@ -1,4 +1,4 @@
-﻿import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import { generateForemanRequestPdfViaBackend } from "../../lib/api/foremanRequestPdfBackend.service";
 import { getUriScheme } from "../../lib/pdfFileContract";

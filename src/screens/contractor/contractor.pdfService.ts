@@ -1,4 +1,4 @@
-﻿import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import type { Database } from "../../lib/database.types";
 import { loadAggregatedWorkSummary } from "./contractor.data";

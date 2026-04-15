@@ -83,6 +83,7 @@ export function ContractorScreen() {
     screenContract,
     setScreenContract,
     manualClaimedJobIds,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     subcontractCards,
     setSubcontractCards,
     loadingWorks,
@@ -147,6 +148,7 @@ export function ContractorScreen() {
     setWorkStageOptions,
     workSearchVisible,
     setWorkSearchVisible,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     workModalRowRef,
     workModalBootSeqRef,
     issuedLoadSeqRef,

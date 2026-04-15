@@ -1,4 +1,4 @@
-﻿import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import type { WorkLogRow } from "./types";
 
 export type RequestScopeRow = { id: string; status: string | null };

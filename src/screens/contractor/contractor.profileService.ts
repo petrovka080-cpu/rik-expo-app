@@ -1,4 +1,4 @@
-﻿import { beginPlatformObservability } from "../../lib/observability/platformObservability";
+import { beginPlatformObservability } from "../../lib/observability/platformObservability";
 
 export type ContractorUserProfile = {
   id: string;

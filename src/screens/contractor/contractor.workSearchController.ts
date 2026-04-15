@@ -1,4 +1,4 @@
-﻿import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 
 type Params = {

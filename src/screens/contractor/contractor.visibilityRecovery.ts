@@ -29,7 +29,7 @@ export type ContractorScreenContract = {
 
 const trim = (value: unknown) => String(value || "").trim();
 
-const firstNonEmpty = (...values: Array<unknown>): string | null => {
+const firstNonEmpty = (...values: unknown[]): string | null => {
   for (const value of values) {
     const normalized = trim(value);
     if (normalized) return normalized;
@@ -37,7 +37,7 @@ const firstNonEmpty = (...values: Array<unknown>): string | null => {
   return null;
 };
 
-const firstNonEmptyText = (...values: Array<unknown>): string | null => {
+const firstNonEmptyText = (...values: unknown[]): string | null => {
   const value = firstNonEmpty(...values);
   if (!value) return null;
   const normalized = String(normalizeRuText(value)).trim();

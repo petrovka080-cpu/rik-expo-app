@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Text, View } from "react-native";
 import type { ReqItemRow } from "../../lib/catalog_api";
 import CloseIconButton from "../../ui/CloseIconButton";

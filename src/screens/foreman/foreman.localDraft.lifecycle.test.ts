@@ -1,16 +1,3 @@
-jest.mock("../../lib/catalog_api", () => ({
-  clearLocalDraftId: jest.fn(),
-  fetchRequestDetails: jest.fn(),
-  listRequestItems: jest.fn(),
-  setLocalDraftId: jest.fn(),
-}));
-
-jest.mock("@react-native-async-storage/async-storage", () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-}));
-
 import { createMemoryOfflineStorage } from "../../lib/offline/offlineStorage";
 import { fetchRequestDetails, listRequestItems } from "../../lib/catalog_api";
 import {
@@ -23,6 +10,19 @@ import {
   resolveForemanDraftBootstrap,
   type ForemanLocalDraftSnapshot,
 } from "./foreman.localDraft";
+
+jest.mock("../../lib/catalog_api", () => ({
+  clearLocalDraftId: jest.fn(),
+  fetchRequestDetails: jest.fn(),
+  listRequestItems: jest.fn(),
+  setLocalDraftId: jest.fn(),
+}));
+
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+}));
 
 const mockFetchRequestDetails = fetchRequestDetails as unknown as jest.Mock;
 const mockListRequestItems = listRequestItems as unknown as jest.Mock;

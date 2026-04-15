@@ -26,7 +26,7 @@ export default function ForemanSubcontractHistoryModal({
 }: Props) {
   const [mode, setMode] = React.useState<ModalMode>("list");
   const [selected, setSelected] = React.useState<Subcontract | null>(null);
-  const [linkedRequests, setLinkedRequests] = React.useState<Array<{ id: string; label: string }>>([]);
+  const [linkedRequests, setLinkedRequests] = React.useState<{ id: string; label: string }[]>([]);
   const [linkedLoading, setLinkedLoading] = React.useState(false);
 
   React.useEffect(() => {

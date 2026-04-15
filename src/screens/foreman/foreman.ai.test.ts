@@ -1,3 +1,12 @@
+import {
+  parseForemanAiResponse,
+  resolveForemanQuickLocalAssist,
+  scoreCatalogCandidate,
+  type ForemanAiQuickItem,
+  type ParsedForemanAiItem,
+  type RikCatalogItem,
+} from "./foreman.ai";
+
 const mockRecordPlatformObservability = jest.fn();
 
 jest.mock("../../lib/observability/platformObservability", () => ({
@@ -17,15 +26,6 @@ jest.mock("../../lib/api/foremanAiResolve.service", () => ({
 jest.mock("../../lib/catalog_api", () => ({
   rikQuickSearch: jest.fn(),
 }));
-
-import {
-  parseForemanAiResponse,
-  resolveForemanQuickLocalAssist,
-  scoreCatalogCandidate,
-  type ForemanAiQuickItem,
-  type ParsedForemanAiItem,
-  type RikCatalogItem,
-} from "./foreman.ai";
 
 const makeParsedItem = (overrides?: Partial<ParsedForemanAiItem>): ParsedForemanAiItem => ({
   name: "Cement M500",

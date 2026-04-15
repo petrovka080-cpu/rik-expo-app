@@ -3,7 +3,7 @@ import TestRenderer, { act } from "react-test-renderer";
 
 import { CLASS_TEMPLATES, type ContextResolutionResult } from "./foreman.context";
 import type { FormContextUiModel } from "./foreman.locator.adapter";
-import type { ForemanRequestSummary, ReqItemRow } from "../../lib/catalog_api";
+import type { ForemanRequestSummary } from "../../lib/catalog_api";
 import type { PickedRow, CalcRow } from "./foreman.types";
 import { s as styles } from "./foreman.styles";
 import { UI } from "./foreman.ui";

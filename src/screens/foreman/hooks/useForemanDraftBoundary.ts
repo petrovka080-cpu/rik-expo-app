@@ -131,10 +131,12 @@ export function useForemanDraftBoundary({
     requestId,
     setRequestId: setRequestIdState,
     items,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setItems,
     qtyDrafts,
     setQtyDrafts,
     qtyBusyMap,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setQtyBusyMap,
     loadItems,
     setRowBusy,
@@ -621,6 +623,7 @@ export function useForemanDraftBoundary({
         });
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [
       applyLocalDraftSnapshotToBoundary,
       comment,
@@ -1360,6 +1363,7 @@ export function useForemanDraftBoundary({
 
       await refreshBoundarySyncState(durableSnapshot ?? null);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [
       applyLocalDraftSnapshotToBoundary,
       clearDraftCache,

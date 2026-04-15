@@ -1,11 +1,3 @@
-jest.mock("../../lib/catalog_api", () => ({
-  clearCachedDraftRequestId: jest.fn(),
-  clearLocalDraftId: jest.fn(),
-  fetchRequestDetails: jest.fn(),
-  getLocalDraftId: jest.fn(),
-  updateRequestMeta: jest.fn(),
-}));
-
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -21,6 +13,14 @@ import {
   loadForemanRequestDetails,
   syncForemanRequestHeaderMeta,
 } from "./foreman.draftBoundary.helpers";
+
+jest.mock("../../lib/catalog_api", () => ({
+  clearCachedDraftRequestId: jest.fn(),
+  clearLocalDraftId: jest.fn(),
+  fetchRequestDetails: jest.fn(),
+  getLocalDraftId: jest.fn(),
+  updateRequestMeta: jest.fn(),
+}));
 
 const mockFetchRequestDetails = fetchRequestDetails as unknown as jest.Mock;
 const mockUpdateRequestMeta = updateRequestMeta as unknown as jest.Mock;

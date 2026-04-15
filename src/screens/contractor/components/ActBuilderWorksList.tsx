@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Text } from "react-native";
 import type { ActBuilderWorkItem } from "../types";
 import ActBuilderWorkRow from "./ActBuilderWorkRow";

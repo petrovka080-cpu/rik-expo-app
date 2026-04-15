@@ -1,4 +1,4 @@
-﻿import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import type { ActBuilderItem, ActBuilderWorkItem, IssuedItemRow } from "./types";
 
 type WorkRowForBuilder = {

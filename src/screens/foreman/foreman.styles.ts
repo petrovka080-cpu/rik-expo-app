@@ -1,4 +1,4 @@
-﻿import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { TYPO, UI } from './foreman.ui';
 
 export const s = StyleSheet.create({

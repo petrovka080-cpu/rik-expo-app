@@ -1,4 +1,4 @@
-﻿import { loadWorkLogRows } from "./contractor.data";
+import { loadWorkLogRows } from "./contractor.data";
 import {
   resolveContractorJobIdForRow,
   resolveRequestIdForRow,

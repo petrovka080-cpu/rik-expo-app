@@ -1,4 +1,4 @@
-﻿import { generateActPdf } from "./contractorPdf";
+import { generateActPdf } from "./contractorPdf";
 import {
   fetchRequestScopeRows,
   getProgressIdsForSubcontract,

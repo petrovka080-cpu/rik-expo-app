@@ -2,6 +2,7 @@ import type {
   ContractorSubcontractCard,
   ContractorWorkRow,
 } from "./contractor.loadWorksService";
+import { logger } from "../../lib/logger";
 
 type WorkRowLike = ContractorWorkRow;
 type SubcontractLiteLike = ContractorSubcontractCard;
@@ -68,7 +69,7 @@ const logContractorCardDebug = (
   },
 ) => {
   if (!__DEV__ || !enabled) return;
-  console.debug(`[contractor.cards] card:${cardId} platform:${debugPlatform || "unknown"}`, payload);
+  logger.info("debug", `[contractor.cards] card:${cardId} platform:${debugPlatform || "unknown"}`, payload);
 };
 
 export function groupWorksByJob<T extends WorkRowLike>(rows: T[]): Map<string, T[]> {

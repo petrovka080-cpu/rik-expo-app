@@ -1,4 +1,4 @@
-﻿import {
+import {
   fetchRequestScopeRows,
   getProgressIdsForSubcontract,
   loadConsumedByCode,
@@ -717,7 +717,7 @@ export async function loadInitialWorkMaterialsForModal(
 
 export async function loadWorkStageOptions(params: {
   supabaseClient: SupabaseClient<Database>;
-}): Promise<Array<{ code: string; name: string }>> {
+}): Promise<{ code: string; name: string }[]> {
   const { supabaseClient } = params;
   const { data, error } = await supabaseClient
     .from("work_stages")

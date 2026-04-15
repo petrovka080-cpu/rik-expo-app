@@ -3,6 +3,8 @@ import { join } from "path";
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
+import { useForemanScreenController } from "./useForemanScreenController";
+
 const mockUseRouter = jest.fn(() => ({ push: jest.fn() }));
 const mockUseIsFocused = jest.fn(() => true);
 const mockIsBusy = jest.fn(() => false);
@@ -134,7 +136,7 @@ jest.mock("./foreman.headerRequirements", () => ({
 }));
 
 jest.mock("./foreman.options", () => ({
-  getObjectDisplayName: (_code: string, options: Array<{ code: string; name: string }>) =>
+  getObjectDisplayName: (_code: string, options: { code: string; name: string }[]) =>
     options[0]?.name ?? "",
 }));
 
@@ -418,8 +420,6 @@ jest.mock("../../lib/storage/fioPersistence", () => ({
   loadStoredFioState: (...args: unknown[]) => mockLoadStoredFioState(...args),
   saveStoredFioState: (...args: unknown[]) => mockSaveStoredFioState(...args),
 }));
-
-import { useForemanScreenController } from "./useForemanScreenController";
 
 type ControllerVm = ReturnType<typeof useForemanScreenController> | null;
 

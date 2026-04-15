@@ -28,7 +28,7 @@ type ContractorCardModelsResult = {
 
 const trim = (value: unknown): string => String(value || "").trim();
 
-const firstNonEmpty = (...values: Array<unknown>): string | null => {
+const firstNonEmpty = (...values: unknown[]): string | null => {
   for (const value of values) {
     const normalized = trim(value);
     if (normalized) return normalized;

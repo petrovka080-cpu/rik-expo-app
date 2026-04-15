@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { normalizeRuText } from "../../../lib/text/encoding";
 

@@ -1,4 +1,4 @@
-﻿import { normalizeRuText } from "../../lib/text/encoding";
+import { normalizeRuText } from "../../lib/text/encoding";
 
 export const isApprovedForOtherStatus = (status: string): boolean => {
   const s = normalizeRuText(String(status || "")).toLowerCase();
