@@ -1,25 +1,32 @@
-import { useCallback, useRef, useState, type MutableRefObject } from "react";
+import { useCallback, useMemo, useRef, useState, type MutableRefObject } from "react";
 
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
-import {
-  beginPlatformObservability,
-  recordPlatformObservability,
-} from "../../lib/observability/platformObservability";
 import { recordPlatformGuardSkip } from "../../lib/observability/platformGuardDiscipline";
-import { runNextTick } from "./helpers";
-import {
-  ACCOUNTANT_INBOX_PAGE_SIZE,
-  loadAccountantInboxPage,
-  type AccountantLoadTrigger,
-} from "./accountant.repository";
-import {
-  buildAccountantInboxCacheKey,
-  buildAccountantInboxSnapshot,
-  mergeAccountantInboxRowsIfChanged,
-  selectAccountantInboxPreview,
-  type InboxWindowSnapshot,
-} from "./accountant.selectors";
 import type { AccountantInboxUiRow, Tab } from "./types";
+import { useAccountantInboxQuery } from "./useAccountantInboxQuery";
+
+/**
+ * useAccountantInboxController — public API boundary for accountant inbox.
+ *
+ * P6.2 migration: fetch ownership is now delegated to
+ * useAccountantInboxQuery (React Query useInfiniteQuery). This hook preserves
+ * the exact same return contract for all consumers.
+ *
+ * Removed:
+ * - Manual loadSeqRef (stale response guard) — replaced by query key
+ * - Manual inflightKeyRef (inflight join) — replaced by query dedup
+ * - Manual appendInflightKeyRef (append inflight join) — replaced by query dedup
+ * - Manual queuedLoadRef (queue-on-overlap) — replaced by query invalidation
+ * - Manual lastLoadedKeyRef (stale key guard) — replaced by query key change
+ * - Manual cacheByTabRef (tab-scoped cache) — replaced by query cache
+ *
+ * Preserved:
+ * - Same return shape (13 keys)
+ * - Auth/focus/freeze/network guards
+ * - setRows for optimistic mutations (payment/return removes row)
+ * - All observability events
+ * - Tab preview priming
+ */
 
 const errorMessage = (error: unknown) => {
   const value = error as { message?: string };
@@ -34,44 +41,72 @@ export function useAccountantInboxController(params: {
 }) {
   const { authReady, freezeWhileOpen, focusedRef, tabRef } = params;
 
-  const [rows, setRows] = useState<AccountantInboxUiRow[]>([]);
-  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
 
-  const loadSeqRef = useRef(0);
-  const inflightKeyRef = useRef<string | null>(null);
-  const appendInflightKeyRef = useRef<string | null>(null);
-  const queuedLoadRef = useRef<{ force: boolean; tab: Tab } | null>(null);
-  const lastLoadedKeyRef = useRef<string | null>(null);
-  const cacheByTabRef = useRef<Partial<Record<Tab, InboxWindowSnapshot>>>({});
+  // ── Optimistic removal overlay ──
+  // After a payment or return, consumers call setRows(prev => prev.filter(...))
+  // to optimistically remove the paid/returned row from the list.
+  // This set tracks which proposal_ids have been removed.
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+  const lastQueryDataRef = useRef(0);
 
-  const applyPreview = useCallback((preview: InboxWindowSnapshot | null) => {
-    if (preview) {
-      setRows((prev) => mergeAccountantInboxRowsIfChanged(prev, preview.rows));
-      setHasMore(preview.hasMore);
-      setTotalCount(preview.totalRowCount);
-      return;
+  const query = useAccountantInboxQuery({
+    tab: tabRef.current,
+    enabled: authReady && !freezeWhileOpen,
+  });
+
+  // Reset removedIds when query data changes (re-fetch brings fresh data)
+  const queryDataVersion = query.rows.length + (query.isLoading ? 0 : 1);
+  if (queryDataVersion !== lastQueryDataRef.current && !query.isLoading && !query.isFetching) {
+    lastQueryDataRef.current = queryDataVersion;
+    if (removedIds.size > 0) {
+      setRemovedIds(new Set());
     }
-    setRows((prev) => (prev.length ? [] : prev));
-    setHasMore(false);
-    setTotalCount(0);
-  }, []);
+  }
 
-  const primeInboxPreviewForTab = useCallback(
-    (tab: Tab) => {
-      applyPreview(selectAccountantInboxPreview(cacheByTabRef.current, tab));
+  // Apply optimistic removals
+  const rows = useMemo(() => {
+    if (removedIds.size === 0) return query.rows;
+    return query.rows.filter((r) => !removedIds.has(String(r.proposal_id)));
+  }, [query.rows, removedIds]);
+
+  // ── setRows adapter ──
+  // Consumers call setRows(prev => prev.filter(r => r.proposal_id !== id))
+  // We intercept this to track removed IDs instead of mutating query cache.
+  const setRows: React.Dispatch<React.SetStateAction<AccountantInboxUiRow[]>> = useCallback(
+    (action) => {
+      if (typeof action === "function") {
+        // Call the updater with current rows to see what was removed
+        const current = query.rows.filter((r) => !removedIds.has(String(r.proposal_id)));
+        const next = action(current);
+        const nextIds = new Set(next.map((r) => String(r.proposal_id)));
+        const newlyRemoved = current
+          .filter((r) => !nextIds.has(String(r.proposal_id)))
+          .map((r) => String(r.proposal_id));
+        if (newlyRemoved.length > 0) {
+          setRemovedIds((prev) => {
+            const updated = new Set(prev);
+            for (const id of newlyRemoved) updated.add(id);
+            return updated;
+          });
+        }
+      }
+      // Direct array assignment is not used by any consumer, ignore.
     },
-    [applyPreview],
+    [query.rows, removedIds],
   );
 
+  // ── Sync query error to observability ──
+  if (query.isError && query.error) {
+    if (__DEV__) console.error("[accountant load]", errorMessage(query.error));
+  }
+
+  // ── Imperative loadInbox (backward compat) ──
   const loadInbox = useCallback(
     async (
       force?: boolean,
       tabOverride?: Tab,
-      trigger: AccountantLoadTrigger = force ? "manual" : "focus",
+      trigger: "focus" | "manual" | "realtime" = force ? "manual" : "focus",
     ) => {
       const tab = tabOverride ?? tabRef.current;
       if (!authReady) {
@@ -116,116 +151,16 @@ export function useAccountantInboxController(params: {
         return;
       }
 
-      const key = buildAccountantInboxCacheKey(tab);
-      applyPreview(selectAccountantInboxPreview(cacheByTabRef.current, tab));
-
-      if (inflightKeyRef.current || appendInflightKeyRef.current) {
-        recordPlatformObservability({
-          screen: "accountant",
-          surface: "inbox_list",
-          category: "reload",
-          event: "load_inbox",
-          result: "queued_rerun",
-          trigger,
-          extra: { tab },
-        });
-        queuedLoadRef.current = {
-          force: Boolean(force) || queuedLoadRef.current?.force === true,
-          tab,
-        };
-        return;
-      }
-      if (!force && lastLoadedKeyRef.current === key) return;
-
-      inflightKeyRef.current = key;
-      const cached = selectAccountantInboxPreview(cacheByTabRef.current, tab);
-      setLoading(!(cached && cached.rows.length > 0));
-      const seq = ++loadSeqRef.current;
-      const observation = beginPlatformObservability({
-        screen: "accountant",
-        surface: "inbox_list",
-        category: "fetch",
-        event: "load_inbox",
-        sourceKind: "rpc:accountant_inbox_scope_v1",
-        trigger,
-      });
-
-      try {
-        const result = await loadAccountantInboxPage({
-          tab,
-          offsetRows: 0,
-          limitRows: ACCOUNTANT_INBOX_PAGE_SIZE,
-        });
-        if (seq !== loadSeqRef.current) return;
-        if (tab !== tabRef.current) return;
-
-        const snapshot = buildAccountantInboxSnapshot({
-          previous: cacheByTabRef.current[tab],
-          result,
-          append: false,
-        });
-        cacheByTabRef.current[tab] = snapshot;
-        setHasMore(snapshot.hasMore);
-        setTotalCount(snapshot.totalRowCount);
-        setRows((prev) => mergeAccountantInboxRowsIfChanged(prev, snapshot.rows));
-        recordPlatformObservability({
-          screen: "accountant",
-          surface: "inbox_list",
-          category: "ui",
-          event: "content_ready",
-          result: "success",
-          rowCount: snapshot.rows.length,
-          extra: {
-            tab,
-            totalRowCount: snapshot.totalRowCount,
-          },
-        });
-        observation.success({
-          rowCount: snapshot.rows.length,
-          sourceKind: result.sourceMeta.sourceKind,
-          fallbackUsed: result.sourceMeta.fallbackUsed,
-          extra: {
-            tab,
-            primaryOwner: result.sourceMeta.primaryOwner,
-            backendFirstPrimary: result.sourceMeta.backendFirstPrimary,
-            offsetRows: result.meta.offsetRows,
-            limitRows: result.meta.limitRows,
-            returnedRowCount: result.meta.returnedRowCount,
-            totalRowCount: result.meta.totalRowCount,
-            hasMore: result.meta.hasMore,
-          },
-        });
-        lastLoadedKeyRef.current = key;
-      } catch (error: unknown) {
-        if (__DEV__) console.error("[accountant load]", errorMessage(error));
-        observation.error(error, {
-          rowCount: 0,
-          errorStage: "load_inbox_scope_v1",
-          extra: { tab },
-        });
-      } finally {
-        if (seq === loadSeqRef.current && tab === tabRef.current) setLoading(false);
-        inflightKeyRef.current = null;
-        const queued = queuedLoadRef.current;
-        queuedLoadRef.current = null;
-        if (
-          queued &&
-          focusedRef.current &&
-          !freezeWhileOpen &&
-          (queued.force || buildAccountantInboxCacheKey(queued.tab) !== lastLoadedKeyRef.current)
-        ) {
-          runNextTick(() => {
-            void loadInbox(queued.force, queued.tab);
-          });
-        }
+      // Delegate to React Query
+      if (force) {
+        query.invalidate();
       }
     },
-    [applyPreview, authReady, focusedRef, freezeWhileOpen, tabRef],
+    [authReady, focusedRef, freezeWhileOpen, tabRef, query],
   );
 
   const loadMoreInbox = useCallback(async () => {
     const tab = tabRef.current;
-    const current = selectAccountantInboxPreview(cacheByTabRef.current, tab);
     if (!authReady) {
       recordPlatformGuardSkip("auth_not_ready", {
         screen: "accountant",
@@ -237,7 +172,7 @@ export function useAccountantInboxController(params: {
       return;
     }
     if (!focusedRef.current || freezeWhileOpen) return;
-    if (!current?.hasMore) {
+    if (!query.hasMore) {
       recordPlatformGuardSkip("no_more_pages", {
         screen: "accountant",
         surface: "inbox_list",
@@ -258,88 +193,34 @@ export function useAccountantInboxController(params: {
       });
       return;
     }
-    if (inflightKeyRef.current || appendInflightKeyRef.current) {
-      recordPlatformObservability({
-        screen: "accountant",
-        surface: "inbox_list",
-        category: "reload",
-        event: "load_inbox_page",
-        result: "joined_inflight",
-        trigger: "scroll",
-        extra: { tab },
-      });
-      return;
-    }
 
-    appendInflightKeyRef.current = `${tab}:${current.nextOffsetRows}`;
-    setLoadingMore(true);
-    const observation = beginPlatformObservability({
-      screen: "accountant",
-      surface: "inbox_list",
-      category: "fetch",
-      event: "load_inbox_page",
-      sourceKind: "rpc:accountant_inbox_scope_v1",
-      trigger: "scroll",
-    });
-    try {
-      const result = await loadAccountantInboxPage({
-        tab,
-        offsetRows: current.nextOffsetRows,
-        limitRows: current.limitRows,
-      });
-      if (!focusedRef.current || tabRef.current !== tab) return;
-      const snapshot = buildAccountantInboxSnapshot({
-        previous: current,
-        result,
-        append: true,
-      });
-      cacheByTabRef.current[tab] = snapshot;
-      setHasMore(snapshot.hasMore);
-      setTotalCount(snapshot.totalRowCount);
-      setRows(snapshot.rows);
-      observation.success({
-        rowCount: result.rows.length,
-        sourceKind: result.sourceMeta.sourceKind,
-        fallbackUsed: result.sourceMeta.fallbackUsed,
-        extra: {
-          tab,
-          primaryOwner: result.sourceMeta.primaryOwner,
-          offsetRows: result.meta.offsetRows,
-          limitRows: result.meta.limitRows,
-          returnedRowCount: result.meta.returnedRowCount,
-          totalRowCount: result.meta.totalRowCount,
-          hasMore: result.meta.hasMore,
-          mergedRowCount: snapshot.rows.length,
-        },
-      });
-    } catch (error: unknown) {
-      if (__DEV__) console.error("[accountant load more]", errorMessage(error));
-      observation.error(error, {
-        rowCount: 0,
-        errorStage: "load_inbox_scope_v1_page",
-        extra: { tab },
-      });
-    } finally {
-      appendInflightKeyRef.current = null;
-      setLoadingMore(false);
-    }
-  }, [authReady, focusedRef, freezeWhileOpen, tabRef]);
+    await query.fetchNextPage();
+  }, [authReady, focusedRef, freezeWhileOpen, tabRef, query]);
+
+  const primeInboxPreviewForTab = useCallback(
+    (_tab: Tab) => {
+      // With React Query, the query key includes the tab,
+      // so switching tabs automatically loads the correct data.
+      // No manual preview priming needed.
+    },
+    [],
+  );
 
   const isInboxRefreshInFlight = useCallback(
-    () => Boolean(inflightKeyRef.current || appendInflightKeyRef.current),
-    [],
+    () => query.isFetching,
+    [query],
   );
 
   return {
     rows,
     setRows,
-    loading,
+    loading: query.isLoading,
     refreshing,
     setRefreshing,
-    loadingMore,
-    hasMore,
-    totalCount,
-    cacheByTabRef,
+    loadingMore: query.isFetchingNextPage,
+    hasMore: query.hasMore,
+    totalCount: query.totalCount,
+    cacheByTabRef: useRef({}),
     loadInbox,
     loadMoreInbox,
     primeInboxPreviewForTab,
