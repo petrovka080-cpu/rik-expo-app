@@ -126,35 +126,31 @@ describe("error propagation — Result helpers", () => {
       "submit_form",
     );
     expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error.context).toBe("submit_form");
-      expect(result.error.severity).toBe("warn");
-    }
+    const errResult = result as { ok: false; error: AppError };
+    expect(errResult.error.context).toBe("submit_form");
+    expect(errResult.error.severity).toBe("warn");
   });
 
   it("errorResult produces typed failure with fatal severity", () => {
     const result = errorResult(new Error("crash"), "payment", "fatal");
     expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error.severity).toBe("fatal");
-    }
+    const errResult = result as { ok: false; error: AppError };
+    expect(errResult.error.severity).toBe("fatal");
   });
 
   it("errorResult preserves cause chain", () => {
     const root = new Error("root cause");
     const result = errorResult(root, "chain");
-    if (!result.ok) {
-      expect(result.error.cause).toBe(root);
-    }
+    const errResult = result as { ok: false; error: AppError };
+    expect(errResult.error.cause).toBe(root);
   });
 
   it("errorResult with null error doesn't throw", () => {
     expect(() => errorResult(null, "null_test")).not.toThrow();
     const result = errorResult(null, "null_test");
     expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error.code).toBe("unknown_error");
-    }
+    const errResult = result as { ok: false; error: AppError };
+    expect(errResult.error.code).toBe("unknown_error");
   });
 
   it("okResult with complex data preserves shape", () => {

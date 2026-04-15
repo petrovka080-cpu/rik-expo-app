@@ -114,15 +114,17 @@ describe("release safety — PDF RPC rollout IDs", () => {
 });
 
 describe("release safety — PDF render rollout IDs", () => {
+  /**
+   * PdfRenderRolloutId is currently a single literal: "director_render_v1".
+   * All director PDF document families (finance, production, subcontract,
+   * supplier) share one render offload endpoint. Other document families
+   * (payment, warehouse) use client-side rendering only.
+   *
+   * If new render rollout IDs are added to the production type,
+   * update this list to match.
+   */
   const ALL_RENDER_ROLLOUT_IDS: PdfRenderRolloutId[] = [
-    "payment_pdf_render_v1",
-    "warehouse_incoming_render_v1",
-    "warehouse_incoming_materials_render_v1",
-    "warehouse_object_work_render_v1",
-    "warehouse_day_materials_render_v1",
-    "director_finance_render_v1",
-    "director_production_render_v1",
-    "director_subcontract_render_v1",
+    "director_render_v1",
   ];
 
   it("all render rollout IDs are unique", () => {

@@ -110,15 +110,15 @@ describe("state ownership — buyer.store", () => {
 
   it("openModal sets type and entityId", () => {
     const store = useBuyerStore.getState();
-    store.openModal("detail", "entity-1");
+    store.openModal("prop_details", "entity-1");
     const after = useBuyerStore.getState();
-    expect(after.modal.type).toBe("detail");
+    expect(after.modal.type).toBe("prop_details");
     expect(after.modal.entityId).toBe("entity-1");
   });
 
   it("closeModal resets modal to none", () => {
     const store = useBuyerStore.getState();
-    store.openModal("detail", "entity-1");
+    store.openModal("prop_details", "entity-1");
     useBuyerStore.getState().closeModal();
     const after = useBuyerStore.getState();
     expect(after.modal.type).toBe("none");
