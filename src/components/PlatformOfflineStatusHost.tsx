@@ -79,15 +79,21 @@ const buildContractorContour = (
 
 const buildForemanContour = (
   state: typeof foremanDurableDraftStore.getState extends () => infer T ? T : never,
-): PlatformOfflineContourSummary => ({
-  key: "foreman_draft",
-  label: "\u041f\u0440\u043e\u0440\u0430\u0431",
-  syncStatus: state.syncStatus,
-  pendingCount: Math.max(0, state.pendingOperationsCount ?? 0),
-  retryCount: Math.max(0, state.retryCount ?? 0),
-  lastSyncAt: state.lastSyncAt,
-  lastError: state.lastError,
-});
+): PlatformOfflineContourSummary => {
+  // P6.3d: If there is no active draft snapshot, any remaining sync metadata
+  // is orphaned/stale (the request already moved past draft status).
+  // Report idle to prevent the global banner from showing phantom warnings.
+  const hasActiveSnapshot = Boolean(state.snapshot);
+  return {
+    key: "foreman_draft",
+    label: "\u041f\u0440\u043e\u0440\u0430\u0431",
+    syncStatus: hasActiveSnapshot ? state.syncStatus : "idle",
+    pendingCount: hasActiveSnapshot ? Math.max(0, state.pendingOperationsCount ?? 0) : 0,
+    retryCount: hasActiveSnapshot ? Math.max(0, state.retryCount ?? 0) : 0,
+    lastSyncAt: state.lastSyncAt,
+    lastError: hasActiveSnapshot ? state.lastError : null,
+  };
+};
 
 export default function PlatformOfflineStatusHost() {
   const network = usePlatformNetworkStore((state) => state);
