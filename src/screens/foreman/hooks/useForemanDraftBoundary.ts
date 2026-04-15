@@ -1309,6 +1309,55 @@ export function useForemanDraftBoundary({
       if (options?.cancelled?.()) return;
 
       const durableSnapshot = getForemanDurableDraftState().snapshot;
+
+      // ── P6.3a: Reset stale sync metadata when bootstrap cleared the snapshot ──
+      // When resolveForemanDraftBootstrap detects a terminal remote status, it
+      // calls clearDraftCache which clears the snapshot. However, the durable
+      // store sync metadata (syncStatus, attentionNeeded, conflictType, etc.)
+      // is NOT reset by clearDraftCache. Without this explicit reset, the
+      // global PlatformOfflineStatusHost banner keeps reading stale values
+      // from the durable store, showing phantom "Нужна проверка" banners.
+      if (!durableSnapshot || !hasForemanLocalDraftContent(durableSnapshot)) {
+        const staleDurableState = getForemanDurableDraftState();
+        if (
+          staleDurableState.syncStatus !== "idle" ||
+          staleDurableState.attentionNeeded ||
+          staleDurableState.conflictType !== "none" ||
+          staleDurableState.pendingOperationsCount > 0 ||
+          staleDurableState.retryCount > 0
+        ) {
+          if (__DEV__) {
+            console.info("[foreman.bootstrap] resetting stale durable sync metadata", {
+              syncStatus: staleDurableState.syncStatus,
+              attentionNeeded: staleDurableState.attentionNeeded,
+              conflictType: staleDurableState.conflictType,
+              pendingOps: staleDurableState.pendingOperationsCount,
+              retryCount: staleDurableState.retryCount,
+            });
+          }
+          await patchForemanDurableDraftRecoveryState({
+            snapshot: null,
+            syncStatus: "idle",
+            pendingOperationsCount: 0,
+            queueDraftKey: null,
+            requestIdKnown: false,
+            attentionNeeded: false,
+            conflictType: "none",
+            lastConflictAt: null,
+            recoverableLocalSnapshot: null,
+            lastError: null,
+            lastErrorAt: null,
+            lastErrorStage: null,
+            retryCount: 0,
+            repeatedFailureStageCount: 0,
+            lastTriggerSource: "bootstrap_complete",
+            lastSyncAt: staleDurableState.lastSyncAt,
+          });
+          await refreshBoundarySyncState(null);
+          return;
+        }
+      }
+
       if (durableSnapshot?.ownerId) {
         setActiveDraftOwnerId(durableSnapshot.ownerId, { resetSubmitted: true });
       } else if (!ridStr(requestId)) {
