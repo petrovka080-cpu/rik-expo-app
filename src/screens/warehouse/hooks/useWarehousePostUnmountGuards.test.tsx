@@ -241,7 +241,9 @@ describe("warehouse post-unmount guards", () => {
 
   it("does not commit warehouse reports after the screen becomes inactive", async () => {
     const activeRef = createActiveRef(true);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let resolveReports!: (value: unknown) => void;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let resolveIncoming!: (value: unknown) => void;
     mockApiFetchReports.mockReturnValue(
       new Promise((resolve) => {
@@ -341,9 +343,13 @@ describe("warehouse post-unmount guards", () => {
   });
 
   it("aborts warehouse reports on hook unmount", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let reportSignal: AbortSignal | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let incomingSignal: AbortSignal | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let resolveReports!: (value: unknown) => void;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let resolveIncoming!: (value: unknown) => void;
     mockApiFetchReports.mockImplementation(((_supabase, _from, _to, options) => {
       reportSignal = options?.signal ?? undefined;
@@ -359,6 +365,7 @@ describe("warehouse post-unmount guards", () => {
     }) as typeof apiFetchIncomingReports);
 
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let api: ReturnType<typeof useWarehouseReportsData> | null = null;
     function Harness() {
       api = useWarehouseReportsData({

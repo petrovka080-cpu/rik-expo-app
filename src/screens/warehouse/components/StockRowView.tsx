@@ -1,6 +1,5 @@
-﻿// src/screens/warehouse/components/StockRowView.tsx
+// src/screens/warehouse/components/StockRowView.tsx
 import React from "react";
-import { View } from "react-native";
 import { UI, s } from "../warehouse.styles";
 import type { StockRow } from "../warehouse.types";
 import { RoleCard } from "../../../components/ui/RoleCard";

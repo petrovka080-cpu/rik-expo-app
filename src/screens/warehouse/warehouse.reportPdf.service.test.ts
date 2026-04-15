@@ -1,3 +1,5 @@
+import { createWarehouseReportPdfService } from "./warehouse.reportPdf.service";
+
 const mockExportWarehouseHtmlPdf = jest.fn();
 const mockApiFetchIssuedMaterialsReportFast = jest.fn();
 const mockGetWarehouseDayMaterialsReportPdfSource = jest.fn();
@@ -30,8 +32,6 @@ jest.mock("./warehouse.incomingMaterialsReport.pdf.service", () => ({
 jest.mock("./warehouse.objectWorkReport.pdf.service", () => ({
   getWarehouseObjectWorkReportPdfSource: (...args: unknown[]) => mockGetWarehouseObjectWorkReportPdfSource(...args),
 }));
-
-import { createWarehouseReportPdfService } from "./warehouse.reportPdf.service";
 
 describe("warehouse.reportPdf.service", () => {
   beforeEach(() => {

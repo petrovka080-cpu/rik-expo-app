@@ -1,4 +1,4 @@
-﻿import { useFocusEffect } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   recordOfficeWarehouseRuntimeStateWriteAccepted,

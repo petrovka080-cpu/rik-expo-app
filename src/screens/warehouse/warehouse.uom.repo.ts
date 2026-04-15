@@ -1,5 +1,7 @@
 import { supabase } from "../../lib/supabaseClient";
 
+import { trimMapSize } from "../../lib/cache/boundedCacheUtils";
+
 type SingleResult = {
   data: Record<string, unknown> | null;
   error: { message?: string | null } | null;
@@ -10,8 +12,6 @@ type CacheEntry = {
   expiresAt: number;
   promise: Promise<SingleResult> | null;
 };
-
-import { trimMapSize } from "../../lib/cache/boundedCacheUtils";
 
 const WAREHOUSE_UOM_TTL_MS = 5 * 60 * 1000;
 const MAX_UOM_CACHE_SIZE = 500;

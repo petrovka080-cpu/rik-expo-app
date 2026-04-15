@@ -1,4 +1,4 @@
-﻿import {
+import {
   getPdfRpcRolloutAvailability,
   recordPdfRpcRolloutBranch,
   setPdfRpcRolloutAvailability,

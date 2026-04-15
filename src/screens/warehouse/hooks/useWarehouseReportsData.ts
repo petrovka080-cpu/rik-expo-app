@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { StockRow, WarehouseReportRow } from "../warehouse.types";
 import {
   isWarehouseScreenActive,
   useWarehouseFallbackActiveRef,

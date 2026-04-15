@@ -19,7 +19,7 @@ jest.mock("react-native-safe-area-context", () => ({
 jest.mock("../../../ui/TopRightActionBar", () => {
   const React = require("react");
   const { View, Pressable, Text } = require("react-native");
-  return function MockTopRightActionBar(props: { actions: Array<Record<string, unknown>> }) {
+  return function MockTopRightActionBar(props: { actions: Record<string, unknown>[] }) {
     return React.createElement(
       View,
       { testID: "top-right-actions" },

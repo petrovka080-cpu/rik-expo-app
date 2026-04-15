@@ -144,7 +144,7 @@ describe("useWarehouseRealtimeLifecycle", () => {
   it("routes expense refreshes by active tab and skips mismatched tabs without duplicate churn", async () => {
     const detachFirst = jest.fn();
     const detachSecond = jest.fn();
-    const configs: Array<Record<string, unknown>> = [];
+    const configs: Record<string, unknown>[] = [];
     mockSubscribeChannel
       .mockImplementationOnce((config: Record<string, unknown>) => {
         configs.push(config);

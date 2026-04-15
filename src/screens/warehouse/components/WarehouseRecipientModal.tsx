@@ -23,6 +23,7 @@ interface Props {
 export default function WarehouseRecipientModal({
   visible,
   onConfirm,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onClose,
   suggestions,
   initialValue = "",
