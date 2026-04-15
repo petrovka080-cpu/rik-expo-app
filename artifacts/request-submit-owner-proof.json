@@ -1,9 +1,0 @@
-{
-  "atomicRpcOwnerPresent": true,
-  "noClientPostDraftProbe": true,
-  "noClientReconcilePlan": true,
-  "noClientRequestItemsSubmitProbe": true,
-  "controlledFailureSurface": true,
-  "observabilityAtomicStart": true,
-  "observabilityAtomicFailure": true
-}

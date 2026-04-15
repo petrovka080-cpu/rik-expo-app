@@ -1,9 +1,0 @@
-{
-  "gate": "director_finance_consistency_ui_explainer",
-  "contentUsesUiExplainer": true,
-  "debtModalShowsWorkRule": true,
-  "spendModalShowsWorkRule": true,
-  "dashboardShowsDifference": true,
-  "scopeExposesExplainer": true,
-  "green": true
-}

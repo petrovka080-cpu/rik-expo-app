@@ -1,8 +1,0 @@
-{
-  "status": "GREEN",
-  "file": "src/lib/api/_core.ts",
-  "classifierExported": true,
-  "stopRulesPresent": true,
-  "casesPassed": 5,
-  "casesTotal": 5
-}

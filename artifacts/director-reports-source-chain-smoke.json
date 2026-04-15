@@ -1,9 +1,0 @@
-{
-  "status": "GREEN",
-  "observabilitySourceChainEventPresent": true,
-  "observabilitySourceChainExportPresent": true,
-  "trackedResultHooksSourceChain": true,
-  "reportServiceUsesTrackedResult": true,
-  "factsConditionalLinePrefetch": true,
-  "tablesParallelNameResolve": true
-}

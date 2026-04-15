@@ -1,9 +1,0 @@
-{
-  "gate": "director_reports_workname_fallback_proof",
-  "fallbackIntroduced": false,
-  "resolvedWorkNameCoverageImproved": false,
-  "fallbackSourceMarked": false,
-  "warehouseTruthPreserved": true,
-  "notApplicable": true,
-  "green": true
-}

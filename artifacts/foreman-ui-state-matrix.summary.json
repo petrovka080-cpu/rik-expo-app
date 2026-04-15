@@ -1,9 +1,0 @@
-{
-  "gate": "foreman_ui_state_matrix",
-  "proofPassed": true,
-  "draftStateMatrixPassed": true,
-  "postSubmitFreshDraftPassed": true,
-  "aiDraftContinuityPassed": true,
-  "positionsParityPassed": true,
-  "keyboardComposerLayoutTouched": true
-}

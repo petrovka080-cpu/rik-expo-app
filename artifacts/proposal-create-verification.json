@@ -1,7 +1,0 @@
-{
-  "status": "GREEN",
-  "file": "src/lib/api/proposals.ts",
-  "compatibilityGuardPresent": true,
-  "postCreateVerificationPresent": true,
-  "silentCatchPresent": false
-}

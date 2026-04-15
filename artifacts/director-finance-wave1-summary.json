@@ -1,9 +1,0 @@
-{
-  "gate": "director_finance_wave1",
-  "status": "GREEN",
-  "file": "src/screens/director/director.finance.ts",
-  "currentBytes": 1422,
-  "currentLines": 63,
-  "previousBytes": 57142,
-  "previousLines": 1634
-}
