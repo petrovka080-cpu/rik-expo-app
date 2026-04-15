@@ -10,6 +10,7 @@ import {
 import { AppState } from "react-native";
 
 import {
+  fetchRequestDetails,
   type ReqItemRow,
   type RequestDetails,
 } from "../../../lib/catalog_api";
@@ -1361,12 +1362,59 @@ export function useForemanDraftBoundary({
         }
       }
 
+      // ── P6.3a: Post-bootstrap reconciliation ──────────────────────────
+      // If the restored snapshot references a known requestId, check
+      // the server to see if the request has already moved past draft
+      // status (submitted, approved, etc.). If so, the local draft is
+      // stale and must be cleared to prevent phantom draft cards,
+      // "needs attention" banners, and stale sync indicators.
+      if (
+        durableSnapshot &&
+        hasForemanLocalDraftContent(durableSnapshot) &&
+        ridStr(durableSnapshot.requestId)
+      ) {
+        const reconciledRequestId = ridStr(durableSnapshot.requestId)!;
+        try {
+          if (options?.cancelled?.()) return;
+          const remoteDetails = await fetchRequestDetails(reconciledRequestId);
+          const remoteStatus = remoteDetails?.status ?? null;
+          if (remoteStatus && !isDraftLikeStatus(remoteStatus)) {
+            // Server says this request is no longer a draft — clear stale local state
+            if (__DEV__) {
+              console.info("[foreman.bootstrap-reconciliation] clearing stale draft", {
+                requestId: reconciledRequestId,
+                remoteStatus,
+                localSnapshotItems: durableSnapshot.items.length,
+                submitRequested: durableSnapshot.submitRequested,
+              });
+            }
+            await clearTerminalLocalDraft({
+              snapshot: durableSnapshot,
+              requestId: reconciledRequestId,
+              remoteStatus,
+            });
+            // After clearing, durableSnapshot is no longer valid
+            await refreshBoundarySyncState(null);
+            return;
+          }
+        } catch {
+          // Network failure during reconciliation is non-fatal.
+          // The stale state will be caught on next bootstrap or sync attempt.
+          if (__DEV__) {
+            console.info("[foreman.bootstrap-reconciliation] skipped (network error)", {
+              requestId: reconciledRequestId,
+            });
+          }
+        }
+      }
+
       await refreshBoundarySyncState(durableSnapshot ?? null);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [
       applyLocalDraftSnapshotToBoundary,
       clearDraftCache,
+      clearTerminalLocalDraft,
       getDraftQueueKey,
       getDraftQueueKeys,
       loadItems,
