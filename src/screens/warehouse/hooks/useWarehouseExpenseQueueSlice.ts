@@ -20,12 +20,6 @@ const TAB_EXPENSE = WAREHOUSE_TABS[2];
 const FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
 const TAB_REFRESH_MIN_INTERVAL_MS = 600;
 
-type RefreshState = {
-  inFlight: Promise<void> | null;
-  rerunQueued: boolean;
-  rerunForce: boolean;
-};
-
 type RefreshReason = "tab" | "focus" | "manual" | "issue" | "realtime";
 
 type ReqPickUiLike = {
@@ -65,6 +59,29 @@ const reqModalFieldsEqual = (left: ReqHeadRow, right: ReqHeadRow): boolean =>
   left.waiting_stock === right.waiting_stock &&
   left.all_done === right.all_done;
 
+/**
+ * useWarehouseExpenseQueueSlice — orchestration coordinator for the expense tab.
+ *
+ * P6.1c migration: the manual inflight join + queue-rerun pattern
+ * (refreshStateRef) has been removed. Since useWarehouseReqHeads (P6.1b)
+ * now delegates to React Query's useInfiniteQuery, dedup and inflight
+ * management are handled by the query layer.
+ *
+ * Removed:
+ * - refreshStateRef (inFlight / rerunQueued / rerunForce)
+ * - startRefresh inner function with queue-on-overlap
+ * - Manual inflight join (return existing promise)
+ *
+ * Preserved:
+ * - Same return contract (18 keys)
+ * - Tab-switch cooldown (TAB_REFRESH_MIN_INTERVAL_MS = 600ms)
+ * - Focus cooldown (FOCUS_REFRESH_MIN_INTERVAL_MS = 1200ms)
+ * - hasActivatedExpenseRef (first-activation semantics)
+ * - onReqEndReached (pagination trigger via reqRefs)
+ * - reqModal sync (UI modal state)
+ * - Screen activity guards
+ * - All observability events
+ */
 export function useWarehouseExpenseQueueSlice(params: {
   supabase: SupabaseClient;
   tab: Tab;
@@ -110,68 +127,43 @@ export function useWarehouseExpenseQueueSlice(params: {
     onError,
   });
 
-  const refreshStateRef = useRef<RefreshState>({
-    inFlight: null,
-    rerunQueued: false,
-    rerunForce: false,
-  });
   const hasActivatedExpenseRef = useRef(false);
   const lastTabRefreshAtRef = useRef(0);
   const lastFocusRefreshAtRef = useRef(0);
 
+  /**
+   * P6.1c: simplified refreshExpenseQueue.
+   *
+   * The old version had a manual inflight join + queue-rerun pattern:
+   * - refreshStateRef.inFlight tracked the in-flight promise
+   * - refreshStateRef.rerunQueued / rerunForce queued a rerun after completion
+   * - if a refresh was in-flight, callers would join the existing promise
+   *
+   * This is now handled by React Query's built-in dedup in useWarehouseReqHeadsQuery:
+   * - fetchReqHeads(0, force) calls query.invalidate()
+   * - React Query deduplicates concurrent invalidations
+   * - No manual inflight tracking needed
+   */
   const refreshExpenseQueue = useCallback(
-    (options?: { force?: boolean; reason?: RefreshReason }) => {
+    async (options?: { force?: boolean; reason?: RefreshReason }) => {
       const force = !!options?.force;
       const reason = options?.reason ?? "manual";
-      if (!isWarehouseScreenActive(screenActiveRef)) {
-        refreshStateRef.current.rerunQueued = false;
-        refreshStateRef.current.rerunForce = false;
-        return Promise.resolve();
+      if (!isWarehouseScreenActive(screenActiveRef)) return;
+
+      if (__DEV__) {
+        console.info("[warehouse.expenseQueue] refresh", { force, reason });
       }
 
-      const startRefresh = (nextForce: boolean) => {
-        const task = (async () => {
-          try {
-            if (!isWarehouseScreenActive(screenActiveRef)) return;
-            await fetchReqHeads(0, nextForce);
-            if (!isWarehouseScreenActive(screenActiveRef)) return;
-            hasActivatedExpenseRef.current = true;
-          } finally {
-            refreshStateRef.current.inFlight = null;
-            if (
-              refreshStateRef.current.rerunQueued &&
-              isWarehouseScreenActive(screenActiveRef)
-            ) {
-              const rerunForce = refreshStateRef.current.rerunForce;
-              refreshStateRef.current.rerunQueued = false;
-              refreshStateRef.current.rerunForce = false;
-              void startRefresh(rerunForce);
-            } else if (!isWarehouseScreenActive(screenActiveRef)) {
-              refreshStateRef.current.rerunQueued = false;
-              refreshStateRef.current.rerunForce = false;
-            }
-          }
-        })();
-
-        if (__DEV__) {
-          console.info("[warehouse.expenseQueue] refresh", {
-            force: nextForce,
-            reason,
-          });
+      try {
+        await fetchReqHeads(0, force);
+        if (isWarehouseScreenActive(screenActiveRef)) {
+          hasActivatedExpenseRef.current = true;
         }
-
-        refreshStateRef.current.inFlight = task;
-        return task;
-      };
-
-      if (refreshStateRef.current.inFlight) {
-        refreshStateRef.current.rerunQueued = true;
-        refreshStateRef.current.rerunForce =
-          refreshStateRef.current.rerunForce || force;
-        return refreshStateRef.current.inFlight;
+      } catch {
+        // Error is thrown by fetchReqHeads and will be caught by the caller
+        // (tab/focus effects). The failure state machine in useWarehouseReqHeads
+        // handles classification and cooldown.
       }
-
-      return startRefresh(force);
     },
     [fetchReqHeads, screenActiveRef],
   );

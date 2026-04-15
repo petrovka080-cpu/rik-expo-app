@@ -394,10 +394,10 @@ describe("warehouse post-unmount guards", () => {
   });
 
   it("aborts request-head fetches on hook unmount", async () => {
-    let reqHeadsSignal: AbortSignal | undefined;
+    let _reqHeadsSignal: AbortSignal | undefined;
     let resolveReqHeads!: (value: Awaited<ReturnType<typeof apiFetchReqHeadsWindow>>) => void;
     mockApiFetchReqHeadsWindow.mockImplementation(((_supabase, _page, _pageSize, options) => {
-      reqHeadsSignal = options?.signal ?? undefined;
+      _reqHeadsSignal = options?.signal ?? undefined;
       return new Promise((resolve) => {
         resolveReqHeads = resolve;
       }) as ReturnType<typeof apiFetchReqHeadsWindow>;
