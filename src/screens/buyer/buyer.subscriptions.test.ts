@@ -31,7 +31,7 @@ describe("attachBuyerSubscriptions", () => {
 
   it("logs callback and cleanup failures without breaking detach or realtime callbacks", () => {
     const callbacks: Record<string, ChannelHandler> = {};
-    const builtChannels: Array<{ name: string }> = [];
+    const builtChannels: { name: string }[] = [];
 
     const mockSupabase = {
       channel: jest.fn((name: string) => {

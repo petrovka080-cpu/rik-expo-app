@@ -4,6 +4,11 @@ import {
 } from "../../lib/observability/platformObservability";
 import type { CreateProposalsResult } from "../../lib/catalog_api";
 
+import { uploadSupplierProposalAttachmentsMutation } from "./buyer.attachments.mutation";
+import { syncSubmittedRequestItemsStatusMutation } from "./buyer.status.mutation";
+import { isBuyerMutationFailure } from "./buyer.mutation.shared";
+import { handleCreateProposalsBySupplierAction } from "./buyer.submit.mutation";
+
 jest.mock("./buyer.attachments.mutation", () => ({
   uploadSupplierProposalAttachmentsMutation: jest.fn(),
 }));
@@ -11,11 +16,6 @@ jest.mock("./buyer.attachments.mutation", () => ({
 jest.mock("./buyer.status.mutation", () => ({
   syncSubmittedRequestItemsStatusMutation: jest.fn(),
 }));
-
-import { uploadSupplierProposalAttachmentsMutation } from "./buyer.attachments.mutation";
-import { syncSubmittedRequestItemsStatusMutation } from "./buyer.status.mutation";
-import { isBuyerMutationFailure } from "./buyer.mutation.shared";
-import { handleCreateProposalsBySupplierAction } from "./buyer.submit.mutation";
 
 const mockedUploadSupplierProposalAttachmentsMutation =
   uploadSupplierProposalAttachmentsMutation as unknown as jest.Mock;

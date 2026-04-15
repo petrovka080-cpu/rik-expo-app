@@ -36,6 +36,7 @@ export function BuyerReworkSheetBody({
   rwInvCurrency,
   setRwInvCurrency,
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   rwInvFile,
   setRwInvFile,
   rwInvUploadedName,

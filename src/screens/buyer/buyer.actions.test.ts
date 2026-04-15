@@ -1,3 +1,10 @@
+import { openProposalViewAction } from "./buyer.actions";
+import {
+  repoGetProposalItemsForView,
+  repoGetProposalRequestItemIntegrity,
+  repoGetRequestItemsByIds,
+} from "./buyer.repo";
+
 jest.mock("./buyer.repo", () => ({
   repoGetProposalItemsForView: jest.fn(),
   repoGetProposalRequestItemIntegrity: jest.fn(),
@@ -7,13 +14,6 @@ jest.mock("./buyer.repo", () => ({
   repoSetProposalBuyerFio: jest.fn(),
   repoUpdateProposalItems: jest.fn(),
 }));
-
-import { openProposalViewAction } from "./buyer.actions";
-import {
-  repoGetProposalItemsForView,
-  repoGetProposalRequestItemIntegrity,
-  repoGetRequestItemsByIds,
-} from "./buyer.repo";
 
 const mockRepoGetProposalItemsForView =
   repoGetProposalItemsForView as unknown as jest.Mock;

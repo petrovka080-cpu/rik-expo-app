@@ -3,18 +3,6 @@ import {
   resetPlatformObservabilityEvents,
 } from "../../lib/observability/platformObservability";
 
-jest.mock("./buyer.actions.repo", () => ({
-  clearRequestItemsDirectorRejectState: jest.fn(),
-  sendProposalToAccountingMin: jest.fn(),
-  setRequestItemsDirectorStatus: jest.fn(),
-  setRequestItemsDirectorStatusFallback: jest.fn(),
-}));
-
-jest.mock("./buyer.attachments.mutation", () => ({
-  ensureProposalHtmlAttachmentMutation: jest.fn(),
-  uploadInvoiceAttachmentMutation: jest.fn(),
-}));
-
 import {
   clearRequestItemsDirectorRejectState,
   sendProposalToAccountingMin,
@@ -30,6 +18,18 @@ import {
   runProposalAccountingMutation,
   syncSubmittedRequestItemsStatusMutation,
 } from "./buyer.status.mutation";
+
+jest.mock("./buyer.actions.repo", () => ({
+  clearRequestItemsDirectorRejectState: jest.fn(),
+  sendProposalToAccountingMin: jest.fn(),
+  setRequestItemsDirectorStatus: jest.fn(),
+  setRequestItemsDirectorStatusFallback: jest.fn(),
+}));
+
+jest.mock("./buyer.attachments.mutation", () => ({
+  ensureProposalHtmlAttachmentMutation: jest.fn(),
+  uploadInvoiceAttachmentMutation: jest.fn(),
+}));
 
 const mockedClearRequestItemsDirectorRejectState =
   clearRequestItemsDirectorRejectState as unknown as jest.Mock;

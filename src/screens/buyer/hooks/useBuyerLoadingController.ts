@@ -50,7 +50,7 @@ const getVisibleScopes = (activeTab: BuyerTab): BuyerSummaryScope[] => {
   return ["inbox", "subcontracts"];
 };
 
-const getProposalChangeScopes = (activeTab: BuyerTab): BuyerSummaryScope[] => {
+const _getProposalChangeScopes = (activeTab: BuyerTab): BuyerSummaryScope[] => {
   if (activeTab === "pending" || activeTab === "approved" || activeTab === "rejected") {
     return ["buckets"];
   }
@@ -531,6 +531,7 @@ export function useBuyerLoadingController(params: {
       if (showBucketsLoading) setLoadingBuckets(false);
       if (options.showRefreshing) setRefreshing(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
     approved.length,
     applyBucketsResult,
@@ -605,6 +606,7 @@ export function useBuyerLoadingController(params: {
       });
       log?.("[buyer.summary] inbox next page failed:", error instanceof Error ? error.message : String(error));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [loadInboxWindow]);
 
   useFocusEffect(

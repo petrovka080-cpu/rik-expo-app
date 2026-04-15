@@ -11,16 +11,16 @@ type VisibilityType = "open" | "company_only";
 type PaymentTermsType = "cash" | "bank" | "after" | "deferred";
 
 const DEADLINE_HOURS = [6, 12, 24, 48, 72] as const;
-const DELIVERY_OPTIONS: ReadonlyArray<{ key: DeliveryType; label: string }> = [
+const DELIVERY_OPTIONS: readonly { key: DeliveryType; label: string }[] = [
   { key: "delivery", label: "Доставка" },
   { key: "pickup", label: "Самовывоз" },
   { key: "on_site", label: "На объект" },
 ];
-const VISIBILITY_OPTIONS: ReadonlyArray<{ key: VisibilityType; label: string }> = [
+const VISIBILITY_OPTIONS: readonly { key: VisibilityType; label: string }[] = [
   { key: "open", label: "Всем" },
   { key: "company_only", label: "Только свои" },
 ];
-const PAYMENT_TERMS_OPTIONS: ReadonlyArray<{ key: PaymentTermsType; label: string }> = [
+const PAYMENT_TERMS_OPTIONS: readonly { key: PaymentTermsType; label: string }[] = [
   { key: "cash", label: "Нал" },
   { key: "bank", label: "Безнал" },
   { key: "after", label: "По факту" },

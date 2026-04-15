@@ -75,7 +75,7 @@ export function useBuyerProposalCaches() {
             const q = await fetchBuyerProposalNos(part);
 
             if (!q.error && Array.isArray(q.data)) {
-              const rowsTyped = q.data as Array<{ id?: string | number | null; proposal_no?: string | null }>;
+              const rowsTyped = q.data as { id?: string | number | null; proposal_no?: string | null }[];
               for (const r of rowsTyped) {
                 const id = String(r.id ?? "").trim();
                 const no = String(r.proposal_no ?? "").trim();
@@ -114,6 +114,7 @@ export function useBuyerProposalCaches() {
         // no-op
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, []);
 
   const preloadProposalTitles = useCallback(async (proposalIds: string[]) => {

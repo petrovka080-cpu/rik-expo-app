@@ -1,4 +1,4 @@
-﻿import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 export type AlertFn = (title: string, message: string) => void;
 export type FileLike = File | Blob | {
@@ -96,6 +96,7 @@ const toText = (value: unknown) => String(value ?? "").trim();
 
 export const logBuyerActionDebug = (level: "info" | "warn", ...args: unknown[]) => {
   if (!isDevRuntime()) return;
+  // eslint-disable-next-line no-console
   console[level](...args);
 };
 

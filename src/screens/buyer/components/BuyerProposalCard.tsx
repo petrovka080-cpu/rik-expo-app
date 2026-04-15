@@ -1,4 +1,4 @@
-﻿import React, { useRef } from "react";
+import React, { useRef } from "react";
 import { View, Text, Pressable, Animated } from "react-native";
 
 import type { BuyerProposalBucketRow } from "../buyer.fetchers";

@@ -1,13 +1,13 @@
 import fs from "fs";
 import path from "path";
 
+import { reportBuyerTabsScrollToStartFailure } from "./buyer.observability";
+
 const mockRecordSwallowedError = jest.fn((params: unknown) => params);
 
 jest.mock("../../lib/observability/swallowedError", () => ({
   recordSwallowedError: (params: unknown) => mockRecordSwallowedError(params),
 }));
-
-import { reportBuyerTabsScrollToStartFailure } from "./buyer.observability";
 
 describe("buyer observability boundary", () => {
   beforeEach(() => {

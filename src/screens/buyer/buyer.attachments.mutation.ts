@@ -133,7 +133,7 @@ export async function attachFileToProposalAction(p: {
 }
 
 export async function uploadSupplierProposalAttachmentsMutation(params: {
-  createdProposals: Array<{ id?: string | null; proposal_id?: string | null; supplier?: string | null }>;
+  createdProposals: { id?: string | null; proposal_id?: string | null; supplier?: string | null }[];
   attachmentsNow: Record<string, { file?: FileLike; name?: string }>;
   uploadProposalAttachment: UploadProposalAttachmentFn;
 }): Promise<BuyerMutationResult<SupplierAttachmentsStage, { uploadCount: number; failedCount: number }>> {

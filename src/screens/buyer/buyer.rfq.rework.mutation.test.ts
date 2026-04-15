@@ -1,12 +1,3 @@
-jest.mock("./buyer.actions.repo", () => ({
-  clearRequestItemsDirectorRejectState: jest.fn(),
-  publishRfq: jest.fn(),
-}));
-
-jest.mock("./buyer.repo", () => ({
-  repoUpdateProposalItems: jest.fn(),
-}));
-
 import {
   clearRequestItemsDirectorRejectState,
   publishRfq,
@@ -16,12 +7,21 @@ import { repoUpdateProposalItems } from "./buyer.repo";
 import { publishRfqAction } from "./buyer.rfq.mutation";
 import { rwSendToDirectorAction } from "./buyer.rework.mutation";
 
+jest.mock("./buyer.actions.repo", () => ({
+  clearRequestItemsDirectorRejectState: jest.fn(),
+  publishRfq: jest.fn(),
+}));
+
+jest.mock("./buyer.repo", () => ({
+  repoUpdateProposalItems: jest.fn(),
+}));
+
 const mockedClearRequestItemsDirectorRejectState =
   clearRequestItemsDirectorRejectState as unknown as jest.Mock;
 const mockedPublishRfq = publishRfq as unknown as jest.Mock;
 const mockedRepoUpdateProposalItems = repoUpdateProposalItems as unknown as jest.Mock;
 
-const buildProposalUpdateSupabase = (errors: Array<unknown | null>) => {
+const buildProposalUpdateSupabase = (errors: (unknown | null)[]) => {
   let callIndex = 0;
   return {
     from: jest.fn(() => ({
@@ -101,7 +101,7 @@ describe("buyer rfq and rework mutation owners", () => {
 
   it("keeps rework send-to-director happy path observable and owned", async () => {
     const alert = jest.fn();
-    const setRejected = jest.fn((updater: (prev: Array<{ id?: string }>) => Array<{ id?: string }>) =>
+    const setRejected = jest.fn((updater: (prev: { id?: string }[]) => { id?: string }[]) =>
       updater([{ id: "proposal-1" }]),
     );
 

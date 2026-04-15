@@ -1,10 +1,10 @@
-﻿import { useCallback } from "react";
+import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Alert } from "react-native";
 
-import type { BuyerGroup } from "../buyer.types";
+import type { BuyerGroup , DraftAttachmentMap } from "../buyer.types";
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
-import type { DraftAttachmentMap } from "../buyer.types";
+
 import { getBuyerItemProcurementType, getCounterpartyLabel } from "../procurementTyping";
 import { SUPP_NONE, normName } from "../buyerUtils";
 
@@ -45,12 +45,12 @@ export function useBuyerCreateGuards(params: {
     let missingSupplierCount = 0;
     let missingPriceCount = 0;
     let missingAttachmentCount = 0;
-    const pickedSnapshot: Array<{
+    const pickedSnapshot: {
       requestItemId: string;
       supplier: string;
       price: string;
       hasAttachment: boolean;
-    }> = [];
+    }[] = [];
 
     for (const group of groups) {
       group.items.forEach((it, idx) => {

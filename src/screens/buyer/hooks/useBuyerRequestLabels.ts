@@ -91,7 +91,7 @@ export function useBuyerRequestLabels() {
       if (error) throw error;
 
       const rowsTyped = Array.isArray(data)
-        ? (data as Array<{ request_id?: string | number | null; proposal_no?: string | null }>)
+        ? (data as { request_id?: string | number | null; proposal_no?: string | null }[])
         : [];
 
       const patch: Record<string, string> = {};

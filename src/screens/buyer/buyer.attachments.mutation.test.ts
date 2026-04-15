@@ -1,7 +1,3 @@
-jest.mock("../../lib/api/proposalAttachments.service", () => ({
-  getLatestCanonicalProposalAttachment: jest.fn(),
-}));
-
 import {
   attachFileToProposalAction,
   ensureProposalHtmlAttachmentMutation,
@@ -9,6 +5,10 @@ import {
 } from "./buyer.attachments.mutation";
 import { isBuyerMutationFailure } from "./buyer.mutation.shared";
 import { getLatestCanonicalProposalAttachment } from "../../lib/api/proposalAttachments.service";
+
+jest.mock("../../lib/api/proposalAttachments.service", () => ({
+  getLatestCanonicalProposalAttachment: jest.fn(),
+}));
 
 const mockedGetLatestCanonicalProposalAttachment =
   getLatestCanonicalProposalAttachment as jest.MockedFunction<typeof getLatestCanonicalProposalAttachment>;

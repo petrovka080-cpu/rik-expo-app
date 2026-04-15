@@ -10,7 +10,7 @@ import {
 } from "./buyer.fetchers";
 
 const buildScopeEnvelope = (params: {
-  rows: Array<Record<string, unknown>>;
+  rows: Record<string, unknown>[];
   offsetGroups: number;
   limitGroups: number;
   returnedGroupCount: number;
@@ -32,9 +32,9 @@ const buildScopeEnvelope = (params: {
 });
 
 const buildBucketsEnvelope = (params: {
-  pending?: Array<Record<string, unknown>>;
-  approved?: Array<Record<string, unknown>>;
-  rejected?: Array<Record<string, unknown>>;
+  pending?: Record<string, unknown>[];
+  approved?: Record<string, unknown>[];
+  rejected?: Record<string, unknown>[];
   meta?: Record<string, unknown>;
 }) => ({
   document_type: "buyer_summary_buckets_scope_v1",

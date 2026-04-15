@@ -1,4 +1,4 @@
-﻿import React, { useRef } from "react";
+import React, { useRef } from "react";
 import { View, Pressable, Animated } from "react-native";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";

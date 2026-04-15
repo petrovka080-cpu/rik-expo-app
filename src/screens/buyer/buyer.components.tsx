@@ -1,4 +1,4 @@
-﻿// src/screens/buyer/buyer.components.tsx
+// src/screens/buyer/buyer.components.tsx
 
 export type {
   Attachment,
