@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { generateProposalPdfDocument } from "../../lib/catalog_api";
@@ -62,7 +62,8 @@ export function useDirectorProposalActions({
   showSuccess,
 }: Deps) {
   const router = useRouter();
-  const pdfOpener = createModalAwarePdfOpener(closeSheet);
+  // D-MODAL-PDF: Stabilize the opener — avoid recreating on every render.
+  const pdfOpener = useMemo(() => createModalAwarePdfOpener(closeSheet), [closeSheet]);
   const approveInFlightRef = useRef<Record<string, boolean>>({});
   const approveDoneAtRef = useRef<Record<string, number>>({});
   const APPROVE_DONE_COOLDOWN_MS = 15_000;

@@ -21,6 +21,8 @@ type UseAccountantPaymentPdfBoundaryArgs = {
   busy: AccountantPaymentPdfBusyLike | unknown;
   safeAlert: (title: string, message: string) => void;
   setCurrentPaymentId: Dispatch<SetStateAction<number | null>>;
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null;
 };
 
 type OpenAccountantPaymentPdfRequest = {
@@ -32,7 +34,7 @@ type OpenAccountantPaymentPdfRequest = {
 export function useAccountantPaymentPdfBoundary(
   args: UseAccountantPaymentPdfBoundaryArgs,
 ) {
-  const { busy, safeAlert, setCurrentPaymentId } = args;
+  const { busy, safeAlert, setCurrentPaymentId, onBeforeNavigate } = args;
   const router = useRouter();
 
   return useCallback(async (request: OpenAccountantPaymentPdfRequest) => {
@@ -74,6 +76,8 @@ export function useAccountantPaymentPdfBoundary(
         label: "Открываю платёжное поручение…",
         descriptor,
         router,
+        // XR-PDF: dismiss parent modal before pushing PDF viewer route
+        onBeforeNavigate,
       });
     } catch (error) {
       safeAlert(

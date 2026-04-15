@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ReportsScreen } from "../reports";
+import ReportsScreen from "../../../src/features/reports/ReportsHubScreen";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 

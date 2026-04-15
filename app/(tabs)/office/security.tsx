@@ -1,6 +1,6 @@
 import React from "react";
 
-import { SecurityScreen } from "../security";
+import { SecurityScreen } from "../../../src/screens/security/SecurityScreen";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 

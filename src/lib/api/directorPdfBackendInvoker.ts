@@ -60,7 +60,12 @@ export class DirectorPdfTransportError extends Error {
   }
 }
 
-async function refreshDirectorPdfSessionOnce() {
+// D-BACKEND-PDF: Shared in-flight refresh promise. When multiple PDF backend
+// calls detect auth failure concurrently, they share this single refresh
+// attempt instead of each triggering their own refreshSession().
+let pendingDirectorPdfSessionRefresh: Promise<boolean> | null = null;
+
+async function doDirectorPdfSessionRefresh(): Promise<boolean> {
   try {
     if (!supabase?.auth || typeof supabase.auth.getSession !== "function") return false;
     const sessionResult = await supabase.auth.getSession();
@@ -71,6 +76,14 @@ async function refreshDirectorPdfSessionOnce() {
   } catch {
     return false;
   }
+}
+
+async function refreshDirectorPdfSessionOnce(): Promise<boolean> {
+  if (pendingDirectorPdfSessionRefresh) return await pendingDirectorPdfSessionRefresh;
+  pendingDirectorPdfSessionRefresh = doDirectorPdfSessionRefresh().finally(() => {
+    pendingDirectorPdfSessionRefresh = null;
+  });
+  return await pendingDirectorPdfSessionRefresh;
 }
 
 async function invokeDirectorPdfBackendOnce<TPayload>(args: DirectorPdfInvokeArgs<TPayload>) {

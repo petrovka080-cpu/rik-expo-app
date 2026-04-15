@@ -1,4 +1,4 @@
-﻿import {
+import {
   getPdfRpcRolloutAvailability,
   recordPdfRpcRolloutBranch,
   registerPdfRpcRolloutPath,
@@ -412,12 +412,41 @@ async function fetchDirectorFinancePdfSourceViaRpc(args: {
   };
 }
 
+// D-BACKEND-PDF: Short-lived cache for finance PDF source RPC results.
+// Avoids re-fetching identical data when the user taps the management report
+// PDF button multiple times within the TTL window.
+const FINANCE_PDF_SOURCE_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+type FinancePdfSourceCacheEntry = { ts: number; value: DirectorFinancePdfSource };
+const financePdfSourceCache = new Map<string, FinancePdfSourceCacheEntry>();
+
+const buildFinancePdfSourceCacheKey = (args: {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  dueDaysDefault?: number;
+  criticalDays?: number;
+}) =>
+  [
+    String(args.periodFrom ?? ""),
+    String(args.periodTo ?? ""),
+    String(args.dueDaysDefault ?? 7),
+    String(args.criticalDays ?? 14),
+  ].join("|");
+
 export async function getDirectorFinancePdfSource(args: {
   periodFrom?: string | null;
   periodTo?: string | null;
   dueDaysDefault?: number;
   criticalDays?: number;
 }): Promise<DirectorFinancePdfSource> {
+  // D-BACKEND-PDF: Check short-lived cache first.
+  const cacheKey = buildFinancePdfSourceCacheKey(args);
+  const cached = financePdfSourceCache.get(cacheKey);
+  if (cached && (Date.now() - cached.ts) < FINANCE_PDF_SOURCE_CACHE_TTL_MS) {
+    return cached.value;
+  }
+  // Expired entry — clean up.
+  if (cached) financePdfSourceCache.delete(cacheKey);
+
   const rpcMode = DIRECTOR_FINANCE_PDF_RPC_MODE;
   const observation = beginPdfLifecycleObservation({
     screen: "director",
@@ -454,6 +483,8 @@ export async function getDirectorFinancePdfSource(args: {
         sourceBranch: rpcSource.branchMeta.sourceBranch,
       },
     });
+    // D-BACKEND-PDF: Cache the successful result.
+    financePdfSourceCache.set(cacheKey, { ts: Date.now(), value: rpcSource });
     return rpcSource;
   } catch (error) {
     recordDirectorPdfRpcFailure(
@@ -570,7 +601,10 @@ export async function getDirectorProductionPdfSource(args: {
       objectName: args.objectName ?? null,
       includeDiscipline: true,
       skipDisciplinePrices: priceStage === "base",
-      bypassCache: true,
+      // D-BACKEND-PDF: Reuse the 5-minute transport scope cache.
+      // The data used for PDF is the same data displayed on the reports screen.
+      // Bypassing cache was causing a redundant 2-5s RPC on every PDF tap.
+      bypassCache: false,
     });
     if (!transportSource.report || !transportSource.discipline) {
       throw new DirectorPdfSourceValidationError(

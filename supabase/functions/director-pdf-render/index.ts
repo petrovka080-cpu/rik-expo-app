@@ -131,10 +131,9 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
     },
   });
 
-  const [{ data: userData, error: userError }, { data: roleData, error: roleError }] = await Promise.all([
-    requester.auth.getUser(),
-    requester.rpc("get_my_role"),
-  ]);
+  // D-BACKEND-PDF: Optimized auth flow.
+  // Step 1: Always call getUser() to validate the JWT.
+  const { data: userData, error: userError } = await requester.auth.getUser();
 
   if (userError || !userData?.user) {
     throw createDirectorPdfErrorResponse({
@@ -143,6 +142,30 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
       error: "Unauthorized.",
     });
   }
+
+  // Step 2: Check app_metadata.role first (signed into JWT, trustworthy).
+  // If it resolves to director, skip the get_my_role RPC entirely (saves 100-300ms).
+  const appMetadataCheck = resolveDirectorPdfRoleAccess({
+    user: userData.user,
+    rpcRole: undefined, // no RPC call yet
+  });
+
+  if (appMetadataCheck.isDirector && appMetadataCheck.source === "app_metadata") {
+    console.info(
+      `[${FUNCTION_NAME}] director auth fast-path via app_metadata ${JSON.stringify({
+        userId: userData.user.id,
+        appMetadataRole: appMetadataCheck.appMetadataRole,
+        rpcSkipped: true,
+      })}`,
+    );
+    return {
+      userId: userData.user.id,
+      authSource: "app_metadata" as const,
+    };
+  }
+
+  // Step 3: Fallback — call get_my_role RPC when app_metadata doesn't resolve.
+  const { data: roleData, error: roleError } = await requester.rpc("get_my_role");
 
   const roleAccess = resolveDirectorPdfRoleAccess({
     user: userData.user,
@@ -166,19 +189,9 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
     });
   }
 
-  if (roleAccess.source === "app_metadata" && roleAccess.rpcRole !== "director") {
-    console.info(
-      `[${FUNCTION_NAME}] director auth resolved from signed app_metadata ${JSON.stringify({
-        userId: userData.user.id,
-        appMetadataRole: roleAccess.appMetadataRole,
-        rpcRole: roleAccess.rpcRole,
-        roleError: roleError?.message ?? null,
-      })}`,
-    );
-  }
-
   return {
     userId: userData.user.id,
+    authSource: roleAccess.source as "app_metadata" | "rpc",
   };
 }
 
@@ -368,8 +381,11 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
     });
   }
 
+  // D-BACKEND-PDF: per-segment timing telemetry
+  const tAuthStart = Date.now();
+  let authResult;
   try {
-    await requireDirectorAuth(request, supabaseUrl);
+    authResult = await requireDirectorAuth(request, supabaseUrl);
   } catch (response) {
     if (response instanceof Response) return response;
     return createDirectorPdfErrorResponse({
@@ -379,21 +395,36 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       documentKind: payload.documentKind,
     });
   }
+  const tAuthEnd = Date.now();
 
   const admin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
   try {
+    const tRenderStart = Date.now();
     const { pdfBytes, renderer } = await renderPdfBytes(payload.html);
+    const tRenderEnd = Date.now();
 
     const fileName = normalizePdfFileName(payload.documentKind, payload.fileName);
+    const tUploadStart = Date.now();
     const uploaded = await uploadPdfAndSignUrl({
       admin,
       documentKind: payload.documentKind,
       fileName,
       bytes: pdfBytes,
     });
+    const tUploadEnd = Date.now();
+
+    const timingTelemetry = {
+      authMs: tAuthEnd - tAuthStart,
+      authSource: authResult.authSource,
+      renderMs: tRenderEnd - tRenderStart,
+      uploadAndSignMs: tUploadEnd - tUploadStart,
+      totalMs: tUploadEnd - tAuthStart,
+      htmlLength: payload.html.length,
+      pdfSizeBytes: pdfBytes.byteLength,
+    };
 
     console.info(`[${FUNCTION_NAME}] edge_render_v1`, {
       documentKind: payload.documentKind,
@@ -401,10 +432,9 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       source: payload.source,
       sourceBranch: payload.branchDiagnostics.sourceBranch,
       sourceFallbackReason: payload.branchDiagnostics.sourceFallbackReason,
-      htmlLength: payload.html.length,
+      ...timingTelemetry,
       bucketId: uploaded.bucketId,
       storagePath: uploaded.storagePath,
-      sizeBytes: pdfBytes.byteLength,
     });
 
     return createDirectorPdfSuccessResponse({
@@ -419,6 +449,8 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       signedUrl: uploaded.signedUrl,
       fileName,
       expiresInSeconds: uploaded.expiresInSeconds,
+      // D-BACKEND-PDF: include timing telemetry in response
+      telemetry: timingTelemetry,
     });
   } catch (error) {
     console.error(`[${FUNCTION_NAME}] render_failed`, {

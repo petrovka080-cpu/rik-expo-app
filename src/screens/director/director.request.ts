@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { generateRequestPdfDocument } from "../../lib/catalog_api";
@@ -54,7 +54,8 @@ export function useDirectorRequestActions({
   showSuccess,
 }: Deps) {
   const router = useRouter();
-  const pdfOpener = createModalAwarePdfOpener(closeSheet);
+  // D-MODAL-PDF: Stabilize the opener — avoid recreating on every render.
+  const pdfOpener = useMemo(() => createModalAwarePdfOpener(closeSheet), [closeSheet]);
   const exportRequestExcel = useCallback(async (g: Group) => {
     const rows = g.items;
     if (!rows.length) {

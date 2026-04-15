@@ -35,21 +35,13 @@ const roleRoutes = [
 const readText = (fullPath: string) => fs.readFileSync(fullPath, "utf8");
 
 describe("office role route parity", () => {
+  // NAV-LAZY: Tab-level role files were removed. Role screens now ONLY
+  // exist under office/ child routes. This test ensures they stay removed.
   it.each(roleRoutes)(
-    "keeps $role tab route thin and moves screen logic to src",
-    ({ role, screenFile, screenExport }) => {
-      const routeSource = readText(path.join(appTabsDir, `${role}.tsx`));
-      const screenSource = readText(path.join(srcScreensDir, screenFile));
-
-      expect(routeSource).toContain(
-        `import { ${screenExport} } from "../../src/screens/${screenFile.replace(/\.tsx$/, "")}";`,
-      );
-      expect(routeSource).toContain("withScreenErrorBoundary");
-      expect(routeSource).toContain(`route: "/${role}"`);
-      expect(routeSource).not.toMatch(/\buse(State|Effect|Memo|Callback|Ref)\b/);
-      expect(routeSource).not.toContain("supabase");
-      expect(routeSource).not.toContain("RoleScreenLayout");
-      expect(screenSource).toContain(`export function ${screenExport}()`);
+    "ensures (tabs)/$role.tsx tab-level duplicate does NOT exist for $role",
+    ({ role }) => {
+      const tabFilePath = path.join(appTabsDir, `${role}.tsx`);
+      expect(fs.existsSync(tabFilePath)).toBe(false);
     },
   );
 
@@ -70,3 +62,4 @@ describe("office role route parity", () => {
     },
   );
 });
+

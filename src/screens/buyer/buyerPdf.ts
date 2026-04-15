@@ -93,7 +93,12 @@ export async function buildFallbackProposalHtmlClient(pidStr: string, deps: PdfD
   });
 }
 
-export async function openBuyerProposalPdf(pid: string | number, deps: PdfDeps) {
+export async function openBuyerProposalPdf(
+  pid: string | number,
+  deps: PdfDeps,
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null,
+) {
   const pidStr = String(pid);
 
   try {
@@ -144,6 +149,8 @@ export async function openBuyerProposalPdf(pid: string | number, deps: PdfDeps) 
       descriptor: template,
       getRemoteUrl: () => template.uri,
       router,
+      // XR-PDF: dismiss parent modal before pushing PDF viewer route
+      onBeforeNavigate,
     });
   } catch (e: unknown) {
     const msg = e instanceof Error && e.message ? e.message : String(e);

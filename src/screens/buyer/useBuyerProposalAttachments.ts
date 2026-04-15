@@ -32,8 +32,10 @@ export function useBuyerProposalAttachments(params: {
   uploadProposalAttachment: (proposalId: string, file: PickedFile, fileName: string, groupKey: string) => Promise<void>;
   alert: (title: string, msg: string) => void;
   busy?: unknown;
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null;
 }) {
-  const { supabase, pickFileAny, uploadProposalAttachment, alert, busy } = params;
+  const { supabase, pickFileAny, uploadProposalAttachment, alert, busy, onBeforeNavigate } = params;
   const router = useRouter();
   const [propAttBusy, setPropAttBusy] = useState(false);
   const [propAttByPid, setPropAttByPid] = useState<Record<string, PropAttachmentRow[]>>({});
@@ -99,6 +101,8 @@ export function useBuyerProposalAttachments(params: {
               label: "Открываю вложение…",
               descriptor: template,
               router,
+              // XR-PDF: dismiss parent modal before pushing PDF viewer route
+              onBeforeNavigate,
             });
             return;
           }
@@ -119,7 +123,7 @@ export function useBuyerProposalAttachments(params: {
         alert("Вложение", errText(e) || "Не удалось открыть файл");
       }
     },
-    [alert, busy, router, supabase],
+    [alert, busy, onBeforeNavigate, router, supabase],
   );
 
   const attachFileToProposal = useCallback(

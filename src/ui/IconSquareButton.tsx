@@ -107,10 +107,13 @@ export default function IconSquareButton({
   const borderColor = luxGreen ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.14)";
   const topGlow = luxGreen ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.10)";
 
-  const wrapStyle = isWeb ? containerStyle : [containerStyle, { transform: [{ scale }] }];
+  const wrapStyle = useMemo(
+    () => (isWeb ? containerStyle : [containerStyle, { transform: [{ scale }] }]),
+    [isWeb, containerStyle, scale],
+  );
 
   return (
-    <Animated.View style={wrapStyle as any}>
+    <Animated.View style={wrapStyle}>
       <Pressable
         testID={testID}
         disabled={isDisabled}
@@ -134,7 +137,7 @@ export default function IconSquareButton({
             shadowOffset: { width: 0, height: 10 },
             elevation: isDisabled ? 0 : 8,
 
-            ...(isWeb ? ({ cursor: isDisabled ? "not-allowed" : "pointer" } as any) : null),
+            ...Platform.select({ web: { cursor: isDisabled ? "not-allowed" : "pointer" } as ViewStyle, default: {} }),
           },
         ]}
       >

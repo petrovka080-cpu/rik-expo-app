@@ -162,7 +162,18 @@ async function pushViewerRouteSafely(
     // This saves ~200-400ms for non-modal screens (Warehouse, Foreman,
     // Buyer, Accountant, Contractor).
     if (hadModalDismiss && typeof InteractionManager?.runAfterInteractions === "function") {
-      InteractionManager.runAfterInteractions(runPush);
+      InteractionManager.runAfterInteractions(() => {
+        // D-MODAL-PDF: On Android, the native <Modal> window may still be
+        // detaching when InteractionManager fires. The Modal renders at
+        // the native window level, and router.replace can execute
+        // "underneath" the not-yet-fully-dismissed modal. A minimal
+        // frame delay ensures the modal has fully detached.
+        if (Platform.OS === "android" && hadModalDismiss) {
+          setTimeout(runPush, 80);
+        } else {
+          runPush();
+        }
+      });
     } else {
       // No modal dismiss — push immediately on next microtask
       Promise.resolve().then(runPush).catch(reject);
@@ -174,10 +185,15 @@ type PreviewPdfDocumentOpts = {
   openFlow?: PdfOpenFlowContext & {
     openToken?: string;
   };
-  /** Called before router.push РІР‚вЂќ use to dismiss native Modals that sit above the navigation Stack. */
+  /** Called before router.push — use to dismiss native Modals that sit above the navigation Stack. */
   onBeforeNavigate?: (() => void | Promise<void>) | null;
 };
 const activePreviewFlows = new Map<string, Promise<DocumentDescriptor>>();
+// D-MODAL-PDF: Track when each flow started so we can expire abandoned entries.
+// If a flow promise is leaked (e.g., component unmounts during PDF generation),
+// future opens of the same key would be blocked forever. 60s TTL prevents this.
+const activePreviewFlowTimestamps = new Map<string, number>();
+const ACTIVE_FLOW_MAX_TTL_MS = 60_000;
 function persistCriticalPdfBreadcrumb(input: {
   marker: string;
   screen: unknown;
@@ -974,7 +990,8 @@ export async function prepareAndPreviewPdfDocument(
   });
   if (flowKey) {
     const existing = activePreviewFlows.get(flowKey);
-    if (existing) {
+    const existingTs = activePreviewFlowTimestamps.get(flowKey) ?? 0;
+    if (existing && existingTs > 0 && (Date.now() - existingTs) < ACTIVE_FLOW_MAX_TTL_MS) {
       recordPdfOpenStage({
         context: baseContext,
         stage: "tap_start",
@@ -984,6 +1001,12 @@ export async function prepareAndPreviewPdfDocument(
         },
       });
       return await existing;
+    }
+    // D-MODAL-PDF: Stale flow entry (abandoned promise or TTL expired) — clean
+    // up and proceed with a fresh open rather than blocking indefinitely.
+    if (existing) {
+      activePreviewFlows.delete(flowKey);
+      activePreviewFlowTimestamps.delete(flowKey);
     }
   }
   const runFlow = async () => {
@@ -1119,9 +1142,15 @@ export async function prepareAndPreviewPdfDocument(
     }
   };
   const promise = runFlow().finally(() => {
-    if (flowKey) activePreviewFlows.delete(flowKey);
+    if (flowKey) {
+      activePreviewFlows.delete(flowKey);
+      activePreviewFlowTimestamps.delete(flowKey);
+    }
   });
-  if (flowKey) activePreviewFlows.set(flowKey, promise);
+  if (flowKey) {
+    activePreviewFlows.set(flowKey, promise);
+    activePreviewFlowTimestamps.set(flowKey, Date.now());
+  }
   return await promise;
 }
 export async function openPdfDocumentExternal(

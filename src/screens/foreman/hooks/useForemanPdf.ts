@@ -22,6 +22,8 @@ export function useForemanPdf(gbusy: BusyCtx) {
       requestId: string,
       requestDetails: RequestDetails | null,
       syncMeta: (rid: string, ctx: string) => Promise<void>,
+      /** XR-PDF: dismiss callback for the parent modal (if any). */
+      onBeforeNavigate?: (() => void | Promise<void>) | null,
     ) => {
       const ridKey = String(requestId).trim();
       if (!ridKey) return;
@@ -56,6 +58,8 @@ export function useForemanPdf(gbusy: BusyCtx) {
           label: "Открываю PDF…",
           descriptor,
           router,
+          // XR-PDF: dismiss parent modal before pushing PDF viewer route
+          onBeforeNavigate,
         });
       } catch (error) {
         recordCatchDiscipline({

@@ -1,9 +1,12 @@
 import { Alert } from "react-native";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
+import { reportAndSwallow } from "../../lib/observability/catchDiscipline";
+import { getDirectorFinancePdfSource } from "../../lib/api/directorPdfSource.service";
+import { exportDirectorManagementReportPdf } from "../../lib/api/pdf_director";
 import {
   buildDirectorManagementReportPdfDescriptor,
   buildDirectorSupplierSummaryPdfDescriptor,
@@ -71,9 +74,56 @@ export function useDirectorFinancePanel({
   FIN_CRITICAL_DAYS,
 }: Deps) {
   const router = useRouter();
-  const pdfOpener = createModalAwarePdfOpener(closeFinance);
+  // D-MODAL-PDF: Stabilize the opener — avoid recreating on every render.
+  const pdfOpener = useMemo(() => createModalAwarePdfOpener(closeFinance), [closeFinance]);
   const [finSupplier, setFinSupplier] = useState<FinSupplierPanelState | null>(null);
   const [finSupplierLoading, setFinSupplierLoading] = useState(false);
+
+  // D-BACKEND-PDF: Speculative pre-fetch of finance PDF source.
+  // When the finance screen finishes loading (finScope is ready), fire a background
+  // call to getDirectorFinancePdfSource(). The result populates the 2-minute cache.
+  // When the director taps the PDF button 3-30s later, the source data is already
+  // cached → only the Edge Function render call remains (saves 2-5s on cold-path).
+  //
+  // D-RENDERER-MIGRATION: Extended to also trigger the full render pipeline.
+  // After source data is cached, builds model → HTML → Edge Function render.
+  // The rendered signedUrl is cached by renderedPdfCache in directorPdfRender.service.
+  // When the user taps PDF, both source + render are cache hits → instant open.
+  useEffect(() => {
+    if (finLoading || !finScope) return;
+    // Fire-and-forget: populate the source cache, then trigger full render.
+    void getDirectorFinancePdfSource({
+      periodFrom: finFrom,
+      periodTo: finTo,
+      dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+      criticalDays: FIN_CRITICAL_DAYS,
+    })
+      .then(() => {
+        // D-RENDERER-MIGRATION: Source is now cached. Trigger full render in background.
+        // This call will: get source (cache hit) → build model → render HTML → Edge Function.
+        // The signedUrl from Edge Function is stored in renderedPdfCache.
+        return exportDirectorManagementReportPdf({
+          periodFrom: finFrom,
+          periodTo: finTo,
+          topN: 15,
+          dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+          criticalDays: FIN_CRITICAL_DAYS,
+        });
+      })
+      .catch((error) => {
+        // Speculative — never break UI, but emit observability marker.
+        // If it fails here, it will fail again (and be properly handled) when the user taps PDF.
+        reportAndSwallow({
+          screen: "director",
+          surface: "finance_pdf_prefetch",
+          event: "finance_pdf_prerender_failed",
+          error,
+          kind: "degraded_fallback",
+          sourceKind: "rpc:pdf_director_finance_source_v1",
+          errorStage: "speculative_prerender",
+        });
+      });
+  }, [finLoading, finScope, finFrom, finTo, FIN_DUE_DAYS_DEFAULT, FIN_CRITICAL_DAYS]);
 
   const finKindList = useMemo<FinKindSupplierRow[]>(() => {
     const kindName = financeText(finKindName);

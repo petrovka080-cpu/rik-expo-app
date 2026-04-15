@@ -1,3 +1,5 @@
+// DEEP-LINK CONTRACT: ORPHANED — zero navigation references from src/.
+// Kept for deep-link safety. Legacy inline screen with direct Supabase queries.
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator } from "react-native";

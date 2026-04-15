@@ -15,7 +15,7 @@ export async function fetchQueueLatencyMetricsWithClient(
   supabaseClient: QueueLatencySupabaseClient,
 ): Promise<QueueLatencyMetrics> {
   const oldestQ = await supabaseClient
-    .from("submit_jobs" as any)
+    .from("submit_jobs")
     .select("created_at", { head: false, count: "exact" })
     .eq("status", "pending")
     .order("created_at", { ascending: true })

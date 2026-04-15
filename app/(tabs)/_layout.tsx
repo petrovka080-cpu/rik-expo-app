@@ -197,13 +197,9 @@ export default function TabsLayout() {
           }}
         />
 
-        <Tabs.Screen name="foreman" options={{ href: null }} />
-        <Tabs.Screen name="director" options={{ href: null }} />
-        <Tabs.Screen name="buyer" options={{ href: null }} />
-        <Tabs.Screen name="accountant" options={{ href: null }} />
-        <Tabs.Screen name="security" options={{ href: null }} />
-        <Tabs.Screen name="reports" options={{ href: null }} />
-        <Tabs.Screen name="contractor" options={{ href: null }} />
+        {/* NAV-LAZY: Role screens live under office/ child routes only.
+            Dead duplicate tabs removed: foreman, director, buyer,
+            accountant, security, reports, contractor. */}
         <Tabs.Screen name="supplierMap" options={{ href: null }} />
         <Tabs.Screen name="suppliers-map" options={{ href: null }} />
         <Tabs.Screen name="auctions" options={{ href: null }} />

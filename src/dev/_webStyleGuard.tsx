@@ -1,4 +1,4 @@
-﻿// web-only: гарантированно расплющиваем style-массивы на ЛЮБОМ элементе
+// web-only: гарантированно расплющиваем style-массивы на ЛЮБОМ элементе
 // Это исполняется только в браузере. На iOS/Android (Hermes) кода не будет.
 if (typeof document !== "undefined") {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -13,8 +13,8 @@ if (typeof document !== "undefined") {
     // Дополнительно нормализуем style из вида {[0]:..., [1]:...} (на всякий случай)
     if (props && props.style && typeof props.style === "object" && 0 in props.style) {
       try {
-        const s = props.style as any;
-        const flat: Record<string, any> = {};
+        const s: Record<string, unknown> = props.style;
+        const flat: Record<string, unknown> = {};
         Object.keys(s).forEach((k) => {
           if (!/^\d+$/.test(k)) flat[k] = s[k];
         });

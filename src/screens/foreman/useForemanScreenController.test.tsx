@@ -513,8 +513,10 @@ describe("useForemanScreenController", () => {
   });
 
   it("keeps the route thin while the src screen owns foreman orchestration", () => {
+    // NAV-LAZY: Tab-level (tabs)/foreman.tsx was removed. The only route
+    // is now office/foreman.tsx. Verify it stays thin.
     const routeSource = readFileSync(
-      join(__dirname, "..", "..", "..", "app", "(tabs)", "foreman.tsx"),
+      join(__dirname, "..", "..", "..", "app", "(tabs)", "office", "foreman.tsx"),
       "utf8",
     );
     const screenSource = readFileSync(
@@ -523,7 +525,7 @@ describe("useForemanScreenController", () => {
     );
 
     expect(routeSource).toContain(
-      'import { ForemanScreen } from "../../src/screens/foreman/ForemanScreen";',
+      'import { ForemanScreen } from "../../../src/screens/foreman/ForemanScreen";',
     );
     expect(routeSource).toContain("withScreenErrorBoundary");
     expect(routeSource).not.toContain("useForemanScreenController");

@@ -91,20 +91,21 @@ export default function BusyButton<T = void>({
           paddingHorizontal: 12,
           borderRadius: 10,
           backgroundColor: bg,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
+          flexDirection: 'row' as const,
+          alignItems: 'center' as const,
+          justifyContent: 'center' as const,
           gap: 8,
           opacity: disabledGlobal ? 0.7 : 1,
-          ...(Platform.OS === 'web'
-            ? { cursor: disabledGlobal ? 'not-allowed' : 'pointer', userSelect: 'none' }
-            : null),
-        } as any,
+          ...Platform.select({
+            web: { cursor: disabledGlobal ? 'not-allowed' : 'pointer', userSelect: 'none' } as ViewStyle,
+            default: {},
+          }),
+        },
         style,
       ]}
     >
-      {loading ? <ActivityIndicator color={fg as any} /> : null}
-      <Text style={[{ fontWeight: '800', color: fg } as any, textStyle]}>
+      {loading ? <ActivityIndicator color={fg} /> : null}
+      <Text style={[{ fontWeight: '800' as const, color: fg }, textStyle]}>
         {title}
       </Text>
     </Pressable>

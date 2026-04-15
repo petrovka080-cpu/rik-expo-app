@@ -10,11 +10,16 @@ function readProjectFile(relativePath: string) {
 describe("entry/bootstrap contract", () => {
   it("routes every post-auth entry through the profile access hub", () => {
     const rootLayout = readProjectFile("app/_layout.tsx");
+    // AUTH-LIFECYCLE: POST_AUTH_ENTRY_ROUTE moved from _layout.tsx to useAuthGuard.ts
+    const authGuard = readProjectFile("src/lib/auth/useAuthGuard.ts");
     const indexScreen = readProjectFile("app/index.tsx");
     const loginScreen = readProjectFile("app/auth/login.tsx");
     const registerScreen = readProjectFile("app/auth/register.tsx");
 
-    expect(rootLayout).toContain("POST_AUTH_ENTRY_ROUTE");
+    // Root layout delegates to useAuthGuard which owns POST_AUTH_ENTRY_ROUTE
+    expect(rootLayout).toContain("useAuthGuard");
+    expect(authGuard).toContain("POST_AUTH_ENTRY_ROUTE");
+    expect(authGuard).not.toContain('router.replace("/")');
     expect(rootLayout).not.toContain('router.replace("/")');
 
     expect(indexScreen).toContain("POST_AUTH_ENTRY_ROUTE");
@@ -32,11 +37,14 @@ describe("entry/bootstrap contract", () => {
 
   it("keeps root layout bootstrap setup failures observable", () => {
     const rootLayout = readProjectFile("app/_layout.tsx");
+    // AUTH-LIFECYCLE: role_profile_warm_failed moved to useAuthLifecycle.ts
+    const authLifecycle = readProjectFile("src/lib/auth/useAuthLifecycle.ts");
 
     expect(rootLayout).toContain("applyRootLayoutWebContainerStyle");
     expect(rootLayout).toContain("web_root_container_style_failed");
-    expect(rootLayout).toContain("role_profile_warm_failed");
+    expect(authLifecycle).toContain("role_profile_warm_failed");
     expect(rootLayout).not.toContain("catch {}");
+    expect(authLifecycle).not.toContain("catch {}");
   });
 
   it("keeps entry copy readable and aligned with the unified access hub", () => {

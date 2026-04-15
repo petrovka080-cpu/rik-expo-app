@@ -1,3 +1,5 @@
+// DEEP-LINK CONTRACT: ORPHANED STUB — zero navigation references from src/.
+// Kept for deep-link safety. Do not add new features here.
 
 import { View, Text } from "react-native";
 import { Link } from "expo-router";
@@ -7,7 +9,7 @@ function Calculator() {
   return (
     <View style={{flex:1,alignItems:"center",justifyContent:"center", gap:12}}>
       <Text style={{fontSize:20}}>Калькулятор (заглушка)</Text>
-      <Link href="/foreman">Назад к прорабу</Link>
+      <Link href="/office/foreman">Назад к прорабу</Link>
     </View>
   );
 }

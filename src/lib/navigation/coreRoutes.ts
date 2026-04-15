@@ -10,7 +10,8 @@ import {
 import type { MarketMapParams } from "../../features/market/marketHome.types";
 
 export const AUTH_LOGIN_ROUTE = "/auth/login" satisfies Href;
-export const DIRECTOR_ROUTE = "/director" satisfies Href;
+// DEEP-LINK CONTRACT: Director route lives under office/ after NAV-LAZY.
+export const DIRECTOR_ROUTE = "/office/director" satisfies Href;
 export const ADD_LISTING_ROUTE = "/(tabs)/add" satisfies Href;
 export const OFFICE_TAB_ROUTE = "/office/index" as Href;
 export const PROFILE_TAB_ROUTE = "/(tabs)/profile" satisfies Href;

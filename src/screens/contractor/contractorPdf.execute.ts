@@ -6,6 +6,8 @@ import { supabase } from "../../lib/supabaseClient";
 
 export async function previewContractorActPdfDocument(
   descriptor: DocumentDescriptor,
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null,
 ): Promise<void> {
   await prepareAndPreviewPdfDocument({
     supabase,
@@ -13,5 +15,7 @@ export async function previewContractorActPdfDocument(
     label: "Открываю PDF…",
     descriptor,
     router,
+    // XR-PDF: dismiss parent modal before pushing PDF viewer route
+    onBeforeNavigate,
   });
 }

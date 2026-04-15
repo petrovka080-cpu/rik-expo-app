@@ -27,7 +27,11 @@ export function DirectorScreen() {
   const busy = useGlobalBusy();
   const router = useRouter();
   const reportsCompanyName = String((globalThis as any)?.process?.env?.EXPO_PUBLIC_COMPANY_NAME ?? "RIK Construction");
-  const reportsPdfOpener = createModalAwarePdfOpener(vm.reports.closeReports);
+  // D-MODAL-PDF: Stabilize the opener — avoid recreating on every render.
+  const reportsPdfOpener = React.useMemo(
+    () => createModalAwarePdfOpener(vm.reports.closeReports),
+    [vm.reports.closeReports],
+  );
 
   const onExportProductionPdf = React.useCallback(async () => {
     const template = await buildDirectorProductionReportPdfDescriptor({

@@ -1,4 +1,4 @@
-﻿import React, {
+import React, {
   useCallback,
   useEffect,
   useMemo,
@@ -297,7 +297,8 @@ export function useForemanScreenController() {
         sourceKind: descriptor.fileSource.kind,
         uri: descriptor.uri,
       });
-      closeHistory();
+      // XR-PDF: pass closeHistory as onBeforeNavigate instead of calling it manually.
+      // The shared boundary handles dismiss → InteractionManager → settle → push.
       await prepareAndPreviewGeneratedPdf({
         busy: gbusy,
         supabase,
@@ -305,6 +306,7 @@ export function useForemanScreenController() {
         label: "Открываю PDF…",
         descriptor,
         router,
+        onBeforeNavigate: closeHistory,
       });
     } catch (error) {
       recordCatchDiscipline({
@@ -870,8 +872,10 @@ export function useForemanScreenController() {
   const onPdf = useCallback(async () => {
     if (!ensureHeaderReady()) return;
     await syncPendingQtyDrafts();
-    await runRequestPdf("preview", await ensureRequestId(), requestDetails, syncRequestHeaderMeta);
+    // XR-PDF: pass closeDraft so the DraftModal is dismissed before the PDF viewer route is pushed
+    await runRequestPdf("preview", await ensureRequestId(), requestDetails, syncRequestHeaderMeta, closeDraft);
   }, [
+    closeDraft,
     ensureHeaderReady,
     ensureRequestId,
     requestDetails,

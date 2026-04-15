@@ -1,11 +1,11 @@
-// FILE: app/(tabs)/security.tsx
+// NAV-LAZY: Extracted from app/(tabs)/security.tsx which was a dead
+// duplicate tab. This is the canonical source for the security screen.
 import { SvgXml } from 'react-native-svg';
 import React, { useCallback, useState } from 'react';
 import {
   View, Text, TextInput, Pressable, ScrollView, StyleSheet, Platform, Alert,
 } from 'react-native';
-import { supabase } from '../../src/lib/supabaseClient';
-import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
+import { supabase } from '../../lib/supabaseClient';
 
 export function SecurityScreen() {
   const [enrolling, setEnrolling] = useState(false);
@@ -33,7 +33,6 @@ export function SecurityScreen() {
       // Ожидаем структуру: { id, type, friendlyName?, totp: { qr_code, uri, secret } }
       setFactorId(data.id);
       // На web удобно показать SVG-QR, на мобильных — выдать URI/секрет
-      // @ts-ignore (web-only элемент)
       setQrSvg(data.totp?.qr_code ?? null);
       setUri(data.totp?.uri ?? null);
       setSecret(data.totp?.secret ?? null);
@@ -168,11 +167,6 @@ export function SecurityScreen() {
     </ScrollView>
   );
 }
-
-export default withScreenErrorBoundary(SecurityScreen, {
-  screen: "security",
-  route: "/security",
-});
 
 const s = StyleSheet.create({
   wrap: { padding: 16, paddingBottom: 40, backgroundColor: '#fff' },

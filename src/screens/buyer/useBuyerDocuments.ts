@@ -13,8 +13,10 @@ import {
 export function useBuyerDocuments(params: {
   busy: unknown;
   supabase: SupabaseClient;
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null;
 }) {
-  const { busy, supabase } = params;
+  const { busy, supabase, onBeforeNavigate } = params;
   const router = useRouter();
 
   const openProposalPdf = useCallback(
@@ -39,12 +41,14 @@ export function useBuyerDocuments(params: {
             }),
           },
           router,
+          // XR-PDF: dismiss parent modal before pushing PDF viewer route
+          onBeforeNavigate,
         });
       } catch (error) {
         Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
       }
     },
-    [busy, supabase, router],
+    [busy, onBeforeNavigate, supabase, router],
   );
 
   return { openProposalPdf };

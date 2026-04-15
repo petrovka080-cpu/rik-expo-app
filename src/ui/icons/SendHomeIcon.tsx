@@ -19,7 +19,7 @@ export default function SendHomeIcon({
       viewBox="0 0 24 24"
       fill="none"
       {...(Platform.OS === "web"
-        ? ({ shapeRendering: "geometricPrecision" } as any)
+        ? { shapeRendering: "geometricPrecision" }
         : null)}
     >
       <Path

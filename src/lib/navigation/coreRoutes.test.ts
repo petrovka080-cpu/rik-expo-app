@@ -22,7 +22,7 @@ import {
 describe("coreRoutes", () => {
   it("keeps stable string routes for core entry points", () => {
     expect(AUTH_LOGIN_ROUTE).toBe("/auth/login");
-    expect(DIRECTOR_ROUTE).toBe("/director");
+    expect(DIRECTOR_ROUTE).toBe("/office/director");
     expect(ADD_LISTING_ROUTE).toBe("/(tabs)/add");
     expect(MARKET_TAB_ROUTE).toBe("/(tabs)/market");
     expect(PROFILE_TAB_ROUTE).toBe("/(tabs)/profile");

@@ -859,8 +859,10 @@ export function useForemanSubcontractController({
         }),
       },
       router,
+      // XR-PDF: dismiss the subcontract DraftSheet modal before pushing PDF viewer
+      onBeforeNavigate: closeSubcontractFlow,
     });
-  }, [displayNo, foremanName, requestId, router]);
+  }, [closeSubcontractFlow, displayNo, foremanName, requestId, router]);
 
   const openRequestHistoryPdf = useCallback(async (reqId: string) => {
     const rid = String(reqId || "").trim();
@@ -884,13 +886,16 @@ export function useForemanSubcontractController({
         }),
       },
       router,
+      // XR-PDF: dismiss the request history modal before pushing PDF viewer
+      onBeforeNavigate: closeRequestHistory,
     });
-  }, [foremanName, router]);
+  }, [closeRequestHistory, foremanName, router]);
 
+  // XR-PDF: closeRequestHistory is now wired via onBeforeNavigate inside openRequestHistoryPdf,
+  // so no manual dismiss is needed here.
   const handleRequestHistorySelect = useCallback(async (reqId: string) => {
-    closeRequestHistory();
     await openRequestHistoryPdf(reqId);
-  }, [closeRequestHistory, openRequestHistoryPdf]);
+  }, [openRequestHistoryPdf]);
 
   const clearDraft = useCallback(async () => {
     const pendingDeleteIds = draftItems

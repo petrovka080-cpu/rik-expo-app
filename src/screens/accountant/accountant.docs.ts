@@ -26,6 +26,8 @@ async function previewProposalAttachment(
   proposalId: string,
   groupKey: "proposal_pdf" | "invoice" | "payment",
   title: string,
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null,
 ): Promise<void> {
   const preview = await getLatestProposalAttachmentPreview(proposalId, groupKey);
   if (!isPdfLike(preview.fileName, preview.url)) {
@@ -51,30 +53,42 @@ async function previewProposalAttachment(
       entityId: proposalId,
     }),
     router,
+    // XR-PDF: dismiss parent modal before pushing PDF viewer route
+    onBeforeNavigate,
   });
 }
 
-export async function openProposalSourceDoc(proposalId: string): Promise<void> {
+export async function openProposalSourceDoc(
+  proposalId: string,
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null,
+): Promise<void> {
   const pid = String(proposalId || "").trim();
   if (!pid) return;
-  await previewProposalAttachment(pid, "proposal_pdf", "Документ предложения");
+  await previewProposalAttachment(pid, "proposal_pdf", "Документ предложения", onBeforeNavigate);
 }
 
-export async function openInvoiceDoc(proposalId: string): Promise<void> {
+export async function openInvoiceDoc(
+  proposalId: string,
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null,
+): Promise<void> {
   const pid = String(proposalId || "").trim();
   if (!pid) return;
-  await previewProposalAttachment(pid, "invoice", "Счёт");
+  await previewProposalAttachment(pid, "invoice", "Счёт", onBeforeNavigate);
 }
 
 export async function openPaymentDocsOrUpload(p: {
   proposalId: string;
   reload: () => Promise<void>;
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null;
 }): Promise<void> {
   const pid = String(p.proposalId || "").trim();
   if (!pid) return;
 
   try {
-    await previewProposalAttachment(pid, "payment", "Платёжный документ");
+    await previewProposalAttachment(pid, "payment", "Платёжный документ", p.onBeforeNavigate);
     return;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -94,8 +108,9 @@ export async function openPaymentDocsOrUpload(p: {
   await p.reload();
 
   try {
-    await previewProposalAttachment(pid, "payment", "Платёжный документ");
+    await previewProposalAttachment(pid, "payment", "Платёжный документ", p.onBeforeNavigate);
   } catch {
     safeAlert("Загружено", "Файл загружен, но предпросмотр открыть не удалось. Попробуйте ещё раз.");
   }
 }
+

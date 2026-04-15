@@ -10,6 +10,8 @@ import {
   type PdfRenderRolloutMode,
 } from "../documents/pdfRenderRollout";
 import { beginCanonicalPdfBoundary } from "../pdf/canonicalPdfObservability";
+import { hashString32 } from "../pdfFileContract";
+import { recordPlatformObservability } from "../observability/platformObservability";
 import { invokeDirectorPdfBackend } from "./directorPdfBackendInvoker";
 
 const DIRECTOR_PDF_RENDER_OFFLOAD_V1_MODE_RAW = String(
@@ -135,7 +137,75 @@ async function renderDirectorPdfViaEdge(args: DirectorPdfRenderArgs): Promise<Di
   };
 }
 
+// D-RENDERER-MIGRATION: Client-side rendered PDF cache.
+// After a successful Edge Function render, the signedUrl is cached by
+// FNV-1a hash of the final HTML. On reopen with identical source data +
+// params, the HTML is identical → cache hit → Puppeteer render skipped entirely.
+// TTL is 30 minutes (half the 60-minute signedUrl TTL for safety margin).
+const RENDERED_PDF_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+type RenderedPdfCacheEntry = {
+  signedUrl: string;
+  ts: number;
+  documentKind: DirectorPdfRenderDocumentKind;
+};
+
+const renderedPdfCache = new Map<string, RenderedPdfCacheEntry>();
+
+function getRenderedPdfFromCache(
+  htmlHash: string,
+  documentKind: DirectorPdfRenderDocumentKind,
+): string | null {
+  const entry = renderedPdfCache.get(htmlHash);
+  if (!entry) return null;
+  if (Date.now() - entry.ts >= RENDERED_PDF_CACHE_TTL_MS) {
+    renderedPdfCache.delete(htmlHash);
+    return null;
+  }
+  // Extra safety: ensure documentKind matches (should always match for same HTML)
+  if (entry.documentKind !== documentKind) return null;
+  return entry.signedUrl;
+}
+
+function setRenderedPdfCache(
+  htmlHash: string,
+  signedUrl: string,
+  documentKind: DirectorPdfRenderDocumentKind,
+): void {
+  // Evict old entries to prevent unbounded growth
+  if (renderedPdfCache.size > 20) {
+    const now = Date.now();
+    for (const [key, entry] of renderedPdfCache) {
+      if (now - entry.ts >= RENDERED_PDF_CACHE_TTL_MS) {
+        renderedPdfCache.delete(key);
+      }
+    }
+  }
+  renderedPdfCache.set(htmlHash, { signedUrl, ts: Date.now(), documentKind });
+}
+
 export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<string> {
+  // D-RENDERER-MIGRATION: Check rendered PDF cache before Edge Function call.
+  const htmlHash = hashString32(args.html);
+  const cachedUrl = getRenderedPdfFromCache(htmlHash, args.documentKind);
+  if (cachedUrl) {
+    recordPlatformObservability({
+      screen: "director",
+      surface: "director_pdf_backend",
+      category: "fetch",
+      event: "rendered_pdf_cache_hit",
+      result: "success",
+      durationMs: 0,
+      sourceKind: "rendered_pdf_cache",
+      extra: {
+        documentKind: args.documentKind,
+        htmlHash,
+        htmlLength: args.html.length,
+      },
+    });
+    return cachedUrl;
+  }
+
   const boundary = beginCanonicalPdfBoundary({
     screen: "director",
     surface: "director_pdf_backend",
@@ -247,6 +317,8 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
         htmlLength: args.html.length,
       },
     );
+    // D-RENDERER-MIGRATION: Cache the rendered signedUrl for reopen/hot path.
+    setRenderedPdfCache(htmlHash, renderResult.signedUrl, args.documentKind);
     return renderResult.signedUrl;
   } catch (error) {
     if (DIRECTOR_PDF_RENDER_MODE === "auto" && shouldDisableDirectorPdfRenderForSession(error)) {

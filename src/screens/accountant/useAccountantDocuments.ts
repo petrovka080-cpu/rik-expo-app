@@ -30,6 +30,8 @@ type Params = {
   gbusy: unknown;
   safeAlert: (title: string, msg: string) => void;
   getErrorText: (e: unknown) => string;
+  /** XR-PDF: dismiss callback for the parent modal (if any). */
+  onBeforeNavigate?: (() => void | Promise<void>) | null;
 };
 
 export function useAccountantDocuments(params: Params) {
@@ -41,12 +43,14 @@ export function useAccountantDocuments(params: Params) {
     gbusy,
     safeAlert,
     getErrorText,
+    onBeforeNavigate,
   } = params;
   const router = useRouter();
   const openPaymentReportPreview = useAccountantPaymentPdfBoundary({
     busy: gbusy,
     safeAlert,
     setCurrentPaymentId,
+    onBeforeNavigate,
   });
 
   const onOpenProposalPdf = useCallback(async () => {
@@ -69,8 +73,10 @@ export function useAccountantDocuments(params: Params) {
         }),
       },
       router,
+      // XR-PDF: dismiss parent modal before pushing PDF viewer route
+      onBeforeNavigate,
     });
-  }, [current, gbusy, router]);
+  }, [current, gbusy, onBeforeNavigate, router]);
 
   const onShareCard = useCallback(async () => {
     try {
@@ -113,9 +119,11 @@ export function useAccountantDocuments(params: Params) {
         label: "Открываю документ…",
         descriptor: template,
         router,
+        // XR-PDF: dismiss parent modal before pushing PDF viewer route
+        onBeforeNavigate,
       });
     },
-    [gbusy, router],
+    [gbusy, onBeforeNavigate, router],
   );
 
   const onOpenProposalSource = useCallback(async () => {

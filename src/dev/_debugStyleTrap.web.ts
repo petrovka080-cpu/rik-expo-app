@@ -11,7 +11,6 @@ React.createElement = function (type: any, props: any, ...children: any[]) {
     reported = true;
     try {
       // печатаем виновника: тег, props.style и стек (чтобы увидеть файл/строку)
-      // @ts-ignore
       console.error(
         "[STYLE-ARRAY→DOM] tag =", type,
         "\nstyle =", props.style,
