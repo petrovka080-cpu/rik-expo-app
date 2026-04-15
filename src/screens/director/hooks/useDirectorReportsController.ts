@@ -2,20 +2,12 @@ import { Alert } from "react-native";
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
-  type MutableRefObject,
 } from "react";
 import {
-  type DirectorReportFetchMeta,
-} from "../../../lib/api/director_reports";
-import {
   loadDirectorReportUiScope,
-  type DirectorReportScopeDisciplinePayload,
-  type DirectorReportScopeLoadResult,
   type DirectorReportScopeOptionsState,
-  type DirectorReportScopePayload,
 } from "../../../lib/api/directorReportsScope.service";
 import {
   abortController,
@@ -23,7 +15,6 @@ import {
   throwIfAborted,
 } from "../../../lib/requestCancellation";
 import { useDirectorReportOptionsQuery } from "./useDirectorReportOptionsQuery";
-import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import type {
   RepDisciplinePayload,
   RepPayload,
@@ -31,140 +22,43 @@ import type {
 } from "../director.types";
 import {
   useDirectorReportsUiStore,
-  type DirectorObservedBranchMeta,
-  type DirectorReportsBranchStage,
 } from "../directorReports.store";
+import {
+  buildDirectorReportsScopeKey,
+  buildDirectorDisciplineKey,
+} from "../reports/directorReports.query.key";
+import {
+  type DirectorReportsRequestSlot,
+  startDirectorReportsRequest,
+  isActiveDirectorReportsRequest,
+  clearDirectorReportsRequest,
+  getErrorMessage,
+  recordDirectorReportsWarning,
+} from "../reports/directorReports.scopeLoader";
+import { REPORTS_TIMING, nowMs, logTiming } from "../reports/directorReports.timing";
+import { summarizeRepDiscipline, isoDate, minusDays } from "../reports/directorReports.helpers";
+import { useDirectorReportsCommit } from "../reports/useDirectorReportsCommit";
+import { useDirectorReportsDerived } from "../reports/useDirectorReportsDerived";
+import {
+  emitQueryStart,
+  emitQuerySuccess,
+  emitQueryError,
+  emitRefreshStart,
+  emitRefreshSuccess,
+  emitRefreshError,
+  emitFiltersChanged,
+  emitOpenReports,
+} from "../reports/directorReports.observability";
 
 type Deps = {
   fmtDateOnly: (iso?: string | null) => string;
 };
 
-type ReportOptionsState = DirectorReportScopeOptionsState;
-
-type DirectorReportsRequestSlot = {
-  key: string;
-  reqId: number;
-  controller: AbortController;
-};
-
-const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
-
-type PerformanceLike = {
-  now?: () => number;
-};
-
-const getPerformance = (): PerformanceLike | null => {
-  if (typeof globalThis !== "undefined" && "performance" in globalThis) {
-    return (globalThis as typeof globalThis & { performance?: PerformanceLike }).performance ?? null;
-  }
-  return null;
-};
-
-let directorReportsPerfFallbackWarned = false;
-
-const recordDirectorReportsWarning = (
-  event: string,
-  error: unknown,
-  extra?: Record<string, unknown>,
-) => {
-  const message = getErrorMessage(error, event);
-  if (__DEV__) console.warn("[director_reports.controller]", { event, message, ...extra });
-  recordPlatformObservability({
-    screen: "director",
-    surface: "reports",
-    category: "ui",
-    event,
-    result: "error",
-    fallbackUsed: true,
-    errorClass: error instanceof Error ? error.name : undefined,
-    errorMessage: message,
-    extra: {
-      module: "useDirectorReportsController",
-      route: "/director",
-      role: "director",
-      owner: "reports_controller",
-      severity: "warn",
-      ...extra,
-    },
-  });
-};
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (error instanceof Error) {
-    const message = error.message.trim();
-    if (message) return message;
-  }
-
-  if (error && typeof error === "object") {
-    const record = error as Record<string, unknown>;
-    const message = String(record.message ?? "").trim();
-    if (message) return message;
-  }
-
-  const raw = String(error ?? "").trim();
-  return raw || fallback;
-};
-
-const getDisciplineFromPayload = (payload: DirectorReportScopePayload | null): DirectorReportScopeDisciplinePayload | null =>
-  payload?.discipline ?? null;
-
-const summarizeRepDiscipline = (payload: DirectorReportScopeDisciplinePayload | null) => {
-  const works = Array.isArray(payload?.works) ? payload.works : [];
-  let levels = 0;
-  let materials = 0;
-  for (const work of works) {
-    const workLevels = Array.isArray(work.levels) ? work.levels : [];
-    levels += workLevels.length;
-    for (const level of workLevels) {
-      materials += Array.isArray(level.materials) ? level.materials.length : 0;
-    }
-  }
-  return { works: works.length, levels, materials };
-};
-
-const isoDate = (d: Date) => {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-};
-
-const minusDays = (days: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return d;
-};
-
-const deriveDisciplineMeta = (meta: DirectorReportFetchMeta | null): DirectorReportFetchMeta | null =>
-  meta ? { ...meta, stage: "discipline", pricedStage: meta.pricedStage ?? "priced" } : null;
-
-const startDirectorReportsRequest = (
-  ref: MutableRefObject<DirectorReportsRequestSlot | null>,
-  key: string,
-  reqId: number,
-  reason: string,
-): DirectorReportsRequestSlot => {
-  abortController(ref.current?.controller, reason);
-  const slot: DirectorReportsRequestSlot = {
-    key,
-    reqId,
-    controller: new AbortController(),
-  };
-  ref.current = slot;
-  return slot;
-};
-
-const isActiveDirectorReportsRequest = (
-  ref: MutableRefObject<DirectorReportsRequestSlot | null>,
-  slot: DirectorReportsRequestSlot,
-) => ref.current === slot && !slot.controller.signal.aborted;
-
-const clearDirectorReportsRequest = (
-  ref: MutableRefObject<DirectorReportsRequestSlot | null>,
-  slot: DirectorReportsRequestSlot,
-) => {
-  if (ref.current === slot) ref.current = null;
-};
+// Timing utilities imported from ../reports/directorReports.timing.ts
+// Helper functions imported from ../reports/directorReports.helpers.ts
+// Commit functions imported from ../reports/useDirectorReportsCommit.ts
+// Derived values imported from ../reports/useDirectorReportsDerived.ts
+// Request-slot lifecycle imported from ../reports/directorReports.scopeLoader.ts
 
 export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const repTab = useDirectorReportsUiStore((state) => state.repTab);
@@ -179,9 +73,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const setReportPeriodState = useDirectorReportsUiStore((state) => state.setReportPeriod);
   const setRepObjectName = useDirectorReportsUiStore((state) => state.setRepObjectName);
   const setRepLoading = useDirectorReportsUiStore((state) => state.setRepLoading);
-  const setRepDisciplinePriceLoading = useDirectorReportsUiStore((state) => state.setRepDisciplinePriceLoading);
   const setRepOptLoading = useDirectorReportsUiStore((state) => state.setRepOptLoading);
-  const setRepBranchStage = useDirectorReportsUiStore((state) => state.setRepBranchStage);
   const resetRepBranchMeta = useDirectorReportsUiStore((state) => state.resetRepBranchMeta);
   const [repData, setRepData] = useState<RepPayload | null>(null);
   const [repDiscipline, setRepDiscipline] = useState<RepDisciplinePayload | null>(null);
@@ -205,150 +97,34 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     abortController(scopeRequestRef.current?.controller, reason);
   }, []);
 
-  const nowMs = useCallback(() => {
-    try {
-      const perf = getPerformance();
-      return typeof perf?.now === "function" ? perf.now() : Date.now();
-    } catch (error) {
-      if (!directorReportsPerfFallbackWarned) {
-        directorReportsPerfFallbackWarned = true;
-        recordDirectorReportsWarning("reports_performance_clock_unavailable", error, {
-          fallbackUsed: "date_now",
-        });
-      }
-      return Date.now();
-    }
-  }, []);
+  // nowMs and logTiming are now module-level imports from directorReports.timing.ts
 
-  const logTiming = useCallback((label: string, startedAt: number) => {
-    if (!REPORTS_TIMING) return;
-    const ms = Math.round(nowMs() - startedAt);
-    if (__DEV__) console.info(`[director_works] ${label}: ${ms}ms`);
-  }, [nowMs]);
+  const setRepDisciplinePriceLoading = useDirectorReportsUiStore((state) => state.setRepDisciplinePriceLoading);
+  const setRepBranchStage = useDirectorReportsUiStore((state) => state.setRepBranchStage);
 
-  const observeBranch = useCallback((
-    stage: DirectorReportsBranchStage,
-    scopeKey: string,
-    meta: DirectorReportFetchMeta | null,
-    opts?: { fromCache?: boolean },
-  ) => {
-    if (!meta) return;
-    const observed: DirectorObservedBranchMeta = {
-      ...meta,
-      observedAt: Date.now(),
-      scopeKey,
-      fromCache: !!opts?.fromCache,
-    };
-    setRepBranchStage(stage, observed);
-    if (REPORTS_TIMING) {
-      const chain = observed.chain.join(" -> ");
-      const cacheNote = observed.fromCache ? "transport_cache" : observed.cacheLayer;
-      const pricedNote = observed.pricedStage ? ` priced_stage=${observed.pricedStage}` : "";
-      const rowsSourceNote = observed.rowsSource ? ` rows_source=${observed.rowsSource}` : "";
-      if (__DEV__) console.info(
-        `[director_reports] ${stage}.branch: branch=${observed.branch} chain=${chain || "none"} cache=${cacheNote}${pricedNote}${rowsSourceNote}`,
-      );
-    }
-  }, [setRepBranchStage]);
+  const {
+    commitOptionsState,
+    commitDisciplineState,
+    commitReportState,
+    commitLoadedScope,
+  } = useDirectorReportsCommit({
+    setRepOptObjects,
+    setRepOptObjectIdByName,
+    setRepData,
+    setRepDiscipline,
+    setRepDisciplinePriceLoading,
+    setRepBranchStage,
+    lastDisciplineLoadKeyRef,
+    disciplinePricesReadyRef,
+  });
 
-  const commitOptionsState = useCallback((
-    key: string,
-    value: ReportOptionsState,
-    meta: DirectorReportFetchMeta | null,
-    opts?: { fromCache?: boolean },
-  ) => {
-    setRepOptObjects(value.objects);
-    setRepOptObjectIdByName(value.objectIdByName);
-    observeBranch("options", key, meta, { fromCache: opts?.fromCache });
-  }, [observeBranch]);
-
-  const commitDisciplineState = useCallback((
-    key: string,
-    payload: RepDisciplinePayload,
-    meta: DirectorReportFetchMeta | null,
-    opts?: { pricesReady?: boolean; fromCache?: boolean },
-  ) => {
-    if (opts?.pricesReady === true) {
-      disciplinePricesReadyRef.current.add(key);
-    } else if (opts?.pricesReady === false) {
-      disciplinePricesReadyRef.current.delete(key);
-    }
-    setRepDiscipline(payload);
-    lastDisciplineLoadKeyRef.current = key;
-    setRepDisciplinePriceLoading(!disciplinePricesReadyRef.current.has(key));
-    recordPlatformObservability({
-      screen: "director",
-      surface: "reports_discipline",
-      category: "ui",
-      event: "content_ready",
-      result: "success",
-      rowCount: Array.isArray(payload?.works) ? payload.works.length : 0,
-      extra: summarizeRepDiscipline(payload),
-    });
-    observeBranch("discipline", key, meta, { fromCache: opts?.fromCache });
-  }, [observeBranch, setRepDisciplinePriceLoading]);
-
-  const commitReportState = useCallback((
-    key: string,
-    payload: RepPayload | null,
-    meta: DirectorReportFetchMeta | null,
-    opts?: { syncDiscipline?: boolean; fromCache?: boolean },
-  ) => {
-    setRepData(payload);
-    recordPlatformObservability({
-      screen: "director",
-      surface: "reports_summary",
-      category: "ui",
-      event: "content_ready",
-      result: "success",
-      rowCount: payload?.rows?.length ?? 0,
-    });
-    observeBranch("report", key, meta, { fromCache: opts?.fromCache });
-    if (opts?.syncDiscipline === false) return;
-
-    const disciplinePayload = getDisciplineFromPayload(payload);
-    if (disciplinePayload) {
-      const disciplineMeta = deriveDisciplineMeta(meta);
-      setRepDiscipline(disciplinePayload);
-      lastDisciplineLoadKeyRef.current = key;
-      setRepDisciplinePriceLoading(!disciplinePricesReadyRef.current.has(key));
-      observeBranch("discipline", key, disciplineMeta, { fromCache: opts?.fromCache });
-      return;
-    }
-
-    if (lastDisciplineLoadKeyRef.current !== key) {
-      setRepDiscipline(null);
-      setRepDisciplinePriceLoading(false);
-    }
-  }, [observeBranch, setRepDisciplinePriceLoading]);
-
-  const optionsKey = useCallback((from: string, to: string) => `${from}|${to}`, []);
-  const reportKey = useCallback(
-    (from: string, to: string, objectName: string | null, objectMap: Record<string, string | null>) =>
-      `${from}|${to}|${String(objectName ?? "")}|${String(objectName == null ? "" : (objectMap?.[objectName] ?? ""))}`,
-    [],
-  );
-  const disciplineKey = reportKey;
-  const currentOptionsState = useMemo<ReportOptionsState | null>(() => {
-    if (!repOptObjects.length && !Object.keys(repOptObjectIdByName).length) return null;
-    return {
-      objects: repOptObjects,
-      objectIdByName: repOptObjectIdByName,
-    };
-  }, [repOptObjectIdByName, repOptObjects]);
-  const makeOptionsState = useCallback((objectIdByNameOverride?: Record<string, string | null>) => {
-    if (!objectIdByNameOverride && !currentOptionsState) return null;
-    return {
-      objects: currentOptionsState?.objects ?? repOptObjects,
-      objectIdByName: objectIdByNameOverride ?? currentOptionsState?.objectIdByName ?? repOptObjectIdByName,
-    };
-  }, [currentOptionsState, repOptObjectIdByName, repOptObjects]);
-
-  const repPeriodShort = useMemo(() => {
-    return repFrom || repTo
-      ? `${repFrom ? fmtDateOnly(repFrom) : "—"} -> ${repTo ? fmtDateOnly(repTo) : "—"}`
-      : "Весь период";
-  }, [fmtDateOnly, repFrom, repTo]);
+  const { currentOptionsState, makeOptionsState, repPeriodShort } = useDirectorReportsDerived({
+    repOptObjects,
+    repOptObjectIdByName,
+    repFrom,
+    repTo,
+    fmtDateOnly,
+  });
 
   const beginScopeRefresh = useCallback((reason: string = "director reports scope changed") => {
     abortActiveRequests(reason);
@@ -366,41 +142,22 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     from: string;
     to: string;
     objectName: string | null;
-    optionsState?: ReportOptionsState | null;
+    optionsState?: DirectorReportScopeOptionsState | null;
     includeDiscipline?: boolean;
     skipDisciplinePrices: boolean;
     bypassCache?: boolean;
     signal?: AbortSignal | null;
   }) => loadDirectorReportUiScope(args), []);
 
-  const commitLoadedScope = useCallback((scopeLoad: DirectorReportScopeLoadResult, opts?: { includeDiscipline: boolean }) => {
-    commitOptionsState(scopeLoad.optionsKey, scopeLoad.optionsState, scopeLoad.optionsMeta, {
-      fromCache: scopeLoad.optionsFromCache,
-    });
-    commitReportState(scopeLoad.key, scopeLoad.report, scopeLoad.reportMeta, {
-      syncDiscipline: false,
-      fromCache: scopeLoad.reportFromCache,
-    });
-    if (scopeLoad.discipline) {
-      commitDisciplineState(scopeLoad.key, scopeLoad.discipline, scopeLoad.disciplineMeta, {
-        pricesReady: scopeLoad.disciplinePricesReady,
-        fromCache: scopeLoad.disciplineFromCache,
-      });
-    } else if (!opts?.includeDiscipline) {
-      setRepDiscipline(null);
-      setRepDisciplinePriceLoading(false);
-    } else {
-      setRepDiscipline(null);
-      lastDisciplineLoadKeyRef.current = scopeLoad.key;
-      setRepDisciplinePriceLoading(false);
-    }
-  }, [commitDisciplineState, commitOptionsState, commitReportState, setRepDisciplinePriceLoading]);
+  // commitLoadedScope is now provided by useDirectorReportsCommit
 
   const fetchReport = useCallback(async (objectNameArg?: string | null, opts?: { background?: boolean }) => {
+    const fetchStart = nowMs();
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const objectName = objectNameArg === undefined ? repObjectName : objectNameArg;
-    const key = reportKey(from, to, objectName ?? null, repOptObjectIdByName);
+    const key = buildDirectorReportsScopeKey(from, to, objectName ?? null, repOptObjectIdByName);
+    emitQueryStart({ key, objectName, tab: "materials" });
     const reqId = ++reportReqSeqRef.current;
     const requestSlot = startDirectorReportsRequest(
       reportRequestRef,
@@ -434,6 +191,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           syncDiscipline: false,
           fromCache: scopeLoad.reportFromCache,
         });
+        emitQuerySuccess({ key, durationMs: Math.round(nowMs() - fetchStart), resultSize: scopeLoad.report?.rows?.length ?? 0, fromCache: scopeLoad.reportFromCache });
       } catch (e: unknown) {
         if (
           isAbortError(e) ||
@@ -441,6 +199,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
           !isActiveDirectorReportsRequest(reportRequestRef, requestSlot)
         ) return;
         const message = getErrorMessage(e, "Не удалось получить отчёт");
+        emitQueryError({ key, durationMs: Math.round(nowMs() - fetchStart), errorMessage: message });
         if (__DEV__) {
           console.warn("[director] fetchReport:", message);
         }
@@ -454,7 +213,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       }
     })();
     await task;
-  }, [commitOptionsState, commitReportState, currentOptionsState, loadReportScope, repFrom, repObjectName, repOptObjectIdByName, repTo, reportKey, setRepLoading]);
+  }, [commitOptionsState, commitReportState, currentOptionsState, loadReportScope, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepLoading]);
 
   const fetchDiscipline = useCallback(async (
     objectNameArg?: string | null,
@@ -465,7 +224,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const objectName = objectNameArg === undefined ? repObjectName : objectNameArg;
     const objectIdByName = opts?.objectIdByNameOverride ?? repOptObjectIdByName;
-    const key = disciplineKey(from, to, objectName ?? null, objectIdByName);
+    const key = buildDirectorDisciplineKey(from, to, objectName ?? null, objectIdByName);
     if (__DEV__) if (REPORTS_TIMING) console.info(`[director_works] api:discipline:start key=${key}`);
     const hasCurrentState = lastDisciplineLoadKeyRef.current === key && repDiscipline != null;
     if (hasCurrentState) {
@@ -636,7 +395,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       }
     })();
     await task;
-  }, [commitDisciplineState, commitOptionsState, disciplineKey, loadReportScope, logTiming, makeOptionsState, nowMs, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepDisciplinePriceLoading, setRepLoading]);
+  }, [commitDisciplineState, commitOptionsState, loadReportScope, makeOptionsState, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepDisciplinePriceLoading, setRepLoading]);
 
   const syncScopeBothModes = useCallback(async (objectName: string | null, modeOverride?: RepTab) => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
@@ -705,9 +464,10 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   }, [beginScopeRefresh, commitLoadedScope, currentOptionsState, fetchDiscipline, loadReportScope, repFrom, repTab, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading]);
 
   const applyObjectFilter = useCallback(async (obj: string | null) => {
+    emitFiltersChanged({ prevObjectName: repObjectName, nextObjectName: obj });
     setRepObjectName(obj);
     await syncScopeBothModes(obj);
-  }, [setRepObjectName, syncScopeBothModes]);
+  }, [repObjectName, setRepObjectName, syncScopeBothModes]);
 
   // ── Wave 2 real migration: fetchReportOptions → React Query ──
   // The query hook owns fetch, dedup, abort, and caching for the options path.
@@ -814,13 +574,16 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   }, [applyReportPeriod]);
 
   const refreshReports = useCallback(async () => {
+    const refreshStart = nowMs();
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const currentObject = repObjectName ?? null;
+    const refreshKey = `${from}|${to}|${String(currentObject ?? "")}|refresh|${repTab}`;
+    emitRefreshStart({ key: refreshKey, objectName: currentObject });
     const scopeReqId = beginScopeRefresh();
     const requestSlot = startDirectorReportsRequest(
       scopeRequestRef,
-      `${from}|${to}|${String(currentObject ?? "")}|refresh|${repTab}`,
+      refreshKey,
       scopeReqId,
       "director report refresh superseded",
     );
@@ -847,6 +610,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
       ) return;
       commitLoadedScope(scopeLoad, { includeDiscipline: repTab === "discipline" });
+      emitRefreshSuccess({ key: refreshKey, durationMs: Math.round(nowMs() - refreshStart), resultSize: scopeLoad.report?.rows?.length ?? 0 });
       if (repTab === "discipline" && scopeLoad.discipline && !scopeLoad.disciplinePricesReady) {
         void fetchDiscipline(currentObject, {
           background: true,
@@ -860,6 +624,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         !isActiveDirectorReportsRequest(scopeRequestRef, requestSlot)
       ) return;
       const message = getErrorMessage(e, "Не удалось обновить отчёт");
+      emitRefreshError({ key: refreshKey, durationMs: Math.round(nowMs() - refreshStart), errorMessage: message });
       if (__DEV__) {
         console.warn("[director] refreshReports:", message);
       }
@@ -880,7 +645,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     if (tab === "discipline") {
       const from = repFrom ? String(repFrom).slice(0, 10) : "";
       const to = repTo ? String(repTo).slice(0, 10) : "";
-      const key = disciplineKey(from, to, repObjectName ?? null, repOptObjectIdByName);
+      const key = buildDirectorDisciplineKey(from, to, repObjectName ?? null, repOptObjectIdByName);
       const hasReady = !!(repDiscipline || repData?.discipline);
 
       if (hasReady) {
@@ -896,7 +661,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     }
     abortController(disciplineRequestRef.current?.controller, "director reports tab changed");
     void fetchReport(undefined, { background: true });
-  }, [disciplineKey, fetchReport, logTiming, nowMs, repData, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepTabState, syncScopeBothModes]);
+  }, [fetchReport, repData, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepTabState, syncScopeBothModes]);
 
   const openReports = useCallback(() => {
     const startedAt = nowMs();
@@ -905,6 +670,8 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const currentObject = repObjectName ?? null;
+    const openKey = `${from}|${to}|${String(currentObject ?? "")}|open`;
+    emitOpenReports({ key: openKey, objectName: currentObject });
     const scopeReqId = beginScopeRefresh();
     const requestSlot = startDirectorReportsRequest(
       scopeRequestRef,
@@ -956,7 +723,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       }
     })();
     logTiming("open_reports_dispatch", startedAt);
-  }, [beginScopeRefresh, commitLoadedScope, currentOptionsState, loadReportScope, logTiming, nowMs, repFrom, repObjectName, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading, setRepTabState]);
+  }, [beginScopeRefresh, commitLoadedScope, currentOptionsState, loadReportScope, repFrom, repObjectName, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading, setRepTabState]);
 
   return {
     repTab,

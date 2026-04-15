@@ -1,4 +1,4 @@
-﻿import { recordPlatformObservability } from "../observability/platformObservability";
+import { recordPlatformObservability } from "../observability/platformObservability";
 
 type DirectorReportsSourceChainMeta = {
   stage: "options" | "report" | "discipline";
