@@ -147,4 +147,102 @@ describe("P6.3a — bootstrap draft reconciliation", () => {
       expect(shouldClearLiveState(null, true)).toBe(false);
     });
   });
+
+  describe("P6.3d — persist effect race condition guard", () => {
+    /**
+     * Simulates the persist effect decision: should we rebuild and persist
+     * a snapshot from React state?
+     */
+    const shouldPersistSnapshot = (params: {
+      bootstrapReady: boolean;
+      isDraftActive: boolean;
+      localDraftSnapshotRefIsNull: boolean;
+    }) => {
+      if (!params.bootstrapReady) return false;
+      if (!params.isDraftActive) return false;
+      // P6.3d guard: cleared ref means cleanup is in progress
+      if (params.localDraftSnapshotRefIsNull) return false;
+      return true;
+    };
+
+    it("blocks persist when localDraftSnapshotRef was cleared by cleanup", () => {
+      expect(shouldPersistSnapshot({
+        bootstrapReady: true,
+        isDraftActive: true, // still true due to isDraftLikeStatus(null) race
+        localDraftSnapshotRefIsNull: true,
+      })).toBe(false);
+    });
+
+    it("allows persist for a real active draft", () => {
+      expect(shouldPersistSnapshot({
+        bootstrapReady: true,
+        isDraftActive: true,
+        localDraftSnapshotRefIsNull: false,
+      })).toBe(true);
+    });
+
+    it("blocks persist when not bootstrapped", () => {
+      expect(shouldPersistSnapshot({
+        bootstrapReady: false,
+        isDraftActive: true,
+        localDraftSnapshotRefIsNull: false,
+      })).toBe(false);
+    });
+  });
+
+  describe("P6.3d — foreground reconciliation decision", () => {
+    /**
+     * Simulates restoreDraftIfNeeded decision: should we clear the
+     * snapshot because the remote request is terminal?
+     */
+    const shouldClearOnForeground = (params: {
+      hasSnapshotWithContent: boolean;
+      snapshotRequestId: string | null;
+      remoteStatus: string | null;
+    }) => {
+      if (!params.hasSnapshotWithContent || !params.snapshotRequestId) return false;
+      if (!params.remoteStatus) return false;
+      return !isDraftLikeStatus(params.remoteStatus);
+    };
+
+    it("clears when foreground check finds terminal remote status", () => {
+      expect(shouldClearOnForeground({
+        hasSnapshotWithContent: true,
+        snapshotRequestId: "req-0121",
+        remoteStatus: "approved",
+      })).toBe(true);
+    });
+
+    it("clears for submitted status on foreground", () => {
+      expect(shouldClearOnForeground({
+        hasSnapshotWithContent: true,
+        snapshotRequestId: "req-0121",
+        remoteStatus: "На рассмотрении",
+      })).toBe(true);
+    });
+
+    it("does not clear when remote says draft", () => {
+      expect(shouldClearOnForeground({
+        hasSnapshotWithContent: true,
+        snapshotRequestId: "req-0121",
+        remoteStatus: "draft",
+      })).toBe(false);
+    });
+
+    it("does not clear when no snapshot content", () => {
+      expect(shouldClearOnForeground({
+        hasSnapshotWithContent: false,
+        snapshotRequestId: "req-0121",
+        remoteStatus: "approved",
+      })).toBe(false);
+    });
+
+    it("does not clear when network fails (remoteStatus null)", () => {
+      expect(shouldClearOnForeground({
+        hasSnapshotWithContent: true,
+        snapshotRequestId: "req-0121",
+        remoteStatus: null,
+      })).toBe(false);
+    });
+  });
 });

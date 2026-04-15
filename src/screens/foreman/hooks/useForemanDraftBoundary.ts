@@ -1488,10 +1488,42 @@ export function useForemanDraftBoundary({
   const restoreDraftIfNeeded = useCallback(
     async (context: string) => {
       if (!boundaryState.bootstrapReady) return;
-      if (!isForemanConflictAutoRecoverable(getForemanDurableDraftState().conflictType)) return;
+
+      // ── P6.3d: On focus/foreground, check if active snapshot's request
+      // is already terminal on the server. skipRemoteDraftEffects prevents
+      // loadDetails from running, so P6.3c live reconciliation has no way
+      // to discover the terminal status. This explicit check closes that gap.
+      const durableState = getForemanDurableDraftState();
+      const snapshot = localDraftSnapshotRef.current ?? durableState.snapshot;
+      const snapshotRequestId = ridStr(snapshot?.requestId);
+      if (snapshotRequestId && snapshot && hasForemanLocalDraftContent(snapshot)) {
+        try {
+          const remoteDetails = await fetchRequestDetails(snapshotRequestId);
+          const remoteStatus = remoteDetails?.status ?? null;
+          if (remoteStatus && !isDraftLikeStatus(remoteStatus)) {
+            if (__DEV__) {
+              console.info("[foreman.live-reconciliation] foreground check found terminal request", {
+                requestId: snapshotRequestId,
+                remoteStatus,
+                context,
+              });
+            }
+            await clearTerminalLocalDraft({
+              snapshot,
+              requestId: snapshotRequestId,
+              remoteStatus,
+            });
+            return;
+          }
+        } catch {
+          // Network failure is non-fatal; will retry on next foreground event.
+        }
+      }
+
+      if (!isForemanConflictAutoRecoverable(durableState.conflictType)) return;
       await syncLocalDraftNow({ context });
     },
-    [boundaryState.bootstrapReady, syncLocalDraftNow],
+    [boundaryState.bootstrapReady, clearTerminalLocalDraft, syncLocalDraftNow],
   );
 
   const detailsRequestId = ridStr(requestDetails?.id);
@@ -1506,6 +1538,16 @@ export function useForemanDraftBoundary({
   useEffect(() => {
     if (!boundaryState.bootstrapReady) return;
     if (!isDraftActive) return;
+
+    // ── P6.3d: Prevent persist effect from re-creating a snapshot that was
+    // just cleared by clearTerminalLocalDraft / bootstrap reconciliation.
+    // clearDraftCache sets localDraftSnapshotRef.current = null synchronously,
+    // but resetDraftState() uses async React setState. During the next render
+    // cycle, items/requestDetails still hold old values, so
+    // buildCurrentLocalDraftSnapshot() would rebuild a stale snapshot and
+    // write it right back into the durable store — undoing the cleanup.
+    if (localDraftSnapshotRef.current === null) return;
+
     if (
       requestDetails &&
       detailsRequestId &&
