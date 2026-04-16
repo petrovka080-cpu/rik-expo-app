@@ -1,6 +1,8 @@
-import { esc } from "../../api/pdf_director.format";
-import type { DirectorSupplierSummaryPdfModel } from "../../api/pdf_director.data";
-import { renderDirectorSupplierSummaryPdfHtmlShared } from "../directorSupplierSummary.shared";
+import { esc } from "../../api/pdf_director.format.ts";
+import {
+  renderDirectorSupplierSummaryPdfHtmlShared,
+  type DirectorSupplierSummaryPdfModelShared,
+} from "../directorSupplierSummary.shared.ts";
 import {
   joinHtml,
   renderBox,
@@ -11,8 +13,10 @@ import {
   renderPageFooter,
   renderTable,
   renderTag,
-} from "../pdf.director.sections";
-import { formatMoney, formatMoneyKgs } from "./shared";
+} from "../pdf.director.sections.ts";
+import { formatMoney, formatMoneyKgs } from "./shared.ts";
+
+type DirectorSupplierSummaryPdfModel = DirectorSupplierSummaryPdfModelShared;
 const SUPPLIER_SUMMARY_STYLES = `
     @page { margin: 14mm 12mm 20mm 12mm; }
 

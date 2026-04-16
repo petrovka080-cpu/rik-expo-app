@@ -420,7 +420,7 @@ async function main() {
       checkedAt: new Date().toISOString(),
       rootCauseClosed: {
         staleWritePath: "buyer_rfq_create_and_publish_v1 -> get_my_role() contractor override before canonical buyer sources",
-        fixedWritePath: "buyer_rfq_create_and_publish_v1 -> profiles.role=buyer, company_members.role=buyer, trusted app_metadata.role=buyer, then get_my_role()",
+        fixedWritePath: "buyer_rfq_create_and_publish_v1 -> company_members.role=buyer, profiles.role=buyer, trusted app_metadata.role=buyer, then get_my_role()",
       },
       stage,
       buyerUser: {

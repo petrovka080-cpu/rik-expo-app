@@ -10,11 +10,12 @@ const asObject = (value: unknown): Record<string, unknown> | null =>
     ? (value as Record<string, unknown>)
     : null;
 
-export type DirectorPdfRoleAccessSource = "app_metadata" | "rpc" | "none";
+export type DirectorPdfRoleAccessSource = "company_members" | "app_metadata" | "rpc" | "none";
 
 export type DirectorPdfRoleAccessResolution = {
   isDirector: boolean;
   source: DirectorPdfRoleAccessSource;
+  companyMemberRoles: string[];
   appMetadataRole: string | null;
   rpcRole: string | null;
 };
@@ -28,14 +29,31 @@ export function readDirectorPdfSignedAppRole(user: { app_metadata?: unknown } | 
 export function resolveDirectorPdfRoleAccess(args: {
   user?: { app_metadata?: unknown } | null;
   rpcRole?: unknown;
+  companyMemberRoles?: unknown;
 }): DirectorPdfRoleAccessResolution {
   const appMetadataRole = readDirectorPdfSignedAppRole(args.user);
   const rpcRole = normalizeRole(args.rpcRole);
+  const companyMemberRoles = Array.isArray(args.companyMemberRoles)
+    ? args.companyMemberRoles
+        .map((value) => normalizeRole(value))
+        .filter((value): value is string => value != null)
+    : [];
+
+  if (companyMemberRoles.includes("director")) {
+    return {
+      isDirector: true,
+      source: "company_members",
+      companyMemberRoles,
+      appMetadataRole,
+      rpcRole,
+    };
+  }
 
   if (appMetadataRole === "director") {
     return {
       isDirector: true,
       source: "app_metadata",
+      companyMemberRoles,
       appMetadataRole,
       rpcRole,
     };
@@ -45,6 +63,7 @@ export function resolveDirectorPdfRoleAccess(args: {
     return {
       isDirector: true,
       source: "rpc",
+      companyMemberRoles,
       appMetadataRole,
       rpcRole,
     };
@@ -53,6 +72,7 @@ export function resolveDirectorPdfRoleAccess(args: {
   return {
     isDirector: false,
     source: "none",
+    companyMemberRoles,
     appMetadataRole,
     rpcRole,
   };

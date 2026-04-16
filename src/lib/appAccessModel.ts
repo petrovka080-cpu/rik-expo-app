@@ -168,6 +168,7 @@ export function buildAppAccessModel(
     isOfficeRole(authRole) ? authRole : null,
   ]);
   const activeOfficeRole =
+    membershipOfficeRoles[0] ??
     (isOfficeRole(resolvedRole) ? resolvedRole : null) ??
     (isOfficeRole(authRole) ? authRole : null) ??
     availableOfficeRoles[0] ??

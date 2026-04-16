@@ -1,8 +1,8 @@
-export { renderDirectorFinancePdfHtml } from "./director/finance";
+export { renderDirectorFinancePdfHtml } from "./director/finance.ts";
 export {
   renderDirectorSupplierSummaryPdfHtml,
   renderDirectorSupplierSummaryPdfHtmlLegacy,
-} from "./director/supplier";
-export { renderDirectorManagementReportPdfHtml } from "./director/management";
-export { renderDirectorProductionReportPdfHtml } from "./director/production";
-export { renderDirectorSubcontractReportPdfHtml } from "./director/subcontract";
+} from "./director/supplier.ts";
+export { renderDirectorManagementReportPdfHtml } from "./director/management.ts";
+export { renderDirectorProductionReportPdfHtml } from "./director/production.ts";
+export { renderDirectorSubcontractReportPdfHtml } from "./director/subcontract.ts";

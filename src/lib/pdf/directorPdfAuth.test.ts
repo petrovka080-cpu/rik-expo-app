@@ -13,8 +13,25 @@ describe("directorPdfAuth", () => {
     ).toEqual({
       isDirector: true,
       source: "app_metadata",
+      companyMemberRoles: [],
       appMetadataRole: "director",
       rpcRole: "buyer",
+    });
+  });
+
+  it("prefers director company membership before signed metadata or rpc role", () => {
+    expect(
+      resolveDirectorPdfRoleAccess({
+        user: { app_metadata: { role: "buyer" } },
+        rpcRole: "contractor",
+        companyMemberRoles: ["director", "buyer"],
+      }),
+    ).toEqual({
+      isDirector: true,
+      source: "company_members",
+      companyMemberRoles: ["director", "buyer"],
+      appMetadataRole: "buyer",
+      rpcRole: "contractor",
     });
   });
 
@@ -27,6 +44,7 @@ describe("directorPdfAuth", () => {
     ).toEqual({
       isDirector: true,
       source: "rpc",
+      companyMemberRoles: [],
       appMetadataRole: null,
       rpcRole: "director",
     });
@@ -41,6 +59,7 @@ describe("directorPdfAuth", () => {
     ).toEqual({
       isDirector: false,
       source: "none",
+      companyMemberRoles: [],
       appMetadataRole: "buyer",
       rpcRole: "buyer",
     });

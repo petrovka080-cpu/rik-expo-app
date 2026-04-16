@@ -1,0 +1,44 @@
+[
+  {
+    "id": "S2-A-001",
+    "scenario": "buyer publish under conflicting role sources",
+    "verifier": "local SQL contract proof",
+    "expected": "membership-first helper exists and blocks lower fallback override",
+    "status": "passed"
+  },
+  {
+    "id": "S2-A-002",
+    "scenario": "foreign company resource access denial",
+    "verifier": "resolveForemanRequestPdfAccess",
+    "expected": "wrong-company director cannot access foreman request PDF",
+    "status": "passed"
+  },
+  {
+    "id": "S2-A-003",
+    "scenario": "signed URL issuance denial for unauthorized actor",
+    "verifier": "resolveWarehousePdfAccess",
+    "expected": "non-warehouse/non-director does not pass generated PDF policy",
+    "status": "passed"
+  },
+  {
+    "id": "S2-A-004",
+    "scenario": "same-company allowed PDF/doc access",
+    "verifier": "resolveForemanRequestPdfAccess + resolveWarehousePdfAccess",
+    "expected": "foreman owner and warehouse member pass policy",
+    "status": "passed"
+  },
+  {
+    "id": "S2-A-005",
+    "scenario": "director PDF role source parity",
+    "verifier": "resolveDirectorPdfRoleAccess",
+    "expected": "director membership wins before lower role sources",
+    "status": "passed"
+  },
+  {
+    "id": "S2-A-006",
+    "scenario": "live buyer RFQ publish under contractor fallback drift",
+    "verifier": "scripts/buyer_tender_publish_runtime_verify.ts",
+    "expected": "buyer membership/profile/app_metadata truth wins over legacy get_my_role() contractor fallback without adding contractor to buyer allow-list",
+    "status": "passed"
+  }
+]

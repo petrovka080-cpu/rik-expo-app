@@ -1,6 +1,6 @@
 import { esc, fmtDateOnly, formatArrowPeriodText, formatPaidRangeText, joinBulletParts, money, nnum } from "../api/pdf_director.format.ts";
 import { joinHtml, renderBox, renderDocumentShell, renderInlineKpiRow, renderLabelValueCell, renderMuted, renderPageFooter, renderTable, renderTag } from "./pdf.director.sections.ts";
-import { logger } from "../logger";
+import { logger } from "../logger.ts";
 
 export type DirectorFinanceSupplierSummaryPdfRequest = {
   version: "v1";

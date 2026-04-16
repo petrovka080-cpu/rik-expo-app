@@ -1,5 +1,5 @@
-import { esc, money } from "../../api/pdf_director.format";
-import { renderTitledBoxSection } from "../pdf.director.sections";
+import { esc, money } from "../../api/pdf_director.format.ts";
+import { renderTitledBoxSection } from "../pdf.director.sections.ts";
 
 export const formatMoney = (value: number) => esc(money(value));
 export const formatMoneyKgs = (value: number) => `${formatMoney(value)} KGS`;

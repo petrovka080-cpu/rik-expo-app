@@ -1,5 +1,4 @@
-import { esc } from "../../api/pdf_director.format";
-import type { DirectorProductionReportPdfModel } from "../../api/pdf_director.data";
+import { esc } from "../../api/pdf_director.format.ts";
 import {
   joinHtml,
   renderDocumentShell,
@@ -7,8 +6,10 @@ import {
   renderPageFooter,
   renderTable,
   renderTitledBoxSection,
-} from "../pdf.director.sections";
-import { formatMoney, renderSignaturesSection } from "./shared";
+} from "../pdf.director.sections.ts";
+import { formatMoney, renderSignaturesSection } from "./shared.ts";
+
+type DirectorProductionReportPdfModel = Record<string, any>;
 const PRODUCTION_REPORT_STYLES = `
     @page { margin: 12mm; }
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#0f172a}

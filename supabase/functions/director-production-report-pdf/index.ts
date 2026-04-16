@@ -4,7 +4,7 @@
 import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { adaptCanonicalMaterialsPayload, adaptCanonicalWorksPayload } from "../../../src/lib/api/director_reports.adapters.ts";
-import { renderDirectorProductionReportPdfHtml } from "../../../src/lib/pdf/pdf.director.templates.ts";
+import { renderDirectorProductionReportPdfHtml } from "../../../src/lib/pdf/director/production.ts";
 import {
   normalizeDirectorProductionReportPdfRequest,
   prepareDirectorProductionReportPdfModelShared,
@@ -156,17 +156,27 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
     });
   }
 
+  const { data: membershipRows, error: membershipError } = await requester
+    .from("company_members")
+    .select("role")
+    .eq("user_id", userData.user.id);
+
   const roleAccess = resolveDirectorPdfRoleAccess({
     user: userData.user,
     rpcRole: roleData,
+    companyMemberRoles: Array.isArray(membershipRows)
+      ? membershipRows.map((row) => row?.role)
+      : [],
   });
 
   if (!roleAccess.isDirector) {
     console.warn(
       `[${FUNCTION_NAME}] director auth forbidden ${JSON.stringify({
         userId: userData.user.id,
+        companyMemberRoles: roleAccess.companyMemberRoles,
         appMetadataRole: roleAccess.appMetadataRole,
         rpcRole: roleAccess.rpcRole,
+        membershipError: membershipError?.message ?? null,
         roleError: roleError?.message ?? null,
       })}`,
     );
@@ -178,12 +188,15 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
     });
   }
 
-  if (roleAccess.source === "app_metadata" && roleAccess.rpcRole !== "director") {
+  if (roleAccess.source !== "company_members" && roleAccess.rpcRole !== "director") {
     console.info(
-      `[${FUNCTION_NAME}] director auth resolved from signed app_metadata ${JSON.stringify({
+      `[${FUNCTION_NAME}] director auth resolved from fallback role source ${JSON.stringify({
         userId: userData.user.id,
+        source: roleAccess.source,
+        companyMemberRoles: roleAccess.companyMemberRoles,
         appMetadataRole: roleAccess.appMetadataRole,
         rpcRole: roleAccess.rpcRole,
+        membershipError: membershipError?.message ?? null,
         roleError: roleError?.message ?? null,
       })}`,
     );

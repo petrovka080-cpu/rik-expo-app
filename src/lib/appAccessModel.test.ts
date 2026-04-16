@@ -127,6 +127,23 @@ describe("appAccessModel", () => {
     });
   });
 
+  it("prefers company membership as the active office role when profile/RPC role drifts", () => {
+    const model = buildAppAccessModel({
+      userId: "user-5b",
+      authRole: "contractor",
+      resolvedRole: "contractor",
+      usageMarket: false,
+      usageBuild: true,
+      ownedCompanyId: null,
+      companyMemberships: [{ companyId: "company-3", role: "buyer" }],
+      listingsCount: 0,
+      requestedActiveContext: "office",
+    });
+
+    expect(model.availableOfficeRoles).toEqual(["buyer", "contractor"]);
+    expect(model.activeOfficeRole).toBe("buyer");
+  });
+
   it("returns an explicit source map for legacy mixed truth inputs", () => {
     const sourceMap = buildAppAccessSourceMap({
       userId: "user-6",

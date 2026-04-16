@@ -1,0 +1,97 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-16T07:03:33.930Z",
+  "rootCauseClosed": {
+    "staleWritePath": "buyer_rfq_create_and_publish_v1 -> get_my_role() contractor override before canonical buyer sources",
+    "fixedWritePath": "buyer_rfq_create_and_publish_v1 -> company_members.role=buyer, profiles.role=buyer, trusted app_metadata.role=buyer, then get_my_role()"
+  },
+  "stage": "readback_tender",
+  "buyerUser": {
+    "id": "3934a813-af72-4ac4-b649-ad273edc139b",
+    "email": "buyer.tender.publish.mo14urc6rm6u@e.com"
+  },
+  "roleProbe": {
+    "authUserId": "3934a813-af72-4ac4-b649-ad273edc139b",
+    "appMetadataRole": "buyer",
+    "rpcRole": "contractor",
+    "profileRoles": [
+      "buyer"
+    ],
+    "companyMemberships": [
+      {
+        "companyId": "5fca1357-fd12-4072-9530-1232e75cdaf2",
+        "role": "buyer"
+      }
+    ]
+  },
+  "companyId": "5fca1357-fd12-4072-9530-1232e75cdaf2",
+  "requestSeed": {
+    "marker": "RT-RFQ-MO14UTEY",
+    "requestId": "7c6809f5-603a-4df4-9856-5429faa2457f",
+    "requestItemId": "22d0ac76-f035-43d7-a488-0129a89ff9cc",
+    "displayNo": "REQ-RT-RFQ-MO14UTEY/2026",
+    "approvedStatus": "К закупке"
+  },
+  "actionResult": {
+    "ok": true,
+    "family": "rfq",
+    "operation": "publish_rfq",
+    "status": "success",
+    "completedStages": [
+      "validate_selection",
+      "validate_deadline",
+      "validate_delivery_days",
+      "validate_delivery_location",
+      "validate_contacts",
+      "publish_rfq"
+    ],
+    "warnings": [],
+    "data": {
+      "tenderId": "e919679e-bf62-40c6-a761-384e47fcc86f"
+    }
+  },
+  "busyTransitions": [
+    true,
+    false
+  ],
+  "alerts": [
+    {
+      "title": "Готово",
+      "message": "Торги опубликованы (e919679e)"
+    }
+  ],
+  "tender": {
+    "id": "e919679e-bf62-40c6-a761-384e47fcc86f",
+    "status": "published",
+    "mode": "rfq",
+    "created_by": "3934a813-af72-4ac4-b649-ad273edc139b",
+    "deadline_at": "2026-04-17T07:03:32.664+00:00",
+    "contact_phone": "+996700123456",
+    "contact_email": "buyer@example.com",
+    "city": "Bishkek",
+    "address_text": "Main street 1",
+    "note": "runtime RT-RFQ-MO14UTEY"
+  },
+  "tenderItems": [
+    {
+      "id": "0781bb2a-3f9c-4a63-bf1f-9309e4dcf438",
+      "request_item_id": "22d0ac76-f035-43d7-a488-0129a89ff9cc",
+      "tender_id": "e919679e-bf62-40c6-a761-384e47fcc86f",
+      "name_human": "RT-RFQ-MO14UTEY",
+      "qty": 1,
+      "uom": "pcs"
+    }
+  ],
+  "invariants": {
+    "tenderCreated": true,
+    "tenderPublished": true,
+    "tenderModeRfq": true,
+    "ownerUsesCreatedBy": true,
+    "tenderItemsLinked": true,
+    "actorRoleHadContractorOverride": true,
+    "canonicalBuyerSourcePresent": true,
+    "actorRoleResolvedDespiteContractorOverride": true,
+    "noUserIdColumnError": true,
+    "noForbiddenActorRoleError": true
+  }
+}

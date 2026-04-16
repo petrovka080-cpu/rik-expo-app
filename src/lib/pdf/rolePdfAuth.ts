@@ -73,6 +73,17 @@ export function resolveCanonicalPdfRoleAccess(args: {
         .filter((value): value is string => value != null)
     : [];
 
+  if (companyMemberRoles.includes(args.expectedRole)) {
+    return {
+      allowed: true,
+      source: "company_members",
+      expectedRole: args.expectedRole,
+      appMetadataRole,
+      rpcRole,
+      companyMemberRoles,
+    };
+  }
+
   if (appMetadataRole === args.expectedRole) {
     return {
       allowed: true,
@@ -88,17 +99,6 @@ export function resolveCanonicalPdfRoleAccess(args: {
     return {
       allowed: true,
       source: "rpc",
-      expectedRole: args.expectedRole,
-      appMetadataRole,
-      rpcRole,
-      companyMemberRoles,
-    };
-  }
-
-  if (companyMemberRoles.includes(args.expectedRole)) {
-    return {
-      allowed: true,
-      source: "company_members",
       expectedRole: args.expectedRole,
       appMetadataRole,
       rpcRole,

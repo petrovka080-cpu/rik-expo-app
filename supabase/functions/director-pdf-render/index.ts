@@ -143,41 +143,30 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
     });
   }
 
-  // Step 2: Check app_metadata.role first (signed into JWT, trustworthy).
-  // If it resolves to director, skip the get_my_role RPC entirely (saves 100-300ms).
-  const appMetadataCheck = resolveDirectorPdfRoleAccess({
-    user: userData.user,
-    rpcRole: undefined, // no RPC call yet
-  });
-
-  if (appMetadataCheck.isDirector && appMetadataCheck.source === "app_metadata") {
-    console.info(
-      `[${FUNCTION_NAME}] director auth fast-path via app_metadata ${JSON.stringify({
-        userId: userData.user.id,
-        appMetadataRole: appMetadataCheck.appMetadataRole,
-        rpcSkipped: true,
-      })}`,
-    );
-    return {
-      userId: userData.user.id,
-      authSource: "app_metadata" as const,
-    };
-  }
-
-  // Step 3: Fallback — call get_my_role RPC when app_metadata doesn't resolve.
-  const { data: roleData, error: roleError } = await requester.rpc("get_my_role");
+  const [{ data: roleData, error: roleError }, { data: membershipRows, error: membershipError }] = await Promise.all([
+    requester.rpc("get_my_role"),
+    requester
+      .from("company_members")
+      .select("role")
+      .eq("user_id", userData.user.id),
+  ]);
 
   const roleAccess = resolveDirectorPdfRoleAccess({
     user: userData.user,
     rpcRole: roleData,
+    companyMemberRoles: Array.isArray(membershipRows)
+      ? membershipRows.map((row) => row?.role)
+      : [],
   });
 
   if (!roleAccess.isDirector) {
     console.warn(
       `[${FUNCTION_NAME}] director auth forbidden ${JSON.stringify({
         userId: userData.user.id,
+        companyMemberRoles: roleAccess.companyMemberRoles,
         appMetadataRole: roleAccess.appMetadataRole,
         rpcRole: roleAccess.rpcRole,
+        membershipError: membershipError?.message ?? null,
         roleError: roleError?.message ?? null,
       })}`,
     );
@@ -191,7 +180,7 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
 
   return {
     userId: userData.user.id,
-    authSource: roleAccess.source as "app_metadata" | "rpc",
+    authSource: roleAccess.source as "company_members" | "app_metadata" | "rpc",
   };
 }
 

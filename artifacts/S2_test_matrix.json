@@ -1,0 +1,58 @@
+[
+  {
+    "id": "S2-T-001",
+    "area": "role_truth",
+    "name": "membership buyer wins before contractor fallback",
+    "status": "passed",
+    "risk_covered": "fallback helper cannot deny a valid canonical buyer"
+  },
+  {
+    "id": "S2-T-002",
+    "area": "role_truth",
+    "name": "membership non-buyer blocks lower buyer fallback",
+    "status": "passed",
+    "risk_covered": "stale profile/app_metadata cannot override explicit membership"
+  },
+  {
+    "id": "S2-T-003",
+    "area": "route_rpc_consistency",
+    "name": "office active role prefers membership",
+    "status": "passed",
+    "risk_covered": "UI active role follows server priority"
+  },
+  {
+    "id": "S2-T-004",
+    "area": "rpc_hardening",
+    "name": "buyer RFQ keeps buyer-only allow list",
+    "status": "passed",
+    "risk_covered": "contractor is not added to RFQ publish"
+  },
+  {
+    "id": "S2-T-005",
+    "area": "rpc_hardening",
+    "name": "attachment helper uses canonical role context",
+    "status": "passed",
+    "risk_covered": "attach/read role helper no longer has bespoke priority"
+  },
+  {
+    "id": "S2-T-006",
+    "area": "storage_pdf",
+    "name": "director PDF auth supports membership-first source",
+    "status": "passed",
+    "risk_covered": "PDF auth aligns with canonical role policy"
+  },
+  {
+    "id": "S2-T-007",
+    "area": "storage_pdf",
+    "name": "foreign foreman request PDF denied",
+    "status": "passed",
+    "risk_covered": "same-company/owner PDF policy blocks cross-company access"
+  },
+  {
+    "id": "S2-T-008",
+    "area": "storage_pdf",
+    "name": "warehouse PDF non-warehouse non-director denied",
+    "status": "passed",
+    "risk_covered": "role-restricted generated PDF policy remains narrow"
+  }
+]

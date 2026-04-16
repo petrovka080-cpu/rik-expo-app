@@ -1,10 +1,44 @@
 import {
   normalizeCompanyMembershipRows,
+  resolveCanonicalPdfRoleAccess,
   resolveForemanRequestPdfAccess,
   resolveWarehousePdfAccess,
 } from "./rolePdfAuth";
 
 describe("rolePdfAuth policy layer", () => {
+  describe("resolveCanonicalPdfRoleAccess", () => {
+    it("prefers company membership before signed metadata and rpc role", () => {
+      expect(
+        resolveCanonicalPdfRoleAccess({
+          user: { app_metadata: { role: "foreman" } },
+          rpcRole: "foreman",
+          companyMemberRoles: ["warehouse"],
+          expectedRole: "warehouse",
+        }),
+      ).toMatchObject({
+        allowed: true,
+        source: "company_members",
+        expectedRole: "warehouse",
+        companyMemberRoles: ["warehouse"],
+      });
+    });
+
+    it("keeps signed metadata as fallback when membership truth is absent", () => {
+      expect(
+        resolveCanonicalPdfRoleAccess({
+          user: { app_metadata: { role: "director" } },
+          rpcRole: "foreman",
+          companyMemberRoles: [],
+          expectedRole: "director",
+        }),
+      ).toMatchObject({
+        allowed: true,
+        source: "app_metadata",
+        expectedRole: "director",
+      });
+    });
+  });
+
   describe("normalizeCompanyMembershipRows", () => {
     it("normalizes company membership rows and drops invalid entries", () => {
       expect(
