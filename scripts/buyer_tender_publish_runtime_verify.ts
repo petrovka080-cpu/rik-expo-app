@@ -172,10 +172,16 @@ async function attachCompanyMember(params: {
 }
 
 async function readBuyerRoleProbe(client: any, userId: string) {
-  const [{ data: authUser, error: authError }, { data: rpcRole, error: rpcError }, memberships] = await Promise.all([
+  const [
+    { data: authUser, error: authError },
+    { data: rpcRole, error: rpcError },
+    memberships,
+    profiles,
+  ] = await Promise.all([
     client.auth.getUser(),
     client.rpc("get_my_role"),
     client.from("company_members").select("company_id,role").eq("user_id", userId),
+    client.from("profiles").select("role").eq("user_id", userId),
   ]);
   if (authError) throw authError;
   if (rpcError) throw rpcError;
@@ -183,6 +189,9 @@ async function readBuyerRoleProbe(client: any, userId: string) {
     authUserId: toText(authUser.user?.id),
     appMetadataRole: toText(asRecord(authUser.user?.app_metadata).role) || null,
     rpcRole: toText(rpcRole) || null,
+    profileRoles: Array.isArray(profiles.data)
+      ? profiles.data.map((row: any) => toText(row.role)).filter(Boolean)
+      : [],
     companyMemberships: Array.isArray(memberships.data)
       ? memberships.data.map((row: any) => ({
           companyId: toText(row.company_id) || null,
@@ -306,11 +315,13 @@ async function main() {
 
     stage = "create_temp_buyer";
     buyerUser = await createTempUser(admin, {
-      role: "director",
+      role: "buyer",
       fullName: "Buyer Tender Publish Verify",
       emailPrefix: "buyer.tender.publish",
       userProfile: {
         usage_build: true,
+        usage_market: true,
+        is_contractor: true,
       },
     });
 
@@ -408,8 +419,8 @@ async function main() {
       status: "GREEN",
       checkedAt: new Date().toISOString(),
       rootCauseClosed: {
-        staleWritePath: "buyer_rfq_create_and_publish_v1 -> get_my_role() only",
-        fixedWritePath: "buyer_rfq_create_and_publish_v1 -> get_my_role() or company_members.role=buyer",
+        staleWritePath: "buyer_rfq_create_and_publish_v1 -> get_my_role() contractor override before canonical buyer sources",
+        fixedWritePath: "buyer_rfq_create_and_publish_v1 -> profiles.role=buyer, company_members.role=buyer, trusted app_metadata.role=buyer, then get_my_role()",
       },
       stage,
       buyerUser: {
@@ -432,10 +443,18 @@ async function main() {
         tenderItemsLinked: (tenderItemsReadback.data ?? []).some(
           (row) => toText(row.request_item_id) === seeded.requestItemId,
         ),
-        actorRoleResolvedFromMembership:
-          toText(roleProbe.appMetadataRole).toLowerCase() !== "buyer"
-          && toText(roleProbe.rpcRole).toLowerCase() !== "buyer"
-          && roleProbe.companyMemberships.some((row) => toText(row.role).toLowerCase() === "buyer"),
+        actorRoleHadContractorOverride: toText(roleProbe.rpcRole).toLowerCase() === "contractor",
+        canonicalBuyerSourcePresent:
+          toText(roleProbe.appMetadataRole).toLowerCase() === "buyer"
+          || roleProbe.profileRoles.some((role) => toText(role).toLowerCase() === "buyer")
+          || roleProbe.companyMemberships.some((row) => toText(row.role).toLowerCase() === "buyer"),
+        actorRoleResolvedDespiteContractorOverride:
+          toText(roleProbe.rpcRole).toLowerCase() === "contractor"
+          && (
+            toText(roleProbe.appMetadataRole).toLowerCase() === "buyer"
+            || roleProbe.profileRoles.some((role) => toText(role).toLowerCase() === "buyer")
+            || roleProbe.companyMemberships.some((row) => toText(row.role).toLowerCase() === "buyer")
+          ),
         noUserIdColumnError: alerts.every(
           (entry) => !/column "user_id" of relation "tenders" does not exist/i.test(`${entry.title} ${entry.message}`),
         ),

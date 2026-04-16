@@ -99,6 +99,50 @@ describe("buyer rfq and rework mutation owners", () => {
     );
   });
 
+  it("does not show RFQ success or close the sheet when the server denies actor role", async () => {
+    const alert = jest.fn();
+    const closeSheet = jest.fn();
+    const setBusy = jest.fn();
+    mockedPublishRfq.mockResolvedValue({
+      data: null,
+      error: {
+        code: "42501",
+        message: "buyer_rfq_create_and_publish_v1: forbidden actor role",
+        details: "contractor",
+      },
+    });
+
+    const result = await publishRfqAction({
+      pickedIds: ["ri-1"],
+      rfqDeadlineIso: "2030-03-30T12:30:00.000Z",
+      rfqDeliveryDays: "2",
+      rfqCity: "Bishkek",
+      rfqAddressText: "",
+      rfqPhone: "700123456",
+      rfqCountryCode: "+996",
+      rfqEmail: "",
+      rfqVisibility: "open",
+      rfqNote: "",
+      supabase: {} as never,
+      setBusy,
+      closeSheet,
+      alert,
+    });
+
+    expect(isBuyerMutationFailure(result)).toBe(true);
+    if (!isBuyerMutationFailure(result)) return;
+    expect(result.failedStage).toBe("publish_rfq");
+    expect(result.message).toContain("forbidden actor role");
+    expect(closeSheet).not.toHaveBeenCalled();
+    expect(alert).not.toHaveBeenCalledWith("Р“РѕС‚РѕРІРѕ", expect.any(String));
+    expect(alert).toHaveBeenCalledWith(
+      "Ошибка",
+      expect.stringContaining("forbidden actor role"),
+    );
+    expect(setBusy).toHaveBeenNthCalledWith(1, true);
+    expect(setBusy).toHaveBeenLastCalledWith(false);
+  });
+
   it("keeps rework send-to-director happy path observable and owned", async () => {
     const alert = jest.fn();
     const setRejected = jest.fn((updater: (prev: { id?: string }[]) => { id?: string }[]) =>

@@ -1,0 +1,36 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-16T06:19:16.859Z",
+  "command": "npx tsx scripts/buyer_tender_publish_runtime_verify.ts",
+  "rootCauseClosed": {
+    "staleWritePath": "buyer_rfq_create_and_publish_v1 -> get_my_role() contractor override before canonical buyer sources",
+    "fixedWritePath": "buyer_rfq_create_and_publish_v1 -> profiles.role=buyer, company_members.role=buyer, trusted app_metadata.role=buyer, then get_my_role()"
+  },
+  "roleProbe": {
+    "rpcRole": "contractor",
+    "appMetadataRole": "buyer",
+    "profileRoles": ["buyer"],
+    "companyMembershipRoles": ["buyer"]
+  },
+  "actionResult": {
+    "family": "rfq",
+    "operation": "publish_rfq",
+    "status": "success",
+    "completedStages": [
+      "validate_selection",
+      "validate_deadline",
+      "validate_delivery_days",
+      "validate_delivery_location",
+      "validate_contacts",
+      "publish_rfq"
+    ]
+  },
+  "readback": {
+    "tenderCreated": true,
+    "tenderPublished": true,
+    "tenderModeRfq": true,
+    "ownerUsesCreatedBy": true,
+    "tenderItemsLinked": true,
+    "noForbiddenActorRoleError": true
+  }
+}
