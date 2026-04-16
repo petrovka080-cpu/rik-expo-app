@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 
+import { useAppActiveRevalidation } from "../../lib/lifecycle/useAppActiveRevalidation";
+
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
@@ -196,4 +198,26 @@ export function useBuyerRealtimeLifecycle(params: {
   }, [params.focusedRef]);
 
   useFocusEffect(bindRealtime);
+
+  // S3: Fix Buyer app-resume gap.
+  // Before S3, Buyer had no AppState listener for data revalidation on resume.
+  // Realtime reconnects on useFocusEffect, but data could be stale after a long
+  // background session if no realtime event was fired.
+  // force: false → respects freshness cache (kickMsInbox / kickMsBuckets),
+  // so rapid resumals within the freshness window are no-ops.
+  useAppActiveRevalidation({
+    screen: "buyer",
+    surface: "summary_root",
+    enabled: params.focusedRef.current,
+    onRevalidate: async (reason) => {
+      if (!params.focusedRef.current) return;
+      await refreshRef.current({
+        reason: "focus",
+        scopes: ["inbox", "buckets"],
+        force: false,
+      });
+      void reason; // typed LifecycleRefreshReason — logged by the hook itself
+    },
+    isInFlight: params.isRefreshInFlight,
+  });
 }
