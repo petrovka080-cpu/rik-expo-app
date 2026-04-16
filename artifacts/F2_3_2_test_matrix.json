@@ -1,0 +1,58 @@
+{
+  "wave": "F2.3",
+  "generatedAt": "2026-04-16T13:44:14.976Z",
+  "localGates": [
+    {
+      "command": "npx jest src/lib/api/f2_3_financeRollupValidationMigration.test.ts --runInBand --no-coverage",
+      "status": "PASS",
+      "tests": "14/14"
+    },
+    {
+      "command": "npx jest src/lib/api/f2_2_financeRollupMigration.test.ts src/lib/api/f2_3_financeRollupValidationMigration.test.ts --runInBand --no-coverage",
+      "status": "PASS",
+      "tests": "58/58"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "status": "PASS_WITH_EXISTING_WARNINGS",
+      "warnings": 7
+    },
+    {
+      "command": "npx jest --no-coverage",
+      "status": "PASS",
+      "tests": "1787/1788",
+      "skipped": 1
+    }
+  ],
+  "remoteGates": [
+    {
+      "command": "npx supabase db push --yes",
+      "status": "PASS"
+    },
+    {
+      "command": "npx supabase migration list --linked",
+      "status": "PASS"
+    },
+    {
+      "command": "finance_rollups_rebuild_all_v1",
+      "status": "PASS"
+    },
+    {
+      "command": "finance_rollup_drift_check_v1",
+      "status": "PASS"
+    },
+    {
+      "command": "finance_rollup_status_v1",
+      "status": "PASS"
+    },
+    {
+      "command": "director_finance_panel_scope_v4 usage/fallback proof",
+      "status": "PASS"
+    }
+  ],
+  "overall": "GREEN"
+}
