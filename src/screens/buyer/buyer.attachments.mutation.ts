@@ -13,6 +13,7 @@ import {
   formatBuyerMutationWarnings,
   isBuyerMutationFailure,
 } from "./buyer.mutation.shared";
+import { SUPP_NONE, normName } from "./buyerUtils";
 import { getLatestCanonicalProposalAttachment } from "../../lib/api/proposalAttachments.service";
 
 type AlertFn = (title: string, message: string) => void;
@@ -39,6 +40,15 @@ type AttachFileStage = "pick_file" | "upload_attachment" | "reload_attachments";
 type SupplierAttachmentsStage = "upload_supplier_attachments";
 type InvoiceAttachmentStage = "upload_invoice_attachment";
 type ProposalHtmlStage = "ensure_proposal_html";
+
+const resolveSupplierAttachment = (
+  attachmentsNow: Record<string, { file?: FileLike; name?: string }>,
+  supplier: unknown,
+) => {
+  const rawKey = String(supplier ?? "").trim();
+  const normalizedKey = normName(rawKey) || SUPP_NONE;
+  return attachmentsNow?.[normalizedKey] ?? attachmentsNow?.[rawKey] ?? null;
+};
 
 const ATTACH_FILE_STAGE_LABELS: Record<AttachFileStage, string> = {
   pick_file: "Выбор файла",
@@ -153,8 +163,7 @@ export async function uploadSupplierProposalAttachmentsMutation(params: {
   for (const proposal of proposalRows) {
     const proposalId = String(proposal?.proposal_id ?? proposal?.id ?? "").trim();
     if (!proposalId) continue;
-    const supplierKey = String(proposal?.supplier ?? "").trim();
-    const attachment = params.attachmentsNow?.[supplierKey];
+    const attachment = resolveSupplierAttachment(params.attachmentsNow, proposal?.supplier);
     if (!attachment?.file) continue;
     const fileName = String(attachment.name || `file_${Date.now()}`).trim();
     uploads.push(

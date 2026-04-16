@@ -67,23 +67,31 @@ type SubmitJobsMarkFailedRpcRow = {
   next_retry_at?: string | null;
 };
 type SubmitJobsIdRow = { id?: string | null };
-type SubmitJobsRetryCountRow = { retry_count?: number | null };
+type SubmitJobsRetryCountRow = { retry_count?: number | null; status?: string | null };
+type QueueRpcError = {
+  message?: string | null;
+  code?: string | null;
+  details?: string | null;
+  hint?: string | null;
+  status?: number | string | null;
+  statusCode?: number | string | null;
+};
 
 type SubmitJobsRpcCompatBoundary = {
   rpc(
     fn: "submit_jobs_claim",
     args: SubmitJobsClaimLegacyArgs,
-  ): Promise<{ data: SubmitJobsClaimRpcRow[] | null; error: { message?: string } | null }>;
+  ): Promise<{ data: SubmitJobsClaimRpcRow[] | null; error: QueueRpcError | null }>;
   rpc(
     fn: "submit_jobs_mark_completed",
     args: SubmitJobsMarkCompletedLegacyArgs,
-  ): Promise<{ data: null; error: { message?: string } | null }>;
+  ): Promise<{ data: null; error: QueueRpcError | null }>;
   rpc(
     fn: "submit_jobs_mark_failed",
     args: SubmitJobsMarkFailedLegacyArgs,
   ): Promise<{
     data: SubmitJobsMarkFailedRpcRow[] | SubmitJobsMarkFailedRpcRow | null;
-    error: { message?: string } | null;
+    error: QueueRpcError | null;
   }>;
 };
 type JobQueueSupabaseClient = Pick<SupabaseClient<Database>, "from" | "rpc">;
@@ -175,6 +183,7 @@ const parseSubmitJobRetryCountRow = (value: unknown): SubmitJobsRetryCountRow | 
       value.retry_count == null
         ? null
         : getNumberOrDefault((value as SubmitJobsRetryCountRow).retry_count, 0),
+    status: getStringOrNull((value as SubmitJobsRetryCountRow).status),
   };
 };
 
@@ -203,8 +212,37 @@ const parseSubmitJobMetricsRow = (value: unknown): SubmitJobMetrics => {
   };
 };
 
-const queueInfraError = (scope: string, error: { message?: string | null } | null) =>
-  new Error(`${scope}: ${String(error?.message || "unknown")}`);
+const rpcErrorText = (error: QueueRpcError | null | undefined) => {
+  if (!error) return "";
+  return [
+    error.message,
+    error.code,
+    error.details,
+    error.hint,
+    error.status,
+    error.statusCode,
+  ]
+    .map((value) => String(value ?? "").trim())
+    .filter(Boolean)
+    .join(" ");
+};
+
+const isMissingOrIncompatibleRpcError = (fn: string, error: QueueRpcError | null | undefined) => {
+  const haystack = rpcErrorText(error).toLowerCase();
+  if (!haystack) return false;
+  return (
+    haystack.includes("pgrst202") ||
+    haystack.includes("schema cache") ||
+    haystack.includes("could not find") ||
+    haystack.includes("not found") ||
+    haystack.includes("function not found") ||
+    haystack.includes("404") ||
+    (haystack.includes(fn.toLowerCase()) && haystack.includes("function"))
+  );
+};
+
+const queueInfraError = (scope: string, error: QueueRpcError | null) =>
+  new Error(`${scope}: ${rpcErrorText(error) || "unknown"}`);
 
 const toBool = (value: unknown): boolean => {
   const v = String(value ?? "").trim().toLowerCase();
@@ -246,7 +284,7 @@ export const COMPACTION_DELAY_MS = toInt(
 const JOB_SELECT =
   "id,client_request_id,job_type,entity_type,entity_id,entity_key,payload,status,retry_count,error,created_at,started_at,worker_id,next_retry_at,locked_until,processed_at";
 const SUBMIT_JOBS_ID_SELECT = "id";
-const SUBMIT_JOBS_RETRY_COUNT_SELECT = "retry_count";
+const SUBMIT_JOBS_RETRY_COUNT_SELECT = "retry_count,status";
 
 const buildSubmitJobInsert = (input: EnqueueSubmitJobInput): SubmitJobsInsert => ({
   client_request_id: input.clientRequestId ?? null,
@@ -391,7 +429,7 @@ async function markSubmitJobCompletedWithClient(
   jobId: string,
 ): Promise<void> {
   const queueRpcCompat = toQueueRpcCompat(supabaseClient);
-  const first = await queueRpcCompat.rpc("submit_jobs_mark_completed", { p_job_id: jobId });
+  const first = await supabaseClient.rpc("submit_jobs_mark_completed", { p_id: jobId });
   if (!first.error) {
     const normalize = await supabaseClient
       .from("submit_jobs")
@@ -401,9 +439,23 @@ async function markSubmitJobCompletedWithClient(
     return;
   }
 
-  const msg = String(first.error.message || "");
-  const fallbackNeeded = msg.includes("submit_jobs_mark_completed") && msg.includes("schema cache");
-  if (!fallbackNeeded) throw queueInfraError("markSubmitJobCompleted.rpc", first.error);
+  if (!isMissingOrIncompatibleRpcError("submit_jobs_mark_completed", first.error)) {
+    throw queueInfraError("markSubmitJobCompleted.rpc", first.error);
+  }
+
+  const legacy = await queueRpcCompat.rpc("submit_jobs_mark_completed", { p_job_id: jobId });
+  if (!legacy.error) {
+    const normalize = await supabaseClient
+      .from("submit_jobs")
+      .update(buildSubmitJobsCompletedCleanupUpdate())
+      .eq("id", jobId);
+    if (normalize.error) throw queueInfraError("markSubmitJobCompleted.normalizeCleanup", normalize.error);
+    return;
+  }
+
+  if (!isMissingOrIncompatibleRpcError("submit_jobs_mark_completed", legacy.error)) {
+    throw queueInfraError("markSubmitJobCompleted.legacyRpc", legacy.error);
+  }
 
   const fallback = await supabaseClient
     .from("submit_jobs")
@@ -418,17 +470,29 @@ async function markSubmitJobFailedWithClient(
   message: string,
 ): Promise<{ retryCount: number; status: string }> {
   const queueRpcCompat = toQueueRpcCompat(supabaseClient);
-  const first = await queueRpcCompat.rpc("submit_jobs_mark_failed", {
-    p_job_id: jobId,
+  const first = await supabaseClient.rpc("submit_jobs_mark_failed", {
+    p_id: jobId,
     p_error: message,
   });
   if (!first.error) {
     return parseSubmitJobFailedRpcResult(first.data);
   }
 
-  const msg = String(first.error.message || "");
-  const fallbackNeeded = msg.includes("submit_jobs_mark_failed") && msg.includes("schema cache");
-  if (!fallbackNeeded) throw queueInfraError("markSubmitJobFailed.rpc", first.error);
+  if (!isMissingOrIncompatibleRpcError("submit_jobs_mark_failed", first.error)) {
+    throw queueInfraError("markSubmitJobFailed.rpc", first.error);
+  }
+
+  const legacy = await queueRpcCompat.rpc("submit_jobs_mark_failed", {
+    p_job_id: jobId,
+    p_error: message,
+  });
+  if (!legacy.error) {
+    return parseSubmitJobFailedRpcResult(legacy.data);
+  }
+
+  if (!isMissingOrIncompatibleRpcError("submit_jobs_mark_failed", legacy.error)) {
+    throw queueInfraError("markSubmitJobFailed.legacyRpc", legacy.error);
+  }
 
   const current = await supabaseClient
     .from("submit_jobs")

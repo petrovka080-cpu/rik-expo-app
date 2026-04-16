@@ -111,6 +111,33 @@ describe("buyer attachments mutation owner", () => {
     expect(result.data).toEqual({ uploadCount: 2, failedCount: 1 });
   });
 
+  it("matches supplier attachments by normalized supplier key", async () => {
+    const uploadProposalAttachment = jest.fn(async () => undefined);
+
+    const result = await uploadSupplierProposalAttachmentsMutation({
+      createdProposals: [
+        { proposal_id: "proposal-1", supplier: "Acme, Ltd." },
+      ],
+      attachmentsNow: {
+        "acme ltd": {
+          file: { name: "quote.pdf", uri: "file:///quote.pdf" },
+          name: "quote.pdf",
+        },
+      },
+      uploadProposalAttachment,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data).toEqual({ uploadCount: 1, failedCount: 0 });
+    expect(uploadProposalAttachment).toHaveBeenCalledWith(
+      "proposal-1",
+      expect.objectContaining({ name: "quote.pdf" }),
+      "quote.pdf",
+      "supplier_quote",
+    );
+  });
+
   it("uses canonical attachment lookup before generating proposal_html", async () => {
     const uploadProposalAttachment = jest.fn(async () => undefined);
 
