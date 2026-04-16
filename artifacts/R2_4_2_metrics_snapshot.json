@@ -1,0 +1,365 @@
+{
+  "wave": "R2.4",
+  "target": "https://nxrnjywzxxfdpqmzjorh.supabase.co",
+  "startedAt": "2026-04-16T14:08:04.595Z",
+  "completedAt": "2026-04-16T14:08:15.464Z",
+  "preCounts": {
+    "snapshots": 2,
+    "rebuildEvents": 3,
+    "runtimeMetrics": 0
+  },
+  "postCounts": {
+    "snapshots": 2,
+    "rebuildEvents": 5,
+    "runtimeMetrics": 2
+  },
+  "factStatus": {
+    "is_fresh": true,
+    "rebuilt_at": "2026-04-16T12:18:29.17392+00:00",
+    "fallback_reason": "fresh_projection",
+    "selected_source": "projection",
+    "source_row_count": 122,
+    "projection_age_ms": 6581213,
+    "last_rebuild_error": null,
+    "projection_version": "r2_2_issue_fact_v1",
+    "last_rebuild_status": "success",
+    "projected_row_count": 122,
+    "meta_source_row_count": 122,
+    "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+    "last_rebuild_started_at": "2026-04-16T12:18:29.17392+00:00",
+    "last_rebuild_duration_ms": 0,
+    "last_rebuild_finished_at": "2026-04-16T12:18:29.17392+00:00",
+    "meta_projected_row_count": 122,
+    "expected_projection_version": "r2_2_issue_fact_v1",
+    "meta_source_high_water_mark": "2026-04-01T09:26:27.498056+00:00"
+  },
+  "rebuild": {
+    "noCost": {
+      "status": "success",
+      "row_count": 15,
+      "generated_at": "2026-04-16T14:08:11.038288+00:00",
+      "payload_hash": "8b361d462534b64a4dd322c36e82ebe1",
+      "snapshot_key": "7bedde0705e8b5085842d6f7dd92efee",
+      "source_row_count": 122,
+      "projection_version": "r2_4_works_snapshot_v1",
+      "rebuild_duration_ms": 0,
+      "fact_fallback_reason": "fresh_projection",
+      "fact_selected_source": "projection",
+      "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00"
+    },
+    "withCost": {
+      "status": "success",
+      "row_count": 15,
+      "generated_at": "2026-04-16T14:08:11.492128+00:00",
+      "payload_hash": "079ba637354a1ebaff30e80c97a1e37b",
+      "snapshot_key": "31d3a9e057bfd6810f75b8f4fd409cfa",
+      "source_row_count": 122,
+      "projection_version": "r2_4_works_snapshot_v1",
+      "rebuild_duration_ms": 0,
+      "fact_fallback_reason": "fresh_projection",
+      "fact_selected_source": "projection",
+      "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00"
+    }
+  },
+  "snapshot": {
+    "snapshot_key": "7bedde0705e8b5085842d6f7dd92efee",
+    "generated_at": "2026-04-16T14:08:11.038288+00:00",
+    "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+    "source_row_count": 122,
+    "projection_version": "r2_4_works_snapshot_v1",
+    "fact_projection_version": "r2_2_issue_fact_v1",
+    "fact_selected_source": "projection",
+    "fact_fallback_reason": "fresh_projection",
+    "rebuild_status": "success",
+    "rebuild_duration_ms": 0,
+    "row_count": 15,
+    "payload_hash": "8b361d462534b64a4dd322c36e82ebe1"
+  },
+  "status": {
+    "fresh": {
+      "age_ms": 925,
+      "date_to": null,
+      "is_fresh": true,
+      "date_from": null,
+      "row_count": 15,
+      "fact_status": {
+        "is_fresh": true,
+        "rebuilt_at": "2026-04-16T12:18:29.17392+00:00",
+        "fallback_reason": "fresh_projection",
+        "selected_source": "projection",
+        "source_row_count": 122,
+        "projection_age_ms": 6582790,
+        "last_rebuild_error": null,
+        "projection_version": "r2_2_issue_fact_v1",
+        "last_rebuild_status": "success",
+        "projected_row_count": 122,
+        "meta_source_row_count": 122,
+        "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+        "last_rebuild_started_at": "2026-04-16T12:18:29.17392+00:00",
+        "last_rebuild_duration_ms": 0,
+        "last_rebuild_finished_at": "2026-04-16T12:18:29.17392+00:00",
+        "meta_projected_row_count": 122,
+        "expected_projection_version": "r2_2_issue_fact_v1",
+        "meta_source_high_water_mark": "2026-04-01T09:26:27.498056+00:00"
+      },
+      "object_name": null,
+      "generated_at": "2026-04-16T14:08:11.038288+00:00",
+      "payload_hash": "8b361d462534b64a4dd322c36e82ebe1",
+      "snapshot_key": "7bedde0705e8b5085842d6f7dd92efee",
+      "include_costs": false,
+      "rebuild_status": "success",
+      "fact_rebuilt_at": "2026-04-16T12:18:29.17392+00:00",
+      "fallback_reason": "none",
+      "object_name_key": "",
+      "selected_source": "snapshot",
+      "source_row_count": 122,
+      "projection_version": "r2_4_works_snapshot_v1",
+      "rebuild_duration_ms": 0,
+      "fact_fallback_reason": "fresh_projection",
+      "fact_selected_source": "projection",
+      "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+      "fact_projection_version": "r2_2_issue_fact_v1",
+      "current_source_row_count": 122,
+      "fact_projected_row_count": 122,
+      "expected_projection_version": "r2_4_works_snapshot_v1",
+      "current_source_high_water_mark": "2026-04-01T09:26:27.498056+00:00"
+    },
+    "versionMismatch": {
+      "age_ms": 2250,
+      "date_to": null,
+      "is_fresh": false,
+      "date_from": null,
+      "row_count": 15,
+      "fact_status": {
+        "is_fresh": true,
+        "rebuilt_at": "2026-04-16T12:18:29.17392+00:00",
+        "fallback_reason": "fresh_projection",
+        "selected_source": "projection",
+        "source_row_count": 122,
+        "projection_age_ms": 6584114,
+        "last_rebuild_error": null,
+        "projection_version": "r2_2_issue_fact_v1",
+        "last_rebuild_status": "success",
+        "projected_row_count": 122,
+        "meta_source_row_count": 122,
+        "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+        "last_rebuild_started_at": "2026-04-16T12:18:29.17392+00:00",
+        "last_rebuild_duration_ms": 0,
+        "last_rebuild_finished_at": "2026-04-16T12:18:29.17392+00:00",
+        "meta_projected_row_count": 122,
+        "expected_projection_version": "r2_2_issue_fact_v1",
+        "meta_source_high_water_mark": "2026-04-01T09:26:27.498056+00:00"
+      },
+      "object_name": null,
+      "generated_at": "2026-04-16T14:08:11.038288+00:00",
+      "payload_hash": "8b361d462534b64a4dd322c36e82ebe1",
+      "snapshot_key": "7bedde0705e8b5085842d6f7dd92efee",
+      "include_costs": false,
+      "rebuild_status": "success",
+      "fact_rebuilt_at": "2026-04-16T12:18:29.17392+00:00",
+      "fallback_reason": "version_mismatch",
+      "object_name_key": "",
+      "selected_source": "facts",
+      "source_row_count": 122,
+      "projection_version": "r2_4_works_snapshot_v1",
+      "rebuild_duration_ms": 0,
+      "fact_fallback_reason": "fresh_projection",
+      "fact_selected_source": "projection",
+      "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+      "fact_projection_version": "r2_2_issue_fact_v1",
+      "current_source_row_count": 122,
+      "fact_projected_row_count": 122,
+      "expected_projection_version": "r2_4_wrong_version",
+      "current_source_high_water_mark": "2026-04-01T09:26:27.498056+00:00"
+    },
+    "expired": {
+      "age_ms": 3789,
+      "date_to": null,
+      "is_fresh": false,
+      "date_from": null,
+      "row_count": 15,
+      "fact_status": {
+        "is_fresh": true,
+        "rebuilt_at": "2026-04-16T12:18:29.17392+00:00",
+        "fallback_reason": "fresh_projection",
+        "selected_source": "projection",
+        "source_row_count": 122,
+        "projection_age_ms": 6585653,
+        "last_rebuild_error": null,
+        "projection_version": "r2_2_issue_fact_v1",
+        "last_rebuild_status": "success",
+        "projected_row_count": 122,
+        "meta_source_row_count": 122,
+        "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+        "last_rebuild_started_at": "2026-04-16T12:18:29.17392+00:00",
+        "last_rebuild_duration_ms": 0,
+        "last_rebuild_finished_at": "2026-04-16T12:18:29.17392+00:00",
+        "meta_projected_row_count": 122,
+        "expected_projection_version": "r2_2_issue_fact_v1",
+        "meta_source_high_water_mark": "2026-04-01T09:26:27.498056+00:00"
+      },
+      "object_name": null,
+      "generated_at": "2026-04-16T14:08:11.038288+00:00",
+      "payload_hash": "8b361d462534b64a4dd322c36e82ebe1",
+      "snapshot_key": "7bedde0705e8b5085842d6f7dd92efee",
+      "include_costs": false,
+      "rebuild_status": "success",
+      "fact_rebuilt_at": "2026-04-16T12:18:29.17392+00:00",
+      "fallback_reason": "expired_snapshot",
+      "object_name_key": "",
+      "selected_source": "facts",
+      "source_row_count": 122,
+      "projection_version": "r2_4_works_snapshot_v1",
+      "rebuild_duration_ms": 0,
+      "fact_fallback_reason": "fresh_projection",
+      "fact_selected_source": "projection",
+      "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+      "fact_projection_version": "r2_2_issue_fact_v1",
+      "current_source_row_count": 122,
+      "fact_projected_row_count": 122,
+      "expected_projection_version": "r2_4_works_snapshot_v1",
+      "current_source_high_water_mark": "2026-04-01T09:26:27.498056+00:00"
+    }
+  },
+  "drift": {
+    "noCost": {
+      "filters": {
+        "to": null,
+        "from": null,
+        "object_name": null,
+        "include_costs": false
+      },
+      "checked_at": "2026-04-16T14:08:12.411487",
+      "diff_count": 0,
+      "works_equal": true,
+      "snapshot_key": "7bedde0705e8b5085842d6f7dd92efee",
+      "is_drift_free": true,
+      "summary_equal": true,
+      "facts_row_count": 15,
+      "snapshot_exists": true,
+      "facts_payload_hash": "8b361d462534b64a4dd322c36e82ebe1",
+      "projection_version": "r2_4_works_snapshot_v1",
+      "snapshot_row_count": 15,
+      "snapshot_payload_hash": "8b361d462534b64a4dd322c36e82ebe1"
+    },
+    "withCost": {
+      "filters": {
+        "to": null,
+        "from": null,
+        "object_name": null,
+        "include_costs": true
+      },
+      "checked_at": "2026-04-16T14:08:12.845018",
+      "diff_count": 0,
+      "works_equal": true,
+      "snapshot_key": "31d3a9e057bfd6810f75b8f4fd409cfa",
+      "is_drift_free": true,
+      "summary_equal": true,
+      "facts_row_count": 15,
+      "snapshot_exists": true,
+      "facts_payload_hash": "079ba637354a1ebaff30e80c97a1e37b",
+      "projection_version": "r2_4_works_snapshot_v1",
+      "snapshot_row_count": 15,
+      "snapshot_payload_hash": "079ba637354a1ebaff30e80c97a1e37b"
+    }
+  },
+  "runtime": {
+    "latestMetric": {
+      "id": 1,
+      "recorded_at": "2026-04-16T14:08:15.305183+00:00",
+      "event_name": "director_report_works_snapshot_used",
+      "snapshot_key": "7bedde0705e8b5085842d6f7dd92efee",
+      "date_from": null,
+      "date_to": null,
+      "object_name": null,
+      "object_name_key": "",
+      "include_costs": false,
+      "selected_source": "snapshot",
+      "fallback_reason": "none",
+      "is_fresh": true,
+      "projection_version": "r2_4_works_snapshot_v1",
+      "generated_at": "2026-04-16T14:08:11.038288+00:00",
+      "age_ms": 4266,
+      "source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+      "current_source_high_water_mark": "2026-04-01T09:26:27.498056+00:00",
+      "source_row_count": 122,
+      "current_source_row_count": 122,
+      "fact_selected_source": "projection",
+      "fact_fallback_reason": "fresh_projection",
+      "rebuild_status": "success",
+      "rebuild_duration_ms": 0
+    },
+    "reportSmoke": {
+      "noCost": {
+        "totalPositions": 122,
+        "issueCostTotal": 0,
+        "worksRows": 15
+      },
+      "withCost": {
+        "totalPositions": 122,
+        "issueCostTotal": 360661.39899680804,
+        "worksRows": 15
+      }
+    }
+  },
+  "localGates": [
+    {
+      "command": "npx jest src/screens/director/directorReportSnapshotEnvelopeMigration.test.ts --runInBand --no-coverage",
+      "status": "PASS"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "status": "PASS_WITH_EXISTING_WARNINGS"
+    },
+    {
+      "command": "npx jest --no-coverage",
+      "status": "PASS"
+    }
+  ],
+  "remoteGates": [
+    {
+      "command": "npx supabase db push --yes",
+      "status": "PASS"
+    },
+    {
+      "command": "npx supabase migration list --linked",
+      "status": "PASS"
+    },
+    {
+      "command": "director_report_works_snapshot_rebuild_v1",
+      "status": "PASS"
+    },
+    {
+      "command": "director_report_works_snapshot_status_v1",
+      "status": "PASS"
+    },
+    {
+      "command": "director_report_works_snapshot_drift_v1",
+      "status": "PASS"
+    },
+    {
+      "command": "director_report_fetch_works_v1 snapshot usage",
+      "status": "PASS"
+    }
+  ],
+  "checks": {
+    "factLayerObservable": true,
+    "rebuildNoCostOk": true,
+    "rebuildWithCostOk": true,
+    "snapshotExists": true,
+    "freshnessFresh": true,
+    "driftNoCostZero": true,
+    "driftWithCostZero": true,
+    "versionMismatchDetected": true,
+    "expiredDetected": true,
+    "consumingPathUsesSnapshot": true,
+    "noCostSemanticsPreserved": true,
+    "reportShapePreserved": true
+  },
+  "overall": "GREEN",
+  "ota": "not published; SQL migration + test only; client bundle unchanged"
+}
