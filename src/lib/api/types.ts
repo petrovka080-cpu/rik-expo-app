@@ -23,6 +23,7 @@ export type ReqItemRow = {
   app_code?: string | null;
   note?: string | null;
   line_no?: number | null;
+  updated_at?: string | null;
 };
 
 export type RequestMeta = {
@@ -49,6 +50,7 @@ export type RequestRecord = {
   system_code?: string | null;
   zone_code?: string | null;
   created_at?: string | null;
+  updated_at?: string | null;
 };
 
 export type DirectorPendingRow = {

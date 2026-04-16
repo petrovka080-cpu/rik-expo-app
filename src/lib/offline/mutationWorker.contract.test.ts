@@ -295,6 +295,68 @@ describe("mutationWorker contract", () => {
     ).toBe(true);
   });
 
+  it("uses server revision to avoid false remote divergence on retryable failures", async () => {
+    const baseServerRevision = "2026-04-01T10:00:00.000Z";
+    const snapshot: ForemanLocalDraftSnapshot = {
+      ...createSnapshot("req-worker-revision"),
+      baseServerRevision,
+      updatedAt: "2026-04-01T10:05:00.000Z",
+      items: Array.from({ length: 150 }, (_, index) => ({
+        local_id: `local-${index}`,
+        remote_item_id: `item-${index}`,
+        rik_code: `MAT-${index}`,
+        name_human: `Material ${index}`,
+        qty: index + 1,
+        uom: "pcs",
+        status: "draft",
+        note: null,
+        app_code: null,
+        kind: "material",
+        line_no: index + 1,
+      })),
+    };
+    const remoteSnapshot: ForemanLocalDraftSnapshot = {
+      ...snapshot,
+      updatedAt: "2026-04-01T10:06:00.000Z",
+      items: [],
+    };
+    await replaceForemanDurableDraftSnapshot(snapshot);
+    await enqueueForemanMutation({
+      draftKey: snapshot.requestId,
+      requestId: snapshot.requestId,
+      snapshotUpdatedAt: snapshot.updatedAt,
+      mutationKind: "background_sync",
+      triggerSource: "manual_retry",
+    });
+
+    const syncSnapshot = jest.fn(async (_params: unknown) => {
+      throw new Error("Network request failed");
+    });
+    const inspectRemoteDraft = jest.fn(async () => ({
+      snapshot: remoteSnapshot,
+      status: "draft",
+      isTerminal: false,
+    }));
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+      inspectRemoteDraft,
+      getNetworkOnline: () => true,
+    });
+
+    const result = await flushForemanMutationQueue(deps);
+    const queue = await loadForemanMutationQueue();
+    const durableState = getForemanDurableDraftState();
+
+    expect(result.failed).toBe(true);
+    expect(queue[0]).toMatchObject({
+      lifecycleStatus: "retry_scheduled",
+      lastErrorKind: "network_unreachable",
+    });
+    expect(durableState.conflictType).toBe("retryable_sync_failure");
+    expect(inspectRemoteDraft).toHaveBeenCalledTimes(2);
+  });
+
   it("turns exhausted retries into failed_non_retryable terminal state", async () => {
     const snapshot = createSnapshot("req-worker-exhausted");
     await replaceForemanDurableDraftSnapshot(snapshot);

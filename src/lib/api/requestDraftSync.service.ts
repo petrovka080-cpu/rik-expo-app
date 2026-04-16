@@ -176,6 +176,7 @@ const asReqItemRow = (value: unknown): CatalogReqItemRow | null => {
     app_code: asTrimmedString(value.app_code) || null,
     note: asTrimmedString(value.note) || null,
     line_no: Number.isFinite(Number(value.line_no)) ? Number(value.line_no) : null,
+    updated_at: asTrimmedString(value.updated_at) || null,
   };
 };
 

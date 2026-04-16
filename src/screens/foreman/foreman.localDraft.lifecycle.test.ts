@@ -6,6 +6,8 @@ import {
   replaceForemanDurableDraftSnapshot,
 } from "./foreman.durableDraft.store";
 import {
+  areForemanLocalDraftSnapshotsEqual,
+  compareForemanLocalDraftSnapshotsByVersion,
   loadForemanRemoteDraftSnapshot,
   resolveForemanDraftBootstrap,
   type ForemanLocalDraftSnapshot,
@@ -123,5 +125,69 @@ describe("foreman local draft lifecycle boundary", () => {
       },
       isTerminal: true,
     });
+  });
+
+  it("builds server revision metadata and keeps semantic compare fallback explicit", async () => {
+    const local = {
+      ...sampleSnapshot,
+      baseServerRevision: "2026-04-01T10:00:00.000Z",
+      updatedAt: "2026-04-01T10:05:00.000Z",
+      items: [
+        {
+          ...sampleSnapshot.items[0],
+          qty: 5,
+        },
+      ],
+    };
+    const remote = {
+      ...sampleSnapshot,
+      baseServerRevision: "2026-04-01T10:00:00.000Z",
+      updatedAt: "2026-04-01T10:06:00.000Z",
+    };
+
+    const revisionCompare = compareForemanLocalDraftSnapshotsByVersion(local, remote, {
+      ignoreUpdatedAt: true,
+    });
+
+    expect(revisionCompare).toMatchObject({
+      source: "server_revision",
+      equal: true,
+      fallbackRequired: false,
+    });
+    expect(
+      areForemanLocalDraftSnapshotsEqual(local, remote, {
+        ignoreUpdatedAt: true,
+        ignoreLastError: true,
+      }),
+    ).toBe(false);
+  });
+
+  it("uses request and item updated_at as remote draft server high-water mark", async () => {
+    mockFetchRequestDetails.mockResolvedValue({
+      id: "req-lifecycle-1",
+      status: "draft",
+      display_no: "REQ-9999/2026",
+      updated_at: "2026-04-01T10:00:00.000Z",
+    });
+    mockListRequestItems.mockResolvedValue([
+      {
+        id: "item-1",
+        request_id: "req-lifecycle-1",
+        rik_code: "MAT-1",
+        name_human: "Material 1",
+        qty: 2,
+        uom: "pcs",
+        status: "draft",
+        note: null,
+        app_code: null,
+        updated_at: "2026-04-01T10:03:00.000Z",
+      },
+    ]);
+
+    const result = await loadForemanRemoteDraftSnapshot({
+      requestId: "req-lifecycle-1",
+    });
+
+    expect(result.snapshot?.baseServerRevision).toBe("2026-04-01T10:03:00.000Z");
   });
 });

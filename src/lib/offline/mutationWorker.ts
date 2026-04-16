@@ -28,6 +28,10 @@ import {
   type ForemanLocalDraftSnapshot,
   type ForemanLocalDraftSyncResult,
 } from "../../screens/foreman/foreman.localDraft";
+import {
+  areForemanLocalDraftSnapshotsEqual,
+  compareForemanLocalDraftSnapshotsByVersion,
+} from "../../screens/foreman/foreman.localDraft.version";
 import { FOREMAN_LOCAL_ONLY_REQUEST_ID } from "../../screens/foreman/foreman.localDraft.constants";
 import {
   clearForemanMutationsForDraft,
@@ -346,22 +350,20 @@ const deriveConflictFromFailure = async (params: {
       remoteStatus = remote.status;
       if (remote.isTerminal) {
         conflictType = "server_terminal_conflict";
-      } else if (
-        conflictType === "retryable_sync_failure" &&
-        remote.snapshot &&
-        params.snapshot &&
-        JSON.stringify({
-          ...params.snapshot,
-          updatedAt: "",
-          lastError: null,
-        }) !==
-          JSON.stringify({
-            ...remote.snapshot,
-            updatedAt: "",
-            lastError: null,
-          })
-      ) {
-        conflictType = "remote_divergence_requires_attention";
+      } else if (conflictType === "retryable_sync_failure" && remote.snapshot && params.snapshot) {
+        const versionCompare = compareForemanLocalDraftSnapshotsByVersion(params.snapshot, remote.snapshot, {
+          ignoreUpdatedAt: true,
+        });
+        const remoteDiverged =
+          versionCompare.source === "server_revision" && versionCompare.equal === true
+            ? false
+            : !areForemanLocalDraftSnapshotsEqual(params.snapshot, remote.snapshot, {
+                ignoreUpdatedAt: true,
+                ignoreLastError: true,
+              });
+        if (remoteDiverged) {
+          conflictType = "remote_divergence_requires_attention";
+        }
       }
     } catch (error) {
       const appError = normalizeAppError(

@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-04-16T14:52:30.836Z",
+  "wave": "O1.2",
+  "targeted": [
+    {
+      "command": "npx jest src/screens/foreman/foreman.localDraft.lifecycle.test.ts src/lib/offline/mutationWorker.contract.test.ts --runInBand --no-coverage",
+      "status": "PASS"
+    }
+  ],
+  "fullGates": [
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "status": "PASS_WITH_EXISTING_WARNINGS",
+      "warnings": 7
+    },
+    {
+      "command": "npx jest --no-coverage",
+      "status": "PASS",
+      "testSuites": "1 skipped, 298 passed, 298 of 299 total",
+      "tests": "1 skipped, 1803 passed, 1804 total"
+    }
+  ],
+  "sql": "not changed",
+  "remoteDbPush": "not required",
+  "ota": {
+    "status": "PUBLISHED",
+    "command": "npx eas update --branch production --message \"O1: add version-based offline sync\"",
+    "branch": "production",
+    "runtimeVersion": "1.0.0",
+    "updateGroupId": "76fed42f-e6eb-43bb-b9a8-83e86e10c7a4",
+    "androidUpdateId": "019d96c6-316f-76c0-8633-7bdefa623d58",
+    "iosUpdateId": "019d96c6-316f-7c29-b934-05e334d0ce09"
+  },
+  "status": "GREEN"
+}

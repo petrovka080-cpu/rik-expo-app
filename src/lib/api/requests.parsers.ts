@@ -67,6 +67,7 @@ export function mapRequestRow(raw: unknown): RequestRecord | null {
     system_code: norm(raw.system_code),
     zone_code: norm(raw.zone_code),
     created_at: norm(raw.created_at),
+    updated_at: norm(raw.updated_at),
   };
 }
 
@@ -85,6 +86,7 @@ export function parseRequestItemRow(raw: unknown): ReqItemRow | null {
     supplier_hint: typeof raw.supplier_hint === "string" ? raw.supplier_hint : null,
     app_code: typeof raw.app_code === "string" ? raw.app_code : null,
     note: typeof raw.note === "string" ? raw.note : null,
+    updated_at: typeof raw.updated_at === "string" ? raw.updated_at : null,
   };
 }
 

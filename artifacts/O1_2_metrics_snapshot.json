@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-04-16T14:52:30.836Z",
+  "wave": "O1.2",
+  "selectedSlice": "foreman mutation worker remote divergence compare",
+  "itemCount": 150,
+  "iterations": 250,
+  "oldSemanticJsonCompareMs": 26.956,
+  "newRevisionCompareMs": 0.386,
+  "speedup": 69.83,
+  "versionCompare": {
+    "equal": true,
+    "source": "server_revision",
+    "fallbackRequired": false,
+    "reason": "base server revision matches",
+    "leftRevision": {
+      "schemaVersion": 1,
+      "ownerId": "srv:req-o1-proof",
+      "requestId": "req-o1-proof",
+      "localUpdatedAt": "2026-04-01T10:05:00.000Z",
+      "baseServerRevision": "2026-04-01T10:00:00.000Z",
+      "itemCount": 150,
+      "pendingDeleteCount": 0,
+      "submitRequested": false
+    },
+    "rightRevision": {
+      "schemaVersion": 1,
+      "ownerId": "srv:req-o1-proof",
+      "requestId": "req-o1-proof",
+      "localUpdatedAt": "2026-04-01T10:06:00.000Z",
+      "baseServerRevision": "2026-04-01T10:00:00.000Z",
+      "itemCount": 0,
+      "pendingDeleteCount": 0,
+      "submitRequested": false
+    }
+  },
+  "semanticEqual": false,
+  "checks": {
+    "selectedPathUsesVersionCompare": true,
+    "oldInlineJsonCompareRemoved": true,
+    "baseServerRevisionInSnapshot": true,
+    "fallbackPreserved": true,
+    "semanticFallbackStillDetectsContentDiff": true,
+    "versionCompareAvoidsFalseRemoteDivergence": true,
+    "largeDraftItemCount": true
+  },
+  "status": "GREEN"
+}

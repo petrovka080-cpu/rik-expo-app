@@ -47,6 +47,7 @@ export type ReqItemRow = {
   note?: string | null;
   rik_code?: string | null;
   line_no?: number | null;
+  updated_at?: string | null;
 };
 
 export type ForemanRequestSummary = {
@@ -69,6 +70,7 @@ export type RequestDetails = {
   year?: number | null;
   seq?: number | null;
   created_at?: string | null;
+  updated_at?: string | null;
   need_by?: string | null;
   comment?: string | null;
   foreman_name?: string | null;
@@ -205,6 +207,7 @@ const mapRequestItemRow = (raw: unknown, requestId: string): ReqItemRow | null =
     note: pickFirstString(row.note, row.comment),
     rik_code: pickFirstString(row.rik_code, row.code),
     line_no: lineNo,
+    updated_at: pickFirstString(row.updated_at, row.updatedAt),
   };
 };
 
@@ -365,6 +368,7 @@ const mapDetailsFromRow = (row: unknown): RequestDetails | null => {
     year: parseNumberValue(source.year, source.request_year, source.requestYear),
     seq: parseNumberValue(source.seq, source.request_seq, source.requestSeq),
     created_at: pickFirstString(source.created_at, source.created, source.createdAt),
+    updated_at: pickFirstString(source.updated_at, source.updatedAt),
     need_by: pickFirstString(source.need_by, source.need_by_date, source.needBy),
     comment: comment ?? null,
     foreman_name: pickFirstString(source.foreman_name, source.foreman, source.foremanName),
@@ -607,7 +611,7 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
   const id = norm(requestId);
   if (!id) return null;
   const requestDetailsSelect =
-    `id,status,display_no,year,seq,created_at,need_by,comment,foreman_name,
+    `id,status,display_no,year,seq,created_at,updated_at,need_by,comment,foreman_name,
      object_type_code,level_code,system_code,zone_code,
      object:ref_object_types(*),
      level:ref_levels(*),
@@ -816,7 +820,7 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
     const { data, error } = await supabase
       .from("request_items")
       .select(
-        "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order",
+        "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order,updated_at",
       )
       .eq("request_id", id)
       .order("row_no", { ascending: true })
@@ -886,7 +890,7 @@ export async function requestItemUpdateQty(
       .update({ qty: numericQty } satisfies RequestItemsUpdate)
       .eq("id", id)
       .select(
-        "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order",
+        "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order,updated_at",
       )
       .maybeSingle();
     if (error) throw error;

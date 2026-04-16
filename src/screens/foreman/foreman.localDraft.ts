@@ -21,6 +21,18 @@ import {
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { FOREMAN_LOCAL_ONLY_REQUEST_ID } from "./foreman.localDraft.constants";
 import type { RequestDraftMeta } from "./foreman.types";
+import {
+  resolveForemanDraftServerRevision,
+} from "./foreman.localDraft.version";
+export {
+  areForemanLocalDraftSnapshotsEqual,
+  buildForemanLocalDraftRevisionStamp,
+  compareForemanLocalDraftSnapshotsByVersion,
+} from "./foreman.localDraft.version";
+export type {
+  ForemanLocalDraftRevisionStamp,
+  ForemanLocalDraftVersionCompareResult,
+} from "./foreman.localDraft.version";
 
 const LEGACY_LOCAL_DRAFT_STORAGE_KEY = "foreman_materials_local_draft_v1";
 export { FOREMAN_LOCAL_ONLY_REQUEST_ID } from "./foreman.localDraft.constants";
@@ -66,6 +78,7 @@ export type ForemanLocalDraftSnapshot = {
   submitRequested: boolean;
   lastError: string | null;
   updatedAt: string;
+  baseServerRevision?: string | null;
 };
 
 export type ForemanDraftAppendInput = {
@@ -254,6 +267,7 @@ const parseForemanLocalDraftSnapshotRecord = (
     submitRequested: row.submitRequested === true,
     lastError: trim(row.lastError) || null,
     updatedAt: trim(row.updatedAt) || new Date().toISOString(),
+    baseServerRevision: trim(row.baseServerRevision) || null,
   };
 
   return hasForemanLocalDraftContent(snapshot) ? snapshot : null;
@@ -276,26 +290,6 @@ const loadLegacyForemanLocalDraftSnapshot = async (): Promise<ForemanLocalDraftS
 const clearLegacyForemanLocalDraftSnapshot = async (): Promise<void> => {
   await legacyDraftStorage.removeItem(LEGACY_LOCAL_DRAFT_STORAGE_KEY);
 };
-
-const normalizeSnapshotForCompare = (
-  snapshot: ForemanLocalDraftSnapshot | null | undefined,
-  options?: { ignoreUpdatedAt?: boolean; ignoreLastError?: boolean },
-) => {
-  if (!snapshot) return null;
-  return {
-    ...snapshot,
-    updatedAt: options?.ignoreUpdatedAt ? "" : snapshot.updatedAt,
-    lastError: options?.ignoreLastError ? null : snapshot.lastError,
-  };
-};
-
-export const areForemanLocalDraftSnapshotsEqual = (
-  left: ForemanLocalDraftSnapshot | null | undefined,
-  right: ForemanLocalDraftSnapshot | null | undefined,
-  options?: { ignoreUpdatedAt?: boolean; ignoreLastError?: boolean },
-): boolean =>
-  JSON.stringify(normalizeSnapshotForCompare(left, options)) ===
-  JSON.stringify(normalizeSnapshotForCompare(right, options));
 
 export const buildForemanDraftRestoreId = (
   snapshot: ForemanLocalDraftSnapshot | null | undefined,
@@ -531,6 +525,10 @@ export async function loadForemanRemoteDraftSnapshot(params: {
   const qtyDrafts = Object.fromEntries(
     items.map((item) => [item.remote_item_id || item.local_id, String(item.qty)]),
   );
+  const baseServerRevision = resolveForemanDraftServerRevision({
+    requestUpdatedAt: details.updated_at ?? details.created_at,
+    itemUpdatedAts: rows.map((row) => row.updated_at),
+  });
 
   return {
     snapshot: {
@@ -553,6 +551,7 @@ export async function loadForemanRemoteDraftSnapshot(params: {
       submitRequested: false,
       lastError: null,
       updatedAt: new Date().toISOString(),
+      baseServerRevision,
     },
     details,
     isTerminal: false,
@@ -635,6 +634,7 @@ export function buildForemanLocalDraftSnapshot(params: {
     submitRequested: base?.submitRequested ?? false,
     lastError: base?.lastError ?? null,
     updatedAt: new Date().toISOString(),
+    baseServerRevision: base?.baseServerRevision ?? null,
   };
 
   return hasForemanLocalDraftContent(next) ? next : null;
@@ -663,6 +663,7 @@ export function buildFreshForemanLocalDraftSnapshot(params: {
     submitRequested: false,
     lastError: null,
     updatedAt: new Date().toISOString(),
+    baseServerRevision: base?.baseServerRevision ?? null,
   };
 }
 
@@ -686,6 +687,7 @@ export function appendRowsToForemanLocalDraft(
           submitRequested: false,
           lastError: null,
           updatedAt: new Date().toISOString(),
+          baseServerRevision: null,
         };
 
   for (const row of rows) {
@@ -885,6 +887,10 @@ export async function syncForemanLocalDraftSnapshot(params: {
   next.items = rpc.items.map((row) => {
     const existing = localItems.find((item) => rowMatchesSnapshotItem(row, item)) ?? null;
     return reqRowToLocalItem(row, existing);
+  });
+  next.baseServerRevision = resolveForemanDraftServerRevision({
+    requestUpdatedAt: rpc.request.updated_at ?? rpc.request.created_at,
+    itemUpdatedAts: rpc.items.map((row) => row.updated_at),
   });
   next.pendingDeletes = [];
   next.submitRequested = false;
