@@ -124,11 +124,30 @@ Runtime proof artifact:
 
 ## Commit / push / OTA
 
-Pending:
+Code commit:
 
-- commit hash
-- push proof
-- production OTA group / update IDs
+- `41de64914094c3072e7f8ad5dbfcf5b00fbd42ca`
+- message: `H1.8b: wire buyer RFQ publish to developer override`
+
+Push:
+
+- `git push origin main`
+- result: `f015f18..41de649  main -> main`
+
+Production OTA:
+
+- command: `npx eas update --branch production --message "H1.8b buyer RFQ override publish" --non-interactive`
+- branch: `production`
+- runtime version: `1.0.0`
+- platform: `android, ios`
+- update group ID: `746d0cb2-631c-44a1-ab98-7e48a5d3afe8`
+- Android update ID: `019d954c-60e3-77ce-93d8-435c1e284afa`
+- iOS update ID: `019d954c-60e3-76cb-b4ef-f716b116ed63`
+- EAS dashboard: `https://expo.dev/accounts/azisbek_dzhantaev/projects/rik-expo-app/updates/746d0cb2-631c-44a1-ab98-7e48a5d3afe8`
+
+Release proof commit:
+
+- pending at time of this file update
 
 ## Remaining risks
 
