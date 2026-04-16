@@ -108,6 +108,20 @@ type ProposalAtomicSubmitRpcResult = {
   meta?: ProposalAtomicSubmitRpcMeta | null;
 };
 
+type ExistingProposalRecoveryRow = {
+  id?: string | null;
+  proposal_no?: string | null;
+  display_no?: string | null;
+  status?: string | null;
+  submitted_at?: string | null;
+  sent_to_accountant_at?: string | null;
+  supplier?: string | null;
+};
+
+type ExistingProposalItemRecoveryRow = {
+  request_item_id?: string | null;
+};
+
 type SupplierBindingRow = Pick<Database["public"]["Tables"]["suppliers"]["Row"], "id" | "name">;
 type ContractorBindingRow = Pick<Database["public"]["Tables"]["contractors"]["Row"], "id" | "company_name">;
 type ProposalsUpdate = Database["public"]["Tables"]["proposals"]["Update"];
@@ -973,6 +987,152 @@ const bucketSupplierLabel = (bucket: ProposalBucketInput | undefined): string =>
   return supplier || SUPPLIER_NONE_LABEL;
 };
 
+const isProposalRequestSupplierConflict = (error: unknown): boolean => {
+  const source = asLooseRecord(error);
+  const code = norm(source.code == null ? null : String(source.code));
+  const status = Number(source.status ?? source.statusCode ?? 0);
+  const text = [
+    source.message,
+    source.details,
+    source.hint,
+    source.error,
+    source.code,
+  ]
+    .map((value) => String(value ?? "").toLowerCase())
+    .join(" ");
+
+  return (
+    text.includes("proposals_uniq_req_supplier") ||
+    (code === "23505" && text.includes("request_id") && text.includes("supplier")) ||
+    (status === 409 && text.includes("duplicate") && text.includes("supplier"))
+  );
+};
+
+const uniqueBucketRequestItemIds = (bucket: ProposalBucketInput | undefined): string[] =>
+  Array.from(
+    new Set(
+      (bucket?.request_item_ids ?? [])
+        .map((requestItemId) => String(requestItemId ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+
+async function loadExistingProposalItems(proposalId: string, requestItemIds: string[]): Promise<Set<string>> {
+  if (!requestItemIds.length) return new Set();
+
+  const { data, error } = await supabase
+    .from("proposal_items")
+    .select("request_item_id")
+    .eq("proposal_id", proposalId)
+    .in("request_item_id", requestItemIds);
+
+  if (error) throw error;
+  return new Set(
+    (Array.isArray(data) ? (data as ExistingProposalItemRecoveryRow[]) : [])
+      .map((row) => String(row?.request_item_id ?? "").trim())
+      .filter(Boolean),
+  );
+}
+
+async function findExistingProposalForBucket(
+  requestId: string,
+  bucket: ProposalBucketInput,
+): Promise<ExistingProposalRecoveryRow | null> {
+  const requestItemIds = uniqueBucketRequestItemIds(bucket);
+  const supplier = norm(bucket?.supplier ?? null);
+
+  let query = supabase
+    .from("proposals")
+    .select("id,proposal_no,display_no,status,submitted_at,sent_to_accountant_at,supplier")
+    .eq("request_id", requestId);
+
+  query = supplier ? query.eq("supplier", supplier) : query.is("supplier", null);
+  const { data, error } = await query.order("updated_at", { ascending: false }).limit(10);
+  if (error) throw error;
+
+  const rows = Array.isArray(data) ? (data as ExistingProposalRecoveryRow[]) : [];
+  for (const row of rows) {
+    const proposalId = norm(row?.id ?? null);
+    if (!proposalId) continue;
+    const existingItemIds = await loadExistingProposalItems(proposalId, requestItemIds);
+    if (requestItemIds.every((requestItemId) => existingItemIds.has(requestItemId))) {
+      return row;
+    }
+  }
+
+  return null;
+}
+
+async function recoverExistingProposalSubmitResult(
+  buckets: ProposalBucketInput[],
+  opts: CreateProposalsOptions,
+  clientMutationId: string,
+): Promise<CreateProposalsResult> {
+  const requestId = norm(opts.requestId ?? null);
+  if (!requestId) {
+    throw new Error("rpc_proposal_submit_v3 duplicate proposal recovery requires requestId");
+  }
+
+  const proposals: ProposalAtomicSubmitRpcProposalRow[] = [];
+  let createdItemCount = 0;
+
+  for (let bucketIndex = 0; bucketIndex < buckets.length; bucketIndex += 1) {
+    const bucket = buckets[bucketIndex];
+    const requestItemIds = uniqueBucketRequestItemIds(bucket);
+    const existing = await findExistingProposalForBucket(requestId, bucket);
+    const proposalId = norm(existing?.id ?? null);
+    if (!existing || !proposalId) {
+      throw new Error("rpc_proposal_submit_v3 duplicate proposal recovery could not find matching proposal");
+    }
+
+    const visible = isProposalDirectorVisibleRow({
+      status: existing.status ?? null,
+      submitted_at: existing.submitted_at ?? null,
+      sent_to_accountant_at: existing.sent_to_accountant_at ?? null,
+    });
+    let rawStatus = existing.status ?? null;
+    let submittedAt = existing.submitted_at ?? null;
+
+    if (opts.submit !== false && !visible) {
+      await rpcProposalSubmit(proposalId);
+      rawStatus = "На утверждении";
+      submittedAt = submittedAt || new Date().toISOString();
+    }
+
+    createdItemCount += requestItemIds.length;
+    proposals.push({
+      bucket_index: bucketIndex,
+      proposal_id: proposalId,
+      proposal_no: norm(existing.display_no ?? null) || norm(existing.proposal_no ?? null) || null,
+      supplier: norm(existing.supplier ?? null) || norm(bucket?.supplier ?? null) || null,
+      request_item_ids: requestItemIds,
+      raw_status: rawStatus,
+      submitted_at: submittedAt,
+      sent_to_accountant_at: existing.sent_to_accountant_at ?? null,
+      submit_source: opts.submit === false ? null : "rpc:proposal_submit_text_v1",
+    });
+  }
+
+  return mapAtomicProposalSubmitResult(
+    {
+      status: "ok",
+      proposals,
+      meta: {
+        canonical_path: "rpc:proposal_submit_v3",
+        client_mutation_id: clientMutationId,
+        request_id: requestId,
+        idempotent_replay: true,
+        expected_bucket_count: buckets.length,
+        expected_item_count: createdItemCount,
+        created_proposal_count: proposals.length,
+        created_item_count: createdItemCount,
+        attachment_continuation_ready: true,
+      },
+    },
+    buckets,
+  );
+}
+
 function mapAtomicProposalSubmitResult(
   rawResult: ProposalAtomicSubmitRpcResult,
   buckets: ProposalBucketInput[],
@@ -1051,7 +1211,12 @@ async function runAtomicProposalSubmitRpc(
   };
 
   const { data, error } = await supabase.rpc("rpc_proposal_submit_v3" as never, args as never);
-  if (error) throw error;
+  if (error) {
+    if (isProposalRequestSupplierConflict(error)) {
+      return await recoverExistingProposalSubmitResult(buckets, opts, args.p_client_mutation_id);
+    }
+    throw error;
+  }
 
   const parsed = mapAtomicProposalSubmitResult((data ?? null) as ProposalAtomicSubmitRpcResult, buckets);
   if (!parsed.proposals.length) {

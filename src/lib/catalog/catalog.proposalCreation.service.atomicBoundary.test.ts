@@ -168,4 +168,90 @@ describe("catalog proposal atomic boundary", () => {
     );
     expect(mockedSupabase.from).not.toHaveBeenCalled();
   });
+
+  it("recovers request/supplier duplicate conflicts as an existing proposal replay", async () => {
+    mockedSupabase.rpc.mockResolvedValueOnce({
+      data: null,
+      error: {
+        code: "23505",
+        status: 409,
+        message:
+          'duplicate key value violates unique constraint "proposals_uniq_req_supplier"',
+        details: "Key (request_id, COALESCE(supplier, ''::text)) already exists.",
+      },
+    });
+
+    const proposalQuery = {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      is: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn(async () => ({
+        data: [
+          {
+            id: "proposal-1",
+            proposal_no: "PR-1",
+            display_no: "PR-1",
+            supplier: "Acme",
+            status: "На утверждении",
+            submitted_at: "2026-03-30T10:00:00.000Z",
+            sent_to_accountant_at: null,
+          },
+        ],
+        error: null,
+      })),
+    };
+    const proposalItemsQuery = {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      in: jest.fn(async () => ({
+        data: [{ request_item_id: "ri-1" }],
+        error: null,
+      })),
+    };
+
+    mockedSupabase.from.mockImplementation((table: string) => {
+      if (table === "proposals") return proposalQuery;
+      if (table === "proposal_items") return proposalItemsQuery;
+      throw new Error(`unexpected table ${table}`);
+    });
+
+    const result = await createProposalsBySupplier(
+      [
+        {
+          supplier: "Acme",
+          request_item_ids: ["ri-1"],
+          meta: [{ request_item_id: "ri-1", price: "100", supplier: "Acme", note: "n1" }],
+        },
+      ],
+      {
+        buyerFio: "Buyer User",
+        requestId: "request-1",
+        clientMutationId: "mutation-2",
+      },
+    );
+
+    expect(mockedSupabase.rpc).toHaveBeenCalledTimes(1);
+    expect(mockedSupabase.from).toHaveBeenCalledWith("proposals");
+    expect(mockedSupabase.from).toHaveBeenCalledWith("proposal_items");
+    expect(proposalQuery.eq).toHaveBeenCalledWith("request_id", "request-1");
+    expect(proposalQuery.eq).toHaveBeenCalledWith("supplier", "Acme");
+    expect(proposalItemsQuery.eq).toHaveBeenCalledWith("proposal_id", "proposal-1");
+    expect(proposalItemsQuery.in).toHaveBeenCalledWith("request_item_id", ["ri-1"]);
+    expect(result.proposals).toEqual([
+      expect.objectContaining({
+        proposal_id: "proposal-1",
+        supplier: "Acme",
+        request_item_ids: ["ri-1"],
+        visible_to_director: true,
+      }),
+    ]);
+    expect(result.meta).toEqual(
+      expect.objectContaining({
+        client_mutation_id: "mutation-2",
+        idempotent_replay: true,
+        attachment_continuation_ready: true,
+      }),
+    );
+  });
 });
