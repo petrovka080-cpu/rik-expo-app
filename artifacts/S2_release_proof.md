@@ -1,6 +1,6 @@
 # S2 Release Proof
 
-Final status: GREEN pending commit/push/OTA
+Final status: GREEN
 
 ## Code / Test Proof
 
@@ -38,10 +38,15 @@ Final status: GREEN pending commit/push/OTA
 
 ## Release Proof
 
-- Code commit: pending.
-- Push: pending.
-- OTA branch: pending.
-- OTA update group: pending.
+- Code commit: `f85e37a11b97ad2e30f1d36e1e07ad23df90a0c2`
+- Push: `git push origin main` succeeded, `38d06f6..f85e37a main -> main`
+- OTA branch: `production`
+- OTA runtime version: `1.0.0`
+- OTA update group: `64e9a5a2-0886-4903-adbf-2ee09a9febab`
+- Android update ID: `019d9521-0f44-7782-b445-2ad145c2e644`
+- iOS update ID: `019d9521-0f44-745f-92c5-7183520db897`
+- OTA message: `S2 role/rpc/storage hardening`
+- EAS dashboard: `https://expo.dev/accounts/azisbek_dzhantaev/projects/rik-expo-app/updates/64e9a5a2-0886-4903-adbf-2ee09a9febab`
 
 ## Remaining Risks
 
