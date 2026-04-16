@@ -2,7 +2,7 @@
 
 ## Final Status
 
-GREEN CANDIDATE. Static gates, remote migration, targeted tests, full Jest, and runtime proof are green. Commit, push, and OTA fields are filled after release execution.
+GREEN. Static gates, remote migration, targeted tests, full Jest, runtime proof, commit, push, and production OTA are complete.
 
 ## Scope
 
@@ -78,7 +78,26 @@ Only the buyer RFQ publish role boundary was changed.
 
 ## Commit / Push / OTA
 
-Pending.
+- Code commit:
+  `09196093659efb58f4571519f2ab968847566999`
+- Commit message:
+  `H1.7: recover buyer RFQ role boundary`
+- Push:
+  `main -> main`, remote advanced from `940696c` to `0919609`
+- OTA command:
+  `npx eas update --branch production --message "H1.7 buyer RFQ role boundary recovery" --non-interactive`
+- OTA branch:
+  `production`
+- OTA runtime version:
+  `1.0.0`
+- OTA update group ID:
+  `50c70089-9863-4649-91a3-950a7e3a4d4a`
+- Android update ID:
+  `019d94f6-fd54-7cf5-8b43-9d173a87c0d1`
+- iOS update ID:
+  `019d94f6-fd54-7e04-a003-df115914ea82`
+- EAS dashboard:
+  `https://expo.dev/accounts/azisbek_dzhantaev/projects/rik-expo-app/updates/50c70089-9863-4649-91a3-950a7e3a4d4a`
 
 ## Remaining Risks
 
