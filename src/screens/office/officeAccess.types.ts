@@ -1,4 +1,5 @@
 import type { AppAccessSourceSnapshot } from "../../lib/appAccessModel";
+import type { DeveloperOverrideContext } from "../../lib/developerOverride";
 import type { Company, UserProfile } from "../profile/profile.types";
 
 export type OfficeAccessMember = {
@@ -30,6 +31,7 @@ export type OfficeAccessScreenData = {
   profileRole: string | null;
   company: Company | null;
   companyAccessRole: string | null;
+  developerOverride?: DeveloperOverrideContext | null;
   accessSourceSnapshot: AppAccessSourceSnapshot;
   members: OfficeAccessMember[];
   invites: OfficeAccessInvite[];

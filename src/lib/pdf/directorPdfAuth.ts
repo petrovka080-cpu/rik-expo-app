@@ -10,7 +10,12 @@ const asObject = (value: unknown): Record<string, unknown> | null =>
     ? (value as Record<string, unknown>)
     : null;
 
-export type DirectorPdfRoleAccessSource = "company_members" | "app_metadata" | "rpc" | "none";
+export type DirectorPdfRoleAccessSource =
+  | "developer_override"
+  | "company_members"
+  | "app_metadata"
+  | "rpc"
+  | "none";
 
 export type DirectorPdfRoleAccessResolution = {
   isDirector: boolean;
@@ -30,14 +35,27 @@ export function resolveDirectorPdfRoleAccess(args: {
   user?: { app_metadata?: unknown } | null;
   rpcRole?: unknown;
   companyMemberRoles?: unknown;
+  developerOverrideActive?: boolean;
+  developerOverrideEffectiveRole?: unknown;
 }): DirectorPdfRoleAccessResolution {
   const appMetadataRole = readDirectorPdfSignedAppRole(args.user);
   const rpcRole = normalizeRole(args.rpcRole);
+  const developerOverrideRole = normalizeRole(args.developerOverrideEffectiveRole);
   const companyMemberRoles = Array.isArray(args.companyMemberRoles)
     ? args.companyMemberRoles
         .map((value) => normalizeRole(value))
         .filter((value): value is string => value != null)
     : [];
+
+  if (args.developerOverrideActive === true && developerOverrideRole === "director") {
+    return {
+      isDirector: true,
+      source: "developer_override",
+      companyMemberRoles,
+      appMetadataRole,
+      rpcRole,
+    };
+  }
 
   if (companyMemberRoles.includes("director")) {
     return {

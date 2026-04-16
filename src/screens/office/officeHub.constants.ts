@@ -54,6 +54,7 @@ export const EMPTY_DATA: OfficeAccessScreenData = {
   profileRole: null,
   company: null,
   companyAccessRole: null,
+  developerOverride: null,
   accessSourceSnapshot: {
     userId: null,
     authRole: null,

@@ -27,6 +27,7 @@ describe("officeHub.styles — extraction integrity", () => {
     "stats", "stat", "label",
     "pill", "pillSuccess", "pillWarning",
     "pillText", "pillTextSuccess", "pillTextWarning",
+    "devPanel", "devRoleButton",
     "section", "sectionTitle", "helper",
     "grid", "card", "cardPrimary", "cardHead",
     "accent", "add", "addPrimary", "addText", "addTextPrimary",

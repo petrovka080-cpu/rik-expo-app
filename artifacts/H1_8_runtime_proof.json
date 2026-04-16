@@ -1,0 +1,204 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-16T07:33:57.497Z",
+  "targetUser": {
+    "id": "9adc5ab1-31fa-41be-8a00-17eadbb37c39",
+    "email": "petrovka080@gmail.com"
+  },
+  "testedRoles": [
+    "buyer",
+    "accountant"
+  ],
+  "availableRoles": [
+    "buyer",
+    "director",
+    "warehouse",
+    "accountant",
+    "foreman",
+    "contractor"
+  ],
+  "tempVerifierUserId": "90938782-d8b6-42f5-84bd-e372a21ea441",
+  "invariants": {
+    "targetOverrideReady": true,
+    "onlyTempRowCanUseTempOverride": true,
+    "buyerRoleAllowed": true,
+    "accountantDeniedWhileBuyer": true,
+    "nonAllowedRoleDenied": true,
+    "accountantRoleAllowed": true,
+    "disableReturnsToNormal": true,
+    "expiredOverrideDenied": true,
+    "auditLogged": true
+  },
+  "results": {
+    "targetOverride": {
+      "user_id": "9adc5ab1-31fa-41be-8a00-17eadbb37c39",
+      "is_enabled": true,
+      "allowed_roles": [
+        "buyer",
+        "director",
+        "warehouse",
+        "accountant",
+        "foreman",
+        "contractor"
+      ],
+      "active_effective_role": null,
+      "can_access_all_office_routes": true,
+      "can_impersonate_for_mutations": true,
+      "expires_at": "2026-05-16T07:33:40.81117+00:00",
+      "reason": "H1.8 developer verification break-glass for petrovka080@gmail.com"
+    },
+    "initialContext": {
+      "reason": "H1.8 runtime verifier temporary account",
+      "isActive": false,
+      "expiresAt": "2026-04-16T08:33:51.302+00:00",
+      "isEnabled": true,
+      "actorUserId": "90938782-d8b6-42f5-84bd-e372a21ea441",
+      "allowedRoles": [
+        "buyer",
+        "accountant"
+      ],
+      "activeEffectiveRole": null,
+      "canAccessAllOfficeRoutes": true,
+      "canImpersonateForMutations": true
+    },
+    "setBuyer": {
+      "reason": "H1.8 runtime verifier temporary account",
+      "isActive": true,
+      "expiresAt": "2026-04-16T08:33:51.302+00:00",
+      "isEnabled": true,
+      "actorUserId": "90938782-d8b6-42f5-84bd-e372a21ea441",
+      "allowedRoles": [
+        "buyer",
+        "accountant"
+      ],
+      "activeEffectiveRole": "buyer",
+      "canAccessAllOfficeRoutes": true,
+      "canImpersonateForMutations": true
+    },
+    "buyerContext": {
+      "role": "buyer",
+      "source": "developer_override",
+      "allowed": true,
+      "baseRole": "guest",
+      "override": true,
+      "baseSource": "profiles",
+      "actorUserId": "90938782-d8b6-42f5-84bd-e372a21ea441"
+    },
+    "accountantDeniedWhileBuyer": {
+      "role": "buyer",
+      "reason": "effective_role_not_allowed_for_action",
+      "source": "developer_override",
+      "allowed": false,
+      "baseRole": "guest",
+      "override": true,
+      "baseSource": "profiles",
+      "actorUserId": "90938782-d8b6-42f5-84bd-e372a21ea441"
+    },
+    "nonAllowedRoleError": {
+      "code": "42501",
+      "message": "developer_set_effective_role_v1: role not allowed"
+    },
+    "setAccountant": {
+      "reason": "H1.8 runtime verifier temporary account",
+      "isActive": true,
+      "expiresAt": "2026-04-16T08:33:51.302+00:00",
+      "isEnabled": true,
+      "actorUserId": "90938782-d8b6-42f5-84bd-e372a21ea441",
+      "allowedRoles": [
+        "buyer",
+        "accountant"
+      ],
+      "activeEffectiveRole": "accountant",
+      "canAccessAllOfficeRoutes": true,
+      "canImpersonateForMutations": true
+    },
+    "accountantContext": {
+      "role": "accountant",
+      "source": "developer_override",
+      "allowed": true,
+      "baseRole": "guest",
+      "override": true,
+      "baseSource": "profiles",
+      "actorUserId": "90938782-d8b6-42f5-84bd-e372a21ea441"
+    },
+    "clearContext": {
+      "reason": "H1.8 runtime verifier temporary account",
+      "isActive": false,
+      "expiresAt": "2026-04-16T08:33:51.302+00:00",
+      "isEnabled": true,
+      "actorUserId": "90938782-d8b6-42f5-84bd-e372a21ea441",
+      "allowedRoles": [
+        "buyer",
+        "accountant"
+      ],
+      "activeEffectiveRole": null,
+      "canAccessAllOfficeRoutes": true,
+      "canImpersonateForMutations": true
+    },
+    "inactiveBuyerContext": {
+      "role": "guest",
+      "reason": "source_role_forbidden",
+      "source": "profiles",
+      "allowed": false,
+      "actorUserId": "90938782-d8b6-42f5-84bd-e372a21ea441"
+    },
+    "auditRows": [
+      {
+        "actor_user_id": "90938782-d8b6-42f5-84bd-e372a21ea441",
+        "effective_role": "buyer",
+        "override_enabled": true,
+        "action_name": "developer_effective_role_selected",
+        "created_at": "2026-04-16T07:33:54.866221+00:00"
+      },
+      {
+        "actor_user_id": "90938782-d8b6-42f5-84bd-e372a21ea441",
+        "effective_role": "buyer",
+        "override_enabled": true,
+        "action_name": "developer_override_rpc_action",
+        "created_at": "2026-04-16T07:33:55.278571+00:00"
+      },
+      {
+        "actor_user_id": "90938782-d8b6-42f5-84bd-e372a21ea441",
+        "effective_role": "buyer",
+        "override_enabled": false,
+        "action_name": "developer_override_denied",
+        "created_at": "2026-04-16T07:33:55.688321+00:00"
+      },
+      {
+        "actor_user_id": "90938782-d8b6-42f5-84bd-e372a21ea441",
+        "effective_role": "accountant",
+        "override_enabled": true,
+        "action_name": "developer_effective_role_selected",
+        "created_at": "2026-04-16T07:33:56.499812+00:00"
+      },
+      {
+        "actor_user_id": "90938782-d8b6-42f5-84bd-e372a21ea441",
+        "effective_role": "accountant",
+        "override_enabled": true,
+        "action_name": "developer_override_rpc_action",
+        "created_at": "2026-04-16T07:33:56.904549+00:00"
+      },
+      {
+        "actor_user_id": "90938782-d8b6-42f5-84bd-e372a21ea441",
+        "effective_role": "accountant",
+        "override_enabled": false,
+        "action_name": "developer_override_disabled",
+        "created_at": "2026-04-16T07:33:57.307228+00:00"
+      }
+    ],
+    "expiredContext": {
+      "reason": "H1.8 runtime verifier temporary account",
+      "isActive": false,
+      "expiresAt": "2026-04-16T07:32:56.493+00:00",
+      "isEnabled": true,
+      "actorUserId": "90938782-d8b6-42f5-84bd-e372a21ea441",
+      "allowedRoles": [
+        "buyer",
+        "accountant"
+      ],
+      "activeEffectiveRole": null,
+      "canAccessAllOfficeRoutes": true,
+      "canImpersonateForMutations": true
+    }
+  }
+}

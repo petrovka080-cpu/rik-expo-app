@@ -201,6 +201,17 @@ export const styles = StyleSheet.create({
     lineHeight: 19,
     fontWeight: "700",
   },
+  devPanel: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#FDBA74",
+    backgroundColor: "#FFF7ED",
+    padding: 14,
+    gap: 10,
+  },
+  devRoleButton: {
+    minHeight: 38,
+  },
   entity: {
     backgroundColor: "#FFFFFF",
     borderRadius: 18,

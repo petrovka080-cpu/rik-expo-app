@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { loadDeveloperOverrideContext } from "../../lib/developerOverride";
 import type { Company, UserProfile } from "../profile/profile.types";
 import {
   loadCurrentAuthUser,
@@ -188,6 +189,7 @@ export async function loadOfficeAccessScreenData(): Promise<OfficeAccessScreenDa
     loadCurrentAuthUser(),
     loadProfileScreenData(),
   ]);
+  const developerOverride = await loadDeveloperOverrideContext();
 
   const membershipCompanyId = firstMembershipCompanyId(
     baseProfile.accessSourceSnapshot.companyMemberships,
@@ -212,13 +214,18 @@ export async function loadOfficeAccessScreenData(): Promise<OfficeAccessScreenDa
     profileRole: baseProfile.profileRole,
     company,
     companyAccessRole,
+    developerOverride,
     accessSourceSnapshot: company
       ? {
           ...baseProfile.accessSourceSnapshot,
+          developerOverride,
           ownedCompanyId:
             baseProfile.accessSourceSnapshot.ownedCompanyId ?? company.id,
         }
-      : baseProfile.accessSourceSnapshot,
+      : {
+          ...baseProfile.accessSourceSnapshot,
+          developerOverride,
+        },
     members,
     invites,
   };

@@ -143,12 +143,17 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
     });
   }
 
-  const [{ data: roleData, error: roleError }, { data: membershipRows, error: membershipError }] = await Promise.all([
+  const [
+    { data: roleData, error: roleError },
+    { data: membershipRows, error: membershipError },
+    { data: developerOverride },
+  ] = await Promise.all([
     requester.rpc("get_my_role"),
     requester
       .from("company_members")
       .select("role")
       .eq("user_id", userData.user.id),
+    requester.rpc("developer_override_context_v1"),
   ]);
 
   const roleAccess = resolveDirectorPdfRoleAccess({
@@ -157,6 +162,8 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
     companyMemberRoles: Array.isArray(membershipRows)
       ? membershipRows.map((row) => row?.role)
       : [],
+    developerOverrideActive: developerOverride?.isActive === true,
+    developerOverrideEffectiveRole: developerOverride?.activeEffectiveRole,
   });
 
   if (!roleAccess.isDirector) {
@@ -180,7 +187,7 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
 
   return {
     userId: userData.user.id,
-    authSource: roleAccess.source as "company_members" | "app_metadata" | "rpc",
+    authSource: roleAccess.source as "developer_override" | "company_members" | "app_metadata" | "rpc",
   };
 }
 

@@ -24,6 +24,12 @@ import {
 import RoleScreenLayout from "../../components/layout/RoleScreenLayout";
 import { buildAppAccessModel } from "../../lib/appAccessModel";
 import {
+  clearDeveloperEffectiveRole,
+  DEVELOPER_OVERRIDE_ROLES,
+  setDeveloperEffectiveRole,
+  type DeveloperOverrideRole,
+} from "../../lib/developerOverride";
+import {
   formatOfficePostReturnProbe,
   getOfficePostReturnProbe,
   normalizeOfficePostReturnProbe,
@@ -135,6 +141,9 @@ export default function OfficeHubScreen({
   );
   const [loading, setLoading] = useState(() => !initialBootstrapSnapshot);
   const [refreshing, setRefreshing] = useState(false);
+  const [developerRoleSaving, setDeveloperRoleSaving] = useState<string | null>(
+    null,
+  );
 
   const isMountedRef = useRef(true);
   const focusCycleRef = useRef(0);
@@ -590,6 +599,40 @@ export default function OfficeHubScreen({
     loadScreen,
   });
 
+  const developerOverride = data.developerOverride;
+  const developerOverrideRoles = useMemo(
+    () =>
+      DEVELOPER_OVERRIDE_ROLES.filter((role) =>
+        developerOverride?.allowedRoles.includes(role),
+      ),
+    [developerOverride?.allowedRoles],
+  );
+  const handleDeveloperRoleSelect = useCallback(
+    async (role: DeveloperOverrideRole) => {
+      setDeveloperRoleSaving(role);
+      try {
+        await setDeveloperEffectiveRole(role);
+        await loadScreen({ mode: "refresh", reason: "developer_override_role_selected" });
+      } catch (error) {
+        Alert.alert("Dev override", error instanceof Error ? error.message : String(error));
+      } finally {
+        setDeveloperRoleSaving(null);
+      }
+    },
+    [loadScreen],
+  );
+  const handleDeveloperRoleClear = useCallback(async () => {
+    setDeveloperRoleSaving("normal");
+    try {
+      await clearDeveloperEffectiveRole();
+      await loadScreen({ mode: "refresh", reason: "developer_override_cleared" });
+    } catch (error) {
+      Alert.alert("Dev override", error instanceof Error ? error.message : String(error));
+    } finally {
+      setDeveloperRoleSaving(null);
+    }
+  }, [loadScreen]);
+
   if (loading) {
     return (
       <RoleScreenLayout
@@ -634,6 +677,53 @@ export default function OfficeHubScreen({
         {company.companyFeedback ? (
           <View style={styles.notice}>
             <Text style={styles.noticeText}>{company.companyFeedback}</Text>
+          </View>
+        ) : null}
+
+        {developerOverride?.isEnabled ? (
+          <View testID="developer-override-panel" style={styles.devPanel}>
+            <View style={styles.inline}>
+              <View style={styles.grow}>
+                <Text style={styles.eyebrow}>Dev override</Text>
+                <Text style={styles.helper}>
+                  Active role: {developerOverride.activeEffectiveRole ?? "normal"}
+                </Text>
+              </View>
+              <Pressable
+                testID="developer-override-clear"
+                disabled={Boolean(developerRoleSaving)}
+                onPress={handleDeveloperRoleClear}
+                style={({ pressed }) => [
+                  styles.secondary,
+                  styles.devRoleButton,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Text style={styles.secondaryText}>Normal</Text>
+              </Pressable>
+            </View>
+            <View style={styles.chips}>
+              {developerOverrideRoles.map((role) => {
+                const active = developerOverride.activeEffectiveRole === role;
+                return (
+                  <Pressable
+                    key={role}
+                    testID={`developer-override-role-${role}`}
+                    disabled={Boolean(developerRoleSaving) || active}
+                    onPress={() => handleDeveloperRoleSelect(role)}
+                    style={[
+                      styles.chip,
+                      active && styles.chipActive,
+                      styles.devRoleButton,
+                    ]}
+                  >
+                    <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                      {getProfileRoleLabel(role)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
         ) : null}
 
@@ -1284,5 +1374,4 @@ export default function OfficeHubScreen({
     </RoleScreenLayout>
   );
 }
-
 

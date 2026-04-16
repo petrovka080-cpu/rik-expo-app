@@ -1,7 +1,19 @@
 import {
   buildAppAccessModel,
   buildAppAccessSourceMap,
+  type AppAccessSourceSnapshot,
 } from "./appAccessModel";
+
+const baseSnapshot: AppAccessSourceSnapshot = {
+  userId: "user-dev",
+  authRole: null,
+  resolvedRole: null,
+  usageMarket: true,
+  usageBuild: false,
+  ownedCompanyId: null,
+  companyMemberships: [],
+  listingsCount: 0,
+};
 
 describe("appAccessModel", () => {
   it("builds market-only access for a plain market user", () => {
@@ -142,6 +154,59 @@ describe("appAccessModel", () => {
 
     expect(model.availableOfficeRoles).toEqual(["buyer", "contractor"]);
     expect(model.activeOfficeRole).toBe("buyer");
+  });
+
+  it("adds developer override roles without changing normal membership truth", () => {
+    const model = buildAppAccessModel({
+      ...baseSnapshot,
+      usageBuild: true,
+      resolvedRole: "director",
+      companyMemberships: [{ companyId: "company-1", role: "director" }],
+      developerOverride: {
+        isEnabled: true,
+        isActive: true,
+        activeEffectiveRole: "buyer",
+        allowedRoles: [
+          "buyer",
+          "director",
+          "warehouse",
+          "accountant",
+          "foreman",
+          "contractor",
+        ],
+        canAccessAllOfficeRoutes: true,
+      },
+    });
+
+    expect(model.hasOfficeAccess).toBe(true);
+    expect(model.activeOfficeRole).toBe("buyer");
+    expect(model.availableOfficeRoles).toEqual([
+      "buyer",
+      "director",
+      "warehouse",
+      "accountant",
+      "foreman",
+      "contractor",
+    ]);
+  });
+
+  it("ignores disabled developer override roles for ordinary users", () => {
+    const model = buildAppAccessModel({
+      ...baseSnapshot,
+      usageBuild: true,
+      resolvedRole: "director",
+      companyMemberships: [{ companyId: "company-1", role: "director" }],
+      developerOverride: {
+        isEnabled: false,
+        isActive: false,
+        activeEffectiveRole: "buyer",
+        allowedRoles: ["buyer", "warehouse"],
+        canAccessAllOfficeRoutes: true,
+      },
+    });
+
+    expect(model.activeOfficeRole).toBe("director");
+    expect(model.availableOfficeRoles).toEqual(["director"]);
   });
 
   it("returns an explicit source map for legacy mixed truth inputs", () => {

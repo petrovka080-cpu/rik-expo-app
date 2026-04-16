@@ -140,9 +140,14 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
     },
   });
 
-  const [{ data: userData, error: userError }, { data: roleData, error: roleError }] = await Promise.all([
+  const [
+    { data: userData, error: userError },
+    { data: roleData, error: roleError },
+    { data: developerOverride },
+  ] = await Promise.all([
     requester.auth.getUser(),
     requester.rpc("get_my_role"),
+    requester.rpc("developer_override_context_v1"),
   ]);
 
   if (userError || !userData?.user) {
@@ -165,6 +170,8 @@ async function requireDirectorAuth(request: Request, supabaseUrl: string) {
     companyMemberRoles: Array.isArray(membershipRows)
       ? membershipRows.map((row) => row?.role)
       : [],
+    developerOverrideActive: developerOverride?.isActive === true,
+    developerOverrideEffectiveRole: developerOverride?.activeEffectiveRole,
   });
 
   if (!roleAccess.isDirector) {

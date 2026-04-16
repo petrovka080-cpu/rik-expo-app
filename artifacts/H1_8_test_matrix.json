@@ -1,0 +1,65 @@
+[
+  {
+    "name": "migration creates override storage",
+    "scenario": "developer_access_overrides table includes enabled flag, allowed roles, active effective role, TTL, route and mutation capabilities, and constraints",
+    "expected_result": "table and constraints exist in migration",
+    "status": "passed",
+    "proof": "npx jest src/lib/api/developerBreakGlassMigration.test.ts --runInBand --no-coverage"
+  },
+  {
+    "name": "migration creates audit trail",
+    "scenario": "override selection, denial, expiration, disable, and RPC action events are logged",
+    "expected_result": "audit table and write helper exist",
+    "status": "passed",
+    "proof": "developerBreakGlassMigration.test.ts plus runtime verifier audit rows"
+  },
+  {
+    "name": "server-side effective role validation",
+    "scenario": "developer_set_effective_role_v1 rejects disabled, expired, and non-allowed roles",
+    "expected_result": "invalid override attempts return forbidden",
+    "status": "passed",
+    "proof": "scripts/h1_8_developer_override_runtime_verify.ts: nonAllowedRoleDenied, expiredOverrideDenied"
+  },
+  {
+    "name": "route access model",
+    "scenario": "enabled override adds allowed office roles and disabled override is ignored",
+    "expected_result": "developer can see all allowed role cards, ordinary users remain unchanged",
+    "status": "passed",
+    "proof": "npx jest src/lib/appAccessModel.test.ts --runInBand --no-coverage"
+  },
+  {
+    "name": "developer client RPC wrapper",
+    "scenario": "client loads override context, sets effective role, and clears effective role through server RPCs",
+    "expected_result": "client never trusts a local-only effective role",
+    "status": "passed",
+    "proof": "npx jest src/lib/developerOverride.test.ts --runInBand --no-coverage"
+  },
+  {
+    "name": "director PDF override",
+    "scenario": "active developer override with director effective role passes director PDF auth",
+    "expected_result": "source is developer_override",
+    "status": "passed",
+    "proof": "npx jest src/lib/pdf/directorPdfAuth.test.ts --runInBand --no-coverage"
+  },
+  {
+    "name": "office UI style/extraction contract",
+    "scenario": "dev-only role switcher styles remain explicit in OfficeHub extraction contract",
+    "expected_result": "no accidental style drift",
+    "status": "passed",
+    "proof": "npx jest src/screens/office/officeHub.extraction.test.ts --runInBand --no-coverage"
+  },
+  {
+    "name": "runtime buyer/accountant role actions",
+    "scenario": "temporary override user selects buyer and accountant roles through server RPC",
+    "expected_result": "allowed contexts pass, non-allowed role is denied, disable returns to base role, audit rows written",
+    "status": "passed",
+    "proof": "npx tsx scripts/h1_8_developer_override_runtime_verify.ts"
+  },
+  {
+    "name": "full regression suite",
+    "scenario": "all project tests after H1.8",
+    "expected_result": "full Jest remains green",
+    "status": "passed",
+    "proof": "npx jest --no-coverage: 274 passed, 1 skipped, 1552 tests passed"
+  }
+]

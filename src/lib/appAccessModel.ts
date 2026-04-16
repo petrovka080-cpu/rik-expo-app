@@ -26,6 +26,13 @@ export type AppAccessSourceSnapshot = {
   listingsCount: number;
   marketAccessGranted?: boolean | null;
   requestedActiveContext?: AppContext | null;
+  developerOverride?: {
+    isEnabled: boolean;
+    isActive: boolean;
+    allowedRoles: string[];
+    activeEffectiveRole: string | null;
+    canAccessAllOfficeRoutes: boolean;
+  } | null;
 };
 
 export type AppAccessSourceMap = {
@@ -162,12 +169,25 @@ export function buildAppAccessModel(
       .map((item) => normalizeRole(item.role))
       .filter((role): role is string => role != null && isOfficeRole(role)),
   );
+  const developerOverride = snapshot.developerOverride ?? null;
+  const developerOverrideRoles =
+    developerOverride?.isEnabled && developerOverride.canAccessAllOfficeRoutes
+      ? uniqueStrings(
+          developerOverride.allowedRoles.filter((role) => isOfficeRole(role)),
+        )
+      : [];
+  const developerActiveRole =
+    developerOverride?.isActive && isOfficeRole(developerOverride.activeEffectiveRole)
+      ? developerOverride.activeEffectiveRole
+      : null;
   const availableOfficeRoles = uniqueStrings([
+    ...developerOverrideRoles,
     ...membershipOfficeRoles,
     isOfficeRole(resolvedRole) ? resolvedRole : null,
     isOfficeRole(authRole) ? authRole : null,
   ]);
   const activeOfficeRole =
+    developerActiveRole ??
     membershipOfficeRoles[0] ??
     (isOfficeRole(resolvedRole) ? resolvedRole : null) ??
     (isOfficeRole(authRole) ? authRole : null) ??
@@ -176,7 +196,10 @@ export function buildAppAccessModel(
   const hasCompanyContext =
     Boolean(sourceMap.accessSources.ownedCompanyId) || sourceMap.accessSources.membershipCompanyIds.length > 0;
   const hasSellerCapability = snapshot.usageMarket === true || sourceMap.accessSources.listingsCount > 0;
-  const hasOfficeAccess = snapshot.usageBuild === true || availableOfficeRoles.length > 0;
+  const hasOfficeAccess =
+    snapshot.usageBuild === true ||
+    availableOfficeRoles.length > 0 ||
+    Boolean(developerOverride?.isEnabled && developerOverride.canAccessAllOfficeRoutes);
   const hasMarketAccess =
     typeof snapshot.marketAccessGranted === "boolean"
       ? snapshot.marketAccessGranted

@@ -35,6 +35,24 @@ describe("directorPdfAuth", () => {
     });
   });
 
+  it("allows director PDF through active developer override", () => {
+    expect(
+      resolveDirectorPdfRoleAccess({
+        user: { app_metadata: { role: "buyer" } },
+        rpcRole: "contractor",
+        companyMemberRoles: ["buyer"],
+        developerOverrideActive: true,
+        developerOverrideEffectiveRole: "director",
+      }),
+    ).toEqual({
+      isDirector: true,
+      source: "developer_override",
+      companyMemberRoles: ["buyer"],
+      appMetadataRole: "buyer",
+      rpcRole: "contractor",
+    });
+  });
+
   it("accepts director access from rpc when signed metadata is missing", () => {
     expect(
       resolveDirectorPdfRoleAccess({
