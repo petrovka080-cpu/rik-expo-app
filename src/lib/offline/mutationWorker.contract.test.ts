@@ -15,6 +15,7 @@ import {
   clearForemanDurableDraftState,
   configureForemanDurableDraftStore,
   getForemanDurableDraftState,
+  hydrateForemanDurableDraftStore,
   replaceForemanDurableDraftSnapshot,
 } from "../../screens/foreman/foreman.durableDraft.store";
 import type {
@@ -355,6 +356,63 @@ describe("mutationWorker contract", () => {
     });
     expect(durableState.conflictType).toBe("retryable_sync_failure");
     expect(inspectRemoteDraft).toHaveBeenCalledTimes(2);
+  });
+
+  it("replays a compact-hydrated durable snapshot without changing sync payload", async () => {
+    const durableStorage = createMemoryOfflineStorage();
+    configureForemanDurableDraftStore({ storage: durableStorage });
+    await clearForemanDurableDraftState();
+    const snapshot: ForemanLocalDraftSnapshot = {
+      ...createSnapshot("req-worker-compact-replay"),
+      baseServerRevision: "2026-04-16T09:00:00.000Z",
+      items: Array.from({ length: 150 }, (_, index) => ({
+        local_id: `local-${index}`,
+        remote_item_id: `item-${index}`,
+        rik_code: `MAT-${index}`,
+        name_human: `Material ${index}`,
+        qty: index + 1,
+        uom: "pcs",
+        status: "draft",
+        note: index % 2 === 0 ? `note ${index}` : null,
+        app_code: index % 5 === 0 ? `APP-${index}` : null,
+        kind: "material",
+        line_no: index + 1,
+      })),
+      qtyDrafts: Object.fromEntries(
+        Array.from({ length: 150 }, (_, index) => [`item-${index}`, String(index + 1)]),
+      ),
+    };
+    await replaceForemanDurableDraftSnapshot(snapshot, {
+      syncStatus: "queued",
+      pendingOperationsCount: 1,
+      queueDraftKey: snapshot.requestId,
+      requestIdKnown: true,
+    });
+    await hydrateForemanDurableDraftStore();
+    await enqueueForemanMutation({
+      draftKey: snapshot.requestId,
+      requestId: snapshot.requestId,
+      snapshotUpdatedAt: snapshot.updatedAt,
+      mutationKind: "background_sync",
+      localBeforeCount: snapshot.items.length,
+      localAfterCount: snapshot.items.length,
+      triggerSource: "manual_retry",
+    });
+    const syncSnapshot = jest.fn(async (params: { snapshot: ForemanLocalDraftSnapshot }) =>
+      createSyncResult(params.snapshot),
+    );
+    const { deps } = createWorkerDeps({
+      snapshot: null,
+      syncSnapshot,
+      getNetworkOnline: () => true,
+    });
+
+    const result = await flushForemanMutationQueue(deps);
+    const replayedSnapshot = syncSnapshot.mock.calls[0]?.[0]?.snapshot;
+
+    expect(result.failed).toBe(false);
+    expect(syncSnapshot).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(replayedSnapshot)).toBe(JSON.stringify(snapshot));
   });
 
   it("turns exhausted retries into failed_non_retryable terminal state", async () => {

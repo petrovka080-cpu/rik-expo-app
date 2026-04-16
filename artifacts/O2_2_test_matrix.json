@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-04-16T15:10:09.504Z",
+  "wave": "O2.2",
+  "targeted": [
+    {
+      "command": "npx jest src/screens/foreman/foreman.durableDraft.compactPayload.test.ts src/lib/offline/mutationWorker.contract.test.ts --runInBand --no-coverage",
+      "status": "PASS"
+    }
+  ],
+  "fullGates": [
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "status": "PASS_WITH_EXISTING_WARNINGS",
+      "warnings": 7
+    },
+    {
+      "command": "npx jest --no-coverage",
+      "status": "PASS",
+      "testSuites": "1 skipped, 299 passed, 299 of 300 total",
+      "tests": "1 skipped, 1807 passed, 1808 total"
+    }
+  ],
+  "sql": "not changed",
+  "remoteDbPush": "not required",
+  "ota": {
+    "status": "PUBLISHED",
+    "command": "npx eas update --branch production --message \"O2: add compact queue payload for offline sync\"",
+    "branch": "production",
+    "runtimeVersion": "1.0.0",
+    "updateGroupId": "79362166-2551-4c1e-8f0b-34787daf9539",
+    "androidUpdateId": "019d96d7-6969-77d7-9ed9-8a1e572414b0",
+    "iosUpdateId": "019d96d7-6969-7a39-b999-e337d60c7340"
+  },
+  "status": "GREEN"
+}

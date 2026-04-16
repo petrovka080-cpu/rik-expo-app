@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-04-16T15:10:09.504Z",
+  "wave": "O2.2",
+  "selectedSlice": "foreman durable draft replay payload persistence",
+  "itemCount": 150,
+  "iterations": 500,
+  "fullPersistedBytes": 33144,
+  "compactPersistedBytes": 16946,
+  "sizeReductionPercent": 48.87,
+  "fullWriteSerializationMs": 50.37,
+  "compactWriteSerializationMs": 27.856,
+  "writeSpeedup": 1.81,
+  "fullHydrateMs": 72.82,
+  "compactHydrateMs": 89.176,
+  "hydrateRatio": 1.22,
+  "checks": {
+    "itemCountAtLeast100": true,
+    "compactPayloadKind": true,
+    "compactEquivalence": true,
+    "fullFallbackEquivalence": true,
+    "invalidCompactFallbackAvailable": true,
+    "persistedSizeReduced": true,
+    "writeSerializationImproved": true,
+    "hydrateRuntimeBounded": true,
+    "durableStoreWritesCompactPayload": true,
+    "durableStoreReadsLegacyFallback": true,
+    "replayProofTestPresent": true
+  },
+  "status": "GREEN"
+}

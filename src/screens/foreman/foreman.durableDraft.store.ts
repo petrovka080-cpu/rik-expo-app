@@ -18,6 +18,13 @@ import {
   type OfflineStorageAdapter,
 } from "../../lib/offline/offlineStorage";
 import type { ForemanLocalDraftSnapshot } from "./foreman.localDraft";
+import {
+  buildCompactForemanLocalDraftSnapshotPayload,
+  buildFullForemanLocalDraftSnapshotPayload,
+  restoreForemanLocalDraftSnapshotFromPayload,
+  type ForemanLocalDraftSnapshotPayload,
+  type ForemanLocalDraftSnapshotPayloadMode,
+} from "./foreman.localDraft.compactPayload";
 
 export type ForemanDurableDraftRecord = {
   version: 2;
@@ -43,7 +50,19 @@ export type ForemanDurableDraftRecord = {
   updatedAt: number | null;
 };
 
-type PersistedForemanDurableDraftRecord = Omit<ForemanDurableDraftRecord, "hydrated">;
+type PersistedForemanDurableDraftRecord = Omit<
+  ForemanDurableDraftRecord,
+  "hydrated" | "snapshot" | "recoverableLocalSnapshot" | "version"
+> & {
+  version: 2 | 3;
+  payloadSchemaVersion?: 1;
+  snapshot?: ForemanLocalDraftSnapshot | null;
+  snapshotPayload?: ForemanLocalDraftSnapshotPayload | null;
+  snapshotStorageMode?: ForemanLocalDraftSnapshotPayloadMode;
+  recoverableLocalSnapshot?: ForemanLocalDraftSnapshot | null;
+  recoverableLocalSnapshotPayload?: ForemanLocalDraftSnapshotPayload | null;
+  recoverableSnapshotStorageMode?: ForemanLocalDraftSnapshotPayloadMode;
+};
 
 const FOREMAN_DURABLE_DRAFT_STORAGE_KEY = "foreman_durable_draft_store_v2";
 
@@ -78,10 +97,58 @@ export const foremanDurableDraftStore = createStore<ForemanDurableDraftRecord>((
 const toFiniteNumber = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : null);
 const toTrimmedString = (value: unknown) => String(value ?? "").trim() || null;
 
+const buildPersistedSnapshotPayload = (
+  snapshot: ForemanLocalDraftSnapshot | null,
+): {
+  payload: ForemanLocalDraftSnapshotPayload | null;
+  legacySnapshot: ForemanLocalDraftSnapshot | null;
+  mode: ForemanLocalDraftSnapshotPayloadMode;
+} => {
+  if (!snapshot) {
+    return {
+      payload: null,
+      legacySnapshot: null,
+      mode: "none",
+    };
+  }
+
+  try {
+    const compact = buildCompactForemanLocalDraftSnapshotPayload(snapshot);
+    if (compact) {
+      return {
+        payload: compact,
+        legacySnapshot: null,
+        mode: "compact_v1",
+      };
+    }
+  } catch {
+    // Preserve the full payload if compact encoding ever becomes unavailable.
+  }
+
+  return {
+    payload: buildFullForemanLocalDraftSnapshotPayload(snapshot),
+    legacySnapshot: snapshot,
+    mode: "full_v1",
+  };
+};
+
+const restorePersistedSnapshot = (
+  payload: unknown,
+  legacySnapshot: ForemanLocalDraftSnapshot | null | undefined,
+): ForemanLocalDraftSnapshot | null =>
+  restoreForemanLocalDraftSnapshotFromPayload(payload) ?? legacySnapshot ?? null;
+
 const persistState = async (state: ForemanDurableDraftRecord) => {
+  const snapshotPayload = buildPersistedSnapshotPayload(state.snapshot);
+  const recoverableSnapshotPayload = buildPersistedSnapshotPayload(
+    state.recoverableLocalSnapshot,
+  );
   const record: PersistedForemanDurableDraftRecord = {
-    version: 2,
-    snapshot: state.snapshot,
+    version: 3,
+    payloadSchemaVersion: 1,
+    snapshot: snapshotPayload.legacySnapshot,
+    snapshotPayload: snapshotPayload.payload,
+    snapshotStorageMode: snapshotPayload.mode,
     syncStatus: state.syncStatus,
     lastSyncAt: state.lastSyncAt,
     lastError: state.lastError,
@@ -96,7 +163,9 @@ const persistState = async (state: ForemanDurableDraftRecord) => {
     requestIdKnown: state.requestIdKnown,
     attentionNeeded: state.attentionNeeded,
     availableRecoveryActions: state.availableRecoveryActions,
-    recoverableLocalSnapshot: state.recoverableLocalSnapshot,
+    recoverableLocalSnapshot: recoverableSnapshotPayload.legacySnapshot,
+    recoverableLocalSnapshotPayload: recoverableSnapshotPayload.payload,
+    recoverableSnapshotStorageMode: recoverableSnapshotPayload.mode,
     lastTriggerSource: state.lastTriggerSource,
     telemetry: state.telemetry,
     updatedAt: state.updatedAt,
@@ -104,6 +173,7 @@ const persistState = async (state: ForemanDurableDraftRecord) => {
 
   const isEmpty =
     !record.snapshot &&
+    !record.snapshotPayload &&
     record.syncStatus === "idle" &&
     record.lastSyncAt == null &&
     !record.lastError &&
@@ -119,6 +189,7 @@ const persistState = async (state: ForemanDurableDraftRecord) => {
     record.attentionNeeded === false &&
     record.availableRecoveryActions.length === 0 &&
     !record.recoverableLocalSnapshot &&
+    !record.recoverableLocalSnapshotPayload &&
     record.lastTriggerSource === "unknown" &&
     record.telemetry.length === 0 &&
     record.updatedAt == null;
@@ -175,12 +246,21 @@ export const hydrateForemanDurableDraftStore = async (): Promise<ForemanDurableD
     storageAdapter,
     FOREMAN_DURABLE_DRAFT_STORAGE_KEY,
   );
+  const restoredSnapshot = loaded
+    ? restorePersistedSnapshot(loaded.snapshotPayload, loaded.snapshot)
+    : null;
+  const restoredRecoverableSnapshot = loaded
+    ? restorePersistedSnapshot(
+        loaded.recoverableLocalSnapshotPayload,
+        loaded.recoverableLocalSnapshot,
+      )
+    : null;
 
   const next: ForemanDurableDraftRecord = loaded
     ? {
         version: 2,
         hydrated: true,
-        snapshot: loaded.snapshot ?? null,
+        snapshot: restoredSnapshot,
         syncStatus: loaded.syncStatus ?? "idle",
         lastSyncAt: toFiniteNumber(loaded.lastSyncAt),
         lastError: toTrimmedString(loaded.lastError),
@@ -197,7 +277,7 @@ export const hydrateForemanDurableDraftStore = async (): Promise<ForemanDurableD
         availableRecoveryActions: Array.isArray(loaded.availableRecoveryActions)
           ? (loaded.availableRecoveryActions as ForemanDraftRecoveryAction[])
           : [],
-        recoverableLocalSnapshot: loaded.recoverableLocalSnapshot ?? null,
+        recoverableLocalSnapshot: restoredRecoverableSnapshot,
         lastTriggerSource:
           (toTrimmedString(loaded.lastTriggerSource) as ForemanDraftSyncTriggerSource | null) ?? "unknown",
         telemetry: Array.isArray(loaded.telemetry)
