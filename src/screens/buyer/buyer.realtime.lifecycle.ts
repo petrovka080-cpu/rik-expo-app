@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 
 import { useAppActiveRevalidation } from "../../lib/lifecycle/useAppActiveRevalidation";
+import { useScreenFocusRevalidation } from "../../lib/lifecycle/useScreenFocusRevalidation";
 
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
@@ -199,12 +200,8 @@ export function useBuyerRealtimeLifecycle(params: {
 
   useFocusEffect(bindRealtime);
 
-  // S3: Fix Buyer app-resume gap.
-  // Before S3, Buyer had no AppState listener for data revalidation on resume.
-  // Realtime reconnects on useFocusEffect, but data could be stale after a long
-  // background session if no realtime event was fired.
-  // force: false → respects freshness cache (kickMsInbox / kickMsBuckets),
-  // so rapid resumals within the freshness window are no-ops.
+  // S3.1: Fix Buyer app-resume gap (AppState: background → active).
+  // Revalidates inbox+buckets when app returns from background.
   useAppActiveRevalidation({
     screen: "buyer",
     surface: "summary_root",
@@ -217,6 +214,29 @@ export function useBuyerRealtimeLifecycle(params: {
         force: false,
       });
       void reason; // typed LifecycleRefreshReason — logged by the hook itself
+    },
+    isInFlight: params.isRefreshInFlight,
+  });
+
+  // S3.2: Fix Buyer office-return / screen_focus gap.
+  // When user returns to Buyer from a child route (e.g. office hub navigation),
+  // or refocuses the screen, data may be stale if no realtime event fired.
+  // skipFirstFocus: true — the bootstrap load handles the initial fetch.
+  // force: false — respects freshness cache to avoid storm on rapid tab switches.
+  useScreenFocusRevalidation({
+    screen: "buyer",
+    surface: "summary_root",
+    enabled: true,
+    reason: "office_return",
+    skipFirstFocus: true,
+    onRevalidate: async (reason) => {
+      if (!params.focusedRef.current) return;
+      await refreshRef.current({
+        reason: "focus",
+        scopes: ["inbox", "buckets"],
+        force: false,
+      });
+      void reason;
     },
     isInFlight: params.isRefreshInFlight,
   });

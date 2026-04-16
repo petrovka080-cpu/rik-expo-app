@@ -1,8 +1,17 @@
-PASS src/screens/buyer/hooks/useBuyerEnsureAccountingFlags.test.ts
 PASS src/screens/buyer/buyer.status.mutation.test.ts
+  buyer status mutation owner
+    √ keeps status propagation happy path inside the status owner (3 ms)
+    √ does not hide degraded status propagation after primary and fallback failures (2 ms)
+    √ reads authoritative server state after accounting handoff before success (3 ms)
+    √ does not claim success when server truth is stale after handoff (2 ms)
+    √ surfaces terminal handoff failure without verify or local success (1 ms)
+    √ keeps adapter fallback visible as partial success instead of masking it (2 ms)
+    √ does not report final success when post-write authoritative refresh fails (2 ms)
+    √ does not send duplicate accounting requests while an action is already in flight (1 ms)
+    √ does not call downstream finance RPC after failed internal attachment step (3 ms)
 
-Test Suites: 2 passed, 2 total
-Tests:       12 passed, 12 total
+Test Suites: 1 passed, 1 total
+Tests:       9 passed, 9 total
 Snapshots:   0 total
-Time:        0.757 s, estimated 1 s
-Ran all test suites matching /src\\screens\\buyer\\buyer.status.mutation.test.ts|src\\screens\\buyer\\hooks\\useBuyerEnsureAccountingFlags.test.ts/i.
+Time:        0.674 s, estimated 1 s
+Ran all test suites matching /src\\screens\\buyer\\buyer.status.mutation.test.ts/i.

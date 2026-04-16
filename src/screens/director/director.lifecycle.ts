@@ -172,6 +172,8 @@ export function useDirectorLifecycle({
   const appStateRef = useRef(AppState.currentState);
   const lastWebResumeAtRef = useRef(0);
   const lastLifecycleRefreshAtRef = useRef(0);
+  // S3.2: track previous focus state to detect focus-return (not initial focus)
+  const prevFocusedRef = useRef(false);
   const rtChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const handoffChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const rowsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
@@ -429,6 +431,25 @@ export function useDirectorLifecycle({
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [isScreenFocused, runLifecycleScopedRefresh]);
+
+  // S3.2: Director screen_focus on return from child route / modal.
+  // The isScreenFocused prop goes false when a modal or child screen covers the
+  // director, and true when it is dismissed. The existing tab_switch effect
+  // at line ~370 only fires when tab/period CHANGED. This effect catches the
+  // case where focus returns but tab/period are unchanged (e.g. PDF closed,
+  // proposal sheet dismissed) — data may be stale in that case.
+  useEffect(() => {
+    const wasFocused = prevFocusedRef.current;
+    prevFocusedRef.current = isScreenFocused;
+
+    if (!isScreenFocused) return;          // blur — ignore
+    if (!wasFocused && !didInit.current) return; // first mount — bootstrap handles it
+    if (!wasFocused && didInit.current) {
+      // Focus returned after being hidden — fire a soft (not forced) revalidation
+      runLifecycleScopedRefresh("screen_focus", "screen_focus");
+    }
+  }, [isScreenFocused, runLifecycleScopedRefresh]);
+
 
   useEffect(() => {
     if (!isScreenFocused) return;
