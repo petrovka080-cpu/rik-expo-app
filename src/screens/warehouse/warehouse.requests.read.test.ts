@@ -111,6 +111,18 @@ describe("warehouse.requests.read canonical ownership", () => {
         fallbackUsed: false,
       }),
     );
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "rpc_latency",
+        result: "success",
+        sourceKind: "rpc:warehouse_issue_queue_scope_v4",
+        rowCount: 1,
+        extra: expect.objectContaining({
+          rpcName: "warehouse_issue_queue_scope_v4",
+          totalRowCount: 1,
+        }),
+      }),
+    );
   });
 
   it("fails closed when the canonical request-head RPC fails", async () => {
