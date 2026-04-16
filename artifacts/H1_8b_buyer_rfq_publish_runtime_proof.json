@@ -1,0 +1,53 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-16T07:53:27.879Z",
+  "stage": "readback",
+  "user": {
+    "id": "f649561b-add7-4755-a270-e5d747eb42f0",
+    "email": "h18b.rfq.override.mo16mx784q39@e.com"
+  },
+  "baseRole": "contractor",
+  "overrideSetup": "active_effective_role=buyer inserted server-side by verifier",
+  "actorContext": {
+    "role": "buyer",
+    "reason": null,
+    "source": "developer_override",
+    "allowed": true,
+    "baseRole": "foreman",
+    "override": true,
+    "baseSource": "profiles",
+    "actorUserId": "f649561b-add7-4755-a270-e5d747eb42f0"
+  },
+  "seeded": {
+    "marker": "H18B-RFQ-MO16N0NO",
+    "requestId": "e269febc-a591-4f12-8073-dc904a7707b8",
+    "requestItemId": "e250c83d-0ad1-46d1-bce1-d3978ba89bad",
+    "displayNo": "REQ-H18B-RFQ-MO16N0NO/2026",
+    "approvedStatus": "К закупке"
+  },
+  "tender": {
+    "id": "1ea2dac6-6950-4f9e-a4c6-36f19838cc5b",
+    "status": "published",
+    "mode": "rfq",
+    "created_by": "f649561b-add7-4755-a270-e5d747eb42f0",
+    "note": "runtime H18B-RFQ-MO16N0NO"
+  },
+  "tenderItems": [
+    {
+      "id": "eb0a47ef-e477-4368-8b8a-706cce933cf3",
+      "tender_id": "1ea2dac6-6950-4f9e-a4c6-36f19838cc5b",
+      "request_item_id": "e250c83d-0ad1-46d1-bce1-d3978ba89bad"
+    }
+  ],
+  "invariants": {
+    "baseRoleIsNotBuyer": true,
+    "actorContextUsesDeveloperOverride": true,
+    "actorContextRoleBuyer": true,
+    "actorContextAllowed": true,
+    "tenderCreated": true,
+    "tenderPublished": true,
+    "tenderModeRfq": true,
+    "tenderCreatedByOverrideActor": true,
+    "tenderItemLinked": true
+  }
+}
