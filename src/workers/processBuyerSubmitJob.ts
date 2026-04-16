@@ -8,6 +8,7 @@ import {
   bindQueuedProposalAttachmentToProposal,
   type QueuedProposalAttachment,
 } from "../lib/api/queuedProposalAttachments";
+import { readbackSubmittedProposalTruth } from "../lib/api/proposalActionBoundary";
 
 type CreateProposalsApi = (
   payload: ProposalBucketInput[],
@@ -126,6 +127,10 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
         .join(",")}`,
     );
   }
+  const proposalIds = created
+    .map((row) => norm(row?.proposal_id))
+    .filter(Boolean);
+  await readbackSubmittedProposalTruth(deps.supabase, proposalIds);
 
   const attachments = Array.isArray(payload.attachments) ? payload.attachments : [];
   if (attachments.length) {

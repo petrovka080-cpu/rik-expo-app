@@ -1,0 +1,72 @@
+[
+  {
+    "name": "buyer submit happy path readback",
+    "scenario": "rpc returns submitted proposal and proposals readback confirms it",
+    "risk_covered": "final success from payload without authoritative truth",
+    "expected_result": "success with terminalClass=success and readbackConfirmed=true",
+    "status": "passed_targeted"
+  },
+  {
+    "name": "buyer submit duplicate tap",
+    "scenario": "sendingRef is already locked and user taps submit again",
+    "risk_covered": "duplicate tap publishing second terminal success",
+    "expected_result": "guard_duplicate_submit failure and no rpc call",
+    "status": "passed_targeted"
+  },
+  {
+    "name": "buyer submit stale readback",
+    "scenario": "rpc payload says submitted but proposals readback returns draft/null submitted_at",
+    "risk_covered": "stale state / speculative final success",
+    "expected_result": "verify_director_visibility failure; no attachments/status/inbox finalization",
+    "status": "passed_targeted"
+  },
+  {
+    "name": "buyer submit retryable failure",
+    "scenario": "proposal submit rpc boundary throws 503 temporary outage",
+    "risk_covered": "retryable failure shown as success",
+    "expected_result": "create_proposals failure classified retryable_failure",
+    "status": "passed_targeted"
+  },
+  {
+    "name": "buyer submit partial local status degradation",
+    "scenario": "server submit/readback succeeds but request_items status sync degrades",
+    "risk_covered": "internal local step masking server transition failure",
+    "expected_result": "partial_success warning; terminal submit already server-confirmed",
+    "status": "passed_targeted_existing"
+  },
+  {
+    "name": "director approve success readback",
+    "scenario": "approve rpc succeeds and proposal readback has sent_to_accountant_at",
+    "risk_covered": "success after rpc/general refresh without exact truth",
+    "expected_result": "terminal success only after readback",
+    "status": "passed_targeted"
+  },
+  {
+    "name": "director approve stale readback",
+    "scenario": "approve rpc succeeds but proposal readback lacks sent_to_accountant_at",
+    "risk_covered": "stale read model / speculative approve success",
+    "expected_result": "terminal_failure and no success marker",
+    "status": "passed_targeted"
+  },
+  {
+    "name": "director approve denied",
+    "scenario": "approve rpc returns ok=false permission failure",
+    "risk_covered": "denied terminal failure hidden by fallback success",
+    "expected_result": "DirectorApproveBoundaryError, no readback, no success marker",
+    "status": "passed_targeted"
+  },
+  {
+    "name": "director approve retryable failure",
+    "scenario": "approve rpc returns 503",
+    "risk_covered": "retryable backend failure displayed as final success",
+    "expected_result": "retryable_failure and no readback",
+    "status": "passed_targeted"
+  },
+  {
+    "name": "director approve object error rendering",
+    "scenario": "Supabase error object has code/details/message",
+    "risk_covered": "mobile UI showing [object Object]",
+    "expected_result": "human error text",
+    "status": "passed_targeted_existing"
+  }
+]

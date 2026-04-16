@@ -9,6 +9,11 @@ import type { QueuedProposalAttachment } from "../../lib/api/queuedProposalAttac
 import { stageProposalAttachmentForQueue } from "../../lib/api/storage";
 import { enqueueSubmitJob, JOB_QUEUE_ENABLED } from "../../lib/infra/jobQueue";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import {
+  classifyProposalActionFailure,
+  readbackSubmittedProposalTruth,
+  type ProposalActionTerminalClass,
+} from "../../lib/api/proposalActionBoundary";
 import type { UploadProposalAttachmentFn } from "./buyer.attachments.mutation";
 import { uploadSupplierProposalAttachmentsMutation } from "./buyer.attachments.mutation";
 import {
@@ -78,6 +83,7 @@ type BuyerSubmitIntentPayloadRecord = Record<string, unknown>;
 type ConfirmSendWithoutAttachments = () => Promise<boolean>;
 
 type SubmitStage =
+  | "guard_duplicate_submit"
   | "validate_selection"
   | "confirm_without_attachments"
   | "stage_queue_attachments"
@@ -91,9 +97,12 @@ type SubmitSuccessData = {
   mode: "queue" | "sync";
   createdProposalIds: string[];
   affectedRequestItemIds: string[];
+  terminalClass?: ProposalActionTerminalClass;
+  readbackConfirmed?: boolean;
 };
 
 const SUBMIT_STAGE_LABELS: Record<SubmitStage, string> = {
+  guard_duplicate_submit: "Duplicate submit guard",
   validate_selection: "Проверка выбранных позиций",
   confirm_without_attachments: "Подтверждение отправки без вложений",
   stage_queue_attachments: "Подготовка вложений для очереди",
@@ -145,6 +154,25 @@ const refreshBuyerBucketsAndInboxInBackground = (
   });
 };
 
+const recordProposalSubmitBoundaryEvent = (
+  event: string,
+  result: "success" | "error",
+  extra: Record<string, unknown>,
+  error?: unknown,
+) => {
+  recordPlatformObservability({
+    screen: "buyer",
+    surface: "buyer_submit_mutation",
+    category: "ui",
+    event,
+    result,
+    sourceKind: "mutation:buyer:proposal_submit",
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error ? errMessage(error, "proposal submit failed") : undefined,
+    extra,
+  });
+};
+
 export type CreateProposalsDeps = {
   creating: boolean;
   sendingRef: { current: boolean };
@@ -185,6 +213,8 @@ type SubmitRunResult =
       mode: "queue" | "sync";
       createdProposalIds: string[];
       affectedRequestItemIds: string[];
+      terminalClass?: ProposalActionTerminalClass;
+      readbackConfirmed?: boolean;
     };
 
 const isSubmitFailure = (
@@ -326,6 +356,11 @@ async function runSyncSubmitMutation(
     pickedCount: ids.length,
     clientRequestId,
   });
+  recordProposalSubmitBoundaryEvent("proposal_submit_rpc_invoked", "success", {
+    payloadBuckets: payload.length,
+    pickedCount: ids.length,
+    clientRequestId,
+  });
   let result: CatalogCreateProposalsResult;
   try {
     result = await p.apiCreateProposalsBySupplier(payload, {
@@ -340,6 +375,11 @@ async function runSyncSubmitMutation(
       payloadBuckets: payload.length,
       clientRequestId,
     });
+    recordProposalSubmitBoundaryEvent("proposal_submit_terminal_failure", "error", {
+      stage: "create_proposals",
+      terminalClass: classifyProposalActionFailure(error),
+      clientRequestId,
+    }, error);
     return tracker.asFailure(
       "create_proposals",
       normalizeRuntimeError(error, "Не удалось создать предложения."),
@@ -347,6 +387,10 @@ async function runSyncSubmitMutation(
     );
   }
   tracker.markCompleted("create_proposals", {
+    payloadBuckets: payload.length,
+    clientRequestId,
+  });
+  recordProposalSubmitBoundaryEvent("proposal_submit_result_received", "success", {
     payloadBuckets: payload.length,
     clientRequestId,
   });
@@ -359,6 +403,14 @@ async function runSyncSubmitMutation(
       "Не удалось сформировать предложения",
     );
   }
+
+  const createdProposalIds = Array.from(
+    new Set(
+      created
+        .map((row) => String(row?.proposal_id ?? row?.id ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
 
   tracker.markStarted("verify_director_visibility", {
     createdCount: created.length,
@@ -384,18 +436,36 @@ async function runSyncSubmitMutation(
       "Предложение не дошло до директора после отправки",
     );
   }
+  recordProposalSubmitBoundaryEvent("proposal_submit_readback_started", "success", {
+    proposalCount: createdProposalIds.length,
+    clientRequestId,
+  });
+  try {
+    await readbackSubmittedProposalTruth(p.supabase, createdProposalIds);
+  } catch (error) {
+    recordProposalSubmitBoundaryEvent("proposal_submit_terminal_failure", "error", {
+      stage: "verify_director_visibility",
+      terminalClass: classifyProposalActionFailure(error),
+      clientRequestId,
+    }, error);
+    return tracker.asFailure(
+      "verify_director_visibility",
+      error,
+      "РџСЂРµРґР»РѕР¶РµРЅРёРµ РЅРµ РїРѕРґС‚РІРµСЂР¶РґРµРЅРѕ СЃРµСЂРІРµСЂРѕРј",
+    );
+  }
+  recordProposalSubmitBoundaryEvent("proposal_submit_readback_completed", "success", {
+    proposalCount: createdProposalIds.length,
+    clientRequestId,
+  });
+  recordProposalSubmitBoundaryEvent("proposal_submit_terminal_success", "success", {
+    proposalCount: createdProposalIds.length,
+    clientRequestId,
+    terminalClass: "success",
+  });
   tracker.markCompleted("verify_director_visibility", {
     createdCount: created.length,
   });
-
-  const createdProposalIds = Array.from(
-    new Set(
-      created
-        .map((row) => String(row?.proposal_id ?? row?.id ?? "").trim())
-        .filter(Boolean),
-    ),
-  );
-
   tracker.markStarted("upload_supplier_attachments", {
     proposalCount: created.length,
   });
@@ -460,6 +530,8 @@ async function runSyncSubmitMutation(
     mode: "sync",
     createdProposalIds,
     affectedRequestItemIds: affectedIds,
+    terminalClass: "success",
+    readbackConfirmed: true,
   };
 }
 
@@ -473,20 +545,19 @@ export async function handleCreateProposalsBySupplierAction(
   });
 
   if (p.creating || p.sendingRef.current) {
-    return tracker.success(
-      {
-        mode: "sync",
-        createdProposalIds: [],
-        affectedRequestItemIds: [],
-      },
-      {
-        skipped: true,
-        guardReason: p.creating ? "already_creating" : "sending_ref_locked",
-      },
+    return tracker.asFailure(
+      "guard_duplicate_submit",
+      new Error(p.creating ? "already creating proposal submit" : "proposal submit already in flight"),
+      "РћС‚РїСЂР°РІРєР° СѓР¶Рµ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ",
     );
   }
 
   const ids = p.pickedIds || [];
+  recordProposalSubmitBoundaryEvent("proposal_submit_started", "success", {
+    requestId: p.requestId ? String(p.requestId).trim() || null : null,
+    pickedCount: ids.length,
+    queueEnabled: p.jobQueueEnabled ?? JOB_QUEUE_ENABLED,
+  });
   logBuyerActionDebug("info", "[buyer.submit] pressed", {
     pickedIds: ids,
     pickedCount: ids.length,
@@ -590,6 +661,10 @@ export async function handleCreateProposalsBySupplierAction(
       error,
       "Не удалось отправить директору",
     );
+    recordProposalSubmitBoundaryEvent("proposal_submit_terminal_failure", "error", {
+      stage: "create_proposals",
+      terminalClass: classifyProposalActionFailure(error),
+    }, error);
     p.alert(
       "Ошибка",
       formatBuyerMutationFailure(

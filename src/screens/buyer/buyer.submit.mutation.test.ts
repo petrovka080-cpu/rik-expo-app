@@ -8,6 +8,7 @@ import { uploadSupplierProposalAttachmentsMutation } from "./buyer.attachments.m
 import { syncSubmittedRequestItemsStatusMutation } from "./buyer.status.mutation";
 import { isBuyerMutationFailure } from "./buyer.mutation.shared";
 import { handleCreateProposalsBySupplierAction } from "./buyer.submit.mutation";
+import { classifyProposalActionFailure } from "../../lib/api/proposalActionBoundary";
 
 jest.mock("./buyer.attachments.mutation", () => ({
   uploadSupplierProposalAttachmentsMutation: jest.fn(),
@@ -42,8 +43,36 @@ const buildCreateResult = (
   ],
 });
 
+const buildSubmitReadbackSupabase = (
+  response: {
+    data?: unknown[];
+    error?: unknown;
+  } = {
+    data: [
+      {
+        id: "proposal-1",
+        status: "submitted",
+        submitted_at: "2026-03-30T10:00:00.000Z",
+        sent_to_accountant_at: null,
+      },
+    ],
+    error: null,
+  },
+) => {
+  const inMock = jest.fn(async () => response);
+  const selectMock = jest.fn(() => ({ in: inMock }));
+  const fromMock = jest.fn(() => ({ select: selectMock }));
+  return {
+    supabase: { from: fromMock } as never,
+    fromMock,
+    selectMock,
+    inMock,
+  };
+};
+
 const baseSubmitDeps = () => {
   const alert = jest.fn();
+  const readback = buildSubmitReadbackSupabase();
   return {
     deps: {
       creating: false,
@@ -65,7 +94,7 @@ const baseSubmitDeps = () => {
       validatePicked: jest.fn(() => true),
       confirmSendWithoutAttachments: jest.fn(async () => true),
       apiCreateProposalsBySupplier: jest.fn(async () => buildCreateResult()),
-      supabase: {} as never,
+      supabase: readback.supabase,
       uploadProposalAttachment: jest.fn(async () => undefined),
       setAttachments: jest.fn(),
       removeFromInboxLocally: jest.fn(),
@@ -80,6 +109,7 @@ const baseSubmitDeps = () => {
       jobQueueEnabled: false,
     },
     alert,
+    readback,
   };
 };
 
@@ -111,7 +141,7 @@ describe("buyer submit mutation owner", () => {
   });
 
   it("keeps submit happy path inside the submit owner", async () => {
-    const { deps, alert } = baseSubmitDeps();
+    const { deps, alert, readback } = baseSubmitDeps();
 
     const result = await handleCreateProposalsBySupplierAction(deps);
 
@@ -122,7 +152,11 @@ describe("buyer submit mutation owner", () => {
       mode: "sync",
       createdProposalIds: ["proposal-1"],
       affectedRequestItemIds: ["ri-1"],
+      terminalClass: "success",
+      readbackConfirmed: true,
     });
+    expect(readback.fromMock).toHaveBeenCalledWith("proposals");
+    expect(readback.inMock).toHaveBeenCalledWith("id", ["proposal-1"]);
     expect(deps.setAttachments).toHaveBeenCalledWith({});
     expect(deps.removeFromInboxLocally).toHaveBeenCalledWith(["ri-1"]);
     expect(deps.clearPick).toHaveBeenCalled();
@@ -162,6 +196,68 @@ describe("buyer submit mutation owner", () => {
           event.errorStage === "verify_director_visibility",
       ),
     ).toBe(true);
+  });
+
+  it("rejects duplicate submit instead of publishing a second terminal success", async () => {
+    const { deps, alert } = baseSubmitDeps();
+    deps.sendingRef.current = true;
+
+    const result = await handleCreateProposalsBySupplierAction(deps);
+
+    expect(isBuyerMutationFailure(result)).toBe(true);
+    if (!isBuyerMutationFailure(result)) return;
+    expect(result.failedStage).toBe("guard_duplicate_submit");
+    expect(deps.apiCreateProposalsBySupplier).not.toHaveBeenCalled();
+    expect(alert).not.toHaveBeenCalled();
+  });
+
+  it("does not publish final success when authoritative submit readback is stale", async () => {
+    const { deps, alert } = baseSubmitDeps();
+    const staleReadback = buildSubmitReadbackSupabase({
+      data: [
+        {
+          id: "proposal-1",
+          status: "draft",
+          submitted_at: null,
+          sent_to_accountant_at: null,
+        },
+      ],
+      error: null,
+    });
+    deps.supabase = staleReadback.supabase;
+
+    const result = await handleCreateProposalsBySupplierAction(deps);
+
+    expect(isBuyerMutationFailure(result)).toBe(true);
+    if (!isBuyerMutationFailure(result)) return;
+    expect(result.failedStage).toBe("verify_director_visibility");
+    expect(mockedUploadSupplierProposalAttachmentsMutation).not.toHaveBeenCalled();
+    expect(mockedSyncSubmittedRequestItemsStatusMutation).not.toHaveBeenCalled();
+    expect(deps.removeFromInboxLocally).not.toHaveBeenCalled();
+    expect(alert).toHaveBeenCalled();
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) => event.event === "proposal_submit_terminal_failure",
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps retryable submit failures out of final success classes", async () => {
+    const { deps, alert } = baseSubmitDeps();
+    deps.apiCreateProposalsBySupplier = jest.fn(async () => {
+      throw { status: 503, message: "temporary network outage" };
+    });
+
+    const result = await handleCreateProposalsBySupplierAction(deps);
+
+    expect(isBuyerMutationFailure(result)).toBe(true);
+    if (!isBuyerMutationFailure(result)) return;
+    expect(result.failedStage).toBe("create_proposals");
+    expect(
+      classifyProposalActionFailure((result.error as Error & { causeError?: unknown }).causeError),
+    ).toBe("retryable_failure");
+    expect(mockedUploadSupplierProposalAttachmentsMutation).not.toHaveBeenCalled();
+    expect(alert).toHaveBeenCalled();
   });
 
   it("publishes partial success when post-submit status sync degrades", async () => {

@@ -10,6 +10,7 @@ import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
 import type { ProposalItem } from "./director.types";
+import { runDirectorApprovePipelineAction } from "./director.approve.boundary";
 
 type BusyLike = { isBusy: (key: string) => boolean };
 type Deps = {
@@ -76,8 +77,6 @@ export function useDirectorProposalActions({
   // D-MODAL-PDF: Stabilize the opener — avoid recreating on every render.
   const pdfOpener = useMemo(() => createModalAwarePdfOpener(closeSheet), [closeSheet]);
   const approveInFlightRef = useRef<Record<string, boolean>>({});
-  const approveDoneAtRef = useRef<Record<string, number>>({});
-  const APPROVE_DONE_COOLDOWN_MS = 15_000;
   const recordDirectorProposalCatch = (
     kind: "critical_fail" | "soft_failure" | "cleanup_only" | "degraded_fallback",
     event: string,
@@ -314,12 +313,6 @@ export function useDirectorProposalActions({
       return;
     }
 
-    const doneAt = approveDoneAtRef.current[pid] ?? 0;
-    if (doneAt > 0 && Date.now() - doneAt < APPROVE_DONE_COOLDOWN_MS) {
-      if (__DEV__) console.warn(`[director.approve] duplicate approve suppressed (cooldown): ${pid}`);
-      return;
-    }
-
     const clientMutationId = `dap_${pid}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     try {
@@ -331,40 +324,25 @@ export function useDirectorProposalActions({
         clientMutationId,
       });
 
-      const { data, error } = await supabase.rpc("director_approve_pipeline_v1", {
-        p_proposal_id: pid,
-        p_comment: null,
-        p_invoice_currency: "KGS",
-        p_client_mutation_id: clientMutationId,
+      const result = await runDirectorApprovePipelineAction({
+        supabase,
+        proposalId: pid,
+        clientMutationId,
       });
-
-      if (error) throw toProposalRequestItemIntegrityDegradedError(error) ?? error;
-
-      const result = asRecord(data);
-      if (result && result.ok === false) {
-        const failureMessage = pickTrimmedString(result.failure_message) || "Не удалось утвердить предложение.";
-        recordDirectorProposalCatch("critical_fail", "director_pipeline_error", new Error(failureMessage), {
-          proposalId: pid,
-          clientMutationId,
-          failureCode: pickTrimmedString(result.failure_code),
-        });
-        throw new Error(failureMessage);
-      }
-
-      const workSeedOk = result ? result.work_seed_ok !== false : true;
-      const workSeedError = result ? pickTrimmedString(result.work_seed_error) : null;
-      const idempotentReplay = result ? result.idempotent_replay === true : false;
+      const workSeedOk = result.workSeedOk;
+      const workSeedError = result.workSeedError;
+      const idempotentReplay = result.idempotentReplay;
 
       recordDirectorProposalCatch("cleanup_only", "director_pipeline_success", null, {
         proposalId: pid,
         clientMutationId,
-        purchaseId: result ? pickTrimmedString(result.purchase_id) : null,
+        purchaseId: result.purchaseId,
         workSeedOk,
         idempotentReplay,
+        sentToAccountantAt: result.serverTruth.sentToAccountantAt,
       });
 
       await refreshDirectorApprovalViews();
-      approveDoneAtRef.current[pid] = Date.now();
 
       if (!workSeedOk && workSeedError) {
         Alert.alert(

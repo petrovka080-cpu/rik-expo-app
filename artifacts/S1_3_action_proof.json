@@ -1,0 +1,44 @@
+[
+  {
+    "action": "proposal_submit",
+    "authoritative_source": "proposals table readback via readbackSubmittedProposalTruth",
+    "removed_speculative_step": "screen no longer finalizes sync success from rpc payload alone",
+    "terminal_classes": [
+      "success",
+      "denied",
+      "conflict",
+      "retryable_failure",
+      "terminal_failure"
+    ],
+    "duplicate_guard_strategy": "active in-flight duplicate returns failed guard stage instead of success",
+    "readback_contract": "each proposal id must have submitted_at, empty sent_to_accountant_at, and submitted-normalized status",
+    "proof_status": "targeted_tests_green"
+  },
+  {
+    "action": "proposal_submit_worker",
+    "authoritative_source": "proposals table readback via readbackSubmittedProposalTruth",
+    "removed_speculative_step": "worker no longer binds queued attachments after unconfirmed create/submit payload",
+    "terminal_classes": [
+      "success",
+      "terminal_failure"
+    ],
+    "duplicate_guard_strategy": "rpc idempotency plus worker readback",
+    "readback_contract": "worker requires the same submitted/director-visible proposal truth before attachment continuation",
+    "proof_status": "typecheck_green_targeted_by_helper_contract"
+  },
+  {
+    "action": "director_approve",
+    "authoritative_source": "proposals.sent_to_accountant_at readback via readbackApprovedProposalTruth",
+    "removed_speculative_step": "screen no longer shows success after rpc result and general refresh alone",
+    "terminal_classes": [
+      "success",
+      "denied",
+      "conflict",
+      "retryable_failure",
+      "terminal_failure"
+    ],
+    "duplicate_guard_strategy": "active in-flight guard only; post-success cooldown removed, server idempotency/readback owns repeated terminal truth",
+    "readback_contract": "exact proposal id must have non-empty sent_to_accountant_at before terminal success",
+    "proof_status": "targeted_tests_green"
+  }
+]
