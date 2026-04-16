@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-04-16T14:26:23.857Z",
+  "wave": "T1.2",
+  "selectedPath": "app/pdf-viewer.tsx",
+  "localGates": [
+    {
+      "command": "npx jest src/lib/pdf/pdfViewerEncoding.test.ts src/lib/text/encoding.test.ts --runInBand --no-coverage",
+      "status": "PASS"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "status": "PASS_WITH_EXISTING_WARNINGS"
+    },
+    {
+      "command": "npx jest --no-coverage",
+      "status": "PASS"
+    }
+  ],
+  "sql": "not changed",
+  "remoteDbPush": "not required",
+  "ota": {
+    "status": "PUBLISHED",
+    "reason": "required because client/PDF viewer bundle changed",
+    "branch": "production",
+    "runtimeVersion": "1.0.0",
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "updateGroupId": "3d7980fa-047b-4fa4-b0ee-563a82f57bed",
+    "androidUpdateId": "019d96b2-ac7b-7a3b-bba3-2b0e27608529",
+    "iosUpdateId": "019d96b2-ac7b-73bb-a5bc-d41182d2c730",
+    "dashboard": "https://expo.dev/accounts/azisbek_dzhantaev/projects/rik-expo-app/updates/3d7980fa-047b-4fa4-b0ee-563a82f57bed"
+  },
+  "selectedSliceChecks": {
+    "selectedPath": "app/pdf-viewer.tsx",
+    "sourceContainsCorrectedLabels": true,
+    "sourceNoLongerContainsKnownBrokenLabels": true,
+    "correctedLabelsAreNotCorrupted": true,
+    "reportSnapshotSqlUntouched": true
+  },
+  "status": "GREEN"
+}

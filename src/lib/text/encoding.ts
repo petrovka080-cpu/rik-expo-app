@@ -125,13 +125,26 @@ export function isCorruptedText(value: unknown): boolean {
   if (value == null) return false;
   const src = String(value);
   if (!src) return false;
-  return scoreMojibake(collapseBrokenMojibakeSpacing(src)) >= 4;
+  const rawScore = scoreMojibake(src);
+  if (rawScore < 4) return false;
+
+  const collapsed = collapseBrokenMojibakeSpacing(src);
+  const collapsedScore = scoreMojibake(collapsed);
+  const decoded = decodeCp1251Mojibake(collapsed);
+
+  return Boolean(
+    decoded &&
+      decoded !== src &&
+      decoded !== collapsed &&
+      scoreMojibake(decoded) < Math.max(rawScore, collapsedScore),
+  );
 }
 
 export function normalizeRuText<T>(value: T): T {
   if (value == null) return value;
   const src = String(value);
   if (!src) return value;
+  if (!isCorruptedText(src)) return value;
 
   const rank = (s: string): number => {
     const bad = scoreMojibake(s);

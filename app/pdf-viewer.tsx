@@ -1133,7 +1133,7 @@ function PdfViewerScreen() {
   const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
   const headerHeight =
     headerBarHeight + (Platform.OS === "web" ? 0 : insets.top);
-  const pageIndicatorText = state === "ready" ? "1 / 1" : "вЂ¦";
+  const pageIndicatorText = state === "ready" ? "1 / 1" : "…";
   const showPageIndicator =
     Boolean(asset) && resolvedSource.kind === "resolved-embedded";
 
@@ -1361,20 +1361,20 @@ function PdfViewerScreen() {
           return (
             <View style={styles.loadingState}>
               <ActivityIndicator size="large" color="#FFFFFF" />
-              <Text style={styles.loadingText}>РћС‚РєСЂС‹РІР°РµС‚СЃСЏ...</Text>
+              <Text style={styles.loadingText}>Открывается...</Text>
             </View>
           );
         }
         return (
           <Pressable style={styles.viewerBody} onPress={toggleChrome}>
             <CenteredPanel
-              title="Р”РѕРєСѓРјРµРЅС‚ РѕС‚РєСЂС‹С‚ РІРѕ РІРЅРµС€РЅРµРј PDF-РїСЂРёР»РѕР¶РµРЅРёРё"
-              subtitle="Р’РµСЂРЅРёС‚РµСЃСЊ РІ РїСЂРёР»РѕР¶РµРЅРёРµ, РєРѕРіРґР° Р·Р°РєРѕРЅС‡РёС‚Рµ, РёР»Рё РѕС‚РєСЂРѕР№С‚Рµ РґРѕРєСѓРјРµРЅС‚ РµС‰С‘ СЂР°Р· РѕС‚СЃСЋРґР°."
-              actionLabel="РћС‚РєСЂС‹С‚СЊ РµС‰С‘ СЂР°Р·"
+              title="Документ открыт во внешнем PDF-приложении"
+              subtitle="Вернитесь в приложение, когда закончите, или откройте документ ещё раз отсюда."
+              actionLabel="Открыть ещё раз"
               onAction={() => {
                 void handoffPdfPreview(resolvedSource.asset, "manual");
               }}
-              secondaryLabel={asset ? "РџРѕРґРµР»РёС‚СЊСЃСЏ" : undefined}
+              secondaryLabel={asset ? "Поделиться" : undefined}
               onSecondaryAction={asset ? () => void onShare() : undefined}
             />
           </Pressable>
@@ -1400,7 +1400,7 @@ function PdfViewerScreen() {
       return (
         <View style={styles.loadingState}>
           <ActivityIndicator size="large" color="#FFFFFF" />
-          <Text style={styles.loadingText}>РћС‚РєСЂС‹РІР°РµС‚СЃСЏ...</Text>
+          <Text style={styles.loadingText}>Открывается...</Text>
         </View>
       );
     }
@@ -1425,7 +1425,7 @@ function PdfViewerScreen() {
         {state === "loading" ? (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color="#FFFFFF" />
-            <Text style={styles.loadingText}>РћС‚РєСЂС‹РІР°РµС‚СЃСЏ...</Text>
+            <Text style={styles.loadingText}>Открывается...</Text>
           </View>
         ) : null}
 

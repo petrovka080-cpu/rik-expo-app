@@ -1,0 +1,230 @@
+{
+  "generatedAt": "2026-04-16T14:26:23.857Z",
+  "target": "https://nxrnjywzxxfdpqmzjorh.supabase.co",
+  "sourceData": [
+    {
+      "table": "requests",
+      "scannedRows": 231,
+      "corruptedFieldCount": 0,
+      "samples": []
+    },
+    {
+      "table": "request_items",
+      "scannedRows": 1028,
+      "corruptedFieldCount": 0,
+      "samples": []
+    },
+    {
+      "table": "warehouse_issues",
+      "scannedRows": 32,
+      "corruptedFieldCount": 0,
+      "samples": []
+    },
+    {
+      "table": "subcontracts",
+      "scannedRows": 65,
+      "corruptedFieldCount": 0,
+      "samples": []
+    }
+  ],
+  "sourceFiles": [
+    {
+      "file": "app/pdf-viewer.tsx",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "app.json",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.ts",
+      "corruptedLiteralCount": 16,
+      "samples": [
+        {
+          "raw": "РџРѕР·РёС†РёСЏ",
+          "normalized": "Позиция"
+        },
+        {
+          "raw": "Р§РµСЂРЅРѕРІРёРє",
+          "normalized": "Черновик"
+        },
+        {
+          "raw": "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё",
+          "normalized": "На утверждении"
+        },
+        {
+          "raw": "РћС‚РєР»РѕРЅРµРЅРѕ",
+          "normalized": "Отклонено"
+        },
+        {
+          "raw": "Р—Р°РєСЂС‹С‚Р°",
+          "normalized": "Закрыта"
+        }
+      ]
+    },
+    {
+      "file": "src/screens/contractor/contractor.visibilityRecovery.ts",
+      "corruptedLiteralCount": 6,
+      "samples": [
+        {
+          "raw": "РџРѕРґСЂСЏРґС‡РёРє",
+          "normalized": "Подрядчик"
+        },
+        {
+          "raw": "РћР±СЉРµРєС‚",
+          "normalized": "Объект"
+        },
+        {
+          "raw": "РћР±СЉРµРєС‚",
+          "normalized": "Объект"
+        },
+        {
+          "raw": "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РЅР°Р·РЅР°С‡РµРЅРЅС‹Рµ РїРѕРґСЂСЏРґРЅС‹Рµ СЂР°Р±РѕС‚С‹.",
+          "normalized": "Не удалось загрузить назначенные подрядные работы."
+        },
+        {
+          "raw": "РќРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ РїСЂРѕС„РёР»СЊ РїРѕРґСЂСЏРґС‡РёРєР°. РќР°Р·РЅР°С‡РµРЅРЅС‹Рµ СЂР°Р±РѕС‚С‹ РјРѕРіСѓС‚ Р±С‹С‚СЊ РЅРµРґРѕСЃС‚СѓРїРЅС‹.",
+          "normalized": "Не удалось определить профиль подрядчика. Назначенные работы могут быть недоступны."
+        }
+      ]
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.tab.empty.ts",
+      "corruptedLiteralCount": 6,
+      "samples": [
+        {
+          "raw": "РќРµС‚ Р·Р°РїРёСЃРµР№ РІ РѕС‡РµСЂРµРґРё СЃРєР»Р°РґР°.",
+          "normalized": "Нет записей в очереди склада."
+        },
+        {
+          "raw": "РџРѕРєР° РЅРµС‚ РґР°РЅРЅС‹С… РїРѕ СЃРєР»Р°РґСѓ.",
+          "normalized": "Пока нет данных по складу."
+        },
+        {
+          "raw": "Р—Р°РіСЂСѓР·РєР°...",
+          "normalized": "Загрузка..."
+        },
+        {
+          "raw": "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ РѕС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё.\\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РїРѕРІС‚РѕСЂРёС‚СЊ.",
+          "normalized": "Не удалось обновить очередь выдачи.\\nПотяни вниз, чтобы повторить."
+        },
+        {
+          "raw": "РќРµС‚ Р·Р°СЏРІРѕРє РґР»СЏ РІС‹РґР°С‡Рё.\\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РѕР±РЅРѕРІРёС‚СЊ.",
+          "normalized": "Нет заявок для выдачи.\\nПотяни вниз, чтобы обновить."
+        }
+      ]
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
+      "corruptedLiteralCount": 8,
+      "samples": [
+        {
+          "raw": "Р“Р»Р°РІРЅС‹Р№ СЃРєР»Р°Рґ",
+          "normalized": "Главный склад"
+        },
+        {
+          "raw": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РЅРѕРјРµСЂ РїСЂРёС…РѕРґР°.",
+          "normalized": "Некорректный номер прихода."
+        },
+        {
+          "raw": "РџРѕР·РёС†РёСЏ",
+          "normalized": "Позиция"
+        },
+        {
+          "raw": "РџРѕР·РёС†РёСЏ",
+          "normalized": "Позиция"
+        },
+        {
+          "raw": "РџРѕР·РёС†РёСЏ",
+          "normalized": "Позиция"
+        }
+      ]
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.service.ts",
+      "corruptedLiteralCount": 1,
+      "samples": [
+        {
+          "raw": "РџРѕР·РёС†РёСЏ",
+          "normalized": "Позиция"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/pdf/director/production.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/api/pdf_director.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.production.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/api/director_reports.normalizers.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "supabase/migrations/20260417003000_r2_2_director_report_issue_facts.sql",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "supabase/migrations/20260417044500_r2_4_director_report_snapshot_envelope.sql",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    }
+  ],
+  "totals": {
+    "corruptedSourceLiterals": 37,
+    "corruptedDbFields": 0
+  },
+  "classes": [
+    {
+      "id": "T1-R1",
+      "name": "Corrupted source data",
+      "status": "not_observed",
+      "evidence": "Remote critical text tables scanned read-only."
+    },
+    {
+      "id": "T1-R2",
+      "name": "Broken normalization/source literals",
+      "status": "observed",
+      "evidence": "Corrupted hardcoded literals found in selected client/UI/PDF source files."
+    },
+    {
+      "id": "T1-R3",
+      "name": "Serialization/transport corruption",
+      "status": "not_observed_for_selected_slice",
+      "evidence": "PDF viewer selected slice has no API/RPC transport boundary."
+    },
+    {
+      "id": "T1-R4",
+      "name": "Rendering-only corruption",
+      "status": "observed",
+      "evidence": "PDF viewer rendered RN Text literals were already corrupted in source."
+    },
+    {
+      "id": "T1-R5",
+      "name": "Font/encoding mismatch",
+      "status": "not_observed_for_selected_slice",
+      "evidence": "Selected slice is viewer chrome text, not generated PDF glyph mapping."
+    }
+  ],
+  "selectedFixSlice": {
+    "selectedPath": "app/pdf-viewer.tsx",
+    "sourceContainsCorrectedLabels": true,
+    "sourceNoLongerContainsKnownBrokenLabels": true,
+    "correctedLabelsAreNotCorrupted": true,
+    "reportSnapshotSqlUntouched": true
+  },
+  "status": "GREEN"
+}
