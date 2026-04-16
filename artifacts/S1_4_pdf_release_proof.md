@@ -2,7 +2,7 @@
 
 ## Final status
 
-NOT GREEN until commit, push, and OTA complete.
+GREEN
 
 ## Exact changed files
 
@@ -80,10 +80,21 @@ Tests: 1 skipped, 1532 passed, 1533 total
 
 ## Pending proof
 
-- commit hash
-- push proof
-- production OTA branch/update id
+None.
+
+## Commit / push / OTA proof
+
+- Code commit: `7ae8db28902a18aa5fd2774c93f58a1ffe48533c`
+- Commit message: `S1.4: burn down PDF client orchestration`
+- Push: `00feed1..7ae8db2 main -> main`
+- OTA branch: `production`
+- OTA message: `S1.4 PDF client orchestration burndown`
+- OTA update group ID: `b4f6cc7f-ab67-4cca-823c-6f3d18afaeb4`
+- Android update ID: `019d94e5-ad74-73a4-aee9-acd0a1e55dce`
+- iOS update ID: `019d94e5-ad74-7644-9e86-547748030bdd`
+- Runtime version: `1.0.0`
+- EAS Dashboard: `https://expo.dev/accounts/azisbek_dzhantaev/projects/rik-expo-app/updates/b4f6cc7f-ab67-4cca-823c-6f3d18afaeb4`
 
 ## Remaining risks
 
-S1.4 is code/test/lint green so far, but release-grade GREEN is blocked until commit, push, and OTA complete.
+No real-device PDF smoke proof was run in this terminal session. The production OTA was published for the code commit above; this proof file is finalized after OTA ids became available.

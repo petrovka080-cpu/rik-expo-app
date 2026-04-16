@@ -2,7 +2,7 @@
 
 ## Status
 
-NOT GREEN until commit, push, and OTA are complete.
+GREEN
 
 ## What changed
 
@@ -41,4 +41,5 @@ NOT GREEN until commit, push, and OTA are complete.
 
 ## Remaining risks
 
-- No production OTA has been published for S1.4 yet.
+- No real-device PDF smoke proof was run in this terminal session.
+- Production OTA was published for the code commit; this summary was finalized in a docs-only proof commit after OTA ids were available.

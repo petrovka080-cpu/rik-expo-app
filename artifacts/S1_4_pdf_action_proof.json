@@ -20,5 +20,5 @@
     "access_expired"
   ],
   "removed_speculative_step": "stale PDF run can no longer navigate or clear a newer active flow after TTL replacement",
-  "proof_status": "targeted_pdf_jest_green_tsc_green_lint_green_full_jest_green_release_pending"
+  "proof_status": "green_code_commit_pushed_and_production_ota_published"
 }
