@@ -29,6 +29,13 @@ import {
   checkPdfMobilePreviewEligibility,
   recordPdfPreviewOversizeBlocked,
 } from "../pdf/pdfMobilePreviewSizeGuard";
+import {
+  createPdfActionBoundaryKey,
+  createPdfActionBoundaryRun,
+  recordPdfActionBoundaryEvent,
+  toPdfActionBoundaryError,
+  type PdfActionBoundaryRun,
+} from "../pdf/pdfActionBoundary";
 export function getPdfFlowErrorMessage(
   error: unknown,
   fallback = "Р СњР Вµ РЎС“Р Т‘Р В°Р В»Р С•РЎРѓРЎРЉ Р С•РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ PDF",
@@ -186,14 +193,41 @@ type PreviewPdfDocumentOpts = {
     openToken?: string;
   };
   /** Called before router.push — use to dismiss native Modals that sit above the navigation Stack. */
+  boundaryRun?: PdfActionBoundaryRun;
+  assertCurrentRun?: (stage: "prepare" | "viewer_entry" | "visibility") => void;
   onBeforeNavigate?: (() => void | Promise<void>) | null;
 };
-const activePreviewFlows = new Map<string, Promise<DocumentDescriptor>>();
+type ActivePreviewFlow = {
+  promise: Promise<DocumentDescriptor>;
+  runId: string;
+  startedAt: number;
+};
+const activePreviewFlows = new Map<string, ActivePreviewFlow>();
 // D-MODAL-PDF: Track when each flow started so we can expire abandoned entries.
 // If a flow promise is leaked (e.g., component unmounts during PDF generation),
 // future opens of the same key would be blocked forever. 60s TTL prevents this.
 const activePreviewFlowTimestamps = new Map<string, number>();
 const ACTIVE_FLOW_MAX_TTL_MS = 60_000;
+let pdfActionRunSeq = 0;
+const latestPreviewRunByKey = new Map<string, string>();
+
+function nextPdfActionRunId(): string {
+  pdfActionRunSeq += 1;
+  return `pdf-action-${Date.now()}-${pdfActionRunSeq}`;
+}
+
+function assertCurrentPdfActionRun(
+  flowKey: string,
+  runId: string,
+  stage: "prepare" | "viewer_entry" | "visibility",
+): void {
+  if (latestPreviewRunByKey.get(flowKey) === runId) return;
+  throw toPdfActionBoundaryError(
+    new Error(`Stale PDF action result ignored for ${flowKey}`),
+    stage,
+    "Stale PDF action result ignored",
+  );
+}
 function persistCriticalPdfBreadcrumb(input: {
   marker: string;
   screen: unknown;
@@ -372,6 +406,22 @@ export async function previewPdfDocument(
       source: doc.uri,
     },
   });
+  const recordBoundary = (
+    event: string,
+    stage: "viewer_entry" | "visibility" = "viewer_entry",
+    result: "success" | "error" = "success",
+    error?: unknown,
+  ) => {
+    if (!opts?.boundaryRun) return;
+    recordPdfActionBoundaryEvent({
+      run: opts.boundaryRun,
+      event,
+      stage,
+      result,
+      sourceKind: doc.fileSource.kind,
+      error,
+    });
+  };
   try {
     const scheme = extractUriScheme(doc.uri);
     if (__DEV__) console.info("[pdf-document-actions] preview", {
@@ -544,7 +594,10 @@ export async function previewPdfDocument(
             payloadMode: "session_id_only",
           },
         });
+        opts?.assertCurrentRun?.("viewer_entry");
+        recordBoundary("pdf_viewer_entry_started", "viewer_entry");
         await pushViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
+        recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
         persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
           screen: breadcrumbScreen,
@@ -814,7 +867,10 @@ export async function previewPdfDocument(
             patchVersion: "v3",
           },
         });
+        opts?.assertCurrentRun?.("viewer_entry");
+        recordBoundary("pdf_viewer_entry_started", "viewer_entry");
         await pushViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
+        recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
         persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
           screen: breadcrumbScreen,
@@ -903,7 +959,10 @@ export async function previewPdfDocument(
       },
     });
     try {
+      opts?.assertCurrentRun?.("viewer_entry");
+      recordBoundary("pdf_viewer_entry_started", "viewer_entry");
       await openPdfPreview(asset.uri, asset.fileName);
+      recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
       openObservation.success({
         sourceKind: asset.sourceKind,
         extra: {
@@ -919,6 +978,7 @@ export async function previewPdfDocument(
       });
     }
   } catch (error) {
+    recordBoundary("pdf_terminal_failure", "viewer_entry", "error", error);
     const lifecycleError = error;
     const message = getPdfFlowErrorMessage(
       lifecycleError,
@@ -979,18 +1039,54 @@ export async function prepareAndPreviewPdfDocument(
     onBeforeNavigate?: (() => void | Promise<void>) | null;
   },
 ): Promise<DocumentDescriptor> {
-  const flowKey = String(args.key || "").trim();
-  const baseContext = createPdfOpenFlowContext({
+  const descriptorUri =
+    args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null;
+  const flowKey = createPdfActionBoundaryKey({
     key: args.key,
+    documentType: args.descriptor.documentType,
+    originModule: args.descriptor.originModule,
+    entityId: args.descriptor.entityId ?? null,
+    fileName: args.descriptor.fileName,
+    uri: descriptorUri,
+  });
+  const runId = nextPdfActionRunId();
+  const boundaryRun = createPdfActionBoundaryRun({
+    runId,
+    key: flowKey,
+    label: args.label,
+    documentType: args.descriptor.documentType,
+    originModule: args.descriptor.originModule,
+    entityId: args.descriptor.entityId ?? null,
+    fileName: args.descriptor.fileName,
+  });
+  const baseContext = createPdfOpenFlowContext({
+    key: flowKey,
     label: args.label,
     fileName: args.descriptor.fileName,
     entityId: args.descriptor.entityId ?? null,
     documentType: args.descriptor.documentType,
     originModule: args.descriptor.originModule,
   });
+  const recordBoundary = (
+    event: string,
+    stage: "access" | "prepare" | "viewer_entry" | "visibility",
+    result: "success" | "error" | "joined_inflight" = "success",
+    error?: unknown,
+    extra?: Record<string, unknown>,
+  ) => {
+    recordPdfActionBoundaryEvent({
+      run: boundaryRun,
+      event,
+      stage,
+      result,
+      sourceKind: args.descriptor.fileSource?.kind ?? "pdf:document",
+      error,
+      extra,
+    });
+  };
   if (flowKey) {
     const existing = activePreviewFlows.get(flowKey);
-    const existingTs = activePreviewFlowTimestamps.get(flowKey) ?? 0;
+    const existingTs = activePreviewFlowTimestamps.get(flowKey) ?? existing?.startedAt ?? 0;
     if (existing && existingTs > 0 && (Date.now() - existingTs) < ACTIVE_FLOW_MAX_TTL_MS) {
       recordPdfOpenStage({
         context: baseContext,
@@ -1000,7 +1096,11 @@ export async function prepareAndPreviewPdfDocument(
           guardReason: "owner_already_inflight",
         },
       });
-      return await existing;
+      recordBoundary("pdf_action_started", "access", "joined_inflight", undefined, {
+        duplicateStrategy: "join_inflight",
+        joinedRunId: existing.runId,
+      });
+      return await existing.promise;
     }
     // D-MODAL-PDF: Stale flow entry (abandoned promise or TTL expired) — clean
     // up and proceed with a fresh open rather than blocking indefinitely.
@@ -1009,6 +1109,10 @@ export async function prepareAndPreviewPdfDocument(
       activePreviewFlowTimestamps.delete(flowKey);
     }
   }
+  latestPreviewRunByKey.set(flowKey, runId);
+  const assertCurrentRun = (stage: "prepare" | "viewer_entry" | "visibility") => {
+    assertCurrentPdfActionRun(flowKey, runId, stage);
+  };
   const runFlow = async () => {
     recordPdfOpenStage({
       context: baseContext,
@@ -1016,6 +1120,9 @@ export async function prepareAndPreviewPdfDocument(
       extra: {
         hasBusyOwner: Boolean(args.busy?.run || args.busy?.show),
       },
+    });
+    recordBoundary("pdf_action_started", "access", "success", undefined, {
+      hasBusyOwner: Boolean(args.busy?.run || args.busy?.show),
     });
     persistCriticalPdfBreadcrumb({
       marker: "tap_start",
@@ -1042,33 +1149,51 @@ export async function prepareAndPreviewPdfDocument(
         context: baseContext,
         stage: "document_prepare_start",
       });
+      recordBoundary("pdf_access_requested", "access");
+      recordBoundary("pdf_document_prepare_started", "prepare");
       let document: DocumentDescriptor;
       try {
         document = await preparePdfDocument({
           ...args,
           busy: undefined,
         });
+        assertCurrentRun("prepare");
+        recordBoundary("pdf_access_resolved", "access", "success", undefined, {
+          sourceKind: document.fileSource.kind,
+        });
+        recordBoundary("pdf_document_prepare_completed", "prepare", "success", undefined, {
+          sourceKind: document.fileSource.kind,
+        });
       } catch (error) {
+        const boundaryError = toPdfActionBoundaryError(
+          error,
+          "prepare",
+          "PDF document prepare failed",
+        );
         recordPdfOpenStage({
           context: baseContext,
           stage: "document_prepare_fail",
           result: "error",
           sourceKind: args.descriptor.fileSource?.kind ?? "pdf:document",
-          error,
+          error: boundaryError,
           extra: {
             source:
               args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null,
           },
         });
-        throw error;
+        recordBoundary("pdf_terminal_failure", "prepare", "error", boundaryError);
+        throw boundaryError;
       }
       const visibilityWait = args.router
         ? beginPdfOpenVisibilityWait(baseContext)
         : null;
       try {
+        assertCurrentRun("prepare");
         await previewPdfDocument(document, {
           router: args.router,
           onBeforeNavigate: args.onBeforeNavigate,
+          boundaryRun,
+          assertCurrentRun,
           openFlow: visibilityWait
             ? {
                 ...baseContext,
@@ -1078,18 +1203,28 @@ export async function prepareAndPreviewPdfDocument(
         });
         if (visibilityWait) {
           await visibilityWait.promise;
+          assertCurrentRun("visibility");
         } else {
           recordPdfOpenStage({
             context: baseContext,
             stage: "first_open_visible",
             sourceKind: document.fileSource.kind,
           });
+          assertCurrentRun("visibility");
         }
+        recordBoundary("pdf_terminal_success", "visibility", "success", undefined, {
+          sourceKind: document.fileSource.kind,
+        });
         return document;
       } catch (error) {
+        const boundaryError = toPdfActionBoundaryError(
+          error,
+          "visibility",
+          "PDF viewer readiness failed",
+        );
         const signalledFailure = failPdfOpenVisible(
           visibilityWait?.token,
-          error,
+          boundaryError,
           {
             sourceKind: document.fileSource.kind,
           },
@@ -1100,16 +1235,19 @@ export async function prepareAndPreviewPdfDocument(
             stage: "open_failed",
             result: "error",
             sourceKind: document.fileSource.kind,
-            error,
+            error: boundaryError,
           });
         }
-        throw error;
+        recordBoundary("pdf_terminal_failure", "visibility", "error", boundaryError, {
+          sourceKind: document.fileSource.kind,
+        });
+        throw boundaryError;
       }
     };
     try {
       if (args.busy?.run) {
         const output = await args.busy.run(execute, {
-          key: args.key,
+          key: flowKey,
           label: args.label,
           minMs: 200,
         });
@@ -1143,12 +1281,23 @@ export async function prepareAndPreviewPdfDocument(
   };
   const promise = runFlow().finally(() => {
     if (flowKey) {
-      activePreviewFlows.delete(flowKey);
-      activePreviewFlowTimestamps.delete(flowKey);
+      const active = activePreviewFlows.get(flowKey);
+      if (active?.runId === runId) {
+        activePreviewFlows.delete(flowKey);
+        activePreviewFlowTimestamps.delete(flowKey);
+      }
+      if (latestPreviewRunByKey.get(flowKey) === runId) {
+        latestPreviewRunByKey.delete(flowKey);
+      }
     }
   });
   if (flowKey) {
-    activePreviewFlows.set(flowKey, promise);
+    const startedAt = Date.now();
+    activePreviewFlows.set(flowKey, {
+      promise,
+      runId,
+      startedAt,
+    });
     activePreviewFlowTimestamps.set(flowKey, Date.now());
   }
   return await promise;

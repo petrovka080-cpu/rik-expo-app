@@ -65,6 +65,16 @@ const flushPromises = async () => {
   await Promise.resolve();
 };
 
+const createDeferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+};
+
 describe("pdfDocumentActions", () => {
   const originalPlatformOs = Platform.OS;
 
@@ -474,6 +484,195 @@ describe("pdfDocumentActions", () => {
           && event.result === "success",
       ),
     ).toBe(true);
+  });
+
+  it("blocks stale TTL-expired PDF results from opening over a newer run", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    let nowMs = 1_000;
+    jest.spyOn(Date, "now").mockImplementation(() => nowMs);
+    const oldPrepare = createDeferred<{ kind: "remote-url"; uri: string }>();
+    mockPreparePdfExecutionSource
+      .mockReturnValueOnce(oldPrepare.promise)
+      .mockResolvedValueOnce({
+        kind: "remote-url",
+        uri: "https://example.com/new.pdf",
+      });
+
+    const push = jest.fn();
+    const first = prepareAndPreviewPdfDocument({
+      supabase: {},
+      key: "pdf:stale:1",
+      label: "Opening PDF...",
+      descriptor: baseDocument,
+      getRemoteUrl: () => baseDocument.uri,
+      router: { push },
+    });
+
+    await flushPromises();
+    expect(mockRootRouterReplace).not.toHaveBeenCalled();
+
+    nowMs += 61_000;
+    const second = prepareAndPreviewPdfDocument({
+      supabase: {},
+      key: "pdf:stale:1",
+      label: "Opening PDF...",
+      descriptor: baseDocument,
+      getRemoteUrl: () => baseDocument.uri,
+      router: { push },
+    });
+
+    await flushPromises();
+    expect(mockRootRouterReplace).toHaveBeenCalledTimes(1);
+    const pushedHref = String(mockRootRouterReplace.mock.calls[0]?.[0] || "");
+    const openToken = new URL(pushedHref, "https://example.test").searchParams.get("openToken") || "";
+    markPdfOpenVisible(openToken, {
+      sourceKind: "remote-url",
+    });
+
+    await expect(second).resolves.toMatchObject({
+      uri: "https://example.com/new.pdf",
+    });
+
+    oldPrepare.resolve({
+      kind: "remote-url",
+      uri: "https://example.com/old.pdf",
+    });
+    await expect(first).rejects.toMatchObject({
+      terminalClass: "access_expired",
+    });
+    expect(mockRootRouterReplace).toHaveBeenCalledTimes(1);
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.surface === "pdf_action_boundary"
+          && event.event === "pdf_terminal_failure"
+          && event.extra?.terminalClass === "access_expired",
+      ),
+    ).toBe(true);
+  });
+
+  it("classifies denied PDF access without entering the viewer", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    mockPreparePdfExecutionSource.mockRejectedValueOnce({
+      status: 403,
+      message: "forbidden",
+    });
+
+    await expect(
+      prepareAndPreviewPdfDocument({
+        supabase: {},
+        key: "pdf:denied:1",
+        label: "Opening PDF...",
+        descriptor: baseDocument,
+        getRemoteUrl: () => baseDocument.uri,
+        router: { push: jest.fn() },
+      }),
+    ).rejects.toMatchObject({
+      terminalClass: "denied",
+    });
+
+    expect(mockRootRouterReplace).not.toHaveBeenCalled();
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.surface === "pdf_action_boundary"
+          && event.event === "pdf_terminal_failure"
+          && event.extra?.terminalClass === "denied",
+      ),
+    ).toBe(true);
+  });
+
+  it("does not enter the viewer before PDF readiness is confirmed", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    const prepare = createDeferred<{ kind: "remote-url"; uri: string }>();
+    mockPreparePdfExecutionSource.mockReturnValueOnce(prepare.promise);
+
+    const promise = prepareAndPreviewPdfDocument({
+      supabase: {},
+      key: "pdf:readiness:1",
+      label: "Opening PDF...",
+      descriptor: baseDocument,
+      getRemoteUrl: () => baseDocument.uri,
+      router: { push: jest.fn() },
+    });
+
+    await flushPromises();
+    expect(mockRootRouterReplace).not.toHaveBeenCalled();
+
+    prepare.resolve({
+      kind: "remote-url",
+      uri: "https://example.com/ready.pdf",
+    });
+    await flushPromises();
+    expect(mockRootRouterReplace).toHaveBeenCalledTimes(1);
+    const pushedHref = String(mockRootRouterReplace.mock.calls[0]?.[0] || "");
+    const openToken = new URL(pushedHref, "https://example.test").searchParams.get("openToken") || "";
+    markPdfOpenVisible(openToken, {
+      sourceKind: "remote-url",
+    });
+
+    await expect(promise).resolves.toMatchObject({
+      uri: "https://example.com/ready.pdf",
+    });
+  });
+
+  it("allows a clean retry after retryable PDF access failure", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    mockPreparePdfExecutionSource
+      .mockRejectedValueOnce({
+        status: 503,
+        message: "temporary storage outage",
+      })
+      .mockResolvedValueOnce({
+        kind: "remote-url",
+        uri: "https://example.com/retry-success.pdf",
+      });
+
+    await expect(
+      prepareAndPreviewPdfDocument({
+        supabase: {},
+        key: "pdf:retry:1",
+        label: "Opening PDF...",
+        descriptor: baseDocument,
+        getRemoteUrl: () => baseDocument.uri,
+        router: { push: jest.fn() },
+      }),
+    ).rejects.toMatchObject({
+      terminalClass: "retryable_failure",
+    });
+    expect(mockRootRouterReplace).not.toHaveBeenCalled();
+
+    const second = prepareAndPreviewPdfDocument({
+      supabase: {},
+      key: "pdf:retry:1",
+      label: "Opening PDF...",
+      descriptor: baseDocument,
+      getRemoteUrl: () => baseDocument.uri,
+      router: { push: jest.fn() },
+    });
+    await flushPromises();
+    expect(mockRootRouterReplace).toHaveBeenCalledTimes(1);
+    const pushedHref = String(mockRootRouterReplace.mock.calls[0]?.[0] || "");
+    const openToken = new URL(pushedHref, "https://example.test").searchParams.get("openToken") || "";
+    markPdfOpenVisible(openToken, {
+      sourceKind: "remote-url",
+    });
+
+    await expect(second).resolves.toMatchObject({
+      uri: "https://example.com/retry-success.pdf",
+    });
   });
 
   it("clears busy and reports open failure when viewer visibility fails after navigation", async () => {

@@ -1,0 +1,55 @@
+{
+  "wave": "S1.4",
+  "tests": [
+    {
+      "name": "keeps busy active until first open visible and coalesces duplicate taps into one PDF open flow",
+      "scenario": "two fast taps on the same PDF key",
+      "risk_covered": "duplicate open path / double viewer entry",
+      "expected_result": "second tap joins in-flight flow; one viewer route; terminal readiness once",
+      "status": "passed_targeted"
+    },
+    {
+      "name": "blocks stale TTL-expired PDF results from opening over a newer run",
+      "scenario": "old access result resolves after a newer boundary run",
+      "risk_covered": "stale signed URL/result wins over current run",
+      "expected_result": "old run rejects with access_expired; only newer route opens",
+      "status": "passed_targeted"
+    },
+    {
+      "name": "classifies denied PDF access without entering the viewer",
+      "scenario": "prepare/access returns 403",
+      "risk_covered": "permission failure masked as generic/open success",
+      "expected_result": "terminalClass denied; no viewer route",
+      "status": "passed_targeted"
+    },
+    {
+      "name": "does not enter the viewer before PDF readiness is confirmed",
+      "scenario": "prepare promise remains pending",
+      "risk_covered": "premature viewer entry",
+      "expected_result": "no route push before preparation resolves",
+      "status": "passed_targeted"
+    },
+    {
+      "name": "allows a clean retry after retryable PDF access failure",
+      "scenario": "first access fails with 503, second succeeds",
+      "risk_covered": "retryable failure leaves stale active owner",
+      "expected_result": "first terminalClass retryable_failure; second opens current PDF",
+      "status": "passed_targeted"
+    },
+    {
+      "name": "clears busy and reports open failure when viewer visibility fails after navigation",
+      "scenario": "viewer route pushed but visibility wait fails",
+      "risk_covered": "viewer failure masked as success",
+      "expected_result": "promise rejects; busy clears; open_failed is observed",
+      "status": "passed_targeted"
+    },
+    {
+      "name": "blocks oversized PDF on iOS without pushing viewer route",
+      "scenario": "oversized local iOS PDF",
+      "risk_covered": "unsafe viewer boot",
+      "expected_result": "oversize error; no route push",
+      "status": "passed_targeted"
+    }
+  ]
+}
+

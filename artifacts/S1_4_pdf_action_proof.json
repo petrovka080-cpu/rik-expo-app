@@ -1,0 +1,24 @@
+{
+  "wave": "S1.4",
+  "action": "pdf_access_prepare_viewer_open",
+  "authoritative_source": "typed PDF action boundary plus current-run viewer readiness confirmation",
+  "readiness_contract": {
+    "access": "preparePdfDocument resolves a valid DocumentDescriptor/PdfSource",
+    "prepare": "current run must still own the boundary key after preparation",
+    "viewer_entry": "viewer navigation is attempted only by the current run",
+    "visibility": "terminal success is emitted only after first visible/open readiness confirmation"
+  },
+  "duplicate_strategy": "join_inflight for same boundary key inside ACTIVE_FLOW_MAX_TTL_MS",
+  "stale_invalidation": "latestPreviewRunByKey rejects stale prepare/viewer/visibility commits; cleanup is run-id guarded",
+  "terminal_classes": [
+    "success",
+    "denied",
+    "conflict",
+    "retryable_failure",
+    "terminal_failure",
+    "viewer_failure",
+    "access_expired"
+  ],
+  "removed_speculative_step": "stale PDF run can no longer navigate or clear a newer active flow after TTL replacement",
+  "proof_status": "targeted_pdf_jest_green_tsc_green_lint_green_full_jest_green_release_pending"
+}
