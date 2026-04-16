@@ -573,7 +573,7 @@ export async function rwSendToAccountingAction<TRejected extends MaybeId = Maybe
     return tracker.success({ proposalId });
   } catch (error) {
     const failure = tracker.asFailure(
-      "ensure_accounting_flags",
+      "verify_accountant_state",
       error,
       "Не удалось отправить бухгалтеру",
     );

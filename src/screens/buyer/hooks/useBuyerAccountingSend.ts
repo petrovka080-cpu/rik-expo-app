@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -54,6 +54,7 @@ export function useBuyerAccountingSend<TApproved extends { id?: string | number 
     setInvoiceUploadedName,
     alertUser,
   } = params;
+  const accountingSendInFlightRef = useRef(false);
 
   const openInvoicePickerWeb = useCallback(async () => {
     await openInvoicePickerWebAction({
@@ -96,6 +97,7 @@ export function useBuyerAccountingSend<TApproved extends { id?: string | number 
       closeSheet,
       setApproved,
       setBusy: setAcctBusy,
+      inFlightRef: accountingSendInFlightRef,
       alert: alertUser,
     });
   }, [

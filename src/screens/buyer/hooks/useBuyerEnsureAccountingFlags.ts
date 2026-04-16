@@ -1,41 +1,38 @@
 import { useCallback } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { fetchBuyerAccountingFlags, updateBuyerAccountingFlags } from "./useBuyerAccountingFlagsRepo";
+
+import { fetchBuyerAccountingFlags } from "./useBuyerAccountingFlagsRepo";
+
+export async function verifyBuyerAccountingServerState(params: {
+  supabase: SupabaseClient;
+  proposalId: string;
+}) {
+  const chk = await fetchBuyerAccountingFlags(params.supabase, params.proposalId);
+  if (chk.error) throw chk.error;
+
+  const sentToAccountantAt = String(chk.data?.sent_to_accountant_at ?? "").trim();
+  if (!sentToAccountantAt) {
+    throw new Error("Server truth did not confirm sent_to_accountant_at");
+  }
+
+  return {
+    paymentStatus: String(chk.data?.payment_status ?? "").trim() || null,
+    sentToAccountantAt,
+    invoiceAmount: chk.data?.invoice_amount ?? null,
+  };
+}
 
 export function useBuyerEnsureAccountingFlags(params: {
   supabase: SupabaseClient;
   proposalSubmit: (proposalId: string) => Promise<unknown>;
 }) {
-  const { supabase, proposalSubmit } = params;
+  const { supabase } = params;
 
   const ensureAccountingFlags = useCallback(
-    async (proposalId: string, invoiceAmountNum?: number) => {
-      try {
-        const chk = await fetchBuyerAccountingFlags(supabase, proposalId);
-
-        if (chk.error) return;
-
-        const ps = String(chk.data?.payment_status ?? "").trim();
-        const sent = !!chk.data?.sent_to_accountant_at;
-        const shouldReset = ps.length === 0 || /^на доработке/i.test(ps);
-
-        if (!sent || shouldReset || (chk.data?.invoice_amount == null && typeof invoiceAmountNum === "number")) {
-          const upd: { sent_to_accountant_at?: string; payment_status?: string; invoice_amount?: number } = {};
-          if (!sent) upd.sent_to_accountant_at = new Date().toISOString();
-          if (shouldReset) upd.payment_status = "К оплате";
-          if (chk.data?.invoice_amount == null && typeof invoiceAmountNum === "number") {
-            upd.invoice_amount = invoiceAmountNum;
-          }
-          if (Object.keys(upd).length) {
-            await updateBuyerAccountingFlags(supabase, proposalId, upd);
-            await proposalSubmit(proposalId);
-          }
-        }
-      } catch {
-        // no-op
-      }
+    async (proposalId: string) => {
+      await verifyBuyerAccountingServerState({ supabase, proposalId });
     },
-    [supabase, proposalSubmit]
+    [supabase],
   );
 
   return { ensureAccountingFlags };

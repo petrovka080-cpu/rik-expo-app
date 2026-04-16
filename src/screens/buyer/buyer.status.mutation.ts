@@ -41,11 +41,11 @@ export type SubmitStatusStage =
   | "clear_request_item_reject_state";
 
 export type AccountingStage =
+  | "guard_duplicate_submit"
   | "validate_invoice_fields"
   | "upload_invoice_attachment"
   | "ensure_proposal_html"
   | "send_to_accountant"
-  | "ensure_accounting_flags"
   | "verify_accountant_state"
   | "refresh_bucket_lists";
 
@@ -55,13 +55,19 @@ const SUBMIT_STATUS_STAGE_LABELS: Record<SubmitStatusStage, string> = {
 };
 
 export const ACCOUNTING_STAGE_LABELS: Record<AccountingStage, string> = {
+  guard_duplicate_submit: "Защита от повторной отправки",
   validate_invoice_fields: "Проверка реквизитов счёта",
   upload_invoice_attachment: "Загрузка счёта",
   ensure_proposal_html: "Обновление HTML-вложения",
   send_to_accountant: "Передача бухгалтеру",
-  ensure_accounting_flags: "Фиксация бухгалтерских флагов",
   verify_accountant_state: "Проверка proposal после handoff",
   refresh_bucket_lists: "Обновление buyer buckets",
+};
+
+type AccountingResultData = {
+  proposalId: string;
+  amount: number;
+  skipped?: "duplicate_in_flight";
 };
 
 async function sendToAccountingWithFallback(params: {
@@ -168,7 +174,7 @@ export async function runProposalAccountingMutation(params: {
   ensureAccountingFlags: (proposalId: string, invoiceAmountNum?: number) => Promise<void>;
   supabase: SupabaseClient;
   fetchBuckets: () => Promise<void>;
-}): Promise<BuyerMutationResult<AccountingStage, { proposalId: string; amount: number }>> {
+}): Promise<BuyerMutationResult<AccountingStage, AccountingResultData>> {
   const proposalId = String(params.proposalId || "").trim();
   const tracker = createBuyerMutationTracker<AccountingStage>({
     family: "status",
@@ -274,26 +280,18 @@ export async function runProposalAccountingMutation(params: {
   }
   tracker.markCompleted("send_to_accountant");
 
-  tracker.markStarted("ensure_accounting_flags");
-  try {
-    await params.ensureAccountingFlags(proposalId, amount);
-  } catch (error) {
-    return tracker.asFailure(
-      "ensure_accounting_flags",
-      error,
-      "Не удалось зафиксировать бухгалтерские флаги",
-    );
-  }
-  tracker.markCompleted("ensure_accounting_flags");
-
   tracker.markStarted("verify_accountant_state");
   try {
     const chk = await params.supabase
       .from("proposals")
-      .select("payment_status, sent_to_accountant_at")
+      .select("payment_status, sent_to_accountant_at, invoice_amount")
       .eq("id", proposalId)
       .maybeSingle();
     if (chk.error) throw chk.error;
+    const sentToAccountantAt = String(chk.data?.sent_to_accountant_at ?? "").trim();
+    if (!sentToAccountantAt) {
+      throw new Error("Server truth did not confirm sent_to_accountant_at");
+    }
   } catch (error) {
     return tracker.asFailure(
       "verify_accountant_state",
@@ -335,9 +333,26 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
   closeSheet: () => void;
   setApproved: (fn: (prev: TApproved[]) => TApproved[]) => void;
   setBusy: (v: boolean) => void;
+  inFlightRef?: { current: boolean };
   alert: AlertFn;
-}): Promise<BuyerMutationResult<AccountingStage, { proposalId: string; amount: number }>> {
+}): Promise<BuyerMutationResult<AccountingStage, AccountingResultData>> {
   const proposalId = String(p.acctProposalId || "").trim();
+  if (p.inFlightRef?.current) {
+    const tracker = createBuyerMutationTracker<AccountingStage>({
+      family: "status",
+      operation: "send_to_accounting",
+      proposalId,
+    });
+    tracker.markStarted("guard_duplicate_submit", { skipped: true });
+    tracker.markCompleted("guard_duplicate_submit", { skipped: true });
+    return tracker.success({
+      proposalId,
+      amount: 0,
+      skipped: "duplicate_in_flight",
+    });
+  }
+
+  if (p.inFlightRef) p.inFlightRef.current = true;
   p.setBusy(true);
   try {
     const result = await runProposalAccountingMutation({
@@ -385,6 +400,7 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
     p.closeSheet();
     return result;
   } finally {
+    if (p.inFlightRef) p.inFlightRef.current = false;
     p.setBusy(false);
   }
 }

@@ -1,0 +1,36 @@
+{
+  "wave": "S1.5",
+  "scope": "buyer finance/accounting mutation boundary",
+  "proofs": [
+    {
+      "claim": "duplicate tap does not create a second accounting RPC",
+      "test": "does not send duplicate accounting requests while an action is already in flight",
+      "file": "src/screens/buyer/buyer.status.mutation.test.ts"
+    },
+    {
+      "claim": "stale server truth cannot be rendered as final success",
+      "test": "does not claim success when server truth is stale after handoff",
+      "file": "src/screens/buyer/buyer.status.mutation.test.ts"
+    },
+    {
+      "claim": "post-mutation success depends on authoritative readback",
+      "test": "reads authoritative server state after accounting handoff before success",
+      "file": "src/screens/buyer/buyer.status.mutation.test.ts"
+    },
+    {
+      "claim": "client no longer recreates final accounting flags",
+      "test": "rejects stale server state instead of recreating final flags locally",
+      "file": "src/screens/buyer/hooks/useBuyerEnsureAccountingFlags.test.ts"
+    },
+    {
+      "claim": "partial adapter fallback is visible",
+      "test": "keeps adapter fallback visible as partial success instead of masking it",
+      "file": "src/screens/buyer/buyer.status.mutation.test.ts"
+    },
+    {
+      "claim": "failed internal steps do not trigger downstream finance RPCs",
+      "test": "does not call downstream finance RPC after failed internal attachment step",
+      "file": "src/screens/buyer/buyer.status.mutation.test.ts"
+    }
+  ]
+}

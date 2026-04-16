@@ -1,0 +1,45 @@
+{
+  "wave": "S1.5",
+  "required_scenarios": [
+    {
+      "scenario": "duplicate tap",
+      "covered_by": "does not send duplicate accounting requests while an action is already in flight",
+      "status": "covered"
+    },
+    {
+      "scenario": "stale state arrival",
+      "covered_by": "does not claim success when server truth is stale after handoff",
+      "status": "covered"
+    },
+    {
+      "scenario": "read-after-write from authoritative refresh",
+      "covered_by": "reads authoritative server state after accounting handoff before success",
+      "status": "covered"
+    },
+    {
+      "scenario": "terminal handoff failure",
+      "covered_by": "surfaces terminal handoff failure without verify or local success",
+      "status": "covered"
+    },
+    {
+      "scenario": "retryable adapter failure",
+      "covered_by": "keeps adapter fallback visible as partial success instead of masking it",
+      "status": "covered"
+    },
+    {
+      "scenario": "no speculative final success",
+      "covered_by": "does not claim success when server truth is stale after handoff",
+      "status": "covered"
+    },
+    {
+      "scenario": "no partial success masking",
+      "covered_by": "does not report final success when post-write authoritative refresh fails",
+      "status": "covered"
+    },
+    {
+      "scenario": "no false success after failed internal step",
+      "covered_by": "does not call downstream finance RPC after failed internal attachment step",
+      "status": "covered"
+    }
+  ]
+}
