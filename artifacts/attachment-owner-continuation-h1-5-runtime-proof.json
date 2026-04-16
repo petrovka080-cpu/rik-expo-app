@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-04-16T04:18:00.000Z",
+  "status": "GREEN",
+  "scope": "proposal_attachment_evidence_attach_v1 owner continuation recovery",
+  "productionMigrationApplied": "20260416144500_attachment_owner_continuation_recovery_h1_5.sql",
+  "liveShape": {
+    "proposalId": "0b235f64-a364-4cb7-b47e-76fc51d309af",
+    "proposalCreatedBy": "9adc5ab1-31fa-41be-8a00-17eadbb37c39",
+    "getMyRole": "contractor",
+    "attachmentActorRole": "director"
+  },
+  "proof": {
+    "attachRpc": "proposal_attachment_evidence_attach_v1",
+    "attachRpcReturnedAttachmentId": "280",
+    "no42501": true,
+    "buyerVisibleCount": 1,
+    "directorVisibleCount": 1
+  },
+  "cleanup": {
+    "deletedAttachmentRows": 1,
+    "deletedStorageObjects": 1,
+    "postCleanupAttachmentRows": 0,
+    "postCleanupStorageRows": 0
+  }
+}
