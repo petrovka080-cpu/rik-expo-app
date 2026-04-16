@@ -222,10 +222,11 @@ export function useDirectorScreenController() {
         FIN_DUE_DAYS_DEFAULT, FIN_CRITICAL_DAYS
     });
 
+    const { invalidateFinance } = financeQuery;
     const refreshFinanceRealtimeScope = useCallback(async () => {
         setRefreshReason("realtime:director:finance");
-        await fetchFinance();
-    }, [fetchFinance, setRefreshReason]);
+        await invalidateFinance();
+    }, [invalidateFinance, setRefreshReason]);
 
     const refreshReportsRealtimeScope = useCallback(async () => {
         setRefreshReason("realtime:director:reports");

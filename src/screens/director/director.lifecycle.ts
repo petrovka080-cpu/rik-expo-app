@@ -522,7 +522,11 @@ export function useDirectorLifecycle({
             const notification =
               next && typeof next === "object" ? (next as { title?: string; body?: string }) : {};
             showRtToastRef.current(notification.title, notification.body);
-            refreshCurrentVisibleScopeRef.current("realtime:notifications", true);
+            // P6.6: Only refresh Requests data — finance/reports have their own realtime channels.
+            // Notification INSERT has no semantic connection to finance/report data.
+            if (dirTabRef.current === DIRECTOR_TAB_REQUESTS) {
+              refreshCurrentVisibleScopeRef.current("realtime:notifications", true);
+            }
           },
         )
         .on(
