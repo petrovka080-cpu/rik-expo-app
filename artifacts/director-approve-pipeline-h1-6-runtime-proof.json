@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-04-16T04:35:00.000Z",
+  "status": "GREEN",
+  "scope": "director_approve_pipeline_v1 uuid boundary recovery",
+  "productionMigrationApplied": "20260416151500_director_approve_pipeline_uuid_recovery_h1_6.sql",
+  "rootCause": {
+    "directorApproveMinAutoSignature": "director_approve_min_auto(uuid,text)",
+    "brokenPipelineCallBeforeFix": "director_approve_pipeline_v1(text,text,text,text) passed text p_proposal_id to uuid-only downstream functions",
+    "runtimeErrorBeforeFix": "42883 No function matches the given name and argument types"
+  },
+  "proof": {
+    "nonIdempotentRollbackProbe": {
+      "proposalId": "972d1061-d9ed-40b3-9cd3-c0b0c6979f91",
+      "before": {
+        "status": "На утверждении",
+        "sentToAccountantAt": null,
+        "purchaseCount": 0
+      },
+      "result": {
+        "ok": true,
+        "idempotentReplay": false,
+        "workSeedOk": true,
+        "workSeedError": null,
+        "purchaseIdCreatedInsideRolledBackTransaction": "de5020ff-7c09-43b4-b284-2ad8cf4ec816",
+        "no42883": true
+      },
+      "afterRollback": {
+        "status": "На утверждении",
+        "sentToAccountantAt": null,
+        "purchaseCount": 0
+      }
+    },
+    "idempotentLiveProbe": {
+      "proposalId": "0b235f64-a364-4cb7-b47e-76fc51d309af",
+      "result": {
+        "ok": true,
+        "idempotentReplay": true,
+        "workSeedOk": true,
+        "purchaseId": "d11aac0f-000d-4665-866f-82780a883b54",
+        "no42883": true
+      }
+    },
+    "invalidIdProbe": {
+      "result": {
+        "ok": false,
+        "failureCode": "proposal_id_invalid",
+        "failureMessage": "Предложение не найдено",
+        "noTransport42883": true
+      }
+    }
+  },
+  "clientErrorRendering": {
+    "fixed": true,
+    "objectErrorsRenderMessageInsteadOfObjectObject": true
+  }
+}

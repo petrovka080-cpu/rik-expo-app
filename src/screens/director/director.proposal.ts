@@ -27,8 +27,19 @@ type Deps = {
   showSuccess: (msg: string) => void;
 };
 
-const errText = (error: unknown): string => {
+export const errText = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
+  const row = asRecord(error);
+  if (row) {
+    const message = pickTrimmedString(row.message);
+    if (message) return message;
+
+    const details = pickTrimmedString(row.details);
+    const hint = pickTrimmedString(row.hint);
+    const code = pickTrimmedString(row.code);
+    const parts = [code, details, hint].filter(Boolean);
+    if (parts.length > 0) return parts.join(": ");
+  }
   return String(error ?? "");
 };
 
