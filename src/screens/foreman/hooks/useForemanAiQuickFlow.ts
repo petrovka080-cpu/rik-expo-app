@@ -369,11 +369,16 @@ export function useForemanAiQuickFlow({
 
       if (outcome.type === "ai_unavailable") {
         setAiQuickOutcomeType("ai_unavailable");
-        setAiUnavailableReason(outcome.reason);
+        // H2: Sanitize reason — do not expose raw backend errors to user.
+        // Raw reason is already logged to observability in foreman.ai.ts.
+        setAiUnavailableReason("");
         setAiQuickCandidateGroups([]);
         setAiQuickQuestions([]);
         setAiQuickPreview([]);
-        setAiQuickError(outcome.message || "AI временно недоступен.");
+        // H2: Do NOT set aiQuickError — the unavailable NoticeCard is the single canonical error surface.
+        // Setting both aiQuickError and outcomeType=ai_unavailable caused duplicate banners.
+        setAiQuickError("");
+        setAiQuickNotice(outcome.message || "AI временно недоступен.");
         setAiQuickMode("compose");
         return;
       }
