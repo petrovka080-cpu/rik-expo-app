@@ -5,6 +5,7 @@ import {
   beginPlatformObservability,
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
+import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
 import type { AccountantInboxUiRow, Tab } from "./types";
 
 type AccountantInboxScopeRow = {
@@ -130,14 +131,43 @@ export async function loadAccountantInboxWindowData(params: {
   });
 
   try {
+    const startedAt = Date.now();
     const { data, error } = await supabase.rpc("accountant_inbox_scope_v1", {
       p_tab: normalizeAccountantInboxRpcTab(tab),
       p_offset: Math.max(0, offsetRows),
       p_limit: Math.max(1, limitRows),
     });
-    if (error) throw error;
+    if (error) {
+      trackRpcLatency({
+        name: "accountant_inbox_scope_v1",
+        screen: "accountant",
+        surface: "inbox_window",
+        durationMs: Date.now() - startedAt,
+        status: "error",
+        error,
+        extra: {
+          tab: normalizeAccountantInboxRpcTab(tab),
+          offsetRows: Math.max(0, offsetRows),
+          limitRows: Math.max(1, limitRows),
+        },
+      });
+      throw error;
+    }
 
     const envelope = adaptAccountantInboxScopeEnvelope(data);
+    trackRpcLatency({
+      name: "accountant_inbox_scope_v1",
+      screen: "accountant",
+      surface: "inbox_window",
+      durationMs: Date.now() - startedAt,
+      status: "success",
+      rowCount: envelope.rows.length,
+      extra: {
+        tab: normalizeAccountantInboxRpcTab(tab),
+        offsetRows: Math.max(0, offsetRows),
+        limitRows: Math.max(1, limitRows),
+      },
+    });
     const guarded = await filterProposalLinkedRowsByExistingProposalLinks(supabase, envelope.rows, {
       screen: "accountant",
       surface: "inbox_window",

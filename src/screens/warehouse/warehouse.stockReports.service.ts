@@ -6,6 +6,7 @@ import {
   beginPlatformObservability,
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
+import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
 import {
   isAbortError,
   throwIfAborted,
@@ -334,13 +335,38 @@ export async function apiFetchStockRpcV2(
   });
 
   try {
+    const startedAt = Date.now();
     const { data, error } = await supabase.rpc("warehouse_stock_scope_v2", {
       p_limit: limit,
       p_offset: offset,
     });
-    if (error) throw error;
+    if (error) {
+      trackRpcLatency({
+        name: "warehouse_stock_scope_v2",
+        screen: "warehouse",
+        surface: "stock_list",
+        durationMs: Date.now() - startedAt,
+        status: "error",
+        error,
+        extra: { limit, offset },
+      });
+      throw error;
+    }
 
     const envelope = adaptWarehouseStockScopeEnvelope(data);
+    trackRpcLatency({
+      name: "warehouse_stock_scope_v2",
+      screen: "warehouse",
+      surface: "stock_list",
+      durationMs: Date.now() - startedAt,
+      status: "success",
+      rowCount: envelope.rows.length,
+      extra: {
+        limit,
+        offset,
+        totalRowCount: adaptWarehouseStockWindowMeta(envelope.meta, offset, limit).totalRowCount,
+      },
+    });
     const result: WarehouseStockFetchResult = {
       supported: true,
       rows: envelope.rows,

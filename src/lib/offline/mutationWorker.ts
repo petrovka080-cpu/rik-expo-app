@@ -11,6 +11,7 @@ import {
   type PlatformOfflineQueueAction,
 } from "./platformOffline.observability";
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { trackQueueBacklogMetric } from "../observability/queueBacklogMetrics";
 import { normalizeAppError } from "../errors/appError";
 import type { PlatformOfflineSyncStatus } from "./platformOffline.model";
 import type { RequestDraftMeta } from "../../screens/foreman/foreman.types";
@@ -301,6 +302,28 @@ const pushStageTelemetry = async (params: {
   });
 };
 
+const trackForemanMutationBacklog = (
+  summary: Awaited<ReturnType<typeof getForemanMutationQueueSummary>>,
+  event: string,
+  extra?: Record<string, unknown>,
+) => {
+  trackQueueBacklogMetric({
+    queue: "foreman_mutation",
+    event,
+    size: summary.activeCount,
+    oldestAgeMs: summary.oldestActiveAgeMs,
+    processingCount: summary.inflightCount,
+    failedCount: summary.failedCount + summary.failedNonRetryableCount + summary.conflictedCount,
+    retryScheduledCount: summary.retryScheduledCount,
+    coalescedCount: summary.coalescedCount,
+    extra: {
+      totalCount: summary.totalCount,
+      pendingCount: summary.pendingCount,
+      ...extra,
+    },
+  });
+};
+
 const deriveConflictFromFailure = async (params: {
   deps: ForemanMutationWorkerDeps;
   snapshot: ForemanLocalDraftSnapshot | null;
@@ -412,6 +435,10 @@ const runFlush = async (
     const queueSummaryBefore = await getForemanMutationQueueSummary([
       entry.payload.draftKey,
     ]);
+    trackForemanMutationBacklog(queueSummaryBefore, "foreman_mutation_backlog_before_flush", {
+      draftKey: entry.payload.draftKey,
+      triggerSource: triggerSourceOverride ?? entry.payload.triggerSource,
+    });
     const pendingBefore = await getPendingCountForSnapshot(snapshot);
     const attemptNumber = inflight.attemptCount;
     const offlineState = toOfflineState(deps.getNetworkOnline?.());
@@ -810,6 +837,11 @@ const runFlush = async (
           ? getDraftQueueKeysFromSnapshot(result.snapshot)
           : [requestKeyForCleanup],
       );
+      trackForemanMutationBacklog(queueSummaryAfter, "foreman_mutation_backlog_after_flush", {
+        draftKey: latestRequestId ?? entry.payload.draftKey,
+        triggerSource: effectiveTriggerSource,
+        processedCount,
+      });
       await pushStageTelemetry({
         stage: "cleanup",
         result: "success",

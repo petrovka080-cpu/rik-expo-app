@@ -7,10 +7,13 @@ import {
   resolveCatalogSynonymMatchViaRpc,
 } from "../../lib/api/foremanAiResolve.service";
 import { rikQuickSearch } from "../../lib/catalog_api";
+import { mapWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type ForemanAiAction = "create_request" | "clarify";
 type ForemanAiKind = "material" | "work" | "service";
+
+const FOREMAN_AI_CATALOG_RESOLVE_CONCURRENCY_LIMIT = 5;
 
 type RawForemanAiResponse = {
   action?: unknown;
@@ -946,7 +949,11 @@ const resolveForemanCatalogItem = async (input: ParsedForemanAiItem): Promise<Ca
 };
 
 const resolveCatalogItems = async (items: ParsedForemanAiItem[]) => {
-  const resolutions = await Promise.all(items.map((item) => resolveForemanCatalogItem(item)));
+  const resolutions = await mapWithConcurrencyLimit(
+    items,
+    FOREMAN_AI_CATALOG_RESOLVE_CONCURRENCY_LIMIT,
+    async (item) => await resolveForemanCatalogItem(item),
+  );
   const accepted: ForemanAiQuickItem[] = [];
   const candidateGroups: CandidateOptionGroup[] = [];
   const clarifyQuestions: ClarifyQuestion[] = [];

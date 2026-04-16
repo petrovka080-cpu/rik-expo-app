@@ -57,6 +57,7 @@ export type ForemanMutationQueueSummary = {
   conflictedCount: number;
   failedNonRetryableCount: number;
   coalescedCount: number;
+  oldestActiveAgeMs: number;
 };
 
 const MUTATION_QUEUE_STORAGE_KEY = "offline_mutation_queue_v2";
@@ -344,9 +345,14 @@ export const getForemanMutationQueueSummary = async (
     const queue = await loadQueueInternal();
     const keys = uniqueDraftKeys(draftKeys ?? []);
     const filtered = keys.length ? queue.filter((entry) => keys.includes(entry.payload.draftKey)) : queue;
+    const active = filtered.filter((entry) => isOfflineMutationActiveLifecycleStatus(entry.lifecycleStatus));
+    const oldestActiveCreatedAt = active.reduce<number | null>(
+      (oldest, entry) => oldest == null ? entry.createdAt : Math.min(oldest, entry.createdAt),
+      null,
+    );
     return {
       totalCount: filtered.length,
-      activeCount: filtered.filter((entry) => isOfflineMutationActiveLifecycleStatus(entry.lifecycleStatus)).length,
+      activeCount: active.length,
       pendingCount: filtered.filter((entry) => entry.status === "pending").length,
       inflightCount: filtered.filter((entry) => entry.status === "inflight").length,
       failedCount: filtered.filter((entry) => entry.status === "failed").length,
@@ -354,6 +360,7 @@ export const getForemanMutationQueueSummary = async (
       conflictedCount: filtered.filter((entry) => entry.lifecycleStatus === "conflicted").length,
       failedNonRetryableCount: filtered.filter((entry) => entry.lifecycleStatus === "failed_non_retryable").length,
       coalescedCount: filtered.reduce((sum, entry) => sum + entry.coalescedCount, 0),
+      oldestActiveAgeMs: oldestActiveCreatedAt == null ? 0 : Math.max(0, Date.now() - oldestActiveCreatedAt),
     };
   });
 };

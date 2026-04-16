@@ -3,6 +3,7 @@ import {
   applySupabaseAbortSignal,
   throwIfAborted,
 } from "../../lib/requestCancellation";
+import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
 
 import { createHealthyWarehouseReqHeadsIntegrityState } from "./warehouse.reqHeads.state";
 import { parseNum } from "./warehouse.request.utils";
@@ -98,6 +99,7 @@ export async function apiFetchReqHeadsCanonicalRaw(
 ): Promise<WarehouseReqHeadsFetchResult> {
   const offset = Math.max(0, page * pageSize);
   throwIfAborted(options?.signal);
+  const startedAt = Date.now();
   const { data, error } = await applySupabaseAbortSignal(
     supabase.rpc("warehouse_issue_queue_scope_v4", {
       p_offset: offset,
@@ -106,12 +108,37 @@ export async function apiFetchReqHeadsCanonicalRaw(
     options?.signal,
   );
   throwIfAborted(options?.signal);
-  if (error) throw error;
+  if (error) {
+    trackRpcLatency({
+      name: "warehouse_issue_queue_scope_v4",
+      screen: "warehouse",
+      surface: "issue_queue",
+      durationMs: Date.now() - startedAt,
+      status: "error",
+      error,
+      extra: { page, pageSize, offset },
+    });
+    throw error;
+  }
 
   const rows = requireRpcRows(data, "warehouse_issue_queue_scope_v4").map((row, index) =>
     adaptReqHeadsRpcRow(row, index),
   );
   const meta = toReqHeadsRpcMeta(data, page, pageSize, rows.length);
+  trackRpcLatency({
+    name: "warehouse_issue_queue_scope_v4",
+    screen: "warehouse",
+    surface: "issue_queue",
+    durationMs: Date.now() - startedAt,
+    status: "success",
+    rowCount: rows.length,
+    extra: {
+      page,
+      pageSize,
+      offset,
+      totalRowCount: meta.totalRowCount,
+    },
+  });
 
   return {
     rows,

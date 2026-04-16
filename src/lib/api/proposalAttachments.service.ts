@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "../database.types";
+import { mapWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
 import { beginPlatformObservability } from "../observability/platformObservability";
 
 type ProposalAttachmentEvidenceRpcRow = {
@@ -22,6 +23,8 @@ type ProposalAttachmentEvidenceRpcRow = {
 
 type ProposalAttachmentTableRow =
   Database["public"]["Tables"]["proposal_attachments"]["Row"];
+
+const ATTACHMENT_SIGNED_URL_CONCURRENCY_LIMIT = 5;
 
 export type ProposalAttachmentViewState = "ready" | "empty" | "error" | "degraded";
 export type AttachmentOwnerType =
@@ -197,8 +200,10 @@ async function mapRows(
   signedUrlTtlSec: number,
 ) {
   const seen = new Set<string>();
-  const mapped = await Promise.all(
-    rows.map(async (row) => {
+  const mapped = await mapWithConcurrencyLimit(
+    rows,
+    ATTACHMENT_SIGNED_URL_CONCURRENCY_LIMIT,
+    async (row) => {
       const attachmentId =
         "attachment_id" in row
           ? text(row.attachment_id)
@@ -250,7 +255,7 @@ async function mapRows(
         createdAt: text(row.created_at) || null,
         sourceKind,
       } satisfies CanonicalProposalAttachmentReadModel;
-    }),
+    },
   );
 
   return mapped.filter((row): row is CanonicalProposalAttachmentReadModel => !!row);

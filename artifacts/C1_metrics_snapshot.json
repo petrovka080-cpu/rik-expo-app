@@ -1,0 +1,33 @@
+{
+  "status": "local_targeted_proof",
+  "rpc_latency_metrics": [
+    {
+      "name": "director_report_transport_scope_v1",
+      "count": 2,
+      "errorCount": 1,
+      "errorRate": 0.5,
+      "p50Ms": 10,
+      "p95Ms": 40,
+      "maxMs": 40,
+      "source": "src/lib/observability/rpcLatencyMetrics.test.ts"
+    }
+  ],
+  "queue_backlog_metrics": [
+    {
+      "queue": "foreman_mutation",
+      "size": 12,
+      "oldestAgeMs": 4500,
+      "processingCount": 1,
+      "failedCount": 2,
+      "retryScheduledCount": 3,
+      "coalescedCount": 4,
+      "source": "src/lib/observability/queueBacklogMetrics.test.ts"
+    }
+  ],
+  "concurrency_limits": {
+    "attachment_signed_url": 5,
+    "supplier_attachment_upload": 3,
+    "assistant_catalog_match": 5,
+    "foreman_ai_catalog_resolve": 5
+  }
+}

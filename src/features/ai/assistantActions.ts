@@ -1,4 +1,5 @@
 import { asListingItems } from "../market/marketHome.data";
+import { mapWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { supabase } from "../../lib/supabaseClient";
 import {
@@ -28,6 +29,8 @@ type AssistantActorContext = {
   fullName: string;
   companyId: string | null;
 };
+
+const ASSISTANT_CATALOG_MATCH_CONCURRENCY_LIMIT = 5;
 
 type AssistantActionResult = {
   handled: boolean;
@@ -451,8 +454,10 @@ async function createOrAppendForemanDraft(
   sourceMessage: string,
   session: ForemanAssistantSession,
 ): Promise<string> {
-  const matches = await Promise.all(
-    items.map(async (item) => {
+  const matches = await mapWithConcurrencyLimit(
+    items,
+    ASSISTANT_CATALOG_MATCH_CONCURRENCY_LIMIT,
+    async (item) => {
       const rows = await rikQuickSearch(item.name, 6).catch((error) => {
         recordAssistantActionFallback("match_catalog_item_failed", error, {
           action: "createOrAppendForemanDraft",
@@ -466,7 +471,7 @@ async function createOrAppendForemanDraft(
         item,
         match: best,
       };
-    }),
+    },
   );
 
   const matched = matches.filter((entry) => entry.match?.code);

@@ -15,6 +15,7 @@ import {
 } from "./buyer.mutation.shared";
 import { SUPP_NONE, normName } from "./buyerUtils";
 import { getLatestCanonicalProposalAttachment } from "../../lib/api/proposalAttachments.service";
+import { allSettledWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
 
 type AlertFn = (title: string, message: string) => void;
 
@@ -40,6 +41,8 @@ type AttachFileStage = "pick_file" | "upload_attachment" | "reload_attachments";
 type SupplierAttachmentsStage = "upload_supplier_attachments";
 type InvoiceAttachmentStage = "upload_invoice_attachment";
 type ProposalHtmlStage = "ensure_proposal_html";
+
+const SUPPLIER_ATTACHMENT_UPLOAD_CONCURRENCY_LIMIT = 3;
 
 const resolveSupplierAttachment = (
   attachmentsNow: Record<string, { file?: FileLike; name?: string }>,
@@ -159,16 +162,22 @@ export async function uploadSupplierProposalAttachmentsMutation(params: {
     attachmentKeys: attachmentEntries.map(([key]) => key),
   });
 
-  const uploads: Promise<void>[] = [];
+  const uploads: {
+    proposalId: string;
+    file: FileLike;
+    fileName: string;
+  }[] = [];
   for (const proposal of proposalRows) {
     const proposalId = String(proposal?.proposal_id ?? proposal?.id ?? "").trim();
     if (!proposalId) continue;
     const attachment = resolveSupplierAttachment(params.attachmentsNow, proposal?.supplier);
     if (!attachment?.file) continue;
     const fileName = String(attachment.name || `file_${Date.now()}`).trim();
-    uploads.push(
-      params.uploadProposalAttachment(proposalId, attachment.file, fileName, "supplier_quote"),
-    );
+    uploads.push({
+      proposalId,
+      file: attachment.file,
+      fileName,
+    });
   }
 
   if (!uploads.length) {
@@ -176,7 +185,17 @@ export async function uploadSupplierProposalAttachmentsMutation(params: {
     return tracker.success({ uploadCount: 0, failedCount: 0 });
   }
 
-  const settled = await Promise.allSettled(uploads);
+  const settled = await allSettledWithConcurrencyLimit(
+    uploads,
+    SUPPLIER_ATTACHMENT_UPLOAD_CONCURRENCY_LIMIT,
+    async (upload) =>
+      await params.uploadProposalAttachment(
+        upload.proposalId,
+        upload.file,
+        upload.fileName,
+        "supplier_quote",
+      ),
+  );
   const failedCount = settled.filter((entry) => entry.status === "rejected").length;
   if (failedCount > 0) {
     tracker.warn(

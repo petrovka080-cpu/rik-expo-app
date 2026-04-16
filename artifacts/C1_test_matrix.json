@@ -1,0 +1,74 @@
+[
+  {
+    "id": "C1-T001",
+    "area": "concurrency_helper",
+    "scenario": "100 items with limit 5",
+    "assertion": "active workers never exceed 5 and result order is preserved",
+    "test": "src/lib/async/mapWithConcurrencyLimit.test.ts",
+    "status": "passed"
+  },
+  {
+    "id": "C1-T002",
+    "area": "concurrency_helper",
+    "scenario": "500 item large batch with limit 7",
+    "assertion": "active workers never exceed 7 and all items complete",
+    "test": "src/lib/async/mapWithConcurrencyLimit.test.ts",
+    "status": "passed"
+  },
+  {
+    "id": "C1-T003",
+    "area": "error_handling",
+    "scenario": "worker throws",
+    "assertion": "mapWithConcurrencyLimit rejects and does not silently succeed",
+    "test": "src/lib/async/mapWithConcurrencyLimit.test.ts",
+    "status": "passed"
+  },
+  {
+    "id": "C1-T004",
+    "area": "partial_failure",
+    "scenario": "some workers fail under all-settled mode",
+    "assertion": "allSettledWithConcurrencyLimit preserves fulfilled/rejected results",
+    "test": "src/lib/async/mapWithConcurrencyLimit.test.ts",
+    "status": "passed"
+  },
+  {
+    "id": "C1-T005",
+    "area": "attachments_upload",
+    "scenario": "50 supplier attachments",
+    "assertion": "upload concurrency stays <= 3 and all uploads are attempted",
+    "test": "src/screens/buyer/buyer.attachments.mutation.test.ts",
+    "status": "passed"
+  },
+  {
+    "id": "C1-T006",
+    "area": "attachments_signed_url",
+    "scenario": "50 canonical attachment rows",
+    "assertion": "signed URL concurrency stays <= 5 and all rows are mapped",
+    "test": "src/lib/api/proposalAttachments.service.test.ts",
+    "status": "passed"
+  },
+  {
+    "id": "C1-T007",
+    "area": "rpc_metrics",
+    "scenario": "success and error latency samples",
+    "assertion": "p50, p95, max, and errorRate are computed by RPC name",
+    "test": "src/lib/observability/rpcLatencyMetrics.test.ts",
+    "status": "passed"
+  },
+  {
+    "id": "C1-T008",
+    "area": "queue_metrics",
+    "scenario": "queue backlog metric emission",
+    "assertion": "latest size and oldestAgeMs are retained in snapshot",
+    "test": "src/lib/observability/queueBacklogMetrics.test.ts",
+    "status": "passed"
+  },
+  {
+    "id": "C1-T009",
+    "area": "foreman_queue_contract",
+    "scenario": "existing mutation queue contract",
+    "assertion": "summary remains compatible while adding oldestActiveAgeMs",
+    "test": "src/lib/offline/mutationQueue.contract.test.ts",
+    "status": "passed"
+  }
+]

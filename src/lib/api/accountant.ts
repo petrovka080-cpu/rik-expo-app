@@ -1,5 +1,6 @@
 import { client, rpcCompat } from "./_core";
 import { ensureProposalExists, ensureProposalItemIdsBelongToProposal } from "./integrity.guards";
+import { trackRpcLatency } from "../observability/rpcLatencyMetrics";
 import type { AccountantInboxRow } from "./types";
 import type { Database } from "../database.types";
 
@@ -538,10 +539,32 @@ export async function accountantLoadProposalFinancialState(
     p_proposal_id: proposal.proposalId,
   };
 
+  const startedAt = Date.now();
   const { data, error } = await client.rpc("accountant_proposal_financial_state_v1", args);
-  if (error) throw error;
+  if (error) {
+    trackRpcLatency({
+      name: "accountant_proposal_financial_state_v1",
+      screen: "accountant",
+      surface: "proposal_financial_state",
+      durationMs: Date.now() - startedAt,
+      status: "error",
+      error,
+      extra: { proposalId: proposal.proposalId },
+    });
+    throw error;
+  }
 
-  return parseAccountantProposalFinancialState(data);
+  const result = parseAccountantProposalFinancialState(data);
+  trackRpcLatency({
+    name: "accountant_proposal_financial_state_v1",
+    screen: "accountant",
+    surface: "proposal_financial_state",
+    durationMs: Date.now() - startedAt,
+    status: "success",
+    rowCount: result.items.length,
+    extra: { proposalId: proposal.proposalId },
+  });
+  return result;
 }
 
 export async function accountantPayInvoiceAtomic(
@@ -600,10 +623,40 @@ export async function accountantPayInvoiceAtomic(
         : undefined,
   };
 
+  const startedAt = Date.now();
   const { data, error } = await client.rpc("accounting_pay_invoice_v1", args);
-  if (error) throw error;
+  if (error) {
+    trackRpcLatency({
+      name: "accounting_pay_invoice_v1",
+      screen: "accountant",
+      surface: "accounting_pay_invoice_v1",
+      durationMs: Date.now() - startedAt,
+      status: "error",
+      error,
+      extra: {
+        proposalId: proposal.proposalId,
+        allocationCount: allocations.length,
+      },
+    });
+    throw error;
+  }
 
   const result = parseAccountantPayInvoiceAtomicResult(data);
+  trackRpcLatency({
+    name: "accounting_pay_invoice_v1",
+    screen: "accountant",
+    surface: "accounting_pay_invoice_v1",
+    durationMs: Date.now() - startedAt,
+    status: result.ok ? "success" : "error",
+    error: result.ok ? undefined : new AccountantPayInvoiceAtomicError(result as AccountantPayInvoiceAtomicFailure),
+    rowCount: allocations.length,
+    extra: {
+      proposalId: proposal.proposalId,
+      allocationCount: allocations.length,
+      outcome: result.outcome,
+      idempotentReplay: result.idempotentReplay,
+    },
+  });
   if (!result.ok) {
     throw new AccountantPayInvoiceAtomicError(result as AccountantPayInvoiceAtomicFailure);
   }

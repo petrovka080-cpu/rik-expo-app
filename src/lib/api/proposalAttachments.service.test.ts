@@ -92,6 +92,49 @@ describe("proposalAttachments.service evidence boundary", () => {
     expect(client.from).not.toHaveBeenCalled();
   });
 
+  it("caps signed URL generation for attachment bursts", async () => {
+    let active = 0;
+    let maxActive = 0;
+    const client = createClient({
+      rpcResult: {
+        data: Array.from({ length: 50 }, (_, index) => ({
+          attachment_id: String(index + 1),
+          proposal_id: "proposal-burst",
+          entity_type: "proposal",
+          entity_id: "proposal-burst",
+          evidence_kind: "supplier_quote",
+          file_name: `quote-${index + 1}.pdf`,
+          file_url: null,
+          storage_path: `proposals/proposal-burst/quote-${index + 1}.pdf`,
+          bucket_id: "proposal_files",
+          group_key: "supplier_quote",
+          created_at: "2026-03-31T10:00:00Z",
+        })),
+        error: null,
+      },
+    });
+    const createSignedUrl = client.storage.from().createSignedUrl;
+    createSignedUrl.mockImplementation(async (...args: unknown[]) => {
+      const path = String(args[0] ?? "");
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      active -= 1;
+      return {
+        data: { signedUrl: `https://signed.example/${path}` },
+        error: null,
+      };
+    });
+
+    const result = await listCanonicalProposalAttachments(client as never, "proposal-burst", {
+      screen: "buyer",
+    });
+
+    expect(result.rows).toHaveLength(50);
+    expect(maxActive).toBeLessThanOrEqual(5);
+  });
+
+
   it("treats canonical empty as empty and does not hit compatibility fallback by default", async () => {
     const client = createClient({
       rpcResult: {

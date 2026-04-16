@@ -16,6 +16,7 @@ import type {
   DirectorReportPayload,
 } from "./director_reports.shared";
 import { trimMap } from "./director_reports.cache";
+import { trackRpcLatency } from "../observability/rpcLatencyMetrics";
 import {
   shouldRejectScopedEmptyMaterialsPayload,
   shouldRejectTransportScopeDisciplinePayload,
@@ -238,72 +239,103 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
   signal?: AbortSignal | null;
 }): Promise<Omit<DirectorReportTransportScopeResult, "fromCache">> {
   throwIfAborted(args.signal);
-  const { data, error } = await applySupabaseAbortSignal(
-    supabase.rpc("director_report_transport_scope_v1", {
-      p_from: args.from || null,
-      p_to: args.to || null,
-      p_object_name: args.objectName ?? null,
-      p_include_discipline: args.includeDiscipline,
-      p_include_costs: args.includeDiscipline ? !args.skipDisciplinePrices : false,
-    }),
-    args.signal,
-  );
-  throwIfAborted(args.signal);
+  const startedAt = Date.now();
 
-  if (error) {
-    throw new DirectorReportTransportScopeRpcError(
-      `director_report_transport_scope_v1 failed: ${error.message}`,
-      { disableForSession: isMissingScopeRpcError(error) },
+  try {
+    const { data, error } = await applySupabaseAbortSignal(
+      supabase.rpc("director_report_transport_scope_v1", {
+        p_from: args.from || null,
+        p_to: args.to || null,
+        p_object_name: args.objectName ?? null,
+        p_include_discipline: args.includeDiscipline,
+        p_include_costs: args.includeDiscipline ? !args.skipDisciplinePrices : false,
+      }),
+      args.signal,
     );
-  }
+    throwIfAborted(args.signal);
 
-  const envelope = validateScopeEnvelopeV1(data);
-  const options = adaptCanonicalOptionsPayload(envelope.options_payload);
-  const report = adaptCanonicalMaterialsPayload(envelope.report_payload);
-  const discipline =
-    envelope.discipline_payload == null ? null : adaptCanonicalWorksPayload(envelope.discipline_payload);
+    if (error) {
+      throw new DirectorReportTransportScopeRpcError(
+        `director_report_transport_scope_v1 failed: ${error.message}`,
+        { disableForSession: isMissingScopeRpcError(error) },
+      );
+    }
 
-  if (!options || !report || (args.includeDiscipline && !discipline)) {
-    throw new DirectorReportTransportScopeValidationError(
-      "director_report_transport_scope_v1 payload adaptation failed",
-    );
-  }
-  if (shouldRejectScopedEmptyMaterialsPayload(report, args.objectName, options)) {
-    throw new DirectorReportTransportScopeValidationError(
-      "director_report_transport_scope_v1 scoped payload empty for canonical object",
-    );
-  }
-  if (
-    args.includeDiscipline &&
-    shouldRejectTransportScopeDisciplinePayload(discipline, report)
-  ) {
-    throw new DirectorReportTransportScopeValidationError(
-      "director_report_transport_scope_v1 discipline payload lost linked detail levels",
-    );
-  }
+    const envelope = validateScopeEnvelopeV1(data);
+    const options = adaptCanonicalOptionsPayload(envelope.options_payload);
+    const report = adaptCanonicalMaterialsPayload(envelope.report_payload);
+    const discipline =
+      envelope.discipline_payload == null ? null : adaptCanonicalWorksPayload(envelope.discipline_payload);
 
-  const pricedStage =
-    args.includeDiscipline
-      ? (envelope.priced_stage ?? (args.skipDisciplinePrices ? "base" : "priced"))
-      : null;
+    if (!options || !report || (args.includeDiscipline && !discipline)) {
+      throw new DirectorReportTransportScopeValidationError(
+        "director_report_transport_scope_v1 payload adaptation failed",
+      );
+    }
+    if (shouldRejectScopedEmptyMaterialsPayload(report, args.objectName, options)) {
+      throw new DirectorReportTransportScopeValidationError(
+        "director_report_transport_scope_v1 scoped payload empty for canonical object",
+      );
+    }
+    if (
+      args.includeDiscipline &&
+      shouldRejectTransportScopeDisciplinePayload(discipline, report)
+    ) {
+      throw new DirectorReportTransportScopeValidationError(
+        "director_report_transport_scope_v1 discipline payload lost linked detail levels",
+      );
+    }
 
-  const result: Omit<DirectorReportTransportScopeResult, "fromCache"> = {
-    options,
-    report,
-    discipline,
-    canonicalSummaryPayload: envelope.canonical_summary,
-    canonicalDiagnosticsPayload: envelope.canonical_diagnostics,
-    optionsMeta: makeTransportMeta("options"),
-    reportMeta: makeTransportMeta("report"),
-    disciplineMeta: args.includeDiscipline ? makeTransportMeta("discipline", pricedStage) : null,
-    source: "transport:director_report_scope_rpc_v1",
-    branchMeta: {
-      transportBranch: "rpc_scope_v1",
-      rpcVersion: "v1",
-      pricedStage,
-    },
-  };
-  return result;
+    const pricedStage =
+      args.includeDiscipline
+        ? (envelope.priced_stage ?? (args.skipDisciplinePrices ? "base" : "priced"))
+        : null;
+
+    const result: Omit<DirectorReportTransportScopeResult, "fromCache"> = {
+      options,
+      report,
+      discipline,
+      canonicalSummaryPayload: envelope.canonical_summary,
+      canonicalDiagnosticsPayload: envelope.canonical_diagnostics,
+      optionsMeta: makeTransportMeta("options"),
+      reportMeta: makeTransportMeta("report"),
+      disciplineMeta: args.includeDiscipline ? makeTransportMeta("discipline", pricedStage) : null,
+      source: "transport:director_report_scope_rpc_v1",
+      branchMeta: {
+        transportBranch: "rpc_scope_v1",
+        rpcVersion: "v1",
+        pricedStage,
+      },
+    };
+    trackRpcLatency({
+      name: "director_report_transport_scope_v1",
+      screen: "director",
+      surface: "reports_transport",
+      durationMs: Date.now() - startedAt,
+      status: "success",
+      rowCount: (result.report?.rows?.length ?? 0) + (result.discipline?.works?.length ?? 0),
+      extra: {
+        includeDiscipline: args.includeDiscipline,
+        includeCosts: args.includeDiscipline ? !args.skipDisciplinePrices : false,
+        objectScoped: Boolean(args.objectName),
+      },
+    });
+    return result;
+  } catch (error) {
+    trackRpcLatency({
+      name: "director_report_transport_scope_v1",
+      screen: "director",
+      surface: "reports_transport",
+      durationMs: Date.now() - startedAt,
+      status: "error",
+      error,
+      extra: {
+        includeDiscipline: args.includeDiscipline,
+        objectScoped: Boolean(args.objectName),
+      },
+    });
+    throw error;
+  }
 }
 
 async function loadDirectorReportTransportScopeLive(args: {

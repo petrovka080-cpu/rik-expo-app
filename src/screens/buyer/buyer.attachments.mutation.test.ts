@@ -111,6 +111,43 @@ describe("buyer attachments mutation owner", () => {
     expect(result.data).toEqual({ uploadCount: 2, failedCount: 1 });
   });
 
+  it("caps supplier attachment upload concurrency", async () => {
+    let active = 0;
+    let maxActive = 0;
+    const uploadProposalAttachment = jest.fn(async () => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      active -= 1;
+    });
+
+    const createdProposals = Array.from({ length: 50 }, (_, index) => ({
+      proposal_id: `proposal-${index}`,
+      supplier: `Supplier ${index}`,
+    }));
+    const attachmentsNow = Object.fromEntries(
+      createdProposals.map((row, index) => [
+        row.supplier,
+        {
+          file: { name: `quote-${index}.pdf`, uri: `file:///quote-${index}.pdf` },
+          name: `quote-${index}.pdf`,
+        },
+      ]),
+    );
+
+    const result = await uploadSupplierProposalAttachmentsMutation({
+      createdProposals,
+      attachmentsNow,
+      uploadProposalAttachment,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data).toEqual({ uploadCount: 50, failedCount: 0 });
+    expect(maxActive).toBeLessThanOrEqual(3);
+  });
+
+
   it("matches supplier attachments by normalized supplier key", async () => {
     const uploadProposalAttachment = jest.fn(async () => undefined);
 

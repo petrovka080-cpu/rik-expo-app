@@ -1,4 +1,5 @@
 import type { Database } from "../../lib/database.types";
+import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
 import { supabase } from "../../lib/supabaseClient";
 import type {
   DirectorFinancePanelScope,
@@ -225,17 +226,49 @@ export async function fetchDirectorFinancePanelScopeV4ViaRpc(opts?: {
     p_offset: Math.max(0, nnum(opts?.offset)),
   };
 
+  const startedAt = Date.now();
   const { data, error } = await supabase.rpc(FINANCE_PANEL_SCOPE_V4_RPC_NAME, args);
   if (error) {
     markFinanceRpcStatus(
       financePanelScopeV4RpcMeta,
       isMissingFinanceRpcError(error, FINANCE_PANEL_SCOPE_V4_RPC_NAME) ? "missing" : "failed",
     );
+    trackRpcLatency({
+      name: FINANCE_PANEL_SCOPE_V4_RPC_NAME,
+      screen: "director",
+      surface: "finance_panel",
+      durationMs: Date.now() - startedAt,
+      status: "error",
+      error,
+      extra: {
+        objectScoped: Boolean(args.p_object_id),
+        limit: args.p_limit,
+        offset: args.p_offset,
+      },
+    });
     throw error;
   }
 
   markFinanceRpcStatus(financePanelScopeV4RpcMeta, "available");
-  return adaptDirectorFinancePanelScopeV4Payload(data);
+  const result = adaptDirectorFinancePanelScopeV4Payload(data);
+  trackRpcLatency({
+    name: FINANCE_PANEL_SCOPE_V4_RPC_NAME,
+    screen: "director",
+    surface: "finance_panel",
+    durationMs: Date.now() - startedAt,
+    status: "success",
+    rowCount:
+      (result?.canonical.suppliers.length ?? 0) +
+      (result?.canonical.objects.length ?? 0) +
+      (result?.spend.kindRows.length ?? 0),
+    extra: {
+      objectScoped: Boolean(args.p_object_id),
+      limit: args.p_limit,
+      offset: args.p_offset,
+      totalCount: result?.pagination.total ?? null,
+    },
+  });
+  return result;
 }
 
 export async function fetchDirectorFinancePanelScopeV2ViaRpc(opts?: {
