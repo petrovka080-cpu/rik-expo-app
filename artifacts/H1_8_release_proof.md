@@ -1,6 +1,6 @@
 # H1.8 Release Proof
 
-Final status: GREEN pending commit/push/OTA ids
+Final status: GREEN
 
 ## Scope
 
@@ -147,11 +147,30 @@ Result: all four functions deployed to project `nxrnjywzxxfdpqmzjorh`.
 
 ## Commit / push / OTA
 
-Pending:
+Code commit:
 
-- commit hash
-- push proof
-- production OTA group / update IDs
+- `5cb16fe373419814834da3148db04689b04e2730`
+- message: `H1.8: add developer break-glass role override`
+
+Push:
+
+- `git push origin main`
+- result: `d5f9b02..5cb16fe  main -> main`
+
+Production OTA:
+
+- command: `npx eas update --branch production --message "H1.8 developer override" --non-interactive`
+- branch: `production`
+- runtime version: `1.0.0`
+- platform: `android, ios`
+- update group ID: `8ad1943d-5d55-40f5-9c58-eb1607258771`
+- Android update ID: `019d953d-5dcb-7b43-9b8f-aacc554942e3`
+- iOS update ID: `019d953d-5dcb-7677-9830-5b807b9e82f2`
+- EAS dashboard: `https://expo.dev/accounts/azisbek_dzhantaev/projects/rik-expo-app/updates/8ad1943d-5d55-40f5-9c58-eb1607258771`
+
+Release proof commit:
+
+- pending at time of this file update
 
 ## Remaining risks
 
