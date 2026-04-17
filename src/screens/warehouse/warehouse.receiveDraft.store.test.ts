@@ -3,6 +3,8 @@ import {
   configureWarehouseReceiveDraftStore,
   getWarehouseReceiveDraft,
   hydrateWarehouseReceiveDraftStore,
+  markWarehouseReceiveDraftFailedTerminal,
+  markWarehouseReceiveDraftRetryWait,
   markWarehouseReceiveDraftSynced,
   setWarehouseReceiveDraftItems,
   useWarehouseReceiveDraftStore,
@@ -120,5 +122,45 @@ describe("warehouse receive draft storage discipline", () => {
 
     expect(getWarehouseReceiveDraft("incoming-1")?.status).toBe("synced");
     expect(storage.dump()[STORAGE_KEY]).toBeUndefined();
+  });
+
+  it("persists retry_wait nextRetryAt for receive queue backoff", async () => {
+    const storage = createMemoryOfflineStorage();
+    configureWarehouseReceiveDraftStore({ storage });
+
+    await setWarehouseReceiveDraftItems("incoming-retry", [
+      { itemId: "purchase-item-1", qty: 2, localUpdatedAt: 100 },
+    ]);
+    await markWarehouseReceiveDraftRetryWait("incoming-retry", "temporary outage", 1, {
+      nextRetryAt: 123_456,
+    });
+
+    expect(getWarehouseReceiveDraft("incoming-retry")).toMatchObject({
+      status: "retry_wait",
+      retryCount: 1,
+      pendingCount: 1,
+      lastError: "temporary outage",
+      nextRetryAt: 123_456,
+    });
+    expect(storage.dump()[STORAGE_KEY]).toContain("\"nextRetryAt\":123456");
+  });
+
+  it("persists empty failed_terminal drafts so local receive recovery is not dropped", async () => {
+    const storage = createMemoryOfflineStorage();
+    configureWarehouseReceiveDraftStore({ storage });
+
+    await markWarehouseReceiveDraftFailedTerminal(
+      "incoming-empty-final",
+      "warehouse_receive_draft_missing_or_empty",
+      1,
+    );
+
+    expect(getWarehouseReceiveDraft("incoming-empty-final")).toMatchObject({
+      status: "failed_terminal",
+      pendingCount: 1,
+      lastError: "warehouse_receive_draft_missing_or_empty",
+      nextRetryAt: null,
+    });
+    expect(storage.dump()[STORAGE_KEY]).toContain("incoming-empty-final");
   });
 });

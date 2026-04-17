@@ -24,6 +24,7 @@ export type WarehouseReceiveDraftRecord = {
   retryCount: number;
   pendingCount: number;
   lastError: string | null;
+  nextRetryAt: number | null;
   updatedAt: number | null;
 };
 
@@ -56,6 +57,13 @@ export const useWarehouseReceiveDraftStore = create<WarehouseReceiveDraftStoreSt
 
 const trim = (value: unknown) => String(value ?? "").trim();
 
+const normalizeNullableNumber = (value: unknown) =>
+  value == null || trim(value) === ""
+    ? null
+    : Number.isFinite(Number(value))
+      ? Number(value)
+      : null;
+
 const sanitizeItems = (items: WarehouseReceiveDraftItem[]) =>
   items
     .map((item) => ({
@@ -76,6 +84,7 @@ const normalizeDraft = (incomingId: string, value: Partial<WarehouseReceiveDraft
     retryCount: Number.isFinite(Number(value.retryCount)) ? Number(value.retryCount) : 0,
     pendingCount: Number.isFinite(Number(value.pendingCount)) ? Number(value.pendingCount) : 0,
     lastError: trim(value.lastError) || null,
+    nextRetryAt: normalizeNullableNumber(value.nextRetryAt),
     updatedAt: Number.isFinite(Number(value.updatedAt)) ? Number(value.updatedAt) : null,
   };
 };
@@ -122,6 +131,7 @@ const areDraftRecordsEqual = (
   left.retryCount === right.retryCount &&
   left.pendingCount === right.pendingCount &&
   left.lastError === right.lastError &&
+  left.nextRetryAt === right.nextRetryAt &&
   left.updatedAt === right.updatedAt &&
   areDraftItemsEqual(left.items, right.items);
 
@@ -254,6 +264,7 @@ export const replaceWarehouseReceiveDraft = async (
       retryCount: 0,
       pendingCount: 0,
       lastError: null,
+      nextRetryAt: null,
       updatedAt: null,
     }),
     ...patch,
@@ -294,6 +305,7 @@ export const setWarehouseReceiveDraftItems = async (
     items: sanitized,
     status: nextStatus,
     lastError: nextStatus === "dirty_local" || nextStatus === "idle" ? null : previous?.lastError ?? null,
+    nextRetryAt: nextStatus === "dirty_local" || nextStatus === "idle" ? null : previous?.nextRetryAt ?? null,
   });
 };
 
@@ -305,6 +317,7 @@ export const markWarehouseReceiveDraftQueued = async (
     status: pendingCount > 0 ? "queued" : "dirty_local",
     pendingCount,
     lastError: null,
+    nextRetryAt: null,
   });
 
 export const markWarehouseReceiveDraftSyncing = async (
@@ -314,6 +327,7 @@ export const markWarehouseReceiveDraftSyncing = async (
   await replaceWarehouseReceiveDraft(incomingId, {
     status: pendingCount > 0 ? "syncing" : "idle",
     pendingCount,
+    nextRetryAt: null,
   });
 
 export const markWarehouseReceiveDraftSynced = async (
@@ -331,6 +345,7 @@ export const markWarehouseReceiveDraftSynced = async (
     retryCount: 0,
     pendingCount: options?.pendingCount ?? 0,
     lastError: null,
+    nextRetryAt: null,
   });
 };
 
@@ -338,6 +353,9 @@ export const markWarehouseReceiveDraftRetryWait = async (
   incomingId: string,
   errorMessage: string,
   pendingCount: number,
+  options?: {
+    nextRetryAt?: number | null;
+  },
 ): Promise<WarehouseReceiveDraftRecord | null> => {
   const previous = getWarehouseReceiveDraft(incomingId);
   return await replaceWarehouseReceiveDraft(incomingId, {
@@ -345,8 +363,21 @@ export const markWarehouseReceiveDraftRetryWait = async (
     retryCount: (previous?.retryCount ?? 0) + 1,
     pendingCount,
     lastError: trim(errorMessage) || previous?.lastError || null,
+    nextRetryAt: options?.nextRetryAt ?? null,
   });
 };
+
+export const markWarehouseReceiveDraftFailedTerminal = async (
+  incomingId: string,
+  errorMessage: string,
+  pendingCount: number,
+): Promise<WarehouseReceiveDraftRecord | null> =>
+  await replaceWarehouseReceiveDraft(incomingId, {
+    status: "failed_terminal",
+    pendingCount,
+    lastError: trim(errorMessage) || null,
+    nextRetryAt: null,
+  });
 
 export const selectWarehouseReceiveQtyInputMap = (incomingId: string): Record<string, string> => {
   const draft = getWarehouseReceiveDraft(incomingId);

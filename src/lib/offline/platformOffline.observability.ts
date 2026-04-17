@@ -19,6 +19,8 @@ export type PlatformOfflineQueueAction =
   | "sync_success"
   | "refresh_after_success_failed"
   | "sync_retry_wait"
+  | "sync_failed_non_retryable"
+  | "sync_conflicted"
   | "sync_failed_terminal"
   | "manual_retry";
 
@@ -27,6 +29,8 @@ export type PlatformOfflineFailureClass =
   | "offline_wait"
   | "ui_refresh_failure"
   | "retryable_sync_failure"
+  | "failed_non_retryable"
+  | "conflicted"
   | "failed_terminal";
 
 export type PlatformOfflineTelemetryEvent = {

@@ -2,6 +2,10 @@ import type { RpcReceiveApplyResult } from "./warehouse.types";
 import type { PlatformOfflineRetryTriggerSource } from "../../lib/offline/platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "../../lib/offline/platformOffline.observability";
 import {
+  classifyOfflineMutationErrorKind,
+  isOfflineMutationConflictKind,
+} from "../../lib/offline/mutation.conflict";
+import {
   shouldClearLocalRecoveryState,
   type PlatformTerminalTruth,
 } from "../../lib/offline/platformTerminalRecovery";
@@ -11,6 +15,7 @@ import {
 } from "../../lib/offline/offlineReplayCoordinator";
 import {
   getWarehouseReceiveDraft,
+  markWarehouseReceiveDraftFailedTerminal,
   markWarehouseReceiveDraftQueued,
   markWarehouseReceiveDraftRetryWait,
   markWarehouseReceiveDraftSynced,
@@ -19,11 +24,12 @@ import {
   type WarehouseReceiveDraftRecord,
 } from "./warehouse.receiveDraft.store";
 import {
-  clearWarehouseReceiveQueueForIncoming,
   enqueueWarehouseReceive,
   getWarehouseReceivePendingCount,
-  markWarehouseReceiveQueueFailed,
+  markWarehouseReceiveQueueConflicted,
+  markWarehouseReceiveQueueFailedNonRetryable,
   markWarehouseReceiveQueueInflight,
+  markWarehouseReceiveQueueRetryWait,
   loadWarehouseReceiveQueue,
   peekNextWarehouseReceiveQueueEntry,
   removeWarehouseReceiveQueueEntry,
@@ -84,6 +90,124 @@ const toErrorText = (error: unknown) => {
   return trim(error) || "sync_failed";
 };
 
+type WarehouseReceiveFailureAssessment = {
+  queueStatus: "retry_wait" | "failed_non_retryable" | "conflicted";
+  errorMessage: string;
+  failureClass: "offline_wait" | "retryable_sync_failure" | "failed_non_retryable" | "conflicted";
+};
+
+const classifyWarehouseReceiveFailure = (error: unknown): WarehouseReceiveFailureAssessment => {
+  const normalized = classifyOfflineMutationErrorKind(error);
+  const lower = normalized.message.toLowerCase();
+
+  if (normalized.errorKind === "network_unreachable") {
+    return {
+      queueStatus: "retry_wait",
+      errorMessage: normalized.message,
+      failureClass: "offline_wait",
+    };
+  }
+
+  if (
+    isOfflineMutationConflictKind(normalized.errorKind) ||
+    lower.includes("already received") ||
+    lower.includes("already applied") ||
+    lower.includes("remaining") ||
+    lower.includes("left_after") ||
+    lower.includes("closed") ||
+    lower.includes("completed") ||
+    lower.includes("cancelled") ||
+    lower.includes("canceled")
+  ) {
+    return {
+      queueStatus: "conflicted",
+      errorMessage: normalized.message,
+      failureClass: "conflicted",
+    };
+  }
+
+  if (
+    normalized.errorKind === "auth_invalid" ||
+    normalized.errorKind === "contract_validation"
+  ) {
+    return {
+      queueStatus: "failed_non_retryable",
+      errorMessage: normalized.message,
+      failureClass: "failed_non_retryable",
+    };
+  }
+
+  return {
+    queueStatus: "retry_wait",
+    errorMessage: normalized.message,
+    failureClass: "retryable_sync_failure",
+  };
+};
+
+const markWarehouseReceiveFailureState = async (params: {
+  queueId: string;
+  incomingId: string;
+  failure: WarehouseReceiveFailureAssessment;
+}) => {
+  if (params.failure.queueStatus === "conflicted") {
+    const queueEntry = await markWarehouseReceiveQueueConflicted(params.queueId, params.failure.errorMessage);
+    const pendingCount = await getWarehouseReceivePendingCount(params.incomingId);
+    await markWarehouseReceiveDraftFailedTerminal(params.incomingId, params.failure.errorMessage, pendingCount);
+    return {
+      queueEntry,
+      syncStatus: "failed_terminal" as const,
+      queueAction: "sync_conflicted" as const,
+      failureClass: "conflicted" as const,
+      retryCount: queueEntry?.retryCount ?? 0,
+      pendingCount,
+    };
+  }
+
+  if (params.failure.queueStatus === "failed_non_retryable") {
+    const queueEntry = await markWarehouseReceiveQueueFailedNonRetryable(params.queueId, params.failure.errorMessage);
+    const pendingCount = await getWarehouseReceivePendingCount(params.incomingId);
+    await markWarehouseReceiveDraftFailedTerminal(params.incomingId, params.failure.errorMessage, pendingCount);
+    return {
+      queueEntry,
+      syncStatus: "failed_terminal" as const,
+      queueAction: "sync_failed_non_retryable" as const,
+      failureClass: "failed_non_retryable" as const,
+      retryCount: queueEntry?.retryCount ?? 0,
+      pendingCount,
+    };
+  }
+
+  const queueEntry = await markWarehouseReceiveQueueRetryWait(params.queueId, params.failure.errorMessage);
+  const pendingCount = await getWarehouseReceivePendingCount(params.incomingId);
+
+  if (queueEntry?.status === "retry_wait") {
+    await markWarehouseReceiveDraftRetryWait(
+      params.incomingId,
+      params.failure.errorMessage,
+      pendingCount,
+      { nextRetryAt: queueEntry.nextRetryAt },
+    );
+    return {
+      queueEntry,
+      syncStatus: "retry_wait" as const,
+      queueAction: "sync_retry_wait" as const,
+      failureClass: params.failure.failureClass,
+      retryCount: queueEntry.retryCount,
+      pendingCount,
+    };
+  }
+
+  await markWarehouseReceiveDraftFailedTerminal(params.incomingId, params.failure.errorMessage, pendingCount);
+  return {
+    queueEntry,
+    syncStatus: "failed_terminal" as const,
+    queueAction: "sync_failed_non_retryable" as const,
+    failureClass: "failed_non_retryable" as const,
+    retryCount: queueEntry?.retryCount ?? 0,
+    pendingCount,
+  };
+};
+
 const runFlush = async (
   deps: WarehouseReceiveWorkerDeps,
   triggerSource: WarehouseReceiveWorkerTriggerSource,
@@ -116,7 +240,7 @@ const runFlush = async (
   let lastLeftAfter: number | null = null;
 
   while (true) {
-    const entry = await peekNextWarehouseReceiveQueueEntry();
+    const entry = await peekNextWarehouseReceiveQueueEntry({ triggerSource });
     if (!entry) {
       return {
         processedCount,
@@ -135,21 +259,24 @@ const runFlush = async (
     if (!inflight) continue;
 
     if (deps.getNetworkOnline?.() === false) {
-      await markWarehouseReceiveQueueFailed(entry.id, "offline");
-      await markWarehouseReceiveDraftRetryWait(
-        entry.incomingId,
-        "offline",
-        await getWarehouseReceivePendingCount(entry.incomingId),
-      );
+      const failureState = await markWarehouseReceiveFailureState({
+        queueId: entry.id,
+        incomingId: entry.incomingId,
+        failure: {
+          queueStatus: "retry_wait",
+          errorMessage: "offline",
+          failureClass: "offline_wait",
+        },
+      });
       recordPlatformOfflineTelemetry({
         contourKey: "warehouse_receive",
         entityKey: entry.incomingId,
-        syncStatus: "retry_wait",
-        queueAction: "sync_retry_wait",
+        syncStatus: failureState.syncStatus,
+        queueAction: failureState.queueAction,
         coalesced: inflight.coalescedCount > 0,
-        retryCount: inflight.retryCount + 1,
-        pendingCount: await getWarehouseReceivePendingCount(entry.incomingId),
-        failureClass: "offline_wait",
+        retryCount: failureState.retryCount,
+        pendingCount: failureState.pendingCount,
+        failureClass: failureState.failureClass,
         triggerKind: triggerSource,
         networkKnownOffline: true,
         restoredAfterReopen: false,
@@ -195,34 +322,33 @@ const runFlush = async (
           continue;
         }
       } catch (error) {
-        const message = toErrorText(error);
-        await markWarehouseReceiveQueueFailed(entry.id, message);
-        await markWarehouseReceiveDraftRetryWait(
-          entry.incomingId,
-          message,
-          await getWarehouseReceivePendingCount(entry.incomingId),
-        );
+        const failure = classifyWarehouseReceiveFailure(error);
+        const failureState = await markWarehouseReceiveFailureState({
+          queueId: entry.id,
+          incomingId: entry.incomingId,
+          failure,
+        });
         recordPlatformOfflineTelemetry({
           contourKey: "warehouse_receive",
           entityKey: entry.incomingId,
-          syncStatus: "retry_wait",
-          queueAction: "sync_retry_wait",
+          syncStatus: failureState.syncStatus,
+          queueAction: failureState.queueAction,
           coalesced: inflight.coalescedCount > 0,
-          retryCount: inflight.retryCount + 1,
-          pendingCount: await getWarehouseReceivePendingCount(entry.incomingId),
-          failureClass: "retryable_sync_failure",
+          retryCount: failureState.retryCount,
+          pendingCount: failureState.pendingCount,
+          failureClass: failureState.failureClass,
           triggerKind: triggerSource,
           networkKnownOffline: deps.getNetworkOnline?.() === false,
           restoredAfterReopen: false,
           manualRetry: triggerSource === "manual_retry",
           durationMs: null,
-          errorMessage: message,
+          errorMessage: failure.errorMessage,
         });
         return {
           processedCount,
           remainingCount: await getWarehouseReceivePendingCount(),
           failed: true,
-          errorMessage: message,
+          errorMessage: failure.errorMessage,
           lastIncomingId,
           lastOkCount,
           lastFailCount,
@@ -234,12 +360,31 @@ const runFlush = async (
 
     const warehousemanFio = trim(deps.getWarehousemanFio());
     if (!warehousemanFio) {
-      await markWarehouseReceiveQueueFailed(entry.id, "warehouseman_fio_missing");
-      await markWarehouseReceiveDraftRetryWait(
-        entry.incomingId,
-        "Сначала подтвердите ФИО кладовщика.",
-        await getWarehouseReceivePendingCount(entry.incomingId),
-      );
+      const failureState = await markWarehouseReceiveFailureState({
+        queueId: entry.id,
+        incomingId: entry.incomingId,
+        failure: {
+          queueStatus: "failed_non_retryable",
+          errorMessage: "\u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u0424\u0418\u041e \u043a\u043b\u0430\u0434\u043e\u0432\u0449\u0438\u043a\u0430.",
+          failureClass: "failed_non_retryable",
+        },
+      });
+      recordPlatformOfflineTelemetry({
+        contourKey: "warehouse_receive",
+        entityKey: entry.incomingId,
+        syncStatus: failureState.syncStatus,
+        queueAction: failureState.queueAction,
+        coalesced: inflight.coalescedCount > 0,
+        retryCount: failureState.retryCount,
+        pendingCount: failureState.pendingCount,
+        failureClass: failureState.failureClass,
+        triggerKind: triggerSource,
+        networkKnownOffline: deps.getNetworkOnline?.() === false,
+        restoredAfterReopen: false,
+        manualRetry: triggerSource === "manual_retry",
+        durationMs: null,
+        errorMessage: "warehouseman_fio_missing",
+      });
       return {
         processedCount,
         remainingCount: await getWarehouseReceivePendingCount(),
@@ -255,10 +400,42 @@ const runFlush = async (
 
     const draftBefore = getWarehouseReceiveDraft(entry.incomingId);
     if (!draftBefore || !draftBefore.items.length) {
-      await removeWarehouseReceiveQueueEntry(entry.id);
-      await clearWarehouseReceiveQueueForIncoming(entry.incomingId);
-      await markWarehouseReceiveDraftSynced(entry.incomingId, { keepItems: false, pendingCount: 0 });
-      continue;
+      const failureState = await markWarehouseReceiveFailureState({
+        queueId: entry.id,
+        incomingId: entry.incomingId,
+        failure: {
+          queueStatus: "failed_non_retryable",
+          errorMessage: "warehouse_receive_draft_missing_or_empty",
+          failureClass: "failed_non_retryable",
+        },
+      });
+      recordPlatformOfflineTelemetry({
+        contourKey: "warehouse_receive",
+        entityKey: entry.incomingId,
+        syncStatus: failureState.syncStatus,
+        queueAction: failureState.queueAction,
+        coalesced: inflight.coalescedCount > 0,
+        retryCount: failureState.retryCount,
+        pendingCount: failureState.pendingCount,
+        failureClass: failureState.failureClass,
+        triggerKind: triggerSource,
+        networkKnownOffline: deps.getNetworkOnline?.() === false,
+        restoredAfterReopen: false,
+        manualRetry: triggerSource === "manual_retry",
+        durationMs: null,
+        errorMessage: "warehouse_receive_draft_missing_or_empty",
+      });
+      return {
+        processedCount,
+        remainingCount: await getWarehouseReceivePendingCount(),
+        failed: true,
+        errorMessage: "warehouse_receive_draft_missing_or_empty",
+        lastIncomingId,
+        lastOkCount,
+        lastFailCount,
+        lastLeftAfter,
+        triggerSource,
+      };
     }
 
     const snapshotKey = serializeDraftItems(draftBefore);
@@ -360,33 +537,33 @@ const runFlush = async (
         }
       }
     } catch (error) {
-      const message = toErrorText(error);
-      await markWarehouseReceiveQueueFailed(entry.id, message);
-      await markWarehouseReceiveDraftRetryWait(
-        entry.incomingId,
-        message,
-        await getWarehouseReceivePendingCount(entry.incomingId),
-      );
+      const failure = classifyWarehouseReceiveFailure(error);
+      const failureState = await markWarehouseReceiveFailureState({
+        queueId: entry.id,
+        incomingId: entry.incomingId,
+        failure,
+      });
       recordPlatformOfflineTelemetry({
         contourKey: "warehouse_receive",
         entityKey: entry.incomingId,
-        syncStatus: "retry_wait",
-        queueAction: "sync_retry_wait",
+        syncStatus: failureState.syncStatus,
+        queueAction: failureState.queueAction,
         coalesced: inflight.coalescedCount > 0,
-        retryCount: inflight.retryCount + 1,
-        pendingCount: await getWarehouseReceivePendingCount(entry.incomingId),
-        failureClass: message === "offline" ? "offline_wait" : "retryable_sync_failure",
+        retryCount: failureState.retryCount,
+        pendingCount: failureState.pendingCount,
+        failureClass: failureState.failureClass,
         triggerKind: triggerSource,
         networkKnownOffline: deps.getNetworkOnline?.() === false,
         restoredAfterReopen: false,
         manualRetry: triggerSource === "manual_retry",
         durationMs: Date.now() - startedAt,
+        errorMessage: failure.errorMessage,
       });
       return {
         processedCount,
         remainingCount: await getWarehouseReceivePendingCount(),
         failed: true,
-        errorMessage: message,
+        errorMessage: failure.errorMessage,
         lastIncomingId,
         lastOkCount,
         lastFailCount,

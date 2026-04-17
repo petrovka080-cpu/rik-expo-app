@@ -17,6 +17,7 @@ import {
   enqueueWarehouseReceive,
   loadWarehouseReceiveQueue,
   markWarehouseReceiveQueueInflight,
+  WAREHOUSE_RECEIVE_RETRY_POLICY,
 } from "./warehouseReceiveQueue";
 import {
   WAREHOUSE_RECEIVE_REPLAY_POLICY,
@@ -277,5 +278,207 @@ describe("warehouse receive worker", () => {
     expect(result.failed).toBe(false);
     expect(applyReceive).toHaveBeenCalledTimes(1);
     expect(getWarehouseReceiveDraft("incoming-active")?.status).toBe("synced");
+  });
+
+  it("schedules retryable receive failures with nextRetryAt and skips replay until due", async () => {
+    await seedReceiveDraft("incoming-retry-wait");
+    const applyReceive = jest.fn(async () => {
+      throw new Error("temporary service unavailable");
+    });
+
+    const firstResult = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+      },
+      "app_active",
+    );
+
+    const [queueEntry] = await loadWarehouseReceiveQueue();
+    const draft = getWarehouseReceiveDraft("incoming-retry-wait");
+
+    expect(firstResult.failed).toBe(true);
+    expect(applyReceive).toHaveBeenCalledTimes(1);
+    expect(queueEntry).toMatchObject({
+      incomingId: "incoming-retry-wait",
+      status: "retry_wait",
+      retryCount: 1,
+      lastError: "temporary service unavailable",
+    });
+    expect(queueEntry.nextRetryAt).toEqual(expect.any(Number));
+    expect(draft).toMatchObject({
+      status: "retry_wait",
+      retryCount: 1,
+      nextRetryAt: queueEntry.nextRetryAt,
+    });
+
+    const secondResult = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+      },
+      "app_active",
+    );
+
+    expect(secondResult.failed).toBe(false);
+    expect(secondResult.remainingCount).toBe(1);
+    expect(applyReceive).toHaveBeenCalledTimes(1);
+  });
+
+  it("exhausts receive retry budget into failed_non_retryable without dropping local recovery", async () => {
+    await seedReceiveDraft("incoming-budget");
+    const applyReceive = jest.fn(async () => {
+      throw new Error("temporary service unavailable");
+    });
+
+    for (let attempt = 0; attempt < WAREHOUSE_RECEIVE_RETRY_POLICY.maxAttempts; attempt += 1) {
+      await flushWarehouseReceiveQueue(
+        {
+          getWarehousemanFio: () => "Warehouse Tester",
+          applyReceive,
+          getNetworkOnline: () => true,
+        },
+        "manual_retry",
+      );
+    }
+
+    const [queueEntry] = await loadWarehouseReceiveQueue();
+    expect(queueEntry).toMatchObject({
+      incomingId: "incoming-budget",
+      status: "failed_non_retryable",
+      retryCount: WAREHOUSE_RECEIVE_RETRY_POLICY.maxAttempts,
+      nextRetryAt: null,
+    });
+    expect(getWarehouseReceiveDraft("incoming-budget")).toMatchObject({
+      status: "failed_terminal",
+      pendingCount: 1,
+      lastError: "temporary service unavailable",
+    });
+
+    await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+      },
+      "app_active",
+    );
+
+    expect(applyReceive).toHaveBeenCalledTimes(WAREHOUSE_RECEIVE_RETRY_POLICY.maxAttempts);
+  });
+
+  it("classifies stale receive apply failures as conflicted and stops blind replay", async () => {
+    await seedReceiveDraft("incoming-conflict");
+    const applyReceive = jest.fn(async () => ({
+      data: null,
+      error: { message: "stale receive conflict" },
+    }));
+
+    const result = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+      },
+      "manual_retry",
+    );
+
+    const [queueEntry] = await loadWarehouseReceiveQueue();
+    expect(result.failed).toBe(true);
+    expect(queueEntry).toMatchObject({
+      incomingId: "incoming-conflict",
+      status: "conflicted",
+      lastError: "stale receive conflict",
+      nextRetryAt: null,
+    });
+    expect(getWarehouseReceiveDraft("incoming-conflict")).toMatchObject({
+      status: "failed_terminal",
+      pendingCount: 1,
+      lastError: "stale receive conflict",
+    });
+    expect(getPlatformOfflineTelemetryEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          contourKey: "warehouse_receive",
+          entityKey: "incoming-conflict",
+          queueAction: "sync_conflicted",
+          failureClass: "conflicted",
+        }),
+      ]),
+    );
+
+    await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+      },
+      "app_active",
+    );
+    expect(applyReceive).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks missing warehouseman FIO as failed_non_retryable instead of retrying forever", async () => {
+    await seedReceiveDraft("incoming-missing-fio");
+    const applyReceive = jest.fn(async () => ({
+      data: { ok: 1, fail: 0, left_after: 0 },
+      error: null,
+    }));
+
+    const result = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "",
+        applyReceive,
+        getNetworkOnline: () => true,
+      },
+      "manual_retry",
+    );
+
+    const [queueEntry] = await loadWarehouseReceiveQueue();
+    expect(result.failed).toBe(true);
+    expect(applyReceive).not.toHaveBeenCalled();
+    expect(queueEntry).toMatchObject({
+      incomingId: "incoming-missing-fio",
+      status: "failed_non_retryable",
+      retryCount: 0,
+      nextRetryAt: null,
+    });
+    expect(getWarehouseReceiveDraft("incoming-missing-fio")).toMatchObject({
+      status: "failed_terminal",
+      pendingCount: 1,
+    });
+  });
+
+  it("preserves missing draft receive commands as failed_non_retryable local recovery", async () => {
+    await enqueueWarehouseReceive("incoming-missing-draft");
+    const applyReceive = jest.fn(async () => ({
+      data: { ok: 1, fail: 0, left_after: 0 },
+      error: null,
+    }));
+
+    const result = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+      },
+      "bootstrap_complete",
+    );
+
+    const [queueEntry] = await loadWarehouseReceiveQueue();
+    expect(result.failed).toBe(true);
+    expect(applyReceive).not.toHaveBeenCalled();
+    expect(queueEntry).toMatchObject({
+      incomingId: "incoming-missing-draft",
+      status: "failed_non_retryable",
+      lastError: "warehouse_receive_draft_missing_or_empty",
+    });
+    expect(getWarehouseReceiveDraft("incoming-missing-draft")).toMatchObject({
+      status: "failed_terminal",
+      pendingCount: 1,
+      lastError: "warehouse_receive_draft_missing_or_empty",
+    });
   });
 });

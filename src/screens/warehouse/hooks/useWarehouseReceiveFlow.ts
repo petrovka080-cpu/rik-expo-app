@@ -644,6 +644,10 @@ export function useWarehouseReceiveFlow(params: {
           return;
         }
 
+        const queued = await getWarehouseReceiveQueueEntry(incomingId);
+        const requeueFinalLocalState =
+          queued?.status === "failed_non_retryable" || queued?.status === "conflicted";
+
         recordPlatformOfflineTelemetry({
           contourKey: "warehouse_receive",
           entityKey: incomingId,
@@ -654,8 +658,10 @@ export function useWarehouseReceiveFlow(params: {
           retryCount: Math.max(0, draft.retryCount ?? 0),
           pendingCount: Math.max(0, draft.pendingCount ?? 0),
           failureClass:
-            draft.status === "failed_terminal"
-              ? "failed_terminal"
+            queued?.status === "conflicted"
+              ? "conflicted"
+              : queued?.status === "failed_non_retryable" || draft.status === "failed_terminal"
+                ? "failed_non_retryable"
               : networkOnlineRef.current === false
                 ? "offline_wait"
                 : "retryable_sync_failure",
@@ -666,8 +672,7 @@ export function useWarehouseReceiveFlow(params: {
           durationMs: null,
         });
 
-        const queued = await getWarehouseReceiveQueueEntry(incomingId);
-        if (!queued) {
+        if (!queued || requeueFinalLocalState) {
           await queueIncomingDraft(incomingId);
         }
 
@@ -728,7 +733,9 @@ export function useWarehouseReceiveFlow(params: {
     [activeDraft],
   );
   const canRetryActiveReceive =
-    activeDraft?.status === "retry_wait" || activeDraft?.status === "queued";
+    activeDraft?.status === "retry_wait" ||
+    activeDraft?.status === "queued" ||
+    activeDraft?.status === "failed_terminal";
 
   return {
     qtyInputByItem,
