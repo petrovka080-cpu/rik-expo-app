@@ -318,23 +318,34 @@ export function ProfileContent() {
     push(String(MARKET_TAB_ROUTE));
   }, [accessModel.activeContext, router]);
 
+  const performSignOut = useCallback(async () => {
+    try {
+      await signOutProfileSession();
+      router.replace(AUTH_LOGIN_ROUTE);
+    } catch (error: unknown) {
+      Alert.alert("Профиль", getErrorMessage(error));
+    }
+  }, [router]);
+
   const handleSignOut = useCallback(() => {
+    if (Platform.OS === "web") {
+      const confirmed =
+        typeof window === "undefined" ||
+        typeof window.confirm !== "function" ||
+        window.confirm("Завершить текущую сессию GOX?");
+      if (confirmed) void performSignOut();
+      return;
+    }
+
     Alert.alert("Выйти из аккаунта", "Завершить текущую сессию GOX?", [
       { text: "Отмена", style: "cancel" },
       {
         text: "Выйти",
         style: "destructive",
-        onPress: async () => {
-          try {
-            await signOutProfileSession();
-            router.replace(AUTH_LOGIN_ROUTE);
-          } catch (error: unknown) {
-            Alert.alert("Профиль", getErrorMessage(error));
-          }
-        },
+        onPress: performSignOut,
       },
     ]);
-  }, [router]);
+  }, [performSignOut]);
 
   const retryProfileLoad = useCallback(() => {
     setProfileLoadAttempt((current) => current + 1);

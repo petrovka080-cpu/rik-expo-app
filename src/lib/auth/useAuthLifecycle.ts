@@ -19,6 +19,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { router } from "expo-router";
 
 import { getSessionSafe, supabase } from "../supabaseClient";
@@ -43,7 +44,7 @@ export type AuthLifecycleState = {
   hasSessionRef: React.MutableRefObject<boolean | null>;
   isPdfViewerRouteRef: React.MutableRefObject<boolean>;
   resetPendingAuthExitSessionProbe: () => void;
-  loadRoleForCurrentSession: () => void;
+  loadRoleForCurrentSession: (user?: User | null) => void;
   clearSessionBoundaryState: (reason: string) => Promise<void>;
   recordAuthCheckEvent: (
     event: string,
@@ -179,10 +180,10 @@ export function useAuthLifecycle(deps: {
   );
 
   // --- Role profile warming (background, non-blocking) ---
-  const loadRoleForCurrentSession = useCallback(async () => {
+  const loadRoleForCurrentSession = useCallback(async (user?: User | null) => {
     if (!supabase) return;
     try {
-      await warmCurrentSessionProfile("root_layout");
+      await warmCurrentSessionProfile("root_layout", user);
     } catch (e: unknown) {
       recordAuthCheckEvent("role_profile_warm_failed", "error", {
         caller: "root_layout",
@@ -303,7 +304,7 @@ export function useAuthLifecycle(deps: {
         setHasSession(has);
         setSessionLoaded(true);
 
-        if (has) loadRoleForCurrentSession();
+        if (has) loadRoleForCurrentSession(session?.user ?? null);
         else {
           await clearSessionBoundaryState("bootstrap_no_session");
         }
@@ -414,7 +415,7 @@ export function useAuthLifecycle(deps: {
 
         resetPendingAuthExitSessionProbe();
         setHasSession(true);
-        loadRoleForCurrentSession();
+        loadRoleForCurrentSession(session?.user ?? null);
       },
     );
 

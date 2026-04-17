@@ -321,6 +321,9 @@ describe("RootLayout recovery bootstrap", () => {
 
     expect(mockReplace).toHaveBeenCalledWith("/(tabs)/profile");
     expect(mockEnsureQueueWorker).toHaveBeenCalledTimes(1);
+    expect(mockWarmCurrentSessionProfile).toHaveBeenCalledWith("root_layout", {
+      id: "user-1",
+    });
   });
 
   it("records background role warm failures without blocking authenticated entry", async () => {

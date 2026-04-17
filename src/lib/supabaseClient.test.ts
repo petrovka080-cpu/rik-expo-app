@@ -12,6 +12,10 @@ const originalProcess = (globalThis as typeof globalThis & { process?: unknown }
 const originalFetch = globalThis.fetch;
 
 type LoadedSupabaseModule = {
+  getSessionSafe: (extra?: Record<string, unknown>) => Promise<{
+    session: unknown;
+    degraded: boolean;
+  }>;
   ensureSignedIn: () => Promise<boolean>;
   currentUserId: () => Promise<string | null>;
   supabase: {
@@ -52,6 +56,7 @@ const restoreRuntimeGlobals = () => {
 const loadSupabaseModule = (options: {
   web: boolean;
   sessionResult?: unknown;
+  sessionPromise?: Promise<unknown>;
   sessionError?: Error | null;
 }) => {
   jest.resetModules();
@@ -105,6 +110,8 @@ const loadSupabaseModule = (options: {
     auth: {
       getSession: options.sessionError
         ? jest.fn().mockRejectedValue(options.sessionError)
+        : options.sessionPromise
+          ? jest.fn().mockReturnValue(options.sessionPromise)
         : jest.fn().mockResolvedValue(
             options.sessionResult ?? {
               data: { session: null },
@@ -130,6 +137,18 @@ const loadSupabaseModule = (options: {
     recordPlatformObservability: (...args: any[]) => mockRecordPlatformObservability(...args),
   }));
   jest.doMock("./requestTimeoutPolicy", () => ({
+    REQUEST_TIMEOUT_POLICY_MS: {
+      lightweight_lookup: 8_000,
+      ui_scope_load: 20_000,
+      heavy_report_or_pdf_or_storage: 60_000,
+      mutation_request: 30_000,
+    },
+    RequestTimeoutError: class RequestTimeoutError extends Error {
+      constructor(params: { timeoutMs: number; owner: string; operation: string }) {
+        super(`${params.owner}.${params.operation} request timed out after ${params.timeoutMs}ms`);
+        this.name = "RequestTimeoutError";
+      }
+    },
     fetchWithRequestTimeout: (...args: any[]) => mockFetchWithRequestTimeout(...args),
   }));
   jest.doMock("@react-native-async-storage/async-storage", () => asyncStorageMock);
@@ -145,6 +164,7 @@ const loadSupabaseModule = (options: {
 
 describe("supabaseClient runtime contract", () => {
   afterEach(() => {
+    jest.useRealTimers();
     restoreRuntimeGlobals();
     jest.resetModules();
   });
@@ -172,6 +192,106 @@ describe("supabaseClient runtime contract", () => {
     expect(options.auth.storage).toBe(asyncStorageMock);
     expect(options.auth.detectSessionInUrl).toBe(false);
     expect(options.global.fetch).toEqual(expect.any(Function));
+  });
+
+  it("single-flights concurrent safe session reads", async () => {
+    let resolveSession!: (value: unknown) => void;
+    const sessionPromise = new Promise((resolve) => {
+      resolveSession = resolve;
+    });
+    const { module, mockSupabase } = loadSupabaseModule({
+      web: true,
+      sessionPromise,
+    });
+
+    const first = module.getSessionSafe({ caller: "root_layout" });
+    const second = module.getSessionSafe({ caller: "index_bootstrap" });
+
+    expect(mockSupabase.auth.getSession).toHaveBeenCalledTimes(1);
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        surface: "auth_session_gate",
+        event: "auth_session_read_join_inflight",
+        result: "skipped",
+      }),
+    );
+
+    resolveSession({
+      data: {
+        session: {
+          user: { id: "user-1" },
+          access_token: "tok",
+        },
+      },
+    });
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      {
+        session: {
+          user: { id: "user-1" },
+          access_token: "tok",
+        },
+        degraded: false,
+      },
+      {
+        session: {
+          user: { id: "user-1" },
+          access_token: "tok",
+        },
+        degraded: false,
+      },
+    ]);
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        surface: "auth_session_gate",
+        event: "auth_session_read_success",
+        result: "success",
+      }),
+    );
+  });
+
+  it("keeps timeout-safe session reads joined without a retry storm", async () => {
+    jest.useFakeTimers();
+    const neverSettles = new Promise<unknown>(() => undefined);
+    const { module, mockSupabase } = loadSupabaseModule({
+      web: true,
+      sessionPromise: neverSettles,
+    });
+
+    const first = module.getSessionSafe({ caller: "root_layout" });
+    const second = module.getSessionSafe({ caller: "office_route" });
+
+    expect(mockSupabase.auth.getSession).toHaveBeenCalledTimes(1);
+
+    jest.advanceTimersByTime(8_000);
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      { session: null, degraded: true },
+      { session: null, degraded: true },
+    ]);
+
+    await expect(
+      module.getSessionSafe({ caller: "warehouse_reentry" }),
+    ).resolves.toEqual({ session: null, degraded: true });
+
+    expect(mockSupabase.auth.getSession).toHaveBeenCalledTimes(1);
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        surface: "auth_session_gate",
+        event: "auth_session_read_timeout",
+        result: "skipped",
+      }),
+    );
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        surface: "auth_session_gate",
+        event: "auth_session_read_join_inflight",
+        result: "skipped",
+        extra: expect.objectContaining({
+          inflightTimedOut: true,
+        }),
+      }),
+    );
   });
 
   it("bypasses timeout discipline for auth token exchange and records transport markers", async () => {

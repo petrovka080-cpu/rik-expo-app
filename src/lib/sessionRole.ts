@@ -5,7 +5,7 @@ import {
   beginPlatformObservability,
   recordPlatformObservability,
 } from "./observability/platformObservability";
-import { supabase } from "./supabaseClient";
+import { getSessionSafe } from "./supabaseClient";
 
 type SessionRoleSource = "session_metadata" | "rpc" | "rpc_after_profile" | "none";
 
@@ -82,10 +82,19 @@ const cacheResolution = (resolution: SessionRoleResolution) => {
   return resolution;
 };
 
-async function readSessionUser(providedUser?: User | null): Promise<User | null> {
+async function readSessionUser(
+  providedUser?: User | null,
+  trigger = "unknown",
+): Promise<User | null> {
   if (typeof providedUser !== "undefined") return providedUser;
-  const sessionResult = await supabase.auth.getSession();
-  return sessionResult.data.session?.user ?? null;
+  const sessionResult = await getSessionSafe({
+    caller: "session_role",
+    trigger,
+  });
+  if (sessionResult.degraded) {
+    throw new Error("session_role_session_read_degraded");
+  }
+  return sessionResult.session?.user ?? null;
 }
 
 async function resolveRoleViaRpcPath(
@@ -124,7 +133,7 @@ export async function resolveCurrentSessionRole(
   const ensureProfile = options.ensureProfile === true;
   const joinInflight = options.joinInflight !== false;
   const trigger = trimText(options.trigger) || "unknown";
-  const user = await readSessionUser(options.user);
+  const user = await readSessionUser(options.user, trigger);
   const userId = trimText(user?.id) || null;
 
   if (!userId || !user) {
@@ -216,8 +225,11 @@ export async function resolveCurrentSessionRole(
   return promise;
 }
 
-export async function warmCurrentSessionProfile(trigger = "unknown"): Promise<SessionRoleResolution> {
-  const user = await readSessionUser();
+export async function warmCurrentSessionProfile(
+  trigger = "unknown",
+  providedUser?: User | null,
+): Promise<SessionRoleResolution> {
+  const user = await readSessionUser(providedUser, trigger);
   const userId = trimText(user?.id) || null;
   if (!userId || !user) {
     clearCurrentSessionRoleCache();

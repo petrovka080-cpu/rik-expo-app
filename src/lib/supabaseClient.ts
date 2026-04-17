@@ -12,7 +12,11 @@ import {
   isClientSupabaseEnvValid,
 } from "./env/clientSupabaseEnv";
 import { recordPlatformObservability } from "./observability/platformObservability";
-import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
+import {
+  REQUEST_TIMEOUT_POLICY_MS,
+  RequestTimeoutError,
+  fetchWithRequestTimeout,
+} from "./requestTimeoutPolicy";
 import { logger } from "./logger";
 
 type RuntimeProcessLike = {
@@ -386,6 +390,62 @@ const recordAuthSessionReadStart = (extra?: Record<string, unknown>) =>
     },
   });
 
+const recordAuthSessionReadJoinInflight = (
+  extra: Record<string, unknown> | undefined,
+  inflight: AuthSessionReadInflight,
+) =>
+  recordPlatformObservability({
+    screen: "request",
+    surface: "auth_session_gate",
+    category: "fetch",
+    event: "auth_session_read_join_inflight",
+    result: "skipped",
+    sourceKind: "supabase_auth:getSession",
+    extra: {
+      owner: "supabase_client",
+      joinedReadId: inflight.readId,
+      inflightAgeMs: Math.max(0, Math.round(nowMs() - inflight.startedAt)),
+      inflightTimedOut: inflight.timedOut,
+      originalCaller: inflight.caller,
+      ...(extra ?? {}),
+    },
+  });
+
+const recordAuthSessionReadTerminalEvent = (params: {
+  event: "auth_session_read_timeout" | "auth_session_read_success" | "auth_session_read_failed";
+  result: "success" | "error" | "skipped";
+  readId: number;
+  startedAt: number;
+  hasSession: boolean;
+  degraded: boolean;
+  error?: unknown;
+  extra?: Record<string, unknown>;
+}) =>
+  recordPlatformObservability({
+    screen: "request",
+    surface: "auth_session_gate",
+    category: "fetch",
+    event: params.event,
+    result: params.result,
+    durationMs: Math.max(0, Math.round(nowMs() - params.startedAt)),
+    fallbackUsed: params.degraded || undefined,
+    errorClass: params.error instanceof Error ? params.error.name : undefined,
+    errorMessage:
+      params.error instanceof Error
+        ? params.error.message
+        : params.error != null
+          ? String(params.error)
+          : undefined,
+    sourceKind: "supabase_auth:getSession",
+    extra: {
+      owner: "supabase_client",
+      readId: params.readId,
+      degraded: params.degraded,
+      hasSession: params.hasSession,
+      ...(params.extra ?? {}),
+    },
+  });
+
 const recordAuthSessionReadResult = (params: {
   result: "success" | "error";
   degraded: boolean;
@@ -421,6 +481,21 @@ type SafeSessionResult = {
   degraded: boolean;
 };
 
+type AuthSessionReadRawResult = Awaited<ReturnType<typeof supabase.auth.getSession>>;
+
+type AuthSessionReadInflight = {
+  readId: number;
+  startedAt: number;
+  caller: unknown;
+  timedOut: boolean;
+  rawPromise: Promise<AuthSessionReadRawResult>;
+  resultPromise: Promise<SafeSessionResult>;
+};
+
+const AUTH_SESSION_READ_TIMEOUT_MS = REQUEST_TIMEOUT_POLICY_MS.lightweight_lookup;
+let authSessionReadInflight: AuthSessionReadInflight | null = null;
+let nextAuthSessionReadId = 0;
+
 function isTimeoutLikeError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? "");
   return (
@@ -429,6 +504,196 @@ function isTimeoutLikeError(error: unknown): boolean {
     message.includes("AbortError") ||
     message.includes("network request failed")
   );
+}
+
+function createAuthSessionReadTimeoutError(startedAt: number): RequestTimeoutError {
+  return new RequestTimeoutError({
+    requestClass: "lightweight_lookup",
+    timeoutMs: AUTH_SESSION_READ_TIMEOUT_MS,
+    owner: "supabase_client",
+    operation: "getSession",
+    elapsedMs: Math.max(0, Math.round(nowMs() - startedAt)),
+    urlPath: "supabase.auth.getSession",
+  });
+}
+
+function startAuthSessionRead(
+  extra?: Record<string, unknown>,
+): Promise<SafeSessionResult> {
+  const readId = ++nextAuthSessionReadId;
+  const startedAt = nowMs();
+  const caller = extra?.caller ?? "unknown";
+
+  recordAuthSessionReadStart({
+    ...(extra ?? {}),
+    readId,
+    timeoutMs: AUTH_SESSION_READ_TIMEOUT_MS,
+  });
+
+  const rawPromise = (() => {
+    try {
+      return Promise.resolve(supabase.auth.getSession());
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  })();
+
+  let settledForCallers = false;
+  let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+
+  const resultPromise = new Promise<SafeSessionResult>((resolve) => {
+    const resolveOnce = (result: SafeSessionResult) => {
+      if (settledForCallers) return;
+      settledForCallers = true;
+      if (timeoutHandle) clearTimeout(timeoutHandle);
+      timeoutHandle = null;
+      resolve(result);
+    };
+
+    timeoutHandle = setTimeout(() => {
+      const timeoutError = createAuthSessionReadTimeoutError(startedAt);
+      if (authSessionReadInflight?.readId === readId) {
+        authSessionReadInflight.timedOut = true;
+      }
+      recordAuthSessionReadTerminalEvent({
+        event: "auth_session_read_timeout",
+        result: "skipped",
+        readId,
+        startedAt,
+        hasSession: false,
+        degraded: true,
+        error: timeoutError,
+        extra: {
+          ...(extra ?? {}),
+          timeoutMs: AUTH_SESSION_READ_TIMEOUT_MS,
+        },
+      });
+      recordSupabaseAuthBootstrapFallback("get_session_safe_failed", timeoutError, {
+        ...(extra ?? {}),
+        readId,
+        reason: "bounded_session_read_timeout",
+      });
+      recordAuthSessionReadResult({
+        result: "error",
+        degraded: true,
+        hasSession: false,
+        error: timeoutError,
+        extra: {
+          ...(extra ?? {}),
+          readId,
+          reason: "bounded_session_read_timeout",
+        },
+      });
+      resolveOnce({ session: null, degraded: true });
+    }, AUTH_SESSION_READ_TIMEOUT_MS);
+
+    rawPromise
+      .then((result) => {
+        const session = result?.data?.session ?? null;
+        if (!settledForCallers) {
+          recordAuthSessionReadTerminalEvent({
+            event: "auth_session_read_success",
+            result: "success",
+            readId,
+            startedAt,
+            hasSession: Boolean(session),
+            degraded: false,
+            extra,
+          });
+          recordAuthSessionReadResult({
+            result: "success",
+            degraded: false,
+            hasSession: Boolean(session),
+            extra: {
+              ...(extra ?? {}),
+              readId,
+            },
+          });
+          resolveOnce({
+            session,
+            degraded: false,
+          });
+          return;
+        }
+
+        recordAuthSessionReadTerminalEvent({
+          event: "auth_session_read_success",
+          result: "success",
+          readId,
+          startedAt,
+          hasSession: Boolean(session),
+          degraded: true,
+          extra: {
+            ...(extra ?? {}),
+            settledAfterTimeout: true,
+          },
+        });
+      })
+      .catch((error: unknown) => {
+        const degraded = isTimeoutLikeError(error);
+        if (!settledForCallers) {
+          recordSupabaseAuthBootstrapFallback("get_session_safe_failed", error, {
+            ...(extra ?? {}),
+            readId,
+          });
+          recordAuthSessionReadTerminalEvent({
+            event: "auth_session_read_failed",
+            result: "error",
+            readId,
+            startedAt,
+            hasSession: false,
+            degraded,
+            error,
+            extra,
+          });
+          recordAuthSessionReadResult({
+            result: "error",
+            degraded,
+            hasSession: false,
+            error,
+            extra: {
+              ...(extra ?? {}),
+              readId,
+            },
+          });
+
+          resolveOnce({
+            session: null,
+            degraded,
+          });
+          return;
+        }
+
+        recordAuthSessionReadTerminalEvent({
+          event: "auth_session_read_failed",
+          result: "error",
+          readId,
+          startedAt,
+          hasSession: false,
+          degraded: true,
+          error,
+          extra: {
+            ...(extra ?? {}),
+            settledAfterTimeout: true,
+          },
+        });
+      })
+      .finally(() => {
+        if (authSessionReadInflight?.rawPromise === rawPromise) {
+          authSessionReadInflight = null;
+        }
+      });
+  });
+
+  authSessionReadInflight = {
+    readId,
+    startedAt,
+    caller,
+    timedOut: false,
+    rawPromise,
+    resultPromise,
+  };
+  return resultPromise;
 }
 
 export async function getSessionSafe(
@@ -447,36 +712,12 @@ export async function getSessionSafe(
     return { session: null, degraded: true };
   }
 
-  recordAuthSessionReadStart(extra);
-
-  try {
-    const result = await supabase.auth.getSession();
-    const session = result?.data?.session ?? null;
-    recordAuthSessionReadResult({
-      result: "success",
-      degraded: false,
-      hasSession: Boolean(session),
-      extra,
-    });
-    return {
-      session,
-      degraded: false,
-    };
-  } catch (error: unknown) {
-    recordSupabaseAuthBootstrapFallback("get_session_safe_failed", error, extra);
-    recordAuthSessionReadResult({
-      result: "error",
-      degraded: isTimeoutLikeError(error),
-      hasSession: false,
-      error,
-      extra,
-    });
-
-    return {
-      session: null,
-      degraded: isTimeoutLikeError(error),
-    };
+  if (authSessionReadInflight) {
+    recordAuthSessionReadJoinInflight(extra, authSessionReadInflight);
+    return authSessionReadInflight.resultPromise;
   }
+
+  return startAuthSessionRead(extra);
 }
 export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {

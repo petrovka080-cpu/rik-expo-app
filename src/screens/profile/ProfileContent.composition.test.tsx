@@ -1,6 +1,6 @@
 import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 
 import { ProfileContent } from "./ProfileContent";
 
@@ -8,6 +8,7 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockLoadProfileScreenData = jest.fn();
 const mockLoadStoredActiveContext = jest.fn();
+const mockSignOutProfileSession = jest.fn();
 
 let capturedMainProps: Record<string, unknown> | null = null;
 let capturedEditModalProps: Record<string, unknown> | null = null;
@@ -75,7 +76,8 @@ jest.mock("./profile.services", () => ({
   loadProfileScreenData: (...args: unknown[]) =>
     mockLoadProfileScreenData(...args),
   saveProfileDetails: jest.fn(),
-  signOutProfileSession: jest.fn(),
+  signOutProfileSession: (...args: unknown[]) =>
+    mockSignOutProfileSession(...args),
 }));
 
 describe("ProfileContent composition shell", () => {
@@ -88,6 +90,7 @@ describe("ProfileContent composition shell", () => {
     mockReplace.mockReset();
     mockLoadProfileScreenData.mockReset();
     mockLoadStoredActiveContext.mockReset();
+    mockSignOutProfileSession.mockReset();
 
     mockLoadStoredActiveContext.mockResolvedValue("office");
     mockLoadProfileScreenData.mockResolvedValue({
@@ -309,5 +312,59 @@ describe("ProfileContent composition shell", () => {
     expect(
       renderer!.root.findByProps({ testID: "profile-main-sections" }),
     ).toBeTruthy();
+  });
+
+  it("signs out through a web confirm fallback without relying on native Alert callbacks", async () => {
+    const originalPlatformOS = Platform.OS;
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "web",
+    });
+    const originalWindow = (globalThis as typeof globalThis & {
+      window?: unknown;
+    }).window;
+    const confirm = jest.fn().mockReturnValue(true);
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { confirm },
+    });
+    mockSignOutProfileSession.mockResolvedValue(undefined);
+
+    try {
+      await act(async () => {
+        TestRenderer.create(<ProfileContent />);
+      });
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      await act(async () => {
+        await (capturedMainProps?.onSignOut as (() => void) | undefined)?.();
+        await Promise.resolve();
+      });
+
+      expect(confirm).toHaveBeenCalledWith("Завершить текущую сессию GOX?");
+      expect(mockSignOutProfileSession).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+      expect(alertSpy).not.toHaveBeenCalledWith(
+        "Выйти из аккаунта",
+        expect.anything(),
+        expect.anything(),
+      );
+    } finally {
+      Object.defineProperty(Platform, "OS", {
+        configurable: true,
+        value: originalPlatformOS,
+      });
+      if (typeof originalWindow === "undefined") {
+        delete (globalThis as typeof globalThis & { window?: unknown }).window;
+      } else {
+        Object.defineProperty(globalThis, "window", {
+          configurable: true,
+          value: originalWindow,
+        });
+      }
+    }
   });
 });
