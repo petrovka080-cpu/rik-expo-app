@@ -94,13 +94,12 @@ import {
 } from "../foreman.draftRecovery.model";
 import {
   getForemanBootstrapReconciliationRequestId,
-  resolveForemanBootstrapOwnerPlan,
+  planForemanBootstrapReenqueueCommand,
+  resolveForemanBootstrapCompletionStartPlan,
   resolveForemanBootstrapReconciliationPlan,
-  resolveForemanBootstrapReenqueuePlan,
   resolveForemanRestoreRemoteCheckPlan,
   resolveForemanRestoreRemoteStatusPlan,
   shouldPersistForemanLifecycleSnapshot,
-  shouldResetForemanBootstrapStaleDurableState,
   shouldSkipForemanRemoteDraftEffects,
   shouldSyncForemanDraftAfterRestoreCheck,
 } from "../foreman.draftLifecycle.model";
@@ -1362,12 +1361,12 @@ export function useForemanDraftBoundary({
       // global PlatformOfflineStatusHost banner keeps reading stale values
       // from the durable store, showing phantom "Нужна проверка" banners.
       const staleDurableState = getForemanDurableDraftState();
-      if (
-        shouldResetForemanBootstrapStaleDurableState({
-          durableSnapshot,
-          durableState: staleDurableState,
-        })
-      ) {
+      const completionStartPlan = resolveForemanBootstrapCompletionStartPlan({
+        durableSnapshot,
+        durableState: staleDurableState,
+        requestId,
+      });
+      if (completionStartPlan.action === "reset_stale_durable") {
         if (__DEV__) {
           console.info("[foreman.bootstrap] resetting stale durable sync metadata", {
             syncStatus: staleDurableState.syncStatus,
@@ -1377,43 +1376,30 @@ export function useForemanDraftBoundary({
             retryCount: staleDurableState.retryCount,
           });
         }
-        await patchForemanDurableDraftRecoveryState({
-          snapshot: null,
-          syncStatus: "idle",
-          pendingOperationsCount: 0,
-          queueDraftKey: null,
-          requestIdKnown: false,
-          attentionNeeded: false,
-          conflictType: "none",
-          lastConflictAt: null,
-          recoverableLocalSnapshot: null,
-          lastError: null,
-          lastErrorAt: null,
-          lastErrorStage: null,
-          retryCount: 0,
-          repeatedFailureStageCount: 0,
-          lastTriggerSource: "bootstrap_complete",
-          lastSyncAt: staleDurableState.lastSyncAt,
-        });
+        await patchForemanDurableDraftRecoveryState(completionStartPlan.durablePatch);
         // P6.3c: Also clear React-level draft state (items, requestDetails,
         // requestId, header). Without this, isDraftActive stays true because
         // requestDetails still holds the old "draft" status, and the persist
         // effect at line ~1497 rebuilds & re-persists the stale snapshot.
-        setActiveDraftOwnerId(undefined, { resetSubmitted: true });
-        resetDraftState();
-        localDraftSnapshotRef.current = null;
-        setLocalDraftSnapshot(null);
-        await refreshBoundarySyncState(null);
+        setActiveDraftOwnerId(completionStartPlan.activeOwnerReset.nextOwnerId, {
+          resetSubmitted: completionStartPlan.activeOwnerReset.resetSubmitted,
+        });
+        if (completionStartPlan.resetDraftState) resetDraftState();
+        if (completionStartPlan.clearLocalSnapshotRef) {
+          localDraftSnapshotRef.current = completionStartPlan.nextLocalSnapshot;
+        }
+        setLocalDraftSnapshot(completionStartPlan.nextLocalSnapshot);
+        await refreshBoundarySyncState(completionStartPlan.refreshBoundarySnapshot);
         return;
       }
 
-      const ownerPlan = resolveForemanBootstrapOwnerPlan({ durableSnapshot, requestId });
+      const ownerPlan = completionStartPlan.ownerPlan;
       if (ownerPlan.action === "set_owner") {
         setActiveDraftOwnerId(ownerPlan.ownerId, { resetSubmitted: true });
       } else if (ownerPlan.action === "reset_owner") {
         setActiveDraftOwnerId(undefined, { resetSubmitted: true });
       }
-      if (durableSnapshot && hasForemanLocalDraftContent(durableSnapshot)) {
+      if (durableSnapshot && completionStartPlan.hasDurableSnapshotContent) {
         await pushForemanDurableDraftTelemetry({
           stage: "hydrate",
           result: "success",
@@ -1482,27 +1468,19 @@ export function useForemanDraftBoundary({
 
         // Only re-enqueue if reconciliation didn't clear the draft
         const reenqueueState = getForemanDurableDraftState();
-        const reenqueuePlan = resolveForemanBootstrapReenqueuePlan({
+        const reenqueuePlan = planForemanBootstrapReenqueueCommand({
+          snapshot: durableSnapshot,
           pendingOperationsCount,
           conflictAutoRecoverable: isForemanConflictAutoRecoverable(reenqueueState.conflictType),
-          snapshotSubmitRequested: durableSnapshot.submitRequested,
           snapshotHasPendingSync: hasForemanLocalDraftPendingSync(durableSnapshot),
           syncStatus: reenqueueState.syncStatus,
+          draftKey: getDraftQueueKey(durableSnapshot),
         });
-        if (reenqueuePlan.shouldEnqueue) {
-          await enqueueForemanMutation({
-            draftKey: getDraftQueueKey(durableSnapshot),
-            requestId: ridStr(durableSnapshot.requestId) || null,
-            snapshotUpdatedAt: durableSnapshot.updatedAt,
-            mutationKind: reenqueuePlan.mutationKind,
-            localBeforeCount: durableSnapshot.items.length,
-            localAfterCount: durableSnapshot.items.length,
-            submitRequested: durableSnapshot.submitRequested,
-            triggerSource: "bootstrap_complete",
-          });
+        if (reenqueuePlan.action === "reenqueue") {
+          await enqueueForemanMutation(reenqueuePlan.enqueue);
           await markForemanSnapshotQueued(durableSnapshot, {
-            queueDraftKey: getDraftQueueKey(durableSnapshot),
-            triggerSource: "bootstrap_complete",
+            queueDraftKey: reenqueuePlan.markQueued.queueDraftKey,
+            triggerSource: reenqueuePlan.markQueued.triggerSource,
           });
         }
       }

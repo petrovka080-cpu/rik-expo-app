@@ -18,6 +18,62 @@ export type ForemanBootstrapReenqueuePlan =
   | { shouldEnqueue: false; mutationKind: null }
   | { shouldEnqueue: true; mutationKind: "submit" | "background_sync" };
 
+export type ForemanBootstrapStaleDurableResetPatch = {
+  snapshot: null;
+  syncStatus: "idle";
+  pendingOperationsCount: 0;
+  queueDraftKey: null;
+  requestIdKnown: false;
+  attentionNeeded: false;
+  conflictType: "none";
+  lastConflictAt: null;
+  recoverableLocalSnapshot: null;
+  lastError: null;
+  lastErrorAt: null;
+  lastErrorStage: null;
+  retryCount: 0;
+  repeatedFailureStageCount: 0;
+  lastTriggerSource: "bootstrap_complete";
+  lastSyncAt: number | null;
+};
+
+export type ForemanBootstrapCompletionStartPlan =
+  | {
+      action: "reset_stale_durable";
+      durablePatch: ForemanBootstrapStaleDurableResetPatch;
+      activeOwnerReset: { nextOwnerId: undefined; resetSubmitted: true };
+      resetDraftState: true;
+      clearLocalSnapshotRef: true;
+      nextLocalSnapshot: null;
+      refreshBoundarySnapshot: null;
+    }
+  | {
+      action: "continue";
+      ownerPlan: ForemanBootstrapOwnerPlan;
+      hasDurableSnapshotContent: boolean;
+    };
+
+export type ForemanBootstrapReenqueueCommandPlan =
+  | { action: "skip_reenqueue"; refreshBoundarySnapshot: ForemanLocalDraftSnapshot | null }
+  | {
+      action: "reenqueue";
+      enqueue: {
+        draftKey: string;
+        requestId: string | null;
+        snapshotUpdatedAt: string;
+        mutationKind: "submit" | "background_sync";
+        localBeforeCount: number;
+        localAfterCount: number;
+        submitRequested: boolean;
+        triggerSource: "bootstrap_complete";
+      };
+      markQueued: {
+        queueDraftKey: string;
+        triggerSource: "bootstrap_complete";
+      };
+      refreshBoundarySnapshot: ForemanLocalDraftSnapshot;
+    };
+
 export type ForemanRestoreRemoteCheckPlan =
   | { action: "skip_terminal_check"; requestId: null }
   | { action: "check_terminal"; requestId: string };
@@ -65,6 +121,27 @@ export const shouldResetForemanBootstrapStaleDurableState = (params: {
   );
 };
 
+export const buildForemanBootstrapStaleDurableResetPatch = (params: {
+  lastSyncAt: number | null;
+}): ForemanBootstrapStaleDurableResetPatch => ({
+  snapshot: null,
+  syncStatus: "idle",
+  pendingOperationsCount: 0,
+  queueDraftKey: null,
+  requestIdKnown: false,
+  attentionNeeded: false,
+  conflictType: "none",
+  lastConflictAt: null,
+  recoverableLocalSnapshot: null,
+  lastError: null,
+  lastErrorAt: null,
+  lastErrorStage: null,
+  retryCount: 0,
+  repeatedFailureStageCount: 0,
+  lastTriggerSource: "bootstrap_complete",
+  lastSyncAt: params.lastSyncAt,
+});
+
 export const resolveForemanBootstrapOwnerPlan = (params: {
   durableSnapshot: ForemanLocalDraftSnapshot | null;
   requestId: string | number | null | undefined;
@@ -73,6 +150,47 @@ export const resolveForemanBootstrapOwnerPlan = (params: {
   if (ownerId) return { action: "set_owner", ownerId };
   if (!trim(params.requestId)) return { action: "reset_owner" };
   return { action: "keep_owner" };
+};
+
+export const resolveForemanBootstrapCompletionStartPlan = (params: {
+  durableSnapshot: ForemanLocalDraftSnapshot | null;
+  durableState: {
+    syncStatus: ForemanDraftSyncStatus;
+    attentionNeeded: boolean;
+    conflictType: ForemanDraftConflictType;
+    pendingOperationsCount: number;
+    retryCount: number;
+    lastSyncAt: number | null;
+  };
+  requestId: string | number | null | undefined;
+}): ForemanBootstrapCompletionStartPlan => {
+  if (
+    shouldResetForemanBootstrapStaleDurableState({
+      durableSnapshot: params.durableSnapshot,
+      durableState: params.durableState,
+    })
+  ) {
+    return {
+      action: "reset_stale_durable",
+      durablePatch: buildForemanBootstrapStaleDurableResetPatch({
+        lastSyncAt: params.durableState.lastSyncAt,
+      }),
+      activeOwnerReset: { nextOwnerId: undefined, resetSubmitted: true },
+      resetDraftState: true,
+      clearLocalSnapshotRef: true,
+      nextLocalSnapshot: null,
+      refreshBoundarySnapshot: null,
+    };
+  }
+
+  return {
+    action: "continue",
+    ownerPlan: resolveForemanBootstrapOwnerPlan({
+      durableSnapshot: params.durableSnapshot,
+      requestId: params.requestId,
+    }),
+    hasDurableSnapshotContent: hasSnapshotContent(params.durableSnapshot),
+  };
 };
 
 export const getForemanBootstrapReconciliationRequestId = (
@@ -117,6 +235,49 @@ export const resolveForemanBootstrapReenqueuePlan = (params: {
   return {
     shouldEnqueue: true,
     mutationKind: params.snapshotSubmitRequested ? "submit" : "background_sync",
+  };
+};
+
+export const planForemanBootstrapReenqueueCommand = (params: {
+  snapshot: ForemanLocalDraftSnapshot;
+  pendingOperationsCount: number;
+  conflictAutoRecoverable: boolean;
+  snapshotHasPendingSync: boolean;
+  syncStatus: ForemanDraftSyncStatus;
+  draftKey: string;
+}): ForemanBootstrapReenqueueCommandPlan => {
+  const reenqueuePlan = resolveForemanBootstrapReenqueuePlan({
+    pendingOperationsCount: params.pendingOperationsCount,
+    conflictAutoRecoverable: params.conflictAutoRecoverable,
+    snapshotSubmitRequested: params.snapshot.submitRequested,
+    snapshotHasPendingSync: params.snapshotHasPendingSync,
+    syncStatus: params.syncStatus,
+  });
+
+  if (!reenqueuePlan.shouldEnqueue) {
+    return {
+      action: "skip_reenqueue",
+      refreshBoundarySnapshot: params.snapshot,
+    };
+  }
+
+  return {
+    action: "reenqueue",
+    enqueue: {
+      draftKey: params.draftKey,
+      requestId: trim(params.snapshot.requestId) || null,
+      snapshotUpdatedAt: params.snapshot.updatedAt,
+      mutationKind: reenqueuePlan.mutationKind,
+      localBeforeCount: params.snapshot.items.length,
+      localAfterCount: params.snapshot.items.length,
+      submitRequested: params.snapshot.submitRequested,
+      triggerSource: "bootstrap_complete",
+    },
+    markQueued: {
+      queueDraftKey: params.draftKey,
+      triggerSource: "bootstrap_complete",
+    },
+    refreshBoundarySnapshot: params.snapshot,
   };
 };
 

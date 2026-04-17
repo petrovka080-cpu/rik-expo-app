@@ -2,7 +2,10 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import {
+  buildForemanBootstrapStaleDurableResetPatch,
   getForemanBootstrapReconciliationRequestId,
+  planForemanBootstrapReenqueueCommand,
+  resolveForemanBootstrapCompletionStartPlan,
   resolveForemanBootstrapOwnerPlan,
   resolveForemanBootstrapReconciliationPlan,
   resolveForemanBootstrapReenqueuePlan,
@@ -92,6 +95,9 @@ describe("foreman draft lifecycle decision model", () => {
     expect(source).not.toContain("fetchRequestDetails");
     expect(source).not.toContain("AppState");
     expect(source).not.toContain("subscribePlatformNetwork");
+    expect(source).not.toContain("runForemanQueueRecovery");
+    expect(source).not.toContain("clearTerminalLocalDraft");
+    expect(source).not.toContain("Date.now");
   });
 
   it("resets stale durable metadata only when bootstrap has no durable snapshot content", () => {
@@ -146,6 +152,66 @@ describe("foreman draft lifecycle decision model", () => {
       durableSnapshot: null,
       requestId: "req-active",
     })).toEqual({ action: "keep_owner" });
+  });
+
+  it("plans stale durable bootstrap reset as a pure command payload", () => {
+    const lastSyncAt = 123456;
+    const durableState = {
+      ...baseDurableState,
+      syncStatus: "retry_wait" as const,
+      attentionNeeded: true,
+      conflictType: "retryable_sync_failure" as const,
+      pendingOperationsCount: 2,
+      retryCount: 3,
+      lastSyncAt,
+    };
+
+    const expectedPatch = buildForemanBootstrapStaleDurableResetPatch({ lastSyncAt });
+    expect(resolveForemanBootstrapCompletionStartPlan({
+      durableSnapshot: null,
+      durableState,
+      requestId: "req-active",
+    })).toEqual({
+      action: "reset_stale_durable",
+      durablePatch: expectedPatch,
+      activeOwnerReset: { nextOwnerId: undefined, resetSubmitted: true },
+      resetDraftState: true,
+      clearLocalSnapshotRef: true,
+      nextLocalSnapshot: null,
+      refreshBoundarySnapshot: null,
+    });
+  });
+
+  it("plans bootstrap continuation with owner and content signals", () => {
+    const snapshot = makeSnapshot({ ownerId: "owner-durable" });
+
+    expect(resolveForemanBootstrapCompletionStartPlan({
+      durableSnapshot: snapshot,
+      durableState: {
+        ...baseDurableState,
+        syncStatus: "retry_wait",
+        attentionNeeded: true,
+        conflictType: "retryable_sync_failure",
+        pendingOperationsCount: 2,
+        retryCount: 3,
+        lastSyncAt: null,
+      },
+      requestId: null,
+    })).toEqual({
+      action: "continue",
+      ownerPlan: { action: "set_owner", ownerId: "owner-durable" },
+      hasDurableSnapshotContent: true,
+    });
+
+    expect(resolveForemanBootstrapCompletionStartPlan({
+      durableSnapshot: emptySnapshot({ ownerId: "" }),
+      durableState: { ...baseDurableState, lastSyncAt: null },
+      requestId: null,
+    })).toEqual({
+      action: "continue",
+      ownerPlan: { action: "reset_owner" },
+      hasDurableSnapshotContent: false,
+    });
   });
 
   it("plans bootstrap terminal reconciliation before any re-enqueue", () => {
@@ -223,6 +289,83 @@ describe("foreman draft lifecycle decision model", () => {
       snapshotHasPendingSync: true,
       syncStatus: "retry_wait",
     })).toEqual({ shouldEnqueue: false, mutationKind: null });
+  });
+
+  it("plans bootstrap re-enqueue command payload without executing queue side effects", () => {
+    const snapshot = makeSnapshot({
+      requestId: "req-replay",
+      updatedAt: "2026-04-17T10:00:00.000Z",
+      submitRequested: true,
+    });
+
+    expect(planForemanBootstrapReenqueueCommand({
+      snapshot,
+      pendingOperationsCount: 0,
+      conflictAutoRecoverable: true,
+      snapshotHasPendingSync: false,
+      syncStatus: "idle",
+      draftKey: "req-replay",
+    })).toEqual({
+      action: "reenqueue",
+      enqueue: {
+        draftKey: "req-replay",
+        requestId: "req-replay",
+        snapshotUpdatedAt: "2026-04-17T10:00:00.000Z",
+        mutationKind: "submit",
+        localBeforeCount: 1,
+        localAfterCount: 1,
+        submitRequested: true,
+        triggerSource: "bootstrap_complete",
+      },
+      markQueued: {
+        queueDraftKey: "req-replay",
+        triggerSource: "bootstrap_complete",
+      },
+      refreshBoundarySnapshot: snapshot,
+    });
+
+    expect(planForemanBootstrapReenqueueCommand({
+      snapshot: makeSnapshot({ requestId: "req-bg", submitRequested: false }),
+      pendingOperationsCount: 0,
+      conflictAutoRecoverable: true,
+      snapshotHasPendingSync: true,
+      syncStatus: "idle",
+      draftKey: "req-bg",
+    })).toEqual(expect.objectContaining({
+      action: "reenqueue",
+      enqueue: expect.objectContaining({
+        mutationKind: "background_sync",
+        triggerSource: "bootstrap_complete",
+      }),
+    }));
+  });
+
+  it("skips bootstrap re-enqueue when pending queue or conflict gates block replay", () => {
+    const snapshot = makeSnapshot({ requestId: "req-skip", submitRequested: true });
+
+    expect(planForemanBootstrapReenqueueCommand({
+      snapshot,
+      pendingOperationsCount: 1,
+      conflictAutoRecoverable: true,
+      snapshotHasPendingSync: true,
+      syncStatus: "retry_wait",
+      draftKey: "req-skip",
+    })).toEqual({
+      action: "skip_reenqueue",
+      refreshBoundarySnapshot: snapshot,
+    });
+
+    expect(planForemanBootstrapReenqueueCommand({
+      snapshot,
+      pendingOperationsCount: 0,
+      conflictAutoRecoverable: false,
+      snapshotHasPendingSync: true,
+      syncStatus: "retry_wait",
+      draftKey: "req-skip",
+    })).toEqual({
+      action: "skip_reenqueue",
+      refreshBoundarySnapshot: snapshot,
+    });
   });
 
   it("plans restore terminal checks without deciding side effects", () => {
