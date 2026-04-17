@@ -22,6 +22,60 @@ export type ForemanTerminalRecoveryCandidate = {
   source: ForemanTerminalRecoverySource;
 };
 
+export type ForemanTerminalCleanupDurablePatchPlan = {
+  snapshot: null;
+  syncStatus: "idle";
+  pendingOperationsCount: 0;
+  queueDraftKey: null;
+  requestIdKnown: false;
+  attentionNeeded: false;
+  conflictType: "none";
+  lastConflictAt: null;
+  recoverableLocalSnapshot: null;
+  lastError: null;
+  lastErrorAt: null;
+  lastErrorStage: null;
+  retryCount: 0;
+  repeatedFailureStageCount: 0;
+  lastTriggerSource: "bootstrap_complete";
+  lastSyncAt: "now";
+};
+
+export type ForemanTerminalCleanupDurablePatch = Omit<
+  ForemanTerminalCleanupDurablePatchPlan,
+  "lastSyncAt"
+> & {
+  lastSyncAt: number;
+};
+
+export type ForemanTerminalCleanupPlan = {
+  snapshot: ForemanLocalDraftSnapshot | null;
+  cleanupKeys: string[];
+  cacheClear: {
+    snapshot: ForemanLocalDraftSnapshot | null;
+    requestId: string;
+  };
+  activeOwnerReset: {
+    nextOwnerId: undefined;
+    resetSubmitted: true;
+  };
+  resetDraftState: true;
+  durablePatch: ForemanTerminalCleanupDurablePatchPlan;
+  refreshBoundaryRequestId: null;
+  devTelemetry: {
+    draftId: string;
+    requestId: string;
+    remoteStatus: string | null;
+    submitSuccess: false;
+    postSubmitAction: "entered_empty_state";
+    staleBannerVisibleAfterSubmit: false;
+    activeDraftIdBefore: string;
+    activeDraftIdAfter: null;
+    freshDraftCreated: false;
+    runtimeResult: "cleared_terminal_local_snapshot";
+  };
+};
+
 const isRequestBoundKey = (value?: string | null) => {
   const key = ridStr(value);
   return Boolean(key && key !== FOREMAN_LOCAL_ONLY_REQUEST_ID);
@@ -134,4 +188,85 @@ export const collectForemanTerminalCleanupDraftKeys = (params: {
   }
 
   return Array.from(keys);
+};
+
+export const buildForemanTerminalCleanupDurablePatch = (
+  plan: ForemanTerminalCleanupDurablePatchPlan,
+  lastSyncAt: number,
+): ForemanTerminalCleanupDurablePatch => ({
+  ...plan,
+  lastSyncAt,
+});
+
+export const resolveForemanTerminalCleanupPlan = (params: {
+  requestId: string;
+  remoteStatus?: string | null;
+  optionSnapshot?: ForemanLocalDraftSnapshot | null;
+  activeSnapshot?: ForemanLocalDraftSnapshot | null;
+  durableSnapshot?: ForemanLocalDraftSnapshot | null;
+  recoverableSnapshot?: ForemanLocalDraftSnapshot | null;
+  queueDraftKey?: string | null;
+}): ForemanTerminalCleanupPlan => {
+  const snapshot =
+    params.optionSnapshot ??
+    params.activeSnapshot ??
+    params.durableSnapshot ??
+    params.recoverableSnapshot ??
+    null;
+  const cleanupKeys = collectForemanTerminalCleanupDraftKeys({
+    requestId: params.requestId,
+    snapshots: [
+      snapshot,
+      params.activeSnapshot,
+      params.durableSnapshot,
+      params.recoverableSnapshot,
+    ],
+    queueDraftKey: params.queueDraftKey,
+  });
+  const draftId = ridStr(snapshot?.requestId) || params.requestId;
+
+  return {
+    snapshot,
+    cleanupKeys,
+    cacheClear: {
+      snapshot,
+      requestId: params.requestId,
+    },
+    activeOwnerReset: {
+      nextOwnerId: undefined,
+      resetSubmitted: true,
+    },
+    resetDraftState: true,
+    durablePatch: {
+      snapshot: null,
+      syncStatus: "idle",
+      pendingOperationsCount: 0,
+      queueDraftKey: null,
+      requestIdKnown: false,
+      attentionNeeded: false,
+      conflictType: "none",
+      lastConflictAt: null,
+      recoverableLocalSnapshot: null,
+      lastError: null,
+      lastErrorAt: null,
+      lastErrorStage: null,
+      retryCount: 0,
+      repeatedFailureStageCount: 0,
+      lastTriggerSource: "bootstrap_complete",
+      lastSyncAt: "now",
+    },
+    refreshBoundaryRequestId: null,
+    devTelemetry: {
+      draftId,
+      requestId: params.requestId,
+      remoteStatus: params.remoteStatus ?? null,
+      submitSuccess: false,
+      postSubmitAction: "entered_empty_state",
+      staleBannerVisibleAfterSubmit: false,
+      activeDraftIdBefore: draftId,
+      activeDraftIdAfter: null,
+      freshDraftCreated: false,
+      runtimeResult: "cleared_terminal_local_snapshot",
+    },
+  };
 };

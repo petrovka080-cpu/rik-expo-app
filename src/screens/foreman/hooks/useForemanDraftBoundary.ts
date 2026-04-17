@@ -45,10 +45,11 @@ import {
   ridStr,
 } from "../foreman.helpers";
 import {
-  collectForemanTerminalCleanupDraftKeys,
+  buildForemanTerminalCleanupDurablePatch,
   collectForemanTerminalRecoveryCandidates,
   hasForemanDurableRecoverySignal,
   isForemanTerminalRemoteStatus,
+  resolveForemanTerminalCleanupPlan,
 } from "../foreman.terminalRecovery";
 import {
   FOREMAN_LOCAL_ONLY_REQUEST_ID,
@@ -675,63 +676,30 @@ export function useForemanDraftBoundary({
       remoteStatus?: string | null;
     }) => {
       const durableState = getForemanDurableDraftState();
-      const snapshot =
-        options.snapshot ??
-        localDraftSnapshotRef.current ??
-        durableState.snapshot ??
-        durableState.recoverableLocalSnapshot;
-      const cleanupKeys = collectForemanTerminalCleanupDraftKeys({
+      const cleanupPlan = resolveForemanTerminalCleanupPlan({
         requestId: options.requestId,
-        snapshots: [
-          snapshot,
-          localDraftSnapshotRef.current,
-          durableState.snapshot,
-          durableState.recoverableLocalSnapshot,
-        ],
+        remoteStatus: options.remoteStatus,
+        optionSnapshot: options.snapshot,
+        activeSnapshot: localDraftSnapshotRef.current,
+        durableSnapshot: durableState.snapshot,
+        recoverableSnapshot: durableState.recoverableLocalSnapshot,
         queueDraftKey: durableState.queueDraftKey,
       });
-      for (const key of cleanupKeys) {
+      for (const key of cleanupPlan.cleanupKeys) {
         await clearForemanMutationsForDraft(key);
       }
-      await clearDraftCache({
-        snapshot,
-        requestId: options.requestId,
+      await clearDraftCache(cleanupPlan.cacheClear);
+      setActiveDraftOwnerId(cleanupPlan.activeOwnerReset.nextOwnerId, {
+        resetSubmitted: cleanupPlan.activeOwnerReset.resetSubmitted,
       });
-      setActiveDraftOwnerId(undefined, { resetSubmitted: true });
-      resetDraftState();
-      await patchForemanDurableDraftRecoveryState({
-        snapshot: null,
-        syncStatus: "idle",
-        pendingOperationsCount: 0,
-        queueDraftKey: null,
-        requestIdKnown: false,
-        attentionNeeded: false,
-        conflictType: "none",
-        lastConflictAt: null,
-        recoverableLocalSnapshot: null,
-        lastError: null,
-        lastErrorAt: null,
-        lastErrorStage: null,
-        retryCount: 0,
-        repeatedFailureStageCount: 0,
-        lastTriggerSource: "bootstrap_complete",
-        lastSyncAt: Date.now(),
-      });
-      await refreshBoundarySyncState(null);
+      if (cleanupPlan.resetDraftState) resetDraftState();
+      await patchForemanDurableDraftRecoveryState(
+        buildForemanTerminalCleanupDurablePatch(cleanupPlan.durablePatch, Date.now()),
+      );
+      await refreshBoundarySyncState(cleanupPlan.refreshBoundaryRequestId);
 
       if (__DEV__) {
-        console.info("[foreman.terminal-cleanup]", {
-          draftId: ridStr(snapshot?.requestId) || options.requestId,
-          requestId: options.requestId,
-          remoteStatus: options.remoteStatus ?? null,
-          submitSuccess: false,
-          postSubmitAction: "entered_empty_state",
-          staleBannerVisibleAfterSubmit: false,
-          activeDraftIdBefore: ridStr(snapshot?.requestId) || options.requestId,
-          activeDraftIdAfter: null,
-          freshDraftCreated: false,
-          runtimeResult: "cleared_terminal_local_snapshot",
-        });
+        console.info("[foreman.terminal-cleanup]", cleanupPlan.devTelemetry);
       }
     },
     [clearDraftCache, refreshBoundarySyncState, resetDraftState, setActiveDraftOwnerId],

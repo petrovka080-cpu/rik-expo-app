@@ -1,13 +1,18 @@
+import { readFileSync } from "fs";
+import { join } from "path";
+
 import {
   buildForemanAvailableRecoveryActions,
   type ForemanDraftRecoveryAction,
 } from "../../lib/offline/foremanSyncRuntime";
 import { summarizePlatformOfflineOverview, type PlatformNetworkSnapshot } from "../../lib/offline/platformOffline.model";
 import {
+  buildForemanTerminalCleanupDurablePatch,
   collectForemanTerminalCleanupDraftKeys,
   collectForemanTerminalRecoveryCandidates,
   hasForemanDurableRecoverySignal,
   isForemanTerminalRemoteStatus,
+  resolveForemanTerminalCleanupPlan,
 } from "./foreman.terminalRecovery";
 import { FOREMAN_LOCAL_ONLY_REQUEST_ID, type ForemanLocalDraftSnapshot } from "./foreman.localDraft";
 import type { ForemanDurableDraftRecord } from "./foreman.durableDraft.store";
@@ -89,6 +94,19 @@ const durable = (
 });
 
 describe("P6.3e foreman terminal recovery contract", () => {
+  it("terminal recovery planner stays free of runtime side effects", () => {
+    const source = readFileSync(join(__dirname, "foreman.terminalRecovery.ts"), "utf8");
+
+    expect(source).not.toContain("clearForemanMutationsForDraft");
+    expect(source).not.toContain("clearDraftCache");
+    expect(source).not.toContain("patchForemanDurableDraftRecoveryState");
+    expect(source).not.toContain("refreshBoundarySyncState");
+    expect(source).not.toContain("fetchRequestDetails");
+    expect(source).not.toContain("AppState");
+    expect(source).not.toContain("subscribePlatformNetwork");
+    expect(source).not.toContain("Date.now");
+  });
+
   it("terminal request with stale durable snapshot is selected for cleanup", () => {
     const stale = snapshot("req-0121");
     const state = durable({
@@ -163,6 +181,103 @@ describe("P6.3e foreman terminal recovery contract", () => {
         queueDraftKey: "req-0121",
       }).sort(),
     ).toEqual([FOREMAN_LOCAL_ONLY_REQUEST_ID, "REQ-0121/2026", "req-0121", "req-0121-recovery"].sort());
+  });
+
+  it("terminal cleanup command plan preserves snapshot fallback priority and cleanup keys", () => {
+    const active = snapshot("req-active");
+    const durableSnapshot = snapshot("req-durable");
+    const recoverable = snapshot("req-recoverable");
+
+    const plan = resolveForemanTerminalCleanupPlan({
+      requestId: "req-terminal",
+      remoteStatus: "approved",
+      optionSnapshot: null,
+      activeSnapshot: active,
+      durableSnapshot,
+      recoverableSnapshot: recoverable,
+      queueDraftKey: "req-queued",
+    });
+
+    expect(plan.snapshot).toBe(active);
+    expect(plan.cacheClear).toEqual({
+      snapshot: active,
+      requestId: "req-terminal",
+    });
+    expect(plan.cleanupKeys.sort()).toEqual([
+      FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      "REQ-0121/2026",
+      "req-active",
+      "req-durable",
+      "req-queued",
+      "req-recoverable",
+      "req-terminal",
+    ].sort());
+    expect(plan.activeOwnerReset).toEqual({
+      nextOwnerId: undefined,
+      resetSubmitted: true,
+    });
+    expect(plan.resetDraftState).toBe(true);
+    expect(plan.refreshBoundaryRequestId).toBeNull();
+    expect(plan.devTelemetry).toEqual({
+      draftId: "req-active",
+      requestId: "req-terminal",
+      remoteStatus: "approved",
+      submitSuccess: false,
+      postSubmitAction: "entered_empty_state",
+      staleBannerVisibleAfterSubmit: false,
+      activeDraftIdBefore: "req-active",
+      activeDraftIdAfter: null,
+      freshDraftCreated: false,
+      runtimeResult: "cleared_terminal_local_snapshot",
+    });
+  });
+
+  it("terminal cleanup command plan honors explicit option snapshot before active state", () => {
+    const option = snapshot("req-option");
+    const active = snapshot("req-active");
+
+    const plan = resolveForemanTerminalCleanupPlan({
+      requestId: "req-terminal",
+      optionSnapshot: option,
+      activeSnapshot: active,
+      durableSnapshot: null,
+      recoverableSnapshot: null,
+      queueDraftKey: null,
+    });
+
+    expect(plan.snapshot).toBe(option);
+    expect(plan.devTelemetry.draftId).toBe("req-option");
+    expect(plan.devTelemetry.remoteStatus).toBeNull();
+  });
+
+  it("terminal cleanup durable reset patch preserves existing terminal cleanup semantics", () => {
+    const plan = resolveForemanTerminalCleanupPlan({
+      requestId: "req-terminal",
+      optionSnapshot: null,
+      activeSnapshot: null,
+      durableSnapshot: null,
+      recoverableSnapshot: null,
+      queueDraftKey: null,
+    });
+
+    expect(buildForemanTerminalCleanupDurablePatch(plan.durablePatch, 12345)).toEqual({
+      snapshot: null,
+      syncStatus: "idle",
+      pendingOperationsCount: 0,
+      queueDraftKey: null,
+      requestIdKnown: false,
+      attentionNeeded: false,
+      conflictType: "none",
+      lastConflictAt: null,
+      recoverableLocalSnapshot: null,
+      lastError: null,
+      lastErrorAt: null,
+      lastErrorStage: null,
+      retryCount: 0,
+      repeatedFailureStageCount: 0,
+      lastTriggerSource: "bootstrap_complete",
+      lastSyncAt: 12345,
+    });
   });
 
   it("display-number keyed terminal recovery entries are selected for cleanup", () => {
