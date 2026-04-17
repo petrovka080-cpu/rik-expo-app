@@ -59,6 +59,7 @@ import {
   requestOfflineReplay,
   type OfflineReplayPolicy,
 } from "./offlineReplayCoordinator";
+import { classifyForemanConflict } from "./offlineConflictClassifier";
 
 type ForemanMutationWorkerResult = {
   processedCount: number;
@@ -371,6 +372,49 @@ const deriveConflictFromFailure = async (params: {
               });
         if (remoteDiverged) {
           conflictType = "remote_divergence_requires_attention";
+        }
+
+        // ── O5.2: C3 explicit detection — pending queue against advanced remote revision ──
+        // Runs only when conflictType is still retryable (not already upgraded above).
+        // classifyForemanConflict is pure/stateless — no side effects.
+        if (conflictType === "retryable_sync_failure" || conflictType === "remote_divergence_requires_attention") {
+          try {
+            const pendingSummary = await getForemanMutationQueueSummary();
+            const pendingCount = pendingSummary.pendingCount + pendingSummary.inflightCount;
+            const o5Classification = classifyForemanConflict({
+              localSnapshot: params.snapshot,
+              remoteSnapshot: remote.snapshot,
+              remoteStatus: remote.status,
+              remoteIsTerminal: remote.isTerminal,
+              remoteMissing: remote.snapshot == null,
+              pendingCount,
+              requestIdKnown: Boolean(params.requestId),
+            });
+
+            if (o5Classification.conflictClass === "local_queue_pending_against_new_remote") {
+              // C3: upgrade to attention-required — pending queue must not blind-replay
+              conflictType = "remote_divergence_requires_attention";
+              recordPlatformObservability({
+                screen: "foreman",
+                surface: "offline_conflict",
+                category: "ui",
+                event: "conflict_c3_detected",
+                result: "error",
+                errorClass: "local_queue_pending_against_new_remote",
+                extra: {
+                  requestId: params.requestId,
+                  localBaseRevision: o5Classification.localBaseRevision,
+                  remoteBaseRevision: o5Classification.remoteBaseRevision,
+                  pendingCount: o5Classification.pendingCount,
+                  revisionAdvanced: o5Classification.revisionAdvanced,
+                  deterministic: o5Classification.deterministic,
+                  reason: o5Classification.reason,
+                },
+              });
+            }
+          } catch {
+            // O5.2 classifier is best-effort — primary conflict path is unaffected
+          }
         }
       }
     } catch (error) {
