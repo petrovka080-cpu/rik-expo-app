@@ -92,6 +92,18 @@ import {
   resolveForemanTerminalRecoveryCleanupDecision,
 } from "../foreman.draftRecovery.model";
 import {
+  getForemanBootstrapReconciliationRequestId,
+  resolveForemanBootstrapOwnerPlan,
+  resolveForemanBootstrapReconciliationPlan,
+  resolveForemanBootstrapReenqueuePlan,
+  resolveForemanRestoreRemoteCheckPlan,
+  resolveForemanRestoreRemoteStatusPlan,
+  shouldPersistForemanLifecycleSnapshot,
+  shouldResetForemanBootstrapStaleDurableState,
+  shouldSkipForemanRemoteDraftEffects,
+  shouldSyncForemanDraftAfterRestoreCheck,
+} from "../foreman.draftLifecycle.model";
+import {
   getForemanDurableDraftState,
   markForemanDurableDraftDirtyLocal,
   patchForemanDurableDraftRecoveryState,
@@ -1422,58 +1434,56 @@ export function useForemanDraftBoundary({
       // is NOT reset by clearDraftCache. Without this explicit reset, the
       // global PlatformOfflineStatusHost banner keeps reading stale values
       // from the durable store, showing phantom "Нужна проверка" banners.
-      if (!durableSnapshot || !hasForemanLocalDraftContent(durableSnapshot)) {
-        const staleDurableState = getForemanDurableDraftState();
-        if (
-          staleDurableState.syncStatus !== "idle" ||
-          staleDurableState.attentionNeeded ||
-          staleDurableState.conflictType !== "none" ||
-          staleDurableState.pendingOperationsCount > 0 ||
-          staleDurableState.retryCount > 0
-        ) {
-          if (__DEV__) {
-            console.info("[foreman.bootstrap] resetting stale durable sync metadata", {
-              syncStatus: staleDurableState.syncStatus,
-              attentionNeeded: staleDurableState.attentionNeeded,
-              conflictType: staleDurableState.conflictType,
-              pendingOps: staleDurableState.pendingOperationsCount,
-              retryCount: staleDurableState.retryCount,
-            });
-          }
-          await patchForemanDurableDraftRecoveryState({
-            snapshot: null,
-            syncStatus: "idle",
-            pendingOperationsCount: 0,
-            queueDraftKey: null,
-            requestIdKnown: false,
-            attentionNeeded: false,
-            conflictType: "none",
-            lastConflictAt: null,
-            recoverableLocalSnapshot: null,
-            lastError: null,
-            lastErrorAt: null,
-            lastErrorStage: null,
-            retryCount: 0,
-            repeatedFailureStageCount: 0,
-            lastTriggerSource: "bootstrap_complete",
-            lastSyncAt: staleDurableState.lastSyncAt,
+      const staleDurableState = getForemanDurableDraftState();
+      if (
+        shouldResetForemanBootstrapStaleDurableState({
+          durableSnapshot,
+          durableState: staleDurableState,
+        })
+      ) {
+        if (__DEV__) {
+          console.info("[foreman.bootstrap] resetting stale durable sync metadata", {
+            syncStatus: staleDurableState.syncStatus,
+            attentionNeeded: staleDurableState.attentionNeeded,
+            conflictType: staleDurableState.conflictType,
+            pendingOps: staleDurableState.pendingOperationsCount,
+            retryCount: staleDurableState.retryCount,
           });
-          // P6.3c: Also clear React-level draft state (items, requestDetails,
-          // requestId, header). Without this, isDraftActive stays true because
-          // requestDetails still holds the old "draft" status, and the persist
-          // effect at line ~1497 rebuilds & re-persists the stale snapshot.
-          setActiveDraftOwnerId(undefined, { resetSubmitted: true });
-          resetDraftState();
-          localDraftSnapshotRef.current = null;
-          setLocalDraftSnapshot(null);
-          await refreshBoundarySyncState(null);
-          return;
         }
+        await patchForemanDurableDraftRecoveryState({
+          snapshot: null,
+          syncStatus: "idle",
+          pendingOperationsCount: 0,
+          queueDraftKey: null,
+          requestIdKnown: false,
+          attentionNeeded: false,
+          conflictType: "none",
+          lastConflictAt: null,
+          recoverableLocalSnapshot: null,
+          lastError: null,
+          lastErrorAt: null,
+          lastErrorStage: null,
+          retryCount: 0,
+          repeatedFailureStageCount: 0,
+          lastTriggerSource: "bootstrap_complete",
+          lastSyncAt: staleDurableState.lastSyncAt,
+        });
+        // P6.3c: Also clear React-level draft state (items, requestDetails,
+        // requestId, header). Without this, isDraftActive stays true because
+        // requestDetails still holds the old "draft" status, and the persist
+        // effect at line ~1497 rebuilds & re-persists the stale snapshot.
+        setActiveDraftOwnerId(undefined, { resetSubmitted: true });
+        resetDraftState();
+        localDraftSnapshotRef.current = null;
+        setLocalDraftSnapshot(null);
+        await refreshBoundarySyncState(null);
+        return;
       }
 
-      if (durableSnapshot?.ownerId) {
-        setActiveDraftOwnerId(durableSnapshot.ownerId, { resetSubmitted: true });
-      } else if (!ridStr(requestId)) {
+      const ownerPlan = resolveForemanBootstrapOwnerPlan({ durableSnapshot, requestId });
+      if (ownerPlan.action === "set_owner") {
+        setActiveDraftOwnerId(ownerPlan.ownerId, { resetSubmitted: true });
+      } else if (ownerPlan.action === "reset_owner") {
         setActiveDraftOwnerId(undefined, { resetSubmitted: true });
       }
       if (durableSnapshot && hasForemanLocalDraftContent(durableSnapshot)) {
@@ -1505,25 +1515,30 @@ export function useForemanDraftBoundary({
         // fail against the terminal server state, and write recovery state
         // back into the durable store — overwriting the reconciliation cleanup.
         // Now we check remote status FIRST then decide whether to enqueue.
-        if (ridStr(durableSnapshot.requestId)) {
-          const reconciledRequestId = ridStr(durableSnapshot.requestId)!;
+        const reconciledRequestId = getForemanBootstrapReconciliationRequestId(durableSnapshot);
+        if (reconciledRequestId) {
           try {
             if (options?.cancelled?.()) return;
             const remoteDetails = await fetchRequestDetails(reconciledRequestId);
             const remoteStatus = remoteDetails?.status ?? null;
-            if (remoteStatus && !isDraftLikeStatus(remoteStatus)) {
+            const reconciliationPlan = resolveForemanBootstrapReconciliationPlan({
+              snapshot: durableSnapshot,
+              remoteStatus,
+              remoteStatusIsTerminal: Boolean(remoteStatus && !isDraftLikeStatus(remoteStatus)),
+            });
+            if (reconciliationPlan.action === "clear_terminal") {
               if (__DEV__) {
                 console.info("[foreman.bootstrap-reconciliation] clearing stale draft (pre-enqueue)", {
-                  requestId: reconciledRequestId,
-                  remoteStatus,
+                  requestId: reconciliationPlan.requestId,
+                  remoteStatus: reconciliationPlan.remoteStatus,
                   localSnapshotItems: durableSnapshot.items.length,
                   submitRequested: durableSnapshot.submitRequested,
                 });
               }
               await clearTerminalLocalDraft({
                 snapshot: durableSnapshot,
-                requestId: reconciledRequestId,
-                remoteStatus,
+                requestId: reconciliationPlan.requestId,
+                remoteStatus: reconciliationPlan.remoteStatus,
               });
               await refreshBoundarySyncState(null);
               return;
@@ -1539,20 +1554,20 @@ export function useForemanDraftBoundary({
         }
 
         // Only re-enqueue if reconciliation didn't clear the draft
-        if (
-          pendingOperationsCount === 0 &&
-          isForemanConflictAutoRecoverable(getForemanDurableDraftState().conflictType) &&
-          (durableSnapshot.submitRequested ||
-            hasForemanLocalDraftPendingSync(durableSnapshot) ||
-            getForemanDurableDraftState().syncStatus === "dirty_local" ||
-            getForemanDurableDraftState().syncStatus === "retry_wait" ||
-            getForemanDurableDraftState().syncStatus === "failed_terminal")
-        ) {
+        const reenqueueState = getForemanDurableDraftState();
+        const reenqueuePlan = resolveForemanBootstrapReenqueuePlan({
+          pendingOperationsCount,
+          conflictAutoRecoverable: isForemanConflictAutoRecoverable(reenqueueState.conflictType),
+          snapshotSubmitRequested: durableSnapshot.submitRequested,
+          snapshotHasPendingSync: hasForemanLocalDraftPendingSync(durableSnapshot),
+          syncStatus: reenqueueState.syncStatus,
+        });
+        if (reenqueuePlan.shouldEnqueue) {
           await enqueueForemanMutation({
             draftKey: getDraftQueueKey(durableSnapshot),
             requestId: ridStr(durableSnapshot.requestId) || null,
             snapshotUpdatedAt: durableSnapshot.updatedAt,
-            mutationKind: durableSnapshot.submitRequested ? "submit" : "background_sync",
+            mutationKind: reenqueuePlan.mutationKind,
             localBeforeCount: durableSnapshot.items.length,
             localAfterCount: durableSnapshot.items.length,
             submitRequested: durableSnapshot.submitRequested,
@@ -1597,23 +1612,28 @@ export function useForemanDraftBoundary({
       // to discover the terminal status. This explicit check closes that gap.
       const durableState = getForemanDurableDraftState();
       const snapshot = localDraftSnapshotRef.current ?? durableState.snapshot;
-      const snapshotRequestId = ridStr(snapshot?.requestId);
-      if (snapshotRequestId && snapshot && hasForemanLocalDraftContent(snapshot)) {
+      const remoteCheckPlan = resolveForemanRestoreRemoteCheckPlan({ snapshot });
+      if (remoteCheckPlan.action === "check_terminal") {
         try {
-          const remoteDetails = await fetchRequestDetails(snapshotRequestId);
+          const remoteDetails = await fetchRequestDetails(remoteCheckPlan.requestId);
           const remoteStatus = remoteDetails?.status ?? null;
-          if (remoteStatus && !isDraftLikeStatus(remoteStatus)) {
+          const remoteStatusPlan = resolveForemanRestoreRemoteStatusPlan({
+            requestId: remoteCheckPlan.requestId,
+            remoteStatus,
+            remoteStatusIsTerminal: Boolean(remoteStatus && !isDraftLikeStatus(remoteStatus)),
+          });
+          if (remoteStatusPlan.action === "clear_terminal") {
             if (__DEV__) {
               console.info("[foreman.live-reconciliation] foreground check found terminal request", {
-                requestId: snapshotRequestId,
-                remoteStatus,
+                requestId: remoteStatusPlan.requestId,
+                remoteStatus: remoteStatusPlan.remoteStatus,
                 context,
               });
             }
             await clearTerminalLocalDraft({
               snapshot,
-              requestId: snapshotRequestId,
-              remoteStatus,
+              requestId: remoteStatusPlan.requestId,
+              remoteStatus: remoteStatusPlan.remoteStatus,
             });
             return;
           }
@@ -1622,7 +1642,11 @@ export function useForemanDraftBoundary({
         }
       }
 
-      if (!isForemanConflictAutoRecoverable(durableState.conflictType)) return;
+      if (
+        !shouldSyncForemanDraftAfterRestoreCheck({
+          conflictAutoRecoverable: isForemanConflictAutoRecoverable(durableState.conflictType),
+        })
+      ) return;
       await syncLocalDraftNow({ context });
     },
     [
@@ -1635,17 +1659,14 @@ export function useForemanDraftBoundary({
 
   const detailsRequestId = ridStr(requestDetails?.id);
   const skipRemoteDraftEffects = useMemo(() => {
-    if (!boundaryState.bootstrapReady) return true;
-    const snapshot = getActiveLocalDraftSnapshot();
-    if (!snapshot) return false;
-    if (ridStr(snapshot.requestId)) return ridStr(snapshot.requestId) === ridStr(requestId);
-    return !ridStr(requestId);
+    return shouldSkipForemanRemoteDraftEffects({
+      bootstrapReady: boundaryState.bootstrapReady,
+      activeSnapshot: getActiveLocalDraftSnapshot(),
+      requestId,
+    });
   }, [boundaryState.bootstrapReady, getActiveLocalDraftSnapshot, requestId]);
 
   useEffect(() => {
-    if (!boundaryState.bootstrapReady) return;
-    if (!isDraftActive) return;
-
     // ── P6.3d: Prevent persist effect from re-creating a snapshot that was
     // just cleared by clearTerminalLocalDraft / bootstrap reconciliation.
     // clearDraftCache sets localDraftSnapshotRef.current = null synchronously,
@@ -1653,14 +1674,16 @@ export function useForemanDraftBoundary({
     // cycle, items/requestDetails still hold old values, so
     // buildCurrentLocalDraftSnapshot() would rebuild a stale snapshot and
     // write it right back into the durable store — undoing the cleanup.
-    if (localDraftSnapshotRef.current === null) return;
-
     if (
-      requestDetails &&
-      detailsRequestId &&
-      ridStr(requestId) &&
-      detailsRequestId !== ridStr(requestId) &&
-      !hasLocalDraft
+      !shouldPersistForemanLifecycleSnapshot({
+        bootstrapReady: boundaryState.bootstrapReady,
+        isDraftActive,
+        localDraftSnapshotRefCleared: localDraftSnapshotRef.current === null,
+        hasRequestDetails: Boolean(requestDetails),
+        detailsRequestId,
+        requestId,
+        hasLocalDraft,
+      })
     ) {
       return;
     }
