@@ -88,6 +88,10 @@ import {
   updateForemanLocalDraftQtyInBoundary,
 } from "../foreman.draftBoundary.helpers";
 import {
+  buildForemanDraftRecoveryBoundaryPatch,
+  resolveForemanTerminalRecoveryCleanupDecision,
+} from "../foreman.draftRecovery.model";
+import {
   getForemanDurableDraftState,
   markForemanDurableDraftDirtyLocal,
   patchForemanDurableDraftRecoveryState,
@@ -225,28 +229,13 @@ export function useForemanDraftBoundary({
       const pendingOperationsCount = await getForemanPendingMutationCountForDraftKeys(
         getDraftQueueKeys(snapshot),
       );
-      patchBoundaryState({
-        draftDirty:
-          Boolean(snapshot && hasForemanLocalDraftContent(snapshot)) &&
-          (durableState.syncStatus !== "synced" || pendingOperationsCount > 0 || Boolean(durableState.lastError)),
-        syncNeeded:
-          pendingOperationsCount > 0 ||
-          durableState.syncStatus === "retry_wait" ||
-          durableState.syncStatus === "failed_terminal" ||
-          durableState.conflictType !== "none" ||
-          Boolean(snapshot && hasForemanLocalDraftPendingSync(snapshot)),
-        syncStatus: durableState.syncStatus,
-        lastSyncAt: durableState.lastSyncAt,
-        lastErrorAt: durableState.lastErrorAt,
-        lastErrorStage: durableState.lastErrorStage,
-        conflictType: durableState.conflictType,
-        retryCount: durableState.retryCount,
-        pendingOperationsCount,
-        queueDraftKey: durableState.queueDraftKey,
-        requestIdKnown: durableState.requestIdKnown,
-        attentionNeeded: durableState.attentionNeeded,
-        availableRecoveryActions: durableState.availableRecoveryActions,
-      });
+      patchBoundaryState(
+        buildForemanDraftRecoveryBoundaryPatch({
+          durableState,
+          snapshot,
+          pendingOperationsCount,
+        }),
+      );
     },
     [getDraftQueueKeys, patchBoundaryState],
   );
@@ -1697,66 +1686,42 @@ export function useForemanDraftBoundary({
     const durableState = getForemanDurableDraftState();
     const snapshot =
       localDraftSnapshotRef.current ?? durableState.snapshot ?? durableState.recoverableLocalSnapshot;
-    const snapshotId = ridStr(snapshot?.requestId);
-    const recoverableId = ridStr(durableState.recoverableLocalSnapshot?.requestId);
-    const activeId = ridStr(requestId);
     const currentStatus = requestDetails?.status;
+    const cleanupDecision = resolveForemanTerminalRecoveryCleanupDecision({
+      bootstrapReady: boundaryState.bootstrapReady,
+      boundaryConflictType: boundaryState.conflictType,
+      requestId,
+      remoteStatus: currentStatus,
+      snapshot,
+      durableState,
+    });
 
-    const isTerminalConflict = boundaryState.conflictType === "server_terminal_conflict";
-    const isTerminalStatus = currentStatus && !isDraftLikeStatus(currentStatus);
-
-    if (!isTerminalConflict && !isTerminalStatus) return;
-
-    let terminalRequestId: string | null = null;
-    if (isTerminalConflict) {
-      terminalRequestId = snapshotId || recoverableId || activeId || null;
-    } else if (isTerminalStatus && snapshotId === activeId) {
-      terminalRequestId = activeId || null;
-    } else if (isTerminalStatus && activeId) {
-      terminalRequestId = activeId || null;
-    }
-
-    if (!terminalRequestId) return;
-
-    const hasStaleState = 
-      durableState.syncStatus !== "idle" ||
-      durableState.attentionNeeded ||
-      durableState.conflictType !== "none" ||
-      durableState.pendingOperationsCount > 0 ||
-      durableState.retryCount > 0 ||
-      Boolean(snapshot && hasForemanLocalDraftContent(snapshot)) ||
-      Boolean(
-        durableState.recoverableLocalSnapshot &&
-          hasForemanLocalDraftContent(durableState.recoverableLocalSnapshot),
-      ) ||
-      durableState.availableRecoveryActions.length > 0;
-
-    if (!hasStaleState) return;
+    if (!cleanupDecision.shouldClear || !cleanupDecision.requestId) return;
 
     if (__DEV__) {
       console.info("[foreman.live-reconciliation] clearing stale state for terminal request", {
-        requestId: terminalRequestId,
-        isTerminalConflict,
-        isTerminalStatus,
+        requestId: cleanupDecision.requestId,
+        isTerminalConflict: cleanupDecision.isTerminalConflict,
+        isTerminalStatus: cleanupDecision.isTerminalStatus,
         remoteStatus: currentStatus ?? null,
       });
     }
 
     void clearTerminalLocalDraft({
-      snapshot: snapshot && hasForemanLocalDraftContent(snapshot) ? snapshot : null,
-      requestId: terminalRequestId,
-      remoteStatus: currentStatus ?? null,
+      snapshot: cleanupDecision.snapshotForCleanup,
+      requestId: cleanupDecision.requestId,
+      remoteStatus: cleanupDecision.remoteStatus,
     }).catch((error) => {
       reportDraftBoundaryFailure({
         event: "live_terminal_local_cleanup_failed",
         error,
-        context: isTerminalConflict ? "server_terminal_conflict" : "live_reconciliation",
+        context: cleanupDecision.isTerminalConflict ? "server_terminal_conflict" : "live_reconciliation",
         stage: "cleanup",
         kind: "critical_fail",
         sourceKind: "draft_boundary:terminal_cleanup",
         extra: {
-          remoteStatus: currentStatus ?? null,
-          isTerminalConflict,
+          remoteStatus: cleanupDecision.remoteStatus,
+          isTerminalConflict: cleanupDecision.isTerminalConflict,
         },
       });
     });
