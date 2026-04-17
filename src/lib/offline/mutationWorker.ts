@@ -67,6 +67,9 @@ type ForemanMutationWorkerResult = {
   submitted: RequestRecord | null;
   failed: boolean;
   errorMessage: string | null;
+  // O3.2: backpressure observability
+  batchLimitReached: boolean;
+  drainDurationMs: number | null;
 };
 
 type ForemanMutationWorkerDeps = {
@@ -118,6 +121,11 @@ const toErrorText = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
 const FOREMAN_RETRY_POLICY = getOfflineMutationRetryPolicy("foreman_default");
+
+// O3.2: Maximum items processed in a single runFlush pass.
+// After FOREMAN_DRAIN_BATCH_SIZE items, runFlush exits with batchLimitReached=true
+// and the coordinator re-triggers on remaining work — preventing resume burst.
+export const FOREMAN_DRAIN_BATCH_SIZE = 3;
 export const FOREMAN_MUTATION_REPLAY_POLICY = {
   queueKey: "foreman_draft",
   owner: "foreman_mutation_worker",
@@ -411,8 +419,39 @@ const runFlush = async (
   let processedCount = 0;
   let latestRequestId: string | null = null;
   let latestSubmitted: RequestRecord | null = null;
+  const drainStartedAt = Date.now();
 
   while (true) {
+    // O3.2: Bounded drain — exit after FOREMAN_DRAIN_BATCH_SIZE items per pass.
+    // The coordinator re-triggers if items remain, yielding the JS thread between passes.
+    if (processedCount >= FOREMAN_DRAIN_BATCH_SIZE) {
+      const remainingCount = await getPendingCountForSnapshot(deps.getSnapshot());
+      recordPlatformObservability({
+        screen: "foreman",
+        surface: "offline_mutation_worker",
+        category: "ui",
+        event: "drain_batch_limit_reached",
+        result: "success",
+        extra: {
+          processedCount,
+          remainingCount,
+          drainBatchSize: FOREMAN_DRAIN_BATCH_SIZE,
+          drainDurationMs: Date.now() - drainStartedAt,
+          triggerSource: triggerSourceOverride ?? "unknown",
+        },
+      });
+      return {
+        processedCount,
+        remainingCount,
+        requestId: latestRequestId,
+        submitted: latestSubmitted,
+        failed: false,
+        errorMessage: null,
+        batchLimitReached: true,
+        drainDurationMs: Date.now() - drainStartedAt,
+      };
+    }
+
     const entry = await peekNextForemanMutation({
       triggerSource: triggerSourceOverride ?? null,
     });
@@ -424,6 +463,8 @@ const runFlush = async (
         submitted: latestSubmitted,
         failed: false,
         errorMessage: null,
+        batchLimitReached: false,
+        drainDurationMs: Date.now() - drainStartedAt,
       };
     }
 
@@ -501,6 +542,8 @@ const runFlush = async (
             submitted: latestSubmitted,
             failed: false,
             errorMessage: null,
+            batchLimitReached: false,
+            drainDurationMs: Date.now() - drainStartedAt,
           };
         }
       } catch {
@@ -703,6 +746,8 @@ const runFlush = async (
         submitted: latestSubmitted,
         failed: true,
         errorMessage: message,
+        batchLimitReached: false,
+        drainDurationMs: Date.now() - drainStartedAt,
       };
     };
 
