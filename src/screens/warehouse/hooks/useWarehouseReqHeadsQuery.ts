@@ -26,6 +26,7 @@
  * - publishReqHeadsPage0 observability
  */
 
+import { useMemo } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -37,6 +38,7 @@ import type { ReqHeadRow } from "../warehouse.types";
 import { warehouseReqHeadsKeys } from "./warehouseReqHeads.query.key";
 
 const REQ_HEADS_STALE_TIME = 30_000; // 30s
+const EMPTY_REQ_HEAD_ROWS: ReqHeadRow[] = [];
 
 /** Shape of each page returned by the infinite query */
 export type WarehouseReqHeadsPageData = WarehouseReqHeadsFetchResult;
@@ -70,8 +72,8 @@ export function useWarehouseReqHeadsQuery(params: {
   });
 
   // ── Flatten pages into a single deduped array ──
-  const rows: ReqHeadRow[] = (() => {
-    if (!query.data?.pages?.length) return [];
+  const rows: ReqHeadRow[] = useMemo(() => {
+    if (!query.data?.pages?.length) return EMPTY_REQ_HEAD_ROWS;
     const seen = new Set<string>();
     const result: ReqHeadRow[] = [];
     for (const page of query.data.pages) {
@@ -84,7 +86,7 @@ export function useWarehouseReqHeadsQuery(params: {
       }
     }
     return result;
-  })();
+  }, [query.data]);
 
   const lastPage = query.data?.pages?.[query.data.pages.length - 1];
   const firstPage = query.data?.pages?.[0];

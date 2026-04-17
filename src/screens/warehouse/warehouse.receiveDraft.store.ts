@@ -98,6 +98,53 @@ const pruneDraftsForPersistence = (
       .filter(([incomingId, record]) => Boolean(incomingId) && shouldPersistDraft(record)),
   );
 
+const areDraftItemsEqual = (
+  left: WarehouseReceiveDraftItem[],
+  right: WarehouseReceiveDraftItem[],
+) =>
+  left.length === right.length &&
+  left.every((item, index) => {
+    const other = right[index];
+    return (
+      item.itemId === other?.itemId &&
+      item.qty === other.qty &&
+      item.localUpdatedAt === other.localUpdatedAt
+    );
+  });
+
+const areDraftRecordsEqual = (
+  left: WarehouseReceiveDraftRecord,
+  right: WarehouseReceiveDraftRecord,
+) =>
+  left.incomingId === right.incomingId &&
+  left.status === right.status &&
+  left.lastSyncAt === right.lastSyncAt &&
+  left.retryCount === right.retryCount &&
+  left.pendingCount === right.pendingCount &&
+  left.lastError === right.lastError &&
+  left.updatedAt === right.updatedAt &&
+  areDraftItemsEqual(left.items, right.items);
+
+const areDraftMapsEqual = (
+  left: Record<string, WarehouseReceiveDraftRecord>,
+  right: Record<string, WarehouseReceiveDraftRecord>,
+) => {
+  const leftKeys = Object.keys(left).sort();
+  const rightKeys = Object.keys(right).sort();
+  if (leftKeys.length !== rightKeys.length) return false;
+  return leftKeys.every((key, index) => {
+    if (key !== rightKeys[index]) return false;
+    const leftRecord = left[key];
+    const rightRecord = right[key];
+    return Boolean(leftRecord && rightRecord && areDraftRecordsEqual(leftRecord, rightRecord));
+  });
+};
+
+const areDraftStatesEqual = (
+  left: WarehouseReceiveDraftStoreState,
+  right: WarehouseReceiveDraftStoreState,
+) => left.hydrated === right.hydrated && areDraftMapsEqual(left.drafts, right.drafts);
+
 const persistState = async (state: WarehouseReceiveDraftStoreState) => {
   const drafts = pruneDraftsForPersistence(state.drafts);
   const payload: PersistedWarehouseReceiveDraftStore = {
@@ -141,6 +188,11 @@ export const hydrateWarehouseReceiveDraftStore = async (): Promise<WarehouseRece
     hydrated: true,
     drafts,
   };
+
+  const current = useWarehouseReceiveDraftStore.getState();
+  if (areDraftStatesEqual(current, next)) {
+    return current;
+  }
 
   useWarehouseReceiveDraftStore.setState(next);
   if (Object.keys(normalizedDrafts).length !== Object.keys(drafts).length) {

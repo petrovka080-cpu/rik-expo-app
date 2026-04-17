@@ -163,6 +163,14 @@ export function useWarehouseReceiveFlow(params: {
     externalScreenActiveRef,
   );
   const focusedRef = useRef(isScreenFocused);
+  const activeIncomingIdRef = useRef("");
+  const flushQueueRef = useRef<
+    (triggerSource: PlatformOfflineRetryTriggerSource) => Promise<unknown>
+  >(async () => null);
+  const onErrorRef = useRef(onError);
+  const syncLocalInputFromDraftRef = useRef<(incomingId: string) => void>(
+    () => undefined,
+  );
   const receiveDrafts = useWarehouseReceiveDraftStore((state) => state.drafts);
   const activeIncomingId = trim(itemsModalIncomingId);
   const activeDraft = useWarehouseReceiveDraftStore(
@@ -179,6 +187,12 @@ export function useWarehouseReceiveFlow(params: {
   useEffect(() => {
     focusedRef.current = isScreenFocused;
   }, [isScreenFocused]);
+  useEffect(() => {
+    activeIncomingIdRef.current = activeIncomingId;
+  }, [activeIncomingId]);
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
 
   const isScreenActive = useCallback(
     () => isWarehouseScreenActive(screenActiveRef) && focusedRef.current,
@@ -207,6 +221,9 @@ export function useWarehouseReceiveFlow(params: {
     },
     [ensureScreenActive],
   );
+  useEffect(() => {
+    syncLocalInputFromDraftRef.current = syncLocalInputFromDraft;
+  }, [syncLocalInputFromDraft]);
 
   const refreshWarehouseAfterSuccess = useCallback(
     async (incomingId: string) => {
@@ -277,6 +294,9 @@ export function useWarehouseReceiveFlow(params: {
         : null,
     [isScreenActive, loadItemsForHead, refreshWarehouseAfterSuccess, supabase, warehousemanFio],
   );
+  useEffect(() => {
+    flushQueueRef.current = flushQueue;
+  }, [flushQueue]);
 
   const queueIncomingDraft = useCallback(
     async (incomingId: string) => {
@@ -331,30 +351,24 @@ export function useWarehouseReceiveFlow(params: {
       if (cancelled) return;
       if (!ensureScreenActive("receiveFlow.bootstrap.runtimeReady")) return;
       setRuntimeReady(true);
-      if (activeIncomingId) {
-        syncLocalInputFromDraft(activeIncomingId);
+      const activeIncomingIdSnapshot = activeIncomingIdRef.current;
+      if (activeIncomingIdSnapshot) {
+        syncLocalInputFromDraftRef.current(activeIncomingIdSnapshot);
       }
       const snapshot = await ensurePlatformNetworkService();
       if (cancelled || !ensureScreenActive("receiveFlow.bootstrap.network"))
         return;
       networkOnlineRef.current = selectPlatformOnlineFlag(snapshot);
       if (!focusedRef.current) return;
-      void syncQueuedDraftIfPossible("bootstrap_complete");
+      void flushQueueRef.current("bootstrap_complete");
     })().catch((error) => {
-      if (!cancelled && isScreenActive()) onError(error);
+      if (!cancelled && isScreenActive()) onErrorRef.current(error);
     });
 
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-  }, [
-    activeIncomingId,
-    isScreenActive,
-    onError,
-    syncLocalInputFromDraft,
-    syncQueuedDraftIfPossible,
-  ]);
+  }, [ensureScreenActive, isScreenActive]);
 
   useEffect(() => {
     if (!runtimeReady || !isScreenActive()) return;
