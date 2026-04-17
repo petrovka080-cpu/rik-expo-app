@@ -104,6 +104,15 @@ import {
   shouldSyncForemanDraftAfterRestoreCheck,
 } from "../foreman.draftLifecycle.model";
 import {
+  planForemanClearFailedQueueTailAction,
+  planForemanDiscardLocalAction,
+  planForemanDiscardLocalRemoteAction,
+  planForemanRehydrateServerAction,
+  planForemanRehydrateServerRemoteAction,
+  planForemanRestoreLocalAction,
+  planForemanRetryNowAction,
+} from "../foreman.manualRecovery.model";
+import {
   getForemanDurableDraftState,
   markForemanDurableDraftDirtyLocal,
   patchForemanDurableDraftRecoveryState,
@@ -934,7 +943,8 @@ export function useForemanDraftBoundary({
 
   const retryDraftSyncNow = useCallback(async () => {
     const snapshot = localDraftSnapshotRef.current ?? getForemanDurableDraftState().snapshot;
-    if (!snapshot || !hasForemanLocalDraftContent(snapshot)) return;
+    const retryPlan = planForemanRetryNowAction({ snapshot });
+    if (retryPlan.action === "skip") return;
     await pushRecoveryTelemetry({
       recoveryAction: "retry_now",
       result: "progress",
@@ -942,11 +952,11 @@ export function useForemanDraftBoundary({
     try {
       await syncLocalDraftNow({
         context: "retryNow",
-        overrideSnapshot: snapshot,
-        mutationKind: snapshot.submitRequested ? "submit" : "background_sync",
-        localBeforeCount: snapshot.items.length,
-        localAfterCount: snapshot.items.length,
-        force: true,
+        overrideSnapshot: retryPlan.snapshot,
+        mutationKind: retryPlan.mutationKind,
+        localBeforeCount: retryPlan.localBeforeCount,
+        localAfterCount: retryPlan.localAfterCount,
+        force: retryPlan.force,
       });
       await pushRecoveryTelemetry({
         recoveryAction: "retry_now",
@@ -968,8 +978,11 @@ export function useForemanDraftBoundary({
   const rehydrateDraftFromServer = useCallback(async () => {
     const durableState = getForemanDurableDraftState();
     const currentSnapshot = localDraftSnapshotRef.current ?? durableState.snapshot;
-    const targetRequestId = ridStr(currentSnapshot?.requestId) || ridStr(requestId);
-    if (!targetRequestId) return;
+    const rehydratePlan = planForemanRehydrateServerAction({
+      currentSnapshot,
+      requestId,
+    });
+    if (rehydratePlan.action === "skip") return;
 
     await pushRecoveryTelemetry({
       recoveryAction: "rehydrate_server",
@@ -977,15 +990,22 @@ export function useForemanDraftBoundary({
     });
 
     const remote = await loadForemanRemoteDraftSnapshot({
-      requestId: targetRequestId,
-      localSnapshot: currentSnapshot,
+      requestId: rehydratePlan.requestId,
+      localSnapshot: rehydratePlan.currentSnapshot,
     });
 
-    if (remote.isTerminal) {
+    const remotePlan = planForemanRehydrateServerRemoteAction({
+      requestId: rehydratePlan.requestId,
+      currentSnapshot: rehydratePlan.currentSnapshot,
+      remote,
+      now: Date.now(),
+    });
+
+    if (remotePlan.action === "clear_terminal") {
       await clearTerminalLocalDraft({
-        snapshot: currentSnapshot,
-        requestId: targetRequestId,
-        remoteStatus: remote.details?.status ?? null,
+        snapshot: remotePlan.currentSnapshot,
+        requestId: remotePlan.requestId,
+        remoteStatus: remotePlan.remoteStatus,
       });
       await pushRecoveryTelemetry({
         recoveryAction: "rehydrate_server",
@@ -996,62 +1016,28 @@ export function useForemanDraftBoundary({
     }
 
     await clearForemanMutationsForDraft(FOREMAN_LOCAL_ONLY_REQUEST_ID);
-    await clearForemanMutationsForDraft(targetRequestId);
+    await clearForemanMutationsForDraft(rehydratePlan.requestId);
 
-    if (remote.snapshot) {
-      setActiveDraftOwnerId(remote.snapshot.ownerId, { resetSubmitted: true });
-      applyLocalDraftSnapshotToBoundary(remote.snapshot, {
+    if (remotePlan.action === "apply_remote_snapshot") {
+      setActiveDraftOwnerId(remotePlan.remoteSnapshot.ownerId, { resetSubmitted: true });
+      applyLocalDraftSnapshotToBoundary(remotePlan.remoteSnapshot, {
         restoreHeader: true,
         clearWhenEmpty: true,
         restoreSource: "remoteDraft",
-        restoreIdentity: `manual:remote:${targetRequestId}`,
+        restoreIdentity: remotePlan.restoreIdentity,
       });
-      await patchForemanDurableDraftRecoveryState({
-        snapshot: remote.snapshot,
-        syncStatus: "synced",
-        pendingOperationsCount: 0,
-        queueDraftKey: null,
-        requestIdKnown: true,
-        attentionNeeded: false,
-        conflictType: "none",
-        lastConflictAt: null,
-        recoverableLocalSnapshot: currentSnapshot,
-        lastError: null,
-        lastErrorAt: null,
-        lastErrorStage: null,
-        retryCount: 0,
-        repeatedFailureStageCount: 0,
-        lastTriggerSource: "manual_retry",
-        lastSyncAt: Date.now(),
-      });
-      await refreshBoundarySyncState(remote.snapshot);
+      await patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
+      await refreshBoundarySyncState(remotePlan.remoteSnapshot);
     } else {
       setActiveDraftOwnerId(undefined, { resetSubmitted: true });
       persistLocalDraftSnapshot(null);
-      setRequestIdState(targetRequestId);
-      setRequestDetails(remote.details);
-      if (remote.details) {
-        syncHeaderFromDetails(remote.details);
+      setRequestIdState(remotePlan.requestId);
+      setRequestDetails(remotePlan.details);
+      if (remotePlan.details) {
+        syncHeaderFromDetails(remotePlan.details);
       }
-      await loadItems(targetRequestId, { forceRemote: true });
-      await patchForemanDurableDraftRecoveryState({
-        snapshot: null,
-        syncStatus: "idle",
-        pendingOperationsCount: 0,
-        queueDraftKey: null,
-        requestIdKnown: Boolean(targetRequestId),
-        attentionNeeded: false,
-        conflictType: "none",
-        lastConflictAt: null,
-        recoverableLocalSnapshot: currentSnapshot,
-        lastError: null,
-        lastErrorAt: null,
-        lastErrorStage: null,
-        retryCount: 0,
-        repeatedFailureStageCount: 0,
-        lastTriggerSource: "manual_retry",
-        lastSyncAt: Date.now(),
-      });
+      await loadItems(remotePlan.requestId, { forceRemote: true });
+      await patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
       await refreshBoundarySyncState(null);
     }
 
@@ -1075,8 +1061,12 @@ export function useForemanDraftBoundary({
 
   const restoreLocalDraftAfterConflict = useCallback(async () => {
     const durableState = getForemanDurableDraftState();
-    const recoverableSnapshot = durableState.recoverableLocalSnapshot;
-    if (!recoverableSnapshot || !hasForemanLocalDraftContent(recoverableSnapshot)) return;
+    const restorePlan = planForemanRestoreLocalAction({
+      durableState,
+      now: Date.now(),
+    });
+    if (restorePlan.action === "skip") return;
+    const recoverableSnapshot = restorePlan.snapshot;
     setActiveDraftOwnerId(recoverableSnapshot.ownerId, { resetSubmitted: true });
 
     await pushRecoveryTelemetry({
@@ -1089,32 +1079,25 @@ export function useForemanDraftBoundary({
       restoreHeader: true,
       clearWhenEmpty: true,
       restoreSource: "snapshot",
-      restoreIdentity: `manual:restore:${recoverableSnapshot.updatedAt}`,
+      restoreIdentity: restorePlan.restoreIdentity,
     });
-    await patchForemanDurableDraftRecoveryState({
-      snapshot: recoverableSnapshot,
-      syncStatus: "dirty_local",
-      pendingOperationsCount: 0,
-      queueDraftKey: null,
-      requestIdKnown: Boolean(recoverableSnapshot.requestId),
-      attentionNeeded: true,
-      conflictType: recoverableSnapshot.requestId ? "stale_local_snapshot" : "retryable_sync_failure",
-      lastConflictAt: Date.now(),
-      recoverableLocalSnapshot: null,
-      lastTriggerSource: "manual_retry",
-    });
+    await patchForemanDurableDraftRecoveryState(restorePlan.durablePatch);
     await refreshBoundarySyncState(recoverableSnapshot);
     await pushRecoveryTelemetry({
       recoveryAction: "restore_local",
       result: "success",
-      conflictType: recoverableSnapshot.requestId ? "stale_local_snapshot" : "retryable_sync_failure",
+      conflictType: restorePlan.conflictType,
     });
   }, [applyLocalDraftSnapshotToBoundary, pushRecoveryTelemetry, refreshBoundarySyncState, setActiveDraftOwnerId]);
 
   const discardLocalDraftNow = useCallback(async () => {
     const durableState = getForemanDurableDraftState();
     const currentSnapshot = localDraftSnapshotRef.current ?? durableState.snapshot;
-    const targetRequestId = ridStr(currentSnapshot?.requestId) || ridStr(requestId);
+    const discardPlan = planForemanDiscardLocalAction({
+      durableState,
+      currentSnapshot,
+      requestId,
+    });
 
     await pushRecoveryTelemetry({
       recoveryAction: "discard_local",
@@ -1123,20 +1106,26 @@ export function useForemanDraftBoundary({
     });
 
     await clearForemanMutationsForDraft(FOREMAN_LOCAL_ONLY_REQUEST_ID);
-    if (targetRequestId) {
-      await clearForemanMutationsForDraft(targetRequestId);
+    if (discardPlan.action === "load_remote") {
+      await clearForemanMutationsForDraft(discardPlan.requestId);
     }
 
-    if (targetRequestId) {
+    if (discardPlan.action === "load_remote") {
       const remote = await loadForemanRemoteDraftSnapshot({
-        requestId: targetRequestId,
-        localSnapshot: currentSnapshot,
+        requestId: discardPlan.requestId,
+        localSnapshot: discardPlan.currentSnapshot,
       });
-      if (remote.isTerminal) {
+      const remotePlan = planForemanDiscardLocalRemoteAction({
+        requestId: discardPlan.requestId,
+        currentSnapshot: discardPlan.currentSnapshot,
+        remote,
+        now: Date.now(),
+      });
+      if (remotePlan.action === "clear_terminal") {
         await clearTerminalLocalDraft({
-          snapshot: currentSnapshot,
-          requestId: targetRequestId,
-          remoteStatus: remote.details?.status ?? null,
+          snapshot: remotePlan.currentSnapshot,
+          requestId: remotePlan.requestId,
+          remoteStatus: remotePlan.remoteStatus,
         });
         await pushRecoveryTelemetry({
           recoveryAction: "discard_local",
@@ -1145,83 +1134,32 @@ export function useForemanDraftBoundary({
         });
         return;
       }
-      if (remote.snapshot) {
-        setActiveDraftOwnerId(remote.snapshot.ownerId, { resetSubmitted: true });
-        applyLocalDraftSnapshotToBoundary(remote.snapshot, {
+      if (remotePlan.action === "apply_remote_snapshot") {
+        setActiveDraftOwnerId(remotePlan.remoteSnapshot.ownerId, { resetSubmitted: true });
+        applyLocalDraftSnapshotToBoundary(remotePlan.remoteSnapshot, {
           restoreHeader: true,
           clearWhenEmpty: true,
           restoreSource: "remoteDraft",
-          restoreIdentity: `manual:discard:${targetRequestId}`,
+          restoreIdentity: remotePlan.restoreIdentity,
         });
-        await patchForemanDurableDraftRecoveryState({
-          snapshot: remote.snapshot,
-          syncStatus: "synced",
-          pendingOperationsCount: 0,
-          queueDraftKey: null,
-          requestIdKnown: true,
-          attentionNeeded: false,
-          conflictType: "none",
-          lastConflictAt: null,
-          recoverableLocalSnapshot: null,
-          lastError: null,
-          lastErrorAt: null,
-          lastErrorStage: null,
-          retryCount: 0,
-          repeatedFailureStageCount: 0,
-          lastTriggerSource: "manual_retry",
-          lastSyncAt: Date.now(),
-        });
-        await refreshBoundarySyncState(remote.snapshot);
+        await patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
+        await refreshBoundarySyncState(remotePlan.remoteSnapshot);
       } else {
         setActiveDraftOwnerId(undefined, { resetSubmitted: true });
         persistLocalDraftSnapshot(null);
-        setRequestIdState(targetRequestId);
-        setRequestDetails(remote.details);
-        if (remote.details) {
-          syncHeaderFromDetails(remote.details);
+        setRequestIdState(remotePlan.requestId);
+        setRequestDetails(remotePlan.details);
+        if (remotePlan.details) {
+          syncHeaderFromDetails(remotePlan.details);
         }
-        await loadItems(targetRequestId, { forceRemote: true });
-        await patchForemanDurableDraftRecoveryState({
-          snapshot: null,
-          syncStatus: "idle",
-          pendingOperationsCount: 0,
-          queueDraftKey: null,
-          requestIdKnown: Boolean(targetRequestId),
-          attentionNeeded: false,
-          conflictType: "none",
-          lastConflictAt: null,
-          recoverableLocalSnapshot: null,
-          lastError: null,
-          lastErrorAt: null,
-          lastErrorStage: null,
-          retryCount: 0,
-          repeatedFailureStageCount: 0,
-          lastTriggerSource: "manual_retry",
-          lastSyncAt: Date.now(),
-        });
+        await loadItems(remotePlan.requestId, { forceRemote: true });
+        await patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
         await refreshBoundarySyncState(null);
       }
     } else {
       await clearDraftCache();
       resetDraftState();
-      await patchForemanDurableDraftRecoveryState({
-        snapshot: null,
-        syncStatus: "idle",
-        pendingOperationsCount: 0,
-        queueDraftKey: null,
-        requestIdKnown: false,
-        attentionNeeded: false,
-        conflictType: "none",
-        lastConflictAt: null,
-        recoverableLocalSnapshot: null,
-        lastError: null,
-        lastErrorAt: null,
-        lastErrorStage: null,
-        retryCount: 0,
-        repeatedFailureStageCount: 0,
-        lastTriggerSource: "manual_retry",
-        lastSyncAt: durableState.lastSyncAt,
-      });
+      await patchForemanDurableDraftRecoveryState(discardPlan.durablePatch);
     }
 
     await pushRecoveryTelemetry({
@@ -1246,16 +1184,17 @@ export function useForemanDraftBoundary({
 
   const clearFailedQueueTailNow = useCallback(async () => {
     const snapshot = localDraftSnapshotRef.current ?? getForemanDurableDraftState().snapshot;
+    const clearPlan = planForemanClearFailedQueueTailAction({ snapshot });
     await pushRecoveryTelemetry({
       recoveryAction: "clear_failed_queue",
       result: "progress",
     });
     await clearForemanMutationQueueTail({
-      snapshot,
-      draftKey: getDraftQueueKey(snapshot),
-      triggerSource: "manual_retry",
+      snapshot: clearPlan.snapshot,
+      draftKey: getDraftQueueKey(clearPlan.snapshot),
+      triggerSource: clearPlan.triggerSource,
     });
-    await refreshBoundarySyncState(snapshot);
+    await refreshBoundarySyncState(clearPlan.snapshot);
     await pushRecoveryTelemetry({
       recoveryAction: "clear_failed_queue",
       result: "success",
