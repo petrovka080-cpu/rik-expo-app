@@ -104,6 +104,12 @@ import {
   shouldSyncForemanDraftAfterRestoreCheck,
 } from "../foreman.draftLifecycle.model";
 import {
+  planForemanSyncInactiveGate,
+  planForemanSyncQueueCommand,
+  planForemanSyncSnapshotPreflight,
+  resolveForemanSyncMutationKind,
+} from "../foreman.draftSyncPlan.model";
+import {
   planForemanClearFailedQueueTailAction,
   planForemanDiscardLocalAction,
   planForemanDiscardLocalRemoteAction,
@@ -783,54 +789,72 @@ export function useForemanDraftBoundary({
       localAfterCount?: number | null;
       force?: boolean;
     }) => {
-      const mutationKind =
-        options?.mutationKind ?? (options?.submit ? "submit" : "background_sync");
+      const mutationKind = resolveForemanSyncMutationKind({
+        optionMutationKind: options?.mutationKind,
+        submit: options?.submit === true,
+      });
 
-      if (!isDraftActive && !options?.overrideSnapshot && mutationKind !== "background_sync") {
-        return { requestId: ridStr(requestId) || null, submitted: null };
+      const inactiveGatePlan = planForemanSyncInactiveGate({
+        isDraftActive,
+        hasOverrideSnapshot: Boolean(options?.overrideSnapshot),
+        mutationKind,
+        requestId,
+      });
+      if (inactiveGatePlan.action === "skip_inactive") {
+        return inactiveGatePlan;
       }
 
       let snapshot = options?.overrideSnapshot ?? buildCurrentLocalDraftSnapshot();
       if (options?.submit) {
         snapshot = markForemanLocalDraftSubmitRequested(snapshot);
       }
-      const submitOwnerId =
-        options?.submit === true ? normalizeDraftOwnerId(snapshot?.ownerId) || activeDraftOwnerIdRef.current : null;
-      const triggerSource = normalizeForemanSyncTriggerSource(
-        options?.context,
+      const currentDraftSyncInFlight = draftSyncInFlightRef.current;
+      const preflightPlan = planForemanSyncSnapshotPreflight({
+        snapshot,
+        submit: options?.submit === true,
         mutationKind,
-        options?.submit === true || snapshot?.submitRequested === true,
-      );
+        context: options?.context,
+        requestId,
+        activeDraftOwnerId: activeDraftOwnerIdRef.current,
+        lastSubmittedOwnerId: lastSubmittedOwnerIdRef.current,
+        submitInFlightOwnerId: submitInFlightOwnerIdRef.current,
+        hasDraftSyncInFlight: Boolean(currentDraftSyncInFlight),
+      });
 
-      if (!snapshot || !hasForemanLocalDraftContent(snapshot)) {
-        await refreshBoundarySyncState(snapshot ?? null);
-        return { requestId: ridStr(requestId) || null, submitted: null };
+      if (preflightPlan.action === "skip_empty") {
+        await refreshBoundarySyncState(preflightPlan.snapshot);
+        return {
+          requestId: preflightPlan.requestId,
+          submitted: preflightPlan.submitted,
+        };
+      }
+      if (preflightPlan.action === "throw_duplicate_submit") {
+        throw new Error(preflightPlan.message);
+      }
+      if (preflightPlan.action === "await_in_flight_submit") {
+        return await currentDraftSyncInFlight!;
       }
 
-      if (options?.submit === true && submitOwnerId) {
-        if (lastSubmittedOwnerIdRef.current === submitOwnerId) {
-          throw new Error("Этот черновик уже отправлен. Откройте новый активный черновик.");
-        }
-        if (submitInFlightOwnerIdRef.current === submitOwnerId && draftSyncInFlightRef.current) {
-          return await draftSyncInFlightRef.current;
-        }
-      }
+      snapshot = preflightPlan.snapshot;
+      const triggerSource = preflightPlan.triggerSource;
+      const submitOwnerId = preflightPlan.submitOwnerId;
 
       const pendingOperationsCount = await getForemanPendingMutationCountForDraftKeys(
         getDraftQueueKeys(snapshot),
       );
       const durableState = getForemanDurableDraftState();
+      const draftKey = getDraftQueueKey(snapshot);
       await markForemanDurableDraftDirtyLocal(snapshot, {
-        queueDraftKey: getDraftQueueKey(snapshot),
+        queueDraftKey: draftKey,
         triggerSource,
       });
       persistLocalDraftSnapshot(snapshot);
       await pushForemanDurableDraftTelemetry({
         stage: "enqueue",
         result: "progress",
-        draftKey: getDraftQueueKey(snapshot),
+        draftKey,
         requestId: ridStr(snapshot.requestId) || null,
-        localOnlyDraftKey: getDraftQueueKey(snapshot) === FOREMAN_LOCAL_ONLY_REQUEST_ID,
+        localOnlyDraftKey: draftKey === FOREMAN_LOCAL_ONLY_REQUEST_ID,
         attemptNumber: 0,
         queueSizeBefore: pendingOperationsCount,
         queueSizeAfter: null,
@@ -844,33 +868,29 @@ export function useForemanDraftBoundary({
         triggerSource,
       });
 
-      if (!options?.force && !isForemanConflictAutoRecoverable(durableState.conflictType)) {
-        await patchForemanDurableDraftRecoveryState({
-          snapshot,
-          syncStatus: "dirty_local",
-          pendingOperationsCount: 0,
-          queueDraftKey: null,
-          requestIdKnown: Boolean(snapshot.requestId),
-          attentionNeeded: true,
-          lastTriggerSource: triggerSource,
-        });
-        await refreshBoundarySyncState(snapshot);
-        return { requestId: ridStr(snapshot.requestId) || ridStr(requestId) || null, submitted: null };
-      }
-
-      await enqueueForemanMutation({
-        draftKey: getDraftQueueKey(snapshot),
-        requestId: ridStr(snapshot.requestId) || null,
-        snapshotUpdatedAt: snapshot.updatedAt,
+      const queuePlan = planForemanSyncQueueCommand({
+        snapshot,
         mutationKind,
-        localBeforeCount: options?.localBeforeCount ?? null,
-        localAfterCount: options?.localAfterCount ?? snapshot.items.length,
-        submitRequested: options?.submit === true || snapshot.submitRequested,
         triggerSource,
+        durableConflictType: durableState.conflictType,
+        force: options?.force === true,
+        draftKey,
+        localBeforeCount: options?.localBeforeCount,
+        localAfterCount: options?.localAfterCount,
+        submit: options?.submit === true,
+        activeRequestId: requestId,
       });
 
+      if (queuePlan.action === "block_for_manual_recovery") {
+        await patchForemanDurableDraftRecoveryState(queuePlan.durablePatch);
+        await refreshBoundarySyncState(snapshot);
+        return { requestId: queuePlan.requestId, submitted: queuePlan.submitted };
+      }
+
+      await enqueueForemanMutation(queuePlan.enqueue);
+
       await markForemanSnapshotQueued(snapshot, {
-        queueDraftKey: getDraftQueueKey(snapshot),
+        queueDraftKey: queuePlan.enqueue.draftKey,
         triggerSource,
       });
       await refreshBoundarySyncState(snapshot);
