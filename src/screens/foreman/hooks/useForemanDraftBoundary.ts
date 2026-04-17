@@ -28,6 +28,7 @@ import {
   flushForemanMutationQueue,
   markForemanSnapshotQueued,
 } from "../../../lib/offline/mutationWorker";
+import { runForemanQueueRecovery } from "../../../lib/offline/offlineQueueRecovery";
 import {
   classifyForemanSyncError,
   isForemanConflictAutoRecoverable,
@@ -1417,6 +1418,11 @@ export function useForemanDraftBoundary({
       if (options?.cancelled?.()) return;
 
       if (await clearTerminalRecoveryOwnerIfNeeded("bootstrap_complete", options)) return;
+
+      // ── O4: Queue recovery — classify + reset inflight before any flush ───
+      // Runs before snapshot enqueue and flush. Non-blocking: errors are logged
+      // internally, result is advisory only. Never removes items.
+      await runForemanQueueRecovery({ triggerSource: "bootstrap_complete" });
 
       const durableSnapshot = getForemanDurableDraftState().snapshot;
 
