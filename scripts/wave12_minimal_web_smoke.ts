@@ -137,6 +137,33 @@ async function clickCancel(page: Awaited<ReturnType<typeof launchWebRuntime>>["p
   await focusableActions.nth(count - 2).click({ force: true });
 }
 
+async function waitForTestId(
+  page: Awaited<ReturnType<typeof launchWebRuntime>>["page"],
+  testId: string,
+) {
+  const selector = `[data-testid="${testId}"]`;
+  await poll(
+    `wave12-minimal-web:${testId}`,
+    async () => ((await page.locator(selector).count()) > 0 ? true : null),
+    45_000,
+    500,
+  );
+}
+
+async function waitForAddListingFlowClosed(
+  page: Awaited<ReturnType<typeof launchWebRuntime>>["page"],
+) {
+  await poll(
+    "wave12-minimal-web:add-listing-closed",
+    async () => {
+      const ownerShellCount = await page.locator('[data-testid="add-listing-owner-shell"]').count();
+      return ownerShellCount === 0 || !page.url().includes("/add") ? true : null;
+    },
+    30_000,
+    500,
+  );
+}
+
 async function signInSession(user: RuntimeTestUser) {
   const client = createClient(supabaseUrl, anonKey, {
     auth: {
@@ -164,6 +191,9 @@ async function signInSession(user: RuntimeTestUser) {
 async function runSmoke(user: RuntimeTestUser) {
   const webServer = await ensureLocalWebServer();
   const runtimeSession = await launchWebRuntime();
+  let profileRouteOpened = false;
+  let editModalProof = false;
+  let listingModalProof = false;
 
   try {
     const session = await signInSession(user);
@@ -178,35 +208,33 @@ async function runSmoke(user: RuntimeTestUser) {
     );
 
     await runtimeSession.page.goto(`${baseUrl}/profile`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-    await poll(
-      "wave12-minimal-web:profile-open",
-      async () => {
-        const count = await runtimeSession.page.locator('[data-testid="profile-edit-open"]').count();
-        return count > 0 ? true : null;
-      },
-      45_000,
-      500,
-    );
+    await waitForTestId(runtimeSession.page, "profile-edit-open");
+    profileRouteOpened = runtimeSession.page.url().includes("/profile");
 
     await runtimeSession.page.locator('[data-testid="profile-edit-open"]').click({ force: true });
     await waitForDialogState(runtimeSession.page, "visible");
     await clickCancel(runtimeSession.page);
     await waitForDialogState(runtimeSession.page, "hidden");
+    editModalProof = true;
 
-    await runtimeSession.page.locator('[data-testid="profile-listing-open"]').click({ force: true });
-    await waitForDialogState(runtimeSession.page, "visible");
-    await clickCancel(runtimeSession.page);
-    await waitForDialogState(runtimeSession.page, "hidden");
+    await runtimeSession.page.locator('[data-testid="profile-open-add-listing"]').click({ force: true });
+    await waitForTestId(runtimeSession.page, "add-listing-owner-shell");
+    await runtimeSession.page.locator('[data-testid="add-listing-flow-close"]').click({ force: true });
+    await waitForAddListingFlowClosed(runtimeSession.page);
+    listingModalProof = true;
 
     return {
       status:
+        profileRouteOpened &&
+        editModalProof &&
+        listingModalProof &&
         runtimeSession.runtime.pageErrors.length === 0 && runtimeSession.runtime.badResponses.length === 0
           ? "GREEN"
           : "NOT_GREEN",
       finalUrl: runtimeSession.page.url(),
-      routeOpened: runtimeSession.page.url().includes("/profile"),
-      editModalProof: true,
-      listingModalProof: true,
+      routeOpened: profileRouteOpened,
+      editModalProof,
+      listingModalProof,
       runtime: runtimeSession.runtime,
       webServerStarted: webServer.started,
       failureArtifacts: null,
@@ -217,9 +245,9 @@ async function runSmoke(user: RuntimeTestUser) {
     return {
       status: "NOT_GREEN",
       finalUrl: runtimeSession.page.url(),
-      routeOpened: runtimeSession.page.url().includes("/profile"),
-      editModalProof: false,
-      listingModalProof: false,
+      routeOpened: profileRouteOpened,
+      editModalProof,
+      listingModalProof,
       runtime: runtimeSession.runtime,
       webServerStarted: webServer.started,
       error: error instanceof Error ? error.message : String(error),

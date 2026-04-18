@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 
 import { chromium } from "playwright";
@@ -15,11 +15,20 @@ loadDotenv({ path: ".env", override: false });
 const projectRoot = process.cwd();
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const supabaseKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
+const supabaseAnonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+const supabaseProjectRef = (() => {
+  try {
+    return new URL(supabaseUrl).hostname.split(".")[0] || "";
+  } catch {
+    return "";
+  }
+})();
+const supabaseStorageKey = `sb-${supabaseProjectRef}-auth-token`;
 const baseUrl = "http://localhost:8081";
 const password = "Pass1234";
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+if (!supabaseUrl || !supabaseKey || !supabaseAnonKey) {
+  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY");
 }
 
 const admin = createClient(supabaseUrl, supabaseKey, {
@@ -29,8 +38,18 @@ const admin = createClient(supabaseUrl, supabaseKey, {
 
 const artifactBase = "artifacts/contractor-runtime";
 const webArtifactBase = "artifacts/contractor-web-smoke";
+const webServerStdoutPath = path.join(projectRoot, "artifacts/contractor-web.stdout.log");
+const webServerStderrPath = path.join(projectRoot, "artifacts/contractor-web.stderr.log");
 const androidDevClientPort = Number(process.env.CONTRACTOR_ANDROID_DEV_PORT ?? "8081");
 const shouldRunWebRuntime = process.env.CONTRACTOR_RUNTIME_WEB === "1";
+const webContractorRoute = "/office/contractor";
+const webForemanRoute = "/office/foreman";
+const androidContractorDeepLink = "rik://office/contractor";
+const androidContractorDeepLinks = [
+  androidContractorDeepLink,
+  "rik:///office/contractor",
+  "rik:///%28tabs%29/office/contractor",
+];
 
 const LABELS = {
   title: "Подрядчик",
@@ -77,6 +96,11 @@ type AndroidNode = {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+type WebServerHandle = {
+  started: boolean;
+  stop: () => void;
+};
+
 const writeJson = (fullPath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`);
@@ -106,6 +130,74 @@ async function poll<T>(
   }
   if (lastError) throw lastError;
   throw new Error(`poll timeout: ${label}`);
+}
+
+function stopProcessTree(child: {
+  pid?: number;
+  exitCode: number | null;
+  kill: (signal?: NodeJS.Signals) => boolean;
+}) {
+  if (child.exitCode != null) return;
+  if (process.platform === "win32" && child.pid) {
+    spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
+      stdio: "ignore",
+      windowsHide: true,
+    });
+    return;
+  }
+  child.kill("SIGTERM");
+}
+
+async function isWebServerReady() {
+  try {
+    const response = await fetch(baseUrl);
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function ensureLocalWebServer(): Promise<WebServerHandle> {
+  if (await isWebServerReady()) {
+    return { started: false, stop: () => {} };
+  }
+
+  fs.mkdirSync(path.dirname(webServerStdoutPath), { recursive: true });
+  fs.writeFileSync(webServerStdoutPath, "", "utf8");
+  fs.writeFileSync(webServerStderrPath, "", "utf8");
+
+  const child = spawn("cmd.exe", ["/c", "npx", "expo", "start", "--web", "-c"], {
+    cwd: projectRoot,
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
+
+  child.stdout.on("data", (chunk) => {
+    fs.appendFileSync(webServerStdoutPath, String(chunk));
+  });
+  child.stderr.on("data", (chunk) => {
+    fs.appendFileSync(webServerStderrPath, String(chunk));
+  });
+
+  await poll(
+    "contractor-runtime:web-server-ready",
+    async () => {
+      if (child.exitCode != null) {
+        const stderr = fs.existsSync(webServerStderrPath)
+          ? fs.readFileSync(webServerStderrPath, "utf8")
+          : "";
+        throw new Error(`expo web server exited early (${child.exitCode}): ${stderr}`);
+      }
+      return (await isWebServerReady()) ? true : null;
+    },
+    240_000,
+    1_000,
+  );
+
+  return {
+    started: true,
+    stop: () => stopProcessTree(child),
+  };
 }
 
 async function createTempUser(role: string, fullName: string): Promise<TempUser> {
@@ -394,31 +486,14 @@ async function waitForBody(page: import("playwright").Page, needles: string | st
   );
 }
 
-async function loginContractor(page: import("playwright").Page, user: TempUser) {
-  await page.goto(`${baseUrl}/director`, { waitUntil: "networkidle" });
-  const emailInput = page.locator(`input[placeholder="${LABELS.email}"]`).first();
-  if ((await emailInput.count()) > 0) {
-    await emailInput.fill(user.email);
-    await page.locator('input[type="password"]').fill(user.password);
-    const loginButton = page.getByText(/Войти|Login/i).first();
-    if ((await loginButton.count()) > 0) {
-      await loginButton.click();
-    } else {
-      await page.locator('button,[role="button"],div[tabindex="0"]').first().click();
-    }
-    await page.waitForURL((url) => !url.pathname.startsWith("/auth/"), { timeout: 30_000 }).catch(() => {});
-  }
-  await page.goto(`${baseUrl}/contractor`, { waitUntil: "networkidle" });
-}
-
 async function settleWebContractorRoute(page: import("playwright").Page) {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const body = await bodyText(page);
     if (!body.includes(LABELS.activationTitle)) return;
     await page.waitForTimeout(1500);
-    await page.goto(`${baseUrl}/foreman`, { waitUntil: "networkidle" }).catch(() => {});
+    await page.goto(`${baseUrl}${webForemanRoute}`, { waitUntil: "domcontentloaded", timeout: 60_000 }).catch(() => {});
     await page.waitForTimeout(500);
-    await page.goto(`${baseUrl}/contractor`, { waitUntil: "networkidle" });
+    await page.goto(`${baseUrl}${webContractorRoute}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
   }
 }
 
@@ -441,8 +516,33 @@ async function maybeActivateContractorWeb(page: import("playwright").Page) {
 const isBlockingWebConsoleError = (entry: { type: string; text: string }) =>
   entry.type === "error" && !/Accessing element\.ref was removed in React 19/i.test(entry.text);
 
+async function signInWebSession(user: TempUser) {
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+    global: {
+      headers: {
+        "x-client-info": "contractor-runtime-web-smoke",
+      },
+    },
+  });
+
+  const result = await client.auth.signInWithPassword({
+    email: user.email,
+    password: user.password,
+  });
+  if (result.error || !result.data.session) {
+    throw result.error ?? new Error(`signInWithPassword returned no session for ${user.email}`);
+  }
+  return result.data.session;
+}
+
 async function runWebRuntime(user: TempUser, scope: SeededScope): Promise<Record<string, unknown>> {
   let browser: import("playwright").Browser | null = null;
+  const webServer = await ensureLocalWebServer();
   const runtime = {
     console: [] as { type: string; text: string }[],
     pageErrors: [] as { message: string }[],
@@ -467,11 +567,22 @@ async function runWebRuntime(user: TempUser, scope: SeededScope): Promise<Record
       });
     });
 
-    await loginContractor(page, user);
+    const session = await signInWebSession(user);
+    await page.addInitScript(
+      ({ key, value }) => {
+        window.localStorage.setItem(key, value);
+      },
+      {
+        key: supabaseStorageKey,
+        value: JSON.stringify(session),
+      },
+    );
+
+    await page.goto(`${baseUrl}${webContractorRoute}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await settleWebContractorRoute(page);
     await maybeActivateContractorWeb(page);
     await settleWebContractorRoute(page);
-    await waitForBody(page, [LABELS.title, scope.contractorOrg], 45_000);
+    await waitForBody(page, scope.contractorOrg, 45_000);
 
     const card = page.getByText(scope.contractorOrg, { exact: false }).first();
     if ((await card.count()) === 0) {
@@ -497,6 +608,7 @@ async function runWebRuntime(user: TempUser, scope: SeededScope): Promise<Record
       modalOpened: true,
       issuedExpanded: issuedBody.includes(LABELS.emptyIssued) || issuedBody.includes(LABELS.noApprovedHint),
       screenshot: `${webArtifactBase}.png`,
+      webServerStarted: webServer.started,
       blockingConsoleErrors: runtime.console.filter(isBlockingWebConsoleError),
       pageErrors: runtime.pageErrors,
       platformSpecificIssues: [] as string[],
@@ -512,6 +624,7 @@ async function runWebRuntime(user: TempUser, scope: SeededScope): Promise<Record
     return { ...result, runtime };
   } finally {
     if (browser) await browser.close().catch(() => {});
+    webServer.stop();
   }
 }
 
@@ -636,7 +749,7 @@ const startAndroidLoginRoute = (packageName: string | null) => {
 };
 
 const startAndroidContractorRoute = (packageName: string | null) => {
-  startAndroidRoute(packageName, "rik://contractor");
+  startAndroidRoute(packageName, androidContractorDeepLink);
 };
 
 const findAndroidNode = (nodes: AndroidNode[], matcher: (node: AndroidNode) => boolean): AndroidNode | null =>
@@ -653,6 +766,10 @@ const findAndroidLabelNode = (nodes: AndroidNode[], label: string, requireClicka
 const isAndroidLoginScreen = (xml: string) => xml.includes("Email") && /Войти|Login/i.test(xml);
 const isAndroidActivationScreen = (xml: string) =>
   /Активац|РђРєС‚РёРІ|Активир|РђРєС‚РёРІРё/i.test(xml) && /EditText/i.test(xml);
+const hasAndroidContractorOfficeHeader = (xml: string) =>
+  xml.includes("Navigate up") && (xml.includes(LABELS.title) || xml.includes("Подрядчик"));
+const isAndroidContractorRouteSurface = (xml: string) =>
+  isAndroidActivationScreen(xml) || xml.includes("Активация подрядчика") || hasAndroidContractorOfficeHeader(xml);
 const isAndroidContractorModalReady = (xml: string, scope: SeededScope) =>
   xml.includes(LABELS.issuedSection) && xml.includes(scope.contractorOrg) && xml.includes(scope.contractorInn);
 
@@ -671,10 +788,10 @@ async function loginContractorAndroid(user: TempUser, packageName: string | null
     return androidHarness.loginAndroidWithProtectedRoute({
       packageName,
       user,
-      protectedRoute: "rik://contractor",
+      protectedRoute: androidContractorDeepLink,
       artifactBase: "android-contractor",
-      successPredicate: (xml) => !isAndroidLoginScreen(xml),
-      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidActivationScreen(xml) || xml.includes("Подрядчик") || xml.includes("РџРѕРґСЂСЏРґС‡РёРє"),
+      successPredicate: isAndroidContractorRouteSurface,
+      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidContractorRouteSurface(xml),
       loginScreenPredicate: isAndroidLoginScreen,
     });
   }
@@ -811,15 +928,16 @@ async function runAndroidRuntime(user: TempUser, scope: SeededScope): Promise<Re
   const preflight = androidHarness.runAndroidPreflight({ packageName, clearApp: true });
   await androidHarness.warmAndroidDevClientBundle(androidDevClientPort);
   const current = await loginContractorAndroid(user, packageName);
-  const contractorTab = findAndroidLabelNode(parseAndroidNodes(current.xml), "Подрядчик");
-  if (contractorTab) {
-    tapAndroidBounds(contractorTab.bounds);
-    await sleep(1500);
-  } else {
-    startAndroidContractorRoute(packageName);
-    await sleep(1500);
-  }
-  let screen = dumpAndroidScreen("android-contractor-route");
+  let screen = await androidHarness.openAndroidRoute({
+    packageName,
+    routes: androidContractorDeepLinks,
+    artifactBase: "android-contractor",
+    predicate: (xml) => isAndroidContractorRouteSurface(xml) || xml.includes(scope.contractorOrg),
+    renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidContractorRouteSurface(xml),
+    loginScreenPredicate: isAndroidLoginScreen,
+    timeoutMs: 45_000,
+    delayMs: 1500,
+  });
   screen = await settleAndroidContractorRoute(packageName, screen);
   const platformSpecificIssues: string[] = [];
   if (isAndroidActivationScreen(screen.xml)) {

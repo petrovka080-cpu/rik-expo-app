@@ -1,4 +1,4 @@
-import { reportAndSwallow } from "../observability/catchDiscipline";
+import { recordPlatformObservability } from "../observability/platformObservability";
 
 export type OfflineStorageAdapter = {
   getItem: (key: string) => Promise<string | null>;
@@ -30,18 +30,56 @@ type OfflineStorageFailureParams = {
   kind?: "soft_failure" | "degraded_fallback";
 };
 
+const trimText = (value: unknown) => String(value ?? "").trim();
+
+const getErrorSummary = (error: unknown) => {
+  if (error instanceof Error) {
+    return {
+      errorClass: trimText(error.name) || "Error",
+      errorMessage: trimText(error.message) || "unknown_error",
+    };
+  }
+
+  const record = error && typeof error === "object" ? (error as Record<string, unknown>) : {};
+  return {
+    errorClass: trimText(record.name) || null,
+    errorMessage: trimText(record.message ?? error) || "unknown_error",
+  };
+};
+
 const reportOfflineStorageFailure = (params: OfflineStorageFailureParams) => {
-  reportAndSwallow({
+  const kind = params.kind ?? "soft_failure";
+  const scope = params.scope;
+  const summary = getErrorSummary(params.error);
+
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    console.warn("[catch.swallow]", {
+      scope,
+      kind,
+      errorClass: summary.errorClass,
+      errorMessage: summary.errorMessage,
+      extra: {
+        key: params.key ?? null,
+        storageKind: params.sourceKind,
+      },
+    });
+  }
+
+  recordPlatformObservability({
     screen: "global_busy",
     surface: "offline_storage",
     category: "fetch",
     event: params.event,
-    scope: params.scope,
-    error: params.error,
-    errorStage: params.errorStage,
+    result: "error",
+    trigger: "catch",
     sourceKind: params.sourceKind,
-    kind: params.kind ?? "soft_failure",
+    fallbackUsed: kind === "degraded_fallback",
+    errorStage: params.errorStage,
+    errorClass: summary.errorClass ?? undefined,
+    errorMessage: summary.errorMessage || undefined,
     extra: {
+      catchKind: kind,
+      scope,
       key: params.key ?? null,
       storageKind: params.sourceKind,
     },
