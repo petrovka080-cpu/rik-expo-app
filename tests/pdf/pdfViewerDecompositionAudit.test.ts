@@ -40,6 +40,7 @@ describe("E: extracted modules exist", () => {
     "pdfViewerRenderEventGuard.ts",
     "pdfViewerWebRenderUriCleanup.ts",
     "pdfViewerLoadingTimeoutGuard.ts",
+    "pdfViewerBootstrapPlan.ts",
     "pdfNativeHandoffGuard.ts",
     "pdfCrashBreadcrumbs.ts",
     "pdfCriticalPath.ts",
@@ -120,6 +121,11 @@ describe("E: pdf-viewer.tsx imports from extracted modules (not inline)", () => 
     expect(viewerSource).toContain("armPdfViewerLoadingTimeout");
   });
 
+  it("imports bootstrap planning from pdfViewerBootstrapPlan", () => {
+    expect(viewerSource).toContain("pdfViewerBootstrapPlan");
+    expect(viewerSource).toContain("resolvePdfViewerBootstrapPlan");
+  });
+
   it("imports open flow from pdfOpenFlow", () => {
     expect(viewerSource).toContain("pdfOpenFlow");
     expect(viewerSource).toContain("markPdfOpenVisible");
@@ -178,6 +184,10 @@ describe("E: viewer state machine core remains in pdf-viewer.tsx (honest defer)"
   it("prepareViewer bootstrap effect is still in the viewer", () => {
     expect(viewerSource).toContain("const prepareViewer");
   });
+
+  it("prepareViewer delegates bootstrap decisions to a pure plan", () => {
+    expect(viewerSource).toContain("const bootstrapPlan = resolvePdfViewerBootstrapPlan");
+  });
 });
 
 describe("E: pdfDocumentActions.ts exports are stable", () => {
@@ -211,6 +221,7 @@ describe("E: extracted module test coverage exists", () => {
     "pdfViewerRenderEventGuard.test.ts",
     "pdfViewerWebRenderUriCleanup.test.ts",
     "pdfViewerLoadingTimeoutGuard.test.ts",
+    "pdfViewerBootstrapPlan.test.ts",
     "pdfNativeHandoffGuard.test.ts",
     "pdfCrashBreadcrumbs.test.ts",
     "pdfCriticalPath.test.ts",

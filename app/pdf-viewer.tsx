@@ -29,7 +29,6 @@ import {
   resolvePdfViewerDirectSnapshot,
   resolvePdfViewerResolution,
   resolvePdfViewerState,
-  type PdfViewerResolution,
   type PdfViewerState as ViewerState,
 } from "../src/lib/pdf/pdfViewerContract";
 import { createPdfViewerRenderInstanceKey } from "../src/lib/pdf/pdfViewerRenderLifecycle";
@@ -57,12 +56,12 @@ import {
   createPdfViewerLoadingTimeoutGuardState,
   shouldCommitPdfViewerLoadingTimeout,
 } from "../src/lib/pdf/pdfViewerLoadingTimeoutGuard";
+import { resolvePdfViewerBootstrapPlan } from "../src/lib/pdf/pdfViewerBootstrapPlan";
 
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import {
   FALLBACK_ROUTE,
   VIEWER_BG,
-  VIEWER_BORDER,
   VIEWER_TEXT,
   VIEWER_PLATFORM,
 } from "../src/lib/pdf/pdfViewer.constants";
@@ -870,116 +869,126 @@ function PdfViewerScreen() {
         asset: next.asset,
         platform: VIEWER_PLATFORM,
       });
-      if (resolution.kind === "missing-session") {
+      const bootstrapPlan = resolvePdfViewerBootstrapPlan({
+        resolution,
+        platform: VIEWER_PLATFORM,
+      });
+      if (bootstrapPlan.action === "show_empty") {
         setState("empty");
         return;
       }
-      if (resolution.kind === "session-error") {
-        setErrorText(resolution.errorMessage);
+      if (bootstrapPlan.action === "show_session_error") {
+        setErrorText(bootstrapPlan.errorMessage);
         setState("error");
         return;
       }
-      if (resolution.kind === "missing-asset") {
-        setErrorText("Missing document asset.");
+      if (bootstrapPlan.action === "show_missing_asset") {
+        setErrorText(bootstrapPlan.errorMessage);
         setState("error");
         return;
       }
-      if (resolution.kind === "unsupported-mobile-source") {
-        markError(resolution.errorMessage, "resolution");
+      if (bootstrapPlan.action === "fail_resolution") {
+        markError(bootstrapPlan.errorMessage, "resolution");
         return;
       }
 
-      initialAssetUriRef.current = String(resolution.asset.uri || "");
+      const resolvedResolution = bootstrapPlan.resolution;
+      const resolvedAsset = resolvedResolution.asset;
+
+      initialAssetUriRef.current = String(resolvedAsset.uri || "");
       console.info("[pdf-viewer] open", {
         sessionId: next.session.sessionId,
-        documentType: resolution.asset.documentType,
-        originModule: resolution.asset.originModule,
-        uri: resolution.asset.uri,
-        scheme: resolution.scheme,
-        sourceKind: resolution.sourceKind,
-        fileName: resolution.asset.fileName,
+        documentType: resolvedAsset.documentType,
+        originModule: resolvedAsset.originModule,
+        uri: resolvedAsset.uri,
+        scheme: resolvedResolution.scheme,
+        sourceKind: resolvedResolution.sourceKind,
+        fileName: resolvedAsset.fileName,
         exists:
-          typeof resolution.asset.sizeBytes === "number" ? true : undefined,
-        sizeBytes: resolution.asset.sizeBytes,
-        renderer: resolution.renderer,
+          typeof resolvedAsset.sizeBytes === "number" ? true : undefined,
+        sizeBytes: resolvedAsset.sizeBytes,
+        renderer: resolvedResolution.renderer,
         openTime: new Date().toISOString(),
       });
       recordViewerBreadcrumb("viewer_resolution_selected", {
-        uri: resolution.asset.uri,
-        uriKind: resolution.scheme,
-        sourceKind: resolution.sourceKind,
-        fileSizeBytes: resolution.asset.sizeBytes,
+        uri: resolvedAsset.uri,
+        uriKind: resolvedResolution.scheme,
+        sourceKind: resolvedResolution.sourceKind,
+        fileSizeBytes: resolvedAsset.sizeBytes,
         fileExists:
-          typeof resolution.asset.sizeBytes === "number" ? true : null,
+          typeof resolvedAsset.sizeBytes === "number" ? true : null,
         previewPath:
-          resolution.kind === "resolved-embedded"
-            ? resolution.renderer
-            : resolution.kind,
+          resolvedResolution.kind === "resolved-embedded"
+            ? resolvedResolution.renderer
+            : resolvedResolution.kind,
         extra: {
-          renderer: resolution.renderer,
-          resolutionKind: resolution.kind,
+          renderer: resolvedResolution.renderer,
+          resolutionKind: resolvedResolution.kind,
         },
       });
       recordViewerBreadcrumb(
-        resolution.sourceKind === "local-file"
+        resolvedResolution.sourceKind === "local-file"
           ? "viewer_resolution_local_file"
           : "viewer_resolution_remote_url",
         {
-          uri: resolution.asset.uri,
-          uriKind: resolution.scheme,
-          sourceKind: resolution.sourceKind,
-          fileSizeBytes: resolution.asset.sizeBytes,
+          uri: resolvedAsset.uri,
+          uriKind: resolvedResolution.scheme,
+          sourceKind: resolvedResolution.sourceKind,
+          fileSizeBytes: resolvedAsset.sizeBytes,
           fileExists:
-            typeof resolution.asset.sizeBytes === "number" ? true : null,
+            typeof resolvedAsset.sizeBytes === "number" ? true : null,
           previewPath:
-            resolution.kind === "resolved-embedded"
-              ? resolution.renderer
-              : resolution.kind,
+            resolvedResolution.kind === "resolved-embedded"
+              ? resolvedResolution.renderer
+              : resolvedResolution.kind,
           extra: {
-            renderer: resolution.renderer,
-            resolutionKind: resolution.kind,
+            renderer: resolvedResolution.renderer,
+            resolutionKind: resolvedResolution.kind,
           },
         },
       );
 
       enterLoading();
-      if (resolution.kind === "resolved-native-handoff") {
-        await handoffPdfPreview(resolution.asset, "primary");
+      if (bootstrapPlan.action === "start_native_handoff") {
+        await handoffPdfPreview(bootstrapPlan.resolution.asset, "primary");
         return;
       }
-      if (Platform.OS !== "web" && resolution.kind === "resolved-embedded") {
+      if (
+        bootstrapPlan.action === "show_embedded_render" &&
+        bootstrapPlan.shouldValidateEmbeddedPreview
+      ) {
         recordViewerBreadcrumb("viewer_validation_start", {
-          uri: resolution.asset.uri,
-          uriKind: resolution.scheme,
-          sourceKind: resolution.sourceKind,
-          fileSizeBytes: resolution.asset.sizeBytes,
+          uri: resolvedAsset.uri,
+          uriKind: resolvedResolution.scheme,
+          sourceKind: resolvedResolution.sourceKind,
+          fileSizeBytes: resolvedAsset.sizeBytes,
           fileExists:
-            typeof resolution.asset.sizeBytes === "number" ? true : null,
-          previewPath: resolution.renderer,
+            typeof resolvedAsset.sizeBytes === "number" ? true : null,
+          previewPath: resolvedResolution.renderer,
         });
         try {
-          await validateEmbeddedPreviewResolution(resolution);
+          await validateEmbeddedPreviewResolution(bootstrapPlan.resolution);
           recordViewerBreadcrumb("viewer_validation_success", {
-            uri: resolution.asset.uri,
-            uriKind: resolution.scheme,
-            sourceKind: resolution.sourceKind,
-            fileSizeBytes: resolution.asset.sizeBytes,
+            uri: resolvedAsset.uri,
+            uriKind: resolvedResolution.scheme,
+            sourceKind: resolvedResolution.sourceKind,
+            fileSizeBytes: resolvedAsset.sizeBytes,
             fileExists:
-              typeof resolution.asset.sizeBytes === "number" ? true : null,
-            previewPath: resolution.renderer,
+              typeof resolvedAsset.sizeBytes === "number" ? true : null,
+            previewPath: resolvedResolution.renderer,
           });
         } catch (error) {
           if (!cancelled) {
             const message =
               error instanceof Error ? error.message : String(error);
             recordViewerBreadcrumb("viewer_validation_failed", {
-              uri: resolution.asset.uri,
-              uriKind: resolution.scheme,
-              sourceKind: resolution.sourceKind,
-              fileSizeBytes: resolution.asset.sizeBytes,
+              uri: resolvedAsset.uri,
+              uriKind: resolvedResolution.scheme,
+              sourceKind: resolvedResolution.sourceKind,
+              fileSizeBytes: resolvedAsset.sizeBytes,
               fileExists:
-                typeof resolution.asset.sizeBytes === "number" ? true : null,
-              previewPath: resolution.renderer,
+                typeof resolvedAsset.sizeBytes === "number" ? true : null,
+              previewPath: resolvedResolution.renderer,
               errorMessage: message,
             });
             markError(message, "resolution");
@@ -987,34 +996,37 @@ function PdfViewerScreen() {
           return;
         }
       }
-      if (Platform.OS === "web" && resolution.kind === "resolved-embedded") {
-        if (resolution.sourceKind === "remote-url") {
-          clearWebRenderUri();
-          webRenderUriRef.current = resolution.asset.uri;
-          setWebRenderUri(resolution.asset.uri);
-          console.info("[pdf-viewer] signedUrl", resolution.asset.uri);
-          console.info("[pdf-viewer] web_iframe_src_ready", {
-            sessionId: next.session.sessionId,
-            documentType: resolution.asset.documentType,
-            originModule: resolution.asset.originModule,
-            remoteUri: resolution.asset.uri,
-            renderUri: resolution.asset.uri,
-            renderScheme: getUriScheme(resolution.asset.uri),
-          });
-          setIsReadyToRender(true);
-          return;
-        }
-        setWebRenderUri(resolution.asset.uri);
+      if (bootstrapPlan.action === "show_web_remote_iframe") {
+        clearWebRenderUri();
+        webRenderUriRef.current = bootstrapPlan.webRenderUri;
+        setWebRenderUri(bootstrapPlan.webRenderUri);
+        console.info("[pdf-viewer] signedUrl", bootstrapPlan.webRenderUri);
+        console.info("[pdf-viewer] web_iframe_src_ready", {
+          sessionId: next.session.sessionId,
+          documentType: resolvedAsset.documentType,
+          originModule: resolvedAsset.originModule,
+          remoteUri: bootstrapPlan.webRenderUri,
+          renderUri: bootstrapPlan.webRenderUri,
+          renderScheme: getUriScheme(bootstrapPlan.webRenderUri),
+        });
+        setIsReadyToRender(true);
+        return;
+      }
+      if (
+        bootstrapPlan.action === "show_embedded_render" &&
+        bootstrapPlan.webRenderUri
+      ) {
+        setWebRenderUri(bootstrapPlan.webRenderUri);
       }
       if (!cancelled) {
         recordViewerBreadcrumb("viewer_render_bootstrap_ready", {
-          uri: resolution.asset.uri,
-          uriKind: resolution.scheme,
-          sourceKind: resolution.sourceKind,
-          fileSizeBytes: resolution.asset.sizeBytes,
+          uri: resolvedAsset.uri,
+          uriKind: resolvedResolution.scheme,
+          sourceKind: resolvedResolution.sourceKind,
+          fileSizeBytes: resolvedAsset.sizeBytes,
           fileExists:
-            typeof resolution.asset.sizeBytes === "number" ? true : null,
-          previewPath: resolution.renderer,
+            typeof resolvedAsset.sizeBytes === "number" ? true : null,
+          previewPath: resolvedResolution.renderer,
         });
         setIsReadyToRender(true);
       }
