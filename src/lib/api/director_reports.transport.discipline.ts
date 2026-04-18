@@ -55,6 +55,9 @@ import {
 } from "./director_reports.transport.facts";
 import { loadDirectorRequestContextLookups } from "./director_reports.transport.lookups";
 
+const DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE = 500;
+const DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT = 4;
+
 async function fetchDirectorDisciplineSourceRowsViaRpc(p: {
   from: string;
   to: string;
@@ -156,20 +159,25 @@ async function fetchAllFactRowsFromTables(p: {
 
   const issueItems: WarehouseIssueItemFactRow[] = [];
   const tIssueItems = nowMs();
-  await forEachChunkParallel(issueIds, 500, 6, async (ids) => {
-    const { data, error } = await supabase
-      .from("warehouse_issue_items" as never)
-      .select("id,issue_id,rik_code,uom_id,qty,request_item_id")
-      .in("issue_id", ids);
-    if (error) throw error;
-    if (Array.isArray(data)) {
-      issueItems.push(
-        ...data
-          .map(normalizeWarehouseIssueItemFactRow)
-          .filter((row): row is WarehouseIssueItemFactRow => !!row),
-      );
-    }
-  });
+  await forEachChunkParallel(
+    issueIds,
+    DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE,
+    DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT,
+    async (ids) => {
+      const { data, error } = await supabase
+        .from("warehouse_issue_items" as never)
+        .select("id,issue_id,rik_code,uom_id,qty,request_item_id")
+        .in("issue_id", ids);
+      if (error) throw error;
+      if (Array.isArray(data)) {
+        issueItems.push(
+          ...data
+            .map(normalizeWarehouseIssueItemFactRow)
+            .filter((row): row is WarehouseIssueItemFactRow => !!row),
+        );
+      }
+    },
+  );
   logTiming("discipline.rows.tables.issue_items", tIssueItems);
 
   if (!issueItems.length) return [];
@@ -197,24 +205,29 @@ async function fetchAllFactRowsFromTables(p: {
   const requestIdByRequestItem = new Map<string, string>();
   if (requestItemIds.length) {
     const tReqItems = nowMs();
-    await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
-      const { data, error } = await supabase
-        .from("request_items" as never)
-        .select("id,request_id")
-        .in("id", ids);
-      if (error) throw error;
+    await forEachChunkParallel(
+      requestItemIds,
+      DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE,
+      DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT,
+      async (ids) => {
+        const { data, error } = await supabase
+          .from("request_items" as never)
+          .select("id,request_id")
+          .in("id", ids);
+        if (error) throw error;
 
-      const rows = Array.isArray(data)
-        ? data
-            .map(normalizeRequestItemRequestLinkRow)
-            .filter((row): row is RequestItemRequestLinkRow => !!row)
-        : [];
-      for (const row of rows) {
-        const id = row.id;
-        const reqId = String(row.request_id ?? "").trim();
-        if (id && reqId) requestIdByRequestItem.set(id, reqId);
-      }
-    });
+        const rows = Array.isArray(data)
+          ? data
+              .map(normalizeRequestItemRequestLinkRow)
+              .filter((row): row is RequestItemRequestLinkRow => !!row)
+          : [];
+        for (const row of rows) {
+          const id = row.id;
+          const reqId = String(row.request_id ?? "").trim();
+          if (id && reqId) requestIdByRequestItem.set(id, reqId);
+        }
+      },
+    );
     logTiming("discipline.rows.tables.request_items", tReqItems);
   }
 
@@ -233,13 +246,18 @@ async function fetchAllFactRowsFromTables(p: {
   const requestById = new Map<string, RequestLookupRow>();
   if (requestIds.length) {
     const tReq = nowMs();
-    await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
-      const rows = await fetchRequestsRowsSafe(ids);
-      for (const row of rows) {
-        const id = String(row?.id ?? "").trim();
-        if (id) requestById.set(id, row);
-      }
-    });
+    await forEachChunkParallel(
+      requestIds,
+      DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE,
+      DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT,
+      async (ids) => {
+        const rows = await fetchRequestsRowsSafe(ids);
+        for (const row of rows) {
+          const id = String(row?.id ?? "").trim();
+          if (id) requestById.set(id, row);
+        }
+      },
+    );
     logTiming("discipline.rows.tables.requests", tReq);
   }
 
@@ -452,20 +470,25 @@ async function fetchDisciplineFactRowsFromTables(p: {
 
   const issueItems: WarehouseIssueItemFactRow[] = [];
   const tIssueItems = nowMs();
-  await forEachChunkParallel(issueIds, 500, 6, async (ids) => {
-    const { data, error } = await supabase
-      .from("warehouse_issue_items" as never)
-      .select("id,issue_id,rik_code,uom_id,qty,request_item_id")
-      .in("issue_id", ids);
-    if (error) throw error;
-    if (Array.isArray(data)) {
-      issueItems.push(
-        ...data
-          .map(normalizeWarehouseIssueItemFactRow)
-          .filter((row): row is WarehouseIssueItemFactRow => !!row),
-      );
-    }
-  });
+  await forEachChunkParallel(
+    issueIds,
+    DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE,
+    DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT,
+    async (ids) => {
+      const { data, error } = await supabase
+        .from("warehouse_issue_items" as never)
+        .select("id,issue_id,rik_code,uom_id,qty,request_item_id")
+        .in("issue_id", ids);
+      if (error) throw error;
+      if (Array.isArray(data)) {
+        issueItems.push(
+          ...data
+            .map(normalizeWarehouseIssueItemFactRow)
+            .filter((row): row is WarehouseIssueItemFactRow => !!row),
+        );
+      }
+    },
+  );
   logTiming("discipline.rows.light.issue_items", tIssueItems);
   if (__DEV__) if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: issue_items=${issueItems.length}`);
   if (!issueItems.length) return [];
@@ -493,23 +516,28 @@ async function fetchDisciplineFactRowsFromTables(p: {
   const requestIdByRequestItem = new Map<string, string>();
   if (requestItemIds.length) {
     const tReqItems = nowMs();
-    await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
-      const { data, error } = await supabase
-        .from("request_items" as never)
-        .select("id,request_id")
-        .in("id", ids);
-      if (error) throw error;
-      const rows = Array.isArray(data)
-        ? data
-            .map(normalizeRequestItemRequestLinkRow)
-            .filter((row): row is RequestItemRequestLinkRow => !!row)
-        : [];
-      for (const row of rows) {
-        const id = row.id;
-        const reqId = String(row.request_id ?? "").trim();
-        if (id && reqId) requestIdByRequestItem.set(id, reqId);
-      }
-    });
+    await forEachChunkParallel(
+      requestItemIds,
+      DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE,
+      DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT,
+      async (ids) => {
+        const { data, error } = await supabase
+          .from("request_items" as never)
+          .select("id,request_id")
+          .in("id", ids);
+        if (error) throw error;
+        const rows = Array.isArray(data)
+          ? data
+              .map(normalizeRequestItemRequestLinkRow)
+              .filter((row): row is RequestItemRequestLinkRow => !!row)
+          : [];
+        for (const row of rows) {
+          const id = row.id;
+          const reqId = String(row.request_id ?? "").trim();
+          if (id && reqId) requestIdByRequestItem.set(id, reqId);
+        }
+      },
+    );
     logTiming("discipline.rows.light.request_items", tReqItems);
     if (__DEV__) if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: request_items=${requestItemIds.length}`);
   }
@@ -529,13 +557,18 @@ async function fetchDisciplineFactRowsFromTables(p: {
   const requestById = new Map<string, RequestLookupRow>();
   if (requestIds.length) {
     const tReq = nowMs();
-    await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
-      const rows = await fetchRequestsDisciplineRowsSafe(ids);
-      for (const row of rows) {
-        const id = String(row?.id ?? "").trim();
-        if (id) requestById.set(id, row);
-      }
-    });
+    await forEachChunkParallel(
+      requestIds,
+      DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE,
+      DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT,
+      async (ids) => {
+        const rows = await fetchRequestsDisciplineRowsSafe(ids);
+        for (const row of rows) {
+          const id = String(row?.id ?? "").trim();
+          if (id) requestById.set(id, row);
+        }
+      },
+    );
     logTiming("discipline.rows.light.requests", tReq);
     if (__DEV__) if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: requests=${requestIds.length}`);
   }
@@ -550,27 +583,32 @@ async function fetchDisciplineFactRowsFromTables(p: {
   const systemNameByCode = new Map<string, string>();
   if (systemCodes.length) {
     const tSystems = nowMs();
-    await forEachChunkParallel(systemCodes, 500, 4, async (codes) => {
-      const { data, error } = await supabase
-        .from("ref_systems" as never)
-        .select("code,name_human_ru,display_name,alias_ru,name")
-        .in("code", codes);
-      if (error) throw error;
-      const rows = Array.isArray(data)
-        ? data
-            .map(normalizeRefSystemLookupRow)
-            .filter((row): row is RefSystemLookupRow => !!row)
-        : [];
-      for (const row of rows) {
-        const code = row.code;
-        const name =
-          String(row.name_human_ru ?? "").trim() ||
-          String(row.display_name ?? "").trim() ||
-          String(row.alias_ru ?? "").trim() ||
-          String(row.name ?? "").trim();
-        if (code && name) systemNameByCode.set(code, name);
-      }
-    });
+    await forEachChunkParallel(
+      systemCodes,
+      DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE,
+      DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT,
+      async (codes) => {
+        const { data, error } = await supabase
+          .from("ref_systems" as never)
+          .select("code,name_human_ru,display_name,alias_ru,name")
+          .in("code", codes);
+        if (error) throw error;
+        const rows = Array.isArray(data)
+          ? data
+              .map(normalizeRefSystemLookupRow)
+              .filter((row): row is RefSystemLookupRow => !!row)
+          : [];
+        for (const row of rows) {
+          const code = row.code;
+          const name =
+            String(row.name_human_ru ?? "").trim() ||
+            String(row.display_name ?? "").trim() ||
+            String(row.alias_ru ?? "").trim() ||
+            String(row.name ?? "").trim();
+          if (code && name) systemNameByCode.set(code, name);
+        }
+      },
+    );
     logTiming("discipline.rows.light.systems", tSystems);
   }
 
