@@ -93,8 +93,12 @@ import {
   resolveForemanTerminalRecoveryCleanupDecision,
 } from "../foreman.draftRecovery.model";
 import {
+  type ForemanDraftRestoreTriggerPlan,
   getForemanBootstrapReconciliationRequestId,
+  planForemanAppActiveRestoreTrigger,
   planForemanBootstrapReenqueueCommand,
+  planForemanFocusRestoreTrigger,
+  planForemanNetworkBackRestoreTrigger,
   resolveForemanBootstrapCompletionStartPlan,
   resolveForemanBootstrapReconciliationPlan,
   resolveForemanRestoreRemoteCheckPlan,
@@ -1562,6 +1566,19 @@ export function useForemanDraftBoundary({
     ],
   );
 
+  const runRestoreTriggerPlan = useCallback(
+    (plan: ForemanDraftRestoreTriggerPlan) => {
+      if (plan.action !== "restore") return;
+      void restoreDraftIfNeeded(plan.context).catch((error) => {
+        reportDraftBoundaryFailure({
+          ...plan.failureTelemetry,
+          error,
+        });
+      });
+    },
+    [reportDraftBoundaryFailure, restoreDraftIfNeeded],
+  );
+
   const detailsRequestId = ridStr(requestDetails?.id);
   const skipRemoteDraftEffects = useMemo(() => {
     return shouldSkipForemanRemoteDraftEffects({
@@ -1673,37 +1690,25 @@ export function useForemanDraftBoundary({
   useEffect(() => {
     const wasFocused = wasScreenFocusedRef.current;
     wasScreenFocusedRef.current = isScreenFocused;
-    if (!isScreenFocused || wasFocused || !boundaryState.bootstrapReady) return;
-    void restoreDraftIfNeeded("focus").catch((error) => {
-      reportDraftBoundaryFailure({
-        event: "restore_draft_on_focus_failed",
-        error,
-        context: "focus",
-        stage: "recovery",
-        sourceKind: "draft_boundary:focus_restore",
-      });
-    });
-  }, [boundaryState.bootstrapReady, isScreenFocused, reportDraftBoundaryFailure, restoreDraftIfNeeded]);
+    runRestoreTriggerPlan(planForemanFocusRestoreTrigger({
+      bootstrapReady: boundaryState.bootstrapReady,
+      isScreenFocused,
+      wasScreenFocused: wasFocused,
+    }));
+  }, [boundaryState.bootstrapReady, isScreenFocused, runRestoreTriggerPlan]);
 
   useEffect(() => {
     const sub = AppState.addEventListener("change", (nextState) => {
       const prevState = appStateRef.current;
       appStateRef.current = nextState;
-      if (!boundaryState.bootstrapReady) return;
-      if (prevState !== "active" && nextState === "active") {
-        void restoreDraftIfNeeded("app_active").catch((error) => {
-          reportDraftBoundaryFailure({
-            event: "restore_draft_on_app_active_failed",
-            error,
-            context: "app_active",
-            stage: "recovery",
-            sourceKind: "draft_boundary:app_active_restore",
-          });
-        });
-      }
+      runRestoreTriggerPlan(planForemanAppActiveRestoreTrigger({
+        bootstrapReady: boundaryState.bootstrapReady,
+        previousState: prevState,
+        nextState,
+      }));
     });
     return () => sub.remove();
-  }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, restoreDraftIfNeeded]);
+  }, [boundaryState.bootstrapReady, runRestoreTriggerPlan]);
 
   useEffect(() => {
     let disposed = false;
@@ -1734,25 +1739,18 @@ export function useForemanDraftBoundary({
       const wasOnline = selectPlatformOnlineFlag(previous);
       networkOnlineRef.current = nextOnline;
       setNetworkOnline(nextOnline);
-      if (!boundaryState.bootstrapReady) return;
-      if (wasOnline === false && nextOnline === true) {
-        void restoreDraftIfNeeded("network_back").catch((error) => {
-          reportDraftBoundaryFailure({
-            event: "restore_draft_on_network_back_failed",
-            error,
-            context: "network_back",
-            stage: "recovery",
-            sourceKind: "draft_boundary:network_restore",
-          });
-        });
-      }
+      runRestoreTriggerPlan(planForemanNetworkBackRestoreTrigger({
+        bootstrapReady: boundaryState.bootstrapReady,
+        previousOnline: wasOnline,
+        nextOnline,
+      }));
     });
 
     return () => {
       disposed = true;
       unsubscribe();
     };
-  }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, restoreDraftIfNeeded]);
+  }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, runRestoreTriggerPlan]);
 
   useEffect(() => {
     if (!boundaryState.bootstrapReady || !requestId || skipRemoteDraftEffects) return;

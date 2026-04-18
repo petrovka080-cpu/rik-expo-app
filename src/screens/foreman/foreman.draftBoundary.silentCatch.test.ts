@@ -111,12 +111,14 @@ describe("foreman draft boundary silent failure discipline", () => {
 
   it("removes anonymous background boundary swallows from the critical foreman restore path", () => {
     const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
+    const lifecycleModelSource = readFileSync(join(__dirname, "foreman.draftLifecycle.model.ts"), "utf8");
 
     expect(source).not.toContain(".catch(() => undefined)");
-    expect(source).toContain("restore_draft_on_focus_failed");
-    expect(source).toContain("restore_draft_on_app_active_failed");
+    expect(source).toContain("runRestoreTriggerPlan");
+    expect(lifecycleModelSource).toContain("restore_draft_on_focus_failed");
+    expect(lifecycleModelSource).toContain("restore_draft_on_app_active_failed");
     expect(source).toContain("network_service_bootstrap_failed");
-    expect(source).toContain("restore_draft_on_network_back_failed");
+    expect(lifecycleModelSource).toContain("restore_draft_on_network_back_failed");
     expect(source).toContain("terminal_local_cleanup_failed");
   });
 });

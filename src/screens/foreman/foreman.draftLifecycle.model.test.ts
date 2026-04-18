@@ -2,9 +2,13 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import {
+  buildForemanDraftRestoreFailureTelemetry,
   buildForemanBootstrapStaleDurableResetPatch,
   getForemanBootstrapReconciliationRequestId,
+  planForemanAppActiveRestoreTrigger,
   planForemanBootstrapReenqueueCommand,
+  planForemanFocusRestoreTrigger,
+  planForemanNetworkBackRestoreTrigger,
   resolveForemanBootstrapCompletionStartPlan,
   resolveForemanBootstrapOwnerPlan,
   resolveForemanBootstrapReconciliationPlan,
@@ -98,6 +102,104 @@ describe("foreman draft lifecycle decision model", () => {
     expect(source).not.toContain("runForemanQueueRecovery");
     expect(source).not.toContain("clearTerminalLocalDraft");
     expect(source).not.toContain("Date.now");
+  });
+
+  it("plans lifecycle restore triggers without executing restore side effects", () => {
+    expect(
+      planForemanFocusRestoreTrigger({
+        bootstrapReady: true,
+        isScreenFocused: true,
+        wasScreenFocused: false,
+      }),
+    ).toEqual({
+      action: "restore",
+      context: "focus",
+      failureTelemetry: {
+        event: "restore_draft_on_focus_failed",
+        context: "focus",
+        stage: "recovery",
+        sourceKind: "draft_boundary:focus_restore",
+      },
+    });
+
+    expect(
+      planForemanFocusRestoreTrigger({
+        bootstrapReady: false,
+        isScreenFocused: true,
+        wasScreenFocused: false,
+      }),
+    ).toEqual({ action: "skip", context: "focus", reason: "bootstrap_not_ready" });
+
+    expect(
+      planForemanFocusRestoreTrigger({
+        bootstrapReady: true,
+        isScreenFocused: false,
+        wasScreenFocused: false,
+      }),
+    ).toEqual({ action: "skip", context: "focus", reason: "screen_not_focused" });
+
+    expect(
+      planForemanFocusRestoreTrigger({
+        bootstrapReady: true,
+        isScreenFocused: true,
+        wasScreenFocused: true,
+      }),
+    ).toEqual({ action: "skip", context: "focus", reason: "already_focused" });
+  });
+
+  it("plans app-active and network-back restore triggers with existing failure telemetry", () => {
+    expect(
+      planForemanAppActiveRestoreTrigger({
+        bootstrapReady: true,
+        previousState: "background",
+        nextState: "active",
+      }),
+    ).toEqual({
+      action: "restore",
+      context: "app_active",
+      failureTelemetry: buildForemanDraftRestoreFailureTelemetry("app_active"),
+    });
+
+    expect(
+      planForemanAppActiveRestoreTrigger({
+        bootstrapReady: true,
+        previousState: "active",
+        nextState: "active",
+      }),
+    ).toEqual({
+      action: "skip",
+      context: "app_active",
+      reason: "app_not_becoming_active",
+    });
+
+    expect(
+      planForemanNetworkBackRestoreTrigger({
+        bootstrapReady: true,
+        previousOnline: false,
+        nextOnline: true,
+      }),
+    ).toEqual({
+      action: "restore",
+      context: "network_back",
+      failureTelemetry: {
+        event: "restore_draft_on_network_back_failed",
+        context: "network_back",
+        stage: "recovery",
+        sourceKind: "draft_boundary:network_restore",
+      },
+    });
+
+    expect(
+      planForemanNetworkBackRestoreTrigger({
+        bootstrapReady: true,
+        previousOnline: null,
+        nextOnline: true,
+      }),
+    ).toEqual({
+      action: "skip",
+      context: "network_back",
+      reason: "network_not_recovered",
+    });
   });
 
   it("resets stale durable metadata only when bootstrap has no durable snapshot content", () => {

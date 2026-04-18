@@ -424,7 +424,7 @@ const detectAndroidPackage = (): string | null => {
 };
 
 const startAndroidForemanRoute = (packageName: string | null) => {
-  const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", "rik://foreman"];
+  const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", "rik://office/foreman"];
   if (packageName) args.push(packageName);
   execFileSync("adb", args, { cwd: projectRoot, stdio: "pipe" });
 };
@@ -586,7 +586,7 @@ async function loginForemanAndroid(user: TempUser, packageName: string | null, d
   return androidHarness.loginAndroidWithProtectedRoute({
     packageName,
     user,
-    protectedRoute: "rik://foreman",
+    protectedRoute: "rik://office/foreman",
     artifactBase: "android-foreman-request-sync",
     successPredicate: isAndroidForemanHome,
     renderablePredicate: isAndroidForemanRenderableScreen,
@@ -620,7 +620,11 @@ async function settleAndroidForemanRoute(
 
     const routed = await androidHarness.openAndroidRoute({
       packageName,
-      routes: ["rik://foreman", "rik:///foreman", "rik:///%28tabs%29/foreman"],
+      routes: [
+        "rik://office/foreman",
+        "rik:///office/foreman",
+        "rik:///%28tabs%29/office/foreman",
+      ],
       artifactBase: "android-foreman-request-sync-route",
       predicate: isAndroidForemanHome,
       timeoutMs: 20_000,

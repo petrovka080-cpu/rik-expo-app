@@ -82,7 +82,79 @@ export type ForemanRestoreRemoteStatusPlan =
   | { action: "preserve"; requestId: string; remoteStatus: string | null }
   | { action: "clear_terminal"; requestId: string; remoteStatus: string };
 
+export type ForemanDraftRestoreTriggerContext =
+  | "focus"
+  | "app_active"
+  | "network_back";
+
+export type ForemanDraftRestoreFailureTelemetry = {
+  event:
+    | "restore_draft_on_focus_failed"
+    | "restore_draft_on_app_active_failed"
+    | "restore_draft_on_network_back_failed";
+  context: ForemanDraftRestoreTriggerContext;
+  stage: "recovery";
+  sourceKind:
+    | "draft_boundary:focus_restore"
+    | "draft_boundary:app_active_restore"
+    | "draft_boundary:network_restore";
+};
+
+export type ForemanDraftRestoreTriggerPlan =
+  | {
+      action: "restore";
+      context: ForemanDraftRestoreTriggerContext;
+      failureTelemetry: ForemanDraftRestoreFailureTelemetry;
+    }
+  | {
+      action: "skip";
+      context: ForemanDraftRestoreTriggerContext;
+      reason:
+        | "bootstrap_not_ready"
+        | "screen_not_focused"
+        | "already_focused"
+        | "app_not_becoming_active"
+        | "network_not_recovered";
+    };
+
 const trim = (value: unknown): string => String(value ?? "").trim();
+
+export const buildForemanDraftRestoreFailureTelemetry = (
+  context: ForemanDraftRestoreTriggerContext,
+): ForemanDraftRestoreFailureTelemetry => {
+  if (context === "focus") {
+    return {
+      event: "restore_draft_on_focus_failed",
+      context,
+      stage: "recovery",
+      sourceKind: "draft_boundary:focus_restore",
+    };
+  }
+
+  if (context === "app_active") {
+    return {
+      event: "restore_draft_on_app_active_failed",
+      context,
+      stage: "recovery",
+      sourceKind: "draft_boundary:app_active_restore",
+    };
+  }
+
+  return {
+    event: "restore_draft_on_network_back_failed",
+    context,
+    stage: "recovery",
+    sourceKind: "draft_boundary:network_restore",
+  };
+};
+
+const restorePlan = (
+  context: ForemanDraftRestoreTriggerContext,
+): ForemanDraftRestoreTriggerPlan => ({
+  action: "restore",
+  context,
+  failureTelemetry: buildForemanDraftRestoreFailureTelemetry(context),
+});
 
 const hasSnapshotContent = (snapshot: ForemanLocalDraftSnapshot | null | undefined): boolean => {
   if (!snapshot) return false;
@@ -304,6 +376,51 @@ export const resolveForemanRestoreRemoteStatusPlan = (params: {
     return { action: "clear_terminal", requestId: params.requestId, remoteStatus };
   }
   return { action: "preserve", requestId: params.requestId, remoteStatus };
+};
+
+export const planForemanFocusRestoreTrigger = (params: {
+  bootstrapReady: boolean;
+  isScreenFocused: boolean;
+  wasScreenFocused: boolean;
+}): ForemanDraftRestoreTriggerPlan => {
+  if (!params.bootstrapReady) {
+    return { action: "skip", context: "focus", reason: "bootstrap_not_ready" };
+  }
+  if (!params.isScreenFocused) {
+    return { action: "skip", context: "focus", reason: "screen_not_focused" };
+  }
+  if (params.wasScreenFocused) {
+    return { action: "skip", context: "focus", reason: "already_focused" };
+  }
+  return restorePlan("focus");
+};
+
+export const planForemanAppActiveRestoreTrigger = (params: {
+  bootstrapReady: boolean;
+  previousState: string;
+  nextState: string;
+}): ForemanDraftRestoreTriggerPlan => {
+  if (!params.bootstrapReady) {
+    return { action: "skip", context: "app_active", reason: "bootstrap_not_ready" };
+  }
+  if (params.previousState !== "active" && params.nextState === "active") {
+    return restorePlan("app_active");
+  }
+  return { action: "skip", context: "app_active", reason: "app_not_becoming_active" };
+};
+
+export const planForemanNetworkBackRestoreTrigger = (params: {
+  bootstrapReady: boolean;
+  previousOnline: boolean | null;
+  nextOnline: boolean | null;
+}): ForemanDraftRestoreTriggerPlan => {
+  if (!params.bootstrapReady) {
+    return { action: "skip", context: "network_back", reason: "bootstrap_not_ready" };
+  }
+  if (params.previousOnline === false && params.nextOnline === true) {
+    return restorePlan("network_back");
+  }
+  return { action: "skip", context: "network_back", reason: "network_not_recovered" };
 };
 
 export const shouldSyncForemanDraftAfterRestoreCheck = (params: {
