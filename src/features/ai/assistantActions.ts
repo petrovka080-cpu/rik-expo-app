@@ -1,4 +1,5 @@
 import { asListingItems } from "../market/marketHome.data";
+import { planFanoutBatch } from "../../lib/async/fanoutBatchPlan";
 import { mapWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { supabase } from "../../lib/supabaseClient";
@@ -31,6 +32,7 @@ type AssistantActorContext = {
 };
 
 const ASSISTANT_CATALOG_MATCH_CONCURRENCY_LIMIT = 5;
+const ASSISTANT_CATALOG_MATCH_ITEM_LIMIT = 40;
 
 type AssistantActionResult = {
   handled: boolean;
@@ -97,6 +99,16 @@ const FILLER_RE =
 
 function normalizeText(value: string | null | undefined): string {
   return String(value ?? "").trim().toLowerCase();
+}
+
+function buildAssistantCatalogMatchFanoutKey(item: AssistantParsedItem): string {
+  return JSON.stringify([
+    normalizeText(item.name),
+    Number.isFinite(item.qty) ? item.qty : 0,
+    normalizeUnit(item.unit),
+    item.kind,
+    normalizeText(item.specs ?? null),
+  ]);
 }
 
 function normalizeUnit(unit: string | null | undefined): string {
@@ -454,8 +466,33 @@ async function createOrAppendForemanDraft(
   sourceMessage: string,
   session: ForemanAssistantSession,
 ): Promise<string> {
-  const matches = await mapWithConcurrencyLimit(
-    items,
+  const matchPlan = planFanoutBatch(items, {
+    maxItems: ASSISTANT_CATALOG_MATCH_ITEM_LIMIT,
+    getKey: (item) => buildAssistantCatalogMatchFanoutKey(item),
+  });
+  if (matchPlan.duplicateCount > 0 || matchPlan.cappedCount > 0) {
+    recordPlatformObservability({
+      screen: "ai",
+      surface: "assistant_actions",
+      category: "ui",
+      event: "assistant_catalog_match_batch_planned",
+      result: "success",
+      fallbackUsed: false,
+      extra: {
+        module: "ai.assistantActions",
+        route: "/ai",
+        role: "ai",
+        owner: "assistant_actions",
+        sourceItemCount: matchPlan.sourceCount,
+        resolveItemCount: matchPlan.resolveItems.length,
+        duplicateItemCount: matchPlan.duplicateCount,
+        cappedItemCount: matchPlan.cappedCount,
+      },
+    });
+  }
+
+  const resolvedMatches = await mapWithConcurrencyLimit(
+    matchPlan.resolveItems,
     ASSISTANT_CATALOG_MATCH_CONCURRENCY_LIMIT,
     async (item) => {
       const rows = await rikQuickSearch(item.name, 6).catch((error) => {
@@ -473,6 +510,14 @@ async function createOrAppendForemanDraft(
       };
     },
   );
+  const matches = items.map((item, index) => {
+    const resolveIndex = matchPlan.sourceToResolveIndex[index];
+    if (resolveIndex == null) return { item, match: null };
+    return {
+      item,
+      match: resolvedMatches[resolveIndex]?.match ?? null,
+    };
+  });
 
   const matched = matches.filter((entry) => entry.match?.code);
   const unmatched = matches.filter((entry) => !entry.match?.code);

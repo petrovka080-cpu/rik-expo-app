@@ -1,11 +1,18 @@
 import {
+  FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT,
   parseForemanAiResponse,
+  resolveForemanParsedItemsForTesting,
   resolveForemanQuickLocalAssist,
   scoreCatalogCandidate,
   type ForemanAiQuickItem,
   type ParsedForemanAiItem,
   type RikCatalogItem,
 } from "./foreman.ai";
+import {
+  resolveCatalogPackagingViaRpc,
+  resolveCatalogSynonymMatchViaRpc,
+} from "../../lib/api/foremanAiResolve.service";
+import { rikQuickSearch } from "../../lib/catalog_api";
 
 const mockRecordPlatformObservability = jest.fn();
 
@@ -27,6 +34,10 @@ jest.mock("../../lib/catalog_api", () => ({
   rikQuickSearch: jest.fn(),
 }));
 
+const mockResolveCatalogPackagingViaRpc = resolveCatalogPackagingViaRpc as jest.Mock;
+const mockResolveCatalogSynonymMatchViaRpc = resolveCatalogSynonymMatchViaRpc as jest.Mock;
+const mockRikQuickSearch = rikQuickSearch as jest.Mock;
+
 const makeParsedItem = (overrides?: Partial<ParsedForemanAiItem>): ParsedForemanAiItem => ({
   name: "Cement M500",
   qty: 2,
@@ -47,6 +58,9 @@ const makeCatalogItem = (overrides?: Partial<RikCatalogItem>): RikCatalogItem =>
 describe("foreman.ai contract hardening", () => {
   beforeEach(() => {
     mockRecordPlatformObservability.mockReset();
+    mockResolveCatalogPackagingViaRpc.mockReset().mockResolvedValue(null);
+    mockResolveCatalogSynonymMatchViaRpc.mockReset().mockResolvedValue(null);
+    mockRikQuickSearch.mockReset();
     jest.spyOn(console, "warn").mockImplementation(() => {});
     jest.spyOn(console, "info").mockImplementation(() => {});
   });
@@ -172,6 +186,62 @@ describe("foreman.ai contract hardening", () => {
         message: expect.any(String),
       }),
     );
+  });
+
+  it("dedupes repeated parsed items before catalog resolution while preserving output count", async () => {
+    mockRikQuickSearch.mockResolvedValue([
+      makeCatalogItem({
+        rik_code: "MAT-CEMENT",
+        name_human: "Cement M500",
+      }),
+    ]);
+
+    const result = await resolveForemanParsedItemsForTesting({
+      items: Array.from({ length: 8 }, () =>
+        makeParsedItem({
+          name: "Cement M500",
+          specs: null,
+        }),
+      ),
+    });
+
+    expect(result.type).toBe("resolved_items");
+    if (result.type === "resolved_items") {
+      expect(result.items).toHaveLength(8);
+      expect(result.items.every((item) => item.rik_code === "MAT-CEMENT")).toBe(true);
+    }
+    expect(mockResolveCatalogSynonymMatchViaRpc).toHaveBeenCalledTimes(1);
+    expect(mockRikQuickSearch).toHaveBeenCalledTimes(1);
+  });
+
+  it("caps unique catalog resolution work for oversized AI item batches", async () => {
+    mockRikQuickSearch.mockImplementation(async (query: unknown) => [
+      makeCatalogItem({
+        rik_code: `MAT-${String(query).replace(/\s+/g, "-")}`,
+        name_human: String(query),
+      }),
+    ]);
+
+    const result = await resolveForemanParsedItemsForTesting({
+      items: Array.from({ length: FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT + 3 }, (_, index) =>
+        makeParsedItem({
+          name: `Unique material ${index + 1}`,
+          specs: null,
+        }),
+      ),
+    });
+
+    expect(mockResolveCatalogSynonymMatchViaRpc).toHaveBeenCalledTimes(FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT);
+    expect(mockRikQuickSearch).toHaveBeenCalledTimes(FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT);
+    expect(result).toEqual(
+      expect.objectContaining({
+        type: "clarify_required",
+        partialFailure: true,
+      }),
+    );
+    if ("resolvedItems" in result) {
+      expect(result.resolvedItems).toHaveLength(FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT);
+    }
   });
 
   afterEach(() => {

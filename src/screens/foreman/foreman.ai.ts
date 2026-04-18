@@ -8,12 +8,14 @@ import {
 } from "../../lib/api/foremanAiResolve.service";
 import { rikQuickSearch } from "../../lib/catalog_api";
 import { mapWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
+import { planFanoutBatch } from "../../lib/async/fanoutBatchPlan";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type ForemanAiAction = "create_request" | "clarify";
 type ForemanAiKind = "material" | "work" | "service";
 
 const FOREMAN_AI_CATALOG_RESOLVE_CONCURRENCY_LIMIT = 5;
+export const FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT = 40;
 
 type RawForemanAiResponse = {
   action?: unknown;
@@ -948,9 +950,32 @@ const resolveForemanCatalogItem = async (input: ParsedForemanAiItem): Promise<Ca
   };
 };
 
+const buildForemanAiCatalogFanoutKey = (item: ParsedForemanAiItem): string =>
+  JSON.stringify([
+    normalizeSearchText(item.name),
+    Number.isFinite(item.qty) ? item.qty : 0,
+    normalizeResolveUnitCanonical(item.unit),
+    item.kind,
+    normalizeSearchText(item.specs ?? ""),
+  ]);
+
 const resolveCatalogItems = async (items: ParsedForemanAiItem[]) => {
+  const batchPlan = planFanoutBatch(items, {
+    maxItems: FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT,
+    getKey: (item) => buildForemanAiCatalogFanoutKey(item),
+  });
+  if (batchPlan.duplicateCount > 0 || batchPlan.cappedCount > 0) {
+    logForemanAi({
+      phase: "catalog_resolve_batch_planned",
+      sourceItemCount: batchPlan.sourceCount,
+      resolveItemCount: batchPlan.resolveItems.length,
+      duplicateItemCount: batchPlan.duplicateCount,
+      cappedItemCount: batchPlan.cappedCount,
+    });
+  }
+
   const resolutions = await mapWithConcurrencyLimit(
-    items,
+    batchPlan.resolveItems,
     FOREMAN_AI_CATALOG_RESOLVE_CONCURRENCY_LIMIT,
     async (item) => await resolveForemanCatalogItem(item),
   );
@@ -960,7 +985,16 @@ const resolveCatalogItems = async (items: ParsedForemanAiItem[]) => {
   const unresolvedNames: string[] = [];
 
   items.forEach((item, index) => {
-    const resolution = resolutions[index];
+    const resolveIndex = batchPlan.sourceToResolveIndex[index];
+    if (resolveIndex == null) {
+      unresolvedNames.push(item.name);
+      return;
+    }
+    const resolution = resolutions[resolveIndex];
+    if (!resolution) {
+      unresolvedNames.push(item.name);
+      return;
+    }
     if (resolution.resolved) {
       accepted.push(resolution.resolved);
       return;
