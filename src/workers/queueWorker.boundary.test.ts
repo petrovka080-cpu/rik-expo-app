@@ -1,6 +1,8 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
+import { resolveQueueWorkerBatchConcurrency } from "./queueWorker.limits";
+
 describe("queueWorker critical boundaries", () => {
   it("records typed observability for worker catch points before continuing", () => {
     const source = readFileSync(join(__dirname, "queueWorker.ts"), "utf8");
@@ -12,5 +14,13 @@ describe("queueWorker critical boundaries", () => {
     expect(source).toContain("failure_persistence_failed");
     expect(source).toContain("worker_loop_failed");
     expect(source).toContain("offline_queue_worker");
+  });
+
+  it("caps batch worker allocation to the compacted job count", () => {
+    expect(resolveQueueWorkerBatchConcurrency(8, 3)).toBe(3);
+    expect(resolveQueueWorkerBatchConcurrency(2, 3)).toBe(2);
+    expect(resolveQueueWorkerBatchConcurrency(0, 3)).toBe(1);
+    expect(resolveQueueWorkerBatchConcurrency(Number.NaN, 3)).toBe(1);
+    expect(resolveQueueWorkerBatchConcurrency(4, 0)).toBe(0);
   });
 });

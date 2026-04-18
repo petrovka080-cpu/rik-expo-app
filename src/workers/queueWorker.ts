@@ -18,6 +18,7 @@ import {
 import { startQueueMetricsLoop } from "../lib/infra/queueMetrics";
 import { fetchQueueLatencyMetrics } from "../lib/infra/queueLatencyMetrics";
 import { compactJobsByEntity, dispatchJob } from "./jobDispatcher";
+import { resolveQueueWorkerBatchConcurrency } from "./queueWorker.limits";
 import { normalizeAppError } from "../lib/errors/appError";
 import { recordPlatformObservability } from "../lib/observability/platformObservability";
 
@@ -291,8 +292,13 @@ async function processBatch(
 
   const queue = compacted.map((entry) => entry.job);
   let idx = 0;
+  const workerCount = resolveQueueWorkerBatchConcurrency(
+    concurrency,
+    queue.length,
+  );
+  if (workerCount <= 0) return;
 
-  const workers = Array.from({ length: Math.max(1, concurrency) }).map(
+  const workers = Array.from({ length: workerCount }).map(
     async () => {
       while (idx < queue.length) {
         const current = queue[idx++];
