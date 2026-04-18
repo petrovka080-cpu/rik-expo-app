@@ -33,6 +33,8 @@ type AssistantActorContext = {
 
 const ASSISTANT_CATALOG_MATCH_CONCURRENCY_LIMIT = 5;
 const ASSISTANT_CATALOG_MATCH_ITEM_LIMIT = 40;
+const ASSISTANT_MARKET_SEARCH_QUERY_LIMIT = 3;
+const ASSISTANT_MARKET_SEARCH_CONCURRENCY_LIMIT = 2;
 
 type AssistantActionResult = {
   handled: boolean;
@@ -181,7 +183,10 @@ function extractSearchQueries(message: string): string[] {
     .map((item) => item.name)
     .filter(Boolean);
   if (heuristicItems.length > 0) {
-    return Array.from(new Set(heuristicItems)).slice(0, 3);
+    return Array.from(new Set(heuristicItems)).slice(
+      0,
+      ASSISTANT_MARKET_SEARCH_QUERY_LIMIT,
+    );
   }
 
   const cleaned = String(message || "")
@@ -663,11 +668,13 @@ async function handleMarketSearchAction(message: string, buyerMode: boolean): Pr
     return 'Не понял, что именно искать. Напиши, например: "найди цемент М400" или "сравни цены на кирпич".';
   }
 
-  const resultsByQuery = await Promise.all(
-    queries.slice(0, 3).map(async (query) => ({
+  const resultsByQuery = await mapWithConcurrencyLimit(
+    queries.slice(0, ASSISTANT_MARKET_SEARCH_QUERY_LIMIT),
+    ASSISTANT_MARKET_SEARCH_CONCURRENCY_LIMIT,
+    async (query) => ({
       query,
       rows: await smartSearch(query, buyerMode ? 8 : 6),
-    })),
+    }),
   );
 
   return formatSearchResults(
