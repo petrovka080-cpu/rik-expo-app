@@ -2,11 +2,14 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import {
+  FOREMAN_SYNC_DIRTY_LOCAL_COMMANDS,
   FOREMAN_DUPLICATE_SUBMIT_MESSAGE,
   planForemanSyncInactiveGate,
   planForemanSyncQueueCommand,
   planForemanSyncSnapshotPreflight,
+  resolveForemanSyncDirtyLocalCommandPlan,
   resolveForemanSyncMutationKind,
+  resolveForemanSyncOfflineState,
 } from "./foreman.draftSyncPlan.model";
 import type { ForemanLocalDraftSnapshot } from "./foreman.localDraft";
 
@@ -88,6 +91,13 @@ describe("foreman draft sync pre-flush planner", () => {
     expect(resolveForemanSyncMutationKind({ submit: true })).toBe("submit");
     expect(resolveForemanSyncMutationKind({ submit: false })).toBe("background_sync");
     expect(resolveForemanSyncMutationKind({ optionMutationKind: "qty_update", submit: true })).toBe("qty_update");
+  });
+
+  it("normalizes the enqueue telemetry offline state deterministically", () => {
+    expect(resolveForemanSyncOfflineState(true)).toBe("online");
+    expect(resolveForemanSyncOfflineState(false)).toBe("offline");
+    expect(resolveForemanSyncOfflineState(null)).toBe("unknown");
+    expect(resolveForemanSyncOfflineState(undefined)).toBe("unknown");
   });
 
   it("skips inactive non-background sync without an override snapshot", () => {
@@ -198,6 +208,58 @@ describe("foreman draft sync pre-flush planner", () => {
     });
   });
 
+  it("plans dirty-local command payloads before queue planning", () => {
+    const snapshot = makeSnapshot({ requestId: " req-1 " });
+
+    expect(resolveForemanSyncDirtyLocalCommandPlan({
+      snapshot,
+      draftKey: "req-1",
+      pendingOperationsCount: 2,
+      durableConflictType: "retryable_sync_failure",
+      networkOnline: false,
+      triggerSource: "network_back",
+      localOnlyRequestId: "local-only",
+    })).toEqual({
+      action: "record_dirty_local",
+      commands: FOREMAN_SYNC_DIRTY_LOCAL_COMMANDS,
+      dirtyLocal: {
+        queueDraftKey: "req-1",
+        triggerSource: "network_back",
+      },
+      telemetry: {
+        stage: "enqueue",
+        result: "progress",
+        draftKey: "req-1",
+        requestId: "req-1",
+        localOnlyDraftKey: false,
+        attemptNumber: 0,
+        queueSizeBefore: 2,
+        queueSizeAfter: null,
+        coalescedCount: 0,
+        conflictType: "retryable_sync_failure",
+        recoveryAction: null,
+        errorClass: null,
+        errorCode: null,
+        offlineState: "offline",
+        triggerSource: "network_back",
+      },
+    });
+
+    expect(resolveForemanSyncDirtyLocalCommandPlan({
+      snapshot: makeSnapshot({ requestId: "" }),
+      draftKey: "local-only",
+      pendingOperationsCount: 0,
+      durableConflictType: "none",
+      networkOnline: true,
+      triggerSource: "submit",
+      localOnlyRequestId: "local-only",
+    }).telemetry).toMatchObject({
+      requestId: null,
+      localOnlyDraftKey: true,
+      offlineState: "online",
+    });
+  });
+
   it("blocks non-auto-recoverable conflicts without force", () => {
     const snapshot = makeSnapshot({ requestId: "req-conflict" });
 
@@ -255,5 +317,39 @@ describe("foreman draft sync pre-flush planner", () => {
         triggerSource: "submit",
       },
     });
+  });
+
+  it("keeps syncLocalDraftNow side effects in the established order", () => {
+    const source = readFileSync(
+      join(__dirname, "hooks", "useForemanDraftBoundary.ts"),
+      "utf8",
+    );
+    const syncStart = source.indexOf("const syncLocalDraftNow = useCallback");
+    const syncEnd = source.indexOf("const retryDraftSyncNow = useCallback");
+    const syncSource = source.slice(syncStart, syncEnd);
+
+    expect(syncStart).toBeGreaterThanOrEqual(0);
+    expect(syncEnd).toBeGreaterThan(syncStart);
+
+    const orderedTokens = [
+      "const dirtyLocalPlan = resolveForemanSyncDirtyLocalCommandPlan",
+      "await markForemanDurableDraftDirtyLocal(snapshot, dirtyLocalPlan.dirtyLocal)",
+      "persistLocalDraftSnapshot(snapshot)",
+      "await pushForemanDurableDraftTelemetry(dirtyLocalPlan.telemetry)",
+      "const queuePlan = planForemanSyncQueueCommand",
+      "await enqueueForemanMutation(queuePlan.enqueue)",
+      "await markForemanSnapshotQueued(snapshot",
+      "const run = flushForemanMutationQueue",
+      "draftSyncInFlightRef.current = run",
+      "return await run",
+      "draftSyncInFlightRef.current = null",
+    ];
+
+    let previousIndex = -1;
+    for (const token of orderedTokens) {
+      const nextIndex = syncSource.indexOf(token);
+      expect(nextIndex).toBeGreaterThan(previousIndex);
+      previousIndex = nextIndex;
+    }
   });
 });

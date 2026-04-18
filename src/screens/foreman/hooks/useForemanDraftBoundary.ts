@@ -112,6 +112,7 @@ import {
   planForemanSyncInactiveGate,
   planForemanSyncQueueCommand,
   planForemanSyncSnapshotPreflight,
+  resolveForemanSyncDirtyLocalCommandPlan,
   resolveForemanSyncMutationKind,
 } from "../foreman.draftSyncPlan.model";
 import {
@@ -808,29 +809,18 @@ export function useForemanDraftBoundary({
       );
       const durableState = getForemanDurableDraftState();
       const draftKey = getDraftQueueKey(snapshot);
-      await markForemanDurableDraftDirtyLocal(snapshot, {
-        queueDraftKey: draftKey,
-        triggerSource,
-      });
-      persistLocalDraftSnapshot(snapshot);
-      await pushForemanDurableDraftTelemetry({
-        stage: "enqueue",
-        result: "progress",
+      const dirtyLocalPlan = resolveForemanSyncDirtyLocalCommandPlan({
+        snapshot,
         draftKey,
-        requestId: ridStr(snapshot.requestId) || null,
-        localOnlyDraftKey: draftKey === FOREMAN_LOCAL_ONLY_REQUEST_ID,
-        attemptNumber: 0,
-        queueSizeBefore: pendingOperationsCount,
-        queueSizeAfter: null,
-        coalescedCount: 0,
-        conflictType: durableState.conflictType,
-        recoveryAction: null,
-        errorClass: null,
-        errorCode: null,
-        offlineState:
-          networkOnlineRef.current === true ? "online" : networkOnlineRef.current === false ? "offline" : "unknown",
+        pendingOperationsCount,
+        durableConflictType: durableState.conflictType,
+        networkOnline: networkOnlineRef.current,
         triggerSource,
+        localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
       });
+      await markForemanDurableDraftDirtyLocal(snapshot, dirtyLocalPlan.dirtyLocal);
+      persistLocalDraftSnapshot(snapshot);
+      await pushForemanDurableDraftTelemetry(dirtyLocalPlan.telemetry);
 
       const queuePlan = planForemanSyncQueueCommand({
         snapshot,

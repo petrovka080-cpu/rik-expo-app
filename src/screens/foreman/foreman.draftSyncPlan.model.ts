@@ -1,5 +1,6 @@
 import type {
   ForemanDraftConflictType,
+  ForemanDraftSyncTelemetryEvent,
   ForemanDraftSyncTriggerSource,
 } from "../../lib/offline/foremanSyncRuntime";
 import {
@@ -12,6 +13,12 @@ import type { ForemanLocalDraftSnapshot } from "./foreman.localDraft";
 export const FOREMAN_DUPLICATE_SUBMIT_MESSAGE =
   "Этот черновик уже отправлен. Откройте новый активный черновик.";
 
+export const FOREMAN_SYNC_DIRTY_LOCAL_COMMANDS = [
+  "mark_dirty_local",
+  "persist_local_snapshot",
+  "push_enqueue_progress_telemetry",
+] as const;
+
 type ForemanSyncDurablePatch = {
   snapshot: ForemanLocalDraftSnapshot;
   syncStatus: "dirty_local";
@@ -20,6 +27,18 @@ type ForemanSyncDurablePatch = {
   requestIdKnown: boolean;
   attentionNeeded: true;
   lastTriggerSource: ForemanDraftSyncTriggerSource;
+};
+
+export type ForemanSyncOfflineState = "online" | "offline" | "unknown";
+
+export type ForemanSyncDirtyLocalCommandPlan = {
+  action: "record_dirty_local";
+  commands: typeof FOREMAN_SYNC_DIRTY_LOCAL_COMMANDS;
+  dirtyLocal: {
+    queueDraftKey: string;
+    triggerSource: ForemanDraftSyncTriggerSource;
+  };
+  telemetry: Omit<ForemanDraftSyncTelemetryEvent, "id" | "at">;
 };
 
 export type ForemanSyncInactiveGatePlan =
@@ -84,6 +103,11 @@ export const resolveForemanSyncMutationKind = (params: {
   submit?: boolean;
 }): ForemanDraftMutationKind => params.optionMutationKind ?? (params.submit ? "submit" : "background_sync");
 
+export const resolveForemanSyncOfflineState = (
+  value: boolean | null | undefined,
+): ForemanSyncOfflineState =>
+  value === true ? "online" : value === false ? "offline" : "unknown";
+
 export const planForemanSyncInactiveGate = (params: {
   isDraftActive: boolean;
   hasOverrideSnapshot: boolean;
@@ -145,6 +169,40 @@ export const planForemanSyncSnapshotPreflight = (params: {
     submitOwnerId,
   };
 };
+
+export const resolveForemanSyncDirtyLocalCommandPlan = (params: {
+  snapshot: ForemanLocalDraftSnapshot;
+  draftKey: string;
+  pendingOperationsCount: number;
+  durableConflictType: ForemanDraftConflictType;
+  networkOnline: boolean | null | undefined;
+  triggerSource: ForemanDraftSyncTriggerSource;
+  localOnlyRequestId: string;
+}): ForemanSyncDirtyLocalCommandPlan => ({
+  action: "record_dirty_local",
+  commands: FOREMAN_SYNC_DIRTY_LOCAL_COMMANDS,
+  dirtyLocal: {
+    queueDraftKey: params.draftKey,
+    triggerSource: params.triggerSource,
+  },
+  telemetry: {
+    stage: "enqueue",
+    result: "progress",
+    draftKey: params.draftKey,
+    requestId: trim(params.snapshot.requestId) || null,
+    localOnlyDraftKey: params.draftKey === params.localOnlyRequestId,
+    attemptNumber: 0,
+    queueSizeBefore: params.pendingOperationsCount,
+    queueSizeAfter: null,
+    coalescedCount: 0,
+    conflictType: params.durableConflictType,
+    recoveryAction: null,
+    errorClass: null,
+    errorCode: null,
+    offlineState: resolveForemanSyncOfflineState(params.networkOnline),
+    triggerSource: params.triggerSource,
+  },
+});
 
 export const planForemanSyncQueueCommand = (params: {
   snapshot: ForemanLocalDraftSnapshot;
