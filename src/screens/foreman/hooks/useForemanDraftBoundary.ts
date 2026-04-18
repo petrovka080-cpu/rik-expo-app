@@ -104,6 +104,7 @@ import {
   resolveForemanBootstrapHydrateTelemetryPlan,
   resolveForemanBootstrapReconciliationPlan,
   resolveForemanBootstrapStaleDurableResetExecutionPlan,
+  resolveForemanDraftCacheClearPlan,
   resolveForemanRestoreRemoteCheckPlan,
   resolveForemanRestoreRemoteStatusPlan,
   shouldPersistForemanLifecycleSnapshot,
@@ -509,22 +510,21 @@ export function useForemanDraftBoundary({
     requestId?: string | null;
   }) => {
     const activeSnapshot = options?.snapshot ?? localDraftSnapshotRef.current;
-    const cleanupRequestId =
-      ridStr(options?.requestId) || ridStr(activeSnapshot?.requestId) || ridStr(requestId);
-    const queueKeys = new Set<string>([
-      FOREMAN_LOCAL_ONLY_REQUEST_ID,
-      ...getDraftQueueKeys(activeSnapshot, cleanupRequestId),
-    ]);
+    const cacheClearPlan = resolveForemanDraftCacheClearPlan({
+      activeSnapshot,
+      optionRequestId: options?.requestId,
+      activeRequestId: requestId,
+      localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+    });
     await Promise.all(
-      Array.from(queueKeys)
-        .filter(Boolean)
+      Array.from(cacheClearPlan.queueKeys)
         .map(async (key) => {
           await clearForemanMutationsForDraft(key);
         }),
     );
     await clearForemanDraftCacheState(persistLocalDraftSnapshot, patchBoundaryState);
     await refreshBoundarySyncState(null);
-  }, [getDraftQueueKeys, patchBoundaryState, persistLocalDraftSnapshot, refreshBoundarySyncState, requestId]);
+  }, [patchBoundaryState, persistLocalDraftSnapshot, refreshBoundarySyncState, requestId]);
 
   const resetDraftState = useCallback(() => {
     invalidateRequestDetailsLoads();

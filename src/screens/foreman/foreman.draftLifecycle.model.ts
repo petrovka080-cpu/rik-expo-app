@@ -164,6 +164,12 @@ export type ForemanActiveLocalDraftSnapshotPlan =
         | "request_mismatch";
     };
 
+export type ForemanDraftCacheClearPlan = {
+  action: "clear_draft_cache";
+  cleanupRequestId: string;
+  queueKeys: string[];
+};
+
 const trim = (value: unknown): string => String(value ?? "").trim();
 
 export const buildForemanDraftRestoreFailureTelemetry = (
@@ -255,6 +261,30 @@ export const resolveForemanActiveLocalDraftSnapshotPlan = (params: {
   }
 
   return { action: "use_snapshot", snapshot, reason: "active_request_match" };
+};
+
+export const resolveForemanDraftCacheClearPlan = (params: {
+  activeSnapshot?: ForemanLocalDraftSnapshot | null;
+  optionRequestId?: string | number | null;
+  activeRequestId?: string | number | null;
+  localOnlyRequestId: string;
+}): ForemanDraftCacheClearPlan => {
+  const snapshotRequestId = trim(params.activeSnapshot?.requestId);
+  const cleanupRequestId =
+    trim(params.optionRequestId) || snapshotRequestId || trim(params.activeRequestId);
+  const primaryQueueKey = snapshotRequestId || cleanupRequestId;
+  const queueKeys = Array.from(
+    new Set([
+      trim(params.localOnlyRequestId),
+      primaryQueueKey,
+    ].filter(Boolean)),
+  );
+
+  return {
+    action: "clear_draft_cache",
+    cleanupRequestId,
+    queueKeys,
+  };
 };
 
 export const shouldResetForemanBootstrapStaleDurableState = (params: {

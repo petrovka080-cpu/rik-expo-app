@@ -17,6 +17,7 @@ import {
   resolveForemanBootstrapReenqueuePlan,
   resolveForemanBootstrapStaleDurableResetExecutionPlan,
   resolveForemanActiveLocalDraftSnapshotPlan,
+  resolveForemanDraftCacheClearPlan,
   resolveForemanRestoreRemoteCheckPlan,
   resolveForemanRestoreRemoteStatusPlan,
   shouldPersistForemanLifecycleSnapshot,
@@ -301,6 +302,74 @@ describe("foreman draft lifecycle decision model", () => {
       snapshot: localOnlySnapshot,
       reason: "local_only_without_active_request",
     });
+  });
+
+  it("plans draft cache cleanup queue keys with legacy snapshot priority and dedupe", () => {
+    expect(resolveForemanDraftCacheClearPlan({
+      activeSnapshot: makeSnapshot({ requestId: "req-snapshot" }),
+      optionRequestId: "req-option",
+      activeRequestId: "req-active",
+      localOnlyRequestId: "__foreman_local_draft__",
+    })).toEqual({
+      action: "clear_draft_cache",
+      cleanupRequestId: "req-option",
+      queueKeys: ["__foreman_local_draft__", "req-snapshot"],
+    });
+
+    expect(resolveForemanDraftCacheClearPlan({
+      activeSnapshot: makeSnapshot({ requestId: "" }),
+      optionRequestId: "req-option",
+      activeRequestId: "req-active",
+      localOnlyRequestId: "__foreman_local_draft__",
+    })).toEqual({
+      action: "clear_draft_cache",
+      cleanupRequestId: "req-option",
+      queueKeys: ["__foreman_local_draft__", "req-option"],
+    });
+
+    expect(resolveForemanDraftCacheClearPlan({
+      activeSnapshot: null,
+      optionRequestId: null,
+      activeRequestId: " req-active ",
+      localOnlyRequestId: "__foreman_local_draft__",
+    })).toEqual({
+      action: "clear_draft_cache",
+      cleanupRequestId: "req-active",
+      queueKeys: ["__foreman_local_draft__", "req-active"],
+    });
+
+    expect(resolveForemanDraftCacheClearPlan({
+      activeSnapshot: null,
+      optionRequestId: null,
+      activeRequestId: null,
+      localOnlyRequestId: "__foreman_local_draft__",
+    })).toEqual({
+      action: "clear_draft_cache",
+      cleanupRequestId: "",
+      queueKeys: ["__foreman_local_draft__"],
+    });
+  });
+
+  it("keeps clearDraftCache side effects in the established order", () => {
+    const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
+    const start = source.indexOf("const clearDraftCache = useCallback");
+    const end = source.indexOf("const resetDraftState = useCallback", start);
+    const block = source.slice(start, end);
+    const expectedOrder = [
+      "const activeSnapshot = options?.snapshot ?? localDraftSnapshotRef.current",
+      "const cacheClearPlan = resolveForemanDraftCacheClearPlan",
+      "Array.from(cacheClearPlan.queueKeys)",
+      "clearForemanMutationsForDraft(key)",
+      "clearForemanDraftCacheState(persistLocalDraftSnapshot, patchBoundaryState)",
+      "refreshBoundarySyncState(null)",
+    ];
+
+    let previousIndex = -1;
+    for (const marker of expectedOrder) {
+      const nextIndex = block.indexOf(marker);
+      expect(nextIndex).toBeGreaterThan(previousIndex);
+      previousIndex = nextIndex;
+    }
   });
 
   it("resets stale durable metadata only when bootstrap has no durable snapshot content", () => {
