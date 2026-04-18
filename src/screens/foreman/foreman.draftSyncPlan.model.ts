@@ -19,6 +19,13 @@ export const FOREMAN_SYNC_DIRTY_LOCAL_COMMANDS = [
   "push_enqueue_progress_telemetry",
 ] as const;
 
+export const FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS = {
+  refreshBoundarySyncState: "refresh_boundary_sync_state",
+  throwQueueFailure: "throw_queue_failure",
+  markLastSubmittedOwner: "mark_last_submitted_owner",
+  returnSyncResult: "return_sync_result",
+} as const;
+
 type ForemanSyncDurablePatch = {
   snapshot: ForemanLocalDraftSnapshot;
   syncStatus: "dirty_local";
@@ -77,6 +84,41 @@ export type ForemanSyncQueuePlan =
         localAfterCount: number;
         submitRequested: boolean;
         triggerSource: ForemanDraftSyncTriggerSource;
+      };
+    };
+
+export type ForemanSyncFlushWorkerResult<TSubmitted> = {
+  requestId: string | null;
+  submitted: TSubmitted | null;
+  failed: boolean;
+  errorMessage: string | null;
+};
+
+export type ForemanSyncFlushCompletionPlan<TSubmitted> =
+  | {
+      action: "throw_failed";
+      commands: readonly [
+        typeof FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.refreshBoundarySyncState,
+        typeof FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.throwQueueFailure,
+      ];
+      message: string;
+    }
+  | {
+      action: "return_success";
+      commands:
+        | readonly [
+            typeof FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.refreshBoundarySyncState,
+            typeof FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.returnSyncResult,
+          ]
+        | readonly [
+            typeof FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.refreshBoundarySyncState,
+            typeof FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.markLastSubmittedOwner,
+            typeof FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.returnSyncResult,
+          ];
+      markLastSubmittedOwnerId: string | null;
+      result: {
+        requestId: string | null;
+        submitted: TSubmitted | null;
       };
     };
 
@@ -246,6 +288,47 @@ export const planForemanSyncQueueCommand = (params: {
       localAfterCount: params.localAfterCount ?? params.snapshot.items.length,
       submitRequested: params.submit || params.snapshot.submitRequested,
       triggerSource: params.triggerSource,
+    },
+  };
+};
+
+export const planForemanSyncFlushCompletion = <TSubmitted>(params: {
+  result: ForemanSyncFlushWorkerResult<TSubmitted>;
+  submit: boolean;
+  submitOwnerId: string | null | undefined;
+}): ForemanSyncFlushCompletionPlan<TSubmitted> => {
+  if (params.result.failed) {
+    return {
+      action: "throw_failed",
+      commands: [
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.refreshBoundarySyncState,
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.throwQueueFailure,
+      ],
+      message: params.result.errorMessage || "Foreman mutation queue flush failed.",
+    };
+  }
+
+  const submitOwnerId = trim(params.submitOwnerId) || null;
+  const markLastSubmittedOwnerId =
+    params.submit && submitOwnerId && params.result.submitted ? submitOwnerId : null;
+  const commands = markLastSubmittedOwnerId
+    ? [
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.refreshBoundarySyncState,
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.markLastSubmittedOwner,
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.returnSyncResult,
+      ] as const
+    : [
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.refreshBoundarySyncState,
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.returnSyncResult,
+      ] as const;
+
+  return {
+    action: "return_success",
+    commands,
+    markLastSubmittedOwnerId,
+    result: {
+      requestId: params.result.requestId,
+      submitted: params.result.submitted,
     },
   };
 };

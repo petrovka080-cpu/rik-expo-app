@@ -3,7 +3,9 @@ import { join } from "path";
 
 import {
   FOREMAN_SYNC_DIRTY_LOCAL_COMMANDS,
+  FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS,
   FOREMAN_DUPLICATE_SUBMIT_MESSAGE,
+  planForemanSyncFlushCompletion,
   planForemanSyncInactiveGate,
   planForemanSyncQueueCommand,
   planForemanSyncSnapshotPreflight,
@@ -72,7 +74,7 @@ const emptySnapshot = (
     ...patch,
   });
 
-describe("foreman draft sync pre-flush planner", () => {
+describe("foreman draft sync command planner", () => {
   it("stays free of queue, durable, persistence, fetch, and subscription side effects", () => {
     const source = readFileSync(join(__dirname, "foreman.draftSyncPlan.model.ts"), "utf8");
 
@@ -319,6 +321,107 @@ describe("foreman draft sync pre-flush planner", () => {
     });
   });
 
+  it("plans flush failures after boundary refresh with the existing fallback error message", () => {
+    expect(planForemanSyncFlushCompletion({
+      result: {
+        requestId: "req-failed",
+        submitted: null,
+        failed: true,
+        errorMessage: "",
+      },
+      submit: true,
+      submitOwnerId: "owner-submit",
+    })).toEqual({
+      action: "throw_failed",
+      commands: [
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.refreshBoundarySyncState,
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.throwQueueFailure,
+      ],
+      message: "Foreman mutation queue flush failed.",
+    });
+
+    expect(planForemanSyncFlushCompletion({
+      result: {
+        requestId: "req-failed",
+        submitted: null,
+        failed: true,
+        errorMessage: "network boom",
+      },
+      submit: false,
+      submitOwnerId: null,
+    })).toMatchObject({
+      action: "throw_failed",
+      message: "network boom",
+    });
+  });
+
+  it("plans successful flush return without marking submitted owners for background sync", () => {
+    const submitted = { id: "req-1" };
+
+    expect(planForemanSyncFlushCompletion({
+      result: {
+        requestId: "req-1",
+        submitted,
+        failed: false,
+        errorMessage: null,
+      },
+      submit: false,
+      submitOwnerId: "owner-submit",
+    })).toEqual({
+      action: "return_success",
+      commands: [
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.refreshBoundarySyncState,
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.returnSyncResult,
+      ],
+      markLastSubmittedOwnerId: null,
+      result: {
+        requestId: "req-1",
+        submitted,
+      },
+    });
+  });
+
+  it("plans last-submitted owner marking only for successful submit results", () => {
+    const submitted = { id: "req-submitted" };
+
+    expect(planForemanSyncFlushCompletion({
+      result: {
+        requestId: "req-submitted",
+        submitted,
+        failed: false,
+        errorMessage: null,
+      },
+      submit: true,
+      submitOwnerId: " owner-submit ",
+    })).toEqual({
+      action: "return_success",
+      commands: [
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.refreshBoundarySyncState,
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.markLastSubmittedOwner,
+        FOREMAN_SYNC_FLUSH_COMPLETION_COMMANDS.returnSyncResult,
+      ],
+      markLastSubmittedOwnerId: "owner-submit",
+      result: {
+        requestId: "req-submitted",
+        submitted,
+      },
+    });
+
+    expect(planForemanSyncFlushCompletion({
+      result: {
+        requestId: "req-not-submitted",
+        submitted: null,
+        failed: false,
+        errorMessage: null,
+      },
+      submit: true,
+      submitOwnerId: "owner-submit",
+    })).toMatchObject({
+      action: "return_success",
+      markLastSubmittedOwnerId: null,
+    });
+  });
+
   it("keeps syncLocalDraftNow side effects in the established order", () => {
     const source = readFileSync(
       join(__dirname, "hooks", "useForemanDraftBoundary.ts"),
@@ -340,6 +443,13 @@ describe("foreman draft sync pre-flush planner", () => {
       "await enqueueForemanMutation(queuePlan.enqueue)",
       "await markForemanSnapshotQueued(snapshot",
       "const run = flushForemanMutationQueue",
+      "await refreshBoundarySyncState(localDraftSnapshotRef.current)",
+      "const flushCompletionPlan = planForemanSyncFlushCompletion",
+      "if (flushCompletionPlan.action === \"throw_failed\")",
+      "throw new Error(flushCompletionPlan.message)",
+      "if (flushCompletionPlan.markLastSubmittedOwnerId)",
+      "lastSubmittedOwnerIdRef.current = flushCompletionPlan.markLastSubmittedOwnerId",
+      "return flushCompletionPlan.result",
       "draftSyncInFlightRef.current = run",
       "return await run",
       "draftSyncInFlightRef.current = null",

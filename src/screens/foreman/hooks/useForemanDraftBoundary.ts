@@ -110,6 +110,7 @@ import {
 } from "../foreman.draftLifecycle.model";
 import {
   planForemanSyncInactiveGate,
+  planForemanSyncFlushCompletion,
   planForemanSyncQueueCommand,
   planForemanSyncSnapshotPreflight,
   resolveForemanSyncDirtyLocalCommandPlan,
@@ -880,16 +881,18 @@ export function useForemanDraftBoundary({
         },
       }, triggerSource).then(async (result) => {
         await refreshBoundarySyncState(localDraftSnapshotRef.current);
-        if (result.failed) {
-          throw new Error(result.errorMessage || "Foreman mutation queue flush failed.");
+        const flushCompletionPlan = planForemanSyncFlushCompletion({
+          result,
+          submit: options?.submit === true,
+          submitOwnerId,
+        });
+        if (flushCompletionPlan.action === "throw_failed") {
+          throw new Error(flushCompletionPlan.message);
         }
-        if (options?.submit === true && submitOwnerId && result.submitted) {
-          lastSubmittedOwnerIdRef.current = submitOwnerId;
+        if (flushCompletionPlan.markLastSubmittedOwnerId) {
+          lastSubmittedOwnerIdRef.current = flushCompletionPlan.markLastSubmittedOwnerId;
         }
-        return {
-          requestId: result.requestId,
-          submitted: result.submitted,
-        };
+        return flushCompletionPlan.result;
       });
 
       draftSyncInFlightRef.current = run;
