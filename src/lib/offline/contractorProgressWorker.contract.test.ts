@@ -6,6 +6,14 @@ import {
   loadContractorProgressQueue,
 } from "./contractorProgressQueue";
 import {
+  getQueueBacklogSnapshot,
+  resetQueueBacklogMetrics,
+} from "../observability/queueBacklogMetrics";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../observability/platformObservability";
+import {
   flushContractorProgressQueue,
   CONTRACTOR_PROGRESS_REPLAY_POLICY,
 } from "./contractorProgressWorker";
@@ -91,6 +99,8 @@ describe("contractorProgressWorker replay discipline", () => {
     resetOfflineReplayCoordinatorForTests();
     configureContractorProgressQueue({ storage: createMemoryOfflineStorage() });
     configureContractorProgressDraftStore({ storage: createMemoryOfflineStorage() });
+    resetQueueBacklogMetrics();
+    resetPlatformObservabilityEvents();
     mockEnsureWorkProgressSubmission.mockReset();
     await clearContractorProgressQueue();
     await clearContractorProgressDraftStore();
@@ -149,6 +159,109 @@ describe("contractorProgressWorker replay discipline", () => {
     expect(maxActive).toBe(1);
     expect(await loadContractorProgressQueue()).toEqual([]);
     expect(getContractorProgressDraft("progress-1")?.syncStatus).toBe("synced");
+  });
+
+  it("tracks contractor progress backlog before and after a successful flush", async () => {
+    await seedProgressDraft("progress-backlog-success");
+    mockEnsureWorkProgressSubmission.mockResolvedValue({
+      ok: true,
+      logId: "log-backlog-success",
+    });
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+      },
+      "network_back",
+    );
+
+    expect(result.failed).toBe(false);
+    const backlogEvents = getPlatformObservabilityEvents().filter(
+      (event) => event.sourceKind === "queue:contractor_progress",
+    );
+    expect(backlogEvents.map((event) => event.event)).toEqual([
+      "contractor_progress_backlog_before_flush",
+      "contractor_progress_backlog_after_flush",
+    ]);
+    expect(backlogEvents[0]).toMatchObject({
+      rowCount: 1,
+      extra: expect.objectContaining({
+        progressId: "progress-backlog-success",
+        triggerSource: "network_back",
+        totalCount: 1,
+      }),
+    });
+    expect(backlogEvents[1]).toMatchObject({
+      rowCount: 0,
+      extra: expect.objectContaining({
+        progressId: "progress-backlog-success",
+        triggerSource: "network_back",
+        totalCount: 0,
+      }),
+    });
+    expect(getQueueBacklogSnapshot()).toEqual([
+      expect.objectContaining({
+        queue: "contractor_progress",
+        size: 0,
+        processingCount: 0,
+        failedCount: 0,
+        retryScheduledCount: 0,
+      }),
+    ]);
+  });
+
+  it("tracks contractor progress retry backlog without changing retry semantics", async () => {
+    await seedProgressDraft("progress-backlog-retry");
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => false,
+      },
+      "network_back",
+    );
+
+    expect(result).toMatchObject({
+      failed: true,
+      remainingCount: 1,
+      failureClass: "offline_wait",
+    });
+    expect(await loadContractorProgressQueue({ includeFinal: true })).toEqual([
+      expect.objectContaining({
+        progressId: "progress-backlog-retry",
+        lifecycleStatus: "retry_scheduled",
+        status: "failed",
+      }),
+    ]);
+    const backlogEvents = getPlatformObservabilityEvents().filter(
+      (event) => event.sourceKind === "queue:contractor_progress",
+    );
+    expect(backlogEvents.map((event) => event.event)).toEqual([
+      "contractor_progress_backlog_before_flush",
+      "contractor_progress_backlog_after_flush",
+    ]);
+    expect(backlogEvents[1]).toMatchObject({
+      rowCount: 1,
+      extra: expect.objectContaining({
+        progressId: "progress-backlog-retry",
+        triggerSource: "network_back",
+        totalCount: 1,
+      }),
+    });
+    expect(getQueueBacklogSnapshot()).toEqual([
+      expect.objectContaining({
+        queue: "contractor_progress",
+        size: 1,
+        processingCount: 0,
+        failedCount: 1,
+        retryScheduledCount: 1,
+      }),
+    ]);
   });
 
   it("cleanup removes progress draft and queue entry for terminal work", async () => {

@@ -3,6 +3,7 @@ import {
   enqueueContractorProgress,
   getContractorProgressPendingCount,
   loadContractorProgressQueue,
+  type ContractorProgressQueueEntry,
   markContractorProgressQueueConflicted,
   markContractorProgressQueueFailedNonRetryable,
   markContractorProgressQueueInflight,
@@ -11,6 +12,7 @@ import {
   removeContractorProgressQueueEntry,
   resetInflightContractorProgressQueue,
 } from "./contractorProgressQueue";
+import { trackQueueBacklogMetric } from "../observability/queueBacklogMetrics";
 import type { PlatformOfflineRetryTriggerSource } from "./platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "./platformOffline.observability";
 import {
@@ -174,6 +176,39 @@ const resolvedObjectNameMissing = (
   return !trim(resolvedObjectName);
 };
 
+const isActiveQueueEntry = (entry: ContractorProgressQueueEntry) =>
+  entry.lifecycleStatus === "queued" ||
+  entry.lifecycleStatus === "processing" ||
+  entry.lifecycleStatus === "retry_scheduled";
+
+const trackContractorProgressBacklog = async (
+  event: string,
+  extra?: Record<string, unknown>,
+) => {
+  const queue = await loadContractorProgressQueue({ includeFinal: true });
+  const active = queue.filter(isActiveQueueEntry);
+  const oldestActiveCreatedAt = active.reduce<number | null>(
+    (oldest, entry) => oldest == null ? entry.createdAt : Math.min(oldest, entry.createdAt),
+    null,
+  );
+
+  trackQueueBacklogMetric({
+    queue: "contractor_progress",
+    event,
+    size: active.length,
+    oldestAgeMs: oldestActiveCreatedAt == null ? 0 : Date.now() - oldestActiveCreatedAt,
+    processingCount: active.filter((entry) => entry.lifecycleStatus === "processing").length,
+    failedCount: queue.filter((entry) => entry.status === "failed").length,
+    retryScheduledCount: active.filter((entry) => entry.lifecycleStatus === "retry_scheduled").length,
+    coalescedCount: queue.reduce((sum, entry) => sum + entry.coalescedCount, 0),
+    extra: {
+      totalCount: queue.length,
+      pendingCount: queue.filter((entry) => entry.status === "pending").length,
+      ...extra,
+    },
+  });
+};
+
 const runFlush = async (
   deps: ContractorProgressWorkerDeps,
   triggerSource: ContractorProgressWorkerTriggerSource,
@@ -224,6 +259,11 @@ const runFlush = async (
 
     const inflight = await markContractorProgressQueueInflight(entry.id);
     if (!inflight) continue;
+
+    await trackContractorProgressBacklog("contractor_progress_backlog_before_flush", {
+      progressId: entry.progressId,
+      triggerSource,
+    });
 
     if (deps.getNetworkOnline?.() === false) {
       const decision = resolveOfflineMutationFailureDecision({
@@ -283,6 +323,11 @@ const runFlush = async (
         manualRetry: triggerSource === "manual_retry",
         durationMs: null,
       });
+      await trackContractorProgressBacklog("contractor_progress_backlog_after_flush", {
+        progressId: entry.progressId,
+        triggerSource,
+        processedCount,
+      });
       return {
         processedCount,
         remainingCount: await getContractorProgressPendingCount(),
@@ -317,6 +362,11 @@ const runFlush = async (
             errorMessage: remoteTruth?.reason ?? "terminal_remote_cleanup",
           });
           processedCount += 1;
+          await trackContractorProgressBacklog("contractor_progress_backlog_after_flush", {
+            progressId: entry.progressId,
+            triggerSource,
+            processedCount,
+          });
           lastProgressId = entry.progressId;
           continue;
         }
@@ -384,6 +434,11 @@ const runFlush = async (
           durationMs: null,
           errorMessage: failure.errorMessage,
         });
+        await trackContractorProgressBacklog("contractor_progress_backlog_after_flush", {
+          progressId: entry.progressId,
+          triggerSource,
+          processedCount,
+        });
         return {
           processedCount,
           remainingCount: await getContractorProgressPendingCount(),
@@ -427,6 +482,11 @@ const runFlush = async (
       await removeContractorProgressQueueEntry(entry.id);
       await clearContractorProgressQueueForProgress(entry.progressId);
       await markContractorProgressSynced(entry.progressId, { pendingCount: 0 });
+      await trackContractorProgressBacklog("contractor_progress_backlog_after_flush", {
+        progressId: entry.progressId,
+        triggerSource,
+        processedCount,
+      });
       continue;
     }
 
@@ -566,6 +626,11 @@ const runFlush = async (
         manualRetry: triggerSource === "manual_retry",
         durationMs: Date.now() - startedAt,
       });
+      await trackContractorProgressBacklog("contractor_progress_backlog_after_flush", {
+        progressId: entry.progressId,
+        triggerSource,
+        processedCount,
+      });
 
       return {
         processedCount,
@@ -670,6 +735,11 @@ const runFlush = async (
         restoredAfterReopen: restoredInflightCount > 0,
         manualRetry: triggerSource === "manual_retry",
         durationMs: Date.now() - startedAt,
+      });
+      await trackContractorProgressBacklog("contractor_progress_backlog_after_flush", {
+        progressId: entry.progressId,
+        triggerSource,
+        processedCount,
       });
 
       if (deps.refreshAfterSuccess) {
