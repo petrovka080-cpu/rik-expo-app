@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import {
+  FOREMAN_MANUAL_RECOVERY_TELEMETRY_COMMANDS,
   planForemanClearFailedQueueTailAction,
   planForemanDiscardLocalAction,
   planForemanDiscardLocalRemoteAction,
@@ -9,6 +10,7 @@ import {
   planForemanRehydrateServerRemoteAction,
   planForemanRestoreLocalAction,
   planForemanRetryNowAction,
+  resolveForemanManualRecoveryTelemetryPlan,
 } from "./foreman.manualRecovery.model";
 import type { ForemanLocalDraftSnapshot } from "./foreman.localDraft";
 
@@ -81,6 +83,7 @@ describe("foreman manual recovery command planner", () => {
     expect(source).not.toContain("patchForemanDurableDraftRecoveryState");
     expect(source).not.toContain("persistForemanLocalDraftSnapshot");
     expect(source).not.toContain("loadForemanRemoteDraftSnapshot");
+    expect(source).not.toContain("pushForemanDurableDraftTelemetry");
     expect(source).not.toContain("fetchRequestDetails");
     expect(source).not.toContain("AppState");
     expect(source).not.toContain("subscribePlatformNetwork");
@@ -383,5 +386,89 @@ describe("foreman manual recovery command planner", () => {
       snapshot,
       triggerSource: "manual_retry",
     });
+  });
+
+  it("plans manual recovery telemetry payload without owning telemetry side effects", () => {
+    const snapshot = makeSnapshot({ requestId: " req-telemetry " });
+
+    expect(resolveForemanManualRecoveryTelemetryPlan({
+      snapshot,
+      draftKey: "req-telemetry",
+      durableState: {
+        conflictType: "retryable_sync_failure",
+        retryCount: 2,
+        pendingOperationsCount: 3,
+      },
+      recoveryAction: "retry_now",
+      result: "terminal_failure",
+      conflictType: "server_terminal_conflict",
+      errorClass: "recovery",
+      errorCode: "retry_failed",
+      networkOnline: false,
+      localOnlyRequestId: "__foreman_local_draft__",
+    })).toEqual({
+      action: "push_recovery_telemetry",
+      commands: FOREMAN_MANUAL_RECOVERY_TELEMETRY_COMMANDS,
+      telemetry: {
+        stage: "recovery",
+        result: "terminal_failure",
+        draftKey: "req-telemetry",
+        requestId: "req-telemetry",
+        localOnlyDraftKey: false,
+        attemptNumber: 3,
+        queueSizeBefore: 3,
+        queueSizeAfter: 3,
+        coalescedCount: 0,
+        conflictType: "server_terminal_conflict",
+        recoveryAction: "retry_now",
+        errorClass: "recovery",
+        errorCode: "retry_failed",
+        offlineState: "offline",
+        triggerSource: "manual_retry",
+      },
+    });
+
+    expect(resolveForemanManualRecoveryTelemetryPlan({
+      snapshot: makeSnapshot({ requestId: "" }),
+      draftKey: "__foreman_local_draft__",
+      durableState: {
+        conflictType: "none",
+        retryCount: 0,
+        pendingOperationsCount: 0,
+      },
+      recoveryAction: "discard_local",
+      result: "success",
+      networkOnline: undefined,
+      localOnlyRequestId: "__foreman_local_draft__",
+    }).telemetry).toMatchObject({
+      requestId: null,
+      localOnlyDraftKey: true,
+      attemptNumber: 1,
+      conflictType: "none",
+      errorClass: null,
+      errorCode: null,
+      offlineState: "unknown",
+    });
+  });
+
+  it("keeps pushRecoveryTelemetry side effects in the established order", () => {
+    const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
+    const start = source.indexOf("const pushRecoveryTelemetry = useCallback");
+    const end = source.indexOf("const reportDraftBoundaryFailure = useCallback", start);
+    const block = source.slice(start, end);
+    const expectedOrder = [
+      "const durableState = getForemanDurableDraftState()",
+      "const snapshot = localDraftSnapshotRef.current ?? durableState.snapshot",
+      "const recoveryDraftKey = getDraftQueueKey(snapshot)",
+      "const recoveryTelemetryPlan = resolveForemanManualRecoveryTelemetryPlan",
+      "pushForemanDurableDraftTelemetry(recoveryTelemetryPlan.telemetry)",
+    ];
+
+    let previousIndex = -1;
+    for (const marker of expectedOrder) {
+      const nextIndex = block.indexOf(marker);
+      expect(nextIndex).toBeGreaterThan(previousIndex);
+      previousIndex = nextIndex;
+    }
   });
 });

@@ -125,6 +125,7 @@ import {
   planForemanRehydrateServerRemoteAction,
   planForemanRestoreLocalAction,
   planForemanRetryNowAction,
+  resolveForemanManualRecoveryTelemetryPlan,
 } from "../foreman.manualRecovery.model";
 import {
   resolveForemanPostSubmitDraftPlan,
@@ -289,24 +290,20 @@ export function useForemanDraftBoundary({
     }) => {
       const durableState = getForemanDurableDraftState();
       const snapshot = localDraftSnapshotRef.current ?? durableState.snapshot;
-      await pushForemanDurableDraftTelemetry({
-        stage: "recovery",
-        result: params.result,
-        draftKey: getDraftQueueKey(snapshot),
-        requestId: ridStr(snapshot?.requestId) || null,
-        localOnlyDraftKey: getDraftQueueKey(snapshot) === FOREMAN_LOCAL_ONLY_REQUEST_ID,
-        attemptNumber: durableState.retryCount + 1,
-        queueSizeBefore: durableState.pendingOperationsCount,
-        queueSizeAfter: durableState.pendingOperationsCount,
-        coalescedCount: 0,
-        conflictType: params.conflictType ?? durableState.conflictType,
+      const recoveryDraftKey = getDraftQueueKey(snapshot);
+      const recoveryTelemetryPlan = resolveForemanManualRecoveryTelemetryPlan({
+        snapshot,
+        draftKey: recoveryDraftKey,
+        durableState,
         recoveryAction: params.recoveryAction,
-        errorClass: params.errorClass ?? null,
-        errorCode: params.errorCode ?? null,
-        offlineState:
-          networkOnlineRef.current === true ? "online" : networkOnlineRef.current === false ? "offline" : "unknown",
-        triggerSource: "manual_retry",
+        result: params.result,
+        conflictType: params.conflictType,
+        errorClass: params.errorClass,
+        errorCode: params.errorCode,
+        networkOnline: networkOnlineRef.current,
+        localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
       });
+      await pushForemanDurableDraftTelemetry(recoveryTelemetryPlan.telemetry);
     },
     [getDraftQueueKey],
   );

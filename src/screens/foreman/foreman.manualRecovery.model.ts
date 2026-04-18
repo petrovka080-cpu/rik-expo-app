@@ -1,8 +1,10 @@
 import type { RequestDetails } from "../../lib/catalog_api";
 import type {
   ForemanDraftConflictType,
+  ForemanDraftRecoveryAction,
   ForemanDraftSyncStage,
   ForemanDraftSyncStatus,
+  ForemanDraftSyncTelemetryEvent,
   ForemanDraftSyncTriggerSource,
 } from "../../lib/offline/foremanSyncRuntime";
 import type { ForemanLocalDraftSnapshot } from "./foreman.localDraft";
@@ -123,6 +125,16 @@ export type ForemanClearFailedQueueTailPlan = {
   action: "clear_queue_tail";
   snapshot: ForemanLocalDraftSnapshot | null;
   triggerSource: "manual_retry";
+};
+
+export const FOREMAN_MANUAL_RECOVERY_TELEMETRY_COMMANDS = [
+  "push_recovery_telemetry",
+] as const;
+
+export type ForemanManualRecoveryTelemetryPlan = {
+  action: "push_recovery_telemetry";
+  commands: typeof FOREMAN_MANUAL_RECOVERY_TELEMETRY_COMMANDS;
+  telemetry: Omit<ForemanDraftSyncTelemetryEvent, "id" | "at">;
 };
 
 const trim = (value: unknown): string => String(value ?? "").trim();
@@ -364,4 +376,41 @@ export const planForemanClearFailedQueueTailAction = (params: {
   action: "clear_queue_tail",
   snapshot: params.snapshot,
   triggerSource: "manual_retry",
+});
+
+export const resolveForemanManualRecoveryTelemetryPlan = (params: {
+  snapshot: ForemanLocalDraftSnapshot | null;
+  draftKey: string;
+  durableState: {
+    conflictType: ForemanDraftConflictType;
+    retryCount: number;
+    pendingOperationsCount: number;
+  };
+  recoveryAction: ForemanDraftRecoveryAction;
+  result: "progress" | "success" | "retryable_failure" | "terminal_failure";
+  conflictType?: ForemanDraftConflictType;
+  errorClass?: string | null;
+  errorCode?: string | null;
+  networkOnline: boolean | null | undefined;
+  localOnlyRequestId: string;
+}): ForemanManualRecoveryTelemetryPlan => ({
+  action: "push_recovery_telemetry",
+  commands: FOREMAN_MANUAL_RECOVERY_TELEMETRY_COMMANDS,
+  telemetry: {
+    stage: "recovery",
+    result: params.result,
+    draftKey: params.draftKey,
+    requestId: trim(params.snapshot?.requestId) || null,
+    localOnlyDraftKey: params.draftKey === params.localOnlyRequestId,
+    attemptNumber: params.durableState.retryCount + 1,
+    queueSizeBefore: params.durableState.pendingOperationsCount,
+    queueSizeAfter: params.durableState.pendingOperationsCount,
+    coalescedCount: 0,
+    conflictType: params.conflictType ?? params.durableState.conflictType,
+    recoveryAction: params.recoveryAction,
+    errorClass: params.errorClass ?? null,
+    errorCode: params.errorCode ?? null,
+    offlineState: params.networkOnline === true ? "online" : params.networkOnline === false ? "offline" : "unknown",
+    triggerSource: "manual_retry",
+  },
 });
