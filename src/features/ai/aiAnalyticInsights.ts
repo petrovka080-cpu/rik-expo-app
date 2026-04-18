@@ -4,6 +4,7 @@ import {
   type PriceAnalysis,
   type SupplierScore,
 } from "../../lib/ai_reports";
+import { mapWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
 
 export type ProposalAnalyticSourceItem = {
   id: string;
@@ -37,10 +38,12 @@ type LoadProposalAnalyticInsightsOptions = {
   companyId?: string | null;
   itemLimit?: number;
   supplierLimit?: number;
+  concurrencyLimit?: number;
 };
 
 const DEFAULT_ITEM_LIMIT = 3;
 const DEFAULT_SUPPLIER_LIMIT = 3;
+const DEFAULT_ANALYTIC_INSIGHT_CONCURRENCY_LIMIT = 2;
 
 const toFinitePositiveNumber = (value: unknown): number | null => {
   const parsed = Number(value);
@@ -248,10 +251,16 @@ export async function loadProposalAnalyticInsights(
 ): Promise<ProposalAnalyticInsight[]> {
   const itemLimit = Math.max(1, Math.trunc(options?.itemLimit ?? DEFAULT_ITEM_LIMIT));
   const supplierLimit = Math.max(1, Math.trunc(options?.supplierLimit ?? DEFAULT_SUPPLIER_LIMIT));
+  const concurrencyLimit = Math.max(
+    1,
+    Math.trunc(options?.concurrencyLimit ?? DEFAULT_ANALYTIC_INSIGHT_CONCURRENCY_LIMIT),
+  );
   const normalizedItems = normalizeProposalAnalyticSourceItems(items, itemLimit);
 
-  const insights = await Promise.all(
-    normalizedItems.map(async (item) => {
+  const insights = await mapWithConcurrencyLimit(
+    normalizedItems,
+    concurrencyLimit,
+    async (item) => {
       const rikCode = item.rikCode;
       const currentPrice = Number(item.price);
       const [priceAnalysis, supplierRecommendations] = await Promise.all([
@@ -271,7 +280,7 @@ export async function loadProposalAnalyticInsights(
         supplierRecommendations,
         supplierInsightText: buildSupplierInsightText(supplierRecommendations),
       } satisfies ProposalAnalyticInsight;
-    }),
+    },
   );
 
   return insights.filter(
