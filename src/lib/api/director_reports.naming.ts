@@ -1,6 +1,7 @@
 import { supabase } from "../supabaseClient";
 import { normalizeRuText } from "../text/encoding";
 import { trimMapSize, trimSetSize } from "../cache/boundedCacheUtils";
+import { mapWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
 import type { DirectorNamingProbeCacheMode, DirectorNamingSourceStatus } from "../../screens/director/director.readModels";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import type { CodeNameRow, DirectorFactRow, ObjectLookupRow, RikNameLookupRow } from "./director_reports.shared";
@@ -217,8 +218,40 @@ type MaterialNameResolutionSource =
   | "balance_ledger"
   | "unresolved_code_fallback";
 
+type MaterialNameSourceQuery = {
+  source: Exclude<MaterialNameResolutionSource, "unresolved_code_fallback">;
+  table: string;
+  selectCols: string;
+  codeField: string;
+  nameField: string;
+};
+
 const NAME_SOURCES_PROBE_POSITIVE_TTL_MS = 5 * 60 * 1000;
 const NAME_SOURCES_PROBE_NEGATIVE_TTL_MS = 60 * 1000;
+const MATERIAL_NAME_SOURCE_QUERY_CONCURRENCY_LIMIT = 2;
+const MATERIAL_NAME_SOURCE_QUERIES: readonly MaterialNameSourceQuery[] = [
+  {
+    source: "balance_ledger",
+    table: "v_wh_balance_ledger_ui",
+    selectCols: "code,name",
+    codeField: "code",
+    nameField: "name",
+  },
+  {
+    source: "v_rik_names_ru",
+    table: "v_rik_names_ru",
+    selectCols: "code,name_ru",
+    codeField: "code",
+    nameField: "name_ru",
+  },
+  {
+    source: "catalog_name_overrides",
+    table: "catalog_name_overrides",
+    selectCols: "code,name_ru",
+    codeField: "code",
+    nameField: "name_ru",
+  },
+];
 
 let nameSourcesProbeCache: NameSourcesProbeCacheEntry | null = null;
 const MAX_MATERIAL_NAME_CACHE_SIZE = 2000;
@@ -430,13 +463,23 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
       return sourceMap;
     };
 
-    // Resolve independent name sources concurrently and merge with existing priority:
-    // catalog_name_overrides > v_rik_names_ru > v_wh_balance_ledger_ui.
-    const [ledgerMap, rikMap, overrideMap] = await Promise.all([
-      fetchSource("v_wh_balance_ledger_ui", "code,name", "code", "name"),
-      fetchSource("v_rik_names_ru", "code,name_ru", "code", "name_ru"),
-      fetchSource("catalog_name_overrides", "code,name_ru", "code", "name_ru"),
-    ]);
+    const sourceResults = await mapWithConcurrencyLimit(
+      MATERIAL_NAME_SOURCE_QUERIES,
+      MATERIAL_NAME_SOURCE_QUERY_CONCURRENCY_LIMIT,
+      async (sourceQuery) => ({
+        source: sourceQuery.source,
+        map: await fetchSource(
+          sourceQuery.table,
+          sourceQuery.selectCols,
+          sourceQuery.codeField,
+          sourceQuery.nameField,
+        ),
+      }),
+    );
+    const sourceMaps = new Map(sourceResults.map((result) => [result.source, result.map]));
+    const ledgerMap = sourceMaps.get("balance_ledger") ?? new Map<string, string>();
+    const rikMap = sourceMaps.get("v_rik_names_ru") ?? new Map<string, string>();
+    const overrideMap = sourceMaps.get("catalog_name_overrides") ?? new Map<string, string>();
 
     const resolved = new Map<string, string>();
     for (const [code, name] of ledgerMap.entries()) {
