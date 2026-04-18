@@ -11,7 +11,7 @@ import {
   type PdfSource,
   type PdfSourceKind,
 } from "../pdfFileContract";
-import { recordPdfCrashBreadcrumbAsync } from "../pdf/pdfCrashBreadcrumbs";
+import { recordPdfCrashBreadcrumb } from "../pdf/pdfCrashBreadcrumbs";
 import type {
   FileInfo,
   FileSystemDownloadResult,
@@ -128,8 +128,10 @@ function persistMaterializeBreadcrumb(
     fileSizeBytes?: number;
     errorMessage?: string;
   },
-) {
-  return recordPdfCrashBreadcrumbAsync({
+): void {
+  // PDF-PERF: materialization breadcrumbs are diagnostic only; AsyncStorage
+  // writes must not sit on the mobile PDF open critical path.
+  recordPdfCrashBreadcrumb({
     marker,
     screen: input.screen,
     documentType: input.documentType,
@@ -311,7 +313,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
   let sizeBytes: number | undefined;
 
   if (Platform.OS !== "web") {
-    await persistMaterializeBreadcrumb("viewer_materialize_start", {
+    persistMaterializeBreadcrumb("viewer_materialize_start", {
       screen: doc.originModule,
       documentType: doc.documentType,
       originModule: doc.originModule,
@@ -321,7 +323,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
       entityId: doc.entityId,
     });
     if (rawSource.kind === "blob") {
-      await persistMaterializeBreadcrumb("viewer_materialize_error", {
+      persistMaterializeBreadcrumb("viewer_materialize_error", {
         screen: doc.originModule,
         documentType: doc.documentType,
         originModule: doc.originModule,
@@ -365,7 +367,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
         documentType: doc.documentType,
         originModule: doc.originModule,
       });
-      await persistMaterializeBreadcrumb("viewer_materialize_success", {
+      persistMaterializeBreadcrumb("viewer_materialize_success", {
         screen: doc.originModule,
         documentType: doc.documentType,
         originModule: doc.originModule,
@@ -377,7 +379,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
         fileSizeBytes: getFileSize(finalInfo),
       });
     } catch (error) {
-      await persistMaterializeBreadcrumb("viewer_materialize_error", {
+      persistMaterializeBreadcrumb("viewer_materialize_error", {
         screen: doc.originModule,
         documentType: doc.documentType,
         originModule: doc.originModule,

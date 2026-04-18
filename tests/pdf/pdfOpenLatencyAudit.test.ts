@@ -22,8 +22,18 @@ const ACTIONS_PATH = join(
   "documents",
   "pdfDocumentActions.ts",
 );
+const SESSIONS_PATH = join(
+  __dirname,
+  "..",
+  "..",
+  "src",
+  "lib",
+  "documents",
+  "pdfDocumentSessions.ts",
+);
 
 const actionsSource = readFileSync(ACTIONS_PATH, "utf8");
+const sessionsSource = readFileSync(SESSIONS_PATH, "utf8");
 
 describe("L-PERF: breadcrumbs are fire-and-forget on critical path", () => {
   it("persistCriticalPdfBreadcrumb returns void, not Promise", () => {
@@ -106,6 +116,32 @@ describe("L-PERF: critical path contract preserved", () => {
 
   it("activePreviewFlows dedup guard is still present", () => {
     expect(actionsSource).toContain("activePreviewFlows");
+  });
+});
+
+describe("L-PERF-S: materialization breadcrumbs are fire-and-forget", () => {
+  it("persistMaterializeBreadcrumb returns void, not Promise", () => {
+    expect(sessionsSource).toMatch(
+      /function persistMaterializeBreadcrumb\([^)]*\):\s*void\s*\{/s,
+    );
+  });
+
+  it("uses recordPdfCrashBreadcrumb instead of the awaited async variant", () => {
+    expect(sessionsSource).toContain("recordPdfCrashBreadcrumb");
+    expect(sessionsSource).not.toContain("recordPdfCrashBreadcrumbAsync");
+  });
+
+  it("does not await materialization breadcrumbs on the PDF open path", () => {
+    expect(sessionsSource).not.toMatch(/await\s+persistMaterializeBreadcrumb\(/);
+  });
+
+  it("keeps the materialization order intact", () => {
+    expect(sessionsSource.indexOf("persistMaterializeBreadcrumb(\"viewer_materialize_start\"")).toBeLessThan(
+      sessionsSource.indexOf("ensureLocalPdfUri(rawSource, doc.fileName)"),
+    );
+    expect(sessionsSource.indexOf("ensureLocalPdfUri(rawSource, doc.fileName)")).toBeLessThan(
+      sessionsSource.indexOf("persistMaterializeBreadcrumb(\"viewer_materialize_success\""),
+    );
   });
 });
 
