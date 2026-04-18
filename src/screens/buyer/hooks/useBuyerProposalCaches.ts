@@ -4,14 +4,12 @@ import { supabase } from "../../../lib/supabaseClient";
 import { batchResolveRequestLabels } from "../../../lib/catalog_api";
 import { preloadProposalTitlesAction } from "../buyer.actions";
 import { fetchBuyerProposalNos } from "./useBuyerProposalNos";
+import { planBuyerProposalNoPreload } from "./useBuyerProposalCaches.plan";
 
 const errText = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
   return String(error ?? "");
 };
-
-const uniq = (arr: string[]) =>
-  Array.from(new Set((arr || []).map(String).map((s) => s.trim()).filter(Boolean)));
 
 const chunk = <T,>(arr: T[], size: number) => {
   const out: T[][] = [];
@@ -46,32 +44,29 @@ export function useBuyerProposalCaches() {
 
   const preloadProposalNosByIds = useCallback(async (proposalIdsRaw: string[]) => {
     const now = Date.now();
-    const ids = uniq(proposalIdsRaw);
-
-    const need = ids.filter((id) => {
-      const have = proposalNoByPidRef.current?.[id];
-      const ts = prNoTsRef.current[id] ?? 0;
-      if (have && now - ts < PRNO_TTL_MS) return false;
-      return true;
+    const plan = planBuyerProposalNoPreload({
+      proposalIdsRaw,
+      existingById: proposalNoByPidRef.current || {},
+      timestampById: prNoTsRef.current,
+      inflightById: prNoInflightRef.current,
+      now,
+      ttlMs: PRNO_TTL_MS,
     });
 
-    if (!need.length) return;
+    if (!plan.need.length) return;
 
     const wait: Promise<void>[] = [];
-    const toFetch: string[] = [];
-
-    for (const id of need) {
+    for (const id of plan.waitIds) {
       const infl = prNoInflightRef.current[id];
       if (infl) wait.push(infl);
-      else toFetch.push(id);
     }
 
-    if (toFetch.length) {
+    if (plan.toFetch.length) {
       const p = (async () => {
         try {
           const patch: Record<string, string> = {};
 
-          for (const part of chunk(toFetch, 250)) {
+          for (const part of chunk(plan.toFetch, 250)) {
             const q = await fetchBuyerProposalNos(part);
 
             if (!q.error && Array.isArray(q.data)) {
@@ -97,11 +92,11 @@ export function useBuyerProposalCaches() {
         }
       })();
 
-      for (const id of toFetch) prNoInflightRef.current[id] = p;
+      for (const id of plan.toFetch) prNoInflightRef.current[id] = p;
       wait.push(p);
 
       p.finally(() => {
-        for (const id of toFetch) {
+        for (const id of plan.toFetch) {
           if (prNoInflightRef.current[id] === p) delete prNoInflightRef.current[id];
         }
       });
