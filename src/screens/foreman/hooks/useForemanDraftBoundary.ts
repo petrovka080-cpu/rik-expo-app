@@ -123,6 +123,10 @@ import {
   planForemanRetryNowAction,
 } from "../foreman.manualRecovery.model";
 import {
+  resolveForemanPostSubmitDraftPlan,
+  resolveForemanPostSubmitSubmittedOwnerId,
+} from "../foreman.postSubmitDraftPlan.model";
+import {
   getForemanDurableDraftState,
   markForemanDurableDraftDirtyLocal,
   patchForemanDurableDraftRecoveryState,
@@ -579,16 +583,16 @@ export function useForemanDraftBoundary({
 
   const handlePostSubmitSuccess = useCallback(
     async (rid: string, submitted: RequestRecord | null) => {
-      const activeDraftIdBefore = ridStr(localDraftSnapshotRef.current?.requestId) || ridStr(requestId) || rid || null;
-      const submittedOwnerId =
-        normalizeDraftOwnerId(localDraftSnapshotRef.current?.ownerId)
-        || normalizeDraftOwnerId(activeDraftOwnerIdRef.current)
-        || null;
+      const activeSnapshot = localDraftSnapshotRef.current;
+      const submittedOwnerId = resolveForemanPostSubmitSubmittedOwnerId({
+        activeSnapshot,
+        activeDraftOwnerId: activeDraftOwnerIdRef.current,
+      });
       if (submittedOwnerId) {
         lastSubmittedOwnerIdRef.current = submittedOwnerId;
       }
       const freshDraftSnapshot = buildFreshForemanLocalDraftSnapshot({
-        base: localDraftSnapshotRef.current,
+        base: activeSnapshot,
         header: {
           foreman,
           comment: "",
@@ -598,56 +602,44 @@ export function useForemanDraftBoundary({
           zone,
         },
       });
-      setActiveDraftOwnerId(freshDraftSnapshot.ownerId);
-      if (submitted?.display_no) {
-        setDisplayNoByReq((prev) => ({ ...prev, [rid]: String(submitted.display_no) }));
+      const postSubmitPlan = resolveForemanPostSubmitDraftPlan({
+        rid,
+        activeRequestId: requestId,
+        activeSnapshot,
+        submitted,
+        submittedOwnerId,
+        freshDraftSnapshot,
+      });
+      setActiveDraftOwnerId(postSubmitPlan.nextActiveDraftOwnerId);
+      const displayNoPatch = postSubmitPlan.displayNoPatch;
+      if (displayNoPatch) {
+        setDisplayNoByReq((prev) => ({
+          ...prev,
+          [displayNoPatch.requestId]: displayNoPatch.displayNo,
+        }));
       }
 
-      skipRemoteHydrationRequestIdRef.current = null;
-      invalidateRequestDetailsLoads();
-      useForemanUiStore.getState().resetAiQuickUi();
-      useForemanUiStore.getState().clearAiQuickSessionHistory();
-      applyLocalDraftSnapshotToBoundary(freshDraftSnapshot, {
-        restoreHeader: true,
-        clearWhenEmpty: true,
-        restoreSource: "snapshot",
-        restoreIdentity: `post-submit:fresh:${freshDraftSnapshot.updatedAt}`,
-      });
+      if (postSubmitPlan.clearSkipRemoteHydrationRequestId) skipRemoteHydrationRequestIdRef.current = null;
+      if (postSubmitPlan.invalidateRequestDetailsLoads) invalidateRequestDetailsLoads();
+      if (postSubmitPlan.resetAiQuickUi) useForemanUiStore.getState().resetAiQuickUi();
+      if (postSubmitPlan.clearAiQuickSessionHistory) useForemanUiStore.getState().clearAiQuickSessionHistory();
+      applyLocalDraftSnapshotToBoundary(
+        postSubmitPlan.applySnapshot.snapshot,
+        postSubmitPlan.applySnapshot.options,
+      );
 
       await patchForemanDurableDraftRecoveryState({
-        snapshot: freshDraftSnapshot,
-        syncStatus: "idle",
-        pendingOperationsCount: 0,
-        queueDraftKey: null,
-        requestIdKnown: false,
-        attentionNeeded: false,
-        conflictType: "none",
-        lastConflictAt: null,
-        recoverableLocalSnapshot: null,
-        lastError: null,
-        lastErrorAt: null,
-        lastErrorStage: null,
-        retryCount: 0,
-        repeatedFailureStageCount: 0,
-        lastTriggerSource: "submit",
+        ...postSubmitPlan.durablePatch,
         lastSyncAt: Date.now(),
       });
-      await refreshBoundarySyncState(freshDraftSnapshot);
+      await refreshBoundarySyncState(postSubmitPlan.refreshBoundarySnapshot);
 
       if (__DEV__) {
         const durableState = getForemanDurableDraftState();
         console.info("[foreman.post-submit]", {
-          draftId: activeDraftIdBefore,
-          requestId: rid,
-          submitSuccess: true,
-          postSubmitAction: "promoted_fresh_local_draft",
+          ...postSubmitPlan.devTelemetry,
           staleBannerVisibleAfterSubmit:
             durableState.conflictType !== "none" || durableState.availableRecoveryActions.length > 0,
-          activeDraftIdBefore,
-          activeDraftIdAfter: FOREMAN_LOCAL_ONLY_REQUEST_ID,
-          activeDraftOwnerIdAfter: freshDraftSnapshot.ownerId,
-          freshDraftCreated: true,
-          runtimeResult: "post_submit_fresh_draft_state",
         });
       }
     },
