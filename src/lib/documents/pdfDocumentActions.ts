@@ -36,6 +36,10 @@ import {
   toPdfActionBoundaryError,
   type PdfActionBoundaryRun,
 } from "../pdf/pdfActionBoundary";
+import {
+  resolvePdfDocumentOpenFlowCleanupPlan,
+  resolvePdfDocumentOpenFlowStartPlan,
+} from "./pdfDocumentOpenFlowPlan";
 export function getPdfFlowErrorMessage(
   error: unknown,
   fallback = "Р СњР Вµ РЎС“Р Т‘Р В°Р В»Р С•РЎРѓРЎРЉ Р С•РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ PDF",
@@ -1087,24 +1091,32 @@ export async function prepareAndPreviewPdfDocument(
   if (flowKey) {
     const existing = activePreviewFlows.get(flowKey);
     const existingTs = activePreviewFlowTimestamps.get(flowKey) ?? existing?.startedAt ?? 0;
-    if (existing && existingTs > 0 && (Date.now() - existingTs) < ACTIVE_FLOW_MAX_TTL_MS) {
+    const startPlan = resolvePdfDocumentOpenFlowStartPlan({
+      flowKey,
+      existingRunId: existing?.runId,
+      existingStartedAt: existing?.startedAt,
+      existingTimestamp: existingTs,
+      nowMs: Date.now(),
+      maxTtlMs: ACTIVE_FLOW_MAX_TTL_MS,
+    });
+    if (startPlan.action === "join_existing" && existing) {
       recordPdfOpenStage({
         context: baseContext,
         stage: "tap_start",
         result: "joined_inflight",
         extra: {
-          guardReason: "owner_already_inflight",
+          guardReason: startPlan.guardReason,
         },
       });
       recordBoundary("pdf_action_started", "access", "joined_inflight", undefined, {
         duplicateStrategy: "join_inflight",
-        joinedRunId: existing.runId,
+        joinedRunId: startPlan.joinedRunId,
       });
       return await existing.promise;
     }
     // D-MODAL-PDF: Stale flow entry (abandoned promise or TTL expired) — clean
     // up and proceed with a fresh open rather than blocking indefinitely.
-    if (existing) {
+    if (startPlan.action === "start_new" && startPlan.clearExisting) {
       activePreviewFlows.delete(flowKey);
       activePreviewFlowTimestamps.delete(flowKey);
     }
@@ -1282,11 +1294,17 @@ export async function prepareAndPreviewPdfDocument(
   const promise = runFlow().finally(() => {
     if (flowKey) {
       const active = activePreviewFlows.get(flowKey);
-      if (active?.runId === runId) {
+      const cleanupPlan = resolvePdfDocumentOpenFlowCleanupPlan({
+        flowKey,
+        activeRunId: active?.runId,
+        latestRunId: latestPreviewRunByKey.get(flowKey),
+        currentRunId: runId,
+      });
+      if (cleanupPlan.clearActiveFlow) {
         activePreviewFlows.delete(flowKey);
         activePreviewFlowTimestamps.delete(flowKey);
       }
-      if (latestPreviewRunByKey.get(flowKey) === runId) {
+      if (cleanupPlan.clearLatestRun) {
         latestPreviewRunByKey.delete(flowKey);
       }
     }

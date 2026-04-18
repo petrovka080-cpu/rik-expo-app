@@ -35,6 +35,10 @@ describe("D-MODAL-PDF: activePreviewFlows TTL", () => {
       require("path").resolve(__dirname, "../../lib/documents/pdfDocumentActions.ts"),
       "utf-8",
     );
+    const plannerSource = require("fs").readFileSync(
+      require("path").resolve(__dirname, "../../lib/documents/pdfDocumentOpenFlowPlan.ts"),
+      "utf-8",
+    );
 
     // Verify the TTL constant exists
     expect(source).toContain("ACTIVE_FLOW_MAX_TTL_MS");
@@ -43,8 +47,9 @@ describe("D-MODAL-PDF: activePreviewFlows TTL", () => {
     // Verify the timestamp map exists
     expect(source).toContain("activePreviewFlowTimestamps");
 
-    // Verify the TTL check is in the inflight guard
-    expect(source).toContain("Date.now() - existingTs");
+    // Verify the TTL check still drives the inflight guard through the pure planner.
+    expect(source).toContain("resolvePdfDocumentOpenFlowStartPlan");
+    expect(plannerSource).toContain("args.nowMs - existingTimestamp");
     expect(source).toContain("ACTIVE_FLOW_MAX_TTL_MS");
   });
 
