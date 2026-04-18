@@ -41,6 +41,7 @@ describe("E: extracted modules exist", () => {
     "pdfViewerWebRenderUriCleanup.ts",
     "pdfViewerLoadingTimeoutGuard.ts",
     "pdfViewerBootstrapPlan.ts",
+    "pdfViewerOpenSignalPlan.ts",
     "pdfNativeHandoffGuard.ts",
     "pdfCrashBreadcrumbs.ts",
     "pdfCriticalPath.ts",
@@ -124,6 +125,12 @@ describe("E: pdf-viewer.tsx imports from extracted modules (not inline)", () => 
   it("imports bootstrap planning from pdfViewerBootstrapPlan", () => {
     expect(viewerSource).toContain("pdfViewerBootstrapPlan");
     expect(viewerSource).toContain("resolvePdfViewerBootstrapPlan");
+  });
+
+  it("imports open-signal planning from pdfViewerOpenSignalPlan", () => {
+    expect(viewerSource).toContain("pdfViewerOpenSignalPlan");
+    expect(viewerSource).toContain("resolvePdfViewerOpenVisibleSignalPlan");
+    expect(viewerSource).toContain("resolvePdfViewerOpenFailedSignalPlan");
   });
 
   it("imports open flow from pdfOpenFlow", () => {

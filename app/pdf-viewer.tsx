@@ -57,6 +57,10 @@ import {
   shouldCommitPdfViewerLoadingTimeout,
 } from "../src/lib/pdf/pdfViewerLoadingTimeoutGuard";
 import { resolvePdfViewerBootstrapPlan } from "../src/lib/pdf/pdfViewerBootstrapPlan";
+import {
+  resolvePdfViewerOpenFailedSignalPlan,
+  resolvePdfViewerOpenVisibleSignalPlan,
+} from "../src/lib/pdf/pdfViewerOpenSignalPlan";
 
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import {
@@ -436,17 +440,18 @@ function PdfViewerScreen() {
 
   const signalOpenVisible = React.useCallback(
     (resolvedAsset?: DocumentAsset | null, extra?: Record<string, unknown>) => {
-      if (!openToken || openSignalSettledRef.current) return;
+      const signalPlan = resolvePdfViewerOpenVisibleSignalPlan({
+        openToken,
+        alreadySettled: openSignalSettledRef.current,
+        sessionId,
+        asset: resolvedAsset,
+        extra,
+      });
+      if (signalPlan.action !== "emit_visible") return;
       openSignalSettledRef.current = true;
-      markPdfOpenVisible(openToken, {
-        sourceKind: resolvedAsset?.sourceKind,
-        extra: {
-          sessionId,
-          documentType: resolvedAsset?.documentType ?? null,
-          originModule: resolvedAsset?.originModule ?? null,
-          fileName: resolvedAsset?.fileName ?? null,
-          ...extra,
-        },
+      markPdfOpenVisible(signalPlan.openToken, {
+        sourceKind: signalPlan.sourceKind,
+        extra: signalPlan.extra,
       });
     },
     [openToken, sessionId],
@@ -454,17 +459,24 @@ function PdfViewerScreen() {
 
   const signalOpenFailed = React.useCallback(
     (message: string, extra?: Record<string, unknown>) => {
-      if (!openToken || openSignalSettledRef.current) return;
-      openSignalSettledRef.current = true;
-      failPdfOpenVisible(openToken, new Error(message), {
-        sourceKind: asset?.sourceKind,
-        extra: {
-          sessionId,
-          documentType: asset?.documentType ?? null,
-          originModule: asset?.originModule ?? null,
-          fileName: asset?.fileName ?? null,
-          ...extra,
+      const signalPlan = resolvePdfViewerOpenFailedSignalPlan({
+        openToken,
+        alreadySettled: openSignalSettledRef.current,
+        sessionId,
+        message,
+        asset: {
+          sourceKind: asset?.sourceKind,
+          documentType: asset?.documentType,
+          originModule: asset?.originModule,
+          fileName: asset?.fileName,
         },
+        extra,
+      });
+      if (signalPlan.action !== "emit_failed") return;
+      openSignalSettledRef.current = true;
+      failPdfOpenVisible(signalPlan.openToken, new Error(signalPlan.message), {
+        sourceKind: signalPlan.sourceKind,
+        extra: signalPlan.extra,
       });
     },
     [
