@@ -5,12 +5,14 @@ import type {
   RequestLookupRow,
 } from "./director_reports.shared";
 import {
-  chunk,
   forEachChunkParallel,
 } from "./director_reports.shared";
+import { mapWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
 import { recordDirectorReportsTransportWarning } from "./director_reports.observability";
 import { runContainedRpc } from "./queryBoundary";
 import { loadCanonicalRequestsByIds } from "./requestCanonical.read";
+
+const DIRECTOR_REPORT_ISSUE_LINE_FALLBACK_CONCURRENCY_LIMIT = 6;
 
 async function runTypedRpc<TRow>(
   fnName:
@@ -113,38 +115,36 @@ async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLin
     }
   }
 
-  const out: AccIssueLine[] = [];
-  const groups = chunk(ids, 20);
-  await forEachChunkParallel(groups, 1, 3, async (groupPart) => {
-    const group = groupPart[0] ?? [];
-    const settled = await Promise.all(
-      group.map(async (id) => {
-        try {
-          const numId = Number(id);
-          if (isNaN(numId)) return [] as AccIssueLine[];
+  const settled = await mapWithConcurrencyLimit(
+    ids,
+    DIRECTOR_REPORT_ISSUE_LINE_FALLBACK_CONCURRENCY_LIMIT,
+    async (id) => {
+      try {
+        const numId = Number(id);
+        if (isNaN(numId)) return [] as AccIssueLine[];
 
-          const { data, error } = await runTypedRpc<AccIssueLine>("acc_report_issue_lines", {
-            p_issue_id: numId,
-          });
-          if (error) {
-            recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", error, {
-              issueId: id,
-              source: "acc_report_issue_lines",
-            });
-            return [] as AccIssueLine[];
-          }
-          return Array.isArray(data) ? (data as AccIssueLine[]) : [];
-        } catch (error) {
+        const { data, error } = await runTypedRpc<AccIssueLine>("acc_report_issue_lines", {
+          p_issue_id: numId,
+        });
+        if (error) {
           recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", error, {
             issueId: id,
             source: "acc_report_issue_lines",
           });
           return [] as AccIssueLine[];
         }
-      }),
-    );
-    for (const rows of settled) if (rows) out.push(...rows);
-  });
+        return Array.isArray(data) ? (data as AccIssueLine[]) : [];
+      } catch (error) {
+        recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", error, {
+          issueId: id,
+          source: "acc_report_issue_lines",
+        });
+        return [] as AccIssueLine[];
+      }
+    },
+  );
+  const out: AccIssueLine[] = [];
+  for (const rows of settled) if (rows) out.push(...rows);
   return out;
 }
 
