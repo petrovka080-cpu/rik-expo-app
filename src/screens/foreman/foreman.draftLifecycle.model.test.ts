@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import {
+  FOREMAN_BOOTSTRAP_HYDRATE_TELEMETRY_COMMANDS,
   buildForemanDraftRestoreFailureTelemetry,
   buildForemanBootstrapStaleDurableResetPatch,
   getForemanBootstrapReconciliationRequestId,
@@ -10,6 +11,7 @@ import {
   planForemanFocusRestoreTrigger,
   planForemanNetworkBackRestoreTrigger,
   resolveForemanBootstrapCompletionStartPlan,
+  resolveForemanBootstrapHydrateTelemetryPlan,
   resolveForemanBootstrapOwnerPlan,
   resolveForemanBootstrapReconciliationPlan,
   resolveForemanBootstrapReenqueuePlan,
@@ -102,6 +104,7 @@ describe("foreman draft lifecycle decision model", () => {
     expect(source).not.toContain("subscribePlatformNetwork");
     expect(source).not.toContain("runForemanQueueRecovery");
     expect(source).not.toContain("clearTerminalLocalDraft");
+    expect(source).not.toContain("pushForemanDurableDraftTelemetry");
     expect(source).not.toContain("Date.now");
   });
 
@@ -418,6 +421,78 @@ describe("foreman draft lifecycle decision model", () => {
       requestId: null,
       remoteStatus: null,
     });
+  });
+
+  it("plans bootstrap hydrate telemetry payload without owning telemetry side effects", () => {
+    const snapshot = makeSnapshot({
+      requestId: " req-hydrate ",
+      updatedAt: "2026-04-17T10:00:00.000Z",
+    });
+
+    expect(resolveForemanBootstrapHydrateTelemetryPlan({
+      snapshot,
+      draftKey: "req-hydrate",
+      durableConflictType: "retryable_sync_failure",
+      networkOnline: false,
+      localOnlyRequestId: "__foreman_local_draft__",
+    })).toEqual({
+      action: "push_hydrate_success_telemetry",
+      commands: FOREMAN_BOOTSTRAP_HYDRATE_TELEMETRY_COMMANDS,
+      telemetry: {
+        stage: "hydrate",
+        result: "success",
+        draftKey: "req-hydrate",
+        requestId: "req-hydrate",
+        localOnlyDraftKey: false,
+        attemptNumber: 0,
+        queueSizeBefore: null,
+        queueSizeAfter: null,
+        coalescedCount: 0,
+        conflictType: "retryable_sync_failure",
+        recoveryAction: null,
+        errorClass: null,
+        errorCode: null,
+        offlineState: "offline",
+        triggerSource: "bootstrap_complete",
+      },
+    });
+
+    expect(resolveForemanBootstrapHydrateTelemetryPlan({
+      snapshot: makeSnapshot({ requestId: "" }),
+      draftKey: "__foreman_local_draft__",
+      durableConflictType: "none",
+      networkOnline: undefined,
+      localOnlyRequestId: "__foreman_local_draft__",
+    }).telemetry).toMatchObject({
+      requestId: null,
+      localOnlyDraftKey: true,
+      offlineState: "unknown",
+    });
+  });
+
+  it("keeps bootstrap hydrate telemetry before pending-count and re-enqueue work", () => {
+    const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
+    const start = source.indexOf("if (durableSnapshot && completionStartPlan.hasDurableSnapshotContent)");
+    const end = source.indexOf("await refreshBoundarySyncState(durableSnapshot ?? null)", start);
+    const block = source.slice(start, end);
+    const expectedOrder = [
+      "const hydrateDraftKey = getDraftQueueKey(durableSnapshot)",
+      "const hydrateTelemetryPlan = resolveForemanBootstrapHydrateTelemetryPlan",
+      "pushForemanDurableDraftTelemetry(hydrateTelemetryPlan.telemetry)",
+      "const pendingOperationsCount = await getForemanPendingMutationCountForDraftKeys",
+      "const reconciledRequestId = getForemanBootstrapReconciliationRequestId(durableSnapshot)",
+      "const reenqueueState = getForemanDurableDraftState()",
+      "const reenqueuePlan = planForemanBootstrapReenqueueCommand",
+      "await enqueueForemanMutation(reenqueuePlan.enqueue)",
+      "await markForemanSnapshotQueued(durableSnapshot",
+    ];
+
+    let previousIndex = -1;
+    for (const marker of expectedOrder) {
+      const nextIndex = block.indexOf(marker);
+      expect(nextIndex).toBeGreaterThan(previousIndex);
+      previousIndex = nextIndex;
+    }
   });
 
   it("reenqueues only the legacy eligible bootstrap cases", () => {

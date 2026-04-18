@@ -1,5 +1,6 @@
 import type {
   ForemanDraftConflictType,
+  ForemanDraftSyncTelemetryEvent,
   ForemanDraftSyncStatus,
 } from "../../lib/offline/foremanSyncRuntime";
 import type { ForemanLocalDraftSnapshot } from "./foreman.localDraft";
@@ -93,6 +94,16 @@ export type ForemanBootstrapReenqueueCommandPlan =
       };
       refreshBoundarySnapshot: ForemanLocalDraftSnapshot;
     };
+
+export const FOREMAN_BOOTSTRAP_HYDRATE_TELEMETRY_COMMANDS = [
+  "push_hydrate_success_telemetry",
+] as const;
+
+export type ForemanBootstrapHydrateTelemetryPlan = {
+  action: "push_hydrate_success_telemetry";
+  commands: typeof FOREMAN_BOOTSTRAP_HYDRATE_TELEMETRY_COMMANDS;
+  telemetry: Omit<ForemanDraftSyncTelemetryEvent, "id" | "at">;
+};
 
 export type ForemanRestoreRemoteCheckPlan =
   | { action: "skip_terminal_check"; requestId: null }
@@ -397,6 +408,34 @@ export const planForemanBootstrapReenqueueCommand = (params: {
     refreshBoundarySnapshot: params.snapshot,
   };
 };
+
+export const resolveForemanBootstrapHydrateTelemetryPlan = (params: {
+  snapshot: ForemanLocalDraftSnapshot;
+  draftKey: string;
+  durableConflictType: ForemanDraftConflictType;
+  networkOnline: boolean | null | undefined;
+  localOnlyRequestId: string;
+}): ForemanBootstrapHydrateTelemetryPlan => ({
+  action: "push_hydrate_success_telemetry",
+  commands: FOREMAN_BOOTSTRAP_HYDRATE_TELEMETRY_COMMANDS,
+  telemetry: {
+    stage: "hydrate",
+    result: "success",
+    draftKey: params.draftKey,
+    requestId: trim(params.snapshot.requestId) || null,
+    localOnlyDraftKey: params.draftKey === params.localOnlyRequestId,
+    attemptNumber: 0,
+    queueSizeBefore: null,
+    queueSizeAfter: null,
+    coalescedCount: 0,
+    conflictType: params.durableConflictType,
+    recoveryAction: null,
+    errorClass: null,
+    errorCode: null,
+    offlineState: params.networkOnline === true ? "online" : params.networkOnline === false ? "offline" : "unknown",
+    triggerSource: "bootstrap_complete",
+  },
+});
 
 export const resolveForemanRestoreRemoteCheckPlan = (params: {
   snapshot: ForemanLocalDraftSnapshot | null;

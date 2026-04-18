@@ -100,6 +100,7 @@ import {
   planForemanFocusRestoreTrigger,
   planForemanNetworkBackRestoreTrigger,
   resolveForemanBootstrapCompletionStartPlan,
+  resolveForemanBootstrapHydrateTelemetryPlan,
   resolveForemanBootstrapReconciliationPlan,
   resolveForemanBootstrapStaleDurableResetExecutionPlan,
   resolveForemanRestoreRemoteCheckPlan,
@@ -1388,24 +1389,15 @@ export function useForemanDraftBoundary({
         setActiveDraftOwnerId(undefined, { resetSubmitted: true });
       }
       if (durableSnapshot && completionStartPlan.hasDurableSnapshotContent) {
-        await pushForemanDurableDraftTelemetry({
-          stage: "hydrate",
-          result: "success",
-          draftKey: getDraftQueueKey(durableSnapshot),
-          requestId: ridStr(durableSnapshot.requestId) || null,
-          localOnlyDraftKey: getDraftQueueKey(durableSnapshot) === FOREMAN_LOCAL_ONLY_REQUEST_ID,
-          attemptNumber: 0,
-          queueSizeBefore: null,
-          queueSizeAfter: null,
-          coalescedCount: 0,
-          conflictType: getForemanDurableDraftState().conflictType,
-          recoveryAction: null,
-          errorClass: null,
-          errorCode: null,
-          offlineState:
-            networkOnlineRef.current === true ? "online" : networkOnlineRef.current === false ? "offline" : "unknown",
-          triggerSource: "bootstrap_complete",
+        const hydrateDraftKey = getDraftQueueKey(durableSnapshot);
+        const hydrateTelemetryPlan = resolveForemanBootstrapHydrateTelemetryPlan({
+          snapshot: durableSnapshot,
+          draftKey: hydrateDraftKey,
+          durableConflictType: getForemanDurableDraftState().conflictType,
+          networkOnline: networkOnlineRef.current,
+          localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
         });
+        await pushForemanDurableDraftTelemetry(hydrateTelemetryPlan.telemetry);
         const pendingOperationsCount = await getForemanPendingMutationCountForDraftKeys(
           getDraftQueueKeys(durableSnapshot),
         );
