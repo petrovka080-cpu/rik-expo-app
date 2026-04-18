@@ -29,6 +29,9 @@ import {
 import { recordDirectorReportsTransportWarning } from "./director_reports.observability";
 import { runTypedRpc } from "./director_reports.transport.base";
 
+const DIRECTOR_PRODUCTION_PRICE_LOOKUP_CHUNK_SIZE = 500;
+const DIRECTOR_PRODUCTION_PRICE_LOOKUP_CONCURRENCY_LIMIT = 4;
+
 const isMissingIssuePriceScopeRpcError = (error: unknown) => {
   const record = error && typeof error === "object" ? (error as Record<string, unknown>) : {};
   const message = String(record.message ?? error ?? "").toLowerCase();
@@ -150,18 +153,23 @@ async function fetchDirectorIssuePriceMaps(args: {
   if (!args.skipPurchaseItems) {
     if (codes.length) {
       try {
-        await forEachChunkParallel(codes, 500, 4, async (part) => {
-          const q = await supabase
-            .from("purchase_items" as never)
-            .select("ref_id,price,price_per_unit,amount,qty")
-            .in("ref_id", part)
-            .limit(50000);
-          if (q.error || !Array.isArray(q.data)) return;
-          for (const rawRow of q.data) {
-            const row = normalizePurchaseItemPriceRow(rawRow);
-            pushCode(row.ref_id ?? row.rik_code ?? row.code, resolvePurchaseUnitPrice(row), row.qty, "table:purchase_items/ref_id");
-          }
-        });
+        await forEachChunkParallel(
+          codes,
+          DIRECTOR_PRODUCTION_PRICE_LOOKUP_CHUNK_SIZE,
+          DIRECTOR_PRODUCTION_PRICE_LOOKUP_CONCURRENCY_LIMIT,
+          async (part) => {
+            const q = await supabase
+              .from("purchase_items" as never)
+              .select("ref_id,price,price_per_unit,amount,qty")
+              .in("ref_id", part)
+              .limit(50000);
+            if (q.error || !Array.isArray(q.data)) return;
+            for (const rawRow of q.data) {
+              const row = normalizePurchaseItemPriceRow(rawRow);
+              pushCode(row.ref_id ?? row.rik_code ?? row.code, resolvePurchaseUnitPrice(row), row.qty, "table:purchase_items/ref_id");
+            }
+          },
+        );
       } catch (error) {
         recordDirectorReportsTransportWarning("issue_price_map_purchase_items_failed", error, {
           codeCount: codes.length,
@@ -172,18 +180,23 @@ async function fetchDirectorIssuePriceMaps(args: {
 
     if (ids.length) {
       try {
-        await forEachChunkParallel(ids, 500, 4, async (part) => {
-          const q = await supabase
-            .from("purchase_items" as never)
-            .select("request_item_id,price,price_per_unit,amount,qty")
-            .in("request_item_id", part)
-            .limit(50000);
-          if (q.error || !Array.isArray(q.data)) return;
-          for (const rawRow of q.data) {
-            const row = normalizePurchaseItemRequestPriceRow(rawRow);
-            pushRequestItem(row.request_item_id, resolvePurchaseUnitPrice(row), row.qty, "table:purchase_items/request_item_id");
-          }
-        });
+        await forEachChunkParallel(
+          ids,
+          DIRECTOR_PRODUCTION_PRICE_LOOKUP_CHUNK_SIZE,
+          DIRECTOR_PRODUCTION_PRICE_LOOKUP_CONCURRENCY_LIMIT,
+          async (part) => {
+            const q = await supabase
+              .from("purchase_items" as never)
+              .select("request_item_id,price,price_per_unit,amount,qty")
+              .in("request_item_id", part)
+              .limit(50000);
+            if (q.error || !Array.isArray(q.data)) return;
+            for (const rawRow of q.data) {
+              const row = normalizePurchaseItemRequestPriceRow(rawRow);
+              pushRequestItem(row.request_item_id, resolvePurchaseUnitPrice(row), row.qty, "table:purchase_items/request_item_id");
+            }
+          },
+        );
       } catch (error) {
         recordDirectorReportsTransportWarning("request_item_price_lookup_failed", error, {
           requestItemCount: ids.length,
@@ -195,18 +208,23 @@ async function fetchDirectorIssuePriceMaps(args: {
   if (!DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
     if (codes.length) {
       try {
-        await forEachChunkParallel(codes, 500, 4, async (part) => {
-          const q = await supabase
-            .from("proposal_items" as never)
-            .select("rik_code,price,qty")
-            .in("rik_code", part)
-            .limit(50000);
-          if (q.error || !Array.isArray(q.data)) return;
-          for (const rawRow of q.data) {
-            const row = normalizeProposalItemPriceRow(rawRow);
-            pushCode(row.rik_code, row.price, row.qty, "table:proposal_items/rik_code");
-          }
-        });
+        await forEachChunkParallel(
+          codes,
+          DIRECTOR_PRODUCTION_PRICE_LOOKUP_CHUNK_SIZE,
+          DIRECTOR_PRODUCTION_PRICE_LOOKUP_CONCURRENCY_LIMIT,
+          async (part) => {
+            const q = await supabase
+              .from("proposal_items" as never)
+              .select("rik_code,price,qty")
+              .in("rik_code", part)
+              .limit(50000);
+            if (q.error || !Array.isArray(q.data)) return;
+            for (const rawRow of q.data) {
+              const row = normalizeProposalItemPriceRow(rawRow);
+              pushCode(row.rik_code, row.price, row.qty, "table:proposal_items/rik_code");
+            }
+          },
+        );
       } catch (error) {
         recordDirectorReportsTransportWarning("issue_price_map_proposal_items_failed", error, {
           codeCount: codes.length,
@@ -216,20 +234,25 @@ async function fetchDirectorIssuePriceMaps(args: {
 
     if (ids.length) {
       try {
-        await forEachChunkParallel(ids, 500, 4, async (part) => {
-          const q = await supabase
-            .from("proposal_items" as never)
-            .select("request_item_id,rik_code,price,qty")
-            .in("request_item_id", part)
-            .limit(50000);
-          if (q.error || !Array.isArray(q.data)) return;
-          for (const rawRow of q.data) {
-            const row = normalizeProposalItemPriceRow(rawRow as DirectorIssuePriceScopeRow);
-            const requestItemId = String((rawRow as Record<string, unknown>).request_item_id ?? "").trim();
-            pushRequestItem(requestItemId, row.price, row.qty, "table:proposal_items/request_item_id");
-            pushCode(row.rik_code, row.price, row.qty, "table:proposal_items/rik_code");
-          }
-        });
+        await forEachChunkParallel(
+          ids,
+          DIRECTOR_PRODUCTION_PRICE_LOOKUP_CHUNK_SIZE,
+          DIRECTOR_PRODUCTION_PRICE_LOOKUP_CONCURRENCY_LIMIT,
+          async (part) => {
+            const q = await supabase
+              .from("proposal_items" as never)
+              .select("request_item_id,rik_code,price,qty")
+              .in("request_item_id", part)
+              .limit(50000);
+            if (q.error || !Array.isArray(q.data)) return;
+            for (const rawRow of q.data) {
+              const row = normalizeProposalItemPriceRow(rawRow as DirectorIssuePriceScopeRow);
+              const requestItemId = String((rawRow as Record<string, unknown>).request_item_id ?? "").trim();
+              pushRequestItem(requestItemId, row.price, row.qty, "table:proposal_items/request_item_id");
+              pushCode(row.rik_code, row.price, row.qty, "table:proposal_items/rik_code");
+            }
+          },
+        );
       } catch (error) {
         recordDirectorReportsTransportWarning("request_item_price_lookup_proposal_items_failed", error, {
           requestItemCount: ids.length,
