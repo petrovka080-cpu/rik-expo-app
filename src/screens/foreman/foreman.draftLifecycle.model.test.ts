@@ -13,6 +13,7 @@ import {
   resolveForemanBootstrapOwnerPlan,
   resolveForemanBootstrapReconciliationPlan,
   resolveForemanBootstrapReenqueuePlan,
+  resolveForemanBootstrapStaleDurableResetExecutionPlan,
   resolveForemanRestoreRemoteCheckPlan,
   resolveForemanRestoreRemoteStatusPlan,
   shouldPersistForemanLifecycleSnapshot,
@@ -282,6 +283,74 @@ describe("foreman draft lifecycle decision model", () => {
       nextLocalSnapshot: null,
       refreshBoundarySnapshot: null,
     });
+  });
+
+  it("plans stale durable bootstrap reset execution without running hook effects", () => {
+    const lastSyncAt = 123456;
+    const durableState = {
+      ...baseDurableState,
+      syncStatus: "failed_terminal" as const,
+      attentionNeeded: true,
+      conflictType: "server_terminal_conflict" as const,
+      pendingOperationsCount: 4,
+      retryCount: 5,
+      lastSyncAt,
+    };
+    const resetPlan = resolveForemanBootstrapCompletionStartPlan({
+      durableSnapshot: null,
+      durableState,
+      requestId: "req-active",
+    });
+
+    expect(resetPlan.action).toBe("reset_stale_durable");
+    if (resetPlan.action !== "reset_stale_durable") {
+      throw new Error("expected reset plan");
+    }
+
+    expect(resolveForemanBootstrapStaleDurableResetExecutionPlan({
+      resetPlan,
+      durableState,
+    })).toEqual({
+      durablePatch: buildForemanBootstrapStaleDurableResetPatch({ lastSyncAt }),
+      activeOwnerReset: { nextOwnerId: undefined, resetSubmitted: true },
+      resetDraftState: true,
+      clearLocalSnapshotRef: true,
+      nextLocalSnapshot: null,
+      refreshBoundarySnapshot: null,
+      devTelemetry: {
+        syncStatus: "failed_terminal",
+        attentionNeeded: true,
+        conflictType: "server_terminal_conflict",
+        pendingOps: 4,
+        retryCount: 5,
+      },
+    });
+  });
+
+  it("keeps bootstrap stale reset side effects in the legacy order", () => {
+    const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
+    const start = source.indexOf("const completionStartPlan = resolveForemanBootstrapCompletionStartPlan");
+    const end = source.indexOf("const ownerPlan = completionStartPlan.ownerPlan", start);
+    const block = source.slice(start, end);
+    const expectedOrder = [
+      "resolveForemanBootstrapCompletionStartPlan",
+      "resolveForemanBootstrapStaleDurableResetExecutionPlan",
+      'console.info("[foreman.bootstrap] resetting stale durable sync metadata"',
+      "patchForemanDurableDraftRecoveryState(staleResetExecutionPlan.durablePatch)",
+      "setActiveDraftOwnerId(staleResetExecutionPlan.activeOwnerReset.nextOwnerId",
+      "resetDraftState()",
+      "localDraftSnapshotRef.current = staleResetExecutionPlan.nextLocalSnapshot",
+      "setLocalDraftSnapshot(staleResetExecutionPlan.nextLocalSnapshot)",
+      "refreshBoundarySyncState(staleResetExecutionPlan.refreshBoundarySnapshot)",
+      "return;",
+    ];
+
+    let previousIndex = -1;
+    for (const marker of expectedOrder) {
+      const nextIndex = block.indexOf(marker);
+      expect(nextIndex).toBeGreaterThan(previousIndex);
+      previousIndex = nextIndex;
+    }
   });
 
   it("plans bootstrap continuation with owner and content signals", () => {

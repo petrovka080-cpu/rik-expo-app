@@ -101,6 +101,7 @@ import {
   planForemanNetworkBackRestoreTrigger,
   resolveForemanBootstrapCompletionStartPlan,
   resolveForemanBootstrapReconciliationPlan,
+  resolveForemanBootstrapStaleDurableResetExecutionPlan,
   resolveForemanRestoreRemoteCheckPlan,
   resolveForemanRestoreRemoteStatusPlan,
   shouldPersistForemanLifecycleSnapshot,
@@ -1363,29 +1364,27 @@ export function useForemanDraftBoundary({
         requestId,
       });
       if (completionStartPlan.action === "reset_stale_durable") {
+        const staleResetExecutionPlan = resolveForemanBootstrapStaleDurableResetExecutionPlan({
+          resetPlan: completionStartPlan,
+          durableState: staleDurableState,
+        });
         if (__DEV__) {
-          console.info("[foreman.bootstrap] resetting stale durable sync metadata", {
-            syncStatus: staleDurableState.syncStatus,
-            attentionNeeded: staleDurableState.attentionNeeded,
-            conflictType: staleDurableState.conflictType,
-            pendingOps: staleDurableState.pendingOperationsCount,
-            retryCount: staleDurableState.retryCount,
-          });
+          console.info("[foreman.bootstrap] resetting stale durable sync metadata", staleResetExecutionPlan.devTelemetry);
         }
-        await patchForemanDurableDraftRecoveryState(completionStartPlan.durablePatch);
+        await patchForemanDurableDraftRecoveryState(staleResetExecutionPlan.durablePatch);
         // P6.3c: Also clear React-level draft state (items, requestDetails,
         // requestId, header). Without this, isDraftActive stays true because
         // requestDetails still holds the old "draft" status, and the persist
         // effect at line ~1497 rebuilds & re-persists the stale snapshot.
-        setActiveDraftOwnerId(completionStartPlan.activeOwnerReset.nextOwnerId, {
-          resetSubmitted: completionStartPlan.activeOwnerReset.resetSubmitted,
+        setActiveDraftOwnerId(staleResetExecutionPlan.activeOwnerReset.nextOwnerId, {
+          resetSubmitted: staleResetExecutionPlan.activeOwnerReset.resetSubmitted,
         });
-        if (completionStartPlan.resetDraftState) resetDraftState();
-        if (completionStartPlan.clearLocalSnapshotRef) {
-          localDraftSnapshotRef.current = completionStartPlan.nextLocalSnapshot;
+        if (staleResetExecutionPlan.resetDraftState) resetDraftState();
+        if (staleResetExecutionPlan.clearLocalSnapshotRef) {
+          localDraftSnapshotRef.current = staleResetExecutionPlan.nextLocalSnapshot;
         }
-        setLocalDraftSnapshot(completionStartPlan.nextLocalSnapshot);
-        await refreshBoundarySyncState(completionStartPlan.refreshBoundarySnapshot);
+        setLocalDraftSnapshot(staleResetExecutionPlan.nextLocalSnapshot);
+        await refreshBoundarySyncState(staleResetExecutionPlan.refreshBoundarySnapshot);
         return;
       }
 

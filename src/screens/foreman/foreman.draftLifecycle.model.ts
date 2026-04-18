@@ -53,6 +53,26 @@ export type ForemanBootstrapCompletionStartPlan =
       hasDurableSnapshotContent: boolean;
     };
 
+type ForemanBootstrapStaleDurableResetPlan = Extract<
+  ForemanBootstrapCompletionStartPlan,
+  { action: "reset_stale_durable" }
+>;
+
+export type ForemanBootstrapStaleDurableResetDevTelemetry = {
+  syncStatus: ForemanDraftSyncStatus;
+  attentionNeeded: boolean;
+  conflictType: ForemanDraftConflictType;
+  pendingOps: number;
+  retryCount: number;
+};
+
+export type ForemanBootstrapStaleDurableResetExecutionPlan = Omit<
+  ForemanBootstrapStaleDurableResetPlan,
+  "action"
+> & {
+  devTelemetry: ForemanBootstrapStaleDurableResetDevTelemetry;
+};
+
 export type ForemanBootstrapReenqueueCommandPlan =
   | { action: "skip_reenqueue"; refreshBoundarySnapshot: ForemanLocalDraftSnapshot | null }
   | {
@@ -264,6 +284,31 @@ export const resolveForemanBootstrapCompletionStartPlan = (params: {
     hasDurableSnapshotContent: hasSnapshotContent(params.durableSnapshot),
   };
 };
+
+export const resolveForemanBootstrapStaleDurableResetExecutionPlan = (params: {
+  resetPlan: ForemanBootstrapStaleDurableResetPlan;
+  durableState: {
+    syncStatus: ForemanDraftSyncStatus;
+    attentionNeeded: boolean;
+    conflictType: ForemanDraftConflictType;
+    pendingOperationsCount: number;
+    retryCount: number;
+  };
+}): ForemanBootstrapStaleDurableResetExecutionPlan => ({
+  durablePatch: params.resetPlan.durablePatch,
+  activeOwnerReset: params.resetPlan.activeOwnerReset,
+  resetDraftState: params.resetPlan.resetDraftState,
+  clearLocalSnapshotRef: params.resetPlan.clearLocalSnapshotRef,
+  nextLocalSnapshot: params.resetPlan.nextLocalSnapshot,
+  refreshBoundarySnapshot: params.resetPlan.refreshBoundarySnapshot,
+  devTelemetry: {
+    syncStatus: params.durableState.syncStatus,
+    attentionNeeded: params.durableState.attentionNeeded,
+    conflictType: params.durableState.conflictType,
+    pendingOps: params.durableState.pendingOperationsCount,
+    retryCount: params.durableState.retryCount,
+  },
+});
 
 export const getForemanBootstrapReconciliationRequestId = (
   snapshot: ForemanLocalDraftSnapshot | null | undefined,
