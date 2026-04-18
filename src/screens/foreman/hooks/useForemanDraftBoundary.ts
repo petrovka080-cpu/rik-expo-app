@@ -32,7 +32,6 @@ import { runForemanQueueRecovery } from "../../../lib/offline/offlineQueueRecove
 import {
   classifyForemanSyncError,
   isForemanConflictAutoRecoverable,
-  normalizeForemanSyncTriggerSource,
   type ForemanDraftSyncStage,
   type ForemanDraftRecoveryAction,
 } from "../../../lib/offline/foremanSyncRuntime";
@@ -64,6 +63,7 @@ import {
   type ForemanLocalDraftSnapshot,
 } from "../foreman.localDraft";
 import type { RequestDraftMeta } from "../foreman.types";
+import { resolveForemanDraftBoundaryFailureReportPlan } from "../foreman.draftBoundaryFailure.model";
 import {
   INITIAL_BOUNDARY_STATE,
   appendForemanLocalDraftRows,
@@ -320,26 +320,20 @@ export function useForemanDraftBoundary({
     const classified = classifyForemanSyncError(params.error);
     const snapshot = localDraftSnapshotRef.current ?? getForemanDurableDraftState().snapshot;
     const requestIdForError = ridStr(snapshot?.requestId) || ridStr(requestId) || null;
-    recordCatchDiscipline({
-      screen: "foreman",
-      surface: "draft_boundary",
+    const failurePlan = resolveForemanDraftBoundaryFailureReportPlan({
       event: params.event,
-      kind: params.kind ?? (classified.retryable ? "degraded_fallback" : "soft_failure"),
       error: params.error,
-      sourceKind: params.sourceKind ?? "draft_boundary:auto_recover",
-      errorStage: params.stage,
-      trigger: normalizeForemanSyncTriggerSource(params.context, null, false),
-      extra: {
-        conflictType: classified.conflictType,
-        context: params.context ?? null,
-        errorCode: classified.errorCode,
-        queueDraftKey: getDraftQueueKey(snapshot),
-        requestId: requestIdForError,
-        retryable: classified.retryable,
-        ...params.extra,
-      },
+      context: params.context,
+      stage: params.stage,
+      kind: params.kind,
+      sourceKind: params.sourceKind,
+      extra: params.extra,
+      classified,
+      queueDraftKey: getDraftQueueKey(snapshot),
+      requestId: requestIdForError,
     });
-    return classified;
+    recordCatchDiscipline(failurePlan.catchDiscipline);
+    return failurePlan.classified;
   }, [getDraftQueueKey, requestId]);
 
   const persistLocalDraftSnapshot = useCallback(
