@@ -54,6 +54,10 @@ import {
   planPdfNativeHandoffErrorCompletion,
   planPdfNativeHandoffStart,
   planPdfNativeHandoffSuccessCompletion,
+  resolvePdfNativeHandoffDuplicateSkipCommandPlan,
+  resolvePdfNativeHandoffErrorCommandPlan,
+  resolvePdfNativeHandoffStartCommandPlan,
+  resolvePdfNativeHandoffSuccessTelemetryPlan,
 } from "../src/lib/pdf/pdfNativeHandoffPlan";
 import {
   armPdfViewerLoadingTimeout,
@@ -693,6 +697,12 @@ function PdfViewerScreen() {
 
   const handoffPdfPreview = React.useCallback(
     async (resolvedAsset: DocumentAsset, trigger: "primary" | "manual") => {
+      const handoffContext = {
+        diagnosticsScreen,
+        openToken,
+        sessionId,
+        uriKind: getUriScheme(resolvedAsset.uri),
+      };
       const handoffKey = createPdfNativeHandoffKey({
         assetId: resolvedAsset.assetId,
         sessionId,
@@ -713,29 +723,23 @@ function PdfViewerScreen() {
         return;
       }
       if (startPlan.action === "record_duplicate_skip") {
-        console.info("[pdf-viewer] native_handoff_duplicate_skipped", {
-          sessionId,
-          documentType: resolvedAsset.documentType,
-          originModule: resolvedAsset.originModule,
-          uri: resolvedAsset.uri,
-          sourceKind: resolvedAsset.sourceKind,
-          trigger,
+        const duplicatePlan = resolvePdfNativeHandoffDuplicateSkipCommandPlan({
+          startPlan,
+          asset: resolvedAsset,
+          context: handoffContext,
         });
-        recordViewerBreadcrumb("native_open_duplicate_skipped", {
-          uri: resolvedAsset.uri,
-          uriKind: getUriScheme(resolvedAsset.uri),
-          sourceKind: resolvedAsset.sourceKind,
-          fileSizeBytes: resolvedAsset.sizeBytes,
-          fileExists:
-            typeof resolvedAsset.sizeBytes === "number" ? true : null,
-          previewPath: "native_handoff",
-          extra: {
-            trigger,
-            handoffType: "native_handoff",
-          },
-        });
+        console.info(duplicatePlan.console.label, duplicatePlan.console.payload);
+        recordViewerBreadcrumb(
+          duplicatePlan.breadcrumb.marker,
+          duplicatePlan.breadcrumb.payload,
+        );
         return;
       }
+      const startCommandPlan = resolvePdfNativeHandoffStartCommandPlan({
+        startPlan,
+        asset: resolvedAsset,
+        context: handoffContext,
+      });
       clearLoadingTimeout();
       setMenuOpen(false);
       setErrorText("");
@@ -744,67 +748,32 @@ function PdfViewerScreen() {
       setNativeHandoffCompleted(false);
 
       try {
-        console.info("[pdf-viewer] native_handoff_start", {
-          sessionId,
-          documentType: resolvedAsset.documentType,
-          originModule: resolvedAsset.originModule,
-          uri: resolvedAsset.uri,
-          scheme: getUriScheme(resolvedAsset.uri),
-          sourceKind: resolvedAsset.sourceKind,
+        console.info(
+          startCommandPlan.console.label,
+          startCommandPlan.console.payload,
+        );
+        recordViewerBreadcrumb(
+          startCommandPlan.breadcrumb.marker,
+          startCommandPlan.breadcrumb.payload,
+        );
+        recordPdfCriticalPathEvent(startCommandPlan.criticalPath);
+        await openPdfPreview(
+          startCommandPlan.openPreview.uri,
+          startCommandPlan.openPreview.fileName,
+        );
+        const successTelemetryPlan = resolvePdfNativeHandoffSuccessTelemetryPlan({
+          asset: resolvedAsset,
+          context: handoffContext,
           trigger,
         });
-        recordViewerBreadcrumb("native_open_start", {
-          uri: resolvedAsset.uri,
-          uriKind: getUriScheme(resolvedAsset.uri),
-          sourceKind: resolvedAsset.sourceKind,
-          fileSizeBytes: resolvedAsset.sizeBytes,
-          fileExists: typeof resolvedAsset.sizeBytes === "number" ? true : null,
-          previewPath: "native_handoff",
-          extra: {
-            trigger,
-            handoffType: "native_handoff",
-          },
-        });
-        recordPdfCriticalPathEvent({
-          event: "pdf_render_start",
-          screen: resolvedAsset.originModule ?? diagnosticsScreen ?? "pdf_viewer",
-          sourceKind: resolvedAsset.sourceKind,
-          documentType: resolvedAsset.documentType,
-          originModule: resolvedAsset.originModule,
-          entityId: resolvedAsset.entityId,
-          fileName: resolvedAsset.fileName,
-          sessionId,
-          openToken,
-          uri: resolvedAsset.uri,
-          uriKind: getUriScheme(resolvedAsset.uri),
-          previewPath: "native_handoff",
-          extra: {
-            trigger,
-            handoffType: "native_handoff",
-          },
-        });
-        await openPdfPreview(resolvedAsset.uri, resolvedAsset.fileName);
-        console.info("[pdf-viewer] native_handoff_ready", {
-          sessionId,
-          documentType: resolvedAsset.documentType,
-          originModule: resolvedAsset.originModule,
-          uri: resolvedAsset.uri,
-          sourceKind: resolvedAsset.sourceKind,
-          trigger,
-        });
-        recordViewerBreadcrumb("native_open_success", {
-          uri: resolvedAsset.uri,
-          uriKind: getUriScheme(resolvedAsset.uri),
-          sourceKind: resolvedAsset.sourceKind,
-          fileSizeBytes: resolvedAsset.sizeBytes,
-          fileExists: typeof resolvedAsset.sizeBytes === "number" ? true : null,
-          previewPath: "native_handoff",
-          terminalState: "success",
-          extra: {
-            trigger,
-            handoffType: "native_handoff",
-          },
-        });
+        console.info(
+          successTelemetryPlan.console.label,
+          successTelemetryPlan.console.payload,
+        );
+        recordViewerBreadcrumb(
+          successTelemetryPlan.breadcrumb.marker,
+          successTelemetryPlan.breadcrumb.payload,
+        );
         let successPlan = planPdfNativeHandoffSuccessCompletion({
           trigger,
           isMounted: isMountedRef.current,
@@ -844,30 +813,23 @@ function PdfViewerScreen() {
           });
         }
         if (errorPlan.action !== "commit_error") return;
-        const message = errorPlan.message;
-        console.error("[pdf-viewer] native_handoff_error", {
-          sessionId,
-          documentType: resolvedAsset.documentType,
-          originModule: resolvedAsset.originModule,
-          uri: resolvedAsset.uri,
-          trigger,
-          error: message,
+        const errorCommandPlan = resolvePdfNativeHandoffErrorCommandPlan({
+          errorPlan,
+          asset: resolvedAsset,
+          context: handoffContext,
         });
-        recordViewerBreadcrumb("native_open_error", {
-          uri: resolvedAsset.uri,
-          uriKind: getUriScheme(resolvedAsset.uri),
-          sourceKind: resolvedAsset.sourceKind,
-          fileSizeBytes: resolvedAsset.sizeBytes,
-          fileExists: typeof resolvedAsset.sizeBytes === "number" ? true : null,
-          previewPath: "native_handoff",
-          errorMessage: message,
-          terminalState: "error",
-          extra: {
-            trigger,
-            handoffType: "native_handoff",
-          },
-        });
-        markError(message, "render");
+        console.error(
+          errorCommandPlan.console.label,
+          errorCommandPlan.console.payload,
+        );
+        recordViewerBreadcrumb(
+          errorCommandPlan.breadcrumb.marker,
+          errorCommandPlan.breadcrumb.payload,
+        );
+        markError(
+          errorCommandPlan.terminalError.message,
+          errorCommandPlan.terminalError.phase,
+        );
       }
     },
     [
