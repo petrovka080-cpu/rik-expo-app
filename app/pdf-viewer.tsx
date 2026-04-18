@@ -51,6 +51,11 @@ import {
   resetPdfNativeHandoffGuard,
 } from "../src/lib/pdf/pdfNativeHandoffGuard";
 import {
+  planPdfNativeHandoffErrorCompletion,
+  planPdfNativeHandoffStart,
+  planPdfNativeHandoffSuccessCompletion,
+} from "../src/lib/pdf/pdfNativeHandoffPlan";
+import {
   armPdfViewerLoadingTimeout,
   cancelPdfViewerLoadingTimeout,
   createPdfViewerLoadingTimeoutGuardState,
@@ -693,39 +698,43 @@ function PdfViewerScreen() {
         sessionId,
         uri: resolvedAsset.uri,
       });
-      if (trigger === "primary") {
-        const decision = beginPdfNativeHandoff(
-          nativeHandoffGuardRef.current,
-          handoffKey,
-        );
-        if (decision === "skip_settled") {
-          markReady();
-          return;
-        }
-        if (decision === "skip_in_flight") {
-          console.info("[pdf-viewer] native_handoff_duplicate_skipped", {
-            sessionId,
-            documentType: resolvedAsset.documentType,
-            originModule: resolvedAsset.originModule,
-            uri: resolvedAsset.uri,
-            sourceKind: resolvedAsset.sourceKind,
-            trigger,
-          });
-          recordViewerBreadcrumb("native_open_duplicate_skipped", {
-            uri: resolvedAsset.uri,
-            uriKind: getUriScheme(resolvedAsset.uri),
-            sourceKind: resolvedAsset.sourceKind,
-            fileSizeBytes: resolvedAsset.sizeBytes,
-            fileExists:
-              typeof resolvedAsset.sizeBytes === "number" ? true : null,
-            previewPath: "native_handoff",
-            extra: {
+      const startPlan =
+        trigger === "primary"
+          ? planPdfNativeHandoffStart({
               trigger,
-              handoffType: "native_handoff",
-            },
-          });
-          return;
-        }
+              guardDecision: beginPdfNativeHandoff(
+                nativeHandoffGuardRef.current,
+                handoffKey,
+              ),
+            })
+          : planPdfNativeHandoffStart({ trigger });
+      if (startPlan.action === "mark_ready") {
+        markReady();
+        return;
+      }
+      if (startPlan.action === "record_duplicate_skip") {
+        console.info("[pdf-viewer] native_handoff_duplicate_skipped", {
+          sessionId,
+          documentType: resolvedAsset.documentType,
+          originModule: resolvedAsset.originModule,
+          uri: resolvedAsset.uri,
+          sourceKind: resolvedAsset.sourceKind,
+          trigger,
+        });
+        recordViewerBreadcrumb("native_open_duplicate_skipped", {
+          uri: resolvedAsset.uri,
+          uriKind: getUriScheme(resolvedAsset.uri),
+          sourceKind: resolvedAsset.sourceKind,
+          fileSizeBytes: resolvedAsset.sizeBytes,
+          fileExists:
+            typeof resolvedAsset.sizeBytes === "number" ? true : null,
+          previewPath: "native_handoff",
+          extra: {
+            trigger,
+            handoffType: "native_handoff",
+          },
+        });
+        return;
       }
       clearLoadingTimeout();
       setMenuOpen(false);
@@ -796,28 +805,46 @@ function PdfViewerScreen() {
             handoffType: "native_handoff",
           },
         });
-        if (!isMountedRef.current) return;
-        if (trigger === "primary") {
+        let successPlan = planPdfNativeHandoffSuccessCompletion({
+          trigger,
+          isMounted: isMountedRef.current,
+        });
+        if (successPlan.action === "complete_guard") {
           const completed = completePdfNativeHandoff(
             nativeHandoffGuardRef.current,
             handoffKey,
             "success",
           );
-          if (!completed) return;
+          successPlan = planPdfNativeHandoffSuccessCompletion({
+            trigger,
+            isMounted: true,
+            primaryGuardCompleted: completed,
+          });
         }
+        if (successPlan.action !== "commit_ready") return;
         setNativeHandoffCompleted(true);
         markReady();
       } catch (error) {
-        if (!isMountedRef.current) return;
-        if (trigger === "primary") {
+        let errorPlan = planPdfNativeHandoffErrorCompletion({
+          trigger,
+          isMounted: isMountedRef.current,
+          error,
+        });
+        if (errorPlan.action === "complete_guard") {
           const completed = completePdfNativeHandoff(
             nativeHandoffGuardRef.current,
             handoffKey,
             "failure",
           );
-          if (!completed) return;
+          errorPlan = planPdfNativeHandoffErrorCompletion({
+            trigger,
+            isMounted: true,
+            primaryGuardCompleted: completed,
+            error,
+          });
         }
-        const message = error instanceof Error ? error.message : String(error);
+        if (errorPlan.action !== "commit_error") return;
+        const message = errorPlan.message;
         console.error("[pdf-viewer] native_handoff_error", {
           sessionId,
           documentType: resolvedAsset.documentType,
