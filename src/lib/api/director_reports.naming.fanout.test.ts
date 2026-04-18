@@ -1,3 +1,6 @@
+import { readFileSync } from "fs";
+import { join } from "path";
+
 const mockFrom = jest.fn();
 const mockRecordPlatformObservability = jest.fn();
 
@@ -12,6 +15,24 @@ jest.mock("../observability/platformObservability", () => ({
 }));
 
 const loadSubject = () => require("./director_reports.naming") as typeof import("./director_reports.naming");
+
+describe("director_reports.naming lookup fan-out budget", () => {
+  const source = readFileSync(join(__dirname, "director_reports.naming.ts"), "utf8");
+
+  it("keeps chunked naming lookups on the named lookup budget", () => {
+    expect(source).toContain("const DIRECTOR_NAMING_LOOKUP_CHUNK_SIZE = 500;");
+    expect(source).toContain("const DIRECTOR_NAMING_LOOKUP_CONCURRENCY_LIMIT = 4;");
+
+    const chunkedLookupCalls = source.match(/forEachChunkParallel\(/g) ?? [];
+    const budgetUsages = source.match(/DIRECTOR_NAMING_LOOKUP_CONCURRENCY_LIMIT/g) ?? [];
+    const chunkSizeUsages = source.match(/DIRECTOR_NAMING_LOOKUP_CHUNK_SIZE/g) ?? [];
+
+    expect(chunkedLookupCalls).toHaveLength(3);
+    expect(budgetUsages).toHaveLength(chunkedLookupCalls.length + 1);
+    expect(chunkSizeUsages).toHaveLength(chunkedLookupCalls.length + 1);
+    expect(source).not.toMatch(/forEachChunkParallel\([\s\S]*?\n\s*500,\s*4,/);
+  });
+});
 
 describe("director_reports.naming material name fan-out", () => {
   beforeEach(() => {

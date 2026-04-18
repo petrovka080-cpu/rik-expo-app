@@ -28,6 +28,9 @@ import {
   systemLookupInFlight,
 } from "./director_reports.cache";
 
+const DIRECTOR_NAMING_LOOKUP_CHUNK_SIZE = 500;
+const DIRECTOR_NAMING_LOOKUP_CONCURRENCY_LIMIT = 4;
+
 async function fetchObjectsByIds(idsRaw: string[]): Promise<Map<string, string>> {
   const ids = Array.from(new Set((idsRaw || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
   const out = new Map<string, string>();
@@ -49,26 +52,31 @@ async function fetchObjectsByIds(idsRaw: string[]): Promise<Map<string, string>>
   if (!pending) {
     pending = (async () => {
       const loaded = new Map<string, string>();
-      await forEachChunkParallel(missingIds, 500, 4, async (part) => {
-        const { data, error } = await supabase
-          .from("objects" as never)
-          .select("id,name")
-          .in("id", part);
-        if (error) throw error;
-        const rows = Array.isArray(data)
-          ? data.map(normalizeObjectLookupRow).filter((row): row is ObjectLookupRow => !!row)
-          : [];
-        const seen = new Set<string>();
-        for (const row of rows) {
-          seen.add(row.id);
-          const name = String(row.name ?? "").trim();
-          setLookupValue(objectLookupCache, row.id, name || null);
-          if (name) loaded.set(row.id, name);
-        }
-        for (const id of part) {
-          if (!seen.has(id)) setLookupValue(objectLookupCache, id, null);
-        }
-      });
+      await forEachChunkParallel(
+        missingIds,
+        DIRECTOR_NAMING_LOOKUP_CHUNK_SIZE,
+        DIRECTOR_NAMING_LOOKUP_CONCURRENCY_LIMIT,
+        async (part) => {
+          const { data, error } = await supabase
+            .from("objects" as never)
+            .select("id,name")
+            .in("id", part);
+          if (error) throw error;
+          const rows = Array.isArray(data)
+            ? data.map(normalizeObjectLookupRow).filter((row): row is ObjectLookupRow => !!row)
+            : [];
+          const seen = new Set<string>();
+          for (const row of rows) {
+            seen.add(row.id);
+            const name = String(row.name ?? "").trim();
+            setLookupValue(objectLookupCache, row.id, name || null);
+            if (name) loaded.set(row.id, name);
+          }
+          for (const id of part) {
+            if (!seen.has(id)) setLookupValue(objectLookupCache, id, null);
+          }
+        },
+      );
       return loaded;
     })();
     objectLookupInFlight.set(inFlightKey, pending);
@@ -115,30 +123,35 @@ async function fetchCodeLookupByCodes(
   if (!pending) {
     pending = (async () => {
       const loaded = new Map<string, string>();
-      await forEachChunkParallel(missingCodes, 500, 4, async (part) => {
-        const { data, error } = await supabase
-          .from(table as never)
-          .select(selectCols)
-          .in("code", part);
-        if (error) throw error;
-        const rows = Array.isArray(data)
-          ? data
-              .map((row) => (table === "v_rik_names_ru" ? normalizeCodeNameRow(row) : normalizeCodeNameRow(row)))
-              .filter((row): row is CodeNameRow => !!row)
-          : [];
-        const seen = new Set<string>();
-        for (const row of rows) {
-          const code = String(row.code ?? "").trim().toUpperCase();
-          if (!code) continue;
-          seen.add(code);
-          const name = resolveName(row).trim();
-          setLookupValue(cache, code, name || null);
-          if (name) loaded.set(code, name);
-        }
-        for (const code of part) {
-          if (!seen.has(code)) setLookupValue(cache, code, null);
-        }
-      });
+      await forEachChunkParallel(
+        missingCodes,
+        DIRECTOR_NAMING_LOOKUP_CHUNK_SIZE,
+        DIRECTOR_NAMING_LOOKUP_CONCURRENCY_LIMIT,
+        async (part) => {
+          const { data, error } = await supabase
+            .from(table as never)
+            .select(selectCols)
+            .in("code", part);
+          if (error) throw error;
+          const rows = Array.isArray(data)
+            ? data
+                .map((row) => (table === "v_rik_names_ru" ? normalizeCodeNameRow(row) : normalizeCodeNameRow(row)))
+                .filter((row): row is CodeNameRow => !!row)
+            : [];
+          const seen = new Set<string>();
+          for (const row of rows) {
+            const code = String(row.code ?? "").trim().toUpperCase();
+            if (!code) continue;
+            seen.add(code);
+            const name = resolveName(row).trim();
+            setLookupValue(cache, code, name || null);
+            if (name) loaded.set(code, name);
+          }
+          for (const code of part) {
+            if (!seen.has(code)) setLookupValue(cache, code, null);
+          }
+        },
+      );
       return loaded;
     })();
     inFlight.set(inFlightKey, pending);
@@ -439,27 +452,32 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
       nameField: string,
     ): Promise<Map<string, string>> => {
       const sourceMap = new Map<string, string>();
-      await forEachChunkParallel(missingCodes, 500, 4, async (part) => {
-        try {
-          const sb = supabase as unknown as DynamicQueryClient;
-          const q = await sb
-            .from(table)
-            .select(selectCols)
-            .in(codeField, part);
-          if (q.error) {
-            warnDirectorNaming("fetch_source", table, q.error);
-            return;
-          }
-          if (Array.isArray(q.data)) {
-            for (const rowValue of q.data as unknown[]) {
-              const row = asRecord(rowValue);
-              put(sourceMap, row[codeField], row[nameField]);
+      await forEachChunkParallel(
+        missingCodes,
+        DIRECTOR_NAMING_LOOKUP_CHUNK_SIZE,
+        DIRECTOR_NAMING_LOOKUP_CONCURRENCY_LIMIT,
+        async (part) => {
+          try {
+            const sb = supabase as unknown as DynamicQueryClient;
+            const q = await sb
+              .from(table)
+              .select(selectCols)
+              .in(codeField, part);
+            if (q.error) {
+              warnDirectorNaming("fetch_source", table, q.error);
+              return;
             }
+            if (Array.isArray(q.data)) {
+              for (const rowValue of q.data as unknown[]) {
+                const row = asRecord(rowValue);
+                put(sourceMap, row[codeField], row[nameField]);
+              }
+            }
+          } catch (error) {
+            warnDirectorNaming("fetch_source", table, error);
           }
-        } catch (error) {
-          warnDirectorNaming("fetch_source", table, error);
-        }
-      });
+        },
+      );
       return sourceMap;
     };
 
