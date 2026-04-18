@@ -12,6 +12,7 @@ import {
   type PdfSourceKind,
 } from "../pdfFileContract";
 import { recordPdfCrashBreadcrumb } from "../pdf/pdfCrashBreadcrumbs";
+import { resolvePdfLocalMaterializationPlan } from "./pdfDocumentMaterializationPlan";
 import type {
   FileInfo,
   FileSystemDownloadResult,
@@ -174,6 +175,7 @@ async function ensureLocalPdfUri(
   const normalizedName = normalizePdfFileName(fileName, "document");
   const paths = getFileSystemPaths();
   const cacheDir = paths.cacheDir;
+  const documentDir = paths.documentDir;
   const hash = hashString32(source.uri);
   const targetName = `pdf_${hash}_${sanitizeStem(normalizedName, "document.pdf")}`;
   const targetUri = `${cacheDir}${targetName}`;
@@ -217,22 +219,25 @@ async function ensureLocalPdfUri(
     throw new Error(`PDF source not found: ${sourceUri.slice(-60)}`);
   }
 
-  // Even if keepAsIs could be true, on iOS 18 it's safer to always copy to our own controlled cache
-  // if the file is in a volatile location like /Print/
-  const isVolatile = sourceUri.includes("/Caches/Print/") || sourceUri.includes("/T/");
-  
-  if (isVolatile || sourceUri !== targetUri) {
+  const plan = resolvePdfLocalMaterializationPlan({
+    sourceUri,
+    targetUri,
+    cacheDir,
+    documentDir,
+  });
+
+  if (plan.action === "copy") {
     logMaterializeStage("pdf_materialize_copy_started", {
       uri: sourceUri,
       sourceKind: "local-file",
       fileName,
     });
-    await fileSystemCompat.copyAsync({ from: sourceUri, to: targetUri });
-    const copiedInfo = await getFileInfo(targetUri);
+    await fileSystemCompat.copyAsync({ from: sourceUri, to: plan.targetUri });
+    const copiedInfo = await getFileInfo(plan.targetUri);
     if (!copiedInfo?.exists) throw new Error("Materialized local PDF file is missing after copy");
     
     return {
-      uri: targetUri,
+      uri: plan.targetUri,
       sourceKind: "local-file",
       sizeBytes: getFileSize(copiedInfo),
     };

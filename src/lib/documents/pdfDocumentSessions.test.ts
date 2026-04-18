@@ -92,4 +92,63 @@ describe("pdfDocumentSessions materialization", () => {
       }),
     );
   });
+
+  it("does not recopy stable PDFs that are already inside controlled cache", async () => {
+    const sourceUri = "file:///cache/already-ready.pdf";
+
+    const asset = await materializePdfAsset({
+      uri: sourceUri,
+      fileSource: {
+        kind: "local-file",
+        uri: sourceUri,
+      },
+      fileName: "already-ready.pdf",
+      title: "Ready PDF",
+      mimeType: "application/pdf",
+      documentType: "warehouse_document",
+      source: "generated",
+      originModule: "warehouse",
+      createdAt: "2026-04-19T00:00:00.000Z",
+      entityId: "warehouse-1",
+    });
+
+    expect(asset.uri).toBe(sourceUri);
+    expect(asset.sourceKind).toBe("local-file");
+    expect(asset.sizeBytes).toBe(1234);
+    expect(mockCopyAsync).not.toHaveBeenCalled();
+    expect(mockRecordPdfCrashBreadcrumb).toHaveBeenCalledWith(
+      expect.objectContaining({
+        marker: "viewer_materialize_success",
+        screen: "warehouse",
+        uri: sourceUri,
+      }),
+    );
+  });
+
+  it("still copies volatile print-cache PDFs into controlled cache", async () => {
+    const sourceUri = "file:///cache/Caches/Print/output.pdf";
+
+    const asset = await materializePdfAsset({
+      uri: sourceUri,
+      fileSource: {
+        kind: "local-file",
+        uri: sourceUri,
+      },
+      fileName: "print-output.pdf",
+      title: "Print Output PDF",
+      mimeType: "application/pdf",
+      documentType: "request",
+      source: "generated",
+      originModule: "foreman",
+      createdAt: "2026-04-19T00:00:00.000Z",
+      entityId: "request-2",
+    });
+
+    expect(asset.uri).toContain("file:///cache/pdf_");
+    expect(asset.uri).not.toBe(sourceUri);
+    expect(mockCopyAsync).toHaveBeenCalledWith({
+      from: sourceUri,
+      to: expect.stringContaining("file:///cache/pdf_"),
+    });
+  });
 });

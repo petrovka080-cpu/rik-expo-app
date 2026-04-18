@@ -143,6 +143,11 @@ describe("L-PERF-S: materialization breadcrumbs are fire-and-forget", () => {
       sessionsSource.indexOf("persistMaterializeBreadcrumb(\"viewer_materialize_success\""),
     );
   });
+
+  it("delegates local materialization copy decisions to a pure plan", () => {
+    expect(sessionsSource).toContain("resolvePdfLocalMaterializationPlan");
+    expect(sessionsSource).not.toContain("sourceUri.includes(\"/Caches/Print/\")");
+  });
 });
 
 describe("L-PERF: exact bottleneck elimination verification", () => {
