@@ -98,4 +98,38 @@ describe("pdf.runner lifecycle", () => {
       },
     });
   });
+
+  it("emits generated source preparation timing for descriptor builds", async () => {
+    await buildGeneratedPdfDescriptor({
+      getSource: async () => ({
+        kind: "remote-url",
+        uri: "https://example.com/generated.pdf",
+      }),
+      title: "Generated PDF",
+      fileName: "generated.pdf",
+      documentType: "warehouse_register",
+      originModule: "warehouse",
+      entityId: "register-1",
+    });
+
+    expect(getPlatformObservabilityEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          screen: "warehouse",
+          surface: "pdf_source_prepare",
+          event: "generated_pdf_source_ready",
+          result: "success",
+          sourceKind: "remote-url",
+          durationMs: expect.any(Number),
+          extra: expect.objectContaining({
+            documentType: "warehouse_register",
+            originModule: "warehouse",
+            entityId: "register-1",
+            sourceMode: "getSource",
+            uriKind: "https",
+          }),
+        }),
+      ]),
+    );
+  });
 });

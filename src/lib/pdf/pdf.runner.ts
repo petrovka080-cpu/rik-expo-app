@@ -17,6 +17,7 @@ import {
 import { beginPdfLifecycleObservation } from "./pdfLifecycle";
 import { normalizeRuTextForHtml } from "../text/encoding";
 import type { BusyLike } from "../pdfRunner";
+import { recordPlatformObservability } from "../observability/platformObservability";
 
 type BuildGeneratedPdfDescriptorArgs = {
   getSource?: () => Promise<PdfSource>;
@@ -35,6 +36,54 @@ type PrepareGeneratedPdfArgs = {
   label: string;
   descriptor: DocumentDescriptor;
 };
+
+type PdfSourcePrepareScreen =
+  | "foreman"
+  | "buyer"
+  | "accountant"
+  | "director"
+  | "warehouse"
+  | "contractor"
+  | "reports";
+
+const nowMs = () => {
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+    return performance.now();
+  }
+  return Date.now();
+};
+
+const normalizeSourcePrepareScreen = (originModule: PdfOriginModule): PdfSourcePrepareScreen => {
+  switch (originModule) {
+    case "foreman":
+    case "buyer":
+    case "accountant":
+    case "director":
+    case "warehouse":
+    case "contractor":
+    case "reports":
+      return originModule;
+    default:
+      return "reports";
+  }
+};
+
+const getErrorShape = (error: unknown) => {
+  if (error instanceof Error) {
+    return {
+      errorClass: String(error.name || "Error"),
+      errorMessage: String(error.message || "").trim() || undefined,
+    };
+  }
+  const text = String(error ?? "").trim();
+  return {
+    errorClass: undefined,
+    errorMessage: text || undefined,
+  };
+};
+
+const getUriScheme = (uri: unknown) =>
+  String(uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "";
 
 function ensureGeneratedPdfUri(value: unknown, label: string): string {
   const uri = typeof value === "string" ? value.trim() : "";
@@ -162,17 +211,60 @@ export function createGeneratedPdfDescriptor(args: {
 export async function buildGeneratedPdfDescriptor(
   args: BuildGeneratedPdfDescriptorArgs,
 ): Promise<DocumentDescriptor> {
-  const source = args.getSource
-    ? ensureGeneratedPdfSource(await args.getSource(), "Generated PDF source")
-    : createPdfSource(ensureGeneratedPdfUri(await args.getUri?.(), "Generated PDF URI"));
-  return createGeneratedPdfDescriptor({
-    fileSource: source,
-    title: args.title,
-    fileName: args.fileName,
-    documentType: args.documentType,
-    originModule: args.originModule,
-    entityId: args.entityId,
-  });
+  const startedAt = nowMs();
+  const sourceMode = args.getSource ? "getSource" : "getUri";
+  try {
+    const source = args.getSource
+      ? ensureGeneratedPdfSource(await args.getSource(), "Generated PDF source")
+      : createPdfSource(ensureGeneratedPdfUri(await args.getUri?.(), "Generated PDF URI"));
+    recordPlatformObservability({
+      screen: normalizeSourcePrepareScreen(args.originModule),
+      surface: "pdf_source_prepare",
+      category: "fetch",
+      event: "generated_pdf_source_ready",
+      result: "success",
+      durationMs: Math.max(0, Math.round(nowMs() - startedAt)),
+      sourceKind: source.kind,
+      extra: {
+        documentType: args.documentType,
+        originModule: args.originModule,
+        entityId: args.entityId == null ? null : String(args.entityId),
+        fileName: args.fileName ?? null,
+        sourceMode,
+        uriKind: getUriScheme(source.uri) || source.kind,
+      },
+    });
+    return createGeneratedPdfDescriptor({
+      fileSource: source,
+      title: args.title,
+      fileName: args.fileName,
+      documentType: args.documentType,
+      originModule: args.originModule,
+      entityId: args.entityId,
+    });
+  } catch (error) {
+    const errorShape = getErrorShape(error);
+    recordPlatformObservability({
+      screen: normalizeSourcePrepareScreen(args.originModule),
+      surface: "pdf_source_prepare",
+      category: "fetch",
+      event: "generated_pdf_source_ready",
+      result: "error",
+      durationMs: Math.max(0, Math.round(nowMs() - startedAt)),
+      sourceKind: "pdf:generated_source",
+      errorStage: "generated_pdf_source_ready",
+      errorClass: errorShape.errorClass,
+      errorMessage: errorShape.errorMessage,
+      extra: {
+        documentType: args.documentType,
+        originModule: args.originModule,
+        entityId: args.entityId == null ? null : String(args.entityId),
+        fileName: args.fileName ?? null,
+        sourceMode,
+      },
+    });
+    throw error;
+  }
 }
 
 export async function prepareGeneratedPdf(

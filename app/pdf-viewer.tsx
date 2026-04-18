@@ -37,6 +37,7 @@ import { resolvePdfViewerWebRenderUriCleanup } from "../src/lib/pdf/pdfViewerWeb
 import {
   failPdfOpenVisible,
   markPdfOpenVisible,
+  markPdfOpenRouteMounted,
 } from "../src/lib/pdf/pdfOpenFlow";
 import {
   recordPdfCrashBreadcrumbAsync,
@@ -70,13 +71,13 @@ import {
   resolvePdfViewerOpenFailedSignalPlan,
   resolvePdfViewerOpenVisibleSignalPlan,
 } from "../src/lib/pdf/pdfViewerOpenSignalPlan";
+import { resolvePdfViewerWebIframeReadyFallbackPlan } from "../src/lib/pdf/pdfViewerWebIframeReadyFallback";
 
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import {
   FALLBACK_ROUTE,
   VIEWER_BG,
   VIEWER_TEXT,
-  VIEWER_PLATFORM,
 } from "../src/lib/pdf/pdfViewer.constants";
 import { styles } from "../src/lib/pdf/pdfViewer.styles";
 import { MenuAction, EmptyState, CenteredPanel } from "../src/lib/pdf/pdfViewer.components";
@@ -113,6 +114,9 @@ const NativePdfWebView =
           return null;
         }
       })() as React.ComponentType<any> | null);
+
+const getCurrentViewerPlatform = () =>
+  Platform.OS === "web" ? "web" : Platform.OS === "android" ? "android" : "ios";
 
 console.info("[pdf-viewer] module_loaded", { platform: Platform.OS });
 
@@ -191,6 +195,7 @@ function PdfViewerScreen() {
     assetUri: snapshot.asset?.uri?.slice(-40) ?? null,
     sourceKind: snapshot.asset?.sourceKind ?? null,
   });
+  const viewerPlatform = getCurrentViewerPlatform();
   const [session, setSession] = React.useState<DocumentSession | null>(
     snapshot.session,
   );
@@ -198,7 +203,7 @@ function PdfViewerScreen() {
     snapshot.asset,
   );
   const [state, setState] = React.useState<ViewerState>(
-    resolvePdfViewerState(snapshot.session, snapshot.asset, VIEWER_PLATFORM),
+    resolvePdfViewerState(snapshot.session, snapshot.asset, viewerPlatform),
   );
   const [errorText, setErrorText] = React.useState(
     snapshot.session?.errorMessage || "",
@@ -217,7 +222,12 @@ function PdfViewerScreen() {
   const initialAssetUriRef = React.useRef("");
   const isMountedRef = React.useRef(true);
   const renderFailedRef = React.useRef(false);
+  const readyCommittedRef = React.useRef(false);
   const webRenderUriRef = React.useRef<string | null>(null);
+  const webIframeReadyFallbackRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const viewerCycleRef = React.useRef(0);
   const openSignalSettledRef = React.useRef(false);
   const webIframeRenderLoggedKeyRef = React.useRef("");
   const activeRenderInstanceKeyRef = React.useRef("");
@@ -229,8 +239,8 @@ function PdfViewerScreen() {
   );
   const resolvedSource = React.useMemo(
     () =>
-      resolvePdfViewerResolution({ session, asset, platform: VIEWER_PLATFORM }),
-    [asset, session],
+      resolvePdfViewerResolution({ session, asset, platform: viewerPlatform }),
+    [asset, session, viewerPlatform],
   );
   const resolvedPreviewPath = React.useMemo(
     () =>
@@ -313,11 +323,20 @@ function PdfViewerScreen() {
     };
   }, []);
 
+  const clearWebIframeReadyFallback = React.useCallback(() => {
+    if (webIframeReadyFallbackRef.current) {
+      clearTimeout(webIframeReadyFallbackRef.current);
+      webIframeReadyFallbackRef.current = null;
+    }
+  }, []);
+
   React.useEffect(() => {
     openSignalSettledRef.current = false;
+    readyCommittedRef.current = false;
     webIframeRenderLoggedKeyRef.current = "";
+    clearWebIframeReadyFallback();
     resetPdfNativeHandoffGuard(nativeHandoffGuardRef.current);
-  }, [openToken, sessionId, loadAttempt]);
+  }, [clearWebIframeReadyFallback, openToken, sessionId, loadAttempt]);
 
   const clearWebRenderUri = React.useCallback((options?: { commitState?: boolean }) => {
     const current = webRenderUriRef.current;
@@ -393,6 +412,17 @@ function PdfViewerScreen() {
         receivedSessionId: params.sessionId ?? null,
       },
     });
+    markPdfOpenRouteMounted(openToken, {
+      sourceKind: snapshot.asset?.sourceKind ?? params.sourceKind ?? null,
+      extra: {
+        route: "/pdf-viewer",
+        sessionId,
+        receivedSessionId: params.sessionId ?? null,
+        documentType: snapshot.asset?.documentType ?? params.documentType,
+        originModule: snapshot.asset?.originModule ?? params.originModule,
+        uriKind: getUriScheme(snapshot.asset?.uri ?? params.uri),
+      },
+    });
   }, [
     diagnosticsScreen,
     openToken,
@@ -432,12 +462,12 @@ function PdfViewerScreen() {
       const nextState = resolvePdfViewerState(
         next.session,
         next.asset,
-        VIEWER_PLATFORM,
+        viewerPlatform,
       );
       return prev === nextState ? prev : nextState;
     });
     return next;
-  }, [resolveSnapshot]);
+  }, [resolveSnapshot, viewerPlatform]);
 
   const clearLoadingTimeout = React.useCallback(() => {
     if (loadingTimeoutRef.current) {
@@ -504,6 +534,7 @@ function PdfViewerScreen() {
       phase: "resolution" | "render" | "timeout" | "action" = "render",
     ) => {
       renderFailedRef.current = true;
+      clearWebIframeReadyFallback();
       clearLoadingTimeout();
       setIsReadyToRender(false);
       setErrorText(message);
@@ -578,6 +609,7 @@ function PdfViewerScreen() {
     },
     [
       clearLoadingTimeout,
+      clearWebIframeReadyFallback,
       diagnosticsScreen,
       openToken,
       params.documentType,
@@ -618,6 +650,9 @@ function PdfViewerScreen() {
   }, [clearLoadingTimeout, markError, syncSnapshot]);
 
   const markReady = React.useCallback(() => {
+    if (readyCommittedRef.current || renderFailedRef.current) return;
+    readyCommittedRef.current = true;
+    clearWebIframeReadyFallback();
     clearLoadingTimeout();
     const next = syncSnapshot();
     setErrorText("");
@@ -682,6 +717,7 @@ function PdfViewerScreen() {
     });
   }, [
     clearLoadingTimeout,
+    clearWebIframeReadyFallback,
     diagnosticsScreen,
     openToken,
     params.documentType,
@@ -694,6 +730,65 @@ function PdfViewerScreen() {
     signalOpenVisible,
     syncSnapshot,
   ]);
+
+  const scheduleWebIframeReadyFallback = React.useCallback(
+    (args: {
+      resolvedAsset: DocumentAsset;
+      renderUri: string;
+      sourceKind: string;
+    }) => {
+      const fallbackPlan = resolvePdfViewerWebIframeReadyFallbackPlan({
+        platform: viewerPlatform,
+        sourceKind: args.sourceKind,
+        renderUri: args.renderUri,
+      });
+      if (fallbackPlan.action !== "schedule_ready_fallback") return;
+
+      clearWebIframeReadyFallback();
+      const cycle = viewerCycleRef.current;
+      webIframeReadyFallbackRef.current = setTimeout(() => {
+        webIframeReadyFallbackRef.current = null;
+        if (
+          !isMountedRef.current ||
+          renderFailedRef.current ||
+          readyCommittedRef.current ||
+          viewerCycleRef.current !== cycle ||
+          webRenderUriRef.current !== args.renderUri
+        ) {
+          return;
+        }
+        const latest = syncSnapshot();
+        if (latest.asset?.assetId !== args.resolvedAsset.assetId) return;
+        console.info("[pdf-viewer] web_iframe_ready_fallback", {
+          sessionId: latest.session?.sessionId ?? sessionId,
+          documentType: args.resolvedAsset.documentType,
+          originModule: args.resolvedAsset.originModule,
+          uri: args.renderUri,
+          delayMs: fallbackPlan.delayMs,
+          reason: fallbackPlan.reason,
+        });
+        recordViewerBreadcrumb("web_iframe_ready_fallback", {
+          uri: args.renderUri,
+          uriKind: getUriScheme(args.renderUri),
+          sourceKind: args.sourceKind,
+          previewPath: "web-frame",
+          extra: {
+            delayMs: fallbackPlan.delayMs,
+            reason: fallbackPlan.reason,
+          },
+        });
+        markReady();
+      }, fallbackPlan.delayMs);
+    },
+    [
+      clearWebIframeReadyFallback,
+      markReady,
+      recordViewerBreadcrumb,
+      sessionId,
+      syncSnapshot,
+      viewerPlatform,
+    ],
+  );
 
   const handoffPdfPreview = React.useCallback(
     async (resolvedAsset: DocumentAsset, trigger: "primary" | "manual") => {
@@ -748,10 +843,7 @@ function PdfViewerScreen() {
       setNativeHandoffCompleted(false);
 
       try {
-        console.info(
-          startCommandPlan.console.label,
-          startCommandPlan.console.payload,
-        );
+        console.info("[pdf-viewer] native_handoff_start", startCommandPlan.console.payload);
         recordViewerBreadcrumb(
           startCommandPlan.breadcrumb.marker,
           startCommandPlan.breadcrumb.payload,
@@ -766,10 +858,7 @@ function PdfViewerScreen() {
           context: handoffContext,
           trigger,
         });
-        console.info(
-          successTelemetryPlan.console.label,
-          successTelemetryPlan.console.payload,
-        );
+        console.info("[pdf-viewer] native_handoff_ready", successTelemetryPlan.console.payload);
         recordViewerBreadcrumb(
           successTelemetryPlan.breadcrumb.marker,
           successTelemetryPlan.breadcrumb.payload,
@@ -844,8 +933,11 @@ function PdfViewerScreen() {
   );
 
   React.useEffect(() => {
+    viewerCycleRef.current += 1;
     openedAtRef.current = Date.now();
     renderFailedRef.current = false;
+    readyCommittedRef.current = false;
+    clearWebIframeReadyFallback();
     clearLoadingTimeout();
     clearWebRenderUri();
     setIsReadyToRender(false);
@@ -861,18 +953,18 @@ function PdfViewerScreen() {
 
     touchDocumentSession(next.session.sessionId);
     setErrorText(next.session.errorMessage || "");
-    setState(resolvePdfViewerState(next.session, next.asset, VIEWER_PLATFORM));
+    setState(resolvePdfViewerState(next.session, next.asset, viewerPlatform));
     let cancelled = false;
 
     const prepareViewer = async () => {
       const resolution = resolvePdfViewerResolution({
         session: next.session,
         asset: next.asset,
-        platform: VIEWER_PLATFORM,
+        platform: viewerPlatform,
       });
       const bootstrapPlan = resolvePdfViewerBootstrapPlan({
         resolution,
-        platform: VIEWER_PLATFORM,
+        platform: viewerPlatform,
       });
       if (bootstrapPlan.action === "show_empty") {
         setState("empty");
@@ -1011,6 +1103,11 @@ function PdfViewerScreen() {
           renderScheme: getUriScheme(bootstrapPlan.webRenderUri),
         });
         setIsReadyToRender(true);
+        scheduleWebIframeReadyFallback({
+          resolvedAsset,
+          renderUri: bootstrapPlan.webRenderUri,
+          sourceKind: resolvedResolution.sourceKind,
+        });
         return;
       }
       if (
@@ -1044,17 +1141,21 @@ function PdfViewerScreen() {
         scheme: getUriScheme(next.asset?.uri),
       });
       clearLoadingTimeout();
+      clearWebIframeReadyFallback();
     };
   }, [
     clearLoadingTimeout,
+    clearWebIframeReadyFallback,
     clearWebRenderUri,
     enterLoading,
     handoffPdfPreview,
     markError,
     markReady,
     recordViewerBreadcrumb,
+    scheduleWebIframeReadyFallback,
     sessionId,
     syncSnapshot,
+    viewerPlatform,
     loadAttempt,
   ]);
 
@@ -1110,13 +1211,13 @@ function PdfViewerScreen() {
   const renderInstanceKey = React.useMemo(() => {
     if (!asset || resolvedSource.kind !== "resolved-embedded") {
       return createPdfViewerRenderInstanceKey({
-        platform: VIEWER_PLATFORM,
+        platform: viewerPlatform,
         sessionId,
         loadAttempt,
       });
     }
     return createPdfViewerRenderInstanceKey({
-      platform: VIEWER_PLATFORM,
+      platform: viewerPlatform,
       sessionId,
       assetId: asset.assetId,
       uri: asset.uri,
@@ -1127,7 +1228,7 @@ function PdfViewerScreen() {
       renderer: resolvedSource.renderer,
       loadAttempt,
     });
-  }, [asset, loadAttempt, resolvedSource, sessionId, webEmbeddedUri]);
+  }, [asset, loadAttempt, resolvedSource, sessionId, viewerPlatform, webEmbeddedUri]);
 
   React.useLayoutEffect(() => {
     activeRenderInstanceKeyRef.current = renderInstanceKey;
@@ -1457,6 +1558,7 @@ function PdfViewerScreen() {
                 src={webEmbeddedUri || undefined}
                 onLoad={() => {
                   if (!isActiveRenderEvent(renderInstanceKey)) return;
+                  if (renderFailedRef.current) return;
                   console.info("[pdf-viewer] web_iframe_load", {
                     sessionId,
                     documentType: asset.documentType,

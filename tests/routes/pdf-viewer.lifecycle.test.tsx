@@ -7,6 +7,7 @@ import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
 } from "../../src/lib/observability/platformObservability";
+import { PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS } from "../../src/lib/pdf/pdfViewerWebIframeReadyFallback";
 
 const mockUseLocalSearchParams = jest.fn();
 const mockRouterBack = jest.fn();
@@ -16,6 +17,7 @@ const mockTouchDocumentSession = jest.fn();
 const mockFailDocumentSession = jest.fn();
 const mockMarkPdfOpenVisible = jest.fn();
 const mockFailPdfOpenVisible = jest.fn();
+const mockMarkPdfOpenRouteMounted = jest.fn();
 
 jest.mock("expo-router", () => ({
   router: {
@@ -57,6 +59,8 @@ jest.mock("../../src/lib/documents/pdfDocumentActions", () => ({
 
 jest.mock("../../src/lib/pdf/pdfOpenFlow", () => ({
   failPdfOpenVisible: (...args: unknown[]) => mockFailPdfOpenVisible(...args),
+  markPdfOpenRouteMounted: (...args: unknown[]) =>
+    mockMarkPdfOpenRouteMounted(...args),
   markPdfOpenVisible: (...args: unknown[]) => mockMarkPdfOpenVisible(...args),
 }));
 
@@ -96,6 +100,7 @@ describe("PdfViewerScreen web lifecycle", () => {
     mockFailDocumentSession.mockReset();
     mockMarkPdfOpenVisible.mockReset();
     mockFailPdfOpenVisible.mockReset();
+    mockMarkPdfOpenRouteMounted.mockReset();
     resetPlatformObservabilityEvents();
 
     Object.defineProperty(Platform, "OS", {
@@ -170,6 +175,42 @@ describe("PdfViewerScreen web lifecycle", () => {
     ).toHaveLength(0);
 
     await act(async () => {
+      jest.advanceTimersByTime(PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS);
+      await flush();
+    });
+
+    const infoTextsAfterFallback = infoSpy.mock.calls.map((call) =>
+      String(call[0] ?? ""),
+    );
+    expect(
+      infoTextsAfterFallback.filter((text) => text.includes("[pdf-viewer] open")),
+    ).toHaveLength(1);
+    expect(
+      infoTextsAfterFallback.filter((text) =>
+        text.includes("[pdf-viewer] viewer_before_render"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      infoTextsAfterFallback.filter((text) =>
+        text.includes("[pdf-viewer] web_iframe_render"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      infoTextsAfterFallback.filter((text) =>
+        text.includes("[pdf-viewer] web_iframe_ready_fallback"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      infoTextsAfterFallback.filter((text) =>
+        text.includes("[pdf-viewer] web_iframe_load"),
+      ),
+    ).toHaveLength(0);
+    expect(
+      infoTextsAfterFallback.filter((text) => text.includes("[pdf-viewer] ready")),
+    ).toHaveLength(1);
+    expect(errorSpy).not.toHaveBeenCalled();
+
+    await act(async () => {
       iframe.props.onLoad();
       await flush();
     });
@@ -178,19 +219,6 @@ describe("PdfViewerScreen web lifecycle", () => {
       String(call[0] ?? ""),
     );
     expect(
-      infoTextsAfterLoad.filter((text) => text.includes("[pdf-viewer] open")),
-    ).toHaveLength(1);
-    expect(
-      infoTextsAfterLoad.filter((text) =>
-        text.includes("[pdf-viewer] viewer_before_render"),
-      ),
-    ).toHaveLength(1);
-    expect(
-      infoTextsAfterLoad.filter((text) =>
-        text.includes("[pdf-viewer] web_iframe_render"),
-      ),
-    ).toHaveLength(1);
-    expect(
       infoTextsAfterLoad.filter((text) =>
         text.includes("[pdf-viewer] web_iframe_load"),
       ),
@@ -198,7 +226,6 @@ describe("PdfViewerScreen web lifecycle", () => {
     expect(
       infoTextsAfterLoad.filter((text) => text.includes("[pdf-viewer] ready")),
     ).toHaveLength(1);
-    expect(errorSpy).not.toHaveBeenCalled();
     expect(getPlatformObservabilityEvents()).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

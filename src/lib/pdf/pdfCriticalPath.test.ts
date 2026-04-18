@@ -34,6 +34,24 @@ describe("pdf critical path observability", () => {
         sessionId: "session-1",
       },
     });
+    recordPdfOpenStage({
+      context,
+      stage: "viewer_route_mounted",
+      sourceKind: "remote-url",
+      extra: {
+        route: "/pdf-viewer",
+        sessionId: "session-1",
+      },
+    });
+    recordPdfOpenStage({
+      context,
+      stage: "first_open_visible",
+      sourceKind: "remote-url",
+      extra: {
+        route: "/pdf-viewer",
+        sessionId: "session-1",
+      },
+    });
 
     expect(getPlatformObservabilityEvents()).toEqual(
       expect.arrayContaining([
@@ -62,6 +80,21 @@ describe("pdf critical path observability", () => {
           event: "pdf_viewer_route_push",
           result: "success",
           sourceKind: "remote-url",
+        }),
+        expect.objectContaining({
+          screen: "buyer",
+          surface: "pdf_open_performance",
+          event: "pdf_open_latency",
+          result: "success",
+          sourceKind: "remote-url",
+          extra: expect.objectContaining({
+            documentType: "proposal",
+            originModule: "buyer",
+            hasRouteMountedMark: true,
+            hasSourceReadyMark: true,
+            tapToVisibleMs: expect.any(Number),
+            sourceReadyToVisibleMs: expect.any(Number),
+          }),
         }),
       ]),
     );
@@ -107,6 +140,15 @@ describe("pdf critical path observability", () => {
           errorMessage: "source unavailable",
           extra: expect.objectContaining({
             appErrorContext: "pdf_terminal_fail",
+          }),
+        }),
+        expect.objectContaining({
+          surface: "pdf_open_performance",
+          event: "pdf_open_latency",
+          result: "error",
+          extra: expect.objectContaining({
+            tapToVisibleMs: null,
+            tapToTerminalMs: expect.any(Number),
           }),
         }),
       ]),

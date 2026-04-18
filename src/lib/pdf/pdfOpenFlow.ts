@@ -11,6 +11,12 @@ import {
   recordPdfCriticalPathEvent,
   type PdfCriticalPathEvent,
 } from "./pdfCriticalPath";
+import {
+  recordPdfOpenPerformanceMark,
+  recordPdfOpenPerformanceSummary,
+  type PdfOpenPerformanceMarks,
+  type PdfOpenPerformanceStage,
+} from "./pdfOpenPerformance";
 
 type PdfOpenStage =
   | "tap_start"
@@ -21,6 +27,7 @@ type PdfOpenStage =
   | "viewer_or_handoff_start"
   | "viewer_route_payload_ready"
   | "viewer_route_push_attempt"
+  | "viewer_route_mounted"
   | "viewer_route_push_crash"
   | "first_open_visible"
   | "open_failed"
@@ -45,6 +52,8 @@ export type PdfOpenFlowContext = {
   documentType: PdfDocumentType;
   originModule: PdfOriginModule;
   startedAt: number;
+  performanceMarks: PdfOpenPerformanceMarks;
+  performanceTerminalRecorded?: boolean;
 };
 
 type PdfOpenStageRecordArgs = {
@@ -128,6 +137,7 @@ export function createPdfOpenFlowContext(args: {
   documentType: PdfDocumentType;
   originModule: PdfOriginModule;
 }): PdfOpenFlowContext {
+  const startedAt = nowMs();
   return {
     key: trimText(args.key) || undefined,
     label: trimText(args.label) || undefined,
@@ -135,12 +145,30 @@ export function createPdfOpenFlowContext(args: {
     entityId: trimText(args.entityId) || undefined,
     documentType: args.documentType,
     originModule: args.originModule,
-    startedAt: nowMs(),
+    startedAt,
+    performanceMarks: {},
   };
 }
 
 export function recordPdfOpenStage(args: PdfOpenStageRecordArgs) {
   if (!args.context) return null;
+  const observedAt = nowMs();
+  const performanceStage = args.stage as PdfOpenPerformanceStage;
+  if (
+    performanceStage === "tap_start" ||
+    performanceStage === "document_prepare_start" ||
+    performanceStage === "document_prepare_done" ||
+    performanceStage === "viewer_route_push_attempt" ||
+    performanceStage === "viewer_route_mounted" ||
+    performanceStage === "first_open_visible" ||
+    performanceStage === "open_failed"
+  ) {
+    recordPdfOpenPerformanceMark(
+      args.context.performanceMarks,
+      performanceStage,
+      observedAt,
+    );
+  }
   const screen = normalizeScreen(args.context.originModule);
   const criticalEvent = PDF_CRITICAL_EVENT_BY_STAGE[args.stage];
   if (criticalEvent) {
@@ -206,7 +234,7 @@ export function recordPdfOpenStage(args: PdfOpenStageRecordArgs) {
     });
   }
   const errorShape = getErrorShape(args.error);
-  return recordPlatformObservability({
+  const familyEvent = recordPlatformObservability({
     screen,
     surface: "pdf_open_family",
     category:
@@ -217,7 +245,7 @@ export function recordPdfOpenStage(args: PdfOpenStageRecordArgs) {
         : "ui"),
     event: args.stage,
     result: args.result ?? "success",
-    durationMs: Math.max(0, Math.round(nowMs() - args.context.startedAt)),
+    durationMs: Math.max(0, Math.round(observedAt - args.context.startedAt)),
     sourceKind: trimText(args.sourceKind) || "pdf:document",
     errorStage: args.result === "error" ? args.stage : undefined,
     errorClass: errorShape.errorClass,
@@ -232,6 +260,36 @@ export function recordPdfOpenStage(args: PdfOpenStageRecordArgs) {
       ...args.extra,
     },
   });
+  if (
+    (args.stage === "first_open_visible" || args.stage === "open_failed") &&
+    !args.context.performanceTerminalRecorded
+  ) {
+    args.context.performanceTerminalRecorded = true;
+    recordPdfOpenPerformanceSummary({
+      marks: args.context.performanceMarks,
+      startedAt: args.context.startedAt,
+      terminalAtMs: observedAt,
+      result: args.stage === "first_open_visible" ? "success" : "error",
+      sourceKind: args.sourceKind,
+      key: args.context.key,
+      label: args.context.label,
+      documentType: args.context.documentType,
+      originModule: args.context.originModule,
+      entityId: args.context.entityId,
+      fileName: args.context.fileName,
+      extra: {
+        terminalStage: args.stage,
+        openToken: trimText(args.extra?.openToken) || null,
+        sessionId: trimText(args.extra?.sessionId) || null,
+        previewPath: trimText(
+          args.extra?.previewPath ??
+            args.extra?.previewSourceMode ??
+            args.extra?.route,
+        ) || null,
+      },
+    });
+  }
+  return familyEvent;
 }
 
 export function beginPdfOpenVisibilityWait(context: PdfOpenFlowContext) {
@@ -268,6 +326,29 @@ export function markPdfOpenVisible(
     extra: params?.extra,
   });
   pending.resolve();
+  return true;
+}
+
+export function markPdfOpenRouteMounted(
+  token: string | null | undefined,
+  params?: {
+    sourceKind?: string | null;
+    extra?: Record<string, unknown>;
+  },
+) {
+  const key = trimText(token);
+  if (!key) return false;
+  const pending = pendingVisibility.get(key);
+  if (!pending || pending.settled) return false;
+  recordPdfOpenStage({
+    context: pending.context,
+    stage: "viewer_route_mounted",
+    sourceKind: params?.sourceKind,
+    extra: {
+      openToken: key,
+      ...params?.extra,
+    },
+  });
   return true;
 }
 
