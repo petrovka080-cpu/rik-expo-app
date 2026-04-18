@@ -16,6 +16,7 @@ import {
   resolveForemanBootstrapReconciliationPlan,
   resolveForemanBootstrapReenqueuePlan,
   resolveForemanBootstrapStaleDurableResetExecutionPlan,
+  resolveForemanActiveLocalDraftSnapshotPlan,
   resolveForemanRestoreRemoteCheckPlan,
   resolveForemanRestoreRemoteStatusPlan,
   shouldPersistForemanLifecycleSnapshot,
@@ -203,6 +204,102 @@ describe("foreman draft lifecycle decision model", () => {
       action: "skip",
       context: "network_back",
       reason: "network_not_recovered",
+    });
+  });
+
+  it("selects only active local draft snapshots by content, owner, and request identity", () => {
+    const snapshot = makeSnapshot({
+      ownerId: "owner-active",
+      requestId: "req-active",
+    });
+
+    expect(resolveForemanActiveLocalDraftSnapshotPlan({
+      snapshot: null,
+      activeDraftOwnerId: "owner-active",
+      activeRequestId: "req-active",
+    })).toEqual({
+      action: "skip",
+      snapshot: null,
+      reason: "missing_or_empty_snapshot",
+    });
+
+    expect(resolveForemanActiveLocalDraftSnapshotPlan({
+      snapshot: emptySnapshot(),
+      activeDraftOwnerId: "owner-active",
+      activeRequestId: null,
+    })).toEqual({
+      action: "skip",
+      snapshot: null,
+      reason: "missing_or_empty_snapshot",
+    });
+
+    expect(resolveForemanActiveLocalDraftSnapshotPlan({
+      snapshot,
+      activeDraftOwnerId: "owner-other",
+      activeRequestId: "req-active",
+    })).toEqual({
+      action: "skip",
+      snapshot: null,
+      reason: "owner_mismatch",
+    });
+
+    expect(resolveForemanActiveLocalDraftSnapshotPlan({
+      snapshot,
+      activeDraftOwnerId: "owner-active",
+      activeRequestId: "req-active",
+    })).toEqual({
+      action: "use_snapshot",
+      snapshot,
+      reason: "active_request_match",
+    });
+
+    expect(resolveForemanActiveLocalDraftSnapshotPlan({
+      snapshot,
+      activeDraftOwnerId: "owner-active",
+      targetRequestId: "req-other",
+      activeRequestId: "req-active",
+    })).toEqual({
+      action: "skip",
+      snapshot: null,
+      reason: "request_mismatch",
+    });
+  });
+
+  it("preserves local-only draft selection and explicit empty target request semantics", () => {
+    const localOnlySnapshot = makeSnapshot({
+      ownerId: "owner-local",
+      requestId: "",
+    });
+
+    expect(resolveForemanActiveLocalDraftSnapshotPlan({
+      snapshot: localOnlySnapshot,
+      activeDraftOwnerId: "owner-local",
+      activeRequestId: null,
+    })).toEqual({
+      action: "use_snapshot",
+      snapshot: localOnlySnapshot,
+      reason: "local_only_without_active_request",
+    });
+
+    expect(resolveForemanActiveLocalDraftSnapshotPlan({
+      snapshot: localOnlySnapshot,
+      activeDraftOwnerId: "owner-local",
+      activeRequestId: "req-active",
+    })).toEqual({
+      action: "skip",
+      snapshot: null,
+      reason: "local_only_with_active_request",
+    });
+
+    expect(resolveForemanActiveLocalDraftSnapshotPlan({
+      snapshot: localOnlySnapshot,
+      activeDraftOwnerId: "owner-local",
+      targetRequestId: "",
+      activeRequestId: "req-active",
+    })).toEqual({
+      action: "use_snapshot",
+      snapshot: localOnlySnapshot,
+      reason: "local_only_without_active_request",
     });
   });
 

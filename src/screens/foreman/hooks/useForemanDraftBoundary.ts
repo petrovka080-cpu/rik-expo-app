@@ -99,6 +99,7 @@ import {
   planForemanBootstrapReenqueueCommand,
   planForemanFocusRestoreTrigger,
   planForemanNetworkBackRestoreTrigger,
+  resolveForemanActiveLocalDraftSnapshotPlan,
   resolveForemanBootstrapCompletionStartPlan,
   resolveForemanBootstrapHydrateTelemetryPlan,
   resolveForemanBootstrapReconciliationPlan,
@@ -350,23 +351,13 @@ export function useForemanDraftBoundary({
 
   const getActiveLocalDraftSnapshot = useCallback(
     (targetRequestId?: string | null) => {
-      const snapshot = localDraftSnapshotRef.current;
-      if (!snapshot || !hasForemanLocalDraftContent(snapshot)) return null;
-
-      const snapshotOwnerId = normalizeDraftOwnerId(snapshot.ownerId);
-      const activeOwnerId = normalizeDraftOwnerId(activeDraftOwnerIdRef.current);
-      if (snapshotOwnerId && activeOwnerId && snapshotOwnerId !== activeOwnerId) {
-        return null;
-      }
-
-      const currentRequestId = ridStr(targetRequestId ?? requestId);
-      const snapshotRequestId = ridStr(snapshot.requestId);
-
-      if (!snapshotRequestId) {
-        return currentRequestId ? null : snapshot;
-      }
-
-      return snapshotRequestId === currentRequestId ? snapshot : null;
+      const activeDraftPlan = resolveForemanActiveLocalDraftSnapshotPlan({
+        snapshot: localDraftSnapshotRef.current,
+        activeDraftOwnerId: activeDraftOwnerIdRef.current,
+        targetRequestId,
+        activeRequestId: requestId,
+      });
+      return activeDraftPlan.snapshot;
     },
     [requestId],
   );

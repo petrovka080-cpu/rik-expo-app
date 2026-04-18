@@ -148,6 +148,22 @@ export type ForemanDraftRestoreTriggerPlan =
         | "network_not_recovered";
     };
 
+export type ForemanActiveLocalDraftSnapshotPlan =
+  | {
+      action: "use_snapshot";
+      snapshot: ForemanLocalDraftSnapshot;
+      reason: "active_request_match" | "local_only_without_active_request";
+    }
+  | {
+      action: "skip";
+      snapshot: null;
+      reason:
+        | "missing_or_empty_snapshot"
+        | "owner_mismatch"
+        | "local_only_with_active_request"
+        | "request_mismatch";
+    };
+
 const trim = (value: unknown): string => String(value ?? "").trim();
 
 export const buildForemanDraftRestoreFailureTelemetry = (
@@ -201,6 +217,44 @@ const hasSnapshotContent = (snapshot: ForemanLocalDraftSnapshot | null | undefin
       trim(snapshot.header.system) ||
       trim(snapshot.header.zone),
   );
+};
+
+export const resolveForemanActiveLocalDraftSnapshotPlan = (params: {
+  snapshot: ForemanLocalDraftSnapshot | null;
+  activeDraftOwnerId: string | null | undefined;
+  targetRequestId?: string | number | null;
+  activeRequestId?: string | number | null;
+}): ForemanActiveLocalDraftSnapshotPlan => {
+  const snapshot = params.snapshot;
+  if (!hasSnapshotContent(snapshot)) {
+    return { action: "skip", snapshot: null, reason: "missing_or_empty_snapshot" };
+  }
+
+  const snapshotOwnerId = trim(snapshot.ownerId);
+  const activeOwnerId = trim(params.activeDraftOwnerId);
+  if (snapshotOwnerId && activeOwnerId && snapshotOwnerId !== activeOwnerId) {
+    return { action: "skip", snapshot: null, reason: "owner_mismatch" };
+  }
+
+  const currentRequestId = trim(params.targetRequestId ?? params.activeRequestId);
+  const snapshotRequestId = trim(snapshot.requestId);
+
+  if (!snapshotRequestId) {
+    if (currentRequestId) {
+      return { action: "skip", snapshot: null, reason: "local_only_with_active_request" };
+    }
+    return {
+      action: "use_snapshot",
+      snapshot,
+      reason: "local_only_without_active_request",
+    };
+  }
+
+  if (snapshotRequestId !== currentRequestId) {
+    return { action: "skip", snapshot: null, reason: "request_mismatch" };
+  }
+
+  return { action: "use_snapshot", snapshot, reason: "active_request_match" };
 };
 
 export const shouldResetForemanBootstrapStaleDurableState = (params: {
