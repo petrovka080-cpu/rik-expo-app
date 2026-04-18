@@ -95,13 +95,13 @@ function rikKindLabel(rikCode?: string | null): string {
       return "Материал";
     case "WRK":
     case "WORK":
-      return "РР°Р±РѕС‚Р°";
+      return "Работа";
     case "SRV":
       return "Услуга";
     case "KIT":
       return "Комплект";
     case "SPEC":
-      return "РЎРїРµС†.";
+      return "Спец.";
     default:
       return "";
   }
@@ -111,10 +111,10 @@ function stripContextFromText(raw: unknown) {
   const s = String(raw ?? "").trim();
   if (!s) return "";
   return s
-    .replace(/РѕР±СЉРµРєС‚\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/СЌС‚Р°Р¶\s*\/?\s*СѓСЂРѕРІРµРЅСЊ\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/СЃРёСЃС‚РµРјР°\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/Р·РѕРЅР°\s*\/?\s*СѓС‡Р°СЃС‚РѕРє\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/объект\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/этаж\s*\/?\s*уровень\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/система\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/зона\s*\/?\s*участок\s*:\s*[^;\n]+;?\s*/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 }
@@ -343,7 +343,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
         const meta: string[] = [];
         if (supplier.phone) meta.push(`Тел.: ${supplier.phone}`);
         if (supplier.email) meta.push(`Email: ${supplier.email}`);
-        if (supplier.inn) meta.push(`: ${supplier.inn}`);
+        if (supplier.inn) meta.push(`ИНН: ${supplier.inn}`);
         if (supplier.address) meta.push(`Адрес: ${supplier.address}`);
         return {
           name: supplier.name,
@@ -358,7 +358,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
         const appCode = getObjectField<string>(row, "app_code");
         const app = appCode ? appNames[appCode] ?? appCode : "";
         const noteText = stripContextFromText(
-          String(getObjectField<string>(row, "note") ?? "").trim().replace(/^РїСЂРёРј\.\:\s*/i, ""),
+          String(getObjectField<string>(row, "note") ?? "").trim().replace(/^прим\.:\s*/i, ""),
         );
         return {
           name: String(getObjectField<string>(row, "name_human") ?? "").trim(),

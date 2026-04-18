@@ -132,7 +132,7 @@ const isMissingName = (value: unknown): boolean => {
   if (/^[-\u2014\u2013\u2212]+$/.test(text)) return true;
   const lowered = text.toLowerCase();
   if (lowered === "null" || lowered === "undefined" || lowered === "n/a") return true;
-  if (lowered.includes("РѕС‚СЃСѓС‚СЃС‚РІ")) return true;
+  if (lowered.includes("отсутств")) return true;
   return false;
 };
 
@@ -195,7 +195,7 @@ const normalizeWarehouseDayMaterialsReportRow = (
   const rawName = String(normalizeRuText(String(row.material_name ?? materialCode ?? ""))).trim();
   const materialName = !isMissingName(rawName)
     ? rawName
-    : (materialCode || "РџРѕР·РёС†РёСЏ");
+    : (materialCode || "Позиция");
 
   return {
     material_code: materialCode,

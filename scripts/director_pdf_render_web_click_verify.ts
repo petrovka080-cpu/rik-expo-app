@@ -41,10 +41,10 @@ const WEB_LABELS = {
 };
 
 const WEB_TEXT = {
-  header: [WEB_LABELS.header, "РљРѕРЅС‚СЂРѕР»СЊ"],
-  financeTab: [WEB_LABELS.financeTab, "Р¤РёРЅР°РЅСЃС‹"],
-  debtCard: [WEB_LABELS.debtCard, "РћР±СЏР·Р°С‚РµР»СЊСЃС‚РІР°"],
-  debtModalTitle: [WEB_LABELS.debtModalTitle, "Р”РѕР»РіРё Рё СЂРёСЃРєРё"],
+  header: [WEB_LABELS.header, "Контроль"],
+  financeTab: [WEB_LABELS.financeTab, "Финансы"],
+  debtCard: [WEB_LABELS.debtCard, "Обязательства"],
+  debtModalTitle: [WEB_LABELS.debtModalTitle, "Долги и риски"],
   pdfAction: [WEB_LABELS.pdfAction],
 };
 

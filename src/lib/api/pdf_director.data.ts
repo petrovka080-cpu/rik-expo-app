@@ -417,7 +417,7 @@ const pickDueIso = (value: unknown) => {
 
 const invoiceTitle = (value: unknown) => {
   const invoiceNo = pickInvoiceNumber(value);
-  if (invoiceNo) return `РЎС‡С‘С‚ в„–${invoiceNo}`;
+  if (invoiceNo) return `Счёт №${invoiceNo}`;
 
   const pretty = proposalPretty(value);
   if (pretty) return `Предложение ${pretty}`;
@@ -516,10 +516,10 @@ const _mapSupplierSummaryItem = (
 
   return {
     title: invoiceNo
-      ? `РЎС‡С‘С‚ в„–${invoiceNo}`
+      ? `Счёт №${invoiceNo}`
       : pretty
         ? `Предложение ${pretty}`
-        : "РЎС‡С‘С‚",
+        : "Счёт",
     invoiceDate: pickIso10(
       record.invoiceDate,
       record.invoice_date,

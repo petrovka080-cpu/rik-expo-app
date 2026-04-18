@@ -198,7 +198,7 @@ const normalizeWarehouseIncomingMaterialsReportRow = (
     ? mappedName
     : !isMissingName(rawName)
       ? rawName
-      : (materialCode || "РџРѕР·РёС†РёСЏ");
+      : (materialCode || "Позиция");
 
   return {
     material_code: materialCode,

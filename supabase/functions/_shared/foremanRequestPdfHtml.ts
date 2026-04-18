@@ -30,7 +30,7 @@ type ForemanRequestPdfModel = {
 const renderRequestCommentBlock = (comment: string) =>
   comment
     ? `<div class="comment">
-         <div class="comment-k">РљРѕРјРјРµРЅС‚Р°СЂРёР№</div>
+         <div class="comment-k">Комментарий</div>
          <div class="comment-v">${esc(comment)}</div>
        </div>`
     : "";
@@ -50,7 +50,7 @@ const renderRequestRows = (model: ForemanRequestPdfModel) =>
 </tr>`;
         })
         .join("")
-    : `<tr><td colspan="6" class="empty">РќРµС‚ РїРѕР·РёС†РёР№</td></tr>`;
+    : `<tr><td colspan="6" class="empty">Нет позиций</td></tr>`;
 
 const renderRequestMetaGrid = (model: ForemanRequestPdfModel) =>
   model.metaFields
@@ -68,7 +68,7 @@ export function renderForemanRequestPdfHtml(model: ForemanRequestPdfModel): stri
 <html lang="ru">
 <head>
 <meta charset="utf-8"/>
-<title>Р—Р°СЏРІРєР° ${esc(model.requestLabel)}</title>
+<title>Заявка ${esc(model.requestLabel)}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
   :root{ --ink:#000; --line:#000; --bg:#ffffff; }
@@ -139,8 +139,8 @@ export function renderForemanRequestPdfHtml(model: ForemanRequestPdfModel): stri
 <body>
   <div class="container">
     <header>
-      <h1>Р—Р°СЏРІРєР° ${esc(model.requestLabel)}</h1>
-      <div class="subtitle">РЎС„РѕСЂРјРёСЂРѕРІР°РЅРѕ: ${esc(model.generatedAt)}</div>
+      <h1>Заявка ${esc(model.requestLabel)}</h1>
+      <div class="subtitle">Сформировано: ${esc(model.generatedAt)}</div>
     </header>
 
     <div class="meta-wrap">
@@ -154,12 +154,12 @@ export function renderForemanRequestPdfHtml(model: ForemanRequestPdfModel): stri
     <table class="items">
       <thead>
         <tr>
-          <th>в„–</th>
-          <th>РџРѕР·РёС†РёСЏ</th>
-          <th>Р•Рґ.</th>
-          <th>РљРѕР»РёС‡РµСЃС‚РІРѕ</th>
-          <th>РЎС‚Р°С‚СѓСЃ</th>
-          <th>РџСЂРёРјРµС‡Р°РЅРёРµ</th>
+          <th>№</th>
+          <th>Позиция</th>
+          <th>Ед.</th>
+          <th>Количество</th>
+          <th>Статус</th>
+          <th>Примечание</th>
         </tr>
       </thead>
       <tbody>${renderRequestRows(model)}</tbody>
@@ -167,12 +167,12 @@ export function renderForemanRequestPdfHtml(model: ForemanRequestPdfModel): stri
 
     <div class="signs">
       <div class="sign">
-        <div class="sign-label">РџСЂРѕСЂР°Р±</div>
+        <div class="sign-label">Прораб</div>
         <div class="sign-line"></div>
         <div class="sign-name">${esc(model.foremanName)}</div>
       </div>
       <div class="sign">
-        <div class="sign-label">Р”РёСЂРµРєС‚РѕСЂ</div>
+        <div class="sign-label">Директор</div>
         <div class="sign-line"></div>
         <div class="sign-name">&nbsp;</div>
       </div>

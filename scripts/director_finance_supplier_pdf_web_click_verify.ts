@@ -41,14 +41,14 @@ const WEB_LABELS = {
 };
 
 const WEB_TEXT = {
-  header: [WEB_LABELS.header, "РљРѕРЅС‚СЂРѕР»СЊ"],
-  financeTab: [WEB_LABELS.financeTab, "Р¤РёРЅР°РЅСЃС‹"],
-  debtCard: [WEB_LABELS.debtCard, "РћР±СЏР·Р°С‚РµР»СЊСЃС‚РІР°"],
-  debtModalTitle: [WEB_LABELS.debtModalTitle, "Р”РѕР»РіРё Рё СЂРёСЃРєРё"],
-  suppliersSection: [WEB_LABELS.suppliersSection, "РџРѕСЃС‚Р°РІС‰РёРєРё (РґРѕР»Рі)"],
-  supplierPdf: [WEB_LABELS.supplierPdf, "РЎРІРѕРґРєР° (PDF)"],
-  debtLabel: [WEB_LABELS.debtLabel, "Р”РѕР»Рі:"],
-  emptyState: [WEB_LABELS.emptyState, "РќРµС‚ РґР°РЅРЅС‹С…"],
+  header: [WEB_LABELS.header, "Контроль"],
+  financeTab: [WEB_LABELS.financeTab, "Финансы"],
+  debtCard: [WEB_LABELS.debtCard, "Обязательства"],
+  debtModalTitle: [WEB_LABELS.debtModalTitle, "Долги и риски"],
+  suppliersSection: [WEB_LABELS.suppliersSection, "Поставщики (долг)"],
+  supplierPdf: [WEB_LABELS.supplierPdf, "Сводка (PDF)"],
+  debtLabel: [WEB_LABELS.debtLabel, "Долг:"],
+  emptyState: [WEB_LABELS.emptyState, "Нет данных"],
 };
 
 const FUNCTION_URL_RE = /director-finance-supplier-summary-pdf/i;

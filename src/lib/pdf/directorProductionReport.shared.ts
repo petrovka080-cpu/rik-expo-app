@@ -243,7 +243,7 @@ export function prepareDirectorProductionReportPdfModelShared(
   const generatedBy = toText(input.generatedBy) || "Директор";
   const from = toText(input.periodFrom);
   const to = toText(input.periodTo);
-  const objectName = toText(input.objectName) || "�се объекты";
+  const objectName = toText(input.objectName) || "Все объекты";
   const generatedAt = new Date().toLocaleString("ru-RU");
 
   const data = parseDirectorProductionData(input.repData);
@@ -285,7 +285,7 @@ export function prepareDirectorProductionReportPdfModelShared(
   const byObject = new Map<string, { docs: number; positions: number; noReq: number; noWork: number }>();
   for (const work of worksSorted) {
     for (const level of work.levels) {
-      const obj = toText(level.object_name ?? objectName ?? "�ез объекта") || "�ез объекта";
+      const obj = toText(level.object_name ?? objectName ?? "Без объекта") || "Без объекта";
       const current = byObject.get(obj) ?? { docs: 0, positions: 0, noReq: 0, noWork: 0 };
       current.docs += nnum(level.total_docs);
       current.positions += nnum(level.total_positions);
@@ -336,17 +336,17 @@ export function prepareDirectorProductionReportPdfModelShared(
     ratioPct,
     problemRows: [
       {
-        problem: "�ез вида работ",
+        problem: "Без вида работ",
         count: withoutWork,
         comment: "Требует контроля источника",
       },
       {
-        problem: "�ез заявки",
+        problem: "Без заявки",
         count: itemsNoRequest,
         comment: "Есть выдачи без request item",
       },
       {
-        problem: "�ез объекта",
+        problem: "Без объекта",
         count: issuesNoObject,
         comment: "Проверить привязку объекта",
       },

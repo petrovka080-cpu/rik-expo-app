@@ -185,8 +185,8 @@ const normalizeWarehouseObjectWorkReportRow = (
   const row = asRecord(value);
   return {
     object_id: toText(row.object_id) || null,
-    object_name: toText(row.object_name) || "Р вЂР ВµР В· Р С•Р В±РЎР‰Р ВµР С”РЎвЂљР В°",
-    work_name: toText(row.work_name) || "Р вЂР ВµР В· Р Р†Р С‘Р Т‘Р В° РЎР‚Р В°Р В±Р С•РЎвЂљ",
+    object_name: toText(row.object_name) || "Без объекта",
+    work_name: toText(row.work_name) || "Без вида работ",
     docs_cnt: toNumber(row.docs_cnt),
     req_cnt: toNumber(row.req_cnt),
     active_days: toNumber(row.active_days),

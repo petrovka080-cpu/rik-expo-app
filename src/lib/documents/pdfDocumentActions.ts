@@ -42,7 +42,7 @@ import {
 } from "./pdfDocumentOpenFlowPlan";
 export function getPdfFlowErrorMessage(
   error: unknown,
-  fallback = "Р СњР Вµ РЎС“Р Т‘Р В°Р В»Р С•РЎРѓРЎРЉ Р С•РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ PDF",
+  fallback = "Не удалось открыть PDF",
 ): string {
   if (error && typeof error === "object") {
     const maybeMessage =
@@ -252,7 +252,7 @@ function persistCriticalPdfBreadcrumb(input: {
   extra?: Record<string, unknown>;
 }): void {
   if (!shouldRecordPdfCrashBreadcrumbs(input.screen)) return;
-  // L-PERF: fire-and-forget РІР‚вЂќ breadcrumbs must NOT block the critical open path.
+  // L-PERF: fire-and-forget breadcrumbs must NOT block the critical open path.
   // Previously each await did 2 AsyncStorage I/O ops (read+write), and 6 sequential
   // awaits on the critical path added 12 I/O ops before the viewer route push.
   recordPdfCrashBreadcrumb(input);
@@ -704,7 +704,7 @@ export async function previewPdfDocument(
       exists: typeof asset.sizeBytes === "number" ? true : undefined,
       sizeBytes: asset.sizeBytes,
     });
-    // РІвЂќР‚РІвЂќР‚ iOS oversize guard РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
+    // iOS oversize guard.
     // Must fire BEFORE the viewer route push. If the file is too large for
     // the iOS in-app viewer, we throw IosPdfOversizeError which bubbles to
     // the busy handler for proper cleanup and user-facing Alert.
@@ -725,7 +725,7 @@ export async function previewPdfDocument(
         fileName: asset.fileName,
       });
     }
-    // РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
+    // Route handoff boundary.
     if (opts?.router) {
       recordPdfOpenStage({
         context: opts.openFlow,
@@ -1039,7 +1039,7 @@ export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
 export async function prepareAndPreviewPdfDocument(
   args: PreparePdfDocumentArgs & {
     router?: PdfViewerRouterLike;
-    /** Called before router.push РІР‚вЂќ use to dismiss native Modals that sit above the navigation Stack. */
+    /** Called before router.push to dismiss native Modals that sit above the navigation Stack. */
     onBeforeNavigate?: (() => void | Promise<void>) | null;
   },
 ): Promise<DocumentDescriptor> {
