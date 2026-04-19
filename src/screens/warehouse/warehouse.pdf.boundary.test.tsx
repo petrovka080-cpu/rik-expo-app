@@ -3,7 +3,6 @@ import TestRenderer, { act } from "react-test-renderer";
 import { useWarehousePdfPreviewBoundary } from "./warehouse.pdf.boundary";
 
 const mockPush = jest.fn();
-const mockGenerateWarehousePdfDocument = jest.fn();
 const mockPrepareAndPreviewPdfDocument = jest.fn();
 const mockCreatePdfSource = jest.fn();
 const mockRecordCatchDiscipline = jest.fn();
@@ -12,10 +11,6 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: (...args: unknown[]) => mockPush(...args),
   }),
-}));
-
-jest.mock("../../lib/documents/pdfDocumentGenerators", () => ({
-  generateWarehousePdfDocument: (...args: unknown[]) => mockGenerateWarehousePdfDocument(...args),
 }));
 
 jest.mock("../../lib/documents/pdfDocumentActions", () => ({
@@ -59,7 +54,6 @@ async function renderHarness() {
 describe("warehouse.pdf.boundary", () => {
   beforeEach(() => {
     mockPush.mockReset();
-    mockGenerateWarehousePdfDocument.mockReset();
     mockPrepareAndPreviewPdfDocument.mockReset();
     mockCreatePdfSource.mockReset();
     mockRecordCatchDiscipline.mockReset();
@@ -67,12 +61,13 @@ describe("warehouse.pdf.boundary", () => {
       kind: "remote-url",
       uri,
     }));
-    mockGenerateWarehousePdfDocument.mockImplementation(async (args: unknown) => args);
     mockPrepareAndPreviewPdfDocument.mockResolvedValue(undefined);
   });
 
-  it("builds warehouse preview on canonical remote PdfSource without getRemoteUrl fallback", async () => {
+  it("defers warehouse remote source resolution into the guarded PDF open flow", async () => {
     const { preview } = await renderHarness();
+
+    const getRemoteUrl = jest.fn(async () => "https://example.com/warehouse.pdf");
 
     await act(async () => {
       await preview({
@@ -82,42 +77,40 @@ describe("warehouse.pdf.boundary", () => {
         fileName: "warehouse.pdf",
         documentType: "warehouse_document",
         entityId: "77",
-        getRemoteUrl: async () => "https://example.com/warehouse.pdf",
+        getRemoteUrl,
       });
     });
 
-    expect(mockGenerateWarehousePdfDocument).toHaveBeenCalledWith(
-      expect.objectContaining({
-        documentType: "warehouse_document",
-        getSource: expect.any(Function),
-      }),
-    );
-    expect(mockGenerateWarehousePdfDocument).not.toHaveBeenCalledWith(
-      expect.objectContaining({
-        getUri: expect.any(Function),
-      }),
-    );
-
-    const generatorArgs = mockGenerateWarehousePdfDocument.mock.calls[0][0] as {
-      getSource: () => Promise<unknown>;
-    };
-    await expect(generatorArgs.getSource()).resolves.toEqual({
-      kind: "remote-url",
-      uri: "https://example.com/warehouse.pdf",
-    });
-    expect(mockCreatePdfSource).toHaveBeenCalledWith("https://example.com/warehouse.pdf");
+    expect(getRemoteUrl).not.toHaveBeenCalled();
 
     expect(mockPrepareAndPreviewPdfDocument).toHaveBeenCalledWith(
       expect.objectContaining({
-        descriptor: expect.any(Object),
+        key: "pdf:warehouse:test",
+        label: "Opening warehouse PDF...",
+        descriptor: expect.objectContaining({
+          title: "Warehouse PDF",
+          fileName: "warehouse.pdf",
+          documentType: "warehouse_document",
+          originModule: "warehouse",
+          source: "generated",
+          mimeType: "application/pdf",
+          entityId: "77",
+        }),
+        getRemoteUrl: expect.any(Function),
         router: expect.any(Object),
       }),
     );
-    expect(mockPrepareAndPreviewPdfDocument.mock.calls[0][0]).not.toHaveProperty("getRemoteUrl");
+
+    const prepareArgs = mockPrepareAndPreviewPdfDocument.mock.calls[0][0] as {
+      getRemoteUrl: () => Promise<string>;
+    };
+    await expect(prepareArgs.getRemoteUrl()).resolves.toBe("https://example.com/warehouse.pdf");
+    expect(getRemoteUrl).toHaveBeenCalledTimes(1);
+    expect(mockCreatePdfSource).toHaveBeenCalledWith("https://example.com/warehouse.pdf");
   });
 
   it("surfaces a controlled warehouse PDF error instead of failing silently", async () => {
-    mockGenerateWarehousePdfDocument.mockRejectedValue(new Error("warehouse blocked"));
+    mockPrepareAndPreviewPdfDocument.mockRejectedValue(new Error("warehouse blocked"));
     const { preview, notifyError } = await renderHarness();
 
     await act(async () => {

@@ -1,9 +1,8 @@
 import { useCallback } from "react";
 import { useRouter } from "expo-router";
 
-import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { buildPdfFileName, type DocumentDescriptor } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage, prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
-import { generateWarehousePdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import { createPdfSource } from "../../lib/pdfFileContract";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 
@@ -41,6 +40,10 @@ export type WarehousePdfOffloadContract<TPayload, TFlow extends string> = {
 };
 
 type WarehousePdfMode = "issue" | "incoming";
+type PendingWarehousePdfDescriptor = Omit<DocumentDescriptor, "uri" | "fileSource"> & {
+  uri?: string;
+  fileSource?: never;
+};
 
 type WarehousePdfBusyKeyArgs =
   | {
@@ -133,19 +136,22 @@ export function useWarehousePdfPreviewBoundary(params: {
   return useCallback(async (request: WarehousePdfPreviewRequest) => {
     try {
       const safeRequest = normalizeWarehousePdfPreviewRequest(request);
-      const template = await generateWarehousePdfDocument({
+      const template: PendingWarehousePdfDescriptor = {
         title: safeRequest.title,
         fileName: safeRequest.fileName,
         documentType: safeRequest.documentType,
+        source: "generated",
+        originModule: "warehouse",
+        mimeType: "application/pdf",
         entityId: safeRequest.entityId,
-        getSource: async () => createPdfSource(await safeRequest.getRemoteUrl()),
-      });
+      };
       await prepareAndPreviewPdfDocument({
         busy,
         supabase: null,
         key: safeRequest.key,
         label: safeRequest.label,
         descriptor: template,
+        getRemoteUrl: safeRequest.getRemoteUrl,
         router,
       });
     } catch (error) {

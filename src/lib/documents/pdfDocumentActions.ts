@@ -59,7 +59,10 @@ type PreparePdfDocumentArgs = {
   supabase: any;
   key?: string;
   label?: string;
-  descriptor: Omit<DocumentDescriptor, "uri"> & { uri?: string };
+  descriptor: Omit<DocumentDescriptor, "uri" | "fileSource"> & {
+    uri?: string;
+    fileSource?: PdfSource;
+  };
   resolveSource?: () => Promise<PdfSource> | PdfSource;
   getRemoteUrl?: () => Promise<string> | string;
 };

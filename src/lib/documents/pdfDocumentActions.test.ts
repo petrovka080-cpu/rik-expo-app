@@ -162,6 +162,47 @@ describe("pdfDocumentActions", () => {
     ).toBe(true);
   });
 
+  it("supports pending descriptors so remote source resolution runs inside the guarded flow", async () => {
+    const getRemoteUrl = jest.fn(() => "https://example.com/warehouse.pdf");
+    const pendingDescriptor = {
+      title: "Warehouse PDF",
+      fileName: "warehouse.pdf",
+      mimeType: "application/pdf" as const,
+      documentType: "warehouse_document" as const,
+      originModule: "warehouse" as const,
+      source: "generated" as const,
+      entityId: "77",
+    };
+    mockPreparePdfExecutionSource.mockResolvedValueOnce({
+      kind: "remote-url",
+      uri: "https://example.com/warehouse.pdf",
+    });
+
+    const result = await preparePdfDocument({
+      supabase: {},
+      descriptor: pendingDescriptor,
+      getRemoteUrl,
+    });
+
+    expect(result).toMatchObject({
+      uri: "https://example.com/warehouse.pdf",
+      fileSource: {
+        kind: "remote-url",
+        uri: "https://example.com/warehouse.pdf",
+      },
+      documentType: "warehouse_document",
+      originModule: "warehouse",
+      entityId: "77",
+    });
+    expect(mockPreparePdfExecutionSource).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: undefined,
+        getRemoteUrl,
+        fileName: "warehouse.pdf",
+      }),
+    );
+  });
+
   it("rejects local legacy materialization for canonical role PDF families", async () => {
     mockPreparePdfExecutionSource.mockResolvedValueOnce({
       kind: "local-file",
