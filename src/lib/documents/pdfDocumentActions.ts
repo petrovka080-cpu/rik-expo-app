@@ -41,6 +41,15 @@ import {
   resolvePdfDocumentOpenFlowStartPlan,
 } from "./pdfDocumentOpenFlowPlan";
 import { resolvePdfDocumentPreviewSessionPlan } from "./pdfDocumentPreviewSessionPlan";
+import {
+  resolvePdfDocumentBusyExecutionPlan,
+  resolvePdfDocumentBusyRunOutputPlan,
+  resolvePdfDocumentManualBusyCleanupPlan,
+  resolvePdfDocumentVisibilityFailureRecordPlan,
+  resolvePdfDocumentVisibilityFailureSignalPlan,
+  resolvePdfDocumentVisibilityStartPlan,
+  resolvePdfDocumentVisibilitySuccessPlan,
+} from "./pdfDocumentVisibilityBusyPlan";
 export function getPdfFlowErrorMessage(
   error: unknown,
   fallback = "Не удалось открыть PDF",
@@ -1205,9 +1214,13 @@ export async function prepareAndPreviewPdfDocument(
         recordBoundary("pdf_terminal_failure", "prepare", "error", boundaryError);
         throw boundaryError;
       }
-      const visibilityWait = args.router
-        ? beginPdfOpenVisibilityWait(baseContext)
-        : null;
+      const visibilityStartPlan = resolvePdfDocumentVisibilityStartPlan({
+        hasRouter: Boolean(args.router),
+      });
+      const visibilityWait =
+        visibilityStartPlan.action === "begin_visibility_wait"
+          ? beginPdfOpenVisibilityWait(baseContext)
+          : null;
       try {
         assertCurrentRun("prepare");
         await previewPdfDocument(document, {
@@ -1222,16 +1235,19 @@ export async function prepareAndPreviewPdfDocument(
               }
             : baseContext,
         });
-        if (visibilityWait) {
-          await visibilityWait.promise;
-          assertCurrentRun("visibility");
+        const visibilitySuccessPlan = resolvePdfDocumentVisibilitySuccessPlan({
+          hasVisibilityWait: Boolean(visibilityWait),
+        });
+        if (visibilitySuccessPlan.action === "await_visibility_wait") {
+          await visibilityWait!.promise;
+          assertCurrentRun(visibilitySuccessPlan.assertStage);
         } else {
           recordPdfOpenStage({
             context: baseContext,
-            stage: "first_open_visible",
+            stage: visibilitySuccessPlan.stage,
             sourceKind: document.fileSource.kind,
           });
-          assertCurrentRun("visibility");
+          assertCurrentRun(visibilitySuccessPlan.assertStage);
         }
         recordBoundary("pdf_terminal_success", "visibility", "success", undefined, {
           sourceKind: document.fileSource.kind,
@@ -1243,14 +1259,19 @@ export async function prepareAndPreviewPdfDocument(
           "visibility",
           "PDF viewer readiness failed",
         );
-        const signalledFailure = failPdfOpenVisible(
-          visibilityWait?.token,
-          boundaryError,
-          {
-            sourceKind: document.fileSource.kind,
-          },
-        );
-        if (!signalledFailure) {
+        const failureSignalPlan = resolvePdfDocumentVisibilityFailureSignalPlan({
+          visibilityToken: visibilityWait?.token,
+        });
+        const signalledFailure =
+          failureSignalPlan.action === "signal_visibility_failure"
+            ? failPdfOpenVisible(failureSignalPlan.token, boundaryError, {
+                sourceKind: document.fileSource.kind,
+              })
+            : false;
+        const failureRecordPlan = resolvePdfDocumentVisibilityFailureRecordPlan({
+          signalledFailure,
+        });
+        if (failureRecordPlan.recordOpenFailedStage) {
           recordPdfOpenStage({
             context: baseContext,
             stage: "open_failed",
@@ -1265,23 +1286,42 @@ export async function prepareAndPreviewPdfDocument(
         throw boundaryError;
       }
     };
+    const busyExecutionPlan = resolvePdfDocumentBusyExecutionPlan({
+      hasBusyRun: Boolean(args.busy?.run),
+      hasBusyShow: Boolean(args.busy?.show),
+      hasBusyHide: Boolean(args.busy?.hide),
+      flowKey,
+      label: args.label,
+    });
     try {
-      if (args.busy?.run) {
+      if (busyExecutionPlan.mode === "busy_run" && args.busy?.run) {
         const output = await args.busy.run(execute, {
-          key: flowKey,
-          label: args.label,
-          minMs: 200,
+          key: busyExecutionPlan.key,
+          label: busyExecutionPlan.label,
+          minMs: busyExecutionPlan.minMs,
         });
-        if (!output) throw new Error("PDF open cancelled");
+        const outputPlan = resolvePdfDocumentBusyRunOutputPlan({
+          hasOutput: Boolean(output),
+        });
+        if (outputPlan.action === "throw_cancelled") {
+          throw new Error(outputPlan.message);
+        }
         return output;
       }
-      if (args.busy?.show && args.busy?.hide) {
-        const manualBusyKey = flowKey || "pdf:open";
-        args.busy.show(manualBusyKey, args.label);
+      if (
+        busyExecutionPlan.mode === "manual_busy" &&
+        args.busy?.show &&
+        args.busy?.hide
+      ) {
+        const manualBusyKey = busyExecutionPlan.key;
+        args.busy.show(manualBusyKey, busyExecutionPlan.label);
         try {
           return await execute();
         } finally {
-          if (args.busy.isBusy?.(manualBusyKey)) {
+          const cleanupPlan = resolvePdfDocumentManualBusyCleanupPlan({
+            isBusy: Boolean(args.busy.isBusy?.(manualBusyKey)),
+          });
+          if (cleanupPlan.hideBusy) {
             args.busy.hide(manualBusyKey);
           }
           recordPdfOpenStage({
@@ -1292,7 +1332,7 @@ export async function prepareAndPreviewPdfDocument(
       }
       return await execute();
     } finally {
-      if (args.busy?.run) {
+      if (busyExecutionPlan.mode === "busy_run") {
         recordPdfOpenStage({
           context: baseContext,
           stage: "busy_cleared",
