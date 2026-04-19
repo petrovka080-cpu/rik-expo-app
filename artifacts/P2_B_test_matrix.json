@@ -1,0 +1,81 @@
+{
+  "wave": "P2-B",
+  "scope": "officeReentryBreadcrumbs batching",
+  "code_paths": [
+    "src/lib/navigation/officeReentryBreadcrumbs.ts",
+    "tests/navigation/officeReentryBreadcrumbs.test.ts"
+  ],
+  "unit_characterization": [
+    {
+      "case": "1-4 events wait for timer/manual flush",
+      "status": "passed",
+      "proof": "npx jest tests/navigation/officeReentryBreadcrumbs.test.ts --runInBand --no-coverage"
+    },
+    {
+      "case": "5th event flushes immediately",
+      "status": "passed",
+      "proof": "npx jest tests/navigation/officeReentryBreadcrumbs.test.ts --runInBand --no-coverage"
+    },
+    {
+      "case": "event order is preserved",
+      "status": "passed",
+      "proof": "saved marker order asserted in batching tests"
+    },
+    {
+      "case": "duplicate flush does not duplicate batch",
+      "status": "passed",
+      "proof": "second explicit flush keeps AsyncStorage setItem at one call"
+    },
+    {
+      "case": "route-exit marker final flush",
+      "status": "passed",
+      "proof": "office_route_owner_unmount drains pending batch without timer"
+    },
+    {
+      "case": "background AppState final flush",
+      "status": "passed",
+      "proof": "AppState change to background drains pending batch"
+    },
+    {
+      "case": "failed flush does not block next batch",
+      "status": "passed",
+      "proof": "mocked storage failure followed by successful next write"
+    }
+  ],
+  "command_proof": {
+    "targeted": {
+      "command": "npx jest tests/navigation/officeReentryBreadcrumbs.test.ts --runInBand --no-coverage",
+      "status": "passed",
+      "summary": "1 suite, 22 tests"
+    },
+    "office_targeted": {
+      "command": "npx jest tests/navigation/officeReentryBreadcrumbs.test.ts tests/app/office-index-route-scope.test.tsx tests/app/office-layout.test.tsx tests/app/office-child-route-audit.test.tsx tests/app/office-warehouse-route-scope.test.tsx src/screens/office/OfficeHubScreen.test.tsx tests/office/useOfficeHubRoleAccess.test.tsx --runInBand --no-coverage",
+      "status": "passed",
+      "summary": "7 suites, 66 tests"
+    },
+    "typescript": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "passed"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "passed"
+    },
+    "full_jest": {
+      "command": "npx jest --runInBand",
+      "status": "passed",
+      "summary": "1 skipped, 346 passed, 346 of 347 suites; 1 skipped, 2200 passed, 2201 tests"
+    },
+    "web_smoke": {
+      "artifact": "artifacts/P2_B_web_smoke.json",
+      "status": "passed",
+      "summary": "/office -> /office/director -> /office, pageErrors 0, server5xx 0"
+    },
+    "android_smoke": {
+      "artifact": "artifacts/P2_B_android_smoke.json",
+      "status": "passed",
+      "summary": "rik:///office -> rik:///office/director -> rik:///office, fatalLines 0"
+    }
+  },
+  "green": true
+}

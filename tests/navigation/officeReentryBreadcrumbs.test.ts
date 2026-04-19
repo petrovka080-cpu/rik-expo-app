@@ -1,9 +1,17 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppState } from "react-native";
+
 import {
   buildOfficeReentryBreadcrumbsText,
+  clearOfficeReentryBreadcrumbs,
   clearPendingOfficeRouteReturnReceipt,
   consumePendingOfficeRouteReturnReceipt,
+  flushOfficeReentryBreadcrumbWrites,
+  getOfficeReentryBreadcrumbs,
   markPendingOfficeRouteReturnReceipt,
   peekPendingOfficeRouteReturnReceipt,
+  recordOfficeReentryBreadcrumbs,
+  recordOfficeReentryBreadcrumbsAsync,
   recordOfficeBackPathFailure,
   recordOfficeBootstrapInitialDone,
   recordOfficeBootstrapInitialStart,
@@ -87,8 +95,158 @@ import {
 } from "../../src/lib/observability/platformObservability";
 
 describe("office reentry breadcrumbs", () => {
-  beforeEach(() => {
+  const asyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>;
+
+  beforeEach(async () => {
+    jest.useRealTimers();
     resetPlatformObservabilityEvents();
+    await clearOfficeReentryBreadcrumbs();
+    await flushOfficeReentryBreadcrumbWrites();
+    asyncStorage.getItem.mockClear();
+    asyncStorage.setItem.mockClear();
+    asyncStorage.removeItem.mockClear();
+  });
+
+  afterEach(async () => {
+    await flushOfficeReentryBreadcrumbWrites();
+    jest.useRealTimers();
+    await clearOfficeReentryBreadcrumbs();
+  });
+
+  it("batches 1-4 breadcrumb writes until the timer or manual flush", async () => {
+    jest.useFakeTimers();
+
+    recordOfficeReentryBreadcrumbs([
+      { marker: "office_reentry_start", result: "success" },
+      { marker: "office_reentry_route_match", result: "success" },
+      { marker: "office_reentry_component_enter", result: "success" },
+      { marker: "office_reentry_mount", result: "success" },
+    ]);
+
+    await Promise.resolve();
+    expect(asyncStorage.setItem).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(1_999);
+    expect(asyncStorage.setItem).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(1);
+    await flushOfficeReentryBreadcrumbWrites();
+
+    expect(asyncStorage.setItem).toHaveBeenCalledTimes(1);
+    const savedItems = JSON.parse(
+      String(asyncStorage.setItem.mock.calls[0]?.[1] ?? "[]"),
+    );
+    expect(savedItems.map((item: { marker: string }) => item.marker)).toEqual([
+      "office_reentry_start",
+      "office_reentry_route_match",
+      "office_reentry_component_enter",
+      "office_reentry_mount",
+    ]);
+    await expect(getOfficeReentryBreadcrumbs()).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ marker: "office_reentry_mount" }),
+      ]),
+    );
+  });
+
+  it("flushes the fifth breadcrumb immediately without duplicating the batch", async () => {
+    jest.useFakeTimers();
+
+    recordOfficeReentryBreadcrumbs([
+      { marker: "office_reentry_start", result: "success" },
+      { marker: "office_reentry_route_match", result: "success" },
+      { marker: "office_reentry_component_enter", result: "success" },
+      { marker: "office_reentry_mount", result: "success" },
+      { marker: "office_bootstrap_initial_start", result: "success" },
+    ]);
+
+    await flushOfficeReentryBreadcrumbWrites();
+    await flushOfficeReentryBreadcrumbWrites();
+
+    expect(asyncStorage.setItem).toHaveBeenCalledTimes(1);
+    const savedItems = JSON.parse(
+      String(asyncStorage.setItem.mock.calls[0]?.[1] ?? "[]"),
+    );
+    expect(savedItems).toHaveLength(5);
+    expect(savedItems.at(-1)).toMatchObject({
+      marker: "office_bootstrap_initial_start",
+    });
+  });
+
+  it("flushes final route-exit markers without waiting for the timer", async () => {
+    jest.useFakeTimers();
+
+    recordOfficeReentryBreadcrumbs([
+      { marker: "office_reentry_start", result: "success" },
+    ]);
+    expect(asyncStorage.setItem).not.toHaveBeenCalled();
+
+    recordOfficeRouteOwnerUnmount({
+      owner: "office_index_route",
+      route: "/office",
+      pathname: "/office/warehouse",
+      segments: "(tabs)/office/warehouse",
+      identity: "office_index_route:exit",
+      routeWrapper: "office_owned_screen_entry",
+    });
+
+    await flushOfficeReentryBreadcrumbWrites();
+
+    expect(asyncStorage.setItem).toHaveBeenCalledTimes(1);
+    const savedItems = JSON.parse(
+      String(asyncStorage.setItem.mock.calls[0]?.[1] ?? "[]"),
+    );
+    expect(savedItems.map((item: { marker: string }) => item.marker)).toEqual([
+      "office_reentry_start",
+      "office_route_owner_unmount",
+    ]);
+  });
+
+  it("flushes pending breadcrumbs when the app backgrounds", async () => {
+    let appStateHandler: ((state: string) => void) | null = null;
+    const subscriptionRemove = jest.fn();
+    const appStateSpy = jest
+      .spyOn(AppState, "addEventListener")
+      .mockImplementation((_event, handler) => {
+        appStateHandler = handler as (state: string) => void;
+        return { remove: subscriptionRemove };
+      });
+
+    try {
+      recordOfficeReentryBreadcrumbs([
+        { marker: "office_reentry_start", result: "success" },
+      ]);
+
+      expect(asyncStorage.setItem).not.toHaveBeenCalled();
+      expect(appStateHandler).not.toBeNull();
+
+      appStateHandler?.("background");
+      await flushOfficeReentryBreadcrumbWrites();
+
+      expect(asyncStorage.setItem).toHaveBeenCalledTimes(1);
+      expect(subscriptionRemove).toHaveBeenCalledTimes(1);
+    } finally {
+      appStateSpy.mockRestore();
+    }
+  });
+
+  it("keeps the next batch writable after one storage flush failure", async () => {
+    asyncStorage.setItem.mockRejectedValueOnce(new Error("storage full"));
+
+    await recordOfficeReentryBreadcrumbsAsync([
+      { marker: "office_reentry_start", result: "success" },
+    ]);
+    await recordOfficeReentryBreadcrumbsAsync([
+      { marker: "office_reentry_route_match", result: "success" },
+    ]);
+
+    expect(asyncStorage.setItem).toHaveBeenCalledTimes(2);
+    const recoveredItems = JSON.parse(
+      String(asyncStorage.setItem.mock.calls[1]?.[1] ?? "[]"),
+    );
+    expect(recoveredItems.at(-1)).toMatchObject({
+      marker: "office_reentry_route_match",
+    });
   });
 
   it("formats readable office reentry diagnostics", () => {

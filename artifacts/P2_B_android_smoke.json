@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "route": "rik:///office",
+  "childRoute": "rik:///office/director",
+  "officeReached": true,
+  "childReached": true,
+  "returnReached": true,
+  "fatalLines": [],
+  "recovery": {
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false
+  },
+  "preflight": {
+    "deviceDetected": true,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "reverseProxyReady": true,
+    "appCleared": true,
+    "gmsCleared": false,
+    "devClientReachable": true
+  },
+  "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+  "proof": "director runtime user opened rik:///office, navigated to rik:///office/director, returned to rik:///office"
+}

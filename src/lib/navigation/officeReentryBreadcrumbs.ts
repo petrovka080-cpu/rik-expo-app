@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppState } from "react-native";
 
 import { recordPlatformObservability } from "../observability/platformObservability";
 
@@ -145,6 +146,8 @@ type OfficeReentryBreadcrumbInput = {
 
 const OFFICE_REENTRY_BREADCRUMBS_KEY = "rik_office_reentry_breadcrumbs_v1";
 const MAX_BREADCRUMBS = 80;
+const BREADCRUMB_BATCH_SIZE = 5;
+const BREADCRUMB_FLUSH_INTERVAL_MS = 2_000;
 const OFFICE_ROUTE = "/office";
 const OFFICE_POST_RETURN_PROBES: readonly OfficePostReturnProbe[] = [
   "all",
@@ -167,6 +170,9 @@ let writeQueue = Promise.resolve();
 let officePostReturnProbe: OfficePostReturnProbe[] = ["all"];
 let pendingOfficeRouteReturnReceipt: Record<string, unknown> | null = null;
 let recentOfficeRouteReturnReceipt: Record<string, unknown> | null = null;
+let pendingBatch: OfficeReentryBreadcrumb[] = [];
+let flushTimer: ReturnType<typeof setTimeout> | null = null;
+let appStateFinalFlushSubscription: { remove: () => void } | null = null;
 
 function trimText(value: unknown) {
   const text = String(value ?? "").trim();
@@ -222,34 +228,89 @@ async function writeRawBreadcrumbs(items: OfficeReentryBreadcrumb[]) {
  * is being torn down. The last call could hit a deallocated native module →
  * SIGABRT (Signal 6).
  *
- * Fix: Collect all markers within the same tick into `pendingBatch`, then flush
- * once per microtask. This reduces bridge calls from O(2N) to O(2) per tick.
+ * Fix: Collect markers into `pendingBatch`, then flush on bounded policy:
+ * 5 entries, 2 seconds, AppState background, or route-exit markers.
  */
-let pendingBatch: OfficeReentryBreadcrumb[] = [];
-let flushScheduled = false;
+function clearFlushTimer() {
+  if (flushTimer != null) {
+    clearTimeout(flushTimer);
+    flushTimer = null;
+  }
+}
+
+function removeAppStateFinalFlushSubscription() {
+  appStateFinalFlushSubscription?.remove();
+  appStateFinalFlushSubscription = null;
+}
+
+function ensureAppStateFinalFlush() {
+  if (appStateFinalFlushSubscription) return;
+  try {
+    appStateFinalFlushSubscription = AppState.addEventListener(
+      "change",
+      (nextState) => {
+        if (nextState !== "active") {
+          void flushOfficeReentryBreadcrumbWrites();
+        }
+      },
+    );
+  } catch {
+    // Breadcrumb persistence must never destabilize Office navigation.
+  }
+}
+
+function shouldFlushAfterMarker(marker: OfficeReentryMarker) {
+  return (
+    marker.endsWith("_unmount") ||
+    marker.endsWith("_before_remove") ||
+    marker.endsWith("_blur")
+  );
+}
+
+function scheduleTimedFlush() {
+  if (flushTimer != null) return;
+  flushTimer = setTimeout(() => {
+    flushTimer = null;
+    void flushOfficeReentryBreadcrumbWrites();
+  }, BREADCRUMB_FLUSH_INTERVAL_MS);
+  const maybeNodeTimer = flushTimer as { unref?: () => void };
+  maybeNodeTimer.unref?.();
+}
+
+export function flushOfficeReentryBreadcrumbWrites() {
+  clearFlushTimer();
+  writeQueue = writeQueue
+    .catch(() => undefined)
+    .then(async () => {
+      const batch = pendingBatch;
+      pendingBatch = [];
+      if (!batch.length) return;
+      const current = await readRawBreadcrumbs();
+      current.push(...batch);
+      await writeRawBreadcrumbs(current);
+      if (!pendingBatch.length) {
+        removeAppStateFinalFlushSubscription();
+      }
+    });
+
+  return writeQueue;
+}
 
 function enqueueWrite(inputs: OfficeReentryBreadcrumbInput[]) {
   const entries = inputs.map(normalizeEntry);
   if (!entries.length) return writeQueue;
 
+  ensureAppStateFinalFlush();
   pendingBatch.push(...entries);
 
-  if (!flushScheduled) {
-    flushScheduled = true;
-    writeQueue = writeQueue
-      .catch(() => undefined)
-      .then(() => Promise.resolve())
-      .then(async () => {
-        const batch = pendingBatch;
-        pendingBatch = [];
-        flushScheduled = false;
-        if (!batch.length) return;
-        const current = await readRawBreadcrumbs();
-        current.push(...batch);
-        await writeRawBreadcrumbs(current);
-      });
+  const shouldFinalFlush = entries.some((entry) =>
+    shouldFlushAfterMarker(entry.marker),
+  );
+  if (shouldFinalFlush || pendingBatch.length >= BREADCRUMB_BATCH_SIZE) {
+    return flushOfficeReentryBreadcrumbWrites();
   }
 
+  scheduleTimedFlush();
   return writeQueue;
 }
 
@@ -262,7 +323,8 @@ export function recordOfficeReentryBreadcrumbs(
 export async function recordOfficeReentryBreadcrumbsAsync(
   inputs: OfficeReentryBreadcrumbInput[],
 ) {
-  await enqueueWrite(inputs);
+  enqueueWrite(inputs);
+  await flushOfficeReentryBreadcrumbWrites();
 }
 
 function recordOfficeReentryMarker(input: OfficeReentryBreadcrumbInput) {
@@ -1167,10 +1229,15 @@ export function recordOfficePostReturnFailure(params: {
 }
 
 export async function getOfficeReentryBreadcrumbs() {
+  await flushOfficeReentryBreadcrumbWrites();
   return await readRawBreadcrumbs();
 }
 
 export async function clearOfficeReentryBreadcrumbs() {
+  clearFlushTimer();
+  pendingBatch = [];
+  removeAppStateFinalFlushSubscription();
+  await writeQueue.catch(() => undefined);
   try {
     await AsyncStorage.removeItem(OFFICE_REENTRY_BREADCRUMBS_KEY);
   } catch {

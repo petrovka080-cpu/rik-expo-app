@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "route": "/office",
+  "childRoute": "/office/director",
+  "finalUrl": "http://localhost:8081/office",
+  "officeReached": true,
+  "childReached": true,
+  "returnReached": true,
+  "pageErrors": 0,
+  "server5xx": 0,
+  "badResponses": [],
+  "consoleErrors": 0,
+  "proof": "director runtime user opened /office, navigated to /office/director, returned to /office"
+}
