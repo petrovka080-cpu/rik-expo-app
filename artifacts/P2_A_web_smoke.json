@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "base_url": "http://localhost:8081",
+  "checks": [
+    {
+      "role": "director",
+      "route": "/office/director",
+      "status": "passed",
+      "final_url": "http://localhost:8081/office/director",
+      "not_found": false,
+      "page_errors": 0,
+      "server_5xx": 0,
+      "console_errors": 0
+    },
+    {
+      "role": "buyer",
+      "route": "/office/buyer",
+      "status": "passed",
+      "final_url": "http://localhost:8081/office/buyer",
+      "not_found": false,
+      "page_errors": 0,
+      "server_5xx": 0,
+      "console_errors": 0
+    }
+  ],
+  "proposal_submit_proof": "scripts/proposal_atomic_boundary_verify.ts",
+  "note": "Web route smoke guards the live UI surfaces around proposal creation. The atomic submit success, idempotent replay, director readback, and validation rollback proof is the live RPC verifier."
+}

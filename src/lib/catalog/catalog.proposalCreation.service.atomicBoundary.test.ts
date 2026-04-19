@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+
 import { supabase } from "../supabaseClient";
 import { createProposalsBySupplier } from "./catalog.proposalCreation.service";
 
@@ -12,6 +15,11 @@ const mockedSupabase = supabase as unknown as {
   rpc: jest.Mock;
   from: jest.Mock;
 };
+
+const serviceSource = fs.readFileSync(
+  path.join(process.cwd(), "src/lib/catalog/catalog.proposalCreation.service.ts"),
+  "utf8",
+);
 
 describe("catalog proposal atomic boundary", () => {
   beforeEach(() => {
@@ -138,6 +146,21 @@ describe("catalog proposal atomic boundary", () => {
 
     expect(mockedSupabase.rpc).toHaveBeenCalledTimes(1);
     expect(mockedSupabase.from).not.toHaveBeenCalled();
+  });
+
+  it("keeps legacy client write orchestration out of the proposal creation service", () => {
+    expect(serviceSource).toContain("rpc_proposal_submit_v3");
+    expect(serviceSource).toContain("runAtomicProposalSubmitRpc");
+    expect(serviceSource).not.toContain("createProposalHeadStage");
+    expect(serviceSource).not.toContain("linkProposalItemsStage");
+    expect(serviceSource).not.toContain("completeProposalCreationStage");
+    expect(serviceSource).not.toContain("syncProposalRequestItemStatusStage");
+    expect(serviceSource).not.toContain("proposalCreateFull");
+    expect(serviceSource).not.toContain("proposalAddItems");
+    expect(serviceSource).not.toContain("proposalSnapshotItems");
+    expect(serviceSource).not.toContain("request_items_set_status");
+    expect(serviceSource).not.toContain("mutation:proposal_items_fallback");
+    expect(serviceSource).not.toContain("@typescript-eslint/no-unused-vars");
   });
 
   it("rejects inconsistent atomic rpc success payloads instead of accepting partial commits", async () => {

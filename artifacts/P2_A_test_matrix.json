@@ -1,0 +1,63 @@
+{
+  "wave": "P2-A",
+  "scope": "catalog proposal creation atomic RPC closeout",
+  "canonical_rpc": "public.rpc_proposal_submit_v3",
+  "client_entrypoint": "src/lib/catalog/catalog.proposalCreation.service.ts#createProposalsBySupplier",
+  "cases": [
+    {
+      "name": "primary path uses one atomic RPC",
+      "proof": "catalog.proposalCreation.service.atomicBoundary.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "RPC reject does not fall back to client writes",
+      "proof": "catalog.proposalCreation.service.atomicBoundary.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "inconsistent RPC success payload is rejected",
+      "proof": "catalog.proposalCreation.service.atomicBoundary.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "idempotent replay keeps compatible client contract",
+      "proof": "catalog.proposalCreation.service.atomicBoundary.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "duplicate request/supplier conflict recovery remains compatible",
+      "proof": "catalog.proposalCreation.service.atomicBoundary.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "legacy client write stages are absent from service source",
+      "proof": "catalog.proposalCreation.service.atomicBoundary.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "live RPC smoke proves success, replay, and validation rollback",
+      "proof": "scripts/proposal_atomic_boundary_verify.ts",
+      "status": "passed"
+    },
+    {
+      "name": "web buyer/director route smoke around proposal surfaces",
+      "proof": "artifacts/P2_A_web_smoke.json",
+      "status": "passed"
+    },
+    {
+      "name": "Android buyer office route smoke",
+      "proof": "artifacts/P2_A_android_smoke.json",
+      "status": "passed"
+    }
+  ],
+  "commands": [
+    "npx jest src/lib/catalog/catalog.proposalCreation.service.atomicBoundary.test.ts src/lib/catalog/buyerProposalSecurityDefinerSearchPathHardeningMigration.test.ts tests/catalog/catalogProposalAtomicRpcMigration.test.ts --runInBand --no-coverage",
+    "npx tsc --noEmit --pretty false",
+    "npx expo lint",
+    "npx tsx scripts/proposal_atomic_boundary_verify.ts",
+    "npx jest --runInBand",
+    "web smoke via Playwright on /office/director and /office/buyer",
+    "OFFICE_ROLE_RUNTIME_ROLES=buyer npx tsx scripts/office_role_route_runtime_verify.ts"
+  ],
+  "green": true
+}

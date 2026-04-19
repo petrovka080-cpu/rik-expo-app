@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "device": "emulator-5554",
+  "package": "com.azisbek_dzhantaev.rikexpoapp",
+  "route": "rik:///office/buyer",
+  "proof_command": "OFFICE_ROLE_RUNTIME_ROLES=buyer npx tsx scripts/office_role_route_runtime_verify.ts",
+  "route_proof_passed": true,
+  "matched_surface": "buyer",
+  "matched_labels": [
+    "buyer office surface"
+  ],
+  "no_fatal_exception": true,
+  "fatal_lines": [],
+  "source_artifact": "artifacts/office-role-route-runtime-proof.json"
+}
