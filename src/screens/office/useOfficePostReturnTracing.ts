@@ -23,11 +23,17 @@ import {
 } from "react-native";
 
 import {
-  getVisiblePostReturnSections,
   type PostReturnSectionKey,
   type SectionKey,
 } from "./officeHub.constants";
 import type { OfficeAccessScreenData } from "./officeAccess.types";
+import {
+  buildOfficePostReturnExtra,
+  buildOfficePostReturnProbeFlags,
+  formatPostReturnSections,
+  planOfficePostReturnSectionDone,
+  planOfficePostReturnTraceStart,
+} from "./officePostReturnTracing.model";
 import {
   recordOfficeNativeAnimationFrameDone,
   recordOfficeNativeAnimationFrameStart,
@@ -82,23 +88,17 @@ export function useOfficePostReturnTracing(
     offsetsRef,
   } = params;
 
-  // --- Probe flags ---
-  const disableScrollCallbacks = activePostReturnProbe.includes(
-    "no_scroll_callbacks",
+  const {
+    disableScrollCallbacks,
+    disableLayoutCallbacks,
+    disableContentSizeCallbacks,
+    disableKeyboardBridge,
+    disableInteractionManager,
+    disableAnimationFrame,
+  } = useMemo(
+    () => buildOfficePostReturnProbeFlags(activePostReturnProbe),
+    [activePostReturnProbe],
   );
-  const disableLayoutCallbacks = activePostReturnProbe.includes(
-    "no_layout_callbacks",
-  );
-  const disableContentSizeCallbacks = activePostReturnProbe.includes(
-    "no_content_size_callbacks",
-  );
-  const disableKeyboardBridge =
-    activePostReturnProbe.includes("no_keyboard_bridge");
-  const disableInteractionManager = activePostReturnProbe.includes(
-    "no_interaction_manager",
-  );
-  const disableAnimationFrame =
-    activePostReturnProbe.includes("no_animation_frame");
 
   // --- Tracing-owned refs ---
   const postReturnFrameRef = useRef<number | null>(null);
@@ -123,20 +123,15 @@ export function useOfficePostReturnTracing(
   // --- Callbacks ---
 
   const buildPostReturnExtra = useCallback(
-    (extra?: Record<string, unknown>) => {
-      const nextExtra: Record<string, unknown> = {
-        owner: "office_hub",
+    (extra?: Record<string, unknown>) =>
+      buildOfficePostReturnExtra({
         focusCycle: focusCycleRef.current,
-        sections: postReturnPendingSectionsRef.current.join(",") || "none",
-        ...(extra ?? {}),
-      };
-
-      if (postReturnProbeLabel !== "all" && nextExtra.probe == null) {
-        nextExtra.probe = postReturnProbeLabel;
-      }
-
-      return nextExtra;
-    },
+        sectionsLabel: formatPostReturnSections(
+          postReturnPendingSectionsRef.current,
+        ),
+        probeLabel: postReturnProbeLabel,
+        extra,
+      }),
     [focusCycleRef, postReturnProbeLabel],
   );
 
@@ -305,34 +300,46 @@ export function useOfficePostReturnTracing(
   const recordPostReturnSectionDone = useCallback(
     (section: PostReturnSectionKey) => {
       const pendingSections = postReturnPendingSectionsRef.current;
-      if (!pendingSections.includes(section)) return;
+      const committedSections = postReturnCommittedSectionsRef.current;
+      const plan = planOfficePostReturnSectionDone({
+        section,
+        pendingSections,
+        committedSections,
+        layoutCommitted: postReturnLayoutCommitRef.current,
+      });
 
-      const sections = pendingSections.join(",") || "none";
-      if (!postReturnLayoutCommitRef.current) {
+      if (
+        !plan.shouldCommitLayout &&
+        !plan.shouldRecordSectionDone &&
+        !plan.shouldRecordChildMountDone
+      ) {
+        return;
+      }
+
+      if (plan.shouldCommitLayout) {
         postReturnLayoutCommitRef.current = true;
         recordOfficePostReturnLayoutCommit(
           buildPostReturnExtra({
             section,
-            sections,
+            sections: plan.sectionsLabel,
           }),
         );
       }
 
-      const committedSections = postReturnCommittedSectionsRef.current;
-      if (committedSections.has(section)) return;
+      if (!plan.shouldRecordSectionDone) return;
 
       committedSections.add(section);
       recordOfficePostReturnSectionRenderDone(
         buildPostReturnExtra({
           section,
-          sections,
+          sections: plan.sectionsLabel,
         }),
       );
 
-      if (committedSections.size === pendingSections.length) {
+      if (plan.shouldRecordChildMountDone) {
         recordOfficePostReturnChildMountDone(
           buildPostReturnExtra({
-            sections,
+            sections: plan.sectionsLabel,
           }),
         );
       }
@@ -407,11 +414,12 @@ export function useOfficePostReturnTracing(
   const startPostReturnTrace = useCallback(
     (next: OfficeAccessScreenData) => {
       const focusCycle = focusCycleRef.current;
-      const nextSections = getVisiblePostReturnSections(
+      const tracePlan = planOfficePostReturnTraceStart(
         next,
         activePostReturnProbe,
       );
-      const sections = nextSections.join(",") || "none";
+      const nextSections = tracePlan.sections;
+      const sections = tracePlan.sectionsLabel;
 
       cancelPostReturnIdle();
       postReturnPendingSectionsRef.current = nextSections;
@@ -467,7 +475,7 @@ export function useOfficePostReturnTracing(
           focusCycle,
           sections,
         });
-        if (nextSections.length === 0) {
+        if (tracePlan.shouldCompleteChildMountInIdle) {
           recordOfficePostReturnChildMountDone(
             buildPostReturnExtra({
               focusCycle,
