@@ -37,6 +37,9 @@ const mockSetForeman = jest.fn();
 const mockOpenRequestById = jest.fn().mockResolvedValue(undefined);
 const mockEnsureRequestId = jest.fn().mockResolvedValue("req-1");
 const mockRunRequestPdf = jest.fn().mockResolvedValue(undefined);
+const mockPrepareAndPreviewGeneratedPdf = jest.fn().mockResolvedValue(undefined);
+const mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory = jest.fn().mockResolvedValue(undefined);
+const mockBuildForemanRequestPdfDescriptor = jest.fn();
 const mockLoadForemanHistory = jest.fn().mockResolvedValue(["Foreman One"]);
 const mockLoadStoredFioState = jest.fn().mockResolvedValue({
   currentFio: "",
@@ -57,6 +60,18 @@ const mockGetUser = jest.fn().mockResolvedValue({
     },
   },
 });
+const foremanHistoryPdfDescriptor = {
+  uri: "https://example.com/foreman-history.pdf",
+  fileName: "foreman-history.pdf",
+  title: "Foreman history",
+  documentType: "request",
+  originModule: "foreman",
+  entityId: "req-history",
+  fileSource: {
+    kind: "remote",
+    uri: "https://example.com/foreman-history.pdf",
+  },
+};
 let mockDraftBoundaryOverrides: Record<string, unknown> = {};
 
 jest.mock("react-native", () => ({
@@ -256,7 +271,13 @@ jest.mock("../../lib/offline/foremanSyncRuntime", () => ({
 }));
 
 jest.mock("../../lib/pdf/pdf.runner", () => ({
-  prepareAndPreviewGeneratedPdf: jest.fn().mockResolvedValue(undefined),
+  prepareAndPreviewGeneratedPdf: (...args: unknown[]) => mockPrepareAndPreviewGeneratedPdf(...args),
+  prepareAndPreviewGeneratedPdfFromDescriptorFactory: (...args: unknown[]) =>
+    mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory(...args),
+}));
+
+jest.mock("./foreman.requestPdf.service", () => ({
+  buildForemanRequestPdfDescriptor: (...args: unknown[]) => mockBuildForemanRequestPdfDescriptor(...args),
 }));
 
 jest.mock("./hooks/useForemanDisplayNo", () => ({
@@ -450,6 +471,9 @@ describe("useForemanScreenController", () => {
     mockSubmitToDirector.mockResolvedValue(undefined);
     mockSyncPendingQtyDrafts.mockResolvedValue(undefined);
     mockRunRequestPdf.mockResolvedValue(undefined);
+    mockPrepareAndPreviewGeneratedPdf.mockResolvedValue(foremanHistoryPdfDescriptor);
+    mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory.mockResolvedValue(foremanHistoryPdfDescriptor);
+    mockBuildForemanRequestPdfDescriptor.mockResolvedValue(foremanHistoryPdfDescriptor);
     mockOpenRequestById.mockResolvedValue(undefined);
     mockDraftBoundaryOverrides = {};
     mockLoadForemanHistory.mockResolvedValue(["Foreman One"]);
@@ -512,6 +536,47 @@ describe("useForemanScreenController", () => {
     expect(mockSubmitToDirector).toHaveBeenCalledTimes(1);
     expect(mockCloseDraft).toHaveBeenCalledTimes(1);
     expect(mockSetDraftSendBusy).toHaveBeenLastCalledWith(false);
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  it("routes history PDF descriptor creation through the guarded preview factory", async () => {
+    let vm: ControllerVm = null;
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vm = value; }} />);
+    });
+    await flushAsync();
+
+    mockBuildForemanRequestPdfDescriptor.mockClear();
+
+    await act(async () => {
+      await vm?.materialsContentProps.onOpenHistoryPdf("req-77");
+    });
+
+    expect(mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory).toHaveBeenCalledTimes(1);
+    expect(mockPrepareAndPreviewGeneratedPdf).not.toHaveBeenCalled();
+    expect(mockBuildForemanRequestPdfDescriptor).not.toHaveBeenCalled();
+
+    const previewArgs = mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory.mock.calls[0]?.[0] as {
+      key: string;
+      createDescriptor: () => Promise<typeof foremanHistoryPdfDescriptor>;
+      onBeforeNavigate?: () => void | Promise<void>;
+    };
+    expect(previewArgs).toEqual(expect.objectContaining({
+      key: "pdf:history:req-77",
+      createDescriptor: expect.any(Function),
+      onBeforeNavigate: expect.any(Function),
+    }));
+
+    await expect(previewArgs.createDescriptor()).resolves.toBe(foremanHistoryPdfDescriptor);
+    expect(mockBuildForemanRequestPdfDescriptor).toHaveBeenCalledWith(expect.objectContaining({
+      requestId: "req-77",
+      displayNo: "#req-",
+    }));
 
     await act(async () => {
       renderer.unmount();

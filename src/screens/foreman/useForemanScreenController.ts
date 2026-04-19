@@ -52,7 +52,10 @@ import {
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
 import { buildForemanSyncUiStatus } from "../../lib/offline/foremanSyncRuntime";
-import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
+import {
+  prepareAndPreviewGeneratedPdf,
+  prepareAndPreviewGeneratedPdfFromDescriptorFactory,
+} from "../../lib/pdf/pdf.runner";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { useForemanHistory } from "./hooks/useForemanHistory";
 import { useForemanDisplayNo } from "./hooks/useForemanDisplayNo";
@@ -287,25 +290,28 @@ export function useForemanScreenController() {
     const rid = ridStr(reqId);
     if (!rid) return;
     try {
-      const descriptor = await buildForemanRequestPdfDescriptor({
-        requestId: rid,
-        generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
-        displayNo: requestDetails?.display_no ?? `#${shortId(rid)}`,
-        title: `Заявка ${rid}`,
-      });
-      if (__DEV__) console.info("[foreman-pdf] history_open_descriptor", {
-        requestId: rid,
-        sourceKind: descriptor.fileSource.kind,
-        uri: descriptor.uri,
-      });
+      const createDescriptor = async () => {
+        const descriptor = await buildForemanRequestPdfDescriptor({
+          requestId: rid,
+          generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
+          displayNo: requestDetails?.display_no ?? `#${shortId(rid)}`,
+          title: `Заявка ${rid}`,
+        });
+        if (__DEV__) console.info("[foreman-pdf] history_open_descriptor", {
+          requestId: rid,
+          sourceKind: descriptor.fileSource.kind,
+          uri: descriptor.uri,
+        });
+        return descriptor;
+      };
       // XR-PDF: pass closeHistory as onBeforeNavigate instead of calling it manually.
       // The shared boundary handles dismiss → InteractionManager → settle → push.
-      await prepareAndPreviewGeneratedPdf({
+      await prepareAndPreviewGeneratedPdfFromDescriptorFactory({
         busy: gbusy,
         supabase,
         key: `pdf:history:${rid}`,
         label: "Открываю PDF…",
-        descriptor,
+        createDescriptor,
         router,
         onBeforeNavigate: closeHistory,
       });
