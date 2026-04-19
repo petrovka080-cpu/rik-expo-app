@@ -107,6 +107,95 @@ describe("catalog proposal atomic boundary", () => {
     });
   });
 
+  it("does not fall back to client-side proposal writes when the atomic rpc rejects", async () => {
+    mockedSupabase.rpc.mockResolvedValue({
+      data: null,
+      error: {
+        code: "P0001",
+        message: "proposal_submit_v3_partial_insert_detected",
+      },
+    });
+
+    await expect(
+      createProposalsBySupplier(
+        [
+          {
+            supplier: "Acme",
+            request_item_ids: ["ri-1"],
+            meta: [{ request_item_id: "ri-1", price: "100", supplier: "Acme", note: "n1" }],
+          },
+        ],
+        {
+          buyerFio: "Buyer User",
+          requestId: "request-1",
+          clientMutationId: "mutation-rollback-1",
+        },
+      ),
+    ).rejects.toMatchObject({
+      code: "P0001",
+      message: "proposal_submit_v3_partial_insert_detected",
+    });
+
+    expect(mockedSupabase.rpc).toHaveBeenCalledTimes(1);
+    expect(mockedSupabase.from).not.toHaveBeenCalled();
+  });
+
+  it("rejects inconsistent atomic rpc success payloads instead of accepting partial commits", async () => {
+    mockedSupabase.rpc.mockResolvedValue({
+      data: {
+        status: "ok",
+        proposals: [
+          {
+            bucket_index: 0,
+            proposal_id: "proposal-1",
+            proposal_no: "PR-1",
+            supplier: "Acme",
+            request_item_ids: ["ri-1"],
+            raw_status: "submitted",
+            submitted_at: "2026-03-30T10:00:00.000Z",
+            sent_to_accountant_at: null,
+            submit_source: "rpc:proposal_submit_text_v1",
+          },
+        ],
+        meta: {
+          canonical_path: "rpc:proposal_submit_v3",
+          client_mutation_id: "mutation-partial-1",
+          request_id: "request-1",
+          idempotent_replay: false,
+          expected_bucket_count: 1,
+          expected_item_count: 2,
+          created_proposal_count: 1,
+          created_item_count: 1,
+          attachment_continuation_ready: true,
+        },
+      },
+      error: null,
+    });
+
+    await expect(
+      createProposalsBySupplier(
+        [
+          {
+            supplier: "Acme",
+            request_item_ids: ["ri-1", "ri-2"],
+            meta: [
+              { request_item_id: "ri-1", price: "100", supplier: "Acme", note: "n1" },
+              { request_item_id: "ri-2", price: "200", supplier: "Acme", note: "n2" },
+            ],
+          },
+        ],
+        {
+          buyerFio: "Buyer User",
+          requestId: "request-1",
+          clientMutationId: "mutation-partial-1",
+        },
+      ),
+    ).rejects.toThrow("rpc_proposal_submit_v3 item count mismatch: expected 2, got 1");
+
+    expect(mockedSupabase.rpc).toHaveBeenCalledTimes(1);
+    expect(mockedSupabase.from).not.toHaveBeenCalled();
+  });
+
   it("preserves compatibility on idempotent replay and fills supplier/request_item fallback from input bucket", async () => {
     mockedSupabase.rpc.mockResolvedValue({
       data: {
