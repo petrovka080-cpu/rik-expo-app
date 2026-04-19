@@ -14,9 +14,12 @@ import { recordPlatformOfflineTelemetry } from "../../../lib/offline/platformOff
 import { seedEnsureIncomingItems } from "../warehouse.seed";
 import { applyWarehouseReceive } from "./useWarehouseReceiveApply";
 import {
+  buildWarehouseReceiveEnqueueTelemetry,
+  buildWarehouseReceiveManualRetryTelemetry,
   buildWarehouseReceiveRemoteTruth,
   buildWarehouseReceiveSelection as buildReceiveSelection,
   normalizeWarehouseReceiveFlowText as trim,
+  shouldRequeueWarehouseReceiveManualRetry,
   toWarehouseReceiveDraftItemsFromInputMap as toDraftItemsFromInputMap,
   toWarehouseReceiveQtyInputMap as toQtyInputMap,
   type WarehouseReceiveFlowRow as ReceiveRow,
@@ -238,21 +241,15 @@ export function useWarehouseReceiveFlow(params: {
         return;
       }
       await markWarehouseReceiveDraftQueued(incomingId, pendingCount);
-      recordPlatformOfflineTelemetry({
-        contourKey: "warehouse_receive",
-        entityKey: incomingId,
-        syncStatus: "queued",
-        queueAction: entry?.coalescedCount ? "coalesce" : "enqueue",
-        coalesced: (entry?.coalescedCount ?? 0) > 0,
-        retryCount: Math.max(0, entry?.retryCount ?? 0),
-        pendingCount,
-        failureClass: "none",
-        triggerKind: "submit",
-        networkKnownOffline: networkOnlineRef.current === false,
-        restoredAfterReopen: false,
-        manualRetry: false,
-        durationMs: null,
-      });
+      recordPlatformOfflineTelemetry(
+        buildWarehouseReceiveEnqueueTelemetry({
+          incomingId,
+          coalescedCount: entry?.coalescedCount,
+          retryCount: entry?.retryCount,
+          pendingCount,
+          networkOnline: networkOnlineRef.current,
+        }),
+      );
     },
     [ensureScreenActive],
   );
@@ -351,8 +348,8 @@ export function useWarehouseReceiveFlow(params: {
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
+    ensureScreenActive,
     isScreenActive,
     itemsModalIncomingId,
     loadItemsForHead,
@@ -526,10 +523,10 @@ export function useWarehouseReceiveFlow(params: {
         setReceivingHeadId(null);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [
       ensureScreenActive,
       handleManualSyncResult,
+      isScreenActive,
       loadItemsForHead,
       notifyError,
       notifyInfo,
@@ -568,31 +565,18 @@ export function useWarehouseReceiveFlow(params: {
 
         const queued = await getWarehouseReceiveQueueEntry(incomingId);
         const requeueFinalLocalState =
-          queued?.status === "failed_non_retryable" || queued?.status === "conflicted";
+          shouldRequeueWarehouseReceiveManualRetry(queued?.status);
 
-        recordPlatformOfflineTelemetry({
-          contourKey: "warehouse_receive",
-          entityKey: incomingId,
-          syncStatus:
-            draft.status === "failed_terminal" ? "failed_terminal" : "queued",
-          queueAction: "manual_retry",
-          coalesced: false,
-          retryCount: Math.max(0, draft.retryCount ?? 0),
-          pendingCount: Math.max(0, draft.pendingCount ?? 0),
-          failureClass:
-            queued?.status === "conflicted"
-              ? "conflicted"
-              : queued?.status === "failed_non_retryable" || draft.status === "failed_terminal"
-                ? "failed_non_retryable"
-              : networkOnlineRef.current === false
-                ? "offline_wait"
-                : "retryable_sync_failure",
-          triggerKind: "manual_retry",
-          networkKnownOffline: networkOnlineRef.current === false,
-          restoredAfterReopen: false,
-          manualRetry: true,
-          durationMs: null,
-        });
+        recordPlatformOfflineTelemetry(
+          buildWarehouseReceiveManualRetryTelemetry({
+            incomingId,
+            draftStatus: draft.status,
+            draftRetryCount: draft.retryCount,
+            draftPendingCount: draft.pendingCount,
+            queuedStatus: queued?.status,
+            networkOnline: networkOnlineRef.current,
+          }),
+        );
 
         if (!queued || requeueFinalLocalState) {
           await queueIncomingDraft(incomingId);
@@ -626,10 +610,10 @@ export function useWarehouseReceiveFlow(params: {
         setReceivingHeadId(null);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [
       ensureScreenActive,
       handleManualSyncResult,
+      isScreenActive,
       notifyInfo,
       onError,
       queueIncomingDraft,

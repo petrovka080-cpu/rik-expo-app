@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "route": "/office/warehouse",
+  "finalUrl": "http://localhost:8081/office/warehouse",
+  "hasWarehouseSurface": true,
+  "hasNotFoundBody": false,
+  "pageErrors": 0,
+  "server5xx": 0,
+  "consoleErrors": 0,
+  "proof": "warehouse role login reached the office warehouse route and daily FIO gate without page/runtime errors"
+}

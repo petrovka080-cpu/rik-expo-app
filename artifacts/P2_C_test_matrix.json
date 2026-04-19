@@ -1,0 +1,63 @@
+{
+  "wave": "P2-C",
+  "scope": "warehouse receive flow decision boundary",
+  "green": true,
+  "cases": [
+    {
+      "name": "receive selection and remote truth parity",
+      "proof": "tests/warehouse/warehouseReceiveFlow.model.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "enqueue telemetry planner parity",
+      "proof": "tests/warehouse/warehouseReceiveFlow.model.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "manual retry telemetry planner parity",
+      "proof": "tests/warehouse/warehouseReceiveFlow.model.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "manual retry final-state requeue decision",
+      "proof": "tests/warehouse/warehouseReceiveFlow.model.test.ts",
+      "status": "passed"
+    },
+    {
+      "name": "warehouse receive worker/draft/queue regression",
+      "proof": "7 targeted warehouse suites, 48 tests",
+      "status": "passed"
+    },
+    {
+      "name": "TypeScript",
+      "proof": "npx tsc --noEmit --pretty false",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "proof": "npx expo lint",
+      "status": "passed"
+    },
+    {
+      "name": "full Jest",
+      "proof": "npx jest --runInBand",
+      "status": "passed",
+      "summary": "1 skipped, 346 passed, 346 of 347 suites; 1 skipped, 2195 passed, 2196 tests"
+    },
+    {
+      "name": "warehouse reliability verifier",
+      "proof": "npx tsx scripts/warehouse_receive_reliability_wave1.ts",
+      "status": "passed"
+    },
+    {
+      "name": "web runtime smoke",
+      "proof": "artifacts/P2_C_web_smoke.json",
+      "status": "passed"
+    },
+    {
+      "name": "Android runtime smoke",
+      "proof": "artifacts/P2_C_android_smoke.json",
+      "status": "passed"
+    }
+  ]
+}

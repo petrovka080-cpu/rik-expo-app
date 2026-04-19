@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "route": "rik:///office/warehouse",
+  "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+  "routeReached": true,
+  "fioGateReached": true,
+  "warehouseSurfaceMatched": true,
+  "noFatalException": true,
+  "fatalLines": [],
+  "xmlPath": "artifacts/P2_C_android_warehouse-route-1.xml",
+  "pngPath": "artifacts/P2_C_android_warehouse-route-1.png",
+  "androidPreflight": {
+    "deviceDetected": true,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "reverseProxyReady": true,
+    "appCleared": true,
+    "gmsCleared": false,
+    "devClientReachable": true
+  },
+  "recovery": {
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false
+  }
+}

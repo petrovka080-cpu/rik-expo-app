@@ -1,5 +1,9 @@
 import type { PlatformTerminalTruth } from "../../../lib/offline/platformTerminalRecovery";
-import type { WarehouseReceiveDraftItem } from "../warehouse.receiveDraft.store";
+import type { PlatformOfflineTelemetryEvent } from "../../../lib/offline/platformOffline.observability";
+import type {
+  WarehouseReceiveDraftItem,
+  WarehouseReceiveSyncStatus,
+} from "../warehouse.receiveDraft.store";
 import { nz, parseQtySelected } from "../warehouse.utils";
 
 export type WarehouseReceiveFlowRow = {
@@ -19,6 +23,21 @@ export type WarehouseReceiveSelection = {
   items: WarehouseReceiveDraftItem[];
   payload: WarehouseReceiveSelectionPayloadItem[];
 };
+
+export type WarehouseReceiveTelemetryInput = Omit<
+  PlatformOfflineTelemetryEvent,
+  "id" | "at"
+>;
+
+export type WarehouseReceiveQueueStatusLike =
+  | "queued"
+  | "inflight"
+  | "retry_wait"
+  | "failed_non_retryable"
+  | "conflicted"
+  | string
+  | null
+  | undefined;
 
 export const normalizeWarehouseReceiveFlowText = (value: unknown) =>
   String(value ?? "").trim();
@@ -111,3 +130,70 @@ export const buildWarehouseReceiveRemoteTruth = (
         : "receive_remaining_qty_zero",
   };
 };
+
+const safeCount = (value: unknown): number => {
+  const numberValue = Number(value ?? 0);
+  return Number.isFinite(numberValue) ? Math.max(0, numberValue) : 0;
+};
+
+export const buildWarehouseReceiveEnqueueTelemetry = (params: {
+  incomingId: string;
+  coalescedCount?: number | null;
+  retryCount?: number | null;
+  pendingCount: number;
+  networkOnline: boolean | null;
+}): WarehouseReceiveTelemetryInput => {
+  const coalescedCount = safeCount(params.coalescedCount);
+  return {
+    contourKey: "warehouse_receive",
+    entityKey: params.incomingId,
+    syncStatus: "queued",
+    queueAction: coalescedCount > 0 ? "coalesce" : "enqueue",
+    coalesced: coalescedCount > 0,
+    retryCount: safeCount(params.retryCount),
+    pendingCount: safeCount(params.pendingCount),
+    failureClass: "none",
+    triggerKind: "submit",
+    networkKnownOffline: params.networkOnline === false,
+    restoredAfterReopen: false,
+    manualRetry: false,
+    durationMs: null,
+  };
+};
+
+export const shouldRequeueWarehouseReceiveManualRetry = (
+  queuedStatus: WarehouseReceiveQueueStatusLike,
+): boolean =>
+  queuedStatus === "failed_non_retryable" || queuedStatus === "conflicted";
+
+export const buildWarehouseReceiveManualRetryTelemetry = (params: {
+  incomingId: string;
+  draftStatus: WarehouseReceiveSyncStatus;
+  draftRetryCount?: number | null;
+  draftPendingCount?: number | null;
+  queuedStatus?: WarehouseReceiveQueueStatusLike;
+  networkOnline: boolean | null;
+}): WarehouseReceiveTelemetryInput => ({
+  contourKey: "warehouse_receive",
+  entityKey: params.incomingId,
+  syncStatus:
+    params.draftStatus === "failed_terminal" ? "failed_terminal" : "queued",
+  queueAction: "manual_retry",
+  coalesced: false,
+  retryCount: safeCount(params.draftRetryCount),
+  pendingCount: safeCount(params.draftPendingCount),
+  failureClass:
+    params.queuedStatus === "conflicted"
+      ? "conflicted"
+      : params.queuedStatus === "failed_non_retryable" ||
+          params.draftStatus === "failed_terminal"
+        ? "failed_non_retryable"
+        : params.networkOnline === false
+          ? "offline_wait"
+          : "retryable_sync_failure",
+  triggerKind: "manual_retry",
+  networkKnownOffline: params.networkOnline === false,
+  restoredAfterReopen: false,
+  manualRetry: true,
+  durationMs: null,
+});

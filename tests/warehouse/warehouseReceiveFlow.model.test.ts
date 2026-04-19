@@ -1,6 +1,9 @@
 import {
+  buildWarehouseReceiveEnqueueTelemetry,
+  buildWarehouseReceiveManualRetryTelemetry,
   buildWarehouseReceiveRemoteTruth,
   buildWarehouseReceiveSelection,
+  shouldRequeueWarehouseReceiveManualRetry,
   toWarehouseReceiveDraftItemsFromInputMap,
   toWarehouseReceiveQtyInputMap,
 } from "../../src/screens/warehouse/hooks/warehouseReceiveFlow.model";
@@ -179,4 +182,88 @@ describe("warehouseReceiveFlow model", () => {
       reason: "receive_remaining_qty_zero",
     });
   });
+
+  it("plans enqueue telemetry without keeping queue branching in the hook", () => {
+    expect(
+      buildWarehouseReceiveEnqueueTelemetry({
+        incomingId: "incoming-1",
+        coalescedCount: 2,
+        retryCount: 3,
+        pendingCount: 4,
+        networkOnline: false,
+      }),
+    ).toEqual({
+      contourKey: "warehouse_receive",
+      entityKey: "incoming-1",
+      syncStatus: "queued",
+      queueAction: "coalesce",
+      coalesced: true,
+      retryCount: 3,
+      pendingCount: 4,
+      failureClass: "none",
+      triggerKind: "submit",
+      networkKnownOffline: true,
+      restoredAfterReopen: false,
+      manualRetry: false,
+      durationMs: null,
+    });
+
+    expect(
+      buildWarehouseReceiveEnqueueTelemetry({
+        incomingId: "incoming-2",
+        pendingCount: 1,
+        networkOnline: true,
+      }),
+    ).toMatchObject({
+      entityKey: "incoming-2",
+      queueAction: "enqueue",
+      coalesced: false,
+      retryCount: 0,
+      pendingCount: 1,
+      networkKnownOffline: false,
+    });
+  });
+
+  it("plans manual retry telemetry and final-state requeue decisions", () => {
+    expect(shouldRequeueWarehouseReceiveManualRetry("conflicted")).toBe(true);
+    expect(shouldRequeueWarehouseReceiveManualRetry("failed_non_retryable")).toBe(true);
+    expect(shouldRequeueWarehouseReceiveManualRetry("retry_wait")).toBe(false);
+
+    expect(
+      buildWarehouseReceiveManualRetryTelemetry({
+        incomingId: "incoming-conflict",
+        draftStatus: "queued",
+        draftRetryCount: 2,
+        draftPendingCount: 3,
+        queuedStatus: "conflicted",
+        networkOnline: true,
+      }),
+    ).toMatchObject({
+      entityKey: "incoming-conflict",
+      syncStatus: "queued",
+      queueAction: "manual_retry",
+      failureClass: "conflicted",
+      retryCount: 2,
+      pendingCount: 3,
+      manualRetry: true,
+      networkKnownOffline: false,
+    });
+
+    expect(
+      buildWarehouseReceiveManualRetryTelemetry({
+        incomingId: "incoming-terminal",
+        draftStatus: "failed_terminal",
+        queuedStatus: "retry_wait",
+        networkOnline: false,
+      }),
+    ).toMatchObject({
+      entityKey: "incoming-terminal",
+      syncStatus: "failed_terminal",
+      failureClass: "failed_non_retryable",
+      retryCount: 0,
+      pendingCount: 0,
+      networkKnownOffline: true,
+    });
+  });
+
 });
