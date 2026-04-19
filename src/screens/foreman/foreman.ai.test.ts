@@ -9,10 +9,14 @@ import {
   type RikCatalogItem,
 } from "./foreman.ai";
 import {
-  resolveCatalogPackagingViaRpc,
-  resolveCatalogSynonymMatchViaRpc,
+  resolveForemanAiCatalogViaServer,
 } from "../../lib/api/foremanAiResolve.service";
-import { rikQuickSearch } from "../../lib/catalog_api";
+import {
+  buildForemanAiPromptCacheKey,
+  createForemanAiPromptCache,
+} from "../../../supabase/functions/foreman-ai-resolve/cache";
+import { readFileSync } from "fs";
+import { resolve as resolvePath } from "path";
 
 const mockRecordPlatformObservability = jest.fn();
 
@@ -26,17 +30,10 @@ jest.mock("../../lib/ai/aiRepository", () => ({
 }));
 
 jest.mock("../../lib/api/foremanAiResolve.service", () => ({
-  resolveCatalogPackagingViaRpc: jest.fn(),
-  resolveCatalogSynonymMatchViaRpc: jest.fn(),
+  resolveForemanAiCatalogViaServer: jest.fn(),
 }));
 
-jest.mock("../../lib/catalog_api", () => ({
-  rikQuickSearch: jest.fn(),
-}));
-
-const mockResolveCatalogPackagingViaRpc = resolveCatalogPackagingViaRpc as jest.Mock;
-const mockResolveCatalogSynonymMatchViaRpc = resolveCatalogSynonymMatchViaRpc as jest.Mock;
-const mockRikQuickSearch = rikQuickSearch as jest.Mock;
+const mockResolveForemanAiCatalogViaServer = resolveForemanAiCatalogViaServer as jest.Mock;
 
 const makeParsedItem = (overrides?: Partial<ParsedForemanAiItem>): ParsedForemanAiItem => ({
   name: "Cement M500",
@@ -55,12 +52,26 @@ const makeCatalogItem = (overrides?: Partial<RikCatalogItem>): RikCatalogItem =>
   ...overrides,
 } as RikCatalogItem);
 
+const makeServerResolveResult = (overrides?: Partial<Awaited<ReturnType<typeof resolveForemanAiCatalogViaServer>>>) => ({
+  items: [],
+  candidateGroups: [],
+  clarifyQuestions: [],
+  unresolvedNames: [],
+  meta: {
+    source: "foreman-ai-resolve",
+    cacheStatus: "miss",
+    sourceItemCount: 0,
+    resolveItemCount: 0,
+    duplicateItemCount: 0,
+    cappedItemCount: 0,
+  },
+  ...overrides,
+});
+
 describe("foreman.ai contract hardening", () => {
   beforeEach(() => {
     mockRecordPlatformObservability.mockReset();
-    mockResolveCatalogPackagingViaRpc.mockReset().mockResolvedValue(null);
-    mockResolveCatalogSynonymMatchViaRpc.mockReset().mockResolvedValue(null);
-    mockRikQuickSearch.mockReset();
+    mockResolveForemanAiCatalogViaServer.mockReset();
     jest.spyOn(console, "warn").mockImplementation(() => {});
     jest.spyOn(console, "info").mockImplementation(() => {});
   });
@@ -188,13 +199,24 @@ describe("foreman.ai contract hardening", () => {
     );
   });
 
-  it("dedupes repeated parsed items before catalog resolution while preserving output count", async () => {
-    mockRikQuickSearch.mockResolvedValue([
-      makeCatalogItem({
-        rik_code: "MAT-CEMENT",
-        name_human: "Cement M500",
+  it("routes repeated parsed items through one server resolve boundary while preserving output count", async () => {
+    mockResolveForemanAiCatalogViaServer.mockImplementation(async (params) =>
+      makeServerResolveResult({
+        items: params.items.map((item: ParsedForemanAiItem) => ({
+          ...item,
+          rik_code: "MAT-CEMENT",
+          name: "Cement M500",
+        })),
+        meta: {
+          source: "foreman-ai-resolve",
+          cacheStatus: "miss",
+          sourceItemCount: params.items.length,
+          resolveItemCount: 1,
+          duplicateItemCount: params.items.length - 1,
+          cappedItemCount: 0,
+        },
       }),
-    ]);
+    );
 
     const result = await resolveForemanParsedItemsForTesting({
       items: Array.from({ length: 8 }, () =>
@@ -210,17 +232,42 @@ describe("foreman.ai contract hardening", () => {
       expect(result.items).toHaveLength(8);
       expect(result.items.every((item) => item.rik_code === "MAT-CEMENT")).toBe(true);
     }
-    expect(mockResolveCatalogSynonymMatchViaRpc).toHaveBeenCalledTimes(1);
-    expect(mockRikQuickSearch).toHaveBeenCalledTimes(1);
+    expect(mockResolveForemanAiCatalogViaServer).toHaveBeenCalledTimes(1);
+    expect(mockResolveForemanAiCatalogViaServer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prompt: "Battle dataset resolve",
+        maxItems: FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT,
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            name: "Cement M500",
+            kind: "material",
+          }),
+        ]),
+      }),
+    );
   });
 
-  it("caps unique catalog resolution work for oversized AI item batches", async () => {
-    mockRikQuickSearch.mockImplementation(async (query: unknown) => [
-      makeCatalogItem({
-        rik_code: `MAT-${String(query).replace(/\s+/g, "-")}`,
-        name_human: String(query),
-      }),
-    ]);
+  it("keeps oversized AI item batches bounded by one server request and max item metadata", async () => {
+    mockResolveForemanAiCatalogViaServer.mockImplementation(async (params) => {
+      const accepted = params.items.slice(0, FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT);
+      return makeServerResolveResult({
+        items: accepted.map((item: ParsedForemanAiItem, index: number) => ({
+          ...item,
+          rik_code: `MAT-${index + 1}`,
+        })),
+        unresolvedNames: params.items
+          .slice(FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT)
+          .map((item: ParsedForemanAiItem) => item.name),
+        meta: {
+          source: "foreman-ai-resolve",
+          cacheStatus: "miss",
+          sourceItemCount: params.items.length,
+          resolveItemCount: FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT,
+          duplicateItemCount: 0,
+          cappedItemCount: params.items.length - FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT,
+        },
+      });
+    });
 
     const result = await resolveForemanParsedItemsForTesting({
       items: Array.from({ length: FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT + 3 }, (_, index) =>
@@ -231,8 +278,16 @@ describe("foreman.ai contract hardening", () => {
       ),
     });
 
-    expect(mockResolveCatalogSynonymMatchViaRpc).toHaveBeenCalledTimes(FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT);
-    expect(mockRikQuickSearch).toHaveBeenCalledTimes(FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT);
+    expect(mockResolveForemanAiCatalogViaServer).toHaveBeenCalledTimes(1);
+    expect(mockResolveForemanAiCatalogViaServer.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        maxItems: FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT,
+        items: expect.any(Array),
+      }),
+    );
+    expect(mockResolveForemanAiCatalogViaServer.mock.calls[0][0].items).toHaveLength(
+      FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT + 3,
+    );
     expect(result).toEqual(
       expect.objectContaining({
         type: "clarify_required",
@@ -242,6 +297,60 @@ describe("foreman.ai contract hardening", () => {
     if ("resolvedItems" in result) {
       expect(result.resolvedItems).toHaveLength(FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT);
     }
+  });
+
+  it("does not keep the old client-side catalog resolve storm path", () => {
+    const source = readFileSync(resolvePath(__dirname, "foreman.ai.ts"), "utf8");
+
+    expect(source).toContain("resolveForemanAiCatalogViaServer");
+    expect(source).not.toContain("rikQuickSearch");
+    expect(source).not.toContain("resolveCatalogSynonymMatchViaRpc");
+    expect(source).not.toContain("resolveCatalogPackagingViaRpc");
+    expect(source).not.toContain("mapWithConcurrencyLimit");
+    expect(source).not.toContain("planFanoutBatch");
+  });
+
+  it("keeps prompt cache keys normalized and separates changed context", () => {
+    const baseKey = buildForemanAiPromptCacheKey({
+      prompt: " Cement M500 ",
+      items: [{ name: "Cement M500", qty: 2, unit: "\u043a\u0433", kind: "material" }],
+    });
+    const normalizedKey = buildForemanAiPromptCacheKey({
+      prompt: "cement m500",
+      items: [{ name: "Cement M500", qty: 2, unit: "\u043a\u0433", kind: "material" }],
+    });
+    const changedKey = buildForemanAiPromptCacheKey({
+      prompt: "cement m500",
+      items: [{ name: "Cement M500", qty: 3, unit: "\u043a\u0433", kind: "material" }],
+    });
+
+    expect(baseKey).toBe(normalizedKey);
+    expect(changedKey).not.toBe(baseKey);
+  });
+
+  it("uses short-lived prompt cache hit, miss, and ttl expiry semantics", () => {
+    let now = 1000;
+    const cache = createForemanAiPromptCache<{ ok: boolean }>({
+      ttlMs: 100,
+      maxEntries: 5,
+      now: () => now,
+    });
+    const key = buildForemanAiPromptCacheKey({
+      prompt: "cement",
+      items: [{ name: "cement", qty: 1 }],
+    });
+    const changedKey = buildForemanAiPromptCacheKey({
+      prompt: "cement changed",
+      items: [{ name: "cement", qty: 1 }],
+    });
+
+    expect(cache.get(key)).toEqual({ status: "miss", reason: "missing" });
+    cache.set(key, { ok: true });
+    expect(cache.get(key)).toEqual({ status: "hit", value: { ok: true } });
+    expect(cache.get(changedKey)).toEqual({ status: "miss", reason: "missing" });
+
+    now = 1101;
+    expect(cache.get(key)).toEqual({ status: "miss", reason: "expired" });
   });
 
   afterEach(() => {

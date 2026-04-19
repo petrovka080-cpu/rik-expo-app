@@ -3,18 +3,13 @@ import {
   requestAiGeneratedText,
 } from "../../lib/ai/aiRepository";
 import {
-  resolveCatalogPackagingViaRpc,
-  resolveCatalogSynonymMatchViaRpc,
+  resolveForemanAiCatalogViaServer,
 } from "../../lib/api/foremanAiResolve.service";
-import { rikQuickSearch } from "../../lib/catalog_api";
-import { mapWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
-import { planFanoutBatch } from "../../lib/async/fanoutBatchPlan";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type ForemanAiAction = "create_request" | "clarify";
 type ForemanAiKind = "material" | "work" | "service";
 
-const FOREMAN_AI_CATALOG_RESOLVE_CONCURRENCY_LIMIT = 5;
 export const FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT = 40;
 
 type RawForemanAiResponse = {
@@ -91,11 +86,15 @@ export type ParsedForemanAiQuickResult = {
   message: string;
 };
 
-export type RikCatalogItem = Awaited<ReturnType<typeof rikQuickSearch>>[number];
+export type RikCatalogItem = {
+  rik_code?: string | null;
+  name_human?: string | null;
+  name_human_ru?: string | null;
+  uom_code?: string | null;
+  kind?: string | null;
+};
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
-const RESOLVE_SCORE_THRESHOLD = 120;
-const CANDIDATE_SCORE_THRESHOLD = 20;
 const PACKAGING_UNITS = new Set([
   "коробка",
   "пачка",
@@ -185,21 +184,6 @@ const recordForemanAiDegradedOnce = (
       ...extra,
     },
   });
-};
-
-const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  if (error && typeof error === "object") {
-    try {
-      return JSON.stringify(error);
-    } catch (stringifyError) {
-      recordForemanAiDegradedOnce("error_stringify_failed", stringifyError, {
-        originalErrorType: error.constructor?.name ?? typeof error,
-      });
-      return String(error);
-    }
-  }
-  return String(error);
 };
 
 const cleanJsonText = (text: string): string => {
@@ -310,48 +294,6 @@ const splitSearchTokens = (value: unknown): string[] =>
     .map((token) => token.trim())
     .filter((token) => token.length >= 2);
 
-const SEARCH_MEANINGLESS_TOKENS = new Set([
-  "мм",
-  "см",
-  "кг",
-  "шт",
-  "м2",
-  "м3",
-  "тонн",
-  "тонна",
-  "тн",
-]);
-
-const splitMeaningfulSearchTokens = (value: unknown): string[] =>
-  splitSearchTokens(value).filter((token) => {
-    if (SEARCH_MEANINGLESS_TOKENS.has(token)) return false;
-    return !/^\d+(?:[.,]\d+)?$/.test(token);
-  });
-
-const hasMeaningfulTokenOverlap = (source: unknown, candidate: unknown): boolean => {
-  const sourceTokens = splitMeaningfulSearchTokens(source);
-  if (sourceTokens.length === 0) return true;
-  const candidateText = normalizeSearchText(candidate);
-  return sourceTokens.some((token) => candidateText.includes(token));
-};
-
-const addCatalogQuery = (collector: Set<string>, value: string) => {
-  const normalized = String(value || "").trim().replace(/\s+/g, " ");
-  if (normalized.length >= 2) {
-    collector.add(normalized);
-  }
-};
-
-const extractRebarMark = (value: string): string | null => {
-  const match = String(value || "").match(/\bA\d{3,4}C?\b/i);
-  return match ? match[0].toUpperCase() : null;
-};
-
-const extractDiameter = (value: string): string | null => {
-  const match = String(value || "").match(/\b(\d{1,3})\s*(?:мм|mm)\b/i);
-  return match?.[1] ?? null;
-};
-
 const resolveCatalogKind = (item: RikCatalogItem): ForemanAiKind | "unknown" => {
   const rawKind = String(item.kind ?? "").trim().toLowerCase();
   if (["material", "materials", "материал", "материалы"].includes(rawKind)) return "material";
@@ -410,42 +352,6 @@ export const scoreCatalogCandidate = (input: ParsedForemanAiItem, item: RikCatal
   else if (candidateCode.startsWith(queryName.toUpperCase())) score += 40;
 
   return score + 15;
-};
-
-const buildCatalogQueries = (input: ParsedForemanAiItem): string[] => {
-  const queries = new Set<string>();
-  const fullQuery = [input.name, input.specs].filter(Boolean).join(" ").trim();
-  const nameOnlyQuery = input.name.trim();
-
-  addCatalogQuery(queries, fullQuery);
-  addCatalogQuery(queries, nameOnlyQuery);
-
-  const fullDiameterVariant = fullQuery.replace(/\b(\d{1,3})\s*(?:мм|mm)\b/gi, "Ø$1");
-  const nameDiameterVariant = nameOnlyQuery.replace(/\b(\d{1,3})\s*(?:мм|mm)\b/gi, "Ø$1");
-  addCatalogQuery(queries, fullDiameterVariant);
-  addCatalogQuery(queries, nameDiameterVariant);
-
-  const rebarMark = extractRebarMark(nameOnlyQuery);
-  const diameter = extractDiameter(nameOnlyQuery);
-  if (/арматур/i.test(nameOnlyQuery) && rebarMark) {
-    addCatalogQuery(queries, `Арматура ${rebarMark}`);
-    if (diameter) {
-      addCatalogQuery(queries, `Арматура ${rebarMark} Ø${diameter}`);
-    }
-  }
-
-  return Array.from(queries);
-};
-
-const hasSpecificCatalogResolveSignal = (input: ParsedForemanAiItem): boolean => {
-  const nameTokens = splitSearchTokens(input.name);
-  const specTokens = splitSearchTokens(input.specs ?? "");
-  const combinedText = `${input.name} ${input.specs ?? ""}`;
-  return (
-    nameTokens.length >= 2
-    || specTokens.length > 0
-    || /\d/.test(combinedText)
-  );
 };
 
 const normalizeForemanAiItem = (rawItem: unknown): ParsedForemanAiItem | null => {
@@ -508,21 +414,6 @@ const buildClarifyQuestions = (message: string, fallbackId = "clarify"): Clarify
   return [{ id: fallbackId, prompt }];
 };
 
-type CatalogResolution = {
-  resolved: ForemanAiQuickItem | null;
-  options: CandidateOption[];
-  clarifyQuestions: ClarifyQuestion[];
-};
-
-type CatalogResolvedBase = {
-  rik_code: string;
-  name: string;
-  unit: string;
-  kind: ForemanAiKind;
-  specs?: string | null;
-  matchedBy?: string | null;
-};
-
 export type ForemanAiResolvedInputItem = {
   name: string;
   qty: number;
@@ -564,20 +455,6 @@ const SPOKEN_REFERENCE_NUMBERS: Record<string, number> = {
   "\u0434\u0435\u0432\u044f\u0442\u044c": 9,
   "\u0434\u0435\u0441\u044f\u0442\u044c": 10,
 };
-
-const buildResolvedQuickItem = (
-  input: ParsedForemanAiItem,
-  base: CatalogResolvedBase,
-  resolvedQty: number,
-  resolvedUnit: string,
-): ForemanAiQuickItem => ({
-  rik_code: base.rik_code,
-  name: base.name,
-  qty: resolvedQty,
-  unit: normalizeResolveUnitCanonical(resolvedUnit),
-  kind: base.kind,
-  specs: input.specs ?? base.specs ?? null,
-});
 
 const normalizeResolvedInputItem = (
   rawItem: ForemanAiResolvedInputItem,
@@ -710,327 +587,132 @@ export function resolveForemanQuickLocalAssist(params: ForemanQuickLocalAssistPa
   return null;
 }
 
-const buildPackagingClarifyQuestion = (
-  input: ParsedForemanAiItem,
-  base: CatalogResolvedBase,
-): ClarifyQuestion => ({
-  id: `packaging:${base.rik_code}`,
-  prompt:
-    `Уточните упаковку для "${base.name}": ` +
-    `единица "${input.unit}" не настроена для каталожной единицы "${base.unit}".`,
-});
+type ServerCatalogResolveResult = {
+  items: ForemanAiQuickItem[];
+  candidateGroups: CandidateOptionGroup[];
+  clarifyQuestions: ClarifyQuestion[];
+  unresolvedNames: string[];
+};
 
-const resolveCatalogBySynonymPrimary = async (
-  input: ParsedForemanAiItem,
-): Promise<CatalogResolvedBase | null> => {
-  try {
-    const match = await resolveCatalogSynonymMatchViaRpc({
-      terms: buildCatalogQueries(input),
-      kind: input.kind,
-    });
-    if (!match) return null;
-    if (
-      !hasSpecificCatalogResolveSignal(input) &&
-      ["rik_alias_exact", "name_human_exact", "name_human_ru_exact"].includes(match.matchedBy ?? "")
-    ) {
-      logForemanAi({
-        phase: "synonym_generic_blocked",
-        sourceName: input.name,
-        kind: input.kind,
-        rikCode: match.rikCode,
-        matchedBy: match.matchedBy,
-      });
-      return null;
-    }
-    if (!hasMeaningfulTokenOverlap([input.name, input.specs].filter(Boolean).join(" "), match.nameHuman)) {
-      logForemanAi({
-        phase: "synonym_overlap_blocked",
-        sourceName: input.name,
-        kind: input.kind,
-        rikCode: match.rikCode,
-        matchedBy: match.matchedBy,
-        matchedName: match.nameHuman,
-      });
-      return null;
-    }
-    logForemanAi({
-      phase: "synonym_primary_hit",
-      sourceName: input.name,
-      rikCode: match.rikCode,
-      matchedBy: match.matchedBy,
-      confidence: match.confidence,
-    });
-    return {
-      rik_code: match.rikCode,
-      name: normalizeName(match.nameHuman || input.name),
-      unit: normalizeResolveUnitCanonical(match.uomCode ?? input.unit),
-      kind: match.kind ?? input.kind,
-      specs: input.specs ?? null,
-      matchedBy: match.matchedBy,
-    };
-  } catch (error) {
-    logForemanAi({
-      phase: "synonym_resolve_failed",
-      sourceName: input.name,
-      kind: input.kind,
-      errorMessage: toErrorMessage(error),
-      fallbackUsed: true,
-    });
+const mapServerResolvedItem = (item: {
+  rik_code: string;
+  name: string;
+  qty: number;
+  unit: string;
+  kind: ForemanAiKind;
+  specs?: string | null;
+}): ForemanAiQuickItem | null => {
+  const rikCode = String(item.rik_code || "").trim();
+  const name = normalizeName(item.name);
+  const qty = Number(item.qty);
+  const unit = normalizeResolveUnitCanonical(item.unit);
+  if (!rikCode || !name || !Number.isFinite(qty) || qty <= 0 || !unit) return null;
+  return {
+    rik_code: rikCode,
+    name,
+    qty,
+    unit,
+    kind: normalizeKind(item.kind, name),
+    specs: String(item.specs || "").trim() || null,
+  };
+};
+
+const mapServerCandidateGroup = (group: CandidateOptionGroup): CandidateOptionGroup | null => {
+  const sourceName = normalizeName(group.sourceName);
+  const requestedQty = Number(group.requestedQty);
+  const requestedUnit = normalizeResolveUnitCanonical(group.requestedUnit);
+  const options = Array.isArray(group.options)
+    ? group.options
+        .map((option) => ({
+          rik_code: String(option.rik_code || "").trim(),
+          name: normalizeName(option.name),
+          unit: normalizeResolveUnitCanonical(option.unit),
+          kind: normalizeKind(option.kind, option.name),
+          score: Number(option.score),
+        }))
+        .filter((option) => option.rik_code && option.name && option.unit && Number.isFinite(option.score))
+    : [];
+  if (!sourceName || !Number.isFinite(requestedQty) || requestedQty <= 0 || !requestedUnit || options.length === 0) {
     return null;
   }
-};
-
-const applyPackagingResolution = async (
-  input: ParsedForemanAiItem,
-  base: CatalogResolvedBase,
-): Promise<{ resolved: ForemanAiQuickItem | null; clarifyQuestions: ClarifyQuestion[] }> => {
-  const requestedUnit = normalizeResolveUnitCanonical(input.unit);
-  const catalogUnit = normalizeResolveUnitCanonical(base.unit);
-  if (!requestedUnit || !catalogUnit || requestedUnit === catalogUnit) {
-    return {
-      resolved: buildResolvedQuickItem(input, base, input.qty, catalogUnit || base.unit),
-      clarifyQuestions: [],
-    };
-  }
-
-  try {
-    const packaging = await resolveCatalogPackagingViaRpc({
-      rikCode: base.rik_code,
-      packageName: requestedUnit,
-      qty: input.qty,
-    });
-    if (
-      !packaging ||
-      packaging.clarifyRequired ||
-      packaging.resolvedQty == null ||
-      !String(packaging.resolvedUnit || "").trim()
-    ) {
-      logForemanAi({
-        phase: "packaging_clarify_required",
-        rikCode: base.rik_code,
-        requestedUnit,
-        catalogUnit,
-        matchedBy: packaging?.matchedBy ?? null,
-      });
-      return {
-        resolved: null,
-        clarifyQuestions: [buildPackagingClarifyQuestion(input, base)],
-      };
-    }
-
-    logForemanAi({
-      phase: "packaging_resolved",
-      rikCode: base.rik_code,
-      requestedUnit,
-      resolvedUnit: packaging.resolvedUnit,
-      packageMultiplier: packaging.packageMultiplier ?? null,
-      conversionApplied: packaging.conversionApplied,
-      matchedBy: packaging.matchedBy ?? null,
-    });
-    return {
-      resolved: buildResolvedQuickItem(input, base, packaging.resolvedQty, packaging.resolvedUnit),
-      clarifyQuestions: [],
-    };
-  } catch (error) {
-    logForemanAi({
-      phase: "packaging_resolve_failed",
-      rikCode: base.rik_code,
-      requestedUnit,
-      catalogUnit,
-      errorMessage: toErrorMessage(error),
-      fallbackUsed: true,
-    });
-    return {
-      resolved: null,
-      clarifyQuestions: [buildPackagingClarifyQuestion(input, base)],
-    };
-  }
-};
-
-const resolveForemanCatalogItem = async (input: ParsedForemanAiItem): Promise<CatalogResolution> => {
-  const synonymPrimary = await resolveCatalogBySynonymPrimary(input);
-  if (synonymPrimary) {
-    const packagingResult = await applyPackagingResolution(input, synonymPrimary);
-    return {
-      resolved: packagingResult.resolved,
-      options: [],
-      clarifyQuestions: packagingResult.clarifyQuestions,
-    };
-  }
-
-  const queries = buildCatalogQueries(input);
-  let candidates: RikCatalogItem[] = [];
-
-  for (const query of queries) {
-    try {
-      const found = await rikQuickSearch(query, 10);
-      if (Array.isArray(found) && found.length > 0) {
-        candidates = [...candidates, ...found];
-      }
-    } catch (error) {
-      logForemanAi({
-        phase: "catalog_search_failed",
-        query,
-        errorMessage: toErrorMessage(error),
-      });
-    }
-  }
-
-  const uniqueCandidates = Array.from(
-    new Map(
-      candidates
-        .filter((item) => String(item.rik_code ?? "").trim())
-        .map((item) => [String(item.rik_code ?? "").trim(), item]),
-    ).values(),
-  );
-
-  let best: { item: RikCatalogItem; score: number } | null = null;
-  const ranked: CandidateOption[] = [];
-  for (const candidate of uniqueCandidates) {
-    const score = scoreCatalogCandidate(input, candidate);
-    if (score >= CANDIDATE_SCORE_THRESHOLD) {
-      ranked.push({
-        rik_code: String(candidate.rik_code ?? "").trim(),
-        name: normalizeName(candidate.name_human || input.name),
-        unit: normalizeResolveUnitCanonical(candidate.uom_code ?? input.unit),
-        kind: input.kind,
-        score,
-      });
-    }
-    if (!best || score > best.score) {
-      best = { item: candidate, score };
-    }
-  }
-
-  ranked.sort((left, right) => right.score - left.score);
-  const options = ranked.slice(0, 5);
-
-  if (!best || best.score < RESOLVE_SCORE_THRESHOLD) {
-    logForemanAi({
-      phase: "catalog_unresolved",
-      sourceName: input.name,
-      kind: input.kind,
-      bestScore: best?.score ?? null,
-      candidateCount: uniqueCandidates.length,
-    });
-    return {
-      resolved: null,
-      options,
-      clarifyQuestions: [],
-    };
-  }
-
-  if (!hasSpecificCatalogResolveSignal(input)) {
-    logForemanAi({
-      phase: "catalog_fallback_generic_blocked",
-      sourceName: input.name,
-      kind: input.kind,
-      bestScore: best.score,
-      candidateCount: options.length,
-    });
-    return {
-      resolved: null,
-      options,
-      clarifyQuestions: [],
-    };
-  }
-
-  const packagingResult = await applyPackagingResolution(input, {
-    rik_code: String(best.item.rik_code ?? "").trim(),
-    name: normalizeName(best.item.name_human || input.name),
-    unit: normalizeResolveUnitCanonical(best.item.uom_code ?? input.unit),
-    kind: input.kind,
-    specs: input.specs ?? null,
-    matchedBy: "catalog_search_fallback",
-  });
   return {
-    resolved: packagingResult.resolved,
+    sourceName,
+    requestedQty,
+    requestedUnit,
+    kind: normalizeKind(group.kind, sourceName),
+    specs: String(group.specs || "").trim() || null,
     options,
-    clarifyQuestions: packagingResult.clarifyQuestions,
   };
 };
 
-const buildForemanAiCatalogFanoutKey = (item: ParsedForemanAiItem): string =>
-  JSON.stringify([
-    normalizeSearchText(item.name),
-    Number.isFinite(item.qty) ? item.qty : 0,
-    normalizeResolveUnitCanonical(item.unit),
-    item.kind,
-    normalizeSearchText(item.specs ?? ""),
-  ]);
+const mapServerClarifyQuestion = (question: ClarifyQuestion): ClarifyQuestion | null => {
+  const id = String(question.id || "").trim();
+  const prompt = String(question.prompt || "").trim();
+  return id && prompt ? { id, prompt } : null;
+};
 
-const resolveCatalogItems = async (items: ParsedForemanAiItem[]) => {
-  const batchPlan = planFanoutBatch(items, {
-    maxItems: FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT,
-    getKey: (item) => buildForemanAiCatalogFanoutKey(item),
-  });
-  if (batchPlan.duplicateCount > 0 || batchPlan.cappedCount > 0) {
-    logForemanAi({
-      phase: "catalog_resolve_batch_planned",
-      sourceItemCount: batchPlan.sourceCount,
-      resolveItemCount: batchPlan.resolveItems.length,
-      duplicateItemCount: batchPlan.duplicateCount,
-      cappedItemCount: batchPlan.cappedCount,
-    });
-  }
-
-  const resolutions = await mapWithConcurrencyLimit(
-    batchPlan.resolveItems,
-    FOREMAN_AI_CATALOG_RESOLVE_CONCURRENCY_LIMIT,
-    async (item) => await resolveForemanCatalogItem(item),
-  );
-  const accepted: ForemanAiQuickItem[] = [];
-  const candidateGroups: CandidateOptionGroup[] = [];
-  const clarifyQuestions: ClarifyQuestion[] = [];
-  const unresolvedNames: string[] = [];
-
-  items.forEach((item, index) => {
-    const resolveIndex = batchPlan.sourceToResolveIndex[index];
-    if (resolveIndex == null) {
-      unresolvedNames.push(item.name);
-      return;
-    }
-    const resolution = resolutions[resolveIndex];
-    if (!resolution) {
-      unresolvedNames.push(item.name);
-      return;
-    }
-    if (resolution.resolved) {
-      accepted.push(resolution.resolved);
-      return;
-    }
-
-    if (resolution.options.length > 0) {
-      candidateGroups.push({
-        sourceName: item.name,
-        requestedQty: item.qty,
-        requestedUnit: item.unit,
+const resolveCatalogItems = async (
+  items: ParsedForemanAiItem[],
+  prompt: string,
+): Promise<ServerCatalogResolveResult> => {
+  try {
+    const resolved = await resolveForemanAiCatalogViaServer({
+      prompt,
+      items: items.map((item) => ({
+        name: item.name,
+        qty: item.qty,
+        unit: item.unit,
         kind: item.kind,
         specs: item.specs ?? null,
-        options: resolution.options,
-      });
-      return;
-    }
+      })),
+      maxItems: FOREMAN_AI_CATALOG_RESOLVE_ITEM_LIMIT,
+    });
 
-    if (resolution.clarifyQuestions.length > 0) {
-      clarifyQuestions.push(...resolution.clarifyQuestions);
-      return;
-    }
+    const accepted = resolved.items
+      .map(mapServerResolvedItem)
+      .filter((item): item is ForemanAiQuickItem => Boolean(item));
+    const candidateGroups = resolved.candidateGroups
+      .map(mapServerCandidateGroup)
+      .filter((group): group is CandidateOptionGroup => Boolean(group));
+    const clarifyQuestions = resolved.clarifyQuestions
+      .map(mapServerClarifyQuestion)
+      .filter((question): question is ClarifyQuestion => Boolean(question));
+    const unresolvedNames = resolved.unresolvedNames
+      .map((name) => normalizeName(name))
+      .filter(Boolean);
 
-    unresolvedNames.push(item.name);
-  });
+    logForemanAi({
+      phase: "server_catalog_resolved",
+      sourceItemCount: resolved.meta.sourceItemCount,
+      resolveItemCount: resolved.meta.resolveItemCount,
+      duplicateItemCount: resolved.meta.duplicateItemCount,
+      cappedItemCount: resolved.meta.cappedItemCount,
+      cacheStatus: resolved.meta.cacheStatus,
+    });
 
-  return {
-    items: accepted,
-    candidateGroups,
-    clarifyQuestions,
-    unresolvedNames,
-  };
+    return {
+      items: accepted,
+      candidateGroups,
+      clarifyQuestions,
+      unresolvedNames,
+    };
+  } catch (error) {
+    recordForemanAiDegradedOnce("server_catalog_resolve_failed", error, {
+      sourceItemCount: items.length,
+    });
+    return {
+      items: [],
+      candidateGroups: [],
+      clarifyQuestions: [],
+      unresolvedNames: items.map((item) => item.name),
+    };
+  }
 };
 
 const finalizeResolvedQuickResult = async (
   parsed: ParsedForemanAiQuickResult,
   sourcePath: "backend",
+  prompt: string,
 ): Promise<AiDraftOutcome> => {
   if (parsed.action === "clarify" || parsed.items.length === 0) {
     return {
@@ -1043,7 +725,7 @@ const finalizeResolvedQuickResult = async (
     };
   }
 
-  const resolved = await resolveCatalogItems(parsed.items);
+  const resolved = await resolveCatalogItems(parsed.items, prompt);
   logForemanAi({
     phase: "catalog_resolved",
     sourcePath,
@@ -1119,6 +801,7 @@ void finalizeResolvedQuickResult;
 const finalizeResolvedQuickResultV2 = async (
   parsed: ParsedForemanAiQuickResult,
   sourcePath: "backend",
+  prompt: string,
 ): Promise<AiDraftOutcome> => {
   if (parsed.action === "clarify" || parsed.items.length === 0) {
     return {
@@ -1131,7 +814,7 @@ const finalizeResolvedQuickResultV2 = async (
     };
   }
 
-  const resolved = await resolveCatalogItems(parsed.items);
+  const resolved = await resolveCatalogItems(parsed.items, prompt);
   logForemanAi({
     phase: "catalog_resolved",
     sourcePath,
@@ -1195,6 +878,7 @@ const finalizeResolvedQuickResultV2 = async (
 export async function resolveForemanParsedItemsForTesting(params: {
   items: ForemanAiResolvedInputItem[];
   message?: string;
+  prompt?: string;
   action?: ForemanAiAction;
 }): Promise<AiDraftOutcome> {
   const normalizedItems = Array.isArray(params.items)
@@ -1210,6 +894,7 @@ export async function resolveForemanParsedItemsForTesting(params: {
       message: String(params.message || "").trim() || "Battle dataset resolve",
     },
     "backend",
+    String(params.prompt || params.message || "").trim() || "Battle dataset resolve",
   );
 }
 
@@ -1253,7 +938,7 @@ export async function sendForemanQuickRequestPrompt(prompt: string): Promise<AiD
     action: parsed.action,
     parsedItemCount: parsed.items.length,
   });
-  return await finalizeResolvedQuickResultV2(parsed, "backend");
+  return await finalizeResolvedQuickResultV2(parsed, "backend", message);
 }
 
 export async function resolveForemanQuickRequest(prompt: string): Promise<AiDraftOutcome> {
