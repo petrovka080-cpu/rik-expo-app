@@ -11,8 +11,6 @@ import {
   Text,
   TextInput,
   View,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  type LayoutChangeEvent,
 } from "react-native";
 import {
   useFocusEffect,
@@ -52,8 +50,6 @@ import {
 } from "../../lib/navigation/officeReentryBreadcrumbs";
 import { getProfileRoleLabel } from "../profile/profile.helpers";
 import {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  OFFICE_ASSIGNABLE_ROLES,
   buildOfficeAccessEntryCopy,
   canManageOfficeCompanyAccess,
   filterOfficeWorkspaceCards,
@@ -85,8 +81,6 @@ import {
   
   EMPTY_DATA,
   COPY,
-  COMPANY_FIELDS,
-  RULES,
   getVisibleCompanyDetails,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getPostReturnSections,
@@ -96,7 +90,12 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   formatDate,
 } from "./officeHub.constants";
-import { DirectionCard, MemberCard, InviteCard } from "./officeHub.cards";
+import {
+  DirectionCard,
+  InviteCard,
+  MemberCard,
+  OfficeCompanyCreateSection,
+} from "./officeHub.sections";
 import {
   isWarehouseOfficeReturnReceipt,
   OfficePostReturnSubtreeBoundary,
@@ -1125,130 +1124,17 @@ export default function OfficeHubScreen({
             ) : null}
           </>
         ) : (
-          <>
-            <View
-              style={styles.section}
-              onLayout={handleSectionLayout("company_create", "company")}
-            >
-              <Text style={styles.sectionTitle}>{COPY.companyCreateTitle}</Text>
-              <View style={styles.panel}>
-                <Text style={styles.helper}>{COPY.companyCreateLead}</Text>
-                {COMPANY_FIELDS.map((field) => (
-                  <View key={field.key} style={styles.stack}>
-                    <Text style={styles.label}>{field.label}</Text>
-                    <TextInput
-                      testID={
-                        field.key === "name"
-                          ? "office-company-name"
-                          : field.key === "legalAddress"
-                            ? "office-company-legal-address"
-                            : field.key === "inn"
-                              ? "office-company-inn"
-                              : undefined
-                      }
-                      placeholder={field.placeholder}
-                      placeholderTextColor="#94A3B8"
-                      style={[
-                        styles.input,
-                        field.key === "siteAddress" && styles.textArea,
-                      ]}
-                      autoCapitalize={
-                        field.key === "email" || field.key === "website"
-                          ? "none"
-                          : "sentences"
-                      }
-                      keyboardType={
-                        field.key === "phoneMain"
-                          ? "phone-pad"
-                          : field.key === "email"
-                            ? "email-address"
-                            : "default"
-                      }
-                      multiline={field.key === "siteAddress"}
-                      value={company.companyDraft[field.key]}
-                      onChangeText={(value) =>
-                        company.setCompanyDraft((current) => ({
-                          ...current,
-                          [field.key]: value,
-                        }))
-                      }
-                    />
-                  </View>
-                ))}
-                <View style={styles.stack}>
-                  <View style={styles.inline}>
-                    <Text style={styles.label}>Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ С‚РµР»РµС„РѕРЅС‹</Text>
-                    <Pressable
-                      testID="office-add-company-phone"
-                      onPress={() =>
-                        company.setCompanyDraft((current) => ({
-                          ...current,
-                          additionalPhones: [...current.additionalPhones, ""],
-                        }))
-                      }
-                    >
-                      <Text style={styles.link}>Р”РѕР±Р°РІРёС‚СЊ С‚РµР»РµС„РѕРЅ</Text>
-                    </Pressable>
-                  </View>
-                  {company.companyDraft.additionalPhones.map((phone, index) => (
-                    <View key={`phone-${index}`} style={styles.phoneRow}>
-                      <TextInput
-                        testID={`office-company-phone-${index}`}
-                        placeholder="Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№ С‚РµР»РµС„РѕРЅ"
-                        placeholderTextColor="#94A3B8"
-                        style={[styles.input, styles.phoneInput]}
-                        keyboardType="phone-pad"
-                        value={phone}
-                        onChangeText={(value) =>
-                          company.setCompanyDraft((current) => ({
-                            ...current,
-                            additionalPhones: current.additionalPhones.map(
-                              (item, itemIndex) =>
-                                itemIndex === index ? value : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <Pressable
-                        onPress={() =>
-                          company.setCompanyDraft((current) => ({
-                            ...current,
-                            additionalPhones: current.additionalPhones.filter(
-                              (_item, itemIndex) => itemIndex !== index,
-                            ),
-                          }))
-                        }
-                      >
-                        <Text style={styles.linkDanger}>РЈР±СЂР°С‚СЊ</Text>
-                      </Pressable>
-                    </View>
-                  ))}
-                </View>
-                <Pressable
-                  testID="office-create-company"
-                  disabled={company.savingCompany}
-                  onPress={() => void company.handleCreateCompany()}
-                  style={[styles.primary, company.savingCompany && styles.dim]}
-                >
-                  <Text style={styles.primaryText}>{COPY.companyCta}</Text>
-                </Pressable>
-              </View>
-            </View>
-
-            <View
-              style={styles.section}
-              onLayout={handleSectionLayout("rules")}
-            >
-              <Text style={styles.sectionTitle}>{COPY.rulesTitle}</Text>
-              <View style={styles.panel}>
-                {RULES.map((rule) => (
-                  <Text key={rule} style={styles.rule}>
-                    вЂў {rule}
-                  </Text>
-                ))}
-              </View>
-            </View>
-          </>
+          <OfficeCompanyCreateSection
+            companyDraft={company.companyDraft}
+            savingCompany={company.savingCompany}
+            onChangeCompanyDraft={company.setCompanyDraft}
+            onCreateCompany={() => void company.handleCreateCompany()}
+            onCompanyCreateLayout={handleSectionLayout(
+              "company_create",
+              "company",
+            )}
+            onRulesLayout={handleSectionLayout("rules")}
+          />
         )}
       </ScrollView>
 
@@ -1374,4 +1260,3 @@ export default function OfficeHubScreen({
     </RoleScreenLayout>
   );
 }
-

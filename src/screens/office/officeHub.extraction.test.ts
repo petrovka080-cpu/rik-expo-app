@@ -15,6 +15,12 @@ import {
   isWarehouseOfficeReturnReceipt,
   OfficePostReturnSubtreeBoundary,
 } from "./officeHub.helpers";
+import {
+  DirectionCard,
+  InviteCard,
+  MemberCard,
+  OfficeCompanyCreateSection,
+} from "./officeHub.sections";
 
 describe("officeHub.styles — extraction integrity", () => {
   const EXPECTED_STYLE_KEYS = [
@@ -79,6 +85,15 @@ describe("officeHub.styles — extraction integrity", () => {
     expect(styles.primary).toMatchObject({
       backgroundColor: "#0F766E",
     });
+  });
+});
+
+describe("officeHub.sections - view boundary exports", () => {
+  it("keeps OfficeHub section components behind one import surface", () => {
+    expect(typeof DirectionCard).toBe("function");
+    expect(typeof InviteCard).toBe("function");
+    expect(typeof MemberCard).toBe("function");
+    expect(typeof OfficeCompanyCreateSection).toBe("function");
   });
 });
 
