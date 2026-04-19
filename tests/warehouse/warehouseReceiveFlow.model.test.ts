@@ -1,4 +1,5 @@
 import {
+  buildWarehouseReceiveRemoteTruth,
   buildWarehouseReceiveSelection,
   toWarehouseReceiveDraftItemsFromInputMap,
   toWarehouseReceiveQtyInputMap,
@@ -109,6 +110,73 @@ describe("warehouseReceiveFlow model", () => {
     ).toEqual({
       items: [],
       payload: [],
+    });
+  });
+
+  it("builds pending remote truth from positive remaining receive rows", () => {
+    expect(
+      buildWarehouseReceiveRemoteTruth("incoming-1", [
+        {
+          purchase_item_id: "purchase-1",
+          qty_expected: 10,
+          qty_received: 4,
+        },
+        {
+          purchase_item_id: "purchase-2",
+          qty_expected: 8,
+          qty_received: 0,
+          qty_left: 3,
+        },
+      ]),
+    ).toEqual({
+      kind: "warehouse_receive",
+      entityId: "incoming-1",
+      present: true,
+      remainingCount: 9,
+      terminal: false,
+      terminalWhenMissing: true,
+      status: "pending",
+      reason: "receive_remaining_qty_zero",
+    });
+  });
+
+  it("builds completed remote truth when receive rows are gone", () => {
+    expect(buildWarehouseReceiveRemoteTruth("incoming-missing", [])).toEqual({
+      kind: "warehouse_receive",
+      entityId: "incoming-missing",
+      present: false,
+      remainingCount: 0,
+      terminal: true,
+      terminalWhenMissing: true,
+      status: "completed",
+      reason: "not_in_receive_scope",
+    });
+  });
+
+  it("builds completed remote truth when all received rows have no remaining qty", () => {
+    expect(
+      buildWarehouseReceiveRemoteTruth("incoming-complete", [
+        {
+          purchase_item_id: "purchase-1",
+          qty_expected: 10,
+          qty_received: 10,
+        },
+        {
+          purchase_item_id: "purchase-2",
+          qty_expected: 5,
+          qty_received: 1,
+          qty_left: 0,
+        },
+      ]),
+    ).toEqual({
+      kind: "warehouse_receive",
+      entityId: "incoming-complete",
+      present: true,
+      remainingCount: 0,
+      terminal: true,
+      terminalWhenMissing: true,
+      status: "completed",
+      reason: "receive_remaining_qty_zero",
     });
   });
 });

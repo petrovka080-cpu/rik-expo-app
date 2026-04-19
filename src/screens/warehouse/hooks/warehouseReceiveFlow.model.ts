@@ -1,3 +1,4 @@
+import type { PlatformTerminalTruth } from "../../../lib/offline/platformTerminalRecovery";
 import type { WarehouseReceiveDraftItem } from "../warehouse.receiveDraft.store";
 import { nz, parseQtySelected } from "../warehouse.utils";
 
@@ -82,5 +83,31 @@ export const buildWarehouseReceiveSelection = (
   return {
     items,
     payload,
+  };
+};
+
+export const buildWarehouseReceiveRemoteTruth = (
+  incomingId: string,
+  rows: WarehouseReceiveFlowRow[],
+): PlatformTerminalTruth => {
+  const remainingCount = rows.reduce((sum, row) => {
+    const expected = nz(row.qty_expected, 0);
+    const received = nz(row.qty_received, 0);
+    return sum + Math.max(0, nz(row.qty_left, expected - received));
+  }, 0);
+  const terminal = rows.length === 0 || remainingCount <= 0;
+
+  return {
+    kind: "warehouse_receive",
+    entityId: incomingId,
+    present: rows.length > 0,
+    remainingCount,
+    terminal,
+    terminalWhenMissing: true,
+    status: terminal ? "completed" : "pending",
+    reason:
+      rows.length === 0
+        ? "not_in_receive_scope"
+        : "receive_remaining_qty_zero",
   };
 };

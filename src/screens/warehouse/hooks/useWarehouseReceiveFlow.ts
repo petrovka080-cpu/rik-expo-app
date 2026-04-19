@@ -12,9 +12,9 @@ import {
 } from "../../../lib/offline/platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "../../../lib/offline/platformOffline.observability";
 import { seedEnsureIncomingItems } from "../warehouse.seed";
-import { nz } from "../warehouse.utils";
 import { applyWarehouseReceive } from "./useWarehouseReceiveApply";
 import {
+  buildWarehouseReceiveRemoteTruth,
   buildWarehouseReceiveSelection as buildReceiveSelection,
   normalizeWarehouseReceiveFlowText as trim,
   toWarehouseReceiveDraftItemsFromInputMap as toDraftItemsFromInputMap,
@@ -208,21 +208,7 @@ export function useWarehouseReceiveFlow(params: {
               getNetworkOnline: () => networkOnlineRef.current,
               inspectRemoteReceive: async (incomingId) => {
                 const rows = await loadItemsForHead(incomingId, true);
-                const remainingCount = rows.reduce((sum, row) => {
-                  const expected = nz(row.qty_expected, 0);
-                  const received = nz(row.qty_received, 0);
-                  return sum + Math.max(0, nz(row.qty_left, expected - received));
-                }, 0);
-                return {
-                  kind: "warehouse_receive",
-                  entityId: incomingId,
-                  present: rows.length > 0,
-                  remainingCount,
-                  terminal: rows.length === 0 || remainingCount <= 0,
-                  terminalWhenMissing: true,
-                  status: rows.length === 0 || remainingCount <= 0 ? "completed" : "pending",
-                  reason: rows.length === 0 ? "not_in_receive_scope" : "receive_remaining_qty_zero",
-                };
+                return buildWarehouseReceiveRemoteTruth(incomingId, rows);
               },
             },
             triggerSource,
