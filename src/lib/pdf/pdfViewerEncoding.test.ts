@@ -4,7 +4,11 @@ import path from "path";
 import { isCorruptedText, normalizeRuText } from "../text/encoding";
 
 const viewerPath = path.join(process.cwd(), "app/pdf-viewer.tsx");
-const source = fs.readFileSync(viewerPath, "utf8");
+const nativeShellPath = path.join(process.cwd(), "src/lib/pdf/PdfViewerNativeShell.tsx");
+const source = [
+  fs.readFileSync(viewerPath, "utf8"),
+  fs.readFileSync(nativeShellPath, "utf8"),
+].join("\n");
 
 describe("PDF viewer text encoding", () => {
   it("keeps the PDF viewer handoff and loading copy readable", () => {

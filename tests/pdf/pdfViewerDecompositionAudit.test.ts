@@ -6,7 +6,7 @@
  * 2. pdf-viewer.tsx imports from the extracted modules (not inline)
  * 3. Each extracted module exports the expected shape
  * 4. No duplicate definitions exist (constants, helpers, components)
- * 5. The viewer state machine core remains in pdf-viewer.tsx (NOT extracted)
+ * 5. The viewer state machine decision layer is extracted while side effects stay in pdf-viewer.tsx
  * 6. pdfDocumentActions.ts exports are stable
  */
 
@@ -14,6 +14,7 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 const PDF_LIB = join(__dirname, "..", "..", "src", "lib", "pdf");
+const TESTS_PDF = join(__dirname, "..", "..", "tests", "pdf");
 const VIEWER_PATH = join(__dirname, "..", "..", "app", "pdf-viewer.tsx");
 const ACTIONS_PATH = join(
   __dirname,
@@ -49,6 +50,9 @@ describe("E: extracted modules exist", () => {
     "pdfMobilePreviewSizeGuard.ts",
     "pdfSourceValidation.ts",
     "pdfLifecycle.ts",
+    "usePdfViewerOrchestrator.ts",
+    "PdfViewerNativeShell.tsx",
+    "PdfViewerWebShell.tsx",
   ];
 
   for (const file of EXPECTED_FILES) {
@@ -62,7 +66,7 @@ describe("E: pdf-viewer.tsx imports from extracted modules (not inline)", () => 
   it("imports constants from pdfViewer.constants", () => {
     expect(viewerSource).toContain("pdfViewer.constants");
     expect(viewerSource).toContain("FALLBACK_ROUTE");
-    expect(viewerSource).toContain("VIEWER_BG");
+    expect(viewerSource).toContain("VIEWER_TEXT");
   });
 
   it("imports styles from pdfViewer.styles", () => {
@@ -138,6 +142,12 @@ describe("E: pdf-viewer.tsx imports from extracted modules (not inline)", () => 
     expect(viewerSource).toContain("markPdfOpenVisible");
     expect(viewerSource).toContain("failPdfOpenVisible");
   });
+
+  it("imports the extracted orchestrator and render shells", () => {
+    expect(viewerSource).toContain("usePdfViewerOrchestrator");
+    expect(viewerSource).toContain("PdfViewerNativeShell");
+    expect(viewerSource).toContain("PdfViewerWebShell");
+  });
 });
 
 describe("E: no duplicate definitions (constants not re-declared inline)", () => {
@@ -163,7 +173,7 @@ describe("E: no duplicate definitions (constants not re-declared inline)", () =>
   });
 });
 
-describe("E: viewer state machine core remains in pdf-viewer.tsx (honest defer)", () => {
+describe("E: viewer state machine extraction boundary", () => {
   it("syncSnapshot is still in the viewer", () => {
     expect(viewerSource).toContain("const syncSnapshot");
   });
@@ -194,6 +204,17 @@ describe("E: viewer state machine core remains in pdf-viewer.tsx (honest defer)"
 
   it("prepareViewer delegates bootstrap decisions to a pure plan", () => {
     expect(viewerSource).toContain("const bootstrapPlan = resolvePdfViewerBootstrapPlan");
+  });
+
+  it("viewer delegates local state ownership to usePdfViewerOrchestrator", () => {
+    expect(viewerSource).toContain("const orchestrator = usePdfViewerOrchestrator");
+    expect(viewerSource).toContain("planPdfViewerLoadingTransition");
+    expect(viewerSource).toContain("planPdfViewerTimeoutTransition");
+  });
+
+  it("viewer does not own low-level native/web shell rendering inline", () => {
+    expect(viewerSource).not.toContain("<NativePdfWebView");
+    expect(viewerSource).not.toContain("<iframe");
   });
 });
 
@@ -240,6 +261,17 @@ describe("E: extracted module test coverage exists", () => {
   for (const file of EXPECTED_TEST_FILES) {
     it(`test file ${file} exists`, () => {
       expect(existsSync(join(PDF_LIB, file))).toBe(true);
+    });
+  }
+
+  const EXPECTED_ROUTE_TEST_FILES = [
+    "usePdfViewerOrchestrator.test.ts",
+    "PdfViewerShells.test.tsx",
+  ];
+
+  for (const file of EXPECTED_ROUTE_TEST_FILES) {
+    it(`test file ${file} exists`, () => {
+      expect(existsSync(join(TESTS_PDF, file))).toBe(true);
     });
   }
 });
