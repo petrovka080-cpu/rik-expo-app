@@ -28,7 +28,7 @@ function RequestDetails() {
 
       if (error) {
         setErrorText("Не удалось загрузить заявку.");
-        if (__DEV__) console.log("Supabase error:", error);
+        if (__DEV__) console.info("Supabase error:", error);
       } else {
         setItem(data);
       }

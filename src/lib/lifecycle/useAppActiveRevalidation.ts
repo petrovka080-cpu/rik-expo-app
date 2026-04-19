@@ -193,6 +193,5 @@ export function useAppActiveRevalidation(
         // best-effort cleanup
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- stable subscription, deps managed via refs
   }, [screen, surface, minIntervalMs]);
 }

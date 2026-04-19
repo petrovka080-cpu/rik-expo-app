@@ -28,7 +28,6 @@ import {
   flushForemanMutationQueue,
   markForemanSnapshotQueued,
 } from "../../../lib/offline/mutationWorker";
-import { runForemanQueueRecovery } from "../../../lib/offline/offlineQueueRecovery";
 import {
   classifyForemanSyncError,
   isForemanConflictAutoRecoverable,
@@ -55,7 +54,6 @@ import {
   buildFreshForemanLocalDraftSnapshot,
   buildForemanLocalDraftSnapshot,
   hasForemanLocalDraftContent,
-  hasForemanLocalDraftPendingSync,
   loadForemanRemoteDraftSnapshot,
   markForemanLocalDraftSubmitRequested,
   syncForemanLocalDraftSnapshot,
@@ -68,7 +66,6 @@ import {
   INITIAL_BOUNDARY_STATE,
   appendForemanLocalDraftRows,
   applyForemanLocalDraftSnapshotToBoundary as applyForemanLocalDraftSnapshotToBoundaryHelper,
-  bootstrapForemanDraftBoundary,
   buildForemanRequestDraftMeta,
   clearForemanDraftCacheState,
   discardWholeForemanDraftInBoundary,
@@ -102,16 +99,10 @@ import {
 } from "../foreman.draftBoundaryIdentity.model";
 import {
   type ForemanDraftRestoreTriggerPlan,
-  getForemanBootstrapReconciliationRequestId,
   planForemanAppActiveRestoreTrigger,
-  planForemanBootstrapReenqueueCommand,
   planForemanFocusRestoreTrigger,
   planForemanNetworkBackRestoreTrigger,
   resolveForemanActiveLocalDraftSnapshotPlan,
-  resolveForemanBootstrapCompletionStartPlan,
-  resolveForemanBootstrapHydrateTelemetryPlan,
-  resolveForemanBootstrapReconciliationPlan,
-  resolveForemanBootstrapStaleDurableResetExecutionPlan,
   resolveForemanDraftCacheClearPlan,
   resolveForemanRestoreRemoteCheckPlan,
   resolveForemanRestoreRemoteStatusPlan,
