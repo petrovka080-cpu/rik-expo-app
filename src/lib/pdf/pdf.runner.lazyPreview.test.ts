@@ -97,6 +97,7 @@ describe("prepareAndPreviewGeneratedPdfFromDescriptorFactory", () => {
         label: "Opening PDF...",
         descriptor: baseDescriptor,
         router,
+        openFlowStartedAt: expect.any(Number),
         onBeforeNavigate,
       }),
     );

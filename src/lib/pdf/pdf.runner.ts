@@ -35,6 +35,7 @@ type PrepareGeneratedPdfArgs = {
   key: string;
   label: string;
   descriptor: DocumentDescriptor;
+  openFlowStartedAt?: number | null;
 };
 
 type PrepareGeneratedPdfFromDescriptorFactoryArgs = Omit<PrepareGeneratedPdfArgs, "descriptor"> & {
@@ -298,6 +299,7 @@ export async function prepareAndPreviewGeneratedPdf(args: PrepareGeneratedPdfArg
     label: args.label,
     descriptor: args.descriptor,
     router: args.router,
+    openFlowStartedAt: args.openFlowStartedAt,
     onBeforeNavigate: args.onBeforeNavigate,
   });
 }
@@ -310,6 +312,7 @@ export async function prepareAndPreviewGeneratedPdfFromDescriptorFactory(
   const flowKey = String(args.key ?? "").trim();
   const existing = flowKey ? activeGeneratedPreviewDescriptorFactories.get(flowKey) : undefined;
   if (existing) return await existing;
+  const openFlowStartedAt = nowMs();
 
   const run = async () => {
     const descriptor = await args.createDescriptor();
@@ -319,6 +322,7 @@ export async function prepareAndPreviewGeneratedPdfFromDescriptorFactory(
       key: args.key,
       label: args.label,
       descriptor,
+      openFlowStartedAt,
       router: args.router,
       onBeforeNavigate: args.onBeforeNavigate,
     });

@@ -154,4 +154,60 @@ describe("pdf critical path observability", () => {
       ]),
     );
   });
+
+  it("keeps descriptor build time in generated preview latency when an earlier tap mark is supplied", () => {
+    const nowSpy = jest.spyOn(performance, "now");
+    nowSpy
+      .mockReturnValueOnce(250)
+      .mockReturnValueOnce(260)
+      .mockReturnValueOnce(300)
+      .mockReturnValueOnce(400);
+
+    try {
+      const context = createPdfOpenFlowContext({
+        key: "pdf:request:REQ-1",
+        documentType: "request",
+        originModule: "foreman",
+        entityId: "REQ-1",
+        fileName: "request.pdf",
+        startedAt: 100,
+      });
+
+      recordPdfOpenStage({ context, stage: "tap_start" });
+      recordPdfOpenStage({ context, stage: "document_prepare_start" });
+      recordPdfOpenStage({
+        context,
+        stage: "document_prepare_done",
+        sourceKind: "remote-url",
+      });
+      recordPdfOpenStage({
+        context,
+        stage: "first_open_visible",
+        sourceKind: "remote-url",
+      });
+
+      const summary = getPlatformObservabilityEvents().find(
+        (event) =>
+          event.surface === "pdf_open_performance" &&
+          event.event === "pdf_open_latency",
+      );
+
+      expect(summary).toEqual(
+        expect.objectContaining({
+          screen: "foreman",
+          surface: "pdf_open_performance",
+          event: "pdf_open_latency",
+          durationMs: 300,
+          extra: expect.objectContaining({
+            tapToVisibleMs: 300,
+            tapToSourceReadyMs: 200,
+            prepareDurationMs: 40,
+            sourceReadyToVisibleMs: 100,
+          }),
+        }),
+      );
+    } finally {
+      nowSpy.mockRestore();
+    }
+  });
 });

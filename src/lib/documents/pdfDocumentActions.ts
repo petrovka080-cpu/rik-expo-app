@@ -1045,6 +1045,8 @@ export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
 export async function prepareAndPreviewPdfDocument(
   args: PreparePdfDocumentArgs & {
     router?: PdfViewerRouterLike;
+    /** Optional earlier tap timestamp used when descriptor/source creation happens before this boundary. */
+    openFlowStartedAt?: number | null;
     /** Called before router.push to dismiss native Modals that sit above the navigation Stack. */
     onBeforeNavigate?: (() => void | Promise<void>) | null;
   },
@@ -1076,6 +1078,7 @@ export async function prepareAndPreviewPdfDocument(
     entityId: args.descriptor.entityId ?? null,
     documentType: args.descriptor.documentType,
     originModule: args.descriptor.originModule,
+    startedAt: args.openFlowStartedAt,
   });
   const recordBoundary = (
     event: string,

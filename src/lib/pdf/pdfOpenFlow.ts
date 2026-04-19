@@ -136,8 +136,13 @@ export function createPdfOpenFlowContext(args: {
   entityId?: string | null;
   documentType: PdfDocumentType;
   originModule: PdfOriginModule;
+  startedAt?: number | null;
 }): PdfOpenFlowContext {
-  const startedAt = nowMs();
+  const hasStartedAt =
+    typeof args.startedAt === "number" && Number.isFinite(args.startedAt);
+  const startedAt = hasStartedAt
+    ? args.startedAt
+    : nowMs();
   return {
     key: trimText(args.key) || undefined,
     label: trimText(args.label) || undefined,
@@ -146,7 +151,9 @@ export function createPdfOpenFlowContext(args: {
     documentType: args.documentType,
     originModule: args.originModule,
     startedAt,
-    performanceMarks: {},
+    performanceMarks: hasStartedAt
+      ? { tap_start: startedAt }
+      : {},
   };
 }
 
