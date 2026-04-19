@@ -1,5 +1,4 @@
-import { router as rootRouter, type Href } from "expo-router";
-import { InteractionManager, Platform } from "react-native";
+import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 import {
   createDocumentPreviewSession,
@@ -42,6 +41,11 @@ import {
 } from "./pdfDocumentOpenFlowPlan";
 import { resolvePdfDocumentPreviewSessionPlan } from "./pdfDocumentPreviewSessionPlan";
 import {
+  createPdfDocumentViewerHref,
+  pushPdfDocumentViewerRouteSafely,
+  type PdfViewerRouterLike,
+} from "./pdfDocumentViewerEntry";
+import {
   resolvePdfDocumentBusyExecutionPlan,
   resolvePdfDocumentBusyRunOutputPlan,
   resolvePdfDocumentManualBusyCleanupPlan,
@@ -75,10 +79,7 @@ type PreparePdfDocumentArgs = {
   resolveSource?: () => Promise<PdfSource> | PdfSource;
   getRemoteUrl?: () => Promise<string> | string;
 };
-export type PdfViewerRouterLike = {
-  push: (href: Href, options?: unknown) => void;
-  replace?: (href: Href, options?: unknown) => void;
-};
+export type { PdfViewerRouterLike } from "./pdfDocumentViewerEntry";
 function canUseInMemoryRemoteViewerShortcut(
   doc: DocumentDescriptor,
   hasRouter: boolean,
@@ -91,120 +92,12 @@ function canUseInMemoryRemoteViewerShortcut(
     }).action === "use_in_memory_remote_session"
   );
 }
-function toSafeRouteParam(value: unknown) {
-  return String(value ?? "").trim();
-}
 function extractUriScheme(uri: unknown): string {
   return (
     String(uri || "")
       .match(/^([a-z0-9+.-]+):/i)?.[1]
       ?.toLowerCase() || ""
   );
-}
-function createViewerHref(sessionId: unknown, openToken: unknown) {
-  const safeSessionId = toSafeRouteParam(sessionId);
-  const safeOpenToken = toSafeRouteParam(openToken);
-  if (!safeSessionId) {
-    throw new Error("PDF viewer navigation requires a non-empty sessionId");
-  }
-  return {
-    safeSessionId,
-    safeOpenToken,
-    href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}` as Href,
-  };
-}
-async function pushViewerRouteSafely(
-  router: PdfViewerRouterLike,
-  href: Href,
-  onBeforeNavigate?: (() => void | Promise<void>) | null,
-) {
-  if (__DEV__) console.info("[pdf-document-actions] viewer_patch_v3_navigation_call", {
-    href: String(href),
-    platform: Platform.OS,
-    patchVersion: "v3",
-  });
-  if (__DEV__) console.info("[pdf-document-actions] viewer_route_push_pre_schedule", {
-    href: String(href),
-    platform: Platform.OS,
-  });
-  // Dismiss any active native Modal BEFORE navigating.
-  // React Native <Modal> renders at the native window level (UIWindow on iOS),
-  // which physically sits above the entire navigation Stack. If a Modal is
-  // still visible when router.push fires, the PDF viewer screen will appear
-  // underneath the Modal. Calling onBeforeNavigate here sets the modal-visible
-  // state to false, which triggers the native dismiss animation. The subsequent
-  // InteractionManager.runAfterInteractions call then waits for that animation
-  // (an Animated interaction) to fully settle before executing the push.
-  const hadModalDismiss = typeof onBeforeNavigate === "function";
-  if (hadModalDismiss) {
-    try {
-      await Promise.resolve(onBeforeNavigate());
-    } catch (error) {
-      if (__DEV__) console.warn("[pdf-document-actions] onBeforeNavigate error (non-fatal)", error);
-    }
-  }
-  await new Promise<void>((resolve, reject) => {
-    const runPush = () => {
-      try {
-        if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_start", {
-          href: String(href),
-          platform: Platform.OS,
-          method: Platform.OS === "ios" ? "push" : "replace",
-        });
-        if (Platform.OS === "ios") {
-          // On iOS, `replace` from inside (tabs) to a root-level route
-          // performs a cross-navigator replace that can crash UIKit's
-          // native navigation controller. `push` is a safe forward navigation.
-          if (typeof rootRouter?.push === "function") {
-            rootRouter.push(href);
-          } else {
-            router.push(href);
-          }
-        } else if (typeof rootRouter?.replace === "function") {
-          rootRouter.replace(href);
-        } else if (typeof router.replace === "function") {
-          router.replace(href);
-        } else {
-          router.push(href);
-        }
-        if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_done", {
-          href: String(href),
-          platform: Platform.OS,
-        });
-        resolve();
-      } catch (error) {
-        if (__DEV__) console.error("[pdf-document-actions] viewer_route_replace_crash", {
-          href: String(href),
-          platform: Platform.OS,
-          errorName: error instanceof Error ? error.name : undefined,
-          errorMessage: error instanceof Error ? error.message : String(error),
-        });
-        reject(error);
-      }
-    };
-    // L-PERF: Only wait for InteractionManager when a modal dismiss was
-    // triggered. When no modal is active, there are no in-flight dismiss
-    // animations to wait for, so push immediately via microtask.
-    // This saves ~200-400ms for non-modal screens (Warehouse, Foreman,
-    // Buyer, Accountant, Contractor).
-    if (hadModalDismiss && typeof InteractionManager?.runAfterInteractions === "function") {
-      InteractionManager.runAfterInteractions(() => {
-        // D-MODAL-PDF: On Android, the native <Modal> window may still be
-        // detaching when InteractionManager fires. The Modal renders at
-        // the native window level, and router.replace can execute
-        // "underneath" the not-yet-fully-dismissed modal. A minimal
-        // frame delay ensures the modal has fully detached.
-        if (Platform.OS === "android" && hadModalDismiss) {
-          setTimeout(runPush, 80);
-        } else {
-          runPush();
-        }
-      });
-    } else {
-      // No modal dismiss — push immediately on next microtask
-      Promise.resolve().then(runPush).catch(reject);
-    }
-  });
 }
 type PreviewPdfDocumentOpts = {
   router?: PdfViewerRouterLike;
@@ -497,7 +390,7 @@ export async function previewPdfDocument(
         safeSessionId,
         safeOpenToken,
         href: viewerHref,
-      } = createViewerHref(session.sessionId, opts.openFlow?.openToken);
+      } = createPdfDocumentViewerHref(session.sessionId, opts.openFlow?.openToken);
       recordPdfOpenStage({
         context: opts.openFlow,
         stage: "viewer_route_payload_ready",
@@ -615,7 +508,7 @@ export async function previewPdfDocument(
         });
         opts?.assertCurrentRun?.("viewer_entry");
         recordBoundary("pdf_viewer_entry_started", "viewer_entry");
-        await pushViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
+        await pushPdfDocumentViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
         recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
         persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",
@@ -780,7 +673,7 @@ export async function previewPdfDocument(
         safeSessionId,
         safeOpenToken,
         href: viewerHref,
-      } = createViewerHref(session.sessionId, opts.openFlow?.openToken);
+      } = createPdfDocumentViewerHref(session.sessionId, opts.openFlow?.openToken);
       if (__DEV__) console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
         sessionId: safeSessionId,
         documentType: asset.documentType,
@@ -888,7 +781,7 @@ export async function previewPdfDocument(
         });
         opts?.assertCurrentRun?.("viewer_entry");
         recordBoundary("pdf_viewer_entry_started", "viewer_entry");
-        await pushViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
+        await pushPdfDocumentViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
         recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
         persistCriticalPdfBreadcrumb({
           marker: "viewer_route_pushed",

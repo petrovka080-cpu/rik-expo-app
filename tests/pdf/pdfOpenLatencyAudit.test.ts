@@ -31,9 +31,19 @@ const SESSIONS_PATH = join(
   "documents",
   "pdfDocumentSessions.ts",
 );
+const VIEWER_ENTRY_PATH = join(
+  __dirname,
+  "..",
+  "..",
+  "src",
+  "lib",
+  "documents",
+  "pdfDocumentViewerEntry.ts",
+);
 
 const actionsSource = readFileSync(ACTIONS_PATH, "utf8");
 const sessionsSource = readFileSync(SESSIONS_PATH, "utf8");
+const viewerEntrySource = readFileSync(VIEWER_ENTRY_PATH, "utf8");
 
 describe("L-PERF: breadcrumbs are fire-and-forget on critical path", () => {
   it("persistCriticalPdfBreadcrumb returns void, not Promise", () => {
@@ -88,11 +98,13 @@ describe("L-PERF: minMs busy floor reduced from 650 to 200", () => {
 
 describe("L-PERF: critical path contract preserved", () => {
   it("InteractionManager.runAfterInteractions is still used for modal dismiss safety", () => {
-    expect(actionsSource).toContain("InteractionManager");
+    expect(actionsSource).toContain("pushPdfDocumentViewerRouteSafely");
+    expect(viewerEntrySource).toContain("InteractionManager");
+    expect(viewerEntrySource).toContain("runAfterInteractions");
   });
 
-  it("pushViewerRouteSafely still exists", () => {
-    expect(actionsSource).toContain("pushViewerRouteSafely");
+  it("viewer entry route push boundary still exists", () => {
+    expect(viewerEntrySource).toContain("export async function pushPdfDocumentViewerRouteSafely");
   });
 
   it("breadcrumbs still fire (fire-and-forget, not removed)", () => {
@@ -170,29 +182,29 @@ describe("L-PERF: exact bottleneck elimination verification", () => {
 describe("L-PERF FIX-3: InteractionManager is conditional on modal dismiss", () => {
   it("InteractionManager.runAfterInteractions is gated by hadModalDismiss", () => {
     // Must contain: hadModalDismiss && typeof InteractionManager
-    expect(actionsSource).toMatch(
+    expect(viewerEntrySource).toMatch(
       /hadModalDismiss\s*&&\s*typeof InteractionManager/,
     );
   });
 
   it("hadModalDismiss flag is derived from onBeforeNavigate", () => {
-    expect(actionsSource).toContain(
+    expect(viewerEntrySource).toContain(
       'const hadModalDismiss = typeof onBeforeNavigate === "function"',
     );
   });
 
   it("non-modal path uses Promise.resolve microtask (not setTimeout)", () => {
-    expect(actionsSource).toContain("Promise.resolve().then(runPush)");
+    expect(viewerEntrySource).toContain("Promise.resolve().then(runPush)");
   });
 
   it("L-PERF comment explains the conditional InteractionManager", () => {
-    expect(actionsSource).toContain("L-PERF: Only wait for InteractionManager");
+    expect(viewerEntrySource).toContain("L-PERF: Only wait for InteractionManager");
   });
 
   it("no unconditional InteractionManager.runAfterInteractions remains", () => {
     // Verify the actual invocation line contains the hadModalDismiss guard.
     // We look for lines containing the actual call pattern (with opening paren).
-    const lines = actionsSource.split("\n");
+    const lines = viewerEntrySource.split("\n");
     const invocationLines = lines.filter((line) => {
       const trimmed = line.trim();
       if (trimmed.startsWith("//") || trimmed.startsWith("*")) return false;

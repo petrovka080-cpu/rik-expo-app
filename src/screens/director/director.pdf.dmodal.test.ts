@@ -78,7 +78,7 @@ describe("D-MODAL-PDF: activePreviewFlows TTL", () => {
 describe("D-MODAL-PDF: Android modal dismiss settle delay", () => {
   it("should have Android settle delay in pushViewerRouteSafely", () => {
     const source = require("fs").readFileSync(
-      require("path").resolve(__dirname, "../../lib/documents/pdfDocumentActions.ts"),
+      require("path").resolve(__dirname, "../../lib/documents/pdfDocumentViewerEntry.ts"),
       "utf-8",
     );
 
@@ -89,7 +89,7 @@ describe("D-MODAL-PDF: Android modal dismiss settle delay", () => {
 
   it("should not add delay for iOS modal paths", () => {
     const source = require("fs").readFileSync(
-      require("path").resolve(__dirname, "../../lib/documents/pdfDocumentActions.ts"),
+      require("path").resolve(__dirname, "../../lib/documents/pdfDocumentViewerEntry.ts"),
       "utf-8",
     );
 
