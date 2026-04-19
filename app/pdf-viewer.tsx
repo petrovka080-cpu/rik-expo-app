@@ -30,7 +30,17 @@ import {
   resolvePdfViewerState,
 } from "../src/lib/pdf/pdfViewerContract";
 import { createPdfViewerRenderInstanceKey } from "../src/lib/pdf/pdfViewerRenderLifecycle";
-import { shouldCommitPdfViewerRenderEvent } from "../src/lib/pdf/pdfViewerRenderEventGuard";
+import {
+  type PdfViewerRenderBreadcrumbCommand,
+  type PdfViewerRenderConsoleCommand,
+  resolvePdfViewerNativeErrorEventPlan,
+  resolvePdfViewerNativeHttpErrorEventPlan,
+  resolvePdfViewerNativeLoadEndEventPlan,
+  resolvePdfViewerNativeLoadStartEventPlan,
+  resolvePdfViewerWebIframeErrorEventPlan,
+  resolvePdfViewerWebIframeLoadEventPlan,
+  shouldCommitPdfViewerRenderEvent,
+} from "../src/lib/pdf/pdfViewerRenderEventGuard";
 import { resolvePdfViewerWebRenderUriCleanup } from "../src/lib/pdf/pdfViewerWebRenderUriCleanup";
 import {
   failPdfOpenVisible,
@@ -72,7 +82,6 @@ import {
   resolvePdfViewerOpenVisibleSignalPlan,
 } from "../src/lib/pdf/pdfViewerOpenSignalPlan";
 import { resolvePdfViewerWebIframeReadyFallbackPlan } from "../src/lib/pdf/pdfViewerWebIframeReadyFallback";
-
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import {
   FALLBACK_ROUTE,
@@ -118,6 +127,29 @@ const NativePdfWebView =
 
 const getCurrentViewerPlatform = () =>
   Platform.OS === "web" ? "web" : Platform.OS === "android" ? "android" : "ios";
+
+const emitPdfViewerRenderConsoleCommand = (
+  command?: PdfViewerRenderConsoleCommand,
+) => {
+  if (!command) return;
+  if (command.level === "error") {
+    console.error(command.label, command.payload);
+    return;
+  }
+  console.info(command.label, command.payload);
+};
+
+const emitPdfViewerRenderBreadcrumbCommands = (
+  recordViewerBreadcrumb: (
+    marker: string,
+    overrides?: PdfViewerRenderBreadcrumbCommand["payload"],
+  ) => void,
+  commands?: PdfViewerRenderBreadcrumbCommand[],
+) => {
+  for (const command of commands ?? []) {
+    recordViewerBreadcrumb(command.marker, command.payload);
+  }
+};
 
 console.info("[pdf-viewer] module_loaded", { platform: Platform.OS });
 
@@ -1252,13 +1284,13 @@ function PdfViewerScreen() {
     activeRenderInstanceKeyRef.current = renderInstanceKey;
   }, [activeRenderInstanceKeyRef, renderInstanceKey]);
 
-  const isActiveRenderEvent = React.useCallback(
+  const resolveRenderEventCommitPlan = React.useCallback(
     (eventRenderInstanceKey: string) => {
       const guardActive = shouldCommitPdfViewerRenderEvent({
         activeRenderInstanceKey: activeRenderInstanceKeyRef.current,
         eventRenderInstanceKey,
       });
-      return planRenderEventCommit(guardActive).action === "commit_render_event";
+      return planRenderEventCommit(guardActive);
     },
     [activeRenderInstanceKeyRef, planRenderEventCommit],
   );
@@ -1561,25 +1593,27 @@ function PdfViewerScreen() {
             renderInstanceKey={renderInstanceKey}
             webEmbeddedUri={webEmbeddedUri}
             onLoad={() => {
-              if (!isActiveRenderEvent(renderInstanceKey)) return;
-              if (renderFailedRef.current) return;
-              console.info("[pdf-viewer] web_iframe_load", {
+              const eventPlan = resolvePdfViewerWebIframeLoadEventPlan({
+                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
+                renderFailed: renderFailedRef.current,
                 sessionId,
-                documentType: asset.documentType,
-                originModule: asset.originModule,
-                uri: webEmbeddedUri || asset.uri,
+                asset,
+                renderUri: webEmbeddedUri || asset.uri,
               });
+              if (eventPlan.action === "skip_render_event") return;
+              emitPdfViewerRenderConsoleCommand(eventPlan.console);
               markReady();
             }}
             onError={() => {
-              if (!isActiveRenderEvent(renderInstanceKey)) return;
-              console.error("[pdf-viewer] web_iframe_error", {
+              const eventPlan = resolvePdfViewerWebIframeErrorEventPlan({
+                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
                 sessionId,
-                documentType: asset.documentType,
-                originModule: asset.originModule,
-                uri: webEmbeddedUri || asset.uri,
+                asset,
+                renderUri: webEmbeddedUri || asset.uri,
               });
-              markError("Web PDF frame failed to load.", "render");
+              if (eventPlan.action === "skip_render_event") return;
+              emitPdfViewerRenderConsoleCommand(eventPlan.console);
+              markError(eventPlan.message, "render");
             }}
           />
         ) : (
@@ -1590,138 +1624,63 @@ function PdfViewerScreen() {
             nativePdfWebView={NativePdfWebView}
             nativeWebViewReadAccessUri={nativeWebViewReadAccessUri}
             onLoadStart={() => {
-              recordViewerBreadcrumb("native_open_start", {
-                uri: asset.uri,
-                uriKind: getUriScheme(asset.uri),
-                sourceKind: resolvedSource.sourceKind,
-                fileSizeBytes: asset.sizeBytes,
-                fileExists: typeof asset.sizeBytes === "number" ? true : null,
-                previewPath: resolvedSource.renderer,
-                extra: {
-                  handoffType: "native_webview",
-                },
+              const eventPlan = resolvePdfViewerNativeLoadStartEventPlan({
+                asset,
+                source: resolvedSource,
               });
-              recordViewerBreadcrumb("native_webview_load_start", {
-                uri: asset.uri,
-                uriKind: getUriScheme(asset.uri),
-                sourceKind: resolvedSource.sourceKind,
-                fileSizeBytes: asset.sizeBytes,
-                fileExists: typeof asset.sizeBytes === "number" ? true : null,
-                previewPath: resolvedSource.renderer,
-              });
+              emitPdfViewerRenderBreadcrumbCommands(
+                recordViewerBreadcrumb,
+                eventPlan.breadcrumbs,
+              );
             }}
             onLoadEnd={() => {
-              if (!isActiveRenderEvent(renderInstanceKey)) return;
-              if (renderFailedRef.current) return;
-              console.info("[pdf-viewer] native_webview_load_end", {
+              const eventPlan = resolvePdfViewerNativeLoadEndEventPlan({
+                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
+                renderFailed: renderFailedRef.current,
                 sessionId,
-                documentType: asset.documentType,
-                originModule: asset.originModule,
-                uri: asset.uri,
+                asset,
+                source: resolvedSource,
               });
-              recordViewerBreadcrumb("native_webview_load_end", {
-                uri: asset.uri,
-                uriKind: getUriScheme(asset.uri),
-                sourceKind: resolvedSource.sourceKind,
-                fileSizeBytes: asset.sizeBytes,
-                fileExists: typeof asset.sizeBytes === "number" ? true : null,
-                previewPath: resolvedSource.renderer,
-              });
-              recordViewerBreadcrumb("native_open_success", {
-                uri: asset.uri,
-                uriKind: getUriScheme(asset.uri),
-                sourceKind: resolvedSource.sourceKind,
-                fileSizeBytes: asset.sizeBytes,
-                fileExists: typeof asset.sizeBytes === "number" ? true : null,
-                previewPath: resolvedSource.renderer,
-                terminalState: "success",
-                extra: {
-                  handoffType: "native_webview",
-                },
-              });
+              if (eventPlan.action === "skip_render_event") return;
+              emitPdfViewerRenderConsoleCommand(eventPlan.console);
+              emitPdfViewerRenderBreadcrumbCommands(
+                recordViewerBreadcrumb,
+                eventPlan.breadcrumbs,
+              );
               markReady();
             }}
             onError={(event) => {
-              if (!isActiveRenderEvent(renderInstanceKey)) return;
-              const message = String(
-                event?.nativeEvent?.description ||
-                  "Native PDF viewer failed to load.",
-              ).trim();
-              console.error("[pdf-viewer] native_webview_error", {
+              const eventPlan = resolvePdfViewerNativeErrorEventPlan({
+                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
                 sessionId,
-                documentType: asset.documentType,
-                originModule: asset.originModule,
-                uri: asset.uri,
-                error: message,
+                asset,
+                source: resolvedSource,
+                description: event?.nativeEvent?.description,
               });
-              recordViewerBreadcrumb("native_webview_error", {
-                uri: asset.uri,
-                uriKind: getUriScheme(asset.uri),
-                sourceKind: resolvedSource.sourceKind,
-                fileSizeBytes: asset.sizeBytes,
-                fileExists: typeof asset.sizeBytes === "number" ? true : null,
-                previewPath: resolvedSource.renderer,
-                errorMessage: message,
-              });
-              recordViewerBreadcrumb("native_open_error", {
-                uri: asset.uri,
-                uriKind: getUriScheme(asset.uri),
-                sourceKind: resolvedSource.sourceKind,
-                fileSizeBytes: asset.sizeBytes,
-                fileExists: typeof asset.sizeBytes === "number" ? true : null,
-                previewPath: resolvedSource.renderer,
-                errorMessage: message,
-                terminalState: "error",
-                extra: {
-                  handoffType: "native_webview",
-                },
-              });
-              markError(message, "render");
+              if (eventPlan.action === "skip_render_event") return;
+              emitPdfViewerRenderConsoleCommand(eventPlan.console);
+              emitPdfViewerRenderBreadcrumbCommands(
+                recordViewerBreadcrumb,
+                eventPlan.breadcrumbs,
+              );
+              markError(eventPlan.message, "render");
             }}
             onHttpError={(event) => {
-              if (!isActiveRenderEvent(renderInstanceKey)) return;
-              const statusCode = Number(event?.nativeEvent?.statusCode);
-              const description = String(
-                event?.nativeEvent?.description || "",
-              ).trim();
-              const message = statusCode
-                ? `PDF request failed (${statusCode}).`
-                : description || "PDF request failed.";
-              console.error("[pdf-viewer] native_webview_http_error", {
+              const eventPlan = resolvePdfViewerNativeHttpErrorEventPlan({
+                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
                 sessionId,
-                documentType: asset.documentType,
-                originModule: asset.originModule,
-                uri: asset.uri,
-                statusCode: Number.isFinite(statusCode) ? statusCode : null,
-                error: message,
+                asset,
+                source: resolvedSource,
+                description: event?.nativeEvent?.description,
+                statusCode: event?.nativeEvent?.statusCode,
               });
-              recordViewerBreadcrumb("native_webview_http_error", {
-                uri: asset.uri,
-                uriKind: getUriScheme(asset.uri),
-                sourceKind: resolvedSource.sourceKind,
-                fileSizeBytes: asset.sizeBytes,
-                fileExists: typeof asset.sizeBytes === "number" ? true : null,
-                previewPath: resolvedSource.renderer,
-                errorMessage: message,
-                extra: {
-                  statusCode: Number.isFinite(statusCode) ? statusCode : null,
-                },
-              });
-              recordViewerBreadcrumb("native_open_error", {
-                uri: asset.uri,
-                uriKind: getUriScheme(asset.uri),
-                sourceKind: resolvedSource.sourceKind,
-                fileSizeBytes: asset.sizeBytes,
-                fileExists: typeof asset.sizeBytes === "number" ? true : null,
-                previewPath: resolvedSource.renderer,
-                errorMessage: message,
-                terminalState: "error",
-                extra: {
-                  handoffType: "native_webview",
-                  statusCode: Number.isFinite(statusCode) ? statusCode : null,
-                },
-              });
-              markError(message, "render");
+              if (eventPlan.action === "skip_render_event") return;
+              emitPdfViewerRenderConsoleCommand(eventPlan.console);
+              emitPdfViewerRenderBreadcrumbCommands(
+                recordViewerBreadcrumb,
+                eventPlan.breadcrumbs,
+              );
+              markError(eventPlan.message, "render");
             }}
             onOpenExternal={() => void onOpenExternal()}
           />

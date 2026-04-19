@@ -106,6 +106,12 @@ describe("E: pdf-viewer.tsx imports from extracted modules (not inline)", () => 
     expect(viewerSource).toContain("shouldCommitPdfViewerRenderEvent");
   });
 
+  it("imports render event command planning from pdfViewerRenderEventGuard", () => {
+    expect(viewerSource).toContain("pdfViewerRenderEventGuard");
+    expect(viewerSource).toContain("resolvePdfViewerNativeLoadEndEventPlan");
+    expect(viewerSource).toContain("resolvePdfViewerWebIframeErrorEventPlan");
+  });
+
   it("imports breadcrumbs from pdfCrashBreadcrumbs", () => {
     expect(viewerSource).toContain("pdfCrashBreadcrumbs");
     expect(viewerSource).toContain("recordPdfCrashBreadcrumbAsync");
