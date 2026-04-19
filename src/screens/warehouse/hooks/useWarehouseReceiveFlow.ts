@@ -19,6 +19,7 @@ import {
   buildWarehouseReceiveRemoteTruth,
   buildWarehouseReceiveSelection as buildReceiveSelection,
   normalizeWarehouseReceiveFlowText as trim,
+  planWarehouseReceiveManualSyncResult,
   shouldRequeueWarehouseReceiveManualRetry,
   toWarehouseReceiveDraftItemsFromInputMap as toDraftItemsFromInputMap,
   toWarehouseReceiveQtyInputMap as toQtyInputMap,
@@ -392,35 +393,16 @@ export function useWarehouseReceiveFlow(params: {
       }
       syncLocalInputFromDraft(incomingId);
 
-      if (result.failed) {
-        notifyError(
-          "Синхронизация отложена",
-          `Изменения сохранены локально и будут отправлены позже: ${result.errorMessage ?? "sync_failed"}`,
-        );
-        return;
-      }
-
-      if (result.lastIncomingId !== incomingId) {
-        notifyInfo("Готово", "Очередь приёма синхронизирована.");
-        return;
-      }
-
-      if (result.lastFailCount > 0) {
-        notifyError(
-          "Приход выполнен с предупреждением",
-          `Принято позиций: ${result.lastOkCount}, ошибок: ${result.lastFailCount}, осталось: ${result.lastLeftAfter ?? 0}.`,
-        );
-        return;
-      }
-
-      if ((result.lastLeftAfter ?? 0) <= 0) {
+      const plan = planWarehouseReceiveManualSyncResult(incomingId, result);
+      if (plan.closeItemsModal) {
         setItemsModal(null);
       }
 
-      notifyInfo(
-        "Готово",
-        `Принято позиций: ${result.lastOkCount}\nОсталось: ${result.lastLeftAfter ?? 0}`,
-      );
+      if (plan.notice.kind === "error") {
+        notifyError(plan.notice.title, plan.notice.message);
+      } else {
+        notifyInfo(plan.notice.title, plan.notice.message);
+      }
     },
     [
       ensureScreenActive,

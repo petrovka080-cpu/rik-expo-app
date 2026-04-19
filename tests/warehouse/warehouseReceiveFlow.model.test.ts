@@ -3,10 +3,24 @@ import {
   buildWarehouseReceiveManualRetryTelemetry,
   buildWarehouseReceiveRemoteTruth,
   buildWarehouseReceiveSelection,
+  planWarehouseReceiveManualSyncResult,
   shouldRequeueWarehouseReceiveManualRetry,
   toWarehouseReceiveDraftItemsFromInputMap,
   toWarehouseReceiveQtyInputMap,
 } from "../../src/screens/warehouse/hooks/warehouseReceiveFlow.model";
+import type { WarehouseReceiveWorkerResult } from "../../src/screens/warehouse/warehouseReceiveWorker";
+
+const baseWorkerResult: WarehouseReceiveWorkerResult = {
+  processedCount: 1,
+  remainingCount: 0,
+  failed: false,
+  errorMessage: null,
+  lastIncomingId: "incoming-1",
+  lastOkCount: 2,
+  lastFailCount: 0,
+  lastLeftAfter: 0,
+  triggerSource: "manual_retry",
+};
 
 describe("warehouseReceiveFlow model", () => {
   beforeEach(() => {
@@ -263,6 +277,61 @@ describe("warehouseReceiveFlow model", () => {
       retryCount: 0,
       pendingCount: 0,
       networkKnownOffline: true,
+    });
+  });
+
+  it("plans manual sync result notifications without keeping worker branching in the hook", () => {
+    expect(
+      planWarehouseReceiveManualSyncResult("incoming-1", {
+        ...baseWorkerResult,
+        failed: true,
+        errorMessage: "offline",
+      }),
+    ).toEqual({
+      closeItemsModal: false,
+      notice: {
+        kind: "error",
+        title: "Синхронизация отложена",
+        message: "Изменения сохранены локально и будут отправлены позже: offline",
+      },
+    });
+
+    expect(
+      planWarehouseReceiveManualSyncResult("incoming-1", {
+        ...baseWorkerResult,
+        lastIncomingId: "incoming-2",
+      }),
+    ).toEqual({
+      closeItemsModal: false,
+      notice: {
+        kind: "info",
+        title: "Готово",
+        message: "Очередь приёма синхронизирована.",
+      },
+    });
+
+    expect(
+      planWarehouseReceiveManualSyncResult("incoming-1", {
+        ...baseWorkerResult,
+        lastFailCount: 1,
+        lastLeftAfter: 3,
+      }),
+    ).toEqual({
+      closeItemsModal: false,
+      notice: {
+        kind: "error",
+        title: "Приход выполнен с предупреждением",
+        message: "Принято позиций: 2, ошибок: 1, осталось: 3.",
+      },
+    });
+
+    expect(planWarehouseReceiveManualSyncResult("incoming-1", baseWorkerResult)).toEqual({
+      closeItemsModal: true,
+      notice: {
+        kind: "info",
+        title: "Готово",
+        message: "Принято позиций: 2\nОсталось: 0",
+      },
     });
   });
 

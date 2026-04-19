@@ -4,6 +4,7 @@ import type {
   WarehouseReceiveDraftItem,
   WarehouseReceiveSyncStatus,
 } from "../warehouse.receiveDraft.store";
+import type { WarehouseReceiveWorkerResult } from "../warehouseReceiveWorker";
 import { nz, parseQtySelected } from "../warehouse.utils";
 
 export type WarehouseReceiveFlowRow = {
@@ -28,6 +29,17 @@ export type WarehouseReceiveTelemetryInput = Omit<
   PlatformOfflineTelemetryEvent,
   "id" | "at"
 >;
+
+export type WarehouseReceiveManualSyncNotice = {
+  kind: "error" | "info";
+  title: string;
+  message: string;
+};
+
+export type WarehouseReceiveManualSyncPlan = {
+  closeItemsModal: boolean;
+  notice: WarehouseReceiveManualSyncNotice;
+};
 
 export type WarehouseReceiveQueueStatusLike =
   | "queued"
@@ -128,6 +140,54 @@ export const buildWarehouseReceiveRemoteTruth = (
       rows.length === 0
         ? "not_in_receive_scope"
         : "receive_remaining_qty_zero",
+  };
+};
+
+export const planWarehouseReceiveManualSyncResult = (
+  incomingId: string,
+  result: WarehouseReceiveWorkerResult,
+): WarehouseReceiveManualSyncPlan => {
+  if (result.failed) {
+    return {
+      closeItemsModal: false,
+      notice: {
+        kind: "error",
+        title: "Синхронизация отложена",
+        message: `Изменения сохранены локально и будут отправлены позже: ${result.errorMessage ?? "sync_failed"}`,
+      },
+    };
+  }
+
+  if (result.lastIncomingId !== incomingId) {
+    return {
+      closeItemsModal: false,
+      notice: {
+        kind: "info",
+        title: "Готово",
+        message: "Очередь приёма синхронизирована.",
+      },
+    };
+  }
+
+  if (result.lastFailCount > 0) {
+    return {
+      closeItemsModal: false,
+      notice: {
+        kind: "error",
+        title: "Приход выполнен с предупреждением",
+        message: `Принято позиций: ${result.lastOkCount}, ошибок: ${result.lastFailCount}, осталось: ${result.lastLeftAfter ?? 0}.`,
+      },
+    };
+  }
+
+  const leftAfter = result.lastLeftAfter ?? 0;
+  return {
+    closeItemsModal: leftAfter <= 0,
+    notice: {
+      kind: "info",
+      title: "Готово",
+      message: `Принято позиций: ${result.lastOkCount}\nОсталось: ${leftAfter}`,
+    },
   };
 };
 
