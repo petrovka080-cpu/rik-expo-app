@@ -1,5 +1,7 @@
 // @ts-nocheck
 
+import { classifyGeminiUpstreamError } from "./upstreamError.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -160,18 +162,23 @@ Deno.serve(async (request) => {
   const upstreamPayload = await upstreamResponse.json().catch(() => null);
   if (!upstreamResponse.ok) {
     const errorMessage = cleanText(upstreamPayload?.error?.message);
+    const errorClassification = classifyGeminiUpstreamError({
+      status: upstreamResponse.status,
+      message: errorMessage,
+    });
     logEdge("error", "upstream_error", {
       requestId,
       model,
       status: upstreamResponse.status,
+      errorCategory: errorClassification.category,
       error: errorMessage || null,
       contentCount: contents.length,
     });
     return json(upstreamResponse.status, {
       ...toErrorBody(
         requestId,
-        "upstream_error",
-        errorMessage || `Gemini request failed (${upstreamResponse.status}).`,
+        errorClassification.category,
+        errorClassification.publicMessage,
       ),
     });
   }
