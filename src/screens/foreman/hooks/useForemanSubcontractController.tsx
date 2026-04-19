@@ -18,7 +18,7 @@ import {
 } from "../foreman.draftSync.repository";
 import { useRouter } from "expo-router";
 import { buildPdfFileName } from "../../../lib/documents/pdfDocument";
-import { prepareAndPreviewGeneratedPdf } from "../../../lib/pdf/pdf.runner";
+import { prepareAndPreviewGeneratedPdfFromDescriptorFactory } from "../../../lib/pdf/pdf.runner";
 import {
   ForemanSubcontractMainSections,
   ForemanSubcontractModalStack,
@@ -838,18 +838,15 @@ export function useForemanSubcontractController({
       Alert.alert("PDF", "Сначала создайте черновик заявки.");
       return;
     }
-    const template = await buildForemanRequestPdfDescriptor({
-      requestId: rid,
-      generatedBy: foremanName || null,
-      displayNo: displayNo || null,
-      title: displayNo ? `Р§РµСЂРЅРѕРІРёРє ${displayNo}` : `Р§РµСЂРЅРѕРІРёРє ${rid}`,
-    });
-    const title = displayNo ? `Черновик ${displayNo}` : `Черновик ${rid}`;
-    await prepareAndPreviewGeneratedPdf({
-      supabase,
-      key: `pdf:subcontracts-request:${rid}`,
-      label: "Открываю PDF…",
-      descriptor: {
+    const createDescriptor = async () => {
+      const template = await buildForemanRequestPdfDescriptor({
+        requestId: rid,
+        generatedBy: foremanName || null,
+        displayNo: displayNo || null,
+        title: displayNo ? `Р§РµСЂРЅРѕРІРёРє ${displayNo}` : `Р§РµСЂРЅРѕРІРёРє ${rid}`,
+      });
+      const title = displayNo ? `Черновик ${displayNo}` : `Черновик ${rid}`;
+      return {
         ...template,
         title,
         fileName: buildPdfFileName({
@@ -857,7 +854,13 @@ export function useForemanSubcontractController({
           title: displayNo || "chernovik",
           entityId: rid,
         }),
-      },
+      };
+    };
+    await prepareAndPreviewGeneratedPdfFromDescriptorFactory({
+      supabase,
+      key: `pdf:subcontracts-request:${rid}`,
+      label: "Открываю PDF…",
+      createDescriptor,
       router,
       // XR-PDF: dismiss the subcontract DraftSheet modal before pushing PDF viewer
       onBeforeNavigate: closeSubcontractFlow,
@@ -867,16 +870,13 @@ export function useForemanSubcontractController({
   const openRequestHistoryPdf = useCallback(async (reqId: string) => {
     const rid = String(reqId || "").trim();
     if (!rid) return;
-    const template = await buildForemanRequestPdfDescriptor({
-      requestId: rid,
-      generatedBy: foremanName || null,
-      title: `Р—Р°СЏРІРєР° ${rid}`,
-    });
-    await prepareAndPreviewGeneratedPdf({
-      supabase,
-      key: `pdf:history:${rid}`,
-      label: "Открываю PDF…",
-      descriptor: {
+    const createDescriptor = async () => {
+      const template = await buildForemanRequestPdfDescriptor({
+        requestId: rid,
+        generatedBy: foremanName || null,
+        title: `Р—Р°СЏРІРєР° ${rid}`,
+      });
+      return {
         ...template,
         title: `Заявка ${rid}`,
         fileName: buildPdfFileName({
@@ -884,7 +884,13 @@ export function useForemanSubcontractController({
           title: rid,
           entityId: rid,
         }),
-      },
+      };
+    };
+    await prepareAndPreviewGeneratedPdfFromDescriptorFactory({
+      supabase,
+      key: `pdf:history:${rid}`,
+      label: "Открываю PDF…",
+      createDescriptor,
       router,
       // XR-PDF: dismiss the request history modal before pushing PDF viewer
       onBeforeNavigate: closeRequestHistory,
