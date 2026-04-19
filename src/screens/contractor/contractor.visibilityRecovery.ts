@@ -120,7 +120,7 @@ export function buildCompatibilityInboxRows(params: {
             matchedRow?.contractor_org,
             contractor?.company_name,
             contractor?.full_name,
-            "РџРѕРґСЂСЏРґС‡РёРє",
+            "Подрядчик",
           )!,
           contractorInn: firstNonEmptyText(card.contractor_inn, matchedRow?.contractor_inn, contractor?.inn),
           contractNumber: firstNonEmptyText(card.contract_number),
@@ -135,7 +135,7 @@ export function buildCompatibilityInboxRows(params: {
         },
         work: {
           workItemId,
-          workName: firstNonEmptyText(card.work_type, matchedRow?.work_name, matchedRow?.work_code, "Р Р°Р±РѕС‚Р°")!,
+          workName: firstNonEmptyText(card.work_type, matchedRow?.work_name, matchedRow?.work_code, "Работа")!,
           workNameSource: card.work_type ? "snapshot" : matchedRow?.work_name ? "snapshot" : "raw_code",
           quantity: Number.isFinite(quantity) ? quantity : null,
           uom: firstNonEmptyText(card.uom, matchedRow?.uom_id),
@@ -145,11 +145,11 @@ export function buildCompatibilityInboxRows(params: {
         },
         location: {
           objectId: firstNonEmpty(matchedRow?.request_id),
-          objectName: firstNonEmptyText(card.object_name, matchedRow?.object_name, "РћР±СЉРµРєС‚")!,
+          objectName: firstNonEmptyText(card.object_name, matchedRow?.object_name, "Объект")!,
           systemName: null,
           zoneName: null,
           floorName: null,
-          locationDisplay: firstNonEmptyText(card.object_name, matchedRow?.object_name, "РћР±СЉРµРєС‚")!,
+          locationDisplay: firstNonEmptyText(card.object_name, matchedRow?.object_name, "Объект")!,
         },
         diagnostics: {
           sourceVersion: "compat:contractor_visibility_recovery_v1",
@@ -212,7 +212,7 @@ export function resolveContractorScreenContract(params: {
       renderState: "error",
       hasCanonicalRows: false,
       hasCompatibilityRows: false,
-      message: "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РЅР°Р·РЅР°С‡РµРЅРЅС‹Рµ РїРѕРґСЂСЏРґРЅС‹Рµ СЂР°Р±РѕС‚С‹.",
+      message: "Не удалось загрузить назначенные подрядные работы.",
     };
   }
 
@@ -223,7 +223,7 @@ export function resolveContractorScreenContract(params: {
       renderState: "error",
       hasCanonicalRows: false,
       hasCompatibilityRows: false,
-      message: "РќРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ РїСЂРѕС„РёР»СЊ РїРѕРґСЂСЏРґС‡РёРєР°. РќР°Р·РЅР°С‡РµРЅРЅС‹Рµ СЂР°Р±РѕС‚С‹ РјРѕРіСѓС‚ Р±С‹С‚СЊ РЅРµРґРѕСЃС‚СѓРїРЅС‹.",
+      message: "Не удалось определить профиль подрядчика. Назначенные работы могут быть недоступны.",
     };
   }
 
@@ -259,7 +259,7 @@ export function resolveContractorScreenContract(params: {
       renderState: "ready_compat_degraded",
       hasCanonicalRows: false,
       hasCompatibilityRows: true,
-      message: "Р Р°Р±РѕС‚С‹ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅС‹ С‡РµСЂРµР· СЃРѕРІРјРµСЃС‚РёРјС‹Р№ РїРѕРґСЂСЏРґРЅС‹Р№ scope. Р”РµС‚Р°Р»Рё РјРѕРіСѓС‚ Р·Р°РіСЂСѓР¶Р°С‚СЊСЃСЏ С‡Р°СЃС‚РёС‡РЅРѕ.",
+      message: "Работы восстановлены через совместимый подрядный scope. Детали могут загружаться частично.",
     };
   }
 
@@ -269,6 +269,6 @@ export function resolveContractorScreenContract(params: {
     renderState: "empty",
     hasCanonicalRows: false,
     hasCompatibilityRows: false,
-    message: "РќРµС‚ РЅР°Р·РЅР°С‡РµРЅРЅС‹С… РїРѕРґСЂСЏРґРЅС‹С… СЂР°Р±РѕС‚.",
+    message: "Нет назначенных подрядных работ.",
   };
 }

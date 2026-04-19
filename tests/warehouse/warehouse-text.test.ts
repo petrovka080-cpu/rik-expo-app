@@ -8,26 +8,26 @@ import {
 
 describe("warehouse visible text", () => {
   it("returns readable warehouse empty-state copy", () => {
-    expect(selectWarehouseIncomingEmptyText()).toBe("РќРµС‚ Р·Р°РїРёСЃРµР№ РІ РѕС‡РµСЂРµРґРё СЃРєР»Р°РґР°.");
+    expect(selectWarehouseIncomingEmptyText()).toBe("Нет записей в очереди склада.");
     expect(selectWarehouseStockUnsupportedText()).toBe(
-      "Р Р°Р·РґРµР» В«РЎРєР»Р°Рґ С„Р°РєС‚В» С‚СЂРµР±СѓРµС‚ view v_warehouse_fact РёР»Рё RPC СЃ С„Р°РєС‚РёС‡РµСЃРєРёРјРё РѕСЃС‚Р°С‚РєР°РјРё.",
+      "Раздел «Склад факт» требует view v_warehouse_fact или RPC с фактическими остатками.",
     );
-    expect(selectWarehouseStockEmptyText()).toBe("РџРѕРєР° РЅРµС‚ РґР°РЅРЅС‹С… РїРѕ СЃРєР»Р°РґСѓ.");
+    expect(selectWarehouseStockEmptyText()).toBe("Пока нет данных по складу.");
   });
 
   it("returns readable issue empty copy for canonical states", () => {
-    expect(selectWarehouseIssueEmptyText(true)).toBe("Р—Р°РіСЂСѓР·РєР°...");
+    expect(selectWarehouseIssueEmptyText(true)).toBe("Загрузка...");
     expect(selectWarehouseIssueEmptyText(false, { publishState: "error" } as never)).toBe(
-      "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ РѕС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РїРѕРІС‚РѕСЂРёС‚СЊ.",
+      "Не удалось обновить очередь выдачи.\nПотяни вниз, чтобы повторить.",
     );
     expect(selectWarehouseIssueEmptyText(false)).toBe(
-      "РќРµС‚ Р·Р°СЏРІРѕРє РґР»СЏ РІС‹РґР°С‡Рё.\nРџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РѕР±РЅРѕРІРёС‚СЊ.",
+      "Нет заявок для выдачи.\nПотяни вниз, чтобы обновить.",
     );
   });
 
   it("returns readable issue banner copy for warehouse failure states", () => {
     expect(selectWarehouseIssueBannerText({ publishState: "error" } as never)).toBe(
-      "РћС‡РµСЂРµРґСЊ РІС‹РґР°С‡Рё РІСЂРµРјРµРЅРЅРѕ РЅРµ РѕР±РЅРѕРІР»РµРЅР°.",
+      "Очередь выдачи временно не обновлена.",
     );
     expect(selectWarehouseIssueBannerText()).toBeNull();
   });

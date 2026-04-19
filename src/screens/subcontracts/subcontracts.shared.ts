@@ -240,7 +240,7 @@ const normalizeSubcontractItemRow = (row: SubcontractItemRow): SubcontractItem =
   created_by: row.created_by ?? null,
   source: normalizeSubcontractItemSource(row.source),
   rik_code: row.rik_code ?? null,
-  name: ru(row.name, "РџРѕР·РёС†РёСЏ"),
+  name: ru(row.name, "Позиция"),
   qty: Number.isFinite(Number(row.qty)) ? Number(row.qty) : 0,
   uom: ruOrNull(row.uom),
   status: normalizeSubcontractItemStatus(row.status),
@@ -478,44 +478,44 @@ const runSubcontractStatusMutation = async (
 };
 
 export const STATUS_CONFIG: Record<SubcontractStatus, { label: string; bg: string; fg: string }> = {
-  draft: { label: "Р§РµСЂРЅРѕРІРёРє", bg: "#E2E8F0", fg: "#475569" },
-  pending: { label: "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё", bg: "#FEF3C7", fg: "#92400E" },
-  approved: { label: "Р’ СЂР°Р±РѕС‚Рµ", bg: "#DCFCE7", fg: "#166534" },
-  rejected: { label: "РћС‚РєР»РѕРЅРµРЅРѕ", bg: "#FEE2E2", fg: "#991B1B" },
-  closed: { label: "Р—Р°РєСЂС‹С‚Р°", bg: "#F1F5F9", fg: "#64748B" },
+  draft: { label: "Черновик", bg: "#E2E8F0", fg: "#475569" },
+  pending: { label: "На утверждении", bg: "#FEF3C7", fg: "#92400E" },
+  approved: { label: "В работе", bg: "#DCFCE7", fg: "#166534" },
+  rejected: { label: "Отклонено", bg: "#FEE2E2", fg: "#991B1B" },
+  closed: { label: "Закрыта", bg: "#F1F5F9", fg: "#64748B" },
 };
 
 export const WORK_MODE_OPTIONS: { value: SubcontractWorkMode; label: string }[] = [
-  { value: "labor_only", label: "РўРѕР»СЊРєРѕ СЂР°Р±РѕС‡РёРµ" },
-  { value: "turnkey", label: "РџРѕРґ РєР»СЋС‡" },
-  { value: "mixed", label: "РЎРјРµС€Р°РЅРЅС‹Р№" },
+  { value: "labor_only", label: "Только рабочие" },
+  { value: "turnkey", label: "Под ключ" },
+  { value: "mixed", label: "Смешанный" },
 ];
 
 export const PRICE_TYPE_OPTIONS: { value: SubcontractPriceType; label: string }[] = [
-  { value: "by_volume", label: "Р—Р° РѕР±СЉС‘Рј" },
-  { value: "by_shift", label: "Р—Р° СЃРјРµРЅСѓ" },
-  { value: "by_hour", label: "Р—Р° С‡Р°СЃ" },
+  { value: "by_volume", label: "За объём" },
+  { value: "by_shift", label: "За смену" },
+  { value: "by_hour", label: "За час" },
 ];
 
 export const WORK_MODE_LABEL: Record<SubcontractWorkMode, string> = {
-  labor_only: "РўРѕР»СЊРєРѕ СЂР°Р±РѕС‡РёРµ",
-  turnkey: "РџРѕРґ РєР»СЋС‡",
-  mixed: "РЎРјРµС€Р°РЅРЅС‹Р№",
+  labor_only: "Только рабочие",
+  turnkey: "Под ключ",
+  mixed: "Смешанный",
 };
 
 export const PRICE_TYPE_LABEL: Record<SubcontractPriceType, string> = {
-  by_volume: "Р—Р° РѕР±СЉС‘Рј",
-  by_shift: "Р—Р° СЃРјРµРЅСѓ",
-  by_hour: "Р—Р° С‡Р°СЃ",
+  by_volume: "За объём",
+  by_shift: "За смену",
+  by_hour: "За час",
 };
 
 export function fmtAmount(v: number | null | undefined): string {
-  if (v == null || !Number.isFinite(Number(v))) return "вЂ”";
+  if (v == null || !Number.isFinite(Number(v))) return "—";
   return Number(v).toLocaleString("ru-RU");
 }
 
 export function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "вЂ”";
+  if (!iso) return "—";
   return new Date(iso).toLocaleDateString("ru-RU");
 }
 
@@ -653,7 +653,7 @@ export async function appendSubcontractItems(
     created_by: createdBy || null,
     source: item.source,
     rik_code: item.rik_code ?? null,
-    name: ru(item.name, "РџРѕР·РёС†РёСЏ"),
+    name: ru(item.name, "Позиция"),
     qty: Number(item.qty) > 0 ? Number(item.qty) : 1,
     uom: ruOrNull(item.uom),
     status: "draft",

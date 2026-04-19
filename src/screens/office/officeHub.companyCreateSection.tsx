@@ -83,7 +83,7 @@ export function OfficeCompanyCreateSection({
           ))}
           <View style={styles.stack}>
             <View style={styles.inline}>
-              <Text style={styles.label}>Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ С‚РµР»РµС„РѕРЅС‹</Text>
+              <Text style={styles.label}>Дополнительные телефоны</Text>
               <Pressable
                 testID="office-add-company-phone"
                 onPress={() =>
@@ -93,14 +93,14 @@ export function OfficeCompanyCreateSection({
                   }))
                 }
               >
-                <Text style={styles.link}>Р”РѕР±Р°РІРёС‚СЊ С‚РµР»РµС„РѕРЅ</Text>
+                <Text style={styles.link}>Добавить телефон</Text>
               </Pressable>
             </View>
             {companyDraft.additionalPhones.map((phone, index) => (
               <View key={`phone-${index}`} style={styles.phoneRow}>
                 <TextInput
                   testID={`office-company-phone-${index}`}
-                  placeholder="Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№ С‚РµР»РµС„РѕРЅ"
+                  placeholder="Дополнительный телефон"
                   placeholderTextColor="#94A3B8"
                   style={[styles.input, styles.phoneInput]}
                   keyboardType="phone-pad"
@@ -125,7 +125,7 @@ export function OfficeCompanyCreateSection({
                     }))
                   }
                 >
-                  <Text style={styles.linkDanger}>РЈР±СЂР°С‚СЊ</Text>
+                  <Text style={styles.linkDanger}>Убрать</Text>
                 </Pressable>
               </View>
             ))}
@@ -146,7 +146,7 @@ export function OfficeCompanyCreateSection({
         <View style={styles.panel}>
           {RULES.map((rule) => (
             <Text key={rule} style={styles.rule}>
-              вЂў {rule}
+              • {rule}
             </Text>
           ))}
         </View>

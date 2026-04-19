@@ -540,7 +540,7 @@ export default function OfficeHubScreen({
     return [data.company.industry, data.company.phone_main, data.company.email]
       .map((value) => String(value || "").trim())
       .filter(Boolean)
-      .join(" вЂў ");
+      .join(" • ");
   }, [data.company]);
   const visibleCompanyDetails = useMemo(
     () => getVisibleCompanyDetails(data.company),
@@ -750,7 +750,7 @@ export default function OfficeHubScreen({
                       ]}
                       accessibilityLabel={COPY.summaryEdit}
                     >
-                      <Text style={styles.editButtonText}>вњЏпёЏ</Text>
+                      <Text style={styles.editButtonText}>✏️</Text>
                     </Pressable>
                   </View>,
                 )}
@@ -935,7 +935,7 @@ export default function OfficeHubScreen({
                             </Text>
                           </View>
                           <View style={styles.handoffCodeBlock}>
-                            <Text style={styles.label}>РљРѕРґ</Text>
+                            <Text style={styles.label}>Код</Text>
                             <Text
                               testID="office-invite-handoff-code"
                               style={styles.handoffCode}
@@ -1168,10 +1168,10 @@ export default function OfficeHubScreen({
                 </Text>
                 <Text style={styles.helper}>{COPY.inviteModalLead}</Text>
                 <View style={styles.stack}>
-                  <Text style={styles.label}>Р¤РРћ СЃРѕС‚СЂСѓРґРЅРёРєР°</Text>
+                  <Text style={styles.label}>ФИО сотрудника</Text>
                   <TextInput
                     testID="office-invite-name"
-                    placeholder="Р¤РРћ СЃРѕС‚СЂСѓРґРЅРёРєР°"
+                    placeholder="ФИО сотрудника"
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     value={invite.inviteDraft.name}
@@ -1181,10 +1181,10 @@ export default function OfficeHubScreen({
                   />
                 </View>
                 <View style={styles.stack}>
-                  <Text style={styles.label}>РўРµР»РµС„РѕРЅ</Text>
+                  <Text style={styles.label}>Телефон</Text>
                   <TextInput
                     testID="office-invite-phone"
-                    placeholder="РўРµР»РµС„РѕРЅ"
+                    placeholder="Телефон"
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     keyboardType="phone-pad"
@@ -1201,7 +1201,7 @@ export default function OfficeHubScreen({
                   <Text style={styles.label}>Email</Text>
                   <TextInput
                     testID="office-invite-email"
-                    placeholder="Email (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)"
+                    placeholder="Email (необязательно)"
                     placeholderTextColor="#94A3B8"
                     style={styles.input}
                     autoCapitalize="none"
@@ -1216,10 +1216,10 @@ export default function OfficeHubScreen({
                   />
                 </View>
                 <View style={styles.stack}>
-                  <Text style={styles.label}>РљРѕРјРјРµРЅС‚Р°СЂРёР№</Text>
+                  <Text style={styles.label}>Комментарий</Text>
                   <TextInput
                     testID="office-invite-comment"
-                    placeholder="РљРѕРјРјРµРЅС‚Р°СЂРёР№ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)"
+                    placeholder="Комментарий (необязательно)"
                     placeholderTextColor="#94A3B8"
                     style={[styles.input, styles.textArea]}
                     multiline
