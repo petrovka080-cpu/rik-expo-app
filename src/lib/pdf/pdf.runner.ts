@@ -37,6 +37,13 @@ type PrepareGeneratedPdfArgs = {
   descriptor: DocumentDescriptor;
 };
 
+type PrepareGeneratedPdfFromDescriptorFactoryArgs = Omit<PrepareGeneratedPdfArgs, "descriptor"> & {
+  createDescriptor: () => Promise<DocumentDescriptor>;
+  router?: PdfViewerRouterLike;
+  /** Called before router.push - use to dismiss native Modals that sit above the navigation Stack. */
+  onBeforeNavigate?: (() => void | Promise<void>) | null;
+};
+
 type PdfSourcePrepareScreen =
   | "foreman"
   | "buyer"
@@ -293,6 +300,50 @@ export async function prepareAndPreviewGeneratedPdf(args: PrepareGeneratedPdfArg
     router: args.router,
     onBeforeNavigate: args.onBeforeNavigate,
   });
+}
+
+const activeGeneratedPreviewDescriptorFactories = new Map<string, Promise<DocumentDescriptor>>();
+
+export async function prepareAndPreviewGeneratedPdfFromDescriptorFactory(
+  args: PrepareGeneratedPdfFromDescriptorFactoryArgs,
+): Promise<DocumentDescriptor> {
+  const flowKey = String(args.key ?? "").trim();
+  const existing = flowKey ? activeGeneratedPreviewDescriptorFactories.get(flowKey) : undefined;
+  if (existing) return await existing;
+
+  const run = async () => {
+    const descriptor = await args.createDescriptor();
+    return await prepareAndPreviewGeneratedPdf({
+      busy: undefined,
+      supabase: args.supabase,
+      key: args.key,
+      label: args.label,
+      descriptor,
+      router: args.router,
+      onBeforeNavigate: args.onBeforeNavigate,
+    });
+  };
+
+  const promise = (async () => {
+    const output = args.busy?.run
+      ? await args.busy.run(run, {
+          key: args.key,
+          label: args.label,
+          minMs: 200,
+        })
+      : await run();
+    if (!output) throw new Error("PDF preparation cancelled");
+    return output;
+  })().finally(() => {
+    if (flowKey && activeGeneratedPreviewDescriptorFactories.get(flowKey) === promise) {
+      activeGeneratedPreviewDescriptorFactories.delete(flowKey);
+    }
+  });
+
+  if (flowKey) {
+    activeGeneratedPreviewDescriptorFactories.set(flowKey, promise);
+  }
+  return await promise;
 }
 
 export async function prepareAndShareGeneratedPdf(

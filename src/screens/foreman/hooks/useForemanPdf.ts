@@ -7,7 +7,7 @@ import type { RequestDetails } from "../../../lib/catalog_api";
 import type { BusyCtx } from "../../../ui/GlobalBusy";
 import { getPdfFlowErrorMessage } from "../../../lib/documents/pdfDocumentActions";
 import {
-  prepareAndPreviewGeneratedPdf,
+  prepareAndPreviewGeneratedPdfFromDescriptorFactory,
   prepareAndShareGeneratedPdf,
 } from "../../../lib/pdf/pdf.runner";
 import { recordCatchDiscipline } from "../../../lib/observability/catchDiscipline";
@@ -31,7 +31,7 @@ export function useForemanPdf(gbusy: BusyCtx) {
       try {
         await syncMeta(ridKey, mode === "share" ? "onPdfShare" : "onPdfExport");
 
-        const descriptor = await buildForemanRequestPdfDescriptor({
+        const createDescriptor = () => buildForemanRequestPdfDescriptor({
           requestId: ridKey,
           generatedBy: requestDetails?.foreman_name ?? null,
           displayNo: requestDetails?.display_no ?? null,
@@ -41,6 +41,7 @@ export function useForemanPdf(gbusy: BusyCtx) {
         });
 
         if (mode === "share") {
+          const descriptor = await createDescriptor();
           await prepareAndShareGeneratedPdf({
             busy: gbusy,
             supabase,
@@ -51,12 +52,12 @@ export function useForemanPdf(gbusy: BusyCtx) {
           return;
         }
 
-        await prepareAndPreviewGeneratedPdf({
+        await prepareAndPreviewGeneratedPdfFromDescriptorFactory({
           busy: gbusy,
           supabase,
           key: `pdf:request:${ridKey}`,
           label: "Открываю PDF…",
-          descriptor,
+          createDescriptor,
           router,
           // XR-PDF: dismiss parent modal before pushing PDF viewer route
           onBeforeNavigate,

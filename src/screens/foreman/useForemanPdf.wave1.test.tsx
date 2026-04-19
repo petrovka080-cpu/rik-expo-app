@@ -7,6 +7,7 @@ import { useForemanPdf } from "./hooks/useForemanPdf";
 
 const mockAlert = jest.fn();
 const mockPrepareAndPreviewGeneratedPdf = jest.fn();
+const mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory = jest.fn();
 const mockPrepareAndShareGeneratedPdf = jest.fn();
 const mockBuildForemanRequestPdfDescriptor = jest.fn();
 const mockRecordCatchDiscipline = jest.fn();
@@ -35,6 +36,8 @@ jest.mock("../../../src/lib/documents/pdfDocumentActions", () => ({
 
 jest.mock("../../../src/lib/pdf/pdf.runner", () => ({
   prepareAndPreviewGeneratedPdf: (...args: unknown[]) => mockPrepareAndPreviewGeneratedPdf(...args),
+  prepareAndPreviewGeneratedPdfFromDescriptorFactory: (...args: unknown[]) =>
+    mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory(...args),
   prepareAndShareGeneratedPdf: (...args: unknown[]) => mockPrepareAndShareGeneratedPdf(...args),
 }));
 
@@ -69,6 +72,7 @@ describe("foreman PDF wave 1 hardening", () => {
   beforeEach(() => {
     mockAlert.mockReset();
     mockPrepareAndPreviewGeneratedPdf.mockReset();
+    mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory.mockReset();
     mockPrepareAndShareGeneratedPdf.mockReset();
     mockBuildForemanRequestPdfDescriptor.mockReset();
     mockRecordCatchDiscipline.mockReset();
@@ -87,7 +91,7 @@ describe("foreman PDF wave 1 hardening", () => {
   });
 
   it("records observability and shows a controlled alert when preview open fails", async () => {
-    mockPrepareAndPreviewGeneratedPdf.mockRejectedValue(new Error("preview blocked"));
+    mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory.mockRejectedValue(new Error("preview blocked"));
 
     let hookApi: HookApi | null = null;
 
@@ -112,9 +116,10 @@ describe("foreman PDF wave 1 hardening", () => {
       );
     });
 
-    expect(mockPrepareAndPreviewGeneratedPdf).toHaveBeenCalledWith(
+    expect(mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory).toHaveBeenCalledWith(
       expect.objectContaining({
         key: "pdf:request:REQ-1",
+        createDescriptor: expect.any(Function),
         label: "Открываю PDF…",
       }),
     );
@@ -126,6 +131,46 @@ describe("foreman PDF wave 1 hardening", () => {
       }),
     );
     expect(mockAlert).toHaveBeenCalledWith("PDF", "preview blocked");
+  });
+
+  it("passes preview descriptor creation into the guarded preview boundary", async () => {
+    mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory.mockResolvedValue(undefined);
+    const syncMeta = jest.fn().mockResolvedValue(undefined);
+    let hookApi: HookApi | null = null;
+
+    await act(async () => {
+      TestRenderer.create(
+        <Harness
+          onReady={(api) => {
+            hookApi = api;
+          }}
+        />,
+      );
+    });
+
+    await act(async () => {
+      await hookApi!.runRequestPdf(
+        "preview",
+        "REQ-2",
+        { foreman_name: "РРІР°РЅ", display_no: "REQ-2" } as never,
+        syncMeta,
+      );
+    });
+
+    expect(syncMeta).toHaveBeenCalledWith("REQ-2", "onPdfExport");
+    expect(mockBuildForemanRequestPdfDescriptor).not.toHaveBeenCalled();
+    const prepareArgs = mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory.mock.calls[0]?.[0] as {
+      createDescriptor: () => Promise<unknown>;
+    };
+    await prepareArgs.createDescriptor();
+    expect(mockBuildForemanRequestPdfDescriptor).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestId: "REQ-2",
+        generatedBy: "РРІР°РЅ",
+        displayNo: "REQ-2",
+      }),
+    );
+    expect(mockPrepareAndPreviewGeneratedPdf).not.toHaveBeenCalled();
   });
 
   it("keeps touched PDF copy readable on active Wave 1 paths", () => {
