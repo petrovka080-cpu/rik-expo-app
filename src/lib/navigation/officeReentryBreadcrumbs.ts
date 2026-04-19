@@ -166,13 +166,37 @@ const OFFICE_POST_RETURN_PROBES: readonly OfficePostReturnProbe[] = [
   "no_focus_post_commit",
 ];
 
-let writeQueue = Promise.resolve();
+export type OfficeBreadcrumbBatcherFlushReason =
+  | "background"
+  | "clear"
+  | "dispose"
+  | "manual"
+  | "route_exit"
+  | "threshold"
+  | "timer";
+
+type OfficeBreadcrumbBatcherSubscription = { remove: () => void };
+
+export type OfficeBreadcrumbBatcherOptions<TEntry> = {
+  batchSize: number;
+  flushIntervalMs: number;
+  writeBatch: (items: TEntry[]) => Promise<void>;
+  shouldFlushAfterItem?: (item: TEntry) => boolean;
+  subscribeToFinalFlush?: (
+    flush: (reason: OfficeBreadcrumbBatcherFlushReason) => void,
+  ) => OfficeBreadcrumbBatcherSubscription | null;
+};
+
+export type OfficeBreadcrumbBatcher<TEntry> = {
+  push: (items: TEntry[]) => Promise<void>;
+  flushNow: (reason?: OfficeBreadcrumbBatcherFlushReason) => Promise<void>;
+  dispose: (reason?: OfficeBreadcrumbBatcherFlushReason) => Promise<void>;
+  getPendingCount: () => number;
+};
+
 let officePostReturnProbe: OfficePostReturnProbe[] = ["all"];
 let pendingOfficeRouteReturnReceipt: Record<string, unknown> | null = null;
 let recentOfficeRouteReturnReceipt: Record<string, unknown> | null = null;
-let pendingBatch: OfficeReentryBreadcrumb[] = [];
-let flushTimer: ReturnType<typeof setTimeout> | null = null;
-let appStateFinalFlushSubscription: { remove: () => void } | null = null;
 
 function trimText(value: unknown) {
   const text = String(value ?? "").trim();
@@ -231,34 +255,6 @@ async function writeRawBreadcrumbs(items: OfficeReentryBreadcrumb[]) {
  * Fix: Collect markers into `pendingBatch`, then flush on bounded policy:
  * 5 entries, 2 seconds, AppState background, or route-exit markers.
  */
-function clearFlushTimer() {
-  if (flushTimer != null) {
-    clearTimeout(flushTimer);
-    flushTimer = null;
-  }
-}
-
-function removeAppStateFinalFlushSubscription() {
-  appStateFinalFlushSubscription?.remove();
-  appStateFinalFlushSubscription = null;
-}
-
-function ensureAppStateFinalFlush() {
-  if (appStateFinalFlushSubscription) return;
-  try {
-    appStateFinalFlushSubscription = AppState.addEventListener(
-      "change",
-      (nextState) => {
-        if (nextState !== "active") {
-          void flushOfficeReentryBreadcrumbWrites();
-        }
-      },
-    );
-  } catch {
-    // Breadcrumb persistence must never destabilize Office navigation.
-  }
-}
-
 function shouldFlushAfterMarker(marker: OfficeReentryMarker) {
   return (
     marker.endsWith("_unmount") ||
@@ -267,51 +263,129 @@ function shouldFlushAfterMarker(marker: OfficeReentryMarker) {
   );
 }
 
-function scheduleTimedFlush() {
-  if (flushTimer != null) return;
-  flushTimer = setTimeout(() => {
-    flushTimer = null;
-    void flushOfficeReentryBreadcrumbWrites();
-  }, BREADCRUMB_FLUSH_INTERVAL_MS);
-  const maybeNodeTimer = flushTimer as { unref?: () => void };
-  maybeNodeTimer.unref?.();
+export function createOfficeBreadcrumbBatcher<TEntry>(
+  options: OfficeBreadcrumbBatcherOptions<TEntry>,
+): OfficeBreadcrumbBatcher<TEntry> {
+  let pendingBatch: TEntry[] = [];
+  let writeQueue = Promise.resolve();
+  let flushTimer: ReturnType<typeof setTimeout> | null = null;
+  let finalFlushSubscription: OfficeBreadcrumbBatcherSubscription | null = null;
+
+  function clearFlushTimer() {
+    if (flushTimer != null) {
+      clearTimeout(flushTimer);
+      flushTimer = null;
+    }
+  }
+
+  function removeFinalFlushSubscription() {
+    finalFlushSubscription?.remove();
+    finalFlushSubscription = null;
+  }
+
+  function ensureFinalFlushSubscription() {
+    if (finalFlushSubscription || !options.subscribeToFinalFlush) return;
+    try {
+      finalFlushSubscription = options.subscribeToFinalFlush((reason) => {
+        void flushNow(reason);
+      });
+    } catch {
+      // Breadcrumb persistence must never destabilize Office navigation.
+    }
+  }
+
+  function scheduleTimedFlush() {
+    if (flushTimer != null) return;
+    flushTimer = setTimeout(() => {
+      flushTimer = null;
+      void flushNow("timer");
+    }, options.flushIntervalMs);
+    const maybeNodeTimer = flushTimer as { unref?: () => void };
+    maybeNodeTimer.unref?.();
+  }
+
+  function flushNow(
+    _reason: OfficeBreadcrumbBatcherFlushReason = "manual",
+  ): Promise<void> {
+    clearFlushTimer();
+    writeQueue = writeQueue
+      .catch(() => undefined)
+      .then(async () => {
+        const batch = pendingBatch;
+        pendingBatch = [];
+        if (!batch.length) return;
+        try {
+          await options.writeBatch(batch);
+        } catch {
+          // A diagnostics flush failure must not poison future Office batches.
+        } finally {
+          if (!pendingBatch.length) {
+            removeFinalFlushSubscription();
+          }
+        }
+      });
+
+    return writeQueue;
+  }
+
+  function push(items: TEntry[]): Promise<void> {
+    if (!items.length) return writeQueue;
+
+    ensureFinalFlushSubscription();
+    pendingBatch.push(...items);
+
+    const shouldFinalFlush = items.some((item) =>
+      options.shouldFlushAfterItem?.(item),
+    );
+    if (shouldFinalFlush || pendingBatch.length >= options.batchSize) {
+      return flushNow(shouldFinalFlush ? "route_exit" : "threshold");
+    }
+
+    scheduleTimedFlush();
+    return writeQueue;
+  }
+
+  async function dispose(
+    reason: OfficeBreadcrumbBatcherFlushReason = "dispose",
+  ): Promise<void> {
+    clearFlushTimer();
+    await flushNow(reason);
+    removeFinalFlushSubscription();
+  }
+
+  return {
+    dispose,
+    flushNow,
+    getPendingCount: () => pendingBatch.length,
+    push,
+  };
 }
 
-export function flushOfficeReentryBreadcrumbWrites() {
-  clearFlushTimer();
-  writeQueue = writeQueue
-    .catch(() => undefined)
-    .then(async () => {
-      const batch = pendingBatch;
-      pendingBatch = [];
-      if (!batch.length) return;
+const officeBreadcrumbBatcher =
+  createOfficeBreadcrumbBatcher<OfficeReentryBreadcrumb>({
+    batchSize: BREADCRUMB_BATCH_SIZE,
+    flushIntervalMs: BREADCRUMB_FLUSH_INTERVAL_MS,
+    shouldFlushAfterItem: (entry) => shouldFlushAfterMarker(entry.marker),
+    subscribeToFinalFlush: (flush) =>
+      AppState.addEventListener("change", (nextState) => {
+        if (nextState !== "active") {
+          flush("background");
+        }
+      }),
+    writeBatch: async (batch) => {
       const current = await readRawBreadcrumbs();
       current.push(...batch);
       await writeRawBreadcrumbs(current);
-      if (!pendingBatch.length) {
-        removeAppStateFinalFlushSubscription();
-      }
-    });
+    },
+  });
 
-  return writeQueue;
+export function flushOfficeReentryBreadcrumbWrites() {
+  return officeBreadcrumbBatcher.flushNow();
 }
 
 function enqueueWrite(inputs: OfficeReentryBreadcrumbInput[]) {
   const entries = inputs.map(normalizeEntry);
-  if (!entries.length) return writeQueue;
-
-  ensureAppStateFinalFlush();
-  pendingBatch.push(...entries);
-
-  const shouldFinalFlush = entries.some((entry) =>
-    shouldFlushAfterMarker(entry.marker),
-  );
-  if (shouldFinalFlush || pendingBatch.length >= BREADCRUMB_BATCH_SIZE) {
-    return flushOfficeReentryBreadcrumbWrites();
-  }
-
-  scheduleTimedFlush();
-  return writeQueue;
+  return officeBreadcrumbBatcher.push(entries);
 }
 
 export function recordOfficeReentryBreadcrumbs(
@@ -1234,10 +1308,7 @@ export async function getOfficeReentryBreadcrumbs() {
 }
 
 export async function clearOfficeReentryBreadcrumbs() {
-  clearFlushTimer();
-  pendingBatch = [];
-  removeAppStateFinalFlushSubscription();
-  await writeQueue.catch(() => undefined);
+  await officeBreadcrumbBatcher.dispose("clear");
   try {
     await AsyncStorage.removeItem(OFFICE_REENTRY_BREADCRUMBS_KEY);
   } catch {

@@ -6,6 +6,7 @@ import {
   clearOfficeReentryBreadcrumbs,
   clearPendingOfficeRouteReturnReceipt,
   consumePendingOfficeRouteReturnReceipt,
+  createOfficeBreadcrumbBatcher,
   flushOfficeReentryBreadcrumbWrites,
   getOfficeReentryBreadcrumbs,
   markPendingOfficeRouteReturnReceipt,
@@ -111,6 +112,73 @@ describe("office reentry breadcrumbs", () => {
     await flushOfficeReentryBreadcrumbWrites();
     jest.useRealTimers();
     await clearOfficeReentryBreadcrumbs();
+  });
+
+  it("exposes a permanent controller API that batches in order", async () => {
+    const writes: string[][] = [];
+    const batcher = createOfficeBreadcrumbBatcher<string>({
+      batchSize: 5,
+      flushIntervalMs: 2_000,
+      writeBatch: async (items) => {
+        writes.push([...items]);
+      },
+    });
+
+    await batcher.push(["one", "two", "three", "four"]);
+    expect(writes).toEqual([]);
+    expect(batcher.getPendingCount()).toBe(4);
+
+    await batcher.push(["five"]);
+    expect(writes).toEqual([["one", "two", "three", "four", "five"]]);
+    expect(batcher.getPendingCount()).toBe(0);
+  });
+
+  it("flushes controller batches by timer and dispose without duplication", async () => {
+    jest.useFakeTimers();
+    const writes: string[][] = [];
+    const batcher = createOfficeBreadcrumbBatcher<string>({
+      batchSize: 5,
+      flushIntervalMs: 2_000,
+      writeBatch: async (items) => {
+        writes.push([...items]);
+      },
+    });
+
+    await batcher.push(["timer"]);
+    await jest.advanceTimersByTimeAsync(1_999);
+    expect(writes).toEqual([]);
+
+    await jest.advanceTimersByTimeAsync(1);
+    expect(writes).toEqual([["timer"]]);
+
+    await batcher.push(["dispose"]);
+    await batcher.dispose();
+    await batcher.flushNow();
+    expect(writes).toEqual([["timer"], ["dispose"]]);
+    expect(batcher.getPendingCount()).toBe(0);
+  });
+
+  it("keeps later controller batches writable after a flush failure", async () => {
+    const attempts: string[][] = [];
+    const batcher = createOfficeBreadcrumbBatcher<string>({
+      batchSize: 2,
+      flushIntervalMs: 2_000,
+      writeBatch: async (items) => {
+        attempts.push([...items]);
+        if (attempts.length === 1) {
+          throw new Error("storage unavailable");
+        }
+      },
+    });
+
+    await expect(batcher.push(["failed", "batch"])).resolves.toBeUndefined();
+    await expect(batcher.push(["next", "batch"])).resolves.toBeUndefined();
+
+    expect(attempts).toEqual([
+      ["failed", "batch"],
+      ["next", "batch"],
+    ]);
+    expect(batcher.getPendingCount()).toBe(0);
   });
 
   it("batches 1-4 breadcrumb writes until the timer or manual flush", async () => {
