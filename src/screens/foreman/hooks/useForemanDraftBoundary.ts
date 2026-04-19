@@ -93,6 +93,14 @@ import {
   resolveForemanTerminalRecoveryCleanupDecision,
 } from "../foreman.draftRecovery.model";
 import {
+  canEditForemanRequestItem,
+  normalizeForemanDraftOwnerId,
+  planForemanItemsLoadEffect,
+  planForemanRemoteDetailsLoadEffect,
+  resolveForemanDraftQueueKey,
+  resolveForemanDraftQueueKeys,
+} from "../foreman.draftBoundaryIdentity.model";
+import {
   type ForemanDraftRestoreTriggerPlan,
   getForemanBootstrapReconciliationRequestId,
   planForemanAppActiveRestoreTrigger,
@@ -156,8 +164,6 @@ type ForemanDraftSyncResultPayload = {
 
 const createEphemeralForemanDraftOwnerId = () =>
   `fdo-boundary-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-
-const normalizeDraftOwnerId = (value: string | null | undefined) => String(value || "").trim();
 
 export function useForemanDraftBoundary({
   isScreenFocused,
@@ -226,7 +232,7 @@ export function useForemanDraftBoundary({
   }, [localDraftSnapshot]);
 
   const setActiveDraftOwnerId = useCallback((ownerId?: string | null, options?: { resetSubmitted?: boolean }) => {
-    const nextOwnerId = normalizeDraftOwnerId(ownerId) || createEphemeralForemanDraftOwnerId();
+    const nextOwnerId = normalizeForemanDraftOwnerId(ownerId) || createEphemeralForemanDraftOwnerId();
     if (options?.resetSubmitted) {
       lastSubmittedOwnerIdRef.current = null;
     }
@@ -241,24 +247,24 @@ export function useForemanDraftBoundary({
 
   const getDraftQueueKey = useCallback(
     (snapshot?: ForemanLocalDraftSnapshot | null, fallbackRequestId?: string | null) => {
-      const snapshotRequestId = ridStr(snapshot?.requestId);
-      const currentRequestId = ridStr(fallbackRequestId ?? requestId);
-      return snapshotRequestId || currentRequestId || FOREMAN_LOCAL_ONLY_REQUEST_ID;
+      return resolveForemanDraftQueueKey({
+        snapshot,
+        fallbackRequestId,
+        activeRequestId: requestId,
+        localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      });
     },
     [requestId],
   );
 
   const getDraftQueueKeys = useCallback(
     (snapshot?: ForemanLocalDraftSnapshot | null, fallbackRequestId?: string | null) => {
-      const snapshotRequestId = ridStr(snapshot?.requestId);
-      const currentRequestId = ridStr(fallbackRequestId ?? requestId);
-      if (snapshotRequestId) {
-        return [snapshotRequestId, FOREMAN_LOCAL_ONLY_REQUEST_ID];
-      }
-      if (currentRequestId) {
-        return [currentRequestId, FOREMAN_LOCAL_ONLY_REQUEST_ID];
-      }
-      return [FOREMAN_LOCAL_ONLY_REQUEST_ID];
+      return resolveForemanDraftQueueKeys({
+        snapshot,
+        fallbackRequestId,
+        activeRequestId: requestId,
+        localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      });
     },
     [requestId],
   );
@@ -451,13 +457,14 @@ export function useForemanDraftBoundary({
 
   const canEditRequestItem = useCallback(
     (row?: ReqItemRow | null) => {
-      if (!row) return false;
-      const activeRequestId = String(requestDetails?.id ?? "").trim();
-      const localRequestId = String(requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID).trim();
-      if (!isDraftActive) return false;
-      const itemRequest = String(row.request_id ?? "").trim();
-      if (activeRequestId && itemRequest === activeRequestId && isDraftLikeStatus(requestDetails?.status)) return true;
-      return itemRequest === localRequestId || itemRequest === FOREMAN_LOCAL_ONLY_REQUEST_ID;
+      return canEditForemanRequestItem({
+        row,
+        isDraftActive,
+        activeRequestDetailsId: requestDetails?.id,
+        activeRequestStatusIsDraftLike: isDraftLikeStatus(requestDetails?.status),
+        requestId,
+        localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      });
     },
     [isDraftActive, requestDetails?.id, requestDetails?.status, requestId],
   );
@@ -1711,21 +1718,29 @@ export function useForemanDraftBoundary({
   }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, runRestoreTriggerPlan]);
 
   useEffect(() => {
-    if (!boundaryState.bootstrapReady || !requestId || skipRemoteDraftEffects) return;
-    const rid = ridStr(requestId);
-    if (!rid) return;
-    if (skipRemoteHydrationRequestIdRef.current === rid) return;
-    void preloadDisplayNo(rid);
-    void loadDetails(rid);
+    const plan = planForemanRemoteDetailsLoadEffect({
+      bootstrapReady: boundaryState.bootstrapReady,
+      requestId,
+      skipRemoteDraftEffects,
+      skipRemoteHydrationRequestId: skipRemoteHydrationRequestIdRef.current,
+    });
+    if (plan.action !== "load") return;
+    void preloadDisplayNo(plan.requestId);
+    void loadDetails(plan.requestId);
   }, [boundaryState.bootstrapReady, loadDetails, preloadDisplayNo, requestId, skipRemoteDraftEffects]);
 
   useEffect(() => {
-    if (!boundaryState.bootstrapReady || skipRemoteDraftEffects) return;
-    const rid = ridStr(requestId);
-    if (rid && skipRemoteHydrationRequestIdRef.current === rid) {
+    const plan = planForemanItemsLoadEffect({
+      bootstrapReady: boundaryState.bootstrapReady,
+      requestId,
+      skipRemoteDraftEffects,
+      skipRemoteHydrationRequestId: skipRemoteHydrationRequestIdRef.current,
+    });
+    if (plan.action === "clear_skip_remote_hydration") {
       skipRemoteHydrationRequestIdRef.current = null;
       return;
     }
+    if (plan.action !== "load_items") return;
     void loadItems();
   }, [boundaryState.bootstrapReady, loadItems, requestId, skipRemoteDraftEffects]);
 
