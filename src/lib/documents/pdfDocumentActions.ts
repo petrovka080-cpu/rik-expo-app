@@ -40,6 +40,7 @@ import {
   resolvePdfDocumentOpenFlowCleanupPlan,
   resolvePdfDocumentOpenFlowStartPlan,
 } from "./pdfDocumentOpenFlowPlan";
+import { resolvePdfDocumentPreviewSessionPlan } from "./pdfDocumentPreviewSessionPlan";
 export function getPdfFlowErrorMessage(
   error: unknown,
   fallback = "Не удалось открыть PDF",
@@ -71,9 +72,11 @@ function canUseInMemoryRemoteViewerShortcut(
   hasRouter: boolean,
 ) {
   return (
-    hasRouter &&
-    Platform.OS === "android" &&
-    doc.fileSource.kind === "remote-url"
+    resolvePdfDocumentPreviewSessionPlan({
+      platform: Platform.OS,
+      sourceKind: doc.fileSource.kind,
+      hasRouter,
+    }).action === "use_in_memory_remote_session"
   );
 }
 function toSafeRouteParam(value: unknown) {

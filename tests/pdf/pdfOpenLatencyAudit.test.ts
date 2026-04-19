@@ -117,6 +117,11 @@ describe("L-PERF: critical path contract preserved", () => {
   it("activePreviewFlows dedup guard is still present", () => {
     expect(actionsSource).toContain("activePreviewFlows");
   });
+
+  it("delegates mobile remote preview session strategy to a pure plan", () => {
+    expect(actionsSource).toContain("resolvePdfDocumentPreviewSessionPlan");
+    expect(actionsSource).not.toContain('Platform.OS === "android" &&\n    doc.fileSource.kind');
+  });
 });
 
 describe("L-PERF-S: materialization breadcrumbs are fire-and-forget", () => {

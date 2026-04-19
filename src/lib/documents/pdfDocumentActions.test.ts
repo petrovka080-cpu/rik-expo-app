@@ -350,48 +350,32 @@ describe("pdfDocumentActions", () => {
     ).toBe(true);
   });
 
-  it("materializes iOS remote PDFs before routing to the in-app viewer", async () => {
+  it("routes iOS remote PDFs directly through the shared viewer contract without pre-route download", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       value: "ios",
     });
     const push = jest.fn();
-    mockCreateDocumentPreviewSession.mockResolvedValueOnce({
-      session: {
-        sessionId: "session-ios-1",
-        assetId: "asset-ios-1",
-        status: "ready",
-        createdAt: "2026-04-08T10:00:00.000Z",
-      },
-      asset: {
-        assetId: "asset-ios-1",
-        uri: "file:///cache/materialized.pdf",
-        fileSource: {
-          kind: "local-file",
-          uri: "file:///cache/materialized.pdf",
-        },
-        sourceKind: "local-file",
-        fileName: "payment.pdf",
-        title: "Payment PDF",
-        mimeType: "application/pdf",
-        documentType: "payment_order",
-        originModule: "accountant",
-        source: "generated",
-        createdAt: "2026-04-08T10:00:00.000Z",
-      },
-    });
 
     await previewPdfDocument(baseDocument, {
       router: { push },
     });
 
-    expect(mockCreateInMemoryDocumentPreviewSession).not.toHaveBeenCalled();
-    expect(mockCreateDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
-    expect(mockRootRouterPush).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-ios-1&openToken=");
+    expect(mockCreateDocumentPreviewSession).not.toHaveBeenCalled();
+    expect(mockCreateInMemoryDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
+    expect(mockRootRouterPush).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-direct-1&openToken=");
     expect(mockRootRouterReplace).not.toHaveBeenCalled();
     expect(push).not.toHaveBeenCalled();
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
     expect(mockOpenPdfShare).not.toHaveBeenCalled();
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.event === "pdf_preview_open"
+          && event.result === "success"
+          && event.extra?.previewSourceMode === "direct_remote_viewer_session_contract",
+      ),
+    ).toBe(true);
   });
 
   it("keeps busy active until first open visible and coalesces duplicate taps into one PDF open flow", async () => {
@@ -746,6 +730,14 @@ describe("pdfDocumentActions", () => {
       value: "ios",
     });
     const push = jest.fn();
+    const localDocument = {
+      ...baseDocument,
+      uri: "file:///cache/huge.pdf",
+      fileSource: {
+        kind: "local-file" as const,
+        uri: "file:///cache/huge.pdf",
+      },
+    };
     mockCreateDocumentPreviewSession.mockResolvedValueOnce({
       session: {
         sessionId: "session-oversize-1",
@@ -773,7 +765,7 @@ describe("pdfDocumentActions", () => {
     });
 
     await expect(
-      previewPdfDocument(baseDocument, { router: { push } }),
+      previewPdfDocument(localDocument, { router: { push } }),
     ).rejects.toThrow("PDF file too large for iOS preview");
 
     // Viewer route must NOT be pushed
@@ -798,6 +790,14 @@ describe("pdfDocumentActions", () => {
       value: "ios",
     });
     const push = jest.fn();
+    const localDocument = {
+      ...baseDocument,
+      uri: "file:///cache/normal.pdf",
+      fileSource: {
+        kind: "local-file" as const,
+        uri: "file:///cache/normal.pdf",
+      },
+    };
     mockCreateDocumentPreviewSession.mockResolvedValueOnce({
       session: {
         sessionId: "session-normal-1",
@@ -824,7 +824,7 @@ describe("pdfDocumentActions", () => {
       },
     });
 
-    await previewPdfDocument(baseDocument, { router: { push } });
+    await previewPdfDocument(localDocument, { router: { push } });
 
     // Viewer route MUST be pushed on iOS
     expect(mockRootRouterPush).toHaveBeenCalledTimes(1);
