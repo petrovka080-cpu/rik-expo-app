@@ -20,7 +20,6 @@ import {
 } from "expo-router";
 
 import RoleScreenLayout from "../../components/layout/RoleScreenLayout";
-import { buildAppAccessModel } from "../../lib/appAccessModel";
 import {
   clearDeveloperEffectiveRole,
   DEVELOPER_OVERRIDE_ROLES,
@@ -49,12 +48,7 @@ import {
   type OfficePostReturnSubtree,
 } from "../../lib/navigation/officeReentryBreadcrumbs";
 import { getProfileRoleLabel } from "../profile/profile.helpers";
-import {
-  buildOfficeAccessEntryCopy,
-  canManageOfficeCompanyAccess,
-  filterOfficeWorkspaceCards,
-  
-} from "./officeAccess.model";
+import type { OfficeWorkspaceCard } from "./officeAccess.model";
 import {
   loadOfficeAccessScreenData,
 } from "./officeAccess.services";
@@ -74,34 +68,25 @@ import {
 } from "./officeHubBootstrapSnapshot";
 import {
   type SectionKey,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  type PostReturnSectionKey,
-  type CompanyPostReturnSectionKey,
   type LoadScreenMode,
-  
   EMPTY_DATA,
   COPY,
-  getVisibleCompanyDetails,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getPostReturnSections,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  shouldRenderCompanySection,
-  getVisiblePostReturnSections,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  formatDate,
 } from "./officeHub.constants";
-import {
-  DirectionCard,
-  InviteCard,
-  MemberCard,
-  OfficeCompanyCreateSection,
-} from "./officeHub.sections";
 import {
   isWarehouseOfficeReturnReceipt,
   OfficePostReturnSubtreeBoundary,
   type OfficeHubScreenProps,
 } from "./officeHub.helpers";
+import {
+  OfficeCompanyDetailsSection,
+  OfficeCompanySummarySection,
+  OfficeHubCompanyCreateRootSection,
+  OfficeInvitesSection,
+  OfficeMembersSection,
+  OfficeRoleDirectionsSection,
+} from "./officeHub.sections";
 import { styles } from "./officeHub.styles";
+import { useOfficeHubRoleAccess } from "./useOfficeHubRoleAccess";
 import { useOfficePostReturnTracing } from "./useOfficePostReturnTracing";
 
 export { __resetOfficeHubBootstrapSnapshotForTests } from "./officeHubBootstrapSnapshot";
@@ -469,95 +454,8 @@ export default function OfficeHubScreen({
     ]),
   );
 
-  const accessModel = useMemo(
-    () => buildAppAccessModel(data.accessSourceSnapshot),
-    [data.accessSourceSnapshot],
-  );
+  const access = useOfficeHubRoleAccess(data, activePostReturnProbe);
 
-  const entryCopy = useMemo(
-    () =>
-      buildOfficeAccessEntryCopy({
-        hasOfficeAccess: accessModel.hasOfficeAccess,
-        hasCompanyContext: accessModel.hasCompanyContext,
-      }),
-    [accessModel.hasCompanyContext, accessModel.hasOfficeAccess],
-  );
-
-  const officeRoles = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          [...accessModel.availableOfficeRoles, data.companyAccessRole]
-            .filter((role): role is string => Boolean(role))
-            .map((role) => String(role).trim().toLowerCase()),
-        ),
-      ),
-    [accessModel.availableOfficeRoles, data.companyAccessRole],
-  );
-
-  const canManageCompany = useMemo(
-    () =>
-      canManageOfficeCompanyAccess({
-        currentUserId: data.currentUserId,
-        companyOwnerUserId: data.company?.owner_user_id,
-        companyAccessRole: data.companyAccessRole,
-        availableOfficeRoles: officeRoles,
-      }),
-    [
-      data.currentUserId,
-      data.company?.owner_user_id,
-      data.companyAccessRole,
-      officeRoles,
-    ],
-  );
-
-  const officeCards = useMemo(
-    () =>
-      filterOfficeWorkspaceCards({
-        availableOfficeRoles: officeRoles,
-        includeDirectorOwnedDirections: canManageCompany,
-      }),
-    [canManageCompany, officeRoles],
-  );
-
-  const roleLabel = useMemo(
-    () =>
-      getProfileRoleLabel(
-        data.companyAccessRole ||
-          accessModel.activeOfficeRole ||
-          data.profileRole,
-      ),
-    [accessModel.activeOfficeRole, data.companyAccessRole, data.profileRole],
-  );
-
-  const accessStatus = accessModel.hasOfficeAccess
-    ? { label: COPY.accessReady, tone: "success" as const }
-    : data.company
-      ? { label: COPY.accessPending, tone: "warning" as const }
-      : { label: COPY.accessClosed, tone: "neutral" as const };
-  const summaryMeta = useMemo(() => {
-    if (!data.company) return "";
-    return [data.company.industry, data.company.phone_main, data.company.email]
-      .map((value) => String(value || "").trim())
-      .filter(Boolean)
-      .join(" • ");
-  }, [data.company]);
-  const visibleCompanyDetails = useMemo(
-    () => getVisibleCompanyDetails(data.company),
-    [data.company],
-  );
-  const visiblePostReturnSections = useMemo(
-    () => new Set(getVisiblePostReturnSections(data, activePostReturnProbe)),
-    [activePostReturnProbe, data],
-  );
-  const visibleRoleLabel =
-    roleLabel && roleLabel !== COPY.noRole ? roleLabel : null;
-
-  const shouldRenderCompanyPostReturnSection = useCallback(
-    (section: CompanyPostReturnSectionKey) =>
-      visiblePostReturnSections.has(section),
-    [visiblePostReturnSections],
-  );
 
   const renderSubtreeBoundary = useCallback(
     (subtree: OfficePostReturnSubtree, children: React.ReactNode) => (
@@ -578,6 +476,15 @@ export default function OfficeHubScreen({
       animated: true,
     });
   }, []);
+
+  const handleOpenOfficeCard = useCallback(
+    (card: OfficeWorkspaceCard) => {
+      if (card.route) {
+        router.push(card.route as Href);
+      }
+    },
+    [router],
+  );
 
   const company = useOfficeCompanySection({
     profile: data.profile,
@@ -651,8 +558,8 @@ export default function OfficeHubScreen({
   return (
     <RoleScreenLayout
       style={styles.screen}
-      title={entryCopy.title}
-      subtitle={data.company ? undefined : entryCopy.subtitle}
+      title={access.entryCopy.title}
+      subtitle={data.company ? undefined : access.entryCopy.subtitle}
       contentStyle={styles.fill}
     >
       <ScrollView
@@ -728,412 +635,49 @@ export default function OfficeHubScreen({
 
         {data.company ? (
           <>
-            {shouldRenderCompanyPostReturnSection("summary") ? (
-              <View
-                testID="office-summary"
-                style={styles.summary}
-                onLayout={handleSectionLayout("summary")}
-              >
-                {renderSubtreeBoundary(
-                  "summary_header",
-                  <View
-                    style={styles.summaryHeader}
-                    onLayout={handleSubtreeLayout("summary_header")}
-                  >
-                    <Text style={styles.eyebrow}>{COPY.summaryTitle}</Text>
-                    <Pressable
-                      testID="office-company-edit"
-                      onPress={company.handleEditCompany}
-                      style={({ pressed }) => [
-                        styles.editButton,
-                        pressed && styles.pressed,
-                      ]}
-                      accessibilityLabel={COPY.summaryEdit}
-                    >
-                      <Text style={styles.editButtonText}>✏️</Text>
-                    </Pressable>
-                  </View>,
-                )}
-                <Text style={styles.company}>{data.company.name}</Text>
-                {summaryMeta
-                  ? renderSubtreeBoundary(
-                      "summary_meta",
-                      <Text
-                        style={styles.summaryMeta}
-                        onLayout={handleSubtreeLayout("summary_meta")}
-                      >
-                        {summaryMeta}
-                      </Text>,
-                    )
-                  : null}
-                {renderSubtreeBoundary(
-                  "summary_badges",
-                  <View
-                    style={styles.summaryBadges}
-                    onLayout={handleSubtreeLayout("summary_badges")}
-                  >
-                    {visibleRoleLabel ? (
-                      <View
-                        style={[styles.summaryBadge, styles.summaryBadgeRole]}
-                      >
-                        <Text style={styles.summaryBadgeText}>
-                          {visibleRoleLabel}
-                        </Text>
-                      </View>
-                    ) : null}
-                    <View
-                      style={[
-                        styles.summaryBadge,
-                        accessStatus.tone === "success" &&
-                          styles.summaryBadgeSuccess,
-                        accessStatus.tone === "warning" &&
-                          styles.summaryBadgeWarning,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.summaryBadgeText,
-                          accessStatus.tone === "success" &&
-                            styles.summaryBadgeTextSuccess,
-                          accessStatus.tone === "warning" &&
-                            styles.summaryBadgeTextWarning,
-                        ]}
-                      >
-                        {accessStatus.label}
-                      </Text>
-                    </View>
-                  </View>,
-                )}
-              </View>
-            ) : null}
-
-            {shouldRenderCompanyPostReturnSection("directions") ? (
-              <View
-                testID="office-section-directions"
-                style={styles.section}
-                onLayout={handleSectionLayout("directions")}
-              >
-                <Text style={styles.sectionTitle}>{COPY.directionsTitle}</Text>
-                {renderSubtreeBoundary(
-                  "directions_cards",
-                  officeCards.length > 0 ? (
-                    <View
-                      style={styles.grid}
-                      onLayout={handleSubtreeLayout("directions_cards")}
-                    >
-                      {officeCards.map((card) => (
-                        <DirectionCard
-                          key={card.key}
-                          card={card}
-                          canInvite={canManageCompany}
-                          onOpen={() =>
-                            card.route && router.push(card.route as Href)
-                          }
-                          onInvite={() => invite.openInviteModal(card)}
-                        />
-                      ))}
-                    </View>
-                  ) : (
-                    <View
-                      style={styles.panel}
-                      onLayout={handleSubtreeLayout("directions_cards")}
-                    >
-                      <Text style={styles.helper}>{COPY.noDirections}</Text>
-                    </View>
-                  ),
-                )}
-              </View>
-            ) : null}
-
-            {shouldRenderCompanyPostReturnSection("company_details") &&
-            visibleCompanyDetails.length > 0 ? (
-              <View
-                testID="office-section-company-details"
-                style={styles.section}
-                onLayout={handleSectionLayout("company_details", "company")}
-              >
-                <Text style={styles.sectionTitle}>
-                  {COPY.companyDetailsTitle}
-                </Text>
-                {renderSubtreeBoundary(
-                  "company_details_rows",
-                  <View
-                    style={styles.panel}
-                    onLayout={handleSubtreeLayout("company_details_rows")}
-                  >
-                    {visibleCompanyDetails.map((item, index) => (
-                      <View
-                        key={item.label}
-                        style={
-                          index === visibleCompanyDetails.length - 1
-                            ? styles.rowLast
-                            : styles.row
-                        }
-                      >
-                        <Text style={styles.label}>{item.label}</Text>
-                        <Text style={styles.value}>{item.value}</Text>
-                      </View>
-                    ))}
-                  </View>,
-                )}
-              </View>
-            ) : null}
-
-            {shouldRenderCompanyPostReturnSection("invites") ? (
-              <View
-                testID="office-section-invites"
-                style={styles.section}
-                onLayout={handleSectionLayout("invites", "invites")}
-              >
-                <Text style={styles.sectionTitle}>{COPY.invitesTitle}</Text>
-                {invite.inviteFeedback ? (
-                  <View style={styles.notice}>
-                    <Text
-                      testID="office-invite-feedback"
-                      style={styles.noticeText}
-                    >
-                      {invite.inviteFeedback}
-                    </Text>
-                  </View>
-                ) : null}
-                {invite.inviteHandoff
-                  ? renderSubtreeBoundary(
-                      "invites_handoff",
-                      <View
-                        testID="office-invite-handoff"
-                        style={styles.handoff}
-                        onLayout={handleSubtreeLayout("invites_handoff")}
-                      >
-                        <Text style={styles.eyebrow}>
-                          {COPY.inviteHandoffTitle}
-                        </Text>
-                        <Text
-                          testID="office-invite-handoff-role"
-                          style={styles.handoffTitle}
-                        >
-                          {invite.inviteHandoff.roleLabel}
-                        </Text>
-                        <Text style={styles.helper}>
-                          {COPY.inviteHandoffLead}
-                        </Text>
-                        <View style={styles.panel}>
-                          <View style={styles.row}>
-                            <Text style={styles.label}>
-                              {COPY.summaryTitle}
-                            </Text>
-                            <Text
-                              testID="office-invite-handoff-company"
-                              style={styles.value}
-                            >
-                              {invite.inviteHandoff.companyName}
-                            </Text>
-                          </View>
-                          <View style={styles.row}>
-                            <Text style={styles.label}>{COPY.summaryRole}</Text>
-                            <Text style={styles.value}>
-                              {invite.inviteHandoff.roleLabel}
-                            </Text>
-                          </View>
-                          <View style={styles.handoffCodeBlock}>
-                            <Text style={styles.label}>Код</Text>
-                            <Text
-                              testID="office-invite-handoff-code"
-                              style={styles.handoffCode}
-                            >
-                              {invite.inviteHandoff.inviteCode}
-                            </Text>
-                          </View>
-                          <View style={styles.rowLast}>
-                            <Text style={styles.label}>
-                              {COPY.inviteHandoffInstruction}
-                            </Text>
-                            <Text style={styles.value}>
-                              {invite.inviteHandoff.instruction}
-                            </Text>
-                          </View>
-                        </View>
-                        {invite.inviteHandoffFeedback ? (
-                          <View style={styles.noticeSoft}>
-                            <Text
-                              testID="office-invite-handoff-feedback"
-                              style={styles.noticeSoftText}
-                            >
-                              {invite.inviteHandoffFeedback}
-                            </Text>
-                          </View>
-                        ) : null}
-                        <View style={styles.actionGrid}>
-                          <Pressable
-                            testID="office-invite-copy-code"
-                            onPress={() =>
-                              void invite.handleCopyInvite(
-                                invite.inviteHandoff.inviteCode,
-                                COPY.inviteCodeCopied,
-                              )
-                            }
-                            style={[styles.secondary, styles.actionButton]}
-                          >
-                            <Text
-                              style={[
-                                styles.secondaryText,
-                                styles.actionButtonText,
-                              ]}
-                            >
-                              {COPY.inviteCopyCode}
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            testID="office-invite-copy-message"
-                            onPress={() =>
-                              void invite.handleCopyInvite(
-                                invite.inviteHandoff.message,
-                                COPY.inviteMessageCopied,
-                              )
-                            }
-                            style={[styles.secondary, styles.actionButton]}
-                          >
-                            <Text
-                              style={[
-                                styles.secondaryText,
-                                styles.actionButtonText,
-                              ]}
-                            >
-                              {COPY.inviteCopyMessage}
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            testID="office-invite-open-whatsapp"
-                            onPress={() =>
-                              void invite.handleOpenInviteChannel(
-                                invite.inviteHandoff.whatsappUrl,
-                              )
-                            }
-                            style={[styles.secondary, styles.actionButton]}
-                          >
-                            <Text
-                              style={[
-                                styles.secondaryText,
-                                styles.actionButtonText,
-                              ]}
-                            >
-                              {COPY.inviteOpenWhatsapp}
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            testID="office-invite-open-telegram"
-                            onPress={() =>
-                              void invite.handleOpenInviteChannel(
-                                invite.inviteHandoff.telegramUrl,
-                              )
-                            }
-                            style={[styles.secondary, styles.actionButton]}
-                          >
-                            <Text
-                              style={[
-                                styles.secondaryText,
-                                styles.actionButtonText,
-                              ]}
-                            >
-                              {COPY.inviteOpenTelegram}
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            testID="office-invite-open-email"
-                            onPress={() =>
-                              void invite.handleOpenInviteChannel(
-                                invite.inviteHandoff.emailUrl,
-                              )
-                            }
-                            style={[styles.secondary, styles.actionButton]}
-                          >
-                            <Text
-                              style={[
-                                styles.secondaryText,
-                                styles.actionButtonText,
-                              ]}
-                            >
-                              {COPY.inviteOpenEmail}
-                            </Text>
-                          </Pressable>
-                        </View>
-                      </View>,
-                    )
-                  : null}
-                {!canManageCompany ? (
-                  <View style={styles.panel}>
-                    <Text style={styles.helper}>{COPY.invitesManageHint}</Text>
-                  </View>
-                ) : null}
-                {renderSubtreeBoundary(
-                  "invites_list",
-                  data.invites.length > 0 ? (
-                    <View
-                      style={styles.stack}
-                      onLayout={handleSubtreeLayout("invites_list")}
-                    >
-                      {data.invites.map((invite) => (
-                        <InviteCard key={invite.id} invite={invite} />
-                      ))}
-                    </View>
-                  ) : (
-                    <View
-                      style={styles.panel}
-                      onLayout={handleSubtreeLayout("invites_list")}
-                    >
-                      <Text style={styles.helper}>{COPY.noInvites}</Text>
-                    </View>
-                  ),
-                )}
-              </View>
-            ) : null}
-
-            {shouldRenderCompanyPostReturnSection("members") ? (
-              <View
-                testID="office-section-members"
-                style={styles.section}
-                onLayout={handleSectionLayout("members", "members")}
-              >
-                <Text style={styles.sectionTitle}>{COPY.membersTitle}</Text>
-                {renderSubtreeBoundary(
-                  "members_list",
-                  data.members.length > 0 ? (
-                    <View
-                      style={styles.stack}
-                      onLayout={handleSubtreeLayout("members_list")}
-                    >
-                      {data.members.map((member) => (
-                        <MemberCard
-                          key={member.userId}
-                          member={member}
-                          canManage={canManageCompany}
-                          savingRole={members.savingRole}
-                          onAssignRole={members.handleAssignRole}
-                        />
-                      ))}
-                    </View>
-                  ) : (
-                    <View
-                      style={styles.panel}
-                      onLayout={handleSubtreeLayout("members_list")}
-                    >
-                      <Text style={styles.helper}>{COPY.noMembers}</Text>
-                    </View>
-                  ),
-                )}
-              </View>
-            ) : null}
+            <OfficeCompanySummarySection
+              access={access}
+              company={data.company}
+              companySection={company}
+              onSectionLayout={handleSectionLayout}
+              onSubtreeLayout={handleSubtreeLayout}
+              renderSubtreeBoundary={renderSubtreeBoundary}
+            />
+            <OfficeRoleDirectionsSection
+              access={access}
+              invite={invite}
+              onOpenCard={handleOpenOfficeCard}
+              onSectionLayout={handleSectionLayout}
+              onSubtreeLayout={handleSubtreeLayout}
+              renderSubtreeBoundary={renderSubtreeBoundary}
+            />
+            <OfficeCompanyDetailsSection
+              access={access}
+              onSectionLayout={handleSectionLayout}
+              onSubtreeLayout={handleSubtreeLayout}
+              renderSubtreeBoundary={renderSubtreeBoundary}
+            />
+            <OfficeInvitesSection
+              access={access}
+              data={data}
+              invite={invite}
+              onSectionLayout={handleSectionLayout}
+              onSubtreeLayout={handleSubtreeLayout}
+              renderSubtreeBoundary={renderSubtreeBoundary}
+            />
+            <OfficeMembersSection
+              access={access}
+              data={data}
+              members={members}
+              onSectionLayout={handleSectionLayout}
+              onSubtreeLayout={handleSubtreeLayout}
+              renderSubtreeBoundary={renderSubtreeBoundary}
+            />
           </>
         ) : (
-          <OfficeCompanyCreateSection
-            companyDraft={company.companyDraft}
-            savingCompany={company.savingCompany}
-            onChangeCompanyDraft={company.setCompanyDraft}
-            onCreateCompany={() => void company.handleCreateCompany()}
-            onCompanyCreateLayout={handleSectionLayout(
-              "company_create",
-              "company",
-            )}
-            onRulesLayout={handleSectionLayout("rules")}
+          <OfficeHubCompanyCreateRootSection
+            company={company}
+            onSectionLayout={handleSectionLayout}
           />
         )}
       </ScrollView>

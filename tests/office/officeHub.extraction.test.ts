@@ -8,19 +8,19 @@
  * 3. No accidental property loss during extraction
  */
 
-import { styles } from "./officeHub.styles";
+import { styles } from "../../src/screens/office/officeHub.styles";
 import {
   EMPTY_COMPANY_DRAFT,
   buildOfficeBootstrapCompanyDraft,
   isWarehouseOfficeReturnReceipt,
   OfficePostReturnSubtreeBoundary,
-} from "./officeHub.helpers";
+} from "../../src/screens/office/officeHub.helpers";
 import {
   DirectionCard,
   InviteCard,
   MemberCard,
   OfficeCompanyCreateSection,
-} from "./officeHub.sections";
+} from "../../src/screens/office/officeHub.sections";
 
 describe("officeHub.styles — extraction integrity", () => {
   const EXPECTED_STYLE_KEYS = [
