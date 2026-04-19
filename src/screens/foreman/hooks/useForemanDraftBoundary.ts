@@ -66,6 +66,7 @@ import {
   INITIAL_BOUNDARY_STATE,
   appendForemanLocalDraftRows,
   applyForemanLocalDraftSnapshotToBoundary as applyForemanLocalDraftSnapshotToBoundaryHelper,
+  applyForemanManualRecoveryRemotePlanToBoundary,
   buildForemanRequestDraftMeta,
   clearForemanDraftCacheState,
   discardWholeForemanDraftInBoundary,
@@ -235,6 +236,10 @@ export function useForemanDraftBoundary({
 
   const patchBoundaryState = useCallback((patch: Partial<ForemanDraftBoundaryState>) => {
     setBoundaryState((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const setSkipRemoteHydrationRequestId = useCallback((rid: string | null) => {
+    skipRemoteHydrationRequestIdRef.current = rid;
   }, []);
 
   const getDraftQueueKey = useCallback(
@@ -961,10 +966,18 @@ export function useForemanDraftBoundary({
     });
 
     if (remotePlan.action === "clear_terminal") {
-      await clearTerminalLocalDraft({
-        snapshot: remotePlan.currentSnapshot,
-        requestId: remotePlan.requestId,
-        remoteStatus: remotePlan.remoteStatus,
+      await applyForemanManualRecoveryRemotePlanToBoundary({
+        remotePlan,
+        clearTerminalLocalDraft,
+        setActiveDraftOwnerId,
+        applyLocalDraftSnapshotToBoundary,
+        patchForemanDurableDraftRecoveryState,
+        refreshBoundarySyncState,
+        persistLocalDraftSnapshot,
+        setRequestIdState,
+        setRequestDetails,
+        syncHeaderFromDetails,
+        loadItems,
       });
       await pushRecoveryTelemetry({
         recoveryAction: "rehydrate_server",
@@ -977,28 +990,19 @@ export function useForemanDraftBoundary({
     await clearForemanMutationsForDraft(FOREMAN_LOCAL_ONLY_REQUEST_ID);
     await clearForemanMutationsForDraft(rehydratePlan.requestId);
 
-    if (remotePlan.action === "apply_remote_snapshot") {
-      setActiveDraftOwnerId(remotePlan.remoteSnapshot.ownerId, { resetSubmitted: true });
-      applyLocalDraftSnapshotToBoundary(remotePlan.remoteSnapshot, {
-        restoreHeader: true,
-        clearWhenEmpty: true,
-        restoreSource: "remoteDraft",
-        restoreIdentity: remotePlan.restoreIdentity,
-      });
-      await patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
-      await refreshBoundarySyncState(remotePlan.remoteSnapshot);
-    } else {
-      setActiveDraftOwnerId(undefined, { resetSubmitted: true });
-      persistLocalDraftSnapshot(null);
-      setRequestIdState(remotePlan.requestId);
-      setRequestDetails(remotePlan.details);
-      if (remotePlan.details) {
-        syncHeaderFromDetails(remotePlan.details);
-      }
-      await loadItems(remotePlan.requestId, { forceRemote: true });
-      await patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
-      await refreshBoundarySyncState(null);
-    }
+    await applyForemanManualRecoveryRemotePlanToBoundary({
+      remotePlan,
+      clearTerminalLocalDraft,
+      setActiveDraftOwnerId,
+      applyLocalDraftSnapshotToBoundary,
+      patchForemanDurableDraftRecoveryState,
+      refreshBoundarySyncState,
+      persistLocalDraftSnapshot,
+      setRequestIdState,
+      setRequestDetails,
+      syncHeaderFromDetails,
+      loadItems,
+    });
 
     await pushRecoveryTelemetry({
       recoveryAction: "rehydrate_server",
@@ -1081,10 +1085,18 @@ export function useForemanDraftBoundary({
         now: Date.now(),
       });
       if (remotePlan.action === "clear_terminal") {
-        await clearTerminalLocalDraft({
-          snapshot: remotePlan.currentSnapshot,
-          requestId: remotePlan.requestId,
-          remoteStatus: remotePlan.remoteStatus,
+        await applyForemanManualRecoveryRemotePlanToBoundary({
+          remotePlan,
+          clearTerminalLocalDraft,
+          setActiveDraftOwnerId,
+          applyLocalDraftSnapshotToBoundary,
+          patchForemanDurableDraftRecoveryState,
+          refreshBoundarySyncState,
+          persistLocalDraftSnapshot,
+          setRequestIdState,
+          setRequestDetails,
+          syncHeaderFromDetails,
+          loadItems,
         });
         await pushRecoveryTelemetry({
           recoveryAction: "discard_local",
@@ -1093,28 +1105,19 @@ export function useForemanDraftBoundary({
         });
         return;
       }
-      if (remotePlan.action === "apply_remote_snapshot") {
-        setActiveDraftOwnerId(remotePlan.remoteSnapshot.ownerId, { resetSubmitted: true });
-        applyLocalDraftSnapshotToBoundary(remotePlan.remoteSnapshot, {
-          restoreHeader: true,
-          clearWhenEmpty: true,
-          restoreSource: "remoteDraft",
-          restoreIdentity: remotePlan.restoreIdentity,
-        });
-        await patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
-        await refreshBoundarySyncState(remotePlan.remoteSnapshot);
-      } else {
-        setActiveDraftOwnerId(undefined, { resetSubmitted: true });
-        persistLocalDraftSnapshot(null);
-        setRequestIdState(remotePlan.requestId);
-        setRequestDetails(remotePlan.details);
-        if (remotePlan.details) {
-          syncHeaderFromDetails(remotePlan.details);
-        }
-        await loadItems(remotePlan.requestId, { forceRemote: true });
-        await patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
-        await refreshBoundarySyncState(null);
-      }
+      await applyForemanManualRecoveryRemotePlanToBoundary({
+        remotePlan,
+        clearTerminalLocalDraft,
+        setActiveDraftOwnerId,
+        applyLocalDraftSnapshotToBoundary,
+        patchForemanDurableDraftRecoveryState,
+        refreshBoundarySyncState,
+        persistLocalDraftSnapshot,
+        setRequestIdState,
+        setRequestDetails,
+        syncHeaderFromDetails,
+        loadItems,
+      });
     } else {
       await clearDraftCache();
       resetDraftState();
@@ -1308,9 +1311,7 @@ export function useForemanDraftBoundary({
     localDraftSnapshotRef,
     networkOnlineRef,
     syncHeaderFromDetails,
-    setSkipRemoteHydrationRequestId: (rid) => {
-      skipRemoteHydrationRequestIdRef.current = rid;
-    },
+    setSkipRemoteHydrationRequestId,
     clearDraftCache,
     applyLocalDraftSnapshotToBoundary,
     clearTerminalLocalDraft,

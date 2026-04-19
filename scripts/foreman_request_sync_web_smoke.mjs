@@ -19,6 +19,38 @@ const norm = (value) => String(value || "").replace(/\s+/g, " ").trim();
 
 void norm;
 
+const TEXT_ALIASES = [
+  ["Вход", "Р’С…РѕРґ"],
+  ["Войти", "Р’РѕР№С‚Рё"],
+  ["Контроль", "РљРѕРЅС‚СЂРѕР»СЊ"],
+  ["Заявки", "Р—Р°СЏРІРєРё"],
+  ["Заявка", "Р—Р°СЏРІРєР°"],
+  ["Материалы", "РњР°С‚РµСЂРёР°Р»С‹"],
+  ["Каталог", "РљР°С‚Р°Р»РѕРі"],
+  ["Сохранить", "РЎРѕС…СЂР°РЅРёС‚СЊ"],
+  ["Смета", "РЎРјРµС‚Р°"],
+  ["Позиции", "РџРѕР·РёС†РёРё"],
+  ["Выбрать объект", "Р’С‹Р±СЂР°С‚СЊ РѕР±СЉРµРєС‚"],
+  ["Подряды", "РџРѕРґСЂСЏРґС‹"],
+  ["Закрыть черновик", "Р—Р°РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє"],
+  ["Открыть черновик из каталога", "РћС‚РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє РёР· РєР°С‚Р°Р»РѕРіР°"],
+  ["Открыть позиции и действия", "РћС‚РєСЂС‹С‚СЊ РїРѕР·РёС†РёРё Рё РґРµР№СЃС‚РІРёСЏ"],
+  ["Открыть позиции и отправить", "РћС‚РєСЂС‹С‚СЊ РїРѕР·РёС†РёРё Рё РѕС‚РїСЂР°РІРёС‚СЊ"],
+  ["Что ищем?", "Р§С‚Рѕ РёС‰РµРј?"],
+  ["Поиск", "РџРѕРёСЃРє"],
+  ["Черновик", "Р§РµСЂРЅРѕРІРёРє"],
+];
+
+function expandTextAliases(value) {
+  const text = String(value || "");
+  const aliases = [];
+  for (const [utf8, legacy] of TEXT_ALIASES) {
+    if (text.includes(utf8)) aliases.push(legacy);
+    if (text.includes(legacy)) aliases.push(utf8);
+  }
+  return aliases.length ? `${text}\n${aliases.join("\n")}` : text;
+}
+
 async function poll(label, fn, timeoutMs = 30_000, delayMs = 400) {
   const startedAt = Date.now();
   let lastError = null;
@@ -36,7 +68,7 @@ async function poll(label, fn, timeoutMs = 30_000, delayMs = 400) {
 }
 
 async function bodyText(page) {
-  return page.evaluate(() => document.body.innerText || "");
+  return expandTextAliases(await page.evaluate(() => document.body.innerText || ""));
 }
 
 async function waitForBodyAny(page, needles, timeoutMs = 30_000) {
@@ -83,9 +115,17 @@ async function clickAnyText(page, needles, opts = {}) {
 }
 
 async function clickVisibleMatcher(page, matcherSource) {
-  const ok = await page.evaluate(({ matcherSource }) => {
+  const ok = await page.evaluate(({ matcherSource, textAliases }) => {
     const match = new Function("text", matcherSource);
     const normValue = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const expandAliases = (text) => {
+      const values = [text];
+      for (const [utf8, legacy] of textAliases) {
+        if (text.includes(utf8)) values.push(legacy);
+        if (text.includes(legacy)) values.push(utf8);
+      }
+      return values;
+    };
     const els = Array.from(
       document.querySelectorAll('div[tabindex],button,[role="button"],a[role="link"],input[type="button"],input[type="submit"]'),
     ).filter((el) => {
@@ -93,13 +133,13 @@ async function clickVisibleMatcher(page, matcherSource) {
       const style = getComputedStyle(el);
       if (rect.width <= 0 || rect.height <= 0) return false;
       if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") return false;
-      return Boolean(match(normValue(el.textContent)));
+      return expandAliases(normValue(el.textContent)).some((text) => Boolean(match(text)));
     });
     const hit = els[0];
     if (!hit) return false;
     hit.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
     return true;
-  }, { matcherSource });
+  }, { matcherSource, textAliases: TEXT_ALIASES });
   if (!ok) throw new Error("clickVisibleMatcher not found");
 }
 
@@ -521,6 +561,16 @@ async function createApprovedSubcontract(userId) {
 
 async function loginDirector(page, user) {
   await page.goto(`${BASE_URL}/auth/login`, { waitUntil: "networkidle" });
+  const emailInput = page.locator('input[placeholder="Email"]').first();
+  const passwordInput = page.locator('input[type="password"]').first();
+  if ((await emailInput.count()) > 0 && (await passwordInput.count()) > 0) {
+    await emailInput.fill(user.email);
+    await passwordInput.fill(user.password);
+    await page.locator("div[tabindex]").last().click();
+    await page.waitForLoadState("networkidle").catch(() => undefined);
+    await page.waitForTimeout(3000);
+  }
+  await page.goto(`${BASE_URL}/office/director`, { waitUntil: "networkidle" });
   const body = await bodyText(page);
   if (body.includes("Вход")) {
     await page.locator('input[placeholder="Email"]').fill(user.email);
@@ -532,6 +582,16 @@ async function loginDirector(page, user) {
 
 async function loginForeman(page, user) {
   await page.goto(`${BASE_URL}/auth/login`, { waitUntil: "networkidle" });
+  const emailInput = page.locator('input[placeholder="Email"]').first();
+  const passwordInput = page.locator('input[type="password"]').first();
+  if ((await emailInput.count()) > 0 && (await passwordInput.count()) > 0) {
+    await emailInput.fill(user.email);
+    await passwordInput.fill(user.password);
+    await page.locator("div[tabindex]").last().click();
+    await page.waitForLoadState("networkidle").catch(() => undefined);
+    await page.waitForTimeout(3000);
+  }
+  await page.goto(`${BASE_URL}/office/foreman`, { waitUntil: "networkidle" });
   const body = await bodyText(page);
   if (body.includes("Вход")) {
     await page.locator('input[placeholder="Email"]').fill(user.email);
@@ -1179,7 +1239,7 @@ async function main() {
       subcontractTarget = await createApprovedSubcontract(foremanUser.id);
       await closeDraftModalStable(foremanPage).catch(() => {});
       await closeSubcontractDetails(foremanPage).catch(() => {});
-      await foremanPage.goto(`${BASE_URL}/foreman`, { waitUntil: "networkidle" });
+      await foremanPage.goto(`${BASE_URL}/office/foreman`, { waitUntil: "networkidle" });
       await waitForBodyAny(foremanPage, ["Подряды", "Материалы"], 15_000);
       await openForemanSubcontractTab(foremanPage, subcontractTarget.contractor_org);
       await openApprovedSubcontract(foremanPage, subcontractTarget.contractor_org);

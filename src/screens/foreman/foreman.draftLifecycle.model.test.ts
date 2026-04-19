@@ -522,6 +522,21 @@ describe("foreman draft lifecycle decision model", () => {
     }
   });
 
+  it("keeps bootstrap coordinator ref setters stable across renders", () => {
+    const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
+    const setterIndex = source.indexOf("const setSkipRemoteHydrationRequestId = useCallback");
+    const coordinatorIndex = source.indexOf("const { bootstrapDraft } = useForemanBootstrapCoordinator");
+    expect(setterIndex).toBeGreaterThan(-1);
+    expect(coordinatorIndex).toBeGreaterThan(setterIndex);
+
+    const coordinatorBlock = source.slice(
+      coordinatorIndex,
+      source.indexOf("const restoreDraftIfNeeded", coordinatorIndex),
+    );
+    expect(coordinatorBlock).toContain("setSkipRemoteHydrationRequestId,");
+    expect(coordinatorBlock).not.toContain("setSkipRemoteHydrationRequestId: (rid)");
+  });
+
   it("plans bootstrap continuation with owner and content signals", () => {
     const snapshot = makeSnapshot({ ownerId: "owner-durable" });
 

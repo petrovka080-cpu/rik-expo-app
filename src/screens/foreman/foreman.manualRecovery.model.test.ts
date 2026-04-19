@@ -12,6 +12,7 @@ import {
   planForemanRetryNowAction,
   resolveForemanManualRecoveryTelemetryPlan,
 } from "./foreman.manualRecovery.model";
+import { applyForemanManualRecoveryRemotePlanToBoundary } from "./foreman.draftBoundary.helpers";
 import type { ForemanLocalDraftSnapshot } from "./foreman.localDraft";
 
 const NOW = 1_777_000_000_000;
@@ -73,6 +74,19 @@ const emptySnapshot = (
     submitRequested: false,
     ...patch,
   });
+
+const createRemoteApplyDeps = () => ({
+  clearTerminalLocalDraft: jest.fn(async () => undefined),
+  setActiveDraftOwnerId: jest.fn(),
+  applyLocalDraftSnapshotToBoundary: jest.fn(),
+  patchForemanDurableDraftRecoveryState: jest.fn(async () => ({})),
+  refreshBoundarySyncState: jest.fn(async () => undefined),
+  persistLocalDraftSnapshot: jest.fn(),
+  setRequestIdState: jest.fn(),
+  setRequestDetails: jest.fn(),
+  syncHeaderFromDetails: jest.fn(),
+  loadItems: jest.fn(async () => undefined),
+});
 
 describe("foreman manual recovery command planner", () => {
   it("stays free of queue, persistence, subscription, and fetch side effects", () => {
@@ -470,5 +484,90 @@ describe("foreman manual recovery command planner", () => {
       expect(nextIndex).toBeGreaterThan(previousIndex);
       previousIndex = nextIndex;
     }
+  });
+});
+
+describe("foreman manual recovery remote boundary apply", () => {
+  it("applies remote snapshots in the same order used by rehydrate/discard flows", async () => {
+    const deps = createRemoteApplyDeps();
+    const remoteSnapshot = makeSnapshot({ ownerId: "remote-owner" });
+    const durablePatch = { snapshot: remoteSnapshot, syncStatus: "synced" as const };
+
+    await expect(applyForemanManualRecoveryRemotePlanToBoundary({
+      ...deps,
+      remotePlan: {
+        action: "apply_remote_snapshot",
+        requestId: "req-1",
+        currentSnapshot: makeSnapshot({ ownerId: "local-owner" }),
+        remoteSnapshot,
+        restoreIdentity: "manual:remote:req-1",
+        durablePatch,
+      },
+    })).resolves.toEqual({ action: "applied_remote_snapshot", requestId: "req-1" });
+
+    expect(deps.setActiveDraftOwnerId).toHaveBeenCalledWith("remote-owner", {
+      resetSubmitted: true,
+    });
+    expect(deps.applyLocalDraftSnapshotToBoundary).toHaveBeenCalledWith(remoteSnapshot, {
+      restoreHeader: true,
+      clearWhenEmpty: true,
+      restoreSource: "remoteDraft",
+      restoreIdentity: "manual:remote:req-1",
+    });
+    expect(deps.patchForemanDurableDraftRecoveryState).toHaveBeenCalledWith(durablePatch);
+    expect(deps.refreshBoundarySyncState).toHaveBeenCalledWith(remoteSnapshot);
+    expect(deps.loadItems).not.toHaveBeenCalled();
+  });
+
+  it("loads remote details without rebuilding a local snapshot", async () => {
+    const deps = createRemoteApplyDeps();
+    const details = { id: "req-2", status: "draft" } as never;
+    const durablePatch = { snapshot: null, syncStatus: "idle" as const };
+
+    await expect(applyForemanManualRecoveryRemotePlanToBoundary({
+      ...deps,
+      remotePlan: {
+        action: "load_remote_details",
+        requestId: "req-2",
+        currentSnapshot: makeSnapshot(),
+        details,
+        durablePatch,
+      },
+    })).resolves.toEqual({ action: "loaded_remote_details", requestId: "req-2" });
+
+    expect(deps.setActiveDraftOwnerId).toHaveBeenCalledWith(undefined, {
+      resetSubmitted: true,
+    });
+    expect(deps.persistLocalDraftSnapshot).toHaveBeenCalledWith(null);
+    expect(deps.setRequestIdState).toHaveBeenCalledWith("req-2");
+    expect(deps.setRequestDetails).toHaveBeenCalledWith(details);
+    expect(deps.syncHeaderFromDetails).toHaveBeenCalledWith(details);
+    expect(deps.loadItems).toHaveBeenCalledWith("req-2", { forceRemote: true });
+    expect(deps.patchForemanDurableDraftRecoveryState).toHaveBeenCalledWith(durablePatch);
+    expect(deps.refreshBoundarySyncState).toHaveBeenCalledWith(null);
+  });
+
+  it("clears terminal remote plans without touching non-terminal apply effects", async () => {
+    const deps = createRemoteApplyDeps();
+    const snapshot = makeSnapshot();
+
+    await expect(applyForemanManualRecoveryRemotePlanToBoundary({
+      ...deps,
+      remotePlan: {
+        action: "clear_terminal",
+        requestId: "req-3",
+        currentSnapshot: snapshot,
+        remoteStatus: "submitted",
+      },
+    })).resolves.toEqual({ action: "cleared_terminal", requestId: "req-3" });
+
+    expect(deps.clearTerminalLocalDraft).toHaveBeenCalledWith({
+      snapshot,
+      requestId: "req-3",
+      remoteStatus: "submitted",
+    });
+    expect(deps.applyLocalDraftSnapshotToBoundary).not.toHaveBeenCalled();
+    expect(deps.patchForemanDurableDraftRecoveryState).not.toHaveBeenCalled();
+    expect(deps.refreshBoundarySyncState).not.toHaveBeenCalled();
   });
 });

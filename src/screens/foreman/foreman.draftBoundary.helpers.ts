@@ -15,6 +15,7 @@ import type {
   ForemanDraftRecoveryAction,
   ForemanDraftSyncStage,
   ForemanDraftSyncStatus,
+  ForemanDraftSyncTriggerSource,
 } from "../../lib/offline/foremanSyncRuntime";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { ridStr, toErrorText } from "./foreman.helpers";
@@ -40,6 +41,13 @@ import {
 import type { RequestDraftMeta } from "./foreman.types";
 
 export type ForemanDraftRestoreSource = "none" | "snapshot" | "remoteDraft";
+
+export type ForemanDraftSnapshotApplyOptions = {
+  restoreHeader?: boolean;
+  clearWhenEmpty?: boolean;
+  restoreSource?: ForemanDraftRestoreSource;
+  restoreIdentity?: string | null;
+};
 
 export type ForemanDraftMutationKind =
   | "catalog_add"
@@ -113,6 +121,53 @@ type SetHeaderState = {
   setSystem: (value: string) => void;
   setZone: (value: string) => void;
 };
+
+type ForemanDraftRecoveryDurablePatch = {
+  snapshot?: ForemanLocalDraftSnapshot | null;
+  syncStatus?: ForemanDraftSyncStatus;
+  pendingOperationsCount?: number;
+  queueDraftKey?: string | null;
+  requestIdKnown?: boolean;
+  attentionNeeded?: boolean;
+  conflictType?: ForemanDraftConflictType;
+  lastConflictAt?: number | null;
+  recoverableLocalSnapshot?: ForemanLocalDraftSnapshot | null;
+  lastError?: string | null;
+  lastErrorAt?: number | null;
+  lastErrorStage?: ForemanDraftSyncStage | null;
+  retryCount?: number;
+  repeatedFailureStageCount?: number;
+  lastTriggerSource?: ForemanDraftSyncTriggerSource;
+  lastSyncAt?: number | null;
+};
+
+export type ForemanManualRecoveryRemoteBoundaryPlan =
+  | {
+      action: "clear_terminal";
+      requestId: string;
+      currentSnapshot: ForemanLocalDraftSnapshot | null;
+      remoteStatus: string | null;
+    }
+  | {
+      action: "apply_remote_snapshot";
+      requestId: string;
+      currentSnapshot: ForemanLocalDraftSnapshot | null;
+      remoteSnapshot: ForemanLocalDraftSnapshot;
+      restoreIdentity: string;
+      durablePatch: ForemanDraftRecoveryDurablePatch;
+    }
+  | {
+      action: "load_remote_details";
+      requestId: string;
+      currentSnapshot: ForemanLocalDraftSnapshot | null;
+      details: RequestDetails | null;
+      durablePatch: ForemanDraftRecoveryDurablePatch;
+    };
+
+export type ForemanManualRecoveryRemoteApplyResult =
+  | { action: "cleared_terminal"; requestId: string }
+  | { action: "applied_remote_snapshot"; requestId: string }
+  | { action: "loaded_remote_details"; requestId: string };
 
 export const logDraftSyncTelemetry = (payload: Record<string, unknown>) => {
   if (!__DEV__) return;
@@ -341,12 +396,7 @@ export const updateForemanDraftMarkers = (
 
 export const applyForemanLocalDraftSnapshotToBoundary = (params: {
   snapshot: ForemanLocalDraftSnapshot | null;
-  options?: {
-    restoreHeader?: boolean;
-    clearWhenEmpty?: boolean;
-    restoreSource?: ForemanDraftRestoreSource;
-    restoreIdentity?: string | null;
-  };
+  options?: ForemanDraftSnapshotApplyOptions;
   persistLocalDraftSnapshot: (snapshot: ForemanLocalDraftSnapshot | null) => void;
   hydrateLocalDraft: (payload: {
     requestId: string;
@@ -408,6 +458,75 @@ export const applyForemanLocalDraftSnapshotToBoundary = (params: {
   }
 };
 
+export async function applyForemanManualRecoveryRemotePlanToBoundary(params: {
+  remotePlan: ForemanManualRecoveryRemoteBoundaryPlan;
+  clearTerminalLocalDraft: (options: {
+    snapshot?: ForemanLocalDraftSnapshot | null;
+    requestId: string;
+    remoteStatus?: string | null;
+  }) => Promise<void>;
+  setActiveDraftOwnerId: (
+    ownerId?: string | null,
+    options?: { resetSubmitted?: boolean },
+  ) => unknown;
+  applyLocalDraftSnapshotToBoundary: (
+    snapshot: ForemanLocalDraftSnapshot | null,
+    options?: ForemanDraftSnapshotApplyOptions,
+  ) => void;
+  patchForemanDurableDraftRecoveryState: (
+    patch: ForemanDraftRecoveryDurablePatch,
+  ) => Promise<unknown>;
+  refreshBoundarySyncState: (
+    snapshotOverride?: ForemanLocalDraftSnapshot | null,
+  ) => Promise<void>;
+  persistLocalDraftSnapshot: (snapshot: ForemanLocalDraftSnapshot | null) => void;
+  setRequestIdState: (requestId: string) => void;
+  setRequestDetails: (details: RequestDetails | null) => void;
+  syncHeaderFromDetails: (details: RequestDetails) => void;
+  loadItems: (
+    ridOverride?: string | number | null,
+    options?: { forceRemote?: boolean },
+  ) => Promise<unknown>;
+}): Promise<ForemanManualRecoveryRemoteApplyResult> {
+  const { remotePlan } = params;
+
+  if (remotePlan.action === "clear_terminal") {
+    await params.clearTerminalLocalDraft({
+      snapshot: remotePlan.currentSnapshot,
+      requestId: remotePlan.requestId,
+      remoteStatus: remotePlan.remoteStatus,
+    });
+    return { action: "cleared_terminal", requestId: remotePlan.requestId };
+  }
+
+  if (remotePlan.action === "apply_remote_snapshot") {
+    params.setActiveDraftOwnerId(remotePlan.remoteSnapshot.ownerId, {
+      resetSubmitted: true,
+    });
+    params.applyLocalDraftSnapshotToBoundary(remotePlan.remoteSnapshot, {
+      restoreHeader: true,
+      clearWhenEmpty: true,
+      restoreSource: "remoteDraft",
+      restoreIdentity: remotePlan.restoreIdentity,
+    });
+    await params.patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
+    await params.refreshBoundarySyncState(remotePlan.remoteSnapshot);
+    return { action: "applied_remote_snapshot", requestId: remotePlan.requestId };
+  }
+
+  params.setActiveDraftOwnerId(undefined, { resetSubmitted: true });
+  params.persistLocalDraftSnapshot(null);
+  params.setRequestIdState(remotePlan.requestId);
+  params.setRequestDetails(remotePlan.details);
+  if (remotePlan.details) {
+    params.syncHeaderFromDetails(remotePlan.details);
+  }
+  await params.loadItems(remotePlan.requestId, { forceRemote: true });
+  await params.patchForemanDurableDraftRecoveryState(remotePlan.durablePatch);
+  await params.refreshBoundarySyncState(null);
+  return { action: "loaded_remote_details", requestId: remotePlan.requestId };
+}
+
 export async function runForemanDraftSyncCycle(params: {
   requestId: string;
   isDraftActive: boolean;
@@ -415,12 +534,7 @@ export async function runForemanDraftSyncCycle(params: {
   persistLocalDraftSnapshot: (snapshot: ForemanLocalDraftSnapshot | null) => void;
   applyLocalDraftSnapshotToBoundary: (
     snapshot: ForemanLocalDraftSnapshot | null,
-    options?: {
-      restoreHeader?: boolean;
-      clearWhenEmpty?: boolean;
-      restoreSource?: ForemanDraftRestoreSource;
-      restoreIdentity?: string | null;
-    },
+    options?: ForemanDraftSnapshotApplyOptions,
   ) => void;
   buildRequestDraftMeta: () => RequestDraftMeta;
   options?: {
