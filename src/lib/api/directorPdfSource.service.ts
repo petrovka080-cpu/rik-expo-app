@@ -67,6 +67,15 @@ type DirectorFinanceSourceEnvelopeV1 = {
   spend_rows: unknown[];
 };
 
+type DirectorFinanceSourceEnvelopeV2 = {
+  document_type: "director_finance_report";
+  version: "v2";
+  metrics: Record<string, unknown>;
+  kind_rows: unknown[];
+  spend_supplier_rows: unknown[];
+  summary: unknown;
+};
+
 type DirectorProductionSourceEnvelopeV1 = {
   document_type: "director_production_report";
   version: "v1";
@@ -312,6 +321,36 @@ function validateDirectorFinanceSourceV1(value: unknown): DirectorFinanceSourceE
   };
 }
 
+function validateDirectorFinanceSourceV2(value: unknown): DirectorFinanceSourceEnvelopeV2 {
+  const root = requireRecord(value, "root", "pdf_director_finance_source_v2");
+  const documentType = requireNonEmptyString(
+    root.document_type,
+    "document_type",
+    "pdf_director_finance_source_v2",
+  );
+  if (documentType !== "director_finance_report") {
+    throw new DirectorPdfSourceValidationError(
+      "invalid_payload",
+      `pdf_director_finance_source_v2 invalid document_type: ${documentType}`,
+    );
+  }
+  const version = requireNonEmptyString(root.version, "version", "pdf_director_finance_source_v2");
+  if (version !== "v2") {
+    throw new DirectorPdfSourceValidationError(
+      "invalid_payload",
+      `pdf_director_finance_source_v2 invalid version: ${version}`,
+    );
+  }
+  return {
+    document_type: "director_finance_report",
+    version: "v2",
+    metrics: requireRecord(root.metrics, "metrics", "pdf_director_finance_source_v2"),
+    kind_rows: requireArray(root.kind_rows, "kind_rows", "pdf_director_finance_source_v2"),
+    spend_supplier_rows: requireArray(root.spend_supplier_rows, "spend_supplier_rows", "pdf_director_finance_source_v2"),
+    summary: root.summary,
+  };
+}
+
 function validateDirectorProductionSourceV1(value: unknown): DirectorProductionSourceEnvelopeV1 {
   const root = requireRecord(value, "root", "pdf_director_production_source_v1");
   const documentType = requireNonEmptyString(
@@ -412,6 +451,58 @@ async function fetchDirectorFinancePdfSourceViaRpc(args: {
   };
 }
 
+export type DirectorFinancePdfSourceV2 = {
+  metrics: Record<string, unknown>;
+  kindRows: unknown[];
+  spendSupplierRows: unknown[];
+  summary: unknown;
+  source: string;
+  branchMeta: PdfRpcRolloutBranchMeta;
+};
+
+async function fetchDirectorFinancePdfSourceViaRpcV2(args: {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  dueDaysDefault?: number;
+  criticalDays?: number;
+}): Promise<DirectorFinancePdfSourceV2> {
+  const { data, error } = await supabase.rpc("pdf_director_finance_source_v2", {
+    p_from: args.periodFrom ?? null,
+    p_to: args.periodTo ?? null,
+    p_due_days: args.dueDaysDefault ?? 7,
+    p_critical_days: args.criticalDays ?? 14,
+  });
+
+  if (error) {
+    throw new DirectorPdfSourceRpcError(
+      `pdf_director_finance_source_v2 failed: ${error.message}`,
+      {
+        code: "code" in error ? String((error as { code?: unknown }).code ?? "") : undefined,
+        disableForSession: shouldDisableDirectorPdfRpcForSession(
+          "pdf_director_finance_source_v2",
+          "code" in error ? (error as { code?: unknown }).code : undefined,
+          "message" in error ? (error as { message?: unknown }).message : undefined,
+        ),
+      },
+    );
+  }
+
+  const envelope = validateDirectorFinanceSourceV2(data);
+
+  return {
+    metrics: envelope.metrics,
+    kindRows: envelope.kind_rows,
+    spendSupplierRows: envelope.spend_supplier_rows,
+    summary: envelope.summary,
+    source: "rpc:pdf_director_finance_source_v2",
+    branchMeta: {
+      sourceBranch: "rpc_v2",
+      rpcVersion: "v2",
+      payloadShapeVersion: "v2",
+    },
+  };
+}
+
 // D-BACKEND-PDF: Short-lived cache for finance PDF source RPC results.
 // Avoids re-fetching identical data when the user taps the management report
 // PDF button multiple times within the TTL window.
@@ -499,6 +590,62 @@ export async function getDirectorFinancePdfSource(args: {
     );
     throw observation.error(error, {
       fallbackMessage: "Director finance PDF source load failed",
+      extra: {
+        periodFrom: args.periodFrom ?? null,
+        periodTo: args.periodTo ?? null,
+        rpcMode,
+        fallbackUsed: false,
+      },
+    });
+  }
+}
+
+export async function getDirectorFinancePdfSourceV2(args: {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  dueDaysDefault?: number;
+  criticalDays?: number;
+}): Promise<DirectorFinancePdfSourceV2> {
+  const rpcMode = DIRECTOR_FINANCE_PDF_RPC_MODE;
+  const observation = beginPdfLifecycleObservation({
+    screen: "director",
+    surface: "director_pdf_source",
+    event: "director_finance_pdf_source_load_v2",
+    stage: "source_load",
+    sourceKind: "rpc:pdf_director_finance_source_v2",
+    context: {
+      documentFamily: "director_finance_pdf",
+      documentType: "director_report",
+      source: "rpc:pdf_director_finance_source_v2",
+    },
+  });
+  try {
+    const rpcSource = await fetchDirectorFinancePdfSourceViaRpcV2(args);
+    logDirectorPdfSourceBranch(DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID, rpcSource.source, rpcSource.branchMeta, {
+      periodFrom: args.periodFrom ?? null,
+      periodTo: args.periodTo ?? null,
+    });
+    observation.success({
+      sourceKind: rpcSource.source,
+      rowCount: rpcSource.kindRows.length + rpcSource.spendSupplierRows.length,
+      extra: {
+        sourceBranch: rpcSource.branchMeta.sourceBranch,
+      },
+    });
+    return rpcSource;
+  } catch (error) {
+    recordDirectorPdfRpcFailure(
+      DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      "[director-finance-pdf-source] rpc_v2 failed",
+      {
+        periodFrom: args.periodFrom ?? null,
+        periodTo: args.periodTo ?? null,
+      },
+      error,
+    );
+    throw observation.error(error, {
+      fallbackMessage: "Director finance PDF source v2 load failed",
       extra: {
         periodFrom: args.periodFrom ?? null,
         periodTo: args.periodTo ?? null,

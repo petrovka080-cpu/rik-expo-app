@@ -497,7 +497,7 @@ describe("foreman draft lifecycle decision model", () => {
   });
 
   it("keeps bootstrap stale reset side effects in the legacy order", () => {
-    const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
+    const source = readFileSync(join(__dirname, "hooks", "useForemanBootstrapCoordinator.ts"), "utf8");
     const start = source.indexOf("const completionStartPlan = resolveForemanBootstrapCompletionStartPlan");
     const end = source.indexOf("const ownerPlan = completionStartPlan.ownerPlan", start);
     const block = source.slice(start, end);
@@ -637,7 +637,7 @@ describe("foreman draft lifecycle decision model", () => {
   });
 
   it("keeps bootstrap hydrate telemetry before pending-count and re-enqueue work", () => {
-    const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
+    const source = readFileSync(join(__dirname, "hooks", "useForemanBootstrapCoordinator.ts"), "utf8");
     const start = source.indexOf("if (durableSnapshot && completionStartPlan.hasDurableSnapshotContent)");
     const end = source.indexOf("await refreshBoundarySyncState(durableSnapshot ?? null)", start);
     const block = source.slice(start, end);

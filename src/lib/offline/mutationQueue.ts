@@ -11,6 +11,10 @@ import {
   getOfflineMutationRetryPolicy,
   shouldProcessOfflineMutationNow,
 } from "./mutation.retryPolicy";
+import {
+  MUTATION_PAYLOAD_SCHEMA_VERSION,
+  recordMutationQuarantineEvent,
+} from "./mutation.quarantine";
 import { recordOfflineMutationEvent } from "./mutation.telemetry";
 import {
   type OfflineMutationCompatibilityStatus,
@@ -35,6 +39,8 @@ export type ForemanMutationQueueEntry = OfflineMutationEnvelopeBase & {
   scope: "foreman_draft";
   type: ForemanMutationQueueType;
   coalescedCount: number;
+  /** Schema version stamp. Optional for backwards compatibility with older stored entries. */
+  schemaVersion?: number;
   payload: {
     draftKey: string;
     requestId: string | null;
@@ -63,6 +69,9 @@ export type ForemanMutationQueueSummary = {
 const MUTATION_QUEUE_STORAGE_KEY = "offline_mutation_queue_v2";
 const MUTATION_QUEUE_LEGACY_STORAGE_KEY = "offline_mutation_queue_v1";
 const FINAL_HISTORY_LIMIT = 20;
+
+/** Used as the storage key context for quarantine events. */
+const QUARANTINE_STORAGE_CTX = MUTATION_QUEUE_STORAGE_KEY;
 
 let storageAdapter: OfflineStorageAdapter = createDefaultOfflineStorage();
 const queuePersistence = createSerializedQueuePersistence();
@@ -130,10 +139,29 @@ const buildForemanMutationDedupeKey = (params: {
   ].join(":");
 
 const normalizeEntry = (value: unknown): ForemanMutationQueueEntry | null => {
-  if (!isRecord(value)) return null;
-  if (value.scope !== "foreman_draft") return null;
+  if (!isRecord(value)) {
+    recordMutationQuarantineEvent(value, QUARANTINE_STORAGE_CTX, "invalid_payload");
+    return null;
+  }
+  if (value.scope !== "foreman_draft") {
+    recordMutationQuarantineEvent(value, QUARANTINE_STORAGE_CTX, "wrong_scope");
+    return null;
+  }
   const payload = isRecord(value.payload) ? value.payload : null;
-  if (!payload) return null;
+  if (!payload) {
+    recordMutationQuarantineEvent(value, QUARANTINE_STORAGE_CTX, "invalid_payload");
+    return null;
+  }
+
+  // Schema version guard: emit quarantine telemetry when the stored entry
+  // predates the current schema. The entry is still processed via the
+  // normalizer fallbacks — this is observability only, not a hard reject.
+  const storedSchemaVersion = Number.isFinite(Number(value.schemaVersion))
+    ? Number(value.schemaVersion)
+    : null;
+  if (storedSchemaVersion !== null && storedSchemaVersion < MUTATION_PAYLOAD_SCHEMA_VERSION) {
+    recordMutationQuarantineEvent(value, QUARANTINE_STORAGE_CTX, "unknown_schema_version");
+  }
 
   const type = trim(value.type) as ForemanMutationQueueType;
   const status = trim(value.status) as MutationQueueStatus;
@@ -141,7 +169,10 @@ const normalizeEntry = (value: unknown): ForemanMutationQueueEntry | null => {
     (trim(value.lifecycleStatus) as OfflineMutationLifecycleStatus) || toLifecycleStatusFromLegacy(status);
   const mutationKind = trim(payload.mutationKind) as ForemanDraftMutationKind;
   const draftKey = trim(payload.draftKey);
-  if (!type || !status || !mutationKind || !draftKey) return null;
+  if (!type || !status || !mutationKind || !draftKey) {
+    recordMutationQuarantineEvent(value, QUARANTINE_STORAGE_CTX, "missing_required_field");
+    return null;
+  }
 
   return {
     id: trim(value.id) || createMutationId(),
@@ -193,6 +224,9 @@ const normalizeEntry = (value: unknown): ForemanMutationQueueEntry | null => {
     maxAttempts: Number.isFinite(Number(value.maxAttempts))
       ? Number(value.maxAttempts)
       : FOREMAN_RETRY_POLICY.maxAttempts,
+    schemaVersion: Number.isFinite(Number(value.schemaVersion))
+      ? Number(value.schemaVersion)
+      : undefined,
   };
 };
 
@@ -280,6 +314,7 @@ const createEntry = (params: {
     baseVersion: trim(params.snapshotUpdatedAt) || null,
     serverVersionHint: null,
     coalescedCount: 0,
+    schemaVersion: MUTATION_PAYLOAD_SCHEMA_VERSION,
     payload: {
       draftKey: params.draftKey,
       requestId: trim(params.requestId) || null,
