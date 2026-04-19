@@ -1,4 +1,4 @@
-import { applyWarehouseReceive } from "./useWarehouseReceiveApply";
+import { applyWarehouseReceive } from "../../src/screens/warehouse/hooks/useWarehouseReceiveApply";
 
 describe("applyWarehouseReceive", () => {
   it("passes a stable client mutation id to the warehouse receive RPC", async () => {

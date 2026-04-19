@@ -12,8 +12,15 @@ import {
 } from "../../../lib/offline/platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "../../../lib/offline/platformOffline.observability";
 import { seedEnsureIncomingItems } from "../warehouse.seed";
-import { nz, parseQtySelected } from "../warehouse.utils";
+import { nz } from "../warehouse.utils";
 import { applyWarehouseReceive } from "./useWarehouseReceiveApply";
+import {
+  buildWarehouseReceiveSelection as buildReceiveSelection,
+  normalizeWarehouseReceiveFlowText as trim,
+  toWarehouseReceiveDraftItemsFromInputMap as toDraftItemsFromInputMap,
+  toWarehouseReceiveQtyInputMap as toQtyInputMap,
+  type WarehouseReceiveFlowRow as ReceiveRow,
+} from "./warehouseReceiveFlow.model";
 import {
   buildWarehouseReceiveSyncUiStatus,
   getWarehouseReceiveDraft,
@@ -22,7 +29,6 @@ import {
   selectWarehouseReceiveQtyInputMap,
   setWarehouseReceiveDraftItems,
   useWarehouseReceiveDraftStore,
-  type WarehouseReceiveDraftItem,
 } from "../warehouse.receiveDraft.store";
 import {
   enqueueWarehouseReceive,
@@ -41,76 +47,6 @@ const logSuppressedPostUnmount = (
   details?: Record<string, unknown>,
 ) => {
   if (__DEV__) console.info(`[warehouse:${scope}] suppressed post-unmount`, details);
-};
-
-type ReceiveRow = {
-  incoming_item_id?: string | null;
-  purchase_item_id?: string | number | null;
-  qty_expected?: number | string | null;
-  qty_received?: number | string | null;
-  qty_left?: number | string | null;
-};
-
-const trim = (value: unknown) => String(value ?? "").trim();
-
-const toDraftItemsFromInputMap = (
-  qtyInputByItem: Record<string, string>,
-): WarehouseReceiveDraftItem[] =>
-  Object.entries(qtyInputByItem)
-    .map(([itemId, raw]) => {
-      const normalized = String(raw ?? "")
-        .replace(",", ".")
-        .replace(/\s+/g, "")
-        .trim();
-      const qty = Number(normalized);
-      return {
-        itemId: trim(itemId),
-        qty,
-        localUpdatedAt: Date.now(),
-      };
-    })
-    .filter((item) => item.itemId && Number.isFinite(item.qty) && item.qty > 0);
-
-const toQtyInputMap = (items: WarehouseReceiveDraftItem[]) =>
-  Object.fromEntries(items.map((item) => [item.itemId, String(item.qty)]));
-
-const buildReceiveSelection = (
-  rows: ReceiveRow[],
-  qtyInputByItem: Record<string, string>,
-) => {
-  const items: WarehouseReceiveDraftItem[] = [];
-  const payload: { purchase_item_id: string; qty: number }[] = [];
-
-  for (const row of rows) {
-    const purchaseItemId = trim(row.purchase_item_id);
-    if (!purchaseItemId) continue;
-
-    const exp = nz(row.qty_expected, 0);
-    const rec = nz(row.qty_received, 0);
-    const left = Math.max(0, nz(row.qty_left, exp - rec));
-    if (!left) continue;
-
-    const raw = qtyInputByItem[purchaseItemId];
-    if (raw == null || trim(raw) === "") continue;
-
-    const qty = parseQtySelected(raw, left);
-    if (qty <= 0) continue;
-
-    items.push({
-      itemId: purchaseItemId,
-      qty,
-      localUpdatedAt: Date.now(),
-    });
-    payload.push({
-      purchase_item_id: purchaseItemId,
-      qty,
-    });
-  }
-
-  return {
-    items,
-    payload,
-  };
 };
 
 export function useWarehouseReceiveFlow(params: {
