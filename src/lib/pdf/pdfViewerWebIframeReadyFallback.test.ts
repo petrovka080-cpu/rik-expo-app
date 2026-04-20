@@ -4,6 +4,11 @@ import {
 } from "./pdfViewerWebIframeReadyFallback";
 
 describe("pdfViewerWebIframeReadyFallback", () => {
+  it("keeps the remote web fallback inside the repeat-open budget", () => {
+    expect(PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS).toBeGreaterThan(0);
+    expect(PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS).toBeLessThanOrEqual(200);
+  });
+
   it("schedules a deterministic ready fallback only for web remote PDF iframes", () => {
     expect(
       resolvePdfViewerWebIframeReadyFallbackPlan({

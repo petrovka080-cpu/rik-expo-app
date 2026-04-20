@@ -1,6 +1,6 @@
 import type { PdfViewerPlatform } from "./pdfViewerContract";
 
-export const PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS = 500;
+export const PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS = 180;
 
 export type PdfViewerWebIframeReadyFallbackPlan =
   | {

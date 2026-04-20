@@ -7,6 +7,7 @@ import {
   type DirectorProductionReportPdfRequest,
 } from "../pdf/directorProductionReport.shared";
 import { invokeDirectorPdfBackend } from "./directorPdfBackendInvoker";
+import { buildDirectorProductionReportManifestContract } from "../pdf/directorPdfPlatformContract";
 
 const FUNCTION_NAME = "director-production-report-pdf";
 const MODE_RAW = String(
@@ -47,6 +48,9 @@ const PRODUCTION_PDF_CLIENT_CACHE_MAX = 20;
 type ProductionPdfClientCacheEntry = {
   ts: number;
   value: DirectorProductionReportPdfBackendResult;
+  // Manifest-driven versioning (PDF-Z2): tracks which source_version produced this artifact.
+  // Same source_version means immediate artifact reuse without a backend call.
+  sourceVersion: string | null;
 };
 
 const productionPdfClientCache = new Map<string, ProductionPdfClientCacheEntry>();
@@ -67,7 +71,7 @@ function buildProductionPdfClientCacheKey(payload: DirectorProductionReportPdfRe
   ].join("|");
 }
 
-function getProductionPdfClientCache(key: string): DirectorProductionReportPdfBackendResult | null {
+function getProductionPdfClientCache(key: string): ProductionPdfClientCacheEntry | null {
   const hit = productionPdfClientCache.get(key);
   if (!hit) return null;
   if (Date.now() - hit.ts >= PRODUCTION_PDF_CLIENT_CACHE_TTL_MS) {
@@ -76,12 +80,16 @@ function getProductionPdfClientCache(key: string): DirectorProductionReportPdfBa
   }
   productionPdfClientCache.delete(key);
   productionPdfClientCache.set(key, hit);
-  return hit.value;
+  return hit;
 }
 
-function setProductionPdfClientCache(key: string, value: DirectorProductionReportPdfBackendResult) {
+function setProductionPdfClientCache(
+  key: string,
+  value: DirectorProductionReportPdfBackendResult,
+  sourceVersion?: string | null,
+) {
   if (productionPdfClientCache.has(key)) productionPdfClientCache.delete(key);
-  productionPdfClientCache.set(key, { ts: Date.now(), value });
+  productionPdfClientCache.set(key, { ts: Date.now(), value, sourceVersion: sourceVersion ?? null });
   while (productionPdfClientCache.size > PRODUCTION_PDF_CLIENT_CACHE_MAX) {
     const oldestKey = productionPdfClientCache.keys().next().value;
     if (!oldestKey) break;
@@ -182,123 +190,149 @@ export async function generateDirectorProductionReportPdfViaBackend(
 
   const cacheKey = buildProductionPdfClientCacheKey(payload);
   const canUseClientHotCache = Boolean(payload.clientSourceFingerprint);
-  if (canUseClientHotCache) {
-    const cached = getProductionPdfClientCache(cacheKey);
-    if (cached) {
-      boundary.success("backend_invoke_success", {
-        sourceKind: "remote-url",
-        extra: {
-          functionName: FUNCTION_NAME,
-          documentKind: "production_report",
-          renderBranch: cached.renderBranch,
-          renderer: cached.renderer,
-          cacheStatus: "client_hot_hit",
-        },
-      });
-      boundary.success("signed_url_received", {
-        sourceKind: "remote-url",
-        extra: {
-          fileName: cached.fileName,
-          cacheStatus: "client_hot_hit",
-        },
-      });
-      return cached;
-    }
+
+  // In-flight dedup: check synchronously before any async work.
+  const alreadyInFlight = productionPdfClientInFlight.get(cacheKey);
+  if (alreadyInFlight) {
+    return await alreadyInFlight;
   }
 
-  const inFlight = productionPdfClientInFlight.get(cacheKey);
-  if (inFlight) {
-    return await inFlight;
-  }
-
-  boundary.success("backend_invoke_start", {
-    sourceKind: "backend_invoke",
-    extra: {
-      functionName: FUNCTION_NAME,
-      documentKind: "production_report",
-    },
-  });
-  let result: DirectorProductionReportPdfBackendResult;
-  try {
-    const task = invokeProductionReportBackend(payload);
-    productionPdfClientInFlight.set(cacheKey, task);
-    result = await task;
+  // Register the promise before any manifest/cache/backend await.
+  let task: Promise<DirectorProductionReportPdfBackendResult>;
+  task = Promise.resolve().then(async (): Promise<DirectorProductionReportPdfBackendResult> => {
+    // PDF-Z2: Compute deterministic source_version. Non-fatal if manifest build fails.
+    let manifestSourceVersion: string | null = null;
     if (canUseClientHotCache) {
-      setProductionPdfClientCache(cacheKey, result);
+      try {
+        const manifest = await buildDirectorProductionReportManifestContract({
+          periodFrom: payload.periodFrom,
+          periodTo: payload.periodTo,
+          objectName: payload.objectName,
+          preferPriceStage: payload.preferPriceStage ?? "priced",
+          clientSourceFingerprint: payload.clientSourceFingerprint,
+        });
+        manifestSourceVersion = manifest.sourceVersion;
+      } catch (error) {
+        boundary.error("backend_invoke_failure", error, {
+          sourceKind: "backend_invoke",
+          errorStage: "manifest_source_version",
+          extra: {
+            functionName: FUNCTION_NAME,
+            documentKind: "production_report",
+          },
+        });
+        // Non-fatal: fall through to normal cache/backend path.
+      }
     }
-  } catch (error) {
-    boundary.error("backend_invoke_failure", error, {
+
+    // Manifest-driven version check: same source_version means immediate artifact reuse.
+    if (canUseClientHotCache) {
+      const cached = getProductionPdfClientCache(cacheKey);
+      if (cached) {
+        const isVersionMatch = manifestSourceVersion !== null && cached.sourceVersion === manifestSourceVersion;
+        const cacheStatus = isVersionMatch ? "manifest_version_hit" : "client_hot_hit";
+        boundary.success("backend_invoke_success", {
+          sourceKind: "remote-url",
+          extra: {
+            functionName: FUNCTION_NAME,
+            documentKind: "production_report",
+            renderBranch: cached.value.renderBranch,
+            renderer: cached.value.renderer,
+            cacheStatus,
+            manifestSourceVersion: manifestSourceVersion ?? null,
+          },
+        });
+        boundary.success("signed_url_received", {
+          sourceKind: "remote-url",
+          extra: {
+            fileName: cached.value.fileName,
+            cacheStatus,
+          },
+        });
+        return cached.value;
+      }
+    }
+
+    boundary.success("backend_invoke_start", {
       sourceKind: "backend_invoke",
-      errorStage: "backend_invoke",
       extra: {
         functionName: FUNCTION_NAME,
         documentKind: "production_report",
       },
     });
-    throw new DirectorProductionReportPdfBackendError(
-      error instanceof Error ? error.message : "director production report pdf backend failed",
-    );
-  } finally {
-    productionPdfClientInFlight.delete(cacheKey);
-  }
+    let result: DirectorProductionReportPdfBackendResult;
+    try {
+      result = await invokeProductionReportBackend(payload);
+      if (canUseClientHotCache) {
+        setProductionPdfClientCache(cacheKey, result, manifestSourceVersion);
+      }
+    } catch (error) {
+      boundary.error("backend_invoke_failure", error, {
+        sourceKind: "backend_invoke",
+        errorStage: "backend_invoke",
+        extra: {
+          functionName: FUNCTION_NAME,
+          documentKind: "production_report",
+        },
+      });
+      throw new DirectorProductionReportPdfBackendError(
+        error instanceof Error ? error.message : "director production report pdf backend failed",
+      );
+    }
 
-  boundary.success("backend_invoke_success", {
-    sourceKind: result.sourceKind,
-    extra: {
-      functionName: FUNCTION_NAME,
-      documentKind: "production_report",
-      renderBranch: result.renderBranch,
-      renderer: result.renderer,
-      cacheStatus: result.telemetry?.cacheStatus ?? null,
-    },
-  });
-  boundary.success("pdf_storage_uploaded", {
-    sourceKind: result.sourceKind,
-    extra: {
-      bucketId: result.bucketId,
-      storagePath: result.storagePath,
-    },
-  });
-  boundary.success("signed_url_received", {
-    sourceKind: result.sourceKind,
-    extra: {
-      fileName: result.fileName,
-    },
-  });
-
-  if (__DEV__) {
-    console.info(
-      `[director-production-report-pdf-backend] ${JSON.stringify({
-        companyName: payload.companyName ?? null,
-        generatedBy: payload.generatedBy ?? null,
-        periodFrom: payload.periodFrom ?? null,
-        periodTo: payload.periodTo ?? null,
-        objectName: payload.objectName ?? null,
-        preferPriceStage: payload.preferPriceStage ?? "priced",
-        clientSourceFingerprint: payload.clientSourceFingerprint ?? null,
-        transport: "supabase_functions",
+    boundary.success("backend_invoke_success", {
+      sourceKind: result.sourceKind,
+      extra: {
         functionName: FUNCTION_NAME,
+        documentKind: "production_report",
         renderBranch: result.renderBranch,
-        renderVersion: result.renderVersion,
         renderer: result.renderer,
-        signedUrl: result.signedUrl,
+        cacheStatus: result.telemetry?.cacheStatus ?? null,
+        manifestSourceVersion: manifestSourceVersion ?? null,
+      },
+    });
+    boundary.success("pdf_storage_uploaded", {
+      sourceKind: result.sourceKind,
+      extra: {
         bucketId: result.bucketId,
         storagePath: result.storagePath,
-      })}`,
-    );
-  }
+      },
+    });
+    boundary.success("signed_url_received", {
+      sourceKind: result.sourceKind,
+      extra: {
+        fileName: result.fileName,
+      },
+    });
 
-  return {
-    source: result.source,
-    bucketId: result.bucketId,
-    storagePath: result.storagePath,
-    signedUrl: result.signedUrl,
-    renderBranch: "backend_production_report_v1",
-    renderVersion: "v1",
-    renderer: result.renderer,
-    fileName: result.fileName,
-    expiresInSeconds: result.expiresInSeconds,
-    sourceKind: result.sourceKind,
-    telemetry: result.telemetry,
-  };
+    if (__DEV__) {
+      console.info(
+        `[director-production-report-pdf-backend] ${JSON.stringify({
+          companyName: payload.companyName ?? null,
+          generatedBy: payload.generatedBy ?? null,
+          periodFrom: payload.periodFrom ?? null,
+          periodTo: payload.periodTo ?? null,
+          objectName: payload.objectName ?? null,
+          preferPriceStage: payload.preferPriceStage ?? "priced",
+          clientSourceFingerprint: payload.clientSourceFingerprint ?? null,
+          transport: "supabase_functions",
+          functionName: FUNCTION_NAME,
+          renderBranch: result.renderBranch,
+          renderVersion: result.renderVersion,
+          renderer: result.renderer,
+          signedUrl: result.signedUrl,
+          bucketId: result.bucketId,
+          storagePath: result.storagePath,
+        })}`,
+      );
+    }
+
+    return result;
+  }).finally(() => {
+    if (productionPdfClientInFlight.get(cacheKey) === task) {
+      productionPdfClientInFlight.delete(cacheKey);
+    }
+  });
+  productionPdfClientInFlight.set(cacheKey, task);
+  return await task;
 }

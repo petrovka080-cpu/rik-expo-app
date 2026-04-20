@@ -330,6 +330,175 @@ export async function buildDirectorFinanceManagementManifestContract(
   };
 }
 
+// ─── Director Production Report PDF Manifest (PDF-Z2) ──────────────────────
+
+export const DIRECTOR_PRODUCTION_REPORT_MANIFEST_VERSION =
+  "pdf_z2_director_production_report_manifest_v1";
+export const DIRECTOR_PRODUCTION_REPORT_DOCUMENT_KIND =
+  "director_production_report";
+export const DIRECTOR_PRODUCTION_REPORT_TEMPLATE_VERSION =
+  "director_production_report_template_v1";
+export const DIRECTOR_PRODUCTION_REPORT_RENDER_CONTRACT_VERSION =
+  "backend_production_report_v1";
+export const DIRECTOR_PRODUCTION_REPORT_ARTIFACT_CONTRACT_VERSION =
+  "director_production_report_artifact_v1";
+
+const PRODUCTION_REPORT_SOURCE_VERSION_PREFIX = "dpr_src_v1";
+const PRODUCTION_REPORT_ARTIFACT_VERSION_PREFIX = "dpr_art_v1";
+const PRODUCTION_REPORT_SCOPE_VERSION_PREFIX = "dpr_scope_v1";
+const PRODUCTION_REPORT_FILE_NAME = "director_production_report.pdf";
+const PRODUCTION_REPORT_ARTIFACT_ROOT = "director/production_report/artifacts/v1";
+const PRODUCTION_REPORT_MANIFEST_ROOT = "director/production_report/manifests/v1";
+
+// Noise keys that should NOT affect source_version (timestamps, debug, cache meta)
+const PRODUCTION_REPORT_NOISE_KEYS = new Set([
+  "_debug",
+  "cache",
+  "duration_ms",
+  "durationMs",
+  "fetched_at",
+  "generated_at",
+  "loaded_at",
+  "nonce",
+  "request_id",
+  "signed_url",
+  "signedUrl",
+  "telemetry",
+  "timing",
+  "trace_id",
+  "traceId",
+  "transport",
+]);
+
+function stripProductionReportNoise(value: unknown, key?: string): unknown {
+  if (key && PRODUCTION_REPORT_NOISE_KEYS.has(key)) return undefined;
+  if (value == null) return null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" || typeof value === "boolean") return value;
+  if (Array.isArray(value)) return value.map((item) => stripProductionReportNoise(item));
+  if (typeof value === "object") {
+    const source = value as Record<string, unknown>;
+    const output: Record<string, unknown> = {};
+    for (const childKey of Object.keys(source).sort()) {
+      const childValue = stripProductionReportNoise(source[childKey], childKey);
+      if (childValue !== undefined) output[childKey] = childValue;
+    }
+    return output;
+  }
+  return toText(value);
+}
+
+export type DirectorProductionReportManifestStatus =
+  | "ready"
+  | "building"
+  | "stale"
+  | "failed"
+  | "missing";
+
+export type DirectorProductionReportDocumentScope = {
+  role: "director";
+  family: "reports";
+  report: "production";
+  periodFrom: string | null;
+  periodTo: string | null;
+  objectName: string | null;
+  preferPriceStage: "base" | "priced";
+};
+
+export type DirectorProductionReportManifestContract = {
+  version: typeof DIRECTOR_PRODUCTION_REPORT_MANIFEST_VERSION;
+  documentKind: typeof DIRECTOR_PRODUCTION_REPORT_DOCUMENT_KIND;
+  documentScope: DirectorProductionReportDocumentScope;
+  sourceVersion: string;
+  artifactVersion: string;
+  templateVersion: typeof DIRECTOR_PRODUCTION_REPORT_TEMPLATE_VERSION;
+  renderContractVersion: typeof DIRECTOR_PRODUCTION_REPORT_RENDER_CONTRACT_VERSION;
+  artifactPath: string;
+  manifestPath: string;
+  fileName: string;
+  lastSourceChangeAt: string | null;
+};
+
+export type BuildDirectorProductionReportManifestContractArgs = {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  objectName?: string | null;
+  preferPriceStage?: "base" | "priced" | null;
+  // Business-significant client fingerprint — derived from repData + repDiscipline
+  // Noise fields (timestamp, cache metadata) must be stripped before passing here.
+  clientSourceFingerprint?: string | null;
+};
+
+export function buildDirectorProductionReportDocumentScope(
+  args: Pick<
+    BuildDirectorProductionReportManifestContractArgs,
+    "periodFrom" | "periodTo" | "objectName" | "preferPriceStage"
+  >,
+): DirectorProductionReportDocumentScope {
+  return {
+    role: "director",
+    family: "reports",
+    report: "production",
+    periodFrom: normalizeIso10(args.periodFrom),
+    periodTo: normalizeIso10(args.periodTo),
+    objectName: toText(args.objectName) || null,
+    preferPriceStage: args.preferPriceStage === "base" ? "base" : "priced",
+  };
+}
+
+export async function buildDirectorProductionReportManifestContract(
+  args: BuildDirectorProductionReportManifestContractArgs,
+): Promise<DirectorProductionReportManifestContract> {
+  const documentScope = buildDirectorProductionReportDocumentScope(args);
+
+  // source_version is deterministic from business inputs only.
+  // companyName, generatedBy, timestamps are noise — excluded.
+  const sourceIdentity = {
+    contractVersion: DIRECTOR_PRODUCTION_REPORT_MANIFEST_VERSION,
+    documentKind: DIRECTOR_PRODUCTION_REPORT_DOCUMENT_KIND,
+    documentScope,
+    source: {
+      sourceKind: "rpc:director_production_report_v1",
+      // clientSourceFingerprint already strips noise — it's hash(repData + repDiscipline)
+      clientSourceFingerprint: stripProductionReportNoise(
+        toText(args.clientSourceFingerprint) || null,
+      ),
+    },
+  };
+  const sourceHash = await stableHash(sourceIdentity);
+  const sourceVersion = `${PRODUCTION_REPORT_SOURCE_VERSION_PREFIX}_${sourceHash}`;
+
+  const artifactHash = await stableHash({
+    artifactContractVersion: DIRECTOR_PRODUCTION_REPORT_ARTIFACT_CONTRACT_VERSION,
+    sourceVersion,
+    templateVersion: DIRECTOR_PRODUCTION_REPORT_TEMPLATE_VERSION,
+    renderContractVersion: DIRECTOR_PRODUCTION_REPORT_RENDER_CONTRACT_VERSION,
+  });
+  const artifactVersion = `${PRODUCTION_REPORT_ARTIFACT_VERSION_PREFIX}_${artifactHash}`;
+
+  const scopeHash = await stableHash({
+    scopeVersion: PRODUCTION_REPORT_SCOPE_VERSION_PREFIX,
+    documentKind: DIRECTOR_PRODUCTION_REPORT_DOCUMENT_KIND,
+    documentScope,
+  });
+
+  return {
+    version: DIRECTOR_PRODUCTION_REPORT_MANIFEST_VERSION,
+    documentKind: DIRECTOR_PRODUCTION_REPORT_DOCUMENT_KIND,
+    documentScope,
+    sourceVersion,
+    artifactVersion,
+    templateVersion: DIRECTOR_PRODUCTION_REPORT_TEMPLATE_VERSION,
+    renderContractVersion: DIRECTOR_PRODUCTION_REPORT_RENDER_CONTRACT_VERSION,
+    artifactPath: `${PRODUCTION_REPORT_ARTIFACT_ROOT}/${sanitizePathSegment(artifactVersion)}/${PRODUCTION_REPORT_FILE_NAME}`,
+    manifestPath: `${PRODUCTION_REPORT_MANIFEST_ROOT}/${sanitizePathSegment(scopeHash)}.json`,
+    fileName: PRODUCTION_REPORT_FILE_NAME,
+    lastSourceChangeAt: null,
+  };
+}
+
+// ─── End Director Production Report PDF Manifest ───────────────────────────
+
 function toInteger(value: unknown) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : null;

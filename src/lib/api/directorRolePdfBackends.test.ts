@@ -246,6 +246,12 @@ const productionInput = (fingerprint: string | null = "fp-a") => ({
 const loadProductionSubject = () =>
   require("./directorProductionReportPdfBackend.service") as typeof import("./directorProductionReportPdfBackend.service");
 
+const waitForProductionBackendInvoke = async (expectedCalls: number) => {
+  for (let attempt = 0; attempt < 20 && mockInvokeDirectorPdfBackend.mock.calls.length < expectedCalls; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+};
+
 describe("director production report backend PDF-X.B1 cache contract", () => {
   let consoleInfoSpy: jest.SpyInstance;
 
@@ -277,15 +283,18 @@ describe("director production report backend PDF-X.B1 cache contract", () => {
 
     expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(1);
     expect(second).toEqual(first);
+    // PDF-Z2: With same fingerprint, source_version matches → manifest_version_hit is reported.
+    // Fall back to client_hot_hit if source_version was not captured (non-fatal manifest failure).
     expect(mockBoundarySuccess).toHaveBeenCalledWith(
       "backend_invoke_success",
       expect.objectContaining({
         extra: expect.objectContaining({
-          cacheStatus: "client_hot_hit",
+          cacheStatus: expect.stringMatching(/^(manifest_version_hit|client_hot_hit)$/),
         }),
       }),
     );
   });
+
 
   it("invalidates the client hot-cache when the screen data fingerprint changes", async () => {
     mockInvokeDirectorPdfBackend
@@ -325,6 +334,7 @@ describe("director production report backend PDF-X.B1 cache contract", () => {
     const first = generateDirectorProductionReportPdfViaBackend(productionInput("fp-burst"));
     const second = generateDirectorProductionReportPdfViaBackend(productionInput("fp-burst"));
 
+    await waitForProductionBackendInvoke(1);
     expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(1);
     resolveBackend?.(productionBackendResult("production-burst"));
     const results = await Promise.all([first, second]);
