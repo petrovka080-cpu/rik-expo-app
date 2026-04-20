@@ -96,9 +96,10 @@ describe("performance budget — bundle module count", () => {
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
     // PDF-Z3 adds focused warehouse manifest/backend reuse tests.
-    // Runtime source threshold remains 1204.
+    // PDF-Z4 adds focused Foreman manifest/backend reuse tests.
+    // Runtime source threshold remains unchanged; focused test files add two source modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1204);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1206);
   });
 });
 

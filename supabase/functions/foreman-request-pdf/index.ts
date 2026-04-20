@@ -2,7 +2,10 @@
 // @ts-nocheck
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { normalizeForemanRequestPdfRequest } from "../../../src/lib/pdf/foremanRequestPdf.shared.ts";
+import {
+  buildForemanRequestManifestContract,
+  normalizeForemanRequestPdfRequest,
+} from "../../../src/lib/pdf/foremanRequestPdf.shared.ts";
 import {
   createCanonicalPdfErrorResponse,
   createCanonicalPdfOptionsResponse,
@@ -11,7 +14,6 @@ import {
 import { resolveForemanRequestPdfAccess } from "../../../src/lib/pdf/rolePdfAuth.ts";
 import {
   buildCanonicalPdfFileName,
-  buildStoragePath,
   cleanText,
   normalizePdfFileName,
   renderPdfBytes,
@@ -23,6 +25,7 @@ import { renderForemanRequestPdfHtml } from "../_shared/foremanRequestPdfHtml.ts
 const FUNCTION_NAME = "foreman-request-pdf";
 const DEFAULT_BUCKET = "role_pdf_exports";
 const RENDER_BRANCH = "backend_foreman_request_v1";
+const FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION = "pdf_z4_foreman_request_artifact_v1";
 
 const asObject = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
@@ -433,6 +436,82 @@ async function loadRequestPdfModel(admin: any, requestId: string) {
   };
 }
 
+function buildForemanRequestSourceModel(model: Record<string, unknown>) {
+  return {
+    requestLabel: model.requestLabel ?? null,
+    comment: model.comment ?? null,
+    foremanName: model.foremanName ?? null,
+    metaFields: model.metaFields ?? [],
+    rows: model.rows ?? [],
+  };
+}
+
+async function trySignExistingPdfArtifact(args: {
+  admin: any;
+  bucketId: string;
+  storagePath: string;
+}) {
+  const slashIndex = args.storagePath.lastIndexOf("/");
+  const prefix = slashIndex >= 0 ? args.storagePath.slice(0, slashIndex) : "";
+  const objectName = slashIndex >= 0 ? args.storagePath.slice(slashIndex + 1) : args.storagePath;
+  const listed = await args.admin.storage.from(args.bucketId).list(prefix, {
+    limit: 1,
+    search: objectName,
+  });
+  if (listed.error || !Array.isArray(listed.data)) return null;
+  const exists = listed.data.some((item: Record<string, unknown>) => cleanText(item?.name) === objectName);
+  if (!exists) return null;
+
+  const ttlSeconds = resolveSignedUrlTtlSeconds();
+  const signed = await args.admin.storage.from(args.bucketId).createSignedUrl(args.storagePath, ttlSeconds);
+  const signedUrl = cleanText(signed.data?.signedUrl);
+  if (signed.error || !signedUrl) return null;
+  return {
+    bucketId: args.bucketId,
+    storagePath: args.storagePath,
+    signedUrl,
+    expiresInSeconds: ttlSeconds,
+  };
+}
+
+function isStorageAlreadyExistsError(error: unknown) {
+  const message = cleanText((error as { message?: unknown } | null)?.message).toLowerCase();
+  const status = cleanText((error as { statusCode?: unknown } | null)?.statusCode);
+  return status === "409" || message.includes("already exists") || message.includes("duplicate");
+}
+
+async function uploadForemanRequestPdfArtifact(args: {
+  admin: any;
+  bucketId: string;
+  storagePath: string;
+  bytes: Uint8Array;
+}) {
+  try {
+    const uploaded = await uploadCanonicalPdf({
+      admin: args.admin,
+      bucketId: args.bucketId,
+      storagePath: args.storagePath,
+      bytes: args.bytes,
+      ttlSeconds: resolveSignedUrlTtlSeconds(),
+    });
+    return {
+      bucketId: args.bucketId,
+      storagePath: uploaded.storagePath,
+      signedUrl: uploaded.signedUrl,
+    };
+  } catch (error) {
+    if (isStorageAlreadyExistsError(error)) {
+      const existing = await trySignExistingPdfArtifact({
+        admin: args.admin,
+        bucketId: args.bucketId,
+        storagePath: args.storagePath,
+      });
+      if (existing) return existing;
+    }
+    throw error;
+  }
+}
+
 const serverPort = Number(Deno.env.get("PORT") ?? "8000");
 
 Deno.serve({ port: Number.isFinite(serverPort) ? serverPort : 8000 }, async (request) => {
@@ -467,7 +546,10 @@ Deno.serve({ port: Number.isFinite(serverPort) ? serverPort : 8000 }, async (req
       userId: auth.userId,
     });
 
+    const totalStartedAt = Date.now();
+    const sourceStartedAt = Date.now();
     const model = await loadRequestPdfModel(admin, payload.requestId);
+    const sourceLoadedAt = Date.now();
     const title = model.requestLabel ? `Заявка ${model.requestLabel}` : `Заявка ${payload.requestId}`;
     const fileName = normalizePdfFileName(
       buildCanonicalPdfFileName({
@@ -477,15 +559,79 @@ Deno.serve({ port: Number.isFinite(serverPort) ? serverPort : 8000 }, async (req
       }),
       "request",
     );
-    const html = renderForemanRequestPdfHtml(model);
-    const { pdfBytes, renderer } = await renderPdfBytes(html);
-    const storagePath = buildStoragePath("foreman/request", fileName);
-    const uploaded = await uploadCanonicalPdf({
+    const artifact = await buildForemanRequestManifestContract({
+      requestId: payload.requestId,
+      sourceModel: buildForemanRequestSourceModel(model),
+      fileName,
+    });
+    const cachedArtifact = await trySignExistingPdfArtifact({
       admin,
       bucketId,
-      storagePath,
+      storagePath: artifact.artifactPath,
+    });
+
+    if (cachedArtifact) {
+      console.info(`[${FUNCTION_NAME}] backend_foreman_request_artifact_hit`, {
+        requestId: payload.requestId,
+        bucketId: cachedArtifact.bucketId,
+        storagePath: cachedArtifact.storagePath,
+        sourceVersion: artifact.sourceVersion,
+        artifactVersion: artifact.artifactVersion,
+        sourceMs: sourceLoadedAt - sourceStartedAt,
+        totalMs: Date.now() - totalStartedAt,
+      });
+
+      return createCanonicalPdfSuccessResponse({
+        role: "foreman",
+        documentType: "request",
+        bucketId: cachedArtifact.bucketId,
+        storagePath: cachedArtifact.storagePath,
+        signedUrl: cachedArtifact.signedUrl,
+        fileName,
+        generatedAt: new Date().toISOString(),
+        renderBranch: RENDER_BRANCH,
+        renderer: "artifact_cache",
+        telemetry: {
+          functionName: FUNCTION_NAME,
+          requestId: payload.requestId,
+          title,
+          requestedByUserId: auth.userId,
+          cacheStatus: "artifact_hit",
+          cacheVersion: FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION,
+          templateVersion: artifact.templateVersion,
+          sourceVersion: artifact.sourceVersion,
+          artifactVersion: artifact.artifactVersion,
+          sourceMs: sourceLoadedAt - sourceStartedAt,
+          renderMs: 0,
+          uploadAndSignMs: 0,
+          totalMs: Date.now() - totalStartedAt,
+        },
+      });
+    }
+
+    const html = renderForemanRequestPdfHtml(model);
+    const renderStartedAt = Date.now();
+    const { pdfBytes, renderer } = await renderPdfBytes(html);
+    const renderFinishedAt = Date.now();
+    const uploadStartedAt = Date.now();
+    const uploaded = await uploadForemanRequestPdfArtifact({
+      admin,
+      bucketId,
+      storagePath: artifact.artifactPath,
       bytes: pdfBytes,
-      ttlSeconds: resolveSignedUrlTtlSeconds(),
+    });
+    const uploadFinishedAt = Date.now();
+
+    console.info(`[${FUNCTION_NAME}] backend_foreman_request_artifact_miss`, {
+      requestId: payload.requestId,
+      bucketId: uploaded.bucketId,
+      storagePath: uploaded.storagePath,
+      sourceVersion: artifact.sourceVersion,
+      artifactVersion: artifact.artifactVersion,
+      sourceMs: sourceLoadedAt - sourceStartedAt,
+      renderMs: renderFinishedAt - renderStartedAt,
+      uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
+      totalMs: uploadFinishedAt - totalStartedAt,
     });
 
     return createCanonicalPdfSuccessResponse({
@@ -503,6 +649,17 @@ Deno.serve({ port: Number.isFinite(serverPort) ? serverPort : 8000 }, async (req
         requestId: payload.requestId,
         title,
         requestedByUserId: auth.userId,
+        cacheStatus: "artifact_miss",
+        cacheVersion: FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION,
+        templateVersion: artifact.templateVersion,
+        sourceVersion: artifact.sourceVersion,
+        artifactVersion: artifact.artifactVersion,
+        sourceMs: sourceLoadedAt - sourceStartedAt,
+        renderMs: renderFinishedAt - renderStartedAt,
+        uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
+        totalMs: uploadFinishedAt - totalStartedAt,
+        htmlLength: html.length,
+        pdfSizeBytes: pdfBytes.byteLength,
       },
     });
   } catch (error) {

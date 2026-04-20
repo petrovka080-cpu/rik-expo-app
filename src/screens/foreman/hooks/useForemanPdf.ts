@@ -35,6 +35,10 @@ export function useForemanPdf(gbusy: BusyCtx) {
           requestId: ridKey,
           generatedBy: requestDetails?.foreman_name ?? null,
           displayNo: requestDetails?.display_no ?? null,
+          status: requestDetails?.status ?? null,
+          createdAt: requestDetails?.created_at ?? null,
+          updatedAt: requestDetails?.updated_at ?? null,
+          objectName: requestDetails?.object_name_ru ?? null,
           title: requestDetails?.display_no
             ? `Заявка ${requestDetails.display_no}`
             : `Заявка ${ridKey}`,

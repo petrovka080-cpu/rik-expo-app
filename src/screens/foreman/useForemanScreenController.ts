@@ -290,11 +290,16 @@ export function useForemanScreenController() {
     const rid = ridStr(reqId);
     if (!rid) return;
     try {
+      const historyRequest = historyRequests.find((entry) => ridStr(entry.id) === rid) ?? null;
       const createDescriptor = async () => {
         const descriptor = await buildForemanRequestPdfDescriptor({
           requestId: rid,
           generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
-          displayNo: requestDetails?.display_no ?? `#${shortId(rid)}`,
+          displayNo: historyRequest?.display_no ?? requestDetails?.display_no ?? `#${shortId(rid)}`,
+          status: historyRequest?.status ?? requestDetails?.status ?? null,
+          createdAt: historyRequest?.created_at ?? requestDetails?.created_at ?? null,
+          updatedAt: requestDetails?.updated_at ?? null,
+          objectName: historyRequest?.object_name_ru ?? requestDetails?.object_name_ru ?? null,
           title: `Заявка ${rid}`,
         });
         if (__DEV__) console.info("[foreman-pdf] history_open_descriptor", {
@@ -336,8 +341,13 @@ export function useForemanScreenController() {
     authIdentity.fullName,
     closeHistory,
     gbusy,
+    historyRequests,
+    requestDetails?.created_at,
     requestDetails?.display_no,
     requestDetails?.foreman_name,
+    requestDetails?.object_name_ru,
+    requestDetails?.status,
+    requestDetails?.updated_at,
     router,
   ]);
 

@@ -1,12 +1,17 @@
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import { generateForemanRequestPdfViaBackend } from "../../lib/api/foremanRequestPdfBackend.service";
+import { buildForemanRequestClientSourceFingerprint } from "../../lib/pdf/foremanRequestPdf.shared";
 import { getUriScheme } from "../../lib/pdfFileContract";
 
 export async function buildForemanRequestPdfDescriptor(args: {
   requestId: string;
   generatedBy?: string | null;
   displayNo?: string | null;
+  status?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  objectName?: string | null;
   title?: string | null;
 }) {
   const requestId = String(args.requestId ?? "").trim();
@@ -26,6 +31,14 @@ export async function buildForemanRequestPdfDescriptor(args: {
     documentType: "request",
     requestId,
     generatedBy: args.generatedBy ?? null,
+    clientSourceFingerprint: buildForemanRequestClientSourceFingerprint({
+      requestId,
+      displayNo: args.displayNo ?? null,
+      status: args.status ?? null,
+      createdAt: args.createdAt ?? null,
+      updatedAt: args.updatedAt ?? null,
+      objectName: args.objectName ?? null,
+    }),
   });
 
   const displayNo = String(args.displayNo ?? "").trim();

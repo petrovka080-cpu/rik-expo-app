@@ -16,7 +16,7 @@ describe("foreman.requestPdf.service", () => {
         uri: "https://example.com/foreman-request.pdf",
       },
       bucketId: "role_pdf_exports",
-      storagePath: "foreman/request/2026/04/04/file.pdf",
+      storagePath: "foreman/request/artifacts/v1/version/file.pdf",
       signedUrl: "https://example.com/foreman-request.pdf",
       fileName: "request_123.pdf",
       mimeType: "application/pdf",
@@ -32,9 +32,13 @@ describe("foreman.requestPdf.service", () => {
   it("builds a generated foreman descriptor from the canonical backend result", async () => {
     const descriptor = await buildForemanRequestPdfDescriptor({
       requestId: "123",
-      generatedBy: "Иван",
+      generatedBy: "Ivan",
       displayNo: "REQ-123",
-      title: "Заявка REQ-123",
+      status: "pending",
+      createdAt: "2026-04-04T00:00:00.000Z",
+      updatedAt: "2026-04-04T00:00:00.000Z",
+      objectName: "Tower A",
+      title: "Request REQ-123",
     });
 
     expect(mockGenerateForemanRequestPdfViaBackend).toHaveBeenCalledWith({
@@ -42,13 +46,14 @@ describe("foreman.requestPdf.service", () => {
       role: "foreman",
       documentType: "request",
       requestId: "123",
-      generatedBy: "Иван",
+      generatedBy: "Ivan",
+      clientSourceFingerprint: expect.stringMatching(/^frq_client_v1_/),
     });
     expect(descriptor.originModule).toBe("foreman");
     expect(descriptor.documentType).toBe("request");
     expect(descriptor.fileSource.kind).toBe("remote-url");
     expect(descriptor.uri).toBe("https://example.com/foreman-request.pdf");
     expect(descriptor.fileName).toBe("request_123.pdf");
-    expect(descriptor.title).toBe("Заявка REQ-123");
+    expect(descriptor.title).toBe("Request REQ-123");
   });
 });
