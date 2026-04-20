@@ -1,0 +1,72 @@
+[
+  {
+    "source_location": "src/lib/security/redaction.ts",
+    "leak_class": "shared redaction boundary",
+    "scenario": "Signed Supabase URL with token-like query parameters is prepared for diagnostics.",
+    "expected_safe_output": "Query secret values are replaced with [redacted] while the diagnostic string remains readable.",
+    "result": "PASS"
+  },
+  {
+    "source_location": "app/pdf-viewer.tsx",
+    "leak_class": "viewer route and iframe diagnostics",
+    "scenario": "PDF viewer logs route params, web iframe source, load errors, native handoff payloads, or error-state payloads.",
+    "expected_safe_output": "Console payloads pass through redactSensitiveRecord/redactSensitiveText; openToken and signed URL query values are redacted.",
+    "result": "PASS"
+  },
+  {
+    "source_location": "src/lib/documents/attachmentOpener.ts",
+    "leak_class": "attachment open diagnostics",
+    "scenario": "Android intent or remote PDF open diagnostics include a signed storage URL.",
+    "expected_safe_output": "The runtime URL is used for opening, but the logged URI and error message are redacted.",
+    "result": "PASS"
+  },
+  {
+    "source_location": "src/lib/api/directorProductionReportPdfBackend.service.ts",
+    "leak_class": "director PDF backend dev diagnostics",
+    "scenario": "Production report backend returns a signed artifact URL and emits a dev diagnostic payload.",
+    "expected_safe_output": "The product result keeps signedUrl; the diagnostic JSON payload uses redactSensitiveRecord.",
+    "result": "PASS"
+  },
+  {
+    "source_location": "src/lib/api/canonicalPdfBackendInvoker.ts",
+    "leak_class": "transport error detail leakage",
+    "scenario": "Canonical PDF backend transport returns an error or response summary containing token-bearing text.",
+    "expected_safe_output": "Thrown diagnostic detail and dev console output redact token-bearing values before surfacing.",
+    "result": "PASS"
+  },
+  {
+    "source_location": "src/lib/observability/platformObservability.ts",
+    "leak_class": "observability payload persistence",
+    "scenario": "Platform observability receives errorMessage or extra data containing signed URLs, hrefs, or authorization values.",
+    "expected_safe_output": "Stored event details and extras contain redacted values only.",
+    "result": "PASS"
+  },
+  {
+    "source_location": "src/lib/logError.ts",
+    "leak_class": "app error payload persistence",
+    "scenario": "logError receives an Error or extra payload containing signed URLs or tokens.",
+    "expected_safe_output": "Persisted app_errors payload and dev console diagnostic are redacted.",
+    "result": "PASS"
+  },
+  {
+    "source_location": "src/lib/pdf/pdfCrashBreadcrumbs.ts",
+    "leak_class": "PDF crash breadcrumb persistence",
+    "scenario": "PDF crash breadcrumbs include uriTail, openToken, errorMessage, or nested extras with signed URL data.",
+    "expected_safe_output": "AsyncStorage breadcrumb data stores redacted URI/error/extras and secret presence only.",
+    "result": "PASS"
+  },
+  {
+    "source_location": "src/lib/documents/pdfDocumentActions.ts",
+    "leak_class": "route/open-path diagnostics",
+    "scenario": "PDF document action diagnostics include sourceUri, finalUri, route params JSON, or openToken.",
+    "expected_safe_output": "Diagnostics keep route/open signal but redact token-bearing values.",
+    "result": "PASS"
+  },
+  {
+    "source_location": "artifacts/A4_security_signed_url_redaction_proof.md",
+    "leak_class": "proof artifact evidence handling",
+    "scenario": "Security proof records examples and release details.",
+    "expected_safe_output": "Examples use synthetic values and redacted forms; no real signed URL/token is stored.",
+    "result": "PASS"
+  }
+]
