@@ -536,6 +536,23 @@ describe("mutationWorker contract", () => {
       expect.objectContaining({
         screen: "foreman",
         surface: "offline_mutation_worker",
+        event: "terminal_guard_remote_inspection_failed",
+        result: "error",
+        sourceKind: "offline:foreman_draft",
+        errorClass: "pgrst500",
+        errorMessage: "remote read failed",
+        extra: expect.objectContaining({
+          requestId: snapshot.requestId,
+          draftKey: snapshot.requestId,
+          appErrorSeverity: "warn",
+          fallbackReason: "proceed_with_normal_sync",
+        }),
+      }),
+    );
+    expect(mockedRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "foreman",
+        surface: "offline_mutation_worker",
         event: "remote_draft_inspection_failed",
         result: "error",
         sourceKind: "offline:foreman_draft",

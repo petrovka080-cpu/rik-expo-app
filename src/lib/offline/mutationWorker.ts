@@ -590,7 +590,31 @@ const runFlush = async (
             drainDurationMs: Date.now() - drainStartedAt,
           };
         }
-      } catch {
+      } catch (error) {
+        const appError = normalizeAppError(
+          error,
+          "foreman_mutation_worker_terminal_guard",
+          "warn",
+        );
+        recordPlatformObservability({
+          screen: "foreman",
+          surface: "offline_mutation_worker",
+          category: "fetch",
+          event: "terminal_guard_remote_inspection_failed",
+          result: "error",
+          sourceKind: "offline:foreman_draft",
+          errorStage: appError.context,
+          errorClass: appError.code,
+          errorMessage: appError.message,
+          extra: {
+            requestId: requestIdForGuard,
+            draftKey: entry.payload.draftKey,
+            appErrorCode: appError.code,
+            appErrorContext: appError.context,
+            appErrorSeverity: appError.severity,
+            fallbackReason: "proceed_with_normal_sync",
+          },
+        });
         // Remote inspection failure is non-fatal; proceed with normal sync.
       }
     }

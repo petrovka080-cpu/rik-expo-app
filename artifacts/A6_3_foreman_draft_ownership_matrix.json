@@ -1,0 +1,30 @@
+[
+  {
+    "test": "mutationWorker contract surfaces best-effort remote inspection failures instead of swallowing them",
+    "target": "src/lib/offline/mutationWorker.ts",
+    "scenario": "pre-sync terminal guard inspectRemoteDraft throws before normal sync",
+    "expected": "worker emits terminal_guard_remote_inspection_failed and still proceeds with normal sync path",
+    "result": "PASS"
+  },
+  {
+    "test": "mutationWorker contract",
+    "target": "foreman mutation worker",
+    "scenario": "full worker focused contract suite",
+    "expected": "queue, retry, conflict, terminal, and recovery behavior unchanged",
+    "result": "PASS"
+  },
+  {
+    "test": "mutationQueue contract",
+    "target": "foreman mutation queue",
+    "scenario": "queue ordering, coalescing, inflight reset, retry metadata, and stale overwrite protection",
+    "expected": "queue ownership behavior unchanged",
+    "result": "PASS"
+  },
+  {
+    "test": "offline suite",
+    "target": "offline platform",
+    "scenario": "offline queue, recovery, conflict classifier, worker, and status host tests",
+    "expected": "platform offline behavior remains green",
+    "result": "PASS"
+  }
+]
