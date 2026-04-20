@@ -1,5 +1,6 @@
 import { beginCanonicalPdfBoundary } from "../pdf/canonicalPdfObservability";
 import {
+  buildWarehouseIssueRegisterManifestContract,
   buildWarehouseIncomingRegisterManifestContract,
   normalizeWarehousePdfRequest,
   type WarehousePdfRequest,
@@ -68,8 +69,11 @@ function buildWarehousePdfClientCacheKey(payload: WarehousePdfRequest) {
   ].join("|");
 }
 
-function canUseWarehouseIncomingRegisterHotCache(payload: WarehousePdfRequest) {
-  return payload.documentKind === "incoming_register" && Boolean(payload.clientSourceFingerprint);
+function canUseWarehouseRegisterHotCache(payload: WarehousePdfRequest) {
+  return (
+    (payload.documentKind === "incoming_register" || payload.documentKind === "issue_register") &&
+    Boolean(payload.clientSourceFingerprint)
+  );
 }
 
 function getWarehousePdfClientCache(key: string): WarehousePdfClientCacheEntry | null {
@@ -107,8 +111,15 @@ function hashWarehousePdfCacheKey(value: string) {
   return (hash >>> 0).toString(36);
 }
 
-function buildWarehousePdfStoredCacheKey(cacheKey: string) {
-  return `pdf.z3.warehouse.incoming_register.v1.${hashWarehousePdfCacheKey(cacheKey)}`;
+function buildWarehousePdfStoredCacheKey(
+  cacheKey: string,
+  documentKind: WarehousePdfRequest["documentKind"],
+) {
+  const prefix =
+    documentKind === "incoming_register"
+      ? "pdf.z3.warehouse.incoming_register.v1"
+      : "pdf.final.warehouse.issue_register.v1";
+  return `${prefix}.${hashWarehousePdfCacheKey(cacheKey)}`;
 }
 
 function isWarehousePdfStoredCacheEntry(value: unknown): value is WarehousePdfStoredCacheEntry {
@@ -122,10 +133,11 @@ function isWarehousePdfStoredCacheEntry(value: unknown): value is WarehousePdfSt
 
 async function readWarehousePdfStoredCache(
   cacheKey: string,
+  documentKind: WarehousePdfRequest["documentKind"],
   sourceVersion: string | null,
 ): Promise<WarehousePdfClientCacheEntry | null> {
   if (!sourceVersion) return null;
-  const storageKey = buildWarehousePdfStoredCacheKey(cacheKey);
+  const storageKey = buildWarehousePdfStoredCacheKey(cacheKey, documentKind);
   const stored = await readStoredJson<WarehousePdfStoredCacheEntry>({
     screen: "warehouse",
     surface: "warehouse_pdf_backend",
@@ -149,6 +161,7 @@ async function readWarehousePdfStoredCache(
 
 async function writeWarehousePdfStoredCache(
   cacheKey: string,
+  documentKind: WarehousePdfRequest["documentKind"],
   value: WarehousePdfBackendResult,
   sourceVersion: string | null,
 ) {
@@ -157,7 +170,7 @@ async function writeWarehousePdfStoredCache(
     {
       screen: "warehouse",
       surface: "warehouse_pdf_backend",
-      key: buildWarehousePdfStoredCacheKey(cacheKey),
+      key: buildWarehousePdfStoredCacheKey(cacheKey, documentKind),
       ttlMs: WAREHOUSE_PDF_CLIENT_CACHE_TTL_MS,
     },
     {
@@ -224,7 +237,7 @@ export async function generateWarehousePdfViaBackend(
   });
 
   const cacheKey = buildWarehousePdfClientCacheKey(payload);
-  const canUseClientHotCache = canUseWarehouseIncomingRegisterHotCache(payload);
+  const canUseClientHotCache = canUseWarehouseRegisterHotCache(payload);
   const alreadyInFlight = warehousePdfClientInFlight.get(cacheKey);
   if (alreadyInFlight) {
     return await alreadyInFlight;
@@ -235,13 +248,22 @@ export async function generateWarehousePdfViaBackend(
     let manifestSourceVersion: string | null = null;
     if (canUseClientHotCache) {
       try {
-        const manifest = await buildWarehouseIncomingRegisterManifestContract({
-          periodFrom: "periodFrom" in payload ? payload.periodFrom : null,
-          periodTo: "periodTo" in payload ? payload.periodTo : null,
-          companyName: payload.companyName,
-          warehouseName: payload.warehouseName,
-          clientSourceFingerprint: payload.clientSourceFingerprint,
-        });
+        const manifest =
+          payload.documentKind === "issue_register"
+            ? await buildWarehouseIssueRegisterManifestContract({
+                periodFrom: "periodFrom" in payload ? payload.periodFrom : null,
+                periodTo: "periodTo" in payload ? payload.periodTo : null,
+                companyName: payload.companyName,
+                warehouseName: payload.warehouseName,
+                clientSourceFingerprint: payload.clientSourceFingerprint,
+              })
+            : await buildWarehouseIncomingRegisterManifestContract({
+                periodFrom: "periodFrom" in payload ? payload.periodFrom : null,
+                periodTo: "periodTo" in payload ? payload.periodTo : null,
+                companyName: payload.companyName,
+                warehouseName: payload.warehouseName,
+                clientSourceFingerprint: payload.clientSourceFingerprint,
+              });
         manifestSourceVersion = manifest.sourceVersion;
       } catch (error) {
         boundary.error("backend_invoke_failure", error, {
@@ -283,7 +305,11 @@ export async function generateWarehousePdfViaBackend(
         return cached.value;
       }
 
-      const stored = await readWarehousePdfStoredCache(cacheKey, manifestSourceVersion);
+      const stored = await readWarehousePdfStoredCache(
+        cacheKey,
+        payload.documentKind,
+        manifestSourceVersion,
+      );
       if (stored) {
         setWarehousePdfClientCache(cacheKey, stored.value, stored.sourceVersion);
         boundary.success("backend_invoke_success", {
@@ -322,7 +348,12 @@ export async function generateWarehousePdfViaBackend(
       result = await invokeWarehousePdfBackend(payload);
       if (canUseClientHotCache) {
         setWarehousePdfClientCache(cacheKey, result, manifestSourceVersion);
-        await writeWarehousePdfStoredCache(cacheKey, result, manifestSourceVersion);
+        await writeWarehousePdfStoredCache(
+          cacheKey,
+          payload.documentKind,
+          result,
+          manifestSourceVersion,
+        );
       }
     } catch (error) {
       boundary.error("backend_invoke_failure", error, {

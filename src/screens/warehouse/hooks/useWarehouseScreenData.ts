@@ -1,7 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
 import { Platform } from "react-native";
 import { supabase } from "../../../lib/supabaseClient";
-import { buildWarehouseIncomingRegisterClientSourceFingerprint } from "../../../lib/pdf/warehousePdf.shared";
+import {
+  buildWarehouseIncomingRegisterClientSourceFingerprint,
+  buildWarehouseIssueRegisterClientSourceFingerprint,
+} from "../../../lib/pdf/warehousePdf.shared";
 import { useGlobalBusy } from "../../../ui/GlobalBusy";
 import { showToast } from "../../../ui/toast";
 import { useWarehouseIncoming } from "../warehouse.incoming";
@@ -180,6 +183,15 @@ export function useWarehouseScreenData(params: {
       }),
     [periodFrom, periodTo, repIncoming],
   );
+  const issueRegisterSourceFingerprint = useMemo(
+    () =>
+      buildWarehouseIssueRegisterClientSourceFingerprint({
+        periodFrom,
+        periodTo,
+        issueRows: repIssues,
+      }),
+    [periodFrom, periodTo, repIssues],
+  );
   const reportsUi = useWarehouseReports({
     busy,
     supabase,
@@ -214,6 +226,7 @@ export function useWarehouseScreenData(params: {
     notifyError,
     orgName: ORG_NAME,
     warehouseName: WAREHOUSE_NAME,
+    issueRegisterSourceFingerprint,
     incomingRegisterSourceFingerprint,
   });
   const {

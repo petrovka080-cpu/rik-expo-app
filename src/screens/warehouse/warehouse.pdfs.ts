@@ -34,6 +34,7 @@ type UseWarehousePdfArgs = {
   notifyError: (title: string, message?: string) => void;
   orgName: string;
   warehouseName?: string;
+  issueRegisterSourceFingerprint?: string | null;
   incomingRegisterSourceFingerprint?: string | null;
 };
 
@@ -47,6 +48,7 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
     notifyError,
     orgName,
     warehouseName,
+    issueRegisterSourceFingerprint,
     incomingRegisterSourceFingerprint,
   } = args;
 
@@ -219,11 +221,14 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
         warehouseName: warehouseName || null,
         ...(isIncoming && incomingRegisterSourceFingerprint
           ? { clientSourceFingerprint: incomingRegisterSourceFingerprint }
-          : {}),
+          : !isIncoming && issueRegisterSourceFingerprint
+            ? { clientSourceFingerprint: issueRegisterSourceFingerprint }
+            : {}),
       },
     });
   }, [
     incomingRegisterSourceFingerprint,
+    issueRegisterSourceFingerprint,
     orgName,
     periodFrom,
     periodTo,

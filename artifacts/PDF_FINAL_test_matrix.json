@@ -1,0 +1,58 @@
+{
+  "wave": "PDF-FINAL",
+  "status": "PASS",
+  "targeted": [
+    {
+      "command": "npx jest src/lib/pdf/warehousePdf.manifest.test.ts src/lib/api/warehousePdfBackend.service.test.ts src/screens/warehouse/warehouse.pdfs.test.tsx tests/pdf/pdfZ3WarehouseIncomingRegisterArtifactCache.test.ts --runInBand --no-coverage",
+      "result": "PASS",
+      "suites": 4,
+      "tests": 22
+    },
+    {
+      "command": "npx jest tests/pdf/pdfZ1DirectorFinanceManifest.test.ts tests/pdf/pdfXB1DirectorProductionArtifactCache.test.ts tests/pdf/pdfZ3WarehouseIncomingRegisterArtifactCache.test.ts tests/pdf/pdfZ4ForemanRequestArtifactCache.test.ts src/lib/pdf/directorProductionReport.manifest.test.ts src/lib/pdf/warehousePdf.manifest.test.ts src/lib/pdf/foremanRequestPdf.manifest.test.ts src/lib/api/warehousePdfBackend.service.test.ts src/lib/api/foremanRequestPdfBackend.service.test.ts src/lib/api/directorRolePdfBackends.test.ts src/screens/director/director.finance.pdfService.test.ts src/screens/director/director.reports.pdfService.test.ts src/screens/warehouse/warehouse.pdfs.test.tsx src/screens/warehouse/warehouse.reportPdf.service.test.ts src/screens/foreman/foreman.requestPdf.service.test.ts src/screens/contractor/contractorPdf.render.test.ts src/screens/buyer/buyerProposalPdf.service.test.ts src/screens/accountant/accountantProposalPdf.service.test.ts src/screens/accountant/accountantPaymentReportPdf.service.test.ts src/screens/accountant/accountantAttachmentPdf.service.test.ts --runInBand --no-coverage",
+      "result": "PASS",
+      "suites": 20,
+      "tests": 112
+    }
+  ],
+  "staticGates": [
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "result": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "result": "PASS"
+    },
+    {
+      "command": "npx jest --runInBand --no-coverage",
+      "result": "PASS",
+      "suitesPassed": 369,
+      "suitesSkipped": 1,
+      "testsPassed": 2353,
+      "testsSkipped": 1
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "runtime": [
+    {
+      "surface": "web",
+      "result": "PASS",
+      "artifact": "artifacts/foreman-warehouse-web-pdf-runtime-summary.json"
+    },
+    {
+      "surface": "android",
+      "result": "BLOCKED",
+      "artifact": "artifacts/PDF_FINAL_android_timing.md"
+    }
+  ],
+  "deployment": [
+    {
+      "command": "npx supabase functions deploy warehouse-pdf",
+      "result": "PASS"
+    }
+  ]
+}

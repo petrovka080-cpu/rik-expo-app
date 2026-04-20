@@ -24,6 +24,23 @@ describe("PDF-Z3 warehouse incoming register artifact cache", () => {
     expect(source).toContain("storagePath: artifact.artifactPath");
   });
 
+  it("checks the issue register deterministic artifact before starting Puppeteer render", () => {
+    const selectedPath = source.indexOf("async function renderIssueRegisterWithArtifactCache");
+    const artifactCheck = source.indexOf(
+      "const cachedArtifact = await trySignExistingPdfArtifact",
+      selectedPath,
+    );
+    const renderStart = source.indexOf(
+      "const { pdfBytes, renderer } = await renderPdfBytes(html)",
+      selectedPath,
+    );
+
+    expect(selectedPath).toBeGreaterThan(0);
+    expect(artifactCheck).toBeGreaterThan(selectedPath);
+    expect(renderStart).toBeGreaterThan(artifactCheck);
+    expect(source).toContain("storagePath: artifact.artifactPath");
+  });
+
   it("exposes hit/miss telemetry and the artifact_cache renderer", () => {
     expect(source).toContain('renderer: "artifact_cache"');
     expect(source).toContain('cacheStatus: "artifact_hit"');
@@ -32,8 +49,9 @@ describe("PDF-Z3 warehouse incoming register artifact cache", () => {
     expect(source).toContain("artifactVersion: artifact.artifactVersion");
   });
 
-  it("keeps the Z3 scope to one warehouse document kind", () => {
+  it("keeps artifact caching scoped to register document kinds", () => {
     expect(source).toContain('payload.documentKind === "incoming_register"');
+    expect(source).toContain('payload.documentKind === "issue_register"');
     expect(source).not.toContain('payload.documentKind === "issue_materials"');
     expect(source).not.toContain('payload.documentKind === "object_work" &&');
   });

@@ -1,0 +1,103 @@
+{
+  "wave": "PDF-FINAL",
+  "status": "implementation_in_progress",
+  "rules": {
+    "same_business_data": "same source_version",
+    "meaningful_business_change": "new source_version",
+    "noise_or_transport_change": "source_version unchanged",
+    "artifact_version": "source_version plus template/render/artifact contract versions"
+  },
+  "families": [
+    {
+      "family": "director_finance_management",
+      "source_version_owner": "src/lib/pdf/directorPdfPlatformContract.ts",
+      "artifact_owner": "supabase/functions/director-pdf-render/index.ts",
+      "noise_immunity_test": "tests/pdf/pdfZ1DirectorFinanceManifest.test.ts",
+      "state": "green_existing"
+    },
+    {
+      "family": "director_production_report",
+      "source_version_owner": "src/lib/pdf/directorPdfPlatformContract.ts",
+      "artifact_owner": "supabase/functions/director-production-report-pdf/index.ts",
+      "noise_immunity_test": "src/lib/pdf/directorProductionReport.manifest.test.ts",
+      "state": "green_existing"
+    },
+    {
+      "family": "warehouse_incoming_register",
+      "source_version_owner": "src/lib/pdf/warehousePdf.shared.ts",
+      "artifact_owner": "supabase/functions/warehouse-pdf/index.ts",
+      "noise_immunity_test": "src/lib/pdf/warehousePdf.manifest.test.ts",
+      "state": "green_existing"
+    },
+    {
+      "family": "warehouse_issue_register",
+      "source_version_owner": "src/lib/pdf/warehousePdf.shared.ts",
+      "artifact_owner": "supabase/functions/warehouse-pdf/index.ts",
+      "noise_immunity_test": "src/lib/pdf/warehousePdf.manifest.test.ts",
+      "state": "green_pdf_final_targeted"
+    },
+    {
+      "family": "foreman_request",
+      "source_version_owner": "src/lib/pdf/foremanRequestPdf.shared.ts",
+      "artifact_owner": "supabase/functions/foreman-request-pdf/index.ts",
+      "noise_immunity_test": "src/lib/pdf/foremanRequestPdf.manifest.test.ts",
+      "state": "green_existing"
+    },
+    {
+      "family": "buyer_proposal",
+      "source_version_owner": "src/screens/buyer/buyerProposalPdf.manifest.ts",
+      "artifact_owner": "src/screens/buyer/buyerProposalPdf.service.ts",
+      "noise_immunity_test": "src/screens/buyer/buyerProposalPdf.manifest.test.ts",
+      "state": "green_existing"
+    },
+    {
+      "family": "accountant_payment_report",
+      "source_version_owner": "src/screens/accountant/accountantPaymentReportPdf.manifest.ts",
+      "artifact_owner": "src/screens/accountant/accountantPaymentReportPdf.service.ts",
+      "noise_immunity_test": "src/screens/accountant/accountantPaymentReportPdf.manifest.test.ts",
+      "state": "green_existing"
+    },
+    {
+      "family": "accountant_proposal",
+      "source_version_owner": "src/screens/accountant/accountantProposalPdf.manifest.ts",
+      "artifact_owner": "src/screens/accountant/accountantProposalPdf.service.ts",
+      "noise_immunity_test": "src/screens/accountant/accountantProposalPdf.manifest.test.ts",
+      "state": "green_existing"
+    },
+    {
+      "family": "accountant_attachment_pdf",
+      "source_version_owner": "src/screens/accountant/accountantAttachmentPdf.manifest.ts",
+      "artifact_owner": "src/screens/accountant/accountantAttachmentPdf.service.ts",
+      "noise_immunity_test": "src/screens/accountant/accountantAttachmentPdf.manifest.test.ts",
+      "state": "green_existing"
+    },
+    {
+      "family": "contractor_act",
+      "source_version_owner": "src/screens/contractor/contractorPdf.manifest.ts",
+      "artifact_owner": "src/screens/contractor/contractorPdf.render.ts",
+      "noise_immunity_test": "src/screens/contractor/contractorPdf.manifest.test.ts",
+      "state": "green_existing"
+    }
+  ],
+  "pdf_final_exact_target": {
+    "family": "warehouse_issue_register",
+    "client_source_fingerprint": "wissue_client_v1_*",
+    "source_version_prefix": "wissue_src_v1",
+    "artifact_version_prefix": "wissue_art_v1",
+    "meaningful_inputs": [
+      "periodFrom",
+      "periodTo",
+      "companyName",
+      "warehouseName",
+      "issue rows returned by acc_report_issues_v2 or loaded on the screen"
+    ],
+    "ignored_noise": [
+      "generated_at",
+      "durationMs",
+      "traceId",
+      "signedUrl",
+      "transport",
+      "telemetry"
+    ]
+  }
+}

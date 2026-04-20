@@ -1,0 +1,29 @@
+{
+  "wave": "PDF-FINAL",
+  "checkedAt": "2026-04-20T19:09:52.205Z",
+  "web": [
+    {
+      "role": "warehouse",
+      "action": "issue_register_all_period",
+      "route": "/office/warehouse",
+      "mode": "artifact_hit",
+      "function": "warehouse-pdf",
+      "httpStatus": 200,
+      "cacheStatus": "artifact_hit",
+      "renderer": "artifact_cache",
+      "sourceMs": 318,
+      "renderMs": 0,
+      "uploadAndSignMs": 0,
+      "backendTotalMs": 2607,
+      "viewerReadyMs": 184,
+      "pageErrors": 0,
+      "badResponses": 0,
+      "blockingConsole": 0,
+      "result": "PASS"
+    }
+  ],
+  "android": {
+    "status": "BLOCKED",
+    "reason": "adb devices timed out; one recovery attempt with adb kill-server/start-server/devices also timed out"
+  }
+}

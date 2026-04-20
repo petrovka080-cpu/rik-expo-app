@@ -115,7 +115,7 @@ async function stableHash(value: unknown): Promise<string> {
   return `fnv1a32_${hashString32(text)}`;
 }
 
-const WAREHOUSE_INCOMING_REGISTER_NOISE_KEYS = new Set([
+const WAREHOUSE_REGISTER_NOISE_KEYS = new Set([
   "_debug",
   "cache",
   "duration_ms",
@@ -134,17 +134,17 @@ const WAREHOUSE_INCOMING_REGISTER_NOISE_KEYS = new Set([
   "transport",
 ]);
 
-function stripWarehouseIncomingRegisterNoise(value: unknown, key?: string): unknown {
-  if (key && WAREHOUSE_INCOMING_REGISTER_NOISE_KEYS.has(key)) return undefined;
+function stripWarehouseRegisterNoise(value: unknown, key?: string): unknown {
+  if (key && WAREHOUSE_REGISTER_NOISE_KEYS.has(key)) return undefined;
   if (value == null) return null;
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
   if (typeof value === "string" || typeof value === "boolean") return value;
-  if (Array.isArray(value)) return value.map((item) => stripWarehouseIncomingRegisterNoise(item));
+  if (Array.isArray(value)) return value.map((item) => stripWarehouseRegisterNoise(item));
   if (typeof value === "object") {
     const source = value as Record<string, unknown>;
     const output: Record<string, unknown> = {};
     for (const childKey of Object.keys(source).sort()) {
-      const childValue = stripWarehouseIncomingRegisterNoise(source[childKey], childKey);
+      const childValue = stripWarehouseRegisterNoise(source[childKey], childKey);
       if (childValue !== undefined) output[childKey] = childValue;
     }
     return output;
@@ -171,10 +171,39 @@ const WAREHOUSE_INCOMING_REGISTER_ARTIFACT_ROOT =
 const WAREHOUSE_INCOMING_REGISTER_MANIFEST_ROOT =
   "warehouse/incoming_register/manifests/v1";
 
+export const WAREHOUSE_ISSUE_REGISTER_MANIFEST_VERSION =
+  "pdf_final_warehouse_issue_register_manifest_v1";
+export const WAREHOUSE_ISSUE_REGISTER_DOCUMENT_KIND =
+  "warehouse_issue_register";
+export const WAREHOUSE_ISSUE_REGISTER_TEMPLATE_VERSION =
+  "warehouse_issue_register_template_v1";
+export const WAREHOUSE_ISSUE_REGISTER_RENDER_CONTRACT_VERSION =
+  "backend_warehouse_pdf_v1";
+export const WAREHOUSE_ISSUE_REGISTER_ARTIFACT_CONTRACT_VERSION =
+  "warehouse_issue_register_artifact_v1";
+
+const WAREHOUSE_ISSUE_REGISTER_SOURCE_VERSION_PREFIX = "wissue_src_v1";
+const WAREHOUSE_ISSUE_REGISTER_ARTIFACT_VERSION_PREFIX = "wissue_art_v1";
+const WAREHOUSE_ISSUE_REGISTER_SCOPE_VERSION_PREFIX = "wissue_scope_v1";
+const WAREHOUSE_ISSUE_REGISTER_ARTIFACT_ROOT =
+  "warehouse/issue_register/artifacts/v1";
+const WAREHOUSE_ISSUE_REGISTER_MANIFEST_ROOT =
+  "warehouse/issue_register/manifests/v1";
+
 export type WarehouseIncomingRegisterDocumentScope = {
   role: "warehouse";
   family: "warehouse";
   report: "incoming_register";
+  periodFrom: string | null;
+  periodTo: string | null;
+  companyName: string | null;
+  warehouseName: string | null;
+};
+
+export type WarehouseIssueRegisterDocumentScope = {
+  role: "warehouse";
+  family: "warehouse";
+  report: "issue_register";
   periodFrom: string | null;
   periodTo: string | null;
   companyName: string | null;
@@ -195,6 +224,20 @@ export type WarehouseIncomingRegisterManifestContract = {
   lastSourceChangeAt: string | null;
 };
 
+export type WarehouseIssueRegisterManifestContract = {
+  version: typeof WAREHOUSE_ISSUE_REGISTER_MANIFEST_VERSION;
+  documentKind: typeof WAREHOUSE_ISSUE_REGISTER_DOCUMENT_KIND;
+  documentScope: WarehouseIssueRegisterDocumentScope;
+  sourceVersion: string;
+  artifactVersion: string;
+  templateVersion: typeof WAREHOUSE_ISSUE_REGISTER_TEMPLATE_VERSION;
+  renderContractVersion: typeof WAREHOUSE_ISSUE_REGISTER_RENDER_CONTRACT_VERSION;
+  artifactPath: string;
+  manifestPath: string;
+  fileName: string;
+  lastSourceChangeAt: string | null;
+};
+
 export type BuildWarehouseIncomingRegisterManifestContractArgs = {
   periodFrom?: string | null;
   periodTo?: string | null;
@@ -202,6 +245,16 @@ export type BuildWarehouseIncomingRegisterManifestContractArgs = {
   warehouseName?: string | null;
   clientSourceFingerprint?: string | null;
   incomingHeads?: unknown[] | null;
+  fileName?: string | null;
+};
+
+export type BuildWarehouseIssueRegisterManifestContractArgs = {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  companyName?: string | null;
+  warehouseName?: string | null;
+  clientSourceFingerprint?: string | null;
+  issueHeads?: unknown[] | null;
   fileName?: string | null;
 };
 
@@ -222,6 +275,23 @@ export function buildWarehouseIncomingRegisterDocumentScope(
   };
 }
 
+export function buildWarehouseIssueRegisterDocumentScope(
+  args: Pick<
+    BuildWarehouseIssueRegisterManifestContractArgs,
+    "periodFrom" | "periodTo" | "companyName" | "warehouseName"
+  >,
+): WarehouseIssueRegisterDocumentScope {
+  return {
+    role: "warehouse",
+    family: "warehouse",
+    report: "issue_register",
+    periodFrom: normalizeIso10(args.periodFrom),
+    periodTo: normalizeIso10(args.periodTo),
+    companyName: trimText(args.companyName) || null,
+    warehouseName: trimText(args.warehouseName) || null,
+  };
+}
+
 export function buildWarehouseIncomingRegisterClientSourceFingerprint(args: {
   periodFrom?: string | null;
   periodTo?: string | null;
@@ -231,11 +301,27 @@ export function buildWarehouseIncomingRegisterClientSourceFingerprint(args: {
     version: "warehouse_incoming_register_client_source_v1",
     periodFrom: normalizeIso10(args.periodFrom),
     periodTo: normalizeIso10(args.periodTo),
-    incomingRows: stripWarehouseIncomingRegisterNoise(
+    incomingRows: stripWarehouseRegisterNoise(
       Array.isArray(args.incomingRows) ? args.incomingRows : [],
     ),
   };
   return `wir_client_v1_${hashString32(stableJsonStringify(identity))}`;
+}
+
+export function buildWarehouseIssueRegisterClientSourceFingerprint(args: {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  issueRows?: unknown[] | null;
+}) {
+  const identity = {
+    version: "warehouse_issue_register_client_source_v1",
+    periodFrom: normalizeIso10(args.periodFrom),
+    periodTo: normalizeIso10(args.periodTo),
+    issueRows: stripWarehouseRegisterNoise(
+      Array.isArray(args.issueRows) ? args.issueRows : [],
+    ),
+  };
+  return `wissue_client_v1_${hashString32(stableJsonStringify(identity))}`;
 }
 
 export async function buildWarehouseIncomingRegisterManifestContract(
@@ -249,10 +335,10 @@ export async function buildWarehouseIncomingRegisterManifestContract(
     documentScope,
     source: {
       sourceKind: "rpc:acc_report_incoming_v2",
-      clientSourceFingerprint: stripWarehouseIncomingRegisterNoise(
+      clientSourceFingerprint: stripWarehouseRegisterNoise(
         trimText(args.clientSourceFingerprint) || null,
       ),
-      incomingHeads: stripWarehouseIncomingRegisterNoise(
+      incomingHeads: stripWarehouseRegisterNoise(
         Array.isArray(args.incomingHeads) ? args.incomingHeads : [],
       ),
     },
@@ -282,6 +368,55 @@ export async function buildWarehouseIncomingRegisterManifestContract(
     renderContractVersion: WAREHOUSE_INCOMING_REGISTER_RENDER_CONTRACT_VERSION,
     artifactPath: `${WAREHOUSE_INCOMING_REGISTER_ARTIFACT_ROOT}/${sanitizePathSegment(artifactVersion)}/${fileName}`,
     manifestPath: `${WAREHOUSE_INCOMING_REGISTER_MANIFEST_ROOT}/${sanitizePathSegment(scopeHash)}.json`,
+    fileName,
+    lastSourceChangeAt: null,
+  };
+}
+
+export async function buildWarehouseIssueRegisterManifestContract(
+  args: BuildWarehouseIssueRegisterManifestContractArgs,
+): Promise<WarehouseIssueRegisterManifestContract> {
+  const documentScope = buildWarehouseIssueRegisterDocumentScope(args);
+  const fileName = trimText(args.fileName) || "warehouse_issue_register.pdf";
+  const sourceIdentity = {
+    contractVersion: WAREHOUSE_ISSUE_REGISTER_MANIFEST_VERSION,
+    documentKind: WAREHOUSE_ISSUE_REGISTER_DOCUMENT_KIND,
+    documentScope,
+    source: {
+      sourceKind: "rpc:acc_report_issues_v2",
+      clientSourceFingerprint: stripWarehouseRegisterNoise(
+        trimText(args.clientSourceFingerprint) || null,
+      ),
+      issueHeads: stripWarehouseRegisterNoise(
+        Array.isArray(args.issueHeads) ? args.issueHeads : [],
+      ),
+    },
+  };
+  const sourceHash = await stableHash(sourceIdentity);
+  const sourceVersion = `${WAREHOUSE_ISSUE_REGISTER_SOURCE_VERSION_PREFIX}_${sourceHash}`;
+  const artifactHash = await stableHash({
+    artifactContractVersion: WAREHOUSE_ISSUE_REGISTER_ARTIFACT_CONTRACT_VERSION,
+    sourceVersion,
+    templateVersion: WAREHOUSE_ISSUE_REGISTER_TEMPLATE_VERSION,
+    renderContractVersion: WAREHOUSE_ISSUE_REGISTER_RENDER_CONTRACT_VERSION,
+  });
+  const artifactVersion = `${WAREHOUSE_ISSUE_REGISTER_ARTIFACT_VERSION_PREFIX}_${artifactHash}`;
+  const scopeHash = await stableHash({
+    scopeVersion: WAREHOUSE_ISSUE_REGISTER_SCOPE_VERSION_PREFIX,
+    documentKind: WAREHOUSE_ISSUE_REGISTER_DOCUMENT_KIND,
+    documentScope,
+  });
+
+  return {
+    version: WAREHOUSE_ISSUE_REGISTER_MANIFEST_VERSION,
+    documentKind: WAREHOUSE_ISSUE_REGISTER_DOCUMENT_KIND,
+    documentScope,
+    sourceVersion,
+    artifactVersion,
+    templateVersion: WAREHOUSE_ISSUE_REGISTER_TEMPLATE_VERSION,
+    renderContractVersion: WAREHOUSE_ISSUE_REGISTER_RENDER_CONTRACT_VERSION,
+    artifactPath: `${WAREHOUSE_ISSUE_REGISTER_ARTIFACT_ROOT}/${sanitizePathSegment(artifactVersion)}/${fileName}`,
+    manifestPath: `${WAREHOUSE_ISSUE_REGISTER_MANIFEST_ROOT}/${sanitizePathSegment(scopeHash)}.json`,
     fileName,
     lastSourceChangeAt: null,
   };

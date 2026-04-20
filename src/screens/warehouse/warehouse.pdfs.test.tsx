@@ -141,4 +141,41 @@ describe("warehouse.pdfs canonical backend path", () => {
       clientSourceFingerprint: "wir_client_v1_test",
     });
   });
+
+  it("passes the issue register source fingerprint into the warehouse backend contract", async () => {
+    const actions = await renderHarness({
+      busy: {},
+      reportsMode: "issue",
+      periodFrom: "2026-04-01",
+      periodTo: "2026-04-30",
+      warehousemanFio: "РЎРєР»Р°РґРѕРІС‰РёРє",
+      notifyError: jest.fn(),
+      orgName: "GOX",
+      warehouseName: "Main Warehouse",
+      issueRegisterSourceFingerprint: "wissue_client_v1_test",
+    });
+
+    await act(async () => {
+      await actions.onPdfRegister();
+    });
+
+    expect(mockPreviewWarehousePdf).toHaveBeenCalledTimes(1);
+    const previewRequest = mockPreviewWarehousePdf.mock.calls[0][0] as {
+      getRemoteUrl: () => Promise<string>;
+    };
+
+    await expect(previewRequest.getRemoteUrl()).resolves.toBe("https://example.com/warehouse.pdf");
+    expect(mockGenerateWarehousePdfViaBackend).toHaveBeenCalledWith({
+      version: "v1",
+      role: "warehouse",
+      documentType: "warehouse_register",
+      documentKind: "issue_register",
+      periodFrom: "2026-04-01",
+      periodTo: "2026-04-30",
+      generatedBy: "РЎРєР»Р°РґРѕРІС‰РёРє",
+      companyName: "GOX",
+      warehouseName: "Main Warehouse",
+      clientSourceFingerprint: "wissue_client_v1_test",
+    });
+  });
 });

@@ -20,6 +20,12 @@ const baseUrl = String(process.env.RIK_WEB_BASE_URL ?? "http://localhost:8083").
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
 const roleMode = String(process.env.RIK_PDF_WEB_ROLE_MODE ?? "membership").trim().toLowerCase();
+const runtimeRoles = new Set(
+  String(process.env.RIK_PDF_WEB_RUNTIME_ROLES ?? "foreman,warehouse")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean),
+);
 
 if (!supabaseUrl || !anonKey) {
   throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY");
@@ -107,6 +113,54 @@ function countToken(entries: RuntimeConsoleEntry[], token: string) {
   return entries.filter((entry) => entry.text.includes(token)).length;
 }
 
+function redactSensitiveText(value: string) {
+  return String(value ?? "")
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/g, "Bearer [redacted]")
+    .replace(/https:\/\/[^\s"']*storage\/v[^\s"']*/gi, "[signed-pdf-url:redacted]")
+    .replace(
+      /https:\/\/[^\s"']*\/storage\/v1\/object\/sign\/[^\s"']+/gi,
+      "[signed-pdf-url:redacted]",
+    )
+    .replace(/(token=)[^&\s"']+/gi, "$1[redacted]")
+    .replace(/(apikey[=:]\s*)[A-Za-z0-9._-]+/gi, "$1[redacted]");
+}
+
+function redactHeaders(headers: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(headers).map(([key, value]) => {
+      const normalizedKey = key.toLowerCase();
+      if (
+        normalizedKey === "authorization" ||
+        normalizedKey === "apikey" ||
+        normalizedKey === "cookie" ||
+        normalizedKey === "set-cookie"
+      ) {
+        return [key, "[redacted]"];
+      }
+      return [key, redactSensitiveText(value)];
+    }),
+  );
+}
+
+function redactPayload(value: unknown): unknown {
+  if (typeof value === "string") return redactSensitiveText(value);
+  if (Array.isArray(value)) return value.map(redactPayload);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, child]) => {
+      const normalizedKey = key.toLowerCase();
+      if (
+        normalizedKey === "authorization" ||
+        normalizedKey === "apikey" ||
+        normalizedKey === "token"
+      ) {
+        return [key, "[redacted]"];
+      }
+      return [key, redactPayload(child)];
+    }),
+  );
+}
+
 function writeJsonArtifact(relativePath: string, payload: unknown) {
   const fullPath = path.join(projectRoot, relativePath);
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
@@ -116,7 +170,7 @@ function writeJsonArtifact(relativePath: string, payload: unknown) {
 async function writeHtmlArtifact(relativePath: string, page: Page) {
   const fullPath = path.join(projectRoot, relativePath);
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-  fs.writeFileSync(fullPath, await page.content(), "utf8");
+  fs.writeFileSync(fullPath, redactSensitiveText(await page.content()), "utf8");
 }
 
 async function signInSession(user: RuntimeTestUser) {
@@ -248,7 +302,7 @@ function attachRuntime(page: Page, functionMatcher: RegExp): PageRuntime {
   const responseTasks: Promise<void>[] = [];
 
   page.on("console", (message) => {
-    runtime.console.push({ type: message.type(), text: message.text() });
+    runtime.console.push({ type: message.type(), text: redactSensitiveText(message.text()) });
   });
 
   page.on("pageerror", (error) => {
@@ -285,10 +339,12 @@ function attachRuntime(page: Page, functionMatcher: RegExp): PageRuntime {
 
         runtime.functionResponses.push({
           ...entry,
-          headers: response.headers(),
-          requestHeaders: response.request().headers(),
-          payload,
-          signedUrl: payloadRecord ? String(payloadRecord.signedUrl ?? "").trim() || null : null,
+          headers: redactHeaders(response.headers()),
+          requestHeaders: redactHeaders(response.request().headers()),
+          payload: redactPayload(payload),
+          signedUrl: payloadRecord
+            ? redactSensitiveText(String(payloadRecord.signedUrl ?? "").trim()) || null
+            : null,
           sourceKind: payloadRecord ? String(payloadRecord.sourceKind ?? "").trim() || null : null,
         });
       })(),
@@ -332,12 +388,17 @@ async function maybeConfirmFioModal(page: Page, label: string) {
   return true;
 }
 
-async function waitForViewerReady(page: Page, runtime: RuntimeCapture) {
-  await page.waitForURL(/\/pdf-viewer/i, { timeout: 45_000 });
+async function waitForViewerReady(page: Page, runtime: RuntimeCapture, afterReadyCount = 0) {
+  await poll(
+    "web-viewer-url",
+    () => (/\/pdf-viewer/i.test(page.url()) ? true : null),
+    45_000,
+    250,
+  );
   await poll(
     "web-viewer-ready",
     async () =>
-      runtime.console.some((entry) => entry.text.includes("[pdf-viewer] ready")) ? true : null,
+      countToken(runtime.console, "[pdf-viewer] ready") > afterReadyCount ? true : null,
     45_000,
     500,
   );
@@ -442,7 +503,9 @@ async function runForemanProof(browser: Browser): Promise<ProofResult> {
       checkedAt: new Date().toISOString(),
       baseUrl,
       finalUrl: page.url(),
-      iframeSrc: await page.locator("iframe").first().getAttribute("src").catch(() => null),
+      iframeSrc: redactSensitiveText(
+        (await page.locator("iframe").first().getAttribute("src").catch(() => null)) ?? "",
+      ) || null,
       eventCounts: {
         payload_ready: countToken(runtime.console, "payload_ready"),
         backend_invoke_start: countToken(runtime.console, "backend_invoke_start"),
@@ -539,7 +602,7 @@ async function runWarehouseProof(browser: Browser): Promise<ProofResult> {
     const { runtime, responseTasks } = attachRuntime(page, /warehouse-pdf/i);
     await preparePage(page, session);
 
-    await page.goto(`${baseUrl}/warehouse`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    await page.goto(`${baseUrl}/office/warehouse`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await sleep(2_000);
 
     await maybeConfirmFioModal(page, "Warehouse Web PDF Proof");
@@ -571,7 +634,9 @@ async function runWarehouseProof(browser: Browser): Promise<ProofResult> {
       checkedAt: new Date().toISOString(),
       baseUrl,
       finalUrl: page.url(),
-      iframeSrc: await page.locator("iframe").first().getAttribute("src").catch(() => null),
+      iframeSrc: redactSensitiveText(
+        (await page.locator("iframe").first().getAttribute("src").catch(() => null)) ?? "",
+      ) || null,
       eventCounts: {
         payload_ready: countToken(runtime.console, "payload_ready"),
         backend_invoke_start: countToken(runtime.console, "backend_invoke_start"),
@@ -626,27 +691,33 @@ async function runWarehouseProof(browser: Browser): Promise<ProofResult> {
 async function main() {
   const browser = await createBrowser();
   try {
-    const foreman = await runForemanProof(browser);
-    const warehouse = await runWarehouseProof(browser);
+    const foreman = runtimeRoles.has("foreman") ? await runForemanProof(browser) : null;
+    const warehouse = runtimeRoles.has("warehouse") ? await runWarehouseProof(browser) : null;
+    const statuses = [foreman?.status, warehouse?.status].filter(Boolean);
 
     writeJsonArtifact("artifacts/foreman-warehouse-web-pdf-runtime-summary.json", {
-      status: foreman.status === "GREEN" && warehouse.status === "GREEN" ? "GREEN" : "NOT_GREEN",
+      status: statuses.length > 0 && statuses.every((status) => status === "GREEN") ? "GREEN" : "NOT_GREEN",
       checkedAt: new Date().toISOString(),
       baseUrl,
-      foreman: {
-        finalUrl: foreman.finalUrl,
-        eventCounts: foreman.eventCounts,
-        functionResponses: foreman.functionResponses,
-        pageErrors: foreman.pageErrors,
-        badResponses: foreman.badResponses,
-      },
-      warehouse: {
-        finalUrl: warehouse.finalUrl,
-        eventCounts: warehouse.eventCounts,
-        functionResponses: warehouse.functionResponses,
-        pageErrors: warehouse.pageErrors,
-        badResponses: warehouse.badResponses,
-      },
+      roles: Array.from(runtimeRoles),
+      foreman: foreman
+        ? {
+            finalUrl: foreman.finalUrl,
+            eventCounts: foreman.eventCounts,
+            functionResponses: foreman.functionResponses,
+            pageErrors: foreman.pageErrors,
+            badResponses: foreman.badResponses,
+          }
+        : null,
+      warehouse: warehouse
+        ? {
+            finalUrl: warehouse.finalUrl,
+            eventCounts: warehouse.eventCounts,
+            functionResponses: warehouse.functionResponses,
+            pageErrors: warehouse.pageErrors,
+            badResponses: warehouse.badResponses,
+          }
+        : null,
     });
   } finally {
     await browser.close().catch(() => undefined);

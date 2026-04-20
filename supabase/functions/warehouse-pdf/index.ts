@@ -9,6 +9,7 @@ import {
 } from "../../../src/lib/pdf/canonicalPdfPlatformContract.ts";
 import { resolveWarehousePdfAccess } from "../../../src/lib/pdf/rolePdfAuth.ts";
 import {
+  buildWarehouseIssueRegisterManifestContract,
   buildWarehouseIncomingRegisterManifestContract,
   normalizeWarehousePdfRequest,
   type WarehousePdfRequest,
@@ -37,6 +38,7 @@ const FUNCTION_NAME = "warehouse-pdf";
 const DEFAULT_BUCKET = "role_pdf_exports";
 const RENDER_BRANCH = "backend_warehouse_pdf_v1";
 const INCOMING_REGISTER_ARTIFACT_CACHE_VERSION = "pdf_z3_warehouse_incoming_register_artifact_v1";
+const ISSUE_REGISTER_ARTIFACT_CACHE_VERSION = "pdf_final_warehouse_issue_register_artifact_v1";
 const ALL_FROM_ISO = "1970-01-01T00:00:00.000Z";
 const ALL_TO_ISO = "2100-01-01T00:00:00.000Z";
 const RU_MONTHS: Record<string, number> = {
@@ -638,6 +640,140 @@ async function renderIncomingRegisterWithArtifactCache(args: {
   });
 }
 
+async function renderIssueRegisterWithArtifactCache(args: {
+  admin: any;
+  bucketId: string;
+  payload: Extract<WarehousePdfRequest, { documentKind: "issue_register" }>;
+  requestedByUserId: string;
+}) {
+  const totalStartedAt = Date.now();
+  const range = buildRpcRange(args.payload);
+  const sourceStartedAt = Date.now();
+  const heads = await loadIssueHeads(args.admin, range.rpcFrom, range.rpcTo);
+  const filtered = filterHeadsByDayLabel(heads, args.payload.dayLabel);
+  const sourceLoadedAt = Date.now();
+  const companyName = cleanText(args.payload.companyName) || "";
+  const warehouseName = cleanText(args.payload.warehouseName) || "";
+  const fileName = buildWarehouseFileName(args.payload);
+  const artifact = await buildWarehouseIssueRegisterManifestContract({
+    periodFrom: args.payload.periodFrom,
+    periodTo: args.payload.periodTo,
+    companyName,
+    warehouseName,
+    issueHeads: filtered,
+    fileName,
+  });
+
+  const cachedArtifact = await trySignExistingPdfArtifact({
+    admin: args.admin,
+    bucketId: args.bucketId,
+    storagePath: artifact.artifactPath,
+  });
+  if (cachedArtifact) {
+    console.info(`[${FUNCTION_NAME}] backend_issue_register_artifact_hit`, {
+      periodFrom: range.periodFrom,
+      periodTo: range.periodTo,
+      bucketId: cachedArtifact.bucketId,
+      storagePath: cachedArtifact.storagePath,
+      sourceVersion: artifact.sourceVersion,
+      artifactVersion: artifact.artifactVersion,
+      sourceMs: sourceLoadedAt - sourceStartedAt,
+      totalMs: Date.now() - totalStartedAt,
+    });
+    return createCanonicalPdfSuccessResponse({
+      role: "warehouse",
+      documentType: args.payload.documentType,
+      bucketId: cachedArtifact.bucketId,
+      storagePath: cachedArtifact.storagePath,
+      signedUrl: cachedArtifact.signedUrl,
+      fileName,
+      generatedAt: new Date().toISOString(),
+      renderBranch: RENDER_BRANCH,
+      renderer: "artifact_cache",
+      telemetry: {
+        functionName: FUNCTION_NAME,
+        documentKind: args.payload.documentKind,
+        requestedByUserId: args.requestedByUserId,
+        periodFrom: range.periodFrom,
+        periodTo: range.periodTo,
+        dayLabel: null,
+        cacheStatus: "artifact_hit",
+        cacheVersion: ISSUE_REGISTER_ARTIFACT_CACHE_VERSION,
+        templateVersion: artifact.templateVersion,
+        sourceVersion: artifact.sourceVersion,
+        artifactVersion: artifact.artifactVersion,
+        sourceMs: sourceLoadedAt - sourceStartedAt,
+        renderMs: 0,
+        uploadAndSignMs: 0,
+        totalMs: Date.now() - totalStartedAt,
+      },
+    });
+  }
+
+  const html = buildWarehouseIssuesRegisterHtml({
+    periodFrom: range.periodFrom,
+    periodTo: range.periodTo,
+    issues: filtered,
+    orgName: companyName,
+    warehouseName,
+  });
+  const renderStartedAt = Date.now();
+  const { pdfBytes, renderer } = await renderPdfBytes(html);
+  const renderFinishedAt = Date.now();
+  const uploadStartedAt = Date.now();
+  const uploaded = await uploadWarehousePdfArtifact({
+    admin: args.admin,
+    bucketId: args.bucketId,
+    storagePath: artifact.artifactPath,
+    bytes: pdfBytes,
+  });
+  const uploadFinishedAt = Date.now();
+
+  console.info(`[${FUNCTION_NAME}] backend_issue_register_artifact_miss`, {
+    periodFrom: range.periodFrom,
+    periodTo: range.periodTo,
+    bucketId: uploaded.bucketId,
+    storagePath: uploaded.storagePath,
+    sourceVersion: artifact.sourceVersion,
+    artifactVersion: artifact.artifactVersion,
+    sourceMs: sourceLoadedAt - sourceStartedAt,
+    renderMs: renderFinishedAt - renderStartedAt,
+    uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
+    totalMs: uploadFinishedAt - totalStartedAt,
+  });
+
+  return createCanonicalPdfSuccessResponse({
+    role: "warehouse",
+    documentType: args.payload.documentType,
+    bucketId: uploaded.bucketId,
+    storagePath: uploaded.storagePath,
+    signedUrl: uploaded.signedUrl,
+    fileName,
+    generatedAt: new Date().toISOString(),
+    renderBranch: RENDER_BRANCH,
+    renderer,
+    telemetry: {
+      functionName: FUNCTION_NAME,
+      documentKind: args.payload.documentKind,
+      requestedByUserId: args.requestedByUserId,
+      periodFrom: range.periodFrom,
+      periodTo: range.periodTo,
+      dayLabel: null,
+      cacheStatus: "artifact_miss",
+      cacheVersion: ISSUE_REGISTER_ARTIFACT_CACHE_VERSION,
+      templateVersion: artifact.templateVersion,
+      sourceVersion: artifact.sourceVersion,
+      artifactVersion: artifact.artifactVersion,
+      sourceMs: sourceLoadedAt - sourceStartedAt,
+      renderMs: renderFinishedAt - renderStartedAt,
+      uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
+      totalMs: uploadFinishedAt - totalStartedAt,
+      htmlLength: html.length,
+      pdfSizeBytes: pdfBytes.byteLength,
+    },
+  });
+}
+
 async function assertWarehouseRequesterRpcOk(args: {
   requester: any;
   rpcName: string;
@@ -1011,6 +1147,15 @@ Deno.serve({ port: Number.isFinite(serverPort) ? serverPort : 8000 }, async (req
 
     if (payload.documentKind === "incoming_register") {
       return await renderIncomingRegisterWithArtifactCache({
+        admin,
+        bucketId,
+        payload,
+        requestedByUserId: auth.userId,
+      });
+    }
+
+    if (payload.documentKind === "issue_register") {
+      return await renderIssueRegisterWithArtifactCache({
         admin,
         bucketId,
         payload,

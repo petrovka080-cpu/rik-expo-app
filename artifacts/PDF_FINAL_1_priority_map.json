@@ -1,0 +1,122 @@
+{
+  "wave": "PDF-FINAL",
+  "baseline_commit": "926e2d40a87fac41f9f89e3493d6fe14af9b3f3d",
+  "status": "implementation_in_progress",
+  "rollout_policy": {
+    "tier_a": "must be instant or repeat-fast through manifest/version/reuse",
+    "tier_b": "must avoid blind repeat rebuild; promote to full artifact reuse when telemetry proves repeat pain",
+    "tier_c": "on-demand acceptable unless telemetry changes"
+  },
+  "actions": [
+    {
+      "role": "director",
+      "action": "finance_management_pdf",
+      "tier": "A",
+      "business_criticality": "high",
+      "current_state": "closed_pdf_z1",
+      "owner": "src/screens/director/director.finance.pdfService.ts"
+    },
+    {
+      "role": "director",
+      "action": "production_report_pdf",
+      "tier": "A",
+      "business_criticality": "high",
+      "current_state": "closed_pdf_z2",
+      "owner": "src/screens/director/director.reports.pdfService.ts"
+    },
+    {
+      "role": "warehouse",
+      "action": "incoming_register_pdf",
+      "tier": "A",
+      "business_criticality": "high",
+      "current_state": "closed_pdf_z3",
+      "owner": "src/screens/warehouse/warehouse.pdfs.ts"
+    },
+    {
+      "role": "warehouse",
+      "action": "issue_register_pdf",
+      "tier": "A",
+      "business_criticality": "high",
+      "current_state": "closed_pdf_final",
+      "owner": "src/screens/warehouse/warehouse.pdfs.ts",
+      "why": "Measured 12472 ms in PDF-Z3.0 and was the highest remaining documented offender."
+    },
+    {
+      "role": "foreman",
+      "action": "request_history_pdf",
+      "tier": "A",
+      "business_criticality": "medium_high",
+      "current_state": "closed_pdf_z4",
+      "owner": "src/screens/foreman/foreman.requestPdf.service.ts"
+    },
+    {
+      "role": "contractor",
+      "action": "contractor_act_pdf",
+      "tier": "A",
+      "business_criticality": "high",
+      "current_state": "closed_pdf_z5",
+      "owner": "src/screens/contractor/contractorPdf.render.ts"
+    },
+    {
+      "role": "purchaser",
+      "action": "proposal_pdf",
+      "tier": "A",
+      "business_criticality": "high",
+      "current_state": "closed_pdf_pur_1",
+      "owner": "src/screens/buyer/buyerProposalPdf.service.ts"
+    },
+    {
+      "role": "accountant",
+      "action": "payment_report_pdf",
+      "tier": "A",
+      "business_criticality": "critical_money_flow",
+      "current_state": "closed_pdf_acc_1",
+      "owner": "src/screens/accountant/accountantPaymentReportPdf.service.ts"
+    },
+    {
+      "role": "accountant",
+      "action": "proposal_and_attachment_pdf",
+      "tier": "A",
+      "business_criticality": "critical_money_flow",
+      "current_state": "closed_pdf_acc_final",
+      "owner": "src/screens/accountant/accountantProposalPdf.service.ts"
+    },
+    {
+      "role": "warehouse",
+      "action": "materials_and_object_work_pdfs",
+      "tier": "B",
+      "business_criticality": "medium_high",
+      "current_state": "backend_offloaded_p1_candidate",
+      "owner": "src/screens/warehouse/warehouse.pdfs.ts",
+      "promotion_rule": "Promote to next exact slice only after telemetry shows repeat/warm pain remains after register fixes."
+    },
+    {
+      "role": "director",
+      "action": "supplier_summary_and_subcontract_reports",
+      "tier": "B",
+      "business_criticality": "medium_high",
+      "current_state": "backend_offloaded",
+      "owner": "src/lib/api/directorFinanceSupplierPdfBackend.service.ts"
+    },
+    {
+      "role": "shared",
+      "action": "single_document_or_loaded_data_exports",
+      "tier": "C",
+      "business_criticality": "varies",
+      "current_state": "on_demand_acceptable",
+      "owner": "src/lib/documents/pdfDocumentActions.ts"
+    }
+  ],
+  "top_10_after_pdf_final": [
+    "director.finance_management_pdf",
+    "director.production_report_pdf",
+    "warehouse.incoming_register_pdf",
+    "warehouse.issue_register_pdf",
+    "foreman.request_history_pdf",
+    "contractor.contractor_act_pdf",
+    "purchaser.proposal_pdf",
+    "accountant.payment_report_pdf",
+    "accountant.proposal_pdf",
+    "accountant.attachment_pdf"
+  ]
+}

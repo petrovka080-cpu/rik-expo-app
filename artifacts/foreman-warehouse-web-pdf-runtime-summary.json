@@ -1,0 +1,105 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-20T19:09:52.205Z",
+  "baseUrl": "http://localhost:8083",
+  "roles": [
+    "warehouse"
+  ],
+  "foreman": null,
+  "warehouse": {
+    "finalUrl": "http://localhost:8083/pdf-viewer?sessionId=session_mo7kk8qm_2&openToken=pdf_open_mo7kk8qm_1",
+    "eventCounts": {
+      "payload_ready": 0,
+      "backend_invoke_start": 0,
+      "backend_invoke_success": 0,
+      "signed_url_received": 0,
+      "viewer_route_mounted": 1,
+      "open": 1,
+      "viewer_before_render": 1,
+      "web_iframe_render": 1,
+      "web_iframe_load": 1,
+      "ready": 1,
+      "busy_cleared": 0
+    },
+    "functionResponses": [
+      {
+        "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/functions/v1/warehouse-pdf",
+        "method": "POST",
+        "status": 200,
+        "headers": {
+          "sb-project-ref": "nxrnjywzxxfdpqmzjorh",
+          "content-encoding": "gzip",
+          "cf-cache-status": "DYNAMIC",
+          "sb-request-id": "019dac4c-663c-7532-af1e-66503b877a49",
+          "access-control-allow-methods": "POST, OPTIONS",
+          "alt-svc": "h3=\":443\"; ma=86400",
+          "server-timing": "cfExtPri",
+          "date": "Mon, 20 Apr 2026 19:09:46 GMT",
+          "content-type": "application/json; charset=utf-8",
+          "vary": "Accept-Encoding",
+          "x-served-by": "supabase-edge-runtime",
+          "priority": "u=1,i",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "cache-control": "no-store",
+          "endpoint-load-metrics": "application_utilization:11,named_metrics.queue_depth:11",
+          "cf-ray": "9ef671dd2bbe60a4-WAW",
+          "x-deno-execution-id": "2efa3abc-7c7f-49c4-b230-147841edc6e7",
+          "access-control-allow-origin": "*",
+          "content-length": "1202",
+          "x-sb-edge-region": "eu-central-1",
+          "server": "cloudflare",
+          "sb-gateway-version": "1"
+        },
+        "requestHeaders": {
+          "sec-ch-ua-platform": "\"Windows\"",
+          "authorization": "[redacted]",
+          "referer": "http://localhost:8083/",
+          "sec-ch-ua": "\"Microsoft Edge\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"",
+          "sec-ch-ua-mobile": "?0",
+          "x-client-info": "supabase-js-web/2.97.0, rik-expo-app",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0",
+          "accept": "application/json",
+          "content-type": "application/json",
+          "apikey": "[redacted]"
+        },
+        "payload": {
+          "ok": true,
+          "version": "v1",
+          "role": "warehouse",
+          "documentType": "warehouse_register",
+          "sourceKind": "remote-url",
+          "bucketId": "role_pdf_exports",
+          "storagePath": "warehouse/issue_register/artifacts/v1/wissue_art_v1_cb4c991276a4ed956a1951ab235fc7816770ff60f7802233b8f4129bd6e6d4e4/warehouse_register_issue_register_all.pdf",
+          "signedUrl": "[signed-pdf-url:redacted]",
+          "fileName": "warehouse_register_issue_register_all.pdf",
+          "mimeType": "application/pdf",
+          "generatedAt": "2026-04-20T19:09:46.208Z",
+          "renderBranch": "backend_warehouse_pdf_v1",
+          "renderer": "artifact_cache",
+          "telemetry": {
+            "functionName": "warehouse-pdf",
+            "documentKind": "issue_register",
+            "requestedByUserId": "60c9a392-c0b9-41af-9474-c8a4e09609ea",
+            "periodFrom": "",
+            "periodTo": "",
+            "dayLabel": null,
+            "cacheStatus": "artifact_hit",
+            "cacheVersion": "pdf_final_warehouse_issue_register_artifact_v1",
+            "templateVersion": "warehouse_issue_register_template_v1",
+            "sourceVersion": "wissue_src_v1_f408b3282ee4588a34c723a293bd04baf562e89445215aacb4430152f54ff1ee",
+            "artifactVersion": "wissue_art_v1_cb4c991276a4ed956a1951ab235fc7816770ff60f7802233b8f4129bd6e6d4e4",
+            "sourceMs": 318,
+            "renderMs": 0,
+            "uploadAndSignMs": 0,
+            "totalMs": 2607
+          }
+        },
+        "signedUrl": "[signed-pdf-url:redacted]",
+        "sourceKind": "remote-url"
+      }
+    ],
+    "pageErrors": [],
+    "badResponses": []
+  }
+}

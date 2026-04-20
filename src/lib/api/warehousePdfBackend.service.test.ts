@@ -1,5 +1,8 @@
 import { generateWarehousePdfViaBackend } from "./warehousePdfBackend.service";
-import { buildWarehouseIncomingRegisterManifestContract } from "../pdf/warehousePdf.shared";
+import {
+  buildWarehouseIssueRegisterManifestContract,
+  buildWarehouseIncomingRegisterManifestContract,
+} from "../pdf/warehousePdf.shared";
 
 const mockInvokeCanonicalPdfBackend = jest.fn();
 const mockBoundarySuccess = jest.fn();
@@ -35,6 +38,19 @@ const buildIncomingRegisterRequest = (fingerprint: string) => ({
   generatedBy: "Warehouse User",
   companyName: "GOX",
   warehouseName: "Склад",
+  clientSourceFingerprint: fingerprint,
+});
+
+const buildIssueRegisterRequest = (fingerprint: string) => ({
+  version: "v1" as const,
+  role: "warehouse" as const,
+  documentType: "warehouse_register" as const,
+  documentKind: "issue_register" as const,
+  periodFrom: "2026-04-01",
+  periodTo: "2026-04-30",
+  generatedBy: "Warehouse User",
+  companyName: "GOX",
+  warehouseName: "РЎРєР»Р°Рґ",
   clientSourceFingerprint: fingerprint,
 });
 
@@ -158,6 +174,78 @@ describe("warehousePdfBackend.service PDF-Z3 reuse", () => {
         extra: expect.objectContaining({
           cacheStatus: "persistent_manifest_hit",
           documentKind: "incoming_register",
+        }),
+      }),
+    );
+  });
+
+  it("reuses an issue register PDF for the same client source fingerprint", async () => {
+    const fingerprint = uniqueFingerprint("issue-cache");
+    const first = await generateWarehousePdfViaBackend(buildIssueRegisterRequest(fingerprint));
+    const second = await generateWarehousePdfViaBackend(buildIssueRegisterRequest(fingerprint));
+
+    expect(first.signedUrl).toBe("https://example.com/warehouse.pdf");
+    expect(second.signedUrl).toBe("https://example.com/warehouse.pdf");
+    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(1);
+    expect(mockBoundarySuccess).toHaveBeenCalledWith(
+      "backend_invoke_success",
+      expect.objectContaining({
+        extra: expect.objectContaining({
+          cacheStatus: "manifest_version_hit",
+          documentKind: "issue_register",
+        }),
+      }),
+    );
+  });
+
+  it("coalesces concurrent identical issue register requests into one backend call", async () => {
+    const fingerprint = uniqueFingerprint("issue-concurrent");
+    let resolveBackend!: (value: typeof backendResult) => void;
+    mockInvokeCanonicalPdfBackend.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveBackend = resolve;
+        }),
+    );
+
+    const first = generateWarehousePdfViaBackend(buildIssueRegisterRequest(fingerprint));
+    const second = generateWarehousePdfViaBackend(buildIssueRegisterRequest(fingerprint));
+
+    await waitForBackendInvokeCount(1);
+    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(1);
+    resolveBackend(backendResult);
+
+    await expect(first).resolves.toMatchObject({ signedUrl: "https://example.com/warehouse.pdf" });
+    await expect(second).resolves.toMatchObject({ signedUrl: "https://example.com/warehouse.pdf" });
+    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses the persisted signed artifact handoff for a same-version issue register warm open", async () => {
+    const fingerprint = uniqueFingerprint("issue-persistent");
+    const request = buildIssueRegisterRequest(fingerprint);
+    const manifest = await buildWarehouseIssueRegisterManifestContract({
+      periodFrom: request.periodFrom,
+      periodTo: request.periodTo,
+      companyName: request.companyName,
+      warehouseName: request.warehouseName,
+      clientSourceFingerprint: request.clientSourceFingerprint,
+    });
+    mockReadStoredJson.mockResolvedValueOnce({
+      version: 1,
+      sourceVersion: manifest.sourceVersion,
+      value: backendResult,
+    });
+
+    const result = await generateWarehousePdfViaBackend(request);
+
+    expect(result.signedUrl).toBe("https://example.com/warehouse.pdf");
+    expect(mockInvokeCanonicalPdfBackend).not.toHaveBeenCalled();
+    expect(mockBoundarySuccess).toHaveBeenCalledWith(
+      "backend_invoke_success",
+      expect.objectContaining({
+        extra: expect.objectContaining({
+          cacheStatus: "persistent_manifest_hit",
+          documentKind: "issue_register",
         }),
       }),
     );
