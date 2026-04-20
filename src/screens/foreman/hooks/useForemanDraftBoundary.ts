@@ -72,12 +72,6 @@ import {
   discardWholeForemanDraftInBoundary,
   ensureForemanDraftRequestId,
   loadForemanRequestDetails,
-  patchForemanRequestDetailsComment,
-  patchForemanRequestDetailsLevel,
-  patchForemanRequestDetailsName,
-  patchForemanRequestDetailsObjectType,
-  patchForemanRequestDetailsSystem,
-  patchForemanRequestDetailsZone,
   persistForemanLocalDraftSnapshot,
   removeForemanLocalDraftRowInBoundary,
   syncForemanRequestHeaderMeta,
@@ -91,12 +85,17 @@ import {
   resolveForemanTerminalRecoveryCleanupDecision,
 } from "../foreman.draftRecovery.model";
 import {
+  applyForemanDraftHeaderEditPlanToRequestDetails,
+  buildForemanDraftHeaderState,
   canEditForemanRequestItem,
   normalizeForemanDraftOwnerId,
   planForemanItemsLoadEffect,
   planForemanRemoteDetailsLoadEffect,
+  resolveForemanDraftActivityState,
+  resolveForemanDraftHeaderEditPlan,
   resolveForemanDraftQueueKey,
   resolveForemanDraftQueueKeys,
+  type ForemanDraftHeaderEditPlan,
 } from "../foreman.draftBoundaryIdentity.model";
 import {
   type ForemanDraftRestoreTriggerPlan,
@@ -408,6 +407,19 @@ export function useForemanDraftBoundary({
     ],
   );
 
+  const currentHeaderState = useMemo(
+    () =>
+      buildForemanDraftHeaderState({
+        foreman,
+        comment,
+        objectType,
+        level,
+        system,
+        zone,
+      }),
+    [comment, foreman, level, objectType, system, zone],
+  );
+
   const buildCurrentLocalDraftSnapshot = useCallback(() => {
     return buildForemanLocalDraftSnapshot({
       base: localDraftSnapshotRef.current,
@@ -415,42 +427,30 @@ export function useForemanDraftBoundary({
       requestId,
       displayNo: requestDetails?.display_no ?? null,
       status: requestDetails?.status ?? (items.length ? "draft" : null),
-      header: {
-        foreman,
-        comment,
-        objectType,
-        level,
-        system,
-        zone,
-      },
+      header: currentHeaderState,
       items,
       qtyDrafts,
     });
   }, [
-    comment,
-    foreman,
+    currentHeaderState,
     items,
-    level,
-    objectType,
     qtyDrafts,
     requestDetails?.display_no,
     requestDetails?.status,
     requestId,
-    system,
-    zone,
   ]);
 
   const activeLocalDraftSnapshot = useMemo(() => getActiveLocalDraftSnapshot(), [getActiveLocalDraftSnapshot]);
 
-  const hasLocalDraft = useMemo(
-    () => Boolean(activeLocalDraftSnapshot && hasForemanLocalDraftContent(activeLocalDraftSnapshot)),
-    [activeLocalDraftSnapshot],
+  const draftActivityState = useMemo(
+    () =>
+      resolveForemanDraftActivityState({
+        activeLocalDraftSnapshot,
+        requestStatus: requestDetails?.status,
+      }),
+    [activeLocalDraftSnapshot, requestDetails?.status],
   );
-
-  const isDraftActive = useMemo(
-    () => hasLocalDraft || isDraftLikeStatus(requestDetails?.status),
-    [hasLocalDraft, requestDetails?.status],
-  );
+  const { hasLocalDraft, isDraftActive } = draftActivityState;
 
   const canEditRequestItem = useCallback(
     (row?: ReqItemRow | null) => {
@@ -468,15 +468,8 @@ export function useForemanDraftBoundary({
 
   const buildRequestDraftMeta = useCallback(
     (): RequestDraftMeta =>
-      buildForemanRequestDraftMeta({
-        foreman,
-        comment,
-        objectType,
-        level,
-        system,
-        zone,
-      }),
-    [comment, foreman, level, objectType, system, zone],
+      buildForemanRequestDraftMeta(currentHeaderState),
+    [currentHeaderState],
   );
 
   const syncRequestHeaderMeta = useCallback(
@@ -484,10 +477,10 @@ export function useForemanDraftBoundary({
       await syncForemanRequestHeaderMeta({
         requestId: rid,
         context,
-        header: { foreman, comment, objectType, level, system, zone },
+        header: currentHeaderState,
       });
     },
-    [comment, foreman, level, objectType, system, zone],
+    [currentHeaderState],
   );
 
   const loadDetails = useCallback(
@@ -584,12 +577,12 @@ export function useForemanDraftBoundary({
       const freshDraftSnapshot = buildFreshForemanLocalDraftSnapshot({
         base: activeSnapshot,
         header: {
-          foreman,
+          foreman: currentHeaderState.foreman,
           comment: "",
-          objectType,
-          level,
-          system,
-          zone,
+          objectType: currentHeaderState.objectType,
+          level: currentHeaderState.level,
+          system: currentHeaderState.system,
+          zone: currentHeaderState.zone,
         },
       });
       const postSubmitPlan = resolveForemanPostSubmitDraftPlan({
@@ -633,20 +626,14 @@ export function useForemanDraftBoundary({
         });
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [
       applyLocalDraftSnapshotToBoundary,
-      comment,
-      foreman,
+      currentHeaderState,
       invalidateRequestDetailsLoads,
-      level,
-      objectType,
       refreshBoundarySyncState,
       requestId,
       setActiveDraftOwnerId,
       setDisplayNoByReq,
-      system,
-      zone,
     ],
   );
 
@@ -1197,55 +1184,82 @@ export function useForemanDraftBoundary({
     syncLocalDraftNow,
   ]);
 
+  const applyHeaderEditPlan = useCallback(
+    (plan: ForemanDraftHeaderEditPlan) => {
+      if (plan.headerPatch.foreman !== undefined) setForemanState(plan.headerPatch.foreman);
+      if (plan.headerPatch.comment !== undefined) setCommentState(plan.headerPatch.comment);
+      if (plan.headerPatch.objectType !== undefined) setObjectTypeState(plan.headerPatch.objectType);
+      if (plan.headerPatch.level !== undefined) setLevelState(plan.headerPatch.level);
+      if (plan.headerPatch.system !== undefined) setSystemState(plan.headerPatch.system);
+      if (plan.headerPatch.zone !== undefined) setZoneState(plan.headerPatch.zone);
+      setRequestDetails((prev) => applyForemanDraftHeaderEditPlanToRequestDetails(prev, plan));
+    },
+    [
+      setCommentState,
+      setForemanState,
+      setLevelState,
+      setObjectTypeState,
+      setSystemState,
+      setZoneState,
+    ],
+  );
+
   const setForeman = useCallback(
     (value: string) => {
-      setForemanState(value);
-      setRequestDetails((prev) => patchForemanRequestDetailsName(prev, value));
+      applyHeaderEditPlan(resolveForemanDraftHeaderEditPlan({ field: "foreman", value }));
     },
-    [setForemanState],
+    [applyHeaderEditPlan],
   );
 
   const setComment = useCallback(
     (value: string) => {
-      setCommentState(value);
-      setRequestDetails((prev) => patchForemanRequestDetailsComment(prev, value));
+      applyHeaderEditPlan(resolveForemanDraftHeaderEditPlan({ field: "comment", value }));
     },
-    [setCommentState],
+    [applyHeaderEditPlan],
   );
 
   const applyObjectTypeSelection = useCallback(
     (code: string, objectName?: string | null) => {
-      setObjectTypeState(code);
-      setLevelState("");
-      setSystemState("");
-      setZoneState("");
-      setRequestDetails((prev) => patchForemanRequestDetailsObjectType(prev, code, objectName));
+      applyHeaderEditPlan(resolveForemanDraftHeaderEditPlan({
+        field: "objectType",
+        code,
+        name: objectName,
+      }));
     },
-    [setLevelState, setObjectTypeState, setSystemState, setZoneState],
+    [applyHeaderEditPlan],
   );
 
   const applyLevelSelection = useCallback(
     (code: string, levelName?: string | null) => {
-      setLevelState(code);
-      setRequestDetails((prev) => patchForemanRequestDetailsLevel(prev, code, levelName));
+      applyHeaderEditPlan(resolveForemanDraftHeaderEditPlan({
+        field: "level",
+        code,
+        name: levelName,
+      }));
     },
-    [setLevelState],
+    [applyHeaderEditPlan],
   );
 
   const applySystemSelection = useCallback(
     (code: string, systemName?: string | null) => {
-      setSystemState(code);
-      setRequestDetails((prev) => patchForemanRequestDetailsSystem(prev, code, systemName));
+      applyHeaderEditPlan(resolveForemanDraftHeaderEditPlan({
+        field: "system",
+        code,
+        name: systemName,
+      }));
     },
-    [setSystemState],
+    [applyHeaderEditPlan],
   );
 
   const applyZoneSelection = useCallback(
     (code: string, zoneName?: string | null) => {
-      setZoneState(code);
-      setRequestDetails((prev) => patchForemanRequestDetailsZone(prev, code, zoneName));
+      applyHeaderEditPlan(resolveForemanDraftHeaderEditPlan({
+        field: "zone",
+        code,
+        name: zoneName,
+      }));
     },
-    [setZoneState],
+    [applyHeaderEditPlan],
   );
 
   const openRequestById = useCallback(

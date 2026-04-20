@@ -1,0 +1,54 @@
+{
+  "wave": "P3-F",
+  "status": "GREEN",
+  "scope": {
+    "root_hook": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+    "boundary_module": "src/screens/foreman/foreman.draftBoundaryIdentity.model.ts",
+    "targeted_test": "tests/foreman/foreman.draftStateBoundary.model.test.ts"
+  },
+  "checks": [
+    {
+      "name": "targeted draft state boundary parity",
+      "command": "npx jest tests/foreman/foreman.draftStateBoundary.model.test.ts --runInBand --no-coverage",
+      "status": "PASS",
+      "proof": "5 tests passed; validates side-effect-free model, draft activity parity, header meta parity, header edit request-details parity, and root hook routing."
+    },
+    {
+      "name": "foreman exact-scope draft regression",
+      "command": "npx jest tests/foreman/foreman.draftStateBoundary.model.test.ts src/screens/foreman/foreman.draftLifecycle.model.test.ts src/screens/foreman/foreman.draftBoundaryIdentity.model.test.ts src/screens/foreman/foreman.draftSyncPlan.model.test.ts src/screens/foreman/foreman.manualRecovery.model.test.ts src/screens/foreman/foreman.postSubmitDraftPlan.model.test.ts src/screens/foreman/foreman.draftBoundaryFailure.model.test.ts src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts --runInBand --no-coverage",
+      "status": "PASS",
+      "proof": "8 suites passed; 76 tests passed."
+    },
+    {
+      "name": "typescript",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "name": "lint",
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    {
+      "name": "full jest",
+      "command": "npx jest --runInBand",
+      "status": "PASS",
+      "proof": "350 suites passed, 1 skipped; 2239 tests passed, 1 skipped."
+    },
+    {
+      "name": "diff check",
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    {
+      "name": "web smoke",
+      "status": "PASS",
+      "proof": "Expo web on localhost:19007; /office/foreman returned 200; Playwright load saw no console errors, page errors, or 5xx responses."
+    },
+    {
+      "name": "android smoke",
+      "status": "PASS",
+      "proof": "emulator-5554 online; rik://office/foreman launch status ok; app process alive; fresh logcat had no relevant fatal/crash/ANR/package death."
+    }
+  ]
+}
