@@ -41,6 +41,7 @@ export type GenerateActPdfArgs = {
 };
 
 export type ContractorActPdfData = {
+  mode: GenerateActPdfArgs["mode"];
   work: ContractorPdfWork;
   materials: ContractorPdfMaterialRow[];
   actNo: string;
@@ -69,6 +70,7 @@ export function prepareContractorActPdfData(
 
   const actNo = String(args.actNumber || args.work.progress_id.slice(0, 8));
   return {
+    mode: args.mode,
     work: args.work,
     materials: args.materials as ContractorPdfMaterialRow[],
     actNo,

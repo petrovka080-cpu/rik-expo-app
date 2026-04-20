@@ -97,9 +97,9 @@ describe("performance budget — bundle module count", () => {
     // PDF-Z2 adds one permanent production report manifest contract test.
     // PDF-Z3 adds focused warehouse manifest/backend reuse tests.
     // PDF-Z4 adds focused Foreman manifest/backend reuse tests.
-    // Runtime source threshold remains unchanged; focused test files add two source modules.
+    // PDF-Z5 adds contractor act manifest/reuse contract plus focused tests.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1206);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1209);
   });
 });
 
