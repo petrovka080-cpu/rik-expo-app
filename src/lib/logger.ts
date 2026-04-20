@@ -10,8 +10,12 @@
  * This module is the **single owner** of console output for touched production code.
  */
 
+import { redactSensitiveValue } from "./security/redaction";
+
 const isDev =
   typeof __DEV__ !== "undefined" ? __DEV__ : process.env.NODE_ENV !== "production";
+
+const redactArgs = (args: unknown[]) => args.map((arg) => redactSensitiveValue(arg));
 
 export const logger = {
   /**
@@ -19,7 +23,7 @@ export const logger = {
    * In production, these are silent. Use structured observability for prod events.
    */
   info(tag: string, ...args: unknown[]): void {
-    if (isDev) console.info(`[${tag}]`, ...args);
+    if (isDev) console.info(`[${tag}]`, ...redactArgs(args));
   },
 
   /**
@@ -27,7 +31,7 @@ export const logger = {
    * In production, these are silent. Use structured observability for prod warnings.
    */
   warn(tag: string, ...args: unknown[]): void {
-    if (isDev) console.warn(`[${tag}]`, ...args);
+    if (isDev) console.warn(`[${tag}]`, ...redactArgs(args));
   },
 
   /**
@@ -36,6 +40,6 @@ export const logger = {
    * not through raw console.error.
    */
   error(tag: string, ...args: unknown[]): void {
-    if (isDev) console.error(`[${tag}]`, ...args);
+    if (isDev) console.error(`[${tag}]`, ...redactArgs(args));
   },
 } as const;

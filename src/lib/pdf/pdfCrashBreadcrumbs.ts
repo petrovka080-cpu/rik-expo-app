@@ -8,6 +8,11 @@ import {
   type Result,
 } from "../errors/appError";
 import { recordPlatformObservability } from "../observability/platformObservability";
+import {
+  SENSITIVE_REDACTION_MARKER,
+  redactSensitiveRecord,
+  redactSensitiveText,
+} from "../security/redaction";
 
 type PdfCrashDiagnosticScreen = "foreman" | "warehouse";
 type PdfCrashTerminalState = "success" | "error";
@@ -44,9 +49,18 @@ function trimText(value: unknown) {
 }
 
 function normalizeUriTail(uri: unknown) {
-  const text = String(uri ?? "").trim();
+  const text = redactSensitiveText(uri).trim();
   if (!text) return null;
   return text.slice(-180);
+}
+
+function normalizeRedactedText(value: unknown) {
+  const text = trimText(value);
+  return text ? redactSensitiveText(text) : null;
+}
+
+function normalizeSecretPresence(value: unknown) {
+  return trimText(value) ? SENSITIVE_REDACTION_MARKER : null;
 }
 
 function normalizeNumber(value: unknown) {
@@ -193,16 +207,16 @@ export function recordPdfCrashBreadcrumb(input: {
     fileName: trimText(input.fileName),
     entityId: trimText(input.entityId),
     sessionId: trimText(input.sessionId),
-    openToken: trimText(input.openToken),
+    openToken: normalizeSecretPresence(input.openToken),
     fileExists: normalizeBool(input.fileExists),
     fileSizeBytes: normalizeNumber(input.fileSizeBytes),
     previewPath: trimText(input.previewPath),
-    errorMessage: trimText(input.errorMessage),
+    errorMessage: normalizeRedactedText(input.errorMessage),
     terminalState:
       input.terminalState === "success" || input.terminalState === "error"
         ? input.terminalState
         : null,
-    extra: input.extra,
+    extra: redactSensitiveRecord(input.extra) ?? undefined,
   };
 
   void enqueueBreadcrumbWrite(entry);
@@ -243,16 +257,16 @@ export async function recordPdfCrashBreadcrumbAsync(input: {
     fileName: trimText(input.fileName),
     entityId: trimText(input.entityId),
     sessionId: trimText(input.sessionId),
-    openToken: trimText(input.openToken),
+    openToken: normalizeSecretPresence(input.openToken),
     fileExists: normalizeBool(input.fileExists),
     fileSizeBytes: normalizeNumber(input.fileSizeBytes),
     previewPath: trimText(input.previewPath),
-    errorMessage: trimText(input.errorMessage),
+    errorMessage: normalizeRedactedText(input.errorMessage),
     terminalState:
       input.terminalState === "success" || input.terminalState === "error"
         ? input.terminalState
         : null,
-    extra: input.extra,
+    extra: redactSensitiveRecord(input.extra) ?? undefined,
   };
 
   await enqueueBreadcrumbWrite(entry);
@@ -292,8 +306,8 @@ export function buildPdfCrashBreadcrumbsText(items: PdfCrashBreadcrumb[]) {
       parts.push(`exists=${String(item.fileExists)}`);
     if (item.fileSizeBytes != null) parts.push(`size=${item.fileSizeBytes}`);
     if (item.terminalState) parts.push(`terminal=${item.terminalState}`);
-    if (item.errorMessage) parts.push(`error=${item.errorMessage}`);
-    if (item.uriTail) parts.push(`uri=${item.uriTail}`);
+    if (item.errorMessage) parts.push(`error=${redactSensitiveText(item.errorMessage)}`);
+    if (item.uriTail) parts.push(`uri=${redactSensitiveText(item.uriTail)}`);
     return parts.join(" | ");
   });
   return lines.join("\n");

@@ -1,3 +1,5 @@
+import { redactSensitiveRecord, redactSensitiveText } from "../security/redaction";
+
 type PlatformObservabilityScreen =
   | "global_busy"
   | "warehouse"
@@ -201,6 +203,8 @@ export function recordPlatformObservability(input: PlatformObservabilityEventInp
     id: `obs-${store.seq}`,
     at: Date.now(),
     ...input,
+    errorMessage: input.errorMessage ? redactSensitiveText(input.errorMessage) : input.errorMessage,
+    extra: redactSensitiveRecord(input.extra) ?? undefined,
   };
   store.events.push(event);
   if (store.events.length > MAX_PLATFORM_OBSERVABILITY_EVENTS) {

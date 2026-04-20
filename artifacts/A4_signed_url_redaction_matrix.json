@@ -1,0 +1,62 @@
+[
+  {
+    "test": "src/lib/security/redaction.test.ts",
+    "intent": "Prove the reusable redaction boundary strips signed URL query secrets, bearer tokens, JWT-like values, and sensitive object keys.",
+    "expected_behavior": "Diagnostic shape is preserved, but token-bearing values are replaced with [redacted].",
+    "result": "PASS"
+  },
+  {
+    "test": "src/lib/observability/platformObservability.redaction.test.ts",
+    "intent": "Prove persisted platform observability events do not store signed URLs, open tokens, authorization headers, or nested token values.",
+    "expected_behavior": "Observed event details and extras are stored with sensitive values redacted.",
+    "result": "PASS"
+  },
+  {
+    "test": "src/lib/logError.redaction.test.ts",
+    "intent": "Prove production app error payloads and development console diagnostics are redacted before persistence or console output.",
+    "expected_behavior": "Signed URLs, authorization headers, and open tokens do not appear in logged payloads.",
+    "result": "PASS"
+  },
+  {
+    "test": "src/lib/logger.test.ts",
+    "intent": "Prove the shared logger boundary redacts token-bearing diagnostics before delegating to console methods.",
+    "expected_behavior": "Console receives sanitized objects and strings while safe metadata remains available.",
+    "result": "PASS"
+  },
+  {
+    "test": "src/lib/pdf/pdfCrashBreadcrumbs.test.ts",
+    "intent": "Prove PDF crash breadcrumbs redact signed URLs, open tokens, error messages, and nested extras before AsyncStorage persistence.",
+    "expected_behavior": "Stored breadcrumb data contains [redacted] markers and no raw diagnostic secrets.",
+    "result": "PASS"
+  },
+  {
+    "test": "src/lib/api/canonicalPdfBackendInvoker.test.ts",
+    "intent": "Guard canonical PDF backend transport behavior while redacting transport diagnostic details.",
+    "expected_behavior": "Canonical backend invocation behavior is preserved across native and web paths.",
+    "result": "PASS"
+  },
+  {
+    "test": "src/lib/documents/pdfDocumentActions.test.ts",
+    "intent": "Guard PDF document action behavior after diagnostic route/source URI redaction.",
+    "expected_behavior": "Open path behavior and route semantics remain unchanged.",
+    "result": "PASS"
+  },
+  {
+    "test": "tests/routes/pdf-viewer.lifecycle.test.tsx",
+    "intent": "Guard PDF viewer lifecycle behavior after replacing raw console payloads with redacted helpers.",
+    "expected_behavior": "Viewer lifecycle remains stable and route-driven behavior is unchanged.",
+    "result": "PASS"
+  },
+  {
+    "test": "src/lib/pdf/pdfNativeHandoffPlan.test.ts",
+    "intent": "Guard native handoff planning and source-order audit after viewer diagnostic helper extraction.",
+    "expected_behavior": "Native handoff semantics and source ordering remain unchanged.",
+    "result": "PASS"
+  },
+  {
+    "test": "tests/perf/performance-budget.test.ts",
+    "intent": "Keep module growth explicit after adding one reusable security boundary and focused regression tests.",
+    "expected_behavior": "Performance budget remains bounded and documented.",
+    "result": "PASS"
+  }
+]

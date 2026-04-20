@@ -19,6 +19,7 @@ import {
   recordPdfCrashBreadcrumb,
   recordPdfCrashBreadcrumbAsync,
 } from "./pdfCrashBreadcrumbs";
+import { SENSITIVE_REDACTION_MARKER } from "../security/redaction";
 import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
@@ -58,8 +59,43 @@ describe("pdfCrashBreadcrumbs", () => {
       marker: "viewer_route_pushed",
       screen: "foreman",
       sourceKind: "remote-url",
-      openToken: "open-1",
+      openToken: SENSITIVE_REDACTION_MARKER,
     });
+  });
+
+  it("redacts signed URLs, open tokens, and nested diagnostic extras before persistence", async () => {
+    await recordPdfCrashBreadcrumbAsync({
+      marker: "viewer_route_pushed",
+      screen: "warehouse",
+      documentType: "warehouse_register",
+      originModule: "warehouse",
+      sourceKind: "remote-url",
+      uri: "https://storage.example.test/register.pdf?token=storage-secret&download=1",
+      openToken: "open-secret",
+      errorMessage: "failed for Bearer auth-secret",
+      extra: {
+        signedUrl: "https://storage.example.test/report.pdf?token=nested-secret",
+        href: "/pdf-viewer?sessionId=session-1&openToken=route-secret",
+      },
+    });
+
+    const savedItems = JSON.parse(String(mockSetItem.mock.calls[0]?.[1] ?? "[]"));
+    const savedJson = JSON.stringify(savedItems);
+
+    expect(savedJson).not.toContain("storage-secret");
+    expect(savedJson).not.toContain("open-secret");
+    expect(savedJson).not.toContain("auth-secret");
+    expect(savedJson).not.toContain("nested-secret");
+    expect(savedJson).not.toContain("route-secret");
+    expect(savedItems[0]).toMatchObject({
+      openToken: SENSITIVE_REDACTION_MARKER,
+      errorMessage: `failed for Bearer ${SENSITIVE_REDACTION_MARKER}`,
+      extra: {
+        signedUrl: SENSITIVE_REDACTION_MARKER,
+        href: `/pdf-viewer?sessionId=session-1&openToken=${SENSITIVE_REDACTION_MARKER}`,
+      },
+    });
+    expect(savedItems[0].uriTail).toContain(`token=${SENSITIVE_REDACTION_MARKER}`);
   });
 
   it("flushes queued fire-and-forget writes for diagnostics reads", async () => {

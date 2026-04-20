@@ -7,6 +7,7 @@ import {
   type DirectorSubcontractReportPdfRequest,
 } from "../pdf/directorSubcontractReport.shared";
 import { invokeDirectorPdfBackend } from "./directorPdfBackendInvoker";
+import { redactSensitiveRecord } from "../security/redaction";
 
 const FUNCTION_NAME = "director-subcontract-report-pdf";
 const MODE_RAW = String(
@@ -156,7 +157,7 @@ export async function generateDirectorSubcontractReportPdfViaBackend(
 
   if (__DEV__) {
     console.info(
-      `[director-subcontract-report-pdf-backend] ${JSON.stringify({
+      `[director-subcontract-report-pdf-backend] ${JSON.stringify(redactSensitiveRecord({
         companyName: payload.companyName ?? null,
         generatedBy: payload.generatedBy ?? null,
         periodFrom: payload.periodFrom ?? null,
@@ -170,7 +171,7 @@ export async function generateDirectorSubcontractReportPdfViaBackend(
         signedUrl: result.signedUrl,
         bucketId: result.bucketId,
         storagePath: result.storagePath,
-      })}`,
+      }))}`,
     );
   }
 

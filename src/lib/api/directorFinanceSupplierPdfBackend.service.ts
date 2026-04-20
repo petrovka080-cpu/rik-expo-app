@@ -7,6 +7,7 @@ import {
   type DirectorFinanceSupplierSummaryPdfRequest,
 } from "../pdf/directorSupplierSummary.shared";
 import { invokeDirectorPdfBackend } from "./directorPdfBackendInvoker";
+import { redactSensitiveRecord } from "../security/redaction";
 
 const FUNCTION_NAME = "director-finance-supplier-summary-pdf";
 const MODE_RAW = String(
@@ -174,7 +175,7 @@ export async function generateDirectorFinanceSupplierSummaryPdfViaBackend(
 
   if (__DEV__) {
     console.info(
-      `[director-finance-supplier-pdf-backend] ${JSON.stringify({
+      `[director-finance-supplier-pdf-backend] ${JSON.stringify(redactSensitiveRecord({
         supplier: payload.supplier,
         kindName: payload.kindName ?? null,
         periodFrom: payload.periodFrom ?? null,
@@ -188,7 +189,7 @@ export async function generateDirectorFinanceSupplierSummaryPdfViaBackend(
         bucketId: result.bucketId,
         storagePath: result.storagePath,
         telemetry: result.telemetry,
-      })}`,
+      }))}`,
     );
   }
 

@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { redactSensitiveRecord, redactSensitiveText, redactSensitiveValue } from "./security/redaction";
 import { supabase } from "./supabaseClient";
 
 type Extra = Record<string, unknown> | undefined;
@@ -22,17 +23,26 @@ const toMessage = (error: unknown): string => {
   return String(error ?? "unknown error");
 };
 
-export function logError(context: string, error: unknown, extra?: Extra): void {
-  const message = toMessage(error);
-  const payload: AppErrorInsert = {
+export function buildLogErrorPayload(context: string, error: unknown, extra?: Extra): AppErrorInsert {
+  const message = redactSensitiveText(toMessage(error));
+  const redactedExtra = redactSensitiveRecord(extra) ?? null;
+  return {
     context,
     message,
-    extra: extra ?? null,
+    extra: redactedExtra,
     platform: Platform.OS,
   };
+}
+
+export function logError(context: string, error: unknown, extra?: Extra): void {
+  const payload = buildLogErrorPayload(context, error, extra);
+  const { message, extra: redactedExtra } = payload;
 
   if (isDevRuntime) {
-    console.error(`[${context}]`, message, { error, extra });
+    console.error(`[${context}]`, message, {
+      error: redactSensitiveValue(error),
+      extra: redactedExtra,
+    });
     return;
   }
 

@@ -12,6 +12,7 @@ import {
 import { beginCanonicalPdfBoundary } from "../pdf/canonicalPdfObservability";
 import { hashString32 } from "../pdfFileContract";
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { redactSensitiveText } from "../security/redaction";
 import { invokeDirectorPdfBackend } from "./directorPdfBackendInvoker";
 import type { DirectorFinanceManagementManifestContract } from "../pdf/directorPdfPlatformContract";
 
@@ -376,7 +377,7 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
   } catch (error) {
     if (DIRECTOR_PDF_RENDER_MODE === "auto" && shouldDisableDirectorPdfRenderForSession(error)) {
       setPdfRenderRolloutAvailability(DIRECTOR_PDF_RENDER_ROLLOUT_ID, "missing", {
-        errorMessage: toErrorMessage(error, "director-pdf-render failed"),
+        errorMessage: redactSensitiveText(toErrorMessage(error, "director-pdf-render failed")),
       });
     }
     if (__DEV__) {
@@ -384,7 +385,7 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
         documentKind: args.documentKind,
         source: args.source,
         renderMode: DIRECTOR_PDF_RENDER_MODE,
-        errorMessage: toErrorMessage(error, "Unknown render error"),
+        errorMessage: redactSensitiveText(toErrorMessage(error, "Unknown render error")),
       });
     }
     boundary.error("backend_invoke_failure", error, {

@@ -1,5 +1,6 @@
 import { router as rootRouter, type Href } from "expo-router";
 import { InteractionManager, Platform } from "react-native";
+import { redactSensitiveText } from "../security/redaction";
 
 export type PdfViewerRouterLike = {
   push: (href: Href, options?: unknown) => void;
@@ -28,13 +29,14 @@ export async function pushPdfDocumentViewerRouteSafely(
   href: Href,
   onBeforeNavigate?: (() => void | Promise<void>) | null,
 ) {
+  const hrefForDiagnostics = redactSensitiveText(String(href));
   if (__DEV__) console.info("[pdf-document-actions] viewer_patch_v3_navigation_call", {
-    href: String(href),
+    href: hrefForDiagnostics,
     platform: Platform.OS,
     patchVersion: "v3",
   });
   if (__DEV__) console.info("[pdf-document-actions] viewer_route_push_pre_schedule", {
-    href: String(href),
+    href: hrefForDiagnostics,
     platform: Platform.OS,
   });
   const hadModalDismiss = typeof onBeforeNavigate === "function";
@@ -50,7 +52,7 @@ export async function pushPdfDocumentViewerRouteSafely(
       try {
         const shouldPushViewerRoute = Platform.OS === "ios" || Platform.OS === "web";
         if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_start", {
-          href: String(href),
+          href: hrefForDiagnostics,
           platform: Platform.OS,
           method: shouldPushViewerRoute ? "push" : "replace",
         });
@@ -68,16 +70,16 @@ export async function pushPdfDocumentViewerRouteSafely(
           router.push(href);
         }
         if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_done", {
-          href: String(href),
+          href: hrefForDiagnostics,
           platform: Platform.OS,
         });
         resolve();
       } catch (error) {
         if (__DEV__) console.error("[pdf-document-actions] viewer_route_replace_crash", {
-          href: String(href),
+          href: hrefForDiagnostics,
           platform: Platform.OS,
           errorName: error instanceof Error ? error.name : undefined,
-          errorMessage: error instanceof Error ? error.message : String(error),
+          errorMessage: redactSensitiveText(error instanceof Error ? error.message : String(error)),
         });
         reject(error);
       }

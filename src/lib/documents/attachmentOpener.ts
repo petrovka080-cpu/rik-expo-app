@@ -6,6 +6,7 @@ import * as IntentLauncher from "expo-intent-launcher";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
 import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
+import { redactSensitiveText } from "../security/redaction";
 import { supabase } from "../supabaseClient";
 import { recordPlatformObservability } from "../observability/platformObservability";
 
@@ -325,7 +326,7 @@ export async function openAndroidViewIntent(
   }
 
   if (__DEV__) console.info(`[${context.owner}] android_view_intent_start`, {
-    uri,
+    uri: redactSensitiveText(uri),
     scheme: getUriScheme(uri),
     mimeType,
     fileName: context.fileName ?? null,
@@ -338,7 +339,7 @@ export async function openAndroidViewIntent(
       type: mimeType,
     });
     if (__DEV__) console.info(`[${context.owner}] android_view_intent_ready`, {
-      uri,
+      uri: redactSensitiveText(uri),
       mimeType,
       fileName: context.fileName ?? null,
       resultCode:
@@ -349,10 +350,10 @@ export async function openAndroidViewIntent(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error ?? "Android view intent failed");
     if (__DEV__) console.error(`[${context.owner}] android_view_intent_failed`, {
-      uri,
+      uri: redactSensitiveText(uri),
       mimeType,
       fileName: context.fileName ?? null,
-      error: message,
+      error: redactSensitiveText(message),
     });
     throw error instanceof Error ? error : new Error(message);
   }
@@ -375,7 +376,7 @@ export async function openAndroidRemotePdfUrl(
   }
 
   if (__DEV__) console.info(`[${context.owner}] android_remote_pdf_open_start`, {
-    uri: normalizedUrl,
+    uri: redactSensitiveText(normalizedUrl),
     scheme: getUriScheme(normalizedUrl),
     fileName: context.fileName ?? null,
   });
@@ -386,15 +387,15 @@ export async function openAndroidRemotePdfUrl(
       fileName: context.fileName ?? null,
     });
     if (__DEV__) console.info(`[${context.owner}] android_remote_pdf_open_ready`, {
-      uri: normalizedUrl,
+      uri: redactSensitiveText(normalizedUrl),
       fileName: context.fileName ?? null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error ?? "Android remote PDF open failed");
     if (__DEV__) console.error(`[${context.owner}] android_remote_pdf_open_failed`, {
-      uri: normalizedUrl,
+      uri: redactSensitiveText(normalizedUrl),
       fileName: context.fileName ?? null,
-      error: message,
+      error: redactSensitiveText(message),
     });
     throw error instanceof Error ? error : new Error(message);
   }

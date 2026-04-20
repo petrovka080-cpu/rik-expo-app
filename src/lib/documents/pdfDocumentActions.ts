@@ -54,6 +54,11 @@ import {
   resolvePdfDocumentVisibilityStartPlan,
   resolvePdfDocumentVisibilitySuccessPlan,
 } from "./pdfDocumentVisibilityBusyPlan";
+import { redactSensitiveRecord, redactSensitiveText } from "../security/redaction";
+
+const redactedRouteParamsJson = (params: Record<string, unknown>) =>
+  JSON.stringify(redactSensitiveRecord(params) ?? {});
+
 export function getPdfFlowErrorMessage(
   error: unknown,
   fallback = "Не удалось открыть PDF",
@@ -213,7 +218,7 @@ export async function preparePdfDocument(
         platform: Platform.OS,
         documentType: args.descriptor.documentType,
         originModule: args.descriptor.originModule,
-        sourceUri: args.descriptor.uri ?? null,
+        sourceUri: args.descriptor.uri ? redactSensitiveText(args.descriptor.uri) : null,
         fileName: args.descriptor.fileName,
         busyKey: args.key ?? null,
       });
@@ -235,7 +240,7 @@ export async function preparePdfDocument(
         platform: Platform.OS,
         documentType: args.descriptor.documentType,
         originModule: args.descriptor.originModule,
-        finalUri: uri,
+        finalUri: redactSensitiveText(uri),
         finalScheme: extractUriScheme(uri),
         finalSourceKind: preparedSource.kind,
         fileName: args.descriptor.fileName,
@@ -265,7 +270,7 @@ export async function preparePdfDocument(
           error && typeof error === "object" && "name" in error
             ? String((error as { name?: unknown }).name || "")
             : "",
-        errorMessage: message,
+        errorMessage: redactSensitiveText(message),
       });
       throw lifecycleError instanceof Error
         ? lifecycleError
@@ -342,7 +347,7 @@ export async function previewPdfDocument(
       documentType: doc.documentType,
       originModule: doc.originModule,
       scheme,
-      uri: doc.uri,
+      uri: redactSensitiveText(doc.uri),
       fileName: doc.fileName,
     });
     if (canUseInMemoryRemoteViewerShortcut(doc, Boolean(opts?.router))) {
@@ -406,14 +411,14 @@ export async function previewPdfDocument(
         sessionId: safeSessionId,
         documentType: asset.documentType,
         originModule: asset.originModule,
-        finalUri: asset.uri,
+        finalUri: redactSensitiveText(asset.uri),
         finalScheme: extractUriScheme(asset.uri),
         finalSourceKind: asset.sourceKind,
         isLocalFile: false,
         fileName: asset.fileName,
         previewSourceMode: "direct_remote_viewer_session_contract",
         payloadMode: "session_id_only",
-        routeParamsJson: JSON.stringify({
+        routeParamsJson: redactedRouteParamsJson({
           sessionId: safeSessionId,
           openToken: safeOpenToken,
         }),
@@ -606,7 +611,7 @@ export async function previewPdfDocument(
       documentType: asset.documentType,
       originModule: asset.originModule,
       sourceKind: asset.sourceKind,
-      uri: asset.uri,
+      uri: redactSensitiveText(asset.uri),
       scheme: extractUriScheme(asset.uri),
       fileName: asset.fileName,
       exists: typeof asset.sizeBytes === "number" ? true : undefined,
@@ -678,12 +683,12 @@ export async function previewPdfDocument(
         sessionId: safeSessionId,
         documentType: asset.documentType,
         originModule: asset.originModule,
-        finalUri: asset.uri,
+        finalUri: redactSensitiveText(asset.uri),
         finalScheme: extractUriScheme(asset.uri),
         finalSourceKind: asset.sourceKind,
         isLocalFile: /^file:\/\//i.test(String(asset.uri || "")),
         fileName: asset.fileName,
-        routeParamsJson: JSON.stringify({
+        routeParamsJson: redactedRouteParamsJson({
           sessionId: safeSessionId,
           openToken: safeOpenToken,
         }),
@@ -860,7 +865,7 @@ export async function previewPdfDocument(
     if (__DEV__) console.warn("[pdf-document-actions] preview_without_router_fallback", {
       documentType: asset.documentType,
       originModule: asset.originModule,
-      finalUri: asset.uri,
+      finalUri: redactSensitiveText(asset.uri),
     });
     recordPdfOpenStage({
       context: opts?.openFlow,
@@ -902,12 +907,12 @@ export async function previewPdfDocument(
       documentType: doc.documentType,
       originModule: doc.originModule,
       fileName: doc.fileName,
-      uri: doc.uri,
+      uri: redactSensitiveText(doc.uri),
       errorName:
         error && typeof error === "object" && "name" in error
           ? String((error as { name?: unknown }).name || "")
           : "",
-      errorMessage: message,
+      errorMessage: redactSensitiveText(message),
     });
     throw lifecycleError instanceof Error ? lifecycleError : new Error(message);
   }

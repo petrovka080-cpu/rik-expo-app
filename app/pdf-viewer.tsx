@@ -100,6 +100,7 @@ import {
 import { usePdfViewerActions } from "../src/lib/pdf/usePdfViewerActions";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
 import { safeBack } from "../src/lib/navigation/safeBack";
+import { redactSensitiveRecord, redactSensitiveText } from "../src/lib/security/redaction";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
 
 
@@ -128,15 +129,26 @@ const NativePdfWebView =
 const getCurrentViewerPlatform = () =>
   Platform.OS === "web" ? "web" : Platform.OS === "android" ? "android" : "ios";
 
+const redactPdfViewerConsolePayload = (payload: Record<string, unknown>) =>
+  redactSensitiveRecord(payload) ?? {};
+
+const logPdfViewerInfo = (label: string, payload: Record<string, unknown>) => {
+  console.info(label, redactPdfViewerConsolePayload(payload));
+};
+
+const logPdfViewerError = (label: string, payload: Record<string, unknown>) => {
+  console.error(label, redactPdfViewerConsolePayload(payload));
+};
+
 const emitPdfViewerRenderConsoleCommand = (
   command?: PdfViewerRenderConsoleCommand,
 ) => {
   if (!command) return;
   if (command.level === "error") {
-    console.error(command.label, command.payload);
+    logPdfViewerError(command.label, command.payload);
     return;
   }
-  console.info(command.label, command.payload);
+  logPdfViewerInfo(command.label, command.payload);
 };
 
 const emitPdfViewerRenderBreadcrumbCommands = (
@@ -181,7 +193,7 @@ function PdfViewerScreen() {
     () => String(params.openToken || "").trim(),
     [params.openToken],
   );
-  console.info("[pdf-viewer] viewer_params_parsed", {
+  logPdfViewerInfo("[pdf-viewer] viewer_params_parsed", {
     platform: Platform.OS,
     sessionId: String(params.sessionId || "").trim() || null,
     openToken: String(params.openToken || "").trim() || null,
@@ -220,7 +232,7 @@ function PdfViewerScreen() {
     );
   }, [directSnapshotParams, sessionId]);
   const snapshot = React.useMemo(() => resolveSnapshot(), [resolveSnapshot]);
-  console.info("[pdf-viewer] viewer_snapshot_resolved", {
+  logPdfViewerInfo("[pdf-viewer] viewer_snapshot_resolved", {
     platform: Platform.OS,
     hasSession: Boolean(snapshot.session),
     hasAsset: Boolean(snapshot.asset),
@@ -413,7 +425,7 @@ function PdfViewerScreen() {
   }, [clearWebRenderUri]);
 
   React.useEffect(() => {
-    console.info("[pdf-viewer] viewer_route_mounted", {
+    logPdfViewerInfo("[pdf-viewer] viewer_route_mounted", {
       platform: Platform.OS,
       sessionId,
       receivedSessionId: params.sessionId ?? null,
@@ -575,13 +587,13 @@ function PdfViewerScreen() {
       const next = syncSnapshot();
       if (next.asset) {
         const scheme = String(next.asset.uri || "").split(":")[0] || "unknown";
-        console.error("[pdf-viewer] load_error", {
+        logPdfViewerError("[pdf-viewer] load_error", {
           documentType: next.asset.documentType,
           originModule: next.asset.originModule,
           scheme,
           platform: Platform.OS,
           phase,
-          error: message,
+          error: redactSensitiveText(message),
         });
       }
       recordViewerBreadcrumb("viewer_terminal_error", {
@@ -804,7 +816,7 @@ function PdfViewerScreen() {
         }
         const latest = syncSnapshot();
         if (latest.asset?.assetId !== args.resolvedAsset.assetId) return;
-        console.info("[pdf-viewer] web_iframe_ready_fallback", {
+        logPdfViewerInfo("[pdf-viewer] web_iframe_ready_fallback", {
           sessionId: latest.session?.sessionId ?? sessionId,
           documentType: args.resolvedAsset.documentType,
           originModule: args.resolvedAsset.originModule,
@@ -873,7 +885,7 @@ function PdfViewerScreen() {
           asset: resolvedAsset,
           context: handoffContext,
         });
-        console.info(duplicatePlan.console.label, duplicatePlan.console.payload);
+        logPdfViewerInfo(duplicatePlan.console.label, duplicatePlan.console.payload);
         recordViewerBreadcrumb(
           duplicatePlan.breadcrumb.marker,
           duplicatePlan.breadcrumb.payload,
@@ -890,7 +902,7 @@ function PdfViewerScreen() {
       resetForNativeHandoffStart();
 
       try {
-        console.info("[pdf-viewer] native_handoff_start", startCommandPlan.console.payload);
+        logPdfViewerInfo("[pdf-viewer] native_handoff_start", startCommandPlan.console.payload);
         recordViewerBreadcrumb(
           startCommandPlan.breadcrumb.marker,
           startCommandPlan.breadcrumb.payload,
@@ -905,7 +917,7 @@ function PdfViewerScreen() {
           context: handoffContext,
           trigger,
         });
-        console.info("[pdf-viewer] native_handoff_ready", successTelemetryPlan.console.payload);
+        logPdfViewerInfo("[pdf-viewer] native_handoff_ready", successTelemetryPlan.console.payload);
         recordViewerBreadcrumb(
           successTelemetryPlan.breadcrumb.marker,
           successTelemetryPlan.breadcrumb.payload,
@@ -954,7 +966,7 @@ function PdfViewerScreen() {
           asset: resolvedAsset,
           context: handoffContext,
         });
-        console.error(
+        logPdfViewerError(
           errorCommandPlan.console.label,
           errorCommandPlan.console.payload,
         );
@@ -1034,7 +1046,7 @@ function PdfViewerScreen() {
       const resolvedResolution = bootstrapPlan.resolution;
       const resolvedAsset = resolvedResolution.asset;
 
-      console.info("[pdf-viewer] open", {
+      logPdfViewerInfo("[pdf-viewer] open", {
         sessionId: next.session.sessionId,
         documentType: resolvedAsset.documentType,
         originModule: resolvedAsset.originModule,
@@ -1138,8 +1150,8 @@ function PdfViewerScreen() {
         clearWebRenderUri();
         webRenderUriRef.current = bootstrapPlan.webRenderUri;
         setWebRenderUri(bootstrapPlan.webRenderUri);
-        console.info("[pdf-viewer] signedUrl", bootstrapPlan.webRenderUri);
-        console.info("[pdf-viewer] web_iframe_src_ready", {
+        console.info("[pdf-viewer] signedUrl", redactSensitiveText(bootstrapPlan.webRenderUri));
+        logPdfViewerInfo("[pdf-viewer] web_iframe_src_ready", {
           sessionId: next.session.sessionId,
           documentType: resolvedAsset.documentType,
           originModule: resolvedAsset.originModule,
@@ -1179,7 +1191,7 @@ function PdfViewerScreen() {
 
     return () => {
       cancelled = true;
-      console.info("[pdf-viewer] unmount", {
+      logPdfViewerInfo("[pdf-viewer] unmount", {
         sessionId,
         documentType: next.asset?.documentType ?? null,
         originModule: next.asset?.originModule ?? null,
@@ -1330,17 +1342,17 @@ function PdfViewerScreen() {
           exists = info?.exists;
           size = info?.sizeBytes;
         } catch (error) {
-          console.error("[pdf-viewer] viewer_file_inspect_failed", {
+          logPdfViewerError("[pdf-viewer] viewer_file_inspect_failed", {
             sessionId,
             uri: resolvedAsset.uri,
-            error: error instanceof Error ? error.message : String(error),
+            error: redactSensitiveText(error instanceof Error ? error.message : String(error)),
           });
         }
       }
 
       if (!cancelled) {
         if (Platform.OS !== "web" && scheme === "file" && exists === false) {
-          console.info("[pdf-viewer] viewer_local_file_exists_no", {
+          logPdfViewerInfo("[pdf-viewer] viewer_local_file_exists_no", {
             sessionId,
             uri: resolvedAsset.uri,
             exists: false,
@@ -1349,7 +1361,7 @@ function PdfViewerScreen() {
             documentType: resolvedAsset.documentType,
             originModule: resolvedAsset.originModule,
           });
-          console.error("[pdf-viewer] viewer_file_not_found", {
+          logPdfViewerError("[pdf-viewer] viewer_file_not_found", {
             sessionId,
             uri: resolvedAsset.uri,
             fileName: resolvedAsset.fileName,
@@ -1359,7 +1371,7 @@ function PdfViewerScreen() {
           scheme === "file" &&
           exists === true
         ) {
-          console.info("[pdf-viewer] viewer_local_file_exists_yes", {
+          logPdfViewerInfo("[pdf-viewer] viewer_local_file_exists_yes", {
             sessionId,
             uri: resolvedAsset.uri,
             exists: true,
@@ -1369,7 +1381,7 @@ function PdfViewerScreen() {
             originModule: resolvedAsset.originModule,
           });
         }
-        console.info("[pdf-viewer] viewer_before_render", {
+        logPdfViewerInfo("[pdf-viewer] viewer_before_render", {
           platform: Platform.OS,
           sessionId,
           documentType: resolvedAsset.documentType,
@@ -1445,7 +1457,7 @@ function PdfViewerScreen() {
     if (webIframeRenderLoggedKeyRef.current === cycleKey) return;
     webIframeRenderLoggedKeyRef.current = cycleKey;
 
-    console.info("[pdf-viewer] web_iframe_render", {
+    logPdfViewerInfo("[pdf-viewer] web_iframe_render", {
       sessionId,
       documentType: asset.documentType,
       originModule: asset.originModule,
@@ -1475,7 +1487,7 @@ function PdfViewerScreen() {
 
   const body = (() => {
     if (state === "empty") {
-      console.error("[pdf-viewer] viewer_missing_session", {
+      logPdfViewerError("[pdf-viewer] viewer_missing_session", {
         platform: Platform.OS,
         sessionId,
       });
@@ -1488,10 +1500,10 @@ function PdfViewerScreen() {
     }
 
     if (state === "error") {
-      console.error("[pdf-viewer] viewer_error_state", {
+      logPdfViewerError("[pdf-viewer] viewer_error_state", {
         platform: Platform.OS,
         sessionId,
-        errorText,
+        errorText: redactSensitiveText(errorText),
         uri: asset?.uri ?? null,
         scheme: getUriScheme(asset?.uri),
       });
@@ -1508,7 +1520,7 @@ function PdfViewerScreen() {
     }
 
     if (resolvedSource.kind === "missing-asset") {
-      console.error("[pdf-viewer] viewer_invalid_asset", {
+      logPdfViewerError("[pdf-viewer] viewer_invalid_asset", {
         platform: Platform.OS,
         sessionId,
         hasAsset: Boolean(asset),
@@ -1563,7 +1575,7 @@ function PdfViewerScreen() {
     }
 
     if (!source) {
-      console.error("[pdf-viewer] viewer_invalid_asset", {
+      logPdfViewerError("[pdf-viewer] viewer_invalid_asset", {
         platform: Platform.OS,
         sessionId,
         hasAsset: Boolean(asset),

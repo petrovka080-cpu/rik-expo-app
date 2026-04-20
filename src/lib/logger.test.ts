@@ -46,6 +46,21 @@ describe("logger boundary", () => {
     expect(typeof logger.error).toBe("function");
   });
 
+  it("redacts token-bearing diagnostics before delegating to console", () => {
+    const spy = jest.spyOn(console, "info").mockImplementation(() => {});
+
+    logger.info("redaction-tag", {
+      signedUrl: "https://storage.example.test/file.pdf?token=secret",
+      href: "/pdf-viewer?sessionId=session-1&openToken=open-secret",
+    });
+
+    if (originalDev) {
+      const logged = JSON.stringify(spy.mock.calls);
+      expect(logged).not.toContain("secret");
+      expect(logged).toContain("[redacted]");
+    }
+  });
+
   it("does not throw on any call variant", () => {
     expect(() => logger.info("tag")).not.toThrow();
     expect(() => logger.warn("tag")).not.toThrow();

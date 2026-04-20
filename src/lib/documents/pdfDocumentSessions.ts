@@ -13,6 +13,7 @@ import {
 } from "../pdfFileContract";
 import { recordPdfCrashBreadcrumb } from "../pdf/pdfCrashBreadcrumbs";
 import { resolvePdfLocalMaterializationPlan } from "./pdfDocumentMaterializationPlan";
+import { redactSensitiveText } from "../security/redaction";
 import type {
   FileInfo,
   FileSystemDownloadResult,
@@ -104,7 +105,7 @@ function logMaterializeStage(
 ) {
   if (__DEV__) console.info(`[pdf-document-sessions] ${stage}`, {
     stage,
-    uri: payload.uri ?? null,
+    uri: payload.uri ? redactSensitiveText(payload.uri) : null,
     scheme: getUriScheme(payload.uri),
     exists: payload.exists,
     sizeBytes: payload.size,
@@ -434,9 +435,9 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
     originModule: asset.originModule,
     source: asset.source,
     sourceKind: asset.sourceKind,
-    rawUri,
+    rawUri: redactSensitiveText(rawUri),
     rawScheme,
-    finalUri: asset.uri,
+    finalUri: redactSensitiveText(asset.uri),
     finalScheme: getUriScheme(asset.uri),
     fileName: asset.fileName,
     exists: typeof asset.sizeBytes === "number" ? true : undefined,

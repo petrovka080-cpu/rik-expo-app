@@ -24,6 +24,7 @@ import {
 } from "./pdfFileContract";
 import { assertValidLocalPdfFile } from "./pdf/pdfSourceValidation";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
+import { redactSensitiveText } from "./security/redaction";
 import type { Database } from "./database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -108,7 +109,7 @@ function logPdfRunnerStage(
 ) {
   if (__DEV__) console.info(`[pdf-runner] ${stage}`, {
     stage,
-    uri: payload.uri ?? null,
+    uri: payload.uri ? redactSensitiveText(payload.uri) : null,
     scheme: getUriScheme(payload.uri),
     exists: payload.exists,
     sizeBytes: payload.size,

@@ -1,6 +1,7 @@
 import { createPdfSource, type PdfSource } from "../pdfFileContract";
 import { Platform } from "react-native";
 import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
+import { redactSensitiveText } from "../security/redaction";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "../supabaseClient";
 import {
   extractCanonicalPdfErrorPayload,
@@ -63,7 +64,7 @@ export class CanonicalPdfTransportError extends Error {
     this.code = options.code;
     this.httpStatus = options.httpStatus ?? null;
     this.transport = options.transport ?? "supabase_functions_invoke";
-    this.detail = trimText(options.detail) || null;
+    this.detail = trimText(redactSensitiveText(options.detail)) || null;
   }
 }
 
@@ -109,11 +110,11 @@ function extractTransportErrorDetail(error: unknown): string | null {
   }
 
   const values = [...parts];
-  return values.length > 0 ? values.join(" | ") : null;
+  return values.length > 0 ? redactSensitiveText(values.join(" | ")) : null;
 }
 
 function summarizeFunctionResponse(value: unknown): string | null {
-  if (typeof value === "string") return trimText(value) || null;
+  if (typeof value === "string") return redactSensitiveText(trimText(value)) || null;
   if (!value || typeof value !== "object") return null;
 
   const candidate = value as {
@@ -129,10 +130,10 @@ function summarizeFunctionResponse(value: unknown): string | null {
     trimText(candidate.detail),
   ].filter(Boolean);
 
-  if (parts.length > 0) return parts.join(" | ");
+  if (parts.length > 0) return redactSensitiveText(parts.join(" | "));
 
   try {
-    return JSON.stringify(value);
+    return redactSensitiveText(JSON.stringify(value));
   } catch {
     return null;
   }
@@ -198,7 +199,7 @@ async function invokeDirectFetchOnce<TPayload>(
     functionName: args.functionName,
     platform: Platform.OS,
     hasAccessToken: Boolean(accessToken),
-    url,
+    url: redactSensitiveText(url),
   });
 
   try {
@@ -242,7 +243,7 @@ async function invokeDirectFetchOnce<TPayload>(
         functionName: args.functionName,
         platform: Platform.OS,
         httpStatus: response.status,
-        parseError: parseError instanceof Error ? parseError.message : String(parseError),
+        parseError: redactSensitiveText(parseError instanceof Error ? parseError.message : String(parseError)),
       });
       throw parseError;
     }
@@ -268,7 +269,7 @@ async function invokeDirectFetchOnce<TPayload>(
       platform: Platform.OS,
       detail,
       errorName: error instanceof Error ? error.name : undefined,
-      errorMessage: error instanceof Error ? error.message : String(error),
+      errorMessage: redactSensitiveText(error instanceof Error ? error.message : String(error)),
     });
     throw new CanonicalPdfTransportError(
       `${args.errorPrefix}: Failed to send a request to the Edge Function`,
@@ -288,7 +289,7 @@ function normalizeCanonicalPdfResult<TPayload>(
 ): CanonicalPdfInvokeSuccess {
   const payloadError = extractCanonicalPdfErrorPayload(data);
   if (payloadError) {
-    throw new CanonicalPdfTransportError(`${args.errorPrefix}: ${payloadError.error}`, {
+    throw new CanonicalPdfTransportError(`${args.errorPrefix}: ${redactSensitiveText(payloadError.error)}`, {
       functionName: args.functionName,
       code: payloadError.errorCode,
     });
@@ -349,7 +350,7 @@ async function invokeCanonicalPdfBackendViaDirectFetch<TPayload>(
       detail,
     });
     if (payloadError) {
-      throw new CanonicalPdfTransportError(`${args.errorPrefix}: ${payloadError.error}`, {
+      throw new CanonicalPdfTransportError(`${args.errorPrefix}: ${redactSensitiveText(payloadError.error)}`, {
         functionName: args.functionName,
         code: payloadError.errorCode,
         httpStatus: attempt.status,
@@ -403,7 +404,7 @@ async function invokeCanonicalPdfBackendViaSupabase<TPayload>(
   }
 
   if (attempt.error) {
-    const message = trimText(attempt.error.message) || "canonical pdf backend invoke failed";
+    const message = redactSensitiveText(trimText(attempt.error.message) || "canonical pdf backend invoke failed");
     const status = Number((attempt.error as { context?: { status?: unknown } }).context?.status ?? NaN);
     const detail = extractTransportErrorDetail(attempt.error);
     if (__DEV__) console.error("[canonical-pdf-backend] supabase_invoke_failed", {

@@ -8,6 +8,7 @@ import {
 } from "../pdf/directorProductionReport.shared";
 import { invokeDirectorPdfBackend } from "./directorPdfBackendInvoker";
 import { buildDirectorProductionReportManifestContract } from "../pdf/directorPdfPlatformContract";
+import { redactSensitiveRecord } from "../security/redaction";
 
 const FUNCTION_NAME = "director-production-report-pdf";
 const MODE_RAW = String(
@@ -307,7 +308,7 @@ export async function generateDirectorProductionReportPdfViaBackend(
 
     if (__DEV__) {
       console.info(
-        `[director-production-report-pdf-backend] ${JSON.stringify({
+        `[director-production-report-pdf-backend] ${JSON.stringify(redactSensitiveRecord({
           companyName: payload.companyName ?? null,
           generatedBy: payload.generatedBy ?? null,
           periodFrom: payload.periodFrom ?? null,
@@ -323,7 +324,7 @@ export async function generateDirectorProductionReportPdfViaBackend(
           signedUrl: result.signedUrl,
           bucketId: result.bucketId,
           storagePath: result.storagePath,
-        })}`,
+        }))}`,
       );
     }
 
