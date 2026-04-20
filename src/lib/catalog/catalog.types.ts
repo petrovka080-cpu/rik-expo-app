@@ -1,4 +1,10 @@
-import type { Database, Tables } from "../database.types";
+import type {
+  CatalogContractorRow,
+  CatalogRikItemRow,
+  CatalogSubcontractRow,
+  CatalogSupplierRow,
+  CatalogUserProfileRow,
+} from "../../types/contracts/catalog";
 
 export type CatalogItem = {
   code: string;
@@ -61,7 +67,7 @@ export type UnifiedCounterparty = {
 };
 
 export type SupplierTableRow = Pick<
-  Database["public"]["Tables"]["suppliers"]["Row"],
+  CatalogSupplierRow,
   | "id"
   | "name"
   | "inn"
@@ -76,17 +82,17 @@ export type SupplierTableRow = Pick<
 >;
 
 export type SupplierCounterpartyRow = Pick<
-  Database["public"]["Tables"]["suppliers"]["Row"],
+  CatalogSupplierRow,
   "id" | "name" | "inn" | "phone"
 >;
 
 export type SubcontractCounterpartyRow = Pick<
-  Database["public"]["Tables"]["subcontracts"]["Row"],
+  CatalogSubcontractRow,
   "id" | "status" | "contractor_org" | "contractor_inn" | "contractor_phone"
 >;
 
 export type ContractorCounterpartyRow = Pick<
-  Database["public"]["Tables"]["contractors"]["Row"],
+  CatalogContractorRow,
   "id" | "company_name" | "phone" | "inn"
 >;
 
@@ -132,7 +138,7 @@ export type CatalogSearchRpcRow = {
 };
 
 export type CatalogSearchFallbackRow = Pick<
-  Tables<"rik_items">,
+  CatalogRikItemRow,
   "rik_code" | "name_human" | "uom_code" | "sector_code" | "spec" | "kind" | "group_code"
 >;
 
@@ -150,7 +156,7 @@ export type RikQuickSearchRpcRow = {
 };
 
 export type RikQuickSearchFallbackRow = Pick<
-  Tables<"rik_items">,
+  CatalogRikItemRow,
   "rik_code" | "name_human" | "uom_code" | "kind" | "name_human_ru"
 >;
 
@@ -164,7 +170,7 @@ export type RikQuickSearchItem = {
 };
 
 export type ProfileContractorCompatRow = Pick<
-  Database["public"]["Tables"]["user_profiles"]["Row"],
+  CatalogUserProfileRow,
   "user_id" | "full_name" | "phone" | "is_contractor"
 > & {
   company?: string | null;

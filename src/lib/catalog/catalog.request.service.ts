@@ -1,10 +1,15 @@
 import { supabase } from "../supabaseClient";
-import type { Database } from "../database.types";
 import {
   clearCachedDraftRequestId,
   getOrCreateDraftRequestId as getOrCreateLowLevelDraftRequestId,
 } from "../api/requests";
 import { filterRequestLinkedRowsByExistingRequestLinks } from "../api/integrity.guards";
+import type {
+  CatalogRequestDisplayNoArgs,
+  CatalogRequestItemUpdate,
+  CatalogRequestItemUpdateQtyArgs,
+  CatalogRequestUpdate,
+} from "../../types/contracts/catalog";
 import { recordCatalogWarning } from "./catalog.observability";
 import {
   asLooseRecord,
@@ -113,10 +118,10 @@ type RequestItemStatusAggRow = {
   status?: unknown;
 };
 
-type RequestsUpdate = Database["public"]["Tables"]["requests"]["Update"];
-type RequestItemsUpdate = Database["public"]["Tables"]["request_items"]["Update"];
-type RequestItemUpdateQtyArgs = Database["public"]["Functions"]["request_item_update_qty"]["Args"];
-type RequestDisplayRpcArgs = Database["public"]["Functions"]["request_display_no"]["Args"];
+type RequestsUpdate = CatalogRequestUpdate;
+type RequestItemsUpdate = CatalogRequestItemUpdate;
+type RequestItemUpdateQtyArgs = CatalogRequestItemUpdateQtyArgs;
+type RequestDisplayRpcArgs = CatalogRequestDisplayNoArgs;
 type RequestDisplayRpcName = "request_display_no" | "request_display" | "request_label";
 type CatalogDynamicReadSource =
   | "request_display"

@@ -1,9 +1,12 @@
 import { supabase } from "../../lib/supabaseClient";
-import type { Database } from "../../lib/database.types";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import type {
+  ForemanRequestRow,
+  ForemanRequestUpdate,
+} from "../../types/contracts/foreman";
 
-type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
-type RequestUpdate = Database["public"]["Tables"]["requests"]["Update"];
+type RequestRow = ForemanRequestRow;
+type RequestUpdate = ForemanRequestUpdate;
 
 type RequestDisplayRow = Pick<RequestRow, "display_no" | "request_no">;
 type RequestLinkRow = Pick<RequestRow, "id" | "subcontract_id" | "contractor_job_id">;

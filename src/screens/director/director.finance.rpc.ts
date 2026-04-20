@@ -1,6 +1,15 @@
-import type { Database } from "../../lib/database.types";
 import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
 import { supabase } from "../../lib/supabaseClient";
+import type {
+  DirectorFinanceFetchSummaryV1Args,
+  DirectorFinancePanelScopeV1Args,
+  DirectorFinancePanelScopeV2Args,
+  DirectorFinancePanelScopeV3Args,
+  DirectorFinancePanelScopeV4Args,
+  DirectorFinanceSummaryV2Args,
+  DirectorFinanceSupplierScopeV1Args,
+  DirectorFinanceSupplierScopeV2Args,
+} from "../../types/contracts/director";
 import type {
   DirectorFinancePanelScope,
   DirectorFinancePanelScopeV2,
@@ -125,7 +134,7 @@ export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
 }): Promise<FinRep | null> {
   if (!canUseFinanceRpc(financeSummaryRpcMeta)) return null;
 
-  const args: Database["public"]["Functions"]["director_finance_fetch_summary_v1"]["Args"] = {
+  const args: DirectorFinanceFetchSummaryV1Args = {
     p_from: pickIso10(opts?.periodFromIso),
     p_to: pickIso10(opts?.periodToIso),
     p_due_days: normalizeFinanceRpcInteger(opts?.dueDaysDefault, 7),
@@ -152,7 +161,7 @@ export async function fetchDirectorFinanceSummaryV2ViaRpc(opts?: {
 }): Promise<DirectorFinanceSummaryV2 | null> {
   if (!canUseFinanceRpc(financeSummaryV2RpcMeta)) return null;
 
-  const args: Database["public"]["Functions"]["director_finance_summary_v2"]["Args"] = {
+  const args: DirectorFinanceSummaryV2Args = {
     p_object_id: financeText(opts?.objectId) || undefined,
     p_date_from: pickIso10(opts?.periodFromIso) ?? undefined,
     p_date_to: pickIso10(opts?.periodToIso) ?? undefined,
@@ -182,7 +191,7 @@ export async function fetchDirectorFinancePanelScopeV3ViaRpc(opts?: {
 }): Promise<DirectorFinancePanelScopeV3 | null> {
   if (!canUseFinanceRpc(financePanelScopeV3RpcMeta)) return null;
 
-  const args: Database["public"]["Functions"]["director_finance_panel_scope_v3"]["Args"] = {
+  const args: DirectorFinancePanelScopeV3Args = {
     p_object_id: financeText(opts?.objectId) || undefined,
     p_date_from: pickIso10(opts?.periodFromIso) ?? undefined,
     p_date_to: pickIso10(opts?.periodToIso) ?? undefined,
@@ -216,7 +225,7 @@ export async function fetchDirectorFinancePanelScopeV4ViaRpc(opts?: {
 }): Promise<DirectorFinancePanelScopeV4 | null> {
   if (!canUseFinanceRpc(financePanelScopeV4RpcMeta)) return null;
 
-  const args: Database["public"]["Functions"]["director_finance_panel_scope_v4"]["Args"] = {
+  const args: DirectorFinancePanelScopeV4Args = {
     p_object_id: financeText(opts?.objectId) || undefined,
     p_date_from: pickIso10(opts?.periodFromIso) ?? undefined,
     p_date_to: pickIso10(opts?.periodToIso) ?? undefined,
@@ -280,7 +289,7 @@ export async function fetchDirectorFinancePanelScopeV2ViaRpc(opts?: {
 }): Promise<DirectorFinancePanelScopeV2 | null> {
   if (!canUseFinanceRpc(financePanelScopeV2RpcMeta)) return null;
 
-  const args: Database["public"]["Functions"]["director_finance_panel_scope_v2"]["Args"] = {
+  const args: DirectorFinancePanelScopeV2Args = {
     p_object_id: financeText(opts?.objectId) || undefined,
     p_date_from: pickIso10(opts?.periodFromIso) ?? undefined,
     p_date_to: pickIso10(opts?.periodToIso) ?? undefined,
@@ -309,7 +318,7 @@ export async function fetchDirectorFinancePanelScopeViaRpc(opts?: {
 }): Promise<DirectorFinancePanelScope | null> {
   if (!canUseFinanceRpc(financePanelScopeRpcMeta)) return null;
 
-  const args: Database["public"]["Functions"]["director_finance_panel_scope_v1"]["Args"] = {
+  const args: DirectorFinancePanelScopeV1Args = {
     p_from: pickIso10(opts?.periodFromIso),
     p_to: pickIso10(opts?.periodToIso),
     p_due_days: normalizeFinanceRpcInteger(opts?.dueDaysDefault, 7),
@@ -341,7 +350,7 @@ export async function fetchDirectorFinanceSupplierScopeViaRpc(opts: {
   if (!supplier) return null;
   if (!canUseFinanceRpc(financeSupplierScopeRpcMeta)) return null;
 
-  const args: Database["public"]["Functions"]["director_finance_supplier_scope_v1"]["Args"] = {
+  const args: DirectorFinanceSupplierScopeV1Args = {
     p_supplier: supplier,
     p_kind_name: financeText(opts.kindName) || null,
     p_from: pickIso10(opts.periodFromIso),
@@ -405,7 +414,7 @@ export async function fetchDirectorFinanceSupplierScopeV2ViaRpc(opts: {
   if (!supplier) return null;
   if (!canUseFinanceRpc(financeSupplierScopeV2RpcMeta)) return null;
 
-  const args: Database["public"]["Functions"]["director_finance_supplier_scope_v2"]["Args"] = {
+  const args: DirectorFinanceSupplierScopeV2Args = {
     p_supplier: supplier,
     p_kind_name: financeText(opts.kindName) || null,
     p_object_id: financeText(opts.objectId) || undefined,

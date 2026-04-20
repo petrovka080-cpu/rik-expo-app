@@ -1,5 +1,5 @@
-import type { Database } from "../../lib/database.types";
 import { supabase } from "../../lib/supabaseClient";
+import type { ForemanRefObjectTypeRow } from "../../types/contracts/foreman";
 import type { AppOption, RefOption } from "./foreman.types";
 import {
   getForemanLevelOptions,
@@ -13,7 +13,7 @@ type AppRow = { app_code: string; name_human?: string | null };
 type ItemAppRow = { app_code: string | null };
 type DictTable = "ref_object_types" | "ref_levels" | "ref_systems" | "ref_zones";
 type DictSelectResult = {
-  data: Database["public"]["Tables"]["ref_object_types"]["Row"][] | null;
+  data: ForemanRefObjectTypeRow[] | null;
   error: { message?: string | null } | null;
 };
 

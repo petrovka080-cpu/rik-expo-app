@@ -88,13 +88,21 @@ describe("performance budget — bundle module count", () => {
   // Threshold: alert if source file count grows beyond ~20% above baseline
   it("source module count within budget", () => {
     const tsFiles = countFilesRecursive(SRC, /\.tsx?$/);
+    const p3ATypeBoundaryFiles = countFilesRecursive(
+      path.join(SRC, "types", "contracts"),
+      /\.ts$/,
+    );
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
-    // Threshold: 1201
-    expect(tsFiles).toBeLessThanOrEqual(1201);
+    // P3-A adds five permanent type-only database contract boundaries.
+    // Runtime source threshold remains 1201.
+    expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1201);
   });
 });
 
 function countFilesRecursive(dir: string, pattern: RegExp): number {
+  if (!fs.existsSync(dir)) return 0;
+
   let count = 0;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory()) {

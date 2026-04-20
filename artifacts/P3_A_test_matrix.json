@@ -1,0 +1,77 @@
+{
+  "wave": "P3-A",
+  "base_commit": "0c6eaa4",
+  "status": "GREEN",
+  "scope": {
+    "canonical_source": "src/lib/database.types.ts",
+    "contract_entrypoints": [
+      "src/types/contracts/shared.ts",
+      "src/types/contracts/director.ts",
+      "src/types/contracts/warehouse.ts",
+      "src/types/contracts/foreman.ts",
+      "src/types/contracts/catalog.ts"
+    ],
+    "migrated_hot_paths": [
+      "src/lib/api/_core.ts",
+      "src/lib/catalog/catalog.request.service.ts",
+      "src/lib/catalog/catalog.types.ts",
+      "src/lib/dbContract.types.ts",
+      "src/screens/director/director.finance.rpc.ts",
+      "src/screens/director/director.proposals.repo.ts",
+      "src/screens/director/director.repository.ts",
+      "src/screens/foreman/foreman.dicts.repo.ts",
+      "src/screens/foreman/foreman.requests.ts",
+      "src/screens/warehouse/warehouse.issue.repo.ts"
+    ]
+  },
+  "checks": [
+    {
+      "name": "targeted_contract_boundary_jest",
+      "command": "npx jest tests/types/p3ADatabaseContractBoundaries.test.ts --runInBand --no-coverage",
+      "status": "PASS",
+      "proof": "4 tests passed"
+    },
+    {
+      "name": "type_integrity",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS",
+      "proof": "typecheck completed with exit code 0 after catalog view boundary correction"
+    },
+    {
+      "name": "lint",
+      "command": "npx expo lint",
+      "status": "PASS",
+      "proof": "expo lint completed with exit code 0"
+    },
+    {
+      "name": "full_jest",
+      "command": "npx jest --runInBand",
+      "status": "PASS",
+      "proof": "349 suites passed, 1 skipped; 2234 tests passed, 1 skipped"
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "status": "PASS",
+      "proof": "completed with exit code 0"
+    },
+    {
+      "name": "web_sanity",
+      "command": "minimal Expo web smoke",
+      "status": "PASS",
+      "proof": "Expo web on localhost:19007 returned 200 for / and /office/director; web bundle returned 200; Playwright saw no console errors, page errors, or 5xx responses"
+    },
+    {
+      "name": "android_sanity",
+      "command": "minimal emulator launch smoke",
+      "status": "PASS",
+      "proof": "emulator-5554 online; rik://office/director launched com.azisbek_dzhantaev.rikexpoapp; app process alive; top/resumed activity present; crash signal count 0"
+    }
+  ],
+  "runtime_drift": {
+    "sql_changed": false,
+    "business_logic_changed": false,
+    "ui_flow_changed": false,
+    "runtime_fallbacks_added": false
+  }
+}

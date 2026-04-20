@@ -1,17 +1,19 @@
 import { supabase } from "../supabaseClient";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../database.types";
+import type {
+  AppSupabaseClient,
+  PublicFunctionArgs,
+  PublicFunctionName,
+} from "../../types/contracts/shared";
 
-type RpcFunctions = Database["public"]["Functions"];
-type RpcName = keyof RpcFunctions;
-type RpcArgs<TName extends RpcName> = RpcFunctions[TName]["Args"];
+type RpcName = PublicFunctionName;
+type RpcArgs<TName extends RpcName> = PublicFunctionArgs<TName>;
 type RpcVariantMap = {
   [TName in RpcName]: undefined extends RpcArgs<TName>
     ? { fn: TName; args?: RpcArgs<TName> }
     : { fn: TName; args: RpcArgs<TName> };
 };
 
-export const client: SupabaseClient<Database> = supabase;
+export const client: AppSupabaseClient = supabase;
 
 type ErrorLike = {
   message?: unknown;

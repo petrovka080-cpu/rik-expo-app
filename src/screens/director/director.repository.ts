@@ -1,10 +1,9 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../../lib/database.types";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
+import type { DirectorSupabaseClient } from "../../types/contracts/director";
 import type { PendingRow } from "./director.types";
 
 type DirectorRepositoryDeps = {
-  supabase: SupabaseClient<Database>;
+  supabase: DirectorSupabaseClient;
 };
 
 export type DirectorPendingRowsLoadResult = {

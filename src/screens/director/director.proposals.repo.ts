@@ -1,7 +1,8 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-import type { Database } from "../../lib/database.types";
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
+import type {
+  DirectorPendingProposalsScopeV1Args,
+  DirectorSupabaseClient,
+} from "../../types/contracts/director";
 import type { ProposalHead } from "./director.types";
 
 type DirectorProposalScopeEnvelope = {
@@ -40,7 +41,7 @@ export type DirectorProposalWindowResult = {
 };
 
 type FetchDirectorProposalWindowArgs = {
-  supabase: SupabaseClient<Database>;
+  supabase: DirectorSupabaseClient;
   offsetHeads: number;
   limitHeads: number;
 };
@@ -168,7 +169,7 @@ export async function fetchDirectorPendingProposalWindow(
   });
 
   try {
-    const rpcArgs: Database["public"]["Functions"]["director_pending_proposals_scope_v1"]["Args"] = {
+    const rpcArgs: DirectorPendingProposalsScopeV1Args = {
       p_offset_heads: offsetHeads,
       p_limit_heads: limitHeads,
     };
