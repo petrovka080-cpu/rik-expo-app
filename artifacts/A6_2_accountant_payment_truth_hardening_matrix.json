@@ -1,0 +1,37 @@
+[
+  {
+    "test": "accountant.paymentForm.helpers derives the submit amount from the canonical payment owner",
+    "target": "derivePaymentFormCanonicalAmount",
+    "scenario": "full mode, partial mode, and manual/non-proposal form",
+    "expected": "full uses restProposal, partial uses allocSum, manual returns null",
+    "result": "PASS"
+  },
+  {
+    "test": "ActivePaymentForm promotes canonical server outstanding over stale current row math",
+    "target": "useAccountantPaymentForm + ActivePaymentForm",
+    "scenario": "server financial state reports outstanding 35 while stale current row math would differ",
+    "expected": "visible rest and submit amount both become 35.00",
+    "result": "PASS"
+  },
+  {
+    "test": "ActivePaymentForm keeps partial allocation totals and residuals deterministic",
+    "target": "partial allocation mode",
+    "scenario": "user allocates 40 to one line",
+    "expected": "submit amount becomes 40.00 and allocRows remain unchanged semantically",
+    "result": "PASS"
+  },
+  {
+    "test": "ActivePaymentForm clears partial allocation state deterministically",
+    "target": "partial allocation clear path",
+    "scenario": "user clears partial allocations",
+    "expected": "submit amount and allocRows clear without stale residue",
+    "result": "PASS"
+  },
+  {
+    "test": "full release gate",
+    "target": "repo",
+    "scenario": "serial and parallel Jest after accountant payment truth hardening",
+    "expected": "all suites pass without new nondeterminism",
+    "result": "PASS"
+  }
+]

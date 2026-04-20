@@ -15,6 +15,7 @@ import {
   applyAllocationRow,
   buildAllocRowsSignature,
   buildFullAllocationRows,
+  derivePaymentFormCanonicalAmount,
   buildLineInputMap,
   derivePaymentFormState,
   getPaymentFormErrorMessage,
@@ -381,12 +382,33 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
   }, [allocRows]);
 
   useEffect(() => {
-    if (mode !== "partial") return;
-    const next = round2(derived.allocSum);
+    const hasServerFinancialTruth =
+      !proposalId || String(financialCurrent?.proposal_id ?? "").trim() === proposalId;
+    if (!hasServerFinancialTruth || itemsLoading || paymentDataErrorMessage) return;
+
+    const canonicalAmount = derivePaymentFormCanonicalAmount({
+      proposalId,
+      mode,
+      restProposal: derived.restProposal,
+      allocSum: derived.allocSum,
+    });
+    if (canonicalAmount == null) return;
+
+    const next = round2(nnum(canonicalAmount));
     const now = round2(nnum(amount));
     if (Math.abs(next - now) <= 0.005) return;
-    setAmount(next > 0 ? String(next.toFixed(2)) : "");
-  }, [amount, derived.allocSum, mode, setAmount]);
+    setAmount(canonicalAmount);
+  }, [
+    amount,
+    derived.allocSum,
+    derived.restProposal,
+    financialCurrent?.proposal_id,
+    itemsLoading,
+    mode,
+    paymentDataErrorMessage,
+    proposalId,
+    setAmount,
+  ]);
 
   useEffect(() => {
     try {

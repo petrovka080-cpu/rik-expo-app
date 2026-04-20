@@ -249,6 +249,18 @@ export function derivePaymentFormState(params: DerivePaymentFormStateParams) {
   };
 }
 
+export function derivePaymentFormCanonicalAmount(params: {
+  proposalId: string;
+  mode: AccountantPaymentMode;
+  restProposal: number;
+  allocSum: number;
+}) {
+  if (!String(params.proposalId ?? "").trim()) return null;
+  const amount =
+    params.mode === "partial" ? round2(params.allocSum) : round2(params.restProposal);
+  return amount > 0 ? amount.toFixed(2) : "";
+}
+
 export function applyAllocationRow(params: ApplyAllocationRowParams) {
   const proposalItemId = String(params.itemId);
   const next = buildAllocMap(params.allocRows);

@@ -370,6 +370,7 @@ describe("ActivePaymentForm", () => {
     );
 
     expect(readTextByTestId(renderer, "payment-form-rest")).toContain("35.00");
+    expect(readTextByTestId(renderer, "harness-amount")).toBe("35.00");
   });
 
   it("renders readable payment form copy without mojibake markers", async () => {

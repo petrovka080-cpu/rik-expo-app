@@ -2,6 +2,7 @@ import {
   applyAllocationRow,
   buildFullAllocationRows,
   buildPaidAllocationState,
+  derivePaymentFormCanonicalAmount,
   derivePaymentFormState,
   normalizePaymentFormItem,
 } from "./accountant.paymentForm.helpers";
@@ -89,6 +90,33 @@ describe("accountant.paymentForm.helpers", () => {
 
     expect(state.restProposal).toBe(35);
     expect(state.paidUnassigned).toBe(7);
+  });
+
+  it("derives the submit amount from the canonical payment owner", () => {
+    expect(
+      derivePaymentFormCanonicalAmount({
+        proposalId: "proposal-1",
+        mode: "full",
+        restProposal: 35,
+        allocSum: 12,
+      }),
+    ).toBe("35.00");
+    expect(
+      derivePaymentFormCanonicalAmount({
+        proposalId: "proposal-1",
+        mode: "partial",
+        restProposal: 35,
+        allocSum: 12,
+      }),
+    ).toBe("12.00");
+    expect(
+      derivePaymentFormCanonicalAmount({
+        proposalId: "",
+        mode: "full",
+        restProposal: 35,
+        allocSum: 12,
+      }),
+    ).toBeNull();
   });
 
   it("clamps per-line allocations to the actual residual", () => {
