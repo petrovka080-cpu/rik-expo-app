@@ -37,6 +37,7 @@ import { runForemanQueueRecovery } from "../../../lib/offline/offlineQueueRecove
 import {
   isForemanConflictAutoRecoverable,
 } from "../../../lib/offline/foremanSyncRuntime";
+import { recordCatchDiscipline } from "../../../lib/observability/catchDiscipline";
 import {
   FOREMAN_LOCAL_ONLY_REQUEST_ID,
   hasForemanLocalDraftPendingSync,
@@ -282,8 +283,24 @@ export function useForemanBootstrapCoordinator(deps: ForemanBootstrapCoordinator
               await refreshBoundarySyncState(null);
               return;
             }
-          } catch {
-            // Network failure during reconciliation is non-fatal.
+          } catch (error) {
+            recordCatchDiscipline({
+              screen: "foreman",
+              surface: "draft_boundary",
+              event: "bootstrap_reconciliation_remote_check_failed",
+              kind: "degraded_fallback",
+              error,
+              sourceKind: "rpc:fetch_request_details",
+              errorStage: "recovery",
+              trigger: "unknown",
+              extra: {
+                requestId: reconciledRequestId,
+                queueDraftKey: getDraftQueueKey(durableSnapshot),
+                fallbackReason: "defer_bootstrap_reconciliation",
+                snapshotItemCount: durableSnapshot.items.length,
+                submitRequested: durableSnapshot.submitRequested,
+              },
+            });
             if (__DEV__) {
               console.info("[foreman.bootstrap-reconciliation] skipped (network error)", {
                 requestId: reconciledRequestId,

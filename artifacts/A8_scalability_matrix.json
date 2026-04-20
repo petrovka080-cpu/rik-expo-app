@@ -1,0 +1,136 @@
+[
+  {
+    "riskId": "A8-S1",
+    "category": "CONCURRENCY / PARALLEL EXECUTION",
+    "locations": [
+      "src/lib/api/directorProductionReportPdfBackend.service.ts",
+      "src/lib/api/directorRolePdfBackends.test.ts:325",
+      "src/lib/offline/queuePersistenceSerializer.ts:6",
+      "tests/offline/mutation-queue-mutex.test.ts:63"
+    ],
+    "classification": "P0 closed, no new open P0 found",
+    "scenario": "Concurrent identical requests or parallel Jest execution should not double-invoke backend work or leak module state.",
+    "fix": "No new code fix in A8. Existing coalescing, module reset, and serialized queue persistence contracts were verified.",
+    "tests": [
+      "npm test -- src/lib/offline/mutationQueue.contract.test.ts tests/offline/queuePersistenceSerializer.test.ts --runInBand",
+      "npm test -- tests/offline/mutation-queue-mutex.test.ts --runInBand"
+    ],
+    "result": "PASS"
+  },
+  {
+    "riskId": "A8-S2",
+    "category": "DATA CONSISTENCY / SOURCE OF TRUTH",
+    "locations": [
+      "src/screens/accountant/useAccountantPaymentForm.ts:102",
+      "src/screens/accountant/accountant.paymentForm.helpers.ts:191",
+      "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "src/screens/foreman/foreman.localDraft.ts"
+    ],
+    "classification": "P1 remaining",
+    "scenario": "Payment amount/allocation and Foreman local/durable/queue state can drift if ownership becomes implicit.",
+    "fix": "No broad A8 fix. Existing canonical outstanding/stale-response shields were verified; remaining owner work belongs to A6.2/A6.3.",
+    "tests": [
+      "npm test -- src/screens/accountant/accountant.paymentForm.helpers.test.ts src/screens/accountant/components/ActivePaymentForm.test.tsx --runInBand"
+    ],
+    "result": "PASS"
+  },
+  {
+    "riskId": "A8-S3",
+    "category": "CLIENT DECIDES INSTEAD OF SERVER",
+    "locations": [
+      "src/screens/buyer/buyer.actions.repo.ts:7",
+      "src/screens/buyer/buyer.actions.repo.ts:20",
+      "src/lib/infra/jobQueue.ts:258",
+      "src/lib/infra/jobQueue.test.ts:57"
+    ],
+    "classification": "P0 closed",
+    "scenario": "Client fallback writes could bypass server invariants for buyer status or queue transitions.",
+    "fix": "No new A8 code fix. A3 fail-closed server-owned contracts remain in place.",
+    "tests": [
+      "npm test -- src/screens/buyer/buyer.actions.repo.test.ts src/lib/infra/jobQueue.test.ts --runInBand"
+    ],
+    "result": "PASS"
+  },
+  {
+    "riskId": "A8-S4",
+    "category": "NETWORK / TIMEOUT / DEGRADED MODE",
+    "locations": [
+      "src/screens/accountant/useAccountantPaymentForm.ts:238",
+      "app/pdf-viewer.tsx",
+      "app/auth/login.tsx"
+    ],
+    "classification": "P1/P2 remaining",
+    "scenario": "Slow or flaky network can produce stale responses, timeout UX, or repeated work.",
+    "fix": "No broad cancellation rewrite in A8. Stale response guards were verified; deeper AbortController work should be done per screen.",
+    "tests": [
+      "npm test -- src/screens/accountant/accountant.paymentForm.helpers.test.ts src/screens/accountant/components/ActivePaymentForm.test.tsx --runInBand"
+    ],
+    "result": "PASS"
+  },
+  {
+    "riskId": "A8-S5",
+    "category": "LARGE DATA / PERFORMANCE",
+    "locations": [
+      "app/pdf-viewer.tsx",
+      "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "src/lib/documents/pdfDocumentActions.ts",
+      "src/lib/navigation/officeReentryBreadcrumbs.ts"
+    ],
+    "classification": "P2 remaining",
+    "scenario": "God files increase render and team-scale regression risk.",
+    "fix": "No broad owner split in A8. Documented rollout order for future exact slices.",
+    "tests": [],
+    "result": "AUDIT_ONLY"
+  },
+  {
+    "riskId": "A8-S6",
+    "category": "OFFLINE / RETRY / QUEUE",
+    "locations": [
+      "src/lib/offline/mutationQueue.ts:77",
+      "src/lib/offline/queuePersistenceSerializer.ts:6",
+      "src/lib/infra/jobQueue.ts:258"
+    ],
+    "classification": "P0 closed, P1 monitored",
+    "scenario": "Retry without serialization or server ownership can duplicate work or resurrect stale state.",
+    "fix": "No new A8 code fix. Existing mutex, fail-closed queue RPC, and recovery tests were verified.",
+    "tests": [
+      "npm test -- src/lib/offline/mutationQueue.contract.test.ts tests/offline/queuePersistenceSerializer.test.ts --runInBand",
+      "npm test -- tests/offline/mutation-queue-mutex.test.ts --runInBand"
+    ],
+    "result": "PASS"
+  },
+  {
+    "riskId": "A8-S7-1",
+    "category": "ERROR HANDLING / SILENT FAILURES",
+    "locations": [
+      "src/screens/foreman/hooks/useForemanDraftBoundary.ts:714",
+      "src/screens/foreman/hooks/useForemanDraftBoundary.ts:1391",
+      "src/screens/foreman/hooks/useForemanBootstrapCoordinator.ts:290"
+    ],
+    "classification": "P1 fixed in A8",
+    "scenario": "Foreman terminal reconciliation network failures can defer stale-state cleanup without any production signal.",
+    "fix": "Replaced anonymous non-fatal catches with typed degraded_fallback observability while preserving retry/defer behavior.",
+    "tests": [
+      "npm test -- src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts --runInBand"
+    ],
+    "result": "PASS"
+  },
+  {
+    "riskId": "A8-S8",
+    "category": "SECURITY / SECRET REDACTION",
+    "locations": [
+      "src/lib/security/redaction.ts",
+      "src/lib/observability/platformObservability.ts:199",
+      "app/pdf-viewer.tsx:1153",
+      "src/lib/api/canonicalPdfBackendInvoker.ts"
+    ],
+    "classification": "P0 closed",
+    "scenario": "Signed URLs or token-like query strings must not leak into logs or proof artifacts.",
+    "fix": "No new A8 code fix. A4 redaction contract remains in place.",
+    "tests": [
+      "src/lib/security/redaction.test.ts",
+      "src/lib/observability/platformObservability.redaction.test.ts"
+    ],
+    "result": "PREVIOUSLY_GREEN"
+  }
+]

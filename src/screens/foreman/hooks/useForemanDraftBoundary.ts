@@ -709,14 +709,26 @@ export function useForemanDraftBoundary({
             remoteStatus,
           });
           return true;
-        } catch {
-          // Network failure during reconciliation is non-fatal.
+        } catch (error) {
+          reportDraftBoundaryFailure({
+            event: "terminal_recovery_remote_check_failed",
+            error,
+            context,
+            stage: "recovery",
+            kind: "degraded_fallback",
+            sourceKind: "rpc:fetch_request_details",
+            extra: {
+              candidateRequestId: candidate.requestId,
+              candidateSource: candidate.source,
+              fallbackReason: "keep_recovery_owner_for_next_check",
+            },
+          });
         }
       }
 
       return false;
     },
-    [clearTerminalLocalDraft, requestId],
+    [clearTerminalLocalDraft, reportDraftBoundaryFailure, requestId],
   );
 
   const syncLocalDraftNow = useCallback(
@@ -1374,8 +1386,19 @@ export function useForemanDraftBoundary({
             });
             return;
           }
-        } catch {
-          // Network failure is non-fatal; will retry on next foreground event.
+        } catch (error) {
+          reportDraftBoundaryFailure({
+            event: "restore_remote_terminal_check_failed",
+            error,
+            context,
+            stage: "recovery",
+            kind: "degraded_fallback",
+            sourceKind: "rpc:fetch_request_details",
+            extra: {
+              requestId: remoteCheckPlan.requestId,
+              fallbackReason: "retry_next_foreground_event",
+            },
+          });
         }
       }
 
@@ -1390,6 +1413,7 @@ export function useForemanDraftBoundary({
       boundaryState.bootstrapReady,
       clearTerminalLocalDraft,
       clearTerminalRecoveryOwnerIfNeeded,
+      reportDraftBoundaryFailure,
       syncLocalDraftNow,
     ],
   );
