@@ -311,15 +311,6 @@ export const saveProfileDetails = async (params: {
     position: params.form.profilePositionInput.trim() || null,
   };
 
-  const authUpdate = await supabase.auth.updateUser({
-    data: {
-      full_name: payload.full_name,
-      city: payload.city,
-      avatar_url: nextAvatarUrl,
-    },
-  });
-  if (authUpdate.error) throw authUpdate.error;
-
   const { data, error } = await supabase
     .from("user_profiles")
     .upsert(payload, { onConflict: "user_id" })
@@ -327,6 +318,16 @@ export const saveProfileDetails = async (params: {
     .single();
 
   if (error) throw error;
+
+  if (nextAvatarUrl !== params.profileAvatarUrl) {
+    const authUpdate = await supabase.auth.updateUser({
+      data: {
+        avatar_url: nextAvatarUrl,
+      },
+    });
+    if (authUpdate.error) throw authUpdate.error;
+  }
+
   return { profile: data as UserProfile, profileAvatarUrl: nextAvatarUrl };
 };
 

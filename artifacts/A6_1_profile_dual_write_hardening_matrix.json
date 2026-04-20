@@ -1,0 +1,54 @@
+{
+  "wave": "A6.1.PROFILE_DUAL_WRITE_HARDENING",
+  "status": "GREEN",
+  "entries": [
+    {
+      "test": "src/screens/profile/profile.services.test.ts",
+      "scenario": "healthy editable profile save",
+      "expected": "Editable profile fields are persisted through user_profiles upsert.",
+      "result": "PASS"
+    },
+    {
+      "test": "src/screens/profile/profile.services.test.ts",
+      "scenario": "unchanged avatar with changed profile fields",
+      "expected": "auth.updateUser is not called for full_name or city mirror writes.",
+      "result": "PASS"
+    },
+    {
+      "test": "src/screens/profile/profile.services.test.ts",
+      "scenario": "canonical profile write failure",
+      "expected": "auth metadata is not mutated when user_profiles upsert fails.",
+      "result": "PASS"
+    },
+    {
+      "test": "npm test -- profile --runInBand",
+      "scenario": "profile scope behavior",
+      "expected": "Profile composition, forms, services, and listing contracts remain green.",
+      "result": "PASS"
+    },
+    {
+      "test": "npx tsc --noEmit --pretty false",
+      "scenario": "type contract",
+      "expected": "Profile service ownership change preserves TypeScript contracts.",
+      "result": "PASS"
+    },
+    {
+      "test": "npx expo lint",
+      "scenario": "lint hygiene",
+      "expected": "No lint suppressions or unused profile test mocks.",
+      "result": "PASS"
+    },
+    {
+      "test": "npm test -- --runInBand",
+      "scenario": "serial release gate",
+      "expected": "Full serial Jest gate stays green after profile ownership change.",
+      "result": "PASS"
+    },
+    {
+      "test": "npm test",
+      "scenario": "parallel release gate",
+      "expected": "Full parallel Jest gate stays green after profile ownership change.",
+      "result": "PASS"
+    }
+  ]
+}
