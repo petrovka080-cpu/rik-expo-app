@@ -1,6 +1,6 @@
 # PDF-ACC-FINAL Exec Summary
 
-Verdict: GREEN with ANDROID BLOCKED
+Verdict: GREEN
 
 ## What Changed
 
@@ -27,7 +27,7 @@ Verdict: GREEN with ANDROID BLOCKED
 - Lint: PASS.
 - Full Jest: PASS, 369 suites passed, 1 skipped; 2344 tests passed, 1 skipped.
 - Web runtime: PASS, `/office/accountant` card and buttons reachable with no page errors or 5xx.
-- Android runtime: BLOCKED by environment after the single bounded attempt; no extended adb debugging.
+- Android runtime: PASS. The proof opens `/office/accountant`, verifies the seeded proposal through `accountant_inbox_scope_v1`, renders the fixture row, opens the payment entrypoint, and records no fatal/ANR lines.
 
 ## Artifacts
 
@@ -40,6 +40,7 @@ Verdict: GREEN with ANDROID BLOCKED
 - `artifacts/PDF_ACC_FINAL_test_matrix.json`
 - `artifacts/PDF_ACC_FINAL_exec_summary.md`
 - `artifacts/PDF_ACC_FINAL_web_runtime.json`
+- `artifacts/accountant-payment-runtime-proof.json`
 
 ## Unchanged
 

@@ -13,6 +13,7 @@ const artifactPath = "artifacts/accountant-payment-runtime-proof.json";
 const androidDevClientPort = Number(process.env.ACCOUNTANT_ANDROID_DEV_PORT ?? "8081");
 const admin = createVerifierAdmin("accountant-payment-runtime-verify") as SupabaseClient<Database>;
 const harness = createAndroidHarness({ projectRoot, devClientPort: androidDevClientPort });
+const ACCOUNTANT_TO_PAY_TAB = "К оплате";
 
 type SeedBundle = {
   marker: string;
@@ -145,6 +146,46 @@ function isFioModalSurface(xml: string) {
 }
 
 type AndroidScreen = ReturnType<typeof harness.dumpAndroidScreen>;
+
+function rpcEnvelopeRows(value: unknown): Record<string, unknown>[] {
+  if (!value || typeof value !== "object") return [];
+  const rows = (value as { rows?: unknown }).rows;
+  return Array.isArray(rows) ? rows.filter((row): row is Record<string, unknown> => !!row && typeof row === "object") : [];
+}
+
+async function assertSeedVisibleInAccountantRpc(seed: SeedBundle) {
+  const result = await admin.rpc("accountant_inbox_scope_v1", {
+    p_tab: ACCOUNTANT_TO_PAY_TAB,
+    p_offset: 0,
+    p_limit: 40,
+  });
+  if (result.error) throw result.error;
+  const rows = rpcEnvelopeRows(result.data);
+  const matched = rows.some((row) => JSON.stringify(row).includes(seed.marker));
+  if (!matched) {
+    throw new Error(
+      `Seed proposal ${seed.proposalId} was not visible in accountant_inbox_scope_v1(${ACCOUNTANT_TO_PAY_TAB})`,
+    );
+  }
+  const meta = result.data && typeof result.data === "object" ? (result.data as { meta?: unknown }).meta : null;
+  return {
+    rowCount: rows.length,
+    meta: meta && typeof meta === "object" ? meta : null,
+  };
+}
+
+async function openAndroidLoginSurface(packageName: string | null) {
+  return harness.openAndroidRoute({
+    packageName,
+    routes: ["rik:///auth/login", "rik://auth/login", "rik:///sign-in"],
+    artifactBase: "accountant-payment-runtime-auth-login",
+    predicate: isLoginSurface,
+    renderablePredicate: isLoginSurface,
+    loginScreenPredicate: isLoginSurface,
+    timeoutMs: 45_000,
+    delayMs: 1200,
+  });
+}
 
 function findFioInputNode(screen: AndroidScreen) {
   return (
@@ -362,7 +403,7 @@ async function waitForMarkerOnAccountantScreen(marker: string, fioLabel: string)
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const screen = await harness.openAndroidRoute({
       packageName: harness.detectAndroidPackage(),
-      routes: ["rik:///accountant", "rik:///%28tabs%29/accountant", "rik:///office/accountant"],
+      routes: ["rik:///office/accountant", "rik:///%28tabs%29/office/accountant", "rik:///accountant"],
       artifactBase: `accountant-payment-runtime-${attempt + 1}`,
       predicate: (xml) => (isAccountantSurface(xml) && xml.includes(marker)) || isFioModalSurface(xml),
       renderablePredicate: (xml) => isLoginSurface(xml) || isAccountantSurface(xml) || isFioModalSurface(xml),
@@ -400,12 +441,13 @@ async function main() {
   const summary: Record<string, unknown> = {
     generatedAt: new Date().toISOString(),
     status: "NOT GREEN",
-    route: "rik:///accountant",
+    route: "rik:///office/accountant",
     livePaymentMutationApplied: false,
   };
 
   try {
     seed = await seedPayableProposal();
+    const seedRpc = await assertSeedVisibleInAccountantRpc(seed);
     user = await createTempUser(admin, {
       role: "accountant",
       fullName: "Accountant Runtime Smoke",
@@ -416,10 +458,11 @@ async function main() {
     clearAndroidLogcat();
     const runtimeFioLabel = "accountant";
 
+    await openAndroidLoginSurface(prepared.packageName);
     const loggedIn = await harness.loginAndroidWithProtectedRoute({
       packageName: prepared.packageName,
       user,
-      protectedRoute: "rik:///accountant",
+      protectedRoute: "rik:///office/accountant",
       artifactBase: "accountant-payment-runtime-login",
       successPredicate: (xml) => isAccountantSurface(xml) || isProfileSurface(xml, user) || isFioModalSurface(xml),
       renderablePredicate: (xml) =>
@@ -445,6 +488,7 @@ async function main() {
       user: { id: user.id, email: user.email, role: user.role },
       proposalId: seed.proposalId,
       marker: seed.marker,
+      seedRpc,
       preflight: prepared.preflight,
       recovery: harness.getRecoverySummary(),
       fioConfirmed: routedResult.fioConfirmed,

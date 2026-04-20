@@ -1,6 +1,6 @@
 {
   "wave": "PDF-ACC-FINAL",
-  "status": "PASS_WITH_ANDROID_BLOCKED",
+  "status": "PASS",
   "targetedTests": {
     "command": "npx jest src/screens/accountant/accountantProposalPdf.shared.test.ts src/screens/accountant/accountantProposalPdf.service.test.ts src/screens/accountant/accountantAttachmentPdf.shared.test.ts src/screens/accountant/accountantAttachmentPdf.service.test.ts src/screens/accountant/accountantPaymentReportPdf.shared.test.ts src/screens/accountant/accountantPaymentReportPdf.service.test.ts src/screens/accountant/accountant.screen.boundaries.test.ts --runInBand --no-coverage",
     "result": "PASS",
@@ -47,9 +47,13 @@
       "artifact": "artifacts/PDF_ACC_FINAL_web_runtime.json"
     },
     "android": {
-      "result": "BLOCKED",
+      "result": "PASS",
       "artifact": "artifacts/accountant-payment-runtime-proof.json",
-      "reason": "route did not settle inside the bounded 15 minute attempt"
+      "route": "rik:///office/accountant",
+      "seedRpc": "PASS",
+      "fixtureRowRendered": true,
+      "paymentEntryOpened": true,
+      "fatalLines": 0
     }
   }
 }
