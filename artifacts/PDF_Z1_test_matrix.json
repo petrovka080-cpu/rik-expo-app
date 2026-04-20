@@ -1,0 +1,104 @@
+{
+  "wave": "PDF-Z1",
+  "family": "director_finance_management_pdf",
+  "status": "GREEN_CANDIDATE",
+  "implementationProof": {
+    "manifestContract": "implemented",
+    "sourceVersion": "deterministic",
+    "artifactVersion": "deterministic",
+    "artifactPath": "deterministic",
+    "readinessPolicy": [
+      "missing",
+      "stale",
+      "building",
+      "ready",
+      "failed"
+    ],
+    "clickPath": "management_report render transport sends finance manifest; backend checks deterministic artifact before render",
+    "duplicateStormGuard": "identical concurrent render requests join rendered_pdf_inflight instead of invoking the Edge renderer twice"
+  },
+  "businessLogicParity": {
+    "formulasChanged": false,
+    "templateChanged": false,
+    "viewerChanged": false,
+    "uiFlowChanged": false,
+    "otherPdfFamiliesChanged": false
+  },
+  "targetedTests": {
+    "command": "npx jest tests/pdf/pdfZ1DirectorFinanceManifest.test.ts src/lib/api/directorPdfRender.service.test.ts src/lib/api/pdf_director.test.ts --runInBand --no-coverage",
+    "status": "PASS",
+    "suites": 3,
+    "tests": 19,
+    "coverage": [
+      "deterministic source_version",
+      "business-data version bump",
+      "noise immunity",
+      "deterministic artifact_version/path",
+      "manifest payload transport",
+      "artifact_cache renderer acceptance",
+      "same-version artifact reuse",
+      "concurrent identical render in-flight coalescing",
+      "PDF formulas/templates/viewer untouched"
+    ]
+  },
+  "staticGates": {
+    "tsc": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    "fullJest": {
+      "command": "npx jest --runInBand",
+      "status": "PASS",
+      "suites": "1 skipped, 352 passed, 352 of 353 total",
+      "tests": "1 skipped, 2255 passed, 2256 total"
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  },
+  "runtimeProof": {
+    "edgeDeployment": {
+      "command": "npx supabase functions deploy director-pdf-render --project-ref nxrnjywzxxfdpqmzjorh",
+      "status": "PASS",
+      "note": "director-pdf-render deployed with PDF-Z1 manifest/artifact logic"
+    },
+    "webClickSmoke": {
+      "command": "RIK_WEB_BASE_URL=http://127.0.0.1:19008 node node_modules/tsx/dist/cli.mjs scripts/director_pdf_render_web_click_verify.ts",
+      "status": "PASS",
+      "baseUrl": "http://127.0.0.1:19008",
+      "functionStatus": 200,
+      "renderer": "artifact_cache",
+      "cacheStatus": "artifact_hit",
+      "manifestStatus": "ready",
+      "manifestDrivenOpenPath": true,
+      "storagePathClass": "director/management_report/artifacts/v1/<artifact_version>/director_finance_management_report.pdf",
+      "functionPostCount": 1,
+      "inFlightJoinObserved": true,
+      "viewerReady": true,
+      "pageErrors": 0,
+      "badResponses": 0
+    },
+    "androidSmoke": {
+      "status": "PASS",
+      "device": "emulator-5554",
+      "package": "com.azisbek_dzhantaev.rikexpoapp",
+      "launch": "MainActivity",
+      "cleanLaunchHasLoginUi": true,
+      "devLauncherError": false,
+      "freshFatalOrAnrAfterRecovery": false,
+      "note": "Authenticated finance UI was not driven on Android to avoid seed/login harness; clean launch and PDF runtime module load were verified after one recovery."
+    }
+  },
+  "release": {
+    "commit": "PENDING",
+    "push": "PENDING",
+    "otaDevelopment": "PENDING",
+    "otaPreview": "PENDING",
+    "otaProduction": "PENDING"
+  }
+}

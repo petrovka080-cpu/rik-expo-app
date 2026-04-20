@@ -46,6 +46,30 @@ const makeEdgeResult = (signedUrl: string) => ({
   renderer: "browserless_puppeteer",
 });
 
+const makeFinanceManifest = () => ({
+  version: "pdf_z1_director_finance_management_manifest_v1" as const,
+  documentKind: "director_finance_management_report" as const,
+  documentScope: {
+    role: "director" as const,
+    family: "finance" as const,
+    report: "management" as const,
+    periodFrom: "2026-04-01",
+    periodTo: "2026-04-30",
+    topN: 15,
+    dueDaysDefault: 7,
+    criticalDays: 14,
+    evaluationDate: "2026-04-20",
+  },
+  sourceVersion: "dfm_src_v1_source",
+  artifactVersion: "dfm_art_v1_artifact",
+  templateVersion: "director_finance_management_template_v1" as const,
+  renderContractVersion: "director_pdf_render_edge_v1" as const,
+  artifactPath: "director/management_report/artifacts/v1/dfm_art_v1_artifact/director_finance_management_report.pdf",
+  manifestPath: "director/management_report/manifests/v1/scope.json",
+  fileName: "director_finance_management_report.pdf",
+  lastSourceChangeAt: null,
+});
+
 describe("directorPdfRender.service", () => {
   beforeEach(() => {
     jest.resetModules();
@@ -158,6 +182,46 @@ describe("directorPdfRender.service", () => {
       }),
     );
   });
+
+  it("passes finance management manifest and accepts backend artifact-cache hits", async () => {
+    mockInvokeDirectorPdfBackend.mockResolvedValue({
+      ...makeEdgeResult("https://example.com/ready-management.pdf"),
+      renderer: "artifact_cache",
+      telemetry: {
+        cacheStatus: "artifact_hit",
+        manifestStatus: "ready",
+      },
+    });
+
+    const { renderDirectorPdf } = loadSubject();
+    const manifest = makeFinanceManifest();
+    const result = await renderDirectorPdf({
+      documentKind: "management_report",
+      documentType: "director_report",
+      html: "<html>report</html>",
+      source: "rpc:pdf_director_finance_source_v1",
+      sourceBranch: "rpc_v1",
+      financeManagementManifest: manifest,
+    });
+
+    expect(result).toBe("https://example.com/ready-management.pdf");
+    expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowedRenderers: ["browserless_puppeteer", "local_browser_puppeteer", "artifact_cache"],
+        payload: expect.objectContaining({
+          financeManagementManifest: manifest,
+        }),
+      }),
+    );
+    expect(mockRecordBranch).toHaveBeenCalledWith(
+      "director_render_v1",
+      expect.objectContaining({
+        branchMeta: expect.objectContaining({
+          renderer: "artifact_cache",
+        }),
+      }),
+    );
+  });
 });
 
 // D-RENDERER-MIGRATION: Rendered PDF cache tests.
@@ -216,6 +280,43 @@ describe("directorPdfRender.service — rendered PDF cache", () => {
         (call[0] as Record<string, unknown>).event === "rendered_pdf_cache_hit",
     );
     expect(cacheHitCalls.length).toBe(1);
+  });
+
+  it("coalesces concurrent identical renders into one Edge invocation", async () => {
+    let resolveEdge: ((value: ReturnType<typeof makeEdgeResult>) => void) | null = null;
+    mockInvokeDirectorPdfBackend.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveEdge = resolve;
+        }),
+    );
+
+    const { renderDirectorPdf } = loadSubject();
+    const args = {
+      documentKind: "management_report" as const,
+      documentType: "director_report" as const,
+      html: "<html>same-inflight-management-report</html>",
+      source: "rpc:pdf_director_finance_source_v1",
+      financeManagementManifest: makeFinanceManifest(),
+    };
+
+    const first = renderDirectorPdf(args);
+    const second = renderDirectorPdf(args);
+
+    expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(1);
+    resolveEdge?.(makeEdgeResult("https://cdn.example.com/inflight.pdf"));
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      "https://cdn.example.com/inflight.pdf",
+      "https://cdn.example.com/inflight.pdf",
+    ]);
+    expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(1);
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "rendered_pdf_inflight_join",
+        sourceKind: "rendered_pdf_inflight",
+      }),
+    );
   });
 
   it("calls Edge Function again when HTML changes (cache miss)", async () => {

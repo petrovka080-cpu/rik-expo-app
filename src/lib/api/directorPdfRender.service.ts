@@ -13,6 +13,7 @@ import { beginCanonicalPdfBoundary } from "../pdf/canonicalPdfObservability";
 import { hashString32 } from "../pdfFileContract";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { invokeDirectorPdfBackend } from "./directorPdfBackendInvoker";
+import type { DirectorFinanceManagementManifestContract } from "../pdf/directorPdfPlatformContract";
 
 const DIRECTOR_PDF_RENDER_OFFLOAD_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_DIRECTOR_PDF_RENDER_OFFLOAD_V1 ?? "",
@@ -42,6 +43,7 @@ type DirectorPdfRenderArgs = {
   source: string;
   sourceBranch?: string | null;
   sourceFallbackReason?: string | null;
+  financeManagementManifest?: DirectorFinanceManagementManifestContract | null;
 };
 
 type DirectorPdfRenderInvokePayload = {
@@ -54,6 +56,7 @@ type DirectorPdfRenderInvokePayload = {
     sourceBranch: string | null;
     sourceFallbackReason: string | null;
   };
+  financeManagementManifest?: DirectorFinanceManagementManifestContract;
 };
 
 type DirectorPdfRenderEdgeResult = {
@@ -61,7 +64,8 @@ type DirectorPdfRenderEdgeResult = {
   bucketId: string;
   storagePath: string;
   fileName: string;
-  renderer: "browserless_puppeteer" | "local_browser_puppeteer";
+  renderer: "browserless_puppeteer" | "local_browser_puppeteer" | "artifact_cache";
+  telemetry: Record<string, unknown> | null;
 };
 
 const toErrorMessage = (error: unknown, fallback: string) => {
@@ -117,6 +121,9 @@ async function renderDirectorPdfViaEdge(args: DirectorPdfRenderArgs): Promise<Di
       sourceBranch: args.sourceBranch ?? null,
       sourceFallbackReason: args.sourceFallbackReason ?? null,
     },
+    ...(args.financeManagementManifest
+      ? { financeManagementManifest: args.financeManagementManifest }
+      : {}),
   };
 
   const result = await invokeDirectorPdfBackend({
@@ -124,12 +131,11 @@ async function renderDirectorPdfViaEdge(args: DirectorPdfRenderArgs): Promise<Di
     payload,
     expectedDocumentKind: args.documentKind,
     expectedRenderBranch: "edge_render_v1",
-    allowedRenderers: ["browserless_puppeteer", "local_browser_puppeteer"],
+    allowedRenderers: args.financeManagementManifest
+      ? ["browserless_puppeteer", "local_browser_puppeteer", "artifact_cache"]
+      : ["browserless_puppeteer", "local_browser_puppeteer"],
     errorPrefix: "director-pdf-render failed",
   });
-  if (result.renderer === "artifact_cache") {
-    throw new Error("director-pdf-render returned unsupported artifact cache renderer");
-  }
 
   return {
     signedUrl: result.signedUrl,
@@ -137,6 +143,7 @@ async function renderDirectorPdfViaEdge(args: DirectorPdfRenderArgs): Promise<Di
     storagePath: result.storagePath,
     fileName: result.fileName,
     renderer: result.renderer,
+    telemetry: result.telemetry,
   };
 }
 
@@ -154,6 +161,7 @@ type RenderedPdfCacheEntry = {
 };
 
 const renderedPdfCache = new Map<string, RenderedPdfCacheEntry>();
+const renderedPdfInFlight = new Map<string, Promise<DirectorPdfRenderEdgeResult>>();
 
 function getRenderedPdfFromCache(
   htmlHash: string,
@@ -209,6 +217,28 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
     return cachedUrl;
   }
 
+  const renderCacheKey = `${args.documentKind}:${htmlHash}`;
+  const inFlight = renderedPdfInFlight.get(renderCacheKey);
+  if (inFlight) {
+    recordPlatformObservability({
+      screen: "director",
+      surface: "director_pdf_backend",
+      category: "fetch",
+      event: "rendered_pdf_inflight_join",
+      result: "success",
+      durationMs: 0,
+      sourceKind: "rendered_pdf_inflight",
+      extra: {
+        documentKind: args.documentKind,
+        htmlHash,
+        htmlLength: args.html.length,
+      },
+    });
+    const joinedResult = await inFlight;
+    setRenderedPdfCache(htmlHash, joinedResult.signedUrl, args.documentKind);
+    return joinedResult.signedUrl;
+  }
+
   const boundary = beginCanonicalPdfBoundary({
     screen: "director",
     surface: "director_pdf_backend",
@@ -225,6 +255,8 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
       sourceBranch: args.sourceBranch ?? null,
       sourceFallbackReason: args.sourceFallbackReason ?? null,
       htmlLength: args.html.length,
+      manifestSourceVersion: args.financeManagementManifest?.sourceVersion ?? null,
+      manifestArtifactVersion: args.financeManagementManifest?.artifactVersion ?? null,
     },
   });
 
@@ -280,7 +312,9 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
   });
 
   try {
-    const renderResult = await renderDirectorPdfViaEdge(args);
+    const renderTask = renderDirectorPdfViaEdge(args);
+    renderedPdfInFlight.set(renderCacheKey, renderTask);
+    const renderResult = await renderTask;
     if (DIRECTOR_PDF_RENDER_MODE === "auto") {
       setPdfRenderRolloutAvailability(DIRECTOR_PDF_RENDER_ROLLOUT_ID, "available");
     }
@@ -291,6 +325,14 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
         documentKind: args.documentKind,
         renderBranch: "edge_render_v1",
         renderer: renderResult.renderer,
+        manifestStatus:
+          typeof renderResult.telemetry?.manifestStatus === "string"
+            ? renderResult.telemetry.manifestStatus
+            : null,
+        cacheStatus:
+          typeof renderResult.telemetry?.cacheStatus === "string"
+            ? renderResult.telemetry.cacheStatus
+            : null,
       },
     });
     boundary.success("pdf_storage_uploaded", {
@@ -318,6 +360,14 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
         sourceBranch: args.sourceBranch ?? null,
         sourceFallbackReason: args.sourceFallbackReason ?? null,
         htmlLength: args.html.length,
+        manifestStatus:
+          typeof renderResult.telemetry?.manifestStatus === "string"
+            ? renderResult.telemetry.manifestStatus
+            : null,
+        cacheStatus:
+          typeof renderResult.telemetry?.cacheStatus === "string"
+            ? renderResult.telemetry.cacheStatus
+            : null,
       },
     );
     // D-RENDERER-MIGRATION: Cache the rendered signedUrl for reopen/hot path.
@@ -346,5 +396,7 @@ export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<st
       },
     });
     throw error instanceof Error ? error : new Error(toErrorMessage(error, "director-pdf-render failed"));
+  } finally {
+    renderedPdfInFlight.delete(renderCacheKey);
   }
 }

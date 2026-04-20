@@ -30,6 +30,10 @@ import {
   renderDirectorSubcontractReportPdfHtml,
   renderDirectorSupplierSummaryPdfHtml,
 } from "../pdf/pdf.template";
+import {
+  buildDirectorFinanceManagementManifestContract,
+  type DirectorFinanceManagementManifestContract,
+} from "../pdf/directorPdfPlatformContract";
 
 const buildDirectorPdf = (
   html: string,
@@ -39,6 +43,7 @@ const buildDirectorPdf = (
     source: string;
     sourceBranch?: string | null;
     sourceFallbackReason?: string | null;
+    financeManagementManifest?: DirectorFinanceManagementManifestContract | null;
   },
 ) =>
   renderDirectorPdf({
@@ -47,6 +52,7 @@ const buildDirectorPdf = (
     source: args.source,
     sourceBranch: args.sourceBranch,
     sourceFallbackReason: args.sourceFallbackReason,
+    financeManagementManifest: args.financeManagementManifest ?? null,
     html: normalizeRuTextForHtml(html, {
       documentType: args.documentType,
       source: args.source,
@@ -129,6 +135,16 @@ export async function exportDirectorManagementReportPdf(
     financeRows: source.financeRows,
     spendRows: source.spendRows,
   });
+  const manifest = await buildDirectorFinanceManagementManifestContract({
+    periodFrom: p.periodFrom,
+    periodTo: p.periodTo,
+    topN: p.topN,
+    dueDaysDefault: p.dueDaysDefault,
+    criticalDays: p.criticalDays,
+    financeRows: source.financeRows,
+    spendRows: source.spendRows,
+    sourceKind: source.source,
+  });
   const html = renderDirectorManagementReportPdfHtml(model);
   const tModel = Date.now();
   const result = await buildDirectorPdf(
@@ -139,6 +155,7 @@ export async function exportDirectorManagementReportPdf(
       source: source.source,
       sourceBranch: source.branchMeta.sourceBranch,
       sourceFallbackReason: source.branchMeta.fallbackReason ?? null,
+      financeManagementManifest: manifest,
     },
   );
   const tEnd = Date.now();
@@ -159,6 +176,8 @@ export async function exportDirectorManagementReportPdf(
       htmlLength: html.length,
       financeRows: source.financeRows.length,
       spendRows: source.spendRows.length,
+      sourceVersion: manifest.sourceVersion,
+      artifactVersion: manifest.artifactVersion,
     },
   });
   return result;

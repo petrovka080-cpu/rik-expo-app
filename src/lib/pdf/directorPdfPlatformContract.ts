@@ -50,6 +50,87 @@ export type DirectorPdfSuccessPayload = {
   telemetry?: Record<string, unknown> | null;
 };
 
+export const DIRECTOR_FINANCE_MANAGEMENT_MANIFEST_VERSION =
+  "pdf_z1_director_finance_management_manifest_v1";
+export const DIRECTOR_FINANCE_MANAGEMENT_DOCUMENT_KIND =
+  "director_finance_management_report";
+export const DIRECTOR_FINANCE_MANAGEMENT_TEMPLATE_VERSION =
+  "director_finance_management_template_v1";
+export const DIRECTOR_FINANCE_MANAGEMENT_RENDER_CONTRACT_VERSION =
+  "director_pdf_render_edge_v1";
+export const DIRECTOR_FINANCE_MANAGEMENT_ARTIFACT_CONTRACT_VERSION =
+  "director_finance_management_artifact_v1";
+
+export type DirectorFinanceManagementManifestStatus =
+  | "ready"
+  | "building"
+  | "stale"
+  | "failed"
+  | "missing";
+
+export type DirectorFinanceManagementDocumentScope = {
+  role: "director";
+  family: "finance";
+  report: "management";
+  periodFrom: string | null;
+  periodTo: string | null;
+  topN: number;
+  dueDaysDefault: number;
+  criticalDays: number;
+  evaluationDate: string;
+};
+
+export type DirectorFinanceManagementManifestContract = {
+  version: typeof DIRECTOR_FINANCE_MANAGEMENT_MANIFEST_VERSION;
+  documentKind: typeof DIRECTOR_FINANCE_MANAGEMENT_DOCUMENT_KIND;
+  documentScope: DirectorFinanceManagementDocumentScope;
+  sourceVersion: string;
+  artifactVersion: string;
+  templateVersion: typeof DIRECTOR_FINANCE_MANAGEMENT_TEMPLATE_VERSION;
+  renderContractVersion: typeof DIRECTOR_FINANCE_MANAGEMENT_RENDER_CONTRACT_VERSION;
+  artifactPath: string;
+  manifestPath: string;
+  fileName: string;
+  lastSourceChangeAt: string | null;
+};
+
+export type BuildDirectorFinanceManagementManifestContractArgs = {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  topN?: number | null;
+  dueDaysDefault?: number | null;
+  criticalDays?: number | null;
+  evaluationDate?: string | null;
+  financeRows?: unknown[] | null;
+  spendRows?: unknown[] | null;
+  sourceKind?: string | null;
+};
+
+const SOURCE_VERSION_PREFIX = "dfm_src_v1";
+const ARTIFACT_VERSION_PREFIX = "dfm_art_v1";
+const SCOPE_VERSION_PREFIX = "dfm_scope_v1";
+const FINANCE_MANAGEMENT_FILE_NAME = "director_finance_management_report.pdf";
+const FINANCE_MANAGEMENT_ARTIFACT_ROOT = "director/management_report/artifacts/v1";
+const FINANCE_MANAGEMENT_MANIFEST_ROOT = "director/management_report/manifests/v1";
+const FINANCE_MANAGEMENT_NOISE_KEYS = new Set([
+  "_debug",
+  "cache",
+  "duration_ms",
+  "durationMs",
+  "fetched_at",
+  "generated_at",
+  "loaded_at",
+  "nonce",
+  "request_id",
+  "signed_url",
+  "signedUrl",
+  "telemetry",
+  "timing",
+  "trace_id",
+  "traceId",
+  "transport",
+]);
+
 export type DirectorPdfErrorPayload = {
   ok: false;
   renderVersion: "v1";
@@ -101,6 +182,152 @@ export function createDirectorPdfSuccessResponse(payload: DirectorPdfSuccessPayl
 
 function toText(value: unknown) {
   return String(value ?? "").trim();
+}
+
+function normalizeIso10(value: unknown) {
+  const text = toText(value).slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : null;
+}
+
+function todayIso10() {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function positiveInt(value: unknown, fallback: number, minValue = 0) {
+  const parsed = Math.floor(Number(value));
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(minValue, parsed);
+}
+
+function sanitizePathSegment(value: string) {
+  return (
+    toText(value)
+      .replace(/[^a-zA-Z0-9._-]+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_+|_+$/g, "") || "version"
+  );
+}
+
+function stripManifestNoise(value: unknown, key?: string): unknown {
+  if (key && FINANCE_MANAGEMENT_NOISE_KEYS.has(key)) return undefined;
+  if (value == null) return null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" || typeof value === "boolean") return value;
+  if (Array.isArray(value)) return value.map((item) => stripManifestNoise(item));
+  if (typeof value === "object") {
+    const source = value as Record<string, unknown>;
+    const output: Record<string, unknown> = {};
+    for (const childKey of Object.keys(source).sort()) {
+      const childValue = stripManifestNoise(source[childKey], childKey);
+      if (childValue !== undefined) output[childKey] = childValue;
+    }
+    return output;
+  }
+  return toText(value);
+}
+
+export function stableJsonStringify(value: unknown): string {
+  if (value == null) return "null";
+  if (typeof value === "number" || typeof value === "boolean") return JSON.stringify(value);
+  if (typeof value === "string") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(stableJsonStringify).join(",")}]`;
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJsonStringify(record[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(toText(value));
+}
+
+function hashString32(input: string): string {
+  let hash = 2166136261;
+  const source = String(input || "");
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+async function stableHash(value: unknown): Promise<string> {
+  const text = stableJsonStringify(value);
+  const subtle = globalThis.crypto?.subtle;
+  if (subtle && typeof subtle.digest === "function" && typeof TextEncoder !== "undefined") {
+    const digest = await subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(digest))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+  }
+  return `fnv1a32_${hashString32(text)}`;
+}
+
+export function buildDirectorFinanceManagementDocumentScope(
+  args: Pick<
+    BuildDirectorFinanceManagementManifestContractArgs,
+    "periodFrom" | "periodTo" | "topN" | "dueDaysDefault" | "criticalDays" | "evaluationDate"
+  >,
+): DirectorFinanceManagementDocumentScope {
+  return {
+    role: "director",
+    family: "finance",
+    report: "management",
+    periodFrom: normalizeIso10(args.periodFrom),
+    periodTo: normalizeIso10(args.periodTo),
+    topN: positiveInt(args.topN, 15, 1),
+    dueDaysDefault: positiveInt(args.dueDaysDefault, 7, 0),
+    criticalDays: positiveInt(args.criticalDays, 14, 1),
+    evaluationDate: normalizeIso10(args.evaluationDate) ?? todayIso10(),
+  };
+}
+
+export async function buildDirectorFinanceManagementManifestContract(
+  args: BuildDirectorFinanceManagementManifestContractArgs,
+): Promise<DirectorFinanceManagementManifestContract> {
+  const documentScope = buildDirectorFinanceManagementDocumentScope(args);
+  const sourceIdentity = {
+    contractVersion: DIRECTOR_FINANCE_MANAGEMENT_MANIFEST_VERSION,
+    documentKind: DIRECTOR_FINANCE_MANAGEMENT_DOCUMENT_KIND,
+    documentScope,
+    source: {
+      sourceKind: toText(args.sourceKind) || "rpc:pdf_director_finance_source_v1",
+      financeRows: stripManifestNoise(Array.isArray(args.financeRows) ? args.financeRows : []),
+      spendRows: stripManifestNoise(Array.isArray(args.spendRows) ? args.spendRows : []),
+    },
+  };
+  const sourceHash = await stableHash(sourceIdentity);
+  const sourceVersion = `${SOURCE_VERSION_PREFIX}_${sourceHash}`;
+  const artifactHash = await stableHash({
+    artifactContractVersion: DIRECTOR_FINANCE_MANAGEMENT_ARTIFACT_CONTRACT_VERSION,
+    sourceVersion,
+    templateVersion: DIRECTOR_FINANCE_MANAGEMENT_TEMPLATE_VERSION,
+    renderContractVersion: DIRECTOR_FINANCE_MANAGEMENT_RENDER_CONTRACT_VERSION,
+  });
+  const scopeHash = await stableHash({
+    scopeVersion: SCOPE_VERSION_PREFIX,
+    documentKind: DIRECTOR_FINANCE_MANAGEMENT_DOCUMENT_KIND,
+    documentScope,
+  });
+  const artifactVersion = `${ARTIFACT_VERSION_PREFIX}_${artifactHash}`;
+
+  return {
+    version: DIRECTOR_FINANCE_MANAGEMENT_MANIFEST_VERSION,
+    documentKind: DIRECTOR_FINANCE_MANAGEMENT_DOCUMENT_KIND,
+    documentScope,
+    sourceVersion,
+    artifactVersion,
+    templateVersion: DIRECTOR_FINANCE_MANAGEMENT_TEMPLATE_VERSION,
+    renderContractVersion: DIRECTOR_FINANCE_MANAGEMENT_RENDER_CONTRACT_VERSION,
+    artifactPath: `${FINANCE_MANAGEMENT_ARTIFACT_ROOT}/${sanitizePathSegment(artifactVersion)}/${FINANCE_MANAGEMENT_FILE_NAME}`,
+    manifestPath: `${FINANCE_MANAGEMENT_MANIFEST_ROOT}/${sanitizePathSegment(scopeHash)}.json`,
+    fileName: FINANCE_MANAGEMENT_FILE_NAME,
+    lastSourceChangeAt: null,
+  };
 }
 
 function toInteger(value: unknown) {

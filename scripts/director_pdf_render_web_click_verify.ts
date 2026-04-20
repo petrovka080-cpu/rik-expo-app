@@ -54,13 +54,6 @@ const VIEWER_READY_TOKENS = ["[pdf-viewer] ready"];
 const VIEWER_ROUTE_TOKENS = ["[pdf-viewer] viewer_route_mounted"];
 const VIEWER_SRC_TOKENS = ["[pdf-viewer] web_iframe_src_ready", "[pdf-viewer] signedUrl"];
 const NAVIGATION_TOKEN = "[pdf-document-actions] about_to_navigate_to_viewer";
-const PDF_START_TOKENS = [
-  "[pdf-document-actions] prepare_requested",
-  "[pdf-document-actions] prepare_ready",
-  "[pdf-document-actions] preview",
-  "[director-pdf-render]",
-];
-
 if (!supabaseUrl || !anonKey || !supabaseProjectRef) {
   throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY");
 }
@@ -98,6 +91,27 @@ type LocatorScope = Page | Locator;
 
 function text(value: unknown) {
   return String(value ?? "").trim();
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function sanitizeHeaders(headers: Record<string, string>) {
+  const sanitized: Record<string, string> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    const normalizedKey = key.toLowerCase();
+    sanitized[key] =
+      normalizedKey === "authorization" ||
+      normalizedKey === "apikey" ||
+      normalizedKey === "cookie" ||
+      normalizedKey === "set-cookie"
+        ? "<redacted>"
+        : value;
+  }
+  return sanitized;
 }
 
 function escapeRegex(value: string) {
@@ -438,7 +452,7 @@ async function hydrateDirectorSession(page: Page, user: { email: string; passwor
     },
   );
 
-  await page.goto(`${baseUrl}/director`, { waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}/office/director`, { waitUntil: "domcontentloaded" });
   await poll(
     "director-pdf-render-session-hydrated",
     async () => {
@@ -459,17 +473,14 @@ async function hydrateDirectorSession(page: Page, user: { email: string; passwor
 
 async function safeParseFunctionResponse(response: Response): Promise<FunctionResponseRecord> {
   const payload = await parseResponsePayload(response);
-  const record =
-    payload && typeof payload === "object" && !Array.isArray(payload)
-      ? (payload as Record<string, unknown>)
-      : null;
+  const record = asRecord(payload);
 
   return {
     url: response.url(),
     status: response.status(),
     method: response.request().method(),
-    headers: await response.allHeaders().catch(() => ({})),
-    requestHeaders: await response.request().allHeaders().catch(() => ({})),
+    headers: sanitizeHeaders(await response.allHeaders().catch(() => ({}))),
+    requestHeaders: sanitizeHeaders(await response.request().allHeaders().catch(() => ({}))),
     payload,
     signedUrl: text(record?.signedUrl) || null,
     renderBranch: text(record?.renderBranch) || null,
@@ -486,11 +497,54 @@ function hasAnyToken(entries: { text: string }[], tokens: string[]) {
   return tokens.some((token) => entries.some((entry) => entry.text.includes(token)));
 }
 
+function resolveManifestProof(functionCall: FunctionResponseRecord | null) {
+  const payload = asRecord(functionCall?.payload);
+  const telemetry = asRecord(payload?.telemetry);
+  const cacheStatus = text(telemetry?.cacheStatus);
+  const manifestStatus = text(telemetry?.manifestStatus);
+  const sourceVersion = text(telemetry?.sourceVersion);
+  const artifactVersion = text(telemetry?.artifactVersion);
+  const manifestPath = text(telemetry?.manifestPath);
+  const storagePath = text(payload?.storagePath);
+  const renderer = text(payload?.renderer);
+  const artifactPathVersioned =
+    storagePath.startsWith("director/management_report/artifacts/v1/") &&
+    storagePath.endsWith("/director_finance_management_report.pdf");
+  const manifestPathVersioned = manifestPath.startsWith("director/management_report/manifests/v1/");
+  const manifestCacheStatus = cacheStatus === "artifact_hit" || cacheStatus === "artifact_miss";
+  const manifestDrivenOpenPath =
+    functionCall?.status === 200 &&
+    text(payload?.documentKind) === "management_report" &&
+    Boolean(functionCall.signedUrl) &&
+    artifactPathVersioned &&
+    manifestPathVersioned &&
+    manifestCacheStatus &&
+    manifestStatus === "ready" &&
+    Boolean(sourceVersion) &&
+    Boolean(artifactVersion);
+
+  return {
+    manifestDrivenOpenPath,
+    artifactPathVersioned,
+    manifestPathVersioned,
+    manifestCacheStatus,
+    cacheStatus: cacheStatus || null,
+    manifestStatus: manifestStatus || null,
+    sourceVersion: sourceVersion || null,
+    artifactVersion: artifactVersion || null,
+    manifestPath: manifestPath || null,
+    storagePath: storagePath || null,
+    renderer: renderer || null,
+  };
+}
+
 function identifyNextBlocker(args: {
   financeModalOpened: boolean;
   pdfButtonFound: boolean;
   pdfButtonClicked: boolean;
   functionCall: FunctionResponseRecord | null;
+  manifestDrivenOpenPath: boolean;
+  manifestProof: ReturnType<typeof resolveManifestProof>;
   navigationLogged: boolean;
   routeReached: boolean;
   viewerRouteMounted: boolean;
@@ -525,6 +579,18 @@ function identifyNextBlocker(args: {
       exactFunction: "Deno.serve",
       exactCondition: "management_report POST did not complete to a 200 response with signedUrl",
       runtimeSymptom: args.functionCall.error || `HTTP ${args.functionCall.status}`,
+    };
+  }
+
+  if (!args.manifestDrivenOpenPath) {
+    return {
+      layer: "manifest_cutover",
+      exactFile: "src/lib/api/pdf_director.ts",
+      exactFunction: "exportDirectorManagementReportPdf",
+      exactCondition: "management_report click must send financeManagementManifest and use the deterministic artifact path",
+      runtimeSymptom: `cacheStatus=${args.manifestProof.cacheStatus ?? "null"}, manifestStatus=${
+        args.manifestProof.manifestStatus ?? "null"
+      }, storagePath=${args.manifestProof.storagePath ?? "null"}`,
     };
   }
 
@@ -633,18 +699,8 @@ async function main() {
         { timeout: 45_000 },
       ).catch(() => null);
 
-      pdfButtonClickMethod = await activatePressable(
-        page,
-        pdfButton,
-        async () => {
-          const postConsole = lastConsole(runtime, consoleBaseline);
-          return (
-            relevantResponses.length > responseBaseline ||
-            postConsole.some((entry) => PDF_START_TOKENS.some((token) => entry.text.includes(token)))
-          );
-        },
-        5_000,
-      );
+      await pdfButton.click({ force: true });
+      pdfButtonClickMethod = "locator.click";
       pdfButtonClicked = pdfButtonClickMethod != null;
 
       const functionResponse = await functionResponsePromise;
@@ -721,11 +777,15 @@ async function main() {
       }
     }
 
+    const manifestProof = resolveManifestProof(functionCall);
+    const manifestDrivenOpenPath = manifestProof.manifestDrivenOpenPath;
     const nextBlocker = identifyNextBlocker({
       financeModalOpened,
       pdfButtonFound,
       pdfButtonClicked,
       functionCall,
+      manifestDrivenOpenPath,
+      manifestProof,
       navigationLogged,
       routeReached,
       viewerRouteMounted,
@@ -745,6 +805,7 @@ async function main() {
       managementReportRealClickPathExercised &&
       managementReportFunctionPostStatus === 200 &&
       managementReportSignedUrlReturned &&
+      manifestDrivenOpenPath &&
       managementReportViewerOrOpenReached &&
       managementReportOpened
         ? "GREEN"
@@ -757,6 +818,8 @@ async function main() {
       managementReportRealClickPathExercised,
       managementReportFunctionPostStatus,
       managementReportSignedUrlReturned,
+      manifestDrivenOpenPath,
+      manifestProof,
       managementReportViewerOrOpenReached,
       managementReportOpened,
       nextExactBlockerIdentified,
@@ -813,6 +876,10 @@ async function main() {
         `- Exact PDF button clicked: ${pdfButtonClicked}`,
         `- Function status: ${managementReportFunctionPostStatus ?? "<none>"}`,
         `- signedUrl returned: ${managementReportSignedUrlReturned}`,
+        `- manifest-driven artifact path: ${manifestDrivenOpenPath}`,
+        `- manifest status: ${manifestProof.manifestStatus ?? "null"}`,
+        `- cache status: ${manifestProof.cacheStatus ?? "null"}`,
+        `- storage path: ${manifestProof.storagePath ?? "null"}`,
         `- /pdf-viewer reached: ${routeReached || viewerRouteMounted}`,
         `- iframe src present: ${Boolean(iframeSrc)}`,
         `- viewer ready: ${viewerReady}`,
@@ -828,6 +895,7 @@ async function main() {
         `- managementReportRealClickPathExercised = ${managementReportRealClickPathExercised}`,
         `- managementReportFunctionPostStatus = ${managementReportFunctionPostStatus ?? "null"}`,
         `- managementReportSignedUrlReturned = ${managementReportSignedUrlReturned}`,
+        `- manifestDrivenOpenPath = ${manifestDrivenOpenPath}`,
         `- managementReportViewerOrOpenReached = ${managementReportViewerOrOpenReached}`,
         `- managementReportOpened = ${managementReportOpened}`,
         `- Final status: ${status}`,
