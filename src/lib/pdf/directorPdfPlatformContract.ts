@@ -18,7 +18,7 @@ export type DirectorPdfRenderBranch =
   | "backend_production_report_v1"
   | "backend_subcontract_report_v1";
 
-export type DirectorPdfRenderer = "browserless_puppeteer" | "local_browser_puppeteer";
+export type DirectorPdfRenderer = "browserless_puppeteer" | "local_browser_puppeteer" | "artifact_cache";
 
 export type DirectorPdfServerErrorCode =
   | "auth_failed"

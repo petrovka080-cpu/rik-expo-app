@@ -127,6 +127,9 @@ async function renderDirectorPdfViaEdge(args: DirectorPdfRenderArgs): Promise<Di
     allowedRenderers: ["browserless_puppeteer", "local_browser_puppeteer"],
     errorPrefix: "director-pdf-render failed",
   });
+  if (result.renderer === "artifact_cache") {
+    throw new Error("director-pdf-render returned unsupported artifact cache renderer");
+  }
 
   return {
     signedUrl: result.signedUrl,

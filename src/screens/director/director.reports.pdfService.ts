@@ -2,6 +2,16 @@ import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { generateDirectorPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import { generateDirectorProductionReportPdfViaBackend } from "../../lib/api/directorProductionReportPdfBackend.service";
 import { generateDirectorSubcontractReportPdfViaBackend } from "../../lib/api/directorSubcontractReportPdfBackend.service";
+import { hashString32 } from "../../lib/pdfFileContract";
+
+function buildReportSourceFingerprint(repData: unknown, repDiscipline: unknown) {
+  if (repData == null && repDiscipline == null) return null;
+  try {
+    return hashString32(JSON.stringify({ repData, repDiscipline }));
+  } catch {
+    return null;
+  }
+}
 
 export async function buildDirectorProductionReportPdfDescriptor(args: {
   companyName?: string | null;
@@ -34,6 +44,7 @@ export async function buildDirectorProductionReportPdfDescriptor(args: {
         periodTo: args.periodTo,
         objectName: args.objectName ?? null,
         preferPriceStage: args.preferPriceStage ?? "priced",
+        clientSourceFingerprint: buildReportSourceFingerprint(args.repData, args.repDiscipline),
       });
       return backend.source;
     },

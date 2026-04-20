@@ -19,6 +19,8 @@ import {
 const FUNCTION_NAME = "director-production-report-pdf";
 const DEFAULT_BUCKET = "director_pdf_exports";
 const DEFAULT_SIGNED_URL_TTL_SECONDS = 60 * 60;
+const PRODUCTION_ARTIFACT_CACHE_VERSION = "pdf_x_b1_director_production_artifact_v1";
+const PRODUCTION_ARTIFACT_TEMPLATE_VERSION = "director_production_report_template_v1";
 const WINDOWS_LOCAL_BROWSER_CANDIDATES = [
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
   "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
@@ -35,6 +37,9 @@ const UNIX_LOCAL_BROWSER_CANDIDATES = [
 type ProductionSourceEnvelope = {
   document_type?: string;
   version?: string;
+  generated_at?: unknown;
+  document_id?: unknown;
+  meta?: unknown;
   report_payload?: unknown;
   discipline_payload?: unknown;
 };
@@ -79,10 +84,43 @@ function buildStoragePath(fileName: string) {
   return `director/production_report/${yyyy}/${mm}/${dd}/${stamp}_${nonce}_${fileName}`;
 }
 
+function buildProductionArtifactStoragePath(args: {
+  artifactVersion: string;
+  fileName: string;
+}) {
+  return `director/production_report/artifacts/v1/${sanitizeStem(args.artifactVersion)}/${args.fileName}`;
+}
+
+function resolveBucketId() {
+  return cleanText(Deno.env.get("DIRECTOR_PDF_RENDER_BUCKET")) || DEFAULT_BUCKET;
+}
+
 function resolveSignedUrlTtlSeconds() {
   const raw = Number(Deno.env.get("DIRECTOR_PDF_RENDER_SIGNED_URL_TTL_SECONDS") ?? NaN);
   if (!Number.isFinite(raw) || raw <= 0) return DEFAULT_SIGNED_URL_TTL_SECONDS;
   return Math.floor(raw);
+}
+
+function stableJsonStringify(value: unknown): string {
+  if (value == null) return "null";
+  if (typeof value === "number" || typeof value === "boolean") return JSON.stringify(value);
+  if (typeof value === "string") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(stableJsonStringify).join(",")}]`;
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJsonStringify(record[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(String(value));
+}
+
+async function sha256Hex(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function resolveBrowserWsEndpoint() {
@@ -237,6 +275,9 @@ function validateProductionSourceEnvelope(value: unknown): Required<ProductionSo
   return {
     document_type: "director_production_report",
     version: "v1",
+    generated_at: root.generated_at ?? null,
+    document_id: root.document_id ?? null,
+    meta: root.meta ?? null,
     report_payload: root.report_payload,
     discipline_payload: root.discipline_payload,
   };
@@ -267,6 +308,76 @@ function buildFileName(payload: ReturnType<typeof normalizeDirectorProductionRep
     payload.periodTo ?? payload.periodFrom ?? "",
   ].filter(Boolean);
   return normalizePdfFileName(parts.join("_"));
+}
+
+async function buildProductionArtifactContract(args: {
+  payload: ReturnType<typeof normalizeDirectorProductionReportPdfRequest>;
+  source: Required<ProductionSourceEnvelope>;
+  fileName: string;
+}) {
+  const sourceIdentity = {
+    contractVersion: PRODUCTION_ARTIFACT_CACHE_VERSION,
+    templateVersion: PRODUCTION_ARTIFACT_TEMPLATE_VERSION,
+    request: {
+      companyName: args.payload.companyName ?? null,
+      generatedBy: args.payload.generatedBy ?? null,
+      periodFrom: args.payload.periodFrom ?? null,
+      periodTo: args.payload.periodTo ?? null,
+      objectName: args.payload.objectName ?? null,
+      preferPriceStage: args.payload.preferPriceStage ?? "priced",
+    },
+    source: {
+      documentType: args.source.document_type,
+      documentId: args.source.document_id ?? null,
+      sourceMeta: args.source.meta ?? null,
+      reportPayload: args.source.report_payload,
+      disciplinePayload: args.source.discipline_payload,
+    },
+  };
+  const sourceVersion = await sha256Hex(stableJsonStringify(sourceIdentity));
+  const artifactVersion = `${PRODUCTION_ARTIFACT_TEMPLATE_VERSION}_${sourceVersion}`;
+  return {
+    sourceVersion,
+    artifactVersion,
+    storagePath: buildProductionArtifactStoragePath({
+      artifactVersion,
+      fileName: args.fileName,
+    }),
+  };
+}
+
+async function trySignExistingPdfArtifact(args: {
+  admin: ReturnType<typeof createClient>;
+  bucketId: string;
+  storagePath: string;
+}) {
+  const slashIndex = args.storagePath.lastIndexOf("/");
+  const prefix = slashIndex >= 0 ? args.storagePath.slice(0, slashIndex) : "";
+  const objectName = slashIndex >= 0 ? args.storagePath.slice(slashIndex + 1) : args.storagePath;
+  const listed = await args.admin.storage.from(args.bucketId).list(prefix, {
+    limit: 1,
+    search: objectName,
+  });
+  if (listed.error || !Array.isArray(listed.data)) return null;
+  const exists = listed.data.some((item) => cleanText(item?.name) === objectName);
+  if (!exists) return null;
+
+  const ttlSeconds = resolveSignedUrlTtlSeconds();
+  const signed = await args.admin.storage.from(args.bucketId).createSignedUrl(args.storagePath, ttlSeconds);
+  const signedUrl = cleanText(signed.data?.signedUrl);
+  if (signed.error || !signedUrl) return null;
+  return {
+    bucketId: args.bucketId,
+    storagePath: args.storagePath,
+    signedUrl,
+    expiresInSeconds: ttlSeconds,
+  };
+}
+
+function isStorageAlreadyExistsError(error: unknown) {
+  const message = cleanText((error as { message?: unknown } | null)?.message).toLowerCase();
+  const status = cleanText((error as { statusCode?: unknown } | null)?.statusCode);
+  return status === "409" || message.includes("already exists") || message.includes("duplicate");
 }
 
 async function renderPdfBytes(html: string) {
@@ -336,9 +447,10 @@ async function uploadPdfAndSignUrl(args: {
   admin: ReturnType<typeof createClient>;
   fileName: string;
   bytes: Uint8Array;
+  storagePath?: string;
 }) {
-  const bucketId = cleanText(Deno.env.get("DIRECTOR_PDF_RENDER_BUCKET")) || DEFAULT_BUCKET;
-  const storagePath = buildStoragePath(args.fileName);
+  const bucketId = resolveBucketId();
+  const storagePath = cleanText(args.storagePath) || buildStoragePath(args.fileName);
   const ttlSeconds = resolveSignedUrlTtlSeconds();
 
   const upload = await args.admin.storage.from(bucketId).upload(storagePath, args.bytes, {
@@ -346,6 +458,14 @@ async function uploadPdfAndSignUrl(args: {
     upsert: false,
   });
   if (upload.error) {
+    if (args.storagePath && isStorageAlreadyExistsError(upload.error)) {
+      const existing = await trySignExistingPdfArtifact({
+        admin: args.admin,
+        bucketId,
+        storagePath,
+      });
+      if (existing) return existing;
+    }
     throw new Error(`Storage upload failed: ${upload.error.message}`);
   }
 
@@ -406,13 +526,68 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
   });
 
   try {
+    const totalStartedAt = Date.now();
     console.info(`[${FUNCTION_NAME}] stage_auth_ok`, {
       objectName: payload.objectName ?? null,
       periodFrom: payload.periodFrom ?? null,
       periodTo: payload.periodTo ?? null,
       preferPriceStage: payload.preferPriceStage ?? "priced",
     });
+    const sourceStartedAt = Date.now();
     const source = await loadProductionSource(admin, payload);
+    const sourceLoadedAt = Date.now();
+    const fileName = buildFileName(payload);
+    const artifact = await buildProductionArtifactContract({
+      payload,
+      source,
+      fileName,
+    });
+    const cachedArtifact = await trySignExistingPdfArtifact({
+      admin,
+      bucketId: resolveBucketId(),
+      storagePath: artifact.storagePath,
+    });
+    if (cachedArtifact) {
+      console.info(`[${FUNCTION_NAME}] backend_production_report_artifact_hit`, {
+        objectName: payload.objectName ?? null,
+        periodFrom: payload.periodFrom ?? null,
+        periodTo: payload.periodTo ?? null,
+        preferPriceStage: payload.preferPriceStage ?? "priced",
+        bucketId: cachedArtifact.bucketId,
+        storagePath: cachedArtifact.storagePath,
+        sourceVersion: artifact.sourceVersion,
+        artifactVersion: artifact.artifactVersion,
+        sourceMs: sourceLoadedAt - sourceStartedAt,
+        totalMs: Date.now() - totalStartedAt,
+      });
+
+      return createDirectorPdfSuccessResponse({
+        ok: true,
+        renderVersion: "v1",
+        renderBranch: "backend_production_report_v1",
+        renderer: "artifact_cache",
+        sourceKind: "remote-url",
+        documentKind: "production_report",
+        bucketId: cachedArtifact.bucketId,
+        storagePath: cachedArtifact.storagePath,
+        signedUrl: cachedArtifact.signedUrl,
+        fileName,
+        expiresInSeconds: cachedArtifact.expiresInSeconds,
+        telemetry: {
+          cacheStatus: "artifact_hit",
+          cacheVersion: PRODUCTION_ARTIFACT_CACHE_VERSION,
+          templateVersion: PRODUCTION_ARTIFACT_TEMPLATE_VERSION,
+          sourceVersion: artifact.sourceVersion,
+          artifactVersion: artifact.artifactVersion,
+          sourceComputedAt: source.generated_at ?? null,
+          sourceMs: sourceLoadedAt - sourceStartedAt,
+          renderMs: 0,
+          uploadAndSignMs: 0,
+          totalMs: Date.now() - totalStartedAt,
+        },
+      });
+    }
+
     const repData = adaptCanonicalMaterialsPayload(source.report_payload);
     const repDiscipline = adaptCanonicalWorksPayload(source.discipline_payload);
     if (!repData || !repDiscipline) {
@@ -422,6 +597,7 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       materialRows: Array.isArray(repData.rows) ? repData.rows.length : 0,
       workRows: Array.isArray(repDiscipline.works) ? repDiscipline.works.length : 0,
       preferPriceStage: payload.preferPriceStage ?? "priced",
+      sourceVersion: artifact.sourceVersion,
     });
     const model = prepareDirectorProductionReportPdfModelShared({
       companyName: payload.companyName,
@@ -441,17 +617,21 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
     console.info(`[${FUNCTION_NAME}] stage_html_ready`, {
       htmlLength: html.length,
     });
+    const renderStartedAt = Date.now();
     const { pdfBytes, renderer } = await renderPdfBytes(html);
+    const renderFinishedAt = Date.now();
     console.info(`[${FUNCTION_NAME}] stage_pdf_ready`, {
       renderer,
       sizeBytes: pdfBytes.byteLength,
     });
-    const fileName = buildFileName(payload);
+    const uploadStartedAt = Date.now();
     const uploaded = await uploadPdfAndSignUrl({
       admin,
       fileName,
       bytes: pdfBytes,
+      storagePath: artifact.storagePath,
     });
+    const uploadFinishedAt = Date.now();
 
     console.info(`[${FUNCTION_NAME}] backend_production_report_v1`, {
       objectName: payload.objectName ?? null,
@@ -462,6 +642,13 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       storagePath: uploaded.storagePath,
       sizeBytes: pdfBytes.byteLength,
       renderer,
+      cacheStatus: "artifact_miss",
+      sourceVersion: artifact.sourceVersion,
+      artifactVersion: artifact.artifactVersion,
+      sourceMs: sourceLoadedAt - sourceStartedAt,
+      renderMs: renderFinishedAt - renderStartedAt,
+      uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
+      totalMs: uploadFinishedAt - totalStartedAt,
     });
 
     return createDirectorPdfSuccessResponse({
@@ -476,6 +663,20 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       signedUrl: uploaded.signedUrl,
       fileName,
       expiresInSeconds: uploaded.expiresInSeconds,
+      telemetry: {
+        cacheStatus: "artifact_miss",
+        cacheVersion: PRODUCTION_ARTIFACT_CACHE_VERSION,
+        templateVersion: PRODUCTION_ARTIFACT_TEMPLATE_VERSION,
+        sourceVersion: artifact.sourceVersion,
+        artifactVersion: artifact.artifactVersion,
+        sourceComputedAt: source.generated_at ?? null,
+        sourceMs: sourceLoadedAt - sourceStartedAt,
+        renderMs: renderFinishedAt - renderStartedAt,
+        uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
+        totalMs: uploadFinishedAt - totalStartedAt,
+        htmlLength: html.length,
+        pdfSizeBytes: pdfBytes.byteLength,
+      },
     });
   } catch (error) {
     console.error(`[${FUNCTION_NAME}] render_failed`, {

@@ -25,9 +25,11 @@ type DirectorProductionReportPdfBackendResult = {
   signedUrl: string;
   renderBranch: "backend_production_report_v1";
   renderVersion: "v1";
-  renderer: "browserless_puppeteer" | "local_browser_puppeteer";
+  renderer: "browserless_puppeteer" | "local_browser_puppeteer" | "artifact_cache";
   fileName: string;
   expiresInSeconds: number | null;
+  sourceKind: "remote-url";
+  telemetry: Record<string, unknown> | null;
 };
 
 class DirectorProductionReportPdfBackendError extends Error {
@@ -38,6 +40,81 @@ class DirectorProductionReportPdfBackendError extends Error {
 }
 
 const shouldUseBackendRollout = () => MODE !== "force_off";
+
+const PRODUCTION_PDF_CLIENT_CACHE_TTL_MS = 30 * 60 * 1000;
+const PRODUCTION_PDF_CLIENT_CACHE_MAX = 20;
+
+type ProductionPdfClientCacheEntry = {
+  ts: number;
+  value: DirectorProductionReportPdfBackendResult;
+};
+
+const productionPdfClientCache = new Map<string, ProductionPdfClientCacheEntry>();
+const productionPdfClientInFlight = new Map<string, Promise<DirectorProductionReportPdfBackendResult>>();
+
+const normalizeCachePart = (value: unknown) => String(value ?? "").trim();
+
+function buildProductionPdfClientCacheKey(payload: DirectorProductionReportPdfRequest) {
+  return [
+    payload.version,
+    normalizeCachePart(payload.companyName),
+    normalizeCachePart(payload.generatedBy),
+    normalizeCachePart(payload.periodFrom),
+    normalizeCachePart(payload.periodTo),
+    normalizeCachePart(payload.objectName),
+    payload.preferPriceStage === "base" ? "base" : "priced",
+    normalizeCachePart(payload.clientSourceFingerprint),
+  ].join("|");
+}
+
+function getProductionPdfClientCache(key: string): DirectorProductionReportPdfBackendResult | null {
+  const hit = productionPdfClientCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.ts >= PRODUCTION_PDF_CLIENT_CACHE_TTL_MS) {
+    productionPdfClientCache.delete(key);
+    return null;
+  }
+  productionPdfClientCache.delete(key);
+  productionPdfClientCache.set(key, hit);
+  return hit.value;
+}
+
+function setProductionPdfClientCache(key: string, value: DirectorProductionReportPdfBackendResult) {
+  if (productionPdfClientCache.has(key)) productionPdfClientCache.delete(key);
+  productionPdfClientCache.set(key, { ts: Date.now(), value });
+  while (productionPdfClientCache.size > PRODUCTION_PDF_CLIENT_CACHE_MAX) {
+    const oldestKey = productionPdfClientCache.keys().next().value;
+    if (!oldestKey) break;
+    productionPdfClientCache.delete(oldestKey);
+  }
+}
+
+async function invokeProductionReportBackend(
+  payload: DirectorProductionReportPdfRequest,
+): Promise<DirectorProductionReportPdfBackendResult> {
+  const result = await invokeDirectorPdfBackend({
+    functionName: FUNCTION_NAME,
+    payload,
+    expectedDocumentKind: "production_report",
+    expectedRenderBranch: "backend_production_report_v1",
+    allowedRenderers: ["browserless_puppeteer", "local_browser_puppeteer", "artifact_cache"],
+    errorPrefix: "director production report pdf backend failed",
+  });
+
+  return {
+    source: result.source,
+    bucketId: result.bucketId,
+    storagePath: result.storagePath,
+    signedUrl: result.signedUrl,
+    renderBranch: "backend_production_report_v1",
+    renderVersion: "v1",
+    renderer: result.renderer,
+    fileName: result.fileName,
+    expiresInSeconds: result.expiresInSeconds,
+    sourceKind: result.sourceKind,
+    telemetry: result.telemetry,
+  };
+}
 
 export function getDirectorProductionReportPdfBackendMode() {
   return MODE;
@@ -99,8 +176,41 @@ export async function generateDirectorProductionReportPdfViaBackend(
       periodTo: payload.periodTo ?? null,
       objectName: payload.objectName ?? null,
       preferPriceStage: payload.preferPriceStage ?? "priced",
+      clientSourceFingerprint: payload.clientSourceFingerprint ?? null,
     },
   });
+
+  const cacheKey = buildProductionPdfClientCacheKey(payload);
+  const canUseClientHotCache = Boolean(payload.clientSourceFingerprint);
+  if (canUseClientHotCache) {
+    const cached = getProductionPdfClientCache(cacheKey);
+    if (cached) {
+      boundary.success("backend_invoke_success", {
+        sourceKind: "remote-url",
+        extra: {
+          functionName: FUNCTION_NAME,
+          documentKind: "production_report",
+          renderBranch: cached.renderBranch,
+          renderer: cached.renderer,
+          cacheStatus: "client_hot_hit",
+        },
+      });
+      boundary.success("signed_url_received", {
+        sourceKind: "remote-url",
+        extra: {
+          fileName: cached.fileName,
+          cacheStatus: "client_hot_hit",
+        },
+      });
+      return cached;
+    }
+  }
+
+  const inFlight = productionPdfClientInFlight.get(cacheKey);
+  if (inFlight) {
+    return await inFlight;
+  }
+
   boundary.success("backend_invoke_start", {
     sourceKind: "backend_invoke",
     extra: {
@@ -108,16 +218,14 @@ export async function generateDirectorProductionReportPdfViaBackend(
       documentKind: "production_report",
     },
   });
-  let result;
+  let result: DirectorProductionReportPdfBackendResult;
   try {
-    result = await invokeDirectorPdfBackend({
-      functionName: FUNCTION_NAME,
-      payload,
-      expectedDocumentKind: "production_report",
-      expectedRenderBranch: "backend_production_report_v1",
-      allowedRenderers: ["browserless_puppeteer", "local_browser_puppeteer"],
-      errorPrefix: "director production report pdf backend failed",
-    });
+    const task = invokeProductionReportBackend(payload);
+    productionPdfClientInFlight.set(cacheKey, task);
+    result = await task;
+    if (canUseClientHotCache) {
+      setProductionPdfClientCache(cacheKey, result);
+    }
   } catch (error) {
     boundary.error("backend_invoke_failure", error, {
       sourceKind: "backend_invoke",
@@ -130,6 +238,8 @@ export async function generateDirectorProductionReportPdfViaBackend(
     throw new DirectorProductionReportPdfBackendError(
       error instanceof Error ? error.message : "director production report pdf backend failed",
     );
+  } finally {
+    productionPdfClientInFlight.delete(cacheKey);
   }
 
   boundary.success("backend_invoke_success", {
@@ -139,6 +249,7 @@ export async function generateDirectorProductionReportPdfViaBackend(
       documentKind: "production_report",
       renderBranch: result.renderBranch,
       renderer: result.renderer,
+      cacheStatus: result.telemetry?.cacheStatus ?? null,
     },
   });
   boundary.success("pdf_storage_uploaded", {
@@ -164,6 +275,7 @@ export async function generateDirectorProductionReportPdfViaBackend(
         periodTo: payload.periodTo ?? null,
         objectName: payload.objectName ?? null,
         preferPriceStage: payload.preferPriceStage ?? "priced",
+        clientSourceFingerprint: payload.clientSourceFingerprint ?? null,
         transport: "supabase_functions",
         functionName: FUNCTION_NAME,
         renderBranch: result.renderBranch,
@@ -186,5 +298,7 @@ export async function generateDirectorProductionReportPdfViaBackend(
     renderer: result.renderer,
     fileName: result.fileName,
     expiresInSeconds: result.expiresInSeconds,
+    sourceKind: result.sourceKind,
+    telemetry: result.telemetry,
   };
 }

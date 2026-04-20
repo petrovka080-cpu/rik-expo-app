@@ -209,3 +209,127 @@ describe("director role PDF backends", () => {
     );
   });
 });
+
+const productionBackendResult = (suffix: string, cacheStatus = "artifact_miss") => ({
+  source: {
+    kind: "remote-url",
+    uri: `https://example.com/${suffix}.pdf`,
+  },
+  signedUrl: `https://example.com/${suffix}.pdf`,
+  bucketId: "director_pdf_exports",
+  storagePath: `director/production_report/artifacts/v1/${suffix}.pdf`,
+  fileName: `${suffix}.pdf`,
+  expiresInSeconds: 3600,
+  renderVersion: "v1",
+  renderBranch: "backend_production_report_v1",
+  renderer: "artifact_cache",
+  sourceKind: "remote-url",
+  documentKind: "production_report",
+  telemetry: {
+    cacheStatus,
+    sourceVersion: `source-${suffix}`,
+    artifactVersion: `artifact-${suffix}`,
+  },
+});
+
+const productionInput = (fingerprint: string | null = "fp-a") => ({
+  version: "v1" as const,
+  companyName: "RIK Construction",
+  generatedBy: "Director",
+  periodFrom: "2026-03-01",
+  periodTo: "2026-03-31",
+  objectName: "Object A",
+  preferPriceStage: "priced" as const,
+  clientSourceFingerprint: fingerprint,
+});
+
+const loadProductionSubject = () =>
+  require("./directorProductionReportPdfBackend.service") as typeof import("./directorProductionReportPdfBackend.service");
+
+describe("director production report backend PDF-X.B1 cache contract", () => {
+  let consoleInfoSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.resetModules();
+    consoleInfoSpy = jest.spyOn(console, "info").mockImplementation(() => undefined);
+    mockResolveMode.mockReset();
+    mockInvokeDirectorPdfBackend.mockReset();
+    mockBoundarySuccess.mockReset();
+    mockBoundaryError.mockReset();
+    mockBeginCanonicalPdfBoundary.mockReset();
+    mockResolveMode.mockReturnValue("auto");
+    mockBeginCanonicalPdfBoundary.mockReturnValue({
+      success: (...args: unknown[]) => mockBoundarySuccess(...args),
+      error: (...args: unknown[]) => mockBoundaryError(...args),
+    });
+  });
+
+  afterEach(() => {
+    consoleInfoSpy.mockRestore();
+  });
+
+  it("returns a client hot-cache hit without invoking the backend again", async () => {
+    mockInvokeDirectorPdfBackend.mockResolvedValue(productionBackendResult("production-a"));
+
+    const { generateDirectorProductionReportPdfViaBackend } = loadProductionSubject();
+    const first = await generateDirectorProductionReportPdfViaBackend(productionInput("fp-hot"));
+    const second = await generateDirectorProductionReportPdfViaBackend(productionInput("fp-hot"));
+
+    expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(1);
+    expect(second).toEqual(first);
+    expect(mockBoundarySuccess).toHaveBeenCalledWith(
+      "backend_invoke_success",
+      expect.objectContaining({
+        extra: expect.objectContaining({
+          cacheStatus: "client_hot_hit",
+        }),
+      }),
+    );
+  });
+
+  it("invalidates the client hot-cache when the screen data fingerprint changes", async () => {
+    mockInvokeDirectorPdfBackend
+      .mockResolvedValueOnce(productionBackendResult("production-a"))
+      .mockResolvedValueOnce(productionBackendResult("production-b"));
+
+    const { generateDirectorProductionReportPdfViaBackend } = loadProductionSubject();
+    const first = await generateDirectorProductionReportPdfViaBackend(productionInput("fp-a"));
+    const second = await generateDirectorProductionReportPdfViaBackend(productionInput("fp-b"));
+
+    expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(2);
+    expect(first.signedUrl).toBe("https://example.com/production-a.pdf");
+    expect(second.signedUrl).toBe("https://example.com/production-b.pdf");
+  });
+
+  it("does not persist a client hot-cache entry without a screen data fingerprint", async () => {
+    mockInvokeDirectorPdfBackend
+      .mockResolvedValueOnce(productionBackendResult("production-no-fp-a"))
+      .mockResolvedValueOnce(productionBackendResult("production-no-fp-b"));
+
+    const { generateDirectorProductionReportPdfViaBackend } = loadProductionSubject();
+    await generateDirectorProductionReportPdfViaBackend(productionInput(null));
+    await generateDirectorProductionReportPdfViaBackend(productionInput(null));
+
+    expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(2);
+  });
+
+  it("coalesces concurrent identical requests into one backend invocation", async () => {
+    let resolveBackend: ((value: unknown) => void) | null = null;
+    mockInvokeDirectorPdfBackend.mockReturnValue(
+      new Promise((resolve) => {
+        resolveBackend = resolve;
+      }),
+    );
+
+    const { generateDirectorProductionReportPdfViaBackend } = loadProductionSubject();
+    const first = generateDirectorProductionReportPdfViaBackend(productionInput("fp-burst"));
+    const second = generateDirectorProductionReportPdfViaBackend(productionInput("fp-burst"));
+
+    expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(1);
+    resolveBackend?.(productionBackendResult("production-burst"));
+    const results = await Promise.all([first, second]);
+
+    expect(results[0]).toEqual(results[1]);
+    expect(results[0].signedUrl).toBe("https://example.com/production-burst.pdf");
+  });
+});

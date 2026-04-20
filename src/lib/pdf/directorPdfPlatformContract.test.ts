@@ -78,6 +78,43 @@ describe("directorPdfPlatformContract", () => {
     });
   });
 
+  it("normalizes a production artifact-cache success payload", async () => {
+    const response = createDirectorPdfSuccessResponse({
+      ok: true,
+      renderVersion: "v1",
+      renderBranch: "backend_production_report_v1",
+      renderer: "artifact_cache",
+      sourceKind: "remote-url",
+      documentKind: "production_report",
+      signedUrl: "https://example.com/production.pdf",
+      bucketId: "director_pdf_exports",
+      storagePath: "director/production_report/artifacts/v1/source/production.pdf",
+      fileName: "production.pdf",
+      expiresInSeconds: 3600,
+      telemetry: {
+        cacheStatus: "artifact_hit",
+      },
+    });
+    const payload = await response.json();
+
+    expect(
+      normalizeDirectorPdfSuccessPayload({
+        value: payload,
+        expectedDocumentKind: "production_report",
+        expectedRenderBranch: "backend_production_report_v1",
+        allowedRenderers: ["artifact_cache"],
+      }),
+    ).toMatchObject({
+      ok: true,
+      renderBranch: "backend_production_report_v1",
+      renderer: "artifact_cache",
+      documentKind: "production_report",
+      telemetry: {
+        cacheStatus: "artifact_hit",
+      },
+    });
+  });
+
   it("extracts typed server error payload", () => {
     expect(
       extractDirectorPdfErrorPayload({

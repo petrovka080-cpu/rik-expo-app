@@ -41,6 +41,8 @@ describe("director.reports.pdfService", () => {
       periodFrom: "2026-03-01",
       periodTo: "2026-03-30",
       objectName: "Object A",
+      repData: { rows: [{ rik_code: "MAT-1", qty_total: 3 }] },
+      repDiscipline: { works: [{ work_type_name: "Work A", total_positions: 1 }] },
     });
 
     const source = await ((descriptor as unknown) as { getSource: () => Promise<unknown> }).getSource();
@@ -52,6 +54,7 @@ describe("director.reports.pdfService", () => {
     expect(mockGenerateDirectorProductionReportPdfViaBackend).toHaveBeenCalledWith(
       expect.objectContaining({
         objectName: "Object A",
+        clientSourceFingerprint: expect.any(String),
       }),
     );
   });

@@ -1,0 +1,76 @@
+{
+  "wave": "PDF-X.B1",
+  "baseline_commit": "5c21275e36c8cd0f36998c934d5c86b1ec365f0e",
+  "scope": "director_reports_production_pdf",
+  "status": "GREEN",
+  "checks": [
+    {
+      "name": "targeted_jest_client_backend_cache",
+      "command": "npx jest src/lib/api/directorRolePdfBackends.test.ts src/screens/director/director.reports.pdfService.test.ts src/lib/pdf/directorPdfPlatformContract.test.ts tests/pdf/pdfXB1DirectorProductionArtifactCache.test.ts --runInBand --no-coverage",
+      "status": "pass",
+      "proof": "17 tests pass; covers client hot cache, fingerprint invalidation, no persistent cache without fingerprint, in-flight coalescing, artifact_cache renderer, and Edge artifact-before-render static contract."
+    },
+    {
+      "name": "type_integrity",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "pass",
+      "proof": "DirectorPdfRenderer now includes artifact_cache and downstream TypeScript compiles."
+    },
+    {
+      "name": "lint",
+      "command": "npx expo lint",
+      "status": "pass",
+      "proof": "Expo lint completed with no reported issues."
+    },
+    {
+      "name": "full_jest",
+      "command": "npx jest --runInBand",
+      "status": "pass",
+      "proof": "351 test suites passed, 1 skipped; 2246 tests passed, 1 skipped."
+    },
+    {
+      "name": "artifact_json_parse",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/PDF_X_B1_test_matrix.json','utf8')); console.log('json ok')\"",
+      "status": "pass",
+      "proof": "Matrix remains valid JSON."
+    },
+    {
+      "name": "diff_hygiene",
+      "command": "git diff --check",
+      "status": "pass",
+      "proof": "No whitespace errors after implementation edits."
+    },
+    {
+      "name": "runtime_semantics",
+      "command": "code inspection and targeted tests",
+      "status": "pass",
+      "proof": "No viewer/template/UI flow changed; production report backend remains authoritative source."
+    }
+  ],
+  "freshness_contract": {
+    "client_hot_cache_requires": "clientSourceFingerprint from current repData and repDiscipline",
+    "backend_artifact_version": "sha256(stable normalized request + authoritative report payload + authoritative discipline payload + template/cache version)",
+    "artifact_hit_skips": [
+      "model adaptation",
+      "HTML assembly",
+      "Puppeteer render",
+      "storage upload"
+    ],
+    "artifact_miss_runs": [
+      "source load",
+      "model adaptation",
+      "HTML assembly",
+      "Puppeteer render",
+      "deterministic storage upload",
+      "signed URL"
+    ]
+  },
+  "not_changed": [
+    "pdf-viewer",
+    "PDF templates",
+    "Director report UI flow",
+    "Warehouse PDFs",
+    "Finance PDFs",
+    "SQL report semantics"
+  ]
+}

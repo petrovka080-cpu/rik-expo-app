@@ -8,6 +8,7 @@ export type DirectorProductionReportPdfRequest = {
   periodTo?: string | null;
   objectName?: string | null;
   preferPriceStage?: "base" | "priced" | null;
+  clientSourceFingerprint?: string | null;
 };
 
 type DirectorProductionLevel = {
@@ -218,6 +219,7 @@ export function normalizeDirectorProductionReportPdfRequest(
   const periodTo = toText(row.periodTo);
   const objectName = toText(row.objectName);
   const preferPriceStage = toText(row.preferPriceStage).toLowerCase();
+  const clientSourceFingerprint = toText(row.clientSourceFingerprint);
 
   if (version !== "v1") {
     throw new Error(
@@ -233,6 +235,7 @@ export function normalizeDirectorProductionReportPdfRequest(
     periodTo: periodTo || null,
     objectName: objectName || null,
     preferPriceStage: preferPriceStage === "base" ? "base" : "priced",
+    clientSourceFingerprint: clientSourceFingerprint || null,
   };
 }
 
