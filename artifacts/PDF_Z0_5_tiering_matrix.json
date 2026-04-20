@@ -1,0 +1,293 @@
+{
+  "wave": "PDF-Z0",
+  "mode": "read-only PDF manifest and precompute foundation audit",
+  "baseline_commit": "a105e8738e55d4a81f20c1031e5c1b1147578fc8",
+  "status": "GREEN_AUDIT",
+  "tiers": [
+    {
+      "family": "director_finance_management_pdf",
+      "tier": "tier_1_always_prebuilt",
+      "roles": ["director"],
+      "document_kinds": ["director_report", "management_report"],
+      "source_paths": [
+        "src/screens/director/director.finance.pdfService.ts",
+        "src/lib/api/pdf_director.ts",
+        "src/lib/api/directorPdfSource.service.ts",
+        "src/lib/api/directorPdfRender.service.ts"
+      ],
+      "needs_manifest": true,
+      "needs_summary_projection": false,
+      "needs_artifact_cache": true,
+      "freshness_owner": "director finance backend source plus artifact manifest",
+      "rationale": "Critical report path already has session-local prefetch/render cache, proving hot-path pressure, but it lacks durable source/artifact versioning and manifest readiness.",
+      "next_exact_wave": "PDF-Z1 director finance management manifest and deterministic artifact materialization",
+      "first_slice_candidate": true
+    },
+    {
+      "family": "director_finance_supplier_summary_pdf",
+      "tier": "tier_2_summary_first",
+      "roles": ["director"],
+      "document_kinds": ["supplier_summary"],
+      "source_paths": [
+        "src/lib/api/directorFinanceSupplierPdfBackend.service.ts",
+        "supabase/functions/director-finance-supplier-summary-pdf/index.ts"
+      ],
+      "needs_manifest": true,
+      "needs_summary_projection": false,
+      "needs_artifact_cache": true,
+      "freshness_owner": "director finance supplier PDF backend",
+      "rationale": "Dedicated backend exists, but cold requests still source/filter/render/upload without artifact identity.",
+      "next_exact_wave": "finance supplier summary artifact version after management report",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "director_production_report_pdf",
+      "tier": "tier_1_always_prebuilt",
+      "roles": ["director"],
+      "document_kinds": ["director_report", "production_report"],
+      "source_paths": [
+        "src/lib/api/directorProductionReportPdfBackend.service.ts",
+        "supabase/functions/director-production-report-pdf/index.ts"
+      ],
+      "needs_manifest": true,
+      "needs_summary_projection": true,
+      "needs_artifact_cache": true,
+      "freshness_owner": "director production PDF backend",
+      "rationale": "PDF-X.B1 added deterministic artifact reuse; remaining gap is a manifest/prewarm lifecycle above the artifact.",
+      "next_exact_wave": "manifest/prewarm only after finance management slice or if production telemetry dominates",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "director_subcontract_report_pdf",
+      "tier": "tier_2_summary_first",
+      "roles": ["director"],
+      "document_kinds": ["director_report", "subcontract_report"],
+      "source_paths": [
+        "src/lib/api/directorSubcontractReportPdfBackend.service.ts",
+        "supabase/functions/director-subcontract-report-pdf/index.ts"
+      ],
+      "needs_manifest": true,
+      "needs_summary_projection": true,
+      "needs_artifact_cache": true,
+      "freshness_owner": "director subcontract PDF backend",
+      "rationale": "Report-scale backend path has no deterministic artifact or manifest, but production/finance are higher priority.",
+      "next_exact_wave": "subcontract deterministic artifact slice",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "warehouse_material_pdfs",
+      "tier": "tier_1_always_prebuilt",
+      "roles": ["warehouse"],
+      "document_kinds": ["warehouse_materials", "issue_materials", "incoming_materials", "issue_day_materials", "incoming_day_materials"],
+      "source_paths": [
+        "src/screens/warehouse/warehouse.pdfs.ts",
+        "src/lib/api/warehousePdfBackend.service.ts",
+        "supabase/functions/warehouse-pdf/index.ts"
+      ],
+      "needs_manifest": true,
+      "needs_summary_projection": true,
+      "needs_artifact_cache": true,
+      "freshness_owner": "warehouse PDF backend",
+      "rationale": "Material reports are repeated period/day summaries and are likely expensive when cold.",
+      "next_exact_wave": "warehouse material summary/artifact slice after Director finance",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "warehouse_object_work_pdf",
+      "tier": "tier_1_always_prebuilt",
+      "roles": ["warehouse"],
+      "document_kinds": ["warehouse_materials", "object_work"],
+      "source_paths": [
+        "src/screens/warehouse/warehouse.pdfs.ts",
+        "src/lib/api/warehousePdfBackend.service.ts",
+        "supabase/functions/warehouse-pdf/index.ts"
+      ],
+      "needs_manifest": true,
+      "needs_summary_projection": true,
+      "needs_artifact_cache": true,
+      "freshness_owner": "warehouse PDF backend",
+      "rationale": "Object/work/material grouping is report-scale and should not be rebuilt from scratch on every cold click.",
+      "next_exact_wave": "warehouse object-work summary/artifact slice",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "warehouse_register_pdfs",
+      "tier": "tier_2_summary_first",
+      "roles": ["warehouse"],
+      "document_kinds": ["warehouse_register", "issue_register", "incoming_register", "issue_day_register", "incoming_day_register"],
+      "source_paths": [
+        "src/screens/warehouse/warehouse.pdfs.ts",
+        "supabase/functions/warehouse-pdf/index.ts"
+      ],
+      "needs_manifest": true,
+      "needs_summary_projection": true,
+      "needs_artifact_cache": false,
+      "freshness_owner": "warehouse PDF backend",
+      "rationale": "Registers need cheap summaries by period/day; durable artifacts are optional unless usage proves hot.",
+      "next_exact_wave": "warehouse register summary source",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "warehouse_single_document_pdfs",
+      "tier": "tier_3_on_demand_acceptable",
+      "roles": ["warehouse"],
+      "document_kinds": ["warehouse_document", "issue_form", "incoming_form"],
+      "source_paths": [
+        "src/screens/warehouse/warehouse.pdfs.ts",
+        "supabase/functions/warehouse-pdf/index.ts"
+      ],
+      "needs_manifest": false,
+      "needs_summary_projection": false,
+      "needs_artifact_cache": false,
+      "freshness_owner": "warehouse PDF backend",
+      "rationale": "Single-document forms are bounded and do not justify prebuild without telemetry.",
+      "next_exact_wave": "none",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "proposal_pdf_shared",
+      "tier": "tier_2_summary_first",
+      "roles": ["buyer", "director", "accountant"],
+      "document_kinds": ["proposal"],
+      "source_paths": [
+        "src/lib/api/pdf_proposal.ts",
+        "src/screens/buyer/buyerPdf.ts",
+        "src/screens/director/director.proposal.ts",
+        "src/screens/accountant/useAccountantDocuments.ts"
+      ],
+      "needs_manifest": false,
+      "needs_summary_projection": true,
+      "needs_artifact_cache": false,
+      "freshness_owner": "shared proposal PDF source",
+      "rationale": "Wide role exposure and client-side source fanout make this a summary-first candidate, not a full prebuilt artifact candidate.",
+      "next_exact_wave": "shared proposal summary source",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "accountant_payment_order_pdf",
+      "tier": "tier_2_summary_first",
+      "roles": ["accountant"],
+      "document_kinds": ["payment_order"],
+      "source_paths": [
+        "src/lib/api/paymentPdf.service.ts",
+        "src/lib/api/pdf_payment.ts",
+        "src/screens/accountant/accountant.paymentPdf.boundary.ts"
+      ],
+      "needs_manifest": false,
+      "needs_summary_projection": false,
+      "needs_artifact_cache": false,
+      "freshness_owner": "pdf_payment_source_v1",
+      "rationale": "RPC source contract is already centralized. Artifact cache is optional and not first priority.",
+      "next_exact_wave": "payment artifact cache only if telemetry shows repeated opens",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "foreman_request_pdf",
+      "tier": "tier_3_on_demand_acceptable",
+      "roles": ["foreman"],
+      "document_kinds": ["request"],
+      "source_paths": [
+        "src/screens/foreman/foreman.requestPdf.service.ts",
+        "src/lib/api/foremanRequestPdfBackend.service.ts",
+        "supabase/functions/foreman-request-pdf/index.ts"
+      ],
+      "needs_manifest": false,
+      "needs_summary_projection": false,
+      "needs_artifact_cache": false,
+      "freshness_owner": "foreman request PDF backend",
+      "rationale": "Single request document with isolated backend source/render path.",
+      "next_exact_wave": "none unless telemetry shows hot repeated opens",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "director_request_pdf",
+      "tier": "tier_3_on_demand_acceptable",
+      "roles": ["director"],
+      "document_kinds": ["request"],
+      "source_paths": [
+        "src/screens/director/director.request.ts",
+        "src/lib/api/pdf_request.ts"
+      ],
+      "needs_manifest": false,
+      "needs_summary_projection": false,
+      "needs_artifact_cache": false,
+      "freshness_owner": "request PDF source",
+      "rationale": "Bounded single-request document.",
+      "next_exact_wave": "none",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "contractor_act_pdf",
+      "tier": "tier_2_summary_first",
+      "roles": ["contractor"],
+      "document_kinds": ["contractor_act"],
+      "source_paths": [
+        "src/screens/contractor/contractor.pdfService.ts",
+        "src/screens/contractor/contractorPdfSource.service.ts",
+        "src/screens/contractor/contractorPdf.render.ts"
+      ],
+      "needs_manifest": false,
+      "needs_summary_projection": true,
+      "needs_artifact_cache": false,
+      "freshness_owner": "contractor work PDF source RPC",
+      "rationale": "RPC source exists but fallback aggregation and local render keep some click-path compute.",
+      "next_exact_wave": "contractor source hardening after higher-priority report families",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "reports_dashboard_pdf_export",
+      "tier": "tier_3_on_demand_acceptable",
+      "roles": ["shared_reports"],
+      "document_kinds": ["report_export"],
+      "source_paths": [
+        "src/features/reports/ReportsDashboardScreen.tsx",
+        "src/lib/pdf/pdf.template.ts"
+      ],
+      "needs_manifest": false,
+      "needs_summary_projection": false,
+      "needs_artifact_cache": false,
+      "freshness_owner": "current reports dashboard query state",
+      "rationale": "Export uses already-loaded screen data and is not a raw source factory on click.",
+      "next_exact_wave": "none unless saved scheduled exports are introduced",
+      "first_slice_candidate": false
+    },
+    {
+      "family": "remote_attachment_pdf",
+      "tier": "tier_3_on_demand_acceptable",
+      "roles": ["accountant", "shared"],
+      "document_kinds": ["attachment_pdf"],
+      "source_paths": [
+        "src/screens/accountant/useAccountantDocuments.ts",
+        "src/lib/documents/pdfDocumentActions.ts"
+      ],
+      "needs_manifest": false,
+      "needs_summary_projection": false,
+      "needs_artifact_cache": false,
+      "freshness_owner": "attachment storage lifecycle",
+      "rationale": "Existing PDF artifact open path; no generation pipeline to precompute.",
+      "next_exact_wave": "none",
+      "first_slice_candidate": false
+    }
+  ],
+  "first_implementation_slice": {
+    "id": "PDF-Z1",
+    "family": "director_finance_management_pdf",
+    "scope": "Director finance management report only",
+    "why_first": "It is a critical hot report, already has local mitigation, still lacks durable manifest/artifact freshness, and can improve click latency without changing formulas, templates, viewer, or UI flow.",
+    "must_not_touch": [
+      "pdf-viewer refactor",
+      "supplier summary sibling path",
+      "warehouse PDFs",
+      "proposal/payment PDFs",
+      "business formulas",
+      "PDF templates"
+    ]
+  },
+  "checks": {
+    "code_changed": false,
+    "sql_changed": false,
+    "viewer_changed": false,
+    "template_changed": false,
+    "json_validated": true
+  }
+}
