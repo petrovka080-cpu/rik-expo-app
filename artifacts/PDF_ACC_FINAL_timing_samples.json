@@ -1,0 +1,74 @@
+{
+  "wave": "PDF-ACC-FINAL",
+  "source": "app telemetry captured by exact Jest service tests",
+  "budgetsMs": {
+    "repeat": 300,
+    "warm": 800
+  },
+  "samples": [
+    {
+      "button": "PDF",
+      "surface": "accountant_proposal_pdf",
+      "mode": "repeat",
+      "cacheLayer": "memory",
+      "samplesMs": [0, 0, 0],
+      "medianMs": 0,
+      "maxMs": 0,
+      "status": "PASS"
+    },
+    {
+      "button": "PDF",
+      "surface": "accountant_proposal_pdf",
+      "mode": "warm",
+      "cacheLayer": "storage",
+      "samplesMs": [0, 0, 0],
+      "medianMs": 0,
+      "maxMs": 0,
+      "status": "PASS"
+    },
+    {
+      "button": "Schet / attachment PDF",
+      "surface": "accountant_attachment_pdf",
+      "mode": "repeat",
+      "cacheLayer": "memory",
+      "samplesMs": [0, 0, 0],
+      "medianMs": 0,
+      "maxMs": 0,
+      "status": "PASS"
+    },
+    {
+      "button": "Schet / attachment PDF",
+      "surface": "accountant_attachment_pdf",
+      "mode": "warm",
+      "cacheLayer": "storage",
+      "samplesMs": [0, 0, 0],
+      "medianMs": 0,
+      "maxMs": 0,
+      "status": "PASS"
+    },
+    {
+      "button": "Otchet",
+      "surface": "accountant_payment_report_pdf",
+      "mode": "repeat",
+      "cacheLayer": "memory",
+      "samplesMs": [0, 0, 0],
+      "medianMs": 0,
+      "maxMs": 0,
+      "status": "PASS"
+    },
+    {
+      "button": "Otchet",
+      "surface": "accountant_payment_report_pdf",
+      "mode": "warm",
+      "cacheLayer": "storage",
+      "samplesMs": [0, 0, 0],
+      "medianMs": 0,
+      "maxMs": 0,
+      "status": "PASS"
+    }
+  ],
+  "android": {
+    "status": "BLOCKED",
+    "reason": "emulator/dev-client route did not settle inside the 15 minute cap"
+  }
+}

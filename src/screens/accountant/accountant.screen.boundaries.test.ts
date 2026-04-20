@@ -15,6 +15,13 @@ describe("accountant screen boundaries", () => {
     expect(useDocumentsSource).not.toContain("getRemoteUrl: () =>");
     expect(paymentPdfBoundarySource).not.toContain("getRemoteUrl: () =>");
 
+    expect(useDocumentsSource).toContain("generateAccountantProposalPdfDocument");
+    expect(useDocumentsSource).toContain("resolveAccountantAttachmentPreview");
+    expect(docsSource).toContain("resolveAccountantAttachmentPreview");
+    expect(useDocumentsSource).not.toContain("generateProposalPdfDocument");
+    expect(useDocumentsSource).not.toContain("getLatestProposalAttachmentPreview");
+    expect(docsSource).not.toContain("getLatestProposalAttachmentPreview");
+
     expect(useDocumentsSource).toContain("prepareAndPreviewPdfDocument");
     expect(paymentPdfBoundarySource).toContain("prepareAndPreviewPdfDocument");
   });

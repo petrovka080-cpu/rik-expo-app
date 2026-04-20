@@ -1,0 +1,22 @@
+{
+  "wave": "PDF-ACC-FINAL",
+  "status": "PASS",
+  "route": "http://localhost:8097/office/accountant",
+  "checks": {
+    "screenOpened": true,
+    "cardOpened": true,
+    "pdfButtonReachable": true,
+    "excelButtonReachable": true,
+    "invoiceOrReportButtonReachable": true,
+    "consoleErrorsEmpty": true,
+    "pageErrorsEmpty": true,
+    "badResponsesEmpty": true,
+    "stuckLoadingAbsent": true
+  },
+  "blockingConsoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "screenshot": "artifacts/PDF_ACC_FINAL_web_runtime.png",
+  "bodySample": "Бухгалтер\n\n\nК оплате\nЧастично\nОплачено\nНа доработке\nИстория\nПодряды\n101 документов • обновляй свайпом вниз\nвапвап\nСчёт без № · —\nОстаток: 100 KGS\n100\nК ОПЛАТЕ\n\nкапитал строй 2\nСчёт без № · —\nОстаток: 100 KGS\n100\nК ОПЛАТЕ\n\nвыавыа\nСчёт без № · —\nОстаток: 410 KGS\n410\nК ОПЛАТЕ\n\nвапвап\nСчёт без № · —\nОстаток: 620 KGS\n620\nК ОПЛАТЕ\n\nапрапр\nСчёт без № · —\nОстаток: 10 KGS\n10\nК ОПЛАТЕ\n\nбакыт\nСчёт без № · —\nОстаток: 620 KGS\n620\nК ОПЛАТЕ\n\nбакыт\nСчёт без № · —\nОстаток: 100 KGS\n100\nК ОПЛАТЕ\n\nвапвап\nС",
+  "generatedAt": "2026-04-20T17:27:14.852Z"
+}

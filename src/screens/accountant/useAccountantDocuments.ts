@@ -5,14 +5,13 @@ import { Platform, Share } from "react-native";
 
 import { openAppAttachment } from "../../lib/documents/attachmentOpener";
 import { supabase } from "../../lib/supabaseClient";
-import {
-  exportProposalPdf,
-  generateProposalPdfDocument,
-} from "../../lib/catalog_api";
-import { getLatestProposalAttachmentPreview, isPdfLike, openAttachment } from "../../lib/files";
-import { buildPdfFileName, createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
+import { exportProposalPdf } from "../../lib/catalog_api";
+import { openAttachment } from "../../lib/files";
+import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { useAccountantPaymentPdfBoundary } from "./accountant.paymentPdf.boundary";
+import { resolveAccountantAttachmentPreview } from "./accountantAttachmentPdf.service";
+import { generateAccountantProposalPdfDocument } from "./accountantProposalPdf.service";
 import type { AccountantInboxUiRow } from "./types";
 
 type Params = {
@@ -57,7 +56,15 @@ export function useAccountantDocuments(params: Params) {
     const pid = String(current?.proposal_id ?? "").trim();
     if (!pid) return;
 
-    const template = await generateProposalPdfDocument(pid, "accountant");
+    const fileName = buildPdfFileName({
+      documentType: "proposal",
+      title: "predlozhenie",
+      entityId: pid,
+    });
+    const template = await generateAccountantProposalPdfDocument({
+      proposalId: pid,
+      fileName,
+    });
     await prepareAndPreviewPdfDocument({
       busy: gbusy,
       supabase,
@@ -66,11 +73,7 @@ export function useAccountantDocuments(params: Params) {
       descriptor: {
         ...template,
         title: `Предложение ${pid.slice(0, 8)}`,
-        fileName: buildPdfFileName({
-          documentType: "proposal",
-          title: "predlozhenie",
-          entityId: pid,
-        }),
+        fileName,
       },
       router,
       // XR-PDF: dismiss parent modal before pushing PDF viewer route
@@ -97,27 +100,22 @@ export function useAccountantDocuments(params: Params) {
 
   const previewAttachment = useCallback(
     async (pid: string, groupKey: string, title: string, busyKey: string) => {
-      const att = await getLatestProposalAttachmentPreview(pid, groupKey);
-      if (!isPdfLike(att.fileName, att.url)) {
-        await openAppAttachment({ url: att.url, fileName: att.fileName });
+      const preview = await resolveAccountantAttachmentPreview({
+        proposalId: pid,
+        groupKey,
+        title,
+      });
+      if (preview.kind === "file") {
+        await openAppAttachment({ url: preview.url, fileName: preview.fileName });
         return;
       }
 
-      const template = createPdfDocumentDescriptor({
-        uri: att.url,
-        title,
-        fileName: att.fileName,
-        documentType: "attachment_pdf",
-        source: "attachment",
-        originModule: "accountant",
-        entityId: pid,
-      });
       await prepareAndPreviewPdfDocument({
         busy: gbusy,
         supabase,
         key: busyKey,
         label: "Открываю документ…",
-        descriptor: template,
+        descriptor: preview.descriptor,
         router,
         // XR-PDF: dismiss parent modal before pushing PDF viewer route
         onBeforeNavigate,

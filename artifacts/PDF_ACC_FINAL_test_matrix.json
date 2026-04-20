@@ -1,0 +1,55 @@
+{
+  "wave": "PDF-ACC-FINAL",
+  "status": "PASS_WITH_ANDROID_BLOCKED",
+  "targetedTests": {
+    "command": "npx jest src/screens/accountant/accountantProposalPdf.shared.test.ts src/screens/accountant/accountantProposalPdf.service.test.ts src/screens/accountant/accountantAttachmentPdf.shared.test.ts src/screens/accountant/accountantAttachmentPdf.service.test.ts src/screens/accountant/accountantPaymentReportPdf.shared.test.ts src/screens/accountant/accountantPaymentReportPdf.service.test.ts src/screens/accountant/accountant.screen.boundaries.test.ts --runInBand --no-coverage",
+    "result": "PASS",
+    "suites": 7,
+    "tests": 32
+  },
+  "staticGates": [
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "result": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "result": "PASS"
+    },
+    {
+      "command": "npx jest --runInBand --no-coverage",
+      "result": "PASS",
+      "suitesPassed": 369,
+      "suitesSkipped": 1,
+      "testsPassed": 2344,
+      "testsSkipped": 1
+    }
+  ],
+  "coverage": {
+    "manifestCreate": "PASS",
+    "manifestPersistedDescriptor": "PASS",
+    "statusReadyReuse": "PASS",
+    "failedOrUnusableStoredArtifactRefresh": "PASS",
+    "sameInputSameVersion": "PASS",
+    "changedMeaningfulInputNewVersion": "PASS",
+    "noiseImmunity": "PASS",
+    "artifactVersionStable": "PASS",
+    "repeatNoHeavyRebuild": "PASS",
+    "sameVersionHit": "PASS",
+    "concurrentIdenticalRequestsCoalesced": "PASS",
+    "noDuplicateBackendStorm": "PASS",
+    "boundaryNoDirectHeavyPath": "PASS",
+    "parityNoFormulaTemplateChange": "PASS"
+  },
+  "runtime": {
+    "web": {
+      "result": "PASS",
+      "artifact": "artifacts/PDF_ACC_FINAL_web_runtime.json"
+    },
+    "android": {
+      "result": "BLOCKED",
+      "artifact": "artifacts/accountant-payment-runtime-proof.json",
+      "reason": "route did not settle inside the bounded 15 minute attempt"
+    }
+  }
+}

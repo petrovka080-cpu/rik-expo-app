@@ -1,0 +1,78 @@
+{
+  "wave": "PDF-ACC-FINAL",
+  "status": "COMPLETE",
+  "scope": "accountant",
+  "buttons": [
+    {
+      "id": "accountant.card.bottom.pdf",
+      "label": "PDF",
+      "kind": "accountant_proposal_pdf",
+      "tier": "A",
+      "frequency": "high",
+      "businessCriticality": "high",
+      "currentPainBeforeWave": "proposal PDF source/render repeated on normal click path",
+      "repeatOpenPainBeforeWave": "high",
+      "latencyClassAfterWave": "repeat-fast / warm-fast",
+      "requiredModel": "full artifact reuse",
+      "rolloutOrder": 1,
+      "owner": "src/screens/accountant/accountantProposalPdf.service.ts"
+    },
+    {
+      "id": "accountant.card.invoice",
+      "label": "Schet",
+      "kind": "accountant_attachment_pdf",
+      "tier": "A",
+      "frequency": "high",
+      "businessCriticality": "high",
+      "currentPainBeforeWave": "latest attachment lookup repeated before preview",
+      "repeatOpenPainBeforeWave": "medium",
+      "latencyClassAfterWave": "repeat-fast / warm-fast",
+      "requiredModel": "manifest readiness + descriptor reuse",
+      "rolloutOrder": 2,
+      "owner": "src/screens/accountant/accountantAttachmentPdf.service.ts"
+    },
+    {
+      "id": "accountant.card.report",
+      "label": "Otchet",
+      "kind": "accountant_payment_report",
+      "tier": "A",
+      "frequency": "high",
+      "businessCriticality": "high",
+      "currentPainBeforeWave": "payment report generation repeated before PDF-ACC-1",
+      "repeatOpenPainBeforeWave": "high",
+      "latencyClassAfterWave": "repeat-fast / warm-fast",
+      "requiredModel": "full artifact reuse",
+      "rolloutOrder": 3,
+      "owner": "src/screens/accountant/accountantPaymentReportPdf.service.ts"
+    },
+    {
+      "id": "accountant.card.payment_attachment",
+      "label": "Payment document",
+      "kind": "accountant_attachment_pdf",
+      "tier": "B",
+      "frequency": "medium",
+      "businessCriticality": "medium",
+      "currentPainBeforeWave": "latest payment attachment lookup repeated when a PDF exists",
+      "repeatOpenPainBeforeWave": "medium",
+      "latencyClassAfterWave": "warm-fast",
+      "requiredModel": "manifest readiness + descriptor reuse",
+      "rolloutOrder": 4,
+      "owner": "src/screens/accountant/accountantAttachmentPdf.service.ts"
+    }
+  ],
+  "excludedButtons": [
+    {
+      "id": "accountant.header.excel",
+      "reason": "stub alert; no export/report generation path exists today"
+    },
+    {
+      "id": "accountant.card.excel",
+      "reason": "stub alert; no export/report generation path exists today"
+    }
+  ],
+  "topOffenders": [
+    "accountant.card.bottom.pdf",
+    "accountant.card.invoice",
+    "accountant.card.report"
+  ]
+}

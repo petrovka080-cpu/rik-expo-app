@@ -1,21 +1,16 @@
 {
-  "generatedAt": "2026-04-20T16:17:58.698Z",
-  "status": "GREEN",
+  "generatedAt": "2026-04-20T17:27:59.048Z",
+  "status": "NOT GREEN",
   "route": "rik:///accountant",
   "livePaymentMutationApplied": false,
-  "user": {
-    "role": "accountant",
-    "redacted": true
-  },
-  "proposalId": "redacted-runtime-seed",
-  "marker": "redacted-runtime-seed",
-  "preflight": {
-    "deviceDetected": true,
-    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
-    "reverseProxyReady": true,
-    "appCleared": true,
-    "gmsCleared": false,
-    "devClientReachable": true
+  "error": "android route did not settle for rik:///accountant, rik:////accountant, rik:///%28tabs%29//accountant",
+  "failureArtifacts": {
+    "xmlPath": "artifacts/accountant-payment-runtime-failure.xml",
+    "pngPath": "artifacts/accountant-payment-runtime-failure.png",
+    "stdoutPath": "artifacts/expo-dev-client.stdout.log",
+    "stderrPath": "artifacts/expo-dev-client.stderr.log",
+    "stdoutTail": "\"sourceKind\": \"supabase_auth:getSession\", \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"app_launch_start\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"bootstrap_enter\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_check_start\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_session_read_join_inflight\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_auth:getSession\", \"surface\": \"auth_session_gate\"}\n INFO  [fs-paths] fs_paths_resolved {\"cacheDir\": \"file:///data/user/0/com.azisbek_dzhantaev.rikexpoapp/cache/\", \"documentDir\": \"file:///data/user/0/com.azisbek_dzhantaev.rikexpoapp/files/\"}\n INFO  [platform.observability] {\"durationMs\": 204, \"errorStage\": null, \"event\": \"auth_session_read_success\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_auth:getSession\", \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_session_read_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"supabase_auth:getSession\", \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_restore_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"route_resolution_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_check_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_restore_result\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"invalidate_requests_capabilities_cache\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": \"manual_invalidation\", \"surface\": \"read_capabilities\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_state_change_event\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [RootLayout] onAuthStateChange: INITIAL_SESSION, hasSession=false\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"first_usable_ui_ready\", \"result\": \"success\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"startup_bootstrap\"}\n INFO  [queue.bootstrap] stop skipped: not running\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_gate_transient_no_session\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"auth_redirect_blocked\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_session_gate\"}\n INFO  [platform.observability] {\"durationMs\": null, \"errorStage\": null, \"event\": \"post_auth_route_decision\", \"result\": \"skipped\", \"rowCount\": null, \"screen\": \"request\", \"sourceKind\": null, \"surface\": \"auth_session_gate\"}\n",
+    "stderrTail": ""
   },
   "recovery": {
     "environmentRecoveryUsed": true,
@@ -23,17 +18,5 @@
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": true,
     "devClientBootstrapRecovered": false
-  },
-  "fioConfirmed": true,
-  "screenOpened": true,
-  "fixtureRowRendered": true,
-  "paymentEntryOpened": true,
-  "fatalLines": [],
-  "artifacts": {
-    "routedXml": "artifacts/accountant-payment-runtime-fio-closed-1.xml",
-    "routedPng": "artifacts/accountant-payment-runtime-fio-closed-1.png",
-    "entryXml": "artifacts/accountant-payment-runtime-entry.xml",
-    "entryPng": "artifacts/accountant-payment-runtime-entry.png"
-  },
-  "limitation": "Runtime smoke opens the accountant payment entrypoint but does not submit a live payment mutation."
+  }
 }

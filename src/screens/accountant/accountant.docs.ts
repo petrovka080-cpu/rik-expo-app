@@ -3,14 +3,10 @@ import { router } from "expo-router";
 
 import { exportProposalPdf } from "../../lib/catalog_api";
 import { openAppAttachment } from "../../lib/documents/attachmentOpener";
-import {
-  getLatestProposalAttachmentPreview,
-  isPdfLike,
-  uploadProposalAttachment,
-} from "../../lib/files";
+import { uploadProposalAttachment } from "../../lib/files";
 import { supabase } from "../../lib/supabaseClient";
-import { buildPdfFileName, createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
 import { prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { resolveAccountantAttachmentPreview } from "./accountantAttachmentPdf.service";
 import { safeAlert } from "./helpers";
 import { pickAnyFile } from "./pickAnyFile";
 
@@ -29,8 +25,12 @@ async function previewProposalAttachment(
   /** XR-PDF: dismiss callback for the parent modal (if any). */
   onBeforeNavigate?: (() => void | Promise<void>) | null,
 ): Promise<void> {
-  const preview = await getLatestProposalAttachmentPreview(proposalId, groupKey);
-  if (!isPdfLike(preview.fileName, preview.url)) {
+  const preview = await resolveAccountantAttachmentPreview({
+    proposalId,
+    groupKey,
+    title,
+  });
+  if (preview.kind === "file") {
     await openAppAttachment({ url: preview.url, fileName: preview.fileName });
     return;
   }
@@ -39,19 +39,7 @@ async function previewProposalAttachment(
     supabase,
     key: `pdf:acc:attachment:${groupKey}:${proposalId}`,
     label: "Открываю документ…",
-    descriptor: createPdfDocumentDescriptor({
-      uri: preview.url,
-      title,
-      fileName: buildPdfFileName({
-        documentType: "attachment_pdf",
-        title,
-        entityId: proposalId,
-      }),
-      documentType: "attachment_pdf",
-      source: "attachment",
-      originModule: "accountant",
-      entityId: proposalId,
-    }),
+    descriptor: preview.descriptor,
     router,
     // XR-PDF: dismiss parent modal before pushing PDF viewer route
     onBeforeNavigate,
@@ -113,4 +101,3 @@ export async function openPaymentDocsOrUpload(p: {
     safeAlert("Загружено", "Файл загружен, но предпросмотр открыть не удалось. Попробуйте ещё раз.");
   }
 }
-
