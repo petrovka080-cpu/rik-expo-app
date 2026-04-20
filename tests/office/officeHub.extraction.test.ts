@@ -19,7 +19,9 @@ import {
   DirectionCard,
   InviteCard,
   MemberCard,
+  OfficeDeveloperOverrideSection,
   OfficeCompanyCreateSection,
+  OfficeInviteModalSection,
 } from "../../src/screens/office/officeHub.sections";
 
 describe("officeHub.styles — extraction integrity", () => {
@@ -93,7 +95,9 @@ describe("officeHub.sections - view boundary exports", () => {
     expect(typeof DirectionCard).toBe("function");
     expect(typeof InviteCard).toBe("function");
     expect(typeof MemberCard).toBe("function");
+    expect(typeof OfficeDeveloperOverrideSection).toBe("function");
     expect(typeof OfficeCompanyCreateSection).toBe("function");
+    expect(typeof OfficeInviteModalSection).toBe("function");
   });
 });
 

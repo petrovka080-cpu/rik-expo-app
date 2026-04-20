@@ -1,7 +1,16 @@
 import React from "react";
-import { Pressable, Text, View, type LayoutChangeEvent } from "react-native";
+import {
+  Modal,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+  type LayoutChangeEvent,
+} from "react-native";
 
+import type { DeveloperOverrideRole } from "../../lib/developerOverride";
 import type { OfficePostReturnSubtree } from "../../lib/navigation/officeReentryBreadcrumbs";
+import { getProfileRoleLabel } from "../profile/profile.helpers";
 import type { OfficeWorkspaceCard } from "./officeAccess.model";
 import type { OfficeAccessScreenData } from "./officeAccess.types";
 import { DirectionCard, InviteCard, MemberCard } from "./officeHub.cards";
@@ -119,6 +128,67 @@ function renderOfficeDirectionSection(props: OfficeDirectionSectionProps) {
   const Section =
     OFFICE_DIRECTION_SECTION_BY_KEY[props.card.key] ?? OfficeDirectionSectionCard;
   return <Section key={props.card.key} {...props} />;
+}
+
+export function OfficeDeveloperOverrideSection({
+  activeEffectiveRole,
+  developerRoleSaving,
+  roles,
+  onClear,
+  onSelectRole,
+}: {
+  activeEffectiveRole?: string | null;
+  developerRoleSaving: string | null;
+  roles: readonly DeveloperOverrideRole[];
+  onClear: () => void;
+  onSelectRole: (role: DeveloperOverrideRole) => void;
+}) {
+  return (
+    <View testID="developer-override-panel" style={styles.devPanel}>
+      <View style={styles.inline}>
+        <View style={styles.grow}>
+          <Text style={styles.eyebrow}>Dev override</Text>
+          <Text style={styles.helper}>
+            Active role: {activeEffectiveRole ?? "normal"}
+          </Text>
+        </View>
+        <Pressable
+          testID="developer-override-clear"
+          disabled={Boolean(developerRoleSaving)}
+          onPress={onClear}
+          style={({ pressed }) => [
+            styles.secondary,
+            styles.devRoleButton,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={styles.secondaryText}>Normal</Text>
+        </Pressable>
+      </View>
+      <View style={styles.chips}>
+        {roles.map((role) => {
+          const active = activeEffectiveRole === role;
+          return (
+            <Pressable
+              key={role}
+              testID={`developer-override-role-${role}`}
+              disabled={Boolean(developerRoleSaving) || active}
+              onPress={() => onSelectRole(role)}
+              style={[
+                styles.chip,
+                active && styles.chipActive,
+                styles.devRoleButton,
+              ]}
+            >
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                {getProfileRoleLabel(role)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
 }
 
 export function OfficeCompanySummarySection({
@@ -527,6 +597,141 @@ export function OfficeMembersSection({
         ),
       )}
     </View>
+  );
+}
+
+export function OfficeInviteModalSection({
+  invite,
+  onSubtreeLayout,
+  renderSubtreeBoundary,
+}: Pick<OfficeHubSectionChrome, "onSubtreeLayout" | "renderSubtreeBoundary"> & {
+  invite: Pick<
+    OfficeInviteFlowState,
+    | "closeInviteModal"
+    | "handleCreateInvite"
+    | "inviteCard"
+    | "inviteDraft"
+    | "savingInvite"
+    | "setInviteDraft"
+  >;
+}) {
+  if (!invite.inviteCard) return null;
+
+  return (
+    <Modal
+      transparent
+      animationType="slide"
+      visible
+      onRequestClose={() => invite.closeInviteModal()}
+    >
+      <View style={styles.modalWrap}>
+        <Pressable
+          style={styles.backdrop}
+          onPress={() => invite.closeInviteModal()}
+        />
+        {renderSubtreeBoundary(
+          "invite_modal_form",
+          <View
+            testID="office-role-invite-modal"
+            style={styles.sheet}
+            onLayout={onSubtreeLayout("invite_modal_form")}
+          >
+            <Text style={styles.eyebrow}>{COPY.inviteModalTitle}</Text>
+            <Text testID="office-role-invite-role" style={styles.sheetTitle}>
+              {invite.inviteCard.inviteRole
+                ? getProfileRoleLabel(invite.inviteCard.inviteRole)
+                : COPY.noRole}
+            </Text>
+            <Text style={styles.helper}>{COPY.inviteModalLead}</Text>
+            <View style={styles.stack}>
+              <Text style={styles.label}>ФИО сотрудника</Text>
+              <TextInput
+                testID="office-invite-name"
+                placeholder="ФИО сотрудника"
+                placeholderTextColor="#94A3B8"
+                style={styles.input}
+                value={invite.inviteDraft.name}
+                onChangeText={(value) =>
+                  invite.setInviteDraft((current) => ({ ...current, name: value }))
+                }
+              />
+            </View>
+            <View style={styles.stack}>
+              <Text style={styles.label}>Телефон</Text>
+              <TextInput
+                testID="office-invite-phone"
+                placeholder="Телефон"
+                placeholderTextColor="#94A3B8"
+                style={styles.input}
+                keyboardType="phone-pad"
+                value={invite.inviteDraft.phone}
+                onChangeText={(value) =>
+                  invite.setInviteDraft((current) => ({
+                    ...current,
+                    phone: value,
+                  }))
+                }
+              />
+            </View>
+            <View style={styles.stack}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                testID="office-invite-email"
+                placeholder="Email (необязательно)"
+                placeholderTextColor="#94A3B8"
+                style={styles.input}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={invite.inviteDraft.email}
+                onChangeText={(value) =>
+                  invite.setInviteDraft((current) => ({
+                    ...current,
+                    email: value,
+                  }))
+                }
+              />
+            </View>
+            <View style={styles.stack}>
+              <Text style={styles.label}>Комментарий</Text>
+              <TextInput
+                testID="office-invite-comment"
+                placeholder="Комментарий (необязательно)"
+                placeholderTextColor="#94A3B8"
+                style={[styles.input, styles.textArea]}
+                multiline
+                value={invite.inviteDraft.comment}
+                onChangeText={(value) =>
+                  invite.setInviteDraft((current) => ({
+                    ...current,
+                    comment: value,
+                  }))
+                }
+              />
+            </View>
+            <View style={styles.modalActions}>
+              <Pressable
+                onPress={() => invite.closeInviteModal()}
+                style={styles.secondary}
+              >
+                <Text style={styles.secondaryText}>{COPY.cancel}</Text>
+              </Pressable>
+              <Pressable
+                testID="office-create-invite"
+                disabled={invite.savingInvite}
+                onPress={() => void invite.handleCreateInvite()}
+                style={[
+                  styles.primary,
+                  styles.grow,
+                  invite.savingInvite && styles.dim,
+                ]}
+              >
+                <Text style={styles.primaryText}>{COPY.inviteCta}</Text>
+              </Pressable>
+            </View>
+          </View>,
+        )}
+      </View>
+    </Modal>
   );
 }
 
