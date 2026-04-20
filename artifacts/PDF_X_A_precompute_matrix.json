@@ -1,0 +1,241 @@
+{
+  "wave": "PDF-X.A",
+  "mode": "read-only global PDF audit",
+  "baseline_commit": "de3b2effe760c661c717daf39e85f480bcb38c18",
+  "audit_date": "2026-04-20",
+  "top_offender": "director_reports_production_pdf",
+  "first_implementation_wave": {
+    "id": "PDF-X.B1",
+    "title": "Director production report summary-first artifact contract",
+    "scope": "director production report PDF only",
+    "do_not_mix": [
+      "pdf-viewer refactor",
+      "warehouse PDFs",
+      "finance supplier PDFs",
+      "proposal/request templates",
+      "broad PDF rewrite"
+    ]
+  },
+  "paths": [
+    {
+      "id": "director_request_pdf",
+      "screen": "director request actions",
+      "class": "on-demand-acceptable",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "none",
+      "freshness_policy": "fresh client request/item reads are enough for bounded single-request document",
+      "invalidation_trigger": "request header/items/reference rows change",
+      "next_exact_wave": "none unless request PDFs become hot or large"
+    },
+    {
+      "id": "director_proposal_pdf",
+      "screen": "director proposal actions",
+      "class": "summary-first",
+      "needs_db_projection": true,
+      "needs_artifact_cache": false,
+      "current_reuse": "none",
+      "freshness_policy": "proposal summary version should change when proposal header/items/request item source changes",
+      "invalidation_trigger": "proposal, proposal_items, request_items, supplier/catalog reference mutation",
+      "next_exact_wave": "proposal summary source v1 if proposal PDFs become a priority"
+    },
+    {
+      "id": "buyer_proposal_pdf",
+      "screen": "buyer proposal documents",
+      "class": "summary-first",
+      "needs_db_projection": true,
+      "needs_artifact_cache": false,
+      "current_reuse": "none",
+      "freshness_policy": "same proposal summary version as director/accountant proposal PDFs",
+      "invalidation_trigger": "proposal, proposal_items, request_items, supplier/catalog reference mutation",
+      "next_exact_wave": "shared proposal PDF source boundary"
+    },
+    {
+      "id": "accountant_proposal_pdf",
+      "screen": "accountant proposal documents",
+      "class": "summary-first",
+      "needs_db_projection": true,
+      "needs_artifact_cache": false,
+      "current_reuse": "none",
+      "freshness_policy": "same proposal summary version as director/buyer proposal PDFs",
+      "invalidation_trigger": "proposal, proposal_items, request_items, supplier/catalog reference mutation",
+      "next_exact_wave": "shared proposal PDF source boundary"
+    },
+    {
+      "id": "accountant_remote_attachment_pdf",
+      "screen": "accountant source document open",
+      "class": "on-demand-acceptable",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "remote URL or file handling only",
+      "freshness_policy": "external attachment lifecycle",
+      "invalidation_trigger": "attachment URL/source replacement",
+      "next_exact_wave": "none"
+    },
+    {
+      "id": "accountant_payment_order_pdf",
+      "screen": "accountant payment order",
+      "class": "summary-first",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "none",
+      "freshness_policy": "payment source envelope already exposes generated metadata; artifact version would be optional",
+      "invalidation_trigger": "payment order, allocations, proposal/payment source rows change",
+      "next_exact_wave": "artifact cache only if payment order PDF opens are hot"
+    },
+    {
+      "id": "director_finance_management_pdf",
+      "screen": "director finance panel",
+      "class": "summary-first",
+      "needs_db_projection": false,
+      "needs_artifact_cache": true,
+      "current_reuse": "short client source cache and HTML-hash render cache",
+      "freshness_policy": "source_version should be tied to finance mutations and date/scope filters, not only TTL/html hash",
+      "invalidation_trigger": "finance fact, payment, spend kind, scope/date mutation",
+      "next_exact_wave": "director finance artifact freshness hardening after top report path"
+    },
+    {
+      "id": "director_finance_supplier_summary_pdf",
+      "screen": "director finance supplier drilldown",
+      "class": "summary-first",
+      "needs_db_projection": false,
+      "needs_artifact_cache": true,
+      "current_reuse": "none observed",
+      "freshness_policy": "supplier/kind summary should inherit finance source_version and artifact_version",
+      "invalidation_trigger": "finance fact, payment, spend kind, supplier/kind scoped mutation",
+      "next_exact_wave": "director finance supplier summary artifact cache"
+    },
+    {
+      "id": "director_reports_production_pdf",
+      "screen": "director production report PDF",
+      "class": "precompute-required",
+      "needs_db_projection": true,
+      "needs_artifact_cache": true,
+      "current_reuse": "none observed in backend PDF path",
+      "freshness_policy": "source_version should cover report scope, object/date filters, material facts, work facts, and pricing inputs; artifact_version should match source_version plus template version",
+      "invalidation_trigger": "production material/work/report fact mutation, object/date scope change, pricing or catalog mutation used by the report",
+      "next_exact_wave": "PDF-X.B1 director production report summary-first artifact contract"
+    },
+    {
+      "id": "director_reports_subcontract_pdf",
+      "screen": "director subcontract report PDF",
+      "class": "summary-first",
+      "needs_db_projection": true,
+      "needs_artifact_cache": true,
+      "current_reuse": "none observed",
+      "freshness_policy": "subcontract report source_version plus artifact_version",
+      "invalidation_trigger": "subcontract report rows, object/date scope, contractor/reference mutations",
+      "next_exact_wave": "after production report if subcontract usage proves hot"
+    },
+    {
+      "id": "warehouse_issue_form_pdf",
+      "screen": "warehouse issue document",
+      "class": "on-demand-acceptable",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "none observed",
+      "freshness_policy": "single document source freshness is enough",
+      "invalidation_trigger": "issue header/lines change",
+      "next_exact_wave": "none unless document open frequency is high"
+    },
+    {
+      "id": "warehouse_incoming_form_pdf",
+      "screen": "warehouse incoming document",
+      "class": "on-demand-acceptable",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "none observed",
+      "freshness_policy": "single document source freshness is enough",
+      "invalidation_trigger": "incoming header/lines change",
+      "next_exact_wave": "none unless document open frequency is high"
+    },
+    {
+      "id": "warehouse_register_pdfs",
+      "screen": "warehouse issue/incoming registers",
+      "class": "summary-first",
+      "needs_db_projection": true,
+      "needs_artifact_cache": false,
+      "current_reuse": "none observed",
+      "freshness_policy": "register source_version by date/scope and warehouse fact changes",
+      "invalidation_trigger": "warehouse issue/incoming fact mutation in selected scope",
+      "next_exact_wave": "warehouse register projection after director production path"
+    },
+    {
+      "id": "warehouse_material_pdfs",
+      "screen": "warehouse material reports",
+      "class": "precompute-required",
+      "needs_db_projection": true,
+      "needs_artifact_cache": true,
+      "current_reuse": "none observed",
+      "freshness_policy": "material report source_version by object/date/material scope plus artifact_version",
+      "invalidation_trigger": "warehouse issue/incoming/material fact mutation in selected scope",
+      "next_exact_wave": "warehouse material report summary/artifact slice"
+    },
+    {
+      "id": "warehouse_object_work_pdf",
+      "screen": "warehouse object/work report",
+      "class": "precompute-required",
+      "needs_db_projection": true,
+      "needs_artifact_cache": true,
+      "current_reuse": "none observed",
+      "freshness_policy": "object-work source_version by object/date/work scope plus artifact_version",
+      "invalidation_trigger": "warehouse object/work/material fact mutation",
+      "next_exact_wave": "warehouse object-work summary/artifact slice"
+    },
+    {
+      "id": "warehouse_legacy_report_pdf_service",
+      "screen": "legacy warehouse report service",
+      "class": "on-demand-acceptable",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "none observed",
+      "freshness_policy": "not primary active UI path",
+      "invalidation_trigger": "legacy input state changes",
+      "next_exact_wave": "none; do not optimize before active paths"
+    },
+    {
+      "id": "foreman_request_pdf",
+      "screen": "foreman request/subcontract documents",
+      "class": "on-demand-acceptable",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "none observed",
+      "freshness_policy": "single request source freshness is enough",
+      "invalidation_trigger": "request header/items/reference rows change",
+      "next_exact_wave": "none unless repeated foreman PDF opens are hot"
+    },
+    {
+      "id": "foreman_history_request_pdf",
+      "screen": "foreman history document action",
+      "class": "on-demand-acceptable",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "none observed",
+      "freshness_policy": "same as foreman request PDF",
+      "invalidation_trigger": "request header/items/reference rows change",
+      "next_exact_wave": "none"
+    },
+    {
+      "id": "contractor_act_pdf",
+      "screen": "contractor act/work PDF",
+      "class": "summary-first",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "none observed",
+      "freshness_policy": "prefer RPC source metadata; fallback raw client aggregation has no freshness contract",
+      "invalidation_trigger": "contractor work/material/report rows change",
+      "next_exact_wave": "remove or narrow fallback after higher-risk paths"
+    },
+    {
+      "id": "reports_dashboard_pdf_export",
+      "screen": "reports dashboard export",
+      "class": "on-demand-acceptable",
+      "needs_db_projection": false,
+      "needs_artifact_cache": false,
+      "current_reuse": "uses already-loaded screen rows",
+      "freshness_policy": "screen report run timestamp and parameters",
+      "invalidation_trigger": "user reruns report or changes report parameters",
+      "next_exact_wave": "none"
+    }
+  ]
+}
