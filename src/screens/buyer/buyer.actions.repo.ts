@@ -14,7 +14,11 @@ export async function setRequestItemsDirectorStatusFallback(
   supabase: SupabaseClient,
   affectedIds: string[],
 ) {
-  return await supabase.from("request_items").update({ status: "У директора" }).in("id", affectedIds);
+  void supabase;
+  void affectedIds;
+  throw new Error(
+    "request_items_set_status RPC is required; client-side request_items status fallback is disabled",
+  );
 }
 
 export async function clearRequestItemsDirectorRejectState(

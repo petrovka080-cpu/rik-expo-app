@@ -7,7 +7,6 @@ import {
   clearRequestItemsDirectorRejectState,
   sendProposalToAccountingMin,
   setRequestItemsDirectorStatus,
-  setRequestItemsDirectorStatusFallback,
 } from "./buyer.actions.repo";
 import {
   ensureProposalHtmlAttachmentMutation,
@@ -24,7 +23,6 @@ jest.mock("./buyer.actions.repo", () => ({
   clearRequestItemsDirectorRejectState: jest.fn(),
   sendProposalToAccountingMin: jest.fn(),
   setRequestItemsDirectorStatus: jest.fn(),
-  setRequestItemsDirectorStatusFallback: jest.fn(),
 }));
 
 jest.mock("./buyer.attachments.mutation", () => ({
@@ -38,8 +36,6 @@ const mockedSendProposalToAccountingMin =
   sendProposalToAccountingMin as unknown as jest.Mock;
 const mockedSetRequestItemsDirectorStatus =
   setRequestItemsDirectorStatus as unknown as jest.Mock;
-const mockedSetRequestItemsDirectorStatusFallback =
-  setRequestItemsDirectorStatusFallback as unknown as jest.Mock;
 const mockedEnsureProposalHtmlAttachmentMutation =
   ensureProposalHtmlAttachmentMutation as unknown as jest.Mock;
 const mockedUploadInvoiceAttachmentMutation =
@@ -115,10 +111,15 @@ describe("buyer status mutation owner", () => {
   beforeEach(() => {
     (globalThis as typeof globalThis & { __DEV__?: boolean }).__DEV__ = false;
     resetPlatformObservabilityEvents();
-    mockedClearRequestItemsDirectorRejectState.mockReset().mockResolvedValue(undefined);
-    mockedSendProposalToAccountingMin.mockReset().mockResolvedValue({ error: null });
-    mockedSetRequestItemsDirectorStatus.mockReset().mockResolvedValue({ error: null });
-    mockedSetRequestItemsDirectorStatusFallback.mockReset().mockResolvedValue(undefined);
+    mockedClearRequestItemsDirectorRejectState
+      .mockReset()
+      .mockResolvedValue(undefined);
+    mockedSendProposalToAccountingMin
+      .mockReset()
+      .mockResolvedValue({ error: null });
+    mockedSetRequestItemsDirectorStatus
+      .mockReset()
+      .mockResolvedValue({ error: null });
     mockedEnsureProposalHtmlAttachmentMutation.mockReset().mockResolvedValue({
       ok: true,
       family: "attachments",
@@ -155,31 +156,25 @@ describe("buyer status mutation owner", () => {
     ]);
   });
 
-  it("does not hide degraded status propagation after primary and fallback failures", async () => {
+  it("fails closed when the server-owned status RPC is unavailable", async () => {
     mockedSetRequestItemsDirectorStatus.mockResolvedValue({
       error: new Error("rpc failed"),
     });
-    mockedSetRequestItemsDirectorStatusFallback.mockRejectedValue(
-      new Error("fallback failed"),
-    );
-    mockedClearRequestItemsDirectorRejectState.mockRejectedValue(
-      new Error("reject clear failed"),
-    );
 
     const result = await syncSubmittedRequestItemsStatusMutation({
       supabase: {} as never,
       affectedIds: ["ri-1"],
     });
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.status).toBe("partial_success");
-    expect(result.warnings).toHaveLength(2);
+    expect(isBuyerMutationFailure(result)).toBe(true);
+    if (!isBuyerMutationFailure(result)) return;
+    expect(result.failedStage).toBe("set_request_items_director_status");
+    expect(mockedClearRequestItemsDirectorRejectState).not.toHaveBeenCalled();
     expect(
       getPlatformObservabilityEvents().some(
         (event) =>
           event.surface === "buyer_status_mutation" &&
-          event.event === "stage_warning" &&
+          event.event === "stage_failed" &&
           event.errorStage === "set_request_items_director_status",
       ),
     ).toBe(true);

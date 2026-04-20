@@ -9,7 +9,6 @@ import {
   clearRequestItemsDirectorRejectState,
   sendProposalToAccountingMin,
   setRequestItemsDirectorStatus,
-  setRequestItemsDirectorStatusFallback,
 } from "./buyer.actions.repo";
 import type {
   AlertFn,
@@ -71,7 +70,9 @@ type AccountingResultData = {
 };
 
 async function sendToAccountingWithFallback(params: {
-  proposalSendToAccountant: (payload: ProposalSendToAccountantPayload) => Promise<void>;
+  proposalSendToAccountant: (
+    payload: ProposalSendToAccountantPayload,
+  ) => Promise<void>;
   supabase: SupabaseClient;
   payload: ProposalSendToAccountantPayload;
 }) {
@@ -88,10 +89,14 @@ async function sendToAccountingWithFallback(params: {
     });
     if (error) throw error;
 
-    logBuyerActionDebug("warn", "[buyer.accounting] adapter failed, fallback RPC used", {
-      proposalId: params.payload.proposalId,
-      error: errMessage(primaryError),
-    });
+    logBuyerActionDebug(
+      "warn",
+      "[buyer.accounting] adapter failed, fallback RPC used",
+      {
+        proposalId: params.payload.proposalId,
+        error: errMessage(primaryError),
+      },
+    );
     return {
       mode: "fallback_rpc" as const,
       warning: `Основной adapter не сработал, использован fallback RPC: ${errMessage(primaryError)}`,
@@ -104,7 +109,9 @@ export async function syncSubmittedRequestItemsStatusMutation(params: {
   affectedIds: string[];
 }): Promise<BuyerMutationResult<SubmitStatusStage, { affectedIds: string[] }>> {
   const affectedIds = Array.from(
-    new Set((params.affectedIds || []).map((id) => String(id).trim()).filter(Boolean)),
+    new Set(
+      (params.affectedIds || []).map((id) => String(id).trim()).filter(Boolean),
+    ),
   );
   const tracker = createBuyerMutationTracker<SubmitStatusStage>({
     family: "status",
@@ -116,37 +123,29 @@ export async function syncSubmittedRequestItemsStatusMutation(params: {
     return tracker.success({ affectedIds: [] }, { skipped: true });
   }
 
-  tracker.markStarted("set_request_items_director_status", { affectedCount: affectedIds.length });
+  tracker.markStarted("set_request_items_director_status", {
+    affectedCount: affectedIds.length,
+  });
   try {
-    const rpc = await setRequestItemsDirectorStatus(params.supabase, affectedIds);
+    const rpc = await setRequestItemsDirectorStatus(
+      params.supabase,
+      affectedIds,
+    );
     if (rpc.error) throw rpc.error;
   } catch (primaryStatusError: unknown) {
-    try {
-      await setRequestItemsDirectorStatusFallback(params.supabase, affectedIds);
-      tracker.warn(
-        "set_request_items_director_status",
-        new Error(`Использован fallback статусов: ${errMessage(primaryStatusError)}`),
-        {
-          affectedCount: affectedIds.length,
-          fallbackUsed: true,
-        },
-      );
-    } catch (fallbackStatusError: unknown) {
-      tracker.warn(
-        "set_request_items_director_status",
-        new Error(
-          `Основной и fallback статусный sync не сработали: ${errMessage(primaryStatusError)}; ${errMessage(fallbackStatusError)}`,
-        ),
-        {
-          affectedCount: affectedIds.length,
-          fallbackUsed: true,
-        },
-      );
-    }
+    return tracker.asFailure(
+      "set_request_items_director_status",
+      primaryStatusError,
+      "Не удалось синхронизировать статусы request_items",
+    );
   }
-  tracker.markCompleted("set_request_items_director_status", { affectedCount: affectedIds.length });
+  tracker.markCompleted("set_request_items_director_status", {
+    affectedCount: affectedIds.length,
+  });
 
-  tracker.markStarted("clear_request_item_reject_state", { affectedCount: affectedIds.length });
+  tracker.markStarted("clear_request_item_reject_state", {
+    affectedCount: affectedIds.length,
+  });
   try {
     await clearRequestItemsDirectorRejectState(params.supabase, affectedIds);
   } catch (error) {
@@ -154,7 +153,9 @@ export async function syncSubmittedRequestItemsStatusMutation(params: {
       affectedCount: affectedIds.length,
     });
   }
-  tracker.markCompleted("clear_request_item_reject_state", { affectedCount: affectedIds.length });
+  tracker.markCompleted("clear_request_item_reject_state", {
+    affectedCount: affectedIds.length,
+  });
 
   return tracker.success({ affectedIds });
 }
@@ -169,9 +170,14 @@ export async function runProposalAccountingMutation(params: {
   invFile?: FileLike | null;
   invoiceUploadedName?: string;
   buildProposalPdfHtml: (proposalId: string) => Promise<string>;
-  proposalSendToAccountant: (payload: ProposalSendToAccountantPayload) => Promise<void>;
+  proposalSendToAccountant: (
+    payload: ProposalSendToAccountantPayload,
+  ) => Promise<void>;
   uploadProposalAttachment: UploadProposalAttachmentFn;
-  ensureAccountingFlags: (proposalId: string, invoiceAmountNum?: number) => Promise<void>;
+  ensureAccountingFlags: (
+    proposalId: string,
+    invoiceAmountNum?: number,
+  ) => Promise<void>;
   supabase: SupabaseClient;
   fetchBuckets: () => Promise<void>;
 }): Promise<BuyerMutationResult<AccountingStage, AccountingResultData>> {
@@ -184,7 +190,9 @@ export async function runProposalAccountingMutation(params: {
 
   tracker.markStarted("validate_invoice_fields");
   const amount = Number(String(params.invAmount).replace(",", "."));
-  const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(String(params.invDate || "").trim());
+  const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(
+    String(params.invDate || "").trim(),
+  );
   if (!String(params.invNumber || "").trim()) {
     return tracker.asFailure(
       "validate_invoice_fields",
@@ -288,7 +296,9 @@ export async function runProposalAccountingMutation(params: {
       .eq("id", proposalId)
       .maybeSingle();
     if (chk.error) throw chk.error;
-    const sentToAccountantAt = String(chk.data?.sent_to_accountant_at ?? "").trim();
+    const sentToAccountantAt = String(
+      chk.data?.sent_to_accountant_at ?? "",
+    ).trim();
     if (!sentToAccountantAt) {
       throw new Error("Server truth did not confirm sent_to_accountant_at");
     }
@@ -316,7 +326,9 @@ export async function runProposalAccountingMutation(params: {
   return tracker.success({ proposalId, amount });
 }
 
-export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId>(p: {
+export async function sendToAccountingAction<
+  TApproved extends MaybeId = MaybeId,
+>(p: {
   acctProposalId: string;
   invNumber: string;
   invDate: string;
@@ -325,9 +337,14 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
   invFile?: FileLike | null;
   invoiceUploadedName?: string;
   buildProposalPdfHtml: (proposalId: string) => Promise<string>;
-  proposalSendToAccountant: (payload: ProposalSendToAccountantPayload) => Promise<void>;
+  proposalSendToAccountant: (
+    payload: ProposalSendToAccountantPayload,
+  ) => Promise<void>;
   uploadProposalAttachment: UploadProposalAttachmentFn;
-  ensureAccountingFlags: (proposalId: string, invoiceAmountNum?: number) => Promise<void>;
+  ensureAccountingFlags: (
+    proposalId: string,
+    invoiceAmountNum?: number,
+  ) => Promise<void>;
   supabase: SupabaseClient;
   fetchBuckets: () => Promise<void>;
   closeSheet: () => void;
@@ -384,7 +401,9 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
       return result;
     }
 
-    p.setApproved((prev) => prev.filter((item) => String(item?.id ?? "") !== proposalId));
+    p.setApproved((prev) =>
+      prev.filter((item) => String(item?.id ?? "") !== proposalId),
+    );
     if (result.status === "partial_success") {
       const warningMessage = formatBuyerMutationWarnings(
         result.warnings,

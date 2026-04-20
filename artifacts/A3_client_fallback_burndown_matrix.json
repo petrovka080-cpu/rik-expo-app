@@ -1,0 +1,72 @@
+[
+  {
+    "test_name": "buyer.actions.repo sets director status through the server-owned RPC contract",
+    "target_path": "src/screens/buyer/buyer.actions.repo.ts",
+    "scenario": "Healthy request_items_set_status RPC",
+    "expected_behavior": "Calls request_items_set_status with affected ids and status, with no table fallback",
+    "result": "PASS"
+  },
+  {
+    "test_name": "buyer.actions.repo blocks the legacy direct request_items status fallback",
+    "target_path": "src/screens/buyer/buyer.actions.repo.ts",
+    "scenario": "Legacy fallback function is invoked",
+    "expected_behavior": "Throws RPC-required error and does not call supabase.from/update/in",
+    "result": "PASS"
+  },
+  {
+    "test_name": "buyer.status.mutation keeps status propagation happy path inside the status owner",
+    "target_path": "src/screens/buyer/buyer.status.mutation.ts",
+    "scenario": "Healthy status RPC",
+    "expected_behavior": "Mutation succeeds and continues through reject-state cleanup",
+    "result": "PASS"
+  },
+  {
+    "test_name": "buyer.status.mutation fails closed when the server-owned status RPC is unavailable",
+    "target_path": "src/screens/buyer/buyer.status.mutation.ts",
+    "scenario": "request_items_set_status returns an error",
+    "expected_behavior": "Returns failure at set_request_items_director_status and does not clear reject-state",
+    "result": "PASS"
+  },
+  {
+    "test_name": "jobQueue claims jobs through the healthy RPC path without table mutation fallback",
+    "target_path": "src/lib/infra/jobQueue.ts",
+    "scenario": "submit_jobs_claim succeeds",
+    "expected_behavior": "Returns normalized jobs and does not call supabase.from",
+    "result": "PASS"
+  },
+  {
+    "test_name": "jobQueue fails closed when claim RPC signatures are unavailable",
+    "target_path": "src/lib/infra/jobQueue.ts",
+    "scenario": "typed and legacy submit_jobs_claim RPCs are unavailable",
+    "expected_behavior": "Throws RPC-required error and does not select/update submit_jobs",
+    "result": "PASS"
+  },
+  {
+    "test_name": "jobQueue marks completed jobs through the healthy RPC path without cleanup table writes",
+    "target_path": "src/lib/infra/jobQueue.ts",
+    "scenario": "submit_jobs_mark_completed succeeds",
+    "expected_behavior": "Returns after RPC success and does not call supabase.from",
+    "result": "PASS"
+  },
+  {
+    "test_name": "jobQueue fails closed when complete RPC signatures are unavailable",
+    "target_path": "src/lib/infra/jobQueue.ts",
+    "scenario": "typed and legacy submit_jobs_mark_completed RPCs are unavailable",
+    "expected_behavior": "Throws RPC-required error and does not update submit_jobs",
+    "result": "PASS"
+  },
+  {
+    "test_name": "jobQueue marks failed jobs through the healthy RPC path without table mutation fallback",
+    "target_path": "src/lib/infra/jobQueue.ts",
+    "scenario": "submit_jobs_mark_failed succeeds",
+    "expected_behavior": "Returns RPC retry/status result and does not call supabase.from",
+    "result": "PASS"
+  },
+  {
+    "test_name": "jobQueue fails closed when fail RPC signatures are unavailable",
+    "target_path": "src/lib/infra/jobQueue.ts",
+    "scenario": "typed and legacy submit_jobs_mark_failed RPCs are unavailable",
+    "expected_behavior": "Throws RPC-required error and does not read/update submit_jobs",
+    "result": "PASS"
+  }
+]
