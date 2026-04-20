@@ -1,0 +1,72 @@
+{
+  "wave": "A2.RELEASE_GATE_RECOVERY",
+  "status": "GREEN",
+  "rootCauseClass": "not_active_on_current_head; closest risk class D over class A module-level state ownership",
+  "productionCodeChanged": false,
+  "tests": [
+    {
+      "name": "coalesces concurrent identical requests into one backend invocation",
+      "file": "src/lib/api/directorRolePdfBackends.test.ts",
+      "intent": "Protect the director production report in-flight coalescing contract.",
+      "expectedBehavior": "Two identical concurrent requests share one backend invocation.",
+      "result": "PASS"
+    },
+    {
+      "name": "returns a client hot-cache hit without invoking the backend again",
+      "file": "src/lib/api/directorRolePdfBackends.test.ts",
+      "intent": "Protect same-version client reuse.",
+      "expectedBehavior": "Second same-fingerprint request reuses the first artifact result.",
+      "result": "PASS"
+    },
+    {
+      "name": "invalidates the client hot-cache when the screen data fingerprint changes",
+      "file": "src/lib/api/directorRolePdfBackends.test.ts",
+      "intent": "Prevent stale reuse when meaningful source data changes.",
+      "expectedBehavior": "Different fingerprints invoke backend separately.",
+      "result": "PASS"
+    },
+    {
+      "name": "does not persist a client hot-cache entry without a screen data fingerprint",
+      "file": "src/lib/api/directorRolePdfBackends.test.ts",
+      "intent": "Prevent cache reuse when no deterministic source identity exists.",
+      "expectedBehavior": "Requests without fingerprint each invoke backend.",
+      "result": "PASS"
+    },
+    {
+      "name": "clears in-flight ownership after a failed backend invocation",
+      "file": "src/lib/api/directorRolePdfBackends.test.ts",
+      "intent": "Ensure failed tasks do not poison future same-key opens.",
+      "expectedBehavior": "First same-key call rejects; second same-key call invokes backend again and succeeds.",
+      "result": "PASS"
+    },
+    {
+      "name": "isolates module-level cache state when the test boundary reloads the module",
+      "file": "src/lib/api/directorRolePdfBackends.test.ts",
+      "intent": "Protect test isolation around module-level cache/in-flight maps.",
+      "expectedBehavior": "After jest.resetModules, the same key does not reuse previous module cache state.",
+      "result": "PASS"
+    }
+  ],
+  "commands": [
+    {
+      "command": "npm test",
+      "result": "PASS"
+    },
+    {
+      "command": "npm test -- src/lib/api/directorRolePdfBackends.test.ts",
+      "result": "PASS"
+    },
+    {
+      "command": "npm test -- --runInBand src/lib/api/directorRolePdfBackends.test.ts",
+      "result": "PASS"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "result": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "result": "PASS"
+    }
+  ]
+}

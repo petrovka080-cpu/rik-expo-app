@@ -342,4 +342,43 @@ describe("director production report backend PDF-X.B1 cache contract", () => {
     expect(results[0]).toEqual(results[1]);
     expect(results[0].signedUrl).toBe("https://example.com/production-burst.pdf");
   });
+
+  it("clears in-flight ownership after a failed backend invocation", async () => {
+    mockInvokeDirectorPdfBackend
+      .mockRejectedValueOnce(new Error("production backend down"))
+      .mockResolvedValueOnce(productionBackendResult("production-after-fail"));
+
+    const { generateDirectorProductionReportPdfViaBackend } = loadProductionSubject();
+    await expect(
+      generateDirectorProductionReportPdfViaBackend(productionInput("fp-retry-after-fail")),
+    ).rejects.toThrow("production backend down");
+
+    const recovered = await generateDirectorProductionReportPdfViaBackend(
+      productionInput("fp-retry-after-fail"),
+    );
+
+    expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(2);
+    expect(recovered.signedUrl).toBe("https://example.com/production-after-fail.pdf");
+  });
+
+  it("isolates module-level cache state when the test boundary reloads the module", async () => {
+    mockInvokeDirectorPdfBackend.mockResolvedValueOnce(productionBackendResult("production-isolated-a"));
+
+    const firstSubject = loadProductionSubject();
+    const first = await firstSubject.generateDirectorProductionReportPdfViaBackend(
+      productionInput("fp-module-isolation"),
+    );
+
+    jest.resetModules();
+    mockInvokeDirectorPdfBackend.mockResolvedValueOnce(productionBackendResult("production-isolated-b"));
+
+    const secondSubject = loadProductionSubject();
+    const second = await secondSubject.generateDirectorProductionReportPdfViaBackend(
+      productionInput("fp-module-isolation"),
+    );
+
+    expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(2);
+    expect(first.signedUrl).toBe("https://example.com/production-isolated-a.pdf");
+    expect(second.signedUrl).toBe("https://example.com/production-isolated-b.pdf");
+  });
 });
