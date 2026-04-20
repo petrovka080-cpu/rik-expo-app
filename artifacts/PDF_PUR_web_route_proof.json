@@ -1,0 +1,13 @@
+{
+  "status": "GREEN",
+  "route": "http://localhost:8081/office/buyer",
+  "opened": true,
+  "surfaceMatched": true,
+  "durationMs": 23948,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "bodySample": "Снабженец\nPDF PUR Web Proof\nВход\nКонтроль\nГотово\nПравки\nПодряды\nPDF PUR Web Proof\nВход\nКонтроль\nГотово\nПравки\nПодряды\nНе удалось загрузить данные. Повторите обновление.\n\n\nГлавная\n\n\nОфис\n\n\n+\n\n\nЧаты\n\n\nПрофиль\n\nAI",
+  "screenshot": "artifacts/PDF_PUR_web_route_proof.png",
+  "pdfSpecificProof": "buyerProposalPdf.service.test.ts covers repeat open reuse, concurrent coalescing, same-version hit, changed-data rebuild, and no-snapshot fallback"
+}

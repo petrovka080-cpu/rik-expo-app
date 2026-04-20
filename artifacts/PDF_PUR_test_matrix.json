@@ -1,0 +1,97 @@
+{
+  "wave": "PDF-PUR-1",
+  "status": "GREEN_WITH_ANDROID_BLOCKED",
+  "selectedSlice": {
+    "role": "buyer",
+    "route": "/office/buyer",
+    "documentKind": "buyer_proposal",
+    "openOwner": "src/screens/buyer/useBuyerDocuments.ts",
+    "reuseOwner": "src/screens/buyer/buyerProposalPdf.service.ts",
+    "manifestOwner": "src/screens/buyer/buyerProposalPdf.shared.ts"
+  },
+  "sourceDiffPolicy": {
+    "formulasChanged": false,
+    "totalsChanged": false,
+    "groupingChanged": false,
+    "orderingChanged": false,
+    "templateChanged": false,
+    "viewerChanged": false,
+    "suppressionsAdded": false
+  },
+  "coverage": [
+    {
+      "check": "same business data -> same source_version/artifact_version",
+      "evidence": "src/screens/buyer/buyerProposalPdf.shared.test.ts",
+      "status": "PASS"
+    },
+    {
+      "check": "meaningful visible line change -> new source_version/artifact_version",
+      "evidence": "src/screens/buyer/buyerProposalPdf.shared.test.ts",
+      "status": "PASS"
+    },
+    {
+      "check": "screen-only metadata noise does not churn version",
+      "evidence": "src/screens/buyer/buyerProposalPdf.shared.test.ts",
+      "status": "PASS"
+    },
+    {
+      "check": "repeat same snapshot reuses descriptor and avoids second render",
+      "evidence": "src/screens/buyer/buyerProposalPdf.service.test.ts",
+      "status": "PASS"
+    },
+    {
+      "check": "concurrent identical opens coalesce to one generator call",
+      "evidence": "src/screens/buyer/buyerProposalPdf.service.test.ts",
+      "status": "PASS"
+    },
+    {
+      "check": "persisted same-version descriptor hit avoids rebuild",
+      "evidence": "src/screens/buyer/buyerProposalPdf.service.test.ts",
+      "status": "PASS"
+    },
+    {
+      "check": "changed visible proposal data rebuilds",
+      "evidence": "src/screens/buyer/buyerProposalPdf.service.test.ts",
+      "status": "PASS"
+    },
+    {
+      "check": "no details snapshot falls back to original generator without caching stale data",
+      "evidence": "src/screens/buyer/buyerProposalPdf.service.test.ts",
+      "status": "PASS"
+    }
+  ],
+  "commands": [
+    {
+      "command": "npx jest src/screens/buyer/buyerProposalPdf.shared.test.ts src/screens/buyer/buyerProposalPdf.service.test.ts src/screens/buyer/buyer.silentCatch.test.ts tests/perf/performance-budget.test.ts --runInBand --no-coverage",
+      "status": "PASS"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    {
+      "command": "npx jest --runInBand --no-coverage",
+      "status": "PASS",
+      "summary": "363 passed, 1 skipped; 2313 passed, 1 skipped"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "runtime": {
+    "web": {
+      "status": "PASS",
+      "routeProof": "artifacts/PDF_PUR_web_route_proof.json",
+      "note": "Correct current route is /office/buyer. Legacy /buyer verifier returned Page not found and was not changed."
+    },
+    "android": {
+      "status": "BLOCKED",
+      "reason": "adb devices and one adb recovery attempt hung until timeout"
+    }
+  }
+}

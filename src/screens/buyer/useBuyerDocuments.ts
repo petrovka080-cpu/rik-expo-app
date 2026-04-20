@@ -3,12 +3,18 @@ import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { generateProposalPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import {
   getPdfFlowErrorMessage,
   prepareAndPreviewPdfDocument,
 } from "../../lib/documents/pdfDocumentActions";
+import type { ProposalHeadLite, ProposalViewLine } from "./buyer.types";
+import { generateBuyerProposalPdfDocument } from "./buyerProposalPdf.service";
+
+export type OpenBuyerProposalPdfSnapshot = {
+  head?: ProposalHeadLite | null;
+  lines?: ProposalViewLine[] | null;
+};
 
 export function useBuyerDocuments(params: {
   busy: unknown;
@@ -20,12 +26,24 @@ export function useBuyerDocuments(params: {
   const router = useRouter();
 
   const openProposalPdf = useCallback(
-    async (pid: string | number) => {
+    async (pid: string | number, snapshot?: OpenBuyerProposalPdfSnapshot | null) => {
       const id = String(pid || "").trim();
       if (!id) return;
 
       try {
-        const template = await generateProposalPdfDocument(id, "buyer");
+        const title = `Предложение ${id.slice(0, 8)}`;
+        const fileName = buildPdfFileName({
+          documentType: "proposal",
+          title: "predlozhenie",
+          entityId: id,
+        });
+        const template = await generateBuyerProposalPdfDocument({
+          proposalId: id,
+          title,
+          fileName,
+          head: snapshot?.head ?? null,
+          lines: snapshot?.lines ?? null,
+        });
         await prepareAndPreviewPdfDocument({
           busy,
           supabase,
@@ -33,12 +51,8 @@ export function useBuyerDocuments(params: {
           label: "Открываю PDF…",
           descriptor: {
             ...template,
-            title: `Предложение ${id.slice(0, 8)}`,
-            fileName: buildPdfFileName({
-              documentType: "proposal",
-              title: "predlozhenie",
-              entityId: id,
-            }),
+            title,
+            fileName,
           },
           router,
           // XR-PDF: dismiss parent modal before pushing PDF viewer route

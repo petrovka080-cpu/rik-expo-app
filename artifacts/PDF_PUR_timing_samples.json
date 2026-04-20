@@ -1,0 +1,42 @@
+{
+  "wave": "PDF-PUR-1",
+  "status": "GREEN_WITH_ANDROID_BLOCKED",
+  "samples": [
+    {
+      "mode": "web_route",
+      "route": "http://localhost:8081/office/buyer",
+      "durationMs": 23948,
+      "consoleErrors": 0,
+      "pageErrors": 0,
+      "badResponses": 0
+    },
+    {
+      "mode": "repeat_same_snapshot_functional",
+      "generatorCallsForTwoOpens": 1,
+      "source": "src/screens/buyer/buyerProposalPdf.service.test.ts"
+    },
+    {
+      "mode": "concurrent_identical_functional",
+      "generatorCallsForTwoConcurrentOpens": 1,
+      "source": "src/screens/buyer/buyerProposalPdf.service.test.ts"
+    },
+    {
+      "mode": "persisted_same_version_functional",
+      "generatorCallsForOpen": 0,
+      "source": "src/screens/buyer/buyerProposalPdf.service.test.ts"
+    }
+  ],
+  "android": {
+    "status": "BLOCKED",
+    "attempts": [
+      {
+        "command": "adb devices",
+        "timeoutSeconds": 124
+      },
+      {
+        "command": "adb kill-server; adb start-server; adb devices",
+        "timeoutSeconds": 184
+      }
+    ]
+  }
+}

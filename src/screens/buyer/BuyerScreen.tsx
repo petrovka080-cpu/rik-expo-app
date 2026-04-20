@@ -487,6 +487,14 @@ export function BuyerScreen() {
   });
 
   const { openProposalPdf } = useBuyerDocuments({ busy, supabase });
+  const openProposalPdfFromDetails = useCallback(
+    (pid: string) =>
+      openProposalPdf(pid, {
+        head: propViewHead,
+        lines: propViewLines,
+      }),
+    [openProposalPdf, propViewHead, propViewLines],
+  );
   const {
     propAttBusy,
     propAttByPid,
@@ -861,7 +869,7 @@ export function BuyerScreen() {
                   if (propViewId) attachFileToProposal(propViewId, "extra");
                 }}
                 onOpenAttachment={openPropAttachment}
-                onOpenPdf={openProposalPdf}
+                onOpenPdf={openProposalPdfFromDetails}
                 onOpenAccounting={openAccountingModal}
                 onOpenRework={openRework}
               />
