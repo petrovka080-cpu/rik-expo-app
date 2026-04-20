@@ -102,8 +102,9 @@ describe("performance budget — bundle module count", () => {
     // PDF-ACC-1 adds accountant payment report manifest/reuse contract plus focused tests.
     // PDF-ACC-FINAL adds exact accountant proposal/attachment manifest services plus focused tests.
     // A4 adds one reusable security redaction boundary plus focused regression tests.
+    // A5 adds three buyer owner-boundary modules for sheet composition and sheet-local state.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1229);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1232);
   });
 });
 

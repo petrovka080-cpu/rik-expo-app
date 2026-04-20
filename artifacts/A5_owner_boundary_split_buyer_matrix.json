@@ -1,0 +1,54 @@
+{
+  "wave": "A5.OWNER_BOUNDARY_SPLIT_BUYER",
+  "status": "GREEN",
+  "entries": [
+    {
+      "test": "tests/buyer/buyerScreenSheets.boundary.test.tsx",
+      "scenario": "prop_details sheet active",
+      "expected": "Only proposal details body renders and receives current proposal head, lines, attachment errors, and attachments.",
+      "result": "PASS"
+    },
+    {
+      "test": "tests/buyer/buyerScreenSheets.boundary.test.tsx",
+      "scenario": "rfq sheet active",
+      "expected": "RFQ form state is mapped through BuyerScreenSheets without moving RFQ business rules into BuyerScreen.",
+      "result": "PASS"
+    },
+    {
+      "test": "tests/buyer/buyerScreenSheets.boundary.test.tsx",
+      "scenario": "inbox footer actions",
+      "expected": "Sheet boundary owns clear, RFQ, and send footer action wiring.",
+      "result": "PASS"
+    },
+    {
+      "test": "npm test -- buyer --runInBand",
+      "scenario": "existing buyer behavior",
+      "expected": "Existing buyer mutation, fetcher, attachment, RFQ, PDF, and UI contract tests remain green.",
+      "result": "PASS"
+    },
+    {
+      "test": "tests/perf/performance-budget.test.ts",
+      "scenario": "BuyerScreen size budget",
+      "expected": "BuyerScreen remains below file-size, import, and line-count budgets after owner split.",
+      "result": "PASS"
+    },
+    {
+      "test": "npx tsc --noEmit --pretty false",
+      "scenario": "type contract",
+      "expected": "Extracted sheet owner and state hooks preserve TypeScript contracts.",
+      "result": "PASS"
+    },
+    {
+      "test": "npx expo lint",
+      "scenario": "lint hygiene",
+      "expected": "No unused owner-boundary props or duplicate imports remain.",
+      "result": "PASS"
+    },
+    {
+      "test": "npm test and npm test -- --runInBand",
+      "scenario": "release gate",
+      "expected": "Parallel and serial Jest gates remain green.",
+      "result": "PASS"
+    }
+  ]
+}

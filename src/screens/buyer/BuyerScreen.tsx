@@ -8,16 +8,9 @@ import {
 } from 'react-native';
 import { useLatest } from "../../lib/useLatest";
 import IconSquareButton from "../../ui/IconSquareButton";
-import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import { pickFileAny } from "../../lib/filePick";
 import { Ionicons } from '@expo/vector-icons';
 import { UI, KICK_THROTTLE_MS, TOAST_DEFAULT_MS } from "./buyerUi";
-import type {
-  Attachment,
-  ProposalHeadLite,
-  ProposalViewLine,
-} from "./buyer.types";
-import ToastOverlay from "./ToastOverlay";
 import {
   fmtLocal as fmtLocalHelper,
   setDeadlineHours as setDeadlineHoursHelper,
@@ -40,18 +33,11 @@ import {
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { useBuyerDocuments } from "./useBuyerDocuments";
 
-import AppButton from "../../ui/AppButton";
 import {
   BuyerStickyHeader,
   BuyerMainList,
-  BuyerSheetShell,
-  BuyerAccountingSheetBody,
-  BuyerReworkSheetBody,
-  SheetFooterActions,
-  BuyerRfqSheetBody,
-  BuyerPropDetailsSheetBody,
-  BuyerInboxSheetBody,
 } from "./buyer.components";
+import { BuyerScreenSheets } from "./components/BuyerScreenSheets";
 import { useBuyerProposalAttachments } from "./useBuyerProposalAttachments";
 import {
   isReqContextNote,
@@ -66,7 +52,6 @@ import {
   createProposalsBySupplier as apiCreateProposalsBySupplier,
 } from '../../lib/catalog_api';
 import { supabase } from '../../lib/supabaseClient';
-import WarehouseFioModal from "../warehouse/components/WarehouseFioModal";
 import { useBuyerFioConfirm } from "./useBuyerFioConfirm";
 import { useBuyerSheets } from "./hooks/useBuyerSheets";
 import { useBuyerRfqForm } from "./hooks/useBuyerRfqForm";
@@ -101,6 +86,8 @@ import { useBuyerInboxRenderers } from "./hooks/useBuyerInboxRenderers";
 import { useBuyerProposalCardRenderer } from "./hooks/useBuyerProposalCardRenderer";
 import { useBuyerAlerts } from "./hooks/useBuyerAlerts";
 import { useBuyerScreenHeader } from "./hooks/useBuyerScreenHeader";
+import { useBuyerAccountingSheetState } from "./hooks/useBuyerAccountingSheetState";
+import { useBuyerProposalDetailsState } from "./hooks/useBuyerProposalDetailsState";
 import { useBuyerStore } from "./buyer.store";
 import RoleScreenLayout from "../../components/layout/RoleScreenLayout";
 import BuyerSubcontractTab from "./BuyerSubcontractTab";
@@ -153,13 +140,13 @@ export function BuyerScreen() {
   });
 
   const { toast, showToast } = useTimedToast(TOAST_DEFAULT_MS);
+  const rfqForm = useBuyerRfqForm();
   const {
     rfqBusy,
     setRfqBusy,
     rfqDeadlineIso,
     setRfqDeadlineIso,
     rfqDeliveryDays,
-    setRfqDeliveryDays,
     rfqPhone,
     setRfqPhone,
     rfqCountryCode,
@@ -167,31 +154,11 @@ export function BuyerScreen() {
     rfqEmail,
     setRfqEmail,
     rfqCity,
-    setRfqCity,
     rfqAddressText,
-    setRfqAddressText,
     rfqNote,
-    setRfqNote,
-    rfqShowItems,
-    setRfqShowItems,
     rfqVisibility,
-    setRfqVisibility,
-    rfqPaymentTerms,
-    setRfqPaymentTerms,
-    rfqDeliveryType,
-    setRfqDeliveryType,
-    rfqDeliveryWindow,
-    setRfqDeliveryWindow,
-    rfqNeedInvoice,
-    setRfqNeedInvoice,
-    rfqNeedWaybill,
-    setRfqNeedWaybill,
-    rfqNeedCert,
-    setRfqNeedCert,
-    rfqRememberContacts,
-    setRfqRememberContacts,
     rfqCountryCodeTouched,
-  } = useBuyerRfqForm();
+  } = rfqForm;
 
   const rfqCityRef = useLatest(rfqCity);
   const rfqEmailRef = useLatest(rfqEmail);
@@ -270,26 +237,8 @@ export function BuyerScreen() {
   const { suppliers, counterparties, hasAnyOptions, hasHardFailure } = useBuyerSuppliers();
 
 
-  const [acctProposalId, setAcctProposalId] = useState<string | number | null>(null);
-  const [invNumber, setInvNumber] = useState('');
-  const [invDate, setInvDate] = useState('');
-  const [invAmount, setInvAmount] = useState('');
-  const [invCurrency, setInvCurrency] = useState('KGS');
-  const [invFile, setInvFile] = useState<Attachment["file"] | null>(null);
-  const [acctBusy, setAcctBusy] = useState(false);
-
-  const [propViewId, setPropViewId] = useState<string | null>(null);
-  const [propViewBusy, setPropViewBusy] = useState(false);
-  const [propViewLines, setPropViewLines] = useState<ProposalViewLine[]>([]);
-  const [propViewHead, setPropViewHead] = useState<ProposalHeadLite | null>(null);
-
-  const [acctSupp, setAcctSupp] = useState<{
-    name: string;
-    inn?: string | null;
-    bank?: string | null;
-    phone?: string | null;
-    email?: string | null;
-  } | null>(null);
+  const accountingSheet = useBuyerAccountingSheetState();
+  const proposalDetailsSheet = useBuyerProposalDetailsState();
 
   const tabsScrollRef = useRef<ScrollView | null>(null);
   const scrollTabsToStart = useCallback((animated = true) => {
@@ -299,12 +248,6 @@ export function BuyerScreen() {
       reportBuyerTabsScrollToStartFailure(error);
     }
   }, []);
-
-  const [propDocAttached, setPropDocAttached] = useState<{ name: string; url?: string } | null>(null);
-  const [propDocBusy, setPropDocBusy] = useState(false);
-
-
-  const [invoiceUploadedName, setInvoiceUploadedName] = useState<string>('');
 
   const { prettyLabel, preloadDisplayNos, preloadPrNosByRequests } = useBuyerRequestLabels();
   useBuyerAutoFio({ supabase, buyerFio, setBuyerFio });
@@ -490,10 +433,10 @@ export function BuyerScreen() {
   const openProposalPdfFromDetails = useCallback(
     (pid: string) =>
       openProposalPdf(pid, {
-        head: propViewHead,
-        lines: propViewLines,
+        head: proposalDetailsSheet.propViewHead,
+        lines: proposalDetailsSheet.propViewLines,
       }),
-    [openProposalPdf, propViewHead, propViewLines],
+    [openProposalPdf, proposalDetailsSheet.propViewHead, proposalDetailsSheet.propViewLines],
   );
   const {
     propAttBusy,
@@ -512,15 +455,15 @@ export function BuyerScreen() {
     supabase,
     buildProposalPdfHtml,
     uploadProposalAttachment,
-    setPropDocBusy,
-    setPropDocAttached,
-    setInvAmount,
-    setAcctSupp,
-    setAcctProposalId,
-    setInvNumber,
-    setInvDate,
-    setInvCurrency,
-    setInvFile,
+    setPropDocBusy: accountingSheet.setPropDocBusy,
+    setPropDocAttached: accountingSheet.setPropDocAttached,
+    setInvAmount: accountingSheet.setInvAmount,
+    setAcctSupp: accountingSheet.setAcctSupp,
+    setAcctProposalId: accountingSheet.setAcctProposalId,
+    setInvNumber: accountingSheet.setInvNumber,
+    setInvDate: accountingSheet.setInvDate,
+    setInvCurrency: accountingSheet.setInvCurrency,
+    setInvFile: accountingSheet.setInvFile,
     openAccountingSheet,
   });
   const { ensureAccountingFlags } = useBuyerEnsureAccountingFlags({
@@ -530,13 +473,13 @@ export function BuyerScreen() {
     },
   });
   const { openInvoicePickerWeb, pickInvoiceFile, sendToAccounting } = useBuyerAccountingSend({
-    acctProposalId,
-    invNumber,
-    invDate,
-    invAmount,
-    invCurrency,
-    invFile,
-    invoiceUploadedName,
+    acctProposalId: accountingSheet.acctProposalId,
+    invNumber: accountingSheet.invNumber,
+    invDate: accountingSheet.invDate,
+    invAmount: accountingSheet.invAmount,
+    invCurrency: accountingSheet.invCurrency,
+    invFile: accountingSheet.invFile,
+    invoiceUploadedName: accountingSheet.invoiceUploadedName,
     buildProposalPdfHtml,
     proposalSendToAccountant: async (payload) => {
       await proposalSendToAccountant(payload);
@@ -549,34 +492,12 @@ export function BuyerScreen() {
     fetchBuckets,
     closeSheet,
     setApproved,
-    setAcctBusy,
-    setInvoiceUploadedName,
+    setAcctBusy: accountingSheet.setAcctBusy,
+    setInvoiceUploadedName: accountingSheet.setInvoiceUploadedName,
     alertUser: screenAlertUser,
   });
 
-  const {
-    rwBusy,
-    rwPid,
-    rwReason,
-    rwItems,
-    setRwItems,
-    rwInvNumber,
-    setRwInvNumber,
-    rwInvDate,
-    setRwInvDate,
-    rwInvAmount,
-    setRwInvAmount,
-    rwInvCurrency,
-    setRwInvCurrency,
-    rwInvFile,
-    setRwInvFile,
-    rwInvUploadedName,
-    openRework,
-    rwSaveItems,
-    rwPickInvoiceNative,
-    rwSendToDirector,
-    rwSendToAccounting,
-  } = useBuyerReworkFlow({
+  const reworkFlow = useBuyerReworkFlow({
     supabase,
     openReworkSheet,
     proposalSubmit: async (pid) => {
@@ -596,16 +517,17 @@ export function BuyerScreen() {
     ensureAccountingFlags,
     alertUser: screenAlertUser,
   });
+  const { openRework } = reworkFlow;
   const { openProposalDetailsLines, openProposalDetailsAttachments } = useBuyerProposalDetailsFlow({
     supabase,
     isPropDetailsOpen: sheetKind === "prop_details",
     preloadProposalNosByIds,
     loadProposalAttachments,
     openPropDetailsSheet,
-    setPropViewId,
-    setPropViewHead,
-    setPropViewLines,
-    setPropViewBusy,
+    setPropViewId: proposalDetailsSheet.setPropViewId,
+    setPropViewHead: proposalDetailsSheet.setPropViewHead,
+    setPropViewLines: proposalDetailsSheet.setPropViewLines,
+    setPropViewBusy: proposalDetailsSheet.setPropViewBusy,
   });
 
   const { renderProposalCard } = useBuyerProposalCardRenderer({
@@ -624,24 +546,24 @@ export function BuyerScreen() {
       list: selectBuyerListLoading(tab, loadingInbox, loadingBuckets) || refreshing,
       action:
         creating
-        || acctBusy
-        || propViewBusy
-        || propDocBusy
+        || accountingSheet.acctBusy
+        || proposalDetailsSheet.propViewBusy
+        || accountingSheet.propDocBusy
         || propAttBusy
-        || rwBusy
+        || reworkFlow.rwBusy
         || rfqBusy,
     });
   }, [
-    acctBusy,
+    accountingSheet.acctBusy,
     creating,
     loadingBuckets,
     loadingInbox,
     propAttBusy,
-    propDocBusy,
-    propViewBusy,
+    accountingSheet.propDocBusy,
+    proposalDetailsSheet.propViewBusy,
     refreshing,
     rfqBusy,
-    rwBusy,
+    reworkFlow.rwBusy,
     setLoading,
     tab,
   ]);
@@ -649,9 +571,9 @@ export function BuyerScreen() {
   const sheetTitle = useBuyerSheetTitle({
     sheetKind,
     sheetGroup,
-    acctProposalId,
-    rwPid,
-    propViewId,
+    acctProposalId: accountingSheet.acctProposalId,
+    rwPid: reworkFlow.rwPid,
+    propViewId: proposalDetailsSheet.propViewId,
     proposalNoByPid,
     prettyLabel,
   });
@@ -764,223 +686,83 @@ export function BuyerScreen() {
         />
       )}
 
-      <WarehouseFioModal
-        visible={isFioConfirmVisible}
-        initialFio={buyerFio}
-        onConfirm={handleFioConfirm}
-        loading={isFioLoading}
-        history={buyerHistory}
+      <BuyerScreenSheets
+        s={s}
+        isWeb={isWeb}
+        sheetKind={sheetKind}
+        sheetTitle={sheetTitle}
+        isSheetOpen={isSheetOpen}
+        closeSheet={closeSheet}
+        fioModal={{
+          visible: isFioConfirmVisible,
+          initialFio: buyerFio,
+          onConfirm: handleFioConfirm,
+          loading: isFioLoading,
+          history: buyerHistory,
+        }}
+        inbox={{
+          sheetGroup,
+          sheetData,
+          kbOpen: inboxKeyboardLayoutActive,
+          creating,
+          needAttachWarn,
+          showAttachBlock,
+          setShowAttachBlock,
+          requiredSuppliers,
+          missingAttachSuppliers,
+          attachMissingCount,
+          attachFilledCount,
+          attachSlotsTotal,
+          pickedIdsLen: pickedIds.length,
+          attachments,
+          setAttachments,
+          renderItemRow,
+          showFooter: showInboxFooter,
+          clearPick,
+          openRfqSheet,
+          handleCreateProposalsBySupplier,
+          disableClear,
+          disableRfq,
+          disableSend,
+        }}
+        renderMobileEditorModal={renderMobileEditorModal}
+        proposalDetails={{
+          state: proposalDetailsSheet,
+          isReqContextNote,
+          extractReqContextLines,
+          propAttBusy,
+          propAttErrByPid,
+          propAttByPid,
+          loadProposalAttachments,
+          attachFileToProposal,
+          openPropAttachment,
+          openProposalPdfFromDetails,
+          openAccountingModal,
+          openRework,
+        }}
+        accounting={{
+          ...accountingSheet,
+          openInvoicePickerWeb,
+          pickInvoiceFile,
+          sendToAccounting,
+        }}
+        rework={{
+          ...reworkFlow,
+          pickInvoiceFile: reworkFlow.rwPickInvoiceNative,
+        }}
+        rfq={{
+          form: rfqForm,
+          pickedIdsLen: pickedIds.length,
+          rfqPickedPreview,
+          fmtLocal,
+          setDeadlineHours,
+          isDeadlineHoursActive,
+          inferCountryCode: inferCountryCodeHelper,
+          publishRfq,
+        }}
+        toast={toast}
       />
 
-
-
-      <BuyerSheetShell
-        isOpen={isSheetOpen}
-        onClose={closeSheet}
-        s={s}
-        title={sheetTitle}
-
-      >
-        <View style={[s.sheetBody, { flex: 1, minHeight: 0 }]}>
-            {sheetKind === "inbox" && sheetGroup ? (
-              <BuyerInboxSheetBody
-                s={s}
-                sheetGroup={sheetGroup}
-                sheetData={sheetData}
-                kbOpen={inboxKeyboardLayoutActive}
-                creating={creating}
-                needAttachWarn={needAttachWarn}
-                showAttachBlock={showAttachBlock}
-                setShowAttachBlock={setShowAttachBlock}
-                requiredSuppliers={requiredSuppliers}
-                missingAttachSuppliers={missingAttachSuppliers}
-                attachMissingCount={attachMissingCount}
-                attachFilledCount={attachFilledCount}
-                attachSlotsTotal={attachSlotsTotal}
-                pickedIdsLen={pickedIds.length}
-                attachments={attachments}
-                setAttachments={setAttachments}
-                renderItemRow={renderItemRow}
-                footer={
-                  showInboxFooter ? (
-                    <SheetFooterActions
-                      s={s}
-                      left={
-                        <IconSquareButton
-                          onPress={clearPick}
-                          disabled={disableClear}
-                          accessibilityLabel="Очистить выбор"
-                          width={52}
-                          height={52}
-                          radius={16}
-                          bg="#1F2933"
-                          bgPressed="#273341"
-                          bgDisabled="#111827"
-                          spinnerColor="#FFFFFF"
-                        >
-                          <Ionicons name="close" size={22} color="#FFFFFF" />
-                        </IconSquareButton>
-                      }
-                      center={
-                        <AppButton
-                          label="ТОРГИ"
-                          variant="blue"
-                          shape="wide"
-                          disabled={disableRfq}
-                          onPress={openRfqSheet}
-                        />
-                      }
-                      right={
-                        <View style={needAttachWarn ? s.sendBtnWarnWrap : null}>
-                          <SendPrimaryButton
-                            variant="green"
-                            disabled={disableSend}
-                            loading={creating}
-                            accessibilityLabel="Отправить директору"
-                            onPress={handleCreateProposalsBySupplier}
-                          />
-                        </View>
-                      }
-                    />
-                  ) : null
-                }
-              />
-            ) : null}
-
-            {renderMobileEditorModal?.()}
-
-            {sheetKind === "prop_details" ? (
-              <BuyerPropDetailsSheetBody
-                s={s}
-                head={propViewHead}
-                propViewBusy={propViewBusy}
-                propViewLines={propViewLines}
-                isReqContextNote={isReqContextNote}
-                extractReqContextLines={extractReqContextLines}
-
-                propAttBusy={propAttBusy}
-                propAttErr={propViewId ? (propAttErrByPid[propViewId] || "") : ""}
-                attachments={propViewId ? (propAttByPid[propViewId] || []) : []}
-
-                onReloadAttachments={() => {
-                  if (propViewId) loadProposalAttachments(propViewId);
-                }}
-                onAttachFile={() => {
-                  if (propViewId) attachFileToProposal(propViewId, "extra");
-                }}
-                onOpenAttachment={openPropAttachment}
-                onOpenPdf={openProposalPdfFromDetails}
-                onOpenAccounting={openAccountingModal}
-                onOpenRework={openRework}
-              />
-            ) : null}
-
-            {sheetKind === "accounting" ? (
-              <BuyerAccountingSheetBody
-                s={s}
-                isWeb={isWeb}
-                acctProposalId={acctProposalId}
-                propDocBusy={propDocBusy}
-                propDocAttached={propDocAttached}
-                acctSupp={acctSupp}
-                invNumber={invNumber}
-                setInvNumber={setInvNumber}
-                invDate={invDate}
-                setInvDate={setInvDate}
-                invAmount={invAmount}
-                setInvAmount={setInvAmount}
-                invCurrency={invCurrency}
-                setInvCurrency={setInvCurrency}
-                invoiceUploadedName={invoiceUploadedName}
-                openInvoicePickerWeb={openInvoicePickerWeb}
-                invFile={invFile}
-                pickInvoiceFile={pickInvoiceFile}
-                setInvFile={setInvFile}
-                acctBusy={acctBusy}
-                sendToAccounting={sendToAccounting}
-                closeSheet={closeSheet}
-              />
-            ) : null}
-
-            {sheetKind === "rework" ? (
-              <BuyerReworkSheetBody
-                s={s}
-                rwBusy={rwBusy}
-                rwPid={rwPid}
-                rwReason={rwReason}
-                rwItems={rwItems}
-                setRwItems={setRwItems}
-                rwInvNumber={rwInvNumber}
-                setRwInvNumber={setRwInvNumber}
-                rwInvDate={rwInvDate}
-                setRwInvDate={setRwInvDate}
-                rwInvAmount={rwInvAmount}
-                setRwInvAmount={setRwInvAmount}
-                rwInvCurrency={rwInvCurrency}
-                setRwInvCurrency={setRwInvCurrency}
-                rwInvFile={rwInvFile}
-                setRwInvFile={setRwInvFile}
-                rwInvUploadedName={rwInvUploadedName}
-                pickInvoiceFile={rwPickInvoiceNative}
-                rwSaveItems={rwSaveItems}
-                rwSendToDirector={rwSendToDirector}
-                rwSendToAccounting={rwSendToAccounting}
-                closeSheet={closeSheet}
-              />
-            ) : null}
-
-            {sheetKind === "rfq" ? (
-              <BuyerRfqSheetBody
-                s={s}
-                rfqBusy={rfqBusy}
-                closeSheet={closeSheet}
-                pickedIdsLen={pickedIds.length}
-                rfqShowItems={rfqShowItems}
-                setRfqShowItems={setRfqShowItems}
-                rfqPickedPreview={rfqPickedPreview}
-                fmtLocal={fmtLocal}
-                rfqDeadlineIso={rfqDeadlineIso}
-                setDeadlineHours={setDeadlineHours}
-                isDeadlineHoursActive={isDeadlineHoursActive}
-                rfqDeliveryDays={rfqDeliveryDays}
-                setRfqDeliveryDays={setRfqDeliveryDays}
-                rfqDeliveryType={rfqDeliveryType}
-                setRfqDeliveryType={setRfqDeliveryType}
-                rfqCity={rfqCity}
-                setRfqCity={setRfqCity}
-                rfqCountryCodeTouchedRef={rfqCountryCodeTouched}
-                inferCountryCode={inferCountryCodeHelper}
-                setRfqCountryCode={setRfqCountryCode}
-                rfqAddressText={rfqAddressText}
-                setRfqAddressText={setRfqAddressText}
-                rfqDeliveryWindow={rfqDeliveryWindow}
-                setRfqDeliveryWindow={setRfqDeliveryWindow}
-                rfqCountryCode={rfqCountryCode}
-                rfqPhone={rfqPhone}
-                setRfqPhone={setRfqPhone}
-                rfqEmail={rfqEmail}
-                setRfqEmail={setRfqEmail}
-                rfqRememberContacts={rfqRememberContacts}
-                setRfqRememberContacts={setRfqRememberContacts}
-                rfqVisibility={rfqVisibility}
-                setRfqVisibility={setRfqVisibility}
-                rfqPaymentTerms={rfqPaymentTerms}
-                setRfqPaymentTerms={setRfqPaymentTerms}
-                rfqNeedInvoice={rfqNeedInvoice}
-                setRfqNeedInvoice={setRfqNeedInvoice}
-                rfqNeedWaybill={rfqNeedWaybill}
-                setRfqNeedWaybill={setRfqNeedWaybill}
-                rfqNeedCert={rfqNeedCert}
-                setRfqNeedCert={setRfqNeedCert}
-                rfqNote={rfqNote}
-                setRfqNote={setRfqNote}
-                publishRfq={publishRfq}
-              />
-            ) : null}
-          </View>
-
-      </BuyerSheetShell>
-      <ToastOverlay toast={toast} />
     </RoleScreenLayout>
   );
   return ScreenBody;
