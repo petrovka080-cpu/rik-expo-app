@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-04-20T16:17:25.792Z",
+  "durationMs": 29559,
+  "route": "http://localhost:8081/office/accountant",
+  "finalUrl": "http://localhost:8081/office/accountant",
+  "finalPath": "/office/accountant",
+  "serverStarted": true,
+  "user": {
+    "role": "accountant",
+    "redacted": true
+  },
+  "bodySample": "Бухгалтер   К оплате Частично Оплачено На доработке История Подряды 0 документов • обновляй свайпом вниз   Главная   Офис   +   Чаты   Профиль  AI Представьтесь Введите ваше ФИО для начала работы со складским экраном. Сохранить",
+  "noStuckLoading": true,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "fiveXxResponses": [],
+  "screenshot": "artifacts/PDF_ACC_1_web_route_proof.png"
+}

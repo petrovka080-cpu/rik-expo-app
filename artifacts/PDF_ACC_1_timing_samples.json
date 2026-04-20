@@ -1,0 +1,41 @@
+{
+  "wave": "PDF-ACC-1",
+  "generatedAt": "2026-04-20T16:17:25.792Z",
+  "documentKind": "accountant_payment_report",
+  "telemetryEvent": "accountant_payment_report_pdf_ready",
+  "source": "platform observability emitted by src/screens/accountant/accountantPaymentReportPdf.service.ts and asserted by src/screens/accountant/accountantPaymentReportPdf.service.test.ts",
+  "budgetsMs": {
+    "repeat": 300,
+    "warm": 800
+  },
+  "samples": {
+    "repeat": {
+      "mode": "memory_cache_hit",
+      "durationMs": [0, 0, 0],
+      "medianMs": 0,
+      "maxMs": 0,
+      "status": "PASS"
+    },
+    "warm": {
+      "mode": "storage_cache_hit",
+      "durationMs": [0, 0, 0],
+      "medianMs": 0,
+      "maxMs": 0,
+      "status": "PASS"
+    },
+    "concurrent": {
+      "mode": "joined_inflight",
+      "durationMs": [3],
+      "maxBackendCalls": 1,
+      "status": "PASS"
+    }
+  },
+  "runtimeRouteProof": {
+    "web": "artifacts/PDF_ACC_1_web_route_proof.json",
+    "android": "artifacts/accountant-payment-runtime-proof.json"
+  },
+  "limitations": [
+    "Browser route proof used a temp accountant user with no seeded payment rows, so the browser did not click a real PDF button.",
+    "The PDF repeat/warm timing contract is proven through product telemetry emitted by the exact accountant payment report service and enforced in targeted Jest."
+  ]
+}

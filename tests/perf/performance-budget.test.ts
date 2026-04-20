@@ -99,8 +99,9 @@ describe("performance budget — bundle module count", () => {
     // PDF-Z4 adds focused Foreman manifest/backend reuse tests.
     // PDF-Z5 adds contractor act manifest/reuse contract plus focused tests.
     // PDF-PUR-1 adds buyer proposal manifest/reuse contract plus focused tests.
+    // PDF-ACC-1 adds accountant payment report manifest/reuse contract plus focused tests.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1213);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1217);
   });
 });
 

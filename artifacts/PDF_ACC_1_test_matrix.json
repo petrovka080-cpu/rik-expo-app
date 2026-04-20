@@ -1,0 +1,49 @@
+{
+  "wave": "PDF-ACC-1",
+  "status": "PASS",
+  "commands": [
+    {
+      "command": "npx jest src/screens/accountant/accountantPaymentReportPdf.shared.test.ts src/screens/accountant/accountantPaymentReportPdf.service.test.ts src/screens/accountant/accountant.screen.boundaries.test.ts src/lib/api/paymentPdf.service.test.ts --runInBand --no-coverage",
+      "status": "PASS",
+      "tests": "15 passed"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    {
+      "command": "npx jest --runInBand --no-coverage",
+      "status": "PASS",
+      "tests": "2324 passed, 1 skipped"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "runtime": {
+    "web": {
+      "status": "PASS",
+      "artifact": "artifacts/PDF_ACC_1_web_route_proof.json"
+    },
+    "android": {
+      "status": "PASS_WITH_TEARDOWN_CLEANUP",
+      "artifact": "artifacts/accountant-payment-runtime-proof.json"
+    }
+  },
+  "coverage": {
+    "allCategoriesCovered": true,
+    "manifest": true,
+    "deterministicSourceVersion": true,
+    "deterministicArtifactVersion": true,
+    "repeatReuse": true,
+    "warmReuse": true,
+    "concurrency": true,
+    "parity": true,
+    "runtimeProof": true
+  }
+}

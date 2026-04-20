@@ -1,0 +1,40 @@
+{
+  "wave": "PDF-ACC-1.3",
+  "slice": "accountant reports button path: Отчёт -> payment order report",
+  "status": "PASS",
+  "tests": [
+    {
+      "name": "repeat click uses same ready manifest descriptor",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.service.test.ts",
+      "status": "PASS"
+    },
+    {
+      "name": "repeat telemetry emits three cache_hit samples under 300 ms",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.service.test.ts",
+      "status": "PASS",
+      "samplesMs": [0, 0, 0],
+      "budgetMs": 300
+    },
+    {
+      "name": "warm persisted telemetry emits three cache_hit samples under 800 ms",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.service.test.ts",
+      "status": "PASS",
+      "samplesMs": [0, 0, 0],
+      "budgetMs": 800
+    },
+    {
+      "name": "concurrent identical report requests coalesce into one source/render task",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.service.test.ts",
+      "status": "PASS"
+    },
+    {
+      "name": "changed canonical payment data after cache clear rebuilds through canonical source",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.service.test.ts",
+      "status": "PASS"
+    }
+  ],
+  "policy": {
+    "freshnessWindowMs": 1800000,
+    "missingExpiredOrUnusableArtifact": "controlled rebuild through preparePaymentOrderPdf + exportPaymentOrderPdfContract"
+  }
+}

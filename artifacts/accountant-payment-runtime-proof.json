@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-04-20T16:17:58.698Z",
+  "status": "GREEN",
+  "route": "rik:///accountant",
+  "livePaymentMutationApplied": false,
+  "user": {
+    "role": "accountant",
+    "redacted": true
+  },
+  "proposalId": "redacted-runtime-seed",
+  "marker": "redacted-runtime-seed",
+  "preflight": {
+    "deviceDetected": true,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "reverseProxyReady": true,
+    "appCleared": true,
+    "gmsCleared": false,
+    "devClientReachable": true
+  },
+  "recovery": {
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": true,
+    "devClientBootstrapRecovered": false
+  },
+  "fioConfirmed": true,
+  "screenOpened": true,
+  "fixtureRowRendered": true,
+  "paymentEntryOpened": true,
+  "fatalLines": [],
+  "artifacts": {
+    "routedXml": "artifacts/accountant-payment-runtime-fio-closed-1.xml",
+    "routedPng": "artifacts/accountant-payment-runtime-fio-closed-1.png",
+    "entryXml": "artifacts/accountant-payment-runtime-entry.xml",
+    "entryPng": "artifacts/accountant-payment-runtime-entry.png"
+  },
+  "limitation": "Runtime smoke opens the accountant payment entrypoint but does not submit a live payment mutation."
+}

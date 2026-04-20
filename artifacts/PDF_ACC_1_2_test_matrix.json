@@ -1,0 +1,45 @@
+{
+  "wave": "PDF-ACC-1.2",
+  "slice": "top-1 accountant PDF path: accountant_payment_report_pdf",
+  "status": "PASS",
+  "tests": [
+    {
+      "name": "same data -> same source_version and artifact_version",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.shared.test.ts",
+      "status": "PASS"
+    },
+    {
+      "name": "changed payment amount/line paidThis -> new source_version and artifact_version",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.shared.test.ts",
+      "status": "PASS"
+    },
+    {
+      "name": "generated transport noise does not affect source_version",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.shared.test.ts",
+      "status": "PASS"
+    },
+    {
+      "name": "same payment repeat open reuses descriptor without source/render rebuild",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.service.test.ts",
+      "status": "PASS"
+    },
+    {
+      "name": "persisted ready manifest descriptor opens without source preparation",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.service.test.ts",
+      "status": "PASS"
+    },
+    {
+      "name": "unusable persisted artifact is removed and rebuilt through canonical source",
+      "file": "src/screens/accountant/accountantPaymentReportPdf.service.test.ts",
+      "status": "PASS"
+    }
+  ],
+  "unchanged": [
+    "payment formulas",
+    "totals",
+    "bill grouping",
+    "line ordering",
+    "payment-order-v1 template semantics",
+    "viewer behavior"
+  ]
+}

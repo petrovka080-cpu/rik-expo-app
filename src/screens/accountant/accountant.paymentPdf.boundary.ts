@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { useRouter } from "expo-router";
-import { generatePaymentOrderPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import {
   getPdfFlowErrorMessage,
@@ -9,6 +8,7 @@ import {
 } from "../../lib/documents/pdfDocumentActions";
 import { supabase } from "../../lib/supabaseClient";
 import { fetchLastPaymentIdByProposal } from "./accountant.payment";
+import { generateAccountantPaymentReportPdfDocument } from "./accountantPaymentReportPdf.service";
 
 export type AccountantPaymentPdfBusyLike = {
   run?: <T>(
@@ -59,15 +59,20 @@ export function useAccountantPaymentPdfBoundary(
     }
 
     try {
-      const template = await generatePaymentOrderPdfDocument(paymentId, "accountant");
+      const fileName = buildPdfFileName({
+        documentType: "payment_order",
+        title: request.supplierName || "payment_order",
+        entityId: paymentId,
+      });
+      const template = await generateAccountantPaymentReportPdfDocument({
+        paymentId,
+        title: `Платёжное поручение ${paymentId}`,
+        fileName,
+      });
       const descriptor = {
         ...template,
         title: `Платёжное поручение ${paymentId}`,
-        fileName: buildPdfFileName({
-          documentType: "payment_order",
-          title: request.supplierName || "payment_order",
-          entityId: paymentId,
-        }),
+        fileName,
       };
       await prepareAndPreviewPdfDocument({
         busy: busy as AccountantPaymentPdfBusyLike,
@@ -85,6 +90,5 @@ export function useAccountantPaymentPdfBoundary(
         getPdfFlowErrorMessage(error, "Не удалось открыть PDF"),
       );
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-  }, [busy, router, safeAlert, setCurrentPaymentId]);
+  }, [busy, onBeforeNavigate, router, safeAlert, setCurrentPaymentId]);
 }
