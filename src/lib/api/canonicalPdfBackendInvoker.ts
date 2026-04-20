@@ -6,6 +6,7 @@ import {
   extractCanonicalPdfErrorPayload,
   normalizeCanonicalPdfSuccessPayload,
   type CanonicalPdfBackendDocumentType,
+  type CanonicalPdfBackendRenderer,
   type CanonicalPdfBackendRole,
 } from "../pdf/canonicalPdfPlatformContract";
 
@@ -28,7 +29,7 @@ export type CanonicalPdfInvokeSuccess = {
   generatedAt: string;
   version: "v1";
   renderBranch: string;
-  renderer: "browserless_puppeteer" | "local_browser_puppeteer";
+  renderer: CanonicalPdfBackendRenderer;
   sourceKind: "remote-url";
   role: CanonicalPdfBackendRole;
   documentType: CanonicalPdfBackendDocumentType;

@@ -6,7 +6,8 @@ export type CanonicalPdfBackendDocumentType =
   | "warehouse_materials";
 export type CanonicalPdfBackendRenderer =
   | "browserless_puppeteer"
-  | "local_browser_puppeteer";
+  | "local_browser_puppeteer"
+  | "artifact_cache";
 export type CanonicalPdfBackendErrorCode =
   | "validation_failed"
   | "auth_failed"
@@ -66,7 +67,9 @@ const isDocumentType = (
 const isRenderer = (
   value: string,
 ): value is CanonicalPdfBackendRenderer =>
-  value === "browserless_puppeteer" || value === "local_browser_puppeteer";
+  value === "browserless_puppeteer" ||
+  value === "local_browser_puppeteer" ||
+  value === "artifact_cache";
 
 export function createCanonicalPdfOptionsResponse() {
   return new Response(null, {

@@ -3,6 +3,7 @@ import {
   normalizeForemanRequestPdfRequest,
   type ForemanRequestPdfRequest,
 } from "../pdf/foremanRequestPdf.shared";
+import type { CanonicalPdfBackendRenderer } from "../pdf/canonicalPdfPlatformContract";
 import type { PdfSource } from "../pdfFileContract";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../supabaseClient";
 import { invokeCanonicalPdfBackend } from "./canonicalPdfBackendInvoker";
@@ -20,7 +21,7 @@ export type ForemanRequestPdfBackendResult = {
   generatedAt: string;
   version: "v1";
   renderBranch: typeof RENDER_BRANCH;
-  renderer: "browserless_puppeteer" | "local_browser_puppeteer";
+  renderer: CanonicalPdfBackendRenderer;
   sourceKind: "remote-url";
   telemetry: Record<string, unknown> | null;
 };

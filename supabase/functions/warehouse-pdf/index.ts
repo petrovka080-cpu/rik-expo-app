@@ -9,6 +9,7 @@ import {
 } from "../../../src/lib/pdf/canonicalPdfPlatformContract.ts";
 import { resolveWarehousePdfAccess } from "../../../src/lib/pdf/rolePdfAuth.ts";
 import {
+  buildWarehouseIncomingRegisterManifestContract,
   normalizeWarehousePdfRequest,
   type WarehousePdfRequest,
 } from "../../../src/lib/pdf/warehousePdf.shared.ts";
@@ -35,6 +36,7 @@ import {
 const FUNCTION_NAME = "warehouse-pdf";
 const DEFAULT_BUCKET = "role_pdf_exports";
 const RENDER_BRANCH = "backend_warehouse_pdf_v1";
+const INCOMING_REGISTER_ARTIFACT_CACHE_VERSION = "pdf_z3_warehouse_incoming_register_artifact_v1";
 const ALL_FROM_ISO = "1970-01-01T00:00:00.000Z";
 const ALL_TO_ISO = "2100-01-01T00:00:00.000Z";
 const RU_MONTHS: Record<string, number> = {
@@ -436,6 +438,206 @@ function buildWarehouseFileName(payload: WarehousePdfRequest) {
   );
 }
 
+async function trySignExistingPdfArtifact(args: {
+  admin: any;
+  bucketId: string;
+  storagePath: string;
+}) {
+  const slashIndex = args.storagePath.lastIndexOf("/");
+  const prefix = slashIndex >= 0 ? args.storagePath.slice(0, slashIndex) : "";
+  const objectName = slashIndex >= 0 ? args.storagePath.slice(slashIndex + 1) : args.storagePath;
+  const listed = await args.admin.storage.from(args.bucketId).list(prefix, {
+    limit: 1,
+    search: objectName,
+  });
+  if (listed.error || !Array.isArray(listed.data)) return null;
+  const exists = listed.data.some((item: Record<string, unknown>) => cleanText(item?.name) === objectName);
+  if (!exists) return null;
+
+  const ttlSeconds = resolveSignedUrlTtlSeconds();
+  const signed = await args.admin.storage.from(args.bucketId).createSignedUrl(args.storagePath, ttlSeconds);
+  const signedUrl = cleanText(signed.data?.signedUrl);
+  if (signed.error || !signedUrl) return null;
+  return {
+    bucketId: args.bucketId,
+    storagePath: args.storagePath,
+    signedUrl,
+    expiresInSeconds: ttlSeconds,
+  };
+}
+
+function isStorageAlreadyExistsError(error: unknown) {
+  const message = cleanText((error as { message?: unknown } | null)?.message).toLowerCase();
+  const status = cleanText((error as { statusCode?: unknown } | null)?.statusCode);
+  return status === "409" || message.includes("already exists") || message.includes("duplicate");
+}
+
+async function uploadWarehousePdfArtifact(args: {
+  admin: any;
+  bucketId: string;
+  storagePath: string;
+  bytes: Uint8Array;
+}) {
+  try {
+    const uploaded = await uploadCanonicalPdf({
+      admin: args.admin,
+      bucketId: args.bucketId,
+      storagePath: args.storagePath,
+      bytes: args.bytes,
+      ttlSeconds: resolveSignedUrlTtlSeconds(),
+    });
+    return {
+      bucketId: args.bucketId,
+      storagePath: uploaded.storagePath,
+      signedUrl: uploaded.signedUrl,
+    };
+  } catch (error) {
+    if (isStorageAlreadyExistsError(error)) {
+      const existing = await trySignExistingPdfArtifact({
+        admin: args.admin,
+        bucketId: args.bucketId,
+        storagePath: args.storagePath,
+      });
+      if (existing) return existing;
+    }
+    throw error;
+  }
+}
+
+async function renderIncomingRegisterWithArtifactCache(args: {
+  admin: any;
+  bucketId: string;
+  payload: Extract<WarehousePdfRequest, { documentKind: "incoming_register" }>;
+  requestedByUserId: string;
+}) {
+  const totalStartedAt = Date.now();
+  const range = buildRpcRange(args.payload);
+  const sourceStartedAt = Date.now();
+  const heads = await loadIncomingHeads(args.admin, range.rpcFrom, range.rpcTo);
+  const filtered = filterHeadsByDayLabel(heads, args.payload.dayLabel);
+  const sourceLoadedAt = Date.now();
+  const companyName = cleanText(args.payload.companyName) || "";
+  const warehouseName = cleanText(args.payload.warehouseName) || "";
+  const fileName = buildWarehouseFileName(args.payload);
+  const artifact = await buildWarehouseIncomingRegisterManifestContract({
+    periodFrom: args.payload.periodFrom,
+    periodTo: args.payload.periodTo,
+    companyName,
+    warehouseName,
+    incomingHeads: filtered,
+    fileName,
+  });
+
+  const cachedArtifact = await trySignExistingPdfArtifact({
+    admin: args.admin,
+    bucketId: args.bucketId,
+    storagePath: artifact.artifactPath,
+  });
+  if (cachedArtifact) {
+    console.info(`[${FUNCTION_NAME}] backend_incoming_register_artifact_hit`, {
+      periodFrom: range.periodFrom,
+      periodTo: range.periodTo,
+      bucketId: cachedArtifact.bucketId,
+      storagePath: cachedArtifact.storagePath,
+      sourceVersion: artifact.sourceVersion,
+      artifactVersion: artifact.artifactVersion,
+      sourceMs: sourceLoadedAt - sourceStartedAt,
+      totalMs: Date.now() - totalStartedAt,
+    });
+    return createCanonicalPdfSuccessResponse({
+      role: "warehouse",
+      documentType: args.payload.documentType,
+      bucketId: cachedArtifact.bucketId,
+      storagePath: cachedArtifact.storagePath,
+      signedUrl: cachedArtifact.signedUrl,
+      fileName,
+      generatedAt: new Date().toISOString(),
+      renderBranch: RENDER_BRANCH,
+      renderer: "artifact_cache",
+      telemetry: {
+        functionName: FUNCTION_NAME,
+        documentKind: args.payload.documentKind,
+        requestedByUserId: args.requestedByUserId,
+        periodFrom: range.periodFrom,
+        periodTo: range.periodTo,
+        dayLabel: null,
+        cacheStatus: "artifact_hit",
+        cacheVersion: INCOMING_REGISTER_ARTIFACT_CACHE_VERSION,
+        templateVersion: artifact.templateVersion,
+        sourceVersion: artifact.sourceVersion,
+        artifactVersion: artifact.artifactVersion,
+        sourceMs: sourceLoadedAt - sourceStartedAt,
+        renderMs: 0,
+        uploadAndSignMs: 0,
+        totalMs: Date.now() - totalStartedAt,
+      },
+    });
+  }
+
+  const html = buildWarehouseIncomingRegisterHtml({
+    periodFrom: range.periodFrom,
+    periodTo: range.periodTo,
+    items: filtered,
+    orgName: companyName,
+    warehouseName,
+  });
+  const renderStartedAt = Date.now();
+  const { pdfBytes, renderer } = await renderPdfBytes(html);
+  const renderFinishedAt = Date.now();
+  const uploadStartedAt = Date.now();
+  const uploaded = await uploadWarehousePdfArtifact({
+    admin: args.admin,
+    bucketId: args.bucketId,
+    storagePath: artifact.artifactPath,
+    bytes: pdfBytes,
+  });
+  const uploadFinishedAt = Date.now();
+
+  console.info(`[${FUNCTION_NAME}] backend_incoming_register_artifact_miss`, {
+    periodFrom: range.periodFrom,
+    periodTo: range.periodTo,
+    bucketId: uploaded.bucketId,
+    storagePath: uploaded.storagePath,
+    sourceVersion: artifact.sourceVersion,
+    artifactVersion: artifact.artifactVersion,
+    sourceMs: sourceLoadedAt - sourceStartedAt,
+    renderMs: renderFinishedAt - renderStartedAt,
+    uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
+    totalMs: uploadFinishedAt - totalStartedAt,
+  });
+
+  return createCanonicalPdfSuccessResponse({
+    role: "warehouse",
+    documentType: args.payload.documentType,
+    bucketId: uploaded.bucketId,
+    storagePath: uploaded.storagePath,
+    signedUrl: uploaded.signedUrl,
+    fileName,
+    generatedAt: new Date().toISOString(),
+    renderBranch: RENDER_BRANCH,
+    renderer,
+    telemetry: {
+      functionName: FUNCTION_NAME,
+      documentKind: args.payload.documentKind,
+      requestedByUserId: args.requestedByUserId,
+      periodFrom: range.periodFrom,
+      periodTo: range.periodTo,
+      dayLabel: null,
+      cacheStatus: "artifact_miss",
+      cacheVersion: INCOMING_REGISTER_ARTIFACT_CACHE_VERSION,
+      templateVersion: artifact.templateVersion,
+      sourceVersion: artifact.sourceVersion,
+      artifactVersion: artifact.artifactVersion,
+      sourceMs: sourceLoadedAt - sourceStartedAt,
+      renderMs: renderFinishedAt - renderStartedAt,
+      uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
+      totalMs: uploadFinishedAt - totalStartedAt,
+      htmlLength: html.length,
+      pdfSizeBytes: pdfBytes.byteLength,
+    },
+  });
+}
+
 async function assertWarehouseRequesterRpcOk(args: {
   requester: any;
   rpcName: string;
@@ -806,6 +1008,15 @@ Deno.serve({ port: Number.isFinite(serverPort) ? serverPort : 8000 }, async (req
     const admin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
+
+    if (payload.documentKind === "incoming_register") {
+      return await renderIncomingRegisterWithArtifactCache({
+        admin,
+        bucketId,
+        payload,
+        requestedByUserId: auth.userId,
+      });
+    }
 
     const model = await buildWarehousePdfModel(admin, payload);
     const { pdfBytes, renderer } = await renderPdfBytes(model.html);

@@ -34,6 +34,7 @@ type UseWarehousePdfArgs = {
   notifyError: (title: string, message?: string) => void;
   orgName: string;
   warehouseName?: string;
+  incomingRegisterSourceFingerprint?: string | null;
 };
 
 export function useWarehousePdf(args: UseWarehousePdfArgs) {
@@ -46,6 +47,7 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
     notifyError,
     orgName,
     warehouseName,
+    incomingRegisterSourceFingerprint,
   } = args;
 
   const previewWarehousePdf = useWarehousePdfPreviewBoundary({
@@ -215,9 +217,13 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
         generatedBy: warehousemanFio || null,
         companyName: orgName || null,
         warehouseName: warehouseName || null,
+        ...(isIncoming && incomingRegisterSourceFingerprint
+          ? { clientSourceFingerprint: incomingRegisterSourceFingerprint }
+          : {}),
       },
     });
   }, [
+    incomingRegisterSourceFingerprint,
     orgName,
     periodFrom,
     periodTo,

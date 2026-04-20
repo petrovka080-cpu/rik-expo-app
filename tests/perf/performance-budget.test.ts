@@ -95,9 +95,10 @@ describe("performance budget — bundle module count", () => {
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
-    // Runtime source threshold remains 1202.
+    // PDF-Z3 adds focused warehouse manifest/backend reuse tests.
+    // Runtime source threshold remains 1204.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1202);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1204);
   });
 });
 

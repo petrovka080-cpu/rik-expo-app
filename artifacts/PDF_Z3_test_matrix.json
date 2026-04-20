@@ -1,0 +1,58 @@
+{
+  "wave": "PDF-Z3",
+  "status": "GREEN_WITH_ANDROID_ENV_BLOCKED",
+  "selected_path": "warehouse incoming_register all-period register PDF",
+  "checks": [
+    {
+      "name": "targeted_pdf_z3_tests",
+      "command": "npx jest src/lib/pdf/warehousePdf.manifest.test.ts src/lib/api/warehousePdfBackend.service.test.ts src/screens/warehouse/warehouse.pdfs.test.tsx tests/pdf/pdfZ3WarehouseIncomingRegisterArtifactCache.test.ts --runInBand --no-coverage",
+      "status": "PASS",
+      "suites": 4,
+      "tests": 13
+    },
+    {
+      "name": "typecheck",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "name": "lint",
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    {
+      "name": "full_jest",
+      "command": "npx jest --runInBand --no-coverage",
+      "status": "PASS",
+      "suites": "356 passed, 1 skipped, 357 total",
+      "tests": "2287 passed, 1 skipped, 2288 total"
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    {
+      "name": "web_runtime_proof",
+      "artifact": "artifacts/PDF_Z3_web_timing.md",
+      "status": "PASS",
+      "warm_median_ms": 150,
+      "warm_max_ms": 174,
+      "repeat_median_ms": 137,
+      "repeat_max_ms": 139,
+      "backend_calls_after_cold": 0
+    },
+    {
+      "name": "android_runtime_proof",
+      "artifact": "artifacts/PDF_Z3_android_timing.md",
+      "status": "ENV_BLOCKED",
+      "reason": "adb devices empty; emulator CLI unavailable in PATH"
+    },
+    {
+      "name": "edge_function_deploy",
+      "command": "npx supabase functions deploy warehouse-pdf",
+      "status": "PASS",
+      "project": "nxrnjywzxxfdpqmzjorh"
+    }
+  ]
+}

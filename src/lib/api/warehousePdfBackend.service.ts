@@ -1,8 +1,14 @@
 import { beginCanonicalPdfBoundary } from "../pdf/canonicalPdfObservability";
 import {
+  buildWarehouseIncomingRegisterManifestContract,
   normalizeWarehousePdfRequest,
   type WarehousePdfRequest,
 } from "../pdf/warehousePdf.shared";
+import {
+  readStoredJson,
+  removeStoredValue,
+  writeStoredJson,
+} from "../storage/classifiedStorage";
 import { invokeCanonicalPdfBackend } from "./canonicalPdfBackendInvoker";
 
 const FUNCTION_NAME = "warehouse-pdf";
@@ -18,10 +24,177 @@ export type WarehousePdfBackendResult = {
   generatedAt: string;
   version: "v1";
   renderBranch: typeof RENDER_BRANCH;
-  renderer: "browserless_puppeteer" | "local_browser_puppeteer";
+  renderer: "browserless_puppeteer" | "local_browser_puppeteer" | "artifact_cache";
   sourceKind: "remote-url";
   telemetry: Record<string, unknown> | null;
 };
+
+const WAREHOUSE_PDF_CLIENT_CACHE_TTL_MS = 30 * 60 * 1000;
+const WAREHOUSE_PDF_CLIENT_CACHE_MAX = 20;
+
+type WarehousePdfClientCacheEntry = {
+  ts: number;
+  value: WarehousePdfBackendResult;
+  sourceVersion: string | null;
+};
+
+type WarehousePdfStoredCacheEntry = {
+  version: 1;
+  sourceVersion: string;
+  value: WarehousePdfBackendResult;
+};
+
+const warehousePdfClientCache = new Map<string, WarehousePdfClientCacheEntry>();
+const warehousePdfClientInFlight = new Map<string, Promise<WarehousePdfBackendResult>>();
+
+const normalizeCachePart = (value: unknown) => String(value ?? "").trim();
+
+function buildWarehousePdfClientCacheKey(payload: WarehousePdfRequest) {
+  return [
+    payload.version,
+    payload.role,
+    payload.documentType,
+    payload.documentKind,
+    normalizeCachePart(payload.companyName),
+    normalizeCachePart(payload.warehouseName),
+    normalizeCachePart(payload.generatedBy),
+    "periodFrom" in payload ? normalizeCachePart(payload.periodFrom) : "",
+    "periodTo" in payload ? normalizeCachePart(payload.periodTo) : "",
+    "dayLabel" in payload ? normalizeCachePart(payload.dayLabel) : "",
+    "issueId" in payload ? normalizeCachePart(payload.issueId) : "",
+    "incomingId" in payload ? normalizeCachePart(payload.incomingId) : "",
+    "objectId" in payload ? normalizeCachePart(payload.objectId) : "",
+    normalizeCachePart(payload.clientSourceFingerprint),
+  ].join("|");
+}
+
+function canUseWarehouseIncomingRegisterHotCache(payload: WarehousePdfRequest) {
+  return payload.documentKind === "incoming_register" && Boolean(payload.clientSourceFingerprint);
+}
+
+function getWarehousePdfClientCache(key: string): WarehousePdfClientCacheEntry | null {
+  const hit = warehousePdfClientCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.ts >= WAREHOUSE_PDF_CLIENT_CACHE_TTL_MS) {
+    warehousePdfClientCache.delete(key);
+    return null;
+  }
+  warehousePdfClientCache.delete(key);
+  warehousePdfClientCache.set(key, hit);
+  return hit;
+}
+
+function setWarehousePdfClientCache(
+  key: string,
+  value: WarehousePdfBackendResult,
+  sourceVersion?: string | null,
+) {
+  if (warehousePdfClientCache.has(key)) warehousePdfClientCache.delete(key);
+  warehousePdfClientCache.set(key, { ts: Date.now(), value, sourceVersion: sourceVersion ?? null });
+  while (warehousePdfClientCache.size > WAREHOUSE_PDF_CLIENT_CACHE_MAX) {
+    const oldestKey = warehousePdfClientCache.keys().next().value;
+    if (!oldestKey) break;
+    warehousePdfClientCache.delete(oldestKey);
+  }
+}
+
+function hashWarehousePdfCacheKey(value: string) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+function buildWarehousePdfStoredCacheKey(cacheKey: string) {
+  return `pdf.z3.warehouse.incoming_register.v1.${hashWarehousePdfCacheKey(cacheKey)}`;
+}
+
+function isWarehousePdfStoredCacheEntry(value: unknown): value is WarehousePdfStoredCacheEntry {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Partial<WarehousePdfStoredCacheEntry>;
+  return record.version === 1 &&
+    typeof record.sourceVersion === "string" &&
+    Boolean(record.value) &&
+    typeof record.value === "object";
+}
+
+async function readWarehousePdfStoredCache(
+  cacheKey: string,
+  sourceVersion: string | null,
+): Promise<WarehousePdfClientCacheEntry | null> {
+  if (!sourceVersion) return null;
+  const storageKey = buildWarehousePdfStoredCacheKey(cacheKey);
+  const stored = await readStoredJson<WarehousePdfStoredCacheEntry>({
+    screen: "warehouse",
+    surface: "warehouse_pdf_backend",
+    key: storageKey,
+  });
+  if (!isWarehousePdfStoredCacheEntry(stored)) return null;
+  if (stored.sourceVersion !== sourceVersion) {
+    await removeStoredValue({
+      screen: "warehouse",
+      surface: "warehouse_pdf_backend",
+      key: storageKey,
+    });
+    return null;
+  }
+  return {
+    ts: Date.now(),
+    value: stored.value,
+    sourceVersion: stored.sourceVersion,
+  };
+}
+
+async function writeWarehousePdfStoredCache(
+  cacheKey: string,
+  value: WarehousePdfBackendResult,
+  sourceVersion: string | null,
+) {
+  if (!sourceVersion) return;
+  await writeStoredJson<WarehousePdfStoredCacheEntry>(
+    {
+      screen: "warehouse",
+      surface: "warehouse_pdf_backend",
+      key: buildWarehousePdfStoredCacheKey(cacheKey),
+      ttlMs: WAREHOUSE_PDF_CLIENT_CACHE_TTL_MS,
+    },
+    {
+      version: 1,
+      sourceVersion,
+      value,
+    },
+  );
+}
+
+async function invokeWarehousePdfBackend(
+  payload: WarehousePdfRequest,
+): Promise<WarehousePdfBackendResult> {
+  const result = await invokeCanonicalPdfBackend({
+    functionName: FUNCTION_NAME,
+    payload,
+    expectedRole: "warehouse",
+    expectedDocumentType: payload.documentType,
+    expectedRenderBranch: RENDER_BRANCH,
+    errorPrefix: "warehouse pdf backend failed",
+  });
+
+  return {
+    source: result.source,
+    bucketId: result.bucketId,
+    storagePath: result.storagePath,
+    signedUrl: result.signedUrl,
+    fileName: result.fileName,
+    mimeType: result.mimeType,
+    generatedAt: result.generatedAt,
+    version: result.version,
+    renderBranch: RENDER_BRANCH,
+    renderer: result.renderer,
+    sourceKind: result.sourceKind,
+    telemetry: result.telemetry,
+  };
+}
 
 export async function generateWarehousePdfViaBackend(
   input: WarehousePdfRequest,
@@ -46,26 +219,124 @@ export async function generateWarehousePdfViaBackend(
       periodTo: "periodTo" in payload ? payload.periodTo ?? null : null,
       dayLabel: "dayLabel" in payload ? payload.dayLabel ?? null : null,
       objectId: "objectId" in payload ? payload.objectId ?? null : null,
+      clientSourceFingerprint: payload.clientSourceFingerprint ?? null,
     },
   });
 
-  boundary.success("backend_invoke_start", {
-    sourceKind: "backend_invoke",
-    extra: {
-      functionName: FUNCTION_NAME,
-      documentKind: payload.documentKind,
-    },
-  });
+  const cacheKey = buildWarehousePdfClientCacheKey(payload);
+  const canUseClientHotCache = canUseWarehouseIncomingRegisterHotCache(payload);
+  const alreadyInFlight = warehousePdfClientInFlight.get(cacheKey);
+  if (alreadyInFlight) {
+    return await alreadyInFlight;
+  }
 
-  try {
-    const result = await invokeCanonicalPdfBackend({
-      functionName: FUNCTION_NAME,
-      payload,
-      expectedRole: "warehouse",
-      expectedDocumentType: payload.documentType,
-      expectedRenderBranch: RENDER_BRANCH,
-      errorPrefix: "warehouse pdf backend failed",
+  let task: Promise<WarehousePdfBackendResult>;
+  task = Promise.resolve().then(async (): Promise<WarehousePdfBackendResult> => {
+    let manifestSourceVersion: string | null = null;
+    if (canUseClientHotCache) {
+      try {
+        const manifest = await buildWarehouseIncomingRegisterManifestContract({
+          periodFrom: "periodFrom" in payload ? payload.periodFrom : null,
+          periodTo: "periodTo" in payload ? payload.periodTo : null,
+          companyName: payload.companyName,
+          warehouseName: payload.warehouseName,
+          clientSourceFingerprint: payload.clientSourceFingerprint,
+        });
+        manifestSourceVersion = manifest.sourceVersion;
+      } catch (error) {
+        boundary.error("backend_invoke_failure", error, {
+          sourceKind: "backend_invoke",
+          errorStage: "manifest_source_version",
+          extra: {
+            functionName: FUNCTION_NAME,
+            documentKind: payload.documentKind,
+          },
+        });
+      }
+    }
+
+    if (canUseClientHotCache) {
+      const cached = getWarehousePdfClientCache(cacheKey);
+      if (cached) {
+        const isVersionMatch =
+          manifestSourceVersion !== null && cached.sourceVersion === manifestSourceVersion;
+        const cacheStatus = isVersionMatch ? "manifest_version_hit" : "client_hot_hit";
+        boundary.success("backend_invoke_success", {
+          sourceKind: "remote-url",
+          extra: {
+            functionName: FUNCTION_NAME,
+            documentKind: payload.documentKind,
+            renderBranch: cached.value.renderBranch,
+            renderer: cached.value.renderer,
+            cacheStatus,
+            manifestSourceVersion: manifestSourceVersion ?? null,
+          },
+        });
+        boundary.success("signed_url_received", {
+          sourceKind: "remote-url",
+          extra: {
+            documentKind: payload.documentKind,
+            fileName: cached.value.fileName,
+            cacheStatus,
+          },
+        });
+        return cached.value;
+      }
+
+      const stored = await readWarehousePdfStoredCache(cacheKey, manifestSourceVersion);
+      if (stored) {
+        setWarehousePdfClientCache(cacheKey, stored.value, stored.sourceVersion);
+        boundary.success("backend_invoke_success", {
+          sourceKind: "remote-url",
+          extra: {
+            functionName: FUNCTION_NAME,
+            documentKind: payload.documentKind,
+            renderBranch: stored.value.renderBranch,
+            renderer: stored.value.renderer,
+            cacheStatus: "persistent_manifest_hit",
+            manifestSourceVersion: stored.sourceVersion,
+          },
+        });
+        boundary.success("signed_url_received", {
+          sourceKind: "remote-url",
+          extra: {
+            documentKind: payload.documentKind,
+            fileName: stored.value.fileName,
+            cacheStatus: "persistent_manifest_hit",
+          },
+        });
+        return stored.value;
+      }
+    }
+
+    boundary.success("backend_invoke_start", {
+      sourceKind: "backend_invoke",
+      extra: {
+        functionName: FUNCTION_NAME,
+        documentKind: payload.documentKind,
+      },
     });
+
+    let result: WarehousePdfBackendResult;
+    try {
+      result = await invokeWarehousePdfBackend(payload);
+      if (canUseClientHotCache) {
+        setWarehousePdfClientCache(cacheKey, result, manifestSourceVersion);
+        await writeWarehousePdfStoredCache(cacheKey, result, manifestSourceVersion);
+      }
+    } catch (error) {
+      boundary.error("backend_invoke_failure", error, {
+        sourceKind: "backend_invoke",
+        errorStage: "backend_invoke",
+        extra: {
+          functionName: FUNCTION_NAME,
+          documentKind: payload.documentKind,
+        },
+      });
+      throw error instanceof Error
+        ? error
+        : new Error("warehouse pdf backend failed");
+    }
 
     boundary.success("backend_invoke_success", {
       sourceKind: result.sourceKind,
@@ -73,6 +344,8 @@ export async function generateWarehousePdfViaBackend(
         functionName: FUNCTION_NAME,
         documentKind: payload.documentKind,
         renderer: result.renderer,
+        cacheStatus: result.telemetry?.cacheStatus ?? null,
+        manifestSourceVersion: manifestSourceVersion ?? null,
       },
     });
     boundary.success("pdf_storage_uploaded", {
@@ -90,31 +363,12 @@ export async function generateWarehousePdfViaBackend(
       },
     });
 
-    return {
-      source: result.source,
-      bucketId: result.bucketId,
-      storagePath: result.storagePath,
-      signedUrl: result.signedUrl,
-      fileName: result.fileName,
-      mimeType: result.mimeType,
-      generatedAt: result.generatedAt,
-      version: result.version,
-      renderBranch: RENDER_BRANCH,
-      renderer: result.renderer,
-      sourceKind: result.sourceKind,
-      telemetry: result.telemetry,
-    };
-  } catch (error) {
-    boundary.error("backend_invoke_failure", error, {
-      sourceKind: "backend_invoke",
-      errorStage: "backend_invoke",
-      extra: {
-        functionName: FUNCTION_NAME,
-        documentKind: payload.documentKind,
-      },
-    });
-    throw error instanceof Error
-      ? error
-      : new Error("warehouse pdf backend failed");
-  }
+    return result;
+  }).finally(() => {
+    if (warehousePdfClientInFlight.get(cacheKey) === task) {
+      warehousePdfClientInFlight.delete(cacheKey);
+    }
+  });
+  warehousePdfClientInFlight.set(cacheKey, task);
+  return await task;
 }

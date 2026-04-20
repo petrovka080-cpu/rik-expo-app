@@ -115,6 +115,7 @@ describe("warehouse.pdfs canonical backend path", () => {
       notifyError: jest.fn(),
       orgName: "GOX",
       warehouseName: "Main Warehouse",
+      incomingRegisterSourceFingerprint: "wir_client_v1_test",
     });
 
     await act(async () => {
@@ -137,6 +138,7 @@ describe("warehouse.pdfs canonical backend path", () => {
       generatedBy: "Складовщик",
       companyName: "GOX",
       warehouseName: "Main Warehouse",
+      clientSourceFingerprint: "wir_client_v1_test",
     });
   });
 });

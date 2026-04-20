@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Platform } from "react-native";
 import { supabase } from "../../../lib/supabaseClient";
+import { buildWarehouseIncomingRegisterClientSourceFingerprint } from "../../../lib/pdf/warehousePdf.shared";
 import { useGlobalBusy } from "../../../ui/GlobalBusy";
 import { showToast } from "../../../ui/toast";
 import { useWarehouseIncoming } from "../warehouse.incoming";
@@ -170,6 +171,15 @@ export function useWarehouseScreenData(params: {
       periodTo,
       screenActiveRef,
     });
+  const incomingRegisterSourceFingerprint = useMemo(
+    () =>
+      buildWarehouseIncomingRegisterClientSourceFingerprint({
+        periodFrom,
+        periodTo,
+        incomingRows: repIncoming,
+      }),
+    [periodFrom, periodTo, repIncoming],
+  );
   const reportsUi = useWarehouseReports({
     busy,
     supabase,
@@ -204,6 +214,7 @@ export function useWarehouseScreenData(params: {
     notifyError,
     orgName: ORG_NAME,
     warehouseName: WAREHOUSE_NAME,
+    incomingRegisterSourceFingerprint,
   });
   const {
     onPdfDocument,

@@ -17,6 +17,7 @@ type WarehousePdfRequestBase = {
   generatedBy?: string | null;
   companyName?: string | null;
   warehouseName?: string | null;
+  clientSourceFingerprint?: string | null;
 };
 
 export type WarehouseIssueFormPdfRequest = WarehousePdfRequestBase & {
@@ -66,6 +67,226 @@ export type WarehousePdfRequest =
 
 const trimText = (value: unknown) => String(value ?? "").trim();
 
+const normalizeIso10 = (value: unknown) => {
+  const text = trimText(value).slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : null;
+};
+
+const sanitizePathSegment = (value: string) =>
+  trimText(value)
+    .replace(/[^a-zA-Z0-9._-]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "") || "version";
+
+export function stableJsonStringify(value: unknown): string {
+  if (value == null) return "null";
+  if (typeof value === "number" || typeof value === "boolean") return JSON.stringify(value);
+  if (typeof value === "string") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(stableJsonStringify).join(",")}]`;
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJsonStringify(record[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(trimText(value));
+}
+
+function hashString32(input: string): string {
+  let hash = 2166136261;
+  const source = String(input || "");
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+async function stableHash(value: unknown): Promise<string> {
+  const text = stableJsonStringify(value);
+  const subtle = globalThis.crypto?.subtle;
+  if (subtle && typeof subtle.digest === "function" && typeof TextEncoder !== "undefined") {
+    const digest = await subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(digest))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+  }
+  return `fnv1a32_${hashString32(text)}`;
+}
+
+const WAREHOUSE_INCOMING_REGISTER_NOISE_KEYS = new Set([
+  "_debug",
+  "cache",
+  "duration_ms",
+  "durationMs",
+  "fetched_at",
+  "generated_at",
+  "loaded_at",
+  "nonce",
+  "request_id",
+  "signed_url",
+  "signedUrl",
+  "telemetry",
+  "timing",
+  "trace_id",
+  "traceId",
+  "transport",
+]);
+
+function stripWarehouseIncomingRegisterNoise(value: unknown, key?: string): unknown {
+  if (key && WAREHOUSE_INCOMING_REGISTER_NOISE_KEYS.has(key)) return undefined;
+  if (value == null) return null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" || typeof value === "boolean") return value;
+  if (Array.isArray(value)) return value.map((item) => stripWarehouseIncomingRegisterNoise(item));
+  if (typeof value === "object") {
+    const source = value as Record<string, unknown>;
+    const output: Record<string, unknown> = {};
+    for (const childKey of Object.keys(source).sort()) {
+      const childValue = stripWarehouseIncomingRegisterNoise(source[childKey], childKey);
+      if (childValue !== undefined) output[childKey] = childValue;
+    }
+    return output;
+  }
+  return trimText(value);
+}
+
+export const WAREHOUSE_INCOMING_REGISTER_MANIFEST_VERSION =
+  "pdf_z3_warehouse_incoming_register_manifest_v1";
+export const WAREHOUSE_INCOMING_REGISTER_DOCUMENT_KIND =
+  "warehouse_incoming_register";
+export const WAREHOUSE_INCOMING_REGISTER_TEMPLATE_VERSION =
+  "warehouse_incoming_register_template_v1";
+export const WAREHOUSE_INCOMING_REGISTER_RENDER_CONTRACT_VERSION =
+  "backend_warehouse_pdf_v1";
+export const WAREHOUSE_INCOMING_REGISTER_ARTIFACT_CONTRACT_VERSION =
+  "warehouse_incoming_register_artifact_v1";
+
+const WAREHOUSE_INCOMING_REGISTER_SOURCE_VERSION_PREFIX = "wir_src_v1";
+const WAREHOUSE_INCOMING_REGISTER_ARTIFACT_VERSION_PREFIX = "wir_art_v1";
+const WAREHOUSE_INCOMING_REGISTER_SCOPE_VERSION_PREFIX = "wir_scope_v1";
+const WAREHOUSE_INCOMING_REGISTER_ARTIFACT_ROOT =
+  "warehouse/incoming_register/artifacts/v1";
+const WAREHOUSE_INCOMING_REGISTER_MANIFEST_ROOT =
+  "warehouse/incoming_register/manifests/v1";
+
+export type WarehouseIncomingRegisterDocumentScope = {
+  role: "warehouse";
+  family: "warehouse";
+  report: "incoming_register";
+  periodFrom: string | null;
+  periodTo: string | null;
+  companyName: string | null;
+  warehouseName: string | null;
+};
+
+export type WarehouseIncomingRegisterManifestContract = {
+  version: typeof WAREHOUSE_INCOMING_REGISTER_MANIFEST_VERSION;
+  documentKind: typeof WAREHOUSE_INCOMING_REGISTER_DOCUMENT_KIND;
+  documentScope: WarehouseIncomingRegisterDocumentScope;
+  sourceVersion: string;
+  artifactVersion: string;
+  templateVersion: typeof WAREHOUSE_INCOMING_REGISTER_TEMPLATE_VERSION;
+  renderContractVersion: typeof WAREHOUSE_INCOMING_REGISTER_RENDER_CONTRACT_VERSION;
+  artifactPath: string;
+  manifestPath: string;
+  fileName: string;
+  lastSourceChangeAt: string | null;
+};
+
+export type BuildWarehouseIncomingRegisterManifestContractArgs = {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  companyName?: string | null;
+  warehouseName?: string | null;
+  clientSourceFingerprint?: string | null;
+  incomingHeads?: unknown[] | null;
+  fileName?: string | null;
+};
+
+export function buildWarehouseIncomingRegisterDocumentScope(
+  args: Pick<
+    BuildWarehouseIncomingRegisterManifestContractArgs,
+    "periodFrom" | "periodTo" | "companyName" | "warehouseName"
+  >,
+): WarehouseIncomingRegisterDocumentScope {
+  return {
+    role: "warehouse",
+    family: "warehouse",
+    report: "incoming_register",
+    periodFrom: normalizeIso10(args.periodFrom),
+    periodTo: normalizeIso10(args.periodTo),
+    companyName: trimText(args.companyName) || null,
+    warehouseName: trimText(args.warehouseName) || null,
+  };
+}
+
+export function buildWarehouseIncomingRegisterClientSourceFingerprint(args: {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  incomingRows?: unknown[] | null;
+}) {
+  const identity = {
+    version: "warehouse_incoming_register_client_source_v1",
+    periodFrom: normalizeIso10(args.periodFrom),
+    periodTo: normalizeIso10(args.periodTo),
+    incomingRows: stripWarehouseIncomingRegisterNoise(
+      Array.isArray(args.incomingRows) ? args.incomingRows : [],
+    ),
+  };
+  return `wir_client_v1_${hashString32(stableJsonStringify(identity))}`;
+}
+
+export async function buildWarehouseIncomingRegisterManifestContract(
+  args: BuildWarehouseIncomingRegisterManifestContractArgs,
+): Promise<WarehouseIncomingRegisterManifestContract> {
+  const documentScope = buildWarehouseIncomingRegisterDocumentScope(args);
+  const fileName = trimText(args.fileName) || "warehouse_incoming_register.pdf";
+  const sourceIdentity = {
+    contractVersion: WAREHOUSE_INCOMING_REGISTER_MANIFEST_VERSION,
+    documentKind: WAREHOUSE_INCOMING_REGISTER_DOCUMENT_KIND,
+    documentScope,
+    source: {
+      sourceKind: "rpc:acc_report_incoming_v2",
+      clientSourceFingerprint: stripWarehouseIncomingRegisterNoise(
+        trimText(args.clientSourceFingerprint) || null,
+      ),
+      incomingHeads: stripWarehouseIncomingRegisterNoise(
+        Array.isArray(args.incomingHeads) ? args.incomingHeads : [],
+      ),
+    },
+  };
+  const sourceHash = await stableHash(sourceIdentity);
+  const sourceVersion = `${WAREHOUSE_INCOMING_REGISTER_SOURCE_VERSION_PREFIX}_${sourceHash}`;
+  const artifactHash = await stableHash({
+    artifactContractVersion: WAREHOUSE_INCOMING_REGISTER_ARTIFACT_CONTRACT_VERSION,
+    sourceVersion,
+    templateVersion: WAREHOUSE_INCOMING_REGISTER_TEMPLATE_VERSION,
+    renderContractVersion: WAREHOUSE_INCOMING_REGISTER_RENDER_CONTRACT_VERSION,
+  });
+  const artifactVersion = `${WAREHOUSE_INCOMING_REGISTER_ARTIFACT_VERSION_PREFIX}_${artifactHash}`;
+  const scopeHash = await stableHash({
+    scopeVersion: WAREHOUSE_INCOMING_REGISTER_SCOPE_VERSION_PREFIX,
+    documentKind: WAREHOUSE_INCOMING_REGISTER_DOCUMENT_KIND,
+    documentScope,
+  });
+
+  return {
+    version: WAREHOUSE_INCOMING_REGISTER_MANIFEST_VERSION,
+    documentKind: WAREHOUSE_INCOMING_REGISTER_DOCUMENT_KIND,
+    documentScope,
+    sourceVersion,
+    artifactVersion,
+    templateVersion: WAREHOUSE_INCOMING_REGISTER_TEMPLATE_VERSION,
+    renderContractVersion: WAREHOUSE_INCOMING_REGISTER_RENDER_CONTRACT_VERSION,
+    artifactPath: `${WAREHOUSE_INCOMING_REGISTER_ARTIFACT_ROOT}/${sanitizePathSegment(artifactVersion)}/${fileName}`,
+    manifestPath: `${WAREHOUSE_INCOMING_REGISTER_MANIFEST_ROOT}/${sanitizePathSegment(scopeHash)}.json`,
+    fileName,
+    lastSourceChangeAt: null,
+  };
+}
+
 const isWarehouseDocumentKind = (
   value: string,
 ): value is WarehousePdfDocumentKind =>
@@ -94,6 +315,7 @@ const normalizeCommonFields = (row: Record<string, unknown>) => {
   const generatedBy = trimText(row.generatedBy);
   const companyName = trimText(row.companyName);
   const warehouseName = trimText(row.warehouseName);
+  const clientSourceFingerprint = trimText(row.clientSourceFingerprint);
 
   if (version !== "v1") {
     throw new Error(`warehouse pdf payload invalid version: ${version || "<empty>"}`);
@@ -113,6 +335,7 @@ const normalizeCommonFields = (row: Record<string, unknown>) => {
     generatedBy: generatedBy || null,
     companyName: companyName || null,
     warehouseName: warehouseName || null,
+    ...(clientSourceFingerprint ? { clientSourceFingerprint } : {}),
   };
 };
 

@@ -1,0 +1,792 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-20T13:54:10.898Z",
+  "baseUrl": "http://127.0.0.1:8098",
+  "selectedPath": "warehouse incoming_register all-period register PDF",
+  "route": "/office/warehouse",
+  "companyId": "84fe25c7-736d-4fda-9c69-9b9808a2ad25",
+  "samples": [
+    {
+      "mode": "cold",
+      "index": 1,
+      "wallClockMs": 5354,
+      "telemetryDurationMs": 4720,
+      "telemetryExtra": {
+        "key": "pdf:warehouse:register:incoming:all:all",
+        "label": "Готовлю реестр...",
+        "documentType": "warehouse_register",
+        "originModule": "warehouse",
+        "entityId": null,
+        "fileName": "warehouse_register_warehouse_incoming_register_all_all.pdf",
+        "hasSourceReadyMark": true,
+        "hasRouteMountedMark": true,
+        "tapToSourceReadyMs": 4518,
+        "prepareDurationMs": 4517,
+        "tapToRoutePushMs": 4518,
+        "tapToRouteMountedMs": 4529,
+        "routePushToMountedMs": 11,
+        "routeMountedToVisibleMs": 191,
+        "sourceReadyToVisibleMs": 202,
+        "routePushToVisibleMs": 202,
+        "tapToVisibleMs": 4720,
+        "tapToTerminalMs": 4720,
+        "terminalStage": "first_open_visible",
+        "openToken": null,
+        "sessionId": "session_mo79a3at_2",
+        "previewPath": "/pdf-viewer"
+      },
+      "functionResponses": [
+        {
+          "status": 200,
+          "renderer": "artifact_cache",
+          "cacheStatus": "artifact_hit",
+          "signedUrlPresent": true,
+          "telemetry": {
+            "functionName": "warehouse-pdf",
+            "documentKind": "incoming_register",
+            "requestedByUserId": "2c412918-319c-4786-9ab4-df8e48a92a49",
+            "periodFrom": "",
+            "periodTo": "",
+            "dayLabel": null,
+            "cacheStatus": "artifact_hit",
+            "cacheVersion": "pdf_z3_warehouse_incoming_register_artifact_v1",
+            "templateVersion": "warehouse_incoming_register_template_v1",
+            "sourceVersion": "wir_src_v1_879188fcf3c4c8cfc729dc516f20582633d06723865267c5fe5aa11dee692edc",
+            "artifactVersion": "wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90",
+            "sourceMs": 333,
+            "renderMs": 0,
+            "uploadAndSignMs": 0,
+            "totalMs": 1644
+          }
+        }
+      ],
+      "finalUrl": "http://127.0.0.1:8098/pdf-viewer?sessionId=session_mo79a3at_2&openToken=pdf_open_mo79a3as_1"
+    },
+    {
+      "mode": "warm",
+      "index": 1,
+      "wallClockMs": 780,
+      "telemetryDurationMs": 174,
+      "telemetryExtra": {
+        "key": "pdf:warehouse:register:incoming:all:all",
+        "label": "Готовлю реестр...",
+        "documentType": "warehouse_register",
+        "originModule": "warehouse",
+        "entityId": null,
+        "fileName": "warehouse_register_warehouse_incoming_register_all_all.pdf",
+        "hasSourceReadyMark": true,
+        "hasRouteMountedMark": true,
+        "tapToSourceReadyMs": 6,
+        "prepareDurationMs": 6,
+        "tapToRoutePushMs": 6,
+        "tapToRouteMountedMs": 11,
+        "routePushToMountedMs": 5,
+        "routeMountedToVisibleMs": 162,
+        "sourceReadyToVisibleMs": 168,
+        "routePushToVisibleMs": 168,
+        "tapToVisibleMs": 174,
+        "tapToTerminalMs": 174,
+        "terminalStage": "first_open_visible",
+        "openToken": null,
+        "sessionId": "session_mo79a5kg_2",
+        "previewPath": "/pdf-viewer"
+      },
+      "functionResponses": [],
+      "finalUrl": "http://127.0.0.1:8098/pdf-viewer?sessionId=session_mo79a5kg_2&openToken=pdf_open_mo79a5kg_1"
+    },
+    {
+      "mode": "warm",
+      "index": 2,
+      "wallClockMs": 807,
+      "telemetryDurationMs": 150,
+      "telemetryExtra": {
+        "key": "pdf:warehouse:register:incoming:all:all",
+        "label": "Готовлю реестр...",
+        "documentType": "warehouse_register",
+        "originModule": "warehouse",
+        "entityId": null,
+        "fileName": "warehouse_register_warehouse_incoming_register_all_all.pdf",
+        "hasSourceReadyMark": true,
+        "hasRouteMountedMark": true,
+        "tapToSourceReadyMs": 6,
+        "prepareDurationMs": 6,
+        "tapToRoutePushMs": 6,
+        "tapToRouteMountedMs": 12,
+        "routePushToMountedMs": 6,
+        "routeMountedToVisibleMs": 137,
+        "sourceReadyToVisibleMs": 143,
+        "routePushToVisibleMs": 143,
+        "tapToVisibleMs": 150,
+        "tapToTerminalMs": 150,
+        "terminalStage": "first_open_visible",
+        "openToken": null,
+        "sessionId": "session_mo79a7t7_2",
+        "previewPath": "/pdf-viewer"
+      },
+      "functionResponses": [],
+      "finalUrl": "http://127.0.0.1:8098/pdf-viewer?sessionId=session_mo79a7t7_2&openToken=pdf_open_mo79a7t7_1"
+    },
+    {
+      "mode": "warm",
+      "index": 3,
+      "wallClockMs": 782,
+      "telemetryDurationMs": 138,
+      "telemetryExtra": {
+        "key": "pdf:warehouse:register:incoming:all:all",
+        "label": "Готовлю реестр...",
+        "documentType": "warehouse_register",
+        "originModule": "warehouse",
+        "entityId": null,
+        "fileName": "warehouse_register_warehouse_incoming_register_all_all.pdf",
+        "hasSourceReadyMark": true,
+        "hasRouteMountedMark": true,
+        "tapToSourceReadyMs": 6,
+        "prepareDurationMs": 6,
+        "tapToRoutePushMs": 6,
+        "tapToRouteMountedMs": 11,
+        "routePushToMountedMs": 5,
+        "routeMountedToVisibleMs": 128,
+        "sourceReadyToVisibleMs": 133,
+        "routePushToVisibleMs": 132,
+        "tapToVisibleMs": 138,
+        "tapToTerminalMs": 138,
+        "terminalStage": "first_open_visible",
+        "openToken": null,
+        "sessionId": "session_mo79aa1l_2",
+        "previewPath": "/pdf-viewer"
+      },
+      "functionResponses": [],
+      "finalUrl": "http://127.0.0.1:8098/pdf-viewer?sessionId=session_mo79aa1l_2&openToken=pdf_open_mo79aa1l_1"
+    },
+    {
+      "mode": "repeat",
+      "index": 1,
+      "wallClockMs": 795,
+      "telemetryDurationMs": 139,
+      "telemetryExtra": {
+        "key": "pdf:warehouse:register:incoming:all:all",
+        "label": "Готовлю реестр...",
+        "documentType": "warehouse_register",
+        "originModule": "warehouse",
+        "entityId": null,
+        "fileName": "warehouse_register_warehouse_incoming_register_all_all.pdf",
+        "hasSourceReadyMark": true,
+        "hasRouteMountedMark": true,
+        "tapToSourceReadyMs": 6,
+        "prepareDurationMs": 6,
+        "tapToRoutePushMs": 6,
+        "tapToRouteMountedMs": 10,
+        "routePushToMountedMs": 4,
+        "routeMountedToVisibleMs": 129,
+        "sourceReadyToVisibleMs": 133,
+        "routePushToVisibleMs": 133,
+        "tapToVisibleMs": 139,
+        "tapToTerminalMs": 139,
+        "terminalStage": "first_open_visible",
+        "openToken": null,
+        "sessionId": "session_mo79ab7d_4",
+        "previewPath": "/pdf-viewer"
+      },
+      "functionResponses": [],
+      "finalUrl": "http://127.0.0.1:8098/pdf-viewer?sessionId=session_mo79ab7d_4&openToken=pdf_open_mo79ab7d_2"
+    },
+    {
+      "mode": "repeat",
+      "index": 2,
+      "wallClockMs": 808,
+      "telemetryDurationMs": 136,
+      "telemetryExtra": {
+        "key": "pdf:warehouse:register:incoming:all:all",
+        "label": "Готовлю реестр...",
+        "documentType": "warehouse_register",
+        "originModule": "warehouse",
+        "entityId": null,
+        "fileName": "warehouse_register_warehouse_incoming_register_all_all.pdf",
+        "hasSourceReadyMark": true,
+        "hasRouteMountedMark": true,
+        "tapToSourceReadyMs": 5,
+        "prepareDurationMs": 5,
+        "tapToRoutePushMs": 5,
+        "tapToRouteMountedMs": 9,
+        "routePushToMountedMs": 4,
+        "routeMountedToVisibleMs": 127,
+        "sourceReadyToVisibleMs": 131,
+        "routePushToVisibleMs": 131,
+        "tapToVisibleMs": 136,
+        "tapToTerminalMs": 136,
+        "terminalStage": "first_open_visible",
+        "openToken": null,
+        "sessionId": "session_mo79acdb_6",
+        "previewPath": "/pdf-viewer"
+      },
+      "functionResponses": [],
+      "finalUrl": "http://127.0.0.1:8098/pdf-viewer?sessionId=session_mo79acdb_6&openToken=pdf_open_mo79acdb_3"
+    },
+    {
+      "mode": "repeat",
+      "index": 3,
+      "wallClockMs": 830,
+      "telemetryDurationMs": 137,
+      "telemetryExtra": {
+        "key": "pdf:warehouse:register:incoming:all:all",
+        "label": "Готовлю реестр...",
+        "documentType": "warehouse_register",
+        "originModule": "warehouse",
+        "entityId": null,
+        "fileName": "warehouse_register_warehouse_incoming_register_all_all.pdf",
+        "hasSourceReadyMark": true,
+        "hasRouteMountedMark": true,
+        "tapToSourceReadyMs": 5,
+        "prepareDurationMs": 5,
+        "tapToRoutePushMs": 5,
+        "tapToRouteMountedMs": 9,
+        "routePushToMountedMs": 4,
+        "routeMountedToVisibleMs": 128,
+        "sourceReadyToVisibleMs": 132,
+        "routePushToVisibleMs": 132,
+        "tapToVisibleMs": 137,
+        "tapToTerminalMs": 137,
+        "terminalStage": "first_open_visible",
+        "openToken": null,
+        "sessionId": "session_mo79adk0_8",
+        "previewPath": "/pdf-viewer"
+      },
+      "functionResponses": [],
+      "finalUrl": "http://127.0.0.1:8098/pdf-viewer?sessionId=session_mo79adk0_8&openToken=pdf_open_mo79adk0_4"
+    }
+  ],
+  "summary": {
+    "warm": {
+      "count": 3,
+      "median": 150,
+      "max": 174
+    },
+    "repeat": {
+      "count": 3,
+      "median": 137,
+      "max": 139
+    },
+    "repeatBudgetMs": 300,
+    "warmBudgetMs": 800,
+    "repeatWithinBudget": true,
+    "warmWithinBudget": true
+  },
+  "functionResponseCount": 1,
+  "functionResponses": [
+    {
+      "status": 200,
+      "renderer": "artifact_cache",
+      "cacheStatus": "artifact_hit",
+      "signedUrlPresent": true,
+      "telemetry": {
+        "functionName": "warehouse-pdf",
+        "documentKind": "incoming_register",
+        "requestedByUserId": "2c412918-319c-4786-9ab4-df8e48a92a49",
+        "periodFrom": "",
+        "periodTo": "",
+        "dayLabel": null,
+        "cacheStatus": "artifact_hit",
+        "cacheVersion": "pdf_z3_warehouse_incoming_register_artifact_v1",
+        "templateVersion": "warehouse_incoming_register_template_v1",
+        "sourceVersion": "wir_src_v1_879188fcf3c4c8cfc729dc516f20582633d06723865267c5fe5aa11dee692edc",
+        "artifactVersion": "wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90",
+        "sourceMs": 333,
+        "renderMs": 0,
+        "uploadAndSignMs": 0,
+        "totalMs": 1644
+      }
+    }
+  ],
+  "pageErrors": [],
+  "badResponses": [],
+  "blockingConsole": [],
+  "eventCounts": {
+    "viewerReady": 7,
+    "viewerErrors": 0,
+    "backendInvokeStart": 0,
+    "backendInvokeSuccess": 0
+  },
+  "consoleTail": [
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: session_mo79a3at_2, documentType: warehouse_register, originModule: warehouse, remoteUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mo79a3at_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79a3at_2, openToken: pdf_open_mo79a3as_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79a3at_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: session_mo79a3at_2, documentType: warehouse_register, originModule: warehouse, iframeSrc: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderInstanceKey: pdf-render:web:session_mo79a3at_2:asset_mo79a3at_1:web-frame:0:765097b:765097b}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_ready_fallback {sessionId: session_mo79a3at_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, delayMs: 180}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] ready {documentType: warehouse_register, originModule: warehouse, ms: 192}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79a3at_2, openToken: pdf_open_mo79a3as_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79a3at_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] module_loaded {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79a5kg_2, openToken: pdf_open_mo79a5kg_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79a5kg_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: session_mo79a5kg_2, receivedSessionId: session_mo79a5kg_2, initialUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, initialScheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: session_mo79a5kg_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: session_mo79a5kg_2, documentType: warehouse_register, originModule: warehouse, remoteUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mo79a5kg_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79a5kg_2, openToken: pdf_open_mo79a5kg_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79a5kg_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: session_mo79a5kg_2, documentType: warehouse_register, originModule: warehouse, iframeSrc: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderInstanceKey: pdf-render:web:session_mo79a5kg_2:asset_mo79a5kg_1:web-frame:0:765097b:765097b}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_load {sessionId: session_mo79a5kg_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] ready {documentType: warehouse_register, originModule: warehouse, ms: 163}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79a5kg_2, openToken: pdf_open_mo79a5kg_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79a5kg_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] module_loaded {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79a7t7_2, openToken: pdf_open_mo79a7t7_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79a7t7_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: session_mo79a7t7_2, receivedSessionId: session_mo79a7t7_2, initialUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, initialScheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: session_mo79a7t7_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: session_mo79a7t7_2, documentType: warehouse_register, originModule: warehouse, remoteUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mo79a7t7_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79a7t7_2, openToken: pdf_open_mo79a7t7_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79a7t7_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: session_mo79a7t7_2, documentType: warehouse_register, originModule: warehouse, iframeSrc: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderInstanceKey: pdf-render:web:session_mo79a7t7_2:asset_mo79a7t7_1:web-frame:0:765097b:765097b}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_load {sessionId: session_mo79a7t7_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] ready {documentType: warehouse_register, originModule: warehouse, ms: 138}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79a7t7_2, openToken: pdf_open_mo79a7t7_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79a7t7_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] module_loaded {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79aa1l_2, openToken: pdf_open_mo79aa1l_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79aa1l_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: session_mo79aa1l_2, receivedSessionId: session_mo79aa1l_2, initialUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, initialScheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: session_mo79aa1l_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: session_mo79aa1l_2, documentType: warehouse_register, originModule: warehouse, remoteUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mo79aa1l_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79aa1l_2, openToken: pdf_open_mo79aa1l_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79aa1l_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: session_mo79aa1l_2, documentType: warehouse_register, originModule: warehouse, iframeSrc: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderInstanceKey: pdf-render:web:session_mo79aa1l_2:asset_mo79aa1l_1:web-frame:0:765097b:765097b}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_load {sessionId: session_mo79aa1l_2, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] ready {documentType: warehouse_register, originModule: warehouse, ms: 128}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79aa1l_2, openToken: pdf_open_mo79aa1l_1, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79aa1l_2, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] unmount {sessionId: session_mo79aa1l_2, documentType: warehouse_register, originModule: warehouse, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79ab7d_4, openToken: pdf_open_mo79ab7d_2, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79ab7d_4, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: session_mo79ab7d_4, receivedSessionId: session_mo79ab7d_4, initialUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, initialScheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: session_mo79ab7d_4, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: session_mo79ab7d_4, documentType: warehouse_register, originModule: warehouse, remoteUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mo79ab7d_4, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79ab7d_4, openToken: pdf_open_mo79ab7d_2, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79ab7d_4, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: session_mo79ab7d_4, documentType: warehouse_register, originModule: warehouse, iframeSrc: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderInstanceKey: pdf-render:web:session_mo79ab7d_4:asset_mo79ab7d_3:web-frame:0:765097b:765097b}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_load {sessionId: session_mo79ab7d_4, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] ready {documentType: warehouse_register, originModule: warehouse, ms: 129}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79ab7d_4, openToken: pdf_open_mo79ab7d_2, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79ab7d_4, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] unmount {sessionId: session_mo79ab7d_4, documentType: warehouse_register, originModule: warehouse, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79acdb_6, openToken: pdf_open_mo79acdb_3, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79acdb_6, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: session_mo79acdb_6, receivedSessionId: session_mo79acdb_6, initialUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, initialScheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: session_mo79acdb_6, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: session_mo79acdb_6, documentType: warehouse_register, originModule: warehouse, remoteUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mo79acdb_6, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79acdb_6, openToken: pdf_open_mo79acdb_3, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79acdb_6, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: session_mo79acdb_6, documentType: warehouse_register, originModule: warehouse, iframeSrc: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderInstanceKey: pdf-render:web:session_mo79acdb_6:asset_mo79acdb_5:web-frame:0:765097b:765097b}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_load {sessionId: session_mo79acdb_6, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] ready {documentType: warehouse_register, originModule: warehouse, ms: 127}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79acdb_6, openToken: pdf_open_mo79acdb_3, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79acdb_6, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] unmount {sessionId: session_mo79acdb_6, documentType: warehouse_register, originModule: warehouse, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79adk0_8, openToken: pdf_open_mo79adk0_4, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79adk0_8, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_route_mounted {platform: web, sessionId: session_mo79adk0_8, receivedSessionId: session_mo79adk0_8, initialUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, initialScheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] open {sessionId: session_mo79adk0_8, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, scheme: https}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_src_ready {sessionId: session_mo79adk0_8, documentType: warehouse_register, originModule: warehouse, remoteUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderUri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_before_render {platform: web, sessionId: session_mo79adk0_8, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79adk0_8, openToken: pdf_open_mo79adk0_4, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79adk0_8, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_render {sessionId: session_mo79adk0_8, documentType: warehouse_register, originModule: warehouse, iframeSrc: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs, renderInstanceKey: pdf-render:web:session_mo79adk0_8:asset_mo79adk0_7:web-frame:0:765097b:765097b}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] web_iframe_load {sessionId: session_mo79adk0_8, documentType: warehouse_register, originModule: warehouse, uri: https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v…4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] ready {documentType: warehouse_register, originModule: warehouse, ms: 129}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_screen_enter {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_params_parsed {platform: web, sessionId: session_mo79adk0_8, openToken: pdf_open_mo79adk0_4, hasUri: false}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] viewer_snapshot_resolved {platform: web, hasSession: true, hasAsset: true, sessionId: session_mo79adk0_8, assetUri: 04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs}"
+    }
+  ],
+  "hardFailures": []
+}
