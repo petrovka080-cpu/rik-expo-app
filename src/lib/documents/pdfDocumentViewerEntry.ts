@@ -48,12 +48,13 @@ export async function pushPdfDocumentViewerRouteSafely(
   await new Promise<void>((resolve, reject) => {
     const runPush = () => {
       try {
+        const shouldPushViewerRoute = Platform.OS === "ios" || Platform.OS === "web";
         if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_start", {
           href: String(href),
           platform: Platform.OS,
-          method: Platform.OS === "ios" ? "push" : "replace",
+          method: shouldPushViewerRoute ? "push" : "replace",
         });
-        if (Platform.OS === "ios") {
+        if (shouldPushViewerRoute) {
           if (typeof rootRouter?.push === "function") {
             rootRouter.push(href);
           } else {

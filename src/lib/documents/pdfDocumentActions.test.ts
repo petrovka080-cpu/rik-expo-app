@@ -258,7 +258,7 @@ describe("pdfDocumentActions", () => {
       router: { push },
     });
 
-    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-1&openToken=");
+    expect(mockRootRouterPush).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-1&openToken=");
     expect(push).not.toHaveBeenCalled();
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
   });
@@ -310,7 +310,7 @@ describe("pdfDocumentActions", () => {
     });
 
     expect(mockCreateDocumentPreviewSession).toHaveBeenCalledWith(supplierDocument);
-    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-supplier-1&openToken=");
+    expect(mockRootRouterPush).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-supplier-1&openToken=");
     expect(push).not.toHaveBeenCalled();
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
     expect(

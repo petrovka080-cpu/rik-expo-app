@@ -72,7 +72,7 @@ describe("pdfDocumentViewerEntry", () => {
     );
   });
 
-  it("uses root replace on web without waiting for modal interactions", async () => {
+  it("uses root push on web so the viewer back action can return to the opener", async () => {
     const router = {
       push: jest.fn(),
       replace: jest.fn(),
@@ -83,8 +83,8 @@ describe("pdfDocumentViewerEntry", () => {
       "/pdf-viewer?sessionId=session-1&openToken=" as Parameters<typeof pushPdfDocumentViewerRouteSafely>[1],
     );
 
-    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-1&openToken=");
-    expect(mockRootRouterPush).not.toHaveBeenCalled();
+    expect(mockRootRouterPush).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-1&openToken=");
+    expect(mockRootRouterReplace).not.toHaveBeenCalled();
     expect(router.push).not.toHaveBeenCalled();
     expect(router.replace).not.toHaveBeenCalled();
     expect(mockRunAfterInteractions).not.toHaveBeenCalled();
@@ -167,7 +167,8 @@ describe("pdfDocumentViewerEntry", () => {
     );
 
     expect(mockRunAfterInteractions).toHaveBeenCalledTimes(1);
-    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-dismiss-error&openToken=");
+    expect(mockRootRouterPush).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-dismiss-error&openToken=");
+    expect(mockRootRouterReplace).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalled();
   });
 });
