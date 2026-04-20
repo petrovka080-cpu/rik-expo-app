@@ -743,7 +743,7 @@ export function useForemanScreenController() {
         requestId: rid,
         generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
         displayNo: labelForRequest(rid),
-        title: `Р—Р°СЏРІРєР° ${rid}`,
+        title: `Заявка ${rid}`,
       });
       await prepareAndPreviewGeneratedPdf({
         busy: gbusy,

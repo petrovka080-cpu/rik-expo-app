@@ -843,7 +843,7 @@ export function useForemanSubcontractController({
         requestId: rid,
         generatedBy: foremanName || null,
         displayNo: displayNo || null,
-        title: displayNo ? `Р§РµСЂРЅРѕРІРёРє ${displayNo}` : `Р§РµСЂРЅРѕРІРёРє ${rid}`,
+        title: displayNo ? `Черновик ${displayNo}` : `Черновик ${rid}`,
       });
       const title = displayNo ? `Черновик ${displayNo}` : `Черновик ${rid}`;
       return {
@@ -874,7 +874,7 @@ export function useForemanSubcontractController({
       const template = await buildForemanRequestPdfDescriptor({
         requestId: rid,
         generatedBy: foremanName || null,
-        title: `Р—Р°СЏРІРєР° ${rid}`,
+        title: `Заявка ${rid}`,
       });
       return {
         ...template,
@@ -1023,7 +1023,7 @@ export function useForemanSubcontractController({
         onRemoveDraftItem={removeDraftItem}
         onClearDraft={() => void clearDraft()}
         onPdf={() => void onPdf()}
-        onExcel={() => Alert.alert("Excel", "Р­РєСЃРїРѕСЂС‚ Excel РґР»СЏ РїРѕРґСЂСЏРґРѕРІ Р±СѓРґРµС‚ РґРѕР±Р°РІР»РµРЅ.")}
+        onExcel={() => Alert.alert("Excel", "Экспорт Excel для подрядов будет добавлен.")}
         onSendToDirector={() => void sendToDirector()}
         periodPickerVisible={!!dateTarget}
         onClosePeriodPicker={() => setDateTarget(null)}

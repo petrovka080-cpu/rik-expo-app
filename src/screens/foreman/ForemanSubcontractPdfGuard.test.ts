@@ -50,4 +50,12 @@ describe("Foreman subcontract PDF preview guard wiring", () => {
     expect(historyPdfSource).toContain("onBeforeNavigate: closeRequestHistory");
     expect(historyPdfSource).not.toContain("descriptor:");
   });
+
+  it("keeps subcontract PDF and export copy readable", () => {
+    expect(controllerSource).toContain("title: displayNo ? `Черновик ${displayNo}` : `Черновик ${rid}`");
+    expect(controllerSource).toContain("Экспорт Excel для подрядов будет добавлен.");
+    expect(controllerSource).not.toContain("Р§РµСЂРЅРѕРІРёРє");
+    expect(controllerSource).not.toContain("Р—Р°СЏРІРєР°");
+    expect(controllerSource).not.toContain("Р­РєСЃРїРѕСЂС‚");
+  });
 });

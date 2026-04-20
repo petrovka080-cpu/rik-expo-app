@@ -576,6 +576,7 @@ describe("useForemanScreenController", () => {
     expect(mockBuildForemanRequestPdfDescriptor).toHaveBeenCalledWith(expect.objectContaining({
       requestId: "req-77",
       displayNo: "#req-",
+      title: "Заявка req-77",
     }));
 
     await act(async () => {

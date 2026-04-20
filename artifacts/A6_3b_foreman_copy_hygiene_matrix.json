@@ -1,0 +1,23 @@
+[
+  {
+    "test": "ForemanSubcontractPdfGuard keeps subcontract PDF and export copy readable",
+    "target": "src/screens/foreman/hooks/useForemanSubcontractController.tsx",
+    "scenario": "subcontract draft/history PDF titles and Excel placeholder copy",
+    "expected": "readable Russian copy is present and previous mojibake signatures are absent",
+    "result": "PASS"
+  },
+  {
+    "test": "useForemanScreenController routes history PDF descriptor creation through the guarded preview factory",
+    "target": "src/screens/foreman/useForemanScreenController.ts",
+    "scenario": "history PDF descriptor factory receives title for request id req-77",
+    "expected": "descriptor title is readable: Заявка req-77",
+    "result": "PASS"
+  },
+  {
+    "test": "grep product touched Foreman copy",
+    "target": "Foreman PDF/export product files",
+    "scenario": "search touched product files for previous mojibake signatures",
+    "expected": "no product matches",
+    "result": "PASS"
+  }
+]
