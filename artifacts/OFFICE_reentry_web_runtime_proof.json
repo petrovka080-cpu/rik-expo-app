@@ -1,0 +1,140 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-04-21T12:48:23.799Z",
+  "route": "/office",
+  "firstUrl": "http://localhost:8081/office",
+  "finalUrl": "http://localhost:8081/office",
+  "bodySample": "Подключить Office Создайте компанию, чтобы начать работу. Создать компанию После создания вы сразу входите как директор и получаете все управляемые направления. Наименование компании Юридический адрес компании Сфера деятельности ИНН компании Основной телефон Email компании Наименование объекта строительства Фактический адрес строительства Сайт компании Дополнительные телефоны Добавить телефон Создать компанию Правила доступа • Регистрация сама по себе не выдает office-роли автоматически. • Создание компании открывает Office и назначает только стартовую роль director. • Остальные роли появляются только через приглашение или явное назначение.   Главная   Офис   +   Чаты   Профиль  AI",
+  "officeReentryConsoleSeen": true,
+  "noPageErrors": true,
+  "no5xx": true,
+  "consoleErrorCount": 0,
+  "consoleSample": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+    },
+    {
+      "type": "warning",
+      "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+    },
+    {
+      "type": "info",
+      "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] module_loaded {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_post_return_subtree_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_reentry_component_enter, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_reentry_mount, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_post_return_subtree_done, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_reentry_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_reentry_route_match, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_post_return_subtree_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_reentry_render_success, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_post_return_subtree_done, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_bootstrap_initial_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_reentry_effect_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_loading_shell_enter, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_owner_mount, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_scope_active, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_owner_identity, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_owner_mount, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_owner_identity, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: startup_bootstrap, event: app_launch_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: startup_bootstrap, event: bootstrap_enter, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: auth_session_gate, event: auth_check_start, result: skipped, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: auth_session_gate, event: auth_session_read_start, result: skipped, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_native_focus_callback_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_post_return_subtree_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_post_return_focus, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_post_return_subtree_done, result: success, durationMs: null}"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "serverErrors": [],
+  "serverStarted": false,
+  "screenshot": "artifacts\\OFFICE_reentry_web_runtime_proof.png"
+}

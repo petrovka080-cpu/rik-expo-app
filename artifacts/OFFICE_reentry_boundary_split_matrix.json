@@ -1,0 +1,109 @@
+{
+  "wave": "OFFICE_REENTRY_BOUNDARY_SPLIT",
+  "status": "release_ready",
+  "scope": {
+    "exactOwner": "src/lib/navigation/officeReentryBreadcrumbs.ts",
+    "excluded": [
+      "auth flow",
+      "Office shell/layout rewrite",
+      "role business logic",
+      "PDF domain",
+      "SQL/RPC",
+      "unrelated navigation modules"
+    ]
+  },
+  "touchedFiles": [
+    "src/lib/navigation/officeReentryBreadcrumbs.ts",
+    "src/lib/navigation/officeReentryBreadcrumbBatcher.ts",
+    "src/lib/navigation/officeReentryBreadcrumbDiagnostics.ts",
+    "src/lib/navigation/officeReentryBreadcrumbMarkers.ts",
+    "src/lib/navigation/officeReentryBreadcrumbs.contract.ts",
+    "src/lib/navigation/officeReentryBreadcrumbs.persistence.ts",
+    "src/lib/navigation/officeReentryRouteReturnReceipt.ts",
+    "tests/navigation/officeReentryBoundarySplit.decomposition.test.ts",
+    "tests/navigation/officeReentryBreadcrumbDiagnostics.test.ts",
+    "tests/navigation/officeReentryRouteReturnReceipt.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "extractedOwners": [
+    {
+      "file": "src/lib/navigation/officeReentryBreadcrumbs.contract.ts",
+      "responsibility": "shared types, constants, normalization helpers"
+    },
+    {
+      "file": "src/lib/navigation/officeReentryBreadcrumbBatcher.ts",
+      "responsibility": "batching and flush discipline"
+    },
+    {
+      "file": "src/lib/navigation/officeReentryBreadcrumbs.persistence.ts",
+      "responsibility": "AsyncStorage persistence and AppState final flush"
+    },
+    {
+      "file": "src/lib/navigation/officeReentryBreadcrumbDiagnostics.ts",
+      "responsibility": "post-return probe diagnostics"
+    },
+    {
+      "file": "src/lib/navigation/officeReentryRouteReturnReceipt.ts",
+      "responsibility": "route return receipt ownership"
+    },
+    {
+      "file": "src/lib/navigation/officeReentryBreadcrumbMarkers.ts",
+      "responsibility": "marker recording and observability payload shaping"
+    }
+  ],
+  "publicEntrypoint": {
+    "file": "src/lib/navigation/officeReentryBreadcrumbs.ts",
+    "role": "stable public barrel entrypoint",
+    "lineCountBefore": 1484,
+    "lineCountAfter": 123
+  },
+  "gates": {
+    "tsc": "PASS",
+    "lint": "PASS",
+    "focusedOfficeTests": "PASS",
+    "jestRunInBand": "PASS",
+    "jestParallel": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "focusedTests": {
+    "command": "npx jest tests/navigation/officeReentryBreadcrumbs.test.ts tests/navigation/officeReentryBreadcrumbDiagnostics.test.ts tests/navigation/officeReentryRouteReturnReceipt.test.ts tests/navigation/officeReentryBoundarySplit.decomposition.test.ts src/screens/office/office.reentry.test.ts tests/office/officeOwnerSplit.decomposition.test.ts tests/perf/performance-budget.test.ts --runInBand --no-coverage",
+    "suiteCount": 7,
+    "testCount": 55,
+    "status": "PASS"
+  },
+  "runtimeProof": {
+    "web": {
+      "status": "PASS",
+      "artifact": "artifacts/OFFICE_reentry_web_runtime_proof.json",
+      "route": "/office",
+      "officeReentryConsoleSeen": true,
+      "noPageErrors": true,
+      "no5xx": true
+    },
+    "android": {
+      "status": "PASS",
+      "artifact": "artifacts/office-role-route-runtime-proof.json",
+      "routeProofPassed": true,
+      "noFatalException": true,
+      "rolesPassed": [
+        "buyer",
+        "accountant",
+        "contractor",
+        "director",
+        "foreman"
+      ],
+      "note": "Verifier artifact passed; parent process later hung and was terminated after proof capture."
+    }
+  },
+  "hygiene": {
+    "asAny": false,
+    "tsIgnore": false,
+    "eslintDisable": false,
+    "silentCatch": false
+  },
+  "release": {
+    "runtimeDiff": true,
+    "otaExpected": true,
+    "state": "pending_commit_push_ota"
+  }
+}
