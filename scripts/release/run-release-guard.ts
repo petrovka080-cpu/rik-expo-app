@@ -5,7 +5,9 @@ import path from "node:path";
 import { getExpectedReleaseBranch, isCanonicalReleaseChannel } from "../../src/shared/release/releaseInfo";
 import { PROJECT_ROOT } from "./releaseConfig.shared";
 import {
+  RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES,
   buildReleaseChangedFilesGitArgs,
+  buildReleaseGuardOtaPublishEnv,
   REQUIRED_RELEASE_GATES,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
@@ -370,9 +372,17 @@ function main() {
   const publishResult = spawnSync("npx", ["eas", "update", "--branch", targetChannel, "--message", message], {
     cwd: PROJECT_ROOT,
     encoding: "utf8",
+    env: buildReleaseGuardOtaPublishEnv(process.env),
+    maxBuffer: RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES,
     shell: process.platform === "win32",
     stdio: ["ignore", "pipe", "pipe"],
   });
+
+  if (publishResult.error) {
+    const errorOutput = `${publishResult.stdout ?? ""}${publishResult.stderr ?? ""}`.trim();
+    const cause = publishResult.error.message.trim();
+    throw new Error(`${cause}${errorOutput ? `\n${errorOutput}` : ""}`);
+  }
 
   if (publishResult.status !== 0) {
     const errorOutput = `${publishResult.stdout ?? ""}${publishResult.stderr ?? ""}`.trim();

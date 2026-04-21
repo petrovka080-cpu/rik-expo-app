@@ -93,12 +93,23 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "git-diff-check", command: "git diff --check" },
 ];
 
+export const RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES = 64 * 1024 * 1024;
+
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/g, "/").replace(/^\.\//, "");
 }
 
 export function resolveReleaseGuardPath(projectRoot: string, filePath: string): string {
   return path.isAbsolute(filePath) ? filePath : path.join(projectRoot, filePath);
+}
+
+export function buildReleaseGuardOtaPublishEnv(
+  baseEnv: NodeJS.ProcessEnv,
+): NodeJS.ProcessEnv {
+  return {
+    ...baseEnv,
+    CI: baseEnv.CI ?? "1",
+  };
 }
 
 export function buildReleaseChangedFilesGitArgs(range: string): string[] {

@@ -1,5 +1,7 @@
 import {
+  RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES,
   buildReleaseChangedFilesGitArgs,
+  buildReleaseGuardOtaPublishEnv,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
@@ -274,6 +276,33 @@ EAS Dashboard      https://expo.dev/update/group-123
       expect(resolveReleaseGuardPath("C:\\repo", "artifacts/release-guard.json").replace(/\\/g, "/")).toBe(
         "C:/repo/artifacts/release-guard.json",
       );
+    });
+  });
+
+  describe("buildReleaseGuardOtaPublishEnv", () => {
+    it("forces CI for guarded OTA publishes when the base env is interactive", () => {
+      expect(
+        buildReleaseGuardOtaPublishEnv({
+          ...process.env,
+          EXPO_TOKEN: "token",
+        }).CI,
+      ).toBe("1");
+    });
+
+    it("preserves an explicit CI value from the caller environment", () => {
+      expect(
+        buildReleaseGuardOtaPublishEnv({
+          ...process.env,
+          CI: "already-set",
+          EXPO_TOKEN: "token",
+        }).CI,
+      ).toBe("already-set");
+    });
+  });
+
+  describe("RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES", () => {
+    it("keeps enough headroom for noisy guarded OTA publish output", () => {
+      expect(RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES).toBeGreaterThanOrEqual(64 * 1024 * 1024);
     });
   });
 
