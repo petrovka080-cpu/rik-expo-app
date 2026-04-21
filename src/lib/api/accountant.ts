@@ -3,6 +3,7 @@ import { ensureProposalExists, ensureProposalItemIdsBelongToProposal } from "./i
 import { trackRpcLatency } from "../observability/rpcLatencyMetrics";
 import type { AccountantInboxRow } from "./types";
 import type { Database } from "../database.types";
+import { applySupabaseAbortSignal, throwIfAborted } from "../requestCancellation";
 
 type SendToAccountantInput = {
   proposalId: string | number;
@@ -527,20 +528,27 @@ export async function accountantAddPaymentWithAllocations(input: {
 
 export async function accountantLoadProposalFinancialState(
   proposalId: string | number,
+  options?: { signal?: AbortSignal | null },
 ): Promise<AccountantProposalFinancialState> {
   const pid = String(proposalId);
+  throwIfAborted(options?.signal);
   const proposal = await ensureProposalExists(client, pid, {
     screen: "accountant",
     surface: "proposal_financial_state",
     sourceKind: "rpc:accountant_proposal_financial_state_v1",
-  });
+  }, options);
+  throwIfAborted(options?.signal);
 
   const args: AccountantProposalFinancialStateArgs = {
     p_proposal_id: proposal.proposalId,
   };
 
   const startedAt = Date.now();
-  const { data, error } = await client.rpc("accountant_proposal_financial_state_v1", args);
+  const { data, error } = await applySupabaseAbortSignal(
+    client.rpc("accountant_proposal_financial_state_v1", args),
+    options?.signal,
+  );
+  throwIfAborted(options?.signal);
   if (error) {
     trackRpcLatency({
       name: "accountant_proposal_financial_state_v1",

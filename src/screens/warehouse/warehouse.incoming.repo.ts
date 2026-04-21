@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { applySupabaseAbortSignal, throwIfAborted } from "../../lib/requestCancellation";
 import type { IncomingRow, ItemRow } from "./warehouse.types";
 
 type UnknownRecord = Record<string, unknown>;
@@ -212,11 +213,17 @@ export async function fetchWarehouseIncomingHeadsWindow(
 
 export async function fetchWarehouseIncomingItemsWindow(
   incomingId: string,
+  options?: { signal?: AbortSignal | null },
 ): Promise<WarehouseIncomingItemsFetchResult> {
   const normalizedIncomingId = toText(incomingId);
-  const { data, error } = await supabase.rpc("warehouse_incoming_items_scope_v1" as never, {
-    p_incoming_id: normalizedIncomingId,
-  } as never);
+  throwIfAborted(options?.signal);
+  const { data, error } = await applySupabaseAbortSignal(
+    supabase.rpc("warehouse_incoming_items_scope_v1" as never, {
+      p_incoming_id: normalizedIncomingId,
+    } as never),
+    options?.signal,
+  );
+  throwIfAborted(options?.signal);
 
   if (error) throw error;
 

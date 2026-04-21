@@ -1,0 +1,81 @@
+{
+  "wave": "S4.NETWORK_CANCEL_HARDENING",
+  "date": "2026-04-21",
+  "auditedFiles": [
+    "src/screens/accountant/useAccountantPaymentForm.ts",
+    "src/screens/warehouse/warehouse.incoming.ts",
+    "src/screens/warehouse/warehouse.incoming.repo.ts",
+    "src/screens/buyer/hooks/useBuyerAccountingModal.ts",
+    "src/screens/buyer/buyer.repo.ts",
+    "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+    "src/screens/foreman/hooks/useForemanItemsState.ts"
+  ],
+  "selectedOwners": [
+    {
+      "key": "accountant.payment_form",
+      "strategy": ["abort", "revision_guard"],
+      "status": "fixed"
+    },
+    {
+      "key": "warehouse.incoming_items",
+      "strategy": ["abort", "dedupe_join", "latest_owner"],
+      "status": "fixed"
+    },
+    {
+      "key": "buyer.accounting_modal",
+      "strategy": ["abortable_prefill_reads", "latest_owner"],
+      "status": "fixed"
+    }
+  ],
+  "notTouched": [
+    {
+      "key": "buyer.proposal_details_analytic_insights",
+      "reason": "not selected as the top stale-owner path after audit"
+    },
+    {
+      "key": "foreman.items_loader",
+      "reason": "existing request sequence guard already provided deterministic latest-owner discipline"
+    },
+    {
+      "key": "warehouse.fetch_to_receive",
+      "reason": "existing inflight join already handled duplicate owner storm; exact stale-owner issue was in loadItemsForHead"
+    }
+  ],
+  "tests": [
+    {
+      "path": "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+      "assertions": [
+        "abort on immediate close",
+        "abort obsolete transport on proposal switch",
+        "stale response does not overwrite latest state"
+      ]
+    },
+    {
+      "path": "tests/warehouse/warehouse.incoming.test.tsx",
+      "assertions": [
+        "duplicate join",
+        "force refresh replaces stale owner",
+        "unmount abort"
+      ]
+    },
+    {
+      "path": "tests/buyer/useBuyerAccountingModal.test.tsx",
+      "assertions": [
+        "latest modal owner wins",
+        "unmount drops late commits"
+      ]
+    }
+  ],
+  "gates": {
+    "tsc": "pass",
+    "lint": "pass",
+    "jest_runInBand": "pass",
+    "jest_parallel": "pass",
+    "git_diff_check": "pass"
+  },
+  "runtimeProof": {
+    "automatedRegression": "pass",
+    "manualWeb": "not_run",
+    "manualAndroid": "not_run"
+  }
+}

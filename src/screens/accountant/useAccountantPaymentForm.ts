@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { accountantLoadProposalFinancialState } from "../../lib/api/accountant";
+import { abortController, isAbortError } from "../../lib/requestCancellation";
 import {
   beginAccountantPaymentFormLoad,
   recordAccountantPaymentFormCatch,
@@ -56,8 +57,11 @@ const getFinancialEligibilityMessage = (failureCode: string | null) => {
   }
 };
 
-async function loadPaymentFormFinancialState(proposalId: string) {
-  const financialState = await accountantLoadProposalFinancialState(proposalId);
+async function loadPaymentFormFinancialState(
+  proposalId: string,
+  options?: { signal?: AbortSignal | null },
+) {
+  const financialState = await accountantLoadProposalFinancialState(proposalId, options);
   return {
     current: {
       proposal_id: financialState.proposalId,
@@ -102,6 +106,10 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
   );
   const mountedRef = useRef(true);
   const requestSeqRef = useRef(0);
+  const requestSlotRef = useRef<{
+    requestId: number;
+    controller: AbortController;
+  } | null>(null);
   const proposalIdRef = useRef(proposalId);
   const lastCommittedAllocSignatureRef = useRef("");
   const onAllocStatusRef = useRef(onAllocStatus);
@@ -205,6 +213,11 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
   useEffect(() => {
     mountedRef.current = true;
     return () => {
+      abortController(
+        requestSlotRef.current?.controller ?? null,
+        "accountant_payment_form_unmounted",
+      );
+      requestSlotRef.current = null;
       mountedRef.current = false;
     };
   }, []);
@@ -238,6 +251,15 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
 
     const requestId = requestSeqRef.current + 1;
     requestSeqRef.current = requestId;
+    abortController(
+      requestSlotRef.current?.controller ?? null,
+      "accountant_payment_form_request_replaced",
+    );
+    const requestSlot = {
+      requestId,
+      controller: new AbortController(),
+    };
+    requestSlotRef.current = requestSlot;
     let completed = false;
     const requestObservabilityContext = {
       ...observabilityContext,
@@ -253,12 +275,16 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
     setAllocationsError(null);
 
     void (async () => {
-      const financialStateResult = await loadPaymentFormFinancialState(proposalId);
+      const financialStateResult = await loadPaymentFormFinancialState(proposalId, {
+        signal: requestSlot.controller.signal,
+      });
 
       const isCurrentRequest =
         mountedRef.current &&
         proposalIdRef.current === proposalId &&
-        requestSeqRef.current === requestId;
+        requestSeqRef.current === requestId &&
+        requestSlotRef.current === requestSlot &&
+        !requestSlot.controller.signal.aborted;
 
       if (!isCurrentRequest) {
         recordAccountantPaymentFormStaleResponseIgnored(requestObservabilityContext);
@@ -330,10 +356,15 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
         failureCode: financialStateResult.failureCode,
       });
     })().catch((error) => {
+      if (isAbortError(error)) {
+        return;
+      }
       const isCurrentRequest =
         mountedRef.current &&
         proposalIdRef.current === proposalId &&
-        requestSeqRef.current === requestId;
+        requestSeqRef.current === requestId &&
+        requestSlotRef.current === requestSlot &&
+        !requestSlot.controller.signal.aborted;
 
       if (!isCurrentRequest) {
         recordAccountantPaymentFormStaleResponseIgnored(requestObservabilityContext);
@@ -368,6 +399,13 @@ export function useAccountantPaymentForm(params: UseAccountantPaymentFormParams)
     });
 
     return () => {
+      abortController(
+        requestSlot.controller,
+        "accountant_payment_form_request_cleanup",
+      );
+      if (requestSlotRef.current === requestSlot) {
+        requestSlotRef.current = null;
+      }
       if (!completed) {
         recordAccountantPaymentFormRequestCanceled(requestObservabilityContext);
       }

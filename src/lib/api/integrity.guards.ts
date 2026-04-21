@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "../database.types";
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { applySupabaseAbortSignal, throwIfAborted } from "../requestCancellation";
 import {
   ACTIVE_PROPOSAL_REQUEST_ITEM_INTEGRITY_STATE,
   type ProposalRequestItemIntegrityFields,
@@ -176,14 +177,20 @@ async function loadRequestIds(
 async function loadProposalContexts(
   supabaseClient: SupabaseClient<Database>,
   proposalIds: string[],
+  options?: { signal?: AbortSignal | null },
 ): Promise<Map<string, ProposalContextRow>> {
   const contexts = new Map<string, ProposalContextRow>();
   for (const pack of chunkIds(proposalIds, 150)) {
-    const result = await supabaseClient
-      .from("proposals")
-      .select("id, request_id")
-      .in("id", pack)
-      .returns<ProposalContextRow[]>();
+    throwIfAborted(options?.signal);
+    const result = await applySupabaseAbortSignal(
+      supabaseClient
+        .from("proposals")
+        .select("id, request_id")
+        .in("id", pack)
+        .returns<ProposalContextRow[]>(),
+      options?.signal,
+    );
+    throwIfAborted(options?.signal);
     if (result.error) throw result.error;
     for (const row of result.data ?? []) {
       const id = trim(row.id);
@@ -357,6 +364,7 @@ export async function ensureProposalExists(
   supabaseClient: SupabaseClient<Database>,
   proposalId: string,
   context: GuardContext,
+  options?: { signal?: AbortSignal | null },
 ): Promise<{ proposalId: string; requestId: string | null }> {
   const normalizedProposalId = trim(proposalId);
   if (!normalizedProposalId) {
@@ -368,7 +376,7 @@ export async function ensureProposalExists(
     throw error;
   }
 
-  const contexts = await loadProposalContexts(supabaseClient, [normalizedProposalId]);
+  const contexts = await loadProposalContexts(supabaseClient, [normalizedProposalId], options);
   const proposal = contexts.get(normalizedProposalId);
   if (proposal) {
     const result = {

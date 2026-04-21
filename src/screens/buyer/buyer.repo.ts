@@ -9,6 +9,7 @@ import {
 import { ensureProposalRequestItemsIntegrity } from "../../lib/api/integrity.guards";
 import type { ProposalRequestItemIntegrityRow } from "../../lib/api/proposalIntegrity";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
+import { applySupabaseAbortSignal, throwIfAborted } from "../../lib/requestCancellation";
 
 export type PropAttachmentRow = {
   id: string;
@@ -62,25 +63,43 @@ export async function repoGetLatestProposalPdfAttachment(supabase: SupabaseClien
   }
 }
 
-export async function repoGetProposalItemsForAccounting(supabase: SupabaseClient, pidStr: string) {
-  const pi = await supabase
-    .from("proposal_items")
-    .select("supplier, qty, price")
-    .eq("proposal_id", pidStr);
+export async function repoGetProposalItemsForAccounting(
+  supabase: SupabaseClient,
+  pidStr: string,
+  options?: { signal?: AbortSignal | null },
+) {
+  throwIfAborted(options?.signal);
+  const pi = await applySupabaseAbortSignal(
+    supabase
+      .from("proposal_items")
+      .select("supplier, qty, price")
+      .eq("proposal_id", pidStr),
+    options?.signal,
+  );
+  throwIfAborted(options?.signal);
 
   if (pi.error) throw pi.error;
   return Array.isArray(pi.data) ? (pi.data as ProposalAccountingItemRow[]) : [];
 }
 
-export async function repoGetSupplierCardByName(supabase: SupabaseClient, supplierName: string) {
+export async function repoGetSupplierCardByName(
+  supabase: SupabaseClient,
+  supplierName: string,
+  options?: { signal?: AbortSignal | null },
+) {
   const name = String(supplierName || "").trim();
   if (!name) return null;
 
-  const cardQ = await supabase
-    .from("suppliers")
-    .select("name, inn, bank_account, phone, email")
-    .ilike("name", name)
-    .maybeSingle();
+  throwIfAborted(options?.signal);
+  const cardQ = await applySupabaseAbortSignal(
+    supabase
+      .from("suppliers")
+      .select("name, inn, bank_account, phone, email")
+      .ilike("name", name)
+      .maybeSingle(),
+    options?.signal,
+  );
+  throwIfAborted(options?.signal);
 
   if (cardQ.error) return { name }; // 1:1 fallback как у тебя
   const d = cardQ.data || null;

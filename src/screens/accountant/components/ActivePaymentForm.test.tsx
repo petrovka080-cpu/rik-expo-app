@@ -432,8 +432,21 @@ describe("ActivePaymentForm", () => {
   });
 
   it("cancels in-flight loads on immediate close without stale state updates", async () => {
+    let signal: AbortSignal | null | undefined;
     const financialStateDeferred = deferred<ReturnType<typeof baseFinancialState>>();
-    mockAccountantLoadProposalFinancialState.mockReturnValue(financialStateDeferred.promise);
+    mockAccountantLoadProposalFinancialState.mockImplementation(
+      (_proposalId: string, options?: { signal?: AbortSignal | null }) => {
+        signal = options?.signal ?? null;
+        signal?.addEventListener(
+          "abort",
+          () => {
+            financialStateDeferred.reject(signal?.reason ?? new Error("aborted"));
+          },
+          { once: true },
+        );
+        return financialStateDeferred.promise;
+      },
+    );
 
     let renderer!: ReactTestRenderer;
     await act(async () => {
@@ -445,14 +458,84 @@ describe("ActivePaymentForm", () => {
       renderer.unmount();
     });
 
-    financialStateDeferred.resolve(baseFinancialState());
     await flushAsync();
 
     const events = getPlatformObservabilityEvents();
+    expect(signal?.aborted).toBe(true);
     expect(
       events.some((event) => event.event === "payment_form_request_canceled"),
     ).toBe(true);
+    expect(
+      events.some((event) => event.event === "proposal_financial_state_load_failed"),
+    ).toBe(false);
     expect(consoleErrorSpy).not.toHaveBeenCalled();
+  });
+
+  it("aborts obsolete transport when the payment form switches to a newer proposal", async () => {
+    const secondDeferred = deferred<ReturnType<typeof baseFinancialState>>();
+    const signals: (AbortSignal | null | undefined)[] = [];
+    mockAccountantLoadProposalFinancialState.mockImplementation(
+      (proposalId: string, options?: { signal?: AbortSignal | null }) => {
+        signals.push(options?.signal ?? null);
+        if (proposalId === "proposal-1") {
+          return new Promise((_, reject) => {
+            options?.signal?.addEventListener(
+              "abort",
+              () => reject(options.signal?.reason ?? new Error("aborted")),
+              { once: true },
+            );
+          });
+        }
+        if (proposalId === "proposal-2") {
+          return secondDeferred.promise;
+        }
+        throw new Error(`Unexpected proposal ${proposalId}`);
+      },
+    );
+
+    let renderer!: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <PaymentFormHarness current={baseCurrent({ proposal_id: "proposal-1" })} />,
+      );
+    });
+    await flushAsync(1);
+
+    await act(async () => {
+      renderer.update(
+        <PaymentFormHarness
+          current={baseCurrent({ proposal_id: "proposal-2", invoice_number: "INV-2" })}
+        />,
+      );
+    });
+
+    secondDeferred.resolve(
+      baseFinancialState({
+        proposalId: "proposal-2",
+        invoice: {
+          number: "INV-2",
+          date: "2026-03-29",
+          currency: "KGS",
+          payableSource: "proposal_items_total",
+        },
+      }),
+    );
+    await waitForCondition(
+      () =>
+        getPlatformObservabilityEvents().some(
+          (event) => event.event === "payment_form_ready",
+        ),
+      20,
+    );
+
+    expect(signals).toHaveLength(2);
+    expect(signals[0]?.aborted).toBe(true);
+    expect(signals[1]?.aborted).toBe(false);
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) => event.event === "proposal_financial_state_load_failed",
+      ),
+    ).toBe(false);
   });
 
   it("ignores stale responses after quick reopen and publishes only fresh rows", async () => {

@@ -16,6 +16,10 @@ import {
   useWarehouseFallbackActiveRef,
   type WarehouseScreenActiveRef,
 } from "./hooks/useWarehouseScreenActivity";
+import {
+  abortController,
+  isAbortError,
+} from "../../lib/requestCancellation";
 
 // РјР°Р»РµРЅСЊРєРёРµ СѓС‚РёР»РёС‚С‹ (Р»РѕРєР°Р»СЊРЅРѕ РІ РјРѕРґСѓР»Рµ)
 export function useWarehouseIncoming(params?: {
@@ -38,6 +42,17 @@ export function useWarehouseIncoming(params?: {
   const PAGE_SIZE = 30;
 
   const [itemsByHead, setItemsByHead] = useState<Record<string, ItemRow[]>>({});
+  const incomingItemsRequestSeqRef = useRef<Map<string, number>>(new Map());
+  const incomingItemsRequestSlotsRef = useRef<
+    Map<
+      string,
+      {
+        requestId: number;
+        controller: AbortController;
+        promise: Promise<ItemRow[]>;
+      }
+    >
+  >(new Map());
   const itemsByHeadRef = useRef<Record<string, ItemRow[]>>({});
   const toReceiveRef = useRef<IncomingRow[]>([]);
   useEffect(() => {
@@ -46,6 +61,18 @@ export function useWarehouseIncoming(params?: {
   useEffect(() => {
     toReceiveRef.current = toReceive || [];
   }, [toReceive]);
+  useEffect(() => {
+    const requestSlots = incomingItemsRequestSlotsRef.current;
+    return () => {
+      for (const slot of requestSlots.values()) {
+        abortController(
+          slot.controller,
+          "warehouse_incoming_items_owner_disposed",
+        );
+      }
+      requestSlots.clear();
+    };
+  }, []);
 
   const fetchToReceive = useCallback(
     async (
@@ -232,6 +259,41 @@ export function useWarehouseIncoming(params?: {
         if (cached) return cached;
       }
 
+      const existingRequest = incomingItemsRequestSlotsRef.current.get(incomingId);
+      if (existingRequest && !force) {
+        recordPlatformObservability({
+          screen: "warehouse",
+          surface: "incoming_items",
+          category: "reload",
+          event: "fetch_incoming_items",
+          result: "joined_inflight",
+          sourceKind: "rpc:warehouse_incoming_items_scope_v1",
+          extra: {
+            incomingId,
+            requestId: existingRequest.requestId,
+            force,
+          },
+        });
+        return existingRequest.promise;
+      }
+
+      if (existingRequest) {
+        abortController(
+          existingRequest.controller,
+          "warehouse_incoming_items_request_replaced",
+        );
+      }
+
+      const requestId =
+        (incomingItemsRequestSeqRef.current.get(incomingId) ?? 0) + 1;
+      incomingItemsRequestSeqRef.current.set(incomingId, requestId);
+      const requestSlot = {
+        requestId,
+        controller: new AbortController(),
+        promise: Promise.resolve([] as ItemRow[]),
+      };
+      incomingItemsRequestSlotsRef.current.set(incomingId, requestSlot);
+
       const observation = beginPlatformObservability({
         screen: "warehouse",
         surface: "incoming_items",
@@ -239,51 +301,123 @@ export function useWarehouseIncoming(params?: {
         event: "fetch_incoming_items",
         sourceKind: "rpc:warehouse_incoming_items_scope_v1",
         trigger: force ? "refresh" : "initial",
+        extra: {
+          incomingId,
+          requestId,
+        },
       });
 
-      try {
-        const result = await fetchWarehouseIncomingItemsWindow(incomingId);
+      requestSlot.promise = (async () => {
+        try {
+          const result = await fetchWarehouseIncomingItemsWindow(incomingId, {
+            signal: requestSlot.controller.signal,
+          });
 
-        const rows = (result?.rows ?? []) as ItemRow[];
-        if (isWarehouseScreenActive(screenActiveRef)) {
-          setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: rows }));
-        }
+          const rows = (result?.rows ?? []) as ItemRow[];
+          const isActiveRequest =
+            incomingItemsRequestSlotsRef.current.get(incomingId) === requestSlot &&
+            incomingItemsRequestSeqRef.current.get(incomingId) === requestId &&
+            isWarehouseScreenActive(screenActiveRef) &&
+            !requestSlot.controller.signal.aborted;
+          if (isActiveRequest) {
+            setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: rows }));
+          } else {
+            recordPlatformObservability({
+              screen: "warehouse",
+              surface: "incoming_items",
+              category: "fetch",
+              event: "fetch_incoming_items_commit_skipped",
+              result: "skipped",
+              sourceKind: "rpc:warehouse_incoming_items_scope_v1",
+              extra: {
+                incomingId,
+                requestId,
+                guardReason: "stale_owner",
+              },
+            });
+          }
 
-        observation.success({
-          rowCount: rows.length,
-          sourceKind: result?.sourceMeta.sourceKind,
-          fallbackUsed: false,
-          extra: {
-            incomingId,
-            rowCount: result?.meta.rowCount,
-            scopeKey: result?.meta.scopeKey,
-            contractVersion: result?.meta.contractVersion,
-          },
-        });
+          observation.success({
+            rowCount: rows.length,
+            sourceKind: result?.sourceMeta.sourceKind,
+            fallbackUsed: false,
+            extra: {
+              incomingId,
+              requestId,
+              rowCount: result?.meta.rowCount,
+              scopeKey: result?.meta.scopeKey,
+              contractVersion: result?.meta.contractVersion,
+            },
+          });
 
-        return rows;
-      } catch (error) {
-        observation.error(error, {
-          errorStage: "fetch_incoming_items_rpc_v1",
-          rowCount: 0,
-          sourceKind: "rpc:warehouse_incoming_items_scope_v1",
-          fallbackUsed: false,
-          extra: {
-            incomingId,
-            scopeKey: `warehouse_incoming_items_scope_v1:${incomingId}`,
-          },
-        });
-        if (__DEV__) {
-          console.warn(
-            "[warehouse.incoming] warehouse_incoming_items_scope_v1 failed:",
-            error,
-          );
+          return rows;
+        } catch (error) {
+          if (isAbortError(error)) {
+            const latestRequest = incomingItemsRequestSlotsRef.current.get(incomingId);
+            if (latestRequest && latestRequest !== requestSlot) {
+              recordPlatformObservability({
+                screen: "warehouse",
+                surface: "incoming_items",
+                category: "fetch",
+                event: "fetch_incoming_items",
+                result: "skipped",
+                sourceKind: "rpc:warehouse_incoming_items_scope_v1",
+                extra: {
+                  incomingId,
+                  requestId,
+                  guardReason: "replaced_by_latest",
+                },
+              });
+              return await latestRequest.promise;
+            }
+            recordPlatformObservability({
+              screen: "warehouse",
+              surface: "incoming_items",
+              category: "fetch",
+              event: "fetch_incoming_items",
+              result: "skipped",
+              sourceKind: "rpc:warehouse_incoming_items_scope_v1",
+              extra: {
+                incomingId,
+                requestId,
+                guardReason: "aborted",
+              },
+            });
+            return itemsByHeadRef.current[incomingId] ?? [];
+          }
+
+          observation.error(error, {
+            errorStage: "fetch_incoming_items_rpc_v1",
+            rowCount: 0,
+            sourceKind: "rpc:warehouse_incoming_items_scope_v1",
+            fallbackUsed: false,
+            extra: {
+              incomingId,
+              requestId,
+              scopeKey: `warehouse_incoming_items_scope_v1:${incomingId}`,
+            },
+          });
+          if (__DEV__) {
+            console.warn(
+              "[warehouse.incoming] warehouse_incoming_items_scope_v1 failed:",
+              error,
+            );
+          }
+          if (
+            incomingItemsRequestSlotsRef.current.get(incomingId) === requestSlot &&
+            isWarehouseScreenActive(screenActiveRef)
+          ) {
+            setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: [] }));
+          }
+          return [] as ItemRow[];
+        } finally {
+          if (incomingItemsRequestSlotsRef.current.get(incomingId) === requestSlot) {
+            incomingItemsRequestSlotsRef.current.delete(incomingId);
+          }
         }
-        if (isWarehouseScreenActive(screenActiveRef)) {
-          setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: [] }));
-        }
-        return [] as ItemRow[];
-      }
+      })();
+
+      return requestSlot.promise;
     },
     [screenActiveRef],
   );
