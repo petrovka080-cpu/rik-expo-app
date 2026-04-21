@@ -1,18 +1,18 @@
 /**
- * useAuthGuard — route-coupled auth redirect decision hook.
+ * useAuthGuard вЂ” route-coupled auth redirect decision hook.
  *
  * AUTH-LIFECYCLE: Extracted from app/_layout.tsx. This hook IS route-coupled
  * (depends on segments/pathname) but receives auth state from useAuthLifecycle
  * instead of owning it. Handles:
- *  - Auth → app redirect (session present in auth stack)
- *  - App → auth redirect (confirmed no session)
+ *  - Auth в†’ app redirect (session present in auth stack)
+ *  - App в†’ auth redirect (confirmed no session)
  *  - Post-auth exit session settle window
  *  - Queue worker start/stop
  *  - First usable UI marker
  *  - Auth exit tracking
  */
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { router } from "expo-router";
 
 import { getSessionSafe } from "../supabaseClient";
@@ -23,15 +23,15 @@ import {
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { POST_AUTH_ENTRY_ROUTE } from "../authRouting";
 import {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isAuthStackRoute,
+  resolveRouteFromAuth,
+  type AuthRouteDecision,
   isProtectedAppRoute,
   type AuthLifecycleState,
 } from "./useAuthLifecycle";
 
 const AUTH_EXIT_SESSION_SETTLE_WINDOW_MS = 2500;
 
-function isTimeoutLikeAuthError(error: unknown): boolean {
+function isTimeoutLikeAuthError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error ?? "");
   return (
     message.includes("timed out") ||
@@ -48,11 +48,9 @@ export function useAuthGuard(
   },
 ) {
   const {
-    hasSession,
+    authSessionState,
     sessionLoaded,
-    setHasSession,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    hasSessionRef,
+    setAuthSessionState,
     isPdfViewerRouteRef,
     resetPendingAuthExitSessionProbe,
     recordAuthCheckEvent,
@@ -68,6 +66,151 @@ export function useAuthGuard(
 
   const previousInAuthStackRef = useRef(segments?.[0] === "auth");
   const usableUiMarkerRef = useRef(false);
+  const lastRouteDecisionKeyRef = useRef<string | null>(null);
+
+  const performRouteTransition = useCallback(
+    (args: {
+      decision: Extract<
+        AuthRouteDecision,
+        { type: "redirect_login" | "redirect_post_auth_entry" }
+      >;
+    }): "replace" | "navigate_fallback" | "failed" => {
+      try {
+        router.replace(args.decision.target);
+        return "replace";
+      } catch (replaceError) {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "auth_session_gate",
+          category: "ui",
+          event: "auth_navigation_failed",
+          result: "error",
+          errorStage: "router_replace",
+          errorClass:
+            replaceError instanceof Error ? replaceError.name : undefined,
+          errorMessage:
+            replaceError instanceof Error
+              ? replaceError.message
+              : String(replaceError ?? "router_replace_failed"),
+          fallbackUsed: true,
+          extra: {
+            owner: "root_layout",
+            pathname,
+            target: args.decision.target,
+            decision: args.decision.type,
+            reason: args.decision.reason,
+          },
+        });
+        if (__DEV__) {
+          console.warn(
+            "[RootLayout] auth route transition replace failed:",
+            replaceError instanceof Error ? replaceError.message : replaceError,
+          );
+        }
+
+        try {
+          router.navigate(args.decision.target);
+          recordAuthGateEvent("auth_navigation_fallback_used", "success", {
+            target: args.decision.target,
+            reason: args.decision.reason,
+            method: "router_navigate",
+          });
+          return "navigate_fallback";
+        } catch (navigateError) {
+          recordPlatformObservability({
+            screen: "request",
+            surface: "auth_session_gate",
+            category: "ui",
+            event: "auth_navigation_failed",
+            result: "error",
+            errorStage: "router_navigate_fallback",
+            errorClass:
+              navigateError instanceof Error ? navigateError.name : undefined,
+            errorMessage:
+              navigateError instanceof Error
+                ? navigateError.message
+                : String(navigateError ?? "router_navigate_failed"),
+            extra: {
+              owner: "root_layout",
+              pathname,
+              target: args.decision.target,
+              decision: args.decision.type,
+              reason: args.decision.reason,
+              replaceErrorMessage:
+                replaceError instanceof Error
+                  ? replaceError.message
+                  : String(replaceError ?? "router_replace_failed"),
+            },
+          });
+          if (__DEV__) {
+            console.warn(
+              "[RootLayout] auth route transition fallback failed:",
+              navigateError instanceof Error
+                ? navigateError.message
+                : navigateError,
+            );
+          }
+          return "failed";
+        }
+      }
+    },
+    [pathname, recordAuthGateEvent],
+  );
+
+  const executeRouteDecision = useCallback(
+    (
+      decision: Extract<
+        AuthRouteDecision,
+        { type: "redirect_login" | "redirect_post_auth_entry" }
+      >,
+      extra?: Record<string, unknown>,
+    ) => {
+      const decisionKey = `${decision.type}:${decision.target}:${decision.reason}:${pathname}`;
+      if (lastRouteDecisionKeyRef.current === decisionKey) {
+        recordAuthGateEvent("auth_route_decision_deduped", "skipped", {
+          decision: decision.type,
+          target: decision.target,
+          reason: decision.reason,
+        });
+        return;
+      }
+
+      const transitionMethod = performRouteTransition({ decision });
+      if (transitionMethod === "failed") return;
+
+      lastRouteDecisionKeyRef.current = decisionKey;
+
+      if (decision.type === "redirect_login") {
+        recordAuthRedirectTriggered(decision.reason, {
+          ...(extra ?? {}),
+          target: decision.target,
+          method: transitionMethod,
+        });
+        return;
+      }
+
+      recordPlatformObservability({
+        screen: "request",
+        surface: "startup_bootstrap",
+        category: "ui",
+        event: "route_resolution_result",
+        result: "success",
+        extra: {
+          owner: "root_layout",
+          target: decision.target,
+          reason: decision.reason,
+          method: transitionMethod,
+          ...(extra ?? {}),
+        },
+      });
+    },
+    [
+      pathname,
+      performRouteTransition,
+      recordAuthGateEvent,
+      recordAuthRedirectTriggered,
+    ],
+  );
 
   // --- Track auth stack exit for session settle window ---
   useEffect(() => {
@@ -78,6 +221,7 @@ export function useAuthGuard(
       authExitAtRef.current = Date.now();
       authExitSessionProbeInFlightRef.current = false;
       authExitSessionProbeTokenRef.current += 1;
+      lastRouteDecisionKeyRef.current = null;
       recordAuthGateEvent("post_auth_route_decision", "skipped", {
         reason: "auth_stack_exit_session_settle_pending",
         target: POST_AUTH_ENTRY_ROUTE,
@@ -85,10 +229,17 @@ export function useAuthGuard(
     } else if (inAuthStack) {
       authExitAtRef.current = null;
       authExitSessionProbeInFlightRef.current = false;
+      lastRouteDecisionKeyRef.current = null;
     }
 
     previousInAuthStackRef.current = inAuthStack;
-  }, [recordAuthGateEvent, segments, authExitAtRef, authExitSessionProbeInFlightRef, authExitSessionProbeTokenRef]);
+  }, [
+    recordAuthGateEvent,
+    segments,
+    authExitAtRef,
+    authExitSessionProbeInFlightRef,
+    authExitSessionProbeTokenRef,
+  ]);
 
   // --- Main auth guard / redirect logic ---
   useEffect(() => {
@@ -97,14 +248,18 @@ export function useAuthGuard(
     const inAuthStack = segments?.[0] === "auth";
     const authExitAgeMs =
       authExitAtRef.current == null ? null : Date.now() - authExitAtRef.current;
-    const shouldSettlePostAuthSession =
-      hasSession === false &&
-      !inAuthStack &&
-      !isPdfViewerRouteRef.current &&
-      authExitAgeMs != null &&
-      authExitAgeMs <= AUTH_EXIT_SESSION_SETTLE_WINDOW_MS;
+    const decision = resolveRouteFromAuth({
+      sessionLoaded,
+      sessionState: authSessionState,
+      inAuthStack,
+      isPdfViewerRoute: isPdfViewerRouteRef.current,
+      hasRecentAuthExit:
+        authSessionState.status === "unauthenticated" &&
+        authExitAgeMs != null &&
+        authExitAgeMs <= AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
+    });
 
-    if (shouldSettlePostAuthSession) {
+    if (decision.type === "wait_for_post_auth_settle") {
       if (!authExitSessionProbeInFlightRef.current) {
         authExitSessionProbeInFlightRef.current = true;
         const probeToken = authExitSessionProbeTokenRef.current + 1;
@@ -124,11 +279,6 @@ export function useAuthGuard(
         });
 
         void (async () => {
-          let settledSession: Awaited<
-            ReturnType<typeof getSessionSafe>
-          >["session"] = null;
-          let degraded = false;
-
           try {
             recordAuthCheckEvent("auth_check_start", "skipped", {
               caller: "root_layout_post_auth_exit",
@@ -148,17 +298,14 @@ export function useAuthGuard(
 
             if (probeToken !== authExitSessionProbeTokenRef.current) return;
 
-            settledSession = result.session;
-            degraded = result.degraded;
-
             recordAuthCheckEvent("auth_check_result", "success", {
               caller: "root_layout_post_auth_exit",
-              degraded,
-              hasSession: Boolean(settledSession),
+              degraded: result.degraded,
+              hasSession: Boolean(result.session),
               settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
             });
 
-            if (degraded) {
+            if (result.degraded) {
               recordAuthCheckEvent("auth_check_timeout", "skipped", {
                 caller: "root_layout_post_auth_exit",
                 degraded: true,
@@ -168,9 +315,9 @@ export function useAuthGuard(
             }
 
             authExitSessionProbeInFlightRef.current = false;
+            authExitAtRef.current = null;
 
-            if (settledSession) {
-              authExitAtRef.current = null;
+            if (result.session) {
               recordPlatformObservability({
                 screen: "request",
                 surface: "auth_session_gate",
@@ -183,13 +330,15 @@ export function useAuthGuard(
                   reason: "session_visible_after_auth_exit",
                 },
               });
-              setHasSession(true);
+              lastRouteDecisionKeyRef.current = null;
+              setAuthSessionState({
+                status: "authenticated",
+                reason: "post_auth_settle_authenticated",
+              });
               return;
             }
 
-            authExitAtRef.current = null;
-
-            if (degraded) {
+            if (result.degraded) {
               recordPlatformObservability({
                 screen: "request",
                 surface: "auth_session_gate",
@@ -201,16 +350,33 @@ export function useAuthGuard(
                   reason: "post_auth_session_read_degraded",
                 },
               });
-              setHasSession(null);
+              lastRouteDecisionKeyRef.current = null;
+              setAuthSessionState({
+                status: "unknown",
+                reason: "post_auth_settle_degraded",
+              });
               return;
             }
 
-            recordAuthRedirectTriggered("post_auth_session_absent_after_settle");
-            router.replace("/auth/login");
-          } catch (e: unknown) {
+            const settledNoSessionDecision: Extract<
+              AuthRouteDecision,
+              { type: "redirect_login" }
+            > = {
+              type: "redirect_login",
+              target: "/auth/login",
+              reason: "post_auth_session_absent_after_settle",
+            };
+            setAuthSessionState({
+              status: "unauthenticated",
+              reason: "post_auth_session_absent_after_settle",
+            });
+            executeRouteDecision(settledNoSessionDecision, {
+              settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
+            });
+          } catch (error) {
             if (probeToken !== authExitSessionProbeTokenRef.current) return;
 
-            const timeoutLike = isTimeoutLikeAuthError(e);
+            const timeoutLike = isTimeoutLikeAuthError(error);
             authExitSessionProbeInFlightRef.current = false;
             authExitAtRef.current = null;
             recordAuthCheckEvent(
@@ -221,11 +387,11 @@ export function useAuthGuard(
                 degraded: true,
                 reason: "post_auth_session_read_failed",
                 settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
-                errorClass: e instanceof Error ? e.name : undefined,
+                errorClass: error instanceof Error ? error.name : undefined,
                 errorMessage:
-                  e instanceof Error
-                    ? e.message
-                    : String(e ?? "post_auth_session_read_failed"),
+                  error instanceof Error
+                    ? error.message
+                    : String(error ?? "post_auth_session_read_failed"),
               },
             );
             recordPlatformObservability({
@@ -235,18 +401,22 @@ export function useAuthGuard(
               event: "auth_gate_session_settle_result",
               result: "error",
               errorStage: "post_auth_session_read",
-              errorClass: e instanceof Error ? e.name : undefined,
+              errorClass: error instanceof Error ? error.name : undefined,
               errorMessage:
-                e instanceof Error
-                  ? e.message
-                  : String(e ?? "post_auth_session_read_failed"),
+                error instanceof Error
+                  ? error.message
+                  : String(error ?? "post_auth_session_read_failed"),
               fallbackUsed: true,
               extra: {
                 owner: "root_layout",
                 reason: "post_auth_session_read_failed",
               },
             });
-            setHasSession(null);
+            lastRouteDecisionKeyRef.current = null;
+            setAuthSessionState({
+              status: "unknown",
+              reason: "post_auth_settle_error",
+            });
           }
         })();
       }
@@ -258,43 +428,35 @@ export function useAuthGuard(
       return;
     }
 
-    if (hasSession === false && !inAuthStack && !isPdfViewerRouteRef.current) {
-      if (isProtectedAppRoute(pathname, segments)) {
-        recordAuthRedirectBlocked("protected_app_route_session_unknown", {
-          hasSession,
-          source: "confirmed_no_session_guard",
-        });
-        setHasSession(null);
-        return;
-      }
-
-      recordAuthRedirectTriggered("confirmed_no_session", {
-        hasSession,
+    if (decision.type === "redirect_login") {
+      executeRouteDecision(decision, {
+        hasSession: false,
       });
-      router.replace("/auth/login");
       return;
     }
 
-    if (hasSession === true && inAuthStack) {
-      recordPlatformObservability({
-        screen: "request",
-        surface: "startup_bootstrap",
-        category: "ui",
-        event: "route_resolution_result",
-        result: "success",
-        extra: {
-          owner: "root_layout",
-          target: POST_AUTH_ENTRY_ROUTE,
-          hasSession,
-          reason: "session_present_in_auth_stack",
-        },
-      });
+    if (decision.type === "redirect_post_auth_entry") {
       resetPendingAuthExitSessionProbe();
-      router.replace(POST_AUTH_ENTRY_ROUTE);
+      executeRouteDecision(decision, {
+        hasSession: true,
+      });
+      return;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
+
+    if (
+      decision.reason === "session_unknown_on_route" &&
+      !inAuthStack &&
+      !isPdfViewerRouteRef.current &&
+      isProtectedAppRoute(pathname, segments)
+    ) {
+      recordAuthRedirectBlocked("protected_app_route_session_unknown", {
+        source: "auth_route_resolver",
+        authSessionReason: authSessionState.reason,
+      });
+    }
+    lastRouteDecisionKeyRef.current = null;
   }, [
-    hasSession,
+    authSessionState,
     pathname,
     recordAuthCheckEvent,
     recordAuthRedirectBlocked,
@@ -307,6 +469,8 @@ export function useAuthGuard(
     authExitAtRef,
     authExitSessionProbeTokenRef,
     authExitSessionProbeInFlightRef,
+    executeRouteDecision,
+    setAuthSessionState,
   ]);
 
   // --- First usable UI marker ---
@@ -321,23 +485,23 @@ export function useAuthGuard(
       result: "success",
       extra: {
         owner: "root_layout",
-        hasSession,
+        hasSession: authSessionState.status === "authenticated",
         pathname,
       },
     });
-  }, [hasSession, pathname, sessionLoaded]);
+  }, [authSessionState.status, pathname, sessionLoaded]);
 
   // --- Queue worker lifecycle ---
   useEffect(() => {
     if (!sessionLoaded) return;
 
-    if (hasSession === true) {
+    if (authSessionState.status === "authenticated") {
       ensureQueueWorker();
       return;
     }
 
-    if (hasSession === false) {
+    if (authSessionState.status === "unauthenticated") {
       stopQueueWorker();
     }
-  }, [hasSession, sessionLoaded]);
+  }, [authSessionState.status, sessionLoaded]);
 }

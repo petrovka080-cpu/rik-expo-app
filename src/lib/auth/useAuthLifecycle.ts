@@ -20,12 +20,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { router } from "expo-router";
 
 import { getSessionSafe, supabase } from "../supabaseClient";
 import { warmCurrentSessionProfile } from "../sessionRole";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { resetSessionBoundary } from "../session/sessionBoundary";
+import {
+  POST_AUTH_ENTRY_ROUTE,
+  type PostAuthEntryPath,
+} from "../authRouting";
 
 function isTimeoutLikeAuthError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? "");
@@ -38,6 +41,9 @@ function isTimeoutLikeAuthError(error: unknown): boolean {
 }
 
 export type AuthLifecycleState = {
+  authSessionState: AuthSessionState;
+  authSessionStateRef: React.MutableRefObject<AuthSessionState>;
+  setAuthSessionState: (next: AuthSessionState) => void;
   hasSession: boolean | null;
   sessionLoaded: boolean;
   setHasSession: React.Dispatch<React.SetStateAction<boolean | null>>;
@@ -69,6 +75,58 @@ export type AuthLifecycleState = {
   authExitSessionProbeInFlightRef: React.MutableRefObject<boolean>;
 };
 
+export type AuthSessionState =
+  | {
+      status: "unknown";
+      reason:
+        | "bootstrap_pending"
+        | "bootstrap_protected_route_unknown"
+        | "bootstrap_degraded"
+        | "bootstrap_error"
+        | "non_terminal_auth_event"
+        | "post_auth_settle_degraded"
+        | "post_auth_settle_error";
+    }
+  | {
+      status: "authenticated";
+      reason:
+        | "bootstrap_authenticated"
+        | "auth_event_authenticated"
+        | "post_auth_settle_authenticated";
+    }
+  | {
+      status: "unauthenticated";
+      reason:
+        | "bootstrap_no_session"
+        | "terminal_sign_out"
+        | "post_auth_session_absent_after_settle";
+    };
+
+export type AuthRouteDecision =
+  | {
+      type: "none";
+      reason:
+        | "session_not_loaded"
+        | "session_present_on_app_route"
+        | "session_unknown_on_route"
+        | "session_absent_in_auth_stack"
+        | "session_absent_on_pdf_viewer";
+    }
+  | {
+      type: "wait_for_post_auth_settle";
+      reason: "recent_auth_stack_exit";
+    }
+  | {
+      type: "redirect_login";
+      target: "/auth/login";
+      reason: AuthSessionState["reason"];
+    }
+  | {
+      type: "redirect_post_auth_entry";
+      target: PostAuthEntryPath;
+      reason: AuthSessionState["reason"];
+    };
+
 export function useAuthLifecycle(deps: {
   /** Current pathname from usePathname() — stored in ref, NOT used as effect dep */
   pathname: string;
@@ -79,11 +137,17 @@ export function useAuthLifecycle(deps: {
 }): AuthLifecycleState {
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const [hasSession, setHasSession] = useState<boolean | null>(null);
+  const [authSessionState, setAuthSessionStateState] = useState<AuthSessionState>({
+    status: "unknown",
+    reason: "bootstrap_pending",
+  });
 
   const initStartedRef = useRef(false);
   const launchMarkerRef = useRef(false);
   const hasSessionRef = useRef<boolean | null>(null);
   hasSessionRef.current = hasSession;
+  const authSessionStateRef = useRef<AuthSessionState>(authSessionState);
+  authSessionStateRef.current = authSessionState;
   const pathnameRef = useRef(deps.pathname);
   pathnameRef.current = deps.pathname;
   const isPdfViewerRouteRef = useRef(deps.isPdfViewerRoute);
@@ -92,6 +156,19 @@ export function useAuthLifecycle(deps: {
   const authExitAtRef = useRef<number | null>(null);
   const authExitSessionProbeTokenRef = useRef(0);
   const authExitSessionProbeInFlightRef = useRef(false);
+
+  const setAuthSessionState = useCallback((next: AuthSessionState) => {
+    authSessionStateRef.current = next;
+    const nextHasSession =
+      next.status === "authenticated"
+        ? true
+        : next.status === "unauthenticated"
+          ? false
+          : null;
+    hasSessionRef.current = nextHasSession;
+    setAuthSessionStateState(next);
+    setHasSession(nextHasSession);
+  }, []);
 
   // --- Stable segments ref for use inside the init effect (NOT as dep) ---
   const segmentsRef = useRef(deps.segments);
@@ -272,7 +349,10 @@ export function useAuthLifecycle(deps: {
               hasSession: false,
             },
           });
-          setHasSession(null);
+          setAuthSessionState({
+            status: "unknown",
+            reason: "bootstrap_degraded",
+          });
           setSessionLoaded(true);
           return;
         }
@@ -296,12 +376,25 @@ export function useAuthLifecycle(deps: {
             caller: "root_layout",
             reason: "bootstrap_no_session_on_protected_route",
           });
-          setHasSession(null);
+          setAuthSessionState({
+            status: "unknown",
+            reason: "bootstrap_protected_route_unknown",
+          });
           setSessionLoaded(true);
           return;
         }
 
-        setHasSession(has);
+        setAuthSessionState(
+          has
+            ? {
+                status: "authenticated",
+                reason: "bootstrap_authenticated",
+              }
+            : {
+                status: "unauthenticated",
+                reason: "bootstrap_no_session",
+              },
+        );
         setSessionLoaded(true);
 
         if (has) loadRoleForCurrentSession(session?.user ?? null);
@@ -349,7 +442,10 @@ export function useAuthLifecycle(deps: {
         if (!active) return;
 
         // 🔥 НЕ считаем это logout
-        setHasSession(null);
+        setAuthSessionState({
+          status: "unknown",
+          reason: "bootstrap_error",
+        });
 
         // ❌ НЕ ЧИСТИМ состояние при timeout
         // clearDocumentSessions();
@@ -397,24 +493,27 @@ export function useAuthLifecycle(deps: {
               authEvent: event,
               hadSession: hasSessionRef.current === true,
             });
-            setHasSession(null);
+            setAuthSessionState({
+              status: "unknown",
+              reason: "non_terminal_auth_event",
+            });
             return;
           }
 
           resetPendingAuthExitSessionProbe();
-          setHasSession(false);
+          setAuthSessionState({
+            status: "unauthenticated",
+            reason: "terminal_sign_out",
+          });
           await clearSessionBoundaryState("terminal_sign_out");
-          if (!isPdfViewerRouteRef.current) {
-            recordAuthRedirectTriggered("terminal_sign_out", {
-              authEvent: event,
-            });
-            router.replace("/auth/login");
-          }
           return;
         }
 
         resetPendingAuthExitSessionProbe();
-        setHasSession(true);
+        setAuthSessionState({
+          status: "authenticated",
+          reason: "auth_event_authenticated",
+        });
         loadRoleForCurrentSession(session?.user ?? null);
       },
     );
@@ -431,12 +530,16 @@ export function useAuthLifecycle(deps: {
     recordAuthRedirectBlocked,
     recordAuthRedirectTriggered,
     resetPendingAuthExitSessionProbe,
+    setAuthSessionState,
     // NAV-P0: NO route deps here. The init effect MUST have stable deps only.
     // Adding segments/pathname would cause re-subscribe on every navigation,
     // killing the auth listener → stale hasSession → SIGABRT on back nav.
   ]);
 
   return {
+    authSessionState,
+    authSessionStateRef,
+    setAuthSessionState,
     hasSession,
     sessionLoaded,
     setHasSession,
@@ -457,6 +560,70 @@ export function useAuthLifecycle(deps: {
 
 // --- Pure helper functions (shared with useAuthGuard) ---
 
+function resolveRouteFromAuth(params: {
+  sessionLoaded: boolean;
+  sessionState: AuthSessionState;
+  inAuthStack: boolean;
+  isPdfViewerRoute: boolean;
+  hasRecentAuthExit: boolean;
+}): AuthRouteDecision {
+  if (!params.sessionLoaded) {
+    return {
+      type: "none",
+      reason: "session_not_loaded",
+    };
+  }
+
+  if (params.sessionState.status === "authenticated") {
+    if (params.inAuthStack) {
+      return {
+        type: "redirect_post_auth_entry",
+        target: POST_AUTH_ENTRY_ROUTE,
+        reason: params.sessionState.reason,
+      };
+    }
+
+    return {
+      type: "none",
+      reason: "session_present_on_app_route",
+    };
+  }
+
+  if (params.sessionState.status === "unknown") {
+    return {
+      type: "none",
+      reason: "session_unknown_on_route",
+    };
+  }
+
+  if (params.inAuthStack) {
+    return {
+      type: "none",
+      reason: "session_absent_in_auth_stack",
+    };
+  }
+
+  if (params.isPdfViewerRoute) {
+    return {
+      type: "none",
+      reason: "session_absent_on_pdf_viewer",
+    };
+  }
+
+  if (params.hasRecentAuthExit) {
+    return {
+      type: "wait_for_post_auth_settle",
+      reason: "recent_auth_stack_exit",
+    };
+  }
+
+  return {
+    type: "redirect_login",
+    target: "/auth/login",
+    reason: params.sessionState.reason,
+  };
+}
+
 function isAuthStackRoute(segments: readonly string[] | undefined) {
   return segments?.[0] === "auth";
 }
@@ -475,4 +642,9 @@ function isProtectedAppRoute(
   return true;
 }
 
-export { isAuthStackRoute, isRootEntryPath, isProtectedAppRoute };
+export {
+  resolveRouteFromAuth,
+  isAuthStackRoute,
+  isRootEntryPath,
+  isProtectedAppRoute,
+};

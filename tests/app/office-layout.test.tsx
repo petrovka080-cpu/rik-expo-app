@@ -143,6 +143,21 @@ describe("OfficeStackLayout", () => {
     expect(handlerSource).not.toMatch(/\.reset\(/);
   });
 
+  it("wires android hardware back to the same safe office child contract", () => {
+    const source = fs.readFileSync(
+      path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain('BackHandler.addEventListener(');
+    expect(source).toContain('"hardwareBackPress"');
+    expect(source).toContain('pathname === "/office/foreman"');
+    expect(source).toContain('pathname === "/office/warehouse"');
+    expect(source).toContain("handleOfficeChildBack({");
+    expect(source).toContain("nativePressArgs: []");
+    expect(source).toContain("return true;");
+  });
+
   it.each(officeChildBackRoutes)(
     "%s uses the shared explicit navigate office child contract",
     (sourceRoute) => {
@@ -214,6 +229,50 @@ describe("OfficeStackLayout", () => {
     });
   });
 
+  it("logs the replace fallback failure and skips receipt when both navigation methods fail", () => {
+    const navigateError = new Error("navigate unavailable");
+    const replaceError = new Error("replace unavailable");
+    mockNavigate.mockImplementationOnce(() => {
+      throw navigateError;
+    });
+    mockReplace.mockImplementationOnce(() => {
+      throw replaceError;
+    });
+
+    const header = renderSafeOfficeChildBackButton("/office/foreman", {
+      canGoBack: true,
+      tintColor: "#000000",
+      label: OFFICE_BACK_LABEL,
+      href: undefined,
+      onPress: mockNativeBack,
+    }) as React.ReactElement<{ onPress: () => void }>;
+
+    expect(() => header.props.onPress()).not.toThrow();
+
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith("/office");
+    expect(mockRecordOfficeBackPathFailure).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        error: navigateError,
+        errorStage: "safe_back_navigate",
+      }),
+    );
+    expect(mockRecordOfficeBackPathFailure).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        error: replaceError,
+        errorStage: "safe_back_replace",
+        extra: expect.objectContaining({
+          sourceRoute: "/office/foreman",
+          target: OFFICE_SAFE_BACK_ROUTE,
+          method: "router_replace_fallback",
+        }),
+      }),
+    );
+    expect(mockMarkPendingOfficeRouteReturnReceipt).not.toHaveBeenCalled();
+  });
+
   it("does not emit warehouse-specific back markers", () => {
     const header = renderSafeOfficeForemanBackButton({
       canGoBack: true,
@@ -233,6 +292,11 @@ describe("OfficeStackLayout", () => {
       path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
       "utf8",
     );
+    const handlerStart = source.indexOf("function handleOfficeChildBack");
+    const handlerEnd = source.indexOf(
+      "export function renderSafeOfficeChildBackButton",
+    );
+    const handlerSource = source.slice(handlerStart, handlerEnd);
 
     expect(source).toContain('name="foreman"');
     expect(source).toContain('name="warehouse"');
@@ -253,8 +317,8 @@ describe("OfficeStackLayout", () => {
     expect(source).not.toMatch(/selected\s*Method/);
     expect(source).not.toContain('sourceRoute === "/office/warehouse"');
     expect(source).not.toContain('sourceRoute !== "/office/warehouse"');
-    expect(source).not.toMatch(/if\s*\([^)]*warehouse/i);
-    expect(source).not.toMatch(/switch\s*\([^)]*warehouse/i);
+    expect(handlerSource).not.toMatch(/if\s*\([^)]*warehouse/i);
+    expect(handlerSource).not.toMatch(/switch\s*\([^)]*warehouse/i);
     expect(source).not.toContain("router.push");
     expect(source).not.toMatch(/\.reset\(/);
     expect(source).not.toContain("recordOfficeWarehouseBackHandlerStepAsync");

@@ -6,6 +6,7 @@ import { RequestTimeoutError } from "../requestTimeoutPolicy";
 import RootLayout from "../../../app/_layout";
 
 const mockReplace = jest.fn();
+const mockNavigate = jest.fn();
 const mockGetSessionSafe = jest.fn();
 const mockOnAuthStateChange = jest.fn();
 const mockUseSegments = jest.fn();
@@ -35,6 +36,7 @@ jest.mock("expo-router", () => ({
   },
   router: {
     replace: (...args: unknown[]) => mockReplace(...args),
+    navigate: (...args: unknown[]) => mockNavigate(...args),
   },
   useSegments: (...args: unknown[]) => mockUseSegments(...args),
   usePathname: (...args: unknown[]) => mockUsePathname(...args),
@@ -133,6 +135,7 @@ jest.mock("../realtime/realtime.client", () => ({
 describe("RootLayout recovery bootstrap", () => {
   beforeEach(() => {
     mockReplace.mockReset();
+    mockNavigate.mockReset();
     mockGetSessionSafe.mockReset();
     mockOnAuthStateChange.mockReset();
     mockUseSegments.mockReset();
@@ -615,5 +618,224 @@ let renderer: TestRenderer.ReactTestRenderer;
 
     expect(mockGetSessionSafe).toHaveBeenCalledTimes(2);
     expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+  });
+
+  it("keeps a persisted session on protected office cold start without redirecting to login", async () => {
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "accountant"]);
+    mockUsePathname.mockReturnValue("/office/accountant");
+    mockGetSessionSafe.mockResolvedValue({
+      session: {
+        user: { id: "user-1" },
+        access_token: "tok",
+      },
+      degraded: false,
+    });
+
+    await act(async () => {
+      TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(mockEnsureQueueWorker).toHaveBeenCalledTimes(1);
+    expect(mockWarmCurrentSessionProfile).toHaveBeenCalledWith("root_layout", {
+      id: "user-1",
+    });
+  });
+
+  it("keeps the auth listener subscribed once across navigation churn", async () => {
+    mockGetSessionSafe.mockResolvedValue({
+      session: {
+        user: { id: "user-1" },
+        access_token: "tok",
+      },
+      degraded: false,
+    });
+
+    let renderer: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+    mockUsePathname.mockReturnValue("/office/warehouse");
+
+    await act(async () => {
+      renderer!.update(<RootLayout />);
+      await Promise.resolve();
+    });
+
+    mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
+    mockUsePathname.mockReturnValue("/(tabs)/profile");
+
+    await act(async () => {
+      renderer!.update(<RootLayout />);
+      await Promise.resolve();
+    });
+
+    expect(mockOnAuthStateChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("redirects terminal sign-out on a protected route through the guard", async () => {
+    let capturedAuthCallback:
+      | ((event: string, session: unknown) => void)
+      | null = null;
+
+    mockOnAuthStateChange.mockImplementation(
+      (callback: (event: string, session: unknown) => void) => {
+        capturedAuthCallback = callback;
+        return {
+          data: {
+            subscription: {
+              unsubscribe: jest.fn(),
+            },
+          },
+        };
+      },
+    );
+
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+    mockUsePathname.mockReturnValue("/office/warehouse");
+    mockGetSessionSafe.mockResolvedValue({
+      session: {
+        user: { id: "user-1" },
+        access_token: "tok",
+      },
+      degraded: false,
+    });
+
+    await act(async () => {
+      TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    mockReplace.mockClear();
+
+    await act(async () => {
+      capturedAuthCallback?.("SIGNED_OUT", null);
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+    expect(mockStopQueueWorker).toHaveBeenCalled();
+  });
+
+  it("falls back to router.navigate and logs when router.replace fails", async () => {
+    const replaceError = new Error("replace unavailable");
+    mockUseSegments.mockReturnValue(["auth", "login"]);
+    mockUsePathname.mockReturnValue("/auth/login");
+    mockGetSessionSafe.mockResolvedValue({
+      session: {
+        user: { id: "user-1" },
+        access_token: "tok",
+      },
+      degraded: false,
+    });
+    mockReplace.mockImplementationOnce(() => {
+      throw replaceError;
+    });
+
+    await act(async () => {
+      TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith("/(tabs)/profile");
+    expect(mockNavigate).toHaveBeenCalledWith("/(tabs)/profile");
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "auth_navigation_failed",
+        result: "error",
+        errorStage: "router_replace",
+        fallbackUsed: true,
+      }),
+    );
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "auth_navigation_fallback_used",
+        result: "success",
+        extra: expect.objectContaining({
+          target: "/(tabs)/profile",
+          method: "router_navigate",
+        }),
+      }),
+    );
+  });
+
+  it("resolves only one login route when auth change lands during the post-auth settle window", async () => {
+    jest.useFakeTimers();
+
+    let capturedAuthCallback:
+      | ((event: string, session: unknown) => void)
+      | null = null;
+
+    mockOnAuthStateChange.mockImplementation(
+      (callback: (event: string, session: unknown) => void) => {
+        capturedAuthCallback = callback;
+        return {
+          data: {
+            subscription: {
+              unsubscribe: jest.fn(),
+            },
+          },
+        };
+      },
+    );
+
+    mockUseSegments.mockReturnValue(["auth", "login"]);
+    mockUsePathname.mockReturnValue("/auth/login");
+    mockGetSessionSafe
+      .mockResolvedValueOnce({ session: null, degraded: false })
+      .mockResolvedValueOnce({ session: null, degraded: false });
+
+    let renderer: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    mockReplace.mockClear();
+
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+    mockUsePathname.mockReturnValue("/office/warehouse");
+
+    await act(async () => {
+      renderer!.update(<RootLayout />);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      capturedAuthCallback?.("SIGNED_OUT", null);
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+
+    await act(async () => {
+      jest.advanceTimersByTime(3_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledTimes(1);
   });
 });

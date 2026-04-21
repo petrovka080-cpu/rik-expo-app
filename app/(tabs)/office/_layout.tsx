@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { HeaderBackButton } from "@react-navigation/elements";
+import { BackHandler, Platform } from "react-native";
 import {
   router,
   Stack,
@@ -28,6 +29,14 @@ type OfficeChildBackSourceRoute = "/office/foreman" | "/office/warehouse";
 type OfficeHeaderBackButtonProps = Record<string, unknown> & {
   onPress?: (...args: unknown[]) => void;
 };
+
+function resolveSafeOfficeChildRoute(
+  pathname: string | null | undefined,
+): OfficeChildBackSourceRoute | null {
+  if (pathname === "/office/foreman") return "/office/foreman";
+  if (pathname === "/office/warehouse") return "/office/warehouse";
+  return null;
+}
 
 function useOfficeStackOwnerAudit() {
   const navigation = useNavigation();
@@ -105,6 +114,7 @@ function handleOfficeChildBack(params: {
   sourceRoute: OfficeChildBackSourceRoute;
 }) {
   let method = "explicit_navigate";
+  let navigationCompleted = false;
 
   try {
     // NAV-P0: Use explicit navigation to /office instead of router.back()
@@ -113,6 +123,7 @@ function handleOfficeChildBack(params: {
     // navigator, causing the entire office tab (and its children) to unmount.
     // With explicit navigation, we always land on /office.
     router.navigate("/office");
+    navigationCompleted = true;
   } catch (error) {
     recordOfficeBackPathFailure({
       error,
@@ -126,13 +137,28 @@ function handleOfficeChildBack(params: {
         handler: "safe_back_header",
       },
     });
+
     try {
-      router.replace("/office");
       method = "router_replace_fallback";
-    } catch {
-      // Navigation is in a critically bad state — no more we can do.
+      router.replace("/office");
+      navigationCompleted = true;
+    } catch (replaceError) {
+      recordOfficeBackPathFailure({
+        error: replaceError,
+        errorStage: "safe_back_replace",
+        extra: {
+          owner: "office_stack_layout",
+          route: params.sourceRoute,
+          sourceRoute: params.sourceRoute,
+          target: OFFICE_SAFE_BACK_ROUTE,
+          method,
+          handler: "safe_back_header",
+        },
+      });
     }
   }
+
+  if (!navigationCompleted) return;
 
   markPendingOfficeRouteReturnReceipt({
     sourceRoute: params.sourceRoute,
@@ -177,6 +203,27 @@ const safeOfficeChildBackButtons = {
 
 export default function OfficeStackLayout() {
   useOfficeStackOwnerAudit();
+  const pathname = usePathname();
+  const safeChildRoute = resolveSafeOfficeChildRoute(pathname);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    if (!safeChildRoute) return;
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        handleOfficeChildBack({
+          nativeOnPress: undefined,
+          nativePressArgs: [],
+          sourceRoute: safeChildRoute,
+        });
+        return true;
+      },
+    );
+
+    return () => subscription.remove();
+  }, [safeChildRoute]);
 
   return (
     <Stack
