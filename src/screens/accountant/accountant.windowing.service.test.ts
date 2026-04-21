@@ -2,10 +2,16 @@ import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
 } from "../../lib/observability/platformObservability";
+import { runAccountantReturnToBuyerChain } from "./accountant.return.service";
 import { normalizeAccountantInboxRpcTab } from "../../lib/api/accountant";
 import { loadAccountantHistoryWindowData } from "./accountant.history.service";
 import { loadAccountantInboxWindowData } from "./accountant.inbox.service";
 import type { Tab } from "./types";
+
+jest.mock("../../lib/api/accountant", () => ({
+  accountantReturnToBuyer: jest.fn(),
+  normalizeAccountantInboxRpcTab: jest.requireActual("../../lib/api/accountant").normalizeAccountantInboxRpcTab,
+}));
 
 jest.mock("../../lib/supabaseClient", () => ({
   supabase: {
@@ -24,10 +30,20 @@ jest.mock("../../lib/api/integrity.guards", () => ({
   })),
 }));
 
+jest.mock("../../lib/logger", () => ({
+  logger: {
+    info: jest.fn(),
+  },
+}));
+
 const { supabase: mockSupabase } = jest.requireMock("../../lib/supabaseClient") as {
   supabase: {
     rpc: jest.Mock;
   };
+};
+
+const { accountantReturnToBuyer } = jest.requireMock("../../lib/api/accountant") as {
+  accountantReturnToBuyer: jest.Mock;
 };
 
 const integrityGuards = jest.requireMock("../../lib/api/integrity.guards") as {
@@ -41,6 +57,7 @@ describe("accountant window services", () => {
   beforeEach(() => {
     resetPlatformObservabilityEvents();
     mockSupabase.rpc.mockReset();
+    accountantReturnToBuyer.mockReset();
     integrityGuards.filterProposalLinkedRowsByExistingProposalLinks.mockClear();
     integrityGuards.filterPaymentRowsByExistingPaymentProposalLinks.mockClear();
   });
@@ -190,9 +207,9 @@ describe("accountant window services", () => {
     });
 
     expect(mockSupabase.rpc).toHaveBeenCalledWith("accountant_history_scope_v1", {
-      p_date_from: null,
-      p_date_to: null,
-      p_search: null,
+      p_date_from: undefined,
+      p_date_to: undefined,
+      p_search: undefined,
       p_offset: 0,
       p_limit: 50,
     });
@@ -229,12 +246,48 @@ describe("accountant window services", () => {
 
     expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
     expect(mockSupabase.rpc).toHaveBeenCalledWith("accountant_history_scope_v1", {
-      p_date_from: null,
-      p_date_to: null,
-      p_search: null,
+      p_date_from: undefined,
+      p_date_to: undefined,
+      p_search: undefined,
       p_offset: 0,
       p_limit: 50,
     });
     expect(integrityGuards.filterPaymentRowsByExistingPaymentProposalLinks).not.toHaveBeenCalled();
+  });
+
+  it("passes an undefined comment through the direct return boundary when the user input is empty", async () => {
+    accountantReturnToBuyer.mockResolvedValue(undefined);
+
+    await runAccountantReturnToBuyerChain({
+      proposalId: "proposal-1",
+      comment: "   ",
+    });
+
+    expect(accountantReturnToBuyer).toHaveBeenCalledWith({
+      proposalId: "proposal-1",
+      comment: undefined,
+    });
+    expect(mockSupabase.rpc).not.toHaveBeenCalled();
+  });
+
+  it("keeps fallback return RPC calls optional instead of sending null comments", async () => {
+    accountantReturnToBuyer.mockRejectedValueOnce(new Error("primary_failed"));
+    mockSupabase.rpc
+      .mockResolvedValueOnce({ error: new Error("rpc_failed") })
+      .mockResolvedValueOnce({ error: null });
+
+    await runAccountantReturnToBuyerChain({
+      proposalId: "proposal-2",
+      comment: null,
+    });
+
+    expect(mockSupabase.rpc).toHaveBeenNthCalledWith(1, "acc_return_min_auto", {
+      p_proposal_id: "proposal-2",
+      p_comment: undefined,
+    });
+    expect(mockSupabase.rpc).toHaveBeenNthCalledWith(2, "proposal_return_to_buyer_min", {
+      p_proposal_id: "proposal-2",
+      p_comment: undefined,
+    });
   });
 });

@@ -138,11 +138,12 @@ export function createPdfOpenFlowContext(args: {
   originModule: PdfOriginModule;
   startedAt?: number | null;
 }): PdfOpenFlowContext {
+  const startedAt =
+    typeof args.startedAt === "number" && Number.isFinite(args.startedAt)
+      ? args.startedAt
+      : nowMs();
   const hasStartedAt =
     typeof args.startedAt === "number" && Number.isFinite(args.startedAt);
-  const startedAt = hasStartedAt
-    ? args.startedAt
-    : nowMs();
   return {
     key: trimText(args.key) || undefined,
     label: trimText(args.label) || undefined,

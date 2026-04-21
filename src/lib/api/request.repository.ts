@@ -39,6 +39,10 @@ export type AppendMarketplaceItemsCommand = {
 };
 
 const trim = (value: unknown) => String(value ?? "").trim();
+const trimOptional = (value: unknown): string | undefined => {
+  const text = trim(value);
+  return text || undefined;
+};
 
 const logRequestRepository = (payload: Record<string, unknown>) => {
   if (!__DEV__) return;
@@ -161,11 +165,11 @@ export async function appendMarketplaceItemsToDraft(
       rik_code: trim(item.rikCode),
       qty: Number(item.qty),
       opts: {
-        app_code: trim(item.appCode) || null,
-        kind: trim(item.kind) || null,
-        name_human: trim(item.nameHuman) || null,
-        note: trim(item.note) || null,
-        uom: trim(item.uom) || null,
+        app_code: trimOptional(item.appCode),
+        kind: trimOptional(item.kind),
+        name_human: trimOptional(item.nameHuman),
+        note: trimOptional(item.note),
+        uom: trimOptional(item.uom),
       },
     }))
     .filter((item) => item.rik_code && Number.isFinite(item.qty) && item.qty > 0);

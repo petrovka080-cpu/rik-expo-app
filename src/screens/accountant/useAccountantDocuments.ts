@@ -13,6 +13,7 @@ import { useAccountantPaymentPdfBoundary } from "./accountant.paymentPdf.boundar
 import { resolveAccountantAttachmentPreview } from "./accountantAttachmentPdf.service";
 import { generateAccountantProposalPdfDocument } from "./accountantProposalPdf.service";
 import type { AccountantInboxUiRow } from "./types";
+import type { BusyLike } from "../../lib/pdfRunner";
 
 type Params = {
   current: AccountantInboxUiRow | null;
@@ -26,7 +27,7 @@ type Params = {
   rs: string;
   inn: string;
   kpp: string;
-  gbusy: unknown;
+  gbusy?: BusyLike;
   safeAlert: (title: string, msg: string) => void;
   getErrorText: (e: unknown) => string;
   /** XR-PDF: dismiss callback for the parent modal (if any). */

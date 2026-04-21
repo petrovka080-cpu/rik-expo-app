@@ -377,6 +377,9 @@ export async function prepareAndPreviewPdfDocument(
         if (outputPlan.action === "throw_cancelled") {
           throw new Error(outputPlan.message);
         }
+        if (!output) {
+          throw new Error("PDF action completed without a document descriptor");
+        }
         return output;
       }
       if (

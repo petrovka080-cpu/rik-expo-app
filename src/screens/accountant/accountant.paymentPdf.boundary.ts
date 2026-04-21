@@ -9,16 +9,12 @@ import {
 import { supabase } from "../../lib/supabaseClient";
 import { fetchLastPaymentIdByProposal } from "./accountant.payment";
 import { generateAccountantPaymentReportPdfDocument } from "./accountantPaymentReportPdf.service";
+import type { BusyLike } from "../../lib/pdfRunner";
 
-export type AccountantPaymentPdfBusyLike = {
-  run?: <T>(
-    fn: () => Promise<T>,
-    opts?: { key?: string; label?: string; minMs?: number },
-  ) => Promise<T | null>;
-};
+export type AccountantPaymentPdfBusyLike = BusyLike;
 
 type UseAccountantPaymentPdfBoundaryArgs = {
-  busy: AccountantPaymentPdfBusyLike | unknown;
+  busy?: AccountantPaymentPdfBusyLike;
   safeAlert: (title: string, message: string) => void;
   setCurrentPaymentId: Dispatch<SetStateAction<number | null>>;
   /** XR-PDF: dismiss callback for the parent modal (if any). */
@@ -75,7 +71,7 @@ export function useAccountantPaymentPdfBoundary(
         fileName,
       };
       await prepareAndPreviewPdfDocument({
-        busy: busy as AccountantPaymentPdfBusyLike,
+        busy,
         supabase,
         key: `pdf:acc:pay:${paymentId}`,
         label: "Открываю платёжное поручение…",

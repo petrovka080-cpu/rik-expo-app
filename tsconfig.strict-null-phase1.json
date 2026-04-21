@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strictNullChecks": true
+  },
+  "include": [],
+  "files": [
+    "src/screens/director/director.finance.rpc.ts",
+    "src/lib/api/proposalActionBoundary.ts",
+    "src/lib/api/requests.ts",
+    "src/lib/api/request.repository.ts",
+    "src/screens/accountant/accountant.history.service.ts",
+    "src/screens/accountant/accountant.return.service.ts",
+    "src/screens/accountant/accountant.paymentPdf.boundary.ts",
+    "src/screens/accountant/accountantPaymentReportPdf.service.ts",
+    "src/screens/warehouse/components/HistoryRowView.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "scripts/**/*",
+    "tests/**/*",
+    "diagnostics/**/*",
+    "artifacts/**/*"
+  ]
+}

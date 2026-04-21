@@ -1,6 +1,7 @@
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
+import { formatHistoryRowEventDate } from "./HistoryRowView";
 import WarehouseReportsTab from "./WarehouseReportsTab";
 import { buildWarehousePdfBusyKey } from "../warehouse.pdf.boundary";
 
@@ -109,13 +110,13 @@ const createProps = (overrides: Partial<React.ComponentProps<typeof WarehouseRep
     incomingByDay: [],
     vydachaByDay: [
       {
-        day: "01 апреля 2026",
+        day: "01 Р°РїСЂРµР»СЏ 2026",
         items: [
           {
             issue_id: 77,
             issue_no: "ISSUE-77",
-            who: "Склад",
-            obj_name: "Объект",
+            who: "РЎРєР»Р°Рґ",
+            obj_name: "РћР±СЉРµРєС‚",
           },
         ],
       },
@@ -183,7 +184,7 @@ describe("WarehouseReportsTab", () => {
           buildWarehousePdfBusyKey({
             kind: "day-register",
             reportsMode: "issue",
-            dayLabel: "01 апреля 2026",
+            dayLabel: "01 Р°РїСЂРµР»СЏ 2026",
           }),
     });
     let renderer!: TestRenderer.ReactTestRenderer;
@@ -191,7 +192,7 @@ describe("WarehouseReportsTab", () => {
       renderer = TestRenderer.create(<WarehouseReportsTab {...props} />);
     });
 
-    const dayRow = renderer.root.findByProps({ testID: "warehouse-report-day:01 апреля 2026" });
+    const dayRow = renderer.root.findByProps({ testID: "warehouse-report-day:01 Р°РїСЂРµР»СЏ 2026" });
     act(() => {
       dayRow.props.onPress();
     });
@@ -209,6 +210,10 @@ describe("WarehouseReportsTab", () => {
       dayMaterialsButton.props.onPress();
     });
 
-    expect(props.onPdfDayMaterials).toHaveBeenCalledWith("01 апреля 2026");
+    expect(props.onPdfDayMaterials).toHaveBeenCalledWith("01 Р°РїСЂРµР»СЏ 2026");
+  });
+
+  it("renders a stable placeholder when the history event date is absent", () => {
+    expect(formatHistoryRowEventDate(null)).toBe(formatHistoryRowEventDate(undefined));
   });
 });

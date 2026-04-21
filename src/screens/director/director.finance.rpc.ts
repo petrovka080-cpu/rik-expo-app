@@ -135,8 +135,8 @@ export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
   if (!canUseFinanceRpc(financeSummaryRpcMeta)) return null;
 
   const args: DirectorFinanceFetchSummaryV1Args = {
-    p_from: pickIso10(opts?.periodFromIso),
-    p_to: pickIso10(opts?.periodToIso),
+    p_from: pickIso10(opts?.periodFromIso) ?? undefined,
+    p_to: pickIso10(opts?.periodToIso) ?? undefined,
     p_due_days: normalizeFinanceRpcInteger(opts?.dueDaysDefault, 7),
     p_critical_days: normalizeFinanceRpcInteger(opts?.criticalDays, 14),
   };
@@ -319,8 +319,8 @@ export async function fetchDirectorFinancePanelScopeViaRpc(opts?: {
   if (!canUseFinanceRpc(financePanelScopeRpcMeta)) return null;
 
   const args: DirectorFinancePanelScopeV1Args = {
-    p_from: pickIso10(opts?.periodFromIso),
-    p_to: pickIso10(opts?.periodToIso),
+    p_from: pickIso10(opts?.periodFromIso) ?? undefined,
+    p_to: pickIso10(opts?.periodToIso) ?? undefined,
     p_due_days: normalizeFinanceRpcInteger(opts?.dueDaysDefault, 7),
     p_critical_days: normalizeFinanceRpcInteger(opts?.criticalDays, 14),
   };
@@ -352,9 +352,9 @@ export async function fetchDirectorFinanceSupplierScopeViaRpc(opts: {
 
   const args: DirectorFinanceSupplierScopeV1Args = {
     p_supplier: supplier,
-    p_kind_name: financeText(opts.kindName) || null,
-    p_from: pickIso10(opts.periodFromIso),
-    p_to: pickIso10(opts.periodToIso),
+    p_kind_name: financeText(opts.kindName) || undefined,
+    p_from: pickIso10(opts.periodFromIso) ?? undefined,
+    p_to: pickIso10(opts.periodToIso) ?? undefined,
     p_due_days: normalizeFinanceRpcInteger(opts.dueDaysDefault, 7),
     p_critical_days: normalizeFinanceRpcInteger(opts.criticalDays, 14),
   };
@@ -418,8 +418,8 @@ export async function fetchDirectorFinanceSupplierScopeV2ViaRpc(opts: {
     p_supplier: supplier,
     p_kind_name: financeText(opts.kindName) || null,
     p_object_id: financeText(opts.objectId) || undefined,
-    p_from: pickIso10(opts.periodFromIso),
-    p_to: pickIso10(opts.periodToIso),
+    p_from: pickIso10(opts.periodFromIso) ?? null,
+    p_to: pickIso10(opts.periodToIso) ?? null,
     p_due_days: normalizeFinanceRpcInteger(opts.dueDaysDefault, 7),
     p_critical_days: normalizeFinanceRpcInteger(opts.criticalDays, 14),
   };

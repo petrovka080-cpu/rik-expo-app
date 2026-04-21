@@ -225,7 +225,7 @@ export async function readbackApprovedProposalTruth(
   }
 
   const row = asRecord(query.data);
-  if (text(row?.id) !== pid) {
+  if (!row || text(row.id) !== pid) {
     throw new ProposalActionBoundaryError({
       action: "director_approve",
       stage: "readback",

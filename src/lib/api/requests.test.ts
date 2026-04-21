@@ -7,6 +7,7 @@ import { supabase } from "../supabaseClient";
 import { client } from "./_core";
 import { ensureRequestExists } from "./integrity.guards";
 import {
+  addRequestItemFromRikDetailed,
   clearCachedDraftRequestId,
   getOrCreateDraftRequestId,
   requestCreateDraft,
@@ -460,5 +461,45 @@ describe("requests mutation boundary", () => {
     expect(mockClient.rpc).toHaveBeenCalledWith("request_reopen_atomic_v1", {
       p_request_id_text: "request-4",
     });
+  });
+
+  it("omits optional null item metadata instead of forcing invalid strict-null patch values", async () => {
+    mockEnsureRequestExists.mockResolvedValue(undefined);
+    mockSupabase.rpc.mockResolvedValue({
+      data: "item-1",
+      error: null,
+    });
+    const update = jest.fn((_patch: Record<string, unknown>) => ({
+      eq: jest.fn(async () => ({ error: null })),
+    }));
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table !== "request_items") throw new Error(`Unexpected table ${table}`);
+      return { update };
+    });
+
+    await expect(
+      addRequestItemFromRikDetailed("request-1", "RIK-1", 2, {
+        note: null,
+        app_code: null,
+        kind: null,
+        name_human: null,
+        uom: null,
+      }),
+    ).resolves.toEqual({
+      item_id: "item-1",
+      rik_code: "RIK-1",
+    });
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: expect.any(String),
+        note: null,
+        app_code: null,
+        kind: null,
+      }),
+    );
+    const firstPatch = update.mock.calls[0]?.[0];
+    expect(firstPatch).toBeDefined();
+    expect(firstPatch).not.toHaveProperty("uom");
   });
 });

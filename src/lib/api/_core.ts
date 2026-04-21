@@ -175,7 +175,8 @@ export async function rpcCompat<T = unknown>(
 ): Promise<T> {
   const runRpc = async <TName extends RpcName>(variant: RpcVariant<TName>) => {
     if ("args" in variant && variant.args !== undefined) {
-      return (await supabase.rpc(variant.fn, variant.args)) as { data: unknown; error: unknown };
+      const args = variant.args ?? undefined;
+      return (await supabase.rpc(variant.fn, args)) as { data: unknown; error: unknown };
     }
     return (await supabase.rpc(variant.fn)) as { data: unknown; error: unknown };
   };

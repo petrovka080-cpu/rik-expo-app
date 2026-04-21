@@ -544,9 +544,13 @@ export async function generateAccountantPaymentReportPdfDocument(
         setAccountantPaymentReportReadinessCache(scopeKey, previousReadiness);
       }
 
-      if (!args.draft && isReadinessFastReusable(previousReadiness)) {
+      const reusableReadiness =
+        !args.draft && isReadinessFastReusable(previousReadiness)
+          ? previousReadiness
+          : null;
+      if (reusableReadiness) {
         const reusable = await resolveAccountantPaymentReportReusableArtifact(
-          previousReadiness.manifest,
+          reusableReadiness.manifest,
         );
         if (reusable) {
           recordPaymentReportReady({
@@ -554,7 +558,7 @@ export async function generateAccountantPaymentReportPdfDocument(
             startedAt,
             result: "cache_hit",
             cacheLayer: reusable.cacheLayer,
-            manifest: previousReadiness.manifest,
+            manifest: reusableReadiness.manifest,
           });
           return reusable.descriptor;
         }

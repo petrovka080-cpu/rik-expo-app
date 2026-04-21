@@ -65,6 +65,14 @@ const toMaybeText = (value: unknown): string | null => {
   return text || null;
 };
 
+const toRpcOptionalDate = (value: string, toRpcDateOrNull: (v: string) => string | null) =>
+  toRpcDateOrNull(value) ?? undefined;
+
+const toRpcOptionalSearch = (value: string) => {
+  const search = value?.trim();
+  return search || undefined;
+};
+
 export const adaptAccountantHistoryScopeEnvelope = (value: unknown): AccountantHistoryScopeEnvelope => {
   const envelope = typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
   const rowsRaw = Array.isArray(envelope.rows) ? envelope.rows : [];
@@ -110,9 +118,9 @@ export async function loadAccountantHistoryRows(params: {
 }): Promise<HistoryRow[]> {
   const { dateFrom, dateTo, histSearch, toRpcDateOrNull } = params;
   const { data, error } = await supabase.rpc("list_accountant_payments_history_v2", {
-    p_date_from: toRpcDateOrNull(dateFrom),
-    p_date_to: toRpcDateOrNull(dateTo),
-    p_search: histSearch?.trim() ? histSearch.trim() : null,
+    p_date_from: toRpcOptionalDate(dateFrom, toRpcDateOrNull),
+    p_date_to: toRpcOptionalDate(dateTo, toRpcDateOrNull),
+    p_search: toRpcOptionalSearch(histSearch),
     p_limit: 300,
   });
   if (error) throw error;
@@ -138,9 +146,9 @@ export async function loadAccountantHistoryWindowData(params: {
 
   try {
     const { data, error } = await supabase.rpc("accountant_history_scope_v1", {
-      p_date_from: toRpcDateOrNull(dateFrom),
-      p_date_to: toRpcDateOrNull(dateTo),
-      p_search: histSearch?.trim() ? histSearch.trim() : null,
+      p_date_from: toRpcOptionalDate(dateFrom, toRpcDateOrNull),
+      p_date_to: toRpcOptionalDate(dateTo, toRpcDateOrNull),
+      p_search: toRpcOptionalSearch(histSearch),
       p_offset: Math.max(0, offsetRows),
       p_limit: Math.max(1, limitRows),
     });

@@ -14,8 +14,14 @@ type Props = {
     };
 };
 
+export function formatHistoryRowEventDate(value?: string | null) {
+    return value
+        ? new Date(value).toLocaleString("ru-RU")
+        : "—";
+}
+
 function HistoryRowView({ h }: Props) {
-    const dt = new Date(h.event_dt).toLocaleString("ru-RU");
+    const dt = formatHistoryRowEventDate(h.event_dt);
     const qty = h.qty ?? 0;
 
     const typeLabel =

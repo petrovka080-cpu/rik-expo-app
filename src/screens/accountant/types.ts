@@ -1,4 +1,4 @@
-import type { AccountantInboxRow } from "../../lib/rik_api";
+import type { AccountantInboxRow } from "../../lib/api/types";
 import type {
   ProposalAttachmentViewState,
 } from "../../lib/api/proposalAttachments.service";

@@ -46,10 +46,10 @@ type RequestItemMetaPatch = Pick<
   "status" | "note" | "app_code" | "kind" | "name_human" | "uom"
 >;
 type RequestItemAddOpts = {
-  note?: string;
-  app_code?: string;
-  kind?: string;
-  name_human?: string;
+  note?: string | null;
+  app_code?: string | null;
+  kind?: string | null;
+  name_human?: string | null;
   uom?: string | null;
 };
 type RequestItemBatchInput = {
@@ -224,14 +224,16 @@ function parseRequestItemAddOrIncResult(data: RequestItemAddOrIncResult): string
 }
 
 function buildRequestItemMetaPatch(
-  opts?: { note?: string; app_code?: string; kind?: string; name_human?: string; uom?: string | null },
+  opts?: RequestItemAddOpts,
 ): RequestItemMetaPatch {
   const patch: RequestItemMetaPatch = { status: REQUEST_DRAFT_STATUS };
   if (Object.prototype.hasOwnProperty.call(opts ?? {}, "note")) patch.note = opts?.note ?? null;
   if (Object.prototype.hasOwnProperty.call(opts ?? {}, "app_code")) patch.app_code = opts?.app_code ?? null;
   if (Object.prototype.hasOwnProperty.call(opts ?? {}, "kind")) patch.kind = opts?.kind ?? null;
   if (Object.prototype.hasOwnProperty.call(opts ?? {}, "name_human") && opts?.name_human) patch.name_human = opts.name_human;
-  if (Object.prototype.hasOwnProperty.call(opts ?? {}, "uom")) patch.uom = opts?.uom ?? null;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, "uom") && opts?.uom != null) {
+    patch.uom = opts.uom;
+  }
   return patch;
 }
 

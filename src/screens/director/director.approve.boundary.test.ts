@@ -2,7 +2,12 @@ import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
 } from "../../lib/observability/platformObservability";
-import { classifyProposalActionFailure } from "../../lib/api/proposalActionBoundary";
+import {
+  ProposalActionBoundaryError,
+  classifyProposalActionFailure,
+  readbackApprovedProposalTruth,
+  readbackSubmittedProposalTruth,
+} from "../../lib/api/proposalActionBoundary";
 import {
   DirectorApproveBoundaryError,
   runDirectorApprovePipelineAction,
@@ -11,6 +16,7 @@ import {
 const buildApproveSupabase = (params: {
   rpc?: { data?: unknown; error?: unknown };
   readback?: { data?: unknown; error?: unknown };
+  readbackMany?: { data?: unknown; error?: unknown };
 } = {}) => {
   const rpc = jest.fn(async () =>
     params.rpc ?? {
@@ -34,8 +40,9 @@ const buildApproveSupabase = (params: {
       error: null,
     },
   );
+  const inFn = jest.fn(async () => params.readbackMany ?? { data: [], error: null });
   const eq = jest.fn(() => ({ maybeSingle }));
-  const select = jest.fn(() => ({ eq }));
+  const select = jest.fn(() => ({ eq, in: inFn }));
   const from = jest.fn(() => ({ select }));
 
   return {
@@ -44,6 +51,7 @@ const buildApproveSupabase = (params: {
     from,
     select,
     eq,
+    inFn,
     maybeSingle,
   };
 };
@@ -171,5 +179,65 @@ describe("director approve boundary", () => {
     });
     expect(classifyProposalActionFailure({ status: 503 })).toBe("retryable_failure");
     expect(harness.from).not.toHaveBeenCalled();
+  });
+
+  it("keeps approved readback authoritative when the server row is present", async () => {
+    const harness = buildApproveSupabase({
+      readback: {
+        data: {
+          id: "proposal-1",
+          status: "sent_to_accountant",
+          sent_to_accountant_at: "2026-04-21T10:00:00.000Z",
+        },
+        error: null,
+      },
+    });
+
+    await expect(readbackApprovedProposalTruth(harness.supabase, "proposal-1")).resolves.toEqual({
+      proposalId: "proposal-1",
+      status: "sent_to_accountant",
+      sentToAccountantAt: "2026-04-21T10:00:00.000Z",
+    });
+  });
+
+  it("fails with a controlled boundary error instead of a null-row crash", async () => {
+    const harness = buildApproveSupabase({
+      readback: {
+        data: null,
+        error: null,
+      },
+    });
+
+    await expect(readbackApprovedProposalTruth(harness.supabase, "proposal-1")).rejects.toMatchObject<
+      Partial<ProposalActionBoundaryError>
+    >({
+      name: "ProposalActionBoundaryError",
+      terminalClass: "terminal_failure",
+      stage: "readback",
+    });
+  });
+
+  it("rejects submitted readback rows that lose authoritative visibility", async () => {
+    const harness = buildApproveSupabase({
+      readbackMany: {
+        data: [
+          {
+            id: "proposal-1",
+            status: "draft",
+            submitted_at: null,
+            sent_to_accountant_at: null,
+          },
+        ],
+        error: null,
+      },
+    });
+
+    await expect(readbackSubmittedProposalTruth(harness.supabase, ["proposal-1"])).rejects.toMatchObject<
+      Partial<ProposalActionBoundaryError>
+    >({
+      name: "ProposalActionBoundaryError",
+      terminalClass: "terminal_failure",
+      stage: "readback",
+    });
   });
 });
