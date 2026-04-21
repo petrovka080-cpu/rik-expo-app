@@ -24,6 +24,9 @@
 - `docs/operations/eas-update-runbook.md`
 - `docs/operations/release-decision-matrix.md`
 - `docs/operations/release-lineage-audit.md`
+- `scripts/release/releaseGuard.shared.ts`
+- `scripts/release/run-release-guard.ts`
+- `tests/release/releaseGuard.shared.test.ts`
 
 ## What is now technically enforced
 
@@ -58,6 +61,8 @@
    - classification kind
    - gate outcomes
    - parsed EAS update lineage when OTA actually runs
+7. Guard path resolution now supports both repo-relative and absolute `--report-file` / `--require-artifact` inputs, so proof/report output cannot fail just because an operator used an absolute filesystem path.
+8. Changed-file metadata now preserves caret commit ranges such as `HEAD^..HEAD` by calling `git` with explicit argument arrays instead of shell-interpolated command strings. This closes the false-empty `classification.files` gap on Windows shells.
 
 ## What intentionally stays out of scope
 

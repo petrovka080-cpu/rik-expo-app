@@ -1,6 +1,6 @@
 {
   "wave": "RELEASE_GUARD_AUTOMATION",
-  "status": "GREEN_READY_FOR_RELEASE_TAIL",
+  "status": "GREEN",
   "touchedFiles": [
     "package.json",
     "scripts/preflight-prod.js",
@@ -25,7 +25,8 @@
   "focusedTests": {
     "releaseGuardShared": "PASS",
     "releaseGuardContract": "PASS",
-    "releaseInfoRegression": "PASS"
+    "releaseInfoRegression": "PASS",
+    "absolutePathAndCommitRangeRegression": "PASS"
   },
   "blockedCases": [
     {
@@ -48,7 +49,7 @@
     {
       "case": "non_runtime_diff",
       "status": "OTA_SKIPPED_BY_GUARD",
-      "proof": "tests/release/releaseGuard.shared.test.ts"
+      "proof": "tests/release/releaseGuard.shared.test.ts plus canonical npm guarded ota proof"
     },
     {
       "case": "runtime_ota_diff_with_full_preflight_and_metadata",
@@ -65,12 +66,12 @@
     "canonicalEntrypointsPresent": true,
     "directPackageBypassRemoved": true,
     "metadataCaptureHardened": true,
-    "releaseTail": "commit_and_push_run_after_static_proof",
+    "releaseTail": "commit_and_push_complete",
     "otaNeededForThisWave": false,
     "otaDone": "SKIPPED_EXPECTED"
   },
   "residualRisk": [
     "Raw manual shell use of eas CLI outside npm scripts cannot be OS-blocked by repo code alone.",
-    "Current wave is tooling-only, so clean-state guarded publish confirmation is completed in the release tail after commit."
+    "The guard hardens the canonical repo-owned release path; it does not replace human branch protection or CI policy outside the repository."
   ]
 }

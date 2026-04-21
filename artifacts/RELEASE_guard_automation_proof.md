@@ -37,7 +37,41 @@ Result: all `PASS`
 
 ## Successful guarded release simulation
 
-The current wave changes only tooling/docs/tests/package scripts. Release automation classifies this scope as `non-runtime`, so OTA must not publish.
+Canonical clean-state preflight command executed after push:
+
+```bash
+npm run release:preflight -- --json
+```
+
+Observed result on clean synced `main`:
+
+- exit code `0`
+- `HEAD == origin/main`
+- worktree clean
+- all required gates passed
+- classification = `non-runtime`
+- changed files populated from the actual commit diff
+- OTA disposition = `skip`
+
+Canonical guarded OTA command executed after push:
+
+```bash
+npm run ota:publish:production -- --message "Release guard automation" --json
+```
+
+Observed result on clean synced `main`:
+
+- exit code `0`
+- full preflight re-ran and passed
+- classification remained `non-runtime`
+- OTA publish was skipped
+- no update metadata was produced because no publish occurred, which is the expected safe behavior for this wave
+
+The final clean-state canonical proof commit classified these exact files as non-runtime:
+
+- `scripts/release/releaseGuard.shared.ts`
+- `scripts/release/run-release-guard.ts`
+- `tests/release/releaseGuard.shared.test.ts`
 
 Success condition for this wave:
 
@@ -125,3 +159,11 @@ Metadata hardening is proven in two places:
    - dashboard URL
 
 This removes the old "metadata is optional by convention" gap from the canonical release path.
+
+## Additional hardening proof
+
+Focused tests now also prove:
+
+- absolute `--report-file` paths are accepted without corrupting the output path
+- relative report paths still resolve from the repo root
+- `HEAD^..HEAD` stays intact as a single git argument, so commit diff metadata no longer collapses to an empty file list on Windows shells
