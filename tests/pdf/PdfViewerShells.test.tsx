@@ -1,6 +1,7 @@
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 import { ActivityIndicator } from "react-native";
+import type { WebViewProps } from "react-native-webview";
 
 import type { DocumentAsset } from "../../src/lib/documents/pdfDocumentSessions";
 import { createPdfSource } from "../../src/lib/pdfFileContract";
@@ -15,14 +16,7 @@ type NativeWebViewEvent = {
   };
 };
 
-type MockNativeWebViewProps = {
-  source?: unknown;
-  onLoadStart?: () => void;
-  onLoadEnd?: () => void;
-  onError?: (event: NativeWebViewEvent) => void;
-  onHttpError?: (event: NativeWebViewEvent) => void;
-  [key: string]: unknown;
-};
+type MockNativeWebViewProps = WebViewProps;
 
 const asset: DocumentAsset = {
   assetId: "asset-1",

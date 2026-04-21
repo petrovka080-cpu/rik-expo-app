@@ -1,0 +1,84 @@
+{
+  "wave": "B1.PDF_VIEWER_OWNER_SPLIT",
+  "status": "code_green_runtime_web_pass_android_blocked",
+  "scope": {
+    "touched_runtime_files": [
+      "app/pdf-viewer.tsx",
+      "src/lib/pdf/PdfViewerNativeShell.tsx",
+      "src/lib/pdf/PdfViewerScreenContent.tsx",
+      "src/lib/pdf/pdfViewer.route.ts",
+      "src/lib/pdf/pdfViewer.readiness.ts",
+      "src/lib/pdf/pdfViewer.handoffPlan.ts",
+      "src/lib/pdf/pdfViewer.error.ts",
+      "src/lib/pdf/pdfViewer.nativeWebView.ts"
+    ],
+    "touched_tests": [
+      "src/lib/pdf/pdfViewerEncoding.test.ts",
+      "tests/pdf/PdfViewerShells.test.tsx",
+      "tests/pdf/PdfViewerScreenContent.test.tsx",
+      "tests/pdf/pdfViewer.route.test.ts",
+      "tests/pdf/pdfViewer.readiness.test.ts",
+      "tests/pdf/pdfViewer.handoffPlan.test.ts",
+      "tests/pdf/pdfViewer.error.test.ts",
+      "tests/pdf/pdfViewerDecompositionAudit.test.ts",
+      "tests/routes/pdf-viewer.lifecycle.test.tsx",
+      "tests/perf/performance-budget.test.ts"
+    ],
+    "untouched_domains": [
+      "pdf backend/generation pipeline",
+      "manifest/source_version/artifact_version semantics",
+      "role business logic",
+      "RPC/API contracts",
+      "auth flow",
+      "pdfDocumentActions semantics"
+    ]
+  },
+  "owner_split": {
+    "route_model": "src/lib/pdf/pdfViewer.route.ts",
+    "readiness_model": "src/lib/pdf/pdfViewer.readiness.ts",
+    "handoff_plan": "src/lib/pdf/pdfViewer.handoffPlan.ts",
+    "error_model": "src/lib/pdf/pdfViewer.error.ts",
+    "native_webview_boundary": "src/lib/pdf/pdfViewer.nativeWebView.ts",
+    "presenter": "src/lib/pdf/PdfViewerScreenContent.tsx",
+    "orchestrator": "app/pdf-viewer.tsx"
+  },
+  "gates": {
+    "tsc": "pass",
+    "expo_lint": "pass",
+    "jest_run_in_band": "pass",
+    "jest_parallel": "pass",
+    "git_diff_check": "pass"
+  },
+  "focused_viewer_tests": {
+    "pdf_viewer_lifecycle": "pass",
+    "pdf_viewer_shells": "pass",
+    "pdf_viewer_screen_content": "pass",
+    "pdf_viewer_route": "pass",
+    "pdf_viewer_readiness": "pass",
+    "pdf_viewer_handoff_plan": "pass",
+    "pdf_viewer_error": "pass",
+    "pdf_viewer_decomposition_audit": "pass",
+    "pdf_viewer_encoding": "pass",
+    "pdf_mojibake_audit": "pass"
+  },
+  "runtime_proof": {
+    "web": {
+      "status": "pass",
+      "base_url": "http://127.0.0.1:8081",
+      "route_reached": true,
+      "iframe_count": 1,
+      "ready_count": 1,
+      "viewer_error_logs": 0,
+      "page_errors": 0
+    },
+    "android": {
+      "status": "blocked",
+      "device": "emulator-5554",
+      "attempts": 1,
+      "launch_activity": "expo.modules.devlauncher.launcher.DevLauncherActivity",
+      "viewer_logs_observed": false,
+      "fatal_android_runtime": false,
+      "reason": "Dev launcher/runtime wiring did not reach viewer-owned JS logs during the allowed proof window."
+    }
+  }
+}

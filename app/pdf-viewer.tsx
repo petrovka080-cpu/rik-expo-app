@@ -1,19 +1,10 @@
 import React from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-
-import { Ionicons } from "@expo/vector-icons";
 
 import {
   failDocumentSession,
@@ -21,14 +12,9 @@ import {
   touchDocumentSession,
   type DocumentAsset,
 } from "../src/lib/documents/pdfDocumentSessions";
-
-
-import {
-  getReadAccessParentUri,
-  resolvePdfViewerDirectSnapshot,
-  resolvePdfViewerResolution,
-  resolvePdfViewerState,
-} from "../src/lib/pdf/pdfViewerContract";
+import { FALLBACK_ROUTE } from "../src/lib/pdf/pdfViewer.constants";
+import { getReadAccessParentUri } from "../src/lib/pdf/pdfViewerContract";
+import { normalizePdfViewerError } from "../src/lib/pdf/pdfViewer.error";
 import { createPdfViewerRenderInstanceKey } from "../src/lib/pdf/pdfViewerRenderLifecycle";
 import {
   type PdfViewerRenderBreadcrumbCommand,
@@ -41,12 +27,45 @@ import {
   resolvePdfViewerWebIframeLoadEventPlan,
   shouldCommitPdfViewerRenderEvent,
 } from "../src/lib/pdf/pdfViewerRenderEventGuard";
-import { resolvePdfViewerWebRenderUriCleanup } from "../src/lib/pdf/pdfViewerWebRenderUriCleanup";
 import {
-  failPdfOpenVisible,
-  markPdfOpenVisible,
-  markPdfOpenRouteMounted,
-} from "../src/lib/pdf/pdfOpenFlow";
+  armPdfViewerLoadingTimeout,
+  cancelPdfViewerLoadingTimeout,
+  shouldCommitPdfViewerLoadingTimeout,
+} from "../src/lib/pdf/pdfViewerLoadingTimeoutGuard";
+import {
+  resolvePdfViewerManualHandoffPlan,
+  resolvePdfViewerHandoffPlan,
+} from "../src/lib/pdf/pdfViewer.handoffPlan";
+import {
+  getUriScheme,
+  inspectLocalPdfFile,
+  validateEmbeddedPreviewResolution,
+  FileSystemCompat,
+} from "../src/lib/pdf/pdfViewer.helpers";
+import { resolvePdfViewerNativeWebView } from "../src/lib/pdf/pdfViewer.nativeWebView";
+import {
+  resolvePdfViewerOpenFailedSignalPlan,
+  resolvePdfViewerOpenVisibleSignalPlan,
+} from "../src/lib/pdf/pdfViewerOpenSignalPlan";
+import { PdfViewerScreenContent } from "../src/lib/pdf/PdfViewerScreenContent";
+import {
+  resolvePdfViewerChromeModel,
+  resolvePdfViewerContentModel,
+  resolvePdfViewerReadinessModel,
+} from "../src/lib/pdf/pdfViewer.readiness";
+import {
+  resolvePdfViewerRouteModel,
+  resolvePdfViewerSnapshot,
+} from "../src/lib/pdf/pdfViewer.route";
+import { styles } from "../src/lib/pdf/pdfViewer.styles";
+import {
+  planPdfViewerLoadingTransition,
+  planPdfViewerTimeoutTransition,
+  usePdfViewerOrchestrator,
+} from "../src/lib/pdf/usePdfViewerOrchestrator";
+import { resolvePdfViewerWebIframeReadyFallbackPlan } from "../src/lib/pdf/pdfViewerWebIframeReadyFallback";
+import { resolvePdfViewerWebRenderUriCleanup } from "../src/lib/pdf/pdfViewerWebRenderUriCleanup";
+import { usePdfViewerActions } from "../src/lib/pdf/usePdfViewerActions";
 import {
   recordPdfCrashBreadcrumbAsync,
   shouldRecordPdfCrashBreadcrumbs,
@@ -67,64 +86,15 @@ import {
   resolvePdfNativeHandoffSuccessTelemetryPlan,
 } from "../src/lib/pdf/pdfNativeHandoffPlan";
 import {
-  armPdfViewerLoadingTimeout,
-  cancelPdfViewerLoadingTimeout,
-  shouldCommitPdfViewerLoadingTimeout,
-} from "../src/lib/pdf/pdfViewerLoadingTimeoutGuard";
-import {
-  planPdfViewerLoadingTransition,
-  planPdfViewerTimeoutTransition,
-  usePdfViewerOrchestrator,
-} from "../src/lib/pdf/usePdfViewerOrchestrator";
-import { resolvePdfViewerBootstrapPlan } from "../src/lib/pdf/pdfViewerBootstrapPlan";
-import {
-  resolvePdfViewerOpenFailedSignalPlan,
-  resolvePdfViewerOpenVisibleSignalPlan,
-} from "../src/lib/pdf/pdfViewerOpenSignalPlan";
-import { resolvePdfViewerWebIframeReadyFallbackPlan } from "../src/lib/pdf/pdfViewerWebIframeReadyFallback";
+  failPdfOpenVisible,
+  markPdfOpenRouteMounted,
+  markPdfOpenVisible,
+} from "../src/lib/pdf/pdfOpenFlow";
 import { openPdfPreview } from "../src/lib/pdfRunner";
-import {
-  FALLBACK_ROUTE,
-  VIEWER_TEXT,
-} from "../src/lib/pdf/pdfViewer.constants";
-import { styles } from "../src/lib/pdf/pdfViewer.styles";
-import { MenuAction, EmptyState, CenteredPanel } from "../src/lib/pdf/pdfViewer.components";
-import { PdfViewerNativeShell } from "../src/lib/pdf/PdfViewerNativeShell";
-import { PdfViewerWebShell } from "../src/lib/pdf/PdfViewerWebShell";
-import {
-  getUriScheme,
-  inspectLocalPdfFile,
-  validateEmbeddedPreviewResolution,
-  FileSystemCompat,
-} from "../src/lib/pdf/pdfViewer.helpers";
-import { usePdfViewerActions } from "../src/lib/pdf/usePdfViewerActions";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
 import { safeBack } from "../src/lib/navigation/safeBack";
 import { redactSensitiveRecord, redactSensitiveText } from "../src/lib/security/redaction";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
-
-
-const NativePdfWebView =
-  Platform.OS === "web"
-    ? null
-    : ((() => {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
-          return require("react-native-webview").WebView ?? null;
-        } catch (error) {
-          recordCatchDiscipline({
-            screen: "pdf_viewer",
-            surface: "pdf_viewer",
-            event: "native_webview_require_failed",
-            kind: "degraded_fallback",
-            error,
-            category: "ui",
-            sourceKind: "pdf:viewer",
-            errorStage: "module_require",
-          });
-          return null;
-        }
-      })() as React.ComponentType<any> | null);
 
 const getCurrentViewerPlatform = () =>
   Platform.OS === "web" ? "web" : Platform.OS === "android" ? "android" : "ios";
@@ -165,10 +135,6 @@ const emitPdfViewerRenderBreadcrumbCommands = (
 
 console.info("[pdf-viewer] module_loaded", { platform: Platform.OS });
 
-
-
-
-
 function PdfViewerScreen() {
   console.info("[pdf-viewer] viewer_screen_enter", { platform: Platform.OS });
   const params = useLocalSearchParams<{
@@ -185,53 +151,66 @@ function PdfViewerScreen() {
   }>();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const sessionId = React.useMemo(
-    () => String(params.sessionId || "").trim(),
-    [params.sessionId],
-  );
-  const openToken = React.useMemo(
-    () => String(params.openToken || "").trim(),
-    [params.openToken],
-  );
-  logPdfViewerInfo("[pdf-viewer] viewer_params_parsed", {
-    platform: Platform.OS,
-    sessionId: String(params.sessionId || "").trim() || null,
-    openToken: String(params.openToken || "").trim() || null,
-    hasUri: Boolean(params.uri),
-  });
-  const directSnapshotParams = React.useMemo(
-    () => ({
-      uri: params.uri,
-      fileName: params.fileName,
-      title: params.title,
-      sourceKind: params.sourceKind,
-      documentType: params.documentType,
-      originModule: params.originModule,
-      source: params.source,
-      entityId: params.entityId,
-    }),
+  const viewerPlatform = getCurrentViewerPlatform();
+  const nativePdfWebView = resolvePdfViewerNativeWebView();
+  const routeSessionId = params.sessionId;
+  const routeOpenToken = params.openToken;
+  const routeUri = params.uri;
+  const routeFileName = params.fileName;
+  const routeTitle = params.title;
+  const routeSourceKind = params.sourceKind;
+  const routeDocumentType = params.documentType;
+  const routeOriginModule = params.originModule;
+  const routeSource = params.source;
+  const routeEntityId = params.entityId;
+
+  const route = React.useMemo(
+    () =>
+      resolvePdfViewerRouteModel({
+        sessionId: routeSessionId,
+        openToken: routeOpenToken,
+        uri: routeUri,
+        fileName: routeFileName,
+        title: routeTitle,
+        sourceKind: routeSourceKind,
+        documentType: routeDocumentType,
+        originModule: routeOriginModule,
+        source: routeSource,
+        entityId: routeEntityId,
+      }),
     [
-      params.documentType,
-      params.entityId,
-      params.fileName,
-      params.originModule,
-      params.source,
-      params.sourceKind,
-      params.title,
-      params.uri,
+      routeDocumentType,
+      routeEntityId,
+      routeFileName,
+      routeOpenToken,
+      routeOriginModule,
+      routeSessionId,
+      routeSource,
+      routeSourceKind,
+      routeTitle,
+      routeUri,
     ],
   );
-  const resolveSnapshot = React.useCallback(() => {
-    const registrySnapshot = getDocumentSessionSnapshot(sessionId);
-    if (registrySnapshot.session) return registrySnapshot;
-    return (
-      resolvePdfViewerDirectSnapshot(directSnapshotParams) ?? {
-        session: null,
-        asset: null,
-      }
-    );
-  }, [directSnapshotParams, sessionId]);
+  const sessionId = route.sessionId;
+  const openToken = route.openToken;
+
+  logPdfViewerInfo("[pdf-viewer] viewer_params_parsed", {
+    platform: Platform.OS,
+    sessionId: route.receivedSessionId,
+    openToken: route.openToken || null,
+    hasUri: route.hasUri,
+  });
+
+  const resolveSnapshot = React.useCallback(
+    () =>
+      resolvePdfViewerSnapshot({
+        route,
+        registrySnapshot: getDocumentSessionSnapshot(sessionId),
+      }),
+    [route, sessionId],
+  );
   const snapshot = React.useMemo(() => resolveSnapshot(), [resolveSnapshot]);
+
   logPdfViewerInfo("[pdf-viewer] viewer_snapshot_resolved", {
     platform: Platform.OS,
     hasSession: Boolean(snapshot.session),
@@ -240,19 +219,30 @@ function PdfViewerScreen() {
     assetUri: snapshot.asset?.uri?.slice(-40) ?? null,
     sourceKind: snapshot.asset?.sourceKind ?? null,
   });
-  const viewerPlatform = getCurrentViewerPlatform();
+
+  const initialReadinessModel = React.useMemo(
+    () =>
+      resolvePdfViewerReadinessModel({
+        session: snapshot.session,
+        asset: snapshot.asset,
+        platform: viewerPlatform,
+      }),
+    [snapshot.asset, snapshot.session, viewerPlatform],
+  );
+
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [chromeVisible, setChromeVisible] = React.useState(true);
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const webIframeReadyFallbackRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const webIframeReadyFallbackRef = React.useRef<
+    ReturnType<typeof setTimeout> | null
+  >(null);
+
   const orchestrator = usePdfViewerOrchestrator({
     initialSession: snapshot.session,
     initialAsset: snapshot.asset,
-    initialState: resolvePdfViewerState(snapshot.session, snapshot.asset, viewerPlatform),
+    initialState: initialReadinessModel.initialState,
     initialErrorText: snapshot.session?.errorMessage || "",
   });
   const {
@@ -293,29 +283,31 @@ function PdfViewerScreen() {
     retry: retryViewerOrchestrator,
     planRenderEventCommit,
   } = orchestrator;
-  const resolvedSource = React.useMemo(
+
+  const readinessModel = React.useMemo(
     () =>
-      resolvePdfViewerResolution({ session, asset, platform: viewerPlatform }),
+      resolvePdfViewerReadinessModel({
+        session,
+        asset,
+        platform: viewerPlatform,
+      }),
     [asset, session, viewerPlatform],
   );
-  const resolvedPreviewPath = React.useMemo(
-    () =>
-      resolvedSource.kind === "resolved-embedded"
-        ? resolvedSource.renderer
-        : resolvedSource.kind,
-    [resolvedSource],
-  );
+  const resolvedSource = readinessModel.resolvedSource;
+  const resolvedPreviewPath = readinessModel.previewPath;
+
   const diagnosticsScreen = React.useMemo(() => {
     const origin = String(
       asset?.originModule ??
         snapshot.asset?.originModule ??
-        params.originModule ??
+        route.originModule ??
         "",
     )
       .trim()
       .toLowerCase();
     return shouldRecordPdfCrashBreadcrumbs(origin) ? origin : null;
-  }, [asset?.originModule, params.originModule, snapshot.asset?.originModule]);
+  }, [asset?.originModule, route.originModule, snapshot.asset?.originModule]);
+
   const recordViewerBreadcrumb = React.useCallback(
     (
       marker: string,
@@ -337,16 +329,16 @@ function PdfViewerScreen() {
       void recordPdfCrashBreadcrumbAsync({
         marker,
         screen: diagnosticsScreen,
-        documentType: currentAsset?.documentType ?? params.documentType,
-        originModule: currentAsset?.originModule ?? params.originModule,
+        documentType: currentAsset?.documentType ?? route.documentType,
+        originModule: currentAsset?.originModule ?? route.originModule,
         sourceKind:
           overrides?.sourceKind ??
           currentAsset?.sourceKind ??
-          params.sourceKind,
+          route.sourceKind,
         uriKind: overrides?.uriKind ?? getUriScheme(uri),
         uri,
-        fileName: currentAsset?.fileName ?? params.fileName,
-        entityId: currentAsset?.entityId ?? params.entityId,
+        fileName: currentAsset?.fileName ?? route.fileName,
+        entityId: currentAsset?.entityId ?? route.entityId,
         sessionId,
         openToken,
         fileExists: overrides?.fileExists,
@@ -361,11 +353,11 @@ function PdfViewerScreen() {
       diagnosticsScreen,
       asset,
       snapshot.asset,
-      params.documentType,
-      params.originModule,
-      params.sourceKind,
-      params.fileName,
-      params.entityId,
+      route.documentType,
+      route.originModule,
+      route.sourceKind,
+      route.fileName,
+      route.entityId,
       sessionId,
       openToken,
       resolvedPreviewPath,
@@ -382,41 +374,50 @@ function PdfViewerScreen() {
   React.useEffect(() => {
     resetOpenAttemptGuards();
     clearWebIframeReadyFallback();
-  }, [clearWebIframeReadyFallback, loadAttempt, openToken, resetOpenAttemptGuards, sessionId]);
+  }, [
+    clearWebIframeReadyFallback,
+    loadAttempt,
+    openToken,
+    resetOpenAttemptGuards,
+    sessionId,
+  ]);
 
-  const clearWebRenderUri = React.useCallback((options?: { commitState?: boolean }) => {
-    const current = webRenderUriRef.current;
-    const cleanup = resolvePdfViewerWebRenderUriCleanup({
-      platform: Platform.OS,
-      uri: current,
-      commitState: options?.commitState,
-    });
-    if (
-      cleanup.revokeUri &&
-      typeof URL !== "undefined" &&
-      typeof URL.revokeObjectURL === "function"
-    ) {
-      try {
-        URL.revokeObjectURL(cleanup.revokeUri);
-      } catch (error) {
-        recordCatchDiscipline({
-          screen: "reports",
-          surface: "pdf_viewer",
-          event: "viewer_blob_revoke_failed",
-          kind: "cleanup_only",
-          error,
-          category: "reload",
-          sourceKind: "pdf:viewer",
-          errorStage: "open_view",
-          extra: {
-            sourceKind: "blob",
-          },
-        });
+  const clearWebRenderUri = React.useCallback(
+    (options?: { commitState?: boolean }) => {
+      const current = webRenderUriRef.current;
+      const cleanup = resolvePdfViewerWebRenderUriCleanup({
+        platform: Platform.OS,
+        uri: current,
+        commitState: options?.commitState,
+      });
+      if (
+        cleanup.revokeUri &&
+        typeof URL !== "undefined" &&
+        typeof URL.revokeObjectURL === "function"
+      ) {
+        try {
+          URL.revokeObjectURL(cleanup.revokeUri);
+        } catch (error) {
+          recordCatchDiscipline({
+            screen: "reports",
+            surface: "pdf_viewer",
+            event: "viewer_blob_revoke_failed",
+            kind: "cleanup_only",
+            error,
+            category: "reload",
+            sourceKind: "pdf:viewer",
+            errorStage: "open_view",
+            extra: {
+              sourceKind: "blob",
+            },
+          });
+        }
       }
-    }
-    webRenderUriRef.current = null;
-    if (cleanup.shouldCommitState) setWebRenderUri(null);
-  }, [setWebRenderUri, webRenderUriRef]);
+      webRenderUriRef.current = null;
+      if (cleanup.shouldCommitState) setWebRenderUri(null);
+    },
+    [setWebRenderUri, webRenderUriRef],
+  );
 
   React.useEffect(() => {
     return () => {
@@ -428,58 +429,58 @@ function PdfViewerScreen() {
     logPdfViewerInfo("[pdf-viewer] viewer_route_mounted", {
       platform: Platform.OS,
       sessionId,
-      receivedSessionId: params.sessionId ?? null,
-      initialUri: snapshot.asset?.uri ?? null,
+      receivedSessionId: route.receivedSessionId,
+      initialUri: snapshot.asset?.uri ?? route.uri,
       initialScheme: getUriScheme(snapshot.asset?.uri),
     });
     recordViewerBreadcrumb("viewer_route_mounted", {
-      uri: snapshot.asset?.uri ?? params.uri ?? null,
-      uriKind: getUriScheme(snapshot.asset?.uri ?? params.uri),
-      sourceKind: snapshot.asset?.sourceKind ?? params.sourceKind ?? null,
+      uri: snapshot.asset?.uri ?? route.uri,
+      uriKind: getUriScheme(snapshot.asset?.uri ?? route.uri),
+      sourceKind: snapshot.asset?.sourceKind ?? route.sourceKind ?? null,
       previewPath: "viewer_route",
       extra: {
-        receivedSessionId: params.sessionId ?? null,
+        receivedSessionId: route.receivedSessionId,
       },
     });
     recordPdfCriticalPathEvent({
       event: "pdf_viewer_mounted",
       screen: diagnosticsScreen ?? "pdf_viewer",
-      sourceKind: snapshot.asset?.sourceKind ?? params.sourceKind ?? null,
-      documentType: snapshot.asset?.documentType ?? params.documentType,
-      originModule: snapshot.asset?.originModule ?? params.originModule,
-      entityId: snapshot.asset?.entityId ?? params.entityId,
-      fileName: snapshot.asset?.fileName ?? params.fileName,
+      sourceKind: snapshot.asset?.sourceKind ?? route.sourceKind ?? null,
+      documentType: snapshot.asset?.documentType ?? route.documentType,
+      originModule: snapshot.asset?.originModule ?? route.originModule,
+      entityId: snapshot.asset?.entityId ?? route.entityId,
+      fileName: snapshot.asset?.fileName ?? route.fileName,
       sessionId,
       openToken,
-      uri: snapshot.asset?.uri ?? params.uri ?? null,
-      uriKind: getUriScheme(snapshot.asset?.uri ?? params.uri),
+      uri: snapshot.asset?.uri ?? route.uri,
+      uriKind: getUriScheme(snapshot.asset?.uri ?? route.uri),
       previewPath: "viewer_route",
       extra: {
-        receivedSessionId: params.sessionId ?? null,
+        receivedSessionId: route.receivedSessionId,
       },
     });
     markPdfOpenRouteMounted(openToken, {
-      sourceKind: snapshot.asset?.sourceKind ?? params.sourceKind ?? null,
+      sourceKind: snapshot.asset?.sourceKind ?? route.sourceKind ?? null,
       extra: {
         route: "/pdf-viewer",
         sessionId,
-        receivedSessionId: params.sessionId ?? null,
-        documentType: snapshot.asset?.documentType ?? params.documentType,
-        originModule: snapshot.asset?.originModule ?? params.originModule,
-        uriKind: getUriScheme(snapshot.asset?.uri ?? params.uri),
+        receivedSessionId: route.receivedSessionId,
+        documentType: snapshot.asset?.documentType ?? route.documentType,
+        originModule: snapshot.asset?.originModule ?? route.originModule,
+        uriKind: getUriScheme(snapshot.asset?.uri ?? route.uri),
       },
     });
   }, [
     diagnosticsScreen,
     openToken,
-    params.documentType,
-    params.entityId,
-    params.fileName,
-    params.originModule,
-    params.sessionId,
-    params.sourceKind,
-    params.uri,
     recordViewerBreadcrumb,
+    route.documentType,
+    route.entityId,
+    route.fileName,
+    route.originModule,
+    route.receivedSessionId,
+    route.sourceKind,
+    route.uri,
     sessionId,
     snapshot.asset?.documentType,
     snapshot.asset?.entityId,
@@ -505,15 +506,22 @@ function PdfViewerScreen() {
     );
     setErrorText(next.session?.errorMessage || "");
     setState((prev) => {
-      const nextState = resolvePdfViewerState(
-        next.session,
-        next.asset,
-        viewerPlatform,
-      );
+      const nextState = resolvePdfViewerReadinessModel({
+        session: next.session,
+        asset: next.asset,
+        platform: viewerPlatform,
+      }).initialState;
       return prev === nextState ? prev : nextState;
     });
     return next;
-  }, [resolveSnapshot, setAsset, setErrorText, setSession, setState, viewerPlatform]);
+  }, [
+    resolveSnapshot,
+    setAsset,
+    setErrorText,
+    setSession,
+    setState,
+    viewerPlatform,
+  ]);
 
   const clearLoadingTimeout = React.useCallback(() => {
     if (loadingTimeoutRef.current) {
@@ -580,10 +588,14 @@ function PdfViewerScreen() {
       message: string,
       phase: "resolution" | "render" | "timeout" | "action" = "render",
     ) => {
+      const normalizedError = normalizePdfViewerError({
+        error: message,
+        phase,
+      });
       clearWebIframeReadyFallback();
       clearLoadingTimeout();
-      commitErrorState(message);
-      if (sessionId) failDocumentSession(sessionId, message);
+      commitErrorState(normalizedError.message);
+      if (sessionId) failDocumentSession(sessionId, normalizedError.message);
       const next = syncSnapshot();
       if (next.asset) {
         const scheme = String(next.asset.uri || "").split(":")[0] || "unknown";
@@ -593,7 +605,7 @@ function PdfViewerScreen() {
           scheme,
           platform: Platform.OS,
           phase,
-          error: redactSensitiveText(message),
+          error: redactSensitiveText(normalizedError.message),
         });
       }
       recordViewerBreadcrumb("viewer_terminal_error", {
@@ -602,10 +614,11 @@ function PdfViewerScreen() {
         sourceKind: next.asset?.sourceKind ?? null,
         fileSizeBytes: next.asset?.sizeBytes,
         fileExists: typeof next.asset?.sizeBytes === "number" ? true : null,
-        errorMessage: message,
+        errorMessage: normalizedError.message,
         terminalState: "error",
         extra: {
           phase,
+          kind: normalizedError.kind,
         },
       });
       if (phase === "render") {
@@ -614,11 +627,11 @@ function PdfViewerScreen() {
           screen: next.asset?.originModule ?? diagnosticsScreen ?? "pdf_viewer",
           result: "error",
           sourceKind: next.asset?.sourceKind ?? "pdf:viewer",
-          error: new Error(message),
-          documentType: next.asset?.documentType ?? params.documentType,
-          originModule: next.asset?.originModule ?? params.originModule,
-          entityId: next.asset?.entityId ?? params.entityId,
-          fileName: next.asset?.fileName ?? params.fileName,
+          error: new Error(normalizedError.message),
+          documentType: next.asset?.documentType ?? route.documentType,
+          originModule: next.asset?.originModule ?? route.originModule,
+          entityId: next.asset?.entityId ?? route.entityId,
+          fileName: next.asset?.fileName ?? route.fileName,
           sessionId,
           openToken,
           uri: next.asset?.uri ?? null,
@@ -626,6 +639,7 @@ function PdfViewerScreen() {
           previewPath: resolvedPreviewPath,
           extra: {
             phase,
+            kind: normalizedError.kind,
           },
         });
       }
@@ -634,11 +648,11 @@ function PdfViewerScreen() {
         screen: next.asset?.originModule ?? diagnosticsScreen ?? "pdf_viewer",
         result: "error",
         sourceKind: next.asset?.sourceKind ?? "pdf:viewer",
-        error: new Error(message),
-        documentType: next.asset?.documentType ?? params.documentType,
-        originModule: next.asset?.originModule ?? params.originModule,
-        entityId: next.asset?.entityId ?? params.entityId,
-        fileName: next.asset?.fileName ?? params.fileName,
+        error: new Error(normalizedError.message),
+        documentType: next.asset?.documentType ?? route.documentType,
+        originModule: next.asset?.originModule ?? route.originModule,
+        entityId: next.asset?.entityId ?? route.entityId,
+        fileName: next.asset?.fileName ?? route.fileName,
         sessionId,
         openToken,
         uri: next.asset?.uri ?? null,
@@ -647,9 +661,13 @@ function PdfViewerScreen() {
         terminalState: "error",
         extra: {
           phase,
+          kind: normalizedError.kind,
         },
       });
-      signalOpenFailed(message, { phase });
+      signalOpenFailed(normalizedError.message, {
+        phase,
+        kind: normalizedError.kind,
+      });
     },
     [
       clearLoadingTimeout,
@@ -657,12 +675,12 @@ function PdfViewerScreen() {
       commitErrorState,
       diagnosticsScreen,
       openToken,
-      params.documentType,
-      params.entityId,
-      params.fileName,
-      params.originModule,
       recordViewerBreadcrumb,
       resolvedPreviewPath,
+      route.documentType,
+      route.entityId,
+      route.fileName,
+      route.originModule,
       sessionId,
       signalOpenFailed,
       syncSnapshot,
@@ -738,10 +756,10 @@ function PdfViewerScreen() {
       event: "pdf_render_success",
       screen: next.asset?.originModule ?? diagnosticsScreen ?? "pdf_viewer",
       sourceKind: next.asset?.sourceKind ?? "pdf:viewer",
-      documentType: next.asset?.documentType ?? params.documentType,
-      originModule: next.asset?.originModule ?? params.originModule,
-      entityId: next.asset?.entityId ?? params.entityId,
-      fileName: next.asset?.fileName ?? params.fileName,
+      documentType: next.asset?.documentType ?? route.documentType,
+      originModule: next.asset?.originModule ?? route.originModule,
+      entityId: next.asset?.entityId ?? route.entityId,
+      fileName: next.asset?.fileName ?? route.fileName,
       sessionId,
       openToken,
       uri: next.asset?.uri ?? null,
@@ -755,10 +773,10 @@ function PdfViewerScreen() {
       event: "pdf_terminal_success",
       screen: next.asset?.originModule ?? diagnosticsScreen ?? "pdf_viewer",
       sourceKind: next.asset?.sourceKind ?? "pdf:viewer",
-      documentType: next.asset?.documentType ?? params.documentType,
-      originModule: next.asset?.originModule ?? params.originModule,
-      entityId: next.asset?.entityId ?? params.entityId,
-      fileName: next.asset?.fileName ?? params.fileName,
+      documentType: next.asset?.documentType ?? route.documentType,
+      originModule: next.asset?.originModule ?? route.originModule,
+      entityId: next.asset?.entityId ?? route.entityId,
+      fileName: next.asset?.fileName ?? route.fileName,
       sessionId,
       openToken,
       uri: next.asset?.uri ?? null,
@@ -777,12 +795,12 @@ function PdfViewerScreen() {
     diagnosticsScreen,
     openToken,
     openedAtRef,
-    params.documentType,
-    params.entityId,
-    params.fileName,
-    params.originModule,
     recordViewerBreadcrumb,
     resolvedPreviewPath,
+    route.documentType,
+    route.entityId,
+    route.fileName,
+    route.originModule,
     sessionId,
     signalOpenVisible,
     syncSnapshot,
@@ -902,7 +920,10 @@ function PdfViewerScreen() {
       resetForNativeHandoffStart();
 
       try {
-        logPdfViewerInfo("[pdf-viewer] native_handoff_start", startCommandPlan.console.payload);
+        logPdfViewerInfo(
+          "[pdf-viewer] native_handoff_start",
+          startCommandPlan.console.payload,
+        );
         recordViewerBreadcrumb(
           startCommandPlan.breadcrumb.marker,
           startCommandPlan.breadcrumb.payload,
@@ -917,7 +938,10 @@ function PdfViewerScreen() {
           context: handoffContext,
           trigger,
         });
-        logPdfViewerInfo("[pdf-viewer] native_handoff_ready", successTelemetryPlan.console.payload);
+        logPdfViewerInfo(
+          "[pdf-viewer] native_handoff_ready",
+          successTelemetryPlan.console.payload,
+        );
         recordViewerBreadcrumb(
           successTelemetryPlan.breadcrumb.marker,
           successTelemetryPlan.breadcrumb.payload,
@@ -1011,40 +1035,49 @@ function PdfViewerScreen() {
 
     touchDocumentSession(next.session.sessionId);
     setErrorText(next.session.errorMessage || "");
-    setState(resolvePdfViewerState(next.session, next.asset, viewerPlatform));
+    setState(
+      resolvePdfViewerReadinessModel({
+        session: next.session,
+        asset: next.asset,
+        platform: viewerPlatform,
+      }).initialState,
+    );
     let cancelled = false;
 
     const prepareViewer = async () => {
-      const resolution = resolvePdfViewerResolution({
+      const nextReadinessModel = resolvePdfViewerReadinessModel({
         session: next.session,
         asset: next.asset,
         platform: viewerPlatform,
       });
-      const bootstrapPlan = resolvePdfViewerBootstrapPlan({
-        resolution,
+      const handoffPlan = resolvePdfViewerHandoffPlan({
+        resolution: nextReadinessModel.resolvedSource,
         platform: viewerPlatform,
       });
-      if (bootstrapPlan.action === "show_empty") {
+      if (handoffPlan.action === "show_empty") {
         commitEmptyState();
         return;
       }
-      if (bootstrapPlan.action === "show_session_error") {
-        setErrorText(bootstrapPlan.errorMessage);
+      if (handoffPlan.action === "show_error") {
+        if (handoffPlan.reason === "unsupported_mobile_source") {
+          markError(handoffPlan.errorMessage, "resolution");
+          return;
+        }
+        setErrorText(handoffPlan.errorMessage);
         setState("error");
-        return;
-      }
-      if (bootstrapPlan.action === "show_missing_asset") {
-        setErrorText(bootstrapPlan.errorMessage);
-        setState("error");
-        return;
-      }
-      if (bootstrapPlan.action === "fail_resolution") {
-        markError(bootstrapPlan.errorMessage, "resolution");
         return;
       }
 
-      const resolvedResolution = bootstrapPlan.resolution;
-      const resolvedAsset = resolvedResolution.asset;
+      const resolvedResolution = nextReadinessModel.resolvedSource;
+      const resolvedAsset = handoffPlan.asset;
+      if (
+        !("scheme" in resolvedResolution) ||
+        !("sourceKind" in resolvedResolution) ||
+        !("renderer" in resolvedResolution)
+      ) {
+        markError("Preview failed to load.", "resolution");
+        return;
+      }
 
       logPdfViewerInfo("[pdf-viewer] open", {
         sessionId: next.session.sessionId,
@@ -1099,14 +1132,18 @@ function PdfViewerScreen() {
       );
 
       enterLoading();
-      if (bootstrapPlan.action === "start_native_handoff") {
-        await handoffPdfPreview(bootstrapPlan.resolution.asset, "primary");
+      if (handoffPlan.action === "start_native_handoff") {
+        await handoffPdfPreview(handoffPlan.asset, handoffPlan.trigger);
         return;
       }
       if (
-        bootstrapPlan.action === "show_embedded_render" &&
-        bootstrapPlan.shouldValidateEmbeddedPreview
+        handoffPlan.action === "show_embedded_render" &&
+        handoffPlan.shouldValidateEmbeddedPreview
       ) {
+        if (resolvedResolution.kind !== "resolved-embedded") {
+          markError("Preview failed to load.", "resolution");
+          return;
+        }
         recordViewerBreadcrumb("viewer_validation_start", {
           uri: resolvedAsset.uri,
           uriKind: resolvedResolution.scheme,
@@ -1117,7 +1154,7 @@ function PdfViewerScreen() {
           previewPath: resolvedResolution.renderer,
         });
         try {
-          await validateEmbeddedPreviewResolution(bootstrapPlan.resolution);
+          await validateEmbeddedPreviewResolution(resolvedResolution);
           recordViewerBreadcrumb("viewer_validation_success", {
             uri: resolvedAsset.uri,
             uriKind: resolvedResolution.scheme,
@@ -1129,8 +1166,11 @@ function PdfViewerScreen() {
           });
         } catch (error) {
           if (!cancelled) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const normalizedError = normalizePdfViewerError({
+              error,
+              phase: "resolution",
+              kind: "validation",
+            });
             recordViewerBreadcrumb("viewer_validation_failed", {
               uri: resolvedAsset.uri,
               uriKind: resolvedResolution.scheme,
@@ -1139,39 +1179,39 @@ function PdfViewerScreen() {
               fileExists:
                 typeof resolvedAsset.sizeBytes === "number" ? true : null,
               previewPath: resolvedResolution.renderer,
-              errorMessage: message,
+              errorMessage: normalizedError.message,
             });
-            markError(message, "resolution");
+            markError(normalizedError.message, "resolution");
           }
           return;
         }
       }
-      if (bootstrapPlan.action === "show_web_remote_iframe") {
+      if (handoffPlan.action === "show_web_remote_iframe") {
         clearWebRenderUri();
-        webRenderUriRef.current = bootstrapPlan.webRenderUri;
-        setWebRenderUri(bootstrapPlan.webRenderUri);
-        console.info("[pdf-viewer] signedUrl", redactSensitiveText(bootstrapPlan.webRenderUri));
+        webRenderUriRef.current = handoffPlan.renderUri;
+        setWebRenderUri(handoffPlan.renderUri);
+        console.info("[pdf-viewer] signedUrl", redactSensitiveText(handoffPlan.renderUri));
         logPdfViewerInfo("[pdf-viewer] web_iframe_src_ready", {
           sessionId: next.session.sessionId,
           documentType: resolvedAsset.documentType,
           originModule: resolvedAsset.originModule,
-          remoteUri: bootstrapPlan.webRenderUri,
-          renderUri: bootstrapPlan.webRenderUri,
-          renderScheme: getUriScheme(bootstrapPlan.webRenderUri),
+          remoteUri: handoffPlan.renderUri,
+          renderUri: handoffPlan.renderUri,
+          renderScheme: getUriScheme(handoffPlan.renderUri),
         });
         setIsReadyToRender(true);
         scheduleWebIframeReadyFallback({
           resolvedAsset,
-          renderUri: bootstrapPlan.webRenderUri,
-          sourceKind: resolvedResolution.sourceKind,
+          renderUri: handoffPlan.renderUri,
+          sourceKind: handoffPlan.sourceKind,
         });
         return;
       }
       if (
-        bootstrapPlan.action === "show_embedded_render" &&
-        bootstrapPlan.webRenderUri
+        handoffPlan.action === "show_embedded_render" &&
+        handoffPlan.renderUri
       ) {
-        setWebRenderUri(bootstrapPlan.webRenderUri);
+        setWebRenderUri(handoffPlan.renderUri);
       }
       if (!cancelled) {
         recordViewerBreadcrumb("viewer_render_bootstrap_ready", {
@@ -1209,7 +1249,6 @@ function PdfViewerScreen() {
     enterLoading,
     handoffPdfPreview,
     markError,
-    markReady,
     recordViewerBreadcrumb,
     scheduleWebIframeReadyFallback,
     sessionId,
@@ -1229,7 +1268,6 @@ function PdfViewerScreen() {
     setMenuOpen,
   });
 
-
   const onRetry = React.useCallback(() => {
     const next = syncSnapshot();
     if (!next.session) {
@@ -1247,20 +1285,24 @@ function PdfViewerScreen() {
     );
   }, []);
 
-  const source = React.useMemo(() => {
-    return resolvedSource.kind === "resolved-embedded"
-      ? resolvedSource.source
-      : undefined;
-  }, [resolvedSource]);
+  const source = React.useMemo(
+    () =>
+      resolvedSource.kind === "resolved-embedded"
+        ? resolvedSource.source
+        : undefined,
+    [resolvedSource],
+  );
   const webEmbeddedUri = React.useMemo(() => {
-    if (Platform.OS !== "web" || resolvedSource.kind !== "resolved-embedded")
+    if (viewerPlatform !== "web" || resolvedSource.kind !== "resolved-embedded") {
       return "";
+    }
     if (resolvedSource.sourceKind === "remote-url") return webRenderUri ?? "";
     return resolvedSource.canonicalUri;
-  }, [resolvedSource, webRenderUri]);
+  }, [resolvedSource, viewerPlatform, webRenderUri]);
   const nativeWebViewReadAccessUri = React.useMemo(() => {
-    if (Platform.OS === "web" || resolvedSource.kind !== "resolved-embedded")
+    if (viewerPlatform === "web" || resolvedSource.kind !== "resolved-embedded") {
       return undefined;
+    }
     if (
       "html" in resolvedSource.source &&
       typeof resolvedSource.source.baseUrl === "string"
@@ -1269,7 +1311,58 @@ function PdfViewerScreen() {
       if (baseUrl) return baseUrl;
     }
     return getReadAccessParentUri(resolvedSource.asset.uri);
-  }, [resolvedSource]);
+  }, [resolvedSource, viewerPlatform]);
+  const hasRenderableSource = React.useMemo(
+    () =>
+      viewerPlatform === "web"
+        ? Boolean(webEmbeddedUri || asset?.uri)
+        : Boolean(source),
+    [asset?.uri, source, viewerPlatform, webEmbeddedUri],
+  );
+  const contentModel = React.useMemo(
+    () =>
+      resolvePdfViewerContentModel({
+        state,
+        errorText,
+        asset,
+        resolvedSource,
+        isReadyToRender,
+        hasRenderableSource,
+      }),
+    [
+      asset,
+      errorText,
+      hasRenderableSource,
+      isReadyToRender,
+      resolvedSource,
+      state,
+    ],
+  );
+  const chromeModel = React.useMemo(
+    () =>
+      resolvePdfViewerChromeModel({
+        platform: viewerPlatform,
+        width,
+        topInset: insets.top,
+        chromeVisible,
+        state,
+        asset,
+        resolvedSource,
+      }),
+    [
+      asset,
+      chromeVisible,
+      insets.top,
+      resolvedSource,
+      state,
+      viewerPlatform,
+      width,
+    ],
+  );
+  const manualHandoffPlan = React.useMemo(
+    () => resolvePdfViewerManualHandoffPlan({ resolution: resolvedSource }),
+    [resolvedSource],
+  );
   const renderInstanceKey = React.useMemo(() => {
     if (!asset || resolvedSource.kind !== "resolved-embedded") {
       return createPdfViewerRenderInstanceKey({
@@ -1284,7 +1377,7 @@ function PdfViewerScreen() {
       assetId: asset.assetId,
       uri: asset.uri,
       renderUri:
-        Platform.OS === "web"
+        viewerPlatform === "web"
           ? webEmbeddedUri || asset.uri
           : resolvedSource.canonicalUri,
       renderer: resolvedSource.renderer,
@@ -1307,19 +1400,20 @@ function PdfViewerScreen() {
     [activeRenderInstanceKeyRef, planRenderEventCommit],
   );
 
-  const showChrome = Platform.OS === "web" ? true : chromeVisible;
-  const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
-  const headerHeight =
-    headerBarHeight + (Platform.OS === "web" ? 0 : insets.top);
-  const pageIndicatorText = state === "ready" ? "1 / 1" : "…";
-  const showPageIndicator =
-    Boolean(asset) && resolvedSource.kind === "resolved-embedded";
-
   const toggleChrome = React.useCallback(() => {
-    if (Platform.OS === "web") return;
+    if (viewerPlatform === "web") return;
     setMenuOpen(false);
     setChromeVisible((value) => !value);
+  }, [viewerPlatform]);
+
+  const toggleMenu = React.useCallback(() => {
+    setMenuOpen((value) => !value);
   }, []);
+
+  const onOpenAgain = React.useCallback(() => {
+    if (manualHandoffPlan.action !== "reopen_native_handoff") return;
+    void handoffPdfPreview(manualHandoffPlan.asset, manualHandoffPlan.trigger);
+  }, [handoffPdfPreview, manualHandoffPlan]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -1328,12 +1422,13 @@ function PdfViewerScreen() {
       if (resolvedSource.kind !== "resolved-embedded") {
         return;
       }
-      const { asset: resolvedAsset, scheme } = resolvedSource;
+      const embeddedResolution = resolvedSource;
+      const { asset: resolvedAsset, scheme } = embeddedResolution;
       let exists: boolean | undefined;
       let size: number | undefined;
 
       if (
-        Platform.OS !== "web" &&
+        viewerPlatform !== "web" &&
         scheme === "file" &&
         FileSystemCompat.getInfoAsync
       ) {
@@ -1342,16 +1437,20 @@ function PdfViewerScreen() {
           exists = info?.exists;
           size = info?.sizeBytes;
         } catch (error) {
+          const normalizedError = normalizePdfViewerError({
+            error,
+            phase: "render",
+          });
           logPdfViewerError("[pdf-viewer] viewer_file_inspect_failed", {
             sessionId,
             uri: resolvedAsset.uri,
-            error: redactSensitiveText(error instanceof Error ? error.message : String(error)),
+            error: redactSensitiveText(normalizedError.message),
           });
         }
       }
 
       if (!cancelled) {
-        if (Platform.OS !== "web" && scheme === "file" && exists === false) {
+        if (viewerPlatform !== "web" && scheme === "file" && exists === false) {
           logPdfViewerInfo("[pdf-viewer] viewer_local_file_exists_no", {
             sessionId,
             uri: resolvedAsset.uri,
@@ -1367,7 +1466,7 @@ function PdfViewerScreen() {
             fileName: resolvedAsset.fileName,
           });
         } else if (
-          Platform.OS !== "web" &&
+          viewerPlatform !== "web" &&
           scheme === "file" &&
           exists === true
         ) {
@@ -1390,7 +1489,7 @@ function PdfViewerScreen() {
           scheme,
           fileName: resolvedAsset.fileName,
           mimeType: resolvedAsset.mimeType,
-          sourceKind: resolvedSource.sourceKind,
+          sourceKind: embeddedResolution.sourceKind,
           exists,
           sizeBytes: size ?? resolvedAsset.sizeBytes,
           source,
@@ -1398,10 +1497,10 @@ function PdfViewerScreen() {
         recordViewerBreadcrumb("viewer_before_render", {
           uri: resolvedAsset.uri,
           uriKind: scheme,
-          sourceKind: resolvedSource.sourceKind,
+          sourceKind: embeddedResolution.sourceKind,
           fileExists: exists,
           fileSizeBytes: size ?? resolvedAsset.sizeBytes,
-          previewPath: resolvedSource.renderer,
+          previewPath: embeddedResolution.renderer,
           extra: {
             mimeType: resolvedAsset.mimeType,
           },
@@ -1410,7 +1509,7 @@ function PdfViewerScreen() {
           event: "pdf_render_start",
           screen:
             resolvedAsset.originModule ?? diagnosticsScreen ?? "pdf_viewer",
-          sourceKind: resolvedSource.sourceKind,
+          sourceKind: embeddedResolution.sourceKind,
           documentType: resolvedAsset.documentType,
           originModule: resolvedAsset.originModule,
           entityId: resolvedAsset.entityId,
@@ -1419,7 +1518,7 @@ function PdfViewerScreen() {
           openToken,
           uri: resolvedAsset.uri,
           uriKind: scheme,
-          previewPath: resolvedSource.renderer,
+          previewPath: embeddedResolution.renderer,
           extra: {
             mimeType: resolvedAsset.mimeType,
             fileExists: exists ?? null,
@@ -1440,17 +1539,19 @@ function PdfViewerScreen() {
     resolvedSource,
     sessionId,
     source,
+    viewerPlatform,
   ]);
 
   React.useEffect(() => {
     if (
-      Platform.OS !== "web" ||
+      viewerPlatform !== "web" ||
       !isReadyToRender ||
       resolvedSource.kind !== "resolved-embedded" ||
       !asset
     ) {
       return;
     }
+    const embeddedResolution = resolvedSource;
 
     const iframeSrc = webEmbeddedUri || asset.uri;
     const cycleKey = `${sessionId || "direct"}:${asset.assetId}:${iframeSrc}:${loadAttempt}`;
@@ -1467,8 +1568,8 @@ function PdfViewerScreen() {
     recordViewerBreadcrumb("web_iframe_render", {
       uri: iframeSrc,
       uriKind: getUriScheme(iframeSrc),
-      sourceKind: resolvedSource.sourceKind,
-      previewPath: resolvedSource.renderer,
+      sourceKind: embeddedResolution.sourceKind,
+      previewPath: embeddedResolution.renderer,
       extra: {
         renderInstanceKey,
       },
@@ -1481,320 +1582,221 @@ function PdfViewerScreen() {
     renderInstanceKey,
     resolvedSource,
     sessionId,
+    viewerPlatform,
     webEmbeddedUri,
     webIframeRenderLoggedKeyRef,
   ]);
 
-  const body = (() => {
-    if (state === "empty") {
+  const onWebLoad = React.useCallback(() => {
+    if (!asset) return;
+    const eventPlan = resolvePdfViewerWebIframeLoadEventPlan({
+      renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
+      renderFailed: renderFailedRef.current,
+      sessionId,
+      asset,
+      renderUri: webEmbeddedUri || asset.uri,
+    });
+    if (eventPlan.action === "skip_render_event") return;
+    emitPdfViewerRenderConsoleCommand(eventPlan.console);
+    markReady();
+  }, [
+    asset,
+    markReady,
+    renderFailedRef,
+    renderInstanceKey,
+    resolveRenderEventCommitPlan,
+    sessionId,
+    webEmbeddedUri,
+  ]);
+
+  const onWebError = React.useCallback(() => {
+    if (!asset) return;
+    const eventPlan = resolvePdfViewerWebIframeErrorEventPlan({
+      renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
+      sessionId,
+      asset,
+      renderUri: webEmbeddedUri || asset.uri,
+    });
+    if (eventPlan.action === "skip_render_event") return;
+    emitPdfViewerRenderConsoleCommand(eventPlan.console);
+    markError(eventPlan.message, "render");
+  }, [
+    asset,
+    markError,
+    renderInstanceKey,
+    resolveRenderEventCommitPlan,
+    sessionId,
+    webEmbeddedUri,
+  ]);
+
+  const onNativeLoadStart = React.useCallback(() => {
+    if (resolvedSource.kind !== "resolved-embedded" || !asset) return;
+    const eventPlan = resolvePdfViewerNativeLoadStartEventPlan({
+      asset,
+      source: resolvedSource,
+    });
+    emitPdfViewerRenderBreadcrumbCommands(
+      recordViewerBreadcrumb,
+      eventPlan.breadcrumbs,
+    );
+  }, [asset, recordViewerBreadcrumb, resolvedSource]);
+
+  const onNativeLoadEnd = React.useCallback(() => {
+    if (resolvedSource.kind !== "resolved-embedded" || !asset) return;
+    const eventPlan = resolvePdfViewerNativeLoadEndEventPlan({
+      renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
+      renderFailed: renderFailedRef.current,
+      sessionId,
+      asset,
+      source: resolvedSource,
+    });
+    if (eventPlan.action === "skip_render_event") return;
+    emitPdfViewerRenderConsoleCommand(eventPlan.console);
+    emitPdfViewerRenderBreadcrumbCommands(
+      recordViewerBreadcrumb,
+      eventPlan.breadcrumbs,
+    );
+    markReady();
+  }, [
+    asset,
+    markReady,
+    recordViewerBreadcrumb,
+    renderFailedRef,
+    renderInstanceKey,
+    resolveRenderEventCommitPlan,
+    resolvedSource,
+    sessionId,
+  ]);
+
+  const onNativeError = React.useCallback(
+    (event: { nativeEvent?: { description?: string } }) => {
+      if (resolvedSource.kind !== "resolved-embedded" || !asset) return;
+      const eventPlan = resolvePdfViewerNativeErrorEventPlan({
+        renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
+        sessionId,
+        asset,
+        source: resolvedSource,
+        description: event?.nativeEvent?.description,
+      });
+      if (eventPlan.action === "skip_render_event") return;
+      emitPdfViewerRenderConsoleCommand(eventPlan.console);
+      emitPdfViewerRenderBreadcrumbCommands(
+        recordViewerBreadcrumb,
+        eventPlan.breadcrumbs,
+      );
+      markError(eventPlan.message, "render");
+    },
+    [
+      asset,
+      markError,
+      recordViewerBreadcrumb,
+      renderInstanceKey,
+      resolveRenderEventCommitPlan,
+      resolvedSource,
+      sessionId,
+    ],
+  );
+
+  const onNativeHttpError = React.useCallback(
+    (event: { nativeEvent?: { description?: string; statusCode?: number } }) => {
+      if (resolvedSource.kind !== "resolved-embedded" || !asset) return;
+      const eventPlan = resolvePdfViewerNativeHttpErrorEventPlan({
+        renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
+        sessionId,
+        asset,
+        source: resolvedSource,
+        description: event?.nativeEvent?.description,
+        statusCode: event?.nativeEvent?.statusCode,
+      });
+      if (eventPlan.action === "skip_render_event") return;
+      emitPdfViewerRenderConsoleCommand(eventPlan.console);
+      emitPdfViewerRenderBreadcrumbCommands(
+        recordViewerBreadcrumb,
+        eventPlan.breadcrumbs,
+      );
+      markError(eventPlan.message, "render");
+    },
+    [
+      asset,
+      markError,
+      recordViewerBreadcrumb,
+      renderInstanceKey,
+      resolveRenderEventCommitPlan,
+      resolvedSource,
+      sessionId,
+    ],
+  );
+
+  React.useEffect(() => {
+    if (contentModel.kind === "empty") {
       logPdfViewerError("[pdf-viewer] viewer_missing_session", {
         platform: Platform.OS,
         sessionId,
       });
-      return (
-        <EmptyState
-          title="Document not found"
-          subtitle="Viewer session was not found or has expired."
-        />
-      );
+      return;
     }
-
-    if (state === "error") {
+    if (contentModel.kind === "error") {
       logPdfViewerError("[pdf-viewer] viewer_error_state", {
         platform: Platform.OS,
         sessionId,
-        errorText: redactSensitiveText(errorText),
+        errorText: redactSensitiveText(contentModel.subtitle),
         uri: asset?.uri ?? null,
         scheme: getUriScheme(asset?.uri),
       });
-      return (
-        <CenteredPanel
-          title="Unable to open document"
-          subtitle={errorText || "Preview failed to load."}
-          actionLabel="Retry"
-          onAction={onRetry}
-          secondaryLabel={asset ? "Open externally" : undefined}
-          onSecondaryAction={asset ? () => void onOpenExternal() : undefined}
-        />
-      );
+      return;
     }
-
-    if (resolvedSource.kind === "missing-asset") {
+    if (contentModel.kind === "missing-asset") {
       logPdfViewerError("[pdf-viewer] viewer_invalid_asset", {
         platform: Platform.OS,
         sessionId,
         hasAsset: Boolean(asset),
         uri: asset?.uri ?? null,
       });
-      return (
-        <EmptyState
-          title="Document not found"
-          subtitle="Missing document asset."
-        />
-      );
     }
-
-    if (resolvedSource.kind !== "resolved-embedded") {
-      if (resolvedSource.kind === "resolved-native-handoff") {
-        return (
-          <PdfViewerNativeShell
-            mode="native-handoff"
-            asset={asset}
-            completed={nativeHandoffCompleted}
-            onToggleChrome={toggleChrome}
-            onOpenAgain={() => {
-              void handoffPdfPreview(resolvedSource.asset, "manual");
-            }}
-            onShare={asset ? () => void onShare() : undefined}
-          />
-        );
-      }
-      return (
-        <CenteredPanel
-          title="Unable to open document"
-          subtitle={
-            resolvedSource.kind === "unsupported-mobile-source"
-              ? resolvedSource.errorMessage
-              : "Preview failed to load."
-          }
-          actionLabel="Retry"
-          onAction={onRetry}
-          secondaryLabel={asset ? "Open externally" : undefined}
-          onSecondaryAction={asset ? () => void onOpenExternal() : undefined}
-        />
-      );
-    }
-
-    if (!isReadyToRender) {
-      return (
-        <View style={styles.loadingState}>
-          <ActivityIndicator size="large" color="#FFFFFF" />
-          <Text style={styles.loadingText}>Открывается...</Text>
-        </View>
-      );
-    }
-
-    if (!source) {
-      logPdfViewerError("[pdf-viewer] viewer_invalid_asset", {
-        platform: Platform.OS,
-        sessionId,
-        hasAsset: Boolean(asset),
-        uri: asset?.uri ?? null,
-      });
-      return (
-        <EmptyState
-          title="Document not found"
-          subtitle="Missing document asset."
-        />
-      );
-    }
-
-    return (
-      <Pressable style={styles.viewerBody} onPress={toggleChrome}>
-        {state === "loading" ? (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#FFFFFF" />
-            <Text style={styles.loadingText}>Открывается...</Text>
-          </View>
-        ) : null}
-
-        {Platform.OS === "web" ? (
-          <PdfViewerWebShell
-            asset={asset}
-            width={width}
-            renderInstanceKey={renderInstanceKey}
-            webEmbeddedUri={webEmbeddedUri}
-            onLoad={() => {
-              const eventPlan = resolvePdfViewerWebIframeLoadEventPlan({
-                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
-                renderFailed: renderFailedRef.current,
-                sessionId,
-                asset,
-                renderUri: webEmbeddedUri || asset.uri,
-              });
-              if (eventPlan.action === "skip_render_event") return;
-              emitPdfViewerRenderConsoleCommand(eventPlan.console);
-              markReady();
-            }}
-            onError={() => {
-              const eventPlan = resolvePdfViewerWebIframeErrorEventPlan({
-                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
-                sessionId,
-                asset,
-                renderUri: webEmbeddedUri || asset.uri,
-              });
-              if (eventPlan.action === "skip_render_event") return;
-              emitPdfViewerRenderConsoleCommand(eventPlan.console);
-              markError(eventPlan.message, "render");
-            }}
-          />
-        ) : (
-          <PdfViewerNativeShell
-            mode="native-webview"
-            source={source}
-            renderInstanceKey={renderInstanceKey}
-            nativePdfWebView={NativePdfWebView}
-            nativeWebViewReadAccessUri={nativeWebViewReadAccessUri}
-            onLoadStart={() => {
-              const eventPlan = resolvePdfViewerNativeLoadStartEventPlan({
-                asset,
-                source: resolvedSource,
-              });
-              emitPdfViewerRenderBreadcrumbCommands(
-                recordViewerBreadcrumb,
-                eventPlan.breadcrumbs,
-              );
-            }}
-            onLoadEnd={() => {
-              const eventPlan = resolvePdfViewerNativeLoadEndEventPlan({
-                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
-                renderFailed: renderFailedRef.current,
-                sessionId,
-                asset,
-                source: resolvedSource,
-              });
-              if (eventPlan.action === "skip_render_event") return;
-              emitPdfViewerRenderConsoleCommand(eventPlan.console);
-              emitPdfViewerRenderBreadcrumbCommands(
-                recordViewerBreadcrumb,
-                eventPlan.breadcrumbs,
-              );
-              markReady();
-            }}
-            onError={(event) => {
-              const eventPlan = resolvePdfViewerNativeErrorEventPlan({
-                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
-                sessionId,
-                asset,
-                source: resolvedSource,
-                description: event?.nativeEvent?.description,
-              });
-              if (eventPlan.action === "skip_render_event") return;
-              emitPdfViewerRenderConsoleCommand(eventPlan.console);
-              emitPdfViewerRenderBreadcrumbCommands(
-                recordViewerBreadcrumb,
-                eventPlan.breadcrumbs,
-              );
-              markError(eventPlan.message, "render");
-            }}
-            onHttpError={(event) => {
-              const eventPlan = resolvePdfViewerNativeHttpErrorEventPlan({
-                renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
-                sessionId,
-                asset,
-                source: resolvedSource,
-                description: event?.nativeEvent?.description,
-                statusCode: event?.nativeEvent?.statusCode,
-              });
-              if (eventPlan.action === "skip_render_event") return;
-              emitPdfViewerRenderConsoleCommand(eventPlan.console);
-              emitPdfViewerRenderBreadcrumbCommands(
-                recordViewerBreadcrumb,
-                eventPlan.breadcrumbs,
-              );
-              markError(eventPlan.message, "render");
-            }}
-            onOpenExternal={() => void onOpenExternal()}
-          />
-        )}
-      </Pressable>
-    );
-  })();
+  }, [asset, contentModel, sessionId]);
 
   return (
     <SafeAreaView style={styles.screen} edges={["left", "right", "bottom"]}>
-      <View style={styles.screenRoot}>
-        <View
-          pointerEvents={showChrome ? "auto" : "none"}
-          style={[
-            styles.header,
-            showChrome ? styles.chromeVisible : styles.chromeHidden,
-            {
-              height: headerHeight,
-              paddingTop: Platform.OS === "web" ? 0 : insets.top,
-            },
-          ]}
-        >
-          <Pressable
-            onPress={onBack}
-            style={styles.iconButton}
-            accessibilityLabel="Back"
-          >
-            <Ionicons name="chevron-back" size={20} color={VIEWER_TEXT} />
-          </Pressable>
-
-          <View style={styles.headerTitleWrap}>
-            <Text numberOfLines={1} style={styles.headerTitle}>
-              {asset?.title || "PDF"}
-            </Text>
-          </View>
-
-          <View style={styles.menuAnchor}>
-            <Pressable
-              onPress={() => setMenuOpen((value) => !value)}
-              style={styles.iconButton}
-              disabled={!asset}
-              accessibilityLabel="Document actions"
-            >
-              <Ionicons
-                name="ellipsis-horizontal"
-                size={18}
-                color={VIEWER_TEXT}
-              />
-            </Pressable>
-            {menuOpen && asset ? (
-              <View style={styles.menu}>
-                <MenuAction
-                  icon="share-outline"
-                  label="Share"
-                  onPress={() => void onShare()}
-                />
-                <MenuAction
-                  icon="download-outline"
-                  label="Download"
-                  onPress={() => void onDownload()}
-                />
-                <MenuAction
-                  icon="open-outline"
-                  label="Open externally"
-                  onPress={() => void onOpenExternal()}
-                />
-                <MenuAction
-                  icon="print-outline"
-                  label="Print"
-                  onPress={() => void onPrint()}
-                />
-              </View>
-            ) : null}
-          </View>
-        </View>
-
-        <View style={styles.documentStage}>{body}</View>
-
-        {showPageIndicator ? (
-          <View
-            pointerEvents="none"
-            style={[
-              styles.pageIndicatorWrap,
-              showChrome
-                ? styles.pageIndicatorVisible
-                : styles.pageIndicatorHidden,
-            ]}
-          >
-            <View style={styles.pageIndicator}>
-              <Text style={styles.pageIndicatorText}>{pageIndicatorText}</Text>
-            </View>
-          </View>
-        ) : null}
-      </View>
+      <PdfViewerScreenContent
+        title={asset?.title || "PDF"}
+        showChrome={chromeModel.showChrome}
+        headerHeight={chromeModel.headerHeight}
+        topInset={insets.top}
+        menuOpen={menuOpen}
+        asset={asset}
+        contentModel={contentModel}
+        width={width}
+        renderInstanceKey={renderInstanceKey}
+        webEmbeddedUri={webEmbeddedUri}
+        nativeHandoffCompleted={nativeHandoffCompleted}
+        nativePdfWebView={nativePdfWebView}
+        nativeWebViewReadAccessUri={nativeWebViewReadAccessUri}
+        source={source}
+        resolvedSource={resolvedSource}
+        showPageIndicator={chromeModel.showPageIndicator}
+        pageIndicatorText={chromeModel.pageIndicatorText}
+        onBack={onBack}
+        onToggleMenu={toggleMenu}
+        onShare={() => void onShare()}
+        onDownload={() => void onDownload()}
+        onOpenExternal={() => void onOpenExternal()}
+        onPrint={() => void onPrint()}
+        onRetry={onRetry}
+        onToggleChrome={toggleChrome}
+        onOpenAgain={onOpenAgain}
+        onWebLoad={onWebLoad}
+        onWebError={onWebError}
+        onNativeLoadStart={onNativeLoadStart}
+        onNativeLoadEnd={onNativeLoadEnd}
+        onNativeError={onNativeError}
+        onNativeHttpError={onNativeHttpError}
+      />
     </SafeAreaView>
   );
 }
-
 
 export default withScreenErrorBoundary(PdfViewerScreen, {
   screen: "pdf_viewer",
   route: "/pdf-viewer",
   title: "Ошибка просмотра PDF",
 });
-

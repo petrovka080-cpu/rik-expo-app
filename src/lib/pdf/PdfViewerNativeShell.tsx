@@ -5,20 +5,22 @@ import {
   Text,
   View,
 } from "react-native";
+import type { WebViewProps } from "react-native-webview";
 
 import type { DocumentAsset } from "../documents/pdfDocumentSessions";
 import type { PdfViewerEmbeddedSource } from "./pdfViewerContract";
 import { CenteredPanel } from "./pdfViewer.components";
 import { styles } from "./pdfViewer.styles";
 
-type NativeWebViewEvent = {
+export type PdfViewerNativeWebViewEvent = {
   nativeEvent?: {
     description?: string;
     statusCode?: number;
   };
 };
 
-type NativePdfWebViewComponent = React.ComponentType<any> | null;
+export type PdfViewerNativeWebViewComponent =
+  React.ComponentType<WebViewProps> | null;
 
 type PdfViewerNativeHandoffShellProps = {
   mode: "native-handoff";
@@ -33,12 +35,12 @@ type PdfViewerNativeWebViewShellProps = {
   mode: "native-webview";
   source: PdfViewerEmbeddedSource;
   renderInstanceKey: string;
-  nativePdfWebView: NativePdfWebViewComponent;
+  nativePdfWebView: PdfViewerNativeWebViewComponent;
   nativeWebViewReadAccessUri?: string;
   onLoadStart: () => void;
   onLoadEnd: () => void;
-  onError: (event: NativeWebViewEvent) => void;
-  onHttpError: (event: NativeWebViewEvent) => void;
+  onError: (event: PdfViewerNativeWebViewEvent) => void;
+  onHttpError: (event: PdfViewerNativeWebViewEvent) => void;
   onOpenExternal: () => void;
 };
 

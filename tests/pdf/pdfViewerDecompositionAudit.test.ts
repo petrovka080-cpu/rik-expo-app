@@ -1,16 +1,15 @@
 /**
- * Package E: PDF Viewer decomposition audit shield tests.
+ * Package E: PDF viewer decomposition audit shield tests.
  *
  * Validates that:
- * 1. All safe layers are already extracted into separate files
- * 2. pdf-viewer.tsx imports from the extracted modules (not inline)
- * 3. Each extracted module exports the expected shape
- * 4. No duplicate definitions exist (constants, helpers, components)
- * 5. The viewer state machine decision layer is extracted while side effects stay in pdf-viewer.tsx
- * 6. pdfDocumentActions.ts exports are stable
+ * 1. All extracted viewer owner-boundary files exist
+ * 2. `app/pdf-viewer.tsx` composes extracted modules instead of re-declaring them
+ * 3. Decision logic is delegated to pure modules while side effects stay in the viewer
+ * 4. Presenter/shell rendering is kept out of the screen orchestrator
+ * 5. `pdfDocumentActions.ts` public exports stay stable for the next B2 wave
  */
 
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 const PDF_LIB = join(__dirname, "..", "..", "src", "lib", "pdf");
@@ -29,7 +28,7 @@ const ACTIONS_PATH = join(
 const viewerSource = readFileSync(VIEWER_PATH, "utf8");
 const actionsSource = readFileSync(ACTIONS_PATH, "utf8");
 
-describe("E: extracted modules exist", () => {
+describe("B1: extracted modules exist", () => {
   const EXPECTED_FILES = [
     "pdfViewer.constants.ts",
     "pdfViewer.styles.ts",
@@ -53,6 +52,12 @@ describe("E: extracted modules exist", () => {
     "usePdfViewerOrchestrator.ts",
     "PdfViewerNativeShell.tsx",
     "PdfViewerWebShell.tsx",
+    "pdfViewer.route.ts",
+    "pdfViewer.readiness.ts",
+    "pdfViewer.handoffPlan.ts",
+    "pdfViewer.error.ts",
+    "pdfViewer.nativeWebView.ts",
+    "PdfViewerScreenContent.tsx",
   ];
 
   for (const file of EXPECTED_FILES) {
@@ -62,22 +67,14 @@ describe("E: extracted modules exist", () => {
   }
 });
 
-describe("E: pdf-viewer.tsx imports from extracted modules (not inline)", () => {
+describe("B1: pdf-viewer.tsx composes extracted modules", () => {
   it("imports constants from pdfViewer.constants", () => {
     expect(viewerSource).toContain("pdfViewer.constants");
     expect(viewerSource).toContain("FALLBACK_ROUTE");
-    expect(viewerSource).toContain("VIEWER_TEXT");
   });
 
   it("imports styles from pdfViewer.styles", () => {
     expect(viewerSource).toContain("pdfViewer.styles");
-  });
-
-  it("imports components from pdfViewer.components", () => {
-    expect(viewerSource).toContain("pdfViewer.components");
-    expect(viewerSource).toContain("MenuAction");
-    expect(viewerSource).toContain("EmptyState");
-    expect(viewerSource).toContain("CenteredPanel");
   });
 
   it("imports helpers from pdfViewer.helpers", () => {
@@ -90,141 +87,153 @@ describe("E: pdf-viewer.tsx imports from extracted modules (not inline)", () => 
     expect(viewerSource).toContain("usePdfViewerActions");
   });
 
-  it("imports viewer contract from pdfViewerContract", () => {
+  it("imports contract helpers from pdfViewerContract", () => {
     expect(viewerSource).toContain("pdfViewerContract");
-    expect(viewerSource).toContain("resolvePdfViewerState");
-    expect(viewerSource).toContain("resolvePdfViewerResolution");
+    expect(viewerSource).toContain("getReadAccessParentUri");
   });
 
-  it("imports render lifecycle from pdfViewerRenderLifecycle", () => {
+  it("imports route parsing from pdfViewer.route", () => {
+    expect(viewerSource).toContain("pdfViewer.route");
+    expect(viewerSource).toContain("resolvePdfViewerRouteModel");
+    expect(viewerSource).toContain("resolvePdfViewerSnapshot");
+  });
+
+  it("imports readiness mapping from pdfViewer.readiness", () => {
+    expect(viewerSource).toContain("pdfViewer.readiness");
+    expect(viewerSource).toContain("resolvePdfViewerReadinessModel");
+    expect(viewerSource).toContain("resolvePdfViewerContentModel");
+    expect(viewerSource).toContain("resolvePdfViewerChromeModel");
+  });
+
+  it("imports handoff planning from pdfViewer.handoffPlan", () => {
+    expect(viewerSource).toContain("pdfViewer.handoffPlan");
+    expect(viewerSource).toContain("resolvePdfViewerHandoffPlan");
+    expect(viewerSource).toContain("resolvePdfViewerManualHandoffPlan");
+  });
+
+  it("imports error normalization from pdfViewer.error", () => {
+    expect(viewerSource).toContain("pdfViewer.error");
+    expect(viewerSource).toContain("normalizePdfViewerError");
+  });
+
+  it("imports native webview loading from pdfViewer.nativeWebView", () => {
+    expect(viewerSource).toContain("pdfViewer.nativeWebView");
+    expect(viewerSource).toContain("resolvePdfViewerNativeWebView");
+  });
+
+  it("imports render lifecycle and guard helpers", () => {
     expect(viewerSource).toContain("pdfViewerRenderLifecycle");
     expect(viewerSource).toContain("createPdfViewerRenderInstanceKey");
-  });
-
-  it("imports render event guard from pdfViewerRenderEventGuard", () => {
     expect(viewerSource).toContain("pdfViewerRenderEventGuard");
     expect(viewerSource).toContain("shouldCommitPdfViewerRenderEvent");
   });
 
-  it("imports render event command planning from pdfViewerRenderEventGuard", () => {
-    expect(viewerSource).toContain("pdfViewerRenderEventGuard");
-    expect(viewerSource).toContain("resolvePdfViewerNativeLoadEndEventPlan");
-    expect(viewerSource).toContain("resolvePdfViewerWebIframeErrorEventPlan");
-  });
-
-  it("imports breadcrumbs from pdfCrashBreadcrumbs", () => {
-    expect(viewerSource).toContain("pdfCrashBreadcrumbs");
-    expect(viewerSource).toContain("recordPdfCrashBreadcrumbAsync");
-  });
-
-  it("imports critical path from pdfCriticalPath", () => {
-    expect(viewerSource).toContain("pdfCriticalPath");
-    expect(viewerSource).toContain("recordPdfCriticalPathEvent");
-  });
-
-  it("imports native handoff guard from pdfNativeHandoffGuard", () => {
-    expect(viewerSource).toContain("pdfNativeHandoffGuard");
-    expect(viewerSource).toContain("beginPdfNativeHandoff");
-  });
-
-  it("imports loading timeout guard from pdfViewerLoadingTimeoutGuard", () => {
+  it("imports loading timeout and open-signal planning", () => {
     expect(viewerSource).toContain("pdfViewerLoadingTimeoutGuard");
     expect(viewerSource).toContain("armPdfViewerLoadingTimeout");
-  });
-
-  it("imports bootstrap planning from pdfViewerBootstrapPlan", () => {
-    expect(viewerSource).toContain("pdfViewerBootstrapPlan");
-    expect(viewerSource).toContain("resolvePdfViewerBootstrapPlan");
-  });
-
-  it("imports open-signal planning from pdfViewerOpenSignalPlan", () => {
     expect(viewerSource).toContain("pdfViewerOpenSignalPlan");
     expect(viewerSource).toContain("resolvePdfViewerOpenVisibleSignalPlan");
     expect(viewerSource).toContain("resolvePdfViewerOpenFailedSignalPlan");
   });
 
-  it("imports open flow from pdfOpenFlow", () => {
+  it("imports crash breadcrumbs, critical path, native handoff, and open flow boundaries", () => {
+    expect(viewerSource).toContain("pdfCrashBreadcrumbs");
+    expect(viewerSource).toContain("pdfCriticalPath");
+    expect(viewerSource).toContain("pdfNativeHandoffGuard");
+    expect(viewerSource).toContain("pdfNativeHandoffPlan");
     expect(viewerSource).toContain("pdfOpenFlow");
-    expect(viewerSource).toContain("markPdfOpenVisible");
-    expect(viewerSource).toContain("failPdfOpenVisible");
   });
 
-  it("imports the extracted orchestrator and render shells", () => {
+  it("imports the extracted orchestrator and presenter", () => {
     expect(viewerSource).toContain("usePdfViewerOrchestrator");
-    expect(viewerSource).toContain("PdfViewerNativeShell");
-    expect(viewerSource).toContain("PdfViewerWebShell");
+    expect(viewerSource).toContain("PdfViewerScreenContent");
   });
 });
 
-describe("E: no duplicate definitions (constants not re-declared inline)", () => {
-  it("VIEWER_BG is not re-declared in viewer", () => {
-    // Should import it, not assign it
+describe("B1: no duplicate viewer definitions remain inline", () => {
+  it("does not re-declare viewer constants in the screen", () => {
     expect(viewerSource).not.toMatch(/const VIEWER_BG\s*=/);
-  });
-
-  it("VIEWER_TEXT is not re-declared in viewer", () => {
     expect(viewerSource).not.toMatch(/const VIEWER_TEXT\s*=/);
-  });
-
-  it("FALLBACK_ROUTE is not re-declared in viewer", () => {
     expect(viewerSource).not.toMatch(/const FALLBACK_ROUTE\s*=/);
   });
 
-  it("styles is not re-declared in viewer", () => {
+  it("does not re-declare styles inline", () => {
     expect(viewerSource).not.toContain("StyleSheet.create");
   });
 
-  it("getUriScheme is not re-declared in viewer", () => {
-    expect(viewerSource).not.toMatch(/function getUriScheme/);
+  it("does not re-declare route/readiness/handoff helpers inline", () => {
+    expect(viewerSource).not.toMatch(/function resolvePdfViewerRouteModel/);
+    expect(viewerSource).not.toMatch(/function resolvePdfViewerReadinessModel/);
+    expect(viewerSource).not.toMatch(/function resolvePdfViewerHandoffPlan/);
+    expect(viewerSource).not.toMatch(/function normalizePdfViewerError/);
   });
 });
 
-describe("E: viewer state machine extraction boundary", () => {
-  it("syncSnapshot is still in the viewer", () => {
+describe("B1: orchestrator keeps side effects while decision logic is extracted", () => {
+  it("keeps syncSnapshot in the viewer", () => {
     expect(viewerSource).toContain("const syncSnapshot");
   });
 
-  it("markError is still in the viewer", () => {
+  it("keeps markError in the viewer", () => {
     expect(viewerSource).toContain("const markError");
   });
 
-  it("markReady is still in the viewer", () => {
+  it("keeps markReady in the viewer", () => {
     expect(viewerSource).toContain("const markReady");
   });
 
-  it("enterLoading is still in the viewer", () => {
+  it("keeps enterLoading in the viewer", () => {
     expect(viewerSource).toContain("const enterLoading");
   });
 
-  it("clearLoadingTimeout is still in the viewer", () => {
+  it("keeps clearLoadingTimeout in the viewer", () => {
     expect(viewerSource).toContain("const clearLoadingTimeout");
   });
 
-  it("handoffPdfPreview is still in the viewer", () => {
+  it("keeps handoffPdfPreview in the viewer", () => {
     expect(viewerSource).toContain("const handoffPdfPreview");
   });
 
-  it("prepareViewer bootstrap effect is still in the viewer", () => {
+  it("keeps prepareViewer bootstrap effect in the viewer", () => {
     expect(viewerSource).toContain("const prepareViewer");
   });
 
-  it("prepareViewer delegates bootstrap decisions to a pure plan", () => {
-    expect(viewerSource).toContain("const bootstrapPlan = resolvePdfViewerBootstrapPlan");
+  it("delegates route parsing to the pure route module", () => {
+    expect(viewerSource).toContain("const route = React.useMemo(");
+    expect(viewerSource).toContain("resolvePdfViewerRouteModel({");
+    expect(viewerSource).toContain("resolvePdfViewerSnapshot({");
   });
 
-  it("viewer delegates local state ownership to usePdfViewerOrchestrator", () => {
+  it("delegates readiness and render-state mapping to the pure readiness module", () => {
+    expect(viewerSource).toContain("resolvePdfViewerReadinessModel({");
+    expect(viewerSource).toContain("resolvePdfViewerContentModel({");
+    expect(viewerSource).toContain("resolvePdfViewerChromeModel({");
+  });
+
+  it("delegates bootstrap handoff decisions to the handoff planning module", () => {
+    expect(viewerSource).toContain("const handoffPlan = resolvePdfViewerHandoffPlan({");
+    expect(viewerSource).toContain("resolvePdfViewerManualHandoffPlan({");
+  });
+
+  it("delegates error normalization to the error module", () => {
+    expect(viewerSource).toContain("normalizePdfViewerError({");
+  });
+
+  it("delegates local state ownership to usePdfViewerOrchestrator", () => {
     expect(viewerSource).toContain("const orchestrator = usePdfViewerOrchestrator");
     expect(viewerSource).toContain("planPdfViewerLoadingTransition");
     expect(viewerSource).toContain("planPdfViewerTimeoutTransition");
   });
 
-  it("viewer does not own low-level native/web shell rendering inline", () => {
-    expect(viewerSource).not.toContain("<NativePdfWebView");
+  it("delegates presenter rendering outside the screen orchestrator", () => {
+    expect(viewerSource).toContain("<PdfViewerScreenContent");
+    expect(viewerSource).not.toContain("<PdfViewerNativeShell");
+    expect(viewerSource).not.toContain("<PdfViewerWebShell");
     expect(viewerSource).not.toContain("<iframe");
   });
 });
 
-describe("E: pdfDocumentActions.ts exports are stable", () => {
+describe("B1: pdfDocumentActions.ts exports are stable", () => {
   const EXPECTED_EXPORTS = [
     "getPdfFlowErrorMessage",
     "preparePdfDocument",
@@ -242,12 +251,12 @@ describe("E: pdfDocumentActions.ts exports are stable", () => {
     });
   }
 
-  it("pdfDocumentActions has 6 public exports", () => {
+  it("pdfDocumentActions keeps the same public export count", () => {
     expect(EXPECTED_EXPORTS).toHaveLength(6);
   });
 });
 
-describe("E: extracted module test coverage exists", () => {
+describe("B1: extracted module test coverage exists", () => {
   const EXPECTED_TEST_FILES = [
     "pdfViewer.extraction.test.ts",
     "pdfViewerContract.test.ts",
@@ -273,6 +282,11 @@ describe("E: extracted module test coverage exists", () => {
   const EXPECTED_ROUTE_TEST_FILES = [
     "usePdfViewerOrchestrator.test.ts",
     "PdfViewerShells.test.tsx",
+    "PdfViewerScreenContent.test.tsx",
+    "pdfViewer.route.test.ts",
+    "pdfViewer.readiness.test.ts",
+    "pdfViewer.handoffPlan.test.ts",
+    "pdfViewer.error.test.ts",
   ];
 
   for (const file of EXPECTED_ROUTE_TEST_FILES) {
