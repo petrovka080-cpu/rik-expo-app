@@ -3,6 +3,7 @@ import {
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
+  resolveReleaseGuardPath,
   type ReleaseGateResult,
   type ReleaseRepoState,
 } from "../../scripts/release/releaseGuard.shared";
@@ -246,6 +247,18 @@ EAS Dashboard      https://expo.dev/update/group-123
         commit: "abc123",
         dashboardUrl: "https://expo.dev/update/group-123",
       });
+    });
+  });
+
+  describe("resolveReleaseGuardPath", () => {
+    it("keeps absolute paths untouched", () => {
+      expect(resolveReleaseGuardPath("C:\\repo", "C:\\temp\\release-guard.json")).toBe("C:\\temp\\release-guard.json");
+    });
+
+    it("resolves relative paths from the project root", () => {
+      expect(resolveReleaseGuardPath("C:\\repo", "artifacts/release-guard.json").replace(/\\/g, "/")).toBe(
+        "C:/repo/artifacts/release-guard.json",
+      );
     });
   });
 });

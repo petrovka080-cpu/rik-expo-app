@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import type { ReleaseChangeClass } from "../../src/shared/release/releaseInfo.types";
 
 export type ReleaseGuardMode = "preflight" | "verify" | "ota";
@@ -93,6 +95,10 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
 
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+export function resolveReleaseGuardPath(projectRoot: string, filePath: string): string {
+  return path.isAbsolute(filePath) ? filePath : path.join(projectRoot, filePath);
 }
 
 function dedupe(values: string[]): string[] {

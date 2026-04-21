@@ -10,6 +10,7 @@ import {
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
+  resolveReleaseGuardPath,
   type PackageJsonMutationKind,
   type ReleaseGateDefinition,
   type ReleaseGateResult,
@@ -189,7 +190,7 @@ function runGate(gate: ReleaseGateDefinition): ReleaseGateResult {
 }
 
 function ensureArtifacts(requiredArtifacts: string[]): string[] {
-  return requiredArtifacts.filter((artifactPath) => !fs.existsSync(path.join(PROJECT_ROOT, artifactPath)));
+  return requiredArtifacts.filter((artifactPath) => !fs.existsSync(resolveReleaseGuardPath(PROJECT_ROOT, artifactPath)));
 }
 
 function writeReport(reportFile: string | null, report: ReleaseGuardReport) {
@@ -197,7 +198,7 @@ function writeReport(reportFile: string | null, report: ReleaseGuardReport) {
     return;
   }
 
-  const absolutePath = path.join(PROJECT_ROOT, reportFile);
+  const absolutePath = resolveReleaseGuardPath(PROJECT_ROOT, reportFile);
   fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
   fs.writeFileSync(absolutePath, JSON.stringify(report, null, 2) + "\n", "utf8");
 }
