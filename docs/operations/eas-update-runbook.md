@@ -21,6 +21,15 @@ npm run ota:channels:sync
 
 ## Publish Rules
 
+Canonical publish path:
+
+```powershell
+npm run release:preflight
+npm run release:ota -- --channel <development|preview|production> --message "wave marker"
+```
+
+Direct `npx eas update ...` is not the supported release path for this repo anymore. Use the guarded script so the required gates, git-state checks, runtime classification, and release metadata are enforced together.
+
 - iPhone / TestFlight: publish only to `production`
 
 ```powershell
@@ -41,9 +50,10 @@ npm run ota:publish:development -- --message "development marker 2026-03-19"
 
 ## Release Verification Scripts
 
-Use the read-only scripts before publishing:
+Use the read-only scripts before publishing or dry-running a release decision:
 
 ```powershell
+npm run release:verify
 npx tsx scripts/release/print-release-config.ts --json
 npx tsx scripts/release/check-release-discipline.ts --channel production --change-class js-ui --json
 ```

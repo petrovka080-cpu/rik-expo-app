@@ -124,6 +124,7 @@ This is the default expected behavior for release validation unless diagnostics 
 2. In-app diagnostics now show binary identity, update identity, passive availability state, metadata source, and health verdict from one canonical model.
 3. Read-only release verification scripts now print the current release contract and OTA-vs-build decision outcome.
 4. The project now has explicit documentation for source-of-truth rules and OTA/new-build discipline.
+5. Guarded release automation now enforces full preflight, git-state checks, and runtime-vs-non-runtime OTA classification before publish.
 
 ## Allowed
 

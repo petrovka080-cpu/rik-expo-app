@@ -62,7 +62,10 @@ Implication:
 1. Classify the change.
 2. If any touched area is in the build-required table, stop and make a new build plan.
 3. If every touched area stays in the OTA-safe table, OTA is allowed.
-4. Before publishing OTA, verify:
+4. Before publishing OTA, run the guarded release path:
+   - `npm run release:preflight`
+   - `npm run release:ota -- --channel <channel> --message "<message>"`
+5. Before publishing OTA, verify:
    - target channel
    - expected branch
    - installed runtimeVersion

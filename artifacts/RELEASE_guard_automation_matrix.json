@@ -1,0 +1,76 @@
+{
+  "wave": "RELEASE_GUARD_AUTOMATION",
+  "status": "GREEN_READY_FOR_RELEASE_TAIL",
+  "touchedFiles": [
+    "package.json",
+    "scripts/preflight-prod.js",
+    "scripts/release/releaseGuard.shared.ts",
+    "scripts/release/run-release-guard.ts",
+    "tests/release/releaseGuard.shared.test.ts",
+    "tests/release/releaseGuard.contract.test.ts",
+    "docs/operations/eas-update-runbook.md",
+    "docs/operations/release-decision-matrix.md",
+    "docs/operations/release-lineage-audit.md",
+    "artifacts/RELEASE_guard_automation_notes.md",
+    "artifacts/RELEASE_guard_automation_proof.md",
+    "artifacts/RELEASE_guard_automation_matrix.json"
+  ],
+  "gates": {
+    "tsc": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jestParallel": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "focusedTests": {
+    "releaseGuardShared": "PASS",
+    "releaseGuardContract": "PASS",
+    "releaseInfoRegression": "PASS"
+  },
+  "blockedCases": [
+    {
+      "case": "dirty_worktree",
+      "status": "BLOCKED",
+      "proof": "guarded verify command returned exit code 1"
+    },
+    {
+      "case": "missing_required_artifact",
+      "status": "BLOCKED",
+      "proof": "guarded verify command returned exit code 1 with missing artifact blocker"
+    },
+    {
+      "case": "build_required_diff_over_ota",
+      "status": "BLOCKED_BY_TEST",
+      "proof": "tests/release/releaseGuard.shared.test.ts"
+    }
+  ],
+  "allowedCases": [
+    {
+      "case": "non_runtime_diff",
+      "status": "OTA_SKIPPED_BY_GUARD",
+      "proof": "tests/release/releaseGuard.shared.test.ts"
+    },
+    {
+      "case": "runtime_ota_diff_with_full_preflight_and_metadata",
+      "status": "ALLOWED_BY_GUARD",
+      "proof": "tests/release/releaseGuard.shared.test.ts"
+    }
+  ],
+  "otaClassification": {
+    "nonRuntime": "skip",
+    "runtimeOta": "allow_after_preflight",
+    "buildRequired": "block"
+  },
+  "releaseReadiness": {
+    "canonicalEntrypointsPresent": true,
+    "directPackageBypassRemoved": true,
+    "metadataCaptureHardened": true,
+    "releaseTail": "commit_and_push_run_after_static_proof",
+    "otaNeededForThisWave": false,
+    "otaDone": "SKIPPED_EXPECTED"
+  },
+  "residualRisk": [
+    "Raw manual shell use of eas CLI outside npm scripts cannot be OS-blocked by repo code alone.",
+    "Current wave is tooling-only, so clean-state guarded publish confirmation is completed in the release tail after commit."
+  ]
+}
