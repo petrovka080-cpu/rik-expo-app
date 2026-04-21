@@ -14,6 +14,7 @@ import {
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
   resolveReleaseGuardPath,
+  resolveReleaseGuardNpxCommand,
   type PackageJsonMutationKind,
   type ReleaseGateDefinition,
   type ReleaseGateResult,
@@ -369,12 +370,11 @@ function main() {
     throw new Error("OTA mode requires a non-empty --message.");
   }
 
-  const publishResult = spawnSync("npx", ["eas", "update", "--branch", targetChannel, "--message", message], {
+  const publishResult = spawnSync(resolveReleaseGuardNpxCommand(process.platform), ["eas", "update", "--branch", targetChannel, "--message", message], {
     cwd: PROJECT_ROOT,
     encoding: "utf8",
     env: buildReleaseGuardOtaPublishEnv(process.env),
     maxBuffer: RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES,
-    shell: process.platform === "win32",
     stdio: ["ignore", "pipe", "pipe"],
   });
 

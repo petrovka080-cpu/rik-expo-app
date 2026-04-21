@@ -7,6 +7,7 @@ import {
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
   resolveReleaseGuardPath,
+  resolveReleaseGuardNpxCommand,
   type ReleaseGateResult,
   type ReleaseRepoState,
 } from "../../scripts/release/releaseGuard.shared";
@@ -303,6 +304,16 @@ EAS Dashboard      https://expo.dev/update/group-123
   describe("RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES", () => {
     it("keeps enough headroom for noisy guarded OTA publish output", () => {
       expect(RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES).toBeGreaterThanOrEqual(64 * 1024 * 1024);
+    });
+  });
+
+  describe("resolveReleaseGuardNpxCommand", () => {
+    it("uses the Windows npx shim when publish commands run on win32", () => {
+      expect(resolveReleaseGuardNpxCommand("win32")).toBe("npx.cmd");
+    });
+
+    it("uses plain npx on non-Windows platforms", () => {
+      expect(resolveReleaseGuardNpxCommand("linux")).toBe("npx");
     });
   });
 

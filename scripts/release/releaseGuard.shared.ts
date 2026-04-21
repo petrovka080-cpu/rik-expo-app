@@ -112,6 +112,10 @@ export function buildReleaseGuardOtaPublishEnv(
   };
 }
 
+export function resolveReleaseGuardNpxCommand(platform: NodeJS.Platform): string {
+  return platform === "win32" ? "npx.cmd" : "npx";
+}
+
 export function buildReleaseChangedFilesGitArgs(range: string): string[] {
   if (range === "HEAD") {
     return ["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"];
