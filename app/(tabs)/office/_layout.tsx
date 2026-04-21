@@ -17,26 +17,22 @@ import {
   recordOfficeRouteOwnerMount,
   recordOfficeRouteOwnerUnmount,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
+import {
+  OFFICE_SAFE_BACK_ROUTE,
+  resolveSafeOfficeChildRoute,
+  type OfficeChildBackSourceRoute,
+} from "../../../src/screens/office/office.route";
 
-export const OFFICE_SAFE_BACK_ROUTE = "/office";
+export { OFFICE_SAFE_BACK_ROUTE } from "../../../src/screens/office/office.route";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
 export const unstable_settings = {
   initialRouteName: "index",
 };
 
 const WAREHOUSE_HEADER_TITLE = "\u0421\u043a\u043b\u0430\u0434";
-type OfficeChildBackSourceRoute = "/office/foreman" | "/office/warehouse";
 type OfficeHeaderBackButtonProps = Record<string, unknown> & {
   onPress?: (...args: unknown[]) => void;
 };
-
-function resolveSafeOfficeChildRoute(
-  pathname: string | null | undefined,
-): OfficeChildBackSourceRoute | null {
-  if (pathname === "/office/foreman") return "/office/foreman";
-  if (pathname === "/office/warehouse") return "/office/warehouse";
-  return null;
-}
 
 function useOfficeStackOwnerAudit() {
   const navigation = useNavigation();

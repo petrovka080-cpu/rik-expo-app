@@ -1,0 +1,77 @@
+{
+  "wave": "OFFICE_OWNER_SPLIT",
+  "status": "code_and_runtime_green",
+  "scope": {
+    "touched_files": [
+      "app/(tabs)/office/_layout.tsx",
+      "app/(tabs)/office/index.tsx",
+      "src/screens/office/OfficeHubScreen.tsx",
+      "tests/app/office-layout.test.tsx",
+      "tests/perf/performance-budget.test.ts"
+    ],
+    "added_files": [
+      "src/screens/office/office.route.ts",
+      "src/screens/office/office.reentry.ts",
+      "src/screens/office/office.layout.model.ts",
+      "src/screens/office/OfficeShellContent.tsx",
+      "src/screens/office/office.route.test.ts",
+      "src/screens/office/office.reentry.test.ts",
+      "src/screens/office/office.layout.model.test.ts",
+      "tests/office/officeOwnerSplit.decomposition.test.ts"
+    ],
+    "untouched_domains": [
+      "auth",
+      "pdf",
+      "sql_rpc",
+      "role_workflows",
+      "queue_offline",
+      "unrelated_tabs"
+    ]
+  },
+  "owner_boundaries": {
+    "route": "src/screens/office/office.route.ts",
+    "reentry": "src/screens/office/office.reentry.ts",
+    "layout_model": "src/screens/office/office.layout.model.ts",
+    "presenter": "src/screens/office/OfficeShellContent.tsx",
+    "orchestrators": [
+      "app/(tabs)/office/_layout.tsx",
+      "app/(tabs)/office/index.tsx",
+      "src/screens/office/OfficeHubScreen.tsx"
+    ]
+  },
+  "gates": {
+    "tsc": "pass",
+    "expo_lint": "pass",
+    "npm_test_runInBand": "pass",
+    "npm_test": "pass",
+    "git_diff_check": "pass"
+  },
+  "focused_tests": {
+    "route_decisions": "pass",
+    "reentry_decisions": "pass",
+    "layout_model": "pass",
+    "office_index_route_scope": "pass",
+    "office_layout": "pass",
+    "office_hub_regression": "pass",
+    "office_decomposition_audit": "pass"
+  },
+  "runtime_proof": {
+    "script": "scripts/office_role_route_runtime_verify.ts",
+    "status": "pass",
+    "artifact": "artifacts/office-role-route-runtime-proof.json",
+    "routeProofPassed": true,
+    "noFatalException": true,
+    "environmentRecoveryUsed": true,
+    "roles": {
+      "buyer": "pass",
+      "accountant": "pass",
+      "contractor": "pass",
+      "director": "pass",
+      "foreman": "pass"
+    }
+  },
+  "residual_risk": [
+    "officeReentryBreadcrumbs.ts remains large by design and was not split in this wave",
+    "no dedicated Office web verifier exists in repo; established Office route runtime verifier was used for historically sensitive navigation/reentry proof"
+  ]
+}

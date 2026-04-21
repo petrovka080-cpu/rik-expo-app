@@ -1,12 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { Alert, type ScrollView } from "react-native";
 import {
   useFocusEffect,
   useLocalSearchParams,
@@ -14,7 +7,6 @@ import {
   type Href,
 } from "expo-router";
 
-import RoleScreenLayout from "../../components/layout/RoleScreenLayout";
 import {
   clearDeveloperEffectiveRole,
   DEVELOPER_OVERRIDE_ROLES,
@@ -56,7 +48,6 @@ import type {
 import {
   clearOfficeHubBootstrapSnapshot,
   getFreshOfficeHubBootstrapSnapshot,
-  OFFICE_FOCUS_REFRESH_TTL_MS,
   primeOfficeHubBootstrapSnapshot,
   type OfficeHubBootstrapSnapshot,
 } from "./officeHubBootstrapSnapshot";
@@ -67,21 +58,12 @@ import {
   COPY,
 } from "./officeHub.constants";
 import {
-  isWarehouseOfficeReturnReceipt,
   OfficePostReturnSubtreeBoundary,
   type OfficeHubScreenProps,
 } from "./officeHub.helpers";
-import {
-  OfficeCompanyDetailsSection,
-  OfficeCompanySummarySection,
-  OfficeDeveloperOverrideSection,
-  OfficeHubCompanyCreateRootSection,
-  OfficeInviteModalSection,
-  OfficeInvitesSection,
-  OfficeMembersSection,
-  OfficeRoleDirectionsSection,
-} from "./officeHub.sections";
-import { styles } from "./officeHub.styles";
+import OfficeShellContent from "./OfficeShellContent";
+import { buildOfficeShellContentModel } from "./office.layout.model";
+import { resolveOfficeHubFocusRefreshPlan } from "./office.reentry";
 import { useOfficeHubRoleAccess } from "./useOfficeHubRoleAccess";
 import { useOfficePostReturnTracing } from "./useOfficePostReturnTracing";
 
@@ -140,6 +122,9 @@ export default function OfficeHubScreen({
   > | null>(null);
   const lastSuccessfulLoadAtRef = useRef<number>(
     initialBootstrapSnapshot?.loadedAt ?? 0,
+  );
+  const companyDraftSyncRef = useRef<(next: OfficeAccessScreenData) => void>(
+    () => undefined,
   );
   const disableFocusPostCommit = activePostReturnProbe.includes(
     "no_focus_post_commit",
@@ -209,7 +194,7 @@ export default function OfficeHubScreen({
 
         const loadedAt = Date.now();
         setData(next);
-        company.syncDraftFromData(next);
+        companyDraftSyncRef.current(next);
         primeOfficeHubBootstrapSnapshot(next, loadedAt);
 
         const completionExtra = buildPostReturnExtra({
@@ -274,7 +259,6 @@ export default function OfficeHubScreen({
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [buildPostReturnExtra, startPostReturnTrace],
   );
 
@@ -317,6 +301,17 @@ export default function OfficeHubScreen({
       const focusExtra = buildPostReturnExtra({
         focusCycle: focusCycleRef.current,
       });
+      const focusRefreshPlan = resolveOfficeHubFocusRefreshPlan({
+        routeScopeActive,
+        ownerBootstrapCompleted: ownerBootstrapCompletedRef.current,
+        initialBootstrapInFlight: Boolean(initialBootstrapInFlightRef.current),
+        focusRefreshInFlight: Boolean(focusRefreshInFlightRef.current),
+        officeReturnReceipt,
+        pendingOfficeReturnReceipt: peekPendingOfficeRouteReturnReceipt(),
+        processedWarmOfficeReturnReceipt:
+          processedWarmOfficeReturnReceiptRef.current,
+        lastSuccessfulLoadAt: lastSuccessfulLoadAtRef.current,
+      });
 
       if (!disableFocusPostCommit) {
         runObservedNativeCallback({
@@ -330,94 +325,67 @@ export default function OfficeHubScreen({
         });
       }
 
-      if (!ownerBootstrapCompletedRef.current) {
-        const reason = initialBootstrapInFlightRef.current
-          ? "bootstrap_inflight"
-          : "bootstrap_pending";
+      if (focusRefreshPlan.kind === "scope_inactive") {
+        return () => {
+          cancelPostReturnIdle();
+        };
+      }
+
+      if (focusRefreshPlan.kind === "bootstrap_pending") {
         recordOfficeFocusRefreshReason({
           ...focusExtra,
-          reason,
+          reason: focusRefreshPlan.reason,
         });
         recordOfficeFocusRefreshSkipped({
           ...focusExtra,
-          reason,
+          reason: focusRefreshPlan.reason,
         });
         return () => {
           cancelPostReturnIdle();
         };
       }
 
-      if (focusRefreshInFlightRef.current) {
+      if (focusRefreshPlan.kind === "joined_inflight") {
         recordOfficeLoadingShellSkippedOnFocusReturn({
           ...focusExtra,
-          reason: "joined_inflight",
+          reason: focusRefreshPlan.reason,
         });
         recordOfficeFocusRefreshReason({
           ...focusExtra,
-          reason: "joined_inflight",
+          reason: focusRefreshPlan.reason,
         });
         recordOfficeFocusRefreshSkipped({
           ...focusExtra,
-          reason: "joined_inflight",
+          reason: focusRefreshPlan.reason,
         });
         return () => {
           cancelPostReturnIdle();
         };
       }
 
-      const pendingOfficeReturnReceipt = peekPendingOfficeRouteReturnReceipt();
-      const warmOfficeReturnReceipt = isWarehouseOfficeReturnReceipt(
-        officeReturnReceipt,
-      )
-        ? officeReturnReceipt
-        : pendingOfficeReturnReceipt;
-
-      if (
-        isWarehouseOfficeReturnReceipt(warmOfficeReturnReceipt) &&
-        processedWarmOfficeReturnReceiptRef.current !== warmOfficeReturnReceipt
-      ) {
-        processedWarmOfficeReturnReceiptRef.current = warmOfficeReturnReceipt;
-        const ageMs = Date.now() - lastSuccessfulLoadAtRef.current;
-        const warmReturnExtra = {
-          ...focusExtra,
-          reason: "ttl_fresh",
-          ageMs,
-          ttlMs: OFFICE_FOCUS_REFRESH_TTL_MS,
-          freshnessSource: "warehouse_return_receipt",
-          sourceRoute: warmOfficeReturnReceipt.sourceRoute,
-          target: warmOfficeReturnReceipt.target,
-        };
-        recordOfficeLoadingShellSkippedOnFocusReturn(warmReturnExtra);
-        recordOfficeFocusRefreshReason(warmReturnExtra);
-        recordOfficeFocusRefreshSkipped(warmReturnExtra);
-        return () => {
-          cancelPostReturnIdle();
-        };
-      }
-
-      const ageMs = Date.now() - lastSuccessfulLoadAtRef.current;
-      if (
-        lastSuccessfulLoadAtRef.current > 0 &&
-        ageMs < OFFICE_FOCUS_REFRESH_TTL_MS
-      ) {
-        recordOfficeLoadingShellSkippedOnFocusReturn({
-          ...focusExtra,
-          reason: "ttl_fresh",
-          ageMs,
-          ttlMs: OFFICE_FOCUS_REFRESH_TTL_MS,
-        });
-        recordOfficeFocusRefreshReason({
-          ...focusExtra,
-          reason: "ttl_fresh",
-          ageMs,
-          ttlMs: OFFICE_FOCUS_REFRESH_TTL_MS,
-        });
-        recordOfficeFocusRefreshSkipped({
-          ...focusExtra,
-          reason: "ttl_fresh",
-          ageMs,
-          ttlMs: OFFICE_FOCUS_REFRESH_TTL_MS,
-        });
+      if (focusRefreshPlan.kind === "skip_refresh") {
+        if (focusRefreshPlan.receipt) {
+          processedWarmOfficeReturnReceiptRef.current = focusRefreshPlan.receipt;
+        }
+        const skippedExtra = focusRefreshPlan.freshnessSource
+          ? {
+              ...focusExtra,
+              reason: focusRefreshPlan.reason,
+              ageMs: focusRefreshPlan.ageMs,
+              ttlMs: focusRefreshPlan.ttlMs,
+              freshnessSource: focusRefreshPlan.freshnessSource,
+              sourceRoute: focusRefreshPlan.sourceRoute,
+              target: focusRefreshPlan.target,
+            }
+          : {
+              ...focusExtra,
+              reason: focusRefreshPlan.reason,
+              ageMs: focusRefreshPlan.ageMs,
+              ttlMs: focusRefreshPlan.ttlMs,
+            };
+        recordOfficeLoadingShellSkippedOnFocusReturn(skippedExtra);
+        recordOfficeFocusRefreshReason(skippedExtra);
+        recordOfficeFocusRefreshSkipped(skippedExtra);
         return () => {
           cancelPostReturnIdle();
         };
@@ -425,7 +393,7 @@ export default function OfficeHubScreen({
 
       const task = loadScreen({
         mode: "focus_refresh",
-        reason: "stale_ttl",
+        reason: focusRefreshPlan.reason,
       }).finally(() => {
         if (focusRefreshInFlightRef.current === task) {
           focusRefreshInFlightRef.current = null;
@@ -451,7 +419,6 @@ export default function OfficeHubScreen({
   );
 
   const access = useOfficeHubRoleAccess(data, activePostReturnProbe);
-
 
   const renderSubtreeBoundary = useCallback(
     (subtree: OfficePostReturnSubtree, children: React.ReactNode) => (
@@ -489,6 +456,7 @@ export default function OfficeHubScreen({
     scrollRef,
     initialBootstrapSnapshot,
   });
+  companyDraftSyncRef.current = company.syncDraftFromData;
 
   const invite = useOfficeInviteFlow({
     company: data.company,
@@ -514,9 +482,15 @@ export default function OfficeHubScreen({
       setDeveloperRoleSaving(role);
       try {
         await setDeveloperEffectiveRole(role);
-        await loadScreen({ mode: "refresh", reason: "developer_override_role_selected" });
+        await loadScreen({
+          mode: "refresh",
+          reason: "developer_override_role_selected",
+        });
       } catch (error) {
-        Alert.alert("Dev override", error instanceof Error ? error.message : String(error));
+        Alert.alert(
+          "Dev override",
+          error instanceof Error ? error.message : String(error),
+        );
       } finally {
         setDeveloperRoleSaving(null);
       }
@@ -527,125 +501,57 @@ export default function OfficeHubScreen({
     setDeveloperRoleSaving("normal");
     try {
       await clearDeveloperEffectiveRole();
-      await loadScreen({ mode: "refresh", reason: "developer_override_cleared" });
+      await loadScreen({
+        mode: "refresh",
+        reason: "developer_override_cleared",
+      });
     } catch (error) {
-      Alert.alert("Dev override", error instanceof Error ? error.message : String(error));
+      Alert.alert(
+        "Dev override",
+        error instanceof Error ? error.message : String(error),
+      );
     } finally {
       setDeveloperRoleSaving(null);
     }
   }, [loadScreen]);
 
-  if (loading) {
-    return (
-      <RoleScreenLayout
-        style={styles.screen}
-        title={COPY.title}
-        subtitle={COPY.loadingSubtitle}
-        contentStyle={styles.fill}
-      >
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#2563EB" />
-          <Text style={styles.helper}>{COPY.loading}</Text>
-        </View>
-      </RoleScreenLayout>
-    );
-  }
+  const shellModel = useMemo(
+    () =>
+      buildOfficeShellContentModel({
+        loading,
+        data,
+        access,
+        companyFeedback: company.companyFeedback,
+      }),
+    [access, company.companyFeedback, data, loading],
+  );
+  const handleRefresh = useCallback(() => {
+    void loadScreen({
+      mode: "refresh",
+    });
+  }, [loadScreen]);
 
   return (
-    <RoleScreenLayout
-      style={styles.screen}
-      title={access.entryCopy.title}
-      subtitle={data.company ? undefined : access.entryCopy.subtitle}
-      contentStyle={styles.fill}
-    >
-      <ScrollView
-        ref={scrollRef}
-        contentContainerStyle={styles.content}
-        onLayout={handleScrollLayout}
-        onContentSizeChange={handleContentSizeChange}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() =>
-              void loadScreen({
-                mode: "refresh",
-              })
-            }
-            tintColor="#2563EB"
-          />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {company.companyFeedback ? (
-          <View style={styles.notice}>
-            <Text style={styles.noticeText}>{company.companyFeedback}</Text>
-          </View>
-        ) : null}
-
-        {developerOverride?.isEnabled ? (
-          <OfficeDeveloperOverrideSection
-            activeEffectiveRole={developerOverride.activeEffectiveRole}
-            developerRoleSaving={developerRoleSaving}
-            roles={developerOverrideRoles}
-            onClear={() => void handleDeveloperRoleClear()}
-            onSelectRole={(role) => void handleDeveloperRoleSelect(role)}
-          />
-        ) : null}
-
-        {data.company ? (
-          <>
-            <OfficeCompanySummarySection
-              access={access}
-              company={data.company}
-              companySection={company}
-              onSectionLayout={handleSectionLayout}
-              onSubtreeLayout={handleSubtreeLayout}
-              renderSubtreeBoundary={renderSubtreeBoundary}
-            />
-            <OfficeRoleDirectionsSection
-              access={access}
-              invite={invite}
-              onOpenCard={handleOpenOfficeCard}
-              onSectionLayout={handleSectionLayout}
-              onSubtreeLayout={handleSubtreeLayout}
-              renderSubtreeBoundary={renderSubtreeBoundary}
-            />
-            <OfficeCompanyDetailsSection
-              access={access}
-              onSectionLayout={handleSectionLayout}
-              onSubtreeLayout={handleSubtreeLayout}
-              renderSubtreeBoundary={renderSubtreeBoundary}
-            />
-            <OfficeInvitesSection
-              access={access}
-              data={data}
-              invite={invite}
-              onSectionLayout={handleSectionLayout}
-              onSubtreeLayout={handleSubtreeLayout}
-              renderSubtreeBoundary={renderSubtreeBoundary}
-            />
-            <OfficeMembersSection
-              access={access}
-              data={data}
-              members={members}
-              onSectionLayout={handleSectionLayout}
-              onSubtreeLayout={handleSubtreeLayout}
-              renderSubtreeBoundary={renderSubtreeBoundary}
-            />
-          </>
-        ) : (
-          <OfficeHubCompanyCreateRootSection
-            company={company}
-            onSectionLayout={handleSectionLayout}
-          />
-        )}
-      </ScrollView>
-
-      <OfficeInviteModalSection
-        invite={invite}
-        onSubtreeLayout={handleSubtreeLayout}
-        renderSubtreeBoundary={renderSubtreeBoundary}
-      />
-    </RoleScreenLayout>
+    <OfficeShellContent
+      model={shellModel}
+      data={data}
+      access={access}
+      company={company}
+      invite={invite}
+      members={members}
+      scrollRef={scrollRef}
+      refreshing={refreshing}
+      developerRoleSaving={developerRoleSaving}
+      developerOverrideRoles={developerOverrideRoles}
+      onRefresh={handleRefresh}
+      onOpenOfficeCard={handleOpenOfficeCard}
+      onDeveloperRoleSelect={(role) => void handleDeveloperRoleSelect(role)}
+      onDeveloperRoleClear={() => void handleDeveloperRoleClear()}
+      onSectionLayout={handleSectionLayout}
+      onSubtreeLayout={handleSubtreeLayout}
+      onScrollLayout={handleScrollLayout}
+      onContentSizeChange={handleContentSizeChange}
+      renderSubtreeBoundary={renderSubtreeBoundary}
+    />
   );
 }

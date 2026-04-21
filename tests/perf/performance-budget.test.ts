@@ -105,8 +105,10 @@ describe("performance budget — bundle module count", () => {
     // A5 adds three buyer owner-boundary modules for sheet composition and sheet-local state.
     // B1 adds six permanent PDF viewer owner-boundary modules.
     // B2 adds eight permanent PDF document action owner-boundary modules.
+    // OFFICE_OWNER_SPLIT adds four permanent Office owner-boundary modules
+    // plus three focused src-owned regression tests for route/reentry/model.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1254);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1259);
   });
 });
 

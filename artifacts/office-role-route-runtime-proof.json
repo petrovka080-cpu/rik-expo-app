@@ -1,0 +1,95 @@
+{
+  "status": "passed",
+  "routeProofPassed": true,
+  "noFatalException": true,
+  "fatalLines": [],
+  "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+  "androidPreflight": {
+    "deviceDetected": true,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "reverseProxyReady": true,
+    "appCleared": true,
+    "gmsCleared": false,
+    "devClientReachable": true
+  },
+  "recovery": {
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": true,
+    "devClientBootstrapRecovered": false
+  },
+  "roles": [
+    {
+      "role": "buyer",
+      "route": "rik:///office/buyer",
+      "status": "passed",
+      "surfaceMatched": true,
+      "fioGateReached": false,
+      "fioGateError": null,
+      "xmlPath": "artifacts/artifacts/office-role-route-buyer-fio-after-confirm.xml",
+      "pngPath": "artifacts/artifacts/office-role-route-buyer-fio-after-confirm.png",
+      "matchedLabels": [
+        "Снабженец"
+      ],
+      "platformSpecificIssues": []
+    },
+    {
+      "role": "accountant",
+      "route": "rik:///office/accountant",
+      "status": "passed",
+      "surfaceMatched": true,
+      "fioGateReached": true,
+      "fioGateError": "poll timeout: accountant:fio_confirm_enabled",
+      "xmlPath": "artifacts/artifacts/office-role-route-accountant-fio-gate.xml",
+      "pngPath": "artifacts/artifacts/office-role-route-accountant-fio-gate.png",
+      "matchedLabels": [],
+      "platformSpecificIssues": [
+        "accountant route reached expected daily FIO gate before role surface"
+      ]
+    },
+    {
+      "role": "contractor",
+      "route": "rik:///office/contractor",
+      "status": "passed",
+      "surfaceMatched": true,
+      "fioGateReached": false,
+      "fioGateError": null,
+      "xmlPath": "artifacts/artifacts/office-role-route-contractor-route-1.xml",
+      "pngPath": "artifacts/artifacts/office-role-route-contractor-route-1.png",
+      "matchedLabels": [
+        "Подрядчик"
+      ],
+      "platformSpecificIssues": []
+    },
+    {
+      "role": "director",
+      "route": "rik:///office/director",
+      "status": "passed",
+      "surfaceMatched": true,
+      "fioGateReached": false,
+      "fioGateError": null,
+      "xmlPath": "artifacts/artifacts/office-role-route-director-route-1.xml",
+      "pngPath": "artifacts/artifacts/office-role-route-director-route-1.png",
+      "matchedLabels": [
+        "Контроль",
+        "Финансы"
+      ],
+      "platformSpecificIssues": []
+    },
+    {
+      "role": "foreman",
+      "route": "rik:///office/foreman",
+      "status": "passed",
+      "surfaceMatched": true,
+      "fioGateReached": false,
+      "fioGateError": null,
+      "xmlPath": "artifacts/artifacts/office-role-route-foreman-dev-client-loading.xml",
+      "pngPath": "artifacts/artifacts/office-role-route-foreman-dev-client-loading.png",
+      "matchedLabels": [
+        "Подряды"
+      ],
+      "platformSpecificIssues": []
+    }
+  ]
+}

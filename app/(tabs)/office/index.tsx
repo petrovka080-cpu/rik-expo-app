@@ -18,15 +18,8 @@ import {
   recordOfficeRouteScopeInactive,
   recordOfficeRouteScopeSkipReason,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
+import { resolveOfficeRouteScopePlan } from "../../../src/screens/office/office.route";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
-
-const OFFICE_EXACT_PATH = "/office";
-
-function getOfficeRouteScopeSkipReason(pathname: string | null | undefined) {
-  if (!pathname) return "pathname_unavailable";
-  if (pathname === OFFICE_EXACT_PATH) return "exact_office_path";
-  return `non_exact_path:${pathname}`;
-}
 
 type OfficeReentryCrashBoundaryProps = {
   children: React.ReactNode;
@@ -71,7 +64,8 @@ class OfficeReentryCrashBoundary extends React.Component<
 function OfficeIndexRoute() {
   const pathname = usePathname();
   const segments = useSegments();
-  const isExactOfficePath = pathname === OFFICE_EXACT_PATH;
+  const routeScopePlan = resolveOfficeRouteScopePlan(pathname);
+  const isExactOfficePath = routeScopePlan.isActive;
   const [officeReturnReceipt, setOfficeReturnReceipt] = React.useState<Record<
     string,
     unknown
@@ -127,7 +121,7 @@ function OfficeIndexRoute() {
 
   useEffect(() => {
     if (!isExactOfficePath) {
-      const reason = getOfficeRouteScopeSkipReason(pathname);
+      const reason = routeScopePlan.skipReason ?? "pathname_unavailable";
       const scopeExtra = buildRouteExtra({ reason });
       recordOfficeRouteScopeSkipReason(scopeExtra);
       recordOfficeRouteScopeInactive(scopeExtra);
@@ -137,7 +131,7 @@ function OfficeIndexRoute() {
     const scopeExtra = buildRouteExtra();
     recordOfficeRouteScopeActive(scopeExtra);
     recordOfficeRouteOwnerIdentity(scopeExtra);
-  }, [buildRouteExtra, isExactOfficePath, pathname]);
+  }, [buildRouteExtra, isExactOfficePath, pathname, routeScopePlan.skipReason]);
 
   useLayoutEffect(() => {
     if (!isExactOfficePath) return;
@@ -171,7 +165,7 @@ function OfficeIndexRoute() {
   useFocusEffect(
     useCallback(() => {
       if (!isExactOfficePath) {
-        const reason = getOfficeRouteScopeSkipReason(pathname);
+        const reason = routeScopePlan.skipReason ?? "pathname_unavailable";
         const scopeExtra = buildRouteExtra({ reason });
         recordOfficeRouteScopeSkipReason(scopeExtra);
         recordOfficeRouteScopeInactive(scopeExtra);
@@ -196,7 +190,7 @@ function OfficeIndexRoute() {
           routeWrapper: "office_owned_screen_entry",
         });
       };
-    }, [buildRouteExtra, isExactOfficePath, pathname]),
+    }, [buildRouteExtra, isExactOfficePath, routeScopePlan.skipReason]),
   );
 
   return (

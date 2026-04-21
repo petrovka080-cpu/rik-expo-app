@@ -144,18 +144,24 @@ describe("OfficeStackLayout", () => {
   });
 
   it("wires android hardware back to the same safe office child contract", () => {
-    const source = fs.readFileSync(
+    const layoutSource = fs.readFileSync(
       path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
       "utf8",
     );
+    const routeSource = fs.readFileSync(
+      path.join(__dirname, "../../src/screens/office/office.route.ts"),
+      "utf8",
+    );
 
-    expect(source).toContain('BackHandler.addEventListener(');
-    expect(source).toContain('"hardwareBackPress"');
-    expect(source).toContain('pathname === "/office/foreman"');
-    expect(source).toContain('pathname === "/office/warehouse"');
-    expect(source).toContain("handleOfficeChildBack({");
-    expect(source).toContain("nativePressArgs: []");
-    expect(source).toContain("return true;");
+    expect(layoutSource).toContain('BackHandler.addEventListener(');
+    expect(layoutSource).toContain('"hardwareBackPress"');
+    expect(layoutSource).toContain("resolveSafeOfficeChildRoute(pathname)");
+    expect(layoutSource).toContain("handleOfficeChildBack({");
+    expect(layoutSource).toContain("nativePressArgs: []");
+    expect(layoutSource).toContain("return true;");
+    expect(routeSource).toContain('"/office/foreman"');
+    expect(routeSource).toContain('"/office/warehouse"');
+    expect(routeSource).toContain("if (route === pathname) return route;");
   });
 
   it.each(officeChildBackRoutes)(
