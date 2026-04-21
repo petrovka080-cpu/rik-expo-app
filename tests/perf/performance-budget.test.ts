@@ -109,8 +109,9 @@ describe("performance budget — bundle module count", () => {
     // plus three focused src-owned regression tests for route/reentry/model.
     // FOREMAN_DRAFT_OWNER_SPLIT_FINAL adds four permanent Foreman draft boundary modules.
     // OFFICE_REENTRY_BOUNDARY_SPLIT adds six permanent Office reentry boundary modules.
+    // DIRECTOR_LIFECYCLE_REALTIME_OWNER_SPLIT adds six permanent director lifecycle modules/tests.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1269);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1275);
   });
 });
 

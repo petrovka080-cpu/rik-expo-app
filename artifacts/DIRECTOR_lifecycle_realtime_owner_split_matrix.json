@@ -1,0 +1,92 @@
+{
+  "wave": "DIRECTOR_LIFECYCLE_REALTIME_OWNER_SPLIT",
+  "status": "GREEN_WITH_NATIVE_BLOCKED",
+  "scope": {
+    "exactTouchedFiles": [
+      "src/screens/director/director.lifecycle.ts",
+      "src/screens/director/director.lifecycle.contract.ts",
+      "src/screens/director/director.lifecycle.scope.ts",
+      "src/screens/director/director.lifecycle.refresh.ts",
+      "src/screens/director/director.lifecycle.realtime.ts",
+      "src/screens/director/director.lifecycle.scope.test.ts",
+      "src/screens/director/director.lifecycle.refresh.test.ts",
+      "src/screens/director/director.lifecycle.realtime.test.tsx",
+      "src/screens/director/director.invalidation.boundary.test.ts",
+      "src/lib/lifecycle/lifecycle.s3.test.ts",
+      "tests/director/directorLifecycleOwnerSplit.decomposition.test.ts",
+      "tests/perf/performance-budget.test.ts"
+    ],
+    "notTouched": [
+      "src/screens/director/director.finance.realtime.lifecycle.ts",
+      "src/screens/director/director.reports.realtime.lifecycle.ts",
+      "src/screens/director/useDirectorScreenController.ts",
+      "office/auth/navigation domains outside director lifecycle scope"
+    ]
+  },
+  "gates": {
+    "tsc": "PASS",
+    "expoLint": "PASS",
+    "focusedDirectorJest": "PASS",
+    "serialJest": "PASS",
+    "parallelJest": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "runtimeProof": {
+    "web": {
+      "status": "GREEN",
+      "route": "/office/director",
+      "proofArtifact": "artifacts/director-lifecycle-realtime-owner-web.json",
+      "screenshotArtifact": "artifacts/director-lifecycle-realtime-owner-web.png",
+      "lifecycleLogArtifact": "artifacts/director-lifecycle-realtime-owner-web.log",
+      "financeRealtime": {
+        "subscriptionStarted": true,
+        "subscriptionConnected": true,
+        "eventReceived": true,
+        "refreshTriggered": true,
+        "canonicalFetchPreserved": true,
+        "noCrossScopeReload": true,
+        "doubleFetchDetected": false
+      },
+      "reportsRealtime": {
+        "subscriptionStarted": true,
+        "subscriptionConnected": true,
+        "eventReceived": true,
+        "refreshTriggered": true,
+        "canonicalFetchPreserved": true,
+        "noCrossScopeReload": true,
+        "doubleFetchDetected": false
+      }
+    },
+    "native": {
+      "status": "BLOCKED",
+      "attempts": [
+        "android finance verifier on dedicated dev-client port timed out",
+        "single adb recovery attempt timed out on kill-server/start-server/devices"
+      ],
+      "reason": "Environment-level adb unavailability after one bounded recovery attempt prevented a clean Android rerun.",
+      "supportingLogs": [
+        "artifacts/director-dev-client-8082.stdout.log",
+        "artifacts/director-dev-client-8082.stderr.log"
+      ]
+    }
+  },
+  "decomposition": {
+    "entryHookThinned": true,
+    "scopeOwnerExtracted": true,
+    "refreshOwnerExtracted": true,
+    "realtimeOwnerExtracted": true,
+    "forbiddenPatternsInTouchedRuntimeScope": {
+      "asAny": false,
+      "tsIgnore": false,
+      "eslintDisable": false,
+      "silentCatch": false
+    }
+  },
+  "releaseReadiness": {
+    "codeReady": true,
+    "webProofReady": true,
+    "nativeProofClassification": "BLOCKED",
+    "rawArtifactsCommittedByDefault": false,
+    "exactWaveArtifactsPresent": true
+  }
+}

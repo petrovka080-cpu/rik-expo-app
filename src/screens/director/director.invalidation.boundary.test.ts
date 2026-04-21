@@ -42,29 +42,29 @@ describe("P6.6 finance realtime invalidation contract", () => {
 });
 
 describe("P6.6 notification tab-guard contract", () => {
-  const lifecycleSource = readFileSync(
-    join(__dirname, "director.lifecycle.ts"),
+  const realtimeSource = readFileSync(
+    join(__dirname, "director.lifecycle.realtime.ts"),
     "utf8",
   );
 
   it("notification INSERT only refreshes when user is on Requests tab", () => {
     // P6.6-FIX-6: notification INSERT has no semantic connection
     // to finance/report data. Only refresh on Requests tab.
-    expect(lifecycleSource).toContain(
+    expect(realtimeSource).toContain(
       "dirTabRef.current === DIRECTOR_TAB_REQUESTS",
     );
   });
 
   it("notification INSERT still shows the toast regardless of active tab", () => {
     // Toast should be shown unconditionally — only the data refresh is guarded
-    const notifHandler = lifecycleSource.match(
+    const notifHandler = realtimeSource.match(
       /table:\s*"notifications"[\s\S]*?showRtToastRef\.current/,
     );
     expect(notifHandler).not.toBeNull();
 
     // The refresh guard must come AFTER the toast, not replace it
-    const toastIdx = lifecycleSource.indexOf("showRtToastRef.current(notification.title, notification.body)");
-    const guardIdx = lifecycleSource.indexOf(
+    const toastIdx = realtimeSource.indexOf("refs.showRtToastRef.current(title, body)");
+    const guardIdx = realtimeSource.indexOf(
       'dirTabRef.current === DIRECTOR_TAB_REQUESTS',
     );
     expect(toastIdx).toBeGreaterThan(0);
@@ -72,7 +72,7 @@ describe("P6.6 notification tab-guard contract", () => {
   });
 
   it("notification handler comment documents P6.6 rationale", () => {
-    expect(lifecycleSource).toContain(
+    expect(realtimeSource).toContain(
       "P6.6: Only refresh Requests data",
     );
   });
@@ -131,15 +131,19 @@ describe("P6.6 no-duplicate-reload structural invariants", () => {
     join(__dirname, "director.lifecycle.ts"),
     "utf8",
   );
+  const refreshSource = readFileSync(
+    join(__dirname, "director.lifecycle.refresh.ts"),
+    "utf8",
+  );
 
   it("lifecycle app_resume uses cooldown guard to prevent rapid re-refresh", () => {
-    expect(lifecycleSource).toContain("isPlatformGuardCoolingDown");
+    expect(refreshSource).toContain("isPlatformGuardCoolingDown");
     expect(lifecycleSource).toContain("DIRECTOR_LIFECYCLE_REFRESH_MIN_INTERVAL_MS");
   });
 
   it("lifecycle runRefresh joins inflight requests instead of starting duplicates", () => {
-    expect(lifecycleSource).toContain("joined_inflight");
-    expect(lifecycleSource).toContain("queued_rerun");
+    expect(refreshSource).toContain("joined_inflight");
+    expect(refreshSource).toContain("queued_rerun");
   });
 
   it("lifecycle web_resume has its own dedup guard separate from AppState", () => {

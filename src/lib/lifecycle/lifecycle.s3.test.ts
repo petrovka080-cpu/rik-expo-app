@@ -29,6 +29,10 @@ const DIRECTOR_LIFECYCLE_SRC = join(
   __dirname,
   "../../screens/director/director.lifecycle.ts",
 );
+const DIRECTOR_LIFECYCLE_REFRESH_SRC = join(
+  __dirname,
+  "../../screens/director/director.lifecycle.refresh.ts",
+);
 const CONTRACTOR_LIFECYCLE_SRC = join(
   __dirname,
   "../../screens/contractor/contractor.issuedRefreshLifecycle.ts",
@@ -59,6 +63,7 @@ const PLATFORM_GUARD_SRC = join(
 describe("S3-A: App background → foreground", () => {
   const hookSrc = readFileSync(APP_ACTIVE_HOOK_SRC, "utf8");
   const dirSrc = readFileSync(DIRECTOR_LIFECYCLE_SRC, "utf8");
+  const dirRefreshSrc = readFileSync(DIRECTOR_LIFECYCLE_REFRESH_SRC, "utf8");
 
   it("A1: useAppActiveRevalidation has transition guard (background → active only)", () => {
     expect(hookSrc).toContain('previous === "background"');
@@ -76,7 +81,7 @@ describe("S3-A: App background → foreground", () => {
   });
 
   it("A4: Director lifecycle uses same cooldown pattern independently", () => {
-    expect(dirSrc).toContain("isPlatformGuardCoolingDown");
+    expect(dirRefreshSrc).toContain("isPlatformGuardCoolingDown");
     expect(dirSrc).toContain("lastLifecycleRefreshAtRef");
     expect(dirSrc).toContain("DIRECTOR_LIFECYCLE_REFRESH_MIN_INTERVAL_MS");
   });
@@ -178,10 +183,10 @@ describe("S3-D: Realtime + manual refresh collision", () => {
   });
 
   it("D4: Director lifecycle runRefresh joins inflight and queues rerun with force flag", () => {
-    const dirSrc = readFileSync(DIRECTOR_LIFECYCLE_SRC, "utf8");
-    expect(dirSrc).toContain("joined_inflight");
-    expect(dirSrc).toContain("queued_rerun");
-    expect(dirSrc).toContain("rerunForce");
+    const dirRefreshSrc = readFileSync(DIRECTOR_LIFECYCLE_REFRESH_SRC, "utf8");
+    expect(dirRefreshSrc).toContain("joined_inflight");
+    expect(dirRefreshSrc).toContain("queued_rerun");
+    expect(dirRefreshSrc).toContain("rerunForce");
   });
 
   it("D5: Warehouse realtime uses in-flight ref guard before triggering refresh", () => {
@@ -244,9 +249,9 @@ describe("S3-F: Earlier request cannot overwrite newer truth (stale suppression)
   });
 
   it("F3: Director uses InFlight ref + rerunForce to ensure last force wins", () => {
-    const dirSrc = readFileSync(DIRECTOR_LIFECYCLE_SRC, "utf8");
-    expect(dirSrc).toContain("stateRef.current.rerunForce = true");
-    expect(dirSrc).toContain("const rerunForce = stateRef.current.rerunForce");
+    const dirRefreshSrc = readFileSync(DIRECTOR_LIFECYCLE_REFRESH_SRC, "utf8");
+    expect(dirRefreshSrc).toContain("stateRef.current.rerunForce = true");
+    expect(dirRefreshSrc).toContain("const rerunForce = stateRef.current.rerunForce");
   });
 
   it("F4: Contractor uses inFlightRef to prevent multiple concurrent refreshes", () => {

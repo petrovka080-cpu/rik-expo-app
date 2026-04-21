@@ -1,156 +1,34 @@
 import { useCallback, useEffect, useRef } from "react";
 import { AppState } from "react-native";
-import { isProposalDirectorVisibleRow } from "../../lib/api/proposals";
-import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS, normalizeStatus } from "../../lib/api/requests.status";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+
 import { logError } from "../../lib/logError";
-import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
-import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { reportAndSwallow } from "../../lib/observability/catchDiscipline";
-import {
-  isPlatformGuardCoolingDown,
-  recordPlatformGuardSkip,
-} from "../../lib/observability/platformGuardDiscipline";
+import { recordPlatformGuardSkip } from "../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
-import {
-  DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
-  DIRECTOR_HANDOFF_BROADCAST_EVENT,
-  DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
-} from "../../lib/realtime/realtime.channels";
+import { ensureSignedIn } from "../../lib/supabaseClient";
 import { useDirectorUiStore } from "./directorUi.store";
-
-type RefreshState = {
-  inFlight: Promise<void> | null;
-  rerunQueued: boolean;
-  rerunForce: boolean;
-};
-
-type RefreshFn = (force?: boolean) => Promise<void>;
-
-type Deps = {
-  dirTab: string;
-  requestTab: string;
-  finFrom: string | null;
-  finTo: string | null;
-  repFrom: string | null;
-  repTo: string | null;
-  isScreenFocused: boolean;
-  fetchRows: (force?: boolean) => Promise<void>;
-  fetchProps: (force?: boolean) => Promise<void>;
-  fetchFinance: () => Promise<void>;
-  fetchReport: () => Promise<void>;
-  showRtToast: (title?: string, body?: string) => void;
-};
-
-const DIRECTOR_LIVE_REQUEST_STATUSES = new Set([
-  normalizeStatus(REQUEST_PENDING_STATUS),
-  normalizeStatus(REQUEST_PENDING_EN),
-]);
-
-const DIRECTOR_LIVE_ITEM_STATUSES = new Set([
-  normalizeStatus(REQUEST_PENDING_STATUS),
-  normalizeStatus("\u0423 \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440\u0430"),
-  normalizeStatus(REQUEST_PENDING_EN),
-]);
-
-const DIRECTOR_TAB_REQUESTS = "\u0417\u0430\u044f\u0432\u043a\u0438";
-const DIRECTOR_TAB_FINANCE = "\u0424\u0438\u043d\u0430\u043d\u0441\u044b";
-const DIRECTOR_TAB_REPORTS = "\u041e\u0442\u0447\u0451\u0442\u044b";
-const DIRECTOR_REQUEST_TAB_BUYER = "buyer";
-const DIRECTOR_LIFECYCLE_REFRESH_MIN_INTERVAL_MS = 1200;
-
-const buildRequestsScopeKey = (requestTab: string) => `${DIRECTOR_TAB_REQUESTS}:${requestTab}`;
-
-const getRecordValue = (value: unknown, key: string): unknown => {
-  if (value == null || typeof value !== "object" || Array.isArray(value)) return null;
-  return (value as Record<string, unknown>)[key];
-};
-
-const shouldRefreshDirectorRowsForRequestChange = (payload: { new?: unknown; old?: unknown }) => {
-  const nextStatus = normalizeStatus(getRecordValue(payload.new, "status"));
-  const prevStatus = normalizeStatus(getRecordValue(payload.old, "status"));
-  const nextSubmittedAt = String(getRecordValue(payload.new, "submitted_at") ?? "").trim();
-  const prevSubmittedAt = String(getRecordValue(payload.old, "submitted_at") ?? "").trim();
-  return (
-    !!nextSubmittedAt ||
-    !!prevSubmittedAt ||
-    DIRECTOR_LIVE_REQUEST_STATUSES.has(nextStatus) ||
-    DIRECTOR_LIVE_REQUEST_STATUSES.has(prevStatus)
-  );
-};
-
-const shouldRefreshDirectorRowsForItemChange = (payload: { new?: unknown; old?: unknown }) => {
-  const nextStatus = normalizeStatus(getRecordValue(payload.new, "status"));
-  const prevStatus = normalizeStatus(getRecordValue(payload.old, "status"));
-  return DIRECTOR_LIVE_ITEM_STATUSES.has(nextStatus) || DIRECTOR_LIVE_ITEM_STATUSES.has(prevStatus);
-};
-
-const shouldRefreshDirectorPropsForProposalChange = (payload: { new?: unknown; old?: unknown }) => {
-  const nextVisible = isProposalDirectorVisibleRow(
-    payload.new as { status?: unknown; submitted_at?: unknown; sent_to_accountant_at?: unknown } | null | undefined,
-  );
-  const prevVisible = isProposalDirectorVisibleRow(
-    payload.old as { status?: unknown; submitted_at?: unknown; sent_to_accountant_at?: unknown } | null | undefined,
-  );
-  if (nextVisible || prevVisible) return true;
-  const nextSubmittedAt = String(getRecordValue(payload.new, "submitted_at") ?? "").trim();
-  const prevSubmittedAt = String(getRecordValue(payload.old, "submitted_at") ?? "").trim();
-  return !!nextSubmittedAt || !!prevSubmittedAt;
-};
-
-const logDirectorLive = (payload: Record<string, unknown>) => {
-  if (!__DEV__) return;
-  console.info("[director.live]", payload);
-};
-
-const runRefresh = (
-  stateRef: { current: RefreshState },
-  refreshRef: { current: RefreshFn },
-  meta: { surface: string; event: string; trigger: string; scopeKey: string },
-  options?: { force?: boolean; queueOnOverlap?: boolean },
-) => {
-  const force = !!options?.force;
-  if (stateRef.current.inFlight) {
-    recordPlatformObservability({
-      screen: "director",
-      surface: meta.surface,
-      category: "reload",
-      event: meta.event,
-      result: force || options?.queueOnOverlap ? "queued_rerun" : "joined_inflight",
-      trigger: meta.trigger,
-      extra: {
-        scopeKey: meta.scopeKey,
-        force,
-      },
-    });
-    if (force) {
-      stateRef.current.rerunQueued = true;
-      stateRef.current.rerunForce = true;
-    } else if (options?.queueOnOverlap) {
-      stateRef.current.rerunQueued = true;
-    }
-    return stateRef.current.inFlight;
-  }
-
-  const start = (nextForce: boolean) => {
-    const task = (async () => {
-      try {
-        await refreshRef.current(nextForce);
-      } finally {
-        stateRef.current.inFlight = null;
-        if (stateRef.current.rerunQueued) {
-          const rerunForce = stateRef.current.rerunForce;
-          stateRef.current.rerunQueued = false;
-          stateRef.current.rerunForce = false;
-          void start(rerunForce);
-        }
-      }
-    })();
-    stateRef.current.inFlight = task;
-    return task;
-  };
-
-  return start(force);
-};
+import type { DirectorLifecycleDeps } from "./director.lifecycle.contract";
+import { setupDirectorRealtimeLifecycle } from "./director.lifecycle.realtime";
+import {
+  createRefreshState,
+  type RefreshFn,
+  runRefresh,
+  resolveDirectorLifecycleRefreshPlan,
+  resolveDirectorTabSwitchPlan,
+  resolveDirectorWebResumePlan,
+  shouldTriggerFocusReturnRefresh,
+} from "./director.lifecycle.refresh";
+import {
+  DIRECTOR_LIFECYCLE_REFRESH_MIN_INTERVAL_MS,
+  DIRECTOR_WEB_RESUME_MIN_INTERVAL_MS,
+  buildDirectorFinanceScopeKey,
+  buildDirectorPropsScopeKey,
+  buildDirectorReportsScopeKey,
+  buildDirectorRowsScopeKey,
+  buildDirectorVisibleScopeKey,
+  resolveDirectorVisibleRefreshPlan,
+} from "./director.lifecycle.scope";
 
 export function useDirectorLifecycle({
   dirTab,
@@ -165,21 +43,20 @@ export function useDirectorLifecycle({
   fetchFinance,
   fetchReport,
   showRtToast,
-}: Deps) {
+}: DirectorLifecycleDeps) {
   const didInit = useRef(false);
   const lastInitedTabRef = useRef<string | null>(null);
   const lastInitedPeriodRef = useRef("");
   const appStateRef = useRef(AppState.currentState);
   const lastWebResumeAtRef = useRef(0);
   const lastLifecycleRefreshAtRef = useRef(0);
-  // S3.2: track previous focus state to detect focus-return (not initial focus)
   const prevFocusedRef = useRef(false);
-  const rtChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const handoffChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const rowsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
-  const propsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
-  const financeRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
-  const reportRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const rtChannelRef = useRef<RealtimeChannel | null>(null);
+  const handoffChannelRef = useRef<RealtimeChannel | null>(null);
+  const rowsRefreshRef = useRef(createRefreshState());
+  const propsRefreshRef = useRef(createRefreshState());
+  const financeRefreshRef = useRef(createRefreshState());
+  const reportRefreshRef = useRef(createRefreshState());
   const rowsRefreshFnRef = useRef<RefreshFn>(fetchRows);
   const propsRefreshFnRef = useRef<RefreshFn>(fetchProps);
   const financeRefreshFnRef = useRef<RefreshFn>(() => fetchFinance());
@@ -200,7 +77,7 @@ export function useDirectorLifecycle({
         surface: "request_rows",
         event: "refresh_scope",
         trigger: reason,
-        scopeKey: `requests:${requestTab}:rows`,
+        scopeKey: buildDirectorRowsScopeKey(requestTab),
       },
       { force },
     );
@@ -215,7 +92,7 @@ export function useDirectorLifecycle({
         surface: "proposal_heads",
         event: "refresh_scope",
         trigger: reason,
-        scopeKey: `requests:${requestTab}:buyer_props`,
+        scopeKey: buildDirectorPropsScopeKey(requestTab),
       },
       { force },
     );
@@ -230,7 +107,7 @@ export function useDirectorLifecycle({
         surface: "finance_panel",
         event: "refresh_scope",
         trigger: reason,
-        scopeKey: `finance:${finFrom ?? ""}:${finTo ?? ""}`,
+        scopeKey: buildDirectorFinanceScopeKey(finFrom, finTo),
       },
       { queueOnOverlap: true },
     );
@@ -245,33 +122,30 @@ export function useDirectorLifecycle({
         surface: "reports_scope",
         event: "refresh_scope",
         trigger: reason,
-        scopeKey: `reports:${repFrom ?? ""}:${repTo ?? ""}`,
+        scopeKey: buildDirectorReportsScopeKey(repFrom, repTo),
       },
       { queueOnOverlap: true },
     );
   }, [repFrom, repTo, setRefreshReason]);
 
-  const refreshRequestsScoped = useCallback((reasonBase: string, force = false) => {
-    if (requestTab === DIRECTOR_REQUEST_TAB_BUYER) {
-      void refreshProps(`${reasonBase}:buyer`, force);
-      return;
-    }
-    void refreshRows(`${reasonBase}:foreman`, force);
-  }, [refreshProps, refreshRows, requestTab]);
-
   const refreshCurrentVisibleScope = useCallback((reasonBase: string, force = false) => {
-    if (dirTab === DIRECTOR_TAB_REQUESTS) {
-      refreshRequestsScoped(`${reasonBase}:requests`, force);
+    const plan = resolveDirectorVisibleRefreshPlan({ dirTab, requestTab }, reasonBase, force);
+    if (plan.kind === "request_props") {
+      void refreshProps(plan.reason, plan.force);
       return;
     }
-    if (dirTab === DIRECTOR_TAB_FINANCE) {
-      void refreshFinanceScoped(`${reasonBase}:finance`);
+    if (plan.kind === "request_rows") {
+      void refreshRows(plan.reason, plan.force);
       return;
     }
-    if (dirTab === DIRECTOR_TAB_REPORTS) {
-      void refreshReportScoped(`${reasonBase}:reports`);
+    if (plan.kind === "finance") {
+      void refreshFinanceScoped(plan.reason);
+      return;
     }
-  }, [dirTab, refreshFinanceScoped, refreshReportScoped, refreshRequestsScoped]);
+    if (plan.kind === "reports") {
+      void refreshReportScoped(plan.reason);
+    }
+  }, [dirTab, refreshFinanceScoped, refreshProps, refreshReportScoped, refreshRows, requestTab]);
 
   const dirTabRef = useRef(dirTab);
   const requestTabRef = useRef(requestTab);
@@ -279,6 +153,7 @@ export function useDirectorLifecycle({
   const refreshCurrentVisibleScopeRef = useRef(refreshCurrentVisibleScope);
   const refreshRowsHandlerRef = useRef(refreshRows);
   const refreshPropsHandlerRef = useRef(refreshProps);
+  const runLifecycleScopedRefreshRef = useRef<(reasonBase: string, trigger: string) => void>(() => undefined);
 
   dirTabRef.current = dirTab;
   requestTabRef.current = requestTab;
@@ -288,60 +163,41 @@ export function useDirectorLifecycle({
   refreshPropsHandlerRef.current = refreshProps;
 
   const runLifecycleScopedRefresh = useCallback((reasonBase: string, trigger: string) => {
-    if (!didInit.current) {
-      recordPlatformGuardSkip("bootstrap_not_ready", {
-        screen: "director",
-        surface: "visible_scope",
-        event: "refresh_scope",
-        trigger,
-        extra: {
-          scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
-        },
-      });
-      return;
-    }
-
     const networkSnapshot = getPlatformNetworkSnapshot();
-    if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
-      recordPlatformGuardSkip("network_known_offline", {
+    const scopeKey = buildDirectorVisibleScopeKey({ dirTab, requestTab });
+    const plan = resolveDirectorLifecycleRefreshPlan({
+      didInit: didInit.current,
+      scopeKey,
+      networkHydrated: networkSnapshot.hydrated,
+      networkKnownOffline: networkSnapshot.networkKnownOffline,
+      lastLifecycleRefreshAt: lastLifecycleRefreshAtRef.current,
+      minIntervalMs: DIRECTOR_LIFECYCLE_REFRESH_MIN_INTERVAL_MS,
+      now: Date.now(),
+    });
+
+    if (plan.kind === "skip") {
+      recordPlatformGuardSkip(plan.skipReason, {
         screen: "director",
         surface: "visible_scope",
         event: "refresh_scope",
         trigger,
         extra: {
-          scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
-          networkKnownOffline: true,
+          scopeKey: plan.scopeKey,
+          ...(plan.networkKnownOffline ? { networkKnownOffline: true } : {}),
         },
       });
       return;
     }
 
-    const now = Date.now();
-    if (
-      isPlatformGuardCoolingDown({
-        lastAt: lastLifecycleRefreshAtRef.current,
-        minIntervalMs: DIRECTOR_LIFECYCLE_REFRESH_MIN_INTERVAL_MS,
-        now,
-      })
-    ) {
-      recordPlatformGuardSkip("recent_same_scope", {
-        screen: "director",
-        surface: "visible_scope",
-        event: "refresh_scope",
-        trigger,
-        extra: {
-          scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
-        },
-      });
-      return;
-    }
-
-    lastLifecycleRefreshAtRef.current = now;
+    lastLifecycleRefreshAtRef.current = plan.nextLastLifecycleRefreshAt;
     refreshCurrentVisibleScope(reasonBase, true);
   }, [dirTab, refreshCurrentVisibleScope, requestTab]);
+  runLifecycleScopedRefreshRef.current = runLifecycleScopedRefresh;
 
   useEffect(() => {
     if (didInit.current || !isScreenFocused) return;
+
+    const scopeKey = buildDirectorVisibleScopeKey({ dirTab, requestTab });
 
     void (async () => {
       try {
@@ -353,14 +209,14 @@ export function useDirectorLifecycle({
             event: "refresh_scope",
             trigger: "screen_init",
             extra: {
-              scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
+              scopeKey,
             },
           });
           return;
         }
 
         didInit.current = true;
-        lastInitedTabRef.current = dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab;
+        lastInitedTabRef.current = buildDirectorVisibleScopeKey({ dirTab, requestTab });
         lastInitedPeriodRef.current = `${finFrom}-${finTo}-${repFrom}-${repTo}`;
         refreshCurrentVisibleScope("screen_init");
       } catch (error) {
@@ -372,19 +228,31 @@ export function useDirectorLifecycle({
   useEffect(() => {
     if (!isScreenFocused || !didInit.current) return;
 
-    const periodKey = `${finFrom}-${finTo}-${repFrom}-${repTo}`;
-    const tabKey = dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab;
-    if (lastInitedTabRef.current === tabKey && lastInitedPeriodRef.current === periodKey) return;
+    const plan = resolveDirectorTabSwitchPlan({
+      scope: { dirTab, requestTab, finFrom, finTo, repFrom, repTo },
+      lastTabKey: lastInitedTabRef.current,
+      lastPeriodKey: lastInitedPeriodRef.current,
+    });
 
-    lastInitedTabRef.current = tabKey;
-    lastInitedPeriodRef.current = periodKey;
+    lastInitedTabRef.current = plan.nextTabKey;
+    lastInitedPeriodRef.current = plan.nextPeriodKey;
 
-    if (tabKey === DIRECTOR_TAB_FINANCE) {
-      void refreshFinanceScoped("tab_switch:finance");
-    } else if (tabKey === DIRECTOR_TAB_REPORTS) {
-      void refreshReportScoped("tab_switch:reports");
-    } else if (dirTab === DIRECTOR_TAB_REQUESTS) {
-      refreshRequestsScoped("tab_switch:requests");
+    if (plan.kind !== "refresh") return;
+
+    if (plan.refreshPlan.kind === "request_props") {
+      void refreshProps(plan.refreshPlan.reason, plan.refreshPlan.force);
+      return;
+    }
+    if (plan.refreshPlan.kind === "request_rows") {
+      void refreshRows(plan.refreshPlan.reason, plan.refreshPlan.force);
+      return;
+    }
+    if (plan.refreshPlan.kind === "finance") {
+      void refreshFinanceScoped(plan.refreshPlan.reason);
+      return;
+    }
+    if (plan.refreshPlan.kind === "reports") {
+      void refreshReportScoped(plan.refreshPlan.reason);
     }
   }, [
     dirTab,
@@ -392,8 +260,9 @@ export function useDirectorLifecycle({
     finTo,
     isScreenFocused,
     refreshFinanceScoped,
+    refreshProps,
     refreshReportScoped,
-    refreshRequestsScoped,
+    refreshRows,
     repFrom,
     repTo,
     requestTab,
@@ -408,7 +277,7 @@ export function useDirectorLifecycle({
       const resumed = (previous === "background" || previous === "inactive") && nextState === "active";
       if (!resumed) return;
 
-      runLifecycleScopedRefresh("app_resume", "app_active");
+      runLifecycleScopedRefreshRef.current("app_resume", "app_active");
     });
 
     return () => {
@@ -424,42 +293,42 @@ export function useDirectorLifecycle({
           category: "reload",
           errorStage: "app_state_cleanup",
           extra: {
-            scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
+            scopeKey: buildDirectorVisibleScopeKey({ dirTab, requestTab }),
           },
         });
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-  }, [isScreenFocused, runLifecycleScopedRefresh]);
+  }, [dirTab, isScreenFocused, requestTab]);
 
-  // S3.2: Director screen_focus on return from child route / modal.
-  // The isScreenFocused prop goes false when a modal or child screen covers the
-  // director, and true when it is dismissed. The existing tab_switch effect
-  // at line ~370 only fires when tab/period CHANGED. This effect catches the
-  // case where focus returns but tab/period are unchanged (e.g. PDF closed,
-  // proposal sheet dismissed) — data may be stale in that case.
   useEffect(() => {
     const wasFocused = prevFocusedRef.current;
     prevFocusedRef.current = isScreenFocused;
 
-    if (!isScreenFocused) return;          // blur — ignore
-    if (!wasFocused && !didInit.current) return; // first mount — bootstrap handles it
-    if (!wasFocused && didInit.current) {
-      // Focus returned after being hidden — fire a soft (not forced) revalidation
-      runLifecycleScopedRefresh("screen_focus", "screen_focus");
+    if (!shouldTriggerFocusReturnRefresh({
+      wasFocused,
+      isScreenFocused,
+      didInit: didInit.current,
+    })) {
+      return;
     }
-  }, [isScreenFocused, runLifecycleScopedRefresh]);
 
+    runLifecycleScopedRefresh("screen_focus", "screen_focus");
+  }, [isScreenFocused, runLifecycleScopedRefresh]);
 
   useEffect(() => {
     if (!isScreenFocused) return;
     if (typeof document === "undefined" || typeof window === "undefined") return;
 
     const triggerWebResume = (reasonBase: string) => {
-      const now = Date.now();
-      if (now - lastWebResumeAtRef.current < 750) return;
-      lastWebResumeAtRef.current = now;
-      runLifecycleScopedRefresh(reasonBase, reasonBase);
+      const plan = resolveDirectorWebResumePlan({
+        lastWebResumeAt: lastWebResumeAtRef.current,
+        now: Date.now(),
+        minIntervalMs: DIRECTOR_WEB_RESUME_MIN_INTERVAL_MS,
+      });
+      if (plan.kind === "skip") return;
+
+      lastWebResumeAtRef.current = plan.nextLastWebResumeAt;
+      runLifecycleScopedRefreshRef.current(reasonBase, reasonBase);
     };
 
     const onVisibilityChange = () => {
@@ -478,260 +347,21 @@ export function useDirectorLifecycle({
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("focus", onFocus);
     };
-  }, [isScreenFocused, runLifecycleScopedRefresh]);
+  }, [isScreenFocused]);
 
   useEffect(() => {
-    try {
-      if (rtChannelRef.current) {
-        supabase.removeChannel(rtChannelRef.current);
-        rtChannelRef.current = null;
-      }
-      if (handoffChannelRef.current) {
-        supabase.removeChannel(handoffChannelRef.current);
-        handoffChannelRef.current = null;
-      }
-    } catch (error) {
-      reportAndSwallow({
-        screen: "director",
-        surface: "realtime_cleanup",
-        event: "teardown_previous_channels_failed",
-        error,
-        kind: "cleanup_only",
-        category: "reload",
-        errorStage: "realtime_setup",
-      });
-    }
-
-    if (!isScreenFocused) return;
-
-    let cancelled = false;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-    let handoffChannel: ReturnType<typeof supabase.channel> | null = null;
-
-    void (async () => {
-      try {
-        const session = await supabase.auth.getSession();
-        const accessToken = session.data.session?.access_token ?? null;
-        if (accessToken) {
-          await supabase.realtime.setAuth(accessToken);
-          logDirectorLive({
-            sourcePath: "director.lifecycle.realtime_auth",
-            hasAccessToken: true,
-          });
-        }
-      } catch (error) {
-        logDirectorLive({
-          sourcePath: "director.lifecycle.realtime_auth",
-          errorMessage: error instanceof Error ? error.message : String(error),
-        });
-      }
-
-      if (cancelled) return;
-
-      channel = supabase
-        .channel(DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "notifications",
-            filter: "role=eq.director",
-          },
-          (payload) => {
-            const next = payload.new;
-            const notification =
-              next && typeof next === "object" ? (next as { title?: string; body?: string }) : {};
-            showRtToastRef.current(notification.title, notification.body);
-            // P6.6: Only refresh Requests data — finance/reports have their own realtime channels.
-            // Notification INSERT has no semantic connection to finance/report data.
-            if (dirTabRef.current === DIRECTOR_TAB_REQUESTS) {
-              refreshCurrentVisibleScopeRef.current("realtime:notifications", true);
-            }
-          },
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "proposals",
-          },
-          (payload) => {
-            if (
-              dirTabRef.current !== DIRECTOR_TAB_REQUESTS ||
-              requestTabRef.current !== DIRECTOR_REQUEST_TAB_BUYER
-            ) {
-              return;
-            }
-            if (!shouldRefreshDirectorPropsForProposalChange(payload)) return;
-            logDirectorLive({
-              sourcePath: "director.lifecycle.proposals",
-              eventType: payload.eventType,
-              proposalId:
-                String(getRecordValue(payload.new, "id") ?? getRecordValue(payload.old, "id") ?? "").trim() || null,
-              nextStatus: String(getRecordValue(payload.new, "status") ?? "").trim() || null,
-              prevStatus: String(getRecordValue(payload.old, "status") ?? "").trim() || null,
-            });
-            void refreshPropsHandlerRef.current("realtime:proposals", true);
-          },
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "requests",
-          },
-          (payload) => {
-            if (
-              dirTabRef.current !== DIRECTOR_TAB_REQUESTS ||
-              requestTabRef.current === DIRECTOR_REQUEST_TAB_BUYER
-            ) {
-              return;
-            }
-            if (!shouldRefreshDirectorRowsForRequestChange(payload)) return;
-            logDirectorLive({
-              sourcePath: "director.lifecycle.requests",
-              eventType: payload.eventType,
-              requestId:
-                String(getRecordValue(payload.new, "id") ?? getRecordValue(payload.old, "id") ?? "").trim() || null,
-              nextStatus: String(getRecordValue(payload.new, "status") ?? "").trim() || null,
-              prevStatus: String(getRecordValue(payload.old, "status") ?? "").trim() || null,
-            });
-            void refreshRowsHandlerRef.current("realtime:requests", true);
-          },
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "request_items",
-          },
-          (payload) => {
-            if (
-              dirTabRef.current !== DIRECTOR_TAB_REQUESTS ||
-              requestTabRef.current === DIRECTOR_REQUEST_TAB_BUYER
-            ) {
-              return;
-            }
-            if (!shouldRefreshDirectorRowsForItemChange(payload)) return;
-            logDirectorLive({
-              sourcePath: "director.lifecycle.request_items",
-              eventType: payload.eventType,
-              requestId:
-                String(
-                  getRecordValue(payload.new, "request_id") ?? getRecordValue(payload.old, "request_id") ?? "",
-                ).trim() || null,
-              nextStatus: String(getRecordValue(payload.new, "status") ?? "").trim() || null,
-              prevStatus: String(getRecordValue(payload.old, "status") ?? "").trim() || null,
-            });
-            void refreshRowsHandlerRef.current("realtime:request_items", true);
-          },
-        )
-        .subscribe((status) => {
-          logDirectorLive({
-            sourcePath: "director.lifecycle.channel",
-            status,
-          });
-        });
-
-      rtChannelRef.current = channel;
-
-      handoffChannel = supabase
-        .channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
-          config: {
-            broadcast: {
-              ack: false,
-              self: false,
-            },
-          },
-        })
-        .on("broadcast", { event: DIRECTOR_HANDOFF_BROADCAST_EVENT }, (payload) => {
-          if (
-            dirTabRef.current !== DIRECTOR_TAB_REQUESTS ||
-            requestTabRef.current === DIRECTOR_REQUEST_TAB_BUYER
-          ) {
-            return;
-          }
-          logDirectorLive({
-            sourcePath: "director.lifecycle.broadcast_handoff",
-            requestId: String(getRecordValue(payload.payload, "request_id") ?? "").trim() || null,
-            displayNo: String(getRecordValue(payload.payload, "display_no") ?? "").trim() || null,
-          });
-          void refreshRowsHandlerRef.current("broadcast:foreman_submit", true);
-        })
-        .subscribe((status) => {
-          logDirectorLive({
-            sourcePath: "director.lifecycle.broadcast_channel",
-            status,
-          });
-        });
-
-      handoffChannelRef.current = handoffChannel;
-    })();
-
-    return () => {
-      cancelled = true;
-      if (channel) {
-        try {
-          channel.unsubscribe();
-        } catch (error) {
-          reportAndSwallow({
-            screen: "director",
-            surface: "realtime_cleanup",
-            event: "screen_channel_unsubscribe_failed",
-            error,
-            kind: "cleanup_only",
-            category: "reload",
-            errorStage: "realtime_cleanup",
-          });
-        }
-        try {
-          supabase.removeChannel(channel);
-        } catch (error) {
-          reportAndSwallow({
-            screen: "director",
-            surface: "realtime_cleanup",
-            event: "screen_channel_remove_failed",
-            error,
-            kind: "cleanup_only",
-            category: "reload",
-            errorStage: "realtime_cleanup",
-          });
-        }
-        if (rtChannelRef.current === channel) rtChannelRef.current = null;
-      }
-      if (handoffChannel) {
-        try {
-          handoffChannel.unsubscribe();
-        } catch (error) {
-          reportAndSwallow({
-            screen: "director",
-            surface: "realtime_cleanup",
-            event: "handoff_channel_unsubscribe_failed",
-            error,
-            kind: "cleanup_only",
-            category: "reload",
-            errorStage: "realtime_cleanup",
-          });
-        }
-        try {
-          supabase.removeChannel(handoffChannel);
-        } catch (error) {
-          reportAndSwallow({
-            screen: "director",
-            surface: "realtime_cleanup",
-            event: "handoff_channel_remove_failed",
-            error,
-            kind: "cleanup_only",
-            category: "reload",
-            errorStage: "realtime_cleanup",
-          });
-        }
-        if (handoffChannelRef.current === handoffChannel) handoffChannelRef.current = null;
-      }
-    };
+    return setupDirectorRealtimeLifecycle({
+      isScreenFocused,
+      refs: {
+        dirTabRef,
+        requestTabRef,
+        showRtToastRef,
+        refreshCurrentVisibleScopeRef,
+        refreshRowsHandlerRef,
+        refreshPropsHandlerRef,
+        rtChannelRef,
+        handoffChannelRef,
+      },
+    });
   }, [isScreenFocused]);
 }
