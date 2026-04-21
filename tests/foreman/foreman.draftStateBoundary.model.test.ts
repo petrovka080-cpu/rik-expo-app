@@ -214,9 +214,10 @@ describe("foreman draft state boundary model", () => {
       "utf8",
     );
 
-    expect(source).toContain("resolveForemanDraftActivityState");
+    expect(source).toContain("buildForemanDraftBoundaryViewState");
+    expect(source).toContain("resolveForemanDraftBoundaryCanEditItem");
     expect(source).toContain("resolveForemanDraftHeaderEditPlan");
-    expect(source).toContain("applyForemanDraftHeaderEditPlanToRequestDetails");
+    expect(source).toContain("applyForemanDraftHeaderEditToBoundary");
     expect(source).not.toContain("patchForemanRequestDetailsName");
     expect(source).not.toContain("patchForemanRequestDetailsComment");
     expect(source).not.toContain("patchForemanRequestDetailsObjectType");

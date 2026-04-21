@@ -116,18 +116,20 @@ describe("foreman draft boundary silent failure discipline", () => {
       "utf8",
     );
     const lifecycleModelSource = readFileSync(join(__dirname, "foreman.draftLifecycle.model.ts"), "utf8");
+    const recoverySource = readFileSync(join(__dirname, "foreman.draftBoundary.recovery.ts"), "utf8");
 
     expect(source).not.toContain(".catch(() => undefined)");
     expect(source).not.toContain("catch {");
     expect(bootstrapCoordinatorSource).not.toContain("catch {");
+    expect(recoverySource).not.toContain("catch {");
     expect(source).toContain("runRestoreTriggerPlan");
     expect(lifecycleModelSource).toContain("restore_draft_on_focus_failed");
     expect(lifecycleModelSource).toContain("restore_draft_on_app_active_failed");
     expect(source).toContain("network_service_bootstrap_failed");
     expect(lifecycleModelSource).toContain("restore_draft_on_network_back_failed");
     expect(source).toContain("terminal_local_cleanup_failed");
-    expect(source).toContain("terminal_recovery_remote_check_failed");
-    expect(source).toContain("restore_remote_terminal_check_failed");
+    expect(recoverySource).toContain("terminal_recovery_remote_check_failed");
+    expect(recoverySource).toContain("restore_remote_terminal_check_failed");
     expect(bootstrapCoordinatorSource).toContain("bootstrap_reconciliation_remote_check_failed");
     expect(bootstrapCoordinatorSource).toContain("recordCatchDiscipline");
   });

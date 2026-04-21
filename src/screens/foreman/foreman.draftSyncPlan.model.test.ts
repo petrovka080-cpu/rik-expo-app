@@ -424,11 +424,11 @@ describe("foreman draft sync command planner", () => {
 
   it("keeps syncLocalDraftNow side effects in the established order", () => {
     const source = readFileSync(
-      join(__dirname, "hooks", "useForemanDraftBoundary.ts"),
+      join(__dirname, "foreman.draftBoundary.sync.ts"),
       "utf8",
     );
-    const syncStart = source.indexOf("const syncLocalDraftNow = useCallback");
-    const syncEnd = source.indexOf("const retryDraftSyncNow = useCallback");
+    const syncStart = source.indexOf("export async function runForemanDraftBoundarySyncNow");
+    const syncEnd = source.indexOf("export async function runForemanDraftBoundaryRetrySyncNow");
     const syncSource = source.slice(syncStart, syncEnd);
 
     expect(syncStart).toBeGreaterThanOrEqual(0);
@@ -437,22 +437,22 @@ describe("foreman draft sync command planner", () => {
     const orderedTokens = [
       "const dirtyLocalPlan = resolveForemanSyncDirtyLocalCommandPlan",
       "await markForemanDurableDraftDirtyLocal(snapshot, dirtyLocalPlan.dirtyLocal)",
-      "persistLocalDraftSnapshot(snapshot)",
+      "deps.persistLocalDraftSnapshot(snapshot)",
       "await pushForemanDurableDraftTelemetry(dirtyLocalPlan.telemetry)",
       "const queuePlan = planForemanSyncQueueCommand",
       "await enqueueForemanMutation(queuePlan.enqueue)",
       "await markForemanSnapshotQueued(snapshot",
       "const run = flushForemanMutationQueue",
-      "await refreshBoundarySyncState(localDraftSnapshotRef.current)",
+      "await deps.refreshBoundarySyncState(deps.localDraftSnapshotRef.current)",
       "const flushCompletionPlan = planForemanSyncFlushCompletion",
       "if (flushCompletionPlan.action === \"throw_failed\")",
       "throw new Error(flushCompletionPlan.message)",
       "if (flushCompletionPlan.markLastSubmittedOwnerId)",
-      "lastSubmittedOwnerIdRef.current = flushCompletionPlan.markLastSubmittedOwnerId",
+      "deps.lastSubmittedOwnerIdRef.current = flushCompletionPlan.markLastSubmittedOwnerId",
       "return flushCompletionPlan.result",
-      "draftSyncInFlightRef.current = run",
+      "deps.draftSyncInFlightRef.current = run",
       "return await run",
-      "draftSyncInFlightRef.current = null",
+      "deps.draftSyncInFlightRef.current = null",
     ];
 
     let previousIndex = -1;

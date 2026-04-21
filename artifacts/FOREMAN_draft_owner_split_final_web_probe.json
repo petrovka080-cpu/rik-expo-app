@@ -1,0 +1,85 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-21T12:16:26.015Z",
+  "finalUrl": "http://localhost:8081/office/foreman",
+  "materialsEntryVisible": true,
+  "materialsTabOpened": true,
+  "bodySample": "Прораб Материалы  Прораб × Объект / Блок * Выбрать объект... *  Раздел / Вид работ Выбрать раздел...  Детальное место — Без детализации —   Каталог  Смета  AI заявка Черновик  Позиции 0  Новый черновик 0 позиций • Черновик пуст  История заявок  История подрядов   Главная   Офис   +   Чаты   Профиль  AI",
+  "pageErrors": [],
+  "badResponses": [],
+  "consoleTail": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+    },
+    {
+      "type": "warning",
+      "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+    },
+    {
+      "type": "info",
+      "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+    },
+    {
+      "type": "info",
+      "text": "[pdf-viewer] module_loaded {platform: web}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_owner_mount, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_scope_skip_reason, result: skipped, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_scope_inactive, result: skipped, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_child_entry_mount, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_owner_mount, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_route_owner_identity, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: startup_bootstrap, event: app_launch_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: startup_bootstrap, event: bootstrap_enter, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: auth_session_gate, event: auth_check_start, result: skipped, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: request, surface: auth_session_gate, event: auth_session_read_start, result: skipped, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: office, surface: office_reentry, event: office_child_entry_focus, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: offline_queue_recovery, event: queue_recovery_start, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: foreman, surface: offline_queue_recovery, event: queue_recovery_complete, result: skipped, durationMs: 1}"
+    }
+  ],
+  "webServerStartedByProbe": false
+}
