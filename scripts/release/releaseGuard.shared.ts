@@ -183,6 +183,7 @@ export function classifyPackageJsonMutation(params: {
 
 function isNonRuntimePath(filePath: string): boolean {
   return (
+    /^([^/]+\/)?tsconfig(\.[^/]+)?\.json$/.test(filePath) ||
     filePath.startsWith("docs/") ||
     filePath.startsWith("artifacts/") ||
     filePath.startsWith("tests/") ||

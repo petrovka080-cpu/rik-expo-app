@@ -131,6 +131,20 @@ describe("releaseGuard.shared", () => {
       expect(classification.runtimeFiles).toContain("src/screens/office/OfficeShellContent.tsx");
     });
 
+    it("treats phase tsconfig files as tooling so they do not block OTA classification", () => {
+      const classification = classifyReleaseChanges({
+        changedFiles: [
+          "src/screens/director/director.finance.rpc.ts",
+          "tsconfig.strict-null-phase1.json",
+        ],
+      });
+
+      expect(classification.kind).toBe("runtime-ota");
+      expect(classification.runtimeFiles).toContain("src/screens/director/director.finance.rpc.ts");
+      expect(classification.nonRuntimeFiles).toContain("tsconfig.strict-null-phase1.json");
+      expect(classification.buildRequiredFiles).toEqual([]);
+    });
+
     it("blocks OTA when native or release-host files changed", () => {
       const classification = classifyReleaseChanges({
         changedFiles: ["app.json", "scripts/release/run-release-guard.ts"],
