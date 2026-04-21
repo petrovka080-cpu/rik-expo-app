@@ -67,6 +67,7 @@ type PaymentOrderPdfSource = {
   payload: PaymentOrderPdfRpcPayload;
   allocations: PaymentOrderPdfRecord[];
   branchMeta: PaymentPdfSourceBranchMeta;
+  generatedAt: string | null;
   source: "rpc:pdf_payment_source_v1";
 };
 
@@ -167,6 +168,7 @@ export type PaymentOrderPdfContract = {
 export type PreparedPaymentOrderPdf = {
   source: "rpc:pdf_payment_source_v1";
   branchMeta: PaymentPdfSourceBranchMeta;
+  generatedAt: string | null;
   contract: PaymentOrderPdfContract;
 };
 
@@ -533,6 +535,7 @@ export async function fetchPaymentPdfSourceViaRpc(paymentId: number): Promise<Pa
       rpcVersion: "v1",
       payloadShapeVersion: "v1",
     },
+    generatedAt: String(envelope.generated_at ?? "").trim() || null,
     source: "rpc:pdf_payment_source_v1",
   };
 }
@@ -857,6 +860,7 @@ export async function preparePaymentOrderPdf(args: {
     return {
       source: source.source,
       branchMeta: source.branchMeta,
+      generatedAt: source.generatedAt,
       contract,
     };
   } catch (error) {

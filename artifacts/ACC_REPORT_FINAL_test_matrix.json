@@ -1,0 +1,87 @@
+{
+  "wave": "ACC-REPORT-FINAL",
+  "exact_path": "accountant payment report / payment_order PDF action",
+  "overall_status": "GREEN",
+  "android_runtime_status": "BLOCKED",
+  "notes": [
+    "Business formulas, totals, grouping, ordering, template semantics, and viewer consumer semantics were preserved.",
+    "Repeat and warm web paths now reuse the accountant payment report artifact via durable readiness and deterministic artifact versioning.",
+    "Android runtime remained environment-blocked after one recovery attempt because the FIO modal value would not stabilize under adb input, so report-path proof could not be completed honestly."
+  ],
+  "gates": [
+    {
+      "name": "targeted accountant shared Jest",
+      "command": "npx jest src/screens/accountant/accountantPaymentReportPdf.shared.test.ts --runInBand --no-coverage",
+      "status": "PASS"
+    },
+    {
+      "name": "targeted accountant service Jest",
+      "command": "npx jest src/screens/accountant/accountantPaymentReportPdf.service.test.ts --runInBand --no-coverage",
+      "status": "PASS"
+    },
+    {
+      "name": "TypeScript",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "name": "Lint",
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    {
+      "name": "Full Jest",
+      "command": "npx jest --runInBand --no-coverage",
+      "status": "PASS",
+      "details": {
+        "test_suites_passed": 373,
+        "test_suites_skipped": 1,
+        "tests_passed": 2383,
+        "tests_skipped": 1
+      }
+    },
+    {
+      "name": "Git diff check",
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    {
+      "name": "Web runtime proof",
+      "command": "npx tsx scripts/acc_report_final_web_verify.ts",
+      "status": "PASS",
+      "artifacts": [
+        "artifacts/ACC_REPORT_FINAL_web_timing.md",
+        "artifacts/ACC_REPORT_FINAL_timing_samples.json",
+        "artifacts/ACC_REPORT_FINAL_web_runtime.json",
+        "artifacts/ACC_REPORT_FINAL_web_runtime.png"
+      ],
+      "details": {
+        "repeat_median_ms": 30,
+        "repeat_max_ms": 32,
+        "artifact_hit_median_ms": 28,
+        "artifact_hit_max_ms": 29,
+        "warm_median_ms": 124,
+        "warm_max_ms": 125,
+        "cold_median_ms": 551,
+        "cold_max_ms": 552
+      }
+    },
+    {
+      "name": "Android runtime proof",
+      "command": "npx tsx scripts/acc_report_final_android_verify.ts",
+      "status": "BLOCKED",
+      "attempts": 2,
+      "recovery_attempts_used": 1,
+      "artifacts": [
+        "artifacts/ACC_REPORT_FINAL_android_timing.md",
+        "artifacts/ACC_REPORT_FINAL_android_runtime.json",
+        "artifacts/acc-report-final-android-failure.xml",
+        "artifacts/acc-report-final-android-failure.png"
+      ],
+      "details": {
+        "first_attempt": "NOT_GREEN: paid tab remained empty because the verifier-entered FIO drifted from the seeded FIO value.",
+        "recovery_attempt": "BLOCKED: Android accountant FIO modal value did not stabilize under adb input, so report-path proof could not be completed honestly."
+      }
+    }
+  ]
+}

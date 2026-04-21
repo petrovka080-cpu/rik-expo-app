@@ -1,0 +1,46 @@
+{
+  "status": "BLOCKED",
+  "route": "rik:///office/accountant",
+  "samples": [],
+  "seedPaymentIds": [
+    235,
+    236,
+    237
+  ],
+  "invariants": {
+    "accountantSurfaceReached": false,
+    "reportPathReachable": false,
+    "repeatCycleWorked": false,
+    "noFatalOrAnr": true,
+    "processAlive": true,
+    "noStuckLoading": false
+  },
+  "preflight": {
+    "deviceDetected": true,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "reverseProxyReady": true,
+    "appCleared": true,
+    "gmsCleared": false,
+    "devClientReachable": true
+  },
+  "recovery": {
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false
+  },
+  "artifacts": {
+    "finalXml": null,
+    "finalPng": null,
+    "failureArtifacts": {
+      "xmlPath": "artifacts/acc-report-final-android-failure.xml",
+      "pngPath": "artifacts/acc-report-final-android-failure.png",
+      "stdoutPath": "artifacts/acc-report-final-android.stdout.log",
+      "stderrPath": "artifacts/acc-report-final-android.stderr.log",
+      "stdoutTail": "",
+      "stderrTail": ""
+    }
+  },
+  "failureReason": "Android accountant FIO modal value did not stabilize"
+}

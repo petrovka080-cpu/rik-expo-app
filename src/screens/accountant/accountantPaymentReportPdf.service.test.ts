@@ -2,6 +2,13 @@ import type { DocumentDescriptor } from "../../lib/documents/pdfDocument";
 import type { PaymentOrderPdfContract } from "../../lib/api/paymentPdf.service";
 import { buildAccountantPaymentReportPdfManifestContract } from "./accountantPaymentReportPdf.shared";
 import {
+  buildAccountantPaymentReportArtifactStorageKey,
+  buildAccountantPaymentReportReadinessStorageKey,
+  createAccountantPaymentReportArtifactRecord,
+  createAccountantPaymentReportReadinessRecord,
+  hydrateAccountantPaymentReportManifest,
+  isAccountantPaymentReportArtifactRecord,
+  isAccountantPaymentReportReadinessRecord,
   clearAccountantPaymentReportPdfDocumentCacheForTests,
   generateAccountantPaymentReportPdfDocument,
 } from "./accountantPaymentReportPdf.service";
@@ -149,6 +156,15 @@ const generatedDescriptor: DocumentDescriptor = {
   entityId: "77",
 };
 
+const webBlobDescriptor: DocumentDescriptor = {
+  ...generatedDescriptor,
+  uri: "blob:https://example.test/payment_order_77",
+  fileSource: {
+    kind: "blob",
+    uri: "blob:https://example.test/payment_order_77",
+  },
+};
+
 const createDeferred = <T,>() => {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
@@ -176,15 +192,155 @@ function resetObservabilityEvents() {
 }
 
 function accountantPaymentReportEvents() {
-  return (observabilityGlobal.__RIK_PLATFORM_OBSERVABILITY__?.events ?? [])
-    .filter((event) =>
+  return (observabilityGlobal.__RIK_PLATFORM_OBSERVABILITY__?.events ?? []).filter(
+    (event) =>
       event.screen === "accountant" &&
       event.surface === "accountant_payment_report_pdf" &&
       event.event === "accountant_payment_report_pdf_ready",
-    );
+  );
 }
 
-describe("accountantPaymentReportPdf.service PDF-ACC-1 reuse", () => {
+function paymentManifest(amount = 150) {
+  return buildAccountantPaymentReportPdfManifestContract(paymentContract(amount));
+}
+
+function recentIso(offsetMs = 60_000) {
+  return new Date(Date.now() - offsetMs).toISOString();
+}
+
+function oldIso(offsetMs = 10 * 60 * 1000) {
+  return new Date(Date.now() - offsetMs).toISOString();
+}
+
+function readyReadinessRecord(
+  amount = 150,
+  args?: {
+    lastBuiltAt?: string;
+    lastSourceChangeAt?: string;
+  },
+) {
+  const baseManifest = paymentManifest(amount);
+  const manifest = hydrateAccountantPaymentReportManifest(baseManifest, {
+    status: "ready",
+    lastBuiltAt: args?.lastBuiltAt ?? recentIso(),
+    lastSourceChangeAt: args?.lastSourceChangeAt ?? recentIso(90_000),
+    lastSuccessfulArtifact: baseManifest.artifactPath,
+  });
+  return createAccountantPaymentReportReadinessRecord(manifest);
+}
+
+function staleReadyReadinessRecord(amount = 150) {
+  return readyReadinessRecord(amount, {
+    lastBuiltAt: oldIso(),
+    lastSourceChangeAt: oldIso(11 * 60 * 1000),
+  });
+}
+
+function artifactRecord(
+  amount = 150,
+  args?: {
+    descriptor?: DocumentDescriptor;
+    contractSnapshot?: PaymentOrderPdfContract | null;
+  },
+) {
+  const contractSnapshot =
+    args && "contractSnapshot" in args
+      ? args.contractSnapshot
+      : paymentContract(amount);
+  return createAccountantPaymentReportArtifactRecord(
+    paymentManifest(amount),
+    args?.descriptor ?? generatedDescriptor,
+    contractSnapshot,
+  );
+}
+
+function readinessStatusesFromWrites() {
+  return mockWriteStoredJson.mock.calls
+    .map((call) => call[1])
+    .filter((value) => value && typeof value === "object" && "manifest" in value)
+    .map((value) => {
+      const manifest = (value as { manifest?: { status?: string } }).manifest;
+      return String(manifest?.status ?? "");
+    });
+}
+
+function lastReadinessWrite() {
+  const readinessWrites = mockWriteStoredJson.mock.calls
+    .map((call) => call[1])
+    .filter((value) => value && typeof value === "object" && "manifest" in value);
+  return readinessWrites[readinessWrites.length - 1] as
+    | { manifest: { status: string; lastSuccessfulArtifact: string | null } }
+    | undefined;
+}
+
+describe("accountantPaymentReportPdf.service ACC-REPORT-FINAL readiness helpers", () => {
+  it("creates deterministic readiness and artifact storage keys", () => {
+    const firstReadinessKey = buildAccountantPaymentReportReadinessStorageKey(77);
+    const secondReadinessKey = buildAccountantPaymentReportReadinessStorageKey(77);
+    const firstArtifactKey = buildAccountantPaymentReportArtifactStorageKey(
+      paymentManifest().artifactVersion,
+    );
+    const secondArtifactKey = buildAccountantPaymentReportArtifactStorageKey(
+      paymentManifest().artifactVersion,
+    );
+
+    expect(firstReadinessKey).toBe(secondReadinessKey);
+    expect(firstArtifactKey).toBe(secondArtifactKey);
+    expect(firstArtifactKey).not.toBe(
+      buildAccountantPaymentReportArtifactStorageKey(paymentManifest(175).artifactVersion),
+    );
+  });
+
+  it("hydrates readiness status transitions without losing the latest successful artifact", () => {
+    const ready = hydrateAccountantPaymentReportManifest(paymentManifest(), {
+      status: "ready",
+      lastBuiltAt: "2026-04-20T10:01:00.000Z",
+      lastSourceChangeAt: "2026-04-20T10:00:00.000Z",
+      lastSuccessfulArtifact: paymentManifest().artifactPath,
+    });
+    const stale = hydrateAccountantPaymentReportManifest(paymentManifest(175), {
+      status: "stale",
+      lastBuiltAt: ready.lastBuiltAt,
+      lastSourceChangeAt: "2026-04-21T10:00:00.000Z",
+      lastSuccessfulArtifact: ready.lastSuccessfulArtifact,
+    });
+    const failed = hydrateAccountantPaymentReportManifest(paymentManifest(175), {
+      status: "failed",
+      lastBuiltAt: ready.lastBuiltAt,
+      lastSourceChangeAt: stale.lastSourceChangeAt,
+      lastSuccessfulArtifact: stale.lastSuccessfulArtifact,
+    });
+
+    expect(ready.status).toBe("ready");
+    expect(stale.status).toBe("stale");
+    expect(failed.status).toBe("failed");
+    expect(failed.lastSuccessfulArtifact).toBe(ready.artifactPath);
+  });
+
+  it("creates readiness and artifact records that pass runtime guards", () => {
+    const readyManifest = hydrateAccountantPaymentReportManifest(paymentManifest(), {
+      status: "ready",
+      lastBuiltAt: "2026-04-20T10:01:00.000Z",
+      lastSourceChangeAt: "2026-04-20T10:00:00.000Z",
+      lastSuccessfulArtifact: paymentManifest().artifactPath,
+    });
+    const readiness = createAccountantPaymentReportReadinessRecord(
+      readyManifest,
+      "temporary error",
+    );
+    const artifact = createAccountantPaymentReportArtifactRecord(
+      readyManifest,
+      generatedDescriptor,
+    );
+
+    expect(isAccountantPaymentReportReadinessRecord(readiness)).toBe(true);
+    expect(isAccountantPaymentReportArtifactRecord(artifact)).toBe(true);
+    expect(isAccountantPaymentReportReadinessRecord({ version: 2 })).toBe(false);
+    expect(isAccountantPaymentReportArtifactRecord({ version: 2 })).toBe(false);
+  });
+});
+
+describe("accountantPaymentReportPdf.service ACC-REPORT-FINAL readiness", () => {
   beforeEach(() => {
     clearAccountantPaymentReportPdfDocumentCacheForTests();
     resetObservabilityEvents();
@@ -203,6 +359,7 @@ describe("accountantPaymentReportPdf.service PDF-ACC-1 reuse", () => {
     mockPreparePaymentOrderPdf.mockResolvedValue({
       source: "rpc:pdf_payment_source_v1",
       branchMeta: { sourceBranch: "canonical" },
+      generatedAt: "2026-04-20T10:00:00.000Z",
       contract: paymentContract(),
     });
     mockBuildGeneratedPdfDescriptor.mockImplementation(async (args: {
@@ -213,7 +370,7 @@ describe("accountantPaymentReportPdf.service PDF-ACC-1 reuse", () => {
     });
   });
 
-  it("reuses the same accountant payment report PDF for repeat opens without rebuilding", async () => {
+  it("reuses the same version without rerendering the PDF source", async () => {
     const first = await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
     const second = await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
 
@@ -222,27 +379,9 @@ describe("accountantPaymentReportPdf.service PDF-ACC-1 reuse", () => {
     expect(mockPreparePaymentOrderPdf).toHaveBeenCalledTimes(1);
     expect(mockBuildGeneratedPdfDescriptor).toHaveBeenCalledTimes(1);
     expect(mockExportPaymentOrderPdfContract).toHaveBeenCalledTimes(1);
-    expect(mockWriteStoredJson).toHaveBeenCalledTimes(1);
   });
 
-  it("emits repeat cache-hit telemetry inside the sub-300ms budget", async () => {
-    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
-    resetObservabilityEvents();
-
-    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
-    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
-    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
-
-    const repeatHits = accountantPaymentReportEvents().filter(
-      (event) => event.result === "cache_hit" && event.cacheLayer === "memory",
-    );
-    expect(repeatHits).toHaveLength(3);
-    expect(Math.max(...repeatHits.map((event) => Number(event.durationMs ?? 0))))
-      .toBeLessThanOrEqual(300);
-    expect(mockPreparePaymentOrderPdf).toHaveBeenCalledTimes(1);
-  });
-
-  it("registers inFlight before storage/source awaits and coalesces identical requests", async () => {
+  it("registers inFlight before readiness/source awaits and coalesces identical requests", async () => {
     const readDeferred = createDeferred<null>();
     mockReadStoredJson.mockReturnValueOnce(readDeferred.promise);
 
@@ -262,32 +401,127 @@ describe("accountantPaymentReportPdf.service PDF-ACC-1 reuse", () => {
     expect(mockBuildGeneratedPdfDescriptor).toHaveBeenCalledTimes(1);
   });
 
-  it("uses persisted ready manifest descriptor without source preparation", async () => {
-    const manifest = buildAccountantPaymentReportPdfManifestContract(paymentContract());
-    mockReadStoredJson.mockResolvedValueOnce({
-      version: 1,
-      manifest,
-      descriptor: generatedDescriptor,
-    });
+  it("uses persisted readiness and artifact when source version matches", async () => {
+    mockReadStoredJson
+      .mockResolvedValueOnce(readyReadinessRecord())
+      .mockResolvedValueOnce(artifactRecord());
 
     const result = await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
 
     expect(result.uri).toBe(generatedDescriptor.uri);
     expect(mockPreparePaymentOrderPdf).not.toHaveBeenCalled();
     expect(mockBuildGeneratedPdfDescriptor).not.toHaveBeenCalled();
-    expect(mockWriteStoredJson).not.toHaveBeenCalled();
+    expect(mockExportPaymentOrderPdfContract).not.toHaveBeenCalled();
+  });
+
+  it("does not treat an expired ready artifact as fresh without revalidation", async () => {
+    mockReadStoredJson
+      .mockResolvedValueOnce(staleReadyReadinessRecord())
+      .mockResolvedValueOnce(artifactRecord());
+
+    const result = await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
+
+    expect(result.uri).toBe(generatedDescriptor.uri);
+    expect(mockPreparePaymentOrderPdf).toHaveBeenCalledTimes(1);
+    expect(mockBuildGeneratedPdfDescriptor).not.toHaveBeenCalled();
+    expect(mockExportPaymentOrderPdfContract).not.toHaveBeenCalled();
+  });
+
+  it("rebuilds a web blob descriptor from persisted contract snapshot without source refetch", async () => {
+    mockReadStoredJson
+      .mockResolvedValueOnce(readyReadinessRecord())
+      .mockResolvedValueOnce(
+        artifactRecord(150, {
+          descriptor: webBlobDescriptor,
+          contractSnapshot: paymentContract(),
+        }),
+      );
+    mockBuildGeneratedPdfDescriptor.mockResolvedValueOnce(webBlobDescriptor);
+
+    const result = await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
+
+    expect(result.uri).toBe(webBlobDescriptor.uri);
+    expect(mockPreparePaymentOrderPdf).not.toHaveBeenCalled();
+    expect(mockBuildGeneratedPdfDescriptor).toHaveBeenCalledTimes(1);
+  });
+
+  it("records stale, building, and ready transitions when the cached ready record is expired and the source version changes", async () => {
+    mockReadStoredJson
+      .mockResolvedValueOnce(staleReadyReadinessRecord())
+      .mockResolvedValueOnce(null);
+    mockPreparePaymentOrderPdf.mockResolvedValueOnce({
+      source: "rpc:pdf_payment_source_v1",
+      branchMeta: { sourceBranch: "canonical" },
+      generatedAt: "2026-04-21T10:00:00.000Z",
+      contract: paymentContract(175),
+    });
+
+    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
+
+    expect(mockBuildGeneratedPdfDescriptor).toHaveBeenCalledTimes(1);
+    expect(readinessStatusesFromWrites()).toEqual(
+      expect.arrayContaining(["stale", "building", "ready"]),
+    );
+  });
+
+  it("rebuilds when a same-version artifact disappears and no reusable snapshot remains", async () => {
+    mockReadStoredJson
+      .mockResolvedValueOnce(readyReadinessRecord())
+      .mockResolvedValueOnce(
+        artifactRecord(150, {
+          descriptor: generatedDescriptor,
+          contractSnapshot: null,
+        }),
+      )
+      .mockResolvedValueOnce(null);
+    mockGetInfoAsync.mockResolvedValueOnce({ exists: false });
+
+    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
+
+    expect(mockPreparePaymentOrderPdf).toHaveBeenCalledTimes(1);
+    expect(mockBuildGeneratedPdfDescriptor).toHaveBeenCalledTimes(1);
+  });
+
+  it("persists failed readiness and keeps the latest successful artifact pointer", async () => {
+    mockReadStoredJson
+      .mockResolvedValueOnce(staleReadyReadinessRecord())
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null);
+    mockBuildGeneratedPdfDescriptor.mockRejectedValueOnce(new Error("render failed"));
+
+    await expect(
+      generateAccountantPaymentReportPdfDocument({ paymentId: 77 }),
+    ).rejects.toThrow("render failed");
+
+    const lastWrite = lastReadinessWrite();
+    expect(lastWrite?.manifest.status).toBe("failed");
+    expect(lastWrite?.manifest.lastSuccessfulArtifact).toBe(paymentManifest().artifactPath);
+  });
+
+  it("emits repeat cache-hit telemetry inside the sub-300ms budget", async () => {
+    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
+    resetObservabilityEvents();
+
+    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
+    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
+    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
+
+    const repeatHits = accountantPaymentReportEvents().filter(
+      (event) => event.result === "cache_hit" && event.cacheLayer === "memory",
+    );
+    expect(repeatHits).toHaveLength(3);
+    expect(Math.max(...repeatHits.map((event) => Number(event.durationMs ?? 0))))
+      .toBeLessThanOrEqual(300);
+    expect(mockPreparePaymentOrderPdf).toHaveBeenCalledTimes(1);
+    expect(mockBuildGeneratedPdfDescriptor).toHaveBeenCalledTimes(1);
   });
 
   it("emits persisted warm-hit telemetry inside the sub-800ms budget", async () => {
-    const manifest = buildAccountantPaymentReportPdfManifestContract(paymentContract());
-
     for (let index = 0; index < 3; index += 1) {
       clearAccountantPaymentReportPdfDocumentCacheForTests();
-      mockReadStoredJson.mockResolvedValueOnce({
-        version: 1,
-        manifest,
-        descriptor: generatedDescriptor,
-      });
+      mockReadStoredJson
+        .mockResolvedValueOnce(readyReadinessRecord())
+        .mockResolvedValueOnce(artifactRecord());
       await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
     }
 
@@ -298,37 +532,6 @@ describe("accountantPaymentReportPdf.service PDF-ACC-1 reuse", () => {
     expect(Math.max(...warmHits.map((event) => Number(event.durationMs ?? 0))))
       .toBeLessThanOrEqual(800);
     expect(mockPreparePaymentOrderPdf).not.toHaveBeenCalled();
-  });
-
-  it("removes an unusable persisted artifact and rebuilds through the canonical source path", async () => {
-    const manifest = buildAccountantPaymentReportPdfManifestContract(paymentContract());
-    mockReadStoredJson.mockResolvedValueOnce({
-      version: 1,
-      manifest,
-      descriptor: generatedDescriptor,
-    });
-    mockGetInfoAsync.mockResolvedValueOnce({ exists: false });
-
-    const result = await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
-
-    expect(result.uri).toBe(generatedDescriptor.uri);
-    expect(mockRemoveStoredValue).toHaveBeenCalledTimes(1);
-    expect(mockPreparePaymentOrderPdf).toHaveBeenCalledTimes(1);
-    expect(mockBuildGeneratedPdfDescriptor).toHaveBeenCalledTimes(1);
-  });
-
-  it("rebuilds after cache clear when canonical payment data changes", async () => {
-    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
-    clearAccountantPaymentReportPdfDocumentCacheForTests();
-    mockPreparePaymentOrderPdf.mockResolvedValueOnce({
-      source: "rpc:pdf_payment_source_v1",
-      branchMeta: { sourceBranch: "canonical" },
-      contract: paymentContract(175),
-    });
-
-    await generateAccountantPaymentReportPdfDocument({ paymentId: 77 });
-
-    expect(mockPreparePaymentOrderPdf).toHaveBeenCalledTimes(2);
-    expect(mockBuildGeneratedPdfDescriptor).toHaveBeenCalledTimes(2);
+    expect(mockBuildGeneratedPdfDescriptor).not.toHaveBeenCalled();
   });
 });
