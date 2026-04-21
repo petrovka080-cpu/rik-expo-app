@@ -1,50 +1,24 @@
-import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
-import {
-  createDocumentPreviewSession,
-  createInMemoryDocumentPreviewSession,
-} from "./pdfDocumentSessions";
-import {
-  openPdfExternal,
-  openPdfPreview,
-  openPdfShare,
-  preparePdfExecutionSource,
-  type BusyLike,
-} from "../pdfRunner";
-import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
-import { createPdfSource, type PdfSource } from "../pdfFileContract";
 import {
   beginPdfOpenVisibilityWait,
   createPdfOpenFlowContext,
   failPdfOpenVisible,
   recordPdfOpenStage,
-  type PdfOpenFlowContext,
 } from "../pdf/pdfOpenFlow";
 import {
   recordPdfCrashBreadcrumb,
   shouldRecordPdfCrashBreadcrumbs,
 } from "../pdf/pdfCrashBreadcrumbs";
 import {
-  checkPdfMobilePreviewEligibility,
-  recordPdfPreviewOversizeBlocked,
-} from "../pdf/pdfMobilePreviewSizeGuard";
-import {
   createPdfActionBoundaryKey,
   createPdfActionBoundaryRun,
   recordPdfActionBoundaryEvent,
   toPdfActionBoundaryError,
-  type PdfActionBoundaryRun,
 } from "../pdf/pdfActionBoundary";
 import {
   resolvePdfDocumentOpenFlowCleanupPlan,
   resolvePdfDocumentOpenFlowStartPlan,
 } from "./pdfDocumentOpenFlowPlan";
-import { resolvePdfDocumentPreviewSessionPlan } from "./pdfDocumentPreviewSessionPlan";
-import {
-  createPdfDocumentViewerHref,
-  pushPdfDocumentViewerRouteSafely,
-  type PdfViewerRouterLike,
-} from "./pdfDocumentViewerEntry";
 import {
   resolvePdfDocumentBusyExecutionPlan,
   resolvePdfDocumentBusyRunOutputPlan,
@@ -54,71 +28,27 @@ import {
   resolvePdfDocumentVisibilityStartPlan,
   resolvePdfDocumentVisibilitySuccessPlan,
 } from "./pdfDocumentVisibilityBusyPlan";
-import { redactSensitiveRecord, redactSensitiveText } from "../security/redaction";
+import { extractUriScheme } from "./pdfDocumentActionPreconditions";
+import {
+  getPdfFlowErrorMessage as getPdfFlowErrorMessageInternal,
+} from "./pdfDocumentActionError";
+import type {
+  PersistCriticalPdfBreadcrumbInput,
+  PreparePdfDocumentArgs,
+  PreviewPdfDocumentOpts,
+} from "./pdfDocumentActionTypes";
+import { executeOpenPdfDocumentExternal } from "./pdfDocumentExternalOpenAction";
+import { executePreparePdfDocument } from "./pdfDocumentPrepareAction";
+import { executePreviewPdfDocument } from "./pdfDocumentPreviewAction";
+import { executeSharePdfDocument } from "./pdfDocumentShareAction";
+import type { PdfViewerRouterLike } from "./pdfDocumentViewerEntry";
 
-const redactedRouteParamsJson = (params: Record<string, unknown>) =>
-  JSON.stringify(redactSensitiveRecord(params) ?? {});
-
-export function getPdfFlowErrorMessage(
-  error: unknown,
-  fallback = "Не удалось открыть PDF",
-): string {
-  if (error && typeof error === "object") {
-    const maybeMessage =
-      "message" in error ? (error as { message?: unknown }).message : undefined;
-    const text = typeof maybeMessage === "string" ? maybeMessage.trim() : "";
-    if (text) return text;
-  }
-  const text = String(error ?? "").trim();
-  return text && text !== "[object Object]" ? text : fallback;
-}
-type PreparePdfDocumentArgs = {
-  busy?: BusyLike;
-  supabase: any;
-  key?: string;
-  label?: string;
-  descriptor: Omit<DocumentDescriptor, "uri" | "fileSource"> & {
-    uri?: string;
-    fileSource?: PdfSource;
-  };
-  resolveSource?: () => Promise<PdfSource> | PdfSource;
-  getRemoteUrl?: () => Promise<string> | string;
-};
-export type { PdfViewerRouterLike } from "./pdfDocumentViewerEntry";
-function canUseInMemoryRemoteViewerShortcut(
-  doc: DocumentDescriptor,
-  hasRouter: boolean,
-) {
-  return (
-    resolvePdfDocumentPreviewSessionPlan({
-      platform: Platform.OS,
-      sourceKind: doc.fileSource.kind,
-      hasRouter,
-    }).action === "use_in_memory_remote_session"
-  );
-}
-function extractUriScheme(uri: unknown): string {
-  return (
-    String(uri || "")
-      .match(/^([a-z0-9+.-]+):/i)?.[1]
-      ?.toLowerCase() || ""
-  );
-}
-type PreviewPdfDocumentOpts = {
-  router?: PdfViewerRouterLike;
-  openFlow?: PdfOpenFlowContext & {
-    openToken?: string;
-  };
-  /** Called before router.push — use to dismiss native Modals that sit above the navigation Stack. */
-  boundaryRun?: PdfActionBoundaryRun;
-  assertCurrentRun?: (stage: "prepare" | "viewer_entry" | "visibility") => void;
-  onBeforeNavigate?: (() => void | Promise<void>) | null;
-};
 type ActivePreviewFlow = {
   promise: Promise<DocumentDescriptor>;
   runId: string;
   startedAt: number;
 };
+
 const activePreviewFlows = new Map<string, ActivePreviewFlow>();
 // D-MODAL-PDF: Track when each flow started so we can expire abandoned entries.
 // If a flow promise is leaked (e.g., component unmounts during PDF generation),
@@ -127,6 +57,8 @@ const activePreviewFlowTimestamps = new Map<string, number>();
 const ACTIVE_FLOW_MAX_TTL_MS = 60_000;
 let pdfActionRunSeq = 0;
 const latestPreviewRunByKey = new Map<string, string>();
+
+export type { PdfViewerRouterLike } from "./pdfDocumentViewerEntry";
 
 function nextPdfActionRunId(): string {
   pdfActionRunSeq += 1;
@@ -145,810 +77,43 @@ function assertCurrentPdfActionRun(
     "Stale PDF action result ignored",
   );
 }
-function persistCriticalPdfBreadcrumb(input: {
-  marker: string;
-  screen: unknown;
-  documentType?: unknown;
-  originModule?: unknown;
-  sourceKind?: unknown;
-  uriKind?: unknown;
-  uri?: unknown;
-  fileName?: unknown;
-  entityId?: unknown;
-  sessionId?: unknown;
-  openToken?: unknown;
-  fileExists?: unknown;
-  fileSizeBytes?: unknown;
-  previewPath?: unknown;
-  errorMessage?: unknown;
-  terminalState?: unknown;
-  extra?: Record<string, unknown>;
-}): void {
+
+function persistCriticalPdfBreadcrumb(
+  input: PersistCriticalPdfBreadcrumbInput,
+): void {
   if (!shouldRecordPdfCrashBreadcrumbs(input.screen)) return;
   // L-PERF: fire-and-forget breadcrumbs must NOT block the critical open path.
   // Previously each await did 2 AsyncStorage I/O ops (read+write), and 6 sequential
   // awaits on the critical path added 12 I/O ops before the viewer route push.
   recordPdfCrashBreadcrumb(input);
 }
-function requiresCanonicalRemotePdfSource(
-  args: Pick<DocumentDescriptor, "documentType" | "originModule">,
-) {
-  const key = `${args.originModule}:${args.documentType}`;
-  return (
-    key === "foreman:request" ||
-    key === "director:director_report" ||
-    key === "director:supplier_summary" ||
-    key === "warehouse:warehouse_document" ||
-    key === "warehouse:warehouse_register" ||
-    key === "warehouse:warehouse_materials"
-  );
+
+export function getPdfFlowErrorMessage(
+  error: unknown,
+  fallback = "Не удалось открыть PDF",
+): string {
+  return getPdfFlowErrorMessageInternal(error, fallback);
 }
-function assertCanonicalRemotePdfSource(
-  descriptor: Pick<DocumentDescriptor, "documentType" | "originModule">,
-  source: PdfSource,
-) {
-  if (!requiresCanonicalRemotePdfSource(descriptor)) return;
-  if (source.kind === "remote-url") return;
-  throw new Error(
-    `Canonical ${descriptor.originModule} ${descriptor.documentType} PDF must use backend remote-url source`,
-  );
-}
+
 export async function preparePdfDocument(
   args: PreparePdfDocumentArgs,
 ): Promise<DocumentDescriptor> {
-  const run = async () => {
-    const observation = beginPdfLifecycleObservation({
-      screen: "reports",
-      surface: "pdf_document_actions",
-      event: "pdf_output_prepare",
-      stage: "output_prepare",
-      sourceKind: "pdf:document",
-      context: {
-        documentFamily: args.descriptor.documentType,
-        documentType: args.descriptor.documentType,
-        originModule: args.descriptor.originModule,
-        entityId: args.descriptor.entityId ?? null,
-        fileName: args.descriptor.fileName,
-        source: args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null,
-      },
-    });
-    try {
-      if (__DEV__) console.info("[pdf-document-actions] prepare_requested", {
-        stage: "prepare_requested",
-        platform: Platform.OS,
-        documentType: args.descriptor.documentType,
-        originModule: args.descriptor.originModule,
-        sourceUri: args.descriptor.uri ? redactSensitiveText(args.descriptor.uri) : null,
-        fileName: args.descriptor.fileName,
-        busyKey: args.key ?? null,
-      });
-      const preparedSource = await preparePdfExecutionSource({
-        supabase: args.supabase,
-        source:
-          args.descriptor.fileSource ??
-          (args.descriptor.uri
-            ? createPdfSource(args.descriptor.uri)
-            : undefined),
-        resolveSource: args.resolveSource,
-        getRemoteUrl: args.getRemoteUrl,
-        fileName: args.descriptor.fileName,
-      });
-      assertCanonicalRemotePdfSource(args.descriptor, preparedSource);
-      const uri = preparedSource.uri;
-      if (__DEV__) console.info("[pdf-document-actions] prepare_ready", {
-        stage: "prepare_ready",
-        platform: Platform.OS,
-        documentType: args.descriptor.documentType,
-        originModule: args.descriptor.originModule,
-        finalUri: redactSensitiveText(uri),
-        finalScheme: extractUriScheme(uri),
-        finalSourceKind: preparedSource.kind,
-        fileName: args.descriptor.fileName,
-      });
-      observation.success({
-        sourceKind: preparedSource.kind,
-        extra: {
-          uri: uri,
-        },
-      });
-      return { ...args.descriptor, uri, fileSource: preparedSource };
-    } catch (error) {
-      const lifecycleError = observation.error(error, {
-        fallbackMessage: "PDF preparation failed",
-      });
-      const message = getPdfFlowErrorMessage(
-        lifecycleError,
-        "PDF preparation failed",
-      );
-      if (__DEV__) console.error("[pdf-document-actions] prepare_failed", {
-        stage: "prepare_failed",
-        platform: Platform.OS,
-        documentType: args.descriptor.documentType,
-        originModule: args.descriptor.originModule,
-        fileName: args.descriptor.fileName,
-        errorName:
-          error && typeof error === "object" && "name" in error
-            ? String((error as { name?: unknown }).name || "")
-            : "",
-        errorMessage: redactSensitiveText(message),
-      });
-      throw lifecycleError instanceof Error
-        ? lifecycleError
-        : new Error(message);
-    }
-  };
-  if (args.busy?.run) {
-    const out = await args.busy.run(run, {
-      key: args.key,
-      label: args.label,
-      minMs: 200,
-    });
-    if (!out) throw new Error("PDF preparation cancelled");
-    return out;
-  }
-  return await run();
+  return await executePreparePdfDocument(args);
 }
+
 export async function previewPdfDocument(
   doc: DocumentDescriptor,
   opts?: PreviewPdfDocumentOpts,
 ): Promise<void> {
-  const breadcrumbScreen = doc.originModule;
-  const outputObservation = beginPdfLifecycleObservation({
-    screen: "reports",
-    surface: "pdf_document_actions",
-    event: "pdf_preview_output_prepare",
-    stage: "output_prepare",
-    sourceKind: doc.fileSource.kind,
-    context: {
-      documentFamily: doc.documentType,
-      documentType: doc.documentType,
-      originModule: doc.originModule,
-      entityId: doc.entityId ?? null,
-      fileName: doc.fileName,
-      source: doc.uri,
-    },
+  return await executePreviewPdfDocument(doc, opts, {
+    persistCriticalPdfBreadcrumb,
   });
-  const openObservation = beginPdfLifecycleObservation({
-    screen: "reports",
-    surface: "pdf_document_actions",
-    event: "pdf_preview_open",
-    stage: "open_view",
-    sourceKind: doc.fileSource.kind,
-    context: {
-      documentFamily: doc.documentType,
-      documentType: doc.documentType,
-      originModule: doc.originModule,
-      entityId: doc.entityId ?? null,
-      fileName: doc.fileName,
-      source: doc.uri,
-    },
-  });
-  const recordBoundary = (
-    event: string,
-    stage: "viewer_entry" | "visibility" = "viewer_entry",
-    result: "success" | "error" = "success",
-    error?: unknown,
-  ) => {
-    if (!opts?.boundaryRun) return;
-    recordPdfActionBoundaryEvent({
-      run: opts.boundaryRun,
-      event,
-      stage,
-      result,
-      sourceKind: doc.fileSource.kind,
-      error,
-    });
-  };
-  try {
-    const scheme = extractUriScheme(doc.uri);
-    if (__DEV__) console.info("[pdf-document-actions] preview", {
-      stage: "preview_requested",
-      platform: Platform.OS,
-      documentType: doc.documentType,
-      originModule: doc.originModule,
-      scheme,
-      uri: redactSensitiveText(doc.uri),
-      fileName: doc.fileName,
-    });
-    if (canUseInMemoryRemoteViewerShortcut(doc, Boolean(opts?.router))) {
-      recordPdfOpenStage({
-        context: opts.openFlow,
-        stage: "document_prepare_done",
-        sourceKind: doc.fileSource.kind,
-        extra: {
-          previewSourceMode: "direct_remote_viewer_contract",
-          uriKind: scheme || doc.fileSource.kind,
-          uri: doc.fileSource.uri,
-        },
-      });
-      recordPdfOpenStage({
-        context: opts.openFlow,
-        stage: "viewer_or_handoff_start",
-        sourceKind: doc.fileSource.kind,
-        extra: {
-          route: "/pdf-viewer",
-          previewSourceMode: "direct_remote_viewer_contract",
-          previewPath: "direct_remote_viewer_contract",
-          uriKind: scheme || doc.fileSource.kind,
-          uri: doc.fileSource.uri,
-        },
-      });
-      persistCriticalPdfBreadcrumb({
-        marker: "document_prepare_done",
-        screen: breadcrumbScreen,
-        documentType: doc.documentType,
-        originModule: doc.originModule,
-        sourceKind: doc.fileSource.kind,
-        uriKind: scheme || doc.fileSource.kind,
-        uri: doc.fileSource.uri,
-        fileName: doc.fileName,
-        entityId: doc.entityId,
-        openToken: opts.openFlow?.openToken,
-        previewPath: "direct_remote_viewer_contract",
-        extra: {
-          route: "/pdf-viewer",
-          checkpoint: "mobile_pre_navigation",
-        },
-      });
-      const { session, asset } = createInMemoryDocumentPreviewSession(doc);
-      const {
-        safeSessionId,
-        safeOpenToken,
-        href: viewerHref,
-      } = createPdfDocumentViewerHref(session.sessionId, opts.openFlow?.openToken);
-      recordPdfOpenStage({
-        context: opts.openFlow,
-        stage: "viewer_route_payload_ready",
-        sourceKind: doc.fileSource.kind,
-        extra: {
-          previewSourceMode: "direct_remote_viewer_session_contract",
-          payloadMode: "session_id_only",
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-        },
-      });
-      if (__DEV__) console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
-        sessionId: safeSessionId,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        finalUri: redactSensitiveText(asset.uri),
-        finalScheme: extractUriScheme(asset.uri),
-        finalSourceKind: asset.sourceKind,
-        isLocalFile: false,
-        fileName: asset.fileName,
-        previewSourceMode: "direct_remote_viewer_session_contract",
-        payloadMode: "session_id_only",
-        routeParamsJson: redactedRouteParamsJson({
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-        }),
-      });
-      try {
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_patch_v3_active",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: scheme || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: asset.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          previewPath: "direct_remote_viewer_session_contract",
-          extra: {
-            route: "/pdf-viewer",
-            patchVersion: "v3",
-            payloadMode: "session_id_only",
-          },
-        });
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_patch_v3_before_navigation",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: scheme || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: asset.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          previewPath: "direct_remote_viewer_session_contract",
-          extra: {
-            route: "/pdf-viewer",
-            patchVersion: "v3",
-            payloadMode: "session_id_only",
-          },
-        });
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_route_push_attempt",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: scheme || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: asset.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          previewPath: "direct_remote_viewer_session_contract",
-          extra: {
-            route: "/pdf-viewer",
-            payloadMode: "session_id_only",
-          },
-        });
-        recordPdfOpenStage({
-          context: opts.openFlow,
-          stage: "viewer_route_push_attempt",
-          sourceKind: asset.sourceKind,
-          extra: {
-            route: "/pdf-viewer",
-            sessionId: safeSessionId,
-            openToken: safeOpenToken,
-            previewSourceMode: "direct_remote_viewer_session_contract",
-            payloadMode: "session_id_only",
-          },
-        });
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_patch_v3_navigation_call",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: scheme || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: asset.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          previewPath: "direct_remote_viewer_session_contract",
-          extra: {
-            route: "/pdf-viewer",
-            patchVersion: "v3",
-            payloadMode: "session_id_only",
-          },
-        });
-        opts?.assertCurrentRun?.("viewer_entry");
-        recordBoundary("pdf_viewer_entry_started", "viewer_entry");
-        await pushPdfDocumentViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
-        recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_route_pushed",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: scheme || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: asset.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          previewPath: "direct_remote_viewer_session_contract",
-          extra: {
-            route: "/pdf-viewer",
-            payloadMode: "session_id_only",
-          },
-        });
-        outputObservation.success({
-          sourceKind: asset.sourceKind,
-          extra: {
-            sessionId: session.sessionId,
-            assetId: asset.assetId,
-            previewSourceMode: "direct_remote_viewer_session_contract",
-          },
-        });
-        openObservation.success({
-          sourceKind: asset.sourceKind,
-          extra: {
-            route: "/pdf-viewer",
-            sessionId: safeSessionId,
-            previewSourceMode: "direct_remote_viewer_session_contract",
-          },
-        });
-        return;
-      } catch (error) {
-        recordPdfOpenStage({
-          context: opts.openFlow,
-          stage: "viewer_route_push_crash",
-          result: "error",
-          sourceKind: asset.sourceKind,
-          error,
-          extra: {
-            route: "/pdf-viewer",
-            sessionId: safeSessionId,
-            openToken: safeOpenToken,
-            previewSourceMode: "direct_remote_viewer_session_contract",
-            payloadMode: "session_id_only",
-          },
-        });
-        failPdfOpenVisible(opts.openFlow?.openToken, error, {
-          sourceKind: asset.sourceKind,
-          extra: {
-            route: "/pdf-viewer",
-            sessionId: safeSessionId,
-            previewSourceMode: "direct_remote_viewer_session_contract",
-          },
-        });
-        throw error;
-      }
-    }
-    const { session, asset } = await (async () => {
-      try {
-        return await createDocumentPreviewSession(doc);
-      } catch (error) {
-        throw outputObservation.error(error, {
-          fallbackMessage: "PDF preview asset preparation failed",
-        });
-      }
-    })();
-    recordPdfOpenStage({
-      context: opts?.openFlow,
-      stage: "document_prepare_done",
-      sourceKind: asset.sourceKind,
-      extra: {
-        sessionId: session.sessionId,
-        assetId: asset.assetId,
-        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-        uri: asset.uri,
-        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-        fileSizeBytes: asset.sizeBytes,
-      },
-    });
-    outputObservation.success({
-      sourceKind: asset.sourceKind,
-      extra: {
-        sessionId: session.sessionId,
-        assetId: asset.assetId,
-      },
-    });
-    if (__DEV__) console.info("[pdf-document-actions] preview_asset", {
-      stage: "preview_asset_ready",
-      sessionId: session.sessionId,
-      documentType: asset.documentType,
-      originModule: asset.originModule,
-      sourceKind: asset.sourceKind,
-      uri: redactSensitiveText(asset.uri),
-      scheme: extractUriScheme(asset.uri),
-      fileName: asset.fileName,
-      exists: typeof asset.sizeBytes === "number" ? true : undefined,
-      sizeBytes: asset.sizeBytes,
-    });
-    // iOS oversize guard.
-    // Must fire BEFORE the viewer route push. If the file is too large for
-    // the iOS in-app viewer, we throw IosPdfOversizeError which bubbles to
-    // the busy handler for proper cleanup and user-facing Alert.
-    const sizeEligibility = checkPdfMobilePreviewEligibility({
-      platform: Platform.OS,
-      sizeBytes: asset.sizeBytes,
-      documentType: asset.documentType,
-      originModule: asset.originModule,
-      fileName: asset.fileName,
-    });
-    if (!sizeEligibility.eligible) {
-      const blocked = sizeEligibility as { eligible: false; sizeBytes: number; limitBytes: number };
-      throw recordPdfPreviewOversizeBlocked({
-        sizeBytes: blocked.sizeBytes,
-        limitBytes: blocked.limitBytes,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        fileName: asset.fileName,
-      });
-    }
-    // Route handoff boundary.
-    if (opts?.router) {
-      recordPdfOpenStage({
-        context: opts.openFlow,
-        stage: "viewer_or_handoff_start",
-        sourceKind: asset.sourceKind,
-        extra: {
-          route: "/pdf-viewer",
-          sessionId: session.sessionId,
-          previewPath: "session_viewer_contract",
-          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-          uri: asset.uri,
-          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-          fileSizeBytes: asset.sizeBytes,
-        },
-      });
-      persistCriticalPdfBreadcrumb({
-        marker: "document_prepare_done",
-        screen: breadcrumbScreen,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        sourceKind: asset.sourceKind,
-        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-        uri: asset.uri,
-        fileName: asset.fileName,
-        entityId: doc.entityId,
-        sessionId: session.sessionId,
-        openToken: opts.openFlow?.openToken,
-        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-        fileSizeBytes: asset.sizeBytes,
-        previewPath: "session_viewer_contract",
-        extra: {
-          route: "/pdf-viewer",
-          checkpoint: "mobile_pre_navigation",
-        },
-      });
-      const {
-        safeSessionId,
-        safeOpenToken,
-        href: viewerHref,
-      } = createPdfDocumentViewerHref(session.sessionId, opts.openFlow?.openToken);
-      if (__DEV__) console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
-        sessionId: safeSessionId,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        finalUri: redactSensitiveText(asset.uri),
-        finalScheme: extractUriScheme(asset.uri),
-        finalSourceKind: asset.sourceKind,
-        isLocalFile: /^file:\/\//i.test(String(asset.uri || "")),
-        fileName: asset.fileName,
-        routeParamsJson: redactedRouteParamsJson({
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-        }),
-      });
-      try {
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_patch_v3_active",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: doc.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-          fileSizeBytes: asset.sizeBytes,
-          previewPath: "session_viewer_contract",
-          extra: {
-            route: "/pdf-viewer",
-            patchVersion: "v3",
-          },
-        });
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_patch_v3_before_navigation",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: doc.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-          fileSizeBytes: asset.sizeBytes,
-          previewPath: "session_viewer_contract",
-          extra: {
-            route: "/pdf-viewer",
-            patchVersion: "v3",
-          },
-        });
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_route_push_attempt",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: doc.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-          fileSizeBytes: asset.sizeBytes,
-          previewPath: "session_viewer_contract",
-          extra: {
-            route: "/pdf-viewer",
-          },
-        });
-        recordPdfOpenStage({
-          context: opts.openFlow,
-          stage: "viewer_route_push_attempt",
-          sourceKind: asset.sourceKind,
-          extra: {
-            route: "/pdf-viewer",
-            sessionId: safeSessionId,
-            openToken: safeOpenToken,
-            previewPath: "session_viewer_contract",
-          },
-        });
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_patch_v3_navigation_call",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: doc.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-          fileSizeBytes: asset.sizeBytes,
-          previewPath: "session_viewer_contract",
-          extra: {
-            route: "/pdf-viewer",
-            patchVersion: "v3",
-          },
-        });
-        opts?.assertCurrentRun?.("viewer_entry");
-        recordBoundary("pdf_viewer_entry_started", "viewer_entry");
-        await pushPdfDocumentViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
-        recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
-        persistCriticalPdfBreadcrumb({
-          marker: "viewer_route_pushed",
-          screen: breadcrumbScreen,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          sourceKind: asset.sourceKind,
-          uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-          uri: asset.uri,
-          fileName: asset.fileName,
-          entityId: doc.entityId,
-          sessionId: safeSessionId,
-          openToken: safeOpenToken,
-          fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-          fileSizeBytes: asset.sizeBytes,
-          previewPath: "session_viewer_contract",
-          extra: {
-            route: "/pdf-viewer",
-          },
-        });
-        openObservation.success({
-          sourceKind: asset.sourceKind,
-          extra: {
-            route: "/pdf-viewer",
-            sessionId: safeSessionId,
-          },
-        });
-        return;
-      } catch (error) {
-        recordPdfOpenStage({
-          context: opts.openFlow,
-          stage: "viewer_route_push_crash",
-          result: "error",
-          sourceKind: asset.sourceKind,
-          error,
-          extra: {
-            route: "/pdf-viewer",
-            sessionId: safeSessionId,
-            openToken: safeOpenToken,
-            previewPath: "session_viewer_contract",
-          },
-        });
-        failPdfOpenVisible(opts.openFlow?.openToken, error, {
-          sourceKind: asset.sourceKind,
-          extra: {
-            route: "/pdf-viewer",
-            sessionId: safeSessionId,
-          },
-        });
-        const lifecycleError = openObservation.error(error, {
-          fallbackMessage: "Viewer navigation failed",
-          extra: {
-            sessionId: safeSessionId,
-          },
-        });
-        const message = getPdfFlowErrorMessage(
-          lifecycleError,
-          "Viewer navigation failed",
-        );
-        if (__DEV__) console.error("[pdf-document-actions] preview_navigation_failed", {
-          stage: "navigation_failed",
-          sessionId: safeSessionId,
-          documentType: asset.documentType,
-          originModule: asset.originModule,
-          errorName:
-            error && typeof error === "object" && "name" in error
-              ? String((error as { name?: unknown }).name || "")
-              : "",
-          errorMessage: message,
-        });
-        throw lifecycleError instanceof Error
-          ? lifecycleError
-          : new Error(message);
-      }
-    }
-    if (__DEV__) console.warn("[pdf-document-actions] preview_without_router_fallback", {
-      documentType: asset.documentType,
-      originModule: asset.originModule,
-      finalUri: redactSensitiveText(asset.uri),
-    });
-    recordPdfOpenStage({
-      context: opts?.openFlow,
-      stage: "viewer_or_handoff_start",
-      sourceKind: asset.sourceKind,
-      extra: {
-        openStrategy: "direct_preview",
-      },
-    });
-    try {
-      opts?.assertCurrentRun?.("viewer_entry");
-      recordBoundary("pdf_viewer_entry_started", "viewer_entry");
-      await openPdfPreview(asset.uri, asset.fileName);
-      recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
-      openObservation.success({
-        sourceKind: asset.sourceKind,
-        extra: {
-          openStrategy: "direct_preview",
-        },
-      });
-    } catch (error) {
-      throw openObservation.error(error, {
-        fallbackMessage: "PDF preview open failed",
-        extra: {
-          openStrategy: "direct_preview",
-        },
-      });
-    }
-  } catch (error) {
-    recordBoundary("pdf_terminal_failure", "viewer_entry", "error", error);
-    const lifecycleError = error;
-    const message = getPdfFlowErrorMessage(
-      lifecycleError,
-      "PDF preview failed",
-    );
-    if (__DEV__) console.error("[pdf-document-actions] preview_failed", {
-      stage: "preview_failed",
-      platform: Platform.OS,
-      documentType: doc.documentType,
-      originModule: doc.originModule,
-      fileName: doc.fileName,
-      uri: redactSensitiveText(doc.uri),
-      errorName:
-        error && typeof error === "object" && "name" in error
-          ? String((error as { name?: unknown }).name || "")
-          : "",
-      errorMessage: redactSensitiveText(message),
-    });
-    throw lifecycleError instanceof Error ? lifecycleError : new Error(message);
-  }
 }
+
 export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
-  const observation = beginPdfLifecycleObservation({
-    screen: "reports",
-    surface: "pdf_document_actions",
-    event: "pdf_share_open",
-    stage: "open_view",
-    sourceKind: doc.fileSource.kind,
-    context: {
-      documentFamily: doc.documentType,
-      documentType: doc.documentType,
-      originModule: doc.originModule,
-      entityId: doc.entityId ?? null,
-      fileName: doc.fileName,
-      source: doc.uri,
-    },
-  });
-  try {
-    await openPdfShare(doc.fileSource.uri, doc.fileName);
-    observation.success({
-      extra: {
-        openStrategy: "share_sheet",
-      },
-    });
-  } catch (error) {
-    throw observation.error(error, {
-      fallbackMessage: "PDF share failed",
-      extra: {
-        openStrategy: "share_sheet",
-      },
-    });
-  }
+  return await executeSharePdfDocument(doc);
 }
+
 export async function prepareAndPreviewPdfDocument(
   args: PreparePdfDocumentArgs & {
     router?: PdfViewerRouterLike;
@@ -1004,6 +169,7 @@ export async function prepareAndPreviewPdfDocument(
       extra,
     });
   };
+
   if (flowKey) {
     const existing = activePreviewFlows.get(flowKey);
     const existingTs = activePreviewFlowTimestamps.get(flowKey) ?? existing?.startedAt ?? 0;
@@ -1037,10 +203,12 @@ export async function prepareAndPreviewPdfDocument(
       activePreviewFlowTimestamps.delete(flowKey);
     }
   }
+
   latestPreviewRunByKey.set(flowKey, runId);
   const assertCurrentRun = (stage: "prepare" | "viewer_entry" | "visibility") => {
     assertCurrentPdfActionRun(flowKey, runId, stage);
   };
+
   const runFlow = async () => {
     recordPdfOpenStage({
       context: baseContext,
@@ -1068,6 +236,7 @@ export async function prepareAndPreviewPdfDocument(
         hasBusyOwner: Boolean(args.busy?.run || args.busy?.show),
       },
     });
+
     const execute = async () => {
       recordPdfOpenStage({
         context: baseContext,
@@ -1079,6 +248,7 @@ export async function prepareAndPreviewPdfDocument(
       });
       recordBoundary("pdf_access_requested", "access");
       recordBoundary("pdf_document_prepare_started", "prepare");
+
       let document: DocumentDescriptor;
       try {
         document = await preparePdfDocument({
@@ -1112,6 +282,7 @@ export async function prepareAndPreviewPdfDocument(
         recordBoundary("pdf_terminal_failure", "prepare", "error", boundaryError);
         throw boundaryError;
       }
+
       const visibilityStartPlan = resolvePdfDocumentVisibilityStartPlan({
         hasRouter: Boolean(args.router),
       });
@@ -1119,6 +290,7 @@ export async function prepareAndPreviewPdfDocument(
         visibilityStartPlan.action === "begin_visibility_wait"
           ? beginPdfOpenVisibilityWait(baseContext)
           : null;
+
       try {
         assertCurrentRun("prepare");
         await previewPdfDocument(document, {
@@ -1184,6 +356,7 @@ export async function prepareAndPreviewPdfDocument(
         throw boundaryError;
       }
     };
+
     const busyExecutionPlan = resolvePdfDocumentBusyExecutionPlan({
       hasBusyRun: Boolean(args.busy?.run),
       hasBusyShow: Boolean(args.busy?.show),
@@ -1238,6 +411,7 @@ export async function prepareAndPreviewPdfDocument(
       }
     }
   };
+
   const promise = runFlow().finally(() => {
     if (flowKey) {
       const active = activePreviewFlows.get(flowKey);
@@ -1256,6 +430,7 @@ export async function prepareAndPreviewPdfDocument(
       }
     }
   });
+
   if (flowKey) {
     const startedAt = Date.now();
     activePreviewFlows.set(flowKey, {
@@ -1265,39 +440,12 @@ export async function prepareAndPreviewPdfDocument(
     });
     activePreviewFlowTimestamps.set(flowKey, Date.now());
   }
+
   return await promise;
 }
+
 export async function openPdfDocumentExternal(
   doc: DocumentDescriptor,
 ): Promise<void> {
-  const observation = beginPdfLifecycleObservation({
-    screen: "reports",
-    surface: "pdf_document_actions",
-    event: "pdf_external_open",
-    stage: "open_view",
-    sourceKind: doc.fileSource.kind,
-    context: {
-      documentFamily: doc.documentType,
-      documentType: doc.documentType,
-      originModule: doc.originModule,
-      entityId: doc.entityId ?? null,
-      fileName: doc.fileName,
-      source: doc.uri,
-    },
-  });
-  try {
-    await openPdfExternal(doc.fileSource.uri, doc.fileName);
-    observation.success({
-      extra: {
-        openStrategy: "external",
-      },
-    });
-  } catch (error) {
-    throw observation.error(error, {
-      fallbackMessage: "PDF external open failed",
-      extra: {
-        openStrategy: "external",
-      },
-    });
-  }
+  return await executeOpenPdfDocumentExternal(doc);
 }

@@ -104,8 +104,9 @@ describe("performance budget — bundle module count", () => {
     // A4 adds one reusable security redaction boundary plus focused regression tests.
     // A5 adds three buyer owner-boundary modules for sheet composition and sheet-local state.
     // B1 adds six permanent PDF viewer owner-boundary modules.
+    // B2 adds eight permanent PDF document action owner-boundary modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1238);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1254);
   });
 });
 

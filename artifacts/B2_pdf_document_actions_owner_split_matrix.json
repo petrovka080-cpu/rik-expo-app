@@ -1,0 +1,121 @@
+{
+  "wave": "B2.PDF_DOCUMENT_ACTIONS_OWNER_SPLIT",
+  "status": "code_green_runtime_web_pass_android_blocked",
+  "scope": {
+    "touched_runtime_files": [
+      "src/lib/documents/pdfDocumentActions.ts",
+      "src/lib/documents/pdfDocumentActionTypes.ts",
+      "src/lib/documents/pdfDocumentActionPreconditions.ts",
+      "src/lib/documents/pdfDocumentActionError.ts",
+      "src/lib/documents/pdfDocumentActionPlan.ts",
+      "src/lib/documents/pdfDocumentPrepareAction.ts",
+      "src/lib/documents/pdfDocumentPreviewAction.ts",
+      "src/lib/documents/pdfDocumentShareAction.ts",
+      "src/lib/documents/pdfDocumentExternalOpenAction.ts",
+      "src/lib/pdf/pdf.runner.ts"
+    ],
+    "touched_tests": [
+      "src/lib/documents/pdfDocumentActions.test.ts",
+      "src/lib/documents/pdfDocumentActionPreconditions.test.ts",
+      "src/lib/documents/pdfDocumentActionError.test.ts",
+      "src/lib/documents/pdfDocumentActionPlan.test.ts",
+      "src/lib/documents/pdfDocumentPreviewAction.test.ts",
+      "src/lib/documents/pdfDocumentShareAction.test.ts",
+      "src/lib/documents/pdfDocumentExternalOpenAction.test.ts",
+      "tests/pdf/pdfDocumentActionsDecompositionAudit.test.ts",
+      "tests/pdf/pdfOpenLatencyAudit.test.ts",
+      "tests/perf/performance-budget.test.ts"
+    ],
+    "untouched_domains": [
+      "viewer download/print",
+      "attachmentOpener.ts",
+      "pdf backend/generation pipeline",
+      "manifest/source_version/artifact_version semantics",
+      "auth/navigation/storage/API contracts",
+      "role business logic"
+    ]
+  },
+  "owner_split": {
+    "public_orchestrator": "src/lib/documents/pdfDocumentActions.ts",
+    "action_types": "src/lib/documents/pdfDocumentActionTypes.ts",
+    "preconditions": "src/lib/documents/pdfDocumentActionPreconditions.ts",
+    "error_normalization": "src/lib/documents/pdfDocumentActionError.ts",
+    "plan_layer": "src/lib/documents/pdfDocumentActionPlan.ts",
+    "prepare_execution": "src/lib/documents/pdfDocumentPrepareAction.ts",
+    "preview_execution": "src/lib/documents/pdfDocumentPreviewAction.ts",
+    "share_execution": "src/lib/documents/pdfDocumentShareAction.ts",
+    "external_open_execution": "src/lib/documents/pdfDocumentExternalOpenAction.ts"
+  },
+  "public_contract": {
+    "exports": [
+      "getPdfFlowErrorMessage",
+      "preparePdfDocument",
+      "previewPdfDocument",
+      "sharePdfDocument",
+      "prepareAndPreviewPdfDocument",
+      "openPdfDocumentExternal"
+    ],
+    "changed": false
+  },
+  "gates": {
+    "tsc": "pass",
+    "expo_lint": "pass",
+    "jest_run_in_band": "pass",
+    "jest_parallel": "pass",
+    "git_diff_check": "pass"
+  },
+  "focused_b2_tests": {
+    "preconditions": "pass",
+    "error_normalization": "pass",
+    "action_plan": "pass",
+    "preview_execution": "pass",
+    "share_execution": "pass",
+    "external_open_execution": "pass",
+    "actions_orchestrator": "pass",
+    "decomposition_audit": "pass"
+  },
+  "runtime_proof": {
+    "web": {
+      "status": "pass",
+      "script": "scripts/foreman_warehouse_pdf_web_runtime_verify.ts",
+      "role": "warehouse",
+      "base_url": "http://localhost:8083",
+      "final_url": "http://localhost:8083/pdf-viewer?sessionId=session_mo8djd97_2&openToken=pdf_open_mo8djd95_1",
+      "route_reached": true,
+      "event_counts": {
+        "payload_ready": 1,
+        "backend_invoke_start": 1,
+        "backend_invoke_success": 1,
+        "signed_url_received": 1,
+        "viewer_route_mounted": 1,
+        "open": 1,
+        "viewer_before_render": 1,
+        "web_iframe_render": 1,
+        "web_iframe_load": 1,
+        "ready": 1,
+        "busy_cleared": 1
+      },
+      "page_errors": 0,
+      "bad_responses": 0
+    },
+    "android_open_path": {
+      "status": "blocked",
+      "script": "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
+      "device": "emulator-5554",
+      "attempts": 2,
+      "recovery_attempts": 1,
+      "process_alive": true,
+      "fatal_android_runtime": false,
+      "blocker": "protected-route settle did not reach foreman/warehouse PDF flow; verifier landed on a not-found screen before the action path"
+    },
+    "android_share_external": {
+      "status": "blocked",
+      "reason": "native viewer/action menu could not be reached honestly because the protected-route Android runtime proof was blocked before action entry"
+    }
+  },
+  "release_readiness": {
+    "code_gates_green": true,
+    "web_runtime_green": true,
+    "android_runtime_blocked_honestly": true
+  }
+}

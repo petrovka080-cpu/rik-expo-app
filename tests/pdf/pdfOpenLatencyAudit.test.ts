@@ -31,6 +31,33 @@ const SESSIONS_PATH = join(
   "documents",
   "pdfDocumentSessions.ts",
 );
+const ACTION_PLAN_PATH = join(
+  __dirname,
+  "..",
+  "..",
+  "src",
+  "lib",
+  "documents",
+  "pdfDocumentActionPlan.ts",
+);
+const PREVIEW_ACTION_PATH = join(
+  __dirname,
+  "..",
+  "..",
+  "src",
+  "lib",
+  "documents",
+  "pdfDocumentPreviewAction.ts",
+);
+const VISIBILITY_BUSY_PLAN_PATH = join(
+  __dirname,
+  "..",
+  "..",
+  "src",
+  "lib",
+  "documents",
+  "pdfDocumentVisibilityBusyPlan.ts",
+);
 const VIEWER_ENTRY_PATH = join(
   __dirname,
   "..",
@@ -43,6 +70,9 @@ const VIEWER_ENTRY_PATH = join(
 
 const actionsSource = readFileSync(ACTIONS_PATH, "utf8");
 const sessionsSource = readFileSync(SESSIONS_PATH, "utf8");
+const actionPlanSource = readFileSync(ACTION_PLAN_PATH, "utf8");
+const previewActionSource = readFileSync(PREVIEW_ACTION_PATH, "utf8");
+const visibilityBusyPlanSource = readFileSync(VISIBILITY_BUSY_PLAN_PATH, "utf8");
 const viewerEntrySource = readFileSync(VIEWER_ENTRY_PATH, "utf8");
 
 describe("L-PERF: breadcrumbs are fire-and-forget on critical path", () => {
@@ -83,7 +113,7 @@ describe("L-PERF: breadcrumbs are fire-and-forget on critical path", () => {
 
 describe("L-PERF: minMs busy floor reduced from 650 to 200", () => {
   it("uses minMs: 200 (not 650) for PDF prepare", () => {
-    const matches = actionsSource.match(/minMs:\s*(\d+)/g);
+    const matches = visibilityBusyPlanSource.match(/minMs:\s*(\d+)/g);
     expect(matches).toBeTruthy();
     for (const m of matches!) {
       const value = parseInt(m.replace(/minMs:\s*/, ""), 10);
@@ -92,13 +122,13 @@ describe("L-PERF: minMs busy floor reduced from 650 to 200", () => {
   });
 
   it("does not contain minMs: 650", () => {
-    expect(actionsSource).not.toContain("minMs: 650");
+    expect(visibilityBusyPlanSource).not.toContain("minMs: 650");
   });
 });
 
 describe("L-PERF: critical path contract preserved", () => {
   it("InteractionManager.runAfterInteractions is still used for modal dismiss safety", () => {
-    expect(actionsSource).toContain("pushPdfDocumentViewerRouteSafely");
+    expect(previewActionSource).toContain("pushPdfDocumentViewerRouteSafely");
     expect(viewerEntrySource).toContain("InteractionManager");
     expect(viewerEntrySource).toContain("runAfterInteractions");
   });
@@ -109,8 +139,10 @@ describe("L-PERF: critical path contract preserved", () => {
 
   it("breadcrumbs still fire (fire-and-forget, not removed)", () => {
     // persistCriticalPdfBreadcrumb calls should still exist
-    const callCount = (actionsSource.match(/persistCriticalPdfBreadcrumb\(/g) || []).length;
-    // Function definition + at least 5 calls on the critical path
+    const callCount =
+      (actionsSource.match(/persistCriticalPdfBreadcrumb\(/g) || []).length
+      + (previewActionSource.match(/persistCriticalPdfBreadcrumb\(/g) || []).length;
+    // Function definition in the orchestrator plus preview execution-owner breadcrumbs.
     expect(callCount).toBeGreaterThanOrEqual(6);
   });
 
@@ -131,8 +163,9 @@ describe("L-PERF: critical path contract preserved", () => {
   });
 
   it("delegates mobile remote preview session strategy to a pure plan", () => {
-    expect(actionsSource).toContain("resolvePdfDocumentPreviewSessionPlan");
-    expect(actionsSource).not.toContain('Platform.OS === "android" &&\n    doc.fileSource.kind');
+    expect(actionPlanSource).toContain("resolvePdfDocumentPreviewSessionPlan");
+    expect(previewActionSource).toContain("resolvePdfDocumentPreviewModePlan");
+    expect(actionsSource).not.toContain("resolvePdfDocumentPreviewSessionPlan");
   });
 });
 

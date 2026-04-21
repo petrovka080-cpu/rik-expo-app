@@ -9,11 +9,10 @@ import { createPdfSource, type PdfSource } from "../pdfFileContract";
 import {
   preparePdfDocument,
   prepareAndPreviewPdfDocument,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  previewPdfDocument,
   sharePdfDocument,
   type PdfViewerRouterLike,
 } from "../documents/pdfDocumentActions";
+import type { PdfDocumentSupabaseLike } from "../documents/pdfDocumentActionTypes";
 import { beginPdfLifecycleObservation } from "./pdfLifecycle";
 import { normalizeRuTextForHtml } from "../text/encoding";
 import type { BusyLike } from "../pdfRunner";
@@ -31,7 +30,7 @@ type BuildGeneratedPdfDescriptorArgs = {
 
 type PrepareGeneratedPdfArgs = {
   busy?: BusyLike;
-  supabase: unknown;
+  supabase: PdfDocumentSupabaseLike;
   key: string;
   label: string;
   descriptor: DocumentDescriptor;
