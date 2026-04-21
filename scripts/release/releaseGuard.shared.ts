@@ -101,6 +101,14 @@ export function resolveReleaseGuardPath(projectRoot: string, filePath: string): 
   return path.isAbsolute(filePath) ? filePath : path.join(projectRoot, filePath);
 }
 
+export function buildReleaseChangedFilesGitArgs(range: string): string[] {
+  if (range === "HEAD") {
+    return ["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"];
+  }
+
+  return ["diff", "--name-only", "--diff-filter=ACMR", range];
+}
+
 function dedupe(values: string[]): string[] {
   return [...new Set(values)];
 }

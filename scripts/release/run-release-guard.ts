@@ -5,6 +5,7 @@ import path from "node:path";
 import { getExpectedReleaseBranch, isCanonicalReleaseChannel } from "../../src/shared/release/releaseInfo";
 import { PROJECT_ROOT } from "./releaseConfig.shared";
 import {
+  buildReleaseChangedFilesGitArgs,
   REQUIRED_RELEASE_GATES,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
@@ -97,12 +98,18 @@ function resolveCommitRange(explicitRange: string | null): string {
 }
 
 function readChangedFiles(range: string): string[] {
-  const command =
-    range === "HEAD"
-      ? "git diff-tree --no-commit-id --name-only -r HEAD"
-      : `git diff --name-only --diff-filter=ACMR ${range}`;
+  const result = spawnSync("git", buildReleaseChangedFilesGitArgs(range), {
+    cwd: PROJECT_ROOT,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
 
-  return readCommand(command)
+  if (result.status !== 0) {
+    const message = result.stderr?.trim() || `git changed-files read failed for range ${range}`;
+    throw new Error(message);
+  }
+
+  return result.stdout
     .split(/\r?\n/)
     .map((value) => value.trim())
     .filter(Boolean);

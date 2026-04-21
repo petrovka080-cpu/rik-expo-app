@@ -1,4 +1,5 @@
 import {
+  buildReleaseChangedFilesGitArgs,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
@@ -259,6 +260,27 @@ EAS Dashboard      https://expo.dev/update/group-123
       expect(resolveReleaseGuardPath("C:\\repo", "artifacts/release-guard.json").replace(/\\/g, "/")).toBe(
         "C:/repo/artifacts/release-guard.json",
       );
+    });
+  });
+
+  describe("buildReleaseChangedFilesGitArgs", () => {
+    it("uses diff-tree for a single-head repository range", () => {
+      expect(buildReleaseChangedFilesGitArgs("HEAD")).toEqual([
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "-r",
+        "HEAD",
+      ]);
+    });
+
+    it("preserves caret commit ranges as a single git argument", () => {
+      expect(buildReleaseChangedFilesGitArgs("HEAD^..HEAD")).toEqual([
+        "diff",
+        "--name-only",
+        "--diff-filter=ACMR",
+        "HEAD^..HEAD",
+      ]);
     });
   });
 });
