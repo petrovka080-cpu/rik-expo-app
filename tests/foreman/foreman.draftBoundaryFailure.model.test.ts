@@ -4,7 +4,7 @@ import { join } from "path";
 import {
   resolveForemanDraftBoundaryFailureReportPlan,
   type ForemanDraftBoundaryFailureClassification,
-} from "./foreman.draftBoundaryFailure.model";
+} from "../../src/screens/foreman/foreman.draftBoundaryFailure.model";
 
 const retryableClassification: ForemanDraftBoundaryFailureClassification = {
   retryable: true,
@@ -22,7 +22,10 @@ const terminalClassification: ForemanDraftBoundaryFailureClassification = {
 
 describe("foreman draft boundary failure report planner", () => {
   it("stays free of observability, durable store, and React side effects", () => {
-    const source = readFileSync(join(__dirname, "foreman.draftBoundaryFailure.model.ts"), "utf8");
+    const source = readFileSync(
+      join(__dirname, "../../src/screens/foreman/foreman.draftBoundaryFailure.model.ts"),
+      "utf8",
+    );
 
     expect(source).not.toContain("recordCatchDiscipline");
     expect(source).not.toContain("getForemanDurableDraftState");
@@ -105,15 +108,15 @@ describe("foreman draft boundary failure report planner", () => {
   });
 
   it("keeps reportDraftBoundaryFailure side effects in the established order", () => {
-    const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
+    const source = readFileSync(
+      join(__dirname, "../../src/screens/foreman/hooks/useForemanDraftBoundary.ts"),
+      "utf8",
+    );
     const start = source.indexOf("const reportDraftBoundaryFailure = useCallback");
     const end = source.indexOf("const persistLocalDraftSnapshot = useCallback", start);
     const block = source.slice(start, end);
     const expectedOrder = [
-      "const classified = classifyForemanSyncError(params.error)",
-      "const snapshot = localDraftSnapshotRef.current ?? getForemanDurableDraftState().snapshot",
-      "const requestIdForError = ridStr(snapshot?.requestId) || ridStr(requestId) || null",
-      "const failurePlan = resolveForemanDraftBoundaryFailureReportPlan",
+      "const failurePlan = resolveForemanDraftBoundaryFailurePlan",
       "recordCatchDiscipline(failurePlan.catchDiscipline)",
       "return failurePlan.classified",
     ];

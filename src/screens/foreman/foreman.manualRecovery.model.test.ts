@@ -472,9 +472,7 @@ describe("foreman manual recovery command planner", () => {
     const block = source.slice(start, end);
     const expectedOrder = [
       "const durableState = getForemanDurableDraftState()",
-      "const snapshot = localDraftSnapshotRef.current ?? durableState.snapshot",
-      "const recoveryDraftKey = getDraftQueueKey(snapshot)",
-      "const recoveryTelemetryPlan = resolveForemanManualRecoveryTelemetryPlan",
+      "const recoveryTelemetryPlan = resolveForemanDraftBoundaryManualRecoveryTelemetryPlan",
       "pushForemanDurableDraftTelemetry(recoveryTelemetryPlan.telemetry)",
     ];
 

@@ -29,8 +29,6 @@ import {
   markForemanSnapshotQueued,
 } from "../../../lib/offline/mutationWorker";
 import {
-  classifyForemanSyncError,
-  isForemanConflictAutoRecoverable,
   type ForemanDraftSyncStage,
   type ForemanDraftRecoveryAction,
 } from "../../../lib/offline/foremanSyncRuntime";
@@ -61,7 +59,6 @@ import {
   type ForemanLocalDraftSnapshot,
 } from "../foreman.localDraft";
 import type { RequestDraftMeta } from "../foreman.types";
-import { resolveForemanDraftBoundaryFailureReportPlan } from "../foreman.draftBoundaryFailure.model";
 import {
   INITIAL_BOUNDARY_STATE,
   appendForemanLocalDraftRows,
@@ -81,7 +78,6 @@ import {
   updateForemanLocalDraftQtyInBoundary,
 } from "../foreman.draftBoundary.helpers";
 import {
-  buildForemanDraftRecoveryBoundaryPatch,
   resolveForemanTerminalRecoveryCleanupDecision,
 } from "../foreman.draftRecovery.model";
 import {
@@ -104,11 +100,8 @@ import {
   planForemanNetworkBackRestoreTrigger,
   resolveForemanActiveLocalDraftSnapshotPlan,
   resolveForemanDraftCacheClearPlan,
-  resolveForemanRestoreRemoteCheckPlan,
-  resolveForemanRestoreRemoteStatusPlan,
   shouldPersistForemanLifecycleSnapshot,
   shouldSkipForemanRemoteDraftEffects,
-  shouldSyncForemanDraftAfterRestoreCheck,
 } from "../foreman.draftLifecycle.model";
 import {
   planForemanSyncInactiveGate,
@@ -126,12 +119,19 @@ import {
   planForemanRehydrateServerRemoteAction,
   planForemanRestoreLocalAction,
   planForemanRetryNowAction,
-  resolveForemanManualRecoveryTelemetryPlan,
 } from "../foreman.manualRecovery.model";
 import {
   resolveForemanPostSubmitDraftPlan,
   resolveForemanPostSubmitSubmittedOwnerId,
 } from "../foreman.postSubmitDraftPlan.model";
+import {
+  resolveForemanDraftBoundaryFailurePlan,
+  resolveForemanDraftBoundaryManualRecoveryTelemetryPlan,
+  resolveForemanDraftBoundaryRefreshPlan,
+  resolveForemanDraftBoundarySnapshot,
+  resolveForemanDraftBoundaryRestoreAttemptPlan,
+  resolveForemanDraftBoundaryRestoreRemotePlan,
+} from "../foreman.draftBoundary.logic";
 import {
   getForemanDurableDraftState,
   markForemanDurableDraftDirtyLocal,
@@ -268,18 +268,21 @@ export function useForemanDraftBoundary({
   const refreshBoundarySyncState = useCallback(
     async (snapshotOverride?: ForemanLocalDraftSnapshot | null) => {
       const durableState = getForemanDurableDraftState();
-      const snapshot =
-        snapshotOverride === undefined ? durableState.snapshot ?? localDraftSnapshotRef.current : snapshotOverride;
+      const refreshSnapshot = resolveForemanDraftBoundarySnapshot({
+        durableSnapshot: durableState.snapshot,
+        localSnapshot: localDraftSnapshotRef.current,
+        snapshotOverride,
+      });
       const pendingOperationsCount = await getForemanPendingMutationCountForDraftKeys(
-        getDraftQueueKeys(snapshot),
+        getDraftQueueKeys(refreshSnapshot),
       );
-      patchBoundaryState(
-        buildForemanDraftRecoveryBoundaryPatch({
-          durableState,
-          snapshot,
-          pendingOperationsCount,
-        }),
-      );
+      const refreshPlan = resolveForemanDraftBoundaryRefreshPlan({
+        durableState,
+        localSnapshot: localDraftSnapshotRef.current,
+        snapshotOverride,
+        pendingOperationsCount,
+      });
+      patchBoundaryState(refreshPlan.boundaryPatch);
     },
     [getDraftQueueKeys, patchBoundaryState],
   );
@@ -293,23 +296,21 @@ export function useForemanDraftBoundary({
       errorCode?: string | null;
     }) => {
       const durableState = getForemanDurableDraftState();
-      const snapshot = localDraftSnapshotRef.current ?? durableState.snapshot;
-      const recoveryDraftKey = getDraftQueueKey(snapshot);
-      const recoveryTelemetryPlan = resolveForemanManualRecoveryTelemetryPlan({
-        snapshot,
-        draftKey: recoveryDraftKey,
+      const recoveryTelemetryPlan = resolveForemanDraftBoundaryManualRecoveryTelemetryPlan({
         durableState,
+        localSnapshot: localDraftSnapshotRef.current,
+        activeRequestId: requestId,
+        localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
         recoveryAction: params.recoveryAction,
         result: params.result,
         conflictType: params.conflictType,
         errorClass: params.errorClass,
         errorCode: params.errorCode,
         networkOnline: networkOnlineRef.current,
-        localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
       });
       await pushForemanDurableDraftTelemetry(recoveryTelemetryPlan.telemetry);
     },
-    [getDraftQueueKey],
+    [requestId],
   );
 
   const reportDraftBoundaryFailure = useCallback((params: {
@@ -321,10 +322,11 @@ export function useForemanDraftBoundary({
     sourceKind?: string;
     extra?: Record<string, unknown>;
   }) => {
-    const classified = classifyForemanSyncError(params.error);
-    const snapshot = localDraftSnapshotRef.current ?? getForemanDurableDraftState().snapshot;
-    const requestIdForError = ridStr(snapshot?.requestId) || ridStr(requestId) || null;
-    const failurePlan = resolveForemanDraftBoundaryFailureReportPlan({
+    const failurePlan = resolveForemanDraftBoundaryFailurePlan({
+      durableState: getForemanDurableDraftState(),
+      localSnapshot: localDraftSnapshotRef.current,
+      activeRequestId: requestId,
+      localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
       event: params.event,
       error: params.error,
       context: params.context,
@@ -332,13 +334,10 @@ export function useForemanDraftBoundary({
       kind: params.kind,
       sourceKind: params.sourceKind,
       extra: params.extra,
-      classified,
-      queueDraftKey: getDraftQueueKey(snapshot),
-      requestId: requestIdForError,
     });
     recordCatchDiscipline(failurePlan.catchDiscipline);
     return failurePlan.classified;
-  }, [getDraftQueueKey, requestId]);
+  }, [requestId]);
 
   const persistLocalDraftSnapshot = useCallback(
     (snapshot: ForemanLocalDraftSnapshot | null) => {
@@ -1352,24 +1351,27 @@ export function useForemanDraftBoundary({
 
   const restoreDraftIfNeeded = useCallback(
     async (context: string) => {
-      if (!boundaryState.bootstrapReady) return;
+      const durableState = getForemanDurableDraftState();
+      const restoreAttemptPlan = resolveForemanDraftBoundaryRestoreAttemptPlan({
+        bootstrapReady: boundaryState.bootstrapReady,
+        durableState,
+        localSnapshot: localDraftSnapshotRef.current,
+      });
+      if (restoreAttemptPlan.action === "skip") return;
       if (await clearTerminalRecoveryOwnerIfNeeded(context)) return;
 
       // ── P6.3d: On focus/foreground, check if active snapshot's request
       // is already terminal on the server. skipRemoteDraftEffects prevents
       // loadDetails from running, so P6.3c live reconciliation has no way
       // to discover the terminal status. This explicit check closes that gap.
-      const durableState = getForemanDurableDraftState();
-      const snapshot = localDraftSnapshotRef.current ?? durableState.snapshot;
-      const remoteCheckPlan = resolveForemanRestoreRemoteCheckPlan({ snapshot });
+      const snapshot = restoreAttemptPlan.snapshot;
+      const remoteCheckPlan = restoreAttemptPlan.remoteCheckPlan;
       if (remoteCheckPlan.action === "check_terminal") {
         try {
           const remoteDetails = await fetchRequestDetails(remoteCheckPlan.requestId);
-          const remoteStatus = remoteDetails?.status ?? null;
-          const remoteStatusPlan = resolveForemanRestoreRemoteStatusPlan({
+          const remoteStatusPlan = resolveForemanDraftBoundaryRestoreRemotePlan({
             requestId: remoteCheckPlan.requestId,
-            remoteStatus,
-            remoteStatusIsTerminal: Boolean(remoteStatus && !isDraftLikeStatus(remoteStatus)),
+            remoteStatus: remoteDetails?.status ?? null,
           });
           if (remoteStatusPlan.action === "clear_terminal") {
             if (__DEV__) {
@@ -1402,11 +1404,7 @@ export function useForemanDraftBoundary({
         }
       }
 
-      if (
-        !shouldSyncForemanDraftAfterRestoreCheck({
-          conflictAutoRecoverable: isForemanConflictAutoRecoverable(durableState.conflictType),
-        })
-      ) return;
+      if (!restoreAttemptPlan.shouldSyncAfterRemoteCheck) return;
       await syncLocalDraftNow({ context });
     },
     [
