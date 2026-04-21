@@ -112,8 +112,36 @@ export function buildReleaseGuardOtaPublishEnv(
   };
 }
 
-export function resolveReleaseGuardNpxCommand(platform: NodeJS.Platform): string {
-  return platform === "win32" ? "npx.cmd" : "npx";
+function quoteReleaseGuardShellArg(value: string, platform: NodeJS.Platform): string {
+  if (platform === "win32") {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
+export function buildReleaseGuardOtaPublishCommand(params: {
+  platform: NodeJS.Platform;
+  channel: string;
+  message: string;
+}): string {
+  const parts = [
+    "npx",
+    "eas",
+    "update",
+    "--branch",
+    params.channel,
+    "--message",
+    params.message,
+  ];
+
+  return parts
+    .map((part, index) =>
+      index === 0
+        ? part
+        : quoteReleaseGuardShellArg(part, params.platform),
+    )
+    .join(" ");
 }
 
 export function buildReleaseChangedFilesGitArgs(range: string): string[] {

@@ -1,13 +1,13 @@
 import {
   RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES,
   buildReleaseChangedFilesGitArgs,
+  buildReleaseGuardOtaPublishCommand,
   buildReleaseGuardOtaPublishEnv,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
   resolveReleaseGuardPath,
-  resolveReleaseGuardNpxCommand,
   type ReleaseGateResult,
   type ReleaseRepoState,
 } from "../../scripts/release/releaseGuard.shared";
@@ -307,13 +307,25 @@ EAS Dashboard      https://expo.dev/update/group-123
     });
   });
 
-  describe("resolveReleaseGuardNpxCommand", () => {
-    it("uses the Windows npx shim when publish commands run on win32", () => {
-      expect(resolveReleaseGuardNpxCommand("win32")).toBe("npx.cmd");
+  describe("buildReleaseGuardOtaPublishCommand", () => {
+    it("quotes spaced OTA messages safely for the Windows shell", () => {
+      expect(
+        buildReleaseGuardOtaPublishCommand({
+          platform: "win32",
+          channel: "production",
+          message: 'TS: enable strictNullChecks phase 1',
+        }),
+      ).toBe('npx "eas" "update" "--branch" "production" "--message" "TS: enable strictNullChecks phase 1"');
     });
 
-    it("uses plain npx on non-Windows platforms", () => {
-      expect(resolveReleaseGuardNpxCommand("linux")).toBe("npx");
+    it("quotes OTA messages safely for POSIX shells", () => {
+      expect(
+        buildReleaseGuardOtaPublishCommand({
+          platform: "linux",
+          channel: "preview",
+          message: "Office owner's fallback",
+        }),
+      ).toBe("npx 'eas' 'update' '--branch' 'preview' '--message' 'Office owner'\\''s fallback'");
     });
   });
 
