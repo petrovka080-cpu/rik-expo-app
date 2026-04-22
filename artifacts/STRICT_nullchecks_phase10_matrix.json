@@ -1,0 +1,31 @@
+{
+  "phase": "STRICT_NULLCHECKS_PHASE_10",
+  "chosen_slice": "office presenter invite/access boundary",
+  "cluster": "office presenter invite/access boundary",
+  "touched_files": [
+    "src/screens/office/officeHub.sections.tsx",
+    "src/screens/office/officeHub.companyCreateSection.tsx",
+    "src/screens/office/officeHub.companyCreateSection.test.tsx",
+    "tsconfig.strict-null-phase10-office-invite-access.json"
+  ],
+  "strict_blockers_closed": [
+    "captured non-null invite handoff contract for invite action closures",
+    "optional layout callback contract for company-create presenter",
+    "removed hook-return-type coupling from presenter prop contracts"
+  ],
+  "tests_added": [
+    "src/screens/office/officeHub.companyCreateSection.test.tsx"
+  ],
+  "semantics_changed": false,
+  "phase10_strict_compile": "PASS",
+  "root_typecheck": "PASS",
+  "lint": "PASS",
+  "focused_tests": "PASS",
+  "full_tests_run_in_band": "PASS",
+  "full_tests_parallel": "PASS",
+  "next_remaining_risks": [
+    "src/screens/office/OfficeHubScreen.tsx orchestration strict blocker still drags service-coupled imports",
+    "app/pdf-viewer.tsx session boundary remains a larger strict candidate",
+    "foreman lifecycle/recovery cluster remains too wide for direct strict rollout"
+  ]
+}

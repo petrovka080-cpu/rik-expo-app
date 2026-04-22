@@ -16,8 +16,8 @@ type OfficeCompanyCreateSectionProps = {
   savingCompany: boolean;
   onChangeCompanyDraft: React.Dispatch<React.SetStateAction<CreateCompanyDraft>>;
   onCreateCompany: () => void;
-  onCompanyCreateLayout: (event: LayoutChangeEvent) => void;
-  onRulesLayout: (event: LayoutChangeEvent) => void;
+  onCompanyCreateLayout?: (event: LayoutChangeEvent) => void;
+  onRulesLayout?: (event: LayoutChangeEvent) => void;
 };
 
 function getCompanyFieldTestId(fieldKey: keyof CreateCompanyDraft) {

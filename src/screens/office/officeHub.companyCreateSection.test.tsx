@@ -11,11 +11,15 @@ describe("OfficeCompanyCreateSection", () => {
       ...EMPTY_COMPANY_DRAFT,
       additionalPhones: ["+996700000001"],
     },
+    options?: {
+      onCompanyCreateLayout?: jest.Mock | undefined;
+      onRulesLayout?: jest.Mock | undefined;
+    },
   ) => {
     const onChangeCompanyDraft = jest.fn();
     const onCreateCompany = jest.fn();
-    const onCompanyCreateLayout = jest.fn();
-    const onRulesLayout = jest.fn();
+    const onCompanyCreateLayout = options?.onCompanyCreateLayout ?? jest.fn();
+    const onRulesLayout = options?.onRulesLayout ?? jest.fn();
 
     let renderer!: ReactTestRenderer;
     act(() => {
@@ -117,5 +121,19 @@ describe("OfficeCompanyCreateSection", () => {
       ...draft,
       additionalPhones: ["+996700000002"],
     });
+  });
+
+  it("keeps the form renderable when post-return tracing omits layout handlers", () => {
+    const { renderer } = renderSection(undefined, {
+      onCompanyCreateLayout: undefined,
+      onRulesLayout: undefined,
+    });
+
+    expect(
+      renderer.root.findByProps({ testID: "office-create-company" }),
+    ).toBeTruthy();
+    expect(
+      renderer.root.findByProps({ testID: "office-company-name" }),
+    ).toBeTruthy();
   });
 });

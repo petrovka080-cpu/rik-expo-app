@@ -12,18 +12,21 @@ import type { DeveloperOverrideRole } from "../../lib/developerOverride";
 import type { OfficePostReturnSubtree } from "../../lib/navigation/officeReentryBreadcrumbs";
 import { getProfileRoleLabel } from "../profile/profile.helpers";
 import type { OfficeWorkspaceCard } from "./officeAccess.model";
-import type { OfficeAccessScreenData } from "./officeAccess.types";
+import type {
+  CreateCompanyDraft,
+  OfficeAccessMember,
+  OfficeAccessScreenData,
+} from "./officeAccess.types";
 import { DirectionCard, InviteCard, MemberCard } from "./officeHub.cards";
 import { OfficeCompanyCreateSection } from "./officeHub.companyCreateSection";
 import {
   COPY,
+  type InviteFormDraft,
   type PostReturnSectionKey,
   type SectionKey,
 } from "./officeHub.constants";
 import { styles } from "./officeHub.styles";
-import type { useOfficeCompanySection } from "./useOfficeCompanySection";
-import type { useOfficeInviteFlow } from "./useOfficeInviteFlow";
-import type { useOfficeMembersSection } from "./useOfficeMembersSection";
+import type { OfficeInviteHandoff } from "./officeInviteShare";
 import type { OfficeHubRoleAccessState } from "./useOfficeHubRoleAccess";
 
 export { DirectionCard, InviteCard, MemberCard } from "./officeHub.cards";
@@ -40,9 +43,37 @@ type RenderSubtreeBoundary = (
   children: React.ReactNode,
 ) => React.ReactNode;
 
-type OfficeCompanySectionState = ReturnType<typeof useOfficeCompanySection>;
-type OfficeInviteFlowState = ReturnType<typeof useOfficeInviteFlow>;
-type OfficeMembersSectionState = ReturnType<typeof useOfficeMembersSection>;
+type OfficeCompanySectionState = {
+  companyDraft: CreateCompanyDraft;
+  savingCompany: boolean;
+  setCompanyDraft: React.Dispatch<React.SetStateAction<CreateCompanyDraft>>;
+  handleCreateCompany: () => Promise<void>;
+  handleEditCompany: () => void;
+};
+
+type OfficeInviteFlowState = {
+  closeInviteModal: () => void;
+  handleCreateInvite: () => Promise<void>;
+  handleCopyInvite: (value: string, feedback: string) => Promise<void>;
+  handleOpenInviteChannel: (url: string) => Promise<void>;
+  inviteCard: OfficeWorkspaceCard | null;
+  inviteDraft: InviteFormDraft;
+  inviteFeedback: string | null;
+  inviteHandoff: OfficeInviteHandoff | null;
+  inviteHandoffFeedback: string | null;
+  openInviteModal: (card: OfficeWorkspaceCard) => void;
+  savingInvite: boolean;
+  setInviteDraft: React.Dispatch<React.SetStateAction<InviteFormDraft>>;
+};
+
+type OfficeMembersSectionState = {
+  items: OfficeAccessMember[];
+  savingRole: string | null;
+  handleAssignRole: (memberUserId: string, nextRole: string) => void;
+  hasMore: boolean;
+  loadingMore: boolean;
+  handleLoadMore: () => Promise<void>;
+};
 
 type OfficeHubSectionChrome = {
   onSectionLayout: SectionLayout;
@@ -401,6 +432,8 @@ export function OfficeInvitesSection({
 }) {
   if (!access.shouldRenderCompanyPostReturnSection("invites")) return null;
 
+  const inviteHandoff = invite.inviteHandoff;
+
   return (
     <View
       testID="office-section-invites"
@@ -415,7 +448,7 @@ export function OfficeInvitesSection({
           </Text>
         </View>
       ) : null}
-      {invite.inviteHandoff
+      {inviteHandoff
         ? renderSubtreeBoundary(
             "invites_handoff",
             <View
@@ -425,30 +458,30 @@ export function OfficeInvitesSection({
             >
               <Text style={styles.eyebrow}>{COPY.inviteHandoffTitle}</Text>
               <Text testID="office-invite-handoff-role" style={styles.handoffTitle}>
-                {invite.inviteHandoff.roleLabel}
+                {inviteHandoff.roleLabel}
               </Text>
               <Text style={styles.helper}>{COPY.inviteHandoffLead}</Text>
               <View style={styles.panel}>
                 <View style={styles.row}>
                   <Text style={styles.label}>{COPY.summaryTitle}</Text>
                   <Text testID="office-invite-handoff-company" style={styles.value}>
-                    {invite.inviteHandoff.companyName}
+                    {inviteHandoff.companyName}
                   </Text>
                 </View>
                 <View style={styles.row}>
                   <Text style={styles.label}>{COPY.summaryRole}</Text>
-                  <Text style={styles.value}>{invite.inviteHandoff.roleLabel}</Text>
+                  <Text style={styles.value}>{inviteHandoff.roleLabel}</Text>
                 </View>
                 <View style={styles.handoffCodeBlock}>
                   <Text style={styles.label}>Код</Text>
                   <Text testID="office-invite-handoff-code" style={styles.handoffCode}>
-                    {invite.inviteHandoff.inviteCode}
+                    {inviteHandoff.inviteCode}
                   </Text>
                 </View>
                 <View style={styles.rowLast}>
                   <Text style={styles.label}>{COPY.inviteHandoffInstruction}</Text>
                   <Text style={styles.value}>
-                    {invite.inviteHandoff.instruction}
+                    {inviteHandoff.instruction}
                   </Text>
                 </View>
               </View>
@@ -467,7 +500,7 @@ export function OfficeInvitesSection({
                   testID="office-invite-copy-code"
                   onPress={() =>
                     void invite.handleCopyInvite(
-                      invite.inviteHandoff.inviteCode,
+                      inviteHandoff.inviteCode,
                       COPY.inviteCodeCopied,
                     )
                   }
@@ -481,7 +514,7 @@ export function OfficeInvitesSection({
                   testID="office-invite-copy-message"
                   onPress={() =>
                     void invite.handleCopyInvite(
-                      invite.inviteHandoff.message,
+                      inviteHandoff.message,
                       COPY.inviteMessageCopied,
                     )
                   }
@@ -495,7 +528,7 @@ export function OfficeInvitesSection({
                   testID="office-invite-open-whatsapp"
                   onPress={() =>
                     void invite.handleOpenInviteChannel(
-                      invite.inviteHandoff.whatsappUrl,
+                      inviteHandoff.whatsappUrl,
                     )
                   }
                   style={[styles.secondary, styles.actionButton]}
@@ -508,7 +541,7 @@ export function OfficeInvitesSection({
                   testID="office-invite-open-telegram"
                   onPress={() =>
                     void invite.handleOpenInviteChannel(
-                      invite.inviteHandoff.telegramUrl,
+                      inviteHandoff.telegramUrl,
                     )
                   }
                   style={[styles.secondary, styles.actionButton]}
@@ -520,7 +553,7 @@ export function OfficeInvitesSection({
                 <Pressable
                   testID="office-invite-open-email"
                   onPress={() =>
-                    void invite.handleOpenInviteChannel(invite.inviteHandoff.emailUrl)
+                    void invite.handleOpenInviteChannel(inviteHandoff.emailUrl)
                   }
                   style={[styles.secondary, styles.actionButton]}
                 >
