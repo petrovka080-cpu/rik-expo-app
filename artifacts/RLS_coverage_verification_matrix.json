@@ -1,0 +1,67 @@
+{
+  "wave": "RLS_COVERAGE_VERIFICATION",
+  "status": "green_pre_release",
+  "scope": {
+    "verificationOnly": true,
+    "runtimeSemanticsChanged": false,
+    "auditedBoundaries": [
+      {
+        "name": "buyer_proposal_submit",
+        "ledgerTable": "proposal_submit_mutations_v1",
+        "wrapper": "rpc_proposal_submit_v3(text, jsonb, text, boolean, text, text)"
+      },
+      {
+        "name": "warehouse_receive_apply",
+        "ledgerTable": "warehouse_receive_apply_idempotency_v1",
+        "wrapper": "wh_receive_apply_ui(text, jsonb, text, text, text)"
+      },
+      {
+        "name": "warehouse_issue_request",
+        "ledgerTable": "warehouse_issue_request_mutations_v1",
+        "wrapper": "wh_issue_request_atomic_v1(text, text, text, text, text, jsonb, text)"
+      },
+      {
+        "name": "warehouse_issue_free",
+        "ledgerTable": "warehouse_issue_free_mutations_v1",
+        "wrapper": "wh_issue_free_atomic_v5(text, text, text, text, jsonb, text)"
+      },
+      {
+        "name": "accountant_payment",
+        "ledgerTable": "accounting_pay_invoice_mutations_v1",
+        "wrapper": "accounting_pay_invoice_v1(text, numeric, text, text, text, text, jsonb, text, date, numeric, text, numeric, numeric, text)"
+      }
+    ]
+  },
+  "touchedFiles": [
+    "tests/security/rlsCoverage.shared.ts",
+    "tests/security/rlsCoverageVerification.test.ts",
+    "artifacts/RLS_coverage_verification_notes.md",
+    "artifacts/RLS_coverage_verification_proof.md",
+    "artifacts/RLS_coverage_verification_matrix.json"
+  ],
+  "proof": {
+    "focusedTestCommand": "npx jest tests/security/rlsCoverageVerification.test.ts --runInBand --no-coverage",
+    "focusedSuitesPassed": 1,
+    "focusedTestsPassed": 6
+  },
+  "gates": {
+    "tsc": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jestParallel": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "hygiene": {
+    "asAny": false,
+    "tsIgnore": false,
+    "tsExpectError": false,
+    "eslintDisable": false,
+    "silentCatch": false
+  },
+  "release": {
+    "commit": "pending",
+    "push": "pending",
+    "otaRequired": false,
+    "otaStatus": "skipped"
+  }
+}
