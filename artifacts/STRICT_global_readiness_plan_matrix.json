@@ -1,0 +1,192 @@
+{
+  "generatedAt": "2026-04-22",
+  "wave": "STRICT_NULLCHECKS_GLOBAL_READINESS_PLAN",
+  "auditInput": {
+    "sourceWave": "STRICT_NULLCHECKS_GLOBAL_READINESS_AUDIT",
+    "strictErrorCount": 401,
+    "uniqueFiles": 93,
+    "runtimeErrors": 136,
+    "testOrScriptErrors": 265,
+    "auditVerdict": "GLOBAL_STRICT_READINESS_PLAN"
+  },
+  "can_continue_narrow_phases": true,
+  "high_value_narrow_phase_count": 2,
+  "reserve_narrow_candidates": [
+    "Profile save transport boundary",
+    "Director dashboard callback boundary"
+  ],
+  "recommendedWaveOrder": [
+    {
+      "wave": "STRICT_NULLCHECKS_PHASE_9",
+      "type": "safe_strict_slice",
+      "target": "Office hub invite/access boundary"
+    },
+    {
+      "wave": "STRICT_NULLCHECKS_PHASE_10",
+      "type": "safe_strict_slice",
+      "target": "PDF viewer session boundary"
+    },
+    {
+      "wave": "STRICT_BOUNDARY_PREP_PHASE_1",
+      "type": "prep_wave",
+      "target": "Root strict-surface staging for runtime/tests/scripts"
+    },
+    {
+      "wave": "OWNER_SPLIT_PREP_PHASE_1",
+      "type": "prep_wave",
+      "target": "Offline queue lifecycle ownership split"
+    },
+    {
+      "wave": "STRICT_CLUSTER_PHASE_OFFLINE_1",
+      "type": "prepared_strict_rollout",
+      "target": "Offline queue core lifecycle"
+    },
+    {
+      "wave": "STRICT_BOUNDARY_PREP_PHASE_2",
+      "type": "prep_wave",
+      "target": "Shared buyer/director API null-contract normalization"
+    },
+    {
+      "wave": "OWNER_SPLIT_PREP_PHASE_2",
+      "type": "prep_wave",
+      "target": "Foreman lifecycle/recovery owner split"
+    },
+    {
+      "wave": "STRICT_CLUSTER_PHASE_FOREMAN_1",
+      "type": "prepared_strict_rollout",
+      "target": "Foreman lifecycle/recovery cluster"
+    }
+  ],
+  "clusters": [
+    {
+      "group": "A",
+      "cluster": "Office hub invite/access boundary",
+      "blocker_type": "owner boundary, render-input contract, process access contract",
+      "prep_required": false,
+      "safe_for_narrow_wave": true,
+      "estimated_scope": "2 runtime files plus focused tests",
+      "recommended_wave": "STRICT_NULLCHECKS_PHASE_9",
+      "deferred_reason": null
+    },
+    {
+      "group": "A",
+      "cluster": "PDF viewer session boundary",
+      "blocker_type": "route/session nullable contract",
+      "prep_required": false,
+      "safe_for_narrow_wave": true,
+      "estimated_scope": "1 runtime file plus focused tests",
+      "recommended_wave": "STRICT_NULLCHECKS_PHASE_10",
+      "deferred_reason": null
+    },
+    {
+      "group": "A",
+      "cluster": "Profile save transport boundary",
+      "blocker_type": "transport overload mismatch",
+      "prep_required": false,
+      "safe_for_narrow_wave": true,
+      "estimated_scope": "1 runtime file plus focused tests",
+      "recommended_wave": "reserve_after_phase10",
+      "deferred_reason": "Lower value than office and PDF viewer slices."
+    },
+    {
+      "group": "A",
+      "cluster": "Director dashboard callback boundary",
+      "blocker_type": "optional callback invocation contract",
+      "prep_required": false,
+      "safe_for_narrow_wave": true,
+      "estimated_scope": "1 runtime file",
+      "recommended_wave": "reserve_after_phase10",
+      "deferred_reason": "Lower process value and weaker dedicated regression support."
+    },
+    {
+      "group": "B",
+      "cluster": "Buyer prefill/documents busy boundary",
+      "blocker_type": "loading-state and helper boundary drift",
+      "prep_required": true,
+      "safe_for_narrow_wave": false,
+      "estimated_scope": "3 runtime files",
+      "recommended_wave": "STRICT_BOUNDARY_PREP_PHASE_BUYER_1",
+      "deferred_reason": "Needs contract-first normalization before strict rollout."
+    },
+    {
+      "group": "B",
+      "cluster": "Warehouse action and pdf regression boundary",
+      "blocker_type": "callback boundary plus regression-surface drift",
+      "prep_required": true,
+      "safe_for_narrow_wave": false,
+      "estimated_scope": "6 files with runtime and tests",
+      "recommended_wave": "STRICT_BOUNDARY_PREP_PHASE_WAREHOUSE_1",
+      "deferred_reason": "Needs callback contract normalization and test/runtime separation first."
+    },
+    {
+      "group": "B",
+      "cluster": "Contractor search and progress submit boundary",
+      "blocker_type": "transport normalization and submit-flow state drift",
+      "prep_required": true,
+      "safe_for_narrow_wave": false,
+      "estimated_scope": "5 runtime files",
+      "recommended_wave": "STRICT_BOUNDARY_PREP_PHASE_CONTRACTOR_1",
+      "deferred_reason": "Needs boundary normalization before strict rollout stays narrow."
+    },
+    {
+      "group": "C",
+      "cluster": "Foreman draft lifecycle and recovery",
+      "blocker_type": "owner-boundary lifecycle and recovery state coupling",
+      "prep_required": true,
+      "safe_for_narrow_wave": false,
+      "estimated_scope": "about 10 files",
+      "recommended_wave": "OWNER_SPLIT_PREP_PHASE_2",
+      "deferred_reason": "Owner split must happen before any safe strict rollout."
+    },
+    {
+      "group": "D",
+      "cluster": "AI assistant quick-search contract drift",
+      "blocker_type": "shared helper and search-result contract drift",
+      "prep_required": true,
+      "safe_for_narrow_wave": false,
+      "estimated_scope": "2 runtime files with shared contracts",
+      "recommended_wave": "STRICT_BOUNDARY_PREP_PHASE_AI_1",
+      "deferred_reason": "Shared contracts raise blast radius beyond file count."
+    },
+    {
+      "group": "D",
+      "cluster": "Shared API null contract drift",
+      "blocker_type": "buyer/director transport normalization drift",
+      "prep_required": true,
+      "safe_for_narrow_wave": false,
+      "estimated_scope": "5 files with shared callers",
+      "recommended_wave": "STRICT_BOUNDARY_PREP_PHASE_2",
+      "deferred_reason": "Caller mapping and contract staging required first."
+    },
+    {
+      "group": "E",
+      "cluster": "Offline queue core lifecycle",
+      "blocker_type": "shared process/lifecycle core",
+      "prep_required": true,
+      "safe_for_narrow_wave": false,
+      "estimated_scope": "2 core runtime files with broad ownership impact",
+      "recommended_wave": "OWNER_SPLIT_PREP_PHASE_1 -> STRICT_CLUSTER_PHASE_OFFLINE_1",
+      "deferred_reason": "Highest remaining production-relevant shared runtime blocker."
+    },
+    {
+      "group": "E",
+      "cluster": "Verification/runtime scripts observability cluster",
+      "blocker_type": "verification helper and observability strict drift",
+      "prep_required": true,
+      "safe_for_narrow_wave": false,
+      "estimated_scope": "35 script files",
+      "recommended_wave": "STRICT_SCRIPTS_PREP_PHASE_1",
+      "deferred_reason": "Must wait for root strict-surface staging decision."
+    },
+    {
+      "group": "E",
+      "cluster": "Root strict compile surface coupling",
+      "blocker_type": "runtime/tests/scripts staged-entry problem",
+      "prep_required": true,
+      "safe_for_narrow_wave": false,
+      "estimated_scope": "global config and program-level plan",
+      "recommended_wave": "STRICT_BOUNDARY_PREP_PHASE_1",
+      "deferred_reason": "Blocks any honest broader strict enablement until staged."
+    }
+  ]
+}
