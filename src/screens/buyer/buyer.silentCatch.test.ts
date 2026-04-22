@@ -70,12 +70,14 @@ describe("buyer silent catch hardening", () => {
     const accountingModalSource = readFileSync(join(__dirname, "hooks", "useBuyerAccountingModal.ts"), "utf8");
     const buyerDocumentsSource = readFileSync(join(__dirname, "useBuyerDocuments.ts"), "utf8");
     const proposalAttachmentsSource = readFileSync(join(__dirname, "useBuyerProposalAttachments.ts"), "utf8");
+    const rfqPrefillSource = readFileSync(join(__dirname, "hooks", "useBuyerRfqPrefill.ts"), "utf8");
 
     expect(buyerPdfSource).not.toContain("catch {}");
     expect(buyerAlertsSource).not.toContain("catch {}");
     expect(buyerLoadingSource).not.toContain("catch {}");
     expect(attachmentUploaderSource).not.toContain("catch {}");
     expect(accountingModalSource).not.toContain("catch {}");
+    expect(rfqPrefillSource).not.toContain("catch {}");
     expect(buyerDocumentsSource).not.toContain("getRemoteUrl: () =>");
     expect(proposalAttachmentsSource).not.toContain("getRemoteUrl: () =>");
 
@@ -87,5 +89,7 @@ describe("buyer silent catch hardening", () => {
     expect(attachmentUploaderSource).toContain("picker_cleanup_failed");
     expect(accountingModalSource).toContain("proposal_document_attach_failed");
     expect(accountingModalSource).toContain("accounting_prefill_failed");
+    expect(rfqPrefillSource).toContain("rfq_prefill_failed");
+    expect(rfqPrefillSource).toContain("rfq_prefill_invalid_payload");
   });
 });

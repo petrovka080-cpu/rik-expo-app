@@ -1,0 +1,36 @@
+{
+  "cluster": "buyer_owner_attachment_prefill_boundary",
+  "touched_files": [
+    "src/screens/buyer/buyer.helpers.ts",
+    "src/screens/buyer/buyer.inbox.presentation.ts",
+    "src/screens/buyer/buyer.silentCatch.test.ts",
+    "src/screens/buyer/buyer.types.ts",
+    "src/screens/buyer/components/BuyerGroupBlock.tsx",
+    "src/screens/buyer/components/BuyerItemRow.tsx",
+    "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+    "src/screens/buyer/hooks/useBuyerCreateProposalsFlow.ts",
+    "src/screens/buyer/hooks/useBuyerInboxRenderers.tsx",
+    "src/screens/buyer/hooks/useBuyerRfqPrefill.ts",
+    "src/screens/buyer/procurementTyping.ts",
+    "tests/strict-null/buyer.owner.boundary.phase9.test.ts",
+    "tsconfig.strict-null-phase9-buyer-owner-boundary.json"
+  ],
+  "strict_blockers_closed": [
+    "src/screens/buyer/BuyerScreen.tsx(409,5)",
+    "src/screens/buyer/hooks/useBuyerInboxRenderers.tsx(207,62)",
+    "src/screens/buyer/hooks/useBuyerRfqPrefill.ts(43,72)"
+  ],
+  "guards_normalizers_contracts_added": [
+    "applyBuyerDraftAttachmentSelection",
+    "mapBuyerDraftAttachmentsForSubmit",
+    "resolveBuyerRfqPrefillBoundary",
+    "buildBuyerRfqPrefillPatch"
+  ],
+  "tests_added": [
+    "tests/strict-null/buyer.owner.boundary.phase9.test.ts",
+    "src/screens/buyer/buyer.silentCatch.test.ts"
+  ],
+  "semantics_changed": false,
+  "phase9_strict_compile": "PASS",
+  "next_wave_hint": "STRICT_BOUNDARY_PREP_PHASE_2 or STRICT_NULLCHECKS_PHASE_10 depending on the next prepared cluster"
+}

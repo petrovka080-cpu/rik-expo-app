@@ -1,6 +1,6 @@
 import { useCallback, useRef, useEffect, useState } from "react";
 
-import type { Supplier, BuyerInboxRow } from "../../../lib/catalog_api";
+import type { BuyerInboxRow, Supplier } from "../../../lib/api/types";
 import {
   selectBuyerCounterpartyUi,
   selectBuyerGroupHeaderMeta,
@@ -10,11 +10,29 @@ import {
   selectBuyerSupplierAutoText,
   selectBuyerSupplierMetaPatch,
 } from "../buyer.inbox.presentation";
-import type { BuyerGroup, BuyerSheetKind, DraftAttachmentMap, LineMeta } from "../buyer.types";
+import type { Attachment, BuyerGroup, BuyerSheetKind, DraftAttachmentMap, LineMeta } from "../buyer.types";
 import type { StylesBag } from "../components/component.types";
-import { BuyerGroupBlock, BuyerItemRow } from "../buyer.components";
+import { BuyerGroupBlock } from "../components/BuyerGroupBlock";
+import { BuyerItemRow } from "../components/BuyerItemRow";
 import { BuyerMobileItemEditorModal } from "../components/BuyerMobileItemEditorModal";
 import { normName } from "../buyerUtils";
+
+export function applyBuyerDraftAttachmentSelection(
+  prev: DraftAttachmentMap,
+  nextKey: string,
+  attachment: Attachment | null,
+): DraftAttachmentMap {
+  const key = String(nextKey ?? "").trim();
+  if (!key) return prev;
+
+  const next = { ...prev };
+  if (attachment) {
+    next[key] = attachment;
+  } else {
+    delete next[key];
+  }
+  return next;
+}
 
 export function useBuyerInboxRenderers(params: {
   s: StylesBag;
@@ -204,7 +222,9 @@ export function useBuyerInboxRenderers(params: {
           isWeb={isWeb}
           supplierGroups={supplierGroups}
           attachments={attachments}
-          onPickAttachment={(nextKey, att) => setAttachments((prev) => ({ ...prev, [nextKey]: att }))}
+          onPickAttachment={(nextKey, att) =>
+            setAttachments((prev) => applyBuyerDraftAttachmentSelection(prev, nextKey, att))
+          }
         />
       );
     },

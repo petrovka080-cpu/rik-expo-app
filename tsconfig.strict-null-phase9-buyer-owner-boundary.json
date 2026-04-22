@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strictNullChecks": true
+  },
+  "include": [],
+  "files": [
+    "src/screens/buyer/hooks/useBuyerInboxRenderers.tsx",
+    "src/screens/buyer/hooks/useBuyerRfqPrefill.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "scripts/**/*",
+    "tests/**/*",
+    "diagnostics/**/*",
+    "artifacts/**/*"
+  ]
+}

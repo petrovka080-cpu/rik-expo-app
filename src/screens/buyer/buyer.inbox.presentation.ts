@@ -1,4 +1,4 @@
-import type { BuyerInboxRow } from "../../lib/catalog_api";
+import type { BuyerInboxRow } from "../../lib/api/types";
 import type { BuyerGroup, LineMeta } from "./buyer.types";
 import { getBuyerItemProcurementType, getCounterpartyLabel, getCounterpartyRoleGate } from "./procurementTyping";
 import { mergeNote, splitNote } from "./buyerUtils";

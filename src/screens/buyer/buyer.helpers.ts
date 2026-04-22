@@ -1,5 +1,5 @@
 // src/screens/buyer/buyer.helpers.ts
-import type { BuyerInboxRow } from "../../lib/catalog_api";
+import type { BuyerInboxRow } from "../../lib/api/types";
 type BuyerInboxRowLite = BuyerInboxRow & {
   qty?: number | null;
   request_item_id?: string | number | null;

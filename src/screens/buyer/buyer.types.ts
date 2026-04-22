@@ -1,4 +1,4 @@
-import type { BuyerInboxRow } from "../../lib/catalog_api";
+import type { BuyerInboxRow } from "../../lib/api/types";
 import type { ProposalRequestItemIntegrityFields } from "../../lib/api/proposalIntegrity";
 
 export type BuyerTab = "inbox" | "pending" | "approved" | "rejected" | "subcontracts";

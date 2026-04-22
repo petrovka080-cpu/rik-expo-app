@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { View, Pressable, Animated } from "react-native";
 
-import type { BuyerInboxRow } from "../../../lib/catalog_api";
+import type { BuyerInboxRow } from "../../../lib/api/types";
 import type { Attachment, BuyerGroup, DraftAttachmentMap } from "../buyer.types";
 import type { StylesBag } from "./component.types";
 import { UI } from "../buyerUi";

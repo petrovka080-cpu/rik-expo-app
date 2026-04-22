@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import type { BuyerInboxRow } from "../../../lib/catalog_api";
+import type { BuyerInboxRow } from "../../../lib/api/types";
 import { StatusBadge } from "../../../ui/StatusBadge";
 import type { LineMeta } from "../buyer.types";
 import { splitNote, mergeNote } from "../buyerUtils";

@@ -1,4 +1,4 @@
-import type { BuyerInboxRow } from "../../lib/catalog_api";
+import type { BuyerInboxRow } from "../../lib/api/types";
 
 export type ProcurementItemType = "material" | "service" | "work" | "unknown";
 export type CounterpartyRoleGate = "supplier" | "contractor" | null;

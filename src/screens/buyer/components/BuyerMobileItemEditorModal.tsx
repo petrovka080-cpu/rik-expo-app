@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, Pressable, TextInput, FlatList, Modal, SafeAreaView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import type { BuyerInboxRow } from "../../../lib/catalog_api";
+import type { BuyerInboxRow } from "../../../lib/api/types";
 import type { LineMeta } from "../buyer.types";
 import { splitNote, mergeNote } from "../buyerUtils";
 import { P_SHEET } from "../buyerUi";
