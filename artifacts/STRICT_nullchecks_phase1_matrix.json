@@ -1,0 +1,67 @@
+{
+  "wave": "STRICT_NULLCHECKS_PHASE_1",
+  "status": "GREEN_PRE_RELEASE",
+  "slice": {
+    "name": "auth_lifecycle",
+    "owner": "src/lib/auth/useAuthLifecycle.ts",
+    "probeConfig": "tsconfig.strict-null-phase1-auth-lifecycle.json"
+  },
+  "candidateAudit": [
+    {
+      "file": "src/lib/auth/useAuthLifecycle.ts",
+      "strictNullChecksProbe": "PASS",
+      "selected": true
+    },
+    {
+      "file": "src/screens/accountant/useAccountantPaymentForm.ts",
+      "strictNullChecksProbe": "PASS",
+      "selected": false
+    },
+    {
+      "file": "src/screens/warehouse/hooks/useWarehouseReceiveFlow.ts",
+      "strictNullChecksProbe": "PASS",
+      "selected": false
+    },
+    {
+      "file": "src/screens/director/hooks/useDirectorReportsController.ts",
+      "strictNullChecksProbe": "PASS",
+      "selected": false
+    }
+  ],
+  "broaderBoundaryAudit": {
+    "attempted": true,
+    "config": "auth_lifecycle_plus_guard",
+    "result": "blocked_out_of_scope",
+    "blockers": [
+      "src/lib/api/buyer.ts",
+      "src/lib/api/director.ts",
+      "src/lib/catalog/catalog.transport.ts",
+      "src/lib/pdf/directorSupplierSummary.shared.ts"
+    ]
+  },
+  "touchedFiles": [
+    "tsconfig.strict-null-phase1-auth-lifecycle.json",
+    "tests/strict-null/authLifecycle.phase1.test.ts",
+    "artifacts/STRICT_nullchecks_phase1_notes.md",
+    "artifacts/STRICT_nullchecks_phase1_proof.md",
+    "artifacts/STRICT_nullchecks_phase1_matrix.json"
+  ],
+  "focusedTests": [
+    "npx jest tests/strict-null/authLifecycle.phase1.test.ts src/lib/authRouting.test.ts --runInBand --no-coverage"
+  ],
+  "gates": {
+    "strictNullSliceProbe": "PASS",
+    "tsc": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jestParallel": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "runtimeDiff": false,
+  "otaRequired": false,
+  "releaseReadiness": {
+    "commit": "pending_final_green_closeout",
+    "push": "pending_final_green_closeout",
+    "ota": "skip_non_runtime_wave"
+  }
+}
