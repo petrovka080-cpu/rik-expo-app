@@ -16,11 +16,24 @@
 
 ### Full gates
 
-- `npx tsc --noEmit --pretty false` — PASS
-- `npx expo lint` — PASS
-- `npm test -- --runInBand` — PASS
-- `npm test` — PASS
-- `git diff --check` — PASS
+- `npx tsc --noEmit --pretty false` - PASS
+- `npx expo lint` - PASS
+- `npm test -- --runInBand` - PASS
+- `npm test` - PASS
+- `git diff --check` - PASS
+
+### Guarded release proof
+
+- Commit:
+  - `d0548f2abec3b7e99f6783115c18f65d8bce9eda`
+- Push:
+  - `origin/main` now points to `d0548f2abec3b7e99f6783115c18f65d8bce9eda`
+- Guarded OTA dry-run:
+  - `npx tsx scripts/release/run-release-guard.ts ota --dry-run --channel production --message "Release: adopt fingerprint runtime policy" --range "f093a57760c035d494d0bd41c9ecabd0005da3aa..d0548f2abec3b7e99f6783115c18f65d8bce9eda"`
+  - Result:
+    - `Classification: build-required`
+    - `OTA disposition: block`
+    - blocker: `Release classification requires a new build. OTA publish is blocked.`
 
 ## Before / After
 
@@ -47,5 +60,5 @@
 ## Honest Release Classification
 
 - This wave changes `app.json` runtime policy.
-- Guarded release automation must classify it as `build-required`.
-- OTA should be blocked and replaced by fresh builds for each channel.
+- Guarded release automation classifies it as `build-required`.
+- OTA is blocked and must be replaced by fresh binaries for each target channel.
