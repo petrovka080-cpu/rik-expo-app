@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useRouter } from "expo-router";
 
 import { buildPdfFileName, type DocumentDescriptor } from "../../lib/documents/pdfDocument";
+import type { PdfDocumentSupabaseLike } from "../../lib/documents/pdfDocumentActionTypes";
 import { getPdfFlowErrorMessage, prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { createPdfSource } from "../../lib/pdfFileContract";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
@@ -28,6 +29,16 @@ export type WarehousePdfPreviewRequest = {
   getRemoteUrl: () => Promise<string>;
 };
 
+export type WarehousePdfPreviewRequestInput = {
+  key?: unknown;
+  label?: unknown;
+  title?: unknown;
+  fileName?: unknown;
+  documentType?: unknown;
+  entityId?: unknown;
+  getRemoteUrl?: unknown;
+} | null | undefined;
+
 export type WarehousePdfOffloadContract<TPayload, TFlow extends string> = {
   version: 1;
   flow: TFlow;
@@ -38,6 +49,27 @@ export type WarehousePdfOffloadContract<TPayload, TFlow extends string> = {
   entityId?: string;
   payload: TPayload;
 };
+
+export type WarehousePdfPreviewInvalidReason =
+  | "invalid_request"
+  | "invalid_document_type"
+  | "missing_source_loader"
+  | "missing_busy_key"
+  | "missing_label"
+  | "missing_title"
+  | "missing_file_name";
+
+export type WarehousePdfPreviewContract =
+  | {
+      kind: "invalid";
+      reason: WarehousePdfPreviewInvalidReason;
+      errorMessage: string;
+    }
+  | {
+      kind: "ready";
+      request: WarehousePdfPreviewRequest;
+      supabase: PdfDocumentSupabaseLike;
+    };
 
 type WarehousePdfMode = "issue" | "incoming";
 type PendingWarehousePdfDescriptor = Omit<DocumentDescriptor, "uri" | "fileSource"> & {
@@ -67,6 +99,13 @@ type WarehousePdfBusyKeyArgs =
       reportsMode: WarehousePdfMode;
       dayLabel: string;
     };
+
+const WAREHOUSE_PDF_DOCUMENT_TYPES: readonly WarehousePdfDocumentType[] = [
+  "warehouse_register",
+  "warehouse_materials",
+  "warehouse_document",
+];
+const WAREHOUSE_PDF_PREVIEW_SUPABASE: PdfDocumentSupabaseLike = {};
 
 const normalizeBusyPart = (value: unknown, fallback: string) => {
   const text = String(value ?? "").trim();
@@ -111,20 +150,105 @@ const requireWarehousePdfText = (value: unknown, field: string) => {
   return text;
 };
 
-const normalizeWarehousePdfPreviewRequest = (
-  request: WarehousePdfPreviewRequest,
-): WarehousePdfPreviewRequest => ({
-  key: requireWarehousePdfText(request.key, "busy key"),
-  label: requireWarehousePdfText(request.label, "label"),
-  title: requireWarehousePdfText(request.title, "title"),
-  fileName: requireWarehousePdfText(request.fileName, "file name"),
-  documentType: request.documentType,
-  entityId: request.entityId ? String(request.entityId).trim() : undefined,
-  getRemoteUrl: async () => {
-    const rawUrl = await request.getRemoteUrl();
-    return createPdfSource(requireWarehousePdfText(rawUrl, "source URI")).uri;
-  },
+const readWarehousePdfText = (value: unknown) => String(value ?? "").trim();
+
+const toWarehousePdfInvalidContract = (
+  reason: WarehousePdfPreviewInvalidReason,
+  errorMessage: string,
+): WarehousePdfPreviewContract => ({
+  kind: "invalid",
+  reason,
+  errorMessage,
 });
+
+const isWarehousePdfDocumentType = (
+  value: unknown,
+): value is WarehousePdfDocumentType =>
+  WAREHOUSE_PDF_DOCUMENT_TYPES.includes(value as WarehousePdfDocumentType);
+
+export const normalizeWarehousePdfRemoteUrl = (value: unknown) => {
+  if (typeof value !== "string") {
+    throw new Error("Warehouse PDF source URI is invalid");
+  }
+  return createPdfSource(requireWarehousePdfText(value, "source URI")).uri;
+};
+
+export function resolveWarehousePdfPreviewContract(
+  request: WarehousePdfPreviewRequestInput,
+): WarehousePdfPreviewContract {
+  if (!request || typeof request !== "object") {
+    return toWarehousePdfInvalidContract(
+      "invalid_request",
+      "Warehouse PDF request is invalid",
+    );
+  }
+
+  if (!isWarehousePdfDocumentType(request.documentType)) {
+    return toWarehousePdfInvalidContract(
+      "invalid_document_type",
+      "Warehouse PDF document type is invalid",
+    );
+  }
+
+  if (typeof request.getRemoteUrl !== "function") {
+    return toWarehousePdfInvalidContract(
+      "missing_source_loader",
+      "Warehouse PDF source loader is missing",
+    );
+  }
+  const getRemoteUrl = request.getRemoteUrl;
+
+  const key = readWarehousePdfText(request.key);
+  if (!key) {
+    return toWarehousePdfInvalidContract(
+      "missing_busy_key",
+      "Warehouse PDF busy key is missing",
+    );
+  }
+
+  const label = readWarehousePdfText(request.label);
+  if (!label) {
+    return toWarehousePdfInvalidContract(
+      "missing_label",
+      "Warehouse PDF label is missing",
+    );
+  }
+
+  const title = readWarehousePdfText(request.title);
+  if (!title) {
+    return toWarehousePdfInvalidContract(
+      "missing_title",
+      "Warehouse PDF title is missing",
+    );
+  }
+
+  const fileName = readWarehousePdfText(request.fileName);
+  if (!fileName) {
+    return toWarehousePdfInvalidContract(
+      "missing_file_name",
+      "Warehouse PDF file name is missing",
+    );
+  }
+
+  const entityId = readWarehousePdfText(request.entityId);
+
+  return {
+    kind: "ready",
+    request: {
+      key,
+      label,
+      title,
+      fileName,
+      documentType: request.documentType,
+      entityId: entityId || undefined,
+      getRemoteUrl: async () => {
+        const rawUrl = await getRemoteUrl();
+        return normalizeWarehousePdfRemoteUrl(rawUrl);
+      },
+    },
+    supabase: WAREHOUSE_PDF_PREVIEW_SUPABASE,
+  };
+}
 
 export function useWarehousePdfPreviewBoundary(params: {
   busy: WarehousePdfBusyLike;
@@ -135,7 +259,12 @@ export function useWarehousePdfPreviewBoundary(params: {
 
   return useCallback(async (request: WarehousePdfPreviewRequest) => {
     try {
-      const safeRequest = normalizeWarehousePdfPreviewRequest(request);
+      const contract = resolveWarehousePdfPreviewContract(request);
+      if (contract.kind !== "ready") {
+        throw new Error(contract.errorMessage);
+      }
+
+      const safeRequest = contract.request;
       const template: PendingWarehousePdfDescriptor = {
         title: safeRequest.title,
         fileName: safeRequest.fileName,
@@ -147,7 +276,7 @@ export function useWarehousePdfPreviewBoundary(params: {
       };
       await prepareAndPreviewPdfDocument({
         busy,
-        supabase: null,
+        supabase: contract.supabase,
         key: safeRequest.key,
         label: safeRequest.label,
         descriptor: template,

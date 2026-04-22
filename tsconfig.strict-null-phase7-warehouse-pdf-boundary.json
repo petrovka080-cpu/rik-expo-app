@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strictNullChecks": true
+  },
+  "include": [],
+  "files": [
+    "src/screens/warehouse/warehouse.pdf.boundary.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "scripts/**/*",
+    "tests/**/*",
+    "diagnostics/**/*",
+    "artifacts/**/*"
+  ]
+}
