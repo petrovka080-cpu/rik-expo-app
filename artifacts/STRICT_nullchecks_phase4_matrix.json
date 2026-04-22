@@ -55,14 +55,29 @@
   "releaseReadiness": {
     "runtimeDiffExpected": true,
     "otaNeededIfGreen": true,
-    "commit": "pending",
-    "push": "pending",
+    "commit": "31e1dfd",
+    "push": "PASS",
     "ota": {
-      "development": "pending",
-      "preview": "pending",
-      "production": "pending"
+      "development": {
+        "iosUpdateGroupId": "ecd6661f-3a13-4758-868b-d36b6ab4bd39",
+        "iosUpdateId": "019db4b4-51dc-7862-82c4-7d2c02b33531",
+        "androidUpdateGroupId": "d5246f2e-a35e-4d41-ad5a-38675b9bee50",
+        "androidUpdateId": "019db4b4-51dc-7a59-8d47-49988fce7553"
+      },
+      "preview": {
+        "iosUpdateGroupId": "666a627e-0efe-4389-b495-be3cb36ff0eb",
+        "iosUpdateId": "019db4b8-e461-769d-9956-4b55722c9cca",
+        "androidUpdateGroupId": "3a054cd8-4cda-46ef-933c-be40a67286e9",
+        "androidUpdateId": "019db4b8-e461-7afa-9fba-c258db08cd1c"
+      },
+      "production": {
+        "iosUpdateGroupId": "ad4c87b1-2cba-4139-9120-adba7ad5af9a",
+        "iosUpdateId": "019db4bc-9f02-72d2-90d8-32abf9fcbf5f",
+        "androidUpdateGroupId": "5b73d556-9462-40fb-8a57-c916874e11c3",
+        "androidUpdateId": "019db4bc-9f02-7dc0-91e2-2f6480858895"
+      }
     },
-    "headMatchesOriginMain": false,
-    "worktreeClean": false
+    "headMatchesOriginMain": true,
+    "worktreeClean": true
   }
 }

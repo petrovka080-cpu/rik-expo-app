@@ -41,7 +41,7 @@
   - `npx expo lint` PASS
   - `npm test -- --runInBand` PASS
   - `npm test` PASS
-  - `git diff --check` pending final re-run after artifact write
+  - `git diff --check` PASS
 
 ## Why runtime semantics are unchanged
 
@@ -52,4 +52,25 @@
 
 ## Release tail
 
-- Pending final commit / push / OTA completion
+- Runtime commit:
+  - `31e1dfd` `TS: strict nullchecks phase 4`
+- Push:
+  - runtime commit pushed to `origin/main`
+- OTA:
+  - `development`
+    - iOS update group: `ecd6661f-3a13-4758-868b-d36b6ab4bd39`
+    - iOS update id: `019db4b4-51dc-7862-82c4-7d2c02b33531`
+    - Android update group: `d5246f2e-a35e-4d41-ad5a-38675b9bee50`
+    - Android update id: `019db4b4-51dc-7a59-8d47-49988fce7553`
+  - `preview`
+    - iOS update group: `666a627e-0efe-4389-b495-be3cb36ff0eb`
+    - iOS update id: `019db4b8-e461-769d-9956-4b55722c9cca`
+    - Android update group: `3a054cd8-4cda-46ef-933c-be40a67286e9`
+    - Android update id: `019db4b8-e461-7afa-9fba-c258db08cd1c`
+  - `production`
+    - iOS update group: `ad4c87b1-2cba-4139-9120-adba7ad5af9a`
+    - iOS update id: `019db4bc-9f02-72d2-90d8-32abf9fcbf5f`
+    - Android update group: `5b73d556-9462-40fb-8a57-c916874e11c3`
+    - Android update id: `019db4bc-9f02-7dc0-91e2-2f6480858895`
+- Proof-tail note:
+  - release metadata was finalized after the runtime publish in a non-runtime artifact update
