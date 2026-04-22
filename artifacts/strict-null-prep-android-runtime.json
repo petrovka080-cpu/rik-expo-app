@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+  "preflight": {
+    "deviceDetected": true,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "reverseProxyReady": true,
+    "appCleared": false,
+    "gmsCleared": false,
+    "devClientReachable": true
+  },
+  "recovery": {
+    "environmentRecoveryUsed": false,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false
+  },
+  "attempts": 4,
+  "screen": {
+    "xmlPath": "artifacts/strict-null-prep-runtime-5.xml",
+    "pngPath": "artifacts/strict-null-prep-runtime-5.png",
+    "containsLogin": false,
+    "isLauncherHome": false,
+    "isDevLauncherHome": false,
+    "isBlankSurface": false,
+    "isDevClientError": false
+  },
+  "logPaths": {
+    "stdoutPath": "artifacts/strict-null-prep-devclient.stdout.log",
+    "stderrPath": "artifacts/strict-null-prep-devclient.stderr.log"
+  },
+  "logTails": {
+    "stdoutTail": "env: load .env.local\nenv: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY EXPO_PUBLIC_JOB_QUEUE_ENABLED WORKER_BATCH_SIZE WORKER_CONCURRENCY COMPACTION_DELAY_MS\nStarting project at C:\\dev\\rik-expo-app-release\nMetro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.\nStarting Metro Bundler\nwarning: Bundler cache is empty, rebuilding (this may take a minute)\nWaiting on http://localhost:8081\nLogs for your project will appear below.\nAndroid ..\\rik-expo-app\\node_modules\\expo-router\\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)\nAndroid ..\\rik-expo-app\\node_modules\\expo-router\\entry.js ▓▓▓░░░░░░░░░░░░░ 24.0% (174/355)\nAndroid ..\\rik-expo-app\\node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 56.6% (555/738)\nAndroid ..\\rik-expo-app\\node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 67.3% ( 858/1245)\nAndroid ..\\rik-expo-app\\node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 67.3% (1237/1660)\nAndroid ..\\rik-expo-app\\node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 67.3% (1585/1970)\nAndroid ..\\rik-expo-app\\node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 80.4% (1995/2250)\nAndroid ..\\rik-expo-app\\node_modules\\expo-router\\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 96.5% (2474/2519)\nAndroid Bundled 25473ms ..\\rik-expo-app\\node_modules\\expo-router\\entry.js (2533 modules)\n",
+    "stderrTail": ""
+  }
+}

@@ -119,7 +119,8 @@ async function fetchAllFactRowsFromTables(p: {
   const tTotal = nowMs();
   const selectedStableObjectKey =
     p.objectName == null ? null : (p.objectIdByName?.[String(p.objectName).trim()] ?? null);
-  const shouldUseLegacyObjectNameFilter = p.objectName != null && !selectedStableObjectKey;
+  const legacyObjectNameFilter =
+    p.objectName != null && !selectedStableObjectKey ? p.objectName : null;
   const issuesById = new Map<string, WarehouseIssueFactRow>();
   const pageSize = 2500;
   let fromIdx = 0;
@@ -132,7 +133,7 @@ async function fetchAllFactRowsFromTables(p: {
 
     if (p.from) query = query.gte("iss_date", toRangeStart(p.from));
     if (p.to) query = query.lte("iss_date", toRangeEnd(p.to));
-    if (shouldUseLegacyObjectNameFilter) query = query.eq("object_name", p.objectName);
+    if (legacyObjectNameFilter != null) query = query.eq("object_name", legacyObjectNameFilter);
 
     query = query
       .order("iss_date", { ascending: false })
@@ -341,7 +342,8 @@ async function fetchDisciplineFactRowsFromTables(p: {
   const tTotal = nowMs();
   const selectedStableObjectKey =
     p.objectName == null ? null : (p.objectIdByName?.[String(p.objectName).trim()] ?? null);
-  const shouldUseLegacyObjectNameFilter = p.objectName != null && !selectedStableObjectKey;
+  const legacyObjectNameFilter =
+    p.objectName != null && !selectedStableObjectKey ? p.objectName : null;
 
   const tryJoinedIssueItemsPath = async (): Promise<DirectorFactRow[] | null> => {
     const tJoined = nowMs();
@@ -357,7 +359,9 @@ async function fetchDisciplineFactRowsFromTables(p: {
           .eq("warehouse_issues.status", "Подтверждено");
         if (p.from) query = query.gte("warehouse_issues.iss_date", toRangeStart(p.from));
         if (p.to) query = query.lte("warehouse_issues.iss_date", toRangeEnd(p.to));
-        if (shouldUseLegacyObjectNameFilter) query = query.eq("warehouse_issues.object_name", p.objectName);
+        if (legacyObjectNameFilter != null) {
+          query = query.eq("warehouse_issues.object_name", legacyObjectNameFilter);
+        }
         query = query.order("issue_id", { ascending: false }).range(fromIdx, fromIdx + pageSize - 1);
 
         const { data, error } = await query;
@@ -443,7 +447,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
 
     if (p.from) query = query.gte("iss_date", toRangeStart(p.from));
     if (p.to) query = query.lte("iss_date", toRangeEnd(p.to));
-    if (shouldUseLegacyObjectNameFilter) query = query.eq("object_name", p.objectName);
+    if (legacyObjectNameFilter != null) query = query.eq("object_name", legacyObjectNameFilter);
 
     query = query
       .order("iss_date", { ascending: false })

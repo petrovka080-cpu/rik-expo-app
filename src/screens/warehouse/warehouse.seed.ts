@@ -1,5 +1,34 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+export type IncomingSeedRow = {
+  incoming_id: string;
+  purchase_item_id: string;
+  qty_expected: number;
+  qty_received: number;
+  rik_code: string | null;
+  name_human: string | null;
+  uom: string | null;
+};
+
+export function mergeIncomingSeedRows(rows: IncomingSeedRow[]): IncomingSeedRow[] {
+  const mergedByKey = new Map<string, IncomingSeedRow>();
+
+  for (const row of rows) {
+    const key = row.purchase_item_id ? `pi:${row.purchase_item_id}` : `code:${String(row.rik_code ?? "")}`;
+    const previous = mergedByKey.get(key);
+    if (!previous) {
+      mergedByKey.set(key, row);
+      continue;
+    }
+    mergedByKey.set(key, {
+      ...previous,
+      qty_expected: Number(previous.qty_expected ?? 0) + Number(row.qty_expected ?? 0),
+    });
+  }
+
+  return Array.from(mergedByKey.values());
+}
+
 type Supa = SupabaseClient;
 
 type RequestItemMini = {
@@ -23,16 +52,6 @@ type ProposalSnapshotRow = {
   request_item_id?: string | null;
   uom?: string | null;
   total_qty?: number | string | null;
-};
-
-type IncomingSeedRow = {
-  incoming_id: string;
-  purchase_item_id: string;
-  qty_expected: number;
-  qty_received: number;
-  rik_code: string | null;
-  name_human: string | null;
-  uom: string | null;
 };
 
 const toNum = (v: unknown): number => {
@@ -261,20 +280,7 @@ async function reseedIncomingItems(
     })
     .filter((x): x is IncomingSeedRow => Boolean(x));
 
-  // merge duplicates
-  {
-    const map = new Map<string, IncomingSeedRow>();
-    for (const r of rows) {
-      const k = r.purchase_item_id ? `pi:${r.purchase_item_id}` : `code:${String(r.rik_code ?? "")}`;
-      if (!map.has(k)) map.set(k, r);
-      else {
-        const prev = map.get(k);
-        prev.qty_expected = Number(prev.qty_expected ?? 0) + Number(r.qty_expected ?? 0);
-        map.set(k, prev);
-      }
-    }
-    rows = Array.from(map.values());
-  }
+  rows = mergeIncomingSeedRows(rows);
 
   const ins = await supabase.from("wh_incoming_items").upsert(rows, {
     onConflict: "incoming_id,purchase_item_id",

@@ -1,0 +1,17 @@
+env: load .env.local
+env: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY EXPO_PUBLIC_JOB_QUEUE_ENABLED WORKER_BATCH_SIZE WORKER_CONCURRENCY COMPACTION_DELAY_MS
+Starting project at C:\dev\rik-expo-app-release
+Metro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Android ..\rik-expo-app\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android ..\rik-expo-app\node_modules\expo-router\entry.js ▓▓▓░░░░░░░░░░░░░ 24.0% (174/355)
+Android ..\rik-expo-app\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 56.6% (555/738)
+Android ..\rik-expo-app\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 67.3% ( 858/1245)
+Android ..\rik-expo-app\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 67.3% (1237/1660)
+Android ..\rik-expo-app\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 67.3% (1585/1970)
+Android ..\rik-expo-app\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 80.4% (1995/2250)
+Android ..\rik-expo-app\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 96.5% (2474/2519)
+Android Bundled 25473ms ..\rik-expo-app\node_modules\expo-router\entry.js (2533 modules)

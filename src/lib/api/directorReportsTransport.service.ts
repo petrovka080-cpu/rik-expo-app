@@ -244,9 +244,9 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
   try {
     const { data, error } = await applySupabaseAbortSignal(
       supabase.rpc("director_report_transport_scope_v1", {
-        p_from: args.from || null,
-        p_to: args.to || null,
-        p_object_name: args.objectName ?? null,
+        p_from: args.from || undefined,
+        p_to: args.to || undefined,
+        p_object_name: args.objectName ?? undefined,
         p_include_discipline: args.includeDiscipline,
         p_include_costs: args.includeDiscipline ? !args.skipDisciplinePrices : false,
       }),

@@ -1,0 +1,53 @@
+{
+  "wave": "STRICT_NULLCHECKS_PROGRAM_PREP",
+  "status": "READY_FOR_RELEASE",
+  "semanticsChanged": false,
+  "probeConfig": "tsconfig.strict-null-prep.json",
+  "touchedFiles": [
+    "tsconfig.strict-null-prep.json",
+    "src/lib/api/director_reports.transport.discipline.ts",
+    "src/lib/api/directorReportsTransport.service.ts",
+    "src/screens/warehouse/warehouse.seed.ts",
+    "tests/strict-null/directorReportsTransport.service.test.ts",
+    "tests/strict-null/warehouse.seed.normalize.test.ts",
+    "artifacts/STRICT_nullability_inventory.json",
+    "artifacts/STRICT_nullchecks_prep_notes.md",
+    "artifacts/STRICT_nullchecks_prep_proof.md",
+    "artifacts/STRICT_nullchecks_prep_matrix.json"
+  ],
+  "errorCategories": [
+    "nullable query filter input",
+    "nullable optional RPC args",
+    "unsafe map lookup assumption"
+  ],
+  "focusedTests": [
+    "npx jest tests/strict-null/directorReportsTransport.service.test.ts --runInBand --no-coverage",
+    "npx jest tests/strict-null/warehouse.seed.normalize.test.ts --runInBand --no-coverage",
+    "npx jest tests/perf/performance-budget.test.ts --runInBand --no-coverage"
+  ],
+  "gates": {
+    "strictPrepProbe": "PASS",
+    "tsc": "PASS",
+    "lint": "PASS",
+    "jestRunInBand": "PASS",
+    "jestParallel": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "runtimeProof": {
+    "android": {
+      "status": "PASS",
+      "reason": "passed after one bounded environment-only release-worktree recovery with no product-code changes",
+      "artifact": "artifacts/strict-null-prep-android-runtime.json"
+    },
+    "web": {
+      "status": "NOT_REQUIRED",
+      "reason": "this prep wave was closed against the requested Android emulator proof; no separate web runtime requirement was introduced for this scope"
+    }
+  },
+  "releaseReadiness": {
+    "commit": "pending_final_green_closeout",
+    "push": "pending_final_green_closeout",
+    "otaRequired": "runtime_diff_true",
+    "otaExecuted": false
+  }
+}

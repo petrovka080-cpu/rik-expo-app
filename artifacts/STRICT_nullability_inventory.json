@@ -1,0 +1,76 @@
+{
+  "wave": "STRICT_NULLCHECKS_PROGRAM_PREP",
+  "generatedAt": "2026-04-22",
+  "probeConfig": "tsconfig.strict-null-prep.json",
+  "scope": [
+    "src/lib/auth/useAuthLifecycle.ts",
+    "src/screens/accountant/useAccountantPaymentForm.ts",
+    "src/screens/warehouse/hooks/useWarehouseReceiveFlow.ts",
+    "src/screens/director/hooks/useDirectorReportsController.ts"
+  ],
+  "zones": [
+    {
+      "file": "src/lib/auth/useAuthLifecycle.ts",
+      "domain": "auth/session bootstrap",
+      "riskClass": "B",
+      "nullSource": "delayed auth/session hydration and nullable profile/session inputs",
+      "guardQuality": "medium",
+      "blockerSeverity": "prep_needed",
+      "recommendedNextAction": "keep in strict phase candidate set; no direct probe blocker in this prep wave"
+    },
+    {
+      "file": "src/screens/accountant/useAccountantPaymentForm.ts",
+      "domain": "accountant payment",
+      "riskClass": "B",
+      "nullSource": "nullable payment/report inputs crossing form and observability boundaries",
+      "guardQuality": "medium",
+      "blockerSeverity": "prep_needed",
+      "recommendedNextAction": "keep in strict phase candidate set; current prep probe stayed green for this owner"
+    },
+    {
+      "file": "src/screens/warehouse/hooks/useWarehouseReceiveFlow.ts",
+      "domain": "warehouse receive flow",
+      "riskClass": "B",
+      "nullSource": "receive lifecycle depends on nullable seed/repository inputs",
+      "guardQuality": "medium",
+      "blockerSeverity": "prep_needed",
+      "recommendedNextAction": "downstream seed normalization needed before strict phase; owner stayed green after dependency fix"
+    },
+    {
+      "file": "src/screens/director/hooks/useDirectorReportsController.ts",
+      "domain": "director reports",
+      "riskClass": "B",
+      "nullSource": "nullable transport/report filters crossing RPC and table fallback boundaries",
+      "guardQuality": "medium",
+      "blockerSeverity": "prep_needed",
+      "recommendedNextAction": "controller candidate stays in phase-1 slice; transport dependencies had to be hardened first"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "domain": "director transport discipline fallback",
+      "riskClass": "C",
+      "nullSource": "legacy object-name filter passed string|null directly into query.eq",
+      "guardQuality": "partial",
+      "blockerSeverity": "critical_blocker",
+      "recommendedNextAction": "fixed in prep by deriving a nullable-safe legacyObjectNameFilter before query composition"
+    },
+    {
+      "file": "src/lib/api/directorReportsTransport.service.ts",
+      "domain": "director transport RPC boundary",
+      "riskClass": "C",
+      "nullSource": "optional RPC parameters were sent as null where generated contract expects omit/undefined",
+      "guardQuality": "weak",
+      "blockerSeverity": "critical_blocker",
+      "recommendedNextAction": "fixed in prep by sending undefined for omitted optional RPC args"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.seed.ts",
+      "domain": "warehouse seed normalization",
+      "riskClass": "C",
+      "nullSource": "duplicate merge branch assumed map.get() is always defined",
+      "guardQuality": "weak",
+      "blockerSeverity": "critical_blocker",
+      "recommendedNextAction": "fixed in prep by explicit merge helper with deterministic previous-row guard"
+    }
+  ]
+}
