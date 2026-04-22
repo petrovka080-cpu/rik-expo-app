@@ -1,0 +1,56 @@
+{
+  "wave": "CALCMODAL_OWNER_BOUNDARY_SPLIT",
+  "status": "gates_green_pending_release_tail",
+  "touched_files": [
+    "src/components/foreman/CalcModal.tsx",
+    "src/components/foreman/CalcModalContent.tsx",
+    "src/components/foreman/calcModal.normalize.ts",
+    "src/components/foreman/calcModal.model.ts",
+    "src/components/foreman/calcModal.validation.ts",
+    "src/components/foreman/calcModal.state.ts",
+    "tests/foreman/CalcModal.test.tsx",
+    "tests/foreman/calcModal.normalize.test.ts",
+    "tests/foreman/calcModal.model.test.ts",
+    "tests/foreman/calcModal.validation.test.ts",
+    "tests/foreman/calcModal.state.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "extracted_modules": [
+    "src/components/foreman/calcModal.normalize.ts",
+    "src/components/foreman/calcModal.model.ts",
+    "src/components/foreman/calcModal.validation.ts",
+    "src/components/foreman/calcModal.state.ts",
+    "src/components/foreman/CalcModalContent.tsx"
+  ],
+  "business_semantics_changed": false,
+  "user_visible_runtime_semantics_changed": false,
+  "runtime_code_changed": true,
+  "auto_fix_scope": {
+    "catch_empty_removed": true,
+    "eslint_disable_removed": true,
+    "any_ignore_added": false
+  },
+  "focused_tests": {
+    "calc_modal_pure": "PASS",
+    "calc_modal_owner": "PASS",
+    "calc_modal_callers": "PASS"
+  },
+  "gates": {
+    "tsc": "PASS",
+    "expo_lint": "PASS",
+    "npm_test_runInBand": "PASS",
+    "npm_test_parallel": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "release_readiness": {
+    "commit_ready": true,
+    "push_ready": false,
+    "ota_required": true,
+    "ota_completed": false
+  },
+  "runtime_proof": {
+    "component_regression": "PASS",
+    "caller_contract_regression": "PASS",
+    "emulator_native_proof": "BLOCKED"
+  }
+}

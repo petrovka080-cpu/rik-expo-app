@@ -113,8 +113,10 @@ describe("performance budget — bundle module count", () => {
     // LIST_RENDER_DISCIPLINE_HARDENING adds six permanent render discipline modules:
     //   reqIssueModal.row.model, ReqIssueModalRow, warehouseReports.row.model, ReportDocRowItem (4 source)
     //   + reqIssueModal.row.model.test, warehouseReports.row.model.test (2 tests).
+    // CALCMODAL_OWNER_BOUNDARY_SPLIT adds five permanent owner-boundary modules:
+    //   calcModal.normalize, calcModal.model, calcModal.validation, calcModal.state, CalcModalContent.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1281);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1286);
   });
 });
 
