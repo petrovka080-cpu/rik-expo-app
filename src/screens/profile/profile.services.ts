@@ -2,6 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
+import type { Database } from "../../lib/database.types";
 import { getMyRole } from "../../lib/api/profile";
 import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
 import { supabase } from "../../lib/supabaseClient";
@@ -42,8 +43,53 @@ type MarketListingInsertParams = {
   lng: number;
 };
 
+type MarketListingInsertPayload =
+  Database["public"]["Tables"]["market_listings"]["Insert"];
+
+type ListingKindSource = { kind?: unknown } | null | undefined;
+
+type MarketListingKindContract =
+  | { status: "missing" }
+  | { status: "invalid"; reason: "explicit_kind" }
+  | { status: "ready"; kind: ListingKind | "mixed" };
+
 const asSupabaseCode = (error: unknown) =>
   String((error as SupabaseCodeError | null)?.code ?? "").trim();
+
+const isListingKind = (value: unknown): value is ListingKind =>
+  value === "material" || value === "service" || value === "rent";
+
+export const normalizeListingCartItemKind = (
+  value: unknown,
+): ListingKind | null => (isListingKind(value) ? value : null);
+
+export const resolveMarketListingKindContract = (
+  explicitKind: unknown,
+  items: readonly ListingKindSource[] | null | undefined,
+): MarketListingKindContract => {
+  if (explicitKind == null || explicitKind === "") {
+    const cartKinds = (items ?? [])
+      .map((item) => normalizeListingCartItemKind(item?.kind))
+      .filter((kind): kind is ListingKind => kind !== null);
+
+    if (cartKinds.length === 0) {
+      return { status: "missing" };
+    }
+
+    const uniqueKinds = Array.from(new Set(cartKinds));
+    if (uniqueKinds.length === 1) {
+      return { status: "ready", kind: uniqueKinds[0] };
+    }
+
+    return { status: "ready", kind: "mixed" };
+  }
+
+  if (!isListingKind(explicitKind)) {
+    return { status: "invalid", reason: "explicit_kind" };
+  }
+
+  return { status: "ready", kind: explicitKind };
+};
 
 const getMetadata = (user: User): ProfileMetadata => {
   const metadata = user.user_metadata;
@@ -331,28 +377,6 @@ export const saveProfileDetails = async (params: {
   return { profile: data as UserProfile, profileAvatarUrl: nextAvatarUrl };
 };
 
-const resolveListingKind = (
-  listingKind: ListingKind | null,
-  listingCartItems: ListingCartItem[],
-): ListingKind | "mixed" | null => {
-  let finalKind: ListingKind | "mixed" | null = listingKind;
-  if (!finalKind && listingCartItems.length > 0) {
-    const kinds = Array.from(
-      new Set(
-        listingCartItems
-          .map((item) => item.kind)
-          .filter((kind): kind is ListingKind => Boolean(kind)),
-      ),
-    );
-    if (kinds.length === 1) {
-      finalKind = kinds[0];
-    } else if (kinds.length > 1) {
-      finalKind = "mixed";
-    }
-  }
-  return finalKind;
-};
-
 export const createMarketListing = async (
   params: MarketListingInsertParams,
 ): Promise<void> => {
@@ -374,18 +398,20 @@ export const createMarketListing = async (
     qty: Number(item.qty.replace(",", ".")) || 0,
     price: Number(item.price.replace(",", ".")) || 0,
     city: item.city,
-    kind: item.kind,
+    kind: normalizeListingCartItemKind(item.kind),
   }));
 
-  const kind = resolveListingKind(
+  const kindContract = resolveMarketListingKindContract(
     params.form.listingKind,
     params.listingCartItems,
   );
+  if (kindContract.status === "invalid") {
+    throw new Error("Некорректный тип объявления.");
+  }
 
-  const { error } = await supabase.from("market_listings").insert({
+  const insertPayload: MarketListingInsertPayload = {
     user_id: params.userId,
     company_id: params.companyId,
-    kind,
     title: params.form.listingTitle.trim(),
     description: params.form.listingDescription.trim() || null,
     price: priceNumber,
@@ -400,7 +426,10 @@ export const createMarketListing = async (
     lng: params.lng,
     rik_code: params.form.listingRikCode,
     items_json: itemsPayload,
-  });
+    ...(kindContract.status === "ready" ? { kind: kindContract.kind } : {}),
+  };
+
+  const { error } = await supabase.from("market_listings").insert(insertPayload);
 
   if (error) throw error;
 };

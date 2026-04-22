@@ -1,0 +1,27 @@
+{
+  "wave": "STRICT_NULLCHECKS_NEXT_EXECUTION_WAVE",
+  "chosen_slice": "profile listing transport boundary",
+  "touched_files": [
+    "src/screens/profile/profile.services.ts",
+    "src/screens/profile/profile.services.test.ts",
+    "tsconfig.strict-null-next-profile-listing.json"
+  ],
+  "strict_blockers_closed": [
+    "nullable listing kind no longer leaks into market_listings.insert",
+    "create-listing transport boundary now distinguishes missing, invalid, and ready kind states",
+    "cart item kinds are normalized before entering items_json"
+  ],
+  "guards_normalizers_invariants_added": [
+    "resolveMarketListingKindContract",
+    "normalizeListingCartItemKind"
+  ],
+  "tests_added": [
+    "src/screens/profile/profile.services.test.ts"
+  ],
+  "semantics_changed": false,
+  "strict_compile": "PASS",
+  "root_typecheck": "PASS",
+  "lint": "PASS",
+  "focused_tests": "PASS",
+  "full_tests": "PASS"
+}

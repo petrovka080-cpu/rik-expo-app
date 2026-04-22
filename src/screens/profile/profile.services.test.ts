@@ -1,6 +1,17 @@
 import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
-import { loadCurrentAuthUser, saveProfileDetails } from "./profile.services";
-import type { UserProfile } from "./profile.types";
+import type { Database } from "../../lib/database.types";
+import {
+  createMarketListing,
+  loadCurrentAuthUser,
+  normalizeListingCartItemKind,
+  resolveMarketListingKindContract,
+  saveProfileDetails,
+} from "./profile.services";
+import type {
+  ListingCartItem,
+  ListingFormState,
+  UserProfile,
+} from "./profile.types";
 
 const mockGetUser = jest.fn();
 const mockGetSession = jest.fn();
@@ -46,6 +57,44 @@ const buildProfileForm = () => ({
   profilePositionInput: "Manager",
 });
 
+const buildListingForm = (
+  overrides: Partial<ListingFormState> = {},
+): ListingFormState => ({
+  listingTitle: "Cement",
+  listingCity: "Bishkek",
+  listingPrice: "1200",
+  listingUom: "kg",
+  listingDescription: "Bulk cement",
+  listingPhone: "+996700333333",
+  listingWhatsapp: "+996700444444",
+  listingEmail: "seller@example.com",
+  listingKind: null,
+  listingRikCode: "RIK-1",
+  ...overrides,
+});
+
+const buildListingCartItem = (
+  overrides: Partial<ListingCartItem> = {},
+): ListingCartItem => ({
+  id: "item-1",
+  rik_code: "RIK-1",
+  name: "Cement",
+  uom: "kg",
+  qty: "2",
+  price: "600",
+  city: "Bishkek",
+  kind: "material",
+  ...overrides,
+});
+
+type MarketListingInsertPayload =
+  Database["public"]["Tables"]["market_listings"]["Insert"];
+
+type MarketListingsInsertResult = { error: Error | null };
+type MarketListingsInsertFn = (
+  payload: MarketListingInsertPayload,
+) => Promise<MarketListingsInsertResult>;
+
 const mockUserProfilesUpsert = (result: { data: UserProfile | null; error: Error | null }) => {
   const mockSingle = jest.fn().mockResolvedValue(result);
   const mockSelect = jest.fn(() => ({ single: mockSingle }));
@@ -59,6 +108,21 @@ const mockUserProfilesUpsert = (result: { data: UserProfile | null; error: Error
   });
 
   return { mockUpsert, mockSelect, mockSingle };
+};
+
+const mockMarketListingsInsert = (result: MarketListingsInsertResult) => {
+  const mockInsert = jest
+    .fn<ReturnType<MarketListingsInsertFn>, Parameters<MarketListingsInsertFn>>()
+    .mockResolvedValue(result);
+
+  mockFrom.mockImplementation((table: string) => {
+    if (table !== "market_listings") {
+      throw new Error(`unexpected table ${table}`);
+    }
+    return { insert: mockInsert };
+  });
+
+  return { mockInsert };
 };
 
 describe("profile.services loadCurrentAuthUser", () => {
@@ -181,5 +245,137 @@ describe("profile.services saveProfileDetails ownership", () => {
     ).rejects.toThrow("user_profiles write failed");
 
     expect(mockUpdateUser).not.toHaveBeenCalled();
+  });
+});
+
+describe("profile.services createMarketListing transport boundary", () => {
+  beforeEach(() => {
+    mockGetUser.mockReset();
+    mockGetSession.mockReset();
+    mockUpdateUser.mockReset();
+    mockFrom.mockReset();
+  });
+
+  it("omits kind when the listing kind contract resolves to missing", async () => {
+    const { mockInsert } = mockMarketListingsInsert({ error: null });
+
+    await expect(
+      createMarketListing({
+        userId: "user-1",
+        companyId: "company-1",
+        form: buildListingForm({ listingKind: null }),
+        listingCartItems: [],
+        lat: 42,
+        lng: 74,
+      }),
+    ).resolves.toBeUndefined();
+
+    const payload = mockInsert.mock.calls[0][0];
+    expect(payload.kind).toBeUndefined();
+    expect(payload.items_json).toEqual([]);
+    expect(payload.title).toBe("Cement");
+  });
+
+  it("keeps the explicit listing kind on the success path even when cart items still carry older kinds", async () => {
+    const { mockInsert } = mockMarketListingsInsert({ error: null });
+
+    await expect(
+      createMarketListing({
+        userId: "user-1",
+        companyId: "company-1",
+        form: buildListingForm({ listingKind: "rent" }),
+        listingCartItems: [buildListingCartItem({ kind: "material" })],
+        lat: 42,
+        lng: 74,
+      }),
+    ).resolves.toBeUndefined();
+
+    const payload = mockInsert.mock.calls[0][0];
+    expect(payload.kind).toBe("rent");
+    expect(payload.items_json).toEqual([
+      {
+        rik_code: "RIK-1",
+        name: "Cement",
+        uom: "kg",
+        qty: 2,
+        price: 600,
+        city: "Bishkek",
+        kind: "material",
+      },
+    ]);
+  });
+
+  it("writes mixed when cart kinds diverge and the explicit kind is missing", async () => {
+    const { mockInsert } = mockMarketListingsInsert({ error: null });
+
+    await expect(
+      createMarketListing({
+        userId: "user-1",
+        companyId: "company-1",
+        form: buildListingForm({ listingKind: null }),
+        listingCartItems: [
+          buildListingCartItem({ id: "item-1", kind: "material" }),
+          buildListingCartItem({
+            id: "item-2",
+            kind: "service",
+            name: "Delivery",
+            qty: "1",
+            price: "1200",
+          }),
+        ],
+        lat: 42,
+        lng: 74,
+      }),
+    ).resolves.toBeUndefined();
+
+    const payload = mockInsert.mock.calls[0][0];
+    expect(payload.kind).toBe("mixed");
+  });
+});
+
+describe("profile.services listing kind contract", () => {
+  it("returns ready when the explicit kind is valid", () => {
+    expect(resolveMarketListingKindContract("rent", [])).toEqual({
+      status: "ready",
+      kind: "rent",
+    });
+  });
+
+  it("returns ready with mixed when cart kinds diverge and the explicit kind is missing", () => {
+    expect(
+      resolveMarketListingKindContract(null, [
+        { kind: "material" },
+        { kind: "service" },
+      ]),
+    ).toEqual({
+      status: "ready",
+      kind: "mixed",
+    });
+  });
+
+  it("returns missing for null and empty payloads", () => {
+    expect(resolveMarketListingKindContract(null, [])).toEqual({
+      status: "missing",
+    });
+  });
+
+  it("returns missing for undefined and partial payloads without a valid kind", () => {
+    expect(
+      resolveMarketListingKindContract(undefined, [{}, { kind: null }, undefined]),
+    ).toEqual({
+      status: "missing",
+    });
+  });
+
+  it("returns invalid for malformed explicit kinds", () => {
+    expect(resolveMarketListingKindContract("broken-kind", [])).toEqual({
+      status: "invalid",
+      reason: "explicit_kind",
+    });
+  });
+
+  it("normalizes malformed cart item kinds to null", () => {
+    expect(normalizeListingCartItemKind("broken-kind")).toBeNull();
+    expect(normalizeListingCartItemKind("material")).toBe("material");
   });
 });
