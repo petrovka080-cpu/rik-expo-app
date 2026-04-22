@@ -39,9 +39,14 @@ export type OfficeHubScreenProps = {
   routeScopeActive?: boolean;
 };
 
+export type WarehouseOfficeReturnReceipt = Record<string, unknown> & {
+  sourceRoute: "/office/warehouse";
+  target: "/office";
+};
+
 export function isWarehouseOfficeReturnReceipt(
   receipt: Record<string, unknown> | null | undefined,
-) {
+): receipt is WarehouseOfficeReturnReceipt {
   return (
     receipt?.sourceRoute === "/office/warehouse" &&
     receipt?.target === "/office"
