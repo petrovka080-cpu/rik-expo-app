@@ -1,0 +1,87 @@
+{
+  "wave": "STRICT_NULLCHECKS_PHASE_5",
+  "chosenSlice": {
+    "path": "src/screens/office/office.reentry.ts",
+    "reason": "2 local strict-null blockers with an office-local guard fix and existing focused regression coverage"
+  },
+  "shortlist": [
+    {
+      "candidate": "src/screens/contractor/contractor.search.ts",
+      "status": "safe_not_chosen",
+      "reason": "4 local optional-number blockers only, but no existing focused regression coverage"
+    },
+    {
+      "candidate": "src/screens/warehouse/warehouse.pdf.boundary.ts",
+      "status": "blocked_cross_dependency",
+      "reason": "local warehouse boundary blocker also pulls shared PDF document action types and strict-null test failures"
+    },
+    {
+      "candidate": "src/screens/warehouse/hooks/useWarehouseScreenActions.ts",
+      "status": "too_wide",
+      "reason": "optional onListScroll contract mismatch spans multiple adjacent warehouse hooks"
+    },
+    {
+      "candidate": "src/screens/office/office.reentry.ts",
+      "status": "chosen",
+      "reason": "2 local blockers only, fixed by a type predicate inside the office-local boundary guard"
+    }
+  ],
+  "touchedFiles": [
+    "src/screens/office/officeHub.helpers.tsx",
+    "tests/strict-null/office.reentry.phase5.test.ts",
+    "tsconfig.strict-null-phase5-office-reentry.json",
+    "artifacts/STRICT_nullchecks_phase5_notes.md",
+    "artifacts/STRICT_nullchecks_phase5_proof.md",
+    "artifacts/STRICT_nullchecks_phase5_matrix.json"
+  ],
+  "guardsOrNormalizersAdded": [
+    "WarehouseOfficeReturnReceipt",
+    "isWarehouseOfficeReturnReceipt type predicate"
+  ],
+  "testsAdded": [
+    "tests/strict-null/office.reentry.phase5.test.ts"
+  ],
+  "semanticsChanged": false,
+  "phase5StrictCompile": "PASS",
+  "rootTypecheck": "PASS",
+  "lint": "PASS",
+  "focusedTests": "PASS",
+  "runInBandTests": "PASS",
+  "parallelTests": "PASS",
+  "gitDiffCheck": "PASS",
+  "releaseReadiness": {
+    "runtimeDiffExpected": true,
+    "otaNeededIfGreen": true,
+    "commit": "d182348",
+    "push": "PASS",
+    "otaExecuted": true,
+    "preExistingDirtyFilesShelvedBeforeReleaseTail": [
+      "android/app/src/main/res/values/strings.xml",
+      "eas.json"
+    ],
+    "ota": {
+      "development": {
+        "iosRuntimeVersion": "7ba116c416495908222b37d232a9a1ab877c4a82",
+        "iosUpdateGroupId": "4e904160-a0a8-4027-88c1-fa6a9d4d1324",
+        "iosUpdateId": "019db579-556f-7cdb-aed6-fe53c5ce3af1",
+        "androidRuntimeVersion": "06479ede57796decbd74bcf425db1d8fd63c01b1",
+        "androidUpdateGroupId": "af5ee064-ef98-43ac-960d-a5d63f38ffbe",
+        "androidUpdateId": "019db579-556f-7465-a3a0-cfde9d0ae21e"
+      },
+      "preview": {
+        "iosUpdateGroupId": "523ea6ca-2ce0-4b3d-982e-17bb7dc83b4f",
+        "iosUpdateId": "019db57a-6912-7169-8e02-91d0fd7da700",
+        "androidUpdateGroupId": "79f44b16-017d-46dd-93e7-675e5a53c8db",
+        "androidUpdateId": "019db57a-6912-7ff3-b58c-c7344e383c26"
+      },
+      "production": {
+        "iosUpdateGroupId": "c308f199-176b-4b94-89f6-0ea06e2fa135",
+        "iosUpdateId": "019db57b-539a-7612-9875-2b028e495823",
+        "androidUpdateGroupId": "9a4835ac-da55-48ad-91d4-a3b1299b0a65",
+        "androidUpdateId": "019db57b-539a-79ce-8577-93c6be4416fb"
+      }
+    },
+    "headMatchesOriginMain": true,
+    "worktreeClean": true
+  }
+}
