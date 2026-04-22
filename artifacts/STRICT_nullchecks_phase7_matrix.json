@@ -1,0 +1,84 @@
+{
+  "wave": "STRICT_NULLCHECKS_PHASE_7",
+  "chosenSlice": {
+    "path": "src/screens/warehouse/warehouse.pdf.boundary.ts",
+    "reason": "1 local strict-null blocker at a warehouse preview process boundary with focused regression coverage and low blast radius"
+  },
+  "shortlist": [
+    {
+      "candidate": "src/lib/pdf/pdfViewer.route.ts",
+      "status": "safe_weaker_value",
+      "reason": "route contract is already strict-clean in isolation, so it provides weaker immediate value for this wave"
+    },
+    {
+      "candidate": "src/screens/foreman/foreman.terminalRecovery.ts",
+      "status": "blocked_cross_dependency",
+      "reason": "isolated probe also pulls buyer/director/shared-PDF/local-draft blockers"
+    },
+    {
+      "candidate": "src/screens/warehouse/hooks/useWarehouseScreenActions.ts",
+      "status": "too_wide",
+      "reason": "process-orchestration probe also pulls canonical PDF backend transport and warehouse preview boundary blockers"
+    },
+    {
+      "candidate": "src/screens/warehouse/warehouse.pdf.boundary.ts",
+      "status": "chosen",
+      "reason": "one local nullability blocker only, fixed by a warehouse-local request contract and non-null preview invariant"
+    }
+  ],
+  "touchedFiles": [
+    "src/screens/warehouse/warehouse.pdf.boundary.ts",
+    "tests/strict-null/warehouse.pdf.boundary.phase7.test.ts",
+    "tsconfig.strict-null-phase7-warehouse-pdf-boundary.json",
+    "artifacts/STRICT_nullchecks_phase7_notes.md",
+    "artifacts/STRICT_nullchecks_phase7_proof.md",
+    "artifacts/STRICT_nullchecks_phase7_matrix.json"
+  ],
+  "guardsOrNormalizersAdded": [
+    "WarehousePdfPreviewRequestInput",
+    "resolveWarehousePdfPreviewContract",
+    "normalizeWarehousePdfRemoteUrl"
+  ],
+  "testsAdded": [
+    "tests/strict-null/warehouse.pdf.boundary.phase7.test.ts"
+  ],
+  "semanticsChanged": false,
+  "phase7StrictCompile": "PASS",
+  "rootTypecheck": "PASS",
+  "lint": "PASS",
+  "focusedTests": "PASS",
+  "runInBandTests": "PASS",
+  "parallelTests": "PASS",
+  "gitDiffCheck": "PASS",
+  "releaseReadiness": {
+    "runtimeDiffExpected": true,
+    "otaNeededIfGreen": true,
+    "commit": "6060662",
+    "push": "PASS",
+    "otaExecuted": true,
+    "ota": {
+      "development": {
+        "iosRuntimeVersion": "7ba116c416495908222b37d232a9a1ab877c4a82",
+        "iosUpdateGroupId": "ce4fc029-65e7-4a99-99d9-5dd4fb2a805e",
+        "iosUpdateId": "019db58f-047e-731c-af00-5fd040431f2b",
+        "androidRuntimeVersion": "06479ede57796decbd74bcf425db1d8fd63c01b1",
+        "androidUpdateGroupId": "1bab250f-93c8-48c0-8f2c-14fbada41cd6",
+        "androidUpdateId": "019db58f-047e-7537-ab54-d0c6b27c5beb"
+      },
+      "preview": {
+        "iosUpdateGroupId": "ab2f9ec9-bee7-4a55-9a2f-c0e18ef01b19",
+        "iosUpdateId": "019db590-2889-7c98-82ce-bcb8563c4652",
+        "androidUpdateGroupId": "a24d8336-62cb-4582-a143-943de01e5ddb",
+        "androidUpdateId": "019db590-2889-7810-a10d-8b24c7535494"
+      },
+      "production": {
+        "iosUpdateGroupId": "27b2a67d-b035-4167-a01d-03c5956b182d",
+        "iosUpdateId": "019db591-6186-7cfe-945b-87558db25e65",
+        "androidUpdateGroupId": "724a3c2b-a2b7-40fe-baf8-95b7b97106aa",
+        "androidUpdateId": "019db591-6186-7620-94b9-1cbd33b99073"
+      }
+    },
+    "headMatchesOriginMain": true,
+    "worktreeClean": true
+  }
+}
