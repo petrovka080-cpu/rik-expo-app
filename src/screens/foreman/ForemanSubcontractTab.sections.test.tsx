@@ -2,6 +2,7 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
 import type { ForemanRequestSummary, ReqItemRow } from "../../lib/catalog_api";
+import type { CalcModalRow } from "../../components/foreman/calcModal.model";
 import { s as styles } from "./foreman.styles";
 import { UI } from "./foreman.ui";
 import type { PickedRow } from "./foreman.types";
@@ -308,7 +309,7 @@ const makeModalStackProps = (): React.ComponentProps<typeof ForemanSubcontractMo
   onCloseCalc: jest.fn(),
   onBackFromCalc: jest.fn(),
   selectedWorkType: { code: "WT-1", name: "Монтаж" },
-  onAddCalcToRequest: jest.fn(async (_rows: Record<string, unknown>[]) => {}),
+  onAddCalcToRequest: jest.fn(async (_rows: CalcModalRow[]) => {}),
   requestHistoryVisible: true,
   onCloseRequestHistory: jest.fn(),
   requestHistoryLoading: false,
@@ -376,7 +377,7 @@ describe("ForemanSubcontractTab sections", () => {
     };
     const calcModalProps = latestCalcModalProps as {
       onBack: () => void;
-      onAddToRequest: (rows: Record<string, unknown>[]) => Promise<void>;
+      onAddToRequest: (rows: CalcModalRow[]) => Promise<void>;
     };
     const historyModalProps = latestHistoryModalProps as {
       mode: "list";
@@ -393,7 +394,24 @@ describe("ForemanSubcontractTab sections", () => {
     };
 
     const pickedRows: PickedRow[] = [{ rik_code: "R-2", name: "Материал 2", qty: "5", note: "" }];
-    const calcRows = [{ rik_code: "R-3", qty: 4 }];
+    const calcRows: CalcModalRow[] = [
+      {
+        work_type_code: "WT-1",
+        rik_code: "R-3",
+        section: "materials",
+        uom_code: "pcs",
+        basis: "qty",
+        base_coeff: 1,
+        effective_coeff: 1,
+        qty: 4,
+        suggested_qty: null,
+        packs: null,
+        pack_size: null,
+        pack_uom: null,
+        hint: null,
+        item_name_ru: "РњР°С‚РµСЂРёР°Р» 3",
+      },
+    ];
 
     const deleteAllButton = renderer.root.findByProps({ testID: "delete-all-btn" });
     const sendPrimaryButton = renderer.root.findByProps({ testID: "send-primary-btn" });

@@ -8,7 +8,6 @@ import {
   updateRequestMeta,
   listRequestItems,
   type ReqItemRow,
-  type RequestMetaPatch,
 } from "../../../lib/catalog_api";
 import {
   mapReqItemsToDraftSyncLines,
@@ -27,11 +26,8 @@ import { s } from "../foreman.styles";
 import { REQUEST_STATUS_STYLES, UI } from "../foreman.ui";
 import { resolveStatusInfo as resolveStatusHelper, shortId } from "../foreman.helpers";
 import {
-  fmtAmount,
   listForemanSubcontracts,
   type Subcontract,
-  type SubcontractPriceType,
-  type SubcontractWorkMode,
 } from "../../subcontracts/subcontracts.shared";
 import {
   fetchForemanRequestDisplayLabel,
@@ -41,6 +37,36 @@ import { readForemanProfileName } from "../foreman.dicts.repo";
 import { useForemanHistory } from "./useForemanHistory";
 import { useForemanSubcontractUiStore, type SubcontractFlowScreen } from "../foremanSubcontractUi.store";
 import { buildForemanRequestPdfDescriptor } from "../foreman.requestPdf.service";
+import {
+  EMPTY_FORM,
+  appendLineInputsToDraftItems,
+  buildDraftScopeKey,
+  deriveSubcontractControllerModel,
+  filterActiveDraftItems,
+  type CalcPickedRow,
+  type DictOption,
+  type FormState,
+  toPositiveQty,
+  toRemoteDraftItemId,
+  trim,
+} from "./foreman.subcontractController.model";
+import {
+  guardDraftUser,
+  guardPdfRequest,
+  guardSendToDirector,
+  guardTemplateContract,
+  isSubcontractControllerGuardFailure,
+} from "./foreman.subcontractController.guards";
+import {
+  planSelectedSubcontractHydration,
+  planSubcontractDraftReset,
+  planSubcontractTotalPriceSync,
+} from "./foreman.subcontractController.effects";
+import {
+  buildForemanSubcontractDebugPayload,
+  getForemanSubcontractAlertCopy,
+  getForemanSubcontractErrorMessage,
+} from "./foreman.subcontractController.telemetry";
 
 export type ForemanSubcontractTabProps = {
   contentTopPad: number;
@@ -52,240 +78,11 @@ export type ForemanSubcontractTabProps = {
   };
 };
 
-type DictOption = {
-  code: string;
-  name: string;
-};
-
-type FormState = {
-  contractorOrg: string;
-  contractorRep: string;
-  contractorPhone: string;
-  contractNumber: string;
-  contractDate: string;
-  objectCode: string;
-  levelCode: string;
-  systemCode: string;
-  zoneText: string;
-  qtyPlanned: string;
-  uom: string;
-  dateStart: string;
-  dateEnd: string;
-  workMode: SubcontractWorkMode | "";
-  pricePerUnit: string;
-  totalPrice: string;
-  priceType: SubcontractPriceType | "";
-  foremanComment: string;
-};
-
-type CalcPickedRow = {
-  rik_code?: string | null;
-  item_name_ru?: string | null;
-  name_human?: string | null;
-  qty?: string | number | null;
-  uom_code?: string | null;
-};
-
-const buildDraftScopeKey = (form: FormState, templateId?: string | null) =>
-  [
-    templateId || "",
-    form.objectCode.trim(),
-    form.levelCode.trim(),
-    form.systemCode.trim(),
-    form.zoneText.trim(),
-    form.contractorOrg.trim(),
-    form.contractNumber.trim(),
-  ].join("|");
-
-const isCancelledDraftRow = (status?: string | null) => {
-  const normalized = String(status || "").trim().toLowerCase();
-  return normalized === "cancelled" || normalized === "canceled";
-};
-
-const filterActiveDraftItems = (rows: ReqItemRow[] | null | undefined): ReqItemRow[] =>
-  (rows || []).filter((row) => !isCancelledDraftRow(row.status));
-
-const EMPTY_FORM: FormState = {
-  contractorOrg: "",
-  contractorRep: "",
-  contractorPhone: "",
-  contractNumber: "",
-  contractDate: "",
-  objectCode: "",
-  levelCode: "",
-  systemCode: "",
-  zoneText: "",
-  qtyPlanned: "",
-  uom: "",
-  dateStart: "",
-  dateEnd: "",
-  workMode: "",
-  pricePerUnit: "",
-  totalPrice: "",
-  priceType: "",
-  foremanComment: "",
-};
-
-const UOM_OPTIONS = [
-  { code: "шт", name: "шт" },
-  { code: "м", name: "м" },
-  { code: "м2", name: "м2" },
-  { code: "м3", name: "м3" },
-  { code: "кг", name: "кг" },
-  { code: "т", name: "т" },
-  { code: "компл", name: "компл" },
-  { code: "смена", name: "смена" },
-  { code: "час", name: "час" },
-];
-
-void UOM_OPTIONS;
-
-const toNum = (v: string) => {
-  const n = Number(String(v || "").trim().replace(",", "."));
-  return Number.isFinite(n) ? n : null;
-};
-
-const toIso = (v: string) => {
-  const s = String(v || "").trim();
-  if (!s) return null;
-  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null;
-};
-
-const sanitizeDecimal = (v: string) => String(v || "").replace(",", ".").replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1");
-const sanitizePhone = (v: string) => {
-  const s = String(v || "").trim();
-  const leadPlus = s.startsWith("+");
-  const digits = s.replace(/\D/g, "");
-  return `${leadPlus ? "+" : ""}${digits}`;
-};
-
-void sanitizeDecimal;
-void sanitizePhone;
-
-const pickName = (arr: { code?: string; name?: string }[], code: string) => {
-  const c = String(code || "").trim();
-  if (!c) return "";
-  const row = (arr || []).find((x) => String(x?.code || "") === c);
-  return String(row?.name || c);
-};
-
-const resolveCodeOrName = (arr: DictOption[], raw: string | null | undefined) => {
-  const value = String(raw || "").trim();
-  if (!value) return "";
-  const byCode = arr.find((x) => String(x.code || "").trim() === value);
-  if (byCode?.name) return String(byCode.name).trim();
-  const byName = arr.find((x) => String(x.name || "").trim() === value);
-  if (byName?.name) return String(byName.name).trim();
-  return value;
-};
-
-const resolveCodeFromDict = (arr: DictOption[], raw: string | null | undefined) => {
-  const value = String(raw || "").trim();
-  if (!value) return "";
-  const byCode = arr.find((x) => String(x.code || "").trim() === value);
-  if (byCode?.code) return String(byCode.code).trim();
-  const byName = arr.find((x) => String(x.name || "").trim() === value);
-  if (byName?.code) return String(byName.code).trim();
-  return "";
-};
-
-const getErrorMessage = (error: unknown, fallback: string) => {
-  if (error instanceof Error && error.message.trim()) return error.message.trim();
-  if (typeof error === "string" && error.trim()) return error.trim();
-  return fallback;
-};
-
-const trim = (value: unknown) => String(value ?? "").trim();
-
-const makeLocalDraftRowId = () => `local:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 8)}`;
-
-const toPositiveQty = (value: unknown, fallback = 1) => {
-  const parsed = Number(String(value ?? "").trim().replace(",", "."));
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-};
-
-const toRemoteDraftItemId = (value: unknown): string | null => {
-  const id = trim(value);
-  if (!id || id.startsWith("local:")) return null;
-  return id;
-};
-
-const cloneDraftItem = (item: ReqItemRow): ReqItemRow => ({
-  ...item,
-  id: trim(item.id),
-  request_id: trim(item.request_id),
-  rik_code: trim(item.rik_code) || null,
-  name_human: trim(item.name_human) || "—",
-  qty: Number(item.qty ?? 0) || 0,
-  uom: trim(item.uom) || null,
-  status: item.status ?? null,
-  supplier_hint: item.supplier_hint ?? null,
-  app_code: item.app_code ?? null,
-  note: item.note ?? null,
-  line_no: Number.isFinite(Number(item.line_no)) ? Number(item.line_no) : null,
-});
-
-const buildDraftMergeKey = (rikCode?: string | null, uom?: string | null) =>
-  `${trim(rikCode).toLowerCase()}::${trim(uom).toLowerCase()}`;
-
-const appendLineInputsToDraftItems = (
-  currentItems: ReqItemRow[],
-  addRows: RequestDraftSyncLineInput[],
-  requestId: string,
-): ReqItemRow[] => {
-  const next = currentItems.map(cloneDraftItem);
-
-  for (const row of addRows) {
-    const rikCode = trim(row.rik_code);
-    const qty = Number(row.qty ?? 0);
-    if (!rikCode || !Number.isFinite(qty) || qty <= 0) continue;
-
-    const existing = next.find(
-      (item) => buildDraftMergeKey(item.rik_code, item.uom) === buildDraftMergeKey(rikCode, row.uom),
-    );
-    if (existing) {
-      existing.qty = Number(existing.qty ?? 0) + qty;
-      if (row.note !== undefined) existing.note = row.note ?? null;
-      if (row.name_human) existing.name_human = row.name_human;
-      if (row.uom !== undefined) existing.uom = row.uom ?? null;
-      if (row.app_code !== undefined) existing.app_code = row.app_code ?? null;
-      existing.status = existing.status ?? "Черновик";
-      continue;
-    }
-
-    next.push({
-      id: makeLocalDraftRowId(),
-      request_id: trim(requestId),
-      rik_code: rikCode,
-      name_human: trim(row.name_human) || rikCode,
-      qty,
-      uom: trim(row.uom) || null,
-      status: "Черновик",
-      supplier_hint: null,
-      app_code: row.app_code ?? null,
-      note: row.note ?? null,
-      line_no: next.length + 1,
-    });
-  }
-
-  return next.map((item, index) => ({
-    ...item,
-    request_id: trim(item.request_id) || trim(requestId),
-    line_no: index + 1,
-  }));
-};
-
-const logForemanSubcontractDebug = (...args: unknown[]) => {
+const logForemanSubcontractDebug = (scope: string, error: unknown) => {
   if (!__DEV__) return;
-  console.warn(...args);
+  const payload = buildForemanSubcontractDebugPayload(scope, error);
+  console.warn(payload.message, payload.error);
 };
-
-const warnForemanSubcontract = (scope: string, error: unknown) => {
-  logForemanSubcontractDebug(`[ForemanSubcontractTab] ${scope}:`, error);
-};
-
-void warnForemanSubcontract;
-
 const resolveRequestStatusInfo = (raw?: string | null) =>
   resolveStatusHelper(raw, REQUEST_STATUS_STYLES);
 
@@ -330,201 +127,55 @@ export function useForemanSubcontractController({
   const setSelectedTemplateId = useForemanSubcontractUiStore((state) => state.setSelectedTemplateId);
   const closeSubcontractFlowUi = useForemanSubcontractUiStore((state) => state.closeSubcontractFlow);
   const [requestId, setRequestId] = useState("");
-  const activeDraftScopeKeyRef = useRef("");
   const draftItemsLoadSeqRef = useRef(0);
 
-  const templateContract = useMemo(
-    () => history.find((row) => String(row.id || "").trim() === String(selectedTemplateId || "").trim()) ?? null,
-    [history, selectedTemplateId],
-  );
-
-  const objectName = useMemo(() => pickName(dicts.objOptions || [], form.objectCode), [dicts.objOptions, form.objectCode]);
-  const levelName = useMemo(() => pickName(dicts.lvlOptions || [], form.levelCode), [dicts.lvlOptions, form.levelCode]);
-  const systemName = useMemo(() => pickName(dicts.sysOptions || [], form.systemCode), [dicts.sysOptions, form.systemCode]);
-  const zoneName = form.zoneText.trim() || "—";
-  const templateObjectName = useMemo(
-    () => resolveCodeOrName(dicts.objOptions || [], templateContract?.object_name),
-    [dicts.objOptions, templateContract?.object_name],
-  );
-  const templateLevelName = useMemo(
-    () => resolveCodeOrName(dicts.lvlOptions || [], templateContract?.work_zone),
-    [dicts.lvlOptions, templateContract?.work_zone],
-  );
-  const templateSystemName = useMemo(
-    () => resolveCodeOrName(dicts.sysOptions || [], templateContract?.work_type),
-    [dicts.sysOptions, templateContract?.work_type],
-  );
-  const templateObjectCode = useMemo(
-    () => resolveCodeFromDict(dicts.objOptions || [], templateContract?.object_name),
-    [dicts.objOptions, templateContract?.object_name],
-  );
-  const templateLevelCode = useMemo(
-    () => resolveCodeFromDict(dicts.lvlOptions || [], templateContract?.work_zone),
-    [dicts.lvlOptions, templateContract?.work_zone],
-  );
-  const templateSystemCode = useMemo(
-    () => resolveCodeFromDict(dicts.sysOptions || [], templateContract?.work_type),
-    [dicts.sysOptions, templateContract?.work_type],
-  );
-  const subcontractDetailsVisible = subcontractFlowOpen && subcontractFlowScreen === "details" && !!templateContract;
-  const draftOpen = subcontractFlowOpen && subcontractFlowScreen === "draft";
-  const catalogVisible = subcontractFlowOpen && subcontractFlowScreen === "catalog";
-  const workTypePickerVisible = subcontractFlowOpen && subcontractFlowScreen === "workType";
-  const calcVisible = subcontractFlowOpen && subcontractFlowScreen === "calc";
-  const scopeNote = useMemo(() => {
-    const obj = String(objectName || templateObjectName || "").trim();
-    const lvl = String(levelName || templateLevelName || "").trim();
-    const sys = String(systemName || templateSystemName || "").trim();
-    const zone = String(form.zoneText || "").trim();
-    const contractor = String(templateContract?.contractor_org || form.contractorOrg || "").trim();
-    const phone = String(templateContract?.contractor_phone || form.contractorPhone || "").trim();
-    const qty = templateContract?.qty_planned ?? toNum(form.qtyPlanned);
-    const qtyUom = String(templateContract?.uom || form.uom || "").trim();
-    const volumeRaw = fmtAmount(qty);
-    const volume = volumeRaw !== "—" ? `${volumeRaw} ${qtyUom}`.trim() : "";
-    return [
-      obj ? `Объект: ${obj}` : "",
-      lvl ? `Этаж/уровень: ${lvl}` : "",
-      sys ? `Система: ${sys}` : "",
-      zone ? `Зона: ${zone}` : "",
-      contractor ? `Подрядчик: ${contractor}` : "",
-      phone ? `Телефон: ${phone}` : "",
-      volume ? `Объём: ${volume}` : "",
-    ]
-      .filter(Boolean)
-      .join("; ");
-  }, [
+  const {
     templateContract,
-    form.contractorOrg,
-    form.contractorPhone,
-    form.qtyPlanned,
-    form.uom,
     objectName,
     levelName,
     systemName,
-    form.zoneText,
+    zoneName,
     templateObjectName,
     templateLevelName,
     templateSystemName,
-  ]);
-  const requestMetaFromTemplate = useMemo<RequestMetaPatch>(() => {
-    if (!templateContract) return {};
-    const contractor = String(templateContract.contractor_org || "").trim();
-    const phone = String(templateContract.contractor_phone || "").trim();
-    const workMode = String(templateContract.work_mode || "").trim();
-    const qty = fmtAmount(templateContract.qty_planned);
-    const uom = String(templateContract.uom || "").trim();
-    const details = [
-      templateContract.display_no ? `Подряд ${templateContract.display_no}` : "",
-      contractor,
-      systemName || templateSystemName || workMode,
-      levelName || templateLevelName || "",
-      String(form.zoneText || "").trim() || "",
-      qty !== "—" ? `${qty} ${uom}`.trim() : "",
-    ].filter(Boolean);
-    return {
-      contractor_job_id: String(templateContract.id || "").trim() || null,
-      subcontract_id: String(templateContract.id || "").trim() || null,
-      object_type_code: form.objectCode || templateObjectCode || null,
-      level_code: form.levelCode || templateLevelCode || null,
-      system_code: form.systemCode || templateSystemCode || null,
-      zone_code: null,
-      foreman_name: foremanName || "Прораб",
-      contractor_org: contractor || null,
-      subcontractor_org: contractor || null,
-      contractor_phone: phone || null,
-      subcontractor_phone: phone || null,
-      planned_volume: templateContract.qty_planned ?? null,
-      qty_plan: templateContract.qty_planned ?? null,
-      volume: templateContract.qty_planned ?? null,
-      object_name: objectName || templateObjectName || null,
-      level_name: levelName || templateLevelName || null,
-      system_name: systemName || templateSystemName || null,
-      zone_name: String(form.zoneText || "").trim() || null,
-      comment: details.length ? details.join(" · ") : null,
-    };
-  }, [
-    templateContract,
-    templateObjectCode,
-    templateLevelCode,
-    templateSystemCode,
-    form.objectCode,
-    form.levelCode,
-    form.systemCode,
-    form.zoneText,
-    foremanName,
-    objectName,
-    levelName,
-    systemName,
-    templateObjectName,
-    templateLevelName,
-    templateSystemName,
-  ]);
-  const requestMetaPersistPatch = useMemo<RequestMetaPatch>(() => ({
-    contractor_job_id: String(templateContract?.id || "").trim() || null,
-    subcontract_id: String(templateContract?.id || "").trim() || null,
-    object_type_code: form.objectCode || templateObjectCode || null,
-    level_code: form.levelCode || templateLevelCode || null,
-    system_code: form.systemCode || templateSystemCode || null,
-    zone_code: null,
-    foreman_name: foremanName || "Прораб",
-    object_name: objectName || templateObjectName || null,
-    comment: (requestMetaFromTemplate.comment ?? scopeNote) || null,
-  }), [
-    templateContract?.id,
-    form.objectCode,
-    form.levelCode,
-    form.systemCode,
-    templateObjectCode,
-    templateLevelCode,
-    templateSystemCode,
-    foremanName,
-    objectName,
-    templateObjectName,
-    requestMetaFromTemplate.comment,
+    subcontractDetailsVisible,
+    draftOpen,
+    catalogVisible,
+    workTypePickerVisible,
+    calcVisible,
     scopeNote,
-  ]);
-
-  const getTemplateSubcontractId = useCallback(() => {
-    return String(templateContract?.id || "").trim();
-  }, [templateContract]);
+    requestMetaFromTemplate,
+    requestMetaPersistPatch,
+    approvedContracts,
+    contractorName,
+    phoneName,
+    volumeText,
+  } = useMemo(
+    () =>
+      deriveSubcontractControllerModel({
+        history,
+        selectedTemplateId,
+        dicts,
+        form,
+        subcontractFlowOpen,
+        subcontractFlowScreen,
+        foremanName,
+      }),
+    [history, selectedTemplateId, dicts, form, subcontractFlowOpen, subcontractFlowScreen, foremanName],
+  );
 
   const ensureTemplateContractStrict = useCallback((): string | null => {
-    const subcontractId = getTemplateSubcontractId();
-    if (!subcontractId) {
-      Alert.alert("Подряд не выбран", "Сначала выберите утвержденный подряд.");
+    const result = guardTemplateContract(templateContract);
+    if (result.ok) {
+      return result.subcontractId ?? null;
+    }
+    if (isSubcontractControllerGuardFailure(result)) {
+      const copy = getForemanSubcontractAlertCopy(result.reason);
+      Alert.alert(copy.title, copy.message);
       return null;
     }
-    if (templateContract?.status !== "approved") {
-      Alert.alert("Подряд не утвержден", "Для заявки можно использовать только утвержденный подряд.");
-      return null;
-    }
-    return subcontractId;
-  }, [getTemplateSubcontractId, templateContract?.status]);
-
-
-  const patch = useMemo(() => ({
-    foreman_name: foremanName || null,
-    contractor_org: form.contractorOrg.trim() || null,
-    contractor_rep: form.contractorRep.trim() || null,
-    contractor_phone: form.contractorPhone.trim() || null,
-    contract_number: form.contractNumber.trim() || null,
-    contract_date: toIso(form.contractDate),
-    object_name: objectName || null,
-    work_zone: levelName || null,
-    work_type: systemName || null,
-    qty_planned: toNum(form.qtyPlanned),
-    uom: form.uom.trim() || null,
-    date_start: toIso(form.dateStart),
-    date_end: toIso(form.dateEnd),
-    work_mode: (form.workMode || null) as SubcontractWorkMode | null,
-    price_per_unit: toNum(form.pricePerUnit),
-    total_price: toNum(form.totalPrice),
-    price_type: (form.priceType || null) as SubcontractPriceType | null,
-    foreman_comment: form.foremanComment.trim() || null,
-  }), [foremanName, form, objectName, levelName, systemName]);
-
-  void patch;
+    return null;
+  }, [templateContract]);
 
   const setField = useCallback(<K extends keyof FormState>(k: K, v: FormState[K]) => {
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -540,15 +191,10 @@ export function useForemanSubcontractController({
   }, [closeSubcontractFlowUi]);
 
   useEffect(() => {
-    const qty = toNum(form.qtyPlanned);
-    const ppu = toNum(form.pricePerUnit);
-    if (qty != null && ppu != null) {
-      const total = qty * ppu;
-      setForm((prev) => ({ ...prev, totalPrice: String(Number.isFinite(total) ? total : "") }));
-      return;
-    }
-    setForm((prev) => ({ ...prev, totalPrice: "" }));
-  }, [form.qtyPlanned, form.pricePerUnit]);
+    const priceSync = planSubcontractTotalPriceSync(form);
+    if (!priceSync.shouldUpdate) return;
+    setForm((prev) => ({ ...prev, totalPrice: priceSync.nextTotalPrice }));
+  }, [form]);
 
   const loadHistory = useCallback(async (uid = userId) => {
     let nextUserId = String(uid || "").trim();
@@ -562,7 +208,10 @@ export function useForemanSubcontractController({
       const rows = await listForemanSubcontracts(nextUserId);
       setHistory(rows);
     } catch (e) {
-      Alert.alert("Не удалось загрузить данные", getErrorMessage(e, "Не удалось загрузить историю подрядов."));
+      Alert.alert(
+        "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РґР°РЅРЅС‹Рµ",
+        getForemanSubcontractErrorMessage(e, "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РёСЃС‚РѕСЂРёСЋ РїРѕРґСЂСЏРґРѕРІ."),
+      );
     } finally {
       setHistoryLoading(false);
     }
@@ -581,19 +230,19 @@ export function useForemanSubcontractController({
       setDraftItems(filterActiveDraftItems(rows || []));
     } catch (e) {
       if (requestSeq !== draftItemsLoadSeqRef.current) return;
-      logForemanSubcontractDebug("[loadDraftItems] error:", e);
+      logForemanSubcontractDebug("loadDraftItems failed", e);
       setDraftItems([]);
     }
   }, []);
 
   const resetSubcontractDraftContext = useCallback((options?: { clearForm?: boolean }) => {
+    const resetPlan = planSubcontractDraftReset(options);
     draftItemsLoadSeqRef.current += 1;
-    setRequestId("");
-    setDisplayNo("");
-    setDraftItems([]);
-    activeDraftScopeKeyRef.current = "";
-    if (options?.clearForm) {
-      setForm(EMPTY_FORM);
+    setRequestId(resetPlan.requestId);
+    setDisplayNo(resetPlan.displayNo);
+    setDraftItems(resetPlan.draftItems);
+    if (resetPlan.nextForm) {
+      setForm(resetPlan.nextForm);
     }
   }, []);
 
@@ -636,8 +285,10 @@ export function useForemanSubcontractController({
       const subcontractId = ensureTemplateContractStrict();
       if (!subcontractId) return null;
 
-      if (!userId) {
-        Alert.alert("Данные не загружены", "Профиль пользователя не найден.");
+      const userGuard = guardDraftUser(userId);
+      if (isSubcontractControllerGuardFailure(userGuard)) {
+        const copy = getForemanSubcontractAlertCopy(userGuard.reason);
+        Alert.alert(copy.title, copy.message);
         return null;
       }
 
@@ -684,10 +335,12 @@ export function useForemanSubcontractController({
         setRequestId(rid);
         setDisplayNo(displayLabel);
         setDraftItems(filterActiveDraftItems(res.items));
-        activeDraftScopeKeyRef.current = draftScopeKey;
         return rid;
       } catch (e) {
-        Alert.alert("Ошибка", getErrorMessage(e, "Не удалось выполнить атомарное сохранение заявки."));
+        Alert.alert(
+          "РћС€РёР±РєР°",
+          getForemanSubcontractErrorMessage(e, "РќРµ СѓРґР°Р»РѕСЃСЊ РІС‹РїРѕР»РЅРёС‚СЊ Р°С‚РѕРјР°СЂРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ Р·Р°СЏРІРєРё."),
+        );
         return null;
       } finally {
         setSaving(false);
@@ -711,10 +364,6 @@ export function useForemanSubcontractController({
       draftScopeKey,
     ]
   );
-
-  const approvedContracts = useMemo(() => {
-    return history.filter((h) => h.status === "approved");
-  }, [history]);
 
   useEffect(() => {
     void loadDraftItems(requestId);
@@ -745,8 +394,9 @@ export function useForemanSubcontractController({
         const label = await fetchForemanRequestDisplayLabel(requestId);
         if (cancelled || !label) return;
         if (label) setDisplayNo(label);
-      } catch {
-        // old schema without request_no; keep existing display
+      } catch (error) {
+        if (cancelled) return;
+        logForemanSubcontractDebug("request label refresh failed", error);
       }
     })();
     return () => {
@@ -779,7 +429,7 @@ export function useForemanSubcontractController({
       rik_code: r.rik_code || "",
       qty: toPositiveQty(r.qty, 1),
       uom: r.uom_code || null,
-      name_human: r.item_name_ru || r.name_human || "Без названия",
+      name_human: r.item_name_ru || r.name_human || "Р‘РµР· РЅР°Р·РІР°РЅРёСЏ",
       note: scopeNote || null,
     }));
     const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);
@@ -804,16 +454,10 @@ export function useForemanSubcontractController({
   }, [saveDraftAtomic, draftItems]);
 
   const sendToDirector = useCallback(async () => {
-    const subcontractId = ensureTemplateContractStrict();
-    if (!subcontractId) return;
-
-    if (!requestId) {
-      Alert.alert("Внимание", "Сначала сформируйте заявку.");
-      return;
-    }
-
-    if (draftItems.length === 0) {
-      Alert.alert("Внимание", "В черновике нет позиций для отправки.");
+    const sendGuard = guardSendToDirector({ templateContract, requestId, draftItems });
+    if (isSubcontractControllerGuardFailure(sendGuard)) {
+      const copy = getForemanSubcontractAlertCopy(sendGuard.reason);
+      Alert.alert(copy.title, copy.message);
       return;
     }
 
@@ -830,14 +474,24 @@ export function useForemanSubcontractController({
       resetSubcontractDraftContext({ clearForm: true });
       closeSubcontractFlow();
     }
-  }, [closeSubcontractFlow, draftItems, ensureTemplateContractStrict, loadHistory, requestId, resetSubcontractDraftContext, saveDraftAtomic, userId]);
+  }, [
+    closeSubcontractFlow,
+    draftItems,
+    loadHistory,
+    requestId,
+    resetSubcontractDraftContext,
+    saveDraftAtomic,
+    templateContract,
+    userId,
+  ]);
 
   const onPdf = useCallback(async () => {
-    const rid = String(requestId || "").trim();
-    if (!rid) {
-      Alert.alert("PDF", "Сначала создайте черновик заявки.");
+    const pdfGuard = guardPdfRequest(requestId);
+    if (!pdfGuard.ok) {
+      Alert.alert("PDF", "РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ С‡РµСЂРЅРѕРІРёРє Р·Р°СЏРІРєРё.");
       return;
     }
+    const rid = pdfGuard.requestId;
     const createDescriptor = async () => {
       const template = await buildForemanRequestPdfDescriptor({
         requestId: rid,
@@ -859,7 +513,7 @@ export function useForemanSubcontractController({
     await prepareAndPreviewGeneratedPdfFromDescriptorFactory({
       supabase,
       key: `pdf:subcontracts-request:${rid}`,
-      label: "Открываю PDF…",
+      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
       createDescriptor,
       router,
       // XR-PDF: dismiss the subcontract DraftSheet modal before pushing PDF viewer
@@ -889,7 +543,7 @@ export function useForemanSubcontractController({
     await prepareAndPreviewGeneratedPdfFromDescriptorFactory({
       supabase,
       key: `pdf:history:${rid}`,
-      label: "Открываю PDF…",
+      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
       createDescriptor,
       router,
       // XR-PDF: dismiss the request history modal before pushing PDF viewer
@@ -923,17 +577,14 @@ export function useForemanSubcontractController({
 
   const hydrateSelectedSubcontract = useCallback(
     async (it: Subcontract) => {
-      const nextForm: FormState = {
-        ...form,
-        objectCode: resolveCodeFromDict(dicts.objOptions || [], it.object_name) || form.objectCode,
-        levelCode: resolveCodeFromDict(dicts.lvlOptions || [], it.work_zone) || form.levelCode,
-        systemCode: resolveCodeFromDict(dicts.sysOptions || [], it.work_type) || form.systemCode,
-        zoneText: form.zoneText || "",
-      };
-      const nextScopeKey = buildDraftScopeKey(nextForm, it.id);
+      const hydrationPlan = planSelectedSubcontractHydration({
+        currentForm: form,
+        item: it,
+        dicts,
+      });
 
       setSelectedTemplateId(String(it.id || "").trim() || null);
-      setForm(nextForm);
+      setForm(hydrationPlan.nextForm);
 
       const existingDraft = await findLatestDraftRequestByLink(String(it.id || "").trim());
       if (existingDraft?.id) {
@@ -941,7 +592,6 @@ export function useForemanSubcontractController({
         const label = String(existingDraft.request_no || existingDraft.display_no || "").trim();
         setRequestId(rid);
         setDisplayNo(label);
-        activeDraftScopeKeyRef.current = nextScopeKey;
         await loadDraftItems(rid);
       } else {
         resetSubcontractDraftContext();
@@ -950,9 +600,7 @@ export function useForemanSubcontractController({
       openSubcontractFlow("details");
     },
     [
-      dicts.lvlOptions,
-      dicts.objOptions,
-      dicts.sysOptions,
+      dicts,
       form,
       loadDraftItems,
       openSubcontractFlow,
@@ -1013,9 +661,9 @@ export function useForemanSubcontractController({
         levelName={levelName}
         systemName={systemName}
         zoneName={zoneName}
-        contractorName={templateContract?.contractor_org || form.contractorOrg || ""}
-        phoneName={templateContract?.contractor_phone || form.contractorPhone || ""}
-        volumeText={`${fmtAmount(templateContract?.qty_planned ?? toNum(form.qtyPlanned))} ${templateContract?.uom || form.uom || ""}`.trim()}
+        contractorName={contractorName}
+        phoneName={phoneName}
+        volumeText={volumeText}
         draftItems={draftItems}
         saving={saving}
         sending={sending}
@@ -1063,7 +711,7 @@ export function useForemanSubcontractController({
         }}
         selectedWorkType={selectedWorkType}
         onAddCalcToRequest={async (rows) => {
-          await appendCalcRows(rows as CalcPickedRow[]);
+          await appendCalcRows(rows);
           setSubcontractFlowScreen("details");
           setSelectedWorkType(null);
         }}
@@ -1083,8 +731,6 @@ export function useForemanSubcontractController({
         subcontractHistoryLoading={historyLoading}
         subcontractHistory={history}
       />
-
-
     </View>
   );
 }

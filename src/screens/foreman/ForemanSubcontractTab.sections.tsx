@@ -6,6 +6,7 @@ import type { ReqItemRow , ForemanRequestSummary } from "../../lib/catalog_api";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import CatalogModal, { type PickedRow as CatalogPickedRow } from "../../components/foreman/CatalogModal";
 import CalcModal from "../../components/foreman/CalcModal";
+import type { CalcModalRow } from "../../components/foreman/calcModal.model";
 import WorkTypePicker from "../../components/foreman/WorkTypePicker";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
@@ -144,7 +145,7 @@ export function ApprovedContractsList(props: {
       data={historyLoading ? [] : approvedContracts}
       keyExtractor={(item) => String(item.id)}
       renderItem={renderApprovedContractItem}
-      overrideItemLayout={(layout: any) => {
+      overrideItemLayout={(layout: { size?: number }) => {
         layout.size = 86;
       }}
       ListEmptyComponent={listEmpty}
@@ -408,7 +409,7 @@ export function DraftSheetBody(props: {
             data={draftItems}
             keyExtractor={(it) => it.id}
             renderItem={renderDraftItem}
-            overrideItemLayout={(layout: any) => {
+            overrideItemLayout={(layout: { size?: number }) => {
               layout.size = 82;
             }}
           />
@@ -567,7 +568,7 @@ export function ForemanSubcontractModalStack(props: {
   onCloseCalc: () => void;
   onBackFromCalc: () => void;
   selectedWorkType: SubcontractSelectedWorkType;
-  onAddCalcToRequest: (rows: Record<string, unknown>[]) => void | Promise<void>;
+  onAddCalcToRequest: (rows: CalcModalRow[]) => void | Promise<void>;
   requestHistoryVisible: boolean;
   onCloseRequestHistory: () => void;
   requestHistoryLoading: boolean;

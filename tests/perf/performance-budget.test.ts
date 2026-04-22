@@ -115,8 +115,10 @@ describe("performance budget — bundle module count", () => {
     //   + reqIssueModal.row.model.test, warehouseReports.row.model.test (2 tests).
     // CALCMODAL_OWNER_BOUNDARY_SPLIT adds five permanent owner-boundary modules:
     //   calcModal.normalize, calcModal.model, calcModal.validation, calcModal.state, CalcModalContent.
+    // FOREMAN_SUBCONTRACT_CONTROLLER_OWNER_SPLIT adds four permanent controller-boundary modules:
+    //   foreman.subcontractController.model, guards, effects, telemetry.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1286);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1295);
   });
 });
 
