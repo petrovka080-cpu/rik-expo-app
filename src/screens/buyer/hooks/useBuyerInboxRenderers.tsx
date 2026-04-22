@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 
 import type { Supplier, BuyerInboxRow } from "../../../lib/catalog_api";
 import {
@@ -65,6 +65,15 @@ export function useBuyerInboxRenderers(params: {
 
   const [editingItem, setEditingItem] = useState<BuyerInboxRow | null>(null);
 
+  // ✅ Ref keeps editing identity stable so renderItemRow dep array stays unchanged
+  // when the user opens/closes the mobile editor for one row.
+  // Without this, changing editingItem state invalidates renderItemRow →
+  // FlashList gets a new renderItem fn → all N rows re-render (N-row storm).
+  const editingItemRef = useRef<BuyerInboxRow | null>(editingItem);
+  useEffect(() => {
+    editingItemRef.current = editingItem;
+  }, [editingItem]);
+
   const applySupplierSelection = useCallback((row: BuyerInboxRow, currentMeta: Partial<LineMeta>, name: string) => {
     const key = String(row.request_item_id ?? "");
     const match = suppliers.find((sp) => normName(sp.name) === normName(name)) || null;
@@ -82,6 +91,8 @@ export function useBuyerInboxRenderers(params: {
       const rejectedByDirector = selectBuyerItemRejectedByDirector(it);
       const { counterpartyLabel, roleGate } = selectBuyerCounterpartyUi(it);
       const sugg = getSupplierSuggestions("", roleGate);
+      // ✅ Derived from ref — not from state, so this callback is stable across editingItem changes
+      const isMobileEditorOpen = editingItemRef.current?.request_item_id === it.request_item_id;
 
       return (
         <BuyerItemRow
@@ -104,7 +115,7 @@ export function useBuyerInboxRenderers(params: {
           onPickSupplier={(name) => applySupplierSelection(it, m, name)}
           showInlineEditor={false}
           onEditMobile={() => setEditingItem(it)}
-          isMobileEditorOpen={editingItem?.request_item_id === it.request_item_id}
+          isMobileEditorOpen={isMobileEditorOpen}
           onFocusField={() => {
             if (isSheetOpen && sheetKind === "inbox" && !isWeb) {
               onFocusRowForSheet?.();
@@ -132,7 +143,7 @@ export function useBuyerInboxRenderers(params: {
       onFocusRow,
       setShowAttachBlock,
       isWeb,
-      editingItem,
+      // editingItem removed: derived from editingItemRef.current inside the callback
       applySupplierSelection,
     ]
   );

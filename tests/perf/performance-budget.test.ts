@@ -110,8 +110,11 @@ describe("performance budget — bundle module count", () => {
     // FOREMAN_DRAFT_OWNER_SPLIT_FINAL adds four permanent Foreman draft boundary modules.
     // OFFICE_REENTRY_BOUNDARY_SPLIT adds six permanent Office reentry boundary modules.
     // DIRECTOR_LIFECYCLE_REALTIME_OWNER_SPLIT adds six permanent director lifecycle modules/tests.
+    // LIST_RENDER_DISCIPLINE_HARDENING adds six permanent render discipline modules:
+    //   reqIssueModal.row.model, ReqIssueModalRow, warehouseReports.row.model, ReportDocRowItem (4 source)
+    //   + reqIssueModal.row.model.test, warehouseReports.row.model.test (2 tests).
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1275);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1281);
   });
 });
 

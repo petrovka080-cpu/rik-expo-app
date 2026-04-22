@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { ActivityIndicator, View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,6 +13,8 @@ import type { TopRightAction } from "../../../ui/TopRightActionBar";
 import { UI, s } from "../warehouse.styles";
 import { buildWarehousePdfBusyKey } from "../warehouse.pdf.boundary";
 import type { WarehouseReportRow } from "../warehouse.types";
+import { selectReportDocRowShape } from "./warehouseReports.row.model";
+import { ReportDocRowItem } from "./ReportDocRowItem";
 
 type ReportDocRow = WarehouseReportRow & {
   incoming_id?: string | number | null;
@@ -162,62 +164,30 @@ export default function WarehouseReportsTab(props: Props) {
 
   const sectionTitle = isIncoming ? "ПРИХОДЫ ЗА ПЕРИОД" : "ВЫДАЧИ ЗА ПЕРИОД";
 
+  // ✅ stable callbacks — not recreated on each parent render
+  const handleOpenDetails = useCallback((docId: string | number) => {
+    if (isIncoming) {
+      void reportsUi.openIncomingDetails(docId);
+    } else {
+      void reportsUi.openIssueDetails(docId as number);
+    }
+  }, [isIncoming, reportsUi]);
+
+  const handleOpenDocPdf = useCallback((docId: string | number) => {
+    void onPdfDocument(docId);
+  }, [onPdfDocument]);
+
   const renderActiveDayItem = React.useCallback(({ item, index }: { item: ReportDocRow; index: number }) => {
-    const docId = isIncoming ? (item.incoming_id || item.id) : item.issue_id;
-    const documentPdfBusy =
-      !!docId &&
-      isPdfBusy(
-        buildWarehousePdfBusyKey({
-          kind: "document",
-          reportsMode: isIncoming ? "incoming" : "issue",
-          docId,
-        }),
-      );
-    const docNo = isIncoming
-      ? (item.display_no || `PR-${String(docId).slice(0, 8)}`)
-      : (item.issue_no || (Number.isFinite(docId) ? `ISSUE-${docId}` : "ISSUE-—"));
-
+    const shape = selectReportDocRowShape(item, isIncoming, activeDay?.day ?? "", isPdfBusy);
     return (
-      <View style={{ marginBottom: 12 }}>
-        <Pressable
-          onPress={() => {
-            if (!docId) return;
-            if (isIncoming) {
-              void reportsUi.openIncomingDetails(docId);
-            } else {
-              void reportsUi.openIssueDetails(docId);
-            }
-          }}
-        >
-          <View style={s.mobCard}>
-            <View style={s.mobMain}>
-              <Text style={s.mobTitle}>{docNo}</Text>
-              {!!item?.who && <Text style={s.mobMeta}>{String(item.who)}</Text>}
-              {!!item?.obj_name && <Text style={s.mobMeta}>{String(item.obj_name)}</Text>}
-            </View>
-
-            <Pressable
-              testID={`warehouse-report-pdf:${String(docId ?? index)}`}
-              hitSlop={10}
-              disabled={!docId || documentPdfBusy}
-              onPress={(e) => {
-                e.stopPropagation?.();
-                if (!docId || documentPdfBusy) return;
-                void onPdfDocument(docId);
-              }}
-              accessibilityState={{ disabled: !docId || documentPdfBusy, busy: documentPdfBusy }}
-            >
-              {documentPdfBusy ? (
-                <ActivityIndicator size="small" color={UI.text} />
-              ) : (
-                <Ionicons name="document-text-outline" size={20} color={UI.text} />
-              )}
-            </Pressable>
-          </View>
-        </Pressable>
-      </View>
+      <ReportDocRowItem
+        shape={shape}
+        testId={`warehouse-report-pdf:${String(shape.docId ?? index)}`}
+        onOpenDetails={handleOpenDetails}
+        onOpenPdf={handleOpenDocPdf}
+      />
     );
-  }, [isIncoming, isPdfBusy, onPdfDocument, reportsUi]);
+  }, [isIncoming, activeDay?.day, isPdfBusy, handleOpenDetails, handleOpenDocPdf]);
 
   const renderDayGroupItem = React.useCallback(({ item }: { item: ReportDayGroup }) => {
     const dayCount = item.items.length;

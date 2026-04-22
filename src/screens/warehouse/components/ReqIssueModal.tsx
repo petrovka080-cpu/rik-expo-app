@@ -1,6 +1,6 @@
 // src/screens/warehouse/components/ReqIssueModal.tsx
-import React, { useMemo } from "react";
-import { View, Text, Pressable, TextInput, Platform } from "react-native";
+import React, { useCallback, useMemo } from "react";
+import { View, Text, Pressable, Platform } from "react-native";
 import RNModal from "../../../ui/React19SafeModal";
 import { Ionicons } from "@expo/vector-icons";
 import { uomLabelRu } from "../warehouse.uom";
@@ -8,6 +8,12 @@ import { uomLabelRu } from "../warehouse.uom";
 import { UI, s } from "../warehouse.styles";
 import { nz } from "../warehouse.utils";
 import type { ReqHeadRow, ReqItemUiRow, ReqPickLine } from "../warehouse.types";
+import {
+  selectReqIssueModalRowShape,
+  selectReqIssueModalRowKey,
+  type ReqIssueModalRowShape,
+} from "./reqIssueModal.row.model";
+import { ReqIssueModalRow } from "./ReqIssueModalRow";
 
 import IconSquareButton from "../../../ui/IconSquareButton";
 import { FlashList } from "../../../ui/FlashList";
@@ -86,7 +92,7 @@ function CloseSquare({
   );
 }
 
-// ✅ дедуп по request_item_id: берём “самую сильную” строку
+// ✅ дедуп по request_item_id: берём "самую сильную" строку
 function parseHeaderMeta(raw: string): { contractor: string; phone: string; volume: string } {
   const out = { contractor: "", phone: "", volume: "" };
   const normalizePhone = (v: string) => {
@@ -200,8 +206,71 @@ export default function ReqIssueModal(props: Props) {
   const hasHead = !!(headObj || headLevel || headSystem || headZone || headContractor || headPhone || headVolume);
 
   // ✅ 1) фильтр по qty_left > 0
-  // ✅ 2) дедуп по request_item_id (иначе троит + warning по key)
   const rows = useMemo(() => (reqItems || []).filter((it) => nz(it.qty_left, 0) > 0), [reqItems]);
+
+  // ✅ Stable callbacks — not recreated per-renderItem call
+  const handleChangeQty = useCallback((requestItemId: string, value: string) => {
+    setReqQtyInputByItem((p) => ({ ...(p || {}), [requestItemId]: value }));
+  }, [setReqQtyInputByItem]);
+
+  const handlePressMax = useCallback((requestItemId: string, maxUi: number) => {
+    setReqQtyInputByItem((p) => ({ ...(p || {}), [requestItemId]: String(maxUi) }));
+  }, [setReqQtyInputByItem]);
+
+  const handlePressAdd = useCallback((shape: ReqIssueModalRowShape) => {
+    addReqPickLine(shape.item);
+  }, [addReqPickLine]);
+
+  // ✅ Memoized cart footer — not rebuilt on every render
+  const cartFooter = useMemo(() => (
+    <View style={{ marginTop: 12, paddingBottom: 12 }}>
+      <Text style={{ color: UI.sub, fontWeight: "900" }}>
+        В корзине: {Object.keys(reqPick || {}).length}
+      </Text>
+
+      {Object.values(reqPick || {}).slice(0, 8).map((ln) => (
+        <View
+          key={ln.request_item_id}
+          style={{ marginTop: 8, flexDirection: "row", gap: 10, alignItems: "center" }}
+        >
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
+              {String(ln.name_human || "Позиция")}
+            </Text>
+            <Text style={{ color: UI.sub, fontWeight: "800" }} numberOfLines={1}>
+              {`${uomLabelRu(ln.uom)} · ${String(ln.qty ?? "0")}`}
+            </Text>
+          </View>
+
+          <CloseSquare
+            onPress={() => removeReqPickLine(ln.request_item_id)}
+            accessibilityLabel="Убрать из корзины"
+            size={44}
+            iconSize={20}
+          />
+        </View>
+      ))}
+
+      <View style={{ marginTop: 12, flexDirection: "row", justifyContent: "flex-end" }}>
+        <Pressable
+          onPress={() => submitReqPick()}
+          disabled={issueBusy || Object.keys(reqPick || {}).length === 0 || !recipientText.trim()}
+          style={[
+            s.openBtn,
+            {
+              borderColor: UI.accent,
+              opacity:
+                issueBusy || Object.keys(reqPick || {}).length === 0 || !recipientText.trim()
+                  ? 0.45
+                  : 1,
+            },
+          ]}
+        >
+          <Text style={s.openBtnText}>{issueBusy ? "..." : "Выдать выбранное"}</Text>
+        </Pressable>
+      </View>
+    </View>
+  ), [reqPick, issueBusy, recipientText, removeReqPickLine, submitReqPick]);
 
   return (
     <RNModal
@@ -306,136 +375,26 @@ export default function ReqIssueModal(props: Props) {
         ) : (
           <FlashList
             data={rows}
-            // ✅ ключ “на всякий” тоже делаем устойчивый
-            keyExtractor={(x, idx) => `${x.request_item_id}:${String(x.rik_code ?? "")}:${String(x.uom ?? "")}:${idx}`}
+            // ✅ stable key: no positional index — prevents virtualization restarts on any update
+            keyExtractor={selectReqIssueModalRowKey}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             estimatedItemSize={148}
-            renderItem={({ item }) => {
-              const canByStock = nz(item.qty_available, 0);
-              const left = nz(item.qty_left, 0);
-              const canByReqNow = nz(item.qty_can_issue_now, 0);
-
-              const maxUi = Math.max(0, Math.min(canByStock, left));
-
-              const uom = uomLabelRu(item.uom);
-              const val = reqQtyInputByItem[item.request_item_id] ?? "";
-
-              const disableByStock = issueBusy || maxUi <= 0;
-              const disableAdd = disableByStock || !recipientText.trim();
-
-              return (
-                <View style={{ marginBottom: 12 }}>
-                  <View style={s.mobCard}>
-                    <View style={s.mobMain}>
-                      <Text style={s.mobTitle} numberOfLines={2}>
-                        {String(item.name_human || "Позиция")}
-                      </Text>
-
-                      <Text style={s.mobMeta} numberOfLines={3}>
-                        {`${uom} · лимит ${item.qty_limit} · выдано ${item.qty_issued} · осталось ${left} · склад ${canByStock} · по заявке можно ${item.qty_can_issue_now}`}
-                      </Text>
-
-                      <View style={{ marginTop: 10, flexDirection: "row", gap: 8, alignItems: "center" }}>
-                        <TextInput
-                          value={val}
-                          onChangeText={(t) => {
-                            const cleaned = String(t ?? "").replace(",", ".").replace(/\s+/g, "");
-                            setReqQtyInputByItem((p) => ({ ...(p || {}), [item.request_item_id]: cleaned }));
-                          }}
-                          keyboardType={Platform.OS === "web" ? "default" : "numeric"}
-                          placeholder={`0 (макс ${maxUi})`}
-                          placeholderTextColor={UI.sub}
-                          style={[s.input, { flex: 1, paddingVertical: 8 }]}
-                        />
-
-                        <Pressable
-                          onPress={() => {
-                            setReqQtyInputByItem((p) => ({ ...(p || {}), [item.request_item_id]: String(maxUi) }));
-                          }}
-                          disabled={disableByStock}
-                          style={[s.openBtn, { opacity: disableByStock ? 0.45 : 1 }]}
-                        >
-                          <Text style={s.openBtnText}>Макс</Text>
-                        </Pressable>
-
-                        <Pressable
-                          onPress={() => addReqPickLine(item)}
-                          disabled={disableAdd}
-                          style={[s.openBtn, { borderColor: UI.accent, opacity: disableAdd ? 0.45 : 1 }]}
-                        >
-                          <Text style={s.openBtnText}>{issueBusy ? "..." : "Добавить"}</Text>
-                        </Pressable>
-                      </View>
-
-                      {maxUi <= 0 ? (
-                        <Text style={{ marginTop: 6, color: UI.sub, fontWeight: "800" }}>
-                          Нельзя выдать сейчас: по заявке лимит исчерпан или на складе 0
-                        </Text>
-                      ) : canByReqNow <= 0 ? (
-                        <Text style={{ marginTop: 6, color: UI.sub, fontWeight: "800" }}>
-                          По заявке можно 0 — перерасход делай через «Свободная выдача»
-                        </Text>
-                      ) : null}
-                    </View>
-                  </View>
-                </View>
-              );
-            }}
+            renderItem={({ item }) => (
+              <ReqIssueModalRow
+                shape={selectReqIssueModalRowShape(item, reqQtyInputByItem, issueBusy, recipientText)}
+                onChangeQty={handleChangeQty}
+                onPressMax={handlePressMax}
+                onPressAdd={handlePressAdd}
+                issueBusy={issueBusy}
+              />
+            )}
             ListEmptyComponent={
               <Text style={{ color: UI.sub, fontWeight: "800", paddingTop: 12 }}>
                 Нет строк для выдачи (лимиты закрыты).
               </Text>
             }
-            ListFooterComponent={
-              <View style={{ marginTop: 12, paddingBottom: 12 }}>
-                <Text style={{ color: UI.sub, fontWeight: "900" }}>
-                  В корзине: {Object.keys(reqPick || {}).length}
-                </Text>
-
-                {Object.values(reqPick || {}).slice(0, 8).map((ln) => (
-                  <View
-                    key={ln.request_item_id}
-                    style={{ marginTop: 8, flexDirection: "row", gap: 10, alignItems: "center" }}
-                  >
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
-                        {String(ln.name_human || "Позиция")}
-                      </Text>
-                      <Text style={{ color: UI.sub, fontWeight: "800" }} numberOfLines={1}>
-                        {`${uomLabelRu(ln.uom)} · ${String(ln.qty ?? "0")}`}
-                      </Text>
-                    </View>
-
-                    <CloseSquare
-                      onPress={() => removeReqPickLine(ln.request_item_id)}
-                      accessibilityLabel="Убрать из корзины"
-                      size={44}
-                      iconSize={20}
-                    />
-                  </View>
-                ))}
-
-                <View style={{ marginTop: 12, flexDirection: "row", justifyContent: "flex-end" }}>
-                  <Pressable
-                    onPress={() => submitReqPick()}
-                    disabled={issueBusy || Object.keys(reqPick || {}).length === 0 || !recipientText.trim()}
-                    style={[
-                      s.openBtn,
-                      {
-                        borderColor: UI.accent,
-                        opacity:
-                          issueBusy || Object.keys(reqPick || {}).length === 0 || !recipientText.trim()
-                            ? 0.45
-                            : 1,
-                      },
-                    ]}
-                  >
-                    <Text style={s.openBtnText}>{issueBusy ? "..." : "Выдать выбранное"}</Text>
-                  </Pressable>
-                </View>
-              </View>
-            }
+            ListFooterComponent={cartFooter}
           />
         )}
 
