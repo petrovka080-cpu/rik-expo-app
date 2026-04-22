@@ -1,0 +1,48 @@
+{
+  "wave": "STRICT_NULLCHECKS_PHASE_12",
+  "chosen_slice": "accountant inbox rpc boundary",
+  "cluster": "src/screens/accountant/accountant.inbox.service.ts",
+  "touched_files": [
+    "src/screens/accountant/accountant.inbox.service.ts",
+    "src/screens/accountant/accountant.windowing.service.test.ts",
+    "tsconfig.strict-null-phase12-accountant-inbox-window.json",
+    "artifacts/STRICT_nullchecks_phase12_notes.md",
+    "artifacts/STRICT_nullchecks_phase12_proof.md",
+    "artifacts/STRICT_nullchecks_phase12_matrix.json"
+  ],
+  "shortlist": [
+    {
+      "candidate": "src/screens/director/DirectorDashboard.tsx",
+      "status": "safe_lower_value"
+    },
+    {
+      "candidate": "src/screens/office/OfficeHubScreen.tsx",
+      "status": "blocked_shared_dependencies"
+    },
+    {
+      "candidate": "src/screens/foreman/foreman.draftLifecycle.model.ts",
+      "status": "too_wide"
+    },
+    {
+      "candidate": "src/screens/accountant/accountant.inbox.service.ts",
+      "status": "chosen"
+    }
+  ],
+  "strict_blockers_closed": [
+    "nullable rpc tab no longer leaks into accountant_inbox_scope_v1 args",
+    "accountant inbox tab contract now distinguishes ready vs missing",
+    "malformed has_invoice payloads no longer truthy-coerce to true"
+  ],
+  "guards_normalizers_invariants_added": [
+    "resolveAccountantInboxRpcTabContract",
+    "buildAccountantInboxScopeRpcArgs",
+    "toBooleanOrFalse"
+  ],
+  "tests_added": [
+    "valid tab rpc args contract",
+    "empty or undefined tab omitted from rpc args",
+    "partial and malformed inbox envelope normalization"
+  ],
+  "semantics_changed": false,
+  "phase12_strict_compile": "PASS"
+}

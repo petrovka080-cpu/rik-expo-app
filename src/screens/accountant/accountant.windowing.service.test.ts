@@ -5,7 +5,12 @@ import {
 import { runAccountantReturnToBuyerChain } from "./accountant.return.service";
 import { normalizeAccountantInboxRpcTab } from "../../lib/api/accountant";
 import { loadAccountantHistoryWindowData } from "./accountant.history.service";
-import { loadAccountantInboxWindowData } from "./accountant.inbox.service";
+import {
+  adaptAccountantInboxScopeEnvelope,
+  buildAccountantInboxScopeRpcArgs,
+  loadAccountantInboxWindowData,
+  resolveAccountantInboxRpcTabContract,
+} from "./accountant.inbox.service";
 import type { Tab } from "./types";
 
 jest.mock("../../lib/api/accountant", () => ({
@@ -156,6 +161,93 @@ describe("accountant window services", () => {
           && event.fallbackUsed === false,
       ),
     ).toBe(true);
+  });
+
+  it("builds rpc args with a ready accountant tab contract for valid input", () => {
+    const contract = resolveAccountantInboxRpcTabContract(ACCOUNTANT_TAB_PAY);
+    const args = buildAccountantInboxScopeRpcArgs({
+      tab: ACCOUNTANT_TAB_PAY,
+      offsetRows: -10,
+      limitRows: 0,
+    });
+
+    expect(contract).toEqual({
+      status: "ready",
+      rpcTab: normalizeAccountantInboxRpcTab(ACCOUNTANT_TAB_PAY),
+    });
+    expect(args).toEqual({
+      p_tab: normalizeAccountantInboxRpcTab(ACCOUNTANT_TAB_PAY) ?? undefined,
+      p_offset: 0,
+      p_limit: 1,
+    });
+  });
+
+  it("omits the rpc tab when the boundary input is empty or undefined", () => {
+    const emptyTab = "" as unknown as Tab;
+    const undefinedTab = undefined as unknown as Tab;
+
+    expect(resolveAccountantInboxRpcTabContract(emptyTab)).toEqual({
+      status: "missing",
+    });
+    expect(resolveAccountantInboxRpcTabContract(undefinedTab)).toEqual({
+      status: "missing",
+    });
+    expect(
+      buildAccountantInboxScopeRpcArgs({
+        tab: emptyTab,
+        offsetRows: 5,
+        limitRows: 25,
+      }),
+    ).toEqual({
+      p_tab: undefined,
+      p_offset: 5,
+      p_limit: 25,
+    });
+  });
+
+  it("adapts partial and malformed inbox scope payloads without false rows", () => {
+    const envelope = adaptAccountantInboxScopeEnvelope({
+      rows: [
+        {
+          proposal_id: null,
+          proposal_no: "drop-me",
+        },
+        {
+          proposal_id: "proposal-1",
+          proposal_no: "P-1",
+          payments_count: "bad-count",
+          has_invoice: "not-boolean",
+          payment_eligible: "not-boolean",
+          invoice_currency: null,
+          last_paid_at: "bad-last-paid-at",
+        },
+        "bad-row",
+      ],
+      meta: null,
+    });
+
+    expect(envelope.rows).toEqual([
+      {
+        proposal_id: "proposal-1",
+        proposal_no: "P-1",
+        id_short: null,
+        supplier: null,
+        invoice_number: null,
+        invoice_date: null,
+        invoice_amount: null,
+        outstanding_amount: null,
+        invoice_currency: "KGS",
+        payment_status: null,
+        total_paid: 0,
+        payments_count: 0,
+        has_invoice: false,
+        sent_to_accountant_at: null,
+        payment_eligible: null,
+        failure_code: null,
+        last_paid_at: null,
+      },
+    ]);
+    expect(envelope.meta).toEqual({});
   });
 
   it("loads history rows from rpc_scope_v1 without legacy window fallback", async () => {

@@ -6,6 +6,7 @@ import {
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
+import type { Database } from "../../lib/database.types";
 import type { AccountantInboxUiRow, Tab } from "./types";
 
 type AccountantInboxScopeRow = {
@@ -32,6 +33,13 @@ type AccountantInboxScopeEnvelope = {
   rows: AccountantInboxUiRow[];
   meta: Record<string, unknown>;
 };
+
+type AccountantInboxScopeRpcArgs =
+  Database["public"]["Functions"]["accountant_inbox_scope_v1"]["Args"];
+
+export type AccountantInboxRpcTabContract =
+  | { status: "ready"; rpcTab: string }
+  | { status: "missing" };
 
 export type AccountantInboxWindowMeta = {
   offsetRows: number;
@@ -71,6 +79,31 @@ const toMaybeText = (value: unknown): string | null => {
   return text || null;
 };
 
+const toBooleanOrFalse = (value: unknown): boolean => value === true;
+
+export const resolveAccountantInboxRpcTabContract = (
+  tab: Tab,
+): AccountantInboxRpcTabContract => {
+  const rpcTab = normalizeAccountantInboxRpcTab(tab);
+  if (!rpcTab) {
+    return { status: "missing" };
+  }
+  return { status: "ready", rpcTab };
+};
+
+export const buildAccountantInboxScopeRpcArgs = (params: {
+  tab: Tab;
+  offsetRows: number;
+  limitRows: number;
+}): AccountantInboxScopeRpcArgs => {
+  const tabContract = resolveAccountantInboxRpcTabContract(params.tab);
+  return {
+    p_tab: tabContract.status === "ready" ? tabContract.rpcTab : undefined,
+    p_offset: Math.max(0, params.offsetRows),
+    p_limit: Math.max(1, params.limitRows),
+  };
+};
+
 export const adaptAccountantInboxScopeEnvelope = (value: unknown): AccountantInboxScopeEnvelope => {
   const envelope = typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
   const rowsRaw = Array.isArray(envelope.rows) ? envelope.rows : [];
@@ -93,7 +126,7 @@ export const adaptAccountantInboxScopeEnvelope = (value: unknown): AccountantInb
       payment_status: toMaybeText(item.payment_status),
       total_paid: toNumberOrNull(item.total_paid) ?? 0,
       payments_count: toInt(item.payments_count, 0),
-      has_invoice: Boolean(item.has_invoice),
+      has_invoice: toBooleanOrFalse(item.has_invoice),
       sent_to_accountant_at: toMaybeText(item.sent_to_accountant_at),
       payment_eligible:
         typeof item.payment_eligible === "boolean" ? item.payment_eligible : null,
@@ -122,6 +155,11 @@ export async function loadAccountantInboxWindowData(params: {
   limitRows: number;
 }): Promise<AccountantInboxWindowLoadResult> {
   const { tab, offsetRows, limitRows } = params;
+  const rpcArgs = buildAccountantInboxScopeRpcArgs({
+    tab,
+    offsetRows,
+    limitRows,
+  });
   const observation = beginPlatformObservability({
     screen: "accountant",
     surface: "inbox_window",
@@ -132,11 +170,7 @@ export async function loadAccountantInboxWindowData(params: {
 
   try {
     const startedAt = Date.now();
-    const { data, error } = await supabase.rpc("accountant_inbox_scope_v1", {
-      p_tab: normalizeAccountantInboxRpcTab(tab),
-      p_offset: Math.max(0, offsetRows),
-      p_limit: Math.max(1, limitRows),
-    });
+    const { data, error } = await supabase.rpc("accountant_inbox_scope_v1", rpcArgs);
     if (error) {
       trackRpcLatency({
         name: "accountant_inbox_scope_v1",
@@ -146,9 +180,9 @@ export async function loadAccountantInboxWindowData(params: {
         status: "error",
         error,
         extra: {
-          tab: normalizeAccountantInboxRpcTab(tab),
-          offsetRows: Math.max(0, offsetRows),
-          limitRows: Math.max(1, limitRows),
+          tab: rpcArgs.p_tab,
+          offsetRows: rpcArgs.p_offset,
+          limitRows: rpcArgs.p_limit,
         },
       });
       throw error;
@@ -163,9 +197,9 @@ export async function loadAccountantInboxWindowData(params: {
       status: "success",
       rowCount: envelope.rows.length,
       extra: {
-        tab: normalizeAccountantInboxRpcTab(tab),
-        offsetRows: Math.max(0, offsetRows),
-        limitRows: Math.max(1, limitRows),
+        tab: rpcArgs.p_tab,
+        offsetRows: rpcArgs.p_offset,
+        limitRows: rpcArgs.p_limit,
       },
     });
     const guarded = await filterProposalLinkedRowsByExistingProposalLinks(supabase, envelope.rows, {
@@ -222,9 +256,9 @@ export async function loadAccountantInboxWindowData(params: {
       errorClass: error instanceof Error ? error.name : undefined,
       errorMessage: errorMessage(error) || undefined,
       extra: {
-        tab: normalizeAccountantInboxRpcTab(tab),
-        offsetRows: Math.max(0, offsetRows),
-        limitRows: Math.max(1, limitRows),
+        tab: rpcArgs.p_tab,
+        offsetRows: rpcArgs.p_offset,
+        limitRows: rpcArgs.p_limit,
         mode: "primary_fail",
       },
     });
@@ -234,9 +268,9 @@ export async function loadAccountantInboxWindowData(params: {
       fallbackUsed: false,
       errorStage: "accountant_inbox_scope_v1",
       extra: {
-        tab: normalizeAccountantInboxRpcTab(tab),
-        offsetRows: Math.max(0, offsetRows),
-        limitRows: Math.max(1, limitRows),
+        tab: rpcArgs.p_tab,
+        offsetRows: rpcArgs.p_offset,
+        limitRows: rpcArgs.p_limit,
         mode: "primary_fail",
       },
     });
