@@ -154,7 +154,7 @@ const createTempUser = async (role: string, fullName: string): Promise<TempUser>
 
 const cleanupTempUser = async (user: TempUser | null): Promise<CleanupResult[]> => {
   if (!user) return [];
-  const operations: Array<Promise<CleanupResult>> = [
+  const operations: Array<PromiseLike<CleanupResult>> = [
     admin
       .from("user_profiles")
       .delete()
