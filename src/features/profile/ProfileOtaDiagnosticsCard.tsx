@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "rea
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 
+import { logger } from "@/src/lib/logger";
 import { checkAndFetchOtaNow } from "@/src/lib/otaHardening";
 import {
   buildOfficeReentryBreadcrumbsText,
@@ -31,6 +32,163 @@ type RowProps = {
   value: string;
   last?: boolean;
 };
+
+type BatchResult<T> =
+  | { status: "success"; data: T }
+  | { status: "error"; error: unknown };
+
+type BreadcrumbBatchSectionKey =
+  | "pdf_crash_breadcrumbs"
+  | "warehouse_back_breadcrumbs"
+  | "office_reentry_breadcrumbs";
+
+type BreadcrumbBatchSection = {
+  key: BreadcrumbBatchSectionKey;
+  content: string;
+};
+
+type BreadcrumbBatchSectionResult = {
+  key: BreadcrumbBatchSectionKey;
+  result: BatchResult<BreadcrumbBatchSection>;
+};
+
+type BreadcrumbBatchState = "complete" | "partial" | "diagnostics_only";
+
+const OTA_DIAGNOSTICS_COPIED_MESSAGE = "Диагностика скопирована.";
+
+function normalizeBatch<T>(results: PromiseSettledResult<T>[]): BatchResult<T>[] {
+  return results.map((result) =>
+    result.status === "fulfilled"
+      ? { status: "success", data: result.value }
+      : { status: "error", error: result.reason },
+  );
+}
+
+function toBatchErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message || error.name || "unknown batch error";
+  }
+
+  const text = String(error ?? "").trim();
+  return text || "unknown batch error";
+}
+
+async function loadPdfCrashBreadcrumbCopySection(): Promise<BreadcrumbBatchSection> {
+  const items = await getPdfCrashBreadcrumbs();
+  return {
+    key: "pdf_crash_breadcrumbs",
+    content: items.length ? buildPdfCrashBreadcrumbsText(items) : "- none",
+  };
+}
+
+async function loadWarehouseBackBreadcrumbCopySection(): Promise<BreadcrumbBatchSection> {
+  const items = await getWarehouseBackBreadcrumbs();
+  return {
+    key: "warehouse_back_breadcrumbs",
+    content: items.length ? buildWarehouseBackBreadcrumbsText(items) : "- none",
+  };
+}
+
+async function loadOfficeReentryBreadcrumbCopySection(): Promise<BreadcrumbBatchSection> {
+  const items = await getOfficeReentryBreadcrumbs();
+  return {
+    key: "office_reentry_breadcrumbs",
+    content: items.length ? buildOfficeReentryBreadcrumbsText(items) : "- none",
+  };
+}
+
+function normalizeBreadcrumbBatchResults(
+  results: PromiseSettledResult<BreadcrumbBatchSection>[],
+): BreadcrumbBatchSectionResult[] {
+  const normalized = normalizeBatch(results);
+  const keys: BreadcrumbBatchSectionKey[] = [
+    "pdf_crash_breadcrumbs",
+    "warehouse_back_breadcrumbs",
+    "office_reentry_breadcrumbs",
+  ];
+
+  return keys.map((key, index) => ({
+    key,
+    result: normalized[index] ?? {
+      status: "error",
+      error: new Error(`Missing batch result for ${key}`),
+    },
+  }));
+}
+
+function classifyBreadcrumbBatchState(params: {
+  successCount: number;
+  errorCount: number;
+}): BreadcrumbBatchState {
+  if (params.errorCount === 0) return "complete";
+  if (params.successCount === 0) return "diagnostics_only";
+  return "partial";
+}
+
+function logBreadcrumbBatchOutcome(params: {
+  state: BreadcrumbBatchState;
+  errors: { key: BreadcrumbBatchSectionKey; error: unknown }[];
+}) {
+  if (!params.errors.length) return;
+
+  logger.warn("ota-diagnostics", "breadcrumb batch degraded", {
+    state: params.state,
+    failedSections: params.errors.map((entry) => entry.key),
+    errorMessages: params.errors.map((entry) => toBatchErrorMessage(entry.error)),
+  });
+}
+
+function buildDiagnosticsCopyPayload(params: {
+  diagnostics: OtaDiagnostics;
+  batchResults: BreadcrumbBatchSectionResult[];
+}) {
+  const successes = params.batchResults
+    .filter(
+      (
+        entry,
+      ): entry is {
+        key: BreadcrumbBatchSectionKey;
+        result: { status: "success"; data: BreadcrumbBatchSection };
+      } => entry.result.status === "success",
+    );
+  const errors = params.batchResults
+    .filter(
+      (
+        entry,
+      ): entry is {
+        key: BreadcrumbBatchSectionKey;
+        result: { status: "error"; error: unknown };
+      } => entry.result.status === "error",
+    )
+    .map((entry) => ({ key: entry.key, error: entry.result.error }));
+  const state = classifyBreadcrumbBatchState({
+    successCount: successes.length,
+    errorCount: errors.length,
+  });
+
+  const payload = buildOtaDiagnosticsText(params.diagnostics)
+    + params.batchResults
+      .map((entry) =>
+        `\n\n${entry.key}:\n${entry.result.status === "success" ? entry.result.data.content : `- error: ${toBatchErrorMessage(entry.result.error)}`}`,
+      )
+      .join("");
+
+  const failedKeys = errors.map((entry) => entry.key).join(", ");
+  const message =
+    state === "complete"
+      ? OTA_DIAGNOSTICS_COPIED_MESSAGE
+      : state === "diagnostics_only"
+        ? `${OTA_DIAGNOSTICS_COPIED_MESSAGE}\n\nAll breadcrumb sections failed: ${failedKeys}.`
+        : `${OTA_DIAGNOSTICS_COPIED_MESSAGE}\n\nUnavailable breadcrumb sections: ${failedKeys}.`;
+
+  return {
+    payload,
+    message,
+    state,
+    successes,
+    errors,
+  };
+}
 
 function getSeverityTheme(severity: OtaDiagnostics["severity"]) {
   switch (severity) {
@@ -125,26 +283,30 @@ export function ProfileOtaDiagnosticsCard() {
 
   const handleCopy = async () => {
     try {
-      const [pdfBreadcrumbs, warehouseBackBreadcrumbs, officeReentryBreadcrumbs] = await Promise.all([
-        getPdfCrashBreadcrumbs(),
-        getWarehouseBackBreadcrumbs(),
-        getOfficeReentryBreadcrumbs(),
+      const settled = await Promise.allSettled([
+        loadPdfCrashBreadcrumbCopySection(),
+        loadWarehouseBackBreadcrumbCopySection(),
+        loadOfficeReentryBreadcrumbCopySection(),
       ]);
-      const payload = buildOtaDiagnosticsText(diagnostics)
-        + (pdfBreadcrumbs.length
-          ? `\n\npdf_crash_breadcrumbs:\n${buildPdfCrashBreadcrumbsText(pdfBreadcrumbs)}`
-          : "\n\npdf_crash_breadcrumbs:\n- none");
-      const fullPayload = payload
-        + (warehouseBackBreadcrumbs.length
-          ? `\n\nwarehouse_back_breadcrumbs:\n${buildWarehouseBackBreadcrumbsText(warehouseBackBreadcrumbs)}`
-          : "\n\nwarehouse_back_breadcrumbs:\n- none");
-      const payloadWithOfficeReentry = fullPayload
-        + (officeReentryBreadcrumbs.length
-          ? `\n\noffice_reentry_breadcrumbs:\n${buildOfficeReentryBreadcrumbsText(officeReentryBreadcrumbs)}`
-          : "\n\noffice_reentry_breadcrumbs:\n- none");
-      await Clipboard.setStringAsync(payloadWithOfficeReentry);
-      setLastActionMessage("Диагностика скопирована.");
-      Alert.alert("OTA diagnostics", "Диагностика скопирована.");
+      const batchResults = normalizeBreadcrumbBatchResults(settled);
+      const copyPayload = buildDiagnosticsCopyPayload({
+        diagnostics,
+        batchResults,
+      });
+
+      logBreadcrumbBatchOutcome({
+        state: copyPayload.state,
+        errors: copyPayload.errors,
+      });
+
+      await Clipboard.setStringAsync(copyPayload.payload);
+      if (copyPayload.state !== "complete") {
+        setLastActionMessage(copyPayload.message);
+        Alert.alert("OTA diagnostics", copyPayload.message);
+        return;
+      }
+      setLastActionMessage(OTA_DIAGNOSTICS_COPIED_MESSAGE);
+      Alert.alert("OTA diagnostics", OTA_DIAGNOSTICS_COPIED_MESSAGE);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setLastActionMessage(message);

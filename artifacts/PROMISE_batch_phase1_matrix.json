@@ -1,0 +1,65 @@
+{
+  "wave": "PROMISE_BATCH_BOUNDARY_HARDENING_PHASE_1",
+  "chosenFile": "src/features/profile/ProfileOtaDiagnosticsCard.tsx",
+  "batchType": "user-triggered diagnostics read batch",
+  "partialSuccessAllowed": true,
+  "shortlist": [
+    {
+      "candidate": "app/product/[id].tsx",
+      "status": "safe_lower_value",
+      "reason": "route-level UI semantics would need extra state decisions"
+    },
+    {
+      "candidate": "src/screens/office/officeAccess.services.ts",
+      "status": "blocked_critical_semantics",
+      "reason": "bootstrap flow is effectively atomic"
+    },
+    {
+      "candidate": "src/features/ai/assistantScopeContext.ts",
+      "status": "too_wide",
+      "reason": "cross-domain fanout with higher blast radius"
+    },
+    {
+      "candidate": "src/features/profile/ProfileOtaDiagnosticsCard.tsx",
+      "status": "chosen",
+      "reason": "independent diagnostics sections with clear partial-success semantics and focused regression coverage"
+    }
+  ],
+  "touchedFiles": [
+    "src/features/profile/ProfileOtaDiagnosticsCard.tsx",
+    "src/features/profile/ProfileOtaDiagnosticsCard.test.tsx",
+    "artifacts/PROMISE_batch_phase1_notes.md",
+    "artifacts/PROMISE_batch_phase1_proof.md",
+    "artifacts/PROMISE_batch_phase1_matrix.json"
+  ],
+  "resultContract": [
+    "BatchResult<T>",
+    "normalizeBatch",
+    "normalizeBreadcrumbBatchResults",
+    "classifyBreadcrumbBatchState",
+    "buildDiagnosticsCopyPayload",
+    "logBreadcrumbBatchOutcome"
+  ],
+  "testsAdded": [
+    "partial success with one failed section",
+    "multiple failures with preserved order",
+    "all failed with diagnostics-only fallback"
+  ],
+  "semanticsChanged": false,
+  "gateStatus": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "runInBandTests": "PASS",
+    "parallelTests": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "releaseTail": {
+    "runtimeChanged": true,
+    "otaRequired": true,
+    "commit": "pending",
+    "push": "pending",
+    "development": "pending",
+    "preview": "pending",
+    "production": "pending"
+  }
+}

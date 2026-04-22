@@ -107,6 +107,7 @@ function createDiagnostics(overrides: Partial<OtaDiagnostics> = {}): OtaDiagnost
 
 describe("ProfileOtaDiagnosticsCard", () => {
   let alertSpy: jest.SpyInstance;
+  let warnSpy: jest.SpyInstance;
 
   beforeEach(() => {
     mockClipboardSetStringAsync.mockReset();
@@ -128,10 +129,12 @@ describe("ProfileOtaDiagnosticsCard", () => {
     mockBuildWarehouseBackBreadcrumbsText.mockReturnValue("warehouse-breadcrumb-line");
 
     alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   afterEach(() => {
     alertSpy.mockRestore();
+    warnSpy.mockRestore();
   });
 
   function renderCard(): ReactTestRenderer {
@@ -264,5 +267,107 @@ describe("ProfileOtaDiagnosticsCard", () => {
       "diagnostics\n\npdf_crash_breadcrumbs:\n2026-04-03T10:00:00.000Z | foreman | viewer_validation_start\n\nwarehouse_back_breadcrumbs:\n2026-04-09T10:00:00.000Z | warehouse_back_navigation_call | success\n\noffice_reentry_breadcrumbs:\n2026-04-09T10:05:00.000Z | office_reentry_mount | success",
     );
     expect(alertSpy).toHaveBeenCalledWith("OTA diagnostics", expect.any(String));
+  });
+
+  it("keeps partial success when one breadcrumb batch item fails", async () => {
+    mockGetOtaDiagnostics.mockReturnValue(createDiagnostics());
+    mockGetPdfCrashBreadcrumbs.mockResolvedValue([
+      {
+        at: "2026-04-03T10:00:00.000Z",
+        screen: "foreman",
+        marker: "viewer_validation_start",
+      },
+    ]);
+    mockBuildPdfCrashBreadcrumbsText.mockReturnValue("pdf-breadcrumb-line");
+    mockGetWarehouseBackBreadcrumbs.mockResolvedValue([
+      {
+        at: "2026-04-09T10:00:00.000Z",
+        marker: "warehouse_back_navigation_call",
+        result: "success",
+      },
+    ]);
+    mockBuildWarehouseBackBreadcrumbsText.mockReturnValue("warehouse-breadcrumb-line");
+    mockGetOfficeReentryBreadcrumbs.mockRejectedValue(
+      new Error("office breadcrumb unavailable"),
+    );
+
+    const renderer = renderCard();
+
+    await act(async () => {
+      await renderer.root.findByProps({ testID: "ota-copy-action" }).props.onPress();
+    });
+
+    expect(mockClipboardSetStringAsync).toHaveBeenCalledWith(
+      "diagnostics\n\npdf_crash_breadcrumbs:\npdf-breadcrumb-line\n\nwarehouse_back_breadcrumbs:\nwarehouse-breadcrumb-line\n\noffice_reentry_breadcrumbs:\n- error: office breadcrumb unavailable",
+    );
+    expect(mockBuildOfficeReentryBreadcrumbsText).not.toHaveBeenCalled();
+    expect(alertSpy).toHaveBeenCalledWith(
+      "OTA diagnostics",
+      expect.stringContaining(
+        "Unavailable breadcrumb sections: office_reentry_breadcrumbs.",
+      ),
+    );
+  });
+
+  it("keeps order and surfaces multiple breadcrumb failures without returning an empty result", async () => {
+    mockGetOtaDiagnostics.mockReturnValue(createDiagnostics());
+    mockGetPdfCrashBreadcrumbs.mockRejectedValue(new Error("pdf breadcrumb unavailable"));
+    mockGetWarehouseBackBreadcrumbs.mockResolvedValue([
+      {
+        at: "2026-04-09T10:00:00.000Z",
+        marker: "warehouse_back_navigation_call",
+        result: "success",
+      },
+    ]);
+    mockBuildWarehouseBackBreadcrumbsText.mockReturnValue("warehouse-breadcrumb-line");
+    mockGetOfficeReentryBreadcrumbs.mockRejectedValue(
+      new Error("office breadcrumb unavailable"),
+    );
+
+    const renderer = renderCard();
+
+    await act(async () => {
+      await renderer.root.findByProps({ testID: "ota-copy-action" }).props.onPress();
+    });
+
+    expect(mockClipboardSetStringAsync).toHaveBeenCalledWith(
+      "diagnostics\n\npdf_crash_breadcrumbs:\n- error: pdf breadcrumb unavailable\n\nwarehouse_back_breadcrumbs:\nwarehouse-breadcrumb-line\n\noffice_reentry_breadcrumbs:\n- error: office breadcrumb unavailable",
+    );
+    expect(alertSpy).toHaveBeenCalledWith(
+      "OTA diagnostics",
+      expect.stringContaining(
+        "Unavailable breadcrumb sections: pdf_crash_breadcrumbs, office_reentry_breadcrumbs.",
+      ),
+    );
+  });
+
+  it("copies base diagnostics even when all breadcrumb batch items fail", async () => {
+    mockGetOtaDiagnostics.mockReturnValue(createDiagnostics());
+    mockGetPdfCrashBreadcrumbs.mockRejectedValue(new Error("pdf breadcrumb unavailable"));
+    mockGetWarehouseBackBreadcrumbs.mockRejectedValue(
+      new Error("warehouse breadcrumb unavailable"),
+    );
+    mockGetOfficeReentryBreadcrumbs.mockRejectedValue(
+      new Error("office breadcrumb unavailable"),
+    );
+
+    const renderer = renderCard();
+
+    await act(async () => {
+      await renderer.root.findByProps({ testID: "ota-copy-action" }).props.onPress();
+    });
+
+    expect(mockClipboardSetStringAsync).toHaveBeenCalledWith(
+      "diagnostics\n\npdf_crash_breadcrumbs:\n- error: pdf breadcrumb unavailable\n\nwarehouse_back_breadcrumbs:\n- error: warehouse breadcrumb unavailable\n\noffice_reentry_breadcrumbs:\n- error: office breadcrumb unavailable",
+    );
+    expect(mockBuildPdfCrashBreadcrumbsText).not.toHaveBeenCalled();
+    expect(mockBuildWarehouseBackBreadcrumbsText).not.toHaveBeenCalled();
+    expect(mockBuildOfficeReentryBreadcrumbsText).not.toHaveBeenCalled();
+    expect(alertSpy).toHaveBeenCalledWith(
+      "OTA diagnostics",
+      expect.stringContaining(
+        "All breadcrumb sections failed: pdf_crash_breadcrumbs, warehouse_back_breadcrumbs, office_reentry_breadcrumbs.",
+      ),
+    );
   });
 });
