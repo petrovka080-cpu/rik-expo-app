@@ -141,6 +141,9 @@ const asArrayOfRecords = (value: unknown): DirectorPdfRecord[] =>
       )
     : [];
 
+const toOptionalRpcArg = <T>(value: T | null | undefined): T | undefined =>
+  value == null ? undefined : value;
+
 const toText = (value: unknown) => String(value ?? "").trim();
 
 const requireNonEmptyString = (value: unknown, field: string, functionName: string) => {
@@ -378,8 +381,8 @@ async function fetchDirectorFinancePdfSourceViaRpc(args: {
   criticalDays?: number;
 }): Promise<DirectorFinancePdfSource> {
   const { data, error } = await supabase.rpc("pdf_director_finance_source_v1", {
-    p_from: args.periodFrom ?? null,
-    p_to: args.periodTo ?? null,
+    p_from: toOptionalRpcArg(args.periodFrom),
+    p_to: toOptionalRpcArg(args.periodTo),
     p_due_days: args.dueDaysDefault ?? 7,
     p_critical_days: args.criticalDays ?? 14,
   });
@@ -517,9 +520,9 @@ async function fetchDirectorProductionPdfSourceViaRpc(args: {
   priceStage: DirectorPdfPriceStage;
 }): Promise<DirectorProductionPdfSource> {
   const { data, error } = await supabase.rpc("pdf_director_production_source_v1", {
-    p_from: args.periodFrom ?? null,
-    p_to: args.periodTo ?? null,
-    p_object_name: args.objectName ?? null,
+    p_from: toOptionalRpcArg(args.periodFrom),
+    p_to: toOptionalRpcArg(args.periodTo),
+    p_object_name: toOptionalRpcArg(args.objectName),
     p_include_costs: args.priceStage !== "base",
   });
 
@@ -685,9 +688,9 @@ async function fetchDirectorSubcontractPdfSourceViaRpc(args: {
   objectName?: string | null;
 }): Promise<DirectorSubcontractPdfSource> {
   const { data, error } = await supabase.rpc("pdf_director_subcontract_source_v1", {
-    p_from: args.periodFrom ?? null,
-    p_to: args.periodTo ?? null,
-    p_object_name: args.objectName ?? null,
+    p_from: toOptionalRpcArg(args.periodFrom),
+    p_to: toOptionalRpcArg(args.periodTo),
+    p_object_name: toOptionalRpcArg(args.objectName),
   });
 
   if (error) {
