@@ -1,0 +1,68 @@
+{
+  "wave": "STRICT_NULLCHECKS_PHASE_4",
+  "chosenSlice": {
+    "path": "src/lib/catalog/catalog.transport.ts",
+    "reason": "4 local strict-null blockers with low blast radius and transport-boundary-only fixes"
+  },
+  "shortlist": [
+    {
+      "candidate": "src/lib/catalog/catalog.transport.ts",
+      "status": "chosen",
+      "reason": "4 local blockers only"
+    },
+    {
+      "candidate": "app/pdf-viewer.tsx",
+      "status": "safe_but_riskier",
+      "reason": "3 local blockers only, but higher-risk critical viewer path than the catalog transport boundary"
+    },
+    {
+      "candidate": "src/screens/office/officeHub.sections.tsx",
+      "status": "blocked_cross_dependency",
+      "reason": "pulls profile.services under strict-null probe"
+    },
+    {
+      "candidate": "src/screens/foreman/foreman.manualRecovery.model.ts",
+      "status": "too_wide",
+      "reason": "pulls foreman.localDraft, catalog transport, buyer/director API, and director PDF shared blockers"
+    },
+    {
+      "candidate": "src/lib/offline/mutationQueue.ts",
+      "status": "too_wide",
+      "reason": "broad offline and adjacent-domain blocker surface"
+    }
+  ],
+  "touchedFiles": [
+    "src/lib/catalog/catalog.transport.ts",
+    "src/lib/catalog/catalog.transport.normalize.ts",
+    "tests/strict-null/catalog.transport.phase4.test.ts",
+    "tsconfig.strict-null-phase4-catalog-transport.json",
+    "artifacts/STRICT_nullchecks_phase4_notes.md",
+    "artifacts/STRICT_nullchecks_phase4_proof.md",
+    "artifacts/STRICT_nullchecks_phase4_matrix.json"
+  ],
+  "guardsOrNormalizersAdded": [
+    "normalizeCatalogGroupRows",
+    "normalizeUomRows",
+    "normalizeIncomingItemRows",
+    "normalizeSuppliersListRpcArgs"
+  ],
+  "testsAdded": [
+    "tests/strict-null/catalog.transport.phase4.test.ts"
+  ],
+  "semanticsChanged": false,
+  "phase4StrictCompile": "PASS",
+  "rootTypecheck": "PASS",
+  "releaseReadiness": {
+    "runtimeDiffExpected": true,
+    "otaNeededIfGreen": true,
+    "commit": "pending",
+    "push": "pending",
+    "ota": {
+      "development": "pending",
+      "preview": "pending",
+      "production": "pending"
+    },
+    "headMatchesOriginMain": false,
+    "worktreeClean": false
+  }
+}

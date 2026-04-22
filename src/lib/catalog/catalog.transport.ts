@@ -6,6 +6,12 @@ import type {
   IncomingItem,
   UomRef,
 } from "./catalog.types";
+import {
+  normalizeCatalogGroupRows,
+  normalizeIncomingItemRows,
+  normalizeSuppliersListRpcArgs,
+  normalizeUomRows,
+} from "./catalog.transport.normalize";
 
 const SUPPLIERS_TABLE_SELECT =
   "id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes";
@@ -96,29 +102,49 @@ export const loadCatalogSearchFallbackRows = async (
 export const loadCatalogGroupsRows = async (): Promise<{
   data: CatalogGroup[] | null;
   error: { message?: string } | null;
-}> =>
-  await supabase
+}> => {
+  const result = await supabase
     .from("catalog_groups_clean")
     .select("code,name,parent_code")
     .order("code", { ascending: true });
 
+  return {
+    data: result.data === null ? null : normalizeCatalogGroupRows(result.data),
+    error: result.error,
+  };
+};
+
 export const loadUomRows = async (): Promise<{
   data: UomRef[] | null;
   error: { message?: string } | null;
-}> =>
-  await supabase.from("ref_uoms_clean").select("id,code,name").order("code", { ascending: true });
+}> => {
+  const result = await supabase
+    .from("ref_uoms_clean")
+    .select("id,code,name")
+    .order("code", { ascending: true });
+
+  return {
+    data: result.data === null ? null : normalizeUomRows(result.data),
+    error: result.error,
+  };
+};
 
 export const loadIncomingItemRows = async (
   incomingId: string,
-): Promise<{ data: IncomingItem[] | null; error: { message?: string } | null }> =>
-  await supabase
+): Promise<{ data: IncomingItem[] | null; error: { message?: string } | null }> => {
+  const result = await supabase
     .from("wh_incoming_items_clean")
     .select("incoming_id,incoming_item_id,purchase_item_id,code,name,uom,qty_expected,qty_received")
     .eq("incoming_id", incomingId)
     .order("incoming_item_id", { ascending: true });
+  return {
+    data: result.data === null ? null : normalizeIncomingItemRows(result.data),
+    error: result.error,
+  };
+};
 
 export const runSuppliersListRpc = async (searchTerm: string | null) =>
-  await supabase.rpc("suppliers_list", { p_search: searchTerm });
+  await supabase.rpc("suppliers_list", normalizeSuppliersListRpcArgs(searchTerm));
 
 export const loadSuppliersTableRows = async (searchTerm: string) => {
   let query = supabase
