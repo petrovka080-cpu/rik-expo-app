@@ -1,0 +1,3272 @@
+{
+  "wave": "RLS_COVERAGE_VERIFICATION_PHASE_1",
+  "generated_at": "2026-04-22T15:30:33.331Z",
+  "scope": {
+    "verification_only": true,
+    "runtime_semantics_changed": false,
+    "repo_based_verification": true
+  },
+  "limitations": [
+    "Repository migration history contains placeholder files, so baseline RLS/grant state is not provable for every legacy table from repo history alone.",
+    "Views are inventoried separately because RLS applies to base tables, not to views directly.",
+    "Coverage booleans are repo-evidence-based: null means the repository does not prove the boundary either way."
+  ],
+  "summary": {
+    "app_touched_tables": 57,
+    "app_touched_views": 30,
+    "unknown_relations": 0,
+    "high_risk_tables": 48,
+    "medium_risk_tables": 0,
+    "low_risk_tables": 9
+  },
+  "shortlist": [
+    {
+      "candidate": "A",
+      "relation": "supplier_messages",
+      "outcome": "verified safe",
+      "reason": "Explicit create table, RLS enablement, select/insert grants, and operation-specific policies exist in repo history."
+    },
+    {
+      "candidate": "B",
+      "relation": "app_errors",
+      "outcome": "policy missing or unverifiable",
+      "reason": "Direct client insert path exists in runtime code, but repo migrations do not provide provable RLS/grant/policy coverage for the table."
+    },
+    {
+      "candidate": "C",
+      "relation": "requests/request_items/proposals/proposal_payments/warehouse_issues/warehouse_issue_items/notifications",
+      "outcome": "policy too broad / too wide",
+      "reason": "Director realtime select policy cluster is role-based and spans multiple core tables, so it should not be remediated in a verification-only wave."
+    },
+    {
+      "candidate": "D",
+      "relation": "submit_jobs",
+      "outcome": "chosen for next hardening wave",
+      "reason": "Queue boundary is auth-sensitive, directly used by the app, and lacks provable repo-side RLS/grant coverage, while still staying narrow enough for a single-table hardening slice."
+    }
+  ],
+  "storage_buckets_excluded": [
+    "avatars",
+    "supplier_files"
+  ],
+  "touched_views": [
+    {
+      "relation": "catalog_groups_clean",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/catalog/catalog.transport.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "construction_object_identity_lookup_v1",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/constructionObjectIdentity.read.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "market_listings_map",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/components/map/useMapListingsQuery.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "proposal_items_view",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/buyer.ts",
+        "src/lib/api/proposals.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "proposal_snapshot_items",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/proposals.ts",
+        "src/screens/warehouse/warehouse.seed.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "ref_uoms_clean",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/catalog/catalog.transport.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "request_display",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/catalog/catalog.request.service.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "request_items_pending_view",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/store_supabase.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "request_object_identity_scope_v1",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/constructionObjectIdentity.read.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "rik_apps",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/pdf_proposal.ts",
+        "src/screens/foreman/foreman.dicts.repo.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "rik_item_apps",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/foreman/foreman.dicts.repo.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "rik_items",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/catalog/catalog.transport.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "rik_materials",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/warehouse/warehouse.uom.repo.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "rik_uoms",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/warehouse/warehouse.uom.repo.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_director_issued_fact_rows",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/director_reports.transport.facts.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_proposals_summary",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/buyer.ts",
+        "src/screens/buyer/buyer.buckets.repo.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_reno_calc_fields_ui",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist"
+      ],
+      "touched_files": [
+        "src/components/foreman/useCalcFields.ts"
+      ],
+      "reasons": [
+        "foreman calculator runtime dynamic view branch"
+      ]
+    },
+    {
+      "relation": "v_reno_calc_fields_ui_clean",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist"
+      ],
+      "touched_files": [
+        "src/components/foreman/useCalcFields.ts"
+      ],
+      "reasons": [
+        "foreman calculator runtime dynamic view branch"
+      ]
+    },
+    {
+      "relation": "v_request_items_display",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/store_supabase.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_request_pdf_header",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/catalog/catalog.request.service.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_requests_display",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/catalog/catalog.request.service.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_rik_names_ru",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist",
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/director_reports.naming.ts",
+        "src/screens/warehouse/warehouse.stockReports.service.ts"
+      ],
+      "reasons": [
+        "director naming dynamic source query",
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_wh_balance_ledger_ui",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist",
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/director_reports.naming.ts",
+        "src/screens/warehouse/warehouse.stockReports.service.ts"
+      ],
+      "reasons": [
+        "director naming dynamic source query",
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_wh_incoming_heads_ui",
+      "observed_client_ops": [],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/director/director.metrics.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_wh_issue_req_heads_ui",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/contractor/contractor.workModalService.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_wh_issue_req_items_ui",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/contractor/contractor.data.ts",
+        "src/screens/contractor/contractor.workModalService.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_work_types_picker",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/components/foreman/WorkTypePicker.tsx",
+        "src/components/foreman/useCalcFields.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "v_works_fact",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/contractor/contractor.loadWorksService.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "warehouse_name_map_ui",
+      "observed_client_ops": [],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/warehouse/warehouse.nameMap.ui.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    },
+    {
+      "relation": "wh_incoming_items_clean",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/catalog/catalog.transport.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ]
+    }
+  ],
+  "unknown_relations": [],
+  "tables": [
+    {
+      "table": "accounting_pay_invoice_mutations_v1",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "mutation ledger boundary: no direct anon/authenticated table access; use exact wrapper only",
+      "actual_risk_level": "low",
+      "next_action": "keep_under_verification",
+      "observed_client_ops": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "auth_sensitive_inventory"
+      ],
+      "touched_files": [
+        "tests/security/rlsCoverageVerification.test.ts"
+      ],
+      "reasons": [
+        "auth-sensitive mutation ledger verified in existing RLS regression suite"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": true,
+        "grants": {
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ]
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [
+          "20260412140000_accounting_pay_invoice_idempotency_v2.sql"
+        ],
+        "rls_evidence": [
+          "20260412140000_accounting_pay_invoice_idempotency_v2.sql:alter table public.accounting_pay_invoice_mutations_v1 enable row level security"
+        ],
+        "grant_evidence": [
+          "20260412140000_accounting_pay_invoice_idempotency_v2.sql:revoke all on table public.accounting_pay_invoice_mutations_v1 from anon, authenticated;"
+        ]
+      }
+    },
+    {
+      "table": "ai_configs",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "authenticated read-only AI config lookup; writes should stay admin/backend-only",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/ai_reports.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "ai_reports",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "authenticated/company-scoped AI report sink: direct upsert allowed; no broad direct delete path expected",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/ai_reports.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "app_errors",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "error sink boundary: direct insert only; no direct client select/update/delete",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/logError.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "auctions",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "repo-inferred authenticated boundary: only observed client operations are expected to be allowed directly",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/features/auctions/auctions.data.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "catalog_items",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "shared reference data: authenticated read expected; writes should stay backend/admin-only",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/components/map/CatalogSearchModal.tsx",
+        "src/screens/contractor/contractor.actBuilderOpenService.ts",
+        "src/screens/contractor/contractor.data.ts",
+        "src/screens/contractor/contractor.pdfService.ts",
+        "src/screens/contractor/contractor.workModalService.ts",
+        "src/screens/profile/profile.services.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "catalog_name_overrides",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "shared reference data: authenticated read expected; writes should stay backend/admin-only",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist",
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/director_reports.naming.ts",
+        "src/screens/warehouse/warehouse.stockReports.service.ts"
+      ],
+      "reasons": [
+        "director naming dynamic source query",
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "chat_messages",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "repo-inferred authenticated boundary: only observed client operations are expected to be allowed directly",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/chat_api.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "companies",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "identity/master data: authenticated scoped read expected; writes should stay owner/admin constrained",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/features/ai/assistantActions.ts",
+        "src/features/supplierShowcase/supplierShowcase.data.ts",
+        "src/lib/chat_api.ts",
+        "src/screens/office/officeAccess.services.contract.test.ts",
+        "src/screens/office/officeAccess.services.ts",
+        "src/screens/profile/profile.services.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "company_invites",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/office/officeAccess.services.contract.test.ts",
+        "src/screens/office/officeAccess.services.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "company_members",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/features/ai/assistantActions.ts",
+        "src/screens/office/officeAccess.services.contract.test.ts",
+        "src/screens/office/officeAccess.services.ts",
+        "src/screens/profile/profile.services.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "company_profiles",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "identity/master data: authenticated scoped read expected; writes should stay owner/admin constrained",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/office/officeAccess.services.contract.test.ts",
+        "src/screens/office/officeAccess.services.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "contractors",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "identity/master data: authenticated scoped read expected; writes should stay owner/admin constrained",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/catalog/catalog.transport.ts",
+        "src/screens/buyer/BuyerSubcontractTab.tsx",
+        "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+        "src/screens/contractor/contractor.profileService.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "demand_offers",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "repo-inferred authenticated boundary: only observed client operations are expected to be allowed directly",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/components/map/MapScreen.tsx"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "developer_access_overrides",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "authenticated own-select break-glass boundary; no direct client writes",
+      "actual_risk_level": "low",
+      "next_action": "keep_under_verification",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "auth_sensitive_inventory"
+      ],
+      "touched_files": [
+        "supabase/migrations/20260416193000_h1_8_developer_break_glass_override.sql"
+      ],
+      "reasons": [
+        "auth-sensitive break-glass table with explicit repo-side RLS/grant contract"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": true,
+        "grants": {
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "grant:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ]
+        },
+        "policies": {
+          "select": [
+            "20260416193000_h1_8_developer_break_glass_override.sql:developer_access_overrides_own_select"
+          ],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [
+          "20260416193000_h1_8_developer_break_glass_override.sql"
+        ],
+        "rls_evidence": [
+          "20260416193000_h1_8_developer_break_glass_override.sql:alter table public.developer_access_overrides enable row level security"
+        ],
+        "grant_evidence": [
+          "20260416193000_h1_8_developer_break_glass_override.sql:revoke all on public.developer_access_overrides from anon, authenticated;",
+          "20260416193000_h1_8_developer_break_glass_override.sql:grant select on public.developer_access_overrides to authenticated;"
+        ]
+      }
+    },
+    {
+      "table": "developer_override_audit_log",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "authenticated own-select break-glass audit boundary; no direct client writes",
+      "actual_risk_level": "low",
+      "next_action": "keep_under_verification",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "auth_sensitive_inventory"
+      ],
+      "touched_files": [
+        "supabase/migrations/20260416193000_h1_8_developer_break_glass_override.sql"
+      ],
+      "reasons": [
+        "auth-sensitive break-glass audit table with explicit repo-side RLS/grant contract"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": true,
+        "grants": {
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "grant:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ]
+        },
+        "policies": {
+          "select": [
+            "20260416193000_h1_8_developer_break_glass_override.sql:developer_override_audit_own_select"
+          ],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [
+          "20260416193000_h1_8_developer_break_glass_override.sql"
+        ],
+        "rls_evidence": [
+          "20260416193000_h1_8_developer_break_glass_override.sql:alter table public.developer_override_audit_log enable row level security"
+        ],
+        "grant_evidence": [
+          "20260416193000_h1_8_developer_break_glass_override.sql:revoke all on public.developer_override_audit_log from anon, authenticated;",
+          "20260416193000_h1_8_developer_break_glass_override.sql:grant select on public.developer_override_audit_log to authenticated;"
+        ]
+      }
+    },
+    {
+      "table": "foreman_ai_prompt_cache",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "backend/service-only cache boundary; direct anon/authenticated table access should stay blocked",
+      "actual_risk_level": "low",
+      "next_action": "keep_under_verification",
+      "observed_client_ops": [],
+      "usage_sources": [
+        "auth_sensitive_inventory"
+      ],
+      "touched_files": [
+        "supabase/migrations/20260420090000_foreman_ai_prompt_cache.sql"
+      ],
+      "reasons": [
+        "auth-sensitive backend cache table with explicit direct-access revokes"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": true,
+        "grants": {
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ]
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [
+          "20260420090000_foreman_ai_prompt_cache.sql"
+        ],
+        "rls_evidence": [
+          "20260420090000_foreman_ai_prompt_cache.sql:alter table public.foreman_ai_prompt_cache enable row level security"
+        ],
+        "grant_evidence": [
+          "20260420090000_foreman_ai_prompt_cache.sql:revoke all on table public.foreman_ai_prompt_cache from anon;",
+          "20260420090000_foreman_ai_prompt_cache.sql:revoke all on table public.foreman_ai_prompt_cache from authenticated;"
+        ]
+      }
+    },
+    {
+      "table": "market_listings",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/components/map/MapScreen.tsx",
+        "src/features/ai/assistantActions.ts",
+        "src/features/market/marketHome.data.ts",
+        "src/features/supplierShowcase/supplierShowcase.data.ts",
+        "src/lib/chat_api.ts",
+        "src/screens/profile/profile.services.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "notifications",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "authenticated role-scoped notification boundary: direct select + mark-read update only; no direct insert/delete",
+      "actual_risk_level": "high",
+      "next_action": "review_scope_narrowing_before_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/notifications.ts",
+        "src/lib/api/request.repository.ts",
+        "src/lib/api/requestDraftSync.service.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [
+            "20260329074500_director_realtime_select_policies.sql:director_realtime_select_notifications"
+          ],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "objects",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "identity/master data: authenticated scoped read expected; writes should stay owner/admin constrained",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/director_reports.naming.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "profiles",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "identity/master data: authenticated scoped read expected; writes should stay owner/admin constrained",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist"
+      ],
+      "touched_files": [
+        "src/screens/warehouse/warehouse.dicts.ts"
+      ],
+      "reasons": [
+        "warehouse recipient lookup allowlist"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "proposal_attachments",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/proposalAttachments.service.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "proposal_items",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/ai_reports.ts",
+        "src/lib/api/buyer.ts",
+        "src/lib/api/director_reports.transport.production.ts",
+        "src/lib/api/integrity.guards.ts",
+        "src/lib/api/pdf_proposal.ts",
+        "src/lib/api/proposals.ts",
+        "src/lib/catalog/catalog.proposalCreation.service.ts",
+        "src/screens/buyer/buyer.buckets.repo.ts",
+        "src/screens/buyer/buyer.repo.ts",
+        "src/screens/buyer/buyer.rework.mutation.ts",
+        "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+        "src/screens/director/director.proposal.detail.ts",
+        "src/screens/director/director.proposal.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "proposal_payments",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "review_scope_narrowing_before_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/integrity.guards.ts",
+        "src/screens/accountant/accountant.attachments.ts",
+        "src/screens/accountant/accountant.payment.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [
+            "20260329074500_director_realtime_select_policies.sql:director_realtime_select_proposal_payments"
+          ],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "proposal_submit_mutations_v1",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "mutation ledger boundary: no direct anon/authenticated table access; use exact wrapper only",
+      "actual_risk_level": "low",
+      "next_action": "keep_under_verification",
+      "observed_client_ops": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "auth_sensitive_inventory"
+      ],
+      "touched_files": [
+        "tests/security/rlsCoverageVerification.test.ts"
+      ],
+      "reasons": [
+        "auth-sensitive mutation ledger verified in existing RLS regression suite"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": true,
+        "grants": {
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ]
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [
+          "20260330200000_proposal_creation_boundary_v3.sql",
+          "20260330201500_proposal_creation_boundary_v3_uuid_cast_fix.sql",
+          "20260330203000_proposal_creation_boundary_v3_enum_cast_fix.sql",
+          "20260330204500_proposal_creation_boundary_v3_price_regex_fix.sql",
+          "20260330205500_proposal_creation_boundary_v3_proposal_id_cast_fix.sql",
+          "20260330210000_proposal_creation_boundary_v3_request_id_cast_fix.sql",
+          "20260330211500_proposal_creation_boundary_v3_proposal_item_uuid_fix.sql",
+          "20260330213000_proposal_creation_boundary_v3_request_item_uuid_fix.sql",
+          "20260330214500_proposal_creation_boundary_v3_total_qty_generated_fix.sql"
+        ],
+        "rls_evidence": [
+          "20260330200000_proposal_creation_boundary_v3.sql:alter table public.proposal_submit_mutations_v1 enable row level security",
+          "20260330201500_proposal_creation_boundary_v3_uuid_cast_fix.sql:alter table public.proposal_submit_mutations_v1 enable row level security",
+          "20260330203000_proposal_creation_boundary_v3_enum_cast_fix.sql:alter table public.proposal_submit_mutations_v1 enable row level security",
+          "20260330204500_proposal_creation_boundary_v3_price_regex_fix.sql:alter table public.proposal_submit_mutations_v1 enable row level security",
+          "20260330205500_proposal_creation_boundary_v3_proposal_id_cast_fix.sql:alter table public.proposal_submit_mutations_v1 enable row level security",
+          "20260330210000_proposal_creation_boundary_v3_request_id_cast_fix.sql:alter table public.proposal_submit_mutations_v1 enable row level security",
+          "20260330211500_proposal_creation_boundary_v3_proposal_item_uuid_fix.sql:alter table public.proposal_submit_mutations_v1 enable row level security",
+          "20260330213000_proposal_creation_boundary_v3_request_item_uuid_fix.sql:alter table public.proposal_submit_mutations_v1 enable row level security",
+          "20260330214500_proposal_creation_boundary_v3_total_qty_generated_fix.sql:alter table public.proposal_submit_mutations_v1 enable row level security"
+        ],
+        "grant_evidence": [
+          "20260330200000_proposal_creation_boundary_v3.sql:revoke all on table public.proposal_submit_mutations_v1 from anon, authenticated;",
+          "20260330201500_proposal_creation_boundary_v3_uuid_cast_fix.sql:revoke all on table public.proposal_submit_mutations_v1 from anon, authenticated;",
+          "20260330203000_proposal_creation_boundary_v3_enum_cast_fix.sql:revoke all on table public.proposal_submit_mutations_v1 from anon, authenticated;",
+          "20260330204500_proposal_creation_boundary_v3_price_regex_fix.sql:revoke all on table public.proposal_submit_mutations_v1 from anon, authenticated;",
+          "20260330205500_proposal_creation_boundary_v3_proposal_id_cast_fix.sql:revoke all on table public.proposal_submit_mutations_v1 from anon, authenticated;",
+          "20260330210000_proposal_creation_boundary_v3_request_id_cast_fix.sql:revoke all on table public.proposal_submit_mutations_v1 from anon, authenticated;",
+          "20260330211500_proposal_creation_boundary_v3_proposal_item_uuid_fix.sql:revoke all on table public.proposal_submit_mutations_v1 from anon, authenticated;",
+          "20260330213000_proposal_creation_boundary_v3_request_item_uuid_fix.sql:revoke all on table public.proposal_submit_mutations_v1 from anon, authenticated;",
+          "20260330214500_proposal_creation_boundary_v3_total_qty_generated_fix.sql:revoke all on table public.proposal_submit_mutations_v1 from anon, authenticated;"
+        ]
+      }
+    },
+    {
+      "table": "proposals",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "review_scope_narrowing_before_hardening",
+      "observed_client_ops": [
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/features/market/market.repository.ts",
+        "src/lib/api/buyer.ts",
+        "src/lib/api/director.ts",
+        "src/lib/api/integrity.guards.ts",
+        "src/lib/api/pdf_proposal.ts",
+        "src/lib/api/proposalActionBoundary.ts",
+        "src/lib/api/proposals.ts",
+        "src/lib/catalog/catalog.proposalCreation.service.ts",
+        "src/screens/accountant/accountant.attachments.ts",
+        "src/screens/buyer/buyer.buckets.repo.ts",
+        "src/screens/buyer/buyer.repo.ts",
+        "src/screens/buyer/buyer.rework.mutation.ts",
+        "src/screens/buyer/buyer.status.mutation.ts",
+        "src/screens/buyer/hooks/useBuyerAccountingFlagsRepo.ts",
+        "src/screens/buyer/hooks/useBuyerProposalNos.ts",
+        "src/screens/director/director.metrics.ts",
+        "src/screens/director/director.proposal.detail.ts",
+        "src/screens/director/director.proposal.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [
+            "20260329074500_director_realtime_select_policies.sql:director_realtime_select_proposals"
+          ],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "purchase_items",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/director_reports.transport.production.ts",
+        "src/lib/store_supabase.ts",
+        "src/screens/contractor/contractor.loadWorksService.ts",
+        "src/screens/contractor/contractor.resolvers.ts",
+        "src/screens/warehouse/warehouse.seed.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "purchases",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/store_supabase.ts",
+        "src/screens/director/director.proposal.ts",
+        "src/screens/warehouse/warehouse.seed.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "purchases_pending",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/store_supabase.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "ref_levels",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "shared reference data: authenticated read expected; writes should stay backend/admin-only",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist",
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/pdf_proposal.ts",
+        "src/lib/pdf/pdf.builder.ts",
+        "src/screens/foreman/foreman.dicts.repo.ts",
+        "src/screens/warehouse/warehouse.dicts.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage",
+        "warehouse reference lookup allowlist"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "ref_object_types",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "shared reference data: authenticated read expected; writes should stay backend/admin-only",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist",
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/pdf_proposal.ts",
+        "src/lib/pdf/pdf.builder.ts",
+        "src/screens/foreman/foreman.dicts.repo.ts",
+        "src/screens/warehouse/warehouse.dicts.repo.ts",
+        "src/screens/warehouse/warehouse.dicts.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage",
+        "warehouse reference lookup allowlist"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "ref_systems",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "shared reference data: authenticated read expected; writes should stay backend/admin-only",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist",
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/director_reports.transport.discipline.ts",
+        "src/lib/api/pdf_proposal.ts",
+        "src/lib/pdf/pdf.builder.ts",
+        "src/screens/foreman/foreman.dicts.repo.ts",
+        "src/screens/warehouse/warehouse.dicts.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage",
+        "warehouse reference lookup allowlist"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "ref_zones",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "shared reference data: authenticated read expected; writes should stay backend/admin-only",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "dynamic_allowlist",
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/pdf_proposal.ts",
+        "src/lib/pdf/pdf.builder.ts",
+        "src/screens/foreman/foreman.dicts.repo.ts",
+        "src/screens/warehouse/warehouse.dicts.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage",
+        "warehouse reference lookup allowlist"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "request_items",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "review_scope_narrowing_before_hardening",
+      "observed_client_ops": [
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/buyer.ts",
+        "src/lib/api/director.ts",
+        "src/lib/api/director_reports.transport.discipline.ts",
+        "src/lib/api/integrity.guards.ts",
+        "src/lib/api/pdf_proposal.ts",
+        "src/lib/api/requestCanonical.read.ts",
+        "src/lib/api/requests.ts",
+        "src/lib/catalog/catalog.request.service.ts",
+        "src/lib/pdf/pdf.builder.ts",
+        "src/lib/store_supabase.ts",
+        "src/screens/buyer/buyer.actions.repo.ts",
+        "src/screens/buyer/buyer.actions.ts",
+        "src/screens/buyer/buyer.repo.ts",
+        "src/screens/buyer/buyer.rework.mutation.ts",
+        "src/screens/contractor/contractor.loadWorksService.ts",
+        "src/screens/contractor/contractor.resolvers.ts",
+        "src/screens/director/director.data.ts",
+        "src/screens/director/director.proposal.row.tsx",
+        "src/screens/director/director.repository.ts",
+        "src/screens/warehouse/warehouse.seed.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [
+            "20260329074500_director_realtime_select_policies.sql:director_realtime_select_request_items"
+          ],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "requests",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "review_scope_narrowing_before_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "app/(tabs)/request/[id].tsx",
+        "src/lib/api/buyer.ts",
+        "src/lib/api/director.ts",
+        "src/lib/api/integrity.guards.ts",
+        "src/lib/api/pdf_proposal.ts",
+        "src/lib/api/requestCanonical.read.ts",
+        "src/lib/api/requests.read-capabilities.ts",
+        "src/lib/api/requests.ts",
+        "src/lib/catalog/catalog.request.service.ts",
+        "src/lib/pdf/pdf.builder.ts",
+        "src/screens/contractor/contractor.data.ts",
+        "src/screens/contractor/contractor.loadWorksService.ts",
+        "src/screens/contractor/contractor.resolvers.ts",
+        "src/screens/contractor/contractor.workModalService.ts",
+        "src/screens/director/director.data.ts",
+        "src/screens/director/director.repository.ts",
+        "src/screens/foreman/foreman.requests.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [
+            "20260329074500_director_realtime_select_policies.sql:director_realtime_select_requests"
+          ],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "subcontract_items",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "delete",
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/subcontracts/subcontracts.shared.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "subcontracts",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "delete",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/pdf_director.data.ts",
+        "src/lib/catalog/catalog.transport.ts",
+        "src/screens/buyer/BuyerSubcontractTab.tsx",
+        "src/screens/buyer/buyer.summary.service.ts",
+        "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+        "src/screens/buyer/hooks/useBuyerSubcontractCount.ts",
+        "src/screens/contractor/contractor.loadWorksService.ts",
+        "src/screens/contractor/contractor.workModalService.ts",
+        "src/screens/subcontracts/subcontracts.rollout.live.test.ts",
+        "src/screens/subcontracts/subcontracts.shared.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "submit_jobs",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "authenticated queue boundary: direct insert/select only; processing/recovery mutations must stay on exact RPC/service path",
+      "actual_risk_level": "high",
+      "next_action": "chosen_for_next_hardening_wave",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/infra/jobQueue.ts",
+        "src/lib/infra/queueLatencyMetrics.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "supplier_files",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "repo-inferred authenticated boundary: only observed client operations are expected to be allowed directly",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/suppliers.ts",
+        "src/lib/files.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "supplier_messages",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "authenticated related-party conversation boundary: direct select + insert only; sender/supplier-user scoped",
+      "actual_risk_level": "low",
+      "next_action": "verified_safe_no_change",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "auth_sensitive_inventory",
+        "runtime"
+      ],
+      "touched_files": [
+        "src/features/market/market.repository.ts",
+        "supabase/migrations/20260328101500_marketplace_runtime_erp_scope_v1.sql"
+      ],
+      "reasons": [
+        "direct client-safe table with explicit RLS/policy contract in repo history",
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": true,
+        "grants": {
+          "anon": [],
+          "authenticated": [
+            "grant:select",
+            "grant:insert"
+          ]
+        },
+        "policies": {
+          "select": [
+            "20260328101500_marketplace_runtime_erp_scope_v1.sql:supplier_messages_select_related"
+          ],
+          "insert": [
+            "20260328101500_marketplace_runtime_erp_scope_v1.sql:supplier_messages_insert_authenticated"
+          ],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [
+          "20260328101500_marketplace_runtime_erp_scope_v1.sql"
+        ],
+        "rls_evidence": [
+          "20260328101500_marketplace_runtime_erp_scope_v1.sql:alter table public.supplier_messages enable row level security"
+        ],
+        "grant_evidence": [
+          "20260328101500_marketplace_runtime_erp_scope_v1.sql:grant select, insert on public.supplier_messages to authenticated;"
+        ]
+      }
+    },
+    {
+      "table": "suppliers",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "identity/master data: authenticated scoped read expected; writes should stay owner/admin constrained",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/suppliers.ts",
+        "src/lib/catalog/catalog.transport.ts",
+        "src/screens/buyer/buyer.repo.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "tender_items",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "repo-inferred authenticated boundary: only observed client operations are expected to be allowed directly",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/features/auctions/auctions.data.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "tenders",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "repo-inferred authenticated boundary: only observed client operations are expected to be allowed directly",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/features/auctions/auctions.data.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "user_profiles",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "identity/master data: authenticated scoped read expected; writes should stay owner/admin constrained",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/features/ai/assistantActions.ts",
+        "src/features/profile/currentProfileIdentity.ts",
+        "src/features/supplierShowcase/supplierShowcase.data.ts",
+        "src/lib/catalog/catalog.transport.ts",
+        "src/lib/chat_api.ts",
+        "src/screens/contractor/contractor.profileService.ts",
+        "src/screens/foreman/foreman.dicts.repo.ts",
+        "src/screens/office/officeAccess.services.ts",
+        "src/screens/profile/profile.services.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "warehouse_issue_free_mutations_v1",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "mutation ledger boundary: no direct anon/authenticated table access; use exact wrapper only",
+      "actual_risk_level": "low",
+      "next_action": "keep_under_verification",
+      "observed_client_ops": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "auth_sensitive_inventory"
+      ],
+      "touched_files": [
+        "tests/security/rlsCoverageVerification.test.ts"
+      ],
+      "reasons": [
+        "auth-sensitive mutation ledger verified in existing RLS regression suite"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": true,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [
+          "20260412090000_warehouse_issue_free_atomic_v5.sql"
+        ],
+        "rls_evidence": [
+          "20260412090000_warehouse_issue_free_atomic_v5.sql:alter table public.warehouse_issue_free_mutations_v1 enable row level security"
+        ],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "warehouse_issue_items",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "review_scope_narrowing_before_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/director_reports.transport.discipline.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [
+            "20260329074500_director_realtime_select_policies.sql:director_realtime_select_warehouse_issue_items"
+          ],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "warehouse_issue_request_mutations_v1",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "mutation ledger boundary: no direct anon/authenticated table access; use exact wrapper only",
+      "actual_risk_level": "low",
+      "next_action": "keep_under_verification",
+      "observed_client_ops": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "auth_sensitive_inventory"
+      ],
+      "touched_files": [
+        "tests/security/rlsCoverageVerification.test.ts"
+      ],
+      "reasons": [
+        "auth-sensitive mutation ledger verified in existing RLS regression suite"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": true,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [
+          "20260411143000_warehouse_issue_request_atomic_v1.sql"
+        ],
+        "rls_evidence": [
+          "20260411143000_warehouse_issue_request_atomic_v1.sql:alter table public.warehouse_issue_request_mutations_v1 enable row level security"
+        ],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "warehouse_issues",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "review_scope_narrowing_before_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/lib/api/director_reports.transport.discipline.ts",
+        "src/screens/contractor/contractor.workModalService.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [
+            "20260329074500_director_realtime_select_policies.sql:director_realtime_select_warehouse_issues"
+          ],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "warehouse_receive_apply_idempotency_v1",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "mutation ledger boundary: no direct anon/authenticated table access; use exact wrapper only",
+      "actual_risk_level": "low",
+      "next_action": "keep_under_verification",
+      "observed_client_ops": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "auth_sensitive_inventory"
+      ],
+      "touched_files": [
+        "tests/security/rlsCoverageVerification.test.ts"
+      ],
+      "reasons": [
+        "auth-sensitive mutation ledger verified in existing RLS regression suite"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": true,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [
+          "20260411120000_warehouse_receive_apply_idempotency_v1.sql"
+        ],
+        "rls_evidence": [
+          "20260411120000_warehouse_receive_apply_idempotency_v1.sql:alter table public.warehouse_receive_apply_idempotency_v1 enable row level security"
+        ],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "wh_incoming",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/director/director.proposal.ts",
+        "src/screens/warehouse/warehouse.seed.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "wh_incoming_items",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select",
+        "update"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/warehouse/warehouse.seed.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "wh_ledger",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/warehouse/warehouse.api.repo.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "work_default_materials",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/contractor/contractor.actBuilderOpenService.ts",
+        "src/screens/contractor/contractor.workModalService.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "work_progress",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/contractor/contractor.loadWorksService.ts",
+        "src/screens/contractor/contractor.resolvers.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "work_progress_log",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/contractor/contractor.actSubmitService.ts",
+        "src/screens/contractor/contractor.data.ts",
+        "src/screens/contractor/contractor.progressService.ts",
+        "src/screens/contractor/contractor.workModalService.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "work_progress_log_materials",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "insert",
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/contractor/contractor.actSubmitService.ts",
+        "src/screens/contractor/contractor.data.ts",
+        "src/screens/contractor/contractor.pdfService.ts",
+        "src/screens/contractor/contractor.progressService.ts",
+        "src/screens/contractor/contractor.workModalService.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    },
+    {
+      "table": "work_stages",
+      "rls_enabled": null,
+      "select_covered": null,
+      "insert_covered": null,
+      "update_covered": null,
+      "delete_covered": null,
+      "expected_access_model": "business data boundary: authenticated role/owner/object-scoped access expected for observed client operations",
+      "actual_risk_level": "high",
+      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "observed_client_ops": [
+        "select"
+      ],
+      "usage_sources": [
+        "runtime"
+      ],
+      "touched_files": [
+        "src/screens/contractor/contractor.workModalService.ts"
+      ],
+      "reasons": [
+        "literal .from() runtime usage"
+      ],
+      "actual_boundary": {
+        "rlsEnabled": null,
+        "grants": {
+          "anon": [],
+          "authenticated": []
+        },
+        "policies": {
+          "select": [],
+          "insert": [],
+          "update": [],
+          "delete": [],
+          "all": []
+        }
+      },
+      "evidence": {
+        "created_in": [],
+        "rls_evidence": [],
+        "grant_evidence": []
+      }
+    }
+  ]
+}
