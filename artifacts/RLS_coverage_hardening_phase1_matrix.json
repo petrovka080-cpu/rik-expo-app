@@ -1,0 +1,74 @@
+{
+  "wave": "RLS_COVERAGE_HARDENING_PHASE_1",
+  "status": "green_pre_release",
+  "chosen_slice": "submit_jobs",
+  "domain": "queue_boundary",
+  "shortlist": [
+    {
+      "candidate": "supplier_messages",
+      "outcome": "safe_lower_value"
+    },
+    {
+      "candidate": "app_errors",
+      "outcome": "narrow_but_lower_process_value"
+    },
+    {
+      "candidate": "requests_request_items_proposals_proposal_payments_warehouse_issues_warehouse_issue_items_notifications",
+      "outcome": "too_wide"
+    },
+    {
+      "candidate": "submit_jobs",
+      "outcome": "chosen"
+    }
+  ],
+  "touched_files": [
+    "supabase/migrations/20260422110000_rls_coverage_hardening_submit_jobs_phase1.sql",
+    "src/lib/infra/queueLatencyMetrics.ts",
+    "tests/observability/queueLatencyMetrics.test.ts",
+    "tests/security/submitJobsRlsHardeningPhase1.test.ts",
+    "artifacts/RLS_coverage_hardening_phase1_notes.md",
+    "artifacts/RLS_coverage_hardening_phase1_proof.md",
+    "artifacts/RLS_coverage_hardening_phase1_matrix.json"
+  ],
+  "boundary_before": {
+    "table_rls": "missing_repo_proof",
+    "direct_client_access": [
+      "insert",
+      "select"
+    ],
+    "worker_transitions": [
+      "claim",
+      "recover_stuck",
+      "mark_completed",
+      "mark_failed",
+      "metrics"
+    ],
+    "latency_read_path": "direct_table_select"
+  },
+  "boundary_after": {
+    "table_rls": "enabled_in_repo_migration",
+    "direct_client_access": [
+      "insert_authenticated_pending_only",
+      "select_authenticated_own_rows_only"
+    ],
+    "worker_transitions": [
+      "security_definer_claim",
+      "security_definer_recover_stuck",
+      "security_definer_mark_completed",
+      "security_definer_mark_failed",
+      "security_definer_metrics"
+    ],
+    "latency_read_path": "submit_jobs_metrics_rpc"
+  },
+  "tests_added": [
+    "tests/security/submitJobsRlsHardeningPhase1.test.ts",
+    "tests/observability/queueLatencyMetrics.test.ts"
+  ],
+  "business_semantics_changed": false,
+  "runtime_js_changed": true,
+  "phase_status": {
+    "focused_tests": "PASS",
+    "global_gates": "PASS",
+    "release_tail": "PENDING"
+  }
+}

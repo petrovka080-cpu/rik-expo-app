@@ -9,31 +9,32 @@ export type QueueLatencyMetrics = {
   oldestPendingAt: string | null;
 };
 
-type QueueLatencySupabaseClient = Pick<SupabaseClient<Database>, "from">;
+type QueueLatencySupabaseClient = Pick<SupabaseClient<Database>, "rpc">;
+type SubmitJobsMetricsRpcRow =
+  Database["public"]["Functions"]["submit_jobs_metrics"]["Returns"][number];
 
 export async function fetchQueueLatencyMetricsWithClient(
   supabaseClient: QueueLatencySupabaseClient,
 ): Promise<QueueLatencyMetrics> {
-  const oldestQ = await supabaseClient
-    .from("submit_jobs")
-    .select("created_at", { head: false, count: "exact" })
-    .eq("status", "pending")
-    .order("created_at", { ascending: true })
-    .limit(1);
+  const { data, error } = await supabaseClient.rpc("submit_jobs_metrics");
+  if (error) throw error;
 
-  if (oldestQ.error) throw oldestQ.error;
-
-  const depth = Number(oldestQ.count ?? 0) || 0;
-  const firstRow =
-    Array.isArray(oldestQ.data) && oldestQ.data.length
-      ? (oldestQ.data[0] as { created_at?: string | null })
+  const metricsRow =
+    Array.isArray(data) && data.length > 0
+      ? (data[0] as Partial<SubmitJobsMetricsRpcRow>)
       : null;
-  const oldestPendingAt = firstRow?.created_at ?? null;
-  const queueWaitMs = oldestPendingAt ? Math.max(0, Date.now() - new Date(oldestPendingAt).getTime()) : 0;
+  const queueDepth = Number(metricsRow?.pending ?? 0) || 0;
+  const oldestPendingAt =
+    metricsRow?.oldest_pending == null
+      ? null
+      : String(metricsRow.oldest_pending);
+  const queueWaitMs = oldestPendingAt
+    ? Math.max(0, Date.now() - new Date(oldestPendingAt).getTime())
+    : 0;
 
   return {
     queueWaitMs,
-    queueDepth: depth,
+    queueDepth,
     oldestPendingAt,
   };
 }
