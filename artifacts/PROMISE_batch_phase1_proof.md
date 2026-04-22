@@ -97,9 +97,24 @@ type BatchResult<T> =
 
 - Runtime TS changed: `true`
 - OTA required when green: `true`
-- Release tail after gates:
-  - commit -> pending until final publish step
-  - push -> pending until final publish step
-  - EAS update `development` -> pending until final publish step
-  - EAS update `preview` -> pending until final publish step
-  - EAS update `production` -> pending until final publish step
+- Runtime commit:
+  - `8e5b3e9` `S: promise batch boundary phase 1`
+- Push:
+  - pushed to `origin/main`
+- EAS update `development`:
+  - iOS runtime version: `7ba116c416495908222b37d232a9a1ab877c4a82`
+  - iOS update group: `c7c719bc-3473-40d5-8cbb-5a6eb1ba491f`
+  - iOS update id: `019db5ba-c4e0-7fd9-bc0b-db2384f798e8`
+  - Android runtime version: `06479ede57796decbd74bcf425db1d8fd63c01b1`
+  - Android update group: `33ee1d78-20ea-4120-bbd1-eba2a5fa07da`
+  - Android update id: `019db5ba-c4e0-756b-8110-a4c1aded7378`
+- EAS update `preview`:
+  - iOS update group: `8b13b9d3-a332-407a-b606-507839ec1297`
+  - iOS update id: `019db5bb-a1da-73e2-9e28-da0cab6c2db2`
+  - Android update group: `1498ad40-56d5-4fe6-9491-2b9f0cf6bde4`
+  - Android update id: `019db5bb-a1da-7d17-b06e-d0a2dede00c4`
+- EAS update `production`:
+  - iOS update group: `7bf0241a-6f39-43f8-8e97-0f4b8fdd2b23`
+  - iOS update id: `019db5bc-7d8c-792d-b87b-49583e142a6a`
+  - Android update group: `8e6afd28-1853-425b-9077-862922255746`
+  - Android update id: `019db5bc-7d8c-799b-9316-78158d4c5323`
