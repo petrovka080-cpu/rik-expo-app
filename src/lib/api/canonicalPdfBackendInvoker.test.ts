@@ -104,6 +104,7 @@ describe("invokeCanonicalPdfBackend", () => {
         Accept: "application/json",
         "Content-Type": "application/json",
       }),
+      body: JSON.stringify({ requestId: "req-1" }),
     });
     expect(result.signedUrl).toBe("https://example.com/request.pdf");
     expect(result.sourceKind).toBe("remote-url");
@@ -130,6 +131,15 @@ describe("invokeCanonicalPdfBackend", () => {
     });
 
     expect(mockFunctionsInvoke).toHaveBeenCalledTimes(1);
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      "foreman-request-pdf",
+      expect.objectContaining({
+        body: { requestId: "req-2" },
+        headers: {
+          Accept: "application/json",
+        },
+      }),
+    );
     expect(mockFetchWithRequestTimeout).not.toHaveBeenCalled();
     expect(result.fileName).toBe("request.pdf");
   });
