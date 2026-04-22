@@ -1,0 +1,59 @@
+{
+  "wave": "RPC_SCALE_VERIFICATION_10K_PHASE_1",
+  "read_only": true,
+  "collected_at": "2026-04-22T16:13:18.640Z",
+  "chosen_rpc_path": "warehouse_issue_queue_scope_v4",
+  "owner_path": "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+  "live_dataset_reaches_10k": false,
+  "live_dataset_counts": {
+    "requests": 264,
+    "request_items": 1608,
+    "proposals": 117,
+    "proposal_items": 205,
+    "purchases": 109
+  },
+  "bottleneck_type": "fixed_pre_pagination_compute_sort_before_slice",
+  "next_action": "RPC_SCALE_HARDENING_10K_PHASE_1",
+  "matrix": [
+    {
+      "rpc_path": "warehouse_issue_queue_scope_v4",
+      "scenario": "page_0_limit_25",
+      "row_count": 25,
+      "payload_bytes": 18182,
+      "median_ms": 867,
+      "max_ms": 2014,
+      "risk_level": "urgent",
+      "next_action": "retain exact path and harden pre-pagination fixed cost"
+    },
+    {
+      "rpc_path": "warehouse_issue_queue_scope_v4",
+      "scenario": "page_0_limit_50",
+      "row_count": 50,
+      "payload_bytes": 36010,
+      "median_ms": 863,
+      "max_ms": 3977,
+      "risk_level": "urgent",
+      "next_action": "retain exact path and harden pre-pagination fixed cost"
+    },
+    {
+      "rpc_path": "warehouse_issue_queue_scope_v4",
+      "scenario": "page_0_limit_100",
+      "row_count": 100,
+      "payload_bytes": 73340,
+      "median_ms": 862,
+      "max_ms": 1031,
+      "risk_level": "urgent",
+      "next_action": "retain exact path and harden pre-pagination fixed cost"
+    },
+    {
+      "rpc_path": "warehouse_issue_queue_scope_v4",
+      "scenario": "deep_page_limit_100",
+      "row_count": 0,
+      "payload_bytes": 446,
+      "median_ms": 855,
+      "max_ms": 864,
+      "risk_level": "urgent",
+      "next_action": "retain exact path and harden pre-pagination fixed cost"
+    }
+  ]
+}
