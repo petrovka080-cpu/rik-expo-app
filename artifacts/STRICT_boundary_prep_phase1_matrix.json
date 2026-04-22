@@ -1,0 +1,20 @@
+{
+  "cluster": "buyer_pdf_busy_boundary",
+  "touched_files": [
+    "src/screens/buyer/useBuyerDocuments.ts",
+    "src/screens/buyer/useBuyerProposalAttachments.ts",
+    "tests/strict-null/buyer.pdf.busy.boundary.phase1.test.ts"
+  ],
+  "contract_type": "buyer_pdf_busy_process_boundary",
+  "states": [
+    "missing",
+    "invalid",
+    "loading",
+    "ready",
+    "terminal"
+  ],
+  "prep_complete": true,
+  "semantics_changed": false,
+  "next_wave": "STRICT_NULLCHECKS_PHASE_9",
+  "next_wave_target": "prepared buyer-local strict slice on top of the buyer PDF busy boundary"
+}

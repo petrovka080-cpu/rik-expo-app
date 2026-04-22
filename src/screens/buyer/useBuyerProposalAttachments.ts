@@ -14,6 +14,7 @@ import {
 import { isPdfLike } from "../../lib/files";
 import { attachFileToProposalAction } from "./buyer.attachments.mutation";
 import type { PickedFile } from "./buyer.attachments.mutation";
+import { normalizeBuyerPdfBusy } from "./useBuyerDocuments";
 import type { PropAttachmentRow } from "./buyer.repo";
 
 const errText = (error: unknown): string => {
@@ -85,6 +86,11 @@ export function useBuyerProposalAttachments(params: {
           });
           url = await ensureProposalAttachmentUrl(supabase, latest.row);
           if (isPdfLike(fileName, url)) {
+            const flowKey = `pdf:buyer:attachment:${attId || pid}`;
+            const safeBusy = normalizeBuyerPdfBusy({
+              busy,
+              flowKey,
+            });
             const template = createPdfDocumentDescriptor({
               uri: url,
               title: fileName.replace(/\.pdf$/i, "") || "Вложение",
@@ -95,9 +101,9 @@ export function useBuyerProposalAttachments(params: {
               entityId: pid,
             });
             await prepareAndPreviewPdfDocument({
-              busy,
+              busy: safeBusy,
               supabase,
-              key: `pdf:buyer:attachment:${attId || pid}`,
+              key: flowKey,
               label: "Открываю вложение…",
               descriptor: template,
               router,
