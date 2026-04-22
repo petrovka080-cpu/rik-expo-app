@@ -1,0 +1,29 @@
+{
+  "phase": "STRICT_NULLCHECKS_PHASE_11",
+  "cluster": "pdf viewer session boundary",
+  "touched_files": [
+    "app/pdf-viewer.tsx",
+    "tests/routes/pdf-viewer.lifecycle.test.tsx",
+    "tsconfig.strict-null-phase11-pdf-viewer-session.json"
+  ],
+  "strict_blockers_closed": [
+    "guarded missing-session loading transition before session touch",
+    "captured non-null session contract for open/handoff logging",
+    "focused missing-session lifecycle regression proof"
+  ],
+  "guards_normalizers_invariants_added": [
+    "local activeSession guard in pdf viewer loading/open lifecycle"
+  ],
+  "tests_added": [
+    "tests/routes/pdf-viewer.lifecycle.test.tsx"
+  ],
+  "semantics_changed": false,
+  "phase11_strict_compile": "PASS",
+  "root_typecheck": "PASS",
+  "focused_tests": "PASS",
+  "next_remaining_risks": [
+    "src/screens/office/OfficeHubScreen.tsx still blocked by service-coupled strict deps",
+    "src/screens/foreman lifecycle/recovery cluster remains too wide for direct rollout",
+    "shared API / AI null-contract drift still requires prep"
+  ]
+}

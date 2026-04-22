@@ -329,4 +329,24 @@ describe("PdfViewerScreen web lifecycle", () => {
     infoSpy.mockRestore();
     errorSpy.mockRestore();
   });
+
+  it("keeps missing registry sessions on the empty path without touching a null session", async () => {
+    mockUseLocalSearchParams.mockReturnValue({
+      sessionId: "missing-session",
+      openToken: "open-missing",
+    });
+    mockGetDocumentSessionSnapshot.mockReturnValue({
+      session: null,
+      asset: null,
+    });
+
+    await act(async () => {
+      TestRenderer.create(<PdfViewerScreen />);
+      await flush();
+    });
+
+    expect(mockTouchDocumentSession).not.toHaveBeenCalled();
+    expect(mockMarkPdfOpenVisible).not.toHaveBeenCalled();
+    expect(mockFailDocumentSession).not.toHaveBeenCalled();
+  });
 });

@@ -697,7 +697,12 @@ function PdfViewerScreen() {
       commitEmptyState();
       return;
     }
-    touchDocumentSession(next.session.sessionId);
+    const activeSession = next.session;
+    if (!activeSession) {
+      commitEmptyState();
+      return;
+    }
+    touchDocumentSession(activeSession.sessionId);
     commitLoadingState();
     const timeoutCycle = armPdfViewerLoadingTimeout(
       loadingTimeoutGuardRef.current,
@@ -1033,11 +1038,13 @@ function PdfViewerScreen() {
       return;
     }
 
-    touchDocumentSession(next.session.sessionId);
-    setErrorText(next.session.errorMessage || "");
+    const activeSession = next.session;
+
+    touchDocumentSession(activeSession.sessionId);
+    setErrorText(activeSession.errorMessage || "");
     setState(
       resolvePdfViewerReadinessModel({
-        session: next.session,
+        session: activeSession,
         asset: next.asset,
         platform: viewerPlatform,
       }).initialState,
@@ -1046,7 +1053,7 @@ function PdfViewerScreen() {
 
     const prepareViewer = async () => {
       const nextReadinessModel = resolvePdfViewerReadinessModel({
-        session: next.session,
+        session: activeSession,
         asset: next.asset,
         platform: viewerPlatform,
       });
@@ -1080,7 +1087,7 @@ function PdfViewerScreen() {
       }
 
       logPdfViewerInfo("[pdf-viewer] open", {
-        sessionId: next.session.sessionId,
+        sessionId: activeSession.sessionId,
         documentType: resolvedAsset.documentType,
         originModule: resolvedAsset.originModule,
         uri: resolvedAsset.uri,
@@ -1192,7 +1199,7 @@ function PdfViewerScreen() {
         setWebRenderUri(handoffPlan.renderUri);
         console.info("[pdf-viewer] signedUrl", redactSensitiveText(handoffPlan.renderUri));
         logPdfViewerInfo("[pdf-viewer] web_iframe_src_ready", {
-          sessionId: next.session.sessionId,
+          sessionId: activeSession.sessionId,
           documentType: resolvedAsset.documentType,
           originModule: resolvedAsset.originModule,
           remoteUri: handoffPlan.renderUri,
