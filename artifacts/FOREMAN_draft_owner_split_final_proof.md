@@ -1,75 +1,90 @@
-## FOREMAN_DRAFT_OWNER_SPLIT_FINAL Proof
+## Wave
 
-### Focused Foreman Regression Shield
-- Focused command:
+`FOREMAN_DRAFT_OWNER_SPLIT_FINAL`
 
-```powershell
-npx jest tests/foreman/foreman.draftBoundary.logic.test.ts tests/foreman/foreman.draftStateBoundary.model.test.ts tests/foreman/foreman.draftBoundary.plan.test.ts tests/foreman/foreman.draftBoundary.apply.test.ts tests/foreman/foreman.draftBoundary.recovery.test.ts tests/foreman/foreman.draftBoundary.decomposition.test.ts src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts src/screens/foreman/foreman.draftLifecycle.model.test.ts src/screens/foreman/foreman.draftSyncPlan.model.test.ts src/screens/foreman/foreman.manualRecovery.model.test.ts src/screens/foreman/foreman.postSubmitDraftPlan.model.test.ts --runInBand --no-coverage
+## Focused regression proof
+
+Focused foreman boundary suites were run with:
+
+```bash
+npx jest tests/foreman/foreman.draftBoundary.decomposition.test.ts tests/foreman/foreman.draftBoundaryFailure.model.test.ts tests/foreman/foreman.draftBoundary.effects.test.ts tests/foreman/foreman.draftBoundary.postSubmit.test.ts tests/foreman/foreman.draftBoundary.requestDetails.test.ts tests/foreman/foreman.draftBoundary.telemetry.test.ts tests/foreman/foreman.draftBoundary.logic.test.ts tests/foreman/foreman.draftBoundary.plan.test.ts tests/foreman/foreman.draftBoundary.recovery.test.ts tests/foreman/foreman.draftStateBoundary.model.test.ts src/screens/foreman/foreman.manualRecovery.model.test.ts src/screens/foreman/foreman.postSubmitDraftPlan.model.test.ts src/screens/foreman/foreman.draftLifecycle.model.test.ts src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts --runInBand --no-coverage
 ```
 
-- Result: `11` suites passed, `84` tests passed.
-- Guarded semantics:
-  - authoritative snapshot and boundary view planning
-  - header apply behavior
-  - terminal cleanup and degraded recovery paths
-  - sync ownership split
-  - hook decomposition and no re-inlining of extracted owners
+Result:
 
-### Required Code Gates
-- `npx tsc --noEmit --pretty false` PASS
-- `npx expo lint` PASS
-- `git diff --check` PASS
-- `npm test -- --runInBand` PASS
-- `npm test` PASS
+- 14/14 suites passed
+- 83/83 tests passed
 
-### Full Jest Proof
-- Serial run result:
-  - `399` suites passed
-  - `1` suite skipped
-- Parallel run result:
-  - `399` suites passed
-  - `1` suite skipped
-- One exact-scope update was required to keep the approved file-budget guard honest:
-  - [tests/perf/performance-budget.test.ts](/C:/dev/rik-expo-app/tests/perf/performance-budget.test.ts)
-  - threshold moved from `1259` to `1263` to account for the four permanent Foreman boundary modules added by this wave
+## Required gates
 
-### Runtime Proof
-- Android proof: PASS
-  - command used the existing verifier:
+The required code gates passed on the final source diff for this wave:
 
-```powershell
-$env:FOREMAN_RUNTIME_WEB='1'; @'
-process.env.FOREMAN_RUNTIME_WEB = '1';
-require('./scripts/foreman_request_sync_runtime_verify.ts');
-'@ | node -r tsx/cjs -
+```bash
+npx tsc --noEmit --pretty false
+npx expo lint
+npm test -- --runInBand
+npm test
+git diff --check
 ```
 
-  - produced:
-    - [artifacts/foreman-request-sync-runtime.json](/C:/dev/rik-expo-app/artifacts/foreman-request-sync-runtime.json)
-    - [artifacts/foreman-request-sync-runtime.summary.json](/C:/dev/rik-expo-app/artifacts/foreman-request-sync-runtime.summary.json)
-    - [artifacts/android-foreman-request-sync-route-1.xml](/C:/dev/rik-expo-app/artifacts/android-foreman-request-sync-route-1.xml)
-    - [artifacts/android-foreman-request-sync-route-1.png](/C:/dev/rik-expo-app/artifacts/android-foreman-request-sync-route-1.png)
-- Exact-scope web proof: PASS
-  - a narrow web probe validated the foreman route without widening into unrelated login flow behavior
-  - artifact:
-    - [artifacts/FOREMAN_draft_owner_split_final_web_probe.json](/C:/dev/rik-expo-app/artifacts/FOREMAN_draft_owner_split_final_web_probe.json)
-  - confirmed:
-    - `status = GREEN`
-    - final URL stayed on `/office/foreman`
-    - `foreman-main-materials-open` was reachable
-    - materials tab opened
-    - no page errors
-    - no bad network responses
+## Runtime proof
 
-### Legacy Harness Classification
-- The broader historical web verifier path reported a failure while traversing a wider `loginDirector` flow.
-- That failure is classified as over-broad for this exact wave and is not used as a fake-green substitute.
-- Exact-scope foreman web proof was run separately and passed.
+Android runtime proof was required because this wave changes a live foreman draft boundary.
 
-### Semantics Preservation Summary
-- Submit behavior unchanged
-- Recovery and restore behavior unchanged
-- Queue behavior unchanged
-- Durable state semantics unchanged
-- Hook public contract unchanged
-- React hook remains the orchestration owner while critical decisions/state transitions are now testable in pure modules
+### First attempt
+
+- command:
+
+```bash
+FOREMAN_RUNTIME_WEB=0 node node_modules/tsx/dist/cli.mjs scripts/foreman_request_sync_runtime_verify.ts
+```
+
+- result: failed
+- blocker type: environment / dev-client bootstrap
+- evidence:
+  - `artifacts/android-foreman-request-sync-failure.xml`
+  - `artifacts/android-foreman-request-sync-failure.png`
+  - `artifacts/expo-dev-client-8081.stdout.log`
+  - `artifacts/expo-dev-client-8081.stderr.log`
+- exact failure surface: Expo dev client error screen with `There was a problem loading the project.` and `java.net.SocketTimeoutException`
+
+### Bounded recovery
+
+One bounded environment recovery was used:
+
+- start Metro separately on `8081` with `CI=1`
+- keep the existing emulator session
+- rerun the same runtime verifier once
+
+### Final runtime pass
+
+- command:
+
+```bash
+CI=1 FOREMAN_RUNTIME_WEB=0 node node_modules/tsx/dist/cli.mjs scripts/foreman_request_sync_runtime_verify.ts
+```
+
+- result: passed
+- proof summary:
+  - `status: passed`
+  - `androidPassed: true`
+  - `runtimeVerified: true`
+  - `environmentRecoveryUsed: true`
+- final Android evidence:
+  - `artifacts/android-foreman-request-sync-route-1.xml`
+  - `artifacts/android-foreman-request-sync-route-1.png`
+  - `artifacts/foreman-request-sync-runtime.summary.json`
+
+## Residuals
+
+- iOS runtime proof remains host-residual on Windows because `xcrun` is unavailable.
+- No product-code workaround was added for this residual.
+
+## Semantics proof
+
+This wave preserves runtime semantics because:
+
+- the hook still owns orchestration and React wiring
+- extracted modules only moved deterministic seams out of the hook
+- focused tests prove unchanged recovery/failure/source-order contracts
+- Android runtime proof confirms the exact foreman route still opens after the split

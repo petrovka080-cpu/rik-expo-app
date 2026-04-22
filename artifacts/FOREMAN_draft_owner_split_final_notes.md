@@ -1,82 +1,55 @@
-## FOREMAN_DRAFT_OWNER_SPLIT_FINAL
+## Wave
 
-### Scope
-- Exact boundary only: [src/screens/foreman/hooks/useForemanDraftBoundary.ts](/C:/dev/rik-expo-app/src/screens/foreman/hooks/useForemanDraftBoundary.ts)
-- New extracted modules:
-  - [src/screens/foreman/foreman.draftBoundary.plan.ts](/C:/dev/rik-expo-app/src/screens/foreman/foreman.draftBoundary.plan.ts)
-  - [src/screens/foreman/foreman.draftBoundary.apply.ts](/C:/dev/rik-expo-app/src/screens/foreman/foreman.draftBoundary.apply.ts)
-  - [src/screens/foreman/foreman.draftBoundary.recovery.ts](/C:/dev/rik-expo-app/src/screens/foreman/foreman.draftBoundary.recovery.ts)
-  - [src/screens/foreman/foreman.draftBoundary.sync.ts](/C:/dev/rik-expo-app/src/screens/foreman/foreman.draftBoundary.sync.ts)
-- Focused exact-scope tests:
-  - [tests/foreman/foreman.draftBoundary.plan.test.ts](/C:/dev/rik-expo-app/tests/foreman/foreman.draftBoundary.plan.test.ts)
-  - [tests/foreman/foreman.draftBoundary.apply.test.ts](/C:/dev/rik-expo-app/tests/foreman/foreman.draftBoundary.apply.test.ts)
-  - [tests/foreman/foreman.draftBoundary.recovery.test.ts](/C:/dev/rik-expo-app/tests/foreman/foreman.draftBoundary.recovery.test.ts)
-  - [tests/foreman/foreman.draftBoundary.decomposition.test.ts](/C:/dev/rik-expo-app/tests/foreman/foreman.draftBoundary.decomposition.test.ts)
+`FOREMAN_DRAFT_OWNER_SPLIT_FINAL`
 
-### Initial Ownership Map
-- `useForemanDraftBoundary.ts` previously mixed:
-  - local snapshot ownership
-  - durable recovery ownership
-  - restore and terminal planning
-  - refresh and reconcile planning
-  - React effect wiring
-  - state commit and apply behavior
-  - queue-facing coordination
-  - telemetry and failure classification
-  - UI-facing derived state
-- This left the boundary in a partial state after the earlier helper extraction wave: critical recovery, sync, and derived-state ownership were still anchored inside the hook.
+## Initial ownership map
 
-### What Was Extracted
-- `foreman.draftBoundary.plan.ts`
-  - derived header state
-  - derived view state
-  - persist plan
-  - remote-effects plan
-  - live cleanup plan
-  - item edit eligibility
-- `foreman.draftBoundary.apply.ts`
-  - pure header edit application into boundary setters plus request-details patching
-- `foreman.draftBoundary.recovery.ts`
-  - terminal cleanup owner
-  - recovery-owner cleanup
-  - restore attempt owner
-  - restore trigger owner
-  - remote rehydrate owner
-  - local restore/discard/open/discard-whole owners
-- `foreman.draftBoundary.sync.ts`
-  - sync-now owner
-  - retry-now owner
-  - failed-queue-tail cleanup owner
+`src/screens/foreman/hooks/useForemanDraftBoundary.ts` initially mixed these responsibilities in one hook:
 
-### What Stayed In The Hook
-- Input gathering from route, draft stores, and other foreman hooks
-- Stable React callback wiring
-- Effect execution points
-- State commits through existing React setters/refs
-- Public hook contract to screens and callers
+- local snapshot ownership and owner-readable derived state
+- durable recovery refresh and request synchronization orchestration
+- request-details load sequencing and invalidation
+- post-submit cleanup and reopen/reset orchestration
+- failure reporting and manual-recovery telemetry
+- live cleanup effect execution
+- remote details/items effect execution
+- React effect wiring and subscription cleanup
+- UI-facing boundary contract assembly
 
-### Why Semantics Stayed Unchanged
-- Submit semantics are unchanged.
-- Durable recovery semantics are unchanged.
-- Queue/mutation worker semantics are unchanged.
-- Draft model shape is unchanged.
-- RPC and backend behavior are unchanged.
-- The hook still owns orchestration order; only pure planning/apply/recovery/sync responsibilities moved out.
-- Existing regression suites for terminal cleanup, restore, sync, modal-aware flow, and duplicate protection remained green.
+## Exact extracted modules in this wave
 
-### Exact Auto-Fixes Completed In Scope
-- Removed exact-scope unused-setter suppression from the hook by narrowing destructuring instead of keeping an `eslint-disable`.
-- Fixed an accidental self-recursion risk in the extracted plan layer by aliasing the imported header-state builder.
-- Tightened exact touched tests so the split is guarded structurally rather than by file size alone.
-- No `as any`, `@ts-ignore`, `eslint-disable`, or silent `catch {}` remain in touched runtime files.
+- `src/screens/foreman/foreman.draftBoundary.requestDetails.ts`
+  Owns request-details load sequencing and invalidation.
+- `src/screens/foreman/foreman.draftBoundary.telemetry.ts`
+  Owns failure reporting and recovery telemetry side-effect boundary while reusing existing pure planners.
+- `src/screens/foreman/foreman.draftBoundary.postSubmit.ts`
+  Owns post-submit orchestration while reusing the existing post-submit plan layer.
+- `src/screens/foreman/foreman.draftBoundary.effects.ts`
+  Owns live cleanup effect execution and remote details/items effect execution.
 
-### Intentionally Not Touched
-- Mutation worker internals
-- Offline queue semantics
-- RPC/backend contracts
-- Draft schema
-- Neighboring role flows
-- Broad foreman screen/UI refactors
+## What remained in the hook
 
-### Residual Risk Kept Out Of Scope
-- A harmless mojibake comment fragment remains in `useForemanDraftBoundary.ts`. It does not affect runtime, typing, lint, or tests and was not used as a justification to widen this wave.
+`useForemanDraftBoundary.ts` remains the orchestration owner for:
+
+- React state, refs, and lifecycle wiring
+- boundary-level callbacks passed to the screen
+- sync/recovery action sequencing
+- local snapshot apply/reset wrappers
+- queue-key accessors and existing domain entrypoints
+- final owner-facing return contract
+
+## Why business semantics did not change
+
+- Existing pure planning layers were reused rather than rewritten.
+- Submit, recovery, restore, and durable draft semantics were not moved into new business logic.
+- Extracted modules only took over boundaries that were already deterministically driven by existing plan/model helpers.
+- Tests were updated so source-order and decomposition assertions now point to the new owners instead of the hook body.
+
+## Intentional non-scope
+
+- no submit pipeline changes
+- no queue worker changes
+- no RPC or SQL changes
+- no durable draft schema changes
+- no UI redesign or flow changes
+- no neighboring foreman domain cleanup outside exact boundary scope

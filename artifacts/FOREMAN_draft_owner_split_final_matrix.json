@@ -1,126 +1,62 @@
 {
   "wave": "FOREMAN_DRAFT_OWNER_SPLIT_FINAL",
-  "status": "pre_release_green",
-  "scope": {
-    "hook": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
-    "extractedModules": [
-      "src/screens/foreman/foreman.draftBoundary.plan.ts",
-      "src/screens/foreman/foreman.draftBoundary.apply.ts",
-      "src/screens/foreman/foreman.draftBoundary.recovery.ts",
-      "src/screens/foreman/foreman.draftBoundary.sync.ts"
-    ],
-    "intentionallyUntouched": [
-      "offline mutation worker semantics",
-      "queue semantics",
-      "RPC/backend contracts",
-      "draft data model",
-      "neighboring role flows"
-    ]
-  },
-  "ownershipMap": {
-    "before": [
-      "local snapshot ownership",
-      "durable recovery state ownership",
-      "restore planning",
-      "terminal planning",
-      "refresh/reconcile planning",
-      "React effect wiring",
-      "state commit/apply layer",
-      "telemetry/error classification",
-      "queue-facing coordination",
-      "UI-facing derived state"
-    ],
-    "after": {
-      "hook": [
-        "input gathering",
-        "React callback/effect orchestration",
-        "state commit via setters/refs",
-        "public hook contract"
-      ],
-      "plan": [
-        "header/view derivation",
-        "persist plan",
-        "remote-effects plan",
-        "live cleanup plan",
-        "item edit eligibility"
-      ],
-      "apply": [
-        "header edit application"
-      ],
-      "recovery": [
-        "restore and terminal cleanup decisions execution",
-        "rehydrate/open/discard flows"
-      ],
-      "sync": [
-        "sync-now",
-        "retry-now",
-        "clear-failed-queue-tail"
-      ]
-    }
-  },
+  "status": "green_ready_for_release_tail",
   "touchedFiles": [
     "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
-    "src/screens/foreman/foreman.draftBoundary.plan.ts",
-    "src/screens/foreman/foreman.draftBoundary.apply.ts",
-    "src/screens/foreman/foreman.draftBoundary.recovery.ts",
-    "src/screens/foreman/foreman.draftBoundary.sync.ts",
+    "src/screens/foreman/foreman.draftBoundary.effects.ts",
+    "src/screens/foreman/foreman.draftBoundary.postSubmit.ts",
+    "src/screens/foreman/foreman.draftBoundary.requestDetails.ts",
+    "src/screens/foreman/foreman.draftBoundary.telemetry.ts",
     "src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts",
-    "src/screens/foreman/foreman.draftSyncPlan.model.test.ts",
-    "tests/foreman/foreman.draftStateBoundary.model.test.ts",
-    "tests/foreman/foreman.draftBoundary.plan.test.ts",
-    "tests/foreman/foreman.draftBoundary.apply.test.ts",
-    "tests/foreman/foreman.draftBoundary.recovery.test.ts",
+    "src/screens/foreman/foreman.manualRecovery.model.test.ts",
+    "src/screens/foreman/foreman.postSubmitDraftPlan.model.test.ts",
     "tests/foreman/foreman.draftBoundary.decomposition.test.ts",
-    "tests/perf/performance-budget.test.ts"
+    "tests/foreman/foreman.draftBoundary.effects.test.ts",
+    "tests/foreman/foreman.draftBoundary.postSubmit.test.ts",
+    "tests/foreman/foreman.draftBoundary.requestDetails.test.ts",
+    "tests/foreman/foreman.draftBoundary.telemetry.test.ts",
+    "tests/foreman/foreman.draftBoundaryFailure.model.test.ts"
+  ],
+  "extractedModules": [
+    "src/screens/foreman/foreman.draftBoundary.effects.ts",
+    "src/screens/foreman/foreman.draftBoundary.postSubmit.ts",
+    "src/screens/foreman/foreman.draftBoundary.requestDetails.ts",
+    "src/screens/foreman/foreman.draftBoundary.telemetry.ts"
+  ],
+  "testsAdded": [
+    "tests/foreman/foreman.draftBoundary.effects.test.ts",
+    "tests/foreman/foreman.draftBoundary.postSubmit.test.ts",
+    "tests/foreman/foreman.draftBoundary.requestDetails.test.ts",
+    "tests/foreman/foreman.draftBoundary.telemetry.test.ts"
   ],
   "gates": {
     "tsc": "PASS",
     "expoLint": "PASS",
-    "jestRunInBand": "PASS",
-    "jestParallel": "PASS",
+    "npmTestRunInBand": "PASS",
+    "npmTestParallel": "PASS",
     "gitDiffCheck": "PASS"
   },
-  "focusedTests": {
-    "command": "npx jest tests/foreman/foreman.draftBoundary.logic.test.ts tests/foreman/foreman.draftStateBoundary.model.test.ts tests/foreman/foreman.draftBoundary.plan.test.ts tests/foreman/foreman.draftBoundary.apply.test.ts tests/foreman/foreman.draftBoundary.recovery.test.ts tests/foreman/foreman.draftBoundary.decomposition.test.ts src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts src/screens/foreman/foreman.draftLifecycle.model.test.ts src/screens/foreman/foreman.draftSyncPlan.model.test.ts src/screens/foreman/foreman.manualRecovery.model.test.ts src/screens/foreman/foreman.postSubmitDraftPlan.model.test.ts --runInBand --no-coverage",
-    "suitesPassed": 11,
-    "testsPassed": 84
-  },
   "runtimeProof": {
-    "android": {
-      "status": "PASS",
-      "artifacts": [
-        "artifacts/foreman-request-sync-runtime.json",
-        "artifacts/foreman-request-sync-runtime.summary.json",
-        "artifacts/android-foreman-request-sync-route-1.xml",
-        "artifacts/android-foreman-request-sync-route-1.png"
-      ]
-    },
-    "web": {
-      "status": "PASS",
-      "artifact": "artifacts/FOREMAN_draft_owner_split_final_web_probe.json"
-    },
-    "legacyBroadWebHarness": {
-      "status": "FAILED_OUT_OF_SCOPE",
-      "artifact": "artifacts/foreman-request-sync-web-smoke.json",
-      "reason": "broader loginDirector flow failure did not represent the exact foreman boundary scope of this wave"
-    }
+    "required": true,
+    "status": "PASS",
+    "platform": "android",
+    "proofScript": "scripts/foreman_request_sync_runtime_verify.ts",
+    "environmentRecoveryUsed": true,
+    "firstAttempt": "FAILED_DEV_CLIENT_TIMEOUT",
+    "finalArtifacts": [
+      "artifacts/android-foreman-request-sync-route-1.xml",
+      "artifacts/android-foreman-request-sync-route-1.png",
+      "artifacts/foreman-request-sync-runtime.summary.json"
+    ],
+    "iosResidual": "xcrun unavailable on Windows host"
   },
-  "banScan": {
-    "runtimeTouchedFiles": {
-      "asAny": 0,
-      "tsIgnore": 0,
-      "eslintDisable": 0,
-      "silentCatch": 0
-    }
+  "businessSemanticsChanged": false,
+  "runtimeSemanticsChanged": false,
+  "releaseReadiness": {
+    "commitReady": true,
+    "pushReady": true,
+    "otaNeeded": true,
+    "otaReason": "Runtime JS/TS foreman boundary code changed"
   },
-  "release": {
-    "commit": "pending",
-    "push": "pending",
-    "otaDevelopment": "pending",
-    "otaPreview": "pending",
-    "otaProduction": "pending"
-  },
-  "residualRisk": [
-    "A harmless mojibake comment fragment remains in the hook and was kept out of scope because it does not affect runtime or gate results."
-  ]
+  "artifactsTrackedByGit": false
 }

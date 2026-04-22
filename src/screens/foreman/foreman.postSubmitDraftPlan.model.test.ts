@@ -220,11 +220,11 @@ describe("foreman post-submit draft command plan", () => {
 
   it("keeps hook post-submit effect execution in the legacy order", () => {
     const source = readFileSync(
-      join(__dirname, "hooks", "useForemanDraftBoundary.ts"),
+      join(__dirname, "foreman.draftBoundary.postSubmit.ts"),
       "utf8",
     );
-    const start = source.indexOf("const handlePostSubmitSuccess = useCallback");
-    const end = source.indexOf("useEffect(() => {\n    handlePostSubmitSuccessRef.current", start);
+    const start = source.indexOf("const submittedOwnerId = resolveForemanPostSubmitSubmittedOwnerId");
+    const end = source.indexOf("if (__DEV__)", start);
     const block = source.slice(start, end);
     const expectedOrder = [
       "resolveForemanPostSubmitSubmittedOwnerId",
@@ -240,7 +240,6 @@ describe("foreman post-submit draft command plan", () => {
       "applyLocalDraftSnapshotToBoundary",
       "patchForemanDurableDraftRecoveryState",
       "refreshBoundarySyncState(postSubmitPlan.refreshBoundarySnapshot)",
-      'console.info("[foreman.post-submit]"',
     ];
 
     let previousIndex = -1;

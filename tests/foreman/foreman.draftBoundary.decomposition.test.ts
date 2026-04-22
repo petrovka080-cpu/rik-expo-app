@@ -12,6 +12,10 @@ describe("foreman draft boundary decomposition audit", () => {
     expect(hookSource).toContain("foreman.draftBoundary.apply");
     expect(hookSource).toContain("foreman.draftBoundary.recovery");
     expect(hookSource).toContain("foreman.draftBoundary.sync");
+    expect(hookSource).toContain("foreman.draftBoundary.effects");
+    expect(hookSource).toContain("foreman.draftBoundary.requestDetails");
+    expect(hookSource).toContain("foreman.draftBoundary.telemetry");
+    expect(hookSource).toContain("foreman.draftBoundary.postSubmit");
     expect(hookSource).toContain("runForemanDraftBoundarySyncNow");
     expect(hookSource).toContain("runForemanRestoreDraftIfNeeded");
     expect(hookSource).toContain("applyForemanDraftHeaderEditToBoundary");
@@ -19,6 +23,10 @@ describe("foreman draft boundary decomposition audit", () => {
     expect(hookSource).not.toContain("enqueueForemanMutation(");
     expect(hookSource).not.toContain("flushForemanMutationQueue(");
     expect(hookSource).not.toContain("loadForemanRemoteDraftSnapshot(");
+    expect(hookSource).not.toContain("resolveForemanPostSubmitSubmittedOwnerId");
+    expect(hookSource).not.toContain("resolveForemanPostSubmitDraftPlan");
+    expect(hookSource).not.toContain("resolveForemanDraftBoundaryFailurePlan");
+    expect(hookSource).not.toContain("resolveForemanDraftBoundaryManualRecoveryTelemetryPlan");
+    expect(hookSource).not.toContain("loadForemanRequestDetails(");
   });
 });
-

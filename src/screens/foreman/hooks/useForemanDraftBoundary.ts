@@ -27,11 +27,9 @@ import {
 } from "../../../lib/offline/foremanSyncRuntime";
 import { selectPlatformOnlineFlag } from "../../../lib/offline/platformOffline.model";
 import type { RequestRecord } from "../../../lib/api/types";
-import { recordCatchDiscipline, type CatchDisciplineKind } from "../../../lib/observability/catchDiscipline";
 import { formatQtyInput } from "../foreman.helpers";
 import {
   FOREMAN_LOCAL_ONLY_REQUEST_ID,
-  buildFreshForemanLocalDraftSnapshot,
   buildForemanLocalDraftSnapshot,
   type ForemanDraftAppendInput,
   type ForemanLocalDraftSnapshot,
@@ -43,7 +41,6 @@ import {
   applyForemanLocalDraftSnapshotToBoundary as applyForemanLocalDraftSnapshotToBoundaryHelper,
   clearForemanDraftCacheState,
   ensureForemanDraftRequestId,
-  loadForemanRequestDetails,
   persistForemanLocalDraftSnapshot,
   removeForemanLocalDraftRowInBoundary,
   syncForemanRequestHeaderMeta,
@@ -68,28 +65,18 @@ import {
   resolveForemanDraftCacheClearPlan,
 } from "../foreman.draftLifecycle.model";
 import {
-  resolveForemanPostSubmitDraftPlan,
-  resolveForemanPostSubmitSubmittedOwnerId,
-} from "../foreman.postSubmitDraftPlan.model";
-import {
-  resolveForemanDraftBoundaryFailurePlan,
-  resolveForemanDraftBoundaryManualRecoveryTelemetryPlan,
   resolveForemanDraftBoundaryRefreshPlan,
   resolveForemanDraftBoundarySnapshot,
 } from "../foreman.draftBoundary.logic";
 import {
   getForemanDurableDraftState,
-  patchForemanDurableDraftRecoveryState,
-  pushForemanDurableDraftTelemetry,
 } from "../foreman.durableDraft.store";
 import { applyForemanDraftHeaderEditToBoundary } from "../foreman.draftBoundary.apply";
 import {
   buildForemanDraftBoundaryHeaderState,
   buildForemanDraftBoundaryViewState,
-  resolveForemanDraftBoundaryLiveCleanupPlan,
   resolveForemanDraftBoundaryCanEditItem,
   resolveForemanDraftBoundaryPersistPlan,
-  resolveForemanDraftBoundaryRemoteEffectsPlan,
 } from "../foreman.draftBoundary.plan";
 import {
   runForemanClearTerminalLocalDraft,
@@ -108,7 +95,20 @@ import {
   runForemanDraftBoundarySyncNow,
   type ForemanDraftBoundarySyncResultPayload,
 } from "../foreman.draftBoundary.sync";
-import { useForemanUiStore } from "../foremanUi.store";
+import {
+  runForemanDraftBoundaryLiveCleanupEffect,
+  runForemanDraftBoundaryRemoteDetailsEffect,
+  runForemanDraftBoundaryRemoteItemsEffect,
+} from "../foreman.draftBoundary.effects";
+import {
+  loadForemanDraftBoundaryRequestDetails,
+  invalidateForemanDraftBoundaryRequestDetailsLoads,
+} from "../foreman.draftBoundary.requestDetails";
+import {
+  pushForemanDraftBoundaryRecoveryTelemetry,
+  reportForemanDraftBoundaryFailure,
+} from "../foreman.draftBoundary.telemetry";
+import { runForemanDraftBoundaryPostSubmitSuccess } from "../foreman.draftBoundary.postSubmit";
 import { useForemanHeader } from "./useForemanHeader";
 import { useForemanItemsState } from "./useForemanItemsState";
 import { useForemanBootstrapCoordinator } from "./useForemanBootstrapCoordinator";
@@ -255,22 +255,16 @@ export function useForemanDraftBoundary({
       conflictType?: ReturnType<typeof getForemanDurableDraftState>["conflictType"];
       errorClass?: string | null;
       errorCode?: string | null;
-    }) => {
-      const durableState = getForemanDurableDraftState();
-      const recoveryTelemetryPlan = resolveForemanDraftBoundaryManualRecoveryTelemetryPlan({
-        durableState,
-        localSnapshot: localDraftSnapshotRef.current,
-        activeRequestId: requestId,
-        localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
-        recoveryAction: params.recoveryAction,
-        result: params.result,
-        conflictType: params.conflictType,
-        errorClass: params.errorClass,
-        errorCode: params.errorCode,
-        networkOnline: networkOnlineRef.current,
-      });
-      await pushForemanDurableDraftTelemetry(recoveryTelemetryPlan.telemetry);
-    },
+    }) =>
+      await pushForemanDraftBoundaryRecoveryTelemetry(
+        {
+          localDraftSnapshotRef,
+          requestId,
+          localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+          networkOnlineRef,
+        },
+        params,
+      ),
     [requestId],
   );
 
@@ -279,26 +273,18 @@ export function useForemanDraftBoundary({
     error: unknown;
     context?: string;
     stage: ForemanDraftSyncStage;
-    kind?: CatchDisciplineKind;
+    kind?: "critical_fail" | "soft_failure" | "degraded_fallback" | "cleanup_only";
     sourceKind?: string;
     extra?: Record<string, unknown>;
-  }) => {
-    const failurePlan = resolveForemanDraftBoundaryFailurePlan({
-      durableState: getForemanDurableDraftState(),
-      localSnapshot: localDraftSnapshotRef.current,
-      activeRequestId: requestId,
-      localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
-      event: params.event,
-      error: params.error,
-      context: params.context,
-      stage: params.stage,
-      kind: params.kind,
-      sourceKind: params.sourceKind,
-      extra: params.extra,
-    });
-    recordCatchDiscipline(failurePlan.catchDiscipline);
-    return failurePlan.classified;
-  }, [requestId]);
+  }) =>
+    reportForemanDraftBoundaryFailure(
+      {
+        localDraftSnapshotRef,
+        requestId,
+        localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      },
+      params,
+    ), [requestId]);
 
   const persistLocalDraftSnapshot = useCallback(
     (snapshot: ForemanLocalDraftSnapshot | null) => {
@@ -456,22 +442,22 @@ export function useForemanDraftBoundary({
   );
 
   const loadDetails = useCallback(
-    async (rid?: string | number | null) => {
-      const requestSeq = ++requestDetailsLoadSeqRef.current;
-      return await loadForemanRequestDetails({
-        requestId: rid,
-        activeRequestId: requestId,
-        setRequestDetails,
-        setDisplayNoByReq,
-        syncHeaderFromDetails,
-        shouldApply: () => requestSeq === requestDetailsLoadSeqRef.current,
-      });
-    },
+    async (rid?: string | number | null) =>
+      await loadForemanDraftBoundaryRequestDetails(
+        {
+          requestDetailsLoadSeqRef,
+          requestId,
+          setRequestDetails,
+          setDisplayNoByReq,
+          syncHeaderFromDetails,
+        },
+        rid,
+      ),
     [requestId, setDisplayNoByReq, syncHeaderFromDetails],
   );
 
   const invalidateRequestDetailsLoads = useCallback(() => {
-    requestDetailsLoadSeqRef.current += 1;
+    invalidateForemanDraftBoundaryRequestDetailsLoads(requestDetailsLoadSeqRef);
   }, []);
 
   const clearDraftCache = useCallback(async (options?: {
@@ -537,67 +523,23 @@ export function useForemanDraftBoundary({
   );
 
   const handlePostSubmitSuccess = useCallback(
-    async (rid: string, submitted: RequestRecord | null) => {
-      const activeSnapshot = localDraftSnapshotRef.current;
-      const submittedOwnerId = resolveForemanPostSubmitSubmittedOwnerId({
-        activeSnapshot,
-        activeDraftOwnerId: activeDraftOwnerIdRef.current,
-      });
-      if (submittedOwnerId) {
-        lastSubmittedOwnerIdRef.current = submittedOwnerId;
-      }
-      const freshDraftSnapshot = buildFreshForemanLocalDraftSnapshot({
-        base: activeSnapshot,
-        header: {
-          foreman: currentHeaderState.foreman,
-          comment: "",
-          objectType: currentHeaderState.objectType,
-          level: currentHeaderState.level,
-          system: currentHeaderState.system,
-          zone: currentHeaderState.zone,
+    async (rid: string, submitted: RequestRecord | null) =>
+      await runForemanDraftBoundaryPostSubmitSuccess(
+        {
+          localDraftSnapshotRef,
+          activeDraftOwnerIdRef,
+          lastSubmittedOwnerIdRef,
+          skipRemoteHydrationRequestIdRef,
+          requestId,
+          currentHeaderState,
+          setActiveDraftOwnerId,
+          setDisplayNoByReq,
+          invalidateRequestDetailsLoads,
+          applyLocalDraftSnapshotToBoundary,
+          refreshBoundarySyncState,
         },
-      });
-      const postSubmitPlan = resolveForemanPostSubmitDraftPlan({
-        rid,
-        activeRequestId: requestId,
-        activeSnapshot,
-        submitted,
-        submittedOwnerId,
-        freshDraftSnapshot,
-      });
-      setActiveDraftOwnerId(postSubmitPlan.nextActiveDraftOwnerId);
-      const displayNoPatch = postSubmitPlan.displayNoPatch;
-      if (displayNoPatch) {
-        setDisplayNoByReq((prev) => ({
-          ...prev,
-          [displayNoPatch.requestId]: displayNoPatch.displayNo,
-        }));
-      }
-
-      if (postSubmitPlan.clearSkipRemoteHydrationRequestId) skipRemoteHydrationRequestIdRef.current = null;
-      if (postSubmitPlan.invalidateRequestDetailsLoads) invalidateRequestDetailsLoads();
-      if (postSubmitPlan.resetAiQuickUi) useForemanUiStore.getState().resetAiQuickUi();
-      if (postSubmitPlan.clearAiQuickSessionHistory) useForemanUiStore.getState().clearAiQuickSessionHistory();
-      applyLocalDraftSnapshotToBoundary(
-        postSubmitPlan.applySnapshot.snapshot,
-        postSubmitPlan.applySnapshot.options,
-      );
-
-      await patchForemanDurableDraftRecoveryState({
-        ...postSubmitPlan.durablePatch,
-        lastSyncAt: Date.now(),
-      });
-      await refreshBoundarySyncState(postSubmitPlan.refreshBoundarySnapshot);
-
-      if (__DEV__) {
-        const durableState = getForemanDurableDraftState();
-        console.info("[foreman.post-submit]", {
-          ...postSubmitPlan.devTelemetry,
-          staleBannerVisibleAfterSubmit:
-            durableState.conflictType !== "none" || durableState.availableRecoveryActions.length > 0,
-        });
-      }
-    },
+        { rid, submitted },
+      ),
     [
       applyLocalDraftSnapshotToBoundary,
       currentHeaderState,
@@ -1033,48 +975,15 @@ export function useForemanDraftBoundary({
   useEffect(() => {
     if (!boundaryState.bootstrapReady) return;
 
-    const durableState = getForemanDurableDraftState();
-    const snapshot =
-      localDraftSnapshotRef.current ?? durableState.snapshot ?? durableState.recoverableLocalSnapshot;
-    const currentStatus = requestDetails?.status;
-    const cleanupDecision = resolveForemanDraftBoundaryLiveCleanupPlan({
-      bootstrapReady: boundaryState.bootstrapReady,
-      boundaryConflictType: boundaryState.conflictType,
-      requestId,
-      remoteStatus: currentStatus,
-      snapshot,
-      durableState,
-    });
-
-    if (!cleanupDecision.shouldClear || !cleanupDecision.requestId) return;
-
-    if (__DEV__) {
-      console.info("[foreman.live-reconciliation] clearing stale state for terminal request", {
-        requestId: cleanupDecision.requestId,
-        isTerminalConflict: cleanupDecision.isTerminalConflict,
-        isTerminalStatus: cleanupDecision.isTerminalStatus,
-        remoteStatus: currentStatus ?? null,
+      runForemanDraftBoundaryLiveCleanupEffect({
+        bootstrapReady: boundaryState.bootstrapReady,
+        boundaryConflictType: boundaryState.conflictType,
+        requestId,
+        requestDetailsStatus: requestDetails?.status,
+        localDraftSnapshotRef,
+        clearTerminalLocalDraft,
+        reportDraftBoundaryFailure,
       });
-    }
-
-    void clearTerminalLocalDraft({
-      snapshot: cleanupDecision.snapshotForCleanup,
-      requestId: cleanupDecision.requestId,
-      remoteStatus: cleanupDecision.remoteStatus,
-    }).catch((error) => {
-      reportDraftBoundaryFailure({
-        event: "live_terminal_local_cleanup_failed",
-        error,
-        context: cleanupDecision.isTerminalConflict ? "server_terminal_conflict" : "live_reconciliation",
-        stage: "cleanup",
-        kind: "critical_fail",
-        sourceKind: "draft_boundary:terminal_cleanup",
-        extra: {
-          remoteStatus: cleanupDecision.remoteStatus,
-          isTerminalConflict: cleanupDecision.isTerminalConflict,
-        },
-      });
-    });
   }, [
     boundaryState.bootstrapReady,
     boundaryState.conflictType,
@@ -1158,32 +1067,24 @@ export function useForemanDraftBoundary({
   }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, runRestoreTriggerPlan]);
 
   useEffect(() => {
-    const remoteEffectsPlan = resolveForemanDraftBoundaryRemoteEffectsPlan({
+    runForemanDraftBoundaryRemoteDetailsEffect({
       bootstrapReady: boundaryState.bootstrapReady,
       requestId,
       skipRemoteDraftEffects,
       skipRemoteHydrationRequestId: skipRemoteHydrationRequestIdRef.current,
+      preloadDisplayNo,
+      loadDetails,
     });
-    const plan = remoteEffectsPlan.detailsPlan;
-    if (plan.action !== "load") return;
-    void preloadDisplayNo(plan.requestId);
-    void loadDetails(plan.requestId);
   }, [boundaryState.bootstrapReady, loadDetails, preloadDisplayNo, requestId, skipRemoteDraftEffects]);
 
   useEffect(() => {
-    const remoteEffectsPlan = resolveForemanDraftBoundaryRemoteEffectsPlan({
+    runForemanDraftBoundaryRemoteItemsEffect({
       bootstrapReady: boundaryState.bootstrapReady,
       requestId,
       skipRemoteDraftEffects,
-      skipRemoteHydrationRequestId: skipRemoteHydrationRequestIdRef.current,
+      skipRemoteHydrationRequestIdRef,
+      loadItems,
     });
-    const plan = remoteEffectsPlan.itemsPlan;
-    if (plan.action === "clear_skip_remote_hydration") {
-      skipRemoteHydrationRequestIdRef.current = null;
-      return;
-    }
-    if (plan.action !== "load_items") return;
-    void loadItems();
   }, [boundaryState.bootstrapReady, loadItems, requestId, skipRemoteDraftEffects]);
 
   return {

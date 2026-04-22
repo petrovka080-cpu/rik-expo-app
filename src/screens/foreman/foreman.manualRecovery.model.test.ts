@@ -466,9 +466,9 @@ describe("foreman manual recovery command planner", () => {
   });
 
   it("keeps pushRecoveryTelemetry side effects in the established order", () => {
-    const source = readFileSync(join(__dirname, "hooks", "useForemanDraftBoundary.ts"), "utf8");
-    const start = source.indexOf("const pushRecoveryTelemetry = useCallback");
-    const end = source.indexOf("const reportDraftBoundaryFailure = useCallback", start);
+    const source = readFileSync(join(__dirname, "foreman.draftBoundary.telemetry.ts"), "utf8");
+    const start = source.indexOf("const durableState = getForemanDurableDraftState()");
+    const end = source.indexOf("export const reportForemanDraftBoundaryFailure", start);
     const block = source.slice(start, end);
     const expectedOrder = [
       "const durableState = getForemanDurableDraftState()",

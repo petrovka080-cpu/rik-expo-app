@@ -109,11 +109,11 @@ describe("foreman draft boundary failure report planner", () => {
 
   it("keeps reportDraftBoundaryFailure side effects in the established order", () => {
     const source = readFileSync(
-      join(__dirname, "../../src/screens/foreman/hooks/useForemanDraftBoundary.ts"),
+      join(__dirname, "../../src/screens/foreman/foreman.draftBoundary.telemetry.ts"),
       "utf8",
     );
-    const start = source.indexOf("const reportDraftBoundaryFailure = useCallback");
-    const end = source.indexOf("const persistLocalDraftSnapshot = useCallback", start);
+    const start = source.indexOf("const failurePlan = resolveForemanDraftBoundaryFailurePlan");
+    const end = source.indexOf("};", start) + 2;
     const block = source.slice(start, end);
     const expectedOrder = [
       "const failurePlan = resolveForemanDraftBoundaryFailurePlan",
