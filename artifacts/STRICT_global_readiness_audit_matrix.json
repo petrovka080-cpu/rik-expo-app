@@ -1,0 +1,175 @@
+{
+  "generatedAt": "2026-04-22",
+  "wave": "STRICT_NULLCHECKS_GLOBAL_READINESS_AUDIT",
+  "probe": {
+    "strictProbeCommand": "npx tsc --noEmit --pretty false --strictNullChecks",
+    "strictErrorCount": 401,
+    "uniqueFiles": 93,
+    "runtimeErrors": 136,
+    "testOrScriptErrors": 265
+  },
+  "readinessVerdict": "GLOBAL_STRICT_READINESS_PLAN",
+  "bucketTotals": {
+    "A_safe_next_strict_slices": {
+      "errorCount": 14,
+      "estimatedFilesTouched": 5
+    },
+    "B_shared_but_containable": {
+      "errorCount": 69,
+      "estimatedFilesTouched": 24
+    },
+    "C_cross_domain_blast_radius": {
+      "errorCount": 17,
+      "estimatedFilesTouched": 7
+    },
+    "D_requires_global_readiness_plan": {
+      "errorCount": 262,
+      "estimatedFilesTouched": 38
+    }
+  },
+  "clusters": [
+    {
+      "bucket": "A",
+      "cluster": "PDF viewer session boundary",
+      "domain": "pdf viewer",
+      "blocker_type": "render-input and session route contract",
+      "isolated": true,
+      "estimated_files_touched": 1,
+      "safe_for_narrow_wave": true,
+      "error_count": 3,
+      "next_action": "Strong candidate for STRICT_NULLCHECKS_PHASE_9 if a final narrow slice is still desired."
+    },
+    {
+      "bucket": "A",
+      "cluster": "Office hub invite/access boundary",
+      "domain": "office",
+      "blocker_type": "owner boundary, render-input contract, process access contract",
+      "isolated": true,
+      "estimated_files_touched": 2,
+      "safe_for_narrow_wave": true,
+      "error_count": 9,
+      "next_action": "Best remaining narrow runtime candidate because the boundary is small and regression coverage already exists."
+    },
+    {
+      "bucket": "A",
+      "cluster": "Profile save transport boundary",
+      "domain": "profile",
+      "blocker_type": "transport normalization and auth/profile write contract",
+      "isolated": true,
+      "estimated_files_touched": 1,
+      "safe_for_narrow_wave": true,
+      "error_count": 1,
+      "next_action": "Safe but lower-value narrow slice."
+    },
+    {
+      "bucket": "A",
+      "cluster": "Director dashboard callback boundary",
+      "domain": "director",
+      "blocker_type": "render-input optional callback contract",
+      "isolated": true,
+      "estimated_files_touched": 1,
+      "safe_for_narrow_wave": true,
+      "error_count": 1,
+      "next_action": "Optional low-value cleanup; deprioritize behind office/pdf/profile."
+    },
+    {
+      "bucket": "B",
+      "cluster": "Buyer prefill/documents busy boundary",
+      "domain": "buyer",
+      "blocker_type": "owner/helper loading-state and transport boundary",
+      "isolated": false,
+      "estimated_files_touched": 3,
+      "safe_for_narrow_wave": true,
+      "error_count": 3,
+      "next_action": "Containable buyer-only wave, but weaker proof support than bucket-A slices."
+    },
+    {
+      "bucket": "B",
+      "cluster": "Foreman draft lifecycle and recovery",
+      "domain": "foreman",
+      "blocker_type": "state/recovery contracts and process lifecycle boundary",
+      "isolated": false,
+      "estimated_files_touched": 10,
+      "safe_for_narrow_wave": false,
+      "error_count": 33,
+      "next_action": "Needs a dedicated domain-bounded readiness program instead of a quick next strict slice."
+    },
+    {
+      "bucket": "B",
+      "cluster": "Warehouse action and pdf regression boundary",
+      "domain": "warehouse",
+      "blocker_type": "process boundary plus regression surface drift",
+      "isolated": false,
+      "estimated_files_touched": 6,
+      "safe_for_narrow_wave": false,
+      "error_count": 22,
+      "next_action": "Containable, but test-surface cleanup dominates and lowers next-wave value."
+    },
+    {
+      "bucket": "B",
+      "cluster": "Contractor search and progress submit boundary",
+      "domain": "contractor",
+      "blocker_type": "transport normalization and submit-flow boundary",
+      "isolated": false,
+      "estimated_files_touched": 5,
+      "safe_for_narrow_wave": false,
+      "error_count": 11,
+      "next_action": "Reserve for a contractor-specific strict program."
+    },
+    {
+      "bucket": "C",
+      "cluster": "AI assistant quick-search contract drift",
+      "domain": "ai",
+      "blocker_type": "shared helper and search-result contract drift",
+      "isolated": false,
+      "estimated_files_touched": 2,
+      "safe_for_narrow_wave": false,
+      "error_count": 12,
+      "next_action": "Do not take as the next narrow slice; shared search contracts must be mapped first."
+    },
+    {
+      "bucket": "C",
+      "cluster": "Shared API null contract drift",
+      "domain": "shared api",
+      "blocker_type": "transport normalization layer shared by buyer and director flows",
+      "isolated": false,
+      "estimated_files_touched": 5,
+      "safe_for_narrow_wave": false,
+      "error_count": 5,
+      "next_action": "Address only inside a shared API readiness plan with caller mapping."
+    },
+    {
+      "bucket": "D",
+      "cluster": "Offline queue core lifecycle",
+      "domain": "offline",
+      "blocker_type": "shared process/lifecycle boundary in offline core",
+      "isolated": false,
+      "estimated_files_touched": 2,
+      "safe_for_narrow_wave": false,
+      "error_count": 61,
+      "next_action": "Top runtime blocker for the global readiness plan."
+    },
+    {
+      "bucket": "D",
+      "cluster": "Verification/runtime scripts observability cluster",
+      "domain": "scripts",
+      "blocker_type": "shared verification helpers, observability transport, nullable runtime captures",
+      "isolated": false,
+      "estimated_files_touched": 35,
+      "safe_for_narrow_wave": false,
+      "error_count": 201,
+      "next_action": "Requires program-level staging or separate strict treatment before any global flip."
+    },
+    {
+      "bucket": "D",
+      "cluster": "Root strict compile surface couples runtime and verification",
+      "domain": "tooling",
+      "blocker_type": "global compile boundary and include-surface coupling",
+      "isolated": false,
+      "estimated_files_touched": 1,
+      "safe_for_narrow_wave": false,
+      "error_count": 0,
+      "next_action": "Global readiness plan must explicitly decide how runtime, tests, and scripts enter future strict rollout."
+    }
+  ]
+}
