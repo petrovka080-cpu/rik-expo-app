@@ -89,6 +89,9 @@ const asDate = (value: unknown): string | null => {
   return normalized || null;
 };
 
+const toOptionalRpcArg = <T>(value: T | null | undefined): T | undefined =>
+  value == null ? undefined : value;
+
 export type SubcontractStatus = "draft" | "pending" | "approved" | "rejected" | "closed";
 export type SubcontractWorkMode = "labor_only" | "turnkey" | "mixed";
 export type SubcontractPriceType = "by_volume" | "by_shift" | "by_hour";
@@ -252,25 +255,25 @@ const buildSubcontractCreatePayload = (
   patch: SubcontractUpdate,
 ): SubcontractCreateArgs => ({
   p_created_by: userId,
-  p_foreman_name: ruOrNull(foremanName),
-  p_contractor_org: patch.contractor_org ?? null,
-  p_contractor_inn: patch.contractor_inn ?? null,
-  p_contractor_rep: patch.contractor_rep ?? null,
-  p_contractor_phone: patch.contractor_phone ?? null,
-  p_contract_number: patch.contract_number ?? null,
-  p_contract_date: asDate(patch.contract_date),
-  p_object_name: patch.object_name ?? null,
-  p_work_zone: patch.work_zone ?? null,
-  p_work_type: patch.work_type ?? null,
-  p_qty_planned: patch.qty_planned ?? null,
-  p_uom: patch.uom ?? null,
-  p_date_start: asDate(patch.date_start),
-  p_date_end: asDate(patch.date_end),
-  p_work_mode: patch.work_mode ?? null,
-  p_price_per_unit: patch.price_per_unit ?? null,
-  p_total_price: patch.total_price ?? null,
-  p_price_type: patch.price_type ?? null,
-  p_foreman_comment: patch.foreman_comment ?? null,
+  p_foreman_name: toOptionalRpcArg(ruOrNull(foremanName)),
+  p_contractor_org: toOptionalRpcArg(patch.contractor_org),
+  p_contractor_inn: toOptionalRpcArg(patch.contractor_inn),
+  p_contractor_rep: toOptionalRpcArg(patch.contractor_rep),
+  p_contractor_phone: toOptionalRpcArg(patch.contractor_phone),
+  p_contract_number: toOptionalRpcArg(patch.contract_number),
+  p_contract_date: toOptionalRpcArg(asDate(patch.contract_date)),
+  p_object_name: toOptionalRpcArg(patch.object_name),
+  p_work_zone: toOptionalRpcArg(patch.work_zone),
+  p_work_type: toOptionalRpcArg(patch.work_type),
+  p_qty_planned: toOptionalRpcArg(patch.qty_planned),
+  p_uom: toOptionalRpcArg(patch.uom),
+  p_date_start: toOptionalRpcArg(asDate(patch.date_start)),
+  p_date_end: toOptionalRpcArg(asDate(patch.date_end)),
+  p_work_mode: toOptionalRpcArg(patch.work_mode),
+  p_price_per_unit: toOptionalRpcArg(patch.price_per_unit),
+  p_total_price: toOptionalRpcArg(patch.total_price),
+  p_price_type: toOptionalRpcArg(patch.price_type),
+  p_foreman_comment: toOptionalRpcArg(patch.foreman_comment),
 });
 
 const buildLegacySubcontractCreatePayload = (
