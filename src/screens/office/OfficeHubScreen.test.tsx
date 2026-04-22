@@ -9,6 +9,7 @@ import OfficeHubScreen, {
 const mockPush = jest.fn();
 const mockUseLocalSearchParams = jest.fn();
 const mockLoadOfficeAccessScreenData = jest.fn();
+const mockLoadOfficeMembersPage = jest.fn();
 const mockCreateOfficeInvite = jest.fn();
 const mockShareOfficeInviteCode = jest.fn();
 const mockCopyOfficeInviteText = jest.fn();
@@ -224,6 +225,8 @@ jest.mock("../../lib/navigation/officeReentryBreadcrumbs", () => ({
 jest.mock("./officeAccess.services", () => ({
   loadOfficeAccessScreenData: (...args: unknown[]) =>
     mockLoadOfficeAccessScreenData(...args),
+  loadOfficeMembersPage: (...args: unknown[]) =>
+    mockLoadOfficeMembersPage(...args),
   createOfficeCompany: jest.fn(),
   createOfficeInvite: (...args: unknown[]) => mockCreateOfficeInvite(...args),
   updateOfficeMemberRole: jest.fn(),
@@ -285,6 +288,12 @@ const directorData = {
       isOwner: true,
     },
   ],
+  membersPagination: {
+    limit: 25,
+    nextOffset: 1,
+    total: 1,
+    hasMore: false,
+  },
   invites: [],
 };
 
@@ -316,6 +325,7 @@ describe("OfficeHubScreen", () => {
     mockFocusEffectCallbacks.clear();
     mockPush.mockReset();
     mockLoadOfficeAccessScreenData.mockReset();
+    mockLoadOfficeMembersPage.mockReset();
     mockCreateOfficeInvite.mockReset();
     mockShareOfficeInviteCode.mockReset();
     mockCopyOfficeInviteText.mockReset();
@@ -430,6 +440,12 @@ describe("OfficeHubScreen", () => {
         listingsCount: 0,
       },
       members: [],
+      membersPagination: {
+        limit: 25,
+        nextOffset: 0,
+        total: 0,
+        hasMore: false,
+      },
       invites: [],
     });
 
@@ -521,6 +537,12 @@ describe("OfficeHubScreen", () => {
           isOwner: false,
         },
       ],
+      membersPagination: {
+        limit: 25,
+        nextOffset: 2,
+        total: 2,
+        hasMore: false,
+      },
     });
 
     let renderer: ReactTestRenderer;
@@ -561,6 +583,67 @@ describe("OfficeHubScreen", () => {
     });
 
     expect(mockPush).toHaveBeenCalledWith("/profile?section=company");
+  });
+
+  it("keeps members pagination scoped to the members section load-more flow", async () => {
+    mockLoadOfficeAccessScreenData.mockResolvedValue({
+      ...directorData,
+      membersPagination: {
+        limit: 1,
+        nextOffset: 1,
+        total: 2,
+        hasMore: true,
+      },
+    });
+    mockLoadOfficeMembersPage.mockResolvedValue({
+      members: [
+        {
+          userId: "user-2",
+          role: "foreman",
+          fullName: "Nurbek",
+          phone: "+996555000111",
+          createdAt: "2026-04-02T00:00:00.000Z",
+          isOwner: false,
+        },
+      ],
+      membersPagination: {
+        limit: 1,
+        nextOffset: 2,
+        total: 2,
+        hasMore: false,
+      },
+    });
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(
+      renderer!.root.findByProps({ testID: "office-members-load-more" }),
+    ).toBeTruthy();
+
+    await act(async () => {
+      renderer!.root
+        .findByProps({ testID: "office-members-load-more" })
+        .props.onPress();
+      await Promise.resolve();
+    });
+
+    expect(mockLoadOfficeMembersPage).toHaveBeenCalledWith({
+      company: directorData.company,
+      limit: 1,
+      offset: 1,
+    });
+    expect(
+      renderer!.root.findByProps({ testID: "office-member-role-user-2-buyer" }),
+    ).toBeTruthy();
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-members-load-more" }),
+    ).toEqual([]);
   });
 
   it("records post-return markers and keeps the invite modal unmounted until the flow is opened", async () => {

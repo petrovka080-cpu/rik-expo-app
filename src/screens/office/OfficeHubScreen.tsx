@@ -466,6 +466,8 @@ export default function OfficeHubScreen({
 
   const members = useOfficeMembersSection({
     company: data.company,
+    initialMembers: data.members,
+    initialMembersPagination: data.membersPagination,
     loadScreen,
   });
 

@@ -9,12 +9,16 @@ import {
   OFFICE_BOOTSTRAP_ROLE,
   buildOfficeBootstrapProfilePayload,
 } from "./officeAccess.model";
+import {
+  buildOfficeMembersPagination,
+  normalizeOfficeMembersPageParams,
+} from "./officeAccess.types";
 import type {
   CreateCompanyDraft,
   CreateInviteDraft,
   CreatedOfficeInvite,
   OfficeAccessInvite,
-  OfficeAccessMember,
+  OfficeMembersPageResult,
   OfficeAccessScreenData,
 } from "./officeAccess.types";
 
@@ -121,14 +125,22 @@ async function loadCompanyById(companyId: string): Promise<Company | null> {
   return result.data ? (result.data as Company) : null;
 }
 
-async function loadCompanyMembers(
-  company: Company,
-): Promise<OfficeAccessMember[]> {
+export async function loadOfficeMembersPage(params: {
+  company: Company;
+  limit?: number | null;
+  offset?: number | null;
+}): Promise<OfficeMembersPageResult> {
+  const page = normalizeOfficeMembersPageParams({
+    limit: params.limit,
+    offset: params.offset,
+  });
   const membersResult = await supabase
     .from("company_members")
-    .select("user_id,role,created_at")
-    .eq("company_id", company.id)
-    .order("created_at", { ascending: true });
+    .select("user_id,role,created_at", { count: "exact" })
+    .eq("company_id", params.company.id)
+    .order("created_at", { ascending: true })
+    .order("user_id", { ascending: true })
+    .range(page.offset, page.offset + page.limit - 1);
 
   if (membersResult.error) throw membersResult.error;
 
@@ -153,7 +165,7 @@ async function loadCompanyMembers(
     profileMap.set(row.user_id, row);
   }
 
-  return memberRows.map((row) => {
+  const members = memberRows.map((row) => {
     const userId = normalizeText(row?.user_id);
     const profile = profileMap.get(userId);
     return {
@@ -162,9 +174,19 @@ async function loadCompanyMembers(
       fullName: profile?.full_name ?? null,
       phone: profile?.phone ?? null,
       createdAt: typeof row?.created_at === "string" ? row.created_at : null,
-      isOwner: userId === company.owner_user_id,
+      isOwner: userId === params.company.owner_user_id,
     };
   });
+
+  return {
+    members,
+    membersPagination: buildOfficeMembersPagination({
+      limit: page.limit,
+      offset: page.offset,
+      total: membersResult.count ?? null,
+      loadedCount: members.length,
+    }),
+  };
 }
 
 async function loadCompanyInvites(
@@ -198,7 +220,18 @@ export async function loadOfficeAccessScreenData(): Promise<OfficeAccessScreenDa
     baseProfile.company ??
     (membershipCompanyId ? await loadCompanyById(membershipCompanyId) : null);
 
-  const members = company ? await loadCompanyMembers(company) : [];
+  const defaultMembersPage = {
+    members: [],
+    membersPagination: buildOfficeMembersPagination({
+      limit: normalizeOfficeMembersPageParams().limit,
+      offset: 0,
+      total: 0,
+      loadedCount: 0,
+    }),
+  };
+  const membersPage = company
+    ? await loadOfficeMembersPage({ company })
+    : defaultMembersPage;
   const invites = company ? await loadCompanyInvites(company.id) : [];
   const companyAccessRole =
     company?.owner_user_id === authUser.id
@@ -226,7 +259,8 @@ export async function loadOfficeAccessScreenData(): Promise<OfficeAccessScreenDa
           ...baseProfile.accessSourceSnapshot,
           developerOverride,
         },
-    members,
+    members: membersPage.members,
+    membersPagination: membersPage.membersPagination,
     invites,
   };
 }

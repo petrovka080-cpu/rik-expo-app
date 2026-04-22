@@ -1,42 +1,77 @@
 /**
- * useOfficeMembersSection — Owner hook for the OfficeHub members section.
- *
- * Extracted from OfficeHubScreen.tsx (Wave O) to establish a single owner
- * boundary for member role assignment state and side-effects.
+ * useOfficeMembersSection - owner hook for the OfficeHub members section.
  *
  * Owns:
+ *  - visible members list
+ *  - members pagination contract
+ *  - loading-more indicator
  *  - savingRole indicator
+ *  - handleLoadMore handler
  *  - handleAssignRole handler
  */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 
-import { updateOfficeMemberRole } from "./officeAccess.services";
+import { mergeOfficeMembersPages } from "./officeAccess.types";
+import type {
+  OfficeAccessMember,
+  OfficeAccessScreenData,
+  OfficeMembersPagination,
+} from "./officeAccess.types";
+import {
+  loadOfficeMembersPage,
+  updateOfficeMemberRole,
+} from "./officeAccess.services";
 import { COPY, type LoadScreenMode } from "./officeHub.constants";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 type UseOfficeMembersSectionArgs = {
-  /** Current company from the screen data — used for the role assignment. */
-  company: { id: string } | null;
-  /** Screen-level data loader — invoked after role assignment to refresh. */
+  company: OfficeAccessScreenData["company"];
+  initialMembers: OfficeAccessMember[];
+  initialMembersPagination: OfficeMembersPagination;
   loadScreen: (opts?: { mode?: LoadScreenMode }) => Promise<unknown>;
 };
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
-
 export function useOfficeMembersSection({
   company,
+  initialMembers,
+  initialMembersPagination,
   loadScreen,
 }: UseOfficeMembersSectionArgs) {
-  // ── State ──────────────────────────────────────────────────────────────
+  const [items, setItems] = useState<OfficeAccessMember[]>(initialMembers);
+  const [pagination, setPagination] = useState<OfficeMembersPagination>(
+    initialMembersPagination,
+  );
+  const [loadingMore, setLoadingMore] = useState(false);
   const [savingRole, setSavingRole] = useState<string | null>(null);
 
-  // ── Actions ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    setItems(initialMembers);
+    setPagination(initialMembersPagination);
+    setLoadingMore(false);
+  }, [initialMembers, initialMembersPagination]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (!company || loadingMore || !pagination.hasMore) return;
+    try {
+      setLoadingMore(true);
+      const nextPage = await loadOfficeMembersPage({
+        company,
+        limit: pagination.limit,
+        offset: pagination.nextOffset,
+      });
+      setItems((current) => mergeOfficeMembersPages(current, nextPage.members));
+      setPagination(nextPage.membersPagination);
+    } catch (error: unknown) {
+      Alert.alert(
+        COPY.title,
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : COPY.membersLoadMoreError,
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [company, loadingMore, pagination]);
 
   const handleAssignRole = useCallback(
     async (memberUserId: string, nextRole: string) => {
@@ -65,10 +100,13 @@ export function useOfficeMembersSection({
     [company, loadScreen],
   );
 
-  // ── Return ─────────────────────────────────────────────────────────────
-
   return {
+    items,
+    hasMore: pagination.hasMore,
+    loadingMore,
+    totalCount: pagination.total,
     savingRole,
+    handleLoadMore,
     handleAssignRole,
   };
 }

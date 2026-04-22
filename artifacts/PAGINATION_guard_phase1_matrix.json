@@ -1,0 +1,28 @@
+[
+  {
+    "path": "office.members",
+    "chosen_files": [
+      "src/screens/office/officeAccess.services.ts",
+      "src/screens/office/useOfficeMembersSection.ts",
+      "src/screens/office/officeHub.sections.tsx",
+      "src/screens/office/officeAccess.types.ts"
+    ],
+    "pagination_type": "limit_offset",
+    "first_page_limit": 25,
+    "sort_preserved": true,
+    "filter_preserved": true,
+    "duplicates": false,
+    "gaps": false,
+    "semantics_changed": false,
+    "proof_summary": {
+      "before_first_load_rows": "unbounded company_members + matching user_profiles",
+      "after_first_load_rows": "max 25 company_members + max 25 user_profiles",
+      "current_live_company_members_max_per_company": 3
+    },
+    "tests_added": [
+      "tests/office/officeMembersPagination.contract.test.ts",
+      "tests/office/officeAccess.members.service.pagination.test.ts",
+      "tests/office/useOfficeMembersSection.pagination.test.tsx"
+    ]
+  }
+]

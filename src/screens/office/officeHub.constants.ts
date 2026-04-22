@@ -2,7 +2,10 @@
  * Constants, types, and helper functions extracted from OfficeHubScreen.tsx.
  * Behavior-preserving mechanical extraction (Wave F).
  */
-import type { OfficeAccessScreenData } from "./officeAccess.types";
+import {
+  EMPTY_OFFICE_MEMBERS_PAGINATION,
+  type OfficeAccessScreenData,
+} from "./officeAccess.types";
 import type { OfficePostReturnProbe } from "../../lib/navigation/officeReentryBreadcrumbs";
 
 export type SectionKey = "members" | "invites" | "company";
@@ -66,6 +69,7 @@ export const EMPTY_DATA: OfficeAccessScreenData = {
     listingsCount: 0,
   },
   members: [],
+  membersPagination: EMPTY_OFFICE_MEMBERS_PAGINATION,
   invites: [],
 };
 
@@ -110,6 +114,9 @@ export const COPY_BASE = {
   membersLead: "Подтвержденные сотрудники и их текущие роли.",
   membersLeadWithInvites:
     "Подтвержденные сотрудники и их текущие роли. Ожидают активации:",
+  membersLoadMore: "Load more",
+  membersLoadingMore: "Loading...",
+  membersLoadMoreError: "Failed to load more members.",
   invitesTitle: "Приглашения",
   invitesLead:
     "Коды, созданные через + в направлениях, появляются здесь до активации сотрудника.",

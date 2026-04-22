@@ -185,7 +185,6 @@ export default function OfficeShellContent(props: OfficeShellContentProps) {
             />
             <OfficeMembersSection
               access={access}
-              data={data}
               members={members}
               onSectionLayout={onSectionLayout}
               onSubtreeLayout={onSubtreeLayout}

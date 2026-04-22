@@ -557,14 +557,12 @@ export function OfficeInvitesSection({
 
 export function OfficeMembersSection({
   access,
-  data,
   members,
   onSectionLayout,
   onSubtreeLayout,
   renderSubtreeBoundary,
 }: OfficeHubSectionChrome & {
   access: OfficeHubRoleAccessState;
-  data: Pick<OfficeAccessScreenData, "members">;
   members: OfficeMembersSectionState;
 }) {
   if (!access.shouldRenderCompanyPostReturnSection("members")) return null;
@@ -578,9 +576,9 @@ export function OfficeMembersSection({
       <Text style={styles.sectionTitle}>{COPY.membersTitle}</Text>
       {renderSubtreeBoundary(
         "members_list",
-        data.members.length > 0 ? (
+        members.items.length > 0 ? (
           <View style={styles.stack} onLayout={onSubtreeLayout("members_list")}>
-            {data.members.map((member) => (
+            {members.items.map((member) => (
               <MemberCard
                 key={member.userId}
                 member={member}
@@ -589,6 +587,24 @@ export function OfficeMembersSection({
                 onAssignRole={members.handleAssignRole}
               />
             ))}
+            {members.hasMore ? (
+              <Pressable
+                testID="office-members-load-more"
+                disabled={members.loadingMore}
+                onPress={() => void members.handleLoadMore()}
+                style={[
+                  styles.secondary,
+                  styles.grow,
+                  members.loadingMore && styles.dim,
+                ]}
+              >
+                <Text style={styles.secondaryText}>
+                  {members.loadingMore
+                    ? COPY.membersLoadingMore
+                    : COPY.membersLoadMore}
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : (
           <View style={styles.panel} onLayout={onSubtreeLayout("members_list")}>

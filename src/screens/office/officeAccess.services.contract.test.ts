@@ -15,6 +15,8 @@ describe("officeAccess.services source contract", () => {
     expect(source).toContain('.from("company_profiles")');
     expect(source).toContain('.from("company_members")');
     expect(source).toContain('.from("company_invites")');
+    expect(source).toContain('{ count: "exact" }');
+    expect(source).toContain(".range(");
     expect(source).not.toContain('role: "buyer"');
     expect(source).not.toContain('role: "foreman"');
     expect(source).not.toContain('role: "warehouse"');

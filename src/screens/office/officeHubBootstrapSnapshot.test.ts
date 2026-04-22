@@ -32,6 +32,12 @@ const makeData = (currentUserId: string) =>
       listingsCount: 0,
     },
     members: [],
+    membersPagination: {
+      limit: 25,
+      nextOffset: 0,
+      total: 0,
+      hasMore: false,
+    },
     invites: [],
   }) as OfficeAccessScreenData;
 
