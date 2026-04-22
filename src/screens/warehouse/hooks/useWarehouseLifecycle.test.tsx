@@ -3,10 +3,12 @@ import TestRenderer, { act } from "react-test-renderer";
 
 import { useWarehouseLifecycle } from "./useWarehouseLifecycle";
 import { WAREHOUSE_TABS } from "../warehouse.types";
+import type { UseAppActiveRevalidationParams } from "../../../lib/lifecycle/useAppActiveRevalidation";
 
 const mockGetPlatformNetworkSnapshot = jest.fn();
 const mockIsPlatformGuardCoolingDown = jest.fn();
 const mockRecordPlatformGuardSkip = jest.fn();
+const mockUseAppActiveRevalidation = jest.fn();
 
 jest.mock("expo-router", () => {
   const ReactRuntime = require("react");
@@ -30,6 +32,11 @@ jest.mock("../../../lib/observability/platformGuardDiscipline", () => ({
     mockIsPlatformGuardCoolingDown(...args),
   recordPlatformGuardSkip: (...args: unknown[]) =>
     mockRecordPlatformGuardSkip(...args),
+}));
+
+jest.mock("../../../lib/lifecycle/useAppActiveRevalidation", () => ({
+  useAppActiveRevalidation: (...args: unknown[]) =>
+    mockUseAppActiveRevalidation(...args),
 }));
 
 function createDeferred<T>() {
@@ -63,6 +70,7 @@ describe("useWarehouseLifecycle", () => {
     });
     mockIsPlatformGuardCoolingDown.mockReset().mockReturnValue(true);
     mockRecordPlatformGuardSkip.mockReset();
+    mockUseAppActiveRevalidation.mockReset();
   });
 
   it("suppresses loading completion after unmount during initial bootstrap", async () => {
@@ -190,5 +198,79 @@ describe("useWarehouseLifecycle", () => {
 
     expect(setLoading).not.toHaveBeenCalled();
     expect(onError).not.toHaveBeenCalled();
+  });
+
+  it("wires app-active revalidation for non-expense tabs and refreshes the current scope", async () => {
+    const setLoading = jest.fn();
+    const fetchToReceive = jest.fn().mockResolvedValue(undefined);
+    const fetchStock = jest.fn().mockResolvedValue(undefined);
+    const fetchReports = jest.fn().mockResolvedValue(undefined);
+    const onError = jest.fn();
+
+    await act(async () => {
+      TestRenderer.create(
+        <Harness
+          tab={WAREHOUSE_TABS[0]}
+          isScreenFocused={true}
+          setLoading={setLoading}
+          fetchToReceive={fetchToReceive}
+          fetchStock={fetchStock}
+          fetchReports={fetchReports}
+          onError={onError}
+        />,
+      );
+    });
+
+    const appActiveCall = mockUseAppActiveRevalidation.mock.calls[
+      mockUseAppActiveRevalidation.mock.calls.length - 1
+    ]?.[0] as UseAppActiveRevalidationParams | undefined;
+    expect(appActiveCall).toEqual(
+      expect.objectContaining({
+        screen: "warehouse",
+        surface: "screen_root",
+        enabled: true,
+      }),
+    );
+
+    fetchToReceive.mockClear();
+    fetchStock.mockClear();
+    fetchReports.mockClear();
+
+    await act(async () => {
+      await appActiveCall?.onRevalidate("app_became_active");
+    });
+
+    expect(fetchToReceive).toHaveBeenCalledTimes(1);
+    expect(fetchStock).not.toHaveBeenCalled();
+    expect(fetchReports).not.toHaveBeenCalled();
+  });
+
+  it("disables app-active revalidation for the expense tab because it is owned by the expense lifecycle", async () => {
+    const setLoading = jest.fn();
+
+    await act(async () => {
+      TestRenderer.create(
+        <Harness
+          tab={WAREHOUSE_TABS[2]}
+          isScreenFocused={true}
+          setLoading={setLoading}
+          fetchToReceive={jest.fn().mockResolvedValue(undefined)}
+          fetchStock={jest.fn().mockResolvedValue(undefined)}
+          fetchReports={jest.fn().mockResolvedValue(undefined)}
+          onError={jest.fn()}
+        />,
+      );
+    });
+
+    const appActiveCall = mockUseAppActiveRevalidation.mock.calls[
+      mockUseAppActiveRevalidation.mock.calls.length - 1
+    ]?.[0] as UseAppActiveRevalidationParams | undefined;
+    expect(appActiveCall).toEqual(
+      expect.objectContaining({
+        screen: "warehouse",
+        surface: "screen_root",
+        enabled: false,
+      }),
+    );
   });
 });

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
+import { useAppActiveRevalidation } from "../../../lib/lifecycle/useAppActiveRevalidation";
 import {
   isWarehouseScreenActive,
   useWarehouseFallbackActiveRef,
@@ -14,6 +15,7 @@ import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork
 
 const TAB_INCOMING = WAREHOUSE_TABS[0];
 const TAB_STOCK_FACT = WAREHOUSE_TABS[1];
+const TAB_EXPENSE = WAREHOUSE_TABS[2];
 const TAB_REPORTS = WAREHOUSE_TABS[3];
 const WAREHOUSE_FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
 
@@ -43,7 +45,7 @@ export function useWarehouseLifecycle(params: {
   );
   const focusedRef = useRef(isScreenFocused);
   const didInitLoadRef = useRef(false);
-  const focusRefreshInFlightRef = useRef<Promise<void> | null>(null);
+  const lifecycleRefreshInFlightRef = useRef<Promise<void> | null>(null);
   const lastFocusRefreshAtRef = useRef(0);
 
   useEffect(() => {
@@ -117,9 +119,23 @@ export function useWarehouseLifecycle(params: {
     }
   }, [tab, fetchToReceive, fetchStock, fetchReports]);
 
+  const startLifecycleRefresh = useCallback(() => {
+    const task = refreshActiveTab()
+      .catch((error) => {
+        if (!isScreenActive()) return;
+        onError(error);
+      })
+      .finally(() => {
+        if (lifecycleRefreshInFlightRef.current === task) {
+          lifecycleRefreshInFlightRef.current = null;
+        }
+      });
+    lifecycleRefreshInFlightRef.current = task;
+    return task;
+  }, [isScreenActive, onError, refreshActiveTab]);
+
   useFocusEffect(
     useCallback(() => {
-      let active = true;
       const now = Date.now();
       const networkSnapshot = getPlatformNetworkSnapshot();
       if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
@@ -151,7 +167,7 @@ export function useWarehouseLifecycle(params: {
         });
         return undefined;
       }
-      if (focusRefreshInFlightRef.current) {
+      if (lifecycleRefreshInFlightRef.current) {
         recordPlatformGuardSkip("recent_same_scope", {
           screen: "warehouse",
           surface: "screen_root",
@@ -162,21 +178,23 @@ export function useWarehouseLifecycle(params: {
         return undefined;
       }
 
-      const task = refreshActiveTab()
-        .catch((e) => {
-          if (!active || !isScreenActive()) return;
-          onError(e);
-        })
-        .finally(() => {
-          if (focusRefreshInFlightRef.current === task) {
-            focusRefreshInFlightRef.current = null;
-          }
-        });
-      focusRefreshInFlightRef.current = task;
+      void startLifecycleRefresh();
       lastFocusRefreshAtRef.current = now;
-      return () => {
-        active = false;
-      };
-    }, [isScreenActive, onError, refreshActiveTab, tab]),
+      return undefined;
+    }, [startLifecycleRefresh, tab]),
   );
+
+  useAppActiveRevalidation({
+    screen: "warehouse",
+    surface: "screen_root",
+    enabled:
+      isScreenFocused &&
+      isWarehouseScreenActive(screenActiveRef) &&
+      tab !== TAB_EXPENSE,
+    onRevalidate: async () => {
+      if (!isScreenActive()) return;
+      await startLifecycleRefresh();
+    },
+    isInFlight: () => lifecycleRefreshInFlightRef.current !== null,
+  });
 }

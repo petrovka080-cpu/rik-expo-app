@@ -3,6 +3,7 @@ import { useFocusEffect } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { WAREHOUSE_TABS, type ReqHeadRow, type Tab } from "../warehouse.types";
+import { useAppActiveRevalidation } from "../../../lib/lifecycle/useAppActiveRevalidation";
 import { useWarehouseReqHeads } from "./useWarehouseReqHeads";
 import { useWarehouseReqItemsData } from "./useWarehouseReqItemsData";
 import { useWarehouseReqModalFlow } from "./useWarehouseReqModalFlow";
@@ -20,7 +21,13 @@ const TAB_EXPENSE = WAREHOUSE_TABS[2];
 const FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
 const TAB_REFRESH_MIN_INTERVAL_MS = 600;
 
-type RefreshReason = "tab" | "focus" | "manual" | "issue" | "realtime";
+type RefreshReason =
+  | "tab"
+  | "focus"
+  | "manual"
+  | "issue"
+  | "realtime"
+  | "app_active";
 
 type ReqPickUiLike = {
   setReqQtyInputByItem: React.Dispatch<
@@ -154,15 +161,9 @@ export function useWarehouseExpenseQueueSlice(params: {
         console.info("[warehouse.expenseQueue] refresh", { force, reason });
       }
 
-      try {
-        await fetchReqHeads(0, force);
-        if (isWarehouseScreenActive(screenActiveRef)) {
-          hasActivatedExpenseRef.current = true;
-        }
-      } catch {
-        // Error is thrown by fetchReqHeads and will be caught by the caller
-        // (tab/focus effects). The failure state machine in useWarehouseReqHeads
-        // handles classification and cooldown.
+      await fetchReqHeads(0, force);
+      if (isWarehouseScreenActive(screenActiveRef)) {
+        hasActivatedExpenseRef.current = true;
       }
     },
     [fetchReqHeads, screenActiveRef],
@@ -275,6 +276,20 @@ export function useWarehouseExpenseQueueSlice(params: {
       return undefined;
     }, [onError, refreshExpenseQueue, screenActiveRef, tab]),
   );
+
+  useAppActiveRevalidation({
+    screen: "warehouse",
+    surface: "req_heads",
+    enabled: isScreenFocused && tab === TAB_EXPENSE && isWarehouseScreenActive(screenActiveRef),
+    onRevalidate: async () => {
+      if (!isWarehouseScreenActive(screenActiveRef)) return;
+      await refreshExpenseQueue({
+        force: hasActivatedExpenseRef.current,
+        reason: "app_active",
+      });
+    },
+    isInFlight: () => reqRefs.current.fetching,
+  });
 
   useEffect(() => {
     if (!isWarehouseScreenActive(screenActiveRef)) return;
