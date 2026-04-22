@@ -89,3 +89,31 @@ npm test -- --runInBand
 npm test
 git diff --check
 ```
+
+## Release tail proof
+
+Runtime release commit:
+
+- commit: `e4f5caae3760d43715678f55c22884330b4ec01c`
+- message: `Foreman: split calc modal owner boundary`
+- pushed to `origin/main`
+
+Guarded OTA publish completed successfully on every required channel:
+
+- `development`
+  - iOS update group: `4a7784a0-544d-4d25-80a8-4eb816a342a7`
+  - Android update group: `d0d07dd7-abda-4c76-8ee2-7e981319aedb`
+- `preview`
+  - iOS update group: `e19aad81-a891-4339-b2e5-7f079b6d67df`
+  - Android update group: `d2a5bc05-4786-45f0-a12d-78ec1caf3d24`
+- `production`
+  - iOS update group: `ad4072bc-e395-4b91-ba48-7d43546854ea`
+  - Android update group: `b3f16e06-0ebd-4c50-8e0b-e9a110be72a1`
+
+Each OTA publish ran through the guarded release path with the same release message and re-validated:
+
+- `tsc`
+- `expo lint`
+- `jest --runInBand`
+- parallel `jest`
+- `git diff --check`

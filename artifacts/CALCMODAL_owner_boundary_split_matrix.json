@@ -1,6 +1,6 @@
 {
   "wave": "CALCMODAL_OWNER_BOUNDARY_SPLIT",
-  "status": "gates_green_pending_release_tail",
+  "status": "GREEN",
   "touched_files": [
     "src/components/foreman/CalcModal.tsx",
     "src/components/foreman/CalcModalContent.tsx",
@@ -44,13 +44,31 @@
   },
   "release_readiness": {
     "commit_ready": true,
-    "push_ready": false,
+    "push_ready": true,
     "ota_required": true,
-    "ota_completed": false
+    "ota_completed": true
   },
   "runtime_proof": {
     "component_regression": "PASS",
     "caller_contract_regression": "PASS",
     "emulator_native_proof": "BLOCKED"
+  },
+  "release_tail": {
+    "runtime_release_commit": "e4f5caae3760d43715678f55c22884330b4ec01c",
+    "runtime_release_message": "Foreman: split calc modal owner boundary",
+    "ota_channels": {
+      "development": {
+        "ios_update_group_id": "4a7784a0-544d-4d25-80a8-4eb816a342a7",
+        "android_update_group_id": "d0d07dd7-abda-4c76-8ee2-7e981319aedb"
+      },
+      "preview": {
+        "ios_update_group_id": "e19aad81-a891-4339-b2e5-7f079b6d67df",
+        "android_update_group_id": "d2a5bc05-4786-45f0-a12d-78ec1caf3d24"
+      },
+      "production": {
+        "ios_update_group_id": "ad4072bc-e395-4b91-ba48-7d43546854ea",
+        "android_update_group_id": "b3f16e06-0ebd-4c50-8e0b-e9a110be72a1"
+      }
+    }
   }
 }
