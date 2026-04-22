@@ -1,0 +1,162 @@
+{
+  "wave": "RPC_SCALE_HARDENING_10K_PHASE_1",
+  "label": "before",
+  "collectedAt": "2026-04-22T16:32:41.187Z",
+  "chosenPath": "warehouse_issue_queue_scope_v4",
+  "bottleneckType": "offset_irrelevant_fallback_truth_branch",
+  "candidateSignals": {
+    "visibleRequestCount": 134,
+    "headCount": 79,
+    "uiTruthCount": 79,
+    "missingUiTruthVisibleCount": 89,
+    "missingUiTruthInHeadCount": 0,
+    "missingUiTruthFallbackOnlyCount": 89,
+    "sampleHeadDependentIds": [],
+    "sampleFallbackOnlyIds": [
+      "b402e9d3-8c2c-4d0a-8f22-44a364b7b3ff",
+      "22194b8b-5d5c-4414-bb87-72403fd01338",
+      "ed4a5a11-ee41-4095-83c6-1ea5b8bc62e2",
+      "ae7a3f3b-8a5b-4321-93ab-3a016a92232c",
+      "55c729c2-2c3d-4a6d-818d-bcc21b17f622",
+      "d12007be-c538-4dbc-910a-3dbf42ce8905",
+      "ba11da88-5f6c-450c-970e-d967f8453473",
+      "539ac5b6-2cc9-4c19-9d7e-8c92b916b4bd",
+      "bb30c71e-a682-4d32-b916-97f1797f2a95",
+      "fbd2fb02-8914-46ed-8942-f71da3e45488"
+    ]
+  },
+  "cpuProof": {
+    "checked_at": "2026-04-22T16:32:43.727128",
+    "build_source_exists": true,
+    "scope_has_substring": false,
+    "scope_has_regexp_match": false,
+    "scope_has_regexp_replace": false,
+    "scope_reads_context_projection": true
+  },
+  "scenarios": [
+    {
+      "label": "page_0_limit_25",
+      "args": {
+        "p_offset": 0,
+        "p_limit": 25
+      },
+      "latencies": [
+        879,
+        865,
+        853
+      ],
+      "medianMs": 865,
+      "maxMs": 879,
+      "payloadBytes": 18182,
+      "rowCount": 25,
+      "total": 122,
+      "repairedMissingIdsCount": 89,
+      "uiTruthRequestCount": 79,
+      "fallbackTruthRequestCount": 79,
+      "parity": {
+        "diffCount": 0,
+        "isDriftFree": true,
+        "rowsEqual": true,
+        "totalEqual": true,
+        "rowCountEqual": true,
+        "hasMoreEqual": true,
+        "repairedMissingIdsEqual": true,
+        "uiTruthRequestCountEqual": true,
+        "fallbackTruthRequestCountEqual": true
+      }
+    },
+    {
+      "label": "page_0_limit_50",
+      "args": {
+        "p_offset": 0,
+        "p_limit": 50
+      },
+      "latencies": [
+        843,
+        857,
+        858
+      ],
+      "medianMs": 857,
+      "maxMs": 858,
+      "payloadBytes": 36010,
+      "rowCount": 50,
+      "total": 122,
+      "repairedMissingIdsCount": 89,
+      "uiTruthRequestCount": 79,
+      "fallbackTruthRequestCount": 79,
+      "parity": {
+        "diffCount": 0,
+        "isDriftFree": true,
+        "rowsEqual": true,
+        "totalEqual": true,
+        "rowCountEqual": true,
+        "hasMoreEqual": true,
+        "repairedMissingIdsEqual": true,
+        "uiTruthRequestCountEqual": true,
+        "fallbackTruthRequestCountEqual": true
+      }
+    },
+    {
+      "label": "page_0_limit_100",
+      "args": {
+        "p_offset": 0,
+        "p_limit": 100
+      },
+      "latencies": [
+        916,
+        885,
+        875
+      ],
+      "medianMs": 885,
+      "maxMs": 916,
+      "payloadBytes": 73340,
+      "rowCount": 100,
+      "total": 122,
+      "repairedMissingIdsCount": 89,
+      "uiTruthRequestCount": 79,
+      "fallbackTruthRequestCount": 79,
+      "parity": {
+        "diffCount": 0,
+        "isDriftFree": true,
+        "rowsEqual": true,
+        "totalEqual": true,
+        "rowCountEqual": true,
+        "hasMoreEqual": true,
+        "repairedMissingIdsEqual": true,
+        "uiTruthRequestCountEqual": true,
+        "fallbackTruthRequestCountEqual": true
+      }
+    },
+    {
+      "label": "deep_page_limit_100",
+      "args": {
+        "p_offset": 300,
+        "p_limit": 100
+      },
+      "latencies": [
+        918,
+        879,
+        846
+      ],
+      "medianMs": 879,
+      "maxMs": 918,
+      "payloadBytes": 446,
+      "rowCount": 0,
+      "total": 43,
+      "repairedMissingIdsCount": 89,
+      "uiTruthRequestCount": 79,
+      "fallbackTruthRequestCount": 79,
+      "parity": {
+        "diffCount": 0,
+        "isDriftFree": true,
+        "rowsEqual": true,
+        "totalEqual": true,
+        "rowCountEqual": true,
+        "hasMoreEqual": true,
+        "repairedMissingIdsEqual": true,
+        "uiTruthRequestCountEqual": true,
+        "fallbackTruthRequestCountEqual": true
+      }
+    }
+  ]
+}

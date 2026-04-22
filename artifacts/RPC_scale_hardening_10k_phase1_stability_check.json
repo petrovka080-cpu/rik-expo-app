@@ -1,0 +1,196 @@
+{
+  "wave": "RPC_SCALE_HARDENING_10K_PHASE_1",
+  "label": "stability_check",
+  "collectedAt": "2026-04-22T16:43:18.447Z",
+  "scenarios": [
+    {
+      "label": "page_0_limit_50",
+      "args": {
+        "p_offset": 0,
+        "p_limit": 50
+      },
+      "runs": 10,
+      "medianMs": 724,
+      "maxMs": 1278,
+      "minMs": 695,
+      "latencies": [
+        {
+          "ms": 1255,
+          "rows": 50,
+          "total": 122
+        },
+        {
+          "ms": 1278,
+          "rows": 50,
+          "total": 122
+        },
+        {
+          "ms": 720,
+          "rows": 50,
+          "total": 122
+        },
+        {
+          "ms": 727,
+          "rows": 50,
+          "total": 122
+        },
+        {
+          "ms": 695,
+          "rows": 50,
+          "total": 122
+        },
+        {
+          "ms": 875,
+          "rows": 50,
+          "total": 122
+        },
+        {
+          "ms": 925,
+          "rows": 50,
+          "total": 122
+        },
+        {
+          "ms": 701,
+          "rows": 50,
+          "total": 122
+        },
+        {
+          "ms": 709,
+          "rows": 50,
+          "total": 122
+        },
+        {
+          "ms": 706,
+          "rows": 50,
+          "total": 122
+        }
+      ]
+    },
+    {
+      "label": "page_0_limit_100",
+      "args": {
+        "p_offset": 0,
+        "p_limit": 100
+      },
+      "runs": 10,
+      "medianMs": 715,
+      "maxMs": 930,
+      "minMs": 700,
+      "latencies": [
+        {
+          "ms": 718,
+          "rows": 100,
+          "total": 122
+        },
+        {
+          "ms": 705,
+          "rows": 100,
+          "total": 122
+        },
+        {
+          "ms": 725,
+          "rows": 100,
+          "total": 122
+        },
+        {
+          "ms": 930,
+          "rows": 100,
+          "total": 122
+        },
+        {
+          "ms": 708,
+          "rows": 100,
+          "total": 122
+        },
+        {
+          "ms": 715,
+          "rows": 100,
+          "total": 122
+        },
+        {
+          "ms": 748,
+          "rows": 100,
+          "total": 122
+        },
+        {
+          "ms": 714,
+          "rows": 100,
+          "total": 122
+        },
+        {
+          "ms": 700,
+          "rows": 100,
+          "total": 122
+        },
+        {
+          "ms": 708,
+          "rows": 100,
+          "total": 122
+        }
+      ]
+    },
+    {
+      "label": "deep_page_limit_100",
+      "args": {
+        "p_offset": 300,
+        "p_limit": 100
+      },
+      "runs": 10,
+      "medianMs": 566,
+      "maxMs": 1178,
+      "minMs": 560,
+      "latencies": [
+        {
+          "ms": 563,
+          "rows": 0,
+          "total": 43
+        },
+        {
+          "ms": 562,
+          "rows": 0,
+          "total": 43
+        },
+        {
+          "ms": 1178,
+          "rows": 0,
+          "total": 43
+        },
+        {
+          "ms": 567,
+          "rows": 0,
+          "total": 43
+        },
+        {
+          "ms": 563,
+          "rows": 0,
+          "total": 43
+        },
+        {
+          "ms": 564,
+          "rows": 0,
+          "total": 43
+        },
+        {
+          "ms": 776,
+          "rows": 0,
+          "total": 43
+        },
+        {
+          "ms": 571,
+          "rows": 0,
+          "total": 43
+        },
+        {
+          "ms": 560,
+          "rows": 0,
+          "total": 43
+        },
+        {
+          "ms": 584,
+          "rows": 0,
+          "total": 43
+        }
+      ]
+    }
+  ]
+}
