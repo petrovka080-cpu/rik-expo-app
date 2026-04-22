@@ -238,6 +238,25 @@ describe("releaseGuard.shared", () => {
         ]),
       );
     });
+
+    it("blocks OTA entirely when the release classification requires a new build", () => {
+      const readiness = evaluateReleaseGuardReadiness({
+        mode: "ota",
+        repo: createRepoState(),
+        gates: createPassedGates(),
+        classification: classifyReleaseChanges({
+          changedFiles: ["app.json"],
+        }),
+        targetChannel: "production",
+        releaseMessage: "Runtime fingerprint policy",
+        missingArtifacts: [],
+        expectedBranch: "production",
+      });
+
+      expect(readiness.status).toBe("fail");
+      expect(readiness.otaDisposition).toBe("block");
+      expect(readiness.blockers).toContain("Release classification requires a new build. OTA publish is blocked.");
+    });
   });
 
   describe("parseEasUpdateOutput", () => {

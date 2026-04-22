@@ -90,7 +90,44 @@ function createSnapshot(overrides: SnapshotOverrides = {}): RuntimeReleaseSnapsh
 }
 
 describe("releaseInfo", () => {
-  it("builds a release config summary and warns that remote build numbers are authoritative", () => {
+  it("builds a release config summary for fingerprint runtime policy and warns that remote build numbers are authoritative", () => {
+    const summary = buildReleaseConfigSummary({
+      appName: "rik-expo-app",
+      appSlug: "rik-expo-app",
+      appVersion: "1.0.0",
+      configuredIosBuildNumber: "13",
+      configuredAndroidVersionCode: "13",
+      runtimeVersion: "policy:fingerprint",
+      runtimePolicy: "policy:fingerprint",
+      updatesEnabled: true,
+      updatesUrl: "https://u.expo.dev/project-id",
+      projectId: "project-id",
+      checkAutomatically: "ON_LOAD",
+      fallbackToCacheTimeout: 0,
+      appVersionSource: "remote",
+      buildProfiles: [
+        { name: "development", channel: "development", distribution: "internal", autoIncrement: false },
+        { name: "preview", channel: "preview", distribution: "internal", autoIncrement: false },
+        { name: "production", channel: "production", distribution: "store", autoIncrement: true },
+      ],
+      gitBranch: "main",
+      gitCommit: "abc123",
+      gitDirty: false,
+    });
+
+    expect(summary.branchByChannel.production).toBe("production");
+    expect(summary.risks).toContain(
+      "appVersionSource=remote means local ios.buildNumber/android.versionCode are not authoritative for shipped binaries; EAS Build owns the real counters.",
+    );
+    expect(summary.risks).toContain(
+      "runtimeVersion uses the fingerprint policy. Native/runtime-affecting changes require fresh builds before publishing compatible OTA updates.",
+    );
+    expect(summary.risks).not.toContain(
+      "runtimeVersion is pinned. OTA remains valid only while the native host stays compatible; changing the runtime policy requires new builds.",
+    );
+  });
+
+  it("keeps the fixed-runtime warning explicit for pinned runtimes", () => {
     const summary = buildReleaseConfigSummary({
       appName: "rik-expo-app",
       appSlug: "rik-expo-app",
@@ -115,9 +152,8 @@ describe("releaseInfo", () => {
       gitDirty: false,
     });
 
-    expect(summary.branchByChannel.production).toBe("production");
     expect(summary.risks).toContain(
-      "appVersionSource=remote means local ios.buildNumber/android.versionCode are not authoritative for shipped binaries; EAS Build owns the real counters.",
+      "runtimeVersion is pinned. OTA remains valid only while the native host stays compatible; changing the runtime policy requires new builds.",
     );
   });
 

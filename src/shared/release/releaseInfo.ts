@@ -10,8 +10,6 @@ import type {
   ReleaseDecisionSummary,
   ReleaseDiagnostics,
   ReleaseMetadata,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  ReleaseMetadataFields,
   ReleaseMetadataSource,
   ReleaseUpdateAvailabilityState,
   RuntimeReleaseSnapshot,
@@ -166,12 +164,6 @@ export function safeString(value: unknown, fallback = UNKNOWN): string {
 
 function safeBoolean(value: unknown): boolean {
   return value === true;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function safeNumber(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  return null;
 }
 
 function pushUnique(target: string[], value: string) {
@@ -362,6 +354,11 @@ export function buildReleaseConfigSummary(input: ReleaseConfigInput): ReleaseCon
     pushUnique(
       risks,
       "runtimeVersion is pinned. OTA remains valid only while the native host stays compatible; changing the runtime policy requires new builds.",
+    );
+  } else if (input.runtimePolicy === "policy:fingerprint") {
+    pushUnique(
+      risks,
+      "runtimeVersion uses the fingerprint policy. Native/runtime-affecting changes require fresh builds before publishing compatible OTA updates.",
     );
   }
 

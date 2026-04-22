@@ -1,0 +1,37 @@
+{
+  "wave": "RUNTIME_VERSION_FINGERPRINT_DISCIPLINE",
+  "status": "gates-green-pre-release-tail",
+  "touchedFiles": [
+    "app.json",
+    "src/shared/release/releaseInfo.ts",
+    "src/shared/release/releaseInfo.test.ts",
+    "tests/release/releaseConfig.shared.test.ts",
+    "tests/release/releaseGuard.shared.test.ts",
+    "tests/release/release-safety.test.ts"
+  ],
+  "businessSemanticsChanged": false,
+  "uiSemanticsChanged": false,
+  "releaseCompatibilityPolicyChanged": true,
+  "runtimePolicy": {
+    "before": "fixed(1.0.0)",
+    "after": "policy:fingerprint"
+  },
+  "focusedTests": [
+    "tests/release/release-safety.test.ts",
+    "tests/release/releaseGuard.shared.test.ts",
+    "tests/release/releaseConfig.shared.test.ts",
+    "src/shared/release/releaseInfo.test.ts"
+  ],
+  "gates": {
+    "tsc": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "releaseClassification": {
+    "otaAllowed": false,
+    "newBuildRequired": true,
+    "reason": "app.json runtimeVersion policy changed to fingerprint"
+  }
+}
