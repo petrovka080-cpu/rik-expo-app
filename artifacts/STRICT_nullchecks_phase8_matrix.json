@@ -1,0 +1,87 @@
+{
+  "wave": "STRICT_NULLCHECKS_PHASE_8",
+  "chosenSlice": {
+    "path": "src/lib/api/canonicalPdfBackendInvoker.ts",
+    "reason": "1 local strict-null blocker at a canonical PDF transport/process boundary with focused regression coverage and low blast radius"
+  },
+  "shortlist": [
+    {
+      "candidate": "src/lib/pdf/pdfViewer.route.ts",
+      "status": "safe_lower_value",
+      "reason": "route contract is isolated and strict-clean already, so it adds weaker immediate value for this wave"
+    },
+    {
+      "candidate": "src/screens/foreman/foreman.terminalRecovery.ts",
+      "status": "blocked_cross_dependency",
+      "reason": "isolated probe also pulls buyer/director/shared-PDF/local-draft blockers"
+    },
+    {
+      "candidate": "src/screens/warehouse/hooks/useWarehouseScreenActions.ts",
+      "status": "too_wide",
+      "reason": "process-orchestration probe also pulls canonical PDF transport and adjacent warehouse action blockers"
+    },
+    {
+      "candidate": "src/lib/api/canonicalPdfBackendInvoker.ts",
+      "status": "chosen",
+      "reason": "one local transport-body blocker only, fixed by an explicit payload contract inside the chosen slice"
+    }
+  ],
+  "touchedFiles": [
+    "src/lib/api/canonicalPdfBackendInvoker.ts",
+    "src/lib/api/canonicalPdfBackendInvoker.test.ts",
+    "tests/strict-null/canonicalPdfBackendInvoker.phase8.test.ts",
+    "tsconfig.strict-null-phase8-canonical-pdf-backend-invoker.json",
+    "artifacts/STRICT_nullchecks_phase8_notes.md",
+    "artifacts/STRICT_nullchecks_phase8_proof.md",
+    "artifacts/STRICT_nullchecks_phase8_matrix.json"
+  ],
+  "guardsOrNormalizersAdded": [
+    "CanonicalPdfInvokePayload",
+    "CanonicalPdfInvokePayloadContract",
+    "resolveCanonicalPdfInvokePayloadContract",
+    "normalizeCanonicalPdfInvokePayload",
+    "normalizeCanonicalPdfInvokeArgs"
+  ],
+  "testsAdded": [
+    "tests/strict-null/canonicalPdfBackendInvoker.phase8.test.ts"
+  ],
+  "semanticsChanged": false,
+  "phase8StrictCompile": "PASS",
+  "rootTypecheck": "PASS",
+  "lint": "PASS",
+  "focusedTests": "PASS",
+  "runInBandTests": "PASS",
+  "parallelTests": "PASS",
+  "gitDiffCheck": "PASS",
+  "releaseReadiness": {
+    "runtimeDiffExpected": true,
+    "otaNeededIfGreen": true,
+    "commit": "18d7c56",
+    "push": "PASS",
+    "otaExecuted": true,
+    "ota": {
+      "development": {
+        "iosRuntimeVersion": "7ba116c416495908222b37d232a9a1ab877c4a82",
+        "iosUpdateGroupId": "b1031b7b-afd4-45a0-8fae-a26af37e8c82",
+        "iosUpdateId": "019db5a2-9173-7c0a-a4e0-28c67a63896e",
+        "androidRuntimeVersion": "06479ede57796decbd74bcf425db1d8fd63c01b1",
+        "androidUpdateGroupId": "b46ebf7e-3f61-404a-8aec-f0e8ccd985b6",
+        "androidUpdateId": "019db5a2-9173-79bb-b44e-9f75b4020d53"
+      },
+      "preview": {
+        "iosUpdateGroupId": "f7079ce0-986a-470b-9f6d-7c1e24e6c641",
+        "iosUpdateId": "019db5a3-a77b-7ddf-8476-215d8d742b38",
+        "androidUpdateGroupId": "9cecba67-9e9e-4fe1-b89d-7d87f0ec2109",
+        "androidUpdateId": "019db5a3-a77b-7d21-96b7-8e0001538e38"
+      },
+      "production": {
+        "iosUpdateGroupId": "b898854e-7579-4886-9cdf-3d0417030a58",
+        "iosUpdateId": "019db5a4-adf3-7df8-b244-2e2020acf2c7",
+        "androidUpdateGroupId": "8c0a8c9a-62bc-47a2-8b75-b57aa5a2e2b3",
+        "androidUpdateId": "019db5a4-adf3-7e16-bd1d-025abd4eb818"
+      }
+    },
+    "headMatchesOriginMain": true,
+    "worktreeClean": true
+  }
+}
