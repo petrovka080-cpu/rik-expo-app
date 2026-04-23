@@ -40,6 +40,11 @@
         "sourceOfTruthVersion": 1,
         "runtimePolicy": "fixed(1.0.0)",
         "appVersionSource": "remote",
+        "runtimeStabilizationProof": {
+          "fixedRuntime": "1.0.0",
+          "stabilizedAt": "2026-04-23",
+          "wave": "OTA_RUNTIME_STABILIZATION_AND_RELEASE_FLOW"
+        },
         "channelBranchMapping": {
           "development": "development",
           "preview": "preview",
