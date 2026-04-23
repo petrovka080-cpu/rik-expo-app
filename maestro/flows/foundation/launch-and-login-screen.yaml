@@ -1,0 +1,11 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Launch And Login Screen
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- assertVisible: "Войти в GOX"
+- assertVisible: "Зарегистрироваться"
+- stopApp

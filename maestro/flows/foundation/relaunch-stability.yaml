@@ -1,0 +1,16 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Relaunch Stability
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- assertVisible: "Войти в GOX"
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- assertVisible: "Войти в GOX"
+- stopApp

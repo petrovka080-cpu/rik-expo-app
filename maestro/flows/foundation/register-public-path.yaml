@@ -1,0 +1,15 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Register Public Path
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- tapOn: "Зарегистрироваться"
+- extendedWaitUntil:
+    visible: "Создать"
+    timeout: 15000
+- assertVisible: "Создать"
+- assertVisible: "Войти"
+- stopApp

@@ -1,0 +1,15 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Login Form Basic Interaction
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- tapOn: "Email"
+- inputText: "foundation@example.test"
+- assertVisible: "foundation@example.test"
+- tapOn: "Пароль"
+- inputText: "foundation-secret-123"
+- assertVisible: "foundation@example.test"
+- stopApp
