@@ -1,0 +1,30 @@
+{
+  "wave": "RLS_COVERAGE_HARDENING_PHASE_2",
+  "chosen_slice": "app_errors insert-only diagnostics sink",
+  "table": "app_errors",
+  "operation": "insert",
+  "before_risk": "direct runtime insert path existed but repo did not prove RLS/grant/policy coverage",
+  "after_status": "RLS enabled with anon/authenticated insert-only policy; no direct select/update/delete grants",
+  "positive_path": "anon/authenticated insert redacted diagnostics payload",
+  "negative_path": "anon/authenticated select/update/delete remain ungranted; spoofed created_by rejected",
+  "semantics_changed": false,
+  "runtime_js_changed": false,
+  "migration": "supabase/migrations/20260423103000_rls_coverage_hardening_app_errors_phase2.sql",
+  "tests": [
+    "tests/security/rlsCoverageVerification.test.ts"
+  ],
+  "next_remaining_risks": [
+    "ai_configs authenticated read policy remains unverified",
+    "ai_reports company-scoped upsert RLS remains unverified",
+    "core realtime business-table cluster remains too wide for single-table hardening"
+  ],
+  "gates": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "focused_tests": "PASS",
+    "npm_test_run_in_band": "PASS",
+    "npm_test": "PASS",
+    "diff_check": "PASS"
+  },
+  "ota": "SKIPPED_RUNTIME_UNCHANGED"
+}

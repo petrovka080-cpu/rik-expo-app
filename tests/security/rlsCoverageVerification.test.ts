@@ -27,6 +27,9 @@ const accountantIdempotencySource = readMigration("20260412140000_accounting_pay
 const accountantSearchPathSource = readMigration(
   "20260416220000_p0_3_finance_security_definer_search_path_payment_v1.sql",
 );
+const appErrorsRlsPhase2Source = readMigration(
+  "20260423103000_rls_coverage_hardening_app_errors_phase2.sql",
+);
 
 describe("RLS coverage verification for critical mutation boundaries", () => {
   it("keeps buyer proposal submit behind an RLS-protected idempotency ledger and authenticated wrapper", () => {
@@ -149,5 +152,37 @@ describe("RLS coverage verification for critical mutation boundaries", () => {
     for (const [tableName, source] of selectedLedgerSources) {
       expectNoDirectTableGrant(source, tableName);
     }
+  });
+
+  it("keeps app_errors as an insert-only diagnostic sink with no direct read/update/delete grants", () => {
+    expect(appErrorsRlsPhase2Source).toContain("create table if not exists public.app_errors");
+    expect(appErrorsRlsPhase2Source).toContain("alter table public.app_errors enable row level security;");
+    expect(appErrorsRlsPhase2Source).toContain("revoke all on table public.app_errors from anon;");
+    expect(appErrorsRlsPhase2Source).toContain("revoke all on table public.app_errors from authenticated;");
+    expect(appErrorsRlsPhase2Source).toContain("grant insert on table public.app_errors to anon, authenticated;");
+    expect(appErrorsRlsPhase2Source).not.toMatch(
+      /grant\s+select\s+on\s+table\s+public\.app_errors\s+to\s+(anon|authenticated)/i,
+    );
+    expect(appErrorsRlsPhase2Source).not.toMatch(
+      /grant\s+update\s+on\s+table\s+public\.app_errors\s+to\s+(anon|authenticated)/i,
+    );
+    expect(appErrorsRlsPhase2Source).not.toMatch(
+      /grant\s+delete\s+on\s+table\s+public\.app_errors\s+to\s+(anon|authenticated)/i,
+    );
+  });
+
+  it("constrains app_errors inserts without changing the existing logging payload contract", () => {
+    expect(appErrorsRlsPhase2Source).toContain("create policy app_errors_insert_redacted_sink");
+    expect(appErrorsRlsPhase2Source).toContain("for insert");
+    expect(appErrorsRlsPhase2Source).toContain("to anon, authenticated");
+    expect(appErrorsRlsPhase2Source).toContain("created_by is not distinct from auth.uid()");
+    expect(appErrorsRlsPhase2Source).toContain("length(btrim(coalesce(context, ''))) between 1 and 200");
+    expect(appErrorsRlsPhase2Source).toContain("length(btrim(coalesce(message, ''))) between 1 and 4000");
+    expect(appErrorsRlsPhase2Source).toContain(
+      "coalesce(platform, '') in ('ios', 'android', 'web', 'windows', 'macos')",
+    );
+    expect(appErrorsRlsPhase2Source).not.toMatch(/for\s+select/i);
+    expect(appErrorsRlsPhase2Source).not.toMatch(/for\s+update/i);
+    expect(appErrorsRlsPhase2Source).not.toMatch(/for\s+delete/i);
   });
 });
