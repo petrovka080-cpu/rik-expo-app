@@ -194,7 +194,7 @@ describe("ProfileContent composition shell", () => {
     act(() => {
       (capturedMainProps?.onOpenOfficeAccess as (() => void) | undefined)?.();
     });
-    expect(mockPush).toHaveBeenCalledWith("/office/index");
+    expect(mockPush).toHaveBeenCalledWith("/(tabs)/office");
   });
 
   it("keeps seller entry hidden when there are no own listings", async () => {

@@ -1,0 +1,53 @@
+{
+  "wave": "E2E_MAESTRO_PHASE_3_CRITICAL_FLOWS",
+  "status": "GREEN",
+  "tool": "maestro",
+  "device_kind": "android_emulator",
+  "api_level": 34,
+  "image_kind": "x86_64",
+  "app_build": "release",
+  "production_surface_touched": true,
+  "production_logic_changed": false,
+  "flows": [
+    {
+      "id": "office-safe-entry",
+      "scenario": "protected office entry from profile",
+      "route": "/auth/login -> /(tabs)/profile -> /(tabs)/office",
+      "requires_testid": true,
+      "seeded_data": true,
+      "flake_risk": "low",
+      "assert_signal": "office-direction-open-buyer",
+      "status": "PASS"
+    },
+    {
+      "id": "office-buyer-route-roundtrip",
+      "scenario": "office to buyer route roundtrip",
+      "route": "/(tabs)/office -> /office/buyer -> /(tabs)/office",
+      "requires_testid": true,
+      "seeded_data": true,
+      "flake_risk": "low",
+      "assert_signal": "buyer-search-input",
+      "status": "PASS"
+    },
+    {
+      "id": "market-entry",
+      "scenario": "protected market entry from profile",
+      "route": "/(tabs)/profile -> /(tabs)/market",
+      "requires_testid": true,
+      "seeded_data": false,
+      "flake_risk": "low",
+      "assert_signal": "market-home-title",
+      "status": "PASS"
+    },
+    {
+      "id": "active-context-switch",
+      "scenario": "active context switch between office and market",
+      "route": "/(tabs)/profile -> /(tabs)/office -> /(tabs)/profile -> /(tabs)/market",
+      "requires_testid": true,
+      "seeded_data": true,
+      "flake_risk": "low",
+      "assert_signal": "tabs.profile + market-home-title",
+      "status": "PASS"
+    }
+  ]
+}

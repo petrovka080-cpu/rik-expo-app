@@ -623,6 +623,7 @@ export function BuyerScreen() {
       }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <TextInput
+            testID="buyer-search-input"
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder={BUYER_SEARCH_PLACEHOLDER}

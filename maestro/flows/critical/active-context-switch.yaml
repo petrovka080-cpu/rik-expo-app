@@ -1,0 +1,67 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Active Context Switch
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_AUTH_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_AUTH_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "profile-context-office"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- extendedWaitUntil:
+    visible:
+      id: "profile-context-office"
+    timeout: 30000
+- tapOn:
+    id: "profile-context-office"
+- tapOn:
+    id: "profile-open-active-context"
+- extendedWaitUntil:
+    visible:
+      id: "office-section-directions"
+    timeout: 30000
+- assertVisible:
+    id: "office-direction-open-buyer"
+- tapOn:
+    id: "tabs.profile"
+- scrollUntilVisible:
+    element:
+      id: "profile-context-market"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- extendedWaitUntil:
+    visible:
+      id: "profile-context-market"
+    timeout: 15000
+- tapOn:
+    id: "profile-context-market"
+- tapOn:
+    id: "profile-open-active-context"
+- extendedWaitUntil:
+    visible:
+      id: "market-home-title"
+    timeout: 30000
+- assertVisible:
+    id: "market-home-title"
+- stopApp

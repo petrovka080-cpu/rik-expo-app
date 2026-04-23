@@ -41,9 +41,7 @@ function resolveAssistantContext(segments: string[]): string {
 }
 
 function isOfficeTabPath(pathname: string | null | undefined) {
-  return (
-    pathname === "/office" || String(pathname ?? "").startsWith("/office/")
-  );
+  return pathname === "/office" || String(pathname ?? "").startsWith("/office/");
 }
 
 export default function TabsLayout() {
@@ -133,6 +131,7 @@ export default function TabsLayout() {
           name="market"
           options={{
             title: "Главная",
+            tabBarButtonTestID: "tabs.market",
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
                 name={iconForRoute("market", focused)}
@@ -146,6 +145,7 @@ export default function TabsLayout() {
           name="office"
           options={{
             title: "Офис",
+            tabBarButtonTestID: "tabs.office",
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
                 name={iconForRoute("office", focused)}
@@ -187,6 +187,7 @@ export default function TabsLayout() {
           name="profile"
           options={{
             title: "Профиль",
+            tabBarButtonTestID: "tabs.profile",
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
                 name={iconForRoute("profile", focused)}

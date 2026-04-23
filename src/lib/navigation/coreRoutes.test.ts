@@ -10,6 +10,7 @@ import {
   DIRECTOR_ROUTE,
   MARKET_AUCTIONS_ROUTE,
   MARKET_TAB_ROUTE,
+  OFFICE_TAB_ROUTE,
   PROFILE_TAB_ROUTE,
   REPORTS_AI_ASSISTANT_ROUTE,
   REPORTS_DASHBOARD_ROUTE,
@@ -25,6 +26,7 @@ describe("coreRoutes", () => {
     expect(DIRECTOR_ROUTE).toBe("/office/director");
     expect(ADD_LISTING_ROUTE).toBe("/(tabs)/add");
     expect(MARKET_TAB_ROUTE).toBe("/(tabs)/market");
+    expect(OFFICE_TAB_ROUTE).toBe("/(tabs)/office");
     expect(PROFILE_TAB_ROUTE).toBe("/(tabs)/profile");
     expect(MARKET_AUCTIONS_ROUTE).toBe("/auctions");
     expect(REPORTS_DASHBOARD_ROUTE).toBe("/reports/dashboard");

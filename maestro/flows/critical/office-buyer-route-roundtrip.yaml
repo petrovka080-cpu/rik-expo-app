@@ -1,0 +1,67 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Office Buyer Route Roundtrip
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_AUTH_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_AUTH_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- extendedWaitUntil:
+    visible:
+      id: "profile-open-office-access"
+    timeout: 30000
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-buyer"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-buyer"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_BUYER_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "buyer-search-input"
+    timeout: 30000
+- assertVisible:
+    id: "buyer-search-input"
+- back
+- extendedWaitUntil:
+    visible:
+      id: "office-section-directions"
+    timeout: 30000
+- assertVisible:
+    id: "office-direction-open-buyer"
+- stopApp

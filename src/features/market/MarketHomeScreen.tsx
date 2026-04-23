@@ -398,7 +398,7 @@ export default function MarketHomeScreen() {
       />
 
       <View style={styles.marketIntro}>
-        <Text style={styles.marketTitle}>Маркет</Text>
+        <Text testID="market-home-title" style={styles.marketTitle}>Маркет</Text>
         <Text style={styles.marketSubtitle}>Сначала товар, цена и продавец. Остальное ниже по экрану.</Text>
       </View>
 
