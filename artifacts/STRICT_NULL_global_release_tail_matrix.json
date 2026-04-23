@@ -1,0 +1,53 @@
+[
+  {
+    "id": "release-preflight",
+    "command": "npm run release:preflight -- --json --report-file artifacts/STRICT_NULL_global_release_tail_preflight.json",
+    "guard_mode": "preflight",
+    "classification": "runtime-ota",
+    "ota_disposition": "allow",
+    "gates": ["tsc", "expo-lint", "jest-run-in-band", "jest", "git-diff-check"],
+    "status": "passed"
+  },
+  {
+    "id": "release-verify",
+    "command": "npm run release:verify -- --json --report-file artifacts/STRICT_NULL_global_release_tail_verify.json",
+    "guard_mode": "verify",
+    "classification": "runtime-ota",
+    "ota_disposition": "allow",
+    "gates": ["tsc", "expo-lint", "jest-run-in-band", "jest", "git-diff-check"],
+    "status": "passed"
+  },
+  {
+    "id": "ota-development",
+    "command": "npm run release:ota -- --channel development --message \"TS strict null checks safely\" --report-file artifacts/STRICT_NULL_global_release_tail_ota_development.json",
+    "guard_mode": "ota",
+    "channel": "development",
+    "ota_disposition": "allow",
+    "update_group_id": "397b4554-a87c-4b2d-b4de-cd60f4947893",
+    "android_update_id": "019db91a-5d7c-7aca-ace9-bdd4d6fe25c1",
+    "ios_update_id": "019db91a-5d7c-76ab-89bc-f2f8d7ad782b",
+    "status": "published"
+  },
+  {
+    "id": "ota-preview",
+    "command": "npm run release:ota -- --channel preview --message \"TS strict null checks safely\" --report-file artifacts/STRICT_NULL_global_release_tail_ota_preview.json",
+    "guard_mode": "ota",
+    "channel": "preview",
+    "ota_disposition": "allow",
+    "update_group_id": "6ce9d86f-b252-4b15-8384-c91b112c1062",
+    "android_update_id": "019db91e-2bb0-72e0-b243-d835c1f2c742",
+    "ios_update_id": "019db91e-2bb0-7cf9-b24a-c732c8290911",
+    "status": "published"
+  },
+  {
+    "id": "ota-production",
+    "command": "npm run release:ota -- --channel production --message \"TS strict null checks safely\" --report-file artifacts/STRICT_NULL_global_release_tail_ota_production.json",
+    "guard_mode": "ota",
+    "channel": "production",
+    "ota_disposition": "allow",
+    "update_group_id": "745fac23-7d36-4ead-8388-69c991ccd54a",
+    "android_update_id": "019db922-fcb7-7dc9-9ff3-8a0f8f899621",
+    "ios_update_id": "019db922-fcb7-791f-8a56-0ac398f99d9d",
+    "status": "published"
+  }
+]
