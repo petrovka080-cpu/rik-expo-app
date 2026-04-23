@@ -100,6 +100,7 @@ export default function DirectorDashboard(p: Props) {
     const sv = topTabsRef.current as TopTabsListRef | null;
     const rec = topTabXRef.current?.[p.dirTab];
     if (!sv || !rec) return;
+    if (typeof sv.scrollToOffset !== "function") return;
     try {
       sv.scrollToOffset({ offset: Math.max(0, rec.x - 12), animated: true });
     } catch (error) {

@@ -31,7 +31,7 @@ describe("filePick", () => {
     mockGetDocumentAsync.mockReset();
     mockReportAndSwallow.mockReset();
     reactNative.Platform.OS = "android";
-    delete runtime.document;
+    Reflect.deleteProperty(runtime, "document");
   });
 
   it("surfaces a controlled alert and observability when native picking fails", async () => {

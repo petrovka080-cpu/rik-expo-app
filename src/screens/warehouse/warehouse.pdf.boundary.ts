@@ -257,7 +257,7 @@ export function useWarehousePdfPreviewBoundary(params: {
   const { busy, notifyError } = params;
   const router = useRouter();
 
-  return useCallback(async (request: WarehousePdfPreviewRequest) => {
+  return useCallback(async (request: WarehousePdfPreviewRequestInput) => {
     try {
       const contract = resolveWarehousePdfPreviewContract(request);
       if (contract.kind !== "ready") {

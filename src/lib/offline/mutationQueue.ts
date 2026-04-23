@@ -268,11 +268,16 @@ const updateQueueEntry = async (
   return await queuePersistence.run(async () => {
     const queue = await loadQueueInternal();
     let nextEntry: ForemanMutationQueueEntry | null = null;
-    const next = queue.map((entry) => {
-      if (entry.id !== mutationId) return entry;
-      nextEntry = updater(entry);
-      return nextEntry;
-    });
+    const next: ForemanMutationQueueEntry[] = [];
+    for (const entry of queue) {
+      if (entry.id !== mutationId) {
+        next.push(entry);
+        continue;
+      }
+      const updated = updater(entry);
+      nextEntry = updated;
+      next.push(updated);
+    }
     await saveQueueInternal(next);
     return nextEntry;
   });

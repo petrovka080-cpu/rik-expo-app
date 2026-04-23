@@ -3,6 +3,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "strict": false,
+    "strictNullChecks": true,
     "skipLibCheck": true,
     "noEmit": true,
     "baseUrl": ".",

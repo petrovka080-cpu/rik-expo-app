@@ -630,7 +630,9 @@ export async function loadInitialWorkMaterialsForModal(
       const matsRows = asArray(matsQ.data as WorkProgressLogMaterialRow[]).map(
         normalizeWorkProgressLogMaterialRow,
       );
-      const codes = matsRows.map((m) => m.mat_code).filter(Boolean);
+      const codes = matsRows
+        .map((m) => m.mat_code)
+        .filter((code): code is string => typeof code === "string" && code.trim().length > 0);
       let namesMap: Record<string, CatalogMeta> = {};
 
       if (codes.length) {
@@ -688,7 +690,9 @@ export async function loadInitialWorkMaterialsForModal(
   }
 
   if (!defaults.length) return [];
-  const codes = defaults.map((d) => d.mat_code).filter(Boolean);
+  const codes = defaults
+    .map((d) => d.mat_code)
+    .filter((code): code is string => typeof code === "string" && code.trim().length > 0);
   let namesMap: Record<string, CatalogMeta> = {};
   if (codes.length) {
     const ci = await supabaseClient

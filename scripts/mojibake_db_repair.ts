@@ -136,7 +136,13 @@ async function repairTable(spec: RepairSpec) {
 
 async function main() {
   const startedAt = new Date().toISOString();
-  const tableResults = [];
+  const tableResults: Array<{
+    table: string;
+    scannedRows: number;
+    repairedRows: number;
+    repairedFields: number;
+    samples: Array<{ id: string; patch: RowRecord }>;
+  }> = [];
   for (const spec of REPAIR_SPECS) {
     tableResults.push(await repairTable(spec));
   }

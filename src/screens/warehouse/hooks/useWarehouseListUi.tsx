@@ -12,7 +12,7 @@ export function useWarehouseListUi(params: {
   refreshing: boolean;
   onRefresh: () => void;
   isWeb: boolean;
-  onListScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onListScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 }) {
   const { headerMax, refreshing, onRefresh, isWeb, onListScroll } = params;
 

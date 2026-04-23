@@ -206,7 +206,9 @@ export async function generateHistoryPdfForLog(params: {
     .eq("log_id", log.id);
 
   const matsRowsRaw: LogMaterialRow[] = Array.isArray(mats) ? (mats as LogMaterialRow[]) : [];
-  const codes = matsRowsRaw.map((m) => m.mat_code).filter(Boolean);
+  const codes = matsRowsRaw
+    .map((m) => m.mat_code)
+    .filter((code): code is string => typeof code === "string" && code.trim().length > 0);
   const namesMap: Record<string, { name: string; uom: string | null }> = {};
   if (codes.length) {
     const ci = await supabaseClient

@@ -456,7 +456,20 @@ const loadHistoryScope = async (params: {
 };
 
 async function main() {
-  const inboxChecks = [];
+  const inboxChecks: Array<{
+    tab: typeof ACCOUNTANT_TABS[number];
+    legacyDurationMs: number;
+    primaryDurationMs: number;
+    primaryOwner: string;
+    fallbackUsed: boolean;
+    rowParityOk: boolean;
+    rowSetParityOk: boolean;
+    totalCountParityOk: boolean;
+    hasMoreParityOk: boolean;
+    backendFirstPrimary: boolean;
+    returnedRowCount: number;
+    totalRowCount: number;
+  }> = [];
 
   for (const tab of ACCOUNTANT_TABS) {
     const legacy = await measure(async () => loadLegacyInboxRows(tab));

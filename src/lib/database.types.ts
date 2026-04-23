@@ -16611,11 +16611,11 @@ export type Database = {
       }
       director_report_transport_scope_v1: {
         Args: {
-          p_from?: string
+          p_from?: string | null
           p_include_costs?: boolean
           p_include_discipline?: boolean
-          p_object_name?: string
-          p_to?: string
+          p_object_name?: string | null
+          p_to?: string | null
         }
         Returns: Json
       }
@@ -16642,7 +16642,7 @@ export type Database = {
         Returns: undefined
       }
       director_return_min_auto: {
-        Args: { p_comment?: string; p_proposal_id: string }
+        Args: { p_comment?: string | null; p_proposal_id: string }
         Returns: undefined
       }
       director_return_proposal_to_buyer: {
@@ -17154,16 +17154,16 @@ export type Database = {
       kb_swap: { Args: { s: string }; Returns: string }
       accountant_history_scope_v1: {
         Args: {
-          p_date_from?: string
-          p_date_to?: string
-          p_search?: string
+          p_date_from?: string | null
+          p_date_to?: string | null
+          p_search?: string | null
           p_offset?: number
           p_limit?: number
         }
         Returns: Json
       }
       accountant_inbox_scope_v1: {
-        Args: { p_tab?: string; p_offset?: number; p_limit?: number }
+        Args: { p_tab?: string | null; p_offset?: number; p_limit?: number }
         Returns: Json
       }
       list_accountant_inbox: {
@@ -17183,7 +17183,7 @@ export type Database = {
           total_paid: number
         }[]
       }
-      list_accountant_inbox_fact: { Args: { p_tab?: string }; Returns: Json[] }
+      list_accountant_inbox_fact: { Args: { p_tab?: string | null }; Returns: Json[] }
       list_accountant_inbox_v2: {
         Args: { p_tab: string }
         Returns: {
@@ -17224,10 +17224,10 @@ export type Database = {
       }
       list_accountant_payments_history_v2: {
         Args: {
-          p_date_from?: string
-          p_date_to?: string
+          p_date_from?: string | null
+          p_date_to?: string | null
           p_limit?: number
-          p_search?: string
+          p_search?: string | null
         }
         Returns: {
           accountant_fio: string
@@ -17278,7 +17278,7 @@ export type Database = {
         }[]
       }
       list_buyer_inbox: {
-        Args: { p_company_id?: string }
+        Args: { p_company_id?: string | null }
         Returns: {
           app_code: string
           created_at: string

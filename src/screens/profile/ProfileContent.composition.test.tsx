@@ -358,7 +358,7 @@ describe("ProfileContent composition shell", () => {
         value: originalPlatformOS,
       });
       if (typeof originalWindow === "undefined") {
-        delete (globalThis as typeof globalThis & { window?: unknown }).window;
+        Reflect.deleteProperty(globalThis, "window");
       } else {
         Object.defineProperty(globalThis, "window", {
           configurable: true,

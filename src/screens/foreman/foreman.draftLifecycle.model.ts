@@ -209,7 +209,9 @@ const restorePlan = (
   failureTelemetry: buildForemanDraftRestoreFailureTelemetry(context),
 });
 
-const hasSnapshotContent = (snapshot: ForemanLocalDraftSnapshot | null | undefined): boolean => {
+const hasSnapshotContent = (
+  snapshot: ForemanLocalDraftSnapshot | null | undefined,
+): snapshot is ForemanLocalDraftSnapshot => {
   if (!snapshot) return false;
   if (snapshot.items.length > 0) return true;
   if (snapshot.pendingDeletes.length > 0) return true;

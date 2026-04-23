@@ -445,7 +445,7 @@ async function main() {
       ...(directorDiff.onlyOld.length || directorDiff.onlyNew.length ? ["director_visibility_mismatch"] : []),
       ...(accountantDiff.onlyOld.length || accountantDiff.onlyNew.length ? ["accountant_basis_mismatch"] : []),
     ];
-    const mismatchExplanations = [];
+    const mismatchExplanations: string[] = [];
     if (directorDiff.onlyOld.length === 1) {
       const directorOnlyOldRow = persistedRows.find((row) => String(row.id) === directorDiff.onlyOld[0]);
       if (directorOnlyOldRow?.group_key === "proposal_html") {

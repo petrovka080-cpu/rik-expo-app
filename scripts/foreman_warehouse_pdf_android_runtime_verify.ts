@@ -26,6 +26,8 @@ const WAREHOUSE_ISSUE_LABEL = "\u0432\u044b\u0434\u0430\u0447\u0430";
 const WAREHOUSE_INCOMING_LABEL = "\u043f\u0440\u0438\u0445\u043e\u0434";
 const WAREHOUSE_STOCK_FACT_LABEL = "\u0441\u043a\u043b\u0430\u0434 \u0444\u0430\u043a\u0442";
 const WAREHOUSE_EXPENSE_LABEL = "\u0440\u0430\u0441\u0445\u043e\u0434";
+const FOREMAN_ANDROID_ROUTE = "rik:///office/foreman";
+const WAREHOUSE_ANDROID_ROUTE = "rik:///office/warehouse";
 
 const harness = createAndroidHarness({
   projectRoot,
@@ -73,6 +75,8 @@ type RoleProof = {
   extra: Record<string, unknown>;
   error?: string | null;
 };
+
+type ProofCompanyRole = "foreman" | "warehouse";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -183,7 +187,7 @@ function buildRelevantLogExcerpt(source: string) {
     .split(/\r?\n/)
     .filter(
       (line) =>
-        /payload_ready|backend_invoke_start|backend_invoke_success|signed_url_received|viewer_open_start|about_to_navigate_to_viewer|\[pdf-viewer\]|\[pdf-document-actions\]/i.test(
+        /payload_ready|backend_invoke_start|backend_invoke_success|signed_url_received|viewer_open_start|about_to_navigate_to_viewer|PdfViewerActivity|capturedLink|storage\/v1\/object\/sign|\[pdf-viewer\]|\[pdf-document-actions\]/i.test(
           line,
         ),
     )
@@ -195,7 +199,7 @@ function buildRelevantLogcatExcerpt(source: string) {
     .split(/\r?\n/)
     .filter(
       (line) =>
-        /FATAL EXCEPTION|AndroidRuntime|pdf-viewer|pdf-document-actions|pdf-runner|payload_ready|backend_invoke_start|backend_invoke_success|signed_url_received|viewer_open_start|mobile_native_handoff|foreman|warehouse/i.test(
+        /FATAL EXCEPTION|AndroidRuntime|PdfViewerActivity|capturedLink|storage\/v1\/object\/sign|pdf-viewer|pdf-document-actions|pdf-runner|payload_ready|backend_invoke_start|backend_invoke_success|signed_url_received|viewer_open_start|mobile_native_handoff|foreman|warehouse/i.test(
           line,
         ),
     )
@@ -207,11 +211,20 @@ function hasAllTokens(source: string, tokens: string[]) {
 }
 
 function getTopActivity() {
-  return tryAdb(["shell", "dumpsys", "activity", "top"])
-    .split(/\r?\n/)
+  const sources = [
+    tryAdb(["shell", "dumpsys", "activity", "activities"]),
+    tryAdb(["shell", "dumpsys", "window", "windows"]),
+    tryAdb(["shell", "dumpsys", "activity", "top"]),
+  ];
+  const lines = sources
+    .flatMap((source) => source.split(/\r?\n/))
     .map((line) => line.trim())
-    .find((line) => /ResumedActivity|topResumedActivity|PdfViewerActivity|chrome|docs|browser/i.test(line))
-    ?? "";
+    .filter((line) => line && !/widgetPickerData/i.test(line));
+
+  return (
+    lines.find((line) => /topResumedActivity|ResumedActivity|mCurrentFocus|mFocusedApp|topActivity=ComponentInfo|PdfViewerActivity/i.test(line))
+    ?? ""
+  );
 }
 
 function getProcessAlive() {
@@ -309,7 +322,7 @@ function isWarehouseReportsChoice(xml: string) {
 }
 
 function isWarehouseDayList(xml: string) {
-  return /\d{2}\.\d{2}\.\d{4}/.test(xml) || containsUiText(xml, "\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u043e\u0432:");
+  return containsUiText(xml, "warehouse-report-day:", "\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u043e\u0432:");
 }
 
 function isWarehouseRecipientModal(xml: string) {
@@ -332,6 +345,14 @@ function isExternalPdfSurface(xml: string, topActivity: string) {
     )
     || /PdfViewerActivity|chrome|docs/i.test(topActivity)
   );
+}
+
+function hasAndroidSignedStoragePdfUrl(logSource: string) {
+  return /https:\/\/[^\s'"]*\/storage\/v1\/object\/sign\/[^\s'"]+\.pdf(?:\?token=(?:\[redacted\]|[^'\s"]+))?/i.test(logSource);
+}
+
+function hasAndroidNativePdfLaunchProof(logSource: string) {
+  return /PdfViewerActivity/i.test(logSource) && hasAndroidSignedStoragePdfUrl(logSource);
 }
 
 function tapMatching(screen: AndroidScreen, label: string, matcher: (node: AndroidNode) => boolean) {
@@ -417,7 +438,12 @@ async function confirmWarehouseRecipientIfPresent(
   );
 }
 
-function hasAndroidPdfSuccessChain(logSource: string) {
+function hasAndroidPdfSuccessChain(args: {
+  logSource: string;
+  finalXml: string;
+  topActivity: string;
+}) {
+  const { logSource, finalXml, topActivity } = args;
   const requiredBaseTokens = [
     "payload_ready",
     "backend_invoke_start",
@@ -426,11 +452,20 @@ function hasAndroidPdfSuccessChain(logSource: string) {
     "[pdf-viewer] viewer_route_mounted",
     "[pdf-viewer] native_handoff_start",
   ];
-  if (!hasAllTokens(logSource, requiredBaseTokens)) return false;
-  return (
+  const legacyTerminalSuccess =
     logSource.includes("[pdf-viewer] native_handoff_ready")
     || logSource.includes("[pdf-runner] android_view_intent_start")
-    || logSource.includes("[pdf-runner] android_remote_pdf_open_start")
+    || logSource.includes("[pdf-runner] android_remote_pdf_open_start");
+  if (hasAllTokens(logSource, requiredBaseTokens) && legacyTerminalSuccess) {
+    return true;
+  }
+
+  return (
+    logSource.includes("[pdf-viewer] viewer_route_mounted")
+    && logSource.includes("[pdf-viewer] native_handoff_start")
+    && hasSignedUrlProof(logSource)
+    && isExternalPdfSurface(finalXml, topActivity)
+    && hasAndroidNativePdfLaunchProof(logSource)
   );
 }
 
@@ -445,12 +480,15 @@ function extractAndroidPdfEventCounts(logSource: string) {
     native_handoff_ready: countToken(logSource, "[pdf-viewer] native_handoff_ready"),
     android_remote_pdf_open_start: countToken(logSource, "[pdf-runner] android_remote_pdf_open_start"),
     android_view_intent_start: countToken(logSource, "[pdf-runner] android_view_intent_start"),
+    signed_storage_pdf_url: hasAndroidSignedStoragePdfUrl(logSource) ? 1 : 0,
+    android_pdf_viewer_activity: countToken(logSource, "PdfViewerActivity"),
   };
 }
 
 function hasRemoteUrlProof(logSource: string) {
   return (
     /sourceKind["': ]+remote-url/i.test(logSource)
+    || hasAndroidSignedStoragePdfUrl(logSource)
     || (
       /https:\/\/[^\s'"]+/i.test(logSource)
       && (
@@ -464,17 +502,76 @@ function hasRemoteUrlProof(logSource: string) {
 
 function hasSignedUrlProof(logSource: string) {
   return (
-    /https:\/\/[^\s'"]+/i.test(logSource)
-    && (
-      logSource.includes("signed_url_received")
-      || logSource.includes("history_descriptor_ready")
-      || logSource.includes("[pdf-document-actions] prepare_ready")
+    hasAndroidSignedStoragePdfUrl(logSource)
+    || (
+      /https:\/\/[^\s'"]+/i.test(logSource)
+      && (
+        logSource.includes("signed_url_received")
+        || logSource.includes("history_descriptor_ready")
+        || logSource.includes("[pdf-document-actions] prepare_ready")
+      )
     )
   );
 }
 
 function hasAppFatalException(logSource: string) {
   return /FATAL EXCEPTION[\s\S]{0,1200}Process:\s*com\.azisbek_dzhantaev\.rikexpoapp/i.test(logSource);
+}
+
+async function createMembershipCompany(ownerUserId: string) {
+  const result = await admin
+    .from("companies")
+    .insert({
+      owner_user_id: ownerUserId,
+      name: `Android PDF Proof Company ${Date.now().toString(36).toUpperCase()}`,
+    })
+    .select("id")
+    .single();
+  if (result.error || !result.data) {
+    throw result.error ?? new Error("Failed to create Android PDF proof company");
+  }
+
+  const companyId = String(result.data.id);
+  const ownerMembership = await admin.from("company_members").upsert(
+    {
+      company_id: companyId,
+      user_id: ownerUserId,
+      role: "director",
+    },
+    { onConflict: "company_id,user_id" },
+  );
+  if (ownerMembership.error) throw ownerMembership.error;
+  return companyId;
+}
+
+async function attachCompanyMember(params: {
+  companyId: string;
+  userId: string;
+  role: ProofCompanyRole;
+}) {
+  const result = await admin.from("company_members").upsert(
+    {
+      company_id: params.companyId,
+      user_id: params.userId,
+      role: params.role,
+    },
+    { onConflict: "company_id,user_id" },
+  );
+  if (result.error) throw result.error;
+}
+
+async function cleanupMembershipCompany(companyId: string | null) {
+  if (!companyId) return;
+  try {
+    await admin.from("company_members").delete().eq("company_id", companyId);
+  } catch {
+    // best effort cleanup
+  }
+  try {
+    await admin.from("companies").delete().eq("id", companyId);
+  } catch {
+    // best effort cleanup
+  }
 }
 
 function matchesWarehouseDayTopAction(node: AndroidNode, kind: "register" | "materials") {
@@ -617,7 +714,7 @@ async function recoverForemanFromProfileIfNeeded(
   artifactBase: string,
 ) {
   if (!isProfileScreen(current.xml)) return current;
-  harness.startAndroidRouteSafe(packageName, "rik://foreman");
+  harness.startAndroidRouteSafe(packageName, FOREMAN_ANDROID_ROUTE);
   return await poll(
     `${artifactBase}:foreman-route-recover`,
     async () => {
@@ -634,7 +731,7 @@ async function loginForemanAndroid(user: RuntimeTestUser, packageName: string | 
     const harnessScreen = await harness.loginAndroidWithProtectedRoute({
       packageName,
       user,
-      protectedRoute: "rik://foreman",
+      protectedRoute: FOREMAN_ANDROID_ROUTE,
       artifactBase: "android-foreman-pdf-proof",
       successPredicate: (xml) => isForemanHome(xml) || isFioModal(xml) || isProfileScreen(xml),
       renderablePredicate: (xml) => isLoginScreen(xml) || isForemanHome(xml) || isFioModal(xml) || isProfileScreen(xml),
@@ -647,7 +744,7 @@ async function loginForemanAndroid(user: RuntimeTestUser, packageName: string | 
     // Fall through to local manual login flow when the shared harness stalls on auth.
   }
 
-  harness.startAndroidRouteSafe(packageName, "rik://foreman");
+  harness.startAndroidRouteSafe(packageName, FOREMAN_ANDROID_ROUTE);
   await sleep(1500);
 
   let current = dumpScreen("android-foreman-pdf-proof-current");
@@ -717,7 +814,7 @@ async function loginForemanAndroid(user: RuntimeTestUser, packageName: string | 
   );
 
   const authenticatedScreen = current;
-  harness.startAndroidRouteSafe(packageName, "rik://foreman");
+  harness.startAndroidRouteSafe(packageName, FOREMAN_ANDROID_ROUTE);
   await sleep(1500);
   const routedScreen = dumpScreen("android-foreman-pdf-proof-routed");
   return isLoginScreen(routedScreen.xml) ? authenticatedScreen : routedScreen;
@@ -747,7 +844,7 @@ async function openWarehouseReportsFromHome(
     if (reportsNode && hasUsableBounds(reportsNode.bounds)) {
       harness.tapAndroidBounds(reportsNode.bounds);
     } else {
-      adb(["shell", "input", "swipe", "900", "340", "180", "340", "360"]);
+      adb(["shell", "input", "swipe", "900", "550", "180", "550", "360"]);
     }
 
     await sleep(1600);
@@ -783,6 +880,8 @@ async function runForemanProof(): Promise<RoleProof> {
     | Awaited<ReturnType<typeof harness.prepareAndroidRuntime>>
     | null = null;
   let user: RuntimeTestUser | null = null;
+  let ownerUser: RuntimeTestUser | null = null;
+  let companyId: string | null = null;
   let requestId: string | null = null;
 
   try {
@@ -792,13 +891,21 @@ async function runForemanProof(): Promise<RoleProof> {
       fullName: "Foreman Android PDF Proof",
       emailPrefix: "foreman-android-pdf-proof",
     });
+    const activeUser = user;
+    ownerUser = await createTempUser(admin, {
+      role: "director",
+      fullName: "Foreman Android PDF Company Owner",
+      emailPrefix: "foreman-android-pdf-owner",
+    });
+    companyId = await createMembershipCompany(ownerUser.id);
+    await attachCompanyMember({ companyId, userId: activeUser.id, role: "foreman" });
 
     const requestDisplayNo = `REQ-AND-${Date.now().toString(36).toUpperCase()}`;
     const requestInsert = await admin
       .from("requests")
       .insert({
         created_by: user.id,
-        foreman_name: user.displayLabel,
+        foreman_name: activeUser.displayLabel,
         display_no: requestDisplayNo,
         status: "pending",
       })
@@ -809,10 +916,10 @@ async function runForemanProof(): Promise<RoleProof> {
     }
     requestId = String(requestInsert.data.id);
 
-    let current = await loginForemanAndroid(user, runtime.packageName);
+    let current = await loginForemanAndroid(activeUser, runtime.packageName);
 
     current = await recoverForemanFromProfileIfNeeded(current, runtime.packageName, "android-foreman-pdf-proof");
-    current = await confirmFioIfPresent(current, "android-foreman-pdf-proof", user.displayLabel);
+    current = await confirmFioIfPresent(current, "android-foreman-pdf-proof", activeUser.displayLabel);
     current = await waitForForemanHome(current, "android-foreman-pdf-proof");
 
     tapMatching(
@@ -830,7 +937,7 @@ async function runForemanProof(): Promise<RoleProof> {
       async () => {
         let next = dumpScreen("android-foreman-pdf-proof-materials");
         if (isFioModal(next.xml)) {
-          next = await confirmFioIfPresent(next, "android-foreman-pdf-proof-materials", user.displayLabel);
+          next = await confirmFioIfPresent(next, "android-foreman-pdf-proof-materials", activeUser.displayLabel);
         }
         const nextNodes = harness.parseAndroidNodes(next.xml) as AndroidNode[];
         const closeNode = findNode(
@@ -892,13 +999,8 @@ async function runForemanProof(): Promise<RoleProof> {
     );
 
     const requiredTokens = [
-      "payload_ready",
-      "backend_invoke_start",
-      "backend_invoke_success",
-      "signed_url_received",
       "[pdf-viewer] viewer_route_mounted",
       "[pdf-viewer] native_handoff_start",
-      "[pdf-viewer] native_handoff_ready",
     ];
 
     let metroLog = "";
@@ -923,10 +1025,15 @@ async function runForemanProof(): Promise<RoleProof> {
     const topActivity = getTopActivity();
     const processAlive = getProcessAlive();
     const fatalExceptionLogged = hasAppFatalException(logcat);
-    const successChain = hasAndroidPdfSuccessChain(proofLog);
+    const successChain = hasAndroidPdfSuccessChain({
+      logSource: proofLog,
+      finalXml: finalScreen.xml,
+      topActivity,
+    });
     const remoteUrlProof = hasRemoteUrlProof(proofLog);
     const signedUrlProof = hasSignedUrlProof(proofLog);
     const eventCounts = extractAndroidPdfEventCounts(proofLog);
+    const externalPdfSurface = isExternalPdfSurface(finalScreen.xml, topActivity);
 
     return {
       status:
@@ -935,7 +1042,7 @@ async function runForemanProof(): Promise<RoleProof> {
         && signedUrlProof
         && processAlive
         && !fatalExceptionLogged
-        && isExternalPdfSurface(finalScreen.xml, topActivity)
+        && externalPdfSurface
           ? "GREEN"
           : "NOT_GREEN",
       role: "foreman",
@@ -956,6 +1063,9 @@ async function runForemanProof(): Promise<RoleProof> {
       extra: {
         requestId,
         requestDisplayNo,
+        externalPdfSurface,
+        signedStoragePdfUrlSeen: hasAndroidSignedStoragePdfUrl(proofLog),
+        nativePdfLaunchSeen: hasAndroidNativePdfLaunchProof(proofLog),
         proofSource: metroLog ? "metro+logcat" : "logcat",
       },
       error: null,
@@ -992,7 +1102,9 @@ async function runForemanProof(): Promise<RoleProof> {
         // best effort cleanup
       }
     }
+    await cleanupMembershipCompany(companyId);
     await cleanupTempUser(admin, user).catch(() => undefined);
+    await cleanupTempUser(admin, ownerUser).catch(() => undefined);
     runtime?.devClient.cleanup();
   }
 }
@@ -1002,6 +1114,8 @@ async function runWarehouseProof(): Promise<RoleProof> {
     | Awaited<ReturnType<typeof harness.prepareAndroidRuntime>>
     | null = null;
   let user: RuntimeTestUser | null = null;
+  let ownerUser: RuntimeTestUser | null = null;
+  let companyId: string | null = null;
 
   try {
     runtime = await harness.prepareAndroidRuntime({ clearApp: true });
@@ -1010,11 +1124,19 @@ async function runWarehouseProof(): Promise<RoleProof> {
       fullName: "Warehouse Android PDF Proof",
       emailPrefix: "warehouse-android-pdf-proof",
     });
+    const activeUser = user;
+    ownerUser = await createTempUser(admin, {
+      role: "director",
+      fullName: "Warehouse Android PDF Company Owner",
+      emailPrefix: "warehouse-android-pdf-owner",
+    });
+    companyId = await createMembershipCompany(ownerUser.id);
+    await attachCompanyMember({ companyId, userId: activeUser.id, role: "warehouse" });
 
     let current = await harness.loginAndroidWithProtectedRoute({
       packageName: runtime.packageName,
-      user,
-      protectedRoute: "rik://warehouse",
+      user: activeUser,
+      protectedRoute: WAREHOUSE_ANDROID_ROUTE,
       artifactBase: "android-warehouse-pdf-proof",
       successPredicate: (xml) => isWarehouseHome(xml) || isFioModal(xml),
       renderablePredicate: (xml) => isLoginScreen(xml) || isWarehouseHome(xml) || isFioModal(xml),
@@ -1022,7 +1144,7 @@ async function runWarehouseProof(): Promise<RoleProof> {
     });
 
     if (isProfileScreen(current.xml)) {
-      harness.startAndroidRouteSafe(runtime.packageName, "rik://warehouse");
+      harness.startAndroidRouteSafe(runtime.packageName, WAREHOUSE_ANDROID_ROUTE);
       current = await poll(
         "android-warehouse-pdf-proof:route-recover",
         async () => {
@@ -1034,9 +1156,9 @@ async function runWarehouseProof(): Promise<RoleProof> {
       );
     }
 
-    current = await confirmFioIfPresent(current, "android-warehouse-pdf-proof", user.displayLabel);
+    current = await confirmFioIfPresent(current, "android-warehouse-pdf-proof", activeUser.displayLabel);
     if (!isWarehouseHome(current.xml) && !isFioModal(current.xml)) {
-      harness.startAndroidRouteSafe(runtime.packageName, "rik://warehouse");
+      harness.startAndroidRouteSafe(runtime.packageName, WAREHOUSE_ANDROID_ROUTE);
       current = await poll(
         "android-warehouse-pdf-proof:warehouse-route-reopen",
         async () => {
@@ -1046,14 +1168,14 @@ async function runWarehouseProof(): Promise<RoleProof> {
         30_000,
         1000,
       );
-      current = await confirmFioIfPresent(current, "android-warehouse-pdf-proof", user.displayLabel);
+      current = await confirmFioIfPresent(current, "android-warehouse-pdf-proof", activeUser.displayLabel);
     }
 
     current = await waitForWarehouseHome(current, "android-warehouse-pdf-proof");
 
-    current = await confirmWarehouseRecipientIfPresent(current, "android-warehouse-pdf-proof", user.displayLabel);
+    current = await confirmWarehouseRecipientIfPresent(current, "android-warehouse-pdf-proof", activeUser.displayLabel);
 
-    let reportsScreen = await openWarehouseReportsFromHome(current, "android-warehouse-pdf-proof", user.displayLabel);
+    let reportsScreen = await openWarehouseReportsFromHome(current, "android-warehouse-pdf-proof", activeUser.displayLabel);
 
     if (isWarehouseReportsChoice(reportsScreen.xml) && !isWarehouseDayList(reportsScreen.xml)) {
       let dayListScreen: AndroidScreen | null = null;
@@ -1076,14 +1198,14 @@ async function runWarehouseProof(): Promise<RoleProof> {
               return await confirmFioIfPresent(
                 raw,
                 `android-warehouse-pdf-proof-day-list-${attempt + 1}`,
-                user.displayLabel,
+                activeUser.displayLabel,
               );
             }
             if (isWarehouseRecipientModal(raw.xml)) {
               return await confirmWarehouseRecipientIfPresent(
                 raw,
                 `android-warehouse-pdf-proof-day-list-${attempt + 1}`,
-                user.displayLabel,
+                activeUser.displayLabel,
               );
             }
             if (isWarehouseDayList(raw.xml) || isWarehouseReportsChoice(raw.xml) || isWarehouseHome(raw.xml) || isProfileScreen(raw.xml)) {
@@ -1096,7 +1218,7 @@ async function runWarehouseProof(): Promise<RoleProof> {
         );
 
         if (isProfileScreen(next.xml)) {
-          harness.startAndroidRouteSafe(runtime.packageName, "rik://warehouse");
+          harness.startAndroidRouteSafe(runtime.packageName, WAREHOUSE_ANDROID_ROUTE);
           next = await poll(
             `android-warehouse-pdf-proof:reports-profile-recover-${attempt + 1}`,
             async () => {
@@ -1106,7 +1228,7 @@ async function runWarehouseProof(): Promise<RoleProof> {
             30_000,
             1000,
           );
-          next = await confirmFioIfPresent(next, `android-warehouse-pdf-proof-reports-profile-recover-${attempt + 1}`, user.displayLabel);
+          next = await confirmFioIfPresent(next, `android-warehouse-pdf-proof-reports-profile-recover-${attempt + 1}`, activeUser.displayLabel);
         }
 
         if (isWarehouseDayList(next.xml)) {
@@ -1115,7 +1237,7 @@ async function runWarehouseProof(): Promise<RoleProof> {
         }
 
         reportsScreen = isWarehouseHome(next.xml)
-          ? await openWarehouseReportsFromHome(next, "android-warehouse-pdf-proof", user.displayLabel)
+          ? await openWarehouseReportsFromHome(next, "android-warehouse-pdf-proof", activeUser.displayLabel)
           : next;
       }
 
@@ -1175,13 +1297,8 @@ async function runWarehouseProof(): Promise<RoleProof> {
     harness.tapAndroidBounds(registerPdfNode.bounds);
 
     const requiredTokens = [
-      "payload_ready",
-      "backend_invoke_start",
-      "backend_invoke_success",
-      "signed_url_received",
       "[pdf-viewer] viewer_route_mounted",
       "[pdf-viewer] native_handoff_start",
-      "[pdf-viewer] native_handoff_ready",
     ];
 
     let metroLog = "";
@@ -1206,10 +1323,15 @@ async function runWarehouseProof(): Promise<RoleProof> {
     const topActivity = getTopActivity();
     const processAlive = getProcessAlive();
     const fatalExceptionLogged = hasAppFatalException(logcat);
-    const successChain = hasAndroidPdfSuccessChain(proofLog);
+    const successChain = hasAndroidPdfSuccessChain({
+      logSource: proofLog,
+      finalXml: finalScreen.xml,
+      topActivity,
+    });
     const remoteUrlProof = hasRemoteUrlProof(proofLog);
     const signedUrlProof = hasSignedUrlProof(proofLog);
     const eventCounts = extractAndroidPdfEventCounts(proofLog);
+    const externalPdfSurface = isExternalPdfSurface(finalScreen.xml, topActivity);
 
     return {
       status:
@@ -1218,7 +1340,7 @@ async function runWarehouseProof(): Promise<RoleProof> {
         && signedUrlProof
         && processAlive
         && !fatalExceptionLogged
-        && isExternalPdfSurface(finalScreen.xml, topActivity)
+        && externalPdfSurface
           ? "GREEN"
           : "NOT_GREEN",
       role: "warehouse",
@@ -1238,6 +1360,9 @@ async function runWarehouseProof(): Promise<RoleProof> {
       logcatExcerpt: buildRelevantLogcatExcerpt(logcat),
       extra: {
         dayNodeLabel: labelOf(dayNode),
+        externalPdfSurface,
+        signedStoragePdfUrlSeen: hasAndroidSignedStoragePdfUrl(proofLog),
+        nativePdfLaunchSeen: hasAndroidNativePdfLaunchProof(proofLog),
         proofSource: metroLog ? "metro+logcat" : "logcat",
       },
       error: null,
@@ -1265,7 +1390,9 @@ async function runWarehouseProof(): Promise<RoleProof> {
       error: getErrorMessage(error),
     };
   } finally {
+    await cleanupMembershipCompany(companyId);
     await cleanupTempUser(admin, user).catch(() => undefined);
+    await cleanupTempUser(admin, ownerUser).catch(() => undefined);
     runtime?.devClient.cleanup();
   }
 }

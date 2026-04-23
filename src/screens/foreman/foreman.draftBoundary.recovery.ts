@@ -578,7 +578,7 @@ export async function runForemanOpenRequestById(
 
 export async function runForemanDiscardWholeDraft(
   deps: {
-    buildCurrentLocalDraftSnapshot: () => ForemanLocalDraftSnapshot;
+    buildCurrentLocalDraftSnapshot: () => ForemanLocalDraftSnapshot | null;
     applyLocalDraftSnapshotToBoundary: ApplyLocalDraftSnapshotToBoundary;
     syncLocalDraftNow: (options?: {
       submit?: boolean;

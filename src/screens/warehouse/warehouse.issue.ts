@@ -398,6 +398,9 @@ export function makeWarehouseIssueActions(args: {
       const uomCode = String((row )?.uom ?? "").trim();
       if (!uomCode) throw new Error(`Пустой uom у ${(row )?.rik_code}`);
 
+      const rikCode = String(row.rik_code ?? "").trim();
+      if (!rikCode) throw new Error(`Empty RIK code for ${requestItemId}`);
+
       const r = await issueWarehouseRequestAtomic(supabase, {
         p_who: who,
         p_note: note,
@@ -406,7 +409,7 @@ export function makeWarehouseIssueActions(args: {
         p_work_name: getWorkName(),
         p_lines: [
           {
-            rik_code: (row ).rik_code,
+            rik_code: rikCode,
             uom_id: uomCode,
             qty,
             request_item_id: requestItemId,

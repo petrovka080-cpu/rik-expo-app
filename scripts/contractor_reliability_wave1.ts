@@ -497,7 +497,7 @@ const run = async () => {
   await queueProgress(exhaustedProgressId);
   networkOnline = true;
   serverState.failNextMaterialsCount = 8;
-  const exhaustionAttempts = [];
+  const exhaustionAttempts: Array<Awaited<ReturnType<typeof flushQueue>>> = [];
   for (let index = 0; index < 5; index += 1) {
     exhaustionAttempts.push(await flushQueue("manual_retry"));
   }

@@ -1059,6 +1059,10 @@ async function runWebProof() {
     historyUser = await createTempUser("foreman", "Foreman Post Submit History");
     failureUser = await createTempUser("foreman", "Foreman Post Submit Failure");
     directorUser = await createTempUser("director", "Foreman Post Submit Director Handoff");
+    const activeSuccessUser = successUser;
+    const activeHistoryUser = historyUser;
+    const activeFailureUser = failureUser;
+    const activeDirectorUser = directorUser;
 
     browser = await chromium.launch({ headless: true });
 
@@ -1096,13 +1100,13 @@ async function runWebProof() {
       }
     };
 
-    await loginForeman(successPage, successUser);
-    await loginDirector(directorPage, directorUser);
+    await loginForeman(successPage, activeSuccessUser);
+    await loginDirector(directorPage, activeDirectorUser);
     await ensureForemanContext(successPage);
     await closeDraftModal(successPage);
     let successSubmission: Awaited<ReturnType<typeof createAndSubmitDraft>> | null = null;
     const successCleanState = await runScenario(successPage, async () => {
-      successSubmission = await createAndSubmitDraft(successPage, successUser, "BOLT", "2");
+      successSubmission = await createAndSubmitDraft(successPage, activeSuccessUser, "BOLT", "2");
       return await verifyCleanStateAfterSubmit(
         successPage,
         successSubmission,
@@ -1115,7 +1119,7 @@ async function runWebProof() {
         ? await runScenario(successPage, async () => {
             return await runNoDuplicateResurrectionScenario(
               successPage,
-              successUser,
+              activeSuccessUser,
               successSubmission!.submitted.id,
               successSubmission!.submitted.display_no ?? null,
               "BETON",
@@ -1144,19 +1148,19 @@ async function runWebProof() {
           })
         : { passed: false, error: "success submission unavailable", body: "" };
 
-    await loginForeman(historyPage, historyUser);
+    await loginForeman(historyPage, activeHistoryUser);
     await ensureForemanContext(historyPage);
     await closeDraftModal(historyPage);
     const historyIntact = await runScenario(historyPage, async () => {
-      const historySubmission = await createAndSubmitDraft(historyPage, historyUser, "BRICK", "2");
+      const historySubmission = await createAndSubmitDraft(historyPage, activeHistoryUser, "BRICK", "2");
       return await runHistoryReopenScenario(historyPage, historySubmission);
     });
 
-    await loginForeman(failurePage, failureUser);
+    await loginForeman(failurePage, activeFailureUser);
     await ensureForemanContext(failurePage);
     await closeDraftModal(failurePage);
     const failedSubmitPreservesLocal = await runScenario(failurePage, async () => {
-      return await runFailedSubmitPreserveLocalScenario(failurePage, failureUser);
+      return await runFailedSubmitPreserveLocalScenario(failurePage, activeFailureUser);
     });
 
     const pageErrorsEmpty =
@@ -1260,7 +1264,7 @@ async function runAndroidRuntimeSupport() {
         artifacts: {
           supportSummary: string;
           supportPayload: string;
-          android: ExistingRuntimeSummary["artifacts"] extends { android?: infer T } ? T : null;
+          android: unknown;
         };
         platformSpecificIssues: ExistingRuntimeSummary["platformSpecificIssues"];
         attempts: number;
@@ -1355,6 +1359,9 @@ async function run() {
           platformSpecificIssues: [],
         };
       });
+  if (!androidSupport) {
+    throw new Error("Android runtime support did not produce a result");
+  }
 
   const iosResidual =
     androidSupport.iosResidual ||

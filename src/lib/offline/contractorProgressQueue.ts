@@ -150,11 +150,16 @@ const updateQueueEntry = async (
   return await queuePersistence.run(async () => {
     const queue = await loadQueueInternal();
     let nextEntry: ContractorProgressQueueEntry | null = null;
-    const next = queue.map((entry) => {
-      if (entry.id !== queueId) return entry;
-      nextEntry = updater(entry);
-      return nextEntry;
-    });
+    const next: ContractorProgressQueueEntry[] = [];
+    for (const entry of queue) {
+      if (entry.id !== queueId) {
+        next.push(entry);
+        continue;
+      }
+      const updated = updater(entry);
+      nextEntry = updated;
+      next.push(updated);
+    }
     await saveQueueInternal(next);
     return nextEntry;
   });

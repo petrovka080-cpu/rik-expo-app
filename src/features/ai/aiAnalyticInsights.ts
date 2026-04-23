@@ -262,6 +262,7 @@ export async function loadProposalAnalyticInsights(
     concurrencyLimit,
     async (item) => {
       const rikCode = item.rikCode;
+      if (!rikCode) return null;
       const currentPrice = Number(item.price);
       const [priceAnalysis, supplierRecommendations] = await Promise.all([
         analyzePriceHistory(rikCode, currentPrice, options?.companyId ?? null),
@@ -284,6 +285,8 @@ export async function loadProposalAnalyticInsights(
   );
 
   return insights.filter(
-    (insight) => Boolean(insight.priceAnalysis) || insight.supplierRecommendations.length > 0,
+    (insight): insight is ProposalAnalyticInsight =>
+      insight != null &&
+      (Boolean(insight.priceAnalysis) || insight.supplierRecommendations.length > 0),
   );
 }

@@ -350,12 +350,12 @@ describeLive("subcontracts rollout proof live", () => {
       return await loadSubcontractSnapshot(fallbackScenario.result.createResult.id);
     });
 
-    let conflictError: SerializedError | null = null;
+    const conflictErrorRef: { current: SerializedError | null } = { current: null };
     const conflictScenario = await withClientTransportProbe({ simulateMissingCreateRpc: false }, async () => {
       try {
         await rejectSubcontract(primaryScenario.result.createResult.id, "Conflict should fail");
       } catch (error) {
-        conflictError = serializeError(error);
+        conflictErrorRef.current = serializeError(error);
       }
       return await loadSubcontractSnapshot(primaryScenario.result.createResult.id);
     });
@@ -426,7 +426,8 @@ describeLive("subcontracts rollout proof live", () => {
         repeatedApproveScenario.result.status === "approved" &&
         rejectScenario.result.status === "rejected" &&
         conflictScenario.result.status === "approved" &&
-        conflictError?.message.includes("pending status") === true
+        conflictErrorRef.current !== null &&
+        conflictErrorRef.current.message.includes("pending status") === true
           ? "GREEN"
           : "NOT_GREEN",
       generatedAt: new Date().toISOString(),
@@ -447,7 +448,7 @@ describeLive("subcontracts rollout proof live", () => {
       conflict_after_approve: {
         transport: conflictScenario.probe,
         snapshot: conflictScenario.result,
-        error: conflictError,
+        error: conflictErrorRef.current,
       },
     };
 
@@ -491,13 +492,13 @@ describeLive("subcontracts rollout proof live", () => {
     writeJson("wave15_1_subcontracts_reject_snapshot.json", rejectScenario.result);
     writeJson("wave15_1_subcontracts_conflict_snapshot.json", {
       snapshot: conflictScenario.result,
-      error: conflictError,
+      error: conflictErrorRef.current,
     });
     writeText("wave15_1_subcontracts_rollout_summary.md", summaryMd);
 
     expect(primaryPathProof.status).toBe("GREEN");
     expect(fallbackProof.status).toBe("GREEN");
     expect(liveSmoke.status).toBe("GREEN");
-    expect(conflictError).not.toBeNull();
+    expect(conflictErrorRef.current).not.toBeNull();
   });
 });

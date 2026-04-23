@@ -68,10 +68,10 @@ const createBusyOwner = (overrides: Partial<BusyLike> = {}): BusyLike => ({
 });
 
 async function renderBuyerDocumentsHarness(busy: unknown) {
-  let captured: BuyerDocumentsHarnessResult = null;
+  const capturedRef: { current: BuyerDocumentsHarnessResult } = { current: null };
 
   function Harness() {
-    captured = useBuyerDocuments({
+    capturedRef.current = useBuyerDocuments({
       busy,
       supabase: SUPABASE_STUB,
     });
@@ -82,6 +82,7 @@ async function renderBuyerDocumentsHarness(busy: unknown) {
     TestRenderer.create(React.createElement(Harness));
   });
 
+  const captured = capturedRef.current;
   if (!captured) {
     throw new Error("Buyer documents hook did not initialize");
   }
@@ -90,10 +91,10 @@ async function renderBuyerDocumentsHarness(busy: unknown) {
 }
 
 async function renderBuyerProposalAttachmentsHarness(busy: unknown) {
-  let captured: BuyerProposalAttachmentsHarnessResult = null;
+  const capturedRef: { current: BuyerProposalAttachmentsHarnessResult } = { current: null };
 
   function Harness() {
-    captured = useBuyerProposalAttachments({
+    capturedRef.current = useBuyerProposalAttachments({
       supabase: SUPABASE_STUB,
       pickFileAny: async () => null,
       uploadProposalAttachment: async () => {},
@@ -107,6 +108,7 @@ async function renderBuyerProposalAttachmentsHarness(busy: unknown) {
     TestRenderer.create(React.createElement(Harness));
   });
 
+  const captured = capturedRef.current;
   if (!captured) {
     throw new Error("Buyer proposal attachments hook did not initialize");
   }

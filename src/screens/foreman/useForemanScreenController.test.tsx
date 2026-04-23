@@ -499,29 +499,31 @@ describe("useForemanScreenController", () => {
   });
 
   it("centralizes representative draft, history and tab orchestration without changing screen-facing behavior", async () => {
-    let vm: ControllerVm = null;
+    const vmRef: { current: ControllerVm } = { current: null };
     let renderer!: TestRenderer.ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vm = value; }} />);
+      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vmRef.current = value; }} />);
     });
     await flushAsync();
 
+    const vm = vmRef.current;
     expect(vm).not.toBeNull();
-    expect(vm?.screenTitle).toBe("Материалы");
-    expect(vm?.materialsContentProps.objectDisplayName).toBe("Tower A");
-    expect(vm?.materialsContentProps.currentDisplayLabel).toBe("Новый черновик");
+    if (!vm) throw new Error("controller vm was not captured");
+    expect(vm.screenTitle).toBe("Материалы");
+    expect(vm.materialsContentProps.objectDisplayName).toBe("Tower A");
+    expect(vm.materialsContentProps.currentDisplayLabel).toBe("Новый черновик");
     expect(mockLoadForemanHistory).toHaveBeenCalled();
     expect(mockSetForemanHistory).toHaveBeenCalledWith(["Foreman One"]);
 
     await act(async () => {
-      vm?.openSubcontractsTab();
-      vm?.closeMainTab();
-      vm?.materialsContentProps.onOpenDraft();
-      await vm?.materialsContentProps.onOpenRequestHistory();
-      vm?.materialsContentProps.onOpenSubcontractHistory();
-      vm?.materialsContentProps.onObjectChange("obj-1");
-      await vm?.materialsContentProps.onSendDraft();
+      vm.openSubcontractsTab();
+      vm.closeMainTab();
+      vm.materialsContentProps.onOpenDraft();
+      await vm.materialsContentProps.onOpenRequestHistory();
+      vm.materialsContentProps.onOpenSubcontractHistory();
+      vm.materialsContentProps.onObjectChange("obj-1");
+      await vm.materialsContentProps.onSendDraft();
     });
 
     expect(mockSetForemanMainTab).toHaveBeenCalledWith("subcontracts");
@@ -543,18 +545,20 @@ describe("useForemanScreenController", () => {
   });
 
   it("routes history PDF descriptor creation through the guarded preview factory", async () => {
-    let vm: ControllerVm = null;
+    const vmRef: { current: ControllerVm } = { current: null };
     let renderer!: TestRenderer.ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vm = value; }} />);
+      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vmRef.current = value; }} />);
     });
     await flushAsync();
+    const vm = vmRef.current;
+    if (!vm) throw new Error("controller vm was not captured");
 
     mockBuildForemanRequestPdfDescriptor.mockClear();
 
     await act(async () => {
-      await vm?.materialsContentProps.onOpenHistoryPdf("req-77");
+      await vm.materialsContentProps.onOpenHistoryPdf("req-77");
     });
 
     expect(mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory).toHaveBeenCalledTimes(1);
@@ -599,19 +603,21 @@ describe("useForemanScreenController", () => {
       draftSyncAttentionNeeded: true,
       availableDraftRecoveryActions: ["restore_local", "discard_local", "clear_failed_queue"],
     };
-    let vm: ControllerVm = null;
+    const vmRef: { current: ControllerVm } = { current: null };
     let renderer!: TestRenderer.ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vm = value; }} />);
+      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vmRef.current = value; }} />);
     });
     await flushAsync();
+    const vm = vmRef.current;
+    if (!vm) throw new Error("controller vm was not captured");
 
-    expect(vm?.materialsContentProps.currentDisplayLabel).toBe("Новый черновик");
-    expect(vm?.materialsContentProps.items).toEqual([]);
-    expect(vm?.materialsContentProps.itemsCount).toBe(0);
-    expect(vm?.materialsContentProps.availableDraftRecoveryActions).toEqual([]);
-    expect(vm?.materialsContentProps.draftSyncStatusTone).toBe("neutral");
+    expect(vm.materialsContentProps.currentDisplayLabel).toBe("Новый черновик");
+    expect(vm.materialsContentProps.items).toEqual([]);
+    expect(vm.materialsContentProps.itemsCount).toBe(0);
+    expect(vm.materialsContentProps.availableDraftRecoveryActions).toEqual([]);
+    expect(vm.materialsContentProps.draftSyncStatusTone).toBe("neutral");
 
     await act(async () => {
       renderer.unmount();
@@ -620,17 +626,19 @@ describe("useForemanScreenController", () => {
 
   it("does not open the draft recovery modal when history selection resolves to terminal cleanup", async () => {
     mockOpenRequestById.mockResolvedValueOnce(null);
-    let vm: ControllerVm = null;
+    const vmRef: { current: ControllerVm } = { current: null };
     let renderer!: TestRenderer.ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vm = value; }} />);
+      renderer = TestRenderer.create(<Harness onSnapshot={(value) => { vmRef.current = value; }} />);
     });
     await flushAsync();
+    const vm = vmRef.current;
+    if (!vm) throw new Error("controller vm was not captured");
     mockOpenDraft.mockClear();
 
     await act(async () => {
-      await vm?.materialsContentProps.onHistorySelect({
+      await vm.materialsContentProps.onHistorySelect({
         id: "req-0121",
         display_no: "REQ-0121/2026",
         status: "approved",

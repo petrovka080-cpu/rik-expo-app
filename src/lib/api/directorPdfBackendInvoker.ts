@@ -21,6 +21,10 @@ type DirectorPdfInvokeArgs<TPayload> = {
   errorPrefix: string;
 };
 
+type SupabaseFunctionInvokeBody = NonNullable<
+  Parameters<typeof supabase.functions.invoke<unknown>>[1]
+>["body"];
+
 export type DirectorPdfInvokeSuccess = {
   source: PdfSource;
   signedUrl: string;
@@ -86,7 +90,9 @@ async function refreshDirectorPdfSessionOnce(): Promise<boolean> {
   return await pendingDirectorPdfSessionRefresh;
 }
 
-async function invokeDirectorPdfBackendOnce<TPayload>(args: DirectorPdfInvokeArgs<TPayload>) {
+async function invokeDirectorPdfBackendOnce<TPayload extends SupabaseFunctionInvokeBody>(
+  args: DirectorPdfInvokeArgs<TPayload>,
+) {
   return await supabase.functions.invoke<unknown>(args.functionName, {
     body: args.payload,
     headers: {
@@ -95,7 +101,7 @@ async function invokeDirectorPdfBackendOnce<TPayload>(args: DirectorPdfInvokeArg
   });
 }
 
-export async function invokeDirectorPdfBackend<TPayload>(
+export async function invokeDirectorPdfBackend<TPayload extends SupabaseFunctionInvokeBody>(
   args: DirectorPdfInvokeArgs<TPayload>,
 ): Promise<DirectorPdfInvokeSuccess> {
   let attempt = await invokeDirectorPdfBackendOnce(args);

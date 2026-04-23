@@ -283,11 +283,13 @@ describe("directorPdfRender.service — rendered PDF cache", () => {
   });
 
   it("coalesces concurrent identical renders into one Edge invocation", async () => {
-    let resolveEdge: ((value: ReturnType<typeof makeEdgeResult>) => void) | null = null;
+    const resolveEdgeRef: {
+      current: ((value: ReturnType<typeof makeEdgeResult>) => void) | null;
+    } = { current: null };
     mockInvokeDirectorPdfBackend.mockImplementation(
       () =>
         new Promise((resolve) => {
-          resolveEdge = resolve;
+          resolveEdgeRef.current = resolve;
         }),
     );
 
@@ -304,7 +306,9 @@ describe("directorPdfRender.service — rendered PDF cache", () => {
     const second = renderDirectorPdf(args);
 
     expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(1);
-    resolveEdge?.(makeEdgeResult("https://cdn.example.com/inflight.pdf"));
+    const resolveEdge = resolveEdgeRef.current;
+    if (resolveEdge == null) throw new Error("Expected Edge resolver to be captured");
+    resolveEdge(makeEdgeResult("https://cdn.example.com/inflight.pdf"));
 
     await expect(Promise.all([first, second])).resolves.toEqual([
       "https://cdn.example.com/inflight.pdf",

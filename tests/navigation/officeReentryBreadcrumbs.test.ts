@@ -271,12 +271,12 @@ describe("office reentry breadcrumbs", () => {
   });
 
   it("flushes pending breadcrumbs when the app backgrounds", async () => {
-    let appStateHandler: ((state: string) => void) | null = null;
+    const appStateHandlerRef: { current: ((state: string) => void) | null } = { current: null };
     const subscriptionRemove = jest.fn();
     const appStateSpy = jest
       .spyOn(AppState, "addEventListener")
       .mockImplementation((_event, handler) => {
-        appStateHandler = handler as (state: string) => void;
+        appStateHandlerRef.current = handler as (state: string) => void;
         return { remove: subscriptionRemove };
       });
 
@@ -286,9 +286,11 @@ describe("office reentry breadcrumbs", () => {
       ]);
 
       expect(asyncStorage.setItem).not.toHaveBeenCalled();
+      const appStateHandler = appStateHandlerRef.current;
       expect(appStateHandler).not.toBeNull();
+      if (appStateHandler == null) throw new Error("Expected AppState handler to be registered");
 
-      appStateHandler?.("background");
+      appStateHandler("background");
       await flushOfficeReentryBreadcrumbWrites();
 
       expect(asyncStorage.setItem).toHaveBeenCalledTimes(1);

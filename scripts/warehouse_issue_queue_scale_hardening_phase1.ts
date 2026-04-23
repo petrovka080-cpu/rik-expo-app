@@ -131,7 +131,7 @@ async function main() {
   const missingUiTruthInHeadIds = missingUiTruthVisibleIds.filter((requestId) => headIds.has(requestId));
   const missingUiTruthFallbackOnlyIds = missingUiTruthVisibleIds.filter((requestId) => !headIds.has(requestId));
 
-  const scenarioResults = [];
+  const scenarioResults: Array<Record<string, unknown>> = [];
   for (const scenario of scenarios) {
     const metrics = await measureRpcWindow("warehouse_issue_queue_scope_v4", scenario.args);
     const { data: parity, error: parityError } = await client.rpc(

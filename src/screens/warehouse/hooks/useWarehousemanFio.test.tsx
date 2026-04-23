@@ -173,7 +173,7 @@ describe("useWarehousemanFio", () => {
         lastConfirmIso: "2026-04-10T06:30:00.000Z",
       });
 
-    let latestSnapshot: ReturnType<typeof useWarehousemanFio> | null = null;
+    const latestSnapshotRef: { current: ReturnType<typeof useWarehousemanFio> | null } = { current: null };
     let renderer!: TestRenderer.ReactTestRenderer;
 
     await act(async () => {
@@ -182,7 +182,7 @@ describe("useWarehousemanFio", () => {
           getTodaySixAM={() => new Date("2026-04-10T06:00:00.000Z")}
           isScreenFocused={true}
           onSnapshot={(snapshot) => {
-            latestSnapshot = snapshot;
+            latestSnapshotRef.current = snapshot;
           }}
         />,
       );
@@ -198,7 +198,7 @@ describe("useWarehousemanFio", () => {
           getTodaySixAM={() => new Date("2026-04-10T06:00:00.000Z")}
           isScreenFocused={false}
           onSnapshot={(snapshot) => {
-            latestSnapshot = snapshot;
+            latestSnapshotRef.current = snapshot;
           }}
         />,
       );
@@ -214,6 +214,7 @@ describe("useWarehousemanFio", () => {
       await Promise.resolve();
     });
 
+    const latestSnapshot = latestSnapshotRef.current;
     expect(latestSnapshot?.warehousemanFio).toBe("");
     expect(latestSnapshot?.warehousemanHistory).toEqual([]);
     expect(mockRecordStateWriteAccepted).not.toHaveBeenCalledWith(
@@ -240,7 +241,7 @@ describe("useWarehousemanFio", () => {
       lastConfirmIso: null,
     });
 
-    let latestSnapshot: ReturnType<typeof useWarehousemanFio> | null = null;
+    const latestSnapshotRef: { current: ReturnType<typeof useWarehousemanFio> | null } = { current: null };
 
     await act(async () => {
       TestRenderer.create(
@@ -248,12 +249,13 @@ describe("useWarehousemanFio", () => {
           getTodaySixAM={() => new Date("2026-04-10T06:00:00.000Z")}
           isScreenFocused={true}
           onSnapshot={(snapshot) => {
-            latestSnapshot = snapshot;
+            latestSnapshotRef.current = snapshot;
           }}
         />,
       );
     });
 
+    const latestSnapshot = latestSnapshotRef.current;
     expect(latestSnapshot?.warehousemanFio).toBe("Ivan");
     expect(latestSnapshot?.warehousemanHistory).toEqual(["Ivan"]);
     expect(mockSetIsFioConfirmVisible).toHaveBeenCalledWith(true);

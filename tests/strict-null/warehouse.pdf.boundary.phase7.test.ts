@@ -36,11 +36,11 @@ jest.mock("../../src/lib/observability/catchDiscipline", () => ({
 type HookResult = ReturnType<typeof useWarehousePdfPreviewBoundary> | null;
 
 async function renderHarness() {
-  let captured: HookResult = null;
+  const capturedRef: { current: HookResult } = { current: null };
   const notifyError = jest.fn();
 
   function Harness() {
-    captured = useWarehousePdfPreviewBoundary({
+    capturedRef.current = useWarehousePdfPreviewBoundary({
       busy: {},
       notifyError,
     });
@@ -51,6 +51,7 @@ async function renderHarness() {
     TestRenderer.create(React.createElement(Harness));
   });
 
+  const captured = capturedRef.current;
   if (!captured) {
     throw new Error("Warehouse boundary hook did not initialize");
   }

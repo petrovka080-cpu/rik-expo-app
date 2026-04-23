@@ -97,7 +97,12 @@ async function main() {
     },
   ];
 
-  const commandResults = [];
+  const commandResults: Array<{
+    id: string;
+    command: string;
+    ok: boolean;
+    status: number | null;
+  }> = [];
   try {
     for (const step of steps) {
       const result = runCommand(step.command[0], [...step.command[1]]);

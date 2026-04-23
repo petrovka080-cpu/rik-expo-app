@@ -88,10 +88,11 @@ function createProps(
 function renderContent(
   props?: Partial<React.ComponentProps<typeof PdfViewerScreenContent>>,
 ) {
-  let renderer: TestRenderer.ReactTestRenderer | null = null;
+  const rendererRef: { current: TestRenderer.ReactTestRenderer | null } = { current: null };
   act(() => {
-    renderer = TestRenderer.create(<PdfViewerScreenContent {...createProps(props)} />);
+    rendererRef.current = TestRenderer.create(<PdfViewerScreenContent {...createProps(props)} />);
   });
+  const renderer = rendererRef.current;
   if (!renderer) {
     throw new Error("presenter renderer was not created");
   }

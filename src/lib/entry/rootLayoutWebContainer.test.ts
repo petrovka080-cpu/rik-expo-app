@@ -3,18 +3,20 @@ import type { RootLayoutWebDocumentLike } from "./rootLayoutWebContainer";
 
 describe("rootLayoutWebContainer", () => {
   it("applies stable scroll container styles to the web root", () => {
+    const documentElement = { style: {} as Record<string, string> };
+    const body = { style: {} as Record<string, string> };
     const doc: RootLayoutWebDocumentLike = {
-      documentElement: { style: {} },
-      body: { style: {} },
+      documentElement,
+      body,
       getElementById: jest.fn(() => ({ style: {} })),
     };
 
     const result = applyRootLayoutWebContainerStyle(doc);
 
     expect(result).toEqual({ ok: true, rootFound: true });
-    expect(doc.documentElement.style.height).toBe("100%");
-    expect(doc.body.style.height).toBe("100%");
-    expect(doc.body.style.overflow).toBe("auto");
+    expect(documentElement.style.height).toBe("100%");
+    expect(body.style.height).toBe("100%");
+    expect(body.style.overflow).toBe("auto");
     expect(doc.getElementById).toHaveBeenCalledWith("root");
   });
 

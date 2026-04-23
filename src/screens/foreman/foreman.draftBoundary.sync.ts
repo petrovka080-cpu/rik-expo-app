@@ -60,7 +60,7 @@ export type ForemanDraftBoundarySyncOptions = {
 type ForemanDraftBoundarySyncDeps = {
   isDraftActive: boolean;
   requestId: string;
-  buildCurrentLocalDraftSnapshot: () => ForemanLocalDraftSnapshot;
+  buildCurrentLocalDraftSnapshot: () => ForemanLocalDraftSnapshot | null;
   getDraftQueueKey: (
     snapshot?: ForemanLocalDraftSnapshot | null,
     fallbackRequestId?: string | null,
@@ -141,7 +141,10 @@ export async function runForemanDraftBoundarySyncNow(
     throw new Error(preflightPlan.message);
   }
   if (preflightPlan.action === "await_in_flight_submit") {
-    return await currentDraftSyncInFlight!;
+    if (currentDraftSyncInFlight) {
+      return await currentDraftSyncInFlight;
+    }
+    throw new Error("Expected draft sync in-flight promise to be present");
   }
 
   snapshot = preflightPlan.snapshot;

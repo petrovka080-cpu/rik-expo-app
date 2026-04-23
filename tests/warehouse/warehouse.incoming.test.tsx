@@ -63,9 +63,14 @@ describe("warehouse incoming async ownership", () => {
     mockFetchWarehouseIncomingItemsWindow.mockReturnValue(deferred.promise);
 
     const activeRef: WarehouseScreenActiveRef = { current: true };
-    let api: ReturnType<typeof useWarehouseIncoming> | null = null;
+    const apiRef: { current: ReturnType<typeof useWarehouseIncoming> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Warehouse incoming hook did not initialize");
+      return current;
+    };
     function Harness() {
-      api = useWarehouseIncoming({ screenActiveRef: activeRef });
+      apiRef.current = useWarehouseIncoming({ screenActiveRef: activeRef });
       return null;
     }
 
@@ -76,8 +81,8 @@ describe("warehouse incoming async ownership", () => {
     let first!: Promise<unknown>;
     let second!: Promise<unknown>;
     await act(async () => {
-      first = api!.loadItemsForHead("incoming-1");
-      second = api!.loadItemsForHead("incoming-1");
+      first = getApi().loadItemsForHead("incoming-1");
+      second = getApi().loadItemsForHead("incoming-1");
       await Promise.resolve();
     });
 
@@ -104,7 +109,7 @@ describe("warehouse incoming async ownership", () => {
       await Promise.all([first, second]);
     });
 
-    expect(api?.itemsByHead["incoming-1"]).toEqual([
+    expect(getApi().itemsByHead["incoming-1"]).toEqual([
       expect.objectContaining({ incoming_item_id: "row-1", code: "MAT-1" }),
     ]);
   });
@@ -130,9 +135,14 @@ describe("warehouse incoming async ownership", () => {
     );
 
     const activeRef: WarehouseScreenActiveRef = { current: true };
-    let api: ReturnType<typeof useWarehouseIncoming> | null = null;
+    const apiRef: { current: ReturnType<typeof useWarehouseIncoming> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Warehouse incoming hook did not initialize");
+      return current;
+    };
     function Harness() {
-      api = useWarehouseIncoming({ screenActiveRef: activeRef });
+      apiRef.current = useWarehouseIncoming({ screenActiveRef: activeRef });
       return null;
     }
 
@@ -143,8 +153,8 @@ describe("warehouse incoming async ownership", () => {
     let first!: Promise<unknown>;
     let second!: Promise<unknown>;
     await act(async () => {
-      first = api!.loadItemsForHead("incoming-1", true);
-      second = api!.loadItemsForHead("incoming-1", true);
+      first = getApi().loadItemsForHead("incoming-1", true);
+      second = getApi().loadItemsForHead("incoming-1", true);
       await Promise.resolve();
     });
 
@@ -175,7 +185,7 @@ describe("warehouse incoming async ownership", () => {
     });
     await flushAsync();
 
-    expect(api?.itemsByHead["incoming-1"]).toEqual([
+    expect(getApi().itemsByHead["incoming-1"]).toEqual([
       expect.objectContaining({ incoming_item_id: "row-2", code: "MAT-NEW" }),
     ]);
   });
@@ -197,9 +207,14 @@ describe("warehouse incoming async ownership", () => {
     );
 
     const activeRef: WarehouseScreenActiveRef = { current: true };
-    let api: ReturnType<typeof useWarehouseIncoming> | null = null;
+    const apiRef: { current: ReturnType<typeof useWarehouseIncoming> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Warehouse incoming hook did not initialize");
+      return current;
+    };
     function Harness() {
-      api = useWarehouseIncoming({ screenActiveRef: activeRef });
+      apiRef.current = useWarehouseIncoming({ screenActiveRef: activeRef });
       return null;
     }
 
@@ -210,7 +225,7 @@ describe("warehouse incoming async ownership", () => {
 
     let pending!: Promise<unknown>;
     await act(async () => {
-      pending = api!.loadItemsForHead("incoming-1", true);
+      pending = getApi().loadItemsForHead("incoming-1", true);
       await Promise.resolve();
     });
 

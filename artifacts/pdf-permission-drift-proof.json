@@ -1,0 +1,116 @@
+{
+  "status": "GREEN",
+  "checkedAt": "2026-04-23T05:52:31.063Z",
+  "companyId": "68d1f603-ebac-4a8a-a8cc-585955efa097",
+  "foreman": {
+    "userId": "2b182d23-a743-4355-b7ab-21391e006491",
+    "roleProbe": {
+      "authUserId": "2b182d23-a743-4355-b7ab-21391e006491",
+      "appMetadataRole": "director",
+      "rpcRole": "director",
+      "companyMemberships": [
+        {
+          "companyId": "68d1f603-ebac-4a8a-a8cc-585955efa097",
+          "role": "foreman"
+        }
+      ]
+    },
+    "requestProbe": {
+      "error": null,
+      "row": {
+        "id": "f6a736b2-0e26-4eaa-abff-45b5be2de67c",
+        "createdBy": "2b182d23-a743-4355-b7ab-21391e006491"
+      }
+    },
+    "invoke": {
+      "status": 200,
+      "payload": {
+        "ok": true,
+        "version": "v1",
+        "role": "foreman",
+        "documentType": "request",
+        "sourceKind": "remote-url",
+        "bucketId": "role_pdf_exports",
+        "storagePath": "foreman/request/artifacts/v1/frq_art_v1_cbb599db685841ea720c34b45a1b8ea0aac227f38a2b227a22a08254c1f48b59/request_REQ_DRIFT_MOB2E6YB_f6a736b2-0e26-4eaa-abff-45b5be2de67c.pdf",
+        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/foreman/request/artifacts/v1/frq_art_v1_cbb599db685841ea720c34b45a1b8ea0aac227f38a2b227a22a08254c1f48b59/request_REQ_DRIFT_MOB2E6YB_f6a736b2-0e26-4eaa-abff-45b5be2de67c.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL2ZvcmVtYW4vcmVxdWVzdC9hcnRpZmFjdHMvdjEvZnJxX2FydF92MV9jYmI1OTlkYjY4NTg0MWVhNzIwYzM0YjQ1YTFiOGVhMGFhYzIyN2YzOGEyYjIyN2EyMmEwODI1NGMxZjQ4YjU5L3JlcXVlc3RfUkVRX0RSSUZUX01PQjJFNllCX2Y2YTczNmIyLTBlMjYtNGVhYS1hYmZmLTQ1YjViZTJkZTY3Yy5wZGYiLCJpYXQiOjE3NzY5MjM1NTIsImV4cCI6MTc3NjkyNzE1Mn0.m97Q3NfXZdhIIpfznz0RH4WRQaCNnuv1fbSIhcoJEO4",
+        "fileName": "request_REQ_DRIFT_MOB2E6YB_f6a736b2-0e26-4eaa-abff-45b5be2de67c.pdf",
+        "mimeType": "application/pdf",
+        "generatedAt": "2026-04-23T05:52:33.054Z",
+        "renderBranch": "backend_foreman_request_v1",
+        "renderer": "browserless_puppeteer",
+        "telemetry": {
+          "functionName": "foreman-request-pdf",
+          "requestId": "f6a736b2-0e26-4eaa-abff-45b5be2de67c",
+          "title": "Заявка REQ-DRIFT-MOB2E6YB",
+          "requestedByUserId": "2b182d23-a743-4355-b7ab-21391e006491",
+          "cacheStatus": "artifact_miss",
+          "cacheVersion": "pdf_z4_foreman_request_artifact_v1",
+          "templateVersion": "foreman_request_template_v1",
+          "sourceVersion": "frq_src_v1_4eea1d851e6c8b9c5b95b2bc1df9d453ad2927afdda13789270c12f2d96ac0dc",
+          "artifactVersion": "frq_art_v1_cbb599db685841ea720c34b45a1b8ea0aac227f38a2b227a22a08254c1f48b59",
+          "sourceMs": 1158,
+          "renderMs": 6167,
+          "uploadAndSignMs": 1132,
+          "totalMs": 9372,
+          "htmlLength": 4103,
+          "pdfSizeBytes": 56570
+        }
+      },
+      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/foreman/request/artifacts/v1/frq_art_v1_cbb599db685841ea720c34b45a1b8ea0aac227f38a2b227a22a08254c1f48b59/request_REQ_DRIFT_MOB2E6YB_f6a736b2-0e26-4eaa-abff-45b5be2de67c.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL2ZvcmVtYW4vcmVxdWVzdC9hcnRpZmFjdHMvdjEvZnJxX2FydF92MV9jYmI1OTlkYjY4NTg0MWVhNzIwYzM0YjQ1YTFiOGVhMGFhYzIyN2YzOGEyYjIyN2EyMmEwODI1NGMxZjQ4YjU5L3JlcXVlc3RfUkVRX0RSSUZUX01PQjJFNllCX2Y2YTczNmIyLTBlMjYtNGVhYS1hYmZmLTQ1YjViZTJkZTY3Yy5wZGYiLCJpYXQiOjE3NzY5MjM1NTIsImV4cCI6MTc3NjkyNzE1Mn0.m97Q3NfXZdhIIpfznz0RH4WRQaCNnuv1fbSIhcoJEO4",
+      "sourceKind": "remote-url"
+    }
+  },
+  "warehouse": {
+    "userId": "29a48027-e2cd-40f0-9614-8221ebe1b5fc",
+    "roleProbe": {
+      "authUserId": "29a48027-e2cd-40f0-9614-8221ebe1b5fc",
+      "appMetadataRole": "director",
+      "rpcRole": "director",
+      "companyMemberships": [
+        {
+          "companyId": "68d1f603-ebac-4a8a-a8cc-585955efa097",
+          "role": "warehouse"
+        }
+      ]
+    },
+    "invoke": {
+      "status": 200,
+      "payload": {
+        "ok": true,
+        "version": "v1",
+        "role": "warehouse",
+        "documentType": "warehouse_register",
+        "sourceKind": "remote-url",
+        "bucketId": "role_pdf_exports",
+        "storagePath": "warehouse/issue_register/artifacts/v1/wissue_art_v1_b5554fcbd5ffbe7ea600a94124e7735d19c68da868ea283ccf3abd74c01f7965/warehouse_register_issue_register_all.pdf",
+        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/issue_register/artifacts/v1/wissue_art_v1_b5554fcbd5ffbe7ea600a94124e7735d19c68da868ea283ccf3abd74c01f7965/warehouse_register_issue_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pc3N1ZV9yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lzc3VlX2FydF92MV9iNTU1NGZjYmQ1ZmZiZTdlYTYwMGE5NDEyNGU3NzM1ZDE5YzY4ZGE4NjhlYTI4M2NjZjNhYmQ3NGMwMWY3OTY1L3dhcmVob3VzZV9yZWdpc3Rlcl9pc3N1ZV9yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2OTIzNTUyLCJleHAiOjE3NzY5MjcxNTJ9.se4z8EnD7ngoozMouX6i0D-QDj2FE1rc8JkQUzmNlwE",
+        "fileName": "warehouse_register_issue_register_all.pdf",
+        "mimeType": "application/pdf",
+        "generatedAt": "2026-04-23T05:52:32.176Z",
+        "renderBranch": "backend_warehouse_pdf_v1",
+        "renderer": "browserless_puppeteer",
+        "telemetry": {
+          "functionName": "warehouse-pdf",
+          "documentKind": "issue_register",
+          "requestedByUserId": "29a48027-e2cd-40f0-9614-8221ebe1b5fc",
+          "periodFrom": "",
+          "periodTo": "",
+          "dayLabel": null,
+          "cacheStatus": "artifact_miss",
+          "cacheVersion": "pdf_final_warehouse_issue_register_artifact_v1",
+          "templateVersion": "warehouse_issue_register_template_v1",
+          "sourceVersion": "wissue_src_v1_9493ad8d56a55090be64f70d4fa147d52cae9edc1b1c803527c15ce6c0b513c2",
+          "artifactVersion": "wissue_art_v1_b5554fcbd5ffbe7ea600a94124e7735d19c68da868ea283ccf3abd74c01f7965",
+          "sourceMs": 296,
+          "renderMs": 6306,
+          "uploadAndSignMs": 1288,
+          "totalMs": 8764,
+          "htmlLength": 13210,
+          "pdfSizeBytes": 125174
+        }
+      },
+      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/issue_register/artifacts/v1/wissue_art_v1_b5554fcbd5ffbe7ea600a94124e7735d19c68da868ea283ccf3abd74c01f7965/warehouse_register_issue_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pc3N1ZV9yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lzc3VlX2FydF92MV9iNTU1NGZjYmQ1ZmZiZTdlYTYwMGE5NDEyNGU3NzM1ZDE5YzY4ZGE4NjhlYTI4M2NjZjNhYmQ3NGMwMWY3OTY1L3dhcmVob3VzZV9yZWdpc3Rlcl9pc3N1ZV9yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2OTIzNTUyLCJleHAiOjE3NzY5MjcxNTJ9.se4z8EnD7ngoozMouX6i0D-QDj2FE1rc8JkQUzmNlwE",
+      "sourceKind": "remote-url"
+    }
+  }
+}

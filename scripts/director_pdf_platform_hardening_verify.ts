@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
@@ -224,7 +224,7 @@ function buildFunctionUrl(functionName: FunctionName, caseId: string) {
 }
 
 async function startLocalFunctionServer(): Promise<{
-  children: Array<{ functionName: FunctionName; child: ChildProcessWithoutNullStreams }>;
+  children: Array<{ functionName: FunctionName; child: ChildProcess }>;
   stop: () => void;
 }> {
   fs.mkdirSync(path.dirname(artifactPaths.serveStdout), { recursive: true });
@@ -236,7 +236,7 @@ async function startLocalFunctionServer(): Promise<{
     "director-production-report-pdf": "supabase/functions/director-production-report-pdf/index.ts",
     "director-subcontract-report-pdf": "supabase/functions/director-subcontract-report-pdf/index.ts",
   };
-  const children: Array<{ functionName: FunctionName; child: ChildProcessWithoutNullStreams }> = [];
+  const children: Array<{ functionName: FunctionName; child: ChildProcess }> = [];
 
   for (const [functionName, relativeFile] of Object.entries(functionFiles) as Array<[FunctionName, string]>) {
     const child = spawn(
@@ -891,7 +891,7 @@ function buildSourceScan() {
 }
 
 async function main() {
-  let functionServer: { children: Array<{ functionName: FunctionName; child: ChildProcessWithoutNullStreams }>; stop: () => void } | null = null;
+  let functionServer: { children: Array<{ functionName: FunctionName; child: ChildProcess }>; stop: () => void } | null = null;
   let browser: import("playwright").Browser | null = null;
   let runtimeUser: Awaited<ReturnType<typeof createTempUser>> | null = null;
   let androidPrepared: Awaited<ReturnType<typeof androidHarness.prepareAndroidRuntime>> | null = null;

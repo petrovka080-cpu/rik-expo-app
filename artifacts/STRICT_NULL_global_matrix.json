@@ -1,0 +1,92 @@
+[
+  {
+    "id": "A-offline-queue-update-guards",
+    "file": "src/lib/offline/mutationQueue.ts",
+    "error_kind": "safe guard missing",
+    "fix_kind": "replace side-effect map update with explicit loop narrowing",
+    "runtime_risk": "offline replay entry update could be typed as unreachable under strict null checks",
+    "tests_added": "existing offline queue contract and mutex suites rerun",
+    "status": "closed"
+  },
+  {
+    "id": "A-warehouse-request-item-rik-code",
+    "file": "src/screens/warehouse/warehouse.issue.ts",
+    "error_kind": "safe guard missing",
+    "fix_kind": "controlled guard before atomic issue payload construction",
+    "runtime_risk": "nullable warehouse request item code could reach RPC payload",
+    "tests_added": "warehouse PDF/source and warehouse strict-null suites rerun",
+    "status": "closed"
+  },
+  {
+    "id": "B-foreman-draft-sync-invariant",
+    "file": "src/screens/foreman/foreman.draftBoundary.sync.ts",
+    "error_kind": "invariant required",
+    "fix_kind": "explicit invariant guard for required in-flight draft sync promise",
+    "runtime_risk": "draft sync ownership could be treated as present without narrowing",
+    "tests_added": "foreman draft boundary model/effects/apply/post-submit suites rerun",
+    "status": "closed"
+  },
+  {
+    "id": "C-database-rpc-nullable-args",
+    "file": "src/lib/database.types.ts",
+    "error_kind": "optional field propagation",
+    "fix_kind": "allow null where existing RPC call sites already pass nullable filters",
+    "runtime_risk": "type contract rejected existing null filter semantics",
+    "tests_added": "director/accountant/buyer read-path and migration contract suites rerun",
+    "status": "closed"
+  },
+  {
+    "id": "C-pdf-source-boundaries",
+    "file": "src/screens/warehouse/warehouse.pdf.boundary.ts",
+    "error_kind": "optional field propagation",
+    "fix_kind": "accept preview request input at the boundary and keep existing runtime validator",
+    "runtime_risk": "malformed PDF source input must stay controlled instead of type-only impossible",
+    "tests_added": "tests/strict-null/warehouse.pdf.boundary.phase7.test.ts",
+    "status": "closed"
+  },
+  {
+    "id": "D-test-callback-ref-captures",
+    "file": "src/screens/warehouse/hooks/useWarehousePostUnmountGuards.test.tsx",
+    "error_kind": "test-only typing",
+    "fix_kind": "use ref objects and invariant getters for hook/controller capture",
+    "runtime_risk": "test harness closures assigned values outside TypeScript control flow",
+    "tests_added": "existing hook cancellation and post-unmount regression suites updated",
+    "status": "closed"
+  },
+  {
+    "id": "D-pdf-render-resolver-captures",
+    "file": "src/lib/api/directorPdfRender.service.test.ts",
+    "error_kind": "test-only typing",
+    "fix_kind": "capture Promise resolvers through typed ref objects and assert capture before use",
+    "runtime_risk": "coalesced PDF render tests relied on optional call over a closure-assigned resolver",
+    "tests_added": "existing director PDF backend coalescing suites updated",
+    "status": "closed"
+  },
+  {
+    "id": "E-supabase-function-payload-boundary",
+    "file": "src/lib/api/directorPdfBackendInvoker.ts",
+    "error_kind": "external SDK gap",
+    "fix_kind": "narrow invoke body generic to a Supabase-compatible JSON object",
+    "runtime_risk": "SDK invoke body accepted nullable or unsupported generic payload under strict null checks",
+    "tests_added": "director PDF backend tests rerun",
+    "status": "closed"
+  },
+  {
+    "id": "E-runtime-script-sdk-typing",
+    "file": "scripts/_shared/realtimeWebRuntime.ts",
+    "error_kind": "external SDK gap",
+    "fix_kind": "filter unknown realtime observability records with a local type guard",
+    "runtime_risk": "runtime verifier parsed external browser records without strict field narrowing",
+    "tests_added": "script typecheck via global tsc",
+    "status": "closed"
+  },
+  {
+    "id": "R-android-pdf-runtime-proof",
+    "file": "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
+    "error_kind": "runtime smoke / proof telemetry mismatch",
+    "fix_kind": "seed current company_members auth contract for proof users and sync Android success-chain matcher to signed storage URL plus PdfViewerActivity evidence",
+    "runtime_risk": "PDF path must prove remote signed URL handoff without mistaking stale logs or unrelated UI for success",
+    "tests_added": "artifacts/pdf-permission-drift-proof.json; artifacts/foreman-warehouse-android-pdf-runtime-summary.json",
+    "status": "closed"
+  }
+]

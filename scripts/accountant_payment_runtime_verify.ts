@@ -237,18 +237,18 @@ async function maybeConfirmFio(
   let input = findFioInputNode(working);
   if (!input) throw new Error("Accountant FIO modal was visible but input node was not found");
 
-  const strategies = [
-    async () => {
-      await harness.replaceAndroidFieldText(input, fioLabel);
+  const strategies: Array<(target: NonNullable<ReturnType<typeof findFioInputNode>>) => Promise<void>> = [
+    async (target) => {
+      await harness.replaceAndroidFieldText(target, fioLabel);
     },
-    async () => {
-      harness.tapAndroidBounds(input.bounds);
+    async (target) => {
+      harness.tapAndroidBounds(target.bounds);
       await sleep(900);
       harness.typeAndroidText(fioLabel);
       await sleep(500);
     },
-    async () => {
-      harness.tapAndroidBounds(input.bounds);
+    async (target) => {
+      harness.tapAndroidBounds(target.bounds);
       await sleep(900);
       await typeAsciiLowercaseByKeyEvents(fioLabel);
       await sleep(500);
@@ -259,7 +259,7 @@ async function maybeConfirmFio(
   for (let strategyIndex = 0; strategyIndex < strategies.length && !confirm; strategyIndex += 1) {
     input = findFioInputNode(working);
     if (!input) throw new Error("Accountant FIO modal input disappeared before confirmation");
-    await strategies[strategyIndex]();
+    await strategies[strategyIndex](input);
     adb(["shell", "input", "keyevent", "4"]);
     await sleep(600);
     const result = await waitForFioConfirmNode(

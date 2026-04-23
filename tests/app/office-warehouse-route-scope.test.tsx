@@ -54,6 +54,16 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeTabOwnerUnmount: jest.fn(),
 }));
 
+function renderOfficeWarehouseRoute() {
+  const rendererRef: { current: TestRenderer.ReactTestRenderer | null } = { current: null };
+  act(() => {
+    rendererRef.current = TestRenderer.create(<OfficeWarehouseRoute />);
+  });
+  const renderer = rendererRef.current;
+  if (!renderer) throw new Error("office warehouse route renderer was not created");
+  return renderer;
+}
+
 describe("office warehouse child route entry", () => {
   beforeEach(() => {
     mockUsePathname.mockReset();
@@ -72,10 +82,7 @@ describe("office warehouse child route entry", () => {
     mockUsePathname.mockReturnValue("/office/warehouse");
     mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
 
-    let renderer: TestRenderer.ReactTestRenderer | null = null;
-    act(() => {
-      renderer = TestRenderer.create(<OfficeWarehouseRoute />);
-    });
+    const renderer = renderOfficeWarehouseRoute();
 
     expect(
       renderer?.root.findAllByProps({ testID: "warehouse-screen" }).length,

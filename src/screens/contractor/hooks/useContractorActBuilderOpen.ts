@@ -45,7 +45,7 @@ export function useContractorActBuilderOpen(params: {
   resolveRequestId: (row: ContractorWorkRow) => Promise<string>;
   looksLikeUuid: (value: unknown) => boolean;
   isRejectedOrCancelledRequestStatus: (status: unknown) => boolean;
-  pickFirstNonEmpty: (...values: (string | null | undefined)[]) => string;
+  pickFirstNonEmpty: (...values: (string | null | undefined)[]) => string | null;
   queueAfterClosingModals: (fn: () => void, options?: { closeWork?: boolean }) => void;
   setActBuilderVisible: (next: boolean) => void;
   setActBuilderLoadState: (next: ScreenLoadState) => void;

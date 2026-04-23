@@ -104,7 +104,7 @@ export type ReqItemUiRow = {
   system_name?: string | null;
   zone_name?: string | null;
 
-  rik_code: string;
+  rik_code: string | null;
   name_human: string;
   uom: string | null;
 

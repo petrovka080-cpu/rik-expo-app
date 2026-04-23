@@ -26,4 +26,4 @@ export type CalcRow = {
   hint?: string | null;
 };
 
-export type RequestDraftMeta = Parameters<typeof requestCreateDraft>[0];
+export type RequestDraftMeta = NonNullable<Parameters<typeof requestCreateDraft>[0]>;

@@ -823,7 +823,7 @@ const run = async () => {
   await enqueueSnapshotMutation(exhaustedSnapshot, "qty_update", { triggerSource: "manual_retry" });
   serverOnline = true;
   failNextSyncCount = 8;
-  const exhaustionRuns = [];
+  const exhaustionRuns: Array<Awaited<ReturnType<typeof flushQueue>>> = [];
   for (let index = 0; index < 5; index += 1) {
     exhaustionRuns.push(await flushQueue("manual_retry"));
   }

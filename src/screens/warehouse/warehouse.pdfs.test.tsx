@@ -29,16 +29,17 @@ jest.mock("./warehouse.pdf.boundary", () => ({
 type HookResult = ReturnType<typeof useWarehousePdf> | null;
 
 async function renderHarness(props: Parameters<typeof useWarehousePdf>[0]) {
-  let captured: HookResult = null;
+  const capturedRef: { current: HookResult } = { current: null };
 
   function Harness() {
-    captured = useWarehousePdf(props);
+    capturedRef.current = useWarehousePdf(props);
     return null;
   }
 
   await act(async () => {
     TestRenderer.create(<Harness />);
   });
+  const captured = capturedRef.current;
   if (!captured) {
     throw new Error("Warehouse PDF hook did not initialize");
   }

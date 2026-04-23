@@ -666,7 +666,7 @@ async function main() {
 
   let runtimeMode: "live_web_smoke" | "reused_queue_runtime_summaries" = "live_web_smoke";
   let runtimeResidual: string | null = null;
-  let reusedRuntimeInfo: { androidPassed: boolean; iosPassed: boolean; iosResidual: string | null } | null = null;
+  let reusedRuntimeInfo: { androidPassed: boolean; iosPassed: boolean; iosResidual: string | null } | undefined;
   let webRuntime = await runWebRuntimeSmoke().catch((error) => {
     const incomingRuntimeSummary = readArtifactIfExists<RuntimeSummaryArtifact>(
       "artifacts/warehouse-incoming-queue-runtime.summary.json",

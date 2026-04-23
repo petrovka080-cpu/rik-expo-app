@@ -23,6 +23,23 @@ const requestedRoles = new Set(
 const singleSessionMode = process.env.OFFICE_ROLE_SINGLE_SESSION === "1";
 
 type OfficeRole = "buyer" | "accountant" | "contractor" | "director" | "foreman";
+type OfficeRouteResult = {
+  role: OfficeRole;
+  route: string;
+  status: string;
+  surfaceMatched: boolean;
+  fioGateReached?: boolean;
+  fioGateError?: string | null;
+  xmlPath: string | null;
+  pngPath: string | null;
+  stdoutPath?: string;
+  stderrPath?: string;
+  stdoutTail?: string;
+  stderrTail?: string;
+  matchedLabels?: string[];
+  platformSpecificIssues: string[];
+  error?: string;
+};
 
 type RoleSpec = {
   role: OfficeRole;
@@ -264,7 +281,7 @@ async function verifyRoleRoute(params: {
   spec: RoleSpec;
   packageName: string | null;
   index: number;
-}) {
+}): Promise<OfficeRouteResult> {
   const { spec, packageName, index } = params;
   const route = `rik:///office/${spec.role}`;
   const artifactBase = `artifacts/office-role-route-${spec.role}`;
@@ -375,7 +392,7 @@ async function verifySingleSessionRoutes(packageName: string | null) {
       loginScreenPredicate: isLoginSurface,
     });
 
-    const roles = [];
+    const roles: OfficeRouteResult[] = [];
     for (const spec of activeRoleSpecs) {
       const route = `rik:///office/${spec.role}`;
       const artifactBase = `artifacts/office-role-route-session-${spec.role}`;
@@ -466,7 +483,7 @@ async function main() {
   const runtime = await harness.prepareAndroidRuntime({ clearApp: true });
   harness.adb(["logcat", "-c"]);
 
-  const roles = [];
+  const roles: OfficeRouteResult[] = [];
   try {
     if (singleSessionMode) {
       roles.push(...await verifySingleSessionRoutes(runtime.packageName));

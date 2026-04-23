@@ -75,7 +75,7 @@ async function buildCase(admin: AdminClient, proposalNo: string) {
   if (!proposal?.id) {
     return {
       proposalNo,
-      found: false,
+      found: false as const,
     };
   }
 
@@ -87,7 +87,7 @@ async function buildCase(admin: AdminClient, proposalNo: string) {
 
   return {
     proposalNo,
-    found: true,
+    found: true as const,
     proposalId: proposal.id,
     requestId: proposal.request_id,
     status: proposal.status,
@@ -163,7 +163,7 @@ async function main() {
     },
   });
 
-  const cases = [];
+  const cases: Array<Awaited<ReturnType<typeof buildCase>>> = [];
   for (const proposalNo of TARGET_PROPOSAL_NOS) {
     cases.push(await buildCase(admin, proposalNo));
   }

@@ -249,13 +249,12 @@ export default function OfficeHubScreen({
         );
         return null;
       } finally {
-        if (!isMountedRef.current) return;
-        if (mode === "initial") {
-          setLoading(false);
-          return;
-        }
-        if (mode === "refresh") {
-          setRefreshing(false);
+        if (isMountedRef.current) {
+          if (mode === "initial") {
+            setLoading(false);
+          } else if (mode === "refresh") {
+            setRefreshing(false);
+          }
         }
       }
     },

@@ -35,10 +35,11 @@ const asset: DocumentAsset = {
 };
 
 function renderShell(element: React.ReactElement) {
-  let renderer: TestRenderer.ReactTestRenderer | null = null;
+  const rendererRef: { current: TestRenderer.ReactTestRenderer | null } = { current: null };
   act(() => {
-    renderer = TestRenderer.create(element);
+    rendererRef.current = TestRenderer.create(element);
   });
+  const renderer = rendererRef.current;
   if (!renderer) {
     throw new Error("shell renderer was not created");
   }

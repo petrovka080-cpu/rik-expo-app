@@ -58,6 +58,9 @@ type MarketSearchResult = {
   supplier: string | null;
 };
 
+const isNonEmptyString = (value: string | null | undefined): value is string =>
+  typeof value === "string" && value.trim().length > 0;
+
 const recordAssistantActionFallback = (
   event: string,
   error: unknown,
@@ -278,8 +281,8 @@ async function searchMarketListings(query: string, limit = 6): Promise<MarketSea
   });
 
   const trimmed = filtered.slice(0, limit);
-  const companyIds = Array.from(new Set(trimmed.map((row) => row.company_id).filter(Boolean)));
-  const userIds = Array.from(new Set(trimmed.map((row) => row.user_id).filter(Boolean)));
+  const companyIds = Array.from(new Set(trimmed.map((row) => row.company_id).filter(isNonEmptyString)));
+  const userIds = Array.from(new Set(trimmed.map((row) => row.user_id).filter(isNonEmptyString)));
 
   const [companiesResult, profilesResult] = await Promise.all([
     companyIds.length
@@ -334,8 +337,8 @@ async function smartSearch(query: string, limit = 6): Promise<MarketSearchResult
   });
   return catalogRows.slice(0, limit).map((row) => ({
     source: "catalog",
-    id: String(row.code || row.rik_code || ""),
-    title: String(row.name || row.name_human || row.code || row.rik_code || "").trim(),
+    id: String(row.rik_code || ""),
+    title: String(row.name_human || row.rik_code || "").trim(),
     price: null,
     city: null,
     supplier: null,
@@ -524,8 +527,8 @@ async function createOrAppendForemanDraft(
     };
   });
 
-  const matched = matches.filter((entry) => entry.match?.code);
-  const unmatched = matches.filter((entry) => !entry.match?.code);
+  const matched = matches.filter((entry) => entry.match?.rik_code);
+  const unmatched = matches.filter((entry) => !entry.match?.rik_code);
 
   if (!matched.length) {
     const missing = unmatched.map((entry) => entry.item.name).join(", ");
@@ -545,7 +548,7 @@ async function createOrAppendForemanDraft(
   });
 
   for (const entry of matched) {
-    await requestItemAddOrIncAndPatchMeta(rid, String(entry.match?.code), entry.item.qty, {
+    await requestItemAddOrIncAndPatchMeta(rid, String(entry.match?.rik_code), entry.item.qty, {
       name_human: entry.item.name,
       uom: entry.item.unit,
       kind: entry.item.kind,

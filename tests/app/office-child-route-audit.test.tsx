@@ -44,6 +44,16 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeChildUnmount: jest.fn(),
 }));
 
+function renderOfficeForemanRoute() {
+  const rendererRef: { current: TestRenderer.ReactTestRenderer | null } = { current: null };
+  act(() => {
+    rendererRef.current = TestRenderer.create(<OfficeForemanRoute />);
+  });
+  const renderer = rendererRef.current;
+  if (!renderer) throw new Error("office foreman route renderer was not created");
+  return renderer;
+}
+
 describe("office child route audit", () => {
   beforeEach(() => {
     mockUsePathname.mockReset();
@@ -61,10 +71,7 @@ describe("office child route audit", () => {
     mockUsePathname.mockReturnValue("/office/foreman");
     mockUseSegments.mockReturnValue(["(tabs)", "office", "foreman"]);
 
-    let renderer: TestRenderer.ReactTestRenderer | null = null;
-    act(() => {
-      renderer = TestRenderer.create(<OfficeForemanRoute />);
-    });
+    const renderer = renderOfficeForemanRoute();
 
     expect(
       renderer?.root.findAllByProps({ testID: "foreman-route" }).length,

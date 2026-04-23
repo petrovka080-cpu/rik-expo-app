@@ -62,6 +62,16 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeRouteScopeSkipReason: jest.fn(),
 }));
 
+function renderOfficeIndexRoute() {
+  const rendererRef: { current: TestRenderer.ReactTestRenderer | null } = { current: null };
+  act(() => {
+    rendererRef.current = TestRenderer.create(<OfficeIndexRoute />);
+  });
+  const renderer = rendererRef.current;
+  if (!renderer) throw new Error("office index route renderer was not created");
+  return renderer;
+}
+
 describe("office index route scope", () => {
   beforeEach(() => {
     mockUsePathname.mockReset();
@@ -77,10 +87,7 @@ describe("office index route scope", () => {
     mockUsePathname.mockReturnValue("/office/warehouse");
     mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
 
-    let renderer: TestRenderer.ReactTestRenderer | null = null;
-    act(() => {
-      renderer = TestRenderer.create(<OfficeIndexRoute />);
-    });
+    const renderer = renderOfficeIndexRoute();
 
     expect(
       renderer?.root.findAllByProps({ testID: "office-hub-screen-inactive" })
@@ -97,10 +104,7 @@ describe("office index route scope", () => {
     mockUsePathname.mockReturnValue("/office");
     mockUseSegments.mockReturnValue(["(tabs)", "office"]);
 
-    let renderer: TestRenderer.ReactTestRenderer | null = null;
-    act(() => {
-      renderer = TestRenderer.create(<OfficeIndexRoute />);
-    });
+    const renderer = renderOfficeIndexRoute();
 
     expect(
       renderer?.root.findAllByProps({ testID: "office-hub-screen-active" })
@@ -122,10 +126,7 @@ describe("office index route scope", () => {
       method: "back",
     });
 
-    let renderer: TestRenderer.ReactTestRenderer | null = null;
-    act(() => {
-      renderer = TestRenderer.create(<OfficeIndexRoute />);
-    });
+    const renderer = renderOfficeIndexRoute();
 
     expect(
       renderer?.root.findAllByProps({

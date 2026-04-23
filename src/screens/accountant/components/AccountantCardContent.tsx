@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 
+import type { ProposalRoleTag } from "../../../lib/format";
 import { normalizeRuText } from "../../../lib/text/encoding";
 import type { AccountantInboxUiRow, AttachmentRow, AttachmentState, Tab } from "../types";
 import { S, UI } from "../ui";
@@ -21,7 +22,7 @@ type AccountantCardContentProps = {
   onOpenInvoice: () => Promise<void>;
   onOpenReport: () => Promise<void>;
   formatProposalBaseNo: (no: unknown, id: string) => string;
-  roleBadgeLabel: (role: string) => string;
+  roleBadgeLabel: (role?: ProposalRoleTag) => string;
   statusFromRaw: (status: unknown, isHist: boolean) => { key: string; label: string };
   runAction: (key: string, fn: () => Promise<void>) => Promise<void>;
 };

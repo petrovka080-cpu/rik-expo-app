@@ -181,13 +181,13 @@ describe("director lifecycle refresh queueing", () => {
   });
 
   it("joins the inflight refresh and queues a forced rerun when requested", async () => {
-    let resolveFirst: (() => void) | null = null;
+    const resolveFirstRef: { current: (() => void) | null } = { current: null };
     const refreshFn = jest
       .fn<Promise<void>, [boolean?]>()
       .mockImplementationOnce(
         () =>
           new Promise<void>((resolve) => {
-            resolveFirst = resolve;
+          resolveFirstRef.current = resolve;
           }),
       )
       .mockResolvedValueOnce(undefined);
@@ -228,7 +228,9 @@ describe("director lifecycle refresh queueing", () => {
       }),
     );
 
-    resolveFirst?.();
+    const resolveFirst = resolveFirstRef.current;
+    if (resolveFirst == null) throw new Error("Expected refresh resolver to be captured");
+    resolveFirst();
     await first;
     await Promise.resolve();
     await Promise.resolve();

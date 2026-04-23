@@ -187,7 +187,11 @@ const normalizeDraftRowId = (value: string | number | null | undefined) => trim(
 
 const snapshotItemRowId = (item: ForemanLocalDraftItem) => item.remote_item_id || item.local_id;
 
-const normalizeHeader = (value?: Partial<ForemanLocalDraftHeader> | null): ForemanLocalDraftHeader => ({
+type ForemanLocalDraftHeaderInput = {
+  [K in keyof ForemanLocalDraftHeader]?: ForemanLocalDraftHeader[K] | null | undefined;
+};
+
+const normalizeHeader = (value?: ForemanLocalDraftHeaderInput | null): ForemanLocalDraftHeader => ({
   foreman: trim(value?.foreman),
   comment: trim(value?.comment),
   objectType: trim(value?.objectType),

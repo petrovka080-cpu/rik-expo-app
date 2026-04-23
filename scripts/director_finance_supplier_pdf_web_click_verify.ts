@@ -226,7 +226,7 @@ async function findVisiblePressableByLabels(
   for (let index = 0; index < count; index += 1) {
     const candidate = locator.nth(index);
     if (!(await candidate.isVisible().catch(() => false))) continue;
-    const candidateText = normalizeBodyText(await candidate.textContent().catch(() => ""));
+    const candidateText = normalizeBodyText((await candidate.textContent().catch(() => "")) ?? "");
     const matched = labels.some((label) => {
       if (mode === "exact") return candidateText === label;
       if (mode === "startsWith") return candidateText.startsWith(label);
@@ -388,7 +388,7 @@ async function waitForVisibleDialog(page: Page, labels: string[], timeoutMs = 20
 }
 
 async function isSuppliersToggleExpanded(toggle: Locator) {
-  const textContent = normalizeBodyText(await toggle.textContent().catch(() => ""));
+  const textContent = normalizeBodyText((await toggle.textContent().catch(() => "")) ?? "");
   return /[▴▲]/.test(textContent) || (textContent.includes("KGS") && !textContent.includes("▾"));
 }
 
@@ -399,7 +399,7 @@ async function listVisiblePressableTexts(scope: LocatorScope, limit = 30) {
   for (let index = 0; index < count && out.length < limit; index += 1) {
     const candidate = locator.nth(index);
     if (!(await candidate.isVisible().catch(() => false))) continue;
-    const candidateText = normalizeBodyText(await candidate.textContent().catch(() => ""));
+    const candidateText = normalizeBodyText((await candidate.textContent().catch(() => "")) ?? "");
     if (!candidateText) continue;
     out.push(candidateText);
   }
@@ -423,7 +423,7 @@ async function findSupplierRowPressable(dialog: Locator): Promise<Locator | null
   for (let index = 0; index < count; index += 1) {
     const candidate = locator.nth(index);
     if (!(await candidate.isVisible().catch(() => false))) continue;
-    const candidateText = normalizeBodyText(await candidate.textContent().catch(() => ""));
+    const candidateText = normalizeBodyText((await candidate.textContent().catch(() => "")) ?? "");
     if (!candidateText) continue;
     if (matchesHeaderAction(candidateText)) continue;
     if (!candidateText.includes("KGS")) continue;

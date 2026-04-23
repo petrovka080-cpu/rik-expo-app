@@ -25,6 +25,7 @@ async function main() {
   let context: Awaited<ReturnType<typeof seedContractorCanonicalScenarios>> | null = null;
   try {
     context = await seedContractorCanonicalScenarios();
+    const seededContext = context;
     const readyKeys = ["buyer_subcontract", "foreman_subcontract_request", "foreman_material_request"] as const;
     const invalidKeys = ["invalid_missing_contractor", "invalid_material_only"] as const;
 
@@ -46,8 +47,8 @@ async function main() {
 
     const readyRows = inboxScope.rows;
     const readyWorkNames = new Set(readyRows.map((row) => row.work.workName));
-    const visibleReadyKeys = readyKeys.filter((key) => readyWorkNames.has(findScenario(context.scenarios, key).workName));
-    const hiddenInvalidKeys = invalidKeys.filter((key) => !readyWorkNames.has(findScenario(context.scenarios, key).workName));
+    const visibleReadyKeys = readyKeys.filter((key) => readyWorkNames.has(findScenario(seededContext.scenarios, key).workName));
+    const hiddenInvalidKeys = invalidKeys.filter((key) => !readyWorkNames.has(findScenario(seededContext.scenarios, key).workName));
 
     assert(visibleReadyKeys.length === readyKeys.length, "Not all ready contractor scenarios are visible in inbox scope");
     assert(hiddenInvalidKeys.length === invalidKeys.length, "Invalid contractor/material rows leaked into inbox scope");

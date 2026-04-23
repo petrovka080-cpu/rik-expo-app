@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import dotenv from "dotenv";
+import type { AiDraftOutcome } from "../src/screens/foreman/foreman.ai";
 
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 dotenv.config({ path: path.join(process.cwd(), ".env") });
@@ -249,7 +250,13 @@ async function main() {
   const modalSource = readText("src/screens/foreman/ForemanAiQuickModal.tsx");
   const aiSource = readText("src/screens/foreman/foreman.ai.ts");
 
-  const caseResults = [];
+  const caseResults: Array<{
+    id: string;
+    scope: string;
+    passed: boolean;
+    checks: Record<string, boolean>;
+    outcome: AiDraftOutcome | null;
+  }> = [];
 
   for (const battleCase of battleCases) {
     const outcome = await resolveForemanParsedItemsForTesting({

@@ -120,7 +120,7 @@ const isSupplierSummaryRecord = (value: unknown): value is SupplierSummaryRecord
 const asSupplierSummaryRow = (value: unknown): SupplierSummaryRow =>
   (isSupplierSummaryRecord(value) ? value : {}) as SupplierSummaryRow;
 
-const asSupplierSummaryRows = (value: unknown[]): SupplierSummaryRow[] =>
+const asSupplierSummaryRows = (value: unknown[] | null | undefined): SupplierSummaryRow[] =>
   (Array.isArray(value) ? value : []).map(asSupplierSummaryRow);
 
 function pickIso10(...vals: unknown[]) {

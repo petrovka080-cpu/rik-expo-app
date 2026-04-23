@@ -45,7 +45,7 @@ type Props = {
   systemName: string;
   zoneName: string;
   items: ReqItemRow[];
-  renderReqItem: ({ item }: { item: ReqItemRow }) => React.ReactElement;
+  renderReqItem: ({ item }: { item: ReqItemRow }) => React.ReactElement | null;
   screenLock: boolean;
   draftDeleteBusy: boolean;
   draftSendBusy: boolean;

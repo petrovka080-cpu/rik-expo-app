@@ -19,7 +19,7 @@ export function useContractorActBuilderSubmit(params: {
   resolveRequestId: (row: ContractorWorkRow) => Promise<string>;
   isRejectedOrCancelledRequestStatus: (status: unknown) => boolean;
   looksLikeUuid: (value: unknown) => boolean;
-  pickFirstNonEmpty: (...values: (string | null | undefined)[]) => string;
+  pickFirstNonEmpty: (...values: (string | null | undefined)[]) => string | null;
   loadWorks: () => Promise<void>;
   showErr: (error: unknown) => void;
   setActBuilderHint: (next: string) => void;

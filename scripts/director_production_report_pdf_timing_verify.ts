@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 
 import type { Locator, Page, Response } from "playwright";
 
@@ -183,7 +183,7 @@ async function ensureLocalWebServer(): Promise<{ started: boolean; stop: () => v
   };
 }
 
-function stopProcess(child: ChildProcessWithoutNullStreams) {
+function stopProcess(child: ChildProcess) {
   if (child.exitCode == null) {
     if (process.platform === "win32" && child.pid) {
       try {

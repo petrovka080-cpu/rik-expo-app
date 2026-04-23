@@ -960,11 +960,15 @@ async function loginDirectorAndroid(user: TempUser, packageName: string | null, 
 
   const stableLoginNode = findAndroidLoginNode(nodes) ?? loginNode;
 
-  if (!emailNode || !passwordNode || !stableLoginNode) {
-    throw new Error("Android director login controls were not found");
-  }
+  const requireLoginControl = <T,>(node: T | null, label: string): T => {
+    if (!node) throw new Error(`Android director ${label} control was not found`);
+    return node;
+  };
+  const emailControl = requireLoginControl(emailNode, "email");
+  const passwordControl = requireLoginControl(passwordNode, "password");
+  const loginControl = requireLoginControl(stableLoginNode, "login");
 
-  tapAndroidBounds(emailNode.bounds);
+  tapAndroidBounds(emailControl.bounds);
   await sleep(400);
   execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.email)], {
     cwd: projectRoot,
@@ -972,7 +976,7 @@ async function loginDirectorAndroid(user: TempUser, packageName: string | null, 
   });
   await sleep(400);
 
-  tapAndroidBounds(passwordNode.bounds);
+  tapAndroidBounds(passwordControl.bounds);
   await sleep(400);
   execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.password)], {
     cwd: projectRoot,
@@ -982,7 +986,7 @@ async function loginDirectorAndroid(user: TempUser, packageName: string | null, 
 
   pressAndroidKey(4);
   await sleep(500);
-  tapAndroidBounds(stableLoginNode.bounds);
+  tapAndroidBounds(loginControl.bounds);
   await sleep(1200);
   pressAndroidKey(66);
   await sleep(1500);

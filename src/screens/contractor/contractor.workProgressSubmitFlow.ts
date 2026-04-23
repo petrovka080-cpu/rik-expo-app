@@ -24,7 +24,7 @@ export function validateWorkProgressSubmitContext(params: {
   jobHeader: JobHeaderLike | null;
   pickFirstNonEmpty: (...vals: any[]) => string | null;
 }):
-  | { ok: true; resolvedObjectName: string }
+  | { ok: true; resolvedObjectName: string; workModalRow: WorkRowLike }
   | { ok: false; alert: { title: string; message: string } } {
   const { workModalRow, jobHeader, pickFirstNonEmpty } = params;
   if (!workModalRow) {
@@ -49,7 +49,7 @@ export function validateWorkProgressSubmitContext(params: {
     };
   }
 
-  return { ok: true, resolvedObjectName };
+  return { ok: true, resolvedObjectName, workModalRow };
 }
 
 export async function submitWorkProgressFlow(params: {
@@ -87,12 +87,13 @@ export async function submitWorkProgressFlow(params: {
     };
   }
 
+  const row = validation.workModalRow;
   const materialsPayload = buildWorkProgressMaterialsPayload(workModalMaterials);
   const note = buildWorkProgressNote(workModalLocation, workModalComment);
   const submitResult = await ensureWorkProgressSubmission({
     supabaseClient,
-    progressId: workModalRow.progress_id,
-    workUom: workModalRow.uom_id || null,
+    progressId: row.progress_id,
+    workUom: row.uom_id || null,
     stageNote: workModalStage || null,
     note,
     qty: 1,

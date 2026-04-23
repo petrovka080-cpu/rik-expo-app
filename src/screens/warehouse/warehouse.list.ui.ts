@@ -6,7 +6,7 @@ export function selectWarehouseListContentStyle(headerMax: number) {
 
 export function selectWarehouseListOnScroll(params: {
   isWeb: boolean;
-  onListScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onListScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 }) {
   return params.isWeb ? undefined : params.onListScroll;
 }

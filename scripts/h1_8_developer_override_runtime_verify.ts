@@ -17,7 +17,11 @@ if (!SUPABASE_URL || !ANON_KEY || !SERVICE_ROLE_KEY) {
   throw new Error("Missing Supabase env for H1.8 runtime verifier.");
 }
 
-const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+const supabaseUrl = SUPABASE_URL;
+const anonKey = ANON_KEY;
+const serviceRoleKey = SERVICE_ROLE_KEY;
+
+const admin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
@@ -27,7 +31,7 @@ const proofPath = path.join(artifactDir, "H1_8_runtime_proof.json");
 const nowToken = () => Date.now().toString(36);
 
 async function createSignedClient(email: string, password: string) {
-  const client = createClient(SUPABASE_URL, ANON_KEY, {
+  const client = createClient(supabaseUrl, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { data, error } = await client.auth.signInWithPassword({ email, password });

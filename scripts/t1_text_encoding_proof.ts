@@ -226,7 +226,13 @@ async function scanTable(spec: ScanSpec) {
 async function main() {
   const generatedAt = new Date().toISOString();
   const sourceScan = SOURCE_FILES.map(scanSourceFile);
-  const dbScan = [];
+  const dbScan: Array<{
+    table: string;
+    scannedRows: number;
+    corruptedFieldCount: number;
+    samples: Array<{ id: string; column: string; value: string; normalized: string }>;
+    skipped?: string;
+  }> = [];
 
   for (const spec of DB_SPECS) {
     dbScan.push(await scanTable(spec));

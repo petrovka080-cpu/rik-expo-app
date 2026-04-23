@@ -323,10 +323,10 @@ describe("director production report backend PDF-X.B1 cache contract", () => {
   });
 
   it("coalesces concurrent identical requests into one backend invocation", async () => {
-    let resolveBackend: ((value: unknown) => void) | null = null;
+    const resolveBackendRef: { current: ((value: unknown) => void) | null } = { current: null };
     mockInvokeDirectorPdfBackend.mockReturnValue(
       new Promise((resolve) => {
-        resolveBackend = resolve;
+        resolveBackendRef.current = resolve;
       }),
     );
 
@@ -336,7 +336,9 @@ describe("director production report backend PDF-X.B1 cache contract", () => {
 
     await waitForProductionBackendInvoke(1);
     expect(mockInvokeDirectorPdfBackend).toHaveBeenCalledTimes(1);
-    resolveBackend?.(productionBackendResult("production-burst"));
+    const resolveBackend = resolveBackendRef.current;
+    if (resolveBackend == null) throw new Error("Expected backend resolver to be captured");
+    resolveBackend(productionBackendResult("production-burst"));
     const results = await Promise.all([first, second]);
 
     expect(results[0]).toEqual(results[1]);

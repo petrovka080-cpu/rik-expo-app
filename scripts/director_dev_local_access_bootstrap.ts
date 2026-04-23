@@ -212,8 +212,9 @@ async function main() {
 
     browser = await chromium.launch({ headless });
     page = await browser.newPage();
+    const activePage = page;
 
-    await page.addInitScript(
+    await activePage.addInitScript(
       ({ key, value }) => {
         window.localStorage.setItem(key, value);
       },
@@ -223,13 +224,13 @@ async function main() {
       },
     );
 
-    await page.goto(`${baseUrl}/director`, { waitUntil: "networkidle", timeout: 60_000 });
+    await activePage.goto(`${baseUrl}/director`, { waitUntil: "networkidle", timeout: 60_000 });
 
     const mountedBody = await poll(
       "director-dev-local-access-mounted",
       async () => {
-        const currentUrl = page.url();
-        const currentBody = await bodyText(page);
+        const currentUrl = activePage.url();
+        const currentBody = await bodyText(activePage);
         if (
           !currentUrl.includes("/auth/login") &&
           (includesAnyLabel(currentBody, DIRECTOR_TEXT.header) ||
@@ -245,23 +246,23 @@ async function main() {
     );
 
     const financeTab =
-      (await page.getByTestId("director-top-tab-finance").first().isVisible().catch(() => false))
-        ? page.getByTestId("director-top-tab-finance").first()
-        : (await findVisibleText(page, DIRECTOR_TEXT.financeTab)) ??
+      (await activePage.getByTestId("director-top-tab-finance").first().isVisible().catch(() => false))
+        ? activePage.getByTestId("director-top-tab-finance").first()
+        : (await findVisibleText(activePage, DIRECTOR_TEXT.financeTab)) ??
           (await poll(
             "director-dev-local-access-finance-tab",
             async () => {
-              const byTestId = page.getByTestId("director-top-tab-finance").first();
+              const byTestId = activePage.getByTestId("director-top-tab-finance").first();
               if (await byTestId.isVisible().catch(() => false)) {
                 return byTestId;
               }
-              return (await findVisibleText(page, DIRECTOR_TEXT.financeTab)) ?? null;
+              return (await findVisibleText(activePage, DIRECTOR_TEXT.financeTab)) ?? null;
             },
             20_000,
             250,
           ));
 
-    const debtCardVisibleBeforeClick = Boolean(await findVisibleText(page, DIRECTOR_TEXT.debtCard));
+    const debtCardVisibleBeforeClick = Boolean(await findVisibleText(activePage, DIRECTOR_TEXT.debtCard));
 
     if (!debtCardVisibleBeforeClick) {
       await financeTab.click({ force: true });
@@ -269,7 +270,7 @@ async function main() {
 
     const debtCard = await poll(
       "director-dev-local-access-debt-card",
-      async () => (await findVisibleText(page, DIRECTOR_TEXT.debtCard)) ?? null,
+      async () => (await findVisibleText(activePage, DIRECTOR_TEXT.debtCard)) ?? null,
       45_000,
       250,
     );
@@ -280,7 +281,7 @@ async function main() {
       baseUrl,
       route: "/director",
       headless,
-      currentUrl: page.url(),
+      currentUrl: activePage.url(),
       mountedBodySample: mountedBody.slice(0, 400),
       financeTabClicked: !debtCardVisibleBeforeClick,
       screenOpened: await debtCard.isVisible().catch(() => false),
@@ -300,7 +301,7 @@ async function main() {
     console.log(JSON.stringify(artifact, null, 2));
 
     if (autoCloseMs > 0) {
-      await page.waitForTimeout(autoCloseMs);
+      await activePage.waitForTimeout(autoCloseMs);
       return;
     }
 

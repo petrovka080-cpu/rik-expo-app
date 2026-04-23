@@ -37,6 +37,11 @@ export function useWarehouseReqPick(args: {
     (item: ReqItemUiRow) => {
       const id = String(item.request_item_id || "").trim();
       if (!id) return;
+      const rikCode = String(item.rik_code ?? "").trim();
+      if (!rikCode) {
+        setIssueMsg({ kind: "error", text: "Cannot add request item without RIK code" });
+        return;
+      }
 
       // Сколько можно выдать по заявке и по факту на складе.
       const canByReq = nz(item.qty_can_issue_now, 0);
@@ -79,7 +84,7 @@ export function useWarehouseReqPick(args: {
         ...(prev || {}),
         [id]: {
           request_item_id: id,
-          rik_code: item.rik_code,
+          rik_code: rikCode,
           name_human: item.name_human,
           uom: item.uom ?? null,
           qty,

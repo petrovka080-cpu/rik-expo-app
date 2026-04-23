@@ -18,6 +18,10 @@ export type SubcontractControllerGuardFailure = Extract<
   { ok: false }
 >;
 
+export type SubcontractControllerPdfGuardResult =
+  | { ok: true; requestId: string }
+  | SubcontractControllerGuardFailure;
+
 export function isSubcontractControllerGuardFailure(
   result: SubcontractControllerGuardResult,
 ): result is SubcontractControllerGuardFailure {
@@ -65,7 +69,7 @@ export function guardSendToDirector(params: {
   return { ok: true, subcontractId: templateGuard.subcontractId, requestId };
 }
 
-export function guardPdfRequest(requestId: string): SubcontractControllerGuardResult {
+export function guardPdfRequest(requestId: string): SubcontractControllerPdfGuardResult {
   const normalized = trim(requestId);
   if (!normalized) {
     return { ok: false, reason: "missing_request" };

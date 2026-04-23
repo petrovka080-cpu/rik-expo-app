@@ -105,15 +105,18 @@ function buildRealtimeRoleSeed(role: string) {
 }
 
 export type PlatformObservabilityEvent = {
-  screen?: string;
-  surface?: string;
-  category?: string;
-  event?: string;
-  result?: string;
+  screen?: string | null;
+  surface?: string | null;
+  category?: string | null;
+  event?: string | null;
+  result?: string | null;
   trigger?: string;
   sourceKind?: string | null;
   extra?: Record<string, unknown> | null;
-};
+} & Record<string, unknown>;
+
+const isPlatformObservabilityEvent = (value: unknown): value is PlatformObservabilityEvent =>
+  value != null && typeof value === "object" && !Array.isArray(value);
 
 export type BrowserRuntimeCapture = {
   browser: Browser;
@@ -363,13 +366,14 @@ export async function maybeConfirmWarehouseRecipient(page: Page, recipient: stri
 }
 
 export async function getObservabilityEvents(page: Page): Promise<PlatformObservabilityEvent[]> {
-  return page.evaluate(() => {
+  const events = await page.evaluate(() => {
     const root = globalThis as typeof globalThis & {
       __RIK_PLATFORM_OBSERVABILITY__?: { events?: unknown[] };
     };
     const events = root.__RIK_PLATFORM_OBSERVABILITY__?.events;
     return Array.isArray(events) ? events : [];
   });
+  return events.filter(isPlatformObservabilityEvent);
 }
 
 export async function resetObservabilityEvents(page: Page) {

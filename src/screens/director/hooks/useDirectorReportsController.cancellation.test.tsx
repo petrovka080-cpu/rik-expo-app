@@ -93,9 +93,14 @@ describe("useDirectorReportsController cancellation discipline", () => {
       }) as ReturnType<typeof loadDirectorReportUiScope>;
     }) as typeof loadDirectorReportUiScope);
 
-    let api: ReturnType<typeof useDirectorReportsController> | null = null;
+    const apiRef: { current: ReturnType<typeof useDirectorReportsController> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Director reports controller did not initialize");
+      return current;
+    };
     function Harness() {
-      api = useDirectorReportsController({ fmtDateOnly: (value) => value ?? "" });
+      apiRef.current = useDirectorReportsController({ fmtDateOnly: (value) => value ?? "" });
       return null;
     }
 
@@ -107,12 +112,12 @@ describe("useDirectorReportsController cancellation discipline", () => {
 
     let first: Promise<void> = Promise.resolve();
     await act(async () => {
-      first = api?.fetchReport("old") ?? Promise.resolve();
+      first = getApi().fetchReport("old");
       await Promise.resolve();
     });
     let second: Promise<void> = Promise.resolve();
     await act(async () => {
-      second = api?.fetchReport("new") ?? Promise.resolve();
+      second = getApi().fetchReport("new");
       await Promise.resolve();
     });
 
@@ -124,14 +129,14 @@ describe("useDirectorReportsController cancellation discipline", () => {
       await second;
       await Promise.resolve();
     });
-    expect(api?.repData?.rows?.[0]?.rik_code).toBe("new");
+    expect(getApi().repData?.rows?.[0]?.rik_code).toBe("new");
 
     await act(async () => {
       resolvers[0]?.();
       await first;
       await Promise.resolve();
     });
-    expect(api?.repData?.rows?.[0]?.rik_code).toBe("new");
+    expect(getApi().repData?.rows?.[0]?.rik_code).toBe("new");
     expect(Alert.alert).not.toHaveBeenCalled();
 
     act(() => {
@@ -149,9 +154,14 @@ describe("useDirectorReportsController cancellation discipline", () => {
       }) as ReturnType<typeof loadDirectorReportUiScope>;
     }) as typeof loadDirectorReportUiScope);
 
-    let api: ReturnType<typeof useDirectorReportsController> | null = null;
+    const apiRef: { current: ReturnType<typeof useDirectorReportsController> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Director reports controller did not initialize");
+      return current;
+    };
     function Harness() {
-      api = useDirectorReportsController({ fmtDateOnly: (value) => value ?? "" });
+      apiRef.current = useDirectorReportsController({ fmtDateOnly: (value) => value ?? "" });
       return null;
     }
 
@@ -163,7 +173,7 @@ describe("useDirectorReportsController cancellation discipline", () => {
 
     let task: Promise<void> = Promise.resolve();
     await act(async () => {
-      task = api?.fetchReport() ?? Promise.resolve();
+      task = getApi().fetchReport();
       await Promise.resolve();
     });
     act(() => {

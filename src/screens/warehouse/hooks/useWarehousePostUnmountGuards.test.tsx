@@ -150,10 +150,15 @@ describe("warehouse post-unmount guards", () => {
           releaseStock = resolve;
         }),
     );
-    let api: ReturnType<typeof useWarehouseFetchRefs> | null = null;
+    const apiRef: { current: ReturnType<typeof useWarehouseFetchRefs> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Warehouse fetch refs did not initialize");
+      return current;
+    };
 
     function Harness() {
-      api = useWarehouseFetchRefs({
+      apiRef.current = useWarehouseFetchRefs({
         fetchToReceive: jest.fn(async () => undefined),
         fetchStock,
         fetchReqHeads: jest.fn(async () => undefined),
@@ -167,8 +172,8 @@ describe("warehouse post-unmount guards", () => {
       TestRenderer.create(<Harness />);
     });
 
-    const first = api?.callFetchStock();
-    const second = api?.callFetchStock();
+    const first = getApi().callFetchStock();
+    const second = getApi().callFetchStock();
     expect(fetchStock).toHaveBeenCalledTimes(1);
 
     activeRef.current = false;
@@ -194,10 +199,15 @@ describe("warehouse post-unmount guards", () => {
           }),
       )
       .mockRejectedValueOnce(new Error("queued stock refresh failed"));
-    let api: ReturnType<typeof useWarehouseFetchRefs> | null = null;
+    const apiRef: { current: ReturnType<typeof useWarehouseFetchRefs> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Warehouse fetch refs did not initialize");
+      return current;
+    };
 
     function Harness() {
-      api = useWarehouseFetchRefs({
+      apiRef.current = useWarehouseFetchRefs({
         fetchToReceive: jest.fn(async () => undefined),
         fetchStock,
         fetchReqHeads: jest.fn(async () => undefined),
@@ -211,8 +221,8 @@ describe("warehouse post-unmount guards", () => {
       TestRenderer.create(<Harness />);
     });
 
-    const first = api?.callFetchStock() ?? Promise.resolve();
-    const joined = api?.callFetchStock() ?? Promise.resolve();
+    const first = getApi().callFetchStock();
+    const joined = getApi().callFetchStock();
     expect(fetchStock).toHaveBeenCalledTimes(1);
 
     await act(async () => {
@@ -257,9 +267,14 @@ describe("warehouse post-unmount guards", () => {
     );
 
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-    let api: ReturnType<typeof useWarehouseReportsData> | null = null;
+    const apiRef: { current: ReturnType<typeof useWarehouseReportsData> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Warehouse reports data did not initialize");
+      return current;
+    };
     function Harness() {
-      api = useWarehouseReportsData({
+      apiRef.current = useWarehouseReportsData({
         supabase: {} as never,
         periodFrom: "",
         periodTo: "",
@@ -281,8 +296,8 @@ describe("warehouse post-unmount guards", () => {
       await Promise.resolve();
     });
 
-    expect(api?.repStock).toEqual([]);
-    expect(api?.repIncoming).toEqual([]);
+    expect(getApi().repStock).toEqual([]);
+    expect(getApi().repIncoming).toEqual([]);
   });
 
   it("aborts pending warehouse reports when a newer report scope starts", async () => {
@@ -313,9 +328,14 @@ describe("warehouse post-unmount guards", () => {
     }) as typeof apiFetchIncomingReports);
 
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0, staleTime: 0 } } });
-    let api: ReturnType<typeof useWarehouseReportsData> | null = null;
+    const apiRef: { current: ReturnType<typeof useWarehouseReportsData> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Warehouse reports data did not initialize");
+      return current;
+    };
     function Harness() {
-      api = useWarehouseReportsData({
+      apiRef.current = useWarehouseReportsData({
         supabase: {} as never,
         periodFrom: "",
         periodTo: "",
@@ -338,8 +358,8 @@ describe("warehouse post-unmount guards", () => {
 
     // Data is empty because the mock resolvers are never called
     // (React Query manages its own fetch lifecycle now).
-    expect(api?.repStock).toEqual([]);
-    expect(api?.repIncoming).toEqual([]);
+    expect(getApi().repStock).toEqual([]);
+    expect(getApi().repIncoming).toEqual([]);
   });
 
   it("aborts warehouse reports on hook unmount", async () => {
@@ -448,9 +468,14 @@ describe("warehouse post-unmount guards", () => {
       }) as ReturnType<typeof apiFetchReqItems>,
     );
 
-    let api: ReturnType<typeof useWarehouseReqItemsData> | null = null;
+    const apiRef: { current: ReturnType<typeof useWarehouseReqItemsData> | null } = { current: null };
+    const getApi = () => {
+      const current = apiRef.current;
+      if (current == null) throw new Error("Warehouse request items data did not initialize");
+      return current;
+    };
     function Harness() {
-      api = useWarehouseReqItemsData({
+      apiRef.current = useWarehouseReqItemsData({
         supabase: {} as never,
         screenActiveRef: activeRef,
       });
@@ -463,7 +488,7 @@ describe("warehouse post-unmount guards", () => {
 
     let task: Promise<void> | undefined;
     await act(async () => {
-      task = api?.fetchReqItems("REQ-1");
+      task = getApi().fetchReqItems("REQ-1");
       await Promise.resolve();
     });
     activeRef.current = false;
@@ -473,7 +498,7 @@ describe("warehouse post-unmount guards", () => {
       await Promise.resolve();
     });
 
-    expect(api?.reqItems).toEqual([]);
-    expect(api?.reqItemsLoading).toBe(true);
+    expect(getApi().reqItems).toEqual([]);
+    expect(getApi().reqItemsLoading).toBe(true);
   });
 });

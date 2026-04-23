@@ -3,7 +3,7 @@ import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 
 export function useWarehouseReportActions(params: {
   isWeb: boolean;
-  onListScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onListScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   setReportsMode: React.Dispatch<React.SetStateAction<"choice" | "issue" | "incoming">>;
   onPdfRegister: () => void | Promise<void>;
   onPdfDocument: (id: string | number) => void | Promise<void>;
@@ -78,4 +78,3 @@ export function useWarehouseReportActions(params: {
     reportsScrollEventThrottle,
   };
 }
-

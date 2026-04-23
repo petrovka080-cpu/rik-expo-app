@@ -36,7 +36,7 @@ describe("buyer attachments mutation owner", () => {
     });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok || !result.data) return;
     expect(result.status).toBe("success");
     expect(result.completedStages).toEqual([
       "pick_file",
@@ -100,7 +100,7 @@ describe("buyer attachments mutation owner", () => {
     });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok || !result.data) return;
     expect(result.status).toBe("partial_success");
     expect(result.warnings).toEqual([
       expect.objectContaining({
@@ -192,7 +192,9 @@ describe("buyer attachments mutation owner", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.data.mode).toBe("existing");
+    const data = result.data;
+    if (!data) return;
+    expect(data.mode).toBe("existing");
     expect(mockedGetLatestCanonicalProposalAttachment).toHaveBeenCalledWith(
       expect.anything(),
       "proposal-1",
@@ -216,7 +218,9 @@ describe("buyer attachments mutation owner", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.data.mode).toBe("uploaded");
+    const data = result.data;
+    if (!data) return;
+    expect(data.mode).toBe("uploaded");
     expect(uploadProposalAttachment).toHaveBeenCalledWith(
       "proposal-2",
       expect.any(Blob),
