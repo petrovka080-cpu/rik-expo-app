@@ -510,6 +510,14 @@ describe("OfficeHubScreen", () => {
     expect(
       renderer!.root.findByProps({ testID: "office-direction-add-foreman" }),
     ).toBeTruthy();
+    expect(
+      renderer!.root.findByProps({ testID: "office-direction-open-director" })
+        .props.accessibilityRole,
+    ).toBe("button");
+    expect(
+      renderer!.root.findByProps({ testID: "office-direction-add-foreman" })
+        .props.accessibilityRole,
+    ).toBe("button");
 
     renderer!.root
       .findByProps({ testID: "office-direction-open-director" })

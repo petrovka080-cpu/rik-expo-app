@@ -121,6 +121,22 @@ describe("Profile composition boundaries", () => {
     expect(props.onOpenOfficeAccess).toHaveBeenCalledTimes(1);
     expect(props.onOpenSellerArea).toHaveBeenCalledTimes(1);
     expect(
+      renderer!.root.findByProps({ testID: "profile-open-office-access" }).props
+        .accessibilityRole,
+    ).toBe("button");
+    expect(
+      renderer!.root.findByProps({ testID: "profile-open-market-entry" }).props
+        .accessibilityRole,
+    ).toBe("button");
+    expect(
+      renderer!.root.findByProps({ testID: "profile-context-office" }).props
+        .accessibilityRole,
+    ).toBe("button");
+    expect(
+      renderer!.root.findByProps({ testID: "profile.logout.button" }).props
+        .accessibilityRole,
+    ).toBe("button");
+    expect(
       renderer!.root.findByProps({ testID: "profile-ota-diagnostics-section" }),
     ).toBeTruthy();
     expect(

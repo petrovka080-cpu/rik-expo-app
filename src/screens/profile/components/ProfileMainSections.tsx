@@ -153,6 +153,8 @@ export function ProfileMainSections({
           testID="profile-edit-open"
           onPress={onOpenEditProfile}
           style={styles.profileHeaderAvatarWrap}
+          accessibilityRole="button"
+          accessibilityLabel={COPY.edit}
         >
           <View
             style={[styles.profileHeaderAvatar, profileHeaderAvatarToneStyle]}
@@ -184,7 +186,12 @@ export function ProfileMainSections({
           <Text style={styles.profileTitle}>{COPY.profileTitle}</Text>
           <Text style={styles.profileTitleSubtitle}>{COPY.profileSubtitle}</Text>
         </View>
-        <Pressable style={styles.profileEditButton} onPress={onOpenEditProfile}>
+        <Pressable
+          style={styles.profileEditButton}
+          onPress={onOpenEditProfile}
+          accessibilityRole="button"
+          accessibilityLabel={COPY.edit}
+        >
           <Text style={styles.profileEditButtonText}>{COPY.edit}</Text>
         </Pressable>
       </View>
@@ -249,6 +256,8 @@ export function ProfileMainSections({
             testID="profile-open-market-entry"
             style={styles.profileActionCard}
             onPress={onOpenMarket}
+            accessibilityRole="button"
+            accessibilityLabel={COPY.marketEntryTitle}
           >
             <View style={styles.profileActionTextWrap}>
               <Text style={styles.profileActionTitle}>
@@ -267,6 +276,8 @@ export function ProfileMainSections({
             testID="profile-open-add-listing"
             style={[styles.profileActionCard, styles.companyActionsRowTop]}
             onPress={onOpenAddListing}
+            accessibilityRole="button"
+            accessibilityLabel={COPY.addListingTitle}
           >
             <View style={styles.profileActionTextWrap}>
               <Text style={styles.profileActionTitle}>
@@ -285,6 +296,8 @@ export function ProfileMainSections({
             testID="profile-open-seller-area"
             style={[styles.profileActionCard, styles.companyActionsRowTop]}
             onPress={onOpenSellerArea}
+            accessibilityRole="button"
+            accessibilityLabel={COPY.sellerEntryTitle}
           >
             <View style={styles.profileActionTextWrap}>
               <Text style={styles.profileActionTitle}>
@@ -302,6 +315,8 @@ export function ProfileMainSections({
           testID="profile-open-office-access"
           style={[styles.profileActionCard, styles.companyActionsRowTop]}
           onPress={onOpenOfficeAccess}
+          accessibilityRole="button"
+          accessibilityLabel={officeEntryTitle}
         >
           <View style={styles.profileActionTextWrap}>
             <Text style={styles.profileActionTitle}>{officeEntryTitle}</Text>
@@ -337,6 +352,8 @@ export function ProfileMainSections({
                   marketContextActive && styles.modeSwitchBtnActive,
                 ]}
                 onPress={() => onSelectActiveContext("market")}
+                accessibilityRole="button"
+                accessibilityLabel="Market"
               >
                 <Text
                   style={[
@@ -358,6 +375,8 @@ export function ProfileMainSections({
                   officeContextActive && styles.modeSwitchBtnActive,
                 ]}
                 onPress={() => onSelectActiveContext("office")}
+                accessibilityRole="button"
+                accessibilityLabel="Office"
               >
                 <Text
                   style={[
@@ -382,6 +401,8 @@ export function ProfileMainSections({
             testID="profile-open-active-context"
             style={[styles.companyBtn, styles.companyActionsRowTop]}
             onPress={onOpenActiveContext}
+            accessibilityRole="button"
+            accessibilityLabel={activeContextCtaLabel}
           >
             <Text style={styles.companyBtnText}>{activeContextCtaLabel}</Text>
           </Pressable>
@@ -400,6 +421,8 @@ export function ProfileMainSections({
             <Pressable
               style={[styles.companyBtn, styles.companyBtnSecondary]}
               onPress={onOpenEditProfile}
+              accessibilityRole="button"
+              accessibilityLabel={COPY.editData}
             >
               <Text style={styles.companyBtnTextSecondary}>
                 {COPY.editData}

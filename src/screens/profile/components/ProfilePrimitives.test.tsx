@@ -24,6 +24,9 @@ describe("ProfilePrimitives", () => {
             title="Profile"
             subtitle="Open profile"
             onPress={onPress}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Profile"
           />
           <RowItem label="Email" value="user@example.com" />
         </>,
@@ -32,6 +35,8 @@ describe("ProfilePrimitives", () => {
 
     const menuRow = renderer!.root.findByProps({ testID: "profile-menu-row" });
     expect(menuRow).toBeTruthy();
+    expect(menuRow.props.accessibilityRole).toBe("button");
+    expect(menuRow.props.accessibilityLabel).toBe("Profile");
     menuRow.props.onPress();
     expect(onPress).toHaveBeenCalledTimes(1);
   });

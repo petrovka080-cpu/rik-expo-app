@@ -3,14 +3,28 @@ import { Text, TextInput } from "react-native";
 import TestRenderer, { act } from "react-test-renderer";
 
 import LoginScreen from "../../../app/auth/login";
+import RegisterScreen from "../../../app/auth/register";
+import ResetScreen from "../../../app/auth/reset";
 import { POST_AUTH_ENTRY_ROUTE } from "../authRouting";
 
 const mockReplace = jest.fn();
 const mockSignInSafe = jest.fn();
 const mockGetSessionSafe = jest.fn();
+const mockSignUp = jest.fn();
+const mockResetPasswordForEmail = jest.fn();
 
 jest.mock("expo-router", () => ({
-  Link: ({ children }: { children: React.ReactNode }) => children,
+  Link: ({
+    children,
+    ...props
+  }: {
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(Text, props, children);
+  },
   router: {
     replace: (...args: unknown[]) => mockReplace(...args),
   },
@@ -24,6 +38,13 @@ jest.mock("../auth/signInSafe", () => ({
 jest.mock("../supabaseClient", () => ({
   getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   isSupabaseEnvValid: true,
+  supabase: {
+    auth: {
+      signUp: (...args: unknown[]) => mockSignUp(...args),
+      resetPasswordForEmail: (...args: unknown[]) =>
+        mockResetPasswordForEmail(...args),
+    },
+  },
 }));
 
 const findSubmitButton = (renderer: TestRenderer.ReactTestRenderer) =>
@@ -38,6 +59,8 @@ describe("LoginScreen submit handling", () => {
     mockReplace.mockReset();
     mockSignInSafe.mockReset();
     mockGetSessionSafe.mockReset();
+    mockSignUp.mockReset();
+    mockResetPasswordForEmail.mockReset();
     mockGetSessionSafe.mockResolvedValue({
       session: { user: { id: "user-1" }, access_token: "token" },
       degraded: false,
@@ -278,6 +301,63 @@ describe("LoginScreen submit handling", () => {
 
     expect(textContent).toContain("Сессия ещё закрепляется. Попробуйте ещё раз.");
     expect(mockReplace).not.toHaveBeenCalled();
+  });
+  it("exposes explicit button and link semantics on auth entry routes", () => {
+    let renderer: TestRenderer.ReactTestRenderer;
+
+    act(() => {
+      renderer = TestRenderer.create(<LoginScreen />);
+    });
+
+    const submit = renderer!.root.findByProps({ testID: "auth.login.submit" });
+    const registerLink = renderer!.root.find(
+      (node) => node.props.href === "/auth/register",
+    );
+    const resetLink = renderer!.root.find(
+      (node) => node.props.href === "/auth/reset",
+    );
+
+    expect(submit.props.accessibilityRole).toBe("button");
+    expect(registerLink.props.accessibilityRole).toBe("link");
+    expect(resetLink.props.accessibilityRole).toBe("link");
+  });
+
+  it("keeps register and reset public CTAs accessible without changing auth behavior", () => {
+    let registerRenderer: TestRenderer.ReactTestRenderer;
+    let resetRenderer: TestRenderer.ReactTestRenderer;
+
+    act(() => {
+      registerRenderer = TestRenderer.create(<RegisterScreen />);
+      resetRenderer = TestRenderer.create(<ResetScreen />);
+    });
+
+    const registerSubmit = registerRenderer!.root.find(
+      (node) =>
+        node.props.accessibilityRole === "button"
+        && typeof node.props.onPress === "function"
+        && typeof node.props.disabled === "boolean",
+    );
+    const registerLoginLink = registerRenderer!.root.find(
+      (node) => node.props.href === "/auth/login",
+    );
+    const resetSubmit = resetRenderer!.root.find(
+      (node) =>
+        node.props.accessibilityRole === "button"
+        && typeof node.props.onPress === "function"
+        && typeof node.props.disabled === "boolean",
+    );
+    const resetLoginLink = resetRenderer!.root.find(
+      (node) => node.props.href === "/auth/login",
+    );
+    const resetRegisterLink = resetRenderer!.root.find(
+      (node) => node.props.href === "/auth/register",
+    );
+
+    expect(registerSubmit.props.accessibilityRole).toBe("button");
+    expect(registerLoginLink.props.accessibilityRole).toBe("link");
+    expect(resetSubmit.props.accessibilityRole).toBe("button");
+    expect(resetLoginLink.props.accessibilityRole).toBe("link");
+    expect(resetRegisterLink.props.accessibilityRole).toBe("link");
   });
 });
 

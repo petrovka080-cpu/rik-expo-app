@@ -215,7 +215,9 @@ export default function LoginScreen() {
       style={styles.container}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>{UI_COPY.title}</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          {UI_COPY.title}
+        </Text>
         <TextInput
           testID="auth.login.email"
           style={styles.input}
@@ -246,6 +248,8 @@ export default function LoginScreen() {
           style={styles.button}
           onPress={onSubmit}
           disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={UI_COPY.submit}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
@@ -255,10 +259,20 @@ export default function LoginScreen() {
         </Pressable>
 
         <View style={styles.linksRow}>
-          <Link href="/auth/register" style={styles.link}>
+          <Link
+            href="/auth/register"
+            style={styles.link}
+            accessibilityRole="link"
+            accessibilityLabel={UI_COPY.register}
+          >
             {UI_COPY.register}
           </Link>
-          <Link href="/auth/reset" style={styles.link}>
+          <Link
+            href="/auth/reset"
+            style={styles.link}
+            accessibilityRole="link"
+            accessibilityLabel={UI_COPY.reset}
+          >
             {UI_COPY.reset}
           </Link>
         </View>

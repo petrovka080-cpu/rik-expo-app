@@ -66,6 +66,14 @@ describe("OfficeCompanyCreateSection", () => {
     expect(
       renderer.root.findByProps({ testID: "office-company-phone-0" }),
     ).toBeTruthy();
+    expect(
+      renderer.root.findByProps({ testID: "office-create-company" }).props
+        .accessibilityRole,
+    ).toBe("button");
+    expect(
+      renderer.root.findByProps({ testID: "office-add-company-phone" }).props
+        .accessibilityRole,
+    ).toBe("button");
   });
 
   it("delegates draft field, phone list, layout, and create actions to the owner", () => {

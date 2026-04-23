@@ -17,6 +17,20 @@ export default function ResetScreen() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const titleText = '\u0421\u0431\u0440\u043e\u0441 \u043f\u0430\u0440\u043e\u043b\u044f';
+  const subtitleText =
+    '\u041c\u044b \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u043c \u043f\u0438\u0441\u044c\u043c\u043e \u0441\u043e \u0441\u0441\u044b\u043b\u043a\u043e\u0439 \u043d\u0430 \u0441\u0431\u0440\u043e\u0441 \u043f\u0430\u0440\u043e\u043b\u044f.';
+  const submitLabel = '\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c';
+  const loginLinkLabel =
+    '\u041d\u0430\u0437\u0430\u0434 \u043a \u0432\u0445\u043e\u0434\u0443';
+  const registerLinkLabel =
+    '\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f';
+  const missingSupabaseMessage =
+    'Supabase \u043d\u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0435\u043d: \u043f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 EXPO_PUBLIC_SUPABASE_URL/ANON_KEY.';
+  const successMessage =
+    '\u0415\u0441\u043b\u0438 email \u043d\u0430\u0439\u0434\u0435\u043d, \u0441\u0441\u044b\u043b\u043a\u0430 \u0434\u043b\u044f \u0441\u0431\u0440\u043e\u0441\u0430 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0430.';
+  const fallbackErrorMessage =
+    '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u043f\u0438\u0441\u044c\u043c\u043e.';
 
   const onSubmit = async () => {
     if (loading) return;
@@ -24,14 +38,14 @@ export default function ResetScreen() {
     setMessage(null);
     setLoading(true);
     try {
-      if (!supabase) throw new Error('Supabase не настроен: проверьте EXPO_PUBLIC_SUPABASE_URL/ANON_KEY.');
+      if (!supabase) throw new Error(missingSupabaseMessage);
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: process.env.EXPO_PUBLIC_SUPABASE_URL || undefined,
       });
       if (resetError) throw resetError;
-      setMessage('Если email найден, ссылка для сброса отправлена.');
+      setMessage(successMessage);
     } catch (e: any) {
-      setError(e?.message ?? 'Не удалось отправить письмо.');
+      setError(e?.message ?? fallbackErrorMessage);
     } finally {
       setLoading(false);
     }
@@ -43,8 +57,10 @@ export default function ResetScreen() {
       style={styles.container}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>Сброс пароля</Text>
-        <Text style={styles.subtitle}>Мы отправим письмо со ссылкой на сброс пароля.</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          {titleText}
+        </Text>
+        <Text style={styles.subtitle}>{subtitleText}</Text>
         <TextInput
           style={styles.input}
           autoCapitalize="none"
@@ -58,13 +74,33 @@ export default function ResetScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {message ? <Text style={styles.message}>{message}</Text> : null}
 
-        <Pressable style={styles.button} onPress={onSubmit} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Отправить</Text>}
+        <Pressable
+          style={styles.button}
+          onPress={onSubmit}
+          disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={submitLabel}
+        >
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{submitLabel}</Text>}
         </Pressable>
 
         <View style={styles.linksRow}>
-          <Link href="/auth/login" style={styles.link}>Назад к входу</Link>
-          <Link href="/auth/register" style={styles.link}>Регистрация</Link>
+          <Link
+            href="/auth/login"
+            style={styles.link}
+            accessibilityRole="link"
+            accessibilityLabel={loginLinkLabel}
+          >
+            {loginLinkLabel}
+          </Link>
+          <Link
+            href="/auth/register"
+            style={styles.link}
+            accessibilityRole="link"
+            accessibilityLabel={registerLinkLabel}
+          >
+            {registerLinkLabel}
+          </Link>
         </View>
       </View>
     </KeyboardAvoidingView>

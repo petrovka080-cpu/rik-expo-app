@@ -70,7 +70,9 @@ export default function RegisterScreen() {
       style={styles.container}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>{UI_COPY.title}</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          {UI_COPY.title}
+        </Text>
         <TextInput
           style={styles.input}
           autoCapitalize="none"
@@ -91,7 +93,13 @@ export default function RegisterScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {message ? <Text style={styles.message}>{message}</Text> : null}
 
-        <Pressable style={styles.button} onPress={onSubmit} disabled={loading}>
+        <Pressable
+          style={styles.button}
+          onPress={onSubmit}
+          disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={UI_COPY.submit}
+        >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
@@ -101,7 +109,12 @@ export default function RegisterScreen() {
 
         <View style={styles.linksRow}>
           <Text>{UI_COPY.hasAccount}</Text>
-          <Link href="/auth/login" style={styles.link}>
+          <Link
+            href="/auth/login"
+            style={styles.link}
+            accessibilityRole="link"
+            accessibilityLabel={UI_COPY.login}
+          >
             {UI_COPY.login}
           </Link>
         </View>

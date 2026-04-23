@@ -10,6 +10,8 @@ import { OFFICE_ASSIGNABLE_ROLES, type OfficeWorkspaceCard } from "./officeAcces
 import type { OfficeAccessInvite, OfficeAccessMember } from "./officeAccess.types";
 import { COPY, formatDate } from "./officeHub.constants";
 
+const INVITE_ACTION_PREFIX = "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c";
+
 export function DirectionCard(props: {
   card: OfficeWorkspaceCard;
   canInvite: boolean;
@@ -36,6 +38,8 @@ export function DirectionCard(props: {
           <Pressable
             testID={`office-direction-add-${props.card.key}`}
             onPress={props.onInvite}
+            accessibilityRole="button"
+            accessibilityLabel={`${INVITE_ACTION_PREFIX} ${props.card.title}`}
             style={({ pressed }) => [
               styles.add,
               props.card.primary && styles.addPrimary,
@@ -57,6 +61,8 @@ export function DirectionCard(props: {
         testID={`office-direction-open-${props.card.key}`}
         disabled={disabled}
         onPress={props.onOpen}
+        accessibilityRole="button"
+        accessibilityLabel={props.card.title}
         style={({ pressed }) => [
           styles.stack,
           disabled && styles.dim,

@@ -4,6 +4,7 @@ import path from "path";
 
 import {
   OFFICE_BACK_LABEL,
+  OFFICE_BACK_A11Y_LABEL,
   OFFICE_SAFE_BACK_ROUTE,
   renderSafeOfficeChildBackButton,
   renderSafeOfficeForemanBackButton,
@@ -74,9 +75,14 @@ describe("OfficeStackLayout", () => {
       label: OFFICE_BACK_LABEL,
       href: undefined,
       onPress: mockNativeBack,
-    }) as React.ReactElement<{ label: string; onPress: () => void }>;
+    }) as React.ReactElement<{
+      label: string;
+      onPress: () => void;
+      accessibilityLabel?: string;
+    }>;
 
     expect(header.props.label).toBe(OFFICE_BACK_LABEL);
+    expect(header.props.accessibilityLabel).toBe(OFFICE_BACK_A11Y_LABEL);
     header.props.onPress();
 
     // NAV-P0: nativeOnPress is no longer called — we use router.navigate

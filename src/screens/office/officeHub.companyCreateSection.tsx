@@ -92,6 +92,8 @@ export function OfficeCompanyCreateSection({
                     additionalPhones: [...current.additionalPhones, ""],
                   }))
                 }
+                accessibilityRole="button"
+                accessibilityLabel="\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0442\u0435\u043b\u0435\u0444\u043e\u043d"
               >
                 <Text style={styles.link}>Добавить телефон</Text>
               </Pressable>
@@ -124,6 +126,8 @@ export function OfficeCompanyCreateSection({
                       ),
                     }))
                   }
+                  accessibilityRole="button"
+                  accessibilityLabel="\u0423\u0431\u0440\u0430\u0442\u044c \u0442\u0435\u043b\u0435\u0444\u043e\u043d"
                 >
                   <Text style={styles.linkDanger}>Убрать</Text>
                 </Pressable>
@@ -134,6 +138,8 @@ export function OfficeCompanyCreateSection({
             testID="office-create-company"
             disabled={savingCompany}
             onPress={onCreateCompany}
+            accessibilityRole="button"
+            accessibilityLabel={COPY.companyCta}
             style={[styles.primary, savingCompany && styles.dim]}
           >
             <Text style={styles.primaryText}>{COPY.companyCta}</Text>

@@ -25,6 +25,8 @@ import {
 
 export { OFFICE_SAFE_BACK_ROUTE } from "../../../src/screens/office/office.route";
 export const OFFICE_BACK_LABEL = "\u041e\u0444\u0438\u0441";
+export const OFFICE_BACK_A11Y_LABEL =
+  "\u041d\u0430\u0437\u0430\u0434 \u0432 \u043e\u0444\u0438\u0441";
 export const unstable_settings = {
   initialRouteName: "index",
 };
@@ -171,6 +173,7 @@ export function renderSafeOfficeChildBackButton(
     <HeaderBackButton
       {...props}
       label={OFFICE_BACK_LABEL}
+      accessibilityLabel={OFFICE_BACK_A11Y_LABEL}
       onPress={(...nativePressArgs: unknown[]) => {
         handleOfficeChildBack({
           nativeOnPress: props.onPress,
