@@ -5,7 +5,10 @@ const ROOT = process.cwd();
 const SOURCE_DIRS = ["src", "app"];
 const MIGRATIONS_DIR = path.join(ROOT, "supabase", "migrations");
 const DB_TYPES_PATH = path.join(ROOT, "src", "lib", "database.types.ts");
-const OUTPUT_PATH = path.join(ROOT, "artifacts", "RLS_coverage_phase1_matrix.json");
+const DEFAULT_OUTPUT_PATH = path.join(ROOT, "artifacts", "RLS_coverage_phase1_matrix.json");
+const DEFAULT_WAVE = "RLS_COVERAGE_VERIFICATION_PHASE_1";
+const SHORTLIST_STRATEGY_PHASE1 = "phase1";
+const SHORTLIST_STRATEGY_REMAINING = "remaining";
 
 const CLIENT_ROLES = ["anon", "authenticated"];
 const CRUD_OPS = ["select", "insert", "update", "delete"];
@@ -136,6 +139,14 @@ const POLICY_TOO_BROAD_CLUSTER = new Set([
   "warehouse_issue_items",
   "notifications",
 ]);
+const REMAINING_SHORTLIST_PREFERRED = [
+  "ai_reports",
+  "ai_configs",
+  "chat_messages",
+  "company_invites",
+  "company_members",
+  "market_listings",
+];
 
 function readUtf8(filePath) {
   return fs.readFileSync(filePath, "utf8");
@@ -164,6 +175,41 @@ function listFiles(dirPath) {
 
 function relative(filePath) {
   return path.relative(ROOT, filePath).replace(/\\/g, "/");
+}
+
+function parseArgs(argv = process.argv.slice(2)) {
+  const options = {
+    outputPath: DEFAULT_OUTPUT_PATH,
+    wave: DEFAULT_WAVE,
+    shortlistStrategy: SHORTLIST_STRATEGY_PHASE1,
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--output" && argv[index + 1]) {
+      const rawOutputPath = argv[index + 1];
+      options.outputPath = path.isAbsolute(rawOutputPath)
+        ? rawOutputPath
+        : path.join(ROOT, rawOutputPath);
+      index += 1;
+      continue;
+    }
+    if (arg === "--wave" && argv[index + 1]) {
+      options.wave = String(argv[index + 1]).trim() || DEFAULT_WAVE;
+      index += 1;
+      continue;
+    }
+    if (arg === "--strategy" && argv[index + 1]) {
+      const rawStrategy = String(argv[index + 1]).trim().toLowerCase();
+      options.shortlistStrategy =
+        rawStrategy === SHORTLIST_STRATEGY_REMAINING
+          ? SHORTLIST_STRATEGY_REMAINING
+          : SHORTLIST_STRATEGY_PHASE1;
+      index += 1;
+    }
+  }
+
+  return options;
 }
 
 function parsePublicRelations() {
@@ -654,11 +700,11 @@ function classifyRisk(relation, state, coverage) {
 }
 
 function nextActionFor(relation, riskLevel) {
-  if (relation === "submit_jobs") {
-    return "chosen_for_next_hardening_wave";
-  }
-  if (relation === "supplier_messages") {
+  if (relation === "supplier_messages" && riskLevel === "low") {
     return "verified_safe_no_change";
+  }
+  if ((relation === "app_errors" || relation === "submit_jobs") && riskLevel === "low") {
+    return "verified_safe_after_hardening";
   }
   if (POLICY_TOO_BROAD_CLUSTER.has(relation)) {
     return "review_scope_narrowing_before_hardening";
@@ -672,7 +718,7 @@ function nextActionFor(relation, riskLevel) {
   return "keep_under_verification";
 }
 
-function buildShortlist() {
+function buildLegacyPhase1Shortlist() {
   return [
     {
       candidate: "A",
@@ -705,6 +751,116 @@ function buildShortlist() {
   ];
 }
 
+function buildHighRiskClusterRelation(tableRows) {
+  const clusterRelations = tableRows
+    .filter((row) => POLICY_TOO_BROAD_CLUSTER.has(row.table) && row.actual_risk_level === "high")
+    .map((row) => row.table)
+    .sort();
+  return clusterRelations.length > 0 ? clusterRelations.join("/") : null;
+}
+
+function computeRemainingCandidateScore(row) {
+  const ops = new Set(row.observed_client_ops || []);
+  const writeScore =
+    (ops.has("insert") ? 3 : 0) +
+    (ops.has("update") ? 2 : 0) +
+    (ops.has("delete") ? 2 : 0);
+  const readScore = ops.has("select") ? 1 : 0;
+  const narrowScore = Math.max(0, 5 - (row.touched_files?.length ?? 0));
+  return writeScore + readScore + narrowScore;
+}
+
+function pickRemainingNextCandidate(tableRows) {
+  const eligibleRows = tableRows.filter(
+    (row) =>
+      row.actual_risk_level === "high" &&
+      !POLICY_TOO_BROAD_CLUSTER.has(row.table) &&
+      row.next_action === "verify_live_db_or_prepare_single-table_hardening",
+  );
+
+  for (const relation of REMAINING_SHORTLIST_PREFERRED) {
+    const row = eligibleRows.find((candidate) => candidate.table === relation);
+    if (row) return row;
+  }
+
+  return eligibleRows
+    .slice()
+    .sort((left, right) => {
+      const scoreDelta = computeRemainingCandidateScore(right) - computeRemainingCandidateScore(left);
+      if (scoreDelta !== 0) return scoreDelta;
+      const fileDelta = (left.touched_files?.length ?? 0) - (right.touched_files?.length ?? 0);
+      if (fileDelta !== 0) return fileDelta;
+      return left.table.localeCompare(right.table);
+    })[0] ?? null;
+}
+
+function buildRemainingShortlist(tableRows) {
+  const shortlist = [];
+
+  const supplierMessages = tableRows.find((row) => row.table === "supplier_messages");
+  if (supplierMessages?.actual_risk_level === "low") {
+    shortlist.push({
+      candidate: "A",
+      relation: "supplier_messages",
+      outcome: "verified safe",
+      reason:
+        "Explicit create table, RLS enablement, authenticated select/insert grants, and operation-specific policies remain provable in repo history.",
+    });
+  }
+
+  const appErrors = tableRows.find((row) => row.table === "app_errors");
+  if (appErrors?.actual_risk_level === "low") {
+    shortlist.push({
+      candidate: "B",
+      relation: "app_errors",
+      outcome: "verified safe after hardening",
+      reason:
+        "The current repo now proves table creation, RLS enablement, insert-only grants, and the constrained authenticated/anon insert policy for the diagnostics sink.",
+    });
+  }
+
+  const submitJobs = tableRows.find((row) => row.table === "submit_jobs");
+  if (submitJobs?.actual_risk_level === "low") {
+    shortlist.push({
+      candidate: "C",
+      relation: "submit_jobs",
+      outcome: "verified safe after hardening",
+      reason:
+        "The current repo now proves queue-table RLS enablement, authenticated own select/insert direct access, and security-definer worker RPC boundaries for processing transitions.",
+    });
+  }
+
+  const clusterRelation = buildHighRiskClusterRelation(tableRows);
+  if (clusterRelation) {
+    shortlist.push({
+      candidate: "D",
+      relation: clusterRelation,
+      outcome: "policy too broad / too wide",
+      reason:
+        "The director realtime select cluster still spans multiple core tables, so it remains a poor fit for a narrow verification or single-table hardening slice.",
+    });
+  }
+
+  const nextCandidate = pickRemainingNextCandidate(tableRows);
+  if (nextCandidate) {
+    shortlist.push({
+      candidate: "E",
+      relation: nextCandidate.table,
+      outcome: "chosen next hardening candidate",
+      reason:
+        "This is the narrowest remaining high-risk direct-client table in the current repo snapshot: write-capable runtime usage, no provable repo-side RLS/grant evidence, and limited touched-file blast radius.",
+    });
+  }
+
+  return shortlist;
+}
+
+function buildShortlist(tableRows, shortlistStrategy) {
+  return shortlistStrategy === SHORTLIST_STRATEGY_REMAINING
+    ? buildRemainingShortlist(tableRows)
+    : buildLegacyPhase1Shortlist();
+}
+
 function looksLikeViewRelation(relation) {
   return (
     relation.startsWith("v_") ||
@@ -715,6 +871,7 @@ function looksLikeViewRelation(relation) {
 }
 
 function main() {
+  const options = parseArgs();
   const { tables, views } = parsePublicRelations();
   const runtimeUsage = collectRuntimeUsage();
   const { store: migrationState, createdViews } = parseMigrations();
@@ -798,12 +955,13 @@ function main() {
   };
 
   const payload = {
-    wave: "RLS_COVERAGE_VERIFICATION_PHASE_1",
+    wave: options.wave,
     generated_at: new Date().toISOString(),
     scope: {
       verification_only: true,
       runtime_semantics_changed: false,
       repo_based_verification: true,
+      shortlist_strategy: options.shortlistStrategy,
     },
     limitations: [
       "Repository migration history contains placeholder files, so baseline RLS/grant state is not provable for every legacy table from repo history alone.",
@@ -811,7 +969,7 @@ function main() {
       "Coverage booleans are repo-evidence-based: null means the repository does not prove the boundary either way.",
     ],
     summary,
-    shortlist: buildShortlist(),
+    shortlist: buildShortlist(tableRows, options.shortlistStrategy),
     storage_buckets_excluded: ["avatars", "supplier_files"],
     touched_views: touchedViews.map((usage) => ({
       relation: usage.relation,
@@ -829,11 +987,11 @@ function main() {
     tables: tableRows,
   };
 
-  fs.writeFileSync(OUTPUT_PATH, `${JSON.stringify(payload, null, 2)}\n`);
+  fs.writeFileSync(options.outputPath, `${JSON.stringify(payload, null, 2)}\n`);
   console.log(
     JSON.stringify(
       {
-        output: relative(OUTPUT_PATH),
+        output: relative(options.outputPath),
         summary,
         shortlist: payload.shortlist,
       },

@@ -23,6 +23,7 @@
     "verify:wave12-tests": "node node_modules/jest/bin/jest.js src/screens/contractor/contractor.workModalService.test.ts src/screens/warehouse/warehouse.requests.read.test.ts src/screens/contractor/contractor.realtime.lifecycle.test.tsx src/screens/warehouse/warehouse.realtime.lifecycle.test.tsx src/lib/supabaseClient.test.ts --runInBand --json --outputFile artifacts/wave12-residual-jest.json",
     "verify:wave12-smoke": "node node_modules/tsx/dist/cli.mjs scripts/wave12_minimal_web_smoke.ts",
     "verify:local-role-smoke": "node node_modules/tsx/dist/cli.mjs scripts/local_role_screen_access_verify.ts",
+    "verify:rls:remaining": "node scripts/rlsCoveragePhase1.mjs --strategy remaining --wave RLS_REMAINING_TABLES_VERIFICATION --output artifacts/RLS_remaining_tables_verification_matrix.json",
     "e2e:maestro:infra": "tsx scripts/e2e/run-maestro-infra.ts",
     "e2e:maestro:foundation": "tsx scripts/e2e/run-maestro-foundation.ts",
     "e2e:maestro:auth": "tsx scripts/e2e/run-maestro-auth.ts",
