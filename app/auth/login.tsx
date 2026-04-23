@@ -217,6 +217,7 @@ export default function LoginScreen() {
       <View style={styles.card}>
         <Text style={styles.title}>{UI_COPY.title}</Text>
         <TextInput
+          testID="auth.login.email"
           style={styles.input}
           autoCapitalize="none"
           autoCorrect={false}
@@ -226,6 +227,7 @@ export default function LoginScreen() {
           onChangeText={setEmail}
         />
         <TextInput
+          testID="auth.login.password"
           style={styles.input}
           secureTextEntry
           placeholder={UI_COPY.passwordPlaceholder}
@@ -233,9 +235,18 @@ export default function LoginScreen() {
           onChangeText={setPassword}
         />
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? (
+          <Text testID="auth.error.message" style={styles.error}>
+            {error}
+          </Text>
+        ) : null}
 
-        <Pressable style={styles.button} onPress={onSubmit} disabled={loading}>
+        <Pressable
+          testID="auth.login.submit"
+          style={styles.button}
+          onPress={onSubmit}
+          disabled={loading}
+        >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (

@@ -25,6 +25,7 @@
     "verify:local-role-smoke": "node node_modules/tsx/dist/cli.mjs scripts/local_role_screen_access_verify.ts",
     "e2e:maestro:infra": "tsx scripts/e2e/run-maestro-infra.ts",
     "e2e:maestro:foundation": "tsx scripts/e2e/run-maestro-foundation.ts",
+    "e2e:maestro:auth": "tsx scripts/e2e/run-maestro-auth.ts",
     "verify:governance:static": "npm run verify:typecheck && npm run verify:db-types:imports && npm run verify:coverage:governance && npm run verify:wave6-pdf && npm run verify:wave7-perf",
     "release:preflight": "tsx scripts/release/run-release-guard.ts preflight",
     "release:verify": "tsx scripts/release/run-release-guard.ts verify --json",

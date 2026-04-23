@@ -1,0 +1,20 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Safe Public Entry
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- tapOn: "Зарегистрироваться"
+- extendedWaitUntil:
+    visible: "Создать"
+    timeout: 15000
+- assertVisible: "Создать"
+- assertVisible: "Войти"
+- tapOn: "Войти"
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- assertVisible: "Войти в GOX"
+- stopApp

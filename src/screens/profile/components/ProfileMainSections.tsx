@@ -412,6 +412,11 @@ export function ProfileMainSections({
               title={COPY.signOutTitle}
               subtitle={COPY.signOutSubtitle}
               onPress={onSignOut}
+              testID="profile.logout.button"
+              titleTestID="profile.logout.title"
+              accessible
+              accessibilityLabel={COPY.signOutTitle}
+              accessibilityRole="button"
               danger
               last
             />

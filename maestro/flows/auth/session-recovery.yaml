@@ -1,0 +1,25 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Session Recovery
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- tapOn: "Email"
+- inputText: ${E2E_AUTH_EMAIL}
+- tapOn: "Пароль"
+- inputText: ${E2E_AUTH_PASSWORD}
+- hideKeyboard
+- tapOn: "Войти"
+- extendedWaitUntil:
+    visible: "Профиль"
+    timeout: 30000
+- assertVisible: "Профиль"
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Профиль"
+    timeout: 20000
+- assertVisible: "Профиль"
+- stopApp

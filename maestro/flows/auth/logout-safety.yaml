@@ -1,0 +1,43 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Logout Safety
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- tapOn: "Email"
+- inputText: ${E2E_AUTH_EMAIL}
+- tapOn: "Пароль"
+- inputText: ${E2E_AUTH_PASSWORD}
+- hideKeyboard
+- tapOn: "Войти"
+- extendedWaitUntil:
+    visible: "Профиль"
+    timeout: 30000
+- assertVisible: "Профиль"
+- scrollUntilVisible:
+    element:
+      id: "profile.logout.button"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- extendedWaitUntil:
+    visible:
+      id: "profile.logout.button"
+    timeout: 10000
+- tapOn:
+    id: "profile.logout.button"
+- tapOn: "Выйти"
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- assertVisible: "Войти в GOX"
+- back
+- launchApp
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- assertVisible: "Войти в GOX"
+- stopApp

@@ -5,6 +5,7 @@ import {
   Text,
   TextInput,
   View,
+  type AccessibilityRole,
   type TextInputProps,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,12 +21,18 @@ export function MenuActionRow(props: {
   danger?: boolean;
   last?: boolean;
   testID?: string;
+  titleTestID?: string;
+  accessible?: boolean;
   accessibilityLabel?: string;
+  accessibilityRole?: AccessibilityRole;
 }) {
   return (
     <Pressable
       testID={props.testID}
+      collapsable={!(props.testID || props.titleTestID)}
+      accessible={props.accessible}
       accessibilityLabel={props.accessibilityLabel}
+      accessibilityRole={props.accessibilityRole}
       style={[profileStyles.profileMenuRow, props.last && profileStyles.profileMenuRowLast]}
       onPress={props.onPress}
     >
@@ -42,7 +49,13 @@ export function MenuActionRow(props: {
         />
       </View>
       <View style={profileStyles.profileMenuTextWrap}>
-        <Text style={[profileStyles.profileMenuTitle, props.danger && profileStyles.profileMenuTitleDanger]}>
+        <Text
+          testID={props.titleTestID}
+          style={[
+            profileStyles.profileMenuTitle,
+            props.danger && profileStyles.profileMenuTitleDanger,
+          ]}
+        >
           {props.title}
         </Text>
         <Text style={profileStyles.profileMenuSubtitle}>{props.subtitle}</Text>
