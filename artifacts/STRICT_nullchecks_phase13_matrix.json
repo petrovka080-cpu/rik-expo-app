@@ -1,0 +1,36 @@
+{
+  "wave": "STRICT_NULLCHECKS_PHASE_13",
+  "chosen_slice": "contractor material search RPC output boundary",
+  "cluster": "src/screens/contractor/contractor.search.ts",
+  "touched_files": [
+    "src/screens/contractor/contractor.search.ts",
+    "src/screens/contractor/contractor.loadWorksService.test.ts",
+    "tsconfig.strict-null-phase13-contractor-search.json",
+    "artifacts/STRICT_nullchecks_phase13_notes.md",
+    "artifacts/STRICT_nullchecks_phase13_proof.md",
+    "artifacts/STRICT_nullchecks_phase13_matrix.json"
+  ],
+  "strict_blockers_closed": [
+    "available optional read during sort",
+    "nullable/malformed RPC output normalization boundary"
+  ],
+  "guards_normalizers_invariants_added": [
+    "isCatalogSearchRecord",
+    "readCatalogField",
+    "normalizeText",
+    "normalizeAvailable",
+    "normalizeCatalogSearchRow"
+  ],
+  "tests_added": [
+    "contractor catalog search mapping boundary"
+  ],
+  "semantics_changed": false,
+  "phase13_strict_compile": "PASS",
+  "root_typecheck": "PASS",
+  "expo_lint": "PASS",
+  "focused_tests": "PASS",
+  "npm_test_run_in_band": "PASS",
+  "npm_test": "PASS",
+  "git_diff_check": "PASS",
+  "runtime_diff": true
+}

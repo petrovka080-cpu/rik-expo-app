@@ -2,6 +2,7 @@ import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
 } from "../../lib/observability/platformObservability";
+import { mapCatalogSearchToWorkMaterials } from "./contractor.search";
 import { loadContractorWorksBundle } from "./contractor.loadWorksService";
 
 const buildScopeEnvelope = (params?: {
@@ -33,6 +34,106 @@ const buildParams = (supabaseClient: {
   isStaff: false,
   isExcludedWorkCode: () => false,
   isApprovedForOtherStatus: () => false,
+});
+
+describe("contractor catalog search mapping boundary", () => {
+  it("keeps valid success mapping and sort semantics unchanged", () => {
+    const result = mapCatalogSearchToWorkMaterials([
+      {
+        name_human_ru: "  Материал   Б  ",
+        rik_code: "MAT-B",
+        uom_code: "kg",
+        qty_available: 2,
+      },
+      {
+        name_human: "Material A",
+        rik_code: "MAT-A",
+        uom_code: "pcs",
+        qty_available: 7,
+      },
+      {
+        name_human_ru: "Материал В",
+        rik_code: "MAT-C",
+        uom_code: "m",
+        qty_available: 0,
+      },
+    ]);
+
+    expect(result.map((row) => row.mat_code)).toEqual(["MAT-A", "MAT-B", "MAT-C"]);
+    expect(result[0]).toEqual(
+      expect.objectContaining({
+        material_id: null,
+        qty: 0,
+        mat_code: "MAT-A",
+        name: "Material A",
+        uom: "pcs",
+        available: 7,
+        qty_fact: 0,
+      }),
+    );
+    expect(result[1]?.name).toBe("Материал Б");
+  });
+
+  it("returns a deterministic empty boundary for null and undefined payloads", () => {
+    expect(mapCatalogSearchToWorkMaterials(null)).toEqual([]);
+    expect(mapCatalogSearchToWorkMaterials(undefined)).toEqual([]);
+    expect(mapCatalogSearchToWorkMaterials([])).toEqual([]);
+  });
+
+  it("normalizes partial payloads without creating a false empty state", () => {
+    const result = mapCatalogSearchToWorkMaterials([
+      { rik_code: "MAT-FALLBACK", qty_available: null },
+      { name_human_ru: "Named only" },
+    ]);
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        mat_code: "MAT-FALLBACK",
+        name: "MAT-FALLBACK",
+        available: 0,
+      }),
+      expect.objectContaining({
+        mat_code: null,
+        name: "Named only",
+        available: 0,
+      }),
+    ]);
+  });
+
+  it("keeps malformed rows terminal and sortable without leaking NaN", () => {
+    const result = mapCatalogSearchToWorkMaterials([
+      null,
+      {
+        name_human_ru: 12345,
+        rik_code: 98765,
+        uom_code: false,
+        qty_available: "not-a-number",
+      },
+      {
+        name_human_ru: "Valid stock",
+        rik_code: "MAT-STOCK",
+        qty_available: "5",
+      },
+    ]);
+
+    expect(result.map((row) => row.available)).toEqual([5, 0, 0]);
+    expect(result[0]?.mat_code).toBe("MAT-STOCK");
+    expect(result[1]).toEqual(
+      expect.objectContaining({
+        mat_code: null,
+        name: "",
+        available: 0,
+      }),
+    );
+    expect(result[2]).toEqual(
+      expect.objectContaining({
+        mat_code: "98765",
+        name: "12345",
+        uom: "false",
+        available: 0,
+      }),
+    );
+  });
 });
 
 describe("contractor.loadWorksService", () => {
