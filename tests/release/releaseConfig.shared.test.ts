@@ -4,7 +4,7 @@ import path from "node:path";
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
 describe("releaseConfig.shared", () => {
-  it("declares the fingerprint runtime policy in app config", () => {
+  it("declares the fixed runtime policy in app config", () => {
     const appJson = JSON.parse(
       fs.readFileSync(path.join(PROJECT_ROOT, "app.json"), "utf8"),
     ) as {
@@ -18,7 +18,7 @@ describe("releaseConfig.shared", () => {
       };
     };
 
-    expect(appJson.expo?.runtimeVersion).toEqual({ policy: "fingerprint" });
-    expect(appJson.expo?.extra?.release?.runtimePolicy).toBe("fingerprint");
+    expect(appJson.expo?.runtimeVersion).toBe("1.0.0");
+    expect(appJson.expo?.extra?.release?.runtimePolicy).toBe("fixed(1.0.0)");
   });
 });
