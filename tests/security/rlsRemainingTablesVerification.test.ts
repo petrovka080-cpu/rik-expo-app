@@ -60,6 +60,14 @@ describe("RLS remaining tables verification matrix", () => {
         actual_risk_level: "low",
         next_action: "verified_safe_after_hardening",
       });
+      expect(tableByName.get("ai_configs")).toMatchObject({
+        actual_risk_level: "low",
+        next_action: "verified_safe_after_hardening",
+      });
+      expect(tableByName.get("ai_reports")).toMatchObject({
+        actual_risk_level: "low",
+        next_action: "verified_safe_after_hardening",
+      });
 
       expect(payload.shortlist).toEqual(
         expect.arrayContaining([
@@ -69,6 +77,14 @@ describe("RLS remaining tables verification matrix", () => {
           }),
           expect.objectContaining({
             relation: "submit_jobs",
+            outcome: "verified safe after hardening",
+          }),
+          expect.objectContaining({
+            relation: "ai_configs",
+            outcome: "verified safe after hardening",
+          }),
+          expect.objectContaining({
+            relation: "ai_reports",
             outcome: "verified safe after hardening",
           }),
           expect.objectContaining({
@@ -86,6 +102,10 @@ describe("RLS remaining tables verification matrix", () => {
           expect.objectContaining({
             relation: "submit_jobs",
             outcome: "chosen for next hardening wave",
+          }),
+          expect.objectContaining({
+            relation: "ai_reports",
+            outcome: "chosen next hardening candidate",
           }),
         ]),
       );

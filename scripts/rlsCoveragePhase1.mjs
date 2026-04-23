@@ -703,7 +703,13 @@ function nextActionFor(relation, riskLevel) {
   if (relation === "supplier_messages" && riskLevel === "low") {
     return "verified_safe_no_change";
   }
-  if ((relation === "app_errors" || relation === "submit_jobs") && riskLevel === "low") {
+  if (
+    (relation === "app_errors" ||
+      relation === "submit_jobs" ||
+      relation === "ai_configs" ||
+      relation === "ai_reports") &&
+    riskLevel === "low"
+  ) {
     return "verified_safe_after_hardening";
   }
   if (POLICY_TOO_BROAD_CLUSTER.has(relation)) {
@@ -830,10 +836,32 @@ function buildRemainingShortlist(tableRows) {
     });
   }
 
+  const aiConfigs = tableRows.find((row) => row.table === "ai_configs");
+  if (aiConfigs?.actual_risk_level === "low") {
+    shortlist.push({
+      candidate: "D",
+      relation: "ai_configs",
+      outcome: "verified safe after hardening",
+      reason:
+        "The current repo now proves table creation, RLS enablement, authenticated active-row select access, and the closed direct-write boundary for AI prompt configuration.",
+    });
+  }
+
+  const aiReports = tableRows.find((row) => row.table === "ai_reports");
+  if (aiReports?.actual_risk_level === "low") {
+    shortlist.push({
+      candidate: "E",
+      relation: "ai_reports",
+      outcome: "verified safe after hardening",
+      reason:
+        "The current repo now proves table creation, RLS enablement, authenticated own-row upsert-only access, and company-membership checks for scoped AI report writes.",
+    });
+  }
+
   const clusterRelation = buildHighRiskClusterRelation(tableRows);
   if (clusterRelation) {
     shortlist.push({
-      candidate: "D",
+      candidate: "F",
       relation: clusterRelation,
       outcome: "policy too broad / too wide",
       reason:
@@ -844,7 +872,7 @@ function buildRemainingShortlist(tableRows) {
   const nextCandidate = pickRemainingNextCandidate(tableRows);
   if (nextCandidate) {
     shortlist.push({
-      candidate: "E",
+      candidate: "G",
       relation: nextCandidate.table,
       outcome: "chosen next hardening candidate",
       reason:
