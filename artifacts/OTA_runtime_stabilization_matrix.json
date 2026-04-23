@@ -12,23 +12,28 @@
       "previous_runtime_policy": "fingerprint",
       "new_runtime_policy": "fixed",
       "fixed_runtime_value": "1.0.0",
-      "build_refreshed": "PENDING",
-      "ota_after_js_change": "PENDING"
+      "build_refreshed": true,
+      "ota_after_js_change": true
     },
     {
       "platform": "android",
       "previous_runtime_policy": "fingerprint",
       "new_runtime_policy": "fixed",
       "fixed_runtime_value": "1.0.0",
-      "build_refreshed": "PENDING",
-      "ota_after_js_change": "PENDING"
+      "build_refreshed": true,
+      "ota_after_js_change": true
     }
   ],
   "config_proof": {
     "command": "npx expo config --json",
     "runtimeVersion": "1.0.0",
     "runtimePolicy": "fixed(1.0.0)",
-    "fingerprint_policy_removed": true
+    "fingerprint_policy_removed": true,
+    "runtimeStabilizationProof": {
+      "fixedRuntime": "1.0.0",
+      "stabilizedAt": "2026-04-23",
+      "wave": "OTA_RUNTIME_STABILIZATION_AND_RELEASE_FLOW"
+    }
   },
   "gates": {
     "focused_release_tests": "PASS",
@@ -39,10 +44,38 @@
     "diff_check": "PASS"
   },
   "release_tail": {
-    "commit": "PENDING",
-    "push": "PENDING",
-    "ios_build": "PENDING",
-    "android_build": "PENDING",
-    "production_ota_proof": "PENDING"
+    "config_commit": "6a9ff3aedce0c1d6adbdcb6151c0448b283b4e19",
+    "proof_marker_commit": "f8a1e77fde8d1a6a5604636860bb786441136c4f",
+    "push": "PASS",
+    "ios_build": "PASS",
+    "android_build": "PASS",
+    "production_ota_proof": "PASS_SERVER_SIDE",
+    "device_diagnostics": "PENDING_EXTERNAL_DEVICE_CHECK"
+  },
+  "builds": {
+    "ios": {
+      "build_id": "90d74d45-9e85-441f-970f-161d8dc487de",
+      "app_build_version": "28",
+      "runtimeVersion": "1.0.0",
+      "channel": "production",
+      "artifact": "https://expo.dev/artifacts/eas/iTn7DBUhS6JwouZYwHp6Af.ipa"
+    },
+    "android": {
+      "build_id": "249ff52c-12d7-43e6-a92d-571a578f5bb1",
+      "app_build_version": "5",
+      "runtimeVersion": "1.0.0",
+      "channel": "production",
+      "artifact": "https://expo.dev/artifacts/eas/5wiZJ1fRPDSjzCN2L4sqMx.aab"
+    }
+  },
+  "ota": {
+    "branch": "production",
+    "runtimeVersion": "1.0.0",
+    "platforms": "android, ios",
+    "update_group_id": "7e96c76c-fd86-43db-a65f-518e82c33b84",
+    "android_update_id": "019db874-d281-7db8-bcb7-e925f42e8715",
+    "ios_update_id": "019db874-d281-733e-88b8-8f36d148df2f",
+    "ota_after_js_change": true,
+    "device_applied_proof": "PENDING_EXTERNAL_DEVICE_CHECK"
   }
 }

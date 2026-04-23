@@ -30,6 +30,9 @@ Release metadata now mirrors that contract:
 }
 ```
 
+A permanent release metadata proof marker was also added under `extra.release.runtimeStabilizationProof`.
+It is not business logic and does not affect screens, state, permissions, network behavior, or domain contracts.
+
 ## Fixed Runtime
 
 Selected fixed runtime: `1.0.0`.
