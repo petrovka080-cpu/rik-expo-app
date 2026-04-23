@@ -23,6 +23,7 @@
     "verify:wave12-tests": "node node_modules/jest/bin/jest.js src/screens/contractor/contractor.workModalService.test.ts src/screens/warehouse/warehouse.requests.read.test.ts src/screens/contractor/contractor.realtime.lifecycle.test.tsx src/screens/warehouse/warehouse.realtime.lifecycle.test.tsx src/lib/supabaseClient.test.ts --runInBand --json --outputFile artifacts/wave12-residual-jest.json",
     "verify:wave12-smoke": "node node_modules/tsx/dist/cli.mjs scripts/wave12_minimal_web_smoke.ts",
     "verify:local-role-smoke": "node node_modules/tsx/dist/cli.mjs scripts/local_role_screen_access_verify.ts",
+    "e2e:maestro:infra": "tsx scripts/e2e/run-maestro-infra.ts",
     "verify:governance:static": "npm run verify:typecheck && npm run verify:db-types:imports && npm run verify:coverage:governance && npm run verify:wave6-pdf && npm run verify:wave7-perf",
     "release:preflight": "tsx scripts/release/run-release-guard.ts preflight",
     "release:verify": "tsx scripts/release/run-release-guard.ts verify --json",

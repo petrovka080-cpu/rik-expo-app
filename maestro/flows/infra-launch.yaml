@@ -1,0 +1,20 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Maestro Infra Launch Probe
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- assertVisible: "Войти в GOX"
+- takeScreenshot:
+    path: launch-login-screen
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Войти в GOX"
+    timeout: 15000
+- assertVisible: "Войти в GOX"
+- takeScreenshot:
+    path: relaunch-login-screen
+- stopApp
