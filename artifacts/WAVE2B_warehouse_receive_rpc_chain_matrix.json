@@ -1,0 +1,56 @@
+{
+  "wave": "WAVE 2B: WAREHOUSE_RECEIVE_RPC_CHAIN_FIX",
+  "status": "green_pending_commit",
+  "scope": {
+    "allowedFilesTouched": [
+      "supabase/migrations/20260424150000_warehouse_receive_rpc_chain_fix.sql",
+      "supabase/migrations/20260424153000_warehouse_receive_item_v2_return_contract_fix.sql",
+      "tests/warehouse/useWarehouseReceiveApply.test.ts",
+      "src/screens/warehouse/warehouseReceiveAtomicBoundaryMigration.test.ts"
+    ],
+    "forbiddenAreasTouched": []
+  },
+  "rootCause": [
+    {
+      "id": "receive_apply_uuid_mismatch",
+      "severity": "critical",
+      "proof": "wh_receive_apply_ui resolved wh_incoming_items.id but delegated to wh_receive_item_v2 with text instead of uuid, causing 42883 at runtime."
+    },
+    {
+      "id": "receive_item_v2_zero_row_return_contract",
+      "severity": "critical",
+      "proof": "wh_receive_item_v2 mutated stock state but returned zero rows because RETURNS TABLE branches used bare RETURN instead of RETURN NEXT; wrapper callers treated that as line failure."
+    }
+  ],
+  "fixPath": {
+    "strategy": "preferred_canonical_path_repair",
+    "migrationFiles": [
+      "20260424150000_warehouse_receive_rpc_chain_fix.sql",
+      "20260424153000_warehouse_receive_item_v2_return_contract_fix.sql"
+    ],
+    "clientWorkaroundUsed": false,
+    "businessRewriteUsed": false
+  },
+  "regressionProof": {
+    "focusedTest": "PASS",
+    "successPath": "PASS",
+    "idempotentReplay": "PASS",
+    "invalidPathDeterministic": "PASS",
+    "error42883Removed": true
+  },
+  "gates": {
+    "tsc": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "gitDiffCheck": "PASS",
+    "supabaseMigrationList": "PASS",
+    "supabaseDbPushDryRun": "PASS",
+    "supabaseDbPush": "PASS"
+  },
+  "releaseGuard": {
+    "preCommitVerdict": "block",
+    "reason": "dirty_worktree_only",
+    "postCommitVerdict": "pending"
+  }
+}
