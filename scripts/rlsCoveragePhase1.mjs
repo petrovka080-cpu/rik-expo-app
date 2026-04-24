@@ -139,13 +139,21 @@ const POLICY_TOO_BROAD_CLUSTER = new Set([
   "warehouse_issue_items",
   "notifications",
 ]);
+const VERIFIED_SAFE_NEXT_ACTIONS = new Set([
+  "verified_safe_no_change",
+  "verified_safe_after_hardening",
+]);
+const ACTIONABLE_SHORTLIST_NEXT_ACTIONS = new Set([
+  "verify_live_db_or_prepare_single-table_hardening",
+  "close_repo_evidence_gap",
+]);
 const REMAINING_SHORTLIST_PREFERRED = [
-  "ai_reports",
-  "ai_configs",
-  "chat_messages",
-  "company_invites",
   "company_members",
   "market_listings",
+  "companies",
+  "subcontract_items",
+  "wh_incoming_items",
+  "suppliers",
 ];
 
 function readUtf8(filePath) {
@@ -760,12 +768,40 @@ function computeRemainingCandidateScore(row) {
   return writeScore + readScore + narrowScore;
 }
 
+function compareRemainingCandidates(left, right) {
+  const leftPreferred = REMAINING_SHORTLIST_PREFERRED.indexOf(left.table);
+  const rightPreferred = REMAINING_SHORTLIST_PREFERRED.indexOf(right.table);
+  const leftIsPreferred = leftPreferred !== -1;
+  const rightIsPreferred = rightPreferred !== -1;
+
+  if (leftIsPreferred && rightIsPreferred) {
+    return leftPreferred - rightPreferred;
+  }
+  if (leftIsPreferred) return -1;
+  if (rightIsPreferred) return 1;
+
+  const scoreDelta = computeRemainingCandidateScore(right) - computeRemainingCandidateScore(left);
+  if (scoreDelta !== 0) return scoreDelta;
+  const fileDelta = (left.touched_files?.length ?? 0) - (right.touched_files?.length ?? 0);
+  if (fileDelta !== 0) return fileDelta;
+  return left.table.localeCompare(right.table);
+}
+
+function listRemainingActionableCandidates(tableRows) {
+  return tableRows
+    .filter(
+      (row) =>
+        !POLICY_TOO_BROAD_CLUSTER.has(row.table) &&
+        ACTIONABLE_SHORTLIST_NEXT_ACTIONS.has(row.next_action) &&
+        (row.actual_risk_level === "high" || row.actual_risk_level === "medium"),
+    )
+    .slice()
+    .sort(compareRemainingCandidates);
+}
+
 function pickRemainingNextCandidate(tableRows) {
-  const eligibleRows = tableRows.filter(
-    (row) =>
-      row.actual_risk_level === "high" &&
-      !POLICY_TOO_BROAD_CLUSTER.has(row.table) &&
-      row.next_action === "verify_live_db_or_prepare_single-table_hardening",
+  const eligibleRows = listRemainingActionableCandidates(tableRows).filter(
+    (row) => row.next_action === "verify_live_db_or_prepare_single-table_hardening",
   );
 
   for (const relation of REMAINING_SHORTLIST_PREFERRED) {
@@ -773,101 +809,50 @@ function pickRemainingNextCandidate(tableRows) {
     if (row) return row;
   }
 
-  return eligibleRows
-    .slice()
-    .sort((left, right) => {
-      const scoreDelta = computeRemainingCandidateScore(right) - computeRemainingCandidateScore(left);
-      if (scoreDelta !== 0) return scoreDelta;
-      const fileDelta = (left.touched_files?.length ?? 0) - (right.touched_files?.length ?? 0);
-      if (fileDelta !== 0) return fileDelta;
-      return left.table.localeCompare(right.table);
-    })[0] ?? null;
+  return eligibleRows[0] ?? null;
+}
+
+function buildRemainingCandidateReason(row) {
+  const ops = Array.isArray(row.observed_client_ops) ? row.observed_client_ops.join("/") : "unknown";
+  const fileCount = row.touched_files?.length ?? 0;
+
+  if (row.next_action === "close_repo_evidence_gap") {
+    return `This relation still has direct client ops (${ops}) and a repo-evidence gap across ${fileCount} touched file(s), so the next wave should close proof before any hardening claim.`;
+  }
+
+  return `This relation still has direct client ops (${ops}), remains ${row.actual_risk_level} risk in the current matrix, and has no provable repo-side RLS/grant boundary across ${fileCount} touched file(s).`;
+}
+
+function nextShortlistCandidate(shortlist) {
+  return String.fromCharCode(65 + shortlist.length);
 }
 
 function buildRemainingShortlist(tableRows) {
   const shortlist = [];
+  const actionableCandidates = listRemainingActionableCandidates(tableRows);
+  const verifiedSafeRelations = new Set(
+    tableRows
+      .filter(
+        (row) =>
+          row.actual_risk_level === "low" && VERIFIED_SAFE_NEXT_ACTIONS.has(row.next_action),
+      )
+      .map((row) => row.table),
+  );
 
-  const supplierMessages = tableRows.find((row) => row.table === "supplier_messages");
-  if (supplierMessages?.actual_risk_level === "low") {
+  const nextCandidate = pickRemainingNextCandidate(tableRows);
+  if (nextCandidate) {
     shortlist.push({
-      candidate: "A",
-      relation: "supplier_messages",
-      outcome: "verified safe",
-      reason:
-        "Explicit create table, RLS enablement, authenticated select/insert grants, and operation-specific policies remain provable in repo history.",
-    });
-  }
-
-  const appErrors = tableRows.find((row) => row.table === "app_errors");
-  if (appErrors?.actual_risk_level === "low") {
-    shortlist.push({
-      candidate: "B",
-      relation: "app_errors",
-      outcome: "verified safe after hardening",
-      reason:
-        "The current repo now proves table creation, RLS enablement, insert-only grants, and the constrained authenticated/anon insert policy for the diagnostics sink.",
-    });
-  }
-
-  const submitJobs = tableRows.find((row) => row.table === "submit_jobs");
-  if (submitJobs?.actual_risk_level === "low") {
-    shortlist.push({
-      candidate: "C",
-      relation: "submit_jobs",
-      outcome: "verified safe after hardening",
-      reason:
-        "The current repo now proves queue-table RLS enablement, authenticated own select/insert direct access, and security-definer worker RPC boundaries for processing transitions.",
-    });
-  }
-
-  const aiConfigs = tableRows.find((row) => row.table === "ai_configs");
-  if (aiConfigs?.actual_risk_level === "low") {
-    shortlist.push({
-      candidate: "D",
-      relation: "ai_configs",
-      outcome: "verified safe after hardening",
-      reason:
-        "The current repo now proves table creation, RLS enablement, authenticated active-row select access, and the closed direct-write boundary for AI prompt configuration.",
-    });
-  }
-
-  const aiReports = tableRows.find((row) => row.table === "ai_reports");
-  if (aiReports?.actual_risk_level === "low") {
-    shortlist.push({
-      candidate: "E",
-      relation: "ai_reports",
-      outcome: "verified safe after hardening",
-      reason:
-        "The current repo now proves table creation, RLS enablement, authenticated own-row upsert-only access, and company-membership checks for scoped AI report writes.",
-    });
-  }
-
-  const chatMessages = tableRows.find((row) => row.table === "chat_messages");
-  if (chatMessages?.actual_risk_level === "low") {
-    shortlist.push({
-      candidate: "F",
-      relation: "chat_messages",
-      outcome: "verified safe after hardening",
-      reason:
-        "The current repo now proves table creation, RLS enablement, authenticated listing-thread reads, own-row inserts, and narrow read-receipt-or-soft-delete update boundaries without direct delete grants.",
-    });
-  }
-
-  const companyInvites = tableRows.find((row) => row.table === "company_invites");
-  if (companyInvites?.actual_risk_level === "low") {
-    shortlist.push({
-      candidate: "G",
-      relation: "company_invites",
-      outcome: "verified safe after hardening",
-      reason:
-        "The current repo now proves RLS enablement, authenticated same-company invite visibility, and owner/director-scoped invite creation without any direct update/delete surface.",
+      candidate: nextShortlistCandidate(shortlist),
+      relation: nextCandidate.table,
+      outcome: "chosen next hardening candidate",
+      reason: buildRemainingCandidateReason(nextCandidate),
     });
   }
 
   const clusterRelation = buildHighRiskClusterRelation(tableRows);
   if (clusterRelation) {
     shortlist.push({
-      candidate: "H",
+      candidate: nextShortlistCandidate(shortlist),
       relation: clusterRelation,
       outcome: "policy too broad / too wide",
       reason:
@@ -875,15 +860,20 @@ function buildRemainingShortlist(tableRows) {
     });
   }
 
-  const nextCandidate = pickRemainingNextCandidate(tableRows);
-  if (nextCandidate) {
+  for (const row of actionableCandidates) {
+    if (row.table === nextCandidate?.table || verifiedSafeRelations.has(row.table)) {
+      continue;
+    }
     shortlist.push({
-      candidate: "I",
-      relation: nextCandidate.table,
-      outcome: "chosen next hardening candidate",
-      reason:
-        "This is the narrowest remaining high-risk direct-client table in the current repo snapshot: write-capable runtime usage, no provable repo-side RLS/grant evidence, and limited touched-file blast radius.",
+      candidate: nextShortlistCandidate(shortlist),
+      relation: row.table,
+      outcome:
+        row.next_action === "close_repo_evidence_gap"
+          ? "remaining evidence-gap candidate"
+          : "remaining high-risk candidate",
+      reason: buildRemainingCandidateReason(row),
     });
+    if (shortlist.length >= 4) break;
   }
 
   return shortlist;

@@ -77,62 +77,48 @@ describe("RLS remaining tables verification matrix", () => {
         next_action: "verified_safe_after_hardening",
       });
 
+      for (const relation of [
+        "app_errors",
+        "submit_jobs",
+        "ai_configs",
+        "ai_reports",
+        "chat_messages",
+        "company_invites",
+      ]) {
+        expect(payload.shortlist).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ relation })]),
+        );
+      }
+
       expect(payload.shortlist).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            relation: "app_errors",
-            outcome: "verified safe after hardening",
-          }),
-          expect.objectContaining({
-            relation: "submit_jobs",
-            outcome: "verified safe after hardening",
-          }),
-          expect.objectContaining({
-            relation: "ai_configs",
-            outcome: "verified safe after hardening",
-          }),
-          expect.objectContaining({
-            relation: "ai_reports",
-            outcome: "verified safe after hardening",
-          }),
-          expect.objectContaining({
-            relation: "chat_messages",
-            outcome: "verified safe after hardening",
-          }),
-          expect.objectContaining({
-            relation: "company_invites",
-            outcome: "verified safe after hardening",
-          }),
-          expect.objectContaining({
+            relation: "company_members",
             outcome: "chosen next hardening candidate",
+          }),
+          expect.objectContaining({
+            relation:
+              "notifications/proposal_payments/proposals/request_items/requests/warehouse_issue_items/warehouse_issues",
+            outcome: "policy too broad / too wide",
+          }),
+          expect.objectContaining({
+            outcome: "remaining high-risk candidate",
           }),
         ]),
       );
 
-      expect(payload.shortlist).not.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            relation: "app_errors",
-            outcome: "policy missing or unverifiable",
-          }),
-          expect.objectContaining({
-            relation: "submit_jobs",
-            outcome: "chosen for next hardening wave",
-          }),
-          expect.objectContaining({
-            relation: "ai_reports",
-            outcome: "chosen next hardening candidate",
-          }),
-          expect.objectContaining({
-            relation: "chat_messages",
-            outcome: "chosen next hardening candidate",
-          }),
-          expect.objectContaining({
-            relation: "company_invites",
-            outcome: "chosen next hardening candidate",
-          }),
-        ]),
-      );
+      for (const item of payload.shortlist) {
+        if (item.outcome === "policy too broad / too wide") {
+          continue;
+        }
+        const row = tableByName.get(item.relation);
+        expect(row).toBeDefined();
+        expect(row?.actual_risk_level).not.toBe("low");
+        expect([
+          "verify_live_db_or_prepare_single-table_hardening",
+          "close_repo_evidence_gap",
+        ]).toContain(row?.next_action);
+      }
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
