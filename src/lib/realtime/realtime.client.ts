@@ -8,10 +8,12 @@ import { recordPlatformObservability } from "../observability/platformObservabil
 import { supabase } from "../supabaseClient";
 import type { RealtimeChannelBinding, RealtimeScope } from "./realtime.channels";
 
+type RealtimeLifecycleScope = RealtimeScope | "market";
+
 type SubscribeChannelParams = {
   client?: SupabaseClient;
   name: string;
-  scope: RealtimeScope;
+  scope: RealtimeLifecycleScope;
   route: string;
   surface?: string;
   bindings: readonly RealtimeChannelBinding[];
@@ -56,7 +58,7 @@ export function clearRealtimeSessionState() {
 }
 
 const recordCleanupError = (params: {
-  scope: RealtimeScope;
+  scope: RealtimeLifecycleScope;
   route: string;
   surface: string;
   channelName: string;
@@ -84,7 +86,7 @@ const recordCleanupError = (params: {
 const cleanupRealtimeChannel = (params: {
   client: SupabaseClient;
   channel: RealtimeChannel;
-  scope: RealtimeScope;
+  scope: RealtimeLifecycleScope;
   route: string;
   surface: string;
   channelName: string;
@@ -116,7 +118,7 @@ const cleanupRealtimeChannel = (params: {
 };
 
 const observeChannelStatus = (params: {
-  scope: RealtimeScope;
+  scope: RealtimeLifecycleScope;
   route: string;
   surface: string;
   channelName: string;
@@ -148,7 +150,11 @@ const observeChannelStatus = (params: {
   });
 };
 
-const ensureRealtimeAuth = async (client: SupabaseClient, scope: RealtimeScope, route: string) => {
+const ensureRealtimeAuth = async (
+  client: SupabaseClient,
+  scope: RealtimeLifecycleScope,
+  route: string,
+) => {
   if (!realtimeAuthPromise) {
     realtimeAuthPromise = (async () => {
       try {

@@ -1,3 +1,4 @@
+import { subscribeChannel } from "./realtime/realtime.client";
 import { supabase } from "./supabaseClient";
 
 export type ChatMessageType = "text" | "photo" | "voice" | "file" | "system";
@@ -32,6 +33,8 @@ type ChatActor = {
   fullName: string;
   companyId: string | null;
 };
+
+const buildListingChatChannelName = (listingId: string) => `chat:listing:${listingId}`;
 
 export const CHAT_BACKEND_HINT =
   "Apply db/20260317_chat_backend_foundation.sql to the current Supabase project before using chat.";
@@ -253,21 +256,21 @@ export function subscribeToListingChatMessages(
   listingId: string,
   onChange: () => void,
 ): () => void {
-  const channel = supabase
-    .channel(`chat:listing:${listingId}`)
-    .on(
-      "postgres_changes",
+  return subscribeChannel({
+    name: buildListingChatChannelName(listingId),
+    scope: "market",
+    route: `/chat/${listingId}`,
+    surface: "listing_chat",
+    bindings: [
       {
-        event: "*",
-        schema: "public",
+        key: "listing_chat_messages",
         table: "chat_messages",
+        event: "*",
         filter: `supplier_id=eq.${listingId}`,
+        schema: "public",
+        owner: "table:chat_messages",
       },
-      () => onChange(),
-    )
-    .subscribe();
-
-  return () => {
-    void supabase.removeChannel(channel);
-  };
+    ],
+    onEvent: () => onChange(),
+  });
 }

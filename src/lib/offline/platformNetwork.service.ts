@@ -30,6 +30,9 @@ export const platformNetworkStore = createStore<PlatformNetworkSnapshot>(
 
 let serviceStarted = false;
 let bootstrapPromise: Promise<PlatformNetworkSnapshot> | null = null;
+let networkStateSubscription:
+  | ReturnType<typeof Network.addNetworkStateListener>
+  | null = null;
 
 const normalizeConnectionKind = (value: unknown): PlatformConnectionKind => {
   const text = String(value ?? "")
@@ -147,7 +150,7 @@ export const ensurePlatformNetworkService =
 
     if (!serviceStarted) {
       serviceStarted = true;
-      Network.addNetworkStateListener((snapshot) => {
+      networkStateSubscription = Network.addNetworkStateListener((snapshot) => {
         applyNetworkSnapshot({
           isConnected: snapshot.isConnected ?? null,
           isInternetReachable: snapshot.isInternetReachable ?? null,
@@ -158,6 +161,14 @@ export const ensurePlatformNetworkService =
 
     return await bootstrapPromise;
   };
+
+export function stopPlatformNetworkService() {
+  if (!serviceStarted) return;
+  serviceStarted = false;
+  bootstrapPromise = null;
+  networkStateSubscription?.remove();
+  networkStateSubscription = null;
+}
 
 export const getPlatformNetworkSnapshot = () => platformNetworkStore.getState();
 
