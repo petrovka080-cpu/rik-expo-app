@@ -10,6 +10,7 @@ import {
   resolveReleaseGuardPath,
   type ReleaseGateResult,
   type ReleaseRepoState,
+  type ReleaseGuardRuntimePolicyTruth,
 } from "../../scripts/release/releaseGuard.shared";
 
 function createRepoState(overrides: Partial<ReleaseRepoState> = {}): ReleaseRepoState {
@@ -31,6 +32,22 @@ function createPassedGates(): ReleaseGateResult[] {
     { name: "jest", command: "npm test", status: "passed", exitCode: 0 },
     { name: "git-diff-check", command: "git diff --check", status: "passed", exitCode: 0 },
   ];
+}
+
+function createRuntimePolicyTruth(
+  overrides: Partial<ReleaseGuardRuntimePolicyTruth> = {},
+): ReleaseGuardRuntimePolicyTruth {
+  return {
+    resolvedRuntimeVersion: "policy:fingerprint",
+    runtimePolicy: "policy:fingerprint",
+    runtimeVersionStrategy: "fingerprint",
+    runtimePolicyValid: true,
+    runtimePolicyReason: "runtimeVersion uses the fingerprint policy.",
+    runtimeProofConsistent: true,
+    runtimeProofReason: "release extra truth matches the configured runtime policy.",
+    buildRequired: false,
+    ...overrides,
+  };
 }
 
 describe("releaseGuard.shared", () => {
@@ -180,6 +197,7 @@ describe("releaseGuard.shared", () => {
         classification: classifyReleaseChanges({
           changedFiles: ["src/screens/office/OfficeShellContent.tsx"],
         }),
+        runtimePolicy: createRuntimePolicyTruth(),
         targetChannel: "production",
         releaseMessage: "Office split",
         missingArtifacts: [],
@@ -205,6 +223,7 @@ describe("releaseGuard.shared", () => {
         classification: classifyReleaseChanges({
           changedFiles: ["docs/operations/eas-update-runbook.md"],
         }),
+        runtimePolicy: createRuntimePolicyTruth(),
         targetChannel: "production",
         releaseMessage: "Docs only",
         missingArtifacts: [],
@@ -224,6 +243,7 @@ describe("releaseGuard.shared", () => {
         classification: classifyReleaseChanges({
           changedFiles: ["src/lib/documents/pdfDocumentActions.ts"],
         }),
+        runtimePolicy: createRuntimePolicyTruth(),
         targetChannel: "production",
         releaseMessage: null,
         missingArtifacts: ["artifacts/missing-proof.json"],
@@ -247,6 +267,9 @@ describe("releaseGuard.shared", () => {
         classification: classifyReleaseChanges({
           changedFiles: ["app.json"],
         }),
+        runtimePolicy: createRuntimePolicyTruth({
+          buildRequired: true,
+        }),
         targetChannel: "production",
         releaseMessage: "Runtime fingerprint policy",
         missingArtifacts: [],
@@ -257,13 +280,88 @@ describe("releaseGuard.shared", () => {
       expect(readiness.otaDisposition).toBe("block");
       expect(readiness.blockers).toContain("Release classification requires a new build. OTA publish is blocked.");
     });
+
+    it("keeps build-required runtime policy migrations as pass/block during verify mode", () => {
+      const readiness = evaluateReleaseGuardReadiness({
+        mode: "verify",
+        repo: createRepoState(),
+        gates: createPassedGates(),
+        classification: classifyReleaseChanges({
+          changedFiles: ["app.json", "tests/release/release-safety.test.ts"],
+        }),
+        runtimePolicy: createRuntimePolicyTruth({
+          buildRequired: true,
+        }),
+        targetChannel: null,
+        releaseMessage: null,
+        missingArtifacts: [],
+        expectedBranch: null,
+      });
+
+      expect(readiness.status).toBe("pass");
+      expect(readiness.otaDisposition).toBe("block");
+      expect(readiness.blockers).toEqual([]);
+    });
+
+    it("fails when runtime policy truth is invalid even if the repo gates are green", () => {
+      const readiness = evaluateReleaseGuardReadiness({
+        mode: "verify",
+        repo: createRepoState(),
+        gates: createPassedGates(),
+        classification: classifyReleaseChanges({
+          changedFiles: ["tests/release/releaseConfig.shared.test.ts"],
+        }),
+        runtimePolicy: createRuntimePolicyTruth({
+          runtimeVersionStrategy: "fixed",
+          runtimePolicyValid: false,
+          runtimePolicyReason:
+            'Static runtimeVersion strings are invalid for this repo. Use expo.runtimeVersion = { "policy": "fingerprint" }.',
+        }),
+        targetChannel: null,
+        releaseMessage: null,
+        missingArtifacts: [],
+        expectedBranch: null,
+      });
+
+      expect(readiness.status).toBe("fail");
+      expect(readiness.otaDisposition).toBe("block");
+      expect(readiness.blockers).toContain(
+        'Runtime policy invalid: Static runtimeVersion strings are invalid for this repo. Use expo.runtimeVersion = { "policy": "fingerprint" }.',
+      );
+    });
+
+    it("fails when runtime proof no longer matches the configured policy", () => {
+      const readiness = evaluateReleaseGuardReadiness({
+        mode: "verify",
+        repo: createRepoState(),
+        gates: createPassedGates(),
+        classification: classifyReleaseChanges({
+          changedFiles: ["tests/release/release-safety.test.ts"],
+        }),
+        runtimePolicy: createRuntimePolicyTruth({
+          runtimeProofConsistent: false,
+          runtimeProofReason:
+            'extra.release.runtimePolicy must equal "policy:fingerprint", but found "fixed(1.0.0)".',
+        }),
+        targetChannel: null,
+        releaseMessage: null,
+        missingArtifacts: [],
+        expectedBranch: null,
+      });
+
+      expect(readiness.status).toBe("fail");
+      expect(readiness.otaDisposition).toBe("block");
+      expect(readiness.blockers).toContain(
+        'Runtime proof mismatch: extra.release.runtimePolicy must equal "policy:fingerprint", but found "fixed(1.0.0)".',
+      );
+    });
   });
 
   describe("parseEasUpdateOutput", () => {
     it("extracts release metadata from EAS publish output", () => {
       const metadata = parseEasUpdateOutput(`
 Branch             production
-Runtime version    1.0.0
+Runtime version    7f8c145b6f7dd986d2757d5a4d683d86f3c3d469
 Platform           android, ios
 Update group ID    group-123
 Android update ID  android-123
@@ -275,7 +373,7 @@ EAS Dashboard      https://expo.dev/update/group-123
 
       expect(metadata).toEqual({
         branch: "production",
-        runtimeVersion: "1.0.0",
+        runtimeVersion: "7f8c145b6f7dd986d2757d5a4d683d86f3c3d469",
         platform: "android, ios",
         updateGroupId: "group-123",
         androidUpdateId: "android-123",

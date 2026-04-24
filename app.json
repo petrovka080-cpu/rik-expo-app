@@ -11,7 +11,9 @@
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/93959cca-1c92-4b59-b80a-f1a1f5dfdf5a"
     },
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
     "plugins": [
       "expo-router",
       "expo-updates",
@@ -38,12 +40,12 @@
       "router": {},
       "release": {
         "sourceOfTruthVersion": 1,
-        "runtimePolicy": "fixed(1.0.0)",
+        "runtimePolicy": "policy:fingerprint",
         "appVersionSource": "remote",
         "runtimeStabilizationProof": {
-          "fixedRuntime": "1.0.0",
-          "stabilizedAt": "2026-04-23",
-          "wave": "OTA_RUNTIME_STABILIZATION_AND_RELEASE_FLOW"
+          "runtimeVersionStrategy": "fingerprint",
+          "reconciledAt": "2026-04-24",
+          "wave": "OTA_RUNTIME_VERSION_FINGERPRINT_REPO_SAFE"
         },
         "channelBranchMapping": {
           "development": "development",

@@ -45,17 +45,20 @@ describe("release safety — app.json version config", () => {
     expect(version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
-  it("expo.runtimeVersion uses the fixed OTA runtime", () => {
+  it("expo.runtimeVersion uses the fingerprint OTA policy", () => {
     const expo = appConfig.expo as Record<string, unknown>;
-    expect(expo.runtimeVersion).toBe("1.0.0");
+    expect(expo.runtimeVersion).toEqual({ policy: "fingerprint" });
   });
 
-  it("release extra mirrors the fixed runtime policy", () => {
+  it("release extra mirrors the fingerprint runtime policy truth", () => {
     const expo = appConfig.expo as Record<string, unknown>;
     const extra = expo.extra as Record<string, unknown>;
     const release = extra.release as Record<string, unknown>;
+    const proof = release.runtimeStabilizationProof as Record<string, unknown>;
 
-    expect(release.runtimePolicy).toBe("fixed(1.0.0)");
+    expect(release.runtimePolicy).toBe("policy:fingerprint");
+    expect(proof.runtimeVersionStrategy).toBe("fingerprint");
+    expect("fixedRuntime" in proof).toBe(false);
   });
 
   it("android.versionCode is a positive integer", () => {

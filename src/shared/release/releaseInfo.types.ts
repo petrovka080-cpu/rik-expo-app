@@ -17,6 +17,18 @@ export type ReleaseCheckAutomatically =
 
 export type ReleaseAppVersionSource = "remote" | "local" | "unknown";
 
+export type ReleaseRuntimeVersionStrategy = "fingerprint" | "fixed" | "unknown";
+
+export type ReleaseRuntimePolicyTruth = {
+  resolvedRuntimeVersion: string;
+  runtimePolicy: string;
+  runtimeVersionStrategy: ReleaseRuntimeVersionStrategy;
+  runtimePolicyValid: boolean;
+  runtimePolicyReason: string;
+  runtimeProofConsistent: boolean;
+  runtimeProofReason: string;
+};
+
 export type ReleaseUpdateAvailabilityState =
   | "not-checked"
   | "checking"
@@ -172,6 +184,11 @@ export type ReleaseConfigInput = {
   configuredAndroidVersionCode: string;
   runtimeVersion: string;
   runtimePolicy: string;
+  runtimeVersionStrategy: ReleaseRuntimeVersionStrategy;
+  runtimePolicyValid: boolean;
+  runtimePolicyReason: string;
+  runtimeProofConsistent: boolean;
+  runtimeProofReason: string;
   updatesEnabled: boolean;
   updatesUrl: string;
   projectId: string;
@@ -192,6 +209,11 @@ export type ReleaseConfigSummary = {
   configuredAndroidVersionCode: string;
   runtimeVersion: string;
   runtimePolicy: string;
+  runtimeVersionStrategy: ReleaseRuntimeVersionStrategy;
+  runtimePolicyValid: boolean;
+  runtimePolicyReason: string;
+  runtimeProofConsistent: boolean;
+  runtimeProofReason: string;
   updatesEnabled: boolean;
   updatesUrl: string;
   projectId: string;

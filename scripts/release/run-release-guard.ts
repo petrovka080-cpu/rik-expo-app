@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { getExpectedReleaseBranch, isCanonicalReleaseChannel } from "../../src/shared/release/releaseInfo";
-import { PROJECT_ROOT } from "./releaseConfig.shared";
+import { PROJECT_ROOT, loadReleaseConfigSummary } from "./releaseConfig.shared";
 import {
   RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES,
   buildReleaseChangedFilesGitArgs,
@@ -220,6 +220,10 @@ function printHumanReport(report: ReleaseGuardReport) {
   console.info(`origin/main: ${report.repo.originMainCommit}`);
   console.info(`Worktree clean: ${String(report.repo.worktreeClean)}`);
   console.info(`Classification: ${report.classification.kind}`);
+  console.info(`Runtime strategy: ${report.runtimePolicy.runtimeVersionStrategy}`);
+  console.info(`Resolved runtime: ${report.runtimePolicy.resolvedRuntimeVersion}`);
+  console.info(`Runtime policy: ${report.runtimePolicy.runtimePolicy}`);
+  console.info(`Build required: ${String(report.runtimePolicy.buildRequired)}`);
   if (report.classification.changeClass) {
     console.info(`Change class: ${report.classification.changeClass}`);
   }
@@ -289,6 +293,7 @@ function assertCanonicalChannel(channel: string | null): string | null {
 
 function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFiles: string[]): ReleaseGuardReport {
   const repo = readRepoState();
+  const configSummary = loadReleaseConfigSummary();
   const packageJsonMutationKind = readPackageJsonMutationKind(args.range ?? resolveCommitRange(null), changedFiles);
   const classification = classifyReleaseChanges({
     changedFiles,
@@ -302,6 +307,16 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     repo,
     gates,
     classification,
+    runtimePolicy: {
+      resolvedRuntimeVersion: configSummary.runtimeVersion,
+      runtimePolicy: configSummary.runtimePolicy,
+      runtimeVersionStrategy: configSummary.runtimeVersionStrategy,
+      runtimePolicyValid: configSummary.runtimePolicyValid,
+      runtimePolicyReason: configSummary.runtimePolicyReason,
+      runtimeProofConsistent: configSummary.runtimeProofConsistent,
+      runtimeProofReason: configSummary.runtimeProofReason,
+      buildRequired: classification.kind === "build-required",
+    },
     targetChannel,
     releaseMessage: args.message,
     missingArtifacts,
@@ -314,6 +329,16 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     repo,
     gates,
     classification,
+    runtimePolicy: {
+      resolvedRuntimeVersion: configSummary.runtimeVersion,
+      runtimePolicy: configSummary.runtimePolicy,
+      runtimeVersionStrategy: configSummary.runtimeVersionStrategy,
+      runtimePolicyValid: configSummary.runtimePolicyValid,
+      runtimePolicyReason: configSummary.runtimePolicyReason,
+      runtimeProofConsistent: configSummary.runtimeProofConsistent,
+      runtimeProofReason: configSummary.runtimeProofReason,
+      buildRequired: classification.kind === "build-required",
+    },
     readiness,
     requiredArtifacts: args.requireArtifacts,
     missingArtifacts,

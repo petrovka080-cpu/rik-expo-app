@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import type { ReleaseChangeClass } from "../../src/shared/release/releaseInfo.types";
+import type { ReleaseChangeClass, ReleaseRuntimeVersionStrategy } from "../../src/shared/release/releaseInfo.types";
 
 export type ReleaseGuardMode = "preflight" | "verify" | "ota";
 
@@ -50,6 +50,17 @@ export type ReleaseGuardReadiness = {
   blockers: string[];
 };
 
+export type ReleaseGuardRuntimePolicyTruth = {
+  resolvedRuntimeVersion: string;
+  runtimePolicy: string;
+  runtimeVersionStrategy: ReleaseRuntimeVersionStrategy;
+  runtimePolicyValid: boolean;
+  runtimePolicyReason: string;
+  runtimeProofConsistent: boolean;
+  runtimeProofReason: string;
+  buildRequired: boolean;
+};
+
 export type ReleaseOtaPublishMetadata = {
   branch: string;
   runtimeVersion: string;
@@ -68,6 +79,7 @@ export type ReleaseGuardReport = {
   repo: ReleaseRepoState;
   gates: ReleaseGateResult[];
   classification: ReleaseAutomationClassification;
+  runtimePolicy: ReleaseGuardRuntimePolicyTruth;
   readiness: ReleaseGuardReadiness;
   requiredArtifacts: string[];
   missingArtifacts: string[];
@@ -389,6 +401,7 @@ export function evaluateReleaseGuardReadiness(params: {
   repo: ReleaseRepoState;
   gates: ReleaseGateResult[];
   classification: ReleaseAutomationClassification;
+  runtimePolicy: ReleaseGuardRuntimePolicyTruth;
   targetChannel: string | null;
   releaseMessage: string | null;
   missingArtifacts: string[];
@@ -412,6 +425,14 @@ export function evaluateReleaseGuardReadiness(params: {
 
   for (const artifact of params.missingArtifacts) {
     blockers.push(`Required artifact is missing: ${artifact}`);
+  }
+
+  if (!params.runtimePolicy.runtimePolicyValid) {
+    blockers.push(`Runtime policy invalid: ${params.runtimePolicy.runtimePolicyReason}`);
+  }
+
+  if (!params.runtimePolicy.runtimeProofConsistent) {
+    blockers.push(`Runtime proof mismatch: ${params.runtimePolicy.runtimeProofReason}`);
   }
 
   if (params.mode === "ota") {
@@ -448,6 +469,14 @@ export function evaluateReleaseGuardReadiness(params: {
     return {
       status: "pass",
       otaDisposition: "skip",
+      blockers: [],
+    };
+  }
+
+  if (params.classification.kind === "build-required") {
+    return {
+      status: "pass",
+      otaDisposition: "block",
       blockers: [],
     };
   }

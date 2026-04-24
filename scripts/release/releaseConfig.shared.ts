@@ -5,11 +5,15 @@ import { fileURLToPath } from "node:url";
 
 import {
   buildReleaseConfigSummary,
+  evaluateReleaseRuntimePolicyTruth,
   normalizeReleaseAppVersionSource,
   normalizeReleaseCheckAutomatically,
   safeString,
 } from "../../src/shared/release/releaseInfo";
-import type { ReleaseConfigBuildProfile, ReleaseConfigSummary } from "../../src/shared/release/releaseInfo.types";
+import type {
+  ReleaseConfigBuildProfile,
+  ReleaseConfigSummary,
+} from "../../src/shared/release/releaseInfo.types";
 
 type AppJsonShape = {
   expo?: {
@@ -29,6 +33,8 @@ type AppJsonShape = {
       };
       release?: {
         appVersionSource?: unknown;
+        runtimePolicy?: unknown;
+        runtimeStabilizationProof?: unknown;
       };
     };
     ios?: {
@@ -62,33 +68,6 @@ function readJsonFile<T>(filePath: string): T {
   return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
 }
 
-function resolveRuntimeVersion(runtimeVersion: unknown): { resolvedRuntimeVersion: string; runtimePolicy: string } {
-  if (typeof runtimeVersion === "string" && runtimeVersion.trim().length > 0) {
-    return {
-      resolvedRuntimeVersion: runtimeVersion.trim(),
-      runtimePolicy: `fixed(${runtimeVersion.trim()})`,
-    };
-  }
-
-  if (
-    runtimeVersion &&
-    typeof runtimeVersion === "object" &&
-    !Array.isArray(runtimeVersion) &&
-    typeof (runtimeVersion as { policy?: unknown }).policy === "string"
-  ) {
-    const policy = safeString((runtimeVersion as { policy?: unknown }).policy);
-    return {
-      resolvedRuntimeVersion: `policy:${policy}`,
-      runtimePolicy: `policy:${policy}`,
-    };
-  }
-
-  return {
-    resolvedRuntimeVersion: "unknown",
-    runtimePolicy: "unknown",
-  };
-}
-
 function readGitValue(command: string): string {
   return execSync(command, {
     cwd: PROJECT_ROOT,
@@ -116,8 +95,11 @@ export function loadReleaseConfigSummary(): ReleaseConfigSummary {
   const appJson = readJsonFile<AppJsonShape>(path.join(PROJECT_ROOT, "app.json"));
   const easJson = readJsonFile<EasJsonShape>(path.join(PROJECT_ROOT, "eas.json"));
   const expo = appJson.expo ?? {};
-  const runtimeVersion = resolveRuntimeVersion(expo.runtimeVersion);
   const releaseExtra = expo.extra?.release;
+  const runtimePolicyTruth = evaluateReleaseRuntimePolicyTruth({
+    runtimeVersion: expo.runtimeVersion,
+    releaseExtra,
+  });
 
   return buildReleaseConfigSummary({
     appName: safeString(expo.name),
@@ -125,8 +107,13 @@ export function loadReleaseConfigSummary(): ReleaseConfigSummary {
     appVersion: safeString(expo.version),
     configuredIosBuildNumber: safeString(expo.ios?.buildNumber),
     configuredAndroidVersionCode: safeString(expo.android?.versionCode),
-    runtimeVersion: runtimeVersion.resolvedRuntimeVersion,
-    runtimePolicy: runtimeVersion.runtimePolicy,
+    runtimeVersion: runtimePolicyTruth.resolvedRuntimeVersion,
+    runtimePolicy: runtimePolicyTruth.runtimePolicy,
+    runtimeVersionStrategy: runtimePolicyTruth.runtimeVersionStrategy,
+    runtimePolicyValid: runtimePolicyTruth.runtimePolicyValid,
+    runtimePolicyReason: runtimePolicyTruth.runtimePolicyReason,
+    runtimeProofConsistent: runtimePolicyTruth.runtimeProofConsistent,
+    runtimeProofReason: runtimePolicyTruth.runtimeProofReason,
     updatesEnabled: expo.updates?.enabled === true,
     updatesUrl: safeString(expo.updates?.url),
     projectId: safeString(expo.extra?.eas?.projectId),

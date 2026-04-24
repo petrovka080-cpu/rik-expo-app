@@ -99,6 +99,11 @@ describe("releaseInfo", () => {
       configuredAndroidVersionCode: "13",
       runtimeVersion: "policy:fingerprint",
       runtimePolicy: "policy:fingerprint",
+      runtimeVersionStrategy: "fingerprint",
+      runtimePolicyValid: true,
+      runtimePolicyReason: "runtimeVersion uses the fingerprint policy.",
+      runtimeProofConsistent: true,
+      runtimeProofReason: "release extra truth matches the configured runtime policy.",
       updatesEnabled: true,
       updatesUrl: "https://u.expo.dev/project-id",
       projectId: "project-id",
@@ -136,6 +141,12 @@ describe("releaseInfo", () => {
       configuredAndroidVersionCode: "13",
       runtimeVersion: "1.0.0",
       runtimePolicy: "fixed(1.0.0)",
+      runtimeVersionStrategy: "fixed",
+      runtimePolicyValid: false,
+      runtimePolicyReason:
+        'Static runtimeVersion strings are invalid for this repo. Use expo.runtimeVersion = { "policy": "fingerprint" }.',
+      runtimeProofConsistent: true,
+      runtimeProofReason: "release extra truth matches the configured runtime policy.",
       updatesEnabled: true,
       updatesUrl: "https://u.expo.dev/project-id",
       projectId: "project-id",
@@ -154,6 +165,9 @@ describe("releaseInfo", () => {
 
     expect(summary.risks).toContain(
       "runtimeVersion is pinned. OTA remains valid only while the native host stays compatible; changing the runtime policy requires new builds.",
+    );
+    expect(summary.risks).toContain(
+      'Static runtimeVersion strings are invalid for this repo. Use expo.runtimeVersion = { "policy": "fingerprint" }.',
     );
   });
 

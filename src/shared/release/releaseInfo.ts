@@ -11,6 +11,7 @@ import type {
   ReleaseDiagnostics,
   ReleaseMetadata,
   ReleaseMetadataSource,
+  ReleaseRuntimePolicyTruth,
   ReleaseUpdateAvailabilityState,
   RuntimeReleaseSnapshot,
 } from "./releaseInfo.types";
@@ -154,6 +155,124 @@ export const RELEASE_DECISION_MATRIX: Record<ReleaseChangeClass, ReleaseDecision
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function evaluateReleaseRuntimePolicyTruth(params: {
+  runtimeVersion: unknown;
+  releaseExtra?: {
+    runtimePolicy?: unknown;
+    runtimeStabilizationProof?: unknown;
+  } | null;
+}): ReleaseRuntimePolicyTruth {
+  let resolvedRuntimeVersion = "unknown";
+  let runtimePolicy = "unknown";
+  let runtimeVersionStrategy: ReleaseRuntimePolicyTruth["runtimeVersionStrategy"] = "unknown";
+  let runtimePolicyValid = false;
+  let runtimePolicyReason =
+    'runtimeVersion is missing or unresolved. Use expo.runtimeVersion = { "policy": "fingerprint" }.';
+
+  if (typeof params.runtimeVersion === "string" && params.runtimeVersion.trim().length > 0) {
+    const fixedRuntime = params.runtimeVersion.trim();
+    resolvedRuntimeVersion = fixedRuntime;
+    runtimePolicy = `fixed(${fixedRuntime})`;
+    runtimeVersionStrategy = "fixed";
+    runtimePolicyReason =
+      'Static runtimeVersion strings are invalid for this repo. Use expo.runtimeVersion = { "policy": "fingerprint" }.';
+  } else if (isRecord(params.runtimeVersion) && typeof params.runtimeVersion.policy === "string") {
+    const policy = safeString(params.runtimeVersion.policy);
+    resolvedRuntimeVersion = `policy:${policy}`;
+    runtimePolicy = `policy:${policy}`;
+
+    if (policy === "fingerprint") {
+      runtimeVersionStrategy = "fingerprint";
+      runtimePolicyValid = true;
+      runtimePolicyReason = "runtimeVersion uses the fingerprint policy.";
+    } else {
+      runtimePolicyReason = `Unsupported runtimeVersion policy "${policy}". Repo-safe policy is "fingerprint".`;
+    }
+  }
+
+  const releaseExtra = params.releaseExtra ?? null;
+  const extraRuntimePolicy = safeString(releaseExtra?.runtimePolicy);
+  const proof = isRecord(releaseExtra?.runtimeStabilizationProof) ? releaseExtra.runtimeStabilizationProof : null;
+  const proofRuntimeVersionStrategy = safeString(proof?.runtimeVersionStrategy);
+  const proofFixedRuntime = safeString(proof?.fixedRuntime, "");
+
+  if (extraRuntimePolicy !== runtimePolicy) {
+    return {
+      resolvedRuntimeVersion,
+      runtimePolicy,
+      runtimeVersionStrategy,
+      runtimePolicyValid,
+      runtimePolicyReason,
+      runtimeProofConsistent: false,
+      runtimeProofReason: `extra.release.runtimePolicy must equal "${runtimePolicy}", but found "${extraRuntimePolicy}".`,
+    };
+  }
+
+  if (!proof) {
+    return {
+      resolvedRuntimeVersion,
+      runtimePolicy,
+      runtimeVersionStrategy,
+      runtimePolicyValid,
+      runtimePolicyReason,
+      runtimeProofConsistent: false,
+      runtimeProofReason:
+        "extra.release.runtimeStabilizationProof is missing. Release proof must mirror the active runtime policy.",
+    };
+  }
+
+  if (runtimeVersionStrategy === "fingerprint") {
+    if (proofRuntimeVersionStrategy !== "fingerprint") {
+      return {
+        resolvedRuntimeVersion,
+        runtimePolicy,
+        runtimeVersionStrategy,
+        runtimePolicyValid,
+        runtimePolicyReason,
+        runtimeProofConsistent: false,
+        runtimeProofReason:
+          'extra.release.runtimeStabilizationProof.runtimeVersionStrategy must be "fingerprint" when runtimeVersion uses the fingerprint policy.',
+      };
+    }
+
+    if (proofFixedRuntime.length > 0) {
+      return {
+        resolvedRuntimeVersion,
+        runtimePolicy,
+        runtimeVersionStrategy,
+        runtimePolicyValid,
+        runtimePolicyReason,
+        runtimeProofConsistent: false,
+        runtimeProofReason:
+          "extra.release.runtimeStabilizationProof still contains fixedRuntime, which is stale after switching to fingerprint.",
+      };
+    }
+  }
+
+  if (runtimeVersionStrategy === "fixed" && proofFixedRuntime !== resolvedRuntimeVersion) {
+    return {
+      resolvedRuntimeVersion,
+      runtimePolicy,
+      runtimeVersionStrategy,
+      runtimePolicyValid,
+      runtimePolicyReason,
+      runtimeProofConsistent: false,
+      runtimeProofReason:
+        "extra.release.runtimeStabilizationProof.fixedRuntime must match the configured static runtimeVersion.",
+    };
+  }
+
+  return {
+    resolvedRuntimeVersion,
+    runtimePolicy,
+    runtimeVersionStrategy,
+    runtimePolicyValid,
+    runtimePolicyReason,
+    runtimeProofConsistent: true,
+    runtimeProofReason: "release extra truth matches the configured runtime policy.",
+  };
 }
 
 export function safeString(value: unknown, fallback = UNKNOWN): string {
@@ -350,6 +469,14 @@ export function buildReleaseConfigSummary(input: ReleaseConfigInput): ReleaseCon
     );
   }
 
+  if (!input.runtimePolicyValid) {
+    pushUnique(risks, input.runtimePolicyReason);
+  }
+
+  if (!input.runtimeProofConsistent) {
+    pushUnique(risks, input.runtimeProofReason);
+  }
+
   if (input.runtimePolicy.startsWith("fixed")) {
     pushUnique(
       risks,
@@ -390,6 +517,11 @@ export function buildReleaseConfigSummary(input: ReleaseConfigInput): ReleaseCon
     configuredAndroidVersionCode: input.configuredAndroidVersionCode,
     runtimeVersion: input.runtimeVersion,
     runtimePolicy: input.runtimePolicy,
+    runtimeVersionStrategy: input.runtimeVersionStrategy,
+    runtimePolicyValid: input.runtimePolicyValid,
+    runtimePolicyReason: input.runtimePolicyReason,
+    runtimeProofConsistent: input.runtimeProofConsistent,
+    runtimeProofReason: input.runtimeProofReason,
     updatesEnabled: input.updatesEnabled,
     updatesUrl: input.updatesUrl,
     projectId: input.projectId,
@@ -656,6 +788,9 @@ export function buildReleaseConfigText(summary: ReleaseConfigSummary): string {
     `configuredAndroidVersionCode: ${summary.configuredAndroidVersionCode}`,
     `runtimeVersion: ${summary.runtimeVersion}`,
     `runtimePolicy: ${summary.runtimePolicy}`,
+    `runtimeVersionStrategy: ${summary.runtimeVersionStrategy}`,
+    `runtimePolicyValid: ${String(summary.runtimePolicyValid)}`,
+    `runtimeProofConsistent: ${String(summary.runtimeProofConsistent)}`,
     `updatesEnabled: ${String(summary.updatesEnabled)}`,
     `checkAutomatically: ${summary.checkAutomatically}`,
     `fallbackToCacheTimeout: ${summary.fallbackToCacheTimeout == null ? UNKNOWN : summary.fallbackToCacheTimeout}`,
