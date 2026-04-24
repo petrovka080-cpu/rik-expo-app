@@ -373,6 +373,7 @@ function ensureMigrationState(store, relation) {
 function expandGrantOps(rawText) {
   const text = String(rawText || "")
     .toLowerCase()
+    .replace(/\([^)]*\)/g, "")
     .replace(/\s+privileges/g, "")
     .trim();
   if (!text) return [];
@@ -419,7 +420,7 @@ function parseMigrations() {
       state.rlsEvidence.push(`${fileName}:${match[0].trim()}`);
     }
 
-    for (const match of source.matchAll(/(grant|revoke)\s+([\s\S]*?)\s+on(?:\s+table)?\s+public\.([A-Za-z0-9_]+)\s+(to|from)\s+([^;]+);/gi)) {
+    for (const match of source.matchAll(/(grant|revoke)\s+([^;]*?)\s+on(?:\s+table)?\s+public\.([A-Za-z0-9_]+)\s+(to|from)\s+([^;]+);/gi)) {
       const action = match[1].toLowerCase();
       const relation = match[3];
       const roles = parseRoles(match[5]);
@@ -505,6 +506,11 @@ function buildExpectation(relation, observedOps) {
       model:
         "authenticated/company-scoped AI report sink: direct upsert allowed; no broad direct delete path expected",
       allowed: { select: false, insert: true, update: true, delete: false },
+    },
+    chat_messages: {
+      model:
+        "authenticated listing-thread chat boundary: direct select/insert/read-receipt-or-soft-delete update allowed; no direct delete path expected",
+      allowed: { select: true, insert: true, update: true, delete: false },
     },
     developer_access_overrides: {
       model:
@@ -707,7 +713,8 @@ function nextActionFor(relation, riskLevel) {
     (relation === "app_errors" ||
       relation === "submit_jobs" ||
       relation === "ai_configs" ||
-      relation === "ai_reports") &&
+      relation === "ai_reports" ||
+      relation === "chat_messages") &&
     riskLevel === "low"
   ) {
     return "verified_safe_after_hardening";
@@ -858,10 +865,21 @@ function buildRemainingShortlist(tableRows) {
     });
   }
 
+  const chatMessages = tableRows.find((row) => row.table === "chat_messages");
+  if (chatMessages?.actual_risk_level === "low") {
+    shortlist.push({
+      candidate: "F",
+      relation: "chat_messages",
+      outcome: "verified safe after hardening",
+      reason:
+        "The current repo now proves table creation, RLS enablement, authenticated listing-thread reads, own-row inserts, and narrow read-receipt-or-soft-delete update boundaries without direct delete grants.",
+    });
+  }
+
   const clusterRelation = buildHighRiskClusterRelation(tableRows);
   if (clusterRelation) {
     shortlist.push({
-      candidate: "F",
+      candidate: "G",
       relation: clusterRelation,
       outcome: "policy too broad / too wide",
       reason:
@@ -872,7 +890,7 @@ function buildRemainingShortlist(tableRows) {
   const nextCandidate = pickRemainingNextCandidate(tableRows);
   if (nextCandidate) {
     shortlist.push({
-      candidate: "G",
+      candidate: "H",
       relation: nextCandidate.table,
       outcome: "chosen next hardening candidate",
       reason:

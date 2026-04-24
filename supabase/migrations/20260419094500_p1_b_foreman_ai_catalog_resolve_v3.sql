@@ -1,0 +1,1 @@
+-- applied via Supabase Dashboard on 2026-04-19, resolve_foreman_ai_catalog_v1 iteration v3

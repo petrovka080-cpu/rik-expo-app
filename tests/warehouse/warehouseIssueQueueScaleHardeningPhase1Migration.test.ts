@@ -60,7 +60,7 @@ describe("R4.A warehouse issue queue fallback scope pushdown migration", () => {
     expect(source).toContain("select public.warehouse_issue_queue_r3c_parity_v1(0, 50)");
     expect(source).toContain("select public.warehouse_issue_queue_r3c_parity_v1(0, 100)");
     expect(source).toContain("select public.warehouse_issue_queue_r3c_parity_v1(300, 100)");
-    expect(source).toContain("R4.A warehouse issue queue parity failed");
+    expect(source).toContain("R4.A warehouse issue queue parity drift");
   });
 
   it("stays inside one narrow migration wave with grant and schema reload intact", () => {

@@ -28,7 +28,8 @@ alter table public.submit_jobs
   add column if not exists started_at timestamptz,
   add column if not exists worker_id text,
   add column if not exists next_retry_at timestamptz,
-  add column if not exists locked_until timestamptz;
+  add column if not exists locked_until timestamptz,
+  add column if not exists created_by uuid default auth.uid();
 
 alter table public.submit_jobs
   alter column payload set default '{}'::jsonb,
@@ -166,6 +167,7 @@ as $$
   returning j.*;
 $$;
 
+drop function if exists public.submit_jobs_recover_stuck();
 create or replace function public.submit_jobs_recover_stuck()
 returns bigint
 language sql
@@ -202,6 +204,7 @@ as $$
    where id = p_id;
 $$;
 
+drop function if exists public.submit_jobs_mark_failed(uuid, text);
 create or replace function public.submit_jobs_mark_failed(
   p_id uuid,
   p_error text
@@ -261,6 +264,7 @@ begin
 end;
 $$;
 
+drop function if exists public.submit_jobs_metrics();
 create or replace function public.submit_jobs_metrics()
 returns table(
   pending bigint,

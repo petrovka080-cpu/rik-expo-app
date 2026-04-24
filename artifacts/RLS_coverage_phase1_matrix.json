@@ -1,10 +1,11 @@
 {
   "wave": "RLS_COVERAGE_VERIFICATION_PHASE_1",
-  "generated_at": "2026-04-22T15:30:33.331Z",
+  "generated_at": "2026-04-24T03:19:59.707Z",
   "scope": {
     "verification_only": true,
     "runtime_semantics_changed": false,
-    "repo_based_verification": true
+    "repo_based_verification": true,
+    "shortlist_strategy": "phase1"
   },
   "limitations": [
     "Repository migration history contains placeholder files, so baseline RLS/grant state is not provable for every legacy table from repo history alone.",
@@ -15,9 +16,9 @@
     "app_touched_tables": 57,
     "app_touched_views": 30,
     "unknown_relations": 0,
-    "high_risk_tables": 48,
+    "high_risk_tables": 43,
     "medium_risk_tables": 0,
-    "low_risk_tables": 9
+    "low_risk_tables": 14
   },
   "shortlist": [
     {
@@ -576,14 +577,14 @@
     },
     {
       "table": "ai_configs",
-      "rls_enabled": null,
-      "select_covered": null,
-      "insert_covered": null,
-      "update_covered": null,
-      "delete_covered": null,
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
       "expected_access_model": "authenticated read-only AI config lookup; writes should stay admin/backend-only",
-      "actual_risk_level": "high",
-      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "actual_risk_level": "low",
+      "next_action": "verified_safe_after_hardening",
       "observed_client_ops": [
         "select"
       ],
@@ -597,13 +598,27 @@
         "literal .from() runtime usage"
       ],
       "actual_boundary": {
-        "rlsEnabled": null,
+        "rlsEnabled": true,
         "grants": {
-          "anon": [],
-          "authenticated": []
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "grant:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ]
         },
         "policies": {
-          "select": [],
+          "select": [
+            "20260423160000_rls_ai_configs_ai_reports_phase3.sql:ai_configs_select_active_authenticated"
+          ],
           "insert": [],
           "update": [],
           "delete": [],
@@ -611,21 +626,29 @@
         }
       },
       "evidence": {
-        "created_in": [],
-        "rls_evidence": [],
-        "grant_evidence": []
+        "created_in": [
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql"
+        ],
+        "rls_evidence": [
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql:alter table public.ai_configs enable row level security"
+        ],
+        "grant_evidence": [
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql:revoke all on table public.ai_configs from anon;",
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql:revoke all on table public.ai_configs from authenticated;",
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql:grant select on table public.ai_configs to authenticated;"
+        ]
       }
     },
     {
       "table": "ai_reports",
-      "rls_enabled": null,
-      "select_covered": null,
-      "insert_covered": null,
-      "update_covered": null,
-      "delete_covered": null,
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
       "expected_access_model": "authenticated/company-scoped AI report sink: direct upsert allowed; no broad direct delete path expected",
-      "actual_risk_level": "high",
-      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "actual_risk_level": "low",
+      "next_action": "verified_safe_after_hardening",
       "observed_client_ops": [
         "insert",
         "update"
@@ -640,35 +663,59 @@
         "literal .from() runtime usage"
       ],
       "actual_boundary": {
-        "rlsEnabled": null,
+        "rlsEnabled": true,
         "grants": {
-          "anon": [],
-          "authenticated": []
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "revoke:select",
+            "grant:insert",
+            "grant:update",
+            "revoke:delete"
+          ]
         },
         "policies": {
           "select": [],
-          "insert": [],
-          "update": [],
+          "insert": [
+            "20260423160000_rls_ai_configs_ai_reports_phase3.sql:ai_reports_insert_authenticated_own"
+          ],
+          "update": [
+            "20260423160000_rls_ai_configs_ai_reports_phase3.sql:ai_reports_update_authenticated_own"
+          ],
           "delete": [],
           "all": []
         }
       },
       "evidence": {
-        "created_in": [],
-        "rls_evidence": [],
-        "grant_evidence": []
+        "created_in": [
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql"
+        ],
+        "rls_evidence": [
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql:alter table public.ai_reports enable row level security"
+        ],
+        "grant_evidence": [
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql:revoke all on table public.ai_reports from anon;",
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql:revoke all on table public.ai_reports from authenticated;",
+          "20260423160000_rls_ai_configs_ai_reports_phase3.sql:grant insert, update on table public.ai_reports to authenticated;"
+        ]
       }
     },
     {
       "table": "app_errors",
-      "rls_enabled": null,
-      "select_covered": null,
-      "insert_covered": null,
-      "update_covered": null,
-      "delete_covered": null,
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
       "expected_access_model": "error sink boundary: direct insert only; no direct client select/update/delete",
-      "actual_risk_level": "high",
-      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "actual_risk_level": "low",
+      "next_action": "verified_safe_after_hardening",
       "observed_client_ops": [
         "insert"
       ],
@@ -682,23 +729,45 @@
         "literal .from() runtime usage"
       ],
       "actual_boundary": {
-        "rlsEnabled": null,
+        "rlsEnabled": true,
         "grants": {
-          "anon": [],
-          "authenticated": []
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "grant:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "revoke:select",
+            "grant:insert",
+            "revoke:update",
+            "revoke:delete"
+          ]
         },
         "policies": {
           "select": [],
-          "insert": [],
+          "insert": [
+            "20260423103000_rls_coverage_hardening_app_errors_phase2.sql:app_errors_insert_redacted_sink"
+          ],
           "update": [],
           "delete": [],
           "all": []
         }
       },
       "evidence": {
-        "created_in": [],
-        "rls_evidence": [],
-        "grant_evidence": []
+        "created_in": [
+          "20260423103000_rls_coverage_hardening_app_errors_phase2.sql"
+        ],
+        "rls_evidence": [
+          "20260423103000_rls_coverage_hardening_app_errors_phase2.sql:alter table public.app_errors enable row level security"
+        ],
+        "grant_evidence": [
+          "20260423103000_rls_coverage_hardening_app_errors_phase2.sql:revoke all on table public.app_errors from anon;",
+          "20260423103000_rls_coverage_hardening_app_errors_phase2.sql:revoke all on table public.app_errors from authenticated;",
+          "20260423103000_rls_coverage_hardening_app_errors_phase2.sql:grant insert on table public.app_errors to anon, authenticated;"
+        ]
       }
     },
     {
@@ -837,14 +906,14 @@
     },
     {
       "table": "chat_messages",
-      "rls_enabled": null,
-      "select_covered": null,
-      "insert_covered": null,
-      "update_covered": null,
-      "delete_covered": null,
-      "expected_access_model": "repo-inferred authenticated boundary: only observed client operations are expected to be allowed directly",
-      "actual_risk_level": "high",
-      "next_action": "verify_live_db_or_prepare_single-table_hardening",
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
+      "expected_access_model": "authenticated listing-thread chat boundary: direct select/insert/read-receipt-or-soft-delete update allowed; no direct delete path expected",
+      "actual_risk_level": "low",
+      "next_action": "verified_safe_after_hardening",
       "observed_client_ops": [
         "insert",
         "select",
@@ -860,23 +929,51 @@
         "literal .from() runtime usage"
       ],
       "actual_boundary": {
-        "rlsEnabled": null,
+        "rlsEnabled": true,
         "grants": {
-          "anon": [],
-          "authenticated": []
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "grant:select",
+            "grant:insert",
+            "grant:update",
+            "revoke:delete"
+          ]
         },
         "policies": {
-          "select": [],
-          "insert": [],
-          "update": [],
+          "select": [
+            "20260424110000_rls_chat_messages_phase1.sql:chat_messages_select_authenticated_listing_scope"
+          ],
+          "insert": [
+            "20260424110000_rls_chat_messages_phase1.sql:chat_messages_insert_authenticated_own"
+          ],
+          "update": [
+            "20260424110000_rls_chat_messages_phase1.sql:chat_messages_update_author_authenticated",
+            "20260424110000_rls_chat_messages_phase1.sql:chat_messages_update_read_receipt_authenticated"
+          ],
           "delete": [],
           "all": []
         }
       },
       "evidence": {
-        "created_in": [],
-        "rls_evidence": [],
-        "grant_evidence": []
+        "created_in": [
+          "20260424110000_rls_chat_messages_phase1.sql"
+        ],
+        "rls_evidence": [
+          "20260424110000_rls_chat_messages_phase1.sql:alter table public.chat_messages enable row level security"
+        ],
+        "grant_evidence": [
+          "20260424110000_rls_chat_messages_phase1.sql:revoke all on table public.chat_messages from anon;",
+          "20260424110000_rls_chat_messages_phase1.sql:revoke all on table public.chat_messages from authenticated;",
+          "20260424110000_rls_chat_messages_phase1.sql:grant select, insert on table public.chat_messages to authenticated;",
+          "20260424110000_rls_chat_messages_phase1.sql:grant update (read_by, is_deleted) on table public.chat_messages to authenticated;"
+        ]
       }
     },
     {
@@ -2355,14 +2452,14 @@
     },
     {
       "table": "submit_jobs",
-      "rls_enabled": null,
-      "select_covered": null,
-      "insert_covered": null,
-      "update_covered": null,
-      "delete_covered": null,
+      "rls_enabled": true,
+      "select_covered": true,
+      "insert_covered": true,
+      "update_covered": true,
+      "delete_covered": true,
       "expected_access_model": "authenticated queue boundary: direct insert/select only; processing/recovery mutations must stay on exact RPC/service path",
-      "actual_risk_level": "high",
-      "next_action": "chosen_for_next_hardening_wave",
+      "actual_risk_level": "low",
+      "next_action": "verified_safe_after_hardening",
       "observed_client_ops": [
         "insert",
         "select"
@@ -2371,30 +2468,53 @@
         "runtime"
       ],
       "touched_files": [
-        "src/lib/infra/jobQueue.ts",
-        "src/lib/infra/queueLatencyMetrics.ts"
+        "src/lib/infra/jobQueue.ts"
       ],
       "reasons": [
         "literal .from() runtime usage"
       ],
       "actual_boundary": {
-        "rlsEnabled": null,
+        "rlsEnabled": true,
         "grants": {
-          "anon": [],
-          "authenticated": []
+          "anon": [
+            "revoke:all",
+            "revoke:select",
+            "revoke:insert",
+            "revoke:update",
+            "revoke:delete"
+          ],
+          "authenticated": [
+            "revoke:all",
+            "grant:select",
+            "grant:insert",
+            "revoke:update",
+            "revoke:delete"
+          ]
         },
         "policies": {
-          "select": [],
-          "insert": [],
+          "select": [
+            "20260422110000_rls_coverage_hardening_submit_jobs_phase1.sql:submit_jobs_select_own"
+          ],
+          "insert": [
+            "20260422110000_rls_coverage_hardening_submit_jobs_phase1.sql:submit_jobs_insert_authenticated"
+          ],
           "update": [],
           "delete": [],
           "all": []
         }
       },
       "evidence": {
-        "created_in": [],
-        "rls_evidence": [],
-        "grant_evidence": []
+        "created_in": [
+          "20260422110000_rls_coverage_hardening_submit_jobs_phase1.sql"
+        ],
+        "rls_evidence": [
+          "20260422110000_rls_coverage_hardening_submit_jobs_phase1.sql:alter table public.submit_jobs enable row level security"
+        ],
+        "grant_evidence": [
+          "20260422110000_rls_coverage_hardening_submit_jobs_phase1.sql:revoke all on table public.submit_jobs from anon;",
+          "20260422110000_rls_coverage_hardening_submit_jobs_phase1.sql:revoke all on table public.submit_jobs from authenticated;",
+          "20260422110000_rls_coverage_hardening_submit_jobs_phase1.sql:grant select, insert on table public.submit_jobs to authenticated;"
+        ]
       }
     },
     {
