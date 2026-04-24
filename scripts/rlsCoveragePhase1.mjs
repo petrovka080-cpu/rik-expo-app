@@ -512,6 +512,11 @@ function buildExpectation(relation, observedOps) {
         "authenticated listing-thread chat boundary: direct select/insert/read-receipt-or-soft-delete update allowed; no direct delete path expected",
       allowed: { select: true, insert: true, update: true, delete: false },
     },
+    company_invites: {
+      model:
+        "authenticated office invite boundary: company-scoped direct select allowed; only company owner/director may create; no direct update/delete",
+      allowed: { select: true, insert: true, update: false, delete: false },
+    },
     developer_access_overrides: {
       model:
         "authenticated own-select break-glass boundary; no direct client writes",
@@ -714,7 +719,8 @@ function nextActionFor(relation, riskLevel) {
       relation === "submit_jobs" ||
       relation === "ai_configs" ||
       relation === "ai_reports" ||
-      relation === "chat_messages") &&
+      relation === "chat_messages" ||
+      relation === "company_invites") &&
     riskLevel === "low"
   ) {
     return "verified_safe_after_hardening";
@@ -731,37 +737,8 @@ function nextActionFor(relation, riskLevel) {
   return "keep_under_verification";
 }
 
-function buildLegacyPhase1Shortlist() {
-  return [
-    {
-      candidate: "A",
-      relation: "supplier_messages",
-      outcome: "verified safe",
-      reason:
-        "Explicit create table, RLS enablement, select/insert grants, and operation-specific policies exist in repo history.",
-    },
-    {
-      candidate: "B",
-      relation: "app_errors",
-      outcome: "policy missing or unverifiable",
-      reason:
-        "Direct client insert path exists in runtime code, but repo migrations do not provide provable RLS/grant/policy coverage for the table.",
-    },
-    {
-      candidate: "C",
-      relation: "requests/request_items/proposals/proposal_payments/warehouse_issues/warehouse_issue_items/notifications",
-      outcome: "policy too broad / too wide",
-      reason:
-        "Director realtime select policy cluster is role-based and spans multiple core tables, so it should not be remediated in a verification-only wave.",
-    },
-    {
-      candidate: "D",
-      relation: "submit_jobs",
-      outcome: "chosen for next hardening wave",
-      reason:
-        "Queue boundary is auth-sensitive, directly used by the app, and lacks provable repo-side RLS/grant coverage, while still staying narrow enough for a single-table hardening slice.",
-    },
-  ];
+function buildLegacyPhase1Shortlist(tableRows) {
+  return buildRemainingShortlist(tableRows);
 }
 
 function buildHighRiskClusterRelation(tableRows) {
@@ -876,10 +853,21 @@ function buildRemainingShortlist(tableRows) {
     });
   }
 
+  const companyInvites = tableRows.find((row) => row.table === "company_invites");
+  if (companyInvites?.actual_risk_level === "low") {
+    shortlist.push({
+      candidate: "G",
+      relation: "company_invites",
+      outcome: "verified safe after hardening",
+      reason:
+        "The current repo now proves RLS enablement, authenticated same-company invite visibility, and owner/director-scoped invite creation without any direct update/delete surface.",
+    });
+  }
+
   const clusterRelation = buildHighRiskClusterRelation(tableRows);
   if (clusterRelation) {
     shortlist.push({
-      candidate: "G",
+      candidate: "H",
       relation: clusterRelation,
       outcome: "policy too broad / too wide",
       reason:
@@ -890,7 +878,7 @@ function buildRemainingShortlist(tableRows) {
   const nextCandidate = pickRemainingNextCandidate(tableRows);
   if (nextCandidate) {
     shortlist.push({
-      candidate: "H",
+      candidate: "I",
       relation: nextCandidate.table,
       outcome: "chosen next hardening candidate",
       reason:
@@ -904,7 +892,7 @@ function buildRemainingShortlist(tableRows) {
 function buildShortlist(tableRows, shortlistStrategy) {
   return shortlistStrategy === SHORTLIST_STRATEGY_REMAINING
     ? buildRemainingShortlist(tableRows)
-    : buildLegacyPhase1Shortlist();
+    : buildLegacyPhase1Shortlist(tableRows);
 }
 
 function looksLikeViewRelation(relation) {
