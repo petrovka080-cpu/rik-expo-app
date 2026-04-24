@@ -3,14 +3,12 @@ import { formatRequestDisplay } from "../../lib/format";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, Platform, ScrollView, Animated,
-  TextInput
+  Platform,
+  type ScrollView
 } from 'react-native';
 import { useLatest } from "../../lib/useLatest";
-import IconSquareButton from "../../ui/IconSquareButton";
 import { pickFileAny } from "../../lib/filePick";
-import { Ionicons } from '@expo/vector-icons';
-import { UI, KICK_THROTTLE_MS, TOAST_DEFAULT_MS } from "./buyerUi";
+import { KICK_THROTTLE_MS, TOAST_DEFAULT_MS } from "./buyerUi";
 import {
   fmtLocal as fmtLocalHelper,
   setDeadlineHours as setDeadlineHoursHelper,
@@ -20,24 +18,10 @@ import {
 import {
   selectPickedIds,
 } from "./buyer.selectors";
-import {
-  selectBuyerMainListHeaderPad,
-  selectInboxKeyboardLayoutActive,
-} from "./buyer.screen.selectors";
-import { BUYER_SEARCH_PLACEHOLDER } from "./buyer.screen.constants";
-import { selectBuyerListLoading } from "./buyer.list.ui";
-import {
-  selectBuyerDisableInboxFooterActions,
-  selectBuyerShowInboxFooter,
-} from "./buyer.sheet.footer.selectors";
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { useBuyerDocuments } from "./useBuyerDocuments";
 
-import {
-  BuyerStickyHeader,
-  BuyerMainList,
-} from "./buyer.components";
-import { BuyerScreenSheets } from "./components/BuyerScreenSheets";
+import { BuyerScreenContent } from "./components/BuyerScreenContent";
 import { useBuyerProposalAttachments } from "./useBuyerProposalAttachments";
 import {
   isReqContextNote,
@@ -89,8 +73,10 @@ import { useBuyerScreenHeader } from "./hooks/useBuyerScreenHeader";
 import { useBuyerAccountingSheetState } from "./hooks/useBuyerAccountingSheetState";
 import { useBuyerProposalDetailsState } from "./hooks/useBuyerProposalDetailsState";
 import { useBuyerStore } from "./buyer.store";
-import RoleScreenLayout from "../../components/layout/RoleScreenLayout";
-import BuyerSubcontractTab from "./BuyerSubcontractTab";
+import {
+  buildBuyerScreenLoadingState,
+  buildBuyerScreenViewModel,
+} from "./buyer.screen.model";
 
 const isWeb = Platform.OS === 'web';
 
@@ -541,18 +527,37 @@ export function BuyerScreen() {
     openProposalDetailsAttachments,
   });
 
+  const viewModel = useMemo(
+    () =>
+      buildBuyerScreenViewModel({
+        measuredHeaderMax,
+        kbOpen,
+        isMobileEditorVisible,
+        pickedIdsLength: pickedIds.length,
+        creating,
+        tab,
+        isWeb,
+        isDev: __DEV__,
+      }),
+    [creating, isMobileEditorVisible, kbOpen, measuredHeaderMax, pickedIds.length, tab],
+  );
+
   useEffect(() => {
-    setLoading({
-      list: selectBuyerListLoading(tab, loadingInbox, loadingBuckets) || refreshing,
-      action:
-        creating
-        || accountingSheet.acctBusy
-        || proposalDetailsSheet.propViewBusy
-        || accountingSheet.propDocBusy
-        || propAttBusy
-        || reworkFlow.rwBusy
-        || rfqBusy,
-    });
+    setLoading(
+      buildBuyerScreenLoadingState({
+        tab,
+        loadingInbox,
+        loadingBuckets,
+        refreshing,
+        creating,
+        accountingBusy: accountingSheet.acctBusy,
+        proposalDetailsBusy: proposalDetailsSheet.propViewBusy,
+        proposalDocumentBusy: accountingSheet.propDocBusy,
+        proposalAttachmentsBusy: propAttBusy,
+        reworkBusy: reworkFlow.rwBusy,
+        rfqBusy,
+      }),
+    );
   }, [
     accountingSheet.acctBusy,
     creating,
@@ -577,7 +582,6 @@ export function BuyerScreen() {
     proposalNoByPid,
     prettyLabel,
   });
-  const inboxKeyboardLayoutActive = selectInboxKeyboardLayoutActive(kbOpen, isMobileEditorVisible);
   const header = useBuyerScreenHeader({
     s,
     tab,
@@ -593,118 +597,61 @@ export function BuyerScreen() {
     tabsScrollRef,
     scrollTabsToStart,
   });
-  const mainListHeaderPad = selectBuyerMainListHeaderPad(measuredHeaderMax);
-  const showInboxFooter = selectBuyerShowInboxFooter(inboxKeyboardLayoutActive);
-  const { disableClear, disableRfq, disableSend } = selectBuyerDisableInboxFooterActions(
-    pickedIds.length,
-    creating
-  );
-  const showWebRefreshButton = isWeb && __DEV__ && tab !== "subcontracts";
 
-  const ScreenBody = (
-    <RoleScreenLayout style={[s.screen, { backgroundColor: UI.bg }]}>
-      <BuyerStickyHeader
-        header={header}
-        onHeaderMeasure={onHeaderMeasure}
-        headerHeight={headerHeight}
-        headerShadow={headerShadow}
-      />
-
-      <Animated.View style={{
-        position: 'absolute',
-        top: headerHeight,
-        left: 0,
-        right: 0,
-        zIndex: 40,
-        backgroundColor: UI.bg,
-        paddingHorizontal: 16,
-        paddingBottom: 10,
-        paddingTop: 4
-      }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <TextInput
-            testID="buyer-search-input"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder={BUYER_SEARCH_PLACEHOLDER}
-            placeholderTextColor="rgba(255,255,255,0.4)"
-            style={[
-              s.fieldInput,
-              {
-                flex: 1,
-                backgroundColor: 'rgba(255,255,255,0.06)',
-                borderRadius: 16,
-                height: 44,
-                borderStyle: 'solid',
-              },
-            ]}
-          />
-          {showWebRefreshButton ? (
-            <IconSquareButton
-              onPress={() => {
-                void onRefresh();
-              }}
-              accessibilityLabel="Обновить buyer"
-              width={44}
-              height={44}
-              radius={14}
-              bg="rgba(255,255,255,0.08)"
-              bgPressed="rgba(255,255,255,0.14)"
-              bgDisabled="rgba(255,255,255,0.04)"
-            >
-              <Ionicons name="refresh" size={18} color="#FFFFFF" />
-            </IconSquareButton>
-          ) : null}
-        </View>
-      </Animated.View>
-
-      {tab === "subcontracts" ? (
-        <BuyerSubcontractTab
-          contentTopPad={measuredHeaderMax}
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
-          buyerFio={buyerFio}
-        />
-      ) : (
-        <BuyerMainList
-          s={s}
-          tab={tab}
-          data={listData}
-          publicationState={tab === "inbox" ? inboxPublicationState : bucketsPublicationState}
-          publicationMessage={tab === "inbox" ? inboxPublicationMessage : bucketsPublicationMessage}
-          measuredHeaderMax={mainListHeaderPad}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          loadingInbox={loadingInbox}
-          loadingBuckets={loadingBuckets}
-          loadingInboxMore={loadingInboxMore}
-          inboxHasMore={inboxHasMore}
-          onLoadMoreInbox={() => {
-            void fetchInboxNextPage();
-          }}
-          scrollY={scrollY}
-          renderGroupBlock={renderGroupBlock}
-          renderProposalCard={renderProposalCard}
-        />
-      )}
-
-      <BuyerScreenSheets
-        s={s}
-        isWeb={isWeb}
-        sheetKind={sheetKind}
-        sheetTitle={sheetTitle}
-        isSheetOpen={isSheetOpen}
-        closeSheet={closeSheet}
-        fioModal={{
+  return (
+    <BuyerScreenContent
+      s={s}
+      isWeb={isWeb}
+      tab={tab}
+      buyerFio={buyerFio}
+      searchQuery={searchQuery}
+      onChangeSearchQuery={setSearchQuery}
+      onRefresh={() => {
+        void onRefresh();
+      }}
+      showWebRefreshButton={viewModel.showWebRefreshButton}
+      refreshAccessibilityLabel="Refresh buyer"
+      measuredHeaderMax={measuredHeaderMax}
+      scrollY={scrollY}
+      stickyHeader={{
+        header,
+        onHeaderMeasure,
+        headerHeight,
+        headerShadow,
+      }}
+      mainListHeaderPad={viewModel.mainListHeaderPad}
+      mainList={{
+        data: listData,
+        publicationState: tab === "inbox" ? inboxPublicationState : bucketsPublicationState,
+        publicationMessage: tab === "inbox" ? inboxPublicationMessage : bucketsPublicationMessage,
+        refreshing,
+        onRefresh,
+        loadingInbox,
+        loadingBuckets,
+        loadingInboxMore,
+        inboxHasMore,
+        onLoadMoreInbox: () => {
+          void fetchInboxNextPage();
+        },
+        renderGroupBlock,
+        renderProposalCard,
+      }}
+      sheets={{
+        sheetKind,
+        sheetTitle,
+        isSheetOpen,
+        closeSheet,
+        fioModal: {
           visible: isFioConfirmVisible,
           initialFio: buyerFio,
           onConfirm: handleFioConfirm,
           loading: isFioLoading,
           history: buyerHistory,
-        }}
-        inbox={{
+        },
+        inbox: {
           sheetGroup,
           sheetData,
-          kbOpen: inboxKeyboardLayoutActive,
+          kbOpen: viewModel.inboxKeyboardLayoutActive,
           creating,
           needAttachWarn,
           showAttachBlock,
@@ -718,16 +665,16 @@ export function BuyerScreen() {
           attachments,
           setAttachments,
           renderItemRow,
-          showFooter: showInboxFooter,
+          showFooter: viewModel.showInboxFooter,
           clearPick,
           openRfqSheet,
           handleCreateProposalsBySupplier,
-          disableClear,
-          disableRfq,
-          disableSend,
-        }}
-        renderMobileEditorModal={renderMobileEditorModal}
-        proposalDetails={{
+          disableClear: viewModel.disableClear,
+          disableRfq: viewModel.disableRfq,
+          disableSend: viewModel.disableSend,
+        },
+        renderMobileEditorModal,
+        proposalDetails: {
           state: proposalDetailsSheet,
           isReqContextNote,
           extractReqContextLines,
@@ -740,18 +687,18 @@ export function BuyerScreen() {
           openProposalPdfFromDetails,
           openAccountingModal,
           openRework,
-        }}
-        accounting={{
+        },
+        accounting: {
           ...accountingSheet,
           openInvoicePickerWeb,
           pickInvoiceFile,
           sendToAccounting,
-        }}
-        rework={{
+        },
+        rework: {
           ...reworkFlow,
           pickInvoiceFile: reworkFlow.rwPickInvoiceNative,
-        }}
-        rfq={{
+        },
+        rfq: {
           form: rfqForm,
           pickedIdsLen: pickedIds.length,
           rfqPickedPreview,
@@ -760,13 +707,11 @@ export function BuyerScreen() {
           isDeadlineHoursActive,
           inferCountryCode: inferCountryCodeHelper,
           publishRfq,
-        }}
-        toast={toast}
-      />
-
-    </RoleScreenLayout>
+        },
+        toast,
+      }}
+    />
   );
-  return ScreenBody;
 }
 
 const s = buyerStyles;

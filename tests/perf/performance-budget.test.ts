@@ -117,8 +117,10 @@ describe("performance budget — bundle module count", () => {
     //   calcModal.normalize, calcModal.model, calcModal.validation, calcModal.state, CalcModalContent.
     // FOREMAN_SUBCONTRACT_CONTROLLER_OWNER_SPLIT adds four permanent controller-boundary modules:
     //   foreman.subcontractController.model, guards, effects, telemetry.
+    // BUYER_SCREEN_OWNER_SPLIT adds four permanent buyer screen boundary files:
+    //   buyer.screen.model, BuyerSearchBar, BuyerScreenContent, buyer.screen.model.test.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1295);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1299);
   });
 });
 
