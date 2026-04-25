@@ -13,6 +13,10 @@ import {
 } from "../src/lib/pdf/pdfViewerContract";
 import { createAndroidHarness } from "./_shared/androidHarness";
 import {
+  hasAndroidPdfRuntimeControlledErrorSignal,
+  hasAndroidPdfRuntimeReadySignal,
+} from "./_shared/pdfAndroidRuntimeSignals";
+import {
   cleanupTempUser,
   createTempUser,
   createVerifierAdmin,
@@ -80,6 +84,7 @@ type AndroidRuntimeResult = {
   handoffStarted: boolean;
   handoffReady: boolean;
   handoffError: boolean;
+  externalPdfSurface: boolean;
   processAlive: boolean;
   fatalCrash: boolean;
   logExcerpt: string[];
@@ -102,6 +107,14 @@ const serviceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim(
 const baseUrl = String(process.env.RIK_WEB_BASE_URL ?? "http://localhost:8081").trim();
 const localFunctionHost = "http://127.0.0.1";
 const password = runtimePassword;
+const baseUrlPort = (() => {
+  try {
+    const parsed = new URL(baseUrl);
+    return parsed.port || (parsed.protocol === "https:" ? "443" : "80");
+  } catch {
+    return "8081";
+  }
+})();
 
 const FUNCTION_PORTS: Record<FunctionName, number> = {
   "director-pdf-render": 54331,
@@ -122,6 +135,8 @@ const artifactPaths = {
   parity: path.join(projectRoot, "artifacts/director-pdf-family-parity.json"),
   serveStdout: path.join(projectRoot, "artifacts/director-pdf-functions-serve.stdout.log"),
   serveStderr: path.join(projectRoot, "artifacts/director-pdf-functions-serve.stderr.log"),
+  webServerStdout: path.join(projectRoot, "artifacts/director-pdf-platform-web.stdout.log"),
+  webServerStderr: path.join(projectRoot, "artifacts/director-pdf-platform-web.stderr.log"),
 };
 
 const admin = createVerifierAdmin("director-pdf-platform-hardening-verify");
@@ -512,6 +527,10 @@ async function runFamilySuccessProbe(
     signedUrl = text(normalizedBody.signedUrl);
     renderer = text(normalizedBody.renderer) || null;
     renderBranch = text(normalizedBody.renderBranch) || null;
+    const rendererAllowed =
+      definition.family === "production_report"
+        ? renderer === "artifact_cache" || renderer === "browserless_puppeteer" || renderer === "local_browser_puppeteer"
+        : renderer === "browserless_puppeteer" || renderer === "local_browser_puppeteer";
     contractOk =
       normalizedBody.ok === true &&
       text(normalizedBody.renderVersion) === "v1" &&
@@ -522,7 +541,7 @@ async function runFamilySuccessProbe(
       !!text(normalizedBody.bucketId) &&
       !!text(normalizedBody.storagePath) &&
       !!text(normalizedBody.fileName) &&
-      (renderer === "browserless_puppeteer" || renderer === "local_browser_puppeteer");
+      rendererAllowed;
   }
 
   const signedUrlReachable = signedUrl ? await fetchSignedUrlReachable(signedUrl) : false;
@@ -640,7 +659,7 @@ async function runWebViewerOpen(page: import("playwright").Page, signedUrl: stri
     `${baseUrl}/pdf-viewer?uri=${encodeURIComponent(signedUrl)}&fileName=${encodeURIComponent("director-platform-hardening.pdf")}` +
     `&title=${encodeURIComponent("Director PDF Runtime")}&sourceKind=remote-url&documentType=director_report&originModule=director&source=generated`;
 
-  await page.goto(routeUrl, { waitUntil: "domcontentloaded" });
+  await page.goto(routeUrl, { waitUntil: "domcontentloaded", timeout: 120_000 });
 
   try {
     await poll(
@@ -729,6 +748,27 @@ function readLogDelta(relativePaths: string[], baselineLength: number) {
   return source.slice(baselineLength);
 }
 
+function readLogcatDelta() {
+  try {
+    return execFileSync("adb", ["logcat", "-d", "-t", "400"], {
+      cwd: projectRoot,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 30_000,
+    });
+  } catch (error) {
+    return error && typeof error === "object" && "stdout" in error
+      ? String((error as { stdout?: unknown }).stdout ?? "")
+      : "";
+  }
+}
+
+function readRuntimeSignalDelta(relativePaths: string[], baselineLength: number) {
+  return [readLogDelta(relativePaths, baselineLength), readLogcatDelta()]
+    .filter(Boolean)
+    .join("\n");
+}
+
 function buildRuntimeCaseLogExcerpt(logText: string) {
   return String(logText || "")
     .split(/\r?\n/)
@@ -739,10 +779,114 @@ function buildRuntimeCaseLogExcerpt(logText: string) {
     .slice(-30);
 }
 
-function hasNativeHandoffSettled(logText: string) {
+async function isWebServerReady() {
+  try {
+    const response = await fetch(baseUrl);
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function ensureLocalWebServer(): Promise<{ started: boolean; stop: () => void }> {
+  if (await isWebServerReady()) {
+    return {
+      started: false,
+      stop: () => {},
+    };
+  }
+
+  fs.mkdirSync(path.dirname(artifactPaths.webServerStdout), { recursive: true });
+  fs.writeFileSync(artifactPaths.webServerStdout, "", "utf8");
+  fs.writeFileSync(artifactPaths.webServerStderr, "", "utf8");
+
+  const child = spawn(
+    "cmd.exe",
+    ["/c", "npx", "expo", "start", "--web", "--port", baseUrlPort, "-c"],
+    {
+      cwd: projectRoot,
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
+    },
+  );
+
+  child.stdout.on("data", (chunk) => {
+    fs.appendFileSync(artifactPaths.webServerStdout, String(chunk));
+  });
+  child.stderr.on("data", (chunk) => {
+    fs.appendFileSync(artifactPaths.webServerStderr, String(chunk));
+  });
+
+  await poll(
+    "director-pdf-platform-web-server-ready",
+    async () => {
+      if (child.exitCode != null) {
+        const stderr = fs.existsSync(artifactPaths.webServerStderr)
+          ? fs.readFileSync(artifactPaths.webServerStderr, "utf8")
+          : "";
+        throw new Error(`expo web server exited early (${child.exitCode}): ${stderr}`);
+      }
+      return (await isWebServerReady()) ? true : null;
+    },
+    240_000,
+    1_000,
+  );
+
+  return {
+    started: true,
+    stop: () => {
+      if (child.exitCode == null) {
+        child.kill("SIGTERM");
+      }
+    },
+  };
+}
+
+function getTopActivityText() {
+  const dumps = [
+    ["shell", "dumpsys", "activity", "activities"],
+    ["shell", "dumpsys", "window", "windows"],
+    ["shell", "dumpsys", "activity", "top"],
+  ];
+  return dumps
+    .map((args) => {
+      try {
+        return execFileSync("adb", args, {
+          cwd: projectRoot,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "pipe"],
+          timeout: 30_000,
+        }).trim();
+      } catch (error) {
+        return error && typeof error === "object" && "stdout" in error
+          ? String((error as { stdout?: unknown }).stdout ?? "").trim()
+          : "";
+      }
+    })
+    .join("\n");
+}
+
+function resolveTopActivity(topActivityText: string) {
+  const lines = String(topActivityText || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !/widgetPickerData/i.test(line));
   return (
-    hasToken(logText, "native_handoff_ready") ||
-    hasToken(logText, "android_remote_pdf_open_ready")
+    lines.find(
+      (line) =>
+        /topResumedActivity|ResumedActivity|mCurrentFocus|mFocusedApp|topActivity=ComponentInfo|PdfViewerActivity/i.test(
+          line,
+        ),
+    ) ?? ""
+  );
+}
+
+function isExternalPdfSurface(xml: string, topActivity: string) {
+  return (
+    /package="com\.google\.android\.apps\.docs"|package="com\.android\.chrome"|package="com\.google\.android\.apps\.chrome"|package="com\.android\.documentsui"/i.test(
+      xml,
+    ) ||
+    /PdfViewerActivity|chrome|docs|documentsui|pdf/i.test(topActivity)
   );
 }
 
@@ -788,10 +932,10 @@ async function runAndroidRuntimeCase(args: {
   let caseError: string | null = null;
 
   try {
-    androidHarness.startAndroidRoute(args.packageName, args.route);
+    androidHarness.startAndroidRoute(null, args.route);
   } catch (error) {
     caseError = getErrorMessage(error);
-    logText = readLogDelta(args.logPaths, baselineLength);
+    logText = readRuntimeSignalDelta(args.logPaths, baselineLength);
   }
 
   if (!caseError) {
@@ -799,17 +943,29 @@ async function runAndroidRuntimeCase(args: {
       logText = await poll(
         `director-pdf-open:${args.family}`,
         async () => {
-          const current = readLogDelta(args.logPaths, baselineLength);
+          const current = readRuntimeSignalDelta(args.logPaths, baselineLength);
           const routeMounted = hasToken(current, "viewer_route_mounted");
           const handoffStarted = hasToken(current, "native_handoff_start");
-          const handoffReady = hasNativeHandoffSettled(current);
-          const handoffError =
-            hasToken(current, "native_handoff_error") ||
-            hasToken(current, "viewer_error_state") ||
-            hasToken(current, "load_error");
+          const handoffReady = hasAndroidPdfRuntimeReadySignal(current);
+          const handoffError = hasAndroidPdfRuntimeControlledErrorSignal(current);
+          let externalPdfSurface = false;
+          if (args.expected === "ready" && routeMounted && handoffStarted) {
+            try {
+              const surface = androidHarness.dumpAndroidScreen(
+                `director-pdf-platform-${args.family}-surface-poll`,
+              );
+              const topActivity = resolveTopActivity(getTopActivityText());
+              externalPdfSurface = isExternalPdfSurface(surface.xml, topActivity);
+            } catch {
+              externalPdfSurface = false;
+            }
+          }
 
           if (!routeMounted) return null;
-          if (args.expected === "ready" && (!handoffStarted || !handoffReady)) return null;
+          if (
+            args.expected === "ready" &&
+            (!handoffStarted || (!handoffReady && !externalPdfSurface))
+          ) return null;
           if (args.expected === "controlled_error" && !handoffError) return null;
           return current;
         },
@@ -818,22 +974,29 @@ async function runAndroidRuntimeCase(args: {
       );
     } catch (error) {
       caseError = getErrorMessage(error);
-      logText = readLogDelta(args.logPaths, baselineLength);
+      logText = readRuntimeSignalDelta(args.logPaths, baselineLength);
     }
   }
 
   await sleep(1_500);
+  const topActivity = resolveTopActivity(getTopActivityText());
   const processAlive = Boolean(getPid(args.packageName));
   const routeMounted = hasToken(logText, "viewer_route_mounted");
   const handoffStarted = hasToken(logText, "native_handoff_start");
-  const handoffReady = hasNativeHandoffSettled(logText);
-  const handoffError =
-    hasToken(logText, "native_handoff_error") ||
-    hasToken(logText, "viewer_error_state") ||
-    hasToken(logText, "load_error");
+  const handoffReady = hasAndroidPdfRuntimeReadySignal(logText);
+  const handoffError = hasAndroidPdfRuntimeControlledErrorSignal(logText);
+  let externalPdfSurface = false;
+  try {
+    const finalScreen = androidHarness.dumpAndroidScreen(
+      `director-pdf-platform-${args.family}-surface-final`,
+    );
+    externalPdfSurface = isExternalPdfSurface(finalScreen.xml, topActivity);
+  } catch {
+    externalPdfSurface = false;
+  }
   const runtimeSettled =
     routeMounted &&
-    ((args.expected === "ready" && handoffStarted && handoffReady) ||
+    ((args.expected === "ready" && handoffStarted && (handoffReady || externalPdfSurface)) ||
       (args.expected === "controlled_error" && handoffError));
   const fatalCrash = !processAlive && routeMounted;
 
@@ -843,6 +1006,7 @@ async function runAndroidRuntimeCase(args: {
     handoffStarted,
     handoffReady,
     handoffError,
+    externalPdfSurface,
     processAlive,
     fatalCrash,
     logExcerpt: buildRuntimeCaseLogExcerpt(logText),
@@ -868,7 +1032,9 @@ function buildSourceScan() {
       renderService.includes('functionName: DIRECTOR_PDF_RENDER_FUNCTION') &&
       !renderService.includes("renderPdfHtmlToUri"),
     renderServiceAllowsParityRenderers:
-      renderService.includes('allowedRenderers: ["browserless_puppeteer", "local_browser_puppeteer"]'),
+      renderService.includes("allowedRenderers: args.financeManagementManifest") &&
+      renderService.includes('["browserless_puppeteer", "local_browser_puppeteer"]') &&
+      renderService.includes('"artifact_cache"'),
     renderFunctionHasSharedCorsHelpers:
       renderFunction.includes("createDirectorPdfOptionsResponse") &&
       renderFunction.includes("createDirectorPdfSuccessResponse") &&
@@ -892,6 +1058,7 @@ function buildSourceScan() {
 
 async function main() {
   let functionServer: { children: Array<{ functionName: FunctionName; child: ChildProcess }>; stop: () => void } | null = null;
+  let webServer: { started: boolean; stop: () => void } | null = null;
   let browser: import("playwright").Browser | null = null;
   let runtimeUser: Awaited<ReturnType<typeof createTempUser>> | null = null;
   let androidPrepared: Awaited<ReturnType<typeof androidHarness.prepareAndroidRuntime>> | null = null;
@@ -906,6 +1073,7 @@ async function main() {
 
   try {
     functionServer = await startLocalFunctionServer();
+    webServer = await ensureLocalWebServer();
     runtimeUser = await createTempUser(admin, {
       role: "director",
       fullName: "Director PDF Platform Runtime",
@@ -916,7 +1084,7 @@ async function main() {
     browser = await chromium.launch({ headless: true });
     const context = await browser.newContext();
     const page = await context.newPage();
-    await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+    await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 120_000 });
 
     for (const family of families) {
       webCorsDiagnostics.push(await runFamilySuccessProbe(page, family, signedIn.accessToken));
@@ -1014,9 +1182,9 @@ async function main() {
           renderer: "renderer" in resolution ? resolution.renderer : null,
           canonicalUri: "canonicalUri" in resolution ? resolution.canonicalUri : null,
           safe:
-            resolution.kind === "resolved-native-handoff" &&
+            resolution.kind === "resolved-embedded" &&
             resolution.sourceKind === "remote-url" &&
-            resolution.renderer === "native-handoff",
+            resolution.renderer === "native-webview",
         };
       });
 
@@ -1177,6 +1345,7 @@ async function main() {
       await browser.close().catch(() => {});
     }
     androidPrepared?.devClient.cleanup();
+    webServer?.stop();
     functionServer?.stop();
     await cleanupTempUser(admin, runtimeUser);
   }

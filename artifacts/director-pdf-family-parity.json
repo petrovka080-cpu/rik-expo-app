@@ -1,0 +1,89 @@
+{
+  "status": "passed",
+  "sourceScan": {
+    "renderServiceCanonicalOnly": true,
+    "renderServiceAllowsParityRenderers": true,
+    "renderFunctionHasSharedCorsHelpers": true,
+    "renderFunctionHasLocalRendererFallback": true,
+    "familyEdgeFunctionsShareCorsContract": true,
+    "familyBackendServicesUseSharedInvoker": true,
+    "reportsPdfServiceNoClientFallback": true
+  },
+  "families": [
+    {
+      "family": "management_report",
+      "functionName": "director-pdf-render",
+      "renderBranch": "edge_render_v1",
+      "renderer": "local_browser_puppeteer",
+      "sourceKind": "remote-url",
+      "contractOk": true,
+      "corsOk": true,
+      "signedUrlReachable": true
+    },
+    {
+      "family": "supplier_summary",
+      "functionName": "director-finance-supplier-summary-pdf",
+      "renderBranch": "backend_supplier_summary_v1",
+      "renderer": "local_browser_puppeteer",
+      "sourceKind": "remote-url",
+      "contractOk": true,
+      "corsOk": true,
+      "signedUrlReachable": true
+    },
+    {
+      "family": "production_report",
+      "functionName": "director-production-report-pdf",
+      "renderBranch": "backend_production_report_v1",
+      "renderer": "artifact_cache",
+      "sourceKind": "remote-url",
+      "contractOk": true,
+      "corsOk": true,
+      "signedUrlReachable": true
+    },
+    {
+      "family": "subcontract_report",
+      "functionName": "director-subcontract-report-pdf",
+      "renderBranch": "backend_subcontract_report_v1",
+      "renderer": "local_browser_puppeteer",
+      "sourceKind": "remote-url",
+      "contractOk": true,
+      "corsOk": true,
+      "signedUrlReachable": true
+    }
+  ],
+  "iosFamilyChecks": [
+    {
+      "family": "management_report",
+      "resolutionKind": "resolved-embedded",
+      "sourceKind": "remote-url",
+      "renderer": "native-webview",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/management_report/2026/04/25/2026-04-25T18-05-39-386Z_2ca0786d_director_management_report.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9tYW5hZ2VtZW50X3JlcG9ydC8yMDI2LzA0LzI1LzIwMjYtMDQtMjVUMTgtMDUtMzktMzg2Wl8yY2EwNzg2ZF9kaXJlY3Rvcl9tYW5hZ2VtZW50X3JlcG9ydC5wZGYiLCJpYXQiOjE3NzcxNDAzNDUsImV4cCI6MTc3NzE0Mzk0NX0.1t3xkR3_5t7aJeSHZjj9vgFRhFlXOrndZwNdQCOy_NA",
+      "safe": true
+    },
+    {
+      "family": "supplier_summary",
+      "resolutionKind": "resolved-embedded",
+      "sourceKind": "remote-url",
+      "renderer": "native-webview",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/supplier_summary/2026/04/25/2026-04-25T18-05-50-164Z_ed0d033a_director_supplier_summary_Runtime_Smoke_Supplier_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdXBwbGllcl9zdW1tYXJ5LzIwMjYvMDQvMjUvMjAyNi0wNC0yNVQxOC0wNS01MC0xNjRaX2VkMGQwMzNhX2RpcmVjdG9yX3N1cHBsaWVyX3N1bW1hcnlfUnVudGltZV9TbW9rZV9TdXBwbGllcl8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NzE0MDM1NiwiZXhwIjoxNzc3MTQzOTU2fQ.FOvBbwDftKhEvC4BwaWCKwqT-GTAlDfBao-B9IytuFM",
+      "safe": true
+    },
+    {
+      "family": "production_report",
+      "resolutionKind": "resolved-embedded",
+      "sourceKind": "remote-url",
+      "renderer": "native-webview",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/production_report/artifacts/v1/director_production_report_template_v1_caa7c3df72b52c4e4cbc7b610f06fd30bbb9925784b65c8b6f04a6c3391d77cb/director_production_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9wcm9kdWN0aW9uX3JlcG9ydC9hcnRpZmFjdHMvdjEvZGlyZWN0b3JfcHJvZHVjdGlvbl9yZXBvcnRfdGVtcGxhdGVfdjFfY2FhN2MzZGY3MmI1MmM0ZTRjYmM3YjYxMGYwNmZkMzBiYmI5OTI1Nzg0YjY1YzhiNmYwNGE2YzMzOTFkNzdjYi9kaXJlY3Rvcl9wcm9kdWN0aW9uX3JlcG9ydF8yMDI2LTAzLTMxLnBkZiIsImlhdCI6MTc3NzE0MDM2NCwiZXhwIjoxNzc3MTQzOTY0fQ.gCEJMyzL1QwU1Q7PLqimlzkuAOxKFO02lPLWn2jnmrw",
+      "safe": true
+    },
+    {
+      "family": "subcontract_report",
+      "resolutionKind": "resolved-embedded",
+      "sourceKind": "remote-url",
+      "renderer": "native-webview",
+      "canonicalUri": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/director_pdf_exports/director/subcontract_report/2026/04/25/2026-04-25T18-06-09-834Z_d216ad87_director_subcontract_report_2026-03-31.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkaXJlY3Rvcl9wZGZfZXhwb3J0cy9kaXJlY3Rvci9zdWJjb250cmFjdF9yZXBvcnQvMjAyNi8wNC8yNS8yMDI2LTA0LTI1VDE4LTA2LTA5LTgzNFpfZDIxNmFkODdfZGlyZWN0b3Jfc3ViY29udHJhY3RfcmVwb3J0XzIwMjYtMDMtMzEucGRmIiwiaWF0IjoxNzc3MTQwMzc2LCJleHAiOjE3NzcxNDM5NzZ9.xwlIEoj45lNrmQpnqpiGBoJoT-nUpI3wx1Fsw_xPiXQ",
+      "safe": true
+    }
+  ],
+  "safeSwitchVerdict": true
+}

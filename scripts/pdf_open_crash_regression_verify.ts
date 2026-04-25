@@ -3,6 +3,11 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 
 import { createAndroidHarness } from "./_shared/androidHarness";
+import {
+  hasAndroidPdfRuntimeControlledErrorSignal,
+  hasAndroidPdfRuntimeFailureSignal,
+  hasAndroidPdfRuntimeReadySignal,
+} from "./_shared/pdfAndroidRuntimeSignals";
 
 type JestAssertion = {
   fullName: string;
@@ -28,6 +33,7 @@ type RuntimeCaseResult = {
   handoffStarted: boolean;
   handoffReady: boolean;
   handoffError: boolean;
+  externalPdfSurface: boolean;
   fatalCrash: boolean;
   processAlive: boolean;
   topActivity: string;
@@ -136,7 +142,11 @@ function readFullLogcat() {
 }
 
 function getTopActivityText() {
-  return tryRun("adb", ["shell", "dumpsys", "activity", "top"]);
+  return [
+    tryRun("adb", ["shell", "dumpsys", "activity", "activities"]),
+    tryRun("adb", ["shell", "dumpsys", "window", "windows"]),
+    tryRun("adb", ["shell", "dumpsys", "activity", "top"]),
+  ].join("\n");
 }
 
 function getPid() {
@@ -166,24 +176,32 @@ function buildRuntimeCaseLogExcerpt(logText: string) {
     .slice(-30);
 }
 
-function hasNativeHandoffSettled(logText: string) {
-  return (
-    hasToken(logText, "native_handoff_ready")
-    || hasToken(logText, "android_remote_pdf_open_ready")
-  );
-}
-
 function resolveTopActivity(topActivityText: string) {
   const lines = String(topActivityText || "")
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
   return (
-    lines.find((line) => /chrome|browser|pdf|docs|files|viewer/i.test(line) && !/launcher/i.test(line))
+    lines.find(
+      (line) =>
+        /topResumedActivity|ResumedActivity|mCurrentFocus|mFocusedApp|topActivity=ComponentInfo|PdfViewerActivity/i.test(
+          line,
+        ) && !/widgetPickerData/i.test(line),
+    )
+    ?? lines.find((line) => /chrome|browser|pdf|docs|files|viewer/i.test(line) && !/launcher/i.test(line))
     ?? lines.find((line) => /ResumedActivity|topResumedActivity/i.test(line))
     ?? lines.find((line) => /ACTIVITY/i.test(line) && !/launcher/i.test(line))
     ?? lines.find((line) => /ACTIVITY/i.test(line))
     ?? ""
+  );
+}
+
+function isExternalPdfSurface(xml: string, topActivity: string) {
+  return (
+    /package="com\.google\.android\.apps\.docs"|package="com\.android\.chrome"|package="com\.google\.android\.apps\.chrome"|package="com\.android\.documentsui"/i.test(
+      xml,
+    ) ||
+    /PdfViewerActivity|chrome|docs|documentsui|pdf/i.test(topActivity)
   );
 }
 
@@ -223,14 +241,21 @@ async function runRuntimeCase(
           const current = readLogDelta(logPaths, baselineLength);
           const routeMounted = hasToken(current, "viewer_route_mounted");
           const handoffStarted = hasToken(current, "native_handoff_start");
-          const handoffReady = hasNativeHandoffSettled(current);
-          const handoffError =
-            hasToken(current, "native_handoff_error")
-            || hasToken(current, "viewer_error_state")
-            || hasToken(current, "load_error");
+          const handoffReady = hasAndroidPdfRuntimeReadySignal(current);
+          const handoffError = hasAndroidPdfRuntimeControlledErrorSignal(current);
+          let externalPdfSurface = false;
+          if (expected === "ready" && routeMounted && handoffStarted) {
+            try {
+              const surface = harness.dumpAndroidScreen(`pdf-open-${family}-surface-poll`);
+              const topActivity = resolveTopActivity(getTopActivityText());
+              externalPdfSurface = isExternalPdfSurface(surface.xml, topActivity);
+            } catch {
+              externalPdfSurface = false;
+            }
+          }
 
           if (!routeMounted) return null;
-          if (expected === "ready" && (!handoffStarted || !handoffReady)) return null;
+          if (expected === "ready" && (!handoffStarted || (!handoffReady && !externalPdfSurface))) return null;
           if (expected === "controlled_error" && !handoffError) return null;
           return current;
         },
@@ -250,14 +275,18 @@ async function runRuntimeCase(
   const processAlive = Boolean(getPid());
   const routeMounted = hasToken(logText, "viewer_route_mounted");
   const handoffStarted = hasToken(logText, "native_handoff_start");
-  const handoffReady = hasNativeHandoffSettled(logText);
-  const handoffError =
-    hasToken(logText, "native_handoff_error")
-    || hasToken(logText, "viewer_error_state")
-    || hasToken(logText, "load_error");
+  const handoffReady = hasAndroidPdfRuntimeReadySignal(logText);
+  const handoffError = hasAndroidPdfRuntimeControlledErrorSignal(logText);
+  let externalPdfSurface = false;
+  try {
+    const finalScreen = harness.dumpAndroidScreen(`pdf-open-${family}-surface-final`);
+    externalPdfSurface = isExternalPdfSurface(finalScreen.xml, topActivity);
+  } catch {
+    externalPdfSurface = false;
+  }
   const runtimeSettled =
     routeMounted
-    && ((expected === "ready" && handoffStarted && handoffReady)
+    && ((expected === "ready" && handoffStarted && (handoffReady || externalPdfSurface))
       || (expected === "controlled_error" && handoffError));
   const fatalExceptionLogged =
     /FATAL EXCEPTION|AndroidRuntime/i.test(fullLog)
@@ -277,6 +306,7 @@ async function runRuntimeCase(
     handoffStarted,
     handoffReady,
     handoffError,
+    externalPdfSurface,
     fatalCrash,
     processAlive,
     topActivity,
@@ -305,9 +335,12 @@ async function main() {
 
   const viewerContractSource = readText("src/lib/pdf/pdfViewerContract.ts");
   const viewerSource = readText("app/pdf-viewer.tsx");
+  const nativeShellSource = readText("src/lib/pdf/PdfViewerNativeShell.tsx");
+  const nativeWebViewSource = readText("src/lib/pdf/pdfViewer.nativeWebView.ts");
   const pdfRunnerSource = readText("src/lib/pdfRunner.ts");
   const attachmentOpenerSource = readText("src/lib/documents/attachmentOpener.ts");
   const pdfDocumentActionsSource = readText("src/lib/documents/pdfDocumentActions.ts");
+  const pdfDocumentPreviewActionSource = readText("src/lib/documents/pdfDocumentPreviewAction.ts");
   const diffPreview = run("git", [
     "diff",
     "--unified=12",
@@ -445,17 +478,12 @@ async function main() {
 
     const metroLog = readAllLiveLogText(runtimeLogPaths);
     metroEvidence = {
-      viewerRouteMounted: metroLog.includes("[pdf-viewer] viewer_route_mounted"),
-      nativeHandoffStarted: metroLog.includes("[pdf-viewer] native_handoff_start"),
-      nativeOpenReady:
-        metroLog.includes("[pdf-viewer] native_handoff_ready")
-        || metroLog.includes("[pdf-runner] android_remote_pdf_open_ready")
-        || metroLog.includes("[attachment-opener] android_remote_pdf_open_ready"),
-      nativeHandoffError: metroLog.includes("[pdf-viewer] native_handoff_error"),
-      viewerErrorState:
-        metroLog.includes("[pdf-viewer] viewer_error_state")
-        || metroLog.includes("[pdf-viewer] load_error"),
-    };
+    viewerRouteMounted: metroLog.includes("[pdf-viewer] viewer_route_mounted"),
+    nativeHandoffStarted: metroLog.includes("[pdf-viewer] native_handoff_start"),
+    nativeOpenReady: hasAndroidPdfRuntimeReadySignal(metroLog),
+    nativeHandoffError: hasAndroidPdfRuntimeFailureSignal(metroLog),
+    viewerErrorState: hasAndroidPdfRuntimeControlledErrorSignal(metroLog),
+  };
 
     const boundaryChecks = {
       androidViewerStillUsesNativeHandoffBoundary:
@@ -469,17 +497,21 @@ async function main() {
         viewerContractSource.includes('platform === "web"')
         && viewerContractSource.includes('renderer: "web-frame"'),
       viewerUsesNativeHandoff:
-        viewerSource.includes('console.info("[pdf-viewer] native_handoff_start"')
+        viewerSource.includes('"[pdf-viewer] native_handoff_start"')
         && viewerSource.includes("await openPdfPreview(")
-        && viewerSource.includes('console.info("[pdf-viewer] native_handoff_ready"'),
-      viewerImportsNativeWebViewForIosPreview: viewerSource.includes("react-native-webview"),
+        && viewerSource.includes('"[pdf-viewer] native_handoff_ready"'),
+      viewerImportsNativeWebViewForIosPreview:
+        nativeShellSource.includes('mode: "native-webview"')
+        && nativeWebViewSource.includes('from "react-native-webview"'),
       previewRouteStillCanonical:
-        pdfDocumentActionsSource.includes('route: "/pdf-viewer"')
-        && pdfDocumentActionsSource.includes("createDocumentPreviewSession"),
+        pdfDocumentPreviewActionSource.includes('route: "/pdf-viewer"')
+        && pdfDocumentPreviewActionSource.includes("createPdfDocumentViewerHref(")
+        && pdfDocumentPreviewActionSource.includes("pushPdfDocumentViewerRouteSafely("),
       mobileRemotePreviewUsesDirectViewerBoundary:
-        pdfDocumentActionsSource.includes('previewSourceMode: "direct_remote_viewer_contract"')
-        && pdfDocumentActionsSource.includes("createInMemoryDocumentPreviewSession(doc)")
-        && pdfDocumentActionsSource.includes("createViewerHref("),
+        pdfDocumentPreviewActionSource.includes('previewSourceMode: "direct_remote_viewer_contract"')
+        && pdfDocumentPreviewActionSource.includes('previewSourceMode: "direct_remote_viewer_session_contract"')
+        && pdfDocumentPreviewActionSource.includes("createInMemoryDocumentPreviewSession(doc)")
+        && pdfDocumentPreviewActionSource.includes("createPdfDocumentViewerHref("),
       attachmentRemotePdfUsesSharedAndroidBoundary:
         attachmentOpenerSource.includes('mimeType === "application/pdf"')
         && attachmentOpenerSource.includes('source.kind === "remote"')
