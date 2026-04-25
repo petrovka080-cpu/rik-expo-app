@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
-import { AppState } from "react-native";
-import {
-  ensurePlatformNetworkService,
-  subscribePlatformNetwork,
-} from "../../lib/offline/platformNetwork.service";
+import { ensurePlatformNetworkService } from "../../lib/offline/platformNetwork.service";
 import { selectPlatformOnlineFlag } from "../../lib/offline/platformOffline.model";
+import {
+  getLifecycleCurrentAppState,
+  subscribeLifecycleAppActiveTransition,
+  subscribeLifecycleNetworkRecovery,
+} from "../../lib/lifecycle/useAppActiveRevalidation";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
@@ -39,7 +40,7 @@ export function useIssuedRefreshLifecycle<RowT>(params: Params<RowT>) {
 
   const inFlightRef = useRef(false);
   const lastRefreshAtRef = useRef(0);
-  const appStateRef = useRef(AppState.currentState);
+  const appStateRef = useRef(getLifecycleCurrentAppState());
   const networkReadyRef = useRef(false);
   const networkOnlineRef = useRef<boolean | null>(null);
 
@@ -180,36 +181,31 @@ export function useIssuedRefreshLifecycle<RowT>(params: Params<RowT>) {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = subscribePlatformNetwork((state, previous) => {
-      networkReadyRef.current = true;
-      const nextOnline = selectPlatformOnlineFlag(state);
-      const wasOnline = selectPlatformOnlineFlag(previous);
-      networkOnlineRef.current = nextOnline;
-      if (!enabled) return;
-      if (wasOnline === false && nextOnline === true) {
+    const unsubscribe = subscribeLifecycleNetworkRecovery({
+      networkOnlineRef,
+      onRecovered: () => {
+        if (!enabled) return;
         void refreshIssued("network_back");
-      }
+      },
+      onNetworkStateChange: () => {
+        networkReadyRef.current = true;
+      },
     });
 
-    return () => {
-      unsubscribe();
-    };
+    return unsubscribe;
   }, [enabled, refreshIssued]);
 
   useEffect(() => {
     if (!enabled) return;
 
-    const sub = AppState.addEventListener("change", (nextState) => {
-      const previous = appStateRef.current;
-      appStateRef.current = nextState;
-      if (previous !== "active" && nextState === "active") {
+    const unsubscribe = subscribeLifecycleAppActiveTransition({
+      appStateRef,
+      onBecameActive: () => {
         void refreshIssued("app_active");
-      }
+      },
     });
 
-    return () => {
-      sub.remove();
-    };
+    return unsubscribe;
   }, [enabled, refreshIssued]);
 
   useEffect(() => {

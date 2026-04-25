@@ -7,6 +7,8 @@ type Props = {
   containerStyle?: object;
   pressableStyle?: object;
   pressedOpacity?: number;
+  testID?: string;
+  accessibilityLabel?: string;
 };
 
 export default function WarehouseCardShell({
@@ -15,10 +17,14 @@ export default function WarehouseCardShell({
   containerStyle,
   pressableStyle,
   pressedOpacity = 0.92,
+  testID,
+  accessibilityLabel,
 }: Props) {
   return (
     <View style={containerStyle}>
       <Pressable
+        testID={testID}
+        accessibilityLabel={accessibilityLabel}
         onPress={onPress}
         style={({ pressed }) => [pressableStyle, pressed && { opacity: pressedOpacity }]}
       >

@@ -231,6 +231,8 @@ export default function ForemanEditorSection(p: Props) {
       <View style={p.styles.section}>
         <View style={p.styles.pickTabsRow}>
           <Pressable
+            testID="foreman-catalog-open"
+            accessibilityLabel="foreman-catalog-open"
             onPress={() => {
               if (!p.ensureHeaderReady()) return;
               if (!p.canStartDraftFlow) {
@@ -247,6 +249,8 @@ export default function ForemanEditorSection(p: Props) {
           </Pressable>
 
           <Pressable
+            testID="foreman-calc-open"
+            accessibilityLabel="foreman-calc-open"
             onPress={p.onCalcPress}
             disabled={p.busy}
             style={[p.styles.pickTabBtn, p.styles.pickTabSoft, p.busy && { opacity: 0.5 }]}
@@ -257,6 +261,8 @@ export default function ForemanEditorSection(p: Props) {
         </View>
 
         <Pressable
+          testID="foreman-ai-quick-open"
+          accessibilityLabel="foreman-ai-quick-open"
           onPress={p.onAiQuickPress}
           disabled={p.busy}
           style={[

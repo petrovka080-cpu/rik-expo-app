@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AppState, Alert } from "react-native";
+import { Alert } from "react-native";
 import type { Dispatch, SetStateAction } from "react";
 import type { WorkMaterialRow } from "../../../components/WorkMaterialsEditor";
-import {
-  ensurePlatformNetworkService,
-  subscribePlatformNetwork,
-} from "../../../lib/offline/platformNetwork.service";
+import { ensurePlatformNetworkService } from "../../../lib/offline/platformNetwork.service";
 import {
   selectPlatformOnlineFlag,
   type PlatformOfflineRetryTriggerSource,
 } from "../../../lib/offline/platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "../../../lib/offline/platformOffline.observability";
+import {
+  getLifecycleCurrentAppState,
+  subscribeLifecycleAppActiveTransition,
+  subscribeLifecycleNetworkRecovery,
+} from "../../../lib/lifecycle/useAppActiveRevalidation";
 import type { ContractorWorkRow } from "../contractor.loadWorksService";
 import {
   buildContractorProgressSyncUiStatus,
@@ -180,7 +182,7 @@ export function useContractorProgressReliability(params: {
   );
   const [runtimeReady, setRuntimeReady] = useState(false);
   const networkOnlineRef = useRef<boolean | null>(null);
-  const appStateRef = useRef(AppState.currentState);
+  const appStateRef = useRef(getLifecycleCurrentAppState());
   const applyingDraftRef = useRef(false);
   activeProgressIdRef.current = activeProgressId;
   workModalRowRef.current = workModalRow;
@@ -254,30 +256,25 @@ export function useContractorProgressReliability(params: {
   useEffect(() => {
     if (!runtimeReady) return;
 
-    const unsubscribe = subscribePlatformNetwork((state, previous) => {
-      const nextOnline = selectPlatformOnlineFlag(state);
-      const wasOnline = selectPlatformOnlineFlag(previous);
-      networkOnlineRef.current = nextOnline;
-      if (wasOnline === false && nextOnline === true) {
+    const unsubscribe = subscribeLifecycleNetworkRecovery({
+      networkOnlineRef,
+      onRecovered: () => {
         void syncQueuedDraftIfPossible("network_back");
-      }
+      },
     });
 
-    return () => {
-      unsubscribe();
-    };
+    return unsubscribe;
   }, [runtimeReady, syncQueuedDraftIfPossible]);
 
   useEffect(() => {
     if (!runtimeReady) return;
-    const sub = AppState.addEventListener("change", (nextState) => {
-      const previous = appStateRef.current;
-      appStateRef.current = nextState;
-      if (previous !== "active" && nextState === "active") {
+    const unsubscribe = subscribeLifecycleAppActiveTransition({
+      appStateRef,
+      onBecameActive: () => {
         void syncQueuedDraftIfPossible("app_active");
-      }
+      },
     });
-    return () => sub.remove();
+    return unsubscribe;
   }, [runtimeReady, syncQueuedDraftIfPossible]);
 
   useEffect(() => {

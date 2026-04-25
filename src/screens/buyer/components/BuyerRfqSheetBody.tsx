@@ -183,6 +183,8 @@ export function BuyerRfqSheetBody({
         <Text style={[s.modalTitle, { flex: 1, color: D.text }]}>Торги (RFQ)</Text>
 
         <Pressable
+          testID="buyer-rfq-close-top"
+          accessibilityLabel="buyer-rfq-close-top"
           onPress={closeSheet}
           style={[
             s.smallBtn,
@@ -210,6 +212,8 @@ export function BuyerRfqSheetBody({
           </Text>
 
           <Pressable
+            testID="buyer-rfq-show-items"
+            accessibilityLabel="buyer-rfq-show-items"
             onPress={() => setRfqShowItems((v) => !v)}
             style={[
               s.smallBtn,
@@ -278,6 +282,8 @@ export function BuyerRfqSheetBody({
           Срок поставки/исполнения (дней)
         </Text>
         <TextInput
+          testID="buyer-rfq-delivery-days"
+          accessibilityLabel="buyer-rfq-delivery-days"
           value={rfqDeliveryDays}
           onChangeText={setRfqDeliveryDays}
           keyboardType="numeric"
@@ -310,6 +316,8 @@ export function BuyerRfqSheetBody({
 
         <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: "800" }]}>Город</Text>
         <TextInput
+          testID="buyer-rfq-city"
+          accessibilityLabel="buyer-rfq-city"
           value={rfqCity}
           onChangeText={handleCityChange}
           placeholder="Бишкек"
@@ -322,6 +330,8 @@ export function BuyerRfqSheetBody({
 
         <Text style={[s.modalHelp, { color: D.sub, fontWeight: "800" }]}>Адрес поставки</Text>
         <TextInput
+          testID="buyer-rfq-address"
+          accessibilityLabel="buyer-rfq-address"
           value={rfqAddressText}
           onChangeText={setRfqAddressText}
           placeholder="ул..., дом..., объект..."
@@ -334,6 +344,8 @@ export function BuyerRfqSheetBody({
 
         <Text style={[s.modalHelp, { color: D.sub, fontWeight: "800" }]}>Окно приёма (пример: 9:00–18:00)</Text>
         <TextInput
+          testID="buyer-rfq-window"
+          accessibilityLabel="buyer-rfq-window"
           value={rfqDeliveryWindow}
           onChangeText={setRfqDeliveryWindow}
           placeholderTextColor={D.sub}
@@ -348,6 +360,8 @@ export function BuyerRfqSheetBody({
         <Text style={[s.modalHelp, { color: D.sub, fontWeight: "800" }]}>Телефон</Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
           <Pressable
+            testID="buyer-rfq-country-code-toggle"
+            accessibilityLabel="buyer-rfq-country-code-toggle"
             onPress={handleToggleCountryCode}
             style={[
               s.input,
@@ -364,6 +378,8 @@ export function BuyerRfqSheetBody({
           </Pressable>
 
           <TextInput
+            testID="buyer-rfq-phone"
+            accessibilityLabel="buyer-rfq-phone"
             value={rfqPhone}
             onChangeText={(text) => setRfqPhone(String(text).replace(/[^\d]/g, ""))}
             placeholder="номер"
@@ -382,6 +398,8 @@ export function BuyerRfqSheetBody({
 
         <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: "800" }]}>Email</Text>
         <TextInput
+          testID="buyer-rfq-email"
+          accessibilityLabel="buyer-rfq-email"
           value={rfqEmail}
           onChangeText={setRfqEmail}
           placeholder="mail@example.com"
@@ -486,6 +504,8 @@ export function BuyerRfqSheetBody({
 
         <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: "800" }]}>Комментарий</Text>
         <TextInput
+          testID="buyer-rfq-note"
+          accessibilityLabel="buyer-rfq-note"
           value={rfqNote}
           onChangeText={setRfqNote}
           multiline
@@ -499,6 +519,8 @@ export function BuyerRfqSheetBody({
 
       <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
         <Pressable
+          testID="buyer-rfq-cancel"
+          accessibilityLabel="buyer-rfq-cancel"
           onPress={closeSheet}
           style={[
             s.smallBtn,
@@ -510,6 +532,8 @@ export function BuyerRfqSheetBody({
         </Pressable>
 
         <Pressable
+          testID="buyer-rfq-publish"
+          accessibilityLabel="buyer-rfq-publish"
           disabled={rfqBusy}
           onPress={() => {
             void handlePublish();

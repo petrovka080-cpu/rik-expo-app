@@ -12,23 +12,11 @@ const appId = "com.azisbek_dzhantaev.rikexpoapp";
 const expectedApiLevel = "34";
 const expectedAbi = "x86_64";
 const expectedAvdPattern = process.env.MAESTRO_EXPECTED_AVD_PATTERN ?? "API_34";
-const flowDir = path.join(projectRoot, "maestro", "flows", "critical");
-const warehouseIssueRuntimeVerifyScript = path.join(
-  projectRoot,
-  "scripts",
-  "warehouse_issue_request_runtime_verify.ts",
+const flowDir = path.join(projectRoot, "maestro", "flows", "external-ai");
+const externalAiFlows = ["foreman-ai-draft-submit.yaml"].map((filename) =>
+  path.join(flowDir, filename),
 );
-const criticalFlows = [
-  "active-context-switch.yaml",
-  "buyer-proposal-review.yaml",
-  "buyer-rfq-create.yaml",
-  "foreman-draft-submit.yaml",
-  "market-entry.yaml",
-  "office-buyer-route-roundtrip.yaml",
-  "office-safe-entry.yaml",
-  "warehouse-receive-issue.yaml",
-].map((filename) => path.join(flowDir, filename));
-const outputDir = path.join(projectRoot, "artifacts", "maestro-critical");
+const outputDir = path.join(projectRoot, "artifacts", "maestro-external-ai");
 const reportFile = path.join(outputDir, "report.xml");
 const defaultReleaseApk = path.join(
   projectRoot,
@@ -50,9 +38,8 @@ const maestroBinary =
     "bin",
     process.platform === "win32" ? "maestro.bat" : "maestro",
   );
-const npxBinary = process.platform === "win32" ? "npx.cmd" : "npx";
 
-type CriticalSeed = MaestroCriticalBusinessSeed;
+type ExternalAiSeed = MaestroCriticalBusinessSeed;
 
 function runCommand(
   command: string,
@@ -60,14 +47,11 @@ function runCommand(
   capture = false,
   extraEnv: Record<string, string> = {},
 ) {
-  const requiresShell =
-    process.platform === "win32" && /\.(bat|cmd)$/i.test(command);
-
   const result = spawnSync(command, args, {
     cwd: projectRoot,
     encoding: "utf8",
     stdio: capture ? "pipe" : "inherit",
-    shell: requiresShell,
+    shell: process.platform === "win32" && command.endsWith(".bat"),
     env: {
       ...process.env,
       ...extraEnv,
@@ -124,7 +108,7 @@ function detectDeviceId() {
     .map((parts) => parts[0]);
 
   if (devices.length === 0) {
-    throw new Error("No Android device detected for Maestro critical suite.");
+    throw new Error("No Android device detected for Maestro external AI suite.");
   }
 
   if (devices.length > 1) {
@@ -169,7 +153,7 @@ function ensureCanonicalEnvironment(deviceId: string) {
 function ensureAppInstalled(deviceId: string) {
   if (!fs.existsSync(releaseApk)) {
     throw new Error(
-      `Release APK for Maestro critical suite was not found at ${releaseApk}. Build the current release APK before running this suite.`,
+      `Release APK for Maestro external AI suite was not found at ${releaseApk}. Build the current release APK before running this suite.`,
     );
   }
 
@@ -180,39 +164,27 @@ function ensureAppInstalled(deviceId: string) {
   }
 }
 
-async function createCriticalSuiteSeed(): Promise<CriticalSeed> {
+async function createExternalAiSuiteSeed(): Promise<ExternalAiSeed> {
   return await createMaestroCriticalBusinessSeed();
 }
 
-async function cleanupCriticalSuiteSeed(seed: CriticalSeed | null) {
+async function cleanupExternalAiSuiteSeed(seed: ExternalAiSeed | null) {
   if (!seed) return;
   await seed.cleanup();
 }
 
 async function main() {
   if (!fs.existsSync(flowDir)) {
-    throw new Error(`Maestro critical flow directory not found at ${flowDir}`);
+    throw new Error(`Maestro external AI flow directory not found at ${flowDir}`);
   }
 
-  const missingFlows = criticalFlows.filter((flowPath) => !fs.existsSync(flowPath));
+  const missingFlows = externalAiFlows.filter((flowPath) => !fs.existsSync(flowPath));
   if (missingFlows.length > 0) {
-    throw new Error(`Maestro critical flows missing: ${missingFlows.join(", ")}`);
+    throw new Error(`Maestro external AI flows missing: ${missingFlows.join(", ")}`);
   }
 
   if (!fs.existsSync(maestroBinary)) {
     throw new Error(`Maestro CLI not found at ${maestroBinary}`);
-  }
-
-  if (!process.env.MAESTRO_SKIP_WAREHOUSE_ISSUE_RUNTIME_VERIFY) {
-    if (!fs.existsSync(warehouseIssueRuntimeVerifyScript)) {
-      throw new Error(
-        `Warehouse issue runtime verifier not found at ${warehouseIssueRuntimeVerifyScript}`,
-      );
-    }
-    console.log("Running warehouse issue runtime verifier before Maestro critical suite");
-    runCommand(npxBinary, ["tsx", warehouseIssueRuntimeVerifyScript], false);
-  } else {
-    console.log("Skipping warehouse issue runtime verifier due to MAESTRO_SKIP_WAREHOUSE_ISSUE_RUNTIME_VERIFY");
   }
 
   const deviceId = detectDeviceId();
@@ -220,13 +192,13 @@ async function main() {
   ensureAppInstalled(deviceId);
   fs.mkdirSync(outputDir, { recursive: true });
 
-  let seed: CriticalSeed | null = null;
+  let seed: ExternalAiSeed | null = null;
 
   try {
-    seed = await createCriticalSuiteSeed();
+    seed = await createExternalAiSuiteSeed();
     adb(deviceId, ["shell", "am", "force-stop", appId], false);
 
-    console.log(`Running Maestro critical suite on ${deviceId}`);
+    console.log(`Running Maestro external AI suite on ${deviceId}`);
     console.log(
       `Canonical environment: API ${expectedApiLevel}, ABI ${expectedAbi}, AVD pattern ${expectedAvdPattern}`,
     );
@@ -250,7 +222,7 @@ async function main() {
         "--flatten-debug-output",
         "--no-ansi",
         ...buildMaestroEnvArgs(seed.env),
-        ...criticalFlows,
+        ...externalAiFlows,
       ],
       false,
     );
@@ -260,7 +232,7 @@ async function main() {
     } catch {
       // best-effort device cleanup
     }
-    await cleanupCriticalSuiteSeed(seed);
+    await cleanupExternalAiSuiteSeed(seed);
   }
 }
 

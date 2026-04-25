@@ -20,6 +20,13 @@ interface Props {
   initialValue?: string;
 }
 
+const toSelectorToken = (value: string) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 export default function WarehouseRecipientModal({
   visible,
   onConfirm,
@@ -78,6 +85,8 @@ export default function WarehouseRecipientModal({
             </View>
 
             <TextInput
+              testID="warehouse-recipient-input"
+              accessibilityLabel="warehouse-recipient-input"
               style={st.searchInput}
               placeholder="Поиск или новый ФИО..."
               placeholderTextColor="rgba(255,255,255,0.4)"
@@ -94,6 +103,8 @@ export default function WarehouseRecipientModal({
                 estimatedItemSize={56}
                 renderItem={({ item }) => (
                   <Pressable
+                    testID={`warehouse-recipient-option-${toSelectorToken(item) || "empty"}`}
+                    accessibilityLabel={`warehouse-recipient-option-${toSelectorToken(item) || "empty"}`}
                     style={({ pressed }) => [st.item, pressed && st.itemPressed]}
                     onPress={() => handlePick(item)}
                   >
@@ -108,7 +119,12 @@ export default function WarehouseRecipientModal({
                 }
                 ListEmptyComponent={
                   search.trim() ? (
-                    <Pressable style={st.item} onPress={handleCustomSubmit}>
+                    <Pressable
+                      testID="warehouse-recipient-custom-submit"
+                      accessibilityLabel="warehouse-recipient-custom-submit"
+                      style={st.item}
+                      onPress={handleCustomSubmit}
+                    >
                       <Text style={[st.itemText, { color: "#22C55E" }]}>
                         {"Добавить: \""}
                         {search.trim()}
@@ -125,6 +141,8 @@ export default function WarehouseRecipientModal({
             {/* Added a safeguard: button to confirm if search is filled */}
             {search.trim().length > 3 && (
               <Pressable
+                testID="warehouse-recipient-confirm"
+                accessibilityLabel="warehouse-recipient-confirm"
                 onPress={handleCustomSubmit}
                 style={[st.confirmBtn]}
               >

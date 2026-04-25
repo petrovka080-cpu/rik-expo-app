@@ -115,6 +115,8 @@ export default function IncomingItemsSheet({
           </View>
 
           <Pressable
+            testID={`warehouse-incoming-submit-${incomingId}`}
+            accessibilityLabel={`warehouse-incoming-submit-${incomingId}`}
             onPress={() => onSubmit(incomingId)}
             disabled={submitDisabled}
             style={[
@@ -152,6 +154,8 @@ export default function IncomingItemsSheet({
 
           {canRetryReceive ? (
             <Pressable
+              testID={`warehouse-incoming-retry-${incomingId}`}
+              accessibilityLabel={`warehouse-incoming-retry-${incomingId}`}
               onPress={() => onRetryNow(incomingId)}
               style={{
                 marginTop: 8,
@@ -195,7 +199,11 @@ export default function IncomingItemsSheet({
           const val = qtyInputByItem?.[inputKey] ?? "";
 
           return (
-            <View style={{ marginBottom: 12 }}>
+            <View
+              testID={`warehouse-incoming-item-${inputKey}`}
+              accessibilityLabel={`warehouse-incoming-item-${inputKey}`}
+              style={{ marginBottom: 12 }}
+            >
               <View style={s.mobCard}>
                 <View style={s.mobMain}>
                   <Text style={s.mobTitle} numberOfLines={3}>
@@ -207,6 +215,8 @@ export default function IncomingItemsSheet({
                   </Text>
 
                   <TextInput
+                    testID={`warehouse-incoming-qty-input-${inputKey}`}
+                    accessibilityLabel={`warehouse-incoming-qty-input-${inputKey}`}
                     value={val}
                     onChangeText={(text) => {
                       const cleaned = String(text ?? "").replace(",", ".").replace(/\s+/g, "");

@@ -1,0 +1,146 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Foreman AI Draft Submit
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_FOREMAN_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_FOREMAN_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-foreman"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-foreman"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_FOREMAN_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "foreman-main-materials-open"
+    timeout: 30000
+- tapOn:
+    id: "foreman-main-materials-open"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_FOREMAN_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- scrollUntilVisible:
+    element:
+      id: "foreman-dropdown-open-foreman-object"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "foreman-dropdown-open-foreman-object"
+- extendedWaitUntil:
+    visible:
+      id: "foreman-dropdown-option-foreman-object-${E2E_FOREMAN_OBJECT_CODE_TOKEN}"
+    timeout: 30000
+- tapOn:
+    id: "foreman-dropdown-option-foreman-object-${E2E_FOREMAN_OBJECT_CODE_TOKEN}"
+- scrollUntilVisible:
+    element:
+      id: "foreman-dropdown-open-foreman-locator"
+    direction: UP
+    timeout: 20000
+    visibilityPercentage: 1
+    centerElement: true
+- tapOn:
+    id: "foreman-dropdown-open-foreman-locator"
+- extendedWaitUntil:
+    visible:
+      id: "foreman-dropdown-search-foreman-locator"
+    timeout: 30000
+- tapOn:
+    id: "foreman-dropdown-search-foreman-locator"
+- inputText: ${E2E_FOREMAN_LOCATOR_CODE}
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: "foreman-dropdown-option-foreman-locator-${E2E_FOREMAN_LOCATOR_CODE_TOKEN}"
+    timeout: 30000
+- tapOn:
+    id: "foreman-dropdown-option-foreman-locator-${E2E_FOREMAN_LOCATOR_CODE_TOKEN}"
+- scrollUntilVisible:
+    element:
+      id: "foreman-ai-quick-open"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "foreman-ai-quick-open"
+- extendedWaitUntil:
+    visible:
+      id: "foreman-ai-input"
+    timeout: 30000
+- tapOn:
+    id: "foreman-ai-input"
+- eraseText
+- inputText: ${E2E_FOREMAN_AI_PROMPT}
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: "foreman-ai-parse"
+    timeout: 10000
+- tapOn:
+    id: "foreman-ai-parse"
+- extendedWaitUntil:
+    visible:
+      id: "foreman-ai-apply"
+    timeout: 60000
+- tapOn:
+    id: "foreman-ai-apply"
+- extendedWaitUntil:
+    visible:
+      id: "foreman-draft-send"
+    timeout: 60000
+- tapOn:
+    id: "foreman-draft-send"
+- extendedWaitUntil:
+    visible:
+      id: "foreman-draft-open"
+    timeout: 30000
+- stopApp

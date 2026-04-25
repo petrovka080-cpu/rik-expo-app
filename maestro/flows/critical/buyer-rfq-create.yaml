@@ -1,0 +1,124 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Buyer RFQ Create
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_BUYER_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_BUYER_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-buyer"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-buyer"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_BUYER_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "buyer-search-input"
+    timeout: 30000
+- tapOn:
+    id: "buyer-group-open-${E2E_BUYER_RFQ_REQUEST_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "buyer-item-toggle-${E2E_BUYER_RFQ_ITEM_ID}"
+    timeout: 30000
+- tapOn:
+    id: "buyer-item-toggle-${E2E_BUYER_RFQ_ITEM_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "buyer-rfq-open"
+    timeout: 30000
+- tapOn:
+    id: "buyer-rfq-open"
+- extendedWaitUntil:
+    visible:
+      id: "buyer-rfq-city"
+    timeout: 30000
+- tapOn:
+    id: "buyer-rfq-city"
+- eraseText
+- inputText: ${E2E_BUYER_RFQ_CITY}
+- hideKeyboard
+- tapOn:
+    id: "buyer-rfq-address"
+- eraseText
+- inputText: "E2E RFQ delivery point"
+- hideKeyboard
+- tapOn:
+    id: "buyer-rfq-window"
+- eraseText
+- inputText: "09:00-18:00"
+- hideKeyboard
+- tapOn:
+    id: "buyer-rfq-phone"
+- eraseText
+- inputText: ${E2E_BUYER_RFQ_PHONE}
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "buyer-rfq-email"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "buyer-rfq-email"
+- eraseText
+- inputText: "buyer-rfq@example.test"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "buyer-rfq-note"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "buyer-rfq-note"
+- eraseText
+- inputText: "Deterministic Maestro RFQ"
+- hideKeyboard
+- tapOn:
+    id: "buyer-rfq-publish"
+- extendedWaitUntil:
+    visible:
+      id: "android:id/button1"
+    timeout: 30000
+- tapOn:
+    id: "android:id/button1"
+- stopApp

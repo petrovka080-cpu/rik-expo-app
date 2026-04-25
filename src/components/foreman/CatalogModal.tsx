@@ -42,6 +42,13 @@ export type PickedRow = {
   appsFromItem?: string[];
 };
 
+const toSelectorToken = (value: string) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 /**
  * Component to render text with highlighted parts matching the search query
  */
@@ -244,7 +251,7 @@ export default function CatalogModal(props: {
   return (
     <Modal visible={visible} animationType="slide" transparent={false} statusBarTranslucent>
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: UI.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1 }} testID="foreman-catalog-modal" accessibilityLabel="foreman-catalog-modal">
           <View style={[s.header, { paddingTop: HEADER_PAD_TOP }]}>
             <View style={s.headerRow}>
               <Text style={s.hTitle}>Каталог</Text>
@@ -257,6 +264,9 @@ export default function CatalogModal(props: {
               </Pressable>
 
               <Pressable
+                accessible
+                testID="foreman-catalog-close"
+                accessibilityLabel="foreman-catalog-close"
                 onPress={() => { Keyboard.dismiss(); onClose(); }}
                 style={s.closeBtn}
               >
@@ -267,6 +277,9 @@ export default function CatalogModal(props: {
             <View style={s.searchWrap}>
               <Ionicons name="search" size={20} color={UI.sub} style={{ marginLeft: 12 }} />
               <TextInput
+                accessible
+                testID="foreman-catalog-search-input"
+                accessibilityLabel="foreman-catalog-search-input"
                 ref={inputRef}
                 value={query}
                 onChangeText={setQuery}
@@ -323,11 +336,16 @@ export default function CatalogModal(props: {
             renderItem={({ item }) => {
               const title = titleOf(item);
               const code = String(item.rik_code || '').trim();
+              const token = toSelectorToken(code) || 'empty';
               const qty = qtyByCode[code] ?? '';
               const adding = !!addBusyByCode[code];
 
               return (
-                <Animated.View style={s.card}>
+                <Animated.View
+                  style={s.card}
+                  testID={`foreman-catalog-row-${token}`}
+                  accessibilityLabel={`foreman-catalog-row-${token}`}
+                >
                   <View style={s.cardHeader}>
                     <HighlightedText
                       text={title}
@@ -352,6 +370,9 @@ export default function CatalogModal(props: {
 
                     <View style={s.actionRow}>
                       <TextInput
+                        accessible
+                        testID={`foreman-catalog-qty-${token}`}
+                        accessibilityLabel={`foreman-catalog-qty-${token}`}
                         value={qty}
                         onChangeText={(v) => setQtyByCode(p => ({ ...p, [code]: v }))}
                         keyboardType="decimal-pad"
@@ -361,6 +382,8 @@ export default function CatalogModal(props: {
                         selectTextOnFocus
                       />
                       <IconSquareButton
+                        testID={`foreman-catalog-add-${token}`}
+                        accessibilityLabel={`foreman-catalog-add-${token}`}
                         disabled={adding}
                         loading={adding}
                         onPress={() => handleCommit(item)}
@@ -579,4 +602,3 @@ const s = StyleSheet.create({
     ...TYPO.bodyStrong,
   },
 });
-

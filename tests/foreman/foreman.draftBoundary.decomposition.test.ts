@@ -19,6 +19,8 @@ describe("foreman draft boundary decomposition audit", () => {
     expect(hookSource).toContain("runForemanDraftBoundarySyncNow");
     expect(hookSource).toContain("runForemanRestoreDraftIfNeeded");
     expect(hookSource).toContain("applyForemanDraftHeaderEditToBoundary");
+    expect(hookSource).toContain("subscribeForemanDraftBoundaryAppState");
+    expect(hookSource).toContain("startForemanDraftBoundaryNetworkRuntime");
     expect(hookSource).not.toContain("eslint-disable");
     expect(hookSource).not.toContain("enqueueForemanMutation(");
     expect(hookSource).not.toContain("flushForemanMutationQueue(");
@@ -28,5 +30,8 @@ describe("foreman draft boundary decomposition audit", () => {
     expect(hookSource).not.toContain("resolveForemanDraftBoundaryFailurePlan");
     expect(hookSource).not.toContain("resolveForemanDraftBoundaryManualRecoveryTelemetryPlan");
     expect(hookSource).not.toContain("loadForemanRequestDetails(");
+    expect(hookSource).not.toContain("AppState.addEventListener");
+    expect(hookSource).not.toContain("subscribePlatformNetwork(");
+    expect(hookSource).not.toContain("ensurePlatformNetworkService(");
   });
 });

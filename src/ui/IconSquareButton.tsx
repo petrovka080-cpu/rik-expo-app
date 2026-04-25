@@ -115,6 +115,7 @@ export default function IconSquareButton({
   return (
     <Animated.View style={wrapStyle}>
       <Pressable
+        accessible={!isDisabled}
         testID={testID}
         disabled={isDisabled}
         onPress={press}

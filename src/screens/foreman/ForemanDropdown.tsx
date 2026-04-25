@@ -37,6 +37,13 @@ type Props = {
   styles: typeof import("./foreman.styles").s;
 };
 
+const toSelectorToken = (value: string) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 export default function ForemanDropdown({
   label,
   options,
@@ -93,12 +100,17 @@ export default function ForemanDropdown({
 
   const renderItem = useCallback(
     ({ item }: { item: RefOption }) => (
-      <Pressable onPress={() => pickCode(item.code)} style={[s.suggest, localStyles.itemRow]}>
+      <Pressable
+        testID={`foreman-dropdown-option-${toSelectorToken(key)}-${toSelectorToken(item.code) || "empty"}`}
+        accessibilityLabel={`foreman-dropdown-option-${toSelectorToken(key)}-${toSelectorToken(item.code) || "empty"}`}
+        onPress={() => pickCode(item.code)}
+        style={[s.suggest, localStyles.itemRow]}
+      >
         <Text style={[localStyles.itemName, { color: ui.text }]}>{item.name}</Text>
         <Text style={localStyles.itemCode}>{item.code}</Text>
       </Pressable>
     ),
-    [pickCode, s.suggest, ui.text],
+    [key, pickCode, s.suggest, ui.text],
   );
 
   return (
@@ -111,6 +123,8 @@ export default function ForemanDropdown({
       ) : null}
 
       <Pressable
+        testID={`foreman-dropdown-open-${toSelectorToken(key)}`}
+        accessibilityLabel={`foreman-dropdown-open-${toSelectorToken(key)}`}
         onPress={openModal}
         style={[
           s.input,
@@ -144,6 +158,8 @@ export default function ForemanDropdown({
             {searchable ? (
               <View style={localStyles.searchWrap}>
                 <TextInput
+                  testID={`foreman-dropdown-search-${toSelectorToken(key)}`}
+                  accessibilityLabel={`foreman-dropdown-search-${toSelectorToken(key)}`}
                   value={query}
                   onChangeText={setQuery}
                   placeholder="Поиск по названию или коду..."

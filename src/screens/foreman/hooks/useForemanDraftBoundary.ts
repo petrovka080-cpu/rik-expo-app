@@ -7,7 +7,6 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { AppState } from "react-native";
 
 import {
   type ReqItemRow,
@@ -18,14 +17,9 @@ import {
   getForemanPendingMutationCountForDraftKeys,
 } from "../../../lib/offline/mutationQueue";
 import {
-  ensurePlatformNetworkService,
-  subscribePlatformNetwork,
-} from "../../../lib/offline/platformNetwork.service";
-import {
   type ForemanDraftSyncStage,
   type ForemanDraftRecoveryAction,
 } from "../../../lib/offline/foremanSyncRuntime";
-import { selectPlatformOnlineFlag } from "../../../lib/offline/platformOffline.model";
 import type { RequestRecord } from "../../../lib/api/types";
 import { formatQtyInput } from "../foreman.helpers";
 import {
@@ -58,9 +52,7 @@ import {
 } from "../foreman.draftBoundaryIdentity.model";
 import {
   type ForemanDraftRestoreTriggerPlan,
-  planForemanAppActiveRestoreTrigger,
   planForemanFocusRestoreTrigger,
-  planForemanNetworkBackRestoreTrigger,
   resolveForemanActiveLocalDraftSnapshotPlan,
   resolveForemanDraftCacheClearPlan,
 } from "../foreman.draftLifecycle.model";
@@ -96,9 +88,12 @@ import {
   type ForemanDraftBoundarySyncResultPayload,
 } from "../foreman.draftBoundary.sync";
 import {
+  getForemanDraftBoundaryCurrentAppState,
   runForemanDraftBoundaryLiveCleanupEffect,
   runForemanDraftBoundaryRemoteDetailsEffect,
   runForemanDraftBoundaryRemoteItemsEffect,
+  startForemanDraftBoundaryNetworkRuntime,
+  subscribeForemanDraftBoundaryAppState,
 } from "../foreman.draftBoundary.effects";
 import {
   loadForemanDraftBoundaryRequestDetails,
@@ -174,7 +169,7 @@ export function useForemanDraftBoundary({
   const handlePostSubmitSuccessRef = useRef<
     (rid: string, submitted: RequestRecord | null) => Promise<void>
   >(async () => undefined);
-  const appStateRef = useRef(AppState.currentState);
+  const appStateRef = useRef(getForemanDraftBoundaryCurrentAppState());
   const networkOnlineRef = useRef<boolean | null>(null);
   const wasScreenFocusedRef = useRef(false);
   const skipRemoteHydrationRequestIdRef = useRef<string | null>(null);
@@ -1012,57 +1007,24 @@ export function useForemanDraftBoundary({
   }, [boundaryState.bootstrapReady, isScreenFocused, runRestoreTriggerPlan]);
 
   useEffect(() => {
-    const sub = AppState.addEventListener("change", (nextState) => {
-      const prevState = appStateRef.current;
-      appStateRef.current = nextState;
-      runRestoreTriggerPlan(planForemanAppActiveRestoreTrigger({
-        bootstrapReady: boundaryState.bootstrapReady,
-        previousState: prevState,
-        nextState,
-      }));
+    return subscribeForemanDraftBoundaryAppState({
+      bootstrapReady: boundaryState.bootstrapReady,
+      appStateRef,
+      runRestoreTriggerPlan,
+      reportDraftBoundaryFailure,
     });
-    return () => sub.remove();
-  }, [boundaryState.bootstrapReady, runRestoreTriggerPlan]);
+  }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, runRestoreTriggerPlan]);
 
   useEffect(() => {
-    let disposed = false;
-    void ensurePlatformNetworkService()
-      .then((snapshot) => {
-        if (disposed) return;
-        networkOnlineRef.current = selectPlatformOnlineFlag(snapshot);
-        setNetworkOnline(networkOnlineRef.current);
-      })
-      .catch((error) => {
-        if (disposed) return;
-        networkOnlineRef.current = null;
-        setNetworkOnline(null);
-        reportDraftBoundaryFailure({
-          event: "network_service_bootstrap_failed",
-          error,
-          context: "network_service_bootstrap",
-          stage: "hydrate",
-          sourceKind: "draft_boundary:network_service",
-          extra: {
-            fallbackReason: "network_online_unknown",
-          },
-        });
-      });
-    const unsubscribe = subscribePlatformNetwork((state, previous) => {
-      if (disposed) return;
-      const nextOnline = selectPlatformOnlineFlag(state);
-      const wasOnline = selectPlatformOnlineFlag(previous);
-      networkOnlineRef.current = nextOnline;
-      setNetworkOnline(nextOnline);
-      runRestoreTriggerPlan(planForemanNetworkBackRestoreTrigger({
-        bootstrapReady: boundaryState.bootstrapReady,
-        previousOnline: wasOnline,
-        nextOnline,
-      }));
+    const runtime = startForemanDraftBoundaryNetworkRuntime({
+      bootstrapReady: boundaryState.bootstrapReady,
+      networkOnlineRef,
+      setNetworkOnline,
+      runRestoreTriggerPlan,
+      reportDraftBoundaryFailure,
     });
-
     return () => {
-      disposed = true;
-      unsubscribe();
+      runtime.dispose();
     };
   }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, runRestoreTriggerPlan]);
 

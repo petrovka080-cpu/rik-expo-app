@@ -1,0 +1,145 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Warehouse Receive Issue
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_WAREHOUSE_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_WAREHOUSE_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-warehouse"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-warehouse"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_WAREHOUSE_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "warehouse-tab-incoming"
+    timeout: 30000
+- tapOn:
+    id: "warehouse-tab-incoming"
+- scrollUntilVisible:
+    element:
+      id: "warehouse-incoming-row-${E2E_WAREHOUSE_INCOMING_ID}"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "warehouse-incoming-row-${E2E_WAREHOUSE_INCOMING_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "warehouse-incoming-qty-input-${E2E_WAREHOUSE_PURCHASE_ITEM_ID}"
+    timeout: 30000
+- tapOn:
+    id: "warehouse-incoming-qty-input-${E2E_WAREHOUSE_PURCHASE_ITEM_ID}"
+- eraseText
+- inputText: ${E2E_WAREHOUSE_RECEIVE_QTY}
+- hideKeyboard
+- tapOn:
+    id: "warehouse-incoming-submit-${E2E_WAREHOUSE_INCOMING_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "warehouse-tab-issue"
+    timeout: 15000
+- tapOn:
+    id: "warehouse-tab-issue"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-recipient-input"
+    commands:
+      - tapOn:
+          id: "warehouse-recipient-input"
+      - eraseText
+      - inputText: ${E2E_WAREHOUSE_RECIPIENT}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-recipient-confirm"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-tab-issue"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "warehouse-issue-recipient-open"
+          direction: DOWN
+          timeout: 20000
+          visibilityPercentage: 20
+          centerElement: true
+      - tapOn:
+          id: "warehouse-issue-recipient-open"
+      - extendedWaitUntil:
+          visible:
+            id: "warehouse-recipient-input"
+          timeout: 30000
+      - tapOn:
+          id: "warehouse-recipient-input"
+      - eraseText
+      - inputText: ${E2E_WAREHOUSE_RECIPIENT}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-recipient-confirm"
+- scrollUntilVisible:
+    element:
+      id: "warehouse-req-row-${E2E_WAREHOUSE_REQUEST_ID}"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "warehouse-req-row-${E2E_WAREHOUSE_REQUEST_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "warehouse-req-qty-input-${E2E_WAREHOUSE_REQUEST_ITEM_ID}"
+    timeout: 30000
+- tapOn:
+    id: "warehouse-req-qty-input-${E2E_WAREHOUSE_REQUEST_ITEM_ID}"
+- eraseText
+- inputText: ${E2E_WAREHOUSE_ISSUE_QTY}
+- hideKeyboard
+- tapOn:
+    id: "warehouse-req-add-${E2E_WAREHOUSE_REQUEST_ITEM_ID}"
+- tapOn:
+    id: "warehouse-req-submit"
+- extendedWaitUntil:
+    visible:
+      id: "warehouse-tab-issue"
+    timeout: 15000
+- stopApp

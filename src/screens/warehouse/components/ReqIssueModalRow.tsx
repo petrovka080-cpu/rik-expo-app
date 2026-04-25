@@ -4,7 +4,7 @@
 // Receives pre-shaped props — no derived values computed here.
 
 import React from "react";
-import { View, Text, TextInput, Pressable, Platform } from "react-native";
+import { View, Text, TextInput, Pressable, Platform, StyleSheet } from "react-native";
 import { UI, s } from "../warehouse.styles";
 import type { ReqIssueModalRowShape } from "./reqIssueModal.row.model";
 
@@ -37,7 +37,11 @@ function ReqIssueModalRowInner({
   } = shape;
 
   return (
-    <View style={{ marginBottom: 12 }}>
+    <View
+      testID={`warehouse-req-item-${item.request_item_id}`}
+      accessibilityLabel={`warehouse-req-item-${item.request_item_id}`}
+      style={localStyles.container}
+    >
       <View style={s.mobCard}>
         <View style={s.mobMain}>
           <Text style={s.mobTitle} numberOfLines={2}>
@@ -48,8 +52,10 @@ function ReqIssueModalRowInner({
             {metaText}
           </Text>
 
-          <View style={{ marginTop: 10, flexDirection: "row", gap: 8, alignItems: "center" }}>
+          <View style={localStyles.actionRow}>
             <TextInput
+              testID={`warehouse-req-qty-input-${item.request_item_id}`}
+              accessibilityLabel={`warehouse-req-qty-input-${item.request_item_id}`}
               value={qtyValue}
               onChangeText={(t) => {
                 const cleaned = String(t ?? "").replace(",", ".").replace(/\s+/g, "");
@@ -58,32 +64,36 @@ function ReqIssueModalRowInner({
               keyboardType={Platform.OS === "web" ? "default" : "numeric"}
               placeholder={qtyPlaceholder}
               placeholderTextColor={UI.sub}
-              style={[s.input, { flex: 1, paddingVertical: 8 }]}
+              style={[s.input, localStyles.input]}
             />
 
             <Pressable
+              testID={`warehouse-req-max-${item.request_item_id}`}
+              accessibilityLabel={`warehouse-req-max-${item.request_item_id}`}
               onPress={() => onPressMax(item.request_item_id, maxUi)}
               disabled={disabledByStock}
-              style={[s.openBtn, { opacity: disabledByStock ? 0.45 : 1 }]}
+              style={[s.openBtn, disabledByStock && localStyles.disabledButton]}
             >
               <Text style={s.openBtnText}>Макс</Text>
             </Pressable>
 
             <Pressable
+              testID={`warehouse-req-add-${item.request_item_id}`}
+              accessibilityLabel={`warehouse-req-add-${item.request_item_id}`}
               onPress={() => onPressAdd(shape)}
               disabled={disabledAdd}
-              style={[s.openBtn, { borderColor: UI.accent, opacity: disabledAdd ? 0.45 : 1 }]}
+              style={[s.openBtn, localStyles.addButton, disabledAdd && localStyles.disabledButton]}
             >
               <Text style={s.openBtnText}>{issueBusy ? "..." : "Добавить"}</Text>
             </Pressable>
           </View>
 
           {showStockZeroWarn ? (
-            <Text style={{ marginTop: 6, color: UI.sub, fontWeight: "800" }}>
+            <Text style={localStyles.warnText}>
               Нельзя выдать сейчас: по заявке лимит исчерпан или на складе 0
             </Text>
           ) : showReqZeroWarn ? (
-            <Text style={{ marginTop: 6, color: UI.sub, fontWeight: "800" }}>
+            <Text style={localStyles.warnText}>
               По заявке можно 0 — перерасход делай через «Свободная выдача»
             </Text>
           ) : null}
@@ -115,3 +125,30 @@ export const ReqIssueModalRow = React.memo(ReqIssueModalRowInner, (prev, next) =
 });
 
 ReqIssueModalRow.displayName = "ReqIssueModalRow";
+
+const localStyles = StyleSheet.create({
+  container: {
+    marginBottom: 12,
+  },
+  actionRow: {
+    marginTop: 10,
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 8,
+  },
+  addButton: {
+    borderColor: UI.accent,
+  },
+  disabledButton: {
+    opacity: 0.45,
+  },
+  warnText: {
+    marginTop: 6,
+    color: UI.sub,
+    fontWeight: "800",
+  },
+});

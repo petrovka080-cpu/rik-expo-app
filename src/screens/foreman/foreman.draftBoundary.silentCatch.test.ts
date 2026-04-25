@@ -129,7 +129,9 @@ describe("foreman draft boundary silent failure discipline", () => {
     expect(source).toContain("runRestoreTriggerPlan");
     expect(lifecycleModelSource).toContain("restore_draft_on_focus_failed");
     expect(lifecycleModelSource).toContain("restore_draft_on_app_active_failed");
-    expect(source).toContain("network_service_bootstrap_failed");
+    expect(source).toContain("subscribeForemanDraftBoundaryAppState");
+    expect(source).toContain("startForemanDraftBoundaryNetworkRuntime");
+    expect(effectsSource).toContain("network_service_bootstrap_failed");
     expect(lifecycleModelSource).toContain("restore_draft_on_network_back_failed");
     expect(effectsSource).toContain("terminal_local_cleanup_failed");
     expect(recoverySource).toContain("terminal_recovery_remote_check_failed");

@@ -43,6 +43,8 @@ export default function ForemanDraftSummaryCard({
 
   return (
     <Pressable
+      testID="foreman-draft-open"
+      accessibilityLabel="foreman-draft-open"
       onPress={onPress}
       disabled={disabled}
       style={[styles.draftCard, disabled && styles.draftCardDisabled]}

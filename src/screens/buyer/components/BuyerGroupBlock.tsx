@@ -57,6 +57,8 @@ export const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <View style={[s.group, { borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }]}>
         <Pressable
+          testID={`buyer-group-open-${String(props.g.request_id ?? "")}`}
+          accessibilityLabel={`buyer-group-open-${String(props.g.request_id ?? "")}`}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           onPress={onToggle}

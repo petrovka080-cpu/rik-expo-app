@@ -332,6 +332,7 @@ export default function ForemanDraftModal(p: Props) {
               variant="green"
               disabled={p.screenLock || p.items.length === 0}
               loading={p.draftSendBusy}
+              testID="foreman-draft-send"
               onPress={async () => {
                 if (p.screenLock || p.items.length === 0) return;
                 await p.onSend();

@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, Pressable, Text, TextInput, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   fmt2,
@@ -189,7 +189,7 @@ export default function ActivePaymentForm({
           style={S.input(!!String(accountantFio || "").trim())}
         />
 
-        <View style={{ height: 10 }} />
+        <View style={ps.gap10} />
 
         {(() => {
           const invNoServer = String(current?.invoice_number ?? "").trim();
@@ -201,8 +201,8 @@ export default function ActivePaymentForm({
           return (
             <>
               {supp0 ? (
-                <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 8 }} numberOfLines={1}>
-                  Поставщик: <Text style={{ color: UI.text, fontWeight: "900" }}>{supp0}</Text>
+                <Text style={ps.supplierLabel} numberOfLines={1}>
+                  Поставщик: <Text style={ps.supplierValue}>{supp0}</Text>
                 </Text>
               ) : null}
 
@@ -216,9 +216,9 @@ export default function ActivePaymentForm({
                 style={[S.input(true), { opacity: busyKey ? 0.9 : 1 }]}
               />
 
-              <View style={{ height: 10 }} />
+              <View style={ps.gap10} />
 
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+              <View style={ps.dateChipRow}>
                 <Pressable
                   disabled={!!busyKey}
                   onPress={() => {
@@ -228,17 +228,9 @@ export default function ActivePaymentForm({
                     setInvMM(s.slice(5, 7));
                     setInvDD(s.slice(8, 10));
                   }}
-                  style={{
-                    paddingVertical: 6,
-                    paddingHorizontal: 10,
-                    borderRadius: 999,
-                    backgroundColor: "rgba(255,255,255,0.06)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.14)",
-                    opacity: busyKey ? 0.6 : 1,
-                  }}
+                  style={[ps.dateChip, { opacity: busyKey ? 0.6 : 1 }]}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>Сегодня</Text>
+                  <Text style={ps.boldText}>Сегодня</Text>
                 </Pressable>
 
                 <Pressable
@@ -251,34 +243,16 @@ export default function ActivePaymentForm({
                     setInvMM(s.slice(5, 7));
                     setInvDD(s.slice(8, 10));
                   }}
-                  style={{
-                    paddingVertical: 6,
-                    paddingHorizontal: 10,
-                    borderRadius: 999,
-                    backgroundColor: "rgba(255,255,255,0.06)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.14)",
-                    opacity: busyKey ? 0.6 : 1,
-                  }}
+                  style={[ps.dateChip, { opacity: busyKey ? 0.6 : 1 }]}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>Вчера</Text>
+                  <Text style={ps.boldText}>Вчера</Text>
                 </Pressable>
               </View>
 
               <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: "rgba(34,197,94,0.55)",
-                  backgroundColor: "rgba(34,197,94,0.06)",
-                  borderRadius: 12,
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
-                  opacity: busyKey ? 0.9 : 1,
-                }}
+                style={[ps.dateInputRow, { opacity: busyKey ? 0.9 : 1 }]}
               >
-                <Text style={{ color: UI.text, fontWeight: "900" }}>{INV_PREFIX}</Text>
+                <Text style={ps.boldText}>{INV_PREFIX}</Text>
 
                 <TextInput
                   ref={mmRef}
@@ -297,18 +271,10 @@ export default function ActivePaymentForm({
                     if (d.length === 2) runNextTick(() => ddRef?.current?.focus?.());
                   }}
                   onBlur={() => setInvMM((x: string) => clamp2(x, 12))}
-                  style={{
-                    width: 42,
-                    marginLeft: 10,
-                    color: UI.text,
-                    fontWeight: "900",
-                    paddingVertical: 0,
-                    paddingHorizontal: 0,
-                    textAlign: "center",
-                  }}
+                  style={ps.dateInputField}
                 />
 
-                <Text style={{ color: UI.text, fontWeight: "900", marginHorizontal: 8 }}>-</Text>
+                <Text style={ps.dateSep}>-</Text>
 
                 <TextInput
                   ref={ddRef}
@@ -326,50 +292,34 @@ export default function ActivePaymentForm({
                     setInvDD(d);
                   }}
                   onBlur={() => setInvDD((x: string) => clamp2(x, 31))}
-                  style={{
-                    width: 42,
-                    color: UI.text,
-                    fontWeight: "900",
-                    paddingVertical: 0,
-                    paddingHorizontal: 0,
-                    textAlign: "center",
-                  }}
+                  style={ps.dateInputFieldNoML}
                 />
               </View>
 
-              <View style={{ height: 12 }} />
+              <View style={ps.gap12} />
             </>
           );
         })()}
 
         <View style={S.section}>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={ps.segRow}>
             <Pressable disabled={!!busyKey} onPress={() => setPayKind("bank")} style={segBtn(payKind === "bank")}>
-              <Text style={{ color: UI.text, fontWeight: "900" }}>Банк</Text>
+              <Text style={ps.boldText}>Банк</Text>
             </Pressable>
 
             <Pressable disabled={!!busyKey} onPress={() => setPayKind("cash")} style={segBtn(payKind === "cash")}>
-              <Text style={{ color: UI.text, fontWeight: "900" }}>Нал</Text>
+              <Text style={ps.boldText}>Нал</Text>
             </Pressable>
           </View>
 
-          <View style={{ height: 10 }} />
+          <View style={ps.gap10} />
 
           {proposalId ? (
-            <View
-              style={{
-                marginBottom: 10,
-                padding: 12,
-                borderRadius: 14,
-                backgroundColor: "rgba(255,255,255,0.04)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.12)",
-              }}
-            >
-              <Text style={{ color: UI.sub, fontWeight: "800" }}>Остаток к оплате</Text>
+            <View style={ps.restBox}>
+              <Text style={ps.subBold}>Остаток к оплате</Text>
               <Text
                 testID="payment-form-rest"
-                style={{ color: UI.text, fontWeight: "900", fontSize: 22, marginTop: 6 }}
+                style={ps.restAmount}
               >
                 {restProposal.toFixed(2)} {cur}
               </Text>
@@ -379,19 +329,12 @@ export default function ActivePaymentForm({
           {proposalId && paymentDataErrorMessage ? (
             <View
               testID="payment-form-data-error"
-              style={{
-                marginBottom: 10,
-                padding: 12,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: "rgba(255,99,99,0.45)",
-                backgroundColor: "rgba(255,99,99,0.08)",
-              }}
+              style={ps.errorBox}
             >
-              <Text style={{ color: UI.text, fontWeight: "900" }}>
+              <Text style={ps.boldText}>
                 Не удалось подготовить данные для оплаты
               </Text>
-              <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
+              <Text style={ps.subBoldMt6}>
                 {paymentDataErrorMessage}
               </Text>
             </View>
@@ -399,14 +342,14 @@ export default function ActivePaymentForm({
 
           {proposalId ? (
             <>
-              <View style={{ flexDirection: "row", gap: 8 }}>
+              <View style={ps.segRow}>
                 <Pressable
                   testID="payment-form-mode-full"
                   disabled={!!busyKey}
                   onPress={selectFullMode}
                   style={segBtn(mode === "full")}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>Оплатить полностью</Text>
+                  <Text style={ps.boldText}>Оплатить полностью</Text>
                 </Pressable>
 
                 <Pressable
@@ -415,11 +358,11 @@ export default function ActivePaymentForm({
                   onPress={selectPartialMode}
                   style={segBtn(mode === "partial")}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>Оплатить частично</Text>
+                  <Text style={ps.boldText}>Оплатить частично</Text>
                 </Pressable>
               </View>
 
-              <View style={{ height: 12 }} />
+              <View style={ps.gap12} />
             </>
           ) : null}
 
@@ -428,75 +371,72 @@ export default function ActivePaymentForm({
               <View style={pillBox()}>
                 <Text style={pillBoxTxt()}>
                   Сумма к оплате:{" "}
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>
+                  <Text style={ps.boldText}>
                     {restProposal.toFixed(2)} {cur}
                   </Text>
                 </Text>
               </View>
 
-              <View style={{ height: 8 }} />
-              <View style={{ height: 6 }} />
+              <View style={ps.gap8} />
+              <View style={ps.gap6} />
             </>
           ) : null}
 
           {proposalId && mode === "partial" ? (
             <>
               <View
-                style={{
-                  padding: 12,
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: allocOk ? "rgba(34,197,94,0.35)" : "rgba(255,99,99,0.45)",
-                  backgroundColor: "rgba(255,255,255,0.03)",
-                }}
+                style={[
+                  ps.allocBox,
+                  { borderColor: allocOk ? "rgba(34,197,94,0.35)" : "rgba(255,99,99,0.45)" },
+                ]}
               >
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontWeight: "900", color: UI.text }}>Распределение по позициям</Text>
+                <View style={ps.allocHeaderRow}>
+                  <View style={ps.flex1}>
+                    <Text style={ps.boldText}>Распределение по позициям</Text>
 
-                    <Text testID="payment-form-alloc-sum" style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
+                    <Text testID="payment-form-alloc-sum" style={ps.subBoldMt6}>
                       Сумма к оплате (авто):{" "}
-                      <Text style={{ color: UI.text, fontWeight: "900" }}>
+                      <Text style={ps.boldText}>
                         {fmt2(allocSum)} {cur}
                       </Text>
                     </Text>
 
                     {paidUnassigned > 0.01 ? (
-                      <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
+                      <Text style={ps.subBoldMt6}>
                         Не распределено ранее:{" "}
-                        <Text style={{ color: UI.text, fontWeight: "900" }}>
+                        <Text style={ps.boldText}>
                           {fmt2(paidUnassigned)} {cur}
                         </Text>
                       </Text>
                     ) : null}
                   </View>
 
-                  <View style={{ flexDirection: "row", gap: 8 }}>
+                  <View style={ps.segRow}>
                     <Pressable
                       testID="payment-form-clear"
                       disabled={!!busyKey}
                       onPress={clearAlloc}
                       style={smallBtn("neutral", !!busyKey)}
                     >
-                      <Text style={{ color: UI.text, fontWeight: "900" }}>Очистить</Text>
+                      <Text style={ps.boldText}>Очистить</Text>
                     </Pressable>
                   </View>
                 </View>
 
-                <View style={{ height: 10 }} />
+                <View style={ps.gap10} />
 
                 {itemsLoading ? (
-                  <Text testID="payment-form-loading" style={{ color: UI.sub, fontWeight: "800" }}>
+                  <Text testID="payment-form-loading" style={ps.subBold}>
                     Загружаю позиции…
                   </Text>
                 ) : paymentDataErrorMessage ? (
-                  <Text style={{ color: UI.text, fontWeight: "800" }}>
+                  <Text style={ps.boldText}>
                     Распределение временно недоступно: {paymentDataErrorMessage}
                   </Text>
                 ) : !items.length ? (
-                  <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет позиций у счёта</Text>
+                  <Text style={ps.subBold}>Нет позиций у счёта</Text>
                 ) : (
-                  <View style={{ gap: 10 }}>
+                  <View style={ps.lineItemsGap}>
                     {items.map((it, idx) => {
                       const id = String(it.id);
                       const name = String(it.name_human ?? "—");
@@ -513,39 +453,30 @@ export default function ActivePaymentForm({
                       const restAfter = round2(Math.max(0, total - (paidBefore + committedThisPay)));
 
                       return (
-                        <View
-                          key={id}
-                          style={{
-                            borderWidth: 1,
-                            borderColor: "rgba(255,255,255,0.12)",
-                            backgroundColor: "rgba(0,0,0,0.10)",
-                            borderRadius: 14,
-                            padding: 10,
-                          }}
-                        >
-                          <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
+                        <View key={id} style={ps.lineCard}>
+                          <Text style={ps.boldText} numberOfLines={2}>
                             {name}
                           </Text>
 
-                          <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={1}>
+                          <Text style={ps.lineSubMt4} numberOfLines={1}>
                             {kindOf(it)} • {fmtQty(qty)} {uom} × {fmt2(price)}
                           </Text>
 
                           <Text
                             testID={`payment-form-line-remain-${id}`}
-                            style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}
+                            style={ps.subBoldMt6}
                           >
                             Остаток по позиции:{" "}
-                            <Text style={{ color: UI.text, fontWeight: "900" }}>{fmt2(remain)} {cur}</Text>
+                            <Text style={ps.boldText}>{fmt2(remain)} {cur}</Text>
                           </Text>
 
-                          <View style={{ height: 8 }} />
+                          <View style={ps.gap8} />
 
-                          <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
+                          <Text style={ps.lineSubMb6}>
                             Этим платежом по позиции
                           </Text>
 
-                          <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+                          <View style={ps.lineInputRow}>
                             <TextInput
                               testID={`payment-form-line-input-${id}`}
                               value={rawThisPay}
@@ -560,14 +491,8 @@ export default function ActivePaymentForm({
                               onFocus={(e) => scrollInputIntoView(e, 220)}
                               style={[
                                 S.input(true),
-                                {
-                                  flex: 1,
-                                  height: 42,
-                                  paddingVertical: 8,
-                                  borderColor: "rgba(34,197,94,0.35)",
-                                  backgroundColor: "rgba(255,255,255,0.04)",
-                                  opacity: busyKey ? 0.9 : 1,
-                                },
+                                ps.lineAllocInput,
+                                { opacity: busyKey ? 0.9 : 1 },
                               ]}
                             />
 
@@ -577,16 +502,16 @@ export default function ActivePaymentForm({
                               onPress={() => setLineAllocMax(id)}
                               style={miniBtn(!!busyKey || remain <= 0)}
                             >
-                              <Text style={{ color: UI.text, fontWeight: "900", fontSize: 12 }}>MAX</Text>
+                              <Text style={ps.maxBtnText}>MAX</Text>
                             </Pressable>
                           </View>
 
                           <Text
                             testID={`payment-form-line-rest-after-${id}`}
-                            style={{ color: UI.sub, fontWeight: "800", marginTop: 8 }}
+                            style={ps.lineRestAfter}
                           >
-                            Оплачено до: <Text style={{ color: UI.text, fontWeight: "900" }}>{fmt2(paidBefore)} {cur}</Text>
-                            {"  "}• Остаток после: <Text style={{ color: UI.text, fontWeight: "900" }}>{fmt2(restAfter)} {cur}</Text>
+                            Оплачено до: <Text style={ps.boldText}>{fmt2(paidBefore)} {cur}</Text>
+                            {"  "}• Остаток после: <Text style={ps.boldText}>{fmt2(restAfter)} {cur}</Text>
                           </Text>
                         </View>
                       );
@@ -595,28 +520,19 @@ export default function ActivePaymentForm({
                 )}
 
                 {!allocOk ? (
-                  <View
-                    style={{
-                      marginTop: 10,
-                      padding: 10,
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: "rgba(255,99,99,0.35)",
-                      backgroundColor: "rgba(255,99,99,0.07)",
-                    }}
-                  >
-                    <Text style={{ color: UI.text, fontWeight: "900" }}>
+                  <View style={ps.allocWarnBox}>
+                    <Text style={ps.boldText}>
                       ✕ Заполните хотя бы одну позицию (сумма должна быть больше 0).
                     </Text>
                   </View>
                 ) : null}
 
-                <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 10 }}>
+                <Text style={ps.allocAutoHint}>
                   Сумма оплаты берётся автоматически из распределения по позициям.
                 </Text>
               </View>
 
-              <View style={{ height: 12 }} />
+              <View style={ps.gap12} />
             </>
           ) : null}
 
@@ -632,14 +548,14 @@ export default function ActivePaymentForm({
             onFocus={(e) => scrollInputIntoView(e)}
             style={[
               S.input(true),
-              isPayActiveTab ? { borderColor: "rgba(34,197,94,0.55)" } : null,
+              isPayActiveTab ? ps.noteAccent : null,
               { minHeight: 56, opacity: busyKey ? 0.9 : 1 },
             ]}
           />
 
           {payKind === "bank" ? (
             <>
-              <View style={{ height: 12 }} />
+              <View style={ps.gap12} />
               <TextInput
                 value={bankName}
                 onChangeText={setBankName}
@@ -652,7 +568,7 @@ export default function ActivePaymentForm({
                 style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
               />
 
-              <View style={{ height: 8 }} />
+              <View style={ps.gap8} />
               <TextInput
                 value={bik}
                 onChangeText={setBik}
@@ -665,7 +581,7 @@ export default function ActivePaymentForm({
                 style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
               />
 
-              <View style={{ height: 8 }} />
+              <View style={ps.gap8} />
               <TextInput
                 value={rs}
                 onChangeText={setRs}
@@ -678,10 +594,10 @@ export default function ActivePaymentForm({
                 style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
               />
 
-              <View style={{ height: 8 }} />
+              <View style={ps.gap8} />
 
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <View style={{ flex: 1 }}>
+              <View style={ps.segRow}>
+                <View style={ps.flex1}>
                   <TextInput
                     value={inn}
                     onChangeText={setInn}
@@ -696,7 +612,7 @@ export default function ActivePaymentForm({
                   />
                 </View>
 
-                <View style={{ flex: 1 }}>
+                <View style={ps.flex1}>
                   <TextInput
                     value={kpp}
                     onChangeText={setKpp}
@@ -732,3 +648,113 @@ function pillBox() {
 function pillBoxTxt() {
   return { color: UI.sub, fontWeight: "800" } as const;
 }
+
+const ps = StyleSheet.create({
+  gap6: { height: 6 },
+  gap8: { height: 8 },
+  gap10: { height: 10 },
+  gap12: { height: 12 },
+  flex1: { flex: 1 },
+  segRow: { flexDirection: "row", gap: 8 },
+  boldText: { color: UI.text, fontWeight: "900" },
+  subBold: { color: UI.sub, fontWeight: "800" },
+  subBoldMt6: { color: UI.sub, fontWeight: "800", marginTop: 6 },
+  supplierLabel: { color: UI.sub, fontWeight: "800", marginBottom: 8 },
+  supplierValue: { color: UI.text, fontWeight: "900" },
+  dateChipRow: { flexDirection: "row", gap: 8, marginBottom: 8 },
+  dateChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+  },
+  dateInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(34,197,94,0.55)",
+    backgroundColor: "rgba(34,197,94,0.06)",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  dateInputField: {
+    width: 42,
+    marginLeft: 10,
+    color: UI.text,
+    fontWeight: "900",
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    textAlign: "center",
+  },
+  dateSep: { color: UI.text, fontWeight: "900", marginHorizontal: 8 },
+  dateInputFieldNoML: {
+    width: 42,
+    color: UI.text,
+    fontWeight: "900",
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    textAlign: "center",
+  },
+  restBox: {
+    marginBottom: 10,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  restAmount: { color: UI.text, fontWeight: "900", fontSize: 22, marginTop: 6 },
+  errorBox: {
+    marginBottom: 10,
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,99,99,0.45)",
+    backgroundColor: "rgba(255,99,99,0.08)",
+  },
+  allocBox: {
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    backgroundColor: "rgba(255,255,255,0.03)",
+  },
+  allocHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  lineItemsGap: { gap: 10 },
+  lineCard: {
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(0,0,0,0.10)",
+    borderRadius: 14,
+    padding: 10,
+  },
+  lineSubMt4: { color: UI.sub, fontWeight: "800", marginTop: 4 },
+  lineSubMb6: { color: UI.sub, fontWeight: "800", marginBottom: 6 },
+  lineInputRow: { flexDirection: "row", gap: 8, alignItems: "center" },
+  lineAllocInput: {
+    flex: 1,
+    height: 42,
+    paddingVertical: 8,
+    borderColor: "rgba(34,197,94,0.35)",
+    backgroundColor: "rgba(255,255,255,0.04)",
+  },
+  maxBtnText: { color: UI.text, fontWeight: "900", fontSize: 12 },
+  lineRestAfter: { color: UI.sub, fontWeight: "800", marginTop: 8 },
+  allocWarnBox: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,99,99,0.35)",
+    backgroundColor: "rgba(255,99,99,0.07)",
+  },
+  allocAutoHint: { color: UI.sub, fontWeight: "800", marginTop: 10 },
+  noteAccent: { borderColor: "rgba(34,197,94,0.55)" },
+});

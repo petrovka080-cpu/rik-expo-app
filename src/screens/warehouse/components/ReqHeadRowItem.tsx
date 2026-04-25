@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { ReqHeadRow } from "../warehouse.types";
 import { s } from "../warehouse.styles";
 import { RoleCard } from "../../../components/ui/RoleCard";
@@ -22,16 +22,9 @@ function HeaderMetric({
   color: string;
 }) {
   return (
-    <Text
-      style={{
-        fontSize: 15,
-        fontWeight: "700",
-        lineHeight: 18,
-        letterSpacing: 0.1,
-      }}
-    >
+    <Text style={localStyles.metricValue}>
       <Text style={{ color }}>{issued}</Text>
-      <Text style={{ color: "#94A3B8" }}>{` / ${total}`}</Text>
+      <Text style={localStyles.metricTotal}>{` / ${total}`}</Text>
     </Text>
   );
 }
@@ -42,8 +35,10 @@ export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
   return (
     <View style={s.listItemContainer}>
       <Pressable
+        testID={`warehouse-req-row-${String(row.request_id ?? "")}`}
+        accessibilityLabel={`warehouse-req-row-${String(row.request_id ?? "")}`}
         onPress={() => onPress(row)}
-        style={({ pressed }) => [s.reqItemPressable, pressed && { opacity: 0.92 }]}
+        style={({ pressed }) => [s.reqItemPressable, pressed && localStyles.pressed]}
       >
         <RoleCard
           title={card.title}
@@ -53,41 +48,60 @@ export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
           rightIndicator={<ChevronIndicator />}
           style={[
             s.groupHeader,
-            {
-              marginBottom: 0,
-              paddingVertical: 10,
-              paddingHorizontal: 12,
-              minHeight: 92,
-              borderLeftWidth: 4,
-              borderLeftColor: card.stripeColor,
-            },
+            localStyles.card,
+            { borderLeftColor: card.stripeColor },
           ]}
           titleStyle={[
             s.groupTitle,
-            {
-              fontSize: 16,
-              fontWeight: "700",
-              lineHeight: 20,
-            },
+            localStyles.cardTitle,
           ]}
           subtitleStyle={[
             s.reqItemDate,
-            {
-              marginTop: 4,
-              color: "#E5E7EB",
-              fontWeight: "700",
-            },
+            localStyles.cardSubtitle,
           ]}
           metaStyle={[
             s.reqItemRow3,
-            {
-              marginTop: 4,
-              fontWeight: "500",
-              color: "#94A3B8",
-            },
+            localStyles.cardMeta,
           ]}
         />
       </Pressable>
     </View>
   );
 }
+
+const localStyles = StyleSheet.create({
+  metricValue: {
+    fontSize: 15,
+    fontWeight: "700",
+    lineHeight: 18,
+    letterSpacing: 0.1,
+  },
+  metricTotal: {
+    color: "#94A3B8",
+  },
+  pressed: {
+    opacity: 0.92,
+  },
+  card: {
+    marginBottom: 0,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    minHeight: 92,
+    borderLeftWidth: 4,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    lineHeight: 20,
+  },
+  cardSubtitle: {
+    marginTop: 4,
+    color: "#E5E7EB",
+    fontWeight: "700",
+  },
+  cardMeta: {
+    marginTop: 4,
+    fontWeight: "500",
+    color: "#94A3B8",
+  },
+});

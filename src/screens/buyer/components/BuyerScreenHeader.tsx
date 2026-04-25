@@ -60,6 +60,8 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
           keyboardShouldPersistTaps="handled"
         >
           <Pressable
+            testID="buyer-tab-inbox"
+            accessibilityLabel="buyer-tab-inbox"
             onPress={() => { scrollTabsToStart(true); setTab("inbox"); }}
             style={[s.tabPill, tab === "inbox" && s.tabPillActive]}
           >
@@ -70,6 +72,8 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
           </Pressable>
 
           <Pressable
+            testID="buyer-tab-pending"
+            accessibilityLabel="buyer-tab-pending"
             onPress={() => { scrollTabsToStart(true); setTab("pending"); }}
             style={[s.tabPill, tab === "pending" && s.tabPillActive]}
           >
@@ -80,6 +84,8 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
           </Pressable>
 
           <Pressable
+            testID="buyer-tab-approved"
+            accessibilityLabel="buyer-tab-approved"
             onPress={() => { scrollTabsToStart(true); setTab("approved"); }}
             style={[s.tabPill, tab === "approved" && s.tabPillActive]}
           >
@@ -90,6 +96,8 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
           </Pressable>
 
           <Pressable
+            testID="buyer-tab-rejected"
+            accessibilityLabel="buyer-tab-rejected"
             onPress={() => { scrollTabsToStart(true); setTab("rejected"); }}
             style={[s.tabPill, tab === "rejected" && s.tabPillActive]}
           >
@@ -100,6 +108,8 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
           </Pressable>
 
           <Pressable
+            testID="buyer-tab-subcontracts"
+            accessibilityLabel="buyer-tab-subcontracts"
             onPress={() => { scrollTabsToStart(true); setTab("subcontracts"); }}
             style={[s.tabPill, tab === "subcontracts" && s.tabPillActive]}
           >

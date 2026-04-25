@@ -8,6 +8,7 @@ import {
   Platform,
   Modal,
   SafeAreaView,
+  StyleSheet,
   useWindowDimensions,
   InteractionManager,
 } from "react-native";
@@ -104,22 +105,8 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
 
   const shouldStackPrimaryFields = isMobileRuntime && viewportWidth < 420;
   const editorCardStyle = isMobileRuntime
-    ? {
-        marginTop: 10,
-        gap: 10,
-        padding: 12,
-        borderRadius: 16,
-        borderColor: "rgba(59,130,246,0.24)",
-        backgroundColor: "rgba(255,255,255,0.04)",
-      }
-    : {
-        marginTop: 0,
-        gap: 8,
-        padding: 14,
-        borderRadius: 18,
-        borderColor: "rgba(34,197,94,0.26)",
-        backgroundColor: "rgba(2,132,199,0.06)",
-      };
+    ? styles.editorCardMobile
+    : styles.editorCardDesktop;
 
   const commitSelectedSupplier = React.useCallback(
     (rawName: string) => {
@@ -170,30 +157,20 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
 
   return (
     <View
-      style={[
-        {
-          position: "relative",
-          overflow: "visible",
-          borderWidth: 1,
-        },
-        editorCardStyle,
-      ]}
+      style={[styles.editorCardBase, editorCardStyle]}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 12 }}>
+      <View style={styles.editorStatusRow}>
         <StatusBadge label="Редактируется" tone="info" compact />
       </View>
 
       <View
-        style={{
-          flexDirection: shouldStackPrimaryFields ? "column" : "row",
-          gap: 8,
-          position: "relative",
-          overflow: "visible",
-          zIndex: isDropdownOpen ? 1200 : 10,
-          elevation: isDropdownOpen ? 80 : 1,
-        }}
+        style={[
+          styles.primaryFieldsBase,
+          shouldStackPrimaryFields ? styles.primaryFieldsStack : styles.primaryFieldsInline,
+          isDropdownOpen ? styles.primaryFieldsOpen : styles.primaryFieldsClosed,
+        ]}
       >
-        <View style={{ flex: 1 }}>
+        <View style={styles.flexOne}>
           <TextInput
             value={priceDraft}
             onChangeText={setPriceDraft}
@@ -217,25 +194,32 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
           />
         </View>
 
-        <View style={{ flex: 1, position: "relative", zIndex: isDropdownOpen ? 2600 : 700, elevation: isDropdownOpen ? 120 : 40 }}>
+        <View
+          style={[
+            styles.supplierFieldWrap,
+            isDropdownOpen ? styles.supplierFieldWrapOpen : styles.supplierFieldWrapClosed,
+          ]}
+        >
           {isMobileRuntime ? (
             <Pressable
               onPress={openPicker}
               disabled={!hasAnyCounterpartyOptions}
               style={[
                 s.fieldInput,
-                {
-                  minHeight: 44,
-                  backgroundColor: P.inputBg,
-                  borderColor: P.inputBorder,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  opacity: hasAnyCounterpartyOptions ? 1 : 0.6,
-                },
+                styles.mobileSupplierTrigger,
+                hasAnyCounterpartyOptions
+                  ? styles.mobileSupplierTriggerEnabled
+                  : styles.mobileSupplierTriggerDisabled,
+                { backgroundColor: P.inputBg, borderColor: P.inputBorder },
               ]}
             >
-              <Text style={{ color: selectedSupplierLabel ? P.text : P.sub, fontWeight: "700", flex: 1 }} numberOfLines={1}>
+              <Text
+                style={[
+                  styles.mobileSupplierLabel,
+                  { color: selectedSupplierLabel ? P.text : P.sub },
+                ]}
+                numberOfLines={1}
+              >
                 {selectedSupplierLabel || `${counterpartyLabel} *`}
               </Text>
               <Ionicons name="chevron-down" size={18} color={P.sub} />
@@ -279,14 +263,8 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
             <View
               style={[
                 s.suggestBoxInline,
-                {
-                  borderColor: P.inputBorder,
-                  backgroundColor: "#1E2A38",
-                  top: supplierInputHeight + 6,
-                  zIndex: 3000,
-                  elevation: 160,
-                  maxHeight: 220,
-                },
+                styles.inlineSuggestBox,
+                { borderColor: P.inputBorder, top: supplierInputHeight + 6 },
               ]}
               pointerEvents="auto"
             >
@@ -294,7 +272,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                 data={filteredSuppliers}
                 keyExtractor={(item, idx) => `${item}:${idx}`}
                 keyboardShouldPersistTaps="always"
-                style={{ maxHeight: 220 }}
+                style={styles.inlineSupplierList}
                 renderItem={({ item }) => (
                   <Pressable
                     onPressIn={() => {
@@ -306,16 +284,15 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                     }}
                     style={({ pressed }) => [
                       s.suggestItem,
+                      styles.inlineSuggestItem,
                       {
                         borderColor: P.inputBorder,
                         backgroundColor: pressed ? "rgba(255,255,255,0.08)" : "#1E2A38",
-                        minHeight: 44,
-                        justifyContent: "center",
                       },
                     ]}
                     onPress={() => commitSelectedSupplier(item)}
                   >
-                    <Text style={{ color: P.text, fontWeight: "800" }} numberOfLines={1}>
+                    <Text style={[styles.inlineSuggestItemText, { color: P.text }]} numberOfLines={1}>
                       {item}
                     </Text>
                   </Pressable>
@@ -324,7 +301,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
             </View>
           ) : null}
           {counterpartyHardFailure ? (
-            <Text style={{ color: "#fca5a5", marginTop: 6, fontSize: 12, fontWeight: "700" }}>
+            <Text style={styles.counterpartyFailureText}>
               Справочник контрагентов недоступен.
             </Text>
           ) : null}
@@ -360,18 +337,12 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
 
       {noteAuto ? (
         <View
-          style={{
-            padding: 10,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: P.inputBorder,
-            backgroundColor: "rgba(255,255,255,0.04)",
-          }}
+          style={[styles.noteAutoCard, { borderColor: P.inputBorder }]}
         >
-          <Text style={{ color: P.sub, fontWeight: "900", marginBottom: 4 }}>
+          <Text style={[styles.noteAutoLabel, { color: P.sub }]}>
             Реквизиты поставщика
           </Text>
-          <Text style={{ color: P.text, fontWeight: "800" }} numberOfLines={3}>
+          <Text style={[styles.noteAutoValue, { color: P.text }]} numberOfLines={3}>
             {noteAuto.replace(/\n+/g, " • ")}
           </Text>
         </View>
@@ -385,22 +356,15 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
           presentationStyle="fullScreen"
           onRequestClose={() => setIsSupplierModalOpen(false)}
         >
-          <SafeAreaView style={{ flex: 1, backgroundColor: "#0B1220" }}>
-            <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <Text style={{ color: P.text, fontWeight: "900", fontSize: 20 }}>
+          <SafeAreaView style={styles.supplierModalSafeArea}>
+            <View style={styles.supplierModalContent}>
+              <View style={styles.supplierModalHeader}>
+                <Text style={[styles.supplierModalTitle, { color: P.text }]}>
                   Выберите {counterpartyLabel.toLowerCase()}
                 </Text>
                 <Pressable
                   onPress={() => setIsSupplierModalOpen(false)}
-                  style={{
-                    minHeight: 40,
-                    minWidth: 40,
-                    borderRadius: 12,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                  }}
+                  style={styles.supplierModalCloseButton}
                 >
                   <Ionicons name="close" size={20} color={P.text} />
                 </Pressable>
@@ -416,13 +380,8 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                 placeholderTextColor={P.sub}
                 style={[
                   s.fieldInput,
-                  {
-                    backgroundColor: P.inputBg,
-                    borderColor: P.inputBorder,
-                    color: P.text,
-                    marginBottom: 12,
-                    minHeight: 46,
-                  },
+                  styles.modalSearchInput,
+                  { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text },
                 ]}
               />
 
@@ -430,35 +389,24 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                 data={filteredSuppliers}
                 keyExtractor={(item, idx) => `${item}:${idx}`}
                 keyboardShouldPersistTaps="always"
-                contentContainerStyle={{ paddingBottom: 24 }}
+                contentContainerStyle={styles.modalSupplierListContent}
                 renderItem={({ item }) => (
                   <Pressable
                     onPress={() => commitSelectedSupplier(item)}
-                    style={{
-                      minHeight: 56,
-                      justifyContent: "center",
-                      paddingHorizontal: 14,
-                      paddingVertical: 12,
-                      borderRadius: 16,
-                      backgroundColor:
-                        makeSupplierId(item) === selectedSupplierId
-                          ? "rgba(34,197,94,0.16)"
-                          : "rgba(255,255,255,0.04)",
-                      marginBottom: 8,
-                      borderWidth: 1,
-                      borderColor:
-                        makeSupplierId(item) === selectedSupplierId
-                          ? "rgba(34,197,94,0.4)"
-                          : "rgba(255,255,255,0.08)",
-                    }}
+                    style={[
+                      styles.modalSupplierRow,
+                      makeSupplierId(item) === selectedSupplierId
+                        ? styles.modalSupplierRowSelected
+                        : styles.modalSupplierRowDefault,
+                    ]}
                   >
-                    <Text style={{ color: P.text, fontWeight: "800" }} numberOfLines={1}>
+                    <Text style={[styles.modalSupplierRowText, { color: P.text }]} numberOfLines={1}>
                       {item}
                     </Text>
                   </Pressable>
                 )}
                 ListEmptyComponent={
-                  <Text style={{ color: P.sub, fontWeight: "700", paddingVertical: 12 }}>
+                  <Text style={[styles.modalEmptyText, { color: P.sub }]}>
                     Ничего не найдено
                   </Text>
                 }
@@ -535,21 +483,20 @@ function BuyerItemRowInner(props: {
         inSheet ? s.buyerMobCard : s.card,
         inSheet ? null : { backgroundColor: P.cardBg, borderColor: P.border },
         selected && (inSheet ? s.buyerMobCardPicked : s.cardPicked),
-        selected
-          ? { position: "relative", overflow: "visible", zIndex: 500, elevation: 30 }
-          : { position: "relative", overflow: "visible", zIndex: 1, elevation: 1 },
+        styles.rowShellBase,
+        selected ? styles.rowShellSelected : styles.rowShellDefault,
       ]}
       pointerEvents="box-none"
     >
-      <View style={{ gap: 8 }}>
-        <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <View style={styles.rowContent}>
+        <View style={styles.rowHeader}>
+          <View style={styles.rowHeaderMain}>
+            <View style={styles.rowHeaderTitleRow}>
               <Text style={[s.cardTitle, { color: P.text }]}>{it.name_human}</Text>
 
               {it.app_code ? (
-                <View style={{ backgroundColor: P.chipGrayBg, borderRadius: 999, paddingVertical: 3, paddingHorizontal: 8 }}>
-                  <Text style={{ color: P.chipGrayText, fontWeight: "700", fontSize: 12 }}>
+                <View style={[styles.appCodeChip, { backgroundColor: P.chipGrayBg }]}>
+                  <Text style={[styles.appCodeChipText, { color: P.chipGrayText }]}>
                     {it.app_code}
                   </Text>
                 </View>
@@ -557,16 +504,15 @@ function BuyerItemRowInner(props: {
 
               {rejectedByDirector ? (
                 <View
-                  style={{
-                    backgroundColor: inSheet ? "rgba(239,68,68,0.18)" : "#FEE2E2",
-                    borderRadius: 999,
-                    paddingVertical: 3,
-                    paddingHorizontal: 8,
-                    borderWidth: 1,
-                    borderColor: inSheet ? "rgba(239,68,68,0.45)" : "#FCA5A5",
-                  }}
+                  style={[
+                    styles.rejectedBadge,
+                    {
+                      backgroundColor: inSheet ? "rgba(239,68,68,0.18)" : "#FEE2E2",
+                      borderColor: inSheet ? "rgba(239,68,68,0.45)" : "#FCA5A5",
+                    },
+                  ]}
                 >
-                  <Text style={{ color: inSheet ? "#FCA5A5" : "#991B1B", fontWeight: "900", fontSize: 12 }}>
+                  <Text style={[styles.rejectedBadgeText, { color: inSheet ? "#FCA5A5" : "#991B1B" }]}>
                     ОТКЛОНЕНА
                   </Text>
                 </View>
@@ -576,17 +522,18 @@ function BuyerItemRowInner(props: {
             <Text style={[s.cardMeta, { color: P.sub }]}>{prettyText}</Text>
           </View>
 
-          <View style={{ alignItems: "flex-end", gap: 8 }}>
+          <View style={styles.rowHeaderActions}>
             <Pressable
+              testID={`buyer-item-toggle-${String(it.request_item_id ?? "")}`}
+              accessibilityLabel={`buyer-item-toggle-${String(it.request_item_id ?? "")}`}
               onPress={onTogglePick}
               style={[
                 s.smallBtn,
                 {
                   borderColor: selected ? "#2563eb" : P.btnBorder,
                   backgroundColor: selected ? "#2563eb" : P.btnBg,
-                  minWidth: 86,
-                  alignItems: "center",
                 },
+                styles.toggleButton,
               ]}
             >
               <Text style={[s.smallBtnText, { color: selected ? "#fff" : P.text }]}>
@@ -597,62 +544,54 @@ function BuyerItemRowInner(props: {
           </View>
         </View>
 
-        <View style={{ gap: 4 }}>
-          <Text style={{ color: P.sub }}>
-            Цена: <Text style={{ color: P.text, fontWeight: "800" }}>{m.price || "?"}</Text>
+        <View style={styles.rowMetaBlock}>
+          <Text style={[styles.rowMetaText, { color: P.sub }]}>
+            Цена: <Text style={[styles.rowMetaStrong, { color: P.text }]}>{m.price || "?"}</Text>
             {" • "}
-            {counterpartyLabel}: <Text style={{ color: P.text, fontWeight: "800" }}>{m.supplier || "?"}</Text>
+            {counterpartyLabel}: <Text style={[styles.rowMetaStrong, { color: P.text }]}>{m.supplier || "?"}</Text>
             {" • "}
-            Прим.: <Text style={{ color: P.text, fontWeight: "800" }}>{noteUser || "?"}</Text>
+            Прим.: <Text style={[styles.rowMetaStrong, { color: P.text }]}>{noteUser || "?"}</Text>
           </Text>
 
-          <Text style={{ color: P.sub }}>
+          <Text style={[styles.rowMetaText, { color: P.sub }]}>
             Сумма по позиции:{" "}
-            <Text style={{ color: P.text, fontWeight: "800" }}>{sum ? sum.toLocaleString() : "0"}</Text> сом
+            <Text style={[styles.rowMetaStrong, { color: P.text }]}>{sum ? sum.toLocaleString() : "0"}</Text> сом
           </Text>
 
           {rejectedByDirector ? (
             <View
-              style={{
-                marginTop: 6,
-                padding: 10,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: inSheet ? "rgba(239,68,68,0.45)" : "#FCA5A5",
-                backgroundColor: inSheet ? "rgba(239,68,68,0.12)" : "#FEF2F2",
-              }}
+              style={[
+                styles.rejectReasonCard,
+                {
+                  borderColor: inSheet ? "rgba(239,68,68,0.45)" : "#FCA5A5",
+                  backgroundColor: inSheet ? "rgba(239,68,68,0.12)" : "#FEF2F2",
+                },
+              ]}
             >
-              <Text style={{ color: inSheet ? "#FCA5A5" : "#991B1B", fontWeight: "900", fontSize: 12 }}>
+              <Text style={[styles.rejectReasonText, { color: inSheet ? "#FCA5A5" : "#991B1B" }]}>
                 Причина отклонения:{" "}
-                <Text style={{ color: inSheet ? "#FECACA" : "#7F1D1D", fontWeight: "800" }}>
+                <Text style={[styles.rejectReasonStrong, { color: inSheet ? "#FECACA" : "#7F1D1D" }]}>
                   {rejectReason || "Отклонено директором"}
                 </Text>
               </Text>
-              <Text style={{ color: inSheet ? "#FECACA" : "#7F1D1D", fontWeight: "800", marginTop: 4, fontSize: 12 }}>
+              <Text style={[styles.rejectReasonSubline, { color: inSheet ? "#FECACA" : "#7F1D1D" }]}>
                 Предыдущее предложение: {lastOfferSupplier || "?"} • {lastOfferPrice != null ? `${lastOfferPrice}` : "?"} сом
               </Text>
             </View>
           ) : null}
         </View>
 
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <View style={styles.rowFooter}>
           {selected ? (
             <Pressable
               onPress={onEditMobile}
-              style={{
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                backgroundColor: "rgba(59,130,246,0.15)",
-                borderColor: "rgba(59,130,246,0.4)",
-                borderWidth: 1,
-                borderRadius: 10,
-              }}
+              style={styles.mobileEditButton}
             >
-              <Text style={{ color: "#60A5FA", fontWeight: "700", fontSize: 13 }}>Редактировать</Text>
+              <Text style={styles.mobileEditButtonText}>Редактировать</Text>
             </Pressable>
           ) : null}
 
-          <View style={{ marginLeft: "auto" }}>
+          <View style={styles.statusBadgeWrap}>
             <StatusBadge label={statusLabel} tone={statusTone} compact />
           </View>
         </View>
@@ -684,4 +623,282 @@ export const BuyerItemRow = React.memo(BuyerItemRowInner, (prev, next) => {
     prev.s === next.s &&
     prev.supplierSuggestions === next.supplierSuggestions
   );
+});
+
+const styles = StyleSheet.create({
+  appCodeChip: {
+    borderRadius: 999,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  appCodeChipText: {
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  counterpartyFailureText: {
+    color: "#fca5a5",
+    marginTop: 6,
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  editorCardBase: {
+    position: "relative",
+    overflow: "visible",
+    borderWidth: 1,
+  },
+  editorCardDesktop: {
+    marginTop: 0,
+    gap: 8,
+    padding: 14,
+    borderRadius: 18,
+    borderColor: "rgba(34,197,94,0.26)",
+    backgroundColor: "rgba(2,132,199,0.06)",
+  },
+  editorCardMobile: {
+    marginTop: 10,
+    gap: 10,
+    padding: 12,
+    borderRadius: 16,
+    borderColor: "rgba(59,130,246,0.24)",
+    backgroundColor: "rgba(255,255,255,0.04)",
+  },
+  editorStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 12,
+  },
+  flexOne: {
+    flex: 1,
+  },
+  inlineSuggestBox: {
+    backgroundColor: "#1E2A38",
+    zIndex: 3000,
+    elevation: 160,
+    maxHeight: 220,
+  },
+  inlineSuggestItem: {
+    minHeight: 44,
+    justifyContent: "center",
+  },
+  inlineSuggestItemText: {
+    fontWeight: "800",
+  },
+  inlineSupplierList: {
+    maxHeight: 220,
+  },
+  mobileEditButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "rgba(59,130,246,0.15)",
+    borderColor: "rgba(59,130,246,0.4)",
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  mobileEditButtonText: {
+    color: "#60A5FA",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+  mobileSupplierLabel: {
+    fontWeight: "700",
+    flex: 1,
+  },
+  mobileSupplierTrigger: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  mobileSupplierTriggerDisabled: {
+    opacity: 0.6,
+  },
+  mobileSupplierTriggerEnabled: {
+    opacity: 1,
+  },
+  modalEmptyText: {
+    fontWeight: "700",
+    paddingVertical: 12,
+  },
+  modalSearchInput: {
+    marginBottom: 12,
+    minHeight: 46,
+  },
+  modalSupplierListContent: {
+    paddingBottom: 24,
+  },
+  modalSupplierRow: {
+    minHeight: 56,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 16,
+    marginBottom: 8,
+    borderWidth: 1,
+  },
+  modalSupplierRowDefault: {
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  modalSupplierRowSelected: {
+    backgroundColor: "rgba(34,197,94,0.16)",
+    borderColor: "rgba(34,197,94,0.4)",
+  },
+  modalSupplierRowText: {
+    fontWeight: "800",
+  },
+  noteAutoCard: {
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    backgroundColor: "rgba(255,255,255,0.04)",
+  },
+  noteAutoLabel: {
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+  noteAutoValue: {
+    fontWeight: "800",
+  },
+  primaryFieldsBase: {
+    gap: 8,
+    position: "relative",
+    overflow: "visible",
+  },
+  primaryFieldsClosed: {
+    zIndex: 10,
+    elevation: 1,
+  },
+  primaryFieldsInline: {
+    flexDirection: "row",
+  },
+  primaryFieldsOpen: {
+    zIndex: 1200,
+    elevation: 80,
+  },
+  primaryFieldsStack: {
+    flexDirection: "column",
+  },
+  rejectReasonCard: {
+    marginTop: 6,
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  rejectReasonStrong: {
+    fontWeight: "800",
+  },
+  rejectReasonSubline: {
+    fontWeight: "800",
+    marginTop: 4,
+    fontSize: 12,
+  },
+  rejectReasonText: {
+    fontWeight: "900",
+    fontSize: 12,
+  },
+  rejectedBadge: {
+    borderRadius: 999,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+  },
+  rejectedBadgeText: {
+    fontWeight: "900",
+    fontSize: 12,
+  },
+  rowContent: {
+    gap: 8,
+  },
+  rowFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap",
+  },
+  rowHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  rowHeaderActions: {
+    alignItems: "flex-end",
+    gap: 8,
+  },
+  rowHeaderMain: {
+    flex: 1,
+    minWidth: 0,
+  },
+  rowHeaderTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  rowMetaBlock: {
+    gap: 4,
+  },
+  rowMetaStrong: {
+    fontWeight: "800",
+  },
+  rowMetaText: {},
+  rowShellBase: {
+    position: "relative",
+    overflow: "visible",
+  },
+  rowShellDefault: {
+    zIndex: 1,
+    elevation: 1,
+  },
+  rowShellSelected: {
+    zIndex: 500,
+    elevation: 30,
+  },
+  statusBadgeWrap: {
+    marginLeft: "auto",
+  },
+  supplierFieldWrap: {
+    flex: 1,
+    position: "relative",
+  },
+  supplierFieldWrapClosed: {
+    zIndex: 700,
+    elevation: 40,
+  },
+  supplierFieldWrapOpen: {
+    zIndex: 2600,
+    elevation: 120,
+  },
+  supplierModalCloseButton: {
+    minHeight: 40,
+    minWidth: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  supplierModalContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  supplierModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  supplierModalSafeArea: {
+    flex: 1,
+    backgroundColor: "#0B1220",
+  },
+  supplierModalTitle: {
+    fontWeight: "900",
+    fontSize: 20,
+  },
+  toggleButton: {
+    minWidth: 86,
+    alignItems: "center",
+  },
 });

@@ -45,7 +45,7 @@ describe("foreman draft boundary effect owners", () => {
     mockGetForemanDurableDraftState.mockReset();
   });
 
-  it("stays free of React hook ownership and only executes extracted effect paths", () => {
+  it("stays free of React hook ownership and owns the extracted runtime/effect paths", () => {
     const source = readFileSync(
       join(process.cwd(), "src", "screens", "foreman", "foreman.draftBoundary.effects.ts"),
       "utf8",
@@ -53,7 +53,10 @@ describe("foreman draft boundary effect owners", () => {
 
     expect(source).not.toContain("useEffect");
     expect(source).not.toContain("useCallback");
-    expect(source).not.toContain("AppState");
+    expect(source).toContain("AppState");
+    expect(source).toContain("subscribePlatformNetwork");
+    expect(source).toContain("planForemanAppActiveRestoreTrigger");
+    expect(source).toContain("planForemanNetworkBackRestoreTrigger");
     expect(source).toContain("resolveForemanDraftBoundaryLiveCleanupPlan");
     expect(source).toContain("resolveForemanDraftBoundaryRemoteEffectsPlan");
   });

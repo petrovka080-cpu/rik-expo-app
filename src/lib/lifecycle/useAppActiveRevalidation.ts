@@ -24,10 +24,17 @@
  *   });
  */
 
-import { useEffect, useRef } from "react";
-import { AppState } from "react-native";
+import { useEffect, useRef, type MutableRefObject } from "react";
+import { AppState, type AppStateStatus } from "react-native";
 
-import { getPlatformNetworkSnapshot } from "../offline/platformNetwork.service";
+import {
+  getPlatformNetworkSnapshot,
+  subscribePlatformNetwork,
+} from "../offline/platformNetwork.service";
+import {
+  selectPlatformOnlineFlag,
+  type PlatformNetworkSnapshot,
+} from "../offline/platformOffline.model";
 import {
   isPlatformGuardCoolingDown,
   recordPlatformGuardSkip,
@@ -42,6 +49,22 @@ import type { LifecycleRefreshReason } from "./lifecycleContract";
 type ObservabilityScreen = PlatformObservabilityEvent["screen"];
 
 const DEFAULT_MIN_INTERVAL_MS = 1200;
+
+type AppStateSubscription = {
+  remove: () => void;
+};
+
+type AppStateListenerRegistrar = (
+  eventType: "change",
+  listener: (nextState: AppStateStatus) => void,
+) => AppStateSubscription;
+
+type NetworkListener = (
+  state: PlatformNetworkSnapshot,
+  previous: PlatformNetworkSnapshot,
+) => void;
+
+type NetworkSubscriber = (listener: NetworkListener) => () => void;
 
 export type UseAppActiveRevalidationParams = {
   /** Observability screen identifier — must be a valid PlatformObservabilityScreen value */
@@ -66,6 +89,82 @@ export type UseAppActiveRevalidationParams = {
    * When true, revalidation is skipped (inflight guard).
    */
   isInFlight?: () => boolean;
+};
+
+const defaultAppStateListenerRegistrar: AppStateListenerRegistrar = (
+  eventType,
+  listener,
+) => AppState.addEventListener(eventType, listener);
+
+export const getLifecycleCurrentAppState = (): AppStateStatus =>
+  AppState.currentState;
+
+export const handleLifecycleAppActiveTransition = (params: {
+  appStateRef: MutableRefObject<AppStateStatus>;
+  nextState: AppStateStatus;
+  onBecameActive: () => void;
+}): boolean => {
+  const previous = params.appStateRef.current;
+  params.appStateRef.current = params.nextState;
+
+  const resumed =
+    (previous === "background" || previous === "inactive") &&
+    params.nextState === "active";
+  if (!resumed) return false;
+
+  params.onBecameActive();
+  return true;
+};
+
+export const subscribeLifecycleAppActiveTransition = (params: {
+  appStateRef: MutableRefObject<AppStateStatus>;
+  onBecameActive: () => void;
+  addAppStateListener?: AppStateListenerRegistrar;
+}) => {
+  const registerListener =
+    params.addAppStateListener ?? defaultAppStateListenerRegistrar;
+  const subscription = registerListener("change", (nextState) => {
+    handleLifecycleAppActiveTransition({
+      appStateRef: params.appStateRef,
+      nextState,
+      onBecameActive: params.onBecameActive,
+    });
+  });
+
+  let removed = false;
+  return () => {
+    if (removed) return;
+    removed = true;
+    subscription.remove();
+  };
+};
+
+export const subscribeLifecycleNetworkRecovery = (params: {
+  networkOnlineRef: MutableRefObject<boolean | null>;
+  onRecovered: () => void;
+  onNetworkStateChange?: (
+    nextOnline: boolean | null,
+    previousOnline: boolean | null,
+  ) => void;
+  subscribeNetwork?: NetworkSubscriber;
+}) => {
+  const subscribeNetwork = params.subscribeNetwork ?? subscribePlatformNetwork;
+  const unsubscribe = subscribeNetwork((state, previous) => {
+    const nextOnline = selectPlatformOnlineFlag(state);
+    const previousOnline = selectPlatformOnlineFlag(previous);
+    params.networkOnlineRef.current = nextOnline;
+    params.onNetworkStateChange?.(nextOnline, previousOnline);
+    if (previousOnline === false && nextOnline === true) {
+      params.onRecovered();
+    }
+  });
+
+  let disposed = false;
+  return () => {
+    if (disposed) return;
+    disposed = true;
+    unsubscribe();
+  };
 };
 
 export function useAppActiveRevalidation(

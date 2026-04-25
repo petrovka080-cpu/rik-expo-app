@@ -126,6 +126,8 @@ export function BuyerScreenSheets({
           variant="blue"
           shape="wide"
           disabled={inbox.disableRfq}
+          testID="buyer-rfq-open"
+          accessibilityLabel="buyer-rfq-open"
           onPress={inbox.openRfqSheet}
         />
       }
@@ -135,6 +137,7 @@ export function BuyerScreenSheets({
             variant="green"
             disabled={inbox.disableSend}
             loading={inbox.creating}
+            testID="buyer-create-proposals-send"
             accessibilityLabel="РћС‚РїСЂР°РІРёС‚СЊ РґРёСЂРµРєС‚РѕСЂСѓ"
             onPress={inbox.handleCreateProposalsBySupplier}
           />

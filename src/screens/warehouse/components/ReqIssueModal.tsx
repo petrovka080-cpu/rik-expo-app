@@ -253,6 +253,8 @@ export default function ReqIssueModal(props: Props) {
 
       <View style={{ marginTop: 12, flexDirection: "row", justifyContent: "flex-end" }}>
         <Pressable
+          testID="warehouse-req-submit"
+          accessibilityLabel="warehouse-req-submit"
           onPress={() => submitReqPick()}
           disabled={issueBusy || Object.keys(reqPick || {}).length === 0 || !recipientText.trim()}
           style={[

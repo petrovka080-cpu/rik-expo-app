@@ -7,6 +7,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   View,
@@ -50,13 +51,191 @@ type Props = {
   styles: typeof import("./foreman.styles").s;
 };
 
-const cardStyle = {
-  borderRadius: 16,
-  borderWidth: 1,
-  borderColor: "rgba(255,255,255,0.08)",
-  backgroundColor: "rgba(255,255,255,0.03)",
-  padding: 14,
-};
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(255,255,255,0.03)",
+    padding: 14,
+  },
+  composerShell: {
+    marginTop: 6,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    padding: 10,
+    gap: 10,
+  },
+  composerInput: {
+    flex: 1,
+    minHeight: 84,
+    maxHeight: 160,
+    marginBottom: 0,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    borderWidth: 0,
+    backgroundColor: "transparent",
+  },
+  composerInputRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 10,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(11,15,20,0.28)",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  composeScrollContent: {
+    paddingBottom: 16,
+    gap: 12,
+  },
+  contextLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  contentFill: {
+    flex: 1,
+    minHeight: 0,
+  },
+  flexOne: {
+    flex: 1,
+  },
+  footerDivider: {
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.08)",
+  },
+  helperRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  helperText: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  infoCard: {
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  introCard: {
+    paddingVertical: 12,
+    backgroundColor: "rgba(255,255,255,0.02)",
+  },
+  introBody: {
+    fontSize: 13,
+    marginTop: 4,
+  },
+  introTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+  },
+  micButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  modalBackdrop: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: "rgba(0,0,0,0.55)",
+  },
+  modalKeyboardAvoider: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  noticeCard: {
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+  },
+  noticeDetail: {
+    fontSize: 12,
+    marginTop: 6,
+    opacity: 0.9,
+  },
+  noticeTitle: {
+    fontWeight: "800",
+    fontSize: 13,
+  },
+  optionList: {
+    gap: 8,
+  },
+  optionTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  parseActionButton: {
+    flex: 0,
+    minWidth: 128,
+    flexDirection: "row",
+    gap: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+  },
+  reviewCardGap: {
+    gap: 2,
+  },
+  reviewCardMeta: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  reviewCardTitle: {
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  reviewItemCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    padding: 12,
+  },
+  reviewSectionBody: {
+    gap: 10,
+    marginTop: 12,
+  },
+  reviewSectionBodyLarge: {
+    gap: 12,
+    marginTop: 12,
+  },
+  reviewSectionTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  reviewScrollContent: {
+    paddingBottom: 12,
+    gap: 12,
+  },
+  sessionHintText: {
+    fontSize: 12,
+  },
+  selectedOptionText: {
+    color: "#86efac",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+});
+
+const cardStyle = styles.card;
 
 const normalizeComparableMessage = (value: string): string =>
   String(value || "")
@@ -81,6 +260,13 @@ const renderMetaLine = (params: { qty?: number; unit?: string | null; kind?: str
     .filter(Boolean)
     .join(" • ");
 
+const toSelectorToken = (value: string) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 const NoticeCard = ({
   backgroundColor,
   borderColor,
@@ -95,17 +281,11 @@ const NoticeCard = ({
   detail?: string | null;
 }) => (
   <View
-    style={{
-      borderRadius: 14,
-      padding: 12,
-      backgroundColor,
-      borderWidth: 1,
-      borderColor,
-    }}
+    style={[styles.noticeCard, { backgroundColor, borderColor }]}
   >
-    <Text style={{ color: titleColor, fontWeight: "800", fontSize: 13 }}>{title}</Text>
+    <Text style={[styles.noticeTitle, { color: titleColor }]}>{title}</Text>
     {detail ? (
-      <Text style={{ color: titleColor, fontSize: 12, marginTop: 6, opacity: 0.9 }}>
+      <Text style={[styles.noticeDetail, { color: titleColor }]}>
         {detail}
       </Text>
     ) : null}
@@ -168,20 +348,13 @@ export default function ForemanAiQuickModal(props: Props) {
       onRequestClose={props.onClose}
     >
       <KeyboardAvoidingView
-        style={{ flex: 1, justifyContent: "flex-end" }}
+        style={styles.modalKeyboardAvoider}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 20 : 0}
       >
         <Pressable
           onPress={props.onClose}
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            bottom: 0,
-            left: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
-          }}
+          style={styles.modalBackdrop}
         />
 
         <DismissKeyboardView
@@ -207,63 +380,41 @@ export default function ForemanAiQuickModal(props: Props) {
           </View>
 
           {isComposeMode ? (
-            <View style={{ flex: 1, minHeight: 0 }}>
+            <View style={styles.contentFill}>
               <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={{ paddingBottom: 16, gap: 12 }}
+                style={styles.flexOne}
+                contentContainerStyle={styles.composeScrollContent}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
               >
                 <View
                   style={[
                     cardStyle,
-                    {
-                      paddingVertical: 12,
-                      backgroundColor: "rgba(255,255,255,0.02)",
-                    },
+                    styles.introCard,
                   ]}
                 >
-                  <Text style={{ color: props.ui.text, fontSize: 17, fontWeight: "800" }}>
+                  <Text style={[styles.introTitle, { color: props.ui.text }]}>
                     Опишите материалы, работы или услуги
                   </Text>
-                  <Text style={{ color: props.ui.sub, fontSize: 13, marginTop: 4 }}>
+                  <Text style={[styles.introBody, { color: props.ui.sub }]}>
                     Например: 100 кирпичей и 5 т цемента
                   </Text>
                 </View>
 
                 {props.sessionHint ? (
-                  <View
-                    style={{
-                      borderRadius: 14,
-                      paddingHorizontal: 12,
-                      paddingVertical: 10,
-                      backgroundColor: "rgba(255,255,255,0.04)",
-                      borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.08)",
-                    }}
-                  >
-                    <Text style={{ color: props.ui.sub, fontSize: 12 }}>{props.sessionHint}</Text>
+                  <View style={styles.infoCard}>
+                    <Text style={[styles.sessionHintText, { color: props.ui.sub }]}>{props.sessionHint}</Text>
                   </View>
                 ) : null}
 
-                <View
-                  style={{
-                    borderRadius: 14,
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    backgroundColor: "rgba(255,255,255,0.04)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.08)",
-                    gap: 2,
-                  }}
-                >
-                  <Text style={{ color: props.ui.sub, fontSize: 11, fontWeight: "800", textTransform: "uppercase" }}>
+                <View style={[styles.infoCard, styles.reviewCardGap]}>
+                  <Text style={[styles.contextLabel, { color: props.ui.sub }]}>
                     {draftContext.title}
                   </Text>
-                  <Text style={{ color: props.ui.text, fontSize: 14, fontWeight: "800" }}>
+                  <Text style={[styles.reviewCardTitle, { color: props.ui.text }]}>
                     {draftContext.draftLabel}
                   </Text>
-                  <Text style={{ color: props.ui.sub, fontSize: 12, fontWeight: "700" }}>
+                  <Text style={[styles.reviewCardMeta, { color: props.ui.sub }]}>
                     {draftContext.meta}
                   </Text>
                 </View>
@@ -297,31 +448,11 @@ export default function ForemanAiQuickModal(props: Props) {
                 ) : null}
               </ScrollView>
 
-              <View
-                style={{
-                  marginTop: 6,
-                  borderRadius: 22,
-                  borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.10)",
-                  backgroundColor: "rgba(255,255,255,0.05)",
-                  padding: 10,
-                  gap: 10,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "flex-end",
-                    gap: 10,
-                    borderRadius: 18,
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.08)",
-                    backgroundColor: "rgba(11,15,20,0.28)",
-                    paddingHorizontal: 14,
-                    paddingVertical: 12,
-                  }}
-                >
+              <View style={styles.composerShell}>
+                <View style={styles.composerInputRow}>
                   <TextInput
+                    testID="foreman-ai-input"
+                    accessibilityLabel="foreman-ai-input"
                     value={props.value}
                     onChangeText={props.onChangeText}
                     multiline
@@ -330,70 +461,45 @@ export default function ForemanAiQuickModal(props: Props) {
                     placeholderTextColor="rgba(255,255,255,0.35)"
                     style={[
                       props.styles.input,
-                      {
-                        flex: 1,
-                        minHeight: 84,
-                        maxHeight: 160,
-                        marginBottom: 0,
-                        paddingVertical: 0,
-                        paddingHorizontal: 0,
-                        borderWidth: 0,
-                        backgroundColor: "transparent",
-                      },
+                      styles.composerInput,
                     ]}
                   />
 
                   <Pressable
+                    testID="foreman-ai-mic"
                     onPress={voice.isActive ? voice.stop : voice.start}
                     disabled={composerDisabled}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 24,
-                      borderWidth: 1,
-                      borderColor: voice.isActive ? props.ui.accent : "rgba(255,255,255,0.12)",
-                      backgroundColor: voice.isActive ? "rgba(34,197,94,0.14)" : "rgba(255,255,255,0.05)",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: composerDisabled ? 0.55 : 1,
-                      flexShrink: 0,
-                    }}
+                    style={[
+                      styles.micButton,
+                      {
+                        borderColor: voice.isActive ? props.ui.accent : "rgba(255,255,255,0.12)",
+                        backgroundColor: voice.isActive ? "rgba(34,197,94,0.14)" : "rgba(255,255,255,0.05)",
+                        opacity: composerDisabled ? 0.55 : 1,
+                      },
+                    ]}
                     accessibilityLabel={voice.isActive ? "Остановить голосовой ввод" : "Запустить голосовой ввод"}
                   >
                     <Ionicons name={micIcon} size={22} color={props.ui.text} />
                   </Pressable>
                 </View>
 
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 10,
-                  }}
-                >
+                <View style={styles.helperRow}>
                   <Text
-                    style={{ flex: 1, minWidth: 0, color: voiceHelperColor, fontSize: 12, fontWeight: "600" }}
+                    style={[styles.helperText, { color: voiceHelperColor }]}
                     numberOfLines={2}
                     ellipsizeMode="tail"
                   >
                     {voiceHelperText}
                   </Text>
                   <Pressable
+                    testID="foreman-ai-parse"
+                    accessibilityLabel="foreman-ai-parse"
                     onPress={() => void props.onParse()}
                     disabled={!canParse}
                     style={[
                       props.styles.actionBtnWide,
-                      {
-                        flex: 0,
-                        minWidth: 128,
-                        backgroundColor: props.ui.accent,
-                        opacity: canParse ? 1 : 0.6,
-                        flexDirection: "row",
-                        gap: 8,
-                        paddingHorizontal: 18,
-                        paddingVertical: 11,
-                      },
+                      styles.parseActionButton,
+                      { backgroundColor: props.ui.accent, opacity: canParse ? 1 : 0.6 },
                     ]}
                   >
                     {props.parseLoading ? <ActivityIndicator size="small" color="#0B0F14" /> : null}
@@ -405,10 +511,10 @@ export default function ForemanAiQuickModal(props: Props) {
               </View>
             </View>
           ) : (
-            <View style={{ flex: 1, minHeight: 0 }}>
+            <View style={styles.contentFill}>
               <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={{ paddingBottom: 12, gap: 12 }}
+                style={styles.flexOne}
+                contentContainerStyle={styles.reviewScrollContent}
                 keyboardShouldPersistTaps="handled"
               >
                 {props.error ? (
@@ -429,50 +535,33 @@ export default function ForemanAiQuickModal(props: Props) {
                   />
                 ) : null}
 
-                <View
-                  style={{
-                    borderRadius: 14,
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    backgroundColor: "rgba(255,255,255,0.04)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.08)",
-                    gap: 2,
-                  }}
-                >
-                  <Text style={{ color: props.ui.sub, fontSize: 11, fontWeight: "800", textTransform: "uppercase" }}>
+                <View style={[styles.infoCard, styles.reviewCardGap]}>
+                  <Text style={[styles.contextLabel, { color: props.ui.sub }]}>
                     {draftContext.title}
                   </Text>
-                  <Text style={{ color: props.ui.text, fontSize: 14, fontWeight: "800" }}>
+                  <Text style={[styles.reviewCardTitle, { color: props.ui.text }]}>
                     {draftContext.draftLabel}
                   </Text>
-                  <Text style={{ color: props.ui.sub, fontSize: 12, fontWeight: "700" }}>
+                  <Text style={[styles.reviewCardMeta, { color: props.ui.sub }]}>
                     {draftContext.meta}
                   </Text>
                 </View>
 
                 {props.preview.length > 0 ? (
                   <View style={cardStyle}>
-                    <Text style={{ color: props.ui.text, fontSize: 16, fontWeight: "800" }}>
+                    <Text style={[styles.reviewSectionTitle, { color: props.ui.text }]}>
                       Готово к добавлению
                     </Text>
-                    <View style={{ gap: 10, marginTop: 12 }}>
+                    <View style={styles.reviewSectionBody}>
                       {props.preview.map((item) => (
                         <View
                           key={`${item.rik_code}:${item.name}`}
-                          style={{
-                            borderRadius: 14,
-                            borderWidth: 1,
-                            borderColor: "rgba(255,255,255,0.08)",
-                            backgroundColor: props.ui.cardBg,
-                            padding: 12,
-                            gap: 4,
-                          }}
+                          style={[styles.reviewItemCard, styles.reviewCardGap, { backgroundColor: props.ui.cardBg }]}
                         >
-                          <Text style={{ color: props.ui.text, fontSize: 14, fontWeight: "800" }}>
+                          <Text style={[styles.reviewCardTitle, { color: props.ui.text }]}>
                             {item.name}
                           </Text>
-                          <Text style={{ color: props.ui.sub, fontSize: 12, fontWeight: "700" }}>
+                          <Text style={[styles.reviewCardMeta, { color: props.ui.sub }]}>
                             {renderMetaLine({
                               qty: item.qty,
                               unit: item.unit,
@@ -481,7 +570,7 @@ export default function ForemanAiQuickModal(props: Props) {
                             })}
                           </Text>
                           {item.specs ? (
-                            <Text style={{ color: props.ui.text, fontSize: 12 }}>{item.specs}</Text>
+                            <Text style={[styles.sessionHintText, { color: props.ui.text }]}>{item.specs}</Text>
                           ) : null}
                         </View>
                       ))}
@@ -491,27 +580,20 @@ export default function ForemanAiQuickModal(props: Props) {
 
                 {props.reviewGroups.length > 0 ? (
                   <View style={cardStyle}>
-                    <Text style={{ color: props.ui.text, fontSize: 16, fontWeight: "800" }}>
+                    <Text style={[styles.reviewSectionTitle, { color: props.ui.text }]}>
                       Нужно выбрать из каталога
                     </Text>
-                    <View style={{ gap: 12, marginTop: 12 }}>
+                    <View style={styles.reviewSectionBodyLarge}>
                       {props.reviewGroups.map((group) => (
                         <View
                           key={group.groupId}
-                          style={{
-                            borderRadius: 14,
-                            borderWidth: 1,
-                            borderColor: "rgba(255,255,255,0.08)",
-                            backgroundColor: props.ui.cardBg,
-                            padding: 12,
-                            gap: 10,
-                          }}
+                          style={[styles.reviewItemCard, styles.reviewSectionBody, { backgroundColor: props.ui.cardBg }]}
                         >
-                          <View style={{ gap: 4 }}>
-                            <Text style={{ color: props.ui.text, fontSize: 14, fontWeight: "800" }}>
+                          <View style={styles.reviewCardGap}>
+                            <Text style={[styles.reviewCardTitle, { color: props.ui.text }]}>
                               {group.sourceName}
                             </Text>
-                            <Text style={{ color: props.ui.sub, fontSize: 12, fontWeight: "700" }}>
+                            <Text style={[styles.reviewCardMeta, { color: props.ui.sub }]}>
                               {renderMetaLine({
                                 qty: group.requestedQty,
                                 unit: group.requestedUnit,
@@ -519,30 +601,32 @@ export default function ForemanAiQuickModal(props: Props) {
                               })}
                             </Text>
                             {group.specs ? (
-                              <Text style={{ color: props.ui.text, fontSize: 12 }}>{group.specs}</Text>
+                              <Text style={[styles.sessionHintText, { color: props.ui.text }]}>{group.specs}</Text>
                             ) : null}
                           </View>
 
-                          <View style={{ gap: 8 }}>
+                          <View style={styles.optionList}>
                             {group.options.map((option) => {
                               const selected = group.selectedOption?.rik_code === option.rik_code;
                               return (
                                 <Pressable
+                                  testID={`foreman-ai-option-${toSelectorToken(group.groupId)}-${toSelectorToken(option.rik_code) || "empty"}`}
+                                  accessibilityLabel={`foreman-ai-option-${toSelectorToken(group.groupId)}-${toSelectorToken(option.rik_code) || "empty"}`}
                                   key={`${group.groupId}:${option.rik_code}`}
                                   onPress={() => props.onSelectCandidate(group.groupId, option.rik_code)}
-                                  style={{
-                                    borderRadius: 14,
-                                    borderWidth: 1,
-                                    borderColor: selected ? props.ui.accent : "rgba(255,255,255,0.1)",
-                                    backgroundColor: selected ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.04)",
-                                    padding: 12,
-                                    gap: 4,
-                                  }}
+                                  style={[
+                                    styles.reviewItemCard,
+                                    styles.reviewCardGap,
+                                    {
+                                      borderColor: selected ? props.ui.accent : "rgba(255,255,255,0.1)",
+                                      backgroundColor: selected ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.04)",
+                                    },
+                                  ]}
                                 >
-                                  <Text style={{ color: props.ui.text, fontSize: 13, fontWeight: "800" }}>
+                                  <Text style={[styles.optionTitle, { color: props.ui.text }]}>
                                     {option.name}
                                   </Text>
-                                  <Text style={{ color: props.ui.sub, fontSize: 12 }}>
+                                  <Text style={[styles.sessionHintText, { color: props.ui.sub }]}>
                                     {renderMetaLine({
                                       unit: option.unit,
                                       kind: option.kind,
@@ -550,7 +634,7 @@ export default function ForemanAiQuickModal(props: Props) {
                                     })}
                                   </Text>
                                   {selected ? (
-                                    <Text style={{ color: "#86efac", fontSize: 12, fontWeight: "700" }}>
+                                    <Text style={styles.selectedOptionText}>
                                       Выбрано
                                     </Text>
                                   ) : null}
@@ -566,22 +650,18 @@ export default function ForemanAiQuickModal(props: Props) {
 
                 {filteredQuestions.length > 0 ? (
                   <View style={cardStyle}>
-                    <Text style={{ color: props.ui.text, fontSize: 16, fontWeight: "800" }}>
+                    <Text style={[styles.reviewSectionTitle, { color: props.ui.text }]}>
                       Нужно уточнение
                     </Text>
-                    <View style={{ gap: 10, marginTop: 12 }}>
+                    <View style={styles.reviewSectionBody}>
                       {filteredQuestions.map((question) => (
                         <View
                           key={question.id}
-                          style={{
-                            borderRadius: 14,
-                            borderWidth: 1,
-                            borderColor: "rgba(255,255,255,0.08)",
-                            backgroundColor: props.ui.cardBg,
-                            padding: 12,
-                          }}
+                          style={[styles.reviewItemCard, { backgroundColor: props.ui.cardBg }]}
                         >
-                          <Text style={{ color: props.ui.text, fontSize: 13 }}>{question.prompt}</Text>
+                          <Text style={[styles.optionTitle, { color: props.ui.text, fontWeight: "400" }]}>
+                            {question.prompt}
+                          </Text>
                         </View>
                       ))}
                     </View>
@@ -589,15 +669,11 @@ export default function ForemanAiQuickModal(props: Props) {
                 ) : null}
               </ScrollView>
 
-              <View
-                style={{
-                  paddingTop: 12,
-                  borderTopWidth: 1,
-                  borderTopColor: "rgba(255,255,255,0.08)",
-                }}
-              >
+              <View style={styles.footerDivider}>
                 <View style={props.styles.reqActionsBottom}>
                   <Pressable
+                    testID="foreman-ai-back"
+                    accessibilityLabel="foreman-ai-back"
                     onPress={props.onBackToCompose}
                     disabled={props.parseLoading || props.applying}
                     style={[
@@ -614,6 +690,8 @@ export default function ForemanAiQuickModal(props: Props) {
                   <View style={props.styles.sp8} />
 
                   <Pressable
+                    testID="foreman-ai-apply"
+                    accessibilityLabel="foreman-ai-apply"
                     onPress={() => void props.onApply()}
                     disabled={props.parseLoading || props.applying || !props.canApply}
                     style={[

@@ -324,6 +324,7 @@ describe("S3-H: Realtime reconnect, no duplicate subscriptions", () => {
 // ---------------------------------------------------------------------------
 
 describe("S3-I: Disable / recover network (network_recovered trigger)", () => {
+  const hookSrc = readFileSync(APP_ACTIVE_HOOK_SRC, "utf8");
   const contractorSrc = readFileSync(CONTRACTOR_LIFECYCLE_SRC, "utf8");
   const warehouseReceiveSrc = readFileSync(
     join(
@@ -334,21 +335,23 @@ describe("S3-I: Disable / recover network (network_recovered trigger)", () => {
   );
 
   it("I1: Contractor subscribes to network state and triggers refresh on recovery", () => {
-    expect(contractorSrc).toContain("subscribePlatformNetwork");
-    expect(contractorSrc).toContain('wasOnline === false && nextOnline === true');
+    expect(contractorSrc).toContain("subscribeLifecycleNetworkRecovery");
+    expect(contractorSrc).toContain("subscribeLifecycleAppActiveTransition");
+    expect(hookSrc).toContain("previousOnline === false && nextOnline === true");
     expect(contractorSrc).toContain('"network_back"');
   });
 
   it("I2: Warehouse receive flow triggers queue flush on network recovery", () => {
-    expect(warehouseReceiveSrc).toContain("subscribePlatformNetwork");
+    expect(warehouseReceiveSrc).toContain("subscribeLifecycleNetworkRecovery");
+    expect(warehouseReceiveSrc).toContain("subscribeLifecycleAppActiveTransition");
     expect(warehouseReceiveSrc).toContain('"network_back"');
   });
 
   it("I3: Network recovery is NOT triggered if was already online (no false re-flush)", () => {
     // The guard is: wasOnline === false && nextOnline === true
     // ie. only changes from offline→online, not online→online
-    expect(contractorSrc).toContain("wasOnline === false");
-    expect(warehouseReceiveSrc).toContain("wasOnline === false");
+    expect(hookSrc).toContain("previousOnline === false");
+    expect(hookSrc).toContain("nextOnline === true");
   });
 
   it("I4: Network service listener is registered exactly once (ensurePlatformNetworkService guard)", () => {

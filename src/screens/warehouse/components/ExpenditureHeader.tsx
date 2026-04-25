@@ -19,6 +19,8 @@ function ExpenditureHeader({ recipientText, onOpenRecipientModal }: Props) {
           </Text>
 
           <Pressable
+            testID="warehouse-issue-recipient-open"
+            accessibilityLabel="warehouse-issue-recipient-open"
             onPress={onOpenRecipientModal}
             style={[
               s.input,

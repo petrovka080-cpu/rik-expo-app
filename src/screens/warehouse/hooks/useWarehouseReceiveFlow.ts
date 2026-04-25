@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AppState } from "react-native";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import {
-  ensurePlatformNetworkService,
-  subscribePlatformNetwork,
-} from "../../../lib/offline/platformNetwork.service";
+import { ensurePlatformNetworkService } from "../../../lib/offline/platformNetwork.service";
 import {
   selectPlatformOnlineFlag,
   type PlatformOfflineRetryTriggerSource,
 } from "../../../lib/offline/platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "../../../lib/offline/platformOffline.observability";
+import {
+  getLifecycleCurrentAppState,
+  subscribeLifecycleAppActiveTransition,
+  subscribeLifecycleNetworkRecovery,
+} from "../../../lib/lifecycle/useAppActiveRevalidation";
 import { seedEnsureIncomingItems } from "../warehouse.seed";
 import { applyWarehouseReceive } from "./useWarehouseReceiveApply";
 import {
@@ -122,7 +123,7 @@ export function useWarehouseReceiveFlow(params: {
   );
   const [runtimeReady, setRuntimeReady] = useState(false);
   const networkOnlineRef = useRef<boolean | null>(null);
-  const appStateRef = useRef(AppState.currentState);
+  const appStateRef = useRef(getLifecycleCurrentAppState());
 
   useEffect(() => {
     focusedRef.current = isScreenFocused;
@@ -293,34 +294,29 @@ export function useWarehouseReceiveFlow(params: {
   useEffect(() => {
     if (!runtimeReady || !isScreenActive()) return;
 
-    const unsubscribe = subscribePlatformNetwork((state, previous) => {
-      const nextOnline = selectPlatformOnlineFlag(state);
-      const wasOnline = selectPlatformOnlineFlag(previous);
-      networkOnlineRef.current = nextOnline;
-      if (wasOnline === false && nextOnline === true && isScreenActive()) {
-        void syncQueuedDraftIfPossible("network_back");
-      }
+    const unsubscribe = subscribeLifecycleNetworkRecovery({
+      networkOnlineRef,
+      onRecovered: () => {
+        if (isScreenActive()) {
+          void syncQueuedDraftIfPossible("network_back");
+        }
+      },
     });
 
-    return () => {
-      unsubscribe();
-    };
+    return unsubscribe;
   }, [isScreenActive, runtimeReady, syncQueuedDraftIfPossible]);
 
   useEffect(() => {
     if (!runtimeReady || !isScreenActive()) return;
-    const sub = AppState.addEventListener("change", (nextState) => {
-      const prevState = appStateRef.current;
-      appStateRef.current = nextState;
-      if (
-        prevState !== "active" &&
-        nextState === "active" &&
-        isScreenActive()
-      ) {
-        void syncQueuedDraftIfPossible("app_active");
-      }
+    const unsubscribe = subscribeLifecycleAppActiveTransition({
+      appStateRef,
+      onBecameActive: () => {
+        if (isScreenActive()) {
+          void syncQueuedDraftIfPossible("app_active");
+        }
+      },
     });
-    return () => sub.remove();
+    return unsubscribe;
   }, [isScreenActive, runtimeReady, syncQueuedDraftIfPossible]);
 
   useEffect(() => {

@@ -24,6 +24,7 @@ type Props = {
 
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
+  testID?: string;
   accessibilityLabel?: string;
 };
 
@@ -67,6 +68,7 @@ export default function AppButton({
 
   style,
   textStyle,
+  testID,
   accessibilityLabel,
 }: Props) {
   const isDisabled = disabled || loading;
@@ -79,6 +81,7 @@ export default function AppButton({
 
   return (
     <Pressable
+      testID={testID}
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       disabled={isDisabled}

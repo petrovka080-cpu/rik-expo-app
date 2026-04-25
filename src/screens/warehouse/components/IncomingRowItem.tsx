@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { StatusBadge } from "../../../ui/StatusBadge";
 import { RoleCard } from "../../../components/ui/RoleCard";
 import type { IncomingRow } from "../warehouse.types";
@@ -32,12 +33,14 @@ export default function IncomingRowItem({
       containerStyle={s.listItemContainer}
       pressableStyle={s.incomingItemPressable}
       pressedOpacity={0.8}
+      testID={`warehouse-incoming-row-${String(row.incoming_id ?? "")}`}
+      accessibilityLabel={`warehouse-incoming-row-${String(row.incoming_id ?? "")}`}
     >
       <RoleCard
         title={card.title}
         subtitle={subtitle}
-        style={[s.groupHeader, { marginBottom: 0 }]}
-        titleStyle={{ fontSize: 16 }}
+        style={[s.groupHeader, localStyles.card]}
+        titleStyle={localStyles.cardTitle}
         subtitleStyle={s.incomingItemDate}
         status={<StatusBadge label={card.receivedLabel} tone="neutral" compact />}
         rightIndicator={renderWarehouseIncomingRightIndicator(card.leftLabel)}
@@ -45,3 +48,12 @@ export default function IncomingRowItem({
     </WarehouseCardShell>
   );
 }
+
+const localStyles = StyleSheet.create({
+  card: {
+    marginBottom: 0,
+  },
+  cardTitle: {
+    fontSize: 16,
+  },
+});

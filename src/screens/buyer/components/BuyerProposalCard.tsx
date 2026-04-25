@@ -46,6 +46,8 @@ export const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <Pressable
+        testID={`buyer-proposal-card-${card.pidStr}`}
+        accessibilityLabel={`buyer-proposal-card-${card.pidStr}`}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={() => onOpenDetails(card.pidStr)}

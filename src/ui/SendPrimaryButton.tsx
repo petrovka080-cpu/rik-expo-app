@@ -20,6 +20,7 @@ type Props = {
   iconSize?: number;  // default = 24
 
   label?: string;     // для wide
+  testID?: string;
   accessibilityLabel?: string;
 };
 
@@ -57,6 +58,7 @@ export default function SendPrimaryButton({
   iconSize = 24,
 
   label,
+  testID,
   accessibilityLabel,
 }: Props) {
   const isDisabled = disabled || loading;
@@ -76,6 +78,7 @@ export default function SendPrimaryButton({
         onPress={onPress}
         disabled={disabled}
         loading={loading}
+        testID={testID}
         accessibilityLabel={accessibilityLabel || text}
         width="100%"
         height={52}
@@ -100,6 +103,7 @@ export default function SendPrimaryButton({
       disabled={disabled}
       loading={loading}
       accessibilityLabel={accessibilityLabel || "Отправить"}
+      testID={testID}
       width={BTN}
       height={BTN}
       radius={RAD}
