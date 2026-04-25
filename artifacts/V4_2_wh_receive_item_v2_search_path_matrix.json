@@ -1,0 +1,59 @@
+{
+  "wave": "V4-2",
+  "id": "SQL_001_WH_RECEIVE_ITEM_V2_SEARCH_PATH",
+  "baseCommit": "a8e2490f2176833dcf5cd49fb778fc2f0712aa79",
+  "goal": "Pin wh_receive_item_v2 to SECURITY DEFINER plus empty search_path without changing signature, return contract, or warehouse receive logic.",
+  "changedFiles": [
+    "supabase/migrations/20260425061500_wh_receive_item_v2_search_path_fix.sql",
+    "tests/backend/whReceiveItemV2SearchPath.test.ts"
+  ],
+  "inventory": {
+    "canonicalDefinition": "supabase/migrations/20260424153000_warehouse_receive_item_v2_return_contract_fix.sql",
+    "wrapperCaller": "supabase/migrations/20260424150000_warehouse_receive_rpc_chain_fix.sql",
+    "liveBefore": {
+      "prosecdef": true,
+      "proconfig": null
+    },
+    "liveAfter": {
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    }
+  },
+  "databaseRollout": {
+    "dbPushDryRunInitial": "pass",
+    "dbPushInitial": {
+      "status": "blocked",
+      "reason": "missing SUPABASE_DB_PASSWORD for cli_login_postgres"
+    },
+    "managementApiApply": "pass",
+    "schemaMigrationsHistorySync": "pass",
+    "dbPushDryRunFinal": "up_to_date"
+  },
+  "tests": {
+    "targeted": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "warehouseIssueRuntime": "pass",
+    "jestRunInBand": "pass",
+    "jest": "pass",
+    "maestroCritical": "pass"
+  },
+  "android": {
+    "apkExists": true,
+    "install": "pass",
+    "launch": "pass",
+    "pidof": "7812",
+    "mainActivityResumed": true,
+    "fatalOrFingerprintMatches": false
+  },
+  "releaseVerify": {
+    "preCommitDirtyWorktree": "expected_fail",
+    "postPush": "pending"
+  },
+  "ota": {
+    "required": false,
+    "published": false
+  }
+}
