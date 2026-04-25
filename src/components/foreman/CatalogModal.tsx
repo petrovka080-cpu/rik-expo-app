@@ -254,9 +254,9 @@ export default function CatalogModal(props: {
         <View style={{ flex: 1 }} testID="foreman-catalog-modal" accessibilityLabel="foreman-catalog-modal">
           <View style={[s.header, { paddingTop: HEADER_PAD_TOP }]}>
             <View style={s.headerRow}>
-              <Text style={s.hTitle}>Каталог</Text>
+              <Text testID="foreman-catalog-title" style={s.hTitle}>Каталог</Text>
 
-              <Pressable onPress={onOpenDraft} style={s.hDraftPill} accessibilityLabel="Открыть черновик из каталога">
+              <Pressable onPress={onOpenDraft} style={s.hDraftPill} testID="foreman-catalog-draft-open" accessibilityLabel="Открыть черновик из каталога">
                 <Ionicons name="cart" size={18} color={UI.accent} />
                 <View style={s.badge}>
                   <Text style={s.badgeText}>{draftCount ?? 0}</Text>

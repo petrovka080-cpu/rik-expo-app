@@ -256,7 +256,7 @@ export default function DirectorProposalSheet({
   );
 
   return (
-    <View style={s.sheetContent}>
+    <View testID={`director-proposal-sheet-${pidStr}`} style={s.sheetContent}>
       <View style={s.sheetScrollableBody}>
         <FlashList
           data={items}
@@ -401,6 +401,7 @@ export default function DirectorProposalSheet({
               variant="green"
               disabled={approveDisabled}
               loading={propApproveId === pidStr}
+              testID={`director-proposal-approve-${pidStr}`}
               onPress={() => void onApprove()}
             />
           </View>

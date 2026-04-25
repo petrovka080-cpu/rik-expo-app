@@ -12,6 +12,8 @@ const appId = "com.azisbek_dzhantaev.rikexpoapp";
 const expectedApiLevel = "34";
 const expectedAbi = "x86_64";
 const expectedAvdPattern = process.env.MAESTRO_EXPECTED_AVD_PATTERN ?? "API_34";
+const canonicalImeId =
+  "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME";
 const flowDir = path.join(projectRoot, "maestro", "flows", "critical");
 const warehouseIssueRuntimeVerifyScript = path.join(
   projectRoot,
@@ -22,6 +24,7 @@ const criticalFlows = [
   "active-context-switch.yaml",
   "buyer-proposal-review.yaml",
   "buyer-rfq-create.yaml",
+  "director-approve-report.yaml",
   "foreman-draft-submit.yaml",
   "market-entry.yaml",
   "office-buyer-route-roundtrip.yaml",
@@ -166,6 +169,21 @@ function ensureCanonicalEnvironment(deviceId: string) {
   }
 }
 
+function ensureCanonicalInputMethod(deviceId: string) {
+  // Preserve the soft-keyboard auth flow that our Maestro login steps rely on.
+  adb(deviceId, ["shell", "settings", "put", "secure", "show_ime_with_hard_keyboard", "1"], true);
+  adb(deviceId, ["shell", "settings", "put", "secure", "enabled_input_methods", canonicalImeId], true);
+  adb(deviceId, ["shell", "settings", "put", "secure", "default_input_method", canonicalImeId], true);
+  adb(deviceId, ["shell", "ime", "set", canonicalImeId], true);
+
+  const activeIme = adb(deviceId, ["shell", "settings", "get", "secure", "default_input_method"], true).trim();
+  if (activeIme !== canonicalImeId) {
+    throw new Error(
+      `Expected canonical input method ${canonicalImeId}, received ${activeIme || "<empty>"}.`,
+    );
+  }
+}
+
 function ensureAppInstalled(deviceId: string) {
   if (!fs.existsSync(releaseApk)) {
     throw new Error(
@@ -217,6 +235,7 @@ async function main() {
 
   const deviceId = detectDeviceId();
   ensureCanonicalEnvironment(deviceId);
+  ensureCanonicalInputMethod(deviceId);
   ensureAppInstalled(deviceId);
   fs.mkdirSync(outputDir, { recursive: true });
 

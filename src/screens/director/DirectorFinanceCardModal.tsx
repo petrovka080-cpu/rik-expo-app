@@ -37,6 +37,8 @@ export default function DirectorFinanceCardModal({
   onPdfSecondary,
   pdfPrimaryLabel = "PDF",
   pdfSecondaryLabel = "PDF 2",
+  modalTestID,
+  testIdPrefix,
 
   children,
   overlay,
@@ -56,6 +58,8 @@ export default function DirectorFinanceCardModal({
   onPdfSecondary?: () => Promise<any> | any;
   pdfPrimaryLabel?: string;
   pdfSecondaryLabel?: string;
+  modalTestID?: string;
+  testIdPrefix?: string;
 
   children: React.ReactNode;
   overlay?: React.ReactNode;
@@ -133,6 +137,7 @@ export default function DirectorFinanceCardModal({
         />
 
         <View
+          testID={modalTestID}
           style={{
             position: "absolute",
             top: 0,
@@ -156,6 +161,7 @@ export default function DirectorFinanceCardModal({
               }}
             >
               <TopRightActionBar
+                testIdPrefix={testIdPrefix}
                 titleLeft={periodShort || "Весь период"}
                 actions={[
                   {

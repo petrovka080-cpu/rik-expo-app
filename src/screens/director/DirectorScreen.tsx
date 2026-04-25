@@ -183,6 +183,8 @@ export function DirectorScreen() {
         title={vm.financePanel.financeTitle}
         periodShort={vm.financePanel.financePeriodShort}
         loading={vm.financePanel.financeTopLoading}
+        modalTestID="director-finance-modal"
+        testIdPrefix="director-finance"
         onOpenPeriod={() => vm.financePanel.setFinPeriodOpen(true)}
         onRefresh={() => void vm.financePanel.fetchFinance()}
         onPdf={vm.finPage === "supplier" ? vm.financePanel.onSupplierPdf : vm.financePanel.onFinancePdf}

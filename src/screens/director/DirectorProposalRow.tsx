@@ -18,7 +18,7 @@ function DirectorProposalRow(props: Props) {
   const title = pretty || `#${pidStr.slice(0, 8)}`;
 
   return (
-    <View style={{ marginBottom: 12 }}>
+    <View testID={`director-proposal-card-${pidStr}`} style={{ marginBottom: 12 }}>
       <View style={s.groupHeader}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.groupTitle} numberOfLines={1}>
@@ -38,6 +38,7 @@ function DirectorProposalRow(props: Props) {
           <View style={s.rightStackSpacer} />
 
           <Pressable
+            testID={`director-proposal-open-${pidStr}`}
             disabled={props.screenLock}
             onPress={() => props.onOpen(pidStr, props.screenLock)}
             style={[s.openBtn, props.screenLock && { opacity: 0.6 }]}

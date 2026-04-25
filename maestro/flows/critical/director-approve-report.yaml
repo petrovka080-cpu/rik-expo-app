@@ -1,0 +1,141 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Director Approve Report
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_DIRECTOR_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_DIRECTOR_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-director"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-director"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_DIRECTOR_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "director-top-tab-requests"
+    timeout: 30000
+- tapOn:
+    id: "director-top-tab-requests"
+- extendedWaitUntil:
+    visible:
+      id: "director-request-tab-buyer"
+    timeout: 15000
+- tapOn:
+    id: "director-request-tab-buyer"
+- scrollUntilVisible:
+    element:
+      id: "director-proposal-card-${E2E_DIRECTOR_PROPOSAL_ID}"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "director-proposal-open-${E2E_DIRECTOR_PROPOSAL_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "director-proposal-sheet-${E2E_DIRECTOR_PROPOSAL_ID}"
+    timeout: 30000
+- assertVisible:
+    id: "director-proposal-approve-${E2E_DIRECTOR_PROPOSAL_ID}"
+- tapOn:
+    id: "director-sheet-close"
+- extendedWaitUntil:
+    visible:
+      id: "director-top-tab-finance"
+    timeout: 15000
+- tapOn:
+    id: "director-top-tab-finance"
+- extendedWaitUntil:
+    visible:
+      id: "director-finance-dashboard-debt-card"
+    timeout: 15000
+- tapOn:
+    id: "director-finance-dashboard-debt-card"
+- extendedWaitUntil:
+    visible:
+      id: "director-finance-modal"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "director-finance-debt-suppliers-toggle"
+    timeout: 30000
+- tapOn:
+    id: "director-finance-action-close"
+- extendedWaitUntil:
+    visible:
+      id: "director-finance-action-close"
+    timeout: 15000
+- tapOn:
+    id: "director-finance-action-close"
+- extendedWaitUntil:
+    visible:
+      id: "director-top-tab-warehouse"
+    timeout: 15000
+- swipe:
+    from:
+      id: "director-top-tab-warehouse"
+    direction: LEFT
+    duration: 400
+    waitToSettleTimeoutMs: 500
+- extendedWaitUntil:
+    visible:
+      id: "director-top-tab-reports"
+    timeout: 15000
+- tapOn:
+    id: "director-top-tab-reports"
+- extendedWaitUntil:
+    visible:
+      id: "director-reports-home-card"
+    timeout: 15000
+- tapOn:
+    id: "director-reports-home-card"
+- extendedWaitUntil:
+    visible:
+      id: "director-reports-modal"
+    timeout: 30000
+- assertVisible:
+    id: "director-reports-tab-materials"
+- tapOn:
+    id: "director-reports-tab-discipline"
+- assertVisible:
+    id: "director-reports-tab-discipline"
+- tapOn:
+    id: "director-reports-action-close"
+- stopApp

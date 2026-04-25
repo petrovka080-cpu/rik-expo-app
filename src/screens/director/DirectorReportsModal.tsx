@@ -332,6 +332,8 @@ export default function DirectorReportsModal({
       title="Весь период (даты)"
       periodShort={repPeriodShort}
       loading={repLoading}
+      modalTestID="director-reports-modal"
+      testIdPrefix="director-reports"
       onOpenPeriod={onOpenPeriod}
       onRefresh={onRefresh}
       onPdf={() => void onExportProductionPdf?.()}
@@ -501,7 +503,12 @@ export default function DirectorReportsModal({
         {(["materials", "discipline"] as RepTab[]).map((tab) => {
           const active = repTab === tab;
           return (
-            <Pressable key={tab} onPress={() => onTabPress(tab)} style={[s.tab, active && s.tabActive, { marginRight: 8 }]}>
+            <Pressable
+              key={tab}
+              testID={`director-reports-tab-${tab}`}
+              onPress={() => onTabPress(tab)}
+              style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
+            >
               <Text style={{ color: active ? UI.text : UI.sub, fontWeight: "900" }}>
                 {tab === "materials" ? "Материалы" : "Работы"}
               </Text>

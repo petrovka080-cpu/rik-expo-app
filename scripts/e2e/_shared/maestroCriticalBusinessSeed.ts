@@ -38,6 +38,12 @@ type BuyerSeed = {
   proposalId: string;
 };
 
+type DirectorSeed = {
+  proposalRequestId: string;
+  proposalRequestItemId: string;
+  proposalId: string;
+};
+
 type WarehouseSeed = {
   requestId: string;
   requestItemId: string;
@@ -65,6 +71,7 @@ export type MaestroCriticalBusinessSeed = {
   companyProfileId: string;
   users: SeedUsers;
   buyer: BuyerSeed;
+  director: DirectorSeed;
   warehouse: WarehouseSeed;
   foreman: ForemanSeed;
   env: Record<string, string>;
@@ -240,6 +247,26 @@ async function finalizeApprovedProposal(
       submitted_at: decisionTimestamp,
       approved_at: decisionTimestamp,
       decided_at: decisionTimestamp,
+    })
+    .eq("id", params.proposalId);
+  if (update.error) throw update.error;
+}
+
+async function finalizePendingProposal(
+  admin: AdminClient,
+  params: {
+    proposalId: string;
+  },
+) {
+  const submissionTimestamp = new Date().toISOString();
+  const update = await admin
+    .from("proposals")
+    .update({
+      status: "На утверждении",
+      submitted_at: submissionTimestamp,
+      approved_at: null,
+      decided_at: null,
+      sent_to_accountant_at: null,
     })
     .eq("id", params.proposalId);
   if (update.error) throw update.error;
@@ -437,6 +464,73 @@ async function seedBuyerProposalReview(
   };
 }
 
+async function seedDirectorPendingProposal(
+  admin: AdminClient,
+  buyerClient: AuthenticatedClient,
+  params: {
+    marker: string;
+    user: RuntimeTestUser;
+    requestStatus: RequestStatus;
+  },
+) {
+  const requestInsert = await admin
+    .from("requests")
+    .insert({
+      status: MUTABLE_REQUEST_STATUS,
+      display_no: `REQ-${params.marker}-DIR-PROP/2026`,
+      object_name: `Director Proposal ${params.marker}`,
+      note: `Director Proposal ${params.marker}`,
+      created_by: params.user.id,
+      requested_by: params.user.displayLabel,
+    })
+    .select("id")
+    .single();
+  if (requestInsert.error) throw requestInsert.error;
+  const requestId = toText(requestInsert.data?.id);
+
+  const requestItemInsert = await admin
+    .from("request_items")
+    .insert({
+      request_id: requestId,
+      name_human: `Director Proposal ${params.marker}`,
+      qty: 1,
+      uom: "pcs",
+      rik_code: `MAT-DIR-PROP-${params.marker}`,
+      status: "approved",
+      kind: "material",
+      note: params.marker,
+    })
+    .select("id")
+    .single();
+  if (requestItemInsert.error) throw requestItemInsert.error;
+  const requestItemId = toText(requestItemInsert.data?.id);
+
+  await finalizeSeedRequestStatus(admin, {
+    requestId,
+    requestStatus: params.requestStatus,
+    submittedBy: params.user.id,
+  });
+
+  const proposalSeed = await submitSeedProposal(buyerClient, {
+    marker: `${params.marker}-director`,
+    user: params.user,
+    requestId,
+    requestItemId,
+  });
+
+  const proposalId = proposalSeed.proposalId;
+
+  await finalizePendingProposal(admin, {
+    proposalId,
+  });
+
+  return {
+    requestId,
+    requestItemId,
+    proposalId,
+  };
+}
+
 async function seedWarehouseBusinessFlow(
   admin: AdminClient,
   params: {
@@ -603,6 +697,7 @@ async function resolveForemanHeaderSeed(admin: AdminClient): Promise<ForemanSeed
 const buildCriticalEnv = (params: {
   users: SeedUsers;
   buyer: BuyerSeed;
+  director: DirectorSeed;
   warehouse: WarehouseSeed;
   foreman: ForemanSeed;
 }) => ({
@@ -618,6 +713,12 @@ const buildCriticalEnv = (params: {
   E2E_BUYER_PROPOSAL_ID: params.buyer.proposalId,
   E2E_BUYER_PROPOSAL_REQUEST_ID: params.buyer.proposalRequestId,
   E2E_BUYER_PROPOSAL_ITEM_ID: params.buyer.proposalRequestItemId,
+  E2E_DIRECTOR_EMAIL: params.users.owner.email,
+  E2E_DIRECTOR_PASSWORD: params.users.owner.password,
+  E2E_DIRECTOR_FIO: "MaestroDirector",
+  E2E_DIRECTOR_PROPOSAL_ID: params.director.proposalId,
+  E2E_DIRECTOR_PROPOSAL_REQUEST_ID: params.director.proposalRequestId,
+  E2E_DIRECTOR_PROPOSAL_ITEM_ID: params.director.proposalRequestItemId,
   E2E_WAREHOUSE_EMAIL: params.users.warehouse.email,
   E2E_WAREHOUSE_PASSWORD: params.users.warehouse.password,
   E2E_WAREHOUSE_FIO: "MaestroWarehouse",
@@ -745,6 +846,15 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
   createdRequestItems.push(buyerProposal.requestItemId);
   createdProposals.push(buyerProposal.proposalId);
 
+  const directorProposal = await seedDirectorPendingProposal(admin, buyerClient, {
+    marker,
+    user: buyer,
+    requestStatus,
+  });
+  createdRequests.push(directorProposal.requestId);
+  createdRequestItems.push(directorProposal.requestItemId);
+  createdProposals.push(directorProposal.proposalId);
+
   const warehouseSeed = await seedWarehouseBusinessFlow(admin, {
     marker,
     requestStatus,
@@ -838,6 +948,11 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
       proposalRequestItemId: buyerProposal.requestItemId,
       proposalId: buyerProposal.proposalId,
     },
+    director: {
+      proposalRequestId: directorProposal.requestId,
+      proposalRequestItemId: directorProposal.requestItemId,
+      proposalId: directorProposal.proposalId,
+    },
     warehouse: warehouseSeed,
     foreman: foremanSeed,
   });
@@ -854,6 +969,11 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
       proposalRequestId: buyerProposal.requestId,
       proposalRequestItemId: buyerProposal.requestItemId,
       proposalId: buyerProposal.proposalId,
+    },
+    director: {
+      proposalRequestId: directorProposal.requestId,
+      proposalRequestItemId: directorProposal.requestItemId,
+      proposalId: directorProposal.proposalId,
     },
     warehouse: warehouseSeed,
     foreman: foremanSeed,

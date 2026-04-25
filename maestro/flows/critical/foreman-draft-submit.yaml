@@ -80,6 +80,7 @@ name: Foreman Draft Submit
     timeout: 30000
 - tapOn:
     id: "foreman-dropdown-option-foreman-object-${E2E_FOREMAN_OBJECT_CODE_TOKEN}"
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: "foreman-dropdown-open-foreman-locator"
@@ -103,6 +104,7 @@ name: Foreman Draft Submit
     timeout: 30000
 - tapOn:
     id: "foreman-dropdown-option-foreman-locator-${E2E_FOREMAN_LOCATOR_CODE_TOKEN}"
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: "foreman-catalog-open"
@@ -114,10 +116,10 @@ name: Foreman Draft Submit
     id: "foreman-catalog-open"
 - extendedWaitUntil:
     visible:
-      text: "Каталог"
+      id: "foreman-catalog-title"
     timeout: 30000
 - tapOn:
-    text: "Что ищем? (бетон, арматура...)"
+    id: "foreman-catalog-search-input"
 - inputText: ${E2E_FOREMAN_EXPECTED_CODE}
 - hideKeyboard
 - extendedWaitUntil:
@@ -132,7 +134,7 @@ name: Foreman Draft Submit
 - tapOn:
     id: "foreman-catalog-add-${E2E_FOREMAN_EXPECTED_CODE_TOKEN}"
 - tapOn:
-    text: "Открыть черновик из каталога"
+    id: "foreman-catalog-draft-open"
 - extendedWaitUntil:
     visible:
       id: "foreman-draft-send"

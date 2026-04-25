@@ -82,7 +82,7 @@ export default function DirectorSheetModal(props: Props) {
               {props.sheetTitle}
             </Text>
 
-            <Pressable onPress={props.onClose} style={s.sheetCloseBtn}>
+            <Pressable testID="director-sheet-close" onPress={props.onClose} style={s.sheetCloseBtn}>
               <Text style={s.sheetCloseText}>Свернуть</Text>
             </Pressable>
           </View>

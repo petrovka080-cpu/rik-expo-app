@@ -9,6 +9,7 @@ export type TopRightAction = {
   disabled?: boolean;
   busy?: boolean;
   ariaLabel?: string;
+  testID?: string;
 };
 
 export type TopRightUi = {
@@ -35,6 +36,7 @@ function IconSquare({
   busy,
   ui,
   ariaLabel,
+  testID,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
@@ -42,9 +44,11 @@ function IconSquare({
   busy?: boolean;
   ui: TopRightUi;
   ariaLabel?: string;
+  testID?: string;
 }) {
   return (
     <Pressable
+      testID={testID}
       accessibilityLabel={ariaLabel}
       accessibilityState={{ disabled: !!disabled, busy: !!busy }}
       onPress={onPress}
@@ -88,11 +92,7 @@ export default function TopRightActionBar({
 
       <View style={{ flexDirection: "row", gap: 8, marginLeft: 10 }}>
         {actions.map((a) => (
-          <View
-            key={a.key}
-            testID={testIdPrefix ? `${testIdPrefix}-action-${a.key}` : undefined}
-            accessibilityLabel={testIdPrefix ? `${testIdPrefix}-action-${a.key}` : undefined}
-          >
+          <View key={a.key}>
             <IconSquare
               icon={a.icon}
               onPress={a.onPress}
@@ -100,6 +100,7 @@ export default function TopRightActionBar({
               busy={a.busy}
               ui={ui}
               ariaLabel={a.ariaLabel}
+              testID={a.testID ?? (testIdPrefix ? `${testIdPrefix}-action-${a.key}` : undefined)}
             />
           </View>
         ))}

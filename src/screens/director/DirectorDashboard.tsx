@@ -23,6 +23,14 @@ type TopTabItem = { key: DirTopTab; label: string };
 
 type TopTabsListRef = { scrollToOffset?: (params: { offset: number; animated?: boolean }) => void };
 
+const DIRECTOR_TOP_TAB_TEST_IDS = [
+  "requests",
+  "subcontracts",
+  "finance",
+  "warehouse",
+  "reports",
+] as const;
+
 const DIRECTOR_TOP_TABS: TopTabItem[] = [
   { key: "Заявки", label: "Заявки" },
   { key: "Подряды", label: "Подряды" },
@@ -191,11 +199,13 @@ export default function DirectorDashboard(p: Props) {
         showsHorizontalScrollIndicator={false}
         bounces={false}
         keyboardShouldPersistTaps="handled"
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const active = String(p.dirTab) === item.key;
+          const topTabTestId = DIRECTOR_TOP_TAB_TEST_IDS[index] ?? "unknown";
           return (
             <Pressable
               key={item.key}
+              testID={`director-top-tab-${topTabTestId}`}
               onLayout={(e) => onTopTabLayout(item.key, e)}
               onPress={() => {
                 p.setDirTab(item.key);
@@ -225,6 +235,7 @@ export default function DirectorDashboard(p: Props) {
               return (
                 <Pressable
                   key={t}
+                  testID={`director-request-tab-${t}`}
                   onPress={() => p.setTab(t)}
                   style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
                 >
@@ -417,6 +428,7 @@ export default function DirectorDashboard(p: Props) {
             if (item.key === "debt") {
               return (
                 <Pressable
+                  testID="director-finance-dashboard-debt-card"
                   onPress={() => p.openFinancePage("debt")}
                   style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
                 >
@@ -432,6 +444,7 @@ export default function DirectorDashboard(p: Props) {
 
             return (
               <Pressable
+                testID="director-finance-dashboard-spend-card"
                 onPress={() => p.openFinancePage("spend")}
                 style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
               >
@@ -492,6 +505,7 @@ export default function DirectorDashboard(p: Props) {
       ) : (
         <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
           <Pressable
+            testID="director-reports-home-card"
             onPress={() => p.openReports?.()}
             style={[s.mobCard, { marginBottom: 12 }]}
           >
