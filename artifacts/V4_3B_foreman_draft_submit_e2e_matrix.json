@@ -1,0 +1,41 @@
+{
+  "task": "V4-3B FOREMAN_DRAFT_SUBMIT_E2E_STABILIZATION",
+  "status": "GREEN",
+  "scope": {
+    "directorTouched": false,
+    "businessLogicTouched": false,
+    "useForemanScreenControllerTouched": false,
+    "useForemanDraftBoundaryTouched": false,
+    "sqlTouched": false,
+    "runtimeTouched": false,
+    "harnessTouched": false
+  },
+  "rootCause": {
+    "type": "selector_mismatch",
+    "summary": "The catalog cart button exposed only an accessibility label in the Android hierarchy, so Maestro's id selector could not find foreman-catalog-draft-open.",
+    "catalogModalOpened": true,
+    "blockingAlertObserved": false,
+    "failingSelectorBefore": "id: foreman-catalog-draft-open",
+    "workingSelectorAfter": "text: Открыть черновик из каталога"
+  },
+  "changedFiles": [
+    "maestro/flows/critical/foreman-draft-submit.yaml",
+    "artifacts/V4_3B_foreman_draft_submit_e2e_notes.md",
+    "artifacts/V4_3B_foreman_draft_submit_e2e_proof.md",
+    "artifacts/V4_3B_foreman_draft_submit_e2e_matrix.json"
+  ],
+  "results": {
+    "contractTest": "pass",
+    "targetedForemanFlow": "pass",
+    "criticalSuite": "pass",
+    "criticalSuitePassedFlows": 9,
+    "criticalSuiteFailedFlows": 0,
+    "directorFlow": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTestDefault": "pass",
+    "gitDiffCheck": "pass",
+    "androidProofRequired": false
+  }
+}

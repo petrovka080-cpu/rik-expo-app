@@ -35,36 +35,31 @@ name: Foreman Draft Submit
     timeout: 30000
 - tapOn:
     id: "office-direction-open-foreman"
-- runFlow:
-    when:
-      visible:
-        id: "warehouse-fio-input"
-    commands:
-      - tapOn:
-          id: "warehouse-fio-input"
-      - eraseText
-      - inputText: ${E2E_FOREMAN_FIO}
-      - hideKeyboard
-      - tapOn:
-          id: "warehouse-fio-confirm"
+# After entering foreman role, wait for the materials tab to be ready
 - extendedWaitUntil:
     visible:
       id: "foreman-main-materials-open"
     timeout: 30000
 - tapOn:
     id: "foreman-main-materials-open"
-- runFlow:
-    when:
-      visible:
-        id: "warehouse-fio-input"
-    commands:
-      - tapOn:
-          id: "warehouse-fio-input"
-      - eraseText
-      - inputText: ${E2E_FOREMAN_FIO}
-      - hideKeyboard
-      - tapOn:
-          id: "warehouse-fio-confirm"
+# FIO bootstrap: with clearState:true, the async bootstrap
+# (getUser + loadStoredFioState) SHOULD open the FIO modal.
+# We wait for the object dropdown as a bootstrap-complete signal,
+# because both the FIO modal and the dropdown are in ForemanMaterialsContent.
+# If the FIO modal appears on the way, it blocks scrolling, so we handle it.
+- extendedWaitUntil:
+    visible:
+      id: "warehouse-fio-input"
+    timeout: 10000
+- tapOn:
+    id: "warehouse-fio-input"
+- eraseText
+- inputText: ${E2E_FOREMAN_FIO}
+- hideKeyboard
+- tapOn:
+    id: "warehouse-fio-confirm"
+- waitForAnimationToEnd
+# Now select object
 - scrollUntilVisible:
     element:
       id: "foreman-dropdown-open-foreman-object"
@@ -81,6 +76,7 @@ name: Foreman Draft Submit
 - tapOn:
     id: "foreman-dropdown-option-foreman-object-${E2E_FOREMAN_OBJECT_CODE_TOKEN}"
 - waitForAnimationToEnd
+# Now select locator
 - scrollUntilVisible:
     element:
       id: "foreman-dropdown-open-foreman-locator"
@@ -105,6 +101,7 @@ name: Foreman Draft Submit
 - tapOn:
     id: "foreman-dropdown-option-foreman-locator-${E2E_FOREMAN_LOCATOR_CODE_TOKEN}"
 - waitForAnimationToEnd
+# Open catalog — all header fields now filled (foreman, object, locator)
 - scrollUntilVisible:
     element:
       id: "foreman-catalog-open"
@@ -116,7 +113,11 @@ name: Foreman Draft Submit
     id: "foreman-catalog-open"
 - extendedWaitUntil:
     visible:
-      id: "foreman-catalog-title"
+      id: "foreman-catalog-modal"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "foreman-catalog-search-input"
     timeout: 30000
 - tapOn:
     id: "foreman-catalog-search-input"
@@ -133,8 +134,12 @@ name: Foreman Draft Submit
 - hideKeyboard
 - tapOn:
     id: "foreman-catalog-add-${E2E_FOREMAN_EXPECTED_CODE_TOKEN}"
+- extendedWaitUntil:
+    visible:
+      text: "Открыть черновик из каталога"
+    timeout: 30000
 - tapOn:
-    id: "foreman-catalog-draft-open"
+    text: "Открыть черновик из каталога"
 - extendedWaitUntil:
     visible:
       id: "foreman-draft-send"
