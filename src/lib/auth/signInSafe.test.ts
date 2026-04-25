@@ -97,4 +97,24 @@ describe("signInSafe", () => {
       }),
     );
   });
+
+  it("trims surrounding whitespace from email before submitting auth credentials", async () => {
+    mockSignInWithPassword.mockResolvedValue({
+      data: {
+        session: { access_token: "token" },
+        user: { id: "user-1" },
+      },
+      error: null,
+    });
+
+    await signInSafe({
+      email: "  test@example.com  ",
+      password: "secret",
+    });
+
+    expect(mockSignInWithPassword).toHaveBeenCalledWith({
+      email: "test@example.com",
+      password: "secret",
+    });
+  });
 });

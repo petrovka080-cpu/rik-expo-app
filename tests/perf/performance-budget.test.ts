@@ -119,8 +119,10 @@ describe("performance budget — bundle module count", () => {
     //   foreman.subcontractController.model, guards, effects, telemetry.
     // BUYER_SCREEN_OWNER_SPLIT adds four permanent buyer screen boundary files:
     //   buyer.screen.model, BuyerSearchBar, BuyerScreenContent, buyer.screen.model.test.
+    // FOREMAN_DRAFT_RUNTIME_OWNER_SPLIT adds one permanent runtime owner hook:
+    //   useForemanDraftBoundaryRuntimeSubscriptions.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
-    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1299);
+    expect(tsFiles - p3ATypeBoundaryFiles).toBeLessThanOrEqual(1300);
   });
 });
 

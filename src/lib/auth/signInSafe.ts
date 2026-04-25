@@ -54,6 +54,7 @@ export async function signInSafe(params: {
   password: string;
 }): Promise<SafeSignInResult> {
   const startedAt = nowMs();
+  const normalizedEmail = String(params.email ?? "").trim();
 
   recordPlatformObservability({
     ...LOGIN_OBSERVABILITY_BASE,
@@ -63,7 +64,7 @@ export async function signInSafe(params: {
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: params.email,
+      email: normalizedEmail,
       password: params.password,
     });
 

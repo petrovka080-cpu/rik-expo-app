@@ -51,8 +51,6 @@ import {
   type ForemanDraftHeaderEditPlan,
 } from "../foreman.draftBoundaryIdentity.model";
 import {
-  type ForemanDraftRestoreTriggerPlan,
-  planForemanFocusRestoreTrigger,
   resolveForemanActiveLocalDraftSnapshotPlan,
   resolveForemanDraftCacheClearPlan,
 } from "../foreman.draftLifecycle.model";
@@ -88,14 +86,6 @@ import {
   type ForemanDraftBoundarySyncResultPayload,
 } from "../foreman.draftBoundary.sync";
 import {
-  getForemanDraftBoundaryCurrentAppState,
-  runForemanDraftBoundaryLiveCleanupEffect,
-  runForemanDraftBoundaryRemoteDetailsEffect,
-  runForemanDraftBoundaryRemoteItemsEffect,
-  startForemanDraftBoundaryNetworkRuntime,
-  subscribeForemanDraftBoundaryAppState,
-} from "../foreman.draftBoundary.effects";
-import {
   loadForemanDraftBoundaryRequestDetails,
   invalidateForemanDraftBoundaryRequestDetailsLoads,
 } from "../foreman.draftBoundary.requestDetails";
@@ -107,6 +97,10 @@ import { runForemanDraftBoundaryPostSubmitSuccess } from "../foreman.draftBounda
 import { useForemanHeader } from "./useForemanHeader";
 import { useForemanItemsState } from "./useForemanItemsState";
 import { useForemanBootstrapCoordinator } from "./useForemanBootstrapCoordinator";
+import {
+  buildForemanDraftBoundaryInitialAppState,
+  useForemanDraftBoundaryRuntimeSubscriptions,
+} from "./useForemanDraftBoundaryRuntimeSubscriptions";
 
 type UseForemanDraftBoundaryProps = {
   isScreenFocused: boolean;
@@ -169,7 +163,7 @@ export function useForemanDraftBoundary({
   const handlePostSubmitSuccessRef = useRef<
     (rid: string, submitted: RequestRecord | null) => Promise<void>
   >(async () => undefined);
-  const appStateRef = useRef(getForemanDraftBoundaryCurrentAppState());
+  const appStateRef = useRef(buildForemanDraftBoundaryInitialAppState());
   const networkOnlineRef = useRef<boolean | null>(null);
   const wasScreenFocusedRef = useRef(false);
   const skipRemoteHydrationRequestIdRef = useRef<string | null>(null);
@@ -924,7 +918,7 @@ export function useForemanDraftBoundary({
   );
 
   const runRestoreTriggerPlan = useCallback(
-    (plan: ForemanDraftRestoreTriggerPlan) =>
+    (plan: Parameters<typeof runForemanRestoreTriggerPlan>[0]) =>
       runForemanRestoreTriggerPlan(plan, {
         restoreDraftIfNeeded,
         reportDraftBoundaryFailure,
@@ -967,87 +961,28 @@ export function useForemanDraftBoundary({
   ]);
 
   // ── P6.3c: Live Reconciliation Path ──────────────────────────
-  useEffect(() => {
-    if (!boundaryState.bootstrapReady) return;
-
-      runForemanDraftBoundaryLiveCleanupEffect({
-        bootstrapReady: boundaryState.bootstrapReady,
-        boundaryConflictType: boundaryState.conflictType,
-        requestId,
-        requestDetailsStatus: requestDetails?.status,
-        localDraftSnapshotRef,
-        clearTerminalLocalDraft,
-        reportDraftBoundaryFailure,
-      });
-  }, [
-    boundaryState.bootstrapReady,
-    boundaryState.conflictType,
-    clearTerminalLocalDraft,
-    reportDraftBoundaryFailure,
-    requestDetails?.status,
+  useForemanDraftBoundaryRuntimeSubscriptions({
+    bootstrapReady: boundaryState.bootstrapReady,
+    boundaryConflictType: boundaryState.conflictType,
+    isScreenFocused,
     requestId,
-  ]);
+    requestDetailsStatus: requestDetails?.status,
+    skipRemoteDraftEffects,
+    preloadDisplayNo,
+    loadDetails,
+    loadItems,
+    bootstrapDraft,
+    setNetworkOnline,
+    appStateRef,
+    networkOnlineRef,
+    wasScreenFocusedRef,
+    localDraftSnapshotRef,
+    skipRemoteHydrationRequestIdRef,
+    clearTerminalLocalDraft,
+    runRestoreTriggerPlan,
+    reportDraftBoundaryFailure,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    void bootstrapDraft({ cancelled: () => cancelled });
-    return () => {
-      cancelled = true;
-    };
-  }, [bootstrapDraft]);
-
-  useEffect(() => {
-    const wasFocused = wasScreenFocusedRef.current;
-    wasScreenFocusedRef.current = isScreenFocused;
-    runRestoreTriggerPlan(planForemanFocusRestoreTrigger({
-      bootstrapReady: boundaryState.bootstrapReady,
-      isScreenFocused,
-      wasScreenFocused: wasFocused,
-    }));
-  }, [boundaryState.bootstrapReady, isScreenFocused, runRestoreTriggerPlan]);
-
-  useEffect(() => {
-    return subscribeForemanDraftBoundaryAppState({
-      bootstrapReady: boundaryState.bootstrapReady,
-      appStateRef,
-      runRestoreTriggerPlan,
-      reportDraftBoundaryFailure,
-    });
-  }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, runRestoreTriggerPlan]);
-
-  useEffect(() => {
-    const runtime = startForemanDraftBoundaryNetworkRuntime({
-      bootstrapReady: boundaryState.bootstrapReady,
-      networkOnlineRef,
-      setNetworkOnline,
-      runRestoreTriggerPlan,
-      reportDraftBoundaryFailure,
-    });
-    return () => {
-      runtime.dispose();
-    };
-  }, [boundaryState.bootstrapReady, reportDraftBoundaryFailure, runRestoreTriggerPlan]);
-
-  useEffect(() => {
-    runForemanDraftBoundaryRemoteDetailsEffect({
-      bootstrapReady: boundaryState.bootstrapReady,
-      requestId,
-      skipRemoteDraftEffects,
-      skipRemoteHydrationRequestId: skipRemoteHydrationRequestIdRef.current,
-      preloadDisplayNo,
-      loadDetails,
-    });
-  }, [boundaryState.bootstrapReady, loadDetails, preloadDisplayNo, requestId, skipRemoteDraftEffects]);
-
-  useEffect(() => {
-    runForemanDraftBoundaryRemoteItemsEffect({
-      bootstrapReady: boundaryState.bootstrapReady,
-      requestId,
-      skipRemoteDraftEffects,
-      skipRemoteHydrationRequestIdRef,
-      loadItems,
-    });
-  }, [boundaryState.bootstrapReady, loadItems, requestId, skipRemoteDraftEffects]);
 
   return {
     foreman,
