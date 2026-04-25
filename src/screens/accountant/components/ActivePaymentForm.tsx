@@ -143,40 +143,6 @@ export default function ActivePaymentForm({
     onAllocStatus,
   });
 
-  const segBtn = (active: boolean) => ({
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 14,
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
-    backgroundColor: active ? "rgba(34,197,94,0.18)" : "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: active ? "rgba(34,197,94,0.55)" : "rgba(255,255,255,0.14)",
-    opacity: busyKey ? 0.6 : 1,
-  });
-
-  const smallBtn = (kind: "green" | "neutral", disabled?: boolean) => ({
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: kind === "green" ? "rgba(34,197,94,0.55)" : "rgba(255,255,255,0.14)",
-    backgroundColor: kind === "green" ? "rgba(34,197,94,0.16)" : "rgba(255,255,255,0.06)",
-    opacity: disabled ? 0.55 : 1,
-  });
-
-  const miniBtn = (disabled?: boolean) => ({
-    width: 54,
-    height: 42,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.55)",
-    backgroundColor: "rgba(34,197,94,0.16)",
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
-    opacity: disabled ? 0.55 : 1,
-  });
-
   return (
     <>
       <View style={S.section}>
@@ -213,7 +179,7 @@ export default function ActivePaymentForm({
                 placeholder="Номер счёта (инвойса) *"
                 placeholderTextColor={UI.sub}
                 onFocus={(e) => scrollInputIntoView(e)}
-                style={[S.input(true), { opacity: busyKey ? 0.9 : 1 }]}
+                style={[S.input(true), busyKey ? ps.opacity90 : null]}
               />
 
               <View style={ps.gap10} />
@@ -228,7 +194,7 @@ export default function ActivePaymentForm({
                     setInvMM(s.slice(5, 7));
                     setInvDD(s.slice(8, 10));
                   }}
-                  style={[ps.dateChip, { opacity: busyKey ? 0.6 : 1 }]}
+                  style={[ps.dateChip, busyKey ? ps.opacity60 : null]}
                 >
                   <Text style={ps.boldText}>Сегодня</Text>
                 </Pressable>
@@ -243,15 +209,13 @@ export default function ActivePaymentForm({
                     setInvMM(s.slice(5, 7));
                     setInvDD(s.slice(8, 10));
                   }}
-                  style={[ps.dateChip, { opacity: busyKey ? 0.6 : 1 }]}
+                  style={[ps.dateChip, busyKey ? ps.opacity60 : null]}
                 >
                   <Text style={ps.boldText}>Вчера</Text>
                 </Pressable>
               </View>
 
-              <View
-                style={[ps.dateInputRow, { opacity: busyKey ? 0.9 : 1 }]}
-              >
+              <View style={[ps.dateInputRow, busyKey ? ps.opacity90 : null]}>
                 <Text style={ps.boldText}>{INV_PREFIX}</Text>
 
                 <TextInput
@@ -303,11 +267,27 @@ export default function ActivePaymentForm({
 
         <View style={S.section}>
           <View style={ps.segRow}>
-            <Pressable disabled={!!busyKey} onPress={() => setPayKind("bank")} style={segBtn(payKind === "bank")}>
+            <Pressable
+              disabled={!!busyKey}
+              onPress={() => setPayKind("bank")}
+              style={[
+                ps.segBtnBase,
+                payKind === "bank" ? ps.segBtnActive : ps.segBtnInactive,
+                busyKey ? ps.opacity60 : null,
+              ]}
+            >
               <Text style={ps.boldText}>Банк</Text>
             </Pressable>
 
-            <Pressable disabled={!!busyKey} onPress={() => setPayKind("cash")} style={segBtn(payKind === "cash")}>
+            <Pressable
+              disabled={!!busyKey}
+              onPress={() => setPayKind("cash")}
+              style={[
+                ps.segBtnBase,
+                payKind === "cash" ? ps.segBtnActive : ps.segBtnInactive,
+                busyKey ? ps.opacity60 : null,
+              ]}
+            >
               <Text style={ps.boldText}>Нал</Text>
             </Pressable>
           </View>
@@ -347,7 +327,11 @@ export default function ActivePaymentForm({
                   testID="payment-form-mode-full"
                   disabled={!!busyKey}
                   onPress={selectFullMode}
-                  style={segBtn(mode === "full")}
+                  style={[
+                    ps.segBtnBase,
+                    mode === "full" ? ps.segBtnActive : ps.segBtnInactive,
+                    busyKey ? ps.opacity60 : null,
+                  ]}
                 >
                   <Text style={ps.boldText}>Оплатить полностью</Text>
                 </Pressable>
@@ -356,7 +340,11 @@ export default function ActivePaymentForm({
                   testID="payment-form-mode-partial"
                   disabled={!!busyKey}
                   onPress={selectPartialMode}
-                  style={segBtn(mode === "partial")}
+                  style={[
+                    ps.segBtnBase,
+                    mode === "partial" ? ps.segBtnActive : ps.segBtnInactive,
+                    busyKey ? ps.opacity60 : null,
+                  ]}
                 >
                   <Text style={ps.boldText}>Оплатить частично</Text>
                 </Pressable>
@@ -368,8 +356,8 @@ export default function ActivePaymentForm({
 
           {proposalId && mode === "full" ? (
             <>
-              <View style={pillBox()}>
-                <Text style={pillBoxTxt()}>
+              <View style={ps.pillBox}>
+                <Text style={ps.pillBoxText}>
                   Сумма к оплате:{" "}
                   <Text style={ps.boldText}>
                     {restProposal.toFixed(2)} {cur}
@@ -387,7 +375,7 @@ export default function ActivePaymentForm({
               <View
                 style={[
                   ps.allocBox,
-                  { borderColor: allocOk ? "rgba(34,197,94,0.35)" : "rgba(255,99,99,0.45)" },
+                  allocOk ? ps.allocBoxOk : ps.allocBoxWarn,
                 ]}
               >
                 <View style={ps.allocHeaderRow}>
@@ -416,7 +404,11 @@ export default function ActivePaymentForm({
                       testID="payment-form-clear"
                       disabled={!!busyKey}
                       onPress={clearAlloc}
-                      style={smallBtn("neutral", !!busyKey)}
+                      style={[
+                        ps.smallBtnBase,
+                        ps.smallBtnNeutral,
+                        busyKey ? ps.opacity55 : null,
+                      ]}
                     >
                       <Text style={ps.boldText}>Очистить</Text>
                     </Pressable>
@@ -492,7 +484,7 @@ export default function ActivePaymentForm({
                               style={[
                                 S.input(true),
                                 ps.lineAllocInput,
-                                { opacity: busyKey ? 0.9 : 1 },
+                                busyKey ? ps.opacity90 : null,
                               ]}
                             />
 
@@ -500,7 +492,10 @@ export default function ActivePaymentForm({
                               testID={`payment-form-line-max-${id}`}
                               disabled={!!busyKey || remain <= 0}
                               onPress={() => setLineAllocMax(id)}
-                              style={miniBtn(!!busyKey || remain <= 0)}
+                              style={[
+                                ps.miniBtnBase,
+                                busyKey || remain <= 0 ? ps.opacity55 : null,
+                              ]}
                             >
                               <Text style={ps.maxBtnText}>MAX</Text>
                             </Pressable>
@@ -549,7 +544,8 @@ export default function ActivePaymentForm({
             style={[
               S.input(true),
               isPayActiveTab ? ps.noteAccent : null,
-              { minHeight: 56, opacity: busyKey ? 0.9 : 1 },
+              ps.minHeight56,
+              busyKey ? ps.opacity90 : null,
             ]}
           />
 
@@ -565,7 +561,7 @@ export default function ActivePaymentForm({
                 autoCorrect={false}
                 autoCapitalize="none"
                 onFocus={(e) => scrollInputIntoView(e)}
-                style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
+                style={[S.input(true), payAccent as object, busyKey ? ps.opacity90 : null]}
               />
 
               <View style={ps.gap8} />
@@ -578,7 +574,7 @@ export default function ActivePaymentForm({
                 autoCorrect={false}
                 autoCapitalize="none"
                 onFocus={(e) => scrollInputIntoView(e)}
-                style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
+                style={[S.input(true), payAccent as object, busyKey ? ps.opacity90 : null]}
               />
 
               <View style={ps.gap8} />
@@ -591,7 +587,7 @@ export default function ActivePaymentForm({
                 autoCorrect={false}
                 autoCapitalize="none"
                 onFocus={(e) => scrollInputIntoView(e)}
-                style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
+                style={[S.input(true), payAccent as object, busyKey ? ps.opacity90 : null]}
               />
 
               <View style={ps.gap8} />
@@ -608,7 +604,7 @@ export default function ActivePaymentForm({
                     autoCorrect={false}
                     autoCapitalize="none"
                     onFocus={(e) => scrollInputIntoView(e)}
-                    style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
+                    style={[S.input(true), payAccent as object, busyKey ? ps.opacity90 : null]}
                   />
                 </View>
 
@@ -622,7 +618,7 @@ export default function ActivePaymentForm({
                     autoCorrect={false}
                     autoCapitalize="none"
                     onFocus={(e) => scrollInputIntoView(e)}
-                    style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
+                    style={[S.input(true), payAccent as object, busyKey ? ps.opacity90 : null]}
                   />
                 </View>
               </View>
@@ -634,21 +630,6 @@ export default function ActivePaymentForm({
   );
 }
 
-function pillBox() {
-  return {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-    backgroundColor: "rgba(255,255,255,0.04)",
-  };
-}
-
-function pillBoxTxt() {
-  return { color: UI.sub, fontWeight: "800" } as const;
-}
-
 const ps = StyleSheet.create({
   gap6: { height: 6 },
   gap8: { height: 8 },
@@ -656,11 +637,60 @@ const ps = StyleSheet.create({
   gap12: { height: 12 },
   flex1: { flex: 1 },
   segRow: { flexDirection: "row", gap: 8 },
+  opacity60: { opacity: 0.6 },
+  opacity55: { opacity: 0.55 },
+  opacity90: { opacity: 0.9 },
+  minHeight56: { minHeight: 56 },
   boldText: { color: UI.text, fontWeight: "900" },
   subBold: { color: UI.sub, fontWeight: "800" },
   subBoldMt6: { color: UI.sub, fontWeight: "800", marginTop: 6 },
   supplierLabel: { color: UI.sub, fontWeight: "800", marginBottom: 8 },
   supplierValue: { color: UI.text, fontWeight: "900" },
+  segBtnBase: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  segBtnActive: {
+    backgroundColor: "rgba(34,197,94,0.18)",
+    borderColor: "rgba(34,197,94,0.55)",
+  },
+  segBtnInactive: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderColor: "rgba(255,255,255,0.14)",
+  },
+  smallBtnBase: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  smallBtnNeutral: {
+    borderColor: "rgba(255,255,255,0.14)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+  miniBtnBase: {
+    width: 54,
+    height: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(34,197,94,0.55)",
+    backgroundColor: "rgba(34,197,94,0.16)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pillBox: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,255,255,0.04)",
+  },
+  pillBoxText: { color: UI.sub, fontWeight: "800" },
   dateChipRow: { flexDirection: "row", gap: 8, marginBottom: 8 },
   dateChip: {
     paddingVertical: 6,
@@ -721,6 +751,8 @@ const ps = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "rgba(255,255,255,0.03)",
   },
+  allocBoxOk: { borderColor: "rgba(34,197,94,0.35)" },
+  allocBoxWarn: { borderColor: "rgba(255,99,99,0.45)" },
   allocHeaderRow: {
     flexDirection: "row",
     alignItems: "center",

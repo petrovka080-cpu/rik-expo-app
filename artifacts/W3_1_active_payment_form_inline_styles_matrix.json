@@ -1,0 +1,72 @@
+{
+  "wave": "W3.1",
+  "name": "ActivePaymentForm inline style extraction",
+  "domain": "PERFORMANCE",
+  "base_head": "22f9b95e980faa4db2faecfb89b446ddf32ed85c",
+  "base_origin_main": "22f9b95e980faa4db2faecfb89b446ddf32ed85c",
+  "status": "GREEN_CANDIDATE_PENDING_RELEASE_VERIFY",
+  "scope": {
+    "logic_changed": false,
+    "ui_behavior_changed": false,
+    "sql_changed": false,
+    "runtime_policy_changed": false,
+    "temporary_hooks_added": false
+  },
+  "changed_files": [
+    "src/screens/accountant/components/ActivePaymentForm.tsx",
+    "src/screens/accountant/components/ActivePaymentForm.test.tsx"
+  ],
+  "style_extraction": {
+    "removed_render_time_builders": [
+      "segBtn",
+      "smallBtn",
+      "miniBtn",
+      "pillBox",
+      "pillBoxTxt"
+    ],
+    "added_stable_style_entries": [
+      "opacity60",
+      "opacity55",
+      "opacity90",
+      "minHeight56",
+      "segBtnBase",
+      "segBtnActive",
+      "segBtnInactive",
+      "smallBtnBase",
+      "smallBtnNeutral",
+      "miniBtnBase",
+      "pillBox",
+      "pillBoxText",
+      "allocBoxOk",
+      "allocBoxWarn"
+    ]
+  },
+  "gates": {
+    "targeted_active_payment_form_test": "pass",
+    "tsc": "pass",
+    "expo_lint": "pass",
+    "jest_run_in_band": "pass",
+    "jest_parallel": "pass",
+    "git_diff_check": "pass"
+  },
+  "android_release_proof": {
+    "clean": "pass",
+    "assemble_release": "pass",
+    "install": "Success",
+    "launch_status": "ok",
+    "launch_state": "COLD",
+    "launch_activity": "com.azisbek_dzhantaev.rikexpoapp/.MainActivity",
+    "pid": "3838",
+    "main_activity_resumed": true,
+    "fatal_androidruntime_filenotfound_fingerprint_matches": false
+  },
+  "critical_e2e": {
+    "warehouse_runtime_gate": "GREEN",
+    "maestro_flows_passed": 8,
+    "maestro_flows_total": 8
+  },
+  "release": {
+    "post_push_release_verify": "pending",
+    "ota_disposition": "pending"
+  }
+}
