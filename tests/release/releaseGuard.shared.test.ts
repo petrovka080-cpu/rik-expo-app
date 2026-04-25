@@ -10,6 +10,7 @@ import {
   resolveReleaseGuardPath,
   type ReleaseGateResult,
   type ReleaseRepoState,
+  type ReleaseGuardStartupPolicyTruth,
   type ReleaseGuardRuntimePolicyTruth,
 } from "../../scripts/release/releaseGuard.shared";
 
@@ -46,6 +47,19 @@ function createRuntimePolicyTruth(
     runtimeProofConsistent: true,
     runtimeProofReason: "release extra truth matches the configured runtime policy.",
     buildRequired: false,
+    ...overrides,
+  };
+}
+
+function createStartupPolicyTruth(
+  overrides: Partial<ReleaseGuardStartupPolicyTruth> = {},
+): ReleaseGuardStartupPolicyTruth {
+  return {
+    updatesEnabled: true,
+    checkAutomatically: "ON_LOAD",
+    fallbackToCacheTimeout: 30000,
+    startupPolicyValid: true,
+    startupPolicyReason: "Release startup policy is ON_LOAD with fallbackToCacheTimeout=30000.",
     ...overrides,
   };
 }
@@ -198,6 +212,7 @@ describe("releaseGuard.shared", () => {
           changedFiles: ["src/screens/office/OfficeShellContent.tsx"],
         }),
         runtimePolicy: createRuntimePolicyTruth(),
+        startupPolicy: createStartupPolicyTruth(),
         targetChannel: "production",
         releaseMessage: "Office split",
         missingArtifacts: [],
@@ -224,6 +239,7 @@ describe("releaseGuard.shared", () => {
           changedFiles: ["docs/operations/eas-update-runbook.md"],
         }),
         runtimePolicy: createRuntimePolicyTruth(),
+        startupPolicy: createStartupPolicyTruth(),
         targetChannel: "production",
         releaseMessage: "Docs only",
         missingArtifacts: [],
@@ -244,6 +260,7 @@ describe("releaseGuard.shared", () => {
           changedFiles: ["src/lib/documents/pdfDocumentActions.ts"],
         }),
         runtimePolicy: createRuntimePolicyTruth(),
+        startupPolicy: createStartupPolicyTruth(),
         targetChannel: "production",
         releaseMessage: null,
         missingArtifacts: ["artifacts/missing-proof.json"],
@@ -270,6 +287,7 @@ describe("releaseGuard.shared", () => {
         runtimePolicy: createRuntimePolicyTruth({
           buildRequired: true,
         }),
+        startupPolicy: createStartupPolicyTruth(),
         targetChannel: "production",
         releaseMessage: "Runtime fingerprint policy",
         missingArtifacts: [],
@@ -292,6 +310,7 @@ describe("releaseGuard.shared", () => {
         runtimePolicy: createRuntimePolicyTruth({
           buildRequired: true,
         }),
+        startupPolicy: createStartupPolicyTruth(),
         targetChannel: null,
         releaseMessage: null,
         missingArtifacts: [],
@@ -317,6 +336,7 @@ describe("releaseGuard.shared", () => {
           runtimePolicyReason:
             'Static runtimeVersion strings are invalid for this repo. Use expo.runtimeVersion = { "policy": "fingerprint" }.',
         }),
+        startupPolicy: createStartupPolicyTruth(),
         targetChannel: null,
         releaseMessage: null,
         missingArtifacts: [],
@@ -343,6 +363,7 @@ describe("releaseGuard.shared", () => {
           runtimeProofReason:
             'extra.release.runtimePolicy must equal "policy:fingerprint", but found "fixed(1.0.0)".',
         }),
+        startupPolicy: createStartupPolicyTruth(),
         targetChannel: null,
         releaseMessage: null,
         missingArtifacts: [],
@@ -353,6 +374,36 @@ describe("releaseGuard.shared", () => {
       expect(readiness.otaDisposition).toBe("block");
       expect(readiness.blockers).toContain(
         'Runtime proof mismatch: extra.release.runtimePolicy must equal "policy:fingerprint", but found "fixed(1.0.0)".',
+      );
+    });
+
+    it("fails when the release startup policy drifts from ON_LOAD + 30000", () => {
+      const readiness = evaluateReleaseGuardReadiness({
+        mode: "verify",
+        repo: createRepoState(),
+        gates: createPassedGates(),
+        classification: classifyReleaseChanges({
+          changedFiles: ["app.json"],
+        }),
+        runtimePolicy: createRuntimePolicyTruth({
+          buildRequired: true,
+        }),
+        startupPolicy: createStartupPolicyTruth({
+          fallbackToCacheTimeout: 0,
+          startupPolicyValid: false,
+          startupPolicyReason:
+            "expo.updates.fallbackToCacheTimeout must be 30000 for the guarded release startup contract, but found 0.",
+        }),
+        targetChannel: null,
+        releaseMessage: null,
+        missingArtifacts: [],
+        expectedBranch: null,
+      });
+
+      expect(readiness.status).toBe("fail");
+      expect(readiness.otaDisposition).toBe("block");
+      expect(readiness.blockers).toContain(
+        "Startup policy invalid: expo.updates.fallbackToCacheTimeout must be 30000 for the guarded release startup contract, but found 0.",
       );
     });
   });

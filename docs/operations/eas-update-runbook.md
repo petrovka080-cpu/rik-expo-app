@@ -1,6 +1,6 @@
 # EAS Update Runbook
 
-Last updated: April 2, 2026
+Last updated: April 25, 2026
 
 Related docs:
 
@@ -69,12 +69,13 @@ npx tsx scripts/release/check-release-discipline.ts --channel production --chang
 Current app behavior:
 
 - `updates.checkAutomatically = ON_LOAD`
-- `updates.fallbackToCacheTimeout = 0`
+- `updates.fallbackToCacheTimeout = 30000`
 
-So the typical cycle is:
+So the release startup contract is:
 
-- launch 1 -> fetch
-- launch 2 -> apply
+- cold-launch on stable network
+- allow up to 30 seconds for the startup OTA check to complete
+- if diagnostics later show `downloaded-pending-relaunch`, fully kill and relaunch once to apply the downloaded update
 
 ## In-App Diagnostics
 

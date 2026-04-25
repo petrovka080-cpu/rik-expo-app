@@ -131,5 +131,9 @@ describe("releaseConfig.shared", () => {
     expect(summary.runtimeVersionStrategy).toBe("fingerprint");
     expect(summary.runtimePolicyValid).toBe(true);
     expect(summary.runtimeProofConsistent).toBe(true);
+    expect(summary.checkAutomatically).toBe("ON_LOAD");
+    expect(summary.fallbackToCacheTimeout).toBe(30000);
+    expect(summary.startupPolicyValid).toBe(true);
+    expect(summary.startupPolicyReason).toBe("Release startup policy is ON_LOAD with fallbackToCacheTimeout=30000.");
   });
 });

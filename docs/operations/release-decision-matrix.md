@@ -1,6 +1,6 @@
 # Release Decision Matrix
 
-Last updated: April 2, 2026
+Last updated: April 25, 2026
 
 ## Rule
 
@@ -36,14 +36,14 @@ If one batch contains both OTA-safe and build-required changes, the whole batch 
 
 ### Current runtime policy
 
-The project currently uses a fixed runtime string:
+The project currently uses the fingerprint runtime policy:
 
-- `runtimeVersion = 1.0.0`
+- `runtimeVersion = policy:fingerprint`
 
 Implication:
 
-- JS changes can keep shipping by OTA while they stay compatible with runtime `1.0.0`
-- any change that makes the current host incompatible must also bump runtime policy and ship a new build
+- JS changes can keep shipping by OTA while they stay inside the currently installed native host and compatible fingerprint lineage
+- any native/runtime-affecting change still requires fresh builds before publishing compatible OTA updates
 
 ### Current build counter policy
 

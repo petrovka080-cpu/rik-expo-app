@@ -29,6 +29,11 @@ export type ReleaseRuntimePolicyTruth = {
   runtimeProofReason: string;
 };
 
+export type ReleaseStartupPolicyTruth = {
+  startupPolicyValid: boolean;
+  startupPolicyReason: string;
+};
+
 export type ReleaseUpdateAvailabilityState =
   | "not-checked"
   | "checking"
@@ -219,6 +224,8 @@ export type ReleaseConfigSummary = {
   projectId: string;
   checkAutomatically: ReleaseCheckAutomatically;
   fallbackToCacheTimeout: number | null;
+  startupPolicyValid: boolean;
+  startupPolicyReason: string;
   appVersionSource: ReleaseAppVersionSource;
   branchByChannel: Record<CanonicalReleaseChannel, string>;
   buildProfiles: ReleaseConfigBuildProfile[];

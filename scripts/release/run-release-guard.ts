@@ -224,6 +224,14 @@ function printHumanReport(report: ReleaseGuardReport) {
   console.info(`Resolved runtime: ${report.runtimePolicy.resolvedRuntimeVersion}`);
   console.info(`Runtime policy: ${report.runtimePolicy.runtimePolicy}`);
   console.info(`Build required: ${String(report.runtimePolicy.buildRequired)}`);
+  console.info(`Updates enabled: ${String(report.startupPolicy.updatesEnabled)}`);
+  console.info(`Check automatically: ${report.startupPolicy.checkAutomatically}`);
+  console.info(
+    `Fallback timeout: ${
+      report.startupPolicy.fallbackToCacheTimeout == null ? "unknown" : report.startupPolicy.fallbackToCacheTimeout
+    }`,
+  );
+  console.info(`Startup policy valid: ${String(report.startupPolicy.startupPolicyValid)}`);
   if (report.classification.changeClass) {
     console.info(`Change class: ${report.classification.changeClass}`);
   }
@@ -317,6 +325,13 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
       runtimeProofReason: configSummary.runtimeProofReason,
       buildRequired: classification.kind === "build-required",
     },
+    startupPolicy: {
+      updatesEnabled: configSummary.updatesEnabled,
+      checkAutomatically: configSummary.checkAutomatically,
+      fallbackToCacheTimeout: configSummary.fallbackToCacheTimeout,
+      startupPolicyValid: configSummary.startupPolicyValid,
+      startupPolicyReason: configSummary.startupPolicyReason,
+    },
     targetChannel,
     releaseMessage: args.message,
     missingArtifacts,
@@ -338,6 +353,13 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
       runtimeProofConsistent: configSummary.runtimeProofConsistent,
       runtimeProofReason: configSummary.runtimeProofReason,
       buildRequired: classification.kind === "build-required",
+    },
+    startupPolicy: {
+      updatesEnabled: configSummary.updatesEnabled,
+      checkAutomatically: configSummary.checkAutomatically,
+      fallbackToCacheTimeout: configSummary.fallbackToCacheTimeout,
+      startupPolicyValid: configSummary.startupPolicyValid,
+      startupPolicyReason: configSummary.startupPolicyReason,
     },
     readiness,
     requiredArtifacts: args.requireArtifacts,

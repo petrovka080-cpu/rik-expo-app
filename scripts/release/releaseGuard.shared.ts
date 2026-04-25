@@ -1,6 +1,10 @@
 import path from "node:path";
 
-import type { ReleaseChangeClass, ReleaseRuntimeVersionStrategy } from "../../src/shared/release/releaseInfo.types";
+import type {
+  ReleaseChangeClass,
+  ReleaseCheckAutomatically,
+  ReleaseRuntimeVersionStrategy,
+} from "../../src/shared/release/releaseInfo.types";
 
 export type ReleaseGuardMode = "preflight" | "verify" | "ota";
 
@@ -61,6 +65,14 @@ export type ReleaseGuardRuntimePolicyTruth = {
   buildRequired: boolean;
 };
 
+export type ReleaseGuardStartupPolicyTruth = {
+  updatesEnabled: boolean;
+  checkAutomatically: ReleaseCheckAutomatically;
+  fallbackToCacheTimeout: number | null;
+  startupPolicyValid: boolean;
+  startupPolicyReason: string;
+};
+
 export type ReleaseOtaPublishMetadata = {
   branch: string;
   runtimeVersion: string;
@@ -80,6 +92,7 @@ export type ReleaseGuardReport = {
   gates: ReleaseGateResult[];
   classification: ReleaseAutomationClassification;
   runtimePolicy: ReleaseGuardRuntimePolicyTruth;
+  startupPolicy: ReleaseGuardStartupPolicyTruth;
   readiness: ReleaseGuardReadiness;
   requiredArtifacts: string[];
   missingArtifacts: string[];
@@ -402,6 +415,7 @@ export function evaluateReleaseGuardReadiness(params: {
   gates: ReleaseGateResult[];
   classification: ReleaseAutomationClassification;
   runtimePolicy: ReleaseGuardRuntimePolicyTruth;
+  startupPolicy: ReleaseGuardStartupPolicyTruth;
   targetChannel: string | null;
   releaseMessage: string | null;
   missingArtifacts: string[];
@@ -433,6 +447,10 @@ export function evaluateReleaseGuardReadiness(params: {
 
   if (!params.runtimePolicy.runtimeProofConsistent) {
     blockers.push(`Runtime proof mismatch: ${params.runtimePolicy.runtimeProofReason}`);
+  }
+
+  if (!params.startupPolicy.startupPolicyValid) {
+    blockers.push(`Startup policy invalid: ${params.startupPolicy.startupPolicyReason}`);
   }
 
   if (params.mode === "ota") {

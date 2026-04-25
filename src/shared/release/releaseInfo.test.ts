@@ -28,7 +28,7 @@ function createSnapshot(overrides: SnapshotOverrides = {}): RuntimeReleaseSnapsh
       updatesUrl: "https://u.expo.dev/project-id",
       projectId: "project-id",
       checkAutomatically: "ON_LOAD",
-      fallbackToCacheTimeout: 0,
+      fallbackToCacheTimeout: 30000,
       appVersionSource: "remote",
     },
     native: {
@@ -108,7 +108,7 @@ describe("releaseInfo", () => {
       updatesUrl: "https://u.expo.dev/project-id",
       projectId: "project-id",
       checkAutomatically: "ON_LOAD",
-      fallbackToCacheTimeout: 0,
+      fallbackToCacheTimeout: 30000,
       appVersionSource: "remote",
       buildProfiles: [
         { name: "development", channel: "development", distribution: "internal", autoIncrement: false },
@@ -127,6 +127,8 @@ describe("releaseInfo", () => {
     expect(summary.risks).toContain(
       "runtimeVersion uses the fingerprint policy. Native/runtime-affecting changes require fresh builds before publishing compatible OTA updates.",
     );
+    expect(summary.startupPolicyValid).toBe(true);
+    expect(summary.startupPolicyReason).toBe("Release startup policy is ON_LOAD with fallbackToCacheTimeout=30000.");
     expect(summary.risks).not.toContain(
       "runtimeVersion is pinned. OTA remains valid only while the native host stays compatible; changing the runtime policy requires new builds.",
     );
@@ -151,7 +153,7 @@ describe("releaseInfo", () => {
       updatesUrl: "https://u.expo.dev/project-id",
       projectId: "project-id",
       checkAutomatically: "ON_LOAD",
-      fallbackToCacheTimeout: 0,
+      fallbackToCacheTimeout: 30000,
       appVersionSource: "remote",
       buildProfiles: [
         { name: "development", channel: "development", distribution: "internal", autoIncrement: false },
@@ -169,6 +171,7 @@ describe("releaseInfo", () => {
     expect(summary.risks).toContain(
       'Static runtimeVersion strings are invalid for this repo. Use expo.runtimeVersion = { "policy": "fingerprint" }.',
     );
+    expect(summary.startupPolicyValid).toBe(true);
   });
 
   it("classifies a healthy OTA-applied runtime lineage as ok", () => {

@@ -61,6 +61,15 @@ describe("release safety — app.json version config", () => {
     expect("fixedRuntime" in proof).toBe(false);
   });
 
+  it("expo-updates keeps the hardened release startup policy", () => {
+    const expo = appConfig.expo as Record<string, unknown>;
+    const updates = expo.updates as Record<string, unknown>;
+
+    expect(updates.enabled).toBe(true);
+    expect(updates.checkAutomatically).toBe("ON_LOAD");
+    expect(updates.fallbackToCacheTimeout).toBe(30000);
+  });
+
   it("android.versionCode is a positive integer", () => {
     const expo = appConfig.expo as Record<string, unknown>;
     const android = expo.android as Record<string, unknown>;

@@ -1,6 +1,6 @@
 # Release Lineage Audit
 
-Last updated: April 2, 2026
+Last updated: April 25, 2026
 
 ## Scope
 
@@ -16,10 +16,10 @@ This document defines the current release topology for `rik-expo-app` and the pr
 ### App config
 
 - `app.json -> expo.version = 1.0.0`
-- `app.json -> expo.runtimeVersion = 1.0.0`
+- `app.json -> expo.runtimeVersion = { "policy": "fingerprint" }`
 - `app.json -> expo.updates.enabled = true`
 - `app.json -> expo.updates.checkAutomatically = ON_LOAD`
-- `app.json -> expo.updates.fallbackToCacheTimeout = 0`
+- `app.json -> expo.updates.fallbackToCacheTimeout = 30000`
 - `app.json -> expo.updates.url = https://u.expo.dev/93959cca-1c92-4b59-b80a-f1a1f5dfdf5a`
 
 ### EAS build config
@@ -97,12 +97,12 @@ Rule:
 Because the project currently uses:
 
 - `checkAutomatically = ON_LOAD`
-- `fallbackToCacheTimeout = 0`
+- `fallbackToCacheTimeout = 30000`
 
 the expected release behavior is:
 
-1. launch once to allow OTA download
-2. cold-launch again to apply it
+1. cold-launch on stable network and allow up to 30 seconds for the startup OTA check
+2. if diagnostics show `downloaded-pending-relaunch`, cold-launch again to apply the downloaded update
 
 This is the default expected behavior for release validation unless diagnostics show a different passive state such as:
 
@@ -114,7 +114,7 @@ This is the default expected behavior for release validation unless diagnostics 
 ## Current Risks
 
 1. Local native build numbers can diverge from shipped binaries because `appVersionSource=remote`.
-2. `runtimeVersion` is pinned to a fixed string (`1.0.0`), so native-incompatible changes cannot be papered over with OTA.
+2. `runtimeVersion` uses the fingerprint policy, so native/runtime-affecting changes still require fresh builds before publishing compatible OTA updates.
 3. Comparing `localhost web`, `preview APK`, and `TestFlight production` as if they were one track creates false mismatch conclusions.
 4. Optional release metadata such as git commit or release label may be absent unless explicitly embedded into the bundle/update.
 

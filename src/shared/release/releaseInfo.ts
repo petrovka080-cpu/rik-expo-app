@@ -12,6 +12,7 @@ import type {
   ReleaseMetadata,
   ReleaseMetadataSource,
   ReleaseRuntimePolicyTruth,
+  ReleaseStartupPolicyTruth,
   ReleaseUpdateAvailabilityState,
   RuntimeReleaseSnapshot,
 } from "./releaseInfo.types";
@@ -291,6 +292,46 @@ function pushUnique(target: string[], value: string) {
   }
 }
 
+export function evaluateReleaseStartupPolicyTruth(params: {
+  updatesEnabled: boolean;
+  checkAutomatically: ReleaseCheckAutomatically;
+  fallbackToCacheTimeout: number | null;
+}): ReleaseStartupPolicyTruth {
+  if (!params.updatesEnabled) {
+    return {
+      startupPolicyValid: false,
+      startupPolicyReason: "expo.updates.enabled must stay true for guarded release builds.",
+    };
+  }
+
+  if (params.checkAutomatically !== "ON_LOAD") {
+    return {
+      startupPolicyValid: false,
+      startupPolicyReason: `expo.updates.checkAutomatically must be "ON_LOAD" for the guarded release startup contract, but found "${params.checkAutomatically}".`,
+    };
+  }
+
+  if (params.fallbackToCacheTimeout == null || !Number.isFinite(params.fallbackToCacheTimeout)) {
+    return {
+      startupPolicyValid: false,
+      startupPolicyReason:
+        "expo.updates.fallbackToCacheTimeout must be the numeric value 30000 for the guarded release startup contract.",
+    };
+  }
+
+  if (params.fallbackToCacheTimeout !== 30000) {
+    return {
+      startupPolicyValid: false,
+      startupPolicyReason: `expo.updates.fallbackToCacheTimeout must be 30000 for the guarded release startup contract, but found ${params.fallbackToCacheTimeout}.`,
+    };
+  }
+
+  return {
+    startupPolicyValid: true,
+    startupPolicyReason: "Release startup policy is ON_LOAD with fallbackToCacheTimeout=30000.",
+  };
+}
+
 export function isCanonicalReleaseChannel(channel: string): channel is CanonicalReleaseChannel {
   return (CANONICAL_RELEASE_CHANNELS as readonly string[]).includes(channel);
 }
@@ -461,6 +502,11 @@ export function buildReleaseDecisionSummary(params: {
 
 export function buildReleaseConfigSummary(input: ReleaseConfigInput): ReleaseConfigSummary {
   const risks: string[] = [];
+  const startupPolicyTruth = evaluateReleaseStartupPolicyTruth({
+    updatesEnabled: input.updatesEnabled,
+    checkAutomatically: input.checkAutomatically,
+    fallbackToCacheTimeout: input.fallbackToCacheTimeout,
+  });
 
   if (input.appVersionSource === "remote") {
     pushUnique(
@@ -489,15 +535,8 @@ export function buildReleaseConfigSummary(input: ReleaseConfigInput): ReleaseCon
     );
   }
 
-  if (input.checkAutomatically === "ON_LOAD" && input.fallbackToCacheTimeout === 0) {
-    pushUnique(
-      risks,
-      "Current startup policy is ON_LOAD + fallbackToCacheTimeout=0, so OTA normally downloads on one launch and applies on the next cold launch.",
-    );
-  }
-
-  if (!input.updatesEnabled) {
-    pushUnique(risks, "expo-updates is disabled in app config, so OTA delivery would not work for this binary.");
+  if (!startupPolicyTruth.startupPolicyValid) {
+    pushUnique(risks, startupPolicyTruth.startupPolicyReason);
   }
 
   for (const profile of input.buildProfiles) {
@@ -527,6 +566,8 @@ export function buildReleaseConfigSummary(input: ReleaseConfigInput): ReleaseCon
     projectId: input.projectId,
     checkAutomatically: input.checkAutomatically,
     fallbackToCacheTimeout: input.fallbackToCacheTimeout,
+    startupPolicyValid: startupPolicyTruth.startupPolicyValid,
+    startupPolicyReason: startupPolicyTruth.startupPolicyReason,
     appVersionSource: input.appVersionSource,
     branchByChannel: CANONICAL_BRANCH_BY_CHANNEL,
     buildProfiles: input.buildProfiles,
@@ -629,7 +670,12 @@ export function buildReleaseDiagnostics(snapshot: RuntimeReleaseSnapshot): Relea
 
   if (snapshot.update.isEmbeddedLaunch) {
     pushUnique(issues, "The current launch is still using the embedded bundle.");
-    if (snapshot.config.checkAutomatically === "ON_LOAD" && snapshot.config.fallbackToCacheTimeout === 0) {
+    if (snapshot.config.checkAutomatically === "ON_LOAD" && snapshot.config.fallbackToCacheTimeout === 30000) {
+      pushUnique(
+        actions,
+        "Cold-launch on stable network and allow up to 30 seconds for the startup OTA check before concluding the embedded bundle stayed active.",
+      );
+    } else if (snapshot.config.checkAutomatically === "ON_LOAD" && snapshot.config.fallbackToCacheTimeout === 0) {
       pushUnique(actions, "Cold-launch once to download and a second time to apply the OTA update.");
     } else {
       pushUnique(actions, "Cold relaunch the app to allow the downloaded OTA update to apply.");
@@ -794,6 +840,8 @@ export function buildReleaseConfigText(summary: ReleaseConfigSummary): string {
     `updatesEnabled: ${String(summary.updatesEnabled)}`,
     `checkAutomatically: ${summary.checkAutomatically}`,
     `fallbackToCacheTimeout: ${summary.fallbackToCacheTimeout == null ? UNKNOWN : summary.fallbackToCacheTimeout}`,
+    `startupPolicyValid: ${String(summary.startupPolicyValid)}`,
+    `startupPolicyReason: ${summary.startupPolicyReason}`,
     `appVersionSource: ${summary.appVersionSource}`,
     `updatesUrl: ${summary.updatesUrl}`,
     `projectId: ${summary.projectId}`,

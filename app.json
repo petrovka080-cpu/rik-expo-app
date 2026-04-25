@@ -8,7 +8,7 @@
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0,
+      "fallbackToCacheTimeout": 30000,
       "url": "https://u.expo.dev/93959cca-1c92-4b59-b80a-f1a1f5dfdf5a"
     },
     "runtimeVersion": {

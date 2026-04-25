@@ -1,0 +1,107 @@
+{
+  "wave": "REL_002_FALLBACK_TIMEOUT_HARDENING",
+  "baseCommit": "956eae9914b28ee5eaa54203d7342f720ee03435",
+  "otaPublished": false,
+  "changeSummary": {
+    "beforeFallbackToCacheTimeout": 0,
+    "afterFallbackToCacheTimeout": 30000,
+    "afterCheckAutomatically": "ON_LOAD",
+    "afterUpdatesEnabled": true,
+    "afterRuntimeVersionPolicy": "fingerprint",
+    "changedFiles": [
+      "app.json",
+      "docs/operations/eas-update-runbook.md",
+      "docs/operations/release-decision-matrix.md",
+      "docs/operations/release-lineage-audit.md",
+      "scripts/release/releaseGuard.shared.ts",
+      "scripts/release/run-release-guard.ts",
+      "src/shared/release/releaseInfo.test.ts",
+      "src/shared/release/releaseInfo.ts",
+      "src/shared/release/releaseInfo.types.ts",
+      "tests/release/release-safety.test.ts",
+      "tests/release/releaseConfig.shared.test.ts",
+      "tests/release/releaseGuard.shared.test.ts"
+    ]
+  },
+  "expoConfigProof": {
+    "command": "npx expo config --json --type introspect",
+    "runtimeVersion": "policy:fingerprint",
+    "updatesEnabled": true,
+    "checkAutomatically": "ON_LOAD",
+    "fallbackToCacheTimeout": 30000,
+    "ios": {
+      "EXUpdatesEnabled": true,
+      "EXUpdatesCheckOnLaunch": "ALWAYS",
+      "EXUpdatesLaunchWaitMs": 30000,
+      "EXUpdatesRuntimeVersion": "file:fingerprint"
+    },
+    "android": {
+      "updatesEnabled": true,
+      "checkOnLaunch": "ALWAYS",
+      "launchWaitMs": "30000",
+      "runtimeVersion": "file:fingerprint"
+    }
+  },
+  "gates": {
+    "tsc": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "pass",
+      "exitCode": 0
+    },
+    "expoLint": {
+      "command": "npx expo lint",
+      "status": "pass",
+      "exitCode": 0
+    },
+    "jestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "pass",
+      "exitCode": 0
+    },
+    "jest": {
+      "command": "npm test",
+      "status": "pass",
+      "exitCode": 0
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "status": "pass",
+      "exitCode": 0
+    },
+    "releaseVerifyPreCommit": {
+      "command": "npm run release:verify -- --json",
+      "status": "expected_fail_dirty_worktree",
+      "exitCode": 1,
+      "worktreeClean": false,
+      "headMatchesOriginMain": true,
+      "startupPolicyValid": true,
+      "startupPolicyReason": "Release startup policy is ON_LOAD with fallbackToCacheTimeout=30000.",
+      "blockers": [
+        "Worktree is dirty. Release automation requires a clean repository state."
+      ]
+    }
+  },
+  "androidEmulatorProof": {
+    "commands": [
+      ".\\gradlew.bat clean",
+      ".\\gradlew.bat assembleRelease",
+      "adb logcat -c",
+      "adb install -r android\\app\\build\\outputs\\apk\\release\\app-release.apk",
+      "adb shell am force-stop com.azisbek_dzhantaev.rikexpoapp",
+      "adb shell monkey -p com.azisbek_dzhantaev.rikexpoapp 1",
+      "adb shell pidof com.azisbek_dzhantaev.rikexpoapp",
+      "adb shell dumpsys activity activities | findstr /i \"rikexpoapp MainActivity mResumed\"",
+      "adb logcat -d -t 200 *:E | findstr /i \"FATAL EXCEPTION AndroidRuntime FileNotFoundException fingerprint\""
+    ],
+    "apkPath": "C:\\dev\\rik-expo-app\\android\\app\\build\\outputs\\apk\\release\\app-release.apk",
+    "apkSizeBytes": 106975680,
+    "apkLastWriteTime": "2026-04-25 10:46:29",
+    "installStatus": "Success",
+    "launchEventsInjected": 1,
+    "pid": "31081",
+    "mainActivityResumed": true,
+    "fatalException": false,
+    "fileNotFoundException": false,
+    "fingerprintError": false
+  }
+}
