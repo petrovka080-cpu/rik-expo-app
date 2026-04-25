@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "../../../src/lib/database.types";
@@ -44,6 +46,15 @@ type DirectorSeed = {
   proposalId: string;
 };
 
+type AccountantSeed = {
+  requestId: string;
+  requestItemId: string;
+  proposalId: string;
+  proposalItemId: string;
+  supplier: string;
+  invoiceNumber: string;
+};
+
 type WarehouseSeed = {
   requestId: string;
   requestItemId: string;
@@ -57,11 +68,27 @@ type ForemanSeed = {
   locatorCode: string;
 };
 
+type ContractorSeed = {
+  contractorId: string;
+  subcontractId: string;
+  requestId: string;
+  requestItemId: string;
+  purchaseId: string;
+  purchaseItemId: string;
+  progressId: string;
+  workItemId: string;
+  workItemToken: string;
+  contractorOrg: string;
+  workName: string;
+};
+
 type SeedUsers = {
   owner: RuntimeTestUser;
   buyer: RuntimeTestUser;
+  accountant: RuntimeTestUser;
   warehouse: RuntimeTestUser;
   foreman: RuntimeTestUser;
+  contractor: RuntimeTestUser;
 };
 
 export type MaestroCriticalBusinessSeed = {
@@ -72,13 +99,16 @@ export type MaestroCriticalBusinessSeed = {
   users: SeedUsers;
   buyer: BuyerSeed;
   director: DirectorSeed;
+  accountant: AccountantSeed;
   warehouse: WarehouseSeed;
   foreman: ForemanSeed;
+  contractor: ContractorSeed;
   env: Record<string, string>;
   cleanup: () => Promise<void>;
 };
 
 const BUYER_APPROVED_STATUS = "\u0423\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e";
+const ACCOUNTANT_TO_PAY_TAB = "\u041a \u043e\u043f\u043b\u0430\u0442\u0435";
 const FOREMAN_AI_PROMPT = "rebar 12 mm 10 pcs";
 const FOREMAN_EXPECTED_CODE = "MAT-REBAR-A500-12";
 const PURCHASE_STATUS_APPROVED = "\u0423\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e";
@@ -94,6 +124,7 @@ const toSelectorToken = (value: string) =>
 
 const buildMarker = () =>
   `MCRIT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const supabaseUrl = toText(process.env.EXPO_PUBLIC_SUPABASE_URL);
 const supabaseAnonKey = toText(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY);
 const MUTABLE_REQUEST_STATUS = "\u0427\u0435\u0440\u043D\u043E\u0432\u0438\u043A" as RequestStatus;
@@ -105,6 +136,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const isMutableRequestStatus = (status: RequestStatus) => {
   const normalized = toText(status).toLowerCase();
   return normalized === "" || normalized === "draft" || normalized === "\u0447\u0435\u0440\u043D\u043E\u0432\u0438\u043A";
+};
+
+const rpcEnvelopeRows = (value: unknown): Record<string, unknown>[] => {
+  if (!value || typeof value !== "object") return [];
+  const rows = (value as { rows?: unknown }).rows;
+  return Array.isArray(rows)
+    ? rows.filter((row): row is Record<string, unknown> => !!row && typeof row === "object")
+    : [];
 };
 
 const toRefOptions = (
@@ -531,6 +570,114 @@ async function seedDirectorPendingProposal(
   };
 }
 
+async function seedAccountantPayableProposal(
+  admin: AdminClient,
+  params: {
+    marker: string;
+    accountantClient: AuthenticatedClient;
+  },
+) {
+  const supplier = `E2E Accountant Supplier ${params.marker}`;
+  const invoiceNumber = `INV-${params.marker}`;
+  const requestInsert = await admin
+    .from("requests")
+    .insert({
+      status: MUTABLE_REQUEST_STATUS,
+      comment: `${params.marker}:request`,
+      object_name: supplier,
+      note: params.marker,
+    })
+    .select("id")
+    .single();
+  if (requestInsert.error) throw requestInsert.error;
+  const requestId = toText(requestInsert.data?.id);
+
+  const proposalInsert = await admin
+    .from("proposals")
+    .insert({
+      request_id: requestId,
+      status: MUTABLE_REQUEST_STATUS,
+      supplier,
+      invoice_number: invoiceNumber,
+      invoice_date: new Date().toISOString().slice(0, 10),
+      invoice_currency: "KGS",
+      sent_to_accountant_at: null,
+    })
+    .select("id")
+    .single();
+  if (proposalInsert.error) throw proposalInsert.error;
+  const proposalId = toText(proposalInsert.data?.id);
+
+  const requestItemInsert = await admin
+    .from("request_items")
+    .insert({
+      request_id: requestId,
+      name_human: `Accountant ${params.marker}`,
+      qty: 1,
+      uom: "pcs",
+      rik_code: `MAT-ACC-${params.marker}`,
+      status: MUTABLE_REQUEST_STATUS,
+    })
+    .select("id")
+    .single();
+  if (requestItemInsert.error) throw requestItemInsert.error;
+  const requestItemId = toText(requestItemInsert.data?.id);
+
+  const proposalItemInsert = await admin
+    .from("proposal_items")
+    .insert({
+      proposal_id: proposalId,
+      proposal_id_text: proposalId,
+      request_item_id: requestItemId,
+      name_human: `Accountant ${params.marker}`,
+      qty: 1,
+      uom: "pcs",
+      price: 125,
+      rik_code: `MAT-ACC-${params.marker}`,
+      supplier,
+      status: BUYER_APPROVED_STATUS,
+    })
+    .select("id")
+    .single();
+  if (proposalItemInsert.error) throw proposalItemInsert.error;
+  const proposalItemId = toText(proposalItemInsert.data?.id);
+
+  const decisionTimestamp = new Date().toISOString();
+  const promote = await admin
+    .from("proposals")
+    .update({
+      status: BUYER_APPROVED_STATUS,
+      submitted_at: decisionTimestamp,
+      approved_at: decisionTimestamp,
+      decided_at: decisionTimestamp,
+      sent_to_accountant_at: decisionTimestamp,
+    })
+    .eq("id", proposalId);
+  if (promote.error) throw promote.error;
+
+  const accountantScope = await params.accountantClient.rpc("accountant_inbox_scope_v1" as never, {
+    p_tab: ACCOUNTANT_TO_PAY_TAB,
+    p_offset: 0,
+    p_limit: 40,
+  } as never);
+  if (accountantScope.error) throw accountantScope.error;
+  const matched = rpcEnvelopeRows(accountantScope.data).some(
+    (row) => toText(row.proposal_id) === proposalId || JSON.stringify(row).includes(proposalId),
+  );
+  if (!matched) {
+    throw new Error(`Seeded accountant proposal ${proposalId} was not visible in accountant_inbox_scope_v1.`);
+  }
+
+  return {
+    requestId,
+    requestItemId,
+    proposalId,
+    proposalItemId,
+    supplier,
+    invoiceNumber,
+  };
+}
+
 async function seedWarehouseBusinessFlow(
   admin: AdminClient,
   params: {
@@ -655,6 +802,201 @@ async function seedWarehouseBusinessFlow(
   };
 }
 
+async function seedContractorProgressFlow(
+  admin: AdminClient,
+  params: {
+    marker: string;
+    user: RuntimeTestUser;
+  },
+) {
+  const contractorOrg = `E2E Contractor ${params.marker}`;
+  const contractorInn = `12345678${params.marker.slice(-4).replace(/\D/g, "7").padEnd(4, "7")}`;
+  const objectName = `E2E Object ${params.marker}`;
+  const workName = `E2E Work ${params.marker}`;
+
+  const contractorInsert = await admin
+    .from("contractors")
+    .insert({
+      user_id: params.user.id,
+      full_name: params.user.displayLabel,
+      company_name: contractorOrg,
+      phone: "+996555000111",
+      email: params.user.email,
+      inn: contractorInn,
+    })
+    .select("id")
+    .single();
+  if (contractorInsert.error) throw contractorInsert.error;
+  const contractorId = toText(contractorInsert.data?.id);
+
+  const subcontractInsert = await admin
+    .from("subcontracts")
+    .insert({
+      created_by: params.user.id,
+      status: "approved",
+      foreman_name: "Maestro Critical Foreman",
+      contractor_org: contractorOrg,
+      contractor_inn: contractorInn,
+      contractor_rep: "Maestro Critical Contractor",
+      contractor_phone: "+996555000111",
+      contract_number: `CTR-${params.marker}`,
+      contract_date: new Date().toISOString().slice(0, 10),
+      object_name: objectName,
+      work_zone: "Zone A",
+      work_type: workName,
+      qty_planned: 1,
+      uom: "pcs",
+      date_start: new Date().toISOString().slice(0, 10),
+      date_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      work_mode: "labor_only",
+      price_per_unit: 100,
+      total_price: 100,
+      price_type: "by_volume",
+      foreman_comment: "Maestro critical contractor seed",
+      approved_at: new Date().toISOString(),
+      submitted_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+  if (subcontractInsert.error) throw subcontractInsert.error;
+  const subcontractId = toText(subcontractInsert.data?.id);
+
+  const requestInsert = await admin
+    .from("requests")
+    .insert({
+      created_by: params.user.id,
+      role: "foreman",
+      name: workName,
+      object_name: objectName,
+      subcontract_id: subcontractId,
+      contractor_job_id: subcontractId,
+      company_name_snapshot: contractorOrg,
+      company_inn_snapshot: contractorInn,
+      status: MUTABLE_REQUEST_STATUS,
+      date: new Date().toISOString().slice(0, 10),
+    })
+    .select("id")
+    .single();
+  if (requestInsert.error) throw requestInsert.error;
+  const requestId = toText(requestInsert.data?.id);
+
+  const requestItemInsert = await admin
+    .from("request_items")
+    .insert({
+      request_id: requestId,
+      name_human: workName,
+      qty: 1,
+      rik_code: `CTR-WORK-${params.marker}`,
+      uom: "pcs",
+      row_no: 1,
+      position_order: 1,
+      kind: "work",
+      status: BUYER_APPROVED_STATUS,
+    })
+    .select("id")
+    .single();
+  if (requestItemInsert.error) throw requestItemInsert.error;
+  const requestItemId = toText(requestItemInsert.data?.id);
+
+  await finalizeSeedRequestStatus(admin, {
+    requestId,
+    requestStatus: BUYER_APPROVED_STATUS as RequestStatus,
+    submittedBy: params.user.id,
+  });
+
+  const purchaseInsert = await admin
+    .from("purchases")
+    .insert({
+      created_by: params.user.id,
+      request_id: requestId,
+      object_name: objectName,
+      supplier: contractorOrg,
+      currency: "KGS",
+      status: PURCHASE_STATUS_APPROVED,
+    })
+    .select("id")
+    .single();
+  if (purchaseInsert.error) throw purchaseInsert.error;
+  const purchaseId = toText(purchaseInsert.data?.id);
+
+  const purchaseItemInsert = await admin
+    .from("purchase_items")
+    .insert({
+      purchase_id: purchaseId,
+      request_item_id: requestItemId,
+      name_human: workName,
+      qty: 1,
+      uom: "pcs",
+      price_per_unit: 100,
+      status: PURCHASE_ITEM_STATUS_DRAFT,
+    })
+    .select("id")
+    .single();
+  if (purchaseItemInsert.error) throw purchaseItemInsert.error;
+  const purchaseItemId = toText(purchaseItemInsert.data?.id);
+
+  const progressId = randomUUID();
+  const workProgressInsert = await admin
+    .from("work_progress")
+    .insert({
+      id: progressId,
+      purchase_item_id: purchaseItemId,
+      contractor_id: contractorId,
+      contractor_name: contractorOrg,
+      qty_planned: 1,
+      qty_done: 0,
+      qty_left: 1,
+      status: "active",
+      uom: "pcs",
+      work_dt: new Date().toISOString().slice(0, 10),
+      location: objectName,
+    })
+    .select("id")
+    .single();
+  if (workProgressInsert.error) throw workProgressInsert.error;
+
+  let workItemId = `progress:${progressId}`;
+  let visible = false;
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const scope = await admin.rpc("contractor_inbox_scope_v1" as never, {
+      p_my_contractor_id: contractorId,
+      p_is_staff: false,
+    } as never);
+    if (scope.error) throw scope.error;
+    const rows = rpcEnvelopeRows(scope.data);
+    const matched =
+      rows.find(
+        (row) =>
+          toText(row.progressId ?? row.progress_id) === progressId ||
+          toText(row.workItemId ?? row.work_item_id) === workItemId ||
+          JSON.stringify(row).includes(progressId),
+      ) ?? null;
+    if (matched) {
+      workItemId = toText(matched.workItemId ?? matched.work_item_id) || workItemId;
+      visible = true;
+      break;
+    }
+    await sleep(500);
+  }
+  if (!visible) {
+    throw new Error(`Seeded contractor progress ${progressId} was not visible in contractor_inbox_scope_v1.`);
+  }
+
+  return {
+    contractorId,
+    subcontractId,
+    requestId,
+    requestItemId,
+    purchaseId,
+    purchaseItemId,
+    progressId,
+    workItemId,
+    workItemToken: toSelectorToken(workItemId),
+    contractorOrg,
+    workName,
+  };
+}
+
 async function resolveForemanHeaderSeed(admin: AdminClient): Promise<ForemanSeed> {
   const [objects, levels, zones] = await Promise.all([
     fetchDictRows(admin, "ref_object_types", "name", "code,name,name_ru", "code,name"),
@@ -698,8 +1040,10 @@ const buildCriticalEnv = (params: {
   users: SeedUsers;
   buyer: BuyerSeed;
   director: DirectorSeed;
+  accountant: AccountantSeed;
   warehouse: WarehouseSeed;
   foreman: ForemanSeed;
+  contractor: ContractorSeed;
 }) => ({
   E2E_AUTH_EMAIL: params.users.buyer.email,
   E2E_AUTH_PASSWORD: params.users.buyer.password,
@@ -719,6 +1063,12 @@ const buildCriticalEnv = (params: {
   E2E_DIRECTOR_PROPOSAL_ID: params.director.proposalId,
   E2E_DIRECTOR_PROPOSAL_REQUEST_ID: params.director.proposalRequestId,
   E2E_DIRECTOR_PROPOSAL_ITEM_ID: params.director.proposalRequestItemId,
+  E2E_ACCOUNTANT_EMAIL: params.users.accountant.email,
+  E2E_ACCOUNTANT_PASSWORD: params.users.accountant.password,
+  E2E_ACCOUNTANT_FIO: "MaestroAccountant",
+  E2E_ACCOUNTANT_PROPOSAL_ID: params.accountant.proposalId,
+  E2E_ACCOUNTANT_SUPPLIER: params.accountant.supplier,
+  E2E_ACCOUNTANT_INVOICE_NUMBER: params.accountant.invoiceNumber,
   E2E_WAREHOUSE_EMAIL: params.users.warehouse.email,
   E2E_WAREHOUSE_PASSWORD: params.users.warehouse.password,
   E2E_WAREHOUSE_FIO: "MaestroWarehouse",
@@ -739,6 +1089,13 @@ const buildCriticalEnv = (params: {
   E2E_FOREMAN_AI_PROMPT: FOREMAN_AI_PROMPT,
   E2E_FOREMAN_EXPECTED_CODE: FOREMAN_EXPECTED_CODE,
   E2E_FOREMAN_EXPECTED_CODE_TOKEN: toSelectorToken(FOREMAN_EXPECTED_CODE),
+  E2E_CONTRACTOR_EMAIL: params.users.contractor.email,
+  E2E_CONTRACTOR_PASSWORD: params.users.contractor.password,
+  E2E_CONTRACTOR_WORK_ITEM_ID: params.contractor.workItemId,
+  E2E_CONTRACTOR_WORK_ITEM_TOKEN: params.contractor.workItemToken,
+  E2E_CONTRACTOR_PROGRESS_ID: params.contractor.progressId,
+  E2E_CONTRACTOR_WORK_NAME: params.contractor.workName,
+  E2E_CONTRACTOR_ORG: params.contractor.contractorOrg,
 });
 
 async function cleanupById(
@@ -751,7 +1108,10 @@ async function cleanupById(
     | "proposal_items"
     | "proposals"
     | "request_items"
-    | "requests",
+    | "requests"
+    | "work_progress"
+    | "subcontracts"
+    | "contractors",
   ids: string[],
 ) {
   const uniqueIds = Array.from(new Set(ids.map((value) => toText(value)).filter(Boolean)));
@@ -769,6 +1129,9 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
   const createdPurchases: string[] = [];
   const createdPurchaseItems: string[] = [];
   const createdIncomingHeads: string[] = [];
+  const createdWorkProgress: string[] = [];
+  const createdSubcontracts: string[] = [];
+  const createdContractors: string[] = [];
 
   const owner = await createTempUser(admin, {
     role: "director",
@@ -782,6 +1145,12 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
     emailPrefix: "maestro-critical-buyer",
     userProfile: { usage_build: true, usage_market: true },
   });
+  const accountant = await createTempUser(admin, {
+    role: "accountant",
+    fullName: "Maestro Critical Accountant",
+    emailPrefix: "maestro-critical-accountant",
+    userProfile: { usage_build: true },
+  });
   const warehouse = await createTempUser(admin, {
     role: "warehouse",
     fullName: "Maestro Critical Warehouse",
@@ -794,14 +1163,23 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
     emailPrefix: "maestro-critical-foreman",
     userProfile: { usage_build: true },
   });
+  const contractor = await createTempUser(admin, {
+    role: "foreman",
+    fullName: "Maestro Critical Contractor",
+    emailPrefix: "maestro-critical-contractor",
+    userProfile: { usage_build: true, is_contractor: true },
+  });
 
   const users: SeedUsers = {
     owner,
     buyer,
+    accountant,
     warehouse,
     foreman,
+    contractor,
   };
   const buyerClient = await signInRuntimeUser(buyer, "maestro-critical-buyer-seed");
+  const accountantClient = await signInRuntimeUser(accountant, "maestro-critical-accountant-seed");
 
   const officeCompany = await insertCompany(admin, owner, marker);
   await attachCompanyMember(admin, {
@@ -817,6 +1195,11 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
     }),
     attachCompanyMember(admin, {
       companyId: officeCompany.companyId,
+      userId: accountant.id,
+      role: "accountant",
+    }),
+    attachCompanyMember(admin, {
+      companyId: officeCompany.companyId,
       userId: warehouse.id,
       role: "warehouse",
     }),
@@ -824,6 +1207,11 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
       companyId: officeCompany.companyId,
       userId: foreman.id,
       role: "foreman",
+    }),
+    attachCompanyMember(admin, {
+      companyId: officeCompany.companyId,
+      userId: contractor.id,
+      role: "contractor",
     }),
   ]);
 
@@ -855,6 +1243,14 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
   createdRequestItems.push(directorProposal.requestItemId);
   createdProposals.push(directorProposal.proposalId);
 
+  const accountantSeed = await seedAccountantPayableProposal(admin, {
+    marker,
+    accountantClient,
+  });
+  createdRequests.push(accountantSeed.requestId);
+  createdRequestItems.push(accountantSeed.requestItemId);
+  createdProposals.push(accountantSeed.proposalId);
+
   const warehouseSeed = await seedWarehouseBusinessFlow(admin, {
     marker,
     requestStatus,
@@ -867,7 +1263,49 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
 
   const foremanSeed = await resolveForemanHeaderSeed(admin);
 
+  const contractorSeed = await seedContractorProgressFlow(admin, {
+    marker,
+    user: contractor,
+  });
+  createdRequests.push(contractorSeed.requestId);
+  createdRequestItems.push(contractorSeed.requestItemId);
+  createdPurchases.push(contractorSeed.purchaseId);
+  createdPurchaseItems.push(contractorSeed.purchaseItemId);
+  createdWorkProgress.push(contractorSeed.progressId);
+  createdSubcontracts.push(contractorSeed.subcontractId);
+  createdContractors.push(contractorSeed.contractorId);
+
   const cleanup = async () => {
+    try {
+      if (createdWorkProgress.length > 0) {
+        const logs = await admin
+          .from("work_progress_log")
+          .select("id")
+          .in("progress_id", createdWorkProgress as never);
+        if (!logs.error) {
+          const logIds = (logs.data ?? [])
+            .map((row) => toText((row as { id?: unknown }).id))
+            .filter(Boolean);
+          if (logIds.length > 0) {
+            await admin.from("work_progress_log_materials").delete().in("log_id", logIds as never);
+          }
+        }
+      }
+    } catch {
+      // best effort cleanup
+    }
+    try {
+      if (createdWorkProgress.length > 0) {
+        await admin.from("work_progress_log").delete().in("progress_id", createdWorkProgress as never);
+      }
+    } catch {
+      // best effort cleanup
+    }
+    try {
+      await cleanupById(admin, "work_progress", createdWorkProgress);
+    } catch {
+      // best effort cleanup
+    }
     try {
       if (createdIncomingHeads.length > 0) {
         await admin.from("wh_incoming_items").delete().in("incoming_id", createdIncomingHeads as never);
@@ -913,6 +1351,16 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
       // best effort cleanup
     }
     try {
+      await cleanupById(admin, "subcontracts", createdSubcontracts);
+    } catch {
+      // best effort cleanup
+    }
+    try {
+      await cleanupById(admin, "contractors", createdContractors);
+    } catch {
+      // best effort cleanup
+    }
+    try {
       await admin.from("company_invites").delete().eq("company_id", officeCompany.companyId);
     } catch {
       // best effort cleanup
@@ -933,6 +1381,9 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
       // best effort cleanup
     }
     await buyerClient.auth.signOut().catch(() => undefined);
+    await accountantClient.auth.signOut().catch(() => undefined);
+    await cleanupTempUser(admin, contractor).catch(() => undefined);
+    await cleanupTempUser(admin, accountant).catch(() => undefined);
     await cleanupTempUser(admin, foreman).catch(() => undefined);
     await cleanupTempUser(admin, warehouse).catch(() => undefined);
     await cleanupTempUser(admin, buyer).catch(() => undefined);
@@ -953,8 +1404,10 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
       proposalRequestItemId: directorProposal.requestItemId,
       proposalId: directorProposal.proposalId,
     },
+    accountant: accountantSeed,
     warehouse: warehouseSeed,
     foreman: foremanSeed,
+    contractor: contractorSeed,
   });
 
   return {
@@ -975,8 +1428,10 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
       proposalRequestItemId: directorProposal.requestItemId,
       proposalId: directorProposal.proposalId,
     },
+    accountant: accountantSeed,
     warehouse: warehouseSeed,
     foreman: foremanSeed,
+    contractor: contractorSeed,
     env,
     cleanup,
   };

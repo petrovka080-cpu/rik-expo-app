@@ -103,7 +103,10 @@ export default function WorkModalOverviewSection(props: Props) {
             gap: 6,
           }}
         >
-          <Text style={{ fontSize: 13, fontWeight: "800", color: statusColorMap[props.progressSyncTone] }}>
+          <Text
+            testID="contractor-progress-sync-label"
+            style={{ fontSize: 13, fontWeight: "800", color: statusColorMap[props.progressSyncTone] }}
+          >
             {props.progressSyncLabel}
           </Text>
           {props.progressSyncDetail ? (
@@ -111,6 +114,7 @@ export default function WorkModalOverviewSection(props: Props) {
           ) : null}
           <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
             <Pressable
+              testID="contractor-progress-submit"
               onPress={props.onSubmitProgress}
               disabled={!props.canSubmitProgress || props.workModalSaving || props.loadingIssued}
               style={[

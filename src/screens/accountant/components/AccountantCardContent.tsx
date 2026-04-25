@@ -126,15 +126,15 @@ export const AccountantCardContent = memo(function AccountantCardContent({
       <View style={{ height: 8 }} />
 
       <Text style={S.label}>
-        Поставщик: <Text style={S.value}>{ruText(current?.supplier || "—")}</Text>
+        Поставщик: <Text testID="accountant-card-supplier" style={S.value}>{ruText(current?.supplier || "—")}</Text>
       </Text>
 
-      <Text style={[S.label, { marginTop: 6 }]}>
+      <Text testID="accountant-card-invoice" style={[S.label, { marginTop: 6 }]}>
         Счёт (инвойс): <Text style={S.value}>{ruText(current?.invoice_number || "—")}</Text> от{" "}
         <Text style={S.value}>{ruText(current?.invoice_date || "—")}</Text>
       </Text>
 
-      <Text style={[S.label, { marginTop: 6 }]}>
+      <Text testID="accountant-card-amount" style={[S.label, { marginTop: 6 }]}>
         Сумма счёта:{" "}
         <Text style={S.value}>
           {Number(current?.invoice_amount ?? 0)} {current?.invoice_currency || "KGS"}
@@ -144,7 +144,7 @@ export const AccountantCardContent = memo(function AccountantCardContent({
       <View style={{ height: 10 }} />
 
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-        <Text style={S.label}>
+        <Text testID="accountant-card-status" style={S.label}>
           Статус оплаты: <Text style={S.value}>{status.label}</Text>
         </Text>
       </View>

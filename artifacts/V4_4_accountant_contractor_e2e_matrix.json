@@ -1,0 +1,59 @@
+{
+  "wave": "V4-4",
+  "title": "ACCOUNTANT_CONTRACTOR_CRITICAL_E2E",
+  "scope": {
+    "businessLogicChanged": false,
+    "sqlChanged": false,
+    "runtimeChanged": false,
+    "directorTouched": false
+  },
+  "flows": {
+    "accountantPayment": "pass",
+    "contractorProgress": "pass",
+    "criticalSuite": {
+      "status": "pass",
+      "passed": 11,
+      "failed": 0
+    }
+  },
+  "gates": {
+    "contractTest": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "jestRunInBand": "pass",
+    "jestDefault": "pass",
+    "gitDiffCheck": "pass"
+  },
+  "android": {
+    "assembleRelease": "pass",
+    "install": "pass",
+    "launch": "pass",
+    "pid": "24619",
+    "resumed": "com.azisbek_dzhantaev.rikexpoapp/.MainActivity",
+    "fatalException": false,
+    "fileNotFoundException": false,
+    "fingerprintError": false
+  },
+  "release": {
+    "prePushVerify": "pending_clean_head_required",
+    "postPushVerify": "pending",
+    "otaDisposition": "pending"
+  },
+  "changedFiles": [
+    "scripts/e2e/_shared/maestroCriticalBusinessSeed.ts",
+    "scripts/e2e/run-maestro-critical.ts",
+    "maestro/flows/critical/accountant-payment.yaml",
+    "maestro/flows/critical/contractor-progress.yaml",
+    "tests/e2e/maestroCriticalBusinessPhase1.contract.test.ts",
+    "src/screens/accountant/components/ListRow.tsx",
+    "src/screens/accountant/components/CardModal.tsx",
+    "src/screens/accountant/components/AccountantCardContent.tsx",
+    "src/screens/contractor/components/ContractorSubcontractsList.tsx",
+    "src/screens/contractor/components/ContractorWorkModal.tsx",
+    "src/screens/contractor/components/WorkModalOverviewSection.tsx"
+  ],
+  "rootCauseSummary": {
+    "accountant": "Maestro could open the seeded item, but modal-root and field testIDs were not reliable proof targets; final flow verifies deterministic invoice/payment-ready state via surfaced text plus payment-form-rest.",
+    "contractor": "Maestro could open the work modal and save progress, but modal-root and Android alert ids were not reliable proof targets; final flow verifies success via surfaced dialog text."
+  }
+}

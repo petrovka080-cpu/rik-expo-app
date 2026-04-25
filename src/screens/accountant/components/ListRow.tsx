@@ -24,10 +24,12 @@ function ListRowInner({
   onPress: () => void;
 }) {
   const row = mapAccountantListRowToProps(item);
+  const proposalId = String(item.proposal_id ?? "").trim();
 
   return (
     <Pressable
       onPress={onPress}
+      testID={proposalId ? `accountant-proposal-row-${proposalId}` : undefined}
       style={({ pressed }) => ({
         backgroundColor: UI.cardBg,
         marginHorizontal: 12,

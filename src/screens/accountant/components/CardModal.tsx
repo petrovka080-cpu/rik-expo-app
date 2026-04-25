@@ -118,6 +118,7 @@ export default function CardModal({
           }}
         >
           <View
+            testID="accountant-card-modal"
             style={{ flex: 1, backgroundColor: ui.bg }}
             onStartShouldSetResponder={
               Platform.OS === "web"
@@ -208,4 +209,3 @@ export default function CardModal({
     </Modal>
   );
 }
-

@@ -15,12 +15,20 @@ describe("maestro critical business phase 1 contracts", () => {
   };
 
   const warehouseFlow = read("maestro/flows/critical/warehouse-receive-issue.yaml");
+  const accountantFlow = read("maestro/flows/critical/accountant-payment.yaml");
   const buyerRfqFlow = read("maestro/flows/critical/buyer-rfq-create.yaml");
   const buyerProposalFlow = read("maestro/flows/critical/buyer-proposal-review.yaml");
+  const contractorFlow = read("maestro/flows/critical/contractor-progress.yaml");
   const directorFlow = read("maestro/flows/critical/director-approve-report.yaml");
   const foremanFlow = read("maestro/flows/critical/foreman-draft-submit.yaml");
   const foremanExternalAiFlow = read("maestro/flows/external-ai/foreman-ai-draft-submit.yaml");
   const foremanCatalogSource = read("src/components/foreman/CatalogModal.tsx");
+  const accountantListRowSource = read("src/screens/accountant/components/ListRow.tsx");
+  const accountantCardModalSource = read("src/screens/accountant/components/CardModal.tsx");
+  const accountantCardContentSource = read("src/screens/accountant/components/AccountantCardContent.tsx");
+  const contractorListSource = read("src/screens/contractor/components/ContractorSubcontractsList.tsx");
+  const contractorWorkModalSource = read("src/screens/contractor/components/ContractorWorkModal.tsx");
+  const contractorOverviewSource = read("src/screens/contractor/components/WorkModalOverviewSection.tsx");
 
   const appButtonSource = read("src/ui/AppButton.tsx");
   const sendPrimaryButtonSource = read("src/ui/SendPrimaryButton.tsx");
@@ -50,6 +58,8 @@ describe("maestro critical business phase 1 contracts", () => {
     expect(runnerSource).toContain("show_ime_with_hard_keyboard");
     expect(runnerSource).toContain("enabled_input_methods");
     expect(runnerSource).toContain("default_input_method");
+    expect(runnerSource).toContain("accountant-payment.yaml");
+    expect(runnerSource).toContain("contractor-progress.yaml");
     expect(runnerSource).toContain("director-approve-report.yaml");
     expect(runnerSource).toContain("warehouse_issue_request_runtime_verify.ts");
     expect(packageJson.scripts?.["verify:wave2-platform"]).toBe(
@@ -67,10 +77,20 @@ describe("maestro critical business phase 1 contracts", () => {
     expect(seedSource).toContain("MCRIT-");
     expect(seedSource).toContain("E2E_BUYER_RFQ_REQUEST_ID");
     expect(seedSource).toContain("type DirectorSeed = {");
+    expect(seedSource).toContain("type AccountantSeed = {");
+    expect(seedSource).toContain("type ContractorSeed = {");
     expect(seedSource).toContain("director: DirectorSeed;");
+    expect(seedSource).toContain("accountant: AccountantSeed;");
+    expect(seedSource).toContain("contractor: ContractorSeed;");
     expect(seedSource).toContain("seedDirectorPendingProposal");
+    expect(seedSource).toContain("seedAccountantPayableProposal");
+    expect(seedSource).toContain("seedContractorProgressFlow");
     expect(seedSource).toContain("E2E_DIRECTOR_EMAIL");
     expect(seedSource).toContain("E2E_DIRECTOR_PROPOSAL_ID");
+    expect(seedSource).toContain("E2E_ACCOUNTANT_EMAIL");
+    expect(seedSource).toContain("E2E_ACCOUNTANT_PROPOSAL_ID");
+    expect(seedSource).toContain("E2E_CONTRACTOR_EMAIL");
+    expect(seedSource).toContain("E2E_CONTRACTOR_WORK_ITEM_TOKEN");
     expect(seedSource).toContain("E2E_WAREHOUSE_INCOMING_ID");
     expect(seedSource).toContain("E2E_FOREMAN_OBJECT_CODE_TOKEN");
     expect(seedSource).toContain("E2E_FOREMAN_LOCATOR_CODE_TOKEN");
@@ -87,17 +107,42 @@ describe("maestro critical business phase 1 contracts", () => {
     expect(seedSource).toContain("approved_at: decisionTimestamp");
     expect(seedSource).toContain('status: PURCHASE_STATUS_APPROVED');
     expect(seedSource).toContain('status: PURCHASE_ITEM_STATUS_DRAFT');
+    expect(seedSource).toContain("const ACCOUNTANT_TO_PAY_TAB =");
+    expect(seedSource).toContain('"accountant_inbox_scope_v1"');
+    expect(seedSource).toContain('"contractor_inbox_scope_v1"');
+    expect(seedSource).toContain('role: "contractor"');
+    expect(seedSource).toContain("is_contractor: true");
+    expect(seedSource).toContain("randomUUID()");
     expect(seedSource).toContain('.from("wh_incoming")');
     expect(seedSource).toContain('.eq("purchase_id", purchaseId)');
     expect(seedSource).toContain(".maybeSingle()");
+    expect(seedSource).toContain('cleanupTempUser(admin, contractor)');
+    expect(seedSource).toContain('cleanupTempUser(admin, accountant)');
     expect(seedSource).toContain("cleanupTempUser(admin, foreman)");
     expect(seedSource).toContain('await admin.from("company_members").delete().eq("company_id", officeCompany.companyId);');
   });
 
   it("keeps every business flow bound to deterministic seeded ids instead of generic smoke selectors", () => {
-    for (const flowSource of [warehouseFlow, buyerRfqFlow, buyerProposalFlow, directorFlow, foremanFlow]) {
+    for (const flowSource of [
+      warehouseFlow,
+      accountantFlow,
+      buyerRfqFlow,
+      buyerProposalFlow,
+      contractorFlow,
+      directorFlow,
+      foremanFlow,
+    ]) {
       expect(flowSource).toContain("clearState: true");
     }
+
+    expect(accountantFlow).toContain("office-direction-open-accountant");
+    expect(accountantFlow).toContain("text: ${E2E_ACCOUNTANT_SUPPLIER}");
+    expect(accountantFlow).toContain('text: "Поставщик: ${E2E_ACCOUNTANT_SUPPLIER}"');
+    expect(accountantFlow).toContain("text: ${E2E_ACCOUNTANT_INVOICE_NUMBER}");
+    expect(accountantFlow).toContain('text: "Статус оплаты: К ОПЛАТЕ"');
+    expect(accountantFlow).toContain("payment-form-rest");
+    expect(accountantFlow).toContain('text: "Банк"');
+    expect(accountantFlow).toContain('text: "Провести оплату"');
 
     expect(warehouseFlow).toContain("warehouse-incoming-row-${E2E_WAREHOUSE_INCOMING_ID}");
     expect(warehouseFlow).toContain("warehouse-incoming-qty-input-${E2E_WAREHOUSE_PURCHASE_ITEM_ID}");
@@ -117,6 +162,14 @@ describe("maestro critical business phase 1 contracts", () => {
     expect(buyerProposalFlow).toContain("buyer-proposal-pdf");
     expect(buyerProposalFlow).toContain("com.google.android.apps.docs:id/pdf_view");
     expect(buyerProposalFlow).not.toContain("native-pdf-webview");
+
+    expect(contractorFlow).toContain("office-direction-open-contractor");
+    expect(contractorFlow).toContain("text: ${E2E_CONTRACTOR_ORG}");
+    expect(contractorFlow).toContain('text: "Факт выполнения работы"');
+    expect(contractorFlow).toContain('text: "Готово к сохранению"');
+    expect(contractorFlow).toContain('text: "Сохранить факт"');
+    expect(contractorFlow).toContain('text: "Готово"');
+    expect(contractorFlow).toContain('text: "Факт по работе сохранён."');
 
     expect(directorFlow).toContain("office-direction-open-director");
     expect(directorFlow).toContain("director-top-tab-requests");
@@ -194,5 +247,15 @@ describe("maestro critical business phase 1 contracts", () => {
     expect(foremanCatalogSource).toContain('testID="foreman-catalog-search-input"');
     expect(foremanCatalogSource).toContain('testID="foreman-catalog-close"');
     expect(foremanCatalogSource).toContain('testID={`foreman-catalog-add-${token}`}');
+    expect(accountantListRowSource).toContain("accountant-proposal-row-${proposalId}");
+    expect(accountantCardModalSource).toContain('testID="accountant-card-modal"');
+    expect(accountantCardContentSource).toContain('testID="accountant-card-supplier"');
+    expect(accountantCardContentSource).toContain('testID="accountant-card-invoice"');
+    expect(accountantCardContentSource).toContain('testID="accountant-card-amount"');
+    expect(accountantCardContentSource).toContain('testID="accountant-card-status"');
+    expect(contractorListSource).toContain("contractor-work-card-${cardToken}");
+    expect(contractorWorkModalSource).toContain('testID="contractor-work-modal"');
+    expect(contractorOverviewSource).toContain('testID="contractor-progress-sync-label"');
+    expect(contractorOverviewSource).toContain('testID="contractor-progress-submit"');
   });
 });

@@ -22,8 +22,10 @@ const warehouseIssueRuntimeVerifyScript = path.join(
 );
 const criticalFlows = [
   "active-context-switch.yaml",
+  "accountant-payment.yaml",
   "buyer-proposal-review.yaml",
   "buyer-rfq-create.yaml",
+  "contractor-progress.yaml",
   "director-approve-report.yaml",
   "foreman-draft-submit.yaml",
   "market-entry.yaml",

@@ -76,7 +76,7 @@ const asWebStyle = (style: WebModalStyle): ViewStyle => style as ViewStyle;
 
 export default function ContractorWorkModal(props: Props) {
   const content = (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }} edges={["top"]}>
+    <SafeAreaView testID="contractor-work-modal" style={{ flex: 1, backgroundColor: "#f8fafc" }} edges={["top"]}>
       <ModalSheetHeader
         title="Факт выполнения работы"
         onClose={props.onClose}

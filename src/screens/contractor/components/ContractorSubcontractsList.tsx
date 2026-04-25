@@ -45,6 +45,13 @@ const qualityBadgeTone = (qualityState: ContractorWorkCardModel["qualityState"])
     ? { bg: "rgba(245,158,11,0.14)", fg: "#FCD34D", label: "TITLE DEGRADED" }
     : null;
 
+const toCardToken = (value: unknown) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 export default function ContractorSubcontractsList(props: Props) {
   const { data, screenContract, refreshing, loadingWorks, onRefresh, onOpen, styles } = props;
   const emptyMessage = loadingWorks
@@ -82,10 +89,12 @@ export default function ContractorSubcontractsList(props: Props) {
         const statusBadge = statusBadgeTone(item.status);
         const qualityBadge = qualityBadgeTone(item.qualityState);
         const objectLine = [item.objectName, item.systemName, item.zoneName].filter(Boolean).join(" / ");
+        const cardToken = toCardToken(item.workId) || "unknown";
 
         return (
           <Pressable
             onPress={() => onOpen(String(item.workId))}
+            testID={`contractor-work-card-${cardToken}`}
             style={({ pressed }) => [
               styles.card,
               styles.cardDark,
