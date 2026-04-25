@@ -68,6 +68,12 @@ type ForemanSeed = {
   locatorCode: string;
 };
 
+type ChatSeed = {
+  listingId: string;
+  listingTitle: string;
+  messageText: string;
+};
+
 type ContractorSeed = {
   contractorId: string;
   subcontractId: string;
@@ -102,6 +108,7 @@ export type MaestroCriticalBusinessSeed = {
   accountant: AccountantSeed;
   warehouse: WarehouseSeed;
   foreman: ForemanSeed;
+  chat: ChatSeed;
   contractor: ContractorSeed;
   env: Record<string, string>;
   cleanup: () => Promise<void>;
@@ -997,6 +1004,61 @@ async function seedContractorProgressFlow(
   };
 }
 
+async function seedMarketplaceChatFlow(
+  admin: AdminClient,
+  params: {
+    marker: string;
+    user: RuntimeTestUser;
+    companyId: string;
+  },
+) {
+  const listingTitle = `E2E Chat Listing ${params.marker}`;
+  const messageText = `E2E chat ping ${params.marker}`;
+  const listingRikCode = FOREMAN_EXPECTED_CODE;
+  const insertResult = await admin
+    .from("market_listings")
+    .insert({
+      title: listingTitle,
+      description: `Deterministic chat listing ${params.marker}`,
+      status: "active",
+      side: "offer",
+      kind: "material",
+      city: "Bishkek",
+      lat: 42.8746,
+      lng: 74.5698,
+      price: 777,
+      currency: "KGS",
+      rik_code: listingRikCode,
+      uom: "pcs",
+      uom_code: "pcs",
+      company_id: params.companyId,
+      user_id: params.user.id,
+      contacts_phone: "+996555000222",
+      contacts_whatsapp: "+996555000222",
+      contacts_email: params.user.email,
+      items_json: [
+        {
+          rik_code: listingRikCode,
+          name: listingTitle,
+          uom: "pcs",
+          qty: 1,
+          price: 777,
+          kind: "material",
+          city: "Bishkek",
+        },
+      ],
+    })
+    .select("id")
+    .single();
+  if (insertResult.error) throw insertResult.error;
+
+  return {
+    listingId: toText(insertResult.data?.id),
+    listingTitle,
+    messageText,
+  };
+}
+
 async function resolveForemanHeaderSeed(admin: AdminClient): Promise<ForemanSeed> {
   const [objects, levels, zones] = await Promise.all([
     fetchDictRows(admin, "ref_object_types", "name", "code,name,name_ru", "code,name"),
@@ -1043,6 +1105,7 @@ const buildCriticalEnv = (params: {
   accountant: AccountantSeed;
   warehouse: WarehouseSeed;
   foreman: ForemanSeed;
+  chat: ChatSeed;
   contractor: ContractorSeed;
 }) => ({
   E2E_AUTH_EMAIL: params.users.buyer.email,
@@ -1089,6 +1152,11 @@ const buildCriticalEnv = (params: {
   E2E_FOREMAN_AI_PROMPT: FOREMAN_AI_PROMPT,
   E2E_FOREMAN_EXPECTED_CODE: FOREMAN_EXPECTED_CODE,
   E2E_FOREMAN_EXPECTED_CODE_TOKEN: toSelectorToken(FOREMAN_EXPECTED_CODE),
+  E2E_CHAT_EMAIL: params.users.buyer.email,
+  E2E_CHAT_PASSWORD: params.users.buyer.password,
+  E2E_CHAT_LISTING_ID: params.chat.listingId,
+  E2E_CHAT_LISTING_TITLE: params.chat.listingTitle,
+  E2E_CHAT_MESSAGE: params.chat.messageText,
   E2E_CONTRACTOR_EMAIL: params.users.contractor.email,
   E2E_CONTRACTOR_PASSWORD: params.users.contractor.password,
   E2E_CONTRACTOR_WORK_ITEM_ID: params.contractor.workItemId,
@@ -1129,6 +1197,7 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
   const createdPurchases: string[] = [];
   const createdPurchaseItems: string[] = [];
   const createdIncomingHeads: string[] = [];
+  const createdMarketListings: string[] = [];
   const createdWorkProgress: string[] = [];
   const createdSubcontracts: string[] = [];
   const createdContractors: string[] = [];
@@ -1263,6 +1332,13 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
 
   const foremanSeed = await resolveForemanHeaderSeed(admin);
 
+  const chatSeed = await seedMarketplaceChatFlow(admin, {
+    marker,
+    user: buyer,
+    companyId: officeCompany.companyId,
+  });
+  createdMarketListings.push(chatSeed.listingId);
+
   const contractorSeed = await seedContractorProgressFlow(admin, {
     marker,
     user: contractor,
@@ -1276,6 +1352,20 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
   createdContractors.push(contractorSeed.contractorId);
 
   const cleanup = async () => {
+    try {
+      if (createdMarketListings.length > 0) {
+        await admin.from("chat_messages" as never).delete().in("supplier_id", createdMarketListings as never);
+      }
+    } catch {
+      // best effort cleanup
+    }
+    try {
+      if (createdMarketListings.length > 0) {
+        await admin.from("market_listings").delete().in("id", createdMarketListings as never);
+      }
+    } catch {
+      // best effort cleanup
+    }
     try {
       if (createdWorkProgress.length > 0) {
         const logs = await admin
@@ -1407,6 +1497,7 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
     accountant: accountantSeed,
     warehouse: warehouseSeed,
     foreman: foremanSeed,
+    chat: chatSeed,
     contractor: contractorSeed,
   });
 
@@ -1431,6 +1522,7 @@ export async function createMaestroCriticalBusinessSeed(): Promise<MaestroCritic
     accountant: accountantSeed,
     warehouse: warehouseSeed,
     foreman: foremanSeed,
+    chat: chatSeed,
     contractor: contractorSeed,
     env,
     cleanup,

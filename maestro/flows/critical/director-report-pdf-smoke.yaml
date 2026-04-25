@@ -1,0 +1,86 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Director Report PDF Smoke
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_DIRECTOR_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_DIRECTOR_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-director"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-director"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_DIRECTOR_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "director-top-tab-warehouse"
+    timeout: 30000
+- swipe:
+    from:
+      id: "director-top-tab-warehouse"
+    direction: LEFT
+    duration: 400
+    waitToSettleTimeoutMs: 500
+- extendedWaitUntil:
+    visible:
+      id: "director-top-tab-reports"
+    timeout: 15000
+- tapOn:
+    id: "director-top-tab-reports"
+- extendedWaitUntil:
+    visible:
+      id: "director-reports-home-card"
+    timeout: 15000
+- tapOn:
+    id: "director-reports-home-card"
+- extendedWaitUntil:
+    visible:
+      id: "director-reports-modal"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "director-reports-action-pdf"
+    timeout: 30000
+- tapOn:
+    id: "director-reports-action-pdf"
+- extendedWaitUntil:
+    visible:
+      id: "com.google.android.apps.docs:id/pdf_view"
+    timeout: 45000
+- stopApp

@@ -50,7 +50,10 @@ export default function ChatScreen() {
     supplierId?: string | string[];
     title?: string | string[];
   }>();
-  const listingId = useMemo(() => getParam(params.listingId || params.supplierId).trim(), [params.listingId, params.supplierId]);
+  const listingId = useMemo(
+    () => getParam(params.listingId || params.supplierId).trim(),
+    [params.listingId, params.supplierId],
+  );
   const titleParam = getParam(params.title).trim();
 
   const [listing, setListing] = useState<MarketHomeListingCard | null>(null);
@@ -185,7 +188,10 @@ export default function ChatScreen() {
             <Text style={styles.authorText}>{authorName}</Text>
             {item.content ? <Text style={styles.messageText}>{item.content}</Text> : null}
             <Text style={styles.timeText}>
-              {new Date(item.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              {new Date(item.created_at).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </Text>
           </View>
         </Pressable>
@@ -212,9 +218,15 @@ export default function ChatScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <View style={styles.header}>
-          <Pressable style={styles.headerButton} onPress={() => safeBack(router, MARKET_TAB_ROUTE)}>
+          <Pressable
+            style={styles.headerButton}
+            onPress={() => safeBack(router, MARKET_TAB_ROUTE)}
+          >
             <Ionicons name="arrow-back" size={20} color={MARKET_HOME_COLORS.text} />
           </Pressable>
 
@@ -241,8 +253,15 @@ export default function ChatScreen() {
         </View>
 
         {listing ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.routeRow}>
-            <Pressable style={styles.routeChip} onPress={() => router.push(buildMarketProductRoute(listing.id))}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.routeRow}
+          >
+            <Pressable
+              style={styles.routeChip}
+              onPress={() => router.push(buildMarketProductRoute(listing.id))}
+            >
               <Text style={styles.routeChipText}>Товар</Text>
             </Pressable>
             <Pressable
@@ -273,7 +292,10 @@ export default function ChatScreen() {
             <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_TAB_ROUTE)}>
               <Text style={styles.routeChipText}>Маркет</Text>
             </Pressable>
-            <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_AUCTIONS_ROUTE)}>
+            <Pressable
+              style={styles.routeChip}
+              onPress={() => router.push(MARKET_AUCTIONS_ROUTE)}
+            >
               <Text style={styles.routeChipText}>Торги</Text>
             </Pressable>
           </ScrollView>
@@ -300,6 +322,8 @@ export default function ChatScreen() {
           </View>
         ) : (
           <FlatList
+            testID="chat-thread-list"
+            accessibilityLabel="chat-thread-list"
             ref={listRef}
             data={messages}
             keyExtractor={(item) => item.id}
@@ -308,7 +332,9 @@ export default function ChatScreen() {
             ListEmptyComponent={
               <View style={styles.centerState}>
                 <Text style={styles.stateTitle}>Пока пусто</Text>
-                <Text style={styles.stateText}>Начните переписку по этому объявлению.</Text>
+                <Text style={styles.stateText}>
+                  Начните переписку по этому объявлению.
+                </Text>
               </View>
             }
           />
@@ -316,6 +342,8 @@ export default function ChatScreen() {
 
         <View style={styles.composer}>
           <TextInput
+            testID="chat-composer-input"
+            accessibilityLabel="chat-composer-input"
             style={styles.input}
             value={input}
             onChangeText={setInput}
@@ -325,14 +353,27 @@ export default function ChatScreen() {
             editable={!backendMissing && !sending}
           />
           <Pressable
-            style={[styles.sendButton, (!input.trim() || sending || backendMissing) && styles.sendButtonDisabled]}
+            testID="chat-send-button"
+            accessibilityLabel="chat-send-button"
+            accessibilityRole="button"
+            accessible
+            style={[
+              styles.sendButton,
+              (!input.trim() || sending || backendMissing) && styles.sendButtonDisabled,
+            ]}
             onPress={() => void handleSend()}
             disabled={!input.trim() || sending || backendMissing}
           >
             {sending ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
+              <ActivityIndicator color="#FFFFFF" size="small" accessible={false} />
             ) : (
-              <Ionicons name="send" size={18} color="#FFFFFF" />
+              <Ionicons
+                name="send"
+                size={18}
+                color="#FFFFFF"
+                accessible={false}
+                importantForAccessibility="no"
+              />
             )}
           </Pressable>
         </View>

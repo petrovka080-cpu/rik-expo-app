@@ -1,0 +1,49 @@
+{
+  "wave": "V4-5",
+  "title": "E2E_PHASE_2_REPORTING_AND_CHAT_COVERAGE",
+  "status": "green-pre-commit",
+  "safety": {
+    "businessLogicChanged": false,
+    "sqlOrRpcChanged": false,
+    "runtimeChanged": false,
+    "temporaryHooksAdded": false
+  },
+  "changedFiles": [
+    "scripts/e2e/_shared/maestroCriticalBusinessSeed.ts",
+    "scripts/e2e/run-maestro-critical.ts",
+    "src/features/chat/ChatScreen.tsx",
+    "tests/e2e/maestroCriticalBusinessPhase1.contract.test.ts",
+    "maestro/flows/critical/chat-message.yaml",
+    "maestro/flows/critical/contractor-pdf-smoke.yaml",
+    "maestro/flows/critical/director-report-pdf-smoke.yaml"
+  ],
+  "flows": {
+    "chatMessage": "pass",
+    "contractorPdfSmoke": "pass",
+    "directorReportPdfSmoke": "pass",
+    "fullCriticalSuite": "14/14 pass"
+  },
+  "gates": {
+    "contractTest": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "gitDiffCheck": "pass"
+  },
+  "android": {
+    "assembleRelease": "pass",
+    "install": "success",
+    "launch": "pass",
+    "pid": "18307",
+    "mainActivityResumed": true,
+    "fatalExceptionHits": false,
+    "fileNotFoundHits": false,
+    "fingerprintHits": false
+  },
+  "release": {
+    "verifyBeforeCommit": "not-applicable-dirty-worktree",
+    "verifyAfterPush": "pending",
+    "otaDispositionAfterPush": "pending"
+  }
+}

@@ -25,8 +25,11 @@ const criticalFlows = [
   "accountant-payment.yaml",
   "buyer-proposal-review.yaml",
   "buyer-rfq-create.yaml",
+  "chat-message.yaml",
   "contractor-progress.yaml",
+  "contractor-pdf-smoke.yaml",
   "director-approve-report.yaml",
+  "director-report-pdf-smoke.yaml",
   "foreman-draft-submit.yaml",
   "market-entry.yaml",
   "office-buyer-route-roundtrip.yaml",
@@ -58,6 +61,10 @@ const maestroBinary =
 const npxBinary = process.platform === "win32" ? "npx.cmd" : "npx";
 
 type CriticalSeed = MaestroCriticalBusinessSeed;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function runCommand(
   command: string,
@@ -97,6 +104,21 @@ function runCommand(
 
 function adb(deviceId: string, args: string[], capture = true) {
   return runCommand("adb", ["-s", deviceId, ...args], capture);
+}
+
+function resolveLaunchableActivity(deviceId: string) {
+  const output = adb(deviceId, ["shell", "cmd", "package", "resolve-activity", "--brief", appId], true);
+  const activity = output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .findLast((line) => line.includes("/"));
+
+  if (!activity) {
+    throw new Error(`Unable to resolve launch activity for ${appId}. Output: ${output || "<empty>"}`);
+  }
+
+  return activity;
 }
 
 function buildMaestroEnvArgs(envMap: Record<string, string>) {
@@ -186,7 +208,32 @@ function ensureCanonicalInputMethod(deviceId: string) {
   }
 }
 
-function ensureAppInstalled(deviceId: string) {
+async function ensureAppLaunchable(deviceId: string) {
+  const activity = resolveLaunchableActivity(deviceId);
+  const deadline = Date.now() + 120_000;
+  let lastAttempt = "";
+
+  while (Date.now() < deadline) {
+    try {
+      const output = adb(deviceId, ["shell", "am", "start", "-W", "-n", activity], true);
+      lastAttempt = output;
+      if (output.includes("Status: ok")) {
+        adb(deviceId, ["shell", "am", "force-stop", appId], false);
+        return;
+      }
+    } catch (error: unknown) {
+      lastAttempt = error instanceof Error ? error.message : String(error);
+    }
+
+    await sleep(2_000);
+  }
+
+  throw new Error(
+    `Installed app did not become launchable within 120s after install. Last attempt: ${lastAttempt || "<empty>"}`,
+  );
+}
+
+async function ensureAppInstalled(deviceId: string) {
   if (!fs.existsSync(releaseApk)) {
     throw new Error(
       `Release APK for Maestro critical suite was not found at ${releaseApk}. Build the current release APK before running this suite.`,
@@ -198,6 +245,8 @@ function ensureAppInstalled(deviceId: string) {
   if (!installedPath.includes("package:")) {
     throw new Error(`Failed to verify installation of ${appId} on ${deviceId}.`);
   }
+
+  await ensureAppLaunchable(deviceId);
 }
 
 async function createCriticalSuiteSeed(): Promise<CriticalSeed> {
@@ -238,7 +287,7 @@ async function main() {
   const deviceId = detectDeviceId();
   ensureCanonicalEnvironment(deviceId);
   ensureCanonicalInputMethod(deviceId);
-  ensureAppInstalled(deviceId);
+  await ensureAppInstalled(deviceId);
   fs.mkdirSync(outputDir, { recursive: true });
 
   let seed: CriticalSeed | null = null;

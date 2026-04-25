@@ -1,0 +1,40 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Chat Message
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_CHAT_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_CHAT_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- openLink: "rik://chat?listingId=${E2E_CHAT_LISTING_ID}"
+- extendedWaitUntil:
+    visible:
+      text: "Напишите сообщение..."
+    timeout: 30000
+- tapOn:
+    text: "Напишите сообщение..."
+- inputText: ${E2E_CHAT_MESSAGE}
+- hideKeyboard
+- tapOn:
+    id: "chat-send-button"
+- extendedWaitUntil:
+    visible:
+      text: ${E2E_CHAT_MESSAGE}
+    timeout: 30000
+- assertVisible:
+    text: ${E2E_CHAT_MESSAGE}
+- stopApp

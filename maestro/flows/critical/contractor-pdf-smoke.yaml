@@ -1,0 +1,61 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Contractor PDF Smoke
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_CONTRACTOR_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_CONTRACTOR_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-contractor"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-contractor"
+- scrollUntilVisible:
+    element:
+      text: ${E2E_CONTRACTOR_ORG}
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    text: ${E2E_CONTRACTOR_ORG}
+- extendedWaitUntil:
+    visible:
+      id: "contractor-work-modal"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      text: "Итоговый PDF"
+    timeout: 30000
+- tapOn:
+    text: "Итоговый PDF"
+- extendedWaitUntil:
+    visible:
+      id: "com.google.android.apps.docs:id/pdf_view"
+    timeout: 45000
+- stopApp
