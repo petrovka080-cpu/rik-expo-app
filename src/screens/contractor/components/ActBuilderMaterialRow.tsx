@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
 import { normalizeRuText } from "../../../lib/text/encoding";
 
 type MaterialItem = {
@@ -32,81 +33,69 @@ export default function ActBuilderMaterialRow(props: Props) {
   const uom = normalizeRuText(it.uom || "");
 
   return (
-    <View
-      style={{
-        backgroundColor: it.include ? "#f0fdf4" : "#fff",
-        borderWidth: 1,
-        borderColor: it.include ? "#22c55e" : "#e2e8f0",
-        borderRadius: 12,
-        padding: 10,
-        marginBottom: 8,
-        gap: 6,
-      }}
-    >
-      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-        <Pressable onPress={props.onToggleExpanded} style={{ flex: 1, gap: 3 }}>
-          <Text style={{ fontWeight: "700", color: "#0f172a", fontSize: 13 }} numberOfLines={2}>
+    <View style={[styles.card, it.include ? styles.cardIncluded : styles.cardDefault]}>
+      <View style={styles.headerRow}>
+        <Pressable onPress={props.onToggleExpanded} style={styles.headerBody}>
+          <Text style={styles.title} numberOfLines={2}>
             {itemName}
           </Text>
-          <Text style={{ fontSize: 11, color: "#64748b" }}>
-            Выдано: {Number(it.issuedQty || 0).toLocaleString("ru-RU")} {uom || ""}  |  Списано:{" "}
-            {Number(it.alreadyUsed || 0).toLocaleString("ru-RU")} {uom || ""}  |  Доступно:{" "}
+          <Text style={styles.meta}>
+            Выдано: {Number(it.issuedQty || 0).toLocaleString("ru-RU")} {uom || ""} | Списано:{" "}
+            {Number(it.alreadyUsed || 0).toLocaleString("ru-RU")} {uom || ""} | Доступно:{" "}
             {Number(it.qtyMax || 0).toLocaleString("ru-RU")} {uom || ""}
           </Text>
-          <Text style={{ fontSize: 12, color: "#334155" }}>
-            Кол-во {Number(it.qty || 0).toLocaleString("ru-RU")} · Ед: {uom || "—"} · Цена {" "}
+          <Text style={styles.summary}>
+            Кол-во {Number(it.qty || 0).toLocaleString("ru-RU")} · Ед: {uom || "—"} · Цена{" "}
             {it.price == null ? "—" : Number(it.price).toLocaleString("ru-RU")} · Сумма{" "}
             {sum == null || sum === 0 ? "—" : Number(sum).toLocaleString("ru-RU")}
           </Text>
         </Pressable>
+
         <Pressable
           onPress={props.onToggleInclude}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            backgroundColor: it.include ? "#16a34a" : "#e2e8f0",
-            alignItems: "center",
-            justifyContent: "center",
-            marginTop: 2,
-          }}
+          style={[styles.includeToggle, it.include ? styles.includeToggleOn : styles.includeToggleOff]}
         >
-          <Text style={{ color: it.include ? "#fff" : "#334155", fontWeight: "800", fontSize: 12 }}>Вкл</Text>
+          <Text
+            style={[
+              styles.includeToggleText,
+              it.include ? styles.includeToggleTextOn : styles.includeToggleTextOff,
+            ]}
+          >
+            Вкл
+          </Text>
         </Pressable>
       </View>
 
       {(props.expanded || it.include) && (
-        <View style={{ marginTop: 4, gap: 6 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Text style={{ color: "#64748b", fontSize: 11 }}>Кол-во</Text>
-            <Pressable
-              onPress={props.onDecrement}
-              style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#e2e8f0" }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>−</Text>
+        <View style={styles.expandedSection}>
+          <View style={styles.controlsRow}>
+            <Text style={styles.controlLabel}>Кол-во</Text>
+
+            <Pressable onPress={props.onDecrement} style={styles.stepperButton}>
+              <Text style={styles.stepperButtonText}>-</Text>
             </Pressable>
-            <Text style={{ minWidth: 50, textAlign: "center", fontWeight: "800", color: "#0f172a", fontSize: 13 }}>
-              {Number(it.qty || 0).toLocaleString("ru-RU")}
-            </Text>
-            <Pressable
-              onPress={props.onIncrement}
-              style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#e2e8f0" }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>+</Text>
+
+            <Text style={styles.qtyValue}>{Number(it.qty || 0).toLocaleString("ru-RU")}</Text>
+
+            <Pressable onPress={props.onIncrement} style={styles.stepperButton}>
+              <Text style={styles.stepperButtonText}>+</Text>
             </Pressable>
-            <Text style={{ color: "#64748b", fontSize: 11, marginLeft: 4 }}>Цена</Text>
+
+            <Text style={styles.priceLabel}>Цена</Text>
             <TextInput
               value={it.price == null ? "" : String(it.price)}
               onChangeText={props.onPriceChange}
               keyboardType="numeric"
               placeholder="—"
-              style={{ width: 84, height: 32, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 8, fontSize: 12, backgroundColor: "#fff" }}
+              style={styles.priceInput}
             />
-            <Text style={{ color: "#0f172a", fontSize: 12, fontWeight: "700", minWidth: 72, textAlign: "right" }}>
+
+            <Text style={styles.sumValue}>
               {sum == null || sum === 0 ? "—" : Number(sum).toLocaleString("ru-RU")}
             </Text>
           </View>
-          <Text style={{ color: "#64748b", fontSize: 11 }}>
+
+          <Text style={styles.remaining}>
             Остаток после акта: {remaining.toLocaleString("ru-RU")} {uom || ""}
           </Text>
         </View>
@@ -114,3 +103,129 @@ export default function ActBuilderMaterialRow(props: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
+    gap: 6,
+  },
+  cardDefault: {
+    backgroundColor: "#fff",
+    borderColor: "#e2e8f0",
+  },
+  cardIncluded: {
+    backgroundColor: "#f0fdf4",
+    borderColor: "#22c55e",
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  headerBody: {
+    flex: 1,
+    gap: 3,
+  },
+  title: {
+    fontWeight: "700",
+    color: "#0f172a",
+    fontSize: 13,
+  },
+  meta: {
+    fontSize: 11,
+    color: "#64748b",
+  },
+  summary: {
+    fontSize: 12,
+    color: "#334155",
+  },
+  includeToggle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  includeToggleOff: {
+    backgroundColor: "#e2e8f0",
+  },
+  includeToggleOn: {
+    backgroundColor: "#16a34a",
+  },
+  includeToggleText: {
+    fontWeight: "800",
+    fontSize: 12,
+  },
+  includeToggleTextOff: {
+    color: "#334155",
+  },
+  includeToggleTextOn: {
+    color: "#fff",
+  },
+  expandedSection: {
+    marginTop: 4,
+    gap: 6,
+  },
+  controlsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  controlLabel: {
+    color: "#64748b",
+    fontSize: 11,
+  },
+  stepperButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#f1f5f9",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  stepperButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  qtyValue: {
+    minWidth: 50,
+    textAlign: "center",
+    fontWeight: "800",
+    color: "#0f172a",
+    fontSize: 13,
+  },
+  priceLabel: {
+    color: "#64748b",
+    fontSize: 11,
+    marginLeft: 4,
+  },
+  priceInput: {
+    width: 84,
+    height: 32,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    fontSize: 12,
+    backgroundColor: "#fff",
+  },
+  sumValue: {
+    color: "#0f172a",
+    fontSize: 12,
+    fontWeight: "700",
+    minWidth: 72,
+    textAlign: "right",
+  },
+  remaining: {
+    color: "#64748b",
+    fontSize: 11,
+  },
+});

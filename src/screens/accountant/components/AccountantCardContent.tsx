@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ProposalRoleTag } from "../../../lib/format";
 import { normalizeRuText } from "../../../lib/text/encoding";
@@ -47,18 +47,16 @@ function AttachmentStateBlock(props: {
 
   return (
     <View
-      style={{
-        marginTop: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: palette.borderColor,
-        backgroundColor: palette.backgroundColor,
-      }}
+      style={[
+        styles.attachmentStateBlock,
+        {
+          borderColor: palette.borderColor,
+          backgroundColor: palette.backgroundColor,
+        },
+      ]}
     >
-      <Text style={{ color: palette.color, fontWeight: "900" }}>{props.title}</Text>
-      <Text style={{ color: palette.color, marginTop: 4 }}>{props.message}</Text>
+      <Text style={[styles.attachmentStateTitle, { color: palette.color }]}>{props.title}</Text>
+      <Text style={[styles.attachmentStateMessage, { color: palette.color }]}>{props.message}</Text>
     </View>
   );
 }
@@ -88,10 +86,11 @@ export const AccountantCardContent = memo(function AccountantCardContent({
   const files = Array.isArray(attRows) ? attRows : [];
   const busyAtt = busyKey === "att_refresh";
   const showEmpty = attState === "empty" && files.length === 0;
+  const webMonospace = Platform.OS === "web" ? styles.webMonospace : null;
 
   return (
     <View style={S.section}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <View style={styles.headerRow}>
         <Text style={S.label}>
           Номер предложения:{" "}
           <Text style={S.value}>
@@ -99,77 +98,58 @@ export const AccountantCardContent = memo(function AccountantCardContent({
           </Text>
         </Text>
 
-        <View
-          style={{
-            paddingVertical: 3,
-            paddingHorizontal: 10,
-            borderRadius: 999,
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.18)",
-            backgroundColor: "rgba(255,255,255,0.06)",
-          }}
-        >
-          <Text style={{ fontWeight: "900", color: UI.text, fontSize: 12 }}>
-            {roleBadgeLabel("A")}
-          </Text>
+        <View style={styles.roleBadge}>
+          <Text style={styles.roleBadgeText}>{roleBadgeLabel("A")}</Text>
         </View>
       </View>
 
-      <View style={{ height: 6 }} />
+      <View style={styles.spacer6} />
 
       <Text style={S.label}>
         ID заявки:{" "}
-        <Text style={[S.value, { fontFamily: Platform.OS === "web" ? "monospace" : undefined }]}>
-          {current?.proposal_id || "—"}
-        </Text>
+        <Text style={[S.value, webMonospace]}>{current?.proposal_id || "—"}</Text>
       </Text>
-      <View style={{ height: 8 }} />
+
+      <View style={styles.spacer8} />
 
       <Text style={S.label}>
-        Поставщик: <Text testID="accountant-card-supplier" style={S.value}>{ruText(current?.supplier || "—")}</Text>
+        Поставщик:{" "}
+        <Text testID="accountant-card-supplier" style={S.value}>
+          {ruText(current?.supplier || "—")}
+        </Text>
       </Text>
 
-      <Text testID="accountant-card-invoice" style={[S.label, { marginTop: 6 }]}>
+      <Text testID="accountant-card-invoice" style={[S.label, styles.marginTop6]}>
         Счёт (инвойс): <Text style={S.value}>{ruText(current?.invoice_number || "—")}</Text> от{" "}
         <Text style={S.value}>{ruText(current?.invoice_date || "—")}</Text>
       </Text>
 
-      <Text testID="accountant-card-amount" style={[S.label, { marginTop: 6 }]}>
+      <Text testID="accountant-card-amount" style={[S.label, styles.marginTop6]}>
         Сумма счёта:{" "}
         <Text style={S.value}>
           {Number(current?.invoice_amount ?? 0)} {current?.invoice_currency || "KGS"}
         </Text>
       </Text>
 
-      <View style={{ height: 10 }} />
+      <View style={styles.spacer10} />
 
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+      <View style={styles.statusRow}>
         <Text testID="accountant-card-status" style={S.label}>
           Статус оплаты: <Text style={S.value}>{status.label}</Text>
         </Text>
       </View>
 
-      <View style={{ marginTop: 10 }}>
+      <View style={styles.attachmentsSection}>
         <View>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <Text style={{ color: UI.text, fontWeight: "900" }}>Вложения: {files.length}</Text>
+          <View style={styles.attachmentsHeaderRow}>
+            <Text style={styles.attachmentsTitle}>Вложения: {files.length}</Text>
 
             <Pressable
               disabled={!!busyKey}
               onPress={() => runAction("att_refresh", onRefreshAtt)}
-              style={{
-                paddingVertical: 6,
-                paddingHorizontal: 10,
-                borderRadius: 999,
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.18)",
-                backgroundColor: "rgba(255,255,255,0.06)",
-                opacity: busyKey ? 0.6 : 1,
-              }}
+              style={[styles.outlinePill, busyKey ? styles.dimmed : null]}
             >
-              <Text style={{ color: UI.text, fontWeight: "900", fontSize: 12 }}>
-                {busyAtt ? "..." : "Обновить"}
-              </Text>
+              <Text style={styles.outlinePillText}>{busyAtt ? "..." : "Обновить"}</Text>
             </Pressable>
           </View>
 
@@ -190,31 +170,19 @@ export const AccountantCardContent = memo(function AccountantCardContent({
           ) : null}
 
           {showEmpty ? (
-            <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 8 }}>
-              {attMessage || "Вложения отсутствуют."}
-            </Text>
+            <Text style={styles.emptyText}>{attMessage || "Вложения отсутствуют."}</Text>
           ) : null}
 
           {files.length > 0 ? (
-            <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 8 }}>
+            <View style={styles.fileList}>
               {files.map((file) => (
                 <Pressable
                   key={String(file.attachmentId)}
                   disabled={!!busyKey}
                   onPress={() => void onOpenFile(file)}
-                  style={{
-                    paddingVertical: 8,
-                    paddingHorizontal: 12,
-                    borderRadius: 999,
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.18)",
-                    backgroundColor: "rgba(255,255,255,0.06)",
-                    marginRight: 8,
-                    marginBottom: 8,
-                    opacity: busyKey ? 0.6 : 1,
-                  }}
+                  style={[styles.fileChip, busyKey ? styles.dimmed : null]}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
+                  <Text style={styles.fileChipText} numberOfLines={1}>
                     {(file.groupKey ? `${file.groupKey}: ` : "") + String(file.fileName ?? "file")}
                   </Text>
                 </Pressable>
@@ -224,24 +192,14 @@ export const AccountantCardContent = memo(function AccountantCardContent({
         </View>
 
         {showInvoice || showReport ? (
-          <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>
+          <View style={styles.actionRow}>
             {showInvoice ? (
               <Pressable
                 disabled={!!busyKey}
                 onPress={() => runAction("top_invoice", onOpenInvoice)}
-                style={{
-                  flex: 1,
-                  paddingVertical: 10,
-                  borderRadius: 14,
-                  backgroundColor: "rgba(255,255,255,0.06)",
-                  borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.14)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: busyKey ? 0.6 : 1,
-                }}
+                style={[styles.actionButton, busyKey ? styles.dimmed : null]}
               >
-                <Text style={{ color: UI.text, fontWeight: "900" }}>Счёт</Text>
+                <Text style={styles.actionButtonText}>Счёт</Text>
               </Pressable>
             ) : null}
 
@@ -249,19 +207,9 @@ export const AccountantCardContent = memo(function AccountantCardContent({
               <Pressable
                 disabled={!!busyKey}
                 onPress={() => runAction("top_report", onOpenReport)}
-                style={{
-                  flex: 1,
-                  paddingVertical: 10,
-                  borderRadius: 14,
-                  backgroundColor: "rgba(255,255,255,0.06)",
-                  borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.14)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: busyKey ? 0.6 : 1,
-                }}
+                style={[styles.actionButton, busyKey ? styles.dimmed : null]}
               >
-                <Text style={{ color: UI.text, fontWeight: "900" }}>Отчёт</Text>
+                <Text style={styles.actionButtonText}>Отчёт</Text>
               </Pressable>
             ) : null}
           </View>
@@ -269,4 +217,131 @@ export const AccountantCardContent = memo(function AccountantCardContent({
       </View>
     </View>
   );
+});
+
+const styles = StyleSheet.create({
+  attachmentStateBlock: {
+    marginTop: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  attachmentStateTitle: {
+    fontWeight: "900",
+  },
+  attachmentStateMessage: {
+    marginTop: 4,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  roleBadge: {
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+  roleBadgeText: {
+    fontWeight: "900",
+    color: UI.text,
+    fontSize: 12,
+  },
+  spacer6: {
+    height: 6,
+  },
+  spacer8: {
+    height: 8,
+  },
+  spacer10: {
+    height: 10,
+  },
+  webMonospace: {
+    fontFamily: "monospace",
+  },
+  marginTop6: {
+    marginTop: 6,
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  attachmentsSection: {
+    marginTop: 10,
+  },
+  attachmentsHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  attachmentsTitle: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+  outlinePill: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+  outlinePillText: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 12,
+  },
+  dimmed: {
+    opacity: 0.6,
+  },
+  emptyText: {
+    color: UI.sub,
+    fontWeight: "800",
+    marginTop: 8,
+  },
+  fileList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 8,
+  },
+  fileChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  fileChipText: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+  actionRow: {
+    marginTop: 10,
+    flexDirection: "row",
+    gap: 8,
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionButtonText: {
+    color: UI.text,
+    fontWeight: "900",
+  },
 });

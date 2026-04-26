@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
 import { normalizeRuText } from "../../../lib/text/encoding";
 
 type WorkItem = {
@@ -34,81 +35,184 @@ export default function ActBuilderWorkRow(props: Props) {
   const approvedUnit = normalizeRuText(w.approvedUnit || "");
 
   return (
-    <View
-      style={{
-        borderWidth: 1,
-        borderColor: w.include ? "#22c55e" : "#e2e8f0",
-        borderRadius: 12,
-        backgroundColor: w.include ? "#f0fdf4" : "#fff",
-        padding: 10,
-        marginBottom: 8,
-        gap: 6,
-      }}
-    >
-      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-        <Pressable onPress={props.onToggleExpanded} style={{ flex: 1, gap: 3 }}>
-          <Text style={{ fontSize: 13, color: "#0f172a", fontWeight: "700" }} numberOfLines={2}>
+    <View style={[styles.card, w.include ? styles.cardIncluded : styles.cardDefault]}>
+      <View style={styles.headerRow}>
+        <Pressable onPress={props.onToggleExpanded} style={styles.headerBody}>
+          <Text style={styles.title} numberOfLines={2}>
             {workName}
           </Text>
-          <Text style={{ fontSize: 11, color: "#64748b" }} numberOfLines={1}>
+          <Text style={styles.meta} numberOfLines={1}>
             {objectName || "Объект не указан"}
           </Text>
-          <Text style={{ fontSize: 12, color: "#334155" }}>
-            Кол-во: {Number(w.qty || 0).toLocaleString("ru-RU")} • Ед: {unit || "—"} • Цена: {w.price == null ? "—" : Number(w.price).toLocaleString("ru-RU")} • Сумма: {sum > 0 ? sum.toLocaleString("ru-RU") : "0"}
+          <Text style={styles.summary}>
+            Кол-во: {Number(w.qty || 0).toLocaleString("ru-RU")} • Ед: {unit || "—"} • Цена:{" "}
+            {w.price == null ? "—" : Number(w.price).toLocaleString("ru-RU")} • Сумма:{" "}
+            {sum > 0 ? sum.toLocaleString("ru-RU") : "0"}
           </Text>
           {(w.approvedQty != null || w.approvedPrice != null || w.approvedUnit) && (
-            <Text style={{ fontSize: 11, color: "#64748b" }}>
-              Утверждено: {w.approvedQty == null ? "—" : Number(w.approvedQty).toLocaleString("ru-RU")} {approvedUnit || unit || "—"} • Цена: {w.approvedPrice == null ? "—" : Number(w.approvedPrice).toLocaleString("ru-RU")}
+            <Text style={styles.approvedMeta}>
+              Утверждено:{" "}
+              {w.approvedQty == null ? "—" : Number(w.approvedQty).toLocaleString("ru-RU")}{" "}
+              {approvedUnit || unit || "—"} • Цена:{" "}
+              {w.approvedPrice == null ? "—" : Number(w.approvedPrice).toLocaleString("ru-RU")}
             </Text>
           )}
         </Pressable>
+
         <Pressable
           onPress={props.onToggleInclude}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            backgroundColor: w.include ? "#16a34a" : "#e2e8f0",
-            alignItems: "center",
-            justifyContent: "center",
-            marginTop: 2,
-          }}
+          style={[styles.includeToggle, w.include ? styles.includeToggleOn : styles.includeToggleOff]}
         >
-          <Text style={{ color: w.include ? "#fff" : "#334155", fontWeight: "800", fontSize: 12 }}>Вкл</Text>
+          <Text
+            style={[
+              styles.includeToggleText,
+              w.include ? styles.includeToggleTextOn : styles.includeToggleTextOff,
+            ]}
+          >
+            Вкл
+          </Text>
         </Pressable>
       </View>
 
       {(props.expanded || w.include) && (
-        <View style={{ gap: 8, paddingTop: 4 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Text style={{ color: "#64748b", fontSize: 11 }}>Кол-во</Text>
+        <View style={styles.expandedSection}>
+          <View style={styles.controlRow}>
+            <Text style={styles.controlLabel}>Кол-во</Text>
             <TextInput
               value={String(w.qty ?? 0)}
               keyboardType="numeric"
               onChangeText={props.onQtyChange}
-              style={{ flex: 1, height: 32, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 8, fontSize: 12, color: "#334155", backgroundColor: "#fff" }}
+              style={styles.flexInput}
             />
-            <Text style={{ color: "#64748b", fontSize: 11 }}>Ед</Text>
-            <TextInput
-              value={unit || ""}
-              onChangeText={props.onUnitChange}
-              style={{ width: 76, height: 32, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 8, fontSize: 12, color: "#334155", backgroundColor: "#fff" }}
-            />
+
+            <Text style={styles.controlLabel}>Ед</Text>
+            <TextInput value={unit || ""} onChangeText={props.onUnitChange} style={styles.unitInput} />
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Text style={{ color: "#64748b", fontSize: 11 }}>Цена</Text>
+
+          <View style={styles.controlRow}>
+            <Text style={styles.controlLabel}>Цена</Text>
             <TextInput
               value={w.price == null ? "" : String(w.price)}
               keyboardType="numeric"
               onChangeText={props.onPriceChange}
-              style={{ flex: 1, height: 32, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 8, fontSize: 12, color: "#334155", backgroundColor: "#fff" }}
+              style={styles.flexInput}
             />
-            <Text style={{ color: "#0f172a", fontSize: 12, fontWeight: "700", minWidth: 88, textAlign: "right" }}>
-              {sum > 0 ? sum.toLocaleString("ru-RU") : "0"}
-            </Text>
+
+            <Text style={styles.sumValue}>{sum > 0 ? sum.toLocaleString("ru-RU") : "0"}</Text>
           </View>
         </View>
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
+    gap: 6,
+  },
+  cardDefault: {
+    borderColor: "#e2e8f0",
+    backgroundColor: "#fff",
+  },
+  cardIncluded: {
+    borderColor: "#22c55e",
+    backgroundColor: "#f0fdf4",
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  headerBody: {
+    flex: 1,
+    gap: 3,
+  },
+  title: {
+    fontSize: 13,
+    color: "#0f172a",
+    fontWeight: "700",
+  },
+  meta: {
+    fontSize: 11,
+    color: "#64748b",
+  },
+  summary: {
+    fontSize: 12,
+    color: "#334155",
+  },
+  approvedMeta: {
+    fontSize: 11,
+    color: "#64748b",
+  },
+  includeToggle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  includeToggleOff: {
+    backgroundColor: "#e2e8f0",
+  },
+  includeToggleOn: {
+    backgroundColor: "#16a34a",
+  },
+  includeToggleText: {
+    fontWeight: "800",
+    fontSize: 12,
+  },
+  includeToggleTextOff: {
+    color: "#334155",
+  },
+  includeToggleTextOn: {
+    color: "#fff",
+  },
+  expandedSection: {
+    gap: 8,
+    paddingTop: 4,
+  },
+  controlRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  controlLabel: {
+    color: "#64748b",
+    fontSize: 11,
+  },
+  flexInput: {
+    flex: 1,
+    height: 32,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    fontSize: 12,
+    color: "#334155",
+    backgroundColor: "#fff",
+  },
+  unitInput: {
+    width: 76,
+    height: 32,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    fontSize: 12,
+    color: "#334155",
+    backgroundColor: "#fff",
+  },
+  sumValue: {
+    color: "#0f172a",
+    fontSize: 12,
+    fontWeight: "700",
+    minWidth: 88,
+    textAlign: "right",
+  },
+});

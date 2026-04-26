@@ -1,0 +1,91 @@
+{
+  "wave": "V4-6",
+  "name": "PERFORMANCE_INLINE_STYLES_PHASE_2",
+  "baseCommit": "b43dbff10ddbf78b8953607070297d59e4d48512",
+  "selectedFiles": [
+    {
+      "path": "src/screens/contractor/components/ActBuilderMaterialRow.tsx",
+      "hotpathReason": "Repeated contractor act-builder material row with dense controls.",
+      "beforeInlineCount": 20,
+      "afterInlineCount": 0,
+      "dynamicStylesRetained": [
+        "include-state card colors",
+        "include toggle state styles"
+      ]
+    },
+    {
+      "path": "src/screens/contractor/components/ActBuilderWorkRow.tsx",
+      "hotpathReason": "Repeated contractor act-builder work row with expanded editor inputs.",
+      "beforeInlineCount": 19,
+      "afterInlineCount": 0,
+      "dynamicStylesRetained": [
+        "include-state card colors",
+        "include toggle state styles"
+      ]
+    },
+    {
+      "path": "src/screens/accountant/components/AccountantCardContent.tsx",
+      "hotpathReason": "High-density accountant card with attachments and repeated action buttons.",
+      "beforeInlineCount": 24,
+      "afterInlineCount": 0,
+      "dynamicStylesRetained": [
+        "attachment-state palette colors",
+        "busy-state dimming",
+        "platform-specific monospace style"
+      ]
+    },
+    {
+      "path": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+      "hotpathReason": "Input-heavy buyer modal used in mobile editing flow.",
+      "beforeInlineCount": 34,
+      "afterInlineCount": 0,
+      "dynamicStylesRetained": [
+        "web/native shell and card selection",
+        "counterparty selector disabled opacity",
+        "placeholder or selected text color"
+      ]
+    },
+    {
+      "path": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+      "hotpathReason": "Large RFQ form sheet with repeated pills, summary preview, and many inputs.",
+      "beforeInlineCount": 32,
+      "afterInlineCount": 0,
+      "dynamicStylesRetained": [
+        "selected active pill styles",
+        "document toggle selected states",
+        "publish-busy visual state"
+      ]
+    }
+  ],
+  "regressionCoverage": {
+    "contractTest": "tests/perf/v4_6_inline_styles_phase2.contract.test.ts",
+    "status": "passed"
+  },
+  "gates": {
+    "tsc": "passed",
+    "expoLint": "passed",
+    "jestRunInBand": "passed",
+    "jest": "passed",
+    "gitDiffCheck": "passed",
+    "maestroCritical": {
+      "status": "passed",
+      "flowsPassed": 14,
+      "flowsTotal": 14,
+      "note": "First run had a transient warehouse login selector failure; clean rerun passed unchanged."
+    }
+  },
+  "androidProof": {
+    "assembleRelease": "passed",
+    "install": "passed",
+    "launch": "passed",
+    "appPid": "31161",
+    "mainActivityResumed": true,
+    "fatalMatches": false,
+    "note": "Initial packageRelease failure was transient; rerun with --stacktrace succeeded without source changes."
+  },
+  "releaseGuard": {
+    "prePushAuthoritative": false,
+    "reason": "Guard requires a clean worktree and committed diff range.",
+    "finalPostPush": "pending"
+  }
+}
