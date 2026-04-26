@@ -152,7 +152,7 @@ describe("foreman PDF wave 1 hardening", () => {
       await hookApi!.runRequestPdf(
         "preview",
         "REQ-2",
-        { foreman_name: "РРІР°РЅ", display_no: "REQ-2" } as never,
+        { foreman_name: "Иван", display_no: "REQ-2" } as never,
         syncMeta,
       );
     });
@@ -166,7 +166,7 @@ describe("foreman PDF wave 1 hardening", () => {
     expect(mockBuildForemanRequestPdfDescriptor).toHaveBeenCalledWith(
       expect.objectContaining({
         requestId: "REQ-2",
-        generatedBy: "РРІР°РЅ",
+        generatedBy: "Иван",
         displayNo: "REQ-2",
       }),
     );
@@ -176,18 +176,24 @@ describe("foreman PDF wave 1 hardening", () => {
   it("keeps touched PDF copy readable on active Wave 1 paths", () => {
     const foremanHookSource = readFileSync(join(__dirname, "hooks", "useForemanPdf.ts"), "utf8");
     const foremanControllerSource = readFileSync(join(__dirname, "useForemanScreenController.ts"), "utf8");
+    const foremanRequestPdfServiceSource = readFileSync(
+      join(__dirname, "foreman.requestPdf.service.ts"),
+      "utf8",
+    );
     const warehouseBoundarySource = readFileSync(
       join(__dirname, "..", "warehouse", "warehouse.pdf.boundary.ts"),
       "utf8",
     );
 
-    for (const source of [foremanHookSource, warehouseBoundarySource]) {
-      expect(source).not.toContain("РќРµ СѓРґР°Р»РѕСЃСЊ");
-      expect(source).not.toContain("РћС‚РєСЂС‹РІР°СЋ");
-      expect(source).not.toContain("Р“РѕС‚РѕРІР»СЋ");
+    for (const source of [foremanHookSource, foremanRequestPdfServiceSource, warehouseBoundarySource]) {
+      expect(source).not.toContain("Р СњР Вµ РЎС“Р Т‘Р В°Р В»Р С•РЎРѓРЎРЉ");
+      expect(source).not.toContain("Р С›РЎвЂљР С”РЎР‚РЎвЂ№Р Р†Р В°РЎР‹");
+      expect(source).not.toContain("Р вЂњР С•РЎвЂљР С•Р Р†Р В»РЎР‹");
     }
 
-    expect(foremanControllerSource).toContain('label: "Открываю PDF…"');
-    expect(foremanControllerSource).toContain('getPdfFlowErrorMessage(error, "Не удалось открыть PDF")');
+    expect(foremanControllerSource).toContain("previewForemanHistoryPdf({");
+    expect(foremanControllerSource).not.toContain("prepareAndPreviewGeneratedPdfFromDescriptorFactory({");
+    expect(foremanRequestPdfServiceSource).toContain('label: "Открываю PDF…"');
+    expect(foremanRequestPdfServiceSource).toContain('getPdfFlowErrorMessage(error, "Не удалось открыть PDF")');
   });
 });

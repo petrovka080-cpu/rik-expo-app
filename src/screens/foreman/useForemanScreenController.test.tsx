@@ -278,6 +278,57 @@ jest.mock("../../lib/pdf/pdf.runner", () => ({
 
 jest.mock("./foreman.requestPdf.service", () => ({
   buildForemanRequestPdfDescriptor: (...args: unknown[]) => mockBuildForemanRequestPdfDescriptor(...args),
+  previewForemanHistoryPdf: async (args: {
+    requestId: string;
+    authIdentityFullName?: string | null;
+    historyRequests: {
+      id?: unknown;
+      display_no?: string | null;
+      status?: string | null;
+      created_at?: string | null;
+      object_name_ru?: string | null;
+    }[];
+    requestDetails?: {
+      foreman_name?: string | null;
+      display_no?: string | null;
+      status?: string | null;
+      created_at?: string | null;
+      updated_at?: string | null;
+      object_name_ru?: string | null;
+    } | null;
+    closeHistory: () => void | Promise<void>;
+    busy?: unknown;
+    supabase: unknown;
+    router?: unknown;
+  }) => {
+    const requestId = String(args.requestId ?? "").trim();
+    if (!requestId) return;
+    const historyRequest =
+      args.historyRequests.find((entry) => String(entry.id ?? "").trim() === requestId) ?? null;
+    const requestDetails = args.requestDetails ?? null;
+    await mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory({
+      busy: args.busy,
+      supabase: args.supabase,
+      key: `pdf:history:${requestId}`,
+      label: "Открываю PDF…",
+      router: args.router,
+      onBeforeNavigate: args.closeHistory,
+      createDescriptor: async () =>
+        await mockBuildForemanRequestPdfDescriptor({
+          requestId,
+          generatedBy: requestDetails?.foreman_name ?? args.authIdentityFullName ?? null,
+          displayNo:
+            historyRequest?.display_no ??
+            requestDetails?.display_no ??
+            `#${requestId.slice(0, 4)}`,
+          status: historyRequest?.status ?? requestDetails?.status ?? null,
+          createdAt: historyRequest?.created_at ?? requestDetails?.created_at ?? null,
+          updatedAt: requestDetails?.updated_at ?? null,
+          objectName: historyRequest?.object_name_ru ?? requestDetails?.object_name_ru ?? null,
+          title: `Заявка ${requestId}`,
+        }),
+    });
+  },
 }));
 
 jest.mock("./hooks/useForemanDisplayNo", () => ({

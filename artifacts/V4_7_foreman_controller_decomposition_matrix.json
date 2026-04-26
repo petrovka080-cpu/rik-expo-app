@@ -1,0 +1,50 @@
+{
+  "wave": "V4-7",
+  "title": "FOREMAN_CONTROLLER_DECOMPOSITION_PHASE_2",
+  "status": "pre_commit_green",
+  "baseHead": "25dccfab196089f4c88deb4bac3a8c1f69cfdaf6",
+  "scope": {
+    "responsibilityBlock": "foreman_history_pdf_preview",
+    "controllerFile": "src/screens/foreman/useForemanScreenController.ts",
+    "changedFiles": [
+      "src/screens/foreman/useForemanScreenController.ts",
+      "src/screens/foreman/foreman.requestPdf.service.ts",
+      "src/screens/foreman/foreman.requestPdf.service.test.ts",
+      "src/screens/foreman/useForemanScreenController.test.tsx",
+      "src/screens/foreman/useForemanPdf.wave1.test.tsx"
+    ],
+    "businessLogicChanged": false,
+    "draftSemanticsChanged": false,
+    "sqlChanged": false,
+    "runtimeChanged": false,
+    "e2eFlowChanged": false
+  },
+  "proof": {
+    "focusedJest": "passed",
+    "tsc": "passed",
+    "expoLint": "passed",
+    "jestRunInBand": "passed",
+    "jest": "passed",
+    "gitDiffCheck": "passed",
+    "maestroCritical": {
+      "status": "passed",
+      "flowsPassed": 14,
+      "flowsTotal": 14
+    },
+    "android": {
+      "assembleRelease": "passed",
+      "install": "Success",
+      "pid": "5819",
+      "mainActivityResumed": true,
+      "fatalException": false,
+      "fileNotFoundException": false,
+      "fingerprintError": false
+    }
+  },
+  "release": {
+    "commit": null,
+    "pushed": false,
+    "releaseVerifyAfterPush": "pending",
+    "otaDisposition": "pending"
+  }
+}

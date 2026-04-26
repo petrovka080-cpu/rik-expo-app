@@ -49,14 +49,7 @@ import {
   shortId,
   toErrorText,
 } from "./foreman.helpers";
-import { buildPdfFileName } from "../../lib/documents/pdfDocument";
-import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
 import { buildForemanSyncUiStatus } from "../../lib/offline/foremanSyncRuntime";
-import {
-  prepareAndPreviewGeneratedPdf,
-  prepareAndPreviewGeneratedPdfFromDescriptorFactory,
-} from "../../lib/pdf/pdf.runner";
-import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { useForemanHistory } from "./hooks/useForemanHistory";
 import { useForemanDisplayNo } from "./hooks/useForemanDisplayNo";
 import { useForemanDraftBoundary } from "./hooks/useForemanDraftBoundary";
@@ -67,11 +60,12 @@ import { useForemanBaseUi } from "./hooks/useForemanBaseUi";
 import { useForemanDraftUi } from "./hooks/useForemanDraftUi";
 import { useForemanHistoryUi } from "./hooks/useForemanHistoryUi";
 import { useForemanAiQuickFlow } from "./hooks/useForemanAiQuickFlow";
-import { buildForemanRequestPdfDescriptor } from "./foreman.requestPdf.service";
 import {
   loadStoredFioState,
   saveStoredFioState,
 } from "../../lib/storage/fioPersistence";
+import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
+import { previewForemanHistoryPdf } from "./foreman.requestPdf.service";
 
 type WebUiApi = {
   onZoneChange: (v: string) => void;
@@ -287,67 +281,22 @@ export function useForemanScreenController() {
   }, [setForemanHistory]);
 
   const openHistoryPdfSafe = useCallback(async (reqId: string) => {
-    const rid = ridStr(reqId);
-    if (!rid) return;
-    try {
-      const historyRequest = historyRequests.find((entry) => ridStr(entry.id) === rid) ?? null;
-      const createDescriptor = async () => {
-        const descriptor = await buildForemanRequestPdfDescriptor({
-          requestId: rid,
-          generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
-          displayNo: historyRequest?.display_no ?? requestDetails?.display_no ?? `#${shortId(rid)}`,
-          status: historyRequest?.status ?? requestDetails?.status ?? null,
-          createdAt: historyRequest?.created_at ?? requestDetails?.created_at ?? null,
-          updatedAt: requestDetails?.updated_at ?? null,
-          objectName: historyRequest?.object_name_ru ?? requestDetails?.object_name_ru ?? null,
-          title: `Заявка ${rid}`,
-        });
-        if (__DEV__) console.info("[foreman-pdf] history_open_descriptor", {
-          requestId: rid,
-          sourceKind: descriptor.fileSource.kind,
-          uri: descriptor.uri,
-        });
-        return descriptor;
-      };
-      // XR-PDF: pass closeHistory as onBeforeNavigate instead of calling it manually.
-      // The shared boundary handles dismiss → InteractionManager → settle → push.
-      await prepareAndPreviewGeneratedPdfFromDescriptorFactory({
-        busy: gbusy,
-        supabase,
-        key: `pdf:history:${rid}`,
-        label: "Открываю PDF…",
-        createDescriptor,
-        router,
-        onBeforeNavigate: closeHistory,
-      });
-    } catch (error) {
-      recordCatchDiscipline({
-        screen: "foreman",
-        surface: "foreman_pdf_open",
-        event: "foreman_history_pdf_open_failed",
-        kind: "critical_fail",
-        error,
-        category: "ui",
-        sourceKind: "pdf:request",
-        errorStage: "open_view",
-        extra: {
-          requestId: rid,
-          action: "openHistoryPdf",
-        },
-      });
-      Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
-    }
+    await previewForemanHistoryPdf({
+      requestId: reqId,
+      authIdentityFullName: authIdentity.fullName,
+      historyRequests,
+      requestDetails,
+      closeHistory,
+      busy: gbusy,
+      supabase,
+      router,
+    });
   }, [
     authIdentity.fullName,
     closeHistory,
     gbusy,
     historyRequests,
-    requestDetails?.created_at,
-    requestDetails?.display_no,
-    requestDetails?.foreman_name,
-    requestDetails?.object_name_ru,
-    requestDetails?.status,
-    requestDetails?.updated_at,
+    requestDetails,
     router,
   ]);
 
@@ -734,77 +683,6 @@ export function useForemanScreenController() {
       setHistoryReopenBusyId(null);
     }
   }, [alertError, closeHistory, openDraft, openRequestById, setHistoryReopenBusyId]);
-
-  const openHistoryPdf = useCallback(async (reqId: string) => {
-    const rid = ridStr(reqId);
-    if (!rid) return;
-    try {
-      const descriptor = await buildForemanRequestPdfDescriptor({
-        requestId: rid,
-        generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
-        displayNo: labelForRequest(rid),
-        title: `Заявка ${rid}`,
-      });
-      await prepareAndPreviewGeneratedPdf({
-        busy: gbusy,
-        supabase,
-        key: `pdf:history:${rid}`,
-        label: "Готовлю PDF...",
-        descriptor: {
-          ...descriptor,
-          title: `Заявка ${rid}`,
-          fileName: buildPdfFileName({
-            documentType: "request",
-            title: rid,
-            entityId: rid,
-          }),
-        },
-        router,
-      });
-    } catch (error) {
-      Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
-    }
-  }, [authIdentity.fullName, gbusy, labelForRequest, requestDetails?.foreman_name, router]);
-
-  const openHistoryPdfObserved = useCallback(async (reqId: string) => {
-    const rid = ridStr(reqId);
-    if (!rid) return;
-    try {
-      const descriptor = await buildForemanRequestPdfDescriptor({
-        requestId: rid,
-        generatedBy: requestDetails?.foreman_name ?? authIdentity.fullName ?? null,
-        displayNo: labelForRequest(rid),
-        title: `Заявка ${rid}`,
-      });
-      await prepareAndPreviewGeneratedPdf({
-        busy: gbusy,
-        supabase,
-        key: `pdf:history:${rid}`,
-        label: "Открываю PDF…",
-        descriptor,
-        router,
-      });
-    } catch (error) {
-      recordCatchDiscipline({
-        screen: "foreman",
-        surface: "foreman_pdf_open",
-        event: "foreman_history_pdf_open_failed",
-        kind: "critical_fail",
-        error,
-        category: "ui",
-        sourceKind: "pdf:request",
-        errorStage: "open_view",
-        extra: {
-          requestId: rid,
-          action: "openHistoryPdf",
-        },
-      });
-      Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
-    }
-  }, [authIdentity.fullName, gbusy, labelForRequest, requestDetails?.foreman_name, router]);
-
-  void openHistoryPdf;
-  void openHistoryPdfObserved;
 
   useEffect(() => {
     let active = true;
