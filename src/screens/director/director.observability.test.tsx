@@ -42,12 +42,17 @@ describe("director observability hardening", () => {
   });
 
   it("reports dashboard metric fallbacks without changing the default metric shape", async () => {
+    type RejectingBuilder = {
+      select: jest.Mock<RejectingBuilder, []>;
+      not: jest.Mock<RejectingBuilder, [string, string, null]>;
+      limit: jest.Mock<Promise<never>, [number]>;
+    };
+
     const makeRejectingBuilder = (error: Error) => {
-      const builder = {
-        select: jest.fn(() => builder),
-        not: jest.fn(() => builder),
-        limit: jest.fn(() => Promise.reject(error)),
-      };
+      const builder = {} as RejectingBuilder;
+      builder.select = jest.fn(() => builder);
+      builder.not = jest.fn((_column: string, _operator: string, _value: null) => builder);
+      builder.limit = jest.fn((_count: number) => Promise.reject(error));
       return builder;
     };
 

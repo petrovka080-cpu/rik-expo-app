@@ -278,9 +278,9 @@ async function verifyAndroid(user: RuntimeTestUser) {
       user,
       protectedRoute: "rik://profile",
       artifactBase: androidArtifactBase,
-      successPredicate: (xml) => !androidTextRe.login.test(xml) && androidTextRe.profile.test(xml),
-      renderablePredicate: (xml) => androidTextRe.login.test(xml) || androidTextRe.profile.test(xml),
-      loginScreenPredicate: (xml) => androidTextRe.login.test(xml),
+      successPredicate: (xml: string) => !androidTextRe.login.test(xml) && androidTextRe.profile.test(xml),
+      renderablePredicate: (xml: string) => androidTextRe.login.test(xml) || androidTextRe.profile.test(xml),
+      loginScreenPredicate: (xml: string) => androidTextRe.login.test(xml),
     } as const;
 
     let screen = await androidHarness.loginAndroidWithProtectedRoute(loginParams);

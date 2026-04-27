@@ -3,6 +3,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "strict": false,
+    "noImplicitAny": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
     "noEmit": true,
@@ -26,6 +27,8 @@
     "expo-env.d.ts"
   ],
   "exclude": [
+    "artifacts/**/*",
+    "diagnostics/**/*",
     "diagnostics/archive/migrated/**/*",
     "migrated/**/*",
     "scripts/diagnostics/root-legacy/**/*"

@@ -7,9 +7,10 @@ import {
   renderTable,
   renderTitledBoxSection,
 } from "../pdf.director.sections.ts";
+import type { DirectorProductionReportPdfModelShared } from "../directorProductionReport.shared.ts";
 import { formatMoney, renderSignaturesSection } from "./shared.ts";
 
-type DirectorProductionReportPdfModel = Record<string, any>;
+type DirectorProductionReportPdfModel = DirectorProductionReportPdfModelShared;
 const PRODUCTION_REPORT_STYLES = `
     @page { margin: 12mm; }
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#0f172a}

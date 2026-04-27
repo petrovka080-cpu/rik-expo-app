@@ -7,9 +7,10 @@ import {
   renderTable,
   renderTitledBoxSection,
 } from "../pdf.director.sections.ts";
+import type { DirectorSubcontractReportPdfModelShared } from "../directorSubcontractReport.shared.ts";
 import { formatMoney, renderSignaturesSection } from "./shared.ts";
 
-type DirectorSubcontractReportPdfModel = Record<string, any>;
+type DirectorSubcontractReportPdfModel = DirectorSubcontractReportPdfModelShared;
 const SUBCONTRACT_REPORT_STYLES = `
     @page { margin: 12mm; }
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#0f172a}

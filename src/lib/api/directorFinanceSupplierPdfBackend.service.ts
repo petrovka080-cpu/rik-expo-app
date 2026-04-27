@@ -202,7 +202,7 @@ export async function generateDirectorFinanceSupplierSummaryPdfViaBackend(
     signedUrl: result.signedUrl,
     renderBranch: "backend_supplier_summary_v1",
     renderVersion: "v1",
-    renderer: result.renderer,
+    renderer: result.renderer as DirectorFinanceSupplierPdfBackendResult["renderer"],
     fileName: result.fileName,
     expiresInSeconds: result.expiresInSeconds,
     telemetry:

@@ -11,6 +11,11 @@ jest.mock("../../lib/supabaseClient", () => ({
 }));
 
 type ChannelHandler = (payload?: unknown) => void;
+type MockBuyerChannel = {
+  name: string;
+  on: jest.Mock<MockBuyerChannel, [string, unknown, ChannelHandler]>;
+  subscribe: jest.Mock<MockBuyerChannel, []>;
+};
 
 describe("attachBuyerSubscriptions", () => {
   let consoleErrorSpy: jest.SpyInstance;
@@ -35,14 +40,13 @@ describe("attachBuyerSubscriptions", () => {
 
     const mockSupabase = {
       channel: jest.fn((name: string) => {
-        const channel = {
-          name,
-          on: jest.fn((_event: string, _filter: unknown, callback: ChannelHandler) => {
-            callbacks[name] = callback;
-            return channel;
-          }),
-          subscribe: jest.fn(() => channel),
-        };
+        const channel = {} as MockBuyerChannel;
+        channel.name = name;
+        channel.on = jest.fn((_event: string, _filter: unknown, callback: ChannelHandler) => {
+          callbacks[name] = callback;
+          return channel;
+        });
+        channel.subscribe = jest.fn(() => channel);
         builtChannels.push(channel);
         return channel;
       }),

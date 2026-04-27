@@ -182,7 +182,7 @@ export async function generateDirectorSubcontractReportPdfViaBackend(
     signedUrl: result.signedUrl,
     renderBranch: "backend_subcontract_report_v1",
     renderVersion: "v1",
-    renderer: result.renderer,
+    renderer: result.renderer as DirectorSubcontractReportPdfBackendResult["renderer"],
     fileName: result.fileName,
     expiresInSeconds: result.expiresInSeconds,
   };

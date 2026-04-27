@@ -140,7 +140,10 @@ export function ReportsOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
 }
 
-const OFFICE_DIRECTION_SECTION_BY_KEY = {
+const OFFICE_DIRECTION_SECTION_BY_KEY: Record<
+  string,
+  (props: OfficeDirectionSectionProps) => React.ReactElement
+> = {
   accountant: AccountantOfficeSection,
   buyer: BuyerOfficeSection,
   contractor: ContractorOfficeSection,
@@ -150,10 +153,7 @@ const OFFICE_DIRECTION_SECTION_BY_KEY = {
   reports: ReportsOfficeSection,
   security: SecurityOfficeSection,
   warehouse: WarehouseOfficeSection,
-} satisfies Record<
-  string,
-  (props: OfficeDirectionSectionProps) => React.ReactElement
->;
+};
 
 function renderOfficeDirectionSection(props: OfficeDirectionSectionProps) {
   const Section =

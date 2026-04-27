@@ -81,6 +81,10 @@ type ProposalHeadRow = {
   supplier: string | null;
   request_id: string | null;
 };
+type SupplierProbeRow = {
+  id?: unknown;
+  name?: unknown;
+};
 
 async function resolveApprovedRequestStatus(admin: any) {
   const inbox = await admin.rpc("buyer_summary_inbox_scope_v1" as never, {
@@ -112,12 +116,12 @@ async function resolveSupplier(admin: any) {
     .limit(20);
   if (result.error) throw result.error;
   const row = Array.isArray(result.data)
-    ? result.data.find((entry) => text((entry as { name?: unknown }).name))
+    ? result.data.find((entry: SupplierProbeRow) => text(entry.name))
     : null;
   if (!row) throw new Error("No supplier with non-empty name found");
   return {
-    id: text((row as { id?: unknown }).id),
-    name: text((row as { name?: unknown }).name),
+    id: text(row.id),
+    name: text(row.name),
   };
 }
 

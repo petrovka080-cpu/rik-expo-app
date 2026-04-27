@@ -29,12 +29,18 @@ function buildMembersBuilder(result: {
   count: number | null;
   error: Error | null;
 }) {
-  const builder = {
-    select: jest.fn(() => builder),
-    eq: jest.fn(() => builder),
-    order: jest.fn(() => builder),
-    range: jest.fn().mockResolvedValue(result),
+  type MembersBuilder = {
+    select: jest.Mock<MembersBuilder, [string, { count: "exact" }]>;
+    eq: jest.Mock<MembersBuilder, [string, string]>;
+    order: jest.Mock<MembersBuilder, [string, { ascending: boolean }]>;
+    range: jest.Mock<Promise<typeof result>, [number, number]>;
   };
+
+  const builder = {} as MembersBuilder;
+  builder.select = jest.fn((_columns: string, _options: { count: "exact" }) => builder);
+  builder.eq = jest.fn((_column: string, _value: string) => builder);
+  builder.order = jest.fn((_column: string, _options: { ascending: boolean }) => builder);
+  builder.range = jest.fn((_from: number, _to: number) => Promise.resolve(result));
 
   return builder;
 }
@@ -43,10 +49,14 @@ function buildProfilesBuilder(result: {
   data: unknown[];
   error: Error | null;
 }) {
-  const builder = {
-    select: jest.fn(() => builder),
-    in: jest.fn().mockResolvedValue(result),
+  type ProfilesBuilder = {
+    select: jest.Mock<ProfilesBuilder, [string]>;
+    in: jest.Mock<Promise<typeof result>, [string, readonly string[]]>;
   };
+
+  const builder = {} as ProfilesBuilder;
+  builder.select = jest.fn((_columns: string) => builder);
+  builder.in = jest.fn((_column: string, _values: readonly string[]) => Promise.resolve(result));
 
   return builder;
 }

@@ -119,6 +119,18 @@ jest.mock("./requests.read-capabilities", () => ({
 }));
 
 type MockResult<T> = Promise<{ data: T; error: Error | null }>;
+type MockSelectChain<T> = {
+  eq: jest.Mock<MockSelectChain<T>, [string, unknown]>;
+  in: jest.Mock<MockSelectChain<T>, [string, readonly unknown[]]>;
+  limit: jest.Mock<MockResult<T>, [number]>;
+  maybeSingle: jest.Mock<MockResult<T>, []>;
+  single: jest.Mock<MockResult<T>, []>;
+  select: jest.Mock<MockSelectChain<T>, [string?]>;
+  order: jest.Mock<MockSelectChain<T>, [string, Record<string, unknown>?]>;
+  then: MockResult<T>["then"];
+  catch: MockResult<T>["catch"];
+  finally: MockResult<T>["finally"];
+};
 
 const mockSupabase = supabase as unknown as {
   auth: {
@@ -137,18 +149,17 @@ const mockClient = client as unknown as {
 const mockEnsureRequestExists = ensureRequestExists as unknown as jest.Mock;
 
 const makeSelectChain = <T,>(result: MockResult<T>) => {
-  const chain = {
-    eq: jest.fn(() => chain),
-    in: jest.fn(() => chain),
-    limit: jest.fn(() => result),
-    maybeSingle: jest.fn(() => result),
-    single: jest.fn(() => result),
-    select: jest.fn(() => chain),
-    order: jest.fn(() => chain),
-    then: result.then.bind(result),
-    catch: result.catch.bind(result),
-    finally: result.finally.bind(result),
-  };
+  const chain = {} as MockSelectChain<T>;
+  chain.eq = jest.fn((_column: string, _value: unknown) => chain);
+  chain.in = jest.fn((_column: string, _values: readonly unknown[]) => chain);
+  chain.limit = jest.fn((_count: number) => result);
+  chain.maybeSingle = jest.fn(() => result);
+  chain.single = jest.fn(() => result);
+  chain.select = jest.fn((_columns?: string) => chain);
+  chain.order = jest.fn((_column: string, _options?: Record<string, unknown>) => chain);
+  chain.then = result.then.bind(result);
+  chain.catch = result.catch.bind(result);
+  chain.finally = result.finally.bind(result);
   return chain;
 };
 

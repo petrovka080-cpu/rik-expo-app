@@ -57,6 +57,23 @@ async function poll<T>(
 const toText = (value: unknown) => String(value ?? "").trim();
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+type RoleProbeProfileRow = {
+  role?: unknown;
+};
+type RoleProbeMembershipRow = {
+  company_id?: unknown;
+  role?: unknown;
+};
+type BuyerRoleProbe = {
+  authUserId: string;
+  appMetadataRole: string | null;
+  rpcRole: string | null;
+  profileRoles: string[];
+  companyMemberships: Array<{
+    companyId: string | null;
+    role: string | null;
+  }>;
+};
 
 const writeJson = (filePath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -171,7 +188,7 @@ async function attachCompanyMember(params: {
   if (result.error) throw result.error;
 }
 
-async function readBuyerRoleProbe(client: any, userId: string) {
+async function readBuyerRoleProbe(client: any, userId: string): Promise<BuyerRoleProbe> {
   const [
     { data: authUser, error: authError },
     { data: rpcRole, error: rpcError },
@@ -190,10 +207,10 @@ async function readBuyerRoleProbe(client: any, userId: string) {
     appMetadataRole: toText(asRecord(authUser.user?.app_metadata).role) || null,
     rpcRole: toText(rpcRole) || null,
     profileRoles: Array.isArray(profiles.data)
-      ? profiles.data.map((row: any) => toText(row.role)).filter(Boolean)
+      ? profiles.data.map((row: RoleProbeProfileRow) => toText(row.role)).filter(Boolean)
       : [],
     companyMemberships: Array.isArray(memberships.data)
-      ? memberships.data.map((row: any) => ({
+      ? memberships.data.map((row: RoleProbeMembershipRow) => ({
           companyId: toText(row.company_id) || null,
           role: toText(row.role) || null,
         }))

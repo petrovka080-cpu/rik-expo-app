@@ -77,6 +77,10 @@ type ProposalRow = {
   supplier: string | null;
   request_id: string | null;
 };
+type SupplierProbeRow = {
+  id?: unknown;
+  name?: unknown;
+};
 
 const readText = (relativePath: string) =>
   fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
@@ -135,12 +139,12 @@ async function resolveSupplier(admin: any) {
     .limit(20);
   if (result.error) throw result.error;
   const row = Array.isArray(result.data)
-    ? result.data.find((entry) => text((entry as { name?: unknown }).name))
+    ? result.data.find((entry: SupplierProbeRow) => text(entry.name))
     : null;
   if (!row) throw new Error("No supplier with non-empty name found");
   return {
-    id: text((row as { id?: unknown }).id),
-    name: text((row as { name?: unknown }).name),
+    id: text(row.id),
+    name: text(row.name),
   };
 }
 

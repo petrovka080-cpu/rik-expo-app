@@ -151,6 +151,38 @@ type CatalogCompatError = {
   hint?: string | null;
 } | null;
 
+const BASE_REQUEST_PAYLOAD_KEYS = [
+  "need_by",
+  "comment",
+  "object_type_code",
+  "level_code",
+  "system_code",
+  "zone_code",
+  "foreman_name",
+] as const satisfies readonly (keyof RequestsUpdate)[];
+
+type BaseRequestPayloadKey = (typeof BASE_REQUEST_PAYLOAD_KEYS)[number];
+
+const basePayloadKeys = new Set<string>(BASE_REQUEST_PAYLOAD_KEYS);
+
+function isBaseRequestPayloadKey(key: string): key is BaseRequestPayloadKey {
+  return basePayloadKeys.has(key);
+}
+
+function pickBaseRequestPayload(payload: RequestsExtendedMetaUpdate): RequestsUpdate {
+  const basePayload: RequestsUpdate = {};
+  if (Object.prototype.hasOwnProperty.call(payload, "need_by")) basePayload.need_by = payload.need_by;
+  if (Object.prototype.hasOwnProperty.call(payload, "comment")) basePayload.comment = payload.comment;
+  if (Object.prototype.hasOwnProperty.call(payload, "object_type_code")) {
+    basePayload.object_type_code = payload.object_type_code;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "level_code")) basePayload.level_code = payload.level_code;
+  if (Object.prototype.hasOwnProperty.call(payload, "system_code")) basePayload.system_code = payload.system_code;
+  if (Object.prototype.hasOwnProperty.call(payload, "zone_code")) basePayload.zone_code = payload.zone_code;
+  if (Object.prototype.hasOwnProperty.call(payload, "foreman_name")) basePayload.foreman_name = payload.foreman_name;
+  return basePayload;
+}
+
 const DRAFT_KEY = "foreman_draft_request_id";
 
 const asRequestHeader = (value: unknown): RequestHeader | null => {
@@ -746,16 +778,7 @@ export async function updateRequestMeta(
 
   if (!Object.keys(payload).length) return true;
 
-  const basePayloadKeys = new Set([
-    "need_by",
-    "comment",
-    "object_type_code",
-    "level_code",
-    "system_code",
-    "zone_code",
-    "foreman_name",
-  ]);
-  const hasExtendedPayload = Object.keys(payload).some((key) => !basePayloadKeys.has(key));
+  const hasExtendedPayload = Object.keys(payload).some((key) => !isBaseRequestPayloadKey(key));
 
   try {
     const fullPayloadAllowed =
@@ -763,9 +786,7 @@ export async function updateRequestMeta(
       requestsExtendedMetaWriteSupportedCache === true ||
       (requestsExtendedMetaWriteSupportedCache == null &&
         (await resolveRequestsExtendedMetaWriteSupport()));
-    const primaryPayload = fullPayloadAllowed
-      ? payload
-      : Object.fromEntries(Object.entries(payload).filter(([key]) => basePayloadKeys.has(key)));
+    const primaryPayload = fullPayloadAllowed ? payload : pickBaseRequestPayload(payload);
     let { error } = await supabase.from("requests").update(primaryPayload).eq("id", id);
 
     if (!error && hasExtendedPayload && fullPayloadAllowed) {
@@ -774,10 +795,7 @@ export async function updateRequestMeta(
 
     if (error && hasExtendedPayload && fullPayloadAllowed) {
       const primaryErr = error;
-      const fallbackPayload: RequestsUpdate = {};
-      for (const key of Object.keys(payload)) {
-        if (basePayloadKeys.has(key)) fallbackPayload[key] = payload[key];
-      }
+      const fallbackPayload = pickBaseRequestPayload(payload);
       const msg = String(error?.message ?? "").toLowerCase();
       if (msg.includes("column") || msg.includes("does not exist") || msg.includes("schema cache")) {
         requestsExtendedMetaWriteSupportedCache = false;
