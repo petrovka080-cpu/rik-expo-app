@@ -35,6 +35,7 @@
     "release:preflight": "tsx scripts/release/run-release-guard.ts preflight",
     "release:verify": "tsx scripts/release/run-release-guard.ts verify --json",
     "release:ota": "tsx scripts/release/run-release-guard.ts ota",
+    "release:sentry:sourcemaps": "sentry-expo-upload-sourcemaps dist",
     "preflight:prod": "node scripts/preflight-prod.js",
     "ota:channels:sync": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/eas-channel-sync.ps1",
     "ota:publish:development": "tsx scripts/release/run-release-guard.ts ota --channel development",
@@ -51,6 +52,7 @@
     "@babel/runtime": "^7.28.6",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
+    "@sentry/react-native": "^8.9.2",
     "@shopify/flash-list": "^2.3.0",
     "@supabase/supabase-js": "^2.58.0",
     "@tanstack/react-query": "^5.99.0",
@@ -72,7 +74,6 @@
     "expo-location": "~19.0.8",
     "expo-modules-core": "3.0.29",
     "expo-network": "~8.0.8",
-
     "expo-print": "~15.0.8",
     "expo-router": "~6.0.23",
     "expo-sharing": "~14.0.8",
@@ -81,7 +82,6 @@
     "expo-status-bar": "~3.0.9",
     "expo-updates": "~29.0.16",
     "expo-web-browser": "~15.0.10",
-
     "leaflet": "^1.9.4",
     "react": "19.1.0",
     "react-native": "0.81.5",

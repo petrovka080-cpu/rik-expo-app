@@ -81,6 +81,35 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+apply from: new File(["node", "--print", "require('path').dirname(require.resolve('@sentry/react-native/package.json'))"].execute().text.trim(), "sentry.gradle")
+
+def sentryUploadEnvMissingLogged = false
+
+boolean hasSentryUploadEnv() {
+    return ["SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT"].every { key ->
+        def value = System.getenv(key)
+        value != null && value.trim()
+    }
+}
+
+// Keep native Sentry build hooks wired in, but do not fail local release builds
+// when source map upload credentials are intentionally absent.
+project.ext.shouldSentryAutoUploadGeneral = { ->
+    if (System.getenv("SENTRY_DISABLE_AUTO_UPLOAD") == "true") {
+        return false
+    }
+    if (!hasSentryUploadEnv()) {
+        if (!sentryUploadEnvMissingLogged) {
+            logger.lifecycle(
+                "[sentry] Source map upload disabled for this build because SENTRY_AUTH_TOKEN, SENTRY_ORG, or SENTRY_PROJECT is missing."
+            )
+            sentryUploadEnvMissingLogged = true
+        }
+        return false
+    }
+    return true
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 

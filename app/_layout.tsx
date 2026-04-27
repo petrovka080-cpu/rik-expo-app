@@ -15,7 +15,10 @@ import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWeb
 import { AppQueryProvider } from "../src/lib/query/queryClient";
 import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
+import { initializeSentry, wrapRootComponentWithSentry } from "../src/lib/observability/sentry";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
+
+initializeSentry();
 
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
 if (Platform.OS === "web") {
@@ -37,7 +40,7 @@ if (Platform.OS === "web") {
   };
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const segments = useSegments();
   const pathname = usePathname();
   const isPdfViewerRoute = pathname === "/pdf-viewer";
@@ -107,3 +110,5 @@ export default function RootLayout() {
     </AppQueryProvider>
   );
 }
+
+export default wrapRootComponentWithSentry(RootLayout);
