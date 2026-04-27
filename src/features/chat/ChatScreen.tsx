@@ -208,7 +208,12 @@ export default function ChatScreen() {
           <Text style={styles.stateText}>
             Откройте чат из карточки объявления или со страницы товара.
           </Text>
-          <Pressable style={styles.primaryButton} onPress={() => router.replace(MARKET_TAB_ROUTE)}>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={() => router.replace(MARKET_TAB_ROUTE)}
+            accessibilityRole="button"
+            accessibilityHint="Открывает главную страницу маркета"
+          >
             <Text style={styles.primaryButtonText}>Перейти в маркет</Text>
           </Pressable>
         </View>
@@ -226,6 +231,9 @@ export default function ChatScreen() {
           <Pressable
             style={styles.headerButton}
             onPress={() => safeBack(router, MARKET_TAB_ROUTE)}
+            accessibilityRole="button"
+            accessibilityLabel="Назад"
+            accessibilityHint="Возвращает к предыдущему экрану или в маркет"
           >
             <Ionicons name="arrow-back" size={20} color={MARKET_HOME_COLORS.text} />
           </Pressable>
@@ -247,6 +255,9 @@ export default function ChatScreen() {
                 }),
               )
             }
+            accessibilityRole="button"
+            accessibilityLabel="Открыть помощника"
+            accessibilityHint="Открывает AI-помощника по этому объявлению"
           >
             <Ionicons name="sparkles" size={18} color={MARKET_HOME_COLORS.accentStrong} />
           </Pressable>
@@ -261,6 +272,7 @@ export default function ChatScreen() {
             <Pressable
               style={styles.routeChip}
               onPress={() => router.push(buildMarketProductRoute(listing.id))}
+              accessibilityRole="button"
             >
               <Text style={styles.routeChipText}>Товар</Text>
             </Pressable>
@@ -274,6 +286,7 @@ export default function ChatScreen() {
                   }),
                 )
               }
+              accessibilityRole="button"
             >
               <Text style={styles.routeChipText}>Витрина</Text>
             </Pressable>
@@ -286,15 +299,21 @@ export default function ChatScreen() {
                   ),
                 )
               }
+              accessibilityRole="button"
             >
               <Text style={styles.routeChipText}>Карта</Text>
             </Pressable>
-            <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_TAB_ROUTE)}>
+            <Pressable
+              style={styles.routeChip}
+              onPress={() => router.push(MARKET_TAB_ROUTE)}
+              accessibilityRole="button"
+            >
               <Text style={styles.routeChipText}>Маркет</Text>
             </Pressable>
             <Pressable
               style={styles.routeChip}
               onPress={() => router.push(MARKET_AUCTIONS_ROUTE)}
+              accessibilityRole="button"
             >
               <Text style={styles.routeChipText}>Торги</Text>
             </Pressable>
@@ -356,6 +375,8 @@ export default function ChatScreen() {
             testID="chat-send-button"
             accessibilityLabel="chat-send-button"
             accessibilityRole="button"
+            accessibilityHint="Отправляет сообщение в текущий чат"
+            accessibilityState={{ disabled: !input.trim() || sending || backendMissing, busy: sending }}
             accessible
             style={[
               styles.sendButton,

@@ -20,17 +20,9 @@ name: Office Safe Entry
     visible:
       id: "profile-edit-open"
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      id: "profile-open-office-access"
-    direction: DOWN
-    timeout: 20000
-    visibilityPercentage: 20
-    centerElement: true
-- extendedWaitUntil:
-    visible:
-      id: "profile-open-office-access"
-    timeout: 30000
+- waitForAnimationToEnd
+- scroll
+- scroll
 - tapOn:
     id: "profile-open-office-access"
 - extendedWaitUntil:

@@ -47,7 +47,7 @@ export default React.memo(function StockFactHeader(props: {
       <View style={s.sectionBox}>
         <View style={{ marginTop: 8, gap: 8 }}>
           <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-            <Pressable onPress={props.onPickObject} style={s.openBtn}>
+            <Pressable onPress={props.onPickObject} style={s.openBtn} accessibilityRole="button">
               <Text style={s.openBtnText} numberOfLines={1}>
                 {props.objectOpt?.label
                   ? props.objectOpt.label
@@ -55,7 +55,7 @@ export default React.memo(function StockFactHeader(props: {
               </Text>
             </Pressable>
 
-            <Pressable onPress={props.onPickLevel} style={s.openBtn}>
+            <Pressable onPress={props.onPickLevel} style={s.openBtn} accessibilityRole="button">
               <Text style={s.openBtnText} numberOfLines={1}>
                 {props.levelOpt?.label
                   ? props.levelOpt.label
@@ -65,7 +65,7 @@ export default React.memo(function StockFactHeader(props: {
           </View>
 
           <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-            <Pressable onPress={props.onPickSystem} style={s.openBtn}>
+            <Pressable onPress={props.onPickSystem} style={s.openBtn} accessibilityRole="button">
               <Text style={s.openBtnText} numberOfLines={1}>
                 {props.systemOpt?.label
                   ? props.systemOpt.label
@@ -73,7 +73,7 @@ export default React.memo(function StockFactHeader(props: {
               </Text>
             </Pressable>
 
-            <Pressable onPress={props.onPickZone} style={s.openBtn}>
+            <Pressable onPress={props.onPickZone} style={s.openBtn} accessibilityRole="button">
               <Text style={s.openBtnText} numberOfLines={1}>
                 {props.zoneOpt?.label
                   ? props.zoneOpt.label
@@ -89,6 +89,7 @@ export default React.memo(function StockFactHeader(props: {
           </Text>
           <Pressable
             onPress={props.onOpenRecipientModal}
+            accessibilityRole="button"
             style={[
               s.input,
               { justifyContent: "center", minHeight: 48 },
@@ -147,7 +148,12 @@ export default React.memo(function StockFactHeader(props: {
                   </Text>
                 </View>
 
-                <Pressable onPress={() => props.onRemovePick(ln.pick_key || `${ln.code}:${ln.uom_id || "-"}`)} style={s.openBtn}>
+                <Pressable
+                  onPress={() => props.onRemovePick(ln.pick_key || `${ln.code}:${ln.uom_id || "-"}`)}
+                  style={s.openBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Убрать ${ln.name} из выдачи`}
+                >
                   <Text style={s.openBtnText}>Убрать</Text>
                 </Pressable>
               </View>
@@ -166,6 +172,8 @@ export default React.memo(function StockFactHeader(props: {
           <Pressable
             onPress={props.onClear}
             disabled={pickCount === 0 || props.issueBusy}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: pickCount === 0 || props.issueBusy }}
             style={[s.openBtn, (pickCount === 0 || props.issueBusy) && { opacity: 0.55 }]}
           >
             <Text style={s.openBtnText}>Очистить ({pickCount})</Text>
@@ -174,6 +182,9 @@ export default React.memo(function StockFactHeader(props: {
           <Pressable
             onPress={props.onSubmit}
             disabled={!canSubmit}
+            accessibilityRole="button"
+            accessibilityHint="Проводит выдачу выбранных позиций"
+            accessibilityState={{ disabled: !canSubmit }}
             style={[s.openBtn, { borderColor: UI.accent, opacity: !canSubmit ? 0.45 : 1 }]}
           >
             <Text style={s.openBtnText}>{props.issueBusy ? "..." : "Выдать выбранное"}</Text>

@@ -91,6 +91,9 @@ export default function BottomBar({
         <Pressable
           disabled={!!busyKey}
           onPress={() => runAction("bar_pdf", async () => { await onOpenPdf(); })}
+          accessibilityRole="button"
+          accessibilityHint="Открывает PDF по текущему предложению"
+          accessibilityState={{ disabled: !!busyKey }}
           style={{
             flex: 1,
             minWidth: 0,
@@ -112,6 +115,9 @@ export default function BottomBar({
         <Pressable
           disabled={!!busyKey}
           onPress={onExcel}
+          accessibilityRole="button"
+          accessibilityHint="Открывает Excel-выгрузку по текущему предложению"
+          accessibilityState={{ disabled: !!busyKey }}
           style={{
             flex: 1,
             minWidth: 0,

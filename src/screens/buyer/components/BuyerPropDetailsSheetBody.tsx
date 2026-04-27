@@ -338,6 +338,8 @@ export function BuyerPropDetailsSheetBody({
           <Pressable
             testID="buyer-proposal-pdf"
             accessibilityLabel="buyer-proposal-pdf"
+            accessibilityRole="button"
+            accessibilityHint="Открывает PDF предложения"
             onPress={() => onOpenPdf(pidStr)}
             style={[
               s.smallBtn,
@@ -353,6 +355,8 @@ export function BuyerPropDetailsSheetBody({
           <Pressable
             testID="buyer-proposal-accounting"
             accessibilityLabel="buyer-proposal-accounting"
+            accessibilityRole="button"
+            accessibilityHint="Отправляет предложение в бухгалтерию"
             onPress={() => onOpenAccounting(pidStr)}
             style={[s.smallBtn, styles.actionButton, { flex: 1.5, backgroundColor: UI.accent, borderColor: UI.accent }]}
           >
@@ -364,6 +368,8 @@ export function BuyerPropDetailsSheetBody({
           <Pressable
             testID="buyer-proposal-rework"
             accessibilityLabel="buyer-proposal-rework"
+            accessibilityRole="button"
+            accessibilityHint="Открывает доработку предложения"
             onPress={() => onOpenRework(pidStr)}
             style={[s.smallBtn, styles.actionButton, { flex: 1.5, backgroundColor: "#f97316", borderColor: "#f97316" }]}
           >
@@ -500,6 +506,9 @@ export function BuyerPropDetailsSheetBody({
                 <Pressable
                   onPress={onReloadAttachments}
                   disabled={propAttBusy}
+                  accessibilityRole="button"
+                  accessibilityHint="Обновляет список вложений"
+                  accessibilityState={{ disabled: propAttBusy }}
                   style={[s.smallBtn, styles.attachmentsMiniAction]}
                 >
                   <Text style={[styles.attachmentsMiniActionText, { color: D.text }]}>
@@ -510,6 +519,9 @@ export function BuyerPropDetailsSheetBody({
                 <Pressable
                   onPress={onAttachFile}
                   disabled={propAttBusy}
+                  accessibilityRole="button"
+                  accessibilityHint="Открывает выбор файла для вложения"
+                  accessibilityState={{ disabled: propAttBusy }}
                   style={[s.smallBtn, styles.attachmentsMiniAction]}
                 >
                   <Text style={[styles.attachmentsMiniActionText, { color: D.text }]}>+ Файл</Text>

@@ -20,17 +20,8 @@ name: Market Entry
     visible:
       id: "profile-edit-open"
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      id: "profile-open-market-entry"
-    direction: DOWN
-    timeout: 20000
-    visibilityPercentage: 20
-    centerElement: true
-- extendedWaitUntil:
-    visible:
-      id: "profile-open-market-entry"
-    timeout: 30000
+- waitForAnimationToEnd
+- scroll
 - tapOn:
     id: "profile-open-market-entry"
 - extendedWaitUntil:

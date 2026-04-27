@@ -20,17 +20,10 @@ name: Active Context Switch
     visible:
       id: "profile-edit-open"
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      id: "profile-context-office"
-    direction: DOWN
-    timeout: 20000
-    visibilityPercentage: 20
-    centerElement: true
-- extendedWaitUntil:
-    visible:
-      id: "profile-context-office"
-    timeout: 30000
+- waitForAnimationToEnd
+- scroll
+- scroll
+- scroll
 - tapOn:
     id: "profile-context-office"
 - tapOn:
@@ -43,19 +36,10 @@ name: Active Context Switch
     id: "office-direction-open-buyer"
 - tapOn:
     id: "tabs.profile"
-- scrollUntilVisible:
-    element:
-      id: "profile-context-market"
-    direction: DOWN
-    timeout: 20000
-    visibilityPercentage: 20
-    centerElement: true
-- extendedWaitUntil:
-    visible:
-      id: "profile-context-market"
-    timeout: 15000
+- waitForAnimationToEnd
 - tapOn:
     id: "profile-context-market"
+- waitForAnimationToEnd
 - tapOn:
     id: "profile-open-active-context"
 - extendedWaitUntil:

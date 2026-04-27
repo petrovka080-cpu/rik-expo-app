@@ -77,7 +77,13 @@ export default function WorkModalOverviewSection(props: Props) {
         <Text style={props.styles.workModalInfoText}>
           {`Объект: ${objectInfo} · Зона/этаж: ${props.zone} / ${props.levelName} · Цена/ед: ${props.unitPrice}`}
         </Text>
-        <Pressable onPress={props.onOpenContract} style={{ marginTop: 6, alignSelf: "flex-start" }}>
+        <Pressable
+          onPress={props.onOpenContract}
+          style={{ marginTop: 6, alignSelf: "flex-start" }}
+          accessibilityRole="button"
+          accessibilityLabel="Подробнее о договоре"
+          accessibilityHint="Открывает подробную информацию по договору"
+        >
           <Text style={{ color: "#0284c7", fontSize: 12, fontWeight: "700" }}>Подробнее</Text>
         </Pressable>
       </View>
@@ -117,6 +123,9 @@ export default function WorkModalOverviewSection(props: Props) {
               testID="contractor-progress-submit"
               onPress={props.onSubmitProgress}
               disabled={!props.canSubmitProgress || props.workModalSaving || props.loadingIssued}
+              accessibilityRole="button"
+              accessibilityHint="Сохраняет текущий фактический прогресс"
+              accessibilityState={{ disabled: !props.canSubmitProgress || props.workModalSaving || props.loadingIssued }}
               style={[
                 props.styles.workModalMainActionBtn,
                 (!props.canSubmitProgress || props.workModalSaving || props.loadingIssued) &&
@@ -129,7 +138,12 @@ export default function WorkModalOverviewSection(props: Props) {
             </Pressable>
 
             {props.canRetryProgress ? (
-              <Pressable onPress={props.onRetryProgress} style={props.styles.workModalSecondaryActionBtn}>
+              <Pressable
+                onPress={props.onRetryProgress}
+                style={props.styles.workModalSecondaryActionBtn}
+                accessibilityRole="button"
+                accessibilityHint="Повторяет сохранение прогресса"
+              >
                 <Text style={props.styles.workModalActionText}>Повторить</Text>
               </Pressable>
             ) : null}
@@ -139,6 +153,9 @@ export default function WorkModalOverviewSection(props: Props) {
         <Pressable
           onPress={props.onOpenActBuilder}
           disabled={props.workModalSaving || props.loadingIssued}
+          accessibilityRole="button"
+          accessibilityHint="Открывает сборщик акта выполненных работ"
+          accessibilityState={{ disabled: props.workModalSaving || props.loadingIssued }}
           style={[
             props.styles.workModalMainActionBtn,
             (props.workModalSaving || props.loadingIssued) && props.styles.workModalMainActionBtnDisabled,
@@ -146,7 +163,12 @@ export default function WorkModalOverviewSection(props: Props) {
         >
           <Text style={props.styles.workModalActionText}>Сформировать акт выполненных работ</Text>
         </Pressable>
-        <Pressable onPress={props.onOpenSummaryPdf} style={props.styles.workModalSecondaryActionBtn}>
+        <Pressable
+          onPress={props.onOpenSummaryPdf}
+          style={props.styles.workModalSecondaryActionBtn}
+          accessibilityRole="button"
+          accessibilityHint="Открывает итоговый PDF по работам"
+        >
           <Text style={props.styles.workModalActionText}>Итоговый PDF</Text>
         </Pressable>
         {!!props.workModalHint && (

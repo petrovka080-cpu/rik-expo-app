@@ -1,0 +1,140 @@
+{
+  "wave": "V4-8",
+  "name": "ACCESSIBILITY_ROLES_PHASE_1",
+  "status": "green_ready_for_commit",
+  "headBefore": "503b42b1abd43b450afea7a377b9726a13f03614",
+  "originMainBefore": "503b42b1abd43b450afea7a377b9726a13f03614",
+  "selectedFiles": [
+    "src/features/chat/ChatScreen.tsx",
+    "src/screens/accountant/components/BottomBar.tsx",
+    "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+    "src/screens/contractor/components/WorkModalOverviewSection.tsx",
+    "src/screens/director/DirectorDashboard.tsx",
+    "src/screens/foreman/ForemanEditorSection.tsx",
+    "src/screens/warehouse/components/StockFactHeader.tsx"
+  ],
+  "counts": {
+    "before": {
+      "accessibilityRole": 1,
+      "accessibilityLabel": 11,
+      "accessibilityHint": 0,
+      "accessibilityState": 0
+    },
+    "after": {
+      "accessibilityRole": 37,
+      "accessibilityLabel": 15,
+      "accessibilityHint": 23,
+      "accessibilityState": 13
+    },
+    "delta": {
+      "accessibilityRole": 36,
+      "accessibilityLabel": 4,
+      "accessibilityHint": 23,
+      "accessibilityState": 13
+    }
+  },
+  "perFile": [
+    {
+      "file": "src/features/chat/ChatScreen.tsx",
+      "accessibilityRole": { "before": 1, "after": 9, "delta": 8 },
+      "accessibilityLabel": { "before": 3, "after": 5, "delta": 2 },
+      "accessibilityHint": { "before": 0, "after": 4, "delta": 4 },
+      "accessibilityState": { "before": 0, "after": 1, "delta": 1 }
+    },
+    {
+      "file": "src/screens/accountant/components/BottomBar.tsx",
+      "accessibilityRole": { "before": 0, "after": 2, "delta": 2 },
+      "accessibilityLabel": { "before": 2, "after": 2, "delta": 0 },
+      "accessibilityHint": { "before": 0, "after": 2, "delta": 2 },
+      "accessibilityState": { "before": 0, "after": 2, "delta": 2 }
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+      "accessibilityRole": { "before": 0, "after": 5, "delta": 5 },
+      "accessibilityLabel": { "before": 3, "after": 3, "delta": 0 },
+      "accessibilityHint": { "before": 0, "after": 5, "delta": 5 },
+      "accessibilityState": { "before": 0, "after": 2, "delta": 2 }
+    },
+    {
+      "file": "src/screens/contractor/components/WorkModalOverviewSection.tsx",
+      "accessibilityRole": { "before": 0, "after": 5, "delta": 5 },
+      "accessibilityLabel": { "before": 0, "after": 1, "delta": 1 },
+      "accessibilityHint": { "before": 0, "after": 5, "delta": 5 },
+      "accessibilityState": { "before": 0, "after": 2, "delta": 2 }
+    },
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "accessibilityRole": { "before": 0, "after": 5, "delta": 5 },
+      "accessibilityLabel": { "before": 0, "after": 0, "delta": 0 },
+      "accessibilityHint": { "before": 0, "after": 3, "delta": 3 },
+      "accessibilityState": { "before": 0, "after": 2, "delta": 2 }
+    },
+    {
+      "file": "src/screens/foreman/ForemanEditorSection.tsx",
+      "accessibilityRole": { "before": 0, "after": 3, "delta": 3 },
+      "accessibilityLabel": { "before": 3, "after": 3, "delta": 0 },
+      "accessibilityHint": { "before": 0, "after": 3, "delta": 3 },
+      "accessibilityState": { "before": 0, "after": 2, "delta": 2 }
+    },
+    {
+      "file": "src/screens/warehouse/components/StockFactHeader.tsx",
+      "accessibilityRole": { "before": 0, "after": 8, "delta": 8 },
+      "accessibilityLabel": { "before": 0, "after": 1, "delta": 1 },
+      "accessibilityHint": { "before": 0, "after": 1, "delta": 1 },
+      "accessibilityState": { "before": 0, "after": 2, "delta": 2 }
+    }
+  ],
+  "productScope": {
+    "logicChanged": false,
+    "callbacksChanged": false,
+    "onPressChanged": false,
+    "disabledConditionsChanged": false,
+    "validationChanged": false,
+    "navigationSemanticsChanged": false,
+    "uiLayoutChanged": false,
+    "stylesChanged": false,
+    "testIdsChanged": false,
+    "sqlOrRpcChanged": false,
+    "runtimeChanged": false,
+    "packageJsonChanged": false,
+    "releaseScriptsChanged": false
+  },
+  "harnessRecovery": {
+    "wave": "V4-8B",
+    "status": "green_ready_for_commit",
+    "maestroYamlChanged": true,
+    "productCodeChangedDuringRecovery": false,
+    "rootCause": "Maestro profile-entry and RFQ viewport/scroll drift around existing stable selectors.",
+    "criticalBefore": "fail",
+    "criticalAfter": "pass",
+    "criticalAfterSummary": "14/14 flows passed"
+  },
+  "gates": {
+    "tsc": "pass",
+    "lint": "pass",
+    "testRunInBand": "pass",
+    "testFull": "pass",
+    "maestroCritical": "pass",
+    "gitDiffCheck": "pass",
+    "releaseVerifyPreCommit": "dirty_worktree_blocker_only"
+  },
+  "maestroCritical": {
+    "report": "artifacts/maestro-critical/report.xml",
+    "timestampLocal": "2026-04-27 06:32:35 +06",
+    "tests": 14,
+    "failures": 0,
+    "timeSeconds": 982,
+    "result": "pass"
+  },
+  "release": {
+    "otaPublished": false,
+    "otaCommandRun": false,
+    "easBuildRun": false,
+    "easSubmitRun": false,
+    "postCommitReleaseVerifyRequired": true
+  },
+  "commit": {
+    "createdAtArtifactWriteTime": false,
+    "pushedAtArtifactWriteTime": false
+  }
+}

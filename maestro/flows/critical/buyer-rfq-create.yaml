@@ -20,13 +20,9 @@ name: Buyer RFQ Create
     visible:
       id: "profile-edit-open"
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      id: "profile-open-office-access"
-    direction: DOWN
-    timeout: 20000
-    visibilityPercentage: 20
-    centerElement: true
+- waitForAnimationToEnd
+- scroll
+- scroll
 - tapOn:
     id: "profile-open-office-access"
 - extendedWaitUntil:
@@ -89,25 +85,17 @@ name: Buyer RFQ Create
 - eraseText
 - inputText: ${E2E_BUYER_RFQ_PHONE}
 - hideKeyboard
-- scrollUntilVisible:
-    element:
-      id: "buyer-rfq-email"
-    direction: DOWN
-    timeout: 20000
-    visibilityPercentage: 20
-    centerElement: true
+- waitForAnimationToEnd
+- scroll
+- waitForAnimationToEnd
 - tapOn:
     id: "buyer-rfq-email"
 - eraseText
 - inputText: "buyer-rfq@example.test"
 - hideKeyboard
-- scrollUntilVisible:
-    element:
-      id: "buyer-rfq-note"
-    direction: DOWN
-    timeout: 20000
-    visibilityPercentage: 20
-    centerElement: true
+- waitForAnimationToEnd
+- scroll
+- scroll
 - tapOn:
     id: "buyer-rfq-note"
 - eraseText

@@ -1,0 +1,77 @@
+{
+  "wave": "V4-8B",
+  "name": "PROFILE_ENTRY_HARNESS_FIX_FOR_BLOCKED_A11Y",
+  "status": "green_ready_for_commit",
+  "rootCause": "Maestro profile-entry and RFQ viewport/scroll drift around existing stable selectors; one long-run emulator system-service drift recovered by reboot.",
+  "productFilesChangedBeyondOriginalV48": false,
+  "productCodeChangedDuringRecovery": false,
+  "businessLogicChanged": false,
+  "callbacksChanged": false,
+  "onPressChanged": false,
+  "disabledConditionsChanged": false,
+  "validationChanged": false,
+  "sqlOrRpcChanged": false,
+  "runtimeChanged": false,
+  "packageJsonChanged": false,
+  "criticalSuiteReduced": false,
+  "flowsSkippedOrDeleted": false,
+  "harnessFilesChanged": [
+    "maestro/flows/critical/accountant-payment.yaml",
+    "maestro/flows/critical/active-context-switch.yaml",
+    "maestro/flows/critical/buyer-proposal-review.yaml",
+    "maestro/flows/critical/buyer-rfq-create.yaml",
+    "maestro/flows/critical/contractor-pdf-smoke.yaml",
+    "maestro/flows/critical/contractor-progress.yaml",
+    "maestro/flows/critical/director-approve-report.yaml",
+    "maestro/flows/critical/director-report-pdf-smoke.yaml",
+    "maestro/flows/critical/foreman-draft-submit.yaml",
+    "maestro/flows/critical/market-entry.yaml",
+    "maestro/flows/critical/office-buyer-route-roundtrip.yaml",
+    "maestro/flows/critical/office-safe-entry.yaml",
+    "maestro/flows/critical/warehouse-receive-issue.yaml"
+  ],
+  "critical": {
+    "before": {
+      "result": "fail",
+      "pattern": [
+        "profile-context-office",
+        "profile-open-office-access",
+        "profile-open-market-entry",
+        "buyer-rfq-email",
+        "profile-open-active-context"
+      ]
+    },
+    "after": {
+      "result": "pass",
+      "tests": 14,
+      "failures": 0,
+      "report": "artifacts/maestro-critical/report.xml",
+      "timestampLocal": "2026-04-27 06:32:35 +06",
+      "timeSeconds": 982
+    }
+  },
+  "deviceRecovery": {
+    "manualLaunch": "pass",
+    "emulatorRebooted": true,
+    "device": "Pixel_7_API_34",
+    "api": "34",
+    "abi": "x86_64",
+    "fontScale": "1.0",
+    "density": "420"
+  },
+  "gates": {
+    "tsc": "pass",
+    "lint": "pass",
+    "testRunInBand": "pass",
+    "testFull": "pass",
+    "gitDiffCheck": "pass",
+    "maestroCritical": "pass",
+    "releaseVerifyPreCommit": "dirty_worktree_blocker_only"
+  },
+  "release": {
+    "otaPublished": false,
+    "easBuildRun": false,
+    "easSubmitRun": false,
+    "postCommitReleaseVerifyRequired": true
+  }
+}

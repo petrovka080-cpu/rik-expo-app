@@ -233,6 +233,8 @@ export default function ForemanEditorSection(p: Props) {
           <Pressable
             testID="foreman-catalog-open"
             accessibilityLabel="foreman-catalog-open"
+            accessibilityRole="button"
+            accessibilityHint="Открывает каталог материалов для текущей заявки"
             onPress={() => {
               if (!p.ensureHeaderReady()) return;
               if (!p.canStartDraftFlow) {
@@ -251,6 +253,9 @@ export default function ForemanEditorSection(p: Props) {
           <Pressable
             testID="foreman-calc-open"
             accessibilityLabel="foreman-calc-open"
+            accessibilityRole="button"
+            accessibilityHint="Открывает смету для текущей заявки"
+            accessibilityState={{ disabled: p.busy }}
             onPress={p.onCalcPress}
             disabled={p.busy}
             style={[p.styles.pickTabBtn, p.styles.pickTabSoft, p.busy && { opacity: 0.5 }]}
@@ -263,6 +268,9 @@ export default function ForemanEditorSection(p: Props) {
         <Pressable
           testID="foreman-ai-quick-open"
           accessibilityLabel="foreman-ai-quick-open"
+          accessibilityRole="button"
+          accessibilityHint="Открывает быстрый AI-помощник для заполнения заявки"
+          accessibilityState={{ disabled: p.busy }}
           onPress={p.onAiQuickPress}
           disabled={p.busy}
           style={[

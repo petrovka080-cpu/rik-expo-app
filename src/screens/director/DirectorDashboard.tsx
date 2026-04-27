@@ -211,6 +211,8 @@ export default function DirectorDashboard(p: Props) {
                 p.setDirTab(item.key);
                 if (item.key !== "Заявки") p.closeSheet();
               }}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: active }}
               style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
             >
               <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600", fontSize: 13 }}>
@@ -237,6 +239,8 @@ export default function DirectorDashboard(p: Props) {
                   key={t}
                   testID={`director-request-tab-${t}`}
                   onPress={() => p.setTab(t)}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: active }}
                   style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
                 >
                   <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600", fontSize: 13 }}>
@@ -430,6 +434,8 @@ export default function DirectorDashboard(p: Props) {
                 <Pressable
                   testID="director-finance-dashboard-debt-card"
                   onPress={() => p.openFinancePage("debt")}
+                  accessibilityRole="button"
+                  accessibilityHint="Открывает детализацию долгов по предложениям и счетам"
                   style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
                 >
                   <Text style={{ color: UI.text, fontWeight: "600", fontSize: 14 }} numberOfLines={1}>
@@ -446,6 +452,8 @@ export default function DirectorDashboard(p: Props) {
               <Pressable
                 testID="director-finance-dashboard-spend-card"
                 onPress={() => p.openFinancePage("spend")}
+                accessibilityRole="button"
+                accessibilityHint="Открывает детализацию распределённых расходов"
                 style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
               >
                 <Text style={{ color: UI.text, fontWeight: "600", fontSize: 14 }} numberOfLines={1}>
@@ -507,6 +515,8 @@ export default function DirectorDashboard(p: Props) {
           <Pressable
             testID="director-reports-home-card"
             onPress={() => p.openReports?.()}
+            accessibilityRole="button"
+            accessibilityHint="Открывает раздел директорских отчётов"
             style={[s.mobCard, { marginBottom: 12 }]}
           >
             <View style={s.mobMain}>
