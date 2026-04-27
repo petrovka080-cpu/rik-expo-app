@@ -254,6 +254,7 @@ function isNonRuntimePath(filePath: string): boolean {
     /^([^/]+\/)?tsconfig(\.[^/]+)?\.json$/.test(filePath) ||
     filePath.startsWith("docs/") ||
     filePath.startsWith("artifacts/") ||
+    filePath.startsWith("maestro/") ||
     filePath.startsWith("tests/") ||
     filePath.startsWith("scripts/") ||
     filePath.startsWith(".husky/") ||

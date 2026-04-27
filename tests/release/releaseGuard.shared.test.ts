@@ -179,6 +179,22 @@ describe("releaseGuard.shared", () => {
       expect(classification.buildRequiredFiles).toEqual([]);
     });
 
+    it("treats Maestro E2E harness files as non-runtime release evidence", () => {
+      const classification = classifyReleaseChanges({
+        changedFiles: [
+          "src/screens/director/DirectorDashboard.tsx",
+          "maestro/flows/critical/office-safe-entry.yaml",
+          "artifacts/V4_8B_profile_entry_harness_proof.md",
+        ],
+      });
+
+      expect(classification.kind).toBe("runtime-ota");
+      expect(classification.changeClass).toBe("js-ui");
+      expect(classification.runtimeFiles).toContain("src/screens/director/DirectorDashboard.tsx");
+      expect(classification.nonRuntimeFiles).toContain("maestro/flows/critical/office-safe-entry.yaml");
+      expect(classification.buildRequiredFiles).toEqual([]);
+    });
+
     it("blocks OTA when native or release-host files changed", () => {
       const classification = classifyReleaseChanges({
         changedFiles: ["app.json", "scripts/release/run-release-guard.ts"],
