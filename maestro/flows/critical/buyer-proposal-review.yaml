@@ -21,8 +21,13 @@ name: Buyer Proposal Review
       id: "profile-edit-open"
     timeout: 30000
 - waitForAnimationToEnd
-- scroll
-- scroll
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
 - tapOn:
     id: "profile-open-office-access"
 - extendedWaitUntil:

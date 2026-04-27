@@ -1,5 +1,6 @@
 import { supabase } from "../supabaseClient";
 import { syncRequestDraftViaRpc } from "./requestDraftSync.service";
+import { mapRequestRow } from "./requests.parsers";
 
 jest.mock("../supabaseClient", () => ({
   supabase: {
@@ -21,12 +22,37 @@ jest.mock("./requests.parsers", () => ({
 }));
 
 const mockSupabase = supabase as unknown as {
+  auth: {
+    getSession: jest.Mock;
+  };
+  realtime: {
+    setAuth: jest.Mock;
+  };
+  channel: jest.Mock;
+  removeChannel: jest.Mock;
+  from: jest.Mock;
   rpc: jest.Mock;
+};
+const mockMapRequestRow = mapRequestRow as jest.Mock;
+
+type MockHandoffChannel = {
+  subscribe: jest.Mock<MockHandoffChannel, [(status: string) => void]>;
+  send: jest.Mock<Promise<string>, []>;
 };
 
 describe("request draft sync lifecycle boundary", () => {
   beforeEach(() => {
+    mockSupabase.auth.getSession.mockReset().mockResolvedValue({
+      data: { session: { access_token: "access-token" } },
+    });
+    mockSupabase.realtime.setAuth.mockReset().mockResolvedValue(undefined);
+    mockSupabase.channel.mockReset();
+    mockSupabase.removeChannel.mockReset().mockResolvedValue(undefined);
+    mockSupabase.from.mockReset().mockReturnValue({
+      insert: jest.fn().mockResolvedValue({ error: null }),
+    });
     mockSupabase.rpc.mockReset();
+    mockMapRequestRow.mockReset();
   });
 
   it("surfaces stale submitted request lifecycle errors without silent fallback", async () => {
@@ -51,5 +77,49 @@ describe("request draft sync lifecycle boundary", () => {
     ).rejects.toThrow(
       "request_sync_draft_v2 failed: request_sync_draft_v2: stale_draft_against_submitted_request",
     );
+  });
+
+  it("removes the director handoff channel when broadcast subscribe fails", async () => {
+    const channel = {} as MockHandoffChannel;
+    channel.subscribe = jest.fn<MockHandoffChannel, [(status: string) => void]>(
+      (callback) => {
+        callback("CHANNEL_ERROR");
+        return channel;
+      },
+    );
+    channel.send = jest.fn<Promise<string>, []>();
+
+    mockSupabase.channel.mockReturnValue(channel);
+    mockSupabase.rpc.mockResolvedValue({
+      data: {
+        document_type: "request_draft_sync",
+        version: "v2",
+        request_payload: { id: "req-1" },
+        items_payload: [],
+        submitted: true,
+        request_created: false,
+      },
+      error: null,
+    });
+    mockMapRequestRow.mockReturnValue({
+      id: "req-1",
+      display_no: "REQ-1",
+      status: "submitted",
+    });
+
+    await expect(
+      syncRequestDraftViaRpc({
+        requestId: "req-1",
+        lines: [],
+        submit: true,
+      }),
+    ).resolves.toMatchObject({
+      request: {
+        id: "req-1",
+      },
+      submitted: true,
+    });
+
+    expect(mockSupabase.removeChannel).toHaveBeenCalledWith(channel);
   });
 });

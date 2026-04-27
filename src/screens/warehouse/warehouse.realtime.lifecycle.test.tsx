@@ -2,6 +2,7 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
 import { useWarehouseRealtimeLifecycle } from "./warehouse.realtime.lifecycle";
+import { useWarehouseExpenseRealtime } from "./hooks/useWarehouseExpenseRealtime";
 import {
   WAREHOUSE_REALTIME_BINDINGS,
   WAREHOUSE_REALTIME_CHANNEL_NAME,
@@ -54,6 +55,38 @@ function Harness(props: {
   screenActiveRef?: WarehouseScreenActiveRef;
 }) {
   useWarehouseRealtimeLifecycle(props);
+  return null;
+}
+
+type MockWarehouseExpenseChannel = {
+  on: jest.Mock<MockWarehouseExpenseChannel, [string, unknown, () => void]>;
+  subscribe: jest.Mock<MockWarehouseExpenseChannel, []>;
+  unsubscribe: jest.Mock<void, []>;
+};
+
+const buildMockWarehouseExpenseChannel = (): MockWarehouseExpenseChannel => {
+  const channel = {} as MockWarehouseExpenseChannel;
+  channel.on = jest.fn<MockWarehouseExpenseChannel, [string, unknown, () => void]>(
+    () => channel,
+  );
+  channel.subscribe = jest.fn<MockWarehouseExpenseChannel, []>(() => channel);
+  channel.unsubscribe = jest.fn<void, []>();
+  return channel;
+};
+
+function ExpenseRealtimeHarness(props: {
+  supabase: {
+    channel: jest.Mock;
+    removeChannel: jest.Mock;
+  };
+  fetchReqHeadsForce: () => Promise<void>;
+}) {
+  useWarehouseExpenseRealtime({
+    supabase: props.supabase as never,
+    tab: WAREHOUSE_TABS[2],
+    fetchReqHeadsForce: props.fetchReqHeadsForce,
+    screenActiveRef: { current: true },
+  });
   return null;
 }
 
@@ -277,5 +310,35 @@ describe("useWarehouseRealtimeLifecycle", () => {
 
     expect(refreshIncoming).not.toHaveBeenCalled();
     expect(refreshExpense).not.toHaveBeenCalled();
+  });
+});
+
+describe("useWarehouseExpenseRealtime lifecycle", () => {
+  it("unsubscribes and removes the expense channel on cleanup", async () => {
+    const channel = buildMockWarehouseExpenseChannel();
+    const supabase = {
+      channel: jest.fn(() => channel),
+      removeChannel: jest.fn(),
+    };
+
+    let renderer!: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <ExpenseRealtimeHarness
+          supabase={supabase}
+          fetchReqHeadsForce={jest.fn().mockResolvedValue(undefined)}
+        />,
+      );
+    });
+
+    expect(supabase.channel).toHaveBeenCalledWith("warehouse-expense-rt");
+    expect(channel.subscribe).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      renderer.unmount();
+    });
+
+    expect(channel.unsubscribe).toHaveBeenCalledTimes(1);
+    expect(supabase.removeChannel).toHaveBeenCalledWith(channel);
   });
 });

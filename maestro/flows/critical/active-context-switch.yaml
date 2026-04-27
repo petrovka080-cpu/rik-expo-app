@@ -21,9 +21,13 @@ name: Active Context Switch
       id: "profile-edit-open"
     timeout: 30000
 - waitForAnimationToEnd
-- scroll
-- scroll
-- scroll
+- scrollUntilVisible:
+    element:
+      id: "profile-context-office"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
 - tapOn:
     id: "profile-context-office"
 - tapOn:
@@ -37,6 +41,13 @@ name: Active Context Switch
 - tapOn:
     id: "tabs.profile"
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "profile-context-market"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
 - tapOn:
     id: "profile-context-market"
 - waitForAnimationToEnd

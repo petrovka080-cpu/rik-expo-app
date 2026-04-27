@@ -83,33 +83,42 @@ const signalDirectorRequestSubmitted = async (params: {
     });
     const broadcastResult = await new Promise<string>((resolve, reject) => {
       let settled = false;
-      channel.subscribe(async (status) => {
-        if (settled) return;
-        if (status === "SUBSCRIBED") {
-          try {
-            const sendResult = await channel.send({
-              type: "broadcast",
-              event: DIRECTOR_HANDOFF_BROADCAST_EVENT,
-              payload: {
-                request_id: requestId,
-                display_no: displayNo,
-                source_path: params.sourcePath,
-              },
-            });
-            settled = true;
-            resolve(String(sendResult));
-          } catch (error) {
-            settled = true;
-            reject(error);
+      try {
+        channel.subscribe(async (status) => {
+          if (settled) return;
+          if (status === "SUBSCRIBED") {
+            try {
+              const sendResult = await channel.send({
+                type: "broadcast",
+                event: DIRECTOR_HANDOFF_BROADCAST_EVENT,
+                payload: {
+                  request_id: requestId,
+                  display_no: displayNo,
+                  source_path: params.sourcePath,
+                },
+              });
+              settled = true;
+              resolve(String(sendResult));
+            } catch (error) {
+              settled = true;
+              reject(error);
+            }
+            return;
           }
-          return;
-        }
 
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            settled = true;
+            reject(new Error(`broadcast subscribe ${status.toLowerCase()}`));
+          }
+        });
+      } catch (error) {
+        if (!settled) {
           settled = true;
-          reject(new Error(`broadcast subscribe ${status.toLowerCase()}`));
+          reject(error);
         }
-      });
+      }
+    }).finally(() => {
+      void supabase.removeChannel(channel);
     });
     if (__DEV__) console.info("[request-draft-sync.signal]", {
       kind: "broadcast",
@@ -118,7 +127,6 @@ const signalDirectorRequestSubmitted = async (params: {
       displayNo,
       result: broadcastResult,
     });
-    void supabase.removeChannel(channel);
   } catch (error) {
     if (__DEV__) console.warn("[request-draft-sync.signal]", {
       kind: "broadcast_error",
