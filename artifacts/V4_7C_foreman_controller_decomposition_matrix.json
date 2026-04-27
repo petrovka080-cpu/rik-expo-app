@@ -1,0 +1,58 @@
+{
+  "wave": "V4-7C",
+  "task": "FOREMAN_CONTROLLER_DECOMPOSITION_PHASE_3",
+  "status": "green_candidate",
+  "headBefore": "59a76072547730627013ad9e751a110176bf90c2",
+  "selectedConcern": "FIO/bootstrap coordination",
+  "controller": {
+    "file": "src/screens/foreman/useForemanScreenController.ts",
+    "linesBefore": 948,
+    "linesAfter": 866,
+    "lineReduction": 82
+  },
+  "newFiles": [
+    {
+      "path": "src/screens/foreman/hooks/useForemanFioBootstrapFlow.ts",
+      "lines": 150,
+      "purpose": "Extract Foreman FIO/auth/bootstrap/history coordination from the screen controller."
+    }
+  ],
+  "changedTests": [
+    {
+      "path": "tests/perf/performance-budget.test.ts",
+      "purpose": "Record one permanent V4-7C Foreman hook module in the source module budget."
+    }
+  ],
+  "safety": {
+    "publicReturnShapePreserved": true,
+    "callbackNamesPreserved": true,
+    "businessLogicChanged": false,
+    "draftBehaviorChanged": false,
+    "submitBehaviorChanged": false,
+    "validationChanged": false,
+    "navigationSemanticsChanged": false,
+    "zustandStoreContractsChanged": false,
+    "sqlRpcChanged": false,
+    "runtimeChanged": false,
+    "maestroYamlChanged": false,
+    "otaPublished": false
+  },
+  "gates": {
+    "tsc": "PASS",
+    "lint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "targetedControllerAndPerf": "PASS",
+    "maestroCritical": "PASS_14_OF_14",
+    "gitDiffCheck": "PASS",
+    "releaseVerify": "PENDING_POST_COMMIT_CLEAN_TREE"
+  },
+  "maestro": {
+    "finalResult": "PASS",
+    "flowsPassed": 14,
+    "flowsTotal": 14,
+    "duration": "21m53s",
+    "deviceOnlyRecoveryUsed": true,
+    "yamlChanged": false
+  }
+}

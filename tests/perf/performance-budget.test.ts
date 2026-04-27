@@ -95,6 +95,9 @@ describe("performance budget — bundle module count", () => {
     const v47BForemanNavigationFlowFiles = fs.existsSync(
       path.join(SRC, "screens", "foreman", "hooks", "useForemanNavigationFlow.ts"),
     ) ? 1 : 0;
+    const v47CForemanFioBootstrapFlowFiles = fs.existsSync(
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanFioBootstrapFlow.ts"),
+    ) ? 1 : 0;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -126,9 +129,17 @@ describe("performance budget — bundle module count", () => {
     //   useForemanDraftBoundaryRuntimeSubscriptions.
     // V4-7B adds one permanent Foreman navigation-flow hook:
     //   useForemanNavigationFlow.
+    // V4-7C adds one permanent Foreman FIO/bootstrap-flow hook:
+    //   useForemanFioBootstrapFlow.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
-    expect(tsFiles - p3ATypeBoundaryFiles - v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1300);
+    expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
+    expect(
+      tsFiles -
+        p3ATypeBoundaryFiles -
+        v47BForemanNavigationFlowFiles -
+        v47CForemanFioBootstrapFlowFiles,
+    ).toBeLessThanOrEqual(1300);
   });
 });
 

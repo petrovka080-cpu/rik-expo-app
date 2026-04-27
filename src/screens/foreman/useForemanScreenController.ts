@@ -30,7 +30,6 @@ import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "./foreman.ui";
 import { useForemanSubcontractHistory } from "./hooks/useForemanSubcontractHistory";
 import { useCollapsingHeader } from "../shared/useCollapsingHeader";
 import { useGlobalBusy } from "../../ui/GlobalBusy";
-import { supabase } from "../../lib/supabaseClient";
 import {
   rikQuickSearch,
   type ReqItemRow,
@@ -39,10 +38,8 @@ import type { RefOption } from "./foreman.types";
 import {
   buildScopeNote,
   isDraftLikeStatus,
-  loadForemanHistory,
   resolveStatusInfo as resolveStatusHelper,
   ridStr,
-  saveForemanToHistory,
   shortId,
   toErrorText,
 } from "./foreman.helpers";
@@ -57,11 +54,13 @@ import { useForemanBaseUi } from "./hooks/useForemanBaseUi";
 import { useForemanDraftUi } from "./hooks/useForemanDraftUi";
 import { useForemanHistoryUi } from "./hooks/useForemanHistoryUi";
 import { useForemanAiQuickFlow } from "./hooks/useForemanAiQuickFlow";
-import {
-  loadStoredFioState,
-  saveStoredFioState,
-} from "../../lib/storage/fioPersistence";
 import { useForemanNavigationFlow } from "./hooks/useForemanNavigationFlow";
+import {
+  useForemanFioBootstrapEffect,
+  useForemanFioBootstrapFlow,
+  useForemanFioHistoryRefreshEffect,
+  type ForemanAuthIdentity,
+} from "./hooks/useForemanFioBootstrapFlow";
 
 type WebUiApi = {
   onZoneChange: (v: string) => void;
@@ -85,13 +84,6 @@ type WebUiApi = {
 type ForemanMaterialsContentProps = ComponentProps<typeof ForemanMaterialsContent>;
 type ForemanSubcontractTabProps = ComponentProps<typeof ForemanSubcontractTab>;
 
-function buildFioBootstrapScopeKey(userId?: string | null, date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${userId || "anonymous"}:${year}-${month}-${day}`;
-}
-
 declare global {
   var webUi: WebUiApi;
 }
@@ -99,11 +91,7 @@ declare global {
 export function useForemanScreenController() {
   const gbusy = useGlobalBusy();
   const isScreenFocused = useIsFocused();
-  const [authIdentity, setAuthIdentity] = useState<{
-    fullName: string;
-    email: string;
-    phone: string;
-  }>({
+  const [authIdentity, setAuthIdentity] = useState<ForemanAuthIdentity>({
     fullName: "",
     email: "",
     phone: "",
@@ -225,6 +213,21 @@ export function useForemanScreenController() {
     setSelectedObjectName,
   } = useForemanBaseUi();
   const {
+    finalizeAfterSubmit,
+    handleFioConfirm,
+    refreshForemanHistory,
+    runFioBootstrap,
+  } = useForemanFioBootstrapFlow({
+    foreman,
+    setForeman,
+    setAuthIdentity,
+    fioBootstrapScopeKey,
+    setFioBootstrapScopeKey,
+    setForemanHistory,
+    setIsFioConfirmVisible,
+    setIsFioLoading,
+  });
+  const {
     draftOpen,
     openDraft,
     closeDraft,
@@ -271,13 +274,7 @@ export function useForemanScreenController() {
     appOptions,
   } = useForemanDicts();
 
-  const refreshForemanHistory = useCallback(async () => {
-    setForemanHistory(await loadForemanHistory());
-  }, [setForemanHistory]);
-
-  useEffect(() => {
-    void refreshForemanHistory();
-  }, [refreshForemanHistory]);
+  useForemanFioHistoryRefreshEffect(refreshForemanHistory);
 
   const labelForApp = useCallback((code?: string | null) => {
     if (!code) return "";
@@ -370,11 +367,6 @@ export function useForemanScreenController() {
   const alertError = useCallback((error: unknown, fallback: string) => {
     Alert.alert(FOREMAN_TEXT.errorTitle, toErrorText(error, fallback));
   }, []);
-
-  const finalizeAfterSubmit = useCallback(async () => {
-    await saveForemanToHistory(foreman);
-    await refreshForemanHistory();
-  }, [foreman, refreshForemanHistory]);
 
   const ensureCanSubmitToDirector = useCallback(() => {
     if (!ensureEditableContext({ draftFirst: true, draftMessage: FOREMAN_TEXT.submitNeedDraftHint })) {
@@ -670,85 +662,7 @@ export function useForemanScreenController() {
     }));
   }, [headerAttention, headerRequirements, setHeaderAttention]);
 
-  useEffect(() => {
-    let active = true;
-    void (async () => {
-      const authUserResult = await supabase.auth.getUser();
-      const authUser = authUserResult.data.user ?? null;
-      const nextIdentity = {
-        fullName: String(authUser?.user_metadata?.full_name ?? "").trim(),
-        email: String(authUser?.email ?? "").trim(),
-        phone: String(authUser?.phone ?? authUser?.user_metadata?.phone ?? "").trim(),
-      };
-      if (active) {
-        setAuthIdentity(nextIdentity);
-      }
-      const scopeKey = buildFioBootstrapScopeKey(authUserResult.data.user?.id);
-      if (!active || fioBootstrapScopeKey === scopeKey) return;
-      const sixAM = new Date();
-      sixAM.setHours(6, 0, 0, 0);
-      const {
-        currentFio,
-        history,
-        lastConfirmIso,
-      } = await loadStoredFioState({
-        screen: "foreman",
-        surface: "foreman_fio_confirm",
-        keys: {
-          currentKey: "foreman_fio",
-          confirmKey: "foreman_confirm_ts",
-          historyKey: "foreman_name_history_v1",
-        },
-      });
-      const lastConfirm = lastConfirmIso ? new Date(lastConfirmIso) : null;
-      if (!active) return;
-      if (currentFio) setForeman(currentFio);
-      setForemanHistory(history);
-      if (!lastConfirm || Number.isNaN(lastConfirm.getTime()) || lastConfirm < sixAM) {
-        setIsFioConfirmVisible(true);
-      }
-      setFioBootstrapScopeKey(scopeKey);
-    })();
-    return () => {
-      active = false;
-    };
-  }, [
-    fioBootstrapScopeKey,
-    setFioBootstrapScopeKey,
-    setForeman,
-    setForemanHistory,
-    setIsFioConfirmVisible,
-  ]);
-
-  const handleFioConfirm = useCallback(async (fio: string) => {
-    setIsFioLoading(true);
-    try {
-      setForeman(fio);
-      const nextHistory = await saveStoredFioState({
-        screen: "foreman",
-        surface: "foreman_fio_confirm",
-        keys: {
-          currentKey: "foreman_fio",
-          confirmKey: "foreman_confirm_ts",
-          historyKey: "foreman_name_history_v1",
-        },
-        fio,
-        history: await loadForemanHistory(),
-      });
-      setForemanHistory(nextHistory);
-      const authUserResult = await supabase.auth.getUser();
-      setFioBootstrapScopeKey(buildFioBootstrapScopeKey(authUserResult.data.user?.id));
-      setIsFioConfirmVisible(false);
-    } finally {
-      setIsFioLoading(false);
-    }
-  }, [
-    setFioBootstrapScopeKey,
-    setForeman,
-    setForemanHistory,
-    setIsFioConfirmVisible,
-    setIsFioLoading,
-  ]);
+  useForemanFioBootstrapEffect(runFioBootstrap);
 
   const buildReqItemMetaLine = useCallback((item: ReqItemRow) => {
     return [
