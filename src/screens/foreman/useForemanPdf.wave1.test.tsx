@@ -176,6 +176,10 @@ describe("foreman PDF wave 1 hardening", () => {
   it("keeps touched PDF copy readable on active Wave 1 paths", () => {
     const foremanHookSource = readFileSync(join(__dirname, "hooks", "useForemanPdf.ts"), "utf8");
     const foremanControllerSource = readFileSync(join(__dirname, "useForemanScreenController.ts"), "utf8");
+    const foremanNavigationFlowSource = readFileSync(
+      join(__dirname, "hooks", "useForemanNavigationFlow.ts"),
+      "utf8",
+    );
     const foremanRequestPdfServiceSource = readFileSync(
       join(__dirname, "foreman.requestPdf.service.ts"),
       "utf8",
@@ -185,14 +189,21 @@ describe("foreman PDF wave 1 hardening", () => {
       "utf8",
     );
 
-    for (const source of [foremanHookSource, foremanRequestPdfServiceSource, warehouseBoundarySource]) {
+    for (const source of [
+      foremanHookSource,
+      foremanNavigationFlowSource,
+      foremanRequestPdfServiceSource,
+      warehouseBoundarySource,
+    ]) {
       expect(source).not.toContain("Р СњР Вµ РЎС“Р Т‘Р В°Р В»Р С•РЎРѓРЎРЉ");
       expect(source).not.toContain("Р С›РЎвЂљР С”РЎР‚РЎвЂ№Р Р†Р В°РЎР‹");
       expect(source).not.toContain("Р вЂњР С•РЎвЂљР С•Р Р†Р В»РЎР‹");
     }
 
-    expect(foremanControllerSource).toContain("previewForemanHistoryPdf({");
+    expect(foremanControllerSource).toContain("useForemanNavigationFlow({");
     expect(foremanControllerSource).not.toContain("prepareAndPreviewGeneratedPdfFromDescriptorFactory({");
+    expect(foremanNavigationFlowSource).toContain("previewForemanHistoryPdf({");
+    expect(foremanNavigationFlowSource).not.toContain("prepareAndPreviewGeneratedPdfFromDescriptorFactory({");
     expect(foremanRequestPdfServiceSource).toContain('label: "Открываю PDF…"');
     expect(foremanRequestPdfServiceSource).toContain('getPdfFlowErrorMessage(error, "Не удалось открыть PDF")');
   });

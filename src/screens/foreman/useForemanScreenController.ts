@@ -11,7 +11,6 @@ import {
   Platform,
   type ListRenderItem,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 
 import ForemanReqItemRow from "./ForemanReqItemRow";
@@ -34,10 +33,8 @@ import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { supabase } from "../../lib/supabaseClient";
 import {
   rikQuickSearch,
-  type ForemanRequestSummary,
   type ReqItemRow,
 } from "../../lib/catalog_api";
-import { reopenRequestDraft } from "../../lib/api/request.repository";
 import type { RefOption } from "./foreman.types";
 import {
   buildScopeNote,
@@ -64,8 +61,7 @@ import {
   loadStoredFioState,
   saveStoredFioState,
 } from "../../lib/storage/fioPersistence";
-import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
-import { previewForemanHistoryPdf } from "./foreman.requestPdf.service";
+import { useForemanNavigationFlow } from "./hooks/useForemanNavigationFlow";
 
 type WebUiApi = {
   onZoneChange: (v: string) => void;
@@ -102,7 +98,6 @@ declare global {
 
 export function useForemanScreenController() {
   const gbusy = useGlobalBusy();
-  const router = useRouter();
   const isScreenFocused = useIsFocused();
   const [authIdentity, setAuthIdentity] = useState<{
     fullName: string;
@@ -279,26 +274,6 @@ export function useForemanScreenController() {
   const refreshForemanHistory = useCallback(async () => {
     setForemanHistory(await loadForemanHistory());
   }, [setForemanHistory]);
-
-  const openHistoryPdfSafe = useCallback(async (reqId: string) => {
-    await previewForemanHistoryPdf({
-      requestId: reqId,
-      authIdentityFullName: authIdentity.fullName,
-      historyRequests,
-      requestDetails,
-      closeHistory,
-      busy: gbusy,
-      supabase,
-      router,
-    });
-  }, [
-    authIdentity.fullName,
-    closeHistory,
-    gbusy,
-    historyRequests,
-    requestDetails,
-    router,
-  ]);
 
   useEffect(() => {
     void refreshForemanHistory();
@@ -573,6 +548,57 @@ export function useForemanScreenController() {
     handleRemoveDraftRow,
     handleCalcAddToRequest,
   } = actions;
+  const {
+    openHistoryPdfSafe,
+    handleHistorySelect,
+    handleHistoryReopen,
+    onPdf,
+    draftPdfBusy,
+    handleCancelWholeDraft,
+    handleSendDraftFromSheet,
+    handleCalcPress,
+    openDraftFromCatalog,
+    openFioModal,
+    openMaterialsTab,
+    openSubcontractsTab,
+    closeMainTab,
+    openRequestHistory,
+    openSubcontractHistory,
+    handleHistoryShowDetails,
+    screenTitle,
+  } = useForemanNavigationFlow({
+    authIdentityFullName: authIdentity.fullName,
+    historyRequests,
+    requestDetails,
+    closeHistory,
+    busyContext: gbusy,
+    openRequestById,
+    openDraft,
+    setHistoryReopenBusyId,
+    alertError,
+    ensureHeaderReady,
+    syncPendingQtyDrafts,
+    ensureRequestId,
+    syncRequestHeaderMeta,
+    closeDraft,
+    runRequestPdf,
+    requestId,
+    discardWholeDraft,
+    submitToDirector,
+    setDraftDeleteBusy,
+    setDraftSendBusy,
+    busy,
+    ensureEditableContext,
+    openWorkTypePicker,
+    closeCatalog,
+    setIsFioConfirmVisible,
+    foremanMainTab,
+    setForemanMainTab,
+    foreman,
+    fetchHistory,
+    fetchSubcontractHistory,
+    showRequestHistoryDetails,
+  });
 
   const handleObjectChange = useCallback((code: string) => {
     const option = objAllOptions.find((item) => item.code === code);
@@ -643,46 +669,6 @@ export function useForemanScreenController() {
       message: headerRequirements.message,
     }));
   }, [headerAttention, headerRequirements, setHeaderAttention]);
-
-  const handleHistorySelect = useCallback(async (request: ForemanRequestSummary) => {
-    const openedDraftId = await openRequestById(request.id);
-    closeHistory();
-    if (openedDraftId) openDraft();
-  }, [closeHistory, openDraft, openRequestById]);
-
-  const handleHistoryReopen = useCallback(async (request: ForemanRequestSummary) => {
-    const requestKey = ridStr(request.id);
-    if (!requestKey) return;
-    setHistoryReopenBusyId(requestKey);
-    try {
-      await reopenRequestDraft({
-        requestId: requestKey,
-        sourcePath: "foreman.history.reopen",
-        draftScopeKey: requestKey,
-      });
-      const openedDraftId = await openRequestById(requestKey);
-      closeHistory();
-      if (openedDraftId) openDraft();
-    } catch (error) {
-      recordCatchDiscipline({
-        screen: "foreman",
-        surface: "foreman_history_reopen",
-        event: "foreman_history_reopen_failed",
-        kind: "critical_fail",
-        error,
-        category: "ui",
-        sourceKind: "foreman:request",
-        errorStage: "reopen_draft",
-        extra: {
-          requestId: requestKey,
-          action: "handleHistoryReopen",
-        },
-      });
-      alertError(error, "Не удалось вернуть черновик");
-    } finally {
-      setHistoryReopenBusyId(null);
-    }
-  }, [alertError, closeHistory, openDraft, openRequestById, setHistoryReopenBusyId]);
 
   useEffect(() => {
     let active = true;
@@ -764,21 +750,6 @@ export function useForemanScreenController() {
     setIsFioLoading,
   ]);
 
-  const onPdf = useCallback(async () => {
-    if (!ensureHeaderReady()) return;
-    await syncPendingQtyDrafts();
-    // XR-PDF: pass closeDraft so the DraftModal is dismissed before the PDF viewer route is pushed
-    await runRequestPdf("preview", await ensureRequestId(), requestDetails, syncRequestHeaderMeta, closeDraft);
-  }, [
-    closeDraft,
-    ensureHeaderReady,
-    ensureRequestId,
-    requestDetails,
-    runRequestPdf,
-    syncPendingQtyDrafts,
-    syncRequestHeaderMeta,
-  ]);
-
   const buildReqItemMetaLine = useCallback((item: ReqItemRow) => {
     return [
       `${item.qty ?? "-"} ${item.uom ?? ""}`.trim(),
@@ -852,41 +823,6 @@ export function useForemanScreenController() {
     contentTopOffset: 12,
   });
 
-  const draftPdfBusy = useMemo(() => {
-    const ridKey = ridStr(requestId);
-    return gbusy.isBusy(`pdf:request:${ridKey || "draft"}`);
-  }, [gbusy, requestId]);
-
-  const handleCancelWholeDraft = useCallback(async () => {
-    setDraftDeleteBusy(true);
-    try {
-      await discardWholeDraft();
-      closeDraft();
-    } catch (error) {
-      alertError(error, FOREMAN_TEXT.deleteDraftError);
-    } finally {
-      setDraftDeleteBusy(false);
-    }
-  }, [alertError, closeDraft, discardWholeDraft, setDraftDeleteBusy]);
-
-  const handleSendDraftFromSheet = useCallback(async () => {
-    setDraftSendBusy(true);
-    try {
-      await submitToDirector();
-      closeDraft();
-    } catch (error) {
-      alertError(error, FOREMAN_TEXT.sendToDirectorError);
-    } finally {
-      setDraftSendBusy(false);
-    }
-  }, [alertError, closeDraft, setDraftSendBusy, submitToDirector]);
-
-  const handleCalcPress = useCallback(() => {
-    if (busy) return;
-    if (!ensureEditableContext()) return;
-    openWorkTypePicker();
-  }, [busy, ensureEditableContext, openWorkTypePicker]);
-
   const {
     aiQuickVisible,
     aiQuickMode,
@@ -929,32 +865,6 @@ export function useForemanScreenController() {
     networkOnline,
   });
 
-  const openDraftFromCatalog = useCallback(() => {
-    closeCatalog();
-    openDraft();
-  }, [closeCatalog, openDraft]);
-
-  const openFioModal = useCallback(() => {
-    setIsFioConfirmVisible(true);
-  }, [setIsFioConfirmVisible]);
-
-  const openMaterialsTab = useCallback(() => {
-    setForemanMainTab("materials");
-  }, [setForemanMainTab]);
-
-  const openSubcontractsTab = useCallback(() => {
-    setForemanMainTab("subcontracts");
-  }, [setForemanMainTab]);
-
-  const closeMainTab = useCallback(() => {
-    setForemanMainTab(null);
-  }, [setForemanMainTab]);
-
-  const screenTitle = useMemo(() => {
-    if (foremanMainTab === "materials") return "Материалы";
-    if (foremanMainTab === "subcontracts") return "Подряды";
-    return "Заявка";
-  }, [foremanMainTab]);
   const keyboardBehavior: "padding" | undefined = Platform.OS === "ios" ? "padding" : undefined;
 
   const materialsContentProps: ForemanMaterialsContentProps = {
@@ -991,12 +901,12 @@ export function useForemanScreenController() {
     draftSyncStatusTone: safeDraftSyncUi.tone,
     draftSendBusy,
     headerAttention,
-    onOpenRequestHistory: () => fetchHistory(foreman),
-    onOpenSubcontractHistory: () => void fetchSubcontractHistory(),
+    onOpenRequestHistory: openRequestHistory,
+    onOpenSubcontractHistory: openSubcontractHistory,
     historyVisible,
     historyMode: requestHistoryMode,
     historySelectedRequestId: selectedHistoryRequestId,
-    onHistoryShowDetails: (request) => showRequestHistoryDetails(request.id),
+    onHistoryShowDetails: handleHistoryShowDetails,
     onHistoryBackToList: backToRequestHistoryList,
     onHistoryResetView: backToRequestHistoryList,
     historyLoading,
