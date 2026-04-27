@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
+  type FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { FlashList } from "../../ui/FlashList";
 import {
   CHAT_BACKEND_HINT,
   deleteListingChatMessage,
@@ -340,11 +341,12 @@ export default function ChatScreen() {
             <Text style={styles.stateText}>Загружаем сообщения...</Text>
           </View>
         ) : (
-          <FlatList
+          <FlashList
             testID="chat-thread-list"
             accessibilityLabel="chat-thread-list"
             ref={listRef}
             data={messages}
+            estimatedItemSize={88}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}

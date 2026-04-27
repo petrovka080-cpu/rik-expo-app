@@ -3,11 +3,12 @@ import React from "react";
 import {
   View,
   Text,
-  FlatList,
   TextInput,
   Pressable,
   StyleSheet,
 } from "react-native";
+
+import { FlashList } from "../ui/FlashList";
 
 const UI = {
   bg: "#F9FAFB",
@@ -203,8 +204,9 @@ export const WorkMaterialsEditor: React.FC<Props> = ({
 
   return (
     <View style={{ flex: 1 }}>
-      <FlatList
+      <FlashList
         data={rows}
+        estimatedItemSize={148}
         keyExtractor={(_, idx) => `${idx}`}
         renderItem={renderRow}
         ListEmptyComponent={
@@ -333,4 +335,3 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
-

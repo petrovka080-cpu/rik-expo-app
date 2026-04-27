@@ -1,6 +1,7 @@
 import React from "react";
-import { FlatList, View, Text, TextInput, Pressable, type ListRenderItemInfo } from "react-native";
+import { View, Text, TextInput, Pressable, type ListRenderItemInfo } from "react-native";
 
+import { FlashList } from "../../../ui/FlashList";
 import type { Attachment, DraftAttachmentMap } from "../buyer.types";
 import { D, UI } from "../buyerUi";
 import { normName, SUPP_NONE } from "../buyerUtils";
@@ -278,8 +279,9 @@ export function BuyerReworkSheetBody({
   );
 
   return (
-    <FlatList
+    <FlashList
       data={rwItems}
+      estimatedItemSize={164}
       keyExtractor={(item, index) => `${item.request_item_id}-${index}`}
       style={{ flex: 1 }}
       contentContainerStyle={{ paddingBottom: 24 }}

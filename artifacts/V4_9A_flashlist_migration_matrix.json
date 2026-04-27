@@ -1,0 +1,82 @@
+{
+  "wave": "V4-9A",
+  "task": "FLATLIST_TO_FLASHLIST_MEASURED_MIGRATION",
+  "headBefore": "4f7154b9a28d5dd8ece3d25244c33a6433586f8b",
+  "selection": {
+    "selectedProductionFiles": [
+      {
+        "path": "src/features/chat/ChatScreen.tsx",
+        "reason": "Chat message thread can grow with conversation history.",
+        "estimatedItemSize": 88,
+        "getItemLayout": "not present before migration"
+      },
+      {
+        "path": "src/components/WorkMaterialsEditor.tsx",
+        "reason": "Repeated work material rows in editing surfaces.",
+        "estimatedItemSize": 148,
+        "getItemLayout": "not present before migration"
+      },
+      {
+        "path": "src/screens/buyer/components/BuyerReworkSheetBody.tsx",
+        "reason": "Repeated buyer rework items with header/footer form content.",
+        "estimatedItemSize": 164,
+        "getItemLayout": "not present before migration"
+      }
+    ],
+    "deferredFiles": [
+      "src/components/AppCombo.tsx",
+      "src/screens/foreman/ForemanDropdown.tsx",
+      "src/screens/buyer/components/BuyerItemRow.tsx",
+      "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx"
+    ],
+    "deferredReason": "Dropdown, picker, or header-only list scope; intentionally not part of measured V4-9A migration."
+  },
+  "counts": {
+    "realProductionJsxFlatListBefore": 9,
+    "realProductionJsxFlatListAfter": 6,
+    "realProductionJsxFlatListDelta": -3,
+    "productionFilesContainingFlatListBefore": 13,
+    "productionFilesContainingFlatListAfter": 11
+  },
+  "guardrails": {
+    "existingFlashListWrapperUsed": true,
+    "rawShopifyFlashListImportAdded": false,
+    "itemRenderingLogicChanged": false,
+    "keyExtractorSemanticsChanged": false,
+    "sortingFilteringPaginationChanged": false,
+    "emptyStateChanged": false,
+    "refreshBehaviorChanged": false,
+    "businessCallbacksChanged": false,
+    "styleRedesignChanged": false,
+    "sqlRpcChanged": false,
+    "runtimeConfigChanged": false,
+    "maestroYamlChanged": false,
+    "otaPublished": false
+  },
+  "gates": {
+    "precheckStatusClean": "PASS",
+    "precheckHeadEqualsOriginMain": "PASS",
+    "precheckReleaseVerify": "PASS_OTA_DISPOSITION_ALLOW",
+    "tsc": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jestDefault": "PASS",
+    "maestroCriticalFirstRun": "FAIL_13_OF_14_KEYBOARD_DISMISS_HARNESS",
+    "maestroCriticalAfterDeviceRetry": "PASS_14_OF_14",
+    "gitDiffCheck": "PASS",
+    "androidSmoke": "PASS",
+    "releaseVerifyPostcommit": "PENDING"
+  },
+  "androidSmoke": {
+    "packagePresent": true,
+    "monkeyLaunch": "PASS",
+    "pidof": "PASS",
+    "mainActivityResumedFocused": "PASS",
+    "fatalException": false,
+    "androidRuntimeCrash": false
+  },
+  "ota": {
+    "published": false,
+    "finalDisposition": "PENDING_POSTCOMMIT_GUARD"
+  }
+}
