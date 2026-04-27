@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   Keyboard,
+  StyleSheet,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../../src/lib/supabaseClient';
@@ -153,37 +154,25 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View
-        style={{
-          flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.35)',
-          justifyContent: 'flex-end',
-          paddingTop: sheetTopPad,
-          paddingHorizontal: 0,
-          paddingBottom: 0,
-        }}
+        style={[localStyles.backdrop, { paddingTop: sheetTopPad }]}
       >
         <View
-          style={{
-            backgroundColor: '#fff',
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
-            padding: 16,
-            paddingTop: 16 + Math.min(insets.top, 12),
-            paddingBottom: 16 + sheetBottomPad,
-            height: '96%',
-            width: '100%',
-            maxWidth: Platform.OS === 'web' ? 900 : undefined,
-            alignSelf: Platform.OS === 'web' ? 'center' : undefined,
-          }}
+          style={[
+            localStyles.sheet,
+            {
+              paddingTop: 16 + Math.min(insets.top, 12),
+              paddingBottom: 16 + sheetBottomPad,
+              maxWidth: Platform.OS === 'web' ? 900 : undefined,
+              alignSelf: Platform.OS === 'web' ? 'center' : undefined,
+            },
+          ]}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View style={{ flex: 1, paddingRight: 10 }}>
-              <Text style={{ fontSize: 26, fontWeight: '900' }}>
+          <View style={localStyles.headerRow}>
+            <View style={localStyles.headerCopy}>
+              <Text style={localStyles.title}>
                 {selectedFamily ? currentFamilyTitle : 'Выберите вид работ'}
               </Text>
-              <Text style={{ color: '#6b7280', marginTop: 4 }}>
+              <Text style={localStyles.subtitle}>
                 {selectedFamily
                   ? 'Выберите конкретную работу из списка'
                   : 'Сначала выберите раздел, затем конкретную работу'}
@@ -195,70 +184,57 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
                 Keyboard.dismiss();
                 onClose();
               }}
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                borderRadius: 12,
-                backgroundColor: '#f3f4f6',
-              }}
+              style={localStyles.closeButton}
             >
-              <Text style={{ fontWeight: '800' }}>Закрыть</Text>
+              <Text style={localStyles.closeText}>Закрыть</Text>
             </Pressable>
           </View>
 
-          <View style={{ marginTop: 12 }}>
+          <View style={localStyles.searchBlock}>
             <TextInput
               placeholder="Поиск по названию или коду (WT-...)"
               value={query}
               onChangeText={setQuery}
               placeholderTextColor="#94A3B8"
-              style={{
-                borderWidth: 1,
-                borderColor: '#e5e7eb',
-                borderRadius: 12,
-                paddingHorizontal: 12,
-                paddingVertical: Platform.OS === 'web' ? 10 : 12,
-                backgroundColor: '#fff',
-                fontSize: 16,
-              }}
+              style={[
+                localStyles.searchInput,
+                {
+                  paddingVertical: Platform.OS === 'web' ? 10 : 12,
+                },
+              ]}
             />
           </View>
 
-          <View style={{ flex: 1, marginTop: 14 }}>
+          <View style={localStyles.content}>
             {loading ? (
-              <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+              <View style={localStyles.loadingBox}>
                 <ActivityIndicator size="large" />
-                <Text style={{ marginTop: 10, color: '#6b7280', fontWeight: '700' }}>
+                <Text style={localStyles.loadingText}>
                   Загружаем виды работ...
                 </Text>
               </View>
             ) : (selectedFamily ? listInside.length === 0 : families.length === 0) ? (
-              <View style={{ paddingVertical: 16 }}>
-                <Text style={{ color: '#6b7280', textAlign: 'center' }}>
+              <View style={localStyles.emptyBox}>
+                <Text style={localStyles.emptyText}>
                   {error ?? 'Не найдено подходящих видов работ'}
                 </Text>
               </View>
             ) : selectedFamily ? (
               <>
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 10 }}>
+                <View style={localStyles.backRow}>
                   <Pressable
                     onPress={() => {
                       Keyboard.dismiss();
                       setSelectedFamily(null);
                     }}
-                    style={{
-                      paddingHorizontal: 12,
-                      paddingVertical: 8,
-                      borderRadius: 12,
-                      backgroundColor: '#111827',
-                    }}
+                    style={localStyles.backButton}
                   >
-                    <Text style={{ color: '#fff', fontWeight: '900' }}>Назад</Text>
+                    <Text style={localStyles.backButtonText}>Назад</Text>
                   </Pressable>
                 </View>
 
                 <ScrollView
-                  style={{ flex: 1 }}
+                  style={localStyles.list}
                   contentContainerStyle={{ paddingBottom: 12 }}
                   keyboardShouldPersistTaps="handled"
                 >
@@ -269,27 +245,22 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
                         Keyboard.dismiss();
                         onSelect({ code: item.code, name: item.work_name_ru });
                       }}
-                      style={({ pressed }) => ({
-                        paddingVertical: 14,
-                        paddingHorizontal: 12,
-                        borderRadius: 14,
-                        backgroundColor: pressed ? '#f3f4f6' : 'transparent',
-                        borderWidth: 1,
-                        borderColor: '#eef2f7',
-                        marginBottom: 10,
-                      })}
+                      style={({ pressed }) => [
+                        localStyles.workItem,
+                        pressed && localStyles.workItemPressed,
+                      ]}
                     >
-                      <Text style={{ fontSize: 18, fontWeight: '800', color: '#111827' }}>
+                      <Text style={localStyles.workItemTitle}>
                         {item.work_name_ru}
                       </Text>
-                      <Text style={{ color: '#6b7280', marginTop: 3 }}>{item.code}</Text>
+                      <Text style={localStyles.workItemCode}>{item.code}</Text>
                     </Pressable>
                   ))}
                 </ScrollView>
               </>
             ) : (
               <ScrollView
-                style={{ flex: 1 }}
+                style={localStyles.list}
                 contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', paddingBottom: 12 }}
                 keyboardShouldPersistTaps="handled"
               >
@@ -300,16 +271,9 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
                       Keyboard.dismiss();
                       setSelectedFamily(f.family_code);
                     }}
-                    style={{
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      borderRadius: 999,
-                      marginRight: 10,
-                      marginBottom: 10,
-                      backgroundColor: '#f3f4f6',
-                    }}
+                    style={localStyles.familyChip}
                   >
-                    <Text style={{ color: '#111827', fontWeight: '900', fontSize: 16 }}>
+                    <Text style={localStyles.familyChipText}>
                       {f.family_short_name_ru} {f.count}
                     </Text>
                   </Pressable>
@@ -322,3 +286,132 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
     </Modal>
   );
 }
+
+const localStyles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 0,
+    paddingBottom: 0,
+  },
+  sheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    padding: 16,
+    height: '96%',
+    width: '100%',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerCopy: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '900',
+  },
+  subtitle: {
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  closeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
+  },
+  closeText: {
+    fontWeight: '800',
+  },
+  searchBlock: {
+    marginTop: 12,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    fontSize: 16,
+  },
+  content: {
+    flex: 1,
+    marginTop: 14,
+  },
+  loadingBox: {
+    paddingVertical: 24,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#6b7280',
+    fontWeight: '700',
+  },
+  emptyBox: {
+    paddingVertical: 16,
+  },
+  emptyText: {
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  backRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginBottom: 10,
+  },
+  backButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: '#111827',
+  },
+  backButtonText: {
+    color: '#fff',
+    fontWeight: '900',
+  },
+  list: {
+    flex: 1,
+  },
+  workItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#eef2f7',
+    marginBottom: 10,
+  },
+  workItemPressed: {
+    backgroundColor: '#f3f4f6',
+  },
+  workItemTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  workItemCode: {
+    color: '#6b7280',
+    marginTop: 3,
+  },
+  familyChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 999,
+    marginRight: 10,
+    marginBottom: 10,
+    backgroundColor: '#f3f4f6',
+  },
+  familyChipText: {
+    color: '#111827',
+    fontWeight: '900',
+    fontSize: 16,
+  },
+});

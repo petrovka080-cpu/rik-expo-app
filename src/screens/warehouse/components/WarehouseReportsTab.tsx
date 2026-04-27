@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { ActivityIndicator, View, Text, Pressable } from "react-native";
+import { ActivityIndicator, View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -198,7 +198,7 @@ export default function WarehouseReportsTab(props: Props) {
         accessibilityLabel={`warehouse-report-day:${item.day}`}
         accessible
         onPress={() => setActiveDay(item)}
-        style={{ marginBottom: 12, marginHorizontal: 16 }}
+        style={localStyles.dayGroupPressable}
       >
         <View style={s.mobCard}>
           <View style={s.mobMain}>
@@ -206,7 +206,7 @@ export default function WarehouseReportsTab(props: Props) {
             <Text style={s.mobMeta}>Документов: {dayCount}</Text>
           </View>
 
-          <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+          <View style={localStyles.dayCountRow}>
             <StatusBadge label={`${dayCount}`} tone="info" compact />
             <ChevronIndicator />
           </View>
@@ -236,24 +236,15 @@ export default function WarehouseReportsTab(props: Props) {
 
   const reportsListHeader = React.useMemo(() => (
     <>
-      <View style={{ paddingHorizontal: 16, marginBottom: 16, flexDirection: "row", alignItems: "center", gap: 12 }}>
+      <View style={localStyles.reportsHeaderRow}>
         <Pressable
           onPress={onBack}
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "rgba(255,255,255,0.08)",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.12)",
-          }}
+          style={localStyles.headerCloseButton}
           hitSlop={15}
         >
           <Ionicons name="close" size={22} color={UI.text} />
         </Pressable>
-        <Text style={{ color: UI.text, fontSize: 18, fontWeight: "600" }}>
+        <Text style={localStyles.reportsHeaderTitle}>
           {isIncoming ? "ПРИХОД" : "ВЫДАЧИ"}
         </Text>
       </View>
@@ -284,30 +275,23 @@ export default function WarehouseReportsTab(props: Props) {
 
   if (mode === "choice") {
     return (
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: headerTopPad + 20 }}>
-        <Text style={{ color: UI.text, fontSize: 22, fontWeight: "600", textAlign: "center", marginBottom: 28 }}>
+      <View style={[localStyles.choiceContainer, { paddingTop: headerTopPad + 20 }]}>
+        <Text style={localStyles.choiceTitle}>
           ОТЧЁТЫ
         </Text>
 
-        <View style={{ gap: 12 }}>
+        <View style={localStyles.modeButtons}>
           <Pressable
             testID="warehouse-reports-mode-issue"
             accessibilityLabel="warehouse-reports-mode-issue"
             accessible
             onPress={() => onSelectMode("issue")}
             style={({ pressed }) => [
-              {
-                backgroundColor: "rgba(255,255,255,0.06)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.12)",
-                borderRadius: 16,
-                paddingVertical: 20,
-                alignItems: "center",
-              },
-              pressed && { opacity: 0.9, backgroundColor: "rgba(255,255,255,0.08)" },
+              localStyles.modeButton,
+              pressed && localStyles.modeButtonPressed,
             ]}
           >
-            <Text style={{ color: UI.text, fontSize: 17, fontWeight: "600" }}>Выдача</Text>
+            <Text style={localStyles.modeButtonText}>Выдача</Text>
           </Pressable>
 
           <Pressable
@@ -316,18 +300,11 @@ export default function WarehouseReportsTab(props: Props) {
             accessible
             onPress={() => onSelectMode("incoming")}
             style={({ pressed }) => [
-              {
-                backgroundColor: "rgba(255,255,255,0.06)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.12)",
-                borderRadius: 16,
-                paddingVertical: 20,
-                alignItems: "center",
-              },
-              pressed && { opacity: 0.9, backgroundColor: "rgba(255,255,255,0.08)" },
+              localStyles.modeButton,
+              pressed && localStyles.modeButtonPressed,
             ]}
           >
-            <Text style={{ color: UI.text, fontSize: 17, fontWeight: "600" }}>Приход</Text>
+            <Text style={localStyles.modeButtonText}>Приход</Text>
           </Pressable>
         </View>
       </View>
@@ -336,35 +313,21 @@ export default function WarehouseReportsTab(props: Props) {
 
   if (activeDay) {
     return (
-      <View style={{ flex: 1, backgroundColor: UI.bg, minHeight: 0 }}>
+      <View style={localStyles.activeRoot}>
         <View
-          style={{
-            paddingTop: headerTopPad + 4,
-            paddingHorizontal: 16,
-            paddingBottom: 14,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 12,
-            borderBottomWidth: 1,
-            borderBottomColor: "rgba(255,255,255,0.06)",
-            backgroundColor: UI.bg,
-          }}
+          style={[
+            localStyles.activeHeader,
+            {
+              paddingTop: headerTopPad + 4,
+            },
+          ]}
         >
           <Pressable
             testID="warehouse-day-back"
             accessibilityLabel="warehouse-day-back"
             accessible
             onPress={() => setActiveDay(null)}
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 14,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(255,255,255,0.08)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.12)",
-            }}
+            style={localStyles.dayBackButton}
             hitSlop={15}
           >
             <Ionicons name="chevron-back" size={24} color={UI.text} />
@@ -372,17 +335,12 @@ export default function WarehouseReportsTab(props: Props) {
 
           <Text
             numberOfLines={1}
-            style={{
-              flex: 1,
-              fontSize: 16,
-              fontWeight: "600",
-              color: UI.text,
-            }}
+            style={localStyles.activeDayTitle}
           >
             {activeDay.day}
           </Text>
 
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={localStyles.dayActions}>
             <Pressable
               testID="warehouse-day-register-pdf"
               accessibilityLabel="warehouse-day-register-pdf"
@@ -392,17 +350,10 @@ export default function WarehouseReportsTab(props: Props) {
                 void onPdfDayRegister?.(activeDay.day);
               }}
               disabled={dayRegisterBusy}
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 12,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(255,255,255,0.08)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.12)",
-                opacity: dayRegisterBusy ? 0.55 : 1,
-              }}
+              style={[
+                localStyles.dayActionButton,
+                dayRegisterBusy && localStyles.disabledAction,
+              ]}
               hitSlop={10}
               accessibilityState={{ disabled: dayRegisterBusy, busy: dayRegisterBusy }}
             >
@@ -422,17 +373,10 @@ export default function WarehouseReportsTab(props: Props) {
                 void onPdfDayMaterials?.(activeDay.day);
               }}
               disabled={dayMaterialsBusy}
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 12,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(255,255,255,0.08)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.12)",
-                opacity: dayMaterialsBusy ? 0.55 : 1,
-              }}
+              style={[
+                localStyles.dayActionButton,
+                dayMaterialsBusy && localStyles.disabledAction,
+              ]}
               hitSlop={10}
               accessibilityState={{ disabled: dayMaterialsBusy, busy: dayMaterialsBusy }}
             >
@@ -452,7 +396,7 @@ export default function WarehouseReportsTab(props: Props) {
             const docId = isIncoming ? (item.incoming_id || item.id) : item.issue_id;
             return `${activeDay.day}_${docId || index}_${index}`;
           }}
-          style={{ flex: 1 }}
+          style={localStyles.flex}
           estimatedItemSize={92}
           contentContainerStyle={{
             paddingTop: 20,
@@ -473,7 +417,7 @@ export default function WarehouseReportsTab(props: Props) {
         data={dayGroups}
         renderItem={renderDayGroupItem}
         keyExtractor={(item) => item.day}
-        style={{ flex: 1 }}
+        style={localStyles.flex}
         estimatedItemSize={88}
         contentContainerStyle={{
           paddingTop: headerTopPad + 4,
@@ -482,8 +426,127 @@ export default function WarehouseReportsTab(props: Props) {
         showsVerticalScrollIndicator
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={reportsListHeader}
-        ListFooterComponent={<View style={{ height: 8 }} />}
+        ListFooterComponent={<View style={localStyles.footerSpacer} />}
       />
     </RoleScreenLayout>
   );
 }
+
+const localStyles = StyleSheet.create({
+  dayGroupPressable: {
+    marginBottom: 12,
+    marginHorizontal: 16,
+  },
+  dayCountRow: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+  },
+  reportsHeaderRow: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  headerCloseButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  reportsHeaderTitle: {
+    color: UI.text,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  choiceContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  choiceTitle: {
+    color: UI.text,
+    fontSize: 22,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 28,
+  },
+  modeButtons: {
+    gap: 12,
+  },
+  modeButton: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    borderRadius: 16,
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  modeButtonPressed: {
+    opacity: 0.9,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  modeButtonText: {
+    color: UI.text,
+    fontSize: 17,
+    fontWeight: "600",
+  },
+  activeRoot: {
+    flex: 1,
+    backgroundColor: UI.bg,
+    minHeight: 0,
+  },
+  activeHeader: {
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.06)",
+    backgroundColor: UI.bg,
+  },
+  dayBackButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  activeDayTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "600",
+    color: UI.text,
+  },
+  dayActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  dayActionButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  disabledAction: {
+    opacity: 0.55,
+  },
+  flex: {
+    flex: 1,
+  },
+  footerSpacer: {
+    height: 8,
+  },
+});

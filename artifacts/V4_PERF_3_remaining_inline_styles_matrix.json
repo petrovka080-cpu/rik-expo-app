@@ -1,0 +1,80 @@
+{
+  "wave": "V4-PERF-3",
+  "task": "REMAINING_HOTPATH_INLINE_STYLES",
+  "headBefore": "19fcf629bb88eb54bf70dee06bb58776557679cd",
+  "originMainBefore": "19fcf629bb88eb54bf70dee06bb58776557679cd",
+  "selectedFiles": [
+    {
+      "path": "src/components/foreman/WorkTypePicker.tsx",
+      "whyHotpath": "Foreman modal picker with search input and repeated family/work-type rows.",
+      "inlineStyleCountBefore": 24,
+      "inlineStyleCountAfter": 0,
+      "dynamicStylesLeft": [
+        "safe-area sheet padding",
+        "web maxWidth/alignSelf",
+        "platform TextInput padding",
+        "pressed row state",
+        "ScrollView contentContainerStyle"
+      ]
+    },
+    {
+      "path": "src/screens/warehouse/components/ReqIssueModal.tsx",
+      "whyHotpath": "Warehouse issue modal with FlashList rows, cart footer, and frequent issue quantity updates.",
+      "inlineStyleCountBefore": 24,
+      "inlineStyleCountAfter": 0,
+      "dynamicStylesLeft": [
+        "submit disabled opacity",
+        "accent borderLeftColor",
+        "existing dynamic open button style"
+      ]
+    },
+    {
+      "path": "src/screens/warehouse/components/WarehouseReportsTab.tsx",
+      "whyHotpath": "Warehouse reports tab with repeated report-day rows and PDF action controls.",
+      "inlineStyleCountBefore": 20,
+      "inlineStyleCountAfter": 0,
+      "dynamicStylesLeft": [
+        "headerTopPad",
+        "insets-based list padding",
+        "pressed mode button state",
+        "busy action opacity"
+      ]
+    }
+  ],
+  "counts": {
+    "selectedInlineStyleCountBefore": 68,
+    "selectedInlineStyleCountAfter": 0,
+    "productionTsxInlineStyleCountBefore": 963,
+    "productionTsxInlineStyleCountAfter": 895
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "validationChanged": false,
+    "callbacksChanged": false,
+    "uiRedesign": false,
+    "sqlRpcChanged": false,
+    "runtimeChanged": false,
+    "maestroYamlChanged": false,
+    "packageJsonChanged": false,
+    "otaPublished": false
+  },
+  "gates": {
+    "tsc": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "maestroCritical": "PASS 14/14",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPreCommit": "BLOCK_DIRTY_WORKTREE_ONLY_AFTER_INTERNAL_GATES_PASS"
+  },
+  "androidProof": {
+    "assembleRelease": "PASS",
+    "installReleaseApk": "PASS",
+    "monkeyLaunch": "PASS",
+    "pidof": "PASS",
+    "mainActivityFocused": "PASS",
+    "fatalExceptionOrAndroidRuntime": "NO_MATCHES"
+  },
+  "otaDisposition": "precommit-block-dirty-worktree",
+  "otaPublished": false
+}

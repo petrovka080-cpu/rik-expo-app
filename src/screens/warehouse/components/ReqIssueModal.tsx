@@ -1,6 +1,6 @@
 // src/screens/warehouse/components/ReqIssueModal.tsx
 import React, { useCallback, useMemo } from "react";
-import { View, Text, Pressable, Platform } from "react-native";
+import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
 import RNModal from "../../../ui/React19SafeModal";
 import { Ionicons } from "@expo/vector-icons";
 import { uomLabelRu } from "../warehouse.uom";
@@ -223,21 +223,21 @@ export default function ReqIssueModal(props: Props) {
 
   // ✅ Memoized cart footer — not rebuilt on every render
   const cartFooter = useMemo(() => (
-    <View style={{ marginTop: 12, paddingBottom: 12 }}>
-      <Text style={{ color: UI.sub, fontWeight: "900" }}>
+    <View style={localStyles.cartFooter}>
+      <Text style={localStyles.cartSummaryText}>
         В корзине: {Object.keys(reqPick || {}).length}
       </Text>
 
       {Object.values(reqPick || {}).slice(0, 8).map((ln) => (
         <View
           key={ln.request_item_id}
-          style={{ marginTop: 8, flexDirection: "row", gap: 10, alignItems: "center" }}
+          style={localStyles.cartRow}
         >
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
+          <View style={localStyles.flexContent}>
+            <Text style={localStyles.cartItemTitle} numberOfLines={1}>
               {String(ln.name_human || "Позиция")}
             </Text>
-            <Text style={{ color: UI.sub, fontWeight: "800" }} numberOfLines={1}>
+            <Text style={localStyles.cartItemMeta} numberOfLines={1}>
               {`${uomLabelRu(ln.uom)} · ${String(ln.qty ?? "0")}`}
             </Text>
           </View>
@@ -251,7 +251,7 @@ export default function ReqIssueModal(props: Props) {
         </View>
       ))}
 
-      <View style={{ marginTop: 12, flexDirection: "row", justifyContent: "flex-end" }}>
+      <View style={localStyles.cartActions}>
         <Pressable
           testID="warehouse-req-submit"
           accessibilityLabel="warehouse-req-submit"
@@ -285,36 +285,17 @@ export default function ReqIssueModal(props: Props) {
       hideModalContentWhileAnimating
       avoidKeyboard={false}
       propagateSwipe={Platform.OS !== "web"}
-      style={{ margin: 0, justifyContent: "flex-end" }}
+      style={localStyles.modal}
     >
       <View
-        style={{
-          height: "90%",
-          backgroundColor: UI.cardBg,
-          borderTopLeftRadius: 22,
-          borderTopRightRadius: 22,
-          paddingTop: 10,
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.10)",
-          flex: 1,
-          minHeight: 0,
-        }}
+        style={localStyles.sheet}
       >
         <View
-          style={{
-            alignSelf: "center",
-            width: 44,
-            height: 5,
-            borderRadius: 999,
-            backgroundColor: "rgba(255,255,255,0.18)",
-            marginBottom: 10,
-          }}
+          style={localStyles.handle}
         />
 
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          <Text style={{ flex: 1, color: UI.text, fontWeight: "900", fontSize: 18 }} numberOfLines={1}>
+        <View style={localStyles.headerRow}>
+          <Text style={localStyles.title} numberOfLines={1}>
             {title}
           </Text>
           <CloseSquare onPress={onClose} accessibilityLabel="Свернуть" size={46} iconSize={22} />
@@ -322,50 +303,40 @@ export default function ReqIssueModal(props: Props) {
 
         {hasHead ? (
           <View
-            style={{
-              marginTop: 8,
-              marginBottom: 12,
-              padding: 12,
-              borderRadius: 14,
-              backgroundColor: "#0F172A",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.10)",
-              borderLeftWidth: 4,
-              borderLeftColor: headAccentColor,
-            }}
+            style={[localStyles.headCard, { borderLeftColor: headAccentColor }]}
           >
             {!!headObj ? (
-              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 4 }}>
+              <Text style={localStyles.headText}>
                 {`Объект: ${headObj}`}
               </Text>
             ) : null}
             {!!headLevel ? (
-              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 4 }}>
+              <Text style={localStyles.headText}>
                 {`Этаж/уровень: ${headLevel}`}
               </Text>
             ) : null}
             {!!headSystem ? (
-              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 4 }}>
+              <Text style={localStyles.headText}>
                 {`Система: ${headSystem}`}
               </Text>
             ) : null}
             {!!headZone ? (
-              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 0 }}>
+              <Text style={localStyles.headTextLast}>
                 {`Зона: ${headZone}`}
               </Text>
             ) : null}
             {!!headContractor ? (
-              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 4 }}>
+              <Text style={localStyles.headText}>
                 {`Подрядчик: ${headContractor}`}
               </Text>
             ) : null}
             {!!headPhone ? (
-              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 4 }}>
+              <Text style={localStyles.headText}>
                 {`Телефон: ${headPhone}`}
               </Text>
             ) : null}
             {!!headVolume ? (
-              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 0 }}>
+              <Text style={localStyles.headTextLast}>
                 {`Объём: ${headVolume}`}
               </Text>
             ) : null}
@@ -373,7 +344,7 @@ export default function ReqIssueModal(props: Props) {
         ) : null}
 
         {reqItemsLoading ? (
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>Загрузка позиций…</Text>
+          <Text style={localStyles.loadingText}>Загрузка позиций…</Text>
         ) : (
           <FlashList
             data={rows}
@@ -392,7 +363,7 @@ export default function ReqIssueModal(props: Props) {
               />
             )}
             ListEmptyComponent={
-              <Text style={{ color: UI.sub, fontWeight: "800", paddingTop: 12 }}>
+              <Text style={localStyles.emptyText}>
                 Нет строк для выдачи (лимиты закрыты).
               </Text>
             }
@@ -402,19 +373,126 @@ export default function ReqIssueModal(props: Props) {
 
         {issueMsg.kind ? (
           <View
-            style={{
-              marginTop: 12,
-              padding: 12,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.10)",
-              backgroundColor: "rgba(255,255,255,0.04)",
-            }}
+            style={localStyles.messageBox}
           >
-            <Text style={{ color: UI.text, fontWeight: "900" }}>{issueMsg.text}</Text>
+            <Text style={localStyles.messageText}>{issueMsg.text}</Text>
           </View>
         ) : null}
       </View>
     </RNModal>
   );
 }
+
+const localStyles = StyleSheet.create({
+  cartFooter: {
+    marginTop: 12,
+    paddingBottom: 12,
+  },
+  cartSummaryText: {
+    color: UI.sub,
+    fontWeight: "900",
+  },
+  cartRow: {
+    marginTop: 8,
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+  },
+  flexContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+  cartItemTitle: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+  cartItemMeta: {
+    color: UI.sub,
+    fontWeight: "800",
+  },
+  cartActions: {
+    marginTop: 12,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  modal: {
+    margin: 0,
+    justifyContent: "flex-end",
+  },
+  sheet: {
+    height: "90%",
+    backgroundColor: UI.cardBg,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    flex: 1,
+    minHeight: 0,
+  },
+  handle: {
+    alignSelf: "center",
+    width: 44,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    marginBottom: 10,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 10,
+  },
+  title: {
+    flex: 1,
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 18,
+  },
+  headCard: {
+    marginTop: 8,
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: "#0F172A",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    borderLeftWidth: 4,
+  },
+  headText: {
+    color: UI.text,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  headTextLast: {
+    color: UI.text,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 0,
+  },
+  loadingText: {
+    color: UI.sub,
+    fontWeight: "800",
+  },
+  emptyText: {
+    color: UI.sub,
+    fontWeight: "800",
+    paddingTop: 12,
+  },
+  messageBox: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    backgroundColor: "rgba(255,255,255,0.04)",
+  },
+  messageText: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+});
