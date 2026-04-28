@@ -135,11 +135,11 @@ describe("performance budget — bundle module count", () => {
     //   useForemanNavigationFlow.
     // V4-7C adds one permanent Foreman FIO/bootstrap-flow hook:
     //   useForemanFioBootstrapFlow.
-    // S-50K-ARCH-1 adds three contract-only BFF boundary scaffold files.
+    // S-50K-ARCH-1/S-50K-CACHE-1 add bounded contract-only scale scaffold files.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
-    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(3);
+    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(4);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
