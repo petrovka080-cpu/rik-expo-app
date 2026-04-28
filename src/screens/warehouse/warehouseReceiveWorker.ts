@@ -10,7 +10,11 @@ import {
   type PlatformTerminalTruth,
 } from "../../lib/offline/platformTerminalRecovery";
 import {
+  classifyReplayFailure,
+  recordReplayFailure,
+  recordReplaySuccess,
   requestOfflineReplay,
+  shouldAllowReplay,
   type OfflineReplayPolicy,
 } from "../../lib/offline/offlineReplayCoordinator";
 import {
@@ -212,6 +216,21 @@ const runFlush = async (
   deps: WarehouseReceiveWorkerDeps,
   triggerSource: WarehouseReceiveWorkerTriggerSource,
 ): Promise<WarehouseReceiveWorkerResult> => {
+  const circuitDecision = shouldAllowReplay();
+  if (!circuitDecision.allow) {
+    return {
+      processedCount: 0,
+      remainingCount: await getWarehouseReceivePendingCount(),
+      failed: false,
+      errorMessage: null,
+      lastIncomingId: null,
+      lastOkCount: 0,
+      lastFailCount: 0,
+      lastLeftAfter: null,
+      triggerSource,
+    };
+  }
+
   const inflightBeforeReset = (await loadWarehouseReceiveQueue()).filter((entry) => entry.status === "inflight").length;
   await resetInflightWarehouseReceiveQueue();
   const restoredInflightCount = inflightBeforeReset;
@@ -267,6 +286,10 @@ const runFlush = async (
           errorMessage: "offline",
           failureClass: "offline_wait",
         },
+      });
+      recordReplayFailure({
+        worker: "warehouseReceive",
+        kind: "network",
       });
       recordPlatformOfflineTelemetry({
         contourKey: "warehouse_receive",
@@ -328,6 +351,15 @@ const runFlush = async (
           incomingId: entry.incomingId,
           failure,
         });
+        if (failure.queueStatus === "retry_wait") {
+          const replayFailure = classifyReplayFailure(error);
+          if (replayFailure) {
+            recordReplayFailure({
+              worker: "warehouseReceive",
+              ...replayFailure,
+            });
+          }
+        }
         recordPlatformOfflineTelemetry({
           contourKey: "warehouse_receive",
           entityKey: entry.incomingId,
@@ -473,6 +505,7 @@ const runFlush = async (
       if (error) throw new Error(trim(error.message) || "receive_apply_failed");
 
       await removeWarehouseReceiveQueueEntry(entry.id);
+      recordReplaySuccess("warehouseReceive");
       processedCount += 1;
       lastIncomingId = entry.incomingId;
       lastOkCount = Number(data?.ok ?? 0);
@@ -543,6 +576,15 @@ const runFlush = async (
         incomingId: entry.incomingId,
         failure,
       });
+      if (failure.queueStatus === "retry_wait") {
+        const replayFailure = classifyReplayFailure(error);
+        if (replayFailure) {
+          recordReplayFailure({
+            worker: "warehouseReceive",
+            ...replayFailure,
+          });
+        }
+      }
       recordPlatformOfflineTelemetry({
         contourKey: "warehouse_receive",
         entityKey: entry.incomingId,

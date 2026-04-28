@@ -1,8 +1,13 @@
 import {
+  OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG,
+  classifyReplayFailure,
   getOfflineReplayOwnerSnapshot,
+  recordReplayFailure,
+  recordReplaySuccess,
   requestOfflineReplay,
   resetOfflineReplayCoordinator,
   resetOfflineReplayCoordinatorForTests,
+  shouldAllowReplay,
   type OfflineReplayPolicy,
 } from "./offlineReplayCoordinator";
 
@@ -125,5 +130,134 @@ describe("offlineReplayCoordinator", () => {
       pendingTriggerSource: null,
       runCount: 0,
     });
+  });
+
+  it("allows replay initially", () => {
+    expect(shouldAllowReplay(1_000)).toEqual({
+      allow: true,
+      reason: "ok",
+      retryAfterMs: 0,
+    });
+  });
+
+  it("opens a shared cooldown after transient failures inside the window", () => {
+    const now = 10_000;
+
+    for (
+      let index = 0;
+      index < OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG.failureThreshold;
+      index += 1
+    ) {
+      recordReplayFailure({
+        worker: index % 2 === 0 ? "mutation" : "warehouseReceive",
+        kind: "server_error",
+        status: 503,
+        now: now + index,
+      });
+    }
+
+    const decision = shouldAllowReplay(now + 10);
+    expect(decision.allow).toBe(false);
+    expect(decision.reason).toBe("cooldown");
+    expect(decision.retryAfterMs).toBeGreaterThan(0);
+    expect(decision.retryAfterMs).toBeLessThanOrEqual(
+      OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG.cooldownInitialMs,
+    );
+  });
+
+  it("recovers after the cooldown expires", () => {
+    const now = 20_000;
+
+    for (
+      let index = 0;
+      index < OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG.failureThreshold;
+      index += 1
+    ) {
+      recordReplayFailure({
+        worker: "contractorProgress",
+        kind: "network",
+        now: now + index,
+      });
+    }
+
+    expect(shouldAllowReplay(now + 100).allow).toBe(false);
+    expect(
+      shouldAllowReplay(
+        now + OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG.cooldownInitialMs + 100,
+      ),
+    ).toEqual({
+      allow: true,
+      reason: "ok",
+      retryAfterMs: 0,
+    });
+  });
+
+  it("success reduces pressure for the successful worker", () => {
+    const now = 30_000;
+    for (let index = 0; index < 4; index += 1) {
+      recordReplayFailure({
+        worker: "mutation",
+        kind: "rate_limit",
+        status: 429,
+        now: now + index,
+      });
+    }
+
+    recordReplaySuccess("mutation");
+    recordReplayFailure({
+      worker: "warehouseReceive",
+      kind: "server_error",
+      status: 503,
+      now: now + 10,
+    });
+
+    expect(shouldAllowReplay(now + 20).allow).toBe(true);
+  });
+
+  it("does not carry old failures outside the rolling window", () => {
+    const now = 40_000;
+    for (let index = 0; index < 4; index += 1) {
+      recordReplayFailure({
+        worker: "mutation",
+        kind: "network",
+        now: now + index,
+      });
+    }
+    recordReplayFailure({
+      worker: "mutation",
+      kind: "network",
+      now:
+        now +
+        OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG.failureWindowMs +
+        1_000,
+    });
+
+    expect(
+      shouldAllowReplay(
+        now +
+          OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG.failureWindowMs +
+          1_001,
+      ).allow,
+    ).toBe(true);
+  });
+
+  it("classifies transient replay failures but ignores permanent/domain errors", () => {
+    expect(classifyReplayFailure({ status: 429 })).toEqual({
+      kind: "rate_limit",
+      status: 429,
+    });
+    expect(classifyReplayFailure({ status: 503 })).toEqual({
+      kind: "server_error",
+      status: 503,
+    });
+    expect(classifyReplayFailure(new Error("Network request failed"))).toEqual(
+      expect.objectContaining({
+        kind: "network",
+      }),
+    );
+    expect(classifyReplayFailure(new Error("validation failed"))).toBeNull();
+    expect(classifyReplayFailure({ status: 403 })).toBeNull();
+    expect(classifyReplayFailure({ status: 409 })).toBeNull();
+    expect(classifyReplayFailure({ status: 422 })).toBeNull();
   });
 });

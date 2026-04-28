@@ -56,7 +56,11 @@ import {
 } from "./mutation.retryPolicy";
 import { recordOfflineMutationEvent } from "./mutation.telemetry";
 import {
+  classifyReplayFailure,
+  recordReplayFailure,
+  recordReplaySuccess,
   requestOfflineReplay,
+  shouldAllowReplay,
   type OfflineReplayPolicy,
 } from "./offlineReplayCoordinator";
 import { classifyForemanConflict } from "./offlineConflictClassifier";
@@ -458,6 +462,35 @@ const runFlush = async (
   deps: ForemanMutationWorkerDeps,
   triggerSourceOverride?: ForemanDraftSyncTriggerSource | null,
 ): Promise<ForemanMutationWorkerResult> => {
+  const circuitDecision = shouldAllowReplay();
+  if (!circuitDecision.allow) {
+    const remainingCount = await getPendingCountForSnapshot(deps.getSnapshot());
+    recordPlatformObservability({
+      screen: "foreman",
+      surface: "offline_replay_circuit",
+      category: "fetch",
+      event: "offline_replay_circuit_skip",
+      result: "success",
+      sourceKind: "offline:foreman_draft",
+      extra: {
+        worker: "mutation",
+        remainingCount,
+        retryAfterMs: circuitDecision.retryAfterMs,
+        triggerSource: triggerSourceOverride ?? "unknown",
+      },
+    });
+    return {
+      processedCount: 0,
+      remainingCount,
+      requestId: null,
+      submitted: null,
+      failed: false,
+      errorMessage: null,
+      batchLimitReached: false,
+      drainDurationMs: 0,
+    };
+  }
+
   await resetInflightForemanMutations();
 
   let processedCount = 0;
@@ -710,6 +743,13 @@ const runFlush = async (
         errorKind: errorInfo.errorKind,
       });
       if (decision.lifecycleStatus === "retry_scheduled") {
+        const replayFailure = classifyReplayFailure(error);
+        if (replayFailure) {
+          recordReplayFailure({
+            worker: "mutation",
+            ...replayFailure,
+          });
+        }
         await markForemanMutationRetryScheduled({
           mutationId: entry.id,
           errorMessage: message,
@@ -916,6 +956,7 @@ const runFlush = async (
         },
       });
       await removeForemanMutationById(entry.id);
+      recordReplaySuccess("mutation");
 
       const requestKeyForCleanup =
         String(

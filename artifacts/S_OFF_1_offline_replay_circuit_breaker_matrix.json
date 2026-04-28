@@ -1,0 +1,68 @@
+{
+  "wave": "S-OFF-1",
+  "goal": "global offline replay circuit breaker",
+  "status": "CODE_GREEN_WITH_MAESTRO_HARNESS_BLOCKED",
+  "workers": {
+    "mutationWorker": true,
+    "warehouseReceiveWorker": true,
+    "contractorProgressWorker": true
+  },
+  "circuit": {
+    "helper": "src/lib/offline/offlineReplayCoordinator.ts",
+    "failureWindowMs": 60000,
+    "failureThreshold": 5,
+    "cooldownInitialMs": 30000,
+    "cooldownMaxMs": 300000,
+    "inMemoryOnly": true
+  },
+  "transientFailures": {
+    "http429": true,
+    "http502": true,
+    "http503": true,
+    "http5xx": true,
+    "network": true,
+    "timeout": true
+  },
+  "permanentFailuresIgnored": {
+    "validation": true,
+    "permissionRls": true,
+    "conflict": true,
+    "duplicateOrIdempotency": true,
+    "domainTerminal": true
+  },
+  "forbiddenChanges": {
+    "businessLogic": false,
+    "payloadShape": false,
+    "clientMutationId": false,
+    "quarantineCriteria": false,
+    "retrySemantics": false,
+    "sqlRpc": false,
+    "rls": false,
+    "ui": false,
+    "maestroYaml": false,
+    "appConfig": false,
+    "package": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  },
+  "gates": {
+    "targetedTests": "PASS",
+    "tsc": "PASS",
+    "lint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "androidReleaseApkBuild": "PASS",
+    "androidInstallLaunch": "PASS",
+    "androidFatalException": "NONE",
+    "maestroCritical": "BLOCKED_HARNESS_AUTH_LAUNCH_INSTABILITY",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPreCommit": "PASS_GATES_DIRTY_WORKTREE_BLOCK_ONLY"
+  },
+  "release": {
+    "otaDisposition": "not_published_in_code_wave",
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  }
+}

@@ -43,7 +43,11 @@ import {
 import { recordOfflineMutationEvent } from "./mutation.telemetry";
 import type { OfflineMutationErrorKind } from "./mutation.types";
 import {
+  classifyReplayFailure,
+  recordReplayFailure,
+  recordReplaySuccess,
   requestOfflineReplay,
+  shouldAllowReplay,
   type OfflineReplayPolicy,
 } from "./offlineReplayCoordinator";
 import {
@@ -213,6 +217,20 @@ const runFlush = async (
   deps: ContractorProgressWorkerDeps,
   triggerSource: ContractorProgressWorkerTriggerSource,
 ): Promise<ContractorProgressWorkerResult> => {
+  const circuitDecision = shouldAllowReplay();
+  if (!circuitDecision.allow) {
+    return {
+      processedCount: 0,
+      remainingCount: await getContractorProgressPendingCount(),
+      failed: false,
+      errorMessage: null,
+      failureClass: "none",
+      lastProgressId: null,
+      lastErrorStage: null,
+      triggerSource,
+    };
+  }
+
   const inflightBeforeReset = (await loadContractorProgressQueue({ includeFinal: true })).filter(
     (entry) => entry.lifecycleStatus === "processing",
   ).length;
@@ -274,6 +292,10 @@ const runFlush = async (
         errorKind: "network_unreachable",
       });
       if (decision.lifecycleStatus === "retry_scheduled") {
+        recordReplayFailure({
+          worker: "contractorProgress",
+          kind: "network",
+        });
         await markContractorProgressQueueRetryScheduled({
           queueId: entry.id,
           errorMessage: "offline",
@@ -380,6 +402,13 @@ const runFlush = async (
           errorKind: failure.errorKind,
         });
         if (decision.lifecycleStatus === "retry_scheduled") {
+          const replayFailure = classifyReplayFailure(error);
+          if (replayFailure) {
+            recordReplayFailure({
+              worker: "contractorProgress",
+              ...replayFailure,
+            });
+          }
           await markContractorProgressQueueRetryScheduled({
             queueId: entry.id,
             errorMessage: failure.errorMessage,
@@ -552,6 +581,13 @@ const runFlush = async (
       });
 
       if (decision.lifecycleStatus === "retry_scheduled") {
+        const replayFailure = classifyReplayFailure(error);
+        if (replayFailure) {
+          recordReplayFailure({
+            worker: "contractorProgress",
+            ...replayFailure,
+          });
+        }
         await markContractorProgressQueueRetryScheduled({
           queueId: entry.id,
           errorMessage: failure.errorMessage,
@@ -693,6 +729,7 @@ const runFlush = async (
         },
       });
       await removeContractorProgressQueueEntry(entry.id);
+      recordReplaySuccess("contractorProgress");
       processedCount += 1;
       lastProgressId = entry.progressId;
 

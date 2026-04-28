@@ -3,7 +3,11 @@ import {
   getPlatformOfflineTelemetryEvents,
   resetPlatformOfflineTelemetryEvents,
 } from "../../lib/offline/platformOffline.observability";
-import { resetOfflineReplayCoordinatorForTests } from "../../lib/offline/offlineReplayCoordinator";
+import {
+  OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG,
+  recordReplayFailure,
+  resetOfflineReplayCoordinatorForTests,
+} from "../../lib/offline/offlineReplayCoordinator";
 import {
   clearWarehouseReceiveDraftStore,
   clearWarehouseReceiveDraftForIncoming,
@@ -80,6 +84,53 @@ describe("warehouse receive worker", () => {
       ordering: "created_at_fifo",
       backpressure: "coalesce_triggers_and_rerun_once",
     });
+  });
+
+  it("skips replay during global circuit cooldown without deleting or quarantining items", async () => {
+    await seedReceiveDraft("incoming-circuit");
+    const draftStatusBefore = getWarehouseReceiveDraft("incoming-circuit")?.status;
+    const now = Date.now();
+    for (
+      let index = 0;
+      index < OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG.failureThreshold;
+      index += 1
+    ) {
+      recordReplayFailure({
+        worker: "mutation",
+        kind: "server_error",
+        status: 503,
+        now: now + index,
+      });
+    }
+    const applyReceive = jest.fn(async () => ({
+      data: { ok: 1, fail: 0, left_after: 0 },
+      error: null,
+    }));
+
+    const result = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+      },
+      "network_back",
+    );
+
+    expect(result).toMatchObject({
+      processedCount: 0,
+      remainingCount: 1,
+      failed: false,
+      errorMessage: null,
+    });
+    expect(applyReceive).not.toHaveBeenCalled();
+    expect(await loadWarehouseReceiveQueue()).toEqual([
+      expect.objectContaining({
+        incomingId: "incoming-circuit",
+      }),
+    ]);
+    expect(getWarehouseReceiveDraft("incoming-circuit")?.status).toBe(
+      draftStatusBefore,
+    );
   });
 
   it("does not duplicate receive apply while a flush is already in flight", async () => {
