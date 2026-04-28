@@ -17,6 +17,7 @@ import {
   isRpcRecord,
   validateRpcResponse,
 } from "../api/queryBoundary";
+import { traceAsync } from "../observability/sentry";
 
 export type ProposalBucketInput = {
   supplier?: string | null;
@@ -467,5 +468,12 @@ export async function createProposalsBySupplier(
   buckets: ProposalBucketInput[],
   opts: CreateProposalsOptions = {},
 ): Promise<CreateProposalsResult> {
-  return await runAtomicProposalSubmitRpc(buckets, opts);
+  return await traceAsync(
+    "proposal.submit",
+    {
+      flow: "proposal_submit",
+      role: "buyer",
+    },
+    async () => await runAtomicProposalSubmitRpc(buckets, opts),
+  );
 }

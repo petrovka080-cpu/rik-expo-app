@@ -1,0 +1,109 @@
+{
+  "wave": "S-PERF-1",
+  "mode": "production-safe-performance-tracing",
+  "status": "GREEN_DISABLED_BY_DEFAULT",
+  "targetFlows": 5,
+  "instrumentedFlows": 5,
+  "tracingEnabledByDefault": false,
+  "sampleRate": "disabled_by_default; enabled only with EXPO_PUBLIC_SENTRY_PERFORMANCE_TRACING=1 and EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE>0; clamped_to_0.05",
+  "changedFiles": [
+    "src/lib/observability/sentry.ts",
+    "src/screens/director/director.proposals.repo.ts",
+    "src/lib/catalog/catalog.proposalCreation.service.ts",
+    "src/screens/warehouse/hooks/useWarehouseReceiveApply.ts",
+    "src/lib/api/accountant.ts",
+    "src/lib/documents/pdfDocumentActions.ts",
+    "tests/observability/performanceTracing.test.ts",
+    "tests/observability/performanceTracingFlows.test.ts",
+    "docs/operations/performance_tracing_runbook.md",
+    "artifacts/S_PERF_1_sentry_tracing_matrix.json",
+    "artifacts/S_PERF_1_sentry_tracing_proof.md"
+  ],
+  "flowMatrix": [
+    {
+      "flow": "request_proposal_list_load",
+      "traceName": "proposal.list.load",
+      "file": "src/screens/director/director.proposals.repo.ts",
+      "function": "fetchDirectorPendingProposalWindow",
+      "coverage": "instrumented",
+      "piiTagsAllowed": false,
+      "rawPayloadLogged": false,
+      "highCardinalityTags": false,
+      "tests": ["safe trace name", "safe role tag", "page_size tag sanitized"]
+    },
+    {
+      "flow": "proposal_submit",
+      "traceName": "proposal.submit",
+      "file": "src/lib/catalog/catalog.proposalCreation.service.ts",
+      "function": "createProposalsBySupplier",
+      "coverage": "instrumented",
+      "piiTagsAllowed": false,
+      "rawPayloadLogged": false,
+      "highCardinalityTags": false,
+      "tests": ["safe trace name", "safe flow tag", "safe role tag"]
+    },
+    {
+      "flow": "warehouse_receive_apply",
+      "traceName": "warehouse.receive.apply",
+      "file": "src/screens/warehouse/hooks/useWarehouseReceiveApply.ts",
+      "function": "applyWarehouseReceive",
+      "coverage": "instrumented",
+      "piiTagsAllowed": false,
+      "rawPayloadLogged": false,
+      "highCardinalityTags": false,
+      "tests": ["safe trace name", "safe role tag", "offline_queue_used boolean tag"]
+    },
+    {
+      "flow": "accountant_payment_apply",
+      "traceName": "accountant.payment.apply",
+      "file": "src/lib/api/accountant.ts",
+      "function": "accountantPayInvoiceAtomic",
+      "coverage": "instrumented",
+      "piiTagsAllowed": false,
+      "rawPayloadLogged": false,
+      "highCardinalityTags": false,
+      "tests": ["safe trace name", "safe flow tag", "safe role tag"]
+    },
+    {
+      "flow": "pdf_document_open",
+      "traceName": "pdf.viewer.open",
+      "file": "src/lib/documents/pdfDocumentActions.ts",
+      "function": "prepareAndPreviewPdfDocument",
+      "coverage": "instrumented",
+      "piiTagsAllowed": false,
+      "rawPayloadLogged": false,
+      "highCardinalityTags": false,
+      "tests": ["safe trace name", "safe flow tag", "safe platform tag"]
+    }
+  ],
+  "tagPolicy": {
+    "allowlistOnly": true,
+    "userIdStripped": true,
+    "companyIdStripped": true,
+    "requestIdStripped": true,
+    "proposalIdStripped": true,
+    "invoiceIdStripped": true,
+    "emailPhoneAddressStripped": true,
+    "signedUrlStripped": true,
+    "rawPayloadRejected": true
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false
+  }
+}

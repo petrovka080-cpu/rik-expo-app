@@ -48,9 +48,21 @@ type SentrySdk = {
   init: (options: Record<string, unknown>) => void;
   getGlobalScope: () => SentryGlobalScope;
   withScope: (callback: (scope: SentryScope) => void) => void;
+  startSpan?: <T>(
+    options: {
+      name: string;
+      op: string;
+      attributes?: Record<string, string | number | boolean>;
+    },
+    callback: (span: SentryPerformanceSpan) => T,
+  ) => T;
   captureException: (error: unknown) => void;
   captureMessage: (message: string, level?: string) => void;
   wrap: <Props extends object>(component: ComponentType<Props>) => ComponentType<Props>;
+};
+
+type SentryPerformanceSpan = {
+  setAttribute?: (key: string, value: string | number | boolean) => void;
 };
 
 const createNoopScope = (): SentryScope => ({
@@ -503,4 +515,201 @@ export function wrapRootComponentWithSentry<Props extends object>(
   return getSentryRuntimeStatus().initialized
     ? (getSentrySdk().wrap(Component as ComponentType<any>) as ComponentType<Props>)
     : Component;
+}
+
+export type SafeTraceTags = Record<string, string | number | boolean | null | undefined>;
+
+const ENABLED_TRACE_FLAG = "EXPO_PUBLIC_SENTRY_PERFORMANCE_TRACING";
+const TRACE_SAMPLE_RATE_FLAG = "EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE";
+const MAX_SAFE_TRACE_SAMPLE_RATE = 0.05;
+const MAX_TRACE_TAG_TEXT_LENGTH = 48;
+
+const SAFE_TRACE_NAMES = new Set([
+  "proposal.list.load",
+  "proposal.submit",
+  "warehouse.receive.apply",
+  "accountant.payment.apply",
+  "pdf.viewer.open",
+  "realtime.channel.setup",
+]);
+
+const ALLOWED_TRACE_TAG_KEYS = new Set([
+  "flow",
+  "role",
+  "result",
+  "error_class",
+  "page_size",
+  "offline_queue_used",
+  "cache_hit",
+  "pdf_guard_triggered",
+  "platform",
+  "duplicate_warning",
+  "budget_warning",
+]);
+
+const ALLOWED_TRACE_TAG_STRING_VALUES: Record<string, Set<string>> = {
+  role: new Set(["buyer", "contractor", "warehouse", "accountant", "director", "unknown"]),
+  result: new Set(["success", "error", "cancelled"]),
+  error_class: new Set(["validation", "network", "rpc", "unknown"]),
+  platform: new Set(["ios", "android", "web", "unknown"]),
+};
+
+const SENSITIVE_TRACE_TAG_KEY_PATTERN =
+  /(user|company|request|proposal|invoice|payment|phone|email|address|name|payload|params|token|secret|authorization|url|uri|file|document).*id|^(user|company|request|proposal|invoice|payment)_?id$|payload|params|token|secret|authorization|signed|url|uri|email|phone|address|file_?name/i;
+const TRACE_EMAIL_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+const TRACE_PHONE_PATTERN = /(?:\+?\d[\s().-]*){8,}/;
+const TRACE_URL_PATTERN = /^https?:\/\//i;
+const TRACE_JWT_PATTERN = /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/;
+const LOW_CARDINALITY_TRACE_TAG_PATTERN = /^[a-z0-9_.:-]+$/i;
+
+function parseTraceSampleRate(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 0;
+  return Math.min(parsed, MAX_SAFE_TRACE_SAMPLE_RATE);
+}
+
+export function getPerformanceTracingSampleRate(
+  env: Record<string, string | undefined> = process.env,
+): number {
+  return parseTraceSampleRate(env[TRACE_SAMPLE_RATE_FLAG]);
+}
+
+export function isPerformanceTracingEnabled(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return env[ENABLED_TRACE_FLAG] === "1" && getPerformanceTracingSampleRate(env) > 0;
+}
+
+function isSafeTraceName(name: string): boolean {
+  return SAFE_TRACE_NAMES.has(name);
+}
+
+function isSensitiveTraceTagKey(key: string): boolean {
+  return SENSITIVE_TRACE_TAG_KEY_PATTERN.test(key);
+}
+
+function isSensitiveTraceTagText(value: string): boolean {
+  return (
+    TRACE_EMAIL_PATTERN.test(value) ||
+    TRACE_PHONE_PATTERN.test(value) ||
+    TRACE_URL_PATTERN.test(value) ||
+    TRACE_JWT_PATTERN.test(value) ||
+    value.includes("?token=") ||
+    value.includes("access_token=") ||
+    value.length > MAX_TRACE_TAG_TEXT_LENGTH
+  );
+}
+
+function sanitizeTraceTagValue(
+  key: string,
+  value: unknown,
+): string | number | boolean | undefined {
+  if (value == null) return undefined;
+  if (typeof value === "boolean") return value;
+
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return undefined;
+    if (key === "page_size") return Math.max(1, Math.min(100, Math.trunc(value)));
+    return undefined;
+  }
+
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized || isSensitiveTraceTagText(normalized)) return undefined;
+
+  const allowedValues = ALLOWED_TRACE_TAG_STRING_VALUES[key];
+  if (allowedValues) {
+    return allowedValues.has(normalized) ? normalized : undefined;
+  }
+
+  return LOW_CARDINALITY_TRACE_TAG_PATTERN.test(normalized) ? normalized : undefined;
+}
+
+export function sanitizeTraceTags(tags: Record<string, unknown>): Record<string, string | number | boolean> {
+  const sanitized: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(tags)) {
+    if (!ALLOWED_TRACE_TAG_KEYS.has(key) || isSensitiveTraceTagKey(key)) continue;
+    const safeValue = sanitizeTraceTagValue(key, value);
+    if (safeValue !== undefined) {
+      sanitized[key] = safeValue;
+    }
+  }
+  return sanitized;
+}
+
+function classifyTraceError(error: unknown): "validation" | "network" | "rpc" | "unknown" {
+  if (error instanceof Error) {
+    const text = `${error.name} ${error.message}`.toLowerCase();
+    if (text.includes("validation")) return "validation";
+    if (text.includes("network") || text.includes("fetch") || text.includes("timeout")) return "network";
+    if (text.includes("rpc") || text.includes("supabase") || text.includes("postgres")) return "rpc";
+    return "unknown";
+  }
+  const record = error && typeof error === "object" ? (error as Record<string, unknown>) : {};
+  const text = String(record.name ?? record.code ?? record.message ?? error ?? "").toLowerCase();
+  if (text.includes("validation")) return "validation";
+  if (text.includes("network") || text.includes("fetch") || text.includes("timeout")) return "network";
+  if (text.includes("rpc") || text.includes("supabase") || text.includes("postgres")) return "rpc";
+  return "unknown";
+}
+
+function setTraceSpanAttribute(span: SentryPerformanceSpan, key: string, value: string | number | boolean): void {
+  try {
+    span.setAttribute?.(key, value);
+  } catch {
+    // Tracing must never change app behavior.
+  }
+}
+
+export async function traceAsync<T>(
+  name: string,
+  tags: SafeTraceTags,
+  fn: () => Promise<T>,
+): Promise<T> {
+  if (!isSafeTraceName(name) || !isPerformanceTracingEnabled()) {
+    return await fn();
+  }
+
+  const sentry = getSentrySdk();
+  if (typeof sentry.startSpan !== "function") {
+    return await fn();
+  }
+
+  const attributes = sanitizeTraceTags(tags);
+  let callbackStarted = false;
+  let callbackCompleted = false;
+  let callbackResult: T | undefined;
+
+  try {
+    const traced = sentry.startSpan(
+      {
+        name,
+        op: "app.flow",
+        attributes,
+      },
+      async (span) => {
+        callbackStarted = true;
+        try {
+          const result = await fn();
+          setTraceSpanAttribute(span, "result", "success");
+          callbackCompleted = true;
+          callbackResult = result;
+          return result;
+        } catch (error) {
+          setTraceSpanAttribute(span, "result", "error");
+          setTraceSpanAttribute(span, "error_class", classifyTraceError(error));
+          throw error;
+        }
+      },
+    );
+    return await Promise.resolve(traced);
+  } catch (error) {
+    if (callbackStarted && !callbackCompleted) {
+      throw error;
+    }
+    if (callbackCompleted) {
+      return callbackResult as T;
+    }
+    return await fn();
+  }
 }

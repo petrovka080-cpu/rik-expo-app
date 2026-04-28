@@ -32,6 +32,7 @@ import { extractUriScheme } from "./pdfDocumentActionPreconditions";
 import {
   getPdfFlowErrorMessage as getPdfFlowErrorMessageInternal,
 } from "./pdfDocumentActionError";
+import { traceAsync } from "../observability/sentry";
 import type {
   PersistCriticalPdfBreadcrumbInput,
   PreparePdfDocumentArgs,
@@ -209,7 +210,14 @@ export async function prepareAndPreviewPdfDocument(
     assertCurrentPdfActionRun(flowKey, runId, stage);
   };
 
-  const runFlow = async () => {
+  const runFlow = async () => traceAsync(
+    "pdf.viewer.open",
+    {
+      flow: "pdf_viewer_open",
+      platform: "unknown",
+      pdf_guard_triggered: Boolean(args.busy?.run || args.busy?.show),
+    },
+    async () => {
     recordPdfOpenStage({
       context: baseContext,
       stage: "tap_start",
@@ -413,7 +421,8 @@ export async function prepareAndPreviewPdfDocument(
         });
       }
     }
-  };
+    },
+  );
 
   const promise = runFlow().finally(() => {
     if (flowKey) {

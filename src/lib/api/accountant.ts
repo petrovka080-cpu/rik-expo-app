@@ -1,6 +1,7 @@
 import { client, rpcCompat } from "./_core";
 import { ensureProposalExists, ensureProposalItemIdsBelongToProposal } from "./integrity.guards";
 import { trackRpcLatency } from "../observability/rpcLatencyMetrics";
+import { traceAsync } from "../observability/sentry";
 import {
   isRpcBoolean,
   isAccountantFinancialStateResponse,
@@ -613,6 +614,13 @@ export async function accountantLoadProposalFinancialState(
 export async function accountantPayInvoiceAtomic(
   input: AccountantPayInvoiceAtomicInput,
 ): Promise<AccountantPayInvoiceAtomicSuccess> {
+  return await traceAsync(
+    "accountant.payment.apply",
+    {
+      flow: "accountant_payment_apply",
+      role: "accountant",
+    },
+    async () => {
   const pid = String(input.proposalId);
   const proposal = await ensureProposalExists(client, pid, {
     screen: "accountant",
@@ -710,6 +718,8 @@ export async function accountantPayInvoiceAtomic(
   }
 
   return result;
+    },
+  );
 }
 
 export async function accountantReturnToBuyer(

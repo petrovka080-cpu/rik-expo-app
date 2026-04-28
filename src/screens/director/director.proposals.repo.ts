@@ -1,4 +1,5 @@
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
+import { traceAsync } from "../../lib/observability/sentry";
 import type {
   DirectorPendingProposalsScopeV1Args,
   DirectorSupabaseClient,
@@ -158,6 +159,14 @@ const adaptMeta = (meta: Record<string, unknown>, offsetHeads: number, limitHead
 export async function fetchDirectorPendingProposalWindow(
   args: FetchDirectorProposalWindowArgs,
 ): Promise<DirectorProposalWindowResult> {
+  return await traceAsync(
+    "proposal.list.load",
+    {
+      flow: "proposal_list_load",
+      role: "director",
+      page_size: args.limitHeads,
+    },
+    async () => {
   const offsetHeads = Math.max(0, args.offsetHeads);
   const limitHeads = Math.max(1, args.limitHeads);
   const observation = beginPlatformObservability({
@@ -206,4 +215,6 @@ export async function fetchDirectorPendingProposalWindow(
     observation.error(error, { errorStage: "load_proposals_window_rpc" });
     throw error;
   }
+    },
+  );
 }

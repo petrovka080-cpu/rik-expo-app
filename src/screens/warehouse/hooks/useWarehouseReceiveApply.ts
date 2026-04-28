@@ -8,6 +8,7 @@ import {
   RpcValidationError,
   validateRpcResponse,
 } from "../../../lib/api/queryBoundary";
+import { traceAsync } from "../../../lib/observability/sentry";
 import type { RpcReceiveApplyResult } from "../warehouse.types";
 
 const isWarehouseReceiveApplyResult = (value: unknown): value is RpcReceiveApplyResult =>
@@ -25,38 +26,48 @@ export async function applyWarehouseReceive(params: {
   warehousemanFio: string;
   clientMutationId: string;
 }) {
-  const { supabase, incomingId, items, warehousemanFio, clientMutationId } = params;
+  return await traceAsync(
+    "warehouse.receive.apply",
+    {
+      flow: "warehouse_receive_apply",
+      role: "warehouse",
+      offline_queue_used: false,
+    },
+    async () => {
+      const { supabase, incomingId, items, warehousemanFio, clientMutationId } = params;
 
-  const { data, error } = await supabase.rpc("wh_receive_apply_ui", {
-    p_incoming_id: incomingId,
-    p_items: items,
-    p_client_mutation_id: clientMutationId,
-    p_warehouseman_fio: warehousemanFio.trim(),
-    p_note: null,
-  });
+      const { data, error } = await supabase.rpc("wh_receive_apply_ui", {
+        p_incoming_id: incomingId,
+        p_items: items,
+        p_client_mutation_id: clientMutationId,
+        p_warehouseman_fio: warehousemanFio.trim(),
+        p_note: null,
+      });
 
-  if (error) return { data: null, error };
+      if (error) return { data: null, error };
 
-  try {
-    return {
-      data: validateRpcResponse(data, isWarehouseReceiveApplyResult, {
-        rpcName: "wh_receive_apply_ui",
-        caller: "src/screens/warehouse/hooks/useWarehouseReceiveApply.applyWarehouseReceive",
-        domain: "warehouse",
-      }),
-      error: null,
-    };
-  } catch (validationError) {
-    return {
-      data: null,
-      error:
-        validationError instanceof RpcValidationError
-          ? validationError
-          : new RpcValidationError({
-              rpcName: "wh_receive_apply_ui",
-              caller: "src/screens/warehouse/hooks/useWarehouseReceiveApply.applyWarehouseReceive",
-              domain: "warehouse",
-            }),
-    };
-  }
+      try {
+        return {
+          data: validateRpcResponse(data, isWarehouseReceiveApplyResult, {
+            rpcName: "wh_receive_apply_ui",
+            caller: "src/screens/warehouse/hooks/useWarehouseReceiveApply.applyWarehouseReceive",
+            domain: "warehouse",
+          }),
+          error: null,
+        };
+      } catch (validationError) {
+        return {
+          data: null,
+          error:
+            validationError instanceof RpcValidationError
+              ? validationError
+              : new RpcValidationError({
+                  rpcName: "wh_receive_apply_ui",
+                  caller: "src/screens/warehouse/hooks/useWarehouseReceiveApply.applyWarehouseReceive",
+                  domain: "warehouse",
+                }),
+        };
+      }
+    },
+  );
 }
