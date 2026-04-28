@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { claimRealtimeChannel } from "../../../lib/realtime/realtime.channels";
 import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
 import {
   isWarehouseScreenActive,
@@ -53,6 +54,21 @@ export function useWarehouseExpenseRealtime(params: {
       return;
     }
 
+    const budget = claimRealtimeChannel({
+      key: "warehouse-expense-rt",
+      source: "warehouse.expense.realtime",
+      screen: "warehouse",
+      surface: "expense_realtime",
+      route: "/office/warehouse",
+      maxChannelsForSource: 1,
+    });
+    if (budget.status === "duplicate") {
+      return () => {
+        pendingRefreshRef.current = false;
+        budget.release();
+      };
+    }
+
     const ch = supabase
       .channel("warehouse-expense-rt")
       .on(
@@ -89,6 +105,7 @@ export function useWarehouseExpenseRealtime(params: {
 
     return () => {
       pendingRefreshRef.current = false;
+      budget.release();
       try {
         ch.unsubscribe();
       } catch (error) {

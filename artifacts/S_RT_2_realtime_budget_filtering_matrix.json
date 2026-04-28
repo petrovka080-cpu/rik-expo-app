@@ -1,0 +1,141 @@
+{
+  "wave": "S-RT-2",
+  "mode": "production-safe-realtime-budget-filtering-monitoring",
+  "headBefore": "14c7089119933f057ef819b243c9d926638a7a82",
+  "helpers": [
+    "src/lib/realtime/realtime.channels.ts",
+    "src/lib/realtime/realtime.client.ts"
+  ],
+  "channels": [
+    {
+      "file": "src/lib/realtime/realtime.client.ts",
+      "source": "central subscribeChannel",
+      "tables": "declared bindings",
+      "before": {
+        "channelCalls": 1,
+        "subscribeCalls": 1,
+        "postgresChangesMentions": 2,
+        "filteredListeners": 1,
+        "budgetSignals": 0
+      },
+      "after": {
+        "channelCalls": 1,
+        "subscribeCalls": 1,
+        "postgresChangesMentions": 2,
+        "filteredListeners": 1,
+        "budgetSignals": 5,
+        "debugState": true,
+        "duplicateDetection": true,
+        "budgetWarning": true
+      },
+      "businessLogicChanged": false
+    },
+    {
+      "file": "src/screens/buyer/buyer.subscriptions.ts",
+      "source": "buyer legacy subscriptions",
+      "tables": "notifications, proposals",
+      "before": {
+        "channelCalls": 2,
+        "subscribeCalls": 2,
+        "postgresChangesMentions": 2,
+        "filteredListeners": 1,
+        "budgeted": false
+      },
+      "after": {
+        "channelCalls": 2,
+        "subscribeCalls": 2,
+        "postgresChangesMentions": 2,
+        "filteredListeners": 1,
+        "budgeted": true,
+        "duplicatePrevention": true
+      },
+      "businessLogicChanged": false
+    },
+    {
+      "file": "src/screens/director/director.lifecycle.realtime.ts",
+      "source": "director screen and handoff realtime",
+      "tables": "notifications, proposals, requests, request_items, broadcast handoff",
+      "before": {
+        "channelCalls": 2,
+        "subscribeCalls": 2,
+        "postgresChangesMentions": 4,
+        "filteredListeners": 1,
+        "budgeted": false
+      },
+      "after": {
+        "channelCalls": 2,
+        "subscribeCalls": 2,
+        "postgresChangesMentions": 4,
+        "filteredListeners": 1,
+        "budgeted": true,
+        "duplicatePrevention": true
+      },
+      "businessLogicChanged": false
+    },
+    {
+      "file": "src/screens/warehouse/hooks/useWarehouseExpenseRealtime.ts",
+      "source": "warehouse expense realtime",
+      "tables": "requests, request_items",
+      "before": {
+        "channelCalls": 1,
+        "subscribeCalls": 1,
+        "postgresChangesMentions": 6,
+        "filteredListeners": 0,
+        "budgeted": false
+      },
+      "after": {
+        "channelCalls": 1,
+        "subscribeCalls": 1,
+        "postgresChangesMentions": 6,
+        "filteredListeners": 0,
+        "budgeted": true,
+        "duplicatePrevention": true,
+        "existingCoalescingPreserved": true
+      },
+      "businessLogicChanged": false
+    }
+  ],
+  "deferred": [
+    {
+      "file": "src/screens/director/director.lifecycle.realtime.ts",
+      "source": "director requests/proposals/request_items",
+      "reason": "no direct safe office/company scope is available in the subscription setup without changing lifecycle contracts or business visibility"
+    },
+    {
+      "file": "src/screens/warehouse/hooks/useWarehouseExpenseRealtime.ts",
+      "source": "warehouse requests/request_items",
+      "reason": "request_items direct office/company filter is not proven safe from this hook; broad listener kept with budget and existing coalescing"
+    },
+    {
+      "file": "src/screens/buyer/buyer.subscriptions.ts",
+      "source": "buyer proposals",
+      "reason": "legacy helper does not receive office/company scope; existing proposal visibility preserved"
+    }
+  ],
+  "tests": {
+    "targeted": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "gitDiffCheck": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pass_gates_blocked_precommit_dirty_worktree"
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "permissionsChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "offlineReplayChanged": false,
+    "packageChanged": false,
+    "appConfigChanged": false,
+    "nativeChanged": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "tokenLogged": false,
+    "signedUrlLogged": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  }
+}

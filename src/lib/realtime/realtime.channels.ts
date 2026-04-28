@@ -1,4 +1,7 @@
+import { recordPlatformObservability } from "../observability/platformObservability";
+
 export type RealtimeScope = "buyer" | "accountant" | "warehouse" | "contractor" | "director";
+type RealtimeBudgetScreen = RealtimeScope | "market";
 
 export type RealtimeChannelBinding = {
   key: string;
@@ -18,6 +21,114 @@ export const DIRECTOR_FINANCE_REALTIME_CHANNEL_NAME = "director:finance:realtime
 export const DIRECTOR_REPORTS_REALTIME_CHANNEL_NAME = "director:reports:realtime";
 export const DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME = "director-handoff-rt";
 export const DIRECTOR_HANDOFF_BROADCAST_EVENT = "foreman_request_submitted";
+
+export type RealtimeChannelBudgetOptions = {
+  key: string;
+  source: string;
+  screen: RealtimeBudgetScreen;
+  surface: string;
+  route?: string;
+  maxChannelsForSource?: number;
+  log?: boolean;
+};
+
+export type RealtimeBudgetClaim =
+  | { status: "claimed"; release: () => void }
+  | { status: "duplicate"; release: () => void }
+  | { status: "over_budget"; release: () => void };
+
+type ActiveBudgetEntry = {
+  source: string;
+};
+
+export const DEFAULT_REALTIME_SOURCE_CHANNEL_BUDGET = 2;
+export const REALTIME_GLOBAL_CHANNEL_WARNING_THRESHOLD = 10;
+
+const activeBudgetEntries = new Map<string, ActiveBudgetEntry>();
+
+const recordBudgetSignal = (
+  options: RealtimeChannelBudgetOptions,
+  status: RealtimeBudgetClaim["status"],
+  activeForSource: number,
+) => {
+  if (options.log === false || status === "claimed") return;
+
+  recordPlatformObservability({
+    screen: options.screen,
+    surface: options.surface,
+    category: "reload",
+    event:
+      status === "duplicate"
+        ? "realtime_channel_duplicate_detected"
+        : "realtime_channel_budget_warning",
+    result: status === "duplicate" ? "skipped" : "error",
+    trigger: "realtime",
+    sourceKind: "supabase:realtime",
+    extra: {
+      key: options.key,
+      source: options.source,
+      route: options.route ?? null,
+      activeForSource,
+      maxChannelsForSource:
+        options.maxChannelsForSource ?? DEFAULT_REALTIME_SOURCE_CHANNEL_BUDGET,
+      activeTotal: activeBudgetEntries.size,
+      globalWarningThreshold: REALTIME_GLOBAL_CHANNEL_WARNING_THRESHOLD,
+      owner: "realtime_channel_budget",
+    },
+  });
+};
+
+export function claimRealtimeChannel(options: RealtimeChannelBudgetOptions): RealtimeBudgetClaim {
+  const existing = activeBudgetEntries.get(options.key);
+  const activeForSource = [...activeBudgetEntries.values()].filter(
+    (entry) => entry.source === options.source,
+  ).length;
+
+  if (existing) {
+    recordBudgetSignal(options, "duplicate", activeForSource);
+    return {
+      status: "duplicate",
+      release: () => undefined,
+    };
+  }
+
+  const maxChannelsForSource =
+    options.maxChannelsForSource ?? DEFAULT_REALTIME_SOURCE_CHANNEL_BUDGET;
+  const status: RealtimeBudgetClaim["status"] =
+    activeForSource >= maxChannelsForSource ? "over_budget" : "claimed";
+
+  activeBudgetEntries.set(options.key, {
+    source: options.source,
+  });
+  recordBudgetSignal(options, status, activeForSource + 1);
+
+  let released = false;
+  return {
+    status,
+    release: () => {
+      if (released) return;
+      released = true;
+      const current = activeBudgetEntries.get(options.key);
+      if (current?.source === options.source) {
+        activeBudgetEntries.delete(options.key);
+      }
+    },
+  };
+}
+
+export function getRealtimeBudgetSnapshot() {
+  return {
+    activeCount: activeBudgetEntries.size,
+    activeKeys: [...activeBudgetEntries.keys()].sort(),
+    activeSources: [...activeBudgetEntries.values()]
+      .map((entry) => entry.source)
+      .sort(),
+  };
+}
+
+export function resetRealtimeBudgetForTests() {
+  activeBudgetEntries.clear();
+}
 
 export const BUYER_REALTIME_BINDINGS: readonly RealtimeChannelBinding[] = [
   {

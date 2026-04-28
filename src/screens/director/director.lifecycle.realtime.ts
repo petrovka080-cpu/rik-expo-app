@@ -7,6 +7,8 @@ import {
   DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
   DIRECTOR_HANDOFF_BROADCAST_EVENT,
   DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
+  claimRealtimeChannel,
+  type RealtimeBudgetClaim,
 } from "../../lib/realtime/realtime.channels";
 
 import type { DirectorLifecycleRefreshHandler } from "./director.lifecycle.contract";
@@ -271,6 +273,8 @@ export const setupDirectorRealtimeLifecycle = (params: {
   let cancelled = false;
   let screenChannel: RealtimeChannel | null = null;
   let handoffChannel: RealtimeChannel | null = null;
+  let screenBudget: RealtimeBudgetClaim | null = null;
+  let handoffBudget: RealtimeBudgetClaim | null = null;
 
   void (async () => {
     const signedIn = await ensureSignedIn();
@@ -281,15 +285,37 @@ export const setupDirectorRealtimeLifecycle = (params: {
     await authorizeRealtime();
     if (cancelled) return;
 
-    screenChannel = createDirectorScreenChannel(params.refs);
-    params.refs.rtChannelRef.current = screenChannel;
+    screenBudget = claimRealtimeChannel({
+      key: DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
+      source: "director.lifecycle.realtime",
+      screen: "director",
+      surface: "screen_realtime",
+      route: "/director",
+      maxChannelsForSource: 2,
+    });
+    if (screenBudget.status !== "duplicate") {
+      screenChannel = createDirectorScreenChannel(params.refs);
+      params.refs.rtChannelRef.current = screenChannel;
+    }
 
-    handoffChannel = createDirectorHandoffChannel(params.refs);
-    params.refs.handoffChannelRef.current = handoffChannel;
+    handoffBudget = claimRealtimeChannel({
+      key: DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
+      source: "director.lifecycle.realtime",
+      screen: "director",
+      surface: "screen_realtime",
+      route: "/director",
+      maxChannelsForSource: 2,
+    });
+    if (handoffBudget.status !== "duplicate") {
+      handoffChannel = createDirectorHandoffChannel(params.refs);
+      params.refs.handoffChannelRef.current = handoffChannel;
+    }
   })();
 
   return () => {
     cancelled = true;
+    screenBudget?.release();
+    handoffBudget?.release();
     cleanupRealtimeChannel({
       channel: screenChannel,
       ref: params.refs.rtChannelRef,
