@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
+import { safeJsonParse } from "../format";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
 
 type ObservabilityScreen = Parameters<typeof recordCatchDiscipline>[0]["screen"];
@@ -127,19 +128,17 @@ export async function readStoredString(
   const rawValue = await readRawValue(options);
   if (rawValue == null) return null;
 
-  try {
-    const parsed = JSON.parse(rawValue) as unknown;
-    if (!isEnvelope(parsed)) return rawValue;
+  const parsedResult = safeJsonParse<unknown>(rawValue, null);
+  if (parsedResult.ok === false) return rawValue;
+  const parsed = parsedResult.value;
+  if (!isEnvelope(parsed)) return rawValue;
 
-    if (parsed.expiresAt != null && parsed.expiresAt <= Date.now()) {
-      await removeRawValue(options);
-      return null;
-    }
-
-    return typeof parsed.value === "string" ? parsed.value : rawValue;
-  } catch {
-    return rawValue;
+  if (parsed.expiresAt != null && parsed.expiresAt <= Date.now()) {
+    await removeRawValue(options);
+    return null;
   }
+
+  return typeof parsed.value === "string" ? parsed.value : rawValue;
 }
 
 export async function readStoredJson<T>(
@@ -148,8 +147,9 @@ export async function readStoredJson<T>(
   const rawValue = await readRawValue(options);
   if (rawValue == null) return null;
 
-  try {
-    const parsed = JSON.parse(rawValue) as unknown;
+  const parsedResult = safeJsonParse<unknown>(rawValue, null);
+  if (parsedResult.ok === true) {
+    const parsed = parsedResult.value;
     if (isEnvelope(parsed)) {
       if (parsed.expiresAt != null && parsed.expiresAt <= Date.now()) {
         await removeRawValue(options);
@@ -158,22 +158,22 @@ export async function readStoredJson<T>(
       return parsed.value as T;
     }
     return parsed as T;
-  } catch (error) {
-    recordCatchDiscipline({
-      screen: options.screen,
-      surface: options.surface,
-      event: "storage_parse_failed",
-      error,
-      kind: "degraded_fallback",
-      category: "ui",
-      sourceKind: "storage_parse",
-      extra: {
-        storageKey: options.key,
-        platform: Platform.OS,
-      },
-    });
-    return null;
   }
+
+  recordCatchDiscipline({
+    screen: options.screen,
+    surface: options.surface,
+    event: "storage_parse_failed",
+    error: parsedResult.error,
+    kind: "degraded_fallback",
+    category: "ui",
+    sourceKind: "storage_parse",
+    extra: {
+      storageKey: options.key,
+      platform: Platform.OS,
+    },
+  });
+  return null;
 }
 
 export async function writeStoredString(

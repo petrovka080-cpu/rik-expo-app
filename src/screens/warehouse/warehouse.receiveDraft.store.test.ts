@@ -74,6 +74,21 @@ describe("warehouse receive draft storage discipline", () => {
     }
   });
 
+  it("hydrates an empty safe state when receive draft storage JSON is corrupted", async () => {
+    const storage = createMemoryOfflineStorage({
+      [STORAGE_KEY]: "{broken",
+    });
+    configureWarehouseReceiveDraftStore({ storage });
+
+    const state = await hydrateWarehouseReceiveDraftStore();
+
+    expect(state).toMatchObject({
+      hydrated: true,
+      drafts: {},
+    });
+    expect(storage.dump()[STORAGE_KEY]).toBe("{broken");
+  });
+
   it("does not publish another store state when persisted draft hydration is already current", async () => {
     const storage = createMemoryOfflineStorage({
       [STORAGE_KEY]: JSON.stringify({

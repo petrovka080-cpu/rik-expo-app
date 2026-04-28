@@ -1,4 +1,5 @@
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { safeJsonParse } from "../format";
 
 export type OfflineStorageAdapter = {
   getItem: (key: string) => Promise<string | null>;
@@ -249,11 +250,10 @@ export const readJsonFromStorage = async <T,>(
 ): Promise<T | null> => {
   const raw = await storage.getItem(key);
   if (!raw) return null;
-  try {
-    return JSON.parse(raw) as T;
-  } catch (error) {
+  const parsed = safeJsonParse<T | null>(raw, null);
+  if (parsed.ok === false) {
     reportOfflineStorageFailure({
-      error,
+      error: parsed.error,
       event: "read_json_parse_failed",
       scope: "offlineStorage.readJson.parse",
       key,
@@ -261,8 +261,8 @@ export const readJsonFromStorage = async <T,>(
       errorStage: "parse",
       kind: "degraded_fallback",
     });
-    return null;
   }
+  return parsed.value;
 };
 
 export const writeJsonToStorage = async (

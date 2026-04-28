@@ -1,5 +1,6 @@
 // src/lib/localCache.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { safeJsonParse } from './format';
 import { reportAndSwallow } from './observability/catchDiscipline';
 
 export type HitLite = {
@@ -39,7 +40,16 @@ function reportLocalCacheBoundary(params: {
 async function read<T>(k: string, fallback: T): Promise<T> {
   try {
     const raw = await AsyncStorage.getItem(k);
-    return raw ? JSON.parse(raw) as T : fallback;
+    const parsed = safeJsonParse(raw, fallback);
+    if (parsed.ok === false) {
+      reportLocalCacheBoundary({
+        event: 'local_cache_read_failed',
+        error: parsed.error,
+        errorStage: 'read',
+        key: k,
+      });
+    }
+    return parsed.value;
   } catch (error) {
     reportLocalCacheBoundary({
       event: 'local_cache_read_failed',

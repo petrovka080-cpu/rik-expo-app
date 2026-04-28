@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppState } from "react-native";
 
+import { safeJsonParse } from "../format";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import {
   BREADCRUMB_BATCH_SIZE,
@@ -44,7 +45,9 @@ async function readRawBreadcrumbs(): Promise<OfficeReentryBreadcrumb[]> {
   try {
     const raw = await AsyncStorage.getItem(OFFICE_REENTRY_BREADCRUMBS_KEY);
     if (!raw) return [];
-    const parsed = JSON.parse(raw);
+    const parsedResult = safeJsonParse<unknown>(raw, []);
+    if (parsedResult.ok === false) throw parsedResult.error;
+    const parsed = parsedResult.value;
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(
       (item) => item && typeof item === "object",

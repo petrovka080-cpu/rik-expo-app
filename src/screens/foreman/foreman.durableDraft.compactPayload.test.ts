@@ -129,4 +129,21 @@ describe("foreman durable draft compact payload", () => {
 
     expect(JSON.stringify(hydrated.snapshot)).toBe(JSON.stringify(snapshot));
   });
+
+  it("hydrates an empty safe state when durable draft storage JSON is corrupted", async () => {
+    const storage = createMemoryOfflineStorage({
+      [FOREMAN_DURABLE_DRAFT_STORAGE_KEY]: "{broken",
+    });
+    configureForemanDurableDraftStore({ storage });
+
+    const hydrated = await hydrateForemanDurableDraftStore();
+
+    expect(hydrated).toMatchObject({
+      hydrated: true,
+      snapshot: null,
+      syncStatus: "idle",
+      pendingOperationsCount: 0,
+    });
+    expect(storage.dump()[FOREMAN_DURABLE_DRAFT_STORAGE_KEY]).toBe("{broken");
+  });
 });

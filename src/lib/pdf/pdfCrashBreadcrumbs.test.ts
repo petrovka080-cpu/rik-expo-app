@@ -151,4 +151,23 @@ describe("pdfCrashBreadcrumbs", () => {
       ]),
     );
   });
+
+  it("falls back on corrupted persisted breadcrumbs without logging raw JSON", async () => {
+    mockGetItem.mockResolvedValueOnce("{broken");
+
+    await expect(getPdfCrashBreadcrumbs()).resolves.toEqual([]);
+
+    const events = getPlatformObservabilityEvents();
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          screen: "pdf_viewer",
+          surface: "pdf_crash_breadcrumbs",
+          event: "pdf_breadcrumb_read_failed",
+          result: "error",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(events)).not.toContain("{broken");
+  });
 });

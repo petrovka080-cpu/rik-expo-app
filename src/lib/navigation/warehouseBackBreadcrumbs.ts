@@ -1,5 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { safeJsonParseValue } from "../format";
+
 export type WarehouseBackBreadcrumb = {
   at: string;
   marker: string;
@@ -48,7 +50,7 @@ async function readRawBreadcrumbs(): Promise<WarehouseBackBreadcrumb[]> {
   try {
     const raw = await AsyncStorage.getItem(WAREHOUSE_BACK_BREADCRUMBS_KEY);
     if (!raw) return [];
-    const parsed = JSON.parse(raw);
+    const parsed = safeJsonParseValue<unknown>(raw, []);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((item) => item && typeof item === "object") as WarehouseBackBreadcrumb[];
   } catch {

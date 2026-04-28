@@ -231,4 +231,22 @@ describe("warehouseReceiveQueue atomic persistence", () => {
     );
     expect(JSON.parse(storage.dump().warehouse_receive_queue_v1)).toHaveLength(1);
   });
+
+  it("quarantines corrupted queue JSON without marking replay success", async () => {
+    const storage = createMemoryOfflineStorage({
+      warehouse_receive_queue_v1: "{broken",
+    });
+    configureWarehouseReceiveQueue({ storage });
+
+    await expect(loadWarehouseReceiveQueue()).resolves.toEqual([]);
+
+    const quarantine = await loadWarehouseReceiveQueueQuarantine();
+    expect(quarantine).toEqual([
+      expect.objectContaining({
+        reason: "queue_json_parse_failed",
+        raw: "{broken",
+      }),
+    ]);
+    expect(storage.dump().warehouse_receive_queue_v1).toBeUndefined();
+  });
 });

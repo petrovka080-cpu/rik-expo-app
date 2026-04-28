@@ -7,6 +7,7 @@ import {
   type AppError,
   type Result,
 } from "../errors/appError";
+import { safeJsonParse } from "../format";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import {
   SENSITIVE_REDACTION_MARKER,
@@ -109,7 +110,11 @@ async function readRawBreadcrumbsResult(): Promise<
   try {
     const raw = await AsyncStorage.getItem(PDF_CRASH_BREADCRUMBS_KEY);
     if (!raw) return okResult([]);
-    const parsed = JSON.parse(raw);
+    const parsedResult = safeJsonParse<unknown>(raw, []);
+    if (parsedResult.ok === false) {
+      return errorResult(parsedResult.error, "pdf_crash_breadcrumbs_read", "warn");
+    }
+    const parsed = parsedResult.value;
     if (!Array.isArray(parsed)) return okResult([]);
     return okResult(
       parsed.filter(

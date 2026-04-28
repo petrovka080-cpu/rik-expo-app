@@ -1,0 +1,132 @@
+{
+  "wave": "S-WAVE-2",
+  "goal": "safeJsonParse utility and persisted JSON migration",
+  "helper": "src/lib/format.ts",
+  "target": {
+    "productionJsonParseBefore": 18,
+    "productionJsonParseAfter": 8,
+    "productionJsonParseFilesBefore": 14,
+    "productionJsonParseFilesAfter": 7,
+    "migratedCallSites": 11,
+    "skippedCallSites": 7
+  },
+  "migrated": [
+    {
+      "file": "src/lib/localCache.ts",
+      "kind": "persisted_storage_high_risk",
+      "fallback": "existing caller fallback",
+      "corruptionCrashPrevented": true
+    },
+    {
+      "file": "src/lib/offline/offlineStorage.ts",
+      "kind": "offline_queue_high_risk",
+      "fallback": "null",
+      "corruptionCrashPrevented": true
+    },
+    {
+      "file": "src/lib/storage/classifiedStorage.ts",
+      "kind": "settings_or_cache_medium_risk",
+      "fallback": "raw string or null",
+      "corruptionCrashPrevented": true
+    },
+    {
+      "file": "src/lib/navigation/officeReentryBreadcrumbs.persistence.ts",
+      "kind": "breadcrumb_low_risk",
+      "fallback": "[]",
+      "corruptionCrashPrevented": true
+    },
+    {
+      "file": "src/lib/navigation/warehouseBackBreadcrumbs.ts",
+      "kind": "breadcrumb_low_risk",
+      "fallback": "[]",
+      "corruptionCrashPrevented": true
+    },
+    {
+      "file": "src/lib/pdf/pdfCrashBreadcrumbs.ts",
+      "kind": "breadcrumb_low_risk",
+      "fallback": "[]",
+      "corruptionCrashPrevented": true
+    },
+    {
+      "file": "src/screens/foreman/foreman.localDraft.ts",
+      "kind": "draft_recovery_high_risk",
+      "fallback": "null",
+      "corruptionCrashPrevented": true
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.utils.ts",
+      "kind": "settings_or_cache_medium_risk",
+      "fallback": "existing caller fallback",
+      "corruptionCrashPrevented": true
+    },
+    {
+      "file": "src/screens/warehouse/warehouseReceiveQueue.ts",
+      "kind": "offline_queue_high_risk",
+      "fallback": "[]",
+      "corruptionCrashPrevented": true
+    }
+  ],
+  "skipped": [
+    {
+      "file": "src/lib/ai/geminiGateway.ts",
+      "reason": "ai_response_runtime_risk"
+    },
+    {
+      "file": "src/screens/foreman/foreman.ai.ts",
+      "reason": "ai_response_runtime_risk"
+    },
+    {
+      "file": "src/lib/api/proposalIntegrity.ts",
+      "reason": "pure_runtime_low_risk"
+    },
+    {
+      "file": "src/lib/pdf/directorPdfPlatformContract.ts",
+      "reason": "http_response_runtime_low_risk"
+    },
+    {
+      "file": "src/screens/contractor/contractor.utils.ts",
+      "reason": "pure_runtime_low_risk"
+    },
+    {
+      "file": "src/screens/foreman/foreman.localDraft.ts",
+      "reason": "in_memory_clone_or_serialization"
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "queueShapeChanged": false,
+    "draftSchemaChanged": false,
+    "mutationPayloadChanged": false,
+    "clientMutationIdChanged": false,
+    "quarantineChanged": false,
+    "retryChanged": false,
+    "sqlRpcChanged": false,
+    "uiChanged": false,
+    "maestroYamlChanged": false,
+    "appConfigChanged": false,
+    "packageChanged": false,
+    "rawJsonLogged": false,
+    "signedUrlLogged": false,
+    "tokenLogged": false
+  },
+  "gates": {
+    "targetedTests": "PASS",
+    "performanceBudget": "PASS",
+    "tsc": "PASS",
+    "lint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "maestroCritical": "TIMEOUT_HARNESS",
+    "androidReleaseApk": "PASS",
+    "androidLaunch": "PASS",
+    "androidFatalException": "NONE",
+    "diffCheck": "PASS",
+    "releaseVerify": "GATES_PASS_DIRTY_WORKTREE_BLOCK_BEFORE_COMMIT"
+  },
+  "release": {
+    "otaDisposition": "not_published",
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  }
+}

@@ -65,6 +65,21 @@ describe("contractor progress draft storage discipline", () => {
     expect(storage.dump()[LEGACY_STORAGE_KEY]).toBeUndefined();
   });
 
+  it("hydrates an empty safe state when progress draft storage JSON is corrupted", async () => {
+    const storage = createMemoryOfflineStorage({
+      [STORAGE_KEY]: "{broken",
+    });
+    configureContractorProgressDraftStore({ storage });
+
+    const state = await hydrateContractorProgressDraftStore();
+
+    expect(state).toMatchObject({
+      hydrated: true,
+      drafts: {},
+    });
+    expect(storage.dump()[STORAGE_KEY]).toBeUndefined();
+  });
+
   it("removes stale legacy storage when the active v2 boundary is already present", async () => {
     const storage = createMemoryOfflineStorage({
       [STORAGE_KEY]: JSON.stringify({

@@ -4,6 +4,7 @@ import {
   type OfflineStorageAdapter,
 } from "../../lib/offline/offlineStorage";
 import { createSerializedQueuePersistence } from "../../lib/offline/queuePersistenceSerializer";
+import { safeJsonParse, safeJsonParseValue } from "../../lib/format";
 
 export type WarehouseReceiveQueueStatus =
   | "pending"
@@ -134,16 +135,12 @@ const normalizeQuarantineEntry = (value: unknown): WarehouseReceiveQueueQuaranti
 const loadQuarantineInternal = async (): Promise<WarehouseReceiveQueueQuarantineEntry[]> => {
   const raw = await storageAdapter.getItem(QUARANTINE_STORAGE_KEY);
   if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((entry) => normalizeQuarantineEntry(entry))
-      .filter((entry): entry is WarehouseReceiveQueueQuarantineEntry => Boolean(entry))
-      .sort((left, right) => left.createdAt - right.createdAt);
-  } catch {
-    return [];
-  }
+  const parsed = safeJsonParseValue<unknown>(raw, []);
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .map((entry) => normalizeQuarantineEntry(entry))
+    .filter((entry): entry is WarehouseReceiveQueueQuarantineEntry => Boolean(entry))
+    .sort((left, right) => left.createdAt - right.createdAt);
 };
 
 const saveQuarantineInternal = async (entries: WarehouseReceiveQueueQuarantineEntry[]) => {
@@ -216,14 +213,13 @@ const loadQueueInternal = async (): Promise<WarehouseReceiveQueueEntry[]> => {
   const raw = await storageAdapter.getItem(STORAGE_KEY);
   if (!raw) return [];
 
-  let loaded: unknown;
-  try {
-    loaded = JSON.parse(raw) as unknown;
-  } catch {
+  const parsed = safeJsonParse<unknown>(raw, null);
+  if (parsed.ok === false) {
     await appendQuarantineInternal([buildQuarantineEntry("queue_json_parse_failed", raw)]);
     await storageAdapter.removeItem(STORAGE_KEY);
     return [];
   }
+  const loaded = parsed.value;
 
   if (!Array.isArray(loaded)) {
     await appendQuarantineInternal([buildQuarantineEntry("queue_payload_not_array", loaded)]);

@@ -37,3 +37,41 @@ export function formatProposalBaseNo(
       : "PR-\u2014";
   return base;
 }
+
+export type SafeJsonParseResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; value: T; error: unknown };
+
+export function safeJsonParse<T>(
+  raw: string | null | undefined,
+  fallback: T,
+): SafeJsonParseResult<T> {
+  if (raw == null || raw === "") {
+    return { ok: true, value: fallback };
+  }
+
+  try {
+    return { ok: true, value: JSON.parse(raw) as T };
+  } catch (error) {
+    return { ok: false, value: fallback, error };
+  }
+}
+
+export function safeJsonParseValue<T>(
+  raw: string | null | undefined,
+  fallback: T,
+): T {
+  return safeJsonParse(raw, fallback).value;
+}
+
+export function safeJsonStringify(
+  value: unknown,
+  fallback = "",
+): string {
+  try {
+    const serialized = JSON.stringify(value);
+    return typeof serialized === "string" ? serialized : fallback;
+  } catch {
+    return fallback;
+  }
+}

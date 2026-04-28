@@ -6,6 +6,7 @@ import {
   type ReqItemRow,
   type RequestDetails,
 } from "../../lib/catalog_api";
+import { safeJsonParse } from "../../lib/format";
 import { createDefaultOfflineStorage } from "../../lib/offline/offlineStorage";
 import { isDraftLikeStatus } from "./foreman.helpers";
 import {
@@ -281,8 +282,9 @@ const loadLegacyForemanLocalDraftSnapshot = async (): Promise<ForemanLocalDraftS
   try {
     const raw = await legacyDraftStorage.getItem(LEGACY_LOCAL_DRAFT_STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Record<string, unknown> | null;
-    return parseForemanLocalDraftSnapshotRecord(parsed);
+    const parsed = safeJsonParse<Record<string, unknown> | null>(raw, null);
+    if (parsed.ok === false) throw parsed.error;
+    return parseForemanLocalDraftSnapshotRecord(parsed.value);
   } catch (error) {
     recordForemanLocalDraftFallback("legacy_snapshot_load_failed", error, {
       storageKey: LEGACY_LOCAL_DRAFT_STORAGE_KEY,

@@ -1,5 +1,6 @@
 // src/screens/warehouse/warehouse.utils.ts
 import { Alert, Platform } from "react-native";
+import { safeJsonParse } from "../../lib/format";
 import type { ReqHeaderContext } from "./warehouse.types";
 
 export const nz = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
@@ -102,8 +103,11 @@ export async function saveString(key: string, value: string): Promise<void> {
 export async function loadJson<T>(key: string, fallback: T): Promise<T> {
   try {
     const raw = await loadString(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw) as T;
+    const parsed = safeJsonParse(raw, fallback);
+    if (parsed.ok === false) {
+      logWarehouseUtilsFallback(`loadJson(${key})`, parsed.error);
+    }
+    return parsed.value;
   } catch (error) {
     logWarehouseUtilsFallback(`loadJson(${key})`, error);
     return fallback;
