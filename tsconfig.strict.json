@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "noEmit": true
+  },
+  "include": [
+    "src/lib/format.ts",
+    "src/lib/api/_core.ts",
+    "src/lib/api/queryBoundary.ts",
+    "src/lib/observability/sentry.ts",
+    "scripts/release/releaseGuard.shared.ts"
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "wave": "S-STRICT-1",
+  "mode": "production-safe-incremental-strict-types",
+  "status": "GREEN_TARGETED_STRICT",
+  "globalStrictEnabled": false,
+  "targetedStrictConfig": "tsconfig.strict.json",
+  "targetedStrictPassed": true,
+  "selectedFilesCount": 5,
+  "changedFiles": [
+    "tsconfig.strict.json",
+    "docs/architecture/incremental_strict_types.md",
+    "artifacts/S_STRICT_1_incremental_strict_matrix.json",
+    "artifacts/S_STRICT_1_incremental_strict_proof.md"
+  ],
+  "strictOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "useUnknownInCatchVariables": true,
+    "noUncheckedIndexedAccess": "deferred",
+    "exactOptionalPropertyTypes": "deferred"
+  },
+  "selectedFiles": [
+    {
+      "file": "src/lib/format.ts",
+      "reason": "safe JSON parsing helpers and display formatting helpers",
+      "strictPassed": true,
+      "runtimeBehaviorChanged": false
+    },
+    {
+      "file": "src/lib/api/_core.ts",
+      "reason": "pagination helper and RPC compatibility boundary helpers",
+      "strictPassed": true,
+      "runtimeBehaviorChanged": false
+    },
+    {
+      "file": "src/lib/api/queryBoundary.ts",
+      "reason": "runtime RPC validation helper and guards",
+      "strictPassed": true,
+      "runtimeBehaviorChanged": false
+    },
+    {
+      "file": "src/lib/observability/sentry.ts",
+      "reason": "safe Sentry and performance tracing helper",
+      "strictPassed": true,
+      "runtimeBehaviorChanged": false
+    },
+    {
+      "file": "scripts/release/releaseGuard.shared.ts",
+      "reason": "release metadata and rollback safety helper",
+      "strictPassed": true,
+      "runtimeBehaviorChanged": false
+    }
+  ],
+  "fixes": [
+    {
+      "file": "tsconfig.strict.json",
+      "kind": "targeted_strict_config",
+      "runtimeBehaviorChanged": false
+    }
+  ],
+  "suppressions": [],
+  "deferredStrictIssues": [
+    {
+      "area": "exact optional property types across observability and Supabase client dependencies",
+      "reason": "enabling exactOptionalPropertyTypes pulls unrelated optional-field changes outside the S-STRICT-1 target scope",
+      "nextWave": "S-STRICT-2"
+    },
+    {
+      "area": "unchecked indexed access across existing app utility dependencies",
+      "reason": "noUncheckedIndexedAccess should be introduced with a dedicated nullability pass to avoid broad unrelated churn",
+      "nextWave": "S-STRICT-2"
+    },
+    {
+      "area": "large UI screens and legacy runtime verification scripts",
+      "reason": "existing explicit any usage requires separate scoped migrations and should not be swept in this production-safe wave",
+      "nextWave": "S-STRICT-2"
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false
+  }
+}
