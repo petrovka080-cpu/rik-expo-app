@@ -2,7 +2,7 @@ import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { beginPlatformObservability } from "../observability/platformObservability";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
-import { classifyRpcCompatError, client } from "./_core";
+import { classifyRpcCompatError, client, normalizePage, type PageInput } from "./_core";
 import {
   classifyProposalItemsByRequestItemIntegrity,
   ensureActiveProposalRequestItemsIntegrity,
@@ -766,7 +766,10 @@ export async function proposalSubmit(
   }
 }
 
-export async function listDirectorProposalsPending(): Promise<{ id: string; submitted_at: string | null }[]> {
+export async function listDirectorProposalsPending(
+  pageInput?: PageInput,
+): Promise<{ id: string; submitted_at: string | null }[]> {
+  const page = normalizePage(pageInput, { pageSize: 50, maxPageSize: 100 });
   const observation = beginPlatformObservability({
     screen: "director",
     surface: "pending_proposals",
@@ -779,7 +782,9 @@ export async function listDirectorProposalsPending(): Promise<{ id: string; subm
     .select("id, status, submitted_at, sent_to_accountant_at")
     .not("submitted_at", "is", null)
     .is("sent_to_accountant_at", null)
-    .order("submitted_at", { ascending: false });
+    .order("submitted_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(page.from, page.to);
 
   if (rowsFromTable.error || !rowsFromTable.data) {
     recordProposalCatch({

@@ -78,6 +78,45 @@ export const toFilterId = (v: number | string) => {
 
 export const toRpcId = (id: number | string) => String(id);
 
+export type PageInput = {
+  page?: number | null;
+  pageSize?: number | null;
+};
+
+export type NormalizedPage = {
+  page: number;
+  pageSize: number;
+  from: number;
+  to: number;
+};
+
+const toInt = (value: unknown, fallback: number): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : fallback;
+};
+
+export function normalizePage(
+  input?: PageInput,
+  defaults?: { pageSize?: number; maxPageSize?: number },
+): NormalizedPage {
+  const maxPageSize = Math.max(1, toInt(defaults?.maxPageSize, 100));
+  const defaultPageSize = Math.min(
+    maxPageSize,
+    Math.max(1, toInt(defaults?.pageSize, 50)),
+  );
+  const rawPageSize = toInt(input?.pageSize, defaultPageSize);
+  const pageSize = Math.min(Math.max(rawPageSize, 1), maxPageSize);
+  const page = Math.max(toInt(input?.page, 0), 0);
+  const from = page * pageSize;
+
+  return {
+    page,
+    pageSize,
+    from,
+    to: from + pageSize - 1,
+  };
+}
+
 const errorMessageLower = (error: unknown) => parseErr(error).toLowerCase();
 
 const errorCodeLower = (error: unknown) =>

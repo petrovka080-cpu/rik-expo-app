@@ -10,6 +10,7 @@ import {
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import { runContainedRpc } from "../../lib/api/queryBoundary";
+import { normalizePage } from "../../lib/api/_core";
 
 export type ContractorWorkRow = {
   progress_id: string;
@@ -570,6 +571,7 @@ async function loadContractorWorksBundleLegacyInternal(
   params: LoadContractorWorksBundleParams,
   options?: { observe?: boolean },
 ): Promise<ContractorWorksBundleResult> {
+  const page = normalizePage(undefined, { pageSize: 100, maxPageSize: 100 });
   const {
     supabaseClient,
     normText,
@@ -606,7 +608,12 @@ async function loadContractorWorksBundleLegacyInternal(
       .order("created_at", { ascending: false })
       .limit(500);
 
-    const worksRes = await supabaseClient.from("v_works_fact").select("*").order("created_at", { ascending: false });
+    const worksRes = await supabaseClient
+      .from("v_works_fact")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .order("progress_id", { ascending: false })
+      .range(page.from, page.to);
     if (worksRes.error) {
       throw worksRes.error;
     }

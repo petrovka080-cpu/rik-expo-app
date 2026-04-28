@@ -1,0 +1,137 @@
+{
+  "wave": "S-PAG-3A",
+  "mode": "production-safe-pagination",
+  "targetCallsites": 6,
+  "fixedCallsites": 6,
+  "untouchedIntentionalFullReads": [
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "reason": "proposal PDF source reads must preserve complete document data"
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "reason": "request PDF builder reads must preserve complete document data"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "function": "fetchWarehouseIncomingLedgerRows",
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "reason": "incoming materials report aggregation depends on complete ledger data for the selected date range"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "function": "fetchWarehouseIncomingLineRows",
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "reason": "incoming detail sheet reads all ledger lines for one incoming document"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "function": "proposalItems",
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "reason": "proposal detail/PDF flows need all proposal child rows for one parent proposal"
+    },
+    {
+      "file": "src/screens/director/director.repository.ts",
+      "function": "fetchDirectorPendingRows",
+      "classification": "NEEDS_SEPARATE_UI_WORK",
+      "reason": "main director request rows currently load as a complete list and need explicit UI pagination state before capping"
+    }
+  ],
+  "changedFiles": [
+    "src/lib/api/_core.ts",
+    "src/lib/api/proposals.ts",
+    "src/lib/api/buyer.ts",
+    "src/lib/api/director.ts",
+    "src/screens/buyer/buyer.buckets.repo.ts",
+    "src/screens/contractor/contractor.loadWorksService.ts",
+    "tests/api/pagination.test.ts",
+    "tests/api/topListPagination.contract.test.ts",
+    "tests/buyer/buyerBucketsPagination.test.ts",
+    "artifacts/S_PAG_3A_top_list_pagination_matrix.json",
+    "artifacts/S_PAG_3A_top_list_pagination_proof.md"
+  ],
+  "callsiteMatrix": [
+    {
+      "file": "src/lib/api/proposals.ts",
+      "function": "listDirectorProposalsPending",
+      "table": "proposals",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded pending proposal select ordered by submitted_at",
+      "after": "stable submitted_at/id order + range",
+      "defaultPageSize": 50,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true
+    },
+    {
+      "file": "src/lib/api/buyer.ts",
+      "function": "listBuyerProposalsByStatus",
+      "table": "proposals",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded proposal status list ordered by submitted_at",
+      "after": "stable submitted_at/id order + range",
+      "defaultPageSize": 50,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true
+    },
+    {
+      "file": "src/screens/buyer/buyer.buckets.repo.ts",
+      "function": "fetchBuyerProposalSummaryByStatuses",
+      "table": "v_proposals_summary",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded buyer bucket summary list ordered by submitted_at",
+      "after": "stable submitted_at/proposal_id order + range",
+      "defaultPageSize": 50,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true
+    },
+    {
+      "file": "src/screens/buyer/buyer.buckets.repo.ts",
+      "function": "fetchBuyerRejectedProposalRows",
+      "table": "proposals",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded rejected/rework proposal list ordered by submitted_at and created_at",
+      "after": "stable submitted_at/created_at/id order + range",
+      "defaultPageSize": 50,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "function": "listPending",
+      "table": "requests",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "legacy fallback pending requests select without order/range",
+      "after": "stable id order + range",
+      "defaultPageSize": 50,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true
+    },
+    {
+      "file": "src/screens/contractor/contractor.loadWorksService.ts",
+      "function": "loadContractorWorksBundleLegacyInternal",
+      "table": "v_works_fact",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "legacy contractor works list ordered by created_at without range",
+      "after": "stable created_at/progress_id order + range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "pdfReportExportCapped": false,
+    "detailFullReadsChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  }
+}

@@ -1,4 +1,5 @@
 import type { PostgrestResponse, SupabaseClient } from "@supabase/supabase-js";
+import { normalizePage, type PageInput } from "../../lib/api/_core";
 import {
   BUYER_PROPOSAL_ITEM_ID_SELECT,
   BUYER_PROPOSAL_SUMMARY_SELECT,
@@ -15,33 +16,42 @@ const BUYER_STATUS_REWORK = "\u041d\u0430 \u0434\u043e\u0440\u0430\u0431\u043e\u
 export async function fetchBuyerProposalSummaryByStatus(
   supabase: SupabaseClient,
   status: string,
+  pageInput?: PageInput,
 ): Promise<PostgrestResponse<BuyerProposalSummaryRow>> {
-  return fetchBuyerProposalSummaryByStatuses(supabase, [status]);
+  return fetchBuyerProposalSummaryByStatuses(supabase, [status], pageInput);
 }
 
 export async function fetchBuyerProposalSummaryByStatuses(
   supabase: SupabaseClient,
   statuses: string[],
+  pageInput?: PageInput,
 ): Promise<PostgrestResponse<BuyerProposalSummaryRow>> {
+  const page = normalizePage(pageInput, { pageSize: 50, maxPageSize: 100 });
   const query = supabase
     .from("v_proposals_summary")
     .select(BUYER_PROPOSAL_SUMMARY_SELECT)
     .in("status", statuses)
     .gt("items_cnt", 0)
-    .order("submitted_at", { ascending: false });
+    .order("submitted_at", { ascending: false })
+    .order("proposal_id", { ascending: false })
+    .range(page.from, page.to);
 
   return (await query) as PostgrestResponse<BuyerProposalSummaryRow>;
 }
 
 export async function fetchBuyerRejectedProposalRows(
   supabase: SupabaseClient,
+  pageInput?: PageInput,
 ): Promise<PostgrestResponse<BuyerRejectedProposalRow>> {
+  const page = normalizePage(pageInput, { pageSize: 50, maxPageSize: 100 });
   const query = supabase
     .from("proposals")
     .select(BUYER_REJECTED_PROPOSAL_SELECT)
     .ilike("payment_status", `%${BUYER_STATUS_REWORK}%`)
     .order("submitted_at", { ascending: false, nullsFirst: false })
-    .order("created_at", { ascending: false, nullsFirst: false });
+    .order("created_at", { ascending: false, nullsFirst: false })
+    .order("id", { ascending: false })
+    .range(page.from, page.to);
 
   return (await query) as PostgrestResponse<BuyerRejectedProposalRow>;
 }

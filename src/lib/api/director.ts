@@ -1,6 +1,6 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
-import { client, toRpcId, parseErr } from "./_core";
+import { client, normalizePage, toRpcId, parseErr, type PageInput } from "./_core";
 import type { DirectorPendingRow, DirectorInboxRow } from "./types";
 import { recordPlatformObservability } from "../observability/platformObservability";
 
@@ -157,7 +157,8 @@ async function callPendingRpc(name: PendingRpcName): Promise<DirectorPendingRpcR
   return asDirectorPendingRpcRawRows(rpc.data);
 }
 
-export async function listPending(): Promise<DirectorPendingRow[]> {
+export async function listPending(pageInput?: PageInput): Promise<DirectorPendingRow[]> {
+  const page = normalizePage(pageInput, { pageSize: 50, maxPageSize: 100 });
   const ridMap = new Map<string, number>();
   let ridSeq = 1;
 
@@ -202,6 +203,8 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
     const reqs = await client
       .from("requests")
       .select("id, id_old")
+      .order("id", { ascending: true })
+      .range(page.from, page.to)
       .eq("status", asRequestStatus("На утверждении"));
     const requestRows = asDirectorRequestIdLookupRows(reqs.data);
     const ids = requestRows.map((r) => String(r.id ?? ""));

@@ -1,4 +1,4 @@
-import { client, parseErr } from "./_core";
+import { client, normalizePage, parseErr, type PageInput } from "./_core";
 import type { BuyerInboxRow } from "./types";
 import { isRequestApprovedForProcurement } from "../requestStatus";
 import { normalizeRuText } from "../text/encoding";
@@ -337,14 +337,16 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
   }
 }
 
-export async function listBuyerProposalsByStatus(status: string) {
+export async function listBuyerProposalsByStatus(status: string, pageInput?: PageInput) {
+  const page = normalizePage(pageInput, { pageSize: 50, maxPageSize: 100 });
   const { data, error } = await client
     .from("proposals")
     .select("id, status, submitted_at")
     .eq("status", status)
-    .order("submitted_at", { ascending: false });
+    .order("submitted_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(page.from, page.to);
 
   if (error) throw error;
   return data || [];
 }
-
