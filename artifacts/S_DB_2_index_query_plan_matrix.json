@@ -1,0 +1,132 @@
+{
+  "wave": "S-DB-2",
+  "goal": "DB index/query-plan hardening for 10K+",
+  "migration": "supabase/migrations/20260428154000_s_db_2_query_plan_indexes.sql",
+  "existingIndexStatementCountBefore": 76,
+  "indexes": [
+    {
+      "name": "idx_requests_submitted_display_id_sdb2",
+      "table": "requests",
+      "columns": ["submitted_at DESC NULLS LAST", "display_no DESC NULLS LAST", "id DESC"],
+      "queryFiles": ["src/lib/api/requestCanonical.read.ts"],
+      "purpose": "paginated request list order",
+      "unique": false,
+      "partial": false,
+      "explainProof": "not_available"
+    },
+    {
+      "name": "idx_request_items_request_row_position_id_sdb2",
+      "table": "request_items",
+      "columns": ["request_id", "row_no ASC", "position_order ASC", "id ASC"],
+      "queryFiles": ["src/lib/catalog/catalog.request.service.ts"],
+      "purpose": "request item detail list order",
+      "unique": false,
+      "partial": false,
+      "explainProof": "not_available"
+    },
+    {
+      "name": "idx_request_items_request_status_sdb2",
+      "table": "request_items",
+      "columns": ["request_id", "status", "id"],
+      "queryFiles": ["src/screens/director/director.repository.ts"],
+      "purpose": "director pending item fan-in",
+      "unique": false,
+      "partial": false,
+      "explainProof": "not_available"
+    },
+    {
+      "name": "idx_proposals_director_pending_submitted_sdb2",
+      "table": "proposals",
+      "columns": ["submitted_at DESC NULLS LAST", "id DESC"],
+      "queryFiles": ["src/lib/api/proposals.ts"],
+      "purpose": "director pending proposal queue",
+      "unique": false,
+      "partial": true,
+      "where": "submitted_at IS NOT NULL AND sent_to_accountant_at IS NULL",
+      "explainProof": "not_available"
+    },
+    {
+      "name": "idx_proposals_request_supplier_updated_sdb2",
+      "table": "proposals",
+      "columns": ["request_id", "supplier", "updated_at DESC NULLS LAST", "id DESC"],
+      "queryFiles": ["src/lib/catalog/catalog.proposalCreation.service.ts"],
+      "purpose": "request/supplier proposal lookup",
+      "unique": false,
+      "partial": false,
+      "explainProof": "not_available"
+    },
+    {
+      "name": "idx_proposal_items_proposal_id_id_sdb2",
+      "table": "proposal_items",
+      "columns": ["proposal_id", "id ASC"],
+      "queryFiles": ["src/lib/api/proposals.ts"],
+      "purpose": "proposal detail item ordering",
+      "unique": false,
+      "partial": false,
+      "explainProof": "not_available"
+    },
+    {
+      "name": "idx_market_listings_company_status_created_sdb2",
+      "table": "market_listings",
+      "columns": ["company_id", "status", "created_at DESC NULLS LAST", "id DESC"],
+      "queryFiles": ["src/features/supplierShowcase/supplierShowcase.data.ts"],
+      "purpose": "company supplier showcase feed",
+      "unique": false,
+      "partial": false,
+      "explainProof": "not_available"
+    },
+    {
+      "name": "idx_market_listings_user_status_created_sdb2",
+      "table": "market_listings",
+      "columns": ["user_id", "status", "created_at DESC NULLS LAST", "id DESC"],
+      "queryFiles": ["src/features/supplierShowcase/supplierShowcase.data.ts"],
+      "purpose": "user supplier showcase feed",
+      "unique": false,
+      "partial": false,
+      "explainProof": "not_available"
+    },
+    {
+      "name": "idx_work_progress_log_progress_created_sdb2",
+      "table": "work_progress_log",
+      "columns": ["progress_id", "created_at DESC", "id DESC"],
+      "queryFiles": ["src/screens/contractor/contractor.data.ts", "src/screens/contractor/contractor.workModalService.ts"],
+      "purpose": "contractor progress history/latest-log reads",
+      "unique": false,
+      "partial": false,
+      "explainProof": "not_available"
+    },
+    {
+      "name": "idx_wh_ledger_direction_moved_at_sdb2",
+      "table": "wh_ledger",
+      "columns": ["direction", "moved_at", "id"],
+      "queryFiles": ["src/screens/warehouse/warehouse.api.repo.ts"],
+      "purpose": "warehouse incoming ledger date-window reads",
+      "unique": false,
+      "partial": false,
+      "explainProof": "not_available"
+    }
+  ],
+  "safety": {
+    "destructiveSql": false,
+    "dropIndex": false,
+    "dropTable": false,
+    "alterColumn": false,
+    "rlsChanged": false,
+    "rpcChanged": false,
+    "businessLogicChanged": false,
+    "uiChanged": false,
+    "maestroYamlChanged": false,
+    "productionSqlDeployed": false,
+    "otaPublished": false,
+    "easBuildTriggered": false
+  },
+  "gates": {
+    "targetedMigrationTest": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "jestRunInBand": "pass",
+    "jest": "pass_after_transient_warehouse_fixture_retry",
+    "diffCheck": "pass",
+    "releaseVerify": "pending_post_commit"
+  }
+}
