@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -23,13 +23,15 @@ import { s as foremanStyles } from "../foreman/foreman.styles";
 import { useForemanDicts } from "../foreman/useForemanDicts";
 import { UI as B_UI } from "./buyerUi";
 import {
+  SUBCONTRACT_DEFAULT_PAGE_SIZE,
   PRICE_TYPE_OPTIONS,
   STATUS_CONFIG,
   WORK_MODE_OPTIONS,
   createSubcontractDraftWithPatch,
   fmtAmount,
   fmtDate,
-  listForemanSubcontracts,
+  listForemanSubcontractsPage,
+  mergeSubcontractPages,
   submitSubcontract,
   updateSubcontract,
   type Subcontract,
@@ -135,32 +137,64 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
   const [items, setItems] = useState<Subcontract[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [subId, setSubId] = useState("");
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
   const [dateTarget, setDateTarget] = useState<"dateStart" | "dateEnd" | "contractDate" | null>(null);
+  const nextOffsetRef = useRef(0);
+  const loadSeqRef = useRef(0);
+  const loadingRef = useRef(false);
+  const loadingMoreRef = useRef(false);
+  const hasMoreRef = useRef(false);
 
   const { objOptions, lvlOptions, sysOptions } = useForemanDicts();
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (options?: { reset?: boolean }) => {
+    const reset = options?.reset !== false;
+    const offset = reset ? 0 : nextOffsetRef.current;
+    const seq = ++loadSeqRef.current;
+    if (!reset && (loadingRef.current || loadingMoreRef.current || !hasMoreRef.current)) return;
+    if (reset) {
+      loadingRef.current = true;
+      setLoading(true);
+    } else {
+      loadingMoreRef.current = true;
+      setLoadingMore(true);
+    }
     try {
       const { data } = await supabase.auth.getUser();
       const uid = data?.user?.id;
       if (!uid) return;
-      const list = await listForemanSubcontracts(uid);
-      setItems(list);
+      const page = await listForemanSubcontractsPage(uid, {
+        offset,
+        pageSize: SUBCONTRACT_DEFAULT_PAGE_SIZE,
+      });
+      if (seq !== loadSeqRef.current) return;
+      nextOffsetRef.current = page.nextOffset ?? offset;
+      hasMoreRef.current = page.hasMore;
+      setHasMore(page.hasMore);
+      setItems((current) => (reset ? page.items : mergeSubcontractPages(current, page.items)));
     } catch (e) {
       warnBuyerSubcontract("load error", e);
     } finally {
-      setLoading(false);
+      if (seq === loadSeqRef.current) {
+        if (reset) {
+          loadingRef.current = false;
+          setLoading(false);
+        } else {
+          loadingMoreRef.current = false;
+          setLoadingMore(false);
+        }
+      }
     }
   }, []);
 
   useEffect(() => {
-    void load();
+    void load({ reset: true });
   }, [load]);
 
   useEffect(() => {
@@ -176,10 +210,14 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await load();
+      await load({ reset: true });
     } finally {
       setRefreshing(false);
     }
+  }, [load]);
+
+  const onEndReached = useCallback(() => {
+    void load({ reset: false });
   }, [load]);
 
   const patch = useMemo(() => {
@@ -281,7 +319,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       }
 
       Alert.alert("Черновик сохранён");
-      await load();
+      await load({ reset: true });
     } catch (e) {
       Alert.alert("Ошибка сохранения", errText(e, "Не удалось сохранить черновик"));
     } finally {
@@ -314,7 +352,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       await submitSubcontract(activeId);
       Alert.alert("Отправлено директору");
       closeForm();
-      await load();
+      await load({ reset: true });
     } catch (e) {
       Alert.alert("Ошибка отправки", errText(e, "Не удалось отправить директору"));
     } finally {
@@ -628,11 +666,16 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
           onScroll={onScroll}
           scrollEventThrottle={16}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          onEndReachedThreshold={0.45}
+          onEndReached={hasMore ? onEndReached : undefined}
           ListHeaderComponent={
             <Pressable style={styles.createBtn} onPress={() => setShowForm(true)}>
               <Ionicons name="add-circle" size={24} color="#fff" />
               <Text style={styles.createBtnText}>Создать новый подряд</Text>
             </Pressable>
+          }
+          ListFooterComponent={
+            loadingMore ? <ActivityIndicator style={{ marginVertical: 16 }} color={B_UI.text} /> : null
           }
           ListEmptyComponent={
             loading ? <ActivityIndicator style={{ marginTop: 20 }} color={B_UI.text} /> : <Text style={styles.emptyText}>Подрядов пока нет</Text>
@@ -839,5 +882,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-

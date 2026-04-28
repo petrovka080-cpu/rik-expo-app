@@ -1,0 +1,57 @@
+{
+  "wave": "S-DB-1R",
+  "goal": "finish current subcontract pagination dirty scope",
+  "head_before": "e9723f813db3c1e0387d652b6fd41b3675f496f2",
+  "files": [
+    "src/screens/subcontracts/subcontracts.shared.ts",
+    "src/screens/subcontracts/subcontracts.shared.test.ts",
+    "src/screens/buyer/BuyerSubcontractTab.tsx",
+    "src/screens/director/DirectorSubcontractTab.tsx",
+    "src/screens/accountant/AccountantSubcontractTab.tsx"
+  ],
+  "pagination": {
+    "defaultPageSize": 50,
+    "maxPageSize": 100,
+    "usesRange": true,
+    "hasMore": true,
+    "nextOffset": true,
+    "loadMore": true,
+    "collectAllPages": true,
+    "mergeSubcontractPages": true,
+    "countDirectorSubcontracts": true
+  },
+  "unbounded_selects": {
+    "before_global": 127,
+    "after_selected_files": "subcontracts.shared.ts now uses .range() on all 6 list queries",
+    "old_callers_preserved": true,
+    "old_callers_use_collectAllPages": true
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "validationChanged": false,
+    "sqlRpcChanged": false,
+    "appConfigChanged": false,
+    "packageChanged": false,
+    "maestroYamlChanged": false,
+    "pdfExportCapped": false,
+    "financialTotalsChanged": false
+  },
+  "gates": {
+    "targetedTests": "PASS 12/12",
+    "tsc": "PASS",
+    "lint": "PASS",
+    "jestRunInBand": "PASS 460/460 suites, 2862/2862 tests",
+    "jestParallel": "PASS 460/460 suites, 2862/2862 tests",
+    "androidBuild": "PASS BUILD SUCCESSFUL",
+    "androidInstall": "PASS",
+    "androidLaunch": "PASS PID confirmed, no FATAL EXCEPTION",
+    "maestroCritical": "13/14 PASS, 1 FAIL (contractor-pdf-smoke: external Google Docs viewer not available on emulator, unrelated to subcontract pagination)",
+    "diffCheck": "PASS"
+  },
+  "release": {
+    "otaDisposition": "likely build-required due to Sentry native integration in S-OBS-1",
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  }
+}

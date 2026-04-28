@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,10 +12,12 @@ import {
 import { normalizeRuText } from "../../lib/text/encoding";
 import { FlashList } from "../../ui/FlashList";
 import {
+  SUBCONTRACT_DEFAULT_PAGE_SIZE,
   STATUS_CONFIG,
   fmtAmount,
   fmtDate,
-  listAccountantSubcontracts,
+  listAccountantSubcontractsPage,
+  mergeSubcontractPages,
   type Subcontract,
 } from "../subcontracts/subcontracts.shared";
 
@@ -32,30 +34,66 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
   const [items, setItems] = useState<Subcontract[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const nextOffsetRef = useRef(0);
+  const loadSeqRef = useRef(0);
+  const loadingRef = useRef(false);
+  const loadingMoreRef = useRef(false);
+  const hasMoreRef = useRef(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (options?: { reset?: boolean }) => {
+    const reset = options?.reset !== false;
+    const offset = reset ? 0 : nextOffsetRef.current;
+    const seq = ++loadSeqRef.current;
+    if (!reset && (loadingRef.current || loadingMoreRef.current || !hasMoreRef.current)) return;
+    if (reset) {
+      loadingRef.current = true;
+      setLoading(true);
+    } else {
+      loadingMoreRef.current = true;
+      setLoadingMore(true);
+    }
     try {
-      const rows = await listAccountantSubcontracts();
-      setItems(rows);
+      const page = await listAccountantSubcontractsPage({
+        offset,
+        pageSize: SUBCONTRACT_DEFAULT_PAGE_SIZE,
+      });
+      if (seq !== loadSeqRef.current) return;
+      nextOffsetRef.current = page.nextOffset ?? offset;
+      hasMoreRef.current = page.hasMore;
+      setHasMore(page.hasMore);
+      setItems((current) => (reset ? page.items : mergeSubcontractPages(current, page.items)));
     } catch (error) {
       if (__DEV__) console.warn("[AccountantSubcontractTab] load error:", error);
     } finally {
-      setLoading(false);
+      if (seq === loadSeqRef.current) {
+        if (reset) {
+          loadingRef.current = false;
+          setLoading(false);
+        } else {
+          loadingMoreRef.current = false;
+          setLoadingMore(false);
+        }
+      }
     }
   }, []);
 
   useEffect(() => {
-    void load();
+    void load({ reset: true });
   }, [load]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await load();
+      await load({ reset: true });
     } finally {
       setRefreshing(false);
     }
+  }, [load]);
+
+  const onEndReached = useCallback(() => {
+    void load({ reset: false });
   }, [load]);
 
   const renderCard = ({ item }: { item: Subcontract }) => {
@@ -106,6 +144,15 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingTop: contentTopPad + 10, paddingHorizontal: 16, paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        onEndReachedThreshold={0.45}
+        onEndReached={hasMore ? onEndReached : undefined}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={{ paddingVertical: 16 }}>
+              <ActivityIndicator />
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
           loading ? (
             <ActivityIndicator style={{ marginTop: 20 }} />

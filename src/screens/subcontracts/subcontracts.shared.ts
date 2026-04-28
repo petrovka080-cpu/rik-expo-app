@@ -144,6 +144,24 @@ export type SubcontractItem = {
   status: "draft" | "canceled";
 };
 
+export type SubcontractListStatusFilter = Exclude<SubcontractStatus, "draft">;
+
+export type SubcontractPageRequest = {
+  offset?: number;
+  pageSize?: number;
+};
+
+export type SubcontractPageResult<T> = {
+  items: T[];
+  nextOffset: number | null;
+  hasMore: boolean;
+  offset: number;
+  pageSize: number;
+};
+
+export const SUBCONTRACT_DEFAULT_PAGE_SIZE = 50;
+export const SUBCONTRACT_MAX_PAGE_SIZE = 100;
+
 export type NewSubcontractItem = {
   source: SubcontractItemSource;
   rik_code?: string | null;
@@ -198,6 +216,79 @@ const normalizeSubcontractItemSource = (value: unknown): SubcontractItemSource =
 
 const normalizeSubcontractItemStatus = (value: unknown): "draft" | "canceled" =>
   String(value ?? "").trim().toLowerCase() === "canceled" ? "canceled" : "draft";
+
+const toInt = (value: unknown, fallback: number): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : fallback;
+};
+
+const clampInt = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
+
+const normalizePageRequest = (request?: SubcontractPageRequest) => {
+  const offset = Math.max(0, toInt(request?.offset, 0));
+  const pageSize = clampInt(
+    toInt(request?.pageSize, SUBCONTRACT_DEFAULT_PAGE_SIZE),
+    1,
+    SUBCONTRACT_MAX_PAGE_SIZE,
+  );
+  return {
+    offset,
+    pageSize,
+    from: offset,
+    toInclusive: offset + pageSize,
+  };
+};
+
+const emptyPageResult = <T>(request?: SubcontractPageRequest): SubcontractPageResult<T> => {
+  const page = normalizePageRequest(request);
+  return {
+    items: [],
+    nextOffset: null,
+    hasMore: false,
+    offset: page.offset,
+    pageSize: page.pageSize,
+  };
+};
+
+const buildPageResult = <TRow, TItem>(
+  rows: TRow[] | null | undefined,
+  mapper: (row: TRow) => TItem,
+  request: ReturnType<typeof normalizePageRequest>,
+): SubcontractPageResult<TItem> => {
+  const mapped = Array.isArray(rows) ? rows.map(mapper) : [];
+  const hasMore = mapped.length > request.pageSize;
+  return {
+    items: hasMore ? mapped.slice(0, request.pageSize) : mapped,
+    nextOffset: hasMore ? request.offset + request.pageSize : null,
+    hasMore,
+    offset: request.offset,
+    pageSize: request.pageSize,
+  };
+};
+
+async function collectAllPages<T>(
+  loadPage: (request: SubcontractPageRequest) => Promise<SubcontractPageResult<T>>,
+): Promise<T[]> {
+  const items: T[] = [];
+  let offset = 0;
+  while (true) {
+    const page = await loadPage({
+      offset,
+      pageSize: SUBCONTRACT_MAX_PAGE_SIZE,
+    });
+    items.push(...page.items);
+    if (!page.hasMore || page.nextOffset == null) break;
+    offset = page.nextOffset;
+  }
+  return items;
+}
+
+export function mergeSubcontractPages<T extends { id: string }>(current: T[], next: T[]): T[] {
+  if (next.length === 0) return current;
+  const seen = new Set(current.map((item) => String(item.id)));
+  const appended = next.filter((item) => !seen.has(String(item.id)));
+  return appended.length > 0 ? [...current, ...appended] : current;
+}
 
 const normalizeSubcontractPatch = (patch: Partial<Subcontract>): SubcontractUpdate => ({
   ...patch,
@@ -522,34 +613,84 @@ export function fmtDate(iso: string | null | undefined): string {
   return new Date(iso).toLocaleDateString("ru-RU");
 }
 
-export async function listForemanSubcontracts(userId: string): Promise<Subcontract[]> {
+export async function listForemanSubcontractsPage(
+  userId: string,
+  request?: SubcontractPageRequest,
+): Promise<SubcontractPageResult<Subcontract>> {
+  const uid = String(userId || "").trim();
+  if (!uid) return emptyPageResult(request);
+
+  const page = normalizePageRequest(request);
   const { data, error } = await supabase
     .from("subcontracts")
     .select("*")
-    .eq("created_by", userId)
-    .order("created_at", { ascending: false });
+    .eq("created_by", uid)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(page.from, page.toInclusive);
   if (error) throw error;
-  return Array.isArray(data) ? data.map(normalizeSubcontractRow) : [];
+  return buildPageResult(data as SubcontractRow[] | null | undefined, normalizeSubcontractRow, page);
+}
+
+export async function listForemanSubcontracts(userId: string): Promise<Subcontract[]> {
+  return await collectAllPages((request) => listForemanSubcontractsPage(userId, request));
+}
+
+export async function listDirectorSubcontractsPage(params?: {
+  status?: SubcontractListStatusFilter | null;
+  offset?: number;
+  pageSize?: number;
+}): Promise<SubcontractPageResult<Subcontract>> {
+  const page = normalizePageRequest(params);
+  let query = supabase
+    .from("subcontracts")
+    .select("*")
+    .not("status", "eq", "draft");
+  if (params?.status) {
+    query = query.eq("status", params.status);
+  }
+  const { data, error } = await query
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(page.from, page.toInclusive);
+  if (error) throw error;
+  return buildPageResult(data as SubcontractRow[] | null | undefined, normalizeSubcontractRow, page);
+}
+
+export async function countDirectorSubcontracts(status?: SubcontractListStatusFilter | null): Promise<number> {
+  let query = supabase
+    .from("subcontracts")
+    .select("id", { count: "exact", head: true })
+    .not("status", "eq", "draft");
+  if (status) {
+    query = query.eq("status", status);
+  }
+  const { count, error } = await query;
+  if (error) throw error;
+  return Math.max(0, Number(count ?? 0));
 }
 
 export async function listDirectorSubcontracts(): Promise<Subcontract[]> {
-  const { data, error } = await supabase
-    .from("subcontracts")
-    .select("*")
-    .not("status", "eq", "draft")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return Array.isArray(data) ? data.map(normalizeSubcontractRow) : [];
+  return await collectAllPages((request) => listDirectorSubcontractsPage(request));
 }
 
-export async function listAccountantSubcontracts(): Promise<Subcontract[]> {
+export async function listAccountantSubcontractsPage(
+  request?: SubcontractPageRequest,
+): Promise<SubcontractPageResult<Subcontract>> {
+  const page = normalizePageRequest(request);
   const { data, error } = await supabase
     .from("subcontracts")
     .select("*")
     .eq("status", "approved")
-    .order("approved_at", { ascending: false });
+    .order("approved_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(page.from, page.toInclusive);
   if (error) throw error;
-  return Array.isArray(data) ? data.map(normalizeSubcontractRow) : [];
+  return buildPageResult(data as SubcontractRow[] | null | undefined, normalizeSubcontractRow, page);
+}
+
+export async function listAccountantSubcontracts(): Promise<Subcontract[]> {
+  return await collectAllPages((request) => listAccountantSubcontractsPage(request));
 }
 
 export async function createSubcontractDraft(userId: string, foremanName: string): Promise<string> {
@@ -630,17 +771,27 @@ export async function rejectSubcontract(id: string, comment: string): Promise<vo
   await runSubcontractStatusMutation("reject", "subcontract_reject_v1", args);
 }
 
-export async function listSubcontractItems(subcontractId: string): Promise<SubcontractItem[]> {
+export async function listSubcontractItemsPage(
+  subcontractId: string,
+  request?: SubcontractPageRequest,
+): Promise<SubcontractPageResult<SubcontractItem>> {
   const sid = String(subcontractId || "").trim();
-  if (!sid) return [];
+  if (!sid) return emptyPageResult(request);
+  const page = normalizePageRequest(request);
   const { data, error } = await supabase
     .from("subcontract_items")
     .select("*")
     .eq("subcontract_id", sid)
     .eq("status", "draft")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(page.from, page.toInclusive);
   if (error) throw error;
-  return Array.isArray(data) ? data.map(normalizeSubcontractItemRow) : [];
+  return buildPageResult(data as SubcontractItemRow[] | null | undefined, normalizeSubcontractItemRow, page);
+}
+
+export async function listSubcontractItems(subcontractId: string): Promise<SubcontractItem[]> {
+  return await collectAllPages((request) => listSubcontractItemsPage(subcontractId, request));
 }
 
 export async function appendSubcontractItems(

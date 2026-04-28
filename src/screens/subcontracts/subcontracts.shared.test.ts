@@ -1,7 +1,12 @@
 import { supabase } from "../../lib/supabaseClient";
 import {
+  SUBCONTRACT_MAX_PAGE_SIZE,
   approveSubcontract,
+  countDirectorSubcontracts,
   createSubcontractDraftWithPatch,
+  listDirectorSubcontractsPage,
+  listSubcontractItems,
+  mergeSubcontractPages,
   rejectSubcontract,
 } from "./subcontracts.shared";
 
@@ -17,6 +22,60 @@ type RpcError = { message?: string; code?: string } | null;
 const mockSupabase = supabase as unknown as {
   from: jest.Mock;
   rpc: jest.Mock;
+};
+
+const makeSubcontractRow = (id: string, status: string = "pending") => ({
+  id,
+  status,
+  created_at: "2026-01-01T00:00:00.000Z",
+});
+
+const makeSubcontractItemRow = (id: string) => ({
+  id,
+  subcontract_id: "sub-1",
+  created_at: "2026-01-01T00:00:00.000Z",
+  created_by: "user-1",
+  source: "catalog",
+  name: `item-${id}`,
+  qty: 1,
+  status: "draft",
+});
+
+const createRangeBuilder = (result: { data?: unknown; error?: unknown }) => {
+  const builder: Record<string, jest.Mock> = {
+    select: jest.fn(),
+    eq: jest.fn(),
+    not: jest.fn(),
+    order: jest.fn(),
+    range: jest.fn(),
+  };
+  builder.select.mockReturnValue(builder);
+  builder.eq.mockReturnValue(builder);
+  builder.not.mockReturnValue(builder);
+  builder.order.mockReturnValue(builder);
+  builder.range.mockResolvedValue({
+    data: result.data ?? [],
+    error: result.error ?? null,
+  });
+  return builder;
+};
+
+const createCountBuilder = (result: { count?: number; error?: unknown }) => {
+  const builder: Record<string, unknown> = {
+    select: jest.fn(),
+    eq: jest.fn(),
+    not: jest.fn(),
+    then: undefined as unknown,
+  };
+  (builder.select as jest.Mock).mockReturnValue(builder);
+  (builder.eq as jest.Mock).mockReturnValue(builder);
+  (builder.not as jest.Mock).mockReturnValue(builder);
+  builder.then = (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
+    Promise.resolve({
+      count: result.count ?? 0,
+      error: result.error ?? null,
+    }).then(resolve, reject);
+  return builder;
 };
 
 describe("subcontracts shared boundary", () => {
@@ -247,5 +306,67 @@ describe("subcontracts shared boundary", () => {
         failureCode: "invalid_status",
       }),
     );
+  });
+
+  it("clamps subcontract page size and returns hasMore metadata", async () => {
+    const builder = createRangeBuilder({
+      data: Array.from({ length: SUBCONTRACT_MAX_PAGE_SIZE + 1 }, (_, idx) =>
+        makeSubcontractRow(`sub-${idx + 1}`),
+      ),
+    });
+    mockSupabase.from.mockReturnValue(builder);
+
+    const page = await listDirectorSubcontractsPage({
+      status: "pending",
+      offset: 0,
+      pageSize: 999,
+    });
+
+    expect(builder.range).toHaveBeenCalledWith(0, SUBCONTRACT_MAX_PAGE_SIZE);
+    expect(builder.eq).toHaveBeenCalledWith("status", "pending");
+    expect(page.items).toHaveLength(SUBCONTRACT_MAX_PAGE_SIZE);
+    expect(page.hasMore).toBe(true);
+    expect(page.nextOffset).toBe(SUBCONTRACT_MAX_PAGE_SIZE);
+    expect(page.pageSize).toBe(SUBCONTRACT_MAX_PAGE_SIZE);
+  });
+
+  it("keeps director pending count on the server-side count path", async () => {
+    const builder = createCountBuilder({ count: 27 });
+    mockSupabase.from.mockReturnValue(builder);
+
+    await expect(countDirectorSubcontracts("pending")).resolves.toBe(27);
+    expect((builder.select as jest.Mock)).toHaveBeenCalledWith("id", { count: "exact", head: true });
+    expect((builder.eq as jest.Mock)).toHaveBeenCalledWith("status", "pending");
+  });
+
+  it("preserves full subcontract item reads via bounded page loop", async () => {
+    const firstPage = createRangeBuilder({
+      data: Array.from({ length: SUBCONTRACT_MAX_PAGE_SIZE + 1 }, (_, idx) =>
+        makeSubcontractItemRow(`item-${idx + 1}`),
+      ),
+    });
+    const secondPage = createRangeBuilder({
+      data: [makeSubcontractItemRow(`item-${SUBCONTRACT_MAX_PAGE_SIZE + 2}`)],
+    });
+    mockSupabase.from
+      .mockReturnValueOnce(firstPage)
+      .mockReturnValueOnce(secondPage);
+
+    const rows = await listSubcontractItems("sub-1");
+
+    expect(firstPage.range).toHaveBeenCalledWith(0, SUBCONTRACT_MAX_PAGE_SIZE);
+    expect(secondPage.range).toHaveBeenCalledWith(SUBCONTRACT_MAX_PAGE_SIZE, SUBCONTRACT_MAX_PAGE_SIZE * 2);
+    expect(rows).toHaveLength(SUBCONTRACT_MAX_PAGE_SIZE + 1);
+    expect(rows[0]?.id).toBe("item-1");
+    expect(rows[rows.length - 1]?.id).toBe(`item-${SUBCONTRACT_MAX_PAGE_SIZE + 2}`);
+  });
+
+  it("dedupes appended subcontract pages by id", () => {
+    const merged = mergeSubcontractPages(
+      [makeSubcontractRow("sub-1"), makeSubcontractRow("sub-2")],
+      [makeSubcontractRow("sub-2"), makeSubcontractRow("sub-3")],
+    );
+
+    expect(merged.map((row) => row.id)).toEqual(["sub-1", "sub-2", "sub-3"]);
   });
 });

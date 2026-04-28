@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -16,13 +16,17 @@ import {
 } from 'react-native';
 import { FlashList } from '@/src/ui/FlashList';
 import {
+  SUBCONTRACT_DEFAULT_PAGE_SIZE,
   PRICE_TYPE_LABEL,
   STATUS_CONFIG,
   WORK_MODE_LABEL,
   approveSubcontract,
+  countDirectorSubcontracts,
   fmtAmount,
   fmtDate,
-  listDirectorSubcontracts,
+  listDirectorSubcontractsPage,
+  mergeSubcontractPages,
+  type SubcontractListStatusFilter,
   rejectSubcontract,
   type Subcontract,
 } from '../subcontracts/subcontracts.shared';
@@ -216,36 +220,78 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<StatusFilter>('pending');
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selected, setSelected] = useState<Subcontract | null>(null);
   const [deciding, setDeciding] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const nextOffsetRef = useRef(0);
+  const loadSeqRef = useRef(0);
+  const loadingRef = useRef(false);
+  const loadingMoreRef = useRef(false);
+  const hasMoreRef = useRef(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (options?: { reset?: boolean }) => {
+    const reset = options?.reset !== false;
+    const offset = reset ? 0 : nextOffsetRef.current;
+    const seq = ++loadSeqRef.current;
+    if (!reset && (loadingRef.current || loadingMoreRef.current || !hasMoreRef.current)) return;
+    if (reset) {
+      loadingRef.current = true;
+      setLoading(true);
+    } else {
+      loadingMoreRef.current = true;
+      setLoadingMore(true);
+    }
     try {
-      const list = await listDirectorSubcontracts();
-      setItems(list);
+      const [page, nextPendingCount] = await Promise.all([
+        listDirectorSubcontractsPage({
+          status: filter as SubcontractListStatusFilter,
+          offset,
+          pageSize: SUBCONTRACT_DEFAULT_PAGE_SIZE,
+        }),
+        reset ? countDirectorSubcontracts('pending') : Promise.resolve<number | null>(null),
+      ]);
+      if (seq !== loadSeqRef.current) return;
+      nextOffsetRef.current = page.nextOffset ?? offset;
+      hasMoreRef.current = page.hasMore;
+      setHasMore(page.hasMore);
+      setItems((current) => (reset ? page.items : mergeSubcontractPages(current, page.items)));
+      if (nextPendingCount != null) {
+        setPendingCount(nextPendingCount);
+      }
     } catch (e: unknown) {
       if (__DEV__) console.warn('[DirectorSubcontractTab] load error:', errText(e, 'load failed'));
     } finally {
-      setLoading(false);
+      if (seq === loadSeqRef.current) {
+        if (reset) {
+          loadingRef.current = false;
+          setLoading(false);
+        } else {
+          loadingMoreRef.current = false;
+          setLoadingMore(false);
+        }
+      }
     }
-  }, []);
+  }, [filter]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void load({ reset: true });
+  }, [filter, load]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await load();
+      await load({ reset: true });
     } finally {
       setRefreshing(false);
     }
   }, [load]);
+  const onEndReached = useCallback(() => {
+    void load({ reset: false });
+  }, [load]);
 
-  const filtered = items.filter((x) => x.status === filter);
-  const pendingCount = items.filter((x) => x.status === 'pending').length;
+  const filtered = items;
   const keyExtractor = useCallback((item: Subcontract) => item.id, []);
   const renderItem = useCallback(({ item }: { item: Subcontract }) => <SubCard item={item} onPress={setSelected} />, []);
 
@@ -256,7 +302,7 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
       await approveSubcontract(selected.id);
       Alert.alert('Утверждено', 'Подряд переведён в статус "В работе".');
       setSelected(null);
-      await load();
+      await load({ reset: true });
     } catch (e: unknown) {
       Alert.alert('Не удалось утвердить', errText(e, 'Попробуйте еще раз.'));
     } finally {
@@ -272,7 +318,7 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
         await rejectSubcontract(selected.id, comment);
         Alert.alert('Отклонено', 'Прораб увидит причину отклонения.');
         setSelected(null);
-        await load();
+        await load({ reset: true });
       } catch (e: unknown) {
         Alert.alert('Не удалось отклонить', errText(e, 'Попробуйте еще раз.'));
       } finally {
@@ -302,6 +348,8 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingTop: contentTopPad, paddingHorizontal: 16, paddingBottom: 24 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0EA5E9" />}
+        onEndReachedThreshold={0.45}
+        onEndReached={hasMore ? onEndReached : undefined}
         ListHeaderComponent={
           <View style={ds.filterRow}>
             {FILTER_TABS.map((t) => {
@@ -328,6 +376,13 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
                 : `Нет подрядов со статусом "${FILTER_TABS.find((t) => t.key === filter)?.label}"`}
             </Text>
           )
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={{ paddingVertical: 16 }}>
+              <ActivityIndicator color="#0EA5E9" />
+            </View>
+          ) : null
         }
       />
     </View>
@@ -553,4 +608,3 @@ const ds = StyleSheet.create({
     fontSize: 15,
   },
 });
-
