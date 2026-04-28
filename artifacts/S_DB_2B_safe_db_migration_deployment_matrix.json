@@ -1,0 +1,44 @@
+{
+  "wave": "S-DB-2B",
+  "goal": "safe deployment of S-DB-2 query-plan indexes",
+  "status": "GREEN",
+  "headBeforeDeployment": "260f07f890076220349d70b98e7566bb332b8be4",
+  "migration": "supabase/migrations/20260428154000_s_db_2_query_plan_indexes.sql",
+  "deployment": {
+    "migrationListBefore": "pass",
+    "dryRun": "pass_one_pending_migration",
+    "dbPushLinkedYes": "pass",
+    "migrationListAfter": "pass_local_remote_match",
+    "productionSqlDeployed": true
+  },
+  "indexes": [
+    "idx_requests_submitted_display_id_sdb2",
+    "idx_request_items_request_row_position_id_sdb2",
+    "idx_request_items_request_status_sdb2",
+    "idx_proposals_director_pending_submitted_sdb2",
+    "idx_proposals_request_supplier_updated_sdb2",
+    "idx_proposal_items_proposal_id_id_sdb2",
+    "idx_market_listings_company_status_created_sdb2",
+    "idx_market_listings_user_status_created_sdb2",
+    "idx_work_progress_log_progress_created_sdb2",
+    "idx_wh_ledger_direction_moved_at_sdb2"
+  ],
+  "safety": {
+    "destructiveSql": false,
+    "dropTable": false,
+    "dropIndex": false,
+    "alterColumn": false,
+    "dataMutation": false,
+    "sqlRpcFunctionChanged": false,
+    "rlsChanged": false,
+    "appRuntimeChanged": false,
+    "uiChanged": false,
+    "maestroYamlChanged": false,
+    "appConfigChanged": false,
+    "packageChanged": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  }
+}
