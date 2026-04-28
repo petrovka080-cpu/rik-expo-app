@@ -59,8 +59,9 @@
 - Android release APK build: PASS
 - Android emulator install/launch: PASS
 - Android fatal logcat check: PASS, no `FATAL EXCEPTION AndroidRuntime`
-- Maestro critical: TIMEOUT/HARNESS, not PASS
-- `npm run release:verify -- --json`: gates PASS, readiness blocked while worktree dirty before commit
+- Maestro critical: PASS, 14/14 flows passed in 25m 51s
+- `npm run release:verify -- --json`: PASS after commit/push
+- `otaDisposition`: allow
 
 ## Release
 

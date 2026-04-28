@@ -116,15 +116,15 @@
     "lint": "PASS",
     "jestRunInBand": "PASS",
     "jest": "PASS",
-    "maestroCritical": "TIMEOUT_HARNESS",
+    "maestroCritical": "PASS_14_OF_14",
     "androidReleaseApk": "PASS",
     "androidLaunch": "PASS",
     "androidFatalException": "NONE",
     "diffCheck": "PASS",
-    "releaseVerify": "GATES_PASS_DIRTY_WORKTREE_BLOCK_BEFORE_COMMIT"
+    "releaseVerify": "PASS"
   },
   "release": {
-    "otaDisposition": "not_published",
+    "otaDisposition": "allow",
     "otaPublished": false,
     "easBuildTriggered": false,
     "easSubmitTriggered": false

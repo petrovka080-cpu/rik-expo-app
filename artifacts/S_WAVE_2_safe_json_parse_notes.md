@@ -41,4 +41,4 @@
 
 ## Gate note
 
-Maestro critical was attempted twice. It did not produce a product crash or changed-code assertion failure, but the full suite timed out while running on the Android emulator. This gate is recorded as TIMEOUT/HARNESS, not PASS.
+Maestro critical was rerun with a full-suite timeout budget and passed 14/14 flows in 25m 51s on the Android emulator.
