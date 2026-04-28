@@ -3,6 +3,7 @@ import {
   buildReleaseChangedFilesGitArgs,
   buildReleaseGuardOtaPublishCommand,
   buildReleaseGuardOtaPublishEnv,
+  buildReleaseMetadataEnforcement,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
@@ -449,6 +450,142 @@ EAS Dashboard      https://expo.dev/update/group-123
         commit: "abc123",
         dashboardUrl: "https://expo.dev/update/group-123",
       });
+    });
+  });
+
+  describe("buildReleaseMetadataEnforcement", () => {
+    it("accepts otaDisposition=skip and reports channel metadata as not applicable", () => {
+      const releaseMetadata = buildReleaseMetadataEnforcement({
+        repo: createRepoState(),
+        appVersion: "1.0.0",
+        configuredIosBuildNumber: "13",
+        configuredAndroidVersionCode: "13",
+        appVersionSource: "remote",
+        runtimeVersion: "policy:fingerprint",
+        runtimePolicyValid: true,
+        runtimeProofConsistent: true,
+        startupPolicyValid: true,
+        readiness: {
+          status: "pass",
+          otaDisposition: "skip",
+          blockers: [],
+        },
+        targetChannel: null,
+        expectedBranch: null,
+        otaPublish: null,
+      });
+
+      expect(releaseMetadata.otaDisposition).toBe("skip");
+      expect(releaseMetadata.rollbackReady).toBe(true);
+      expect(releaseMetadata.channel).toBe("not_applicable");
+      expect(releaseMetadata.branch).toBe("not_applicable");
+      expect(releaseMetadata.otaPublished).toBe(false);
+      expect(releaseMetadata.easBuildTriggered).toBe(false);
+      expect(releaseMetadata.easSubmitTriggered).toBe(false);
+    });
+
+    it("reports missing required metadata explicitly", () => {
+      const releaseMetadata = buildReleaseMetadataEnforcement({
+        repo: createRepoState({ headCommit: "" }),
+        appVersion: "",
+        configuredIosBuildNumber: "",
+        configuredAndroidVersionCode: "",
+        appVersionSource: "",
+        runtimeVersion: "",
+        runtimePolicyValid: true,
+        runtimeProofConsistent: true,
+        startupPolicyValid: true,
+        readiness: {
+          status: "pass",
+          otaDisposition: "allow",
+          blockers: [],
+        },
+        targetChannel: null,
+        expectedBranch: null,
+        otaPublish: null,
+      });
+
+      expect(releaseMetadata.otaDisposition).toBe("candidate");
+      expect(releaseMetadata.missing).toEqual(
+        expect.arrayContaining([
+          "gitSha",
+          "appVersion",
+          "buildLineage",
+          "runtimeVersion",
+          "channel",
+          "branch",
+        ]),
+      );
+      expect(releaseMetadata.rollbackReady).toBe(false);
+    });
+
+    it("does not claim Sentry or binary source map proof unless publish proof exists", () => {
+      const releaseMetadata = buildReleaseMetadataEnforcement({
+        repo: createRepoState(),
+        appVersion: "1.0.0",
+        configuredIosBuildNumber: "13",
+        configuredAndroidVersionCode: "13",
+        appVersionSource: "remote",
+        runtimeVersion: "policy:fingerprint",
+        runtimePolicyValid: true,
+        runtimeProofConsistent: true,
+        startupPolicyValid: true,
+        readiness: {
+          status: "pass",
+          otaDisposition: "allow",
+          blockers: [],
+        },
+        targetChannel: "production",
+        expectedBranch: "production",
+        otaPublish: null,
+      });
+
+      expect(releaseMetadata.otaDisposition).toBe("candidate");
+      expect(releaseMetadata.sentrySourceMaps).toBe("not_applicable");
+      expect(releaseMetadata.binarySourceMapsProven).toBe("not_applicable");
+      expect(releaseMetadata.otaPublished).toBe(false);
+      expect(releaseMetadata.easUpdateTriggered).toBe(false);
+    });
+
+    it("marks source map proof as missing for a published OTA report without proof artifacts", () => {
+      const releaseMetadata = buildReleaseMetadataEnforcement({
+        repo: createRepoState(),
+        appVersion: "1.0.0",
+        configuredIosBuildNumber: "13",
+        configuredAndroidVersionCode: "13",
+        appVersionSource: "remote",
+        runtimeVersion: "policy:fingerprint",
+        runtimePolicyValid: true,
+        runtimeProofConsistent: true,
+        startupPolicyValid: true,
+        readiness: {
+          status: "pass",
+          otaDisposition: "allow",
+          blockers: [],
+        },
+        targetChannel: "production",
+        expectedBranch: "production",
+        otaPublish: {
+          branch: "production",
+          runtimeVersion: "policy:fingerprint",
+          platform: "android, ios",
+          updateGroupId: "group-123",
+          androidUpdateId: "android-123",
+          iosUpdateId: "ios-123",
+          message: "release",
+          commit: "head-sha",
+          dashboardUrl: "https://expo.dev/update/group-123",
+        },
+      });
+
+      expect(releaseMetadata.otaDisposition).toBe("published");
+      expect(releaseMetadata.sentrySourceMaps).toBe("missing");
+      expect(releaseMetadata.binarySourceMapsProven).toBe("missing");
+      expect(releaseMetadata.missing).toEqual(
+        expect.arrayContaining(["sentrySourceMaps", "binarySourceMapsProven"]),
+      );
+      expect(releaseMetadata.otaPublished).toBe(true);
+      expect(releaseMetadata.easUpdateTriggered).toBe(true);
     });
   });
 

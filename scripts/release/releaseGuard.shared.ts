@@ -54,6 +54,20 @@ export type ReleaseGuardReadiness = {
   blockers: string[];
 };
 
+export type ReleaseMetadataFieldStatus =
+  | "present"
+  | "missing"
+  | "verified"
+  | "blocked"
+  | "not_applicable"
+  | "owner_action_required";
+
+export type ReleaseMetadataOtaDisposition =
+  | "skip"
+  | "candidate"
+  | "published"
+  | "blocked";
+
 export type ReleaseGuardRuntimePolicyTruth = {
   resolvedRuntimeVersion: string;
   runtimePolicy: string;
@@ -85,6 +99,26 @@ export type ReleaseOtaPublishMetadata = {
   dashboardUrl: string;
 };
 
+export type ReleaseMetadataEnforcement = {
+  gitSha: ReleaseMetadataFieldStatus;
+  appVersion: ReleaseMetadataFieldStatus;
+  buildLineage: ReleaseMetadataFieldStatus;
+  runtimeVersion: ReleaseMetadataFieldStatus;
+  channel: ReleaseMetadataFieldStatus;
+  branch: ReleaseMetadataFieldStatus;
+  platform: ReleaseMetadataFieldStatus;
+  otaDisposition: ReleaseMetadataOtaDisposition;
+  rollbackReady: boolean;
+  sentrySourceMaps: ReleaseMetadataFieldStatus;
+  binarySourceMapsProven: ReleaseMetadataFieldStatus;
+  easBuildTriggered: false;
+  easSubmitTriggered: false;
+  otaPublished: boolean;
+  easUpdateTriggered: boolean;
+  missing: string[];
+  warnings: string[];
+};
+
 export type ReleaseGuardReport = {
   mode: ReleaseGuardMode;
   timestamp: string;
@@ -101,6 +135,7 @@ export type ReleaseGuardReport = {
   releaseMessage: string | null;
   commitRange: string;
   otaPublish: ReleaseOtaPublishMetadata | null;
+  releaseMetadata: ReleaseMetadataEnforcement;
 };
 
 type PackageJsonShape = {
@@ -512,6 +547,114 @@ export function evaluateReleaseGuardReadiness(params: {
     status: "pass",
     otaDisposition: "allow",
     blockers: [],
+  };
+}
+
+function presentWhen(value: string | null | undefined): ReleaseMetadataFieldStatus {
+  return value && value.trim().length > 0 ? "present" : "missing";
+}
+
+function normalizeReleaseMetadataOtaDisposition(params: {
+  readiness: ReleaseGuardReadiness;
+  otaPublish: ReleaseOtaPublishMetadata | null;
+}): ReleaseMetadataOtaDisposition {
+  if (params.otaPublish) return "published";
+  if (params.readiness.otaDisposition === "skip") return "skip";
+  if (params.readiness.otaDisposition === "block") return "blocked";
+  return "candidate";
+}
+
+export function buildReleaseMetadataEnforcement(params: {
+  repo: ReleaseRepoState;
+  appVersion: string;
+  configuredIosBuildNumber: string;
+  configuredAndroidVersionCode: string;
+  appVersionSource: string;
+  runtimeVersion: string;
+  runtimePolicyValid: boolean;
+  runtimeProofConsistent: boolean;
+  startupPolicyValid: boolean;
+  readiness: ReleaseGuardReadiness;
+  targetChannel: string | null;
+  expectedBranch: string | null;
+  otaPublish: ReleaseOtaPublishMetadata | null;
+}): ReleaseMetadataEnforcement {
+  const otaDisposition = normalizeReleaseMetadataOtaDisposition({
+    readiness: params.readiness,
+    otaPublish: params.otaPublish,
+  });
+  const channelValue = params.otaPublish?.branch || params.targetChannel;
+  const branchValue = params.otaPublish?.branch || params.expectedBranch;
+  const platformValue = params.otaPublish?.platform ?? null;
+  const hasBuildLineage =
+    params.appVersionSource.trim().length > 0 &&
+    (params.configuredIosBuildNumber.trim().length > 0 ||
+      params.configuredAndroidVersionCode.trim().length > 0);
+  const sentryProofStatus: ReleaseMetadataFieldStatus =
+    otaDisposition === "published" ? "missing" : "not_applicable";
+  const binarySourceMapProofStatus: ReleaseMetadataFieldStatus =
+    otaDisposition === "published" ? "missing" : "not_applicable";
+  const missing: string[] = [];
+  const warnings: string[] = [];
+  const fieldStatuses = {
+    gitSha: presentWhen(params.repo.headCommit),
+    appVersion: presentWhen(params.appVersion),
+    buildLineage: hasBuildLineage ? "present" : "missing",
+    runtimeVersion: presentWhen(params.runtimeVersion),
+    channel:
+      channelValue && channelValue.trim().length > 0
+        ? "present"
+        : otaDisposition === "skip"
+          ? "not_applicable"
+          : "missing",
+    branch:
+      branchValue && branchValue.trim().length > 0
+        ? "present"
+        : otaDisposition === "skip"
+          ? "not_applicable"
+          : "missing",
+    platform:
+      platformValue && platformValue.trim().length > 0
+        ? "present"
+        : otaDisposition === "published"
+          ? "missing"
+          : "not_applicable",
+  } satisfies Record<string, ReleaseMetadataFieldStatus>;
+
+  for (const [field, status] of Object.entries(fieldStatuses)) {
+    if (status === "missing") missing.push(field);
+  }
+
+  if (sentryProofStatus === "missing") {
+    missing.push("sentrySourceMaps");
+    warnings.push("Sentry source maps are not marked shipped because no source map proof is attached to this report.");
+  }
+
+  if (binarySourceMapProofStatus === "missing") {
+    missing.push("binarySourceMapsProven");
+    warnings.push("Binary/source map proof is not marked shipped without explicit proof artifacts.");
+  }
+
+  const rollbackReady =
+    params.repo.worktreeClean &&
+    params.repo.headMatchesOriginMain &&
+    presentWhen(params.repo.headCommit) === "present" &&
+    params.runtimePolicyValid &&
+    params.runtimeProofConsistent &&
+    params.startupPolicyValid;
+
+  return {
+    ...fieldStatuses,
+    otaDisposition,
+    rollbackReady,
+    sentrySourceMaps: sentryProofStatus,
+    binarySourceMapsProven: binarySourceMapProofStatus,
+    easBuildTriggered: false,
+    easSubmitTriggered: false,
+    otaPublished: otaDisposition === "published",
+    easUpdateTriggered: otaDisposition === "published",
+    missing,
+    warnings,
   };
 }
 

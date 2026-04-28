@@ -9,6 +9,7 @@ import {
   buildReleaseChangedFilesGitArgs,
   buildReleaseGuardOtaPublishCommand,
   buildReleaseGuardOtaPublishEnv,
+  buildReleaseMetadataEnforcement,
   REQUIRED_RELEASE_GATES,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
@@ -337,6 +338,23 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     missingArtifacts,
     expectedBranch,
   });
+  const runtimePolicy = {
+    resolvedRuntimeVersion: configSummary.runtimeVersion,
+    runtimePolicy: configSummary.runtimePolicy,
+    runtimeVersionStrategy: configSummary.runtimeVersionStrategy,
+    runtimePolicyValid: configSummary.runtimePolicyValid,
+    runtimePolicyReason: configSummary.runtimePolicyReason,
+    runtimeProofConsistent: configSummary.runtimeProofConsistent,
+    runtimeProofReason: configSummary.runtimeProofReason,
+    buildRequired: classification.kind === "build-required",
+  };
+  const startupPolicy = {
+    updatesEnabled: configSummary.updatesEnabled,
+    checkAutomatically: configSummary.checkAutomatically,
+    fallbackToCacheTimeout: configSummary.fallbackToCacheTimeout,
+    startupPolicyValid: configSummary.startupPolicyValid,
+    startupPolicyReason: configSummary.startupPolicyReason,
+  };
 
   return {
     mode: args.mode,
@@ -344,23 +362,8 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     repo,
     gates,
     classification,
-    runtimePolicy: {
-      resolvedRuntimeVersion: configSummary.runtimeVersion,
-      runtimePolicy: configSummary.runtimePolicy,
-      runtimeVersionStrategy: configSummary.runtimeVersionStrategy,
-      runtimePolicyValid: configSummary.runtimePolicyValid,
-      runtimePolicyReason: configSummary.runtimePolicyReason,
-      runtimeProofConsistent: configSummary.runtimeProofConsistent,
-      runtimeProofReason: configSummary.runtimeProofReason,
-      buildRequired: classification.kind === "build-required",
-    },
-    startupPolicy: {
-      updatesEnabled: configSummary.updatesEnabled,
-      checkAutomatically: configSummary.checkAutomatically,
-      fallbackToCacheTimeout: configSummary.fallbackToCacheTimeout,
-      startupPolicyValid: configSummary.startupPolicyValid,
-      startupPolicyReason: configSummary.startupPolicyReason,
-    },
+    runtimePolicy,
+    startupPolicy,
     readiness,
     requiredArtifacts: args.requireArtifacts,
     missingArtifacts,
@@ -369,6 +372,21 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     releaseMessage: args.message,
     commitRange: args.range ?? resolveCommitRange(null),
     otaPublish: null,
+    releaseMetadata: buildReleaseMetadataEnforcement({
+      repo,
+      appVersion: configSummary.appVersion,
+      configuredIosBuildNumber: configSummary.configuredIosBuildNumber,
+      configuredAndroidVersionCode: configSummary.configuredAndroidVersionCode,
+      appVersionSource: configSummary.appVersionSource,
+      runtimeVersion: configSummary.runtimeVersion,
+      runtimePolicyValid: configSummary.runtimePolicyValid,
+      runtimeProofConsistent: configSummary.runtimeProofConsistent,
+      startupPolicyValid: configSummary.startupPolicyValid,
+      readiness,
+      targetChannel,
+      expectedBranch,
+      otaPublish: null,
+    }),
   };
 }
 
@@ -444,9 +462,33 @@ function main() {
   const publishOutput = publishResult.stdout ?? "";
 
   const otaPublish = parseEasUpdateOutput(publishOutput);
+  const publishedMissing = [
+    ...baseReport.releaseMetadata.missing,
+    ...(otaPublish.branch ? [] : ["channel", "branch"]),
+    ...(otaPublish.platform ? [] : ["platform"]),
+    "sentrySourceMaps",
+    "binarySourceMapsProven",
+  ].filter((value, index, values) => values.indexOf(value) === index);
   const finalReport: ReleaseGuardReport = {
     ...baseReport,
     otaPublish,
+    releaseMetadata: {
+      ...baseReport.releaseMetadata,
+      channel: otaPublish.branch ? "present" : "missing",
+      branch: otaPublish.branch ? "present" : "missing",
+      platform: otaPublish.platform ? "present" : "missing",
+      otaDisposition: "published",
+      sentrySourceMaps: "missing",
+      binarySourceMapsProven: "missing",
+      otaPublished: true,
+      easUpdateTriggered: true,
+      missing: publishedMissing,
+      warnings: [
+        ...baseReport.releaseMetadata.warnings,
+        "Sentry source maps are not marked shipped because no source map proof is attached to this report.",
+        "Binary/source map proof is not marked shipped without explicit proof artifacts.",
+      ],
+    },
   };
 
   writeReport(args.reportFile, finalReport);

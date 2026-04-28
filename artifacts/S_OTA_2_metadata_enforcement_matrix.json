@@ -1,0 +1,64 @@
+{
+  "wave": "S-ROLL-3/S-OTA-2",
+  "mode": "production-safe-release-rollback",
+  "rollbackScript": {
+    "path": "scripts/release/rollback-ota.mjs",
+    "dryRunDefault": true,
+    "jsonOutput": true,
+    "requiresTarget": true,
+    "requiresChannel": true,
+    "requiresRuntimeVersion": true,
+    "requiresRollbackTarget": true,
+    "productionExecuteRequiresOwnerApproval": true,
+    "easUpdateTriggeredInTests": false,
+    "otaPublishedInTests": false
+  },
+  "releaseMetadata": {
+    "gitSha": "verified",
+    "runtimeVersion": "verified_or_missing_reported",
+    "channel": "verified_or_missing_reported_or_not_applicable",
+    "otaDisposition": "skip_or_candidate_or_published_or_blocked",
+    "rollbackReady": true,
+    "sentrySourceMaps": "verified_or_missing_or_not_applicable",
+    "binarySourceMapsProven": "verified_or_missing_or_not_applicable"
+  },
+  "dryRuns": [
+    {
+      "target": "staging",
+      "status": "dry_run",
+      "easUpdateTriggered": false,
+      "otaPublished": false,
+      "productionTouched": false,
+      "secretsPrinted": false
+    },
+    {
+      "target": "production",
+      "status": "rejected_without_owner_approval",
+      "easUpdateTriggered": false,
+      "otaPublished": false,
+      "productionTouched": false,
+      "secretsPrinted": false
+    }
+  ],
+  "tests": {
+    "targetedReleaseRollbackOtaMetadata": "passed",
+    "typescript": "passed"
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "nativeConfigChanged": false,
+    "packageChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false
+  }
+}
