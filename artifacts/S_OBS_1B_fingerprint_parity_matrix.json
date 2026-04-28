@@ -1,0 +1,46 @@
+{
+  "wave": "S-OBS-1B-R2",
+  "goal": "fix fingerprintignore pattern and retry Sentry production binaries",
+  "previousState": {
+    "previousCommit": "a6ee6691ae4063380b572a1e6db8e9201cc9c518",
+    "failedBuildId": "575d52ff-dd8d-41bb-bc05-b7de913e0618",
+    "failedPhase": "CONFIGURE_EXPO_UPDATES",
+    "failedRuntimeVersion": "329c5b0bb69e8e95e072c22d653f098fd60bf99e",
+    "oldFingerprintIgnore": ["ios"]
+  },
+  "fix": {
+    "newFingerprintIgnore": ["ios/**/*"],
+    "iosCommitted": false,
+    "runtimeVersionPolicyChanged": false,
+    "packageChanged": false,
+    "appConfigChanged": false
+  },
+  "fingerprints": {
+    "iosRun1": "329c5b0bb69e8e95e072c22d653f098fd60bf99e",
+    "iosRun2": "329c5b0bb69e8e95e072c22d653f098fd60bf99e",
+    "iosRepeatedStable": true,
+    "android": "2eb1a9dfacdc8037b20eccf538572182d6c35ec0",
+    "failedBuildCompareHashMatched": true
+  },
+  "preCommitGates": {
+    "tsc": "pass",
+    "lint": "pass",
+    "jestRunInBand": "pass",
+    "jest": "pass",
+    "gitDiffCheck": "pass",
+    "releaseVerifyInternalGates": "pass",
+    "releaseVerifyReadiness": "fail_dirty_worktree_expected",
+    "otaDisposition": "block"
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "uiChanged": false,
+    "sqlRpcChanged": false,
+    "maestroYamlChanged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggeredAfterFix": false,
+    "easSubmitTriggeredAfterFix": false
+  }
+}
