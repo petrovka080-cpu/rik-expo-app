@@ -43,6 +43,69 @@ export class RpcTransportBoundaryError extends Error {
   }
 }
 
+export type RpcValidationContext = {
+  rpcName: string;
+  caller: string;
+  domain:
+    | "warehouse"
+    | "accountant"
+    | "contractor"
+    | "director"
+    | "buyer"
+    | "proposal"
+    | "catalog"
+    | "unknown";
+};
+
+export type RpcResponseValidator<T> = (value: unknown) => value is T;
+
+export class RpcValidationError extends Error {
+  readonly name = "RpcValidationError";
+  readonly rpcName: string;
+  readonly caller: string;
+  readonly domain: string;
+
+  constructor(context: RpcValidationContext) {
+    super(`Invalid RPC response shape for ${context.rpcName} at ${context.caller}`);
+    this.rpcName = context.rpcName;
+    this.caller = context.caller;
+    this.domain = context.domain;
+  }
+}
+
+export function validateRpcResponse<T>(
+  value: unknown,
+  validator: RpcResponseValidator<T>,
+  context: RpcValidationContext,
+): T {
+  if (validator(value)) return value;
+  throw new RpcValidationError(context);
+}
+
+export const isRpcRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+export const isRpcString = (value: unknown): value is string =>
+  typeof value === "string";
+
+export const isRpcNonEmptyString = (value: unknown): value is string =>
+  isRpcString(value) && value.trim().length > 0;
+
+export const isRpcBoolean = (value: unknown): value is boolean =>
+  typeof value === "boolean";
+
+export const isRpcOptionalBoolean = (
+  value: unknown,
+): value is boolean | null | undefined => value == null || isRpcBoolean(value);
+
+export const isRpcNumberLike = (value: unknown): value is number | string =>
+  (typeof value === "number" || typeof value === "string") &&
+  Number.isFinite(Number(value));
+
+export const isRpcOptionalString = (
+  value: unknown,
+): value is string | null | undefined => value == null || isRpcString(value);
+
 const asRpcErrorLike = (value: unknown): NullableRpcErrorLike => {
   if (!value) return null;
   if (value instanceof Error) {

@@ -181,6 +181,30 @@ describe("director approve boundary", () => {
     expect(harness.from).not.toHaveBeenCalled();
   });
 
+  it("does not read back or publish success for malformed approve RPC responses", async () => {
+    const harness = buildApproveSupabase({
+      rpc: {
+        data: { ok: true, purchase_id: { raw: "purchase-1" } },
+        error: null,
+      },
+    });
+
+    await expect(
+      runDirectorApprovePipelineAction({
+        supabase: harness.supabase,
+        proposalId: "proposal-1",
+        clientMutationId: "mutation-1",
+      }),
+    ).rejects.toBeInstanceOf(DirectorApproveBoundaryError);
+
+    expect(harness.from).not.toHaveBeenCalled();
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) => event.event === "director_approve_terminal_success",
+      ),
+    ).toBe(false);
+  });
+
   it("keeps approved readback authoritative when the server row is present", async () => {
     const harness = buildApproveSupabase({
       readback: {

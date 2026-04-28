@@ -3,6 +3,7 @@ import { config as loadDotenv } from "dotenv";
 
 import { REQUEST_DRAFT_STATUS } from "../../src/lib/api/requests.status";
 import type { Database } from "../../src/lib/database.types";
+import { RpcValidationError } from "../../src/lib/api/queryBoundary";
 import { applyWarehouseReceive } from "../../src/screens/warehouse/hooks/useWarehouseReceiveApply";
 import {
   cleanupTempUser,
@@ -423,6 +424,25 @@ describe("applyWarehouseReceive", () => {
       p_warehouseman_fio: "Warehouse Tester",
       p_note: null,
     });
+  });
+
+  it("returns a typed validation error when receive RPC response shape is malformed", async () => {
+    const rpc = jest.fn(async () => ({
+      data: { ok: 1 },
+      error: null,
+    }));
+
+    const result = await applyWarehouseReceive({
+      supabase: { rpc } as never,
+      incomingId: "incoming-1",
+      items: [{ purchase_item_id: "purchase-item-1", qty: 2 }],
+      warehousemanFio: "Warehouse Tester",
+      clientMutationId: "wrq-stable-1",
+    });
+
+    expect(result.data).toBeNull();
+    expect(result.error).toBeInstanceOf(RpcValidationError);
+    expect(String(result.error?.message)).not.toContain("purchase-item-1");
   });
 });
 

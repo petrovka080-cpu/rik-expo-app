@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { RpcValidationError } from "./queryBoundary";
 import { syncRequestDraftViaRpc } from "./requestDraftSync.service";
 import { mapRequestRow } from "./requests.parsers";
 
@@ -77,6 +78,29 @@ describe("request draft sync lifecycle boundary", () => {
     ).rejects.toThrow(
       "request_sync_draft_v2 failed: request_sync_draft_v2: stale_draft_against_submitted_request",
     );
+  });
+
+  it("throws RpcValidationError for malformed request draft sync response", async () => {
+    mockSupabase.rpc.mockResolvedValue({
+      data: {
+        document_type: "request_draft_sync",
+        version: "v2",
+        request_payload: null,
+        items_payload: [],
+        submitted: true,
+        request_created: false,
+      },
+      error: null,
+    });
+
+    await expect(
+      syncRequestDraftViaRpc({
+        requestId: "req-1",
+        lines: [],
+      }),
+    ).rejects.toBeInstanceOf(RpcValidationError);
+
+    expect(mockMapRequestRow).not.toHaveBeenCalled();
   });
 
   it("removes the director handoff channel when broadcast subscribe fails", async () => {

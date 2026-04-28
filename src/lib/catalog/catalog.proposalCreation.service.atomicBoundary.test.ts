@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 
 import { supabase } from "../supabaseClient";
+import { RpcValidationError } from "../api/queryBoundary";
 import { createProposalsBySupplier } from "./catalog.proposalCreation.service";
 
 jest.mock("../supabaseClient", () => ({
@@ -216,6 +217,35 @@ describe("catalog proposal atomic boundary", () => {
     ).rejects.toThrow("rpc_proposal_submit_v3 item count mismatch: expected 2, got 1");
 
     expect(mockedSupabase.rpc).toHaveBeenCalledTimes(1);
+    expect(mockedSupabase.from).not.toHaveBeenCalled();
+  });
+
+  it("throws RpcValidationError for malformed atomic proposal response shape", async () => {
+    mockedSupabase.rpc.mockResolvedValue({
+      data: {
+        status: "ok",
+        proposals: [{ proposal_no: "PR-1" }],
+      },
+      error: null,
+    });
+
+    await expect(
+      createProposalsBySupplier(
+        [
+          {
+            supplier: "Acme",
+            request_item_ids: ["ri-1"],
+            meta: [{ request_item_id: "ri-1", price: "100", supplier: "Acme", note: "n1" }],
+          },
+        ],
+        {
+          buyerFio: "Buyer User",
+          requestId: "request-1",
+          clientMutationId: "mutation-malformed-1",
+        },
+      ),
+    ).rejects.toBeInstanceOf(RpcValidationError);
+
     expect(mockedSupabase.from).not.toHaveBeenCalled();
   });
 

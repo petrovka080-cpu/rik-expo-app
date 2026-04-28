@@ -8,6 +8,7 @@ import {
   ensureProposalExists,
   ensureProposalItemIdsBelongToProposal,
 } from "./integrity.guards";
+import { RpcValidationError } from "./queryBoundary";
 
 jest.mock("./_core", () => ({
   client: {
@@ -278,5 +279,27 @@ describe("accountant financial rpc boundary", () => {
       code: "amount_exceeds_outstanding",
       proposalId: "proposal-1",
     } satisfies Partial<AccountantPayInvoiceAtomicError>);
+  });
+
+  it("throws RpcValidationError when payment RPC success response is malformed", async () => {
+    mockClient.rpc.mockResolvedValue({
+      data: {
+        ok: true,
+        proposal_id: "proposal-1",
+        payment_id: null,
+      },
+      error: null,
+    });
+
+    await expect(
+      accountantPayInvoiceAtomic({
+        proposalId: "proposal-1",
+        amount: 10,
+        accountantFio: "Accountant",
+        purpose: "Payment",
+        clientMutationId: "pay-1",
+        method: "bank",
+      }),
+    ).rejects.toBeInstanceOf(RpcValidationError);
   });
 });

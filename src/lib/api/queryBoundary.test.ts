@@ -2,7 +2,12 @@ import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
 } from "../observability/platformObservability";
-import { runContainedRpc } from "./queryBoundary";
+import {
+  RpcValidationError,
+  isRpcRecord,
+  runContainedRpc,
+  validateRpcResponse,
+} from "./queryBoundary";
 
 describe("queryBoundary", () => {
   beforeEach(() => {
@@ -150,5 +155,104 @@ describe("queryBoundary", () => {
         }),
       ]),
     );
+  });
+});
+
+describe("rpcValidation", () => {
+  const context = {
+    rpcName: "example_rpc",
+    caller: "test/caller",
+    domain: "warehouse" as const,
+  };
+
+  it("passes a valid object", () => {
+    const value = { id: "row-1", extra: "allowed" };
+    const result = validateRpcResponse(
+      value,
+      (candidate): candidate is { id: string } =>
+        isRpcRecord(candidate) && typeof candidate.id === "string",
+      context,
+    );
+
+    expect(result).toBe(value);
+  });
+
+  it("passes a valid array when the validator allows it", () => {
+    const value = [{ id: "row-1" }];
+    const result = validateRpcResponse(
+      value,
+      (candidate): candidate is { id: string }[] =>
+        Array.isArray(candidate) && candidate.every((row) => isRpcRecord(row)),
+      context,
+    );
+
+    expect(result).toBe(value);
+  });
+
+  it("throws RpcValidationError for invalid shape", () => {
+    expect(() =>
+      validateRpcResponse(
+        null,
+        (candidate): candidate is { id: string } => isRpcRecord(candidate),
+        context,
+      ),
+    ).toThrow(RpcValidationError);
+  });
+
+  it("lets nullable behavior follow the validator", () => {
+    expect(
+      validateRpcResponse(
+        null,
+        (candidate): candidate is null => candidate === null,
+        { ...context, rpcName: "nullable_rpc" },
+      ),
+    ).toBeNull();
+  });
+
+  it("allows extra fields when the validator only requires used fields", () => {
+    const value = { id: "row-1", harmless_extra: { nested: true } };
+    expect(
+      validateRpcResponse(
+        value,
+        (candidate): candidate is { id: string } =>
+          isRpcRecord(candidate) && typeof candidate.id === "string",
+        context,
+      ),
+    ).toEqual(value);
+  });
+
+  it("does not include raw payload contents in error messages", () => {
+    const rawSecret = "token_should_not_be_logged";
+
+    try {
+      validateRpcResponse(
+        { token: rawSecret },
+        (candidate): candidate is { id: string } =>
+          isRpcRecord(candidate) && typeof candidate.id === "string",
+        context,
+      );
+      throw new Error("expected validation failure");
+    } catch (error) {
+      expect(error).toBeInstanceOf(RpcValidationError);
+      expect(String((error as Error).message)).not.toContain(rawSecret);
+    }
+  });
+
+  it("attaches context fields", () => {
+    try {
+      validateRpcResponse(
+        "bad",
+        (candidate): candidate is { id: string } => isRpcRecord(candidate),
+        context,
+      );
+      throw new Error("expected validation failure");
+    } catch (error) {
+      expect(error).toMatchObject({
+        name: "RpcValidationError",
+        rpcName: "example_rpc",
+        caller: "test/caller",
+        domain: "warehouse",
+      });
+    }
   });
 });

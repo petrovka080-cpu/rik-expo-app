@@ -8,6 +8,13 @@ import {
   type ProposalActionTerminalClass,
 } from "../../lib/api/proposalActionBoundary";
 import { toProposalRequestItemIntegrityDegradedError } from "../../lib/api/proposalIntegrity";
+import {
+  isRpcBoolean,
+  isRpcOptionalBoolean,
+  isRpcOptionalString,
+  isRpcRecord,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
 
 export type DirectorApprovePipelineResult = {
   proposalId: string;
@@ -38,10 +45,22 @@ export class DirectorApproveBoundaryError extends Error {
   }
 }
 
-const asRecord = (value: unknown): Record<string, unknown> | null =>
-  value && typeof value === "object" ? (value as Record<string, unknown>) : null;
-
 const text = (value: unknown): string => String(value ?? "").trim();
+
+const isDirectorApprovePipelineResponse = (value: unknown): value is Record<string, unknown> => {
+  if (!isRpcRecord(value)) return false;
+  if (value.ok === false) {
+    return isRpcOptionalString(value.failure_code) && isRpcOptionalString(value.failure_message);
+  }
+
+  return (
+    (value.ok == null || isRpcBoolean(value.ok)) &&
+    isRpcOptionalString(value.purchase_id) &&
+    isRpcOptionalBoolean(value.work_seed_ok) &&
+    isRpcOptionalString(value.work_seed_error) &&
+    isRpcOptionalBoolean(value.idempotent_replay)
+  );
+};
 
 const recordApproveEvent = (
   event: string,
@@ -94,7 +113,11 @@ export async function runDirectorApprovePipelineAction(params: {
       });
     }
 
-    const result = asRecord(data);
+    const result = validateRpcResponse(data, isDirectorApprovePipelineResponse, {
+      rpcName: "director_approve_pipeline_v1",
+      caller: "src/screens/director/director.approve.boundary.runDirectorApprovePipelineAction",
+      domain: "director",
+    });
     recordApproveEvent("director_approve_result_received", "success", {
       ...eventBase,
       ok: result?.ok !== false,

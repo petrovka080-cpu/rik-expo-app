@@ -8,6 +8,11 @@ import { supabase } from "../supabaseClient";
 import { mapRequestRow } from "./requests.parsers";
 import type { RequestMeta, RequestRecord } from "./types";
 import { logger } from "../logger";
+import {
+  isRpcBoolean,
+  isRpcRecord,
+  validateRpcResponse,
+} from "./queryBoundary";
 
 type RequestDraftSyncArgsV2 = Database["public"]["Functions"]["request_sync_draft_v2"]["Args"];
 type RequestDraftSyncReturns = Database["public"]["Functions"]["request_sync_draft_v2"]["Returns"];
@@ -225,6 +230,15 @@ const parseEnvelope = (value: RequestDraftSyncReturns): RequestDraftSyncEnvelope
   };
 };
 
+const isRequestDraftSyncRpcResponse = (value: unknown): value is RequestDraftSyncReturns =>
+  isRpcRecord(value) &&
+  value.document_type === "request_draft_sync" &&
+  value.version === "v2" &&
+  isRpcRecord(value.request_payload) &&
+  Array.isArray(value.items_payload) &&
+  isRpcBoolean(value.submitted) &&
+  isRpcBoolean(value.request_created);
+
 export const isRequestDraftSyncRpcEnabled = () => REQUEST_DRAFT_SYNC_RPC_V2_ENABLED;
 
 export async function syncRequestDraftViaRpc(params: {
@@ -280,7 +294,13 @@ export async function syncRequestDraftViaRpc(params: {
     throw new Error(`request_sync_draft_v2 failed: ${error.message}`);
   }
 
-  const envelope = parseEnvelope(data);
+  const envelope = parseEnvelope(
+    validateRpcResponse(data, isRequestDraftSyncRpcResponse, {
+      rpcName: "request_sync_draft_v2",
+      caller: "src/lib/api/requestDraftSync.service.syncRequestDraftViaRpc",
+      domain: "catalog",
+    }),
+  );
   const request = mapRequestRow(envelope.request_payload);
   if (!request) {
     throw new Error("request_sync_draft invalid request_payload");

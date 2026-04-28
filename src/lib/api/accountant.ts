@@ -1,6 +1,13 @@
 import { client, rpcCompat } from "./_core";
 import { ensureProposalExists, ensureProposalItemIdsBelongToProposal } from "./integrity.guards";
 import { trackRpcLatency } from "../observability/rpcLatencyMetrics";
+import {
+  isRpcBoolean,
+  isRpcNonEmptyString,
+  isRpcNumberLike,
+  isRpcRecord,
+  validateRpcResponse,
+} from "./queryBoundary";
 import type { AccountantInboxRow } from "./types";
 import type { Database } from "../database.types";
 import { applySupabaseAbortSignal, throwIfAborted } from "../requestCancellation";
@@ -449,6 +456,28 @@ export const parseAccountantPayInvoiceAtomicResult = (
   };
 };
 
+const isAccountingPayInvoiceRpcResponse = (value: unknown): value is Record<string, unknown> => {
+  if (!isRpcRecord(value) || !isRpcBoolean(value.ok)) return false;
+
+  if (value.ok === false) {
+    return (
+      isRpcNonEmptyString(value.failure_code) ||
+      isRpcNonEmptyString(value.failureCode) ||
+      isRpcNonEmptyString(value.failure_message) ||
+      isRpcNonEmptyString(value.failureMessage)
+    );
+  }
+
+  return (
+    isRpcNonEmptyString(value.proposal_id ?? value.proposalId) &&
+    isRpcNumberLike(value.payment_id ?? value.paymentId) &&
+    isRpcRecord(value.allocation_summary ?? value.allocationSummary) &&
+    isRpcRecord(value.totals_before ?? value.totalsBefore) &&
+    isRpcRecord(value.totals_after ?? value.totalsAfter) &&
+    isRpcRecord(value.server_truth ?? value.serverTruth)
+  );
+};
+
 const isSendToAccountantInput = (v: unknown): v is SendToAccountantInput =>
   typeof v === "object" && v !== null && "proposalId" in v;
 
@@ -649,7 +678,12 @@ export async function accountantPayInvoiceAtomic(
     throw error;
   }
 
-  const result = parseAccountantPayInvoiceAtomicResult(data);
+  const validated = validateRpcResponse(data, isAccountingPayInvoiceRpcResponse, {
+    rpcName: "accounting_pay_invoice_v1",
+    caller: "src/lib/api/accountant.accountantPayInvoiceAtomic",
+    domain: "accountant",
+  });
+  const result = parseAccountantPayInvoiceAtomicResult(validated);
   trackRpcLatency({
     name: "accounting_pay_invoice_v1",
     screen: "accountant",

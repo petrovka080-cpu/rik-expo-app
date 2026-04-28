@@ -1,0 +1,84 @@
+{
+  "wave": "S-RPC-1",
+  "goal": "runtime validation for top RPC responses",
+  "selectedRpcCount": 5,
+  "helper": "src/lib/api/queryBoundary.ts",
+  "dependency": {
+    "zodUsed": false,
+    "zodAdded": false,
+    "nativeDependencyAdded": false,
+    "packageChanged": false
+  },
+  "validators": [
+    {
+      "rpcName": "wh_receive_apply_ui",
+      "domain": "warehouse",
+      "caller": "src/screens/warehouse/hooks/useWarehouseReceiveApply.ts",
+      "validResponseTested": true,
+      "invalidResponseTested": true,
+      "extraFieldsAllowed": true
+    },
+    {
+      "rpcName": "accounting_pay_invoice_v1",
+      "domain": "accountant",
+      "caller": "src/lib/api/accountant.ts",
+      "validResponseTested": true,
+      "invalidResponseTested": true,
+      "extraFieldsAllowed": true
+    },
+    {
+      "rpcName": "director_approve_pipeline_v1",
+      "domain": "director",
+      "caller": "src/screens/director/director.approve.boundary.ts",
+      "validResponseTested": true,
+      "invalidResponseTested": true,
+      "extraFieldsAllowed": true
+    },
+    {
+      "rpcName": "rpc_proposal_submit_v3",
+      "domain": "proposal",
+      "caller": "src/lib/catalog/catalog.proposalCreation.service.ts",
+      "validResponseTested": true,
+      "invalidResponseTested": true,
+      "extraFieldsAllowed": true
+    },
+    {
+      "rpcName": "request_sync_draft_v2",
+      "domain": "catalog",
+      "caller": "src/lib/api/requestDraftSync.service.ts",
+      "validResponseTested": true,
+      "invalidResponseTested": true,
+      "extraFieldsAllowed": true
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "mutationPayloadChanged": false,
+    "clientMutationIdChanged": false,
+    "retryQuarantineChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "uiChanged": false,
+    "maestroYamlChanged": false,
+    "rawResponseLogged": false,
+    "piiLogged": false,
+    "signedUrlLogged": false,
+    "tokenLogged": false
+  },
+  "gates": {
+    "targetedTests": "pass",
+    "performanceBudget": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "jestRunInBand": "pass",
+    "jest": "pass",
+    "gitDiffCheck": "pass",
+    "releaseVerifyPreCommitGates": "pass_dirty_worktree_block_only"
+  },
+  "release": {
+    "otaDisposition": "pending_clean_worktree_verification",
+    "otaPublished": false,
+    "buildTriggered": false,
+    "submitTriggered": false
+  }
+}

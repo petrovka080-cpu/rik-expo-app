@@ -10,6 +10,13 @@ import {
   asLooseRecord,
   norm,
 } from "./catalog.compat.shared";
+import {
+  isRpcNonEmptyString,
+  isRpcOptionalBoolean,
+  isRpcOptionalString,
+  isRpcRecord,
+  validateRpcResponse,
+} from "../api/queryBoundary";
 
 export type ProposalBucketInput = {
   supplier?: string | null;
@@ -94,6 +101,33 @@ type ProposalAtomicSubmitRpcResult = {
   proposals?: ProposalAtomicSubmitRpcProposalRow[] | null;
   meta?: ProposalAtomicSubmitRpcMeta | null;
 };
+
+const isAtomicSubmitProposalRow = (value: unknown): value is ProposalAtomicSubmitRpcProposalRow =>
+  isRpcRecord(value) &&
+  isRpcNonEmptyString(value.proposal_id) &&
+  (value.request_item_ids == null || Array.isArray(value.request_item_ids)) &&
+  isRpcOptionalString(value.proposal_no) &&
+  isRpcOptionalString(value.supplier) &&
+  isRpcOptionalString(value.raw_status) &&
+  isRpcOptionalString(value.submitted_at) &&
+  isRpcOptionalString(value.sent_to_accountant_at) &&
+  isRpcOptionalString(value.submit_source);
+
+const isAtomicSubmitMeta = (value: unknown): value is ProposalAtomicSubmitRpcMeta =>
+  value == null ||
+  (isRpcRecord(value) &&
+    isRpcOptionalString(value.canonical_path) &&
+    isRpcOptionalString(value.client_mutation_id) &&
+    isRpcOptionalString(value.request_id) &&
+    isRpcOptionalBoolean(value.idempotent_replay) &&
+    isRpcOptionalBoolean(value.attachment_continuation_ready));
+
+const isAtomicSubmitRpcResult = (value: unknown): value is ProposalAtomicSubmitRpcResult =>
+  isRpcRecord(value) &&
+  isRpcOptionalString(value.status) &&
+  Array.isArray(value.proposals) &&
+  value.proposals.every(isAtomicSubmitProposalRow) &&
+  isAtomicSubmitMeta(value.meta);
 
 type ExistingProposalRecoveryRow = {
   id?: string | null;
@@ -393,7 +427,12 @@ async function runAtomicProposalSubmitRpc(
     throw error;
   }
 
-  const parsed = mapAtomicProposalSubmitResult((data ?? null) as ProposalAtomicSubmitRpcResult, buckets);
+  const validated = validateRpcResponse(data, isAtomicSubmitRpcResult, {
+    rpcName: "rpc_proposal_submit_v3",
+    caller: "src/lib/catalog/catalog.proposalCreation.service.runAtomicProposalSubmitRpc",
+    domain: "proposal",
+  });
+  const parsed = mapAtomicProposalSubmitResult(validated, buckets);
   if (!parsed.proposals.length) {
     throw new Error("rpc_proposal_submit_v3 returned empty proposals");
   }
