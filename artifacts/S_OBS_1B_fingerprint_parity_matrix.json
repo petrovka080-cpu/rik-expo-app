@@ -1,46 +1,94 @@
 {
-  "wave": "S-OBS-1B-R2",
-  "goal": "fix fingerprintignore pattern and retry Sentry production binaries",
-  "previousState": {
-    "previousCommit": "a6ee6691ae4063380b572a1e6db8e9201cc9c518",
-    "failedBuildId": "575d52ff-dd8d-41bb-bc05-b7de913e0618",
-    "failedPhase": "CONFIGURE_EXPO_UPDATES",
-    "failedRuntimeVersion": "329c5b0bb69e8e95e072c22d653f098fd60bf99e",
-    "oldFingerprintIgnore": ["ios"]
+  "wave": "S-OBS-1B-R3",
+  "goal": "diagnose EAS post-prebuild fingerprint mismatch",
+  "status": "BLOCKED",
+  "failedBuilds": [
+    "b56043da-e4b4-4765-a845-9b1cd7c57a22",
+    "589df034-a1af-422f-ae76-2f4b67315556",
+    "575d52ff-dd8d-41bb-bc05-b7de913e0618",
+    "ae3da312-3afe-4b84-a223-3fddd08d4e73"
+  ],
+  "latestFailedBuild": {
+    "id": "ae3da312-3afe-4b84-a223-3fddd08d4e73",
+    "phase": "CONFIGURE_EXPO_UPDATES",
+    "commit": "bb8bdb30cb728265cac3e24d19d82bdf6a201362",
+    "localRuntime": "329c5b0bb69e8e95e072c22d653f098fd60bf99e",
+    "easRuntime": "bc9c9355222395cbde647610ec48487de37efc6b",
+    "nodeVersion": "20.19.4",
+    "buildImage": "sdk-54",
+    "installCommand": "npm ci --include=dev"
   },
+  "remainingDiffs": {
+    "generatedIosBareNativeDir": true,
+    "sentryReactNative": true,
+    "sentryBeforeHash": "a5a30c5062cf10d7a20437547326bc54b4adc6f5",
+    "sentryAfterHash": "b5472b1833d90dfd901d4193ce981eac859c09fa"
+  },
+  "diagnostics": {
+    "tempCleanClone": true,
+    "tempNpmCi": true,
+    "tempPrebuildAttempted": true,
+    "tempPrebuildRepro": false,
+    "tempPrebuildBlockedByHost": "Windows host cannot generate iOS native project files",
+    "cleanTempFingerprint": "9631e1a79e546825a10033859cb3e1fb216a3459",
+    "realSentryHash": "a5a30c5062cf10d7a20437547326bc54b4adc6f5",
+    "cleanNpmCiSentryHash": "b5472b1833d90dfd901d4193ce981eac859c09fa",
+    "fingerprintIgnoreTested": true,
+    "fingerprintConfigTested": true,
+    "sourceSkipsChecked": true
+  },
+  "ignoreTests": [
+    {
+      "kind": ".fingerprintignore",
+      "patterns": ["ios/**/*"],
+      "iosBareNativeDirSourceStillPresent": true
+    },
+    {
+      "kind": ".fingerprintignore",
+      "patterns": ["ios", "ios/**/*", "**/ios", "**/ios/**/*"],
+      "iosBareNativeDirSourceStillPresent": true
+    },
+    {
+      "kind": "fingerprint.config.js",
+      "ignorePaths": ["ios"],
+      "iosBareNativeDirSourceStillPresent": true
+    },
+    {
+      "kind": "fingerprint.config.js",
+      "ignorePaths": ["ios", "ios/**/*", "**/ios", "**/ios/**/*"],
+      "iosBareNativeDirSourceStillPresent": true
+    }
+  ],
   "fix": {
-    "newFingerprintIgnore": ["ios/**/*"],
+    "file": "",
+    "chosenFix": "none",
+    "reason": "No durable fingerprint config fix was proven. Sentry parity is explainable by stale local node_modules, but generated ios bareNativeDir remains a strict diff source.",
     "iosCommitted": false,
+    "androidChanged": false,
     "runtimeVersionPolicyChanged": false,
     "packageChanged": false,
     "appConfigChanged": false
   },
-  "fingerprints": {
-    "iosRun1": "329c5b0bb69e8e95e072c22d653f098fd60bf99e",
-    "iosRun2": "329c5b0bb69e8e95e072c22d653f098fd60bf99e",
-    "iosRepeatedStable": true,
-    "android": "2eb1a9dfacdc8037b20eccf538572182d6c35ec0",
-    "failedBuildCompareHashMatched": true
-  },
-  "preCommitGates": {
-    "tsc": "pass",
-    "lint": "pass",
-    "jestRunInBand": "pass",
-    "jest": "pass",
+  "gates": {
+    "precheckGitStatus": "clean",
+    "headEqualsOriginMain": true,
     "gitDiffCheck": "pass",
-    "releaseVerifyInternalGates": "pass",
-    "releaseVerifyReadiness": "fail_dirty_worktree_expected",
-    "otaDisposition": "block"
+    "releaseVerify": "pass",
+    "iosBuildRetriedInR3": false,
+    "androidBuild": "not_run",
+    "submit": "not_run"
   },
   "safety": {
     "businessLogicChanged": false,
     "uiChanged": false,
     "sqlRpcChanged": false,
     "maestroYamlChanged": false,
+    "releaseGuardWeakened": false,
+    "nodeModulesIgnoredBroadly": false,
     "secretsPrinted": false,
     "secretsCommitted": false,
     "otaPublished": false,
-    "easBuildTriggeredAfterFix": false,
-    "easSubmitTriggeredAfterFix": false
+    "easBuildTriggeredInR3": false,
+    "easSubmitTriggeredInR3": false
   }
 }
