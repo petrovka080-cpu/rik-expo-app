@@ -10,6 +10,7 @@ import {
   StatusBar,
 } from "react-native";
 import { supabase } from "../../lib/supabaseClient";
+import { normalizePage } from "../../lib/api/_core";
 import { FlashList } from "../../ui/FlashList";
 import type { CatalogItem } from "./types";
 
@@ -21,6 +22,8 @@ const UI = {
   border: "#1F2937",
   accent: "#0EA5E9",
 };
+
+const CATALOG_SEARCH_PAGE_DEFAULTS = { pageSize: 60, maxPageSize: 100 };
 
 type Props = {
   visible: boolean;
@@ -58,10 +61,10 @@ export default function CatalogSearchModal({
   async function runSearch() {
     setLoading(true);
     try {
+      const page = normalizePage(undefined, CATALOG_SEARCH_PAGE_DEFAULTS);
       let query = supabase
         .from("catalog_items")
-        .select("id,rik_code,kind,name_human,uom_code,tags,sector_code")
-        .limit(60);
+        .select("id,rik_code,kind,name_human,uom_code,tags,sector_code");
 
       const s = q.trim().toLowerCase();
       if (s) {
@@ -73,7 +76,10 @@ export default function CatalogSearchModal({
 
       if (kind !== "all") query = query.eq("kind", kind);
 
-      const { data, error } = await query;
+      const { data, error } = await query
+        .order("rik_code", { ascending: true })
+        .order("id", { ascending: true })
+        .range(page.from, page.to);
       if (error) {
         if (__DEV__) console.warn("CatalogSearchModal:", error.message);
         setRows([]);

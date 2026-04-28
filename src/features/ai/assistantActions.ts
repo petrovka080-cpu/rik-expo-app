@@ -12,6 +12,7 @@ import {
   updateRequestMeta,
 } from "../../lib/catalog_api";
 import { submitRequestToDirector } from "../../lib/api/request.repository";
+import { normalizePage } from "../../lib/api/_core";
 import { requestItemAddOrIncAndPatchMeta } from "../../screens/foreman/foreman.helpers";
 import {
   resolveForemanQuickRequest,
@@ -35,6 +36,7 @@ const ASSISTANT_CATALOG_MATCH_CONCURRENCY_LIMIT = 5;
 const ASSISTANT_CATALOG_MATCH_ITEM_LIMIT = 40;
 const ASSISTANT_MARKET_SEARCH_QUERY_LIMIT = 3;
 const ASSISTANT_MARKET_SEARCH_CONCURRENCY_LIMIT = 2;
+const ASSISTANT_MARKET_SEARCH_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
 
 type AssistantActionResult = {
   handled: boolean;
@@ -249,12 +251,14 @@ async function loadAssistantActorContext(): Promise<AssistantActorContext | null
 }
 
 async function searchMarketListings(query: string, limit = 6): Promise<MarketSearchResult[]> {
+  const page = normalizePage(undefined, ASSISTANT_MARKET_SEARCH_PAGE_DEFAULTS);
   const result = await supabase
     .from("market_listings")
     .select("id,title,price,city,company_id,user_id,description,kind,items_json,status,created_at")
     .eq("status", "active")
     .order("created_at", { ascending: false })
-    .limit(120);
+    .order("id", { ascending: false })
+    .range(page.from, page.to);
 
   if (result.error) throw result.error;
 

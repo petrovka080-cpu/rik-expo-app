@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { normalizePage } from "../api/_core";
 import type {
   CatalogGroup,
   CatalogSearchRpcArgs,
@@ -23,6 +24,7 @@ const CATALOG_SEARCH_FALLBACK_SELECT =
   "rik_code,name_human,uom_code,sector_code,spec,kind,group_code";
 const RIK_QUICK_SEARCH_FALLBACK_FIELDS =
   "rik_code,name_human,uom_code,kind,name_human_ru";
+const CATALOG_FALLBACK_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 };
 
 export const RIK_QUICK_SEARCH_RPCS: CatalogSearchRpcName[] = [
   "rik_quick_ru",
@@ -88,7 +90,8 @@ export const loadCatalogSearchFallbackRows = async (
   tokens: string[],
   limit: number,
 ) => {
-  let queryBuilder = supabase.from("rik_items").select(CATALOG_SEARCH_FALLBACK_SELECT).limit(limit);
+  const page = normalizePage({ pageSize: limit }, CATALOG_FALLBACK_PAGE_DEFAULTS);
+  let queryBuilder = supabase.from("rik_items").select(CATALOG_SEARCH_FALLBACK_SELECT);
   if (tokens.length > 0) {
     tokens.forEach((token) => {
       queryBuilder = queryBuilder.or(`name_human.ilike.%${token}%,rik_code.ilike.%${token}%`);
@@ -96,7 +99,9 @@ export const loadCatalogSearchFallbackRows = async (
   } else {
     queryBuilder = queryBuilder.or(`name_human.ilike.%${searchTerm}%,rik_code.ilike.%${searchTerm}%`);
   }
-  return await queryBuilder.order("rik_code", { ascending: true });
+  return await queryBuilder
+    .order("rik_code", { ascending: true })
+    .range(page.from, page.to);
 };
 
 export const loadCatalogGroupsRows = async (): Promise<{
@@ -164,7 +169,8 @@ export const loadRikQuickSearchFallbackRows = async (
   tokens: string[],
   limit: number,
 ) => {
-  let builder = supabase.from("rik_items").select(RIK_QUICK_SEARCH_FALLBACK_FIELDS).limit(limit);
+  const page = normalizePage({ pageSize: limit }, CATALOG_FALLBACK_PAGE_DEFAULTS);
+  let builder = supabase.from("rik_items").select(RIK_QUICK_SEARCH_FALLBACK_FIELDS);
   if (tokens.length > 0) {
     const orFilters = tokens
       .flatMap((token) => [`name_human.ilike.%${token}%`, `rik_code.ilike.%${token}%`])
@@ -173,5 +179,7 @@ export const loadRikQuickSearchFallbackRows = async (
   } else {
     builder = builder.or(`name_human.ilike.%${searchTerm}%,rik_code.ilike.%${searchTerm}%`);
   }
-  return await builder.order("rik_code", { ascending: true });
+  return await builder
+    .order("rik_code", { ascending: true })
+    .range(page.from, page.to);
 };

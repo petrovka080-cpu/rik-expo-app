@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { normalizePage, type PageInput } from "../../lib/api/_core";
 import {
   MARKET_HOME_SELECT,
   buildListingAssistantPrompt,
@@ -16,6 +17,8 @@ type LoadSupplierShowcaseOptions = {
   userId?: string | null;
   companyId?: string | null;
 };
+
+const SUPPLIER_SHOWCASE_PAGE_DEFAULTS = { pageSize: 60, maxPageSize: 100 };
 
 function asNullableParam(value: string | string[] | null | undefined): string | null {
   if (Array.isArray(value)) return asNullableParam(value[0]);
@@ -53,32 +56,36 @@ async function loadCompanyByOwnerUserId(userId: string): Promise<SupplierShowcas
   return ((result.data ?? [])[0] as SupplierShowcaseCompany | undefined) ?? null;
 }
 
-async function loadListingsByUserId(userId: string, includeInactive: boolean) {
+async function loadListingsByUserId(userId: string, includeInactive: boolean, pageInput?: PageInput) {
+  const page = normalizePage(pageInput, SUPPLIER_SHOWCASE_PAGE_DEFAULTS);
   let query = supabase
     .from("market_listings")
     .select(MARKET_HOME_SELECT)
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(60);
+    .eq("user_id", userId);
 
   if (!includeInactive) query = query.eq("status", "active");
 
-  const result = await query;
+  const result = await query
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(page.from, page.to);
   if (result.error) throw result.error;
   return (result.data ?? []).map((row) => toMarketHomeListingCard(row as MarketListingRow));
 }
 
-async function loadListingsByCompanyId(companyId: string, includeInactive: boolean) {
+async function loadListingsByCompanyId(companyId: string, includeInactive: boolean, pageInput?: PageInput) {
+  const page = normalizePage(pageInput, SUPPLIER_SHOWCASE_PAGE_DEFAULTS);
   let query = supabase
     .from("market_listings")
     .select(MARKET_HOME_SELECT)
-    .eq("company_id", companyId)
-    .order("created_at", { ascending: false })
-    .limit(60);
+    .eq("company_id", companyId);
 
   if (!includeInactive) query = query.eq("status", "active");
 
-  const result = await query;
+  const result = await query
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(page.from, page.to);
   if (result.error) throw result.error;
   return (result.data ?? []).map((row) => toMarketHomeListingCard(row as MarketListingRow));
 }

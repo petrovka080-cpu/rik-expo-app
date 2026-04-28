@@ -1,4 +1,5 @@
 import { subscribeChannel } from "./realtime/realtime.client";
+import { normalizePage } from "./api/_core";
 import { supabase } from "./supabaseClient";
 
 export type ChatMessageType = "text" | "photo" | "voice" | "file" | "system";
@@ -144,13 +145,15 @@ export async function fetchListingChatMessages(
   listingId: string,
   limit = 120,
 ): Promise<ChatMessage[]> {
+  const page = normalizePage({ pageSize: limit }, { pageSize: 100, maxPageSize: 100 });
   const { data, error } = await supabase
     .from("chat_messages" as never)
     .select("*")
     .eq("supplier_id", listingId)
     .eq("is_deleted", false)
     .order("created_at", { ascending: true })
-    .limit(limit);
+    .order("id", { ascending: true })
+    .range(page.from, page.to);
 
   if (error) throw toChatError(error, "Failed to load chat messages.");
 

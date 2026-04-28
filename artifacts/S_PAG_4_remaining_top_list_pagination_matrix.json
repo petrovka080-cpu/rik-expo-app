@@ -1,0 +1,205 @@
+{
+  "wave": "S-PAG-4",
+  "mode": "production-safe-pagination",
+  "dependsOn": ["S-PAG-3A", "S-PAG-3B"],
+  "targetCallsites": 7,
+  "fixedCallsites": 7,
+  "status": "GREEN",
+  "skippedAlreadyFixedInSPag3A": [
+    "src/lib/api/proposals.ts:listDirectorProposalsPending",
+    "src/lib/api/buyer.ts:listBuyerProposalsByStatus",
+    "src/screens/buyer/buyer.buckets.repo.ts:fetchBuyerProposalSummaryByStatuses",
+    "src/screens/buyer/buyer.buckets.repo.ts:fetchBuyerRejectedProposalRows",
+    "src/lib/api/director.ts:listPending",
+    "src/screens/contractor/contractor.loadWorksService.ts:loadContractorWorksBundleLegacyInternal"
+  ],
+  "skippedAlreadyFixedInSPag3B": [
+    "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts:fetchBuyerContractorsBasic",
+    "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts:fetchBuyerContractorsFallback",
+    "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts:fetchBuyerSubcontracts",
+    "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts:fetchBuyerProposalSuppliersBasic",
+    "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts:fetchBuyerProposalSuppliersFallback",
+    "src/lib/api/notifications.ts:notifList"
+  ],
+  "untouchedIntentionalFullReads": [
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "reason": "proposal PDF source must preserve complete document data"
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "reason": "request PDF builder must preserve complete document data"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "function": "fetchWarehouseIncomingLedgerRows",
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "reason": "warehouse register/report aggregation needs complete selected-range data"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "function": "fetchWarehouseIncomingLineRows",
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "reason": "warehouse incoming detail reads all lines for one parent document"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "function": "proposalItems",
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "reason": "proposal detail and PDF flows need all child rows for one proposal"
+    }
+  ],
+  "needsSeparateUiWork": [
+    {
+      "file": "src/screens/director/director.repository.ts",
+      "function": "fetchDirectorPendingRows",
+      "classification": "NEEDS_SEPARATE_UI_WORK",
+      "reason": "main director request rows still need explicit UI pagination state before capping"
+    },
+    {
+      "file": "src/components/map/useMapListingsQuery.ts",
+      "function": "fetchMapListings",
+      "classification": "NEEDS_SEPARATE_UI_WORK",
+      "reason": "map expects a broad point set and needs viewport/server pagination before reducing"
+    },
+    {
+      "file": "src/features/auctions/auctions.data.ts",
+      "function": "loadAuctionSummaries",
+      "classification": "NEEDS_SEPARATE_UI_WORK",
+      "reason": "auction tab does not yet expose page state or load-more behavior"
+    },
+    {
+      "file": "src/lib/catalog/catalog.lookup.service.ts",
+      "function": "listUnifiedCounterparties",
+      "classification": "NEEDS_SEPARATE_UI_WORK",
+      "reason": "merged counterparty picker currently filters after merging several sources and needs explicit UI/search pagination before reducing source completeness"
+    }
+  ],
+  "unknownDoNotTouch": [
+    {
+      "file": "src/features/market/marketHome.data.ts",
+      "function": "loadMarketHomePayload",
+      "classification": "UNKNOWN_DO_NOT_TOUCH",
+      "reason": "legacy market home loader appears superseded by paged marketplace service; left unchanged to avoid changing dormant compatibility behavior"
+    }
+  ],
+  "changedFiles": [
+    "src/features/supplierShowcase/supplierShowcase.data.ts",
+    "src/components/map/CatalogSearchModal.tsx",
+    "src/features/ai/assistantActions.ts",
+    "src/lib/chat_api.ts",
+    "src/lib/catalog/catalog.transport.ts",
+    "tests/api/topListPaginationBatch3.contract.test.ts",
+    "artifacts/S_PAG_4_remaining_top_list_pagination_matrix.json",
+    "artifacts/S_PAG_4_remaining_top_list_pagination_proof.md"
+  ],
+  "callsiteMatrix": [
+    {
+      "file": "src/features/supplierShowcase/supplierShowcase.data.ts",
+      "function": "loadListingsByUserId",
+      "table": "market_listings",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "supplier showcase user listing window with created_at order and limit(60)",
+      "after": "status/user filter preserved, stable created_at/id order + range",
+      "defaultPageSize": 60,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false,
+      "alreadyFixedInSPag3B": false
+    },
+    {
+      "file": "src/features/supplierShowcase/supplierShowcase.data.ts",
+      "function": "loadListingsByCompanyId",
+      "table": "market_listings",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "supplier showcase company listing window with created_at order and limit(60)",
+      "after": "status/company filter preserved, stable created_at/id order + range",
+      "defaultPageSize": 60,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false,
+      "alreadyFixedInSPag3B": false
+    },
+    {
+      "file": "src/components/map/CatalogSearchModal.tsx",
+      "function": "runSearch",
+      "table": "catalog_items",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "catalog search result window with filters and limit(60)",
+      "after": "search/kind filters preserved, stable rik_code/id order + range",
+      "defaultPageSize": 60,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false,
+      "alreadyFixedInSPag3B": false
+    },
+    {
+      "file": "src/features/ai/assistantActions.ts",
+      "function": "searchMarketListings",
+      "table": "market_listings",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "AI market search candidate window with active filter, created_at order and limit(120)",
+      "after": "active filter preserved, stable created_at/id order + range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false,
+      "alreadyFixedInSPag3B": false
+    },
+    {
+      "file": "src/lib/chat_api.ts",
+      "function": "fetchListingChatMessages",
+      "table": "chat_messages",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "listing chat message window with supplier/deleted filters, created_at order and caller limit",
+      "after": "supplier/deleted filters preserved, stable created_at/id order + normalized range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false,
+      "alreadyFixedInSPag3B": false
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadCatalogSearchFallbackRows",
+      "table": "rik_items",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "catalog fallback search result window with token filters, rik_code order and caller limit",
+      "after": "token filters preserved, stable rik_code order + normalized range",
+      "defaultPageSize": 50,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false,
+      "alreadyFixedInSPag3B": false
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadRikQuickSearchFallbackRows",
+      "table": "rik_items",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "RIK quick fallback search result window with token filters, rik_code order and caller limit",
+      "after": "token filters preserved, stable rik_code order + normalized range",
+      "defaultPageSize": 50,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false,
+      "alreadyFixedInSPag3B": false
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "pdfReportExportCapped": false,
+    "detailFullReadsChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  }
+}
