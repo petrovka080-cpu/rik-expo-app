@@ -1,0 +1,96 @@
+{
+  "wave": "S-DASH-1",
+  "mode": "production-safe-monitoring-alerts",
+  "status": "PARTIAL",
+  "reason": "Scripts, docs, tests, and artifacts are complete; live production snapshot and external alert verification are deferred because PROD_SUPABASE_URL and PROD_SUPABASE_READONLY_KEY are not configured.",
+  "productionSnapshot": {
+    "status": "env_missing",
+    "prodSupabaseUrl": "missing",
+    "prodSupabaseReadonlyKey": "missing",
+    "productionTouched": false,
+    "writes": false,
+    "secretsPrinted": false
+  },
+  "stagingSnapshot": {
+    "status": "env_missing",
+    "stagingSupabaseUrl": "missing",
+    "stagingSupabaseReadonlyKey": "missing",
+    "productionTouched": false,
+    "writes": false,
+    "secretsPrinted": false
+  },
+  "scripts": [
+    "scripts/monitoring/checkProductionHealth.mjs",
+    "scripts/monitoring/checkProductionHealthCore.js",
+    "scripts/monitoring/production-health-dashboard.js",
+    "scripts/monitoring/production-health-format.js",
+    "scripts/monitoring/production-health-queries.js",
+    "scripts/monitoring/production-health-thresholds.js"
+  ],
+  "docs": [
+    "docs/operations/production_monitoring_runbook.md",
+    "docs/operations/alert_thresholds.md"
+  ],
+  "artifacts": [
+    "artifacts/S_DASH_1_observability_dashboard_notes.md",
+    "artifacts/S_DASH_1_observability_dashboard_proof.md",
+    "artifacts/S_DASH_1_production_health_snapshot.json",
+    "artifacts/S_DASH_1_production_health_summary.md",
+    "artifacts/S_DASH_1_production_health_matrix.json",
+    "artifacts/S_DASH_1_production_dashboards_alerts_proof.md",
+    "artifacts/S_DASH_1_production_dashboards_alerts_matrix.json"
+  ],
+  "metricsCovered": {
+    "sentryCrashes": "documented_env_missing",
+    "appErrors": "implemented_env_missing",
+    "rpcLatency": "documented_or_app_errors_signal",
+    "queueBacklog": "documented_or_app_errors_signal",
+    "realtime": "implemented_from_app_errors_signal",
+    "pdfWebView": "implemented_from_app_errors_signal",
+    "releaseHealth": true
+  },
+  "metricsUnavailable": [
+    {
+      "metric": "production_live_snapshot",
+      "reason": "PROD_SUPABASE_URL and PROD_SUPABASE_READONLY_KEY are not configured"
+    },
+    {
+      "metric": "external_dashboard_alert_verification",
+      "reason": "External provider credentials were not configured in the environment"
+    }
+  ],
+  "dryRuns": {
+    "production": {
+      "command": "node scripts/monitoring/checkProductionHealth.mjs --target production --dry-run",
+      "status": "env_missing",
+      "productionTouched": false,
+      "writes": false,
+      "secretsPrinted": false
+    },
+    "staging": {
+      "command": "node scripts/monitoring/checkProductionHealth.mjs --target staging --dry-run",
+      "status": "env_missing",
+      "productionTouched": false,
+      "writes": false,
+      "secretsPrinted": false
+    }
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "appConfigChanged": false,
+    "nativeChanged": false,
+    "productionLoadGenerated": false,
+    "productionWrites": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  },
+  "nextRecommendedAction": "S-DASH-1B live snapshot / external alert verification after read-only credentials are provided"
+}

@@ -1,0 +1,100 @@
+{
+  "wave": "S-DASH-1",
+  "generatedAt": "2026-04-28T13:17:41.202Z",
+  "liveSnapshotStatus": "env_missing",
+  "environment": {
+    "prodEnvPresent": false,
+    "productionTouched": false,
+    "productionMutated": false,
+    "serviceRoleUsed": false,
+    "serviceRolePrinted": false,
+    "missingKeys": [
+      "PROD_SUPABASE_URL",
+      "PROD_SUPABASE_READONLY_KEY"
+    ]
+  },
+  "privacy": {
+    "rawPiiIncluded": false,
+    "rawSignedUrlIncluded": false,
+    "rawTokenIncluded": false,
+    "redactionApplied": true
+  },
+  "dataSources": [
+    {
+      "name": "app_errors",
+      "status": "not_run_env_missing",
+      "missingKeys": [
+        "PROD_SUPABASE_URL",
+        "PROD_SUPABASE_READONLY_KEY"
+      ]
+    }
+  ],
+  "dashboards": {
+    "appErrors": true,
+    "offlineQueue": true,
+    "realtime": true,
+    "releaseLineage": true,
+    "pdfWebView": true,
+    "rpcValidation": true,
+    "jsonCorruption": true
+  },
+  "metrics": {
+    "generatedAt": "2026-04-28T13:17:41.202Z",
+    "rowCount": 0,
+    "windows": {
+      "last1h": {
+        "label": "last 1 hour",
+        "totalErrors": 0,
+        "topErrorNames": [],
+        "topDomains": [],
+        "topUpdateGroupIds": [],
+        "topRuntimeVersions": [],
+        "topPlatforms": [],
+        "signals": {
+          "offlineQueue": 0,
+          "realtime": 0,
+          "pdfWebView": 0,
+          "rpcValidation": 0,
+          "jsonCorruption": 0
+        },
+        "severity": "OK"
+      },
+      "last24h": {
+        "label": "last 24 hours",
+        "totalErrors": 0,
+        "topErrorNames": [],
+        "topDomains": [],
+        "topUpdateGroupIds": [],
+        "topRuntimeVersions": [],
+        "topPlatforms": [],
+        "signals": {
+          "offlineQueue": 0,
+          "realtime": 0,
+          "pdfWebView": 0,
+          "rpcValidation": 0,
+          "jsonCorruption": 0
+        },
+        "severity": "OK"
+      },
+      "last7d": {
+        "label": "last 7 days",
+        "totalErrors": 0,
+        "topErrorNames": [],
+        "topDomains": [],
+        "topUpdateGroupIds": [],
+        "topRuntimeVersions": [],
+        "topPlatforms": [],
+        "signals": {
+          "offlineQueue": 0,
+          "realtime": 0,
+          "pdfWebView": 0,
+          "rpcValidation": 0,
+          "jsonCorruption": 0
+        },
+        "severity": "OK"
+      }
+    },
+    "severity": "OK",
+    "recommendedAction": "No immediate action. Continue daily monitoring."
+  }
+}

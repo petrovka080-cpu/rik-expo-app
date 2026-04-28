@@ -1,0 +1,47 @@
+{
+  "wave": "S-DASH-1",
+  "goal": "production queue/realtime/error dashboards",
+  "dashboards": {
+    "appErrors": true,
+    "offlineQueue": true,
+    "realtime": true,
+    "releaseLineage": true,
+    "pdfWebView": true,
+    "rpcValidation": true,
+    "jsonCorruption": true
+  },
+  "environment": {
+    "prodEnvPresent": false,
+    "productionTouched": false,
+    "productionMutated": false,
+    "serviceRoleUsed": false,
+    "serviceRolePrinted": false,
+    "missingKeys": [
+      "PROD_SUPABASE_URL",
+      "PROD_SUPABASE_READONLY_KEY"
+    ]
+  },
+  "privacy": {
+    "rawPiiIncluded": false,
+    "rawSignedUrlIncluded": false,
+    "rawTokenIncluded": false,
+    "redactionApplied": true
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "sqlRpcBehaviorChanged": false,
+    "rlsChanged": false,
+    "uiChanged": false,
+    "maestroYamlChanged": false,
+    "appConfigChanged": false
+  },
+  "release": {
+    "otaDisposition": "not_required_scripts_artifacts_only",
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  },
+  "liveSnapshotStatus": "env_missing",
+  "severity": "OK",
+  "recommendedAction": "No immediate action. Continue daily monitoring."
+}
