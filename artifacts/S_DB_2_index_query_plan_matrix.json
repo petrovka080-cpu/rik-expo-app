@@ -127,6 +127,6 @@
     "jestRunInBand": "pass",
     "jest": "pass_after_transient_warehouse_fixture_retry",
     "diffCheck": "pass",
-    "releaseVerify": "pending_post_commit"
+    "releaseVerify": "pass_otaDisposition_skip_non_runtime"
   }
 }

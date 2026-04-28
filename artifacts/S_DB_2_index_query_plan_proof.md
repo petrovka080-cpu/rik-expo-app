@@ -1,7 +1,7 @@
 # S-DB-2 Index Query Plan Proof
 
 HEAD before: 28728cf51e2de286eff1af81ee28b41d0916b530
-HEAD after: PENDING_COMMIT
+HEAD after: 7759b9990d93b319f337b5c984ad03102e442b2d
 
 Migration file:
 - supabase/migrations/20260428154000_s_db_2_query_plan_indexes.sql
@@ -101,4 +101,4 @@ Gate results:
 - npm test -- --runInBand: PASS
 - npm test: PASS after rerun. First parallel run hit a transient warehouse duplicate-key test fixture collision; isolated rerun and full rerun both passed.
 - git diff --check: PASS
-- release:verify: PENDING POST-COMMIT
+- release:verify: PASS (`otaDisposition=skip`, classification `non-runtime`)
