@@ -119,7 +119,17 @@
     "gitDiffCheck": "pass",
     "npmTestRunInBand": "pass",
     "npmTest": "pass",
-    "releaseVerify": "pass_gates_blocked_precommit_dirty_worktree"
+    "releaseVerify": "pass",
+    "otaDisposition": "allow",
+    "androidLocalProof": "pass"
+  },
+  "androidLocalProof": {
+    "releaseApkBuild": "pass",
+    "emulator": "emulator-5554",
+    "install": "pass",
+    "launch": "pass",
+    "pid": "5679",
+    "fatalException": false
   },
   "safety": {
     "businessLogicChanged": false,

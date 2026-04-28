@@ -1,9 +1,10 @@
 # S-RT-2 realtime budget/filtering proof
 
-Status: GREEN pending commit/push
+Status: GREEN
 
 ## Scope
 
+- Implementation commit: `25d3df819a52be31639d7f3c3b690c1111c70c6d`
 - Helper added inside existing module: `src/lib/realtime/realtime.channels.ts`
 - Central realtime budget/debug signals added: `src/lib/realtime/realtime.client.ts`
 - Direct/legacy channels budgeted:
@@ -68,10 +69,21 @@ The wave therefore hardens fanout with budget/duplicate monitoring and duplicate
 - `git diff --check`: PASS
 - `npm test -- --runInBand`: PASS
 - `npm test`: PASS
-- `npm run release:verify -- --json`: PASS gates; pre-commit run blocked only because worktree was intentionally dirty before commit
+- `npm run release:verify -- --json`: PASS after commit/push
+- `otaDisposition`: allow
+
+## Android local proof
+
+- release APK build: PASS
+- emulator: `emulator-5554`
+- install: PASS
+- launch: PASS
+- pid: `5679`
+- fatal exception in last 500 error log lines: NO
 
 ## Release
 
 - OTA published: NO
+- OTA reason: allowed by release guard, not published by S-RT-2 rule
 - EAS build triggered: NO
 - EAS submit triggered: NO
