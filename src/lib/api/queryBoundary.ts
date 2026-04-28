@@ -106,6 +106,96 @@ export const isRpcOptionalString = (
   value: unknown,
 ): value is string | null | undefined => value == null || isRpcString(value);
 
+export const isRpcVoidResponse = (value: unknown): value is null | undefined =>
+  value == null;
+
+export const isRpcNonEmptyStringResponse = (value: unknown): value is string =>
+  isRpcNonEmptyString(value);
+
+export const isWarehouseIssueAtomicResponse = (value: unknown): value is unknown => {
+  if (isRpcNumberLike(value)) return true;
+  if (!isRpcRecord(value)) return false;
+
+  const hasConfirmation =
+    isRpcNumberLike(value.issue_id) ||
+    isRpcNumberLike(value.issued_count) ||
+    isRpcNumberLike(value.rows_affected) ||
+    isRpcNonEmptyString(value.issue_id) ||
+    isRpcNonEmptyString(value.id) ||
+    isRpcNonEmptyString(value.client_mutation_id) ||
+    isRpcBoolean(value.ok) ||
+    isRpcNumberLike(value.ok);
+
+  return (
+    hasConfirmation &&
+    isRpcOptionalString(value.client_mutation_id) &&
+    isRpcOptionalBoolean(value.idempotent_replay)
+  );
+};
+
+export const isDirectorApproveRequestResponse = (
+  value: unknown,
+): value is null | Record<string, unknown> => {
+  if (value == null) return true;
+  if (!isRpcRecord(value) || !isRpcBoolean(value.ok)) return false;
+
+  if (value.ok === false) {
+    return (
+      isRpcOptionalString(value.failure_code) &&
+      (isRpcNonEmptyString(value.failure_message) ||
+        isRpcNonEmptyString(value.message))
+    );
+  }
+
+  return (
+    isRpcOptionalString(value.request_id) &&
+    isRpcOptionalString(value.client_mutation_id) &&
+    isRpcOptionalBoolean(value.idempotent_replay)
+  );
+};
+
+export const isRequestItemUpdateQtyResponse = (
+  value: unknown,
+): value is Record<string, unknown> =>
+  isRpcRecord(value) &&
+  isRpcNonEmptyString(value.id) &&
+  isRpcNonEmptyString(value.request_id) &&
+  isRpcNumberLike(value.qty) &&
+  isRpcNonEmptyString(value.name_human) &&
+  isRpcOptionalString(value.status) &&
+  isRpcOptionalString(value.note);
+
+const isRpcRecordArray = (value: unknown): value is Record<string, unknown>[] =>
+  Array.isArray(value) && value.every(isRpcRecord);
+
+export const isAccountantFinancialStateResponse = (
+  value: unknown,
+): value is Record<string, unknown> => {
+  if (!isRpcRecord(value)) return false;
+  const proposal = value.proposal;
+  const invoice = value.invoice;
+  const totals = value.totals;
+  const eligibility = value.eligibility;
+  const allocationSummary = value.allocation_summary ?? value.allocationSummary;
+
+  return (
+    isRpcRecord(proposal) &&
+    isRpcNonEmptyString(proposal.proposal_id ?? proposal.proposalId) &&
+    isRpcRecord(invoice) &&
+    isRpcRecord(totals) &&
+    isRpcNumberLike(totals.payable_amount ?? totals.payableAmount) &&
+    isRpcNumberLike(totals.total_paid ?? totals.totalPaid) &&
+    isRpcNumberLike(totals.outstanding_amount ?? totals.outstandingAmount) &&
+    isRpcRecord(eligibility) &&
+    isRpcBoolean(eligibility.approved) &&
+    isRpcBoolean(eligibility.sent_to_accountant ?? eligibility.sentToAccountant) &&
+    isRpcBoolean(eligibility.payment_eligible ?? eligibility.paymentEligible) &&
+    isRpcRecord(allocationSummary) &&
+    isRpcRecordArray(value.items) &&
+    isRpcRecord(value.meta)
+  );
+};
+
 const asRpcErrorLike = (value: unknown): NullableRpcErrorLike => {
   if (!value) return null;
   if (value instanceof Error) {

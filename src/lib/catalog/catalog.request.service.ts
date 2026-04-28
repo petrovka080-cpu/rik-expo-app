@@ -1,5 +1,9 @@
 import { supabase } from "../supabaseClient";
 import {
+  isRequestItemUpdateQtyResponse,
+  validateRpcResponse,
+} from "../api/queryBoundary";
+import {
   clearCachedDraftRequestId,
   getOrCreateDraftRequestId as getOrCreateLowLevelDraftRequestId,
 } from "../api/requests";
@@ -898,7 +902,12 @@ export async function requestItemUpdateQty(
     };
     const { data, error } = await supabase.rpc("request_item_update_qty", args);
     if (!error && data) {
-      const mapped = mapRequestItemRow(data, rid || "");
+      const validated = validateRpcResponse(data, isRequestItemUpdateQtyResponse, {
+        rpcName: "request_item_update_qty",
+        caller: "src/lib/catalog/catalog.request.service.requestItemUpdateQty",
+        domain: "catalog",
+      });
+      const mapped = mapRequestItemRow(validated, rid || "");
       if (mapped) return mapped;
     } else if (error) {
       lastErr = error;

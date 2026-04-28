@@ -1,0 +1,237 @@
+{
+  "wave": "S-RPC-2",
+  "mode": "production-safe-rpc-runtime-validation",
+  "targetRpcCallsites": 10,
+  "validatedRpcCallsites": 10,
+  "changedFiles": [
+    "src/lib/api/queryBoundary.ts",
+    "src/screens/warehouse/warehouse.issue.repo.ts",
+    "src/screens/buyer/buyer.actions.repo.ts",
+    "src/screens/director/director.request.ts",
+    "src/lib/catalog/catalog.request.service.ts",
+    "src/lib/api/accountant.ts",
+    "tests/warehouse/warehouse.issue.repo.test.ts",
+    "src/screens/buyer/buyer.actions.repo.test.ts",
+    "src/lib/api/accountant.financial.test.ts",
+    "tests/api/rpcRuntimeValidationBatch2.contract.test.ts",
+    "artifacts/S_RPC_2_runtime_validation_matrix.json",
+    "artifacts/S_RPC_2_runtime_validation_proof.md"
+  ],
+  "rpcMatrix": [
+    {
+      "file": "src/screens/warehouse/warehouse.issue.repo.ts",
+      "function": "issueWarehouseFreeAtomic",
+      "rpc": "wh_issue_free_atomic_v5",
+      "riskArea": "warehouse stock movement",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isWarehouseIssueAtomicResponse",
+      "responseKind": "json-number-or-object",
+      "allowsNull": false,
+      "allowsArray": false,
+      "tests": ["valid shape", "missing required confirmation", "wrong primitive type", "array/object mismatch", "Supabase error path preserved", "raw payload redacted"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.issue.repo.ts",
+      "function": "issueWarehouseRequestAtomic",
+      "rpc": "wh_issue_request_atomic_v1",
+      "riskArea": "warehouse request stock movement",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isWarehouseIssueAtomicResponse",
+      "responseKind": "json-number-or-object",
+      "allowsNull": false,
+      "allowsArray": false,
+      "tests": ["valid shape", "missing required confirmation", "wrong primitive type", "array/object mismatch", "Supabase error path preserved"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    {
+      "file": "src/screens/buyer/buyer.actions.repo.ts",
+      "function": "setRequestItemsDirectorStatus",
+      "rpc": "request_items_set_status",
+      "riskArea": "proposal/request status mutation",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isRpcVoidResponse",
+      "responseKind": "void",
+      "allowsNull": true,
+      "allowsArray": false,
+      "tests": ["valid null shape", "object mismatch fails", "raw payload redacted", "Supabase error path preserved"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    {
+      "file": "src/screens/buyer/buyer.actions.repo.ts",
+      "function": "publishRfq",
+      "rpc": "buyer_rfq_create_and_publish_v1",
+      "riskArea": "buyer RFQ publish mutation",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isRpcNonEmptyStringResponse",
+      "responseKind": "string",
+      "allowsNull": false,
+      "allowsArray": false,
+      "tests": ["valid string shape", "object mismatch fails", "array mismatch fails"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    {
+      "file": "src/screens/buyer/buyer.actions.repo.ts",
+      "function": "sendProposalToAccountingMin",
+      "rpc": "proposal_send_to_accountant_min",
+      "riskArea": "proposal accounting handoff mutation",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isRpcVoidResponse",
+      "responseKind": "void",
+      "allowsNull": true,
+      "allowsArray": false,
+      "tests": ["valid null shape", "object mismatch fails"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    {
+      "file": "src/screens/director/director.request.ts",
+      "function": "rejectRequestItem",
+      "rpc": "reject_request_item",
+      "riskArea": "director request item rejection",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isRpcVoidResponse",
+      "responseKind": "void",
+      "allowsNull": true,
+      "allowsArray": false,
+      "tests": ["valid null shape", "object mismatch fails", "source contract"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    {
+      "file": "src/screens/director/director.request.ts",
+      "function": "deleteRequestAll",
+      "rpc": "reject_request_all",
+      "riskArea": "director whole-request rejection",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isRpcVoidResponse",
+      "responseKind": "void",
+      "allowsNull": true,
+      "allowsArray": false,
+      "tests": ["valid null shape", "object mismatch fails", "source contract"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    {
+      "file": "src/screens/director/director.request.ts",
+      "function": "approveRequestAndSend",
+      "rpc": "director_approve_request_v1",
+      "riskArea": "director request approval",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isDirectorApproveRequestResponse",
+      "responseKind": "nullable-object",
+      "allowsNull": true,
+      "allowsArray": false,
+      "tests": ["valid null shape", "valid success object", "valid failure object", "missing required ok fails", "wrong primitive type fails", "array/object mismatch fails"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    {
+      "file": "src/lib/catalog/catalog.request.service.ts",
+      "function": "requestItemUpdateQty",
+      "rpc": "request_item_update_qty",
+      "riskArea": "request item quantity mutation",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isRequestItemUpdateQtyResponse",
+      "responseKind": "object",
+      "allowsNull": false,
+      "allowsArray": false,
+      "tests": ["valid row shape", "missing required field fails", "wrong primitive type fails", "array/object mismatch fails"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "function": "accountantLoadProposalFinancialState",
+      "rpc": "accountant_proposal_financial_state_v1",
+      "riskArea": "accountant finance state",
+      "classification": "FIX_NOW_HIGH_RISK_RPC",
+      "alreadyValidatedInSRpc1": false,
+      "guard": "isAccountantFinancialStateResponse",
+      "responseKind": "object",
+      "allowsNull": false,
+      "allowsArray": false,
+      "tests": ["valid envelope shape", "missing required field fails", "wrong primitive type fails", "array/object mismatch fails", "raw payload redacted"],
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    }
+  ],
+  "skippedRpcCallsites": [
+    {
+      "file": "src/screens/warehouse/hooks/useWarehouseReceiveApply.ts",
+      "rpc": "wh_receive_apply_ui",
+      "classification": "ALREADY_VALIDATED_IN_S_RPC_1",
+      "reason": "covered by S-RPC-1"
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "rpc": "accounting_pay_invoice_v1",
+      "classification": "ALREADY_VALIDATED_IN_S_RPC_1",
+      "reason": "covered by S-RPC-1"
+    },
+    {
+      "file": "src/screens/director/director.approve.boundary.ts",
+      "rpc": "director_approve_pipeline_v1",
+      "classification": "ALREADY_VALIDATED_IN_S_RPC_1",
+      "reason": "covered by S-RPC-1"
+    },
+    {
+      "file": "src/lib/catalog/catalog.proposalCreation.service.ts",
+      "rpc": "rpc_proposal_submit_v3",
+      "classification": "ALREADY_VALIDATED_IN_S_RPC_1",
+      "reason": "covered by S-RPC-1"
+    },
+    {
+      "file": "src/lib/api/requestDraftSync.service.ts",
+      "rpc": "request_sync_draft_v2",
+      "classification": "ALREADY_VALIDATED_IN_S_RPC_1",
+      "reason": "covered by S-RPC-1"
+    },
+    {
+      "file": "src/lib/api/directorPdfSource.service.ts",
+      "rpc": "pdf_director_*_source_v1",
+      "classification": "LOW_RISK_READ_ONLY",
+      "reason": "PDF source has separate document-shape assertions and is outside mutation priority"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "rpc": "acc_report_*",
+      "classification": "LOW_RISK_READ_ONLY",
+      "reason": "report/PDF reads were intentionally left outside this mutation-first wave"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "rpc": "submit_jobs_*",
+      "classification": "NEEDS_BUSINESS_CONTEXT",
+      "reason": "retry/queue semantics require a separate infra-focused validation wave"
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  }
+}

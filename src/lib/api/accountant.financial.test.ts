@@ -121,6 +121,28 @@ describe("accountant financial rpc boundary", () => {
     });
   });
 
+  it("throws RpcValidationError when proposal financial state shape is malformed", async () => {
+    mockClient.rpc.mockResolvedValue({
+      data: {
+        proposal: {
+          proposal_id: "proposal-1",
+        },
+        totals: {
+          payable_amount: "not-a-number",
+        },
+        buyer_email: "buyer@example.com",
+      },
+      error: null,
+    });
+
+    await expect(accountantLoadProposalFinancialState("proposal-1")).rejects.toBeInstanceOf(
+      RpcValidationError,
+    );
+    await expect(accountantLoadProposalFinancialState("proposal-1")).rejects.not.toThrow(
+      "buyer@example.com",
+    );
+  });
+
   it("commits payment through atomic rpc and returns parsed server truth", async () => {
     mockClient.rpc.mockResolvedValue({
       data: {

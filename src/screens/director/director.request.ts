@@ -6,6 +6,11 @@ import { generateRequestPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
+import {
+  isDirectorApproveRequestResponse,
+  isRpcVoidResponse,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
 import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { toFilterId } from "./director.helpers";
 import type { Group, PendingRow } from "./director.types";
@@ -147,11 +152,16 @@ export function useDirectorRequestActions({
     if (!it.request_item_id) return;
     setActingId(it.request_item_id);
     try {
-      const { error } = await supabase.rpc("reject_request_item", {
+      const { data, error } = await supabase.rpc("reject_request_item", {
         request_item_id: it.request_item_id,
         reason: null,
       });
       if (error) throw error;
+      validateRpcResponse(data, isRpcVoidResponse, {
+        rpcName: "reject_request_item",
+        caller: "src/screens/director/director.request.rejectRequestItem",
+        domain: "director",
+      });
 
       setRows((prev) => prev.filter((r) => r.request_item_id !== it.request_item_id));
     } catch (e: unknown) {
@@ -167,11 +177,16 @@ export function useDirectorRequestActions({
       const reqId = toFilterId(g.request_id);
       if (reqId == null) throw new Error("request_id пустой");
 
-      const { error } = await supabase.rpc("reject_request_all", {
+      const { data, error } = await supabase.rpc("reject_request_all", {
         p_request_id: String(reqId),
         p_reason: null,
       });
       if (error) throw error;
+      validateRpcResponse(data, isRpcVoidResponse, {
+        rpcName: "reject_request_all",
+        caller: "src/screens/director/director.request.deleteRequestAll",
+        domain: "director",
+      });
 
       setRows((prev) => prev.filter((r) => r.request_id !== g.request_id));
       closeSheet();
@@ -204,6 +219,11 @@ export function useDirectorRequestActions({
       });
 
       if (error) throw error;
+      validateRpcResponse(data, isDirectorApproveRequestResponse, {
+        rpcName: "director_approve_request_v1",
+        caller: "src/screens/director/director.request.approveRequestAndSend",
+        domain: "director",
+      });
 
       const result = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
       if (result && result.ok === false) {

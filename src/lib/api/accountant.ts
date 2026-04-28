@@ -3,6 +3,7 @@ import { ensureProposalExists, ensureProposalItemIdsBelongToProposal } from "./i
 import { trackRpcLatency } from "../observability/rpcLatencyMetrics";
 import {
   isRpcBoolean,
+  isAccountantFinancialStateResponse,
   isRpcNonEmptyString,
   isRpcNumberLike,
   isRpcRecord,
@@ -591,7 +592,12 @@ export async function accountantLoadProposalFinancialState(
     throw error;
   }
 
-  const result = parseAccountantProposalFinancialState(data);
+  const validated = validateRpcResponse(data, isAccountantFinancialStateResponse, {
+    rpcName: "accountant_proposal_financial_state_v1",
+    caller: "src/lib/api/accountant.accountantLoadProposalFinancialState",
+    domain: "accountant",
+  });
+  const result = parseAccountantProposalFinancialState(validated);
   trackRpcLatency({
     name: "accountant_proposal_financial_state_v1",
     screen: "accountant",
