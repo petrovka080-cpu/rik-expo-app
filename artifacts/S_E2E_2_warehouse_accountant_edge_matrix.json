@@ -1,0 +1,122 @@
+{
+  "wave": "S-E2E-2",
+  "mode": "production-safe-e2e-edge-coverage",
+  "status": "PARTIAL",
+  "flowsAdded": [
+    {
+      "name": "warehouse-receive-edge",
+      "path": "maestro/flows/warehouse-accountant-edge/warehouse-receive-edge.yaml",
+      "role": "warehouse",
+      "writes": false,
+      "status": "not_green_harness_timeout"
+    },
+    {
+      "name": "warehouse-expense-edge",
+      "path": "maestro/flows/warehouse-accountant-edge/warehouse-expense-edge.yaml",
+      "role": "warehouse",
+      "writes": false,
+      "status": "not_green_harness_timeout"
+    },
+    {
+      "name": "warehouse-stock-empty-state",
+      "path": "maestro/flows/warehouse-accountant-edge/warehouse-stock-empty-state.yaml",
+      "role": "warehouse",
+      "writes": false,
+      "status": "not_green_harness_timeout"
+    },
+    {
+      "name": "accountant-subcontract-list-edge",
+      "path": "maestro/flows/warehouse-accountant-edge/accountant-subcontract-list-edge.yaml",
+      "role": "accountant",
+      "writes": false,
+      "status": "not_green_harness_timeout"
+    },
+    {
+      "name": "accountant-payment-status-edge",
+      "path": "maestro/flows/warehouse-accountant-edge/accountant-payment-status-edge.yaml",
+      "role": "accountant",
+      "writes": false,
+      "status": "not_green_harness_timeout"
+    },
+    {
+      "name": "accountant-document-fallback-edge",
+      "path": "maestro/flows/warehouse-accountant-edge/accountant-document-fallback-edge.yaml",
+      "role": "accountant",
+      "writes": false,
+      "status": "not_green_harness_timeout"
+    }
+  ],
+  "runner": "scripts/e2e/run-maestro-warehouse-accountant.ts",
+  "selectorsAdded": [
+    {
+      "file": "src/screens/accountant/components/Header.tsx",
+      "testIDs": [
+        "accountant-tab-pay",
+        "accountant-tab-partial",
+        "accountant-tab-paid",
+        "accountant-tab-rework",
+        "accountant-tab-history",
+        "accountant-tab-subcontracts"
+      ],
+      "behaviorChanged": false
+    },
+    {
+      "file": "src/screens/accountant/AccountantSubcontractTab.tsx",
+      "testIDs": [
+        "accountant-subcontract-list",
+        "accountant-subcontract-row-<id>",
+        "accountant-subcontract-empty",
+        "accountant-subcontract-load-more"
+      ],
+      "behaviorChanged": false
+    }
+  ],
+  "coverage": {
+    "warehouseReceive": true,
+    "warehouseExpense": true,
+    "warehouseStockEmptyState": true,
+    "accountantSubcontractList": true,
+    "accountantPaymentStatus": true,
+    "documentFallback": true
+  },
+  "liveExecution": {
+    "warehouseAccountantRunner": "attempted_timeout_before_auth_login_visible",
+    "criticalSuite": "attempted_timeout_or_launch_failure",
+    "firstFailingSelector": "auth.login.email",
+    "productRegressionProven": false,
+    "rawMaestroArtifactsCommitted": false,
+    "seedCleanupAttempted": true
+  },
+  "androidLocalProof": {
+    "assembleRelease": "pass",
+    "install": "pass",
+    "launch": "pass",
+    "fatalException": false
+  },
+  "tests": {
+    "targeted": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "jestRunInBand": "pass",
+    "jest": "pass",
+    "gitDiffCheck": "pass",
+    "releaseVerify": "precommit_dirty_worktree_expected; postcommit_required"
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "financialCalculationsChanged": false,
+    "warehouseStockMathChanged": false,
+    "rolePermissionsChanged": false,
+    "packageChanged": false,
+    "appConfigChanged": false,
+    "nativeChanged": false,
+    "productionDataUsed": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "secretsCommitted": false
+  },
+  "nextRecommendedAction": "Re-run S-E2E-2 live Maestro after local Android harness/login-screen timeout is fixed; then proceed to S-READINESS-1."
+}

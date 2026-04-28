@@ -1,0 +1,84 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Warehouse Expense Edge Readonly
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_WAREHOUSE_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_WAREHOUSE_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-warehouse"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-warehouse"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_WAREHOUSE_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "warehouse-tab-issue"
+    timeout: 30000
+- tapOn:
+    id: "warehouse-tab-issue"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-recipient-input"
+    commands:
+      - tapOn:
+          id: "warehouse-recipient-input"
+      - eraseText
+      - inputText: ${E2E_WAREHOUSE_RECIPIENT}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-recipient-confirm"
+- scrollUntilVisible:
+    element:
+      id: "warehouse-req-row-${E2E_WAREHOUSE_REQUEST_ID}"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "warehouse-req-row-${E2E_WAREHOUSE_REQUEST_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "warehouse-req-qty-input-${E2E_WAREHOUSE_REQUEST_ITEM_ID}"
+    timeout: 30000
+- assertVisible:
+    id: "warehouse-req-add-${E2E_WAREHOUSE_REQUEST_ITEM_ID}"
+- stopApp

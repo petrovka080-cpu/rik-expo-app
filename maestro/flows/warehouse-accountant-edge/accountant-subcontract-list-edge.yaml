@@ -1,0 +1,73 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Accountant Subcontract List Edge
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_ACCOUNTANT_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_ACCOUNTANT_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-accountant"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-accountant"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_ACCOUNTANT_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "accountant-tab-pay"
+    timeout: 30000
+- swipe:
+    from:
+      id: "accountant-tab-pay"
+    direction: LEFT
+    duration: 400
+    waitToSettleTimeoutMs: 500
+- extendedWaitUntil:
+    visible:
+      id: "accountant-tab-subcontracts"
+    timeout: 15000
+- tapOn:
+    id: "accountant-tab-subcontracts"
+- extendedWaitUntil:
+    visible:
+      id: "accountant-subcontract-list"
+    timeout: 30000
+- assertVisible:
+    id: "accountant-subcontract-list"
+- stopApp

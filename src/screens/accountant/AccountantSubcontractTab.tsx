@@ -101,6 +101,9 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
 
     return (
       <Pressable
+        testID={`accountant-subcontract-row-${item.id}`}
+        accessibilityLabel={`accountant-subcontract-row-${item.id}`}
+        accessible
         style={styles.card}
         onPress={() => {
           Alert.alert(
@@ -138,6 +141,7 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
   return (
     <View style={{ flex: 1, backgroundColor: "#0B0F14" }}>
       <FlashList
+        testID="accountant-subcontract-list"
         data={items}
         estimatedItemSize={124}
         renderItem={renderCard}
@@ -148,7 +152,7 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
         onEndReached={hasMore ? onEndReached : undefined}
         ListFooterComponent={
           loadingMore ? (
-            <View style={{ paddingVertical: 16 }}>
+            <View testID="accountant-subcontract-load-more" style={{ paddingVertical: 16 }}>
               <ActivityIndicator />
             </View>
           ) : null
@@ -157,7 +161,7 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
           loading ? (
             <ActivityIndicator style={{ marginTop: 20 }} />
           ) : (
-            <Text style={styles.emptyText}>Подрядов на оплату пока нет</Text>
+            <Text testID="accountant-subcontract-empty" style={styles.emptyText}>Подрядов на оплату пока нет</Text>
           )
         }
       />

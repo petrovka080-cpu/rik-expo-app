@@ -34,6 +34,15 @@ export default function Header({
   onOpenFioModal?: () => void;
 }) {
   const isOfficeRoute = useIsOfficeRoute();
+  const tabTestId = (value: Tab) => {
+    const index = TABS.indexOf(value);
+    if (index === 0) return "accountant-tab-pay";
+    if (index === 1) return "accountant-tab-partial";
+    if (index === 2) return "accountant-tab-paid";
+    if (index === 3) return "accountant-tab-rework";
+    if (index === 4) return "accountant-tab-history";
+    return "accountant-tab-subcontracts";
+  };
 
   return (
     <SafeView style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 8 }}>
@@ -109,6 +118,9 @@ export default function Header({
               return (
                 <View key={t} style={{ marginRight: 8 }}>
                   <Pressable
+                    testID={tabTestId(t)}
+                    accessibilityLabel={tabTestId(t)}
+                    accessible
                     onPress={() => {
                       setTab(t);
                       onTabPress(t);

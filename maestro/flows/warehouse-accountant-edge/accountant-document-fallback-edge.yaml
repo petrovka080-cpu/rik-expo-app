@@ -1,0 +1,67 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: Accountant Document Fallback Edge
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_ACCOUNTANT_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_ACCOUNTANT_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "profile-open-office-access"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
+    centerElement: true
+- tapOn:
+    id: "profile-open-office-access"
+- extendedWaitUntil:
+    visible:
+      id: "office-direction-open-accountant"
+    timeout: 30000
+- tapOn:
+    id: "office-direction-open-accountant"
+- runFlow:
+    when:
+      visible:
+        id: "warehouse-fio-input"
+    commands:
+      - tapOn:
+          id: "warehouse-fio-input"
+      - eraseText
+      - inputText: ${E2E_ACCOUNTANT_FIO}
+      - hideKeyboard
+      - tapOn:
+          id: "warehouse-fio-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "accountant-proposal-row-${E2E_ACCOUNTANT_PROPOSAL_ID}"
+    timeout: 30000
+- tapOn:
+    id: "accountant-proposal-row-${E2E_ACCOUNTANT_PROPOSAL_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "accountant-card-modal"
+    timeout: 30000
+- assertVisible:
+    id: "accountant-card-supplier"
+- assertVisible:
+    id: "accountant-card-invoice"
+- assertVisible:
+    id: "accountant-card-amount"
+- stopApp
