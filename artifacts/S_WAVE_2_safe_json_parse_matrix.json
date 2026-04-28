@@ -125,7 +125,12 @@
   },
   "release": {
     "otaDisposition": "allow",
-    "otaPublished": false,
+    "otaPublished": true,
+    "otaChannel": "production",
+    "updateGroupId": "abef9b20-6d02-42b7-9c52-6d7b0e63d632",
+    "androidUpdateId": "019dd31b-c9b0-7fcf-98d1-1fa97fc8132c",
+    "iosUpdateId": "019dd31b-c9b0-79f2-babe-a0d018fbf75d",
+    "runtimeVersion": "ce60c7b4462fb864fe82db37647e41c4123d6bc5",
     "easBuildTriggered": false,
     "easSubmitTriggered": false
   }

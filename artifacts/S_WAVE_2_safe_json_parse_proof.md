@@ -65,6 +65,11 @@
 
 ## Release
 
-- OTA published: NO
+- OTA published: YES
+- OTA channel: production
+- OTA update group: `abef9b20-6d02-42b7-9c52-6d7b0e63d632`
+- Android update ID: `019dd31b-c9b0-7fcf-98d1-1fa97fc8132c`
+- iOS update ID: `019dd31b-c9b0-79f2-babe-a0d018fbf75d`
+- OTA runtimeVersion: `ce60c7b4462fb864fe82db37647e41c4123d6bc5`
 - EAS build triggered: NO
 - EAS submit triggered: NO
