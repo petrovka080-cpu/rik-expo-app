@@ -1,10 +1,11 @@
 # S-PDF-1 WebView/PDF termination guards proof
 
-Status: GREEN pending commit and push
+Status: GREEN
 
 ## Scope
 
 - HEAD before: `4727e99b4bc96ab413ba0082fc2ec2dc0afc5d45`
+- Runtime guard commit: `92c2b86492811f70783f3c64bf6773410f4a2578`
 - Runtime files changed:
   - `app/pdf-viewer.tsx`
   - `src/lib/pdf/PdfViewerNativeShell.tsx`
@@ -72,10 +73,11 @@ Status: GREEN pending commit and push
   - app launch via monkey: PASS
   - app process after launch: PASS
   - FATAL EXCEPTION / AndroidRuntime in recent logs: NO
-- `npm run release:verify -- --json`: pending final post-commit check
+- `npm run release:verify -- --json`: PASS
 
 ## Release
 
 - OTA published: NO
+- otaDisposition: allow
 - EAS build triggered: NO
 - EAS submit triggered: NO

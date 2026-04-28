@@ -2,6 +2,7 @@
   "wave": "S-PDF-1",
   "mode": "production-safe-webview-pdf-termination-guards",
   "headBefore": "4727e99b4bc96ab413ba0082fc2ec2dc0afc5d45",
+  "runtimeGuardCommit": "92c2b86492811f70783f3c64bf6773410f4a2578",
   "guards": [
     {
       "name": "native_webview_process_gone",
@@ -26,7 +27,7 @@
     "gitDiffCheck": "pass",
     "npmTestRunInBand": "pass",
     "npmTest": "pass",
-    "releaseVerify": "pending_post_commit",
+    "releaseVerify": "pass",
     "androidLocalProof": "pass"
   },
   "safety": {
@@ -49,7 +50,7 @@
     "easSubmitTriggered": false
   },
   "release": {
-    "otaDisposition": "",
+    "otaDisposition": "allow",
     "otaPublished": false,
     "easBuildTriggered": false,
     "easSubmitTriggered": false
