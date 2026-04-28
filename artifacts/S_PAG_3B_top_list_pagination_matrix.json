@@ -1,0 +1,159 @@
+{
+  "wave": "S-PAG-3B",
+  "mode": "production-safe-pagination",
+  "dependsOn": ["S-PAG-3A"],
+  "targetCallsites": 6,
+  "fixedCallsites": 6,
+  "skippedAlreadyFixedInSPag3A": [
+    "src/lib/api/proposals.ts:listDirectorProposalsPending",
+    "src/lib/api/buyer.ts:listBuyerProposalsByStatus",
+    "src/screens/buyer/buyer.buckets.repo.ts:fetchBuyerProposalSummaryByStatuses",
+    "src/screens/buyer/buyer.buckets.repo.ts:fetchBuyerRejectedProposalRows",
+    "src/lib/api/director.ts:listPending",
+    "src/screens/contractor/contractor.loadWorksService.ts:loadContractorWorksBundleLegacyInternal"
+  ],
+  "untouchedIntentionalFullReads": [
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "reason": "proposal PDF source reads must remain complete"
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "reason": "request PDF builder reads must remain complete"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "function": "fetchWarehouseIncomingLedgerRows",
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "reason": "warehouse incoming report/export aggregation needs complete selected-range data"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "function": "fetchWarehouseIncomingLineRows",
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "reason": "warehouse incoming detail reads all lines for one parent document"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "function": "proposalItems",
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "reason": "proposal detail/PDF flows need all proposal child rows for one parent proposal"
+    },
+    {
+      "file": "src/screens/director/director.repository.ts",
+      "function": "fetchDirectorPendingRows",
+      "classification": "NEEDS_SEPARATE_UI_WORK",
+      "reason": "main director request rows still need explicit UI pagination state before capping"
+    },
+    {
+      "file": "src/components/map/useMapListingsQuery.ts",
+      "function": "fetchMapListings",
+      "classification": "NEEDS_SEPARATE_UI_WORK",
+      "reason": "map currently expects a broad map point set and needs map viewport/server pagination before reducing"
+    },
+    {
+      "file": "src/features/auctions/auctions.data.ts",
+      "function": "loadAuctionSummaries",
+      "classification": "NEEDS_SEPARATE_UI_WORK",
+      "reason": "auction tab does not yet expose page state or load-more behavior"
+    }
+  ],
+  "changedFiles": [
+    "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+    "src/lib/api/notifications.ts",
+    "tests/buyer/buyerCounterpartyPagination.test.ts",
+    "tests/api/topListPaginationBatch2.contract.test.ts",
+    "artifacts/S_PAG_3B_top_list_pagination_matrix.json",
+    "artifacts/S_PAG_3B_top_list_pagination_proof.md"
+  ],
+  "callsiteMatrix": [
+    {
+      "file": "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+      "function": "fetchBuyerContractorsBasic",
+      "table": "contractors",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "contractor suggestion select ordered by company_name without range",
+      "after": "stable company_name/id order + range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false
+    },
+    {
+      "file": "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+      "function": "fetchBuyerContractorsFallback",
+      "table": "contractors",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "fallback contractor suggestion select with large limit",
+      "after": "stable company_name/id order + range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false
+    },
+    {
+      "file": "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+      "function": "fetchBuyerSubcontracts",
+      "table": "subcontracts",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "subcontract counterparty suggestion select with large limit",
+      "after": "stable contractor_org/id order + range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false
+    },
+    {
+      "file": "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+      "function": "fetchBuyerProposalSuppliersBasic",
+      "table": "proposal_items",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "proposal supplier suggestion select filtered to non-null supplier with large limit",
+      "after": "supplier/id order + range with supplier filter preserved",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false
+    },
+    {
+      "file": "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+      "function": "fetchBuyerProposalSuppliersFallback",
+      "table": "proposal_items",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "fallback proposal supplier suggestion select with large limit",
+      "after": "supplier/id order + range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false
+    },
+    {
+      "file": "src/lib/api/notifications.ts",
+      "function": "notifList",
+      "table": "notifications",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "role-scoped notification list ordered by created_at with limit",
+      "after": "role filter preserved, stable created_at/id order + range",
+      "defaultPageSize": 20,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInSPag3A": false
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "pdfReportExportCapped": false,
+    "detailFullReadsChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  }
+}

@@ -1,4 +1,4 @@
-import { client, parseErr } from "./_core";
+import { client, normalizePage, parseErr } from "./_core";
 
 const logNotificationsDebug = (...args: unknown[]) => {
   if (__DEV__) {
@@ -20,12 +20,14 @@ type NotificationRow = {
 
 export async function notifList(role: AppRole, limit = 20): Promise<NotificationRow[]> {
   try {
+    const page = normalizePage({ pageSize: limit }, { pageSize: 20, maxPageSize: 100 });
     const { data, error } = await client
       .from("notifications")
       .select("id, role, title, body, payload, created_at, is_read")
       .eq("role", role)
       .order("created_at", { ascending: false })
-      .limit(Math.max(1, Math.min(100, limit)));
+      .order("id", { ascending: false })
+      .range(page.from, page.to);
 
     if (error) throw error;
     return Array.isArray(data) ? (data as NotificationRow[]) : [];
