@@ -349,4 +349,45 @@ describe("PdfViewerScreen web lifecycle", () => {
     expect(mockMarkPdfOpenVisible).not.toHaveBeenCalled();
     expect(mockFailDocumentSession).not.toHaveBeenCalled();
   });
+
+  it("converts native WebView renderer termination into a controlled PDF error", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "ios",
+    });
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    let renderer: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<PdfViewerScreen />);
+      await flush();
+    });
+
+    const webView = renderer!.root.find(
+      (node) => String(node.type) === "MockNativePdfWebView",
+    );
+
+    await act(async () => {
+      webView.props.onRenderProcessGone({ nativeEvent: { didCrash: true } });
+      await flush();
+    });
+
+    expect(mockFailPdfOpenVisible).toHaveBeenCalledWith(
+      "open-1",
+      expect.any(Error),
+      expect.objectContaining({
+        extra: expect.objectContaining({
+          sessionId: expect.any(String),
+        }),
+      }),
+    );
+    expect(mockFailDocumentSession).not.toHaveBeenCalled();
+    expect(
+      errorSpy.mock.calls.some((call) =>
+        String(call[0]).includes("native_webview_process_gone"),
+      ),
+    ).toBe(true);
+
+    errorSpy.mockRestore();
+  });
 });

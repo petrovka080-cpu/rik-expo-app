@@ -8,6 +8,7 @@ import {
   resolvePdfViewerNativeHttpErrorEventPlan,
   resolvePdfViewerNativeLoadEndEventPlan,
   resolvePdfViewerNativeLoadStartEventPlan,
+  resolvePdfViewerNativeRenderProcessGoneEventPlan,
   resolvePdfViewerWebIframeErrorEventPlan,
   resolvePdfViewerWebIframeLoadEventPlan,
   shouldCommitPdfViewerRenderEvent,
@@ -310,6 +311,58 @@ describe("pdfViewerRenderEventGuard command planning", () => {
       action: "commit_error",
       message: "PDF request failed.",
     });
+  });
+
+  it("plans native renderer process termination as a terminal render error", () => {
+    expect(
+      resolvePdfViewerNativeRenderProcessGoneEventPlan({
+        renderEventPlan: commitPlan,
+        sessionId: "session-1",
+        asset,
+        source,
+        didCrash: true,
+      }),
+    ).toMatchObject({
+      action: "commit_error",
+      message: "Native PDF renderer process crashed.",
+      console: {
+        level: "error",
+        label: "[pdf-viewer] native_webview_process_gone",
+        payload: {
+          didCrash: true,
+          error: "Native PDF renderer process crashed.",
+        },
+      },
+      breadcrumbs: [
+        {
+          marker: "native_webview_process_gone",
+          payload: {
+            errorMessage: "Native PDF renderer process crashed.",
+            extra: { didCrash: true },
+          },
+        },
+        {
+          marker: "native_open_error",
+          payload: {
+            errorMessage: "Native PDF renderer process crashed.",
+            terminalState: "error",
+            extra: {
+              handoffType: "native_webview",
+              didCrash: true,
+            },
+          },
+        },
+      ],
+    });
+
+    expect(
+      resolvePdfViewerNativeRenderProcessGoneEventPlan({
+        renderEventPlan: stalePlan,
+        sessionId: "session-1",
+        asset,
+        source,
+      }),
+    ).toEqual(stalePlan);
   });
 
   it("stays pure and does not import runtime side-effect APIs", () => {

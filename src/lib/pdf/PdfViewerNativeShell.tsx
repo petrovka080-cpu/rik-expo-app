@@ -15,6 +15,7 @@ import { styles } from "./pdfViewer.styles";
 export type PdfViewerNativeWebViewEvent = {
   nativeEvent?: {
     description?: string;
+    didCrash?: boolean;
     statusCode?: number;
   };
 };
@@ -41,6 +42,7 @@ type PdfViewerNativeWebViewShellProps = {
   onLoadEnd: () => void;
   onError: (event: PdfViewerNativeWebViewEvent) => void;
   onHttpError: (event: PdfViewerNativeWebViewEvent) => void;
+  onRenderProcessGone: (event: PdfViewerNativeWebViewEvent) => void;
   onOpenExternal: () => void;
 };
 
@@ -98,6 +100,7 @@ export function PdfViewerNativeShell(props: PdfViewerNativeShellProps) {
       onLoadEnd={props.onLoadEnd}
       onError={props.onError}
       onHttpError={props.onHttpError}
+      onRenderProcessGone={props.onRenderProcessGone}
     />
   );
 }

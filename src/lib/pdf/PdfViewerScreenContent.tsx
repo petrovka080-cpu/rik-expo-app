@@ -54,6 +54,7 @@ type PdfViewerScreenContentProps = {
   onNativeLoadEnd: () => void;
   onNativeError: (event: PdfViewerNativeWebViewEvent) => void;
   onNativeHttpError: (event: PdfViewerNativeWebViewEvent) => void;
+  onNativeRenderProcessGone: (event: PdfViewerNativeWebViewEvent) => void;
 };
 
 function LoadingState() {
@@ -90,6 +91,7 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
     onWebLoad,
     onNativeError,
     onNativeHttpError,
+    onNativeRenderProcessGone,
     onNativeLoadEnd,
     onNativeLoadStart,
     renderInstanceKey,
@@ -201,6 +203,7 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
             onLoadEnd={onNativeLoadEnd}
             onError={onNativeError}
             onHttpError={onNativeHttpError}
+            onRenderProcessGone={onNativeRenderProcessGone}
             onOpenExternal={onOpenExternal}
           />
         </Pressable>

@@ -81,6 +81,7 @@ function createProps(
     onNativeLoadEnd: jest.fn(),
     onNativeError: jest.fn(),
     onNativeHttpError: jest.fn(),
+    onNativeRenderProcessGone: jest.fn(),
     ...overrides,
   };
 }

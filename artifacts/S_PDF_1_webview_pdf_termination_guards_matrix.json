@@ -1,0 +1,58 @@
+{
+  "wave": "S-PDF-1",
+  "mode": "production-safe-webview-pdf-termination-guards",
+  "headBefore": "4727e99b4bc96ab413ba0082fc2ec2dc0afc5d45",
+  "guards": [
+    {
+      "name": "native_webview_process_gone",
+      "surface": "pdf_viewer_native_webview",
+      "files": [
+        "app/pdf-viewer.tsx",
+        "src/lib/pdf/PdfViewerNativeShell.tsx",
+        "src/lib/pdf/PdfViewerScreenContent.tsx",
+        "src/lib/pdf/pdfViewerRenderEventGuard.ts"
+      ],
+      "event": "onRenderProcessGone",
+      "behavior": "convert native renderer termination into controlled PDF render error",
+      "staleRenderSuppression": true,
+      "terminalErrorPath": "existing markError path",
+      "rawPayloadLogged": false
+    }
+  ],
+  "tests": {
+    "targetedPdfTests": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "gitDiffCheck": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pending_post_commit",
+    "androidLocalProof": "pass"
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "pdfGenerationChanged": false,
+    "pdfSourceRpcChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "navigationChanged": false,
+    "visibleUiChanged": false,
+    "maestroYamlChanged": false,
+    "appConfigChanged": false,
+    "packageChanged": false,
+    "nativeDependencyChanged": false,
+    "rawPayloadLogged": false,
+    "tokenLogged": false,
+    "signedUrlLogged": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  },
+  "release": {
+    "otaDisposition": "",
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  },
+  "nextRecommendedWave": "S-LOAD-1 staging load test"
+}

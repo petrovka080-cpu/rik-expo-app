@@ -339,3 +339,62 @@ export function resolvePdfViewerNativeHttpErrorEventPlan(args: {
     ],
   };
 }
+
+export function resolvePdfViewerNativeRenderProcessGoneEventPlan(args: {
+  renderEventPlan: PdfViewerRenderEventTransitionPlan;
+  sessionId: string;
+  asset: PdfViewerRenderAsset;
+  source: PdfViewerRenderSource;
+  didCrash?: unknown;
+}): PdfViewerRenderErrorPlan {
+  const skip = renderEventSkip(args.renderEventPlan);
+  if (skip) return skip;
+
+  const didCrash = args.didCrash === true;
+  const message = didCrash
+    ? "Native PDF renderer process crashed."
+    : "Native PDF renderer process was terminated.";
+  const processGoneExtra = { didCrash };
+
+  return {
+    action: "commit_error",
+    message,
+    console: {
+      level: "error",
+      label: "[pdf-viewer] native_webview_process_gone",
+      payload: buildAssetConsolePayload({
+        asset: args.asset,
+        sessionId: args.sessionId,
+        uri: args.asset.uri,
+        extra: {
+          ...processGoneExtra,
+          error: message,
+        },
+      }),
+    },
+    breadcrumbs: [
+      {
+        marker: "native_webview_process_gone",
+        payload: buildNativeBreadcrumbPayload({
+          asset: args.asset,
+          source: args.source,
+          errorMessage: message,
+          extra: processGoneExtra,
+        }),
+      },
+      {
+        marker: "native_open_error",
+        payload: buildNativeBreadcrumbPayload({
+          asset: args.asset,
+          source: args.source,
+          errorMessage: message,
+          terminalState: "error",
+          extra: {
+            handoffType: "native_webview",
+            ...processGoneExtra,
+          },
+        }),
+      },
+    ],
+  };
+}

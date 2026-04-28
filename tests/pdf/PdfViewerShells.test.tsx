@@ -117,6 +117,7 @@ describe("PdfViewerNativeShell", () => {
     const onLoadEnd = jest.fn();
     const onError = jest.fn();
     const onHttpError = jest.fn();
+    const onRenderProcessGone = jest.fn();
     const MockNativePdfWebView = (props: MockNativeWebViewProps) =>
       React.createElement("NativePdfWebView", props);
 
@@ -131,6 +132,7 @@ describe("PdfViewerNativeShell", () => {
         onLoadEnd={onLoadEnd}
         onError={onError}
         onHttpError={onHttpError}
+        onRenderProcessGone={onRenderProcessGone}
         onOpenExternal={jest.fn()}
       />,
     );
@@ -142,17 +144,20 @@ describe("PdfViewerNativeShell", () => {
 
     const errorEvent = { nativeEvent: { description: "failed" } };
     const httpErrorEvent = { nativeEvent: { statusCode: 500 } };
+    const processGoneEvent = { nativeEvent: { didCrash: true } };
     act(() => {
       webView.props.onLoadStart();
       webView.props.onLoadEnd();
       webView.props.onError(errorEvent);
       webView.props.onHttpError(httpErrorEvent);
+      webView.props.onRenderProcessGone(processGoneEvent);
     });
 
     expect(onLoadStart).toHaveBeenCalledTimes(1);
     expect(onLoadEnd).toHaveBeenCalledTimes(1);
     expect(onError).toHaveBeenCalledWith(errorEvent);
     expect(onHttpError).toHaveBeenCalledWith(httpErrorEvent);
+    expect(onRenderProcessGone).toHaveBeenCalledWith(processGoneEvent);
   });
 
   it("renders the native unavailable fallback when WebView is absent", () => {
@@ -168,6 +173,7 @@ describe("PdfViewerNativeShell", () => {
         onLoadEnd={jest.fn()}
         onError={jest.fn()}
         onHttpError={jest.fn()}
+        onRenderProcessGone={jest.fn()}
         onOpenExternal={onOpenExternal}
       />,
     );

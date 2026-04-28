@@ -23,6 +23,7 @@ import {
   resolvePdfViewerNativeHttpErrorEventPlan,
   resolvePdfViewerNativeLoadEndEventPlan,
   resolvePdfViewerNativeLoadStartEventPlan,
+  resolvePdfViewerNativeRenderProcessGoneEventPlan,
   resolvePdfViewerWebIframeErrorEventPlan,
   resolvePdfViewerWebIframeLoadEventPlan,
   shouldCommitPdfViewerRenderEvent,
@@ -1734,6 +1735,35 @@ function PdfViewerScreen() {
     ],
   );
 
+  const onNativeRenderProcessGone = React.useCallback(
+    (event: { nativeEvent?: { didCrash?: boolean } }) => {
+      if (resolvedSource.kind !== "resolved-embedded" || !asset) return;
+      const eventPlan = resolvePdfViewerNativeRenderProcessGoneEventPlan({
+        renderEventPlan: resolveRenderEventCommitPlan(renderInstanceKey),
+        sessionId,
+        asset,
+        source: resolvedSource,
+        didCrash: event?.nativeEvent?.didCrash,
+      });
+      if (eventPlan.action === "skip_render_event") return;
+      emitPdfViewerRenderConsoleCommand(eventPlan.console);
+      emitPdfViewerRenderBreadcrumbCommands(
+        recordViewerBreadcrumb,
+        eventPlan.breadcrumbs,
+      );
+      markError(eventPlan.message, "render");
+    },
+    [
+      asset,
+      markError,
+      recordViewerBreadcrumb,
+      renderInstanceKey,
+      resolveRenderEventCommitPlan,
+      resolvedSource,
+      sessionId,
+    ],
+  );
+
   React.useEffect(() => {
     if (contentModel.kind === "empty") {
       logPdfViewerError("[pdf-viewer] viewer_missing_session", {
@@ -1797,6 +1827,7 @@ function PdfViewerScreen() {
         onNativeLoadEnd={onNativeLoadEnd}
         onNativeError={onNativeError}
         onNativeHttpError={onNativeHttpError}
+        onNativeRenderProcessGone={onNativeRenderProcessGone}
       />
     </SafeAreaView>
   );
