@@ -1,0 +1,167 @@
+{
+  "wave": "S-LOAD-1",
+  "mode": "production-safe-staging-load-test",
+  "generatedAt": "2026-04-28T12:55:10.534Z",
+  "environment": {
+    "canRunLive": false,
+    "missingKeys": [
+      "STAGING_SUPABASE_URL",
+      "STAGING_SUPABASE_READONLY_KEY"
+    ],
+    "presentKeys": [],
+    "productionFallbackUsed": false,
+    "secretsPrinted": false
+  },
+  "liveRun": "not_run_env_missing",
+  "targets": [
+    {
+      "target": {
+        "id": "warehouse_issue_queue_page_25",
+        "domain": "warehouse",
+        "rpcName": "warehouse_issue_queue_scope_v4",
+        "args": {
+          "p_offset": 0,
+          "p_limit": 25
+        },
+        "repeatedRuns": 3,
+        "expectedMaxRows": 25,
+        "readOnly": true,
+        "reason": "hot warehouse issue queue first-page bounded scope"
+      },
+      "samples": [],
+      "medianLatencyMs": null,
+      "maxLatencyMs": null,
+      "medianPayloadBytes": null,
+      "maxPayloadBytes": null,
+      "maxRowCount": null,
+      "recommendation": "run_live",
+      "status": "not_run_env_missing",
+      "errors": [
+        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
+      ]
+    },
+    {
+      "target": {
+        "id": "warehouse_incoming_queue_page_30",
+        "domain": "warehouse",
+        "rpcName": "warehouse_incoming_queue_scope_v1",
+        "args": {
+          "p_offset": 0,
+          "p_limit": 30
+        },
+        "repeatedRuns": 3,
+        "expectedMaxRows": 30,
+        "readOnly": true,
+        "reason": "hot warehouse incoming queue bounded scope"
+      },
+      "samples": [],
+      "medianLatencyMs": null,
+      "maxLatencyMs": null,
+      "medianPayloadBytes": null,
+      "maxPayloadBytes": null,
+      "maxRowCount": null,
+      "recommendation": "run_live",
+      "status": "not_run_env_missing",
+      "errors": [
+        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
+      ]
+    },
+    {
+      "target": {
+        "id": "warehouse_stock_page_60",
+        "domain": "warehouse",
+        "rpcName": "warehouse_stock_scope_v2",
+        "args": {
+          "p_offset": 0,
+          "p_limit": 60
+        },
+        "repeatedRuns": 3,
+        "expectedMaxRows": 60,
+        "readOnly": true,
+        "reason": "stock list window with aggregate payload pressure"
+      },
+      "samples": [],
+      "medianLatencyMs": null,
+      "maxLatencyMs": null,
+      "medianPayloadBytes": null,
+      "maxPayloadBytes": null,
+      "maxRowCount": null,
+      "recommendation": "run_live",
+      "status": "not_run_env_missing",
+      "errors": [
+        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
+      ]
+    },
+    {
+      "target": {
+        "id": "buyer_summary_inbox_page_25",
+        "domain": "buyer",
+        "rpcName": "buyer_summary_inbox_scope_v1",
+        "args": {
+          "p_offset": 0,
+          "p_limit": 25,
+          "p_search": null,
+          "p_company_id": null
+        },
+        "repeatedRuns": 3,
+        "expectedMaxRows": 25,
+        "readOnly": true,
+        "reason": "buyer inbox canonical bounded list path"
+      },
+      "samples": [],
+      "medianLatencyMs": null,
+      "maxLatencyMs": null,
+      "medianPayloadBytes": null,
+      "maxPayloadBytes": null,
+      "maxRowCount": null,
+      "recommendation": "run_live",
+      "status": "not_run_env_missing",
+      "errors": [
+        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
+      ]
+    },
+    {
+      "target": {
+        "id": "buyer_summary_buckets_fixed_scope",
+        "domain": "buyer",
+        "rpcName": "buyer_summary_buckets_scope_v1",
+        "repeatedRuns": 3,
+        "expectedMaxRows": null,
+        "readOnly": true,
+        "reason": "buyer dashboard fixed summary scope repeated-run stability"
+      },
+      "samples": [],
+      "medianLatencyMs": null,
+      "maxLatencyMs": null,
+      "medianPayloadBytes": null,
+      "maxPayloadBytes": null,
+      "maxRowCount": null,
+      "recommendation": "run_live",
+      "status": "not_run_env_missing",
+      "errors": [
+        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
+      ]
+    }
+  ],
+  "safety": {
+    "readOnly": true,
+    "productionTouched": false,
+    "productionMutated": false,
+    "businessLogicChanged": false,
+    "sqlRpcChanged": false,
+    "packageChanged": false,
+    "appConfigChanged": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false
+  },
+  "gates": {
+    "targetedTests": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "gitDiffCheck": "pass",
+    "releaseVerify": "not_run"
+  }
+}
