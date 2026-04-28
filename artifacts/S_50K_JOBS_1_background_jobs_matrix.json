@@ -1,0 +1,143 @@
+{
+  "wave": "S-50K-JOBS-1",
+  "mode": "production-safe-background-job-boundary-scaffold",
+  "status": "GREEN_SCAFFOLD",
+  "dependsOn": ["S-50K-ARCH-1", "S-50K-CACHE-1"],
+  "productionTrafficMigrated": false,
+  "serverDeployed": false,
+  "workerDeployed": false,
+  "queueInfrastructureDeployed": false,
+  "backgroundJobsEnabledByDefault": false,
+  "productionTouched": false,
+  "changedFiles": [
+    "src/shared/scale/backgroundJobs.ts",
+    "tests/scale/backgroundJobs.test.ts",
+    "tests/perf/performance-budget.test.ts",
+    "docs/architecture/50k_background_jobs.md",
+    "artifacts/S_50K_JOBS_1_background_jobs_matrix.json",
+    "artifacts/S_50K_JOBS_1_background_jobs_proof.md"
+  ],
+  "jobContracts": [
+    {
+      "flow": "proposal.submit.finalize",
+      "queueName": "proposal_submit_finalize_v1",
+      "status": "contract_only",
+      "category": "mutation_sensitive",
+      "priority": "high",
+      "idempotencyRequired": true,
+      "payloadPiiAllowed": false,
+      "productionOwnerApprovalRequired": true
+    },
+    {
+      "flow": "warehouse.receive.apply",
+      "queueName": "warehouse_receive_apply_v1",
+      "status": "contract_only",
+      "category": "mutation_sensitive",
+      "priority": "high",
+      "idempotencyRequired": true,
+      "payloadPiiAllowed": false,
+      "productionOwnerApprovalRequired": true
+    },
+    {
+      "flow": "accountant.payment.apply",
+      "queueName": "accountant_payment_apply_v1",
+      "status": "contract_only",
+      "category": "mutation_sensitive",
+      "priority": "high",
+      "idempotencyRequired": true,
+      "payloadPiiAllowed": false,
+      "productionOwnerApprovalRequired": true
+    },
+    {
+      "flow": "director.report.build",
+      "queueName": "director_report_build_v1",
+      "status": "contract_only",
+      "category": "report_heavy",
+      "priority": "normal",
+      "idempotencyRequired": true,
+      "payloadPiiAllowed": false,
+      "productionOwnerApprovalRequired": true
+    },
+    {
+      "flow": "pdf.report.render",
+      "queueName": "pdf_report_render_v1",
+      "status": "contract_only",
+      "category": "report_heavy",
+      "priority": "normal",
+      "idempotencyRequired": true,
+      "payloadPiiAllowed": false,
+      "productionOwnerApprovalRequired": true
+    },
+    {
+      "flow": "cache.read_model.refresh",
+      "queueName": "cache_read_model_refresh_v1",
+      "status": "contract_only",
+      "category": "cache_refresh",
+      "priority": "low",
+      "idempotencyRequired": true,
+      "payloadPiiAllowed": false,
+      "productionOwnerApprovalRequired": true
+    },
+    {
+      "flow": "marketplace.catalog.reindex",
+      "queueName": "marketplace_catalog_reindex_v1",
+      "status": "contract_only",
+      "category": "cache_refresh",
+      "priority": "low",
+      "idempotencyRequired": true,
+      "payloadPiiAllowed": false,
+      "productionOwnerApprovalRequired": true
+    },
+    {
+      "flow": "realtime.channel.reconcile",
+      "queueName": "realtime_channel_reconcile_v1",
+      "status": "contract_only",
+      "category": "reconciliation",
+      "priority": "normal",
+      "idempotencyRequired": true,
+      "payloadPiiAllowed": false,
+      "productionOwnerApprovalRequired": true
+    },
+    {
+      "flow": "notification.digest",
+      "queueName": "notification_digest_v1",
+      "status": "contract_only",
+      "category": "notification",
+      "priority": "low",
+      "idempotencyRequired": true,
+      "payloadPiiAllowed": false,
+      "productionOwnerApprovalRequired": true
+    }
+  ],
+  "tests": {
+    "disabledByDefault": true,
+    "shadowModeRequired": true,
+    "noNetworkWhenDisabled": true,
+    "noWorkerExecution": true,
+    "attemptsClamped": true,
+    "metadataAllowlistTested": true,
+    "redactionTested": true,
+    "activeAppFlowImports": false
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "serverDeployed": false,
+    "workerDeployed": false,
+    "queueInfrastructureDeployed": false,
+    "trafficMigrated": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false
+  }
+}
