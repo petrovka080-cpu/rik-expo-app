@@ -64,7 +64,7 @@ The previous 10K proof pack stayed partial because live gates still need owner c
 - `npx expo lint`: PASS
 - `npm test -- --runInBand`: PASS, 507 suites passed / 1 skipped / 3214 tests passed.
 - `npm test`: PASS, 507 suites passed / 1 skipped / 3214 tests passed.
-- `npm run release:verify -- --json`: pre-commit run blocked only because the worktree was dirty; the guard's internal `tsc`, lint, Jest, and `git diff --check` gates passed. Final clean-tree run is required after commit.
+- `npm run release:verify -- --json`: PASS after push with `HEAD == origin/main`, clean worktree, readiness `pass`, and no blockers.
 
 ## Safety
 

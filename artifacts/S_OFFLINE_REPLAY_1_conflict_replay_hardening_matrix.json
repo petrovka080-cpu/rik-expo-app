@@ -42,7 +42,8 @@
     "npmTestRunInBand": "passed",
     "npmTest": "passed",
     "releaseVerifyPreCommit": "blocked_dirty_worktree_only",
-    "releaseVerifyPostCommit": "pending"
+    "releaseVerifyPostCommitPrePush": "blocked_head_not_origin_only",
+    "releaseVerifyPostPush": "passed"
   },
   "safety": {
     "productionTouched": false,
