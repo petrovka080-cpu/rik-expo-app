@@ -1,0 +1,140 @@
+{
+  "wave": "S-PARSE-2",
+  "mode": "production-safe-10k-50k-json-parse-hardening",
+  "status": "GREEN",
+  "ownerGoal": "10K/50K+ readiness",
+  "rawJsonParseBefore": 8,
+  "rawJsonParseAfter": 3,
+  "fixedCallsites": 5,
+  "changedFiles": [
+    "src/lib/api/proposalIntegrity.ts",
+    "src/lib/api/proposalIntegrity.test.ts",
+    "src/lib/ai/geminiGateway.ts",
+    "src/lib/pdf/directorPdfPlatformContract.ts",
+    "src/screens/contractor/contractor.utils.ts",
+    "src/screens/foreman/foreman.ai.ts",
+    "tests/scale/sParse2JsonParse.contract.test.ts",
+    "artifacts/S_PARSE_2_json_parse_hardening_matrix.json",
+    "artifacts/S_PARSE_2_json_parse_hardening_proof.md",
+    "artifacts/S_PARSE_2_remaining_json_parse_matrix.json",
+    "artifacts/S_PARSE_2_remaining_json_parse_proof.md"
+  ],
+  "parseMatrix": [
+    {
+      "file": "src/lib/api/proposalIntegrity.ts",
+      "function": "parseSummary",
+      "classification": "FIX_NOW_SAFEJSON_PARSE",
+      "before": "JSON.parse of RPC degraded error detail string",
+      "after": "safeJsonParse with invalid-detail fallback",
+      "fallbackPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "tests": [
+        "valid JSON",
+        "malformed JSON",
+        "fallback"
+      ]
+    },
+    {
+      "file": "src/lib/ai/geminiGateway.ts",
+      "function": "resolveFunctionsInvokeError",
+      "classification": "FIX_NOW_SAFEJSON_PARSE",
+      "before": "JSON.parse of Edge Function error body",
+      "after": "safeJsonParse with parsed-error extraction and raw-text fallback",
+      "fallbackPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "tests": [
+        "valid JSON",
+        "malformed JSON",
+        "fallback"
+      ]
+    },
+    {
+      "file": "src/lib/pdf/directorPdfPlatformContract.ts",
+      "function": "resolveDirectorPdfInvokeErrorDetails",
+      "classification": "FIX_NOW_SAFEJSON_PARSE",
+      "before": "JSON.parse of Director PDF function response body",
+      "after": "safeJsonParse with structured-error extraction and raw-text fallback",
+      "fallbackPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "tests": [
+        "valid JSON",
+        "malformed JSON",
+        "fallback"
+      ]
+    },
+    {
+      "file": "src/screens/contractor/contractor.utils.ts",
+      "function": "parseActMeta",
+      "classification": "FIX_NOW_SAFEJSON_PARSE",
+      "before": "JSON.parse of ACT_META note suffix",
+      "after": "safeJsonParse with selected-works extraction and observability fallback",
+      "fallbackPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "tests": [
+        "valid JSON",
+        "malformed JSON",
+        "fallback"
+      ]
+    },
+    {
+      "file": "src/screens/foreman/foreman.ai.ts",
+      "function": "parseForemanAiResponse",
+      "classification": "FIX_NOW_SAFEJSON_PARSE",
+      "before": "JSON.parse of cleaned AI response text",
+      "after": "safeJsonParse wrapper with preserved degraded parse-error behavior",
+      "fallbackPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "tests": [
+        "valid JSON",
+        "malformed JSON",
+        "fallback"
+      ]
+    }
+  ],
+  "remainingRawParse": [
+    {
+      "file": "src/lib/format.ts",
+      "classification": "FIX_NOW_SAFEJSON_PARSE",
+      "reason": "central safeJsonParse helper intentionally contains the only raw JSON.parse used for guarded parsing"
+    },
+    {
+      "file": "src/screens/foreman/foreman.localDraft.ts",
+      "classification": "INTENTIONAL_DEEP_CLONE_PATTERN",
+      "reason": "clone roundtrip parses JSON generated in-process; replacing it would require separate runtime compatibility proof"
+    },
+    {
+      "file": "src/screens/foreman/foreman.localDraft.ts",
+      "classification": "INTENTIONAL_DEEP_CLONE_PATTERN",
+      "reason": "snapshot serialization roundtrip parses JSON generated in-process; replacing it would require separate runtime compatibility proof"
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "aiPromptChanged": false,
+    "pdfReportExportCompletenessChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}
