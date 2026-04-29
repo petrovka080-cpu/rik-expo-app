@@ -61,6 +61,31 @@ describe("logger boundary", () => {
     }
   });
 
+  it("redacts PII-like diagnostics before delegating to console", () => {
+    const spy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+    logger.warn("pii-redaction-tag", {
+      email: "person@example.test",
+      phone: "+996 555 123 456",
+      address: "123 Main Street",
+    });
+
+    if (originalDev) {
+      const logged = JSON.stringify(spy.mock.calls);
+      expect(logged).not.toContain("person@example.test");
+      expect(logged).not.toContain("+996 555 123 456");
+      expect(logged).not.toContain("123 Main Street");
+      expect(logged).toContain("[redacted]");
+    }
+  });
+
+  it("handles circular diagnostic objects without throwing", () => {
+    const circular: Record<string, unknown> = { label: "root" };
+    circular.self = circular;
+
+    expect(() => logger.info("circular-tag", circular)).not.toThrow();
+  });
+
   it("does not throw on any call variant", () => {
     expect(() => logger.info("tag")).not.toThrow();
     expect(() => logger.warn("tag")).not.toThrow();

@@ -17,6 +17,7 @@ import {
 } from "../lib/infra/jobQueue";
 import { startQueueMetricsLoop } from "../lib/infra/queueMetrics";
 import { fetchQueueLatencyMetrics } from "../lib/infra/queueLatencyMetrics";
+import { logger } from "../lib/logger";
 import { compactJobsByEntity, dispatchJob } from "./jobDispatcher";
 import { resolveQueueWorkerBatchConcurrency } from "./queueWorker.limits";
 import { normalizeAppError } from "../lib/errors/appError";
@@ -77,6 +78,21 @@ export type QueueWorkerHandle = {
 
 const queueErrorText = (error: unknown): string =>
   error instanceof Error ? error.message : String(error ?? "unknown");
+
+const redactedPresence = (value: unknown): "present_redacted" | "missing" =>
+  String(value ?? "").trim() ? "present_redacted" : "missing";
+
+const queueWorkerScope = (workerId: string) => ({
+  workerIdScope: redactedPresence(workerId),
+});
+
+const queueJobScope = (
+  job?: Pick<SubmitJobRow, "id" | "job_type" | "retry_count"> | null,
+) => ({
+  jobIdScope: redactedPresence(job?.id),
+  jobType: job?.job_type ?? null,
+  retryCount: job?.retry_count ?? null,
+});
 
 const queueVerbose =
   ((typeof globalThis !== "undefined" &&
@@ -168,11 +184,11 @@ async function markCompactedDuplicatesCompleted(
             duplicateJobId: id,
           },
         });
-        if (__DEV__) console.warn("[queue.worker] compacted duplicate completion failed", {
-          workerId,
-          keptJobId: group.job.id,
-          duplicateJobId: id,
-          error: queueErrorText(error),
+        logger.warn("queue.worker", "compacted duplicate completion failed", {
+          ...queueWorkerScope(workerId),
+          keptJobIdScope: redactedPresence(group.job.id),
+          duplicateJobIdScope: redactedPresence(id),
+          errorMessage: queueErrorText(error),
         });
       }
     }
@@ -201,24 +217,17 @@ async function processOne(
           jobProcessingMs: Date.now() - t0,
         },
       });
-      if (__DEV__) console.warn(
-        "[queue.worker] completion persistence failed after dispatch",
-        {
-          workerId,
-          jobId: job.id,
-          jobType: job.job_type,
-          retryCount: job.retry_count,
-          jobProcessingMs: Date.now() - t0,
-          error: queueErrorText(completionError),
-        },
-      );
+      logger.warn("queue.worker", "completion persistence failed after dispatch", {
+        ...queueWorkerScope(workerId),
+        ...queueJobScope(job),
+        jobProcessingMs: Date.now() - t0,
+        errorMessage: queueErrorText(completionError),
+      });
       throw completionError;
     }
-    if (__DEV__) console.info("[queue.worker] job done", {
-      workerId,
-      jobId: job.id,
-      jobType: job.job_type,
-      retryCount: job.retry_count,
+    logger.info("queue.worker", "job done", {
+      ...queueWorkerScope(workerId),
+      ...queueJobScope(job),
       jobProcessingMs: Date.now() - t0,
     });
   } catch (error: unknown) {
@@ -236,14 +245,13 @@ async function processOne(
           jobProcessingMs: Date.now() - t0,
         },
       });
-      if (__DEV__) console.warn("[queue.worker] job failed", {
-        workerId,
-        jobId: job.id,
-        jobType: job.job_type,
+      logger.warn("queue.worker", "job failed", {
+        ...queueWorkerScope(workerId),
+        ...queueJobScope(job),
         retryCount: failed.retryCount,
         status: failed.status,
         jobProcessingMs: Date.now() - t0,
-        error: message,
+        errorMessage: message,
       });
     } catch (failurePersistError: unknown) {
       recordQueueWorkerBoundaryFailure({
@@ -256,14 +264,12 @@ async function processOne(
           jobProcessingMs: Date.now() - t0,
         },
       });
-      if (__DEV__) console.error("[queue.worker] failure persistence failed", {
-        workerId,
-        jobId: job.id,
-        jobType: job.job_type,
-        retryCount: job.retry_count,
+      logger.error("queue.worker", "failure persistence failed", {
+        ...queueWorkerScope(workerId),
+        ...queueJobScope(job),
         jobProcessingMs: Date.now() - t0,
-        processingError: message,
-        failurePersistError: queueErrorText(failurePersistError),
+        processingErrorMessage: message,
+        failurePersistErrorMessage: queueErrorText(failurePersistError),
       });
       throw failurePersistError;
     }
@@ -283,8 +289,8 @@ async function processBatch(
     deps.queueApi,
   );
   if (compactedDuplicates.duplicateCount > 0) {
-    if (__DEV__) console.info("[queue.worker] compacted duplicates processed", {
-      workerId,
+    logger.info("queue.worker", "compacted duplicates processed", {
+      ...queueWorkerScope(workerId),
       duplicateCount: compactedDuplicates.duplicateCount,
       failedCount: compactedDuplicates.failedCount,
     });
@@ -317,17 +323,17 @@ export function startQueueWorker(
 ): QueueWorkerHandle {
   const deps = resolveQueueWorkerDeps(depsInput);
 
-  if (__DEV__) console.info("[queue.worker] init", {
+  logger.info("queue.worker", "init", {
     JOB_QUEUE_ENABLED,
     WORKER_BATCH_SIZE,
     WORKER_CONCURRENCY,
     COMPACTION_DELAY_MS,
-    SUPABASE_HOST: deps.sourceMeta.SUPABASE_HOST,
+    supabaseHostScope: redactedPresence(deps.sourceMeta.SUPABASE_HOST),
     SUPABASE_KEY_KIND: deps.sourceMeta.SUPABASE_KEY_KIND,
   });
 
   if (!JOB_QUEUE_ENABLED) {
-    if (__DEV__) console.info("[queue.worker] disabled (JOB_QUEUE_ENABLED=false)");
+    logger.info("queue.worker", "disabled", { reason: "JOB_QUEUE_ENABLED=false" });
     return { stop: () => undefined };
   }
 
@@ -344,8 +350,8 @@ export function startQueueWorker(
   });
 
   void (async () => {
-    if (__DEV__) console.info("[queue.worker] started", {
-      workerId,
+    logger.info("queue.worker", "started", {
+      ...queueWorkerScope(workerId),
       batchSize,
       concurrency,
     });
@@ -355,16 +361,16 @@ export function startQueueWorker(
         recoveryTick += 1;
         if (recoveryTick % 10 === 0) {
           if (queueVerbose) {
-            if (__DEV__) console.info("[queue.worker] recover tick", {
-              workerId,
+            logger.info("queue.worker", "recover tick", {
+              ...queueWorkerScope(workerId),
               recoveryTick,
             });
           }
           const recovered = await deps.queueApi.recoverStuckSubmitJobs();
           if (recovered > 0) {
-            if (__DEV__) console.warn("[queue.worker] recovered stuck jobs", {
+            logger.warn("queue.worker", "recovered stuck jobs", {
               recovered,
-              workerId,
+              ...queueWorkerScope(workerId),
             });
           }
         }
@@ -375,8 +381,8 @@ export function startQueueWorker(
           batchSize,
         );
         if (claimed.length > 0 || queueVerbose) {
-          if (__DEV__) console.info("[queue.worker] claim result", {
-            workerId,
+          logger.info("queue.worker", "claim result", {
+            ...queueWorkerScope(workerId),
             claimed: claimed.length,
           });
         }
@@ -388,16 +394,16 @@ export function startQueueWorker(
 
         loopPhase = "compaction_delay";
         if (queueVerbose) {
-          if (__DEV__) console.info("[queue.worker] compaction delay", {
-            workerId,
+          logger.info("queue.worker", "compaction delay", {
+            ...queueWorkerScope(workerId),
             COMPACTION_DELAY_MS,
           });
         }
         await sleep(COMPACTION_DELAY_MS);
 
         loopPhase = "process_batch";
-        if (__DEV__) console.info("[queue.worker] processing batch", {
-          workerId,
+        logger.info("queue.worker", "processing batch", {
+          ...queueWorkerScope(workerId),
           claimed: claimed.length,
           concurrency,
         });
@@ -409,10 +415,10 @@ export function startQueueWorker(
           workerId,
           phase: loopPhase,
         });
-        if (__DEV__) console.warn("[queue.worker] loop error", {
-          workerId,
+        logger.warn("queue.worker", "loop error", {
+          ...queueWorkerScope(workerId),
           phase: loopPhase,
-          error: queueErrorText(error),
+          errorMessage: queueErrorText(error),
         });
         await sleep(pollIdleMs);
       }
@@ -423,7 +429,7 @@ export function startQueueWorker(
     stop: () => {
       stopped = true;
       metrics.stop();
-      if (__DEV__) console.info("[queue.worker] stopped", { workerId });
+      logger.info("queue.worker", "stopped", queueWorkerScope(workerId));
     },
   };
 }

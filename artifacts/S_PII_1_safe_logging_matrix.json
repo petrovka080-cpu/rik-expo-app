@@ -1,0 +1,186 @@
+{
+  "wave": "S-PII-1",
+  "mode": "production-safe-10k-50k-safe-logging-redaction",
+  "status": "GREEN",
+  "ownerGoal": "10K/50K+ readiness",
+  "targetCallsites": 25,
+  "fixedCallsites": 29,
+  "consoleLogCountSummary": {
+    "before": {
+      "warn": 164,
+      "error": 37,
+      "log": 1,
+      "info": 128,
+      "debug": 0,
+      "safe": 153
+    },
+    "after": {
+      "warn": 153,
+      "error": 36,
+      "log": 1,
+      "info": 111,
+      "debug": 0,
+      "safe": 182
+    },
+    "rawConsoleReducedBy": 29,
+    "safeLoggingMarkersIncreasedBy": 29
+  },
+  "changedFiles": [
+    "src/lib/security/redaction.ts",
+    "src/lib/security/redaction.test.ts",
+    "src/lib/logger.test.ts",
+    "src/workers/queueWorker.ts",
+    "src/workers/processBuyerSubmitJob.ts",
+    "src/lib/api/requestDraftSync.service.ts",
+    "src/screens/foreman/foreman.draftBoundary.helpers.ts",
+    "tests/security/sPii1LogRedaction.contract.test.ts",
+    "artifacts/S_PII_1_safe_logging_matrix.json",
+    "artifacts/S_PII_1_safe_logging_proof.md"
+  ],
+  "helper": {
+    "path": "src/lib/logger.ts",
+    "redactionPath": "src/lib/security/redaction.ts",
+    "dependencyFree": true,
+    "redactsTokens": true,
+    "redactsPii": true,
+    "handlesCircular": true
+  },
+  "logMatrix": [
+    {
+      "file": "src/workers/queueWorker.ts",
+      "function": "markCompactedDuplicatesCompleted",
+      "classification": "FIX_NOW_QUEUE_OR_REPLAY_PAYLOAD_LOG",
+      "before": "console.warn with workerId, keptJobId, duplicateJobId, raw error text",
+      "after": "logger.warn with worker/job id presence scopes and redacted errorMessage",
+      "fixedCallsites": 1,
+      "operationalSignalPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "secretsLogged": false
+    },
+    {
+      "file": "src/workers/queueWorker.ts",
+      "function": "processOne",
+      "classification": "FIX_NOW_QUEUE_OR_REPLAY_PAYLOAD_LOG",
+      "before": "console.warn/error/info with raw workerId/jobId/job failure diagnostics",
+      "after": "logger.warn/error/info with queueWorkerScope and queueJobScope summaries",
+      "fixedCallsites": 5,
+      "operationalSignalPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "secretsLogged": false
+    },
+    {
+      "file": "src/workers/queueWorker.ts",
+      "function": "processBatch/startQueueWorker",
+      "classification": "FIX_NOW_QUEUE_OR_REPLAY_PAYLOAD_LOG",
+      "before": "console.info/warn loop diagnostics with raw workerId and host detail",
+      "after": "logger.info/warn with workerIdScope and supabaseHostScope",
+      "fixedCallsites": 12,
+      "operationalSignalPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "secretsLogged": false
+    },
+    {
+      "file": "src/workers/processBuyerSubmitJob.ts",
+      "function": "processBuyerSubmitJob",
+      "classification": "FIX_NOW_QUEUE_OR_REPLAY_PAYLOAD_LOG",
+      "before": "console.info/warn with raw jobId, requestId, selectedIds, supplier keys, file/group names",
+      "after": "logger.info/warn with id/file/key presence scopes and counts",
+      "fixedCallsites": 4,
+      "operationalSignalPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "secretsLogged": false
+    },
+    {
+      "file": "src/lib/api/requestDraftSync.service.ts",
+      "function": "signalDirectorRequestSubmitted",
+      "classification": "FIX_NOW_RPC_OR_SUPABASE_RESPONSE_LOG",
+      "before": "console.info/warn broadcast and notification diagnostics with raw requestId/displayNo",
+      "after": "logger.info/warn with requestIdScope/displayNoScope and safe errorMessage",
+      "fixedCallsites": 4,
+      "operationalSignalPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "secretsLogged": false
+    },
+    {
+      "file": "src/lib/api/requestDraftSync.service.ts",
+      "function": "syncRequestDraftViaRpc",
+      "classification": "FIX_NOW_RPC_OR_SUPABASE_RESPONSE_LOG",
+      "before": "console.info submit diagnostics with raw requestId/displayNo",
+      "after": "logger.info with requestIdScope/displayNoScope and preserved status/version metadata",
+      "fixedCallsites": 2,
+      "operationalSignalPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "secretsLogged": false
+    },
+    {
+      "file": "src/screens/foreman/foreman.draftBoundary.helpers.ts",
+      "function": "logDraftSyncTelemetry/runForemanDraftSyncCycle",
+      "classification": "FIX_NOW_QUEUE_OR_REPLAY_PAYLOAD_LOG",
+      "before": "console.info/warn with raw requestId in draft sync diagnostics",
+      "after": "logger.info/warn with summarized requestIdScope/activeRequestIdScope",
+      "fixedCallsites": 3,
+      "operationalSignalPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "secretsLogged": false
+    },
+    {
+      "file": "src/lib/security/redaction.ts",
+      "function": "redactSensitiveText/redactSensitiveValue",
+      "classification": "FIX_NOW_PII_RISK",
+      "before": "shared redaction covered tokens/signed URLs but not email/phone/address PII text",
+      "after": "shared redaction covers email, phone-like, and obvious address PII in diagnostic text",
+      "fixedCallsites": 0,
+      "operationalSignalPreserved": true,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "secretsLogged": false
+    }
+  ],
+  "skippedCallsites": [
+    {
+      "file": "src/lib/catalog/catalog.request.service.ts",
+      "classification": "NEEDS_INCIDENT_CONTEXT",
+      "reason": "large catalog logging cluster; safe refactor should be a separate focused wave to avoid broad request flow churn"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.seed.ts",
+      "classification": "LOW_RISK_DEV_ONLY",
+      "reason": "seed/setup diagnostics, not selected for production runtime logging hardening"
+    },
+    {
+      "file": "app/pdf-viewer.tsx",
+      "classification": "SAFE_REDACTED_ALREADY",
+      "reason": "PDF viewer console payloads already use redactPdfViewerConsolePayload/redactSensitiveText"
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "observabilityRemoved": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}

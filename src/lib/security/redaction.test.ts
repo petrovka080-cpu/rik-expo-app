@@ -29,10 +29,23 @@ describe("security redaction", () => {
     expect(redacted).not.toContain("eyJhbGciOiJIUzI1NiJ9");
   });
 
+  it("redacts email, phone, and obvious address PII in free-form text", () => {
+    const redacted = redactSensitiveText(
+      "Contact person@example.test at +996 555 123 456 or 123 Main Street before retry.",
+    );
+
+    expect(redacted).not.toContain("person@example.test");
+    expect(redacted).not.toContain("+996 555 123 456");
+    expect(redacted).not.toContain("123 Main Street");
+    expect(redacted).toContain(SENSITIVE_REDACTION_MARKER);
+  });
+
   it("redacts sensitive object keys recursively without mutating safe metadata", () => {
     const value = {
       signedUrl: "https://storage.example.test/report.pdf?token=secret",
       href: "/pdf-viewer?sessionId=session-1&openToken=open-secret",
+      email: "person@example.test",
+      phone: "+996 555 123 456",
       nested: {
         Authorization: "Bearer nested-secret",
         rows: [{ uri: "https://storage.example.test/file.pdf?access_token=access-secret" }],
@@ -56,6 +69,8 @@ describe("security redaction", () => {
       safeCount: 3,
     });
     expect(JSON.stringify(redacted)).not.toContain("secret");
+    expect(JSON.stringify(redacted)).not.toContain("person@example.test");
+    expect(JSON.stringify(redacted)).not.toContain("+996 555 123 456");
   });
 
   it("returns redacted Error instances for console-compatible diagnostics", () => {

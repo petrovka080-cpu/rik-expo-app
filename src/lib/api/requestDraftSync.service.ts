@@ -58,6 +58,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   value != null && typeof value === "object" && !Array.isArray(value);
 
 const asTrimmedString = (value: unknown): string => String(value ?? "").trim();
+const redactedPresence = (value: unknown): "present_redacted" | "missing" =>
+  asTrimmedString(value) ? "present_redacted" : "missing";
 
 const ensureRealtimeAuth = async () => {
   const session = await supabase.auth.getSession();
@@ -125,20 +127,20 @@ const signalDirectorRequestSubmitted = async (params: {
     }).finally(() => {
       void supabase.removeChannel(channel);
     });
-    if (__DEV__) console.info("[request-draft-sync.signal]", {
+    logger.info("request-draft-sync.signal", {
       kind: "broadcast",
       sourcePath: params.sourcePath,
-      requestId,
-      displayNo,
+      requestIdScope: redactedPresence(requestId),
+      displayNoScope: redactedPresence(displayNo),
       result: broadcastResult,
     });
   } catch (error) {
-    if (__DEV__) console.warn("[request-draft-sync.signal]", {
+    logger.warn("request-draft-sync.signal", {
       kind: "broadcast_error",
       sourcePath: params.sourcePath,
-      requestId,
-      displayNo,
-      error: error instanceof Error ? error.message : String(error),
+      requestIdScope: redactedPresence(requestId),
+      displayNoScope: redactedPresence(displayNo),
+      errorMessage: error instanceof Error ? error.message : String(error),
     });
   }
 
@@ -153,20 +155,20 @@ const signalDirectorRequestSubmitted = async (params: {
         source_path: params.sourcePath,
       },
     });
-    if (__DEV__) console.info("[request-draft-sync.signal]", {
+    logger.info("request-draft-sync.signal", {
       kind: insertResult.error ? "notification_error" : "notification",
       sourcePath: params.sourcePath,
-      requestId,
-      displayNo,
-      error: insertResult.error?.message ?? null,
+      requestIdScope: redactedPresence(requestId),
+      displayNoScope: redactedPresence(displayNo),
+      errorMessage: insertResult.error?.message ?? null,
     });
   } catch (error) {
-    if (__DEV__) console.warn("[request-draft-sync.signal]", {
+    logger.warn("request-draft-sync.signal", {
       kind: "notification_error",
       sourcePath: params.sourcePath,
-      requestId,
-      displayNo,
-      error: error instanceof Error ? error.message : String(error),
+      requestIdScope: redactedPresence(requestId),
+      displayNoScope: redactedPresence(displayNo),
+      errorMessage: error instanceof Error ? error.message : String(error),
     });
   }
 };
@@ -308,9 +310,9 @@ export async function syncRequestDraftViaRpc(params: {
 
   const items = parseItemsPayload(envelope.items_payload);
   if (__DEV__) logger.info("log", "[draft-sync] source=rpc_v2");
-  if (__DEV__) console.info("[request-draft-sync]", {
+  logger.info("request-draft-sync", {
     sourceBranch: "rpc_v2",
-    requestId: request.id,
+    requestIdScope: redactedPresence(request.id),
     submitted: envelope.submitted,
     requestCreated: envelope.request_created,
     lineCount: items.length,
@@ -319,9 +321,9 @@ export async function syncRequestDraftViaRpc(params: {
   });
 
   if (__DEV__ && params.submit === true) {
-    console.info("[submit]", {
-      requestId: request.id,
-      displayNo: request.display_no ?? null,
+    logger.info("request-draft-sync", "submit", {
+      requestIdScope: redactedPresence(request.id),
+      displayNoScope: redactedPresence(request.display_no),
       status: request.status ?? null,
       sourceBranch: "rpc_v2",
       rpcVersion: "v2",

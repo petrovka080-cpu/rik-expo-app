@@ -9,6 +9,7 @@ import {
   type QueuedProposalAttachment,
 } from "../lib/api/queuedProposalAttachments";
 import { readbackSubmittedProposalTruth } from "../lib/api/proposalActionBoundary";
+import { logger } from "../lib/logger";
 
 type CreateProposalsApi = (
   payload: ProposalBucketInput[],
@@ -63,6 +64,9 @@ const normalizeSupplierKey = (value: unknown): string =>
 
 const SUPP_NONE = "— без поставщика —";
 
+const redactedPresence = (value: unknown): "present_redacted" | "missing" =>
+  String(value ?? "").trim() ? "present_redacted" : "missing";
+
 export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Promise<void> {
   const t0 = Date.now();
   const payload = (job.payload || {}) as BuyerSubmitIntentPayload;
@@ -96,12 +100,12 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
     };
   });
 
-  if (__DEV__) console.info("[buyer.worker] submit intent", {
-    jobId: job.id,
-    requestId: norm(payload.requestId) || null,
+  logger.info("buyer.worker", "submit intent", {
+    jobIdScope: redactedPresence(job.id),
+    requestIdScope: redactedPresence(payload.requestId),
     selectedRowCount: requestItemIds.length,
-    selectedIds: requestItemIds,
-    supplierBucketKeys: Array.from(bySupp.keys()),
+    selectedIdCount: requestItemIds.length,
+    supplierBucketCount: bySupp.size,
     bucketCount: buckets.length,
   });
 
@@ -148,11 +152,11 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
       const proposalId = proposalIdBySupplierKey.get(supplierKey);
       if (!proposalId) {
         missingSupplierKeys.add(supplierKey);
-        if (__DEV__) console.warn("[buyer.worker] queue attachment skipped: no final proposal", {
-          jobId: job.id,
-          supplierKey,
-          fileName: attachment.fileName ?? null,
-          groupKey: attachment.groupKey ?? null,
+        logger.warn("buyer.worker", "queue attachment skipped: no final proposal", {
+          jobIdScope: redactedPresence(job.id),
+          supplierKeyScope: redactedPresence(supplierKey),
+          fileNameScope: redactedPresence(attachment.fileName),
+          groupKeyScope: redactedPresence(attachment.groupKey),
         });
         continue;
       }
@@ -160,12 +164,16 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
     }
 
     if (missingSupplierKeys.size) {
-      if (__DEV__) console.warn("[buyer.worker] attachment binding completed with skipped suppliers", {
-        jobId: job.id,
-        skippedSupplierKeys: Array.from(missingSupplierKeys),
+      logger.warn("buyer.worker", "attachment binding completed with skipped suppliers", {
+        jobIdScope: redactedPresence(job.id),
+        skippedSupplierCount: missingSupplierKeys.size,
       });
     }
   }
 
-  if (__DEV__) console.info("[buyer.worker] jobProcessingMs=", Date.now() - t0, "jobType=buyer_submit_proposal", "retryCount=", Number(job.retry_count || 0));
+  logger.info("buyer.worker", "job processed", {
+    jobProcessingMs: Date.now() - t0,
+    jobType: "buyer_submit_proposal",
+    retryCount: Number(job.retry_count || 0),
+  });
 }

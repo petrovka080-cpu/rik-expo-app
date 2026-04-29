@@ -17,6 +17,7 @@ import type {
   ForemanDraftSyncStatus,
   ForemanDraftSyncTriggerSource,
 } from "../../lib/offline/foremanSyncRuntime";
+import { logger } from "../../lib/logger";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { ridStr, toErrorText } from "./foreman.helpers";
 import {
@@ -169,9 +170,22 @@ export type ForemanManualRecoveryRemoteApplyResult =
   | { action: "applied_remote_snapshot"; requestId: string }
   | { action: "loaded_remote_details"; requestId: string };
 
+const redactedPresence = (value: unknown): "present_redacted" | "missing" =>
+  String(value ?? "").trim() ? "present_redacted" : "missing";
+
+const summarizeDraftSyncTelemetryForLog = (
+  payload: Record<string, unknown>,
+): Record<string, unknown> => {
+  const { requestId, activeRequestId, ...safePayload } = payload;
+  return {
+    ...safePayload,
+    requestIdScope: redactedPresence(requestId),
+    activeRequestIdScope: redactedPresence(activeRequestId),
+  };
+};
+
 export const logDraftSyncTelemetry = (payload: Record<string, unknown>) => {
-  if (!__DEV__) return;
-  console.info("[foreman.draft.sync]", payload);
+  logger.info("foreman.draft.sync", summarizeDraftSyncTelemetryForLog(payload));
 };
 
 export const buildForemanRequestDraftMeta = (
@@ -591,10 +605,10 @@ export async function runForemanDraftSyncCycle(params: {
     syncPayloadLineCount === 0 &&
     (mutationKind === "catalog_add" || mutationKind === "calc_add" || mutationKind === "ai_local_add")
   ) {
-    if (__DEV__) console.warn("[foreman.draft.sync] zero-line payload for add mutation", {
+    logger.warn("foreman.draft.sync", "zero-line payload for add mutation", {
       mutationKind,
       context: params.options?.context ?? null,
-      requestId: activeRequestId,
+      requestIdScope: redactedPresence(activeRequestId),
     });
   }
 
@@ -649,14 +663,14 @@ export async function runForemanDraftSyncCycle(params: {
       submitted: (result.submitted as RequestRecord | null) ?? null,
     };
   } catch (error) {
-    if (__DEV__) console.warn("[foreman.draft.sync] sync failed", {
+    logger.warn("foreman.draft.sync", "sync failed", {
       mutationKind,
       context: params.options?.context ?? null,
-      requestId: activeRequestId,
+      requestIdScope: redactedPresence(activeRequestId),
       beforeLineCount: localBeforeCount,
       afterLocalSnapshotLineCount: localAfterCount,
       syncPayloadLineCount,
-      error: toErrorText(error, params.options?.context || "syncLocalDraftNow"),
+      errorMessage: toErrorText(error, params.options?.context || "syncLocalDraftNow"),
     });
     params.persistLocalDraftSnapshot({
       ...snapshot,

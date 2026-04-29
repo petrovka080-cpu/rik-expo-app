@@ -10,6 +10,10 @@ const sensitiveQueryParamPattern = new RegExp(
 
 const bearerPattern = /\b(Bearer\s+)[A-Za-z0-9._~+/=-]+/gi;
 const jwtLikePattern = /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g;
+const emailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+const phoneLikePattern = /\+?\d[\d\s().-]{7,}\d/g;
+const obviousAddressPattern =
+  /\b\d{1,6}\s+[A-Z0-9][A-Z0-9 .'-]{1,80}\s+(?:street|st|avenue|ave|road|rd|lane|ln|boulevard|blvd)\b/gi;
 
 const fullyRedactedKeys = new Set([
   "authorization",
@@ -31,7 +35,10 @@ export function redactSensitiveText(value: unknown): string {
   return String(value ?? "")
     .replace(bearerPattern, `$1${SENSITIVE_REDACTION_MARKER}`)
     .replace(jwtLikePattern, SENSITIVE_REDACTION_MARKER)
-    .replace(sensitiveQueryParamPattern, `$1${SENSITIVE_REDACTION_MARKER}`);
+    .replace(sensitiveQueryParamPattern, `$1${SENSITIVE_REDACTION_MARKER}`)
+    .replace(emailPattern, SENSITIVE_REDACTION_MARKER)
+    .replace(phoneLikePattern, SENSITIVE_REDACTION_MARKER)
+    .replace(obviousAddressPattern, SENSITIVE_REDACTION_MARKER);
 }
 
 export function redactSensitiveValue(value: unknown, seen = new WeakSet<object>()): unknown {
