@@ -1,0 +1,32 @@
+S-EMU-CRIT-1 redacted Android emulator logcat summary
+
+Capture window:
+- Cleared logcat before launch.
+- Launched package com.azisbek_dzhantaev.rikexpoapp via adb shell am start -W.
+- Waited 20 seconds after launch.
+- Captured raw logcat locally to artifacts/S_EMU_CRIT_1_logcat_raw_LOCAL_DO_NOT_COMMIT.txt.
+- Raw logcat was not staged and must not be committed.
+
+Crash signature scan:
+- FATAL EXCEPTION: 0
+- AndroidRuntime: 0
+- Process .* has died: 0
+
+Runtime status:
+- adb device: emulator-5554
+- AVD: Pixel_7_API_34
+- API level: 34
+- ABI: x86_64
+- package: com.azisbek_dzhantaev.rikexpoapp
+- install status: package path present on device
+- launch command: adb shell am start -W -n com.azisbek_dzhantaev.rikexpoapp/.MainActivity
+- launch status: Status: ok, LaunchState: COLD
+- first safe screen: login screen visible by UIAutomator hierarchy
+- stable login selectors visible: auth.login.email, auth.login.password, auth.login.submit
+
+Safety:
+- Production touched: NO.
+- Staging touched: NO.
+- OTA/EAS triggered: NO.
+- Play Market / Android submit touched: NO.
+- Raw log committed: NO.

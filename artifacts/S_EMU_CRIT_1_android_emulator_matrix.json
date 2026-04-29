@@ -1,0 +1,80 @@
+{
+  "wave": "S-EMU-CRIT-1",
+  "mode": "production-safe-android-emulator-critical-smoke",
+  "status": "GREEN_EMULATOR_CRITICAL_SMOKE",
+  "ownerGoal": "10K/50K+ readiness",
+  "androidSubmit": {
+    "status": "DEFERRED_BY_OWNER",
+    "touched": false
+  },
+  "repoState": {
+    "head": "e4412fb85224b2db71de32b9a199af7ff06e01fe",
+    "headEqualsOriginMain": true,
+    "worktreeCleanBefore": true,
+    "worktreeCleanAfter": true
+  },
+  "tooling": {
+    "adbAvailable": true,
+    "emulatorAvailable": true,
+    "emulatorCliAvailableInPath": false,
+    "deviceDetected": true,
+    "deviceId": "emulator-5554",
+    "avdName": "Pixel_7_API_34",
+    "apiLevel": "34",
+    "abi": "x86_64",
+    "maestroAvailable": false
+  },
+  "appRuntime": {
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "buildMode": "local_gradle_assembleRelease",
+    "apkPathCommitted": false,
+    "appInstalled": true,
+    "appLaunched": true,
+    "launchCommand": "adb shell am start -W -n com.azisbek_dzhantaev.rikexpoapp/.MainActivity",
+    "launchStatus": "Status: ok; LaunchState: COLD",
+    "loginOrFirstScreenVisible": true,
+    "visibleScreen": "auth login",
+    "visibleSelectors": [
+      "auth.login.email",
+      "auth.login.password",
+      "auth.login.submit"
+    ],
+    "criticalSmokeRun": true,
+    "criticalSmokeStatus": "passed_launch_login_smoke",
+    "maestroCriticalRun": false,
+    "maestroCriticalStatus": "skipped_maestro_cli_missing"
+  },
+  "crashCheck": {
+    "logcatCaptured": true,
+    "fatalExceptionFound": false,
+    "androidRuntimeCrashFound": false,
+    "processDiedFound": false,
+    "rawLogCommitted": false,
+    "redactedSummaryCommitted": true
+  },
+  "businessFlow": {
+    "fullBusinessE2EClaimed": false,
+    "reason": "launch/login smoke only; safe test credentials were not used"
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "selectorOnlyChanges": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}
