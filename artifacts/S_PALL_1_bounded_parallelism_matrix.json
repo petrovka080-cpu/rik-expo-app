@@ -1,0 +1,204 @@
+{
+  "wave": "S-PALL-1",
+  "mode": "production-safe-10k-50k-bounded-parallelism",
+  "status": "GREEN",
+  "ownerGoal": "10K/50K+ readiness",
+  "targetCallsites": 8,
+  "fixedCallsites": 5,
+  "changedFiles": [
+    "src/lib/api/director_reports.context.ts",
+    "src/lib/api/requests.ts",
+    "src/lib/async/mapWithConcurrencyLimit.test.ts",
+    "src/screens/buyer/buyer.summary.service.ts",
+    "src/screens/foreman/foreman.helpers.ts",
+    "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+    "tests/scale/boundedParallelismS_PALL_1.contract.test.ts"
+  ],
+  "countSummary": {
+    "before": {
+      "promiseAll": 50,
+      "mapAsync": 3
+    },
+    "after": {
+      "promiseAll": 45,
+      "mapAsync": 1
+    }
+  },
+  "helper": {
+    "path": "src/lib/async/mapWithConcurrencyLimit.ts",
+    "preservesOrder": true,
+    "failFastByDefault": true,
+    "allSettledModeAvailable": true,
+    "dependencyFree": true,
+    "reusedExistingHelper": true
+  },
+  "callsiteMatrix": [
+    {
+      "file": "src/lib/api/requests.ts",
+      "function": "addRequestItemsFromRikBatchDetailed",
+      "classification": "FIX_NOW_DYNAMIC_DB_OR_RPC",
+      "before": "Promise.allSettled over request item mutation pack",
+      "after": "allSettledWithConcurrencyLimit over pack",
+      "concurrency": 3,
+      "maxConcurrency": 3,
+      "orderPreserved": true,
+      "failFastPreserved": true,
+      "businessSemanticsChanged": false,
+      "reason": "dynamic request-item mutation batch was previously bounded only by chunk size 8; this keeps all-settled behavior while reducing concurrent RPC/mutation pressure"
+    },
+    {
+      "file": "src/screens/buyer/buyer.summary.service.ts",
+      "function": "createBuyerSummaryService.load",
+      "classification": "FIX_NOW_DYNAMIC_DB_OR_RPC",
+      "before": "Promise.all over dynamic selected summary scopes",
+      "after": "mapWithConcurrencyLimit over selected scopes",
+      "concurrency": 2,
+      "maxConcurrency": 2,
+      "orderPreserved": true,
+      "failFastPreserved": true,
+      "businessSemanticsChanged": false,
+      "reason": "caller-provided scopes can trigger multiple buyer RPC/table loaders; bounded fanout keeps the same result object and cache behavior"
+    },
+    {
+      "file": "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "function": "clearDraftCache",
+      "classification": "FIX_NOW_DYNAMIC_QUEUE_OR_REPLAY",
+      "before": "Promise.all over dynamic foreman queue keys",
+      "after": "mapWithConcurrencyLimit over queue keys",
+      "concurrency": 2,
+      "maxConcurrency": 2,
+      "orderPreserved": true,
+      "failFastPreserved": true,
+      "businessSemanticsChanged": false,
+      "reason": "dynamic queue cleanup no longer launches all clear operations at once; fail-fast cleanup behavior is preserved"
+    },
+    {
+      "file": "src/screens/foreman/foreman.helpers.ts",
+      "function": "runPool",
+      "classification": "FIX_NOW_DYNAMIC_UI_HEAVY",
+      "before": "custom Promise.all runner over dynamic item pool",
+      "after": "allSettledWithConcurrencyLimit with the same normalized limit",
+      "concurrency": "caller limit clamped to 1..20",
+      "maxConcurrency": 20,
+      "orderPreserved": true,
+      "failFastPreserved": true,
+      "businessSemanticsChanged": false,
+      "reason": "shared helper preserves ordered collected success/error results while removing duplicate custom parallel runner"
+    },
+    {
+      "file": "src/lib/api/director_reports.context.ts",
+      "function": "forEachChunkParallel",
+      "classification": "FIX_NOW_DYNAMIC_DB_OR_RPC",
+      "before": "custom Promise.all runner over dynamic report lookup chunks",
+      "after": "mapWithConcurrencyLimit over chunks",
+      "concurrency": "caller concurrency clamped to chunk count",
+      "maxConcurrency": "caller supplied",
+      "orderPreserved": true,
+      "failFastPreserved": true,
+      "businessSemanticsChanged": false,
+      "reason": "shared helper now owns dynamic report chunk fanout used by director report lookup/read paths"
+    }
+  ],
+  "skippedCallsites": [
+    {
+      "file": "src/workers/queueWorker.ts",
+      "classification": "QUEUE_SEMANTICS_DO_NOT_TOUCH",
+      "reason": "queue worker already resolves worker count through queueWorker.limits; queue semantics deserve a separate worker-specific proof"
+    },
+    {
+      "file": "src/features/ai/aiAnalyticInsights.ts",
+      "classification": "BOUNDED_STATIC_ARRAY_SAFE",
+      "reason": "outer AI insights fanout already uses mapWithConcurrencyLimit; inner Promise.all is a fixed tuple per bounded item"
+    },
+    {
+      "file": "src/features/ai/assistantActions.ts",
+      "classification": "SMALL_FIXED_TUPLE_SAFE",
+      "reason": "remaining Promise.all call-sites are fixed tuple lookups; dynamic supplier matching already uses mapWithConcurrencyLimit"
+    },
+    {
+      "file": "src/features/ai/assistantScopeContext.ts",
+      "classification": "SMALL_FIXED_TUPLE_SAFE",
+      "reason": "fixed two-call scope loaders; not dynamic array fanout"
+    },
+    {
+      "file": "src/lib/storage/fioPersistence.ts",
+      "classification": "SMALL_FIXED_TUPLE_SAFE",
+      "reason": "fixed local storage read/write tuple; no DB/RPC fanout"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.legacy.ts",
+      "classification": "PDF_REPORT_EXPORT_COMPLETENESS_DO_NOT_TOUCH",
+      "reason": "fixed report RPC tuple; report completeness and semantics left unchanged"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "classification": "BOUNDED_STATIC_ARRAY_SAFE",
+      "reason": "uses shared forEachChunkParallel for dynamic chunks; fixed Promise.all joins two already-bounded tasks"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.lookups.ts",
+      "classification": "SMALL_FIXED_TUPLE_SAFE",
+      "reason": "fixed three optional lookups with established all-settled degradation"
+    },
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "classification": "PDF_REPORT_EXPORT_COMPLETENESS_DO_NOT_TOUCH",
+      "reason": "fixed PDF lookup tuple; document completeness not changed"
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "classification": "PDF_REPORT_EXPORT_COMPLETENESS_DO_NOT_TOUCH",
+      "reason": "fixed document-builder lookup tuple; completeness not changed"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "classification": "SMALL_FIXED_TUPLE_SAFE",
+      "reason": "fixed three-report fetch tuple; no dynamic item fanout"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.stockReports.service.ts",
+      "classification": "SMALL_FIXED_TUPLE_SAFE",
+      "reason": "fixed three name-map lookup tuple"
+    },
+    {
+      "file": "src/screens/buyer/hooks/useBuyerProposalCaches.ts",
+      "classification": "FAIL_FAST_SEMANTICS_NEEDS_CARE",
+      "reason": "Promise.all waits on existing inflight promises rather than launching new DB work; left unchanged"
+    },
+    {
+      "file": "src/screens/buyer/buyer.counterparty.data.ts",
+      "classification": "SMALL_FIXED_TUPLE_SAFE",
+      "reason": "fixed all-settled tuple with existing degradation behavior"
+    },
+    {
+      "file": "src/screens/warehouse/hooks/useWarehouseReceiveFlow.ts",
+      "classification": "SMALL_FIXED_TUPLE_SAFE",
+      "reason": "fixed post-success refresh tuple; warehouse mutation semantics left unchanged"
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "warehouseStockMathChanged": false,
+    "accountantPaymentSemanticsChanged": false,
+    "directorApprovalSemanticsChanged": false,
+    "queueSemanticsChanged": false,
+    "pdfReportExportCompletenessChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}

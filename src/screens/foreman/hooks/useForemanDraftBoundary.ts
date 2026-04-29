@@ -12,6 +12,7 @@ import {
   type ReqItemRow,
   type RequestDetails,
 } from "../../../lib/catalog_api";
+import { mapWithConcurrencyLimit } from "../../../lib/async/mapWithConcurrencyLimit";
 import {
   clearForemanMutationsForDraft,
   getForemanPendingMutationCountForDraftKeys,
@@ -460,11 +461,12 @@ export function useForemanDraftBoundary({
       activeRequestId: requestId,
       localOnlyRequestId: FOREMAN_LOCAL_ONLY_REQUEST_ID,
     });
-    await Promise.all(
-      Array.from(cacheClearPlan.queueKeys)
-        .map(async (key) => {
-          await clearForemanMutationsForDraft(key);
-        }),
+    await mapWithConcurrencyLimit(
+      Array.from(cacheClearPlan.queueKeys),
+      2,
+      async (key) => {
+        await clearForemanMutationsForDraft(key);
+      },
     );
     await clearForemanDraftCacheState(persistLocalDraftSnapshot, patchBoundaryState);
     await refreshBoundarySyncState(null);

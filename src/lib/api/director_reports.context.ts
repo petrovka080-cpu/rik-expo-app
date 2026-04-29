@@ -1,4 +1,5 @@
 import { normalizeRuText } from "../text/encoding.ts";
+import { mapWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
 
 import type {
   DirectorFactContextInput,
@@ -561,15 +562,9 @@ const forEachChunkParallel = async <T,>(
   const parts = chunk(arr, size);
   if (!parts.length) return;
   const c = Math.max(1, Math.min(concurrency, parts.length));
-  let idx = 0;
-  const runners = Array.from({ length: c }, async () => {
-    while (true) {
-      const i = idx++;
-      if (i >= parts.length) return;
-      await worker(parts[i]);
-    }
+  await mapWithConcurrencyLimit(parts, c, async (part) => {
+    await worker(part);
   });
-  await Promise.all(runners);
 };
 
 export {

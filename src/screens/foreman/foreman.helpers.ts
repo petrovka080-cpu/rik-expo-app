@@ -1,4 +1,5 @@
 import { addRequestItemFromRikDetailed } from "../../lib/api/requests";
+import { allSettledWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
 import { readStoredJson, writeStoredJson } from "../../lib/storage/classifiedStorage";
 import type { CalcRow, PickedRow } from "./foreman.types";
 
@@ -150,24 +151,12 @@ export async function runPool<T, R>(
   worker: (item: T, index: number) => Promise<R>,
 ): Promise<({ ok: true; value: R } | { ok: false; error: unknown })[]> {
   const n = Math.max(1, Math.min(20, Number(limit) || 6));
-  const results: ({ ok: true; value: R } | { ok: false; error: unknown })[] = new Array(items.length);
-
-  let i = 0;
-  const next = async () => {
-    while (true) {
-      const idx = i++;
-      if (idx >= items.length) return;
-      try {
-        const value = await worker(items[idx], idx);
-        results[idx] = { ok: true, value };
-      } catch (error) {
-        results[idx] = { ok: false, error };
-      }
-    }
-  };
-
-  await Promise.all(Array.from({ length: Math.min(n, items.length) }, () => next()));
-  return results;
+  const settled = await allSettledWithConcurrencyLimit(items, n, worker);
+  return settled.map((result) =>
+    result.status === "fulfilled"
+      ? { ok: true, value: result.value }
+      : { ok: false, error: result.reason },
+  );
 }
 
 export function buildScopeNote(

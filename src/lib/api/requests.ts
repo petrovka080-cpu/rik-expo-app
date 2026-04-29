@@ -16,6 +16,7 @@ import {
   REQUEST_DRAFT_STATUS,
   normalizeStatus,
 } from "./requests.status";
+import { allSettledWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
 import type { ReqItemRow, RequestMeta, RequestRecord } from "./types";
 
 const logRequestsDebug = (...args: unknown[]) => {
@@ -688,8 +689,10 @@ export async function addRequestItemsFromRikBatchDetailed(
 
   for (let idx = 0; idx < prepared.length; idx += chunkSize) {
     const pack = prepared.slice(idx, idx + chunkSize);
-    const results = await Promise.allSettled(
-      pack.map((item) => addRequestItemFromRikDetailed(rid, item.rik_code, item.qty, item.opts)),
+    const results = await allSettledWithConcurrencyLimit(
+      pack,
+      3,
+      async (item) => addRequestItemFromRikDetailed(rid, item.rik_code, item.qty, item.opts),
     );
 
     let firstError: unknown = null;

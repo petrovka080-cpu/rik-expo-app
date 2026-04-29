@@ -41,6 +41,29 @@ describe("mapWithConcurrencyLimit", () => {
     expect(result[499]).toBe(499);
   });
 
+  it("handles an empty array without starting workers", async () => {
+    const worker = jest.fn(async (item: number) => item);
+
+    await expect(mapWithConcurrencyLimit([], 4, worker)).resolves.toEqual([]);
+    expect(worker).not.toHaveBeenCalled();
+  });
+
+  it("handles one item and clamps worker count to the item count", async () => {
+    let active = 0;
+    let maxActive = 0;
+
+    const result = await mapWithConcurrencyLimit([7], 10, async (item) => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await delay();
+      active -= 1;
+      return item * 3;
+    });
+
+    expect(result).toEqual([21]);
+    expect(maxActive).toBe(1);
+  });
+
   it("rejects when a worker fails and does not silently succeed", async () => {
     await expect(
       mapWithConcurrencyLimit([1, 2, 3], 2, async (item) => {

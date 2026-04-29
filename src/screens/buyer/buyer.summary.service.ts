@@ -6,6 +6,7 @@ import {
   type BuyerBucketsLoadResult,
   type BuyerInboxLoadResult,
 } from "./buyer.fetchers";
+import { mapWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
@@ -255,8 +256,10 @@ export function createBuyerSummaryService(params: BuyerSummaryServiceParams) {
     const scopes = normalizeScopes(loadParams.scopes);
     const result: BuyerSummaryLoadResult = {};
 
-    await Promise.all(
-      scopes.map(async (scope) => {
+    await mapWithConcurrencyLimit(
+      scopes,
+      2,
+      async (scope) => {
         switch (scope) {
           case "inbox":
             result.inbox = await readScope(inboxSlot, loadParams);
@@ -270,7 +273,7 @@ export function createBuyerSummaryService(params: BuyerSummaryServiceParams) {
           default:
             return;
         }
-      }),
+      },
     );
 
     return result;
