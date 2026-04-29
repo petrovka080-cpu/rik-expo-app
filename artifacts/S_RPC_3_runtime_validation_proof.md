@@ -212,7 +212,9 @@ Full gates:
 - `npx expo lint`: PASS
 - `npm test -- --runInBand`: PASS (`490/491` suites passed, `3088/3089` tests passed, `1` skipped)
 - `npm test`: PASS (`490/491` suites passed, `3088/3089` tests passed, `1` skipped)
-- `npm run release:verify -- --json`: pending clean post-commit verification
+- `npm run release:verify -- --json`: PASS after push (`readiness.status=pass`, `headMatchesOriginMain=true`)
+
+Note: the same release verification was also run once before push. All gates passed, and the only readiness blocker was the expected pre-push `HEAD does not match origin/main` guard. No OTA/EAS action was triggered.
 
 ## Safety Confirmations
 
