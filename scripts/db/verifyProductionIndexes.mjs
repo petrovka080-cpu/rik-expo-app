@@ -69,6 +69,17 @@ export const EXPECTED_INDEXES = [
 ];
 
 const PUBLIC_TABLES = [...new Set(EXPECTED_INDEXES.map((index) => index.table))].sort();
+const PSQL_COMMAND_CANDIDATES = [
+  "psql",
+  "C:\\Program Files\\PostgreSQL\\17\\bin\\psql.exe",
+  "C:\\Program Files\\PostgreSQL\\16\\bin\\psql.exe",
+  "C:\\Program Files\\PostgreSQL\\15\\bin\\psql.exe",
+  "C:\\Program Files\\PostgreSQL\\14\\bin\\psql.exe",
+  "C:\\Program Files\\PostgreSQL\\17\\pgAdmin 4\\runtime\\psql.exe",
+  "C:\\Program Files\\PostgreSQL\\16\\pgAdmin 4\\runtime\\psql.exe",
+  "C:\\Program Files\\PostgreSQL\\15\\pgAdmin 4\\runtime\\psql.exe",
+  "C:\\Program Files\\PostgreSQL\\14\\pgAdmin 4\\runtime\\psql.exe",
+];
 
 function parseArgs(argv) {
   const args = {
@@ -238,6 +249,40 @@ order by t.relname, i.relname;
 `.trim();
 }
 
+function findPsqlCommand() {
+  for (const command of PSQL_COMMAND_CANDIDATES) {
+    const result = spawnSync(command, ["--version"], {
+      encoding: "utf8",
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    if (!result.error && result.status === 0) return command;
+  }
+  return null;
+}
+
+export function classifyPsqlFailure(result) {
+  if (result?.error?.code === "ENOENT") return "psql_not_available";
+  const stderr = String(result?.stderr ?? "").toLowerCase();
+  const message = String(result?.error?.message ?? "").toLowerCase();
+  const combined = `${stderr}\n${message}`;
+
+  if (/password authentication failed|authentication failed|no password supplied/.test(combined)) {
+    return "authentication_failed";
+  }
+  if (/permission denied|insufficient privilege|must be owner|not allowed/.test(combined)) {
+    return "insufficient_privilege";
+  }
+  if (/role .* does not exist|database .* does not exist|invalid connection option/.test(combined)) {
+    return "invalid_connection";
+  }
+  if (/timeout|timed out|connection refused|could not connect|network is unreachable|could not translate host name/.test(combined)) {
+    return "connection_failed";
+  }
+  if (/\bssl\b|tls/.test(combined)) return "ssl_failed";
+  return "psql_failed";
+}
+
 function parsePsqlRows(stdout) {
   return String(stdout || "")
     .split(/\r?\n/)
@@ -250,8 +295,17 @@ function parsePsqlRows(stdout) {
 }
 
 function runPsqlMetadataVerification(databaseUrl) {
+  const psqlCommand = findPsqlCommand();
+  if (!psqlCommand) {
+    return {
+      ok: false,
+      reason: "local psql executable was not available for read-only DB metadata verification",
+      failureClass: "psql_not_available",
+    };
+  }
+
   const result = spawnSync(
-    "psql",
+    psqlCommand,
     [
       databaseUrl,
       "--no-psqlrc",
@@ -272,13 +326,15 @@ function runPsqlMetadataVerification(databaseUrl) {
   if (result.error || result.status !== 0) {
     return {
       ok: false,
-      reason: "read-only DB metadata query could not be executed with local psql",
+      reason: "read-only DB metadata query could not be completed with the provided metadata credential",
+      failureClass: classifyPsqlFailure(result),
     };
   }
 
   return {
     ok: true,
     rows: parsePsqlRows(result.stdout),
+    psqlResolved: true,
   };
 }
 
@@ -338,9 +394,11 @@ export function verifyProductionIndexes(options, env = process.env) {
       ...baseResult({ env, status: "insufficient_readonly_access" }),
       insufficientAccess: EXPECTED_INDEXES.length,
       reason: verification.reason,
+      psqlFailureClass: verification.failureClass,
       metadataVerificationExecuted: true,
       productionTouched: true,
-      productionMetadataRead: true,
+      productionMetadataRead: false,
+      productionMetadataReadAttempted: true,
     };
   }
 

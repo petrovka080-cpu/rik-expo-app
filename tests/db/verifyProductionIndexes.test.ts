@@ -130,6 +130,21 @@ describe("S-DB-5 production index verifier", () => {
     expect(result.productionTouched).toBe(false);
   });
 
+  it("reports failed DB metadata access without leaking connection secrets", () => {
+    const secretUrl = "postgres://readonly:sensitive-password@example.invalid/db";
+    const result = runJson(["--target", "production", "--json"], {
+      PROD_DATABASE_READONLY_URL: secretUrl,
+    });
+    const serialized = JSON.stringify(result);
+
+    expect(result.status).toBe("insufficient_readonly_access");
+    expect(typeof result.psqlFailureClass).toBe("string");
+    expect(result.productionMetadataRead).toBe(false);
+    expect(result.productionMetadataReadAttempted).toBe(true);
+    expect(serialized).not.toContain(secretUrl);
+    expect(serialized).not.toContain("sensitive-password");
+  });
+
   it("matches expected indexes by table, columns, and predicate instead of exact names", () => {
     const fixture = makeFixture(allFixtureIndexes);
     const result = runJson(["--target", "production", "--fixture", fixture, "--json"]);

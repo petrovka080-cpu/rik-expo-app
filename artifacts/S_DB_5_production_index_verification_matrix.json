@@ -1,19 +1,38 @@
 {
   "wave": "S-DB-5",
-  "mode": "production-safe-read-only-index-verification",
-  "status": "PARTIAL_ENV_MISSING",
+  "mode": "production-safe-readonly-index-metadata-verification",
+  "status": "PARTIAL_INSUFFICIENT_ACCESS",
+  "generatedAt": "2026-04-29T13:17:47.677Z",
   "ownerGoal": "10K/50K+ readiness",
   "target": "production",
-  "androidSubmit": {
-    "status": "DEFERRED_BY_OWNER",
-    "touched": false
-  },
   "env": {
-    "PROD_SUPABASE_URL": "missing",
-    "PROD_SUPABASE_READONLY_KEY": "missing",
-    "PROD_DATABASE_READONLY_URL": "missing",
+    "PROD_DATABASE_READONLY_URL": "present_redacted",
+    "PROD_SUPABASE_URL": "present_redacted",
+    "PROD_SUPABASE_READONLY_KEY": "present_redacted",
     "serviceRoleEnvPresent": false,
     "serviceRoleUsed": false
+  },
+  "verification": {
+    "expectedIndexes": 10,
+    "verifiedIndexes": 0,
+    "missingIndexes": 0,
+    "insufficientAccess": true,
+    "insufficientAccessCount": 10,
+    "failureClass": "connection_failed",
+    "failureReason": "read-only DB metadata query could not be completed with the provided metadata credential",
+    "metadataVerificationExecuted": true,
+    "metadataReadAttempted": true,
+    "productionMetadataRead": false,
+    "productionRowsRead": false,
+    "writes": false,
+    "ddlExecuted": false,
+    "migrationCreated": false,
+    "metadataQueryTables": [
+      "pg_class",
+      "pg_index",
+      "pg_attribute",
+      "pg_namespace"
+    ]
   },
   "expectedIndexes": [
     {
@@ -22,7 +41,7 @@
       "predicate": null,
       "expectedName": "idx_requests_submitted_display_id_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     },
     {
@@ -31,7 +50,7 @@
       "predicate": null,
       "expectedName": "idx_request_items_request_row_position_id_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     },
     {
@@ -40,7 +59,7 @@
       "predicate": null,
       "expectedName": "idx_request_items_request_status_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     },
     {
@@ -49,7 +68,7 @@
       "predicate": "submitted_at IS NOT NULL AND sent_to_accountant_at IS NULL",
       "expectedName": "idx_proposals_director_pending_submitted_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     },
     {
@@ -58,7 +77,7 @@
       "predicate": null,
       "expectedName": "idx_proposals_request_supplier_updated_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     },
     {
@@ -67,7 +86,7 @@
       "predicate": null,
       "expectedName": "idx_proposal_items_proposal_id_id_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     },
     {
@@ -76,7 +95,7 @@
       "predicate": null,
       "expectedName": "idx_market_listings_company_status_created_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     },
     {
@@ -85,7 +104,7 @@
       "predicate": null,
       "expectedName": "idx_market_listings_user_status_created_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     },
     {
@@ -94,7 +113,7 @@
       "predicate": null,
       "expectedName": "idx_work_progress_log_progress_created_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     },
     {
@@ -103,24 +122,32 @@
       "predicate": null,
       "expectedName": "idx_wh_ledger_direction_moved_at_sdb2",
       "verified": false,
-      "status": "env_missing",
+      "status": "insufficient_readonly_access",
       "matchedIndexName": null
     }
   ],
-  "summary": {
-    "expected": 10,
-    "verified": 0,
-    "missing": 0,
-    "insufficientAccess": 0,
-    "envMissing": true
-  },
-  "execution": {
-    "dryRunExecuted": true,
-    "metadataVerificationExecuted": false,
-    "productionMetadataRead": false,
-    "productionDataRowsRead": false,
-    "productionWrites": false,
-    "dryRunStatus": "env_missing"
+  "commandsRun": [
+    "git status --short",
+    "git rev-parse HEAD",
+    "git rev-parse origin/main",
+    "git diff --check",
+    "node -e \"<redacted env presence check>\"",
+    "rg \"verifyProductionIndexes|S_DB_5|production index|PROD_DATABASE_READONLY_URL|PROD_SUPABASE_READONLY\" scripts tests artifacts docs supabase",
+    "rg \"20260428154000_s_db_2_query_plan_indexes\" supabase scripts tests artifacts",
+    "node scripts/db/verifyProductionIndexes.mjs --target production --dry-run",
+    "node scripts/db/verifyProductionIndexes.mjs --target production --json",
+    "npm test -- --runInBand verifyProductionIndexes"
+  ],
+  "gates": {
+    "preflightGitStatus": "pass",
+    "headEqualsOriginMainAtStart": "pass",
+    "gitDiffCheck": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "targetedTests": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pending_post_commit_push"
   },
   "changedFiles": [
     "scripts/db/verifyProductionIndexes.mjs",
@@ -132,21 +159,22 @@
     "businessLogicChanged": false,
     "appBehaviorChanged": false,
     "sqlRpcChanged": false,
-    "rlsChanged": false,
-    "storagePolicyChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
     "migrationCreated": false,
     "ddlExecuted": false,
-    "packageChanged": false,
-    "nativeConfigChanged": false,
-    "productionTouched": false,
     "productionWrites": false,
-    "stagingTouched": false,
-    "secretsCommitted": false,
+    "productionLoadGenerated": false,
     "secretsPrinted": false,
+    "secretsCommitted": false,
     "otaPublished": false,
     "easBuildTriggered": false,
     "easSubmitTriggered": false,
     "easUpdateTriggered": false,
-    "androidSubmitTouched": false
+    "playMarketTouched": false
+  },
+  "nextRecommendedWave": {
+    "ifStatusRemainsPartialInsufficientAccess": "provide a working read-only production metadata credential and rerun S-DB-5",
+    "ifGreenVerifiedLater": "S-DASH-1B or S-RT-4B"
   }
 }
