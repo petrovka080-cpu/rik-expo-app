@@ -1,5 +1,10 @@
 import { supabase } from "../../lib/supabaseClient";
 import { filterPaymentRowsByExistingPaymentProposalLinks } from "../../lib/api/integrity.guards";
+import {
+  isRpcArrayResponse,
+  isRpcRowsEnvelope,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
 import type { AccountantInboxUiRow, HistoryRow } from "./types";
 
 type AccountantHistoryScopeRow = {
@@ -125,7 +130,11 @@ export async function loadAccountantHistoryRows(params: {
   });
   if (error) throw error;
 
-  const arr = Array.isArray(data) ? (data as HistoryRow[]) : [];
+  const arr = validateRpcResponse(data, isRpcArrayResponse, {
+    rpcName: "list_accountant_payments_history_v2",
+    caller: "loadAccountantHistoryRows",
+    domain: "accountant",
+  }) as HistoryRow[];
   arr.sort((a, b) => {
     const ta = Date.parse(String((a as { paid_at?: string; created_at?: string }).paid_at ?? (a as { created_at?: string }).created_at ?? 0)) || 0;
     const tb = Date.parse(String((b as { paid_at?: string; created_at?: string }).paid_at ?? (b as { created_at?: string }).created_at ?? 0)) || 0;
@@ -154,7 +163,12 @@ export async function loadAccountantHistoryWindowData(params: {
     });
     if (error) throw error;
 
-    const envelope = adaptAccountantHistoryScopeEnvelope(data);
+    const validated = validateRpcResponse(data, isRpcRowsEnvelope, {
+      rpcName: "accountant_history_scope_v1",
+      caller: "loadAccountantHistoryWindowData",
+      domain: "accountant",
+    });
+    const envelope = adaptAccountantHistoryScopeEnvelope(validated);
     const guarded = await filterPaymentRowsByExistingPaymentProposalLinks(
       supabase,
       envelope.rows,

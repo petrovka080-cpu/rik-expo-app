@@ -2,6 +2,10 @@ import { supabase } from "../../lib/supabaseClient";
 import { normalizeAccountantInboxRpcTab } from "../../lib/api/accountant";
 import { filterProposalLinkedRowsByExistingProposalLinks } from "../../lib/api/integrity.guards";
 import {
+  isRpcRowsEnvelope,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
+import {
   beginPlatformObservability,
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
@@ -188,7 +192,12 @@ export async function loadAccountantInboxWindowData(params: {
       throw error;
     }
 
-    const envelope = adaptAccountantInboxScopeEnvelope(data);
+    const validated = validateRpcResponse(data, isRpcRowsEnvelope, {
+      rpcName: "accountant_inbox_scope_v1",
+      caller: "loadAccountantInboxWindowData",
+      domain: "accountant",
+    });
+    const envelope = adaptAccountantInboxScopeEnvelope(validated);
     trackRpcLatency({
       name: "accountant_inbox_scope_v1",
       screen: "accountant",

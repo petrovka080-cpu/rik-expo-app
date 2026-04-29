@@ -4,6 +4,10 @@ import {
   throwIfAborted,
 } from "../../lib/requestCancellation";
 import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
+import {
+  isRpcRowsEnvelope,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
 
 import { createHealthyWarehouseReqHeadsIntegrityState } from "./warehouse.reqHeads.state";
 import { parseNum } from "./warehouse.request.utils";
@@ -121,10 +125,15 @@ export async function apiFetchReqHeadsCanonicalRaw(
     throw error;
   }
 
-  const rows = requireRpcRows(data, "warehouse_issue_queue_scope_v4").map((row, index) =>
+  const validated = validateRpcResponse(data, isRpcRowsEnvelope, {
+    rpcName: "warehouse_issue_queue_scope_v4",
+    caller: "apiFetchReqHeadsCanonicalRaw",
+    domain: "warehouse",
+  });
+  const rows = requireRpcRows(validated, "warehouse_issue_queue_scope_v4").map((row, index) =>
     adaptReqHeadsRpcRow(row, index),
   );
-  const meta = toReqHeadsRpcMeta(data, page, pageSize, rows.length);
+  const meta = toReqHeadsRpcMeta(validated, page, pageSize, rows.length);
   trackRpcLatency({
     name: "warehouse_issue_queue_scope_v4",
     screen: "warehouse",
@@ -174,10 +183,15 @@ export async function apiFetchReqItemsCanonicalRaw(
   });
   if (error) throw error;
 
-  const rows = requireRpcRows(data, "warehouse_issue_items_scope_v1").map((row, index) =>
+  const validated = validateRpcResponse(data, isRpcRowsEnvelope, {
+    rpcName: "warehouse_issue_items_scope_v1",
+    caller: "apiFetchReqItemsCanonicalRaw",
+    domain: "warehouse",
+  });
+  const rows = requireRpcRows(validated, "warehouse_issue_items_scope_v1").map((row, index) =>
     adaptReqItemsRpcRow(row, requestId, index),
   );
-  const meta = toReqItemsMeta(data, requestId, rows.length);
+  const meta = toReqItemsMeta(validated, requestId, rows.length);
 
   return {
     rows,

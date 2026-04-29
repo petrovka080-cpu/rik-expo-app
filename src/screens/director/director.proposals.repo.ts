@@ -1,5 +1,9 @@
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
 import { traceAsync } from "../../lib/observability/sentry";
+import {
+  isRpcRecord,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
 import type {
   DirectorPendingProposalsScopeV1Args,
   DirectorSupabaseClient,
@@ -94,6 +98,15 @@ const requireArray = (value: unknown, field: string, scope: string): unknown[] =
   return value;
 };
 
+export const isDirectorPendingProposalsScopeResponse = (
+  value: unknown,
+): value is DirectorProposalScopeEnvelope =>
+  isRpcRecord(value) &&
+  value.document_type === "director_pending_proposals_scope" &&
+  value.version === "v1" &&
+  Array.isArray(value.heads) &&
+  (value.meta == null || isRpcRecord(value.meta));
+
 const adaptDirectorProposalScopeEnvelope = (value: unknown): DirectorProposalScopeEnvelope => {
   const root = requireRecord(value, "director_pending_proposals_scope_v1");
   const documentType = requireString(root.document_type, "document_type", "director_pending_proposals_scope_v1");
@@ -185,7 +198,12 @@ export async function fetchDirectorPendingProposalWindow(
     const { data, error } = await args.supabase.rpc("director_pending_proposals_scope_v1", rpcArgs);
     if (error) throw error;
 
-    const envelope = adaptDirectorProposalScopeEnvelope(data);
+    const validated = validateRpcResponse(data, isDirectorPendingProposalsScopeResponse, {
+      rpcName: "director_pending_proposals_scope_v1",
+      caller: "fetchDirectorPendingProposalWindow",
+      domain: "director",
+    });
+    const envelope = adaptDirectorProposalScopeEnvelope(validated);
     const adaptedHeads = adaptHeads(envelope.heads);
     const meta = adaptMeta(envelope.meta, offsetHeads, limitHeads);
     const hasWindowTruth = meta.totalHeadCount > 0 || adaptedHeads.heads.length > 0;

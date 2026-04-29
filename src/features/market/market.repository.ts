@@ -4,6 +4,11 @@ import {
 } from "../../lib/api/requests";
 import { appendMarketplaceItemsToDraft } from "../../lib/api/request.repository";
 import {
+  isRpcArrayResponse,
+  isRpcRecord,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
+import {
   proposalAddItems,
   proposalCreateFull,
   proposalSetItemsMeta,
@@ -357,7 +362,11 @@ export async function loadMarketHomePage(
 
     if (rowsResult.error) throw rowsResult.error;
 
-    const rawRows = (rowsResult.data ?? []) as MarketMarketplaceScopePageRow[];
+    const rawRows = validateRpcResponse(rowsResult.data, isRpcArrayResponse, {
+      rpcName: "marketplace_items_scope_page_v1",
+      caller: "loadMarketHomePage",
+      domain: "catalog",
+    }) as MarketMarketplaceScopePageRow[];
     const listings = rawRows.map((row) => toMarketHomeListingCardFromScope(row));
     const totalCount = nonNegativeNumberOrNull(rawRows[0]?.total_count) ?? listings.length;
     const activeDemandCount = nonNegativeNumberOrNull(rawRows[0]?.active_demand_count) ?? 0;
@@ -423,7 +432,12 @@ export async function loadMarketListingById(id: string): Promise<MarketHomeListi
       return null;
     }
 
-    const card = toMarketHomeListingCardFromScope(rawData as MarketMarketplaceScopeRow);
+    const validated = validateRpcResponse(rawData, isRpcRecord, {
+      rpcName: "marketplace_item_scope_detail_v1",
+      caller: "loadMarketListingById",
+      domain: "catalog",
+    });
+    const card = toMarketHomeListingCardFromScope(validated as MarketMarketplaceScopeRow);
     observation.success({
       rowCount: 1,
       extra: {

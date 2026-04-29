@@ -1,5 +1,9 @@
 import { supabase } from "../../lib/supabaseClient";
 import { applySupabaseAbortSignal, throwIfAborted } from "../../lib/requestCancellation";
+import {
+  isRpcRowsEnvelope,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
 import type { IncomingRow, ItemRow } from "./warehouse.types";
 
 type UnknownRecord = Record<string, unknown>;
@@ -192,7 +196,11 @@ export async function fetchWarehouseIncomingHeadsWindow(
 
   if (error) throw error;
 
-  const root = asRecord(data);
+  const root = validateRpcResponse(data, isRpcRowsEnvelope, {
+    rpcName: "warehouse_incoming_queue_scope_v1",
+    caller: "fetchWarehouseIncomingHeadsWindow",
+    domain: "warehouse",
+  });
   const rowsValue = asArray(root.rows);
   const rows = rowsValue.map((rowValue) =>
     normalizeIncomingHeadRow(asRecord(rowValue) as IncomingHeadRowDb),
@@ -227,7 +235,11 @@ export async function fetchWarehouseIncomingItemsWindow(
 
   if (error) throw error;
 
-  const root = asRecord(data);
+  const root = validateRpcResponse(data, isRpcRowsEnvelope, {
+    rpcName: "warehouse_incoming_items_scope_v1",
+    caller: "fetchWarehouseIncomingItemsWindow",
+    domain: "warehouse",
+  });
   const rowsValue = asArray(root.rows);
   const rows = rowsValue.map((rowValue) =>
     normalizeIncomingItemRow(asRecord(rowValue) as IncomingItemRowDb),

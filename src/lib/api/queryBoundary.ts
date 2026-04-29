@@ -165,8 +165,18 @@ export const isRequestItemUpdateQtyResponse = (
   isRpcOptionalString(value.status) &&
   isRpcOptionalString(value.note);
 
-const isRpcRecordArray = (value: unknown): value is Record<string, unknown>[] =>
+export const isRpcRecordArray = (value: unknown): value is Record<string, unknown>[] =>
   Array.isArray(value) && value.every(isRpcRecord);
+
+export const isRpcArrayResponse = (value: unknown): value is unknown[] =>
+  Array.isArray(value);
+
+export const isRpcRowsEnvelope = (
+  value: unknown,
+): value is { rows: unknown[]; meta?: Record<string, unknown> } =>
+  isRpcRecord(value) &&
+  Array.isArray(value.rows) &&
+  (value.meta == null || isRpcRecord(value.meta));
 
 export const isAccountantFinancialStateResponse = (
   value: unknown,

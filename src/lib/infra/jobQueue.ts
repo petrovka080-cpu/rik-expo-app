@@ -1,6 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database, Json } from "../database.types";
+import {
+  isRpcNumberLike,
+  isRpcRecord as isRpcObjectRecord,
+  isRpcVoidResponse,
+  validateRpcResponse,
+} from "../api/queryBoundary";
 import { supabase } from "../supabaseClient";
 
 export type SubmitJobStatus = "pending" | "processing" | "completed" | "failed";
@@ -214,6 +220,62 @@ const parseSubmitJobMetricsRow = (value: unknown): SubmitJobMetrics => {
   };
 };
 
+const isSubmitJobStatusValue = (value: unknown): value is SubmitJobStatus =>
+  value === "pending" ||
+  value === "processing" ||
+  value === "completed" ||
+  value === "failed";
+
+export const isSubmitJobsClaimRpcResponse = (
+  value: unknown,
+): value is SubmitJobsClaimRpcRow[] =>
+  Array.isArray(value) &&
+  value.every((row) =>
+    isRpcObjectRecord(row) &&
+    typeof row.id === "string" &&
+    row.id.trim().length > 0 &&
+    typeof row.job_type === "string" &&
+    row.job_type.trim().length > 0 &&
+    isSubmitJobStatusValue(row.status),
+  );
+
+export const isSubmitJobsRecoverStuckRpcResponse = (
+  value: unknown,
+): value is SubmitJobsRecoverStuckRpcReturns => isRpcNumberLike(value);
+
+export const isSubmitJobsMarkCompletedRpcResponse = (
+  value: unknown,
+): value is null | undefined => isRpcVoidResponse(value);
+
+const isSubmitJobsMarkFailedRow = (
+  value: unknown,
+): value is SubmitJobsMarkFailedRpcRow =>
+  isRpcObjectRecord(value) &&
+  isRpcNumberLike(value.retry_count) &&
+  typeof value.status === "string" &&
+  value.status.trim().length > 0 &&
+  (value.next_retry_at == null || typeof value.next_retry_at === "string");
+
+export const isSubmitJobsMarkFailedRpcResponse = (
+  value: unknown,
+): value is SubmitJobsMarkFailedRpcRow[] | SubmitJobsMarkFailedRpcRow | null =>
+  value == null ||
+  isSubmitJobsMarkFailedRow(value) ||
+  (Array.isArray(value) && value.every(isSubmitJobsMarkFailedRow));
+
+const isSubmitJobsMetricsRow = (value: unknown): value is Partial<SubmitJobsMetricsRpcRow> =>
+  isRpcObjectRecord(value) &&
+  isRpcNumberLike(value.pending) &&
+  isRpcNumberLike(value.processing) &&
+  isRpcNumberLike(value.failed) &&
+  (value.oldest_pending == null || typeof value.oldest_pending === "string");
+
+export const isSubmitJobsMetricsRpcResponse = (
+  value: unknown,
+): value is SubmitJobsMetricsRpcRow[] | SubmitJobsMetricsRpcRow =>
+  isSubmitJobsMetricsRow(value) ||
+  (Array.isArray(value) && value.every(isSubmitJobsMetricsRow));
+
 const rpcErrorText = (error: QueueRpcError | null | undefined) => {
   if (!error) return "";
   return [
@@ -364,7 +426,14 @@ async function claimSubmitJobsWithClient(
     "submit_jobs_claim",
     buildSubmitJobsClaimArgs(workerId, limit),
   );
-  if (!primary.error) return normalizeSubmitJobRows(primary.data);
+  if (!primary.error) {
+    const validated = validateRpcResponse(primary.data, isSubmitJobsClaimRpcResponse, {
+      rpcName: "submit_jobs_claim",
+      caller: "claimSubmitJobsWithClient.primary",
+      domain: "unknown",
+    });
+    return normalizeSubmitJobRows(validated);
+  }
 
   if (!isMissingOrIncompatibleRpcError("submit_jobs_claim", primary.error)) {
     throw primary.error;
@@ -380,7 +449,14 @@ async function claimSubmitJobsWithClient(
       "submit_jobs_claim",
       buildSubmitJobsClaimLegacyArgs(workerId, limit, jobType),
     );
-    if (!legacy.error) return normalizeSubmitJobRows(legacy.data);
+    if (!legacy.error) {
+      const validated = validateRpcResponse(legacy.data, isSubmitJobsClaimRpcResponse, {
+        rpcName: "submit_jobs_claim",
+        caller: "claimSubmitJobsWithClient.legacy",
+        domain: "unknown",
+      });
+      return normalizeSubmitJobRows(validated);
+    }
 
     if (!isMissingOrIncompatibleRpcError("submit_jobs_claim", legacy.error)) {
       throw legacy.error;
@@ -405,7 +481,11 @@ async function recoverStuckSubmitJobsWithClient(
 ): Promise<number> {
   const { data, error } = await supabaseClient.rpc("submit_jobs_recover_stuck");
   if (error) throw queueInfraError("recoverStuckSubmitJobs", error);
-  return getNumberOrDefault(data as SubmitJobsRecoverStuckRpcReturns, 0);
+  return getNumberOrDefault(validateRpcResponse(data, isSubmitJobsRecoverStuckRpcResponse, {
+    rpcName: "submit_jobs_recover_stuck",
+    caller: "recoverStuckSubmitJobsWithClient",
+    domain: "unknown",
+  }), 0);
 }
 
 async function markSubmitJobCompletedWithClient(
@@ -417,6 +497,11 @@ async function markSubmitJobCompletedWithClient(
     p_id: jobId,
   });
   if (!first.error) {
+    validateRpcResponse(first.data, isSubmitJobsMarkCompletedRpcResponse, {
+      rpcName: "submit_jobs_mark_completed",
+      caller: "markSubmitJobCompletedWithClient.primary",
+      domain: "unknown",
+    });
     return;
   }
 
@@ -430,6 +515,11 @@ async function markSubmitJobCompletedWithClient(
     p_job_id: jobId,
   });
   if (!legacy.error) {
+    validateRpcResponse(legacy.data, isSubmitJobsMarkCompletedRpcResponse, {
+      rpcName: "submit_jobs_mark_completed",
+      caller: "markSubmitJobCompletedWithClient.legacy",
+      domain: "unknown",
+    });
     return;
   }
 
@@ -457,7 +547,12 @@ async function markSubmitJobFailedWithClient(
     p_error: message,
   });
   if (!first.error) {
-    return parseSubmitJobFailedRpcResult(first.data);
+    const validated = validateRpcResponse(first.data, isSubmitJobsMarkFailedRpcResponse, {
+      rpcName: "submit_jobs_mark_failed",
+      caller: "markSubmitJobFailedWithClient.primary",
+      domain: "unknown",
+    });
+    return parseSubmitJobFailedRpcResult(validated);
   }
 
   if (
@@ -471,7 +566,12 @@ async function markSubmitJobFailedWithClient(
     p_error: message,
   });
   if (!legacy.error) {
-    return parseSubmitJobFailedRpcResult(legacy.data);
+    const validated = validateRpcResponse(legacy.data, isSubmitJobsMarkFailedRpcResponse, {
+      rpcName: "submit_jobs_mark_failed",
+      caller: "markSubmitJobFailedWithClient.legacy",
+      domain: "unknown",
+    });
+    return parseSubmitJobFailedRpcResult(validated);
   }
 
   if (
@@ -492,7 +592,11 @@ async function fetchSubmitJobMetricsWithClient(
 ): Promise<SubmitJobMetrics> {
   const { data, error } = await supabaseClient.rpc("submit_jobs_metrics");
   if (error) throw error;
-  return parseSubmitJobMetricsRow(data);
+  return parseSubmitJobMetricsRow(validateRpcResponse(data, isSubmitJobsMetricsRpcResponse, {
+    rpcName: "submit_jobs_metrics",
+    caller: "fetchSubmitJobMetricsWithClient",
+    domain: "unknown",
+  }));
 }
 
 export function createJobQueueApi(supabaseClient: JobQueueSupabaseClient) {
