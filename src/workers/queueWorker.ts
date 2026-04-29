@@ -18,8 +18,13 @@ import {
 import { startQueueMetricsLoop } from "../lib/infra/queueMetrics";
 import { fetchQueueLatencyMetrics } from "../lib/infra/queueLatencyMetrics";
 import { logger } from "../lib/logger";
+import { mapWithConcurrencyLimit } from "../lib/async/mapWithConcurrencyLimit";
+import { redactSensitiveText } from "../lib/security/redaction";
 import { compactJobsByEntity, dispatchJob } from "./jobDispatcher";
-import { resolveQueueWorkerBatchConcurrency } from "./queueWorker.limits";
+import {
+  resolveQueueWorkerBatchConcurrency,
+  resolveQueueWorkerIdleBackoffMs,
+} from "./queueWorker.limits";
 import { normalizeAppError } from "../lib/errors/appError";
 import { recordPlatformObservability } from "../lib/observability/platformObservability";
 
@@ -77,7 +82,9 @@ export type QueueWorkerHandle = {
 };
 
 const queueErrorText = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error ?? "unknown");
+  redactSensitiveText(
+    error instanceof Error ? error.message : String(error ?? "unknown"),
+  );
 
 const redactedPresence = (value: unknown): "present_redacted" | "missing" =>
   String(value ?? "").trim() ? "present_redacted" : "missing";
@@ -115,6 +122,7 @@ function recordQueueWorkerBoundaryFailure(params: {
     `queue_worker:${params.event}`,
     "fatal",
   );
+  const errorMessage = redactSensitiveText(appError.message);
   recordPlatformObservability({
     screen: "buyer",
     surface: "offline_queue_worker",
@@ -124,11 +132,11 @@ function recordQueueWorkerBoundaryFailure(params: {
     sourceKind: "offline:submit_jobs",
     errorStage: params.phase ?? appError.context,
     errorClass: appError.code,
-    errorMessage: appError.message,
+    errorMessage,
     extra: {
-      workerId: params.workerId,
+      workerIdScope: redactedPresence(params.workerId),
       phase: params.phase ?? null,
-      jobId: params.job?.id ?? null,
+      jobIdScope: redactedPresence(params.job?.id),
       jobType: params.job?.job_type ?? null,
       retryCount: params.job?.retry_count ?? null,
       appErrorCode: appError.code,
@@ -180,8 +188,8 @@ async function markCompactedDuplicatesCompleted(
           workerId,
           job: group.job,
           extra: {
-            keptJobId: group.job.id,
-            duplicateJobId: id,
+            keptJobIdScope: redactedPresence(group.job.id),
+            duplicateJobIdScope: redactedPresence(id),
           },
         });
         logger.warn("queue.worker", "compacted duplicate completion failed", {
@@ -260,7 +268,7 @@ async function processOne(
         workerId,
         job,
         extra: {
-          processingError: message,
+          processingErrorMessage: message,
           jobProcessingMs: Date.now() - t0,
         },
       });
@@ -297,24 +305,20 @@ async function processBatch(
   }
 
   const queue = compacted.map((entry) => entry.job);
-  let idx = 0;
   const workerCount = resolveQueueWorkerBatchConcurrency(
     concurrency,
     queue.length,
   );
   if (workerCount <= 0) return;
 
-  const workers = Array.from({ length: workerCount }).map(
-    async () => {
-      while (idx < queue.length) {
-        const current = queue[idx++];
-        if (!current) return;
-        await processOne(current, workerId, deps);
-      }
+  await mapWithConcurrencyLimit(
+    queue,
+    workerCount,
+    async (current) => {
+      await processOne(current, workerId, deps);
     },
+    { label: "queueWorker.processBatch" },
   );
-
-  await Promise.all(workers);
 }
 
 export function startQueueWorker(
@@ -340,7 +344,7 @@ export function startQueueWorker(
   const workerId = options.workerId || defaultWorkerId();
   const batchSize = options.batchSize ?? WORKER_BATCH_SIZE;
   const concurrency = options.concurrency ?? WORKER_CONCURRENCY;
-  const pollIdleMs = options.pollIdleMs ?? 1000;
+  const pollIdleMs = resolveQueueWorkerIdleBackoffMs(options.pollIdleMs, 1000);
 
   let stopped = false;
   let recoveryTick = 0;

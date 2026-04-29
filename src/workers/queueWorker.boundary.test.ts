@@ -1,7 +1,11 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-import { resolveQueueWorkerBatchConcurrency } from "./queueWorker.limits";
+import {
+  MIN_QUEUE_WORKER_IDLE_BACKOFF_MS,
+  resolveQueueWorkerBatchConcurrency,
+  resolveQueueWorkerIdleBackoffMs,
+} from "./queueWorker.limits";
 
 describe("queueWorker critical boundaries", () => {
   it("records typed observability for worker catch points before continuing", () => {
@@ -22,5 +26,14 @@ describe("queueWorker critical boundaries", () => {
     expect(resolveQueueWorkerBatchConcurrency(0, 3)).toBe(1);
     expect(resolveQueueWorkerBatchConcurrency(Number.NaN, 3)).toBe(1);
     expect(resolveQueueWorkerBatchConcurrency(4, 0)).toBe(0);
+  });
+
+  it("keeps idle and error-loop sleeps above the minimum backoff", () => {
+    expect(resolveQueueWorkerIdleBackoffMs(0)).toBe(1000);
+    expect(resolveQueueWorkerIdleBackoffMs(10)).toBe(MIN_QUEUE_WORKER_IDLE_BACKOFF_MS);
+    expect(resolveQueueWorkerIdleBackoffMs(500)).toBe(500);
+    expect(resolveQueueWorkerIdleBackoffMs(Number.NaN, 25)).toBe(
+      MIN_QUEUE_WORKER_IDLE_BACKOFF_MS,
+    );
   });
 });
