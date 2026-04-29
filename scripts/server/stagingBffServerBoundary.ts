@@ -1,4 +1,6 @@
 import type { BffResponseEnvelope } from "../../src/shared/scale/bffContracts";
+import type { CachePolicyRoute } from "../../src/shared/scale/cachePolicies";
+import { getInvalidationTagsForOperation } from "../../src/shared/scale/cacheInvalidation";
 import {
   BFF_MUTATION_HANDLER_OPERATIONS,
   handleAccountantPaymentApply,
@@ -37,6 +39,9 @@ export type BffStagingRouteDefinition = {
   enabledByDefault: boolean;
   requiresIdempotencyMetadata: boolean;
   requiresRateLimitMetadata: boolean;
+  cachePolicyRoute?: CachePolicyRoute;
+  cachePolicyDefaultEnabled?: false;
+  invalidationTags?: readonly string[];
 };
 
 export type BffStagingServerConfig = {
@@ -112,6 +117,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     enabledByDefault: true,
     requiresIdempotencyMetadata: false,
     requiresRateLimitMetadata: false,
+    cachePolicyRoute: "request.proposal.list",
+    cachePolicyDefaultEnabled: false,
   },
   {
     operation: "marketplace.catalog.search",
@@ -121,6 +128,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     enabledByDefault: true,
     requiresIdempotencyMetadata: false,
     requiresRateLimitMetadata: false,
+    cachePolicyRoute: "marketplace.catalog.search",
+    cachePolicyDefaultEnabled: false,
   },
   {
     operation: "warehouse.ledger.list",
@@ -130,6 +139,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     enabledByDefault: true,
     requiresIdempotencyMetadata: false,
     requiresRateLimitMetadata: false,
+    cachePolicyRoute: "warehouse.ledger.list",
+    cachePolicyDefaultEnabled: false,
   },
   {
     operation: "accountant.invoice.list",
@@ -139,6 +150,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     enabledByDefault: true,
     requiresIdempotencyMetadata: false,
     requiresRateLimitMetadata: false,
+    cachePolicyRoute: "accountant.invoice.list",
+    cachePolicyDefaultEnabled: false,
   },
   {
     operation: "director.pending.list",
@@ -148,6 +161,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     enabledByDefault: true,
     requiresIdempotencyMetadata: false,
     requiresRateLimitMetadata: false,
+    cachePolicyRoute: "director.pending.list",
+    cachePolicyDefaultEnabled: false,
   },
 ]);
 
@@ -160,6 +175,7 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     enabledByDefault: false,
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
+    invalidationTags: getInvalidationTagsForOperation("proposal.submit"),
   },
   {
     operation: "warehouse.receive.apply",
@@ -169,6 +185,7 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     enabledByDefault: false,
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
+    invalidationTags: getInvalidationTagsForOperation("warehouse.receive.apply"),
   },
   {
     operation: "accountant.payment.apply",
@@ -178,6 +195,7 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     enabledByDefault: false,
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
+    invalidationTags: getInvalidationTagsForOperation("accountant.payment.apply"),
   },
   {
     operation: "director.approval.apply",
@@ -187,6 +205,7 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     enabledByDefault: false,
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
+    invalidationTags: getInvalidationTagsForOperation("director.approval.apply"),
   },
   {
     operation: "request.item.update",
@@ -196,6 +215,7 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     enabledByDefault: false,
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
+    invalidationTags: getInvalidationTagsForOperation("request.item.update"),
   },
 ]);
 

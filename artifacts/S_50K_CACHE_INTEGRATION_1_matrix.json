@@ -1,0 +1,44 @@
+{
+  "wave": "S-50K-CACHE-INTEGRATION-1",
+  "mode": "production-safe-disabled-cache-boundary-integration",
+  "ownerGoal": "10K/50K+ readiness",
+  "status": "GREEN_CACHE_BOUNDARY_READY",
+  "cacheBoundary": {
+    "noopAdapter": true,
+    "inMemoryTestAdapter": true,
+    "externalAdapterContract": true,
+    "externalNetworkCallsInTests": false,
+    "enabledByDefault": false
+  },
+  "policies": {
+    "total": 8,
+    "defaultEnabled": false,
+    "readRoutesCovered": 5,
+    "hotspotsCovered": 3,
+    "piiSafeKeys": true
+  },
+  "invalidation": {
+    "mutationOperationsMapped": 6,
+    "executionEnabledByDefault": false
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "stagingTouched": false,
+    "stagingWrites": false,
+    "appRuntimeCacheEnabled": false,
+    "existingSupabaseClientFlowsReplaced": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}

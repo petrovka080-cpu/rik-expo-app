@@ -7,6 +7,7 @@ import {
 } from "./bffContracts";
 import { buildBffError, normalizeBffPage, redactBffText } from "./bffSafety";
 import { CACHE_READ_MODEL_CONTRACTS } from "./cacheReadModels";
+import { getCachePolicy } from "./cachePolicies";
 import {
   getRateLimitPolicy,
   type RateLimitBucket,
@@ -45,6 +46,14 @@ export type BffReadHandlerMetadata = {
     modelName: string;
     ttlSeconds: number;
     status: string;
+  } | null;
+  cacheIntegrationPolicy: {
+    route: BffReadOperation;
+    ttlMs: number;
+    staleWhileRevalidateMs: number;
+    tags: readonly string[];
+    defaultEnabled: false;
+    piiSafe: boolean;
   } | null;
   rateLimitBucket: RateLimitBucket;
   rateLimitPolicy: {
@@ -170,6 +179,7 @@ export function getBffReadHandlerMetadata(operation: BffReadOperation): BffReadH
   const definition = READ_HANDLER_DEFINITIONS[operation];
   const bffContract = BFF_FLOW_CONTRACTS.find((contract) => contract.flow === definition.bffFlow);
   const cacheContract = CACHE_READ_MODEL_CONTRACTS.find((contract) => contract.flow === definition.bffFlow);
+  const cachePolicy = getCachePolicy(operation);
   const rateLimitPolicy = definition.rateLimitOperation
     ? getRateLimitPolicy(definition.rateLimitOperation)
     : null;
@@ -186,6 +196,16 @@ export function getBffReadHandlerMetadata(operation: BffReadOperation): BffReadH
           modelName: cacheContract.modelName,
           ttlSeconds: cacheContract.ttlSeconds,
           status: cacheContract.status,
+        }
+      : null,
+    cacheIntegrationPolicy: cachePolicy
+      ? {
+          route: operation,
+          ttlMs: cachePolicy.ttlMs,
+          staleWhileRevalidateMs: cachePolicy.staleWhileRevalidateMs,
+          tags: cachePolicy.tags,
+          defaultEnabled: cachePolicy.defaultEnabled,
+          piiSafe: cachePolicy.piiSafe,
         }
       : null,
     rateLimitBucket: definition.rateLimitBucket,
