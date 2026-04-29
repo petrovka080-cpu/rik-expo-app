@@ -1,0 +1,46 @@
+{
+  "wave": "S-50K-BFF-STAGING-DEPLOY-1",
+  "mode": "production-safe-staging-bff-server-boundary",
+  "ownerGoal": "10K/50K+ readiness",
+  "status": "DEPLOYMENT_OWNER_ACTION_REQUIRED",
+  "serverBoundary": {
+    "healthEndpointContract": true,
+    "readinessEndpointContract": true,
+    "readRoutes": 5,
+    "mutationRoutes": 5,
+    "mutationRoutesEnabledByDefault": false,
+    "requestEnvelopeValidation": true,
+    "responseEnvelopeValidation": true,
+    "redactedErrors": true
+  },
+  "shadow": {
+    "localShadowAlreadyProven": true,
+    "stagingBffBaseUrl": "missing",
+    "stagingShadowRun": "not_run",
+    "matches": 0,
+    "mismatches": 0,
+    "trafficMigrated": false
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "appRuntimeBffEnabled": false,
+    "existingSupabaseClientFlowsReplaced": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "serviceRoleInClient": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}

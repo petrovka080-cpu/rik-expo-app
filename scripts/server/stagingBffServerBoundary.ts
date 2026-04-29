@@ -1,0 +1,537 @@
+import type { BffResponseEnvelope } from "../../src/shared/scale/bffContracts";
+import {
+  BFF_MUTATION_HANDLER_OPERATIONS,
+  handleAccountantPaymentApply,
+  handleDirectorApprovalApply,
+  handleProposalSubmit,
+  handleRequestItemUpdate,
+  handleWarehouseReceiveApply,
+  type BffMutationInput,
+  type BffMutationOperation,
+} from "../../src/shared/scale/bffMutationHandlers";
+import type { BffMutationPorts } from "../../src/shared/scale/bffMutationPorts";
+import {
+  BFF_READ_HANDLER_OPERATIONS,
+  handleAccountantInvoiceList,
+  handleDirectorPendingList,
+  handleMarketplaceCatalogSearch,
+  handleRequestProposalList,
+  handleWarehouseLedgerList,
+  type BffReadInput,
+  type BffReadOperation,
+} from "../../src/shared/scale/bffReadHandlers";
+import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
+import { buildBffError } from "../../src/shared/scale/bffSafety";
+import {
+  BFF_SHADOW_MUTATION_PAYLOAD,
+  createBffShadowFixturePorts,
+} from "../../src/shared/scale/bffShadowFixtures";
+
+export type BffStagingRouteKind = "health" | "readiness" | "read" | "mutation";
+
+export type BffStagingRouteDefinition = {
+  operation: BffReadOperation | BffMutationOperation | "health" | "readiness";
+  kind: BffStagingRouteKind;
+  method: "GET" | "POST";
+  path: string;
+  enabledByDefault: boolean;
+  requiresIdempotencyMetadata: boolean;
+  requiresRateLimitMetadata: boolean;
+};
+
+export type BffStagingServerConfig = {
+  mutationRoutesEnabled?: boolean;
+  serverAuthConfigured?: boolean;
+  idempotencyMetadataRequired?: boolean;
+  rateLimitMetadataRequired?: boolean;
+};
+
+export type BffStagingServerDeps = {
+  readPorts?: BffReadPorts;
+  mutationPorts?: BffMutationPorts;
+  config?: BffStagingServerConfig;
+};
+
+export type BffStagingRequestEnvelope = {
+  method: "GET" | "POST";
+  path: string;
+  body?: unknown;
+  headers?: Record<string, unknown> | null;
+};
+
+export type BffStagingBoundaryResponse = {
+  status: number;
+  body: BffResponseEnvelope<unknown>;
+  headers: {
+    "content-type": "application/json";
+    "cache-control": "no-store";
+  };
+};
+
+export type BffStagingRequestPayload = {
+  input: Record<string, unknown>;
+  metadata: Record<string, unknown>;
+};
+
+export type BffStagingShadowSummary = {
+  status: "run" | "not_run";
+  matches: number;
+  mismatches: number;
+  trafficMigrated: false;
+  productionTouched: false;
+  stagingWrites: false;
+  networkUsed: false;
+};
+
+export const BFF_STAGING_HEALTH_ROUTE: BffStagingRouteDefinition = Object.freeze({
+  operation: "health",
+  kind: "health",
+  method: "GET",
+  path: "/health",
+  enabledByDefault: true,
+  requiresIdempotencyMetadata: false,
+  requiresRateLimitMetadata: false,
+});
+
+export const BFF_STAGING_READINESS_ROUTE: BffStagingRouteDefinition = Object.freeze({
+  operation: "readiness",
+  kind: "readiness",
+  method: "GET",
+  path: "/ready",
+  enabledByDefault: true,
+  requiresIdempotencyMetadata: false,
+  requiresRateLimitMetadata: false,
+});
+
+export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Object.freeze([
+  {
+    operation: "request.proposal.list",
+    kind: "read",
+    method: "POST",
+    path: "/api/staging-bff/read/request-proposal-list",
+    enabledByDefault: true,
+    requiresIdempotencyMetadata: false,
+    requiresRateLimitMetadata: false,
+  },
+  {
+    operation: "marketplace.catalog.search",
+    kind: "read",
+    method: "POST",
+    path: "/api/staging-bff/read/marketplace-catalog-search",
+    enabledByDefault: true,
+    requiresIdempotencyMetadata: false,
+    requiresRateLimitMetadata: false,
+  },
+  {
+    operation: "warehouse.ledger.list",
+    kind: "read",
+    method: "POST",
+    path: "/api/staging-bff/read/warehouse-ledger-list",
+    enabledByDefault: true,
+    requiresIdempotencyMetadata: false,
+    requiresRateLimitMetadata: false,
+  },
+  {
+    operation: "accountant.invoice.list",
+    kind: "read",
+    method: "POST",
+    path: "/api/staging-bff/read/accountant-invoice-list",
+    enabledByDefault: true,
+    requiresIdempotencyMetadata: false,
+    requiresRateLimitMetadata: false,
+  },
+  {
+    operation: "director.pending.list",
+    kind: "read",
+    method: "POST",
+    path: "/api/staging-bff/read/director-pending-list",
+    enabledByDefault: true,
+    requiresIdempotencyMetadata: false,
+    requiresRateLimitMetadata: false,
+  },
+]);
+
+export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] = Object.freeze([
+  {
+    operation: "proposal.submit",
+    kind: "mutation",
+    method: "POST",
+    path: "/api/staging-bff/mutation/proposal-submit",
+    enabledByDefault: false,
+    requiresIdempotencyMetadata: true,
+    requiresRateLimitMetadata: true,
+  },
+  {
+    operation: "warehouse.receive.apply",
+    kind: "mutation",
+    method: "POST",
+    path: "/api/staging-bff/mutation/warehouse-receive-apply",
+    enabledByDefault: false,
+    requiresIdempotencyMetadata: true,
+    requiresRateLimitMetadata: true,
+  },
+  {
+    operation: "accountant.payment.apply",
+    kind: "mutation",
+    method: "POST",
+    path: "/api/staging-bff/mutation/accountant-payment-apply",
+    enabledByDefault: false,
+    requiresIdempotencyMetadata: true,
+    requiresRateLimitMetadata: true,
+  },
+  {
+    operation: "director.approval.apply",
+    kind: "mutation",
+    method: "POST",
+    path: "/api/staging-bff/mutation/director-approval-apply",
+    enabledByDefault: false,
+    requiresIdempotencyMetadata: true,
+    requiresRateLimitMetadata: true,
+  },
+  {
+    operation: "request.item.update",
+    kind: "mutation",
+    method: "POST",
+    path: "/api/staging-bff/mutation/request-item-update",
+    enabledByDefault: false,
+    requiresIdempotencyMetadata: true,
+    requiresRateLimitMetadata: true,
+  },
+]);
+
+export const BFF_STAGING_ROUTE_REGISTRY: readonly BffStagingRouteDefinition[] = Object.freeze([
+  BFF_STAGING_HEALTH_ROUTE,
+  BFF_STAGING_READINESS_ROUTE,
+  ...BFF_STAGING_READ_ROUTES,
+  ...BFF_STAGING_MUTATION_ROUTES,
+]);
+
+export const BFF_STAGING_SERVER_ENV_NAMES = Object.freeze([
+  "STAGING_BFF_BASE_URL",
+  "BFF_SERVER_AUTH_SECRET",
+  "BFF_DATABASE_READONLY_URL",
+  "BFF_MUTATION_ENABLED",
+  "BFF_IDEMPOTENCY_METADATA_ENABLED",
+  "BFF_RATE_LIMIT_METADATA_ENABLED",
+]);
+
+const RESPONSE_HEADERS = Object.freeze({
+  "content-type": "application/json",
+  "cache-control": "no-store",
+} as const);
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const buildResponse = (
+  status: number,
+  body: BffResponseEnvelope<unknown>,
+): BffStagingBoundaryResponse => ({
+  status,
+  body,
+  headers: { ...RESPONSE_HEADERS },
+});
+
+const buildErrorResponse = (
+  status: number,
+  code: string,
+  message: unknown,
+): BffStagingBoundaryResponse =>
+  buildResponse(status, {
+    ok: false,
+    error: buildBffError(code, message),
+  });
+
+export function isBffStagingResponseEnvelope(value: unknown): value is BffResponseEnvelope<unknown> {
+  if (!isRecord(value) || typeof value.ok !== "boolean") return false;
+  if (value.ok === true) return Object.prototype.hasOwnProperty.call(value, "data");
+  if (!isRecord(value.error)) return false;
+  return typeof value.error.code === "string" && typeof value.error.message === "string";
+}
+
+export function parseBffStagingRequestPayload(body: unknown): BffStagingRequestPayload | null {
+  if (body == null) {
+    return { input: {}, metadata: {} };
+  }
+
+  if (!isRecord(body)) return null;
+
+  const input = Object.prototype.hasOwnProperty.call(body, "input")
+    ? body.input
+    : {};
+  const metadata = Object.prototype.hasOwnProperty.call(body, "metadata")
+    ? body.metadata
+    : {};
+
+  if (!isRecord(input) || !isRecord(metadata)) return null;
+
+  return {
+    input,
+    metadata,
+  };
+}
+
+export function extractBffStagingAuthContext(
+  headers: Record<string, unknown> | null | undefined,
+  config: BffStagingServerConfig = {},
+): {
+  authConfigured: boolean;
+  authHeader: "present_redacted" | "missing";
+  accepted: boolean;
+} {
+  const authHeader = typeof headers?.authorization === "string" && headers.authorization.trim()
+    ? "present_redacted"
+    : "missing";
+  const authConfigured = config.serverAuthConfigured === true;
+
+  return {
+    authConfigured,
+    authHeader,
+    accepted: authConfigured ? authHeader === "present_redacted" : true,
+  };
+}
+
+const findRoute = (request: BffStagingRequestEnvelope): BffStagingRouteDefinition | undefined =>
+  BFF_STAGING_ROUTE_REGISTRY.find(
+    (route) => route.method === request.method && route.path === request.path,
+  );
+
+const hasPresentMetadata = (metadata: Record<string, unknown>, key: string): boolean =>
+  metadata[key] === "present_redacted" || metadata[key] === true;
+
+const invokeReadRoute = async (
+  operation: BffReadOperation,
+  ports: BffReadPorts,
+  input: BffReadInput,
+): Promise<BffResponseEnvelope<unknown>> => {
+  switch (operation) {
+    case "request.proposal.list":
+      return handleRequestProposalList(ports, input);
+    case "marketplace.catalog.search":
+      return handleMarketplaceCatalogSearch(ports, input);
+    case "warehouse.ledger.list":
+      return handleWarehouseLedgerList(ports, input);
+    case "accountant.invoice.list":
+      return handleAccountantInvoiceList(ports, input);
+    case "director.pending.list":
+      return handleDirectorPendingList(ports, input);
+  }
+};
+
+const invokeMutationRoute = async (
+  operation: BffMutationOperation,
+  ports: BffMutationPorts,
+  input: BffMutationInput,
+): Promise<BffResponseEnvelope<unknown>> => {
+  switch (operation) {
+    case "proposal.submit":
+      return handleProposalSubmit(ports, input);
+    case "warehouse.receive.apply":
+      return handleWarehouseReceiveApply(ports, input);
+    case "accountant.payment.apply":
+      return handleAccountantPaymentApply(ports, input);
+    case "director.approval.apply":
+      return handleDirectorApprovalApply(ports, input);
+    case "request.item.update":
+      return handleRequestItemUpdate(ports, input);
+  }
+};
+
+export async function handleBffStagingServerRequest(
+  request: BffStagingRequestEnvelope,
+  deps: BffStagingServerDeps = {},
+): Promise<BffStagingBoundaryResponse> {
+  const route = findRoute(request);
+  const config = deps.config ?? {};
+
+  if (!route) {
+    return buildErrorResponse(404, "BFF_ROUTE_NOT_FOUND", "Unknown staging BFF route");
+  }
+
+  const auth = extractBffStagingAuthContext(request.headers, config);
+  if (!auth.accepted) {
+    return buildErrorResponse(401, "BFF_AUTH_REQUIRED", "Authentication envelope is required");
+  }
+
+  if (route.kind === "health") {
+    return buildResponse(200, {
+      ok: true,
+      data: {
+        status: "ok",
+        serverBoundaryReady: true,
+        productionTouched: false,
+      },
+    });
+  }
+
+  if (route.kind === "readiness") {
+    return buildResponse(200, {
+      ok: true,
+      data: {
+        status: "ready",
+        readRoutes: BFF_STAGING_READ_ROUTES.length,
+        mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
+        mutationRoutesEnabledByDefault: false,
+        mutationRoutesEnabled: config.mutationRoutesEnabled === true,
+        requestEnvelopeValidation: true,
+        responseEnvelopeValidation: true,
+        redactedErrors: true,
+        appRuntimeBffEnabled: false,
+      },
+    });
+  }
+
+  const payload = parseBffStagingRequestPayload(request.body);
+  if (!payload) {
+    return buildErrorResponse(400, "BFF_INVALID_REQUEST_ENVELOPE", "Invalid request envelope");
+  }
+
+  if (route.kind === "read") {
+    if (!deps.readPorts) {
+      return buildErrorResponse(503, "BFF_READ_PORTS_UNAVAILABLE", "Read ports are not configured");
+    }
+
+    const body = await invokeReadRoute(route.operation as BffReadOperation, deps.readPorts, payload.input);
+    if (!isBffStagingResponseEnvelope(body)) {
+      return buildErrorResponse(502, "BFF_INVALID_RESPONSE_ENVELOPE", "Invalid response envelope");
+    }
+    return buildResponse(body.ok ? 200 : 500, body);
+  }
+
+  if (config.mutationRoutesEnabled !== true) {
+    return buildErrorResponse(403, "BFF_MUTATION_ROUTES_DISABLED", "Mutation routes are disabled by default");
+  }
+
+  if (
+    config.idempotencyMetadataRequired !== false &&
+    !hasPresentMetadata(payload.metadata, "idempotencyKeyStatus")
+  ) {
+    return buildErrorResponse(400, "BFF_IDEMPOTENCY_METADATA_REQUIRED", "Idempotency metadata is required");
+  }
+
+  if (
+    config.rateLimitMetadataRequired !== false &&
+    !hasPresentMetadata(payload.metadata, "rateLimitKeyStatus")
+  ) {
+    return buildErrorResponse(400, "BFF_RATE_LIMIT_METADATA_REQUIRED", "Rate limit metadata is required");
+  }
+
+  if (!deps.mutationPorts) {
+    return buildErrorResponse(503, "BFF_MUTATION_PORTS_UNAVAILABLE", "Mutation ports are not configured");
+  }
+
+  const body = await invokeMutationRoute(
+    route.operation as BffMutationOperation,
+    deps.mutationPorts,
+    payload.input,
+  );
+  if (!isBffStagingResponseEnvelope(body)) {
+    return buildErrorResponse(502, "BFF_INVALID_RESPONSE_ENVELOPE", "Invalid response envelope");
+  }
+  return buildResponse(body.ok ? 200 : 500, body);
+}
+
+export function buildBffStagingDeploymentReadiness(params: {
+  stagingBffBaseUrl?: string | null;
+}): {
+  status: "GREEN_DEPLOY_READY" | "DEPLOYMENT_OWNER_ACTION_REQUIRED";
+  stagingBffBaseUrl: "present_redacted" | "missing";
+  serverBoundaryReady: true;
+  stagingShadowRun: "not_run";
+  trafficMigrated: false;
+} {
+  const baseUrlPresent = typeof params.stagingBffBaseUrl === "string" && params.stagingBffBaseUrl.trim().length > 0;
+
+  return {
+    status: baseUrlPresent ? "GREEN_DEPLOY_READY" : "DEPLOYMENT_OWNER_ACTION_REQUIRED",
+    stagingBffBaseUrl: baseUrlPresent ? "present_redacted" : "missing",
+    serverBoundaryReady: true,
+    stagingShadowRun: "not_run",
+    trafficMigrated: false,
+  };
+}
+
+export async function runLocalBffStagingBoundaryShadow(): Promise<BffStagingShadowSummary> {
+  const fixturePorts = createBffShadowFixturePorts();
+  const deps: BffStagingServerDeps = {
+    readPorts: fixturePorts.read,
+    mutationPorts: fixturePorts.mutation,
+    config: {
+      mutationRoutesEnabled: true,
+      idempotencyMetadataRequired: true,
+      rateLimitMetadataRequired: true,
+    },
+  };
+
+  let matches = 0;
+  let mismatches = 0;
+
+  for (const route of BFF_STAGING_READ_ROUTES) {
+    const response = await handleBffStagingServerRequest(
+      {
+        method: route.method,
+        path: route.path,
+        body: {
+          input: {
+            page: -1,
+            pageSize: 250,
+            query: "local shadow query token=fixture-token-value",
+            filters: { status: "pending", scope: "test-company-redacted" },
+          },
+        },
+      },
+      deps,
+    );
+    if (response.status === 200 && response.body.ok) matches += 1;
+    else mismatches += 1;
+  }
+
+  for (const route of BFF_STAGING_MUTATION_ROUTES) {
+    const response = await handleBffStagingServerRequest(
+      {
+        method: route.method,
+        path: route.path,
+        body: {
+          input: {
+            idempotencyKey: "opaque-key-v1",
+            payload: BFF_SHADOW_MUTATION_PAYLOAD,
+            context: {
+              actorRole: "unknown",
+              idempotencyKeyStatus: "present_redacted",
+            },
+          },
+          metadata: {
+            idempotencyKeyStatus: "present_redacted",
+            rateLimitKeyStatus: "present_redacted",
+          },
+        },
+      },
+      deps,
+    );
+    if (response.status === 200 && response.body.ok) matches += 1;
+    else mismatches += 1;
+  }
+
+  return {
+    status: "run",
+    matches,
+    mismatches,
+    trafficMigrated: false,
+    productionTouched: false,
+    stagingWrites: false,
+    networkUsed: false,
+  };
+}
+
+export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
+  healthEndpointContract: true,
+  readinessEndpointContract: true,
+  readRoutes: BFF_STAGING_READ_ROUTES.length,
+  mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
+  mutationRoutesEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some((route) => route.enabledByDefault),
+  requestEnvelopeValidation: true,
+  responseEnvelopeValidation: true,
+  redactedErrors: true,
+  knownReadOperations: BFF_READ_HANDLER_OPERATIONS,
+  knownMutationOperations: BFF_MUTATION_HANDLER_OPERATIONS,
+});
