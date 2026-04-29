@@ -42,13 +42,16 @@ export type ScaleObservabilityEventName =
   | "idempotency.reserved"
   | "idempotency.duplicate_in_flight"
   | "idempotency.duplicate_committed"
+  | "idempotency.failed_retryable"
+  | "idempotency.failed_final"
   | "rate_limit.allowed"
   | "rate_limit.soft_limited"
   | "rate_limit.hard_limited"
   | "abuse.suspicious"
   | "queue.backpressure.warning"
   | "ai.workflow.action.planned"
-  | "realtime.channel_budget.warning";
+  | "realtime.channel_budget.warning"
+  | "realtime.limit_projection.warning";
 
 export type ScaleObservabilityEventContract = {
   eventName: ScaleObservabilityEventName;
@@ -89,6 +92,7 @@ export type CacheObservabilityMetadata = {
   staleEvent: "cache.stale";
   invalidationPlannedEvent: "cache.invalidation.planned";
   hitRateMetric: "cache.hit_rate";
+  missRateMetric: "cache.miss_rate";
   staleRateMetric: "cache.stale_rate";
   externalExportEnabledByDefault: false;
 };
@@ -107,7 +111,10 @@ export type IdempotencyObservabilityMetadata = {
   reservedEvent: "idempotency.reserved";
   duplicateInFlightEvent: "idempotency.duplicate_in_flight";
   duplicateCommittedEvent: "idempotency.duplicate_committed";
+  failedRetryableEvent: "idempotency.failed_retryable";
+  failedFinalEvent: "idempotency.failed_final";
   duplicateRateMetric: "idempotency.duplicate_rate";
+  failedFinalRateMetric: "idempotency.failed_final_rate";
   externalExportEnabledByDefault: false;
 };
 
@@ -140,7 +147,9 @@ export type AiWorkflowObservabilityMetadata = {
 
 export type RealtimeObservabilityMetadata = {
   channelBudgetWarningEvent: "realtime.channel_budget.warning";
+  limitProjectionWarningEvent: "realtime.limit_projection.warning";
   channelBudgetWarningRateMetric: "realtime.channel_budget_warning_rate";
+  limitProjectionWarningRateMetric: "realtime.limit_projection_warning_rate";
   externalExportEnabledByDefault: false;
 };
 
@@ -166,6 +175,8 @@ export const SCALE_OBSERVABILITY_EVENT_REGISTRY: readonly ScaleObservabilityEven
   contract({ eventName: "idempotency.reserved", category: "idempotency", severity: "info", defaultResult: "success", sampled: true }),
   contract({ eventName: "idempotency.duplicate_in_flight", category: "idempotency", severity: "warning", defaultResult: "warning", sampled: true }),
   contract({ eventName: "idempotency.duplicate_committed", category: "idempotency", severity: "info", defaultResult: "skipped", sampled: true }),
+  contract({ eventName: "idempotency.failed_retryable", category: "idempotency", severity: "warning", defaultResult: "warning", sampled: true }),
+  contract({ eventName: "idempotency.failed_final", category: "idempotency", severity: "error", defaultResult: "error", sampled: true }),
   contract({ eventName: "rate_limit.allowed", category: "rate_limit", severity: "debug", defaultResult: "allowed", sampled: true }),
   contract({ eventName: "rate_limit.soft_limited", category: "rate_limit", severity: "warning", defaultResult: "limited", sampled: true }),
   contract({ eventName: "rate_limit.hard_limited", category: "rate_limit", severity: "critical", defaultResult: "limited", sampled: true }),
@@ -173,6 +184,7 @@ export const SCALE_OBSERVABILITY_EVENT_REGISTRY: readonly ScaleObservabilityEven
   contract({ eventName: "queue.backpressure.warning", category: "queue", severity: "warning", defaultResult: "warning", sampled: true }),
   contract({ eventName: "ai.workflow.action.planned", category: "ai", severity: "info", defaultResult: "planned", sampled: true }),
   contract({ eventName: "realtime.channel_budget.warning", category: "realtime", severity: "warning", defaultResult: "warning", sampled: true }),
+  contract({ eventName: "realtime.limit_projection.warning", category: "realtime", severity: "warning", defaultResult: "warning", sampled: true }),
 ] as const);
 
 export const BFF_OBSERVABILITY_METADATA: BffObservabilityMetadata = Object.freeze({
@@ -189,6 +201,7 @@ export const CACHE_OBSERVABILITY_METADATA: CacheObservabilityMetadata = Object.f
   staleEvent: "cache.stale",
   invalidationPlannedEvent: "cache.invalidation.planned",
   hitRateMetric: "cache.hit_rate",
+  missRateMetric: "cache.miss_rate",
   staleRateMetric: "cache.stale_rate",
   externalExportEnabledByDefault: false,
 });
@@ -207,7 +220,10 @@ export const IDEMPOTENCY_OBSERVABILITY_METADATA: IdempotencyObservabilityMetadat
   reservedEvent: "idempotency.reserved",
   duplicateInFlightEvent: "idempotency.duplicate_in_flight",
   duplicateCommittedEvent: "idempotency.duplicate_committed",
+  failedRetryableEvent: "idempotency.failed_retryable",
+  failedFinalEvent: "idempotency.failed_final",
   duplicateRateMetric: "idempotency.duplicate_rate",
+  failedFinalRateMetric: "idempotency.failed_final_rate",
   externalExportEnabledByDefault: false,
 });
 
@@ -240,7 +256,9 @@ export const AI_WORKFLOW_OBSERVABILITY_METADATA: AiWorkflowObservabilityMetadata
 
 export const REALTIME_OBSERVABILITY_METADATA: RealtimeObservabilityMetadata = Object.freeze({
   channelBudgetWarningEvent: "realtime.channel_budget.warning",
+  limitProjectionWarningEvent: "realtime.limit_projection.warning",
   channelBudgetWarningRateMetric: "realtime.channel_budget_warning_rate",
+  limitProjectionWarningRateMetric: "realtime.limit_projection_warning_rate",
   externalExportEnabledByDefault: false,
 });
 

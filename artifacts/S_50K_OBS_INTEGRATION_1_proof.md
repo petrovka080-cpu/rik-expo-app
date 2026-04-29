@@ -39,33 +39,33 @@ Mode: production-safe disabled scale observability boundary. Production and stag
 
 ## Events
 
-Event types created: 19.
+Event types created: 22.
 
 - BFF: `bff.route.request`, `bff.route.error`.
 - Cache: `cache.hit`, `cache.miss`, `cache.stale`, `cache.invalidation.planned`.
 - Jobs: `job.enqueue.planned`, `job.retry.planned`, `job.dead_letter.planned`.
-- Idempotency: `idempotency.reserved`, `idempotency.duplicate_in_flight`, `idempotency.duplicate_committed`.
+- Idempotency: `idempotency.reserved`, `idempotency.duplicate_in_flight`, `idempotency.duplicate_committed`, `idempotency.failed_retryable`, `idempotency.failed_final`.
 - Rate-limit: `rate_limit.allowed`, `rate_limit.soft_limited`, `rate_limit.hard_limited`.
 - Abuse: `abuse.suspicious`.
 - Queue: `queue.backpressure.warning`.
 - AI: `ai.workflow.action.planned`.
-- Realtime: `realtime.channel_budget.warning`.
+- Realtime: `realtime.channel_budget.warning`, `realtime.limit_projection.warning`.
 
 All event contracts require `redacted: true` and `externalExportEnabledByDefault: false`.
 
 ## Metrics
 
-Metric policies created: 14.
+Metric policies created: 17.
 
 - BFF route latency/error rate.
-- Cache hit/stale rate.
+- Cache hit/miss/stale rate.
 - Job enqueue/retry/dead-letter rate.
-- Idempotency duplicate rate.
+- Idempotency duplicate/final-failure rate.
 - Rate-limit soft/hard limit rate.
 - Abuse suspicious rate.
 - Queue backpressure rate.
 - AI workflow usage rate.
-- Realtime channel budget warning rate.
+- Realtime channel budget and limit projection warning rates.
 
 All metric policies are aggregate-safe and disabled by default.
 

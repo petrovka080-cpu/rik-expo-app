@@ -160,18 +160,20 @@ describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => 
   });
 
   it("defines safe disabled event contracts and metric policies", () => {
-    expect(SCALE_OBSERVABILITY_EVENT_REGISTRY).toHaveLength(19);
+    expect(SCALE_OBSERVABILITY_EVENT_REGISTRY).toHaveLength(22);
     for (const eventContract of SCALE_OBSERVABILITY_EVENT_REGISTRY) {
       expect(validateScaleObservabilityEventContract(eventContract)).toBe(true);
       expect(eventContract.redacted).toBe(true);
       expect(eventContract.externalExportEnabledByDefault).toBe(false);
     }
 
-    expect(SCALE_METRIC_POLICY_REGISTRY).toHaveLength(14);
+    expect(SCALE_METRIC_POLICY_REGISTRY).toHaveLength(17);
     expect(getScaleMetricPoliciesByCategory("bff")).toHaveLength(2);
-    expect(getScaleMetricPoliciesByCategory("cache")).toHaveLength(2);
+    expect(getScaleMetricPoliciesByCategory("cache")).toHaveLength(3);
     expect(getScaleMetricPoliciesByCategory("job")).toHaveLength(3);
+    expect(getScaleMetricPoliciesByCategory("idempotency")).toHaveLength(2);
     expect(getScaleMetricPoliciesByCategory("rate_limit")).toHaveLength(2);
+    expect(getScaleMetricPoliciesByCategory("realtime")).toHaveLength(2);
     for (const metricPolicy of SCALE_METRIC_POLICY_REGISTRY) {
       expect(validateScaleMetricPolicy(metricPolicy)).toBe(true);
       expect(metricPolicy.defaultEnabled).toBe(false);
@@ -240,11 +242,13 @@ describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => 
     expect(CACHE_POLICY_REGISTRY.every((policy) => policy.observability.hitEvent === "cache.hit")).toBe(true);
     expect(JOB_POLICY_REGISTRY.every((policy) => policy.observability.enqueuePlannedEvent === "job.enqueue.planned")).toBe(true);
     expect(IDEMPOTENCY_POLICY_REGISTRY.every((policy) => policy.observability.reservedEvent === "idempotency.reserved")).toBe(true);
+    expect(IDEMPOTENCY_POLICY_REGISTRY.every((policy) => policy.observability.failedFinalEvent === "idempotency.failed_final")).toBe(true);
     expect(RATE_ENFORCEMENT_POLICY_REGISTRY.every((policy) => policy.observability.allowedEvent === "rate_limit.allowed")).toBe(true);
     expect(buildAbuseEnforcementDecision({ duplicateMutationAttempt: true }).observability).toEqual(ABUSE_OBSERVABILITY_METADATA);
     expect(QUEUE_OBSERVABILITY_METADATA.backpressureWarningEvent).toBe("queue.backpressure.warning");
     expect(AI_WORKFLOW_OBSERVABILITY_METADATA.actionPlannedEvent).toBe("ai.workflow.action.planned");
     expect(REALTIME_OBSERVABILITY_METADATA.channelBudgetWarningEvent).toBe("realtime.channel_budget.warning");
+    expect(REALTIME_OBSERVABILITY_METADATA.limitProjectionWarningEvent).toBe("realtime.limit_projection.warning");
   });
 
   it("does not replace app flows, send telemetry, or touch forbidden platform files", () => {
@@ -299,8 +303,8 @@ describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => 
     const matrix = JSON.parse(readProjectFile("artifacts/S_50K_OBS_INTEGRATION_1_matrix.json"));
     expect(matrix.wave).toBe("S-50K-OBS-INTEGRATION-1");
     expect(matrix.observabilityBoundary.externalExportEnabledByDefault).toBe(false);
-    expect(matrix.events.totalEventTypes).toBe(19);
-    expect(matrix.metrics.totalPolicies).toBe(14);
+    expect(matrix.events.totalEventTypes).toBe(22);
+    expect(matrix.metrics.totalPolicies).toBe(17);
     expect(matrix.integration.bffMetadata).toBe("present");
     expect(matrix.integration.rateLimitMetadata).toBe("present");
     expect(matrix.safety.externalTelemetrySent).toBe(false);

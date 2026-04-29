@@ -21,12 +21,12 @@ The BFF, cache, job, idempotency, rate-limit, abuse, queue, realtime, and AI bou
 | BFF | `bff.route.request`, `bff.route.error` |
 | Cache | `cache.hit`, `cache.miss`, `cache.stale`, `cache.invalidation.planned` |
 | Jobs | `job.enqueue.planned`, `job.retry.planned`, `job.dead_letter.planned` |
-| Idempotency | `idempotency.reserved`, `idempotency.duplicate_in_flight`, `idempotency.duplicate_committed` |
+| Idempotency | `idempotency.reserved`, `idempotency.duplicate_in_flight`, `idempotency.duplicate_committed`, `idempotency.failed_retryable`, `idempotency.failed_final` |
 | Rate limit | `rate_limit.allowed`, `rate_limit.soft_limited`, `rate_limit.hard_limited` |
 | Abuse | `abuse.suspicious` |
 | Queue | `queue.backpressure.warning` |
 | AI | `ai.workflow.action.planned` |
-| Realtime | `realtime.channel_budget.warning` |
+| Realtime | `realtime.channel_budget.warning`, `realtime.limit_projection.warning` |
 
 Every event must be redacted, bounded, and free of raw payloads.
 
@@ -35,14 +35,14 @@ Every event must be redacted, bounded, and free of raw payloads.
 | Area | Metrics |
 | --- | --- |
 | BFF | `bff.route.latency`, `bff.route.error_rate` |
-| Cache | `cache.hit_rate`, `cache.stale_rate` |
+| Cache | `cache.hit_rate`, `cache.miss_rate`, `cache.stale_rate` |
 | Jobs | `job.enqueue_rate`, `job.retry_rate`, `job.dead_letter_rate` |
-| Idempotency | `idempotency.duplicate_rate` |
+| Idempotency | `idempotency.duplicate_rate`, `idempotency.failed_final_rate` |
 | Rate limit | `rate_limit.soft_limit_rate`, `rate_limit.hard_limit_rate` |
 | Abuse | `abuse.suspicious_rate` |
 | Queue | `queue.backpressure_rate` |
 | AI | `ai.workflow.usage_rate` |
-| Realtime | `realtime.channel_budget_warning_rate` |
+| Realtime | `realtime.channel_budget_warning_rate`, `realtime.limit_projection_warning_rate` |
 
 All metric policies are aggregate-safe and `defaultEnabled: false`.
 

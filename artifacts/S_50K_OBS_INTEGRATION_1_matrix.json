@@ -11,14 +11,14 @@
     "externalExportEnabledByDefault": false
   },
   "events": {
-    "totalEventTypes": 19,
+    "totalEventTypes": 22,
     "piiSafe": true,
     "rawPayloadRejected": true,
     "tokensSecretsRejected": true,
     "boundedEventSize": true
   },
   "metrics": {
-    "totalPolicies": 14,
+    "totalPolicies": 17,
     "defaultEnabled": false,
     "aggregateSafe": true
   },
@@ -28,7 +28,9 @@
     "jobsMetadata": "present",
     "idempotencyMetadata": "present",
     "rateLimitMetadata": "present",
-    "aiWorkflowMetadata": "present"
+    "queueBackpressureMetadata": "present",
+    "aiWorkflowMetadata": "present",
+    "realtimeMetadata": "present"
   },
   "safety": {
     "productionTouched": false,

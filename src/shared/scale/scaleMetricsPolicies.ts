@@ -4,17 +4,20 @@ export type ScaleMetricName =
   | "bff.route.latency"
   | "bff.route.error_rate"
   | "cache.hit_rate"
+  | "cache.miss_rate"
   | "cache.stale_rate"
   | "job.enqueue_rate"
   | "job.retry_rate"
   | "job.dead_letter_rate"
   | "idempotency.duplicate_rate"
+  | "idempotency.failed_final_rate"
   | "rate_limit.soft_limit_rate"
   | "rate_limit.hard_limit_rate"
   | "abuse.suspicious_rate"
   | "queue.backpressure_rate"
   | "ai.workflow.usage_rate"
-  | "realtime.channel_budget_warning_rate";
+  | "realtime.channel_budget_warning_rate"
+  | "realtime.limit_projection_warning_rate";
 
 export type ScaleMetricUnit = "milliseconds" | "ratio" | "count";
 
@@ -75,6 +78,14 @@ export const SCALE_METRIC_POLICY_REGISTRY: readonly ScaleMetricPolicy[] = Object
     alertThreshold: 0.5,
   }),
   policy({
+    metricName: "cache.miss_rate",
+    category: "cache",
+    unit: "ratio",
+    aggregation: "rate",
+    windowMs: MINUTE_MS * 5,
+    alertThreshold: 0.4,
+  }),
+  policy({
     metricName: "cache.stale_rate",
     category: "cache",
     unit: "ratio",
@@ -113,6 +124,14 @@ export const SCALE_METRIC_POLICY_REGISTRY: readonly ScaleMetricPolicy[] = Object
     aggregation: "rate",
     windowMs: MINUTE_MS * 5,
     alertThreshold: 0.1,
+  }),
+  policy({
+    metricName: "idempotency.failed_final_rate",
+    category: "idempotency",
+    unit: "ratio",
+    aggregation: "rate",
+    windowMs: MINUTE_MS * 5,
+    alertThreshold: 0.02,
   }),
   policy({
     metricName: "rate_limit.soft_limit_rate",
@@ -156,6 +175,14 @@ export const SCALE_METRIC_POLICY_REGISTRY: readonly ScaleMetricPolicy[] = Object
   }),
   policy({
     metricName: "realtime.channel_budget_warning_rate",
+    category: "realtime",
+    unit: "ratio",
+    aggregation: "rate",
+    windowMs: MINUTE_MS * 5,
+    alertThreshold: 0.02,
+  }),
+  policy({
+    metricName: "realtime.limit_projection_warning_rate",
     category: "realtime",
     unit: "ratio",
     aggregation: "rate",

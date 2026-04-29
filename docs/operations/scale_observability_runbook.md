@@ -34,14 +34,14 @@ Use the event contract registry as the only allowed event taxonomy. New events m
 Metric policies are aggregate-safe and disabled by default. The current policy table covers:
 
 - BFF latency and error rate
-- cache hit/stale rate
+- cache hit/miss/stale rate
 - job enqueue/retry/dead-letter rate
-- idempotency duplicate rate
+- idempotency duplicate and final-failure rate
 - rate-limit soft/hard limit rate
 - abuse suspicious rate
 - queue backpressure rate
 - AI workflow usage rate
-- realtime channel budget warning rate
+- realtime channel budget and limit projection warning rates
 
 ## External Exporter Plan
 
