@@ -1,3 +1,5 @@
+import { safeJsonParse } from "../format";
+
 export type ProposalRequestItemIntegrityState =
   | "active"
   | "source_cancelled"
@@ -49,10 +51,12 @@ const asRecord = (value: unknown): Record<string, unknown> =>
     : {};
 
 const parseSummary = (detail: unknown): ProposalRequestItemIntegritySummary => {
-  const raw =
-    typeof detail === "string" && detail.trim().startsWith("{")
-      ? asRecord(JSON.parse(detail))
-      : asRecord(detail);
+  let raw = asRecord(detail);
+  if (typeof detail === "string" && detail.trim().startsWith("{")) {
+    const parsed = safeJsonParse<Record<string, unknown>>(detail, {});
+    if (parsed.ok === false) throw parsed.error;
+    raw = asRecord(parsed.value);
+  }
   const requestItemIds = Array.isArray(raw.request_item_ids)
     ? raw.request_item_ids.map((value) => trim(value)).filter(Boolean)
     : [];

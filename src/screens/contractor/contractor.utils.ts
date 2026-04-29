@@ -1,3 +1,4 @@
+import { safeJsonParse } from "../../lib/format";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { normalizeRuText } from "../../lib/text/encoding";
 
@@ -48,13 +49,17 @@ export const parseActMeta = (
   if (idx < 0) return { selectedWorks: [], visibleNote: raw };
   const visibleNote = raw.slice(0, idx).trim();
   const jsonPart = raw.slice(idx + ACT_META_PREFIX.length).trim();
-  try {
-    const parsed = JSON.parse(jsonPart) as { selectedWorks?: unknown } | null;
+  const parsedResult = safeJsonParse<{ selectedWorks?: unknown } | null>(jsonPart, null);
+  if (parsedResult.ok) {
+    const parsed = parsedResult.value;
     const selectedWorks = Array.isArray(parsed?.selectedWorks)
       ? parsed.selectedWorks.map((x) => String(x || "")).filter(Boolean)
       : [];
     return { selectedWorks, visibleNote };
-  } catch (error) {
+  }
+
+  {
+    const error = parsedResult.error;
     recordPlatformObservability({
       screen: "contractor",
       surface: "contractor_utils",

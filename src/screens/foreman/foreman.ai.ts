@@ -5,6 +5,7 @@ import {
 import {
   resolveForemanAiCatalogViaServer,
 } from "../../lib/api/foremanAiResolve.service";
+import { safeJsonParse } from "../../lib/format";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type ForemanAiAction = "create_request" | "clarify";
@@ -377,10 +378,16 @@ const normalizeForemanAiItem = (rawItem: unknown): ParsedForemanAiItem | null =>
   };
 };
 
+const parseForemanAiRawResponse = (text: string): RawForemanAiResponse => {
+  const parsed = safeJsonParse<RawForemanAiResponse>(text, {});
+  if (parsed.ok === false) throw parsed.error;
+  return parsed.value;
+};
+
 export const parseForemanAiResponse = (text: string): ParsedForemanAiQuickResult => {
   let parsed: RawForemanAiResponse;
   try {
-    parsed = JSON.parse(cleanJsonText(text)) as RawForemanAiResponse;
+    parsed = parseForemanAiRawResponse(cleanJsonText(text));
   } catch (error) {
     recordForemanAiDegradedOnce("ai_response_json_parse_failed", error, {
       responseLength: String(text ?? "").length,

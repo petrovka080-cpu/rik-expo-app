@@ -52,4 +52,23 @@ describe("proposalIntegrity helpers", () => {
       },
     });
   });
+
+  it("fails closed on malformed rpc detail JSON without exposing raw detail payload", () => {
+    const error = toProposalRequestItemIntegrityDegradedError({
+      message: "proposal_request_item_integrity_degraded",
+      details: '{"proposal_id":"proposal-secret","request_item_ids":["request-secret"',
+    });
+
+    expect(error).toBeInstanceOf(ProposalRequestItemIntegrityDegradedError);
+    expect(error?.summary).toEqual({
+      proposalId: null,
+      totalItems: 0,
+      degradedItems: 0,
+      cancelledItems: 0,
+      missingItems: 0,
+      requestItemIds: [],
+    });
+    expect(String(error?.message)).not.toContain("proposal-secret");
+    expect(String(error?.message)).not.toContain("request-secret");
+  });
 });

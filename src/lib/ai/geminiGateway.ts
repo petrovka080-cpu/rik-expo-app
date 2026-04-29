@@ -1,3 +1,4 @@
+import { safeJsonParse } from "../format";
 import { isSupabaseEnvValid, supabase } from "../supabaseClient";
 
 export type GeminiGatewayPart = {
@@ -73,15 +74,15 @@ async function resolveFunctionsInvokeError(error: unknown, fallback: string): Pr
       const text = await (typeof response.clone === "function" ? response.clone().text() : response.text());
       const raw = String(text || "").trim();
       if (raw) {
-        try {
-          const parsed = JSON.parse(raw) as {
+        const parsed = safeJsonParse<{
             error?: unknown;
             errorCategory?: unknown;
             requestId?: unknown;
-          };
-          const nestedMessage = String(parsed?.error ?? "").trim();
-          errorCategory = String(parsed?.errorCategory ?? "").trim() || null;
-          requestId = String(parsed?.requestId ?? "").trim() || null;
+          }>(raw, {});
+        if (parsed.ok) {
+          const nestedMessage = String(parsed.value?.error ?? "").trim();
+          errorCategory = String(parsed.value?.errorCategory ?? "").trim() || null;
+          requestId = String(parsed.value?.requestId ?? "").trim() || null;
           if (nestedMessage) {
             return new GeminiGatewayError(nestedMessage, {
               status: directStatus ?? contextStatus,
@@ -89,7 +90,7 @@ async function resolveFunctionsInvokeError(error: unknown, fallback: string): Pr
               requestId,
             });
           }
-        } catch {
+        } else {
           return new GeminiGatewayError(raw, {
             status: directStatus ?? contextStatus,
             requestId,

@@ -1,0 +1,108 @@
+{
+  "wave": "S-PARSE-2",
+  "mode": "production-safe-10k-50k-json-parse-hardening",
+  "status": "GREEN",
+  "ownerGoal": "10K/50K+ readiness",
+  "preWaveCount": {
+    "directJsonParseRuntimeCallsites": 8,
+    "safeJsonParseRuntimeReferences": 24
+  },
+  "postWaveCount": {
+    "directJsonParseRuntimeCallsites": 3,
+    "safeJsonParseRuntimeReferences": 33
+  },
+  "targetCallsites": 5,
+  "fixedCallsites": 5,
+  "changedFiles": [
+    "src/lib/api/proposalIntegrity.ts",
+    "src/lib/api/proposalIntegrity.test.ts",
+    "src/lib/ai/geminiGateway.ts",
+    "src/lib/pdf/directorPdfPlatformContract.ts",
+    "src/screens/contractor/contractor.utils.ts",
+    "src/screens/foreman/foreman.ai.ts",
+    "tests/scale/sParse2JsonParse.contract.test.ts",
+    "artifacts/S_PARSE_2_json_parse_hardening_matrix.json",
+    "artifacts/S_PARSE_2_json_parse_hardening_proof.md"
+  ],
+  "callsiteMatrix": [
+    {
+      "file": "src/lib/api/proposalIntegrity.ts",
+      "function": "parseSummary",
+      "classification": "FIX_NOW_EXTERNAL_ERROR_DETAIL_JSON",
+      "before": "direct JSON.parse of RPC error detail string",
+      "after": "safeJsonParse with preserved invalid-detail fallback",
+      "businessSemanticsChanged": false,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/ai/geminiGateway.ts",
+      "function": "resolveFunctionsInvokeError",
+      "classification": "FIX_NOW_EXTERNAL_FUNCTION_ERROR_JSON",
+      "before": "direct JSON.parse of function response body",
+      "after": "safeJsonParse with preserved raw-text fallback",
+      "businessSemanticsChanged": false,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/pdf/directorPdfPlatformContract.ts",
+      "function": "resolveDirectorPdfInvokeErrorDetails",
+      "classification": "FIX_NOW_EXTERNAL_FUNCTION_ERROR_JSON",
+      "before": "direct JSON.parse of director PDF response body",
+      "after": "safeJsonParse with preserved raw-text fallback",
+      "businessSemanticsChanged": false,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/contractor/contractor.utils.ts",
+      "function": "parseActMeta",
+      "classification": "FIX_NOW_USER_NOTE_METADATA_JSON",
+      "before": "direct JSON.parse of ACT_META note suffix",
+      "after": "safeJsonParse with preserved observability fallback",
+      "businessSemanticsChanged": false,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/foreman/foreman.ai.ts",
+      "function": "parseForemanAiResponse",
+      "classification": "FIX_NOW_AI_RESPONSE_JSON",
+      "before": "direct JSON.parse of cleaned AI response",
+      "after": "safeJsonParse wrapper with preserved degraded error behavior",
+      "businessSemanticsChanged": false,
+      "rawPayloadLogged": false
+    }
+  ],
+  "skippedCallsites": [
+    {
+      "file": "src/lib/format.ts",
+      "classification": "CENTRAL_SAFE_JSON_PARSE_HELPER",
+      "reason": "central helper intentionally contains the only raw JSON.parse for guarded parsing"
+    },
+    {
+      "file": "src/screens/foreman/foreman.localDraft.ts",
+      "classification": "INTENTIONAL_SERIALIZATION_ROUNDTRIP",
+      "reason": "clone and snapshot serialization roundtrips parse JSON generated in-process, not external payloads"
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}

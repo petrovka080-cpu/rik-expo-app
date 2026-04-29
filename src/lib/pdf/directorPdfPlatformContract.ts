@@ -1,3 +1,5 @@
+import { safeJsonParse } from "../format";
+
 export const DIRECTOR_PDF_CORS_HEADERS = Object.freeze({
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, accept",
@@ -633,8 +635,9 @@ export async function resolveDirectorPdfInvokeErrorDetails(error: unknown): Prom
       const text = await (typeof response.clone === "function" ? response.clone().text() : response.text());
       const raw = toText(text);
       if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
+        const parsedResult = safeJsonParse<unknown>(raw, null);
+        if (parsedResult.ok) {
+          const parsed = parsedResult.value;
           const payload = extractDirectorPdfErrorPayload(parsed);
           if (payload) {
             return {
@@ -654,7 +657,7 @@ export async function resolveDirectorPdfInvokeErrorDetails(error: unknown): Prom
               };
             }
           }
-        } catch {
+        } else {
           return {
             message: raw,
             status: directStatus ?? contextStatus,
