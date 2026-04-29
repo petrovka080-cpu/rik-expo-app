@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { normalizePage } from "../../lib/api/_core";
 import { loadDeveloperOverrideContext } from "../../lib/developerOverride";
 import type { Company, UserProfile } from "../profile/profile.types";
 import {
@@ -43,6 +44,7 @@ type CompanyInviteRow = {
 };
 
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
+const OFFICE_INVITES_PAGE_DEFAULTS = { pageSize: 30, maxPageSize: 30 };
 
 const firstMembershipCompanyId = (memberships: {
   companyId: string | null;
@@ -192,12 +194,14 @@ export async function loadOfficeMembersPage(params: {
 async function loadCompanyInvites(
   companyId: string,
 ): Promise<OfficeAccessInvite[]> {
+  const page = normalizePage(undefined, OFFICE_INVITES_PAGE_DEFAULTS);
   const result = await supabase
     .from("company_invites")
     .select("*")
     .eq("company_id", companyId)
     .order("created_at", { ascending: false })
-    .limit(30);
+    .order("id", { ascending: false })
+    .range(page.from, page.to);
 
   if (result.error) throw result.error;
 

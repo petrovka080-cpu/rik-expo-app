@@ -20,6 +20,7 @@
  */
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { normalizePage } from "../../lib/api/_core";
 import { supabase } from "../../lib/supabaseClient";
 import { normalizeMarketListingRow, type MarketListing } from "./mapContracts";
 
@@ -30,6 +31,7 @@ export const mapListingsKeys = {
 } as const;
 
 const MAP_LISTINGS_STALE_TIME = 60_000; // 60s
+const MAP_LISTINGS_PAGE_DEFAULTS = { pageSize: 2000, maxPageSize: 2000 };
 
 /**
  * Fetch function — exact same Supabase query that was inside MapScreen.
@@ -37,13 +39,15 @@ const MAP_LISTINGS_STALE_TIME = 60_000; // 60s
 async function fetchMapListings(
   signal?: AbortSignal,
 ): Promise<MarketListing[]> {
+  const page = normalizePage(undefined, MAP_LISTINGS_PAGE_DEFAULTS);
   const { data, error } = await supabase
     .from("market_listings_map")
     .select(
       "id,title,price,city,lat,lng,kind,items_json,side,status,catalog_item_ids",
     )
     .eq("status", "active")
-    .limit(2000)
+    .order("id", { ascending: true })
+    .range(page.from, page.to)
     .abortSignal(signal!);
 
   if (error) {

@@ -10,6 +10,7 @@
  * Consumer code (warehouse.dicts.ts) requires zero changes.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { normalizePage } from "../../lib/api/_core";
 import { queryClient } from "../../lib/query/queryClient";
 
 type QueryResult = {
@@ -18,6 +19,41 @@ type QueryResult = {
 };
 
 const WAREHOUSE_DICTS_TTL_MS = 5 * 60 * 1000;
+const WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type QueryFactory = () => {
+  range: (from: number, to: number) => any;
+};
+
+async function loadPagedWarehouseRows(queryFactory: QueryFactory): Promise<QueryResult> {
+  const rows: unknown[] = [];
+  let pageIndex = 0;
+
+  while (true) {
+    const page = normalizePage({ page: pageIndex }, WAREHOUSE_DICT_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+
+    if (result.error) {
+      return {
+        data: null,
+        error: { message: String((result.error as { message?: unknown })?.message ?? result.error) },
+      };
+    }
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) {
+      return { data: rows, error: null };
+    }
+    pageIndex += 1;
+  }
+}
+
+const resolveWarehouseDictOrderColumn = (columns: string[]): string => {
+  if (columns.includes("id")) return "id";
+  if (columns.includes("uuid")) return "uuid";
+  return columns[0] || "id";
+};
 
 export async function fetchWarehouseDictRows(
   supabase: SupabaseClient,
@@ -30,11 +66,13 @@ export async function fetchWarehouseDictRows(
   return queryClient.fetchQuery({
     queryKey,
     queryFn: async (): Promise<QueryResult> => {
-      const result = await supabase.from(table).select(select).limit(1000);
-      return {
-        data: Array.isArray(result.data) ? result.data : null,
-        error: result.error ? { message: result.error.message } : null,
-      };
+      const orderColumn = resolveWarehouseDictOrderColumn(columns);
+      return loadPagedWarehouseRows(() =>
+        supabase
+          .from(table)
+          .select(select)
+          .order(orderColumn, { ascending: true }),
+      );
     },
     staleTime: WAREHOUSE_DICTS_TTL_MS,
   });
@@ -51,20 +89,20 @@ export async function fetchWarehouseRefRows(
   return queryClient.fetchQuery({
     queryKey,
     queryFn: async (): Promise<QueryResult> => {
-      let q = supabase
-        .from(table)
-        .select("code,display_name,name_human_ru,name_ru,name")
-        .limit(2000);
+      return loadPagedWarehouseRows(() => {
+        let q = supabase
+          .from(table)
+          .select("code,display_name,name_human_ru,name_ru,name");
 
-      if (order) {
-        q = q.order(order, { ascending: true });
-      }
+        if (order) {
+          q = q.order(order, { ascending: true });
+        }
+        if (order !== "code") {
+          q = q.order("code", { ascending: true });
+        }
 
-      const result = await q;
-      return {
-        data: Array.isArray(result.data) ? result.data : null,
-        error: result.error ? { message: result.error.message } : null,
-      };
+        return q;
+      });
     },
     staleTime: WAREHOUSE_DICTS_TTL_MS,
   });

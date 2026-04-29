@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { normalizePage } from "../../../src/lib/api/_core";
 import { supabase } from "../../../src/lib/supabaseClient";
 import { enrichFieldUiMeta, type FieldUiPriority } from "./calcFieldProfiles";
 import { normalizeWorkTypeCode } from "./workTypeCode";
@@ -29,6 +30,8 @@ export type Field = {
 };
 
 type CalcValues = Record<BasisKey, number | null>;
+const CALC_FIELDS_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+type CalcFieldsViewName = "v_reno_calc_fields_ui_clean" | "v_reno_calc_fields_ui";
 
 type FieldRow = {
   basis_key: string;
@@ -60,6 +63,43 @@ const toFieldRow = (v: unknown): FieldRow | null => {
   };
 };
 
+async function fetchCalcFieldRows(
+  viewName: CalcFieldsViewName,
+  workTypeCode: string,
+): Promise<FieldRow[]> {
+  const rows: FieldRow[] = [];
+  let pageIndex = 0;
+
+  while (true) {
+    const page = normalizePage({ page: pageIndex }, CALC_FIELDS_PAGE_DEFAULTS);
+    const { data, error } = await supabase
+      .from(viewName)
+      .select(`
+        basis_key,
+        label_ru,
+        uom_code,
+        is_required,
+        hint_ru,
+        default_value,
+        sort_order,
+        used_in_norms
+      `)
+      .eq("work_type_code", workTypeCode)
+      .order("sort_order", { ascending: true })
+      .order("basis_key", { ascending: true })
+      .range(page.from, page.to);
+
+    if (error) throw error;
+
+    const pageRows = (Array.isArray(data) ? data : [])
+      .map(toFieldRow)
+      .filter((row): row is FieldRow => Boolean(row));
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return rows;
+    pageIndex += 1;
+  }
+}
+
 export function useCalcFields(workTypeCode?: string | null) {
   const [fields, setFields] = useState<Field[]>([]);
   const [values, setValues] = useState<CalcValues>({});
@@ -88,7 +128,7 @@ export function useCalcFields(workTypeCode?: string | null) {
       setError(null);
 
       try {
-        const viewName = isDemoWorkType(rawWorkTypeCode)
+        const viewName: CalcFieldsViewName = isDemoWorkType(rawWorkTypeCode)
           ? "v_reno_calc_fields_ui_clean"
           : "v_reno_calc_fields_ui";
 
@@ -104,26 +144,7 @@ export function useCalcFields(workTypeCode?: string | null) {
           familyCode = null;
         }
 
-        const { data, error } = await supabase
-          .from(viewName)
-          .select(`
-            basis_key,
-            label_ru,
-            uom_code,
-            is_required,
-            hint_ru,
-            default_value,
-            sort_order,
-            used_in_norms
-          `)
-          .eq("work_type_code", rawWorkTypeCode)
-          .order("sort_order", { ascending: true });
-
-        if (error) throw error;
-
-        const rawList: FieldRow[] = (Array.isArray(data) ? data : [])
-          .map(toFieldRow)
-          .filter((r): r is FieldRow => !!r);
+        const rawList = await fetchCalcFieldRows(viewName, rawWorkTypeCode);
 
         const allKeys = rawList.map((r) => r.basis_key);
 

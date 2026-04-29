@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
 import type { Database } from "../../lib/database.types";
+import { normalizePage } from "../../lib/api/_core";
 import { getMyRole } from "../../lib/api/profile";
 import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
 import { supabase } from "../../lib/supabaseClient";
@@ -58,6 +59,15 @@ const asSupabaseCode = (error: unknown) =>
 
 const isListingKind = (value: unknown): value is ListingKind =>
   value === "material" || value === "service" || value === "rent";
+
+const PROFILE_LISTINGS_PAGE_DEFAULTS = { pageSize: 20, maxPageSize: 20 };
+const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+const PROFILE_CATALOG_SEARCH_PAGE_DEFAULTS = { pageSize: 15, maxPageSize: 15 };
+
+type CompanyMembershipRow = {
+  company_id: string | null;
+  role: string | null;
+};
 
 export const normalizeListingCartItemKind = (
   value: unknown,
@@ -149,6 +159,7 @@ export const loadProfileScreenData =
     const user = await loadCurrentAuthUser();
     const metadata = getMetadata(user);
     const metadataRole = getMetadataRole(user);
+    const listingsPage = normalizePage(undefined, PROFILE_LISTINGS_PAGE_DEFAULTS);
 
     const [
       profileRole,
@@ -173,11 +184,9 @@ export const loadProfileScreenData =
         .select("id")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(20),
-      supabase
-        .from("company_members")
-        .select("company_id,role")
-        .eq("user_id", user.id),
+        .order("id", { ascending: false })
+        .range(listingsPage.from, listingsPage.to),
+      loadCompanyMembershipRows(user.id),
     ]);
 
     const { data: profData, error: profErr } = profileResult;
@@ -213,12 +222,8 @@ export const loadProfileScreenData =
         ? listingsResult.data.length
         : 0;
 
-    if (membershipResult.error) {
-      throw membershipResult.error;
-    }
-
-    const companyMemberships = Array.isArray(membershipResult.data)
-      ? membershipResult.data.map((row) => ({
+    const companyMemberships = Array.isArray(membershipResult)
+      ? membershipResult.map((row) => ({
           companyId:
             typeof row?.company_id === "string" ? row.company_id : null,
           role: typeof row?.role === "string" ? row.role : null,
@@ -243,6 +248,27 @@ export const loadProfileScreenData =
       },
     };
   };
+
+async function loadCompanyMembershipRows(userId: string): Promise<CompanyMembershipRow[]> {
+  const rows: CompanyMembershipRow[] = [];
+  let pageIndex = 0;
+
+  while (true) {
+    const page = normalizePage({ page: pageIndex }, PROFILE_MEMBERSHIP_PAGE_DEFAULTS);
+    const result = await supabase
+      .from("company_members")
+      .select("company_id,role")
+      .eq("user_id", userId)
+      .order("company_id", { ascending: true })
+      .range(page.from, page.to);
+
+    if (result.error) throw result.error;
+    const pageRows = Array.isArray(result.data) ? (result.data as CompanyMembershipRow[]) : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return rows;
+    pageIndex += 1;
+  }
+}
 
 export const loadAddListingOwnerData =
   async (): Promise<AddListingOwnerLoadResult> => {
@@ -455,9 +481,12 @@ export const searchCatalogItems = async (
   if (q.length < 2) {
     return [];
   }
+  const page = normalizePage(undefined, PROFILE_CATALOG_SEARCH_PAGE_DEFAULTS);
   const { data, error } = await buildCatalogQuery(listingKind)
     .ilike("name_human_ru", `%${q}%`)
-    .limit(15);
+    .order("name_human_ru", { ascending: true })
+    .order("rik_code", { ascending: true })
+    .range(page.from, page.to);
   if (error) throw error;
   return (data ?? []) as CatalogSearchItem[];
 };

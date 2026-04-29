@@ -1,0 +1,98 @@
+{
+  "wave": "S-PAG-6",
+  "mode": "production-safe-pagination",
+  "ownerGoal": "10K/50K+ readiness",
+  "baseline": {
+    "unboundedSelects": 97,
+    "unboundedFiles": 38
+  },
+  "result": {
+    "unboundedSelects": 95,
+    "unboundedFiles": 37,
+    "fixedCallSites": 8,
+    "targetMet": true
+  },
+  "fixedCallSites": [
+    {
+      "file": "src/screens/profile/profile.services.ts",
+      "function": "loadProfileScreenData / market_listings",
+      "pattern": "range",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/screens/profile/profile.services.ts",
+      "function": "loadCompanyMembershipRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/screens/profile/profile.services.ts",
+      "function": "searchCatalogItems",
+      "pattern": "range",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/screens/office/officeAccess.services.ts",
+      "function": "loadCompanyInvites",
+      "pattern": "range",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/components/map/useMapListingsQuery.ts",
+      "function": "fetchMapListings",
+      "pattern": "range",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.dicts.repo.ts",
+      "function": "fetchWarehouseDictRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.dicts.repo.ts",
+      "function": "fetchWarehouseRefRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/components/foreman/useCalcFields.ts",
+      "function": "fetchCalcFieldRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    }
+  ],
+  "intentionallyNotTouched": {
+    "pdfReportExport": true,
+    "detailFullReads": true,
+    "integrityGuards": true,
+    "queueInternals": true,
+    "financialCalculations": true,
+    "warehouseStockMath": true
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}
