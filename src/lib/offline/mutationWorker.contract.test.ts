@@ -358,6 +358,151 @@ describe("mutationWorker contract", () => {
     expect(inspectRemoteDraft).toHaveBeenCalledTimes(2);
   });
 
+  it("blocks pre-sync replay when a pending queue is behind a newer remote revision", async () => {
+    const snapshot: ForemanLocalDraftSnapshot = {
+      ...createSnapshot("req-worker-c3-pre-sync"),
+      baseServerRevision: "2026-04-01T10:00:00.000Z",
+      updatedAt: "2026-04-01T10:05:00.000Z",
+    };
+    const remoteSnapshot: ForemanLocalDraftSnapshot = {
+      ...snapshot,
+      baseServerRevision: "2026-04-01T10:10:00.000Z",
+      updatedAt: "2026-04-01T10:10:00.000Z",
+    };
+    await replaceForemanDurableDraftSnapshot(snapshot);
+    await enqueueForemanMutation({
+      draftKey: snapshot.requestId,
+      requestId: snapshot.requestId,
+      snapshotUpdatedAt: snapshot.updatedAt,
+      mutationKind: "qty_update",
+      triggerSource: "manual_retry",
+    });
+
+    const syncSnapshot = jest.fn(async (_params: unknown) =>
+      createSyncResult(snapshot),
+    );
+    const inspectRemoteDraft = jest.fn(async () => ({
+      snapshot: remoteSnapshot,
+      status: "draft",
+      isTerminal: false,
+    }));
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+      inspectRemoteDraft,
+      getNetworkOnline: () => true,
+    });
+
+    const result = await flushForemanMutationQueue(deps);
+    const queue = await loadForemanMutationQueue();
+    const durableState = getForemanDurableDraftState();
+
+    expect(result).toMatchObject({
+      failed: true,
+      processedCount: 0,
+      remainingCount: 0,
+      errorMessage: "pending offline queue is behind a newer remote draft revision",
+    });
+    expect(syncSnapshot).not.toHaveBeenCalled();
+    expect(inspectRemoteDraft).toHaveBeenCalledTimes(1);
+    expect(queue[0]).toMatchObject({
+      lifecycleStatus: "conflicted",
+      status: "failed",
+      lastErrorKind: "remote_divergence",
+      lastErrorCode: "offline_c3_pre_sync",
+      serverVersionHint: remoteSnapshot.baseServerRevision,
+    });
+    expect(durableState.syncStatus).toBe("failed_terminal");
+    expect(durableState.conflictType).toBe("remote_divergence_requires_attention");
+    expect(durableState.attentionNeeded).toBe(true);
+    expect(durableState.recoverableLocalSnapshot?.requestId).toBe(snapshot.requestId);
+    expect(
+      getOfflineMutationTelemetryEvents().map((event) => event.action),
+    ).toContain("conflict_detected");
+    expect(mockedRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "foreman",
+        surface: "offline_conflict",
+        event: "pre_sync_conflict_c3_blocked",
+        result: "error",
+        sourceKind: "offline:foreman_draft",
+        errorClass: "local_queue_pending_against_new_remote",
+        extra: expect.objectContaining({
+          requestId: snapshot.requestId,
+          localBaseRevision: snapshot.baseServerRevision,
+          remoteBaseRevision: remoteSnapshot.baseServerRevision,
+          deterministic: true,
+          revisionAdvanced: true,
+        }),
+      }),
+    );
+  });
+
+  it("holds later replay while an attention-required durable conflict is unresolved", async () => {
+    const snapshot: ForemanLocalDraftSnapshot = {
+      ...createSnapshot("req-worker-attention-hold"),
+      baseServerRevision: "2026-04-01T10:00:00.000Z",
+    };
+    await replaceForemanDurableDraftSnapshot(snapshot, {
+      syncStatus: "failed_terminal",
+      pendingOperationsCount: 1,
+      queueDraftKey: snapshot.requestId,
+      conflictType: "remote_divergence_requires_attention",
+      attentionNeeded: true,
+      recoverableLocalSnapshot: snapshot,
+      lastConflictAt: 123,
+    });
+    await enqueueForemanMutation({
+      draftKey: snapshot.requestId,
+      requestId: snapshot.requestId,
+      snapshotUpdatedAt: snapshot.updatedAt,
+      mutationKind: "background_sync",
+      triggerSource: "manual_retry",
+    });
+
+    const syncSnapshot = jest.fn(async (_params: unknown) =>
+      createSyncResult(snapshot),
+    );
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+      getNetworkOnline: () => true,
+    });
+
+    const result = await flushForemanMutationQueue(deps);
+    const queue = await loadForemanMutationQueue();
+    const durableState = getForemanDurableDraftState();
+
+    expect(result).toMatchObject({
+      failed: true,
+      processedCount: 0,
+      remainingCount: 1,
+      errorMessage: "offline replay held for attention-required conflict",
+    });
+    expect(syncSnapshot).not.toHaveBeenCalled();
+    expect(queue[0]).toMatchObject({
+      lifecycleStatus: "queued",
+      status: "pending",
+    });
+    expect(durableState.conflictType).toBe("remote_divergence_requires_attention");
+    expect(durableState.attentionNeeded).toBe(true);
+    expect(mockedRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "foreman",
+        surface: "offline_mutation_worker",
+        event: "offline_replay_attention_hold",
+        result: "skipped",
+        sourceKind: "offline:foreman_draft",
+        extra: expect.objectContaining({
+          draftKey: snapshot.requestId,
+          requestId: snapshot.requestId,
+          conflictType: "remote_divergence_requires_attention",
+          pendingCount: 1,
+        }),
+      }),
+    );
+  });
+
   it("replays a compact-hydrated durable snapshot without changing sync payload", async () => {
     const durableStorage = createMemoryOfflineStorage();
     configureForemanDurableDraftStore({ storage: durableStorage });

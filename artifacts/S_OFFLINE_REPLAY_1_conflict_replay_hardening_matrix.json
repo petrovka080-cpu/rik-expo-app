@@ -1,0 +1,65 @@
+{
+  "wave": "S-OFFLINE-REPLAY-1",
+  "mode": "production-safe-offline-replay-conflict-hardening",
+  "ownerGoal": "10K/50K+ platform reliability",
+  "status": "GREEN",
+  "sourceEvidence": {
+    "sReadiness10kStatus": "PARTIAL_NOT_PROVEN_LIVE_GATES_REMAIN",
+    "a4TopRisk": "offline_sync_correctness_conflict_replay_maturity",
+    "loadFixRemainingHotspotsNeedDbOrRpcWave": true
+  },
+  "result": {
+    "preSyncC3Guard": true,
+    "attentionRequiredReplayHold": true,
+    "blindReplayBlocked": true,
+    "successPathChanged": false,
+    "businessSemanticsChanged": false,
+    "testsAdded": 2
+  },
+  "hardenedCallSites": [
+    {
+      "file": "src/lib/offline/mutationWorker.ts",
+      "function": "runFlush",
+      "fixType": "pre_sync_conflict_guard",
+      "semanticsPreserved": true,
+      "productionTouched": false
+    },
+    {
+      "file": "src/lib/offline/mutationWorker.ts",
+      "function": "runFlush",
+      "fixType": "attention_required_replay_hold",
+      "semanticsPreserved": true,
+      "productionTouched": false
+    }
+  ],
+  "tests": {
+    "mutationWorkerContract": "passed",
+    "offlineConflictClassifier": "passed",
+    "offlineReplayCoordinator": "passed",
+    "offlineSuite": "passed",
+    "tsc": "passed",
+    "lint": "passed",
+    "npmTestRunInBand": "passed",
+    "npmTest": "passed",
+    "releaseVerifyPreCommit": "blocked_dirty_worktree_only",
+    "releaseVerifyPostCommit": "pending"
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}

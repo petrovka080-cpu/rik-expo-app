@@ -341,6 +341,37 @@ const trackForemanMutationBacklog = (
   });
 };
 
+const isAttentionRequiredConflict = (conflictType: ForemanDraftConflictType) =>
+  conflictType === "stale_local_snapshot" ||
+  conflictType === "server_terminal_conflict" ||
+  conflictType === "validation_conflict" ||
+  conflictType === "remote_divergence_requires_attention";
+
+const shouldHoldReplayForAttention = (params: {
+  conflictType: ForemanDraftConflictType;
+  attentionNeeded: boolean;
+  entryDraftKey: string | null;
+  entryRequestId: string | null;
+  queueDraftKey: string | null;
+  snapshotRequestId: string | null;
+  recoverableRequestId: string | null;
+}) => {
+  if (!params.attentionNeeded) return false;
+  if (!isAttentionRequiredConflict(params.conflictType)) return false;
+
+  const entryKeys = new Set(
+    [params.entryDraftKey, params.entryRequestId]
+      .map((value) => String(value ?? "").trim())
+      .filter(Boolean),
+  );
+  if (!entryKeys.size) return true;
+
+  return [params.queueDraftKey, params.snapshotRequestId, params.recoverableRequestId]
+    .map((value) => String(value ?? "").trim())
+    .filter(Boolean)
+    .some((value) => entryKeys.has(value));
+};
+
 const deriveConflictFromFailure = async (params: {
   deps: ForemanMutationWorkerDeps;
   snapshot: ForemanLocalDraftSnapshot | null;
@@ -545,6 +576,55 @@ const runFlush = async (
       };
     }
 
+    const durableStateBeforeInflight = getForemanDurableDraftState();
+    const entryDraftKey =
+      String(entry.payload.draftKey ?? "").trim() || null;
+    const entryRequestId =
+      String(entry.payload.requestId ?? "").trim() || null;
+    if (
+      shouldHoldReplayForAttention({
+        conflictType: durableStateBeforeInflight.conflictType,
+        attentionNeeded: durableStateBeforeInflight.attentionNeeded,
+        entryDraftKey,
+        entryRequestId,
+        queueDraftKey: durableStateBeforeInflight.queueDraftKey,
+        snapshotRequestId: durableStateBeforeInflight.snapshot?.requestId ?? null,
+        recoverableRequestId:
+          durableStateBeforeInflight.recoverableLocalSnapshot?.requestId ?? null,
+      })
+    ) {
+      const heldSummary = await getForemanMutationQueueSummary(
+        entryDraftKey ? [entryDraftKey] : undefined,
+      );
+      recordPlatformObservability({
+        screen: "foreman",
+        surface: "offline_mutation_worker",
+        category: "ui",
+        event: "offline_replay_attention_hold",
+        result: "skipped",
+        sourceKind: "offline:foreman_draft",
+        extra: {
+          draftKey: entryDraftKey,
+          requestId: entryRequestId,
+          conflictType: durableStateBeforeInflight.conflictType,
+          triggerSource: triggerSourceOverride ?? entry.payload.triggerSource,
+          pendingCount: heldSummary.pendingCount,
+          retryScheduledCount: heldSummary.retryScheduledCount,
+          conflictedCount: heldSummary.conflictedCount,
+        },
+      });
+      return {
+        processedCount,
+        remainingCount: heldSummary.activeCount,
+        requestId: entryRequestId,
+        submitted: latestSubmitted,
+        failed: true,
+        errorMessage: "offline replay held for attention-required conflict",
+        batchLimitReached: false,
+        drainDurationMs: Date.now() - drainStartedAt,
+      };
+    }
+
     const inflight = await markForemanMutationInflight(entry.id);
     if (!inflight) {
       continue;
@@ -619,6 +699,110 @@ const runFlush = async (
             submitted: latestSubmitted,
             failed: false,
             errorMessage: null,
+            batchLimitReached: false,
+            drainDurationMs: Date.now() - drainStartedAt,
+          };
+        }
+
+        const replayConflict = classifyForemanConflict({
+          localSnapshot: snapshot,
+          remoteSnapshot: remoteInspection.snapshot,
+          remoteStatus: remoteInspection.status,
+          remoteIsTerminal: remoteInspection.isTerminal,
+          remoteMissing: remoteInspection.snapshot == null,
+          pendingCount: Math.max(
+            pendingBefore,
+            queueSummaryBefore.pendingCount + queueSummaryBefore.inflightCount,
+          ),
+          requestIdKnown: Boolean(requestIdForGuard),
+        });
+
+        if (
+          replayConflict.conflictClass ===
+          "local_queue_pending_against_new_remote"
+        ) {
+          const message =
+            "pending offline queue is behind a newer remote draft revision";
+          await markForemanMutationConflicted({
+            mutationId: entry.id,
+            errorMessage: message,
+            errorCode: "offline_c3_pre_sync",
+            errorKind: "remote_divergence",
+            serverVersionHint: replayConflict.remoteBaseRevision,
+          });
+          const pendingCountAfter = await getPendingCountForSnapshot(snapshot);
+          await markForemanDurableDraftSyncFailed(
+            snapshot,
+            message,
+            pendingCountAfter,
+            {
+              stage: "prepare_snapshot",
+              retryable: false,
+              conflictType: "remote_divergence_requires_attention",
+              queueDraftKey: entry.payload.draftKey,
+              triggerSource: effectiveTriggerSource,
+              recoverableLocalSnapshot: snapshot,
+            },
+          );
+          recordPlatformObservability({
+            screen: "foreman",
+            surface: "offline_conflict",
+            category: "ui",
+            event: "pre_sync_conflict_c3_blocked",
+            result: "error",
+            sourceKind: "offline:foreman_draft",
+            errorClass: "local_queue_pending_against_new_remote",
+            extra: {
+              requestId: requestIdForGuard,
+              draftKey: entry.payload.draftKey,
+              localBaseRevision: replayConflict.localBaseRevision,
+              remoteBaseRevision: replayConflict.remoteBaseRevision,
+              pendingCount: replayConflict.pendingCount,
+              revisionAdvanced: replayConflict.revisionAdvanced,
+              deterministic: replayConflict.deterministic,
+            },
+          });
+          await pushStageTelemetry({
+            stage: "prepare_snapshot",
+            result: "terminal_failure",
+            draftKey: entry.payload.draftKey,
+            requestId: requestIdForGuard,
+            localOnlyDraftKey:
+              entry.payload.draftKey === FOREMAN_LOCAL_ONLY_REQUEST_ID,
+            attemptNumber,
+            queueSizeBefore: queueSummaryBefore.totalCount,
+            queueSizeAfter: pendingCountAfter,
+            coalescedCount: inflight.coalescedCount,
+            conflictType: "remote_divergence_requires_attention",
+            offlineState,
+            triggerSource: effectiveTriggerSource,
+            errorClass: "local_queue_pending_against_new_remote",
+            errorCode: "offline_c3_pre_sync",
+          });
+          await pushStageTelemetry({
+            stage: "finalize",
+            result: "terminal_failure",
+            draftKey: entry.payload.draftKey,
+            requestId: requestIdForGuard,
+            localOnlyDraftKey:
+              entry.payload.draftKey === FOREMAN_LOCAL_ONLY_REQUEST_ID,
+            attemptNumber,
+            queueSizeBefore: queueSummaryBefore.totalCount,
+            queueSizeAfter: pendingCountAfter,
+            coalescedCount: inflight.coalescedCount,
+            conflictType: "remote_divergence_requires_attention",
+            offlineState,
+            triggerSource: effectiveTriggerSource,
+            errorClass: "local_queue_pending_against_new_remote",
+            errorCode: "offline_c3_pre_sync",
+          });
+          return {
+            processedCount,
+            remainingCount: pendingCountAfter,
+            requestId: requestIdForGuard,
+            submitted: latestSubmitted,
+            failed: true,
+            errorMessage: message,
             batchLimitReached: false,
             drainDurationMs: Date.now() - drainStartedAt,
           };
