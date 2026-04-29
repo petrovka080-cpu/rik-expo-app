@@ -4,12 +4,12 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const {
   assertJsonDoesNotContainSecrets,
-  buildHealthCheckResult,
+  buildLiveHealthCheckResult,
   parseHealthCheckArgs,
 } = require("./checkProductionHealthCore.js");
 
 const args = parseHealthCheckArgs(process.argv);
-const { result, exitCode } = buildHealthCheckResult({
+const { result, exitCode } = await buildLiveHealthCheckResult({
   target: args.target,
   dryRun: args.dryRun,
   env: process.env,

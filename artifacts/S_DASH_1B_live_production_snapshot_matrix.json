@@ -1,0 +1,81 @@
+{
+  "wave": "S-DASH-1B",
+  "mode": "production-safe-live-readonly-monitoring-snapshot",
+  "status": "BLOCKED",
+  "ownerGoal": "10K/50K+ readiness",
+  "env": {
+    "PROD_SUPABASE_URL": "present_redacted",
+    "PROD_SUPABASE_READONLY_KEY": "present_redacted",
+    "PROD_DATABASE_READONLY_URL": "present_redacted",
+    "SENTRY_AUTH_TOKEN": "missing",
+    "SENTRY_ORG": "present_redacted",
+    "SENTRY_PROJECT": "present_redacted"
+  },
+  "snapshot": {
+    "dryRunExecuted": true,
+    "dryRunStatus": "dry_run_ready",
+    "liveSnapshotExecuted": true,
+    "liveSnapshotStatus": "BLOCKED",
+    "liveSnapshotExitCode": 1,
+    "productionTouched": true,
+    "touchType": "attempted_supabase_readonly_aggregate_count",
+    "productionReadOnly": true,
+    "productionMetadataRead": false,
+    "productionRowsRead": false,
+    "productionWrites": false,
+    "productionLoadGenerated": false,
+    "secretsPrinted": false,
+    "sentryAccess": "env_missing",
+    "supabaseAccess": "connection_failed",
+    "queryMode": "aggregate_count_head_only",
+    "rowsReturned": 0,
+    "metricsVerified": {
+      "sentryCrashes": "env_missing",
+      "appErrors": "unavailable",
+      "rpcLatency": "unavailable",
+      "queueBacklog": "unavailable",
+      "offlineReplay": "unavailable",
+      "realtime": "unavailable",
+      "pdfWebViewDocument": "unavailable",
+      "releaseRollback": "unavailable"
+    },
+    "metricsUnavailable": {
+      "sentryCrashes": "missing env: SENTRY_AUTH_TOKEN",
+      "appErrors": "Supabase read-only aggregate count failed with connection_failed",
+      "rpcLatency": "no read-only aggregate rpc_latency source is exposed to this harness",
+      "queueBacklog": "no read-only aggregate queue backlog source is exposed to this harness",
+      "offlineReplay": "depends on app_errors aggregate signal counts, blocked by connection_failed",
+      "realtime": "depends on app_errors aggregate signal counts, blocked by connection_failed",
+      "pdfWebViewDocument": "depends on app_errors aggregate signal counts, blocked by connection_failed",
+      "releaseRollback": "release/update lineage is not exposed as a production aggregate source; rollback readiness is checked by release gates"
+    }
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "productionWrites": false,
+    "productionLoadGenerated": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "rawLogsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  },
+  "gates": {
+    "gitDiffCheck": "PASS",
+    "tsc": "PASS",
+    "lint": "PASS",
+    "targetedProductionHealthDashboard": "PASS",
+    "targetedMonitoring": "PASS",
+    "npmTestRunInBand": "PASS",
+    "npmTest": "PASS",
+    "releaseVerify": "pending_post_push"
+  },
+  "nextRecommendedWave": "Fix production read-only monitoring connectivity, then rerun S-DASH-1B. If snapshot reaches PARTIAL_SENTRY_MISSING, continue to S-RT-4B."
+}

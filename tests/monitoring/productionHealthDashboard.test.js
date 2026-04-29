@@ -10,6 +10,7 @@ const { resolveProductionHealthEnv } = require("../../scripts/monitoring/product
 const {
   assertJsonDoesNotContainSecrets,
   buildHealthCheckResult,
+  buildLiveHealthCheckResult,
 } = require("../../scripts/monitoring/checkProductionHealthCore");
 
 const NOW = "2026-04-28T12:00:00.000Z";
@@ -219,5 +220,74 @@ describe("checkProductionHealth dry-run safety", () => {
     expect(output).not.toContain("readonly-prod-secret");
     expect(output).not.toContain("service-role-secret");
     expect(output).not.toContain("sentry-token-secret");
+  });
+
+  it("runs live production checks as aggregate-only when Sentry token is missing", async () => {
+    const env = {
+      PROD_SUPABASE_URL: "https://prod.example.supabase.co",
+      PROD_SUPABASE_READONLY_KEY: "readonly-prod-secret",
+      PROD_DATABASE_READONLY_URL: "postgres://readonly-secret@example.invalid/db",
+      SENTRY_ORG: "org",
+      SENTRY_PROJECT: "project",
+    };
+    const { result, exitCode } = await buildLiveHealthCheckResult({
+      target: "production",
+      dryRun: false,
+      env,
+      generatedAt: NOW,
+      createReadOnlyClient: () => ({ fake: true }),
+      fetchAppErrorAggregateSnapshot: async () => ({
+        name: "app_errors",
+        status: "queried",
+        queryMode: "aggregate_count_head_only",
+        rowsReturned: 0,
+        productionRowsRead: false,
+        insufficientAccess: false,
+        windows: {},
+        signals: {},
+        errors: [],
+      }),
+    });
+    const output = JSON.stringify(result);
+
+    expect(exitCode).toBe(0);
+    expect(result.status).toBe("PARTIAL_SENTRY_MISSING");
+    expect(result.productionTouched).toBe(true);
+    expect(result.productionRowsRead).toBe(false);
+    expect(result.writes).toBe(false);
+    expect(result.metricsVerified.appErrors).toBe("verified");
+    expect(result.metricsVerified.sentryCrashes).toBe("env_missing");
+    expect(assertJsonDoesNotContainSecrets(output, env)).toBe(true);
+    expect(output).not.toContain("readonly-prod-secret");
+    expect(output).not.toContain("readonly-secret");
+  });
+
+  it("reports insufficient access without service-role fallback", async () => {
+    const { result, exitCode } = await buildLiveHealthCheckResult({
+      target: "production",
+      dryRun: false,
+      env: {
+        PROD_SUPABASE_URL: "https://prod.example.supabase.co",
+        PROD_SUPABASE_READONLY_KEY: "readonly-prod-secret",
+      },
+      generatedAt: NOW,
+      createReadOnlyClient: () => ({ fake: true }),
+      fetchAppErrorAggregateSnapshot: async () => ({
+        name: "app_errors",
+        status: "unavailable",
+        queryMode: "aggregate_count_head_only",
+        rowsReturned: 0,
+        productionRowsRead: false,
+        insufficientAccess: true,
+        errorClass: "insufficient_access",
+        errors: [],
+      }),
+    });
+
+    expect(exitCode).toBe(0);
+    expect(result.status).toBe("PARTIAL_INSUFFICIENT_ACCESS");
+    expect(result.serviceRoleUsed).toBe(false);
+    expect(result.productionLoadGenerated).toBe(false);
+    expect(result.metricsVerified.appErrors).toBe("unavailable");
   });
 });
