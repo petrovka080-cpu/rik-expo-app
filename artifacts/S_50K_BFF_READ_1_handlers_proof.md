@@ -88,7 +88,7 @@ Full gates:
 - `npx expo lint`: PASS
 - `npm test -- --runInBand`: PASS
 - `npm test`: PASS
-- `npm run release:verify -- --json`: pending clean post-commit verification
+- `npm run release:verify -- --json`: PASS
 
 ## Safety Confirmations
 
