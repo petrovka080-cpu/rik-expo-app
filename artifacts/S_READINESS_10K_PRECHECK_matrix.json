@@ -1,0 +1,152 @@
+{
+  "wave": "S-READINESS-10K-PRECHECK",
+  "mode": "production-safe-readiness-map",
+  "status": "GREEN_PRECHECK_CAPACITY_NOT_CLAIMED",
+  "ownerGoal": "10K/50K+ readiness",
+  "repoState": {
+    "head": "19199a1888b749742a03209a8bab05e318509da5",
+    "headEqualsOriginMainAtPrecheck": true,
+    "worktreeCleanAtPrecheck": true,
+    "releaseVerify": "passed",
+    "otaDisposition": "skip"
+  },
+  "capacityClaims": {
+    "tenKCapacityProven": false,
+    "fiftyKCapacityProven": false,
+    "fiftyKLiveArchitectureProven": false,
+    "androidRuntimeSmokeProven": true
+  },
+  "closedEvidence": [
+    {
+      "area": "pagination",
+      "waves": ["S-PAG-3A", "S-PAG-3B", "S-PAG-4", "S-PAG-5A", "S-PAG-5B"],
+      "status": "GREEN_WITH_REMAINING_CLASSIFIED_TAIL"
+    },
+    {
+      "area": "rpc-runtime-validation",
+      "waves": ["S-RPC-1", "S-RPC-2", "S-RPC-3"],
+      "status": "GREEN_WITH_REMAINING_RPC_TAIL"
+    },
+    {
+      "area": "release-safety",
+      "waves": ["S-ROLL-3", "S-OTA-2", "S-RT-4", "S-PERF-1", "S-STRICT-1"],
+      "status": "GREEN_OR_OWNER_ACTION_LIMITS"
+    },
+    {
+      "area": "50k-local-architecture",
+      "waves": [
+        "S-50K-ARCH-1",
+        "S-50K-CACHE-1",
+        "S-50K-JOBS-1",
+        "S-50K-IDEMPOTENCY-1",
+        "S-50K-RATE-1",
+        "S-50K-BFF-READ-1",
+        "S-50K-BFF-WRITE-1",
+        "S-50K-BFF-SHADOW-1"
+      ],
+      "status": "GREEN_DISABLED_OR_LOCAL_ONLY"
+    },
+    {
+      "area": "android-emulator-runtime-smoke",
+      "waves": ["S-EMU-SMOKE-1"],
+      "status": "GREEN_EMULATOR_SMOKE"
+    }
+  ],
+  "currentLocalCounts": {
+    "unboundedSelects": {
+      "files": 42,
+      "selects": 101,
+      "topFiles": [
+        "src/screens/contractor/contractor.data.ts",
+        "src/lib/api/pdf_proposal.ts",
+        "src/lib/pdf/pdf.builder.ts",
+        "src/screens/buyer/buyer.repo.ts",
+        "src/screens/contractor/contractor.resolvers.ts",
+        "src/lib/api/integrity.guards.ts",
+        "src/lib/store_supabase.ts",
+        "src/screens/buyer/buyer.rework.mutation.ts",
+        "src/screens/foreman/foreman.styles.ts",
+        "src/screens/warehouse/warehouse.stockReports.service.ts"
+      ]
+    },
+    "rpc": {
+      "rpcFiles": 55,
+      "rpcCalls": 120,
+      "validationFiles": 17,
+      "validationCalls": 47,
+      "topRemainingFilesByRpcCalls": [
+        "src/lib/infra/jobQueue.ts",
+        "src/screens/director/director.finance.rpc.ts",
+        "src/lib/api/proposals.ts",
+        "src/screens/warehouse/warehouse.api.repo.ts",
+        "src/lib/api/accountant.ts",
+        "src/lib/api/director.ts",
+        "src/lib/api/requests.ts",
+        "src/lib/catalog/catalog.request.service.ts",
+        "src/lib/catalog/catalog.transport.ts",
+        "src/lib/api/directorPdfSource.service.ts"
+      ]
+    }
+  },
+  "openBlockersForTenKProven": [
+    {
+      "blocker": "live_or_staging_load_test",
+      "status": "not_proven_in_this_wave",
+      "reason": "emulator and repo gates do not prove DB/backend capacity"
+    },
+    {
+      "blocker": "remaining_unbounded_select_tail",
+      "status": "open",
+      "evidence": "101 selects across 42 files still match the conservative local unbounded-select counter"
+    },
+    {
+      "blocker": "remaining_rpc_validation_tail",
+      "status": "open",
+      "evidence": "120 rpc calls across 55 files; validation usage is present but not universal"
+    },
+    {
+      "blocker": "production_index_plan_runtime_verification",
+      "status": "not_run_in_this_wave",
+      "reason": "production access was not used"
+    }
+  ],
+  "openBlockersForFiftyKLive": [
+    {
+      "blocker": "bff_server_deployment",
+      "status": "not_deployed"
+    },
+    {
+      "blocker": "production_traffic_migration_to_bff",
+      "status": "not_migrated"
+    },
+    {
+      "blocker": "cache_jobs_rate_limits_live_enforcement",
+      "status": "disabled_or_contract_only"
+    },
+    {
+      "blocker": "direct_client_to_supabase_fanout",
+      "status": "still_present"
+    }
+  ],
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false,
+    "androidSubmitTouched": false
+  }
+}
