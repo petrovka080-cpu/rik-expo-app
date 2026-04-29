@@ -144,7 +144,7 @@ Mode: production-safe code work. No production or staging data was used. No ENV 
 - `npx expo lint`: PASS.
 - `npm test -- --runInBand`: PASS, 497 passed / 1 skipped suites; 3139 passed / 1 skipped tests.
 - `npm test`: PASS, 497 passed / 1 skipped suites; 3139 passed / 1 skipped tests.
-- `npm run release:verify -- --json`: pending clean-tree rerun after commit; the pre-commit run passed inner tsc/lint/Jest/diff-check gates and was blocked only by the release guard's dirty-worktree requirement.
+- `npm run release:verify -- --json`: PASS after push on clean synced tree. Readiness status: pass; HEAD matched `origin/main`; worktree clean; OTA disposition was candidate/allow. Earlier pre-commit/pre-push runs passed inner tsc/lint/Jest/diff-check gates and were blocked only by release guard repository-state checks.
 
 ## Next Recommended Wave
 
