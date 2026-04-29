@@ -1,0 +1,152 @@
+{
+  "wave": "S-DB-5",
+  "mode": "production-safe-read-only-index-verification",
+  "status": "PARTIAL_ENV_MISSING",
+  "ownerGoal": "10K/50K+ readiness",
+  "target": "production",
+  "androidSubmit": {
+    "status": "DEFERRED_BY_OWNER",
+    "touched": false
+  },
+  "env": {
+    "PROD_SUPABASE_URL": "missing",
+    "PROD_SUPABASE_READONLY_KEY": "missing",
+    "PROD_DATABASE_READONLY_URL": "missing",
+    "serviceRoleEnvPresent": false,
+    "serviceRoleUsed": false
+  },
+  "expectedIndexes": [
+    {
+      "table": "requests",
+      "columns": ["submitted_at", "display_no", "id"],
+      "predicate": null,
+      "expectedName": "idx_requests_submitted_display_id_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    },
+    {
+      "table": "request_items",
+      "columns": ["request_id", "row_no", "position_order", "id"],
+      "predicate": null,
+      "expectedName": "idx_request_items_request_row_position_id_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    },
+    {
+      "table": "request_items",
+      "columns": ["request_id", "status", "id"],
+      "predicate": null,
+      "expectedName": "idx_request_items_request_status_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    },
+    {
+      "table": "proposals",
+      "columns": ["submitted_at", "id"],
+      "predicate": "submitted_at IS NOT NULL AND sent_to_accountant_at IS NULL",
+      "expectedName": "idx_proposals_director_pending_submitted_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    },
+    {
+      "table": "proposals",
+      "columns": ["request_id", "supplier", "updated_at", "id"],
+      "predicate": null,
+      "expectedName": "idx_proposals_request_supplier_updated_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    },
+    {
+      "table": "proposal_items",
+      "columns": ["proposal_id", "id"],
+      "predicate": null,
+      "expectedName": "idx_proposal_items_proposal_id_id_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    },
+    {
+      "table": "market_listings",
+      "columns": ["company_id", "status", "created_at", "id"],
+      "predicate": null,
+      "expectedName": "idx_market_listings_company_status_created_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    },
+    {
+      "table": "market_listings",
+      "columns": ["user_id", "status", "created_at", "id"],
+      "predicate": null,
+      "expectedName": "idx_market_listings_user_status_created_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    },
+    {
+      "table": "work_progress_log",
+      "columns": ["progress_id", "created_at", "id"],
+      "predicate": null,
+      "expectedName": "idx_work_progress_log_progress_created_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    },
+    {
+      "table": "wh_ledger",
+      "columns": ["direction", "moved_at", "id"],
+      "predicate": null,
+      "expectedName": "idx_wh_ledger_direction_moved_at_sdb2",
+      "verified": false,
+      "status": "env_missing",
+      "matchedIndexName": null
+    }
+  ],
+  "summary": {
+    "expected": 10,
+    "verified": 0,
+    "missing": 0,
+    "insufficientAccess": 0,
+    "envMissing": true
+  },
+  "execution": {
+    "dryRunExecuted": true,
+    "metadataVerificationExecuted": false,
+    "productionMetadataRead": false,
+    "productionDataRowsRead": false,
+    "productionWrites": false,
+    "dryRunStatus": "env_missing"
+  },
+  "changedFiles": [
+    "scripts/db/verifyProductionIndexes.mjs",
+    "tests/db/verifyProductionIndexes.test.ts",
+    "artifacts/S_DB_5_production_index_verification_matrix.json",
+    "artifacts/S_DB_5_production_index_verification_proof.md"
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "migrationCreated": false,
+    "ddlExecuted": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "stagingTouched": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}
