@@ -139,10 +139,11 @@ describe("performance budget — bundle module count", () => {
     // add bounded contract-only scale scaffold files.
     // S-50K-BFF-READ-1 adds two disabled read-only handler/port modules.
     // S-50K-BFF-WRITE-1 adds two disabled mutation handler/port modules.
+    // S-50K-BFF-SHADOW-1 adds three local fixture-only shadow parity modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
-    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(14);
+    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(17);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
