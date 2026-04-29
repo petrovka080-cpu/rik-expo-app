@@ -89,7 +89,7 @@ Because `STAGING_BFF_BASE_URL` is missing in this agent process, this wave recor
 - `Get-Content` for existing 50K/BFF proof artifacts
 - `rg "bff|BFF|server boundary|shadow|read handler|mutation handler|rate limit|idempotency|cacheReadModels|backgroundJobs" src/shared/scale tests docs artifacts -g "*.ts" -g "*.tsx" -g "*.md" -g "*.json"`
 - `rg "STAGING_BFF|BFF_BASE|bffClient|bffSafety|bffContracts" src scripts tests docs artifacts -g "*.ts" -g "*.tsx" -g "*.mjs" -g "*.md" -g "*.json"`
-- `node -e "const name='STAGING_BFF_BASE_URL'; console.log(process.env[name]?'present_redacted':'missing');"`
+- `node -e "const names=['STAGING_BFF_BASE_URL','STAGING_BFF_SHADOW_ENABLED','STAGING_BFF_READONLY_TOKEN']; console.log(JSON.stringify(Object.fromEntries(names.map(n=>[n,process.env[n]?'present_redacted':'missing'])),null,2));"`
 
 ## Gates
 
@@ -102,7 +102,7 @@ Because `STAGING_BFF_BASE_URL` is missing in this agent process, this wave recor
 - `npx expo lint`: PASS.
 - `npm test -- --runInBand`: PASS; 499 passed / 1 skipped suites, 3157 passed / 1 skipped tests.
 - `npm test`: PASS; 499 passed / 1 skipped suites, 3157 passed / 1 skipped tests.
-- `npm run release:verify -- --json`: PASS after commit/push on `4490533e615b916da4689500e16c6ccfbf436413`; release guard reported `worktreeClean: true`, `headMatchesOriginMain: true`, `readiness.status: pass`, `otaDisposition: skip`, `otaPublished: false`, `easBuildTriggered: false`, `easSubmitTriggered: false`, and `easUpdateTriggered: false`.
+- `npm run release:verify -- --json`: PASS after commit/push; release guard reported `worktreeClean: true`, `headMatchesOriginMain: true`, `readiness.status: pass`, `otaDisposition: skip`, `otaPublished: false`, `easBuildTriggered: false`, `easSubmitTriggered: false`, and `easUpdateTriggered: false`.
 
 ## Next Recommended Wave
 
