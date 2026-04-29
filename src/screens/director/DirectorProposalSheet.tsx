@@ -4,6 +4,7 @@ import { FlashList } from "@/src/ui/FlashList";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
+import DirectorProposalRiskSummaryCard from "../../components/director/DirectorProposalRiskSummaryCard";
 import {
   getProposalIntegritySummaryLabel,
   getProposalItemIntegrityLabel,
@@ -83,6 +84,26 @@ export default function DirectorProposalSheet({
     () => getProposalIntegritySummaryLabel(items),
     [items],
   );
+  const riskSummaryContext = React.useMemo(
+    () => ({
+      proposalId: pidStr,
+      status: approveDisabled ? "decision_blocked_or_not_ready" : "pending_director_review",
+      totalSum,
+      itemCount: items.length,
+      attachmentsCount: files.length,
+      integritySummary,
+      items: items.map((item) => ({
+        id: item.id,
+        name: item.name_human ?? null,
+        supplier: null,
+        qty: item.total_qty ?? null,
+        uom: item.uom ?? null,
+        price: item.price ?? null,
+        appCode: item.app_code ?? item.rik_code ?? null,
+      })),
+    }),
+    [approveDisabled, files.length, integritySummary, items, pidStr, totalSum],
+  );
 
   const analyticSourceItems = React.useMemo(
     () =>
@@ -148,6 +169,8 @@ export default function DirectorProposalSheet({
         onRefresh={onRefreshAttachments}
         onOpenAttachment={onOpenAttachment}
       />
+
+      <DirectorProposalRiskSummaryCard context={riskSummaryContext} />
 
       {integritySummary ? (
         <View

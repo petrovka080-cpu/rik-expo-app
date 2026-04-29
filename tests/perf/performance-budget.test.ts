@@ -102,6 +102,11 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "shared", "scale"),
       /\.ts$/,
     );
+    const sAiWorkflow2DisabledPilotFiles = [
+      path.join(SRC, "shared", "ai", "aiWorkflowFlags.ts"),
+      path.join(SRC, "shared", "ai", "directorProposalRiskSummary.ts"),
+      path.join(SRC, "components", "director", "DirectorProposalRiskSummaryCard.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -140,16 +145,19 @@ describe("performance budget — bundle module count", () => {
     // S-50K-BFF-READ-1 adds two disabled read-only handler/port modules.
     // S-50K-BFF-WRITE-1 adds two disabled mutation handler/port modules.
     // S-50K-BFF-SHADOW-1 adds three local fixture-only shadow parity modules.
+    // S-AI-WORKFLOW-2 adds three disabled-by-default advisory AI pilot modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
     expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(17);
+    expect(sAiWorkflow2DisabledPilotFiles).toBeLessThanOrEqual(3);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
         v47BForemanNavigationFlowFiles -
         v47CForemanFioBootstrapFlowFiles -
-        s50kBffBoundaryScaffoldFiles,
+        s50kBffBoundaryScaffoldFiles -
+        sAiWorkflow2DisabledPilotFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

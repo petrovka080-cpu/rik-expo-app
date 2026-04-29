@@ -1,0 +1,40 @@
+{
+  "wave": "S-AI-WORKFLOW-2",
+  "mode": "production-safe-disabled-ai-ui-pilot",
+  "ownerGoal": "AI workflow product defensibility without runtime risk",
+  "status": "GREEN_DISABLED_BY_DEFAULT",
+  "pilot": {
+    "role": "director",
+    "action": "director.proposal.risk_summary",
+    "uiComponent": "DirectorProposalRiskSummaryCard",
+    "enabledByDefault": false,
+    "autoCallsAiOnRender": false,
+    "requiresExplicitUserAction": true,
+    "advisoryOnly": true,
+    "canMutateState": false
+  },
+  "safety": {
+    "externalAiCallsInTests": false,
+    "externalAiCallsEnabledByDefault": false,
+    "rawPromptLogged": false,
+    "rawResponseLogged": false,
+    "piiRedacted": true,
+    "mutationIntentBlocked": true,
+    "approvalFlowChanged": false,
+    "rejectionFlowChanged": false,
+    "businessLogicChanged": false,
+    "appBehaviorChangedWhenDisabled": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}
