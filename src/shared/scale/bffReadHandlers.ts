@@ -18,6 +18,10 @@ import {
   type RateLimitEnforcementOperation,
   type RateLimitPolicyScope,
 } from "./rateLimitPolicies";
+import {
+  BFF_READ_OBSERVABILITY_EVENT_MAP,
+  type BffObservabilityMetadata,
+} from "./scaleObservabilityEvents";
 import type {
   BffReadContext,
   BffReadPorts,
@@ -74,6 +78,7 @@ export type BffReadHandlerMetadata = {
     defaultEnabled: false;
     enforcementEnabledByDefault: false;
   } | null;
+  observability: BffObservabilityMetadata;
   enabledInAppRuntime: false;
   wiredToAppRuntime: false;
   callsSupabaseDirectly: false;
@@ -245,6 +250,7 @@ export function getBffReadHandlerMetadata(operation: BffReadOperation): BffReadH
           enforcementEnabledByDefault: rateEnforcementPolicy.enforcementEnabledByDefault,
         }
       : null,
+    observability: BFF_READ_OBSERVABILITY_EVENT_MAP[operation],
     enabledInAppRuntime: false,
     wiredToAppRuntime: false,
     callsSupabaseDirectly: false,

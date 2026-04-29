@@ -19,6 +19,10 @@ import {
   type RateLimitEnforcementOperation,
   type RateLimitPolicyScope,
 } from "./rateLimitPolicies";
+import {
+  BFF_MUTATION_OBSERVABILITY_EVENT_MAP,
+  type BffObservabilityMetadata,
+} from "./scaleObservabilityEvents";
 import { getRetryPolicy, type RetryClass, type RetryPolicy } from "./retryPolicy";
 import type { DeadLetterReason } from "./deadLetter";
 import type { BffMutationContext, BffMutationPorts } from "./bffMutationPorts";
@@ -73,6 +77,7 @@ export type BffMutationHandlerMetadata = {
     piiStored: false;
     attached: true;
   };
+  observability: BffObservabilityMetadata;
   serverOnlyFutureBoundary: true;
   enabledInAppRuntime: false;
   wiredToAppRuntime: false;
@@ -234,6 +239,7 @@ export function getBffMutationHandlerMetadata(operation: BffMutationOperation): 
       piiStored: false,
       attached: true,
     },
+    observability: BFF_MUTATION_OBSERVABILITY_EVENT_MAP[operation],
     serverOnlyFutureBoundary: true,
     enabledInAppRuntime: false,
     wiredToAppRuntime: false,

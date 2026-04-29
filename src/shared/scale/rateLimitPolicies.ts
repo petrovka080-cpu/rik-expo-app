@@ -1,6 +1,10 @@
 import type { BffMutationOperation } from "./bffMutationHandlers";
 import type { BffReadOperation } from "./bffReadHandlers";
 import type { JobType } from "./jobPolicies";
+import {
+  RATE_LIMIT_OBSERVABILITY_EVENT_MAP,
+  type RateLimitObservabilityMetadata,
+} from "./scaleObservabilityEvents";
 
 export type RateLimitPolicyScope = "actor" | "company" | "route" | "ip_or_device" | "global";
 
@@ -38,6 +42,7 @@ export type RateEnforcementPolicy = {
   defaultEnabled: false;
   enforcementEnabledByDefault: false;
   externalStoreRequiredForLiveEnforcement: true;
+  observability: RateLimitObservabilityMetadata;
 };
 
 const MINUTE_MS = 60_000;
@@ -77,13 +82,14 @@ export const REALTIME_RATE_LIMIT_OPERATIONS = Object.freeze([
 
 export const AI_RATE_LIMIT_OPERATIONS = Object.freeze(["ai.workflow.action"] as const);
 
-const policy = (value: Omit<RateEnforcementPolicy, "piiSafeKey" | "defaultEnabled" | "enforcementEnabledByDefault" | "externalStoreRequiredForLiveEnforcement">): RateEnforcementPolicy =>
+const policy = (value: Omit<RateEnforcementPolicy, "piiSafeKey" | "defaultEnabled" | "enforcementEnabledByDefault" | "externalStoreRequiredForLiveEnforcement" | "observability">): RateEnforcementPolicy =>
   Object.freeze({
     ...value,
     piiSafeKey: true,
     defaultEnabled: false,
     enforcementEnabledByDefault: false,
     externalStoreRequiredForLiveEnforcement: true,
+    observability: RATE_LIMIT_OBSERVABILITY_EVENT_MAP[value.operation],
   });
 
 export const RATE_ENFORCEMENT_POLICY_REGISTRY: readonly RateEnforcementPolicy[] = Object.freeze([

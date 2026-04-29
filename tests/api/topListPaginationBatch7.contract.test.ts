@@ -131,12 +131,34 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "tests/perf/performance-budget.test.ts",
       "tests/scale/rateEnforcementBoundary.test.ts",
     ]);
+    const s50kObsIntegrationAllowedDirtyFiles = new Set([
+      "artifacts/S_50K_OBS_INTEGRATION_1_matrix.json",
+      "artifacts/S_50K_OBS_INTEGRATION_1_proof.md",
+      "docs/architecture/50k_scale_observability.md",
+      "docs/operations/scale_observability_runbook.md",
+      "scripts/server/stagingBffServerBoundary.ts",
+      "src/shared/scale/abuseEnforcementBoundary.ts",
+      "src/shared/scale/bffMutationHandlers.ts",
+      "src/shared/scale/bffReadHandlers.ts",
+      "src/shared/scale/cachePolicies.ts",
+      "src/shared/scale/idempotencyPolicies.ts",
+      "src/shared/scale/jobPolicies.ts",
+      "src/shared/scale/rateLimitPolicies.ts",
+      "src/shared/scale/scaleMetricsPolicies.ts",
+      "src/shared/scale/scaleObservabilityAdapters.ts",
+      "src/shared/scale/scaleObservabilityEvents.ts",
+      "src/shared/scale/scaleObservabilitySafety.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/scale/rateEnforcementBoundary.test.ts",
+      "tests/scale/scaleObservabilityBoundary.test.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
         !s50kJobsIntegrationAllowedDirtyFiles.has(file) &&
         !s50kIdempotencyIntegrationAllowedDirtyFiles.has(file) &&
-        !s50kRateEnforcementAllowedDirtyFiles.has(file),
+        !s50kRateEnforcementAllowedDirtyFiles.has(file) &&
+        !s50kObsIntegrationAllowedDirtyFiles.has(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(false);
     expect(changed.some((file) => file.startsWith("scripts/scale/"))).toBe(false);

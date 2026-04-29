@@ -1,5 +1,9 @@
 import { redactBffText } from "./bffSafety";
 import type { RateLimitDecisionState } from "./rateLimitAdapters";
+import {
+  ABUSE_OBSERVABILITY_METADATA,
+  type AbuseObservabilityMetadata,
+} from "./scaleObservabilityEvents";
 
 export type AbuseEnforcementReasonCode =
   | "too_many_requests"
@@ -31,6 +35,7 @@ export type AbuseEnforcementDecision = {
   realUsersBlocked: false;
   rawPayloadLogged: false;
   piiLogged: false;
+  observability: AbuseObservabilityMetadata;
 };
 
 export const ABUSE_ENFORCEMENT_REASON_CODES: readonly AbuseEnforcementReasonCode[] = Object.freeze([
@@ -88,6 +93,7 @@ export function buildAbuseEnforcementDecision(input: AbuseEnforcementInput): Abu
     realUsersBlocked: false,
     rawPayloadLogged: false,
     piiLogged: false,
+    observability: ABUSE_OBSERVABILITY_METADATA,
   };
 }
 
@@ -100,6 +106,7 @@ export function validateAbuseEnforcementDecision(decision: AbuseEnforcementDecis
     decision.enforcementEnabled === false &&
     decision.realUsersBlocked === false &&
     decision.rawPayloadLogged === false &&
-    decision.piiLogged === false
+    decision.piiLogged === false &&
+    decision.observability.externalExportEnabledByDefault === false
   );
 }

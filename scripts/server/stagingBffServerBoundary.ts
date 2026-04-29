@@ -11,6 +11,10 @@ import {
   getRateEnforcementPolicyForBffReadOperation,
 } from "../../src/shared/scale/rateLimitPolicies";
 import {
+  BFF_OBSERVABILITY_METADATA,
+  type BffObservabilityMetadata,
+} from "../../src/shared/scale/scaleObservabilityEvents";
+import {
   BFF_MUTATION_HANDLER_OPERATIONS,
   handleAccountantPaymentApply,
   handleDirectorApprovalApply,
@@ -60,6 +64,8 @@ export type BffStagingRouteDefinition = {
   rateLimitPolicyOperation?: RateLimitEnforcementOperation;
   rateLimitPolicyDefaultEnabled?: false;
   rateLimitEnforcementEnabledByDefault?: false;
+  observability?: BffObservabilityMetadata;
+  observabilityExternalExportEnabledByDefault?: false;
 };
 
 export type BffStagingServerConfig = {
@@ -140,6 +146,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("request.proposal.list")?.operation,
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
   {
     operation: "marketplace.catalog.search",
@@ -154,6 +162,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("marketplace.catalog.search")?.operation,
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
   {
     operation: "warehouse.ledger.list",
@@ -168,6 +178,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("warehouse.ledger.list")?.operation,
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
   {
     operation: "accountant.invoice.list",
@@ -182,6 +194,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("accountant.invoice.list")?.operation,
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
   {
     operation: "director.pending.list",
@@ -196,6 +210,8 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("director.pending.list")?.operation,
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
 ]);
 
@@ -231,6 +247,8 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("proposal.submit"),
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
   {
     operation: "warehouse.receive.apply",
@@ -250,6 +268,8 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("warehouse.receive.apply"),
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
   {
     operation: "accountant.payment.apply",
@@ -269,6 +289,8 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("accountant.payment.apply"),
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
   {
     operation: "director.approval.apply",
@@ -288,6 +310,8 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("director.approval.apply"),
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
   {
     operation: "request.item.update",
@@ -307,6 +331,8 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("request.item.update"),
     rateLimitPolicyDefaultEnabled: false,
     rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
   },
 ]);
 
@@ -653,6 +679,11 @@ export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   mutationRoutesWithRateLimitMetadata: BFF_STAGING_MUTATION_ROUTES.filter((route) => route.rateLimitPolicyOperation).length,
   rateLimitEnforcementEnabledByDefault: BFF_STAGING_ROUTE_REGISTRY.some(
     (route) => route.rateLimitEnforcementEnabledByDefault,
+  ),
+  readRoutesWithObservabilityMetadata: BFF_STAGING_READ_ROUTES.filter((route) => route.observability).length,
+  mutationRoutesWithObservabilityMetadata: BFF_STAGING_MUTATION_ROUTES.filter((route) => route.observability).length,
+  observabilityExternalExportEnabledByDefault: BFF_STAGING_ROUTE_REGISTRY.some(
+    (route) => route.observabilityExternalExportEnabledByDefault,
   ),
   knownReadOperations: BFF_READ_HANDLER_OPERATIONS,
   knownMutationOperations: BFF_MUTATION_HANDLER_OPERATIONS,

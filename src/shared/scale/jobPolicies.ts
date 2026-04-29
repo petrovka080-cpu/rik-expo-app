@@ -13,6 +13,10 @@ import {
   getRateEnforcementPolicyForJobType,
   type RateLimitEnforcementOperation,
 } from "./rateLimitPolicies";
+import {
+  JOB_OBSERVABILITY_EVENT_MAP,
+  type JobObservabilityMetadata,
+} from "./scaleObservabilityEvents";
 import type { RetryClass, RetryPolicy } from "./retryPolicy";
 import { getRetryPolicy } from "./retryPolicy";
 
@@ -55,6 +59,7 @@ export type JobPolicy = {
   rateLimitEnforcementOperation: RateLimitEnforcementOperation | null;
   rateLimitEnforcementDefaultEnabled: false;
   rateLimitEnforcementEnabledByDefault: false;
+  observability: JobObservabilityMetadata;
   payloadMaxBytes: number;
   piiPolicy: JobPiiPolicy;
   defaultEnabled: false;
@@ -98,6 +103,7 @@ const policy = (input: {
   rateLimitEnforcementOperation: getRateEnforcementPolicyForJobType(input.jobType)?.operation ?? null,
   rateLimitEnforcementDefaultEnabled: false,
   rateLimitEnforcementEnabledByDefault: false,
+  observability: JOB_OBSERVABILITY_EVENT_MAP[input.jobType],
   payloadMaxBytes: input.payloadMaxBytes,
   piiPolicy: input.piiPolicy ?? "reject_pii",
   defaultEnabled: false,

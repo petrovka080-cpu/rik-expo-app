@@ -149,11 +149,12 @@ describe("performance budget — bundle module count", () => {
     // S-50K-JOBS-INTEGRATION-1 adds five disabled background-job boundary modules.
     // S-50K-IDEMPOTENCY-INTEGRATION-1 adds five disabled idempotency boundary modules.
     // S-50K-RATE-ENFORCEMENT-1 adds four disabled rate-enforcement boundary modules.
+    // S-50K-OBS-INTEGRATION-1 adds four disabled scale-observability boundary modules.
     // S-AI-WORKFLOW-2 adds three disabled-by-default advisory AI pilot modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
-    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(35);
+    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(39);
     expect(sAiWorkflow2DisabledPilotFiles).toBeLessThanOrEqual(3);
     expect(
       tsFiles -

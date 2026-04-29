@@ -1,0 +1,56 @@
+{
+  "wave": "S-50K-OBS-INTEGRATION-1",
+  "mode": "production-safe-disabled-scale-observability-boundary",
+  "ownerGoal": "10K/50K+ readiness",
+  "status": "GREEN_OBSERVABILITY_BOUNDARY_READY",
+  "observabilityBoundary": {
+    "noopAdapter": true,
+    "inMemoryTestAdapter": true,
+    "externalAdapterContract": true,
+    "externalTelemetryCallsInTests": false,
+    "externalExportEnabledByDefault": false
+  },
+  "events": {
+    "totalEventTypes": 19,
+    "piiSafe": true,
+    "rawPayloadRejected": true,
+    "tokensSecretsRejected": true,
+    "boundedEventSize": true
+  },
+  "metrics": {
+    "totalPolicies": 14,
+    "defaultEnabled": false,
+    "aggregateSafe": true
+  },
+  "integration": {
+    "bffMetadata": "present",
+    "cacheMetadata": "present",
+    "jobsMetadata": "present",
+    "idempotencyMetadata": "present",
+    "rateLimitMetadata": "present",
+    "aiWorkflowMetadata": "present"
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "stagingTouched": false,
+    "stagingWrites": false,
+    "externalTelemetrySent": false,
+    "appRuntimeTelemetryEnabled": false,
+    "existingAppFlowsReplaced": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}

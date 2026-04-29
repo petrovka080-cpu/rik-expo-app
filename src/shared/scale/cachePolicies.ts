@@ -1,4 +1,8 @@
 import type { BffReadOperation } from "./bffReadHandlers";
+import {
+  CACHE_OBSERVABILITY_EVENT_MAP,
+  type CacheObservabilityMetadata,
+} from "./scaleObservabilityEvents";
 
 export type CachePolicyRoute =
   | BffReadOperation
@@ -23,9 +27,14 @@ export type CachePolicy = {
   payloadClass: CachePayloadClass;
   defaultEnabled: false;
   disabledReason: string;
+  observability: CacheObservabilityMetadata;
 };
 
-const policy = (value: CachePolicy): CachePolicy => Object.freeze(value);
+const policy = (value: Omit<CachePolicy, "observability">): CachePolicy =>
+  Object.freeze({
+    ...value,
+    observability: CACHE_OBSERVABILITY_EVENT_MAP[value.route],
+  });
 
 export const CACHE_POLICY_REGISTRY: readonly CachePolicy[] = Object.freeze([
   policy({

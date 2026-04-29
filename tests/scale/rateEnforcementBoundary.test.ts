@@ -329,6 +329,10 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       realUsersBlocked: false,
       rawPayloadLogged: false,
       piiLogged: false,
+      observability: expect.objectContaining({
+        suspiciousEvent: "abuse.suspicious",
+        externalExportEnabledByDefault: false,
+      }),
     });
     expect(validateAbuseEnforcementDecision(missingIdempotency)).toBe(true);
 

@@ -1,6 +1,10 @@
 import type { BffMutationOperation } from "./bffMutationHandlers";
 import type { IdempotentOperationKind } from "./idempotency";
 import type { JobType } from "./jobPolicies";
+import {
+  IDEMPOTENCY_OBSERVABILITY_EVENT_MAP,
+  type IdempotencyObservabilityMetadata,
+} from "./scaleObservabilityEvents";
 
 export type IdempotencyPolicyOperation =
   | BffMutationOperation
@@ -25,6 +29,7 @@ export type IdempotencyPolicy = {
   failOnError: true;
   strict: boolean;
   defaultEnabled: false;
+  observability: IdempotencyObservabilityMetadata;
 };
 
 const DAY_MS = 86_400_000;
@@ -53,6 +58,7 @@ const strictPolicy = (input: {
   failOnError: true,
   strict: true,
   defaultEnabled: false,
+  observability: IDEMPOTENCY_OBSERVABILITY_EVENT_MAP[input.operation],
 });
 
 export const IDEMPOTENCY_POLICY_REGISTRY: readonly IdempotencyPolicy[] = Object.freeze([
