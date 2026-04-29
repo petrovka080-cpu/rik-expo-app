@@ -1,4 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  isRpcNonEmptyString,
+  isRpcRecord,
+  validateRpcResponse,
+} from "./queryBoundary";
 
 type ProposalAttachmentEvidenceClient = Pick<SupabaseClient<any, any, any>, "rpc">;
 
@@ -32,6 +37,19 @@ const text = (value: unknown) => String(value ?? "").trim();
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+
+const isProposalAttachmentEvidenceAttachRpcResponse = (
+  value: unknown,
+): value is Record<string, unknown> => {
+  if (!isRpcRecord(value)) return false;
+  return (
+    isRpcNonEmptyString(value.attachment_id ?? value.attachmentId) &&
+    isRpcNonEmptyString(value.proposal_id ?? value.proposalId) &&
+    isRpcNonEmptyString(value.group_key ?? value.groupKey) &&
+    isRpcNonEmptyString(value.bucket_id ?? value.bucketId) &&
+    isRpcNonEmptyString(value.storage_path ?? value.storagePath)
+  );
+};
 
 export function parseProposalAttachmentEvidenceDescriptor(
   value: unknown,
@@ -89,5 +107,14 @@ export async function attachProposalAttachmentEvidence(
 
   const rpc = await client.rpc("proposal_attachment_evidence_attach_v1" as never, args as never);
   if (rpc.error) throw rpc.error;
-  return parseProposalAttachmentEvidenceDescriptor(rpc.data);
+  const validated = validateRpcResponse(
+    rpc.data,
+    isProposalAttachmentEvidenceAttachRpcResponse,
+    {
+      rpcName: "proposal_attachment_evidence_attach_v1",
+      caller: "attachProposalAttachmentEvidence",
+      domain: "proposal",
+    },
+  );
+  return parseProposalAttachmentEvidenceDescriptor(validated);
 }

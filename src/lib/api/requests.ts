@@ -17,6 +17,12 @@ import {
   normalizeStatus,
 } from "./requests.status";
 import { allSettledWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
+import {
+  isRpcArrayResponse,
+  isRpcNonEmptyStringResponse,
+  isRpcNullableNonEmptyStringResponse,
+  validateRpcResponse,
+} from "./queryBoundary";
 import type { ReqItemRow, RequestMeta, RequestRecord } from "./types";
 
 const logRequestsDebug = (...args: unknown[]) => {
@@ -278,6 +284,40 @@ function parseRequestReopenAtomicResult(data: unknown): RequestReopenAtomicSucce
   };
 }
 
+const isRequestSubmitAtomicRpcResponse = (value: unknown): value is Record<string, unknown> => {
+  if (!isRecord(value) || typeof value.ok !== "boolean") return false;
+
+  if (value.ok === false) {
+    return (
+      String(value.failure_code ?? value.failureCode ?? "").trim().length > 0 ||
+      String(value.failure_message ?? value.failureMessage ?? "").trim().length > 0
+    );
+  }
+
+  return (
+    (value.request == null || isRecord(value.request)) &&
+    (value.verification == null || isRecord(value.verification))
+  );
+};
+
+const isRequestReopenAtomicRpcResponse = (value: unknown): value is Record<string, unknown> => {
+  if (!isRecord(value) || typeof value.ok !== "boolean") return false;
+
+  if (value.ok === false) {
+    return (
+      String(value.failure_code ?? value.failureCode ?? "").trim().length > 0 ||
+      String(value.failure_message ?? value.failureMessage ?? "").trim().length > 0
+    );
+  }
+
+  const transitionPath = String(value.transition_path ?? value.transitionPath ?? "rpc_reopen").trim();
+  return (
+    (transitionPath === "rpc_reopen" || transitionPath === "already_draft") &&
+    (value.request == null || isRecord(value.request)) &&
+    (value.verification == null || isRecord(value.verification))
+  );
+};
+
 export function clearCachedDraftRequestId() {
   _draftRequestIdAny = null;
 }
@@ -342,7 +382,12 @@ async function findReusableEmptyDraftRequestId(): Promise<string | null> {
     const { data, error } = await client.rpc("request_find_reusable_empty_draft_v1", args);
     if (error) throw error;
 
-    const reusableId = normalizeRequestFilterId(String(data ?? ""));
+    const reusableIdRaw = validateRpcResponse(data, isRpcNullableNonEmptyStringResponse, {
+      rpcName: "request_find_reusable_empty_draft_v1",
+      caller: "findReusableEmptyDraftRequestId",
+      domain: "proposal",
+    });
+    const reusableId = normalizeRequestFilterId(String(reusableIdRaw ?? ""));
     if (!reusableId) return null;
 
     _draftRequestIdAny = reusableId;
@@ -487,7 +532,12 @@ export async function listRequestItems(requestId: number | string): Promise<ReqI
     const { data, error } = await client.rpc("request_items_by_request", args);
     if (error) throw error;
 
-    return parseRequestItemsByRequestRows(data);
+    const validated = validateRpcResponse(data, isRpcArrayResponse, {
+      rpcName: "request_items_by_request",
+      caller: "listRequestItems",
+      domain: "proposal",
+    });
+    return parseRequestItemsByRequestRows(validated);
   } catch (e) {
     logRequestsDebug("[listRequestItems]", getErrorMessage(e));
     return [];
@@ -640,7 +690,12 @@ export async function addRequestItemFromRikDetailed(
 
   if (error) throw error;
 
-  const itemId = parseRequestItemAddOrIncResult(data);
+  const validated = validateRpcResponse(data, isRpcNonEmptyStringResponse, {
+    rpcName: "request_item_add_or_inc",
+    caller: "addRequestItemFromRikDetailed",
+    domain: "proposal",
+  });
+  const itemId = parseRequestItemAddOrIncResult(validated);
   if (!itemId) throw new Error("request_item_add_or_inc returned empty id");
 
   const patch = buildRequestItemMetaPatch(opts);
@@ -742,7 +797,12 @@ async function runRequestSubmitAtomicStage(
     );
     if (error) throw error;
 
-    const result = parseRequestSubmitAtomicResult(data);
+    const validated = validateRpcResponse(data, isRequestSubmitAtomicRpcResponse, {
+      rpcName: "request_submit_atomic_v1",
+      caller: "runRequestSubmitAtomicStage",
+      domain: "proposal",
+    });
+    const result = parseRequestSubmitAtomicResult(validated);
     if (result.ok === false) {
       recordPlatformObservability({
         screen: "request",
@@ -861,7 +921,12 @@ export async function requestReopen(requestId: number | string): Promise<Request
     );
     if (error) throw error;
 
-    const result = parseRequestReopenAtomicResult(data);
+    const validated = validateRpcResponse(data, isRequestReopenAtomicRpcResponse, {
+      rpcName: "request_reopen_atomic_v1",
+      caller: "requestReopen",
+      domain: "proposal",
+    });
+    const result = parseRequestReopenAtomicResult(validated);
     if (result.ok === false) {
       throw new RequestReopenAtomicError(result);
     }

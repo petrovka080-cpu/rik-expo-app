@@ -1,6 +1,12 @@
 // src/lib/store_supabase.ts
 import { supabase } from './supabaseClient';
 import type { Database } from './database.types';
+import {
+  isRpcNonEmptyString,
+  isRpcNumberLike,
+  isRpcRecord,
+  validateRpcResponse,
+} from './api/queryBoundary';
 
 type RequestItemRowDb = Pick<
   Database["public"]["Tables"]["request_items"]["Row"],
@@ -10,6 +16,17 @@ type PendingRequestItemDb = Database["public"]["Views"]["request_items_pending_v
 type ApprovedRequestItemDb = Database["public"]["Views"]["v_request_items_display"]["Row"];
 type PurchaseInsert = Database["public"]["Tables"]["purchases"]["Insert"];
 type PurchaseItemInsert = Database["public"]["Tables"]["purchase_items"]["Insert"];
+
+type SendRequestToDirectorRpcRow = {
+  inserted_count: number | string;
+};
+
+type ApproveOrDeclinePendingRpcRow = {
+  new_status: string;
+  pending_id: string;
+  request_id: number | string;
+  request_item_id: string;
+};
 
 export type ReqItem = {
   id: string;
@@ -58,6 +75,24 @@ function normalizePendingRequestItem(row: PendingRequestItemDb): PendingRequestI
   };
 }
 
+const isSendRequestToDirectorRpcResponse = (
+  value: unknown,
+): value is SendRequestToDirectorRpcRow[] =>
+  Array.isArray(value) &&
+  value.every((row) => isRpcRecord(row) && isRpcNumberLike(row.inserted_count));
+
+const isApproveOrDeclinePendingRpcResponse = (
+  value: unknown,
+): value is ApproveOrDeclinePendingRpcRow[] =>
+  Array.isArray(value) &&
+  value.every((row) =>
+    isRpcRecord(row) &&
+    isRpcNonEmptyString(row.pending_id) &&
+    isRpcNonEmptyString(row.request_item_id) &&
+    isRpcNonEmptyString(row.new_status) &&
+    isRpcNumberLike(row.request_id),
+  );
+
 export async function listRequestItems(requestId: number, status?: string): Promise<ReqItem[]> {
   let q = supabase
     .from('request_items')
@@ -76,7 +111,12 @@ export async function sendRequestToDirector(requestId: number): Promise<number> 
   const { data, error } = await supabase.rpc('send_request_to_director', { p_request_id: requestId });
 
   if (error) throw error;
-  const first = Array.isArray(data) ? data[0] : null;
+  const validated = validateRpcResponse(data, isSendRequestToDirectorRpcResponse, {
+    rpcName: 'send_request_to_director',
+    caller: 'sendRequestToDirector',
+    domain: 'director',
+  });
+  const first = validated[0] ?? null;
   const inserted =
     first && typeof first === 'object' && 'inserted_count' in first
       ? Number((first as { inserted_count: unknown }).inserted_count)
@@ -101,7 +141,11 @@ export async function approvePending(pendingId: string, verdict: 'Утвержд
   });
 
   if (error) throw error;
-  return data;
+  return validateRpcResponse(data, isApproveOrDeclinePendingRpcResponse, {
+    rpcName: 'approve_or_decline_request_pending',
+    caller: 'approvePending',
+    domain: 'director',
+  });
 }
 
 export async function listApprovedByRequest(requestId: number): Promise<ReqItem[]> {

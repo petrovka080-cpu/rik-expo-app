@@ -1,0 +1,194 @@
+{
+  "wave": "S-RPC-4",
+  "mode": "production-safe-rpc-runtime-validation",
+  "ownerGoal": "10K/50K+ readiness",
+  "baseline": {
+    "rpcCallsTotal": 120,
+    "validateRpcResponseReferences": 57,
+    "validatedFiles": 19
+  },
+  "result": {
+    "validatedCallSites": 15,
+    "validatedRpcNames": 15,
+    "targetMet": true,
+    "alreadyValidatedReopened": false
+  },
+  "validatedCallSites": [
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.ts",
+      "rpcName": "subcontract_create_v1",
+      "function": "runCanonicalSubcontractCreate",
+      "guard": "isSubcontractCreateRpcResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.ts",
+      "rpcName": "subcontract_create_draft",
+      "function": "runLegacySubcontractCreateCompat",
+      "guard": "isSubcontractCreateRpcResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.ts",
+      "rpcName": "subcontract_approve_v1",
+      "function": "runSubcontractStatusMutation",
+      "guard": "isSubcontractApproveRpcResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.ts",
+      "rpcName": "subcontract_reject_v1",
+      "function": "runSubcontractStatusMutation",
+      "guard": "isSubcontractRejectRpcResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "rpcName": "request_find_reusable_empty_draft_v1",
+      "function": "findReusableEmptyDraftRequestId",
+      "guard": "isRpcNullableNonEmptyStringResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "rpcName": "request_items_by_request",
+      "function": "listRequestItems",
+      "guard": "isRpcArrayResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "rpcName": "request_item_add_or_inc",
+      "function": "addRequestItemFromRikDetailed",
+      "guard": "isRpcNonEmptyStringResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "rpcName": "request_submit_atomic_v1",
+      "function": "runRequestSubmitAtomicStage",
+      "guard": "isRequestSubmitAtomicRpcResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "rpcName": "request_reopen_atomic_v1",
+      "function": "requestReopen",
+      "guard": "isRequestReopenAtomicRpcResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/proposalAttachmentEvidence.api.ts",
+      "rpcName": "proposal_attachment_evidence_attach_v1",
+      "function": "attachProposalAttachmentEvidence",
+      "guard": "isProposalAttachmentEvidenceAttachRpcResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/proposalAttachments.service.ts",
+      "rpcName": "proposal_attachment_evidence_scope_v1",
+      "function": "loadCanonicalRows",
+      "guard": "isRpcRecordArray",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/store_supabase.ts",
+      "rpcName": "send_request_to_director",
+      "function": "sendRequestToDirector",
+      "guard": "isSendRequestToDirectorRpcResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/store_supabase.ts",
+      "rpcName": "approve_or_decline_request_pending",
+      "function": "approvePending",
+      "guard": "isApproveOrDeclinePendingRpcResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/accountant/accountant.return.service.ts",
+      "rpcName": "acc_return_min_auto",
+      "function": "runAccountantReturnToBuyerChain",
+      "guard": "isRpcVoidResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/accountant/accountant.return.service.ts",
+      "rpcName": "proposal_return_to_buyer_min",
+      "function": "runAccountantReturnToBuyerChain",
+      "guard": "isRpcVoidResponse",
+      "validShapePasses": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    }
+  ],
+  "skipped": [
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "rpcName": "director_finance_*",
+      "reason": "needs_separate_wave"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "rpcName": "acc_report_* / wh_report_*",
+      "reason": "low_risk"
+    },
+    {
+      "file": "src/lib/api/directorPdfSource.service.ts",
+      "rpcName": "pdf_director_*_source_v1",
+      "reason": "low_risk"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "rpcName": "proposal_* legacy paths",
+      "reason": "unclear_shape"
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcImplementationChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}

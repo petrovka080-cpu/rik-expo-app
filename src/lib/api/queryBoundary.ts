@@ -112,6 +112,14 @@ export const isRpcVoidResponse = (value: unknown): value is null | undefined =>
 export const isRpcNonEmptyStringResponse = (value: unknown): value is string =>
   isRpcNonEmptyString(value);
 
+export const isRpcNullableNonEmptyStringResponse = (
+  value: unknown,
+): value is string | null | undefined =>
+  value == null || isRpcNonEmptyString(value);
+
+export const isRpcBooleanResponse = (value: unknown): value is boolean =>
+  isRpcBoolean(value);
+
 export const isWarehouseIssueAtomicResponse = (value: unknown): value is unknown => {
   if (isRpcNumberLike(value)) return true;
   if (!isRpcRecord(value)) return false;

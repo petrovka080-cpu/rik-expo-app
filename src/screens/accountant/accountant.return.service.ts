@@ -1,5 +1,6 @@
 import { supabase } from "../../lib/supabaseClient";
 import { accountantReturnToBuyer } from "../../lib/api/accountant";
+import { isRpcVoidResponse, validateRpcResponse } from "../../lib/api/queryBoundary";
 import { logger } from "../../lib/logger";
 
 export async function runAccountantReturnToBuyerChain(params: {
@@ -19,17 +20,22 @@ export async function runAccountantReturnToBuyerChain(params: {
   }
 
   try {
-    const { error } = await supabase.rpc("acc_return_min_auto", {
+    const { data, error } = await supabase.rpc("acc_return_min_auto", {
       p_proposal_id: pid,
       p_comment: trimmedComment,
     });
     if (error) throw error;
+    validateRpcResponse(data, isRpcVoidResponse, {
+      rpcName: "acc_return_min_auto",
+      caller: "runAccountantReturnToBuyerChain",
+      domain: "accountant",
+    });
     return;
   } catch (e) {
     if (__DEV__) logger.info("log", "[AccountantReturn] Method 2 (acc_return_min_auto) failed:", e);
   }
 
-  const { error } = await supabase.rpc("proposal_return_to_buyer_min", {
+  const { data, error } = await supabase.rpc("proposal_return_to_buyer_min", {
     p_proposal_id: pid,
     p_comment: trimmedComment,
   });
@@ -37,4 +43,9 @@ export async function runAccountantReturnToBuyerChain(params: {
     if (__DEV__) console.error("[AccountantReturn] Method 3 (proposal_return_to_buyer_min) failed:", error);
     throw error;
   }
+  validateRpcResponse(data, isRpcVoidResponse, {
+    rpcName: "proposal_return_to_buyer_min",
+    caller: "runAccountantReturnToBuyerChain",
+    domain: "accountant",
+  });
 }

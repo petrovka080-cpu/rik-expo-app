@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "../database.types";
 import { mapWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
+import { isRpcRecordArray, validateRpcResponse } from "./queryBoundary";
 import { beginPlatformObservability } from "../observability/platformObservability";
 
 type ProposalAttachmentEvidenceRpcRow = {
@@ -273,7 +274,11 @@ async function loadCanonicalRows(
     p_viewer_role: inferViewerRole(screen, viewerRole),
   } as never);
   if (rpc.error) throw rpc.error;
-  return Array.isArray(rpc.data) ? (rpc.data as ProposalAttachmentEvidenceRpcRow[]) : [];
+  return validateRpcResponse(rpc.data, isRpcRecordArray, {
+    rpcName: "proposal_attachment_evidence_scope_v1",
+    caller: "loadCanonicalRows",
+    domain: "proposal",
+  }) as ProposalAttachmentEvidenceRpcRow[];
 }
 
 async function loadCompatibilityRows(client: ProposalAttachmentsClient, proposalId: string) {

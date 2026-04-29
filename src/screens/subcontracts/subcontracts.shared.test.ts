@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { RpcValidationError } from "../../lib/api/queryBoundary";
 import {
   SUBCONTRACT_MAX_PAGE_SIZE,
   approveSubcontract,
@@ -181,15 +182,13 @@ describe("subcontracts shared boundary", () => {
       error: null,
     });
 
-    await expect(createSubcontractDraftWithPatch("user-1", "Foreman", {})).rejects.toThrow(
-      "subcontract create returned invalid payload",
+    await expect(createSubcontractDraftWithPatch("user-1", "Foreman", {})).rejects.toBeInstanceOf(
+      RpcValidationError,
     );
 
-    expect(warnSpy).toHaveBeenCalledWith(
+    expect(warnSpy).not.toHaveBeenCalledWith(
       "[subcontracts.shared] create.invalid_payload",
-      expect.objectContaining({
-        operation: "create",
-      }),
+      expect.objectContaining({ payload: expect.anything() }),
     );
   });
 

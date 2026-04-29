@@ -1,6 +1,7 @@
 import { supabase } from "../../lib/supabaseClient";
 import type { Database } from "../../lib/database.types";
 import { classifyRpcCompatError, parseErr } from "../../lib/api/_core";
+import { validateRpcResponse } from "../../lib/api/queryBoundary";
 import { normalizeRuText } from "../../lib/text/encoding";
 
 type SubcontractsTable = Database["public"]["Tables"]["subcontracts"];
@@ -471,6 +472,15 @@ const parseSubcontractStatusMutationResult = (
   };
 };
 
+const isSubcontractCreateRpcResponse = (value: unknown): value is Record<string, unknown> =>
+  parseSubcontractCreateResult(value) != null;
+
+const isSubcontractApproveRpcResponse = (value: unknown): value is Record<string, unknown> =>
+  parseSubcontractStatusMutationResult("approve", value) != null;
+
+const isSubcontractRejectRpcResponse = (value: unknown): value is Record<string, unknown> =>
+  parseSubcontractStatusMutationResult("reject", value) != null;
+
 const ensureSubcontractCreateSucceeded = (
   data: unknown,
 ): Pick<Subcontract, "id" | "display_no"> => {
@@ -478,7 +488,6 @@ const ensureSubcontractCreateSucceeded = (
   if (!parsed) {
     logSubcontractsDebug("create.invalid_payload", {
       operation: "create",
-      payload: data,
     });
     throw new Error("subcontract create returned invalid payload");
   }
@@ -507,7 +516,6 @@ const ensureSubcontractStatusMutationSucceeded = (
   if (!parsed) {
     logSubcontractsDebug(`${operation}.invalid_payload`, {
       operation,
-      payload: data,
     });
     throw new Error(`subcontract ${operation} returned invalid payload`);
   }
@@ -543,7 +551,12 @@ const runCanonicalSubcontractCreate = async (
 ): Promise<Pick<Subcontract, "id" | "display_no">> => {
   const { data, error } = await supabase.rpc("subcontract_create_v1", payload);
   if (error) throw error;
-  return ensureSubcontractCreateSucceeded(data);
+  const validated = validateRpcResponse(data, isSubcontractCreateRpcResponse, {
+    rpcName: "subcontract_create_v1",
+    caller: "runCanonicalSubcontractCreate",
+    domain: "contractor",
+  });
+  return ensureSubcontractCreateSucceeded(validated);
 };
 
 const runLegacySubcontractCreateCompat = async (
@@ -551,7 +564,12 @@ const runLegacySubcontractCreateCompat = async (
 ): Promise<Pick<Subcontract, "id" | "display_no">> => {
   const { data, error } = await supabase.rpc("subcontract_create_draft", payload);
   if (error) throw error;
-  return ensureSubcontractCreateSucceeded(data);
+  const validated = validateRpcResponse(data, isSubcontractCreateRpcResponse, {
+    rpcName: "subcontract_create_draft",
+    caller: "runLegacySubcontractCreateCompat",
+    domain: "contractor",
+  });
+  return ensureSubcontractCreateSucceeded(validated);
 };
 
 const runSubcontractStatusMutation = async (
@@ -568,7 +586,16 @@ const runSubcontractStatusMutation = async (
     });
     throw error;
   }
-  ensureSubcontractStatusMutationSucceeded(operation, data);
+  const validated = validateRpcResponse(
+    data,
+    operation === "approve" ? isSubcontractApproveRpcResponse : isSubcontractRejectRpcResponse,
+    {
+      rpcName,
+      caller: "runSubcontractStatusMutation",
+      domain: "contractor",
+    },
+  );
+  ensureSubcontractStatusMutationSucceeded(operation, validated);
 };
 
 export const STATUS_CONFIG: Record<SubcontractStatus, { label: string; bg: string; fg: string }> = {
