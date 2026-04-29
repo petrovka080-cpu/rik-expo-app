@@ -34,6 +34,15 @@ const requireRpcRows = (value: unknown, rpcName: string): unknown[] => {
   return root.rows;
 };
 
+const requireBoundedRpcRows = (value: unknown, rpcName: string, limit: number): unknown[] => {
+  const rows = requireRpcRows(value, rpcName);
+  const maxRows = Math.max(0, Math.trunc(Number(limit) || 0));
+  if (rows.length > maxRows) {
+    throw new Error(`${rpcName} contract mismatch: rows length exceeds p_limit`);
+  }
+  return rows;
+};
+
 const toReqItemsMeta = (
   value: unknown,
   requestId: string,
@@ -130,9 +139,11 @@ export async function apiFetchReqHeadsCanonicalRaw(
     caller: "apiFetchReqHeadsCanonicalRaw",
     domain: "warehouse",
   });
-  const rows = requireRpcRows(validated, "warehouse_issue_queue_scope_v4").map((row, index) =>
-    adaptReqHeadsRpcRow(row, index),
-  );
+  const rows = requireBoundedRpcRows(
+    validated,
+    "warehouse_issue_queue_scope_v4",
+    pageSize,
+  ).map((row, index) => adaptReqHeadsRpcRow(row, index));
   const meta = toReqHeadsRpcMeta(validated, page, pageSize, rows.length);
   trackRpcLatency({
     name: "warehouse_issue_queue_scope_v4",

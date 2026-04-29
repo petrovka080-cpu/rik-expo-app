@@ -1,0 +1,77 @@
+{
+  "wave": "S-LOAD-FIX-1",
+  "mode": "production-safe-staging-load-hotspot-optimization",
+  "status": "PARTIAL_NEEDS_DB_OR_RPC_WAVE",
+  "ownerGoal": "10K/50K+ readiness",
+  "generatedAt": "2026-04-29T20:20:26.5599917+06:00",
+  "sourceEvidence": {
+    "sLoad3Status": "GREEN_STAGING_EXECUTED",
+    "targetsSampled": 5,
+    "optimizeNext": [
+      "warehouse_issue_queue_page_25",
+      "buyer_summary_inbox_page_25"
+    ],
+    "watch": [
+      "warehouse_stock_page_60"
+    ]
+  },
+  "hotspots": {
+    "warehouse_issue_queue_page_25": {
+      "status": "needs_db_or_rpc_wave",
+      "filesChanged": [
+        "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+        "src/screens/warehouse/warehouse.requests.read.test.ts",
+        "tests/load/sLoadFix1Hotspots.contract.test.ts"
+      ],
+      "fixType": "rpc_validation",
+      "semanticsPreserved": true,
+      "note": "Client now fails closed if warehouse_issue_queue_scope_v4 returns more rows than p_limit; measured latency optimization still requires DB/RPC work."
+    },
+    "buyer_summary_inbox_page_25": {
+      "status": "needs_db_or_rpc_wave",
+      "filesChanged": [
+        "src/screens/buyer/buyer.fetchers.ts",
+        "src/screens/buyer/buyer.fetchers.test.ts",
+        "tests/load/sLoadFix1Hotspots.contract.test.ts"
+      ],
+      "fixType": "rpc_validation",
+      "semanticsPreserved": true,
+      "note": "Client now validates buyer_summary_inbox_scope_v1 rows envelope; row-count/latency optimization still requires DB/RPC work because silent client caps are forbidden."
+    }
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "productionTouched": false,
+    "stagingWrites": false,
+    "productionWrites": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  },
+  "gates": {
+    "gitDiffCheck": "pass",
+    "targetedSLoadFix1Hotspots": "pass",
+    "targetedAffectedBuyerWarehouse": "pass",
+    "targetedStagingLoadCore": "pass",
+    "targetedPagination": "pass",
+    "targetedRpc": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerifyPrecommit": "blocked_dirty_worktree_after_internal_gates_passed",
+    "releaseVerifyCleanHead": "pending_after_push"
+  },
+  "optionalStagingRerun": {
+    "performed": false,
+    "reason": "Skipped because the safe code-only changes do not alter the staging RPC latency or payload source; no staging writes were performed."
+  }
+}

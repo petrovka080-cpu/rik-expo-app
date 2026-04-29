@@ -8,6 +8,7 @@ import {
   loadBuyerInboxData,
   loadBuyerInboxWindowData,
 } from "./buyer.fetchers";
+import { RpcValidationError } from "../../lib/api/queryBoundary";
 
 const buildScopeEnvelope = (params: {
   rows: Record<string, unknown>[];
@@ -148,6 +149,34 @@ describe("buyer inbox fetchers", () => {
         }),
       ]),
     );
+  });
+
+  it("fails closed when the inbox rpc returns a malformed rows envelope", async () => {
+    const rpc = jest.fn(async () => ({
+      data: {
+        document_type: "buyer_summary_inbox_scope_v1",
+        version: "1",
+        rows: {},
+        meta: {
+          offset_groups: 0,
+          limit_groups: 25,
+          returned_group_count: 0,
+          total_group_count: 0,
+          has_more: false,
+        },
+      },
+      error: null,
+    }));
+
+    await expect(
+      loadBuyerInboxWindowData({
+        supabase: { rpc },
+        offsetGroups: 0,
+        limitGroups: 25,
+        search: null,
+        log: () => undefined,
+      }),
+    ).rejects.toBeInstanceOf(RpcValidationError);
   });
 
   it("fails closed on an undefined rest transport path instead of publishing empty data", async () => {

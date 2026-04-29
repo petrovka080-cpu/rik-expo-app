@@ -143,6 +143,51 @@ describe("warehouse.requests.read canonical ownership", () => {
     );
   });
 
+  it("fails closed when the canonical request-head RPC exceeds the requested page limit", async () => {
+    const row = {
+      request_id: "req-rpc-1",
+      display_no: "REQ-1",
+      object_name: "Object A",
+      level_code: "L1",
+      system_code: "SYS",
+      zone_code: "Z1",
+      submitted_at: "2026-04-12T08:00:00.000Z",
+      items_cnt: 2,
+      ready_cnt: 2,
+      done_cnt: 0,
+      qty_limit_sum: 10,
+      qty_issued_sum: 4,
+      qty_left_sum: 6,
+      qty_can_issue_now_sum: 5,
+      issuable_now_cnt: 1,
+      issue_status: "READY",
+      visible_in_expense_queue: true,
+      can_issue_now: true,
+      waiting_stock: false,
+      all_done: false,
+    };
+    const rpc = jest.fn().mockResolvedValue({
+      data: {
+        version: "v4",
+        rows: [
+          row,
+          { ...row, request_id: "req-rpc-2" },
+        ],
+        meta: {
+          total: 2,
+          row_count: 2,
+          generated_at: "2026-04-12T08:00:01.000Z",
+          payload_shape_version: "v4",
+        },
+      },
+      error: null,
+    });
+
+    await expect(service.apiFetchReqHeadsWindow({ rpc } as never, 0, 1)).rejects.toThrow(
+      "warehouse_issue_queue_scope_v4 contract mismatch: rows length exceeds p_limit",
+    );
+  });
+
   it("loads request items from the canonical server RPC without materializing local availability", async () => {
     const rpc = jest.fn().mockResolvedValue({
       data: {

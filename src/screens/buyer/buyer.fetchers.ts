@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { BuyerInboxRow } from "../../lib/catalog_api";
-import { runContainedRpc } from "../../lib/api/queryBoundary";
+import {
+  isRpcRowsEnvelope,
+  runContainedRpc,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
@@ -185,7 +189,12 @@ const loadBuyerInboxWindowScope = async (params: {
   });
   if (error) throw error;
 
-  const envelope = adaptBuyerSummaryInboxScopeEnvelope(data);
+  const validated = validateRpcResponse(data, isRpcRowsEnvelope, {
+    rpcName: "buyer_summary_inbox_scope_v1",
+    caller: "loadBuyerInboxWindowScope",
+    domain: "buyer",
+  });
+  const envelope = adaptBuyerSummaryInboxScopeEnvelope(validated);
   const totalGroupCount = toInt(envelope.meta.total_group_count, 0);
   const pageReturnedGroupCount = toInt(envelope.meta.returned_group_count, 0);
   return {
