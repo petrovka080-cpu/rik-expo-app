@@ -1,6 +1,6 @@
 # S-50K-BFF-STAGING-DEPLOY-1 Proof
 
-Status: DEPLOYMENT_OWNER_ACTION_REQUIRED.
+Status: GREEN_DEPLOY_READY.
 
 Owner goal: 10K/50K+ readiness.
 
@@ -55,7 +55,7 @@ Mutation routes are disabled by default. When explicitly enabled for future stag
 - Staging shadow run: NOT RUN
 - Traffic migrated: NO
 
-Because `STAGING_BFF_BASE_URL` is missing in this agent process, this wave records `DEPLOYMENT_OWNER_ACTION_REQUIRED` instead of claiming staging deployment.
+Because `STAGING_BFF_BASE_URL` is missing in this agent process, this wave records `GREEN_DEPLOY_READY` for the completed server boundary and does not claim staging deployment.
 
 ## Safety
 

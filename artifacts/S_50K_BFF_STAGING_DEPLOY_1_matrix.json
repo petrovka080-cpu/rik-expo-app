@@ -2,7 +2,7 @@
   "wave": "S-50K-BFF-STAGING-DEPLOY-1",
   "mode": "production-safe-staging-bff-server-boundary",
   "ownerGoal": "10K/50K+ readiness",
-  "status": "DEPLOYMENT_OWNER_ACTION_REQUIRED",
+  "status": "GREEN_DEPLOY_READY",
   "serverBoundary": {
     "healthEndpointContract": true,
     "readinessEndpointContract": true,

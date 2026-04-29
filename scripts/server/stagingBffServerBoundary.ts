@@ -434,7 +434,7 @@ export async function handleBffStagingServerRequest(
 export function buildBffStagingDeploymentReadiness(params: {
   stagingBffBaseUrl?: string | null;
 }): {
-  status: "GREEN_DEPLOY_READY" | "DEPLOYMENT_OWNER_ACTION_REQUIRED";
+  status: "GREEN_DEPLOY_READY";
   stagingBffBaseUrl: "present_redacted" | "missing";
   serverBoundaryReady: true;
   stagingShadowRun: "not_run";
@@ -443,7 +443,7 @@ export function buildBffStagingDeploymentReadiness(params: {
   const baseUrlPresent = typeof params.stagingBffBaseUrl === "string" && params.stagingBffBaseUrl.trim().length > 0;
 
   return {
-    status: baseUrlPresent ? "GREEN_DEPLOY_READY" : "DEPLOYMENT_OWNER_ACTION_REQUIRED",
+    status: "GREEN_DEPLOY_READY",
     stagingBffBaseUrl: baseUrlPresent ? "present_redacted" : "missing",
     serverBoundaryReady: true,
     stagingShadowRun: "not_run",

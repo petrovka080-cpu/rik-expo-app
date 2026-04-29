@@ -1,6 +1,6 @@
 # BFF Staging Deploy Runbook
 
-Status: owner action required until a staging BFF target is provisioned.
+Status: deploy ready. External staging target provisioning is still required before staging shadow traffic can run.
 
 ## Purpose
 

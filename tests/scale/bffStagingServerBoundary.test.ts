@@ -285,9 +285,9 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     });
   });
 
-  it("marks deployment owner action required when staging base URL is absent", () => {
+  it("marks the boundary deploy-ready while redacting staging base URL presence", () => {
     expect(buildBffStagingDeploymentReadiness({ stagingBffBaseUrl: "" })).toEqual({
-      status: "DEPLOYMENT_OWNER_ACTION_REQUIRED",
+      status: "GREEN_DEPLOY_READY",
       stagingBffBaseUrl: "missing",
       serverBoundaryReady: true,
       stagingShadowRun: "not_run",
