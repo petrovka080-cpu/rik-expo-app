@@ -1,0 +1,47 @@
+{
+  "wave": "S-50K-BFF-STAGING-SHADOW-1",
+  "mode": "production-safe-staging-bff-shadow-readiness",
+  "status": "PARTIAL_OWNER_ACTION_REQUIRED",
+  "ownerGoal": "10K/50K+ readiness",
+  "env": {
+    "STAGING_BFF_BASE_URL": "missing",
+    "STAGING_SHADOW_MODE": "missing",
+    "STAGING_TEST_CREDENTIALS": "missing"
+  },
+  "localShadow": {
+    "status": "verified",
+    "test": "npm test -- --runInBand bffShadowParity",
+    "coveredFlows": 10,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "networkUsed": false
+  },
+  "stagingShadow": {
+    "status": "staging_bff_not_deployed",
+    "run": false,
+    "serverDeployedByThisWave": false,
+    "trafficMigrated": false,
+    "productionTouched": false
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "serverDeployed": false,
+    "trafficMigrated": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "serviceRoleUsed": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}

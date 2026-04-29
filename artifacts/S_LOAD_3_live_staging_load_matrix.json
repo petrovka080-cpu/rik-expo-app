@@ -1,0 +1,52 @@
+{
+  "wave": "S-LOAD-3",
+  "mode": "production-safe-live-staging-load-run",
+  "status": "PARTIAL_ENV_MISSING",
+  "ownerGoal": "10K/50K+ readiness",
+  "target": "staging",
+  "env": {
+    "STAGING_SUPABASE_URL": "missing",
+    "STAGING_SUPABASE_READONLY_KEY": "missing",
+    "STAGING_TEST_EMAIL": "missing",
+    "STAGING_TEST_PASSWORD": "missing",
+    "STAGING_TEST_COMPANY_ID": "missing",
+    "STAGING_LOAD_TARGET": "missing"
+  },
+  "harness": {
+    "corePath": "scripts/load/stagingLoadCore.ts",
+    "legacyExecutablePath": "scripts/load/staging-load-test.ts",
+    "legacyExecutableLoadsDotEnv": true,
+    "coreTargetCount": 5,
+    "boundedReadOnlyTargets": true
+  },
+  "execution": {
+    "targetedTestsRun": true,
+    "dryRunExecuted": false,
+    "dryRunReason": "No access-gated CLI dry-run exists that avoids .env loading; current process staging env is missing.",
+    "smokeRunExecuted": false,
+    "conservativeLoadExecuted": false,
+    "productionTouched": false,
+    "productionWrites": false
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "productionLoadGenerated": false,
+    "stagingWrites": false,
+    "serviceRoleUsed": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "wave": "S-DASH-1B",
+  "mode": "production-safe-live-snapshot-alerts",
+  "status": "PARTIAL_ENV_MISSING",
+  "ownerGoal": "10K/50K+ readiness",
+  "target": "production",
+  "env": {
+    "PROD_SUPABASE_URL": "missing",
+    "PROD_SUPABASE_READONLY_KEY": "missing",
+    "SENTRY_AUTH_TOKEN": "missing",
+    "SENTRY_ORG": "missing",
+    "SENTRY_PROJECT": "missing"
+  },
+  "execution": {
+    "dryRunExecuted": true,
+    "dryRunStatus": "env_missing",
+    "liveSnapshotExecuted": false,
+    "externalAlertsVerified": false,
+    "productionWrites": false,
+    "productionLoadGenerated": false
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "productionLoadGenerated": false,
+    "serviceRoleUsed": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}

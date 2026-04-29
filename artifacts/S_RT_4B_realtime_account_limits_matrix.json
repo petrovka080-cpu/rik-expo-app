@@ -1,0 +1,47 @@
+{
+  "wave": "S-RT-4B",
+  "mode": "production-safe-realtime-account-limits-verification",
+  "status": "PARTIAL_OWNER_ACTION_REQUIRED",
+  "ownerGoal": "10K/50K+ readiness",
+  "source": "repo-static-analysis",
+  "accountLimits": {
+    "SUPABASE_REALTIME_MAX_CHANNELS": "missing",
+    "SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS": "missing",
+    "SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND": "missing",
+    "verified": false
+  },
+  "projection": {
+    "channelsPerActiveUser": 14,
+    "projectedChannelsAt1000": 14000,
+    "projectedChannelsAt5000": 70000,
+    "projectedChannelsAt10000": 140000,
+    "projectedChannelsAt50000": 700000,
+    "withinVerifiedAccountLimits": null
+  },
+  "execution": {
+    "command": "node scripts/realtime/channelCapacity.mjs --scales 1000,5000,10000,50000 --json",
+    "localProjectionExecuted": true,
+    "realtimeLoadGenerated": false,
+    "productionTouched": false
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "realtimeLoadGenerated": false,
+    "serviceRoleUsed": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}
