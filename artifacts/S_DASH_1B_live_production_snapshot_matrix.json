@@ -3,6 +3,12 @@
   "mode": "production-safe-live-readonly-monitoring-snapshot",
   "status": "BLOCKED",
   "ownerGoal": "10K/50K+ readiness",
+  "previousWave": {
+    "wave": "S-DB-5",
+    "status": "PARTIAL_INSUFFICIENT_ACCESS",
+    "rerunAttempted": false,
+    "note": "S-DASH-1B proceeded without rerunning S-DB-5 because DB readonly index metadata access was insufficient and no new credential was provided."
+  },
   "env": {
     "PROD_SUPABASE_URL": "present_redacted",
     "PROD_SUPABASE_READONLY_KEY": "present_redacted",
@@ -77,5 +83,5 @@
     "npmTest": "PASS",
     "releaseVerify": "pending_post_push"
   },
-  "nextRecommendedWave": "Fix production read-only monitoring connectivity, then rerun S-DASH-1B. If snapshot reaches PARTIAL_SENTRY_MISSING, continue to S-RT-4B."
+  "nextRecommendedWave": "Fix production read-only monitoring connectivity, then rerun S-DASH-1B. If the owner chooses to proceed with independent realtime math before monitoring is unblocked, run S-RT-4B."
 }

@@ -10,6 +10,8 @@ Production monitoring snapshot was attempted with explicit read-only production 
 
 Sentry was not checked because `SENTRY_AUTH_TOKEN` is missing. This is recorded honestly as `env_missing`, not as verified.
 
+Previous wave `S-DB-5` ended `PARTIAL_INSUFFICIENT_ACCESS`. It was not rerun in this wave.
+
 ## Commands Run
 
 ```bash
@@ -22,9 +24,20 @@ rg "S_DASH_1|S-DASH-1|checkProductionHealth|production health|app_errors|rpc_lat
 rg "production-health|alert_thresholds|monitoring_runbook|rollback_runbook" scripts tests docs artifacts
 node scripts/monitoring/checkProductionHealth.mjs --target production --dry-run
 node scripts/monitoring/checkProductionHealth.mjs --target production --json --read-only
+git diff --check
+npx tsc --noEmit --pretty false
+npx expo lint
 npm test -- --runInBand productionHealthDashboard
 npm test -- --runInBand monitoring
+npm test -- --runInBand
+npm test
+npm run release:verify -- --json
 ```
+
+## Previous Wave
+
+- `S-DB-5`: `PARTIAL_INSUFFICIENT_ACCESS`
+- rerun attempted: NO
 
 ## Env
 
@@ -119,4 +132,4 @@ S-DASH-1B did not reach a usable live production monitoring snapshot. The harnes
 
 ## Next Recommended Wave
 
-Fix production read-only monitoring connectivity and rerun S-DASH-1B. If the Supabase aggregate snapshot succeeds while Sentry remains missing, record `PARTIAL_SENTRY_MISSING` and continue to S-RT-4B realtime limits verification.
+Fix production read-only monitoring connectivity and rerun S-DASH-1B. If the owner chooses to proceed with independent realtime math before monitoring is unblocked, run S-RT-4B.
