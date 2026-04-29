@@ -1,6 +1,8 @@
 import type { BffResponseEnvelope } from "../../src/shared/scale/bffContracts";
 import type { CachePolicyRoute } from "../../src/shared/scale/cachePolicies";
 import { getInvalidationTagsForOperation } from "../../src/shared/scale/cacheInvalidation";
+import type { JobType } from "../../src/shared/scale/jobPolicies";
+import { getJobPolicyForBffMutationOperation } from "../../src/shared/scale/jobPolicies";
 import {
   BFF_MUTATION_HANDLER_OPERATIONS,
   handleAccountantPaymentApply,
@@ -42,6 +44,9 @@ export type BffStagingRouteDefinition = {
   cachePolicyRoute?: CachePolicyRoute;
   cachePolicyDefaultEnabled?: false;
   invalidationTags?: readonly string[];
+  jobPolicyType?: JobType;
+  jobPolicyDefaultEnabled?: false;
+  jobExecutionEnabledByDefault?: false;
 };
 
 export type BffStagingServerConfig = {
@@ -166,6 +171,9 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
   },
 ]);
 
+const getMutationJobPolicyType = (operation: BffMutationOperation): JobType | undefined =>
+  getJobPolicyForBffMutationOperation(operation)?.jobType;
+
 export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] = Object.freeze([
   {
     operation: "proposal.submit",
@@ -176,6 +184,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
     invalidationTags: getInvalidationTagsForOperation("proposal.submit"),
+    jobPolicyType: getMutationJobPolicyType("proposal.submit"),
+    jobPolicyDefaultEnabled: false,
+    jobExecutionEnabledByDefault: false,
   },
   {
     operation: "warehouse.receive.apply",
@@ -186,6 +197,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
     invalidationTags: getInvalidationTagsForOperation("warehouse.receive.apply"),
+    jobPolicyType: getMutationJobPolicyType("warehouse.receive.apply"),
+    jobPolicyDefaultEnabled: false,
+    jobExecutionEnabledByDefault: false,
   },
   {
     operation: "accountant.payment.apply",
@@ -196,6 +210,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
     invalidationTags: getInvalidationTagsForOperation("accountant.payment.apply"),
+    jobPolicyType: getMutationJobPolicyType("accountant.payment.apply"),
+    jobPolicyDefaultEnabled: false,
+    jobExecutionEnabledByDefault: false,
   },
   {
     operation: "director.approval.apply",
@@ -206,6 +223,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
     invalidationTags: getInvalidationTagsForOperation("director.approval.apply"),
+    jobPolicyType: getMutationJobPolicyType("director.approval.apply"),
+    jobPolicyDefaultEnabled: false,
+    jobExecutionEnabledByDefault: false,
   },
   {
     operation: "request.item.update",
@@ -216,6 +236,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     requiresIdempotencyMetadata: true,
     requiresRateLimitMetadata: true,
     invalidationTags: getInvalidationTagsForOperation("request.item.update"),
+    jobPolicyType: getMutationJobPolicyType("request.item.update"),
+    jobPolicyDefaultEnabled: false,
+    jobExecutionEnabledByDefault: false,
   },
 ]);
 
@@ -552,6 +575,8 @@ export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   requestEnvelopeValidation: true,
   responseEnvelopeValidation: true,
   redactedErrors: true,
+  mutationRoutesWithJobMetadata: BFF_STAGING_MUTATION_ROUTES.filter((route) => route.jobPolicyType).length,
+  jobExecutionEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some((route) => route.jobExecutionEnabledByDefault),
   knownReadOperations: BFF_READ_HANDLER_OPERATIONS,
   knownMutationOperations: BFF_MUTATION_HANDLER_OPERATIONS,
 });

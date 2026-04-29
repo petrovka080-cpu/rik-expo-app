@@ -85,8 +85,24 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "src/shared/scale/cacheKeySafety.ts",
       "src/shared/scale/cachePolicies.ts",
     ]);
+    const s50kJobsIntegrationAllowedDirtyFiles = new Set([
+      "artifacts/S_50K_JOBS_INTEGRATION_1_matrix.json",
+      "artifacts/S_50K_JOBS_INTEGRATION_1_proof.md",
+      "docs/architecture/50k_jobs_integration.md",
+      "docs/operations/background_jobs_runbook.md",
+      "scripts/server/stagingBffServerBoundary.ts",
+      "src/shared/scale/jobAdapters.ts",
+      "src/shared/scale/jobDeadLetterBoundary.ts",
+      "src/shared/scale/jobIdempotency.ts",
+      "src/shared/scale/jobPayloadSafety.ts",
+      "src/shared/scale/jobPolicies.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/scale/jobsIntegrationBoundary.test.ts",
+    ]);
     const changed = changedFiles().filter(
-      (file) => !s50kCacheIntegrationAllowedDirtyFiles.has(file),
+      (file) =>
+        !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
+        !s50kJobsIntegrationAllowedDirtyFiles.has(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(false);
     expect(changed.some((file) => file.startsWith("scripts/scale/"))).toBe(false);

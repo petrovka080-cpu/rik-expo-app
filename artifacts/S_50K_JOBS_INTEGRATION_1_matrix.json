@@ -1,0 +1,47 @@
+{
+  "wave": "S-50K-JOBS-INTEGRATION-1",
+  "mode": "production-safe-disabled-background-job-boundary-integration",
+  "ownerGoal": "10K/50K+ readiness",
+  "status": "GREEN_JOB_BOUNDARY_READY",
+  "jobBoundary": {
+    "noopAdapter": true,
+    "inMemoryTestAdapter": true,
+    "externalAdapterContract": true,
+    "externalNetworkCallsInTests": false,
+    "enabledByDefault": false
+  },
+  "policies": {
+    "total": 10,
+    "defaultEnabled": false,
+    "mutatingJobsRequireIdempotency": true,
+    "notificationJobsRateLimited": true,
+    "payloadSizeLimited": true,
+    "piiSafePayloads": true
+  },
+  "integration": {
+    "bffMutationRoutesWithJobMetadata": 5,
+    "cacheInvalidationJobsMapped": 2,
+    "deadLetterBoundary": true,
+    "retryPolicyBoundary": true
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "stagingTouched": false,
+    "stagingWrites": false,
+    "appRuntimeJobsEnabled": false,
+    "existingAppFlowsReplaced": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}
