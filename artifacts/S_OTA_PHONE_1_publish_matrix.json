@@ -1,0 +1,70 @@
+{
+  "wave": "S-OTA-PHONE-1",
+  "mode": "controlled-ota-publish-to-phone",
+  "status": "PARTIAL",
+  "ownerApproval": true,
+  "ownerIntent": "physical_iOS_phone_needs_OTA_android_emulator_uses_APK",
+  "precheck": {
+    "worktreeClean": true,
+    "headEqualsOriginMain": true,
+    "releaseVerifyPassed": true
+  },
+  "target": {
+    "environment": "production",
+    "branch": "production",
+    "channel": "production",
+    "runtimeVersion": "bc9c9355222395cbde647610ec48487de37efc6b",
+    "platforms": [
+      "ios"
+    ],
+    "reason": "The available physical device is iOS; the submitted iOS production/TestFlight build uses the production channel and runtimeVersion bc9c9355222395cbde647610ec48487de37efc6b."
+  },
+  "publish": {
+    "command": "npx eas update --branch production --platform ios --message \"OTA: phone update d3eaf40\" --non-interactive --json",
+    "executed": true,
+    "otaPublished": true,
+    "easUpdateTriggered": true,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "updateIds": [
+      "019dd726-5912-7c74-90f3-5d3823b92c87"
+    ],
+    "group": "d6901d53-b016-4202-9cc5-64ce61f14388",
+    "message": "OTA: phone update d3eaf40",
+    "gitCommitHash": "d3eaf40bb3430b5eff308925cb71a90c42033a55"
+  },
+  "sentry": {
+    "sourceMaps": "env_missing",
+    "details": "SENTRY_AUTH_TOKEN, SENTRY_ORG, and SENTRY_PROJECT were not present in the shell environment. EAS update generated an iOS source map locally during export, but no Sentry upload was performed.",
+    "secretsPrinted": false
+  },
+  "phoneVerification": {
+    "status": "owner_action_required",
+    "notes": [
+      "The agent cannot physically open the owner's iOS phone.",
+      "Open the iOS app, fully close and reopen if needed, wait for Expo Updates to apply, then confirm the app launches without an immediate fatal crash."
+    ]
+  },
+  "rollback": {
+    "rollbackScriptExists": true,
+    "dryRunGenerated": true,
+    "rollbackExecuted": false,
+    "rollbackTarget": "d3eaf40bb3430b5eff308925cb71a90c42033a55",
+    "rollbackTargetStatus": "current_head_placeholder_owner_action_required_for_previous_safe_update_id"
+  },
+  "postPublish": {
+    "releaseVerifyPassed": true,
+    "worktreeCleanBeforeArtifacts": true
+  },
+  "safety": {
+    "businessLogicChangedInThisWave": false,
+    "sqlRpcChangedInThisWave": false,
+    "rlsChangedInThisWave": false,
+    "packageChangedInThisWave": false,
+    "nativeConfigChangedInThisWave": false,
+    "productionDataTouched": false,
+    "productionWrites": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false
+  }
+}
