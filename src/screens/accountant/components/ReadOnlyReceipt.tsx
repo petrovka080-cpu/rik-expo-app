@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { AccountantInboxRow } from "../../../lib/rik_api";
 import { normalizeRuText } from "../../../lib/text/encoding";
@@ -90,34 +90,28 @@ export function ReadOnlyPaymentSummary({
 
   return (
     <View style={S.section}>
-      <Text style={{ fontWeight: "900", color: UI.text, marginBottom: 10 }}>Детали оплаты</Text>
+      <Text style={receiptStyles.sectionTitle}>Детали оплаты</Text>
 
       <View
-        style={{
-          padding: 12,
-          borderRadius: 14,
-          backgroundColor: "rgba(255,255,255,0.04)",
-          borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.12)",
-        }}
+        style={receiptStyles.amountCard}
       >
-        <Text style={{ color: UI.sub, fontWeight: "800" }}>Счёт</Text>
-        <Text style={{ color: UI.text, fontWeight: "900", fontSize: 18, marginTop: 4 }}>
+        <Text style={receiptStyles.subLabel}>Счёт</Text>
+        <Text style={receiptStyles.amountTitle}>
           {inv.toFixed(2)} {cur}
         </Text>
 
-        <View style={{ height: 10 }} />
+        <View style={receiptStyles.spacer10} />
 
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: UI.sub, fontWeight: "800" }}>Оплачено</Text>
-            <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>
+        <View style={receiptStyles.rowGap10}>
+          <View style={receiptStyles.flex1}>
+            <Text style={receiptStyles.subLabel}>Оплачено</Text>
+            <Text style={receiptStyles.valueText}>
               {paid.toFixed(2)} {cur}
             </Text>
           </View>
 
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: UI.sub, fontWeight: "800" }}>Остаток</Text>
+          <View style={receiptStyles.flex1}>
+            <Text style={receiptStyles.subLabel}>Остаток</Text>
             <Text
               style={{
                 color: rest <= 0 ? "rgba(134,239,172,0.95)" : "rgba(253,224,138,0.95)",
@@ -131,83 +125,66 @@ export function ReadOnlyPaymentSummary({
         </View>
       </View>
 
-      <View style={{ height: 10 }} />
+      <View style={receiptStyles.spacer10} />
 
       {isHistoryTab && currentPaymentId ? (
-        <View style={{ marginBottom: 10 }}>
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>
-            Платёж ID: <Text style={{ color: UI.text, fontWeight: "900" }}>{String(currentPaymentId)}</Text>
+        <View style={receiptStyles.marginBottom10}>
+          <Text style={receiptStyles.subLabel}>
+            Платёж ID: <Text style={receiptStyles.textStrong}>{String(currentPaymentId)}</Text>
           </Text>
         </View>
       ) : null}
 
-      <Text style={{ color: UI.sub, fontWeight: "800" }}>Статус</Text>
+      <Text style={receiptStyles.subLabel}>Статус</Text>
       <StatusBadge label={statusText} tone="neutral" style={{ marginTop: 4 }} />
 
       {noteText ? (
         <>
-          <View style={{ height: 10 }} />
-          <Text style={{ color: UI.text, fontWeight: "800" }}>
-            Комментарий: <Text style={{ color: UI.sub, fontWeight: "800" }}>{noteText}</Text>
+          <View style={receiptStyles.spacer10} />
+          <Text style={receiptStyles.textEmphasis}>
+            Комментарий: <Text style={receiptStyles.subLabel}>{noteText}</Text>
           </Text>
         </>
       ) : null}
 
-      <View style={{ height: 12 }} />
+      <View style={receiptStyles.spacer12} />
 
       <Pressable
         onPress={() => setShowBank((value) => !value)}
-        style={{
-          paddingVertical: 10,
-          paddingHorizontal: 12,
-          borderRadius: 14,
-          backgroundColor: "rgba(255,255,255,0.06)",
-          borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.14)",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        style={receiptStyles.bankToggle}
       >
-        <Text style={{ color: UI.text, fontWeight: "900" }}>Реквизиты {hasAnyBank ? "" : "(пусто)"}</Text>
-        <Text style={{ color: UI.sub, fontWeight: "900" }}>{showBank ? "▲" : "▼"}</Text>
+        <Text style={receiptStyles.textStrong}>Реквизиты {hasAnyBank ? "" : "(пусто)"}</Text>
+        <Text style={receiptStyles.toggleText}>{showBank ? "▲" : "▼"}</Text>
       </Pressable>
 
       {showBank ? (
         <View
-          style={{
-            marginTop: 10,
-            padding: 12,
-            borderRadius: 14,
-            backgroundColor: "rgba(255,255,255,0.04)",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.10)",
-          }}
+          style={receiptStyles.bankPanel}
         >
-          <Text style={{ color: UI.text, fontWeight: "900" }}>
-            Банк: <Text style={{ color: UI.sub, fontWeight: "800" }}>{bankName || "—"}</Text>
+          <Text style={receiptStyles.textStrong}>
+            Банк: <Text style={receiptStyles.subLabel}>{bankName || "—"}</Text>
           </Text>
 
-          <View style={{ height: 10 }} />
-          <Text style={{ color: UI.text, fontWeight: "900" }}>
-            БИК: <Text style={{ color: UI.sub, fontWeight: "800" }}>{bik || "—"}</Text>
+          <View style={receiptStyles.spacer10} />
+          <Text style={receiptStyles.textStrong}>
+            БИК: <Text style={receiptStyles.subLabel}>{bik || "—"}</Text>
           </Text>
 
-          <View style={{ height: 10 }} />
-          <Text style={{ color: UI.text, fontWeight: "900" }}>
-            Р/С: <Text style={{ color: UI.sub, fontWeight: "800" }}>{rs || "—"}</Text>
+          <View style={receiptStyles.spacer10} />
+          <Text style={receiptStyles.textStrong}>
+            Р/С: <Text style={receiptStyles.subLabel}>{rs || "—"}</Text>
           </Text>
 
-          <View style={{ height: 10 }} />
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: UI.text, fontWeight: "900" }}>
-                ИНН: <Text style={{ color: UI.sub, fontWeight: "800" }}>{inn || "—"}</Text>
+          <View style={receiptStyles.spacer10} />
+          <View style={receiptStyles.rowGap10}>
+            <View style={receiptStyles.flex1}>
+              <Text style={receiptStyles.textStrong}>
+                ИНН: <Text style={receiptStyles.subLabel}>{inn || "—"}</Text>
               </Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: UI.text, fontWeight: "900" }}>
-                КПП: <Text style={{ color: UI.sub, fontWeight: "800" }}>{kpp || "—"}</Text>
+            <View style={receiptStyles.flex1}>
+              <Text style={receiptStyles.textStrong}>
+                КПП: <Text style={receiptStyles.subLabel}>{kpp || "—"}</Text>
               </Text>
             </View>
           </View>
@@ -292,74 +269,57 @@ export function ReadOnlyPaymentReceipt({
   return (
     <>
       <View style={S.section}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={1}>
+        <View style={receiptStyles.headerRow}>
+          <View style={receiptStyles.flex1}>
+            <Text style={receiptStyles.supplierTitle} numberOfLines={1}>
               {supplier}
             </Text>
-            <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={1}>
+            <Text style={receiptStyles.headerSub} numberOfLines={1}>
               Счёт №{invNo} • {invDt}
             </Text>
           </View>
 
           <View
-            style={{
-              paddingVertical: 6,
-              paddingHorizontal: 10,
-              borderRadius: 999,
-              backgroundColor: "rgba(34,197,94,0.14)",
-              borderWidth: 1,
-              borderColor: "rgba(34,197,94,0.30)",
-            }}
+            style={receiptStyles.statusPill}
           >
-            <Text style={{ color: "rgba(134,239,172,0.95)", fontWeight: "900", fontSize: 12 }}>
+            <Text style={receiptStyles.statusPillText}>
               {String(statusText).toUpperCase()}
             </Text>
           </View>
         </View>
 
-        <View style={{ height: 10 }} />
+        <View style={receiptStyles.spacer10} />
 
-        <Text style={{ color: UI.sub, fontWeight: "800" }}>
+        <Text style={receiptStyles.subLabel}>
           ID:{" "}
           <Text
-            style={{
-              color: UI.text,
-              fontWeight: "900",
-              fontFamily: Platform.OS === "web" ? "monospace" : undefined,
-            }}
+            style={receiptStyles.monospaceValue}
           >
             {proposalId}
           </Text>
         </Text>
 
-        <View style={{ height: 12 }} />
+        <View style={receiptStyles.spacer12} />
 
         <View
-          style={{
-            padding: 12,
-            borderRadius: 14,
-            backgroundColor: "rgba(255,255,255,0.04)",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.12)",
-          }}
+          style={receiptStyles.amountCard}
         >
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>Сумма счёта</Text>
-          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 18, marginTop: 4 }}>
+          <Text style={receiptStyles.subLabel}>Сумма счёта</Text>
+          <Text style={receiptStyles.amountTitle}>
             {inv.toFixed(2)} {cur}
           </Text>
 
-          <View style={{ height: 10 }} />
+          <View style={receiptStyles.spacer10} />
 
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: UI.sub, fontWeight: "800" }}>Оплачено</Text>
-              <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>
+          <View style={receiptStyles.rowGap10}>
+            <View style={receiptStyles.flex1}>
+              <Text style={receiptStyles.subLabel}>Оплачено</Text>
+              <Text style={receiptStyles.valueText}>
                 {paid.toFixed(2)} {cur}
               </Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: UI.sub, fontWeight: "800" }}>Остаток</Text>
+            <View style={receiptStyles.flex1}>
+              <Text style={receiptStyles.subLabel}>Остаток</Text>
               <Text
                 style={{
                   color: rest <= 0 ? "rgba(134,239,172,0.95)" : "rgba(253,224,138,0.95)",
@@ -373,34 +333,34 @@ export function ReadOnlyPaymentReceipt({
           </View>
         </View>
 
-        <View style={{ height: 12 }} />
+        <View style={receiptStyles.spacer12} />
 
-        <Text style={{ color: UI.sub, fontWeight: "800" }}>Бухгалтер</Text>
-        <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{fio}</Text>
+        <Text style={receiptStyles.subLabel}>Бухгалтер</Text>
+        <Text style={receiptStyles.valueText}>{fio}</Text>
 
         {isHistoryTab && currentPaymentId ? (
-          <View style={{ marginTop: 8 }}>
-            <Text style={{ color: UI.sub, fontWeight: "800" }}>
-              Платёж ID: <Text style={{ color: UI.text, fontWeight: "900" }}>{String(currentPaymentId)}</Text>
+          <View style={receiptStyles.marginTop8}>
+            <Text style={receiptStyles.subLabel}>
+              Платёж ID: <Text style={receiptStyles.textStrong}>{String(currentPaymentId)}</Text>
             </Text>
           </View>
         ) : null}
 
         {noteText ? (
           <>
-            <View style={{ height: 10 }} />
-            <Text style={{ color: UI.text, fontWeight: "800" }}>
-              Комментарий: <Text style={{ color: UI.sub, fontWeight: "800" }}>{noteText}</Text>
+            <View style={receiptStyles.spacer10} />
+            <Text style={receiptStyles.textEmphasis}>
+              Комментарий: <Text style={receiptStyles.subLabel}>{noteText}</Text>
             </Text>
           </>
         ) : null}
       </View>
 
-      <View style={{ height: 12 }} />
+      <View style={receiptStyles.spacer12} />
 
       <View style={S.section}>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Text style={{ color: UI.text, fontWeight: "900" }}>Вложения: {files.length}</Text>
+        <View style={receiptStyles.attachmentHeaderRow}>
+          <Text style={receiptStyles.textStrong}>Вложения: {files.length}</Text>
 
           <Pressable
             disabled={!!busyKey}
@@ -415,11 +375,11 @@ export function ReadOnlyPaymentReceipt({
               opacity: busyKey ? 0.6 : 1,
             }}
           >
-            <Text style={{ color: UI.text, fontWeight: "900", fontSize: 12 }}>{busyKey ? "…" : "Обновить"}</Text>
+            <Text style={receiptStyles.buttonTextSmall}>{busyKey ? "…" : "Обновить"}</Text>
           </Pressable>
         </View>
 
-        <View style={{ height: 10 }} />
+        <View style={receiptStyles.spacer10} />
 
         {attState === "error" ? (
           <AttachmentStateBlock tone="error" title="Не удалось загрузить вложения" message={attMessage} />
@@ -430,11 +390,11 @@ export function ReadOnlyPaymentReceipt({
         ) : null}
 
         {showAttachmentEmpty ? (
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>{attMessage || "Вложения отсутствуют."}</Text>
+          <Text style={receiptStyles.subLabel}>{attMessage || "Вложения отсутствуют."}</Text>
         ) : null}
 
         {files.length > 0 ? (
-          <View style={{ gap: 8 }}>
+          <View style={receiptStyles.gap8}>
             {files.map((file) => (
               <Pressable
                 key={String(file.attachmentId)}
@@ -450,7 +410,7 @@ export function ReadOnlyPaymentReceipt({
                   opacity: busyKey ? 0.6 : 1,
                 }}
               >
-                <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
+                <Text style={receiptStyles.textStrong} numberOfLines={1}>
                   📎 {String(file.fileName ?? "file")}
                 </Text>
               </Pressable>
@@ -459,7 +419,7 @@ export function ReadOnlyPaymentReceipt({
         ) : null}
 
         {showInvoiceBtn || showReportBtn ? (
-          <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>
+          <View style={receiptStyles.actionRow}>
             {showInvoiceBtn ? (
               <Pressable
                 disabled={!!busyKey}
@@ -476,7 +436,7 @@ export function ReadOnlyPaymentReceipt({
                   opacity: busyKey ? 0.6 : 1,
                 }}
               >
-                <Text style={{ color: UI.text, fontWeight: "900" }}>Счёт</Text>
+                <Text style={receiptStyles.textStrong}>Счёт</Text>
               </Pressable>
             ) : null}
 
@@ -496,69 +456,52 @@ export function ReadOnlyPaymentReceipt({
                   opacity: busyKey ? 0.6 : 1,
                 }}
               >
-                <Text style={{ color: UI.text, fontWeight: "900" }}>Отчёт</Text>
+                <Text style={receiptStyles.textStrong}>Отчёт</Text>
               </Pressable>
             ) : null}
           </View>
         ) : null}
       </View>
 
-      <View style={{ height: 12 }} />
+      <View style={receiptStyles.spacer12} />
 
       <View style={S.section}>
         <Pressable
           onPress={() => setShowBank((value) => !value)}
-          style={{
-            paddingVertical: 10,
-            paddingHorizontal: 12,
-            borderRadius: 14,
-            backgroundColor: "rgba(255,255,255,0.06)",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.14)",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+          style={receiptStyles.bankToggle}
         >
-          <Text style={{ color: UI.text, fontWeight: "900" }}>Реквизиты {hasAnyBank ? "" : "(пусто)"}</Text>
-          <Text style={{ color: UI.sub, fontWeight: "900" }}>{showBank ? "▲" : "▼"}</Text>
+          <Text style={receiptStyles.textStrong}>Реквизиты {hasAnyBank ? "" : "(пусто)"}</Text>
+          <Text style={receiptStyles.toggleText}>{showBank ? "▲" : "▼"}</Text>
         </Pressable>
 
         {showBank ? (
           <View
-            style={{
-              marginTop: 10,
-              padding: 12,
-              borderRadius: 14,
-              backgroundColor: "rgba(255,255,255,0.04)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.10)",
-            }}
+            style={receiptStyles.bankPanel}
           >
-            <Text style={{ color: UI.text, fontWeight: "900" }}>
-              Банк: <Text style={{ color: UI.sub, fontWeight: "800" }}>{bankName || "—"}</Text>
+            <Text style={receiptStyles.textStrong}>
+              Банк: <Text style={receiptStyles.subLabel}>{bankName || "—"}</Text>
             </Text>
 
-            <View style={{ height: 10 }} />
-            <Text style={{ color: UI.text, fontWeight: "900" }}>
-              БИК: <Text style={{ color: UI.sub, fontWeight: "800" }}>{bik || "—"}</Text>
+            <View style={receiptStyles.spacer10} />
+            <Text style={receiptStyles.textStrong}>
+              БИК: <Text style={receiptStyles.subLabel}>{bik || "—"}</Text>
             </Text>
 
-            <View style={{ height: 10 }} />
-            <Text style={{ color: UI.text, fontWeight: "900" }}>
-              Р/С: <Text style={{ color: UI.sub, fontWeight: "800" }}>{rs || "—"}</Text>
+            <View style={receiptStyles.spacer10} />
+            <Text style={receiptStyles.textStrong}>
+              Р/С: <Text style={receiptStyles.subLabel}>{rs || "—"}</Text>
             </Text>
 
-            <View style={{ height: 10 }} />
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: UI.text, fontWeight: "900" }}>
-                  ИНН: <Text style={{ color: UI.sub, fontWeight: "800" }}>{inn || "—"}</Text>
+            <View style={receiptStyles.spacer10} />
+            <View style={receiptStyles.rowGap10}>
+              <View style={receiptStyles.flex1}>
+                <Text style={receiptStyles.textStrong}>
+                  ИНН: <Text style={receiptStyles.subLabel}>{inn || "—"}</Text>
                 </Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: UI.text, fontWeight: "900" }}>
-                  КПП: <Text style={{ color: UI.sub, fontWeight: "800" }}>{kpp || "—"}</Text>
+              <View style={receiptStyles.flex1}>
+                <Text style={receiptStyles.textStrong}>
+                  КПП: <Text style={receiptStyles.subLabel}>{kpp || "—"}</Text>
                 </Text>
               </View>
             </View>
@@ -568,3 +511,134 @@ export function ReadOnlyPaymentReceipt({
     </>
   );
 }
+
+const receiptStyles = StyleSheet.create({
+  sectionTitle: {
+    fontWeight: "900",
+    color: UI.text,
+    marginBottom: 10,
+  },
+  amountCard: {
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  subLabel: {
+    color: UI.sub,
+    fontWeight: "800",
+  },
+  amountTitle: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 18,
+    marginTop: 4,
+  },
+  spacer10: {
+    height: 10,
+  },
+  spacer12: {
+    height: 12,
+  },
+  rowGap10: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  flex1: {
+    flex: 1,
+  },
+  valueText: {
+    color: UI.text,
+    fontWeight: "900",
+    marginTop: 4,
+  },
+  marginBottom10: {
+    marginBottom: 10,
+  },
+  marginTop8: {
+    marginTop: 8,
+  },
+  textStrong: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+  textEmphasis: {
+    color: UI.text,
+    fontWeight: "800",
+  },
+  bankToggle: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  toggleText: {
+    color: UI.sub,
+    fontWeight: "900",
+  },
+  bankPanel: {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  supplierTitle: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  headerSub: {
+    color: UI.sub,
+    fontWeight: "800",
+    marginTop: 4,
+  },
+  statusPill: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(34,197,94,0.14)",
+    borderWidth: 1,
+    borderColor: "rgba(34,197,94,0.30)",
+  },
+  statusPillText: {
+    color: "rgba(134,239,172,0.95)",
+    fontWeight: "900",
+    fontSize: 12,
+  },
+  monospaceValue: {
+    color: UI.text,
+    fontWeight: "900",
+    fontFamily: Platform.OS === "web" ? "monospace" : undefined,
+  },
+  attachmentHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  buttonTextSmall: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 12,
+  },
+  gap8: {
+    gap: 8,
+  },
+  actionRow: {
+    marginTop: 10,
+    flexDirection: "row",
+    gap: 8,
+  },
+});

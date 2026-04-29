@@ -23,4 +23,14 @@ describe("V4-6 inline styles phase 2", () => {
       expect(inlineStyleCount).toBe(0);
     }
   });
+
+  it("keeps read-only receipt static styles in StyleSheet while preserving dynamic variants", () => {
+    const source = readRepoFile("src/screens/accountant/components/ReadOnlyReceipt.tsx");
+    const inlineStyleCount = (source.match(/style=\{\{/g) || []).length;
+
+    expect(source).toContain("const receiptStyles = StyleSheet.create");
+    expect(inlineStyleCount).toBeLessThanOrEqual(10);
+    expect(source).toContain('color: rest <= 0 ? "rgba(134,239,172,0.95)" : "rgba(253,224,138,0.95)"');
+    expect(source).toContain("opacity: busyKey ? 0.6 : 1");
+  });
 });
