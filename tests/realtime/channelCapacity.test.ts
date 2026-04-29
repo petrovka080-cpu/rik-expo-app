@@ -11,6 +11,9 @@ function runCapacity(args: string[], env: Record<string, string | undefined> = {
     encoding: "utf8",
     env: {
       ...process.env,
+      SUPABASE_REALTIME_MAX_CHANNELS: undefined,
+      SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS: undefined,
+      SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND: undefined,
       ...env,
       EXPO_PUBLIC_SUPABASE_URL: "https://prod-secret-project.supabase.co",
       EXPO_PUBLIC_SUPABASE_ANON_KEY: "anon_secret_should_not_print",
@@ -32,8 +35,8 @@ describe("realtime channel capacity proof", () => {
     const report = parseStdout(result);
 
     expect(result.status).toBe(0);
-    expect(report.wave).toBe("S-RT-4");
-    expect(report.status).toBe("GREEN_IMPLEMENTATION_LIMITS_OWNER_ACTION");
+    expect(report.wave).toBe("S-RT-4B");
+    expect(report.status).toBe("PARTIAL_LIMITS_MISSING");
     expect(report.productionTouched).toBe(false);
     expect(report.realtimeLoadGenerated).toBe(false);
     expect(report.safety).toEqual(
@@ -82,19 +85,25 @@ describe("realtime channel capacity proof", () => {
       accountLimitStatus: string;
       capacityClaim: string;
       limits: Record<string, unknown>;
+      missingLimitKeys: string[];
       projections: Array<{ withinVerifiedAccountLimits: boolean | null; reason: string }>;
     };
 
     expect(result.status).toBe(0);
     expect(report.accountLimitStatus).toBe("owner_action_required");
-    expect(report.capacityClaim).toBe("unverified");
+    expect(report.capacityClaim).toBe("partial");
     expect(report.limits).toEqual({
       maxChannels: "missing",
       maxConcurrentClients: "missing",
       maxMessagesPerSecond: "missing",
     });
+    expect(report.missingLimitKeys).toEqual([
+      "SUPABASE_REALTIME_MAX_CHANNELS",
+      "SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS",
+      "SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND",
+    ]);
     expect(report.projections[0].withinVerifiedAccountLimits).toBeNull();
-    expect(report.projections[0].reason).toContain("account limits are not configured");
+    expect(report.projections[0].reason).toContain("positive integers");
   });
 
   it("checks true and false projections when account limits are provided", () => {
@@ -104,10 +113,11 @@ describe("realtime channel capacity proof", () => {
         SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS: "20000",
         SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND: "100000",
       }),
-    ) as { accountLimitStatus: string; projections: Array<{ withinVerifiedAccountLimits: boolean }> };
+    ) as { status: string; accountLimitStatus: string; projections: Array<{ withinVerifiedAccountLimits: boolean }> };
 
     expect(within.accountLimitStatus).toBe("verified");
     expect(within.projections[0].withinVerifiedAccountLimits).toBe(true);
+    expect(within.status).toBe("GREEN_LIMITS_VERIFIED");
 
     const over = parseStdout(
       runCapacity(["--scales", "10000"], {
@@ -118,7 +128,56 @@ describe("realtime channel capacity proof", () => {
     ) as { projections: Array<{ withinVerifiedAccountLimits: boolean; reason: string }> };
 
     expect(over.projections[0].withinVerifiedAccountLimits).toBe(false);
-    expect(over.projections[0].reason).toContain("exceed provided limits");
+    expect(over.projections[0].reason).toContain("projected channels exceed");
+  });
+
+  it("keeps channel/client conclusions when messages/sec is missing", () => {
+    const report = parseStdout(
+      runCapacity(["--scales", "1000,5000,10000,50000"], {
+        SUPABASE_REALTIME_MAX_CHANNELS: "200000",
+        SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS: "20000",
+        SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND: undefined,
+      }),
+    ) as {
+      status: string;
+      accountLimitStatus: string;
+      missingLimitKeys: string[];
+      conclusion: { oneK: string; fiveK: string; tenK: string; fiftyK: string };
+    };
+
+    expect(report.status).toBe("PARTIAL_MESSAGES_PER_SECOND_MISSING");
+    expect(report.accountLimitStatus).toBe("partial_messages_per_second_missing");
+    expect(report.missingLimitKeys).toEqual(["SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND"]);
+    expect(report.conclusion).toEqual({
+      oneK: "verified",
+      fiveK: "verified",
+      tenK: "verified",
+      fiftyK: "requires_enterprise",
+    });
+  });
+
+  it("distinguishes present-but-invalid limit env from missing env", () => {
+    const report = parseStdout(
+      runCapacity(["--scales", "10000"], {
+        SUPABASE_REALTIME_MAX_CHANNELS: "true",
+        SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS: "also-not-a-number",
+        SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND: undefined,
+      }),
+    ) as {
+      env: Record<string, string>;
+      missingLimitKeys: string[];
+      invalidLimitKeys: string[];
+      conclusion: { tenK: string };
+    };
+
+    expect(report.env.SUPABASE_REALTIME_MAX_CHANNELS).toBe("present_redacted");
+    expect(report.env.SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS).toBe("present_redacted");
+    expect(report.missingLimitKeys).toEqual(["SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND"]);
+    expect(report.invalidLimitKeys).toEqual([
+      "SUPABASE_REALTIME_MAX_CHANNELS",
+      "SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS",
+    ]);
+    expect(report.conclusion.tenK).toBe("unknown");
   });
 
   it("redacts dynamic channel names and does not print secrets", () => {

@@ -1,0 +1,76 @@
+{
+  "wave": "S-RT-4B",
+  "mode": "production-safe-realtime-account-limits-verification",
+  "status": "PARTIAL_LIMITS_MISSING",
+  "ownerGoal": "10K/50K+ readiness",
+  "env": {
+    "SUPABASE_REALTIME_MAX_CHANNELS": "present_redacted",
+    "SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS": "present_redacted",
+    "SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND": "missing"
+  },
+  "limits": {
+    "maxChannels": null,
+    "maxConcurrentClients": null,
+    "maxMessagesPerSecond": null,
+    "limitsSource": "partial_env",
+    "invalidLimitKeys": [
+      "SUPABASE_REALTIME_MAX_CHANNELS",
+      "SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS"
+    ],
+    "missingLimitKeys": [
+      "SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND"
+    ]
+  },
+  "projection": {
+    "channelsPerActiveUser": 14,
+    "projected1kChannels": 14000,
+    "projected5kChannels": 70000,
+    "projected10kChannels": 140000,
+    "projected50kChannels": 700000
+  },
+  "conclusion": {
+    "oneK": "unknown",
+    "fiveK": "unknown",
+    "tenK": "unknown",
+    "fiftyK": "unknown",
+    "reason": "channel/client ENV is present but not parseable as positive integer account limits; messages/sec ENV is missing"
+  },
+  "execution": {
+    "commandsRun": [
+      "node scripts/realtime/channelCapacity.mjs --json",
+      "node scripts/realtime/channelCapacity.mjs --scales 1000,5000,10000,50000 --json"
+    ],
+    "realtimeLoadGenerated": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "channelsOpened": 0
+  },
+  "safety": {
+    "realtimeLoadGenerated": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  },
+  "gates": {
+    "gitDiffCheck": "PASS",
+    "tsc": "PASS",
+    "lint": "PASS",
+    "targetedChannelCapacity": "PASS",
+    "targetedRealtime": "PASS",
+    "npmTestRunInBand": "PASS",
+    "npmTest": "PASS",
+    "releaseVerify": "pending_post_push"
+  },
+  "nextRecommendedWave": "Provide positive integer SUPABASE_REALTIME_MAX_CHANNELS and SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS plus SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND, then rerun S-RT-4B. If 10K verifies, continue to S-QUEUE-1 or S-PAG-6."
+}

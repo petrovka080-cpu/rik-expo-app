@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 
-const WAVE = "S-RT-4";
+const WAVE = "S-RT-4B";
 const DEFAULT_SCALES = [1000, 5000, 10000, 50000];
+const DEFAULT_MESSAGES_PER_USER_PER_SECOND = 0;
 const SAFE_LIMIT_KEYS = {
   maxChannels: "SUPABASE_REALTIME_MAX_CHANNELS",
   maxConcurrentClients: "SUPABASE_REALTIME_MAX_CONCURRENT_CLIENTS",
@@ -246,7 +247,21 @@ export function readAccountLimits(env = process.env) {
   };
 }
 
-function limitsAreVerified(limits) {
+function limitPresence(limits) {
+  return {
+    maxChannels: typeof limits.maxChannels === "number",
+    maxConcurrentClients: typeof limits.maxConcurrentClients === "number",
+    maxMessagesPerSecond: typeof limits.maxMessagesPerSecond === "number",
+  };
+}
+
+function envPresence(env, keys) {
+  return Object.fromEntries(
+    keys.map((key) => [key, String(env[key] ?? "").trim().length > 0 ? "present_redacted" : "missing"]),
+  );
+}
+
+function allLimitsAreVerified(limits) {
   return (
     typeof limits.maxChannels === "number" &&
     typeof limits.maxConcurrentClients === "number" &&
@@ -254,12 +269,78 @@ function limitsAreVerified(limits) {
   );
 }
 
+function channelClientLimitsPresent(limits) {
+  return typeof limits.maxChannels === "number" && typeof limits.maxConcurrentClients === "number";
+}
+
+function evaluateProjection(activeUsers, projectedChannels, limits) {
+  if (!channelClientLimitsPresent(limits)) {
+    return {
+      withinVerifiedAccountLimits: null,
+      conclusion: "unknown",
+      reason: "channel/client account limits are not fully configured as positive integers",
+    };
+  }
+
+  const channelsFit = projectedChannels <= limits.maxChannels;
+  const clientsFit = activeUsers <= limits.maxConcurrentClients;
+  if (channelsFit && clientsFit) {
+    return {
+      withinVerifiedAccountLimits: true,
+      conclusion: "verified",
+      reason: "projected channels and concurrent clients are within provided limits",
+    };
+  }
+
+  return {
+    withinVerifiedAccountLimits: false,
+    conclusion: activeUsers >= 50000 ? "requires_enterprise" : "insufficient",
+    reason: [
+      channelsFit ? null : "projected channels exceed provided max channel limit",
+      clientsFit ? null : "active users exceed provided concurrent client limit",
+    ]
+      .filter(Boolean)
+      .join("; "),
+  };
+}
+
+function deriveStatus({ limits, conclusion }) {
+  const presence = limitPresence(limits);
+  if (!presence.maxChannels || !presence.maxConcurrentClients) {
+    return "PARTIAL_LIMITS_MISSING";
+  }
+  if (conclusion.tenK !== "verified") {
+    return "PARTIAL_INSUFFICIENT_LIMITS";
+  }
+  if (!presence.maxMessagesPerSecond) {
+    return "PARTIAL_MESSAGES_PER_SECOND_MISSING";
+  }
+  if (conclusion.fiftyK === "requires_enterprise" || conclusion.fiftyK === "insufficient") {
+    return "GREEN_10K_LIMITS_VERIFIED_50K_REQUIRES_ENTERPRISE";
+  }
+  return "GREEN_LIMITS_VERIFIED";
+}
+
+function conclusionKeyForScale(activeUsers) {
+  if (activeUsers === 1000) return "oneK";
+  if (activeUsers === 5000) return "fiveK";
+  if (activeUsers === 10000) return "tenK";
+  if (activeUsers === 50000) return "fiftyK";
+  return `users${activeUsers}`;
+}
+
 export function buildCapacityReport(options = {}) {
   const scales = options.scales ?? DEFAULT_SCALES;
   const env = options.env ?? process.env;
   const limits = readAccountLimits(env);
-  const verifiedLimits = limitsAreVerified(limits);
-  const accountLimitStatus = verifiedLimits ? "verified" : "owner_action_required";
+  const presence = limitPresence(limits);
+  const verifiedLimits = allLimitsAreVerified(limits);
+  const channelClientVerified = channelClientLimitsPresent(limits);
+  const accountLimitStatus = verifiedLimits
+    ? "verified"
+    : channelClientVerified
+      ? "partial_messages_per_second_missing"
+      : "owner_action_required";
   const channelsPerActiveUser = REALTIME_BINDINGS.reduce(
     (total, binding) => total + binding.channelsPerMountedSource,
     0,
@@ -279,42 +360,73 @@ export function buildCapacityReport(options = {}) {
 
   const projections = scales.map((activeUsers) => {
     const projectedChannels = activeUsers * channelsPerActiveUser;
-    const withinVerifiedAccountLimits = verifiedLimits
-      ? projectedChannels <= limits.maxChannels && activeUsers <= limits.maxConcurrentClients
-      : null;
+    const evaluation = evaluateProjection(activeUsers, projectedChannels, limits);
     return {
       activeUsers,
       projectedChannels,
       channelsPerActiveUser,
-      withinVerifiedAccountLimits,
-      reason: verifiedLimits
-        ? withinVerifiedAccountLimits
-          ? "projected channels and concurrent clients are within provided limits"
-          : "projected channels or concurrent clients exceed provided limits"
-        : "account limits are not configured",
+      projectedMessagesPerSecond: DEFAULT_MESSAGES_PER_USER_PER_SECOND,
+      messagesPerSecondFormula:
+        "static proof assumes no generated realtime load; live message rate must be measured separately",
+      ...evaluation,
     };
   });
+  const conclusion = projections.reduce((acc, projection) => {
+    acc[conclusionKeyForScale(projection.activeUsers)] = projection.conclusion;
+    return acc;
+  }, {});
+  const status = deriveStatus({ limits, conclusion });
+  const envState = envPresence(env, Object.values(SAFE_LIMIT_KEYS));
+  const missingLimitKeys = Object.values(SAFE_LIMIT_KEYS).filter((envKey) => envState[envKey] === "missing");
+  const invalidLimitKeys = Object.entries(SAFE_LIMIT_KEYS)
+    .filter(([limitName, envKey]) => envState[envKey] === "present_redacted" && !presence[limitName])
+    .map(([, envKey]) => envKey);
 
   return {
     wave: WAVE,
-    mode: "production-safe-realtime-capacity-proof",
-    status: verifiedLimits ? "GREEN_VERIFIED" : "GREEN_IMPLEMENTATION_LIMITS_OWNER_ACTION",
+    mode: "production-safe-realtime-account-limits-verification",
+    status,
     source: "repo-static-analysis",
     gitSha: readGitSha(),
     productionTouched: false,
     realtimeLoadGenerated: false,
     accountLimitStatus,
-    capacityClaim: verifiedLimits ? "verified_against_provided_limits" : "unverified",
+    capacityClaim: status.startsWith("GREEN") ? "verified_against_provided_limits" : "partial",
+    env: envState,
     scales,
     channelsPerActiveUser,
     bindings,
     projections,
     limits,
-    ownerActions: verifiedLimits
+    limitPresence: presence,
+    limitsSource: missingLimitKeys.length === 0 && invalidLimitKeys.length === 0 ? "env" : "partial_env",
+    missingLimitKeys,
+    invalidLimitKeys,
+    conclusion,
+    recommendations:
+      status === "PARTIAL_INSUFFICIENT_LIMITS"
+        ? [
+            "reduce per-user realtime channels",
+            "aggregate channels where visibility semantics permit it",
+            "introduce BFF fanout for high-cardinality streams",
+            "upgrade Supabase plan/account limits",
+            "offload high-volume realtime streams",
+          ]
+        : [],
+    ownerActions: missingLimitKeys.length === 0 && invalidLimitKeys.length === 0
       ? []
       : [
           {
-            action: "Provide account-specific Supabase realtime channel/client/message limits",
+            action: [
+              missingLimitKeys.length > 0
+                ? `Provide missing account-specific Supabase realtime limits: ${missingLimitKeys.join(", ")}`
+                : null,
+              invalidLimitKeys.length > 0
+                ? `Provide positive integer values for realtime limits: ${invalidLimitKeys.join(", ")}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join("; "),
             requiredFor: "10K/50K verified capacity claim",
           },
         ],

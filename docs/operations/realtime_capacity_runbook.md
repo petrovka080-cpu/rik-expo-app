@@ -51,12 +51,26 @@ tokens, JWTs, signed URLs, or user data to this script.
 
 ## Interpreting Results
 
-`GREEN_IMPLEMENTATION_LIMITS_OWNER_ACTION` means the capacity matrix and
-projection math are implemented, but account-specific Supabase limits were not
-provided. This is implementation-ready, not a verified 10K/50K capacity claim.
+`PARTIAL_LIMITS_MISSING` means channel/client limits are not fully present, so
+the script can only report projection math.
 
-`GREEN_VERIFIED` means all required account limits were provided and the script
-compared projections against them.
+`PARTIAL_MESSAGES_PER_SECOND_MISSING` means max channel and concurrent client
+limits were provided and compared, but `SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND`
+is still missing. The channel/client conclusions are valid, but full realtime
+capacity remains partial until message throughput is supplied or separately
+proven.
+
+`PARTIAL_INSUFFICIENT_LIMITS` means the provided channel/client limits are below
+the 10K projection. Safe responses are reducing per-user channels, aggregating
+channels, adding BFF fanout, upgrading the Supabase account, or offloading
+high-volume streams.
+
+`GREEN_LIMITS_VERIFIED` means all required account limits were provided and the
+requested scale projections fit the provided limits.
+
+`GREEN_10K_LIMITS_VERIFIED_50K_REQUIRES_ENTERPRISE` means the 10K projection
+fits the provided limits, but 50K needs an account/enterprise upgrade or
+architecture work.
 
 `owner_action_required` means the owner must verify Supabase account limits in
 the dashboard, support plan, or provider documentation before claiming verified
