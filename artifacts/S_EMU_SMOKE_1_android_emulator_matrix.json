@@ -1,0 +1,84 @@
+{
+  "wave": "S-EMU-SMOKE-1",
+  "mode": "production-safe-android-emulator-runtime-smoke",
+  "status": "GREEN_EMULATOR_SMOKE",
+  "ownerGoal": "10K/50K+ readiness",
+  "androidSubmit": {
+    "status": "DEFERRED_BY_OWNER",
+    "touched": false
+  },
+  "repoState": {
+    "head": "ec0c5b946b000cf76b255015c38880b531188ace",
+    "headEqualsOriginMain": true,
+    "worktreeCleanBefore": true,
+    "worktreeCleanAfter": true
+  },
+  "emulator": {
+    "adbAvailable": true,
+    "deviceDetected": true,
+    "deviceId": "emulator-5554",
+    "apiLevel": "34",
+    "abi": "x86_64",
+    "avdName": "Pixel_7_API_34",
+    "emulatorCliAvailableInPath": false,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "buildMode": "local Gradle assembleRelease from current HEAD",
+    "appInstalled": true,
+    "appLaunched": true,
+    "launchActivity": "com.azisbek_dzhantaev.rikexpoapp/.MainActivity",
+    "loginOrFirstScreenVisible": true,
+    "loginScreenProof": [
+      "Maestro infra launch probe passed",
+      "UIAutomator saw auth.login.email",
+      "UIAutomator saw auth.login.password",
+      "UIAutomator saw auth.login.submit"
+    ],
+    "criticalSmokeRun": true,
+    "criticalSmokeCommand": "npm run e2e:maestro:infra",
+    "criticalSmokeStatus": "passed",
+    "maestroVersion": "2.4.0"
+  },
+  "crashCheck": {
+    "logcatCaptured": true,
+    "rawLogcatCommitted": false,
+    "fatalExceptionFound": false,
+    "androidRuntimeCrashFound": false,
+    "processDiedFound": false,
+    "appAnrFound": false,
+    "initialSystemDialogObserved": "Process system isn't responding",
+    "initialSystemDialogAppCrash": false,
+    "finalAppCrashSignatureCount": 0
+  },
+  "businessFlow": {
+    "fullBusinessE2EClaimed": false,
+    "reason": "launch/login emulator smoke only; no safe credentials or production/staging business data used"
+  },
+  "gates": {
+    "preEmulatorReleaseVerify": "passed",
+    "gradleAssembleRelease": "passed",
+    "adbInstall": "passed",
+    "manualLaunchSmoke": "passed",
+    "maestroInfraLaunchSmoke": "passed",
+    "postEmulatorReleaseVerify": "pending_after_artifact_commit"
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}
