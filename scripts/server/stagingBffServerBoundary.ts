@@ -5,6 +5,11 @@ import type { IdempotencyPolicyOperation } from "../../src/shared/scale/idempote
 import { getIdempotencyPolicyForBffMutationOperation } from "../../src/shared/scale/idempotencyPolicies";
 import type { JobType } from "../../src/shared/scale/jobPolicies";
 import { getJobPolicyForBffMutationOperation } from "../../src/shared/scale/jobPolicies";
+import type { RateLimitEnforcementOperation } from "../../src/shared/scale/rateLimitPolicies";
+import {
+  getRateEnforcementPolicyForBffMutationOperation,
+  getRateEnforcementPolicyForBffReadOperation,
+} from "../../src/shared/scale/rateLimitPolicies";
 import {
   BFF_MUTATION_HANDLER_OPERATIONS,
   handleAccountantPaymentApply,
@@ -52,6 +57,9 @@ export type BffStagingRouteDefinition = {
   idempotencyPolicyOperation?: IdempotencyPolicyOperation;
   idempotencyPolicyDefaultEnabled?: false;
   idempotencyPersistenceEnabledByDefault?: false;
+  rateLimitPolicyOperation?: RateLimitEnforcementOperation;
+  rateLimitPolicyDefaultEnabled?: false;
+  rateLimitEnforcementEnabledByDefault?: false;
 };
 
 export type BffStagingServerConfig = {
@@ -129,6 +137,9 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     requiresRateLimitMetadata: false,
     cachePolicyRoute: "request.proposal.list",
     cachePolicyDefaultEnabled: false,
+    rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("request.proposal.list")?.operation,
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
   {
     operation: "marketplace.catalog.search",
@@ -140,6 +151,9 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     requiresRateLimitMetadata: false,
     cachePolicyRoute: "marketplace.catalog.search",
     cachePolicyDefaultEnabled: false,
+    rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("marketplace.catalog.search")?.operation,
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
   {
     operation: "warehouse.ledger.list",
@@ -151,6 +165,9 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     requiresRateLimitMetadata: false,
     cachePolicyRoute: "warehouse.ledger.list",
     cachePolicyDefaultEnabled: false,
+    rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("warehouse.ledger.list")?.operation,
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
   {
     operation: "accountant.invoice.list",
@@ -162,6 +179,9 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     requiresRateLimitMetadata: false,
     cachePolicyRoute: "accountant.invoice.list",
     cachePolicyDefaultEnabled: false,
+    rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("accountant.invoice.list")?.operation,
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
   {
     operation: "director.pending.list",
@@ -173,6 +193,9 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
     requiresRateLimitMetadata: false,
     cachePolicyRoute: "director.pending.list",
     cachePolicyDefaultEnabled: false,
+    rateLimitPolicyOperation: getRateEnforcementPolicyForBffReadOperation("director.pending.list")?.operation,
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
 ]);
 
@@ -183,6 +206,11 @@ const getMutationIdempotencyPolicyOperation = (
   operation: BffMutationOperation,
 ): IdempotencyPolicyOperation | undefined =>
   getIdempotencyPolicyForBffMutationOperation(operation)?.operation;
+
+const getMutationRateLimitPolicyOperation = (
+  operation: BffMutationOperation,
+): RateLimitEnforcementOperation | undefined =>
+  getRateEnforcementPolicyForBffMutationOperation(operation)?.operation;
 
 export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] = Object.freeze([
   {
@@ -200,6 +228,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("proposal.submit"),
     idempotencyPolicyDefaultEnabled: false,
     idempotencyPersistenceEnabledByDefault: false,
+    rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("proposal.submit"),
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
   {
     operation: "warehouse.receive.apply",
@@ -216,6 +247,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("warehouse.receive.apply"),
     idempotencyPolicyDefaultEnabled: false,
     idempotencyPersistenceEnabledByDefault: false,
+    rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("warehouse.receive.apply"),
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
   {
     operation: "accountant.payment.apply",
@@ -232,6 +266,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("accountant.payment.apply"),
     idempotencyPolicyDefaultEnabled: false,
     idempotencyPersistenceEnabledByDefault: false,
+    rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("accountant.payment.apply"),
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
   {
     operation: "director.approval.apply",
@@ -248,6 +285,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("director.approval.apply"),
     idempotencyPolicyDefaultEnabled: false,
     idempotencyPersistenceEnabledByDefault: false,
+    rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("director.approval.apply"),
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
   {
     operation: "request.item.update",
@@ -264,6 +304,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("request.item.update"),
     idempotencyPolicyDefaultEnabled: false,
     idempotencyPersistenceEnabledByDefault: false,
+    rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("request.item.update"),
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
   },
 ]);
 
@@ -605,6 +648,11 @@ export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   mutationRoutesWithIdempotencyMetadata: BFF_STAGING_MUTATION_ROUTES.filter((route) => route.idempotencyPolicyOperation).length,
   idempotencyPersistenceEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some(
     (route) => route.idempotencyPersistenceEnabledByDefault,
+  ),
+  readRoutesWithRateLimitMetadata: BFF_STAGING_READ_ROUTES.filter((route) => route.rateLimitPolicyOperation).length,
+  mutationRoutesWithRateLimitMetadata: BFF_STAGING_MUTATION_ROUTES.filter((route) => route.rateLimitPolicyOperation).length,
+  rateLimitEnforcementEnabledByDefault: BFF_STAGING_ROUTE_REGISTRY.some(
+    (route) => route.rateLimitEnforcementEnabledByDefault,
   ),
   knownReadOperations: BFF_READ_HANDLER_OPERATIONS,
   knownMutationOperations: BFF_MUTATION_HANDLER_OPERATIONS,

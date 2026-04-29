@@ -14,6 +14,11 @@ import {
   getRateLimitPolicy,
   type RateLimitBucket,
 } from "./rateLimits";
+import {
+  getRateEnforcementPolicyForBffMutationOperation,
+  type RateLimitEnforcementOperation,
+  type RateLimitPolicyScope,
+} from "./rateLimitPolicies";
 import { getRetryPolicy, type RetryClass, type RetryPolicy } from "./retryPolicy";
 import type { DeadLetterReason } from "./deadLetter";
 import type { BffMutationContext, BffMutationPorts } from "./bffMutationPorts";
@@ -49,6 +54,16 @@ export type BffMutationHandlerMetadata = {
     operation: BffMutationOperation;
     enforcement: "disabled_scaffold";
     failMode: "allow_with_observation";
+  } | null;
+  rateEnforcementPolicy: {
+    operation: RateLimitEnforcementOperation;
+    scope: RateLimitPolicyScope;
+    windowMs: number;
+    maxRequests: number;
+    burst: number;
+    idempotencyKeyRequiredForMutations: true;
+    defaultEnabled: false;
+    enforcementEnabledByDefault: false;
   } | null;
   retryClass: RetryClass;
   retryPolicy: RetryPolicy;
@@ -169,6 +184,7 @@ export function getBffMutationHandlerMetadata(operation: BffMutationOperation): 
   const idempotencyContract = getIdempotencyContract(operation as IdempotentOperationKind);
   const idempotencyPolicy = getIdempotencyPolicyForBffMutationOperation(operation);
   const rateLimitPolicy = getRateLimitPolicy(operation);
+  const rateEnforcementPolicy = getRateEnforcementPolicyForBffMutationOperation(operation);
   const retryPolicy = getRetryPolicy(definition.retryClass);
 
   return {
@@ -196,6 +212,18 @@ export function getBffMutationHandlerMetadata(operation: BffMutationOperation): 
           operation: rateLimitPolicy.operation as BffMutationOperation,
           enforcement: "disabled_scaffold",
           failMode: "allow_with_observation",
+        }
+      : null,
+    rateEnforcementPolicy: rateEnforcementPolicy
+      ? {
+          operation: rateEnforcementPolicy.operation,
+          scope: rateEnforcementPolicy.scope,
+          windowMs: rateEnforcementPolicy.windowMs,
+          maxRequests: rateEnforcementPolicy.maxRequests,
+          burst: rateEnforcementPolicy.burst,
+          idempotencyKeyRequiredForMutations: true,
+          defaultEnabled: rateEnforcementPolicy.defaultEnabled,
+          enforcementEnabledByDefault: rateEnforcementPolicy.enforcementEnabledByDefault,
         }
       : null,
     retryClass: definition.retryClass,

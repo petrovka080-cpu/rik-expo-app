@@ -9,6 +9,10 @@ import {
 } from "./idempotencyPolicies";
 import type { RateLimitedOperation } from "./rateLimits";
 import { getRateLimitPolicy } from "./rateLimits";
+import {
+  getRateEnforcementPolicyForJobType,
+  type RateLimitEnforcementOperation,
+} from "./rateLimitPolicies";
 import type { RetryClass, RetryPolicy } from "./retryPolicy";
 import { getRetryPolicy } from "./retryPolicy";
 
@@ -48,6 +52,9 @@ export type JobPolicy = {
   rateLimitOperation: RateLimitedOperation;
   rateLimitKey: string;
   rateLimitPolicyPresent: boolean;
+  rateLimitEnforcementOperation: RateLimitEnforcementOperation | null;
+  rateLimitEnforcementDefaultEnabled: false;
+  rateLimitEnforcementEnabledByDefault: false;
   payloadMaxBytes: number;
   piiPolicy: JobPiiPolicy;
   defaultEnabled: false;
@@ -88,6 +95,9 @@ const policy = (input: {
   rateLimitOperation: input.rateLimitOperation,
   rateLimitKey: `${input.rateLimitOperation}:opaque-subject`,
   rateLimitPolicyPresent: getRateLimitPolicy(input.rateLimitOperation) !== null,
+  rateLimitEnforcementOperation: getRateEnforcementPolicyForJobType(input.jobType)?.operation ?? null,
+  rateLimitEnforcementDefaultEnabled: false,
+  rateLimitEnforcementEnabledByDefault: false,
   payloadMaxBytes: input.payloadMaxBytes,
   piiPolicy: input.piiPolicy ?? "reject_pii",
   defaultEnabled: false,
@@ -213,6 +223,8 @@ export function validateJobPolicy(policyToValidate: JobPolicy): boolean {
     policyToValidate.idempotencyPolicyDefaultEnabled === false &&
     policyToValidate.idempotencyPersistenceEnabledByDefault === false &&
     policyToValidate.rateLimitPolicyPresent === true &&
+    policyToValidate.rateLimitEnforcementDefaultEnabled === false &&
+    policyToValidate.rateLimitEnforcementEnabledByDefault === false &&
     policyToValidate.deadLetterPolicy.enabled === true &&
     policyToValidate.deadLetterPolicy.rawPayloadStored === false &&
     policyToValidate.deadLetterPolicy.piiStored === false &&

@@ -1,0 +1,59 @@
+{
+  "wave": "S-50K-RATE-ENFORCEMENT-1",
+  "mode": "production-safe-disabled-rate-enforcement-boundary",
+  "ownerGoal": "10K/50K+ readiness",
+  "status": "GREEN_RATE_ENFORCEMENT_BOUNDARY_READY",
+  "rateLimitBoundary": {
+    "noopAdapter": true,
+    "inMemoryTestAdapter": true,
+    "externalAdapterContract": true,
+    "externalStoreCallsInTests": false,
+    "enabledByDefault": false,
+    "realUsersBlockedByDefault": false
+  },
+  "policies": {
+    "total": 19,
+    "defaultEnabled": false,
+    "readPolicies": 8,
+    "mutationPolicies": 5,
+    "jobPolicies": 3,
+    "realtimePolicies": 2,
+    "aiPolicies": 1,
+    "mutationsRequireIdempotency": true,
+    "piiSafeKeys": true
+  },
+  "abuseGuard": {
+    "boundaryExists": true,
+    "reasonCodesRedacted": true,
+    "rawPayloadLogged": false
+  },
+  "integration": {
+    "bffReadRoutesWithRateLimitMetadata": 5,
+    "bffMutationRoutesWithRateLimitMetadata": 5,
+    "jobPoliciesWithRateLimitMetadata": 8,
+    "cacheRefreshPolicyMapped": true,
+    "idempotencyRequiredForMutations": true
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "stagingTouched": false,
+    "stagingWrites": false,
+    "appRuntimeRateLimitEnabled": false,
+    "existingAppFlowsReplaced": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}

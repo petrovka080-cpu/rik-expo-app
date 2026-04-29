@@ -115,11 +115,28 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "tests/perf/performance-budget.test.ts",
       "tests/scale/idempotencyIntegrationBoundary.test.ts",
     ]);
+    const s50kRateEnforcementAllowedDirtyFiles = new Set([
+      "artifacts/S_50K_RATE_ENFORCEMENT_1_matrix.json",
+      "artifacts/S_50K_RATE_ENFORCEMENT_1_proof.md",
+      "docs/architecture/50k_rate_enforcement.md",
+      "docs/operations/rate_limit_runbook.md",
+      "scripts/server/stagingBffServerBoundary.ts",
+      "src/shared/scale/abuseEnforcementBoundary.ts",
+      "src/shared/scale/bffMutationHandlers.ts",
+      "src/shared/scale/bffReadHandlers.ts",
+      "src/shared/scale/jobPolicies.ts",
+      "src/shared/scale/rateLimitAdapters.ts",
+      "src/shared/scale/rateLimitKeySafety.ts",
+      "src/shared/scale/rateLimitPolicies.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/scale/rateEnforcementBoundary.test.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
         !s50kJobsIntegrationAllowedDirtyFiles.has(file) &&
-        !s50kIdempotencyIntegrationAllowedDirtyFiles.has(file),
+        !s50kIdempotencyIntegrationAllowedDirtyFiles.has(file) &&
+        !s50kRateEnforcementAllowedDirtyFiles.has(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(false);
     expect(changed.some((file) => file.startsWith("scripts/scale/"))).toBe(false);

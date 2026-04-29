@@ -13,6 +13,11 @@ import {
   type RateLimitBucket,
   type RateLimitedOperation,
 } from "./rateLimits";
+import {
+  getRateEnforcementPolicyForBffReadOperation,
+  type RateLimitEnforcementOperation,
+  type RateLimitPolicyScope,
+} from "./rateLimitPolicies";
 import type {
   BffReadContext,
   BffReadPorts,
@@ -60,6 +65,15 @@ export type BffReadHandlerMetadata = {
     operation: RateLimitedOperation | null;
     enforcement: "disabled_scaffold";
   };
+  rateEnforcementPolicy: {
+    operation: RateLimitEnforcementOperation;
+    scope: RateLimitPolicyScope;
+    windowMs: number;
+    maxRequests: number;
+    burst: number;
+    defaultEnabled: false;
+    enforcementEnabledByDefault: false;
+  } | null;
   enabledInAppRuntime: false;
   wiredToAppRuntime: false;
   callsSupabaseDirectly: false;
@@ -78,6 +92,7 @@ type HandlerDefinition = {
   operation: BffReadOperation;
   bffFlow: BffFlow;
   rateLimitOperation: RateLimitedOperation | null;
+  rateEnforcementOperation: RateLimitEnforcementOperation;
   rateLimitBucket: RateLimitBucket;
   errorCode: string;
   errorMessage: string;
@@ -89,6 +104,7 @@ const READ_HANDLER_DEFINITIONS: Record<BffReadOperation, HandlerDefinition> = {
     operation: "request.proposal.list",
     bffFlow: "proposal.list",
     rateLimitOperation: "proposal.list",
+    rateEnforcementOperation: "request.proposal.list",
     rateLimitBucket: "read_heavy",
     errorCode: "BFF_REQUEST_PROPOSAL_LIST_ERROR",
     errorMessage: "Unable to load list",
@@ -98,6 +114,7 @@ const READ_HANDLER_DEFINITIONS: Record<BffReadOperation, HandlerDefinition> = {
     operation: "marketplace.catalog.search",
     bffFlow: "catalog.marketplace.list",
     rateLimitOperation: "catalog.search",
+    rateEnforcementOperation: "marketplace.catalog.search",
     rateLimitBucket: "read_heavy",
     errorCode: "BFF_MARKETPLACE_CATALOG_SEARCH_ERROR",
     errorMessage: "Unable to search catalog",
@@ -107,6 +124,7 @@ const READ_HANDLER_DEFINITIONS: Record<BffReadOperation, HandlerDefinition> = {
     operation: "warehouse.ledger.list",
     bffFlow: "warehouse.ledger",
     rateLimitOperation: null,
+    rateEnforcementOperation: "warehouse.ledger.list",
     rateLimitBucket: "read_heavy",
     errorCode: "BFF_WAREHOUSE_LEDGER_LIST_ERROR",
     errorMessage: "Unable to load warehouse ledger",
@@ -116,6 +134,7 @@ const READ_HANDLER_DEFINITIONS: Record<BffReadOperation, HandlerDefinition> = {
     operation: "accountant.invoice.list",
     bffFlow: "accountant.invoice.list",
     rateLimitOperation: null,
+    rateEnforcementOperation: "accountant.invoice.list",
     rateLimitBucket: "read_heavy",
     errorCode: "BFF_ACCOUNTANT_INVOICE_LIST_ERROR",
     errorMessage: "Unable to load accountant invoices",
@@ -125,6 +144,7 @@ const READ_HANDLER_DEFINITIONS: Record<BffReadOperation, HandlerDefinition> = {
     operation: "director.pending.list",
     bffFlow: "director.dashboard",
     rateLimitOperation: null,
+    rateEnforcementOperation: "director.pending.list",
     rateLimitBucket: "read_heavy",
     errorCode: "BFF_DIRECTOR_PENDING_LIST_ERROR",
     errorMessage: "Unable to load director list",
@@ -183,6 +203,7 @@ export function getBffReadHandlerMetadata(operation: BffReadOperation): BffReadH
   const rateLimitPolicy = definition.rateLimitOperation
     ? getRateLimitPolicy(definition.rateLimitOperation)
     : null;
+  const rateEnforcementPolicy = getRateEnforcementPolicyForBffReadOperation(operation);
 
   return {
     operation,
@@ -213,6 +234,17 @@ export function getBffReadHandlerMetadata(operation: BffReadOperation): BffReadH
       operation: rateLimitPolicy?.operation ?? null,
       enforcement: "disabled_scaffold",
     },
+    rateEnforcementPolicy: rateEnforcementPolicy
+      ? {
+          operation: rateEnforcementPolicy.operation,
+          scope: rateEnforcementPolicy.scope,
+          windowMs: rateEnforcementPolicy.windowMs,
+          maxRequests: rateEnforcementPolicy.maxRequests,
+          burst: rateEnforcementPolicy.burst,
+          defaultEnabled: rateEnforcementPolicy.defaultEnabled,
+          enforcementEnabledByDefault: rateEnforcementPolicy.enforcementEnabledByDefault,
+        }
+      : null,
     enabledInAppRuntime: false,
     wiredToAppRuntime: false,
     callsSupabaseDirectly: false,
