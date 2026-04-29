@@ -1,0 +1,131 @@
+{
+  "wave": "S-PAG-5",
+  "mode": "production-safe-remaining-unbounded-selects",
+  "status": "PARTIAL",
+  "dependsOn": ["S-PAG-3A", "S-PAG-3B", "S-PAG-4"],
+  "auditBaseline": {
+    "unboundedSelectsBeforeWave": 111,
+    "unboundedFilesBeforeWave": 42,
+    "source": "fresh read-only audit baseline provided by owner"
+  },
+  "localDiscoveryRecount": {
+    "script": "provided simple src/app no-limit/no-range file script",
+    "unboundedSelectsBeforeWave": 115,
+    "unboundedFilesBeforeWave": 46,
+    "note": "Simple text recount includes additional local matches/false-positive non-query files; no src/app runtime query files were changed in this wave."
+  },
+  "targetCallsites": 8,
+  "fixedCallsites": 0,
+  "changedFiles": [
+    "tests/api/topListPaginationBatch4.contract.test.ts",
+    "artifacts/S_PAG_5_remaining_unbounded_selects_matrix.json",
+    "artifacts/S_PAG_5_remaining_unbounded_selects_proof.md"
+  ],
+  "callsiteMatrix": [],
+  "classificationMatrix": [
+    {
+      "file": "src/screens/contractor/contractor.data.ts",
+      "selects": 11,
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "changed": false,
+      "reason": "Reads are scoped to one subcontract/request/progress/log chain or ID sets derived from that parent; capping would break contractor detail/material completeness."
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "selects": 7,
+      "classification": "LOW_VOLUME_ADMIN",
+      "changed": false,
+      "reason": "Reference dictionaries and app option caches need complete option sets; not a high-volume user list/search window."
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "selects": 6,
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "changed": false,
+      "reason": "Proposal item/accounting/view reads are proposal-scoped detail reads; capping would hide proposal rows."
+    },
+    {
+      "file": "src/screens/director/director.data.ts",
+      "selects": 7,
+      "classification": "NEEDS_SEPARATE_UI_WORK",
+      "changed": false,
+      "reason": "Main director pending-row fallback still loads a complete list; safe pagination requires explicit UI/load-more state before reducing."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "selects": 2,
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "changed": false,
+      "reason": "Incoming ledger report aggregation and incoming detail line reads must preserve full selected-range/parent completeness."
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "selects": 1,
+      "classification": "JOB_QUEUE_SEMANTICS_UNCLEAR",
+      "changed": false,
+      "reason": "The remaining select is an insert-returning single-row job enqueue shape; job claim semantics are RPC-owned and were not changed."
+    },
+    {
+      "file": "src/lib/api/integrity.guards.ts",
+      "selects": 5,
+      "classification": "INTEGRITY_GUARD_DO_NOT_TOUCH",
+      "changed": false,
+      "reason": "Guard reads are chunked by caller-provided IDs and enforce FK/integrity behavior; adding pagination could weaken validation."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.seed.ts",
+      "selects": 8,
+      "classification": "SEED_OR_TEST_OR_FIXTURE",
+      "changed": false,
+      "reason": "Runtime seed/setup fallback must read complete purchase/snapshot rows for one incoming document; not a list/search UI."
+    },
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "selects": 9,
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "changed": false,
+      "reason": "Proposal PDF source must preserve complete head, item, request, supplier, and app data."
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "selects": 9,
+      "classification": "INTENTIONAL_DOCUMENT_BUILDER",
+      "changed": false,
+      "reason": "PDF/document builder reads must preserve complete request/report model data."
+    },
+    {
+      "file": "src/screens/contractor/contractor.resolvers.ts",
+      "selects": 6,
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "changed": false,
+      "reason": "Resolver reads are single-row parent/foreign-key lookups via maybeSingle; not a high-volume list/search window."
+    }
+  ],
+  "postWaveCount": {
+    "unboundedSelectsAfterWave": 111,
+    "unboundedFilesAfterWave": 42,
+    "localDiscoveryUnboundedSelectsAfterWave": 115,
+    "localDiscoveryUnboundedFilesAfterWave": 46,
+    "note": "No src/app runtime query files were changed, so the canonical audit baseline count remains unchanged for this classification-heavy partial."
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "pdfReportExportCapped": false,
+    "detailFullReadsChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}
