@@ -89,6 +89,7 @@ The recount command is intentionally broad and text-based. It is used as a local
 - `npm test -- --runInBand`
 - `npm test`
 - `npm run release:verify -- --json` (pre-commit: internal gates passed; release readiness blocked only by intentionally dirty worktree)
+- `npm run release:verify -- --json` (post-commit clean tree)
 
 ## Gates
 
@@ -103,7 +104,7 @@ The recount command is intentionally broad and text-based. It is used as a local
 - `npx expo lint`: PASS
 - `npm test -- --runInBand`: PASS, 495 passed / 1 skipped suites, 3123 passed / 1 skipped tests
 - `npm test`: PASS, 495 passed / 1 skipped suites, 3123 passed / 1 skipped tests
-- `npm run release:verify -- --json`: PRE-COMMIT PARTIAL, internal gates PASS; readiness blocked only because the repository was dirty before commit. Post-commit rerun pending.
+- `npm run release:verify -- --json`: PASS after commit on clean tree. Readiness status `pass`, `HEAD == origin/main`, worktree clean, no blockers. Pre-commit run also had all internal gates PASS and was blocked only by the intentionally dirty worktree before commit.
 
 ## Safety Confirmations
 
