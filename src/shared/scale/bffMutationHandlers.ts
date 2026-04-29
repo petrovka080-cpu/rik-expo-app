@@ -7,6 +7,10 @@ import {
   type IdempotentOperationKind,
 } from "./idempotency";
 import {
+  getIdempotencyPolicyForBffMutationOperation,
+  type IdempotencyPolicyOperation,
+} from "./idempotencyPolicies";
+import {
   getRateLimitPolicy,
   type RateLimitBucket,
 } from "./rateLimits";
@@ -37,6 +41,9 @@ export type BffMutationHandlerMetadata = {
     IdempotencyContract,
     "operation" | "scope" | "keySource" | "ttlSeconds" | "storesRawPayload" | "piiAllowedInKey"
   > | null;
+  idempotencyPolicyOperation: IdempotencyPolicyOperation | null;
+  idempotencyPolicyDefaultEnabled: false;
+  idempotencyPersistenceEnabledByDefault: false;
   rateLimitBucket: RateLimitBucket;
   rateLimitPolicy: {
     operation: BffMutationOperation;
@@ -160,6 +167,7 @@ export function sanitizeBffMutationOutput(value: unknown, depth = 0): unknown {
 export function getBffMutationHandlerMetadata(operation: BffMutationOperation): BffMutationHandlerMetadata {
   const definition = MUTATION_HANDLER_DEFINITIONS[operation];
   const idempotencyContract = getIdempotencyContract(operation as IdempotentOperationKind);
+  const idempotencyPolicy = getIdempotencyPolicyForBffMutationOperation(operation);
   const rateLimitPolicy = getRateLimitPolicy(operation);
   const retryPolicy = getRetryPolicy(definition.retryClass);
 
@@ -179,6 +187,9 @@ export function getBffMutationHandlerMetadata(operation: BffMutationOperation): 
           piiAllowedInKey: idempotencyContract.piiAllowedInKey,
         }
       : null,
+    idempotencyPolicyOperation: idempotencyPolicy?.operation ?? null,
+    idempotencyPolicyDefaultEnabled: false,
+    idempotencyPersistenceEnabledByDefault: false,
     rateLimitBucket: definition.rateLimitBucket,
     rateLimitPolicy: rateLimitPolicy
       ? {

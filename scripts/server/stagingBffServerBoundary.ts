@@ -1,6 +1,8 @@
 import type { BffResponseEnvelope } from "../../src/shared/scale/bffContracts";
 import type { CachePolicyRoute } from "../../src/shared/scale/cachePolicies";
 import { getInvalidationTagsForOperation } from "../../src/shared/scale/cacheInvalidation";
+import type { IdempotencyPolicyOperation } from "../../src/shared/scale/idempotencyPolicies";
+import { getIdempotencyPolicyForBffMutationOperation } from "../../src/shared/scale/idempotencyPolicies";
 import type { JobType } from "../../src/shared/scale/jobPolicies";
 import { getJobPolicyForBffMutationOperation } from "../../src/shared/scale/jobPolicies";
 import {
@@ -47,6 +49,9 @@ export type BffStagingRouteDefinition = {
   jobPolicyType?: JobType;
   jobPolicyDefaultEnabled?: false;
   jobExecutionEnabledByDefault?: false;
+  idempotencyPolicyOperation?: IdempotencyPolicyOperation;
+  idempotencyPolicyDefaultEnabled?: false;
+  idempotencyPersistenceEnabledByDefault?: false;
 };
 
 export type BffStagingServerConfig = {
@@ -174,6 +179,11 @@ export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Obj
 const getMutationJobPolicyType = (operation: BffMutationOperation): JobType | undefined =>
   getJobPolicyForBffMutationOperation(operation)?.jobType;
 
+const getMutationIdempotencyPolicyOperation = (
+  operation: BffMutationOperation,
+): IdempotencyPolicyOperation | undefined =>
+  getIdempotencyPolicyForBffMutationOperation(operation)?.operation;
+
 export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] = Object.freeze([
   {
     operation: "proposal.submit",
@@ -187,6 +197,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     jobPolicyType: getMutationJobPolicyType("proposal.submit"),
     jobPolicyDefaultEnabled: false,
     jobExecutionEnabledByDefault: false,
+    idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("proposal.submit"),
+    idempotencyPolicyDefaultEnabled: false,
+    idempotencyPersistenceEnabledByDefault: false,
   },
   {
     operation: "warehouse.receive.apply",
@@ -200,6 +213,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     jobPolicyType: getMutationJobPolicyType("warehouse.receive.apply"),
     jobPolicyDefaultEnabled: false,
     jobExecutionEnabledByDefault: false,
+    idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("warehouse.receive.apply"),
+    idempotencyPolicyDefaultEnabled: false,
+    idempotencyPersistenceEnabledByDefault: false,
   },
   {
     operation: "accountant.payment.apply",
@@ -213,6 +229,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     jobPolicyType: getMutationJobPolicyType("accountant.payment.apply"),
     jobPolicyDefaultEnabled: false,
     jobExecutionEnabledByDefault: false,
+    idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("accountant.payment.apply"),
+    idempotencyPolicyDefaultEnabled: false,
+    idempotencyPersistenceEnabledByDefault: false,
   },
   {
     operation: "director.approval.apply",
@@ -226,6 +245,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     jobPolicyType: getMutationJobPolicyType("director.approval.apply"),
     jobPolicyDefaultEnabled: false,
     jobExecutionEnabledByDefault: false,
+    idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("director.approval.apply"),
+    idempotencyPolicyDefaultEnabled: false,
+    idempotencyPersistenceEnabledByDefault: false,
   },
   {
     operation: "request.item.update",
@@ -239,6 +261,9 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     jobPolicyType: getMutationJobPolicyType("request.item.update"),
     jobPolicyDefaultEnabled: false,
     jobExecutionEnabledByDefault: false,
+    idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("request.item.update"),
+    idempotencyPolicyDefaultEnabled: false,
+    idempotencyPersistenceEnabledByDefault: false,
   },
 ]);
 
@@ -577,6 +602,10 @@ export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   redactedErrors: true,
   mutationRoutesWithJobMetadata: BFF_STAGING_MUTATION_ROUTES.filter((route) => route.jobPolicyType).length,
   jobExecutionEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some((route) => route.jobExecutionEnabledByDefault),
+  mutationRoutesWithIdempotencyMetadata: BFF_STAGING_MUTATION_ROUTES.filter((route) => route.idempotencyPolicyOperation).length,
+  idempotencyPersistenceEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some(
+    (route) => route.idempotencyPersistenceEnabledByDefault,
+  ),
   knownReadOperations: BFF_READ_HANDLER_OPERATIONS,
   knownMutationOperations: BFF_MUTATION_HANDLER_OPERATIONS,
 });

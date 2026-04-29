@@ -3,6 +3,10 @@ import type { CacheInvalidationOperation } from "./cacheInvalidation";
 import { getInvalidationTagsForOperation } from "./cacheInvalidation";
 import type { IdempotentOperationKind } from "./idempotency";
 import { getIdempotencyContract } from "./idempotency";
+import {
+  getIdempotencyPolicyForJobType,
+  type IdempotencyPolicyOperation,
+} from "./idempotencyPolicies";
 import type { RateLimitedOperation } from "./rateLimits";
 import { getRateLimitPolicy } from "./rateLimits";
 import type { RetryClass, RetryPolicy } from "./retryPolicy";
@@ -38,6 +42,9 @@ export type JobPolicy = {
   idempotencyOperation: IdempotentOperationKind;
   idempotencyRequired: true;
   idempotencyContractPresent: boolean;
+  idempotencyPolicyOperation: IdempotencyPolicyOperation | null;
+  idempotencyPolicyDefaultEnabled: false;
+  idempotencyPersistenceEnabledByDefault: false;
   rateLimitOperation: RateLimitedOperation;
   rateLimitKey: string;
   rateLimitPolicyPresent: boolean;
@@ -75,6 +82,9 @@ const policy = (input: {
   idempotencyOperation: input.idempotencyOperation,
   idempotencyRequired: true,
   idempotencyContractPresent: getIdempotencyContract(input.idempotencyOperation) !== null,
+  idempotencyPolicyOperation: getIdempotencyPolicyForJobType(input.jobType)?.operation ?? null,
+  idempotencyPolicyDefaultEnabled: false,
+  idempotencyPersistenceEnabledByDefault: false,
   rateLimitOperation: input.rateLimitOperation,
   rateLimitKey: `${input.rateLimitOperation}:opaque-subject`,
   rateLimitPolicyPresent: getRateLimitPolicy(input.rateLimitOperation) !== null,
@@ -200,6 +210,8 @@ export function validateJobPolicy(policyToValidate: JobPolicy): boolean {
     policyToValidate.defaultEnabled === false &&
     policyToValidate.idempotencyRequired === true &&
     policyToValidate.idempotencyContractPresent === true &&
+    policyToValidate.idempotencyPolicyDefaultEnabled === false &&
+    policyToValidate.idempotencyPersistenceEnabledByDefault === false &&
     policyToValidate.rateLimitPolicyPresent === true &&
     policyToValidate.deadLetterPolicy.enabled === true &&
     policyToValidate.deadLetterPolicy.rawPayloadStored === false &&

@@ -99,10 +99,27 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "tests/perf/performance-budget.test.ts",
       "tests/scale/jobsIntegrationBoundary.test.ts",
     ]);
+    const s50kIdempotencyIntegrationAllowedDirtyFiles = new Set([
+      "artifacts/S_50K_IDEMPOTENCY_INTEGRATION_1_matrix.json",
+      "artifacts/S_50K_IDEMPOTENCY_INTEGRATION_1_proof.md",
+      "docs/architecture/50k_idempotency_integration.md",
+      "docs/operations/idempotency_runbook.md",
+      "scripts/server/stagingBffServerBoundary.ts",
+      "src/shared/scale/idempotencyAdapters.ts",
+      "src/shared/scale/idempotencyExecutionGuard.ts",
+      "src/shared/scale/idempotencyKeySafety.ts",
+      "src/shared/scale/idempotencyPolicies.ts",
+      "src/shared/scale/jobPolicies.ts",
+      "src/shared/scale/offlineReplayIdempotency.ts",
+      "src/shared/scale/bffMutationHandlers.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/scale/idempotencyIntegrationBoundary.test.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
-        !s50kJobsIntegrationAllowedDirtyFiles.has(file),
+        !s50kJobsIntegrationAllowedDirtyFiles.has(file) &&
+        !s50kIdempotencyIntegrationAllowedDirtyFiles.has(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(false);
     expect(changed.some((file) => file.startsWith("scripts/scale/"))).toBe(false);

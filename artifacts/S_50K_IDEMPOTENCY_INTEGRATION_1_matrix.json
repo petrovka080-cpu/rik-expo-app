@@ -1,0 +1,56 @@
+{
+  "wave": "S-50K-IDEMPOTENCY-INTEGRATION-1",
+  "mode": "production-safe-disabled-idempotency-boundary-integration",
+  "ownerGoal": "10K/50K+ readiness",
+  "status": "GREEN_IDEMPOTENCY_BOUNDARY_READY",
+  "idempotencyBoundary": {
+    "noopAdapter": true,
+    "inMemoryTestAdapter": true,
+    "externalAdapterContract": true,
+    "externalStorageCallsInTests": false,
+    "enabledByDefault": false
+  },
+  "policies": {
+    "total": 10,
+    "defaultEnabled": false,
+    "mutatingOperationsRequireMetadata": true,
+    "paymentPolicyStrict": true,
+    "warehousePolicyStrict": true,
+    "directorApprovalPolicyStrict": true,
+    "offlineReplayPolicyMapped": true
+  },
+  "keySafety": {
+    "deterministicKeys": true,
+    "payloadHashRequired": true,
+    "piiSafeKeys": true,
+    "tokenSecretSignedUrlRejected": true,
+    "boundedKeyLength": true
+  },
+  "integration": {
+    "bffMutationRoutesWithIdempotencyMetadata": 5,
+    "jobPoliciesWithIdempotencyMetadata": 5,
+    "offlineReplayMapped": true
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "stagingTouched": false,
+    "stagingWrites": false,
+    "appRuntimeIdempotencyEnabled": false,
+    "existingAppFlowsReplaced": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}

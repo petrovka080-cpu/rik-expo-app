@@ -147,11 +147,12 @@ describe("performance budget — bundle module count", () => {
     // S-50K-BFF-SHADOW-1 adds three local fixture-only shadow parity modules.
     // S-50K-CACHE-INTEGRATION-1 adds four disabled cache-boundary integration modules.
     // S-50K-JOBS-INTEGRATION-1 adds five disabled background-job boundary modules.
+    // S-50K-IDEMPOTENCY-INTEGRATION-1 adds five disabled idempotency boundary modules.
     // S-AI-WORKFLOW-2 adds three disabled-by-default advisory AI pilot modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
-    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(26);
+    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(31);
     expect(sAiWorkflow2DisabledPilotFiles).toBeLessThanOrEqual(3);
     expect(
       tsFiles -
