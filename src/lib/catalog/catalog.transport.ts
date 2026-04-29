@@ -2,9 +2,14 @@ import { supabase } from "../supabaseClient";
 import { normalizePage } from "../api/_core";
 import type {
   CatalogGroup,
+  ContractorCounterpartyRow,
   CatalogSearchRpcArgs,
   CatalogSearchRpcName,
   IncomingItem,
+  ProfileContractorCompatRow,
+  SubcontractCounterpartyRow,
+  SupplierCounterpartyRow,
+  SupplierTableRow,
   UomRef,
 } from "./catalog.types";
 import {
@@ -25,6 +30,44 @@ const CATALOG_SEARCH_FALLBACK_SELECT =
 const RIK_QUICK_SEARCH_FALLBACK_FIELDS =
   "rik_code,name_human,uom_code,kind,name_human_ru";
 const CATALOG_FALLBACK_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 };
+const CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type CatalogQueryResult<T> = {
+  data: T[] | null;
+  error: { message?: string } | null;
+};
+
+type CatalogQueryFactory<T> = () => {
+  range: (from: number, to: number) => PromiseLike<CatalogQueryResult<T>>;
+};
+
+type CatalogGroupTransportRow = {
+  code?: string | null;
+  name?: string | null;
+  parent_code?: string | null;
+};
+
+type UomTransportRow = {
+  id?: string | null;
+  code?: string | null;
+  name?: string | null;
+};
+
+const loadPagedCatalogRows = async <T,>(
+  queryFactory: CatalogQueryFactory<T>,
+): Promise<CatalogQueryResult<T>> => {
+  const rows: T[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, CATALOG_SAFE_LIST_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
+};
 
 export const RIK_QUICK_SEARCH_RPCS: CatalogSearchRpcName[] = [
   "rik_quick_ru",
@@ -33,31 +76,53 @@ export const RIK_QUICK_SEARCH_RPCS: CatalogSearchRpcName[] = [
 ];
 
 export const loadSupplierCounterpartyRows = async (searchTerm: string) => {
-  let query = supabase
-    .from("suppliers")
-    .select(SUPPLIERS_COUNTERPARTY_SELECT)
-    .order("name", { ascending: true });
-  if (searchTerm) {
-    query = query.or(`name.ilike.%${searchTerm}%,inn.ilike.%${searchTerm}%`);
-  }
-  return await query;
+  const buildQuery = () => {
+    let query = supabase
+      .from("suppliers")
+      .select(SUPPLIERS_COUNTERPARTY_SELECT)
+      .order("name", { ascending: true })
+      .order("id", { ascending: true });
+    if (searchTerm) {
+      query = query.or(`name.ilike.%${searchTerm}%,inn.ilike.%${searchTerm}%`);
+    }
+    return query;
+  };
+
+  return await loadPagedCatalogRows<SupplierCounterpartyRow>(buildQuery);
 };
 
 export const loadSubcontractCounterpartyRows = async () =>
-  await supabase
-    .from("subcontracts")
-    .select(SUBCONTRACTS_COUNTERPARTY_SELECT)
-    .not("status", "eq", "draft");
+  await loadPagedCatalogRows<SubcontractCounterpartyRow>(() =>
+    supabase
+      .from("subcontracts")
+      .select(SUBCONTRACTS_COUNTERPARTY_SELECT)
+      .not("status", "eq", "draft")
+      .order("contractor_org", { ascending: true })
+      .order("id", { ascending: true }),
+  );
 
 export const loadContractorCounterpartyRows = async () =>
-  await supabase.from("contractors").select(CONTRACTORS_COUNTERPARTY_SELECT);
+  await loadPagedCatalogRows<ContractorCounterpartyRow>(() =>
+    supabase
+      .from("contractors")
+      .select(CONTRACTORS_COUNTERPARTY_SELECT)
+      .order("company_name", { ascending: true })
+      .order("id", { ascending: true }),
+  );
 
 export const loadContractorProfileRows = async (withFilter: boolean) => {
-  let query = supabase.from("user_profiles").select("*");
-  if (withFilter) {
-    query = query.eq("is_contractor", true);
-  }
-  return await query.limit(5000);
+  const buildQuery = () => {
+    let query = supabase
+      .from("user_profiles")
+      .select("*")
+      .order("user_id", { ascending: true });
+    if (withFilter) {
+      query = query.eq("is_contractor", true);
+    }
+    return query;
+  };
+
+  return await loadPagedCatalogRows<ProfileContractorCompatRow>(buildQuery);
 };
 
 export const runCatalogSearchRpcRaw = async (
@@ -108,10 +173,12 @@ export const loadCatalogGroupsRows = async (): Promise<{
   data: CatalogGroup[] | null;
   error: { message?: string } | null;
 }> => {
-  const result = await supabase
-    .from("catalog_groups_clean")
-    .select("code,name,parent_code")
-    .order("code", { ascending: true });
+  const result = await loadPagedCatalogRows<CatalogGroupTransportRow>(() =>
+    supabase
+      .from("catalog_groups_clean")
+      .select("code,name,parent_code")
+      .order("code", { ascending: true }),
+  );
 
   return {
     data: result.data === null ? null : normalizeCatalogGroupRows(result.data),
@@ -123,10 +190,13 @@ export const loadUomRows = async (): Promise<{
   data: UomRef[] | null;
   error: { message?: string } | null;
 }> => {
-  const result = await supabase
-    .from("ref_uoms_clean")
-    .select("id,code,name")
-    .order("code", { ascending: true });
+  const result = await loadPagedCatalogRows<UomTransportRow>(() =>
+    supabase
+      .from("ref_uoms_clean")
+      .select("id,code,name")
+      .order("code", { ascending: true })
+      .order("id", { ascending: true }),
+  );
 
   return {
     data: result.data === null ? null : normalizeUomRows(result.data),
@@ -152,16 +222,21 @@ export const runSuppliersListRpc = async (searchTerm: string | null) =>
   await supabase.rpc("suppliers_list", normalizeSuppliersListRpcArgs(searchTerm));
 
 export const loadSuppliersTableRows = async (searchTerm: string) => {
-  let query = supabase
-    .from("suppliers")
-    .select(SUPPLIERS_TABLE_SELECT)
-    .order("name", { ascending: true });
-  if (searchTerm) {
-    query = query.or(
-      `name.ilike.%${searchTerm}%,inn.ilike.%${searchTerm}%,specialization.ilike.%${searchTerm}%`,
-    );
-  }
-  return await query;
+  const buildQuery = () => {
+    let query = supabase
+      .from("suppliers")
+      .select(SUPPLIERS_TABLE_SELECT)
+      .order("name", { ascending: true })
+      .order("id", { ascending: true });
+    if (searchTerm) {
+      query = query.or(
+        `name.ilike.%${searchTerm}%,inn.ilike.%${searchTerm}%,specialization.ilike.%${searchTerm}%`,
+      );
+    }
+    return query;
+  };
+
+  return await loadPagedCatalogRows<SupplierTableRow>(buildQuery);
 };
 
 export const loadRikQuickSearchFallbackRows = async (

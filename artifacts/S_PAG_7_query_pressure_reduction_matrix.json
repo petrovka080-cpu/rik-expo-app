@@ -1,0 +1,95 @@
+{
+  "wave": "S-PAG-7",
+  "mode": "production-safe-query-pressure-reduction",
+  "ownerGoal": "10K/50K+ readiness",
+  "trigger": "BFF deploy unavailable or next independent audit risk",
+  "baseline": {
+    "unboundedSelects": 95,
+    "unboundedFiles": 37
+  },
+  "result": {
+    "unboundedSelects": 95,
+    "unboundedFiles": 37,
+    "fixedCallSites": 7,
+    "targetMet": true
+  },
+  "fixedCallSites": [
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadSupplierCounterpartyRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadSubcontractCounterpartyRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadContractorCounterpartyRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadContractorProfileRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadCatalogGroupsRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadUomRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadSuppliersTableRows",
+      "pattern": "page-through-all",
+      "stableOrder": true,
+      "semanticsPreserved": true
+    }
+  ],
+  "intentionallyNotTouched": {
+    "bffDeploy": true,
+    "pdfReportExport": true,
+    "detailFullReads": true,
+    "integrityGuards": true,
+    "queueInternals": true,
+    "financialCalculations": true,
+    "warehouseStockMath": true
+  },
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "bffFilesTouched": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}

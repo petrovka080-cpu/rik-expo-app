@@ -28,6 +28,22 @@ const buildOrderedQuery = (resolvedValue: unknown) => {
   return { select, eq, order };
 };
 
+const buildPagedQuery = (...pages: unknown[]) => {
+  const range = jest
+    .fn()
+    .mockImplementation(() =>
+      Promise.resolve(
+        pages.length > 1
+          ? pages[Math.min(range.mock.calls.length - 1, pages.length - 1)]
+          : pages[0],
+      ),
+    );
+  const chain = { order: jest.fn(), range };
+  chain.order.mockReturnValue(chain);
+  const select = jest.fn().mockReturnValue(chain);
+  return { select, order: chain.order, range };
+};
+
 describe("catalog transport strict-null phase 4", () => {
   beforeEach(() => {
     mockFrom.mockReset();
@@ -112,13 +128,15 @@ describe("catalog transport strict-null phase 4", () => {
   });
 
   it("wires normalized catalog group rows through the transport boundary", async () => {
-    const query = buildOrderedQuery({
-      data: [
-        { code: "grp-1", name: "Materials", parent_code: null },
-        { code: null, name: "Broken", parent_code: "root" },
-      ],
-      error: null,
-    });
+    const query = buildPagedQuery(
+      {
+        data: [
+          { code: "grp-1", name: "Materials", parent_code: null },
+          { code: null, name: "Broken", parent_code: "root" },
+        ],
+        error: null,
+      },
+    );
     mockFrom.mockReturnValue({ select: query.select });
 
     await expect(loadCatalogGroupsRows()).resolves.toEqual({
@@ -129,17 +147,20 @@ describe("catalog transport strict-null phase 4", () => {
     expect(mockFrom).toHaveBeenCalledWith("catalog_groups_clean");
     expect(query.select).toHaveBeenCalledWith("code,name,parent_code");
     expect(query.order).toHaveBeenCalledWith("code", { ascending: true });
+    expect(query.range).toHaveBeenCalledWith(0, 99);
   });
 
   it("wires normalized uom rows through the transport boundary", async () => {
-    const query = buildOrderedQuery({
-      data: [
-        { id: "uom-1", code: "kg", name: "Kilogram" },
-        { id: null, code: "pc", name: "Piece" },
-        { id: "bad", code: null, name: "Broken" },
-      ],
-      error: null,
-    });
+    const query = buildPagedQuery(
+      {
+        data: [
+          { id: "uom-1", code: "kg", name: "Kilogram" },
+          { id: null, code: "pc", name: "Piece" },
+          { id: "bad", code: null, name: "Broken" },
+        ],
+        error: null,
+      },
+    );
     mockFrom.mockReturnValue({ select: query.select });
 
     await expect(loadUomRows()).resolves.toEqual({
@@ -153,6 +174,8 @@ describe("catalog transport strict-null phase 4", () => {
     expect(mockFrom).toHaveBeenCalledWith("ref_uoms_clean");
     expect(query.select).toHaveBeenCalledWith("id,code,name");
     expect(query.order).toHaveBeenCalledWith("code", { ascending: true });
+    expect(query.order).toHaveBeenCalledWith("id", { ascending: true });
+    expect(query.range).toHaveBeenCalledWith(0, 99);
   });
 
   it("wires normalized incoming item rows through the transport boundary", async () => {

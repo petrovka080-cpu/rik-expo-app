@@ -78,7 +78,7 @@ describe("S-PAG-4 remaining top list pagination contract", () => {
     expect(catalogTransport).toContain("name_human.ilike.%${token}%");
     expect(catalogTransport).toContain("rik_code.ilike.%${token}%");
     expect(catalogTransport.match(/\.order\(\"rik_code\", \{ ascending: true \}\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
-    expect(catalogTransport.match(/\.range\(page\.from, page\.to\)/g)).toHaveLength(2);
+    expect(catalogTransport.match(/\.range\(page\.from, page\.to\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
   });
 
   it("does not cap PDF, report, export, or detail full reads", () => {
