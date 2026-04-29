@@ -105,7 +105,7 @@ Full gates:
 - `npx expo lint`: PASS
 - `npm test -- --runInBand`: PASS, 488 suites passed, 3071 tests passed, 1 skipped
 - `npm test`: PASS, 488 suites passed, 3071 tests passed, 1 skipped
-- `npm run release:verify -- --json`: pending clean post-commit verification
+- `npm run release:verify -- --json`: PASS, readiness status `pass`, `headMatchesOriginMain=true`, `worktreeClean=true`, `otaPublished=false`, `easBuildTriggered=false`, `easSubmitTriggered=false`, `easUpdateTriggered=false`
 
 ## Safety Confirmations
 
