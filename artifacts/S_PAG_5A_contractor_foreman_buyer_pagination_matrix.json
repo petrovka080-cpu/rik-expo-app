@@ -1,0 +1,194 @@
+{
+  "wave": "S-PAG-5A",
+  "mode": "production-safe-10k-50k-query-hardening",
+  "status": "GREEN",
+  "dependsOn": ["S-PAG-3A", "S-PAG-3B", "S-PAG-4"],
+  "ownerGoal": "10K/50K+ readiness",
+  "androidSubmitDeferredByOwner": true,
+  "auditBaseline": {
+    "unboundedSelectsBeforeWave": 111,
+    "unboundedFilesBeforeWave": 42
+  },
+  "preWaveCount": {
+    "unboundedSelects": 115,
+    "unboundedFiles": 46
+  },
+  "postWaveCount": {
+    "unboundedSelects": 108,
+    "unboundedFiles": 45
+  },
+  "targetCallsites": 8,
+  "fixedCallsites": 6,
+  "changedFiles": [
+    "src/screens/foreman/foreman.dicts.repo.ts",
+    "tests/api/topListPaginationBatch5A.contract.test.ts",
+    "artifacts/S_PAG_5A_contractor_foreman_buyer_pagination_matrix.json",
+    "artifacts/S_PAG_5A_contractor_foreman_buyer_pagination_proof.md"
+  ],
+  "callsiteMatrix": [
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "function": "fetchWithFallback",
+      "table": "ref_object_types",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded select ordered by name",
+      "after": "stable order by name/code + page-through-all range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "function": "fetchWithFallback",
+      "table": "ref_levels",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded select ordered by sort",
+      "after": "stable order by sort/code + page-through-all range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "function": "fetchWithFallback",
+      "table": "ref_systems",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded select ordered by name",
+      "after": "stable order by name/code + page-through-all range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "function": "fetchWithFallback",
+      "table": "ref_zones",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded select ordered by name",
+      "after": "stable order by name/code + page-through-all range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "function": "loadForemanAppOptions",
+      "table": "rik_apps",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded select ordered by app_code",
+      "after": "stable order by app_code + page-through-all range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "function": "loadForemanAppOptions",
+      "table": "rik_item_apps",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded fallback select ordered by app_code",
+      "after": "stable order by app_code + page-through-all range",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    }
+  ],
+  "classificationMatrix": [
+    {
+      "file": "src/screens/contractor/contractor.data.ts",
+      "selects": 11,
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "changed": false,
+      "reason": "Reads are request/progress/log/material detail bundles where callers expect all children for one parent scope."
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "selects": 7,
+      "classification": "FIX_NOW_LIST_QUERY",
+      "changed": true,
+      "reason": "Six dictionary/app option list reads are safe to page-through-all with stable ordering; profile name remains a single maybeSingle detail lookup."
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "selects": 6,
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "changed": false,
+      "reason": "Remaining reads are proposal/accounting/detail-by-parent rows; buyer list reads were already handled in S-PAG-3A/S-PAG-3B."
+    },
+    {
+      "file": "src/screens/director/director.data.ts",
+      "selects": 8,
+      "classification": "UNKNOWN_DO_NOT_TOUCH",
+      "changed": false,
+      "reason": "File already has bounded/direct detail semantics including .limit(1) and existing director list pagination paths; no safe new S-PAG-5A list change selected."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "selects": 2,
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "changed": false,
+      "reason": "Incoming ledger/line reads are warehouse detail correctness paths and were not capped."
+    },
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "selects": 9,
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "changed": false,
+      "reason": "PDF/report completeness must not be capped."
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "selects": 9,
+      "classification": "INTENTIONAL_DOCUMENT_BUILDER",
+      "changed": false,
+      "reason": "Document builder completeness must not be capped."
+    },
+    {
+      "file": "src/lib/api/integrity.guards.ts",
+      "selects": 5,
+      "classification": "INTEGRITY_GUARD_DO_NOT_TOUCH",
+      "changed": false,
+      "reason": "Integrity checks already use chunking semantics and were not changed."
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "selects": 1,
+      "classification": "JOB_QUEUE_SEMANTICS_UNCLEAR",
+      "changed": false,
+      "reason": "Queue semantics were not changed in this pagination wave."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.seed.ts",
+      "selects": 0,
+      "classification": "SEED_OR_TEST_OR_FIXTURE",
+      "changed": false,
+      "reason": "Seed/setup scope intentionally left untouched."
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "pdfReportExportCapped": false,
+    "detailFullReadsChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}

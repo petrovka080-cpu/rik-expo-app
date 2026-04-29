@@ -12,6 +12,13 @@ type DictRow = { code: string; name?: string | null; name_ru?: string | null };
 type AppRow = { app_code: string; name_human?: string | null };
 type ItemAppRow = { app_code: string | null };
 type DictTable = "ref_object_types" | "ref_levels" | "ref_systems" | "ref_zones";
+type PagedSelectResult<T> = {
+  data: T[] | null;
+  error: { message?: string | null } | null;
+};
+type PagedSelectQuery<T> = {
+  range(from: number, to: number): Promise<PagedSelectResult<T>>;
+};
 type DictSelectResult = {
   data: ForemanRefObjectTypeRow[] | null;
   error: { message?: string | null } | null;
@@ -42,6 +49,7 @@ type UserNameCacheEntry = {
 const FOREMAN_DICTS_TTL_MS = 5 * 60 * 1000;
 const FOREMAN_APPS_TTL_MS = 5 * 60 * 1000;
 const FOREMAN_PROFILE_NAME_TTL_MS = 5 * 60 * 1000;
+const FOREMAN_DICT_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
 
 const dictSnapshotCache: CacheEntry<DictsSnapshot> = {
   value: null,
@@ -116,6 +124,39 @@ const toItemAppRow = (value: unknown): ItemAppRow | null => {
   return { app_code: appCode };
 };
 
+const normalizeForemanDictListPage = (pageIndex: number, pageSizeInput?: number) => {
+  const requested = Number.isFinite(pageSizeInput ?? NaN)
+    ? Math.floor(Number(pageSizeInput))
+    : FOREMAN_DICT_LIST_PAGE_DEFAULTS.pageSize;
+  const pageSize = Math.min(
+    Math.max(requested, 1),
+    FOREMAN_DICT_LIST_PAGE_DEFAULTS.maxPageSize,
+  );
+  return {
+    from: pageIndex * pageSize,
+    to: pageIndex * pageSize + pageSize - 1,
+    pageSize,
+  };
+};
+
+const loadPagedForemanRows = async <T,>(
+  queryFactory: () => PagedSelectQuery<T>,
+): Promise<PagedSelectResult<T>> => {
+  const rows: T[] = [];
+  let pageIndex = 0;
+
+  while (true) {
+    const page = normalizeForemanDictListPage(pageIndex);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+    pageIndex += 1;
+  }
+};
+
 const fetchWithFallback = async (
   table: DictTable,
   select: string,
@@ -125,13 +166,37 @@ const fetchWithFallback = async (
   const run = async (cols: string): Promise<DictSelectResult> => {
     switch (table) {
       case "ref_object_types":
-        return (await supabase.from("ref_object_types").select(cols).order(orderColumn)) as DictSelectResult;
+        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(() =>
+          supabase
+            .from("ref_object_types")
+            .select(cols)
+            .order(orderColumn, { ascending: true })
+            .order("code", { ascending: true }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
+        );
       case "ref_levels":
-        return (await supabase.from("ref_levels").select(cols).order(orderColumn)) as DictSelectResult;
+        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(() =>
+          supabase
+            .from("ref_levels")
+            .select(cols)
+            .order(orderColumn, { ascending: true })
+            .order("code", { ascending: true }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
+        );
       case "ref_systems":
-        return (await supabase.from("ref_systems").select(cols).order(orderColumn)) as DictSelectResult;
+        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(() =>
+          supabase
+            .from("ref_systems")
+            .select(cols)
+            .order(orderColumn, { ascending: true })
+            .order("code", { ascending: true }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
+        );
       case "ref_zones":
-        return (await supabase.from("ref_zones").select(cols).order(orderColumn)) as DictSelectResult;
+        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(() =>
+          supabase
+            .from("ref_zones")
+            .select(cols)
+            .order(orderColumn, { ascending: true })
+            .order("code", { ascending: true }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
+        );
     }
   };
 
@@ -198,7 +263,12 @@ const loadForemanDictsSnapshot = async (): Promise<DictsSnapshot> => {
 };
 
 const loadForemanAppOptions = async (): Promise<AppOption[]> => {
-  const apps = await supabase.from("rik_apps").select("app_code, name_human").order("app_code", { ascending: true });
+  const apps = await loadPagedForemanRows<AppRow>(() =>
+    supabase
+      .from("rik_apps")
+      .select("app_code, name_human")
+      .order("app_code", { ascending: true }) as unknown as PagedSelectQuery<AppRow>,
+  );
 
   if (!apps.error && Array.isArray(apps.data) && apps.data.length) {
     return apps.data
@@ -210,11 +280,13 @@ const loadForemanAppOptions = async (): Promise<AppOption[]> => {
       }));
   }
 
-  const fallback = await supabase
-    .from("rik_item_apps")
-    .select("app_code")
-    .not("app_code", "is", null)
-    .order("app_code", { ascending: true });
+  const fallback = await loadPagedForemanRows<ItemAppRow>(() =>
+    supabase
+      .from("rik_item_apps")
+      .select("app_code")
+      .not("app_code", "is", null)
+      .order("app_code", { ascending: true }) as unknown as PagedSelectQuery<ItemAppRow>,
+  );
 
   if (!fallback.error && Array.isArray(fallback.data)) {
     const uniq = Array.from(
