@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
+import { redactSensitiveValue } from "../../lib/security/redaction";
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
 import { reportAndSwallow } from "../../lib/observability/catchDiscipline";
 import { getDirectorFinancePdfSource } from "../../lib/api/directorPdfSource.service";
@@ -169,13 +170,13 @@ export function useDirectorFinancePanel({
           extra: {
             owner: "backend",
             version: "v2",
-            supplier: selection.supplier,
-            kindName: selection.kindName ?? null,
+            supplierScope: "present_redacted",
+            kindScope: selection.kindName ? "present_redacted" : "missing",
           },
         });
       } catch (error) {
         if (__DEV__) {
-          console.warn("[director.finance] supplier scope rpc failed", error);
+          console.warn("[director.finance] supplier scope rpc failed", redactSensitiveValue(error));
         }
         setFinSupplier(null);
         observation.error(error, {
@@ -183,8 +184,8 @@ export function useDirectorFinancePanel({
           sourceKind: "rpc:director_finance_supplier_scope_v2",
           errorStage: "load_supplier_scope",
           extra: {
-            supplier: selection.supplier,
-            kindName: selection.kindName ?? null,
+            supplierScope: "present_redacted",
+            kindScope: selection.kindName ? "present_redacted" : "missing",
           },
         });
         if (!opts?.suppressErrors) {

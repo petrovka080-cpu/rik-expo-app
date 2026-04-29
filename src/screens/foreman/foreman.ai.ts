@@ -7,6 +7,7 @@ import {
 } from "../../lib/api/foremanAiResolve.service";
 import { safeJsonParse } from "../../lib/format";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { redactSensitiveRecord, redactSensitiveText } from "../../lib/security/redaction";
 
 type ForemanAiAction = "create_request" | "clarify";
 type ForemanAiKind = "material" | "work" | "service";
@@ -148,7 +149,12 @@ const asRecord = (value: unknown): Record<string, unknown> | null =>
 
 const logForemanAi = (payload: Record<string, unknown>) => {
   if (!__DEV__) return;
-  console.info("[foreman.ai]", payload);
+  const safePayload = redactSensitiveRecord(payload) ?? {};
+  if (Object.prototype.hasOwnProperty.call(safePayload, "sourcePrompt")) {
+    safePayload.sourcePrompt = "[redacted]";
+    safePayload.sourcePromptLength = String(payload.sourcePrompt ?? "").length;
+  }
+  console.info("[foreman.ai]", safePayload);
 };
 
 const foremanAiWarnedErrors = new Set<string>();
@@ -159,7 +165,7 @@ const recordForemanAiDegradedOnce = (
   error: unknown,
   extra?: Record<string, unknown>,
 ) => {
-  const message = error instanceof Error ? error.message : String(error ?? "unknown_error");
+  const message = redactSensitiveText(error instanceof Error ? error.message : String(error ?? "unknown_error"));
   const key = `${event}:${message}`;
   if (foremanAiWarnedErrors.has(key)) return;
   foremanAiWarnedErrors.add(key);

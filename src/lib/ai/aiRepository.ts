@@ -4,12 +4,13 @@ import {
   isGeminiGatewayConfigured,
   type GeminiGatewayRequest,
 } from "./geminiGateway";
+import { redactSensitiveRecord } from "../security/redaction";
 
 export type AiRepositorySourcePath = "assistant_chat" | "foreman_quick_request";
 
 const logAiRepository = (payload: Record<string, unknown>) => {
   if (!__DEV__) return;
-  console.info("[ai.repository]", payload);
+  console.info("[ai.repository]", redactSensitiveRecord(payload) ?? {});
 };
 
 const toAiErrorCategory = (error: unknown): string => {
@@ -46,7 +47,10 @@ export async function requestAiGeneratedText(params: {
   try {
     const text = await invokeGeminiGateway(params.request);
     if (__DEV__) {
-      console.info("[AI RESPONSE RAW]", text);
+      console.info("[AI RESPONSE METADATA]", {
+        textLength: text.length,
+        sourcePath: params.sourcePath,
+      });
     }
     logAiRepository({
       phase: "backend_success",

@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { supabase } from "../../../src/lib/supabaseClient";
+import { redactSensitiveValue } from "../../../src/lib/security/redaction";
 import CalcModalContent from "./CalcModalContent";
 import type { BasisKey, Field } from "./useCalcFields";
 import { useCalcFields } from "./useCalcFields";
@@ -40,6 +41,11 @@ type Props = {
   workType?: { code: string; name: string } | null;
   onAddToRequest?: (rows: CalcModalRow[]) => void;
 };
+
+const summarizeCalcModalPayloadForLog = (payload: Record<string, unknown>) => ({
+  payloadKeyCount: Object.keys(payload).length,
+  payloadKeys: Object.keys(payload).sort(),
+});
 
 function useKeyboardHeight() {
   const [height, setHeight] = useState(0);
@@ -387,7 +393,10 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
 
       if (error) {
         if (__DEV__) {
-          console.error("[CalcModal][rpc_calc_work_kit]", { payload, error });
+          console.error("[CalcModal][rpc_calc_work_kit]", {
+            payload: summarizeCalcModalPayloadForLog(payload),
+            error: redactSensitiveValue(error),
+          });
         }
         throw error;
       }
@@ -395,7 +404,7 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
       setRows(normalizeCalcRows(data));
     } catch (error) {
       if (__DEV__) {
-        console.error("[CalcModal]", error);
+        console.error("[CalcModal]", redactSensitiveValue(error));
       }
       Alert.alert("Ошибка", "Не удалось выполнить расчет. Проверьте параметры и попробуйте еще раз.");
       setRows(null);

@@ -1,0 +1,103 @@
+{
+  "wave": "S-PII-1",
+  "mode": "production-safe-10k-50k-log-redaction-hardening",
+  "status": "GREEN",
+  "ownerGoal": "10K/50K+ readiness",
+  "logicChangeAllowed": false,
+  "fixedCallsites": 4,
+  "changedFiles": [
+    "src/lib/ai/aiRepository.ts",
+    "src/screens/foreman/foreman.ai.ts",
+    "src/components/foreman/CalcModal.tsx",
+    "src/screens/director/director.finance.panel.ts",
+    "tests/security/sPii1LogRedaction.contract.test.ts",
+    "artifacts/S_PII_1_log_redaction_matrix.json",
+    "artifacts/S_PII_1_log_redaction_proof.md"
+  ],
+  "callsiteMatrix": [
+    {
+      "file": "src/lib/ai/aiRepository.ts",
+      "function": "requestAiGeneratedText",
+      "classification": "FIX_NOW_RAW_AI_RESPONSE_LOG",
+      "before": "dev console logged raw AI response text",
+      "after": "dev console logs response metadata only",
+      "businessLogicChanged": false,
+      "appBehaviorChanged": false,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "tests": [
+        "source contract: no AI RESPONSE RAW",
+        "source contract: metadata only"
+      ]
+    },
+    {
+      "file": "src/screens/foreman/foreman.ai.ts",
+      "function": "logForemanAi",
+      "classification": "FIX_NOW_RAW_AI_PROMPT_LOG",
+      "before": "dev console telemetry could include sourcePrompt text",
+      "after": "sourcePrompt is redacted and sourcePromptLength is retained",
+      "businessLogicChanged": false,
+      "appBehaviorChanged": false,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "tests": [
+        "source contract: sourcePrompt redacted",
+        "source contract: prompt length retained"
+      ]
+    },
+    {
+      "file": "src/components/foreman/CalcModal.tsx",
+      "function": "calc",
+      "classification": "FIX_NOW_RAW_RPC_PAYLOAD_LOG",
+      "before": "dev console error logged raw calc payload and raw error",
+      "after": "dev console logs payload key summary and redacted error",
+      "businessLogicChanged": false,
+      "appBehaviorChanged": false,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "tests": [
+        "source contract: raw payload/error tuple removed",
+        "source contract: redacted error used"
+      ]
+    },
+    {
+      "file": "src/screens/director/director.finance.panel.ts",
+      "function": "loadSupplierScope",
+      "classification": "FIX_NOW_SUPPLIER_SCOPE_OBSERVABILITY",
+      "before": "supplier and kind names were included in observability extras",
+      "after": "extras include redacted presence scopes only; dev warning redacts error",
+      "businessLogicChanged": false,
+      "appBehaviorChanged": false,
+      "rawPayloadLogged": false,
+      "piiLogged": false,
+      "tests": [
+        "source contract: supplier scope redacted",
+        "source contract: raw supplier extras removed"
+      ]
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "aiPromptChanged": false,
+    "pdfReportExportCompletenessChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "stagingTouched": false,
+    "productionWrites": false,
+    "stagingWrites": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}
