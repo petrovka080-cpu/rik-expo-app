@@ -1,18 +1,18 @@
 {
   "wave": "S-LOAD-1",
   "mode": "production-safe-staging-load-test",
-  "generatedAt": "2026-04-28T12:55:10.534Z",
+  "generatedAt": "2026-04-29T12:44:47.523Z",
   "environment": {
-    "canRunLive": false,
-    "missingKeys": [
+    "canRunLive": true,
+    "missingKeys": [],
+    "presentKeys": [
       "STAGING_SUPABASE_URL",
       "STAGING_SUPABASE_READONLY_KEY"
     ],
-    "presentKeys": [],
     "productionFallbackUsed": false,
     "secretsPrinted": false
   },
-  "liveRun": "not_run_env_missing",
+  "liveRun": "completed",
   "targets": [
     {
       "target": {
@@ -28,17 +28,31 @@
         "readOnly": true,
         "reason": "hot warehouse issue queue first-page bounded scope"
       },
-      "samples": [],
-      "medianLatencyMs": null,
-      "maxLatencyMs": null,
-      "medianPayloadBytes": null,
-      "maxPayloadBytes": null,
-      "maxRowCount": null,
-      "recommendation": "run_live",
-      "status": "not_run_env_missing",
-      "errors": [
-        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
-      ]
+      "samples": [
+        {
+          "latencyMs": 3739,
+          "payloadBytes": 18777,
+          "rowCount": 25
+        },
+        {
+          "latencyMs": 2586,
+          "payloadBytes": 18777,
+          "rowCount": 25
+        },
+        {
+          "latencyMs": 2575,
+          "payloadBytes": 18777,
+          "rowCount": 25
+        }
+      ],
+      "medianLatencyMs": 2586,
+      "maxLatencyMs": 3739,
+      "medianPayloadBytes": 18777,
+      "maxPayloadBytes": 18777,
+      "maxRowCount": 25,
+      "recommendation": "optimize_next",
+      "status": "collected",
+      "errors": []
     },
     {
       "target": {
@@ -54,17 +68,31 @@
         "readOnly": true,
         "reason": "hot warehouse incoming queue bounded scope"
       },
-      "samples": [],
-      "medianLatencyMs": null,
-      "maxLatencyMs": null,
-      "medianPayloadBytes": null,
-      "maxPayloadBytes": null,
-      "maxRowCount": null,
-      "recommendation": "run_live",
-      "status": "not_run_env_missing",
-      "errors": [
-        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
-      ]
+      "samples": [
+        {
+          "latencyMs": 798,
+          "payloadBytes": 6366,
+          "rowCount": 14
+        },
+        {
+          "latencyMs": 407,
+          "payloadBytes": 6366,
+          "rowCount": 14
+        },
+        {
+          "latencyMs": 405,
+          "payloadBytes": 6366,
+          "rowCount": 14
+        }
+      ],
+      "medianLatencyMs": 407,
+      "maxLatencyMs": 798,
+      "medianPayloadBytes": 6366,
+      "maxPayloadBytes": 6366,
+      "maxRowCount": 14,
+      "recommendation": "safe_now",
+      "status": "collected",
+      "errors": []
     },
     {
       "target": {
@@ -80,17 +108,31 @@
         "readOnly": true,
         "reason": "stock list window with aggregate payload pressure"
       },
-      "samples": [],
-      "medianLatencyMs": null,
-      "maxLatencyMs": null,
-      "medianPayloadBytes": null,
-      "maxPayloadBytes": null,
-      "maxRowCount": null,
-      "recommendation": "run_live",
-      "status": "not_run_env_missing",
-      "errors": [
-        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
-      ]
+      "samples": [
+        {
+          "latencyMs": 1356,
+          "payloadBytes": 16791,
+          "rowCount": 60
+        },
+        {
+          "latencyMs": 404,
+          "payloadBytes": 16791,
+          "rowCount": 60
+        },
+        {
+          "latencyMs": 407,
+          "payloadBytes": 16791,
+          "rowCount": 60
+        }
+      ],
+      "medianLatencyMs": 407,
+      "maxLatencyMs": 1356,
+      "medianPayloadBytes": 16791,
+      "maxPayloadBytes": 16791,
+      "maxRowCount": 60,
+      "recommendation": "watch",
+      "status": "collected",
+      "errors": []
     },
     {
       "target": {
@@ -108,17 +150,31 @@
         "readOnly": true,
         "reason": "buyer inbox canonical bounded list path"
       },
-      "samples": [],
-      "medianLatencyMs": null,
-      "maxLatencyMs": null,
-      "medianPayloadBytes": null,
-      "maxPayloadBytes": null,
-      "maxRowCount": null,
-      "recommendation": "run_live",
-      "status": "not_run_env_missing",
-      "errors": [
-        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
-      ]
+      "samples": [
+        {
+          "latencyMs": 1454,
+          "payloadBytes": 14738,
+          "rowCount": 26
+        },
+        {
+          "latencyMs": 466,
+          "payloadBytes": 14738,
+          "rowCount": 26
+        },
+        {
+          "latencyMs": 454,
+          "payloadBytes": 14738,
+          "rowCount": 26
+        }
+      ],
+      "medianLatencyMs": 466,
+      "maxLatencyMs": 1454,
+      "medianPayloadBytes": 14738,
+      "maxPayloadBytes": 14738,
+      "maxRowCount": 26,
+      "recommendation": "optimize_next",
+      "status": "collected",
+      "errors": []
     },
     {
       "target": {
@@ -130,17 +186,31 @@
         "readOnly": true,
         "reason": "buyer dashboard fixed summary scope repeated-run stability"
       },
-      "samples": [],
-      "medianLatencyMs": null,
-      "maxLatencyMs": null,
-      "medianPayloadBytes": null,
-      "maxPayloadBytes": null,
-      "maxRowCount": null,
-      "recommendation": "run_live",
-      "status": "not_run_env_missing",
-      "errors": [
-        "Missing staging env: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY"
-      ]
+      "samples": [
+        {
+          "latencyMs": 798,
+          "payloadBytes": 28333,
+          "rowCount": 132
+        },
+        {
+          "latencyMs": 407,
+          "payloadBytes": 28333,
+          "rowCount": 132
+        },
+        {
+          "latencyMs": 408,
+          "payloadBytes": 28333,
+          "rowCount": 132
+        }
+      ],
+      "medianLatencyMs": 408,
+      "maxLatencyMs": 798,
+      "medianPayloadBytes": 28333,
+      "maxPayloadBytes": 28333,
+      "maxRowCount": 132,
+      "recommendation": "safe_now",
+      "status": "collected",
+      "errors": []
     }
   ],
   "safety": {

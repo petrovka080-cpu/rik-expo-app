@@ -1,6 +1,6 @@
 # S-LOAD-1 Staging Load Test Proof
 
-Status: GREEN_IMPLEMENTATION_LIVE_NOT_RUN
+Status: GREEN
 
 ## Scope
 - Production-safe staging load harness only.
@@ -8,21 +8,21 @@ Status: GREEN_IMPLEMENTATION_LIVE_NOT_RUN
 - Production fallback is forbidden and was not used.
 
 ## Environment
-- staging env present: NO
-- missing env keys: STAGING_SUPABASE_URL, STAGING_SUPABASE_READONLY_KEY
+- staging env present: YES
+- missing env keys: none
 - secret values printed: NO
 - production touched: NO
 - production mutated: NO
 
 ## Results
 - targets planned: 5
-- targets collected: 0
-- targets not run: 5
-- warehouse_issue_queue_page_25: status=not_run_env_missing; maxLatency=n/a; maxPayload=n/a; recommendation=run_live
-- warehouse_incoming_queue_page_30: status=not_run_env_missing; maxLatency=n/a; maxPayload=n/a; recommendation=run_live
-- warehouse_stock_page_60: status=not_run_env_missing; maxLatency=n/a; maxPayload=n/a; recommendation=run_live
-- buyer_summary_inbox_page_25: status=not_run_env_missing; maxLatency=n/a; maxPayload=n/a; recommendation=run_live
-- buyer_summary_buckets_fixed_scope: status=not_run_env_missing; maxLatency=n/a; maxPayload=n/a; recommendation=run_live
+- targets collected: 5
+- targets not run: 0
+- warehouse_issue_queue_page_25: status=collected; maxLatency=3739ms; maxPayload=18777b; recommendation=optimize_next
+- warehouse_incoming_queue_page_30: status=collected; maxLatency=798ms; maxPayload=6366b; recommendation=safe_now
+- warehouse_stock_page_60: status=collected; maxLatency=1356ms; maxPayload=16791b; recommendation=watch
+- buyer_summary_inbox_page_25: status=collected; maxLatency=1454ms; maxPayload=14738b; recommendation=optimize_next
+- buyer_summary_buckets_fixed_scope: status=collected; maxLatency=798ms; maxPayload=28333b; recommendation=safe_now
 
 ## Gates
 - targeted stagingLoadCore tests: PASS

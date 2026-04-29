@@ -1,32 +1,113 @@
 {
   "wave": "S-LOAD-3",
   "mode": "production-safe-live-staging-load-run",
-  "status": "PARTIAL_ENV_MISSING",
+  "status": "GREEN_STAGING_EXECUTED",
   "ownerGoal": "10K/50K+ readiness",
   "target": "staging",
+  "generatedAt": "2026-04-29T12:44:47.523Z",
   "env": {
-    "STAGING_SUPABASE_URL": "missing",
-    "STAGING_SUPABASE_READONLY_KEY": "missing",
-    "STAGING_TEST_EMAIL": "missing",
-    "STAGING_TEST_PASSWORD": "missing",
-    "STAGING_TEST_COMPANY_ID": "missing",
-    "STAGING_LOAD_TARGET": "missing"
+    "STAGING_SUPABASE_URL": "present",
+    "STAGING_SUPABASE_READONLY_KEY": "present",
+    "STAGING_LOAD_ENABLED": "true"
   },
   "harness": {
     "corePath": "scripts/load/stagingLoadCore.ts",
     "legacyExecutablePath": "scripts/load/staging-load-test.ts",
     "legacyExecutableLoadsDotEnv": true,
+    "command": "node --import tsx scripts/load/staging-load-test.ts",
+    "nodeLoaderTsxUsed": false,
+    "nodeImportTsxUsed": true,
     "coreTargetCount": 5,
-    "boundedReadOnlyTargets": true
+    "boundedReadOnlyTargets": true,
+    "readOnlyRpcOnly": true
   },
   "execution": {
     "targetedTestsRun": true,
     "dryRunExecuted": false,
-    "dryRunReason": "No access-gated CLI dry-run exists that avoids .env loading; current process staging env is missing.",
-    "smokeRunExecuted": false,
-    "conservativeLoadExecuted": false,
+    "dryRunReason": "No separate dry-run CLI exists; live run used the existing bounded read-only staging RPC harness.",
+    "conservativeLoadExecuted": true,
+    "liveRunCompleted": true,
+    "targetsPlanned": 5,
+    "targetsCollected": 5,
+    "repeatedRunsPerTarget": 3,
     "productionTouched": false,
-    "productionWrites": false
+    "productionWrites": false,
+    "stagingWrites": false
+  },
+  "targets": [
+    {
+      "id": "warehouse_issue_queue_page_25",
+      "domain": "warehouse",
+      "rpcName": "warehouse_issue_queue_scope_v4",
+      "expectedMaxRows": 25,
+      "maxRowCount": 25,
+      "medianLatencyMs": 2586,
+      "maxLatencyMs": 3739,
+      "medianPayloadBytes": 18777,
+      "maxPayloadBytes": 18777,
+      "status": "collected",
+      "recommendation": "optimize_next"
+    },
+    {
+      "id": "warehouse_incoming_queue_page_30",
+      "domain": "warehouse",
+      "rpcName": "warehouse_incoming_queue_scope_v1",
+      "expectedMaxRows": 30,
+      "maxRowCount": 14,
+      "medianLatencyMs": 407,
+      "maxLatencyMs": 798,
+      "medianPayloadBytes": 6366,
+      "maxPayloadBytes": 6366,
+      "status": "collected",
+      "recommendation": "safe_now"
+    },
+    {
+      "id": "warehouse_stock_page_60",
+      "domain": "warehouse",
+      "rpcName": "warehouse_stock_scope_v2",
+      "expectedMaxRows": 60,
+      "maxRowCount": 60,
+      "medianLatencyMs": 407,
+      "maxLatencyMs": 1356,
+      "medianPayloadBytes": 16791,
+      "maxPayloadBytes": 16791,
+      "status": "collected",
+      "recommendation": "watch"
+    },
+    {
+      "id": "buyer_summary_inbox_page_25",
+      "domain": "buyer",
+      "rpcName": "buyer_summary_inbox_scope_v1",
+      "expectedMaxRows": 25,
+      "maxRowCount": 26,
+      "medianLatencyMs": 466,
+      "maxLatencyMs": 1454,
+      "medianPayloadBytes": 14738,
+      "maxPayloadBytes": 14738,
+      "status": "collected",
+      "recommendation": "optimize_next"
+    },
+    {
+      "id": "buyer_summary_buckets_fixed_scope",
+      "domain": "buyer",
+      "rpcName": "buyer_summary_buckets_scope_v1",
+      "expectedMaxRows": null,
+      "maxRowCount": 132,
+      "medianLatencyMs": 408,
+      "maxLatencyMs": 798,
+      "medianPayloadBytes": 28333,
+      "maxPayloadBytes": 28333,
+      "status": "collected",
+      "recommendation": "safe_now"
+    }
+  ],
+  "commandsRun": [
+    "npm test -- --runInBand stagingLoadCore",
+    "node --import tsx scripts/load/staging-load-test.ts"
+  ],
+  "testResults": {
+    "stagingLoadCore": "pass",
+    "conservativeLiveStagingLoad": "pass"
   },
   "safety": {
     "productionTouched": false,
@@ -47,6 +128,11 @@
     "easBuildTriggered": false,
     "easSubmitTriggered": false,
     "easUpdateTriggered": false,
+    "playMarketTouched": false,
     "androidSubmitTouched": false
-  }
+  },
+  "legacyArtifactsUpdatedByHarness": [
+    "artifacts/S_LOAD_1_staging_load_test_matrix.json",
+    "artifacts/S_LOAD_1_staging_load_test_proof.md"
+  ]
 }
