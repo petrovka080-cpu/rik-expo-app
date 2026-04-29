@@ -1,4 +1,5 @@
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
+import { normalizePage } from "../../lib/api/_core";
 import type { DirectorSupabaseClient } from "../../types/contracts/director";
 import type { PendingRow } from "./director.types";
 
@@ -20,6 +21,32 @@ const DIRECTOR_PENDING_ITEM_STATUSES = new Set([
 ]);
 
 const DIRECTOR_EXPECTED_REQUEST_STATUSES = [REQUEST_PENDING_STATUS, REQUEST_PENDING_EN] as const;
+const DIRECTOR_FALLBACK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type PagedDirectorResult<T> = {
+  data: T[] | null;
+  error: unknown;
+};
+
+type PagedDirectorQuery<T> = {
+  range: (from: number, to: number) => Promise<PagedDirectorResult<T>>;
+};
+
+const loadPagedDirectorRows = async <T,>(
+  queryFactory: () => PagedDirectorQuery<T>,
+): Promise<PagedDirectorResult<T>> => {
+  const rows: T[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, DIRECTOR_FALLBACK_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
+};
 
 const errText = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
@@ -73,13 +100,21 @@ async function loadDirectorRowsFallback({ supabase }: DirectorRepositoryDeps): P
     visibleItemStatuses: Array.from(DIRECTOR_PENDING_ITEM_STATUSES),
   });
 
-  const reqs = await supabase
-    .from("requests")
-    .select("id, submitted_at, status")
-    .not("submitted_at", "is", null);
+  const reqs = await loadPagedDirectorRows<{ id?: string | number | null; submitted_at?: string | null; status?: string | null }>(() =>
+    supabase
+      .from("requests")
+      .select("id, submitted_at, status")
+      .not("submitted_at", "is", null)
+      .order("submitted_at", { ascending: false })
+      .order("id", { ascending: false }) as unknown as PagedDirectorQuery<{
+      id?: string | number | null;
+      submitted_at?: string | null;
+      status?: string | null;
+    }>,
+  );
   if (reqs.error) throw reqs.error;
 
-  const reqRows = ((reqs.data ?? []) as { id?: string | number | null; submitted_at?: string | null; status?: string | null }[])
+  const reqRows = (reqs.data ?? [])
     .map((r) => ({
       id: String(r.id ?? "").trim(),
       submitted_at: r.submitted_at ? String(r.submitted_at) : null,
@@ -96,11 +131,15 @@ async function loadDirectorRowsFallback({ supabase }: DirectorRepositoryDeps): P
   if (!reqIds.length) return [];
 
   const reqRank = new Map<string, number>(reqRows.map((r, idx) => [r.id, idx]));
-  const items = await supabase
-    .from("request_items")
-    .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
-    .in("request_id", reqIds)
-    .in("status", Array.from(DIRECTOR_PENDING_ITEM_STATUSES));
+  const items = await loadPagedDirectorRows<Record<string, unknown>>(() =>
+    supabase
+      .from("request_items")
+      .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
+      .in("request_id", reqIds)
+      .in("status", Array.from(DIRECTOR_PENDING_ITEM_STATUSES))
+      .order("request_id", { ascending: true })
+      .order("id", { ascending: true }) as unknown as PagedDirectorQuery<Record<string, unknown>>,
+  );
   if (items.error) throw items.error;
 
   const normalized = normalizeDirectorPendingRows((items.data ?? []) as Record<string, unknown>[]);

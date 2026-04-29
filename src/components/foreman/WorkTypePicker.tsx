@@ -12,6 +12,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { normalizePage } from '../../lib/api/_core';
 import { supabase } from '../../../src/lib/supabaseClient';
 
 type Props = {
@@ -33,6 +34,33 @@ type FamilyRow = {
   family_short_name_ru: string;
   family_sort: number;
   count: number;
+};
+
+const WORK_TYPE_PICKER_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type PagedWorkTypeResult<T> = {
+  data: T[] | null;
+  error: unknown;
+};
+
+type PagedWorkTypeQuery<T> = {
+  range: (from: number, to: number) => Promise<PagedWorkTypeResult<T>>;
+};
+
+const loadPagedWorkTypeRows = async <T,>(
+  queryFactory: () => PagedWorkTypeQuery<T>,
+): Promise<PagedWorkTypeResult<T>> => {
+  const rows: T[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, WORK_TYPE_PICKER_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
 };
 
 const sanitize = (v: unknown) => (v == null ? '' : String(v).trim());
@@ -73,11 +101,14 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
       try {
         setLoading(true);
 
-        const { data, error: fetchError } = await supabase
-          .from('v_work_types_picker')
-          .select('code, work_name_ru, family_code, family_short_name_ru, family_sort')
-          .order('family_sort', { ascending: true })
-          .order('work_name_ru', { ascending: true });
+        const { data, error: fetchError } = await loadPagedWorkTypeRows<Row>(() =>
+          supabase
+            .from('v_work_types_picker')
+            .select('code, work_name_ru, family_code, family_short_name_ru, family_sort')
+            .order('family_sort', { ascending: true })
+            .order('work_name_ru', { ascending: true })
+            .order('code', { ascending: true }) as unknown as PagedWorkTypeQuery<Row>,
+        );
 
         if (fetchError) throw fetchError;
 

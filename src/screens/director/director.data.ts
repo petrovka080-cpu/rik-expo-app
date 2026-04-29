@@ -2,6 +2,7 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
+import { normalizePage } from "../../lib/api/_core";
 import { shortId } from "./director.helpers";
 import { reportDirectorBoundary } from "./director.observability";
 import { fetchDirectorPendingProposalWindow } from "./director.proposals.repo";
@@ -66,6 +67,32 @@ const normalizeDirectorPendingRows = (rows: Record<string, unknown>[]): PendingR
 const DIRECTOR_PENDING_ITEM_STATUSES = new Set([REQUEST_PENDING_STATUS, "У директора", REQUEST_PENDING_EN]);
 const DIRECTOR_EXPECTED_REQUEST_STATUSES = [REQUEST_PENDING_STATUS, REQUEST_PENDING_EN] as const;
 const DIRECTOR_PROPOSALS_WINDOW_SIZE = 10;
+const DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type PagedDirectorDataResult<T> = {
+  data: T[] | null;
+  error: unknown;
+};
+
+type PagedDirectorDataQuery<T> = {
+  range: (from: number, to: number) => Promise<PagedDirectorDataResult<T>>;
+};
+
+const loadPagedDirectorDataRows = async <T,>(
+  queryFactory: () => PagedDirectorDataQuery<T>,
+): Promise<PagedDirectorDataResult<T>> => {
+  const rows: T[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
+};
 
 const logDirectorFetchFilters = (payload: Record<string, unknown>) => {
   if (!__DEV__) return;
@@ -311,13 +338,25 @@ export function useDirectorData({ supabase }: Deps) {
       expectedRequestStatuses: Array.from(DIRECTOR_EXPECTED_REQUEST_STATUSES),
       visibleItemStatuses: Array.from(DIRECTOR_PENDING_ITEM_STATUSES),
     });
-    const reqs = await supabase
-      .from("requests")
-      .select("id, submitted_at, status")
-      .not("submitted_at", "is", null);
+    const reqs = await loadPagedDirectorDataRows<{
+      id?: string | number | null;
+      submitted_at?: string | null;
+      status?: string | null;
+    }>(() =>
+      supabase
+        .from("requests")
+        .select("id, submitted_at, status")
+        .not("submitted_at", "is", null)
+        .order("submitted_at", { ascending: false })
+        .order("id", { ascending: false }) as unknown as PagedDirectorDataQuery<{
+        id?: string | number | null;
+        submitted_at?: string | null;
+        status?: string | null;
+      }>,
+    );
     if (reqs.error) throw reqs.error;
 
-    const reqRows = ((reqs.data ?? []) as { id?: string | number | null; submitted_at?: string | null; status?: string | null }[])
+    const reqRows = (reqs.data ?? [])
       .map((r) => ({
         id: String(r.id ?? "").trim(),
         submitted_at: r.submitted_at ? String(r.submitted_at) : null,
@@ -335,11 +374,15 @@ export function useDirectorData({ supabase }: Deps) {
 
     const reqRank = new Map<string, number>(reqRows.map((r, idx) => [r.id, idx]));
 
-    const items = await supabase
-      .from("request_items")
-      .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
-      .in("request_id", reqIds)
-      .in("status", Array.from(DIRECTOR_PENDING_ITEM_STATUSES));
+    const items = await loadPagedDirectorDataRows<Record<string, unknown>>(() =>
+      supabase
+        .from("request_items")
+        .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
+        .in("request_id", reqIds)
+        .in("status", Array.from(DIRECTOR_PENDING_ITEM_STATUSES))
+        .order("request_id", { ascending: true })
+        .order("id", { ascending: true }) as unknown as PagedDirectorDataQuery<Record<string, unknown>>,
+    );
     if (items.error) throw items.error;
 
     const normalized = normalizeDirectorPendingRows((items.data ?? []) as Record<string, unknown>[]);

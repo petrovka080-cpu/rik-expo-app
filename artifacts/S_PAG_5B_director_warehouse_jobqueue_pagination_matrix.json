@@ -1,0 +1,223 @@
+{
+  "wave": "S-PAG-5B",
+  "mode": "production-safe-10k-50k-query-hardening",
+  "status": "GREEN",
+  "dependsOn": ["S-PAG-3A", "S-PAG-3B", "S-PAG-4", "S-PAG-5A"],
+  "ownerGoal": "10K/50K+ readiness",
+  "androidSubmitDeferredByOwner": true,
+  "preWaveCount": {
+    "unboundedSelects": 108,
+    "unboundedFiles": 45
+  },
+  "postWaveCount": {
+    "unboundedSelects": 101,
+    "unboundedFiles": 42
+  },
+  "targetCallsites": 8,
+  "fixedCallsites": 7,
+  "changedFiles": [
+    "src/screens/director/director.data.ts",
+    "src/screens/director/director.repository.ts",
+    "src/lib/api/suppliers.ts",
+    "src/components/foreman/WorkTypePicker.tsx",
+    "tests/api/topListPaginationBatch5B.contract.test.ts",
+    "artifacts/S_PAG_5B_director_warehouse_jobqueue_pagination_matrix.json",
+    "artifacts/S_PAG_5B_director_warehouse_jobqueue_pagination_proof.md"
+  ],
+  "callsiteMatrix": [
+    {
+      "file": "src/screens/director/director.data.ts",
+      "function": "loadDirectorRowsFallback",
+      "table": "requests",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded select filtered by submitted_at not null",
+      "after": "stable order submitted_at desc/id desc + page-through-all range windows",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/screens/director/director.data.ts",
+      "function": "loadDirectorRowsFallback",
+      "table": "request_items",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded select by request ids and director pending statuses",
+      "after": "stable order request_id asc/id asc + page-through-all range windows",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/screens/director/director.repository.ts",
+      "function": "loadDirectorRowsFallback",
+      "table": "requests",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded select filtered by submitted_at not null",
+      "after": "stable order submitted_at desc/id desc + page-through-all range windows",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/screens/director/director.repository.ts",
+      "function": "loadDirectorRowsFallback",
+      "table": "request_items",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded select by request ids and director pending statuses",
+      "after": "stable order request_id asc/id asc + page-through-all range windows",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/lib/api/suppliers.ts",
+      "function": "listSuppliers",
+      "table": "suppliers",
+      "classification": "FIX_NOW_SEARCH_QUERY",
+      "before": "unbounded supplier list ordered by name with client-side search filter",
+      "after": "stable order name asc/id asc + page-through-all range windows; search filter preserved",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/lib/api/suppliers.ts",
+      "function": "listSupplierFiles",
+      "table": "supplier_files",
+      "classification": "FIX_NOW_LIST_QUERY",
+      "before": "unbounded supplier files list filtered by supplier_id",
+      "after": "stable order created_at desc/id desc + page-through-all range windows",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    },
+    {
+      "file": "src/components/foreman/WorkTypePicker.tsx",
+      "function": "WorkTypePicker",
+      "table": "v_work_types_picker",
+      "classification": "FIX_NOW_SEARCH_QUERY",
+      "before": "unbounded work type picker list ordered by family_sort/work_name_ru",
+      "after": "stable order family_sort asc/work_name_ru asc/code asc + page-through-all range windows; local search and dedupe preserved",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "uiCompletenessPreserved": true,
+      "alreadyFixedInPreviousPaginationWave": false
+    }
+  ],
+  "classificationMatrix": [
+    {
+      "file": "src/screens/director/director.data.ts",
+      "selects": 6,
+      "classification": "FIX_NOW_LIST_QUERY",
+      "changed": true,
+      "reason": "director fallback list reads now page through all rows with stable ordering; approval completeness remains preserved"
+    },
+    {
+      "file": "src/screens/director/director.repository.ts",
+      "selects": 2,
+      "classification": "FIX_NOW_LIST_QUERY",
+      "changed": true,
+      "reason": "director repository fallback mirrors the data fallback and now pages through all rows with stable ordering"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "selects": 2,
+      "classification": "WAREHOUSE_STOCK_SEMANTICS_DO_NOT_TOUCH",
+      "changed": false,
+      "reason": "incoming ledger/report and incoming line detail reads require completeness; no warehouse stock or report semantics changed"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "selects": 1,
+      "classification": "JOB_QUEUE_SEMANTICS_UNCLEAR",
+      "changed": false,
+      "reason": "remaining select is an insert-return single row; queue claim/retry semantics use RPC and were not changed"
+    },
+    {
+      "file": "src/lib/api/integrity.guards.ts",
+      "selects": 5,
+      "classification": "INTEGRITY_GUARD_DO_NOT_TOUCH",
+      "changed": false,
+      "reason": "guard reads validate complete relationships and already chunk id batches; integrity semantics were not changed"
+    },
+    {
+      "file": "src/lib/api/suppliers.ts",
+      "selects": 4,
+      "classification": "FIX_NOW_SEARCH_QUERY",
+      "changed": true,
+      "reason": "supplier list/search and supplier file list are UI list reads that can be retrieved in complete range windows"
+    },
+    {
+      "file": "src/components/foreman/WorkTypePicker.tsx",
+      "selects": 1,
+      "classification": "FIX_NOW_SEARCH_QUERY",
+      "changed": true,
+      "reason": "work type picker is a UI list/search read; page-through-all preserves local search and dedupe"
+    },
+    {
+      "file": "src/lib/store_supabase.ts",
+      "selects": 4,
+      "classification": "DIRECTOR_APPROVAL_SEMANTICS_DO_NOT_TOUCH",
+      "changed": false,
+      "reason": "director inbox and request child reads require separate view-column and approval-flow proof"
+    },
+    {
+      "file": "src/screens/contractor/contractor.data.ts",
+      "selects": 11,
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "changed": false,
+      "reason": "remaining reads load progress/detail bundles by parent ids and must not be capped"
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "selects": 6,
+      "classification": "INTENTIONAL_DETAIL_BY_PARENT",
+      "changed": false,
+      "reason": "remaining buyer reads are proposal/accounting/detail-by-parent reads not safe for this wave"
+    },
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "selects": 9,
+      "classification": "INTENTIONAL_PDF_REPORT_EXPORT",
+      "changed": false,
+      "reason": "PDF/report completeness must not be capped"
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "selects": 9,
+      "classification": "INTENTIONAL_DOCUMENT_BUILDER",
+      "changed": false,
+      "reason": "document builder completeness must not be capped"
+    }
+  ],
+  "safety": {
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsChanged": false,
+    "storagePolicyChanged": false,
+    "pdfReportExportCapped": false,
+    "detailFullReadsChanged": false,
+    "directorApprovalSemanticsChanged": false,
+    "warehouseStockMathChanged": false,
+    "jobQueueSemanticsChanged": false,
+    "integrityGuardSemanticsChanged": false,
+    "packageChanged": false,
+    "nativeConfigChanged": false,
+    "productionTouched": false,
+    "productionWrites": false,
+    "secretsCommitted": false,
+    "secretsPrinted": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "androidSubmitTouched": false
+  }
+}

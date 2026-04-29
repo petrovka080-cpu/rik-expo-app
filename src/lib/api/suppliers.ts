@@ -1,12 +1,42 @@
-import { client, normStr, parseErr } from "./_core";
+import { client, normStr, normalizePage, parseErr } from "./_core";
 import type { Supplier } from "./types";
+
+const SUPPLIER_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type PagedSupplierResult<T> = {
+  data: T[] | null;
+  error: unknown;
+};
+
+type PagedSupplierQuery<T> = {
+  range: (from: number, to: number) => Promise<PagedSupplierResult<T>>;
+};
+
+const loadPagedSupplierRows = async <T,>(
+  queryFactory: () => PagedSupplierQuery<T>,
+): Promise<PagedSupplierResult<T>> => {
+  const rows: T[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, SUPPLIER_LIST_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
+};
 
 export async function listSuppliers(q?: string): Promise<Supplier[]> {
   try {
-    const r = await client
-      .from("suppliers")
-      .select("id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes")
-      .order("name", { ascending: true });
+    const r = await loadPagedSupplierRows<Supplier>(() =>
+      client
+        .from("suppliers")
+        .select("id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes")
+        .order("name", { ascending: true })
+        .order("id", { ascending: true }) as unknown as PagedSupplierQuery<Supplier>,
+    );
 
     if (r.error) throw r.error;
     const list = (r.data || []) as Supplier[];
@@ -69,11 +99,26 @@ export async function upsertSupplier(draft: Partial<Supplier>): Promise<Supplier
 
 export async function listSupplierFiles(supplierId: string) {
   try {
-    const r = await client
-      .from("supplier_files")
-      .select("id,created_at,file_name,file_url,group_key")
-      .eq("supplier_id", supplierId)
-      .order("created_at", { ascending: false });
+    const r = await loadPagedSupplierRows<{
+      id: string;
+      created_at: string | null;
+      file_name: string | null;
+      file_url: string | null;
+      group_key: string | null;
+    }>(() =>
+      client
+        .from("supplier_files")
+        .select("id,created_at,file_name,file_url,group_key")
+        .eq("supplier_id", supplierId)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false }) as unknown as PagedSupplierQuery<{
+        id: string;
+        created_at: string | null;
+        file_name: string | null;
+        file_url: string | null;
+        group_key: string | null;
+      }>,
+    );
     if (r.error) throw r.error;
     return r.data || [];
   } catch (e) {
