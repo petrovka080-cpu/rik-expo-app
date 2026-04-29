@@ -2,7 +2,7 @@
   "wave": "S-DB-5",
   "mode": "production-safe-readonly-index-metadata-verification",
   "status": "PARTIAL_INSUFFICIENT_ACCESS",
-  "generatedAt": "2026-04-29T13:17:47.677Z",
+  "generatedAt": "2026-04-29T20:40:35.3092540+06:00",
   "ownerGoal": "10K/50K+ readiness",
   "target": "production",
   "env": {
@@ -18,7 +18,7 @@
     "missingIndexes": 0,
     "insufficientAccess": true,
     "insufficientAccessCount": 10,
-    "failureClass": "connection_failed",
+    "failureClass": "authentication_failed",
     "failureReason": "read-only DB metadata query could not be completed with the provided metadata credential",
     "metadataVerificationExecuted": true,
     "metadataReadAttempted": true,
@@ -150,8 +150,6 @@
     "releaseVerify": "pending_post_commit_push"
   },
   "changedFiles": [
-    "scripts/db/verifyProductionIndexes.mjs",
-    "tests/db/verifyProductionIndexes.test.ts",
     "artifacts/S_DB_5_production_index_verification_matrix.json",
     "artifacts/S_DB_5_production_index_verification_proof.md"
   ],

@@ -84,7 +84,7 @@ Result:
 - verified indexes: 0
 - missing indexes: 0
 - insufficient access: YES
-- failure class: `connection_failed`
+- failure class: `authentication_failed`
 - metadata verification attempted: YES
 - production metadata read: NO
 - production data rows read: NO
@@ -93,7 +93,7 @@ Result:
 - migration created: NO
 - secrets printed: NO
 
-No fake GREEN was recorded because the provided production metadata credential did not complete the read-only metadata query.
+No fake GREEN was recorded because the provided production metadata credential did not authenticate for the read-only metadata query.
 
 ## Expected Index Shapes
 
@@ -135,8 +135,8 @@ Covered:
 - `npx tsc --noEmit --pretty false`: PASS
 - `npx expo lint`: PASS
 - `npm test -- --runInBand verifyProductionIndexes`: PASS
-- `npm test -- --runInBand`: PASS
-- `npm test`: PASS
+- `npm test -- --runInBand`: PASS, 496 suites passed, 1 skipped; 3134 tests passed, 1 skipped
+- `npm test`: PASS, 496 suites passed, 1 skipped; 3134 tests passed, 1 skipped
 - `npm run release:verify -- --json`: pending post-commit/push release guard
 
 ## Safety
@@ -161,7 +161,7 @@ Covered:
 
 ## Readiness Impact
 
-S-DB-5 remains partial. The expected S-DB-2 index shapes were not verified in production because the metadata credential did not complete the read-only catalog query. This blocks claiming production index readiness for 10K/50K+.
+S-DB-5 remains partial. The expected S-DB-2 index shapes were not verified in production because the metadata credential did not authenticate for the read-only catalog query. This blocks claiming production index readiness for 10K/50K+.
 
 ## Next Recommended Wave
 
