@@ -133,7 +133,12 @@ Emulator:
 
 After emulator:
 
-- Post-artifact `release:verify`: pending until artifact commit/push.
+- Post-artifact `npm run release:verify -- --json`: PASS after artifact commit/push
+  - `HEAD == origin/main`: YES
+  - worktree clean: YES
+  - readiness: `pass`
+  - OTA disposition: `skip`
+  - EAS/OTA triggered: NO
 
 ## Safety Confirmations
 

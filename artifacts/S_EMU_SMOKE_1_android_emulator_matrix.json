@@ -59,7 +59,7 @@
     "adbInstall": "passed",
     "manualLaunchSmoke": "passed",
     "maestroInfraLaunchSmoke": "passed",
-    "postEmulatorReleaseVerify": "pending_after_artifact_commit"
+    "postEmulatorReleaseVerify": "passed_after_artifact_commit"
   },
   "safety": {
     "productionTouched": false,
