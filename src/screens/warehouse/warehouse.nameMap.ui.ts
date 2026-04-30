@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizePage } from "../../lib/api/_core";
+import {
+  isRpcNumberLikeResponse,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
 import { isUuid } from "./warehouse.utils";
 
 type UnknownRow = Record<string, unknown>;
@@ -15,6 +19,8 @@ export type WarehouseNameMapRefreshPayload = {
   code_list?: string[];
   refresh_mode?: WarehouseNameMapRefreshMode;
 };
+
+export const isWarehouseRefreshNameMapUiRpcResponse = isRpcNumberLikeResponse;
 
 const normalizeCode = (value: unknown): string =>
   String(value ?? "").trim().toUpperCase();
@@ -107,7 +113,12 @@ export async function refreshWarehouseNameMapUiProjection(
   });
 
   if (q.error) throw q.error;
-  return Number(q.data ?? 0) || 0;
+  const validated = validateRpcResponse(q.data, isWarehouseRefreshNameMapUiRpcResponse, {
+    rpcName: "warehouse_refresh_name_map_ui",
+    caller: "src/screens/warehouse/warehouse.nameMap.ui.refreshWarehouseNameMapUiProjection",
+    domain: "warehouse",
+  });
+  return Number(validated ?? 0) || 0;
 }
 
 export async function scheduleWarehouseNameMapRefresh(params: {

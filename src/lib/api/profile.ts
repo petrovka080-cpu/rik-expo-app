@@ -1,10 +1,33 @@
 import { supabase } from "../supabaseClient";
+import {
+  isRpcIgnoredMutationResponse,
+  isRpcNonEmptyStringResponse,
+  validateRpcResponse,
+} from "./queryBoundary";
+
+export const isEnsureMyProfileRpcResponse = isRpcIgnoredMutationResponse;
+export const isGetMyRoleRpcResponse = isRpcNonEmptyStringResponse;
 
 export async function ensureMyProfile(): Promise<boolean> {
-  const { error } = await supabase.rpc("ensure_my_profile");
+  const { data, error } = await supabase.rpc("ensure_my_profile");
   if (error) {
     if (__DEV__) {
       console.warn("[ensureMyProfile]", error.message);
+    }
+    return false;
+  }
+  try {
+    validateRpcResponse(data, isEnsureMyProfileRpcResponse, {
+      rpcName: "ensure_my_profile",
+      caller: "src/lib/api/profile.ensureMyProfile",
+      domain: "unknown",
+    });
+  } catch (validationError) {
+    if (__DEV__) {
+      console.warn(
+        "[ensureMyProfile]",
+        validationError instanceof Error ? validationError.message : String(validationError),
+      );
     }
     return false;
   }
@@ -19,5 +42,20 @@ export async function getMyRole(): Promise<string | null> {
     }
     return null;
   }
-  return (data as string) ?? null;
+  if (data == null) return null;
+  try {
+    return validateRpcResponse(data, isGetMyRoleRpcResponse, {
+      rpcName: "get_my_role",
+      caller: "src/lib/api/profile.getMyRole",
+      domain: "unknown",
+    });
+  } catch (validationError) {
+    if (__DEV__) {
+      console.warn(
+        "[getMyRole]",
+        validationError instanceof Error ? validationError.message : String(validationError),
+      );
+    }
+    return null;
+  }
 }

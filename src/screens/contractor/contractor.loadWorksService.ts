@@ -10,7 +10,7 @@ import {
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import { runContainedRpc } from "../../lib/api/queryBoundary";
-import { normalizePage } from "../../lib/api/_core";
+import { loadPagedRowsWithCeiling, normalizePage, type PagedQuery } from "../../lib/api/_core";
 
 export type ContractorWorkRow = {
   progress_id: string;
@@ -84,6 +84,8 @@ type SubcontractLiteLike = {
   created_at?: string | null;
   created_by?: string | null;
 };
+
+const CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 export type ContractorSubcontractCard = SubcontractLiteLike;
 
@@ -466,7 +468,15 @@ export async function enrichWorksRows(params: {
   );
   const requestIdByPurchaseItem = new Map<string, string>();
   if (piIds.length) {
-    const piQ = await supabaseClient.from("purchase_items").select("id, request_item_id").in("id", piIds);
+    const piQ = await loadPagedRowsWithCeiling<PurchaseItemRawRow>(
+      () =>
+        supabaseClient
+          .from("purchase_items")
+          .select("id, request_item_id")
+          .in("id", piIds)
+          .order("id", { ascending: true }) as unknown as PagedQuery<PurchaseItemRawRow>,
+      CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
+    );
     if (!piQ.error && Array.isArray(piQ.data)) {
       const reqItemIds = Array.from(
         new Set(
@@ -477,7 +487,15 @@ export async function enrichWorksRows(params: {
       );
       const reqByReqItem = new Map<string, string>();
       if (reqItemIds.length) {
-        const riQ = await supabaseClient.from("request_items").select("id, request_id").in("id", reqItemIds);
+        const riQ = await loadPagedRowsWithCeiling<RequestItemRawRow>(
+          () =>
+            supabaseClient
+              .from("request_items")
+              .select("id, request_id")
+              .in("id", reqItemIds)
+              .order("id", { ascending: true }) as unknown as PagedQuery<RequestItemRawRow>,
+          CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
+        );
         if (!riQ.error && Array.isArray(riQ.data)) {
           for (const ri of riQ.data as RequestItemRawRow[]) {
             const riId = String(ri.id || "").trim();
@@ -517,10 +535,15 @@ export async function enrichWorksRows(params: {
   );
   const reqById = new Map<string, RequestRawRow>();
   if (reqIds.length) {
-    const rq = await supabaseClient
-      .from("requests")
-      .select("id, status, contractor_job_id, object_type_code, level_code, system_code")
-      .in("id", reqIds);
+    const rq = await loadPagedRowsWithCeiling<RequestRawRow>(
+      () =>
+        supabaseClient
+          .from("requests")
+          .select("id, status, contractor_job_id, object_type_code, level_code, system_code")
+          .in("id", reqIds)
+          .order("id", { ascending: true }) as unknown as PagedQuery<RequestRawRow>,
+      CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
+    );
     if (!rq.error && Array.isArray(rq.data)) {
       for (const r of rq.data as RequestRawRow[]) {
         const id = String(r.id || "").trim();
@@ -554,7 +577,15 @@ export async function enrichWorksRows(params: {
   );
   const objByJob = new Map<string, string>();
   if (jobIds.length) {
-    const sq = await supabaseClient.from("subcontracts").select("id, object_name").in("id", jobIds);
+    const sq = await loadPagedRowsWithCeiling<SubcontractObjectRawRow>(
+      () =>
+        supabaseClient
+          .from("subcontracts")
+          .select("id, object_name")
+          .in("id", jobIds)
+          .order("id", { ascending: true }) as unknown as PagedQuery<SubcontractObjectRawRow>,
+      CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
+    );
     if (!sq.error && Array.isArray(sq.data)) {
       for (const s of sq.data as SubcontractObjectRawRow[]) {
         const id = String(s.id || "").trim();

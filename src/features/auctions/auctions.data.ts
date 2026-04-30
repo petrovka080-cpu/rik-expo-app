@@ -1,5 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
-import { normalizePage } from "../../lib/api/_core";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 
 import type {
   AuctionItemsJson,
@@ -13,25 +13,12 @@ import type {
   UnifiedAuctionSummary,
 } from "./auctions.types";
 
-const AUCTION_CHILD_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
-
-type PagedAuctionQuery<T> = {
-  range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error?: unknown }>;
-};
+const AUCTION_CHILD_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 async function loadPagedAuctionRows<T>(
-  queryFactory: () => PagedAuctionQuery<T>,
+  queryFactory: () => PagedQuery<T>,
 ): Promise<{ data: T[] | null; error: unknown | null }> {
-  const rows: T[] = [];
-  for (let pageIndex = 0; ; pageIndex += 1) {
-    const page = normalizePage({ page: pageIndex }, AUCTION_CHILD_LIST_PAGE_DEFAULTS);
-    const result = await queryFactory().range(page.from, page.to);
-    if (result.error) return { data: null, error: result.error };
-
-    const pageRows = Array.isArray(result.data) ? result.data : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) return { data: rows, error: null };
-  }
+  return loadPagedRowsWithCeiling(queryFactory, AUCTION_CHILD_LIST_PAGE_DEFAULTS);
 }
 
 function toMaybeNumber(value: unknown): number | null {
@@ -179,7 +166,7 @@ export async function loadAuctionSummaries(tab: AuctionListTab): Promise<Unified
         .in("tender_id", tenderIds)
         .order("tender_id", { ascending: true })
         .order("created_at", { ascending: true })
-        .order("id", { ascending: true }) as unknown as PagedAuctionQuery<TenderItemRow>,
+        .order("id", { ascending: true }) as unknown as PagedQuery<TenderItemRow>,
     );
 
     if (itemsResult.error) throw itemsResult.error;
@@ -219,11 +206,14 @@ export async function loadAuctionDetail(id: string): Promise<UnifiedAuctionDetai
   if (tenderResult.error) throw tenderResult.error;
 
   if (tenderResult.data) {
-    const itemResult = await supabase
-      .from("tender_items")
-      .select("id, tender_id, rik_code, name_human, qty, uom, request_item_id, created_at")
-      .eq("tender_id", id)
-      .order("created_at", { ascending: true });
+    const itemResult = await loadPagedAuctionRows<TenderItemRow>(() =>
+      supabase
+        .from("tender_items")
+        .select("id, tender_id, rik_code, name_human, qty, uom, request_item_id, created_at")
+        .eq("tender_id", id)
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true }) as unknown as PagedQuery<TenderItemRow>,
+    );
 
     if (itemResult.error) throw itemResult.error;
 

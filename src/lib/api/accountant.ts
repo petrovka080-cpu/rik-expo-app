@@ -3,6 +3,7 @@ import { ensureProposalExists, ensureProposalItemIdsBelongToProposal } from "./i
 import { trackRpcLatency } from "../observability/rpcLatencyMetrics";
 import { traceAsync } from "../observability/sentry";
 import {
+  isRpcIgnoredMutationResponse,
   isRpcBoolean,
   isAccountantFinancialStateResponse,
   isRpcNullableRecordArrayResponse,
@@ -519,8 +520,13 @@ export async function proposalSendToAccountant(
     p_invoice_currency: String(invoiceCurrency ?? "").trim(),
   };
 
-  const { error } = await client.rpc("proposal_send_to_accountant_min", args);
+  const { data, error } = await client.rpc("proposal_send_to_accountant_min", args);
   if (error) throw error;
+  validateRpcResponse(data, isRpcIgnoredMutationResponse, {
+    rpcName: "proposal_send_to_accountant_min",
+    caller: "src/lib/api/accountant.proposalSendToAccountant",
+    domain: "accountant",
+  });
   return true;
 }
 

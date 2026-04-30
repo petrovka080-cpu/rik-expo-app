@@ -1,6 +1,7 @@
 // src/lib/store_supabase.ts
 import { supabase } from './supabaseClient';
 import type { Database } from './database.types';
+import { loadPagedRowsWithCeiling, type PageInput, type PagedQuery } from './api/_core';
 import {
   isRpcNonEmptyString,
   isRpcNumberLike,
@@ -49,6 +50,15 @@ export type PendingRequestItem = {
   status: string | null;
 };
 
+const STORE_SUPABASE_AUTH_SESSION_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
+
+async function loadPagedStoreSupabaseRows<T>(
+  queryFactory: () => PagedQuery<T>,
+  pageInput?: PageInput,
+): Promise<{ data: T[] | null; error: unknown | null }> {
+  return loadPagedRowsWithCeiling(queryFactory, STORE_SUPABASE_AUTH_SESSION_PAGE_DEFAULTS, pageInput);
+}
+
 function normalizeReqItem(row: RequestItemRowDb | ApprovedRequestItemDb): ReqItem {
   return {
     id: String(row.id ?? ''),
@@ -94,15 +104,17 @@ const isApproveOrDeclinePendingRpcResponse = (
   );
 
 export async function listRequestItems(requestId: number, status?: string): Promise<ReqItem[]> {
-  let q = supabase
-    .from('request_items')
-    .select('id, request_id, name_human, qty, uom, status, created_at')
-    .eq('request_id', String(requestId))
-    .order('created_at', { ascending: true });
+  const { data, error } = await loadPagedStoreSupabaseRows<RequestItemRowDb>(() => {
+    let q = supabase
+      .from('request_items')
+      .select('id, request_id, name_human, qty, uom, status, created_at')
+      .eq('request_id', String(requestId));
 
-  if (status) q = q.eq('status', status);
-
-  const { data, error } = await q;
+    if (status) q = q.eq('status', status);
+    return q
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true });
+  });
   if (error) throw error;
   return (data ?? []).map(normalizeReqItem);
 }
@@ -125,10 +137,13 @@ export async function sendRequestToDirector(requestId: number): Promise<number> 
 }
 
 export async function listDirectorInbox(): Promise<PendingRequestItem[]> {
-  const { data, error } = await supabase
-    .from('request_items_pending_view')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const { data, error } = await loadPagedStoreSupabaseRows<PendingRequestItemDb>(() =>
+    supabase
+      .from('request_items_pending_view')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .order('request_item_id', { ascending: true }),
+  );
 
   if (error) throw error;
   return (data ?? []).map(normalizePendingRequestItem);
@@ -149,10 +164,13 @@ export async function approvePending(pendingId: string, verdict: 'Утвержд
 }
 
 export async function listApprovedByRequest(requestId: number): Promise<ReqItem[]> {
-  const { data, error } = await supabase
-    .from('v_request_items_display')
-    .select('*')
-    .eq('request_id', String(requestId));
+  const { data, error } = await loadPagedStoreSupabaseRows<ApprovedRequestItemDb>(() =>
+    supabase
+      .from('v_request_items_display')
+      .select('*')
+      .eq('request_id', String(requestId))
+      .order('id', { ascending: true }),
+  );
 
   if (error) throw error;
   return (data ?? []).map(normalizeReqItem);

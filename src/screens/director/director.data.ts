@@ -2,7 +2,7 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
-import { normalizePage } from "../../lib/api/_core";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import { shortId } from "./director.helpers";
 import { reportDirectorBoundary } from "./director.observability";
 import { fetchDirectorPendingProposalWindow } from "./director.proposals.repo";
@@ -67,7 +67,7 @@ const normalizeDirectorPendingRows = (rows: Record<string, unknown>[]): PendingR
 const DIRECTOR_PENDING_ITEM_STATUSES = new Set([REQUEST_PENDING_STATUS, "У директора", REQUEST_PENDING_EN]);
 const DIRECTOR_EXPECTED_REQUEST_STATUSES = [REQUEST_PENDING_STATUS, REQUEST_PENDING_EN] as const;
 const DIRECTOR_PROPOSALS_WINDOW_SIZE = 10;
-const DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+const DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 type PagedDirectorDataResult<T> = {
   data: T[] | null;
@@ -79,19 +79,9 @@ type PagedDirectorDataQuery<T> = {
 };
 
 const loadPagedDirectorDataRows = async <T,>(
-  queryFactory: () => PagedDirectorDataQuery<T>,
+  queryFactory: () => PagedDirectorDataQuery<T> | PagedQuery<T>,
 ): Promise<PagedDirectorDataResult<T>> => {
-  const rows: T[] = [];
-
-  for (let pageIndex = 0; ; pageIndex += 1) {
-    const page = normalizePage({ page: pageIndex }, DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS);
-    const result = await queryFactory().range(page.from, page.to);
-    if (result.error) return { data: null, error: result.error };
-
-    const pageRows = Array.isArray(result.data) ? result.data : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) return { data: rows, error: null };
-  }
+  return loadPagedRowsWithCeiling(queryFactory, DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS);
 };
 
 const logDirectorFetchFilters = (payload: Record<string, unknown>) => {
@@ -182,15 +172,21 @@ export function useDirectorData({ supabase }: Deps) {
     if (!need.length) return;
 
     try {
-      const primaryQuery = await supabase
-        .from("requests")
-        .select("id, object_name, object, level_code, system_code, zone_code, site_address_snapshot, note, comment")
-        .in("id", need);
+      const primaryQuery = await loadPagedDirectorDataRows<Record<string, unknown>>(() =>
+        supabase
+          .from("requests")
+          .select("id, object_name, object, level_code, system_code, zone_code, site_address_snapshot, note, comment")
+          .in("id", need)
+          .order("id", { ascending: true }) as unknown as PagedQuery<Record<string, unknown>>
+      );
       const fallbackQuery = primaryQuery.error
-        ? await supabase
-            .from("requests")
-            .select("id, object_name, level_code, system_code, zone_code, note")
-            .in("id", need)
+        ? await loadPagedDirectorDataRows<Record<string, unknown>>(() =>
+            supabase
+              .from("requests")
+              .select("id, object_name, level_code, system_code, zone_code, note")
+              .in("id", need)
+              .order("id", { ascending: true }) as unknown as PagedQuery<Record<string, unknown>>
+          )
         : null;
       const q = fallbackQuery ?? primaryQuery;
 

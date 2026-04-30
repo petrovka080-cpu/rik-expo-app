@@ -37,9 +37,8 @@ describe("S-PAG-5B director warehouse job queue pagination contract", () => {
     expect(directorRepository).not.toContain(".limit(100)");
 
     const directorData = read("src/screens/director/director.data.ts");
-    expect(directorData).toContain("DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
-    expect(directorData).toContain("normalizePage({ page: pageIndex }, DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS)");
-    expect(directorData).toContain("queryFactory().range(page.from, page.to)");
+    expect(directorData).toContain("DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
+    expect(directorData).toContain("loadPagedRowsWithCeiling(queryFactory, DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS)");
     expect(directorData).toContain(".order(\"submitted_at\", { ascending: false })");
     expect(directorData).toContain(".order(\"request_id\", { ascending: true })");
     expect(directorData).toContain(".in(\"status\", Array.from(DIRECTOR_PENDING_ITEM_STATUSES))");
@@ -93,15 +92,15 @@ describe("S-PAG-5B director warehouse job queue pagination contract", () => {
     expect(pdfBuilder).not.toContain(".range(");
 
     const contractorData = read("src/screens/contractor/contractor.data.ts");
-    expect(contractorData).toContain("CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(contractorData).toContain("CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(contractorData).toContain("loadPagedContractorRows");
-    expect(contractorData).toContain(".range(page.from, page.to)");
+    expect(contractorData).toContain("loadPagedRowsWithCeiling(queryFactory, CONTRACTOR_LIST_PAGE_DEFAULTS");
     expect(contractorData).toContain(".eq(\"progress_id\", progressId)");
 
     const buyerRepo = read("src/screens/buyer/buyer.repo.ts");
-    expect(buyerRepo).toContain("BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(buyerRepo).toContain("BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(buyerRepo).toContain("loadPagedBuyerRepoRows");
-    expect(buyerRepo).toContain(".range(page.from, page.to)");
+    expect(buyerRepo).toContain("loadPagedRowsWithCeiling(queryFactory, BUYER_REPO_LIST_PAGE_DEFAULTS");
     expect(buyerRepo).toContain(".eq(\"proposal_id\", pidStr)");
   });
 });

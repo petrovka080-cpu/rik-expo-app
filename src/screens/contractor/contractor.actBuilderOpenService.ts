@@ -1,6 +1,7 @@
 import { fetchRequestScopeRows } from "./contractor.data";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import type { ContractorWorkRow } from "./contractor.loadWorksService";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 
 type WorkRowLike = Pick<ContractorWorkRow, "work_code">;
 
@@ -30,6 +31,8 @@ type Params = {
   resolveRequestId: (row: WorkRowLike) => Promise<string>;
   isRejectedOrCancelledRequestStatus: (status: string | null | undefined) => boolean;
 };
+
+const ACT_BUILDER_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 export async function ensureActBuilderWorkMaterials(params: Params): Promise<{
   materials: WorkMaterialRow[];
@@ -81,10 +84,15 @@ export async function ensureActBuilderWorkMaterials(params: Params): Promise<{
     const codes = defaults.map((d) => String(d.mat_code || "").trim()).filter(Boolean);
     const namesMap: Record<string, { name: string; uom: string | null }> = {};
     if (codes.length) {
-      const ci = await supabaseClient
-        .from("catalog_items")
-        .select("rik_code, name_human_ru, name_human, uom_code")
-        .in("rik_code", codes);
+      const ci = await loadPagedRowsWithCeiling<CatalogItemRow>(
+        () =>
+          supabaseClient
+            .from("catalog_items")
+            .select("rik_code, name_human_ru, name_human, uom_code")
+            .in("rik_code", codes)
+            .order("rik_code", { ascending: true }) as unknown as PagedQuery<CatalogItemRow>,
+        ACT_BUILDER_REFERENCE_PAGE_DEFAULTS,
+      );
       if (!ci.error && Array.isArray(ci.data)) {
         for (const n of ci.data as CatalogItemRow[]) {
           const code = String(n.rik_code || "").trim();

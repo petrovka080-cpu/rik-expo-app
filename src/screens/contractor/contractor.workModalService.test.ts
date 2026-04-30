@@ -33,8 +33,20 @@ const makeLimitQuery = (result: unknown) => ({
   limit: jest.fn().mockResolvedValue(result),
 });
 
-const makeEqQuery = (result: unknown) => ({
-  eq: jest.fn().mockResolvedValue(result),
+const makePagedEqQuery = (result: unknown) => ({
+  eq: jest.fn(() => ({
+    order: jest.fn(() => ({
+      range: jest.fn().mockResolvedValue(result),
+    })),
+  })),
+});
+
+const makePagedInQuery = (result: unknown) => ({
+  in: jest.fn(() => ({
+    order: jest.fn(() => ({
+      range: jest.fn().mockResolvedValue(result),
+    })),
+  })),
 });
 
 const makeEqOrderLimitMaybeSingle = (result: unknown) => ({
@@ -345,7 +357,7 @@ describe("contractor.workModalService", () => {
         if (table === "work_progress_log_materials") {
           return {
             select: jest.fn(() =>
-              makeEqQuery({
+              makePagedEqQuery({
                 data: [{ mat_code: "MAT-1", uom_mat: "kg", qty_fact: 3 }],
                 error: null,
               }),
@@ -355,7 +367,7 @@ describe("contractor.workModalService", () => {
         if (table === "catalog_items") {
           return {
             select: jest.fn(() =>
-              makeInQuery({
+              makePagedInQuery({
                 data: [{ rik_code: "MAT-1", name_human_ru: "Цемент", uom_code: "kg" }],
                 error: null,
               }),

@@ -1,4 +1,8 @@
 import { client, normalizePage, parseErr, type PageInput } from "./_core";
+import {
+  isRpcNullableRecordArrayResponse,
+  validateRpcResponse,
+} from "./queryBoundary";
 import type { BuyerInboxRow } from "./types";
 import { isRequestApprovedForProcurement } from "../requestStatus";
 import { normalizeRuText } from "../text/encoding";
@@ -52,6 +56,8 @@ type ProposalLifecycleRow = {
 };
 
 const BUYER_API_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+export const isBuyerInboxRpcResponse = isRpcNullableRecordArrayResponse;
 
 type PagedBuyerApiResult<T> = {
   data: T[] | null;
@@ -310,7 +316,12 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
     const { data, error } = await client.rpc("list_buyer_inbox", { p_company_id: null });
     if (error) throw error;
 
-    const rows = Array.isArray(data) ? (data as BuyerInboxRow[]) : [];
+    const validated = validateRpcResponse(data, isBuyerInboxRpcResponse, {
+      rpcName: "list_buyer_inbox",
+      caller: "src/lib/api/buyer.listBuyerInbox",
+      domain: "buyer",
+    });
+    const rows = (validated ?? []) as BuyerInboxRow[];
     const gatedRows = await filterInboxByRequestStatus(rows);
     return await enrichRejectedRows(gatedRows);
   } catch (e) {

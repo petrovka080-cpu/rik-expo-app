@@ -1,5 +1,5 @@
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
-import { normalizePage, type PageInput } from "../../lib/api/_core";
+import { loadPagedRowsWithCeiling, type PageInput, type PagedQuery } from "../../lib/api/_core";
 import type { WorkLogRow } from "./types";
 
 export type RequestScopeRow = { id: string; status: string | null };
@@ -58,33 +58,13 @@ type WorkLogDbRow = {
   note?: string | null;
 };
 
-const CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
-
-type PagedContractorQuery<T> = {
-  range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error?: unknown }>;
-};
+const CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 async function loadPagedContractorRows<T>(
-  queryFactory: () => PagedContractorQuery<T>,
+  queryFactory: () => PagedQuery<T>,
   pageInput?: PageInput,
 ): Promise<{ data: T[] | null; error: unknown | null }> {
-  if (pageInput) {
-    const page = normalizePage(pageInput, CONTRACTOR_LIST_PAGE_DEFAULTS);
-    const result = await queryFactory().range(page.from, page.to);
-    if (result.error) return { data: null, error: result.error };
-    return { data: Array.isArray(result.data) ? result.data : [], error: null };
-  }
-
-  const rows: T[] = [];
-  for (let pageIndex = 0; ; pageIndex += 1) {
-    const page = normalizePage({ page: pageIndex }, CONTRACTOR_LIST_PAGE_DEFAULTS);
-    const result = await queryFactory().range(page.from, page.to);
-    if (result.error) return { data: null, error: result.error };
-
-    const pageRows = Array.isArray(result.data) ? result.data : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) return { data: rows, error: null };
-  }
+  return loadPagedRowsWithCeiling(queryFactory, CONTRACTOR_LIST_PAGE_DEFAULTS, pageInput);
 }
 
 export async function fetchRequestScopeRows(
@@ -238,10 +218,13 @@ export async function loadAggregatedWorkSummary<T extends { qty_planned: number;
   progressId: string,
   baseWork: T
 ): Promise<{ work: T; materials: WorkMaterialRow[] }> {
-  const logsQ = await supabaseClient
-    .from("work_progress_log")
-    .select("id, qty")
-    .eq("progress_id", progressId);
+  const logsQ = await loadPagedContractorRows<LogSummaryRow>(() =>
+    supabaseClient
+      .from("work_progress_log")
+      .select("id, qty")
+      .eq("progress_id", progressId)
+      .order("id", { ascending: true })
+  );
 
   if (logsQ.error || !Array.isArray(logsQ.data) || logsQ.data.length === 0) {
     return { work: baseWork, materials: [] };
@@ -251,10 +234,14 @@ export async function loadAggregatedWorkSummary<T extends { qty_planned: number;
   const logIds = logRows.map((l) => String(l.id || ""));
   const totalQty = logRows.reduce((sum, l) => sum + Number(l.qty ?? 0), 0);
 
-  const matsQ = await supabaseClient
-    .from("work_progress_log_materials")
-    .select("log_id, mat_code, uom_mat, qty_fact")
-    .in("log_id", logIds);
+  const matsQ = await loadPagedContractorRows<LogMaterialSummaryRow>(() =>
+    supabaseClient
+      .from("work_progress_log_materials")
+      .select("log_id, mat_code, uom_mat, qty_fact")
+      .in("log_id", logIds)
+      .order("log_id", { ascending: true })
+      .order("mat_code", { ascending: true })
+  );
 
   let aggregated: WorkMaterialRow[] = [];
 
@@ -278,10 +265,13 @@ export async function loadAggregatedWorkSummary<T extends { qty_planned: number;
     const namesMap: Record<string, { name: string; uom: string | null }> = {};
 
     if (codes.length) {
-      const ci = await supabaseClient
-        .from("catalog_items")
-        .select("rik_code, name_human_ru, name_human, uom_code")
-        .in("rik_code", codes);
+      const ci = await loadPagedContractorRows<CatalogItemRow>(() =>
+        supabaseClient
+          .from("catalog_items")
+          .select("rik_code, name_human_ru, name_human, uom_code")
+          .in("rik_code", codes)
+          .order("rik_code", { ascending: true })
+      );
 
       if (!ci.error && Array.isArray(ci.data)) {
         for (const n of ci.data as CatalogItemRow[]) {
@@ -326,17 +316,23 @@ export async function loadWorkLogRows(
 ): Promise<WorkLogRow[]> {
   if (!looksLikeUuid(progressId)) return [];
 
-  let q = await supabaseClient
-    .from("work_progress_log")
-    .select("id, created_at, qty, work_uom, stage_note, note")
-    .eq("progress_id", progressId)
-    .order("created_at", { ascending: true });
-  if (q.error) {
-    q = await supabaseClient
+  let q = await loadPagedContractorRows<WorkLogDbRow>(() =>
+    supabaseClient
       .from("work_progress_log")
       .select("id, created_at, qty, work_uom, stage_note, note")
-      .eq("id", progressId)
-      .order("created_at", { ascending: true });
+      .eq("progress_id", progressId)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+  );
+  if (q.error) {
+    q = await loadPagedContractorRows<WorkLogDbRow>(() =>
+      supabaseClient
+        .from("work_progress_log")
+        .select("id, created_at, qty, work_uom, stage_note, note")
+        .eq("id", progressId)
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+    );
   }
   const { data, error } = q;
   if (error || !Array.isArray(data)) return [];

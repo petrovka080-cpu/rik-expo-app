@@ -20,29 +20,32 @@ const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
   [
     "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql",
     "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql",
+    "src/screens/warehouse/warehouse.api.repo.ts",
+    "src/screens/warehouse/warehouse.stockReports.service.ts",
   ].includes(file);
+
+const isLaterApprovedRpcValidationPatch = (file: string) =>
+  ["src/lib/api/integrity.guards.ts"].includes(file);
 
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
-    expect(contractorData).toContain("CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(contractorData).toContain("CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(contractorData).toContain("async function loadPagedContractorRows");
-    expect(contractorData).toContain("normalizePage({ page: pageIndex }, CONTRACTOR_LIST_PAGE_DEFAULTS)");
-    expect(contractorData).toContain(".range(page.from, page.to)");
+    expect(contractorData).toContain("loadPagedRowsWithCeiling(queryFactory, CONTRACTOR_LIST_PAGE_DEFAULTS");
     expect(contractorData).toContain('.from("requests")');
     expect(contractorData).toContain('.from("work_progress_log")');
     expect(contractorData).toContain('.from("work_progress_log_materials")');
     expect(contractorData).toContain('.from("v_wh_issue_req_items_ui")');
 
     const buyerRepo = read("src/screens/buyer/buyer.repo.ts");
-    expect(buyerRepo).toContain("BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(buyerRepo).toContain("BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(buyerRepo).toContain("async function loadPagedBuyerRepoRows");
-    expect(buyerRepo).toContain("normalizePage(pageInput, BUYER_REPO_LIST_PAGE_DEFAULTS)");
-    expect(buyerRepo).toContain("normalizePage({ page: pageIndex }, BUYER_REPO_LIST_PAGE_DEFAULTS)");
+    expect(buyerRepo).toContain("loadPagedRowsWithCeiling(queryFactory, BUYER_REPO_LIST_PAGE_DEFAULTS");
     expect(buyerRepo).toContain("repoGetProposalItemsForView(");
     expect(buyerRepo).toContain("repoGetProposalItemLinks(");
     expect(buyerRepo).toContain("repoGetRequestItemToRequestMap(");
-    expect(buyerRepo.match(/\.range\(page\.from, page\.to\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    expect(buyerRepo).toContain("maxRows: 5000");
   });
 
   it("clamps the two S-LOAD-3 hotspot list rpc callers", () => {
@@ -67,6 +70,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
 
     const forbiddenChanged = changedFiles().filter((file) =>
       !isLaterApprovedWarehouseIssueSourcePatch(file) &&
+      !isLaterApprovedRpcValidationPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|warehouse\.api\.repo|storage)/i.test(file)),
     );

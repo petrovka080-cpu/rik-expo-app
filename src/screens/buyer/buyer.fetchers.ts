@@ -12,6 +12,7 @@ import {
 import {
   adaptBuyerSummaryInboxScopeEnvelope,
   adaptBuyerSummaryBucketsScopeEnvelope,
+  isBuyerSummaryBucketsScopeResponse,
   withBuyerBucketCanonicalCount,
   type BuyerProposalBucketRow,
   type BuyerSummaryBucketCounts,
@@ -345,7 +346,12 @@ async function loadBuyerBucketsDataRpcInternal(params: {
     });
     if (error) throw error;
 
-    const envelope = adaptBuyerSummaryBucketsScopeEnvelope(data);
+    const validated = validateRpcResponse(data, isBuyerSummaryBucketsScopeResponse, {
+      rpcName: "buyer_summary_buckets_scope_v1",
+      caller: "src/screens/buyer/buyer.fetchers.loadBuyerBucketsDataRpcInternal",
+      domain: "buyer",
+    });
+    const envelope = adaptBuyerSummaryBucketsScopeEnvelope(validated);
     const result: BuyerBucketsLoadResult = {
       pending: withBuyerBucketCanonicalCount(envelope.pending, envelope.counts.pendingCount),
       approved: withBuyerBucketCanonicalCount(envelope.approved, envelope.counts.approvedCount),

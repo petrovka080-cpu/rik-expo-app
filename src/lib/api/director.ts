@@ -1,7 +1,16 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
-import { client, normalizePage, toRpcId, parseErr, type PageInput } from "./_core";
 import {
+  client,
+  loadPagedRowsWithCeiling,
+  normalizePage,
+  toRpcId,
+  parseErr,
+  type PagedQuery,
+  type PageInput,
+} from "./_core";
+import {
+  isRpcBooleanOrVoidResponse,
   isRpcNullableRecordArrayResponse,
   isRpcVoidResponse,
   validateRpcResponse,
@@ -157,6 +166,9 @@ function asDirectorRequestItemFallbackRows(value: unknown): DirectorRequestItemF
 }
 
 export const isDirectorInboxRpcResponse = isRpcNullableRecordArrayResponse;
+export const isDirectorLegacyDecisionRpcResponse = isRpcBooleanOrVoidResponse;
+
+const DIRECTOR_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 async function callPendingRpc(name: PendingRpcName): Promise<DirectorPendingRpcRawRow[]> {
   const rpc = await client.rpc(name);
@@ -222,13 +234,16 @@ export async function listPending(pageInput?: PageInput): Promise<DirectorPendin
       if (Number.isFinite(r.id_old)) idOldByUuid.set(String(r.id), Number(r.id_old));
     });
 
-    const ri = await client
+    const ri = await loadPagedRowsWithCeiling<DirectorRequestItemFallbackRow>(() =>
+      client
       .from("request_items")
       .select("id,request_id,name_human,qty,uom,status")
       .in("request_id", ids)
       .neq("status", asRequestStatus("Утверждено"))
       .order("request_id", { ascending: true })
-      .order("id", { ascending: true });
+      .order("id", { ascending: true }) as unknown as PagedQuery<DirectorRequestItemFallbackRow>,
+      DIRECTOR_REFERENCE_PAGE_DEFAULTS,
+    );
 
     if (ri.error) throw ri.error;
 
@@ -261,7 +276,15 @@ export async function listPending(pageInput?: PageInput): Promise<DirectorPendin
 export async function approve(approvalId: number | string) {
   try {
     const rpc = await client.rpc("approve_one", { p_proposal_id: toRpcId(approvalId) });
-    if (!rpc.error) return true;
+    if (!rpc.error) {
+      const accepted = validateRpcResponse(rpc.data, isDirectorLegacyDecisionRpcResponse, {
+        rpcName: "approve_one",
+        caller: "src/lib/api/director.approve",
+        domain: "director",
+      });
+      if (accepted !== false) return true;
+      throw new Error("approve_one returned false");
+    }
   } catch (error) {
     recordDirectorApiWarning("approve_rpc_failed", error, {
       approvalId: String(approvalId),
@@ -283,7 +306,15 @@ export async function approve(approvalId: number | string) {
 export async function reject(approvalId: number | string, _reason = "Без причины") {
   try {
     const rpc = await client.rpc("reject_one", { p_proposal_id: toRpcId(approvalId) });
-    if (!rpc.error) return true;
+    if (!rpc.error) {
+      const accepted = validateRpcResponse(rpc.data, isDirectorLegacyDecisionRpcResponse, {
+        rpcName: "reject_one",
+        caller: "src/lib/api/director.reject",
+        domain: "director",
+      });
+      if (accepted !== false) return true;
+      throw new Error("reject_one returned false");
+    }
   } catch (error) {
     recordDirectorApiWarning("reject_rpc_failed", error, {
       approvalId: String(approvalId),

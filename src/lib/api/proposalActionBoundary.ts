@@ -124,6 +124,41 @@ export function getProposalActionErrorMessage(error: unknown, fallback: string):
   return text(error) || fallback;
 }
 
+async function readSubmittedProposalTruthRow(
+  supabase: SupabaseClient,
+  proposalId: string,
+): Promise<Record<string, unknown>> {
+  const query = await supabase
+    .from("proposals")
+    .select("id,status,submitted_at,sent_to_accountant_at")
+    .eq("id", proposalId)
+    .maybeSingle();
+  if (query.error) {
+    throw new ProposalActionBoundaryError({
+      action: "proposal_submit",
+      stage: "readback",
+      terminalClass: classifyProposalActionFailure(query.error),
+      message: getProposalActionErrorMessage(
+        query.error,
+        "proposal submit readback failed",
+      ),
+      causeError: query.error,
+    });
+  }
+
+  const row = asRecord(query.data);
+  if (!row || text(row.id) !== proposalId) {
+    throw new ProposalActionBoundaryError({
+      action: "proposal_submit",
+      stage: "readback",
+      terminalClass: "terminal_failure",
+      message: `proposal submit readback missing proposal: ${proposalId}`,
+    });
+  }
+
+  return row;
+}
+
 export async function readbackSubmittedProposalTruth(
   supabase: SupabaseClient,
   proposalIds: string[],
@@ -140,41 +175,13 @@ export async function readbackSubmittedProposalTruth(
     });
   }
 
-  const query = await supabase
-    .from("proposals")
-    .select("id,status,submitted_at,sent_to_accountant_at")
-    .in("id", ids);
-  if (query.error) {
-    throw new ProposalActionBoundaryError({
-      action: "proposal_submit",
-      stage: "readback",
-      terminalClass: classifyProposalActionFailure(query.error),
-      message: getProposalActionErrorMessage(
-        query.error,
-        "proposal submit readback failed",
-      ),
-      causeError: query.error,
-    });
+  const rows: Record<string, unknown>[] = [];
+  for (const proposalId of ids) {
+    rows.push(await readSubmittedProposalTruthRow(supabase, proposalId));
   }
 
-  const rows = Array.isArray(query.data) ? query.data : [];
-  const byId = new Map<string, Record<string, unknown>>();
-  rows.forEach((row) => {
-    const record = asRecord(row);
-    const id = text(record?.id);
-    if (record && id) byId.set(id, record);
-  });
-
-  return ids.map((proposalId) => {
-    const row = byId.get(proposalId);
-    if (!row) {
-      throw new ProposalActionBoundaryError({
-        action: "proposal_submit",
-        stage: "readback",
-        terminalClass: "terminal_failure",
-        message: `proposal submit readback missing proposal: ${proposalId}`,
-      });
-    }
+  return rows.map((row, index) => {
+    const proposalId = ids[index];
     if (!isProposalDirectorVisibleRow(row)) {
       throw new ProposalActionBoundaryError({
         action: "proposal_submit",

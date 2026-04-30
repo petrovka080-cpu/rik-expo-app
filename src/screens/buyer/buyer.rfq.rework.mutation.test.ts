@@ -7,6 +7,8 @@ import { repoUpdateProposalItems } from "./buyer.repo";
 import { publishRfqAction } from "./buyer.rfq.mutation";
 import { rwSendToDirectorAction } from "./buyer.rework.mutation";
 
+jest.mock("../../lib/supabaseClient", () => ({ supabase: {} }));
+
 jest.mock("./buyer.actions.repo", () => ({
   clearRequestItemsDirectorRejectState: jest.fn(),
   publishRfq: jest.fn(),

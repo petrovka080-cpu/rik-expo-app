@@ -1,4 +1,11 @@
 import { supabase } from "./supabaseClient";
+import {
+  isRpcBoolean,
+  isRpcRecord,
+  isRpcRecordArray,
+  isRpcString,
+  validateRpcResponse,
+} from "./api/queryBoundary";
 
 export const DEVELOPER_OVERRIDE_ROLES = [
   "buyer",
@@ -47,6 +54,22 @@ const normalizeRole = (value: unknown): string | null => {
 
 const normalizeBool = (value: unknown): boolean => value === true;
 
+export const isDeveloperOverrideContextRpcResponse = (
+  value: unknown,
+): value is Record<string, unknown> =>
+  isRpcRecord(value) &&
+  (value.actorUserId == null || isRpcString(value.actorUserId)) &&
+  isRpcBoolean(value.isEnabled) &&
+  isRpcBoolean(value.isActive) &&
+  Array.isArray(value.allowedRoles) &&
+  value.allowedRoles.every((role) => role == null || isRpcString(role)) &&
+  (value.activeEffectiveRole == null || isRpcString(value.activeEffectiveRole)) &&
+  isRpcBoolean(value.canAccessAllOfficeRoutes) &&
+  isRpcBoolean(value.canImpersonateForMutations) &&
+  (value.expiresAt == null || isRpcString(value.expiresAt)) &&
+  (value.reason == null || isRpcString(value.reason)) &&
+  !isRpcRecordArray(value);
+
 export function normalizeDeveloperOverrideContext(
   value: unknown,
 ): DeveloperOverrideContext {
@@ -77,7 +100,22 @@ export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideC
     if (__DEV__) console.warn("[developer_override_context_v1]", error.message);
     return EMPTY_CONTEXT;
   }
-  return normalizeDeveloperOverrideContext(data);
+  try {
+    const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
+      rpcName: "developer_override_context_v1",
+      caller: "src/lib/developerOverride.loadDeveloperOverrideContext",
+      domain: "unknown",
+    });
+    return normalizeDeveloperOverrideContext(validated);
+  } catch (validationError) {
+    if (__DEV__) {
+      console.warn(
+        "[developer_override_context_v1]",
+        validationError instanceof Error ? validationError.message : String(validationError),
+      );
+    }
+    return EMPTY_CONTEXT;
+  }
 }
 
 export async function setDeveloperEffectiveRole(
@@ -87,11 +125,21 @@ export async function setDeveloperEffectiveRole(
     p_effective_role: role,
   });
   if (error) throw error;
-  return normalizeDeveloperOverrideContext(data);
+  const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
+    rpcName: "developer_set_effective_role_v1",
+    caller: "src/lib/developerOverride.setDeveloperEffectiveRole",
+    domain: "unknown",
+  });
+  return normalizeDeveloperOverrideContext(validated);
 }
 
 export async function clearDeveloperEffectiveRole(): Promise<DeveloperOverrideContext> {
   const { data, error } = await (supabase as any).rpc("developer_clear_effective_role_v1");
   if (error) throw error;
-  return normalizeDeveloperOverrideContext(data);
+  const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
+    rpcName: "developer_clear_effective_role_v1",
+    caller: "src/lib/developerOverride.clearDeveloperEffectiveRole",
+    domain: "unknown",
+  });
+  return normalizeDeveloperOverrideContext(validated);
 }

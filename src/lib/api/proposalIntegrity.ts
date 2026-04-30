@@ -50,6 +50,41 @@ const asRecord = (value: unknown): Record<string, unknown> =>
     ? (value as Record<string, unknown>)
     : {};
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+const isKnownIntegrityState = (value: unknown) => {
+  const normalized = trim(value).toLowerCase();
+  return (
+    normalized === "" ||
+    normalized === ACTIVE_PROPOSAL_REQUEST_ITEM_INTEGRITY_STATE ||
+    normalized === "source_cancelled" ||
+    normalized === "source_missing"
+  );
+};
+
+const isKnownIntegrityReason = (value: unknown) => {
+  const normalized = trim(value).toLowerCase();
+  return (
+    normalized === "" ||
+    normalized === "request_item_cancelled" ||
+    normalized === "request_item_missing"
+  );
+};
+
+export const isProposalRequestItemIntegrityRpcResponse = (
+  value: unknown,
+): value is Record<string, unknown>[] =>
+  Array.isArray(value) &&
+  value.every((row) => {
+    if (!isRecord(row)) return false;
+    return (
+      isKnownIntegrityState(row.integrity_state) &&
+      isKnownIntegrityReason(row.integrity_reason) &&
+      (row.request_item_exists == null || typeof row.request_item_exists === "boolean")
+    );
+  });
+
 const parseSummary = (detail: unknown): ProposalRequestItemIntegritySummary => {
   let raw = asRecord(detail);
   if (typeof detail === "string" && detail.trim().startsWith("{")) {

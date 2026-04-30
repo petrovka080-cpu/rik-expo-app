@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 
 export type IncomingSeedRow = {
   incoming_id: string;
@@ -30,6 +31,7 @@ export function mergeIncomingSeedRows(rows: IncomingSeedRow[]): IncomingSeedRow[
 }
 
 type Supa = SupabaseClient;
+const WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 type RequestItemMini = {
   id?: string | null;
@@ -90,28 +92,32 @@ async function reseedIncomingItems(
   purchaseId: string,
 ): Promise<boolean> {
   // 1) читаем purchase_items (если пусто - пытаемся seed из proposal_snapshot_items)
-  let pi = await supabase
-    .from("purchase_items")
-    .select(
-      `
-      id,
-      request_item_id,
-      qty,
-      uom,
-      name_human,
-      rik_code,
-      request_items:request_items (
-        rik_code,
-        name_human,
-        uom
-      )
-    `,
-    )
-    .eq("purchase_id", purchaseId)
-    .order("id", { ascending: true });
+  let pi = await loadPagedRowsWithCeiling<PurchaseItemSeedRow>(
+    () =>
+      supabase
+        .from("purchase_items")
+        .select(
+          `
+          id,
+          request_item_id,
+          qty,
+          uom,
+          name_human,
+          rik_code,
+          request_items:request_items (
+            rik_code,
+            name_human,
+            uom
+          )
+        `,
+        )
+        .eq("purchase_id", purchaseId)
+        .order("id", { ascending: true }) as unknown as PagedQuery<PurchaseItemSeedRow>,
+    WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS,
+  );
 
   if (pi.error) {
-    if (__DEV__) console.warn("[seed] select purchase_items error:", pi.error.message);
+    if (__DEV__) console.warn("[seed] select purchase_items error:", (pi.error as Error)?.message ?? pi.error);
     return false;
   }
 
@@ -130,13 +136,18 @@ async function reseedIncomingItems(
       return false;
     }
 
-    const snap = await supabase
-      .from("proposal_snapshot_items")
-      .select("request_item_id, uom, total_qty")
-      .eq("proposal_id", propId);
+    const snap = await loadPagedRowsWithCeiling<ProposalSnapshotRow>(
+      () =>
+        supabase
+          .from("proposal_snapshot_items")
+          .select("request_item_id, uom, total_qty")
+          .eq("proposal_id", propId)
+          .order("request_item_id", { ascending: true }) as unknown as PagedQuery<ProposalSnapshotRow>,
+      WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS,
+    );
 
     if (snap.error || !Array.isArray(snap.data) || snap.data.length === 0) {
-      if (__DEV__) console.warn("[seed] snapshot empty", snap.error?.message);
+      if (__DEV__) console.warn("[seed] snapshot empty", (snap.error as Error | undefined)?.message);
       return false;
     }
 
@@ -149,10 +160,15 @@ async function reseedIncomingItems(
     const riMap: Record<string, { name_human: string; rik_code: string | null; uom: string | null }> = {};
 
     if (reqIds.length) {
-      const ri = await supabase
-        .from("request_items")
-        .select("id, name_human, rik_code, uom")
-        .in("id", reqIds);
+      const ri = await loadPagedRowsWithCeiling<RequestItemMini>(
+        () =>
+          supabase
+            .from("request_items")
+            .select("id, name_human, rik_code, uom")
+            .in("id", reqIds)
+            .order("id", { ascending: true }) as unknown as PagedQuery<RequestItemMini>,
+        WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS,
+      );
 
       if (!ri.error && Array.isArray(ri.data)) {
         for (const r of ri.data as RequestItemMini[]) {
@@ -198,28 +214,32 @@ async function reseedIncomingItems(
     }
 
     // РїРµСЂРµС‡РёС‚С‹РІР°РµРј purchase_items
-    pi = await supabase
-      .from("purchase_items")
-      .select(
-        `
-        id,
-        request_item_id,
-        qty,
-        uom,
-        name_human,
-        rik_code,
-        request_items:request_items (
-          rik_code,
-          name_human,
-          uom
-        )
-      `,
-      )
-      .eq("purchase_id", purchaseId)
-      .order("id", { ascending: true });
+    pi = await loadPagedRowsWithCeiling<PurchaseItemSeedRow>(
+      () =>
+        supabase
+          .from("purchase_items")
+          .select(
+            `
+            id,
+            request_item_id,
+            qty,
+            uom,
+            name_human,
+            rik_code,
+            request_items:request_items (
+              rik_code,
+              name_human,
+              uom
+            )
+          `,
+          )
+          .eq("purchase_id", purchaseId)
+          .order("id", { ascending: true }) as unknown as PagedQuery<PurchaseItemSeedRow>,
+      WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS,
+    );
 
     if (pi.error) {
-      if (__DEV__) console.warn("[seed] reselect purchase_items error:", pi.error.message);
+      if (__DEV__) console.warn("[seed] reselect purchase_items error:", (pi.error as Error)?.message ?? pi.error);
       return false;
     }
   }

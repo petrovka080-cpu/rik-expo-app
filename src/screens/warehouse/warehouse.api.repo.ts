@@ -1,10 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import {
   applySupabaseAbortSignal,
   throwIfAborted,
 } from "../../lib/requestCancellation";
 
 type UnknownRow = Record<string, unknown>;
+const WAREHOUSE_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 export async function fetchWarehouseReportsBundle(
   supabase: SupabaseClient,
@@ -96,23 +98,34 @@ export async function fetchWarehouseIncomingLedgerRows(
   supabase: SupabaseClient,
   p: { from?: string | null; to?: string | null },
 ) {
-  return await supabase
-    .from("wh_ledger")
-    .select("code, uom_id, qty, moved_at, warehouseman_fio")
-    .eq("direction", "in")
-    .gte("moved_at", p.from ?? null)
-    .lte("moved_at", p.to ?? null);
+  return await loadPagedRowsWithCeiling<UnknownRow>(
+    () =>
+      supabase
+        .from("wh_ledger")
+        .select("code, uom_id, qty, moved_at, warehouseman_fio")
+        .eq("direction", "in")
+        .gte("moved_at", p.from ?? null)
+        .lte("moved_at", p.to ?? null)
+        .order("moved_at", { ascending: true })
+        .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+    WAREHOUSE_REFERENCE_PAGE_DEFAULTS,
+  );
 }
 
 export async function fetchWarehouseIncomingLineRows(
   supabase: SupabaseClient,
   incomingId: string,
 ) {
-  return await supabase
-    .from("wh_ledger")
-    .select("code, uom_id, qty")
-    .eq("incoming_id", incomingId)
-    .eq("direction", "in");
+  return await loadPagedRowsWithCeiling<UnknownRow>(
+    () =>
+      supabase
+        .from("wh_ledger")
+        .select("code, uom_id, qty")
+        .eq("incoming_id", incomingId)
+        .eq("direction", "in")
+        .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+    WAREHOUSE_REFERENCE_PAGE_DEFAULTS,
+  );
 }
 
 export function asUnknownRows(data: unknown): UnknownRow[] {

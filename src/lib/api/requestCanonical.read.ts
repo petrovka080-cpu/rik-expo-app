@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { loadPagedRowsWithCeiling, type PagedQuery } from "./_core";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { normalizeRuText } from "../text/encoding";
 import {
@@ -81,6 +82,8 @@ const CANONICAL_REQUEST_DESIRED_COLUMNS = [
   "note",
   "comment",
 ] as const;
+
+const CANONICAL_REQUEST_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 const normalizeText = (value: unknown): string =>
   String(normalizeRuText(String(value ?? "")) ?? "")
@@ -183,10 +186,16 @@ export async function loadCanonicalRequestItemCountsByRequestIds(
   const ids = Array.from(new Set(requestIds.map((value) => String(value ?? "").trim()).filter(Boolean)));
   if (!ids.length) return new Map<string, CanonicalRequestItemCountRow>();
 
-  const { data, error } = await supabase
-    .from("request_items")
-    .select("request_id, qty, status")
-    .in("request_id", ids);
+  const { data, error } = await loadPagedRowsWithCeiling<UnknownRow>(
+    () =>
+      supabase
+        .from("request_items")
+        .select("request_id, qty, status")
+        .in("request_id", ids)
+        .order("request_id", { ascending: true })
+        .order("id", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+    CANONICAL_REQUEST_REFERENCE_PAGE_DEFAULTS,
+  );
 
   if (error) {
     recordCanonicalRequestLoaderWarning("load_request_item_counts_failed", error, {
@@ -377,12 +386,17 @@ export async function loadCanonicalRequestItemsByRequestId(
   const requestIdValue = String(requestId ?? "").trim();
   if (!requestIdValue) return [];
 
-  const { data, error } = await supabase
-    .from("request_items")
-    .select("id, request_id, rik_code, name_human, uom, qty, status, note, app_code, item_kind, created_at")
-    .eq("request_id", requestIdValue)
-    .order("position_order", { ascending: true })
-    .order("name_human", { ascending: true });
+  const { data, error } = await loadPagedRowsWithCeiling<UnknownRow>(
+    () =>
+      supabase
+        .from("request_items")
+        .select("id, request_id, rik_code, name_human, uom, qty, status, note, app_code, item_kind, created_at")
+        .eq("request_id", requestIdValue)
+        .order("position_order", { ascending: true })
+        .order("name_human", { ascending: true })
+        .order("id", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+    CANONICAL_REQUEST_REFERENCE_PAGE_DEFAULTS,
+  );
 
   if (error) {
     recordCanonicalRequestLoaderWarning("load_request_items_by_request_id_failed", error, {

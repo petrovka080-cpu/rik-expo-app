@@ -2,7 +2,14 @@ import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { beginPlatformObservability } from "../observability/platformObservability";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
-import { classifyRpcCompatError, client, normalizePage, type PageInput } from "./_core";
+import {
+  classifyRpcCompatError,
+  client,
+  loadPagedRowsWithCeiling,
+  normalizePage,
+  type PagedQuery,
+  type PageInput,
+} from "./_core";
 import {
   classifyProposalItemsByRequestItemIntegrity,
   ensureActiveProposalRequestItemsIntegrity,
@@ -10,8 +17,10 @@ import {
 } from "./integrity.guards";
 import { toProposalRequestItemIntegrityDegradedError } from "./proposalIntegrity";
 import {
+  isRpcIgnoredMutationResponse,
   isRpcNonEmptyString,
   isRpcNumberLike,
+  isRpcNumberLikeResponse,
   isRpcNullableRecordArrayResponse,
   isRpcRecord,
   isRpcRecordArray,
@@ -123,6 +132,9 @@ export const isProposalPendingRowsRpcResponse = (
     );
   });
 
+export const isProposalAddItemsRpcResponse = isRpcNumberLikeResponse;
+export const isProposalIgnoredMutationRpcResponse = isRpcIgnoredMutationResponse;
+
 const _PROPOSAL_STATUS_PENDING_RU = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
 const PROPOSAL_STATUS_DRAFT_EN = "draft";
 const PROPOSAL_STATUS_PENDING_EN = "pending";
@@ -135,6 +147,8 @@ type ProposalItemsSourceKind =
   | "view:proposal_items_view"
   | "table:proposal_items"
   | "rpc:proposal_items_for_web";
+
+const PROPOSAL_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 export type ProposalStatus = "draft" | "submitted" | "approved" | "rejected";
 export type ProposalSubmitSourceKind =
@@ -194,7 +208,7 @@ function buildProposalAddItemsArgs(
   return { p_proposal_id: String(proposalId), p_request_item_ids: requestItemIds };
 }
 
-function parseProposalAddItemsResult(data: ProposalAddItemsRpcResult): number {
+function parseProposalAddItemsResult(data: ProposalAddItemsRpcResult | string): number {
   return Number(data ?? 0);
 }
 
@@ -308,6 +322,11 @@ async function runProposalSubmitRpc(
     buildProposalSubmitTextArgs(proposalId) as never,
   );
   if (!primary.error) {
+    validateRpcResponse(primary.data, isProposalIgnoredMutationRpcResponse, {
+      rpcName: "proposal_submit_text_v1",
+      caller: "src/lib/api/proposals.runProposalSubmitRpc",
+      domain: "proposal",
+    });
     return { sourceKind: "rpc:proposal_submit_text_v1" };
   }
 
@@ -318,6 +337,11 @@ async function runProposalSubmitRpc(
 
   const compatibility = await client.rpc("proposal_submit", buildProposalSubmitArgs(proposalId));
   if (compatibility.error) throw compatibility.error;
+  validateRpcResponse(compatibility.data, isProposalIgnoredMutationRpcResponse, {
+    rpcName: "proposal_submit",
+    caller: "src/lib/api/proposals.runProposalSubmitRpc",
+    domain: "proposal",
+  });
   return { sourceKind: "rpc:proposal_submit" };
 }
 
@@ -343,27 +367,39 @@ async function selectProposalSubmitVerificationById(proposalId: string) {
 }
 
 async function selectProposalItemsSnapshot(proposalId: string) {
-  return client
-    .from("proposal_snapshot_items")
-    .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty, price, note, supplier")
-    .eq("proposal_id", proposalId)
-    .order("id", { ascending: true });
+  return loadPagedRowsWithCeiling<ProposalSnapshotItemRow>(
+    () =>
+      client
+        .from("proposal_snapshot_items")
+        .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty, price, note, supplier")
+        .eq("proposal_id", proposalId)
+        .order("id", { ascending: true }) as unknown as PagedQuery<ProposalSnapshotItemRow>,
+    PROPOSAL_REFERENCE_PAGE_DEFAULTS,
+  );
 }
 
 async function selectProposalItemsView(proposalId: string) {
-  return client
-    .from("proposal_items_view")
-    .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty, price, note, supplier")
-    .eq("proposal_id", proposalId)
-    .order("id", { ascending: true });
+  return loadPagedRowsWithCeiling<ProposalItemViewRow>(
+    () =>
+      client
+        .from("proposal_items_view")
+        .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty, price, note, supplier")
+        .eq("proposal_id", proposalId)
+        .order("id", { ascending: true }) as unknown as PagedQuery<ProposalItemViewRow>,
+    PROPOSAL_REFERENCE_PAGE_DEFAULTS,
+  );
 }
 
 async function selectProposalItemsTable(proposalId: string) {
-  return client
-    .from("proposal_items")
-    .select("id, request_item_id, rik_code, name_human, uom, app_code, qty, price, note, supplier")
-    .eq("proposal_id", proposalId)
-    .order("id", { ascending: true });
+  return loadPagedRowsWithCeiling<ProposalItemTableRow>(
+    () =>
+      client
+        .from("proposal_items")
+        .select("id, request_item_id, name_human, uom, app_code, rik_code, qty, price, note, supplier")
+        .eq("proposal_id", proposalId)
+        .order("id", { ascending: true }) as unknown as PagedQuery<ProposalItemTableRow>,
+    PROPOSAL_REFERENCE_PAGE_DEFAULTS,
+  );
 }
 
 async function loadProposalItemsFromSource(
@@ -694,7 +730,12 @@ export async function proposalAddItems(proposalId: number | string, requestItemI
     try {
       const { data, error } = await runProposalAddItemsRpc(proposalId, requestItemIds);
       if (error) throw error;
-      const inserted = parseProposalAddItemsResult(data);
+      const validated = validateRpcResponse(data, isProposalAddItemsRpcResponse, {
+        rpcName: "proposal_add_items",
+        caller: "src/lib/api/proposals.proposalAddItems",
+        domain: "proposal",
+      });
+      const inserted = parseProposalAddItemsResult(validated);
       observation.success({
         sourceKind: "rpc:proposal_add_items",
         rowCount: inserted,
@@ -982,9 +1023,14 @@ export async function proposalSnapshotItems(
   proposalId: number | string,
   metaRows: ProposalMutationMetaRow[] = [],
 ) {
-  const { error } = await client.rpc("proposal_items_snapshot", buildProposalItemsSnapshotArgs(proposalId, metaRows));
+  const { data, error } = await client.rpc("proposal_items_snapshot", buildProposalItemsSnapshotArgs(proposalId, metaRows));
 
   if (error) throw error;
+  validateRpcResponse(data, isProposalIgnoredMutationRpcResponse, {
+    rpcName: "proposal_items_snapshot",
+    caller: "src/lib/api/proposals.proposalSnapshotItems",
+    domain: "proposal",
+  });
   return true;
 }
 

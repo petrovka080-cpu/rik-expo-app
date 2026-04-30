@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../api/_core";
 import {
   isRequestItemUpdateQtyResponse,
   validateRpcResponse,
@@ -188,6 +189,7 @@ function pickBaseRequestPayload(payload: RequestsExtendedMetaUpdate): RequestsUp
 }
 
 const DRAFT_KEY = "foreman_draft_request_id";
+const CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 const asRequestHeader = (value: unknown): RequestHeader | null => {
   if (!value || typeof value !== "object") return null;
@@ -844,18 +846,22 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
   if (!id) return [];
 
   try {
-    const { data, error } = await supabase
-      .from("request_items")
-      .select(
-        "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order,updated_at",
-      )
-      .eq("request_id", id)
-      .order("row_no", { ascending: true })
-      .order("position_order", { ascending: true })
-      .order("id", { ascending: true });
+    const { data, error } = await loadPagedRowsWithCeiling<Record<string, unknown>>(
+      () =>
+        supabase
+          .from("request_items")
+          .select(
+            "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order,updated_at",
+          )
+          .eq("request_id", id)
+          .order("row_no", { ascending: true })
+          .order("position_order", { ascending: true })
+          .order("id", { ascending: true }) as unknown as PagedQuery<Record<string, unknown>>,
+      CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS,
+    );
 
     if (error) {
-      if (__DEV__) console.warn("[catalog_api.listRequestItems] request_items:", error.message);
+      if (__DEV__) console.warn("[catalog_api.listRequestItems] request_items:", (error as Error)?.message ?? error);
       return [];
     }
 
@@ -1016,10 +1022,16 @@ export async function listForemanRequests(
   const ids = mapped.map((row) => row.id).filter(Boolean);
   if (!ids.length) return mapped;
 
-  const { data: itemRows, error: itemErr } = await supabase
-    .from("request_items")
-    .select("request_id,status")
-    .in("request_id", ids);
+  const { data: itemRows, error: itemErr } = await loadPagedRowsWithCeiling<Record<string, unknown>>(
+    () =>
+      supabase
+        .from("request_items")
+        .select("request_id,status")
+        .in("request_id", ids)
+        .order("request_id", { ascending: true })
+        .order("id", { ascending: true }) as unknown as PagedQuery<Record<string, unknown>>,
+    CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS,
+  );
 
   if (itemErr || !Array.isArray(itemRows)) {
     return mapped;

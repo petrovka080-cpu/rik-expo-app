@@ -8,6 +8,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { IssuedItemRow, LinkedReqCard } from "./types";
 import type { Database } from "../../lib/database.types";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 
 type WorkRowLike = {
   progress_id: string;
@@ -19,6 +20,8 @@ type WorkRowLike = {
   request_id?: string | null;
   contractor_job_id?: string | null;
 };
+
+const WORK_MODAL_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 type RequestHeaderRow = {
   display_no?: string | null;
@@ -621,10 +624,15 @@ export async function loadInitialWorkMaterialsForModal(
 
   if (!lastLogQ.error && lastLogQ.data?.id) {
     const logId = String(lastLogQ.data.id);
-    const matsQ = await supabaseClient
-      .from("work_progress_log_materials")
-      .select("mat_code, uom_mat, qty_fact")
-      .eq("log_id", logId);
+    const matsQ = await loadPagedRowsWithCeiling<WorkProgressLogMaterialRow>(
+      () =>
+        supabaseClient
+          .from("work_progress_log_materials")
+          .select("mat_code, uom_mat, qty_fact")
+          .eq("log_id", logId)
+          .order("mat_code", { ascending: true }) as unknown as PagedQuery<WorkProgressLogMaterialRow>,
+      WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
+    );
 
     if (!matsQ.error && Array.isArray(matsQ.data) && matsQ.data.length) {
       const matsRows = asArray(matsQ.data as WorkProgressLogMaterialRow[]).map(
@@ -636,10 +644,15 @@ export async function loadInitialWorkMaterialsForModal(
       let namesMap: Record<string, CatalogMeta> = {};
 
       if (codes.length) {
-        const ci = await supabaseClient
-          .from("catalog_items")
-          .select("rik_code, name_human_ru, name_human, uom_code")
-          .in("rik_code", codes);
+        const ci = await loadPagedRowsWithCeiling<CatalogItemRow>(
+          () =>
+            supabaseClient
+              .from("catalog_items")
+              .select("rik_code, name_human_ru, name_human, uom_code")
+              .in("rik_code", codes)
+              .order("rik_code", { ascending: true }) as unknown as PagedQuery<CatalogItemRow>,
+          WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
+        );
         if (!ci.error && Array.isArray(ci.data)) {
           namesMap = buildCatalogMetaMap(ci.data as CatalogItemRow[]);
         }
@@ -695,10 +708,15 @@ export async function loadInitialWorkMaterialsForModal(
     .filter((code): code is string => typeof code === "string" && code.trim().length > 0);
   let namesMap: Record<string, CatalogMeta> = {};
   if (codes.length) {
-    const ci = await supabaseClient
-      .from("catalog_items")
-      .select("rik_code, name_human_ru, name_human, uom_code")
-      .in("rik_code", codes);
+    const ci = await loadPagedRowsWithCeiling<CatalogItemRow>(
+      () =>
+        supabaseClient
+          .from("catalog_items")
+          .select("rik_code, name_human_ru, name_human, uom_code")
+          .in("rik_code", codes)
+          .order("rik_code", { ascending: true }) as unknown as PagedQuery<CatalogItemRow>,
+      WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
+    );
     if (!ci.error && Array.isArray(ci.data)) {
       namesMap = buildCatalogMetaMap(ci.data as CatalogItemRow[]);
     }
@@ -723,11 +741,16 @@ export async function loadWorkStageOptions(params: {
   supabaseClient: SupabaseClient<Database>;
 }): Promise<{ code: string; name: string }[]> {
   const { supabaseClient } = params;
-  const { data, error } = await supabaseClient
-    .from("work_stages")
-    .select("code, name")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
+  const { data, error } = await loadPagedRowsWithCeiling<WorkStageRow>(
+    () =>
+      supabaseClient
+        .from("work_stages")
+        .select("code, name")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("code", { ascending: true }) as unknown as PagedQuery<WorkStageRow>,
+    WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
+  );
   if (error || !Array.isArray(data)) return [];
   return asArray(data as WorkStageRow[]).map((rawStage) => {
     const s = normalizeWorkStageRow(rawStage);

@@ -90,6 +90,16 @@ export type NormalizedPage = {
   to: number;
 };
 
+export type PageThroughDefaults = {
+  pageSize?: number;
+  maxPageSize?: number;
+  maxRows?: number;
+};
+
+export type PagedQuery<T> = {
+  range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error?: unknown }>;
+};
+
 const toInt = (value: unknown, fallback: number): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.trunc(parsed) : fallback;
@@ -115,6 +125,49 @@ export function normalizePage(
     from,
     to: from + pageSize - 1,
   };
+}
+
+const buildPageCeilingError = (maxRows: number) =>
+  new Error(`Paged reference read exceeded max row ceiling (${maxRows})`);
+
+export async function loadPagedRowsWithCeiling<T>(
+  queryFactory: () => PagedQuery<T>,
+  defaults: PageThroughDefaults,
+  pageInput?: PageInput,
+): Promise<{ data: T[] | null; error: unknown | null }> {
+  const maxRows = Math.max(1, toInt(defaults.maxRows, 5000));
+
+  if (pageInput) {
+    const page = normalizePage(pageInput, defaults);
+    if (page.from >= maxRows) return { data: null, error: buildPageCeilingError(maxRows) };
+
+    const result = await queryFactory().range(page.from, Math.min(page.to, maxRows - 1));
+    if (result.error) return { data: null, error: result.error };
+    return { data: Array.isArray(result.data) ? result.data : [], error: null };
+  }
+
+  const rows: T[] = [];
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, defaults);
+    if (page.from >= maxRows) {
+      const probe = await queryFactory().range(maxRows, maxRows);
+      if (probe.error) return { data: null, error: probe.error };
+      const probeRows = Array.isArray(probe.data) ? probe.data : [];
+      return probeRows.length
+        ? { data: null, error: buildPageCeilingError(maxRows) }
+        : { data: rows, error: null };
+    }
+
+    const result = await queryFactory().range(page.from, Math.min(page.to, maxRows - 1));
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    if (rows.length + pageRows.length > maxRows) {
+      return { data: null, error: buildPageCeilingError(maxRows) };
+    }
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
 }
 
 const errorMessageLower = (error: unknown) => parseErr(error).toLowerCase();

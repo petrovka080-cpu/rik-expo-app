@@ -7,8 +7,12 @@ import {
   toProposalAttachmentLegacyRow,
 } from "../../lib/api/proposalAttachments.service";
 import { ensureProposalRequestItemsIntegrity } from "../../lib/api/integrity.guards";
-import type { ProposalRequestItemIntegrityRow } from "../../lib/api/proposalIntegrity";
-import { normalizePage, type PageInput } from "../../lib/api/_core";
+import {
+  isProposalRequestItemIntegrityRpcResponse,
+  type ProposalRequestItemIntegrityRow,
+} from "../../lib/api/proposalIntegrity";
+import { validateRpcResponse } from "../../lib/api/queryBoundary";
+import { loadPagedRowsWithCeiling, type PageInput, type PagedQuery } from "../../lib/api/_core";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { applySupabaseAbortSignal, throwIfAborted } from "../../lib/requestCancellation";
 
@@ -38,33 +42,13 @@ export type RepoAttachmentRow = PropAttachmentRow & {
   storage_path?: string | null;
 };
 
-const BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
-
-type PagedBuyerRepoQuery<T> = {
-  range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error?: unknown }>;
-};
+const BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 async function loadPagedBuyerRepoRows<T>(
-  queryFactory: () => PagedBuyerRepoQuery<T>,
+  queryFactory: () => PagedQuery<T>,
   pageInput?: PageInput,
 ): Promise<{ data: T[] | null; error: unknown | null }> {
-  if (pageInput) {
-    const page = normalizePage(pageInput, BUYER_REPO_LIST_PAGE_DEFAULTS);
-    const result = await queryFactory().range(page.from, page.to);
-    if (result.error) return { data: null, error: result.error };
-    return { data: Array.isArray(result.data) ? result.data : [], error: null };
-  }
-
-  const rows: T[] = [];
-  for (let pageIndex = 0; ; pageIndex += 1) {
-    const page = normalizePage({ page: pageIndex }, BUYER_REPO_LIST_PAGE_DEFAULTS);
-    const result = await queryFactory().range(page.from, page.to);
-    if (result.error) return { data: null, error: result.error };
-
-    const pageRows = Array.isArray(result.data) ? result.data : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) return { data: rows, error: null };
-  }
+  return loadPagedRowsWithCeiling(queryFactory, BUYER_REPO_LIST_PAGE_DEFAULTS, pageInput);
 }
 
 export async function repoGetLatestProposalPdfAttachment(supabase: SupabaseClient, pidStr: string) {
@@ -99,12 +83,15 @@ export async function repoGetProposalItemsForAccounting(
   options?: { signal?: AbortSignal | null },
 ) {
   throwIfAborted(options?.signal);
-  const pi = await applySupabaseAbortSignal(
-    supabase
-      .from("proposal_items")
-      .select("supplier, qty, price")
-      .eq("proposal_id", pidStr),
-    options?.signal,
+  const pi = await loadPagedBuyerRepoRows(() =>
+    applySupabaseAbortSignal(
+      supabase
+        .from("proposal_items")
+        .select("supplier, qty, price")
+        .eq("proposal_id", pidStr)
+        .order("id", { ascending: true }),
+      options?.signal,
+    ),
   );
   throwIfAborted(options?.signal);
 
@@ -220,10 +207,13 @@ export async function repoGetRequestItemsByIds(supabase: SupabaseClient, ids: st
   const clean = Array.from(new Set((ids || []).map(String).filter(Boolean)));
   if (!clean.length) return [];
 
-  const ri = await supabase
-    .from("request_items")
-    .select("id, name_human, uom, qty, rik_code, app_code, status, cancelled_at")
-    .in("id", clean);
+  const ri = await loadPagedBuyerRepoRows(() =>
+    supabase
+      .from("request_items")
+      .select("id, name_human, uom, qty, rik_code, app_code, status, cancelled_at")
+      .in("id", clean)
+      .order("id", { ascending: true }),
+  );
 
   if (ri.error) throw ri.error;
   return Array.isArray(ri.data) ? ri.data : [];
@@ -241,8 +231,13 @@ export async function repoGetProposalRequestItemIntegrity(
   });
   if (rpc.error) throw rpc.error;
 
-  return Array.isArray(rpc.data)
-    ? (rpc.data as Database["public"]["Functions"]["proposal_request_item_integrity_v1"]["Returns"])
+  const validated = validateRpcResponse(rpc.data, isProposalRequestItemIntegrityRpcResponse, {
+    rpcName: "proposal_request_item_integrity_v1",
+    caller: "src/screens/buyer/buyer.repo.repoGetProposalRequestItemIntegrity",
+    domain: "buyer",
+  });
+
+  return validated
         .map((row) => ({
           proposal_id: String(row.proposal_id ?? "").trim(),
           proposal_item_id: Number(row.proposal_item_id ?? 0),
@@ -264,8 +259,7 @@ export async function repoGetProposalRequestItemIntegrity(
               ? null
               : String(row.request_item_cancelled_at),
         }))
-        .filter((row) => row.request_item_id)
-    : [];
+        .filter((row) => row.request_item_id);
 }
 export async function repoGetProposalItemLinks(
   supabase: SupabaseClient,

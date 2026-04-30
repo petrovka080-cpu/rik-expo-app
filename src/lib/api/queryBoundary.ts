@@ -120,6 +120,28 @@ export const isRpcNullableNonEmptyStringResponse = (
 export const isRpcBooleanResponse = (value: unknown): value is boolean =>
   isRpcBoolean(value);
 
+export const isRpcNumberLikeResponse = (value: unknown): value is number | string =>
+  isRpcNumberLike(value);
+
+export const isRpcBooleanOrVoidResponse = (
+  value: unknown,
+): value is boolean | null | undefined =>
+  isRpcVoidResponse(value) || isRpcBoolean(value);
+
+export const isRpcIgnoredMutationResponse = (
+  value: unknown,
+): value is null | undefined | boolean | number | string | Record<string, unknown> => {
+  if (
+    isRpcVoidResponse(value) ||
+    isRpcBoolean(value) ||
+    isRpcNumberLike(value)
+  ) {
+    return true;
+  }
+  if (!isRpcRecord(value)) return false;
+  return isRpcBoolean(value.ok) || isRpcBoolean(value.success);
+};
+
 export const isWarehouseIssueAtomicResponse = (value: unknown): value is unknown => {
   if (isRpcNumberLike(value)) return true;
   if (!isRpcRecord(value)) return false;

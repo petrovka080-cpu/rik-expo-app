@@ -10,6 +10,8 @@ import { isBuyerMutationFailure } from "./buyer.mutation.shared";
 import { handleCreateProposalsBySupplierAction } from "./buyer.submit.mutation";
 import { classifyProposalActionFailure } from "../../lib/api/proposalActionBoundary";
 
+jest.mock("../../lib/supabaseClient", () => ({ supabase: {} }));
+
 jest.mock("./buyer.attachments.mutation", () => ({
   uploadSupplierProposalAttachmentsMutation: jest.fn(),
 }));
@@ -59,14 +61,19 @@ const buildSubmitReadbackSupabase = (
     error: null,
   },
 ) => {
-  const inMock = jest.fn(async () => response);
-  const selectMock = jest.fn(() => ({ in: inMock }));
+  const maybeSingleMock = jest.fn(async () => ({
+    data: Array.isArray(response.data) ? (response.data[0] ?? null) : null,
+    error: response.error ?? null,
+  }));
+  const eqMock = jest.fn(() => ({ maybeSingle: maybeSingleMock }));
+  const selectMock = jest.fn(() => ({ eq: eqMock }));
   const fromMock = jest.fn(() => ({ select: selectMock }));
   return {
     supabase: { from: fromMock } as never,
     fromMock,
     selectMock,
-    inMock,
+    eqMock,
+    maybeSingleMock,
   };
 };
 
@@ -156,7 +163,8 @@ describe("buyer submit mutation owner", () => {
       readbackConfirmed: true,
     });
     expect(readback.fromMock).toHaveBeenCalledWith("proposals");
-    expect(readback.inMock).toHaveBeenCalledWith("id", ["proposal-1"]);
+    expect(readback.eqMock).toHaveBeenCalledWith("id", "proposal-1");
+    expect(readback.maybeSingleMock).toHaveBeenCalled();
     expect(deps.setAttachments).toHaveBeenCalledWith({});
     expect(deps.removeFromInboxLocally).toHaveBeenCalledWith(["ri-1"]);
     expect(deps.clearPick).toHaveBeenCalled();

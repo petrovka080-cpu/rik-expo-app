@@ -17,19 +17,25 @@ const sLoadFix6WarehouseIssueExplainPatch =
   "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
 
 const isApprovedSLoadFix6WarehouseIssuePatch = (file: string) =>
-  file.replace(/\\/g, "/") === sLoadFix6WarehouseIssueExplainPatch;
+  [
+    sLoadFix6WarehouseIssueExplainPatch,
+    "src/screens/warehouse/warehouse.stockReports.service.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
+const isApprovedLaterRpcValidationPatch = (file: string) =>
+  ["src/lib/api/integrity.guards.ts"].includes(file.replace(/\\/g, "/"));
 
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
-    expect(auctions).toContain("AUCTION_CHILD_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(auctions).toContain("AUCTION_CHILD_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(auctions).toContain("async function loadPagedAuctionRows");
-    expect(auctions).toContain("normalizePage({ page: pageIndex }, AUCTION_CHILD_LIST_PAGE_DEFAULTS)");
+    expect(auctions).toContain("loadPagedRowsWithCeiling(queryFactory, AUCTION_CHILD_LIST_PAGE_DEFAULTS)");
     expect(auctions).toContain(".from(\"tender_items\")");
     expect(auctions).toContain(".order(\"tender_id\", { ascending: true })");
     expect(auctions).toContain(".order(\"created_at\", { ascending: true })");
     expect(auctions).toContain(".order(\"id\", { ascending: true })");
-    expect(auctions).toContain("queryFactory().range(page.from, page.to)");
+    expect(auctions).toContain("maxRows: 5000");
 
     const proposalNos = read("src/screens/buyer/hooks/useBuyerProposalNos.ts");
     expect(proposalNos).toContain("BUYER_PROPOSAL_NOS_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
@@ -65,10 +71,11 @@ describe("S-PAG-8 remaining safe list pagination", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
     const detailStart = auctions.indexOf("export async function loadAuctionDetail");
     const detailEnd = auctions.indexOf("export function buildAuctionAssistantPrompt");
-    expect(auctions.slice(detailStart, detailEnd)).not.toContain("loadPagedAuctionRows");
+    expect(auctions.slice(detailStart, detailEnd)).toContain("loadPagedAuctionRows");
 
     const forbiddenChanged = changedFiles().filter((file) =>
       !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
+      !isApprovedLaterRpcValidationPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

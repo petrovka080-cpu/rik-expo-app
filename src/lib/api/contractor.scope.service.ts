@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../database.types";
-import { runContainedRpc } from "./queryBoundary";
+import { runContainedRpc, validateRpcResponse } from "./queryBoundary";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
@@ -473,6 +473,17 @@ function parseRows(value: unknown, scope: string): ContractorInboxRow[] {
   return asArray(value, scope).map((entry, index) => parseInboxRow(entry, `${scope}[${index}]`));
 }
 
+export const isContractorInboxScopeRpcResponse = (
+  value: unknown,
+): value is ContractorInboxScope => {
+  try {
+    parseInboxScope(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const parseWarehouseIssuesPanel = (value: unknown): WarehouseIssuesPanelState => {
   const record = asRecord(value, "contractor_fact_scope_v1.warehouseIssuesPanel");
   const status = asString(record.status, "contractor_fact_scope_v1.warehouseIssuesPanel.status");
@@ -529,6 +540,17 @@ const parseFactScope = (value: unknown): ContractorFactScope => {
   };
 };
 
+export const isContractorFactScopeRpcResponse = (
+  value: unknown,
+): value is ContractorFactScope => {
+  try {
+    parseFactScope(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const toErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error ?? "contractor_scope_error");
 
@@ -551,7 +573,12 @@ export async function loadContractorInboxScope(params: ScopeParams): Promise<Con
       sourceKind: "rpc:contractor_inbox_scope_v1",
     });
     if (error) throw error;
-    const scope = parseInboxScope(data);
+    const validated = validateRpcResponse(data, isContractorInboxScopeRpcResponse, {
+      rpcName: "contractor_inbox_scope_v1",
+      caller: "src/lib/api/contractor.scope.service.loadContractorInboxScope",
+      domain: "contractor",
+    });
+    const scope = parseInboxScope(validated);
     observation.success({
       rowCount: scope.rows.length,
       sourceKind: "rpc:contractor_inbox_scope_v1",
@@ -597,7 +624,12 @@ export async function loadContractorFactScope(params: FactParams): Promise<Contr
     });
     if (error) throw error;
     if (!data) throw new Error("contractor_fact_scope_v1 returned empty payload");
-    const scope = parseFactScope(data);
+    const validated = validateRpcResponse(data, isContractorFactScopeRpcResponse, {
+      rpcName: "contractor_fact_scope_v1",
+      caller: "src/lib/api/contractor.scope.service.loadContractorFactScope",
+      domain: "contractor",
+    });
+    const scope = parseFactScope(validated);
     observation.success({
       rowCount: 1,
       sourceKind: "rpc:contractor_fact_scope_v1",

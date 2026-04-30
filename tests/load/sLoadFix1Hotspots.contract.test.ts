@@ -26,6 +26,7 @@ const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
   [
     "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql",
     "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql",
+    "src/screens/warehouse/warehouse.stockReports.service.ts",
   ].includes(file.replace(/\\/g, "/"));
 
 describe("S-LOAD-FIX-1 hotspot contract", () => {

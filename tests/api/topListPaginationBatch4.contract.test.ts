@@ -39,16 +39,16 @@ describe("S-PAG-5 remaining unbounded selects triage contract", () => {
 
   it("does not cap S-PAG-5 PDF, report, detail, seed, integrity, or job-queue reads", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
-    expect(contractorData).toContain("CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(contractorData).toContain("CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(contractorData).toContain("loadPagedContractorRows");
-    expect(contractorData).toContain(".range(page.from, page.to)");
+    expect(contractorData).toContain("loadPagedRowsWithCeiling(queryFactory, CONTRACTOR_LIST_PAGE_DEFAULTS");
     expect(contractorData).toContain(".eq(\"progress_id\", progressId)");
     expect(contractorData).toContain(".in(\"log_id\", logIds)");
 
     const buyerRepo = read("src/screens/buyer/buyer.repo.ts");
-    expect(buyerRepo).toContain("BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(buyerRepo).toContain("BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(buyerRepo).toContain("loadPagedBuyerRepoRows");
-    expect(buyerRepo).toContain(".range(page.from, page.to)");
+    expect(buyerRepo).toContain("loadPagedRowsWithCeiling(queryFactory, BUYER_REPO_LIST_PAGE_DEFAULTS");
     expect(buyerRepo).toContain(".eq(\"proposal_id\", pidStr)");
 
     const warehouseRepo = read("src/screens/warehouse/warehouse.api.repo.ts");

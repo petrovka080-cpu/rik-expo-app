@@ -24,6 +24,9 @@ jest.mock("./_core", () => ({
     from: jest.fn(),
   },
   classifyRpcCompatError: jest.fn(),
+  loadPagedRowsWithCeiling: jest.fn(async (queryFactory: () => { range: (from: number, to: number) => Promise<unknown> }) =>
+    queryFactory().range(0, 99),
+  ),
 }));
 
 jest.mock("./integrity.guards", () => ({
@@ -142,23 +145,25 @@ describe("proposals silent catch discipline", () => {
         return {
           select: jest.fn(() => ({
             eq: jest.fn(() => ({
-              order: jest.fn().mockResolvedValue({
-                data: [
-                  {
-                    id: 1,
-                    request_item_id: "ri-missing",
-                    rik_code: "MAT-1",
-                    name_human: "Broken line",
-                    uom: "pcs",
-                    app_code: "APP-1",
-                    total_qty: 2,
-                    price: 10,
-                    note: null,
-                    supplier: null,
-                  },
-                ],
-                error: null,
-              }),
+              order: jest.fn(() => ({
+                range: jest.fn().mockResolvedValue({
+                  data: [
+                    {
+                      id: 1,
+                      request_item_id: "ri-missing",
+                      rik_code: "MAT-1",
+                      name_human: "Broken line",
+                      uom: "pcs",
+                      app_code: "APP-1",
+                      total_qty: 2,
+                      price: 10,
+                      note: null,
+                      supplier: null,
+                    },
+                  ],
+                  error: null,
+                }),
+              })),
             })),
           })),
         };

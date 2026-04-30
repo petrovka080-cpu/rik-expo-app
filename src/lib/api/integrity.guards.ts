@@ -3,8 +3,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../database.types";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { applySupabaseAbortSignal, throwIfAborted } from "../requestCancellation";
+import { validateRpcResponse } from "./queryBoundary";
 import {
   ACTIVE_PROPOSAL_REQUEST_ITEM_INTEGRITY_STATE,
+  isProposalRequestItemIntegrityRpcResponse,
   type ProposalRequestItemIntegrityFields,
   type ProposalRequestItemIntegrityReason,
   type ProposalRequestItemIntegrityRow,
@@ -263,7 +265,13 @@ async function loadProposalRequestItemIntegrity(
   });
   if (result.error) throw result.error;
 
-  for (const rawRow of result.data ?? []) {
+  const validated = validateRpcResponse(result.data, isProposalRequestItemIntegrityRpcResponse, {
+    rpcName: "proposal_request_item_integrity_v1",
+    caller: "src/lib/api/integrity.guards.loadProposalRequestItemIntegrity",
+    domain: "proposal",
+  });
+
+  for (const rawRow of validated) {
     const row = rawRow as Database["public"]["Functions"]["proposal_request_item_integrity_v1"]["Returns"][number];
     const requestItemId = trim(row.request_item_id);
     if (!requestItemId) continue;

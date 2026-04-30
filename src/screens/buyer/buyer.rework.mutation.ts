@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { normalizePage, type PageInput } from "../../lib/api/_core";
 import { clearRequestItemsDirectorRejectState } from "./buyer.actions.repo";
 import type { UploadProposalAttachmentFn } from "./buyer.attachments.mutation";
 import { pickInvoiceFileAction } from "./buyer.attachments.mutation";
@@ -109,6 +110,35 @@ const REWORK_ACCOUNTING_STAGE_LABELS: Record<ReworkAccountingStage, string> = {
   persist_rework_items: "Сохранение proposal_items",
   ...ACCOUNTING_STAGE_LABELS,
 };
+
+const BUYER_REWORK_PREFETCH_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type PagedBuyerReworkQuery<T> = {
+  range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error?: unknown }>;
+};
+
+async function loadPagedBuyerReworkRows<T>(
+  queryFactory: () => PagedBuyerReworkQuery<T>,
+  pageInput?: PageInput,
+): Promise<{ data: T[] | null; error: unknown | null }> {
+  if (pageInput) {
+    const page = normalizePage(pageInput, BUYER_REWORK_PREFETCH_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+    return { data: Array.isArray(result.data) ? result.data : [], error: null };
+  }
+
+  const rows: T[] = [];
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, BUYER_REWORK_PREFETCH_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
+}
 
 function detectReworkSourceSafe(row: ReworkProposalRow | null | undefined): "director" | "accountant" {
   const status = String(row?.status || "").toLowerCase();
@@ -230,10 +260,13 @@ export async function openReworkAction(p: {
     p.setRwReason(reason);
 
     tracker.markStarted("load_rework_items");
-    const proposalItems = await p.supabase
-      .from("proposal_items")
-      .select("request_item_id, price, supplier, note")
-      .eq("proposal_id", proposalId);
+    const proposalItems = await loadPagedBuyerReworkRows<ReworkProposalItemRow>(() =>
+      p.supabase
+        .from("proposal_items")
+        .select("request_item_id, price, supplier, note")
+        .eq("proposal_id", proposalId)
+        .order("request_item_id", { ascending: true }),
+    );
     if (proposalItems.error) {
       const failure = tracker.asFailure(
         "load_rework_items",
@@ -261,10 +294,13 @@ export async function openReworkAction(p: {
     const names = new Map<string, RequestItemNameRow>();
     if (requestItemIds.length) {
       tracker.markStarted("load_request_item_names", { requestItemIds: requestItemIds.length });
-      const requestItems = await p.supabase
-        .from("request_items")
-        .select("id, name_human, uom, qty")
-        .in("id", requestItemIds);
+      const requestItems = await loadPagedBuyerReworkRows<RequestItemNameRow>(() =>
+        p.supabase
+          .from("request_items")
+          .select("id, name_human, uom, qty")
+          .in("id", requestItemIds)
+          .order("id", { ascending: true }),
+      );
       if (!requestItems.error && Array.isArray(requestItems.data)) {
         for (const row of requestItems.data) {
           names.set(String(row.id), row);

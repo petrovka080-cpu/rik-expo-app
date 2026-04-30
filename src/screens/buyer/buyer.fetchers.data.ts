@@ -238,6 +238,25 @@ export const adaptBuyerSummaryBucketsScopeEnvelope = (
   };
 };
 
+export const isBuyerSummaryBucketsScopeResponse = (
+  raw: unknown,
+): raw is BuyerSummaryBucketsScopeEnvelope => {
+  const root = asRecord(raw);
+  if (!root) return false;
+  if (asText(root.document_type) !== "buyer_summary_buckets_scope_v1") return false;
+  if (!asText(root.version)) return false;
+  if (!Array.isArray(root.pending) || !Array.isArray(root.approved) || !Array.isArray(root.rejected)) {
+    return false;
+  }
+
+  try {
+    adaptBuyerSummaryBucketsScopeEnvelope(raw);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const mapScopeInboxRows = (rows: unknown): BuyerInboxRow[] => {
   if (!Array.isArray(rows)) return [];
 

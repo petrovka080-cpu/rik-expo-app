@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
+import { validateRpcResponse } from "../../lib/api/queryBoundary";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { trimMapSize } from "../../lib/cache/boundedCacheUtils";
 import {
@@ -38,6 +40,7 @@ type NameMapCacheEntry = {
 
 const WAREHOUSE_STOCK_REFERENCE_TTL_MS = 5 * 60 * 1000;
 const MAX_NAME_MAP_CACHE_SIZE = 200;
+const WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 const warehouseNameMapCache = new Map<string, NameMapCacheEntry>();
 
 const logWarehouseApiFallback = (scope: string, error: unknown) => {
@@ -112,10 +115,15 @@ async function loadNameMapOverrides(
     const codes = normalizeCodeList(codesUpper);
     if (!codes.length) return { value: { map: out }, cacheable: true };
 
-    const q = await supabase
-      .from("catalog_name_overrides")
-      .select("code, name_ru")
-      .in("code", codes.slice(0, 5000));
+    const q = await loadPagedRowsWithCeiling<UnknownRow>(
+      () =>
+        supabase
+          .from("catalog_name_overrides")
+          .select("code, name_ru")
+          .in("code", codes)
+          .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+      WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS,
+    );
 
     if (q.error || !Array.isArray(q.data)) return { value: { map: out }, cacheable: false };
 
@@ -138,10 +146,15 @@ async function loadNameMapRikRu(
     const codes = normalizeCodeList(codesUpper);
     if (!codes.length) return { value: { map: out }, cacheable: true };
 
-    const q = await supabase
-      .from("v_rik_names_ru")
-      .select("code, name_ru")
-      .in("code", codes.slice(0, 5000));
+    const q = await loadPagedRowsWithCeiling<UnknownRow>(
+      () =>
+        supabase
+          .from("v_rik_names_ru")
+          .select("code, name_ru")
+          .in("code", codes)
+          .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+      WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS,
+    );
 
     if (q.error || !Array.isArray(q.data)) return { value: { map: out }, cacheable: false };
 
@@ -164,10 +177,15 @@ async function loadNameMapLedgerUi(
     const codes = normalizeCodeList(codesUpper);
     if (!codes.length) return { value: { map: out }, cacheable: true };
 
-    const q = await supabase
-      .from("v_wh_balance_ledger_ui")
-      .select("code, name")
-      .in("code", codes.slice(0, 5000));
+    const q = await loadPagedRowsWithCeiling<UnknownRow>(
+      () =>
+        supabase
+          .from("v_wh_balance_ledger_ui")
+          .select("code, name")
+          .in("code", codes)
+          .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+      WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS,
+    );
 
     if (q.error || !Array.isArray(q.data)) return { value: { map: out }, cacheable: false };
 
@@ -297,6 +315,17 @@ function adaptWarehouseStockScopeEnvelope(value: unknown): WarehouseStockScopeEn
   };
 }
 
+export const isWarehouseStockScopeRpcResponse = (
+  value: unknown,
+): value is WarehouseStockScopeEnvelope => {
+  try {
+    adaptWarehouseStockScopeEnvelope(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const adaptWarehouseStockWindowMeta = (
   meta: Record<string, unknown>,
   offset: number,
@@ -353,7 +382,12 @@ export async function apiFetchStockRpcV2(
       throw error;
     }
 
-    const envelope = adaptWarehouseStockScopeEnvelope(data);
+    const validated = validateRpcResponse(data, isWarehouseStockScopeRpcResponse, {
+      rpcName: "warehouse_stock_scope_v2",
+      caller: "src/screens/warehouse/warehouse.stockReports.service.apiFetchStockRpcV2",
+      domain: "warehouse",
+    });
+    const envelope = adaptWarehouseStockScopeEnvelope(validated);
     trackRpcLatency({
       name: "warehouse_stock_scope_v2",
       screen: "warehouse",
@@ -622,7 +656,7 @@ export async function apiFetchIncomingMaterialsReportFast(
 
   if (response.error || !response.data) {
     if (__DEV__ && response.error) {
-      console.warn("[apiFetchIncomingMaterialsReportFast] fallback err:", response.error.message);
+      console.warn("[apiFetchIncomingMaterialsReportFast] fallback err:", (response.error as Error)?.message ?? response.error);
     }
     return [];
   }
@@ -694,6 +728,6 @@ export async function apiFetchIncomingLines(
     });
   }
 
-  if (__DEV__ && response.error) console.error("[apiFetchIncomingLines] Error:", response.error.message);
+  if (__DEV__ && response.error) console.error("[apiFetchIncomingLines] Error:", (response.error as Error)?.message ?? response.error);
   return [];
 }
