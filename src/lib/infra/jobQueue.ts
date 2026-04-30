@@ -2,6 +2,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database, Json } from "../database.types";
 import {
+  DEFAULT_QUEUE_WORKER_COMPACTION_DELAY_MS,
+  DEFAULT_QUEUE_WORKER_CONCURRENCY,
+  DEFAULT_SUBMIT_JOB_CLAIM_LIMIT,
+  resolveQueueWorkerCompactionDelayMs,
+  resolveQueueWorkerConfiguredConcurrency,
+  resolveSubmitJobClaimLimit,
+} from "../../workers/queueWorker.limits";
+import {
   isRpcNumberLike,
   isRpcRecord as isRpcObjectRecord,
   isRpcVoidResponse,
@@ -327,11 +335,6 @@ const toBool = (value: unknown): boolean => {
   return v === "1" || v === "true" || v === "yes" || v === "on";
 };
 
-const toInt = (value: unknown, fallback: number): number => {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
-};
-
 const JOB_QUEUE_ENABLED_RAW = process.env.EXPO_PUBLIC_JOB_QUEUE_ENABLED;
 const IS_DEV_RUNTIME =
   (typeof globalThis !== "undefined" &&
@@ -348,18 +351,18 @@ if (IS_DEV_RUNTIME) {
     });
 }
 
-export const WORKER_CONCURRENCY = toInt(
+export const WORKER_CONCURRENCY = resolveQueueWorkerConfiguredConcurrency(
   process.env.EXPO_PUBLIC_WORKER_CONCURRENCY ?? process.env.WORKER_CONCURRENCY,
-  4,
+  DEFAULT_QUEUE_WORKER_CONCURRENCY,
 );
-export const WORKER_BATCH_SIZE = toInt(
+export const WORKER_BATCH_SIZE = resolveSubmitJobClaimLimit(
   process.env.EXPO_PUBLIC_WORKER_BATCH_SIZE ?? process.env.WORKER_BATCH_SIZE,
-  10,
+  DEFAULT_SUBMIT_JOB_CLAIM_LIMIT,
 );
-export const COMPACTION_DELAY_MS = toInt(
+export const COMPACTION_DELAY_MS = resolveQueueWorkerCompactionDelayMs(
   process.env.EXPO_PUBLIC_COMPACTION_DELAY_MS ??
     process.env.COMPACTION_DELAY_MS,
-  500,
+  DEFAULT_QUEUE_WORKER_COMPACTION_DELAY_MS,
 );
 
 const JOB_SELECT =
@@ -421,10 +424,11 @@ async function claimSubmitJobsWithClient(
   limit = WORKER_BATCH_SIZE,
   jobType?: string,
 ): Promise<SubmitJobRow[]> {
+  const normalizedLimit = resolveSubmitJobClaimLimit(limit, WORKER_BATCH_SIZE);
   const queueRpcCompat = toQueueRpcCompat(supabaseClient);
   const primary = await supabaseClient.rpc(
     "submit_jobs_claim",
-    buildSubmitJobsClaimArgs(workerId, limit),
+    buildSubmitJobsClaimArgs(workerId, normalizedLimit),
   );
   if (!primary.error) {
     const validated = validateRpcResponse(primary.data, isSubmitJobsClaimRpcResponse, {
@@ -447,7 +451,7 @@ async function claimSubmitJobsWithClient(
   if (tryLegacyCompat) {
     const legacy = await queueRpcCompat.rpc(
       "submit_jobs_claim",
-      buildSubmitJobsClaimLegacyArgs(workerId, limit, jobType),
+      buildSubmitJobsClaimLegacyArgs(workerId, normalizedLimit, jobType),
     );
     if (!legacy.error) {
       const validated = validateRpcResponse(legacy.data, isSubmitJobsClaimRpcResponse, {

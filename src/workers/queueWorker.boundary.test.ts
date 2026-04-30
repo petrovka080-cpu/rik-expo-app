@@ -2,9 +2,16 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import {
+  MAX_QUEUE_WORKER_COMPACTION_DELAY_MS,
+  MAX_QUEUE_WORKER_CONCURRENCY,
+  MAX_SUBMIT_JOB_CLAIM_LIMIT,
+  MIN_QUEUE_WORKER_COMPACTION_DELAY_MS,
   MIN_QUEUE_WORKER_IDLE_BACKOFF_MS,
   resolveQueueWorkerBatchConcurrency,
+  resolveQueueWorkerCompactionDelayMs,
+  resolveQueueWorkerConfiguredConcurrency,
   resolveQueueWorkerIdleBackoffMs,
+  resolveSubmitJobClaimLimit,
 } from "./queueWorker.limits";
 
 describe("queueWorker critical boundaries", () => {
@@ -26,6 +33,21 @@ describe("queueWorker critical boundaries", () => {
     expect(resolveQueueWorkerBatchConcurrency(0, 3)).toBe(1);
     expect(resolveQueueWorkerBatchConcurrency(Number.NaN, 3)).toBe(1);
     expect(resolveQueueWorkerBatchConcurrency(4, 0)).toBe(0);
+    expect(resolveQueueWorkerBatchConcurrency(500, 500)).toBe(MAX_QUEUE_WORKER_CONCURRENCY);
+  });
+
+  it("caps queue runtime budgets before claim or worker execution", () => {
+    expect(resolveSubmitJobClaimLimit(5)).toBe(5);
+    expect(resolveSubmitJobClaimLimit(5_000)).toBe(MAX_SUBMIT_JOB_CLAIM_LIMIT);
+    expect(resolveSubmitJobClaimLimit(0)).toBe(10);
+
+    expect(resolveQueueWorkerConfiguredConcurrency(2)).toBe(2);
+    expect(resolveQueueWorkerConfiguredConcurrency(500)).toBe(MAX_QUEUE_WORKER_CONCURRENCY);
+    expect(resolveQueueWorkerConfiguredConcurrency(Number.NaN)).toBe(4);
+
+    expect(resolveQueueWorkerCompactionDelayMs(250)).toBe(250);
+    expect(resolveQueueWorkerCompactionDelayMs(10)).toBe(MIN_QUEUE_WORKER_COMPACTION_DELAY_MS);
+    expect(resolveQueueWorkerCompactionDelayMs(50_000)).toBe(MAX_QUEUE_WORKER_COMPACTION_DELAY_MS);
   });
 
   it("keeps idle and error-loop sleeps above the minimum backoff", () => {

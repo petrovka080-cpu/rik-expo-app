@@ -3,9 +3,16 @@ import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 import {
+  MAX_QUEUE_WORKER_COMPACTION_DELAY_MS,
+  MAX_QUEUE_WORKER_CONCURRENCY,
+  MAX_SUBMIT_JOB_CLAIM_LIMIT,
+  MIN_QUEUE_WORKER_COMPACTION_DELAY_MS,
   MIN_QUEUE_WORKER_IDLE_BACKOFF_MS,
   resolveQueueWorkerBatchConcurrency,
+  resolveQueueWorkerCompactionDelayMs,
+  resolveQueueWorkerConfiguredConcurrency,
   resolveQueueWorkerIdleBackoffMs,
+  resolveSubmitJobClaimLimit,
 } from "../../src/workers/queueWorker.limits";
 
 const root = join(__dirname, "..", "..");
@@ -29,6 +36,7 @@ describe("S-QUEUE-1 backpressure hardening contract", () => {
     expect(resolveQueueWorkerBatchConcurrency(0, 3)).toBe(1);
     expect(resolveQueueWorkerBatchConcurrency(Number.NaN, 3)).toBe(1);
     expect(resolveQueueWorkerBatchConcurrency(4, 0)).toBe(0);
+    expect(resolveQueueWorkerBatchConcurrency(500, 500)).toBe(MAX_QUEUE_WORKER_CONCURRENCY);
 
     const workerSource = read("src/workers/queueWorker.ts");
     expect(workerSource).toContain("mapWithConcurrencyLimit");
@@ -47,6 +55,25 @@ describe("S-QUEUE-1 backpressure hardening contract", () => {
     const workerSource = read("src/workers/queueWorker.ts");
     expect(workerSource).toContain("resolveQueueWorkerIdleBackoffMs");
     expect(workerSource).toContain("await sleep(pollIdleMs)");
+  });
+
+  it("keeps queue runtime claim and worker budgets capped for future 50K providers", () => {
+    expect(resolveSubmitJobClaimLimit(25)).toBe(25);
+    expect(resolveSubmitJobClaimLimit(5_000)).toBe(MAX_SUBMIT_JOB_CLAIM_LIMIT);
+    expect(resolveSubmitJobClaimLimit(Number.NaN)).toBe(10);
+
+    expect(resolveQueueWorkerConfiguredConcurrency(4)).toBe(4);
+    expect(resolveQueueWorkerConfiguredConcurrency(500)).toBe(MAX_QUEUE_WORKER_CONCURRENCY);
+    expect(resolveQueueWorkerConfiguredConcurrency(0)).toBe(4);
+
+    expect(resolveQueueWorkerCompactionDelayMs(500)).toBe(500);
+    expect(resolveQueueWorkerCompactionDelayMs(10)).toBe(MIN_QUEUE_WORKER_COMPACTION_DELAY_MS);
+    expect(resolveQueueWorkerCompactionDelayMs(50_000)).toBe(MAX_QUEUE_WORKER_COMPACTION_DELAY_MS);
+
+    const jobQueueSource = read("src/lib/infra/jobQueue.ts");
+    expect(jobQueueSource).toContain("resolveSubmitJobClaimLimit(limit, WORKER_BATCH_SIZE)");
+    expect(jobQueueSource).toContain("buildSubmitJobsClaimArgs(workerId, normalizedLimit)");
+    expect(jobQueueSource).toContain("buildSubmitJobsClaimLegacyArgs(workerId, normalizedLimit, jobType)");
   });
 
   it("keeps queue RPC responses validated and fail-closed", () => {

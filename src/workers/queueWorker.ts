@@ -22,8 +22,11 @@ import { mapWithConcurrencyLimit } from "../lib/async/mapWithConcurrencyLimit";
 import { redactSensitiveText } from "../lib/security/redaction";
 import { compactJobsByEntity, dispatchJob } from "./jobDispatcher";
 import {
+  resolveQueueWorkerCompactionDelayMs,
   resolveQueueWorkerBatchConcurrency,
+  resolveQueueWorkerConfiguredConcurrency,
   resolveQueueWorkerIdleBackoffMs,
+  resolveSubmitJobClaimLimit,
 } from "./queueWorker.limits";
 import { normalizeAppError } from "../lib/errors/appError";
 import { recordPlatformObservability } from "../lib/observability/platformObservability";
@@ -342,8 +345,15 @@ export function startQueueWorker(
   }
 
   const workerId = options.workerId || defaultWorkerId();
-  const batchSize = options.batchSize ?? WORKER_BATCH_SIZE;
-  const concurrency = options.concurrency ?? WORKER_CONCURRENCY;
+  const batchSize = resolveSubmitJobClaimLimit(options.batchSize, WORKER_BATCH_SIZE);
+  const concurrency = resolveQueueWorkerConfiguredConcurrency(
+    options.concurrency,
+    WORKER_CONCURRENCY,
+  );
+  const compactionDelayMs = resolveQueueWorkerCompactionDelayMs(
+    COMPACTION_DELAY_MS,
+    COMPACTION_DELAY_MS,
+  );
   const pollIdleMs = resolveQueueWorkerIdleBackoffMs(options.pollIdleMs, 1000);
 
   let stopped = false;
@@ -398,12 +408,12 @@ export function startQueueWorker(
 
         loopPhase = "compaction_delay";
         if (queueVerbose) {
-          logger.info("queue.worker", "compaction delay", {
-            ...queueWorkerScope(workerId),
-            COMPACTION_DELAY_MS,
-          });
-        }
-        await sleep(COMPACTION_DELAY_MS);
+            logger.info("queue.worker", "compaction delay", {
+              ...queueWorkerScope(workerId),
+              compactionDelayMs,
+            });
+          }
+        await sleep(compactionDelayMs);
 
         loopPhase = "process_batch";
         logger.info("queue.worker", "processing batch", {

@@ -1,4 +1,5 @@
 import { createJobQueueApi } from "./jobQueue";
+import { MAX_SUBMIT_JOB_CLAIM_LIMIT } from "../../workers/queueWorker.limits";
 
 const rpcMissing = (fn: string, signature: string) => ({
   code: "PGRST202",
@@ -54,6 +55,20 @@ describe("job queue server-owned transitions", () => {
     expect(from).not.toHaveBeenCalled();
   });
 
+  it("caps healthy claim RPC limits before calling the queue source", async () => {
+    const from = jest.fn();
+    const rpc = jest.fn(async () => ({ data: [submitJobRow], error: null }));
+    const api = createJobQueueApi({ rpc, from } as never);
+
+    await api.claimSubmitJobs("worker-1", 5_000, "buyer_submit");
+
+    expect(rpc).toHaveBeenCalledWith("submit_jobs_claim", {
+      p_worker: "worker-1",
+      p_limit: MAX_SUBMIT_JOB_CLAIM_LIMIT,
+    });
+    expect(from).not.toHaveBeenCalled();
+  });
+
   it("fails closed when claim RPC signatures are unavailable", async () => {
     const from = jest.fn();
     const rpc = jest
@@ -74,6 +89,28 @@ describe("job queue server-owned transitions", () => {
       p_limit: 1,
       p_job_type: "buyer_submit",
     });
+    expect(from).not.toHaveBeenCalled();
+  });
+
+  it("caps legacy claim RPC limits before compatibility retry", async () => {
+    const from = jest.fn();
+    const rpc = jest
+      .fn()
+      .mockResolvedValueOnce({
+        data: null,
+        error: rpcMissing("submit_jobs_claim", "p_limit, p_worker"),
+      })
+      .mockResolvedValueOnce({ data: [submitJobRow], error: null });
+    const api = createJobQueueApi({ rpc, from } as never);
+
+    const result = await api.claimSubmitJobs("worker-1", 5_000, "buyer_submit");
+
+    expect(rpc).toHaveBeenNthCalledWith(2, "submit_jobs_claim", {
+      p_worker_id: "worker-1",
+      p_limit: MAX_SUBMIT_JOB_CLAIM_LIMIT,
+      p_job_type: "buyer_submit",
+    });
+    expect(result).toHaveLength(1);
     expect(from).not.toHaveBeenCalled();
   });
 
