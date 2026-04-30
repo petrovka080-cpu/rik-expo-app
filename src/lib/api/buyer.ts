@@ -51,6 +51,33 @@ type ProposalLifecycleRow = {
   submitted_at?: string | null;
 };
 
+const BUYER_API_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type PagedBuyerApiResult<T> = {
+  data: T[] | null;
+  error: unknown | null;
+};
+
+type PagedBuyerApiQuery<T> = {
+  range: (from: number, to: number) => PromiseLike<PagedBuyerApiResult<T>>;
+};
+
+const loadPagedBuyerApiRows = async <T,>(
+  queryFactory: () => PagedBuyerApiQuery<T>,
+): Promise<PagedBuyerApiResult<T>> => {
+  const rows: T[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, BUYER_API_SAFE_LIST_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
+};
+
 // REQUEST_ITEMS_FALLBACK_SELECT_PLANS removed to avoid 400 Bad Request probes
 
 const normalizeStatus = (value: unknown): string =>
@@ -88,10 +115,14 @@ async function loadLatestProposalLifecycleByRequestItem(
   const ids = Array.from(new Set((requestItemIds || []).map((id) => String(id || "").trim()).filter(Boolean)));
   if (!ids.length) return new Map();
 
-  const piQ = await client
-    .from("proposal_items_view")
-    .select("proposal_id, request_item_id")
-    .in("request_item_id", ids);
+  const piQ = await loadPagedBuyerApiRows<BuyerRejectContextRow>(() =>
+    client
+      .from("proposal_items_view")
+      .select("proposal_id, request_item_id")
+      .in("request_item_id", ids)
+      .order("request_item_id", { ascending: true })
+      .order("proposal_id", { ascending: true }) as unknown as PagedBuyerApiQuery<BuyerRejectContextRow>,
+  );
   if (piQ.error) throw piQ.error;
 
   const proposalItems = Array.isArray(piQ.data) ? (piQ.data as BuyerRejectContextRow[]) : [];
@@ -100,10 +131,13 @@ async function loadLatestProposalLifecycleByRequestItem(
   );
   if (!proposalIds.length) return new Map();
 
-  const propQ = await client
-    .from("v_proposals_summary")
-    .select("proposal_id, status, sent_to_accountant_at, submitted_at")
-    .in("proposal_id", proposalIds);
+  const propQ = await loadPagedBuyerApiRows<ProposalLifecycleRow>(() =>
+    client
+      .from("v_proposals_summary")
+      .select("proposal_id, status, sent_to_accountant_at, submitted_at")
+      .in("proposal_id", proposalIds)
+      .order("proposal_id", { ascending: true }) as unknown as PagedBuyerApiQuery<ProposalLifecycleRow>,
+  );
   if (propQ.error) throw propQ.error;
 
   const proposalById = new Map<string, ProposalLifecycleRow>();
@@ -152,13 +186,16 @@ async function enrichRejectedRows(rows: BuyerInboxRow[]): Promise<BuyerInboxRow[
   );
   if (!rejectedIds.length) return list;
 
-  let ctxData: any[] = [];
-  let ctxErr: any = null;
+  let ctxData: BuyerRejectContextRow[] = [];
+  let ctxErr: unknown = null;
   // Keep query schema-safe: no order by potentially missing columns.
-  const q = await client
-    .from("proposal_items")
-    .select("*")
-    .in("request_item_id", rejectedIds);
+  const q = await loadPagedBuyerApiRows<BuyerRejectContextRow>(() =>
+    client
+      .from("proposal_items")
+      .select("*")
+      .in("request_item_id", rejectedIds)
+      .order("id", { ascending: true }) as unknown as PagedBuyerApiQuery<BuyerRejectContextRow>,
+  );
 
   if (!q.error) {
     ctxData = Array.isArray(q.data) ? q.data : [];
@@ -215,7 +252,13 @@ async function filterInboxByRequestStatus(rows: BuyerInboxRow[]): Promise<BuyerI
   if (!reqIds.length) return [];
 
   try {
-    const { data, error } = await client.from("requests").select("id, status").in("id", reqIds);
+    const { data, error } = await loadPagedBuyerApiRows<RequestStatusRow>(() =>
+      client
+        .from("requests")
+        .select("id, status")
+        .in("id", reqIds)
+        .order("id", { ascending: true }) as unknown as PagedBuyerApiQuery<RequestStatusRow>,
+    );
     if (error) throw error;
 
     const statusByReqId = new Map<string, string>();

@@ -1,0 +1,130 @@
+{
+  "wave": "S-PAG-9",
+  "mode": "risk-classified-remaining-selects",
+  "ownerGoal": "10K/50K+ production-safe readiness",
+  "dependsOn": [
+    "S-PAG-8 GREEN",
+    "S-RT-5 GREEN",
+    "S-RPC-5 GREEN",
+    "S-LOAD-FIX-3 GREEN_SOURCE_PATCH_READY"
+  ],
+  "sLoad6Decision": {
+    "status": "blocked_until_source_patch_deployed_to_staging",
+    "reason": "S-LOAD-FIX-3 is migration-ready but local preflight has no staging DB migration credential/CLI path. A staging load rerun before applying the source patch would not verify the new direct RPC behavior.",
+    "productionTouched": false,
+    "stagingTouched": false
+  },
+  "baseline": {
+    "unboundedSelects": 80,
+    "unboundedFiles": 37,
+    "source": "S-PAG-8 post-wave artifact from clean HEAD before this repo-only wave."
+  },
+  "result": {
+    "unboundedSelects": 74,
+    "unboundedFiles": 37,
+    "fixedCallSites": 6,
+    "targetMet": true,
+    "note": "Six additional list/enrichment reads are now bounded with page-through ranges. File count is held conservative because the broader static tail still contains report/PDF/export/detail/guard/accounting/stock surfaces intentionally excluded from this wave."
+  },
+  "fixedCallSites": [
+    {
+      "file": "src/lib/api/buyer.ts",
+      "function": "loadLatestProposalLifecycleByRequestItem",
+      "source": "proposal_items_view by request_item_id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "request_item_id asc, proposal_id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/lib/api/buyer.ts",
+      "function": "loadLatestProposalLifecycleByRequestItem",
+      "source": "v_proposals_summary by proposal_id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "proposal_id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/lib/api/buyer.ts",
+      "function": "enrichRejectedRows",
+      "source": "proposal_items by rejected request_item_id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "id asc, then existing JS timestamp sort",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/lib/api/buyer.ts",
+      "function": "filterInboxByRequestStatus",
+      "source": "requests by visible inbox request_id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/lib/api/constructionObjectIdentity.read.ts",
+      "function": "loadConstructionObjectCodesByNames",
+      "source": "construction_object_identity_lookup_v1 by input object names",
+      "pattern": "page-through-all range with abort signal preserved",
+      "defaultPageSize": 100,
+      "stableOrder": "construction_object_name asc, construction_object_code asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/lib/api/constructionObjectIdentity.read.ts",
+      "function": "loadRequestObjectIdentityByRequestIds",
+      "source": "request_object_identity_scope_v1 by input request ids",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "request_id asc",
+      "returnShapePreserved": true
+    }
+  ],
+  "skippedFiles": [
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "reason": "PDF generation/read composition is excluded from pagination waves."
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "reason": "PDF builder full-read semantics are excluded."
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.*.ts",
+      "reason": "Report and calculation surfaces require a dedicated report-safe validation wave."
+    },
+    {
+      "file": "src/lib/api/integrity.guards.ts",
+      "reason": "Integrity guard semantics intentionally unchanged."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.stockReports.service.ts",
+      "reason": "Warehouse stock/report math excluded without dedicated calculation tests."
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "reason": "Accounting/detail paths were left unchanged; existing safe page-through helpers already cover non-accounting list helpers."
+    },
+    {
+      "file": "src/lib/api/proposalAttachments.service.ts",
+      "reason": "Attachment/open-file semantics intentionally left untouched in this wave."
+    }
+  ],
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "writes": false,
+    "loadTestsRun": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "businessLogicChanged": false,
+    "pdfReportExportChanged": false,
+    "detailGuardSemanticsChanged": false,
+    "financeAccountingWarehouseStockChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadPiiSecretsLogged": false,
+    "secretsPrintedOrCommitted": false
+  }
+}

@@ -1,0 +1,74 @@
+import { execSync } from "child_process";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+const root = join(__dirname, "..", "..");
+
+const read = (relativePath: string) =>
+  readFileSync(join(root, relativePath), "utf8");
+
+const changedFiles = () =>
+  execSync("git diff --name-only HEAD", { cwd: root, encoding: "utf8" })
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+describe("S-PAG-9 risk-classified remaining selects", () => {
+  it("bounds six safe buyer and construction-object enrichment reads", () => {
+    const buyer = read("src/lib/api/buyer.ts");
+    expect(buyer).toContain("BUYER_API_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(buyer).toContain("const loadPagedBuyerApiRows");
+    expect(buyer).toContain("normalizePage({ page: pageIndex }, BUYER_API_SAFE_LIST_PAGE_DEFAULTS)");
+    expect((buyer.match(/loadPagedBuyerApiRows</g) ?? []).length).toBeGreaterThanOrEqual(4);
+    expect(buyer).toContain(".from(\"proposal_items_view\")");
+    expect(buyer).toContain(".order(\"request_item_id\", { ascending: true })");
+    expect(buyer).toContain(".order(\"proposal_id\", { ascending: true })");
+    expect(buyer).toContain(".from(\"v_proposals_summary\")");
+    expect(buyer).toContain(".from(\"proposal_items\")");
+    expect(buyer).toContain(".from(\"requests\")");
+    expect((buyer.match(/\.range\(page\.from, page\.to\)/g) ?? []).length).toBeGreaterThanOrEqual(1);
+
+    const identity = read("src/lib/api/constructionObjectIdentity.read.ts");
+    expect(identity).toContain("CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(identity).toContain("normalizePage({ page: pageIndex }, CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS)");
+    expect(identity).toContain(".from(\"construction_object_identity_lookup_v1\")");
+    expect(identity).toContain(".order(\"construction_object_name\", { ascending: true })");
+    expect(identity).toContain(".order(\"construction_object_code\", { ascending: true })");
+    expect(identity).toContain(".from(\"request_object_identity_scope_v1\")");
+    expect(identity).toContain(".order(\"request_id\", { ascending: true })");
+    expect((identity.match(/\.range\(page\.from, page\.to\)/g) ?? []).length).toBe(2);
+  });
+
+  it("keeps excluded full-scan and sensitive surfaces untouched", () => {
+    const forbiddenChanged = changedFiles().filter((file) =>
+      /^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
+      /(?:pdf|report|export|integrity\.guards|warehouse\.stock)/i.test(file),
+    );
+    expect(forbiddenChanged).toEqual([]);
+  });
+
+  it("records the S-PAG-9 proof artifact with counts and safety flags", () => {
+    const matrix = JSON.parse(read("artifacts/S_PAG_9_risk_classified_remaining_selects_matrix.json"));
+    expect(matrix.wave).toBe("S-PAG-9");
+    expect(matrix.baseline).toMatchObject({
+      unboundedSelects: 80,
+      unboundedFiles: 37,
+    });
+    expect(matrix.result).toMatchObject({
+      unboundedSelects: 74,
+      unboundedFiles: 37,
+      fixedCallSites: 6,
+      targetMet: true,
+    });
+    expect(matrix.safety).toMatchObject({
+      productionTouched: false,
+      stagingTouched: false,
+      writes: false,
+      sqlRpcRlsStorageChanged: false,
+      packageNativeChanged: false,
+      businessLogicChanged: false,
+      otaEasPlayMarketTouched: false,
+      secretsPrintedOrCommitted: false,
+    });
+  });
+});
