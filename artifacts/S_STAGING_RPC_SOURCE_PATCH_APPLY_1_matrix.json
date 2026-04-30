@@ -1,0 +1,75 @@
+{
+  "wave": "S-STAGING-RPC-SOURCE-PATCH-APPLY-1",
+  "status": "GREEN_STAGING_SOURCE_PATCH_APPLIED",
+  "generatedAt": "2026-04-30T09:00:00.000Z",
+  "git": {
+    "headEqualsOriginMainBeforeApply": true,
+    "worktreeCleanBeforeApply": true,
+    "headCommitBeforeApply": "bb23c3657173abc35e684574b9abf66765eafaa0"
+  },
+  "stagingIdentity": {
+    "stagingUrlPresent": true,
+    "stagingReadOnlyKeyPresent": true,
+    "linkedProjectRefMatchesStagingUrl": true,
+    "productionProjectSelected": false,
+    "secretsPrinted": false
+  },
+  "migration": {
+    "file": "supabase/migrations/20260430093000_s_load_fix_3_rpc_source_hotspot_patch.sql",
+    "appliedTo": "staging",
+    "appliedToProduction": false,
+    "dryRunAppliedMigrations": [
+      "20260430093000_s_load_fix_3_rpc_source_hotspot_patch.sql"
+    ],
+    "migrationHistoryRemoteVersionAfterApply": "20260430093000",
+    "otherPendingMigrationsApplied": false
+  },
+  "targetedVerification": {
+    "mode": "staging_read_only_rpc_shape_check",
+    "loadTestRun": false,
+    "rpc": "buyer_summary_inbox_scope_v1",
+    "requestedLimit": 25,
+    "rowsReturned": 25,
+    "metaReturnedRowCount": 25,
+    "rowsWithinRequestedLimit": true,
+    "metaWithinRequestedLimit": true,
+    "directRpcOverrunImpossibleForVerifiedCall": true,
+    "proofFunction": "buyer_summary_inbox_sloadfix3_bound_proof_v1",
+    "proofFunctionAccessible": true,
+    "proofBooleans": {
+      "publicSignaturePreserved": true,
+      "sourceBeforeWrapperExists": true,
+      "publicCallsSourceBeforeWrapper": true,
+      "publicClampsLimitTo100": true,
+      "publicCapsRowsByOrdinality": true,
+      "publicPreservesRowOrder": true,
+      "publicRewritesReturnedRowCount": true
+    },
+    "rawPayloadPrinted": false
+  },
+  "gates": {
+    "gitDiffCheck": "pass",
+    "jsonArtifactParse": "pass",
+    "targetedStagingRpcSourceVerification": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pass"
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": true,
+    "stagingDdlMigrationApplied": true,
+    "productionDdlMigrationApplied": false,
+    "dataWrites": false,
+    "loadTestsRun": false,
+    "repoSqlRpcRlsStorageChangedThisWave": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "secretsPrintedOrCommitted": false,
+    "rawStagingPayloadsCommitted": false
+  },
+  "nextRequiredWave": "S-LOAD-6"
+}
