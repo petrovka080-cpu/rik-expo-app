@@ -18,11 +18,11 @@ Status: GREEN
 - targets planned: 5
 - targets collected: 5
 - targets not run: 0
-- warehouse_issue_queue_page_25: status=collected; maxLatency=3005ms; maxPayload=18777b; recommendation=optimize_next
-- warehouse_incoming_queue_page_30: status=collected; maxLatency=793ms; maxPayload=6366b; recommendation=safe_now
-- warehouse_stock_page_60: status=collected; maxLatency=797ms; maxPayload=16791b; recommendation=safe_now
-- buyer_summary_inbox_page_25: status=collected; maxLatency=840ms; maxPayload=14725b; recommendation=optimize_next
-- buyer_summary_buckets_fixed_scope: status=collected; maxLatency=848ms; maxPayload=28333b; recommendation=watch
+- warehouse_issue_queue_page_25: status=collected; maxLatency=3382ms; maxPayload=18777b; recommendation=optimize_next
+- warehouse_incoming_queue_page_30: status=collected; maxLatency=833ms; maxPayload=6366b; recommendation=watch
+- warehouse_stock_page_60: status=collected; maxLatency=1426ms; maxPayload=16791b; recommendation=watch
+- buyer_summary_inbox_page_25: status=collected; maxLatency=914ms; maxPayload=14170b; recommendation=watch
+- buyer_summary_buckets_fixed_scope: status=collected; maxLatency=860ms; maxPayload=28333b; recommendation=watch
 
 ## Gates
 - targeted stagingLoadCore tests: PASS

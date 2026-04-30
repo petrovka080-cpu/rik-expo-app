@@ -1,7 +1,7 @@
 {
   "wave": "S-LOAD-1",
   "mode": "production-safe-staging-load-test",
-  "generatedAt": "2026-04-30T06:14:12.870Z",
+  "generatedAt": "2026-04-30T09:24:24.914Z",
   "environment": {
     "canRunLive": true,
     "missingKeys": [],
@@ -30,23 +30,23 @@
       },
       "samples": [
         {
-          "latencyMs": 3005,
+          "latencyMs": 3382,
           "payloadBytes": 18777,
           "rowCount": 25
         },
         {
-          "latencyMs": 2599,
+          "latencyMs": 2787,
           "payloadBytes": 18777,
           "rowCount": 25
         },
         {
-          "latencyMs": 2632,
-          "payloadBytes": 18776,
+          "latencyMs": 2883,
+          "payloadBytes": 18777,
           "rowCount": 25
         }
       ],
-      "medianLatencyMs": 2632,
-      "maxLatencyMs": 3005,
+      "medianLatencyMs": 2883,
+      "maxLatencyMs": 3382,
       "medianPayloadBytes": 18777,
       "maxPayloadBytes": 18777,
       "maxRowCount": 25,
@@ -70,27 +70,27 @@
       },
       "samples": [
         {
-          "latencyMs": 793,
+          "latencyMs": 833,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 412,
+          "latencyMs": 415,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 418,
+          "latencyMs": 409,
           "payloadBytes": 6366,
           "rowCount": 14
         }
       ],
-      "medianLatencyMs": 418,
-      "maxLatencyMs": 793,
+      "medianLatencyMs": 415,
+      "maxLatencyMs": 833,
       "medianPayloadBytes": 6366,
       "maxPayloadBytes": 6366,
       "maxRowCount": 14,
-      "recommendation": "safe_now",
+      "recommendation": "watch",
       "status": "collected",
       "errors": []
     },
@@ -110,12 +110,12 @@
       },
       "samples": [
         {
-          "latencyMs": 797,
+          "latencyMs": 1426,
           "payloadBytes": 16791,
           "rowCount": 60
         },
         {
-          "latencyMs": 411,
+          "latencyMs": 430,
           "payloadBytes": 16791,
           "rowCount": 60
         },
@@ -125,12 +125,12 @@
           "rowCount": 60
         }
       ],
-      "medianLatencyMs": 420,
-      "maxLatencyMs": 797,
+      "medianLatencyMs": 430,
+      "maxLatencyMs": 1426,
       "medianPayloadBytes": 16791,
       "maxPayloadBytes": 16791,
       "maxRowCount": 60,
-      "recommendation": "safe_now",
+      "recommendation": "watch",
       "status": "collected",
       "errors": []
     },
@@ -152,27 +152,27 @@
       },
       "samples": [
         {
-          "latencyMs": 840,
-          "payloadBytes": 14725,
-          "rowCount": 26
+          "latencyMs": 914,
+          "payloadBytes": 14170,
+          "rowCount": 25
         },
         {
           "latencyMs": 466,
-          "payloadBytes": 14725,
-          "rowCount": 26
+          "payloadBytes": 14170,
+          "rowCount": 25
         },
         {
-          "latencyMs": 478,
-          "payloadBytes": 14725,
-          "rowCount": 26
+          "latencyMs": 475,
+          "payloadBytes": 14170,
+          "rowCount": 25
         }
       ],
-      "medianLatencyMs": 478,
-      "maxLatencyMs": 840,
-      "medianPayloadBytes": 14725,
-      "maxPayloadBytes": 14725,
-      "maxRowCount": 26,
-      "recommendation": "optimize_next",
+      "medianLatencyMs": 475,
+      "maxLatencyMs": 914,
+      "medianPayloadBytes": 14170,
+      "maxPayloadBytes": 14170,
+      "maxRowCount": 25,
+      "recommendation": "watch",
       "status": "collected",
       "errors": []
     },
@@ -188,23 +188,23 @@
       },
       "samples": [
         {
-          "latencyMs": 848,
+          "latencyMs": 860,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 416,
+          "latencyMs": 413,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 420,
+          "latencyMs": 397,
           "payloadBytes": 28333,
           "rowCount": 132
         }
       ],
-      "medianLatencyMs": 420,
-      "maxLatencyMs": 848,
+      "medianLatencyMs": 413,
+      "maxLatencyMs": 860,
       "medianPayloadBytes": 28333,
       "maxPayloadBytes": 28333,
       "maxRowCount": 132,
