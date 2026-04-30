@@ -176,6 +176,11 @@ export const isRequestItemUpdateQtyResponse = (
 export const isRpcRecordArray = (value: unknown): value is Record<string, unknown>[] =>
   Array.isArray(value) && value.every(isRpcRecord);
 
+export const isRpcNullableRecordArrayResponse = (
+  value: unknown,
+): value is Record<string, unknown>[] | null | undefined =>
+  value == null || isRpcRecordArray(value);
+
 export const isRpcArrayResponse = (value: unknown): value is unknown[] =>
   Array.isArray(value);
 

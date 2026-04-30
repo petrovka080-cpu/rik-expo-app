@@ -1,4 +1,11 @@
 import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
+import {
+  isRpcNonEmptyString,
+  isRpcNumberLike,
+  isRpcRecord,
+  isRpcRecordArray,
+  validateRpcResponse,
+} from "../../lib/api/queryBoundary";
 import { supabase } from "../../lib/supabaseClient";
 import type {
   DirectorFinanceFetchSummaryV1Args,
@@ -46,6 +53,7 @@ const FINANCE_SUMMARY_FAILED_COOLDOWN_MS = 10 * 60 * 1000;
 
 type RuntimeProcessEnv = { process?: { env?: Record<string, unknown> } };
 type FinanceRpcStatus = "unknown" | "available" | "missing" | "failed";
+type FinanceRpcMeta = { status: FinanceRpcStatus; updatedAt: number };
 
 const readRuntimeEnvFlag = (key: string, fallback: string): string =>
   String(((globalThis as unknown as RuntimeProcessEnv).process?.env ?? {})[key] ?? fallback).trim();
@@ -53,35 +61,35 @@ const readRuntimeEnvFlag = (key: string, fallback: string): string =>
 const DIRECTOR_FINANCE_SUMMARY_RPC_ENABLED =
   readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_FINANCE_SUMMARY_RPC", "1") !== "0";
 
-const financeSummaryRpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+const financeSummaryRpcMeta: FinanceRpcMeta = {
   status: "unknown",
   updatedAt: 0,
 };
-const financePanelScopeRpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+const financePanelScopeRpcMeta: FinanceRpcMeta = {
   status: "unknown",
   updatedAt: 0,
 };
-const financePanelScopeV2RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+const financePanelScopeV2RpcMeta: FinanceRpcMeta = {
   status: "unknown",
   updatedAt: 0,
 };
-const financePanelScopeV3RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+const financePanelScopeV3RpcMeta: FinanceRpcMeta = {
   status: "unknown",
   updatedAt: 0,
 };
-const financePanelScopeV4RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+const financePanelScopeV4RpcMeta: FinanceRpcMeta = {
   status: "unknown",
   updatedAt: 0,
 };
-const financeSummaryV2RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+const financeSummaryV2RpcMeta: FinanceRpcMeta = {
   status: "unknown",
   updatedAt: 0,
 };
-const financeSupplierScopeRpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+const financeSupplierScopeRpcMeta: FinanceRpcMeta = {
   status: "unknown",
   updatedAt: 0,
 };
-const financeSupplierScopeV2RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+const financeSupplierScopeV2RpcMeta: FinanceRpcMeta = {
   status: "unknown",
   updatedAt: 0,
 };
@@ -126,6 +134,128 @@ const normalizeFinanceRpcInteger = (value: unknown, fallback: number): number =>
   return Math.trunc(numeric);
 };
 
+const hasOwn = (value: Record<string, unknown>, key: string): boolean =>
+  Object.prototype.hasOwnProperty.call(value, key);
+
+const hasAnyOwn = (value: Record<string, unknown>, keys: readonly string[]): boolean =>
+  keys.some((key) => hasOwn(value, key));
+
+const isOptionalRpcRecordArray = (
+  value: unknown,
+): value is Record<string, unknown>[] | null | undefined =>
+  value == null || isRpcRecordArray(value);
+
+const isFinanceReportPayload = (value: unknown): value is Record<string, unknown> =>
+  isRpcRecord(value) && isOptionalRpcRecordArray(value.suppliers);
+
+const isFinancePaginationPayload = (value: unknown): value is Record<string, unknown> =>
+  isRpcRecord(value) &&
+  isRpcNumberLike(value.limit) &&
+  isRpcNumberLike(value.offset) &&
+  isRpcNumberLike(value.total);
+
+const isDirectorFinanceRowsPayload = (value: unknown): value is Record<string, unknown>[] =>
+  isRpcRecordArray(value);
+
+export const isDirectorFinanceSummaryRpcResponse = (
+  value: unknown,
+): value is Record<string, unknown> =>
+  isRpcRecord(value) && isRpcRecord(value.summary) && isFinanceReportPayload(value.report);
+
+export const isDirectorFinanceSummaryV2RpcResponse = (
+  value: unknown,
+): value is Record<string, unknown> => {
+  if (!isRpcRecord(value)) return false;
+  const bySupplier = value.by_supplier ?? value.bySupplier;
+  return (
+    isOptionalRpcRecordArray(bySupplier) &&
+    hasAnyOwn(value, [
+      "total_amount",
+      "totalAmount",
+      "total_paid",
+      "totalPaid",
+      "total_debt",
+      "totalDebt",
+      "overdue_amount",
+      "overdueAmount",
+      "by_supplier",
+      "bySupplier",
+    ])
+  );
+};
+
+export const isDirectorFinancePanelScopeRpcResponse = (
+  value: unknown,
+): value is Record<string, unknown> =>
+  isDirectorFinanceSummaryRpcResponse(value) && isRpcRecord(value.spend);
+
+export const isDirectorFinancePanelScopeV2RpcResponse = (
+  value: unknown,
+): value is Record<string, unknown> =>
+  isDirectorFinancePanelScopeRpcResponse(value) &&
+  isDirectorFinanceRowsPayload(value.rows) &&
+  isFinancePaginationPayload(value.pagination);
+
+export const isDirectorFinancePanelScopeV3RpcResponse = (
+  value: unknown,
+): value is Record<string, unknown> => {
+  if (!isDirectorFinancePanelScopeV2RpcResponse(value)) return false;
+  const supplierRows = value.supplierRows ?? value.supplier_rows;
+  const summaryV3 = value.summaryV3 ?? value.summary_v3;
+  return isOptionalRpcRecordArray(supplierRows) && (summaryV3 == null || isRpcRecord(summaryV3));
+};
+
+export const isDirectorFinancePanelScopeV4RpcResponse = (
+  value: unknown,
+): value is Record<string, unknown> => {
+  if (!isRpcRecord(value)) return false;
+  const canonical = value.canonical;
+  if (!isRpcRecord(canonical)) return false;
+  return (
+    (value.document_type === "director_finance_panel_scope" ||
+      value.documentType === "director_finance_panel_scope") &&
+    value.version === "v4" &&
+    isRpcRecord(canonical.summary) &&
+    isOptionalRpcRecordArray(canonical.suppliers) &&
+    isOptionalRpcRecordArray(canonical.objects) &&
+    isRpcRecord(canonical.spend) &&
+    isDirectorFinanceRowsPayload(value.rows) &&
+    isFinancePaginationPayload(value.pagination)
+  );
+};
+
+export const isDirectorFinanceSupplierScopeRpcResponse = (
+  value: unknown,
+): value is Record<string, unknown> => {
+  if (!isRpcRecord(value) || !isOptionalRpcRecordArray(value.invoices)) return false;
+  return (
+    isRpcNonEmptyString(value.supplier) ||
+    isRpcNonEmptyString(value.supplierName) ||
+    isRpcNonEmptyString(value.supplier_name) ||
+    isRpcRecord(value.summary) ||
+    hasAnyOwn(value, ["amount", "count", "approved", "paid", "toPay", "to_pay"])
+  );
+};
+
+const validateDirectorFinanceRpcResponse = <T extends Record<string, unknown>>(
+  value: unknown,
+  validator: (candidate: unknown) => candidate is T,
+  rpcName: string,
+  caller: string,
+  meta: FinanceRpcMeta,
+): T => {
+  try {
+    return validateRpcResponse(value, validator, {
+      rpcName,
+      caller,
+      domain: "director",
+    });
+  } catch (error) {
+    markFinanceRpcStatus(meta, "failed");
+    throw error;
+  }
+};
+
 export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
   periodFromIso?: string | null;
   periodToIso?: string | null;
@@ -150,8 +280,16 @@ export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
     throw error;
   }
 
+  const validated = validateDirectorFinanceRpcResponse(
+    data,
+    isDirectorFinanceSummaryRpcResponse,
+    FINANCE_SUMMARY_RPC_NAME,
+    "src/screens/director/director.finance.rpc.fetchDirectorFinanceSummaryViaRpc",
+    financeSummaryRpcMeta,
+  );
+  const result = adaptDirectorFinanceSummaryPayload(validated);
   markFinanceRpcStatus(financeSummaryRpcMeta, "available");
-  return adaptDirectorFinanceSummaryPayload(data);
+  return result;
 }
 
 export async function fetchDirectorFinanceSummaryV2ViaRpc(opts?: {
@@ -176,8 +314,16 @@ export async function fetchDirectorFinanceSummaryV2ViaRpc(opts?: {
     throw error;
   }
 
+  const validated = validateDirectorFinanceRpcResponse(
+    data,
+    isDirectorFinanceSummaryV2RpcResponse,
+    FINANCE_SUMMARY_V2_RPC_NAME,
+    "src/screens/director/director.finance.rpc.fetchDirectorFinanceSummaryV2ViaRpc",
+    financeSummaryV2RpcMeta,
+  );
+  const result = adaptDirectorFinanceSummaryV2Payload(validated);
   markFinanceRpcStatus(financeSummaryV2RpcMeta, "available");
-  return adaptDirectorFinanceSummaryV2Payload(data);
+  return result;
 }
 
 export async function fetchDirectorFinancePanelScopeV3ViaRpc(opts?: {
@@ -210,8 +356,16 @@ export async function fetchDirectorFinancePanelScopeV3ViaRpc(opts?: {
     throw error;
   }
 
+  const validated = validateDirectorFinanceRpcResponse(
+    data,
+    isDirectorFinancePanelScopeV3RpcResponse,
+    FINANCE_PANEL_SCOPE_V3_RPC_NAME,
+    "src/screens/director/director.finance.rpc.fetchDirectorFinancePanelScopeV3ViaRpc",
+    financePanelScopeV3RpcMeta,
+  );
+  const result = adaptDirectorFinancePanelScopeV3Payload(validated);
   markFinanceRpcStatus(financePanelScopeV3RpcMeta, "available");
-  return adaptDirectorFinancePanelScopeV3Payload(data);
+  return result;
 }
 
 export async function fetchDirectorFinancePanelScopeV4ViaRpc(opts?: {
@@ -258,8 +412,15 @@ export async function fetchDirectorFinancePanelScopeV4ViaRpc(opts?: {
     throw error;
   }
 
+  const validated = validateDirectorFinanceRpcResponse(
+    data,
+    isDirectorFinancePanelScopeV4RpcResponse,
+    FINANCE_PANEL_SCOPE_V4_RPC_NAME,
+    "src/screens/director/director.finance.rpc.fetchDirectorFinancePanelScopeV4ViaRpc",
+    financePanelScopeV4RpcMeta,
+  );
+  const result = adaptDirectorFinancePanelScopeV4Payload(validated);
   markFinanceRpcStatus(financePanelScopeV4RpcMeta, "available");
-  const result = adaptDirectorFinancePanelScopeV4Payload(data);
   trackRpcLatency({
     name: FINANCE_PANEL_SCOPE_V4_RPC_NAME,
     screen: "director",
@@ -306,8 +467,16 @@ export async function fetchDirectorFinancePanelScopeV2ViaRpc(opts?: {
     throw error;
   }
 
+  const validated = validateDirectorFinanceRpcResponse(
+    data,
+    isDirectorFinancePanelScopeV2RpcResponse,
+    FINANCE_PANEL_SCOPE_V2_RPC_NAME,
+    "src/screens/director/director.finance.rpc.fetchDirectorFinancePanelScopeV2ViaRpc",
+    financePanelScopeV2RpcMeta,
+  );
+  const result = adaptDirectorFinancePanelScopeV2Payload(validated);
   markFinanceRpcStatus(financePanelScopeV2RpcMeta, "available");
-  return adaptDirectorFinancePanelScopeV2Payload(data);
+  return result;
 }
 
 export async function fetchDirectorFinancePanelScopeViaRpc(opts?: {
@@ -334,8 +503,16 @@ export async function fetchDirectorFinancePanelScopeViaRpc(opts?: {
     throw error;
   }
 
+  const validated = validateDirectorFinanceRpcResponse(
+    data,
+    isDirectorFinancePanelScopeRpcResponse,
+    FINANCE_PANEL_SCOPE_RPC_NAME,
+    "src/screens/director/director.finance.rpc.fetchDirectorFinancePanelScopeViaRpc",
+    financePanelScopeRpcMeta,
+  );
+  const result = adaptDirectorFinancePanelScopePayload(validated);
   markFinanceRpcStatus(financePanelScopeRpcMeta, "available");
-  return adaptDirectorFinancePanelScopePayload(data);
+  return result;
 }
 
 export async function fetchDirectorFinanceSupplierScopeViaRpc(opts: {
@@ -368,8 +545,15 @@ export async function fetchDirectorFinanceSupplierScopeViaRpc(opts: {
     throw error;
   }
 
+  const validated = validateDirectorFinanceRpcResponse(
+    data,
+    isDirectorFinanceSupplierScopeRpcResponse,
+    FINANCE_SUPPLIER_SCOPE_RPC_NAME,
+    "src/screens/director/director.finance.rpc.fetchDirectorFinanceSupplierScopeViaRpc",
+    financeSupplierScopeRpcMeta,
+  );
+  const payload = asFinanceRecord(validated);
   markFinanceRpcStatus(financeSupplierScopeRpcMeta, "available");
-  const payload = asFinanceRecord(data);
   return {
     supplier: financeTextOrFallback(payload.supplier, supplier),
     amount: nnum(payload.amount),
@@ -433,8 +617,15 @@ export async function fetchDirectorFinanceSupplierScopeV2ViaRpc(opts: {
     throw error;
   }
 
+  const validated = validateDirectorFinanceRpcResponse(
+    data,
+    isDirectorFinanceSupplierScopeRpcResponse,
+    FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME,
+    "src/screens/director/director.finance.rpc.fetchDirectorFinanceSupplierScopeV2ViaRpc",
+    financeSupplierScopeV2RpcMeta,
+  );
+  const payload = asFinanceRecord(validated);
   markFinanceRpcStatus(financeSupplierScopeV2RpcMeta, "available");
-  const payload = asFinanceRecord(data);
   const supplierName =
     financeText(payload.supplierName ?? payload.supplier_name ?? payload.supplier) || supplier;
   const summary = asFinanceRecord(payload.summary);

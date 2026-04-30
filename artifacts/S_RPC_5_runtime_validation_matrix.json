@@ -1,0 +1,296 @@
+{
+  "wave": "S-RPC-5",
+  "mode": "production-safe-rpc-runtime-validation",
+  "ownerGoal": "10K/50K+ readiness",
+  "baseline": {
+    "rpcCallSitesFromHead": 120,
+    "rpcFilesFromHead": 55,
+    "validateRpcResponseReferences": 69,
+    "validatedFiles": 24
+  },
+  "result": {
+    "rpcCallSitesPostWave": 120,
+    "rpcFilesPostWave": 55,
+    "validateRpcResponseReferences": 80,
+    "validatedFiles": 27,
+    "validatedCallSites": 15,
+    "validatedRpcNames": 15,
+    "alreadyValidatedReopened": false,
+    "targetMet": true
+  },
+  "validatedCallSites": [
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "function": "fetchDirectorFinanceSummaryViaRpc",
+      "rpcName": "director_finance_fetch_summary_v1",
+      "guard": "isDirectorFinanceSummaryRpcResponse",
+      "responseKind": "finance-summary-envelope",
+      "nullAllowed": false,
+      "emptyAllowed": false,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "function": "fetchDirectorFinanceSummaryV2ViaRpc",
+      "rpcName": "director_finance_summary_v2",
+      "guard": "isDirectorFinanceSummaryV2RpcResponse",
+      "responseKind": "finance-summary-v2-record",
+      "nullAllowed": false,
+      "emptyAllowed": false,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "function": "fetchDirectorFinancePanelScopeViaRpc",
+      "rpcName": "director_finance_panel_scope_v1",
+      "guard": "isDirectorFinancePanelScopeRpcResponse",
+      "responseKind": "finance-panel-envelope",
+      "nullAllowed": false,
+      "emptyAllowed": false,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "function": "fetchDirectorFinancePanelScopeV2ViaRpc",
+      "rpcName": "director_finance_panel_scope_v2",
+      "guard": "isDirectorFinancePanelScopeV2RpcResponse",
+      "responseKind": "finance-panel-rows-envelope",
+      "nullAllowed": false,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "function": "fetchDirectorFinancePanelScopeV3ViaRpc",
+      "rpcName": "director_finance_panel_scope_v3",
+      "guard": "isDirectorFinancePanelScopeV3RpcResponse",
+      "responseKind": "finance-panel-v3-envelope",
+      "nullAllowed": false,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "function": "fetchDirectorFinancePanelScopeV4ViaRpc",
+      "rpcName": "director_finance_panel_scope_v4",
+      "guard": "isDirectorFinancePanelScopeV4RpcResponse",
+      "responseKind": "finance-panel-v4-document",
+      "nullAllowed": false,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "function": "fetchDirectorFinanceSupplierScopeViaRpc",
+      "rpcName": "director_finance_supplier_scope_v1",
+      "guard": "isDirectorFinanceSupplierScopeRpcResponse",
+      "responseKind": "finance-supplier-record",
+      "nullAllowed": false,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/director/director.finance.rpc.ts",
+      "function": "fetchDirectorFinanceSupplierScopeV2ViaRpc",
+      "rpcName": "director_finance_supplier_scope_v2",
+      "guard": "isDirectorFinanceSupplierScopeRpcResponse",
+      "responseKind": "finance-supplier-v2-record",
+      "nullAllowed": false,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "function": "proposalCreateFull",
+      "rpcName": "proposal_create",
+      "guard": "isProposalCreateRpcResponse",
+      "responseKind": "non-empty-id-string-or-record",
+      "nullAllowed": false,
+      "emptyAllowed": false,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "function": "loadProposalItemsFromSource",
+      "rpcName": "proposal_items_for_web",
+      "guard": "isProposalItemsForWebRpcResponse",
+      "responseKind": "nullable-record-array",
+      "nullAllowed": true,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "function": "listDirectorProposalsPending",
+      "rpcName": "list_director_proposals_pending",
+      "guard": "isProposalPendingRowsRpcResponse",
+      "responseKind": "nullable-pending-row-array",
+      "nullAllowed": true,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "function": "directorReturnToBuyer",
+      "rpcName": "director_return_min_auto",
+      "guard": "isRpcVoidResponse",
+      "responseKind": "void",
+      "nullAllowed": true,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "function": "listDirectorInbox",
+      "rpcName": "list_director_inbox",
+      "guard": "isDirectorInboxRpcResponse",
+      "responseKind": "nullable-record-array",
+      "nullAllowed": true,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "function": "listAccountantInbox.primary",
+      "rpcName": "list_accountant_inbox_fact",
+      "guard": "isAccountantInboxLegacyRpcResponse",
+      "responseKind": "nullable-record-array",
+      "nullAllowed": true,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "function": "listAccountantInbox.fallback",
+      "rpcName": "list_accountant_inbox",
+      "guard": "isAccountantInboxLegacyRpcResponse",
+      "responseKind": "nullable-record-array",
+      "nullAllowed": true,
+      "emptyAllowed": true,
+      "invalidShapeFailsClosed": true,
+      "rawPayloadLogged": false
+    }
+  ],
+  "alreadyValidatedSkipped": [
+    "wh_receive_apply_ui",
+    "accounting_pay_invoice_v1",
+    "director_approve_pipeline_v1",
+    "rpc_proposal_submit_v3",
+    "request_sync_draft_v2",
+    "wh_issue_free_atomic_v5",
+    "wh_issue_request_atomic_v1",
+    "request_items_set_status",
+    "buyer_rfq_create_and_publish_v1",
+    "proposal_send_to_accountant_min",
+    "reject_request_item",
+    "reject_request_all",
+    "director_approve_request_v1",
+    "request_item_update_qty",
+    "accountant_proposal_financial_state_v1",
+    "warehouse_issue_queue_scope_v4",
+    "warehouse_issue_items_scope_v1",
+    "warehouse_incoming_queue_scope_v1",
+    "warehouse_incoming_items_scope_v1",
+    "accountant_inbox_scope_v1",
+    "list_accountant_payments_history_v2",
+    "accountant_history_scope_v1",
+    "director_pending_proposals_scope_v1",
+    "marketplace_items_scope_page_v1",
+    "marketplace_item_scope_detail_v1",
+    "submit_jobs_claim",
+    "submit_jobs_recover_stuck",
+    "submit_jobs_mark_completed",
+    "submit_jobs_mark_failed",
+    "submit_jobs_metrics",
+    "subcontract_create_v1",
+    "subcontract_create_draft",
+    "subcontract_approve_v1",
+    "subcontract_reject_v1",
+    "request_find_reusable_empty_draft_v1",
+    "request_items_by_request",
+    "request_item_add_or_inc",
+    "request_submit_atomic_v1",
+    "request_reopen_atomic_v1",
+    "proposal_attachment_evidence_attach_v1",
+    "proposal_attachment_evidence_scope_v1",
+    "send_request_to_director",
+    "approve_or_decline_request_pending",
+    "acc_return_min_auto",
+    "proposal_return_to_buyer_min"
+  ],
+  "skipped": [
+    {
+      "file": "src/lib/api/directorPdfSource.service.ts",
+      "rpcName": "pdf_director_*_source_v1",
+      "reason": "PDF/report generation source semantics are hard-excluded for this wave"
+    },
+    {
+      "file": "src/screens/warehouse/*.pdf.service.ts",
+      "rpcName": "pdf_warehouse_*_source_v1",
+      "reason": "PDF full-scan/export generation semantics are hard-excluded"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "rpcName": "acc_report_* / wh_report_*",
+      "reason": "warehouse/accounting report/export semantics intentionally untouched"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.stockReports.service.ts",
+      "rpcName": "warehouse_stock_scope_v2",
+      "reason": "warehouse stock calculation path requires dedicated stock tests"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "rpcName": "proposal_submit_text_v1 / proposal_submit / proposal_items_snapshot",
+      "reason": "void/ignored return semantics and post-submit verification path need separate compatibility proof"
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "rpcName": "approve_one / reject_one / list_pending*",
+      "reason": "legacy multi-variant behavior kept unchanged; no clear stable response shape selected in this wave"
+    },
+    {
+      "file": "src/components/foreman/CalcModal.tsx",
+      "rpcName": "rpc_calc_work_kit",
+      "reason": "foreman calculation path outside director finance/report-safe priority"
+    },
+    {
+      "file": "src/lib/developerOverride.ts",
+      "rpcName": "developer_*",
+      "reason": "developer override tools are not 10K/50K user-facing production paths"
+    }
+  ],
+  "tests": [
+    "tests/api/sRpc5RuntimeValidation.contract.test.ts"
+  ],
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "writes": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "financeAccountingCalculationsChanged": false,
+    "pdfReportExportSemanticsChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "tokensLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false
+  }
+}

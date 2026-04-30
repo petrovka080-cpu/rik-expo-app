@@ -5,6 +5,7 @@ import { traceAsync } from "../observability/sentry";
 import {
   isRpcBoolean,
   isAccountantFinancialStateResponse,
+  isRpcNullableRecordArrayResponse,
   isRpcNonEmptyString,
   isRpcNumberLike,
   isRpcRecord,
@@ -480,6 +481,8 @@ const isAccountingPayInvoiceRpcResponse = (value: unknown): value is Record<stri
   );
 };
 
+export const isAccountantInboxLegacyRpcResponse = isRpcNullableRecordArrayResponse;
+
 const isSendToAccountantInput = (v: unknown): v is SendToAccountantInput =>
   typeof v === "object" && v !== null && "proposalId" in v;
 
@@ -766,10 +769,22 @@ export async function listAccountantInbox(status?: string) {
 
   // 1) новый RPC с датами оплаты
   const n = await client.rpc("list_accountant_inbox_fact", norm ? { p_tab: norm } : {});
-  if (!n.error) return (n.data ?? []) as AccountantInboxRow[];
+  if (!n.error) {
+    const rows = validateRpcResponse(n.data, isAccountantInboxLegacyRpcResponse, {
+      rpcName: "list_accountant_inbox_fact",
+      caller: "src/lib/api/accountant.listAccountantInbox",
+      domain: "accountant",
+    });
+    return (rows ?? []) as AccountantInboxRow[];
+  }
 
   // 2) fallback: старый RPC
   const r = await client.rpc("list_accountant_inbox", { p_tab: norm ?? "К оплате" });
   if (r.error) return [];
-  return (r.data ?? []) as AccountantInboxRow[];
+  const rows = validateRpcResponse(r.data, isAccountantInboxLegacyRpcResponse, {
+    rpcName: "list_accountant_inbox",
+    caller: "src/lib/api/accountant.listAccountantInbox",
+    domain: "accountant",
+  });
+  return (rows ?? []) as AccountantInboxRow[];
 }

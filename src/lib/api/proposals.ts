@@ -9,6 +9,14 @@ import {
   ensureProposalRequestItemsIntegrity,
 } from "./integrity.guards";
 import { toProposalRequestItemIntegrityDegradedError } from "./proposalIntegrity";
+import {
+  isRpcNonEmptyString,
+  isRpcNumberLike,
+  isRpcNullableRecordArrayResponse,
+  isRpcRecord,
+  isRpcRecordArray,
+  validateRpcResponse,
+} from "./queryBoundary";
 import type { ProposalItemRow } from "./types";
 
 const logProposalsDebug = (...args: unknown[]) => {
@@ -93,6 +101,27 @@ type ProposalItemMetaUpsertInput = {
   supplier?: string | null;
   note?: string | null;
 };
+
+export const isProposalCreateRpcResponse = (value: unknown): value is ProposalCreateRpcResult =>
+  isRpcNonEmptyString(value) ||
+  (isRpcRecord(value) && (isRpcNonEmptyString(value.id) || isRpcNumberLike(value.id)));
+
+export const isProposalItemsForWebRpcResponse = (
+  value: unknown,
+): value is ProposalItemsRpcRow[] | null | undefined =>
+  value == null || isRpcRecordArray(value);
+
+export const isProposalPendingRowsRpcResponse = (
+  value: unknown,
+): value is ProposalPendingRpcRow[] | null | undefined =>
+  isRpcNullableRecordArrayResponse(value) &&
+  (value ?? []).every((row) => {
+    const submittedAt = row.submitted_at;
+    return (
+      (isRpcNonEmptyString(row.id) || isRpcNumberLike(row.id)) &&
+      (submittedAt == null || typeof submittedAt === "string")
+    );
+  });
 
 const _PROPOSAL_STATUS_PENDING_RU = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
 const PROPOSAL_STATUS_DRAFT_EN = "draft";
@@ -367,8 +396,13 @@ async function loadProposalItemsFromSource(
 
   const result = await supabase.rpc("proposal_items_for_web", { p_id: proposalId });
   if (result.error) throw result.error;
-  return Array.isArray(result.data) && result.data.length
-    ? normalizeProposalItems(result.data as ProposalItemsRpcRow[])
+  const validated = validateRpcResponse(result.data, isProposalItemsForWebRpcResponse, {
+    rpcName: "proposal_items_for_web",
+    caller: "src/lib/api/proposals.loadProposalItemsFromSource",
+    domain: "proposal",
+  });
+  return Array.isArray(validated) && validated.length
+    ? normalizeProposalItems(validated)
     : null;
 }
 
@@ -606,7 +640,12 @@ export async function proposalCreateFull(): Promise<{ id: string; proposal_no: s
   try {
     const { data, error } = await runProposalCreateRpc();
     if (error) throw error;
-    const id = parseProposalCreateResult(data);
+    const validated = validateRpcResponse(data, isProposalCreateRpcResponse, {
+      rpcName: "proposal_create",
+      caller: "src/lib/api/proposals.proposalCreateFull",
+      domain: "proposal",
+    });
+    const id = parseProposalCreateResult(validated);
     if (!id) throw new Error("proposal_create returned empty id");
     const normalized = await verifyCreatedProposalMeta(id, "rpc_primary");
     observation.success({
@@ -798,8 +837,13 @@ export async function listDirectorProposalsPending(
     });
     try {
       const rpc = await client.rpc("list_director_proposals_pending");
-      if (!rpc.error && Array.isArray(rpc.data)) {
-        const rows = (rpc.data as ProposalPendingRpcRow[])
+      if (!rpc.error) {
+        const validated = validateRpcResponse(rpc.data, isProposalPendingRowsRpcResponse, {
+          rpcName: "list_director_proposals_pending",
+          caller: "src/lib/api/proposals.listDirectorProposalsPending",
+          domain: "director",
+        });
+        const rows = (validated ?? [])
           .map((x) => ({ id: String(x.id), submitted_at: x.submitted_at ?? null }))
           .filter((x) => x.submitted_at != null);
         observation.success({

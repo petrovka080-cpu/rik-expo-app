@@ -1,6 +1,11 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { client, normalizePage, toRpcId, parseErr, type PageInput } from "./_core";
+import {
+  isRpcNullableRecordArrayResponse,
+  isRpcVoidResponse,
+  validateRpcResponse,
+} from "./queryBoundary";
 import type { DirectorPendingRow, DirectorInboxRow } from "./types";
 import { recordPlatformObservability } from "../observability/platformObservability";
 
@@ -150,6 +155,8 @@ function asDirectorRequestItemFallbackRows(value: unknown): DirectorRequestItemF
       : [];
   });
 }
+
+export const isDirectorInboxRpcResponse = isRpcNullableRecordArrayResponse;
 
 async function callPendingRpc(name: PendingRpcName): Promise<DirectorPendingRpcRawRow[]> {
   const rpc = await client.rpc(name);
@@ -308,9 +315,14 @@ export async function directorReturnToBuyer(
     p_proposal_id: pid,
     p_comment: c,
   };
-  const { error } = await supabase.rpc("director_return_min_auto", args);
+  const { data, error } = await supabase.rpc("director_return_min_auto", args);
 
   if (error) throw error;
+  validateRpcResponse(data, isRpcVoidResponse, {
+    rpcName: "director_return_min_auto",
+    caller: "src/lib/api/director.directorReturnToBuyer",
+    domain: "director",
+  });
   return true;
 }
 
@@ -323,6 +335,11 @@ export async function listDirectorInbox(
     logDirectorApiDebug("[listDirectorInbox]", parseErr(error));
     return [];
   }
-  const rows = Array.isArray(data) ? (data as DirectorInboxRow[]) : [];
+  const validated = validateRpcResponse(data, isDirectorInboxRpcResponse, {
+    rpcName: "list_director_inbox",
+    caller: "src/lib/api/director.listDirectorInbox",
+    domain: "director",
+  });
+  const rows = (validated ?? []) as DirectorInboxRow[];
   return rows.filter((r) => (r?.kind ?? "") !== "request");
 }
