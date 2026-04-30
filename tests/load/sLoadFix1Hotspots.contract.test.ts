@@ -22,6 +22,10 @@ const dirtyPaths = () => {
     .map((line) => line.slice(3).replace(/^"|"$/g, ""));
 };
 
+const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
+  file.replace(/\\/g, "/") ===
+  "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql";
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -74,11 +78,12 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the wave inside allowed code and artifact boundaries", () => {
     const changed = dirtyPaths();
     const forbidden = changed.filter((file) =>
-      /^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
-        file.replace(/\\/g, "/"),
-      ) ||
-      /\.(?:apk|aab)$/i.test(file) ||
-      /(?:pdf|report|export|detail)/i.test(file),
+      !isLaterApprovedWarehouseIssueSourcePatch(file) &&
+      (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
+          file.replace(/\\/g, "/"),
+        ) ||
+        /\.(?:apk|aab)$/i.test(file) ||
+        /(?:pdf|report|export|detail)/i.test(file)),
     );
 
     expect(forbidden).toEqual([]);

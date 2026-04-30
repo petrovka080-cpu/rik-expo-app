@@ -1,0 +1,173 @@
+{
+  "wave": "S-LOAD-FIX-6",
+  "mode": "warehouse-issue-queue-explain-index-plan-patch",
+  "status": "GREEN_SOURCE_PATCH_READY",
+  "ownerGoal": "10K/50K+ readiness",
+  "generatedAt": "2026-04-30T17:40:00.000+06:00",
+  "context": {
+    "baselineWave": "S-LOAD-7",
+    "baselineStatus": "PARTIAL_STAGING_EXECUTED_WAREHOUSE_ISSUE_STILL_OPTIMIZE_NEXT",
+    "remainingHotspot": "warehouse_issue_queue_page_25",
+    "baselineRecommendation": "optimize_next",
+    "baselineMaxLatencyMs": 2950,
+    "baselineRows": 25,
+    "sourceRpc": "warehouse_issue_queue_scope_v4",
+    "privateSourceBody": "warehouse_issue_queue_scope_v4_source_before_sloadfix4",
+    "previousApplyWave": "S-STAGING-WAREHOUSE-ISSUE-SOURCE-PATCH-APPLY-2",
+    "previousApplyStatus": "PARTIAL_STAGING_EXECUTED_FIX5_TIMEOUT_RESTORED_SAFE_SOURCE",
+    "note": "S-LOAD-FIX-5 lower-bound total patches timed out on staging and were safety-restored. This wave does not repeat that pattern."
+  },
+  "repoPreflight": {
+    "headCommitBeforePatch": "a145c5b90abb9351673f52628198d7a8242f9478",
+    "originMainCommitBeforePatch": "a145c5b90abb9351673f52628198d7a8242f9478",
+    "headMatchedOriginMainBeforePatch": true,
+    "worktreeCleanBeforePatch": true
+  },
+  "stagingExplain": {
+    "attempted": true,
+    "available": false,
+    "method": "postgrest_rpc_explain_readonly_key",
+    "errorCode": "PGRST107",
+    "rawPlanPrinted": false,
+    "secretValuesPrinted": false,
+    "fallbackEvidenceUsed": [
+      "staging read-only direct RPC smoke",
+      "staging proof helper for active safety-restored source",
+      "repo source-shape diagnosis"
+    ]
+  },
+  "activeStagingSourceState": {
+    "rpc": "warehouse_issue_queue_scope_v4",
+    "publicWrapperActive": true,
+    "privateSourceActive": "warehouse_issue_queue_scope_v4_source_before_sloadfix4",
+    "safetyRestoreProofHelper": "warehouse_issue_queue_sloadfix5d_restore_exact_count_proof_v1",
+    "directRpcSmoke": {
+      "args": {
+        "p_offset": 0,
+        "p_limit": 25
+      },
+      "ok": true,
+      "durationMs": 2842,
+      "rowsReturned": 25,
+      "rowsWithinLimit": true,
+      "metaExists": true,
+      "metaRowCount": 25,
+      "metaHasMoreType": "boolean",
+      "metaTotalExact": null,
+      "metaTotalKind": null,
+      "rawPayloadPrinted": false
+    },
+    "proofBooleans": {
+      "public_wrapper_preserved": true,
+      "source_preserves_row_order": true,
+      "source_preserves_page_bound": true,
+      "source_restores_sorted_rows_page": true,
+      "source_removes_lower_bound_total_metadata": true,
+      "source_restores_exact_visible_queue_total_count": true
+    }
+  },
+  "diagnosis": {
+    "identifiedBottleneck": "The active exact-count source still builds warehouse issue queue truth across broad head/item views before page output. S-LOAD-FIX-5 proved replacing exact count with a limit+1 lower-bound probe is not safe on staging because it caused RPC timeout 57014.",
+    "likelyExpensiveParts": [
+      "exact count path over visible_queue_rows",
+      "head_view reading v_wh_issue_req_heads_ui before visible request narrowing",
+      "ui_item_truth aggregating v_wh_issue_req_items_ui before visible request narrowing",
+      "fallback/stock truth path needed for visibility and warehouse stock semantics"
+    ],
+    "fix5TimeoutPatternRepeated": false,
+    "explainPlanAvailable": false
+  },
+  "sourcePatch": {
+    "migration": "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql",
+    "publicSignatureChanged": false,
+    "publicWrapperPreserved": true,
+    "privateSourcePatched": true,
+    "headViewScopedToVisibleRequests": true,
+    "uiItemTruthScopedToVisibleRequests": true,
+    "exactVisibleQueueTotalCountPreserved": true,
+    "lowerBoundTotalPatchReintroduced": false,
+    "rowPayloadShapeChanged": false,
+    "rowOrderChanged": false,
+    "pageBoundChanged": false,
+    "metaShapeChanged": false,
+    "visibilityRulesChanged": false,
+    "warehouseStockMathChanged": false,
+    "newIndexAdded": false,
+    "reasonNoNewIndex": "Existing repo migrations already include request/order/context/request_items indexes. Without live EXPLAIN, this wave avoids guessing another additive index and instead prepares a narrow source pushdown patch."
+  },
+  "skippedOptions": [
+    {
+      "option": "Reapply S-LOAD-FIX-5 lower-bound total-count patch",
+      "reason": "Already failed targeted staging smoke with timeout 57014."
+    },
+    {
+      "option": "Apply staging migration in this wave",
+      "reason": "This is source-patch-ready only; staging DDL apply must be a separate apply wave."
+    },
+    {
+      "option": "Run S-LOAD-8",
+      "reason": "Load regression before applying a new safe source patch would only re-test the restored exact-count path."
+    },
+    {
+      "option": "Change warehouse stock allocation math",
+      "reason": "Explicitly excluded and business-critical."
+    }
+  ],
+  "filesChanged": [
+    "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/load/sLoadFix2Hotspots.contract.test.ts",
+    "tests/load/sLoadFix6WarehouseIssueExplainIndexPlan.contract.test.ts",
+    "artifacts/S_LOAD_FIX_6_warehouse_issue_explain_index_plan_matrix.json",
+    "artifacts/S_LOAD_FIX_6_warehouse_issue_explain_index_plan_proof.md"
+  ],
+  "execution": {
+    "productionTouched": false,
+    "stagingTouched": true,
+    "stagingReadOnlyOnly": true,
+    "stagingDdlMigrationApplied": false,
+    "productionDdlMigrationApplied": false,
+    "loadTestsRun": false,
+    "dataWrites": false,
+    "serviceRoleUsed": false,
+    "rawStagingPayloadsCommitted": false
+  },
+  "requiredNextWaves": [
+    "S-STAGING-WAREHOUSE-ISSUE-SOURCE-PATCH-APPLY-3",
+    "S-LOAD-8 POST-WAREHOUSE-ISSUE-FIX-6 STAGING REGRESSION"
+  ],
+  "gates": {
+    "targetedSLoadFix6Tests": "pass",
+    "targetedWarehouseIssueQueueSourceTests": "pass",
+    "jsonArtifactParse": "pass",
+    "gitDiffCheck": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pending_post_commit"
+  },
+  "readinessClaim": {
+    "tenKReadinessClaimed": false,
+    "reason": "This wave only prepares a repo migration. Staging apply and bounded staging load regression are still required."
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": true,
+    "stagingReadOnlyOnly": true,
+    "stagingDdlMigrationApplied": false,
+    "productionDdlMigrationApplied": false,
+    "loadTestsRun": false,
+    "dataWrites": false,
+    "serviceRoleUsed": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "visibilitySemanticsChanged": false,
+    "warehouseStockMathChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadPiiSecretsLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false
+  }
+}

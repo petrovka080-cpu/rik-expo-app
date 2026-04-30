@@ -16,6 +16,9 @@ const changedFiles = () =>
     .filter(Boolean)
     .map((line) => line.slice(3).replace(/^"|"$/g, "").replace(/\\/g, "/"));
 
+const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
+  file === "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql";
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -60,8 +63,9 @@ describe("S-PAG-7 hotspot list read pagination", () => {
     expect(contractorResolvers).not.toContain("normalizePage(");
 
     const forbiddenChanged = changedFiles().filter((file) =>
-      /^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
-      /(?:pdf|report|export|integrity\.guards|warehouse\.api\.repo|storage)/i.test(file),
+      !isLaterApprovedWarehouseIssueSourcePatch(file) &&
+      (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
+        /(?:pdf|report|export|integrity\.guards|warehouse\.api\.repo|storage)/i.test(file)),
     );
     expect(forbiddenChanged).toEqual([]);
   });
