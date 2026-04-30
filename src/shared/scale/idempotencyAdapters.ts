@@ -1,4 +1,5 @@
 import type { IdempotencyPolicyOperation } from "./idempotencyPolicies";
+import { assertIdempotencyKeyIsBounded } from "./idempotencyKeySafety";
 
 export type IdempotencyReserveState =
   | "reserved"
@@ -43,6 +44,13 @@ export type IdempotencyAdapterHealth = {
   reserved: number;
   committed: number;
   failed: number;
+  expired?: number;
+  totalRecords?: number;
+  maxRecords?: number;
+  evictedRecords?: number;
+  expiredRecordsReleased?: number;
+  invalidKeyDecisions?: number;
+  maxTtlMs?: number;
 };
 
 export type IdempotencyReserveInput = {
@@ -62,6 +70,18 @@ export interface IdempotencyAdapter {
 }
 
 const now = (): number => Date.now();
+const IDEMPOTENCY_ADAPTER_INVALID_KEY = "idem:v1:invalid";
+const IDEMPOTENCY_ADAPTER_KEY_PATTERN = /^idem:v1:[a-z0-9.]+:[a-f0-9]{8}$/;
+
+export const IN_MEMORY_IDEMPOTENCY_DEFAULT_MAX_RECORDS = 1_000;
+export const IN_MEMORY_IDEMPOTENCY_MAX_RECORDS = 10_000;
+export const IN_MEMORY_IDEMPOTENCY_MAX_TTL_MS = 7 * 24 * 60 * 60 * 1_000;
+const IN_MEMORY_IDEMPOTENCY_DEFAULT_TTL_MS = 24 * 60 * 60 * 1_000;
+
+export type InMemoryIdempotencyAdapterOptions = {
+  nowMs?: () => number;
+  maxRecords?: number;
+};
 
 const disabledReservation = (key: string): IdempotencyReservation => ({
   state: "disabled",
@@ -69,14 +89,38 @@ const disabledReservation = (key: string): IdempotencyReservation => ({
   record: null,
 });
 
-const toReserveState = (record: IdempotencyStoredRecord): IdempotencyReserveState => {
+const toReserveState = (
+  record: IdempotencyStoredRecord,
+): IdempotencyReserveState => {
   if (record.status === "reserved") return "duplicate_in_flight";
   if (record.status === "committed") return "duplicate_committed";
   return record.status;
 };
 
+export function resolveInMemoryIdempotencyMaxRecords(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return IN_MEMORY_IDEMPOTENCY_DEFAULT_MAX_RECORDS;
+  }
+
+  const normalized = Math.trunc(value);
+  if (normalized <= 0) return IN_MEMORY_IDEMPOTENCY_DEFAULT_MAX_RECORDS;
+  return Math.min(normalized, IN_MEMORY_IDEMPOTENCY_MAX_RECORDS);
+}
+
+export function resolveInMemoryIdempotencyTtlMs(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return IN_MEMORY_IDEMPOTENCY_DEFAULT_TTL_MS;
+  }
+
+  const normalized = Math.trunc(value);
+  if (normalized <= 0) return IN_MEMORY_IDEMPOTENCY_DEFAULT_TTL_MS;
+  return Math.min(normalized, IN_MEMORY_IDEMPOTENCY_MAX_TTL_MS);
+}
+
 export class NoopIdempotencyAdapter implements IdempotencyAdapter {
-  async reserve(input: IdempotencyReserveInput): Promise<IdempotencyReservation> {
+  async reserve(
+    input: IdempotencyReserveInput,
+  ): Promise<IdempotencyReservation> {
     return disabledReservation(input.key);
   }
 
@@ -84,7 +128,10 @@ export class NoopIdempotencyAdapter implements IdempotencyAdapter {
     return disabledReservation(key);
   }
 
-  async fail(key: string, _retryable: boolean): Promise<IdempotencyReservation> {
+  async fail(
+    key: string,
+    _retryable: boolean,
+  ): Promise<IdempotencyReservation> {
     return disabledReservation(key);
   }
 
@@ -111,15 +158,74 @@ export class NoopIdempotencyAdapter implements IdempotencyAdapter {
 
 export class InMemoryIdempotencyAdapter implements IdempotencyAdapter {
   private readonly records = new Map<string, IdempotencyStoredRecord>();
+  private readonly nowMs: () => number;
+  private readonly maxRecords: number;
+  private evictedRecords = 0;
+  private expiredRecordsReleased = 0;
+  private invalidKeyDecisions = 0;
 
-  constructor(private readonly nowMs: () => number = now) {}
+  constructor(
+    nowOrOptions: (() => number) | InMemoryIdempotencyAdapterOptions = now,
+  ) {
+    if (typeof nowOrOptions === "function") {
+      this.nowMs = nowOrOptions;
+      this.maxRecords = IN_MEMORY_IDEMPOTENCY_DEFAULT_MAX_RECORDS;
+      return;
+    }
 
-  async reserve(input: IdempotencyReserveInput): Promise<IdempotencyReservation> {
+    this.nowMs = nowOrOptions.nowMs ?? now;
+    this.maxRecords = resolveInMemoryIdempotencyMaxRecords(
+      nowOrOptions.maxRecords,
+    );
+  }
+
+  private isSafeKey(key: string): boolean {
+    return (
+      assertIdempotencyKeyIsBounded(key) &&
+      IDEMPOTENCY_ADAPTER_KEY_PATTERN.test(key)
+    );
+  }
+
+  private disabledForInvalidKey(): IdempotencyReservation {
+    this.invalidKeyDecisions += 1;
+    return disabledReservation(IDEMPOTENCY_ADAPTER_INVALID_KEY);
+  }
+
+  private purgeExpired(nowMs: number): number {
+    let released = 0;
+    for (const [key, record] of this.records.entries()) {
+      if (record.expiresAtMs <= nowMs || record.status === "expired") {
+        this.records.delete(key);
+        released += 1;
+      }
+    }
+    this.expiredRecordsReleased += released;
+    return released;
+  }
+
+  private evictOldestIfNeeded(): void {
+    while (this.records.size > this.maxRecords) {
+      const oldestKey = this.records.keys().next().value;
+      if (typeof oldestKey !== "string") return;
+      this.records.delete(oldestKey);
+      this.evictedRecords += 1;
+    }
+  }
+
+  async reserve(
+    input: IdempotencyReserveInput,
+  ): Promise<IdempotencyReservation> {
+    if (!this.isSafeKey(input.key)) return this.disabledForInvalidKey();
+
     const currentMs = input.nowMs ?? this.nowMs();
     const existing = this.records.get(input.key);
     if (existing) {
       if (existing.expiresAtMs <= currentMs) {
-        const expired = { ...existing, status: "expired" as const, updatedAtMs: currentMs };
+        const expired = {
+          ...existing,
+          status: "expired" as const,
+          updatedAtMs: currentMs,
+        };
         this.records.set(input.key, expired);
         return { state: "expired", key: input.key, record: expired };
       }
@@ -133,8 +239,14 @@ export class InMemoryIdempotencyAdapter implements IdempotencyAdapter {
         this.records.set(input.key, retry);
         return { state: "reserved", key: input.key, record: retry };
       }
-      return { state: toReserveState(existing), key: input.key, record: existing };
+      return {
+        state: toReserveState(existing),
+        key: input.key,
+        record: existing,
+      };
     }
+
+    this.purgeExpired(currentMs);
 
     const record: IdempotencyStoredRecord = {
       key: input.key,
@@ -143,16 +255,21 @@ export class InMemoryIdempotencyAdapter implements IdempotencyAdapter {
       attempts: 1,
       createdAtMs: currentMs,
       updatedAtMs: currentMs,
-      expiresAtMs: currentMs + input.ttlMs,
+      expiresAtMs: currentMs + resolveInMemoryIdempotencyTtlMs(input.ttlMs),
       rawPayloadStored: false,
       piiStored: false,
       resultStatus: "missing",
     };
     this.records.set(input.key, record);
-    return { state: "reserved", key: input.key, record };
+    this.evictOldestIfNeeded();
+    const stored = this.records.get(input.key);
+    return stored
+      ? { state: "reserved", key: input.key, record: stored }
+      : { state: "expired", key: input.key, record: null };
   }
 
   async commit(key: string): Promise<IdempotencyReservation> {
+    if (!this.isSafeKey(key)) return this.disabledForInvalidKey();
     const existing = this.records.get(key);
     if (!existing) return { state: "expired", key, record: null };
     const record = {
@@ -166,11 +283,14 @@ export class InMemoryIdempotencyAdapter implements IdempotencyAdapter {
   }
 
   async fail(key: string, retryable: boolean): Promise<IdempotencyReservation> {
+    if (!this.isSafeKey(key)) return this.disabledForInvalidKey();
     const existing = this.records.get(key);
     if (!existing) return { state: "expired", key, record: null };
     const record = {
       ...existing,
-      status: retryable ? "failed_retryable" as const : "failed_final" as const,
+      status: retryable
+        ? ("failed_retryable" as const)
+        : ("failed_final" as const),
       updatedAtMs: this.nowMs(),
     };
     this.records.set(key, record);
@@ -178,23 +298,22 @@ export class InMemoryIdempotencyAdapter implements IdempotencyAdapter {
   }
 
   async getStatus(key: string): Promise<IdempotencyStoredRecord | null> {
+    if (!this.isSafeKey(key)) return null;
     const existing = this.records.get(key) ?? null;
     if (!existing) return null;
-    if (existing.expiresAtMs > this.nowMs() || existing.status === "expired") return existing;
-    const expired = { ...existing, status: "expired" as const, updatedAtMs: this.nowMs() };
+    if (existing.expiresAtMs > this.nowMs() || existing.status === "expired")
+      return existing;
+    const expired = {
+      ...existing,
+      status: "expired" as const,
+      updatedAtMs: this.nowMs(),
+    };
     this.records.set(key, expired);
     return expired;
   }
 
   async releaseExpired(nowMs: number = this.nowMs()): Promise<number> {
-    let released = 0;
-    for (const [key, record] of this.records.entries()) {
-      if (record.expiresAtMs <= nowMs || record.status === "expired") {
-        this.records.delete(key);
-        released += 1;
-      }
-    }
-    return released;
+    return this.purgeExpired(nowMs);
   }
 
   getHealth(): IdempotencyAdapterHealth {
@@ -205,8 +324,20 @@ export class InMemoryIdempotencyAdapter implements IdempotencyAdapter {
       externalNetworkEnabled: false,
       persistenceEnabledByDefault: false,
       reserved: records.filter((record) => record.status === "reserved").length,
-      committed: records.filter((record) => record.status === "committed").length,
-      failed: records.filter((record) => record.status === "failed_retryable" || record.status === "failed_final").length,
+      committed: records.filter((record) => record.status === "committed")
+        .length,
+      failed: records.filter(
+        (record) =>
+          record.status === "failed_retryable" ||
+          record.status === "failed_final",
+      ).length,
+      expired: records.filter((record) => record.status === "expired").length,
+      totalRecords: records.length,
+      maxRecords: this.maxRecords,
+      evictedRecords: this.evictedRecords,
+      expiredRecordsReleased: this.expiredRecordsReleased,
+      invalidKeyDecisions: this.invalidKeyDecisions,
+      maxTtlMs: IN_MEMORY_IDEMPOTENCY_MAX_TTL_MS,
     };
   }
 }

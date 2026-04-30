@@ -4,8 +4,13 @@ import path from "path";
 
 import {
   EXTERNAL_IDEMPOTENCY_ADAPTER_CONTRACT,
+  IN_MEMORY_IDEMPOTENCY_DEFAULT_MAX_RECORDS,
+  IN_MEMORY_IDEMPOTENCY_MAX_RECORDS,
+  IN_MEMORY_IDEMPOTENCY_MAX_TTL_MS,
   InMemoryIdempotencyAdapter,
   NoopIdempotencyAdapter,
+  resolveInMemoryIdempotencyMaxRecords,
+  resolveInMemoryIdempotencyTtlMs,
 } from "../../src/shared/scale/idempotencyAdapters";
 import {
   buildIdempotencyPayloadHash,
@@ -62,11 +67,13 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
 
     try {
       const noop = new NoopIdempotencyAdapter();
-      await expect(noop.reserve({
-        key: "idem:v1:test",
-        operation: "proposal.submit",
-        ttlMs: 1000,
-      })).resolves.toEqual({
+      await expect(
+        noop.reserve({
+          key: "idem:v1:test",
+          operation: "proposal.submit",
+          ttlMs: 1000,
+        }),
+      ).resolves.toEqual({
         state: "disabled",
         key: "idem:v1:test",
         record: null,
@@ -118,11 +125,13 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
     expect(safeKey.ok).toBe(true);
     if (!safeKey.ok) return;
 
-    await expect(adapter.reserve({
-      key: safeKey.key,
-      operation: policy.operation,
-      ttlMs: policy.ttlMs,
-    })).resolves.toEqual({
+    await expect(
+      adapter.reserve({
+        key: safeKey.key,
+        operation: policy.operation,
+        ttlMs: policy.ttlMs,
+      }),
+    ).resolves.toEqual({
       state: "reserved",
       key: safeKey.key,
       record: expect.objectContaining({
@@ -131,11 +140,13 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
         piiStored: false,
       }),
     });
-    await expect(adapter.reserve({
-      key: safeKey.key,
-      operation: policy.operation,
-      ttlMs: policy.ttlMs,
-    })).resolves.toEqual({
+    await expect(
+      adapter.reserve({
+        key: safeKey.key,
+        operation: policy.operation,
+        ttlMs: policy.ttlMs,
+      }),
+    ).resolves.toEqual({
       state: "duplicate_in_flight",
       key: safeKey.key,
       record: expect.objectContaining({ status: "reserved" }),
@@ -148,11 +159,13 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
         resultStatus: "present_redacted",
       }),
     });
-    await expect(adapter.reserve({
-      key: safeKey.key,
-      operation: policy.operation,
-      ttlMs: policy.ttlMs,
-    })).resolves.toEqual({
+    await expect(
+      adapter.reserve({
+        key: safeKey.key,
+        operation: policy.operation,
+        ttlMs: policy.ttlMs,
+      }),
+    ).resolves.toEqual({
       state: "duplicate_committed",
       key: safeKey.key,
       record: expect.objectContaining({ status: "committed" }),
@@ -165,8 +178,144 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
     await expect(adapter.releaseExpired(now)).resolves.toBe(1);
   });
 
+  it("keeps the in-memory adapter bounded for future runtime use", async () => {
+    let now = 5_000;
+    const policy = getIdempotencyPolicy("warehouse.receive.apply");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+
+    expect(resolveInMemoryIdempotencyMaxRecords(2)).toBe(2);
+    expect(resolveInMemoryIdempotencyMaxRecords(500_000)).toBe(
+      IN_MEMORY_IDEMPOTENCY_MAX_RECORDS,
+    );
+    expect(resolveInMemoryIdempotencyMaxRecords(0)).toBe(
+      IN_MEMORY_IDEMPOTENCY_DEFAULT_MAX_RECORDS,
+    );
+    expect(resolveInMemoryIdempotencyTtlMs(500_000_000_000)).toBe(
+      IN_MEMORY_IDEMPOTENCY_MAX_TTL_MS,
+    );
+    expect(resolveInMemoryIdempotencyTtlMs(0)).toBe(86_400_000);
+
+    const keyFor = (requestId: string) => {
+      const built = buildSafeIdempotencyKey(policy, {
+        ...safeKeyInput,
+        requestId,
+      });
+      expect(built.ok).toBe(true);
+      if (!built.ok) throw new Error("safe idempotency key build failed");
+      return built.key;
+    };
+
+    const firstKey = keyFor("bounded-first");
+    const secondKey = keyFor("bounded-second");
+    const thirdKey = keyFor("bounded-third");
+    const fourthKey = keyFor("bounded-fourth");
+
+    const adapter = new InMemoryIdempotencyAdapter({
+      nowMs: () => now,
+      maxRecords: 2,
+    });
+    await expect(
+      adapter.reserve({
+        key: firstKey,
+        operation: policy.operation,
+        ttlMs: policy.ttlMs,
+      }),
+    ).resolves.toEqual(expect.objectContaining({ state: "reserved" }));
+    await expect(
+      adapter.reserve({
+        key: secondKey,
+        operation: policy.operation,
+        ttlMs: policy.ttlMs,
+      }),
+    ).resolves.toEqual(expect.objectContaining({ state: "reserved" }));
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        totalRecords: 2,
+        maxRecords: 2,
+        evictedRecords: 0,
+      }),
+    );
+
+    await expect(
+      adapter.reserve({
+        key: thirdKey,
+        operation: policy.operation,
+        ttlMs: policy.ttlMs,
+      }),
+    ).resolves.toEqual(expect.objectContaining({ state: "reserved" }));
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        totalRecords: 2,
+        maxRecords: 2,
+        evictedRecords: 1,
+      }),
+    );
+    await expect(adapter.getStatus(firstKey)).resolves.toBeNull();
+    await expect(adapter.getStatus(secondKey)).resolves.toEqual(
+      expect.objectContaining({ key: secondKey }),
+    );
+    await expect(adapter.getStatus(thirdKey)).resolves.toEqual(
+      expect.objectContaining({ key: thirdKey }),
+    );
+
+    await expect(
+      adapter.reserve({
+        key: "",
+        operation: policy.operation,
+        ttlMs: policy.ttlMs,
+      }),
+    ).resolves.toEqual({
+      state: "disabled",
+      key: "idem:v1:invalid",
+      record: null,
+    });
+    await expect(adapter.commit("person@example.test")).resolves.toEqual({
+      state: "disabled",
+      key: "idem:v1:invalid",
+      record: null,
+    });
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        totalRecords: 2,
+        invalidKeyDecisions: 2,
+      }),
+    );
+
+    now += policy.ttlMs + 1;
+    await expect(
+      adapter.reserve({
+        key: fourthKey,
+        operation: policy.operation,
+        ttlMs: policy.ttlMs,
+      }),
+    ).resolves.toEqual(expect.objectContaining({ state: "reserved" }));
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        totalRecords: 1,
+        expiredRecordsReleased: 2,
+      }),
+    );
+
+    const ttlAdapter = new InMemoryIdempotencyAdapter({
+      nowMs: () => now,
+      maxRecords: 2,
+    });
+    const cappedKey = keyFor("bounded-capped-ttl");
+    const capped = await ttlAdapter.reserve({
+      key: cappedKey,
+      operation: policy.operation,
+      ttlMs: Number.MAX_SAFE_INTEGER,
+    });
+    expect(capped.record?.expiresAtMs).toBe(
+      now + IN_MEMORY_IDEMPOTENCY_MAX_TTL_MS,
+    );
+  });
+
   it("defines ten disabled strict policies for high-risk mutation, job, and replay operations", () => {
-    expect(IDEMPOTENCY_POLICY_REGISTRY.map((policy) => policy.operation)).toEqual([
+    expect(
+      IDEMPOTENCY_POLICY_REGISTRY.map((policy) => policy.operation),
+    ).toEqual([
       "proposal.submit",
       "warehouse.receive.apply",
       "accountant.payment.apply",
@@ -227,25 +376,35 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
       expect(first.payloadHash).toMatch(/^payload:/);
     }
 
-    expect(canonicalizeIdempotencyPayload({ b: 2, a: 1 })).toBe('{"a":1,"b":2}');
+    expect(canonicalizeIdempotencyPayload({ b: 2, a: 1 })).toBe(
+      '{"a":1,"b":2}',
+    );
     expect(buildIdempotencyPayloadHash({ b: 2, a: 1 })).toEqual(
       buildIdempotencyPayloadHash({ a: 1, b: 2 }),
     );
-    expect(buildSafeIdempotencyKey(policy, {
-      actorId: "actor-opaque",
-      requestId: "request-opaque",
-      payload: { email: "person@example.test" },
-    })).toEqual({ ok: false, reason: "forbidden_field" });
-    expect(buildSafeIdempotencyKey(policy, {
-      actorId: "person@example.test",
-      requestId: "request-opaque",
-      payload: { ok: true },
-    })).toEqual({ ok: false, reason: "missing_actor_id" });
-    expect(buildSafeIdempotencyKey(policy, {
-      actorId: "actor-opaque",
-      requestId: "request-opaque",
-      payload: { signed: "https://files.example.invalid/doc.pdf?token=signed-secret" },
-    })).toEqual({ ok: false, reason: "sensitive_value" });
+    expect(
+      buildSafeIdempotencyKey(policy, {
+        actorId: "actor-opaque",
+        requestId: "request-opaque",
+        payload: { email: "person@example.test" },
+      }),
+    ).toEqual({ ok: false, reason: "forbidden_field" });
+    expect(
+      buildSafeIdempotencyKey(policy, {
+        actorId: "person@example.test",
+        requestId: "request-opaque",
+        payload: { ok: true },
+      }),
+    ).toEqual({ ok: false, reason: "missing_actor_id" });
+    expect(
+      buildSafeIdempotencyKey(policy, {
+        actorId: "actor-opaque",
+        requestId: "request-opaque",
+        payload: {
+          signed: "https://files.example.invalid/doc.pdf?token=signed-secret",
+        },
+      }),
+    ).toEqual({ ok: false, reason: "sensitive_value" });
   });
 
   it("guards duplicate execution when explicitly enabled and passes through when disabled", async () => {
@@ -426,11 +585,16 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
     ]);
 
     for (const route of BFF_STAGING_MUTATION_ROUTES) {
-      const operation = route.operation as keyof typeof BFF_MUTATION_IDEMPOTENCY_POLICY_MAP;
-      expect(route.idempotencyPolicyOperation).toBe(BFF_MUTATION_IDEMPOTENCY_POLICY_MAP[operation]);
+      const operation =
+        route.operation as keyof typeof BFF_MUTATION_IDEMPOTENCY_POLICY_MAP;
+      expect(route.idempotencyPolicyOperation).toBe(
+        BFF_MUTATION_IDEMPOTENCY_POLICY_MAP[operation],
+      );
       expect(route.idempotencyPolicyDefaultEnabled).toBe(false);
       expect(route.idempotencyPersistenceEnabledByDefault).toBe(false);
-      expect(getIdempotencyPolicyForBffMutationOperation(operation)?.defaultEnabled).toBe(false);
+      expect(
+        getIdempotencyPolicyForBffMutationOperation(operation)?.defaultEnabled,
+      ).toBe(false);
     }
 
     expect(JOB_IDEMPOTENCY_POLICY_MAP).toEqual({
@@ -443,7 +607,9 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
 
     for (const policy of JOB_POLICY_REGISTRY) {
       if (policy.jobType in JOB_IDEMPOTENCY_POLICY_MAP) {
-        expect(policy.idempotencyPolicyOperation).toBe(getIdempotencyPolicyForJobType(policy.jobType)?.operation);
+        expect(policy.idempotencyPolicyOperation).toBe(
+          getIdempotencyPolicyForJobType(policy.jobType)?.operation,
+        );
         expect(policy.idempotencyPolicyDefaultEnabled).toBe(false);
         expect(policy.idempotencyPersistenceEnabledByDefault).toBe(false);
       }
@@ -451,7 +617,13 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
   });
 
   it("does not replace app flows, log raw payloads, or touch forbidden platform files", () => {
-    const roots = ["app", "src/screens", "src/components", "src/features", "src/lib/api"];
+    const roots = [
+      "app",
+      "src/screens",
+      "src/components",
+      "src/features",
+      "src/lib/api",
+    ];
     const activeImports: string[] = [];
 
     const walk = (relativeDir: string) => {
@@ -463,7 +635,11 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
           walk(relativePath);
           continue;
         }
-        if (!/\.(ts|tsx)$/.test(entry.name) || entry.name.endsWith(".test.ts") || entry.name.endsWith(".test.tsx")) {
+        if (
+          !/\.(ts|tsx)$/.test(entry.name) ||
+          entry.name.endsWith(".test.ts") ||
+          entry.name.endsWith(".test.tsx")
+        ) {
           continue;
         }
         const source = readProjectFile(relativePath);
@@ -485,7 +661,9 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
     const changed = changedFiles();
     expect(changed).not.toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/^(package\.json|package-lock\.json|app\.json|eas\.json)$/),
+        expect.stringMatching(
+          /^(package\.json|package-lock\.json|app\.json|eas\.json)$/,
+        ),
         expect.stringMatching(/^(android\/|ios\/|supabase\/migrations\/)/),
       ]),
     );
@@ -496,13 +674,19 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
       "src/shared/scale/idempotencyKeySafety.ts",
       "src/shared/scale/idempotencyExecutionGuard.ts",
       "src/shared/scale/offlineReplayIdempotency.ts",
-    ].map(readProjectFile).join("\n");
+    ]
+      .map(readProjectFile)
+      .join("\n");
     expect(changedSource).not.toMatch(/console\.(log|warn|error|info)/);
-    expect(changedSource).not.toMatch(/rawPayloadLogged:\s*true|piiLogged:\s*true/);
+    expect(changedSource).not.toMatch(
+      /rawPayloadLogged:\s*true|piiLogged:\s*true/,
+    );
   });
 
   it("keeps artifacts valid JSON", () => {
-    const matrix = JSON.parse(readProjectFile("artifacts/S_50K_IDEMPOTENCY_INTEGRATION_1_matrix.json"));
+    const matrix = JSON.parse(
+      readProjectFile("artifacts/S_50K_IDEMPOTENCY_INTEGRATION_1_matrix.json"),
+    );
     expect(matrix.wave).toBe("S-50K-IDEMPOTENCY-INTEGRATION-1");
     expect(matrix.idempotencyBoundary.enabledByDefault).toBe(false);
     expect(matrix.policies.total).toBe(10);
@@ -510,5 +694,24 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
     expect(matrix.integration.jobPoliciesWithIdempotencyMetadata).toBe(5);
     expect(matrix.safety.sqlRpcChanged).toBe(false);
     expect(matrix.safety.rawPayloadLogged).toBe(false);
+
+    const runtimeMatrix = JSON.parse(
+      readProjectFile(
+        "artifacts/S_50K_IDEMPOTENCY_RUNTIME_ADAPTER_2_matrix.json",
+      ),
+    );
+    expect(runtimeMatrix.wave).toBe("S-50K-IDEMPOTENCY-RUNTIME-ADAPTER-2");
+    expect(runtimeMatrix.status).toBe(
+      "GREEN_IDEMPOTENCY_RUNTIME_GUARDRAIL_READY",
+    );
+    expect(runtimeMatrix.runtimeGuardrails.maxRecordsDefault).toBe(
+      IN_MEMORY_IDEMPOTENCY_DEFAULT_MAX_RECORDS,
+    );
+    expect(runtimeMatrix.runtimeGuardrails.maxTtlMs).toBe(
+      IN_MEMORY_IDEMPOTENCY_MAX_TTL_MS,
+    );
+    expect(runtimeMatrix.safety.productionTouched).toBe(false);
+    expect(runtimeMatrix.safety.stagingTouched).toBe(false);
+    expect(runtimeMatrix.safety.appRuntimeIdempotencyEnabled).toBe(false);
   });
 });
