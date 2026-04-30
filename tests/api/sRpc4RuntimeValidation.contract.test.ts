@@ -16,6 +16,12 @@ const root = join(__dirname, "..", "..");
 const read = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
 
+const sLoadFix6WarehouseIssueExplainPatch =
+  "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
+
+const isApprovedSLoadFix6WarehouseIssuePatch = (file: string) =>
+  file.replace(/\\/g, "/") === sLoadFix6WarehouseIssueExplainPatch;
+
 const selectedCallSites = [
   {
     file: "src/screens/subcontracts/subcontracts.shared.ts",
@@ -159,7 +165,8 @@ describe("S-RPC-4 runtime validation contract", () => {
     })
       .split(/\r?\n/)
       .map((line) => line.trim())
-      .filter(Boolean);
+      .filter(Boolean)
+      .filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file));
 
     expect(changedFiles).not.toEqual(
       expect.arrayContaining([

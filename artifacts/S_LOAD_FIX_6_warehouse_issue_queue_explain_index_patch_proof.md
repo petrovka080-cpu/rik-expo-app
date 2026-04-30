@@ -2,9 +2,9 @@
 
 Status: GREEN_SOURCE_PATCH_READY
 
-Evidence status: PARTIAL_EXPLAIN_DNS_BLOCKED
+Evidence status: REAL_EXPLAIN_ANALYZE_CAPTURED
 
-This wave stayed narrow: it did not touch production, did not apply staging DDL, did not run S-LOAD-8, and did not change `warehouse_issue_queue_scope_v4` business semantics.
+This resumed wave used the updated local staging Session Pooler URL. It did not touch production, did not apply staging DDL, did not run S-LOAD-8, did not print env values, and did not commit `.env.staging.local`.
 
 ## Preflight
 
@@ -12,46 +12,98 @@ This wave stayed narrow: it did not touch production, did not apply staging DDL,
 - worktree clean before patch: YES
 - `.env.staging.local` ignored: YES
 - `STAGING_SUPABASE_DB_URL` exists: YES
+- staging DB URL parsed: YES
+- staging DB host resolved: YES
+- DB connection through Session Pooler: YES
 - env values printed: NO
-- env file committed: NO
 
-## Staging Connectivity
+## Bounded RPC Smoke
 
-The local staging hosts from `.env.staging.local` did not resolve:
+Read-only staging DB smoke:
 
-- Supabase URL parse: OK
-- Supabase URL DNS: `ENOTFOUND`
-- DB URL parse: OK
-- DB URL DNS: `ENOTFOUND`
-- public DNS retry: unresolved
+- RPC: `warehouse_issue_queue_scope_v4`
+- args: `p_offset=0`, `p_limit=25`
+- duration: `2832ms`
+- rows returned: `25`
+- rows <= limit: YES
+- `meta.row_count`: `25`
+- `meta.has_more`: boolean
+- raw payload printed: NO
 
-Because of this, direct staging DB `EXPLAIN ANALYZE` could not be captured in this run. A PostgREST anon fallback also could not execute the RPC because it did not have the required RPC access. No raw rows, raw plan, env values, or secrets were printed.
+## Real EXPLAIN / ANALYZE
 
-## Diagnosis
+Two sanitized plans were captured.
 
-Live plan node timings are unavailable until staging DNS/access is corrected. The safe source-shape diagnosis is:
+Public function call:
 
-- Fix-5/Fix-5b/Fix-5c lower-bound/probe rewrites must not be repeated because they caused staging timeout `57014`.
-- Fix-4 already added a request_items text-cast join index for fallback item reads.
-- Fix-3 already added the warehouse issue context order index.
-- The active queue source still uses `coalesce(submitted_at, created_at)` ordering and request id text comparisons.
-- Existing request order index used `submitted_at` and `created_at` as separate keys, which does not exactly match the source ordering expression.
+- EXPLAIN ANALYZE available: YES
+- execution: `2197.888ms`
+- node count: `1`
+- top node: `Result`
+- raw plan printed: NO
 
-## Patch
+The public function call confirms runtime but hides internal SQL function CTE nodes. To identify the bottleneck, the active private source body was extracted and run as read-only SQL with `p_offset=0` and `p_limit=25`.
+
+Private source body:
+
+- EXPLAIN ANALYZE available: YES
+- execution: `2593.491ms`
+- node count: `197`
+- visible queue rows before page: `1197`
+- dominant CTE: `ready_rows`
+- dominant high-loop node: `Merge Join` under `ready_rows`
+- dominant loop count: `1212`
+- dominant loop-adjusted time: `2386.428ms`
+- repeated aggregate loop count: `1212`
+- repeated aggregate loop-adjusted time: `1531.968ms`
+- `requests` seq scan: `12.576ms`
+- temp blocks: `0`
+- raw plan printed: NO
+
+## Decision
+
+The previous draft index patch is not supported by real EXPLAIN evidence.
+
+Reason:
+
+- The `requests` seq scan was around `12.6ms`.
+- The measured bottleneck was repeated rebuilding of merged fallback truth under `ready_rows`, around `2386ms` loop-adjusted.
+- `request_items` text joins already used existing Fix-3/Fix-4 indexes.
+
+So the index-only draft was replaced.
+
+## Selected Patch
 
 Migration:
 
 - `supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql`
 
-The patch is additive index-only:
+Patch type:
 
-- `idx_requests_issue_queue_coalesced_order_sloadfix6`
-- `idx_requests_issue_queue_id_text_sloadfix6`
+- source materialization only
 
-It does not change:
+Materialized CTEs:
+
+- `fallback_truth_by_req`
+- `merged_truth`
+
+Read-only candidate EXPLAIN:
+
+- baseline active source: `2606ms`
+- selected candidate: `826ms`
+- rows returned: `25`
+- rows <= limit: YES
+- row hash parity: YES
+- row id order hash parity: YES
+- row key-set hash parity: YES
+- meta parity: YES
+- raw payload printed: NO
+
+The patch does not change:
 
 - public RPC signature
-- RPC source body
+- public wrapper
+- exact total-count semantics
 - row payload shape
 - ordering semantics
 - visibility semantics
@@ -70,11 +122,8 @@ It does not change:
 
 ## Required Follow-Up
 
-Before any S-LOAD-8 run:
-
-1. Fix the local staging DNS/access values or provide a resolvable staging DB URL.
-2. Rerun bounded RPC smoke and sanitized `EXPLAIN ANALYZE`.
-3. Apply the additive patch to staging in a separate staging-only apply wave if still appropriate.
-4. Then run bounded staging regression as a separate S-LOAD-8 wave.
+1. Apply the S-LOAD-FIX-6 materialization patch to staging in a separate staging-only apply wave.
+2. Run direct staging RPC smoke after apply.
+3. Run S-LOAD-8 as a separate bounded staging regression.
 
 No 10K readiness claim is made by this proof.

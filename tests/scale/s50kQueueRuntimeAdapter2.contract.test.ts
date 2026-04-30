@@ -27,6 +27,12 @@ const changedFiles = () =>
     .map((line) => line.trim())
     .filter(Boolean);
 
+const sLoadFix6WarehouseIssueExplainPatch =
+  "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
+
+const isApprovedSLoadFix6WarehouseIssuePatch = (file: string) =>
+  file.replace(/\\/g, "/") === sLoadFix6WarehouseIssueExplainPatch;
+
 describe("S-50K-QUEUE-RUNTIME-ADAPTER-2 runtime guardrails", () => {
   it("caps queue claim, concurrency, and compaction budgets", () => {
     expect(resolveSubmitJobClaimLimit(25)).toBe(25);
@@ -69,12 +75,14 @@ describe("S-50K-QUEUE-RUNTIME-ADAPTER-2 runtime guardrails", () => {
     expect(matrix.safety.stagingTouched).toBe(false);
     expect(matrix.safety.sqlRpcRlsStorageChanged).toBe(false);
 
-    expect(changedFiles()).not.toEqual(
+    const changed = changedFiles().filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file));
+
+    expect(changed).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^(supabase\/migrations|android\/|ios\/|maestro\/)/),
       ]),
     );
-    expect(changedFiles()).not.toEqual(
+    expect(changed).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^(package\.json|package-lock\.json|app\.json|eas\.json)$/),
       ]),

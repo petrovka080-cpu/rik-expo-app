@@ -13,6 +13,12 @@ const changedFiles = () =>
     .map((line) => line.trim())
     .filter(Boolean);
 
+const sLoadFix6WarehouseIssueExplainPatch =
+  "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
+
+const isApprovedSLoadFix6WarehouseIssuePatch = (file: string) =>
+  file.replace(/\\/g, "/") === sLoadFix6WarehouseIssueExplainPatch;
+
 describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
   it("keeps previous pagination waves closed", () => {
     const proposals = read("src/lib/api/proposals.ts");
@@ -158,7 +164,8 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !s50kJobsIntegrationAllowedDirtyFiles.has(file) &&
         !s50kIdempotencyIntegrationAllowedDirtyFiles.has(file) &&
         !s50kRateEnforcementAllowedDirtyFiles.has(file) &&
-        !s50kObsIntegrationAllowedDirtyFiles.has(file),
+        !s50kObsIntegrationAllowedDirtyFiles.has(file) &&
+        !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(false);
     expect(changed.some((file) => file.startsWith("scripts/scale/"))).toBe(false);

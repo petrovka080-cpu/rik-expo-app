@@ -2,9 +2,9 @@
   "wave": "S-LOAD-FIX-6",
   "mode": "warehouse-issue-queue-explain-index-patch",
   "status": "GREEN_SOURCE_PATCH_READY",
-  "evidenceStatus": "PARTIAL_EXPLAIN_DNS_BLOCKED",
+  "evidenceStatus": "REAL_EXPLAIN_ANALYZE_CAPTURED",
   "ownerGoal": "10K/50K+ production-safe platform readiness",
-  "generatedAt": "2026-04-30T18:45:00.000+06:00",
+  "generatedAt": "2026-04-30T18:55:00.000+06:00",
   "context": {
     "target": "warehouse_issue_queue_page_25",
     "rpc": "warehouse_issue_queue_scope_v4",
@@ -25,70 +25,116 @@
     "envFileCommitted": false
   },
   "stagingConnectivity": {
-    "stagingSupabaseUrlParseOk": true,
-    "stagingSupabaseUrlDnsResolvable": false,
     "stagingDbUrlParseOk": true,
-    "stagingDbUrlDnsResolvable": false,
-    "dnsErrorCode": "ENOTFOUND",
-    "publicDnsRetryResolvable": false,
+    "stagingDbUrlDnsResolvable": true,
+    "stagingDbHostClass": "supabase_pooler",
+    "dbConnectionOk": true,
     "secretValuesPrinted": false
   },
   "boundedRpcSmoke": {
     "attempted": true,
-    "completed": false,
-    "method": "staging_db_readonly_then_postgrest_anon_fallback",
-    "blockedBy": "staging env host DNS ENOTFOUND; anon fallback lacks RPC access",
-    "rowsReturned": null,
-    "rowsWithinLimit": null,
+    "completed": true,
+    "method": "staging_db_readonly_session_pooler",
+    "durationMs": 2832,
+    "rowsReturned": 25,
+    "rowsWithinLimit": true,
+    "metaExists": true,
+    "metaRowCount": 25,
+    "metaHasMoreType": "boolean",
     "rawPayloadPrinted": false
   },
   "sanitizedExplain": {
     "attempted": true,
-    "available": false,
+    "available": true,
     "method": "direct staging DB EXPLAIN ANALYZE through STAGING_SUPABASE_DB_URL",
-    "blockedBy": "staging DB host DNS ENOTFOUND",
+    "functionCallExplainAnalyze": {
+      "available": true,
+      "executionTimeMs": 2197.888,
+      "nodeCount": 1,
+      "topNode": "Result",
+      "note": "The public function call plan confirms runtime but hides internal SQL function CTE nodes."
+    },
+    "sourceBodyExplainAnalyze": {
+      "available": true,
+      "executionTimeMs": 2593.491,
+      "nodeCount": 197,
+      "visibleQueueRowsCount": 1197,
+      "dominantCte": "ready_rows",
+      "dominantHighLoopNode": "Merge Join under ready_rows",
+      "dominantHighLoopCount": 1212,
+      "dominantLoopTimeMs": 2386.428,
+      "repeatedAggregateLoopCount": 1212,
+      "repeatedAggregateLoopTimeMs": 1531.968,
+      "requestsSeqScanMs": 12.576,
+      "requestItemsIndexesUsed": [
+        "idx_request_items_issue_queue_fallback_sloadfix3",
+        "idx_request_items_issue_queue_request_text_sloadfix4",
+        "request_items_pkey"
+      ],
+      "tempBlocks": 0,
+      "rawPlanPrinted": false
+    },
     "rawPlanPrinted": false,
     "rawRowDumpPrinted": false,
     "secretValuesPrinted": false
   },
   "diagnosis": {
-    "planDrivenLiveBottleneckConfirmed": false,
-    "reasonPlanUnavailable": "The local staging DB and Supabase hosts from .env.staging.local did not resolve, so no live EXPLAIN/ANALYZE node timings were available in this wave.",
-    "sourceShapeRiskClass": [
-      "request_source orders by coalesce(submitted_at, created_at) but existing request order index used submitted_at/created_at as separate keys",
-      "warehouse_issue_queue_scope_v4 compares request ids as text in several visibility/source joins",
-      "Fix-4 already covers request_items request_id::text joins",
-      "Fix-3 already covers warehouse_issue_queue_context_v1 source_submitted_at/display order",
-      "Fix-5 lower-bound total-count rewrite must not be reintroduced because it timed out on staging"
-    ],
+    "planDrivenLiveBottleneckConfirmed": true,
+    "identifiedBottleneck": "ready_rows repeatedly rebuilds merged fallback truth. The plan shows a Merge Join under ready_rows running 1212 loops, with a repeated aggregate over fallback truth also running 1212 loops.",
+    "requestIndexDraftSupportedByExplain": false,
+    "reasonRequestIndexDraftUnsupported": "The requests Seq Scan took about 12.6ms, while the dominant repeated ready_rows/merged_truth branch took about 2386ms loop-adjusted. Adding request ordering/text indexes would not address the measured bottleneck.",
     "candidateBottleneckClassification": {
-      "exactCountPath": "still possible but not changed without live plan",
-      "visibleQueueRowsCte": "watch",
-      "requestVisibilityFilter": "watch",
-      "requestItemsJoin": "already indexed by Fix-3/Fix-4",
-      "requestIdTextCast": "additive index patch prepared",
-      "ordering": "additive coalesced ordering index patch prepared",
-      "missingIndex": "coalesce(submitted_at, created_at)+id::text and id::text request indexes prepared"
+      "exactCountPath": "not the primary measured hotspot in this EXPLAIN",
+      "visibleQueueRowsCte": "expensive because it depends on ready_rows",
+      "requestVisibilityFilter": "not primary",
+      "requestItemsJoin": "already indexed and not primary",
+      "requestIdTextCast": "not primary",
+      "ordering": "top-N sort waits on visible_queue_rows but is not independently primary",
+      "missingIndex": "not supported as the next safe patch by this plan"
     }
+  },
+  "rejectedPatch": {
+    "migration": "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql",
+    "previousType": "additive request indexes",
+    "replaced": true,
+    "reason": "Real EXPLAIN showed requests Seq Scan was cheap and the dominant cost was repeated merged/fallback truth evaluation."
+  },
+  "selectedPatchEvidence": {
+    "method": "read-only transformed source body EXPLAIN ANALYZE, no migration applied",
+    "baselineExecutionMs": 2606.842,
+    "selectedVariant": "merged_and_fallback_truth_materialized",
+    "selectedVariantExecutionMs": 826.141,
+    "improvementRatio": 0.317,
+    "rowsReturned": 25,
+    "rowsWithinLimit": true,
+    "metaRowCount": 25,
+    "metaHasMoreType": "boolean",
+    "rowHashEqual": true,
+    "idOrderHashEqual": true,
+    "rowKeySetHashEqual": true,
+    "metaHashEqual": true,
+    "rawPayloadPrinted": false
   },
   "patch": {
     "migration": "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql",
-    "type": "additive_indexes_only",
-    "indexes": [
-      "idx_requests_issue_queue_coalesced_order_sloadfix6",
-      "idx_requests_issue_queue_id_text_sloadfix6"
+    "type": "source_materialization_only",
+    "materializedCtes": [
+      "fallback_truth_by_req",
+      "merged_truth"
     ],
     "rpcSignatureChanged": false,
-    "rpcSourceBodyChanged": false,
+    "publicWrapperChanged": false,
+    "exactCountSemanticsChanged": false,
     "visibilitySemanticsChanged": false,
     "warehouseStockMathChanged": false,
     "businessLogicChanged": false,
-    "fix5LowerBoundPatternReintroduced": false
+    "fix5LowerBoundPatternReintroduced": false,
+    "newIndexAdded": false
   },
   "skipped": [
     {
       "item": "S-LOAD-8",
-      "reason": "Explicitly forbidden; staging regression must wait for a separate apply wave and working staging connectivity."
+      "reason": "Explicitly forbidden; staging regression must wait for a separate apply wave."
     },
     {
       "item": "staging migration apply",
@@ -106,9 +152,6 @@
   "filesChanged": [
     "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql",
     "tests/load/sLoadFix6WarehouseIssueQueueExplainIndexPatch.contract.test.ts",
-    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
-    "tests/load/sLoadFix1Hotspots.contract.test.ts",
-    "tests/load/sLoadFix2Hotspots.contract.test.ts",
     "artifacts/S_LOAD_FIX_6_warehouse_issue_queue_explain_index_patch_matrix.json",
     "artifacts/S_LOAD_FIX_6_warehouse_issue_queue_explain_index_patch_proof.md"
   ],
@@ -125,5 +168,5 @@
     "secretsPrinted": false,
     "secretsCommitted": false
   },
-  "nextRequiredWave": "Fix staging env DNS/access, then rerun EXPLAIN/smoke or apply the additive index patch in a separate staging-only apply wave before any S-LOAD-8 run."
+  "nextRequiredWave": "Apply S-LOAD-FIX-6 materialization patch to staging in a separate staging-only apply wave, then run S-LOAD-8 as a separate bounded staging regression."
 }

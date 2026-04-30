@@ -13,6 +13,12 @@ const changedFiles = () =>
     .map((line) => line.trim())
     .filter(Boolean);
 
+const sLoadFix6WarehouseIssueExplainPatch =
+  "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
+
+const isApprovedSLoadFix6WarehouseIssuePatch = (file: string) =>
+  file.replace(/\\/g, "/") === sLoadFix6WarehouseIssueExplainPatch;
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -41,8 +47,9 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
 
   it("keeps excluded full-scan and sensitive surfaces untouched", () => {
     const forbiddenChanged = changedFiles().filter((file) =>
-      /^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
-      /(?:pdf|report|export|integrity\.guards|warehouse\.stock)/i.test(file),
+      !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
+      (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
+        /(?:pdf|report|export|integrity\.guards|warehouse\.stock)/i.test(file)),
     );
     expect(forbiddenChanged).toEqual([]);
   });

@@ -13,6 +13,12 @@ const changedFiles = () =>
     .map((line) => line.trim())
     .filter(Boolean);
 
+const sLoadFix6WarehouseIssueExplainPatch =
+  "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
+
+const isApprovedSLoadFix6WarehouseIssuePatch = (file: string) =>
+  file.replace(/\\/g, "/") === sLoadFix6WarehouseIssueExplainPatch;
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -62,8 +68,9 @@ describe("S-PAG-8 remaining safe list pagination", () => {
     expect(auctions.slice(detailStart, detailEnd)).not.toContain("loadPagedAuctionRows");
 
     const forbiddenChanged = changedFiles().filter((file) =>
-      /^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
-      /(?:pdf|report|export|integrity\.guards|storage)/i.test(file),
+      !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
+      (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
+        /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );
     expect(forbiddenChanged).toEqual([]);
   });
