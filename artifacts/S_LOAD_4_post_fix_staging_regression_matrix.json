@@ -1,0 +1,234 @@
+{
+  "wave": "S-LOAD-4",
+  "mode": "post-fix-staging-regression-proof",
+  "status": "GREEN_STAGING_EXECUTED_STILL_OPTIMIZE_NEXT",
+  "ownerGoal": "10K/50K+ readiness",
+  "target": "staging",
+  "generatedAt": "2026-04-30T05:33:15.294Z",
+  "context": {
+    "baselineWave": "S-LOAD-3",
+    "postFixWaves": ["S-PAG-7", "S-PAG-8", "S-RT-5"],
+    "sPag7": "95/37 -> 86/37; hotspot list/RPC caller clamps included",
+    "sPag8": "86/37 -> 80/37; 6 additional safe list/enrichment call-sites bounded",
+    "sRt5": "realtime fanout 14 -> 8 channels per active user"
+  },
+  "envBooleanPreflight": {
+    "STAGING_SUPABASE_URL": true,
+    "STAGING_SUPABASE_READONLY_KEY": true,
+    "STAGING_LOAD_ENABLED": true,
+    "STAGING_LOAD_ENABLED_true": true,
+    "secretValuesPrinted": false
+  },
+  "harness": {
+    "corePath": "scripts/load/stagingLoadCore.ts",
+    "legacyExecutablePath": "scripts/load/staging-load-test.ts",
+    "command": "node --import tsx scripts/load/staging-load-test.ts",
+    "targetCount": 5,
+    "boundedReadOnlyTargets": true,
+    "repeatedRunsPerTarget": 3,
+    "targetSetExpanded": false,
+    "concurrencyExpanded": false,
+    "legacyArtifactsUpdatedByHarness": [
+      "artifacts/S_LOAD_1_staging_load_test_matrix.json",
+      "artifacts/S_LOAD_1_staging_load_test_proof.md"
+    ]
+  },
+  "execution": {
+    "targetedTestsRun": true,
+    "stagingLoadRunCompleted": true,
+    "targetsPlanned": 5,
+    "targetsCollected": 5,
+    "productionTouched": false,
+    "productionLoadGenerated": false,
+    "productionWrites": false,
+    "stagingTouched": true,
+    "stagingWrites": false,
+    "serviceRoleUsed": false
+  },
+  "sLoad3BaselineRecommendations": {
+    "warehouse_issue_queue_page_25": "optimize_next",
+    "warehouse_incoming_queue_page_30": "safe_now",
+    "warehouse_stock_page_60": "watch",
+    "buyer_summary_inbox_page_25": "optimize_next",
+    "buyer_summary_buckets_fixed_scope": "safe_now"
+  },
+  "sLoad4PostFixRecommendations": {
+    "warehouse_issue_queue_page_25": "optimize_next",
+    "warehouse_incoming_queue_page_30": "watch",
+    "warehouse_stock_page_60": "watch",
+    "buyer_summary_inbox_page_25": "optimize_next",
+    "buyer_summary_buckets_fixed_scope": "watch"
+  },
+  "targetComparisons": [
+    {
+      "id": "warehouse_issue_queue_page_25",
+      "rpcName": "warehouse_issue_queue_scope_v4",
+      "sLoad3": {
+        "recommendation": "optimize_next",
+        "maxLatencyMs": 3739,
+        "medianLatencyMs": 2586,
+        "maxPayloadBytes": 18777,
+        "maxRowCount": 25
+      },
+      "sLoad4": {
+        "recommendation": "optimize_next",
+        "maxLatencyMs": 3127,
+        "medianLatencyMs": 2592,
+        "maxPayloadBytes": 18777,
+        "maxRowCount": 25
+      },
+      "comparison": {
+        "recommendationChange": "same_optimize_next",
+        "latencyClassChange": "same_optimize_next_threshold",
+        "payloadClassChange": "same",
+        "rowClassChange": "same_bounded",
+        "hotspotStatus": "still_optimize_next",
+        "reason": "Max latency improved from 3739ms to 3127ms, but remains above the 1500ms optimize_next threshold. Rows stayed bounded at 25/25 and payload stayed unchanged."
+      }
+    },
+    {
+      "id": "warehouse_incoming_queue_page_30",
+      "rpcName": "warehouse_incoming_queue_scope_v1",
+      "sLoad3": {
+        "recommendation": "safe_now",
+        "maxLatencyMs": 798,
+        "medianLatencyMs": 407,
+        "maxPayloadBytes": 6366,
+        "maxRowCount": 14
+      },
+      "sLoad4": {
+        "recommendation": "watch",
+        "maxLatencyMs": 1459,
+        "medianLatencyMs": 431,
+        "maxPayloadBytes": 6366,
+        "maxRowCount": 14
+      },
+      "comparison": {
+        "recommendationChange": "safe_now_to_watch",
+        "latencyClassChange": "regressed_to_watch_threshold",
+        "payloadClassChange": "same",
+        "rowClassChange": "same_bounded",
+        "hotspotStatus": "watch",
+        "reason": "One max-latency sample moved the target into watch. Median latency, row count, and payload stayed stable."
+      }
+    },
+    {
+      "id": "warehouse_stock_page_60",
+      "rpcName": "warehouse_stock_scope_v2",
+      "sLoad3": {
+        "recommendation": "watch",
+        "maxLatencyMs": 1356,
+        "medianLatencyMs": 407,
+        "maxPayloadBytes": 16791,
+        "maxRowCount": 60
+      },
+      "sLoad4": {
+        "recommendation": "watch",
+        "maxLatencyMs": 1352,
+        "medianLatencyMs": 406,
+        "maxPayloadBytes": 16791,
+        "maxRowCount": 60
+      },
+      "comparison": {
+        "recommendationChange": "same_watch",
+        "latencyClassChange": "same_watch",
+        "payloadClassChange": "same",
+        "rowClassChange": "same_bounded",
+        "hotspotStatus": "stable_watch",
+        "reason": "Watch-only status remained stable. Max latency moved 1356ms -> 1352ms; rows and payload stayed unchanged."
+      }
+    },
+    {
+      "id": "buyer_summary_inbox_page_25",
+      "rpcName": "buyer_summary_inbox_scope_v1",
+      "sLoad3": {
+        "recommendation": "optimize_next",
+        "maxLatencyMs": 1454,
+        "medianLatencyMs": 466,
+        "maxPayloadBytes": 14738,
+        "maxRowCount": 26
+      },
+      "sLoad4": {
+        "recommendation": "optimize_next",
+        "maxLatencyMs": 1517,
+        "medianLatencyMs": 482,
+        "maxPayloadBytes": 14725,
+        "maxRowCount": 26
+      },
+      "comparison": {
+        "recommendationChange": "same_optimize_next",
+        "latencyClassChange": "slight_regression_to_optimize_next_threshold",
+        "payloadClassChange": "slightly_improved",
+        "rowClassChange": "same_row_overrun",
+        "hotspotStatus": "still_optimize_next",
+        "reason": "The target still returns 26 rows for expectedMaxRows=25 and max latency crossed 1500ms by 17ms. Payload improved slightly from 14738b to 14725b."
+      }
+    },
+    {
+      "id": "buyer_summary_buckets_fixed_scope",
+      "rpcName": "buyer_summary_buckets_scope_v1",
+      "sLoad3": {
+        "recommendation": "safe_now",
+        "maxLatencyMs": 798,
+        "medianLatencyMs": 408,
+        "maxPayloadBytes": 28333,
+        "maxRowCount": 132
+      },
+      "sLoad4": {
+        "recommendation": "watch",
+        "maxLatencyMs": 1472,
+        "medianLatencyMs": 435,
+        "maxPayloadBytes": 28333,
+        "maxRowCount": 132
+      },
+      "comparison": {
+        "recommendationChange": "safe_now_to_watch",
+        "latencyClassChange": "regressed_to_watch_threshold",
+        "payloadClassChange": "same",
+        "rowClassChange": "same_fixed_scope",
+        "hotspotStatus": "watch",
+        "reason": "One max-latency sample moved the fixed scope into watch. Row count and payload stayed unchanged."
+      }
+    }
+  ],
+  "hotspotSummary": {
+    "warehouse_issue_queue_page_25": "still_optimize_next_max_latency_improved",
+    "buyer_summary_inbox_page_25": "still_optimize_next_row_overrun_and_latency_threshold",
+    "warehouse_stock_page_60": "stable_watch",
+    "previouslySafeTargetsRemainSafe": false,
+    "previouslySafeTargetNotes": [
+      "warehouse_incoming_queue_page_30 moved safe_now -> watch due max latency only",
+      "buyer_summary_buckets_fixed_scope moved safe_now -> watch due max latency only"
+    ],
+    "recommendedNextWave": "S-LOAD-FIX-2 TARGETED HOTSPOT OPTIMIZATION"
+  },
+  "proofArtifacts": [
+    "artifacts/S_LOAD_4_post_fix_staging_regression_matrix.json",
+    "artifacts/S_LOAD_4_post_fix_staging_regression_proof.md"
+  ],
+  "gates": {
+    "envBooleanPreflight": "pass",
+    "stagingLoadCore": "pass",
+    "stagingLoadHarness": "pass",
+    "jsonArtifactParse": "pass",
+    "gitDiffCheck": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pending_final_post_commit"
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": true,
+    "stagingReadOnlyBounded": true,
+    "writes": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "rawStagingPayloadsCommitted": false
+  }
+}

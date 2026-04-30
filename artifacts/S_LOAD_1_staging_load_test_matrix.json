@@ -1,7 +1,7 @@
 {
   "wave": "S-LOAD-1",
   "mode": "production-safe-staging-load-test",
-  "generatedAt": "2026-04-29T12:44:47.523Z",
+  "generatedAt": "2026-04-30T05:33:15.294Z",
   "environment": {
     "canRunLive": true,
     "missingKeys": [],
@@ -30,23 +30,23 @@
       },
       "samples": [
         {
-          "latencyMs": 3739,
+          "latencyMs": 3127,
           "payloadBytes": 18777,
           "rowCount": 25
         },
         {
-          "latencyMs": 2586,
+          "latencyMs": 2592,
           "payloadBytes": 18777,
           "rowCount": 25
         },
         {
-          "latencyMs": 2575,
+          "latencyMs": 2579,
           "payloadBytes": 18777,
           "rowCount": 25
         }
       ],
-      "medianLatencyMs": 2586,
-      "maxLatencyMs": 3739,
+      "medianLatencyMs": 2592,
+      "maxLatencyMs": 3127,
       "medianPayloadBytes": 18777,
       "maxPayloadBytes": 18777,
       "maxRowCount": 25,
@@ -70,27 +70,27 @@
       },
       "samples": [
         {
-          "latencyMs": 798,
+          "latencyMs": 1459,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 407,
+          "latencyMs": 431,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 405,
+          "latencyMs": 424,
           "payloadBytes": 6366,
           "rowCount": 14
         }
       ],
-      "medianLatencyMs": 407,
-      "maxLatencyMs": 798,
+      "medianLatencyMs": 431,
+      "maxLatencyMs": 1459,
       "medianPayloadBytes": 6366,
       "maxPayloadBytes": 6366,
       "maxRowCount": 14,
-      "recommendation": "safe_now",
+      "recommendation": "watch",
       "status": "collected",
       "errors": []
     },
@@ -110,23 +110,23 @@
       },
       "samples": [
         {
-          "latencyMs": 1356,
+          "latencyMs": 1352,
           "payloadBytes": 16791,
           "rowCount": 60
         },
         {
-          "latencyMs": 404,
+          "latencyMs": 406,
           "payloadBytes": 16791,
           "rowCount": 60
         },
         {
-          "latencyMs": 407,
+          "latencyMs": 398,
           "payloadBytes": 16791,
           "rowCount": 60
         }
       ],
-      "medianLatencyMs": 407,
-      "maxLatencyMs": 1356,
+      "medianLatencyMs": 406,
+      "maxLatencyMs": 1352,
       "medianPayloadBytes": 16791,
       "maxPayloadBytes": 16791,
       "maxRowCount": 60,
@@ -152,25 +152,25 @@
       },
       "samples": [
         {
-          "latencyMs": 1454,
-          "payloadBytes": 14738,
+          "latencyMs": 1517,
+          "payloadBytes": 14725,
           "rowCount": 26
         },
         {
-          "latencyMs": 466,
-          "payloadBytes": 14738,
+          "latencyMs": 482,
+          "payloadBytes": 14725,
           "rowCount": 26
         },
         {
-          "latencyMs": 454,
-          "payloadBytes": 14738,
+          "latencyMs": 473,
+          "payloadBytes": 14725,
           "rowCount": 26
         }
       ],
-      "medianLatencyMs": 466,
-      "maxLatencyMs": 1454,
-      "medianPayloadBytes": 14738,
-      "maxPayloadBytes": 14738,
+      "medianLatencyMs": 482,
+      "maxLatencyMs": 1517,
+      "medianPayloadBytes": 14725,
+      "maxPayloadBytes": 14725,
       "maxRowCount": 26,
       "recommendation": "optimize_next",
       "status": "collected",
@@ -188,27 +188,27 @@
       },
       "samples": [
         {
-          "latencyMs": 798,
+          "latencyMs": 1472,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 407,
+          "latencyMs": 435,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 408,
+          "latencyMs": 431,
           "payloadBytes": 28333,
           "rowCount": 132
         }
       ],
-      "medianLatencyMs": 408,
-      "maxLatencyMs": 798,
+      "medianLatencyMs": 435,
+      "maxLatencyMs": 1472,
       "medianPayloadBytes": 28333,
       "maxPayloadBytes": 28333,
       "maxRowCount": 132,
-      "recommendation": "safe_now",
+      "recommendation": "watch",
       "status": "collected",
       "errors": []
     }
