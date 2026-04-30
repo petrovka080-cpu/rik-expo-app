@@ -77,11 +77,14 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
       await expect(memory.invalidateByTag("proposal")).resolves.toBe(1);
       await expect(memory.get("cache:v1:a")).resolves.toBeNull();
       await expect(memory.get("cache:v1:b")).resolves.toBe("b");
-      expect(memory.getStatus()).toEqual({
+      expect(memory.getStatus()).toEqual(expect.objectContaining({
         kind: "in_memory",
         enabled: true,
         externalNetworkEnabled: false,
-      });
+        entryCount: 1,
+        maxEntries: 1_000,
+        maxValueBytes: 262_144,
+      }));
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       if (originalFetch) {
@@ -93,6 +96,55 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
       } else {
         delete (globalThis as { fetch?: typeof fetch }).fetch;
       }
+    }
+  });
+
+  it("keeps the in-memory runtime adapter bounded without logging payloads", async () => {
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => undefined);
+    const consoleWarn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    try {
+      let now = 2_000;
+      const memory = new InMemoryCacheAdapter({
+        now: () => now,
+        maxEntries: 2,
+        maxValueBytes: 32,
+        maxTags: 2,
+        maxTagLength: 12,
+      });
+
+      await memory.set("cache:v1:a", "a", { ttlMs: 1_000, tags: ["keep"] });
+      await memory.set("cache:v1:b", "b", { ttlMs: 1_000, tags: ["keep", "keep", "second", "third"] });
+      await memory.set("cache:v1:c", "c", { ttlMs: 1_000, tags: ["third"] });
+
+      await expect(memory.get("cache:v1:a")).resolves.toBeNull();
+      await expect(memory.get("cache:v1:b")).resolves.toBe("b");
+      await expect(memory.get("cache:v1:c")).resolves.toBe("c");
+      expect(memory.getStatus()).toEqual(expect.objectContaining({
+        kind: "in_memory",
+        enabled: true,
+        externalNetworkEnabled: false,
+        entryCount: 2,
+        maxEntries: 2,
+        maxValueBytes: 32,
+      }));
+
+      await memory.set("cache:v1:oversize", { payload: "x".repeat(64) }, { ttlMs: 1_000, tags: ["keep"] });
+      await memory.set("", "invalid", { ttlMs: 1_000, tags: ["keep"] });
+      await expect(memory.get("cache:v1:oversize")).resolves.toBeNull();
+      await expect(memory.get("")).resolves.toBeNull();
+
+      await expect(memory.invalidateByTag("third")).resolves.toBe(1);
+      await expect(memory.get("cache:v1:c")).resolves.toBeNull();
+      await expect(memory.get("cache:v1:b")).resolves.toBe("b");
+
+      now = 3_100;
+      await expect(memory.get("cache:v1:b")).resolves.toBeNull();
+      expect(consoleError).not.toHaveBeenCalled();
+      expect(consoleWarn).not.toHaveBeenCalled();
+    } finally {
+      consoleError.mockRestore();
+      consoleWarn.mockRestore();
     }
   });
 
@@ -245,5 +297,13 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
     expect(matrix.policies.readRoutesCovered).toBe(5);
     expect(matrix.policies.hotspotsCovered).toBe(3);
     expect(matrix.safety.packageNativeChanged).toBe(false);
+
+    const runtimeMatrix = JSON.parse(readProjectFile("artifacts/S_50K_CACHE_RUNTIME_ADAPTER_2_matrix.json"));
+    expect(runtimeMatrix.wave).toBe("S-50K-CACHE-RUNTIME-ADAPTER-2");
+    expect(runtimeMatrix.status).toBe("GREEN_CACHE_RUNTIME_GUARDRAIL_READY");
+    expect(runtimeMatrix.runtimeGuardrails.enabledByDefault).toBe(false);
+    expect(runtimeMatrix.runtimeGuardrails.externalNetworkEnabled).toBe(false);
+    expect(runtimeMatrix.safety.productionTouched).toBe(false);
+    expect(runtimeMatrix.safety.stagingTouched).toBe(false);
   });
 });
