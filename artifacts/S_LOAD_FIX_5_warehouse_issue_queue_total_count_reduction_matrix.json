@@ -34,8 +34,8 @@
     "metaTotalKind": "lower_bound",
     "metaHasMoreSource": "limit_plus_one_probe",
     "fallbackDiagnosticCountScoped": true,
-    "requestOrderIndexAdded": "idx_requests_issue_queue_order_sloadfix5",
-    "indexCompatibilityFix": "status kept as INCLUDE column instead of enum-to-text expression because PostgreSQL requires index expressions to be IMMUTABLE"
+    "requestOrderIndexAdded": "idx_requests_issue_queue_submitted_created_sloadfix5",
+    "indexCompatibilityFix": "index uses only base request columns because PostgreSQL requires index expressions to be IMMUTABLE"
   },
   "businessSemantics": {
     "rowPayloadShapeChanged": false,

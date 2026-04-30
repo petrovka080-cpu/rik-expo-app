@@ -22,7 +22,7 @@ S-LOAD-7 left one optimize_next target: `warehouse_issue_queue_page_25`, max `29
 - Adds `meta.has_more` from the probe.
 - Documents `meta.total` as lower-bound metadata with `total_exact=false` and `total_kind=lower_bound`.
 - Uses scoped fallback diagnostic count from `fallback_truth_by_req`.
-- Adds additive request order index `idx_requests_issue_queue_order_sloadfix5`, with `status` as an included column instead of an enum-to-text expression so the index is migration-safe.
+- Adds additive request order index `idx_requests_issue_queue_submitted_created_sloadfix5`, using only base columns so the index is migration-safe.
 
 ## Why This Is Narrow
 
