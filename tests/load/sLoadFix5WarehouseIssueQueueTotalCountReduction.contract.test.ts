@@ -20,6 +20,13 @@ const readSource = (filePath: string) => fs.readFileSync(filePath, "utf8");
 
 const source = readSource(migrationPath);
 const lowerSource = source.toLowerCase();
+const probeMaterializationSource = readSource(
+  path.join(
+    process.cwd(),
+    "supabase/migrations/20260430120500_s_load_fix_5b_warehouse_issue_queue_probe_materialization.sql",
+  ),
+);
+const lowerProbeMaterializationSource = probeMaterializationSource.toLowerCase();
 
 describe("S-LOAD-FIX-5 warehouse issue queue total-count reduction", () => {
   it("patches only the private warehouse issue queue source body behind the public wrapper", () => {
@@ -101,5 +108,21 @@ describe("S-LOAD-FIX-5 warehouse issue queue total-count reduction", () => {
     expect((matrix.safety as Record<string, unknown>).stagingTouched).toBe(false);
     expect(proof).toContain("GREEN_SOURCE_PATCH_READY");
     expect(proof).toContain("S-STAGING-WAREHOUSE-ISSUE-SOURCE-PATCH-APPLY-2 is required");
+  });
+
+  it("adds a narrow materialization follow-up for the Fix-5 limit-plus-one probe", () => {
+    expect(probeMaterializationSource).toContain(
+      "public.warehouse_issue_queue_scope_v4_source_before_sloadfix4(integer, integer)",
+    );
+    expect(probeMaterializationSource).toContain("sorted_probe_rows as materialized (");
+    expect(probeMaterializationSource).toContain("paged_rows as materialized (");
+    expect(probeMaterializationSource).toContain(
+      "create or replace function public.warehouse_issue_queue_sloadfix5b_probe_materialization_proof_v1()",
+    );
+    expect(probeMaterializationSource).toContain("'source_materializes_probe_rows'");
+    expect(probeMaterializationSource).toContain("'source_materializes_paged_rows'");
+    expect(lowerProbeMaterializationSource).not.toContain("create or replace function public.warehouse_stock_scope_v2");
+    expect(lowerProbeMaterializationSource).not.toContain("create or replace function public.warehouse_incoming_queue_scope_v1");
+    expect(lowerProbeMaterializationSource).not.toContain("warehouse_issue_post");
   });
 });
