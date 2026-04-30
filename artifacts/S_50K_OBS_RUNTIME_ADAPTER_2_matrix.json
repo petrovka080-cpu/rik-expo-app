@@ -1,0 +1,69 @@
+{
+  "wave": "S-50K-OBS-RUNTIME-ADAPTER-2",
+  "status": "GREEN_OBS_RUNTIME_GUARDRAIL_READY",
+  "scope": "repo_only_runtime_observability_guardrails",
+  "baseline": {
+    "previousWave": "S-50K-OBS-INTEGRATION-1",
+    "externalExportEnabledByDefault": false,
+    "inMemoryEventsWereUnbounded": true,
+    "inMemoryMetricsWereUnbounded": true,
+    "inMemorySpansWereUnbounded": true,
+    "metricTagsWereRuntimeValidated": false
+  },
+  "runtimeGuardrails": {
+    "maxEventsDefault": 1000,
+    "maxMetricsDefault": 1000,
+    "maxSpansDefault": 1000,
+    "maxRecordsHardCap": 10000,
+    "maxMetricTags": 8,
+    "oldestEventsEvictedWhenBudgetExceeded": true,
+    "oldestMetricsEvictedWhenBudgetExceeded": true,
+    "oldestSpansEvictedWhenBudgetExceeded": true,
+    "metricTagKeysValidated": true,
+    "metricTagValuesValidated": true,
+    "metricTagCountValidated": true,
+    "unsafeSpanNamesRejected": true,
+    "invalidRecordCounterExposedInHealth": true,
+    "evictionCountersExposedInHealth": true,
+    "flushCountExposedInHealth": true,
+    "flushSendsExternalTelemetry": false,
+    "flushClearsProofBuffers": false
+  },
+  "changedFiles": [
+    "src/shared/scale/scaleObservabilityAdapters.ts",
+    "tests/scale/scaleObservabilityBoundary.test.ts",
+    "artifacts/S_50K_OBS_RUNTIME_ADAPTER_2_matrix.json",
+    "artifacts/S_50K_OBS_RUNTIME_ADAPTER_2_proof.md"
+  ],
+  "tests": {
+    "targeted": [
+      "npm test -- --runInBand scaleObservabilityBoundary"
+    ],
+    "fullGatesRequired": [
+      "git diff --check",
+      "npx tsc --noEmit --pretty false",
+      "npx expo lint",
+      "npm test -- --runInBand",
+      "npm test",
+      "npm run release:verify -- --json"
+    ]
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "writes": false,
+    "externalTelemetryEnabled": false,
+    "externalTelemetrySent": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadPiiSecretsLogged": false,
+    "secretsPrintedOrCommitted": false
+  },
+  "next": {
+    "status": "runtime_guardrail_ready",
+    "liveExportStillDisabled": true,
+    "live50kStillRequiresTelemetryProviderDecision": true
+  }
+}
