@@ -34,7 +34,8 @@
     "metaTotalKind": "lower_bound",
     "metaHasMoreSource": "limit_plus_one_probe",
     "fallbackDiagnosticCountScoped": true,
-    "requestStatusOrderIndexAdded": "idx_requests_issue_queue_visible_status_order_sloadfix5"
+    "requestOrderIndexAdded": "idx_requests_issue_queue_order_sloadfix5",
+    "indexCompatibilityFix": "status kept as INCLUDE column instead of enum-to-text expression because PostgreSQL requires index expressions to be IMMUTABLE"
   },
   "businessSemantics": {
     "rowPayloadShapeChanged": false,

@@ -57,17 +57,17 @@ describe("S-LOAD-FIX-5 warehouse issue queue total-count reduction", () => {
     expect(source).toContain("source_preserves_page_bound");
   });
 
-  it("removes the all-fallback diagnostic count and adds only a targeted request index", () => {
+  it("removes the all-fallback diagnostic count and adds only a targeted request order index", () => {
     expect(source).toContain(
       "(select fallback_truth_request_count from fallback_active_request_count) as fallback_truth_request_count",
     );
     expect(source).toContain(
       "(select count(*)::integer from fallback_truth_by_req) as fallback_truth_request_count",
     );
-    expect(source).toContain("create index if not exists idx_requests_issue_queue_visible_status_order_sloadfix5");
-    expect(source).toContain("(lower(trim(coalesce(status::text, ''))))");
+    expect(source).toContain("create index if not exists idx_requests_issue_queue_order_sloadfix5");
+    expect(source).not.toContain("(lower(trim(coalesce(status::text, ''))))");
     expect(source).toContain("(coalesce(submitted_at, created_at)) desc");
-    expect(source).toContain("include (display_no, object_name, object_type_code, level_code, system_code, zone_code)");
+    expect(source).toContain("include (status, display_no, object_name, object_type_code, level_code, system_code, zone_code)");
   });
 
   it("adds a migration-time proof helper without exposing payloads or secrets", () => {
@@ -76,7 +76,7 @@ describe("S-LOAD-FIX-5 warehouse issue queue total-count reduction", () => {
     );
     expect(source).toContain("'source_uses_limit_plus_one_probe'");
     expect(source).toContain("'source_reports_lower_bound_total'");
-    expect(source).toContain("'request_status_order_index_exists'");
+    expect(source).toContain("'request_order_index_exists'");
     expect(source).toContain(
       "grant execute on function public.warehouse_issue_queue_sloadfix5_total_count_reduction_proof_v1() to authenticated",
     );

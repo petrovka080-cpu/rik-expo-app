@@ -125,13 +125,12 @@ begin
 end;
 $$;
 
-create index if not exists idx_requests_issue_queue_visible_status_order_sloadfix5
+create index if not exists idx_requests_issue_queue_order_sloadfix5
 on public.requests (
-  (lower(trim(coalesce(status::text, '')))),
   (coalesce(submitted_at, created_at)) desc,
   id desc
 )
-include (display_no, object_name, object_type_code, level_code, system_code, zone_code);
+include (status, display_no, object_name, object_type_code, level_code, system_code, zone_code);
 
 create or replace function public.warehouse_issue_queue_sloadfix5_total_count_reduction_proof_v1()
 returns jsonb
@@ -157,7 +156,7 @@ select jsonb_build_object(
     and position('order by pr.submitted_at desc nulls last, pr.display_year desc, pr.display_seq desc, pr.request_id desc' in lower(source_def)) > 0,
   'source_preserves_page_bound', position('limit (select limit_value from normalized_args)' in lower(source_def)) > 0,
   'source_uses_scoped_fallback_diagnostic_count', position('(select count(*)::integer from fallback_truth_by_req) as fallback_truth_request_count' in lower(source_def)) > 0,
-  'request_status_order_index_exists', to_regclass('public.idx_requests_issue_queue_visible_status_order_sloadfix5') is not null
+  'request_order_index_exists', to_regclass('public.idx_requests_issue_queue_order_sloadfix5') is not null
 )
 from defs;
 $$;
@@ -168,8 +167,8 @@ comment on function public.warehouse_issue_queue_scope_v4_source_before_sloadfix
 comment on function public.warehouse_issue_queue_sloadfix5_total_count_reduction_proof_v1() is
 'S-LOAD-FIX-5 verifier for warehouse_issue_queue_scope_v4 source total-count reduction and request status/order index readiness.';
 
-comment on index public.idx_requests_issue_queue_visible_status_order_sloadfix5 is
-'S-LOAD-FIX-5 additive index for warehouse_issue_queue_scope_v4 visible request filtering and submitted/order scan support.';
+comment on index public.idx_requests_issue_queue_order_sloadfix5 is
+'S-LOAD-FIX-5 additive index for warehouse_issue_queue_scope_v4 submitted/order scan support. Keeps status as an included column instead of an enum-to-text expression so the index is migration-safe.';
 
 grant execute on function public.warehouse_issue_queue_sloadfix5_total_count_reduction_proof_v1() to authenticated;
 
