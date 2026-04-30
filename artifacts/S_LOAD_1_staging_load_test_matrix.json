@@ -1,7 +1,7 @@
 {
   "wave": "S-LOAD-1",
   "mode": "production-safe-staging-load-test",
-  "generatedAt": "2026-04-30T09:24:24.914Z",
+  "generatedAt": "2026-04-30T10:15:11.328Z",
   "environment": {
     "canRunLive": true,
     "missingKeys": [],
@@ -30,23 +30,23 @@
       },
       "samples": [
         {
-          "latencyMs": 3382,
+          "latencyMs": 2950,
           "payloadBytes": 18777,
           "rowCount": 25
         },
         {
-          "latencyMs": 2787,
+          "latencyMs": 2588,
           "payloadBytes": 18777,
           "rowCount": 25
         },
         {
-          "latencyMs": 2883,
-          "payloadBytes": 18777,
+          "latencyMs": 2630,
+          "payloadBytes": 18776,
           "rowCount": 25
         }
       ],
-      "medianLatencyMs": 2883,
-      "maxLatencyMs": 3382,
+      "medianLatencyMs": 2630,
+      "maxLatencyMs": 2950,
       "medianPayloadBytes": 18777,
       "maxPayloadBytes": 18777,
       "maxRowCount": 25,
@@ -70,27 +70,27 @@
       },
       "samples": [
         {
-          "latencyMs": 833,
+          "latencyMs": 752,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 415,
+          "latencyMs": 417,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 409,
+          "latencyMs": 417,
           "payloadBytes": 6366,
           "rowCount": 14
         }
       ],
-      "medianLatencyMs": 415,
-      "maxLatencyMs": 833,
+      "medianLatencyMs": 417,
+      "maxLatencyMs": 752,
       "medianPayloadBytes": 6366,
       "maxPayloadBytes": 6366,
       "maxRowCount": 14,
-      "recommendation": "watch",
+      "recommendation": "safe_now",
       "status": "collected",
       "errors": []
     },
@@ -110,27 +110,27 @@
       },
       "samples": [
         {
-          "latencyMs": 1426,
+          "latencyMs": 720,
           "payloadBytes": 16791,
           "rowCount": 60
         },
         {
-          "latencyMs": 430,
+          "latencyMs": 395,
           "payloadBytes": 16791,
           "rowCount": 60
         },
         {
-          "latencyMs": 420,
+          "latencyMs": 397,
           "payloadBytes": 16791,
           "rowCount": 60
         }
       ],
-      "medianLatencyMs": 430,
-      "maxLatencyMs": 1426,
+      "medianLatencyMs": 397,
+      "maxLatencyMs": 720,
       "medianPayloadBytes": 16791,
       "maxPayloadBytes": 16791,
       "maxRowCount": 60,
-      "recommendation": "watch",
+      "recommendation": "safe_now",
       "status": "collected",
       "errors": []
     },
@@ -152,27 +152,27 @@
       },
       "samples": [
         {
-          "latencyMs": 914,
+          "latencyMs": 794,
           "payloadBytes": 14170,
           "rowCount": 25
         },
         {
-          "latencyMs": 466,
+          "latencyMs": 465,
           "payloadBytes": 14170,
           "rowCount": 25
         },
         {
-          "latencyMs": 475,
+          "latencyMs": 492,
           "payloadBytes": 14170,
           "rowCount": 25
         }
       ],
-      "medianLatencyMs": 475,
-      "maxLatencyMs": 914,
+      "medianLatencyMs": 492,
+      "maxLatencyMs": 794,
       "medianPayloadBytes": 14170,
       "maxPayloadBytes": 14170,
       "maxRowCount": 25,
-      "recommendation": "watch",
+      "recommendation": "safe_now",
       "status": "collected",
       "errors": []
     },
@@ -188,23 +188,23 @@
       },
       "samples": [
         {
-          "latencyMs": 860,
+          "latencyMs": 1282,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 413,
+          "latencyMs": 455,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 397,
+          "latencyMs": 407,
           "payloadBytes": 28333,
           "rowCount": 132
         }
       ],
-      "medianLatencyMs": 413,
-      "maxLatencyMs": 860,
+      "medianLatencyMs": 455,
+      "maxLatencyMs": 1282,
       "medianPayloadBytes": 28333,
       "maxPayloadBytes": 28333,
       "maxRowCount": 132,
