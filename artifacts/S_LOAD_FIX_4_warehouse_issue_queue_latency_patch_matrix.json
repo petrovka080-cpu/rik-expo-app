@@ -1,0 +1,152 @@
+{
+  "wave": "S-LOAD-FIX-4",
+  "mode": "warehouse-issue-queue-latency-source-patch",
+  "status": "GREEN_SOURCE_PATCH_READY",
+  "ownerGoal": "10K/50K+ readiness",
+  "generatedAt": "2026-04-30T10:30:00.000+06:00",
+  "context": {
+    "baselineWave": "S-LOAD-6",
+    "baselineStatus": "PARTIAL_STAGING_EXECUTED_WAREHOUSE_ISSUE_OPTIMIZE_NEXT_AND_WATCH_REGRESSIONS",
+    "baselineCommit": "5fa6831c088ff535f1103357d06072bc0f1e523c",
+    "sLoad6Findings": {
+      "warehouse_issue_queue_page_25": {
+        "recommendation": "optimize_next",
+        "maxLatencyMs": 3382,
+        "medianLatencyMs": 2883,
+        "maxRows": 25,
+        "reason": "Rows stayed bounded, but max latency remained above the 1500ms optimize_next threshold."
+      },
+      "buyer_summary_inbox_page_25": {
+        "recommendation": "watch",
+        "maxLatencyMs": 914,
+        "maxRows": 25,
+        "metaReturnedRowCount": 25,
+        "reason": "S-LOAD-FIX-3 source patch resolved the direct RPC row overrun."
+      },
+      "warehouse_stock_page_60": {
+        "recommendation": "watch",
+        "maxLatencyMs": 1426,
+        "reason": "Watch-only latency; warehouse stock math remains excluded from this wave."
+      },
+      "warehouse_incoming_queue_page_30": {
+        "recommendation": "watch",
+        "maxLatencyMs": 833,
+        "reason": "Watch-only latency; not the current optimize_next bottleneck."
+      },
+      "buyer_summary_buckets_fixed_scope": {
+        "recommendation": "watch",
+        "maxLatencyMs": 860,
+        "reason": "Stable watch; not changed in this wave."
+      }
+    }
+  },
+  "inspectedDefinitions": [
+    "supabase/migrations/20260417051000_r3_c_warehouse_issue_queue_cpu_elimination.sql",
+    "supabase/migrations/20260422170000_r4_a_warehouse_issue_queue_fallback_scope_pushdown.sql",
+    "supabase/migrations/20260428154000_s_db_2_query_plan_indexes.sql",
+    "supabase/migrations/20260430093000_s_load_fix_3_rpc_source_hotspot_patch.sql",
+    "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+    "scripts/load/stagingLoadCore.ts",
+    "artifacts/S_LOAD_6_post_rpc_source_patch_staging_regression_matrix.json"
+  ],
+  "sourcePatches": [
+    {
+      "rpcName": "warehouse_issue_queue_scope_v4",
+      "file": "supabase/migrations/20260430103000_s_load_fix_4_warehouse_issue_queue_latency_patch.sql",
+      "type": "rpc-source-wrapper",
+      "signaturePreserved": true,
+      "sourceBeforeWrapper": "warehouse_issue_queue_scope_v4_source_before_sloadfix4",
+      "limitClamp": {
+        "nullLimit": 50,
+        "minimum": 1,
+        "maximum": 100
+      },
+      "offsetClamp": {
+        "minimum": 0
+      },
+      "rowBound": "jsonb rows are rebuilt from source rows where ordinality <= normalized limit_value",
+      "orderingPreserved": "jsonb_agg orders by original source payload ordinality",
+      "rowCountPatched": true,
+      "validShapeChanged": false,
+      "reason": "Direct RPC callers now share the same safe page budget as the app client while preserving the existing v4 source body and row order."
+    },
+    {
+      "rpcName": "warehouse_issue_queue_scope_v4",
+      "file": "supabase/migrations/20260430103000_s_load_fix_4_warehouse_issue_queue_latency_patch.sql",
+      "type": "additive-index-shape-patch",
+      "indexesAdded": [
+        "idx_request_items_issue_queue_request_text_sloadfix4"
+      ],
+      "targetedQueryShape": "fallback_items_base_all joins missing_ui_truth_requests_all on mur.request_id = ri.request_id::text and reads ri.id::text",
+      "businessSemanticsChanged": false,
+      "warehouseStockMathChanged": false,
+      "reason": "S-LOAD-FIX-3 added a normal request_items(request_id, id) index. This wave adds the expression index matching the current ::text join shape so the fallback item read can use an indexed path without rewriting queue visibility or stock allocation logic."
+    }
+  ],
+  "skippedPaths": [
+    {
+      "path": "warehouse_stock_scope_v2",
+      "reason": "Watch-only target and warehouse stock math is explicitly excluded without a dedicated stock test wave."
+    },
+    {
+      "path": "warehouse_incoming_queue_scope_v1",
+      "reason": "Watch-only one-sample latency target; not the remaining optimize_next bottleneck."
+    },
+    {
+      "path": "buyer_summary_buckets_scope_v1",
+      "reason": "Stable watch target; bucket semantics need a dedicated wave if it becomes optimize_next."
+    },
+    {
+      "path": "buyer_summary_inbox_scope_v1",
+      "reason": "S-LOAD-6 proved rows=25 and meta.returned_row_count=25 after S-LOAD-FIX-3 staging apply."
+    },
+    {
+      "path": "live staging migration apply",
+      "reason": "Hard exclusion for this source patch wave. Apply and load verification must be separate waves."
+    }
+  ],
+  "tests": {
+    "targetedWarehouseIssueQueueTests": "tests/load/sLoadFix4WarehouseIssueQueueLatencyPatch.contract.test.ts",
+    "sourceBoundTests": "tests/load/sLoadFix4WarehouseIssueQueueLatencyPatch.contract.test.ts",
+    "artifactTests": "tests/load/sLoadFix4WarehouseIssueQueueLatencyPatch.contract.test.ts",
+    "status": "pending_gates"
+  },
+  "execution": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "stagingLoadRun": false,
+    "productionLoadRun": false,
+    "migrationsAppliedToLiveEnv": false,
+    "writesToLiveEnv": false,
+    "serviceRoleUsed": false
+  },
+  "gates": {
+    "gitDiffCheck": "pending",
+    "jsonArtifactParse": "pending",
+    "targetedWarehouseIssueQueueTests": "pending",
+    "tsc": "pending",
+    "expoLint": "pending",
+    "npmTestRunInBand": "pending",
+    "npmTest": "pending",
+    "releaseVerify": "pending"
+  },
+  "recommendedNextWave": "S-STAGING-WAREHOUSE-ISSUE-SOURCE-PATCH-APPLY-1, then S-LOAD-7 bounded staging regression",
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "loadTestsRun": false,
+    "migrationsAppliedToLiveEnv": false,
+    "writes": false,
+    "serviceRoleUsed": false,
+    "repoSqlMigrationAdded": true,
+    "liveSqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "financeAccountingCalculationsChanged": false,
+    "warehouseStockMathChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadPiiSecretsLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false
+  }
+}
