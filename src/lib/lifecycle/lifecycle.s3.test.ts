@@ -110,10 +110,11 @@ describe("S3-B: Screen blur → focus", () => {
     expect(warehouseSrc).toContain("useFocusEffect(bindRealtime)");
   });
 
-  it("B3: subscribeChannel uses token-based dedup to prevent duplicate channel creation", () => {
+  it("B3: subscribeChannel uses token-based ref-counting to prevent duplicate channel creation", () => {
     const clientSrc = readFileSync(REALTIME_CLIENT_SRC, "utf8");
     expect(clientSrc).toContain("const token = ++activeChannelSeq");
-    expect(clientSrc).toContain("current.token !== token");
+    expect(clientSrc).toContain("subscribers: new Map");
+    expect(clientSrc).toContain("channel_name_shared_ref_counted");
   });
 
   it("B4: Buyer realtime fires only when screen is focused", () => {
@@ -291,13 +292,17 @@ describe("S3-G: PDF entry after resume (lifecycle isolation)", () => {
 describe("S3-H: Realtime reconnect, no duplicate subscriptions", () => {
   const clientSrc = readFileSync(REALTIME_CLIENT_SRC, "utf8");
 
-  it("H1: subscribeChannel cleans up previous channel before creating new (replace guard)", () => {
+  it("H1: subscribeChannel shares duplicate same-signature channels instead of replacing them", () => {
     expect(clientSrc).toContain("activeChannels.get(params.name)");
-    expect(clientSrc).toContain("channel_replaced");
+    expect(clientSrc).toContain("bindingSignature === bindingSignature");
+    expect(clientSrc).toContain("channel_name_shared_ref_counted");
   });
 
-  it("H2: Each subscription has a token; stale cleaup ignores mismatched tokens", () => {
-    expect(clientSrc).toContain("current.token !== token");
+  it("H2: Each subscription has a token; cleanup releases the channel only after the last ref", () => {
+    expect(clientSrc).toContain("const token = ++activeChannelSeq");
+    expect(clientSrc).toContain("current.subscribers.delete(token)");
+    expect(clientSrc).toContain("current.subscribers.size > 0");
+    expect(clientSrc).toContain("last_ref_released");
   });
 
   it("H3: useFocusEffect auto-detaches on blur, preventing ghost subscriptions", () => {

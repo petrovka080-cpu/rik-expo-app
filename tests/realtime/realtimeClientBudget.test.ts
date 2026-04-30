@@ -35,6 +35,7 @@ type MockRealtimeChannel = {
   on: jest.Mock<MockRealtimeChannel, [string, unknown, unknown]>;
   subscribe: jest.Mock<MockRealtimeChannel, [(status?: string) => void]>;
   unsubscribe: jest.Mock<string, []>;
+  postgresHandlers: Array<(payload: unknown) => void>;
 };
 
 const binding: RealtimeChannelBinding = {
@@ -54,7 +55,13 @@ const flushRealtimeSetup = async () => {
 const buildChannel = (name: string): MockRealtimeChannel => {
   const channel = {} as MockRealtimeChannel;
   channel.name = name;
-  channel.on = jest.fn<MockRealtimeChannel, [string, unknown, unknown]>(() => channel);
+  channel.postgresHandlers = [];
+  channel.on = jest.fn<MockRealtimeChannel, [string, unknown, unknown]>((event, _filter, callback) => {
+    if (event === "postgres_changes" && typeof callback === "function") {
+      channel.postgresHandlers.push(callback as (payload: unknown) => void);
+    }
+    return channel;
+  });
   channel.subscribe = jest.fn<MockRealtimeChannel, [(status?: string) => void]>((callback) => {
     callback?.("SUBSCRIBED");
     return channel;
@@ -89,31 +96,75 @@ describe("realtime client budget observability", () => {
     clearRealtimeSessionState();
   });
 
-  it("reports duplicate channel names while replacing the previous channel", async () => {
-    subscribeTestChannel("buyer:screen:realtime");
+  it("shares duplicate channel names and ref-counts cleanup", async () => {
+    const onFirstEvent = jest.fn();
+    const onSecondEvent = jest.fn();
+    const unsubscribeFirst = subscribeChannel({
+      name: "buyer:screen:realtime",
+      scope: "buyer",
+      route: "/buyer",
+      surface: "test_realtime",
+      bindings: [binding],
+      onEvent: onFirstEvent,
+    });
     await flushRealtimeSetup();
 
     const firstChannel = mockChannel.mock.results[0]?.value as MockRealtimeChannel;
 
-    subscribeTestChannel("buyer:screen:realtime");
+    const unsubscribeSecond = subscribeChannel({
+      name: "buyer:screen:realtime",
+      scope: "buyer",
+      route: "/buyer",
+      surface: "test_realtime",
+      bindings: [binding],
+      onEvent: onSecondEvent,
+    });
     await flushRealtimeSetup();
 
-    expect(firstChannel.unsubscribe).toHaveBeenCalledTimes(1);
-    expect(mockRemoveChannel).toHaveBeenCalledWith(firstChannel);
+    expect(mockChannel).toHaveBeenCalledTimes(1);
     expect(getRealtimeDebugState()).toEqual(
       expect.objectContaining({
         activeChannelCount: 1,
         activeChannelNames: ["buyer:screen:realtime"],
+        activeSubscriberCount: 2,
+      }),
+    );
+
+    firstChannel.postgresHandlers[0]?.({ eventType: "UPDATE", new: { id: "row-1" } });
+    expect(onFirstEvent).toHaveBeenCalledTimes(1);
+    expect(onSecondEvent).toHaveBeenCalledTimes(1);
+    const observabilityJson = JSON.stringify(mockRecordPlatformObservability.mock.calls);
+    expect(observabilityJson).not.toContain("row-1");
+    expect(observabilityJson).not.toContain("access_token");
+    expect(observabilityJson).not.toContain("payload");
+
+    unsubscribeFirst();
+    expect(firstChannel.unsubscribe).not.toHaveBeenCalled();
+    expect(mockRemoveChannel).not.toHaveBeenCalled();
+    expect(getRealtimeDebugState()).toEqual(
+      expect.objectContaining({
+        activeChannelCount: 1,
+        activeSubscriberCount: 1,
+      }),
+    );
+
+    unsubscribeSecond();
+    expect(firstChannel.unsubscribe).toHaveBeenCalledTimes(1);
+    expect(mockRemoveChannel).toHaveBeenCalledWith(firstChannel);
+    expect(getRealtimeDebugState()).toEqual(
+      expect.objectContaining({
+        activeChannelCount: 0,
+        activeSubscriberCount: 0,
       }),
     );
     expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
       expect.objectContaining({
         event: "realtime_channel_duplicate_detected",
-        result: "skipped",
+        result: "success",
         sourceKind: "supabase:realtime",
         extra: expect.objectContaining({
           channelName: "buyer:screen:realtime",
-          reason: "channel_name_replaced",
+          reason: "channel_name_shared_ref_counted",
           owner: "realtime_lifecycle",
         }),
       }),
@@ -158,6 +209,7 @@ describe("realtime client budget observability", () => {
         activeChannelCount: 0,
         activeChannelNames: [],
         activeBindingCount: 0,
+        activeSubscriberCount: 0,
       }),
     );
   });

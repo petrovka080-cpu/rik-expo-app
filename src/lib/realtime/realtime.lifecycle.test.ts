@@ -44,7 +44,7 @@ describe("realtime lifecycle discipline", () => {
     }
   });
 
-  it("channel names are unique across scopes", () => {
+  it("mounted subscription channel names are unique across scopes", () => {
     const names = [
       channels.BUYER_REALTIME_CHANNEL_NAME,
       channels.ACCOUNTANT_REALTIME_CHANNEL_NAME,
@@ -53,11 +53,13 @@ describe("realtime lifecycle discipline", () => {
       channels.DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
       channels.DIRECTOR_FINANCE_REALTIME_CHANNEL_NAME,
       channels.DIRECTOR_REPORTS_REALTIME_CHANNEL_NAME,
-      channels.DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
     ];
 
     const unique = new Set(names);
     expect(unique.size).toBe(names.length);
+    expect(channels.DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME).toBe(
+      channels.DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
+    );
   });
 
   it("binding keys are unique within each scope", () => {

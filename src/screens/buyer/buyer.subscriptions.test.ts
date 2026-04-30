@@ -3,6 +3,9 @@ import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
 } from "../../lib/observability/platformObservability";
+import { BUYER_REALTIME_CHANNEL_NAME } from "../../lib/realtime/realtime.channels";
+
+const mockSubscribeChannel = jest.fn();
 
 jest.mock("../../lib/supabaseClient", () => ({
   supabase: {
@@ -10,12 +13,9 @@ jest.mock("../../lib/supabaseClient", () => ({
   },
 }));
 
-type ChannelHandler = (payload?: unknown) => void;
-type MockBuyerChannel = {
-  name: string;
-  on: jest.Mock<MockBuyerChannel, [string, unknown, ChannelHandler]>;
-  subscribe: jest.Mock<MockBuyerChannel, []>;
-};
+jest.mock("../../lib/realtime/realtime.client", () => ({
+  subscribeChannel: (...args: unknown[]) => mockSubscribeChannel(...args),
+}));
 
 describe("attachBuyerSubscriptions", () => {
   let consoleErrorSpy: jest.SpyInstance;
@@ -25,6 +25,7 @@ describe("attachBuyerSubscriptions", () => {
     const runtime = globalThis as typeof globalThis & { __DEV__?: boolean };
     runtime.__DEV__ = false;
     resetPlatformObservabilityEvents();
+    mockSubscribeChannel.mockReset().mockReturnValue(jest.fn());
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
   });
@@ -35,25 +36,11 @@ describe("attachBuyerSubscriptions", () => {
   });
 
   it("logs callback and cleanup failures without breaking detach or realtime callbacks", () => {
-    const callbacks: Record<string, ChannelHandler> = {};
-    const builtChannels: { name: string }[] = [];
-
-    const mockSupabase = {
-      channel: jest.fn((name: string) => {
-        const channel = {} as MockBuyerChannel;
-        channel.name = name;
-        channel.on = jest.fn((_event: string, _filter: unknown, callback: ChannelHandler) => {
-          callbacks[name] = callback;
-          return channel;
-        });
-        channel.subscribe = jest.fn(() => channel);
-        builtChannels.push(channel);
-        return channel;
-      }),
-      removeChannel: jest.fn((channel: { name: string }) => {
-        throw new Error(`remove failed: ${channel.name}`);
-      }),
-    };
+    const detachInner = jest.fn(() => {
+      throw new Error("detach failed");
+    });
+    mockSubscribeChannel.mockReturnValue(detachInner);
+    const mockSupabase = {};
 
     const detach = attachBuyerSubscriptions({
       supabase: mockSupabase as never,
@@ -67,20 +54,32 @@ describe("attachBuyerSubscriptions", () => {
     });
 
     expect(() =>
-      callbacks["notif-buyer-rt"]?.({
-        new: {
-          title: "Title",
-          body: "Body",
+      mockSubscribeChannel.mock.calls[0]?.[0]?.onEvent?.({
+        binding: { key: "buyer_notifications", table: "notifications" },
+        payload: {
+          new: {
+            title: "Title",
+            body: "Body",
+          },
         },
       }),
     ).not.toThrow();
-    expect(() => callbacks["buyer-proposals-rt"]?.({})).not.toThrow();
+    expect(() =>
+      mockSubscribeChannel.mock.calls[0]?.[0]?.onEvent?.({
+        binding: { key: "buyer_proposals_terminal", table: "proposals" },
+        payload: {},
+      }),
+    ).not.toThrow();
     expect(() => detach()).not.toThrow();
 
-    expect(builtChannels.map((channel) => channel.name)).toEqual([
-      "notif-buyer-rt",
-      "buyer-proposals-rt",
-    ]);
+    expect(mockSubscribeChannel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: BUYER_REALTIME_CHANNEL_NAME,
+        scope: "buyer",
+        route: "/buyer",
+        surface: "realtime_subscriptions",
+      }),
+    );
 
     const events = getPlatformObservabilityEvents().map((event) => event.event);
     expect(events).toEqual(
@@ -88,8 +87,7 @@ describe("attachBuyerSubscriptions", () => {
         "buyer_notif_callback_failed",
         "buyer_notif_refresh_failed",
         "buyer_proposals_refresh_failed",
-        "buyer_notif_remove_channel_failed",
-        "buyer_proposals_remove_channel_failed",
+        "buyer_realtime_detach_failed",
       ]),
     );
   });

@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { claimRealtimeChannel } from "../../../lib/realtime/realtime.channels";
+import { subscribeChannel } from "../../../lib/realtime/realtime.client";
+import {
+  WAREHOUSE_REALTIME_BINDINGS,
+  WAREHOUSE_REALTIME_CHANNEL_NAME,
+} from "../../../lib/realtime/realtime.channels";
 import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
 import {
   isWarehouseScreenActive,
@@ -12,7 +16,7 @@ const TAB_EXPENSE = WAREHOUSE_TABS[2];
 
 function logWarehouseExpenseRealtimeFallback(scope: string, error: unknown) {
   if (!__DEV__) return;
-  console.warn(`[warehouse-expense-rt] ${scope}`, error);
+  console.warn(`[warehouse-expense-shared-rt] ${scope}`, error);
 }
 
 export function useWarehouseExpenseRealtime(params: {
@@ -54,67 +58,25 @@ export function useWarehouseExpenseRealtime(params: {
       return;
     }
 
-    const budget = claimRealtimeChannel({
-      key: "warehouse-expense-rt",
-      source: "warehouse.expense.realtime",
-      screen: "warehouse",
-      surface: "expense_realtime",
+    const detach = subscribeChannel({
+      client: supabase,
+      name: WAREHOUSE_REALTIME_CHANNEL_NAME,
+      scope: "warehouse",
       route: "/office/warehouse",
-      maxChannelsForSource: 1,
+      surface: "expense_realtime",
+      bindings: WAREHOUSE_REALTIME_BINDINGS,
+      onEvent: ({ binding }) => {
+        if (binding.table !== "requests" && binding.table !== "request_items") return;
+        triggerRefresh();
+      },
     });
-    if (budget.status === "duplicate") {
-      return () => {
-        pendingRefreshRef.current = false;
-        budget.release();
-      };
-    }
-
-    const ch = supabase
-      .channel("warehouse-expense-rt")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "requests" },
-        triggerRefresh,
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "requests" },
-        triggerRefresh,
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "requests" },
-        triggerRefresh,
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "request_items" },
-        triggerRefresh,
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "request_items" },
-        triggerRefresh,
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "request_items" },
-        triggerRefresh,
-      )
-      .subscribe();
 
     return () => {
       pendingRefreshRef.current = false;
-      budget.release();
       try {
-        ch.unsubscribe();
+        detach();
       } catch (error) {
-        logWarehouseExpenseRealtimeFallback("unsubscribe", error);
-      }
-      try {
-        supabase.removeChannel(ch);
-      } catch (error) {
-        logWarehouseExpenseRealtimeFallback("removeChannel", error);
+        logWarehouseExpenseRealtimeFallback("detach", error);
       }
     };
   }, [supabase, tab, fetchReqHeadsForce, screenActiveRef]);

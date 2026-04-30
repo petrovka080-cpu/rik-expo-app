@@ -5,7 +5,6 @@ import TestRenderer, { act } from "react-test-renderer";
 
 import { useDirectorLifecycle } from "./director.lifecycle";
 import {
-  DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
   DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
 } from "../../lib/realtime/realtime.channels";
 
@@ -130,6 +129,22 @@ describe("director realtime channel lifecycle", () => {
     });
   });
 
+  it("does not create realtime channels while the director screen is unfocused", async () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<Harness focused={false} />);
+    });
+    await flushAsyncEffects();
+
+    expect(mockChannelFactory).not.toHaveBeenCalled();
+    expect(mockEnsureSignedIn).not.toHaveBeenCalled();
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
   it("keeps director screen realtime channel identity stable across blur and reopen, and cleans previous instances", async () => {
     let renderer!: TestRenderer.ReactTestRenderer;
 
@@ -138,8 +153,7 @@ describe("director realtime channel lifecycle", () => {
     });
     await flushAsyncEffects();
 
-    expect(mockChannelFactory).toHaveBeenNthCalledWith(1, DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME);
-    expect(mockChannelFactory).toHaveBeenNthCalledWith(2, DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
+    expect(mockChannelFactory).toHaveBeenNthCalledWith(1, DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME, {
       config: {
         broadcast: {
           ack: false,
@@ -150,7 +164,6 @@ describe("director realtime channel lifecycle", () => {
     expect(mockSetAuth).toHaveBeenCalledWith("director-access-token");
 
     const firstScreenChannel = createdChannels[0];
-    const firstHandoffChannel = createdChannels[1];
 
     await act(async () => {
       renderer.update(<Harness focused={false} />);
@@ -158,17 +171,14 @@ describe("director realtime channel lifecycle", () => {
     await flushAsyncEffects();
 
     expect(firstScreenChannel.unsubscribe).toHaveBeenCalledTimes(1);
-    expect(firstHandoffChannel.unsubscribe).toHaveBeenCalledTimes(1);
     expect(mockRemoveChannel).toHaveBeenCalledWith(firstScreenChannel);
-    expect(mockRemoveChannel).toHaveBeenCalledWith(firstHandoffChannel);
 
     await act(async () => {
       renderer.update(<Harness focused />);
     });
     await flushAsyncEffects();
 
-    expect(mockChannelFactory).toHaveBeenNthCalledWith(3, DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME);
-    expect(mockChannelFactory).toHaveBeenNthCalledWith(4, DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
+    expect(mockChannelFactory).toHaveBeenNthCalledWith(2, DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME, {
       config: {
         broadcast: {
           ack: false,
@@ -180,23 +190,18 @@ describe("director realtime channel lifecycle", () => {
     const createdNames = mockChannelFactory.mock.calls.map((entry) => String(entry[0]));
     expect(createdNames).toEqual([
       DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
-      DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
       DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
-      DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
     ]);
     expect(createdNames.some((name) => /^notif-director-rt:\d+$/.test(name))).toBe(false);
 
-    const reopenedScreenChannel = createdChannels[2];
-    const reopenedHandoffChannel = createdChannels[3];
+    const reopenedScreenChannel = createdChannels[1];
 
     await act(async () => {
       renderer.unmount();
     });
 
     expect(reopenedScreenChannel.unsubscribe).toHaveBeenCalledTimes(1);
-    expect(reopenedHandoffChannel.unsubscribe).toHaveBeenCalledTimes(1);
     expect(mockRemoveChannel).toHaveBeenCalledWith(reopenedScreenChannel);
-    expect(mockRemoveChannel).toHaveBeenCalledWith(reopenedHandoffChannel);
   });
 
   it("keeps lifecycle teardown non-fatal while surfacing swallowed cleanup failures", async () => {
@@ -208,12 +213,8 @@ describe("director realtime channel lifecycle", () => {
     await flushAsyncEffects();
 
     const screenChannel = createdChannels[0];
-    const handoffChannel = createdChannels[1];
     screenChannel.unsubscribe.mockImplementation(() => {
       throw new Error("screen unsubscribe failed");
-    });
-    handoffChannel.unsubscribe.mockImplementation(() => {
-      throw new Error("handoff unsubscribe failed");
     });
     mockRemoveChannel.mockImplementation(() => {
       throw new Error("remove failed");
@@ -249,18 +250,6 @@ describe("director realtime channel lifecycle", () => {
           event: "screen_channel_remove_failed",
           result: "error",
         }),
-        expect.objectContaining({
-          screen: "director",
-          surface: "realtime_cleanup",
-          event: "handoff_channel_unsubscribe_failed",
-          result: "error",
-        }),
-        expect.objectContaining({
-          screen: "director",
-          surface: "realtime_cleanup",
-          event: "handoff_channel_remove_failed",
-          result: "error",
-        }),
       ]),
     );
   });
@@ -275,6 +264,6 @@ describe("director realtime channel lifecycle", () => {
     expect(lifecycleSource).toContain("app_state_listener_remove_failed");
     expect(realtimeSource).toContain("teardown_previous_channels_failed");
     expect(realtimeSource).toContain("screen_channel_unsubscribe_failed");
-    expect(realtimeSource).toContain("handoff_channel_remove_failed");
+    expect(realtimeSource).toContain("DIRECTOR_HANDOFF_BROADCAST_EVENT");
   });
 });

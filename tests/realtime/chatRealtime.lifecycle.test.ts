@@ -115,7 +115,7 @@ describe("chat realtime lifecycle", () => {
     );
   });
 
-  it("replaces duplicate chat attaches and leaves no zombie channel after repeated teardown", async () => {
+  it("shares duplicate chat attaches and leaves no channel after repeated teardown", async () => {
     const unsubscribeFirst = subscribeToListingChatMessages("listing-1", jest.fn());
     await flushRealtimeLifecycle();
 
@@ -124,18 +124,16 @@ describe("chat realtime lifecycle", () => {
     const unsubscribeSecond = subscribeToListingChatMessages("listing-1", jest.fn());
     await flushRealtimeLifecycle();
 
-    const secondRecord = createdChannels[1];
-
-    expect(createdChannels).toHaveLength(2);
-    expect(firstRecord?.channel.unsubscribe).toHaveBeenCalledTimes(1);
-    expect(mockSupabase.removeChannel).toHaveBeenCalledWith(firstRecord?.channel);
+    expect(createdChannels).toHaveLength(1);
+    expect(firstRecord?.channel.unsubscribe).not.toHaveBeenCalled();
+    expect(mockSupabase.removeChannel).not.toHaveBeenCalledWith(firstRecord?.channel);
 
     unsubscribeFirst();
-    expect(secondRecord?.channel.unsubscribe).not.toHaveBeenCalled();
+    expect(firstRecord?.channel.unsubscribe).not.toHaveBeenCalled();
 
     unsubscribeSecond();
-    expect(secondRecord?.channel.unsubscribe).toHaveBeenCalledTimes(1);
-    expect(mockSupabase.removeChannel).toHaveBeenCalledWith(secondRecord?.channel);
+    expect(firstRecord?.channel.unsubscribe).toHaveBeenCalledTimes(1);
+    expect(mockSupabase.removeChannel).toHaveBeenCalledWith(firstRecord?.channel);
 
     const removeCallsBeforeSessionClear =
       mockSupabase.removeChannel.mock.calls.length;

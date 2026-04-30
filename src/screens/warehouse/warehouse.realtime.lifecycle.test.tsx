@@ -314,7 +314,13 @@ describe("useWarehouseRealtimeLifecycle", () => {
 });
 
 describe("useWarehouseExpenseRealtime lifecycle", () => {
-  it("unsubscribes and removes the expense channel on cleanup", async () => {
+  beforeEach(() => {
+    mockSubscribeChannel.mockReset();
+  });
+
+  it("shares the warehouse screen channel and detaches on cleanup", async () => {
+    const detach = jest.fn();
+    mockSubscribeChannel.mockReturnValue(detach);
     const channel = buildMockWarehouseExpenseChannel();
     const supabase = {
       channel: jest.fn(() => channel),
@@ -331,14 +337,25 @@ describe("useWarehouseExpenseRealtime lifecycle", () => {
       );
     });
 
-    expect(supabase.channel).toHaveBeenCalledWith("warehouse-expense-rt");
-    expect(channel.subscribe).toHaveBeenCalledTimes(1);
+    expect(mockSubscribeChannel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        client: supabase,
+        name: WAREHOUSE_REALTIME_CHANNEL_NAME,
+        scope: "warehouse",
+        route: "/office/warehouse",
+        surface: "expense_realtime",
+        bindings: WAREHOUSE_REALTIME_BINDINGS,
+      }),
+    );
+    expect(supabase.channel).not.toHaveBeenCalled();
+    expect(channel.subscribe).not.toHaveBeenCalled();
 
     await act(async () => {
       renderer.unmount();
     });
 
-    expect(channel.unsubscribe).toHaveBeenCalledTimes(1);
-    expect(supabase.removeChannel).toHaveBeenCalledWith(channel);
+    expect(detach).toHaveBeenCalledTimes(1);
+    expect(channel.unsubscribe).not.toHaveBeenCalled();
+    expect(supabase.removeChannel).not.toHaveBeenCalled();
   });
 });

@@ -24,13 +24,22 @@ type SubscribeChannelParams = {
 };
 
 type ActiveRealtimeChannel = {
-  token: number;
-  channel: RealtimeChannel;
+  channel: RealtimeChannel | null;
   scope: RealtimeLifecycleScope;
   route: string;
   surface: string;
   bindingCount: number;
+  bindingSignature: string;
   createdAt: number;
+  client: SupabaseClient;
+  subscribers: Map<number, RealtimeChannelSubscriber>;
+};
+
+type RealtimeChannelSubscriber = {
+  scope: RealtimeLifecycleScope;
+  route: string;
+  surface: string;
+  onEvent: SubscribeChannelParams["onEvent"];
 };
 
 export const REALTIME_ACTIVE_CHANNEL_WARN_AT = 5;
@@ -49,6 +58,10 @@ export function getRealtimeDebugState() {
       (total, entry) => total + entry.bindingCount,
       0,
     ),
+    activeSubscriberCount: [...activeChannels.values()].reduce(
+      (total, entry) => total + entry.subscribers.size,
+      0,
+    ),
     warnAt: REALTIME_ACTIVE_CHANNEL_WARN_AT,
     budget: REALTIME_ACTIVE_CHANNEL_BUDGET,
   };
@@ -61,15 +74,17 @@ export function getRealtimeDebugState() {
 export function clearRealtimeSessionState() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const [name, entry] of activeChannels) {
-    try {
-      entry.channel.unsubscribe();
-    } catch (_) {
-      // best-effort cleanup at session boundary
-    }
-    try {
-      supabase.removeChannel(entry.channel);
-    } catch (_) {
-      // best-effort cleanup at session boundary
+    if (entry.channel) {
+      try {
+        entry.channel.unsubscribe();
+      } catch (_) {
+        // best-effort cleanup at session boundary
+      }
+      try {
+        entry.client.removeChannel(entry.channel);
+      } catch (_) {
+        // best-effort cleanup at session boundary
+      }
     }
   }
   activeChannels.clear();
@@ -256,38 +271,59 @@ const ensureRealtimeAuth = async (
   await realtimeAuthPromise;
 };
 
+const buildBindingSignature = (bindings: readonly RealtimeChannelBinding[]) =>
+  JSON.stringify(
+    bindings.map((binding) => ({
+      event: binding.event,
+      filter: binding.filter ?? null,
+      key: binding.key,
+      owner: binding.owner,
+      schema: binding.schema ?? "public",
+      table: binding.table,
+    })),
+  );
+
 export function subscribeChannel(params: SubscribeChannelParams) {
   const client = params.client ?? supabase;
   const surface = params.surface ?? "realtime_channel";
   const token = ++activeChannelSeq;
-  let disposed = false;
+  const bindingSignature = buildBindingSignature(params.bindings);
 
-  void (async () => {
-    await ensureRealtimeAuth(client, params.scope, params.route);
-    if (disposed) return;
+  const existing = activeChannels.get(params.name);
+  if (existing && existing.bindingSignature === bindingSignature) {
+    existing.subscribers.set(token, {
+      scope: params.scope,
+      route: params.route,
+      surface,
+      onEvent: params.onEvent,
+    });
+    observeRealtimeBudget({
+      scope: params.scope,
+      route: params.route,
+      surface,
+      channelName: params.name,
+      event: "realtime_channel_duplicate_detected",
+      result: "success",
+      reason: "channel_name_shared_ref_counted",
+      activeChannelCount: activeChannels.size,
+      bindingCount: params.bindings.length,
+    });
 
-    const previous = activeChannels.get(params.name);
-    if (previous) {
-      observeRealtimeBudget({
-        scope: params.scope,
-        route: params.route,
-        surface,
-        channelName: params.name,
-        event: "realtime_channel_duplicate_detected",
-        result: "skipped",
-        reason: "channel_name_replaced",
-        activeChannelCount: activeChannels.size,
-        bindingCount: params.bindings.length,
-      });
-      cleanupRealtimeChannel({
-        client,
-        channel: previous.channel,
-        scope: params.scope,
-        route: params.route,
-        surface,
-        channelName: params.name,
-      });
+    return () => {
+      const current = activeChannels.get(params.name);
+      if (!current || !current.subscribers.delete(token)) return;
+      if (current.subscribers.size > 0) return;
       activeChannels.delete(params.name);
+      if (current.channel) {
+        cleanupRealtimeChannel({
+          client: current.client,
+          channel: current.channel,
+          scope: current.scope,
+          route: current.route,
+          surface: current.surface,
+          channelName: params.name,
+        });
+      }
       recordPlatformObservability({
         screen: params.scope,
         surface,
@@ -300,12 +336,66 @@ export function subscribeChannel(params: SubscribeChannelParams) {
           route: params.route,
           channelName: params.name,
           owner: "realtime_lifecycle",
-          reason: "channel_replaced",
+          reason: "last_ref_released",
         },
       });
-    }
+    };
+  }
 
-    const projectedActiveCount = activeChannels.size + 1;
+  if (existing) {
+    observeRealtimeBudget({
+      scope: params.scope,
+      route: params.route,
+      surface,
+      channelName: params.name,
+      event: "realtime_channel_duplicate_detected",
+      result: "error",
+      reason: "channel_name_binding_signature_mismatch",
+      activeChannelCount: activeChannels.size,
+      bindingCount: params.bindings.length,
+    });
+    activeChannels.delete(params.name);
+    if (existing.channel) {
+      cleanupRealtimeChannel({
+        client: existing.client,
+        channel: existing.channel,
+        scope: existing.scope,
+        route: existing.route,
+        surface: existing.surface,
+        channelName: params.name,
+      });
+    }
+  }
+
+  const entry: ActiveRealtimeChannel = {
+    channel: null,
+    scope: params.scope,
+    route: params.route,
+    surface,
+    bindingCount: params.bindings.length,
+    bindingSignature,
+    createdAt: Date.now(),
+    client,
+    subscribers: new Map([
+      [
+        token,
+        {
+          scope: params.scope,
+          route: params.route,
+          surface,
+          onEvent: params.onEvent,
+        },
+      ],
+    ]),
+  };
+  activeChannels.set(params.name, entry);
+
+  void (async () => {
+    await ensureRealtimeAuth(client, params.scope, params.route);
+    const currentEntry = activeChannels.get(params.name);
+    if (currentEntry !== entry || currentEntry.subscribers.size === 0) return;
+
+    const projectedActiveCount = activeChannels.size;
     if (projectedActiveCount >= REALTIME_ACTIVE_CHANNEL_WARN_AT) {
       observeRealtimeBudget({
         scope: params.scope,
@@ -342,7 +432,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
     let channel = client.channel(params.name);
     for (const binding of params.bindings) {
       channel = channel.on(
-        "postgres_changes",
+          "postgres_changes",
         {
           event: binding.event,
           schema: binding.schema ?? "public",
@@ -350,6 +440,8 @@ export function subscribeChannel(params: SubscribeChannelParams) {
           filter: binding.filter,
         },
         (payload) => {
+          const liveEntry = activeChannels.get(params.name);
+          if (!liveEntry) return;
           recordPlatformObservability({
             screen: params.scope,
             surface,
@@ -367,10 +459,13 @@ export function subscribeChannel(params: SubscribeChannelParams) {
               owner: "realtime_lifecycle",
             },
           });
-          params.onEvent({
-            binding,
-            payload: payload as RealtimePostgresChangesPayload<Record<string, unknown>>,
-          });
+          const typedPayload = payload as RealtimePostgresChangesPayload<Record<string, unknown>>;
+          for (const subscriber of liveEntry.subscribers.values()) {
+            subscriber.onEvent({
+              binding,
+              payload: typedPayload,
+            });
+          }
         },
       );
     }
@@ -400,7 +495,8 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       });
     });
 
-    if (disposed) {
+    const liveEntry = activeChannels.get(params.name);
+    if (liveEntry !== entry || liveEntry.subscribers.size === 0) {
       cleanupRealtimeChannel({
         client,
         channel,
@@ -412,30 +508,24 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       return;
     }
 
-    activeChannels.set(params.name, {
-      token,
-      channel,
-      scope: params.scope,
-      route: params.route,
-      surface,
-      bindingCount: params.bindings.length,
-      createdAt: Date.now(),
-    });
+    liveEntry.channel = channel;
   })();
 
   return () => {
-    disposed = true;
     const current = activeChannels.get(params.name);
-    if (!current || current.token !== token) return;
+    if (!current || !current.subscribers.delete(token)) return;
+    if (current.subscribers.size > 0) return;
     activeChannels.delete(params.name);
-    cleanupRealtimeChannel({
-      client,
-      channel: current.channel,
-      scope: params.scope,
-      route: params.route,
-      surface,
-      channelName: params.name,
-    });
+    if (current.channel) {
+      cleanupRealtimeChannel({
+        client: current.client,
+        channel: current.channel,
+        scope: current.scope,
+        route: current.route,
+        surface: current.surface,
+        channelName: params.name,
+      });
+    }
     recordPlatformObservability({
       screen: params.scope,
       surface,
@@ -448,6 +538,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
         route: params.route,
         channelName: params.name,
         owner: "realtime_lifecycle",
+        reason: "last_ref_released",
       },
     });
   };

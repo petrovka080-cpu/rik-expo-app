@@ -4,7 +4,6 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { reportAndSwallow } from "../../lib/observability/catchDiscipline";
 import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
 import {
-  DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
   DIRECTOR_HANDOFF_BROADCAST_EVENT,
   DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
   claimRealtimeChannel,
@@ -123,7 +122,14 @@ const authorizeRealtime = async () => {
 
 const createDirectorScreenChannel = (refs: DirectorRealtimeRefs) =>
   supabase
-    .channel(DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME)
+    .channel(DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME, {
+      config: {
+        broadcast: {
+          ack: false,
+          self: false,
+        },
+      },
+    })
     .on(
       "postgres_changes",
       {
@@ -222,23 +228,6 @@ const createDirectorScreenChannel = (refs: DirectorRealtimeRefs) =>
         void refs.refreshRowsHandlerRef.current("realtime:request_items", true);
       },
     )
-    .subscribe((status) => {
-      logDirectorLive({
-        sourcePath: "director.lifecycle.channel",
-        status,
-      });
-    });
-
-const createDirectorHandoffChannel = (refs: DirectorRealtimeRefs) =>
-  supabase
-    .channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
-      config: {
-        broadcast: {
-          ack: false,
-          self: false,
-        },
-      },
-    })
     .on("broadcast", { event: DIRECTOR_HANDOFF_BROADCAST_EVENT }, (payload) => {
       if (
         refs.dirTabRef.current !== DIRECTOR_TAB_REQUESTS ||
@@ -255,7 +244,7 @@ const createDirectorHandoffChannel = (refs: DirectorRealtimeRefs) =>
     })
     .subscribe((status) => {
       logDirectorLive({
-        sourcePath: "director.lifecycle.broadcast_channel",
+        sourcePath: "director.lifecycle.channel",
         status,
       });
     });
@@ -272,9 +261,7 @@ export const setupDirectorRealtimeLifecycle = (params: {
 
   let cancelled = false;
   let screenChannel: RealtimeChannel | null = null;
-  let handoffChannel: RealtimeChannel | null = null;
   let screenBudget: RealtimeBudgetClaim | null = null;
-  let handoffBudget: RealtimeBudgetClaim | null = null;
 
   void (async () => {
     const signedIn = await ensureSignedIn();
@@ -291,42 +278,23 @@ export const setupDirectorRealtimeLifecycle = (params: {
       screen: "director",
       surface: "screen_realtime",
       route: "/director",
-      maxChannelsForSource: 2,
+      maxChannelsForSource: 1,
     });
     if (screenBudget.status !== "duplicate") {
       screenChannel = createDirectorScreenChannel(params.refs);
       params.refs.rtChannelRef.current = screenChannel;
-    }
-
-    handoffBudget = claimRealtimeChannel({
-      key: DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
-      source: "director.lifecycle.realtime",
-      screen: "director",
-      surface: "screen_realtime",
-      route: "/director",
-      maxChannelsForSource: 2,
-    });
-    if (handoffBudget.status !== "duplicate") {
-      handoffChannel = createDirectorHandoffChannel(params.refs);
-      params.refs.handoffChannelRef.current = handoffChannel;
+      params.refs.handoffChannelRef.current = null;
     }
   })();
 
   return () => {
     cancelled = true;
     screenBudget?.release();
-    handoffBudget?.release();
     cleanupRealtimeChannel({
       channel: screenChannel,
       ref: params.refs.rtChannelRef,
       unsubscribeEvent: "screen_channel_unsubscribe_failed",
       removeEvent: "screen_channel_remove_failed",
-    });
-    cleanupRealtimeChannel({
-      channel: handoffChannel,
-      ref: params.refs.handoffChannelRef,
-      unsubscribeEvent: "handoff_channel_unsubscribe_failed",
-      removeEvent: "handoff_channel_remove_failed",
     });
   };
 };

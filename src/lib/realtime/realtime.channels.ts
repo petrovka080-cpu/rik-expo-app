@@ -19,7 +19,7 @@ export const CONTRACTOR_REALTIME_CHANNEL_NAME = "contractor:screen:realtime";
 export const DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME = "director:screen:realtime";
 export const DIRECTOR_FINANCE_REALTIME_CHANNEL_NAME = "director:finance:realtime";
 export const DIRECTOR_REPORTS_REALTIME_CHANNEL_NAME = "director:reports:realtime";
-export const DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME = "director-handoff-rt";
+export const DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME = DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME;
 export const DIRECTOR_HANDOFF_BROADCAST_EVENT = "foreman_request_submitted";
 
 export type RealtimeChannelBudgetOptions = {

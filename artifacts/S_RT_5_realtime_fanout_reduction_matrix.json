@@ -1,0 +1,120 @@
+{
+  "wave": "S-RT-5",
+  "mode": "realtime-fanout-reduction",
+  "baseline": {
+    "channelsPerActiveUser": 14,
+    "projection10kChannels": 140000,
+    "projection50kChannels": 700000,
+    "source": "S-RT-4B static capacity projection"
+  },
+  "result": {
+    "estimatedChannelsPerActiveUser": 8,
+    "projection10kChannels": 80000,
+    "projection50kChannels": 400000,
+    "targetMet": true,
+    "preferredTargetMet": true,
+    "notes": [
+      "Persistent mounted channel estimate excludes send-only ephemeral broadcasts.",
+      "Unused legacy hooks are inventoried but no longer add independent channel names if reintroduced."
+    ]
+  },
+  "consolidatedChannels": [
+    {
+      "before": "duplicate central subscribeChannel attaches replaced existing channels",
+      "after": "duplicate same-signature attaches share one channel with ref-counted cleanup",
+      "files": [
+        "src/lib/realtime/realtime.client.ts"
+      ],
+      "estimatedDelta": "prevents reconnect/remount multiplication"
+    },
+    {
+      "before": "notif-buyer-rt + buyer-proposals-rt",
+      "after": "buyer:screen:realtime shared through subscribeChannel",
+      "files": [
+        "src/screens/buyer/buyer.subscriptions.ts"
+      ],
+      "estimatedDelta": -2
+    },
+    {
+      "before": "warehouse-expense-rt",
+      "after": "warehouse:screen:realtime shared through subscribeChannel",
+      "files": [
+        "src/screens/warehouse/hooks/useWarehouseExpenseRealtime.ts"
+      ],
+      "estimatedDelta": -1
+    },
+    {
+      "before": "director:screen:realtime + director-handoff-rt",
+      "after": "director:screen:realtime with postgres_changes and broadcast handler",
+      "files": [
+        "src/lib/realtime/realtime.channels.ts",
+        "src/screens/director/director.lifecycle.realtime.ts"
+      ],
+      "estimatedDelta": -1
+    },
+    {
+      "before": "request-draft-sync-handoff and request-repository-handoff counted as active per-user channels",
+      "after": "send-only ephemeral broadcasts documented outside persistent active-user fanout",
+      "files": [
+        "src/lib/api/requestDraftSync.service.ts",
+        "src/lib/api/request.repository.ts"
+      ],
+      "estimatedDelta": -2
+    }
+  ],
+  "remainingPersistentChannels": [
+    {
+      "channel": "buyer:screen:realtime",
+      "reason": "visible buyer summary notifications/request/proposal updates"
+    },
+    {
+      "channel": "accountant:screen:realtime",
+      "reason": "visible accountant inbox/history updates"
+    },
+    {
+      "channel": "warehouse:screen:realtime",
+      "reason": "visible warehouse incoming/expense updates"
+    },
+    {
+      "channel": "contractor:screen:realtime",
+      "reason": "visible contractor work/inbox updates"
+    },
+    {
+      "channel": "director:screen:realtime",
+      "reason": "visible director requests plus foreman handoff broadcast"
+    },
+    {
+      "channel": "director:finance:realtime",
+      "reason": "director finance tab, mounted only while visible"
+    },
+    {
+      "channel": "director:reports:realtime",
+      "reason": "director reports tab, mounted only while visible/open"
+    },
+    {
+      "channel": "chat:listing:<redacted>",
+      "reason": "listing chat screen, scoped by listing id"
+    }
+  ],
+  "skippedSubscriptionPoints": [
+    {
+      "path": "src/lib/api/requestDraftSync.service.ts",
+      "reason": "send-only ephemeral broadcast; channel removed in finally and not persistent per active user"
+    },
+    {
+      "path": "src/lib/api/request.repository.ts",
+      "reason": "send-only submit notification/broadcast path; not a mounted realtime subscription"
+    }
+  ],
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "realtimeLoadGenerated": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false,
+    "businessBehaviorChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "serviceRoleUsed": false,
+    "secretsPrintedOrCommitted": false
+  }
+}
