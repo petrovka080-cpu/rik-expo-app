@@ -1,0 +1,176 @@
+{
+  "wave": "S-STAGING-WAREHOUSE-ISSUE-SOURCE-PATCH-APPLY-2",
+  "mode": "staging-only-warehouse-issue-source-patch-apply",
+  "status": "PARTIAL_STAGING_EXECUTED_FIX5_TIMEOUT_RESTORED_SAFE_SOURCE",
+  "ownerGoal": "10K/50K+ readiness",
+  "generatedAt": "2026-04-30T17:11:26.621+06:00",
+  "context": {
+    "sourcePatchWave": "S-LOAD-FIX-5",
+    "sourcePatchStatus": "GREEN_SOURCE_PATCH_READY",
+    "sourcePatchCommit": "b27567553d3e09c8d2e1731a9a505191630fb899",
+    "requestedSourcePatchMigration": "supabase/migrations/20260430114500_s_load_fix_5_warehouse_issue_queue_total_count_reduction.sql",
+    "priorStagingProofWave": "S-LOAD-7",
+    "priorStagingProofStatus": "PARTIAL_STAGING_EXECUTED_WAREHOUSE_ISSUE_STILL_OPTIMIZE_NEXT",
+    "priorWarehouseIssueQueueFinding": {
+      "target": "warehouse_issue_queue_page_25",
+      "recommendation": "optimize_next",
+      "maxLatencyMs": 2950,
+      "rows": 25,
+      "reason": "Rows stayed bounded, but max latency remained above the 1500ms optimize_next threshold."
+    }
+  },
+  "gitPreflight": {
+    "headCommitBeforeApply": "b27567553d3e09c8d2e1731a9a505191630fb899",
+    "originMainCommitBeforeApply": "b27567553d3e09c8d2e1731a9a505191630fb899",
+    "headMatchedOriginMainBeforeApply": true,
+    "worktreeCleanBeforeApply": true,
+    "headCommitAfterSafetyRestore": "415ef2fea4fcefb6341af8988cdf9e4791016e3a",
+    "originMainCommitAfterSafetyRestore": "415ef2fea4fcefb6341af8988cdf9e4791016e3a",
+    "headMatchedOriginMainAfterSafetyRestore": true
+  },
+  "envBooleanPreflight": {
+    "STAGING_SUPABASE_URL": true,
+    "STAGING_SUPABASE_READONLY_KEY": true,
+    "SUPABASE_ACCESS_TOKEN": false,
+    "productionCredentialsPresentButNotUsed": true,
+    "secretValuesPrinted": false
+  },
+  "projectIdentity": {
+    "linkedProjectRefPresent": true,
+    "linkedProjectRefSha256": "78fb2de8a064f73a80c93b9fdab4973658ca4c279000a78006dfe8402a0e60b4",
+    "stagingUrlHostSha256": "8e4815ff375b3a0d",
+    "productionUrlHostSha256": "028ab9e206b892f4",
+    "linkedProjectMatchedStagingUrl": true,
+    "productionProjectSelected": false,
+    "projectRefValuePrinted": false
+  },
+  "migrationApply": {
+    "dryRunBeforeApply": {
+      "status": "pass",
+      "pendingMigrationCount": 1,
+      "pendingMigrations": [
+        "20260430114500_s_load_fix_5_warehouse_issue_queue_total_count_reduction.sql"
+      ],
+      "wouldApplyOtherMigrations": false
+    },
+    "applyCommand": "npx supabase db push --linked --yes",
+    "appliedMigrations": [
+      {
+        "migration": "20260430114500_s_load_fix_5_warehouse_issue_queue_total_count_reduction.sql",
+        "reason": "Requested S-LOAD-FIX-5 source patch.",
+        "applyStatus": "applied_after_index_compatibility_repairs",
+        "verificationStatus": "failed_timeout",
+        "verificationErrorCode": "57014",
+        "rawPayloadPrinted": false
+      },
+      {
+        "migration": "20260430120500_s_load_fix_5b_warehouse_issue_queue_probe_materialization.sql",
+        "reason": "Required follow-up to try to make the requested lower-bound probe source patch viable after targeted RPC verification timed out.",
+        "applyStatus": "applied",
+        "verificationStatus": "failed_timeout",
+        "verificationErrorCode": "57014",
+        "rawPayloadPrinted": false
+      },
+      {
+        "migration": "20260430122500_s_load_fix_5c_warehouse_issue_queue_inline_probe_order.sql",
+        "reason": "Required follow-up to inline the probe ordering after 5B still timed out.",
+        "applyStatus": "applied",
+        "verificationStatus": "failed_timeout",
+        "verificationErrorCode": "57014",
+        "rawPayloadPrinted": false
+      },
+      {
+        "migration": "20260430124500_s_load_fix_5d_warehouse_issue_queue_restore_exact_count.sql",
+        "reason": "Safety restore because the lower-bound total patch path left the direct staging RPC timing out.",
+        "applyStatus": "applied",
+        "verificationStatus": "pass",
+        "rawPayloadPrinted": false
+      }
+    ],
+    "stagingOnly": true,
+    "productionApply": false,
+    "dryRunAfterFinalApply": {
+      "status": "pass",
+      "remoteDatabaseUpToDate": true,
+      "pendingMigrationCount": 0
+    }
+  },
+  "targetedReadOnlyVerification": {
+    "status": "pass_after_safety_restore",
+    "rpc": "warehouse_issue_queue_scope_v4",
+    "args": {
+      "p_offset": 0,
+      "p_limit": 25
+    },
+    "durationMs": 2895,
+    "rowsReturned": 25,
+    "rowsWithinLimit": true,
+    "metaExists": true,
+    "metaRowCount": 25,
+    "metaRowCountWithinLimit": true,
+    "metaHasMoreExists": true,
+    "metaHasMoreType": "boolean",
+    "metaTotalExact": null,
+    "metaTotalKind": null,
+    "lowerBoundTotalMetadataPresent": false,
+    "rawRowsPrinted": false,
+    "proofHelper": "warehouse_issue_queue_sloadfix5d_restore_exact_count_proof_v1",
+    "proofChecks": {
+      "publicWrapperPreserved": true,
+      "restoresExactVisibleQueueTotalCount": true,
+      "restoresSortedRowsPage": true,
+      "removesLowerBoundTotalMetadata": true,
+      "preservesRowOrder": true,
+      "preservesPageBound": true
+    }
+  },
+  "proofArtifacts": [
+    "artifacts/S_STAGING_WAREHOUSE_ISSUE_SOURCE_PATCH_APPLY_2_matrix.json",
+    "artifacts/S_STAGING_WAREHOUSE_ISSUE_SOURCE_PATCH_APPLY_2_proof.md"
+  ],
+  "execution": {
+    "productionTouched": false,
+    "stagingTouched": true,
+    "stagingDdlMigrationApplied": true,
+    "productionDdlMigrationApplied": false,
+    "dataWrites": false,
+    "loadTestsRun": false,
+    "serviceRoleUsedInClientCode": false,
+    "rawStagingPayloadsCommitted": false
+  },
+  "gates": {
+    "gitDiffCheck": "pass",
+    "jsonArtifactParse": "pass",
+    "targetedStagingWarehouseIssueRpcSourceVerification": "pass_after_safety_restore",
+    "targetedWarehouseIssueQueueTests": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pending_post_commit"
+  },
+  "nextRequiredWave": "S-LOAD-FIX-6 WAREHOUSE ISSUE QUEUE EXPLAIN / INDEX PLAN PATCH",
+  "readinessClaim": {
+    "tenKReadinessClaimed": false,
+    "reason": "The requested lower-bound total source patch was applied to staging but failed targeted RPC verification with timeouts. Staging was restored to a safe bounded exact-count source. A new plan/index patch is required before another load regression."
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": true,
+    "stagingDdlMigrationApplied": true,
+    "productionDdlMigrationApplied": false,
+    "dataWrites": false,
+    "loadTestsRun": false,
+    "serviceRoleUsed": false,
+    "sqlRpcRlsStorageChangedInRepo": true,
+    "repoMigrationsCommittedAndAppliedToStagingOnly": true,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "financeAccountingCalculationsChanged": false,
+    "warehouseStockMathChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadPiiSecretsLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false
+  }
+}
