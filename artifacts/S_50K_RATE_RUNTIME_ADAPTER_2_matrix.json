@@ -1,0 +1,70 @@
+{
+  "wave": "S-50K-RATE-RUNTIME-ADAPTER-2",
+  "mode": "repo-only-production-safe-rate-runtime-guardrails",
+  "ownerGoal": "10K/50K+ readiness",
+  "status": "GREEN_RATE_RUNTIME_GUARDRAIL_READY",
+  "baseline": {
+    "rateEnforcementBoundaryAlreadyGreen": true,
+    "appRuntimeRateLimitEnabled": false,
+    "externalRateStoreLive": false,
+    "inMemoryAdapterHadExplicitKeyBudget": false,
+    "inMemoryAdapterPurgedExpiredRecordsBeforeWrites": false,
+    "inMemoryAdapterRejectedOversizedKeys": false
+  },
+  "runtimeGuardrails": {
+    "enabledByDefault": false,
+    "externalRateStoreEnabled": false,
+    "maxTrackedKeysDefault": 1000,
+    "maxTrackedKeysHardCap": 10000,
+    "maxWindowMs": 3600000,
+    "expiredRecordsPurgedBeforeCheckOrConsume": true,
+    "oldestKeyEvictedWhenBudgetExceeded": true,
+    "unsafeOrOversizedKeysReturnDisabledDecision": true,
+    "unsafeOrOversizedKeysIncreaseTrackedKeys": false,
+    "invalidKeyDecisionRedactsInputKey": true,
+    "realUsersBlockedByDefault": false,
+    "rawPayloadLogging": false
+  },
+  "businessSemantics": {
+    "validPolicyBudgetsChanged": false,
+    "validSafeKeyBehaviorChanged": false,
+    "validDecisionShapeChanged": false,
+    "activeAppFlowsChanged": false,
+    "misconfiguredExtremeValuesFailSafe": true
+  },
+  "tests": {
+    "targeted": [
+      "tests/scale/rateEnforcementBoundary.test.ts"
+    ],
+    "covered": [
+      "in-memory adapter max tracked key budget",
+      "oldest-key eviction",
+      "expired record purge",
+      "unsafe/oversized key disabled decision",
+      "live enforcement remains disabled by default",
+      "artifact JSON validity",
+      "no live/native/database surface changes"
+    ]
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "loadTestsRun": false,
+    "writes": false,
+    "serviceRoleUsed": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "businessLogicChanged": false,
+    "financeAccountingCalculationsChanged": false,
+    "warehouseStockMathChanged": false,
+    "appRuntimeRateLimitEnabled": false,
+    "externalRateStoreEnabled": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadPiiSecretsLogged": false,
+    "secretsPrintedCommitted": false
+  },
+  "next": {
+    "liveRateEnforcement": "Still blocked until external rate store/provider and deployment env are intentionally enabled",
+    "fiftyKRuntime": "Future BFF/runtime rate enforcement can reuse this bounded local adapter contract without unbounded memory growth"
+  }
+}

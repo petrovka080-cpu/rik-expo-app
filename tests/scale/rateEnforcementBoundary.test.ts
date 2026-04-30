@@ -4,8 +4,11 @@ import path from "path";
 
 import {
   EXTERNAL_RATE_LIMIT_ADAPTER_CONTRACT,
+  IN_MEMORY_RATE_LIMIT_DEFAULT_MAX_TRACKED_KEYS,
+  IN_MEMORY_RATE_LIMIT_MAX_TRACKED_KEYS,
   InMemoryRateLimitAdapter,
   NoopRateLimitAdapter,
+  resolveInMemoryRateLimitMaxTrackedKeys,
 } from "../../src/shared/scale/rateLimitAdapters";
 import {
   BFF_MUTATION_RATE_LIMIT_OPERATIONS,
@@ -72,7 +75,9 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       if (!policy) return;
 
       const noop = new NoopRateLimitAdapter();
-      await expect(noop.check({ key: "rate:v1:test", policy })).resolves.toEqual({
+      await expect(
+        noop.check({ key: "rate:v1:test", policy }),
+      ).resolves.toEqual({
         state: "disabled",
         key: "rate:v1:test",
         operation: "proposal.submit",
@@ -82,7 +87,9 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
         enabled: false,
         realUserBlocked: false,
       });
-      await expect(noop.consume({ key: "rate:v1:test", policy })).resolves.toEqual(
+      await expect(
+        noop.consume({ key: "rate:v1:test", policy }),
+      ).resolves.toEqual(
         expect.objectContaining({ state: "disabled", realUserBlocked: false }),
       );
       expect(noop.getHealth()).toEqual({
@@ -129,16 +136,24 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       );
     }
     await expect(adapter.consume({ key, policy })).resolves.toEqual(
-      expect.objectContaining({ state: "soft_limited", realUserBlocked: false }),
+      expect.objectContaining({
+        state: "soft_limited",
+        realUserBlocked: false,
+      }),
     );
 
-    expect(adapter.getHealth()).toEqual({
-      kind: "in_memory",
-      enabled: true,
-      externalNetworkEnabled: false,
-      enforcementEnabledByDefault: false,
-      trackedKeys: 1,
-    });
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "in_memory",
+        enabled: true,
+        externalNetworkEnabled: false,
+        enforcementEnabledByDefault: false,
+        trackedKeys: 1,
+        maxTrackedKeys: IN_MEMORY_RATE_LIMIT_DEFAULT_MAX_TRACKED_KEYS,
+        evictedKeys: 0,
+        invalidKeyDecisions: 0,
+      }),
+    );
     await expect(adapter.refund(key)).resolves.toBe(true);
     await expect(adapter.reset(key)).resolves.toBe(true);
     await expect(adapter.getStatus(key)).resolves.toBeNull();
@@ -146,6 +161,92 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     now += policy.windowMs + 1;
     await expect(adapter.check({ key, policy })).resolves.toEqual(
       expect.objectContaining({ state: "allowed" }),
+    );
+  });
+
+  it("keeps the in-memory adapter bounded for future runtime use", async () => {
+    let now = 20_000;
+    const policy = getRateEnforcementPolicy("buyer.summary.inbox");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+
+    expect(resolveInMemoryRateLimitMaxTrackedKeys(2)).toBe(2);
+    expect(resolveInMemoryRateLimitMaxTrackedKeys(500_000)).toBe(
+      IN_MEMORY_RATE_LIMIT_MAX_TRACKED_KEYS,
+    );
+    expect(resolveInMemoryRateLimitMaxTrackedKeys(0)).toBe(
+      IN_MEMORY_RATE_LIMIT_DEFAULT_MAX_TRACKED_KEYS,
+    );
+
+    const adapter = new InMemoryRateLimitAdapter({
+      now: () => now,
+      maxTrackedKeys: 2,
+    });
+    const firstKey = "rate:v1:buyer.summary.inbox:first";
+    const secondKey = "rate:v1:buyer.summary.inbox:second";
+    const thirdKey = "rate:v1:buyer.summary.inbox:third";
+
+    await expect(adapter.consume({ key: firstKey, policy })).resolves.toEqual(
+      expect.objectContaining({ state: "allowed", realUserBlocked: false }),
+    );
+    await expect(adapter.consume({ key: secondKey, policy })).resolves.toEqual(
+      expect.objectContaining({ state: "allowed", realUserBlocked: false }),
+    );
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        trackedKeys: 2,
+        maxTrackedKeys: 2,
+        evictedKeys: 0,
+      }),
+    );
+
+    await expect(adapter.consume({ key: thirdKey, policy })).resolves.toEqual(
+      expect.objectContaining({ state: "allowed", realUserBlocked: false }),
+    );
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        trackedKeys: 2,
+        maxTrackedKeys: 2,
+        evictedKeys: 1,
+      }),
+    );
+    await expect(adapter.getStatus(firstKey)).resolves.toBeNull();
+    await expect(adapter.getStatus(secondKey)).resolves.toEqual(
+      expect.objectContaining({ key: secondKey }),
+    );
+    await expect(adapter.getStatus(thirdKey)).resolves.toEqual(
+      expect.objectContaining({ key: thirdKey }),
+    );
+
+    await expect(adapter.consume({ key: "", policy })).resolves.toEqual(
+      expect.objectContaining({
+        state: "disabled",
+        key: "rate:v1:invalid",
+        enabled: false,
+        realUserBlocked: false,
+      }),
+    );
+    await expect(
+      adapter.consume({ key: `rate:v1:${"x".repeat(300)}`, policy }),
+    ).resolves.toEqual(
+      expect.objectContaining({ state: "disabled", key: "rate:v1:invalid" }),
+    );
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        trackedKeys: 2,
+        invalidKeyDecisions: 2,
+      }),
+    );
+
+    now += policy.windowMs + 1;
+    await expect(adapter.check({ key: thirdKey, policy })).resolves.toEqual(
+      expect.objectContaining({ state: "allowed", realUserBlocked: false }),
+    );
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        trackedKeys: 1,
+        expiredKeysPurged: 2,
+      }),
     );
   });
 
@@ -202,7 +303,9 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     for (const operation of BFF_READ_HANDLER_OPERATIONS) {
       const policy = getRateEnforcementPolicyForBffReadOperation(operation);
       expect(policy).toBeTruthy();
-      expect(getBffReadHandlerMetadata(operation).rateEnforcementPolicy).toEqual(
+      expect(
+        getBffReadHandlerMetadata(operation).rateEnforcementPolicy,
+      ).toEqual(
         expect.objectContaining({
           operation,
           defaultEnabled: false,
@@ -211,11 +314,15 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       );
     }
 
-    expect(BFF_MUTATION_HANDLER_OPERATIONS).toEqual(BFF_MUTATION_RATE_LIMIT_OPERATIONS);
+    expect(BFF_MUTATION_HANDLER_OPERATIONS).toEqual(
+      BFF_MUTATION_RATE_LIMIT_OPERATIONS,
+    );
     for (const operation of BFF_MUTATION_HANDLER_OPERATIONS) {
       const policy = getRateEnforcementPolicyForBffMutationOperation(operation);
       expect(policy).toBeTruthy();
-      expect(getBffMutationHandlerMetadata(operation).rateEnforcementPolicy).toEqual(
+      expect(
+        getBffMutationHandlerMetadata(operation).rateEnforcementPolicy,
+      ).toEqual(
         expect.objectContaining({
           operation,
           idempotencyKeyRequiredForMutations: true,
@@ -252,16 +359,25 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       "offline.replay.bridge",
     ]);
 
-    const mappedJobs = JOB_POLICY_REGISTRY.filter((policy) => getRateEnforcementPolicyForJobType(policy.jobType));
+    const mappedJobs = JOB_POLICY_REGISTRY.filter((policy) =>
+      getRateEnforcementPolicyForJobType(policy.jobType),
+    );
     expect(mappedJobs).toHaveLength(8);
     for (const policy of mappedJobs) {
-      expect(policy.rateLimitEnforcementOperation).toBe(getRateEnforcementPolicyForJobType(policy.jobType)?.operation);
+      expect(policy.rateLimitEnforcementOperation).toBe(
+        getRateEnforcementPolicyForJobType(policy.jobType)?.operation,
+      );
       expect(policy.rateLimitEnforcementDefaultEnabled).toBe(false);
       expect(policy.rateLimitEnforcementEnabledByDefault).toBe(false);
     }
 
-    expect(getRateEnforcementPolicyForJobType("cache.readmodel.refresh")).toEqual(
-      expect.objectContaining({ operation: "cache.readmodel.refresh", category: "job" }),
+    expect(
+      getRateEnforcementPolicyForJobType("cache.readmodel.refresh"),
+    ).toEqual(
+      expect.objectContaining({
+        operation: "cache.readmodel.refresh",
+        category: "job",
+      }),
     );
     expect(getRateEnforcementPolicyForJobType("offline.replay.bridge")).toEqual(
       expect.objectContaining({
@@ -300,21 +416,28 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       expect(first.rawPiiInKey).toBe(false);
     }
 
-    expect(buildSafeRateLimitKey(policy, {
-      actorId: "actor-opaque",
-      companyId: "company-opaque",
-      payload: { email: "person@example.test" },
-      idempotencyKey: "idem-opaque",
-    })).toEqual({ ok: false, reason: "forbidden_field" });
-    expect(buildSafeRateLimitKey(policy, {
-      actorId: "actor-opaque",
-      companyId: "company-opaque",
-      idempotencyKey: "https://files.example.invalid/doc.pdf?token=signed-secret",
-    })).toEqual({ ok: false, reason: "sensitive_value" });
-    expect(buildSafeRateLimitKey(policy, {
-      actorId: "actor-opaque",
-      companyId: "company-opaque",
-    })).toEqual({ ok: false, reason: "missing_idempotency_key" });
+    expect(
+      buildSafeRateLimitKey(policy, {
+        actorId: "actor-opaque",
+        companyId: "company-opaque",
+        payload: { email: "person@example.test" },
+        idempotencyKey: "idem-opaque",
+      }),
+    ).toEqual({ ok: false, reason: "forbidden_field" });
+    expect(
+      buildSafeRateLimitKey(policy, {
+        actorId: "actor-opaque",
+        companyId: "company-opaque",
+        idempotencyKey:
+          "https://files.example.invalid/doc.pdf?token=signed-secret",
+      }),
+    ).toEqual({ ok: false, reason: "sensitive_value" });
+    expect(
+      buildSafeRateLimitKey(policy, {
+        actorId: "actor-opaque",
+        companyId: "company-opaque",
+      }),
+    ).toEqual({ ok: false, reason: "missing_idempotency_key" });
   });
 
   it("returns redacted observe-only abuse decisions without blocking real users by default", () => {
@@ -336,18 +459,29 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     });
     expect(validateAbuseEnforcementDecision(missingIdempotency)).toBe(true);
 
-    const burst = buildAbuseEnforcementDecision({ rateLimitState: "soft_limited" });
+    const burst = buildAbuseEnforcementDecision({
+      rateLimitState: "soft_limited",
+    });
     expect(burst.reasonCode).toBe("burst_exceeded");
     expect(burst.realUsersBlocked).toBe(false);
 
-    const fanout = buildAbuseEnforcementDecision({ fanoutCount: 10_000, fanoutMax: 100 });
+    const fanout = buildAbuseEnforcementDecision({
+      fanoutCount: 10_000,
+      fanoutMax: 100,
+    });
     expect(fanout.reasonCode).toBe("suspicious_fanout");
     expect(JSON.stringify(fanout)).not.toContain("10_000");
     expect(validateAbuseEnforcementDecision(fanout)).toBe(true);
   });
 
   it("does not replace app flows, log raw payloads, or touch forbidden platform files", () => {
-    const roots = ["app", "src/screens", "src/components", "src/features", "src/lib/api"];
+    const roots = [
+      "app",
+      "src/screens",
+      "src/components",
+      "src/features",
+      "src/lib/api",
+    ];
     const activeImports: string[] = [];
 
     const walk = (relativeDir: string) => {
@@ -359,7 +493,11 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
           walk(relativePath);
           continue;
         }
-        if (!/\.(ts|tsx)$/.test(entry.name) || entry.name.endsWith(".test.ts") || entry.name.endsWith(".test.tsx")) {
+        if (
+          !/\.(ts|tsx)$/.test(entry.name) ||
+          entry.name.endsWith(".test.ts") ||
+          entry.name.endsWith(".test.tsx")
+        ) {
           continue;
         }
         const source = readProjectFile(relativePath);
@@ -379,7 +517,9 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
 
     expect(changedFiles()).not.toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/^(package\.json|package-lock\.json|app\.json|eas\.json)$/),
+        expect.stringMatching(
+          /^(package\.json|package-lock\.json|app\.json|eas\.json)$/,
+        ),
         expect.stringMatching(/^(android\/|ios\/|supabase\/migrations\/)/),
       ]),
     );
@@ -389,13 +529,19 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       "src/shared/scale/rateLimitPolicies.ts",
       "src/shared/scale/rateLimitKeySafety.ts",
       "src/shared/scale/abuseEnforcementBoundary.ts",
-    ].map(readProjectFile).join("\n");
+    ]
+      .map(readProjectFile)
+      .join("\n");
     expect(changedSource).not.toMatch(/console\.(log|warn|error|info)/);
-    expect(changedSource).not.toMatch(/rawPayloadLogged:\s*true|piiLogged:\s*true/);
+    expect(changedSource).not.toMatch(
+      /rawPayloadLogged:\s*true|piiLogged:\s*true/,
+    );
   });
 
   it("keeps artifacts valid JSON", () => {
-    const matrix = JSON.parse(readProjectFile("artifacts/S_50K_RATE_ENFORCEMENT_1_matrix.json"));
+    const matrix = JSON.parse(
+      readProjectFile("artifacts/S_50K_RATE_ENFORCEMENT_1_matrix.json"),
+    );
     expect(matrix.wave).toBe("S-50K-RATE-ENFORCEMENT-1");
     expect(matrix.rateLimitBoundary.enabledByDefault).toBe(false);
     expect(matrix.rateLimitBoundary.realUsersBlockedByDefault).toBe(false);
@@ -403,5 +549,17 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     expect(matrix.integration.bffReadRoutesWithRateLimitMetadata).toBe(5);
     expect(matrix.integration.bffMutationRoutesWithRateLimitMetadata).toBe(5);
     expect(matrix.safety.packageNativeChanged).toBe(false);
+
+    const runtimeMatrix = JSON.parse(
+      readProjectFile("artifacts/S_50K_RATE_RUNTIME_ADAPTER_2_matrix.json"),
+    );
+    expect(runtimeMatrix.wave).toBe("S-50K-RATE-RUNTIME-ADAPTER-2");
+    expect(runtimeMatrix.status).toBe("GREEN_RATE_RUNTIME_GUARDRAIL_READY");
+    expect(runtimeMatrix.runtimeGuardrails.maxTrackedKeysDefault).toBe(
+      IN_MEMORY_RATE_LIMIT_DEFAULT_MAX_TRACKED_KEYS,
+    );
+    expect(runtimeMatrix.safety.productionTouched).toBe(false);
+    expect(runtimeMatrix.safety.stagingTouched).toBe(false);
+    expect(runtimeMatrix.safety.appRuntimeRateLimitEnabled).toBe(false);
   });
 });
