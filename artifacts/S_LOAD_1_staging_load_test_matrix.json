@@ -1,7 +1,7 @@
 {
   "wave": "S-LOAD-1",
   "mode": "production-safe-staging-load-test",
-  "generatedAt": "2026-04-30T05:33:15.294Z",
+  "generatedAt": "2026-04-30T06:14:12.870Z",
   "environment": {
     "canRunLive": true,
     "missingKeys": [],
@@ -30,23 +30,23 @@
       },
       "samples": [
         {
-          "latencyMs": 3127,
+          "latencyMs": 3005,
           "payloadBytes": 18777,
           "rowCount": 25
         },
         {
-          "latencyMs": 2592,
+          "latencyMs": 2599,
           "payloadBytes": 18777,
           "rowCount": 25
         },
         {
-          "latencyMs": 2579,
-          "payloadBytes": 18777,
+          "latencyMs": 2632,
+          "payloadBytes": 18776,
           "rowCount": 25
         }
       ],
-      "medianLatencyMs": 2592,
-      "maxLatencyMs": 3127,
+      "medianLatencyMs": 2632,
+      "maxLatencyMs": 3005,
       "medianPayloadBytes": 18777,
       "maxPayloadBytes": 18777,
       "maxRowCount": 25,
@@ -70,27 +70,27 @@
       },
       "samples": [
         {
-          "latencyMs": 1459,
+          "latencyMs": 793,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 431,
+          "latencyMs": 412,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 424,
+          "latencyMs": 418,
           "payloadBytes": 6366,
           "rowCount": 14
         }
       ],
-      "medianLatencyMs": 431,
-      "maxLatencyMs": 1459,
+      "medianLatencyMs": 418,
+      "maxLatencyMs": 793,
       "medianPayloadBytes": 6366,
       "maxPayloadBytes": 6366,
       "maxRowCount": 14,
-      "recommendation": "watch",
+      "recommendation": "safe_now",
       "status": "collected",
       "errors": []
     },
@@ -110,27 +110,27 @@
       },
       "samples": [
         {
-          "latencyMs": 1352,
+          "latencyMs": 797,
           "payloadBytes": 16791,
           "rowCount": 60
         },
         {
-          "latencyMs": 406,
+          "latencyMs": 411,
           "payloadBytes": 16791,
           "rowCount": 60
         },
         {
-          "latencyMs": 398,
+          "latencyMs": 420,
           "payloadBytes": 16791,
           "rowCount": 60
         }
       ],
-      "medianLatencyMs": 406,
-      "maxLatencyMs": 1352,
+      "medianLatencyMs": 420,
+      "maxLatencyMs": 797,
       "medianPayloadBytes": 16791,
       "maxPayloadBytes": 16791,
       "maxRowCount": 60,
-      "recommendation": "watch",
+      "recommendation": "safe_now",
       "status": "collected",
       "errors": []
     },
@@ -152,23 +152,23 @@
       },
       "samples": [
         {
-          "latencyMs": 1517,
+          "latencyMs": 840,
           "payloadBytes": 14725,
           "rowCount": 26
         },
         {
-          "latencyMs": 482,
+          "latencyMs": 466,
           "payloadBytes": 14725,
           "rowCount": 26
         },
         {
-          "latencyMs": 473,
+          "latencyMs": 478,
           "payloadBytes": 14725,
           "rowCount": 26
         }
       ],
-      "medianLatencyMs": 482,
-      "maxLatencyMs": 1517,
+      "medianLatencyMs": 478,
+      "maxLatencyMs": 840,
       "medianPayloadBytes": 14725,
       "maxPayloadBytes": 14725,
       "maxRowCount": 26,
@@ -188,23 +188,23 @@
       },
       "samples": [
         {
-          "latencyMs": 1472,
+          "latencyMs": 848,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 435,
+          "latencyMs": 416,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 431,
+          "latencyMs": 420,
           "payloadBytes": 28333,
           "rowCount": 132
         }
       ],
-      "medianLatencyMs": 435,
-      "maxLatencyMs": 1472,
+      "medianLatencyMs": 420,
+      "maxLatencyMs": 848,
       "medianPayloadBytes": 28333,
       "maxPayloadBytes": 28333,
       "maxRowCount": 132,
