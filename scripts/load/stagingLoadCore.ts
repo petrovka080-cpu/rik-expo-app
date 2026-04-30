@@ -4,6 +4,31 @@ export type StagingLoadEnvStatus = {
   presentKeys: string[];
 };
 
+export type StagingLoadRunProfile = "smoke" | "bounded-1k";
+
+export type StagingLoadStopConditions = {
+  requestTimeoutMs: number;
+  maxDurationMs: number;
+  maxTotalRequests: number;
+  maxErrorRate: number;
+  stopOnSqlstate57014: true;
+  stopOnHttp429Or5xx: true;
+  cooldownMs: number;
+};
+
+export type StagingLoadHarnessPlan = {
+  profile: StagingLoadRunProfile;
+  planOnly: boolean;
+  targetConcurrency: number;
+  rampSteps: number[];
+  stopConditions: StagingLoadStopConditions;
+  operatorApprovalRequired: boolean;
+  operatorApproved: boolean;
+  supabaseLimitsConfirmed: boolean;
+  safeToRunLive: boolean;
+  blockers: string[];
+};
+
 export type StagingLoadTarget = {
   id: string;
   domain: "buyer" | "warehouse" | "director" | "contractor";
@@ -23,7 +48,7 @@ export type StagingLoadSample = {
 
 export type StagingLoadTargetResult = {
   target: StagingLoadTarget;
-  status: "collected" | "not_run_env_missing" | "runtime_error";
+  status: "collected" | "not_run_env_missing" | "not_run_plan_only" | "not_run_blocked" | "runtime_error";
   samples: StagingLoadSample[];
   medianLatencyMs: number | null;
   maxLatencyMs: number | null;
@@ -35,14 +60,15 @@ export type StagingLoadTargetResult = {
 };
 
 export type StagingLoadMatrix = {
-  wave: "S-LOAD-1";
-  mode: "production-safe-staging-load-test";
+  wave: "S-LOAD-1" | "S-LOAD-10";
+  mode: "production-safe-staging-load-test" | "production-safe-1k-load-preflight";
   generatedAt: string;
   environment: StagingLoadEnvStatus & {
     productionFallbackUsed: false;
     secretsPrinted: false;
   };
-  liveRun: "completed" | "not_run_env_missing";
+  harnessPlan?: StagingLoadHarnessPlan;
+  liveRun: "completed" | "not_run_env_missing" | "not_run_plan_only" | "not_run_blocked";
   targets: StagingLoadTargetResult[];
   gates?: {
     targetedTests?: "pass" | "fail" | "not_run";
@@ -65,6 +91,24 @@ export type StagingLoadMatrix = {
     easBuildTriggered: false;
     easSubmitTriggered: false;
   };
+};
+
+export const DEFAULT_STAGING_LOAD_STOP_CONDITIONS: StagingLoadStopConditions = {
+  requestTimeoutMs: 10_000,
+  maxDurationMs: 10 * 60 * 1000,
+  maxTotalRequests: 15,
+  maxErrorRate: 0.02,
+  stopOnSqlstate57014: true,
+  stopOnHttp429Or5xx: true,
+  cooldownMs: 250,
+};
+
+export const BOUNDED_1K_STAGING_LOAD_STOP_CONDITIONS: StagingLoadStopConditions = {
+  ...DEFAULT_STAGING_LOAD_STOP_CONDITIONS,
+  requestTimeoutMs: 8_000,
+  maxDurationMs: 15 * 60 * 1000,
+  maxTotalRequests: 1_000,
+  cooldownMs: 500,
 };
 
 const REQUIRED_ENV_KEYS = ["STAGING_SUPABASE_URL", "STAGING_SUPABASE_READONLY_KEY"] as const;
@@ -150,6 +194,58 @@ export function resolveStagingLoadEnvStatus(
   };
 }
 
+export function buildStagingLoadHarnessPlan(params: {
+  envStatus: StagingLoadEnvStatus;
+  profile?: StagingLoadRunProfile;
+  planOnly?: boolean;
+  operatorApproved?: boolean;
+  supabaseLimitsConfirmed?: boolean;
+  targetConcurrency?: number;
+}): StagingLoadHarnessPlan {
+  const profile = params.profile ?? "smoke";
+  const operatorApprovalRequired = profile === "bounded-1k";
+  const operatorApproved = params.operatorApproved === true;
+  const supabaseLimitsConfirmed = params.supabaseLimitsConfirmed === true;
+  const targetConcurrency =
+    params.targetConcurrency ??
+    (profile === "bounded-1k" ? 1_000 : DEFAULT_STAGING_LOAD_TARGETS.length);
+  const rampSteps =
+    profile === "bounded-1k"
+      ? [25, 50, 100, 250, 500, 750, 1_000].filter((step) => step <= targetConcurrency)
+      : [Math.max(1, targetConcurrency)];
+  const stopConditions =
+    profile === "bounded-1k"
+      ? BOUNDED_1K_STAGING_LOAD_STOP_CONDITIONS
+      : DEFAULT_STAGING_LOAD_STOP_CONDITIONS;
+  const blockers: string[] = [];
+
+  if (!params.envStatus.canRunLive) {
+    blockers.push("staging_env_missing");
+  }
+  if (operatorApprovalRequired && !operatorApproved) {
+    blockers.push("operator_approval_missing");
+  }
+  if (profile === "bounded-1k" && !supabaseLimitsConfirmed) {
+    blockers.push("supabase_limits_unconfirmed");
+  }
+
+  const planOnly = params.planOnly === true;
+  const safeToRunLive = blockers.length === 0 && !planOnly;
+
+  return {
+    profile,
+    planOnly,
+    targetConcurrency,
+    rampSteps,
+    stopConditions,
+    operatorApprovalRequired,
+    operatorApproved,
+    supabaseLimitsConfirmed,
+    safeToRunLive,
+    blockers,
+  };
+}
+
 export function countRowsFromRpcData(data: unknown): number {
   if (Array.isArray(data)) return data.length;
   if (data && typeof data === "object") {
@@ -211,21 +307,44 @@ export function createEnvMissingResult(
   };
 }
 
+export function createNotRunResult(
+  target: StagingLoadTarget,
+  status: "not_run_plan_only" | "not_run_blocked",
+  reasons: string[],
+): StagingLoadTargetResult {
+  return {
+    ...summarizeTargetResult(target, []),
+    status,
+    errors: reasons,
+  };
+}
+
 export function buildStagingLoadMatrix(params: {
   generatedAt: string;
   envStatus: StagingLoadEnvStatus;
   targets: StagingLoadTargetResult[];
+  harnessPlan?: StagingLoadHarnessPlan;
 }): StagingLoadMatrix {
   return {
-    wave: "S-LOAD-1",
-    mode: "production-safe-staging-load-test",
+    wave: params.harnessPlan?.profile === "bounded-1k" ? "S-LOAD-10" : "S-LOAD-1",
+    mode:
+      params.harnessPlan?.profile === "bounded-1k"
+        ? "production-safe-1k-load-preflight"
+        : "production-safe-staging-load-test",
     generatedAt: params.generatedAt,
     environment: {
       ...params.envStatus,
       productionFallbackUsed: false,
       secretsPrinted: false,
     },
-    liveRun: params.envStatus.canRunLive ? "completed" : "not_run_env_missing",
+    harnessPlan: params.harnessPlan,
+    liveRun: !params.envStatus.canRunLive
+      ? "not_run_env_missing"
+      : params.harnessPlan?.planOnly
+        ? "not_run_plan_only"
+        : params.harnessPlan?.safeToRunLive === false
+          ? "not_run_blocked"
+          : "completed",
     targets: params.targets,
     safety: {
       readOnly: true,
@@ -242,13 +361,33 @@ export function buildStagingLoadMatrix(params: {
   };
 }
 
+export function resolveStagingLoadProofStatus(matrix: StagingLoadMatrix): string {
+  if (matrix.harnessPlan?.profile === "bounded-1k") {
+    return matrix.harnessPlan.safeToRunLive && matrix.liveRun === "completed"
+      ? "GREEN_1K_LOAD_PREFLIGHT_READY"
+      : "BLOCKED_1K_LOAD_REQUIRES_LIMIT_CONFIRMATION";
+  }
+  return (
+    matrix.liveRun === "completed"
+      ? "GREEN"
+      : matrix.liveRun === "not_run_env_missing"
+        ? "GREEN_IMPLEMENTATION_LIVE_NOT_RUN"
+        : "GREEN_PLAN_READY_LIVE_NOT_RUN"
+  );
+}
+
 export function renderStagingLoadProof(matrix: StagingLoadMatrix): string {
   const collected = matrix.targets.filter((target) => target.status === "collected");
   const blocked = matrix.targets.filter((target) => target.status !== "collected");
+  const status = resolveStagingLoadProofStatus(matrix);
+  const title =
+    matrix.harnessPlan?.profile === "bounded-1k"
+      ? "S-LOAD-10 1K Concurrency Preflight Proof"
+      : "S-LOAD-1 Staging Load Test Proof";
   const lines = [
-    "# S-LOAD-1 Staging Load Test Proof",
+    `# ${title}`,
     "",
-    `Status: ${matrix.liveRun === "completed" ? "GREEN" : "GREEN_IMPLEMENTATION_LIVE_NOT_RUN"}`,
+    `Status: ${status}`,
     "",
     "## Scope",
     "- Production-safe staging load harness only.",
@@ -261,6 +400,25 @@ export function renderStagingLoadProof(matrix: StagingLoadMatrix): string {
     "- secret values printed: NO",
     "- production touched: NO",
     "- production mutated: NO",
+    ...(matrix.harnessPlan
+      ? [
+          "",
+          "## Harness Plan",
+          `- profile: ${matrix.harnessPlan.profile}`,
+          `- plan only: ${matrix.harnessPlan.planOnly ? "YES" : "NO"}`,
+          `- target concurrency: ${matrix.harnessPlan.targetConcurrency}`,
+          `- ramp steps: ${matrix.harnessPlan.rampSteps.join(", ")}`,
+          `- request timeout: ${matrix.harnessPlan.stopConditions.requestTimeoutMs}ms`,
+          `- max duration: ${matrix.harnessPlan.stopConditions.maxDurationMs}ms`,
+          `- max total requests: ${matrix.harnessPlan.stopConditions.maxTotalRequests}`,
+          `- cooldown: ${matrix.harnessPlan.stopConditions.cooldownMs}ms`,
+          `- stop on SQLSTATE 57014: ${matrix.harnessPlan.stopConditions.stopOnSqlstate57014 ? "YES" : "NO"}`,
+          `- stop on HTTP 429/5xx: ${matrix.harnessPlan.stopConditions.stopOnHttp429Or5xx ? "YES" : "NO"}`,
+          `- operator approved: ${matrix.harnessPlan.operatorApproved ? "YES" : "NO"}`,
+          `- Supabase limits confirmed: ${matrix.harnessPlan.supabaseLimitsConfirmed ? "YES" : "NO"}`,
+          `- live blockers: ${matrix.harnessPlan.blockers.length ? matrix.harnessPlan.blockers.join(", ") : "none"}`,
+        ]
+      : []),
     "",
     "## Results",
     `- targets planned: ${matrix.targets.length}`,
