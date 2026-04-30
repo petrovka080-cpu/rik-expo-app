@@ -27,6 +27,13 @@ const probeMaterializationSource = readSource(
   ),
 );
 const lowerProbeMaterializationSource = probeMaterializationSource.toLowerCase();
+const inlineProbeOrderSource = readSource(
+  path.join(
+    process.cwd(),
+    "supabase/migrations/20260430122500_s_load_fix_5c_warehouse_issue_queue_inline_probe_order.sql",
+  ),
+);
+const lowerInlineProbeOrderSource = inlineProbeOrderSource.toLowerCase();
 
 describe("S-LOAD-FIX-5 warehouse issue queue total-count reduction", () => {
   it("patches only the private warehouse issue queue source body behind the public wrapper", () => {
@@ -124,5 +131,24 @@ describe("S-LOAD-FIX-5 warehouse issue queue total-count reduction", () => {
     expect(lowerProbeMaterializationSource).not.toContain("create or replace function public.warehouse_stock_scope_v2");
     expect(lowerProbeMaterializationSource).not.toContain("create or replace function public.warehouse_incoming_queue_scope_v1");
     expect(lowerProbeMaterializationSource).not.toContain("warehouse_issue_post");
+  });
+
+  it("adds a narrow inline ordered probe follow-up without changing payload semantics", () => {
+    expect(inlineProbeOrderSource).toContain(
+      "public.warehouse_issue_queue_scope_v4_source_before_sloadfix4(integer, integer)",
+    );
+    expect(inlineProbeOrderSource).toContain("sorted_probe_rows as materialized (");
+    expect(inlineProbeOrderSource).toContain("from visible_queue_rows");
+    expect(inlineProbeOrderSource).toContain("order by submitted_at desc nulls last, display_year desc, display_seq desc, request_id desc");
+    expect(inlineProbeOrderSource).toContain("limit ((select limit_value from normalized_args) + 1)");
+    expect(inlineProbeOrderSource).toContain("from sorted_rows");
+    expect(inlineProbeOrderSource).toContain("position('from sorted_rows' in lower(v_next)) > 0");
+    expect(inlineProbeOrderSource).toContain(
+      "create or replace function public.warehouse_issue_queue_sloadfix5c_inline_probe_order_proof_v1()",
+    );
+    expect(inlineProbeOrderSource).toContain("'source_uses_inline_ordered_probe'");
+    expect(lowerInlineProbeOrderSource).not.toContain("create or replace function public.warehouse_stock_scope_v2");
+    expect(lowerInlineProbeOrderSource).not.toContain("create or replace function public.warehouse_incoming_queue_scope_v1");
+    expect(lowerInlineProbeOrderSource).not.toContain("warehouse_issue_post");
   });
 });
