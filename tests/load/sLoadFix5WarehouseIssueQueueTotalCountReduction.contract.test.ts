@@ -34,6 +34,13 @@ const inlineProbeOrderSource = readSource(
   ),
 );
 const lowerInlineProbeOrderSource = inlineProbeOrderSource.toLowerCase();
+const restoreExactCountSource = readSource(
+  path.join(
+    process.cwd(),
+    "supabase/migrations/20260430124500_s_load_fix_5d_warehouse_issue_queue_restore_exact_count.sql",
+  ),
+);
+const lowerRestoreExactCountSource = restoreExactCountSource.toLowerCase();
 
 describe("S-LOAD-FIX-5 warehouse issue queue total-count reduction", () => {
   it("patches only the private warehouse issue queue source body behind the public wrapper", () => {
@@ -150,5 +157,20 @@ describe("S-LOAD-FIX-5 warehouse issue queue total-count reduction", () => {
     expect(lowerInlineProbeOrderSource).not.toContain("create or replace function public.warehouse_stock_scope_v2");
     expect(lowerInlineProbeOrderSource).not.toContain("create or replace function public.warehouse_incoming_queue_scope_v1");
     expect(lowerInlineProbeOrderSource).not.toContain("warehouse_issue_post");
+  });
+
+  it("adds a safety restore migration when the lower-bound probe cannot pass staging verification", () => {
+    expect(restoreExactCountSource).toContain(
+      "public.warehouse_issue_queue_scope_v4_source_before_sloadfix4(integer, integer)",
+    );
+    expect(restoreExactCountSource).toContain("(select count(*)::integer from visible_queue_rows) as total_count");
+    expect(restoreExactCountSource).toContain("'source_restores_exact_visible_queue_total_count'");
+    expect(restoreExactCountSource).toContain("'source_removes_lower_bound_total_metadata'");
+    expect(restoreExactCountSource).toContain(
+      "create or replace function public.warehouse_issue_queue_sloadfix5d_restore_exact_count_proof_v1()",
+    );
+    expect(lowerRestoreExactCountSource).not.toContain("create or replace function public.warehouse_stock_scope_v2");
+    expect(lowerRestoreExactCountSource).not.toContain("create or replace function public.warehouse_incoming_queue_scope_v1");
+    expect(lowerRestoreExactCountSource).not.toContain("warehouse_issue_post");
   });
 });
