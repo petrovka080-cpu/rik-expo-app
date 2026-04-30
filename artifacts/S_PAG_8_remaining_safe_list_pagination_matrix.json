@@ -1,0 +1,125 @@
+{
+  "wave": "S-PAG-8",
+  "mode": "remaining-safe-list-pagination",
+  "ownerGoal": "10K/50K+ readiness",
+  "dependsOn": [
+    "S-LOAD-3 GREEN_STAGING_EXECUTED",
+    "S-PAG-7 GREEN",
+    "S-RT-5 GREEN"
+  ],
+  "baseline": {
+    "unboundedSelects": 86,
+    "unboundedFiles": 37,
+    "source": "Recalculated from HEAD at start of wave: S-PAG-7 post-wave artifact plus clean main/origin main with no drift."
+  },
+  "result": {
+    "unboundedSelects": 80,
+    "unboundedFiles": 37,
+    "fixedCallSites": 6,
+    "targetMet": true,
+    "note": "Call-site count reduced by six. File count is held conservative because the remaining static tail still includes detail/report/guard/accounting or other deferred reads in the broader audit set."
+  },
+  "fixedCallSites": [
+    {
+      "file": "src/features/auctions/auctions.data.ts",
+      "function": "loadAuctionSummaries",
+      "source": "tender_items by tender_id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "tender_id asc, created_at asc, id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/buyer/hooks/useBuyerProposalNos.ts",
+      "function": "fetchBuyerProposalNos",
+      "source": "proposals by id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/buyer/buyer.buckets.repo.ts",
+      "function": "fetchBuyerProposalItemIds",
+      "source": "proposal_items by proposal_id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "proposal_id asc, request_item_id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/lib/chat_api.ts",
+      "function": "fetchListingChatMessages",
+      "source": "user_profiles by chat message user_id set",
+      "pattern": "input-bounded range",
+      "defaultPageSize": 100,
+      "stableOrder": "user_id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/office/officeAccess.services.ts",
+      "function": "loadOfficeMembersPage",
+      "source": "user_profiles by visible member user_id set",
+      "pattern": "input-bounded range",
+      "defaultPageSize": 100,
+      "stableOrder": "user_id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.nameMap.ui.ts",
+      "function": "fetchWarehouseNameMapUi",
+      "source": "warehouse_name_map_ui by code set",
+      "pattern": "page-through-all range over existing 5000-code input ceiling",
+      "defaultPageSize": 100,
+      "stableOrder": "code asc",
+      "returnShapePreserved": true
+    }
+  ],
+  "skippedFiles": [
+    {
+      "file": "src/lib/api/pdf_proposal.ts",
+      "reason": "PDF full-scan/read composition excluded by hard exclusion."
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "reason": "PDF builder reads excluded by hard exclusion."
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.*.ts",
+      "reason": "report/calculation surfaces require dedicated report-safe validation."
+    },
+    {
+      "file": "src/lib/api/integrity.guards.ts",
+      "reason": "integrity guard semantics intentionally unchanged."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "reason": "warehouse report/export/detail reads intentionally left unpaginated."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.stockReports.service.ts",
+      "reason": "warehouse stock calculation/report surface excluded without dedicated tests."
+    },
+    {
+      "file": "src/screens/contractor/contractor.resolvers.ts",
+      "reason": "single-row resolver lookups via maybeSingle; not a list/search surface."
+    },
+    {
+      "file": "src/lib/files.ts",
+      "reason": "attachment/open full-file behavior left unchanged; existing call path passes explicit limits."
+    }
+  ],
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "writes": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "businessLogicChanged": false,
+    "pdfReportExportChanged": false,
+    "detailGuardSemanticsChanged": false,
+    "financeAccountingWarehouseStockChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "secretsPrintedOrCommitted": false
+  }
+}

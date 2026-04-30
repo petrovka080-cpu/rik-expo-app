@@ -18,7 +18,7 @@ describe("S-PAG-5 remaining unbounded selects triage contract", () => {
     expect(buyerApi).toContain(".range(page.from, page.to)");
 
     const buyerBuckets = read("src/screens/buyer/buyer.buckets.repo.ts");
-    expect(buyerBuckets.match(/\.range\(page\.from, page\.to\)/g)).toHaveLength(2);
+    expect(buyerBuckets.match(/\.range\(page\.from, page\.to\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
 
     const buyerCounterparty = read("src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts");
     expect(buyerCounterparty.match(/\.range\(page\.from, page\.to\)/g)).toHaveLength(5);

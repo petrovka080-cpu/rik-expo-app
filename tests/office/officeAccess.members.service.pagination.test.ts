@@ -51,12 +51,16 @@ function buildProfilesBuilder(result: {
 }) {
   type ProfilesBuilder = {
     select: jest.Mock<ProfilesBuilder, [string]>;
-    in: jest.Mock<Promise<typeof result>, [string, readonly string[]]>;
+    in: jest.Mock<ProfilesBuilder, [string, readonly string[]]>;
+    order: jest.Mock<ProfilesBuilder, [string, { ascending: boolean }]>;
+    range: jest.Mock<Promise<typeof result>, [number, number]>;
   };
 
   const builder = {} as ProfilesBuilder;
   builder.select = jest.fn((_columns: string) => builder);
-  builder.in = jest.fn((_column: string, _values: readonly string[]) => Promise.resolve(result));
+  builder.in = jest.fn((_column: string, _values: readonly string[]) => builder);
+  builder.order = jest.fn((_column: string, _options: { ascending: boolean }) => builder);
+  builder.range = jest.fn((_from: number, _to: number) => Promise.resolve(result));
 
   return builder;
 }
@@ -127,6 +131,10 @@ describe("officeAccess.services members pagination", () => {
       "user-3",
       "user-4",
     ]);
+    expect(profilesBuilder.order).toHaveBeenCalledWith("user_id", {
+      ascending: true,
+    });
+    expect(profilesBuilder.range).toHaveBeenCalledWith(0, 1);
     expect(result.members.map((member) => member.userId)).toEqual([
       "user-3",
       "user-4",

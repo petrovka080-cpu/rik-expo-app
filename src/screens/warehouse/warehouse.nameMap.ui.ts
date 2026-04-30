@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { normalizePage } from "../../lib/api/_core";
 import { isUuid } from "./warehouse.utils";
 
 type UnknownRow = Record<string, unknown>;
@@ -17,6 +18,8 @@ export type WarehouseNameMapRefreshPayload = {
 
 const normalizeCode = (value: unknown): string =>
   String(value ?? "").trim().toUpperCase();
+
+const WAREHOUSE_NAME_MAP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
 
 const fromWarehouseNameMapUi = (supabase: SupabaseClient) =>
   supabase.from("warehouse_name_map_ui" as never);
@@ -54,24 +57,35 @@ export async function fetchWarehouseNameMapUi(
 ): Promise<WarehouseNameMapUiFetchResult> {
   const codes = normalizeWarehouseCodeList(codeList);
   if (!codes.length) return { available: true, map: {} };
+  const boundedCodes = codes.slice(0, 5000);
 
-  const q = await fromWarehouseNameMapUi(supabase)
-    .select("code, display_name")
-    .in("code", codes.slice(0, 5000));
+  const rows: UnknownRow[] = [];
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, WAREHOUSE_NAME_MAP_PAGE_DEFAULTS);
+    const q = await fromWarehouseNameMapUi(supabase)
+      .select("code, display_name")
+      .in("code", boundedCodes)
+      .order("code", { ascending: true })
+      .range(page.from, page.to);
 
-  if (q.error) {
-    const msg = String((q.error as { message?: string } | null)?.message ?? q.error ?? "");
-    const unavailable =
-      msg.includes("warehouse_name_map_ui") &&
-      (msg.includes("schema cache") ||
-        msg.includes("does not exist") ||
-        msg.includes("relation"));
-    if (unavailable) return { available: false, map: {} };
-    return { available: true, map: {} };
+    if (q.error) {
+      const msg = String((q.error as { message?: string } | null)?.message ?? q.error ?? "");
+      const unavailable =
+        msg.includes("warehouse_name_map_ui") &&
+        (msg.includes("schema cache") ||
+          msg.includes("does not exist") ||
+          msg.includes("relation"));
+      if (unavailable) return { available: false, map: {} };
+      return { available: true, map: {} };
+    }
+
+    const pageRows = Array.isArray(q.data) ? (q.data as UnknownRow[]) : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize || rows.length >= boundedCodes.length) break;
   }
 
   const out: Record<string, string> = {};
-  for (const row of (Array.isArray(q.data) ? q.data : []) as UnknownRow[]) {
+  for (const row of rows) {
     const code = normalizeCode(row.code);
     const displayName = String(row.display_name ?? "").trim();
     if (code && displayName && !out[code]) out[code] = displayName;

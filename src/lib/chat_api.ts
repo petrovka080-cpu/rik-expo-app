@@ -162,10 +162,16 @@ export async function fetchListingChatMessages(
   const userMap = new Map<string, string>();
 
   if (userIds.length > 0) {
+    const profilePage = normalizePage(
+      { pageSize: userIds.length },
+      { pageSize: 100, maxPageSize: 100 },
+    );
     const { data: profiles } = await supabase
       .from("user_profiles")
       .select("user_id, full_name")
-      .in("user_id", userIds);
+      .in("user_id", userIds)
+      .order("user_id", { ascending: true })
+      .range(profilePage.from, profilePage.to);
 
     for (const profile of profiles ?? []) {
       if (profile?.user_id) {

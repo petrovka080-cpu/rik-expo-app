@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { normalizePage } from "../../lib/api/_core";
 
 import type {
   AuctionItemsJson,
@@ -11,6 +12,27 @@ import type {
   UnifiedAuctionItem,
   UnifiedAuctionSummary,
 } from "./auctions.types";
+
+const AUCTION_CHILD_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type PagedAuctionQuery<T> = {
+  range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error?: unknown }>;
+};
+
+async function loadPagedAuctionRows<T>(
+  queryFactory: () => PagedAuctionQuery<T>,
+): Promise<{ data: T[] | null; error: unknown | null }> {
+  const rows: T[] = [];
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, AUCTION_CHILD_LIST_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
+}
 
 function toMaybeNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -150,10 +172,15 @@ export async function loadAuctionSummaries(tab: AuctionListTab): Promise<Unified
   const tenders = (tenderResult.data ?? []) as TenderRow[];
   if (tenders.length > 0) {
     const tenderIds = tenders.map((row) => row.id);
-    const itemsResult = await supabase
-      .from("tender_items")
-      .select("id, tender_id, rik_code, name_human, qty, uom, request_item_id, created_at")
-      .in("tender_id", tenderIds);
+    const itemsResult = await loadPagedAuctionRows<TenderItemRow>(() =>
+      supabase
+        .from("tender_items")
+        .select("id, tender_id, rik_code, name_human, qty, uom, request_item_id, created_at")
+        .in("tender_id", tenderIds)
+        .order("tender_id", { ascending: true })
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true }) as unknown as PagedAuctionQuery<TenderItemRow>,
+    );
 
     if (itemsResult.error) throw itemsResult.error;
 

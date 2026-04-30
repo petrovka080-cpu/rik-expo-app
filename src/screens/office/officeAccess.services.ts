@@ -154,10 +154,18 @@ export async function loadOfficeMembersPage(params: {
   );
 
   const profilesResult = memberIds.length
-    ? await supabase
-        .from("user_profiles")
-        .select("user_id,full_name,phone")
-        .in("user_id", memberIds)
+    ? await (() => {
+        const profilePage = normalizePage(
+          { pageSize: memberIds.length },
+          { pageSize: 100, maxPageSize: 100 },
+        );
+        return supabase
+          .from("user_profiles")
+          .select("user_id,full_name,phone")
+          .in("user_id", memberIds)
+          .order("user_id", { ascending: true })
+          .range(profilePage.from, profilePage.to);
+      })()
     : { data: [], error: null };
 
   if (profilesResult.error) throw profilesResult.error;

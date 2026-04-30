@@ -60,12 +60,34 @@ export async function fetchBuyerProposalItemIds(
   supabase: SupabaseClient,
   proposalIds: string[],
 ): Promise<PostgrestResponse<BuyerProposalItemIdRow>> {
-  const query = supabase
-    .from("proposal_items")
-    .select(BUYER_PROPOSAL_ITEM_ID_SELECT)
-    .in("proposal_id", proposalIds);
+  const ids = Array.from(new Set((proposalIds || []).map(String).filter(Boolean)));
+  if (!ids.length) {
+    return {
+      data: [],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: "OK",
+    };
+  }
 
-  return (await query) as PostgrestResponse<BuyerProposalItemIdRow>;
+  const rows: BuyerProposalItemIdRow[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, { pageSize: 100, maxPageSize: 100 });
+    const result = (await supabase
+      .from("proposal_items")
+      .select(BUYER_PROPOSAL_ITEM_ID_SELECT)
+      .in("proposal_id", ids)
+      .order("proposal_id", { ascending: true })
+      .order("request_item_id", { ascending: true })
+      .range(page.from, page.to)) as PostgrestResponse<BuyerProposalItemIdRow>;
+
+    if (result.error) return result;
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { ...result, data: rows };
+  }
 }
 
 export { BUYER_STATUS_APPROVED, BUYER_STATUS_PENDING, BUYER_STATUS_REWORK };
