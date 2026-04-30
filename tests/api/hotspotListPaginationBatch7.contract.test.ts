@@ -17,7 +17,10 @@ const changedFiles = () =>
     .map((line) => line.slice(3).replace(/^"|"$/g, "").replace(/\\/g, "/"));
 
 const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
-  file === "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql";
+  [
+    "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql",
+    "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql",
+  ].includes(file);
 
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {

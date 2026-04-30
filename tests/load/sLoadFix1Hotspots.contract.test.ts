@@ -23,8 +23,10 @@ const dirtyPaths = () => {
 };
 
 const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
-  file.replace(/\\/g, "/") ===
-  "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql";
+  [
+    "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql",
+    "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql",
+  ].includes(file.replace(/\\/g, "/"));
 
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
