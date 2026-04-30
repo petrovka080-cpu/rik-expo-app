@@ -1,0 +1,111 @@
+{
+  "wave": "S-LOAD-FIX-5",
+  "mode": "warehouse-issue-queue-total-count-reduction-source-patch",
+  "status": "GREEN_SOURCE_PATCH_READY",
+  "ownerGoal": "10K/50K+ readiness",
+  "generatedAt": "2026-04-30T16:45:00.000+06:00",
+  "context": {
+    "baselineWave": "S-LOAD-7",
+    "baselineStatus": "PARTIAL_STAGING_EXECUTED_WAREHOUSE_ISSUE_STILL_OPTIMIZE_NEXT",
+    "remainingHotspot": "warehouse_issue_queue_page_25",
+    "baselineRecommendation": "optimize_next",
+    "baselineMaxLatencyMs": 2950,
+    "baselineMedianLatencyMs": 2630,
+    "baselineRows": 25,
+    "sourceRpc": "warehouse_issue_queue_scope_v4",
+    "privateSourceBody": "warehouse_issue_queue_scope_v4_source_before_sloadfix4",
+    "note": "S-LOAD-7 proved buyer inbox, stock, and incoming queue improved, but warehouse_issue_queue_page_25 remained optimize_next. This wave prepares a repo-only source patch and does not run staging load."
+  },
+  "filesChanged": [
+    "supabase/migrations/20260430114500_s_load_fix_5_warehouse_issue_queue_total_count_reduction.sql",
+    "tests/load/sLoadFix5WarehouseIssueQueueTotalCountReduction.contract.test.ts",
+    "artifacts/S_LOAD_FIX_5_warehouse_issue_queue_total_count_reduction_matrix.json",
+    "artifacts/S_LOAD_FIX_5_warehouse_issue_queue_total_count_reduction_proof.md"
+  ],
+  "sourcePatch": {
+    "migration": "supabase/migrations/20260430114500_s_load_fix_5_warehouse_issue_queue_total_count_reduction.sql",
+    "publicSignatureChanged": false,
+    "publicWrapperPreserved": true,
+    "privateSourcePatched": true,
+    "exactVisibleQueueTotalCountRemoved": true,
+    "paginationProbe": "limit_plus_one",
+    "rowsStillCappedToPLimit": true,
+    "rowOrderPreserved": true,
+    "metaTotalKind": "lower_bound",
+    "metaHasMoreSource": "limit_plus_one_probe",
+    "fallbackDiagnosticCountScoped": true,
+    "requestStatusOrderIndexAdded": "idx_requests_issue_queue_visible_status_order_sloadfix5"
+  },
+  "businessSemantics": {
+    "rowPayloadShapeChanged": false,
+    "visibleQueueFiltersChanged": false,
+    "orderingChanged": false,
+    "pageBoundChanged": false,
+    "warehouseStockMathChanged": false,
+    "issueMutationSemanticsChanged": false,
+    "permissionsChanged": false,
+    "rlsChanged": false,
+    "diagnosticMetaChanged": [
+      "meta.total is a lower-bound pagination total instead of forcing exact visible_queue_rows count",
+      "meta.total_exact=false and meta.total_kind=lower_bound document the diagnostic-only total behavior",
+      "meta.has_more is computed from limit+1 probe"
+    ]
+  },
+  "skippedPaths": [
+    {
+      "path": "warehouse_stock_scope_v2",
+      "reason": "S-LOAD-7 classified stock as safe_now; warehouse stock math is excluded."
+    },
+    {
+      "path": "warehouse_incoming_queue_scope_v1",
+      "reason": "S-LOAD-7 classified incoming queue as safe_now."
+    },
+    {
+      "path": "buyer_summary_inbox_scope_v1",
+      "reason": "S-LOAD-7 classified buyer inbox as safe_now with rows=25."
+    },
+    {
+      "path": "buyer_summary_buckets_scope_v1",
+      "reason": "Still watch, but not the remaining optimize_next target."
+    }
+  ],
+  "execution": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "stagingLoadRun": false,
+    "productionLoadRun": false,
+    "migrationAppliedToLiveEnv": false,
+    "writesPerformed": false,
+    "serviceRoleUsed": false
+  },
+  "requiredNextWaves": [
+    "S-STAGING-WAREHOUSE-ISSUE-SOURCE-PATCH-APPLY-2",
+    "S-LOAD-8 POST-WAREHOUSE-ISSUE-TOTAL-COUNT-REDUCTION STAGING REGRESSION"
+  ],
+  "gates": {
+    "targetedSqlContractTest": "pass",
+    "jsonArtifactParse": "pass",
+    "gitDiffCheck": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pending_final_post_commit"
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "loadTestsRun": false,
+    "migrationsAppliedToLiveEnv": false,
+    "writes": false,
+    "serviceRoleUsed": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "financeAccountingCalculationsChanged": false,
+    "warehouseStockMathChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadPiiSecretsLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false
+  }
+}
