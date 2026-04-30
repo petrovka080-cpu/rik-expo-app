@@ -1,0 +1,127 @@
+{
+  "wave": "S-LOAD-FIX-3",
+  "mode": "rpc-source-hotspot-patch",
+  "status": "GREEN_SOURCE_PATCH_READY",
+  "ownerGoal": "10K/50K+ readiness",
+  "generatedAt": "2026-04-30T09:30:00.000+06:00",
+  "context": {
+    "sourceBaselineWave": "S-LOAD-5",
+    "sourceBaselineStatus": "PARTIAL_STAGING_EXECUTED_RPC_ROW_OVERRUN_REMAINS",
+    "sLoad5Commit": "65f9b9dd5604c34a611450b15038b9bb38360b41",
+    "sLoad5Findings": {
+      "warehouse_issue_queue_page_25": {
+        "recommendation": "optimize_next",
+        "maxLatencyMs": 3005,
+        "maxRows": 25,
+        "reason": "rows stayed bounded, max latency remained above 1500ms"
+      },
+      "buyer_summary_inbox_page_25": {
+        "recommendation": "optimize_next",
+        "maxLatencyMs": 840,
+        "maxRows": 26,
+        "reason": "direct staging RPC returned 26 rows for p_limit=25"
+      },
+      "buyer_summary_buckets_fixed_scope": {
+        "recommendation": "watch",
+        "maxLatencyMs": 848,
+        "reason": "latency improved but remained above the watch threshold"
+      }
+    }
+  },
+  "inspectedDefinitions": [
+    "supabase/migrations/20260417053000_r3_e_buyer_inbox_search_cpu_hardening.sql",
+    "supabase/migrations/20260422170000_r4_a_warehouse_issue_queue_fallback_scope_pushdown.sql",
+    "supabase/migrations/20260428154000_s_db_2_query_plan_indexes.sql",
+    "src/screens/buyer/buyer.fetchers.ts",
+    "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+    "scripts/load/stagingLoadCore.ts"
+  ],
+  "sourcePatches": [
+    {
+      "rpcName": "buyer_summary_inbox_scope_v1",
+      "file": "supabase/migrations/20260430093000_s_load_fix_3_rpc_source_hotspot_patch.sql",
+      "type": "rpc-source-wrapper",
+      "signaturePreserved": true,
+      "sourceBeforeWrapper": "buyer_summary_inbox_scope_v1_source_before_sloadfix3",
+      "limitClamp": {
+        "nullLimit": 12,
+        "minimum": 1,
+        "maximum": 100
+      },
+      "rowBound": "jsonb rows are rebuilt from source rows where ordinality <= normalized limit_groups",
+      "orderingPreserved": "jsonb_agg orders by original ordinality from the source payload",
+      "returnedRowCountPatched": true,
+      "directRpcRowsOverLimitImpossibleAfterMigrationApply": true,
+      "validShapeChanged": false
+    },
+    {
+      "rpcName": "warehouse_issue_queue_scope_v4",
+      "file": "supabase/migrations/20260430093000_s_load_fix_3_rpc_source_hotspot_patch.sql",
+      "type": "additive-index-shape-patch",
+      "functionBodyChanged": false,
+      "rowBoundAlreadyPresent": "latest R4.A source uses offset/limit over sorted_rows and client path fail-closes on rows length > p_limit",
+      "indexesAdded": [
+        "idx_warehouse_issue_queue_context_order_sloadfix3",
+        "idx_request_items_issue_queue_fallback_sloadfix3"
+      ],
+      "reason": "No repo-safe warehouse calculation rewrite was made without live EXPLAIN/parity. The additive indexes target current context-order joins and fallback item truth reads while preserving returned shape and warehouse stock math."
+    }
+  ],
+  "skippedPaths": [
+    {
+      "path": "warehouse_stock_scope_v2",
+      "reason": "S-LOAD-5 improved warehouse_stock_page_60 to safe_now; warehouse stock math is excluded from this wave."
+    },
+    {
+      "path": "buyer_summary_buckets_scope_v1",
+      "reason": "Still watch, but not a row-overrun source issue; no safe source patch without a dedicated bucket optimization wave."
+    },
+    {
+      "path": "live staging migration apply",
+      "reason": "Hard exclusion: do not touch staging or apply migrations to live env in S-LOAD-FIX-3."
+    }
+  ],
+  "tests": {
+    "targetedSqlRpcSourceBoundTests": "tests/load/sLoadFix3RpcSourceHotspotPatch.contract.test.ts",
+    "targetedBuyerSummaryInboxTests": "tests/load/sLoadFix3RpcSourceHotspotPatch.contract.test.ts",
+    "targetedWarehouseIssueQueueTests": "tests/load/sLoadFix3RpcSourceHotspotPatch.contract.test.ts",
+    "status": "pass"
+  },
+  "execution": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "stagingLoadRun": false,
+    "productionLoadRun": false,
+    "migrationsAppliedToLiveEnv": false,
+    "writesToLiveEnv": false,
+    "serviceRoleUsed": false
+  },
+  "gates": {
+    "gitDiffCheck": "pass",
+    "jsonArtifactParse": "pass",
+    "targetedSqlRpcSourceBoundTests": "pass",
+    "targetedBuyerSummaryInboxTests": "pass",
+    "targetedWarehouseIssueQueueTests": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pending_final_post_commit"
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "loadTestsRun": false,
+    "migrationsAppliedToLiveEnv": false,
+    "writes": false,
+    "serviceRoleUsed": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "financeAccountingCalculationsChanged": false,
+    "warehouseStockMathChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadPiiSecretsLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false
+  }
+}
