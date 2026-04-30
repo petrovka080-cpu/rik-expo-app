@@ -125,6 +125,37 @@ describe("warehouse.requests.read canonical ownership", () => {
     );
   });
 
+  it("clamps oversized request-head page sizes before calling the hot queue rpc", async () => {
+    const rpc = jest.fn().mockResolvedValue({
+      data: {
+        version: "v4",
+        rows: [],
+        meta: {
+          total: 0,
+          row_count: 0,
+          generated_at: "2026-04-12T08:00:01.000Z",
+          payload_shape_version: "v4",
+        },
+      },
+      error: null,
+    });
+
+    await service.apiFetchReqHeadsWindow({ rpc } as never, 1, 500);
+
+    expect(rpc).toHaveBeenCalledWith("warehouse_issue_queue_scope_v4", {
+      p_offset: 100,
+      p_limit: 100,
+    });
+    expect(mockObservationSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({
+        extra: expect.objectContaining({
+          page: 1,
+          pageSize: 100,
+        }),
+      }),
+    );
+  });
+
   it("fails closed when the canonical request-head RPC fails", async () => {
     const rpc = jest.fn().mockResolvedValue({
       data: null,

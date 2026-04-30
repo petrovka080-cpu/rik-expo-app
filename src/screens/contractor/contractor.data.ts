@@ -1,4 +1,5 @@
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+import { normalizePage, type PageInput } from "../../lib/api/_core";
 import type { WorkLogRow } from "./types";
 
 export type RequestScopeRow = { id: string; status: string | null };
@@ -57,6 +58,35 @@ type WorkLogDbRow = {
   note?: string | null;
 };
 
+const CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type PagedContractorQuery<T> = {
+  range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error?: unknown }>;
+};
+
+async function loadPagedContractorRows<T>(
+  queryFactory: () => PagedContractorQuery<T>,
+  pageInput?: PageInput,
+): Promise<{ data: T[] | null; error: unknown | null }> {
+  if (pageInput) {
+    const page = normalizePage(pageInput, CONTRACTOR_LIST_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+    return { data: Array.isArray(result.data) ? result.data : [], error: null };
+  }
+
+  const rows: T[] = [];
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, CONTRACTOR_LIST_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
+}
+
 export async function fetchRequestScopeRows(
   supabaseClient: any,
   jobId: string,
@@ -66,15 +96,21 @@ export async function fetchRequestScopeRows(
   const safeJobId = String(jobId || "").trim();
   const safeReqId = String(reqIdForRow || "").trim();
   if (safeJobId && looksLikeUuid(safeJobId)) {
-    let reqQ = await supabaseClient
-      .from("requests")
-      .select("id, status")
-      .eq("subcontract_id", safeJobId);
-    if (reqQ.error) {
-      reqQ = await supabaseClient
+    let reqQ = await loadPagedContractorRows<RequestRow>(() =>
+      supabaseClient
         .from("requests")
         .select("id, status")
-        .eq("contractor_job_id", safeJobId);
+        .eq("subcontract_id", safeJobId)
+        .order("id", { ascending: true })
+    );
+    if (reqQ.error) {
+      reqQ = await loadPagedContractorRows<RequestRow>(() =>
+        supabaseClient
+          .from("requests")
+          .select("id, status")
+          .eq("contractor_job_id", safeJobId)
+          .order("id", { ascending: true })
+      );
     }
     reqRows = (reqQ.data as RequestRow[] | null) || [];
   } else if (safeReqId && looksLikeUuid(safeReqId)) {
@@ -117,15 +153,21 @@ export async function loadLogIdsByProgressIds(
   if (!safeProgressIds.length) return [];
   let logsQ;
   if (safeProgressIds.length === 1) {
-    logsQ = await supabaseClient
-      .from("work_progress_log")
-      .select("id")
-      .eq("progress_id", safeProgressIds[0]);
+    logsQ = await loadPagedContractorRows<LogIdRow>(() =>
+      supabaseClient
+        .from("work_progress_log")
+        .select("id")
+        .eq("progress_id", safeProgressIds[0])
+        .order("id", { ascending: true })
+    );
   } else {
-    logsQ = await supabaseClient
-      .from("work_progress_log")
-      .select("id")
-      .in("progress_id", safeProgressIds);
+    logsQ = await loadPagedContractorRows<LogIdRow>(() =>
+      supabaseClient
+        .from("work_progress_log")
+        .select("id")
+        .in("progress_id", safeProgressIds)
+        .order("id", { ascending: true })
+    );
   }
   return Array.isArray(logsQ.data)
     ? (logsQ.data as LogIdRow[]).map((x) => String(x.id || "")).filter(Boolean)
@@ -142,10 +184,14 @@ export async function loadConsumedByCode(
   const logIds = await loadLogIdsByProgressIds(supabaseClient, progressIds);
   if (!logIds.length) return consumedByCode;
 
-  const matsQ = await supabaseClient
-    .from("work_progress_log_materials")
-    .select("mat_code, qty_fact")
-    .in("log_id", logIds);
+  const matsQ = await loadPagedContractorRows<MaterialFactRow>(() =>
+    supabaseClient
+      .from("work_progress_log_materials")
+      .select("mat_code, qty_fact")
+      .in("log_id", logIds)
+      .order("log_id", { ascending: true })
+      .order("mat_code", { ascending: true })
+  );
   if (matsQ.error || !Array.isArray(matsQ.data)) return consumedByCode;
 
   for (const m of matsQ.data as MaterialFactRow[]) {
@@ -169,10 +215,14 @@ export async function loadIssuedByCode(
     .filter((v) => !!v && looksLikeUuid(v));
   if (!safeRequestIds.length) return issuedByCode;
 
-  const itemsQ = await supabaseClient
-    .from("v_wh_issue_req_items_ui")
-    .select("request_id, request_item_id, rik_code, qty_issued")
-    .in("request_id", safeRequestIds);
+  const itemsQ = await loadPagedContractorRows<IssuedItemUiRow>(() =>
+    supabaseClient
+      .from("v_wh_issue_req_items_ui")
+      .select("request_id, request_item_id, rik_code, qty_issued")
+      .in("request_id", safeRequestIds)
+      .order("request_id", { ascending: true })
+      .order("request_item_id", { ascending: true })
+  );
   if (itemsQ.error || !Array.isArray(itemsQ.data)) return issuedByCode;
 
   for (const it of itemsQ.data as IssuedItemUiRow[]) {

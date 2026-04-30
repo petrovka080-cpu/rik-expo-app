@@ -1,0 +1,155 @@
+{
+  "wave": "S-PAG-7",
+  "mode": "hotspot-list-read-pagination",
+  "ownerGoal": "10K/50K readiness",
+  "dependsOn": [
+    "S-LOAD-3 GREEN_STAGING_EXECUTED",
+    "S-PAG-6 GREEN"
+  ],
+  "baseline": {
+    "unboundedSelects": 95,
+    "unboundedFiles": 37,
+    "source": "known tail after S-PAG-6 and artifacts/S_PAG_7_query_pressure_reduction_matrix.json"
+  },
+  "result": {
+    "unboundedSelects": 86,
+    "unboundedFiles": 37,
+    "fixedCallSites": 10,
+    "targetMet": true,
+    "note": "Post count reduces select call-sites; file count remains because target files still contain intentional detail/report/guard reads."
+  },
+  "fixedCallSites": [
+    {
+      "file": "src/screens/contractor/contractor.data.ts",
+      "function": "fetchRequestScopeRows",
+      "source": "requests by subcontract_id",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/contractor/contractor.data.ts",
+      "function": "fetchRequestScopeRows",
+      "source": "requests fallback by contractor_job_id",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/contractor/contractor.data.ts",
+      "function": "loadLogIdsByProgressIds",
+      "source": "work_progress_log by progress_id / progress_id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/contractor/contractor.data.ts",
+      "function": "loadConsumedByCode",
+      "source": "work_progress_log_materials by log_id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "log_id asc, mat_code asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/contractor/contractor.data.ts",
+      "function": "loadIssuedByCode",
+      "source": "v_wh_issue_req_items_ui by request_id set",
+      "pattern": "page-through-all range",
+      "defaultPageSize": 100,
+      "stableOrder": "request_id asc, request_item_id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "function": "repoGetProposalItemsForView",
+      "source": "proposal_items by proposal_id",
+      "pattern": "page-through-all range; explicit pageInput supported",
+      "defaultPageSize": 100,
+      "stableOrder": "request_item_id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "function": "repoGetProposalItemLinks",
+      "source": "proposal_items by proposal_id set",
+      "pattern": "page-through-all range; explicit pageInput supported",
+      "defaultPageSize": 100,
+      "stableOrder": "proposal_id asc, request_item_id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "function": "repoGetRequestItemToRequestMap",
+      "source": "request_items by id set",
+      "pattern": "page-through-all range; explicit pageInput supported",
+      "defaultPageSize": 100,
+      "stableOrder": "id asc",
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/buyer/buyer.fetchers.ts",
+      "function": "loadBuyerInboxWindowScope",
+      "source": "buyer_summary_inbox_scope_v1",
+      "pattern": "rpc p_limit clamp",
+      "defaultPageSize": 100,
+      "maxPageSize": 100,
+      "returnShapePreserved": true
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+      "function": "apiFetchReqHeadsCanonicalRaw",
+      "source": "warehouse_issue_queue_scope_v4",
+      "pattern": "rpc p_limit clamp",
+      "defaultPageSize": 50,
+      "maxPageSize": 100,
+      "returnShapePreserved": true
+    }
+  ],
+  "skippedFiles": [
+    {
+      "file": "src/screens/contractor/contractor.resolvers.ts",
+      "reason": "single-row resolver lookups via maybeSingle; not a list/search surface"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.issue.repo.ts",
+      "reason": "write RPC boundary only; no list/search select"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "reason": "report/export/detail reads intentionally left unpaginated"
+    },
+    {
+      "file": "src/lib/api/integrity.guards.ts",
+      "reason": "guard reads are chunked validation reads; semantics not changed"
+    },
+    {
+      "file": "src/screens/contractor/contractor.data.ts",
+      "reason": "remaining reads are aggregation/detail lookups requiring a separate dedicated semantic pass"
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "reason": "remaining reads are latest attachment, accounting, integrity, write fallback, or detail reads outside this list/search wave"
+    }
+  ],
+  "hotspotRecommendationsCovered": {
+    "warehouse_issue_queue_page_25": "caller limit clamp plus existing bounded rpc validation preserved",
+    "buyer_summary_inbox_page_25": "caller limit clamp plus existing bounded rpc envelope validation preserved",
+    "warehouse_stock_page_60": "watch only; not changed"
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "writes": false,
+    "sqlRpcRlsStorageChanged": false,
+    "businessLogicChanged": false,
+    "pdfReportExportChanged": false,
+    "detailGuardSemanticsChanged": false,
+    "packageNativeChanged": false,
+    "otaEasPlayMarketTouched": false
+  }
+}

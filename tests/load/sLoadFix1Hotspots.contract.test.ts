@@ -48,10 +48,11 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
 
     expect(source).toContain('supabase.rpc("warehouse_issue_queue_scope_v4"');
     expect(source).toContain("p_offset: offset");
-    expect(source).toContain("p_limit: pageSize");
+    expect(source).toContain("p_limit: normalizedPage.pageSize");
+    expect(source).toContain("WAREHOUSE_ISSUE_QUEUE_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 }");
     expect(source).toContain("validateRpcResponse(data, isRpcRowsEnvelope");
     expect(source).toMatch(
-      /requireBoundedRpcRows\(\s*validated,\s*"warehouse_issue_queue_scope_v4",\s*pageSize,\s*\)/,
+      /requireBoundedRpcRows\(\s*validated,\s*"warehouse_issue_queue_scope_v4",\s*normalizedPage\.pageSize,\s*\)/,
     );
     expect(source).toContain("rows length exceeds p_limit");
   });
@@ -61,8 +62,9 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
     const serviceSource = readSource("src/screens/buyer/buyer.summary.service.ts");
 
     expect(fetcherSource).toContain('runContainedRpc(supabase, "buyer_summary_inbox_scope_v1"');
-    expect(fetcherSource).toContain("p_offset: Math.max(0, offsetGroups)");
-    expect(fetcherSource).toContain("p_limit: Math.max(1, limitGroups)");
+    expect(fetcherSource).toContain("BUYER_INBOX_MAX_GROUP_PAGE_SIZE = 100");
+    expect(fetcherSource).toContain("p_offset: normalizedOffsetGroups");
+    expect(fetcherSource).toContain("p_limit: normalizedLimitGroups");
     expect(fetcherSource).toContain("validateRpcResponse(data, isRpcRowsEnvelope");
     expect(fetcherSource).toContain('rpcName: "buyer_summary_inbox_scope_v1"');
     expect(serviceSource).toContain("mapWithConcurrencyLimit(");

@@ -8,6 +8,7 @@ import {
 } from "../../lib/api/proposalAttachments.service";
 import { ensureProposalRequestItemsIntegrity } from "../../lib/api/integrity.guards";
 import type { ProposalRequestItemIntegrityRow } from "../../lib/api/proposalIntegrity";
+import { normalizePage, type PageInput } from "../../lib/api/_core";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { applySupabaseAbortSignal, throwIfAborted } from "../../lib/requestCancellation";
 
@@ -36,6 +37,35 @@ export type RepoAttachmentRow = PropAttachmentRow & {
   bucket_id?: string | null;
   storage_path?: string | null;
 };
+
+const BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+type PagedBuyerRepoQuery<T> = {
+  range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error?: unknown }>;
+};
+
+async function loadPagedBuyerRepoRows<T>(
+  queryFactory: () => PagedBuyerRepoQuery<T>,
+  pageInput?: PageInput,
+): Promise<{ data: T[] | null; error: unknown | null }> {
+  if (pageInput) {
+    const page = normalizePage(pageInput, BUYER_REPO_LIST_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+    return { data: Array.isArray(result.data) ? result.data : [], error: null };
+  }
+
+  const rows: T[] = [];
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const page = normalizePage({ page: pageIndex }, BUYER_REPO_LIST_PAGE_DEFAULTS);
+    const result = await queryFactory().range(page.from, page.to);
+    if (result.error) return { data: null, error: result.error };
+
+    const pageRows = Array.isArray(result.data) ? result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+  }
+}
 
 export async function repoGetLatestProposalPdfAttachment(supabase: SupabaseClient, pidStr: string) {
   try {
@@ -168,12 +198,19 @@ export async function repoListProposalAttachments(supabase: SupabaseClient, prop
 
   return out;
 }
-export async function repoGetProposalItemsForView(supabase: SupabaseClient, pidStr: string) {
-  const q = await supabase
-    .from("proposal_items")
-    .select("request_item_id, name_human, uom, qty, rik_code, app_code, price, supplier, note")
-    .eq("proposal_id", pidStr)
-    .order("request_item_id", { ascending: true });
+export async function repoGetProposalItemsForView(
+  supabase: SupabaseClient,
+  pidStr: string,
+  pageInput?: PageInput,
+) {
+  const q = await loadPagedBuyerRepoRows(() =>
+    supabase
+      .from("proposal_items")
+      .select("request_item_id, name_human, uom, qty, rik_code, app_code, price, supplier, note")
+      .eq("proposal_id", pidStr)
+      .order("request_item_id", { ascending: true }),
+    pageInput,
+  );
 
   if (q.error) throw q.error;
   return Array.isArray(q.data) ? q.data : [];
@@ -230,27 +267,44 @@ export async function repoGetProposalRequestItemIntegrity(
         .filter((row) => row.request_item_id)
     : [];
 }
-export async function repoGetProposalItemLinks(supabase: SupabaseClient, proposalIds: string[]) {
+export async function repoGetProposalItemLinks(
+  supabase: SupabaseClient,
+  proposalIds: string[],
+  pageInput?: PageInput,
+) {
   const ids = Array.from(new Set((proposalIds || []).map(String).filter(Boolean)));
   if (!ids.length) return [];
 
-  const q = await supabase
-    .from("proposal_items")
-    .select("proposal_id, request_item_id")
-    .in("proposal_id", ids);
+  const q = await loadPagedBuyerRepoRows(() =>
+    supabase
+      .from("proposal_items")
+      .select("proposal_id, request_item_id")
+      .in("proposal_id", ids)
+      .order("proposal_id", { ascending: true })
+      .order("request_item_id", { ascending: true }),
+    pageInput,
+  );
 
   if (q.error) throw q.error;
   return Array.isArray(q.data) ? q.data : [];
 }
 
-export async function repoGetRequestItemToRequestMap(supabase: SupabaseClient, requestItemIds: string[]) {
+export async function repoGetRequestItemToRequestMap(
+  supabase: SupabaseClient,
+  requestItemIds: string[],
+  pageInput?: PageInput,
+) {
   const ids = Array.from(new Set((requestItemIds || []).map(String).filter(Boolean)));
   if (!ids.length) return [];
 
-  const q = await supabase
-    .from("request_items")
-    .select("id, request_id")
-    .in("id", ids);
+  const q = await loadPagedBuyerRepoRows(() =>
+    supabase
+      .from("request_items")
+      .select("id, request_id")
+      .in("id", ids)
+      .order("id", { ascending: true }),
+    pageInput,
+  );
 
   if (q.error) throw q.error;
   return Array.isArray(q.data) ? q.data : [];

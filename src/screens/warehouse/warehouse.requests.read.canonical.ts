@@ -24,6 +24,35 @@ import {
 } from "./warehouse.requests.read.shared";
 import { toWarehouseTextOrNull } from "./warehouse.adapters";
 
+export const WAREHOUSE_ISSUE_QUEUE_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 };
+
+const toNonNegativeInt = (value: unknown, fallback: number): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : fallback;
+};
+
+export const normalizeWarehouseIssueQueuePage = (
+  page: number,
+  pageSize: number,
+): { page: number; pageSize: number; offset: number } => {
+  const normalizedPage = toNonNegativeInt(page, 0);
+  const maxPageSize = Math.max(1, WAREHOUSE_ISSUE_QUEUE_PAGE_DEFAULTS.maxPageSize);
+  const defaultPageSize = Math.min(
+    maxPageSize,
+    Math.max(1, WAREHOUSE_ISSUE_QUEUE_PAGE_DEFAULTS.pageSize),
+  );
+  const normalizedPageSize = Math.min(
+    Math.max(1, toNonNegativeInt(pageSize, defaultPageSize)),
+    maxPageSize,
+  );
+
+  return {
+    page: normalizedPage,
+    pageSize: normalizedPageSize,
+    offset: normalizedPage * normalizedPageSize,
+  };
+};
+
 const requireRpcRows = (value: unknown, rpcName: string): unknown[] => {
   const root = value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -110,13 +139,14 @@ export async function apiFetchReqHeadsCanonicalRaw(
   pageSize: number,
   options?: { signal?: AbortSignal | null },
 ): Promise<WarehouseReqHeadsFetchResult> {
-  const offset = Math.max(0, page * pageSize);
+  const normalizedPage = normalizeWarehouseIssueQueuePage(page, pageSize);
+  const offset = normalizedPage.offset;
   throwIfAborted(options?.signal);
   const startedAt = Date.now();
   const { data, error } = await applySupabaseAbortSignal(
     supabase.rpc("warehouse_issue_queue_scope_v4", {
       p_offset: offset,
-      p_limit: pageSize,
+      p_limit: normalizedPage.pageSize,
     }),
     options?.signal,
   );
@@ -129,7 +159,7 @@ export async function apiFetchReqHeadsCanonicalRaw(
       durationMs: Date.now() - startedAt,
       status: "error",
       error,
-      extra: { page, pageSize, offset },
+      extra: { page: normalizedPage.page, pageSize: normalizedPage.pageSize, offset },
     });
     throw error;
   }
@@ -142,9 +172,14 @@ export async function apiFetchReqHeadsCanonicalRaw(
   const rows = requireBoundedRpcRows(
     validated,
     "warehouse_issue_queue_scope_v4",
-    pageSize,
+    normalizedPage.pageSize,
   ).map((row, index) => adaptReqHeadsRpcRow(row, index));
-  const meta = toReqHeadsRpcMeta(validated, page, pageSize, rows.length);
+  const meta = toReqHeadsRpcMeta(
+    validated,
+    normalizedPage.page,
+    normalizedPage.pageSize,
+    rows.length,
+  );
   trackRpcLatency({
     name: "warehouse_issue_queue_scope_v4",
     screen: "warehouse",
@@ -153,8 +188,8 @@ export async function apiFetchReqHeadsCanonicalRaw(
     status: "success",
     rowCount: rows.length,
     extra: {
-      page,
-      pageSize,
+      page: normalizedPage.page,
+      pageSize: normalizedPage.pageSize,
       offset,
       totalRowCount: meta.totalRowCount,
     },
@@ -171,7 +206,7 @@ export async function apiFetchReqHeadsCanonicalRaw(
     },
     meta: {
       ...meta,
-      scopeKey: toReqHeadsScopeKey(page, pageSize, "canonical"),
+      scopeKey: toReqHeadsScopeKey(normalizedPage.page, normalizedPage.pageSize, "canonical"),
     },
     sourceMeta: {
       primaryOwner: "canonical_issue_queue_rpc",

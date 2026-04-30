@@ -22,6 +22,7 @@ import {
 import {
   apiFetchReqHeadsCanonicalRaw,
   apiFetchReqItemsCanonicalRaw,
+  normalizeWarehouseIssueQueuePage,
 } from "./warehouse.requests.read.canonical";
 import { isAbortError } from "../../lib/requestCancellation";
 
@@ -39,6 +40,7 @@ export async function apiFetchReqHeadsWindow(
   pageSize: number = 50,
   options?: { signal?: AbortSignal | null },
 ): Promise<WarehouseReqHeadsFetchResult> {
+  const normalizedPage = normalizeWarehouseIssueQueuePage(page, pageSize);
   const observation = beginPlatformObservability({
     screen: "warehouse",
     surface: "req_heads",
@@ -50,16 +52,16 @@ export async function apiFetchReqHeadsWindow(
   try {
     const result = await apiFetchReqHeadsCanonicalRaw(
       supabase,
-      page,
-      pageSize,
+      normalizedPage.page,
+      normalizedPage.pageSize,
       { signal: options?.signal },
     );
     recordReqHeadsTrace({
       result: "success",
       sourcePath: result.sourceMeta.sourcePath,
       sourceKind: result.sourceMeta.sourceKind,
-      page,
-      pageSize,
+      page: normalizedPage.page,
+      pageSize: normalizedPage.pageSize,
       rowCount: result.rows.length,
       contractVersion: result.sourceMeta.contractVersion,
     });
@@ -68,8 +70,8 @@ export async function apiFetchReqHeadsWindow(
       sourceKind: result.sourceMeta.sourceKind,
       fallbackUsed: false,
       extra: {
-        page,
-        pageSize,
+        page: normalizedPage.page,
+        pageSize: normalizedPage.pageSize,
         pageOffset: result.meta.pageOffset,
         scopeKey: result.meta.scopeKey,
         contractVersion: result.meta.contractVersion,
@@ -89,8 +91,8 @@ export async function apiFetchReqHeadsWindow(
       result: "error",
       sourcePath: "canonical",
       sourceKind: WAREHOUSE_REQ_HEADS_CANONICAL_SOURCE_KIND,
-      page,
-      pageSize,
+      page: normalizedPage.page,
+      pageSize: normalizedPage.pageSize,
       rowCount: null,
       contractVersion: null,
       reason: message,
@@ -107,9 +109,9 @@ export async function apiFetchReqHeadsWindow(
       errorClass: error instanceof Error ? error.name : undefined,
       errorMessage: message,
       extra: {
-        page,
-        pageSize,
-        pageOffset: Math.max(0, page * pageSize),
+        page: normalizedPage.page,
+        pageSize: normalizedPage.pageSize,
+        pageOffset: normalizedPage.offset,
       },
     });
     throw error;

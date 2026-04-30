@@ -179,6 +179,37 @@ describe("buyer inbox fetchers", () => {
     ).rejects.toBeInstanceOf(RpcValidationError);
   });
 
+  it("clamps oversized buyer inbox window limits before calling the hot rpc", async () => {
+    const rpc = jest.fn(async (_fn: string, args: Record<string, unknown>) => ({
+      data: buildScopeEnvelope({
+        rows: [],
+        offsetGroups: Number(args.p_offset ?? 0),
+        limitGroups: Number(args.p_limit ?? 0),
+        returnedGroupCount: 0,
+        totalGroupCount: 0,
+        hasMore: false,
+        search: String(args.p_search ?? ""),
+      }),
+      error: null,
+    }));
+
+    const result = await loadBuyerInboxWindowData({
+      supabase: { rpc },
+      offsetGroups: 3,
+      limitGroups: 500,
+      search: "hot",
+      log: () => undefined,
+    });
+
+    expect(rpc).toHaveBeenCalledWith("buyer_summary_inbox_scope_v1", {
+      p_offset: 3,
+      p_limit: 100,
+      p_search: "hot",
+      p_company_id: null,
+    });
+    expect(result.meta.limitGroups).toBe(100);
+  });
+
   it("fails closed on an undefined rest transport path instead of publishing empty data", async () => {
     const supabase = {
       rpc: jest.fn(function () {

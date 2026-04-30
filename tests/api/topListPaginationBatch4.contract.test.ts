@@ -39,14 +39,16 @@ describe("S-PAG-5 remaining unbounded selects triage contract", () => {
 
   it("does not cap S-PAG-5 PDF, report, detail, seed, integrity, or job-queue reads", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
-    expect(contractorData).not.toContain("normalizePage(");
-    expect(contractorData).not.toContain(".range(");
+    expect(contractorData).toContain("CONTRACTOR_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(contractorData).toContain("loadPagedContractorRows");
+    expect(contractorData).toContain(".range(page.from, page.to)");
     expect(contractorData).toContain(".eq(\"progress_id\", progressId)");
     expect(contractorData).toContain(".in(\"log_id\", logIds)");
 
     const buyerRepo = read("src/screens/buyer/buyer.repo.ts");
-    expect(buyerRepo).not.toContain("normalizePage(");
-    expect(buyerRepo).not.toContain(".range(");
+    expect(buyerRepo).toContain("BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(buyerRepo).toContain("loadPagedBuyerRepoRows");
+    expect(buyerRepo).toContain(".range(page.from, page.to)");
     expect(buyerRepo).toContain(".eq(\"proposal_id\", pidStr)");
 
     const warehouseRepo = read("src/screens/warehouse/warehouse.api.repo.ts");

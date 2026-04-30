@@ -30,6 +30,7 @@ type BuyerRpcScopeClient = {
 const BUYER_BUCKETS_RPC_SOURCE_KIND = "rpc:buyer_summary_buckets_scope_v1";
 const BUYER_INBOX_RPC_SOURCE_KIND = "rpc:buyer_summary_inbox_scope_v1";
 const BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE = 100;
+const BUYER_INBOX_MAX_GROUP_PAGE_SIZE = 100;
 const uniqIds = (values: (string | null | undefined)[]) =>
   Array.from(new Set((values || []).map((value) => String(value ?? "").trim()).filter(Boolean)));
 
@@ -42,6 +43,14 @@ const toMaybeText = (value: unknown): string | null => {
   const text = String(value ?? "").trim();
   return text || null;
 };
+
+const normalizeBuyerInboxOffset = (value: unknown): number => toInt(value, 0);
+
+const normalizeBuyerInboxLimit = (value: unknown): number =>
+  Math.min(
+    BUYER_INBOX_MAX_GROUP_PAGE_SIZE,
+    Math.max(1, toInt(value, BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE)),
+  );
 
 export type BuyerInboxWindowMeta = {
   offsetGroups: number;
@@ -176,9 +185,11 @@ const loadBuyerInboxWindowScope = async (params: {
   search?: string | null;
 }): Promise<BuyerInboxLoadResult> => {
   const { supabase, offsetGroups, limitGroups, search } = params;
+  const normalizedOffsetGroups = normalizeBuyerInboxOffset(offsetGroups);
+  const normalizedLimitGroups = normalizeBuyerInboxLimit(limitGroups);
   const { data, error } = await runContainedRpc(supabase, "buyer_summary_inbox_scope_v1", {
-    p_offset: Math.max(0, offsetGroups),
-    p_limit: Math.max(1, limitGroups),
+    p_offset: normalizedOffsetGroups,
+    p_limit: normalizedLimitGroups,
     p_search: search?.trim() || null,
     p_company_id: null,
   }, {
@@ -201,14 +212,14 @@ const loadBuyerInboxWindowScope = async (params: {
     rows: envelope.rows,
     requestIds: uniqIds(envelope.rows.map((row) => row?.request_id)),
     meta: {
-      offsetGroups: toInt(envelope.meta.offset_groups, Math.max(0, offsetGroups)),
-      limitGroups: toInt(envelope.meta.limit_groups, Math.max(1, limitGroups)),
+      offsetGroups: toInt(envelope.meta.offset_groups, normalizedOffsetGroups),
+      limitGroups: toInt(envelope.meta.limit_groups, normalizedLimitGroups),
       returnedGroupCount: pageReturnedGroupCount,
       totalGroupCount,
       hasMore:
         typeof envelope.meta.has_more === "boolean"
           ? Boolean(envelope.meta.has_more)
-          : Math.max(0, offsetGroups) + pageReturnedGroupCount < totalGroupCount,
+          : normalizedOffsetGroups + pageReturnedGroupCount < totalGroupCount,
       search: toMaybeText(envelope.meta.search),
     },
     sourceMeta: {
@@ -239,10 +250,12 @@ export async function loadBuyerInboxWindowData(params: {
   });
 
   try {
+    const normalizedOffsetGroups = normalizeBuyerInboxOffset(offsetGroups);
+    const normalizedLimitGroups = normalizeBuyerInboxLimit(limitGroups);
     const result = await loadBuyerInboxWindowScope({
       supabase,
-      offsetGroups,
-      limitGroups,
+      offsetGroups: normalizedOffsetGroups,
+      limitGroups: normalizedLimitGroups,
       search,
     });
 
@@ -278,8 +291,8 @@ export async function loadBuyerInboxWindowData(params: {
       errorMessage: failureReason || undefined,
       fallbackUsed: false,
       extra: {
-        offsetGroups,
-        limitGroups,
+        offsetGroups: normalizeBuyerInboxOffset(offsetGroups),
+        limitGroups: normalizeBuyerInboxLimit(limitGroups),
         search: search?.trim() || null,
       },
     });
@@ -289,8 +302,8 @@ export async function loadBuyerInboxWindowData(params: {
       fallbackUsed: false,
       errorStage: "load_inbox_rpc",
       extra: {
-        offsetGroups,
-        limitGroups,
+        offsetGroups: normalizeBuyerInboxOffset(offsetGroups),
+        limitGroups: normalizeBuyerInboxLimit(limitGroups),
         search: search?.trim() || null,
       },
     });
