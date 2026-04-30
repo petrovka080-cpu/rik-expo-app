@@ -1,0 +1,317 @@
+{
+  "wave": "S-50K-READINESS-MASTER-MATRIX-1",
+  "mode": "post-overnight-master-readiness-truth-matrix",
+  "status": "GREEN_MASTER_READINESS_MATRIX_COMPLETE",
+  "matrixComplete": true,
+  "expectedGreenStatus": "GREEN_MASTER_READINESS_MATRIX_COMPLETE",
+  "greenStatusClaimed": true,
+  "generatedAt": "2026-05-01T00:06:02+06:00",
+  "repoState": {
+    "head": "591501c03c7cb1aa062135839a47f478ee00e8a7",
+    "originMain": "591501c03c7cb1aa062135839a47f478ee00e8a7",
+    "headEqualsOriginMain": true,
+    "worktreeClean": true,
+    "worktreeCleanRequiredForExpectedGreen": true,
+    "note": "Repo state was clean at matrix refresh start. Current truth layer includes the later BFF staging readiness clarification and bounded-1K harness preflight patch."
+  },
+  "sourceArtifacts": {
+    "tenKCloseout": {
+      "artifact": "artifacts/S_10K_LOAD_CLOSEOUT_1_matrix.json",
+      "status": "GREEN_10K_LOAD_BLOCKER_CLOSED"
+    },
+    "latestProvenLoad": {
+      "artifact": "artifacts/S_LOAD_8_post_fix6_staging_regression_matrix.json",
+      "status": "GREEN_LOAD_VERIFIED",
+      "whyLatestProven": "S-LOAD-9 is PARTIAL_LOAD_BLOCKER_REMAINS because Fix-7 was not needed or applied; S-LOAD-8 remains the latest real green staging bounded load proof."
+    },
+    "oneKPreflight": {
+      "artifact": "artifacts/S_LOAD_10_1k_concurrency_preflight_matrix.json",
+      "status": "BLOCKED_1K_LOAD_REQUIRES_LIMIT_CONFIRMATION"
+    },
+    "oneKRun": {
+      "artifact": "artifacts/S_LOAD_11_bounded_1k_run_matrix.json",
+      "status": "BLOCKED_BY_STAGING_LIMITS"
+    },
+    "paginationInventory": {
+      "baselineArtifact": "artifacts/S_PAG_10_remaining_list_risk_inventory_matrix.json",
+      "postWaveArtifacts": [
+        "artifacts/S_PAG_11_contractor_resolvers_fanout_matrix.json",
+        "artifacts/S_PAG_12_buyer_rework_mutation_prefetch_matrix.json",
+        "artifacts/S_PAG_13_proposal_action_boundary_matrix.json",
+        "artifacts/S_PAG_14_store_supabase_auth_session_matrix.json",
+        "artifacts/S_PAG_15_dictionary_reference_reads_matrix.json",
+        "artifacts/S_PAG_16_report_safe_reads_matrix.json"
+      ]
+    },
+    "rpcValidation": [
+      {
+        "artifact": "artifacts/S_RPC_6_high_risk_rpc_validation_matrix.json",
+        "status": "GREEN_RPC_VALIDATION_EXTENDED"
+      },
+      {
+        "artifact": "artifacts/S_RPC_7_mutation_result_envelopes_matrix.json",
+        "status": "GREEN_MUTATION_RPC_ENVELOPES_VALIDATED"
+      }
+    ],
+    "realtime": {
+      "artifact": "artifacts/S_RT_6_realtime_fanout_budget_proof_matrix.json",
+      "status": "GREEN_REALTIME_FANOUT_BUDGET_PROVEN"
+    },
+    "offline": {
+      "artifact": "artifacts/S_OFFLINE_2_replay_stress_proof_matrix.json",
+      "status": "GREEN_OFFLINE_REPLAY_STRESS_PROVEN"
+    },
+    "platformDashboard": {
+      "artifact": "artifacts/S_DASH_1B_staging_platform_readiness_dashboard_matrix.json",
+      "status": "GREEN_STAGING_PLATFORM_DASHBOARD_READY"
+    },
+    "bffDeployPreflight": {
+      "artifact": "artifacts/S_BFF_STAGING_DEPLOY_PREFLIGHT_1_matrix.json",
+      "status": "BLOCKED_BFF_DEPLOY_TARGET_MISSING"
+    },
+    "bffShadowParityPreflight": {
+      "artifact": "artifacts/S_BFF_SHADOW_PARITY_PREFLIGHT_1_matrix.json",
+      "status": "GREEN_BFF_SHADOW_PARITY_PREFLIGHT_READY"
+    },
+    "cachePreflight": {
+      "artifact": "artifacts/S_CACHE_STAGING_PROVIDER_PREFLIGHT_1_matrix.json",
+      "status": "BLOCKED_CACHE_PROVIDER_ENV_MISSING"
+    },
+    "queuePreflight": {
+      "artifact": "artifacts/S_QUEUE_STAGING_PROVIDER_PREFLIGHT_1_matrix.json",
+      "status": "BLOCKED_QUEUE_PROVIDER_ENV_MISSING"
+    },
+    "idempotencyPreflight": {
+      "artifact": "artifacts/S_IDEMPOTENCY_DB_PREFLIGHT_1_matrix.json",
+      "status": "BLOCKED_IDEMPOTENCY_DB_ENV_OR_TABLE_MISSING"
+    },
+    "ratePreflight": {
+      "artifact": "artifacts/S_RATE_STAGING_ENFORCEMENT_PREFLIGHT_1_matrix.json",
+      "status": "BLOCKED_RATE_PROVIDER_ENV_MISSING"
+    },
+    "observabilityPreflight": {
+      "artifact": "artifacts/S_OBS_STAGING_EXPORT_PREFLIGHT_1_matrix.json",
+      "status": "BLOCKED_OBS_EXPORT_ENV_MISSING"
+    }
+  },
+  "tenK": {
+    "scoreEstimate": {
+      "score": 87,
+      "max": 100,
+      "confidence": "medium",
+      "rationale": "10K DB/load blocker is closed by S-LOAD-8 and repo gates are green. Remaining gaps are 1K concurrency proof, Supabase/account limits, and the post-pagination tail."
+    },
+    "paginationRiskCount": {
+      "count": 31,
+      "countKind": "derived_post_overnight_actionable_open_count",
+      "derivation": "S-PAG-10 remainingRiskSelects 74 minus 37 uniquely closed or proven non-actionable by S-PAG-11 through S-PAG-15, excluding the six contractor.resolvers.ts maybeSingle point lookups classified as no-safe-patch/non-list fanout in S-PAG-11.",
+      "caveat": "This is an artifact-derived master count, not a fresh scanner run."
+    },
+    "unboundedSelectCount": {
+      "count": 37,
+      "countKind": "derived_post_overnight_remaining_unbounded_or_unpatched_select_count",
+      "baseline": 74,
+      "uniqueClosedOrBoundedFromBaseline": 37,
+      "source": "S-PAG-10 baseline adjusted by S-PAG-12, S-PAG-13, S-PAG-14, and S-PAG-15 closure proofs."
+    },
+    "remainingTrueListReadRiskCount": {
+      "count": 17,
+      "baseline": 19,
+      "closed": 2,
+      "source": "S-PAG-10 true list-read risk count minus S-PAG-14 store_supabase true-list fixes."
+    },
+    "latestLoadProofStatus": {
+      "status": "GREEN_LOAD_VERIFIED",
+      "source": "S-LOAD-8",
+      "warehouseIssueQueuePage25": "watch",
+      "warehouseIssueMovedOutOfOptimizeNext": true,
+      "timeout57014": false,
+      "boundedRowsPass": true,
+      "noMajorTargetRegression": true
+    },
+    "latestOneKProofStatus": {
+      "status": "BLOCKED_BY_STAGING_LIMITS",
+      "source": "S-LOAD-11",
+      "preflightStatus": "BLOCKED_1K_LOAD_REQUIRES_LIMIT_CONFIRMATION",
+      "loadRun": false,
+      "currentBlockingInputs": [
+        "operator_approval_missing",
+        "supabase_limits_unconfirmed"
+      ],
+      "boundedHarnessPlanExists": true
+    },
+    "rpcValidationCoverage": {
+      "status": "GREEN_EXTENDED_NOT_COMPLETE",
+      "sRpc6": {
+        "validatedCallSites": 8,
+        "validatedRpcNames": 7
+      },
+      "sRpc7": {
+        "validatedMutationCallSites": 11,
+        "validatedMutationRpcNames": 10,
+        "supportingReadCallSites": 2
+      },
+      "note": "S-RPC-6 and S-RPC-7 extend high-risk and mutation envelope coverage beyond S-RPC-1 through S-RPC-5; this is not a claim that every RPC in the repo is validated."
+    },
+    "realtimeFanoutStatus": {
+      "status": "GREEN_REALTIME_FANOUT_BUDGET_PROVEN",
+      "persistentChannelsPerActiveUser": 8,
+      "projection10kChannels": 80000,
+      "projection50kChannels": 400000,
+      "regressedFromSrt5": false
+    },
+    "offlineReplayStatus": {
+      "status": "GREEN_OFFLINE_REPLAY_STRESS_PROVEN",
+      "staleOverwriteBlocked": true,
+      "boundedRetryConfirmed": true,
+      "deadLetterBehaviorConfirmed": true,
+      "liveWrites": false
+    }
+  },
+  "fiftyK": {
+    "scoreEstimate": {
+      "score": 35,
+      "max": 100,
+      "confidence": "medium",
+      "rationale": "This is the live 50K readiness score. Repo contracts and preflights are strong, but the live 50K platform is mostly missing: no BFF staging deploy target/base URL, no Redis/cache, queue, DB idempotency, rate, or observability provider env, Supabase limits are unconfirmed, and no 50K load proof exists.",
+      "platformPreparationScore": 71,
+      "platformPreparationRationale": "The BFF/cache/queue/idempotency/rate/observability scaffolds and preflight contracts are in place and disabled, which is good platform preparation but not live capacity."
+    },
+    "bffDeployStatus": {
+      "status": "blocked_missing_deploy_target",
+      "sourceStatus": "BLOCKED_BFF_DEPLOY_TARGET_MISSING",
+      "stagingBffBaseUrl": "missing",
+      "deployProvider": "missing",
+      "repoStatus": "repo_ready_disabled",
+      "live": false
+    },
+    "bffShadowParityStatus": {
+      "status": "preflight_ready_not_live",
+      "sourceStatus": "GREEN_BFF_SHADOW_PARITY_PREFLIGHT_READY",
+      "liveBffUrlRequired": false,
+      "coveredReadOperations": 5,
+      "trafficRoutedToBff": false
+    },
+    "redisCacheStatus": {
+      "status": "blocked_provider_env_missing",
+      "sourceStatus": "BLOCKED_CACHE_PROVIDER_ENV_MISSING",
+      "repoStatus": "repo_ready_disabled",
+      "externalRedisImplementationPresent": false,
+      "appTrafficRoutedThroughCache": false
+    },
+    "queueBullMqStatus": {
+      "status": "blocked_provider_env_missing",
+      "sourceStatus": "BLOCKED_QUEUE_PROVIDER_ENV_MISSING",
+      "repoStatus": "repo_ready_disabled",
+      "externalBullMqImplementationPresent": false,
+      "workerConcurrencyLessThanOrEqual8": true,
+      "batchLessThanOrEqual50": true,
+      "appTrafficRoutedThroughQueueProvider": false
+    },
+    "dbIdempotencyStatus": {
+      "status": "blocked_env_or_table_missing",
+      "sourceStatus": "BLOCKED_IDEMPOTENCY_DB_ENV_OR_TABLE_MISSING",
+      "repoStatus": "repo_ready_disabled",
+      "genericProviderTableConfigured": false,
+      "dbBackedAdapterImplementationPresent": false,
+      "appWideProviderEnabled": false
+    },
+    "rateEnforcementStatus": {
+      "status": "blocked_provider_env_missing",
+      "sourceStatus": "BLOCKED_RATE_PROVIDER_ENV_MISSING",
+      "repoStatus": "repo_ready_disabled",
+      "globalEnforcementEnabled": false,
+      "localContractSmoke": "pass"
+    },
+    "observabilityExportStatus": {
+      "status": "blocked_export_env_missing",
+      "sourceStatus": "BLOCKED_OBS_EXPORT_ENV_MISSING",
+      "repoStatus": "repo_ready_disabled",
+      "piiRedactionCoverage": "covered",
+      "externalTelemetrySent": false
+    },
+    "supabaseLimitsAccountStatus": {
+      "status": "unconfirmed",
+      "source": "S-DASH-1B and S-LOAD-10",
+      "blocks": [
+        "1K concurrency proof",
+        "50K load proof"
+      ]
+    },
+    "fiftyKLoadProofStatus": {
+      "status": "not_run",
+      "source": "S-DASH-1B",
+      "loadRun": false,
+      "readinessClaimed": false
+    },
+    "exactBlockedHumanActions": [
+      "Confirm Supabase Enterprise/account limits and approve a staging concurrent request/database connection budget for 1K and 50K tests.",
+      "Provide a self-contained staging load env setup with STAGING_SUPABASE_READONLY_KEY available to the harness without printing values.",
+      "Approve the existing bounded 1K harness live run only after Supabase/account limits and the operator-owned concurrency budget are confirmed.",
+      "Select the staging BFF deploy provider/target and deploy the BFF staging wrapper.",
+      "Set STAGING_BFF_BASE_URL after deployment; do not invent the URL.",
+      "Provide cache provider, namespace, and auth env for a staging set/get/delete/TTL smoke.",
+      "Provide BullMQ/queue provider, namespace, and auth env for a bounded enqueue/dequeue/dead-letter smoke.",
+      "Provide or approve the generic DB idempotency provider/table/migration path and staging env before reserve/commit/replay live checks.",
+      "Provide rate-limit provider/store env and isolated staging namespace before allowed/over-limit smoke.",
+      "Provide staging observability export env, staging DSN or OTEL endpoint/token, and confirm the target is not production.",
+      "Approve the 50K load test window, target set, stop thresholds, and rollback/abort owner after BFF/provider/lower-load gates are green."
+    ]
+  },
+  "nextFiveWavesForTomorrow": [
+    {
+      "id": "S-LIMITS-1-SUPABASE-ACCOUNT-LIMITS-AND-1K-BUDGET",
+      "goal": "Confirm Supabase account limits and approve the safe 1K/50K test envelope."
+    },
+    {
+      "id": "S-BFF-STAGING-DEPLOY-1",
+      "goal": "Deploy the staging BFF wrapper and produce health/readiness proof with STAGING_BFF_BASE_URL present."
+    },
+    {
+      "id": "S-BFF-SHADOW-PARITY-LIVE-1",
+      "goal": "Run live BFF shadow parity against the deployed staging BFF without routing client traffic."
+    },
+    {
+      "id": "S-CACHE-STAGING-PROVIDER-SMOKE-1",
+      "goal": "Provision Redis/cache staging env and run isolated namespace set/get/delete/TTL smoke."
+    },
+    {
+      "id": "S-QUEUE-STAGING-PROVIDER-SMOKE-1",
+      "goal": "Provision Queue/BullMQ staging env and run bounded namespace enqueue/dequeue/dead-letter smoke."
+    }
+  ],
+  "gates": {
+    "headEqualsOriginMain": "PASS",
+    "worktreeClean": "PASS",
+    "jsonArtifactParse": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": {
+      "status": "PASS",
+      "exitCode": 0,
+      "blockers": []
+    }
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionMutated": false,
+    "bffDeployed": false,
+    "redisCacheEnabled": false,
+    "queueEnabled": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "externalObservabilityEnabled": false,
+    "oneKLoadRunByThisWave": false,
+    "fiftyKLoadRun": false,
+    "migrationsApplied": false,
+    "sqlRpcRlsStorageChanged": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false,
+    "rawPayloadsPrinted": false,
+    "rawRowsPrinted": false
+  }
+}
