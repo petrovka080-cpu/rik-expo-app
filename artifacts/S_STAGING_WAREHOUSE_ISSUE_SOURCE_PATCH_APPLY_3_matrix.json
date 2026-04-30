@@ -1,0 +1,166 @@
+{
+  "wave": "S-STAGING-WAREHOUSE-ISSUE-SOURCE-PATCH-APPLY-3",
+  "status": "GREEN_STAGING_SOURCE_APPLIED",
+  "sourceWave": {
+    "wave": "S-LOAD-FIX-6",
+    "status": "GREEN_SOURCE_PATCH_READY",
+    "commit": "c3d1ba3eae9f99b5c69565a234773b8910abdd66",
+    "migration": "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql"
+  },
+  "preflight": {
+    "gitStatusClean": true,
+    "headEqualsOriginMain": true,
+    "envStagingLocalIgnored": true,
+    "stagingSupabaseDbUrlPresent": true,
+    "dbHostClass": "supabase_session_pooler",
+    "dbDnsOk": true,
+    "dbConnectOk": true,
+    "migrationHistoryReadable": true,
+    "productionSelected": false,
+    "migrationFileExists": true,
+    "psqlAvailable": false,
+    "supabaseCliAvailable": false,
+    "printedEnvValues": false
+  },
+  "beforeApplyIdentity": {
+    "publicWrapperExists": true,
+    "sourceFunctionExists": true,
+    "publicWrapperSha256": "ee297d6b05d058af71cfe4afb51a65138c09164f41844f413da1c6387d019eb8",
+    "sourceFunctionSha256": "9e7dbfce68887abd03c77b36f075112d7e980ee940d8866a625aed99afe1b5da",
+    "publicWrapperLength": 1171,
+    "sourceFunctionLength": 16067,
+    "sourceAlreadyMaterialized": false,
+    "exactCountPathPresent": true,
+    "fix5LowerBoundPresent": false,
+    "rawFunctionSourceStored": false,
+    "rawRowsStored": false
+  },
+  "migrationHistoryBeforeApply": {
+    "version": "20260430143000",
+    "alreadyApplied": false,
+    "columns": [
+      "version",
+      "statements",
+      "name",
+      "created_by",
+      "idempotency_key",
+      "rollback"
+    ]
+  },
+  "dryRun": {
+    "executed": true,
+    "ok": true,
+    "rolledBack": true,
+    "hashUnchangedAfterDryRun": true,
+    "errorCode": null
+  },
+  "apply": {
+    "target": "staging",
+    "productionTouched": false,
+    "migrationApplied": true,
+    "appliedVersion": "20260430143000",
+    "onlyRequestedMigrationApplied": true,
+    "migrationHistoryInserted": true,
+    "migrationHistoryIncludesVersionAfterApply": true,
+    "durationMs": 6785,
+    "sourceHashBefore": "9e7dbfce68887abd03c77b36f075112d7e980ee940d8866a625aed99afe1b5da",
+    "sourceHashAfter": "6757de23549e8e5de098493023aa5983340688529aeec9263e5a782a2021e553",
+    "sourceHashChanged": true,
+    "sourceMaterialized": true,
+    "exactCountPathPresent": true,
+    "fix5LowerBoundPresent": false,
+    "noticeCodes": [
+      "42622",
+      "42622",
+      "42622"
+    ],
+    "noticeMeaning": "PostgreSQL truncated the long proof-helper identifier to 63 bytes; the helper exists and passed all safety checks.",
+    "errorCode": null
+  },
+  "targetedSmoke": {
+    "target": "warehouse_issue_queue_scope_v4",
+    "args": {
+      "p_offset": 0,
+      "p_limit": 25
+    },
+    "executed": true,
+    "ok": true,
+    "durationMs": 6235,
+    "functionExists": true,
+    "rowsReturned": 25,
+    "rowsWithinLimit": true,
+    "metaExists": true,
+    "metaRowCount": 25,
+    "metaRowCountWithinLimit": true,
+    "metaHasMoreExists": true,
+    "metaHasMoreType": "boolean",
+    "timeout57014": false,
+    "errorCode": null,
+    "rawPayloadPrinted": false
+  },
+  "postApplyExplain": {
+    "captured": true,
+    "sanitized": true,
+    "target": "select public.warehouse_issue_queue_scope_v4(0, 25)",
+    "executionTimeMs": 544.545,
+    "planningTimeMs": 0.022,
+    "nodeCount": 1,
+    "topNodeType": "Result",
+    "timeout57014": false,
+    "errorCode": null,
+    "rawPlanPrinted": false
+  },
+  "proofHelper": {
+    "exists": true,
+    "identifierTruncatedByPostgres": true,
+    "ok": true,
+    "publicWrapperPreserved": true,
+    "sourceMaterializesFallbackTruthByReq": true,
+    "sourceMaterializesMergedTruth": true,
+    "sourceKeepsExactVisibleQueueTotalCount": true,
+    "sourceDoesNotReintroduceFix5LowerBoundProbe": true,
+    "sourcePreservesStockTruthPath": true,
+    "sourcePreservesRowOrder": true,
+    "sourcePreservesPageBound": true,
+    "sourcePreservesMetaShape": true
+  },
+  "restorePlanning": {
+    "needed": false,
+    "explicitRestorePathAvailable": true,
+    "restoreStrategy": "If rollback is needed, apply a staging-only inverse source patch replacing fallback_truth_by_req as materialized and merged_truth as materialized back to the exact-count unmaterialized labels, then validate the pre-apply source SHA256.",
+    "preApplySourceSha256": "9e7dbfce68887abd03c77b36f075112d7e980ee940d8866a625aed99afe1b5da"
+  },
+  "gates": {
+    "targetedStagingRpcSmoke": "PASS",
+    "jsonArtifactParse": "PASS",
+    "gitDiffCheck": "PASS",
+    "tsc": "PASS",
+    "expoLint": "PASS",
+    "npmTestRunInBand": "PASS",
+    "npmTest": "PASS",
+    "releaseVerify": "PASS"
+  },
+  "nextRequiredWave": "S-LOAD-8 POST-S-LOAD-FIX-6 STAGING REGRESSION",
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": true,
+    "stagingDdlMigrationApplied": true,
+    "productionDdlMigrationApplied": false,
+    "businessDataWrites": false,
+    "migrationHistoryRecorded": true,
+    "loadTestsRun": false,
+    "sLoad8Run": false,
+    "serviceRoleUsed": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "visibilitySemanticsChanged": false,
+    "warehouseStockMathChanged": false,
+    "bffRedisQueueWorkTouched": false,
+    "otaEasPlayMarketTouched": false,
+    "rawRowsPrintedOrCommitted": false,
+    "rawPayloadPrintedOrCommitted": false,
+    "envValuesPrintedOrCommitted": false,
+    "secretsPrintedOrCommitted": false,
+    "readinessClaimed": false
+  }
+}
