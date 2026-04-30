@@ -1,0 +1,139 @@
+{
+  "wave": "S-STAGING-WAREHOUSE-ISSUE-SOURCE-PATCH-APPLY-1",
+  "mode": "staging-only-warehouse-issue-source-patch-apply",
+  "status": "GREEN_STAGING_SOURCE_PATCH_APPLIED",
+  "ownerGoal": "10K/50K+ readiness",
+  "generatedAt": "2026-04-30T16:00:00.000+06:00",
+  "context": {
+    "sourcePatchWave": "S-LOAD-FIX-4",
+    "sourcePatchStatus": "GREEN_SOURCE_PATCH_READY",
+    "sourcePatchCommit": "f00c2a6722b2a1cdbd0e6a54795ef962ee8c3c2e",
+    "sourcePatchMigration": "supabase/migrations/20260430103000_s_load_fix_4_warehouse_issue_queue_latency_patch.sql",
+    "priorStagingProofWave": "S-LOAD-6",
+    "priorStagingProofStatus": "PARTIAL_STAGING_EXECUTED_WAREHOUSE_ISSUE_OPTIMIZE_NEXT_AND_WATCH_REGRESSIONS",
+    "priorWarehouseIssueQueueFinding": {
+      "target": "warehouse_issue_queue_page_25",
+      "recommendation": "optimize_next",
+      "maxLatencyMs": 3382,
+      "rows": 25,
+      "reason": "Rows stayed bounded, but max latency remained above the 1500ms optimize_next threshold."
+    }
+  },
+  "gitPreflight": {
+    "headCommitBeforeApply": "f00c2a6722b2a1cdbd0e6a54795ef962ee8c3c2e",
+    "originMainCommitBeforeApply": "f00c2a6722b2a1cdbd0e6a54795ef962ee8c3c2e",
+    "headMatchedOriginMainBeforeApply": true,
+    "worktreeCleanBeforeApply": true
+  },
+  "envBooleanPreflight": {
+    "STAGING_SUPABASE_URL": true,
+    "STAGING_SUPABASE_READONLY_KEY": true,
+    "STAGING_LOAD_ENABLED_true": true,
+    "SUPABASE_ACCESS_TOKEN": false,
+    "SUPABASE_DB_PASSWORD": false,
+    "productionCredentialsPresentButNotUsed": true,
+    "secretValuesPrinted": false
+  },
+  "projectIdentity": {
+    "linkedProjectRefPresent": true,
+    "linkedProjectRefSha256": "78fb2de8a064f73a80c93b9fdab4973658ca4c279000a78006dfe8402a0e60b4",
+    "productionProjectSelected": false,
+    "projectRefValuePrinted": false
+  },
+  "migrationApply": {
+    "dryRunBeforeApply": {
+      "status": "pass",
+      "pendingMigrationCount": 1,
+      "pendingMigrations": [
+        "20260430103000_s_load_fix_4_warehouse_issue_queue_latency_patch.sql"
+      ],
+      "wouldApplyOtherMigrations": false
+    },
+    "applyCommand": "npx supabase db push --linked --yes",
+    "appliedMigrations": [
+      "20260430103000_s_load_fix_4_warehouse_issue_queue_latency_patch.sql"
+    ],
+    "stagingOnly": true,
+    "productionApply": false,
+    "dryRunAfterApply": {
+      "status": "pass",
+      "remoteDatabaseUpToDate": true,
+      "pendingMigrationCount": 0
+    }
+  },
+  "targetedReadOnlyVerification": {
+    "status": "pass",
+    "rpc": "warehouse_issue_queue_scope_v4",
+    "args": {
+      "p_offset": 0,
+      "p_limit": 25
+    },
+    "rowsReturned": 25,
+    "rowsWithinLimit": true,
+    "metaRowCount": 25,
+    "metaLimit": 25,
+    "metaRowCountWithinLimit": true,
+    "rawRowsPrinted": false,
+    "proofHelper": "warehouse_issue_queue_sloadfix4_source_patch_proof_v1",
+    "proofChecks": {
+      "public_signature_preserved": true,
+      "source_before_wrapper_exists": true,
+      "public_calls_source_before_wrapper": true,
+      "public_clamps_limit_to_100": true,
+      "public_preserves_offset_floor": true,
+      "public_caps_rows_by_ordinality": true,
+      "public_preserves_row_order": true,
+      "public_rewrites_row_count": true,
+      "request_items_text_join_index_exists": true
+    }
+  },
+  "proofArtifacts": [
+    "artifacts/S_STAGING_WAREHOUSE_ISSUE_SOURCE_PATCH_APPLY_1_matrix.json",
+    "artifacts/S_STAGING_WAREHOUSE_ISSUE_SOURCE_PATCH_APPLY_1_proof.md"
+  ],
+  "execution": {
+    "productionTouched": false,
+    "stagingTouched": true,
+    "stagingDdlMigrationApplied": true,
+    "productionDdlMigrationApplied": false,
+    "dataWrites": false,
+    "loadTestsRun": false,
+    "serviceRoleUsedInClientCode": false,
+    "rawStagingPayloadsCommitted": false
+  },
+  "gates": {
+    "gitDiffCheck": "pass",
+    "jsonArtifactParse": "pass",
+    "targetedStagingRpcSourceVerification": "pass",
+    "targetedWarehouseIssueQueueTests": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pending_final_post_commit"
+  },
+  "nextRequiredWave": "S-LOAD-7 POST-WAREHOUSE-ISSUE-SOURCE-PATCH STAGING REGRESSION",
+  "readinessClaim": {
+    "tenKReadinessClaimed": false,
+    "reason": "This wave only applies and smoke-verifies the staging source patch. Bounded staging load regression is still required."
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": true,
+    "stagingDdlMigrationApplied": true,
+    "productionDdlMigrationApplied": false,
+    "dataWrites": false,
+    "loadTestsRun": false,
+    "serviceRoleUsed": false,
+    "sqlRpcRlsStorageChangedInRepo": false,
+    "repoMigrationAlreadyCommitted": true,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "financeAccountingCalculationsChanged": false,
+    "warehouseStockMathChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadPiiSecretsLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false
+  }
+}
