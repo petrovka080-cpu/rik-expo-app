@@ -51,9 +51,10 @@ export function useWarehouseReqHeadsQuery(params: {
   const { supabase, pageSize, enabled } = params;
 
   const queryClient = useQueryClient();
+  const queryKey = warehouseReqHeadsKeys.page(pageSize);
 
   const query = useInfiniteQuery<WarehouseReqHeadsPageData>({
-    queryKey: warehouseReqHeadsKeys.page(pageSize),
+    queryKey,
     queryFn: async ({ pageParam, signal }) => {
       const page = pageParam as number;
       return apiFetchReqHeadsWindow(supabase, page, pageSize, { signal });
@@ -112,11 +113,9 @@ export function useWarehouseReqHeadsQuery(params: {
     error: query.error,
 
     /** Actions */
-    fetchNextPage: query.fetchNextPage,
-    refetch: query.refetch,
+    fetchNextPage: () => query.fetchNextPage({ cancelRefetch: false }),
+    refetch: () => query.refetch({ cancelRefetch: false }),
     invalidate: () =>
-      queryClient.invalidateQueries({
-        queryKey: warehouseReqHeadsKeys.page(pageSize),
-      }),
+      queryClient.invalidateQueries({ queryKey }, { cancelRefetch: false }),
   };
 }

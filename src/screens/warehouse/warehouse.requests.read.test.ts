@@ -156,6 +156,65 @@ describe("warehouse.requests.read canonical ownership", () => {
     );
   });
 
+  it("dedupes duplicate request-head IDs inside a bounded warehouse issue page", async () => {
+    const row = {
+      request_id: "req-rpc-1",
+      display_no: "REQ-1",
+      object_name: "Object A",
+      level_code: "L1",
+      system_code: "SYS",
+      zone_code: "Z1",
+      submitted_at: "2026-04-12T08:00:00.000Z",
+      items_cnt: 2,
+      ready_cnt: 2,
+      done_cnt: 0,
+      qty_limit_sum: 10,
+      qty_issued_sum: 4,
+      qty_left_sum: 6,
+      qty_can_issue_now_sum: 5,
+      issuable_now_cnt: 1,
+      issue_status: "READY",
+      visible_in_expense_queue: true,
+      can_issue_now: true,
+      waiting_stock: false,
+      all_done: false,
+    };
+    const rpc = jest.fn().mockResolvedValue({
+      data: {
+        version: "v4",
+        rows: [
+          row,
+          { ...row, display_no: "REQ-1-DUPLICATE" },
+          { ...row, request_id: "req-rpc-2", display_no: "REQ-2" },
+        ],
+        meta: {
+          total: 3,
+          row_count: 3,
+          generated_at: "2026-04-12T08:00:01.000Z",
+          payload_shape_version: "v4",
+        },
+      },
+      error: null,
+    });
+
+    const result = await service.apiFetchReqHeadsWindow({ rpc } as never, 0, 25);
+
+    expect(rpc).toHaveBeenCalledWith("warehouse_issue_queue_scope_v4", {
+      p_offset: 0,
+      p_limit: 25,
+    });
+    expect(result.rows.map((next) => next.request_id)).toEqual(["req-rpc-1", "req-rpc-2"]);
+    expect(result.rows.map((next) => next.display_no)).toEqual(["REQ-1", "REQ-2"]);
+    expect(result.meta.returnedRowCount).toBe(2);
+    expect(mockObservationSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rowCount: 2,
+        sourceKind: "rpc:warehouse_issue_queue_scope_v4",
+        fallbackUsed: false,
+      }),
+    );
+  });
+
   it("fails closed when the canonical request-head RPC fails", async () => {
     const rpc = jest.fn().mockResolvedValue({
       data: null,

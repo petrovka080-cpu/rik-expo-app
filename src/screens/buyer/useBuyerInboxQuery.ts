@@ -45,9 +45,10 @@ export function useBuyerInboxQuery(params: {
   const searchKey = String(searchQuery ?? "").trim();
 
   const queryClient = useQueryClient();
+  const queryKey = buyerInboxKeys.search(searchKey);
 
   const query = useInfiniteQuery<BuyerInboxPageData>({
-    queryKey: buyerInboxKeys.search(searchKey),
+    queryKey,
     queryFn: async ({ pageParam }) => {
       const offsetGroups = pageParam as number;
       return loadBuyerInboxWindowData({
@@ -121,11 +122,9 @@ export function useBuyerInboxQuery(params: {
     isError: query.isError,
     error: query.error,
 
-    fetchNextPage: query.fetchNextPage,
-    refetch: query.refetch,
+    fetchNextPage: () => query.fetchNextPage({ cancelRefetch: false }),
+    refetch: () => query.refetch({ cancelRefetch: false }),
     invalidate: () =>
-      queryClient.invalidateQueries({
-        queryKey: buyerInboxKeys.search(searchKey),
-      }),
+      queryClient.invalidateQueries({ queryKey }, { cancelRefetch: false }),
   };
 }

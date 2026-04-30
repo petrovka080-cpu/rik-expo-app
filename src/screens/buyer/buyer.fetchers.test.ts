@@ -210,6 +210,63 @@ describe("buyer inbox fetchers", () => {
     expect(result.meta.limitGroups).toBe(100);
   });
 
+  it("caps buyer inbox window rows to the requested page size after the rpc response", async () => {
+    const rows = Array.from({ length: 26 }, (_value, index) => ({
+      request_id: `req-${index + 1}`,
+      request_id_old: 400 + index,
+      request_item_id: `item-${index + 1}`,
+      rik_code: `RIK-${index + 1}`,
+      name_human: `Material ${index + 1}`,
+      qty: 1,
+      uom: "pcs",
+      app_code: `APP-${index + 1}`,
+      note: null,
+      object_name: "Object A",
+      status: "approved",
+      created_at: "2026-03-30T10:00:00.000Z",
+    }));
+    const rpc = jest.fn(async () => ({
+      data: buildScopeEnvelope({
+        rows,
+        offsetGroups: 0,
+        limitGroups: 999,
+        returnedGroupCount: 25,
+        totalGroupCount: 50,
+        hasMore: true,
+      }),
+      error: null,
+    }));
+
+    const result = await loadBuyerInboxWindowData({
+      supabase: { rpc },
+      offsetGroups: 0,
+      limitGroups: 25,
+      search: null,
+      log: () => undefined,
+    });
+
+    expect(rpc).toHaveBeenCalledWith("buyer_summary_inbox_scope_v1", {
+      p_offset: 0,
+      p_limit: 25,
+      p_search: null,
+      p_company_id: null,
+    });
+    expect(result.rows).toHaveLength(25);
+    expect(result.rows.map((row) => row.request_item_id)).toEqual(
+      rows.slice(0, 25).map((row) => row.request_item_id),
+    );
+    expect(result.rows.some((row) => row.request_item_id === "item-26")).toBe(false);
+    expect(result.requestIds).toEqual(rows.slice(0, 25).map((row) => row.request_id));
+    expect(result.meta).toMatchObject({
+      offsetGroups: 0,
+      limitGroups: 25,
+      returnedGroupCount: 25,
+      totalGroupCount: 50,
+      hasMore: true,
+      search: null,
+    });
+  });
+
   it("fails closed on an undefined rest transport path instead of publishing empty data", async () => {
     const supabase = {
       rpc: jest.fn(function () {

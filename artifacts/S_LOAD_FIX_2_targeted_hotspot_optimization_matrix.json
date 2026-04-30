@@ -1,0 +1,152 @@
+{
+  "wave": "S-LOAD-FIX-2",
+  "mode": "targeted-hotspot-code-optimization",
+  "status": "GREEN_CODE_READY",
+  "ownerGoal": "10K/50K+ readiness",
+  "generatedAt": "2026-04-30T11:57:15.3702832+06:00",
+  "sourceEvidence": {
+    "baselineWave": "S-LOAD-4",
+    "baselineStatus": "GREEN_STAGING_EXECUTED_STILL_OPTIMIZE_NEXT",
+    "stagingLoadRerunInThisWave": false,
+    "optimizeNextTargets": [
+      {
+        "id": "warehouse_issue_queue_page_25",
+        "rpcName": "warehouse_issue_queue_scope_v4",
+        "sLoad4Recommendation": "optimize_next",
+        "sLoad4MaxLatencyMs": 3127,
+        "sLoad4MaxRowCount": 25,
+        "sLoad4Reason": "Max latency stayed above the 1500ms optimize_next threshold."
+      },
+      {
+        "id": "buyer_summary_inbox_page_25",
+        "rpcName": "buyer_summary_inbox_scope_v1",
+        "sLoad4Recommendation": "optimize_next",
+        "sLoad4MaxLatencyMs": 1517,
+        "sLoad4MaxRowCount": 26,
+        "sLoad4Reason": "Direct RPC sample returned 26 rows for expectedMaxRows=25 and crossed the latency threshold."
+      }
+    ],
+    "watchTargets": [
+      {
+        "id": "warehouse_incoming_queue_page_30",
+        "reason": "Watch-only one-sample latency spike; left unchanged except no shared runtime behavior changes."
+      },
+      {
+        "id": "buyer_summary_buckets_fixed_scope",
+        "reason": "Watch-only fixed summary scope; left unchanged except no shared runtime behavior changes."
+      },
+      {
+        "id": "warehouse_stock_page_60",
+        "reason": "Warehouse stock math is hard-excluded without dedicated stock tests."
+      }
+    ]
+  },
+  "execution": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "stagingLoadRun": false,
+    "productionLoadRun": false,
+    "writes": false,
+    "serviceRoleUsed": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false
+  },
+  "changedHotspotPaths": [
+    {
+      "target": "buyer_summary_inbox_page_25",
+      "files": [
+        "src/screens/buyer/buyer.fetchers.ts",
+        "src/screens/buyer/useBuyerInboxQuery.ts",
+        "src/screens/buyer/buyer.fetchers.test.ts"
+      ],
+      "behavior": [
+        "p_limit remains normalized and clamped before buyer_summary_inbox_scope_v1 is called.",
+        "RPC response still passes validateRpcResponse before adaptation.",
+        "Final returned rows are sliced to normalizedLimitGroups, so a 26-row RPC payload cannot publish more than 25 rows when the caller requested 25.",
+        "requestIds are derived from the bounded rows only.",
+        "returnedGroupCount and limitGroups are clamped to the caller bound.",
+        "React Query refetch/fetchNextPage/invalidate use cancelRefetch=false so duplicate in-flight hot reads join instead of cancel/restart."
+      ],
+      "rowOverrunImpossibleInClientPath": true,
+      "orderingPreserved": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "target": "warehouse_issue_queue_page_25",
+      "files": [
+        "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+        "src/screens/warehouse/hooks/useWarehouseReqHeadsQuery.ts",
+        "src/screens/warehouse/warehouse.requests.read.test.ts"
+      ],
+      "behavior": [
+        "p_offset and p_limit remain bounded before warehouse_issue_queue_scope_v4 is called.",
+        "RPC response still fails closed if raw rows exceed p_limit.",
+        "Duplicate request_id/id values inside the bounded page are collapsed after the p_limit contract check and before adaptation.",
+        "First occurrence order is preserved.",
+        "React Query refetch/fetchNextPage/invalidate use cancelRefetch=false so duplicate in-flight hot reads join instead of cancel/restart."
+      ],
+      "dedupedIdSet": "request_id/id inside bounded request-head page",
+      "orderingPreserved": true,
+      "rawPayloadLogged": false
+    }
+  ],
+  "skippedPaths": [
+    {
+      "target": "warehouse_incoming_queue_page_30",
+      "reason": "S-LOAD-4 classified this as watch from one latency spike; no row overrun and no optimize_next status."
+    },
+    {
+      "target": "buyer_summary_buckets_fixed_scope",
+      "reason": "S-LOAD-4 classified this fixed scope as watch from one latency spike; no bounded page semantics to change safely."
+    },
+    {
+      "target": "warehouse_stock_page_60",
+      "reason": "Warehouse stock calculations are hard-excluded for this wave."
+    },
+    {
+      "scope": "SQL/RPC implementations",
+      "reason": "Hard-excluded; this wave is app code, tests, and proof only."
+    }
+  ],
+  "tests": [
+    "src/screens/buyer/buyer.fetchers.test.ts",
+    "src/screens/warehouse/warehouse.requests.read.test.ts",
+    "tests/load/sLoadFix2Hotspots.contract.test.ts"
+  ],
+  "proofArtifacts": [
+    "artifacts/S_LOAD_FIX_2_targeted_hotspot_optimization_matrix.json",
+    "artifacts/S_LOAD_FIX_2_targeted_hotspot_optimization_proof.md"
+  ],
+  "gates": {
+    "gitDiffCheck": "pass",
+    "jsonArtifactParse": "pass",
+    "tsc": "pass",
+    "expoLint": "pass",
+    "targetedHotspotTests": "pass",
+    "npmTestRunInBand": "pass",
+    "npmTest": "pass",
+    "releaseVerify": "pending_final_post_commit"
+  },
+  "nextRequiredProof": {
+    "wave": "S-LOAD-5 POST-FIX HOTSPOT REGRESSION",
+    "reason": "S-LOAD-FIX-2 does not rerun staging and does not modify SQL/RPC, so it must not claim measured hotspot resolution."
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "loadTestsRun": false,
+    "writes": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "financeAccountingCalculationsChanged": false,
+    "warehouseStockMathChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "tokensLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "rawStagingPayloadsCommitted": false
+  }
+}

@@ -72,6 +72,25 @@ const requireBoundedRpcRows = (value: unknown, rpcName: string, limit: number): 
   return rows;
 };
 
+const dedupeReqHeadRawRows = (rows: unknown[]): unknown[] => {
+  const seen = new Set<string>();
+  const result: unknown[] = [];
+  for (const row of rows) {
+    const record = row && typeof row === "object" && !Array.isArray(row)
+      ? (row as Record<string, unknown>)
+      : null;
+    const requestId = String(record?.request_id ?? record?.id ?? "").trim();
+    if (!requestId) {
+      result.push(row);
+      continue;
+    }
+    if (seen.has(requestId)) continue;
+    seen.add(requestId);
+    result.push(row);
+  }
+  return result;
+};
+
 const toReqItemsMeta = (
   value: unknown,
   requestId: string,
@@ -173,12 +192,14 @@ export async function apiFetchReqHeadsCanonicalRaw(
     validated,
     "warehouse_issue_queue_scope_v4",
     normalizedPage.pageSize,
-  ).map((row, index) => adaptReqHeadsRpcRow(row, index));
+  );
+  const dedupedRows = dedupeReqHeadRawRows(rows);
+  const adaptedRows = dedupedRows.map((row, index) => adaptReqHeadsRpcRow(row, index));
   const meta = toReqHeadsRpcMeta(
     validated,
     normalizedPage.page,
     normalizedPage.pageSize,
-    rows.length,
+    adaptedRows.length,
   );
   trackRpcLatency({
     name: "warehouse_issue_queue_scope_v4",
@@ -186,7 +207,7 @@ export async function apiFetchReqHeadsCanonicalRaw(
     surface: "issue_queue",
     durationMs: Date.now() - startedAt,
     status: "success",
-    rowCount: rows.length,
+    rowCount: adaptedRows.length,
     extra: {
       page: normalizedPage.page,
       pageSize: normalizedPage.pageSize,
@@ -196,7 +217,7 @@ export async function apiFetchReqHeadsCanonicalRaw(
   });
 
   return {
-    rows,
+    rows: adaptedRows,
     metrics: {
       stage_a_ms: 0,
       stage_b_ms: 0,

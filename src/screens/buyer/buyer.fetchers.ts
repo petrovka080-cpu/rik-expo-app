@@ -52,6 +52,11 @@ const normalizeBuyerInboxLimit = (value: unknown): number =>
     Math.max(1, toInt(value, BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE)),
   );
 
+const clampBuyerInboxRowsToLimit = (
+  rows: BuyerInboxRow[],
+  limit: number,
+): BuyerInboxRow[] => rows.slice(0, Math.max(0, Math.trunc(Number(limit) || 0)));
+
 export type BuyerInboxWindowMeta = {
   offsetGroups: number;
   limitGroups: number;
@@ -208,18 +213,20 @@ const loadBuyerInboxWindowScope = async (params: {
   const envelope = adaptBuyerSummaryInboxScopeEnvelope(validated);
   const totalGroupCount = toInt(envelope.meta.total_group_count, 0);
   const pageReturnedGroupCount = toInt(envelope.meta.returned_group_count, 0);
+  const boundedRows = clampBuyerInboxRowsToLimit(envelope.rows, normalizedLimitGroups);
+  const boundedReturnedGroupCount = Math.min(pageReturnedGroupCount, normalizedLimitGroups);
   return {
-    rows: envelope.rows,
-    requestIds: uniqIds(envelope.rows.map((row) => row?.request_id)),
+    rows: boundedRows,
+    requestIds: uniqIds(boundedRows.map((row) => row?.request_id)),
     meta: {
       offsetGroups: toInt(envelope.meta.offset_groups, normalizedOffsetGroups),
-      limitGroups: toInt(envelope.meta.limit_groups, normalizedLimitGroups),
-      returnedGroupCount: pageReturnedGroupCount,
+      limitGroups: Math.min(toInt(envelope.meta.limit_groups, normalizedLimitGroups), normalizedLimitGroups),
+      returnedGroupCount: boundedReturnedGroupCount,
       totalGroupCount,
       hasMore:
         typeof envelope.meta.has_more === "boolean"
           ? Boolean(envelope.meta.has_more)
-          : normalizedOffsetGroups + pageReturnedGroupCount < totalGroupCount,
+          : normalizedOffsetGroups + boundedReturnedGroupCount < totalGroupCount,
       search: toMaybeText(envelope.meta.search),
     },
     sourceMeta: {
