@@ -1,0 +1,57 @@
+{
+  "wave": "S-PROJECTION-HEALTH-1",
+  "mode": "production-safe-disabled-projection-health-boundary",
+  "ownerGoal": "10K/50K+ readiness",
+  "status": "GREEN_DISABLED_BY_DEFAULT",
+  "sourceRisk": {
+    "audit": "A4",
+    "riskId": "A4-RISK-002",
+    "name": "Projection and rollup freshness operations"
+  },
+  "projectionHealth": {
+    "surfaces": 7,
+    "defaultEnabled": false,
+    "liveDatabaseReadsEnabledByDefault": false,
+    "redactedSupportSummary": true,
+    "states": [
+      "healthy",
+      "stale",
+      "critical",
+      "missing",
+      "building",
+      "failed",
+      "unknown"
+    ],
+    "surfacesCovered": [
+      "director_report_issue_facts_v1",
+      "director_works_snapshot",
+      "warehouse_stock_summary_v1",
+      "buyer_inbox_search_projection",
+      "finance_supplier_rollup_v1",
+      "finance_object_rollup_v1",
+      "finance_panel_spend_projection_v1"
+    ]
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionWrites": false,
+    "stagingTouched": false,
+    "stagingWrites": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "sqlRpcChanged": false,
+    "rlsStorageChanged": false,
+    "packageNativeChanged": false,
+    "runtimeEnabledByDefault": false,
+    "liveDatabaseReads": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false,
+    "rawRowsIncluded": false,
+    "piiIncluded": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "easUpdateTriggered": false,
+    "playMarketTouched": false
+  }
+}
