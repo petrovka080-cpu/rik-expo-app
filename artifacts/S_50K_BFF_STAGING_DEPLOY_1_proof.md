@@ -1,10 +1,10 @@
 # S-50K-BFF-STAGING-DEPLOY-1 Proof
 
-Status: GREEN_DEPLOY_READY.
+Status: BLOCKED_BFF_DEPLOY_TARGET_MISSING.
 
 Owner goal: 10K/50K+ readiness.
 
-Mode: production-safe staging BFF server boundary. Production was not touched. Staging was not written. App runtime BFF routing remains disabled by default.
+Mode: production-safe staging BFF server boundary. Production was not touched. Staging was not written. App runtime BFF routing remains disabled by default. The repo boundary is ready but disabled; staging live status is missing until a real `STAGING_BFF_BASE_URL` and deploy target exist.
 
 ## Files Changed
 
@@ -55,7 +55,7 @@ Mutation routes are disabled by default. When explicitly enabled for future stag
 - Staging shadow run: NOT RUN
 - Traffic migrated: NO
 
-Because `STAGING_BFF_BASE_URL` is missing in this agent process, this wave records `GREEN_DEPLOY_READY` for the completed server boundary and does not claim staging deployment.
+Because `STAGING_BFF_BASE_URL` is missing in this agent process, this wave records `BLOCKED_BFF_DEPLOY_TARGET_MISSING`. It does not invent a URL, does not run a live BFF health/readiness check, and does not claim staging deployment.
 
 ## Safety
 

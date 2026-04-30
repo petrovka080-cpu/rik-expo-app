@@ -287,16 +287,23 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
 
   it("marks the boundary deploy-ready while redacting staging base URL presence", () => {
     expect(buildBffStagingDeploymentReadiness({ stagingBffBaseUrl: "" })).toEqual({
-      status: "GREEN_DEPLOY_READY",
+      status: "BLOCKED_BFF_DEPLOY_TARGET_MISSING",
+      repoStatus: "repo_ready_disabled",
       stagingBffBaseUrl: "missing",
+      stagingLive: "missing",
+      liveCheckRun: false,
+      liveCheckReason: "STAGING_BFF_BASE_URL is missing; do not invent a URL.",
       serverBoundaryReady: true,
       stagingShadowRun: "not_run",
       trafficMigrated: false,
     });
     expect(buildBffStagingDeploymentReadiness({ stagingBffBaseUrl: "https://staging-bff.example.invalid" })).toEqual(
       expect.objectContaining({
-        status: "GREEN_DEPLOY_READY",
+        status: "GREEN_BFF_STAGING_DEPLOY_PREFLIGHT_READY",
+        repoStatus: "repo_ready_disabled",
         stagingBffBaseUrl: "present_redacted",
+        stagingLive: "not_checked",
+        liveCheckRun: false,
       }),
     );
   });
@@ -346,6 +353,9 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
 
     const matrix = JSON.parse(readProjectFile("artifacts/S_50K_BFF_STAGING_DEPLOY_1_matrix.json"));
     expect(matrix.wave).toBe("S-50K-BFF-STAGING-DEPLOY-1");
+    expect(matrix.status).toBe("BLOCKED_BFF_DEPLOY_TARGET_MISSING");
+    expect(matrix.repoStatus).toBe("repo_ready_disabled");
+    expect(matrix.stagingLive).toBe("missing");
     expect(matrix.serverBoundary.readRoutes).toBe(5);
     expect(matrix.serverBoundary.mutationRoutes).toBe(5);
     expect(matrix.safety.appRuntimeBffEnabled).toBe(false);

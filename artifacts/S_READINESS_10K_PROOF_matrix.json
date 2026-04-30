@@ -22,7 +22,7 @@
     "sQueue1": "GREEN_TARGET_MET"
   },
   "platform50kBoundaries": {
-    "bffStagingDeploy1": "GREEN_DEPLOY_READY",
+    "bffStagingDeploy1": "BLOCKED_BFF_DEPLOY_TARGET_MISSING",
     "cacheIntegration1": "GREEN_CACHE_BOUNDARY_READY",
     "jobsIntegration1": "GREEN_JOB_BOUNDARY_READY",
     "idempotencyIntegration1": "GREEN_IDEMPOTENCY_BOUNDARY_READY",

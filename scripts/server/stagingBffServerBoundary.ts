@@ -571,8 +571,12 @@ export async function handleBffStagingServerRequest(
 export function buildBffStagingDeploymentReadiness(params: {
   stagingBffBaseUrl?: string | null;
 }): {
-  status: "GREEN_DEPLOY_READY";
+  status: "GREEN_BFF_STAGING_DEPLOY_PREFLIGHT_READY" | "BLOCKED_BFF_DEPLOY_TARGET_MISSING";
+  repoStatus: "repo_ready_disabled";
   stagingBffBaseUrl: "present_redacted" | "missing";
+  stagingLive: "missing" | "not_checked";
+  liveCheckRun: false;
+  liveCheckReason: string;
   serverBoundaryReady: true;
   stagingShadowRun: "not_run";
   trafficMigrated: false;
@@ -580,8 +584,16 @@ export function buildBffStagingDeploymentReadiness(params: {
   const baseUrlPresent = typeof params.stagingBffBaseUrl === "string" && params.stagingBffBaseUrl.trim().length > 0;
 
   return {
-    status: "GREEN_DEPLOY_READY",
+    status: baseUrlPresent
+      ? "GREEN_BFF_STAGING_DEPLOY_PREFLIGHT_READY"
+      : "BLOCKED_BFF_DEPLOY_TARGET_MISSING",
+    repoStatus: "repo_ready_disabled",
     stagingBffBaseUrl: baseUrlPresent ? "present_redacted" : "missing",
+    stagingLive: baseUrlPresent ? "not_checked" : "missing",
+    liveCheckRun: false,
+    liveCheckReason: baseUrlPresent
+      ? "Live BFF health/readiness checks require an explicit staging wave."
+      : "STAGING_BFF_BASE_URL is missing; do not invent a URL.",
     serverBoundaryReady: true,
     stagingShadowRun: "not_run",
     trafficMigrated: false,

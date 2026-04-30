@@ -2,7 +2,13 @@
   "wave": "S-50K-BFF-STAGING-DEPLOY-1",
   "mode": "production-safe-staging-bff-server-boundary",
   "ownerGoal": "10K/50K+ readiness",
-  "status": "GREEN_DEPLOY_READY",
+  "status": "BLOCKED_BFF_DEPLOY_TARGET_MISSING",
+  "repoStatus": "repo_ready_disabled",
+  "stagingLive": "missing",
+  "blockers": [
+    "STAGING_BFF_BASE_URL_missing",
+    "staging_BFF_deploy_target_not_provisioned"
+  ],
   "serverBoundary": {
     "healthEndpointContract": true,
     "readinessEndpointContract": true,
@@ -16,6 +22,8 @@
   "shadow": {
     "localShadowAlreadyProven": true,
     "stagingBffBaseUrl": "missing",
+    "liveCheckRun": false,
+    "liveCheckReason": "STAGING_BFF_BASE_URL is missing; do not invent a URL.",
     "stagingShadowRun": "not_run",
     "matches": 0,
     "mismatches": 0,

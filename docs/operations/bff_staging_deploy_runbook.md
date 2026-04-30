@@ -1,6 +1,6 @@
 # BFF Staging Deploy Runbook
 
-Status: deploy ready. External staging target provisioning is still required before staging shadow traffic can run.
+Status: repo-ready disabled. External staging target provisioning and `STAGING_BFF_BASE_URL` are required before BFF can be marked staging-live or before staging shadow traffic can run.
 
 ## Purpose
 

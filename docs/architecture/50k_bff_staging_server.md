@@ -1,8 +1,14 @@
 # 50K BFF Staging Server Boundary
 
-Status: deploy-ready server boundary, production-safe, disabled for app runtime by default.
+Status: repo-ready disabled server boundary. Staging live deployment remains blocked until a real BFF deploy target and `STAGING_BFF_BASE_URL` are provided.
 
 This boundary is the first staging-deployable BFF layer for the existing 50K BFF contracts. It does not replace mobile Supabase flows, does not migrate production traffic, and does not execute live mutations unless a future staging deployment explicitly enables mutation routing with idempotency and rate-limit metadata.
+
+Readiness truth:
+
+- repo module: `repo_ready_disabled`
+- staging BFF live: `missing` while `STAGING_BFF_BASE_URL` is absent
+- live health/readiness check: `not_checked` unless a later staging wave runs it explicitly
 
 ## Boundary
 
