@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import type {
   ForemanRequestRow,
@@ -49,6 +50,7 @@ type RequestsHasRequestNoCacheEntry = {
 
 const REQUEST_NO_CAPABILITY_POSITIVE_TTL_MS = 5 * 60 * 1000;
 const REQUEST_NO_CAPABILITY_NEGATIVE_TTL_MS = 60 * 1000;
+const FOREMAN_REQUEST_LINK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 let requestsHasRequestNoCacheEntry: RequestsHasRequestNoCacheEntry | null = null;
 
@@ -205,18 +207,28 @@ export async function listLinkedRequestsByLink(linkId: string): Promise<LinkedRe
 
   const select = "id, display_no, request_no, created_at, subcontract_id, contractor_job_id";
   const [primary, fallback] = await Promise.all([
-    supabase
-      .from("requests")
-      .select(select)
-      .eq("subcontract_id", normalized)
-      .not("display_no", "is", null)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("requests")
-      .select(select)
-      .eq("contractor_job_id", normalized)
-      .not("display_no", "is", null)
-      .order("created_at", { ascending: false }),
+    loadPagedRowsWithCeiling<LinkedRequestSummaryRow>(
+      () =>
+        supabase
+          .from("requests")
+          .select(select)
+          .eq("subcontract_id", normalized)
+          .not("display_no", "is", null)
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: true }) as unknown as PagedQuery<LinkedRequestSummaryRow>,
+      FOREMAN_REQUEST_LINK_PAGE_DEFAULTS,
+    ),
+    loadPagedRowsWithCeiling<LinkedRequestSummaryRow>(
+      () =>
+        supabase
+          .from("requests")
+          .select(select)
+          .eq("contractor_job_id", normalized)
+          .not("display_no", "is", null)
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: true }) as unknown as PagedQuery<LinkedRequestSummaryRow>,
+      FOREMAN_REQUEST_LINK_PAGE_DEFAULTS,
+    ),
   ]);
 
   const merged = new Map<string, LinkedRequestSummaryRow>();

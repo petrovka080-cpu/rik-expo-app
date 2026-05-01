@@ -437,10 +437,15 @@ export async function enrichWorksRows(params: {
 
   const wpById = new Map<string, WorkProgressRawRow>();
   if (wpIds.length) {
-    const wpByIdRes = await supabaseClient
-      .from("work_progress")
-      .select("id, purchase_item_id, object_id")
-      .in("id", wpIds);
+    const wpByIdRes = await loadPagedRowsWithCeiling<WorkProgressRawRow>(
+      () =>
+        supabaseClient
+          .from("work_progress")
+          .select("id, purchase_item_id, object_id")
+          .in("id", wpIds)
+          .order("id", { ascending: true }) as unknown as PagedQuery<WorkProgressRawRow>,
+      CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
+    );
     if (!wpByIdRes.error && Array.isArray(wpByIdRes.data)) {
       for (const row of wpByIdRes.data as WorkProgressRawRow[]) {
         const id = pickWorkProgressRow(row);

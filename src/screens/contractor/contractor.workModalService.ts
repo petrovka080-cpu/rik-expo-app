@@ -457,10 +457,15 @@ export async function loadIssuedTodayData(
   const reqDisplaySelect = requestsHasRequestNoInWorkModalCache
     ? "id, display_no, request_no, status"
     : "id, display_no, status";
-  const reqDisplayQ = await supabaseClient
-    .from("requests")
-    .select(reqDisplaySelect)
-    .in("id", requestIds);
+  const reqDisplayQ = await loadPagedRowsWithCeiling<RequestDisplayRow>(
+    () =>
+      supabaseClient
+        .from("requests")
+        .select(reqDisplaySelect)
+        .in("id", requestIds)
+        .order("id", { ascending: true }) as unknown as PagedQuery<RequestDisplayRow>,
+    WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
+  );
   const reqDisplayById = new Map<string, { req_no: string; status: string | null }>();
   if (!reqDisplayQ.error && Array.isArray(reqDisplayQ.data)) {
     for (const rawRowReq of asArray(reqDisplayQ.data as RequestDisplayRow[])) {
@@ -473,10 +478,16 @@ export async function loadIssuedTodayData(
     }
   }
 
-  const issueHeadsQ = await supabaseClient
-    .from("warehouse_issues")
-    .select("id, request_id, base_no")
-    .in("request_id", requestIds);
+  const issueHeadsQ = await loadPagedRowsWithCeiling<WarehouseIssueHeadRow>(
+    () =>
+      supabaseClient
+        .from("warehouse_issues")
+        .select("id, request_id, base_no")
+        .in("request_id", requestIds)
+        .order("request_id", { ascending: true })
+        .order("id", { ascending: true }) as unknown as PagedQuery<WarehouseIssueHeadRow>,
+    WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
+  );
   const issueNosByReq = new Map<string, string[]>();
   if (!issueHeadsQ.error && Array.isArray(issueHeadsQ.data)) {
     for (const rawIssue of asArray(issueHeadsQ.data as WarehouseIssueHeadRow[])) {
@@ -490,10 +501,15 @@ export async function loadIssuedTodayData(
     }
   }
 
-  const headsQ = await supabaseClient
-    .from("v_wh_issue_req_heads_ui")
-    .select("request_id, submitted_at, issue_status, qty_issued_sum")
-    .in("request_id", requestIds);
+  const headsQ = await loadPagedRowsWithCeiling<IssueReqHeadUiRow>(
+    () =>
+      supabaseClient
+        .from("v_wh_issue_req_heads_ui")
+        .select("request_id, submitted_at, issue_status, qty_issued_sum")
+        .in("request_id", requestIds)
+        .order("request_id", { ascending: true }) as unknown as PagedQuery<IssueReqHeadUiRow>,
+    WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
+  );
   const issueStatusByReq = new Map<string, string>();
   const issuedSumByReq = new Map<string, number>();
   const buildReqCards = (issuedByItems?: Map<string, number>): LinkedReqCard[] =>
@@ -543,10 +559,16 @@ export async function loadIssuedTodayData(
     };
   }
 
-  const itemsQ = await supabaseClient
-    .from("v_wh_issue_req_items_ui")
-    .select("*")
-    .in("request_id", scopeIds);
+  const itemsQ = await loadPagedRowsWithCeiling<IssueReqItemUiRow>(
+    () =>
+      supabaseClient
+        .from("v_wh_issue_req_items_ui")
+        .select("*")
+        .in("request_id", scopeIds)
+        .order("request_id", { ascending: true })
+        .order("request_item_id", { ascending: true }) as unknown as PagedQuery<IssueReqItemUiRow>,
+    WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
+  );
   if (itemsQ.error || !Array.isArray(itemsQ.data)) {
     return { issuedItems: [], linkedReqCards: buildReqCards(), issuedHint: "" };
   }

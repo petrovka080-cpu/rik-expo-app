@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "../database.types";
 import { mapWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "./_core";
 import { isRpcRecordArray, validateRpcResponse } from "./queryBoundary";
 import { beginPlatformObservability } from "../observability/platformObservability";
 
@@ -105,6 +106,7 @@ type LoadOptions = {
 
 const CANONICAL_SOURCE_KIND = "rpc:proposal_attachment_evidence_scope_v1";
 const COMPATIBILITY_SOURCE_KIND = "table:proposal_attachments";
+const PROPOSAL_ATTACHMENT_COMPATIBILITY_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 const text = (value: unknown) => String(value ?? "").trim();
 
@@ -282,11 +284,16 @@ async function loadCanonicalRows(
 }
 
 async function loadCompatibilityRows(client: ProposalAttachmentsClient, proposalId: string) {
-  const table = await client
-    .from("proposal_attachments")
-    .select("id,proposal_id,file_name,url,group_key,created_at,bucket_id,storage_path")
-    .eq("proposal_id", proposalId)
-    .order("created_at", { ascending: false });
+  const table = await loadPagedRowsWithCeiling<ProposalAttachmentTableRow>(
+    () =>
+      client
+        .from("proposal_attachments")
+        .select("id,proposal_id,file_name,url,group_key,created_at,bucket_id,storage_path")
+        .eq("proposal_id", proposalId)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false }) as unknown as PagedQuery<ProposalAttachmentTableRow>,
+    PROPOSAL_ATTACHMENT_COMPATIBILITY_PAGE_DEFAULTS,
+  );
 
   if (table.error) throw table.error;
   return Array.isArray(table.data) ? table.data : [];

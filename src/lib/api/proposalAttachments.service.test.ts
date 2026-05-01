@@ -2,13 +2,25 @@ import { listCanonicalProposalAttachments } from "./proposalAttachments.service"
 
 type RpcResult = { data: unknown; error: unknown };
 
+type CompatibilityQueryResult = { data: unknown[]; error: unknown };
+
+type CompatibilityQueryChain = {
+  eq: jest.Mock<CompatibilityQueryChain, [string, unknown]>;
+  order: jest.Mock<CompatibilityQueryChain, [string, { ascending: boolean }]>;
+  range: jest.Mock<Promise<CompatibilityQueryResult>, [number, number]>;
+};
+
 function createCompatibilityQuery(result: { data: unknown[]; error: unknown }) {
+  const chain = {} as CompatibilityQueryChain;
+  chain.eq = jest.fn<CompatibilityQueryChain, [string, unknown]>(() => chain);
+  chain.order = jest.fn<CompatibilityQueryChain, [string, { ascending: boolean }]>(() => chain);
+  chain.range = jest.fn(async (from: number, to: number) => ({
+    data: Array.isArray(result.data) ? result.data.slice(from, to + 1) : result.data,
+    error: result.error,
+  }));
   return {
-    select: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        order: jest.fn(async () => result),
-      })),
-    })),
+    select: jest.fn(() => chain),
+    chain,
   };
 }
 
@@ -17,18 +29,20 @@ function createClient(params: {
   compatibilityResult?: { data: unknown[]; error: unknown };
   signedUrl?: string | null;
 }) {
+  const compatibilityQuery = createCompatibilityQuery(
+    params.compatibilityResult ?? { data: [], error: null },
+  );
   const createSignedUrl = jest.fn(async () => ({
     data: { signedUrl: params.signedUrl ?? "https://signed.example/file.pdf" },
     error: null,
   }));
-  const from = jest.fn(() =>
-    createCompatibilityQuery(params.compatibilityResult ?? { data: [], error: null }),
-  );
+  const from = jest.fn(() => compatibilityQuery);
   const rpc = jest.fn(async () => params.rpcResult);
 
   return {
     rpc,
     from,
+    compatibilityQuery,
     storage: {
       from: jest.fn(() => ({
         createSignedUrl,
@@ -194,5 +208,39 @@ describe("proposalAttachments.service evidence boundary", () => {
         fileUrl: "https://legacy.example/invoice.pdf",
       }),
     );
+  });
+
+  it("pages compatibility fallback rows with stable ordering", async () => {
+    const compatibilityRows = Array.from({ length: 101 }, (_, index) => ({
+      id: index + 1,
+      proposal_id: "proposal-paged",
+      file_name: `attachment-${index + 1}.pdf`,
+      url: `https://legacy.example/${index + 1}.pdf`,
+      group_key: "supplier_quote",
+      created_at: "2026-03-31T11:00:00Z",
+      bucket_id: "proposal_files",
+      storage_path: `proposals/proposal-paged/${index + 1}.pdf`,
+    }));
+    const client = createClient({
+      rpcResult: {
+        data: null,
+        error: { message: "scope failed" },
+      },
+      compatibilityResult: {
+        data: compatibilityRows,
+        error: null,
+      },
+    });
+
+    const result = await listCanonicalProposalAttachments(client as never, "proposal-paged", {
+      screen: "buyer",
+    });
+    const compatibilityQuery = client.compatibilityQuery.chain;
+
+    expect(result.rows).toHaveLength(101);
+    expect(compatibilityQuery.order).toHaveBeenCalledWith("created_at", { ascending: false });
+    expect(compatibilityQuery.order).toHaveBeenCalledWith("id", { ascending: false });
+    expect(compatibilityQuery.range).toHaveBeenCalledWith(0, 99);
+    expect(compatibilityQuery.range).toHaveBeenCalledWith(100, 199);
   });
 });

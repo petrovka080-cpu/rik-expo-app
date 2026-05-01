@@ -275,10 +275,15 @@ export async function loadCanonicalRequestsByIds(
   let pending = requestLookupInFlight.get(inFlightKey);
   if (!pending) {
     pending = (async () => {
-      const { data, error } = await supabase
-        .from("requests")
-        .select(selectedColumns.join(","))
-        .in("id", missingIds);
+      const { data, error } = await loadPagedRowsWithCeiling<UnknownRow>(
+        () =>
+          supabase
+            .from("requests")
+            .select(selectedColumns.join(","))
+            .in("id", missingIds)
+            .order("id", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+        CANONICAL_REQUEST_REFERENCE_PAGE_DEFAULTS,
+      );
 
       if (error) {
         recordCanonicalRequestLoaderWarning("load_requests_by_ids_failed", error, {

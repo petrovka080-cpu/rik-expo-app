@@ -25,27 +25,29 @@ const makeEqMaybeSingle = (result: unknown) => ({
   })),
 });
 
-const makeInQuery = (result: unknown) => ({
-  in: jest.fn().mockResolvedValue(result),
-});
-
 const makeLimitQuery = (result: unknown) => ({
   limit: jest.fn().mockResolvedValue(result),
 });
 
 const makePagedEqQuery = (result: unknown) => ({
   eq: jest.fn(() => ({
-    order: jest.fn(() => ({
-      range: jest.fn().mockResolvedValue(result),
-    })),
+    order: jest.fn(function order() {
+      return {
+        order,
+        range: jest.fn().mockResolvedValue(result),
+      };
+    }),
   })),
 });
 
 const makePagedInQuery = (result: unknown) => ({
   in: jest.fn(() => ({
-    order: jest.fn(() => ({
-      range: jest.fn().mockResolvedValue(result),
-    })),
+    order: jest.fn(function order() {
+      return {
+        order,
+        range: jest.fn().mockResolvedValue(result),
+      };
+    }),
   })),
 });
 
@@ -205,7 +207,7 @@ describe("contractor.workModalService", () => {
                 });
               }
               if (selection === "id, display_no, status") {
-                return makeInQuery({
+                return makePagedInQuery({
                   data: [{ id: REQUEST_UUID, display_no: "REQ-100", status: "PARTIAL" }],
                   error: null,
                 });
@@ -217,7 +219,7 @@ describe("contractor.workModalService", () => {
         if (table === "warehouse_issues") {
           return {
             select: jest.fn(() =>
-              makeInQuery({
+              makePagedInQuery({
                 data: [{ id: "issue-1", request_id: REQUEST_UUID, base_no: "ISS-100" }],
                 error: null,
               }),
@@ -227,7 +229,7 @@ describe("contractor.workModalService", () => {
         if (table === "v_wh_issue_req_heads_ui") {
           return {
             select: jest.fn(() =>
-              makeInQuery({
+              makePagedInQuery({
                 data: [
                   {
                     request_id: REQUEST_UUID,
@@ -244,7 +246,7 @@ describe("contractor.workModalService", () => {
         if (table === "v_wh_issue_req_items_ui") {
           return {
             select: jest.fn(() =>
-              makeInQuery({
+              makePagedInQuery({
                 data: [
                   {
                     request_item_id: "item-1",

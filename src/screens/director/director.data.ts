@@ -236,10 +236,18 @@ export function useDirectorData({ supabase }: Deps) {
     if (!ids.length) return;
 
     try {
-      const q = await supabase
-        .from("request_items")
-        .select("id, request_id")
-        .in("id", ids);
+      const q = await loadPagedRowsWithCeiling<{ id?: string | number | null; request_id?: string | number | null }>(
+        () =>
+          supabase
+            .from("request_items")
+            .select("id, request_id")
+            .in("id", ids)
+            .order("id", { ascending: true }) as unknown as PagedQuery<{
+              id?: string | number | null;
+              request_id?: string | number | null;
+            }>,
+        DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS,
+      );
 
       if (q.error) throw q.error;
 
