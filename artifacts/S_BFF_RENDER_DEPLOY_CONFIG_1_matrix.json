@@ -1,0 +1,131 @@
+{
+  "wave": "S-BFF-RENDER-DEPLOY-CONFIG-1",
+  "mode": "render-web-service-config-no-deploy",
+  "status": "GREEN_RENDER_BFF_DEPLOY_CONFIG_READY",
+  "generatedAt": "2026-05-01T13:55:00+06:00",
+  "repoPreflight": {
+    "head": "627f6a8fe129242c1511341e52a3ba9f571dc8d7",
+    "originMain": "627f6a8fe129242c1511341e52a3ba9f571dc8d7",
+    "headEqualsOriginMainAtStart": true,
+    "worktreeCleanAtStart": true,
+    "repo": "petrovka080-cpu/rik-expo-app"
+  },
+  "bffEntrypoint": {
+    "boundaryModule": "scripts/server/stagingBffServerBoundary.ts",
+    "boundaryExport": "handleBffStagingServerRequest",
+    "httpWrapper": "scripts/server/stagingBffHttpServer.ts",
+    "httpWrapperExport": "createBffStagingHttpServer",
+    "runtime": "Node.js TypeScript via local tsx",
+    "httpListenerPresent": true,
+    "healthEndpoint": {
+      "method": "GET",
+      "path": "/health",
+      "confirmed": true
+    },
+    "readinessEndpoint": {
+      "method": "GET",
+      "path": "/ready",
+      "confirmed": true
+    }
+  },
+  "renderConfig": {
+    "renderName": "gox-build-staging-bff",
+    "serviceType": "Web Service",
+    "repository": "petrovka080-cpu/rik-expo-app",
+    "branch": "main",
+    "rootDirectory": "",
+    "rootDirectoryDisplay": "leave blank / repo root",
+    "rootDirectoryRequired": false,
+    "buildCommand": "npm ci --include=dev && npm run verify:typecheck && npm test -- --runInBand tests/scale/bffStagingServerBoundary.test.ts tests/scale/bffStagingHttpServer.test.ts",
+    "startCommand": "npx --no-install tsx scripts/server/stagingBffHttpServer.ts",
+    "healthCheckPath": "/health",
+    "readinessPath": "/ready",
+    "instanceType": "Starter",
+    "instanceTypeReason": "Smallest always-on paid instance is recommended for staging smoke to avoid cold-start/sleep false negatives.",
+    "autoDeploy": "No",
+    "autoDeployReason": "Disable for first staging smoke; enable later only after /health, /ready, and shadow parity are green."
+  },
+  "renderEnvVarNames": [
+    "NODE_ENV",
+    "BFF_SERVER_AUTH_SECRET",
+    "BFF_DATABASE_READONLY_URL",
+    "BFF_MUTATION_ENABLED",
+    "BFF_IDEMPOTENCY_METADATA_ENABLED",
+    "BFF_RATE_LIMIT_METADATA_ENABLED",
+    "STAGING_BFF_BASE_URL"
+  ],
+  "renderProvidedEnv": [
+    "PORT"
+  ],
+  "envNotes": {
+    "valuesPrinted": false,
+    "secretsPrinted": false,
+    "stagingBffBaseUrlInvented": false,
+    "stagingBffBaseUrlStatus": "missing_until_render_url_exists",
+    "portSetByRender": true,
+    "mutationRoutesEnabledByDefault": false,
+    "idempotencyProviderEnabled": false,
+    "rateProviderEnabled": false,
+    "redisQueueProviderEnabled": false,
+    "externalObservabilityEnabled": false
+  },
+  "copyPasteReady": {
+    "Render Name": "gox-build-staging-bff",
+    "Root Directory": "",
+    "Root Directory Note": "Leave blank; use repo root.",
+    "Build Command": "npm ci --include=dev && npm run verify:typecheck && npm test -- --runInBand tests/scale/bffStagingServerBoundary.test.ts tests/scale/bffStagingHttpServer.test.ts",
+    "Start Command": "npx --no-install tsx scripts/server/stagingBffHttpServer.ts",
+    "Health Check Path": "/health",
+    "Readiness Path": "/ready",
+    "Instance Type": "Starter",
+    "Auto Deploy": "No"
+  },
+  "manualSetupChecklist": [
+    "Render service type: Web Service.",
+    "Repository: petrovka080-cpu/rik-expo-app.",
+    "Branch: main.",
+    "Name: gox-build-staging-bff.",
+    "Root Directory: leave blank; package.json and scripts/server are at repo root.",
+    "Build Command: npm ci --include=dev && npm run verify:typecheck && npm test -- --runInBand tests/scale/bffStagingServerBoundary.test.ts tests/scale/bffStagingHttpServer.test.ts.",
+    "Start Command: npx --no-install tsx scripts/server/stagingBffHttpServer.ts.",
+    "Health Check Path: /health.",
+    "After deploy, manually check /ready before any shadow parity.",
+    "Instance Type: Starter for first smoke.",
+    "Auto Deploy: No for the first smoke.",
+    "Add only env names listed in renderEnvVarNames; do not paste env values into artifacts or chat.",
+    "Do not set or invent STAGING_BFF_BASE_URL until Render creates the service URL.",
+    "Keep BFF_MUTATION_ENABLED, BFF_IDEMPOTENCY_METADATA_ENABLED, and BFF_RATE_LIMIT_METADATA_ENABLED in disabled posture for smoke.",
+    "Do not route mobile traffic to BFF after deploy; a later health/readiness wave must prove the live URL first.",
+    "Do not enable Redis, Queue, idempotency persistence, rate enforcement, or external observability providers in this deploy config wave."
+  ],
+  "safety": {
+    "deployed": false,
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionMutated": false,
+    "stagingBffBaseUrlInvented": false,
+    "stagingBffBaseUrlPrinted": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false,
+    "rawPayloadsPrinted": false,
+    "mobileTrafficRoutedToBff": false,
+    "redisCacheEnabled": false,
+    "queueEnabled": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "externalObservabilityEnabled": false,
+    "live1kLoadRun": false,
+    "fiftyKLoadRun": false,
+    "sqlRpcRlsStorageChanged": false
+  },
+  "gates": {
+    "jsonArtifactParse": "PASS",
+    "targetedBffHttpServerTest": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": "PASS"
+  }
+}
