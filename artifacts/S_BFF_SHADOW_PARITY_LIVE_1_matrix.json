@@ -1,0 +1,223 @@
+{
+  "wave": "S-BFF-SHADOW-PARITY-LIVE-1",
+  "mode": "render-live-bff-shadow-parity-read-only-no-routing",
+  "status": "PARTIAL_BFF_SHADOW_PARITY_DIFFS_FOUND",
+  "generatedAt": "2026-05-01T14:50:46+06:00",
+  "repoPreflight": {
+    "head": "85cf4abfa7c15309ff924828e460a41f6fed635f",
+    "originMain": "85cf4abfa7c15309ff924828e460a41f6fed635f",
+    "headEqualsOriginMainAtStart": true,
+    "worktreeCleanAtStart": true,
+    "envStagingLocalGitignored": true
+  },
+  "target": {
+    "provider": "Render",
+    "service": "gox-build-staging-bff",
+    "baseUrlEnvPresent": true,
+    "baseUrlEnvPending": false,
+    "baseUrlHostConfirmed": true,
+    "baseUrlHost": "gox-build-staging-bff.onrender.com",
+    "envFileContentsPrinted": false,
+    "envValuesPrinted": false,
+    "serverAuthSecretLocalStatus": "missing",
+    "databaseReadonlyUrlLocalStatus": "missing",
+    "databaseReadonlyUrlRenderStatus": "operator_reported_present",
+    "readPortsWiredInCurrentHttpEntrypoint": false,
+    "readPortsWiringEvidence": "scripts/server/stagingBffHttpServer.ts passes only config into handleBffStagingServerRequest; no readPorts are created from BFF_DATABASE_READONLY_URL in the current entrypoint."
+  },
+  "controlTargets": {
+    "health": {
+      "method": "GET",
+      "path": "/health",
+      "http_status": 200,
+      "duration_ms": 574,
+      "ok": true,
+      "status": "ok",
+      "serverBoundaryReady": true,
+      "productionTouched": false
+    },
+    "ready": {
+      "method": "GET",
+      "path": "/ready",
+      "http_status": 200,
+      "duration_ms": 482,
+      "ok": true,
+      "status": "ready",
+      "readRoutes": 5,
+      "mutationRoutes": 5,
+      "mutationRoutesEnabled": false,
+      "appRuntimeBffEnabled": false,
+      "redactedErrors": true
+    }
+  },
+  "mappedReadTargets": [
+    {
+      "operation": "request.proposal.list",
+      "currentClientPath": "src/lib/api/proposals.ts::listDirectorProposalsPending",
+      "bffEndpoint": "POST /api/staging-bff/read/request-proposal-list",
+      "liveProbe": {
+        "http_status": 401,
+        "errorCode": "BFF_AUTH_REQUIRED",
+        "errorEnvelopeRedacted": true,
+        "duration_ms": 229
+      },
+      "parity": {
+        "status": "blocked_auth_required",
+        "rows": "not_checked_auth_blocked",
+        "meta": "not_checked_auth_blocked",
+        "ordering": "not_checked_auth_blocked",
+        "errorEnvelope": "pass_auth_required_redacted",
+        "redaction": "pass"
+      }
+    },
+    {
+      "operation": "marketplace.catalog.search",
+      "currentClientPath": "src/features/market/market.repository.ts::loadMarketHomePage",
+      "bffEndpoint": "POST /api/staging-bff/read/marketplace-catalog-search",
+      "liveProbe": {
+        "http_status": 401,
+        "errorCode": "BFF_AUTH_REQUIRED",
+        "errorEnvelopeRedacted": true,
+        "duration_ms": 215
+      },
+      "parity": {
+        "status": "blocked_auth_required",
+        "rows": "not_checked_auth_blocked",
+        "meta": "not_checked_auth_blocked",
+        "ordering": "not_checked_auth_blocked",
+        "errorEnvelope": "pass_auth_required_redacted",
+        "redaction": "pass"
+      }
+    },
+    {
+      "operation": "warehouse.ledger.list",
+      "currentClientPath": "src/screens/warehouse/warehouse.api.repo.ts::fetchWarehouseIncomingLedgerRows",
+      "bffEndpoint": "POST /api/staging-bff/read/warehouse-ledger-list",
+      "liveProbe": {
+        "http_status": 401,
+        "errorCode": "BFF_AUTH_REQUIRED",
+        "errorEnvelopeRedacted": true,
+        "duration_ms": 230
+      },
+      "parity": {
+        "status": "blocked_auth_required",
+        "rows": "not_checked_auth_blocked",
+        "meta": "not_checked_auth_blocked",
+        "ordering": "not_checked_auth_blocked",
+        "errorEnvelope": "pass_auth_required_redacted",
+        "redaction": "pass"
+      }
+    },
+    {
+      "operation": "accountant.invoice.list",
+      "currentClientPath": "src/lib/api/accountant.ts::listAccountantInbox",
+      "bffEndpoint": "POST /api/staging-bff/read/accountant-invoice-list",
+      "liveProbe": {
+        "http_status": 401,
+        "errorCode": "BFF_AUTH_REQUIRED",
+        "errorEnvelopeRedacted": true,
+        "duration_ms": 229
+      },
+      "parity": {
+        "status": "blocked_auth_required",
+        "rows": "not_checked_auth_blocked",
+        "meta": "not_checked_auth_blocked",
+        "ordering": "not_checked_auth_blocked",
+        "errorEnvelope": "pass_auth_required_redacted",
+        "redaction": "pass"
+      }
+    },
+    {
+      "operation": "director.pending.list",
+      "currentClientPath": "src/lib/api/director.ts::listPending",
+      "bffEndpoint": "POST /api/staging-bff/read/director-pending-list",
+      "liveProbe": {
+        "http_status": 401,
+        "errorCode": "BFF_AUTH_REQUIRED",
+        "errorEnvelopeRedacted": true,
+        "duration_ms": 229
+      },
+      "parity": {
+        "status": "blocked_auth_required",
+        "rows": "not_checked_auth_blocked",
+        "meta": "not_checked_auth_blocked",
+        "ordering": "not_checked_auth_blocked",
+        "errorEnvelope": "pass_auth_required_redacted",
+        "redaction": "pass"
+      }
+    }
+  ],
+  "requestedTargetMapping": {
+    "buyerSummaryReadTarget": "not_mapped_in_current_bff_read_registry",
+    "warehouseIssueQueueReadTarget": "not_mapped_in_current_bff_read_registry",
+    "warehouseIncomingReadTarget": "mapped_as_warehouse.ledger.list",
+    "contractorReadTarget": "not_mapped_in_current_bff_read_registry",
+    "directorReadTarget": "mapped_as_director.pending.list",
+    "healthReadyControlTargets": "pass"
+  },
+  "parityChecks": {
+    "status": "partial_status_blocked_by_auth_required",
+    "rows": "not_checked_auth_blocked",
+    "meta": "not_checked_auth_blocked",
+    "ordering": "not_checked_auth_blocked",
+    "errorEnvelope": "pass_auth_required_redacted",
+    "redaction": "pass"
+  },
+  "localHarness": {
+    "existingBffShadowParityHarnessUsed": true,
+    "command": "npm test -- --runInBand bffShadowParityPreflight bffShadowParity bffStagingServerBoundary bffStagingHttpServer",
+    "status": "PASS",
+    "suites": 4,
+    "tests": 28
+  },
+  "decision": {
+    "status": "PARTIAL_BFF_SHADOW_PARITY_DIFFS_FOUND",
+    "bffUrlReachable": true,
+    "healthReadyControlsPass": true,
+    "liveAuthenticatedReadParityComplete": false,
+    "liveRowsCompared": false,
+    "liveMetaCompared": false,
+    "liveOrderingCompared": false,
+    "canRouteMobileTraffic": false,
+    "canEnableMutationRoutes": false,
+    "canEnableProviders": false,
+    "followUpPatchWave": "S-BFF-LIVE-READ-PORTS-WIRING-1",
+    "followUpRequired": [
+      "Provide BFF_SERVER_AUTH_SECRET to the local parity runner without printing or committing it.",
+      "Wire Render HTTP server readPorts from BFF_DATABASE_READONLY_URL using read-only adapters, or confirm an existing adapter and pass it to handleBffStagingServerRequest.",
+      "Add focused tests proving authenticated live read routes return bounded BFF envelopes instead of BFF_READ_PORTS_UNAVAILABLE.",
+      "Redeploy staging BFF after the narrow read-port patch, then rerun S-BFF-SHADOW-PARITY-LIVE."
+    ]
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionMutated": false,
+    "stagingWrites": false,
+    "businessRowsDumped": false,
+    "rawPayloadsPrinted": false,
+    "trafficRoutedToBff": false,
+    "mobileBffEnabled": false,
+    "mutationRoutesEnabled": false,
+    "redisWired": false,
+    "queueWired": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "observabilityProviderEnabled": false,
+    "loadTestsRun": false,
+    "migrationsRun": false,
+    "sqlRpcRlsStorageChanged": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false
+  },
+  "gates": {
+    "jsonArtifactParse": "PASS",
+    "targetedBffParityTests": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": "PASS"
+  }
+}
