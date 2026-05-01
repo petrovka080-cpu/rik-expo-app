@@ -10,10 +10,13 @@ import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
 
 const DEFAULT_PORT = 3000;
 const MAX_BODY_BYTES = 64 * 1024;
+const DEFAULT_MOBILE_AUTH_TIMEOUT_MS = 3_000;
 
 type StagingBffHttpConfig = {
   port: number;
   serverAuthSecretConfigured: boolean;
+  mobileReadonlyAuthEnabled: boolean;
+  mobileReadonlyAuthConfigured: boolean;
   mutationRoutesEnabled: boolean;
   idempotencyMetadataRequired: true;
   rateLimitMetadataRequired: true;
@@ -21,8 +24,11 @@ type StagingBffHttpConfig = {
 
 type StagingBffHttpEnv = Partial<NodeJS.ProcessEnv>;
 
+type MobileReadonlyAuthVerifier = (token: string, env: StagingBffHttpEnv) => Promise<boolean>;
+
 type StagingBffHttpServerOptions = {
   readPortsFactory?: (env: StagingBffHttpEnv) => BffReadPorts | undefined;
+  mobileReadonlyAuthVerifier?: MobileReadonlyAuthVerifier;
 };
 
 const jsonHeaders = {
@@ -32,16 +38,31 @@ const jsonHeaders = {
 
 const parseBooleanFlag = (value: string | undefined): boolean => value === "true";
 
+const parsePositiveInteger = (value: string | undefined, fallback: number): number => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.trunc(parsed);
+};
+
 export function resolveBffStagingHttpConfig(env: StagingBffHttpEnv = process.env): StagingBffHttpConfig {
   const parsedPort = Number(env.PORT);
   const port = Number.isFinite(parsedPort) && parsedPort > 0 ? Math.trunc(parsedPort) : DEFAULT_PORT;
   const mutationFlagEnabled = parseBooleanFlag(env.BFF_MUTATION_ENABLED);
   const idempotencyMetadataEnabled = parseBooleanFlag(env.BFF_IDEMPOTENCY_METADATA_ENABLED);
   const rateLimitMetadataEnabled = parseBooleanFlag(env.BFF_RATE_LIMIT_METADATA_ENABLED);
+  const mobileReadonlyAuthEnabled = parseBooleanFlag(env.BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED);
+  const mobileReadonlyAuthConfigured =
+    mobileReadonlyAuthEnabled &&
+    typeof env.STAGING_SUPABASE_URL === "string" &&
+    env.STAGING_SUPABASE_URL.length > 0 &&
+    typeof env.STAGING_SUPABASE_ANON_KEY === "string" &&
+    env.STAGING_SUPABASE_ANON_KEY.length > 0;
 
   return {
     port,
     serverAuthSecretConfigured: typeof env.BFF_SERVER_AUTH_SECRET === "string" && env.BFF_SERVER_AUTH_SECRET.length > 0,
+    mobileReadonlyAuthEnabled,
+    mobileReadonlyAuthConfigured,
     mutationRoutesEnabled: mutationFlagEnabled && idempotencyMetadataEnabled && rateLimitMetadataEnabled,
     idempotencyMetadataRequired: true,
     rateLimitMetadataRequired: true,
@@ -96,6 +117,15 @@ const readJsonBody = (request: http.IncomingMessage): Promise<unknown> =>
   });
 
 const isApiRoute = (path: string): boolean => path.startsWith("/api/staging-bff/");
+const isReadonlyApiRoute = (path: string): boolean => path.startsWith("/api/staging-bff/read/");
+
+const extractBearerToken = (request: http.IncomingMessage): string | null => {
+  const authorization = request.headers.authorization;
+  if (typeof authorization !== "string") return null;
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  const token = match?.[1]?.trim();
+  return token ? token : null;
+};
 
 const hasAcceptedServerAuth = (
   request: http.IncomingMessage,
@@ -103,7 +133,65 @@ const hasAcceptedServerAuth = (
 ): boolean => {
   const secret = env.BFF_SERVER_AUTH_SECRET;
   if (typeof secret !== "string" || secret.length === 0) return false;
-  return request.headers.authorization === `Bearer ${secret}`;
+  return extractBearerToken(request) === secret;
+};
+
+const isSupabaseUserEnvelope = (value: unknown): boolean =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof (value as { id?: unknown }).id === "string" &&
+  (value as { id: string }).id.length > 0;
+
+const verifySupabaseReadonlyMobileAuth: MobileReadonlyAuthVerifier = async (token, env) => {
+  const supabaseUrl = env.STAGING_SUPABASE_URL;
+  const supabaseAnonKey = env.STAGING_SUPABASE_ANON_KEY;
+  if (
+    typeof supabaseUrl !== "string" ||
+    supabaseUrl.length === 0 ||
+    typeof supabaseAnonKey !== "string" ||
+    supabaseAnonKey.length === 0
+  ) {
+    return false;
+  }
+
+  let userUrl: URL;
+  try {
+    userUrl = new URL("/auth/v1/user", supabaseUrl);
+  } catch {
+    return false;
+  }
+
+  const timeout = parsePositiveInteger(env.BFF_READONLY_MOBILE_AUTH_TIMEOUT_MS, DEFAULT_MOBILE_AUTH_TIMEOUT_MS);
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), timeout);
+  try {
+    const authResponse = await fetch(userUrl.toString(), {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        apikey: supabaseAnonKey,
+        authorization: `Bearer ${token}`,
+      },
+      signal: controller.signal,
+    });
+    if (!authResponse.ok) return false;
+    const authBody: unknown = await authResponse.json().catch(() => undefined);
+    return isSupabaseUserEnvelope(authBody);
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
+};
+
+const hasAcceptedReadonlyMobileAuth = async (
+  request: http.IncomingMessage,
+  env: StagingBffHttpEnv,
+  verifier: MobileReadonlyAuthVerifier,
+): Promise<boolean> => {
+  const token = extractBearerToken(request);
+  if (!token) return false;
+  return verifier(token, env);
 };
 
 export function createBffStagingHttpServer(
@@ -112,6 +200,7 @@ export function createBffStagingHttpServer(
 ): http.Server {
   const config = resolveBffStagingHttpConfig(env);
   const readPorts = (options.readPortsFactory ?? createBffReadonlyDbReadPorts)(env);
+  const mobileReadonlyAuthVerifier = options.mobileReadonlyAuthVerifier ?? verifySupabaseReadonlyMobileAuth;
 
   return http.createServer(async (request, response) => {
     try {
@@ -130,7 +219,7 @@ export function createBffStagingHttpServer(
       const url = new URL(request.url ?? "/", "http://127.0.0.1");
       const path = url.pathname;
 
-      if (isApiRoute(path) && !config.serverAuthSecretConfigured) {
+      if (isApiRoute(path) && !config.serverAuthSecretConfigured && !config.mobileReadonlyAuthConfigured) {
         sendJson(response, 503, {
           ok: false,
           error: {
@@ -141,15 +230,24 @@ export function createBffStagingHttpServer(
         return;
       }
 
-      if (isApiRoute(path) && !hasAcceptedServerAuth(request, env)) {
-        sendJson(response, 401, {
-          ok: false,
-          error: {
-            code: "BFF_AUTH_REQUIRED",
-            message: "Authentication envelope is required",
-          },
-        });
-        return;
+      if (isApiRoute(path)) {
+        const serverAuthAccepted = hasAcceptedServerAuth(request, env);
+        const mobileReadonlyAuthAccepted =
+          !serverAuthAccepted &&
+          config.mobileReadonlyAuthConfigured &&
+          isReadonlyApiRoute(path) &&
+          (await hasAcceptedReadonlyMobileAuth(request, env, mobileReadonlyAuthVerifier));
+
+        if (!serverAuthAccepted && !mobileReadonlyAuthAccepted) {
+          sendJson(response, 401, {
+            ok: false,
+            error: {
+              code: "BFF_AUTH_REQUIRED",
+              message: "Authentication envelope is required",
+            },
+          });
+          return;
+        }
       }
 
       const body = method === "POST" ? await readJsonBody(request) : undefined;
@@ -191,6 +289,8 @@ export function startBffStagingHttpServer(env: StagingBffHttpEnv = process.env):
       JSON.stringify({
         port: config.port,
         serverAuthSecretConfigured: config.serverAuthSecretConfigured,
+        mobileReadonlyAuthEnabled: config.mobileReadonlyAuthEnabled,
+        mobileReadonlyAuthConfigured: config.mobileReadonlyAuthConfigured,
         mutationRoutesEnabled: config.mutationRoutesEnabled,
         readPortsConfigured: Boolean(createBffReadonlyDbReadPorts(env)),
       }),

@@ -76,6 +76,8 @@ describe("staging BFF HTTP server wrapper", () => {
     expect(resolveBffStagingHttpConfig({})).toEqual({
       port: 3000,
       serverAuthSecretConfigured: false,
+      mobileReadonlyAuthEnabled: false,
+      mobileReadonlyAuthConfigured: false,
       mutationRoutesEnabled: false,
       idempotencyMetadataRequired: true,
       rateLimitMetadataRequired: true,
@@ -92,6 +94,36 @@ describe("staging BFF HTTP server wrapper", () => {
       expect.objectContaining({
         port: 10000,
         serverAuthSecretConfigured: true,
+        mobileReadonlyAuthEnabled: false,
+        mobileReadonlyAuthConfigured: false,
+        mutationRoutesEnabled: false,
+      }),
+    );
+  });
+
+  it("keeps readonly mobile auth disabled unless the explicit staging server env is configured", () => {
+    expect(
+      resolveBffStagingHttpConfig({
+        BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "true",
+        STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        mobileReadonlyAuthEnabled: true,
+        mobileReadonlyAuthConfigured: false,
+      }),
+    );
+
+    expect(
+      resolveBffStagingHttpConfig({
+        BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "true",
+        STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+        STAGING_SUPABASE_ANON_KEY: "anon-key",
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        mobileReadonlyAuthEnabled: true,
+        mobileReadonlyAuthConfigured: true,
         mutationRoutesEnabled: false,
       }),
     );
@@ -154,6 +186,151 @@ describe("staging BFF HTTP server wrapper", () => {
           message: "Read ports are not configured",
         },
       });
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("does not accept mobile bearer tokens while readonly mobile auth is disabled", async () => {
+    const mobileReadonlyAuthVerifier = jest.fn(async () => true);
+    const server = createBffStagingHttpServer(
+      {
+        BFF_SERVER_AUTH_SECRET: "server-secret",
+        BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "false",
+        STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+        STAGING_SUPABASE_ANON_KEY: "anon-key",
+      },
+      { mobileReadonlyAuthVerifier },
+    );
+    const port = await listen(server);
+
+    try {
+      const response = await requestJson(port, "/api/staging-bff/read/request-proposal-list", {
+        method: "POST",
+        authorization: "Bearer mobile-access-token",
+        body: { input: { pageSize: 25 } },
+      });
+
+      expect(response.status).toBe(401);
+      expect(JSON.stringify(response.body)).not.toContain("mobile-access-token");
+      expect(JSON.stringify(response.body)).not.toContain("server-secret");
+      expect(mobileReadonlyAuthVerifier).not.toHaveBeenCalled();
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("accepts verified staging mobile auth only for readonly routes", async () => {
+    const readPorts = createReadPorts();
+    const mobileReadonlyAuthVerifier = jest.fn(async (token: string) => token === "mobile-access-token");
+    const server = createBffStagingHttpServer(
+      {
+        BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "true",
+        STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+        STAGING_SUPABASE_ANON_KEY: "anon-key",
+        BFF_DATABASE_READONLY_URL: "postgres://readonly:secret@example.invalid/db",
+      },
+      {
+        readPortsFactory: () => readPorts,
+        mobileReadonlyAuthVerifier,
+      },
+    );
+    const port = await listen(server);
+
+    try {
+      const response = await requestJson(port, "/api/staging-bff/read/request-proposal-list", {
+        method: "POST",
+        authorization: "Bearer mobile-access-token",
+        body: { input: { page: 0, pageSize: 5 } },
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          ok: true,
+          data: [{ id: "proposal-redacted", submitted_at: "present_redacted" }],
+          metadata: expect.objectContaining({
+            operation: "request.proposal.list",
+            readOnly: true,
+            enabledInAppRuntime: false,
+          }),
+        }),
+      );
+      expect(mobileReadonlyAuthVerifier).toHaveBeenCalledWith(
+        "mobile-access-token",
+        expect.objectContaining({
+          BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "true",
+        }),
+      );
+      const output = JSON.stringify(response.body);
+      expect(output).not.toContain("mobile-access-token");
+      expect(output).not.toContain("anon-key");
+      expect(output).not.toContain("postgres://");
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("rejects invalid mobile auth without leaking the bearer token", async () => {
+    const mobileReadonlyAuthVerifier = jest.fn(async () => false);
+    const server = createBffStagingHttpServer(
+      {
+        BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "true",
+        STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+        STAGING_SUPABASE_ANON_KEY: "anon-key",
+      },
+      { mobileReadonlyAuthVerifier },
+    );
+    const port = await listen(server);
+
+    try {
+      const response = await requestJson(port, "/api/staging-bff/read/request-proposal-list", {
+        method: "POST",
+        authorization: "Bearer invalid-mobile-access-token",
+        body: { input: { pageSize: 25 } },
+      });
+
+      expect(response.status).toBe(401);
+      expect(JSON.stringify(response.body)).not.toContain("invalid-mobile-access-token");
+      expect(mobileReadonlyAuthVerifier).toHaveBeenCalledWith(
+        "invalid-mobile-access-token",
+        expect.objectContaining({
+          BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "true",
+        }),
+      );
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("does not use mobile auth for mutation routes", async () => {
+    const mobileReadonlyAuthVerifier = jest.fn(async () => true);
+    const server = createBffStagingHttpServer(
+      {
+        BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "true",
+        STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+        STAGING_SUPABASE_ANON_KEY: "anon-key",
+      },
+      { mobileReadonlyAuthVerifier },
+    );
+    const port = await listen(server);
+
+    try {
+      const response = await requestJson(port, "/api/staging-bff/mutation/proposal-submit", {
+        method: "POST",
+        authorization: "Bearer mobile-access-token",
+        body: {
+          input: {
+            idempotencyKey: "opaque-key",
+            payload: { token: "secret-token-value" },
+          },
+        },
+      });
+
+      expect(response.status).toBe(401);
+      expect(JSON.stringify(response.body)).not.toContain("mobile-access-token");
+      expect(JSON.stringify(response.body)).not.toContain("secret-token-value");
+      expect(mobileReadonlyAuthVerifier).not.toHaveBeenCalled();
     } finally {
       await close(server);
     }
