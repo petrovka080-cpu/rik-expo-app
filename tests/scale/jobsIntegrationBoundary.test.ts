@@ -3,11 +3,14 @@ import fs from "fs";
 import path from "path";
 
 import {
+  BullMqJobAdapter,
   EXTERNAL_JOB_ADAPTER_CONTRACT,
   InMemoryJobAdapter,
   NoopJobAdapter,
   QueueHttpJobAdapter,
   createQueueJobAdapterFromEnv,
+  type BullMqJobPort,
+  type BullMqQueuePort,
   type QueueHttpFetch,
 } from "../../src/shared/scale/jobAdapters";
 import {
@@ -34,6 +37,10 @@ import {
   BFF_STAGING_MUTATION_ROUTES,
 } from "../../scripts/server/stagingBffServerBoundary";
 import { SCALE_PROVIDER_RUNTIME_ENV_NAMES } from "../../src/shared/scale/providerRuntimeConfig";
+import {
+  MAX_QUEUE_WORKER_CONCURRENCY,
+  MAX_SUBMIT_JOB_CLAIM_LIMIT,
+} from "../../src/workers/queueWorker.limits";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -104,6 +111,55 @@ const createQueueHttpMock = () => {
   }) as jest.MockedFunction<QueueHttpFetch>;
 
   return { fetchMock, requests };
+};
+
+type MockBullMqJob = BullMqJobPort & {
+  state: string;
+  getState: jest.Mock<Promise<string>, []>;
+  remove: jest.Mock<Promise<void>, []>;
+  retry: jest.Mock<Promise<void>, []>;
+  moveToFailed: jest.Mock<Promise<unknown>, [Error, string, boolean?]>;
+};
+
+const createBullMqQueueMock = () => {
+  const jobs = new Map<string, MockBullMqJob>();
+  let sequence = 0;
+
+  const queue: BullMqQueuePort = {
+    add: jest.fn(async (name, data, opts) => {
+      sequence += 1;
+      const job = {
+        id: `bullmq-job-${sequence}`,
+        name,
+        data,
+        attemptsMade: 0,
+        opts,
+        state: "waiting",
+      } as unknown as MockBullMqJob;
+      job.getState = jest.fn(async () => job.state);
+      job.remove = jest.fn(async () => {
+        job.state = "cancelled";
+      });
+      job.retry = jest.fn(async () => {
+        job.attemptsMade = (job.attemptsMade ?? 0) + 1;
+        job.state = "retry_scheduled";
+      });
+      job.moveToFailed = jest.fn(async (_error: Error, _token: string, _fetchNext?: boolean) => {
+        job.state = "failed";
+        return null;
+      });
+      jobs.set(String(job.id), job);
+      return job;
+    }),
+    getJob: jest.fn(async (jobId) => jobs.get(jobId) ?? null),
+  };
+
+  return {
+    queue,
+    jobs,
+    addMock: queue.add as jest.MockedFunction<BullMqQueuePort["add"]>,
+    getJobMock: queue.getJob as jest.MockedFunction<BullMqQueuePort["getJob"]>,
+  };
 };
 
 describe("S-50K-JOBS-INTEGRATION-1 disabled background job boundary", () => {
@@ -241,6 +297,77 @@ describe("S-50K-JOBS-INTEGRATION-1 disabled background job boundary", () => {
     expect(production.getHealth().externalNetworkEnabled).toBe(false);
   });
 
+  it("keeps BullMQ provider disabled by default and requires an explicit staging queue port", async () => {
+    const bullMq = createBullMqQueueMock();
+
+    const disabled = createQueueJobAdapterFromEnv(
+      {
+        SCALE_QUEUE_PROVIDER: "bullmq",
+        SCALE_QUEUE_URL: "redis://queue.example.invalid",
+        SCALE_QUEUE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "staging",
+        bullMqQueue: bullMq.queue,
+      },
+    );
+    expect(disabled).toBeInstanceOf(NoopJobAdapter);
+
+    const missingQueuePort = createQueueJobAdapterFromEnv(
+      {
+        SCALE_QUEUE_STAGING_ENABLED: "true",
+        SCALE_QUEUE_PROVIDER: "bullmq",
+        SCALE_QUEUE_URL: "redis://queue.example.invalid",
+        SCALE_QUEUE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "staging",
+      },
+    );
+    expect(missingQueuePort).toBeInstanceOf(NoopJobAdapter);
+
+    const production = createQueueJobAdapterFromEnv(
+      {
+        SCALE_QUEUE_STAGING_ENABLED: "true",
+        SCALE_QUEUE_PROVIDER: "bullmq",
+        SCALE_QUEUE_URL: "redis://queue.example.invalid",
+        SCALE_QUEUE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "production",
+        bullMqQueue: bullMq.queue,
+      },
+    );
+    expect(production).toBeInstanceOf(NoopJobAdapter);
+    expect(bullMq.addMock).not.toHaveBeenCalled();
+
+    const staging = createQueueJobAdapterFromEnv(
+      {
+        SCALE_QUEUE_STAGING_ENABLED: "true",
+        SCALE_QUEUE_PROVIDER: "bullmq",
+        SCALE_QUEUE_URL: "redis://queue.example.invalid",
+        SCALE_QUEUE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "staging",
+        bullMqQueue: bullMq.queue,
+      },
+    );
+    expect(staging).toBeInstanceOf(BullMqJobAdapter);
+    expect(staging.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "bullmq",
+        enabled: true,
+        externalNetworkEnabled: true,
+        executionEnabledByDefault: false,
+        namespace: "rik-staging",
+        provider: "bullmq",
+        workerConcurrencyCap: MAX_QUEUE_WORKER_CONCURRENCY,
+        claimBatchCap: MAX_SUBMIT_JOB_CLAIM_LIMIT,
+      }),
+    );
+  });
+
   it("implements enqueue/status/cancel/retry/dead-letter through a mocked queue provider", async () => {
     const queue = createQueueHttpMock();
     const adapter = new QueueHttpJobAdapter({
@@ -270,6 +397,113 @@ describe("S-50K-JOBS-INTEGRATION-1 disabled background job boundary", () => {
     await expect(adapter.deadLetter(enqueued.record.jobId, "retry_exhausted")).resolves.toBe(true);
     await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(
       expect.objectContaining({ status: "dead_lettered" }),
+    );
+  });
+
+  it("implements BullMQ enqueue/dequeue mocked contract with namespace isolation", async () => {
+    const bullMq = createBullMqQueueMock();
+    const adapter = new BullMqJobAdapter({
+      queue: bullMq.queue,
+      namespace: "rik-staging",
+      provider: "bullmq",
+    });
+
+    const enqueued = await adapter.enqueue({
+      jobType: "cache.readmodel.refresh",
+      payload: { model: "director.pending.list", companyKey: "opaque-company" },
+      metadata: { source: "contract-test" },
+    });
+
+    expect(enqueued.ok).toBe(true);
+    if (!enqueued.ok) return;
+    expect(enqueued.record.status).toBe("queued");
+    expect(bullMq.addMock).toHaveBeenCalledTimes(1);
+    const [name, data, opts] = bullMq.addMock.mock.calls[0];
+    expect(name).toBe("rik-staging:cache.readmodel.refresh");
+    expect(data).toEqual(
+      expect.objectContaining({
+        jobType: "cache.readmodel.refresh",
+        namespace: "rik-staging",
+        metadata: { source: "contract-test" },
+      }),
+    );
+    expect(opts.removeOnComplete).toBe(true);
+    expect(opts.removeOnFail).toBe(false);
+
+    const job = bullMq.jobs.get(enqueued.record.jobId);
+    expect(job).toBeTruthy();
+    if (!job) return;
+    job.state = "active";
+    await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(
+      expect.objectContaining({
+        jobId: enqueued.record.jobId,
+        jobType: "cache.readmodel.refresh",
+        status: "queued",
+      }),
+    );
+
+    const invalidNamespace = new BullMqJobAdapter({
+      queue: bullMq.queue,
+      namespace: "bad namespace",
+      provider: "bullmq",
+    });
+    await expect(
+      invalidNamespace.enqueue({
+        jobType: "cache.readmodel.refresh",
+        payload: { model: "director.pending.list" },
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      code: "JOB_PROVIDER_UNAVAILABLE",
+      message: "Background job provider is unavailable",
+    });
+  });
+
+  it("keeps BullMQ retry/dead-letter budget and worker caps bounded", async () => {
+    expect(MAX_QUEUE_WORKER_CONCURRENCY).toBeLessThanOrEqual(8);
+    expect(MAX_SUBMIT_JOB_CLAIM_LIMIT).toBeLessThanOrEqual(50);
+
+    const bullMq = createBullMqQueueMock();
+    const adapter = new BullMqJobAdapter({
+      queue: bullMq.queue,
+      namespace: "rik-staging",
+      provider: "bullmq",
+    });
+    const policy = getJobPolicy("notification.fanout");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+
+    const enqueued = await adapter.enqueue({
+      jobType: "notification.fanout",
+      payload: { message: "safe notification" },
+    });
+    expect(enqueued.ok).toBe(true);
+    if (!enqueued.ok) return;
+
+    const [, , opts] = bullMq.addMock.mock.calls[0];
+    expect(opts.attempts).toBe(policy.maxAttempts);
+    expect(opts.attempts).toBeLessThanOrEqual(5);
+    expect(opts.backoff).toEqual({
+      type: "exponential",
+      delay: policy.retryPolicy.initialDelayMs,
+    });
+
+    await expect(adapter.retry(enqueued.record.jobId)).resolves.toEqual({
+      ok: true,
+      record: expect.objectContaining({
+        attempts: 1,
+        status: "retry_scheduled",
+      }),
+    });
+    const job = bullMq.jobs.get(enqueued.record.jobId);
+    expect(job?.retry).toHaveBeenCalledTimes(1);
+
+    await expect(adapter.deadLetter(enqueued.record.jobId, "retry_exhausted raw payload omitted")).resolves.toBe(true);
+    expect(job?.moveToFailed).toHaveBeenCalledWith(expect.any(Error), "queue-provider-token", false);
+    await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(
+      expect.objectContaining({
+        status: "dead_lettered",
+      }),
     );
   });
 
