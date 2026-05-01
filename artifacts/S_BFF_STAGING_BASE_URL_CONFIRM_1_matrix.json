@@ -1,0 +1,101 @@
+{
+  "wave": "S-BFF-STAGING-BASE-URL-CONFIRM-1",
+  "mode": "render-live-bff-base-url-confirm-no-traffic-routing",
+  "status": "GREEN_BFF_STAGING_BASE_URL_CONFIRMED",
+  "generatedAt": "2026-05-01T14:38:05+06:00",
+  "repoPreflight": {
+    "head": "a9ffc3f7773bf4bc9c2934c46f2bb364efa5a19d",
+    "originMain": "a9ffc3f7773bf4bc9c2934c46f2bb364efa5a19d",
+    "headEqualsOriginMainAtStart": true,
+    "worktreeCleanAtStart": true,
+    "envStagingLocalGitignored": true
+  },
+  "target": {
+    "provider": "Render",
+    "service": "gox-build-staging-bff",
+    "baseUrlEnvPresent": true,
+    "baseUrlEnvPending": false,
+    "baseUrlHostConfirmed": true,
+    "baseUrlHost": "gox-build-staging-bff.onrender.com",
+    "baseUrlSchemeHttps": true,
+    "envFileContentsPrinted": false,
+    "envValuesPrinted": false
+  },
+  "liveProbes": {
+    "health": {
+      "method": "GET",
+      "path": "/health",
+      "http_status": 200,
+      "duration_ms": 483,
+      "ok": true,
+      "status": "ok",
+      "serverBoundaryReady": true,
+      "productionTouched": false
+    },
+    "ready": {
+      "method": "GET",
+      "path": "/ready",
+      "http_status": 200,
+      "duration_ms": 222,
+      "ok": true,
+      "status": "ready",
+      "readRoutes": 5,
+      "mutationRoutes": 5,
+      "mutationRoutesEnabledByDefault": false,
+      "mutationRoutesEnabled": false,
+      "requestEnvelopeValidation": true,
+      "responseEnvelopeValidation": true,
+      "redactedErrors": true,
+      "appRuntimeBffEnabled": false
+    }
+  },
+  "confirmations": {
+    "stagingBffBaseUrlConfirmed": true,
+    "healthSmokePass": true,
+    "readinessSmokePass": true,
+    "mutationRoutesRemainDisabled": true,
+    "mutationRoutesDisabledEvidence": "GET /ready returned mutationRoutesEnabledByDefault=false and mutationRoutesEnabled=false.",
+    "mobileTrafficRoutingEnabled": false,
+    "mobileTrafficRoutingEvidence": "GET /ready returned appRuntimeBffEnabled=false; no mobile config was changed.",
+    "productionTouched": false,
+    "productionTouchedEvidence": "GET /health returned productionTouched=false.",
+    "secretsPrinted": false,
+    "envValuesPrinted": false,
+    "rawPayloadsPrinted": false
+  },
+  "decision": {
+    "status": "GREEN_BFF_STAGING_BASE_URL_CONFIRMED",
+    "bffBaseUrlReady": true,
+    "canProceedToLiveShadowParity": true,
+    "canRouteMobileTraffic": false,
+    "canEnableMutationRoutes": false,
+    "canEnableProviders": false
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionMutated": false,
+    "mobileBffRoutingEnabled": false,
+    "redisCacheEnabled": false,
+    "queueEnabled": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "externalObservabilityEnabled": false,
+    "live1kLoadRun": false,
+    "fiftyKLoadRun": false,
+    "migrationsRun": false,
+    "sqlRpcRlsStorageChanged": false,
+    "rawEnvPrinted": false,
+    "secretPrinted": false,
+    "rawPayloadPrinted": false
+  },
+  "gates": {
+    "jsonArtifactParse": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": "PASS"
+  }
+}
