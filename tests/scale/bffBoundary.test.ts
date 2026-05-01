@@ -174,7 +174,10 @@ describe("S-50K BFF boundary scaffold", () => {
     const contractsSource = readProjectFile("src/shared/scale/bffContracts.ts");
     const docsSource = readProjectFile("docs/architecture/50k_server_api_boundary.md");
 
-    expect(`${safetySource}\n${clientSource}\n${contractsSource}`).not.toContain("process.env");
+    expect(`${safetySource}\n${contractsSource}`).not.toContain("process.env");
+    expect(clientSource).toContain("EXPO_PUBLIC_BFF_READONLY_STAGING_ENABLED");
+    expect(clientSource).not.toContain("BFF_DATABASE_READONLY_URL");
+    expect(clientSource).not.toContain("BFF_SERVER_AUTH_SECRET");
     expect(docsSource).toContain("BFF_SUPABASE_ADMIN_KEY");
     expect(docsSource).toContain("server-only");
   });
@@ -208,7 +211,10 @@ describe("S-50K BFF boundary scaffold", () => {
           continue;
         }
         const source = readProjectFile(relativePath);
-        if (source.includes("shared/scale/bffClient") || source.includes("shared/scale/bffContracts")) {
+        if (
+          source.includes("shared/scale/bffClient") ||
+          source.includes("shared/scale/bffContracts")
+        ) {
           activeImports.push(relativePath.replace(/\\/g, "/"));
         }
       }

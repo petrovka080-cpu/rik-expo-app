@@ -46,9 +46,17 @@ export type BffResponseEnvelope<T> =
       };
     };
 
+export type BffRuntimeEnvironment = "staging" | "production" | "development" | "test" | "unknown";
+
 export type BffClientConfig = {
   enabled: boolean;
   baseUrl?: string | null;
+  readOnly?: boolean;
+  runtimeEnvironment?: BffRuntimeEnvironment;
+  trafficPercent?: number | null;
+  shadowOnly?: boolean;
+  mutationRoutesEnabled?: boolean;
+  productionGuard?: boolean;
 };
 
 export type BffRateLimitCategory =
