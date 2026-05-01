@@ -6,6 +6,9 @@ import {
   EXTERNAL_JOB_ADAPTER_CONTRACT,
   InMemoryJobAdapter,
   NoopJobAdapter,
+  QueueHttpJobAdapter,
+  createQueueJobAdapterFromEnv,
+  type QueueHttpFetch,
 } from "../../src/shared/scale/jobAdapters";
 import {
   BFF_MUTATION_JOB_POLICY_MAP,
@@ -30,6 +33,7 @@ import { calculateRetryDelayMs } from "../../src/shared/scale/retryPolicy";
 import {
   BFF_STAGING_MUTATION_ROUTES,
 } from "../../scripts/server/stagingBffServerBoundary";
+import { SCALE_PROVIDER_RUNTIME_ENV_NAMES } from "../../src/shared/scale/providerRuntimeConfig";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -44,6 +48,63 @@ const changedFiles = () =>
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
+
+const createQueueHttpMock = () => {
+  const records = new Map<string, { jobId: string; jobType: JobType; status: "queued" | "cancelled" | "retry_scheduled" | "dead_lettered"; attempts: number; payloadBytes: number }>();
+  const requests: unknown[] = [];
+  let sequence = 0;
+
+  const fetchMock = jest.fn(async (_input: string, init: Parameters<QueueHttpFetch>[1]) => {
+    const body = JSON.parse(init.body) as Record<string, unknown>;
+    requests.push(body);
+    let result: unknown = null;
+
+    if (body.operation === "enqueue" && typeof body.jobType === "string") {
+      sequence += 1;
+      const record = {
+        jobId: `provider-job-${sequence}`,
+        jobType: body.jobType as JobType,
+        status: "queued" as const,
+        attempts: 0,
+        payloadBytes: Number(body.payloadBytes) || 0,
+      };
+      records.set(record.jobId, record);
+      result = record;
+    }
+
+    if (body.operation === "status" && typeof body.jobId === "string") {
+      result = records.get(body.jobId) ?? null;
+    }
+
+    if (body.operation === "cancel" && typeof body.jobId === "string") {
+      const current = records.get(body.jobId);
+      if (current) records.set(body.jobId, { ...current, status: "cancelled" });
+      result = { ok: Boolean(current) };
+    }
+
+    if (body.operation === "retry" && typeof body.jobId === "string") {
+      const current = records.get(body.jobId);
+      if (current) {
+        const next = { ...current, status: "retry_scheduled" as const, attempts: current.attempts + 1 };
+        records.set(body.jobId, next);
+        result = next;
+      }
+    }
+
+    if (body.operation === "deadLetter" && typeof body.jobId === "string") {
+      const current = records.get(body.jobId);
+      if (current) records.set(body.jobId, { ...current, status: "dead_lettered" });
+      result = { ok: Boolean(current) };
+    }
+
+    return {
+      ok: true,
+      json: async () => ({ result }),
+    };
+  }) as jest.MockedFunction<QueueHttpFetch>;
+
+  return { fetchMock, requests };
+};
 
 describe("S-50K-JOBS-INTEGRATION-1 disabled background job boundary", () => {
   it("keeps noop and external adapters contract-only without network calls", async () => {
@@ -124,6 +185,146 @@ describe("S-50K-JOBS-INTEGRATION-1 disabled background job boundary", () => {
       queued: 0,
       deadLettered: 1,
     });
+  });
+
+  it("keeps external queue provider disabled by default and staging-gated", async () => {
+    const queue = createQueueHttpMock();
+
+    const disabled = createQueueJobAdapterFromEnv({}, {
+      runtimeEnvironment: "staging",
+      fetchImpl: queue.fetchMock,
+    });
+    expect(disabled).toBeInstanceOf(NoopJobAdapter);
+    await expect(disabled.enqueue({ jobType: "notification.fanout", payload: { message: "safe" } })).resolves.toEqual({
+      ok: false,
+      code: "JOB_ADAPTER_DISABLED",
+      message: "Background job execution is disabled",
+    });
+    expect(queue.fetchMock).not.toHaveBeenCalled();
+
+    const staging = createQueueJobAdapterFromEnv(
+      {
+        SCALE_QUEUE_STAGING_ENABLED: "true",
+        SCALE_QUEUE_PROVIDER: "queue_provider",
+        SCALE_QUEUE_URL: "https://queue.example.invalid",
+        SCALE_QUEUE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "staging",
+        fetchImpl: queue.fetchMock,
+      },
+    );
+    expect(staging.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "queue_http",
+        enabled: true,
+        externalNetworkEnabled: true,
+        executionEnabledByDefault: false,
+        namespace: "rik-staging",
+        provider: "queue_provider",
+      }),
+    );
+
+    const production = createQueueJobAdapterFromEnv(
+      {
+        SCALE_QUEUE_STAGING_ENABLED: "true",
+        SCALE_QUEUE_PROVIDER: "queue_provider",
+        SCALE_QUEUE_URL: "https://queue.example.invalid",
+        SCALE_QUEUE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "production",
+        fetchImpl: queue.fetchMock,
+      },
+    );
+    expect(production).toBeInstanceOf(NoopJobAdapter);
+    expect(production.getHealth().externalNetworkEnabled).toBe(false);
+  });
+
+  it("implements enqueue/status/cancel/retry/dead-letter through a mocked queue provider", async () => {
+    const queue = createQueueHttpMock();
+    const adapter = new QueueHttpJobAdapter({
+      baseUrl: "https://queue.example.invalid",
+      namespace: "rik-staging",
+      provider: "queue_provider",
+      fetchImpl: queue.fetchMock,
+    });
+
+    const enqueued = await adapter.enqueue({
+      jobType: "notification.fanout",
+      payload: { message: "safe notification" },
+    });
+    expect(enqueued.ok).toBe(true);
+    if (!enqueued.ok) return;
+    expect(enqueued.record.status).toBe("queued");
+
+    await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(enqueued.record);
+    await expect(adapter.cancel(enqueued.record.jobId)).resolves.toBe(true);
+    await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(
+      expect.objectContaining({ status: "cancelled" }),
+    );
+    await expect(adapter.retry(enqueued.record.jobId)).resolves.toEqual({
+      ok: true,
+      record: expect.objectContaining({ status: "retry_scheduled", attempts: 1 }),
+    });
+    await expect(adapter.deadLetter(enqueued.record.jobId, "retry_exhausted")).resolves.toBe(true);
+    await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(
+      expect.objectContaining({ status: "dead_lettered" }),
+    );
+  });
+
+  it("keeps queue provider payloads redacted and namespace-isolated", async () => {
+    const queue = createQueueHttpMock();
+    const adapter = new QueueHttpJobAdapter({
+      baseUrl: "https://queue.example.invalid",
+      namespace: "rik-staging",
+      provider: "queue_provider",
+      fetchImpl: queue.fetchMock,
+    });
+
+    await expect(
+      adapter.enqueue({
+        jobType: "proposal.submit.followup",
+        payload: { rawAccessToken: "token=supersecretvalue" },
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      code: "JOB_PAYLOAD_FORBIDDEN_FIELD",
+      message: "Job payload cannot be accepted safely",
+    });
+    expect(queue.fetchMock).not.toHaveBeenCalled();
+
+    const enqueued = await adapter.enqueue({
+      jobType: "notification.fanout",
+      payload: { message: "Call +996 555 123 456 and person@example.test" },
+      metadata: { source: "test" },
+    });
+    expect(enqueued.ok).toBe(true);
+    expect(queue.fetchMock).toHaveBeenCalledTimes(1);
+    const requestJson = JSON.stringify(queue.requests[0]);
+    expect(requestJson).toContain("rik-staging");
+    expect(requestJson).not.toContain("+996 555 123 456");
+    expect(requestJson).not.toContain("person@example.test");
+    expect(requestJson).not.toContain("token=supersecretvalue");
+  });
+
+  it("keeps external queue provider secrets out of public mobile env names", () => {
+    const queueEnvNames = [
+      SCALE_PROVIDER_RUNTIME_ENV_NAMES.queue.enabled,
+      ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.queue.required,
+      ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.queue.optional,
+    ];
+
+    expect(queueEnvNames).toEqual([
+      "SCALE_QUEUE_STAGING_ENABLED",
+      "SCALE_QUEUE_PROVIDER",
+      "SCALE_QUEUE_URL",
+      "SCALE_QUEUE_NAMESPACE",
+    ]);
+    expect(queueEnvNames.every((name) => !name.startsWith("EXPO_PUBLIC_"))).toBe(true);
+    expect(queueEnvNames).not.toContain("BFF_SERVER_AUTH_SECRET");
+    expect(queueEnvNames).not.toContain("EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET");
+    expect(readProjectFile("src/shared/scale/jobAdapters.ts")).not.toContain("EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET");
   });
 
   it("defines ten disabled job policies with idempotency, rate limits, payload caps, retry, and dead-letter boundaries", () => {
