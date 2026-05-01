@@ -1,0 +1,222 @@
+{
+  "wave": "S-LIMITS-2-SUPABASE-LIMITS-EVIDENCE-CLOSEOUT",
+  "mode": "human-confirmed-supabase-dashboard-evidence-closeout",
+  "status": "GREEN_LIMITS_EVIDENCE_RECORDED_S_LOAD_11_BLOCKED",
+  "generatedAt": "2026-05-01T12:46:01+06:00",
+  "sourceEvidence": {
+    "kind": "final_human_dashboard_evidence_package",
+    "operatorInstruction": "Do not ask for more Supabase screenshots unless a live run is explicitly approved later.",
+    "screenshotsStored": false,
+    "personalBillingDetailsRecorded": false
+  },
+  "project": {
+    "projectRef": "nxrnjywzxxfdpqmzjorh",
+    "projectName": "GOX BUILD",
+    "stagingNotProduction": true,
+    "ownerAccessConfirmed": true,
+    "region": "ap-northeast-2 / Seoul",
+    "productionProjectSelected": false
+  },
+  "billingAccount": {
+    "accountProjectTier": "Pro Plan",
+    "spendCapEnabled": true,
+    "includedUsageLimitRisk": true,
+    "dashboardWarning": "organization is limited by included usage; projects may become unresponsive/read-only if included usage quota is exceeded",
+    "currentCostsVisible": true,
+    "projectedCostsVisible": true,
+    "ipv4AddonCostVisible": true,
+    "paymentMethodBillingPersonalDetailsRecorded": false,
+    "invoicesCardAddressPersonalBillingDataRecorded": false
+  },
+  "compute": {
+    "computeSize": "Micro",
+    "visibleComputeItems": [
+      "GOX BUILD 1: Micro Compute",
+      "GOX BUILD PROD: Micro Compute",
+      "GOX BUILD: Micro Compute"
+    ]
+  },
+  "connectionPooling": {
+    "poolerMode": "Session Pooler",
+    "poolerHostConfirmed": true,
+    "connectionPoolSizeBackendConnections": 15,
+    "maxClientConnections": 200,
+    "directDbMaxConnections": "unknown",
+    "statementTimeout": "unknown"
+  },
+  "network": {
+    "networkRestrictions": "open_to_all_ip_addresses",
+    "networkBans": "no_banned_ip_addresses_shown"
+  },
+  "databaseObservability": {
+    "memoryUsageMb": 909.08,
+    "cpuUsagePercent": 1.88,
+    "diskIopsCurrent": 5,
+    "diskThroughput": "54.9 KB/s",
+    "cpuMemoryStatus": "normal",
+    "diskIopsStatus": "normal",
+    "diskThroughputStatus": "normal"
+  },
+  "apiGatewayDataApiObservability": {
+    "apiGatewayTotalRequestsLast60Minutes": 4563,
+    "dataApiResponseSpeedMs": 178.95,
+    "apiStatus": "warning",
+    "visibleRecentApiErrors": [
+      {
+        "method": "POST",
+        "status": 400,
+        "path": "/rest/v1/rpc/wh_receive_apply_ui",
+        "count": 4
+      },
+      {
+        "method": "DELETE",
+        "status": 500,
+        "path": "/rest/v1/wh_moves?...",
+        "count": 2
+      },
+      {
+        "method": "POST",
+        "status": 500,
+        "path": "/rest/v1/rpc/marketplace_items_scope_page_v1",
+        "count": 1
+      }
+    ]
+  },
+  "logs": {
+    "edgeLogsLastHour": "no_results_found",
+    "recentCriticalLogs": "unknown_beyond_visible_edge_logs_result",
+    "recentPostgresTimeoutErrors": "unknown_without_safe_logs_or_metadata_access"
+  },
+  "advisors": {
+    "securityAdvisorErrors": 258,
+    "securityAdvisorWarnings": 1287,
+    "securityAdvisorInfoSuggestions": 6,
+    "securityAdvisorDominantVisibleIssuePattern": "RLS disabled / policy exists on multiple public tables/views",
+    "performanceAdvisorErrors": 0,
+    "performanceAdvisorWarnings": 411,
+    "performanceAdvisorInfoSuggestions": 209,
+    "queryPerformance": "not_fully_reviewed_unknown"
+  },
+  "edgeFunctions": {
+    "visible": true,
+    "count": 8,
+    "functions": [
+      "director-finance-supplier-summary-pdf",
+      "director-pdf-render",
+      "director-production-report-pdf",
+      "director-subcontract-report-pdf",
+      "foreman-ai-resolve",
+      "foreman-request-pdf",
+      "gemini-generate-content",
+      "warehouse-pdf"
+    ],
+    "classification": "PDF/AI/content functions, not staging BFF server",
+    "stagingBffBaseUrl": "missing"
+  },
+  "backupsPitr": {
+    "backupsEnabled": "unknown",
+    "pitrEnabled": "unknown",
+    "latestBackupVisible": "unknown"
+  },
+  "platformLimitsStillUnknown": {
+    "apiRequestRateLimits": "unknown",
+    "authApiLimits": "unknown",
+    "realtimeLimits": "unknown",
+    "enterpriseAccountLimits": "not_confirmed",
+    "directDbMaxConnections": "unknown",
+    "statementTimeout": "unknown",
+    "backupsPitr": "unknown"
+  },
+  "safeDbMetadataChecks": {
+    "attempted": true,
+    "possible": false,
+    "reason": "Only staging REST URL and read-only key were available. No direct staging database URL, psql binary, Supabase CLI, access token, or existing metadata RPC/view was available without changing SQL or printing secrets.",
+    "businessTablesQueried": false,
+    "rowsDumped": false,
+    "connectionStringPrinted": false,
+    "envValuesPrinted": false,
+    "checks": [
+      {
+        "sql": "show statement_timeout;",
+        "status": "not_checked_safely_unavailable"
+      },
+      {
+        "sql": "show max_connections;",
+        "status": "not_checked_safely_unavailable"
+      },
+      {
+        "sql": "show idle_in_transaction_session_timeout;",
+        "status": "not_checked_safely_unavailable"
+      },
+      {
+        "sql": "show lock_timeout;",
+        "status": "not_checked_safely_unavailable"
+      },
+      {
+        "sql": "select current_database();",
+        "status": "not_checked_safely_unavailable"
+      },
+      {
+        "sql": "select current_setting('server_version', true);",
+        "status": "not_checked_safely_unavailable"
+      }
+    ]
+  },
+  "operatorDecision": {
+    "sLoad11Live1kRunApproved": false,
+    "sLoad11PlanOnlyPreflightApproved": true,
+    "boundedReadOnlyLoadOnlyAfterLimitsConfirmedApproved": true,
+    "productionAccessApproved": false,
+    "writesApproved": false,
+    "rawPayloadsApproved": false,
+    "stopOn57014_429_5xx_errorSpike": true
+  },
+  "sLoad11Decision": {
+    "status": "blocked",
+    "allowed": false,
+    "liveRun": "not_approved",
+    "full10kReadinessClaimed": false,
+    "fiftyKReadinessClaimed": false,
+    "blockers": [
+      "operator_approval_no",
+      "api_request_limits_unknown",
+      "auth_realtime_limits_unknown",
+      "enterprise_account_limits_not_confirmed",
+      "api_status_warning_visible_errors",
+      "spend_cap_enabled",
+      "security_advisor_258_errors_1287_warnings",
+      "staging_bff_base_url_missing"
+    ]
+  },
+  "gates": {
+    "jsonArtifactParse": "PASS",
+    "targetedLimitsEvidenceTest": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": "PASS"
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionMutated": false,
+    "live1kLoadRun": false,
+    "fiftyKLoadRun": false,
+    "bffDeployed": false,
+    "redisCacheEnabled": false,
+    "queueEnabled": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "externalObservabilityEnabled": false,
+    "businessTablesQueried": false,
+    "rowsDumped": false,
+    "migrationsApplied": false,
+    "sqlRpcRlsStorageChanged": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false,
+    "rawPayloadsPrinted": false,
+    "fakeConfirmation": false
+  }
+}

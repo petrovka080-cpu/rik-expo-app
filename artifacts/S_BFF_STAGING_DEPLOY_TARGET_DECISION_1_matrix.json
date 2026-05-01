@@ -1,0 +1,220 @@
+{
+  "wave": "S-BFF-STAGING-DEPLOY-TARGET-DECISION-1",
+  "mode": "deploy-target-decision-no-deploy",
+  "status": "GREEN_BFF_DEPLOY_TARGET_DECISION_READY",
+  "generatedAt": "2026-05-01T12:46:01+06:00",
+  "context": {
+    "supabaseLimitsEvidenceStatus": "GREEN_LIMITS_EVIDENCE_RECORDED_S_LOAD_11_BLOCKED",
+    "sLoad11Status": "blocked",
+    "stagingBffBaseUrl": "missing",
+    "existingEdgeFunctionsAreBffServer": false,
+    "doNotInventUrl": true
+  },
+  "bffBoundaryInspection": {
+    "bffCodeLocated": true,
+    "runtimeType": "Node.js TypeScript server-boundary module",
+    "serverEntrypoint": {
+      "path": "scripts/server/stagingBffServerBoundary.ts",
+      "export": "handleBffStagingServerRequest",
+      "httpListenerPresent": false,
+      "note": "The repo has a request handler boundary, not a deployable HTTP listener yet."
+    },
+    "healthEndpoint": {
+      "method": "GET",
+      "path": "/health",
+      "confirmed": true
+    },
+    "readinessEndpoint": {
+      "method": "GET",
+      "path": "/ready",
+      "confirmed": true
+    },
+    "shadowMode": {
+      "localFixtureShadowSupported": true,
+      "export": "runLocalBffStagingBoundaryShadow",
+      "stagingLiveShadowRun": false,
+      "trafficRoutedToBff": false
+    },
+    "mobileBffFlag": {
+      "located": true,
+      "guard": "src/shared/scale/bffSafety.ts::isBffEnabled",
+      "clientPlan": "src/shared/scale/bffClient.ts::buildBffRequestPlan",
+      "enabledByDefault": false,
+      "networkExecutionAllowed": false
+    },
+    "routes": {
+      "readRoutes": 5,
+      "mutationRoutes": 5,
+      "mutationRoutesEnabledByDefault": false,
+      "requestEnvelopeValidation": true,
+      "responseEnvelopeValidation": true,
+      "redactedErrors": true
+    }
+  },
+  "requiredEnvNames": [
+    "STAGING_BFF_BASE_URL",
+    "BFF_SERVER_AUTH_SECRET",
+    "BFF_DATABASE_READONLY_URL",
+    "BFF_MUTATION_ENABLED",
+    "BFF_IDEMPOTENCY_METADATA_ENABLED",
+    "BFF_RATE_LIMIT_METADATA_ENABLED"
+  ],
+  "currentEnvPresence": {
+    "STAGING_BFF_BASE_URL": "missing",
+    "BFF_SERVER_AUTH_SECRET": "missing",
+    "BFF_DATABASE_READONLY_URL": "missing",
+    "BFF_MUTATION_ENABLED": "missing",
+    "BFF_IDEMPOTENCY_METADATA_ENABLED": "missing",
+    "BFF_RATE_LIMIT_METADATA_ENABLED": "missing",
+    "STAGING_BFF_DEPLOY_PROVIDER": "missing",
+    "BFF_DEPLOY_PROVIDER": "missing",
+    "valuesPrinted": false
+  },
+  "providerComparison": [
+    {
+      "provider": "Render",
+      "option": "Web Service",
+      "compatibility": "recommended",
+      "supportsLongLivedNodeHttpService": true,
+      "supportsGitHubLinkedDeploys": true,
+      "supportsBuildAndStartCommands": true,
+      "supportsHealthReadinessPaths": true,
+      "requiresRepoHttpWrapper": true,
+      "requiresProviderAccountSetup": true,
+      "decisionNotes": "Best fit for the current boundary because it can run a normal Node HTTP service once a thin wrapper and start command are added.",
+      "officialDocs": [
+        "https://render.com/docs/web-services",
+        "https://render.com/docs/deploys",
+        "https://render.com/docs/regions"
+      ]
+    },
+    {
+      "provider": "Railway",
+      "option": "Service with public domain",
+      "compatibility": "compatible_alternative",
+      "supportsLongLivedNodeHttpService": true,
+      "supportsPublicServiceDomain": true,
+      "requiresRepoHttpWrapper": true,
+      "requiresProviderAccountSetup": true,
+      "decisionNotes": "A good alternative if the operator already prefers Railway; still needs the same HTTP wrapper/start command.",
+      "officialDocs": [
+        "https://docs.railway.com/develop/services",
+        "https://docs.railway.com/reference/public-networking",
+        "https://docs.railway.com/deployments/regions"
+      ]
+    },
+    {
+      "provider": "Fly.io",
+      "option": "Machines app",
+      "compatibility": "compatible_more_ops",
+      "supportsLongLivedNodeHttpService": true,
+      "supportsDockerfileDeploy": true,
+      "requiresDockerfileOrFlyToml": true,
+      "requiresRepoHttpWrapper": true,
+      "requiresProviderAccountSetup": true,
+      "decisionNotes": "Good for explicit machine/region control, but heavier than needed for the first staging BFF URL.",
+      "officialDocs": [
+        "https://fly.io/docs/apps/deploy/",
+        "https://fly.io/docs/languages-and-frameworks/dockerfile/",
+        "https://fly.io/docs/reference/regions/"
+      ]
+    },
+    {
+      "provider": "Vercel",
+      "option": "Serverless Functions",
+      "compatibility": "possible_not_recommended_for_first_target",
+      "supportsNodeFunctions": true,
+      "requiresServerlessFunctionAdapter": true,
+      "requiresRepoHttpWrapper": true,
+      "decisionNotes": "Possible only with a function adapter. Less aligned with a future long-lived BFF service and provider-side connection pooling tests.",
+      "officialDocs": [
+        "https://vercel.com/docs/functions/runtimes",
+        "https://vercel.com/docs/functions/limitations/",
+        "https://vercel.com/docs/functions/configuring-functions/region"
+      ]
+    },
+    {
+      "provider": "Supabase Edge Functions",
+      "option": "Deno Edge Function",
+      "compatibility": "not_recommended_for_current_boundary",
+      "supportsDenoEdgeFunctions": true,
+      "requiresDenoPort": true,
+      "currentExistingFunctionsAreBffServer": false,
+      "decisionNotes": "Current BFF boundary is Node TypeScript and the existing Edge Functions are PDF/AI/content functions. This would also add BFF pressure to the same Supabase platform currently under limits review.",
+      "officialDocs": [
+        "https://supabase.com/docs/guides/functions",
+        "https://supabase.com/docs/guides/functions/limits",
+        "https://supabase.com/docs/guides/functions/secrets"
+      ]
+    },
+    {
+      "provider": "Custom VPS",
+      "option": "Self-managed Node service",
+      "compatibility": "blocked_until_repo_and_ops_support",
+      "supportsLongLivedNodeHttpService": true,
+      "requiresOperatorRunbook": true,
+      "requiresRepoHttpWrapper": true,
+      "decisionNotes": "Viable only if the repo gains process manager, TLS, logging, rollback, and patching runbooks. Not the first staging target."
+    }
+  ],
+  "recommendation": {
+    "provider": "Render",
+    "targetType": "Web Service",
+    "status": "selected_for_next_setup",
+    "reason": "Render Web Service is the smallest concrete staging target that matches a normal Node HTTP BFF, supports Git-linked build/start commands, and keeps BFF separate from Supabase Edge Function capacity.",
+    "humanProviderChoiceRequired": false,
+    "deployNow": false
+  },
+  "exactSetupChecklist": [
+    "Do not deploy in this wave.",
+    "In the next implementation wave, add a thin Node HTTP wrapper around scripts/server/stagingBffServerBoundary.ts::handleBffStagingServerRequest.",
+    "Add a staging-only start command for the wrapper, for example npm script bff:staging:start, without enabling mobile BFF traffic.",
+    "Create a Render Web Service named gox-build-staging-bff from the GitHub main branch.",
+    "Set the build command to install dependencies and run the repo verification required by the deploy wave.",
+    "Set the start command to the staging BFF HTTP wrapper command after the wrapper exists.",
+    "Set server-only env names in Render without printing values: BFF_SERVER_AUTH_SECRET, BFF_DATABASE_READONLY_URL, BFF_MUTATION_ENABLED=false, BFF_IDEMPOTENCY_METADATA_ENABLED=false, BFF_RATE_LIMIT_METADATA_ENABLED=false.",
+    "Keep Redis, Queue, idempotency persistence, rate enforcement, and external observability providers disabled.",
+    "Configure health check path /health and readiness verification path /ready.",
+    "After Render creates the staging service URL, store only its redacted presence in artifacts and set STAGING_BFF_BASE_URL in the staging environment.",
+    "Run a later staging health/readiness wave before any shadow parity against the live URL.",
+    "Run staging shadow parity only after /health and /ready pass; do not route mobile traffic to BFF."
+  ],
+  "decisionOutputs": {
+    "stagingBffBaseUrlInvented": false,
+    "stagingBffBaseUrlStatus": "missing",
+    "nextWaveCanCreateHttpWrapper": true,
+    "nextWaveCanDeployAfterHumanApproval": true,
+    "mobileTrafficEnabled": false
+  },
+  "gates": {
+    "jsonArtifactParse": "PASS",
+    "targetedBffDeployTargetDecisionTest": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": "PASS"
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionMutated": false,
+    "bffDeployed": false,
+    "stagingBffBaseUrlInvented": false,
+    "liveBffHealthCheckRun": false,
+    "liveBffReadinessCheckRun": false,
+    "mobileTrafficRoutedToBff": false,
+    "redisCacheEnabled": false,
+    "queueEnabled": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "externalObservabilityEnabled": false,
+    "fiftyKLoadRun": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false,
+    "rawPayloadsPrinted": false,
+    "packageNativeChanged": false,
+    "sqlRpcRlsStorageChanged": false
+  }
+}
