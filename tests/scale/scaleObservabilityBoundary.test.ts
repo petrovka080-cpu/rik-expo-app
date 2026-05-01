@@ -4,6 +4,7 @@ import path from "path";
 
 import {
   EXTERNAL_SCALE_OBSERVABILITY_ADAPTER_CONTRACT,
+  ExternalScaleObservabilityExportAdapter,
   IN_MEMORY_SCALE_OBSERVABILITY_DEFAULT_MAX_EVENTS,
   IN_MEMORY_SCALE_OBSERVABILITY_DEFAULT_MAX_METRICS,
   IN_MEMORY_SCALE_OBSERVABILITY_DEFAULT_MAX_SPANS,
@@ -11,6 +12,8 @@ import {
   IN_MEMORY_SCALE_OBSERVABILITY_MAX_RECORDS,
   InMemoryScaleObservabilityAdapter,
   NoopScaleObservabilityAdapter,
+  createScaleObservabilityAdapterFromEnv,
+  type ScaleObservabilityExportFetch,
   resolveInMemoryScaleObservabilityMaxRecords,
 } from "../../src/shared/scale/scaleObservabilityAdapters";
 import {
@@ -33,6 +36,7 @@ import {
   sanitizeScaleObservabilityEvent,
   validateScaleObservabilityEvent,
 } from "../../src/shared/scale/scaleObservabilitySafety";
+import { SCALE_PROVIDER_RUNTIME_ENV_NAMES } from "../../src/shared/scale/providerRuntimeConfig";
 import {
   type BffReadOperation,
   getBffReadHandlerMetadata,
@@ -65,6 +69,24 @@ const changedFiles = () =>
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
+
+const createObservabilityExportMock = () => {
+  const requests: {
+    input: string;
+    headers: Record<string, string>;
+    body: Record<string, unknown>;
+  }[] = [];
+  const fetchMock = jest.fn(async (input: string, init: Parameters<ScaleObservabilityExportFetch>[1]) => {
+    requests.push({
+      input,
+      headers: init.headers,
+      body: JSON.parse(init.body) as Record<string, unknown>,
+    });
+    return { ok: true };
+  }) as jest.MockedFunction<ScaleObservabilityExportFetch>;
+
+  return { fetchMock, requests };
+};
 
 describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => {
   it("keeps noop and external adapters disabled without external telemetry calls", async () => {
@@ -183,6 +205,205 @@ describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => 
         invalidRecords: 0,
         flushes: 1,
       }),
+    );
+  });
+
+  it("keeps the external observability export adapter disabled by default and staging-gated", async () => {
+    const exporter = createObservabilityExportMock();
+    const envNames = SCALE_PROVIDER_RUNTIME_ENV_NAMES.observability_export;
+
+    const disabled = createScaleObservabilityAdapterFromEnv(
+      {},
+      {
+        runtimeEnvironment: "staging",
+        fetchImpl: exporter.fetchMock,
+      },
+    );
+    expect(disabled).toBeInstanceOf(NoopScaleObservabilityAdapter);
+    expect(disabled.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "noop",
+        enabled: false,
+        externalNetworkEnabled: false,
+        externalExportEnabledByDefault: false,
+      }),
+    );
+
+    const staging = createScaleObservabilityAdapterFromEnv(
+      {
+        [envNames.enabled]: "true",
+        [envNames.required[0]]: "https://observability.example.invalid/v1/export",
+        [envNames.required[1]]: "server-only-token",
+        [envNames.optional[0]]: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "staging",
+        fetchImpl: exporter.fetchMock,
+      },
+    );
+    expect(staging).toBeInstanceOf(ExternalScaleObservabilityExportAdapter);
+    expect(staging.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "external_export",
+        enabled: true,
+        externalNetworkEnabled: true,
+        externalExportEnabledByDefault: false,
+      }),
+    );
+
+    const production = createScaleObservabilityAdapterFromEnv(
+      {
+        [envNames.enabled]: "true",
+        [envNames.required[0]]: "https://observability.example.invalid/v1/export",
+        [envNames.required[1]]: "server-only-token",
+        [envNames.optional[0]]: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "production",
+        fetchImpl: exporter.fetchMock,
+      },
+    );
+    expect(production).toBeInstanceOf(NoopScaleObservabilityAdapter);
+    expect(exporter.fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("exports only redacted events, aggregate metrics, and completed spans through a mocked endpoint", async () => {
+    const exporter = createObservabilityExportMock();
+    const adapter = new ExternalScaleObservabilityExportAdapter({
+      endpoint: "https://observability.example.invalid/v1/export",
+      token: "server-only-token",
+      namespace: "rik-staging",
+      fetchImpl: exporter.fetchMock,
+    });
+    const event = buildScaleObservabilityEvent({
+      eventName: "bff.route.request",
+      routeOrOperation: "request.proposal.list",
+      safeActorScope: "present_redacted",
+      safeCompanyScope: "present_redacted",
+      durationMs: 42,
+    });
+
+    await expect(adapter.recordEvent(event)).resolves.toEqual({
+      ok: true,
+      externalTelemetrySent: true,
+    });
+    await expect(
+      adapter.recordMetric({
+        metricName: "bff.route.latency",
+        value: 42,
+        tags: { route: "request.proposal.list" },
+        timestamp: "2026-05-01T00:00:00.000Z",
+      }),
+    ).resolves.toEqual({ ok: true, externalTelemetrySent: true });
+    const span = await adapter.recordSpanStart("bff.route.request", 100);
+    expect(span).toBeTruthy();
+    if (!span) return;
+    await expect(adapter.recordSpanEnd(span, 125)).resolves.toEqual({
+      ok: true,
+      externalTelemetrySent: true,
+    });
+    await expect(adapter.flush()).resolves.toEqual({
+      ok: true,
+      externalTelemetrySent: false,
+    });
+
+    expect(exporter.fetchMock).toHaveBeenCalledTimes(3);
+    expect(exporter.requests.every((request) => request.input === "https://observability.example.invalid/v1/export")).toBe(true);
+    expect(exporter.requests.every((request) => request.headers.authorization === "Bearer server-only-token")).toBe(true);
+    expect(exporter.requests.map((request) => request.body.kind)).toEqual(["event", "metric", "span"]);
+    expect(exporter.requests.every((request) => request.body.redacted === true)).toBe(true);
+    expect(exporter.requests.every((request) => request.body.rawInputIncluded === false)).toBe(true);
+    const serializedBodies = JSON.stringify(exporter.requests.map((request) => request.body));
+    expect(serializedBodies).toContain("rik-staging");
+    expect(serializedBodies).toContain("request.proposal.list");
+    expect(serializedBodies).not.toContain("server-only-token");
+    expect(serializedBodies).not.toContain("rawPayload");
+    expect(serializedBodies).not.toContain("person@example.test");
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "external_export",
+        enabled: true,
+        externalNetworkEnabled: true,
+        externalExportEnabledByDefault: false,
+        events: 1,
+        metrics: 1,
+        spans: 1,
+        flushes: 1,
+      }),
+    );
+  });
+
+  it("rejects unsafe external export endpoints, events, metrics, and spans before provider calls", async () => {
+    const exporter = createObservabilityExportMock();
+    const unsafeEndpoint = new ExternalScaleObservabilityExportAdapter({
+      endpoint: "https://observability.example.invalid/v1/export?token=signed",
+      token: "server-only-token",
+      namespace: "rik-staging",
+      fetchImpl: exporter.fetchMock,
+    });
+    const safeEvent = buildScaleObservabilityEvent({
+      eventName: "cache.hit",
+      routeOrOperation: "marketplace.catalog.search",
+    });
+    await expect(unsafeEndpoint.recordEvent(safeEvent)).resolves.toEqual({
+      ok: false,
+      reason: "export_failed",
+      externalTelemetrySent: false,
+    });
+
+    const adapter = new ExternalScaleObservabilityExportAdapter({
+      endpoint: "https://observability.example.invalid/v1/export",
+      token: "server-only-token",
+      namespace: "rik-staging",
+      fetchImpl: exporter.fetchMock,
+    });
+    await expect(
+      adapter.recordEvent({ ...safeEvent, rawPayload: { value: 1 } } as never),
+    ).resolves.toEqual({
+      ok: false,
+      reason: "forbidden_field",
+      externalTelemetrySent: false,
+    });
+    await expect(
+      adapter.recordMetric({
+        metricName: "bff.route.latency",
+        value: 1,
+        tags: { route: "person@example.test" },
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      reason: "invalid_tag",
+      externalTelemetrySent: false,
+    });
+    await expect(
+      adapter.recordSpanEnd({
+        spanId: "span:unsafe",
+        name: "https://example.test/a?token=signed",
+        startedAtMs: 100,
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      reason: "unsafe_event",
+      externalTelemetrySent: false,
+    });
+    expect(exporter.fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps observability export env names server-only", () => {
+    const envNames = SCALE_PROVIDER_RUNTIME_ENV_NAMES.observability_export;
+    const allNames = [envNames.enabled, ...envNames.required, ...envNames.optional];
+
+    expect(allNames).toEqual([
+      "SCALE_OBSERVABILITY_EXPORT_STAGING_ENABLED",
+      "SCALE_OBSERVABILITY_EXPORT_ENDPOINT",
+      "SCALE_OBSERVABILITY_EXPORT_TOKEN",
+      "SCALE_OBSERVABILITY_EXPORT_NAMESPACE",
+    ]);
+    expect(allNames.every((name) => !name.startsWith("EXPO_PUBLIC_"))).toBe(true);
+    expect(allNames).not.toContain("BFF_SERVER_AUTH_SECRET");
+    expect(allNames).not.toContain("EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET");
+    expect(readProjectFile("src/shared/scale/scaleObservabilityAdapters.ts")).not.toContain(
+      "EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET",
     );
   });
 
