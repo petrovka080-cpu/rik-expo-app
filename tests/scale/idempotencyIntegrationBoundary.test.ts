@@ -4,6 +4,10 @@ import path from "path";
 
 import {
   EXTERNAL_IDEMPOTENCY_ADAPTER_CONTRACT,
+  DbIdempotencyAdapter,
+  createDbIdempotencyAdapterFromEnv,
+  type DbIdempotencyQuery,
+  type DbIdempotencyQueryInput,
   IN_MEMORY_IDEMPOTENCY_DEFAULT_MAX_RECORDS,
   IN_MEMORY_IDEMPOTENCY_MAX_RECORDS,
   IN_MEMORY_IDEMPOTENCY_MAX_TTL_MS,
@@ -34,6 +38,7 @@ import {
 } from "../../src/shared/scale/offlineReplayIdempotency";
 import { BFF_STAGING_MUTATION_ROUTES } from "../../scripts/server/stagingBffServerBoundary";
 import { JOB_POLICY_REGISTRY } from "../../src/shared/scale/jobPolicies";
+import { SCALE_PROVIDER_RUNTIME_ENV_NAMES } from "../../src/shared/scale/providerRuntimeConfig";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -53,6 +58,100 @@ const safeKeyInput = {
   actorId: "actor-opaque",
   requestId: "request-opaque",
   payload: { amountBucket: "small", itemCount: 2 },
+};
+
+const createDbIdempotencyMock = (nowMs = 10_000) => {
+  const records = new Map<string, Record<string, unknown>>();
+  const calls: DbIdempotencyQueryInput[] = [];
+
+  const query = jest.fn(async (input: DbIdempotencyQueryInput) => {
+    calls.push(input);
+    const key = String(input.values[0] ?? "");
+    let row: Record<string, unknown> | null = null;
+
+    if (input.operation === "reserve") {
+      const existing = records.get(key);
+      if (!existing) {
+        row = {
+          key,
+          operation: input.values[1],
+          status: "reserved",
+          attempts: 1,
+          created_at_ms: input.values[2],
+          updated_at_ms: input.values[2],
+          expires_at_ms: input.values[3],
+          raw_payload_stored: false,
+          pii_stored: false,
+          result_status: "missing",
+          reserve_state: "reserved",
+        };
+        records.set(key, row);
+      } else if (existing.status === "failed_retryable") {
+        row = {
+          ...existing,
+          status: "reserved",
+          attempts: Number(existing.attempts) + 1,
+          updated_at_ms: input.values[2],
+          reserve_state: "reserved",
+        };
+        records.set(key, row);
+      } else {
+        row = {
+          ...existing,
+          reserve_state:
+            existing.status === "reserved"
+              ? "duplicate_in_flight"
+              : existing.status === "committed"
+                ? "duplicate_committed"
+                : existing.status,
+        };
+      }
+    }
+
+    if (input.operation === "commit") {
+      const existing = records.get(key);
+      if (existing) {
+        row = {
+          ...existing,
+          status: "committed",
+          updated_at_ms: input.values[1],
+          result_status: "present_redacted",
+        };
+        records.set(key, row);
+      }
+    }
+
+    if (input.operation === "fail") {
+      const existing = records.get(key);
+      if (existing) {
+        row = {
+          ...existing,
+          status: input.values[1],
+          updated_at_ms: input.values[2],
+        };
+        records.set(key, row);
+      }
+    }
+
+    if (input.operation === "status") {
+      row = records.get(key) ?? null;
+    }
+
+    if (input.operation === "releaseExpired") {
+      const expiredKeys = [...records.entries()]
+        .filter(([, record]) => Number(record.expires_at_ms) <= Number(input.values[0]))
+        .map(([recordKey]) => recordKey);
+      for (const recordKey of expiredKeys) {
+        const record = records.get(recordKey);
+        if (record) records.set(recordKey, { ...record, status: "expired" });
+      }
+      return { rows: expiredKeys.map((recordKey) => ({ key: recordKey })), rowCount: expiredKeys.length };
+    }
+
+    return { rows: row ? [row] : [], rowCount: row ? 1 : 0 };
+  }) as jest.MockedFunction<DbIdempotencyQuery>;
+
+  return { query, calls, nowMs };
 };
 
 describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => {
@@ -176,6 +275,215 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
       expect.objectContaining({ status: "expired" }),
     );
     await expect(adapter.releaseExpired(now)).resolves.toBe(1);
+  });
+
+  it("keeps the DB idempotency provider disabled by default and staging-gated", async () => {
+    const db = createDbIdempotencyMock();
+
+    const disabled = createDbIdempotencyAdapterFromEnv(
+      {},
+      {
+        runtimeEnvironment: "staging",
+        query: db.query,
+      },
+    );
+    expect(disabled).toBeInstanceOf(NoopIdempotencyAdapter);
+    await expect(
+      disabled.reserve({
+        key: "idem:v1:proposal.submit:1234abcd",
+        operation: "proposal.submit",
+        ttlMs: 1000,
+      }),
+    ).resolves.toEqual({
+      state: "disabled",
+      key: "idem:v1:proposal.submit:1234abcd",
+      record: null,
+    });
+    expect(db.query).not.toHaveBeenCalled();
+
+    const staging = createDbIdempotencyAdapterFromEnv(
+      {
+        SCALE_IDEMPOTENCY_DB_STAGING_ENABLED: "true",
+        SCALE_IDEMPOTENCY_DB_URL: "postgres://db.example.invalid/staging",
+        SCALE_IDEMPOTENCY_TABLE: "public.scale_idempotency_records",
+      },
+      {
+        runtimeEnvironment: "staging",
+        query: db.query,
+      },
+    );
+    expect(staging).toBeInstanceOf(DbIdempotencyAdapter);
+    expect(staging.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "db",
+        enabled: true,
+        externalNetworkEnabled: true,
+        persistenceEnabledByDefault: false,
+        tableName: '"public"."scale_idempotency_records"',
+      }),
+    );
+
+    const production = createDbIdempotencyAdapterFromEnv(
+      {
+        SCALE_IDEMPOTENCY_DB_STAGING_ENABLED: "true",
+        SCALE_IDEMPOTENCY_DB_URL: "postgres://db.example.invalid/staging",
+        SCALE_IDEMPOTENCY_TABLE: "public.scale_idempotency_records",
+      },
+      {
+        runtimeEnvironment: "production",
+        query: db.query,
+      },
+    );
+    expect(production).toBeInstanceOf(NoopIdempotencyAdapter);
+    expect(production.getHealth().externalNetworkEnabled).toBe(false);
+  });
+
+  it("executes reserve/commit/fail/status/release through a mocked DB provider without raw payload storage", async () => {
+    const db = createDbIdempotencyMock();
+    const adapter = new DbIdempotencyAdapter({
+      tableName: "public.scale_idempotency_records",
+      query: db.query,
+      nowMs: () => db.nowMs,
+    });
+
+    const key = "idem:v1:proposal.submit:1234abcd";
+    await expect(
+      adapter.reserve({
+        key,
+        operation: "proposal.submit",
+        ttlMs: 1000,
+      }),
+    ).resolves.toEqual({
+      state: "reserved",
+      key,
+      record: expect.objectContaining({
+        key,
+        status: "reserved",
+        rawPayloadStored: false,
+        piiStored: false,
+        resultStatus: "missing",
+      }),
+    });
+    await expect(
+      adapter.reserve({
+        key,
+        operation: "proposal.submit",
+        ttlMs: 1000,
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        state: "duplicate_in_flight",
+        key,
+      }),
+    );
+    await expect(adapter.commit(key)).resolves.toEqual({
+      state: "duplicate_committed",
+      key,
+      record: expect.objectContaining({
+        status: "committed",
+        resultStatus: "present_redacted",
+      }),
+    });
+    await expect(adapter.getStatus(key)).resolves.toEqual(
+      expect.objectContaining({ status: "committed" }),
+    );
+
+    const retryKey = "idem:v1:proposal.submit:5678abcd";
+    await adapter.reserve({
+      key: retryKey,
+      operation: "proposal.submit",
+      ttlMs: 1000,
+    });
+    await expect(adapter.fail(retryKey, true)).resolves.toEqual(
+      expect.objectContaining({
+        state: "failed_retryable",
+        record: expect.objectContaining({ status: "failed_retryable" }),
+      }),
+    );
+    await expect(
+      adapter.reserve({
+        key: retryKey,
+        operation: "proposal.submit",
+        ttlMs: 1000,
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        state: "reserved",
+        record: expect.objectContaining({ attempts: 2 }),
+      }),
+    );
+    await expect(adapter.releaseExpired(db.nowMs + 2000)).resolves.toBe(2);
+
+    expect(db.calls.map((call) => call.operation)).toEqual([
+      "reserve",
+      "reserve",
+      "commit",
+      "status",
+      "reserve",
+      "fail",
+      "reserve",
+      "releaseExpired",
+    ]);
+    const serializedCalls = JSON.stringify(db.calls);
+    expect(serializedCalls).toContain("scale_idempotency_records");
+    expect(serializedCalls).not.toContain("person@example.test");
+    expect(serializedCalls).not.toContain("rawPayload");
+  });
+
+  it("rejects unsafe DB idempotency keys and table names before provider calls", async () => {
+    const db = createDbIdempotencyMock();
+    const unsafeTable = new DbIdempotencyAdapter({
+      tableName: "public.scale_idempotency_records;drop table unsafe",
+      query: db.query,
+    });
+    await expect(
+      unsafeTable.reserve({
+        key: "idem:v1:proposal.submit:1234abcd",
+        operation: "proposal.submit",
+        ttlMs: 1000,
+      }),
+    ).resolves.toEqual({
+      state: "disabled",
+      key: "idem:v1:proposal.submit:1234abcd",
+      record: null,
+    });
+
+    const safeTable = new DbIdempotencyAdapter({
+      tableName: "public.scale_idempotency_records",
+      query: db.query,
+    });
+    await expect(
+      safeTable.reserve({
+        key: "person@example.test",
+        operation: "proposal.submit",
+        ttlMs: 1000,
+      }),
+    ).resolves.toEqual({
+      state: "disabled",
+      key: "idem:v1:invalid",
+      record: null,
+    });
+    expect(db.query).not.toHaveBeenCalled();
+  });
+
+  it("keeps DB idempotency provider env names server-only", () => {
+    const idempotencyDbEnvNames = [
+      SCALE_PROVIDER_RUNTIME_ENV_NAMES.idempotency_db.enabled,
+      ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.idempotency_db.required,
+      ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.idempotency_db.optional,
+    ];
+
+    expect(idempotencyDbEnvNames).toEqual([
+      "SCALE_IDEMPOTENCY_DB_STAGING_ENABLED",
+      "SCALE_IDEMPOTENCY_DB_URL",
+      "SCALE_IDEMPOTENCY_TABLE",
+    ]);
+    expect(idempotencyDbEnvNames.every((name) => !name.startsWith("EXPO_PUBLIC_"))).toBe(true);
+    expect(idempotencyDbEnvNames).not.toContain("BFF_SERVER_AUTH_SECRET");
+    expect(idempotencyDbEnvNames).not.toContain("EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET");
+    expect(readProjectFile("src/shared/scale/idempotencyAdapters.ts")).not.toContain(
+      "EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET",
+    );
   });
 
   it("keeps the in-memory adapter bounded for future runtime use", async () => {

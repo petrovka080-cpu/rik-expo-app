@@ -1,5 +1,9 @@
 import type { IdempotencyPolicyOperation } from "./idempotencyPolicies";
 import { assertIdempotencyKeyIsBounded } from "./idempotencyKeySafety";
+import {
+  resolveScaleProviderRuntimeConfig,
+  type ScaleProviderRuntimeEnvironment,
+} from "./providerRuntimeConfig";
 
 export type IdempotencyReserveState =
   | "reserved"
@@ -37,13 +41,14 @@ export type IdempotencyReservation = {
 };
 
 export type IdempotencyAdapterHealth = {
-  kind: "noop" | "in_memory";
+  kind: "noop" | "in_memory" | "db";
   enabled: boolean;
-  externalNetworkEnabled: false;
+  externalNetworkEnabled: boolean;
   persistenceEnabledByDefault: false;
   reserved: number;
   committed: number;
   failed: number;
+  tableName?: string;
   expired?: number;
   totalRecords?: number;
   maxRecords?: number;
@@ -69,9 +74,40 @@ export interface IdempotencyAdapter {
   getHealth(): IdempotencyAdapterHealth;
 }
 
+export type DbIdempotencyQueryInput = {
+  operation: "reserve" | "commit" | "fail" | "status" | "releaseExpired";
+  sql: string;
+  values: readonly unknown[];
+};
+
+export type DbIdempotencyQueryResult = {
+  rows?: readonly unknown[];
+  rowCount?: number | null;
+};
+
+export type DbIdempotencyQuery = (
+  input: DbIdempotencyQueryInput,
+) => Promise<DbIdempotencyQueryResult>;
+
+export type DbIdempotencyAdapterOptions = {
+  tableName: string;
+  query?: DbIdempotencyQuery;
+  nowMs?: () => number;
+};
+
+export type IdempotencyDbEnv = Record<string, string | undefined>;
+
+export type CreateDbIdempotencyAdapterFromEnvOptions = {
+  runtimeEnvironment?: ScaleProviderRuntimeEnvironment;
+  query?: DbIdempotencyQuery;
+  nowMs?: () => number;
+};
+
 const now = (): number => Date.now();
 const IDEMPOTENCY_ADAPTER_INVALID_KEY = "idem:v1:invalid";
 const IDEMPOTENCY_ADAPTER_KEY_PATTERN = /^idem:v1:[a-z0-9.]+:[a-f0-9]{8}$/;
+const IDEMPOTENCY_DB_TABLE_PATTERN =
+  /^[a-z][a-z0-9_]{0,62}(\.[a-z][a-z0-9_]{0,62})?$/;
 
 export const IN_MEMORY_IDEMPOTENCY_DEFAULT_MAX_RECORDS = 1_000;
 export const IN_MEMORY_IDEMPOTENCY_MAX_RECORDS = 10_000;
@@ -88,6 +124,88 @@ const disabledReservation = (key: string): IdempotencyReservation => ({
   key,
   record: null,
 });
+
+const normalizeText = (value: unknown): string => String(value ?? "").trim();
+
+const isSafeIdempotencyAdapterKey = (key: string): boolean =>
+  assertIdempotencyKeyIsBounded(key) &&
+  IDEMPOTENCY_ADAPTER_KEY_PATTERN.test(key);
+
+const isSafeIdempotencyDbTableName = (tableName: string): boolean =>
+  IDEMPOTENCY_DB_TABLE_PATTERN.test(tableName);
+
+const quoteIdempotencyDbTableName = (tableName: string): string | null => {
+  const normalized = normalizeText(tableName).toLowerCase();
+  if (!isSafeIdempotencyDbTableName(normalized)) return null;
+  return normalized
+    .split(".")
+    .map((part) => `"${part}"`)
+    .join(".");
+};
+
+const numberFromRow = (row: Record<string, unknown>, snake: string, camel: string): number => {
+  const value = row[snake] ?? row[camel];
+  return typeof value === "number" && Number.isFinite(value) ? value : Number(value) || 0;
+};
+
+const stringFromRow = (row: Record<string, unknown>, snake: string, camel: string): string =>
+  normalizeText(row[snake] ?? row[camel]);
+
+const mapDbRowToIdempotencyRecord = (
+  value: unknown,
+): IdempotencyStoredRecord | null => {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const key = stringFromRow(row, "key", "key");
+  const operation = stringFromRow(row, "operation", "operation") as IdempotencyPolicyOperation;
+  const status = stringFromRow(row, "status", "status") as IdempotencyStoredStatus;
+  if (!key || !operation || !status) return null;
+  if (
+    !["reserved", "committed", "failed_retryable", "failed_final", "expired"].includes(status)
+  ) {
+    return null;
+  }
+
+  const resultStatus = stringFromRow(row, "result_status", "resultStatus");
+  return {
+    key,
+    operation,
+    status,
+    attempts: numberFromRow(row, "attempts", "attempts"),
+    createdAtMs: numberFromRow(row, "created_at_ms", "createdAtMs"),
+    updatedAtMs: numberFromRow(row, "updated_at_ms", "updatedAtMs"),
+    expiresAtMs: numberFromRow(row, "expires_at_ms", "expiresAtMs"),
+    rawPayloadStored: false,
+    piiStored: false,
+    resultStatus: resultStatus === "present_redacted" ? "present_redacted" : "missing",
+  };
+};
+
+const firstIdempotencyRecord = (
+  result: DbIdempotencyQueryResult,
+): IdempotencyStoredRecord | null => mapDbRowToIdempotencyRecord(result.rows?.[0]);
+
+const reserveStateFromDbRow = (
+  value: unknown,
+  fallback: IdempotencyStoredRecord,
+): IdempotencyReserveState => {
+  if (value && typeof value === "object") {
+    const reserveState = normalizeText((value as Record<string, unknown>).reserve_state);
+    if (
+      [
+        "reserved",
+        "duplicate_in_flight",
+        "duplicate_committed",
+        "failed_retryable",
+        "failed_final",
+        "expired",
+      ].includes(reserveState)
+    ) {
+      return reserveState as IdempotencyReserveState;
+    }
+  }
+  return toReserveState(fallback);
+};
 
 const toReserveState = (
   record: IdempotencyStoredRecord,
@@ -180,10 +298,7 @@ export class InMemoryIdempotencyAdapter implements IdempotencyAdapter {
   }
 
   private isSafeKey(key: string): boolean {
-    return (
-      assertIdempotencyKeyIsBounded(key) &&
-      IDEMPOTENCY_ADAPTER_KEY_PATTERN.test(key)
-    );
+    return isSafeIdempotencyAdapterKey(key);
   }
 
   private disabledForInvalidKey(): IdempotencyReservation {
@@ -342,6 +457,176 @@ export class InMemoryIdempotencyAdapter implements IdempotencyAdapter {
   }
 }
 
+export class DbIdempotencyAdapter implements IdempotencyAdapter {
+  private readonly tableName: string | null;
+  private readonly query: DbIdempotencyQuery | null;
+  private readonly nowMs: () => number;
+
+  constructor(options: DbIdempotencyAdapterOptions) {
+    this.tableName = quoteIdempotencyDbTableName(options.tableName);
+    this.query = options.query ?? null;
+    this.nowMs = options.nowMs ?? now;
+  }
+
+  async reserve(input: IdempotencyReserveInput): Promise<IdempotencyReservation> {
+    if (!isSafeIdempotencyAdapterKey(input.key)) return disabledReservation(IDEMPOTENCY_ADAPTER_INVALID_KEY);
+    const persistence = this.getPersistence();
+    if (!persistence) return disabledReservation(input.key);
+
+    const currentMs = input.nowMs ?? this.nowMs();
+    const expiresAtMs = currentMs + resolveInMemoryIdempotencyTtlMs(input.ttlMs);
+    const result = await this.runQuery({
+      operation: "reserve",
+      sql: `
+with inserted as (
+  insert into ${persistence.tableName} (
+    key, operation, status, attempts, created_at_ms, updated_at_ms,
+    expires_at_ms, raw_payload_stored, pii_stored, result_status
+  )
+  values ($1, $2, 'reserved', 1, $3, $3, $4, false, false, 'missing')
+  on conflict (key, operation) do nothing
+  returning *
+),
+retryable as (
+  update ${persistence.tableName}
+  set status = 'reserved', attempts = attempts + 1, updated_at_ms = $3
+  where key = $1 and operation = $2 and status = 'failed_retryable' and expires_at_ms > $3
+  returning *
+),
+expired as (
+  update ${persistence.tableName}
+  set status = 'expired', updated_at_ms = $3
+  where key = $1 and operation = $2 and expires_at_ms <= $3
+  returning *
+),
+current_record as (
+  select 0 as reserve_priority, *, 'reserved'::text as reserve_state from inserted
+  union all select 1 as reserve_priority, *, 'reserved'::text as reserve_state from retryable
+  union all select 2 as reserve_priority, *, 'expired'::text as reserve_state from expired
+  union all
+  select 3 as reserve_priority, *,
+    case
+      when status = 'reserved' then 'duplicate_in_flight'
+      when status = 'committed' then 'duplicate_committed'
+      else status
+    end as reserve_state
+  from ${persistence.tableName}
+  where key = $1 and operation = $2
+)
+select * from current_record order by reserve_priority limit 1
+      `,
+      values: [input.key, input.operation, currentMs, expiresAtMs],
+    });
+    const record = firstIdempotencyRecord(result);
+    if (!record) return disabledReservation(input.key);
+    const state = reserveStateFromDbRow(result.rows?.[0], record);
+    return { state, key: input.key, record };
+  }
+
+  async commit(key: string): Promise<IdempotencyReservation> {
+    if (!isSafeIdempotencyAdapterKey(key)) return disabledReservation(IDEMPOTENCY_ADAPTER_INVALID_KEY);
+    const persistence = this.getPersistence();
+    if (!persistence) return disabledReservation(key);
+    const result = await this.runQuery({
+      operation: "commit",
+      sql: `
+update ${persistence.tableName}
+set status = 'committed', updated_at_ms = $2, result_status = 'present_redacted'
+where key = $1
+returning *
+      `,
+      values: [key, this.nowMs()],
+    });
+    const record = firstIdempotencyRecord(result);
+    return record
+      ? { state: "duplicate_committed", key, record }
+      : { state: "expired", key, record: null };
+  }
+
+  async fail(key: string, retryable: boolean): Promise<IdempotencyReservation> {
+    if (!isSafeIdempotencyAdapterKey(key)) return disabledReservation(IDEMPOTENCY_ADAPTER_INVALID_KEY);
+    const persistence = this.getPersistence();
+    if (!persistence) return disabledReservation(key);
+    const status: IdempotencyStoredStatus = retryable ? "failed_retryable" : "failed_final";
+    const result = await this.runQuery({
+      operation: "fail",
+      sql: `
+update ${persistence.tableName}
+set status = $2, updated_at_ms = $3
+where key = $1
+returning *
+      `,
+      values: [key, status, this.nowMs()],
+    });
+    const record = firstIdempotencyRecord(result);
+    return record ? { state: status, key, record } : { state: "expired", key, record: null };
+  }
+
+  async getStatus(key: string): Promise<IdempotencyStoredRecord | null> {
+    const persistence = this.getPersistence();
+    if (!isSafeIdempotencyAdapterKey(key) || !persistence) return null;
+    const result = await this.runQuery({
+      operation: "status",
+      sql: `
+select *
+from ${persistence.tableName}
+where key = $1
+limit 1
+      `,
+      values: [key],
+    });
+    return firstIdempotencyRecord(result);
+  }
+
+  async releaseExpired(nowMs: number = this.nowMs()): Promise<number> {
+    const persistence = this.getPersistence();
+    if (!persistence) return 0;
+    const result = await this.runQuery({
+      operation: "releaseExpired",
+      sql: `
+update ${persistence.tableName}
+set status = 'expired', updated_at_ms = $1
+where expires_at_ms <= $1 and status <> 'expired'
+returning key
+      `,
+      values: [nowMs],
+    });
+    return typeof result.rowCount === "number" ? result.rowCount : result.rows?.length ?? 0;
+  }
+
+  getHealth(): IdempotencyAdapterHealth {
+    const persistence = this.getPersistence();
+    const enabled = Boolean(persistence);
+    return {
+      kind: "db",
+      enabled,
+      externalNetworkEnabled: enabled,
+      persistenceEnabledByDefault: false,
+      reserved: 0,
+      committed: 0,
+      failed: 0,
+      tableName: persistence?.tableName,
+    };
+  }
+
+  private getPersistence(): { tableName: string; query: DbIdempotencyQuery } | null {
+    if (!this.tableName || !this.query) return null;
+    return { tableName: this.tableName, query: this.query };
+  }
+
+  private async runQuery(input: DbIdempotencyQueryInput): Promise<DbIdempotencyQueryResult> {
+    if (!this.query) return {};
+    try {
+      return await this.query({
+        ...input,
+        sql: input.sql.trim(),
+      });
+    } catch {
+      return {};
+    }
+  }
+}
+
 export const EXTERNAL_IDEMPOTENCY_ADAPTER_CONTRACT = Object.freeze({
   kind: "external_contract",
   reserve: "contract_only",
@@ -356,4 +641,23 @@ export const EXTERNAL_IDEMPOTENCY_ADAPTER_CONTRACT = Object.freeze({
 
 export function createDisabledIdempotencyAdapter(): IdempotencyAdapter {
   return new NoopIdempotencyAdapter();
+}
+
+export function createDbIdempotencyAdapterFromEnv(
+  env: IdempotencyDbEnv = typeof process !== "undefined" ? process.env : {},
+  options: CreateDbIdempotencyAdapterFromEnvOptions = {},
+): IdempotencyAdapter {
+  const runtimeConfig = resolveScaleProviderRuntimeConfig(env, {
+    runtimeEnvironment: options.runtimeEnvironment,
+  });
+  const idempotencyStatus = runtimeConfig.providers.idempotency_db;
+  if (!idempotencyStatus.liveNetworkAllowed || !options.query) {
+    return createDisabledIdempotencyAdapter();
+  }
+
+  return new DbIdempotencyAdapter({
+    tableName: normalizeText(env.SCALE_IDEMPOTENCY_TABLE),
+    query: options.query,
+    nowMs: options.nowMs,
+  });
 }
