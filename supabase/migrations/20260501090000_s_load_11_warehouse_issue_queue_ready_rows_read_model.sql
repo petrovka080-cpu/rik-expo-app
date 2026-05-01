@@ -146,6 +146,10 @@ exception
 end;
 $$;
 
+revoke all on function public.warehouse_issue_queue_ready_rows_rebuild_v1() from public;
+revoke all on function public.warehouse_issue_queue_ready_rows_rebuild_v1() from anon;
+revoke all on function public.warehouse_issue_queue_ready_rows_rebuild_v1() from authenticated;
+
 create or replace function public.warehouse_issue_queue_scope_v4_source_before_sloadfix4(
   p_offset integer default 0,
   p_limit integer default 50
@@ -379,7 +383,7 @@ comment on function public.warehouse_issue_queue_scope_v4_source_before_sloadfix
 'S-LOAD-11 read-model backed source for warehouse_issue_queue_scope_v4. Runtime reads projected ready rows only; public wrapper is preserved.';
 
 comment on function public.warehouse_issue_queue_ready_rows_rebuild_v1() is
-'S-LOAD-11 rebuilds the warehouse issue queue ready-rows projection from the preserved source. Staging/proof maintenance path, not a mutation route.';
+'S-LOAD-11 rebuilds the warehouse issue queue ready-rows projection from the preserved source. Staging/proof maintenance path; execute grants stay revoked from app roles.';
 
 comment on function public.warehouse_issue_queue_ready_rows_status_v1() is
 'S-LOAD-11 status endpoint for the warehouse issue queue ready-rows projection.';
@@ -392,7 +396,6 @@ comment on function public.warehouse_issue_queue_ready_rows_read_model_proof_v1(
 
 grant execute on function public.warehouse_issue_queue_scope_v4(integer, integer) to authenticated;
 grant execute on function public.warehouse_issue_queue_ready_rows_status_v1() to authenticated;
-grant execute on function public.warehouse_issue_queue_ready_rows_rebuild_v1() to authenticated;
 grant execute on function public.warehouse_issue_queue_ready_rows_parity_v1(integer, integer) to authenticated;
 grant execute on function public.warehouse_issue_queue_ready_rows_read_model_proof_v1() to authenticated;
 

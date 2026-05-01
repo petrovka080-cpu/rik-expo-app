@@ -78,6 +78,12 @@ describe("S-LOAD-11 warehouse issue queue ready rows read model", () => {
     );
     expect(rebuildSource).toContain("jsonb_array_elements(coalesce(v_payload -> 'rows', '[]'::jsonb))");
     expect(rebuildSource).toContain("last_rebuild_error = sqlstate");
+    expect(source).toContain(
+      "revoke all on function public.warehouse_issue_queue_ready_rows_rebuild_v1() from authenticated",
+    );
+    expect(source).not.toContain(
+      "grant execute on function public.warehouse_issue_queue_ready_rows_rebuild_v1() to authenticated",
+    );
     expect(paritySource).toContain("md5(src.row_value::text) as row_hash");
     expect(paritySource).toContain("'row_diff_count'");
     expect(paritySource).toContain("'meta_hash_equal'");
