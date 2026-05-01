@@ -1,0 +1,284 @@
+{
+  "wave": "S-LIMITS-3B-FULL-STAGING-DB-DIAGNOSTIC-ACCESS",
+  "mode": "staging-only-db-diagnostics-no-live-load",
+  "status": "GREEN_FULL_STAGING_DB_METADATA_RECORDED_S_LOAD_11_NOT_APPROVED",
+  "generatedAt": "2026-05-01T13:23:00+06:00",
+  "sourceEvidence": {
+    "kind": "post_compute_upgrade_human_dashboard_evidence_plus_full_staging_db_diagnostic_grant",
+    "stagingDbUrlPresentInGitignoredEnv": true,
+    "connectionStringPrinted": false,
+    "envValuesPrinted": false,
+    "secretsPrinted": false
+  },
+  "repoPreflight": {
+    "head": "e04a450fb3bbca685e021407bc43b363c599a67a",
+    "originMain": "e04a450fb3bbca685e021407bc43b363c599a67a",
+    "headEqualsOriginMainAtStart": true,
+    "worktreeCleanAtStart": true,
+    "envStagingLocalGitignored": true
+  },
+  "accessPreflight": {
+    "stagingSupabaseDbUrlPresent": true,
+    "sessionPoolerHostConfirmedWithoutPrintingValue": true,
+    "stagingProjectRefConfirmedWithoutPrintingValue": true,
+    "productionProjectSelected": false,
+    "prodEnvAccepted": false,
+    "prodEnvUsed": false,
+    "prohibitedEnvValuesPrinted": false
+  },
+  "humanConfirmedPostUpgradeFacts": {
+    "old_compute_size": "Micro",
+    "new_compute_size": "Medium",
+    "memory_gb": 4,
+    "cpu": "2-core ARM CPU",
+    "baseline_io_bandwidth_mbps": 347,
+    "max_io_bandwidth_burst_mbps": 2085,
+    "daily_burst_time_limit_minutes": 30,
+    "disk_used_gb": 2.19,
+    "disk_size_gb": 8,
+    "spend_cap_enabled": true,
+    "api_status": "warning",
+    "staging_bff_base_url": "missing",
+    "s_load_11_live_1k_approval": "NOT_APPROVED_YET"
+  },
+  "dbConnection": {
+    "status": "connected",
+    "hostResolved": true,
+    "sessionPoolerHostConfirmed": true,
+    "stagingProjectRefConfirmed": true,
+    "sslUsed": true,
+    "readOnlyTransactionUsed": true,
+    "clientQueryTimeoutMs": 10000,
+    "diagnosticStartedAtUtc": "2026-05-01T07:20:52.477Z",
+    "diagnosticCompletedAtUtc": "2026-05-01T07:21:02.677Z"
+  },
+  "allowedSqlExecuted": [
+    "SHOW statement_timeout;",
+    "SHOW max_connections;",
+    "SHOW idle_in_transaction_session_timeout;",
+    "SHOW lock_timeout;",
+    "SELECT current_database();",
+    "SELECT current_setting('server_version', true);",
+    "SELECT current_setting('shared_buffers', true);",
+    "SELECT current_setting('work_mem', true);",
+    "SELECT current_setting('effective_cache_size', true);",
+    "SELECT current_setting('max_worker_processes', true);",
+    "SELECT current_setting('max_parallel_workers', true);",
+    "SELECT current_setting('max_parallel_workers_per_gather', true);",
+    "SELECT name, setting, unit FROM pg_settings WHERE name IN (...);",
+    "SELECT count(*) FROM supabase_migrations.schema_migrations;",
+    "SELECT version FROM supabase_migrations.schema_migrations ORDER BY version DESC LIMIT 5;",
+    "SELECT datname, numbackends FROM pg_stat_database WHERE datname = current_database();",
+    "SELECT state, count(*) FROM pg_stat_activity WHERE datname = current_database() GROUP BY state;",
+    "SELECT query_start IS NOT NULL AS has_query_start, state, count(*) FROM pg_stat_activity WHERE datname = current_database() GROUP BY 1,2;",
+    "SELECT relkind, count(*) FROM pg_class GROUP BY relkind;"
+  ],
+  "dbMetadata": {
+    "statement_timeout": "2min",
+    "statement_timeout_ms": 120000,
+    "max_connections": "120",
+    "max_connections_numeric": 120,
+    "idle_in_transaction_session_timeout": "0",
+    "idle_in_transaction_session_timeout_ms": 0,
+    "lock_timeout": "0",
+    "lock_timeout_ms": 0,
+    "current_database": "postgres",
+    "server_version": "17.6",
+    "shared_buffers": "1GB",
+    "work_mem": "7MB",
+    "effective_cache_size": "3GB",
+    "max_worker_processes": "6",
+    "max_parallel_workers": "2",
+    "max_parallel_workers_per_gather": "1"
+  },
+  "pgSettings": [
+    {
+      "name": "effective_cache_size",
+      "setting": "393216",
+      "unit": "8kB"
+    },
+    {
+      "name": "idle_in_transaction_session_timeout",
+      "setting": "0",
+      "unit": "ms"
+    },
+    {
+      "name": "lock_timeout",
+      "setting": "0",
+      "unit": "ms"
+    },
+    {
+      "name": "max_connections",
+      "setting": "120",
+      "unit": null
+    },
+    {
+      "name": "max_parallel_workers",
+      "setting": "2",
+      "unit": null
+    },
+    {
+      "name": "max_parallel_workers_per_gather",
+      "setting": "1",
+      "unit": null
+    },
+    {
+      "name": "max_worker_processes",
+      "setting": "6",
+      "unit": null
+    },
+    {
+      "name": "shared_buffers",
+      "setting": "131072",
+      "unit": "8kB"
+    },
+    {
+      "name": "statement_timeout",
+      "setting": "120000",
+      "unit": "ms"
+    },
+    {
+      "name": "work_mem",
+      "setting": "7168",
+      "unit": "kB"
+    }
+  ],
+  "migrationHistory": {
+    "schemaMigrationsCount": 161,
+    "latestVersions": [
+      "20260430143000",
+      "20260430124500",
+      "20260430122500",
+      "20260430120500",
+      "20260430114500"
+    ],
+    "fix6MigrationPresentInLatestFive": true
+  },
+  "activeConnectionSummary": {
+    "pgStatDatabaseAvailable": true,
+    "currentDatabaseNumbackends": 8,
+    "pgStatActivityStateCountsAvailable": true,
+    "stateCounts": [
+      {
+        "state": "active",
+        "count": 1
+      },
+      {
+        "state": "idle",
+        "count": 5
+      },
+      {
+        "state": null,
+        "count": 2
+      }
+    ],
+    "queryStartStateCountsAvailable": true,
+    "queryStartStateCounts": [
+      {
+        "has_query_start": false,
+        "state": null,
+        "count": 2
+      },
+      {
+        "has_query_start": true,
+        "state": "active",
+        "count": 1
+      },
+      {
+        "has_query_start": true,
+        "state": "idle",
+        "count": 5
+      }
+    ],
+    "pgClassRelkindCountsAvailable": true,
+    "relkindCounts": [
+      {
+        "relkind": "I",
+        "count": 2
+      },
+      {
+        "relkind": "S",
+        "count": 48
+      },
+      {
+        "relkind": "c",
+        "count": 3
+      },
+      {
+        "relkind": "i",
+        "count": 1122
+      },
+      {
+        "relkind": "m",
+        "count": 1
+      },
+      {
+        "relkind": "p",
+        "count": 1
+      },
+      {
+        "relkind": "r",
+        "count": 318
+      },
+      {
+        "relkind": "t",
+        "count": 280
+      },
+      {
+        "relkind": "v",
+        "count": 305
+      }
+    ]
+  },
+  "sLoad11Decision": {
+    "s_load_11_can_be_reconsidered": true,
+    "s_load_11_allowed_now": false,
+    "reason": "The DB metadata blocker is cleared after Medium upgrade, but live S-LOAD-11 still requires explicit operator approval and acceptance of the current API warning/spend-cap risk. No approval is recorded in this wave.",
+    "exact_safe_command_if_approved_later": "$env:STAGING_SUPABASE_LIMITS_CONFIRMED='true'; $env:STAGING_LOAD_OPERATOR_APPROVED='true'; npx tsx scripts/load/staging-load-test.ts --profile bounded-1k --allow-live"
+  },
+  "remainingHumanActionsBeforeLiveSLoad11": [
+    "Explicitly approve the live S-LOAD-11 run window; current approval is NOT_APPROVED_YET.",
+    "Accept or clear the current Supabase API warning/error state before the run.",
+    "Accept spend-cap and included-usage risk for the intended load window, or adjust billing controls.",
+    "Optionally recheck post-Medium Supabase pooler UI limits for backend pool size and max client connections; DB max_connections is now confirmed as 120."
+  ],
+  "safety": {
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionProjectSelected": false,
+    "prodEnvAccepted": false,
+    "prodEnvUsed": false,
+    "businessTablesQueried": false,
+    "businessRowsDumped": false,
+    "rawPayloadsPrinted": false,
+    "dataExported": false,
+    "migrationsApplied": false,
+    "destructiveSqlRun": false,
+    "writesRun": false,
+    "mutationRpcsCalled": false,
+    "live1kLoadRun": false,
+    "fiftyKLoadRun": false,
+    "bffDeployed": false,
+    "redisCacheEnabled": false,
+    "queueEnabled": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "externalObservabilityEnabled": false,
+    "envValuesPrinted": false,
+    "connectionStringPrinted": false,
+    "databasePasswordPrinted": false,
+    "secretsPrinted": false,
+    "envFileCommitted": false,
+    "secretCommitted": false,
+    "fakeReadinessClaim": false
+  },
+  "gates": {
+    "jsonArtifactParse": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": "PASS"
+  }
+}
