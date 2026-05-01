@@ -8,6 +8,9 @@ import {
   IN_MEMORY_RATE_LIMIT_MAX_TRACKED_KEYS,
   InMemoryRateLimitAdapter,
   NoopRateLimitAdapter,
+  RateLimitStoreAdapter,
+  createRateLimitAdapterFromEnv,
+  type RateLimitStoreFetch,
   resolveInMemoryRateLimitMaxTrackedKeys,
 } from "../../src/shared/scale/rateLimitAdapters";
 import {
@@ -44,6 +47,7 @@ import {
   getBffReadHandlerMetadata,
 } from "../../src/shared/scale/bffReadHandlers";
 import { JOB_POLICY_REGISTRY } from "../../src/shared/scale/jobPolicies";
+import { SCALE_PROVIDER_RUNTIME_ENV_NAMES } from "../../src/shared/scale/providerRuntimeConfig";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -58,6 +62,62 @@ const changedFiles = () =>
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
+
+const createRateLimitStoreMock = () => {
+  const counts = new Map<string, number>();
+  const requests: unknown[] = [];
+  const fetchMock = jest.fn(async (_input: string, init: Parameters<RateLimitStoreFetch>[1]) => {
+    const body = JSON.parse(init.body) as Record<string, unknown>;
+    requests.push(body);
+    const key = String(body.key ?? "");
+    const maxRequests = Number((body.policy as Record<string, unknown> | undefined)?.maxRequests ?? 2);
+    const burst = Number((body.policy as Record<string, unknown> | undefined)?.burst ?? 1);
+    const cost = Number(body.cost ?? 1);
+    let result: unknown = null;
+
+    if ((body.command === "check" || body.command === "consume") && key) {
+      const current = counts.get(key) ?? 0;
+      const next = current + cost;
+      if (body.command === "consume" && next <= maxRequests + burst) {
+        counts.set(key, next);
+      }
+      result = {
+        state: next <= maxRequests ? "allowed" : next <= maxRequests + burst ? "soft_limited" : "hard_limited",
+        key,
+        operation: body.operation,
+        remaining: Math.max(0, maxRequests - next),
+        resetAtMs: 20_000,
+        retryAfterMs: next > maxRequests + burst ? 1000 : null,
+      };
+    }
+
+    if (body.command === "refund" && key) {
+      counts.set(key, Math.max(0, (counts.get(key) ?? 0) - cost));
+      result = { ok: true };
+    }
+
+    if (body.command === "reset" && key) {
+      counts.delete(key);
+      result = { ok: true };
+    }
+
+    if (body.command === "status" && key) {
+      result = {
+        key,
+        operation: "proposal.submit",
+        count: counts.get(key) ?? 0,
+        resetAtMs: 20_000,
+      };
+    }
+
+    return {
+      ok: true,
+      json: async () => ({ result }),
+    };
+  }) as jest.MockedFunction<RateLimitStoreFetch>;
+
+  return { fetchMock, requests };
+};
 
 describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
   it("keeps noop and external adapters disabled without external store calls", async () => {
@@ -161,6 +221,187 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     now += policy.windowMs + 1;
     await expect(adapter.check({ key, policy })).resolves.toEqual(
       expect.objectContaining({ state: "allowed" }),
+    );
+  });
+
+  it("keeps the external rate store disabled by default and staging-gated", async () => {
+    const store = createRateLimitStoreMock();
+    const policy = getRateEnforcementPolicy("proposal.submit");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+
+    const disabled = createRateLimitAdapterFromEnv(
+      {},
+      {
+        runtimeEnvironment: "staging",
+        fetchImpl: store.fetchMock,
+      },
+    );
+    expect(disabled).toBeInstanceOf(NoopRateLimitAdapter);
+    await expect(
+      disabled.consume({ key: "rate:v1:proposal.submit:opaque", policy }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        state: "disabled",
+        enabled: false,
+        realUserBlocked: false,
+      }),
+    );
+    expect(store.fetchMock).not.toHaveBeenCalled();
+
+    const staging = createRateLimitAdapterFromEnv(
+      {
+        SCALE_RATE_LIMIT_STAGING_ENABLED: "true",
+        SCALE_RATE_LIMIT_STORE_URL: "https://rate.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "staging",
+        fetchImpl: store.fetchMock,
+      },
+    );
+    expect(staging).toBeInstanceOf(RateLimitStoreAdapter);
+    expect(staging.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "rate_store",
+        enabled: true,
+        externalNetworkEnabled: true,
+        enforcementEnabledByDefault: false,
+        namespace: "rik-staging",
+      }),
+    );
+
+    const production = createRateLimitAdapterFromEnv(
+      {
+        SCALE_RATE_LIMIT_STAGING_ENABLED: "true",
+        SCALE_RATE_LIMIT_STORE_URL: "https://rate.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "production",
+        fetchImpl: store.fetchMock,
+      },
+    );
+    expect(production).toBeInstanceOf(NoopRateLimitAdapter);
+    expect(production.getHealth().externalNetworkEnabled).toBe(false);
+  });
+
+  it("checks, consumes, refunds, resets, and reads status through a mocked rate store", async () => {
+    const store = createRateLimitStoreMock();
+    const policy = getRateEnforcementPolicy("proposal.submit");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+
+    const adapter = new RateLimitStoreAdapter({
+      storeUrl: "https://rate.example.invalid",
+      namespace: "rik-staging",
+      fetchImpl: store.fetchMock,
+    });
+    const key = "rate:v1:proposal.submit:opaque";
+
+    await expect(adapter.check({ key, policy })).resolves.toEqual(
+      expect.objectContaining({
+        state: "allowed",
+        key,
+        operation: "proposal.submit",
+        enabled: true,
+        realUserBlocked: false,
+      }),
+    );
+    await expect(adapter.consume({ key, policy })).resolves.toEqual(
+      expect.objectContaining({ state: "allowed", realUserBlocked: false }),
+    );
+    await expect(adapter.consume({ key, policy, cost: policy.maxRequests })).resolves.toEqual(
+      expect.objectContaining({ state: "soft_limited", realUserBlocked: false }),
+    );
+    await expect(adapter.consume({ key, policy, cost: policy.maxRequests + policy.burst + 1 })).resolves.toEqual(
+      expect.objectContaining({ state: "hard_limited", realUserBlocked: false }),
+    );
+    await expect(adapter.getStatus(key)).resolves.toEqual(
+      expect.objectContaining({
+        key,
+        operation: "proposal.submit",
+        count: expect.any(Number),
+      }),
+    );
+    await expect(adapter.refund(key)).resolves.toBe(true);
+    await expect(adapter.reset(key)).resolves.toBe(true);
+
+    expect(store.requests.map((request) => (request as { command?: string }).command)).toEqual([
+      "check",
+      "consume",
+      "consume",
+      "consume",
+      "status",
+      "refund",
+      "reset",
+    ]);
+    const serializedRequests = JSON.stringify(store.requests);
+    expect(serializedRequests).toContain("rik-staging");
+    expect(serializedRequests).toContain("proposal.submit");
+    expect(serializedRequests).not.toContain("person@example.test");
+    expect(serializedRequests).not.toContain("rawPayload");
+  });
+
+  it("rejects unsafe rate store keys and namespaces before provider calls", async () => {
+    const store = createRateLimitStoreMock();
+    const policy = getRateEnforcementPolicy("proposal.submit");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+
+    const unsafeNamespace = new RateLimitStoreAdapter({
+      storeUrl: "https://rate.example.invalid",
+      namespace: "bad namespace with spaces",
+      fetchImpl: store.fetchMock,
+    });
+    await expect(
+      unsafeNamespace.consume({
+        key: "rate:v1:proposal.submit:opaque",
+        policy,
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        state: "unknown",
+        enabled: true,
+        realUserBlocked: false,
+      }),
+    );
+    await expect(
+      unsafeNamespace.getStatus("rate:v1:proposal.submit:opaque"),
+    ).resolves.toBeNull();
+
+    const adapter = new RateLimitStoreAdapter({
+      storeUrl: "https://rate.example.invalid",
+      namespace: "rik-staging",
+      fetchImpl: store.fetchMock,
+    });
+    await expect(adapter.consume({ key: "person@example.test", policy })).resolves.toEqual(
+      expect.objectContaining({
+        state: "disabled",
+        key: "rate:v1:invalid",
+        realUserBlocked: false,
+      }),
+    );
+    expect(store.fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps rate store env names server-only", () => {
+    const rateStoreEnvNames = [
+      SCALE_PROVIDER_RUNTIME_ENV_NAMES.rate_limit.enabled,
+      ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.rate_limit.required,
+      ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.rate_limit.optional,
+    ];
+
+    expect(rateStoreEnvNames).toEqual([
+      "SCALE_RATE_LIMIT_STAGING_ENABLED",
+      "SCALE_RATE_LIMIT_STORE_URL",
+      "SCALE_RATE_LIMIT_NAMESPACE",
+    ]);
+    expect(rateStoreEnvNames.every((name) => !name.startsWith("EXPO_PUBLIC_"))).toBe(true);
+    expect(rateStoreEnvNames).not.toContain("BFF_SERVER_AUTH_SECRET");
+    expect(rateStoreEnvNames).not.toContain("EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET");
+    expect(readProjectFile("src/shared/scale/rateLimitAdapters.ts")).not.toContain(
+      "EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET",
     );
   });
 

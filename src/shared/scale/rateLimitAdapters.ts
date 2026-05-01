@@ -3,6 +3,10 @@ import type {
   RateLimitEnforcementOperation,
 } from "./rateLimitPolicies";
 import { assertRateLimitKeyIsBounded } from "./rateLimitKeySafety";
+import {
+  resolveScaleProviderRuntimeConfig,
+  type ScaleProviderRuntimeEnvironment,
+} from "./providerRuntimeConfig";
 
 export type RateLimitDecisionState =
   | "allowed"
@@ -12,7 +16,11 @@ export type RateLimitDecisionState =
   | "disabled"
   | "unknown";
 
-export type RateLimitAdapterKind = "noop" | "in_memory" | "external_contract";
+export type RateLimitAdapterKind =
+  | "noop"
+  | "in_memory"
+  | "rate_store"
+  | "external_contract";
 
 export type RateLimitDecision = {
   state: RateLimitDecisionState;
@@ -45,6 +53,7 @@ export type RateLimitAdapterHealth = {
   externalNetworkEnabled: boolean;
   enforcementEnabledByDefault: false;
   trackedKeys: number;
+  namespace?: string;
   maxTrackedKeys?: number;
   evictedKeys?: number;
   expiredKeysPurged?: number;
@@ -60,6 +69,31 @@ export interface RateLimitAdapter {
   getHealth(): RateLimitAdapterHealth;
 }
 
+export type RateLimitStoreFetch = (
+  input: string,
+  init: {
+    method: "POST";
+    headers: Record<string, string>;
+    body: string;
+  },
+) => Promise<{
+  ok: boolean;
+  json(): Promise<unknown>;
+}>;
+
+export type RateLimitStoreAdapterOptions = {
+  storeUrl: string;
+  namespace: string;
+  fetchImpl?: RateLimitStoreFetch;
+};
+
+export type RateLimitStoreEnv = Record<string, string | undefined>;
+
+export type CreateRateLimitAdapterFromEnvOptions = {
+  runtimeEnvironment?: ScaleProviderRuntimeEnvironment;
+  fetchImpl?: RateLimitStoreFetch;
+};
+
 const disabledDecision = (
   key: string,
   operation: RateLimitEnforcementOperation | null = null,
@@ -73,6 +107,101 @@ const disabledDecision = (
   enabled: false,
   realUserBlocked: false,
 });
+
+const unknownDecision = (
+  key: string,
+  operation: RateLimitEnforcementOperation | null,
+): RateLimitDecision => ({
+  state: "unknown",
+  key,
+  operation,
+  remaining: null,
+  resetAtMs: null,
+  retryAfterMs: null,
+  enabled: true,
+  realUserBlocked: false,
+});
+
+const normalizeText = (value: unknown): string => String(value ?? "").trim();
+
+const normalizeRateStoreUrl = (value: string): string => normalizeText(value).replace(/\/+$/g, "");
+
+const isSafeRateLimitNamespace = (namespace: string): boolean =>
+  namespace.length > 0 && namespace.length <= 64 && /^[A-Za-z0-9][A-Za-z0-9:_-]*$/.test(namespace);
+
+const resolveRateLimitCost = (value: unknown): number => {
+  if (typeof value !== "number" || !Number.isFinite(value)) return 1;
+  const normalized = Math.trunc(value);
+  return normalized > 0 ? normalized : 1;
+};
+
+const defaultRateLimitStoreFetch = (): RateLimitStoreFetch | null => {
+  if (typeof globalThis.fetch !== "function") return null;
+  return globalThis.fetch as RateLimitStoreFetch;
+};
+
+const decisionStateFromValue = (value: unknown): RateLimitDecisionState | null => {
+  if (
+    value === "allowed" ||
+    value === "soft_limited" ||
+    value === "hard_limited" ||
+    value === "blocked_abuse" ||
+    value === "disabled" ||
+    value === "unknown"
+  ) {
+    return value;
+  }
+  return null;
+};
+
+const numberOrNull = (value: unknown): number | null =>
+  typeof value === "number" && Number.isFinite(value) ? value : null;
+
+const mapStoreDecision = (
+  payload: unknown,
+  fallback: RateLimitDecision,
+): RateLimitDecision => {
+  const source =
+    payload && typeof payload === "object" && "decision" in payload
+      ? (payload as { decision: unknown }).decision
+      : payload && typeof payload === "object" && "result" in payload
+        ? (payload as { result: unknown }).result
+        : payload;
+  if (!source || typeof source !== "object") return fallback;
+  const record = source as Record<string, unknown>;
+  const state = decisionStateFromValue(record.state);
+  if (!state) return fallback;
+  return {
+    state,
+    key: typeof record.key === "string" ? record.key : fallback.key,
+    operation:
+      typeof record.operation === "string"
+        ? (record.operation as RateLimitEnforcementOperation)
+        : fallback.operation,
+    remaining: numberOrNull(record.remaining),
+    resetAtMs: numberOrNull(record.resetAtMs ?? record.reset_at_ms),
+    retryAfterMs: numberOrNull(record.retryAfterMs ?? record.retry_after_ms),
+    enabled: true,
+    realUserBlocked: false,
+  };
+};
+
+const mapStoreStatus = (payload: unknown): RateLimitStatus | null => {
+  const source =
+    payload && typeof payload === "object" && "status" in payload
+      ? (payload as { status: unknown }).status
+      : payload && typeof payload === "object" && "result" in payload
+        ? (payload as { result: unknown }).result
+        : payload;
+  if (!source || typeof source !== "object") return null;
+  const record = source as Record<string, unknown>;
+  const key = normalizeText(record.key);
+  const operation = normalizeText(record.operation) as RateLimitEnforcementOperation;
+  const count = numberOrNull(record.count);
+  const resetAtMs = numberOrNull(record.resetAtMs ?? record.reset_at_ms);
+  if (!key || !operation || count === null || resetAtMs === null) return null;
+  return { key, operation, count, resetAtMs };
+};
 
 export class NoopRateLimitAdapter implements RateLimitAdapter {
   async check(input: RateLimitCheckInput): Promise<RateLimitDecision> {
@@ -141,12 +270,6 @@ const resolveInMemoryRateLimitWindowMs = (value: unknown): number => {
   const normalized = Math.trunc(value);
   if (normalized <= 0) return IN_MEMORY_RATE_LIMIT_DEFAULT_WINDOW_MS;
   return Math.min(normalized, IN_MEMORY_RATE_LIMIT_MAX_WINDOW_MS);
-};
-
-const resolveRateLimitCost = (value: unknown): number => {
-  if (typeof value !== "number" || !Number.isFinite(value)) return 1;
-  const normalized = Math.trunc(value);
-  return normalized > 0 ? normalized : 1;
 };
 
 export class InMemoryRateLimitAdapter implements RateLimitAdapter {
@@ -302,6 +425,114 @@ export class InMemoryRateLimitAdapter implements RateLimitAdapter {
   }
 }
 
+export class RateLimitStoreAdapter implements RateLimitAdapter {
+  private readonly storeUrl: string;
+  private readonly namespace: string;
+  private readonly fetchImpl: RateLimitStoreFetch | null;
+
+  constructor(options: RateLimitStoreAdapterOptions) {
+    this.storeUrl = normalizeRateStoreUrl(options.storeUrl);
+    this.namespace = normalizeText(options.namespace);
+    this.fetchImpl = options.fetchImpl ?? defaultRateLimitStoreFetch();
+  }
+
+  async check(input: RateLimitCheckInput): Promise<RateLimitDecision> {
+    return this.commandDecision("check", input);
+  }
+
+  async consume(input: RateLimitCheckInput): Promise<RateLimitDecision> {
+    return this.commandDecision("consume", input);
+  }
+
+  async refund(key: string, cost = 1): Promise<boolean> {
+    if (!assertRateLimitKeyIsBounded(key)) return false;
+    const result = await this.command("refund", {
+      key,
+      cost: resolveRateLimitCost(cost),
+    });
+    return Boolean(result && typeof result === "object" && (result as { ok?: unknown }).ok === true);
+  }
+
+  async reset(key: string): Promise<boolean> {
+    if (!assertRateLimitKeyIsBounded(key)) return false;
+    const result = await this.command("reset", { key });
+    return Boolean(result && typeof result === "object" && (result as { ok?: unknown }).ok === true);
+  }
+
+  async getStatus(key: string): Promise<RateLimitStatus | null> {
+    if (!assertRateLimitKeyIsBounded(key)) return null;
+    return mapStoreStatus(await this.command("status", { key }));
+  }
+
+  getHealth(): RateLimitAdapterHealth {
+    const enabled = this.canUseStore();
+    return {
+      kind: "rate_store",
+      enabled,
+      externalNetworkEnabled: enabled,
+      enforcementEnabledByDefault: false,
+      trackedKeys: 0,
+      namespace: enabled ? this.namespace : undefined,
+    };
+  }
+
+  private async commandDecision(
+    operation: "check" | "consume",
+    input: RateLimitCheckInput,
+  ): Promise<RateLimitDecision> {
+    if (!assertRateLimitKeyIsBounded(input.key)) {
+      return disabledDecision(INVALID_RATE_LIMIT_KEY, input.policy.operation);
+    }
+    const fallback = unknownDecision(input.key, input.policy.operation);
+    const result = await this.command(operation, {
+      key: input.key,
+      operation: input.policy.operation,
+      cost: resolveRateLimitCost(input.cost ?? 1),
+      nowMs: input.nowMs ?? null,
+      policy: {
+        maxRequests: input.policy.maxRequests,
+        burst: input.policy.burst,
+        windowMs: input.policy.windowMs,
+        enforcementEnabledByDefault: false,
+      },
+    });
+    return mapStoreDecision(result, fallback);
+  }
+
+  private canUseStore(): boolean {
+    return (
+      this.storeUrl.length > 0 &&
+      isSafeRateLimitNamespace(this.namespace) &&
+      this.fetchImpl !== null
+    );
+  }
+
+  private async command(operation: string, payload: Record<string, unknown>): Promise<unknown | null> {
+    if (!this.canUseStore() || !this.fetchImpl) return null;
+    try {
+      const response = await this.fetchImpl(this.storeUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          ...payload,
+          command: operation,
+          namespace: this.namespace,
+        }),
+      });
+      if (!response.ok) return null;
+      const responsePayload = await response.json();
+      if (responsePayload && typeof responsePayload === "object" && "result" in responsePayload) {
+        return (responsePayload as { result: unknown }).result;
+      }
+      return responsePayload;
+    } catch {
+      return null;
+    }
+  }
+}
+
 export const EXTERNAL_RATE_LIMIT_ADAPTER_CONTRACT = Object.freeze({
   kind: "external_contract" as const,
   check: "contract_only",
@@ -314,4 +545,21 @@ export const EXTERNAL_RATE_LIMIT_ADAPTER_CONTRACT = Object.freeze({
 
 export function createDisabledRateLimitAdapter(): RateLimitAdapter {
   return new NoopRateLimitAdapter();
+}
+
+export function createRateLimitAdapterFromEnv(
+  env: RateLimitStoreEnv = typeof process !== "undefined" ? process.env : {},
+  options: CreateRateLimitAdapterFromEnvOptions = {},
+): RateLimitAdapter {
+  const runtimeConfig = resolveScaleProviderRuntimeConfig(env, {
+    runtimeEnvironment: options.runtimeEnvironment,
+  });
+  const rateStatus = runtimeConfig.providers.rate_limit;
+  if (!rateStatus.liveNetworkAllowed) return createDisabledRateLimitAdapter();
+
+  return new RateLimitStoreAdapter({
+    storeUrl: normalizeText(env.SCALE_RATE_LIMIT_STORE_URL),
+    namespace: normalizeText(env.SCALE_RATE_LIMIT_NAMESPACE),
+    fetchImpl: options.fetchImpl,
+  });
 }
