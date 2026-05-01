@@ -1,0 +1,305 @@
+{
+  "wave": "S-LIMITS-3-POST-COMPUTE-UPGRADE-RECHECK",
+  "mode": "post-compute-upgrade-limits-recheck-no-live-load",
+  "status": "PARTIAL_POST_COMPUTE_UPGRADE_RECHECK_DB_METADATA_UNAVAILABLE",
+  "generatedAt": "2026-05-01T13:03:31+06:00",
+  "sourceEvidence": {
+    "kind": "post_compute_upgrade_human_dashboard_evidence_package",
+    "operatorInstruction": "Do not ask for more Supabase screenshots unless a live run is explicitly approved later.",
+    "screenshotsStored": false,
+    "personalBillingDetailsRecorded": false
+  },
+  "repoPreflight": {
+    "head": "023c60c57e4eb5258c72ab6fb6007c8c0717deb2",
+    "originMain": "023c60c57e4eb5258c72ab6fb6007c8c0717deb2",
+    "headEqualsOriginMainAtStart": true,
+    "worktreeCleanAtStart": true,
+    "envStagingLocalGitignored": true
+  },
+  "project": {
+    "project_ref": "nxrnjywzxxfdpqmzjorh",
+    "project_name": "GOX BUILD",
+    "project_is_staging_not_production": true,
+    "owner_access_confirmed": true,
+    "region": "ap-northeast-2 / Seoul",
+    "production_project_selected": false
+  },
+  "billingAccount": {
+    "account_project_tier": "Pro Plan",
+    "spend_cap_enabled": true,
+    "included_usage_limit_risk": true,
+    "current_costs_visible": true,
+    "projected_costs_visible": true,
+    "ipv4_addon_cost_visible": true,
+    "payment_method_billing_personal_details_recorded": false,
+    "invoices_card_address_personal_billing_data_recorded": false
+  },
+  "computeUpgrade": {
+    "compute_upgrade_completed": true,
+    "old_compute_size": "Micro",
+    "new_compute_size": "Medium",
+    "current_compute_instance": "Medium",
+    "memory_gb": 4,
+    "cpu": "2-core ARM CPU",
+    "hourly_price_usd": 0.0822,
+    "postgres_version_upgrade_available": true,
+    "postgres_version_upgrade_performed": false,
+    "note": "Postgres version upgrade is not compute upgrade and was not performed."
+  },
+  "infrastructureServiceVersions": {
+    "auth_version": "2.189.0",
+    "postgrest_version": "13.0.5",
+    "postgres_version": "17.6.1.054",
+    "latest_postgres_version_available": "17.6.1.111",
+    "postgres_version_upgrade_available": true
+  },
+  "infrastructureActivityAfterUpgrade": {
+    "cpu_cores": 2,
+    "max_cpu_utilization_last_7_days": "visible_peak_roughly_40_percent",
+    "max_memory_utilization_last_7_days": "visible_peak_roughly_70_percent",
+    "current_latest_memory_after_upgrade": "roughly_15_to_20_percent_visible_chart",
+    "cpu_memory_status_after_upgrade": "normal",
+    "baseline_io_bandwidth_mbps": 347,
+    "max_io_bandwidth_burst_mbps": 2085,
+    "daily_burst_time_limit_minutes": 30,
+    "disk_io_consumed_per_day": "near_0_to_1_percent_visible",
+    "disk_io_status": "normal",
+    "disk_size_gb": 8,
+    "disk_used_gb": 2.19,
+    "disk_autoscaling_visible": true,
+    "spend_cap_limits_disk_size_to_8gb": true
+  },
+  "stagingReachability": {
+    "checked_without_printing_env_values": true,
+    "auth_health_with_apikey": "pass_http_200",
+    "rest_root_apikey_only": "unauthorized_http_401",
+    "rest_root_head_apikey_only": "unauthorized_http_401",
+    "gateway_reachable": true,
+    "dashboard_health_evidence": "cpu_memory_disk_io_normal_after_upgrade",
+    "conclusion": "staging_auth_gateway_reachable_and_dashboard_health_normal_but_db_metadata_unavailable"
+  },
+  "connectionPooling": {
+    "pooler_mode": "Session Pooler",
+    "pooler_host_confirmed": true,
+    "connection_pool_size_backend_connections": "previously_15_on_micro_must_recheck_after_medium",
+    "max_client_connections": "previously_200_on_micro_must_recheck_after_medium",
+    "direct_db_max_connections": "unknown",
+    "statement_timeout": "unknown"
+  },
+  "network": {
+    "network_restrictions": "open_to_all_ip_addresses",
+    "network_bans": "no_banned_ip_addresses_shown"
+  },
+  "databaseObservabilityBeforeAroundUpgrade": {
+    "database_memory_usage_observed_earlier_mb": 909.08,
+    "database_cpu_usage_observed_earlier_percent": 1.88,
+    "disk_iops_observed_earlier": 5,
+    "disk_throughput_observed_earlier": "54.9 KB/s",
+    "database_status_around_observed_metrics": "normal"
+  },
+  "apiGatewayDataApiObservability": {
+    "api_gateway_total_requests_last_60_minutes_observed_earlier": 4563,
+    "data_api_response_speed_observed_earlier_ms": 178.95,
+    "api_status": "warning",
+    "visible_recent_api_errors": [
+      {
+        "method": "POST",
+        "status": 400,
+        "path": "/rest/v1/rpc/wh_receive_apply_ui",
+        "count": 4
+      },
+      {
+        "method": "DELETE",
+        "status": 500,
+        "path": "/rest/v1/wh_moves?...",
+        "count": 2
+      },
+      {
+        "method": "POST",
+        "status": 500,
+        "path": "/rest/v1/rpc/marketplace_items_scope_page_v1",
+        "count": 1
+      }
+    ]
+  },
+  "logs": {
+    "edge_logs_last_hour": "no_results_found",
+    "recent_critical_logs": "unknown_beyond_visible_edge_logs_result",
+    "recent_postgres_timeout_errors": "unknown_without_safe_logs_or_metadata_access"
+  },
+  "advisors": {
+    "security_advisor_errors": 258,
+    "security_advisor_warnings": 1287,
+    "security_advisor_info_suggestions": 6,
+    "security_advisor_dominant_visible_issue_pattern": "RLS disabled / policy exists on multiple public tables/views",
+    "performance_advisor_errors": 0,
+    "performance_advisor_warnings": 411,
+    "performance_advisor_info_suggestions": 209,
+    "query_performance": "not_fully_reviewed_unknown"
+  },
+  "edgeFunctions": {
+    "visible": true,
+    "count": 8,
+    "functions": [
+      "director-finance-supplier-summary-pdf",
+      "director-pdf-render",
+      "director-production-report-pdf",
+      "director-subcontract-report-pdf",
+      "foreman-ai-resolve",
+      "foreman-request-pdf",
+      "gemini-generate-content",
+      "warehouse-pdf"
+    ],
+    "classification": "PDF/AI/content functions, not staging BFF server",
+    "STAGING_BFF_BASE_URL": "missing"
+  },
+  "backupsPitr": {
+    "backups_enabled": "unknown",
+    "pitr_enabled": "unknown",
+    "latest_backup_visible": "unknown"
+  },
+  "platformLimitsStillUnknown": {
+    "api_request_rate_limits": "unknown",
+    "auth_api_limits": "unknown",
+    "realtime_limits": "unknown",
+    "enterprise_account_limits": "not_confirmed",
+    "direct_db_max_connections": "unknown",
+    "statement_timeout": "unknown",
+    "backups_pitr": "unknown"
+  },
+  "dbMetadataChecks": {
+    "db_metadata_checks_attempted": true,
+    "db_metadata_checks_executed": false,
+    "possible": false,
+    "reason": "No direct staging database URL, psql binary, Supabase CLI, access token, or existing metadata RPC/view was available. Running these checks through REST would require adding SQL/RPC, which is forbidden in this wave.",
+    "business_tables_queried": false,
+    "rows_dumped": false,
+    "connection_string_printed": false,
+    "env_values_printed": false,
+    "checks": [
+      {
+        "sql": "show statement_timeout;",
+        "status": "not_checked_safely_unavailable",
+        "value": "unknown"
+      },
+      {
+        "sql": "show max_connections;",
+        "status": "not_checked_safely_unavailable",
+        "value": "unknown"
+      },
+      {
+        "sql": "show idle_in_transaction_session_timeout;",
+        "status": "not_checked_safely_unavailable",
+        "value": "unknown"
+      },
+      {
+        "sql": "show lock_timeout;",
+        "status": "not_checked_safely_unavailable",
+        "value": "unknown"
+      },
+      {
+        "sql": "select current_database();",
+        "status": "not_checked_safely_unavailable",
+        "value": "unknown"
+      },
+      {
+        "sql": "select current_setting('server_version', true);",
+        "status": "not_checked_safely_unavailable",
+        "value": "unknown"
+      }
+    ]
+  },
+  "sLoad11BudgetReevaluation": {
+    "old_compute": "Micro",
+    "new_compute": "Medium",
+    "memory_gb": 4,
+    "cpu": "2-core ARM CPU",
+    "baseline_io_bandwidth_mbps": 347,
+    "max_io_bandwidth_burst_mbps": 2085,
+    "daily_burst_time_limit_minutes": 30,
+    "disk_used_gb": 2.19,
+    "disk_size_gb": 8,
+    "compute_posture_improved": true,
+    "budget_profile": "bounded-1k",
+    "max_concurrency": 1000,
+    "max_total_requests": 1000,
+    "max_duration_ms": 900000,
+    "per_request_timeout_ms": 8000,
+    "cooldown_ms": 500,
+    "abort_on_57014": true,
+    "abort_on_429": true,
+    "abort_on_5xx_error_spike": true,
+    "operator_approval": "NOT_APPROVED_YET",
+    "recommendation": "Do not run S-LOAD-11 yet. Medium compute improves the posture, but DB metadata, post-Medium pool/client limits, API warning acceptance, and explicit operator approval are still missing."
+  },
+  "decision": {
+    "s_load_11_can_be_reconsidered": false,
+    "s_load_11_allowed_now": false,
+    "reason": "Operator approval is not recorded and DB metadata/pooler post-Medium limits are unavailable. Required decision logic for live S-LOAD-11 is not satisfied.",
+    "exact_safe_command_if_approved_later": "$env:STAGING_SUPABASE_LIMITS_CONFIRMED='true'; $env:STAGING_LOAD_OPERATOR_APPROVED='true'; npx tsx scripts/load/staging-load-test.ts --profile bounded-1k --allow-live"
+  },
+  "missing_human_actions": [
+    "Provide a safe DB metadata channel or approved direct staging DB metadata query path for statement_timeout, max_connections, idle_in_transaction_session_timeout, lock_timeout, current_database, and server_version.",
+    "Recheck post-Medium pooler backend connection pool size and max client connections if the UI or DB metadata exposes updated values.",
+    "Confirm direct DB max_connections from safe metadata.",
+    "Operator must explicitly accept the current API warning/error state before S-LOAD-11.",
+    "Operator must explicitly approve S-LOAD-11 live run window; current state is NOT APPROVED YET.",
+    "Keep API/Auth/Realtime/platform limits unknown unless proven safely.",
+    "Keep STAGING_BFF_BASE_URL missing until env proves otherwise.",
+    "Decide whether spend-cap-on disk and included-usage risk are acceptable for the intended load window."
+  ],
+  "compute_upgrade_completed": true,
+  "old_compute_size": "Micro",
+  "new_compute_size": "Medium",
+  "memory_gb": 4,
+  "cpu": "2-core ARM CPU",
+  "baseline_io_bandwidth_mbps": 347,
+  "max_io_bandwidth_burst_mbps": 2085,
+  "daily_burst_time_limit_minutes": 30,
+  "disk_used_gb": 2.19,
+  "disk_size_gb": 8,
+  "spend_cap_enabled": true,
+  "db_metadata_checks_attempted": true,
+  "statement_timeout": "unknown",
+  "max_connections": "unknown",
+  "idle_in_transaction_session_timeout": "unknown",
+  "lock_timeout": "unknown",
+  "server_version": "17.6.1.054",
+  "server_version_source": "human_dashboard_evidence_not_current_setting_query",
+  "s_load_11_can_be_reconsidered": false,
+  "s_load_11_allowed_now": false,
+  "production_touched": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "gates": {
+    "jsonArtifactParse": "PASS",
+    "targetedPostComputeUpgradeRecheckTest": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": "PASS"
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionMutated": false,
+    "live1kLoadRun": false,
+    "fiftyKLoadRun": false,
+    "bffDeployed": false,
+    "redisCacheEnabled": false,
+    "queueEnabled": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "externalObservabilityEnabled": false,
+    "businessTablesQueried": false,
+    "rowsDumped": false,
+    "migrationsApplied": false,
+    "sqlRpcRlsStorageChanged": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false,
+    "rawPayloadsPrinted": false,
+    "fakeConfirmation": false
+  }
+}
