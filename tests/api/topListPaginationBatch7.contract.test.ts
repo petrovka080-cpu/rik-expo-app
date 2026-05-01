@@ -168,6 +168,11 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "scripts/server/stagingBffHttpServer.ts",
       "tests/scale/bffStagingHttpServer.test.ts",
     ]);
+    const s50kProviderEnvConventionsAllowedDirtyFiles = new Set([
+      "src/shared/scale/providerRuntimeConfig.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/scale/providerRuntimeConfig.test.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
@@ -177,6 +182,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !s50kObsIntegrationAllowedDirtyFiles.has(file) &&
         !sBffReadonlyRuntimeFlagWiringAllowedDirtyFiles.has(file) &&
         !sBffReadonlyMobileAuthStrategyAllowedDirtyFiles.has(file) &&
+        !s50kProviderEnvConventionsAllowedDirtyFiles.has(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(false);
