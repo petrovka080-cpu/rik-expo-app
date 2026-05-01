@@ -1,0 +1,232 @@
+{
+  "wave": "S-LIMITS-1-SUPABASE-ACCOUNT-LIMITS-AND-1K-BUDGET",
+  "mode": "production-safe-supabase-account-limits-and-1k-operator-budget-proof",
+  "status": "BLOCKED_SUPABASE_LIMITS_NEED_HUMAN_CONFIRMATION",
+  "generatedAt": "2026-05-01T12:16:34+06:00",
+  "decision": {
+    "S_LOAD_11_ALLOWED": false,
+    "reason": "The staging project identity and bounded-1k harness are present, but Supabase account tier, pooler, connection, API rate, disk/IO, backup/PITR, and account-level timeout limits were not confirmable from local CLI/dashboard-safe sources without secrets.",
+    "exactCommandIfAllowedLater": "$env:STAGING_SUPABASE_LIMITS_CONFIRMED='true'; $env:STAGING_LOAD_OPERATOR_APPROVED='true'; npx tsx scripts/load/staging-load-test.ts --profile bounded-1k --allow-live"
+  },
+  "sourceArtifactsRead": {
+    "sLoad10PreflightMatrix": {
+      "artifact": "artifacts/S_LOAD_10_1k_concurrency_preflight_matrix.json",
+      "status": "BLOCKED_1K_LOAD_REQUIRES_LIMIT_CONFIRMATION",
+      "profile": "bounded-1k",
+      "planOnly": true,
+      "safeToRunLive": false,
+      "blockers": [
+        "operator_approval_missing",
+        "supabase_limits_unconfirmed"
+      ]
+    },
+    "sLoad10PreflightProof": {
+      "artifact": "artifacts/S_LOAD_10_1k_concurrency_preflight_proof.md",
+      "status": "BLOCKED_1K_LOAD_REQUIRES_LIMIT_CONFIRMATION"
+    },
+    "masterReadinessMatrix": {
+      "artifact": "artifacts/S_50K_READINESS_MASTER_MATRIX_1.json",
+      "status": "GREEN_MASTER_READINESS_MATRIX_COMPLETE",
+      "oneKStatus": "BLOCKED_BY_STAGING_LIMITS",
+      "supabaseLimitsStatus": "unconfirmed"
+    },
+    "tenKReadinessProofMatrix": {
+      "artifact": "artifacts/S_READINESS_10K_PROOF_matrix.json",
+      "status": "GREEN_10K_DB_LOAD_BLOCKER_CLOSED",
+      "oneKStatus": "BLOCKED_BY_STAGING_LIMITS"
+    }
+  },
+  "repoPreflight": {
+    "head": "9ec8729a745c341374da58830e95ab0cfcc933d5",
+    "originMain": "9ec8729a745c341374da58830e95ab0cfcc933d5",
+    "headEqualsOriginMainAtStart": true,
+    "worktreeCleanAtStart": true,
+    "envFilesGitignored": true,
+    "releaseVerifyRunByThisWave": true
+  },
+  "safeEnvironmentInspection": {
+    "envValuesPrinted": false,
+    "secretsPrinted": false,
+    "rawPayloadsPrinted": false,
+    "stagingSupabaseUrlPresent": true,
+    "stagingSupabaseReadonlyKeyPresentInProcessEnv": true,
+    "stagingSupabaseLimitsConfirmedEnvPresent": false,
+    "stagingLoadOperatorApprovedEnvPresent": false,
+    "supabaseCliAvailable": false,
+    "localSupabaseTempMetadataPresent": true,
+    "localSupabaseTempProjectRefPresent": true,
+    "localSupabaseTempPoolerUrlPresent": true,
+    "localSupabaseTempPostgresVersionPresent": true,
+    "localSupabaseTempRestVersionPresent": true,
+    "localLinkedProjectMetadataPresent": true,
+    "stagingProjectReferenceMatchedLocally": true,
+    "productionFallbackUsed": false
+  },
+  "limitInspection": {
+    "projectIdentity": {
+      "status": "confirmed_from_local_redacted_metadata",
+      "stagingProjectReferenceMatchedLocally": true,
+      "productionProjectSelected": false,
+      "valuesPrinted": false
+    },
+    "accountTier": {
+      "status": "not_confirmed",
+      "reason": "No Supabase CLI/API token or dashboard-safe exported account tier evidence was available locally."
+    },
+    "projectStatus": {
+      "status": "not_confirmed",
+      "reason": "Local metadata identifies the staging project but does not prove current project health/tier/status."
+    },
+    "poolerLimits": {
+      "status": "not_confirmed",
+      "poolerUrlPresentRedacted": true,
+      "reason": "The local pooler URL proves a pooler endpoint exists, not pooler mode, max client connections, or account pool limits."
+    },
+    "connectionLimits": {
+      "status": "not_confirmed",
+      "reason": "No safe local source confirmed Postgres max_connections, reserved connections, or available connection budget."
+    },
+    "apiRateLimits": {
+      "status": "not_confirmed",
+      "reason": "No safe local source confirmed project API/PostgREST request rate limits or 429 thresholds."
+    },
+    "statementTimeout": {
+      "status": "not_confirmed",
+      "reason": "Function-level migrations include timeouts, but this wave did not confirm the staging account/project Postgres statement timeout setting."
+    },
+    "diskIoStatus": {
+      "status": "not_confirmed",
+      "reason": "No safe local source confirmed disk, IO, or database health warnings."
+    },
+    "backupPitrStatus": {
+      "status": "not_confirmed",
+      "reason": "No safe local source confirmed backup or PITR status."
+    }
+  },
+  "supabase_project_confirmed": true,
+  "production_project_selected": false,
+  "account_tier_confirmed": false,
+  "pooler_limits_confirmed": false,
+  "connection_limits_confirmed": false,
+  "api_rate_limits_confirmed": false,
+  "statement_timeout_confirmed": false,
+  "disk_io_status_confirmed": false,
+  "backup_pitr_status_confirmed": false,
+  "bounded_1k_harness_present": true,
+  "operator_budget_defined": true,
+  "operator_budget_approved": false,
+  "s_load_11_allowed": false,
+  "operatorBudget": {
+    "status": "defined_not_approved",
+    "profile": "bounded-1k",
+    "maxConcurrency": 1000,
+    "rampSteps": [
+      25,
+      50,
+      100,
+      250,
+      500,
+      750,
+      1000
+    ],
+    "rampDurationMs": 900000,
+    "maxTotalRequests": 1000,
+    "maxTestDurationMs": 900000,
+    "perRequestTimeoutMs": 8000,
+    "cooldownMs": 500,
+    "abortConditions": {
+      "sqlstate57014": true,
+      "http429": true,
+      "http5xxSpike": true,
+      "errorRateThreshold": 0.02,
+      "latencyThresholdMs": 1500
+    },
+    "watchThresholds": {
+      "latencyMs": 800,
+      "payloadBytes": 800000
+    },
+    "optimizeNextThresholds": {
+      "latencyMs": 1500,
+      "payloadBytes": 2000000
+    },
+    "readOnlyTargetsOnly": true,
+    "productionForbidden": true,
+    "writesForbidden": true,
+    "rawPayloadLoggingForbidden": true,
+    "liveRunApproved": false
+  },
+  "readOnlyTargets": [
+    {
+      "id": "warehouse_issue_queue_page_25",
+      "expectedMaxRows": 25,
+      "readOnly": true
+    },
+    {
+      "id": "warehouse_incoming_queue_page_30",
+      "expectedMaxRows": 30,
+      "readOnly": true
+    },
+    {
+      "id": "warehouse_stock_page_60",
+      "expectedMaxRows": 60,
+      "readOnly": true
+    },
+    {
+      "id": "buyer_summary_inbox_page_25",
+      "expectedMaxRows": 25,
+      "readOnly": true
+    },
+    {
+      "id": "buyer_summary_buckets_fixed_scope",
+      "expectedMaxRows": null,
+      "readOnly": true
+    }
+  ],
+  "missing_human_actions": [
+    "Confirm the staging Supabase project tier/status and compute size from the Supabase dashboard or a secret-safe account export.",
+    "Confirm pooler mode and maximum client/connection limits for the staging project.",
+    "Confirm Postgres max_connections, reserved connections, and an operator-approved connection budget for maxConcurrency=1000.",
+    "Confirm API/PostgREST request rate limits and expected 429 behavior for the staging project.",
+    "Confirm the staging Postgres statement_timeout or equivalent project timeout policy.",
+    "Confirm disk, IO, and database health warning status before a 1K run window.",
+    "Confirm backup/PITR status for the staging project.",
+    "Approve the bounded 1K operator budget and set STAGING_SUPABASE_LIMITS_CONFIRMED=true only after limits meet the budget.",
+    "Set STAGING_LOAD_OPERATOR_APPROVED=true only for the approved S-LOAD-11 run window."
+  ],
+  "gates": {
+    "jsonArtifactParse": "PASS",
+    "targetedLimitsBudgetTest": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": "PASS"
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionMutated": false,
+    "stagingWrites": false,
+    "oneKLoadRunByThisWave": false,
+    "fiftyKLoadRun": false,
+    "bffDeployed": false,
+    "redisCacheEnabled": false,
+    "queueEnabled": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "externalObservabilityEnabled": false,
+    "migrationsApplied": false,
+    "sqlRpcRlsStorageChanged": false,
+    "businessLogicChanged": false,
+    "appBehaviorChanged": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false,
+    "rawPayloadsPrinted": false,
+    "rawRowsPrinted": false,
+    "screenshotsWithSecrets": false,
+    "playMarketTouched": false
+  },
+  "production_touched": false,
+  "secrets_printed": false
+}
