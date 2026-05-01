@@ -1,0 +1,133 @@
+{
+  "wave": "S-BFF-STAGING-SMOKE-1",
+  "mode": "render-live-bff-smoke-no-traffic-routing",
+  "status": "GREEN_BFF_STAGING_SMOKE_READY_ENV_BASE_URL_PENDING",
+  "generatedAt": "2026-05-01T14:01:00+06:00",
+  "repoPreflight": {
+    "head": "4ce49257dc22657dfc13b4f690d119ea04db327a",
+    "originMain": "4ce49257dc22657dfc13b4f690d119ea04db327a",
+    "headEqualsOriginMainAtStart": true,
+    "worktreeCleanAtStart": true
+  },
+  "target": {
+    "provider": "Render",
+    "service": "gox-build-staging-bff",
+    "baseUrl": "https://gox-build-staging-bff.onrender.com",
+    "baseUrlSource": "operator_provided_public_render_url",
+    "stagingBffBaseUrlEnvStatus": "needs_env_update_or_confirmation",
+    "stagingBffBaseUrlEnvReason": "Local environment does not expose STAGING_BFF_BASE_URL and Render env values were not read or printed. Live smoke is valid because the operator provided the public Render URL."
+  },
+  "manualEvidenceAccepted": {
+    "healthReturnedOk": true,
+    "readyReturnedOk": true,
+    "rootReturnsRouteNotFound": true,
+    "renderEnvNamesConfiguredByOperator": [
+      "NODE_ENV",
+      "BFF_SERVER_AUTH_SECRET",
+      "BFF_DATABASE_READONLY_URL",
+      "BFF_MUTATION_ENABLED",
+      "BFF_IDEMPOTENCY_METADATA_ENABLED",
+      "BFF_RATE_LIMIT_METADATA_ENABLED",
+      "STAGING_BFF_BASE_URL"
+    ],
+    "renderEnvValuesRecorded": false
+  },
+  "liveProbes": {
+    "health": {
+      "method": "GET",
+      "path": "/health",
+      "http_status": 200,
+      "duration_ms": 636,
+      "ok": true,
+      "status": "ok",
+      "serverBoundaryReady": true,
+      "productionTouched": false
+    },
+    "ready": {
+      "method": "GET",
+      "path": "/ready",
+      "http_status": 200,
+      "duration_ms": 484,
+      "ok": true,
+      "status": "ready",
+      "readRoutes": 5,
+      "mutationRoutes": 5,
+      "mutationRoutesEnabledByDefault": false,
+      "mutationRoutesEnabled": false,
+      "requestEnvelopeValidation": true,
+      "responseEnvelopeValidation": true,
+      "redactedErrors": true,
+      "appRuntimeBffEnabled": false
+    },
+    "root": {
+      "method": "GET",
+      "path": "/",
+      "http_status": 404,
+      "duration_ms": 215,
+      "ok": false,
+      "errorCode": "BFF_ROUTE_NOT_FOUND",
+      "acceptable": true
+    },
+    "mutationWithoutAuth": {
+      "method": "POST",
+      "path": "/api/staging-bff/mutation/proposal-submit",
+      "http_status": 401,
+      "duration_ms": 229,
+      "ok": false,
+      "errorCode": "BFF_AUTH_REQUIRED",
+      "authProtected": true,
+      "rawPayloadReturned": false
+    }
+  },
+  "confirmations": {
+    "healthSmokePass": true,
+    "readinessSmokePass": true,
+    "rootRouteNotFoundAcceptable": true,
+    "mutationRoutesRemainDisabled": true,
+    "mutationRoutesDisabledEvidence": "GET /ready returned mutationRoutesEnabledByDefault=false and mutationRoutesEnabled=false. Unauthorized mutation probe confirmed API auth guard without printing secrets.",
+    "providerFlagsRemainDisabled": true,
+    "providerFlagsEvidence": "Operator-confirmed Render env names are configured with BFF_MUTATION_ENABLED=false, BFF_IDEMPOTENCY_METADATA_ENABLED=false, and BFF_RATE_LIMIT_METADATA_ENABLED=false. Live /ready confirms effective mutationRoutesEnabled=false.",
+    "mobileTrafficRoutingEnabled": false,
+    "mobileTrafficRoutingEvidence": "GET /ready returned appRuntimeBffEnabled=false; no mobile config was changed.",
+    "productionTouched": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false
+  },
+  "decision": {
+    "status": "GREEN_BFF_STAGING_SMOKE_READY_ENV_BASE_URL_PENDING",
+    "bffStagingSmokeReady": true,
+    "stagingBffBaseUrlNeedsEnvUpdateOrConfirmation": true,
+    "canProceedToLiveHealthReadinessFollowup": true,
+    "canRouteMobileTraffic": false,
+    "canRunShadowParityAgainstLiveUrl": "next_wave_after_env_confirmation"
+  },
+  "safety": {
+    "productionTouched": false,
+    "productionAccessed": false,
+    "productionMutated": false,
+    "mobileBffRoutingEnabled": false,
+    "redisCacheEnabled": false,
+    "queueEnabled": false,
+    "idempotencyEnabled": false,
+    "rateEnforcementEnabled": false,
+    "externalObservabilityEnabled": false,
+    "live1kLoadRun": false,
+    "fiftyKLoadRun": false,
+    "migrationsRun": false,
+    "sqlRpcRlsStorageChanged": false,
+    "rawEnvPrinted": false,
+    "secretPrinted": false,
+    "rawPayloadPrinted": false,
+    "renderEnvValuesRead": false,
+    "renderEnvValuesPrinted": false
+  },
+  "gates": {
+    "jsonArtifactParse": "PASS",
+    "gitDiffCheck": "PASS",
+    "typescriptNoEmit": "PASS",
+    "expoLint": "PASS",
+    "jestRunInBand": "PASS",
+    "jest": "PASS",
+    "releaseVerify": "PASS"
+  }
+}
