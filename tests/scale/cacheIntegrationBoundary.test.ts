@@ -2,7 +2,13 @@ import { execFileSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
-import { NoopCacheAdapter, InMemoryCacheAdapter } from "../../src/shared/scale/cacheAdapters";
+import {
+  NoopCacheAdapter,
+  InMemoryCacheAdapter,
+  RedisRestCacheAdapter,
+  createRedisCacheAdapterFromEnv,
+  type RedisRestFetch,
+} from "../../src/shared/scale/cacheAdapters";
 import {
   CACHE_HOTSPOT_ROUTES,
   CACHE_POLICY_REGISTRY,
@@ -29,6 +35,7 @@ import {
   getBffReadHandlerMetadata,
   type BffReadOperation,
 } from "../../src/shared/scale/bffReadHandlers";
+import { SCALE_PROVIDER_RUNTIME_ENV_NAMES } from "../../src/shared/scale/providerRuntimeConfig";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -43,6 +50,91 @@ const changedFiles = () =>
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
+
+const createRedisRestMock = () => {
+  let now = 0;
+  const values = new Map<string, { value: string; expiresAt: number | null }>();
+  const sets = new Map<string, { members: Set<string>; expiresAt: number | null }>();
+  const commands: (string | number)[][] = [];
+
+  const purgeExpired = () => {
+    for (const [key, entry] of values.entries()) {
+      if (entry.expiresAt !== null && entry.expiresAt <= now) values.delete(key);
+    }
+    for (const [key, entry] of sets.entries()) {
+      if (entry.expiresAt !== null && entry.expiresAt <= now) sets.delete(key);
+    }
+  };
+
+  const fetchMock = jest.fn(async (_input: string, init: Parameters<RedisRestFetch>[1]) => {
+    purgeExpired();
+    const command = JSON.parse(init.body) as (string | number)[];
+    commands.push(command);
+    const operation = String(command[0] ?? "").toUpperCase();
+    let result: unknown = null;
+
+    if (operation === "SET" && typeof command[1] === "string" && typeof command[2] === "string") {
+      const ttlIndex = command.findIndex((part) => String(part).toUpperCase() === "PX");
+      const ttlMs = ttlIndex >= 0 ? Number(command[ttlIndex + 1]) : 0;
+      values.set(command[1], {
+        value: command[2],
+        expiresAt: Number.isFinite(ttlMs) && ttlMs > 0 ? now + ttlMs : null,
+      });
+      result = "OK";
+    }
+
+    if (operation === "GET" && typeof command[1] === "string") {
+      result = values.get(command[1])?.value ?? null;
+    }
+
+    if (operation === "DEL") {
+      let deleted = 0;
+      for (const key of command.slice(1)) {
+        if (typeof key !== "string") continue;
+        if (values.delete(key)) deleted += 1;
+        if (sets.delete(key)) deleted += 1;
+      }
+      result = deleted;
+    }
+
+    if (operation === "SADD" && typeof command[1] === "string") {
+      const set = sets.get(command[1]) ?? { members: new Set<string>(), expiresAt: null };
+      for (const member of command.slice(2)) {
+        if (typeof member === "string") set.members.add(member);
+      }
+      sets.set(command[1], set);
+      result = set.members.size;
+    }
+
+    if (operation === "PEXPIRE" && typeof command[1] === "string") {
+      const ttlMs = Number(command[2]);
+      const set = sets.get(command[1]);
+      if (set && Number.isFinite(ttlMs) && ttlMs > 0) {
+        set.expiresAt = now + ttlMs;
+        result = 1;
+      } else {
+        result = 0;
+      }
+    }
+
+    if (operation === "SMEMBERS" && typeof command[1] === "string") {
+      result = Array.from(sets.get(command[1])?.members ?? []);
+    }
+
+    return {
+      ok: true,
+      json: async () => ({ result }),
+    };
+  }) as jest.MockedFunction<RedisRestFetch>;
+
+  return {
+    commands,
+    fetchMock,
+    advance: (ms: number) => {
+      now += ms;
+    },
+  };
+};
 
 describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
   it("keeps noop and in-memory adapters local without external network calls", async () => {
@@ -146,6 +238,128 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
       consoleError.mockRestore();
       consoleWarn.mockRestore();
     }
+  });
+
+  it("keeps Redis/Upstash cache provider disabled by default and staging-gated", async () => {
+    const redis = createRedisRestMock();
+
+    const disabled = createRedisCacheAdapterFromEnv({}, {
+      runtimeEnvironment: "staging",
+      fetchImpl: redis.fetchMock,
+    });
+    expect(disabled).toBeInstanceOf(NoopCacheAdapter);
+    expect(disabled.getStatus()).toEqual({
+      kind: "noop",
+      enabled: false,
+      externalNetworkEnabled: false,
+    });
+    await disabled.set("cache:v1:disabled", { ok: true }, { ttlMs: 1_000 });
+    expect(redis.fetchMock).not.toHaveBeenCalled();
+
+    const staging = createRedisCacheAdapterFromEnv(
+      {
+        SCALE_REDIS_CACHE_STAGING_ENABLED: "true",
+        SCALE_REDIS_CACHE_URL: "https://cache.example.invalid",
+        SCALE_REDIS_CACHE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "staging",
+        fetchImpl: redis.fetchMock,
+      },
+    );
+    expect(staging.getStatus()).toEqual(
+      expect.objectContaining({
+        kind: "redis_rest",
+        enabled: true,
+        externalNetworkEnabled: true,
+        namespace: "rik-staging",
+      }),
+    );
+
+    const production = createRedisCacheAdapterFromEnv(
+      {
+        SCALE_REDIS_CACHE_STAGING_ENABLED: "true",
+        SCALE_REDIS_CACHE_URL: "https://cache.example.invalid",
+        SCALE_REDIS_CACHE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "production",
+        fetchImpl: redis.fetchMock,
+      },
+    );
+    expect(production).toBeInstanceOf(NoopCacheAdapter);
+    expect(production.getStatus().externalNetworkEnabled).toBe(false);
+  });
+
+  it("implements Redis/Upstash set/get/delete and TTL behavior through a mocked provider", async () => {
+    const redis = createRedisRestMock();
+    const adapter = new RedisRestCacheAdapter({
+      baseUrl: "https://cache.example.invalid",
+      namespace: "rik-staging",
+      fetchImpl: redis.fetchMock,
+    });
+
+    await adapter.set("cache:v1:item", { ok: true, count: 2 }, { ttlMs: 50, tags: ["item"] });
+    await expect(adapter.get("cache:v1:item")).resolves.toEqual({ ok: true, count: 2 });
+
+    redis.advance(51);
+    await expect(adapter.get("cache:v1:item")).resolves.toBeNull();
+
+    await adapter.set("cache:v1:item", "present", { ttlMs: 1_000, tags: ["item"] });
+    await expect(adapter.get("cache:v1:item")).resolves.toBe("present");
+    await adapter.delete("cache:v1:item");
+    await expect(adapter.get("cache:v1:item")).resolves.toBeNull();
+  });
+
+  it("keeps Redis/Upstash cache keys namespace-isolated for tag invalidation", async () => {
+    const redis = createRedisRestMock();
+    const stagingA = new RedisRestCacheAdapter({
+      baseUrl: "https://cache.example.invalid",
+      namespace: "rik-staging-a",
+      fetchImpl: redis.fetchMock,
+    });
+    const stagingB = new RedisRestCacheAdapter({
+      baseUrl: "https://cache.example.invalid",
+      namespace: "rik-staging-b",
+      fetchImpl: redis.fetchMock,
+    });
+
+    await stagingA.set("cache:v1:shared", "a", { ttlMs: 1_000, tags: ["shared"] });
+    await stagingB.set("cache:v1:shared", "b", { ttlMs: 1_000, tags: ["shared"] });
+
+    await expect(stagingA.invalidateByTag("shared")).resolves.toBe(1);
+    await expect(stagingA.get("cache:v1:shared")).resolves.toBeNull();
+    await expect(stagingB.get("cache:v1:shared")).resolves.toBe("b");
+
+    const touchedRedisKeys = redis.commands.flatMap((command) =>
+      command
+        .slice(1)
+        .filter((part): part is string => typeof part === "string" && part.includes("cache:v1")),
+    );
+    expect(touchedRedisKeys.length).toBeGreaterThan(0);
+    expect(
+      touchedRedisKeys.every(
+        (key) => key.startsWith("rik-staging-a:") || key.startsWith("rik-staging-b:"),
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps Redis/Upstash provider secrets out of public mobile env names", () => {
+    const redisEnvNames = [
+      SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache.enabled,
+      ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache.required,
+      ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache.optional,
+    ];
+
+    expect(redisEnvNames).toEqual([
+      "SCALE_REDIS_CACHE_STAGING_ENABLED",
+      "SCALE_REDIS_CACHE_URL",
+      "SCALE_REDIS_CACHE_NAMESPACE",
+    ]);
+    expect(redisEnvNames.every((name) => !name.startsWith("EXPO_PUBLIC_"))).toBe(true);
+    expect(redisEnvNames).not.toContain("BFF_SERVER_AUTH_SECRET");
+    expect(redisEnvNames).not.toContain("EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET");
+    expect(readProjectFile("src/shared/scale/cacheAdapters.ts")).not.toContain("EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET");
   });
 
   it("defines disabled cache policies for BFF read routes and load hotspots", () => {

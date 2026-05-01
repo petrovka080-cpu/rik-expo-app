@@ -1,12 +1,18 @@
+import { safeJsonParseValue, safeJsonStringify } from "../../lib/format";
 import { assertCacheKeyIsBounded } from "./cacheKeySafety";
+import {
+  resolveScaleProviderRuntimeConfig,
+  type ScaleProviderRuntimeEnvironment,
+} from "./providerRuntimeConfig";
 
 export type CacheAdapterStatus = {
-  kind: "noop" | "in_memory" | "external_contract";
+  kind: "noop" | "in_memory" | "external_contract" | "redis_rest";
   enabled: boolean;
-  externalNetworkEnabled: false;
+  externalNetworkEnabled: boolean;
   entryCount?: number;
   maxEntries?: number;
   maxValueBytes?: number;
+  namespace?: string;
 };
 
 export type CacheSetOptions = {
@@ -32,6 +38,40 @@ export const IN_MEMORY_CACHE_DEFAULT_MAX_ENTRIES = 1_000;
 export const IN_MEMORY_CACHE_DEFAULT_MAX_VALUE_BYTES = 262_144;
 export const IN_MEMORY_CACHE_DEFAULT_MAX_TAGS = 16;
 export const IN_MEMORY_CACHE_DEFAULT_MAX_TAG_LENGTH = 80;
+export const REDIS_REST_CACHE_PROVIDER = "redis_rest";
+export const REDIS_REST_CACHE_DEFAULT_MAX_VALUE_BYTES = 262_144;
+export const REDIS_REST_CACHE_DEFAULT_MAX_TAGS = 16;
+export const REDIS_REST_CACHE_DEFAULT_MAX_TAG_LENGTH = 80;
+export const REDIS_REST_CACHE_MAX_NAMESPACE_LENGTH = 64;
+
+export type RedisRestFetch = (
+  input: string,
+  init: {
+    method: "POST";
+    headers: Record<string, string>;
+    body: string;
+  },
+) => Promise<{
+  ok: boolean;
+  json(): Promise<unknown>;
+}>;
+
+export type RedisRestCacheAdapterOptions = {
+  baseUrl: string;
+  namespace: string;
+  bearerToken?: string;
+  fetchImpl?: RedisRestFetch;
+  maxValueBytes?: number;
+  maxTags?: number;
+  maxTagLength?: number;
+};
+
+export type RedisCacheAdapterEnv = Record<string, string | undefined>;
+
+export type CreateRedisCacheAdapterFromEnvOptions = {
+  runtimeEnvironment?: ScaleProviderRuntimeEnvironment;
+  fetchImpl?: RedisRestFetch;
+};
 
 export type InMemoryCacheAdapterOptions = {
   now?: () => number;
@@ -74,6 +114,46 @@ const uniqueBoundedTags = (
   }
   return [...unique];
 };
+
+const isSafeRedisNamespace = (namespace: string): boolean =>
+  namespace.length > 0 &&
+  namespace.length <= REDIS_REST_CACHE_MAX_NAMESPACE_LENGTH &&
+  /^[A-Za-z0-9][A-Za-z0-9:_-]*$/.test(namespace);
+
+const normalizeRedisBaseUrl = (value: string): string => value.trim().replace(/\/+$/g, "");
+
+const buildRedisKey = (namespace: string, key: string): string | null => {
+  if (!isSafeRedisNamespace(namespace) || !assertCacheKeyIsBounded(key)) return null;
+  return `${namespace}:${key}`;
+};
+
+const buildRedisTagKey = (namespace: string, tag: string, maxTagLength: number): string | null => {
+  const normalized = typeof tag === "string" ? tag.trim() : "";
+  if (!isSafeRedisNamespace(namespace) || !normalized || normalized.length > maxTagLength) return null;
+  return `${namespace}:tag:${normalized}`;
+};
+
+const serializeCacheValue = (value: unknown, maxValueBytes: number): string | null => {
+  const serialized = safeJsonStringify({ value });
+  if (!serialized) return null;
+  const valueBytes = estimateSerializedBytes(serialized);
+  if (valueBytes == null || valueBytes > maxValueBytes) return null;
+  return serialized;
+};
+
+const deserializeCacheValue = <T>(value: unknown): T | null => {
+  if (typeof value !== "string") return null;
+  const parsed = safeJsonParseValue<{ value?: T } | null>(value, null);
+  if (!parsed || typeof parsed !== "object") return null;
+  return Object.prototype.hasOwnProperty.call(parsed, "value") ? (parsed.value as T) : null;
+};
+
+const defaultRedisFetch = (): RedisRestFetch | null => {
+  if (typeof globalThis.fetch !== "function") return null;
+  return globalThis.fetch as RedisRestFetch;
+};
+
+const readEnvValue = (env: RedisCacheAdapterEnv, name: string): string => String(env[name] ?? "").trim();
 
 export class NoopCacheAdapter implements CacheAdapter {
   async get<T>(_key: string): Promise<T | null> {
@@ -198,6 +278,116 @@ export class InMemoryCacheAdapter implements CacheAdapter {
   }
 }
 
+export class RedisRestCacheAdapter implements CacheAdapter {
+  private readonly baseUrl: string;
+  private readonly namespace: string;
+  private readonly bearerToken: string | null;
+  private readonly fetchImpl: RedisRestFetch | null;
+  private readonly maxValueBytes: number;
+  private readonly maxTags: number;
+  private readonly maxTagLength: number;
+
+  constructor(options: RedisRestCacheAdapterOptions) {
+    this.baseUrl = normalizeRedisBaseUrl(options.baseUrl);
+    this.namespace = options.namespace.trim();
+    this.bearerToken = options.bearerToken?.trim() || null;
+    this.fetchImpl = options.fetchImpl ?? defaultRedisFetch();
+    this.maxValueBytes = normalizePositiveInteger(
+      options.maxValueBytes,
+      REDIS_REST_CACHE_DEFAULT_MAX_VALUE_BYTES,
+    );
+    this.maxTags = normalizePositiveInteger(options.maxTags, REDIS_REST_CACHE_DEFAULT_MAX_TAGS);
+    this.maxTagLength = normalizePositiveInteger(
+      options.maxTagLength,
+      REDIS_REST_CACHE_DEFAULT_MAX_TAG_LENGTH,
+    );
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    const redisKey = buildRedisKey(this.namespace, key);
+    if (!redisKey) return null;
+    const value = await this.command(["GET", redisKey]);
+    return deserializeCacheValue<T>(value);
+  }
+
+  async set<T>(key: string, value: T, options: CacheSetOptions): Promise<void> {
+    const redisKey = buildRedisKey(this.namespace, key);
+    if (!redisKey) return;
+    const serialized = serializeCacheValue(value, this.maxValueBytes);
+    if (!serialized) return;
+
+    const ttlMs = Math.max(1, Math.trunc(Number(options.ttlMs) || 1));
+    await this.command(["SET", redisKey, serialized, "PX", ttlMs]);
+
+    for (const tag of uniqueBoundedTags(options.tags, this.maxTags, this.maxTagLength)) {
+      const tagKey = buildRedisTagKey(this.namespace, tag, this.maxTagLength);
+      if (!tagKey) continue;
+      await this.command(["SADD", tagKey, redisKey]);
+      await this.command(["PEXPIRE", tagKey, ttlMs]);
+    }
+  }
+
+  async delete(key: string): Promise<void> {
+    const redisKey = buildRedisKey(this.namespace, key);
+    if (!redisKey) return;
+    await this.command(["DEL", redisKey]);
+  }
+
+  async invalidateByTag(tag: string): Promise<number> {
+    const tagKey = buildRedisTagKey(this.namespace, tag, this.maxTagLength);
+    if (!tagKey) return 0;
+    const members = await this.command(["SMEMBERS", tagKey]);
+    const keys = Array.isArray(members) ? members.filter((value): value is string => typeof value === "string") : [];
+    if (keys.length === 0) {
+      await this.command(["DEL", tagKey]);
+      return 0;
+    }
+
+    await this.command(["DEL", ...keys, tagKey]);
+    return keys.length;
+  }
+
+  getStatus(): CacheAdapterStatus {
+    const enabled = this.canUseNetwork();
+    return {
+      kind: REDIS_REST_CACHE_PROVIDER,
+      enabled,
+      externalNetworkEnabled: enabled,
+      maxValueBytes: this.maxValueBytes,
+      namespace: enabled ? this.namespace : undefined,
+    };
+  }
+
+  private canUseNetwork(): boolean {
+    return this.baseUrl.length > 0 && isSafeRedisNamespace(this.namespace) && this.fetchImpl !== null;
+  }
+
+  private async command(command: readonly (string | number)[]): Promise<unknown | null> {
+    if (!this.canUseNetwork() || !this.fetchImpl) return null;
+    try {
+      const headers: Record<string, string> = {
+        "content-type": "application/json",
+      };
+      if (this.bearerToken) {
+        headers.authorization = `Bearer ${this.bearerToken}`;
+      }
+      const response = await this.fetchImpl(this.baseUrl, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(command),
+      });
+      if (!response.ok) return null;
+      const payload = await response.json();
+      if (!payload || typeof payload !== "object") return payload;
+      if ("error" in payload) return null;
+      if ("result" in payload) return (payload as { result: unknown }).result;
+      return payload;
+    } catch {
+      return null;
+    }
+  }
+}
+
 export type ExternalCacheAdapterContract = CacheAdapter & {
   readonly contractOnly: true;
   readonly provider: "redis" | "cdn" | "external_cache";
@@ -205,4 +395,21 @@ export type ExternalCacheAdapterContract = CacheAdapter & {
 
 export function createDisabledCacheAdapter(): CacheAdapter {
   return new NoopCacheAdapter();
+}
+
+export function createRedisCacheAdapterFromEnv(
+  env: RedisCacheAdapterEnv = typeof process !== "undefined" ? process.env : {},
+  options: CreateRedisCacheAdapterFromEnvOptions = {},
+): CacheAdapter {
+  const runtimeConfig = resolveScaleProviderRuntimeConfig(env, {
+    runtimeEnvironment: options.runtimeEnvironment,
+  });
+  const redisStatus = runtimeConfig.providers.redis_cache;
+  if (!redisStatus.liveNetworkAllowed) return createDisabledCacheAdapter();
+
+  return new RedisRestCacheAdapter({
+    baseUrl: readEnvValue(env, "SCALE_REDIS_CACHE_URL"),
+    namespace: readEnvValue(env, "SCALE_REDIS_CACHE_NAMESPACE"),
+    fetchImpl: options.fetchImpl,
+  });
 }
