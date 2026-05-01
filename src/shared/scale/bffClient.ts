@@ -7,11 +7,20 @@ import type {
 import { buildBffError, isBffEnabled } from "./bffSafety";
 
 export type BffRequestPlan = {
-  flow: BffFlow;
+  flow: BffRequestTarget;
   enabled: boolean;
   baseUrlConfigured: boolean;
   networkExecutionAllowed: boolean;
 };
+
+export type BffReadonlyMobileOperation =
+  | "request.proposal.list"
+  | "marketplace.catalog.search"
+  | "warehouse.ledger.list"
+  | "accountant.invoice.list"
+  | "director.pending.list";
+
+export type BffRequestTarget = BffFlow | BffReadonlyMobileOperation;
 
 export const BFF_READONLY_RUNTIME_ENV_NAMES = Object.freeze({
   enabled: "EXPO_PUBLIC_BFF_READONLY_STAGING_ENABLED",
@@ -19,6 +28,14 @@ export const BFF_READONLY_RUNTIME_ENV_NAMES = Object.freeze({
   baseUrl: "EXPO_PUBLIC_BFF_STAGING_BASE_URL",
   shadowOnly: "EXPO_PUBLIC_BFF_SHADOW_ONLY_ENABLED",
 } as const);
+
+export const BFF_READONLY_MOBILE_ROUTE_PATHS = Object.freeze({
+  "request.proposal.list": "/api/staging-bff/read/request-proposal-list",
+  "marketplace.catalog.search": "/api/staging-bff/read/marketplace-catalog-search",
+  "warehouse.ledger.list": "/api/staging-bff/read/warehouse-ledger-list",
+  "accountant.invoice.list": "/api/staging-bff/read/accountant-invoice-list",
+  "director.pending.list": "/api/staging-bff/read/director-pending-list",
+} as const satisfies Record<BffReadonlyMobileOperation, string>);
 
 type BffReadonlyRuntimeEnv = Record<string, string | undefined>;
 
@@ -36,6 +53,16 @@ export type BffReadonlyRuntimeConfig = {
     shadowOnly: "enabled" | "disabled" | "missing";
     runtimeEnvironment: BffRuntimeEnvironment;
   };
+};
+
+export type BffReadonlyMobileAuthProvider = () => Promise<string | null | undefined>;
+
+export type BffReadonlyMobileCallOptions<TInput = Record<string, unknown>> = {
+  config: BffClientConfig;
+  operation: BffReadonlyMobileOperation;
+  input?: TInput | null;
+  getAccessToken: BffReadonlyMobileAuthProvider;
+  fetchImpl?: typeof fetch;
 };
 
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
@@ -111,6 +138,7 @@ const isNetworkExecutionAllowed = (config: BffClientConfig): boolean => {
   const trafficPercent = normalizeTrafficPercent(config.trafficPercent);
   return (
     isBffEnabled(config) &&
+    normalizeHttpsBaseUrl(config.baseUrl) !== null &&
     config.readOnly === true &&
     config.runtimeEnvironment === "staging" &&
     config.productionGuard === true &&
@@ -119,7 +147,7 @@ const isNetworkExecutionAllowed = (config: BffClientConfig): boolean => {
   );
 };
 
-export function buildBffRequestPlan(config: BffClientConfig, flow: BffFlow): BffRequestPlan {
+export function buildBffRequestPlan(config: BffClientConfig, flow: BffRequestTarget): BffRequestPlan {
   return {
     flow,
     enabled: isBffEnabled(config),
@@ -176,7 +204,7 @@ export async function callBffDisabled<T>(): Promise<BffResponseEnvelope<T>> {
 
 export async function callBffContractOnly<T>(
   config: BffClientConfig,
-  flow: BffFlow,
+  flow: BffRequestTarget,
 ): Promise<BffResponseEnvelope<T>> {
   const plan = buildBffRequestPlan(config, flow);
   if (!plan.enabled) {
@@ -190,4 +218,100 @@ export async function callBffContractOnly<T>(
       "Server API boundary contract exists but traffic migration is disabled",
     ),
   };
+}
+
+const buildReadonlyMobileError = <T>(code: string, message: string): BffResponseEnvelope<T> => ({
+  ok: false,
+  error: buildBffError(code, message),
+});
+
+const normalizeAccessToken = (value: unknown): string | null => {
+  const token = normalizeText(value);
+  return token ? token : null;
+};
+
+const buildReadonlyMobileUrl = (
+  baseUrl: string | null | undefined,
+  operation: BffReadonlyMobileOperation,
+): string | null => {
+  const normalizedBaseUrl = normalizeHttpsBaseUrl(baseUrl);
+  if (!normalizedBaseUrl) return null;
+
+  try {
+    return new URL(BFF_READONLY_MOBILE_ROUTE_PATHS[operation], normalizedBaseUrl).toString();
+  } catch {
+    return null;
+  }
+};
+
+const isBffResponseEnvelope = <T>(value: unknown): value is BffResponseEnvelope<T> => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  if (record.ok === true) return Object.prototype.hasOwnProperty.call(record, "data");
+  if (record.ok !== false || typeof record.error !== "object" || record.error === null) return false;
+  const error = record.error as Record<string, unknown>;
+  return typeof error.code === "string" && typeof error.message === "string";
+};
+
+const sanitizeBffResponseEnvelope = <T>(value: BffResponseEnvelope<T>): BffResponseEnvelope<T> => {
+  if (value.ok) return value;
+  return {
+    ok: false,
+    error: buildBffError(value.error.code, value.error.message),
+  };
+};
+
+export async function callBffReadonlyMobile<TResponse, TInput = Record<string, unknown>>(
+  options: BffReadonlyMobileCallOptions<TInput>,
+): Promise<BffResponseEnvelope<TResponse>> {
+  const plan = buildBffRequestPlan(options.config, options.operation);
+  if (!plan.enabled) return callBffDisabled<TResponse>();
+  if (!plan.networkExecutionAllowed) {
+    return buildReadonlyMobileError(
+      "BFF_CONTRACT_ONLY",
+      "Server API boundary contract exists but traffic migration is disabled",
+    );
+  }
+
+  const url = buildReadonlyMobileUrl(options.config.baseUrl, options.operation);
+  if (!url) {
+    return buildReadonlyMobileError("BFF_BASE_URL_INVALID", "Server API boundary base URL is invalid");
+  }
+
+  const accessToken = normalizeAccessToken(await options.getAccessToken());
+  if (!accessToken) {
+    return buildReadonlyMobileError(
+      "BFF_MOBILE_AUTH_SESSION_REQUIRED",
+      "Mobile auth session is required for read-only BFF access",
+    );
+  }
+
+  const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+  if (typeof fetchImpl !== "function") {
+    return buildReadonlyMobileError("BFF_FETCH_UNAVAILABLE", "Server API boundary fetch is unavailable");
+  }
+
+  try {
+    const response = await fetchImpl(url, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        input: options.input ?? {},
+        metadata: {
+          mobileAuth: "supabase_user_jwt_present_redacted",
+        },
+      }),
+    });
+    const body: unknown = await response.json().catch(() => undefined);
+    if (!isBffResponseEnvelope<TResponse>(body)) {
+      return buildReadonlyMobileError("BFF_INVALID_RESPONSE_ENVELOPE", "Invalid response envelope");
+    }
+    return sanitizeBffResponseEnvelope(body);
+  } catch {
+    return buildReadonlyMobileError("BFF_NETWORK_ERROR", "Server API boundary request failed");
+  }
 }

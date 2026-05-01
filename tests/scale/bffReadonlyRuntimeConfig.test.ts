@@ -3,7 +3,9 @@ import path from "node:path";
 
 import {
   BFF_READONLY_RUNTIME_ENV_NAMES,
+  BFF_READONLY_MOBILE_ROUTE_PATHS,
   buildBffRequestPlan,
+  callBffReadonlyMobile,
   resolveBffReadonlyRuntimeConfig,
 } from "../../src/shared/scale/bffClient";
 
@@ -19,6 +21,13 @@ describe("BFF readonly runtime config", () => {
       trafficPercent: "EXPO_PUBLIC_BFF_READONLY_STAGING_TRAFFIC_PERCENT",
       baseUrl: "EXPO_PUBLIC_BFF_STAGING_BASE_URL",
       shadowOnly: "EXPO_PUBLIC_BFF_SHADOW_ONLY_ENABLED",
+    });
+    expect(BFF_READONLY_MOBILE_ROUTE_PATHS).toEqual({
+      "request.proposal.list": "/api/staging-bff/read/request-proposal-list",
+      "marketplace.catalog.search": "/api/staging-bff/read/marketplace-catalog-search",
+      "warehouse.ledger.list": "/api/staging-bff/read/warehouse-ledger-list",
+      "accountant.invoice.list": "/api/staging-bff/read/accountant-invoice-list",
+      "director.pending.list": "/api/staging-bff/read/director-pending-list",
     });
   });
 
@@ -160,6 +169,152 @@ describe("BFF readonly runtime config", () => {
     ).toEqual(expect.objectContaining({ networkExecutionAllowed: false }));
   });
 
+  it("keeps mobile Supabase JWT calls contract-only until staging traffic is approved", async () => {
+    const getAccessToken = jest.fn(async () => "mobile-session-token");
+    const fetchImpl = jest.fn();
+
+    await expect(
+      callBffReadonlyMobile({
+        config: {
+          enabled: true,
+          baseUrl: "https://gox-build-staging-bff.onrender.com",
+          readOnly: true,
+          runtimeEnvironment: "staging",
+          trafficPercent: 0,
+          mutationRoutesEnabled: false,
+          productionGuard: true,
+        },
+        operation: "request.proposal.list",
+        getAccessToken,
+        fetchImpl,
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      error: {
+        code: "BFF_CONTRACT_ONLY",
+        message: "Server API boundary contract exists but traffic migration is disabled",
+      },
+    });
+
+    expect(getAccessToken).not.toHaveBeenCalled();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("sends a Supabase user JWT only for approved staging readonly calls", async () => {
+    const getAccessToken = jest.fn(async () => "mobile-session-token");
+    const fetchImpl = jest.fn(async () => ({
+      json: async () => ({
+        ok: true,
+        data: [{ id: "redacted-row" }],
+        metadata: { readOnly: true },
+      }),
+    })) as unknown as jest.MockedFunction<typeof fetch>;
+
+    await expect(
+      callBffReadonlyMobile({
+        config: {
+          enabled: true,
+          baseUrl: "https://gox-build-staging-bff.onrender.com/ignored-path",
+          readOnly: true,
+          runtimeEnvironment: "staging",
+          trafficPercent: 1,
+          mutationRoutesEnabled: false,
+          productionGuard: true,
+        },
+        operation: "warehouse.ledger.list",
+        input: { page: 0, pageSize: 5 },
+        getAccessToken,
+        fetchImpl,
+      }),
+    ).resolves.toEqual({
+      ok: true,
+      data: [{ id: "redacted-row" }],
+      metadata: { readOnly: true },
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe(
+      "https://gox-build-staging-bff.onrender.com/api/staging-bff/read/warehouse-ledger-list",
+    );
+    expect(fetchImpl.mock.calls[0]?.[1]).toEqual(
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          authorization: "Bearer mobile-session-token",
+          "content-type": "application/json",
+        }),
+        body: JSON.stringify({
+          input: { page: 0, pageSize: 5 },
+          metadata: {
+            mobileAuth: "supabase_user_jwt_present_redacted",
+          },
+        }),
+      }),
+    );
+  });
+
+  it("fails closed without a mobile session token and redacts returned BFF errors", async () => {
+    const missingTokenFetch = jest.fn();
+    await expect(
+      callBffReadonlyMobile({
+        config: {
+          enabled: true,
+          baseUrl: "https://gox-build-staging-bff.onrender.com",
+          readOnly: true,
+          runtimeEnvironment: "staging",
+          trafficPercent: 1,
+          mutationRoutesEnabled: false,
+          productionGuard: true,
+        },
+        operation: "accountant.invoice.list",
+        getAccessToken: async () => "",
+        fetchImpl: missingTokenFetch,
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      error: {
+        code: "BFF_MOBILE_AUTH_SESSION_REQUIRED",
+        message: "Mobile auth session is required for read-only BFF access",
+      },
+    });
+    expect(missingTokenFetch).not.toHaveBeenCalled();
+
+    const leakyFetch = jest.fn(async () => ({
+      json: async () => ({
+        ok: false,
+        error: {
+          code: "leaky error",
+          message: "failed for Bearer mobile-session-token and token=unsafe",
+        },
+      }),
+    })) as unknown as jest.MockedFunction<typeof fetch>;
+
+    const response = await callBffReadonlyMobile({
+      config: {
+        enabled: true,
+        baseUrl: "https://gox-build-staging-bff.onrender.com",
+        readOnly: true,
+        runtimeEnvironment: "staging",
+        trafficPercent: 1,
+        mutationRoutesEnabled: false,
+        productionGuard: true,
+      },
+      operation: "director.pending.list",
+      getAccessToken: async () => "mobile-session-token",
+      fetchImpl: leakyFetch,
+    });
+
+    expect(JSON.stringify(response)).not.toContain("mobile-session-token");
+    expect(JSON.stringify(response)).not.toContain("unsafe");
+    expect(response).toEqual({
+      ok: false,
+      error: {
+        code: "LEAKY_ERROR",
+        message: "failed for Bearer [redacted] and [redacted]",
+      },
+    });
+  });
+
   it("clamps invalid traffic values fail-safe", () => {
     expect(
       resolveBffReadonlyRuntimeConfig({
@@ -188,5 +343,6 @@ describe("BFF readonly runtime config", () => {
     expect(source).not.toContain("BFF_SERVER_AUTH_SECRET");
     expect(source).not.toContain("BFF_DATABASE_READONLY_URL");
     expect(source).not.toContain("RENDER_DEPLOY_HOOK_URL");
+    expect(source).not.toContain("EXPO_PUBLIC_BFF_SERVER_AUTH_SECRET");
   });
 });

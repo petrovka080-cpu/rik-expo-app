@@ -7,6 +7,7 @@ import {
 } from "./bffContracts";
 
 const REDACTED = "[redacted]";
+const SECRET_KEY_VALUE_PATTERN = /\b(?:token|apikey|api_key|authorization|secret)=(?!\[redacted\])[^\s&#]+/gi;
 const TOKEN_PATTERN = /\b(?:token|apikey|api_key|authorization|secret)=?[A-Za-z0-9._~+/=-]{8,}\b/gi;
 const BEARER_PATTERN = /\b(Bearer\s+)[A-Za-z0-9._~+/=-]+/gi;
 const JWT_PATTERN = /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g;
@@ -44,6 +45,7 @@ export function redactBffText(value: unknown): string {
     .replace(JWT_PATTERN, REDACTED)
     .replace(SIGNED_URL_QUERY_PATTERN, `$1${REDACTED}`)
     .replace(BEARER_PATTERN, `$1${REDACTED}`)
+    .replace(SECRET_KEY_VALUE_PATTERN, REDACTED)
     .replace(TOKEN_PATTERN, REDACTED)
     .replace(SERVICE_SECRET_PATTERN, REDACTED)
     .replace(EMAIL_PATTERN, REDACTED)
