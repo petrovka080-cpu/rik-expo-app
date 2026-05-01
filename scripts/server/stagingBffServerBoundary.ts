@@ -508,6 +508,7 @@ export async function handleBffStagingServerRequest(
         status: "ready",
         readRoutes: BFF_STAGING_READ_ROUTES.length,
         mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
+        readPortsConfigured: Boolean(deps.readPorts),
         mutationRoutesEnabledByDefault: false,
         mutationRoutesEnabled: config.mutationRoutesEnabled === true,
         requestEnvelopeValidation: true,

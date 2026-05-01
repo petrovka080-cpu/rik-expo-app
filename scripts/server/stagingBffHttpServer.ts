@@ -5,6 +5,8 @@ import {
   type BffStagingBoundaryResponse,
   type BffStagingRequestEnvelope,
 } from "./stagingBffServerBoundary";
+import { createBffReadonlyDbReadPorts } from "./stagingBffReadonlyDbPorts";
+import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
 
 const DEFAULT_PORT = 3000;
 const MAX_BODY_BYTES = 64 * 1024;
@@ -18,6 +20,10 @@ type StagingBffHttpConfig = {
 };
 
 type StagingBffHttpEnv = Partial<NodeJS.ProcessEnv>;
+
+type StagingBffHttpServerOptions = {
+  readPortsFactory?: (env: StagingBffHttpEnv) => BffReadPorts | undefined;
+};
 
 const jsonHeaders = {
   "content-type": "application/json",
@@ -100,8 +106,12 @@ const hasAcceptedServerAuth = (
   return request.headers.authorization === `Bearer ${secret}`;
 };
 
-export function createBffStagingHttpServer(env: StagingBffHttpEnv = process.env): http.Server {
+export function createBffStagingHttpServer(
+  env: StagingBffHttpEnv = process.env,
+  options: StagingBffHttpServerOptions = {},
+): http.Server {
   const config = resolveBffStagingHttpConfig(env);
+  const readPorts = (options.readPortsFactory ?? createBffReadonlyDbReadPorts)(env);
 
   return http.createServer(async (request, response) => {
     try {
@@ -150,6 +160,7 @@ export function createBffStagingHttpServer(env: StagingBffHttpEnv = process.env)
         headers: request.headers as Record<string, unknown>,
       };
       const boundaryResponse = await handleBffStagingServerRequest(boundaryRequest, {
+        readPorts,
         config: {
           mutationRoutesEnabled: config.mutationRoutesEnabled,
           idempotencyMetadataRequired: config.idempotencyMetadataRequired,
@@ -181,6 +192,7 @@ export function startBffStagingHttpServer(env: StagingBffHttpEnv = process.env):
         port: config.port,
         serverAuthSecretConfigured: config.serverAuthSecretConfigured,
         mutationRoutesEnabled: config.mutationRoutesEnabled,
+        readPortsConfigured: Boolean(createBffReadonlyDbReadPorts(env)),
       }),
     );
   });

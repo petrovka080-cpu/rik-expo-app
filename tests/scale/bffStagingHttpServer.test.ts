@@ -4,6 +4,7 @@ import {
   createBffStagingHttpServer,
   resolveBffStagingHttpConfig,
 } from "../../scripts/server/stagingBffHttpServer";
+import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
 
 const listen = (server: http.Server): Promise<number> =>
   new Promise((resolve) => {
@@ -41,6 +42,34 @@ const requestJson = async (
     headers: response.headers,
   };
 };
+
+const createReadPorts = (): BffReadPorts => ({
+  requestProposal: {
+    async listRequestProposals() {
+      return [{ id: "proposal-redacted", submitted_at: "present_redacted" }];
+    },
+  },
+  marketplaceCatalog: {
+    async searchCatalog() {
+      return [{ id: "catalog-redacted", title: "present_redacted" }];
+    },
+  },
+  warehouseLedger: {
+    async listWarehouseLedger() {
+      return [{ code: "warehouse-redacted", qty: "present_redacted" }];
+    },
+  },
+  accountantInvoice: {
+    async listAccountantInvoices() {
+      return [{ proposal_id: "invoice-redacted", status: "present_redacted" }];
+    },
+  },
+  directorPending: {
+    async listDirectorPending() {
+      return [{ request_item_id: "pending-redacted", status: "present_redacted" }];
+    },
+  },
+});
 
 describe("staging BFF HTTP server wrapper", () => {
   it("resolves Render-safe defaults without enabling mutation routes", () => {
@@ -130,6 +159,106 @@ describe("staging BFF HTTP server wrapper", () => {
     }
   });
 
+  it("wires read ports when the readonly database URL is configured", async () => {
+    const readPorts = createReadPorts();
+    const readPortsFactory = jest.fn(() => readPorts);
+    const server = createBffStagingHttpServer(
+      {
+        BFF_SERVER_AUTH_SECRET: "server-secret",
+        BFF_DATABASE_READONLY_URL: "postgres://readonly:secret@example.invalid/db",
+      },
+      { readPortsFactory },
+    );
+    const port = await listen(server);
+
+    try {
+      const ready = await requestJson(port, "/ready");
+      expect(ready.status).toBe(200);
+      expect(ready.body).toEqual(
+        expect.objectContaining({
+          ok: true,
+          data: expect.objectContaining({
+            readPortsConfigured: true,
+            mutationRoutesEnabled: false,
+            appRuntimeBffEnabled: false,
+          }),
+        }),
+      );
+
+      const response = await requestJson(port, "/api/staging-bff/read/request-proposal-list", {
+        method: "POST",
+        authorization: "Bearer server-secret",
+        body: { input: { page: 0, pageSize: 5 } },
+      });
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          ok: true,
+          data: [{ id: "proposal-redacted", submitted_at: "present_redacted" }],
+          metadata: expect.objectContaining({
+            operation: "request.proposal.list",
+            readOnly: true,
+            enabledInAppRuntime: false,
+          }),
+        }),
+      );
+      expect(JSON.stringify(response.body)).not.toContain("server-secret");
+      expect(JSON.stringify(response.body)).not.toContain("postgres://");
+      expect(readPortsFactory).toHaveBeenCalledWith(
+        expect.objectContaining({
+          BFF_DATABASE_READONLY_URL: expect.any(String),
+        }),
+      );
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("redacts read port failures when readonly ports are wired", async () => {
+    const server = createBffStagingHttpServer(
+      {
+        BFF_SERVER_AUTH_SECRET: "server-secret",
+        BFF_DATABASE_READONLY_URL: "postgres://readonly:secret@example.invalid/db",
+      },
+      {
+        readPortsFactory: () => ({
+          ...createReadPorts(),
+          requestProposal: {
+            async listRequestProposals() {
+              throw new Error("database failure token=unsafe-value user@example.test postgres://leak");
+            },
+          },
+        }),
+      },
+    );
+    const port = await listen(server);
+
+    try {
+      const response = await requestJson(port, "/api/staging-bff/read/request-proposal-list", {
+        method: "POST",
+        authorization: "Bearer server-secret",
+        body: { input: { page: 0, pageSize: 5 } },
+      });
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          ok: false,
+          error: {
+            code: "BFF_REQUEST_PROPOSAL_LIST_ERROR",
+            message: "Unable to load list",
+          },
+        }),
+      );
+      const output = JSON.stringify(response.body);
+      expect(output).not.toContain("unsafe-value");
+      expect(output).not.toContain("user@example.test");
+      expect(output).not.toContain("postgres://");
+    } finally {
+      await close(server);
+    }
+  });
+
   it("keeps mutation routes disabled unless all safety flags are explicitly enabled", async () => {
     const server = createBffStagingHttpServer({
       BFF_SERVER_AUTH_SECRET: "server-secret",
@@ -164,6 +293,49 @@ describe("staging BFF HTTP server wrapper", () => {
         },
       });
       expect(JSON.stringify(response.body)).not.toContain("person@example.test");
+      expect(JSON.stringify(response.body)).not.toContain("secret-token-value");
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("keeps mutation routes disabled even when read ports are wired", async () => {
+    const server = createBffStagingHttpServer(
+      {
+        BFF_SERVER_AUTH_SECRET: "server-secret",
+        BFF_DATABASE_READONLY_URL: "postgres://readonly:secret@example.invalid/db",
+        BFF_MUTATION_ENABLED: "false",
+        BFF_IDEMPOTENCY_METADATA_ENABLED: "true",
+        BFF_RATE_LIMIT_METADATA_ENABLED: "true",
+      },
+      { readPortsFactory: () => createReadPorts() },
+    );
+    const port = await listen(server);
+
+    try {
+      const response = await requestJson(port, "/api/staging-bff/mutation/proposal-submit", {
+        method: "POST",
+        authorization: "Bearer server-secret",
+        body: {
+          input: {
+            idempotencyKey: "opaque-key",
+            payload: { token: "secret-token-value" },
+          },
+          metadata: {
+            idempotencyKeyStatus: "present_redacted",
+            rateLimitKeyStatus: "present_redacted",
+          },
+        },
+      });
+
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({
+        ok: false,
+        error: {
+          code: "BFF_MUTATION_ROUTES_DISABLED",
+          message: "Mutation routes are disabled by default",
+        },
+      });
       expect(JSON.stringify(response.body)).not.toContain("secret-token-value");
     } finally {
       await close(server);
