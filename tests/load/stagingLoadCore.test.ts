@@ -65,10 +65,11 @@ describe("S-LOAD-1 staging load core", () => {
 
     expect(plan.profile).toBe("bounded-1k");
     expect(plan.targetConcurrency).toBe(1000);
-    expect(plan.rampSteps).toEqual([25, 50, 100, 250, 500, 750, 1000]);
+    expect(plan.rampSteps).toEqual([5, 10, 15, 20, 25, 50, 100, 250, 500, 750, 1000]);
     expect(plan.stopConditions).toMatchObject({
       requestTimeoutMs: 8000,
       maxTotalRequests: 1000,
+      maxP95LatencyMs: 1500,
       stopOnSqlstate57014: true,
       stopOnHttp429Or5xx: true,
     });

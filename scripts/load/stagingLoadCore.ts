@@ -10,6 +10,7 @@ export type StagingLoadStopConditions = {
   requestTimeoutMs: number;
   maxDurationMs: number;
   maxTotalRequests: number;
+  maxP95LatencyMs: number;
   maxErrorRate: number;
   stopOnSqlstate57014: true;
   stopOnHttp429Or5xx: true;
@@ -97,6 +98,7 @@ export const DEFAULT_STAGING_LOAD_STOP_CONDITIONS: StagingLoadStopConditions = {
   requestTimeoutMs: 10_000,
   maxDurationMs: 10 * 60 * 1000,
   maxTotalRequests: 15,
+  maxP95LatencyMs: 1_500,
   maxErrorRate: 0.02,
   stopOnSqlstate57014: true,
   stopOnHttp429Or5xx: true,
@@ -211,7 +213,9 @@ export function buildStagingLoadHarnessPlan(params: {
     (profile === "bounded-1k" ? 1_000 : DEFAULT_STAGING_LOAD_TARGETS.length);
   const rampSteps =
     profile === "bounded-1k"
-      ? [25, 50, 100, 250, 500, 750, 1_000].filter((step) => step <= targetConcurrency)
+      ? [5, 10, 15, 20, 25, 50, 100, 250, 500, 750, 1_000].filter(
+          (step) => step <= targetConcurrency,
+        )
       : [Math.max(1, targetConcurrency)];
   const stopConditions =
     profile === "bounded-1k"
@@ -411,6 +415,7 @@ export function renderStagingLoadProof(matrix: StagingLoadMatrix): string {
           `- request timeout: ${matrix.harnessPlan.stopConditions.requestTimeoutMs}ms`,
           `- max duration: ${matrix.harnessPlan.stopConditions.maxDurationMs}ms`,
           `- max total requests: ${matrix.harnessPlan.stopConditions.maxTotalRequests}`,
+          `- max p95 latency: ${matrix.harnessPlan.stopConditions.maxP95LatencyMs}ms`,
           `- cooldown: ${matrix.harnessPlan.stopConditions.cooldownMs}ms`,
           `- stop on SQLSTATE 57014: ${matrix.harnessPlan.stopConditions.stopOnSqlstate57014 ? "YES" : "NO"}`,
           `- stop on HTTP 429/5xx: ${matrix.harnessPlan.stopConditions.stopOnHttp429Or5xx ? "YES" : "NO"}`,
