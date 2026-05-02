@@ -43,6 +43,9 @@ The SQL definition for `buyer_summary_buckets_scope_v1` returns a redacted contr
 - `npm test -- --runInBand`: pass.
 - `npm test`: pass.
 - Pre-commit `npm run release:verify -- --json`: all internal gates passed; release guard blocked final readiness because the hotfix worktree was intentionally dirty before commit.
+- Clean `npm run release:verify -- --json` after commit/push: pass.
+- Release readiness: pass.
+- OTA disposition: allow.
 
 ## Next Safe Wave
 
