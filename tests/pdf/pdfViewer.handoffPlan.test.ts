@@ -61,6 +61,17 @@ describe("pdfViewer.handoffPlan", () => {
     });
   });
 
+  it("keeps preparing assets in the root viewer loading state", () => {
+    expect(
+      resolvePdfViewerHandoffPlan({
+        resolution: { kind: "preparing-asset" },
+        platform: "ios",
+      }),
+    ).toEqual({
+      action: "show_loading",
+    });
+  });
+
   it("plans Android native handoff without executing side effects", () => {
     const resolution: PdfViewerResolution = {
       kind: "resolved-native-handoff",

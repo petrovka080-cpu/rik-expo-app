@@ -3,7 +3,7 @@
 
 import "../src/lib/runtime/installWeakRefPolyfill";
 import React, { useEffect } from "react";
-import { Platform, LogBox } from "react-native";
+import { InteractionManager, Platform, LogBox } from "react-native";
 import { Stack, usePathname, useSegments } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
@@ -85,6 +85,17 @@ function RootLayout() {
     void clearAppCache();
   }, []);
 
+  useEffect(() => {
+    if (Platform.OS === "web") return undefined;
+    if (process.env.NODE_ENV === "test") return undefined;
+    const task = InteractionManager.runAfterInteractions(() => {
+      void import("./pdf-viewer");
+    });
+    return () => {
+      task.cancel?.();
+    };
+  }, []);
+
   const APP_BG = "#0B0F14";
   const UI = {
     text: "#F8FAFC",
@@ -102,7 +113,17 @@ function RootLayout() {
               edges={Platform.OS === "web" ? [] : ["top"]}
             >
               <PlatformOfflineStatusHost />
-              <Stack screenOptions={{ headerShown: false }} />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen
+                  name="pdf-viewer"
+                  options={{
+                    headerShown: false,
+                    presentation: "fullScreenModal",
+                    animation: "fade",
+                    gestureEnabled: false,
+                  }}
+                />
+              </Stack>
             </SafeAreaView>
           </GlobalBusyProvider>
         </Host>

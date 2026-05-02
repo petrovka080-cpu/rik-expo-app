@@ -40,9 +40,19 @@ import type {
 } from "./pdfDocumentActionTypes";
 import { executeOpenPdfDocumentExternal } from "./pdfDocumentExternalOpenAction";
 import { executePreparePdfDocument } from "./pdfDocumentPrepareAction";
-import { executePreviewPdfDocument } from "./pdfDocumentPreviewAction";
+import {
+  createPreparingPdfDocumentViewerSession,
+  executePreviewPdfDocument,
+  failPreparingPdfDocumentViewerSession,
+  getPdfViewerSessionErrorMessage,
+  materializePreparingPdfDocumentViewerSession,
+} from "./pdfDocumentPreviewAction";
 import { executeSharePdfDocument } from "./pdfDocumentShareAction";
-import type { PdfViewerRouterLike } from "./pdfDocumentViewerEntry";
+import {
+  createPdfDocumentViewerHref,
+  pushPdfDocumentViewerRouteSafely,
+  type PdfViewerRouterLike,
+} from "./pdfDocumentViewerEntry";
 
 type ActivePreviewFlow = {
   promise: Promise<DocumentDescriptor>;
@@ -257,6 +267,47 @@ export async function prepareAndPreviewPdfDocument(
       recordBoundary("pdf_access_requested", "access");
       recordBoundary("pdf_document_prepare_started", "prepare");
 
+      const visibilityStartPlan = resolvePdfDocumentVisibilityStartPlan({
+        hasRouter: Boolean(args.router),
+      });
+      const visibilityWait =
+        visibilityStartPlan.action === "begin_visibility_wait"
+          ? beginPdfOpenVisibilityWait(baseContext)
+          : null;
+      const earlyViewerSession = args.router
+        ? createPreparingPdfDocumentViewerSession(args.descriptor)
+        : null;
+
+      if (args.router && earlyViewerSession) {
+        const {
+          safeSessionId,
+          safeOpenToken,
+          href: viewerHref,
+        } = createPdfDocumentViewerHref(
+          earlyViewerSession.session.sessionId,
+          visibilityWait?.token,
+        );
+        recordPdfOpenStage({
+          context: baseContext,
+          stage: "viewer_route_push_attempt",
+          sourceKind: args.descriptor.fileSource?.kind ?? "pdf:document",
+          extra: {
+            route: "/pdf-viewer",
+            sessionId: safeSessionId,
+            openToken: safeOpenToken,
+            previewPath: "preparing_session_viewer_contract",
+            materializationMode: "prepare_then_background_cache",
+          },
+        });
+        recordBoundary("pdf_viewer_entry_started", "viewer_entry");
+        await pushPdfDocumentViewerRouteSafely(
+          args.router,
+          viewerHref,
+          args.onBeforeNavigate,
+        );
+        recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
+      }
+
       let document: DocumentDescriptor;
       try {
         document = await preparePdfDocument({
@@ -271,6 +322,10 @@ export async function prepareAndPreviewPdfDocument(
           sourceKind: document.fileSource.kind,
         });
       } catch (error) {
+        const sessionErrorMessage = getPdfViewerSessionErrorMessage(
+          error,
+          "PDF document prepare failed",
+        );
         const boundaryError = toPdfActionBoundaryError(
           error,
           "prepare",
@@ -288,31 +343,36 @@ export async function prepareAndPreviewPdfDocument(
           },
         });
         recordBoundary("pdf_terminal_failure", "prepare", "error", boundaryError);
+        if (earlyViewerSession) {
+          failPreparingPdfDocumentViewerSession(
+            earlyViewerSession.session.sessionId,
+            sessionErrorMessage,
+          );
+        }
         throw boundaryError;
       }
 
-      const visibilityStartPlan = resolvePdfDocumentVisibilityStartPlan({
-        hasRouter: Boolean(args.router),
-      });
-      const visibilityWait =
-        visibilityStartPlan.action === "begin_visibility_wait"
-          ? beginPdfOpenVisibilityWait(baseContext)
-          : null;
-
       try {
         assertCurrentRun("prepare");
-        await previewPdfDocument(document, {
-          router: args.router,
-          onBeforeNavigate: args.onBeforeNavigate,
-          boundaryRun,
-          assertCurrentRun,
-          openFlow: visibilityWait
-            ? {
-                ...baseContext,
-                openToken: visibilityWait.token,
-              }
-            : baseContext,
-        });
+        if (earlyViewerSession) {
+          await materializePreparingPdfDocumentViewerSession({
+            sessionId: earlyViewerSession.session.sessionId,
+            doc: document,
+          });
+        } else {
+          await previewPdfDocument(document, {
+            router: args.router,
+            onBeforeNavigate: args.onBeforeNavigate,
+            boundaryRun,
+            assertCurrentRun,
+            openFlow: visibilityWait
+              ? {
+                  ...baseContext,
+                  openToken: visibilityWait.token,
+                }
+              : baseContext,
+          });
+        }
         const visibilitySuccessPlan = resolvePdfDocumentVisibilitySuccessPlan({
           hasVisibilityWait: Boolean(visibilityWait),
         });

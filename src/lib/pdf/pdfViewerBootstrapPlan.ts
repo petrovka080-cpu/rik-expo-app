@@ -8,6 +8,7 @@ type NativeHandoffResolution = Extract<PdfViewerResolution, { kind: "resolved-na
 
 export type PdfViewerBootstrapPlan =
   | { action: "show_empty" }
+  | { action: "show_loading" }
   | { action: "show_session_error"; errorMessage: string }
   | { action: "show_missing_asset"; errorMessage: string }
   | { action: "fail_resolution"; errorMessage: string }
@@ -34,6 +35,7 @@ export function resolvePdfViewerBootstrapPlan(args: {
   const { resolution, platform } = args;
 
   if (resolution.kind === "missing-session") return { action: "show_empty" };
+  if (resolution.kind === "preparing-asset") return { action: "show_loading" };
   if (resolution.kind === "session-error") {
     return {
       action: "show_session_error",

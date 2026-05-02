@@ -259,6 +259,7 @@ function PdfViewerScreen() {
     setIsReadyToRender,
     nativeHandoffCompleted,
     loadAttempt,
+    setLoadAttempt,
     webRenderUri,
     setWebRenderUri,
     openedAtRef,
@@ -523,6 +524,32 @@ function PdfViewerScreen() {
     setState,
     viewerPlatform,
   ]);
+
+  React.useEffect(() => {
+    if (!sessionId || session?.status !== "preparing") return;
+    let cancelled = false;
+    let promotedReady = false;
+
+    const refreshPreparingSession = () => {
+      const next = syncSnapshot();
+      if (
+        !cancelled &&
+        !promotedReady &&
+        next.session?.status === "ready" &&
+        next.asset
+      ) {
+        promotedReady = true;
+        setLoadAttempt((value) => value + 1);
+      }
+    };
+
+    refreshPreparingSession();
+    const intervalId = setInterval(refreshPreparingSession, 150);
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [session?.status, sessionId, setLoadAttempt, syncSnapshot]);
 
   const clearLoadingTimeout = React.useCallback(() => {
     if (loadingTimeoutRef.current) {
@@ -1066,6 +1093,10 @@ function PdfViewerScreen() {
         commitEmptyState();
         return;
       }
+      if (handoffPlan.action === "show_loading") {
+        enterLoading();
+        return;
+      }
       if (handoffPlan.action === "show_error") {
         if (handoffPlan.reason === "unsupported_mobile_source") {
           markError(handoffPlan.errorMessage, "resolution");
@@ -1198,7 +1229,6 @@ function PdfViewerScreen() {
         clearWebRenderUri();
         webRenderUriRef.current = handoffPlan.renderUri;
         setWebRenderUri(handoffPlan.renderUri);
-        console.info("[pdf-viewer] signedUrl", redactSensitiveText(handoffPlan.renderUri));
         logPdfViewerInfo("[pdf-viewer] web_iframe_src_ready", {
           sessionId: activeSession.sessionId,
           documentType: resolvedAsset.documentType,

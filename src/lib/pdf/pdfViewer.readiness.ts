@@ -130,6 +130,10 @@ export function resolvePdfViewerContentModel(args: {
     };
   }
 
+  if (args.resolvedSource.kind === "preparing-asset") {
+    return { kind: "loading" };
+  }
+
   if (args.resolvedSource.kind !== "resolved-embedded") {
     if (args.resolvedSource.kind === "resolved-native-handoff") {
       return {

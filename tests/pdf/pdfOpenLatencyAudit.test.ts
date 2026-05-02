@@ -186,16 +186,22 @@ describe("L-PERF-S: materialization breadcrumbs are fire-and-forget", () => {
   });
 
   it("keeps the materialization order intact", () => {
-    expect(sessionsSource.indexOf("persistMaterializeBreadcrumb(\"viewer_materialize_start\"")).toBeLessThan(
-      sessionsSource.indexOf("ensureLocalPdfUri(rawSource, doc.fileName)"),
+    const startIndex = sessionsSource.indexOf(
+      "persistMaterializeBreadcrumb(\"viewer_materialize_start\"",
     );
-    expect(sessionsSource.indexOf("ensureLocalPdfUri(rawSource, doc.fileName)")).toBeLessThan(
-      sessionsSource.indexOf("persistMaterializeBreadcrumb(\"viewer_materialize_success\""),
+    const cacheIndex = sessionsSource.indexOf("ensurePdfInstantCacheAsset({", startIndex);
+    const successIndex = sessionsSource.indexOf(
+      "persistMaterializeBreadcrumb(\"viewer_materialize_success\"",
+      cacheIndex,
     );
+    expect(startIndex).toBeGreaterThanOrEqual(0);
+    expect(cacheIndex).toBeGreaterThan(startIndex);
+    expect(successIndex).toBeGreaterThan(cacheIndex);
   });
 
-  it("delegates local materialization copy decisions to a pure plan", () => {
-    expect(sessionsSource).toContain("resolvePdfLocalMaterializationPlan");
+  it("delegates local materialization and remote downloads to the instant cache service", () => {
+    expect(sessionsSource).toContain("ensurePdfInstantCacheAsset");
+    expect(sessionsSource).toContain("getPdfInstantCacheStatus");
     expect(sessionsSource).not.toContain("sourceUri.includes(\"/Caches/Print/\")");
   });
 });

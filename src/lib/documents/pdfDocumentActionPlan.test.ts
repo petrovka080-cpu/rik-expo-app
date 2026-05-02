@@ -25,7 +25,7 @@ describe("pdfDocumentActionPlan", () => {
         hasRouter: true,
       }),
     ).toEqual({
-      mode: "in_memory_remote_session",
+      mode: "session_viewer_contract",
       fallbackEligible: false,
     });
     expect(
@@ -93,4 +93,3 @@ describe("pdfDocumentActionPlan", () => {
     });
   });
 });
-

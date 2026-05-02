@@ -107,6 +107,9 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "shared", "ai", "directorProposalRiskSummary.ts"),
       path.join(SRC, "components", "director", "DirectorProposalRiskSummaryCard.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sPdfInstantFirstOpenCacheFiles = [
+      path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -152,18 +155,21 @@ describe("performance budget — bundle module count", () => {
     // S-50K-OBS-INTEGRATION-1 adds four disabled scale-observability boundary modules.
     // S-50K-PROVIDER-ENV-CONVENTIONS-1 adds one disabled provider env-convention module.
     // S-AI-WORKFLOW-2 adds three disabled-by-default advisory AI pilot modules.
+    // S-PDF-INSTANT-FIRST-OPEN-AND-TOP-LAYER-FIX-1 adds one permanent cache service module.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
     expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(40);
     expect(sAiWorkflow2DisabledPilotFiles).toBeLessThanOrEqual(3);
+    expect(sPdfInstantFirstOpenCacheFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
         v47BForemanNavigationFlowFiles -
         v47CForemanFioBootstrapFlowFiles -
         s50kBffBoundaryScaffoldFiles -
-        sAiWorkflow2DisabledPilotFiles,
+        sAiWorkflow2DisabledPilotFiles -
+        sPdfInstantFirstOpenCacheFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

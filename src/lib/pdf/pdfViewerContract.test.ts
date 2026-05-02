@@ -188,6 +188,24 @@ describe("pdfViewerContract", () => {
     });
   });
 
+  it("keeps preparing sessions in a loading state until the local asset is ready", () => {
+    const preparingSession = {
+      ...session,
+      status: "preparing" as const,
+    };
+
+    expect(
+      resolvePdfViewerResolution({
+        session: preparingSession,
+        asset: null,
+        platform: "ios",
+      }),
+    ).toEqual({
+      kind: "preparing-asset",
+    });
+    expect(resolvePdfViewerState(preparingSession, null, "ios")).toBe("loading");
+  });
+
   it("keeps viewer state loading for a valid mobile PDF handoff session", () => {
     expect(resolvePdfViewerState(session, localAsset, "android")).toBe("loading");
   });

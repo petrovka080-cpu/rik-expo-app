@@ -31,6 +31,7 @@ export type PdfViewerDirectSourceParams = {
 export type PdfViewerResolution =
   | { kind: "missing-session" }
   | { kind: "session-error"; errorMessage: string }
+  | { kind: "preparing-asset" }
   | { kind: "missing-asset" }
   | { kind: "unsupported-mobile-source"; errorMessage: string }
   | {
@@ -237,6 +238,7 @@ export function resolvePdfViewerState(
   const resolution = resolvePdfViewerResolution({ session, asset, platform });
   if (resolution.kind === "missing-session") return "empty";
   if (resolution.kind === "session-error" || resolution.kind === "missing-asset") return "error";
+  if (resolution.kind === "preparing-asset") return "loading";
   return "loading";
 }
 
@@ -254,6 +256,9 @@ export function resolvePdfViewerResolution(args: {
     };
   }
   const assetUri = typeof asset?.uri === "string" ? asset.uri.trim() : "";
+  if (session.status === "preparing" && (!asset || !assetUri)) {
+    return { kind: "preparing-asset" };
+  }
   if (!asset || !assetUri) return { kind: "missing-asset" };
 
   const scheme = getUriScheme(assetUri);

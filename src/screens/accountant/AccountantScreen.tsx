@@ -328,6 +328,7 @@ export function AccountantScreen() {
     gbusy,
     safeAlert,
     getErrorText,
+    onBeforeNavigate: closeCard,
   });
 
   const afterPaymentSync = useAccountantPostPaymentSync({

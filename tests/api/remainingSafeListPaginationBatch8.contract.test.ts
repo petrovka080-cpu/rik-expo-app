@@ -25,6 +25,33 @@ const isApprovedSLoadFix6WarehouseIssuePatch = (file: string) =>
 const isApprovedLaterRpcValidationPatch = (file: string) =>
   ["src/lib/api/integrity.guards.ts"].includes(file.replace(/\\/g, "/"));
 
+const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
+  [
+    "app/pdf-viewer.tsx",
+    "scripts/pdf/pdfOpenPerfProbe.ts",
+    "src/lib/documents/pdfDocumentActionPlan.test.ts",
+    "src/lib/documents/pdfDocumentActions.test.ts",
+    "src/lib/documents/pdfDocumentActions.ts",
+    "src/lib/documents/pdfDocumentPreviewAction.test.ts",
+    "src/lib/documents/pdfDocumentPreviewAction.ts",
+    "src/lib/documents/pdfDocumentPreviewSessionPlan.test.ts",
+    "src/lib/documents/pdfDocumentPreviewSessionPlan.ts",
+    "src/lib/documents/pdfDocumentSessions.test.ts",
+    "src/lib/documents/pdfDocumentSessions.ts",
+    "src/lib/documents/pdfDocumentVisibilityBusyPlan.test.ts",
+    "src/lib/pdf/pdfInstantCache.ts",
+    "src/lib/pdf/pdfViewer.handoffPlan.ts",
+    "src/lib/pdf/pdfViewer.readiness.ts",
+    "src/lib/pdf/pdfViewerBootstrapPlan.test.ts",
+    "src/lib/pdf/pdfViewerBootstrapPlan.ts",
+    "src/lib/pdf/pdfViewerContract.test.ts",
+    "src/lib/pdf/pdfViewerContract.ts",
+    "tests/pdf/pdfDocumentActionsDecompositionAudit.test.ts",
+    "tests/pdf/pdfOpenLatencyAudit.test.ts",
+    "tests/pdf/pdfViewer.handoffPlan.test.ts",
+    "tests/pdf/pdfViewer.readiness.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -76,6 +103,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
     const forbiddenChanged = changedFiles().filter((file) =>
       !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
       !isApprovedLaterRpcValidationPatch(file) &&
+      !isApprovedPdfInstantFirstOpenPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

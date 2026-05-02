@@ -19,7 +19,11 @@ const mockOpenPdfPreview = jest.fn();
 const mockOpenPdfShare = jest.fn();
 const mockOpenPdfExternal = jest.fn();
 const mockCreateDocumentPreviewSession = jest.fn();
+const mockCreateInstantDocumentPreviewSession = jest.fn();
 const mockCreateInMemoryDocumentPreviewSession = jest.fn();
+const mockCreatePreparingDocumentPreviewSession = jest.fn();
+const mockMaterializeDocumentPreviewSessionAsset = jest.fn();
+const mockFailDocumentSession = jest.fn();
 const mockCreatePdfDocumentViewerHref = jest.fn();
 const mockPushPdfDocumentViewerRouteSafely = jest.fn();
 
@@ -32,8 +36,15 @@ jest.mock("../pdfRunner", () => ({
 
 jest.mock("./pdfDocumentSessions", () => ({
   createDocumentPreviewSession: (...args: unknown[]) => mockCreateDocumentPreviewSession(...args),
+  createInstantDocumentPreviewSession: (...args: unknown[]) =>
+    mockCreateInstantDocumentPreviewSession(...args),
   createInMemoryDocumentPreviewSession: (...args: unknown[]) =>
     mockCreateInMemoryDocumentPreviewSession(...args),
+  createPreparingDocumentPreviewSession: (...args: unknown[]) =>
+    mockCreatePreparingDocumentPreviewSession(...args),
+  materializeDocumentPreviewSessionAsset: (...args: unknown[]) =>
+    mockMaterializeDocumentPreviewSessionAsset(...args),
+  failDocumentSession: (...args: unknown[]) => mockFailDocumentSession(...args),
 }));
 
 jest.mock("./pdfDocumentViewerEntry", () => ({
@@ -58,9 +69,9 @@ const baseDocument = {
 };
 
 const flushPromises = async () => {
-  await Promise.resolve();
-  await Promise.resolve();
-  await Promise.resolve();
+  for (let i = 0; i < 10; i += 1) {
+    await Promise.resolve();
+  }
 };
 
 const createDeferred = <T,>() => {
@@ -86,7 +97,11 @@ describe("pdfDocumentActions", () => {
     mockOpenPdfShare.mockReset();
     mockOpenPdfExternal.mockReset();
     mockCreateDocumentPreviewSession.mockReset();
+    mockCreateInstantDocumentPreviewSession.mockReset();
     mockCreateInMemoryDocumentPreviewSession.mockReset();
+    mockCreatePreparingDocumentPreviewSession.mockReset();
+    mockMaterializeDocumentPreviewSessionAsset.mockReset();
+    mockFailDocumentSession.mockReset();
     mockCreatePdfDocumentViewerHref.mockReset();
     mockPushPdfDocumentViewerRouteSafely.mockReset();
     resetPlatformObservabilityEvents();
@@ -113,6 +128,73 @@ describe("pdfDocumentActions", () => {
         entityId: doc.entityId,
       },
     }));
+    mockCreateInstantDocumentPreviewSession.mockImplementation(
+      async (doc: typeof baseDocument) => {
+        const ready = await mockCreateDocumentPreviewSession(doc);
+        if (ready) {
+          return {
+            ...ready,
+            materializationMode: "cache_hit",
+          };
+        }
+        return {
+          session: {
+            sessionId: "session-instant-1",
+            assetId: "asset-instant-1",
+            status: "ready",
+            createdAt: "2026-03-30T10:00:00.000Z",
+          },
+          asset: {
+            assetId: "asset-instant-1",
+            uri: "file:///cache/instant.pdf",
+            fileSource: {
+              kind: "local-file",
+              uri: "file:///cache/instant.pdf",
+            },
+            sourceKind: "local-file",
+            fileName: doc.fileName,
+            title: doc.title,
+            mimeType: doc.mimeType,
+            documentType: doc.documentType,
+            originModule: doc.originModule,
+            source: doc.source,
+            createdAt: "2026-03-30T10:00:00.000Z",
+            entityId: doc.entityId,
+            sizeBytes: 1024,
+          },
+          materializationMode: "cache_hit",
+        };
+      },
+    );
+    mockCreatePreparingDocumentPreviewSession.mockImplementation((_doc: typeof baseDocument) => ({
+      session: {
+        sessionId: "session-preparing-root-1",
+        assetId: "asset-preparing-root-1",
+        status: "preparing",
+        createdAt: "2026-03-30T10:00:00.000Z",
+      },
+      asset: null,
+    }));
+    mockMaterializeDocumentPreviewSessionAsset.mockImplementation(
+      async (_sessionId: string, doc: typeof baseDocument) => ({
+        assetId: "asset-ready-root-1",
+        uri: "file:///cache/root-ready.pdf",
+        fileSource: {
+          kind: "local-file",
+          uri: "file:///cache/root-ready.pdf",
+        },
+        sourceKind: "local-file",
+        fileName: doc.fileName,
+        title: doc.title,
+        mimeType: doc.mimeType,
+        documentType: doc.documentType,
+        originModule: doc.originModule,
+        source: doc.source,
+        createdAt: "2026-03-30T10:00:00.000Z",
+        entityId: doc.entityId,
+        sizeBytes: 1024,
+      }),
+    );
     mockCreatePdfDocumentViewerHref.mockImplementation((sessionId: string, openToken?: string) => ({
       safeSessionId: sessionId,
       safeOpenToken: String(openToken ?? ""),
@@ -384,12 +466,38 @@ describe("pdfDocumentActions", () => {
     ).toBe(true);
   });
 
-  it("routes mobile remote PDFs directly through the shared viewer contract without local session materialization", async () => {
+  it("routes mobile remote PDFs through the shared viewer contract with a local cache session", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       value: "android",
     });
     const push = jest.fn();
+    mockCreateInstantDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-mobile-cache-1",
+        assetId: "asset-mobile-cache-1",
+        status: "ready",
+        createdAt: "2026-03-30T10:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-mobile-cache-1",
+        uri: "file:///cache/mobile-payment.pdf",
+        fileSource: {
+          kind: "local-file",
+          uri: "file:///cache/mobile-payment.pdf",
+        },
+        sourceKind: "local-file",
+        fileName: "payment.pdf",
+        title: "Payment PDF",
+        mimeType: "application/pdf",
+        documentType: "payment_order",
+        originModule: "accountant",
+        source: "generated",
+        createdAt: "2026-03-30T10:00:00.000Z",
+        sizeBytes: 1024,
+      },
+      materializationMode: "cache_hit",
+    });
 
     await previewPdfDocument(baseDocument, {
       router: { push },
@@ -397,35 +505,63 @@ describe("pdfDocumentActions", () => {
 
     expect(mockCreateDocumentPreviewSession).not.toHaveBeenCalled();
     expect(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1]).toBe(
-      "/pdf-viewer?sessionId=session-direct-1&openToken=",
+      "/pdf-viewer?sessionId=session-mobile-cache-1&openToken=",
     );
     expect(push).not.toHaveBeenCalled();
-    expect(mockCreateInMemoryDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
+    expect(mockCreateInstantDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
+    expect(mockCreateInMemoryDocumentPreviewSession).not.toHaveBeenCalled();
     expect(
       getPlatformObservabilityEvents().some(
         (event) =>
           event.event === "pdf_preview_open"
           && event.result === "success"
-          && event.extra?.previewSourceMode === "direct_remote_viewer_session_contract",
+          && event.extra?.materializationMode === "cache_hit",
       ),
     ).toBe(true);
   });
 
-  it("routes iOS remote PDFs directly through the shared viewer contract without pre-route download", async () => {
+  it("routes iOS remote PDFs through a local cache session before rendering", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       value: "ios",
     });
     const push = jest.fn();
+    mockCreateInstantDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-ios-cache-1",
+        assetId: "asset-ios-cache-1",
+        status: "ready",
+        createdAt: "2026-03-30T10:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-ios-cache-1",
+        uri: "file:///cache/ios-payment.pdf",
+        fileSource: {
+          kind: "local-file",
+          uri: "file:///cache/ios-payment.pdf",
+        },
+        sourceKind: "local-file",
+        fileName: "payment.pdf",
+        title: "Payment PDF",
+        mimeType: "application/pdf",
+        documentType: "payment_order",
+        originModule: "accountant",
+        source: "generated",
+        createdAt: "2026-03-30T10:00:00.000Z",
+        sizeBytes: 1024,
+      },
+      materializationMode: "cache_hit",
+    });
 
     await previewPdfDocument(baseDocument, {
       router: { push },
     });
 
     expect(mockCreateDocumentPreviewSession).not.toHaveBeenCalled();
-    expect(mockCreateInMemoryDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
+    expect(mockCreateInMemoryDocumentPreviewSession).not.toHaveBeenCalled();
+    expect(mockCreateInstantDocumentPreviewSession).toHaveBeenCalledWith(baseDocument);
     expect(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1]).toBe(
-      "/pdf-viewer?sessionId=session-direct-1&openToken=",
+      "/pdf-viewer?sessionId=session-ios-cache-1&openToken=",
     );
     expect(push).not.toHaveBeenCalled();
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
@@ -435,7 +571,43 @@ describe("pdfDocumentActions", () => {
         (event) =>
           event.event === "pdf_preview_open"
           && event.result === "success"
-          && event.extra?.previewSourceMode === "direct_remote_viewer_session_contract",
+          && event.extra?.materializationMode === "cache_hit",
+      ),
+    ).toBe(true);
+  });
+
+  it("opens the root viewer immediately while an uncached mobile PDF materializes", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    const push = jest.fn();
+    mockCreateInstantDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-preparing-1",
+        assetId: "pending-asset-1",
+        status: "preparing",
+        createdAt: "2026-03-30T10:00:00.000Z",
+      },
+      asset: null,
+      materializationMode: "background_fetch",
+    });
+
+    await previewPdfDocument(baseDocument, {
+      router: { push },
+    });
+
+    expect(mockCreateDocumentPreviewSession).not.toHaveBeenCalled();
+    expect(mockCreateInMemoryDocumentPreviewSession).not.toHaveBeenCalled();
+    expect(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1]).toBe(
+      "/pdf-viewer?sessionId=session-preparing-1&openToken=",
+    );
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.event === "pdf_preview_open"
+          && event.result === "success"
+          && event.extra?.materializationMode === "background_fetch",
       ),
     ).toBe(true);
   });
@@ -558,7 +730,7 @@ describe("pdfDocumentActions", () => {
     });
 
     await flushPromises();
-    expect(mockPushPdfDocumentViewerRouteSafely).not.toHaveBeenCalled();
+    expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(1);
 
     nowMs += 61_000;
     const second = prepareAndPreviewPdfDocument({
@@ -571,8 +743,8 @@ describe("pdfDocumentActions", () => {
     });
 
     await flushPromises();
-    expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(1);
-    const pushedHref = String(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1] || "");
+    expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(2);
+    const pushedHref = String(mockPushPdfDocumentViewerRouteSafely.mock.calls[1]?.[1] || "");
     const openToken = new URL(pushedHref, "https://example.test").searchParams.get("openToken") || "";
     markPdfOpenVisible(openToken, {
       sourceKind: "remote-url",
@@ -589,7 +761,7 @@ describe("pdfDocumentActions", () => {
     await expect(first).rejects.toMatchObject({
       terminalClass: "access_expired",
     });
-    expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(1);
+    expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(2);
     expect(
       getPlatformObservabilityEvents().some(
         (event) =>
@@ -600,7 +772,7 @@ describe("pdfDocumentActions", () => {
     ).toBe(true);
   });
 
-  it("classifies denied PDF access without entering the viewer", async () => {
+  it("classifies denied PDF access after opening the root viewer loading state", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       value: "android",
@@ -623,7 +795,11 @@ describe("pdfDocumentActions", () => {
       terminalClass: "denied",
     });
 
-    expect(mockPushPdfDocumentViewerRouteSafely).not.toHaveBeenCalled();
+    expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(1);
+    expect(mockFailDocumentSession).toHaveBeenCalledWith(
+      "session-preparing-root-1",
+      expect.stringContaining("forbidden"),
+    );
     expect(
       getPlatformObservabilityEvents().some(
         (event) =>
@@ -634,7 +810,7 @@ describe("pdfDocumentActions", () => {
     ).toBe(true);
   });
 
-  it("does not enter the viewer before PDF readiness is confirmed", async () => {
+  it("enters the root viewer before source readiness and completes after PDF readiness", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       value: "android",
@@ -652,7 +828,7 @@ describe("pdfDocumentActions", () => {
     });
 
     await flushPromises();
-    expect(mockPushPdfDocumentViewerRouteSafely).not.toHaveBeenCalled();
+    expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(1);
 
     prepare.resolve({
       kind: "remote-url",
@@ -660,6 +836,12 @@ describe("pdfDocumentActions", () => {
     });
     await flushPromises();
     expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(1);
+    expect(mockMaterializeDocumentPreviewSessionAsset).toHaveBeenCalledWith(
+      "session-preparing-root-1",
+      expect.objectContaining({
+        uri: "https://example.com/ready.pdf",
+      }),
+    );
     const pushedHref = String(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1] || "");
     const openToken = new URL(pushedHref, "https://example.test").searchParams.get("openToken") || "";
     markPdfOpenVisible(openToken, {
@@ -698,7 +880,8 @@ describe("pdfDocumentActions", () => {
     ).rejects.toMatchObject({
       terminalClass: "retryable_failure",
     });
-    expect(mockPushPdfDocumentViewerRouteSafely).not.toHaveBeenCalled();
+    expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(1);
+    mockPushPdfDocumentViewerRouteSafely.mockClear();
 
     const second = prepareAndPreviewPdfDocument({
       supabase: {},
@@ -967,8 +1150,8 @@ describe("pdfDocumentActions", () => {
       value: "android",
     });
     const push = jest.fn();
-    // On Android, remote-url docs go through the direct in-memory path
-    // which doesn't have sizeBytes. Use a local-file source to test.
+    // Android only enforces the instant-cache route; the iOS oversize guard
+    // is intentionally not applied here. Use a local-file source to test.
     const localDoc = {
       ...baseDocument,
       fileSource: {

@@ -1,7 +1,7 @@
 import { resolvePdfDocumentPreviewSessionPlan } from "./pdfDocumentPreviewSessionPlan";
 
 describe("pdfDocumentPreviewSessionPlan", () => {
-  it("uses in-memory sessions for Android remote-url viewer routes", () => {
+  it("uses materialized cache-backed sessions for Android remote-url viewer routes", () => {
     expect(
       resolvePdfDocumentPreviewSessionPlan({
         platform: "android",
@@ -9,12 +9,12 @@ describe("pdfDocumentPreviewSessionPlan", () => {
         hasRouter: true,
       }),
     ).toEqual({
-      action: "use_in_memory_remote_session",
-      reason: "mobile_remote_viewer_supported",
+      action: "use_materialized_session",
+      reason: "mobile_requires_local_cache",
     });
   });
 
-  it("uses in-memory sessions for iOS remote-url viewer routes", () => {
+  it("uses materialized cache-backed sessions for iOS remote-url viewer routes", () => {
     expect(
       resolvePdfDocumentPreviewSessionPlan({
         platform: "ios",
@@ -22,8 +22,8 @@ describe("pdfDocumentPreviewSessionPlan", () => {
         hasRouter: true,
       }),
     ).toEqual({
-      action: "use_in_memory_remote_session",
-      reason: "mobile_remote_viewer_supported",
+      action: "use_materialized_session",
+      reason: "mobile_requires_local_cache",
     });
   });
 

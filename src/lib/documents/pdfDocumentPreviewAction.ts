@@ -2,7 +2,11 @@ import { Platform } from "react-native";
 
 import {
   createDocumentPreviewSession,
+  createInstantDocumentPreviewSession,
   createInMemoryDocumentPreviewSession,
+  createPreparingDocumentPreviewSession,
+  failDocumentSession,
+  materializeDocumentPreviewSessionAsset,
 } from "./pdfDocumentSessions";
 import { openPdfPreview } from "../pdfRunner";
 import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
@@ -46,6 +50,68 @@ type PreviewActionDependencies = {
 
 const redactedRouteParamsJson = (params: Record<string, unknown>) =>
   JSON.stringify(redactSensitiveRecord(params) ?? {});
+
+export function createPreparingPdfDocumentViewerSession(
+  doc: Parameters<typeof createPreparingDocumentPreviewSession>[0],
+) {
+  return createPreparingDocumentPreviewSession(doc);
+}
+
+export function getPdfViewerSessionErrorMessage(
+  error: unknown,
+  fallback: string,
+): string {
+  if (error && typeof error === "object" && "message" in error) {
+    const message = String((error as { message?: unknown }).message ?? "").trim();
+    if (message && message !== "[object Object]") return message;
+    const cause =
+      (error as { causeValue?: unknown; causeError?: unknown }).causeValue ??
+      (error as { causeValue?: unknown; causeError?: unknown }).causeError;
+    if (cause && typeof cause === "object" && "message" in cause) {
+      const causeMessage = String((cause as { message?: unknown }).message ?? "").trim();
+      if (causeMessage) return causeMessage;
+    }
+  }
+  return getPdfFlowErrorMessage(error, fallback);
+}
+
+export function failPreparingPdfDocumentViewerSession(
+  sessionId: string,
+  message: string,
+): void {
+  failDocumentSession(sessionId, message);
+}
+
+export async function materializePreparingPdfDocumentViewerSession(args: {
+  sessionId: string;
+  doc: DocumentDescriptor;
+}) {
+  const asset = await materializeDocumentPreviewSessionAsset(args.sessionId, args.doc);
+  const sizeEligibility = checkPdfMobilePreviewEligibility({
+    platform: Platform.OS,
+    sizeBytes: asset.sizeBytes,
+    documentType: asset.documentType,
+    originModule: asset.originModule,
+    fileName: asset.fileName,
+  });
+  if (!sizeEligibility.eligible) {
+    const blocked = sizeEligibility as {
+      eligible: false;
+      sizeBytes: number;
+      limitBytes: number;
+    };
+    const error = recordPdfPreviewOversizeBlocked({
+      sizeBytes: blocked.sizeBytes,
+      limitBytes: blocked.limitBytes,
+      documentType: asset.documentType,
+      originModule: asset.originModule,
+      fileName: asset.fileName,
+    });
+    failDocumentSession(args.sessionId, error.message);
+    throw error;
+  }
+  return asset;
+}
 
 function createPreviewBoundaryRecorder(args: {
   boundaryRun?: PdfActionBoundaryRun;
@@ -328,97 +394,114 @@ async function executeStoredPreviewSessionPath(args: {
   const { doc, opts, persistCriticalPdfBreadcrumb, recordBoundary, outputObservation, openObservation } =
     args;
   const breadcrumbScreen = doc.originModule;
-  const { session, asset } = await (async () => {
+  const routeViewerAvailable = Boolean(opts?.router);
+  const { session, asset, materializationMode } = await (async () => {
     try {
-      return await createDocumentPreviewSession(doc);
+      if (routeViewerAvailable) {
+        return await createInstantDocumentPreviewSession(doc);
+      }
+      const ready = await createDocumentPreviewSession(doc);
+      return {
+        ...ready,
+        materializationMode: "blocking_materialization" as const,
+      };
     } catch (error) {
       throw outputObservation.error(error, {
         fallbackMessage: "PDF preview asset preparation failed",
       });
     }
   })();
+  const stageSourceKind = asset?.sourceKind ?? doc.fileSource.kind;
   recordPdfOpenStage({
     context: opts?.openFlow,
     stage: "document_prepare_done",
-    sourceKind: asset.sourceKind,
+    sourceKind: stageSourceKind,
     extra: {
       sessionId: session.sessionId,
-      assetId: asset.assetId,
-      uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-      uri: asset.uri,
-      fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-      fileSizeBytes: asset.sizeBytes,
+      assetId: asset?.assetId ?? null,
+      uriKind: asset ? extractUriScheme(asset.uri) || asset.sourceKind : doc.fileSource.kind,
+      uri: asset?.uri ?? null,
+      fileExists: asset ? (typeof asset.sizeBytes === "number" ? true : undefined) : false,
+      fileSizeBytes: asset?.sizeBytes,
+      previewSourceMode: "instant_local_cache_session",
+      materializationMode,
     },
   });
   outputObservation.success({
-    sourceKind: asset.sourceKind,
+    sourceKind: stageSourceKind,
     extra: {
       sessionId: session.sessionId,
-      assetId: asset.assetId,
+      assetId: asset?.assetId ?? null,
+      materializationMode,
     },
   });
   if (__DEV__) console.info("[pdf-document-actions] preview_asset", {
-    stage: "preview_asset_ready",
+    stage: asset ? "preview_asset_ready" : "preview_asset_preparing",
     sessionId: session.sessionId,
-    documentType: asset.documentType,
-    originModule: asset.originModule,
-    sourceKind: asset.sourceKind,
-    uri: redactSensitiveText(asset.uri),
-    scheme: extractUriScheme(asset.uri),
-    fileName: asset.fileName,
-    exists: typeof asset.sizeBytes === "number" ? true : undefined,
-    sizeBytes: asset.sizeBytes,
+    documentType: asset?.documentType ?? doc.documentType,
+    originModule: asset?.originModule ?? doc.originModule,
+    sourceKind: asset?.sourceKind ?? doc.fileSource.kind,
+    uri: asset ? redactSensitiveText(asset.uri) : null,
+    scheme: asset ? extractUriScheme(asset.uri) : null,
+    fileName: asset?.fileName ?? doc.fileName,
+    exists: asset ? (typeof asset.sizeBytes === "number" ? true : undefined) : false,
+    sizeBytes: asset?.sizeBytes,
+    materializationMode,
   });
-  const sizeEligibility = checkPdfMobilePreviewEligibility({
-    platform: Platform.OS,
-    sizeBytes: asset.sizeBytes,
-    documentType: asset.documentType,
-    originModule: asset.originModule,
-    fileName: asset.fileName,
-  });
-  if (!sizeEligibility.eligible) {
-    const blocked = sizeEligibility as { eligible: false; sizeBytes: number; limitBytes: number };
-    throw recordPdfPreviewOversizeBlocked({
-      sizeBytes: blocked.sizeBytes,
-      limitBytes: blocked.limitBytes,
+  if (asset) {
+    const sizeEligibility = checkPdfMobilePreviewEligibility({
+      platform: Platform.OS,
+      sizeBytes: asset.sizeBytes,
       documentType: asset.documentType,
       originModule: asset.originModule,
       fileName: asset.fileName,
     });
+    if (!sizeEligibility.eligible) {
+      const blocked = sizeEligibility as { eligible: false; sizeBytes: number; limitBytes: number };
+      throw recordPdfPreviewOversizeBlocked({
+        sizeBytes: blocked.sizeBytes,
+        limitBytes: blocked.limitBytes,
+        documentType: asset.documentType,
+        originModule: asset.originModule,
+        fileName: asset.fileName,
+      });
+    }
   }
   if (opts?.router) {
     recordPdfOpenStage({
       context: opts.openFlow,
       stage: "viewer_or_handoff_start",
-      sourceKind: asset.sourceKind,
+      sourceKind: stageSourceKind,
       extra: {
         route: "/pdf-viewer",
         sessionId: session.sessionId,
         previewPath: "session_viewer_contract",
-        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-        uri: asset.uri,
-        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-        fileSizeBytes: asset.sizeBytes,
+        uriKind: asset ? extractUriScheme(asset.uri) || asset.sourceKind : doc.fileSource.kind,
+        uri: asset?.uri ?? null,
+        fileExists: asset ? (typeof asset.sizeBytes === "number" ? true : undefined) : false,
+        fileSizeBytes: asset?.sizeBytes,
+        materializationMode,
       },
     });
     persistCriticalPdfBreadcrumb({
       marker: "document_prepare_done",
       screen: breadcrumbScreen,
-      documentType: asset.documentType,
-      originModule: asset.originModule,
-      sourceKind: asset.sourceKind,
-      uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-      uri: asset.uri,
-      fileName: asset.fileName,
+      documentType: asset?.documentType ?? doc.documentType,
+      originModule: asset?.originModule ?? doc.originModule,
+      sourceKind: stageSourceKind,
+      uriKind: asset ? extractUriScheme(asset.uri) || asset.sourceKind : doc.fileSource.kind,
+      uri: asset?.uri ?? null,
+      fileName: asset?.fileName ?? doc.fileName,
       entityId: doc.entityId,
       sessionId: session.sessionId,
       openToken: opts.openFlow?.openToken,
-      fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-      fileSizeBytes: asset.sizeBytes,
+      fileExists: asset ? (typeof asset.sizeBytes === "number" ? true : undefined) : false,
+      fileSizeBytes: asset?.sizeBytes,
       previewPath: "session_viewer_contract",
       extra: {
         route: "/pdf-viewer",
         checkpoint: "mobile_pre_navigation",
+        materializationMode,
       },
     });
     const {
@@ -426,15 +509,24 @@ async function executeStoredPreviewSessionPath(args: {
       safeOpenToken,
       href: viewerHref,
     } = createPdfDocumentViewerHref(session.sessionId, opts.openFlow?.openToken);
+    const navDocumentType = asset?.documentType ?? doc.documentType;
+    const navOriginModule = asset?.originModule ?? doc.originModule;
+    const navSourceKind = asset?.sourceKind ?? doc.fileSource.kind;
+    const navUri = asset?.uri ?? null;
+    const navUriKind = asset ? extractUriScheme(asset.uri) || asset.sourceKind : doc.fileSource.kind;
+    const navFileName = asset?.fileName ?? doc.fileName;
+    const navFileExists = asset ? (typeof asset.sizeBytes === "number" ? true : undefined) : false;
+    const navFileSizeBytes = asset?.sizeBytes;
     if (__DEV__) console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
       sessionId: safeSessionId,
-      documentType: asset.documentType,
-      originModule: asset.originModule,
-      finalUri: redactSensitiveText(asset.uri),
-      finalScheme: extractUriScheme(asset.uri),
-      finalSourceKind: asset.sourceKind,
-      isLocalFile: /^file:\/\//i.test(String(asset.uri || "")),
-      fileName: asset.fileName,
+      documentType: navDocumentType,
+      originModule: navOriginModule,
+      finalUri: navUri ? redactSensitiveText(navUri) : null,
+      finalScheme: navUri ? extractUriScheme(navUri) : null,
+      finalSourceKind: navSourceKind,
+      isLocalFile: /^file:\/\//i.test(String(navUri || "")),
+      fileName: navFileName,
+      materializationMode,
       routeParamsJson: redactedRouteParamsJson({
         sessionId: safeSessionId,
         openToken: safeOpenToken,
@@ -444,91 +536,96 @@ async function executeStoredPreviewSessionPath(args: {
       persistCriticalPdfBreadcrumb({
         marker: "viewer_patch_v3_active",
         screen: breadcrumbScreen,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        sourceKind: asset.sourceKind,
-        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-        uri: asset.uri,
-        fileName: asset.fileName,
+        documentType: navDocumentType,
+        originModule: navOriginModule,
+        sourceKind: navSourceKind,
+        uriKind: navUriKind,
+        uri: navUri,
+        fileName: navFileName,
         entityId: doc.entityId,
         sessionId: safeSessionId,
         openToken: safeOpenToken,
-        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-        fileSizeBytes: asset.sizeBytes,
+        fileExists: navFileExists,
+        fileSizeBytes: navFileSizeBytes,
         previewPath: "session_viewer_contract",
         extra: {
           route: "/pdf-viewer",
           patchVersion: "v3",
+          materializationMode,
         },
       });
       persistCriticalPdfBreadcrumb({
         marker: "viewer_patch_v3_before_navigation",
         screen: breadcrumbScreen,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        sourceKind: asset.sourceKind,
-        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-        uri: asset.uri,
-        fileName: asset.fileName,
+        documentType: navDocumentType,
+        originModule: navOriginModule,
+        sourceKind: navSourceKind,
+        uriKind: navUriKind,
+        uri: navUri,
+        fileName: navFileName,
         entityId: doc.entityId,
         sessionId: safeSessionId,
         openToken: safeOpenToken,
-        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-        fileSizeBytes: asset.sizeBytes,
+        fileExists: navFileExists,
+        fileSizeBytes: navFileSizeBytes,
         previewPath: "session_viewer_contract",
         extra: {
           route: "/pdf-viewer",
           patchVersion: "v3",
+          materializationMode,
         },
       });
       persistCriticalPdfBreadcrumb({
         marker: "viewer_route_push_attempt",
         screen: breadcrumbScreen,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        sourceKind: asset.sourceKind,
-        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-        uri: asset.uri,
-        fileName: asset.fileName,
+        documentType: navDocumentType,
+        originModule: navOriginModule,
+        sourceKind: navSourceKind,
+        uriKind: navUriKind,
+        uri: navUri,
+        fileName: navFileName,
         entityId: doc.entityId,
         sessionId: safeSessionId,
         openToken: safeOpenToken,
-        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-        fileSizeBytes: asset.sizeBytes,
+        fileExists: navFileExists,
+        fileSizeBytes: navFileSizeBytes,
         previewPath: "session_viewer_contract",
         extra: {
           route: "/pdf-viewer",
+          materializationMode,
         },
       });
       recordPdfOpenStage({
         context: opts.openFlow,
         stage: "viewer_route_push_attempt",
-        sourceKind: asset.sourceKind,
+        sourceKind: navSourceKind,
         extra: {
           route: "/pdf-viewer",
           sessionId: safeSessionId,
           openToken: safeOpenToken,
           previewPath: "session_viewer_contract",
+          materializationMode,
         },
       });
       persistCriticalPdfBreadcrumb({
         marker: "viewer_patch_v3_navigation_call",
         screen: breadcrumbScreen,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        sourceKind: asset.sourceKind,
-        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-        uri: asset.uri,
-        fileName: asset.fileName,
+        documentType: navDocumentType,
+        originModule: navOriginModule,
+        sourceKind: navSourceKind,
+        uriKind: navUriKind,
+        uri: navUri,
+        fileName: navFileName,
         entityId: doc.entityId,
         sessionId: safeSessionId,
         openToken: safeOpenToken,
-        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-        fileSizeBytes: asset.sizeBytes,
+        fileExists: navFileExists,
+        fileSizeBytes: navFileSizeBytes,
         previewPath: "session_viewer_contract",
         extra: {
           route: "/pdf-viewer",
           patchVersion: "v3",
+          materializationMode,
         },
       });
       opts?.assertCurrentRun?.("viewer_entry");
@@ -538,27 +635,29 @@ async function executeStoredPreviewSessionPath(args: {
       persistCriticalPdfBreadcrumb({
         marker: "viewer_route_pushed",
         screen: breadcrumbScreen,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
-        sourceKind: asset.sourceKind,
-        uriKind: extractUriScheme(asset.uri) || asset.sourceKind,
-        uri: asset.uri,
-        fileName: asset.fileName,
+        documentType: navDocumentType,
+        originModule: navOriginModule,
+        sourceKind: navSourceKind,
+        uriKind: navUriKind,
+        uri: navUri,
+        fileName: navFileName,
         entityId: doc.entityId,
         sessionId: safeSessionId,
         openToken: safeOpenToken,
-        fileExists: typeof asset.sizeBytes === "number" ? true : undefined,
-        fileSizeBytes: asset.sizeBytes,
+        fileExists: navFileExists,
+        fileSizeBytes: navFileSizeBytes,
         previewPath: "session_viewer_contract",
         extra: {
           route: "/pdf-viewer",
+          materializationMode,
         },
       });
       openObservation.success({
-        sourceKind: asset.sourceKind,
+        sourceKind: navSourceKind,
         extra: {
           route: "/pdf-viewer",
           sessionId: safeSessionId,
+          materializationMode,
         },
       });
       return;
@@ -567,20 +666,22 @@ async function executeStoredPreviewSessionPath(args: {
         context: opts.openFlow,
         stage: "viewer_route_push_crash",
         result: "error",
-        sourceKind: asset.sourceKind,
+        sourceKind: navSourceKind,
         error,
         extra: {
           route: "/pdf-viewer",
           sessionId: safeSessionId,
           openToken: safeOpenToken,
           previewPath: "session_viewer_contract",
+          materializationMode,
         },
       });
       failPdfOpenVisible(opts.openFlow?.openToken, error, {
-        sourceKind: asset.sourceKind,
+        sourceKind: navSourceKind,
         extra: {
           route: "/pdf-viewer",
           sessionId: safeSessionId,
+          materializationMode,
         },
       });
       const lifecycleError = openObservation.error(error, {
@@ -596,8 +697,8 @@ async function executeStoredPreviewSessionPath(args: {
       if (__DEV__) console.error("[pdf-document-actions] preview_navigation_failed", {
         stage: "navigation_failed",
         sessionId: safeSessionId,
-        documentType: asset.documentType,
-        originModule: asset.originModule,
+        documentType: navDocumentType,
+        originModule: navOriginModule,
         errorName: getPdfDocumentActionErrorName(error),
         errorMessage: message,
       });
@@ -606,6 +707,16 @@ async function executeStoredPreviewSessionPath(args: {
         "Viewer navigation failed",
       );
     }
+  }
+
+  if (!asset) {
+    throw outputObservation.error(new Error("PDF preview asset is still preparing"), {
+      fallbackMessage: "PDF preview asset preparation failed",
+      extra: {
+        sessionId: session.sessionId,
+        materializationMode,
+      },
+    });
   }
 
   if (__DEV__) console.warn("[pdf-document-actions] preview_without_router_fallback", {

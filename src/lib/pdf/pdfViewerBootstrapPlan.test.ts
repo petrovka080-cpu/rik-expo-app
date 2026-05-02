@@ -61,6 +61,17 @@ describe("pdfViewerBootstrapPlan", () => {
     });
   });
 
+  it("keeps preparing assets on the loading path instead of surfacing an error", () => {
+    expect(
+      resolvePdfViewerBootstrapPlan({
+        resolution: { kind: "preparing-asset" },
+        platform: "ios",
+      }),
+    ).toEqual({
+      action: "show_loading",
+    });
+  });
+
   it("keeps unsupported mobile sources on the resolution failure path", () => {
     expect(
       resolvePdfViewerBootstrapPlan({

@@ -95,6 +95,31 @@ describe("pdfViewer.readiness", () => {
     expect(resolvePdfViewerTerminalState({ state: "loading" })).toBeNull();
   });
 
+  it("keeps preparing sessions in loading content while background cache materializes", () => {
+    const model = resolvePdfViewerReadinessModel({
+      session: {
+        ...readySession,
+        status: "preparing",
+      },
+      asset: null,
+      platform: "ios",
+    });
+
+    expect(model.initialState).toBe("loading");
+    expect(model.resolvedSource).toEqual({ kind: "preparing-asset" });
+    expect(model.bootstrapPlan).toEqual({ action: "show_loading" });
+    expect(
+      resolvePdfViewerContentModel({
+        state: "loading",
+        errorText: "",
+        asset: null,
+        resolvedSource: model.resolvedSource,
+        isReadyToRender: false,
+        hasRenderableSource: false,
+      }),
+    ).toEqual({ kind: "loading" });
+  });
+
   it("maps empty and error content states without changing viewer semantics", () => {
     const embeddedRemote: PdfViewerResolution = {
       kind: "resolved-embedded",

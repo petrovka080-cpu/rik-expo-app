@@ -4,6 +4,7 @@ import type { PdfViewerPlatform, PdfViewerResolution } from "./pdfViewerContract
 
 export type PdfViewerHandoffPlan =
   | { action: "show_empty" }
+  | { action: "show_loading" }
   | {
       action: "show_error";
       reason: "session_error" | "missing_asset" | "unsupported_mobile_source";
@@ -49,6 +50,8 @@ export function resolvePdfViewerHandoffPlan(args: {
   switch (bootstrapPlan.action) {
     case "show_empty":
       return { action: "show_empty" };
+    case "show_loading":
+      return { action: "show_loading" };
     case "show_session_error":
       return {
         action: "show_error",

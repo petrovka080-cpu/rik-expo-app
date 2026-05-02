@@ -1,36 +1,19 @@
 import { Platform } from "react-native";
 import * as FileSystemModule from "expo-file-system/legacy";
 import type { DocumentDescriptor } from "./pdfDocument";
-import { normalizePdfFileName } from "./pdfDocument";
-import { getFileSystemPaths } from "../fileSystemPaths";
 import {
   createPdfSource,
   getUriScheme,
-  hashString32,
-  normalizeLocalFileUri,
   type PdfSource,
   type PdfSourceKind,
 } from "../pdfFileContract";
 import { recordPdfCrashBreadcrumb } from "../pdf/pdfCrashBreadcrumbs";
-import { resolvePdfLocalMaterializationPlan } from "./pdfDocumentMaterializationPlan";
+import {
+  ensurePdfInstantCacheAsset,
+  getPdfInstantCacheStatus,
+} from "../pdf/pdfInstantCache";
 import { redactSensitiveText } from "../security/redaction";
-import type {
-  FileInfo,
-  FileSystemDownloadResult,
-  RelocatingOptions,
-} from "expo-file-system/legacy";
-
-type FileSystemCompatBoundary = {
-  getInfoAsync(fileUri: string): Promise<FileInfo>;
-  downloadAsync(uri: string, fileUri: string): Promise<FileSystemDownloadResult>;
-  copyAsync(options: RelocatingOptions): Promise<void>;
-};
-
-const fileSystemCompat: FileSystemCompatBoundary = {
-  getInfoAsync: FileSystemModule.getInfoAsync,
-  downloadAsync: FileSystemModule.downloadAsync,
-  copyAsync: FileSystemModule.copyAsync,
-};
+import type { FileInfo } from "expo-file-system/legacy";
 
 export type DocumentAsset = {
   assetId: string;
@@ -82,14 +65,6 @@ const assets = new Map<string, DocumentAsset>();
 let seq = 0;
 
 const nowIso = () => new Date().toISOString();
-
-const sanitizeStem = (value: string, fallback: string) =>
-  (String(value || "").trim() || fallback)
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9._-]+/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_+|_+$/g, "") || fallback;
 
 function logMaterializeStage(
   stage: string,
@@ -155,7 +130,7 @@ async function getFileInfo(uri: string) {
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       if (attempt > 1) await new Promise((r) => setTimeout(r, 100 * attempt));
-      const info = await fileSystemCompat.getInfoAsync(uri);
+      const info = await FileSystemModule.getInfoAsync(uri);
       if (info) return info;
     } catch (e) {
       lastError = e;
@@ -169,92 +144,36 @@ const getFileSize = (info: FileInfoBoundary | null | undefined) =>
     ? Number(info.size)
     : undefined;
 
-async function ensureLocalPdfUri(
-  source: PdfSource,
-  fileName: string,
-): Promise<{ uri: string; sizeBytes?: number; sourceKind: "local-file" }> {
-  const normalizedName = normalizePdfFileName(fileName, "document");
-  const paths = getFileSystemPaths();
-  const cacheDir = paths.cacheDir;
-  const documentDir = paths.documentDir;
-  const hash = hashString32(source.uri);
-  const targetName = `pdf_${hash}_${sanitizeStem(normalizedName, "document.pdf")}`;
-  const targetUri = `${cacheDir}${targetName}`;
-  
-  logMaterializeStage("pdf_source_received", {
-    uri: source.uri,
-    sourceKind: source.kind,
-    fileName,
-  });
-
-  if (source.kind === "blob") {
-    throw new Error("Mobile PDF materialization cannot use blob/data source");
-  }
-
-  if (source.kind === "remote-url") {
-    logMaterializeStage("pdf_download_started", {
-      uri: targetUri,
-      sourceKind: "remote-url",
-      fileName,
-    });
-    const downloaded = await fileSystemCompat.downloadAsync(source.uri, targetUri);
-    const downloadedUri = normalizeLocalFileUri(String(downloaded?.uri || targetUri));
-    
-    const info = await getFileInfo(downloadedUri);
-    const exists = Boolean(info?.exists);
-    if (!exists) throw new Error("Downloaded PDF file is missing after materialization");
-    
-    return {
-      uri: downloadedUri,
-      sourceKind: "local-file",
-      sizeBytes: getFileSize(info),
-    };
-  }
-
-  // Local file materialization (e.g. from Library/Caches/Print/)
-  const sourceUri = normalizeLocalFileUri(source.uri);
-  const info = await getFileInfo(sourceUri);
-  const sourceExists = Boolean(info?.exists);
-
-  if (!sourceExists) {
-    throw new Error(`PDF source not found: ${sourceUri.slice(-60)}`);
-  }
-
-  const plan = resolvePdfLocalMaterializationPlan({
-    sourceUri,
-    targetUri,
-    cacheDir,
-    documentDir,
-  });
-
-  if (plan.action === "copy") {
-    logMaterializeStage("pdf_materialize_copy_started", {
-      uri: sourceUri,
-      sourceKind: "local-file",
-      fileName,
-    });
-    await fileSystemCompat.copyAsync({ from: sourceUri, to: plan.targetUri });
-    const copiedInfo = await getFileInfo(plan.targetUri);
-    if (!copiedInfo?.exists) throw new Error("Materialized local PDF file is missing after copy");
-    
-    return {
-      uri: plan.targetUri,
-      sourceKind: "local-file",
-      sizeBytes: getFileSize(copiedInfo),
-    };
-  }
-
-  return {
-    uri: sourceUri,
-    sourceKind: "local-file",
-    sizeBytes: getFileSize(info),
-  };
-}
-
 const makeId = (prefix: string) => {
   seq += 1;
   return `${prefix}_${Date.now().toString(36)}_${seq.toString(36)}`;
 };
+
+function createAssetForLocalUri(
+  doc: DocumentDescriptor,
+  localUri: string,
+  sizeBytes?: number,
+): DocumentAsset {
+  const assetId = makeId("asset");
+  return {
+    assetId,
+    uri: localUri,
+    fileSource: {
+      kind: "local-file",
+      uri: localUri,
+    },
+    sourceKind: "local-file",
+    fileName: doc.fileName,
+    title: doc.title,
+    mimeType: doc.mimeType,
+    documentType: doc.documentType,
+    originModule: doc.originModule,
+    source: doc.source,
+    createdAt: doc.createdAt || nowIso(),
+    entityId: doc.entityId,
+    sizeBytes,
+  };
+}
 
 const isExpired = (iso?: string | null) => {
   if (!iso) return false;
@@ -342,8 +261,12 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
       throw new Error("Mobile preview cannot use blob/data URI; expected a local PDF file");
     }
     try {
-      const materialized = await ensureLocalPdfUri(rawSource, doc.fileName);
-      finalUri = materialized.uri;
+      const materialized = await ensurePdfInstantCacheAsset({
+        ...doc,
+        uri: rawUri,
+        fileSource: rawSource,
+      });
+      finalUri = materialized.localUri;
       finalSourceKind = materialized.sourceKind;
       sizeBytes = materialized.sizeBytes;
 
@@ -461,6 +384,65 @@ export function createDocumentSession(asset: DocumentAsset, status: DocumentSess
   return session;
 }
 
+export function createPreparingDocumentPreviewSession(
+  doc: Pick<
+    DocumentDescriptor,
+    "documentType" | "originModule" | "fileName"
+  > & Partial<Pick<DocumentDescriptor, "uri" | "fileSource">>,
+): { session: DocumentSession; asset: null } {
+  cleanupExpiredDocumentSessions();
+  const pendingAssetId = makeId("pending_asset");
+  const now = nowIso();
+  const session: DocumentSession = {
+    sessionId: makeId("session"),
+    assetId: pendingAssetId,
+    status: "preparing",
+    createdAt: now,
+    lastAccessAt: now,
+  };
+  sessions.set(session.sessionId, session);
+  logMaterializeStage("pdf_session_preparing_created", {
+    uri: doc.uri,
+    sourceKind: doc.fileSource?.kind ?? "remote-url",
+    fileName: doc.fileName,
+    documentType: doc.documentType,
+    originModule: doc.originModule,
+  });
+  return { session, asset: null };
+}
+
+export function completeDocumentPreviewSessionAsset(
+  sessionId: string,
+  asset: DocumentAsset,
+): void {
+  const key = String(sessionId || "").trim();
+  const session = sessions.get(key);
+  if (!session) return;
+  assets.set(asset.assetId, asset);
+  session.assetId = asset.assetId;
+  session.status = "ready";
+  session.errorMessage = undefined;
+  session.lastAccessAt = nowIso();
+  sessions.set(key, session);
+}
+
+export async function materializeDocumentPreviewSessionAsset(
+  sessionId: string,
+  doc: DocumentDescriptor,
+): Promise<DocumentAsset> {
+  try {
+    const asset = await materializePdfAsset(doc);
+    completeDocumentPreviewSessionAsset(sessionId, asset);
+    return asset;
+  } catch (error) {
+    failDocumentSession(
+      sessionId,
+      error instanceof Error ? error.message : String(error),
+    );
+    throw error;
+  }
+}
+
 export function createInMemoryDocumentPreviewSession(
   doc: DocumentDescriptor,
 ): { session: DocumentSession; asset: DocumentAsset } {
@@ -489,6 +471,43 @@ export async function createDocumentPreviewSession(doc: DocumentDescriptor): Pro
   const asset = await materializePdfAsset(doc);
   const session = createDocumentSession(asset, "ready");
   return { session, asset };
+}
+
+export async function createInstantDocumentPreviewSession(
+  doc: DocumentDescriptor,
+): Promise<{
+  session: DocumentSession;
+  asset: DocumentAsset | null;
+  materializationMode: "cache_hit" | "background_fetch" | "joined_inflight" | "web_ready";
+}> {
+  if (Platform.OS === "web") {
+    const ready = await createDocumentPreviewSession(doc);
+    return {
+      ...ready,
+      materializationMode: "web_ready",
+    };
+  }
+
+  const cacheStatus = await getPdfInstantCacheStatus(doc);
+  if (cacheStatus.status === "ready" && cacheStatus.localUri) {
+    const asset = createAssetForLocalUri(doc, cacheStatus.localUri, cacheStatus.sizeBytes);
+    assets.set(asset.assetId, asset);
+    return {
+      session: createDocumentSession(asset, "ready"),
+      asset,
+      materializationMode: "cache_hit",
+    };
+  }
+
+  const preparing = createPreparingDocumentPreviewSession(doc);
+  void materializeDocumentPreviewSessionAsset(preparing.session.sessionId, doc).catch(() => {
+    // materializeDocumentPreviewSessionAsset already records the redacted session error.
+  });
+  return {
+    ...preparing,
+    materializationMode:
+      cacheStatus.status === "fetching" ? "joined_inflight" : "background_fetch",
+  };
 }
 
 export function getDocumentSession(sessionId: string): DocumentSession | null {

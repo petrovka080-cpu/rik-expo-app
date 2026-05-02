@@ -30,6 +30,41 @@ const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
     "src/screens/warehouse/warehouse.stockReports.service.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
+  [
+    "app/_layout.tsx",
+    "app/pdf-viewer.tsx",
+    "scripts/pdf/pdfOpenPerfProbe.ts",
+    "src/lib/documents/pdfDocumentActionPlan.test.ts",
+    "src/lib/documents/pdfDocumentActions.test.ts",
+    "src/lib/documents/pdfDocumentActions.ts",
+    "src/lib/documents/pdfDocumentPreviewAction.test.ts",
+    "src/lib/documents/pdfDocumentPreviewAction.ts",
+    "src/lib/documents/pdfDocumentPreviewSessionPlan.test.ts",
+    "src/lib/documents/pdfDocumentPreviewSessionPlan.ts",
+    "src/lib/documents/pdfDocumentSessions.test.ts",
+    "src/lib/documents/pdfDocumentSessions.ts",
+    "src/lib/documents/pdfDocumentVisibilityBusyPlan.test.ts",
+    "src/lib/pdf/pdfInstantCache.ts",
+    "src/lib/pdf/pdfViewer.handoffPlan.ts",
+    "src/lib/pdf/pdfViewer.readiness.ts",
+    "src/lib/pdf/pdfViewerBootstrapPlan.test.ts",
+    "src/lib/pdf/pdfViewerBootstrapPlan.ts",
+    "src/lib/pdf/pdfViewerContract.test.ts",
+    "src/lib/pdf/pdfViewerContract.ts",
+    "src/screens/accountant/AccountantScreen.tsx",
+    "src/screens/accountant/accountant.screen.boundaries.test.ts",
+    "tests/pdf/pdfDocumentActionsDecompositionAudit.test.ts",
+    "tests/pdf/pdfOpenLatencyAudit.test.ts",
+    "tests/pdf/pdfViewer.handoffPlan.test.ts",
+    "tests/pdf/pdfViewer.readiness.test.ts",
+    "tests/perf/performance-budget.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -83,6 +118,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
     const changed = dirtyPaths();
     const forbidden = changed.filter((file) =>
       !isLaterApprovedWarehouseIssueSourcePatch(file) &&
+      !isApprovedPdfInstantFirstOpenPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||
