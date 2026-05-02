@@ -34,8 +34,8 @@ type ProviderRuntimeEnv = Record<string, string | undefined>;
 export const SCALE_PROVIDER_RUNTIME_ENV_NAMES: Record<ScaleProviderKind, ScaleProviderEnvNames> = Object.freeze({
   redis_cache: {
     enabled: "SCALE_REDIS_CACHE_STAGING_ENABLED",
-    required: ["SCALE_REDIS_CACHE_URL", "SCALE_REDIS_CACHE_NAMESPACE"],
-    optional: [],
+    required: ["SCALE_REDIS_CACHE_NAMESPACE"],
+    optional: ["SCALE_REDIS_CACHE_URL", "REDIS_URL"],
   },
   queue: {
     enabled: "SCALE_QUEUE_STAGING_ENABLED",
@@ -99,6 +99,9 @@ const resolveProviderStatus = (
   const envNames = SCALE_PROVIDER_RUNTIME_ENV_NAMES[provider];
   const enabledFlag = parseEnabledFlagStatus(env[envNames.enabled]);
   const missingEnvNames = envNames.required.filter((name) => !hasEnvValue(env, name));
+  if (provider === "redis_cache" && !hasEnvValue(env, "SCALE_REDIS_CACHE_URL") && !hasEnvValue(env, "REDIS_URL")) {
+    missingEnvNames.push("SCALE_REDIS_CACHE_URL", "REDIS_URL");
+  }
   const configured = missingEnvNames.length === 0;
   const productionGuard = runtimeEnvironment !== "production";
 

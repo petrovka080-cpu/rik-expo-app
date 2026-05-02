@@ -18,8 +18,8 @@ describe("S-50K provider runtime env conventions", () => {
     ]);
     expect(SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache).toEqual({
       enabled: "SCALE_REDIS_CACHE_STAGING_ENABLED",
-      required: ["SCALE_REDIS_CACHE_URL", "SCALE_REDIS_CACHE_NAMESPACE"],
-      optional: [],
+      required: ["SCALE_REDIS_CACHE_NAMESPACE"],
+      optional: ["SCALE_REDIS_CACHE_URL", "REDIS_URL"],
     });
     expect(SCALE_PROVIDER_RUNTIME_ENV_NAMES.queue).toEqual({
       enabled: "SCALE_QUEUE_STAGING_ENABLED",
@@ -57,7 +57,7 @@ describe("S-50K provider runtime env conventions", () => {
         enabledFlag: "enabled",
         configured: false,
         liveNetworkAllowed: false,
-        missingEnvNames: ["SCALE_REDIS_CACHE_URL", "SCALE_REDIS_CACHE_NAMESPACE"],
+        missingEnvNames: ["SCALE_REDIS_CACHE_NAMESPACE", "SCALE_REDIS_CACHE_URL", "REDIS_URL"],
       }),
     );
     expect(config.providers.queue.missingEnvNames).toEqual([
@@ -66,6 +66,7 @@ describe("S-50K provider runtime env conventions", () => {
       "SCALE_QUEUE_NAMESPACE",
     ]);
     expect(getScaleProviderMissingEnvNames(config)).toEqual([
+      "REDIS_URL",
       "SCALE_QUEUE_NAMESPACE",
       "SCALE_QUEUE_PROVIDER",
       "SCALE_QUEUE_URL",
@@ -78,7 +79,7 @@ describe("S-50K provider runtime env conventions", () => {
     const staging = resolveScaleProviderRuntimeConfig(
       {
         SCALE_REDIS_CACHE_STAGING_ENABLED: "true",
-        SCALE_REDIS_CACHE_URL: "rediss://cache.example.invalid",
+        REDIS_URL: "rediss://cache.example.invalid",
         SCALE_REDIS_CACHE_NAMESPACE: "rik-staging",
       },
       { runtimeEnvironment: "staging" },
@@ -86,7 +87,7 @@ describe("S-50K provider runtime env conventions", () => {
     const production = resolveScaleProviderRuntimeConfig(
       {
         SCALE_REDIS_CACHE_STAGING_ENABLED: "true",
-        SCALE_REDIS_CACHE_URL: "rediss://cache.example.invalid",
+        REDIS_URL: "rediss://cache.example.invalid",
         SCALE_REDIS_CACHE_NAMESPACE: "rik-staging",
       },
       { runtimeEnvironment: "production" },

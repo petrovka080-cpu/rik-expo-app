@@ -6,7 +6,9 @@ import {
   NoopCacheAdapter,
   InMemoryCacheAdapter,
   RedisRestCacheAdapter,
+  RedisUrlCacheAdapter,
   createRedisCacheAdapterFromEnv,
+  type RedisCommandExecutor,
   type RedisRestFetch,
 } from "../../src/shared/scale/cacheAdapters";
 import {
@@ -136,6 +138,85 @@ const createRedisRestMock = () => {
   };
 };
 
+const createRedisCommandMock = () => {
+  let now = 0;
+  const values = new Map<string, { value: string; expiresAt: number | null }>();
+  const sets = new Map<string, { members: Set<string>; expiresAt: number | null }>();
+  const commands: (string | number)[][] = [];
+
+  const purgeExpired = () => {
+    for (const [key, entry] of values.entries()) {
+      if (entry.expiresAt !== null && entry.expiresAt <= now) values.delete(key);
+    }
+    for (const [key, entry] of sets.entries()) {
+      if (entry.expiresAt !== null && entry.expiresAt <= now) sets.delete(key);
+    }
+  };
+
+  const commandMock = jest.fn(async (command: readonly (string | number)[]) => {
+    purgeExpired();
+    commands.push([...command]);
+    const operation = String(command[0] ?? "").toUpperCase();
+
+    if (operation === "SET" && typeof command[1] === "string" && typeof command[2] === "string") {
+      const ttlIndex = command.findIndex((part) => String(part).toUpperCase() === "PX");
+      const ttlMs = ttlIndex >= 0 ? Number(command[ttlIndex + 1]) : 0;
+      values.set(command[1], {
+        value: command[2],
+        expiresAt: Number.isFinite(ttlMs) && ttlMs > 0 ? now + ttlMs : null,
+      });
+      return "OK";
+    }
+
+    if (operation === "GET" && typeof command[1] === "string") {
+      return values.get(command[1])?.value ?? null;
+    }
+
+    if (operation === "DEL") {
+      let deleted = 0;
+      for (const key of command.slice(1)) {
+        if (typeof key !== "string") continue;
+        if (values.delete(key)) deleted += 1;
+        if (sets.delete(key)) deleted += 1;
+      }
+      return deleted;
+    }
+
+    if (operation === "SADD" && typeof command[1] === "string") {
+      const set = sets.get(command[1]) ?? { members: new Set<string>(), expiresAt: null };
+      for (const member of command.slice(2)) {
+        if (typeof member === "string") set.members.add(member);
+      }
+      sets.set(command[1], set);
+      return set.members.size;
+    }
+
+    if (operation === "PEXPIRE" && typeof command[1] === "string") {
+      const ttlMs = Number(command[2]);
+      const set = sets.get(command[1]);
+      if (set && Number.isFinite(ttlMs) && ttlMs > 0) {
+        set.expiresAt = now + ttlMs;
+        return 1;
+      }
+      return 0;
+    }
+
+    if (operation === "SMEMBERS" && typeof command[1] === "string") {
+      return Array.from(sets.get(command[1])?.members ?? []);
+    }
+
+    return null;
+  }) as jest.MockedFunction<RedisCommandExecutor>;
+
+  return {
+    commands,
+    commandMock,
+    advance: (ms: number) => {
+      now += ms;
+    },
+  };
+};
+
 describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
   it("keeps noop and in-memory adapters local without external network calls", async () => {
     const originalFetch = globalThis.fetch;
@@ -242,6 +323,7 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
 
   it("keeps Redis/Upstash cache provider disabled by default and staging-gated", async () => {
     const redis = createRedisRestMock();
+    const redisUrl = createRedisCommandMock();
 
     const disabled = createRedisCacheAdapterFromEnv({}, {
       runtimeEnvironment: "staging",
@@ -289,6 +371,26 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
     );
     expect(production).toBeInstanceOf(NoopCacheAdapter);
     expect(production.getStatus().externalNetworkEnabled).toBe(false);
+
+    const renderKeyValue = createRedisCacheAdapterFromEnv(
+      {
+        SCALE_REDIS_CACHE_STAGING_ENABLED: "true",
+        REDIS_URL: "rediss://red-render-kv.example.invalid:6379",
+        SCALE_REDIS_CACHE_NAMESPACE: "rik-staging-render-kv",
+      },
+      {
+        runtimeEnvironment: "staging",
+        redisCommandImpl: redisUrl.commandMock,
+      },
+    );
+    expect(renderKeyValue.getStatus()).toEqual(
+      expect.objectContaining({
+        kind: "redis_url",
+        enabled: true,
+        externalNetworkEnabled: true,
+        namespace: "rik-staging-render-kv",
+      }),
+    );
   });
 
   it("implements Redis/Upstash set/get/delete and TTL behavior through a mocked provider", async () => {
@@ -344,6 +446,29 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
     ).toBe(true);
   });
 
+  it("implements Render Key Value redis/rediss set/get/delete and TTL behavior through a mocked provider", async () => {
+    const redis = createRedisCommandMock();
+    const adapter = new RedisUrlCacheAdapter({
+      redisUrl: "rediss://red-render-kv.example.invalid:6379",
+      namespace: "rik-staging-render",
+      commandImpl: redis.commandMock,
+    });
+
+    await adapter.set("cache:v1:item", { ok: true, count: 2 }, { ttlMs: 50, tags: ["item"] });
+    await expect(adapter.get("cache:v1:item")).resolves.toEqual({ ok: true, count: 2 });
+
+    redis.advance(51);
+    await expect(adapter.get("cache:v1:item")).resolves.toBeNull();
+
+    await adapter.set("cache:v1:item", "present", { ttlMs: 1_000, tags: ["item"] });
+    await expect(adapter.get("cache:v1:item")).resolves.toBe("present");
+    await adapter.delete("cache:v1:item");
+    await expect(adapter.get("cache:v1:item")).resolves.toBeNull();
+    expect(redis.commands.some((command) => command[0] === "SET")).toBe(true);
+    expect(redis.commands.some((command) => command[0] === "GET")).toBe(true);
+    expect(redis.commands.some((command) => command[0] === "DEL")).toBe(true);
+  });
+
   it("keeps Redis/Upstash provider secrets out of public mobile env names", () => {
     const redisEnvNames = [
       SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache.enabled,
@@ -353,8 +478,9 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
 
     expect(redisEnvNames).toEqual([
       "SCALE_REDIS_CACHE_STAGING_ENABLED",
-      "SCALE_REDIS_CACHE_URL",
       "SCALE_REDIS_CACHE_NAMESPACE",
+      "SCALE_REDIS_CACHE_URL",
+      "REDIS_URL",
     ]);
     expect(redisEnvNames.every((name) => !name.startsWith("EXPO_PUBLIC_"))).toBe(true);
     expect(redisEnvNames).not.toContain("BFF_SERVER_AUTH_SECRET");
