@@ -2,7 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  BFF_FORBIDDEN_PRODUCTION_BASE_URLS,
+  BFF_READONLY_PRODUCTION_RUNTIME_ENV_NAMES,
   BFF_READONLY_RUNTIME_ENV_NAMES,
+  BFF_READONLY_RUNTIME_ENV_NAMES_BY_ENVIRONMENT,
+  BFF_READONLY_STAGING_RUNTIME_ENV_NAMES,
   BFF_READONLY_MOBILE_ROUTE_PATHS,
   buildBffRequestPlan,
   callBffReadonlyMobile,
@@ -16,18 +20,58 @@ const readProjectFile = (relativePath: string): string =>
 
 describe("BFF readonly runtime config", () => {
   it("documents the exact staging mobile env names", () => {
-    expect(BFF_READONLY_RUNTIME_ENV_NAMES).toEqual({
+    expect(BFF_READONLY_STAGING_RUNTIME_ENV_NAMES).toEqual({
       enabled: "EXPO_PUBLIC_BFF_READONLY_STAGING_ENABLED",
       trafficPercent: "EXPO_PUBLIC_BFF_READONLY_STAGING_TRAFFIC_PERCENT",
       baseUrl: "EXPO_PUBLIC_BFF_STAGING_BASE_URL",
       shadowOnly: "EXPO_PUBLIC_BFF_SHADOW_ONLY_ENABLED",
     });
+    expect(BFF_READONLY_RUNTIME_ENV_NAMES).toBe(BFF_READONLY_STAGING_RUNTIME_ENV_NAMES);
     expect(BFF_READONLY_MOBILE_ROUTE_PATHS).toEqual({
       "request.proposal.list": "/api/staging-bff/read/request-proposal-list",
       "marketplace.catalog.search": "/api/staging-bff/read/marketplace-catalog-search",
       "warehouse.ledger.list": "/api/staging-bff/read/warehouse-ledger-list",
       "accountant.invoice.list": "/api/staging-bff/read/accountant-invoice-list",
       "director.pending.list": "/api/staging-bff/read/director-pending-list",
+    });
+  });
+
+  it("documents production runtime env names without enabling production by default", () => {
+    expect(BFF_READONLY_PRODUCTION_RUNTIME_ENV_NAMES).toEqual({
+      enabled: "EXPO_PUBLIC_BFF_READONLY_PRODUCTION_ENABLED",
+      trafficPercent: "EXPO_PUBLIC_BFF_READONLY_PRODUCTION_TRAFFIC_PERCENT",
+      baseUrl: "EXPO_PUBLIC_BFF_PRODUCTION_BASE_URL",
+      shadowOnly: "EXPO_PUBLIC_BFF_PRODUCTION_SHADOW_ONLY_ENABLED",
+    });
+    expect(BFF_READONLY_RUNTIME_ENV_NAMES_BY_ENVIRONMENT).toEqual({
+      staging: BFF_READONLY_STAGING_RUNTIME_ENV_NAMES,
+      production: BFF_READONLY_PRODUCTION_RUNTIME_ENV_NAMES,
+    });
+    expect(BFF_FORBIDDEN_PRODUCTION_BASE_URLS).toContain("https://gox-build-staging-bff.onrender.com");
+
+    expect(resolveBffReadonlyRuntimeConfig({}, { runtimeEnvironment: "production" })).toEqual({
+      clientConfig: {
+        enabled: false,
+        baseUrl: null,
+        readOnly: true,
+        runtimeEnvironment: "production",
+        trafficPercent: 0,
+        shadowOnly: true,
+        mutationRoutesEnabled: false,
+        productionGuard: false,
+      },
+      trafficPercent: 0,
+      mobileRuntimeBffEnabled: false,
+      shadowOnlySupported: true,
+      shadowOnly: true,
+      networkExecutionAllowed: false,
+      envStatus: {
+        enabledFlag: "missing",
+        baseUrl: "missing",
+        trafficPercent: "missing",
+        shadowOnly: "missing",
+        runtimeEnvironment: "production",
+      },
     });
   });
 
@@ -164,6 +208,80 @@ describe("BFF readonly runtime config", () => {
     expect(
       buildBffRequestPlan(
         { ...baseConfig, runtimeEnvironment: "staging", mutationRoutesEnabled: true },
+        "proposal.list",
+      ),
+    ).toEqual(expect.objectContaining({ networkExecutionAllowed: false }));
+  });
+
+  it("uses production-specific flags only with a dedicated non-staging HTTPS base URL", () => {
+    const productionRuntime = resolveBffReadonlyRuntimeConfig(
+      {
+        EXPO_PUBLIC_BFF_READONLY_PRODUCTION_ENABLED: "true",
+        EXPO_PUBLIC_BFF_READONLY_PRODUCTION_TRAFFIC_PERCENT: "1",
+        EXPO_PUBLIC_BFF_PRODUCTION_BASE_URL: "https://production-bff.example.invalid/path",
+        EXPO_PUBLIC_BFF_PRODUCTION_SHADOW_ONLY_ENABLED: "false",
+        EXPO_PUBLIC_BFF_READONLY_STAGING_ENABLED: "false",
+        EXPO_PUBLIC_BFF_STAGING_BASE_URL: "https://gox-build-staging-bff.onrender.com",
+      },
+      { runtimeEnvironment: "production" },
+    );
+
+    expect(productionRuntime).toEqual(
+      expect.objectContaining({
+        trafficPercent: 1,
+        mobileRuntimeBffEnabled: true,
+        shadowOnly: false,
+        networkExecutionAllowed: true,
+        envStatus: expect.objectContaining({
+          enabledFlag: "enabled",
+          baseUrl: "present_valid",
+          trafficPercent: "present_valid",
+          shadowOnly: "disabled",
+          runtimeEnvironment: "production",
+        }),
+      }),
+    );
+    expect(productionRuntime.clientConfig).toEqual(
+      expect.objectContaining({
+        baseUrl: "https://production-bff.example.invalid",
+        productionGuard: false,
+        runtimeEnvironment: "production",
+      }),
+    );
+  });
+
+  it("blocks production runtime when the production base URL points at staging", () => {
+    const productionRuntime = resolveBffReadonlyRuntimeConfig(
+      {
+        EXPO_PUBLIC_BFF_READONLY_PRODUCTION_ENABLED: "true",
+        EXPO_PUBLIC_BFF_READONLY_PRODUCTION_TRAFFIC_PERCENT: "1",
+        EXPO_PUBLIC_BFF_PRODUCTION_BASE_URL: "https://gox-build-staging-bff.onrender.com",
+        EXPO_PUBLIC_BFF_PRODUCTION_SHADOW_ONLY_ENABLED: "false",
+      },
+      { runtimeEnvironment: "production" },
+    );
+
+    expect(productionRuntime.clientConfig).toEqual(
+      expect.objectContaining({
+        enabled: true,
+        baseUrl: "https://gox-build-staging-bff.onrender.com",
+        runtimeEnvironment: "production",
+      }),
+    );
+    expect(productionRuntime.mobileRuntimeBffEnabled).toBe(true);
+    expect(productionRuntime.networkExecutionAllowed).toBe(false);
+    expect(
+      buildBffRequestPlan(
+        {
+          enabled: true,
+          baseUrl: "https://gox-build-staging-bff.onrender.com",
+          readOnly: true,
+          runtimeEnvironment: "production",
+          trafficPercent: 1,
+          shadowOnly: false,
+          mutationRoutesEnabled: false,
+          productionGuard: false,
+        },
         "proposal.list",
       ),
     ).toEqual(expect.objectContaining({ networkExecutionAllowed: false }));

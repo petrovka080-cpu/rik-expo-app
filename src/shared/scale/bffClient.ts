@@ -22,12 +22,37 @@ export type BffReadonlyMobileOperation =
 
 export type BffRequestTarget = BffFlow | BffReadonlyMobileOperation;
 
-export const BFF_READONLY_RUNTIME_ENV_NAMES = Object.freeze({
+export type BffReadonlyRuntimeEnvNames = {
+  enabled: string;
+  trafficPercent: string;
+  baseUrl: string;
+  shadowOnly: string;
+};
+
+export const BFF_READONLY_STAGING_RUNTIME_ENV_NAMES = Object.freeze({
   enabled: "EXPO_PUBLIC_BFF_READONLY_STAGING_ENABLED",
   trafficPercent: "EXPO_PUBLIC_BFF_READONLY_STAGING_TRAFFIC_PERCENT",
   baseUrl: "EXPO_PUBLIC_BFF_STAGING_BASE_URL",
   shadowOnly: "EXPO_PUBLIC_BFF_SHADOW_ONLY_ENABLED",
-} as const);
+} as const satisfies BffReadonlyRuntimeEnvNames);
+
+export const BFF_READONLY_PRODUCTION_RUNTIME_ENV_NAMES = Object.freeze({
+  enabled: "EXPO_PUBLIC_BFF_READONLY_PRODUCTION_ENABLED",
+  trafficPercent: "EXPO_PUBLIC_BFF_READONLY_PRODUCTION_TRAFFIC_PERCENT",
+  baseUrl: "EXPO_PUBLIC_BFF_PRODUCTION_BASE_URL",
+  shadowOnly: "EXPO_PUBLIC_BFF_PRODUCTION_SHADOW_ONLY_ENABLED",
+} as const satisfies BffReadonlyRuntimeEnvNames);
+
+export const BFF_READONLY_RUNTIME_ENV_NAMES_BY_ENVIRONMENT = Object.freeze({
+  staging: BFF_READONLY_STAGING_RUNTIME_ENV_NAMES,
+  production: BFF_READONLY_PRODUCTION_RUNTIME_ENV_NAMES,
+} as const satisfies Record<"staging" | "production", BffReadonlyRuntimeEnvNames>);
+
+export const BFF_READONLY_RUNTIME_ENV_NAMES = BFF_READONLY_STAGING_RUNTIME_ENV_NAMES;
+
+export const BFF_FORBIDDEN_PRODUCTION_BASE_URLS = Object.freeze([
+  "https://gox-build-staging-bff.onrender.com",
+] as const);
 
 export const BFF_READONLY_MOBILE_ROUTE_PATHS = Object.freeze({
   "request.proposal.list": "/api/staging-bff/read/request-proposal-list",
@@ -91,6 +116,9 @@ const normalizeHttpsBaseUrl = (value: unknown): string | null => {
   }
 };
 
+const isForbiddenProductionBaseUrl = (baseUrl: string | null): boolean =>
+  baseUrl !== null && BFF_FORBIDDEN_PRODUCTION_BASE_URLS.some((forbidden) => forbidden === baseUrl);
+
 const getBaseUrlStatus = (value: unknown): "present_valid" | "present_invalid" | "missing" => {
   const raw = normalizeText(value);
   if (!raw) return "missing";
@@ -134,14 +162,26 @@ const getRuntimeEnv = (): BffReadonlyRuntimeEnv => {
   return process.env as BffReadonlyRuntimeEnv;
 };
 
+const getReadonlyRuntimeEnvNames = (runtimeEnvironment: BffRuntimeEnvironment): BffReadonlyRuntimeEnvNames =>
+  runtimeEnvironment === "production"
+    ? BFF_READONLY_PRODUCTION_RUNTIME_ENV_NAMES
+    : BFF_READONLY_STAGING_RUNTIME_ENV_NAMES;
+
 const isNetworkExecutionAllowed = (config: BffClientConfig): boolean => {
   const trafficPercent = normalizeTrafficPercent(config.trafficPercent);
+  const normalizedBaseUrl = normalizeHttpsBaseUrl(config.baseUrl);
+  const stagingNetworkAllowed = config.runtimeEnvironment === "staging" && config.productionGuard === true;
+  const productionNetworkAllowed =
+    config.runtimeEnvironment === "production" &&
+    config.productionGuard === false &&
+    config.shadowOnly !== true &&
+    !isForbiddenProductionBaseUrl(normalizedBaseUrl);
+
   return (
     isBffEnabled(config) &&
-    normalizeHttpsBaseUrl(config.baseUrl) !== null &&
+    normalizedBaseUrl !== null &&
     config.readOnly === true &&
-    config.runtimeEnvironment === "staging" &&
-    config.productionGuard === true &&
+    (stagingNetworkAllowed || productionNetworkAllowed) &&
     config.mutationRoutesEnabled !== true &&
     trafficPercent > 0
   );
@@ -160,11 +200,12 @@ export function resolveBffReadonlyRuntimeConfig(
   env: BffReadonlyRuntimeEnv = getRuntimeEnv(),
   options: { runtimeEnvironment?: BffRuntimeEnvironment } = {},
 ): BffReadonlyRuntimeConfig {
-  const enabledValue = env[BFF_READONLY_RUNTIME_ENV_NAMES.enabled];
-  const baseUrlValue = env[BFF_READONLY_RUNTIME_ENV_NAMES.baseUrl];
-  const trafficPercentValue = env[BFF_READONLY_RUNTIME_ENV_NAMES.trafficPercent];
-  const shadowOnlyValue = env[BFF_READONLY_RUNTIME_ENV_NAMES.shadowOnly];
   const runtimeEnvironment = options.runtimeEnvironment ?? inferRuntimeEnvironment(env);
+  const envNames = getReadonlyRuntimeEnvNames(runtimeEnvironment);
+  const enabledValue = env[envNames.enabled];
+  const baseUrlValue = env[envNames.baseUrl];
+  const trafficPercentValue = env[envNames.trafficPercent];
+  const shadowOnlyValue = env[envNames.shadowOnly];
   const trafficPercent = normalizeTrafficPercent(trafficPercentValue);
   const shadowOnly = getEnabledFlagStatus(shadowOnlyValue) !== "disabled" || trafficPercent === 0;
   const clientConfig: BffClientConfig = {
