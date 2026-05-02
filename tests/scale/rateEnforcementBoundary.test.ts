@@ -11,6 +11,7 @@ import {
   RATE_ENFORCEMENT_MODE_ENV_NAME,
   RATE_LIMIT_TEST_NAMESPACE_ENV_NAME,
   RateLimitStoreAdapter,
+  RedisUrlRateLimitAdapter,
   RuntimeRateEnforcementProvider,
   createRateEnforcementProviderFromEnv,
   createRateLimitAdapterFromEnv,
@@ -18,6 +19,10 @@ import {
   resolveInMemoryRateLimitMaxTrackedKeys,
   resolveRateEnforcementMode,
 } from "../../src/shared/scale/rateLimitAdapters";
+import type {
+  RedisCommand,
+  RedisCommandExecutor,
+} from "../../src/shared/scale/cacheAdapters";
 import {
   BFF_MUTATION_RATE_LIMIT_OPERATIONS,
   BFF_READ_RATE_LIMIT_OPERATIONS,
@@ -122,6 +127,36 @@ const createRateLimitStoreMock = () => {
   }) as jest.MockedFunction<RateLimitStoreFetch>;
 
   return { fetchMock, requests };
+};
+
+const createRedisCommandMock = () => {
+  const values = new Map<string, string>();
+  const commands: string[][] = [];
+  const commandMock = jest.fn(async (command: RedisCommand) => {
+    const parts = command.map((part) => String(part));
+    commands.push(parts);
+    const [rawName, rawKey, rawValue] = parts;
+    const name = rawName?.toUpperCase();
+    const key = rawKey ?? "";
+
+    if (name === "GET") {
+      return values.get(key) ?? null;
+    }
+
+    if (name === "SET") {
+      values.set(key, rawValue ?? "");
+      return "OK";
+    }
+
+    if (name === "DEL") {
+      const existed = values.delete(key);
+      return existed ? 1 : 0;
+    }
+
+    return null;
+  }) as jest.MockedFunction<RedisCommandExecutor>;
+
+  return { commandMock, commands, values };
 };
 
 describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
@@ -276,6 +311,29 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       }),
     );
 
+    const redis = createRedisCommandMock();
+    const redisStaging = createRateLimitAdapterFromEnv(
+      {
+        SCALE_RATE_LIMIT_STAGING_ENABLED: "true",
+        SCALE_RATE_LIMIT_STORE_URL: "rediss://rate.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-staging-test",
+      },
+      {
+        runtimeEnvironment: "staging",
+        redisCommandImpl: redis.commandMock,
+      },
+    );
+    expect(redisStaging).toBeInstanceOf(RedisUrlRateLimitAdapter);
+    expect(redisStaging.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "redis_url",
+        enabled: true,
+        externalNetworkEnabled: true,
+        enforcementEnabledByDefault: false,
+        namespace: "rik-staging-test",
+      }),
+    );
+
     const production = createRateLimitAdapterFromEnv(
       {
         SCALE_RATE_LIMIT_STAGING_ENABLED: "true",
@@ -289,6 +347,20 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     );
     expect(production).toBeInstanceOf(NoopRateLimitAdapter);
     expect(production.getHealth().externalNetworkEnabled).toBe(false);
+
+    const redisProduction = createRateLimitAdapterFromEnv(
+      {
+        SCALE_RATE_LIMIT_STAGING_ENABLED: "true",
+        SCALE_RATE_LIMIT_STORE_URL: "rediss://rate.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-staging-test",
+      },
+      {
+        runtimeEnvironment: "production",
+        redisCommandImpl: redis.commandMock,
+      },
+    );
+    expect(redisProduction).toBeInstanceOf(NoopRateLimitAdapter);
+    expect(redis.commandMock).not.toHaveBeenCalled();
   });
 
   it("checks, consumes, refunds, resets, and reads status through a mocked rate store", async () => {
@@ -346,6 +418,63 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     expect(serializedRequests).toContain("proposal.submit");
     expect(serializedRequests).not.toContain("person@example.test");
     expect(serializedRequests).not.toContain("rawPayload");
+  });
+
+  it("checks, consumes, refunds, resets, and reads status through a Redis URL rate store", async () => {
+    const redis = createRedisCommandMock();
+    const policy = getRateEnforcementPolicy("proposal.submit");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+
+    const adapter = new RedisUrlRateLimitAdapter({
+      redisUrl: "rediss://rate.example.invalid",
+      namespace: "rik-staging-test",
+      commandImpl: redis.commandMock,
+    });
+    const key = "rate:v1:proposal.submit:opaque";
+
+    await expect(adapter.check({ key, policy })).resolves.toEqual(
+      expect.objectContaining({
+        state: "allowed",
+        key,
+        operation: "proposal.submit",
+        enabled: true,
+        realUserBlocked: false,
+      }),
+    );
+    await expect(adapter.consume({ key, policy })).resolves.toEqual(
+      expect.objectContaining({ state: "allowed", realUserBlocked: false }),
+    );
+    await expect(adapter.consume({ key, policy, cost: policy.maxRequests })).resolves.toEqual(
+      expect.objectContaining({ state: "soft_limited", realUserBlocked: false }),
+    );
+    await expect(
+      adapter.consume({
+        key,
+        policy,
+        cost: policy.maxRequests + policy.burst + 1,
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({ state: "hard_limited", realUserBlocked: false }),
+    );
+    await expect(adapter.getStatus(key)).resolves.toEqual(
+      expect.objectContaining({
+        key,
+        operation: "proposal.submit",
+        count: expect.any(Number),
+      }),
+    );
+    const serializedValues = JSON.stringify([...redis.values.values()]);
+    await expect(adapter.refund(key)).resolves.toBe(true);
+    await expect(adapter.reset(key)).resolves.toBe(true);
+    await expect(adapter.getStatus(key)).resolves.toBeNull();
+
+    expect(redis.commands.map((command) => command[0])).toEqual(
+      expect.arrayContaining(["GET", "SET", "DEL"]),
+    );
+    expect(serializedValues).toContain("proposal.submit");
+    expect(serializedValues).not.toContain("person@example.test");
+    expect(serializedValues).not.toContain("rawPayload");
   });
 
   it("rejects unsafe rate store keys and namespaces before provider calls", async () => {

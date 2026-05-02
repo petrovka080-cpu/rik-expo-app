@@ -1,3 +1,4 @@
+import { safeJsonParseValue, safeJsonStringify } from "../../lib/format";
 import {
   getRateEnforcementPolicy,
   type RateEnforcementPolicy,
@@ -8,6 +9,10 @@ import {
   buildSafeRateLimitKey,
   type RateLimitKeyInput,
 } from "./rateLimitKeySafety";
+import {
+  createNodeRedisUrlCommandExecutor,
+  type RedisCommandExecutor,
+} from "./cacheAdapters";
 import {
   resolveScaleProviderRuntimeConfig,
   type ScaleProviderRuntimeEnvironment,
@@ -25,6 +30,7 @@ export type RateLimitAdapterKind =
   | "noop"
   | "in_memory"
   | "rate_store"
+  | "redis_url"
   | "external_contract";
 
 export type RateLimitDecision = {
@@ -92,11 +98,18 @@ export type RateLimitStoreAdapterOptions = {
   fetchImpl?: RateLimitStoreFetch;
 };
 
+export type RedisUrlRateLimitAdapterOptions = {
+  redisUrl: string;
+  namespace: string;
+  commandImpl?: RedisCommandExecutor | null;
+};
+
 export type RateLimitStoreEnv = Record<string, string | undefined>;
 
 export type CreateRateLimitAdapterFromEnvOptions = {
   runtimeEnvironment?: ScaleProviderRuntimeEnvironment;
   fetchImpl?: RateLimitStoreFetch;
+  redisCommandImpl?: RedisCommandExecutor | null;
 };
 
 const disabledDecision = (
@@ -131,6 +144,10 @@ const normalizeText = (value: unknown): string => String(value ?? "").trim();
 
 const normalizeRateStoreUrl = (value: string): string => normalizeText(value).replace(/\/+$/g, "");
 
+const normalizeRedisUrl = (value: string): string => normalizeText(value);
+
+const isRedisProtocolUrl = (value: string): boolean => /^rediss?:\/\//i.test(value.trim());
+
 const isSafeRateLimitNamespace = (namespace: string): boolean =>
   namespace.length > 0 && namespace.length <= 64 && /^[A-Za-z0-9][A-Za-z0-9:_-]*$/.test(namespace);
 
@@ -143,6 +160,11 @@ const resolveRateLimitCost = (value: unknown): number => {
 const defaultRateLimitStoreFetch = (): RateLimitStoreFetch | null => {
   if (typeof globalThis.fetch !== "function") return null;
   return globalThis.fetch as RateLimitStoreFetch;
+};
+
+const buildNamespacedRateLimitKey = (namespace: string, key: string): string | null => {
+  if (!isSafeRateLimitNamespace(namespace) || !assertRateLimitKeyIsBounded(key)) return null;
+  return `${namespace}:${key}`;
 };
 
 const decisionStateFromValue = (value: unknown): RateLimitDecisionState | null => {
@@ -538,6 +560,200 @@ export class RateLimitStoreAdapter implements RateLimitAdapter {
   }
 }
 
+type RedisRateLimitRecord = {
+  operation: RateLimitEnforcementOperation;
+  count: number;
+  resetAtMs: number;
+};
+
+const serializeRedisRateLimitRecord = (record: RedisRateLimitRecord): string | null => {
+  return safeJsonStringify(record, "") || null;
+};
+
+const parseRedisRateLimitRecord = (value: unknown): RedisRateLimitRecord | null => {
+  if (typeof value !== "string") return null;
+  const parsed = safeJsonParseValue<unknown | null>(value, null);
+  if (!parsed || typeof parsed !== "object") return null;
+  const record = parsed as Record<string, unknown>;
+  const operation = normalizeText(record.operation) as RateLimitEnforcementOperation;
+  const count = numberOrNull(record.count);
+  const resetAtMs = numberOrNull(record.resetAtMs);
+  if (!operation || count === null || resetAtMs === null) return null;
+  return { operation, count, resetAtMs };
+};
+
+const resolveRedisRateLimitWindowMs = (value: unknown): number => {
+  if (typeof value !== "number" || !Number.isFinite(value)) return 60_000;
+  const normalized = Math.trunc(value);
+  if (normalized <= 0) return 60_000;
+  return Math.min(normalized, IN_MEMORY_RATE_LIMIT_MAX_WINDOW_MS);
+};
+
+export class RedisUrlRateLimitAdapter implements RateLimitAdapter {
+  private readonly redisUrl: string;
+  private readonly namespace: string;
+  private readonly commandImpl: RedisCommandExecutor | null;
+
+  constructor(options: RedisUrlRateLimitAdapterOptions) {
+    this.redisUrl = normalizeRedisUrl(options.redisUrl);
+    this.namespace = normalizeText(options.namespace);
+    this.commandImpl = options.commandImpl ?? createNodeRedisUrlCommandExecutor(this.redisUrl);
+  }
+
+  async check(input: RateLimitCheckInput): Promise<RateLimitDecision> {
+    return this.commandDecision(input, false);
+  }
+
+  async consume(input: RateLimitCheckInput): Promise<RateLimitDecision> {
+    return this.commandDecision(input, true);
+  }
+
+  async refund(key: string, cost = 1): Promise<boolean> {
+    const redisKey = buildNamespacedRateLimitKey(this.namespace, key);
+    if (!redisKey || !this.canUseStore() || !this.commandImpl) return false;
+    const record = await this.readRecord(redisKey, Date.now());
+    if (!record) return false;
+    const nextRecord = {
+      ...record,
+      count: Math.max(0, record.count - resolveRateLimitCost(cost)),
+    };
+    return this.writeRecord(redisKey, nextRecord, Date.now());
+  }
+
+  async reset(key: string): Promise<boolean> {
+    const redisKey = buildNamespacedRateLimitKey(this.namespace, key);
+    if (!redisKey || !this.canUseStore() || !this.commandImpl) return false;
+    try {
+      const deleted = await this.commandImpl(["DEL", redisKey]);
+      return typeof deleted === "number" ? deleted > 0 : Boolean(deleted);
+    } catch {
+      return false;
+    }
+  }
+
+  async getStatus(key: string): Promise<RateLimitStatus | null> {
+    const redisKey = buildNamespacedRateLimitKey(this.namespace, key);
+    if (!redisKey) return null;
+    const record = await this.readRecord(redisKey, Date.now());
+    return record ? { key, ...record } : null;
+  }
+
+  getHealth(): RateLimitAdapterHealth {
+    const enabled = this.canUseStore();
+    return {
+      kind: "redis_url",
+      enabled,
+      externalNetworkEnabled: enabled,
+      enforcementEnabledByDefault: false,
+      trackedKeys: 0,
+      namespace: enabled ? this.namespace : undefined,
+    };
+  }
+
+  private async commandDecision(
+    input: RateLimitCheckInput,
+    shouldConsume: boolean,
+  ): Promise<RateLimitDecision> {
+    const redisKey = buildNamespacedRateLimitKey(this.namespace, input.key);
+    if (!redisKey) return disabledDecision(INVALID_RATE_LIMIT_KEY, input.policy.operation);
+    if (!this.canUseStore()) return unknownDecision(input.key, input.policy.operation);
+
+    const nowMs = input.nowMs ?? Date.now();
+    const record = await this.readOrCreateRecord(redisKey, input, nowMs);
+    if (!record) return unknownDecision(input.key, input.policy.operation);
+
+    const cost = resolveRateLimitCost(input.cost ?? 1);
+    const nextCount = record.count + cost;
+    const decision = this.buildDecision(input, nextCount, record, nowMs);
+    if (shouldConsume && decision.state !== "hard_limited") {
+      const nextRecord = { ...record, count: nextCount };
+      await this.writeRecord(redisKey, nextRecord, nowMs);
+    }
+    return decision;
+  }
+
+  private buildDecision(
+    input: RateLimitCheckInput,
+    nextCount: number,
+    record: RedisRateLimitRecord,
+    nowMs: number,
+  ): RateLimitDecision {
+    const allowedBudget = input.policy.maxRequests;
+    const burstBudget = input.policy.maxRequests + input.policy.burst;
+    const state: RateLimitDecisionState =
+      nextCount <= allowedBudget
+        ? "allowed"
+        : nextCount <= burstBudget
+          ? "soft_limited"
+          : "hard_limited";
+
+    return {
+      state,
+      key: input.key,
+      operation: input.policy.operation,
+      remaining: Math.max(0, allowedBudget - nextCount),
+      resetAtMs: record.resetAtMs,
+      retryAfterMs: state === "hard_limited" ? Math.max(0, record.resetAtMs - nowMs) : null,
+      enabled: true,
+      realUserBlocked: false,
+    };
+  }
+
+  private async readOrCreateRecord(
+    redisKey: string,
+    input: RateLimitCheckInput,
+    nowMs: number,
+  ): Promise<RedisRateLimitRecord | null> {
+    const existing = await this.readRecord(redisKey, nowMs);
+    if (existing) return existing;
+    const record = {
+      operation: input.policy.operation,
+      count: 0,
+      resetAtMs: nowMs + resolveRedisRateLimitWindowMs(input.policy.windowMs),
+    };
+    return (await this.writeRecord(redisKey, record, nowMs)) ? record : null;
+  }
+
+  private async readRecord(redisKey: string, nowMs: number): Promise<RedisRateLimitRecord | null> {
+    if (!this.canUseStore() || !this.commandImpl) return null;
+    try {
+      const record = parseRedisRateLimitRecord(await this.commandImpl(["GET", redisKey]));
+      if (!record || record.resetAtMs <= nowMs) {
+        await this.commandImpl(["DEL", redisKey]);
+        return null;
+      }
+      return record;
+    } catch {
+      return null;
+    }
+  }
+
+  private async writeRecord(
+    redisKey: string,
+    record: RedisRateLimitRecord,
+    nowMs: number,
+  ): Promise<boolean> {
+    if (!this.canUseStore() || !this.commandImpl) return false;
+    const serialized = serializeRedisRateLimitRecord(record);
+    if (!serialized) return false;
+    const ttlMs = Math.max(1, record.resetAtMs - nowMs);
+    try {
+      const result = await this.commandImpl(["SET", redisKey, serialized, "PX", ttlMs]);
+      return result === "OK" || result === "ok" || result === true;
+    } catch {
+      return false;
+    }
+  }
+
+  private canUseStore(): boolean {
+    return (
+      isRedisProtocolUrl(this.redisUrl) &&
+      isSafeRateLimitNamespace(this.namespace) &&
+      this.commandImpl !== null
+    );
+  }
+}
+
 export const EXTERNAL_RATE_LIMIT_ADAPTER_CONTRACT = Object.freeze({
   kind: "external_contract" as const,
   check: "contract_only",
@@ -562,9 +778,19 @@ export function createRateLimitAdapterFromEnv(
   const rateStatus = runtimeConfig.providers.rate_limit;
   if (!rateStatus.liveNetworkAllowed) return createDisabledRateLimitAdapter();
 
+  const storeUrl = normalizeText(env.SCALE_RATE_LIMIT_STORE_URL);
+  const namespace = normalizeText(env.SCALE_RATE_LIMIT_NAMESPACE);
+  if (isRedisProtocolUrl(storeUrl)) {
+    return new RedisUrlRateLimitAdapter({
+      redisUrl: storeUrl,
+      namespace,
+      commandImpl: options.redisCommandImpl,
+    });
+  }
+
   return new RateLimitStoreAdapter({
-    storeUrl: normalizeText(env.SCALE_RATE_LIMIT_STORE_URL),
-    namespace: normalizeText(env.SCALE_RATE_LIMIT_NAMESPACE),
+    storeUrl,
+    namespace,
     fetchImpl: options.fetchImpl,
   });
 }
