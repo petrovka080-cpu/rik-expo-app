@@ -1,0 +1,151 @@
+{
+  "mode": "ota",
+  "timestamp": "2026-05-02T19:42:48.904Z",
+  "repo": {
+    "gitBranch": "main",
+    "headCommit": "ce79ad6d401946ef9b963cc49fb14c4a207156e1",
+    "originMainCommit": "ce79ad6d401946ef9b963cc49fb14c4a207156e1",
+    "worktreeClean": true,
+    "headMatchesOriginMain": true
+  },
+  "gates": [
+    {
+      "name": "tsc",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "expo-lint",
+      "command": "npx expo lint",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "jest-run-in-band",
+      "command": "npm test -- --runInBand",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "jest",
+      "command": "npm test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "git-diff-check",
+      "command": "git diff --check",
+      "status": "passed",
+      "exitCode": 0
+    }
+  ],
+  "classification": {
+    "kind": "runtime-ota",
+    "changeClass": "js-ui",
+    "files": [
+      "artifacts/S_BUYER_SUMMARY_BUCKETS_RPC_SHAPE_HOTFIX_1_matrix.json",
+      "artifacts/S_BUYER_SUMMARY_BUCKETS_RPC_SHAPE_HOTFIX_1_proof.md",
+      "src/screens/buyer/buyer.fetchers.data.ts",
+      "src/screens/buyer/buyer.fetchers.test.ts",
+      "src/screens/buyer/buyer.fetchers.ts",
+      "src/screens/buyer/buyer.list.ui.test.ts",
+      "src/screens/buyer/buyer.list.ui.ts",
+      "src/screens/buyer/components/BuyerMainList.tsx",
+      "src/screens/buyer/hooks/useBuyerLoadingController.ts",
+      "tests/api/sRpc6HighRiskRpcValidation.contract.test.ts"
+    ],
+    "nonRuntimeFiles": [
+      "artifacts/S_BUYER_SUMMARY_BUCKETS_RPC_SHAPE_HOTFIX_1_matrix.json",
+      "artifacts/S_BUYER_SUMMARY_BUCKETS_RPC_SHAPE_HOTFIX_1_proof.md",
+      "src/screens/buyer/buyer.fetchers.test.ts",
+      "src/screens/buyer/buyer.list.ui.test.ts",
+      "tests/api/sRpc6HighRiskRpcValidation.contract.test.ts"
+    ],
+    "runtimeFiles": [
+      "src/screens/buyer/buyer.fetchers.data.ts",
+      "src/screens/buyer/buyer.fetchers.ts",
+      "src/screens/buyer/buyer.list.ui.ts",
+      "src/screens/buyer/components/BuyerMainList.tsx",
+      "src/screens/buyer/hooks/useBuyerLoadingController.ts"
+    ],
+    "buildRequiredFiles": [],
+    "reasons": [
+      "artifacts/S_BUYER_SUMMARY_BUCKETS_RPC_SHAPE_HOTFIX_1_matrix.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_BUYER_SUMMARY_BUCKETS_RPC_SHAPE_HOTFIX_1_proof.md is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "src/screens/buyer/buyer.fetchers.data.ts is runtime JS/TS code and requires full preflight before OTA.",
+      "src/screens/buyer/buyer.fetchers.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "src/screens/buyer/buyer.fetchers.ts is runtime JS/TS code and requires full preflight before OTA.",
+      "src/screens/buyer/buyer.list.ui.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "src/screens/buyer/buyer.list.ui.ts is runtime JS/TS code and requires full preflight before OTA.",
+      "src/screens/buyer/components/BuyerMainList.tsx is runtime JS/TS code and requires full preflight before OTA.",
+      "src/screens/buyer/hooks/useBuyerLoadingController.ts is runtime JS/TS code and requires full preflight before OTA.",
+      "tests/api/sRpc6HighRiskRpcValidation.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped."
+    ],
+    "packageJsonMutationKind": "none"
+  },
+  "runtimePolicy": {
+    "resolvedRuntimeVersion": "policy:fingerprint",
+    "runtimePolicy": "policy:fingerprint",
+    "runtimeVersionStrategy": "fingerprint",
+    "runtimePolicyValid": true,
+    "runtimePolicyReason": "runtimeVersion uses the fingerprint policy.",
+    "runtimeProofConsistent": true,
+    "runtimeProofReason": "release extra truth matches the configured runtime policy.",
+    "buildRequired": false
+  },
+  "startupPolicy": {
+    "updatesEnabled": true,
+    "checkAutomatically": "ON_LOAD",
+    "fallbackToCacheTimeout": 30000,
+    "startupPolicyValid": true,
+    "startupPolicyReason": "Release startup policy is ON_LOAD with fallbackToCacheTimeout=30000."
+  },
+  "readiness": {
+    "status": "pass",
+    "otaDisposition": "allow",
+    "blockers": []
+  },
+  "requiredArtifacts": [],
+  "missingArtifacts": [],
+  "targetChannel": "preview",
+  "expectedBranch": "preview",
+  "releaseMessage": "S-OTA-ALL-EAS-CHANNELS-BUYER-RPC-HOTFIX-1 preview ce79ad6",
+  "commitRange": "3e34447511990e903aea9a489da4e51b105b462a..5c6e2bc1cde57168025ca063a39de6518270e6ca",
+  "otaPublish": {
+    "branch": "preview",
+    "runtimeVersion": "bc9c9355222395cbde647610ec48487de37efc6b",
+    "platform": "ios",
+    "updateGroupId": "0bbbd21a-e8df-43c9-8a3f-417c5bc10bd2",
+    "androidUpdateId": "019dea38-22a6-715b-a72f-a9eedbfacfbd",
+    "iosUpdateId": "019dea38-22a6-7538-ad22-81a568e4d3b9",
+    "message": "S-OTA-ALL-EAS-CHANNELS-BUYER-RPC-HOTFIX-1 preview ce79ad6",
+    "commit": "ce79ad6d401946ef9b963cc49fb14c4a207156e1",
+    "dashboardUrl": "https://expo.dev/accounts/azisbek_dzhantaev/projects/rik-expo-app/updates/0bbbd21a-e8df-43c9-8a3f-417c5bc10bd2"
+  },
+  "releaseMetadata": {
+    "gitSha": "present",
+    "appVersion": "present",
+    "buildLineage": "present",
+    "runtimeVersion": "present",
+    "channel": "present",
+    "branch": "present",
+    "platform": "present",
+    "otaDisposition": "published",
+    "rollbackReady": true,
+    "sentrySourceMaps": "missing",
+    "binarySourceMapsProven": "missing",
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "otaPublished": true,
+    "easUpdateTriggered": true,
+    "missing": [
+      "sentrySourceMaps",
+      "binarySourceMapsProven"
+    ],
+    "warnings": [
+      "Sentry source maps are not marked shipped because no source map proof is attached to this report.",
+      "Binary/source map proof is not marked shipped without explicit proof artifacts."
+    ]
+  }
+}
