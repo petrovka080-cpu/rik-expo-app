@@ -50,7 +50,7 @@ export const SCALE_PROVIDER_RUNTIME_ENV_NAMES: Record<ScaleProviderKind, ScalePr
   rate_limit: {
     enabled: "SCALE_RATE_LIMIT_STAGING_ENABLED",
     required: ["SCALE_RATE_LIMIT_STORE_URL", "SCALE_RATE_LIMIT_NAMESPACE"],
-    optional: [],
+    optional: ["SCALE_RATE_ENFORCEMENT_MODE", "SCALE_RATE_LIMIT_TEST_NAMESPACE"],
   },
   observability_export: {
     enabled: "SCALE_OBSERVABILITY_EXPORT_STAGING_ENABLED",

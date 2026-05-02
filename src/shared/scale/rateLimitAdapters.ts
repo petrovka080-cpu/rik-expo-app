@@ -1,8 +1,13 @@
-import type {
-  RateEnforcementPolicy,
-  RateLimitEnforcementOperation,
+import {
+  getRateEnforcementPolicy,
+  type RateEnforcementPolicy,
+  type RateLimitEnforcementOperation,
 } from "./rateLimitPolicies";
-import { assertRateLimitKeyIsBounded } from "./rateLimitKeySafety";
+import {
+  assertRateLimitKeyIsBounded,
+  buildSafeRateLimitKey,
+  type RateLimitKeyInput,
+} from "./rateLimitKeySafety";
 import {
   resolveScaleProviderRuntimeConfig,
   type ScaleProviderRuntimeEnvironment,
@@ -561,5 +566,238 @@ export function createRateLimitAdapterFromEnv(
     storeUrl: normalizeText(env.SCALE_RATE_LIMIT_STORE_URL),
     namespace: normalizeText(env.SCALE_RATE_LIMIT_NAMESPACE),
     fetchImpl: options.fetchImpl,
+  });
+}
+
+export type RateEnforcementMode =
+  | "disabled"
+  | "observe_only"
+  | "enforce_staging_test_namespace_only";
+
+export type RateEnforcementAction = "disabled" | "observe" | "allow" | "block";
+
+export type RuntimeRateEnforcementEnv = RateLimitStoreEnv & {
+  SCALE_RATE_ENFORCEMENT_MODE?: string;
+  SCALE_RATE_LIMIT_TEST_NAMESPACE?: string;
+};
+
+export type RuntimeRateEnforcementInput = {
+  operation: RateLimitEnforcementOperation;
+  keyInput: RateLimitKeyInput;
+  cost?: number;
+  nowMs?: number;
+};
+
+export type RuntimeRateEnforcementDecision = {
+  action: RateEnforcementAction;
+  mode: RateEnforcementMode;
+  operation: RateLimitEnforcementOperation;
+  providerState: RateLimitDecisionState | "policy_missing" | "key_rejected";
+  providerEnabled: boolean;
+  blocked: boolean;
+  realUsersBlocked: false;
+  enforcementNamespace: string | null;
+  isolatedTestNamespace: string | null;
+  safeSubjectHash: string | null;
+  keyLength: number | null;
+  rawPiiInKey: false;
+  rawPayloadLogged: false;
+  piiLogged: false;
+  reason: string;
+};
+
+export type RuntimeRateEnforcementHealth = {
+  mode: RateEnforcementMode;
+  runtimeEnvironment: ScaleProviderRuntimeEnvironment;
+  providerEnabled: boolean;
+  externalNetworkEnabled: boolean;
+  productionGuard: boolean;
+  namespace: string | null;
+  isolatedTestNamespace: string | null;
+  blocksRealUsersGlobally: false;
+};
+
+export type RuntimeRateEnforcementProviderOptions = {
+  mode?: RateEnforcementMode;
+  runtimeEnvironment?: ScaleProviderRuntimeEnvironment;
+  adapter?: RateLimitAdapter;
+  namespace?: string | null;
+  isolatedTestNamespace?: string | null;
+};
+
+export type CreateRateEnforcementProviderFromEnvOptions = {
+  runtimeEnvironment?: ScaleProviderRuntimeEnvironment;
+  adapter?: RateLimitAdapter;
+  fetchImpl?: RateLimitStoreFetch;
+};
+
+export const RATE_ENFORCEMENT_MODE_ENV_NAME = "SCALE_RATE_ENFORCEMENT_MODE";
+export const RATE_LIMIT_TEST_NAMESPACE_ENV_NAME = "SCALE_RATE_LIMIT_TEST_NAMESPACE";
+
+const isIsolatedStagingTestNamespace = (namespace: string, expected: string): boolean => {
+  const normalized = normalizeText(namespace).toLowerCase();
+  const normalizedExpected = normalizeText(expected).toLowerCase();
+  return (
+    normalized.length > 0 &&
+    normalized === normalizedExpected &&
+    isSafeRateLimitNamespace(namespace) &&
+    normalized.includes("staging") &&
+    normalized.includes("test")
+  );
+};
+
+export function resolveRateEnforcementMode(value: unknown): RateEnforcementMode {
+  const normalized = normalizeText(value).toLowerCase();
+  if (normalized === "observe_only") return "observe_only";
+  if (normalized === "enforce_staging_test_namespace_only") return "enforce_staging_test_namespace_only";
+  return "disabled";
+}
+
+const disabledRuntimeRateDecision = (
+  input: RuntimeRateEnforcementInput,
+  mode: RateEnforcementMode,
+  reason: string,
+  namespace: string | null,
+  isolatedTestNamespace: string | null,
+): RuntimeRateEnforcementDecision => ({
+  action: "disabled",
+  mode,
+  operation: input.operation,
+  providerState: "disabled",
+  providerEnabled: false,
+  blocked: false,
+  realUsersBlocked: false,
+  enforcementNamespace: namespace,
+  isolatedTestNamespace,
+  safeSubjectHash: null,
+  keyLength: null,
+  rawPiiInKey: false,
+  rawPayloadLogged: false,
+  piiLogged: false,
+  reason,
+});
+
+export class RuntimeRateEnforcementProvider {
+  private readonly mode: RateEnforcementMode;
+  private readonly runtimeEnvironment: ScaleProviderRuntimeEnvironment;
+  private readonly adapter: RateLimitAdapter;
+  private readonly namespace: string | null;
+  private readonly isolatedTestNamespace: string | null;
+
+  constructor(options: RuntimeRateEnforcementProviderOptions = {}) {
+    this.mode = options.mode ?? "disabled";
+    this.runtimeEnvironment = options.runtimeEnvironment ?? "unknown";
+    this.adapter = options.adapter ?? createDisabledRateLimitAdapter();
+    this.namespace = normalizeText(options.namespace) || null;
+    this.isolatedTestNamespace = normalizeText(options.isolatedTestNamespace) || null;
+  }
+
+  async evaluate(input: RuntimeRateEnforcementInput): Promise<RuntimeRateEnforcementDecision> {
+    if (this.runtimeEnvironment === "production") {
+      return disabledRuntimeRateDecision(input, this.mode, "production_guard", this.namespace, this.isolatedTestNamespace);
+    }
+    if (this.mode === "disabled") {
+      return disabledRuntimeRateDecision(input, this.mode, "mode_disabled", this.namespace, this.isolatedTestNamespace);
+    }
+
+    const policy = getRateEnforcementPolicy(input.operation);
+    if (!policy) {
+      return {
+        ...disabledRuntimeRateDecision(input, this.mode, "policy_missing", this.namespace, this.isolatedTestNamespace),
+        action: "observe",
+        mode: this.mode,
+        providerState: "policy_missing",
+      };
+    }
+
+    const key = buildSafeRateLimitKey(policy, input.keyInput);
+    if (!key.ok) {
+      return {
+        ...disabledRuntimeRateDecision(input, this.mode, key.reason, this.namespace, this.isolatedTestNamespace),
+        action: "observe",
+        mode: this.mode,
+        providerState: "key_rejected",
+      };
+    }
+
+    const providerDecision = await this.adapter.consume({
+      key: key.key,
+      policy,
+      cost: input.cost,
+      nowMs: input.nowMs,
+    });
+    const providerEnabled = providerDecision.enabled;
+    const canBlockInThisNamespace =
+      this.mode === "enforce_staging_test_namespace_only" &&
+      this.runtimeEnvironment === "staging" &&
+      this.namespace !== null &&
+      this.isolatedTestNamespace !== null &&
+      isIsolatedStagingTestNamespace(this.namespace, this.isolatedTestNamespace);
+    const providerWouldBlock =
+      providerDecision.state === "hard_limited" || providerDecision.state === "blocked_abuse";
+    const blocked = canBlockInThisNamespace && providerWouldBlock;
+    const action: RateEnforcementAction =
+      this.mode === "observe_only"
+        ? "observe"
+        : blocked
+          ? "block"
+          : canBlockInThisNamespace
+            ? "allow"
+            : "observe";
+
+    return {
+      action,
+      mode: this.mode,
+      operation: input.operation,
+      providerState: providerDecision.state,
+      providerEnabled,
+      blocked,
+      realUsersBlocked: false,
+      enforcementNamespace: this.namespace,
+      isolatedTestNamespace: this.isolatedTestNamespace,
+      safeSubjectHash: key.subjectHash,
+      keyLength: key.keyLength,
+      rawPiiInKey: false,
+      rawPayloadLogged: false,
+      piiLogged: false,
+      reason: blocked ? "isolated_test_namespace_limited" : "not_blocking_real_users",
+    };
+  }
+
+  getHealth(): RuntimeRateEnforcementHealth {
+    const health = this.adapter.getHealth();
+    return {
+      mode: this.mode,
+      runtimeEnvironment: this.runtimeEnvironment,
+      providerEnabled: health.enabled,
+      externalNetworkEnabled: health.externalNetworkEnabled,
+      productionGuard: this.runtimeEnvironment !== "production",
+      namespace: this.namespace,
+      isolatedTestNamespace: this.isolatedTestNamespace,
+      blocksRealUsersGlobally: false,
+    };
+  }
+}
+
+export function createRateEnforcementProviderFromEnv(
+  env: RuntimeRateEnforcementEnv = typeof process !== "undefined" ? process.env : {},
+  options: CreateRateEnforcementProviderFromEnvOptions = {},
+): RuntimeRateEnforcementProvider {
+  const runtimeConfig = resolveScaleProviderRuntimeConfig(env, {
+    runtimeEnvironment: options.runtimeEnvironment,
+  });
+  const adapter =
+    options.adapter ??
+    createRateLimitAdapterFromEnv(env, {
+      runtimeEnvironment: runtimeConfig.runtimeEnvironment,
+      fetchImpl: options.fetchImpl,
+    });
+
+  return new RuntimeRateEnforcementProvider({
+    mode: resolveRateEnforcementMode(env[RATE_ENFORCEMENT_MODE_ENV_NAME]),
+    runtimeEnvironment: runtimeConfig.runtimeEnvironment,
+    adapter,
+    namespace: normalizeText(env.SCALE_RATE_LIMIT_NAMESPACE) || null,
+    isolatedTestNamespace: normalizeText(env[RATE_LIMIT_TEST_NAMESPACE_ENV_NAME]) || null,
   });
 }

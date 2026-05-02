@@ -34,7 +34,7 @@ describe("S-50K provider runtime env conventions", () => {
     expect(SCALE_PROVIDER_RUNTIME_ENV_NAMES.rate_limit).toEqual({
       enabled: "SCALE_RATE_LIMIT_STAGING_ENABLED",
       required: ["SCALE_RATE_LIMIT_STORE_URL", "SCALE_RATE_LIMIT_NAMESPACE"],
-      optional: [],
+      optional: ["SCALE_RATE_ENFORCEMENT_MODE", "SCALE_RATE_LIMIT_TEST_NAMESPACE"],
     });
     expect(SCALE_PROVIDER_RUNTIME_ENV_NAMES.observability_export).toEqual({
       enabled: "SCALE_OBSERVABILITY_EXPORT_STAGING_ENABLED",

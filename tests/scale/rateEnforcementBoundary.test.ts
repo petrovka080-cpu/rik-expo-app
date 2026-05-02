@@ -8,10 +8,15 @@ import {
   IN_MEMORY_RATE_LIMIT_MAX_TRACKED_KEYS,
   InMemoryRateLimitAdapter,
   NoopRateLimitAdapter,
+  RATE_ENFORCEMENT_MODE_ENV_NAME,
+  RATE_LIMIT_TEST_NAMESPACE_ENV_NAME,
   RateLimitStoreAdapter,
+  RuntimeRateEnforcementProvider,
+  createRateEnforcementProviderFromEnv,
   createRateLimitAdapterFromEnv,
   type RateLimitStoreFetch,
   resolveInMemoryRateLimitMaxTrackedKeys,
+  resolveRateEnforcementMode,
 } from "../../src/shared/scale/rateLimitAdapters";
 import {
   BFF_MUTATION_RATE_LIMIT_OPERATIONS,
@@ -396,6 +401,8 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       "SCALE_RATE_LIMIT_STAGING_ENABLED",
       "SCALE_RATE_LIMIT_STORE_URL",
       "SCALE_RATE_LIMIT_NAMESPACE",
+      "SCALE_RATE_ENFORCEMENT_MODE",
+      "SCALE_RATE_LIMIT_TEST_NAMESPACE",
     ]);
     expect(rateStoreEnvNames.every((name) => !name.startsWith("EXPO_PUBLIC_"))).toBe(true);
     expect(rateStoreEnvNames).not.toContain("BFF_SERVER_AUTH_SECRET");
@@ -489,6 +496,233 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
         expiredKeysPurged: 2,
       }),
     );
+  });
+
+  it("keeps runtime rate enforcement disabled by default", async () => {
+    const adapter = new InMemoryRateLimitAdapter();
+    const provider = createRateEnforcementProviderFromEnv(
+      {},
+      {
+        runtimeEnvironment: "staging",
+        adapter,
+      },
+    );
+
+    expect(resolveRateEnforcementMode(undefined)).toBe("disabled");
+    expect(provider.getHealth()).toEqual(
+      expect.objectContaining({
+        mode: "disabled",
+        providerEnabled: true,
+        externalNetworkEnabled: false,
+        productionGuard: true,
+        blocksRealUsersGlobally: false,
+      }),
+    );
+    await expect(
+      provider.evaluate({
+        operation: "ai.workflow.action",
+        keyInput: {
+          actorId: "actor-opaque",
+          companyId: "company-opaque",
+          routeKey: "ai-action",
+        },
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        action: "disabled",
+        providerState: "disabled",
+        blocked: false,
+        realUsersBlocked: false,
+      }),
+    );
+    expect(adapter.getHealth().trackedKeys).toBe(0);
+  });
+
+  it("keeps observe-only runtime mode from blocking even after provider hard limits", async () => {
+    const adapter = new InMemoryRateLimitAdapter({ now: () => 30_000 });
+    const provider = new RuntimeRateEnforcementProvider({
+      mode: "observe_only",
+      runtimeEnvironment: "staging",
+      adapter,
+      namespace: "rik-staging",
+    });
+    const input = {
+      operation: "ai.workflow.action" as const,
+      keyInput: {
+        actorId: "actor-opaque",
+        companyId: "company-opaque",
+        routeKey: "ai-action",
+      },
+    };
+
+    let latest = await provider.evaluate(input);
+    const policy = getRateEnforcementPolicy("ai.workflow.action");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+    for (let index = 0; index < policy.maxRequests + policy.burst + 1; index += 1) {
+      latest = await provider.evaluate(input);
+    }
+
+    expect(latest).toEqual(
+      expect.objectContaining({
+        action: "observe",
+        mode: "observe_only",
+        providerState: "hard_limited",
+        providerEnabled: true,
+        blocked: false,
+        realUsersBlocked: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+        reason: "not_blocking_real_users",
+      }),
+    );
+  });
+
+  it("blocks only an isolated staging test namespace in enforce mode", async () => {
+    const policy = getRateEnforcementPolicy("ai.workflow.action");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+    const input = {
+      operation: "ai.workflow.action" as const,
+      keyInput: {
+        actorId: "actor-opaque",
+        companyId: "company-opaque",
+        routeKey: "ai-action",
+      },
+    };
+
+    const liveNamespaceProvider = new RuntimeRateEnforcementProvider({
+      mode: "enforce_staging_test_namespace_only",
+      runtimeEnvironment: "staging",
+      adapter: new InMemoryRateLimitAdapter({ now: () => 40_000 }),
+      namespace: "rik-staging",
+      isolatedTestNamespace: "rik-staging-test",
+    });
+    let liveDecision = await liveNamespaceProvider.evaluate(input);
+    for (let index = 0; index < policy.maxRequests + policy.burst + 1; index += 1) {
+      liveDecision = await liveNamespaceProvider.evaluate(input);
+    }
+    expect(liveDecision).toEqual(
+      expect.objectContaining({
+        action: "observe",
+        providerState: "hard_limited",
+        blocked: false,
+        realUsersBlocked: false,
+      }),
+    );
+
+    const isolatedProvider = new RuntimeRateEnforcementProvider({
+      mode: "enforce_staging_test_namespace_only",
+      runtimeEnvironment: "staging",
+      adapter: new InMemoryRateLimitAdapter({ now: () => 50_000 }),
+      namespace: "rik-staging-test",
+      isolatedTestNamespace: "rik-staging-test",
+    });
+    let isolatedDecision = await isolatedProvider.evaluate(input);
+    for (let index = 0; index < policy.maxRequests + policy.burst + 1; index += 1) {
+      isolatedDecision = await isolatedProvider.evaluate(input);
+    }
+    expect(isolatedDecision).toEqual(
+      expect.objectContaining({
+        action: "block",
+        mode: "enforce_staging_test_namespace_only",
+        providerState: "hard_limited",
+        blocked: true,
+        realUsersBlocked: false,
+        enforcementNamespace: "rik-staging-test",
+        isolatedTestNamespace: "rik-staging-test",
+        reason: "isolated_test_namespace_limited",
+      }),
+    );
+  });
+
+  it("keeps runtime enforcement key hashing PII-safe", async () => {
+    const provider = new RuntimeRateEnforcementProvider({
+      mode: "observe_only",
+      runtimeEnvironment: "staging",
+      adapter: new InMemoryRateLimitAdapter({ now: () => 60_000 }),
+      namespace: "rik-staging",
+    });
+    const decision = await provider.evaluate({
+      operation: "proposal.submit",
+      keyInput: {
+        actorId: "actor-opaque",
+        companyId: "company-opaque",
+        idempotencyKey: "idem-opaque",
+        routeKey: "proposal-submit",
+      },
+    });
+
+    expect(decision.safeSubjectHash).toEqual(expect.any(String));
+    expect(decision.keyLength).toEqual(expect.any(Number));
+    expect(decision.rawPiiInKey).toBe(false);
+    expect(JSON.stringify(decision)).not.toContain("actor-opaque");
+    expect(JSON.stringify(decision)).not.toContain("company-opaque");
+    expect(JSON.stringify(decision)).not.toContain("idem-opaque");
+
+    await expect(
+      provider.evaluate({
+        operation: "proposal.submit",
+        keyInput: {
+          actorId: "actor-opaque",
+          companyId: "company-opaque",
+          idempotencyKey: "idem-opaque",
+          payload: { email: "person@example.test" },
+        },
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        action: "observe",
+        providerState: "key_rejected",
+        blocked: false,
+        rawPiiInKey: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+        reason: "forbidden_field",
+      }),
+    );
+  });
+
+  it("keeps production runtime guarded even with enforce env values", async () => {
+    const adapter = new InMemoryRateLimitAdapter({ now: () => 70_000 });
+    const provider = createRateEnforcementProviderFromEnv(
+      {
+        [RATE_ENFORCEMENT_MODE_ENV_NAME]: "enforce_staging_test_namespace_only",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-staging-test",
+        [RATE_LIMIT_TEST_NAMESPACE_ENV_NAME]: "rik-staging-test",
+      },
+      {
+        runtimeEnvironment: "production",
+        adapter,
+      },
+    );
+
+    await expect(
+      provider.evaluate({
+        operation: "ai.workflow.action",
+        keyInput: {
+          actorId: "actor-opaque",
+          companyId: "company-opaque",
+          routeKey: "ai-action",
+        },
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        action: "disabled",
+        mode: "enforce_staging_test_namespace_only",
+        providerState: "disabled",
+        blocked: false,
+        realUsersBlocked: false,
+        reason: "production_guard",
+      }),
+    );
+    expect(provider.getHealth()).toEqual(
+      expect.objectContaining({
+        productionGuard: false,
+        blocksRealUsersGlobally: false,
+      }),
+    );
+    expect(adapter.getHealth().trackedKeys).toBe(0);
   });
 
   it("defines disabled policies for read, mutation, job, realtime, and AI operations", () => {
