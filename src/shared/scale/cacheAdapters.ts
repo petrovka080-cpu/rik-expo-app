@@ -239,19 +239,8 @@ const createNodeRedisUrlCommandExecutor = (redisUrl: string): RedisCommandExecut
   }
   if (!parsed.hostname) return null;
 
-  const dynamicRequire = (): ((moduleName: string) => unknown) | null => {
-    try {
-      return (0, eval)("require") as (moduleName: string) => unknown;
-    } catch {
-      return null;
-    }
-  };
-
-  const requireFn = dynamicRequire();
-  if (!requireFn) return null;
-
   const useTls = parsed.protocol === "rediss:";
-  let socketModule: {
+  type RedisSocketModule = {
     connect: (options: Record<string, unknown>, onConnect: () => void) => {
       setTimeout: (timeout: number, callback: () => void) => void;
       on: (event: string, callback: (...args: unknown[]) => void) => void;
@@ -261,18 +250,20 @@ const createNodeRedisUrlCommandExecutor = (redisUrl: string): RedisCommandExecut
       destroy: () => void;
     };
   };
-  try {
-    socketModule = requireFn(useTls ? "node:tls" : "node:net") as typeof socketModule;
-  } catch {
-    return null;
-  }
 
   const port = Number(parsed.port || (useTls ? 6380 : 6379));
   const username = decodeURIComponent(parsed.username || "");
   const password = decodeURIComponent(parsed.password || "");
 
-  return async (command: RedisCommand): Promise<unknown | null> =>
-    new Promise((resolve) => {
+  return async (command: RedisCommand): Promise<unknown | null> => {
+    let socketModule: RedisSocketModule;
+    try {
+      socketModule = (await import(useTls ? "node:tls" : "node:net")) as RedisSocketModule;
+    } catch {
+      return null;
+    }
+
+    return new Promise((resolve) => {
       let response = "";
       let settled = false;
       const socket = socketModule.connect(
@@ -313,6 +304,7 @@ const createNodeRedisUrlCommandExecutor = (redisUrl: string): RedisCommandExecut
         finish(parsedResponse.value);
       });
     });
+  };
 };
 
 export class NoopCacheAdapter implements CacheAdapter {
