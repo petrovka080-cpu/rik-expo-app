@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { BuyerInboxRow } from "../../lib/catalog_api";
 import {
   isRpcRowsEnvelope,
+  RpcValidationError,
   runContainedRpc,
   validateRpcResponse,
 } from "../../lib/api/queryBoundary";
@@ -52,6 +53,11 @@ const normalizeBuyerInboxLimit = (value: unknown): number =>
     BUYER_INBOX_MAX_GROUP_PAGE_SIZE,
     Math.max(1, toInt(value, BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE)),
   );
+
+const getRedactedBuyerRpcErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof RpcValidationError) return fallback;
+  return error instanceof Error && error.message.trim() ? error.message.trim() : String(error ?? fallback);
+};
 
 const clampBuyerInboxRowsToLimit = (
   rows: BuyerInboxRow[],
@@ -391,11 +397,13 @@ async function loadBuyerBucketsDataRpcInternal(params: {
     });
     return result;
   } catch (e: unknown) {
-    log?.("[buyer] loadBuyerBucketsDataRpc error:", e instanceof Error ? e.message : String(e));
+    const redactedMessage = getRedactedBuyerRpcErrorMessage(e, "buyer buckets RPC validation failed");
+    log?.("[buyer] loadBuyerBucketsDataRpc error:", redactedMessage);
     observation?.error(e, {
       rowCount: 0,
       errorStage: "load_buckets_rpc",
       sourceKind: BUYER_BUCKETS_RPC_SOURCE_KIND,
+      errorMessage: redactedMessage,
     });
     throw e;
   }
@@ -440,7 +448,7 @@ export async function loadBuyerBucketsData(params: {
     });
     return result;
   } catch (error) {
-    const failureReason = error instanceof Error ? error.message : String(error ?? "");
+    const failureReason = getRedactedBuyerRpcErrorMessage(error, "buyer buckets RPC validation failed");
     params.log?.("[buyer] loadBuyerBucketsData rpc error:", failureReason);
     recordPlatformObservability({
       screen: "buyer",
@@ -459,6 +467,7 @@ export async function loadBuyerBucketsData(params: {
       sourceKind: BUYER_BUCKETS_RPC_SOURCE_KIND,
       fallbackUsed: false,
       errorStage: "load_buckets_rpc",
+      errorMessage: failureReason || undefined,
     });
     throw error;
   }

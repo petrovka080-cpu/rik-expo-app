@@ -9,6 +9,7 @@ import {
 import { FlashList } from "@/src/ui/FlashList";
 import { UI } from "../buyerUi";
 import {
+  normalizeBuyerPublicationMessage,
   selectBuyerListLoading,
   selectBuyerMainListData,
   selectBuyerShouldShowEmptyState,
@@ -67,8 +68,13 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
   const showEmptyState = selectBuyerShouldShowEmptyState(isLoading, publicationState);
   const showPublicationFailure = !isLoading && !hasData && publicationState !== "ready";
   const showDegradedBanner = !isLoading && hasData && publicationState === "degraded";
+  const sanitizedPublicationMessage = normalizeBuyerPublicationMessage(
+    tab === "inbox" ? "inbox" : "buckets",
+    publicationState,
+    publicationMessage,
+  );
   const normalizedPublicationMessage =
-    String(publicationMessage ?? "").trim() ||
+    sanitizedPublicationMessage ||
     (publicationState === "degraded"
       ? "Не удалось полностью обновить данные. Показана последняя доступная версия."
       : "Не удалось загрузить данные. Повторите обновление.");

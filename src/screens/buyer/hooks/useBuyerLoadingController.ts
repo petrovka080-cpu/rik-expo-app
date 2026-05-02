@@ -23,6 +23,7 @@ import {
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 import { useBuyerRealtimeLifecycle } from "../buyer.realtime.lifecycle";
 import { useBuyerInboxQuery } from "../useBuyerInboxQuery";
+import { normalizeBuyerPublicationMessage } from "../buyer.list.ui";
 
 /**
  * useBuyerLoadingController — orchestrates buyer data loading.
@@ -241,8 +242,9 @@ export function useBuyerLoadingController(params: {
         inboxQuery.error instanceof Error && inboxQuery.error.message.trim()
           ? inboxQuery.error.message.trim()
           : "Не удалось загрузить заявки снабженца.";
-      setInboxPublicationState(rows.length > 0 ? "degraded" : "error");
-      setInboxPublicationMessage(errorMsg);
+      const publicationState = rows.length > 0 ? "degraded" : "error";
+      setInboxPublicationState(publicationState);
+      setInboxPublicationMessage(normalizeBuyerPublicationMessage("inbox", publicationState, errorMsg));
     }
   }, [inboxQuery.isError, inboxQuery.error, rows.length, setInboxPublicationMessage, setInboxPublicationState]);
 
@@ -258,7 +260,7 @@ export function useBuyerLoadingController(params: {
     [supabase, listBuyerInbox, kickMsInbox, kickMsBuckets, log],
   );
 
-  const normalizeBuyerPublicationMessage = useCallback(
+  const normalizeBuyerScopePublicationMessage = useCallback(
     (scope: BuyerSummaryPublicationScope, error: unknown) => {
       const message =
         error instanceof Error && error.message.trim()
@@ -266,9 +268,13 @@ export function useBuyerLoadingController(params: {
           : scope === "inbox"
             ? "Не удалось загрузить заявки снабженца."
             : "Не удалось загрузить предложения снабженца.";
-      return message;
+      return normalizeBuyerPublicationMessage(
+        scope,
+        visibleBucketRowsCount > 0 ? "degraded" : "error",
+        message,
+      );
     },
-    [],
+    [visibleBucketRowsCount],
   );
 
   const publishBuyerScopeState = useCallback(
@@ -418,7 +424,7 @@ export function useBuyerLoadingController(params: {
                 publishBuyerScopeState(
                   "buckets",
                   visibleBucketRowsCount > 0 ? "degraded" : "error",
-                  normalizeBuyerPublicationMessage("buckets", error),
+                  normalizeBuyerScopePublicationMessage("buckets", error),
                   {
                     reason: options.reason,
                     hasData: visibleBucketRowsCount > 0,
@@ -467,7 +473,7 @@ export function useBuyerLoadingController(params: {
     applyBucketsResult,
     inboxQuery,
     log,
-    normalizeBuyerPublicationMessage,
+    normalizeBuyerScopePublicationMessage,
     pending.length,
     publishBuyerScopeState,
     rejected.length,

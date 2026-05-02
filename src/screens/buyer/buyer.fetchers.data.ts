@@ -11,6 +11,10 @@ export type BuyerProposalBucketRow = {
 };
 
 const BUYER_BUCKET_CANONICAL_COUNT_KEY = "__buyerCanonicalTotalCount";
+const BUYER_SUMMARY_BUCKETS_DOCUMENT_TYPES = new Set([
+  "buyer_summary_buckets_scope",
+  "buyer_summary_buckets_scope_v1",
+]);
 
 export type BuyerProposalBucketRows = BuyerProposalBucketRow[] & {
   [BUYER_BUCKET_CANONICAL_COUNT_KEY]?: number;
@@ -243,7 +247,7 @@ export const isBuyerSummaryBucketsScopeResponse = (
 ): raw is BuyerSummaryBucketsScopeEnvelope => {
   const root = asRecord(raw);
   if (!root) return false;
-  if (asText(root.document_type) !== "buyer_summary_buckets_scope_v1") return false;
+  if (!BUYER_SUMMARY_BUCKETS_DOCUMENT_TYPES.has(asText(root.document_type))) return false;
   if (!asText(root.version)) return false;
   if (!Array.isArray(root.pending) || !Array.isArray(root.approved) || !Array.isArray(root.rejected)) {
     return false;

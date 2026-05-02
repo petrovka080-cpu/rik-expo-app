@@ -1,0 +1,100 @@
+{
+  "wave": "S-BUYER-SUMMARY-BUCKETS-RPC-SHAPE-HOTFIX-1",
+  "final_status": "GREEN_BUYER_SUMMARY_BUCKETS_RPC_SHAPE_FIXED",
+  "generated_at": "2026-05-03T01:06:42.6659019+06:00",
+  "head": "3e34447511990e903aea9a489da4e51b105b462a",
+  "origin_main": "3e34447511990e903aea9a489da4e51b105b462a",
+  "head_equals_origin_main": true,
+  "worktree_clean_start": true,
+  "worktree_clean_final": "pending_until_commit",
+  "failing_screen": "office/buyer",
+  "failing_rpc": "buyer_summary_buckets_scope_v1",
+  "failing_function": "loadBuyerBucketsDataRpcInternal",
+  "bug_reproduced": true,
+  "root_cause": "SQL RPC returns document_type=buyer_summary_buckets_scope while the frontend validator accepted only buyer_summary_buckets_scope_v1.",
+  "expected_shape_summary": {
+    "top_level_type": "object",
+    "required_fields": [
+      "document_type",
+      "version",
+      "pending",
+      "approved",
+      "rejected",
+      "meta.pending_count",
+      "meta.approved_count",
+      "meta.rejected_count"
+    ],
+    "accepted_document_types_after_fix": [
+      "buyer_summary_buckets_scope",
+      "buyer_summary_buckets_scope_v1"
+    ]
+  },
+  "actual_shape_summary_redacted": {
+    "top_level_type": "object",
+    "document_type": "buyer_summary_buckets_scope",
+    "version_present": true,
+    "bucket_arrays_present": true,
+    "canonical_counts_present": true,
+    "extra_meta_fields_allowed": true
+  },
+  "missing_fields": [],
+  "extra_fields": [
+    "meta.rows_source",
+    "meta.legacy_rows_source",
+    "meta.payload_shape_version",
+    "meta.primary_owner",
+    "meta.bucket_count",
+    "meta.proposal_ids_count",
+    "meta.total_sum_fields",
+    "meta.status_labels"
+  ],
+  "nullability_mismatch": false,
+  "document_type_mismatch_fixed": true,
+  "sql_migration_required": false,
+  "frontend_schema_updated": true,
+  "rpc_normalizer_updated": true,
+  "strict_validation_preserved": true,
+  "global_validation_disabled": false,
+  "user_visible_technical_error_removed": true,
+  "fallback_state_added": true,
+  "retry_state_added": true,
+  "office_buyer_render_regression_test_added": true,
+  "raw_rpc_payload_printed": false,
+  "raw_business_rows_printed": false,
+  "db_urls_printed": false,
+  "secrets_printed": false,
+  "env_values_printed": false,
+  "production_touched": false,
+  "production_db_touched": false,
+  "production_deploy_triggered": false,
+  "bff_traffic_changed": false,
+  "mutations_enabled": false,
+  "providers_enabled": false,
+  "ota_eas_play_market_touched": false,
+  "tests_added_or_updated": [
+    "src/screens/buyer/buyer.fetchers.test.ts",
+    "src/screens/buyer/buyer.list.ui.test.ts",
+    "tests/api/sRpc6HighRiskRpcValidation.contract.test.ts"
+  ],
+  "gates": {
+    "targeted_buyer_rpc_tests": "pass",
+    "targeted_buyer_screen_tests": "pass",
+    "targeted_validation_redaction_tests": "pass",
+    "performance_budget": "pass",
+    "typescript_no_emit": "pass",
+    "expo_lint": "pass",
+    "git_diff_check": "pass",
+    "npm_test_run_in_band": "pass",
+    "npm_test": "pass",
+    "release_verify_json": "blocked_dirty_worktree_before_commit_all_subgates_passed",
+    "json_artifact_parse": "pending_until_written",
+    "final_head_equals_origin_main": "pending_until_push",
+    "final_tracked_worktree_clean": "pending_until_commit"
+  },
+  "artifacts_created": [
+    "artifacts/S_BUYER_SUMMARY_BUCKETS_RPC_SHAPE_HOTFIX_1_matrix.json",
+    "artifacts/S_BUYER_SUMMARY_BUCKETS_RPC_SHAPE_HOTFIX_1_proof.md"
+  ],
+  "blockers": [],
+  "next_wave_recommendation": "S-OTA-ALL-EAS-CHANNELS-BUYER-RPC-HOTFIX-1"
+}

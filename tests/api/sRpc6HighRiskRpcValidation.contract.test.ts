@@ -201,6 +201,20 @@ describe("S-RPC-6 high-risk RPC validation", () => {
         },
       }),
     ).toBe(true);
+    expect(
+      isBuyerSummaryBucketsScopeResponse({
+        document_type: "buyer_summary_buckets_scope",
+        version: "v1",
+        pending: [],
+        approved: [],
+        rejected: [],
+        meta: {
+          pending_count: 0,
+          approved_count: 0,
+          rejected_count: 0,
+        },
+      }),
+    ).toBe(true);
     expect(isBuyerInboxRpcResponse([{ request_id: "req-1", request_item_id: "item-1" }])).toBe(true);
     expect(isBuyerRequestProposalMapRpcResponse([{ request_id: "req-1", proposal_no: "PR-1" }])).toBe(true);
     expect(

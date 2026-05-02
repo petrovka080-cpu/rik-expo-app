@@ -33,12 +33,13 @@ const buildScopeEnvelope = (params: {
 });
 
 const buildBucketsEnvelope = (params: {
+  documentType?: string;
   pending?: Record<string, unknown>[];
   approved?: Record<string, unknown>[];
   rejected?: Record<string, unknown>[];
   meta?: Record<string, unknown>;
 }) => ({
-  document_type: "buyer_summary_buckets_scope_v1",
+  document_type: params.documentType ?? "buyer_summary_buckets_scope_v1",
   version: "1",
   pending: params.pending ?? [],
   approved: params.approved ?? [],
@@ -539,6 +540,87 @@ describe("buyer inbox fetchers", () => {
         }),
       ]),
     );
+  });
+
+  it("accepts the current SQL document_type for buyer buckets without weakening row validation", async () => {
+    const rpc = jest.fn(async () => ({
+      data: buildBucketsEnvelope({
+        documentType: "buyer_summary_buckets_scope",
+        pending: [
+          {
+            id: "proposal-sql-shape",
+            status: "pending",
+            submitted_at: "2026-03-30T10:00:00.000Z",
+            total_sum: 1200,
+            sent_to_accountant_at: null,
+            items_cnt: 2,
+            ignored_extra_field: "ignored",
+          },
+        ],
+        meta: {
+          rows_source: "buyer_summary_buckets_scope_v1",
+          payload_shape_version: "v1",
+          pending_count: 1,
+          approved_count: 0,
+          rejected_count: 0,
+        },
+      }),
+      error: null,
+    }));
+
+    const result = await loadBuyerBucketsDataRpc({
+      supabase: { rpc } as never,
+      log: () => undefined,
+    });
+
+    expect(result.pending).toEqual([
+      expect.objectContaining({
+        id: "proposal-sql-shape",
+        status: "pending",
+        items_cnt: 2,
+      }),
+    ]);
+    expect(result.counts.pendingCount).toBe(1);
+    expect(result.sourceMeta.sourceKind).toBe("rpc:buyer_summary_buckets_scope_v1");
+  });
+
+  it("redacts malformed buyer bucket validation errors before publication telemetry", async () => {
+    const log = jest.fn();
+    const rpc = jest.fn(async () => ({
+      data: {
+        document_type: "buyer_summary_buckets_scope",
+        version: "1",
+        pending: [],
+        approved: [],
+        rejected: [],
+        meta: {
+          pending_count: "not-a-count",
+          approved_count: 0,
+          rejected_count: 0,
+        },
+      },
+      error: null,
+    }));
+
+    await expect(
+      loadBuyerBucketsData({
+        supabase: { rpc } as never,
+        log,
+      }),
+    ).rejects.toBeInstanceOf(RpcValidationError);
+
+    const logText = JSON.stringify(log.mock.calls);
+    expect(logText).not.toContain("Invalid RPC response shape");
+    expect(logText).not.toContain("src/screens/");
+    expect(logText).not.toContain("loadBuyerBucketsDataRpcInternal");
+    expect(logText).toContain("buyer buckets RPC validation failed");
+
+    const eventMessages = getPlatformObservabilityEvents()
+      .filter((event) => event.screen === "buyer" && event.surface === "summary_buckets")
+      .map((event) => String(event.errorMessage ?? ""));
+    expect(eventMessages.some((message) => message.includes("buyer buckets RPC validation failed"))).toBe(true);
+    expect(eventMessages.join(" ")).not.toContain("Invalid RPC response shape");
+    expect(eventMessages.join(" ")).not.toContain("src/screens/");
   });
 
   it("does not fallback to legacy stitch when the buckets rpc fails", async () => {
