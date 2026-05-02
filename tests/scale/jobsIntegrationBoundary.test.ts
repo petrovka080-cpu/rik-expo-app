@@ -8,11 +8,13 @@ import {
   InMemoryJobAdapter,
   NoopJobAdapter,
   QueueHttpJobAdapter,
+  RedisUrlJobAdapter,
   createQueueJobAdapterFromEnv,
   type BullMqJobPort,
   type BullMqQueuePort,
   type QueueHttpFetch,
 } from "../../src/shared/scale/jobAdapters";
+import type { RedisCommandExecutor } from "../../src/shared/scale/cacheAdapters";
 import {
   BFF_MUTATION_JOB_POLICY_MAP,
   JOB_POLICY_REGISTRY,
@@ -160,6 +162,29 @@ const createBullMqQueueMock = () => {
     addMock: queue.add as jest.MockedFunction<BullMqQueuePort["add"]>,
     getJobMock: queue.getJob as jest.MockedFunction<BullMqQueuePort["getJob"]>,
   };
+};
+
+const createRedisCommandMock = () => {
+  const values = new Map<string, string>();
+  const calls: (readonly (string | number)[])[] = [];
+
+  const commandMock = jest.fn(async (command) => {
+    calls.push(command);
+    const [operation, key, value] = command;
+    if (operation === "SET" && typeof key === "string" && typeof value === "string") {
+      values.set(key, value);
+      return "OK";
+    }
+    if (operation === "GET" && typeof key === "string") {
+      return values.get(key) ?? null;
+    }
+    if (operation === "DEL" && typeof key === "string") {
+      return values.delete(key) ? 1 : 0;
+    }
+    return null;
+  }) as jest.MockedFunction<RedisCommandExecutor>;
+
+  return { commandMock, values, calls };
 };
 
 describe("S-50K-JOBS-INTEGRATION-1 disabled background job boundary", () => {
@@ -368,6 +393,64 @@ describe("S-50K-JOBS-INTEGRATION-1 disabled background job boundary", () => {
     );
   });
 
+  it("supports Redis URL queue provider only behind the explicit staging gate", async () => {
+    const redis = createRedisCommandMock();
+
+    const disabled = createQueueJobAdapterFromEnv(
+      {
+        SCALE_QUEUE_PROVIDER: "redis_url",
+        SCALE_QUEUE_URL: "rediss://queue.example.invalid",
+        SCALE_QUEUE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "staging",
+        redisCommandImpl: redis.commandMock,
+      },
+    );
+    expect(disabled).toBeInstanceOf(NoopJobAdapter);
+
+    const production = createQueueJobAdapterFromEnv(
+      {
+        SCALE_QUEUE_STAGING_ENABLED: "true",
+        SCALE_QUEUE_PROVIDER: "redis_url",
+        SCALE_QUEUE_URL: "rediss://queue.example.invalid",
+        SCALE_QUEUE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "production",
+        redisCommandImpl: redis.commandMock,
+      },
+    );
+    expect(production).toBeInstanceOf(NoopJobAdapter);
+    expect(redis.commandMock).not.toHaveBeenCalled();
+
+    const staging = createQueueJobAdapterFromEnv(
+      {
+        SCALE_QUEUE_STAGING_ENABLED: "true",
+        SCALE_QUEUE_PROVIDER: "redis_url",
+        SCALE_QUEUE_URL: "rediss://queue.example.invalid",
+        SCALE_QUEUE_NAMESPACE: "rik-staging",
+      },
+      {
+        runtimeEnvironment: "staging",
+        redisCommandImpl: redis.commandMock,
+      },
+    );
+    expect(staging).toBeInstanceOf(RedisUrlJobAdapter);
+    expect(staging.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "redis_url",
+        enabled: true,
+        externalNetworkEnabled: true,
+        executionEnabledByDefault: false,
+        namespace: "rik-staging",
+        provider: "redis_url",
+        workerConcurrencyCap: MAX_QUEUE_WORKER_CONCURRENCY,
+        claimBatchCap: MAX_SUBMIT_JOB_CLAIM_LIMIT,
+      }),
+    );
+  });
+
   it("implements enqueue/status/cancel/retry/dead-letter through a mocked queue provider", async () => {
     const queue = createQueueHttpMock();
     const adapter = new QueueHttpJobAdapter({
@@ -395,6 +478,45 @@ describe("S-50K-JOBS-INTEGRATION-1 disabled background job boundary", () => {
       record: expect.objectContaining({ status: "retry_scheduled", attempts: 1 }),
     });
     await expect(adapter.deadLetter(enqueued.record.jobId, "retry_exhausted")).resolves.toBe(true);
+    await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(
+      expect.objectContaining({ status: "dead_lettered" }),
+    );
+  });
+
+  it("implements Redis URL enqueue/status/cancel/retry/dead-letter with namespaced synthetic records", async () => {
+    const redis = createRedisCommandMock();
+    const adapter = new RedisUrlJobAdapter({
+      redisUrl: "rediss://queue.example.invalid",
+      namespace: "rik-staging",
+      provider: "redis_url",
+      commandImpl: redis.commandMock,
+    });
+
+    const enqueued = await adapter.enqueue({
+      jobType: "cache.readmodel.refresh",
+      payload: { model: "director.pending.list", companyKey: "opaque-company" },
+    });
+    expect(enqueued.ok).toBe(true);
+    if (!enqueued.ok) return;
+    expect(enqueued.record.status).toBe("queued");
+    expect(redis.calls[0]).toEqual([
+      "SET",
+      `rik-staging:queue:job:${enqueued.record.jobId}`,
+      expect.any(String),
+      "PX",
+      expect.any(Number),
+    ]);
+
+    await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(enqueued.record);
+    await expect(adapter.cancel(enqueued.record.jobId)).resolves.toBe(true);
+    await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(
+      expect.objectContaining({ status: "cancelled" }),
+    );
+    await expect(adapter.retry(enqueued.record.jobId)).resolves.toEqual({
+      ok: true,
+      record: expect.objectContaining({ status: "retry_scheduled", attempts: 1 }),
+    });
+    await expect(adapter.deadLetter(enqueued.record.jobId, "retry_exhausted raw payload omitted")).resolves.toBe(true);
     await expect(adapter.getStatus(enqueued.record.jobId)).resolves.toEqual(
       expect.objectContaining({ status: "dead_lettered" }),
     );

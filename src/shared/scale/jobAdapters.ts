@@ -1,4 +1,9 @@
-import { safeJsonStringify } from "../../lib/format";
+import { safeJsonParseValue, safeJsonStringify } from "../../lib/format";
+import {
+  createNodeRedisUrlCommandExecutor,
+  type RedisCommand,
+  type RedisCommandExecutor,
+} from "./cacheAdapters";
 import {
   MAX_QUEUE_WORKER_CONCURRENCY,
   MAX_SUBMIT_JOB_CLAIM_LIMIT,
@@ -12,7 +17,7 @@ import {
 } from "./providerRuntimeConfig";
 
 export type JobAdapterStatus = {
-  kind: "noop" | "in_memory" | "external_contract" | "queue_http" | "bullmq";
+  kind: "noop" | "in_memory" | "external_contract" | "queue_http" | "bullmq" | "redis_url";
   enabled: boolean;
   externalNetworkEnabled: boolean;
   executionEnabledByDefault: false;
@@ -80,12 +85,21 @@ export type BullMqJobAdapterOptions = {
   provider?: string;
 };
 
+export type RedisUrlJobAdapterOptions = {
+  redisUrl: string;
+  namespace: string;
+  provider?: string;
+  commandImpl?: RedisCommandExecutor | null;
+  recordTtlMs?: number;
+};
+
 export type QueueJobAdapterEnv = Record<string, string | undefined>;
 
 export type CreateQueueJobAdapterFromEnvOptions = {
   runtimeEnvironment?: ScaleProviderRuntimeEnvironment;
   fetchImpl?: QueueHttpFetch;
   bullMqQueue?: BullMqQueuePort;
+  redisCommandImpl?: RedisCommandExecutor | null;
 };
 
 export type BullMqJobState =
@@ -145,6 +159,8 @@ const providerUnavailableResult = (): JobAdapterEnqueueResult => ({
   message: "Background job provider is unavailable",
 });
 
+const REDIS_URL_QUEUE_DEFAULT_RECORD_TTL_MS = 60 * 60 * 1000;
+
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
 
 const normalizeQueueBaseUrl = (value: string): string => normalizeText(value).replace(/\/+$/g, "");
@@ -152,11 +168,32 @@ const normalizeQueueBaseUrl = (value: string): string => normalizeText(value).re
 const isSafeQueueNamespace = (namespace: string): boolean =>
   namespace.length > 0 && namespace.length <= 64 && /^[A-Za-z0-9][A-Za-z0-9:_-]*$/.test(namespace);
 
-const isSupportedQueueProvider = (provider: string): boolean => provider === "queue_provider" || provider === "bullmq";
+const isSupportedQueueProvider = (provider: string): boolean =>
+  provider === "queue_provider" || provider === "bullmq" || provider === "redis_url";
+
+const isRedisProtocolUrl = (value: string): boolean => /^rediss?:\/\//i.test(value.trim());
 
 const defaultQueueFetch = (): QueueHttpFetch | null => {
   if (typeof globalThis.fetch !== "function") return null;
   return globalThis.fetch as QueueHttpFetch;
+};
+
+const createRedisJobId = (): string => {
+  const random = Math.random().toString(36).slice(2, 10);
+  return `redis-job-${Date.now().toString(36)}-${random}`;
+};
+
+const buildRedisQueueJobKey = (namespace: string, jobId: string): string | null => {
+  const normalizedJobId = normalizeText(jobId);
+  if (!isSafeQueueNamespace(namespace) || !normalizedJobId || normalizedJobId.length > 96) return null;
+  if (!/^[A-Za-z0-9:_-]+$/.test(normalizedJobId)) return null;
+  return `${namespace}:queue:job:${normalizedJobId}`;
+};
+
+const parseRedisJobRecord = (value: unknown): JobRecord | null => {
+  if (typeof value !== "string" || !value.trim()) return null;
+  const parsed = safeJsonParseValue<unknown>(value, null);
+  return isJobRecord(parsed) ? parsed : null;
 };
 
 const isJobRecord = (value: unknown): value is JobRecord => {
@@ -582,9 +619,128 @@ export class BullMqJobAdapter implements JobAdapter {
   }
 }
 
+export class RedisUrlJobAdapter implements JobAdapter {
+  private readonly redisUrl: string;
+  private readonly namespace: string;
+  private readonly provider: string;
+  private readonly commandImpl: RedisCommandExecutor | null;
+  private readonly recordTtlMs: number;
+
+  constructor(options: RedisUrlJobAdapterOptions) {
+    this.redisUrl = normalizeText(options.redisUrl);
+    this.namespace = normalizeText(options.namespace);
+    this.provider = normalizeText(options.provider || "redis_url").toLowerCase();
+    this.commandImpl = options.commandImpl ?? createNodeRedisUrlCommandExecutor(this.redisUrl);
+    this.recordTtlMs = Math.max(
+      1_000,
+      Math.floor(Number(options.recordTtlMs ?? REDIS_URL_QUEUE_DEFAULT_RECORD_TTL_MS) || 0),
+    );
+  }
+
+  async enqueue(envelope: JobPayloadEnvelope): Promise<JobAdapterEnqueueResult> {
+    const safePayload = validateJobPayloadEnvelope(envelope);
+    if (!safePayload.ok) {
+      return {
+        ok: false,
+        code: safePayload.code,
+        message: safePayload.message,
+      };
+    }
+
+    const jobId = createRedisJobId();
+    const record: JobRecord = {
+      jobId,
+      jobType: envelope.jobType,
+      status: "queued",
+      attempts: 0,
+      payloadBytes: safePayload.payloadBytes,
+    };
+    const stored = await this.storeRecord(record);
+    return stored ? { ok: true, record } : providerUnavailableResult();
+  }
+
+  async getStatus(jobId: string): Promise<JobRecord | null> {
+    const key = buildRedisQueueJobKey(this.namespace, jobId);
+    if (!key) return null;
+    const result = await this.command(["GET", key]);
+    return parseRedisJobRecord(result);
+  }
+
+  async cancel(jobId: string): Promise<boolean> {
+    return this.updateRecord(jobId, (record) => ({ ...record, status: "cancelled" }));
+  }
+
+  async retry(jobId: string): Promise<JobAdapterEnqueueResult> {
+    const key = buildRedisQueueJobKey(this.namespace, jobId);
+    if (!key) return providerUnavailableResult();
+    const current = parseRedisJobRecord(await this.command(["GET", key]));
+    if (!current) return providerUnavailableResult();
+    const next: JobRecord = {
+      ...current,
+      status: "retry_scheduled",
+      attempts: current.attempts + 1,
+    };
+    return (await this.storeRecord(next)) ? { ok: true, record: next } : providerUnavailableResult();
+  }
+
+  async deadLetter(jobId: string, _reason: string): Promise<boolean> {
+    return this.updateRecord(jobId, (record) => ({ ...record, status: "dead_lettered" }));
+  }
+
+  getHealth(): JobHealth {
+    const enabled = this.canUseNetwork();
+    return {
+      kind: "redis_url",
+      enabled,
+      externalNetworkEnabled: enabled,
+      executionEnabledByDefault: false,
+      namespace: enabled ? this.namespace : undefined,
+      provider: enabled ? this.provider : undefined,
+      queued: 0,
+      deadLettered: 0,
+      workerConcurrencyCap: MAX_QUEUE_WORKER_CONCURRENCY,
+      claimBatchCap: MAX_SUBMIT_JOB_CLAIM_LIMIT,
+    };
+  }
+
+  private async updateRecord(jobId: string, update: (record: JobRecord) => JobRecord): Promise<boolean> {
+    const key = buildRedisQueueJobKey(this.namespace, jobId);
+    if (!key) return false;
+    const current = parseRedisJobRecord(await this.command(["GET", key]));
+    if (!current) return false;
+    return this.storeRecord(update(current));
+  }
+
+  private async storeRecord(record: JobRecord): Promise<boolean> {
+    const key = buildRedisQueueJobKey(this.namespace, record.jobId);
+    const body = safeJsonStringify(record);
+    if (!key || !body) return false;
+    const result = await this.command(["SET", key, body, "PX", this.recordTtlMs]);
+    return result === "OK";
+  }
+
+  private canUseNetwork(): boolean {
+    return (
+      this.provider === "redis_url" &&
+      isRedisProtocolUrl(this.redisUrl) &&
+      isSafeQueueNamespace(this.namespace) &&
+      this.commandImpl !== null
+    );
+  }
+
+  private async command(command: RedisCommand): Promise<unknown | null> {
+    if (!this.canUseNetwork() || !this.commandImpl) return null;
+    try {
+      return await this.commandImpl(command);
+    } catch {
+      return null;
+    }
+  }
+}
+
 export type ExternalJobAdapterContract = {
   kind: "external_contract";
-  provider: "bullmq" | "inngest" | "cloud_tasks" | "queue_provider";
+  provider: "bullmq" | "inngest" | "cloud_tasks" | "queue_provider" | "redis_url";
   enqueue: "contract_only";
   getStatus: "contract_only";
   cancel: "contract_only";
@@ -631,6 +787,17 @@ export function createQueueJobAdapterFromEnv(
       queue: options.bullMqQueue,
       namespace: normalizeText(env.SCALE_QUEUE_NAMESPACE),
       provider,
+    });
+  }
+
+  if (provider === "redis_url") {
+    const redisUrl = normalizeText(env.SCALE_QUEUE_URL);
+    if (!isRedisProtocolUrl(redisUrl)) return createDisabledJobAdapter();
+    return new RedisUrlJobAdapter({
+      redisUrl,
+      namespace: normalizeText(env.SCALE_QUEUE_NAMESPACE),
+      provider,
+      commandImpl: options.redisCommandImpl,
     });
   }
 

@@ -227,7 +227,7 @@ const parseRespValue = (input: string, offset = 0): { value: RedisParsedValue; n
   return null;
 };
 
-const createNodeRedisUrlCommandExecutor = (redisUrl: string): RedisCommandExecutor | null => {
+export const createNodeRedisUrlCommandExecutor = (redisUrl: string): RedisCommandExecutor | null => {
   const normalizedUrl = normalizeRedisUrl(redisUrl);
   if (!isRedisProtocolUrl(normalizedUrl)) return null;
 
