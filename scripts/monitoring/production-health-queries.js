@@ -1,6 +1,7 @@
 "use strict";
 
 const { createClient } = require("@supabase/supabase-js");
+const { Client } = require("pg");
 const { redactSensitive } = require("./production-health-format");
 
 const REQUIRED_PROD_ENV_KEYS = Object.freeze([
@@ -147,6 +148,152 @@ async function countAppErrors(client, options) {
   };
 }
 
+function buildDbSignalWhereClause(terms, params) {
+  if (!terms || terms.length === 0) return "";
+  const clauses = [];
+  for (const term of terms) {
+    const safeTerm = String(term).replace(/[%_]/g, "").trim();
+    if (safeTerm.length === 0) continue;
+    params.push(`%${safeTerm}%`);
+    const placeholder = `$${params.length}`;
+    clauses.push(`context ilike ${placeholder}`, `message ilike ${placeholder}`);
+  }
+  return clauses.length > 0 ? ` and (${clauses.join(" or ")})` : "";
+}
+
+async function countAppErrorsWithDatabaseUrl(client, options) {
+  const params = [options.sinceIso];
+  const signalWhere = buildDbSignalWhereClause(options.terms, params);
+  const result = await client.query(
+    `select count(*)::int as count from public.app_errors where created_at >= $1${signalWhere}`,
+    params,
+  );
+  const count = Number(result.rows && result.rows[0] ? result.rows[0].count : 0);
+  return Number.isFinite(count) ? count : 0;
+}
+
+async function fetchAppErrorAggregateSnapshotViaDatabaseUrl(databaseUrl, options = {}) {
+  const generatedAt = options.generatedAt || new Date().toISOString();
+  const nowMs = Date.parse(generatedAt);
+  const windows = {};
+  const signals = {};
+  const errors = [];
+  const client = new Client({
+    connectionString: databaseUrl,
+    statement_timeout: 8000,
+    query_timeout: 8000,
+  });
+
+  try {
+    await client.connect();
+    await client.query("begin read only");
+    await client.query("set local statement_timeout = '8000ms'");
+
+    for (const windowConfig of APP_ERROR_WINDOWS) {
+      const sinceIso = new Date(nowMs - windowConfig.durationMs).toISOString();
+      try {
+        const count = await countAppErrorsWithDatabaseUrl(client, { sinceIso });
+        windows[windowConfig.key] = {
+          status: "verified",
+          count,
+          rowsReturned: 0,
+          queryMode: "db_count_only",
+        };
+      } catch (error) {
+        errors.push({
+          source: "app_errors",
+          query: `${windowConfig.key}_db_count`,
+          errorClass: classifySupabaseReadError(error),
+          error: redactSensitive(error && error.message ? error.message : String(error)),
+        });
+        windows[windowConfig.key] = {
+          status: "unavailable",
+          count: 0,
+          rowsReturned: 0,
+          queryMode: "db_count_only",
+        };
+      }
+    }
+
+    const last24hSinceIso = new Date(nowMs - 24 * 60 * 60 * 1000).toISOString();
+    for (const [signalName, terms] of Object.entries(APP_ERROR_SIGNAL_FILTERS)) {
+      try {
+        const count = await countAppErrorsWithDatabaseUrl(client, {
+          sinceIso: last24hSinceIso,
+          terms,
+        });
+        signals[signalName] = {
+          status: "verified",
+          count,
+          rowsReturned: 0,
+          queryMode: "db_count_only",
+        };
+      } catch (error) {
+        errors.push({
+          source: "app_errors",
+          query: `${signalName}_last24h_db_count`,
+          errorClass: classifySupabaseReadError(error),
+          error: redactSensitive(error && error.message ? error.message : String(error)),
+        });
+        signals[signalName] = {
+          status: "unavailable",
+          count: 0,
+          rowsReturned: 0,
+          queryMode: "db_count_only",
+        };
+      }
+    }
+
+    await client.query("commit");
+  } catch (error) {
+    try {
+      await client.query("rollback");
+    } catch (_) {
+      // Best-effort cleanup only; the reported error below is the useful signal.
+    }
+    return {
+      name: "app_errors",
+      status: "unavailable",
+      queryMode: "db_aggregate_count_only",
+      rowsReturned: 0,
+      productionRowsRead: false,
+      windows,
+      signals,
+      insufficientAccess: classifySupabaseReadError(error) === "insufficient_access",
+      errorClass: classifySupabaseReadError(error),
+      errors: [
+        {
+          source: "app_errors",
+          query: "db_aggregate_count",
+          errorClass: classifySupabaseReadError(error),
+          error: redactSensitive(error && error.message ? error.message : String(error)),
+        },
+      ],
+    };
+  } finally {
+    await client.end().catch(() => {});
+  }
+
+  const anyVerified = [
+    ...Object.values(windows),
+    ...Object.values(signals),
+  ].some((entry) => entry.status === "verified");
+  const insufficientAccess = errors.some((entry) => entry.errorClass === "insufficient_access");
+
+  return {
+    name: "app_errors",
+    status: anyVerified && errors.length === 0 ? "queried" : "unavailable",
+    queryMode: "db_aggregate_count_only",
+    rowsReturned: 0,
+    productionRowsRead: false,
+    windows,
+    signals,
+    insufficientAccess,
+    errorClass: errors[0] ? errors[0].errorClass : null,
+    errors,
+  };
+}
+
 async function fetchAppErrorAggregateSnapshot(client, options = {}) {
   const generatedAt = options.generatedAt || new Date().toISOString();
   const nowMs = Date.parse(generatedAt);
@@ -221,5 +368,6 @@ module.exports = {
   createProductionReadOnlyClient,
   fetchAppErrors,
   fetchAppErrorAggregateSnapshot,
+  fetchAppErrorAggregateSnapshotViaDatabaseUrl,
   classifySupabaseReadError,
 };

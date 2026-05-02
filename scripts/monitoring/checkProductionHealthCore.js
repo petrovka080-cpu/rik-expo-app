@@ -5,6 +5,7 @@ const { redactSensitive } = require("./production-health-format");
 const {
   createProductionReadOnlyClient,
   fetchAppErrorAggregateSnapshot,
+  fetchAppErrorAggregateSnapshotViaDatabaseUrl,
   resolveProductionHealthEnv,
 } = require("./production-health-queries");
 
@@ -248,6 +249,9 @@ async function buildLiveHealthCheckResult(params) {
   const envStatus = resolveProductionHealthEnv(env);
   const createClient = params.createReadOnlyClient || createProductionReadOnlyClient;
   const fetchAggregate = params.fetchAppErrorAggregateSnapshot || fetchAppErrorAggregateSnapshot;
+  const fetchDatabaseAggregate =
+    params.fetchAppErrorAggregateSnapshotViaDatabaseUrl ||
+    fetchAppErrorAggregateSnapshotViaDatabaseUrl;
   const client = createClient(envStatus);
   let appErrorsAggregate;
 
@@ -271,6 +275,18 @@ async function buildLiveHealthCheckResult(params) {
         },
       ],
     };
+  }
+
+  if (
+    appErrorsAggregate.status !== "queried" &&
+    String(env.PROD_DATABASE_READONLY_URL || "").trim().length > 0
+  ) {
+    const databaseAggregate = await fetchDatabaseAggregate(env.PROD_DATABASE_READONLY_URL, {
+      generatedAt,
+    });
+    if (databaseAggregate.status === "queried") {
+      appErrorsAggregate = databaseAggregate;
+    }
   }
 
   const metricStatuses = buildMetricStatuses(appErrorsAggregate, sentryAccess);

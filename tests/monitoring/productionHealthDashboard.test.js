@@ -290,4 +290,90 @@ describe("checkProductionHealth dry-run safety", () => {
     expect(result.productionLoadGenerated).toBe(false);
     expect(result.metricsVerified.appErrors).toBe("unavailable");
   });
+
+  it("falls back to database-url aggregate counts without reading rows when REST counts fail", async () => {
+    const { result, exitCode } = await buildLiveHealthCheckResult({
+      target: "production",
+      dryRun: false,
+      env: {
+        PROD_SUPABASE_URL: "https://prod.example.supabase.co",
+        PROD_SUPABASE_READONLY_KEY: "readonly-prod-secret",
+        PROD_DATABASE_READONLY_URL: "postgres://readonly-secret@example.invalid/db",
+        SENTRY_ORG: "org",
+        SENTRY_PROJECT: "project",
+      },
+      generatedAt: NOW,
+      createReadOnlyClient: () => ({ fake: true }),
+      fetchAppErrorAggregateSnapshot: async () => ({
+        name: "app_errors",
+        status: "unavailable",
+        queryMode: "aggregate_count_head_only",
+        rowsReturned: 0,
+        productionRowsRead: false,
+        insufficientAccess: false,
+        errorClass: "connection_failed",
+        errors: [],
+      }),
+      fetchAppErrorAggregateSnapshotViaDatabaseUrl: async () => ({
+        name: "app_errors",
+        status: "queried",
+        queryMode: "db_aggregate_count_only",
+        rowsReturned: 0,
+        productionRowsRead: false,
+        insufficientAccess: false,
+        windows: {},
+        signals: {},
+        errors: [],
+      }),
+    });
+    const output = JSON.stringify(result);
+
+    expect(exitCode).toBe(0);
+    expect(result.status).toBe("PARTIAL_SENTRY_MISSING");
+    expect(result.metricsVerified.appErrors).toBe("verified");
+    expect(result.productionRowsRead).toBe(false);
+    expect(result.writes).toBe(false);
+    expect(assertJsonDoesNotContainSecrets(output, {
+      PROD_DATABASE_READONLY_URL: "postgres://readonly-secret@example.invalid/db",
+    })).toBe(true);
+  });
+});
+
+describe("database-url aggregate fallback", () => {
+  it("runs count-only queries in a read-only transaction", async () => {
+    const calls = [];
+    const fakeClient = {
+      connect: jest.fn(),
+      query: jest.fn(async (sql) => {
+        calls.push(sql);
+        if (/count\(\*\)::int/.test(sql)) return { rows: [{ count: 0 }] };
+        return { rows: [] };
+      }),
+      end: jest.fn(async () => {}),
+    };
+    const PgClient = require("pg").Client;
+    const originalClient = PgClient;
+
+    jest.resetModules();
+    jest.doMock("pg", () => ({
+      Client: jest.fn(() => fakeClient),
+    }));
+    const {
+      fetchAppErrorAggregateSnapshotViaDatabaseUrl: fetchWithMock,
+    } = require("../../scripts/monitoring/production-health-queries");
+
+    const result = await fetchWithMock("postgres://readonly-secret@example.invalid/db", {
+      generatedAt: NOW,
+    });
+
+    expect(result.status).toBe("queried");
+    expect(result.productionRowsRead).toBe(false);
+    expect(result.rowsReturned).toBe(0);
+    expect(calls[0]).toBe("begin read only");
+    expect(calls.some((sql) => /select count\(\*\)::int as count/.test(sql))).toBe(true);
+
+    jest.dontMock("pg");
+    jest.resetModules();
+    expect(originalClient).toBeDefined();
+  });
 });
