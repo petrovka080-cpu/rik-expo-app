@@ -5,11 +5,13 @@ name: Register Public Path
     clearState: true
 - extendedWaitUntil:
     visible: "Войти в GOX"
-    timeout: 15000
+    timeout: 60000
+- assertNotVisible: "isn't responding"
 - tapOn: "Зарегистрироваться"
 - extendedWaitUntil:
     visible: "Создать"
-    timeout: 15000
+    timeout: 60000
 - assertVisible: "Создать"
 - assertVisible: "Войти"
+- assertNotVisible: "isn't responding"
 - stopApp

@@ -95,6 +95,57 @@ describe("S-LOAD-1 staging load core", () => {
     expect(plan.blockers).toEqual([]);
   });
 
+  it("builds a bounded 5K plan as plan-only by default and requires enterprise approval", () => {
+    const envStatus = resolveStagingLoadEnvStatus({
+      STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+      STAGING_SUPABASE_READONLY_KEY: "readonly",
+    });
+    const plan = buildStagingLoadHarnessPlan({
+      envStatus,
+      profile: "bounded-5k",
+      planOnly: true,
+      operatorApproved: false,
+      supabaseLimitsConfirmed: false,
+      enterpriseLoadApproved: false,
+    });
+
+    expect(plan.profile).toBe("bounded-5k");
+    expect(plan.targetConcurrency).toBe(5000);
+    expect(plan.rampSteps).toEqual([
+      5,
+      10,
+      15,
+      20,
+      25,
+      50,
+      100,
+      250,
+      500,
+      750,
+      1000,
+      1500,
+      2000,
+      3000,
+      4000,
+      5000,
+    ]);
+    expect(plan.stopConditions).toMatchObject({
+      maxTotalRequests: 5000,
+      maxP95LatencyMs: 1500,
+      stopOnSqlstate57014: true,
+      stopOnHttp429Or5xx: true,
+    });
+    expect(plan.enterpriseLoadApprovalRequired).toBe(true);
+    expect(plan.safeToRunLive).toBe(false);
+    expect(plan.blockers).toEqual(
+      expect.arrayContaining([
+        "operator_approval_missing",
+        "supabase_limits_unconfirmed",
+        "enterprise_5k_load_approval_missing",
+      ]),
+    );
+  });
+
   it("summarizes latency, payload, row count, and recommendation", () => {
     const target = DEFAULT_STAGING_LOAD_TARGETS[0]!;
     const result = summarizeTargetResult(target, [
@@ -192,5 +243,39 @@ describe("S-LOAD-1 staging load core", () => {
     expect(proof).toContain("target concurrency: 1000");
     expect(proof).toContain("stop on SQLSTATE 57014: YES");
     expect(proof).toContain("Supabase limits confirmed: NO");
+  });
+
+  it("records 5K harness readiness separately from a 5K live load proof", () => {
+    const envStatus = resolveStagingLoadEnvStatus({
+      STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+      STAGING_SUPABASE_READONLY_KEY: "readonly",
+    });
+    const harnessPlan = buildStagingLoadHarnessPlan({
+      envStatus,
+      profile: "bounded-5k",
+      planOnly: true,
+      operatorApproved: false,
+      supabaseLimitsConfirmed: false,
+      enterpriseLoadApproved: false,
+    });
+    const matrix = buildStagingLoadMatrix({
+      generatedAt: "2026-05-04T00:00:00.000Z",
+      envStatus,
+      harnessPlan,
+      targets: DEFAULT_STAGING_LOAD_TARGETS.map((target) =>
+        createNotRunResult(target, "not_run_plan_only", harnessPlan.blockers),
+      ),
+    });
+    const proof = renderStagingLoadProof(matrix);
+
+    expect(matrix.liveRun).toBe("not_run_plan_only");
+    expect(matrix.wave).toBe("S-LOAD-STAGING-5K-READONLY-HARNESS-PREFLIGHT-1");
+    expect(resolveStagingLoadProofStatus(matrix)).toBe(
+      "GREEN_5K_HARNESS_READY_LIVE_BLOCKED_BY_APPROVALS_OR_ENV",
+    );
+    expect(proof).toContain("S-LOAD-STAGING-5K Readonly Harness Preflight Proof");
+    expect(proof).toContain("target concurrency: 5000");
+    expect(proof).toContain("Enterprise load approval required: YES");
+    expect(proof).toContain("Enterprise load approved: NO");
   });
 });

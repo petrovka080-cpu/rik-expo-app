@@ -17,6 +17,7 @@ import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
 import { initializeSentry, wrapRootComponentWithSentry } from "../src/lib/observability/sentry";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
+import { shouldWarmPdfViewerAfterStartup } from "../src/lib/entry/pdfViewerWarmupPolicy";
 
 initializeSentry();
 
@@ -86,15 +87,30 @@ function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS === "web") return undefined;
     if (process.env.NODE_ENV === "test") return undefined;
+    if (
+      !shouldWarmPdfViewerAfterStartup({
+        platformOs: Platform.OS,
+        pathname,
+        sessionLoaded: authState.sessionLoaded,
+        authSessionStatus: authState.authSessionState.status,
+      })
+    ) {
+      return undefined;
+    }
+
+    let warmupTimeout: ReturnType<typeof setTimeout> | null = null;
     const task = InteractionManager.runAfterInteractions(() => {
-      void import("./pdf-viewer");
+      warmupTimeout = setTimeout(() => {
+        void import("./pdf-viewer");
+      }, 4_000);
     });
+
     return () => {
       task.cancel?.();
+      if (warmupTimeout) clearTimeout(warmupTimeout);
     };
-  }, []);
+  }, [authState.authSessionState.status, authState.sessionLoaded, pathname]);
 
   const APP_BG = "#0B0F14";
   const UI = {

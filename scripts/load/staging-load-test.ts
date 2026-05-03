@@ -37,6 +37,10 @@ const ARTIFACT_PATHS_BY_PROFILE: Record<StagingLoadRunProfile, { matrix: string;
     matrix: "artifacts/S_LOAD_10_1k_concurrency_preflight_matrix.json",
     proof: "artifacts/S_LOAD_10_1k_concurrency_preflight_proof.md",
   },
+  "bounded-5k": {
+    matrix: "artifacts/S_LOAD_STAGING_5K_READONLY_HARNESS_PREFLIGHT_1_matrix.json",
+    proof: "artifacts/S_LOAD_STAGING_5K_READONLY_HARNESS_PREFLIGHT_1_proof.md",
+  },
 };
 
 type RpcClient = {
@@ -66,10 +70,11 @@ const hasFlag = (flag: string): boolean => process.argv.includes(flag);
 
 const parseCliOptions = (): CliOptions => {
   const profileValue = readFlagValue("--profile");
-  const profile: StagingLoadRunProfile = profileValue === "bounded-1k" ? "bounded-1k" : "smoke";
+  const profile: StagingLoadRunProfile =
+    profileValue === "bounded-5k" ? "bounded-5k" : profileValue === "bounded-1k" ? "bounded-1k" : "smoke";
   return {
     profile,
-    planOnly: hasFlag("--plan-only") || profile === "bounded-1k",
+    planOnly: hasFlag("--plan-only") || profile !== "smoke",
     allowLive: hasFlag("--allow-live"),
   };
 };
@@ -191,7 +196,13 @@ async function main() {
     planOnly: cliOptions.planOnly && !cliOptions.allowLive,
     operatorApproved: cliOptions.allowLive || isTruthyEnv("STAGING_LOAD_OPERATOR_APPROVED"),
     supabaseLimitsConfirmed: isTruthyEnv("STAGING_SUPABASE_LIMITS_CONFIRMED"),
-    targetConcurrency: cliOptions.profile === "bounded-1k" ? 1_000 : DEFAULT_STAGING_LOAD_TARGETS.length,
+    enterpriseLoadApproved: isTruthyEnv("S_LOAD_STAGING_5K_READONLY_APPROVED"),
+    targetConcurrency:
+      cliOptions.profile === "bounded-5k"
+        ? 5_000
+        : cliOptions.profile === "bounded-1k"
+          ? 1_000
+          : DEFAULT_STAGING_LOAD_TARGETS.length,
   });
   const targets = DEFAULT_STAGING_LOAD_TARGETS;
 

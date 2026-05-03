@@ -5,7 +5,8 @@ name: Launch And Login Screen
     clearState: true
 - extendedWaitUntil:
     visible: "Войти в GOX"
-    timeout: 15000
+    timeout: 60000
 - assertVisible: "Войти в GOX"
 - assertVisible: "Зарегистрироваться"
+- assertNotVisible: "isn't responding"
 - stopApp

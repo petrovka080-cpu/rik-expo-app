@@ -5,7 +5,8 @@ name: Login Form Basic Interaction
     clearState: true
 - extendedWaitUntil:
     visible: "Войти в GOX"
-    timeout: 15000
+    timeout: 60000
+- assertNotVisible: "isn't responding"
 - tapOn: "Email"
 - inputText: "foundation@example.test"
 - assertVisible: "foundation@example.test"

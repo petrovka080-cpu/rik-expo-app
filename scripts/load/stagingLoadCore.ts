@@ -4,7 +4,7 @@ export type StagingLoadEnvStatus = {
   presentKeys: string[];
 };
 
-export type StagingLoadRunProfile = "smoke" | "bounded-1k";
+export type StagingLoadRunProfile = "smoke" | "bounded-1k" | "bounded-5k";
 
 export type StagingLoadStopConditions = {
   requestTimeoutMs: number;
@@ -26,6 +26,8 @@ export type StagingLoadHarnessPlan = {
   operatorApprovalRequired: boolean;
   operatorApproved: boolean;
   supabaseLimitsConfirmed: boolean;
+  enterpriseLoadApprovalRequired: boolean;
+  enterpriseLoadApproved: boolean;
   safeToRunLive: boolean;
   blockers: string[];
 };
@@ -61,8 +63,11 @@ export type StagingLoadTargetResult = {
 };
 
 export type StagingLoadMatrix = {
-  wave: "S-LOAD-1" | "S-LOAD-10";
-  mode: "production-safe-staging-load-test" | "production-safe-1k-load-preflight";
+  wave: "S-LOAD-1" | "S-LOAD-10" | "S-LOAD-STAGING-5K-READONLY-HARNESS-PREFLIGHT-1";
+  mode:
+    | "production-safe-staging-load-test"
+    | "production-safe-1k-load-preflight"
+    | "production-safe-5k-load-preflight";
   generatedAt: string;
   environment: StagingLoadEnvStatus & {
     productionFallbackUsed: false;
@@ -112,6 +117,34 @@ export const BOUNDED_1K_STAGING_LOAD_STOP_CONDITIONS: StagingLoadStopConditions 
   maxTotalRequests: 1_000,
   cooldownMs: 500,
 };
+
+export const BOUNDED_5K_STAGING_LOAD_STOP_CONDITIONS: StagingLoadStopConditions = {
+  ...BOUNDED_1K_STAGING_LOAD_STOP_CONDITIONS,
+  maxDurationMs: 30 * 60 * 1000,
+  maxTotalRequests: 5_000,
+  cooldownMs: 1_000,
+};
+
+const BOUNDED_1K_RAMP_STEPS = [5, 10, 15, 20, 25, 50, 100, 250, 500, 750, 1_000] as const;
+
+const BOUNDED_5K_RAMP_STEPS = [
+  5,
+  10,
+  15,
+  20,
+  25,
+  50,
+  100,
+  250,
+  500,
+  750,
+  1_000,
+  1_500,
+  2_000,
+  3_000,
+  4_000,
+  5_000,
+] as const;
 
 const REQUIRED_ENV_KEYS = ["STAGING_SUPABASE_URL", "STAGING_SUPABASE_READONLY_KEY"] as const;
 
@@ -202,25 +235,34 @@ export function buildStagingLoadHarnessPlan(params: {
   planOnly?: boolean;
   operatorApproved?: boolean;
   supabaseLimitsConfirmed?: boolean;
+  enterpriseLoadApproved?: boolean;
   targetConcurrency?: number;
 }): StagingLoadHarnessPlan {
   const profile = params.profile ?? "smoke";
-  const operatorApprovalRequired = profile === "bounded-1k";
+  const operatorApprovalRequired = profile !== "smoke";
   const operatorApproved = params.operatorApproved === true;
   const supabaseLimitsConfirmed = params.supabaseLimitsConfirmed === true;
+  const enterpriseLoadApprovalRequired = profile === "bounded-5k";
+  const enterpriseLoadApproved = params.enterpriseLoadApproved === true;
   const targetConcurrency =
     params.targetConcurrency ??
-    (profile === "bounded-1k" ? 1_000 : DEFAULT_STAGING_LOAD_TARGETS.length);
+    (profile === "bounded-5k"
+      ? 5_000
+      : profile === "bounded-1k"
+        ? 1_000
+        : DEFAULT_STAGING_LOAD_TARGETS.length);
   const rampSteps =
-    profile === "bounded-1k"
-      ? [5, 10, 15, 20, 25, 50, 100, 250, 500, 750, 1_000].filter(
-          (step) => step <= targetConcurrency,
-        )
-      : [Math.max(1, targetConcurrency)];
+    profile === "bounded-5k"
+      ? BOUNDED_5K_RAMP_STEPS.filter((step) => step <= targetConcurrency)
+      : profile === "bounded-1k"
+        ? BOUNDED_1K_RAMP_STEPS.filter((step) => step <= targetConcurrency)
+        : [Math.max(1, targetConcurrency)];
   const stopConditions =
-    profile === "bounded-1k"
-      ? BOUNDED_1K_STAGING_LOAD_STOP_CONDITIONS
-      : DEFAULT_STAGING_LOAD_STOP_CONDITIONS;
+    profile === "bounded-5k"
+      ? BOUNDED_5K_STAGING_LOAD_STOP_CONDITIONS
+      : profile === "bounded-1k"
+        ? BOUNDED_1K_STAGING_LOAD_STOP_CONDITIONS
+        : DEFAULT_STAGING_LOAD_STOP_CONDITIONS;
   const blockers: string[] = [];
 
   if (!params.envStatus.canRunLive) {
@@ -229,8 +271,11 @@ export function buildStagingLoadHarnessPlan(params: {
   if (operatorApprovalRequired && !operatorApproved) {
     blockers.push("operator_approval_missing");
   }
-  if (profile === "bounded-1k" && !supabaseLimitsConfirmed) {
+  if (profile !== "smoke" && !supabaseLimitsConfirmed) {
     blockers.push("supabase_limits_unconfirmed");
+  }
+  if (enterpriseLoadApprovalRequired && !enterpriseLoadApproved) {
+    blockers.push("enterprise_5k_load_approval_missing");
   }
 
   const planOnly = params.planOnly === true;
@@ -245,6 +290,8 @@ export function buildStagingLoadHarnessPlan(params: {
     operatorApprovalRequired,
     operatorApproved,
     supabaseLimitsConfirmed,
+    enterpriseLoadApprovalRequired,
+    enterpriseLoadApproved,
     safeToRunLive,
     blockers,
   };
@@ -330,11 +377,18 @@ export function buildStagingLoadMatrix(params: {
   harnessPlan?: StagingLoadHarnessPlan;
 }): StagingLoadMatrix {
   return {
-    wave: params.harnessPlan?.profile === "bounded-1k" ? "S-LOAD-10" : "S-LOAD-1",
+    wave:
+      params.harnessPlan?.profile === "bounded-5k"
+        ? "S-LOAD-STAGING-5K-READONLY-HARNESS-PREFLIGHT-1"
+        : params.harnessPlan?.profile === "bounded-1k"
+          ? "S-LOAD-10"
+          : "S-LOAD-1",
     mode:
-      params.harnessPlan?.profile === "bounded-1k"
-        ? "production-safe-1k-load-preflight"
-        : "production-safe-staging-load-test",
+      params.harnessPlan?.profile === "bounded-5k"
+        ? "production-safe-5k-load-preflight"
+        : params.harnessPlan?.profile === "bounded-1k"
+          ? "production-safe-1k-load-preflight"
+          : "production-safe-staging-load-test",
     generatedAt: params.generatedAt,
     environment: {
       ...params.envStatus,
@@ -366,6 +420,11 @@ export function buildStagingLoadMatrix(params: {
 }
 
 export function resolveStagingLoadProofStatus(matrix: StagingLoadMatrix): string {
+  if (matrix.harnessPlan?.profile === "bounded-5k") {
+    return matrix.harnessPlan.safeToRunLive && matrix.liveRun === "completed"
+      ? "GREEN_5K_LOAD_PREFLIGHT_READY"
+      : "GREEN_5K_HARNESS_READY_LIVE_BLOCKED_BY_APPROVALS_OR_ENV";
+  }
   if (matrix.harnessPlan?.profile === "bounded-1k") {
     return matrix.harnessPlan.safeToRunLive && matrix.liveRun === "completed"
       ? "GREEN_1K_LOAD_PREFLIGHT_READY"
@@ -385,9 +444,11 @@ export function renderStagingLoadProof(matrix: StagingLoadMatrix): string {
   const blocked = matrix.targets.filter((target) => target.status !== "collected");
   const status = resolveStagingLoadProofStatus(matrix);
   const title =
-    matrix.harnessPlan?.profile === "bounded-1k"
-      ? "S-LOAD-10 1K Concurrency Preflight Proof"
-      : "S-LOAD-1 Staging Load Test Proof";
+    matrix.harnessPlan?.profile === "bounded-5k"
+      ? "S-LOAD-STAGING-5K Readonly Harness Preflight Proof"
+      : matrix.harnessPlan?.profile === "bounded-1k"
+        ? "S-LOAD-10 1K Concurrency Preflight Proof"
+        : "S-LOAD-1 Staging Load Test Proof";
   const lines = [
     `# ${title}`,
     "",
@@ -421,6 +482,8 @@ export function renderStagingLoadProof(matrix: StagingLoadMatrix): string {
           `- stop on HTTP 429/5xx: ${matrix.harnessPlan.stopConditions.stopOnHttp429Or5xx ? "YES" : "NO"}`,
           `- operator approved: ${matrix.harnessPlan.operatorApproved ? "YES" : "NO"}`,
           `- Supabase limits confirmed: ${matrix.harnessPlan.supabaseLimitsConfirmed ? "YES" : "NO"}`,
+          `- Enterprise load approval required: ${matrix.harnessPlan.enterpriseLoadApprovalRequired ? "YES" : "NO"}`,
+          `- Enterprise load approved: ${matrix.harnessPlan.enterpriseLoadApproved ? "YES" : "NO"}`,
           `- live blockers: ${matrix.harnessPlan.blockers.length ? matrix.harnessPlan.blockers.join(", ") : "none"}`,
         ]
       : []),
