@@ -22,6 +22,7 @@
     "verify:wave8-coverage": "node node_modules/jest/bin/jest.js src/lib/offline/mutationQueue.contract.test.ts src/lib/offline/mutationWorker.contract.test.ts src/lib/appAccessModel.test.ts src/screens/profile/profile.helpers.test.ts src/screens/profile/ProfileContent.composition.test.tsx src/screens/profile/components/ProfileComposition.test.tsx src/screens/profile/components/ProfilePrimitives.test.tsx src/screens/profile/hooks/useProfileForms.test.tsx --runInBand --coverage --json --outputFile artifacts/wave8-coverage-jest.json",
     "verify:wave12-tests": "node node_modules/jest/bin/jest.js src/screens/contractor/contractor.workModalService.test.ts src/screens/warehouse/warehouse.requests.read.test.ts src/screens/contractor/contractor.realtime.lifecycle.test.tsx src/screens/warehouse/warehouse.realtime.lifecycle.test.tsx src/lib/supabaseClient.test.ts --runInBand --json --outputFile artifacts/wave12-residual-jest.json",
     "verify:wave12-smoke": "node node_modules/tsx/dist/cli.mjs scripts/wave12_minimal_web_smoke.ts",
+    "verify:web-public-smoke": "node node_modules/tsx/dist/cli.mjs scripts/web_public_smoke.ts",
     "verify:local-role-smoke": "node node_modules/tsx/dist/cli.mjs scripts/local_role_screen_access_verify.ts",
     "verify:warehouse-issue-request-runtime": "tsx scripts/warehouse_issue_request_runtime_verify.ts",
     "verify:wave2-platform": "tsx scripts/wave2_platform_verify.ts",
