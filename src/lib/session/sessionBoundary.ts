@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- Lazy requires keep heavy session cleanup modules out of auth startup. */
 /**
  * Session Boundary — centralized session lifecycle owner.
  *
