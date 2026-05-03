@@ -9,7 +9,10 @@ describe("production safe verification contract", () => {
   const source = fs.readFileSync(verifierPath, "utf8");
 
   it("runs only the approved no-mutation safe verification steps", () => {
+    expect(source).toContain("typescript");
+    expect(source).toContain("expo-lint");
     expect(source).toContain("public-web-smoke-contract");
+    expect(source).toContain("production-safe-verification-contract");
     expect(source).toContain("public-web-smoke");
     expect(source).toContain("maestro-infra");
     expect(source).toContain("maestro-foundation");

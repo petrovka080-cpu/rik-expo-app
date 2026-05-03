@@ -23,10 +23,28 @@ type StepResult = VerificationStep & {
 
 const steps: VerificationStep[] = [
   {
+    id: "typescript",
+    label: "TypeScript noEmit",
+    command: process.platform === "win32" ? "npx.cmd" : "npx",
+    args: ["tsc", "--noEmit", "--pretty", "false"],
+  },
+  {
+    id: "expo-lint",
+    label: "Expo lint",
+    command: process.platform === "win32" ? "npx.cmd" : "npx",
+    args: ["expo", "lint"],
+  },
+  {
     id: "public-web-smoke-contract",
     label: "Public web smoke safety contract",
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["jest", "tests/e2e/publicWebSmokeSafety.contract.test.ts", "--runInBand"],
+  },
+  {
+    id: "production-safe-verification-contract",
+    label: "Production-safe verification contract",
+    command: process.platform === "win32" ? "npx.cmd" : "npx",
+    args: ["jest", "tests/e2e/productionSafeVerification.contract.test.ts", "--runInBand"],
   },
   {
     id: "public-web-smoke",
