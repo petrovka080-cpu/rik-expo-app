@@ -51,6 +51,18 @@ describe("production safe verification contract", () => {
     expect(source).toContain('status: blockers.length === 0 ? "GREEN" : "NOT_GREEN"');
   });
 
+  it("validates redacted child evidence artifacts before reporting GREEN", () => {
+    expect(source).toContain("validateEvidenceArtifacts");
+    expect(source).toContain("validateWebSmokeArtifact");
+    expect(source).toContain("validateMaestroArtifact");
+    expect(source).toContain("artifacts/web-public-smoke.json");
+    expect(source).toContain("artifacts/maestro-infra/report.xml");
+    expect(source).toContain("artifacts/maestro-foundation/report.xml");
+    expect(source).toContain("web-public-smoke-artifact-not-green");
+    expect(source).toContain("artifact-not-passing");
+    expect(source).toContain("evidenceArtifacts");
+  });
+
   it("is exposed as an explicit npm verifier command", () => {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8")) as {
       scripts?: Record<string, string>;

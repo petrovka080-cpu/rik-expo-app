@@ -21,6 +21,14 @@ type StepResult = VerificationStep & {
   durationMs: number;
 };
 
+type ArtifactEvidence = {
+  id: string;
+  path: string;
+  status: StepStatus;
+  summary: Record<string, boolean | number | string | null>;
+  blocker: string | null;
+};
+
 const steps: VerificationStep[] = [
   {
     id: "typescript",
@@ -111,8 +119,134 @@ function readCommand(command: string, args: string[]) {
   return String(result.stdout ?? "").trim();
 }
 
+function readJson(fullPath: string): unknown {
+  return JSON.parse(fs.readFileSync(fullPath, "utf8"));
+}
+
+function readXmlAttributes(fragment: string) {
+  const attributes: Record<string, string> = {};
+  for (const match of fragment.matchAll(/\s([A-Za-z_:][\w:.-]*)="([^"]*)"/g)) {
+    attributes[match[1]] = match[2];
+  }
+  return attributes;
+}
+
+function toNumber(value: string | undefined) {
+  if (value == null || value.trim() === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function validateWebSmokeArtifact(): ArtifactEvidence {
+  const relativePath = "artifacts/web-public-smoke.json";
+  const fullPath = path.join(projectRoot, relativePath);
+  try {
+    const payload = readJson(fullPath) as {
+      status?: unknown;
+      loginRouteOpened?: unknown;
+      registerRouteOpened?: unknown;
+      pageErrorCount?: unknown;
+      consoleErrorCount?: unknown;
+      badResponseCount?: unknown;
+    };
+    const summary = {
+      status: typeof payload.status === "string" ? payload.status : null,
+      loginRouteOpened: payload.loginRouteOpened === true,
+      registerRouteOpened: payload.registerRouteOpened === true,
+      pageErrorCount: typeof payload.pageErrorCount === "number" ? payload.pageErrorCount : null,
+      consoleErrorCount: typeof payload.consoleErrorCount === "number" ? payload.consoleErrorCount : null,
+      badResponseCount: typeof payload.badResponseCount === "number" ? payload.badResponseCount : null,
+    };
+    const ok =
+      summary.status === "GREEN" &&
+      summary.loginRouteOpened &&
+      summary.registerRouteOpened &&
+      summary.pageErrorCount === 0 &&
+      summary.consoleErrorCount === 0 &&
+      summary.badResponseCount === 0;
+
+    return {
+      id: "web-public-smoke-artifact",
+      path: relativePath,
+      status: ok ? "passed" : "failed",
+      summary,
+      blocker: ok ? null : "web-public-smoke-artifact-not-green",
+    };
+  } catch {
+    return {
+      id: "web-public-smoke-artifact",
+      path: relativePath,
+      status: "failed",
+      summary: {
+        status: null,
+        loginRouteOpened: false,
+        registerRouteOpened: false,
+        pageErrorCount: null,
+        consoleErrorCount: null,
+        badResponseCount: null,
+      },
+      blocker: "web-public-smoke-artifact-unreadable",
+    };
+  }
+}
+
+function validateMaestroArtifact(id: string, relativePath: string): ArtifactEvidence {
+  const fullPath = path.join(projectRoot, relativePath);
+  try {
+    const xml = fs.readFileSync(fullPath, "utf8");
+    const suite = xml.match(/<testsuite\b([^>]*)>/);
+    const attributes = suite ? readXmlAttributes(suite[1]) : {};
+    const tests = toNumber(attributes.tests);
+    const failures = toNumber(attributes.failures);
+    const errors = toNumber(attributes.errors) ?? 0;
+    const skipped = toNumber(attributes.skipped) ?? 0;
+    const time = toNumber(attributes.time);
+    const ok = tests != null && tests > 0 && failures === 0 && errors === 0;
+
+    return {
+      id,
+      path: relativePath,
+      status: ok ? "passed" : "failed",
+      summary: {
+        tests,
+        failures,
+        errors,
+        skipped,
+        time,
+      },
+      blocker: ok ? null : `${id}-artifact-not-passing`,
+    };
+  } catch {
+    return {
+      id,
+      path: relativePath,
+      status: "failed",
+      summary: {
+        tests: null,
+        failures: null,
+        errors: null,
+        skipped: null,
+        time: null,
+      },
+      blocker: `${id}-artifact-unreadable`,
+    };
+  }
+}
+
+function validateEvidenceArtifacts() {
+  return [
+    validateWebSmokeArtifact(),
+    validateMaestroArtifact("maestro-infra-artifact", "artifacts/maestro-infra/report.xml"),
+    validateMaestroArtifact("maestro-foundation-artifact", "artifacts/maestro-foundation/report.xml"),
+  ];
+}
+
 function buildReport(results: StepResult[]) {
   const failed = results.filter((step) => step.status !== "passed");
+  const evidenceArtifacts = validateEvidenceArtifacts();
+  const artifactBlockers = evidenceArtifacts
+    .map((artifact) => artifact.blocker)
+    .filter((blocker): blocker is string => Boolean(blocker));
   const head = readCommand("git", ["rev-parse", "HEAD"]);
   const originMain = readCommand("git", ["rev-parse", "origin/main"]);
   const worktreeShort = readCommand("git", ["status", "--short"]);
@@ -122,7 +256,7 @@ function buildReport(results: StepResult[]) {
     ...(trackedWorktreeClean ? [] : ["release-state-not-clean"]),
     ...(headEqualsOriginMain ? [] : ["release-state-head-not-origin-main"]),
   ];
-  const blockers = [...failed.map((step) => step.id), ...releaseStateBlockers];
+  const blockers = [...failed.map((step) => step.id), ...artifactBlockers, ...releaseStateBlockers];
 
   return {
     checkedAt: new Date().toISOString(),
@@ -159,6 +293,7 @@ function buildReport(results: StepResult[]) {
       exitCode: step.exitCode,
       durationMs: step.durationMs,
     })),
+    evidenceArtifacts,
     blockers,
   };
 }
@@ -180,6 +315,11 @@ function writeReport(report: ReturnType<typeof buildReport>) {
       "",
       "## Steps",
       ...report.steps.map((step) => `- ${step.label}: ${step.status} (${step.durationMs}ms)`),
+      "",
+      "## Evidence Artifacts",
+      ...report.evidenceArtifacts.map(
+        (artifact) => `- ${artifact.id}: ${artifact.status} (${artifact.path})`,
+      ),
       "",
       "## Release State",
       "- GREEN requires a clean tracked worktree.",
