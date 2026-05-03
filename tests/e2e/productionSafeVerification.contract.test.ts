@@ -41,6 +41,16 @@ describe("production safe verification contract", () => {
     }
   });
 
+  it("requires a clean synced release state before reporting GREEN", () => {
+    expect(source).toContain("releaseStateOk");
+    expect(source).toContain("release-state-not-clean");
+    expect(source).toContain("release-state-head-not-origin-main");
+    expect(source).toContain('readCommand("git", ["status", "--short"])');
+    expect(source).toContain('readCommand("git", ["rev-parse", "HEAD"])');
+    expect(source).toContain('readCommand("git", ["rev-parse", "origin/main"])');
+    expect(source).toContain('status: blockers.length === 0 ? "GREEN" : "NOT_GREEN"');
+  });
+
   it("is exposed as an explicit npm verifier command", () => {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8")) as {
       scripts?: Record<string, string>;

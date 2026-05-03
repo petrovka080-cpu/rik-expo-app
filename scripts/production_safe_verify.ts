@@ -116,14 +116,22 @@ function buildReport(results: StepResult[]) {
   const head = readCommand("git", ["rev-parse", "HEAD"]);
   const originMain = readCommand("git", ["rev-parse", "origin/main"]);
   const worktreeShort = readCommand("git", ["status", "--short"]);
+  const headEqualsOriginMain = Boolean(head) && head === originMain;
+  const trackedWorktreeClean = worktreeShort.length === 0;
+  const releaseStateBlockers = [
+    ...(trackedWorktreeClean ? [] : ["release-state-not-clean"]),
+    ...(headEqualsOriginMain ? [] : ["release-state-head-not-origin-main"]),
+  ];
+  const blockers = [...failed.map((step) => step.id), ...releaseStateBlockers];
 
   return {
     checkedAt: new Date().toISOString(),
-    status: failed.length === 0 ? "GREEN" : "NOT_GREEN",
+    status: blockers.length === 0 ? "GREEN" : "NOT_GREEN",
     head,
     originMain,
-    headEqualsOriginMain: Boolean(head) && head === originMain,
-    trackedWorktreeClean: worktreeShort.length === 0,
+    headEqualsOriginMain,
+    trackedWorktreeClean,
+    releaseStateOk: releaseStateBlockers.length === 0,
     productionSafety: {
       publicRoutesOnly: true,
       authSubmitExecuted: false,
@@ -151,7 +159,7 @@ function buildReport(results: StepResult[]) {
       exitCode: step.exitCode,
       durationMs: step.durationMs,
     })),
-    blockers: failed.map((step) => step.id),
+    blockers,
   };
 }
 
@@ -168,9 +176,14 @@ function writeReport(report: ReturnType<typeof buildReport>) {
       `- originMain: ${report.originMain}`,
       `- headEqualsOriginMain: ${String(report.headEqualsOriginMain)}`,
       `- trackedWorktreeClean: ${String(report.trackedWorktreeClean)}`,
+      `- releaseStateOk: ${String(report.releaseStateOk)}`,
       "",
       "## Steps",
       ...report.steps.map((step) => `- ${step.label}: ${step.status} (${step.durationMs}ms)`),
+      "",
+      "## Release State",
+      "- GREEN requires a clean tracked worktree.",
+      "- GREEN requires HEAD to match origin/main.",
       "",
       "## Production Safety",
       "- Public web routes only.",
