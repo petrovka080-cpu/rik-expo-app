@@ -176,6 +176,16 @@ describe("offlineStorage", () => {
     expect(getPlatformObservabilityEvents()).toEqual([]);
   });
 
+  it("keeps the default async storage loader quiet under Jest", async () => {
+    configureOfflineStorageTestHarness();
+    asyncStorage.setItem.mockResolvedValue();
+    const storage = createDefaultOfflineStorage();
+
+    await expect(storage.setItem("queue-key", "payload")).resolves.toBeUndefined();
+    expect(asyncStorage.setItem).toHaveBeenCalledWith("queue-key", "payload");
+    expect(getPlatformObservabilityEvents()).toEqual([]);
+  });
+
   it("reports async write failures without becoming fatal", async () => {
     asyncStorage.setItem.mockRejectedValue(new Error("async write exploded"));
     const storage = createDefaultOfflineStorage();

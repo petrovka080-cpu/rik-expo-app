@@ -105,8 +105,16 @@ const getWebLocalStorage = () => {
 };
 
 type AsyncStorageBridge = Pick<OfflineStorageAdapter, "getItem" | "setItem" | "removeItem">;
+type AsyncStorageModule = typeof import("@react-native-async-storage/async-storage");
 
 const loadDefaultAsyncStorage = async (): Promise<AsyncStorageBridge> => {
+  if (process.env.NODE_ENV === "test") {
+    // Jest runs without vm dynamic-import support in some suites; keep production lazy import unchanged.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const module = require("@react-native-async-storage/async-storage") as AsyncStorageModule;
+    return (module.default ?? module) as AsyncStorageBridge;
+  }
+
   const module = await import("@react-native-async-storage/async-storage");
   return (module.default ?? module) as AsyncStorageBridge;
 };
