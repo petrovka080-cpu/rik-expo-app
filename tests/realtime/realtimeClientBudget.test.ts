@@ -23,9 +23,13 @@ jest.mock("../../src/lib/observability/platformObservability", () => ({
 }));
 
 import {
+  buildRealtimeReconnectBackoffPlan,
   clearRealtimeSessionState,
   getRealtimeDebugState,
   REALTIME_ACTIVE_CHANNEL_WARN_AT,
+  REALTIME_RECONNECT_BACKOFF_BASE_MS,
+  REALTIME_RECONNECT_BACKOFF_MAX_MS,
+  redactRealtimeChannelNameForTelemetry,
   subscribeChannel,
 } from "../../src/lib/realtime/realtime.client";
 import type { RealtimeChannelBinding } from "../../src/lib/realtime/realtime.channels";
@@ -36,6 +40,7 @@ type MockRealtimeChannel = {
   subscribe: jest.Mock<MockRealtimeChannel, [(status?: string) => void]>;
   unsubscribe: jest.Mock<string, []>;
   postgresHandlers: Array<(payload: unknown) => void>;
+  statusCallback: ((status: string) => void) | null;
 };
 
 const binding: RealtimeChannelBinding = {
@@ -56,6 +61,7 @@ const buildChannel = (name: string): MockRealtimeChannel => {
   const channel = {} as MockRealtimeChannel;
   channel.name = name;
   channel.postgresHandlers = [];
+  channel.statusCallback = null;
   channel.on = jest.fn<MockRealtimeChannel, [string, unknown, unknown]>((event, _filter, callback) => {
     if (event === "postgres_changes" && typeof callback === "function") {
       channel.postgresHandlers.push(callback as (payload: unknown) => void);
@@ -63,6 +69,7 @@ const buildChannel = (name: string): MockRealtimeChannel => {
     return channel;
   });
   channel.subscribe = jest.fn<MockRealtimeChannel, [(status?: string) => void]>((callback) => {
+    channel.statusCallback = typeof callback === "function" ? callback : null;
     callback?.("SUBSCRIBED");
     return channel;
   });
@@ -210,7 +217,104 @@ describe("realtime client budget observability", () => {
         activeChannelNames: [],
         activeBindingCount: 0,
         activeSubscriberCount: 0,
+        reconnectBackoffAttemptCount: 0,
       }),
     );
+  });
+
+  it("builds bounded deterministic reconnect backoff plans with redacted dynamic channel names", () => {
+    const first = buildRealtimeReconnectBackoffPlan({
+      activeChannelCount: 8,
+      attempt: 3,
+      channelName: "chat:listing:listing-secret-123",
+      reason: "channel_error",
+      route: "/chat/listing-secret-123",
+      scope: "market",
+    });
+    const second = buildRealtimeReconnectBackoffPlan({
+      activeChannelCount: 8,
+      attempt: 3,
+      channelName: "chat:listing:listing-secret-123",
+      reason: "channel_error",
+      route: "/chat/listing-secret-123",
+      scope: "market",
+    });
+
+    expect(first).toEqual(second);
+    expect(first.delayMs).toBeGreaterThanOrEqual(first.baseDelayMs);
+    expect(first.delayMs).toBeLessThanOrEqual(REALTIME_RECONNECT_BACKOFF_MAX_MS);
+    expect(first.redactedChannelName).toBe("chat:listing:<redacted>");
+    expect(redactRealtimeChannelNameForTelemetry("supplier:abc-123")).toBe("supplier:<redacted>");
+  });
+
+  it("keeps repeated reconnect failures on nonzero bounded backoff instead of a tight loop", () => {
+    const plans = Array.from({ length: 6 }, (_, index) =>
+      buildRealtimeReconnectBackoffPlan({
+        activeChannelCount: 50,
+        attempt: index + 1,
+        channelName: "chat:listing:listing-secret-123",
+        reason: "channel_error",
+        route: "/chat/listing-secret-123",
+        scope: "market",
+      }),
+    );
+
+    for (const plan of plans) {
+      expect(plan.delayMs).toBeGreaterThan(0);
+      expect(plan.delayMs).toBeGreaterThanOrEqual(REALTIME_RECONNECT_BACKOFF_BASE_MS);
+      expect(plan.delayMs).toBeGreaterThanOrEqual(plan.baseDelayMs);
+      expect(plan.delayMs).toBeLessThanOrEqual(REALTIME_RECONNECT_BACKOFF_MAX_MS);
+      expect(plan.activeChannelSpreadMs).toBeGreaterThan(0);
+      expect(plan.redactedChannelName).toBe("chat:listing:<redacted>");
+    }
+
+    for (let index = 1; index < plans.length; index += 1) {
+      expect(plans[index]!.delayMs).toBeGreaterThanOrEqual(plans[index - 1]!.delayMs);
+    }
+    expect(plans[plans.length - 1]!.delayMs).toBeGreaterThan(plans[0]!.delayMs);
+  });
+
+  it("records reconnect backoff on timeout without logging dynamic channel ids or payloads", async () => {
+    subscribeChannel({
+      name: "chat:listing:listing-secret-123",
+      scope: "market",
+      route: "/chat/listing-secret-123",
+      surface: "listing_chat",
+      bindings: [
+        {
+          key: "listing_chat_messages",
+          table: "chat_messages",
+          event: "*",
+          filter: "supplier_id=eq.listing-secret-123",
+          schema: "public",
+          owner: "table:chat_messages",
+        },
+      ],
+      onEvent: jest.fn(),
+    });
+    await flushRealtimeSetup();
+
+    const channel = mockChannel.mock.results[0]?.value as MockRealtimeChannel;
+    channel.statusCallback?.("TIMED_OUT");
+
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "realtime_reconnect_backoff_scheduled",
+        result: "success",
+        sourceKind: "supabase:realtime",
+        extra: expect.objectContaining({
+          channelName: "chat:listing:<redacted>",
+          reason: "timed_out",
+          attempt: 1,
+          owner: "realtime_reconnect_backoff",
+        }),
+      }),
+    );
+    expect(getRealtimeDebugState().reconnectBackoffAttemptCount).toBe(1);
+
+    const logged = JSON.stringify(mockRecordPlatformObservability.mock.calls);
+    expect(logged).not.toContain("listing-secret-123");
+    expect(logged).not.toContain("payload");
+    expect(logged).not.toContain("access_token");
   });
 });

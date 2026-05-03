@@ -9,6 +9,7 @@ export type ScaleProviderRuntimeEnvironment = "production" | "staging" | "develo
 
 export type ScaleProviderEnvNames = {
   enabled: string;
+  productionEnabled?: string;
   required: readonly string[];
   optional: readonly string[];
 };
@@ -16,6 +17,7 @@ export type ScaleProviderEnvNames = {
 export type ScaleProviderRuntimeStatus = {
   provider: ScaleProviderKind;
   enabledFlag: "enabled" | "disabled" | "missing";
+  productionEnabledFlag?: "enabled" | "disabled" | "missing";
   configured: boolean;
   missingEnvNames: string[];
   liveNetworkAllowed: boolean;
@@ -54,6 +56,7 @@ export const SCALE_PROVIDER_RUNTIME_ENV_NAMES: Record<ScaleProviderKind, ScalePr
   },
   observability_export: {
     enabled: "SCALE_OBSERVABILITY_EXPORT_STAGING_ENABLED",
+    productionEnabled: "SCALE_OBSERVABILITY_EXPORT_PRODUCTION_ENABLED",
     required: ["SCALE_OBSERVABILITY_EXPORT_ENDPOINT", "SCALE_OBSERVABILITY_EXPORT_TOKEN"],
     optional: ["SCALE_OBSERVABILITY_EXPORT_NAMESPACE"],
   },
@@ -98,20 +101,32 @@ const resolveProviderStatus = (
 ): ScaleProviderRuntimeStatus => {
   const envNames = SCALE_PROVIDER_RUNTIME_ENV_NAMES[provider];
   const enabledFlag = parseEnabledFlagStatus(env[envNames.enabled]);
+  const productionEnabledFlag = envNames.productionEnabled
+    ? parseEnabledFlagStatus(env[envNames.productionEnabled])
+    : undefined;
   const missingEnvNames = envNames.required.filter((name) => !hasEnvValue(env, name));
   if (provider === "redis_cache" && !hasEnvValue(env, "SCALE_REDIS_CACHE_URL") && !hasEnvValue(env, "REDIS_URL")) {
     missingEnvNames.push("SCALE_REDIS_CACHE_URL", "REDIS_URL");
   }
   const configured = missingEnvNames.length === 0;
   const productionGuard = runtimeEnvironment !== "production";
+  const stagingNetworkAllowed =
+    enabledFlag === "enabled" && configured && runtimeEnvironment === "staging" && productionGuard;
+  const productionNetworkAllowed =
+    provider === "observability_export" &&
+    productionEnabledFlag === "enabled" &&
+    configured &&
+    runtimeEnvironment === "production";
 
-  return {
+  const status: ScaleProviderRuntimeStatus = {
     provider,
     enabledFlag,
     configured,
     missingEnvNames,
-    liveNetworkAllowed: enabledFlag === "enabled" && configured && runtimeEnvironment === "staging" && productionGuard,
+    liveNetworkAllowed: stagingNetworkAllowed || productionNetworkAllowed,
   };
+  if (productionEnabledFlag) status.productionEnabledFlag = productionEnabledFlag;
+  return status;
 };
 
 export function resolveScaleProviderRuntimeConfig(
@@ -139,7 +154,11 @@ export function getScaleProviderMissingEnvNames(config: ScaleProviderRuntimeConf
   return Array.from(
     new Set(
       Object.values(config.providers)
-        .filter((provider) => provider.enabledFlag === "enabled" && !provider.configured)
+        .filter(
+          (provider) =>
+            (provider.enabledFlag === "enabled" || provider.productionEnabledFlag === "enabled") &&
+            !provider.configured,
+        )
         .flatMap((provider) => provider.missingEnvNames),
     ),
   ).sort();

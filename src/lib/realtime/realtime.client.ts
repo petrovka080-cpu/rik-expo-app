@@ -35,6 +35,20 @@ type ActiveRealtimeChannel = {
   subscribers: Map<number, RealtimeChannelSubscriber>;
 };
 
+type RealtimeReconnectBackoffReason = "initial_join" | "timed_out" | "channel_error";
+
+type RealtimeReconnectBackoffPlan = {
+  attempt: number;
+  delayMs: number;
+  baseDelayMs: number;
+  jitterMs: number;
+  activeChannelSpreadMs: number;
+  maxDelayMs: number;
+  reason: RealtimeReconnectBackoffReason;
+  channelName: string;
+  redactedChannelName: string;
+};
+
 type RealtimeChannelSubscriber = {
   scope: RealtimeLifecycleScope;
   route: string;
@@ -44,8 +58,15 @@ type RealtimeChannelSubscriber = {
 
 export const REALTIME_ACTIVE_CHANNEL_WARN_AT = 5;
 export const REALTIME_ACTIVE_CHANNEL_BUDGET = 8;
+export const REALTIME_RECONNECT_BACKOFF_BASE_MS = 750;
+export const REALTIME_RECONNECT_BACKOFF_MAX_MS = 30_000;
+export const REALTIME_RECONNECT_BACKOFF_JITTER_MS = 900;
+export const REALTIME_INITIAL_JOIN_STAGGER_MAX_MS = 1_200;
+export const REALTIME_ACTIVE_CHANNEL_SPREAD_MS = 125;
+export const REALTIME_ACTIVE_CHANNEL_SPREAD_MAX_MS = 2_000;
 
 const activeChannels = new Map<string, ActiveRealtimeChannel>();
+const reconnectBackoffAttempts = new Map<string, number>();
 let activeChannelSeq = 0;
 let realtimeAuthPromise: Promise<void> | null = null;
 let realtimeAuthToken = "";
@@ -62,6 +83,7 @@ export function getRealtimeDebugState() {
       (total, entry) => total + entry.subscribers.size,
       0,
     ),
+    reconnectBackoffAttemptCount: reconnectBackoffAttempts.size,
     warnAt: REALTIME_ACTIVE_CHANNEL_WARN_AT,
     budget: REALTIME_ACTIVE_CHANNEL_BUDGET,
   };
@@ -88,10 +110,113 @@ export function clearRealtimeSessionState() {
     }
   }
   activeChannels.clear();
+  reconnectBackoffAttempts.clear();
   activeChannelSeq = 0;
   realtimeAuthPromise = null;
   realtimeAuthToken = "";
 }
+
+export function redactRealtimeChannelNameForTelemetry(channelName: string) {
+  return String(channelName ?? "")
+    .replace(/\b(chat:listing:)[^:\s]+/gi, "$1<redacted>")
+    .replace(/\b((?:company|user|request|object|supplier|listing):)[^:\s]+/gi, "$1<redacted>");
+}
+
+const redactRealtimeRouteForTelemetry = (route: string) =>
+  String(route ?? "")
+    .replace(/(\/chat\/)[^/?#\s]+/gi, "$1<redacted>")
+    .replace(/([?&](?:listingId|supplierId|requestId|userId|objectId)=)[^&#\s]+/gi, "$1<redacted>");
+
+const hashRealtimeBackoffKey = (value: string) => {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+};
+
+export function buildRealtimeReconnectBackoffPlan(params: {
+  activeChannelCount?: number;
+  attempt?: number;
+  channelName: string;
+  reason: RealtimeReconnectBackoffReason;
+  route: string;
+  scope: RealtimeLifecycleScope;
+}): RealtimeReconnectBackoffPlan {
+  const attempt = Math.max(1, Math.min(8, Math.floor(params.attempt ?? 1)));
+  const key = `${params.scope}:${params.route}:${params.channelName}:${params.reason}`;
+  const jitterMs = hashRealtimeBackoffKey(key) % REALTIME_RECONNECT_BACKOFF_JITTER_MS;
+  const activeChannelSpreadMs = Math.min(
+    Math.max(0, Math.floor(params.activeChannelCount ?? 0)) * REALTIME_ACTIVE_CHANNEL_SPREAD_MS,
+    REALTIME_ACTIVE_CHANNEL_SPREAD_MAX_MS,
+  );
+  const baseDelayMs =
+    params.reason === "initial_join"
+      ? 0
+      : Math.min(
+          REALTIME_RECONNECT_BACKOFF_BASE_MS * 2 ** (attempt - 1),
+          REALTIME_RECONNECT_BACKOFF_MAX_MS,
+        );
+  const maxDelayMs =
+    params.reason === "initial_join"
+      ? REALTIME_INITIAL_JOIN_STAGGER_MAX_MS
+      : REALTIME_RECONNECT_BACKOFF_MAX_MS;
+  const delayMs = Math.min(baseDelayMs + jitterMs + activeChannelSpreadMs, maxDelayMs);
+
+  return {
+    attempt,
+    delayMs,
+    baseDelayMs,
+    jitterMs,
+    activeChannelSpreadMs,
+    maxDelayMs,
+    reason: params.reason,
+    channelName: params.channelName,
+    redactedChannelName: redactRealtimeChannelNameForTelemetry(params.channelName),
+  };
+}
+
+const shouldBypassRealtimeDelayForTests = () =>
+  typeof process !== "undefined" && process.env?.NODE_ENV === "test";
+
+const waitRealtimeBackoffDelay = (delayMs: number) =>
+  delayMs > 0
+    ? new Promise<void>((resolve) => {
+        setTimeout(resolve, delayMs);
+      })
+    : Promise.resolve();
+
+const observeRealtimeReconnectBackoff = (params: {
+  plan: RealtimeReconnectBackoffPlan;
+  route: string;
+  scope: RealtimeLifecycleScope;
+  status?: string;
+  surface: string;
+}) => {
+  recordPlatformObservability({
+    screen: params.scope,
+    surface: params.surface,
+    category: "reload",
+    event: "realtime_reconnect_backoff_scheduled",
+    result: "success",
+    trigger: "realtime",
+    sourceKind: "supabase:realtime",
+    extra: {
+      route: redactRealtimeRouteForTelemetry(params.route),
+      channelName: params.plan.redactedChannelName,
+      status: params.status ?? null,
+      reason: params.plan.reason,
+      attempt: params.plan.attempt,
+      delayMs: params.plan.delayMs,
+      baseDelayMs: params.plan.baseDelayMs,
+      jitterMs: params.plan.jitterMs,
+      activeChannelSpreadMs: params.plan.activeChannelSpreadMs,
+      maxDelayMs: params.plan.maxDelayMs,
+      owner: "realtime_reconnect_backoff",
+    },
+  });
+};
 
 const recordCleanupError = (params: {
   scope: RealtimeLifecycleScope;
@@ -111,8 +236,8 @@ const recordCleanupError = (params: {
     sourceKind: "supabase:realtime",
     errorStage: params.stage,
     extra: {
-      route: params.route,
-      channelName: params.channelName,
+      route: redactRealtimeRouteForTelemetry(params.route),
+      channelName: redactRealtimeChannelNameForTelemetry(params.channelName),
       owner: "realtime_lifecycle",
       errorMessage: params.error instanceof Error ? params.error.message : String(params.error),
     },
@@ -160,6 +285,10 @@ const observeChannelStatus = (params: {
   channelName: string;
   status: string;
 }) => {
+  if (params.status === "SUBSCRIBED" || params.status === "CLOSED") {
+    reconnectBackoffAttempts.delete(params.channelName);
+  }
+
   const event =
     params.status === "SUBSCRIBED"
       ? "subscription_connected"
@@ -178,11 +307,31 @@ const observeChannelStatus = (params: {
     trigger: "realtime",
     sourceKind: "supabase:realtime",
     extra: {
-      route: params.route,
-      channelName: params.channelName,
+      route: redactRealtimeRouteForTelemetry(params.route),
+      channelName: redactRealtimeChannelNameForTelemetry(params.channelName),
       status: params.status,
       owner: "realtime_lifecycle",
     },
+  });
+
+  if (params.status !== "TIMED_OUT" && params.status !== "CHANNEL_ERROR") return;
+
+  const attempt = (reconnectBackoffAttempts.get(params.channelName) ?? 0) + 1;
+  reconnectBackoffAttempts.set(params.channelName, attempt);
+  const plan = buildRealtimeReconnectBackoffPlan({
+    activeChannelCount: activeChannels.size,
+    attempt,
+    channelName: params.channelName,
+    reason: params.status === "TIMED_OUT" ? "timed_out" : "channel_error",
+    route: params.route,
+    scope: params.scope,
+  });
+  observeRealtimeReconnectBackoff({
+    plan,
+    route: params.route,
+    scope: params.scope,
+    status: params.status,
+    surface: params.surface,
   });
 };
 
@@ -206,8 +355,8 @@ const observeRealtimeBudget = (params: {
     trigger: "realtime",
     sourceKind: "supabase:realtime",
     extra: {
-      route: params.route,
-      channelName: params.channelName,
+      route: redactRealtimeRouteForTelemetry(params.route),
+      channelName: redactRealtimeChannelNameForTelemetry(params.channelName),
       activeChannelCount: params.activeChannelCount,
       bindingCount: params.bindingCount,
       warnAt: REALTIME_ACTIVE_CHANNEL_WARN_AT,
@@ -240,7 +389,7 @@ const ensureRealtimeAuth = async (
           trigger: "realtime",
           sourceKind: "supabase:realtime",
           extra: {
-            route,
+            route: redactRealtimeRouteForTelemetry(route),
             hasAccessToken: true,
             owner: "realtime_lifecycle",
             stage: "auth_ready",
@@ -257,7 +406,7 @@ const ensureRealtimeAuth = async (
           sourceKind: "supabase:realtime",
           errorStage: "realtime_set_auth",
           extra: {
-            route,
+            route: redactRealtimeRouteForTelemetry(route),
             errorMessage: error instanceof Error ? error.message : String(error),
             owner: "realtime_lifecycle",
           },
@@ -333,8 +482,8 @@ export function subscribeChannel(params: SubscribeChannelParams) {
         trigger: "realtime",
         sourceKind: "supabase:realtime",
         extra: {
-          route: params.route,
-          channelName: params.name,
+          route: redactRealtimeRouteForTelemetry(params.route),
+          channelName: redactRealtimeChannelNameForTelemetry(params.name),
           owner: "realtime_lifecycle",
           reason: "last_ref_released",
         },
@@ -422,8 +571,8 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       trigger: "realtime",
       sourceKind: "supabase:realtime",
       extra: {
-        route: params.route,
-        channelName: params.name,
+        route: redactRealtimeRouteForTelemetry(params.route),
+        channelName: redactRealtimeChannelNameForTelemetry(params.name),
         bindingCount: params.bindings.length,
         owner: "realtime_lifecycle",
       },
@@ -451,8 +600,8 @@ export function subscribeChannel(params: SubscribeChannelParams) {
             trigger: "realtime",
             sourceKind: "supabase:postgres_changes",
             extra: {
-              route: params.route,
-              channelName: params.name,
+              route: redactRealtimeRouteForTelemetry(params.route),
+              channelName: redactRealtimeChannelNameForTelemetry(params.name),
               bindingKey: binding.key,
               table: binding.table,
               eventType: payload.eventType,
@@ -479,12 +628,44 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       trigger: "realtime",
       sourceKind: "supabase:realtime",
       extra: {
-        route: params.route,
-        channelName: params.name,
+        route: redactRealtimeRouteForTelemetry(params.route),
+        channelName: redactRealtimeChannelNameForTelemetry(params.name),
         bindingCount: params.bindings.length,
         owner: "realtime_lifecycle",
       },
     });
+
+    const initialJoinPlan = buildRealtimeReconnectBackoffPlan({
+      activeChannelCount: activeChannels.size,
+      attempt: 1,
+      channelName: params.name,
+      reason: "initial_join",
+      route: params.route,
+      scope: params.scope,
+    });
+    observeRealtimeReconnectBackoff({
+      plan: initialJoinPlan,
+      route: params.route,
+      scope: params.scope,
+      surface,
+    });
+    await waitRealtimeBackoffDelay(
+      shouldBypassRealtimeDelayForTests() ? 0 : initialJoinPlan.delayMs,
+    );
+
+    const entryBeforeSubscribe = activeChannels.get(params.name);
+    if (entryBeforeSubscribe !== entry || entryBeforeSubscribe.subscribers.size === 0) {
+      cleanupRealtimeChannel({
+        client,
+        channel,
+        scope: params.scope,
+        route: params.route,
+        surface,
+        channelName: params.name,
+      });
+      return;
+    }
+
     channel.subscribe((status) => {
       observeChannelStatus({
         scope: params.scope,
@@ -535,8 +716,8 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       trigger: "realtime",
       sourceKind: "supabase:realtime",
       extra: {
-        route: params.route,
-        channelName: params.name,
+        route: redactRealtimeRouteForTelemetry(params.route),
+        channelName: redactRealtimeChannelNameForTelemetry(params.name),
         owner: "realtime_lifecycle",
         reason: "last_ref_released",
       },

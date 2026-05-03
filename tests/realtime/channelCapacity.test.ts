@@ -55,14 +55,168 @@ describe("realtime channel capacity proof", () => {
     const result = runCapacity(["--scales", "1,10"]);
     const report = parseStdout(result) as {
       channelsPerActiveUser: number;
-      projections: Array<{ activeUsers: number; projectedChannels: number }>;
+      staticUpperBoundChannelsPerActiveUser: number;
+      reducedPersistentChannelsPerActiveUser: number;
+      focusedSessionChannelsPerActiveUser: number;
+      projections: Array<{
+        activeUsers: number;
+        projectedChannels: number;
+        projectedStaticUpperBoundChannels: number;
+        projectedPersistentChannels: number;
+        projectedFocusedSessionChannels: number;
+      }>;
     };
 
     expect(result.status).toBe(0);
     expect(report.channelsPerActiveUser).toBe(14);
+    expect(report.staticUpperBoundChannelsPerActiveUser).toBe(14);
+    expect(report.reducedPersistentChannelsPerActiveUser).toBe(8);
+    expect(report.focusedSessionChannelsPerActiveUser).toBe(2);
     expect(report.projections).toEqual([
-      expect.objectContaining({ activeUsers: 1, projectedChannels: 14 }),
-      expect.objectContaining({ activeUsers: 10, projectedChannels: 140 }),
+      expect.objectContaining({
+        activeUsers: 1,
+        projectedChannels: 14,
+        projectedStaticUpperBoundChannels: 14,
+        projectedPersistentChannels: 8,
+        projectedFocusedSessionChannels: 2,
+      }),
+      expect.objectContaining({
+        activeUsers: 10,
+        projectedChannels: 140,
+        projectedStaticUpperBoundChannels: 140,
+        projectedPersistentChannels: 80,
+        projectedFocusedSessionChannels: 20,
+      }),
+    ]);
+  });
+
+  it("reports the reduced persistent fanout model alongside the static upper bound", () => {
+    const result = runCapacity(["--scales", "50000"]);
+    const report = parseStdout(result) as {
+      realtimeFanoutModel: {
+        modelStatus: string;
+        staticUpperBoundChannelsPerActiveUser: number;
+        reducedPersistentChannelsPerActiveUser: number;
+        focusedSessionChannelsPerActiveUser: number;
+      };
+      projections: Array<{
+        activeUsers: number;
+        projectedChannels: number;
+        projectedPersistentChannels: number;
+        projectedFocusedSessionChannels: number;
+      }>;
+      bindings: Array<{
+        channelNamePattern: string;
+        channelsPerMountedSource: number;
+        persistentBudgetContribution: number;
+      }>;
+    };
+
+    expect(result.status).toBe(0);
+    expect(report.realtimeFanoutModel).toEqual(
+      expect.objectContaining({
+        modelStatus: "reduced_persistent_budget_implemented",
+        staticUpperBoundChannelsPerActiveUser: 14,
+        reducedPersistentChannelsPerActiveUser: 8,
+        focusedSessionChannelsPerActiveUser: 2,
+      }),
+    );
+    expect(report.projections).toEqual([
+      expect.objectContaining({
+        activeUsers: 50000,
+        projectedChannels: 700000,
+        projectedPersistentChannels: 400000,
+        projectedFocusedSessionChannels: 100000,
+      }),
+    ]);
+    expect(report.bindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          channelNamePattern: "notif-buyer-rt + buyer-proposals-rt",
+          channelsPerMountedSource: 2,
+          persistentBudgetContribution: 0,
+        }),
+        expect.objectContaining({
+          channelNamePattern: "director:screen:realtime + director-handoff-rt",
+          channelsPerMountedSource: 2,
+          persistentBudgetContribution: 1,
+        }),
+        expect.objectContaining({
+          channelNamePattern: "director-handoff-rt",
+          channelsPerMountedSource: 1,
+          persistentBudgetContribution: 0,
+        }),
+      ]),
+    );
+  });
+
+  it("proves the focused-session channel budget from focus and visible gates", () => {
+    const result = runCapacity(["--scales", "50000"]);
+    const report = parseStdout(result) as {
+      realtimeFanoutModel: {
+        focusedSessionModel: {
+          modelStatus: string;
+          maxFocusedSessionChannelsPerActiveUser: number;
+          roleScreenChannelsPerFocusedRoute: number;
+          directorBaseScreenChannels: number;
+          directorVisibleAncillaryChannelMax: number;
+          chatFocusedRouteChannels: number;
+        };
+      };
+      projections: Array<{
+        projectedFocusedSessionChannels: number;
+      }>;
+    };
+
+    const buyerSource = fs.readFileSync(
+      path.join(PROJECT_ROOT, "src/screens/buyer/buyer.realtime.lifecycle.ts"),
+      "utf8",
+    );
+    const accountantSource = fs.readFileSync(
+      path.join(PROJECT_ROOT, "src/screens/accountant/accountant.realtime.lifecycle.ts"),
+      "utf8",
+    );
+    const warehouseSource = fs.readFileSync(
+      path.join(PROJECT_ROOT, "src/screens/warehouse/warehouse.realtime.lifecycle.ts"),
+      "utf8",
+    );
+    const contractorSource = fs.readFileSync(
+      path.join(PROJECT_ROOT, "src/screens/contractor/contractor.realtime.lifecycle.ts"),
+      "utf8",
+    );
+    const directorControllerSource = fs.readFileSync(
+      path.join(PROJECT_ROOT, "src/screens/director/useDirectorScreenController.ts"),
+      "utf8",
+    );
+    const chatSource = fs.readFileSync(
+      path.join(PROJECT_ROOT, "src/features/chat/ChatScreen.tsx"),
+      "utf8",
+    );
+
+    for (const source of [buyerSource, accountantSource, warehouseSource, contractorSource]) {
+      expect(source).toContain("useFocusEffect(bindRealtime)");
+    }
+    expect(directorControllerSource).toContain(
+      "visible: isScreenFocused && dirTab === DIRECTOR_FINANCE_TAB",
+    );
+    expect(directorControllerSource).toContain(
+      "visible: isScreenFocused && dirTab === DIRECTOR_REPORTS_TAB && reports.repOpen",
+    );
+    expect(chatSource).toContain("subscribeToListingChatMessages(listingId");
+    expect(report.realtimeFanoutModel.focusedSessionModel).toEqual(
+      expect.objectContaining({
+        modelStatus: "focused_session_budget_implemented",
+        maxFocusedSessionChannelsPerActiveUser: 2,
+        roleScreenChannelsPerFocusedRoute: 1,
+        directorBaseScreenChannels: 1,
+        directorVisibleAncillaryChannelMax: 1,
+        chatFocusedRouteChannels: 1,
+      }),
+    );
+    expect(report.projections).toEqual([
+      expect.objectContaining({
+        projectedFocusedSessionChannels: 100000,
+      }),
     ]);
   });
 

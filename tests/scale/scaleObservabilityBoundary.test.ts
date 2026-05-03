@@ -208,9 +208,11 @@ describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => 
     );
   });
 
-  it("keeps the external observability export adapter disabled by default and staging-gated", async () => {
+  it("keeps the external observability export adapter disabled by default and production-gated", async () => {
     const exporter = createObservabilityExportMock();
     const envNames = SCALE_PROVIDER_RUNTIME_ENV_NAMES.observability_export;
+    const productionEnabledName = envNames.productionEnabled;
+    if (!productionEnabledName) throw new Error("observability production flag missing");
 
     const disabled = createScaleObservabilityAdapterFromEnv(
       {},
@@ -264,6 +266,28 @@ describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => 
       },
     );
     expect(production).toBeInstanceOf(NoopScaleObservabilityAdapter);
+
+    const productionEnabled = createScaleObservabilityAdapterFromEnv(
+      {
+        [productionEnabledName]: "true",
+        [envNames.required[0]]: "https://observability.example.invalid/v1/export",
+        [envNames.required[1]]: "server-only-token",
+        [envNames.optional[0]]: "rik-production",
+      },
+      {
+        runtimeEnvironment: "production",
+        fetchImpl: exporter.fetchMock,
+      },
+    );
+    expect(productionEnabled).toBeInstanceOf(ExternalScaleObservabilityExportAdapter);
+    expect(productionEnabled.getHealth()).toEqual(
+      expect.objectContaining({
+        kind: "external_export",
+        enabled: true,
+        externalNetworkEnabled: true,
+        externalExportEnabledByDefault: false,
+      }),
+    );
     expect(exporter.fetchMock).not.toHaveBeenCalled();
   });
 
@@ -391,10 +415,16 @@ describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => 
 
   it("keeps observability export env names server-only", () => {
     const envNames = SCALE_PROVIDER_RUNTIME_ENV_NAMES.observability_export;
-    const allNames = [envNames.enabled, ...envNames.required, ...envNames.optional];
+    const allNames = [
+      envNames.enabled,
+      envNames.productionEnabled,
+      ...envNames.required,
+      ...envNames.optional,
+    ].filter((name): name is string => typeof name === "string");
 
     expect(allNames).toEqual([
       "SCALE_OBSERVABILITY_EXPORT_STAGING_ENABLED",
+      "SCALE_OBSERVABILITY_EXPORT_PRODUCTION_ENABLED",
       "SCALE_OBSERVABILITY_EXPORT_ENDPOINT",
       "SCALE_OBSERVABILITY_EXPORT_TOKEN",
       "SCALE_OBSERVABILITY_EXPORT_NAMESPACE",

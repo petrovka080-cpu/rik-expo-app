@@ -10,12 +10,28 @@ const SAFE_LIMIT_KEYS = {
   maxMessagesPerSecond: "SUPABASE_REALTIME_MAX_MESSAGES_PER_SECOND",
 };
 
+export const FOCUSED_SESSION_REALTIME_MODEL = {
+  modelStatus: "focused_session_budget_implemented",
+  maxFocusedSessionChannelsPerActiveUser: 2,
+  roleScreenChannelsPerFocusedRoute: 1,
+  directorBaseScreenChannels: 1,
+  directorVisibleAncillaryChannelMax: 1,
+  chatFocusedRouteChannels: 1,
+  notes: [
+    "Buyer, accountant, warehouse, and contractor subscriptions are mounted through useFocusEffect, so only the focused role route contributes.",
+    "Director base realtime is mounted only while the director screen is focused.",
+    "Director finance and reports ancillary subscriptions are visible-gated and cannot both be active because they require different dirTab values.",
+    "Listing chat subscription is mounted on the chat route and does not add to a focused role route budget.",
+  ],
+};
+
 export const REALTIME_BINDINGS = [
   {
     source: "buyer-summary",
     bindingPath: "src/screens/buyer/buyer.realtime.lifecycle.ts",
     channelNamePattern: "buyer:screen:realtime",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 1,
     budgetPerSource: 8,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
@@ -29,6 +45,7 @@ export const REALTIME_BINDINGS = [
     bindingPath: "src/screens/accountant/accountant.realtime.lifecycle.ts",
     channelNamePattern: "accountant:screen:realtime",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 1,
     budgetPerSource: 8,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
@@ -42,6 +59,7 @@ export const REALTIME_BINDINGS = [
     bindingPath: "src/screens/warehouse/warehouse.realtime.lifecycle.ts",
     channelNamePattern: "warehouse:screen:realtime",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 1,
     budgetPerSource: 8,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
@@ -55,6 +73,7 @@ export const REALTIME_BINDINGS = [
     bindingPath: "src/screens/contractor/contractor.realtime.lifecycle.ts",
     channelNamePattern: "contractor:screen:realtime",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 1,
     budgetPerSource: 8,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
@@ -68,6 +87,7 @@ export const REALTIME_BINDINGS = [
     bindingPath: "src/screens/director/director.finance.realtime.lifecycle.ts",
     channelNamePattern: "director:finance:realtime",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 1,
     budgetPerSource: 8,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
@@ -81,6 +101,7 @@ export const REALTIME_BINDINGS = [
     bindingPath: "src/screens/director/director.reports.realtime.lifecycle.ts",
     channelNamePattern: "director:reports:realtime",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 1,
     budgetPerSource: 8,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
@@ -94,6 +115,7 @@ export const REALTIME_BINDINGS = [
     bindingPath: "src/lib/chat_api.ts",
     channelNamePattern: "chat:listing:<listingId>",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 1,
     budgetPerSource: 8,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
@@ -107,45 +129,49 @@ export const REALTIME_BINDINGS = [
     bindingPath: "src/screens/buyer/buyer.subscriptions.ts",
     channelNamePattern: "notif-buyer-rt + buyer-proposals-rt",
     channelsPerMountedSource: 2,
+    persistentBudgetContribution: 0,
     budgetPerSource: 2,
     globalWarningContribution: 2,
     cleanupReleasePathExists: true,
     duplicateDetectionExists: true,
     filteringExists: true,
     status: "covered",
-    notes: "Legacy direct channels are budgeted by claimRealtimeChannel; notification listener is role-filtered.",
+    notes: "Legacy direct channels are retained only in the static upper-bound model; runtime is collapsed into buyer:screen:realtime.",
   },
   {
     source: "warehouse-expense-legacy",
     bindingPath: "src/screens/warehouse/hooks/useWarehouseExpenseRealtime.ts",
     channelNamePattern: "warehouse-expense-rt",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 0,
     budgetPerSource: 1,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
     duplicateDetectionExists: true,
     filteringExists: false,
     status: "covered",
-    notes: "Legacy direct warehouse expense channel is budgeted; broad request/request_items bindings are preserved from S-RT-2.",
+    notes: "Legacy warehouse expense channel is retained only in the static upper-bound model; runtime is collapsed into warehouse:screen:realtime.",
   },
   {
     source: "director-screen-handoff",
     bindingPath: "src/screens/director/director.lifecycle.realtime.ts",
     channelNamePattern: "director:screen:realtime + director-handoff-rt",
     channelsPerMountedSource: 2,
+    persistentBudgetContribution: 1,
     budgetPerSource: 2,
     globalWarningContribution: 2,
     cleanupReleasePathExists: true,
     duplicateDetectionExists: true,
     filteringExists: true,
     status: "covered",
-    notes: "Director screen direct channels are budgeted; notification listener is role-filtered and handoff uses broadcast.",
+    notes: "Director handoff shares director:screen:realtime at runtime; static upper-bound keeps the old split conservative.",
   },
   {
     source: "request-draft-sync-handoff",
     bindingPath: "src/lib/api/requestDraftSync.service.ts",
     channelNamePattern: "director-handoff-rt",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 0,
     budgetPerSource: null,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
@@ -159,6 +185,7 @@ export const REALTIME_BINDINGS = [
     bindingPath: "src/lib/api/request.repository.ts",
     channelNamePattern: "director-handoff-rt",
     channelsPerMountedSource: 1,
+    persistentBudgetContribution: 0,
     budgetPerSource: null,
     globalWarningContribution: 1,
     cleanupReleasePathExists: true,
@@ -245,6 +272,21 @@ export function readAccountLimits(env = process.env) {
     maxConcurrentClients: parsePositiveIntegerEnv(env, SAFE_LIMIT_KEYS.maxConcurrentClients),
     maxMessagesPerSecond: parsePositiveIntegerEnv(env, SAFE_LIMIT_KEYS.maxMessagesPerSecond),
   };
+}
+
+export function getStaticUpperBoundChannelsPerActiveUser(bindings = REALTIME_BINDINGS) {
+  return bindings.reduce((total, binding) => total + binding.channelsPerMountedSource, 0);
+}
+
+export function getReducedPersistentChannelsPerActiveUser(bindings = REALTIME_BINDINGS) {
+  return bindings.reduce(
+    (total, binding) => total + Number(binding.persistentBudgetContribution ?? binding.channelsPerMountedSource),
+    0,
+  );
+}
+
+export function getFocusedSessionChannelsPerActiveUser() {
+  return FOCUSED_SESSION_REALTIME_MODEL.maxFocusedSessionChannelsPerActiveUser;
 }
 
 function limitPresence(limits) {
@@ -341,33 +383,56 @@ export function buildCapacityReport(options = {}) {
     : channelClientVerified
       ? "partial_messages_per_second_missing"
       : "owner_action_required";
-  const channelsPerActiveUser = REALTIME_BINDINGS.reduce(
-    (total, binding) => total + binding.channelsPerMountedSource,
-    0,
-  );
+  const staticUpperBoundChannelsPerActiveUser = getStaticUpperBoundChannelsPerActiveUser();
+  const reducedPersistentChannelsPerActiveUser = getReducedPersistentChannelsPerActiveUser();
+  const focusedSessionChannelsPerActiveUser = getFocusedSessionChannelsPerActiveUser();
+  const channelsPerActiveUser = staticUpperBoundChannelsPerActiveUser;
 
   const bindings = REALTIME_BINDINGS.map((binding) => {
     const projected = Object.fromEntries(
       scales.map((scale) => [`projectedChannelsAt${scale}`, scale * binding.channelsPerMountedSource]),
+    );
+    const persistentProjected = Object.fromEntries(
+      scales.map((scale) => [
+        `projectedPersistentChannelsAt${scale}`,
+        scale * Number(binding.persistentBudgetContribution ?? binding.channelsPerMountedSource),
+      ]),
     );
     return {
       ...binding,
       channelNamePattern: redactChannelPattern(binding.channelNamePattern),
       expectedActiveUsers: scales,
       ...projected,
+      ...persistentProjected,
     };
   });
 
   const projections = scales.map((activeUsers) => {
-    const projectedChannels = activeUsers * channelsPerActiveUser;
+    const projectedChannels = activeUsers * staticUpperBoundChannelsPerActiveUser;
+    const projectedPersistentChannels = activeUsers * reducedPersistentChannelsPerActiveUser;
+    const projectedFocusedSessionChannels = activeUsers * focusedSessionChannelsPerActiveUser;
     const evaluation = evaluateProjection(activeUsers, projectedChannels, limits);
+    const persistentEvaluation = evaluateProjection(activeUsers, projectedPersistentChannels, limits);
+    const focusedSessionEvaluation = evaluateProjection(activeUsers, projectedFocusedSessionChannels, limits);
     return {
       activeUsers,
       projectedChannels,
       channelsPerActiveUser,
+      staticUpperBoundChannelsPerActiveUser,
+      reducedPersistentChannelsPerActiveUser,
+      focusedSessionChannelsPerActiveUser,
+      projectedStaticUpperBoundChannels: projectedChannels,
+      projectedPersistentChannels,
+      projectedFocusedSessionChannels,
       projectedMessagesPerSecond: DEFAULT_MESSAGES_PER_USER_PER_SECOND,
       messagesPerSecondFormula:
         "static proof assumes no generated realtime load; live message rate must be measured separately",
+      reducedPersistentWithinVerifiedAccountLimits: persistentEvaluation.withinVerifiedAccountLimits,
+      reducedPersistentConclusion: persistentEvaluation.conclusion,
+      reducedPersistentReason: persistentEvaluation.reason,
+      focusedSessionWithinVerifiedAccountLimits: focusedSessionEvaluation.withinVerifiedAccountLimits,
+      focusedSessionConclusion: focusedSessionEvaluation.conclusion,
+      focusedSessionReason: focusedSessionEvaluation.reason,
       ...evaluation,
     };
   });
@@ -395,6 +460,20 @@ export function buildCapacityReport(options = {}) {
     env: envState,
     scales,
     channelsPerActiveUser,
+    staticUpperBoundChannelsPerActiveUser,
+    reducedPersistentChannelsPerActiveUser,
+    focusedSessionChannelsPerActiveUser,
+    realtimeFanoutModel: {
+      staticUpperBoundChannelsPerActiveUser,
+      reducedPersistentChannelsPerActiveUser,
+      focusedSessionChannelsPerActiveUser,
+      modelStatus: "reduced_persistent_budget_implemented",
+      staticUpperBoundNotes:
+        "Conservative legacy/static inventory keeps collapsed and ephemeral paths counted for owner-support sizing.",
+      reducedPersistentNotes:
+        "Runtime persistent budget counts ref-counted role/screen channels plus one mounted listing chat channel.",
+      focusedSessionModel: FOCUSED_SESSION_REALTIME_MODEL,
+    },
     bindings,
     projections,
     limits,
@@ -457,7 +536,9 @@ function printReport(report, json) {
   console.log(`accountLimitStatus: ${report.accountLimitStatus}`);
   console.log(`capacityClaim: ${report.capacityClaim}`);
   for (const projection of report.projections) {
-    console.log(`${projection.activeUsers}: ${projection.projectedChannels} projected channels`);
+    console.log(
+      `${projection.activeUsers}: ${projection.projectedChannels} static projected channels; ${projection.projectedPersistentChannels} reduced persistent projected channels; ${projection.projectedFocusedSessionChannels} focused-session projected channels`,
+    );
   }
 }
 

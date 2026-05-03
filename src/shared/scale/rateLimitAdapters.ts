@@ -17,6 +17,16 @@ import {
   resolveScaleProviderRuntimeConfig,
   type ScaleProviderRuntimeEnvironment,
 } from "./providerRuntimeConfig";
+import {
+  buildScaleObservabilityEvent,
+  type ScaleObservabilityEventName,
+  type ScaleObservabilityResult,
+} from "./scaleObservabilityEvents";
+import type { ScaleMetricName } from "./scaleMetricsPolicies";
+import type {
+  ScaleObservabilityAdapter,
+  ScaleObservabilityRecordResult,
+} from "./scaleObservabilityAdapters";
 
 export type RateLimitDecisionState =
   | "allowed"
@@ -1026,4 +1036,198 @@ export function createRateEnforcementProviderFromEnv(
     namespace: normalizeText(env.SCALE_RATE_LIMIT_NAMESPACE) || null,
     isolatedTestNamespace: normalizeText(env[RATE_LIMIT_TEST_NAMESPACE_ENV_NAME]) || null,
   });
+}
+
+export type RateLimitShadowMonitorSnapshot = {
+  wouldAllowCount: number;
+  wouldThrottleCount: number;
+  keyCardinalityRedacted: number;
+  observedDecisionCount: number;
+  invalidDecisionCount: number;
+  aggregateEventsRecorded: number;
+  aggregateMetricsRecorded: number;
+  blockedDecisionsObserved: number;
+  realUsersBlocked: false;
+  rawKeysStored: false;
+  rawKeysPrinted: false;
+  rawPayloadLogged: false;
+  piiLogged: false;
+};
+
+export type RateLimitShadowMonitorObserveResult = {
+  accepted: boolean;
+  snapshot: RateLimitShadowMonitorSnapshot;
+  eventRecorded: boolean;
+  metricRecorded: boolean;
+};
+
+type RateLimitShadowClassification = "allow" | "throttle" | "ignore";
+
+const REDACTED_CARDINALITY_MARKER = "present_redacted";
+
+function classifyRateLimitDecisionState(
+  state: RuntimeRateEnforcementDecision["providerState"],
+): RateLimitShadowClassification {
+  if (state === "allowed") return "allow";
+  if (
+    state === "soft_limited" ||
+    state === "hard_limited" ||
+    state === "blocked_abuse"
+  ) {
+    return "throttle";
+  }
+  return "ignore";
+}
+
+function eventForRateLimitDecisionState(
+  state: RateLimitDecisionState | "policy_missing" | "key_rejected",
+): {
+  eventName: ScaleObservabilityEventName;
+  result: ScaleObservabilityResult;
+  metricName: ScaleMetricName | null;
+} | null {
+  if (state === "allowed") {
+    return {
+      eventName: "rate_limit.allowed",
+      result: "allowed",
+      metricName: null,
+    };
+  }
+  if (state === "soft_limited") {
+    return {
+      eventName: "rate_limit.soft_limited",
+      result: "limited",
+      metricName: "rate_limit.soft_limit_rate",
+    };
+  }
+  if (state === "hard_limited" || state === "blocked_abuse") {
+    return {
+      eventName: "rate_limit.hard_limited",
+      result: "limited",
+      metricName: "rate_limit.hard_limit_rate",
+    };
+  }
+  return null;
+}
+
+export class RateLimitShadowMonitor {
+  private wouldAllowCount = 0;
+  private wouldThrottleCount = 0;
+  private observedDecisionCount = 0;
+  private invalidDecisionCount = 0;
+  private aggregateEventsRecorded = 0;
+  private aggregateMetricsRecorded = 0;
+  private blockedDecisionsObserved = 0;
+  private readonly redactedCardinality = new Set<string>();
+  private readonly observability: ScaleObservabilityAdapter | null;
+
+  constructor(options: { observability?: ScaleObservabilityAdapter | null } = {}) {
+    this.observability = options.observability ?? null;
+  }
+
+  async observe(
+    decision: RuntimeRateEnforcementDecision,
+  ): Promise<RateLimitShadowMonitorObserveResult> {
+    if (decision.realUsersBlocked !== false) {
+      this.invalidDecisionCount += 1;
+      return {
+        accepted: false,
+        snapshot: this.snapshot(),
+        eventRecorded: false,
+        metricRecorded: false,
+      };
+    }
+
+    this.observedDecisionCount += 1;
+    if (decision.blocked) this.blockedDecisionsObserved += 1;
+    if (decision.safeSubjectHash) {
+      this.redactedCardinality.add(decision.safeSubjectHash);
+    }
+
+    const classification = classifyRateLimitDecisionState(decision.providerState);
+    if (classification === "allow") this.wouldAllowCount += 1;
+    if (classification === "throttle") this.wouldThrottleCount += 1;
+
+    const observabilityResult = await this.recordAggregateObservability(decision);
+    return {
+      accepted: true,
+      snapshot: this.snapshot(),
+      eventRecorded: observabilityResult.eventRecorded,
+      metricRecorded: observabilityResult.metricRecorded,
+    };
+  }
+
+  snapshot(): RateLimitShadowMonitorSnapshot {
+    return {
+      wouldAllowCount: this.wouldAllowCount,
+      wouldThrottleCount: this.wouldThrottleCount,
+      keyCardinalityRedacted: this.redactedCardinality.size,
+      observedDecisionCount: this.observedDecisionCount,
+      invalidDecisionCount: this.invalidDecisionCount,
+      aggregateEventsRecorded: this.aggregateEventsRecorded,
+      aggregateMetricsRecorded: this.aggregateMetricsRecorded,
+      blockedDecisionsObserved: this.blockedDecisionsObserved,
+      realUsersBlocked: false,
+      rawKeysStored: false,
+      rawKeysPrinted: false,
+      rawPayloadLogged: false,
+      piiLogged: false,
+    };
+  }
+
+  private async recordAggregateObservability(
+    decision: RuntimeRateEnforcementDecision,
+  ): Promise<{ eventRecorded: boolean; metricRecorded: boolean }> {
+    if (!this.observability) {
+      return { eventRecorded: false, metricRecorded: false };
+    }
+
+    const contract = eventForRateLimitDecisionState(decision.providerState);
+    if (!contract) {
+      return { eventRecorded: false, metricRecorded: false };
+    }
+
+    let eventRecorded = false;
+    let metricRecorded = false;
+    const eventResult = await this.observability.recordEvent(
+      buildScaleObservabilityEvent({
+        eventName: contract.eventName,
+        routeOrOperation: decision.operation,
+        result: contract.result,
+        reasonCode: decision.reason,
+        safeActorScope: decision.safeSubjectHash
+          ? REDACTED_CARDINALITY_MARKER
+          : "missing",
+        safeCompanyScope: "not_applicable",
+      }),
+    );
+    if (eventResult.ok) {
+      this.aggregateEventsRecorded += 1;
+      eventRecorded = true;
+    }
+
+    if (contract.metricName) {
+      const metricResult: ScaleObservabilityRecordResult =
+        await this.observability.recordMetric({
+          metricName: contract.metricName,
+          value: 1,
+          tags: {
+            operation: decision.operation,
+            result: contract.result,
+          },
+        });
+      if (metricResult.ok) {
+        this.aggregateMetricsRecorded += 1;
+        metricRecorded = true;
+      }
+    }
+
+    return { eventRecorded, metricRecorded };
+  }
+}
+
+export function createRateLimitShadowMonitor(options: {
+  observability?: ScaleObservabilityAdapter | null;
+} = {}): RateLimitShadowMonitor {
+  return new RateLimitShadowMonitor(options);
 }

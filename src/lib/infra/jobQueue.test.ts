@@ -166,6 +166,24 @@ describe("job queue server-owned transitions", () => {
     expect(from).not.toHaveBeenCalled();
   });
 
+  it("reads failed-job metrics through the aggregate RPC without table fallback", async () => {
+    const from = jest.fn();
+    const rpc = jest.fn(async () => ({
+      data: [{ pending: 3, processing: 1, failed: 2, oldest_pending: "2026-05-03T00:00:00.000Z" }],
+      error: null,
+    }));
+    const api = createJobQueueApi({ rpc, from } as never);
+
+    await expect(api.fetchSubmitJobMetrics()).resolves.toEqual({
+      pending: 3,
+      processing: 1,
+      failed: 2,
+      oldest_pending: "2026-05-03T00:00:00.000Z",
+    });
+    expect(rpc).toHaveBeenCalledWith("submit_jobs_metrics");
+    expect(from).not.toHaveBeenCalled();
+  });
+
   it("fails closed when fail RPC signatures are unavailable", async () => {
     const from = jest.fn();
     const rpc = jest
