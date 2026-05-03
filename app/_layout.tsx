@@ -17,7 +17,6 @@ import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
 import { initializeSentry, wrapRootComponentWithSentry } from "../src/lib/observability/sentry";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
-import { shouldWarmPdfViewerAfterStartup } from "../src/lib/entry/pdfViewerWarmupPolicy";
 
 initializeSentry();
 
@@ -39,6 +38,30 @@ if (Platform.OS === "web") {
     }
     originalWarn.apply(console, args as unknown as []);
   };
+}
+
+type PdfViewerWarmupAuthStatus = "unknown" | "authenticated" | "unauthenticated";
+
+function normalizeWarmupPathname(pathname: string | null | undefined) {
+  return String(pathname ?? "").split("?")[0] || "/";
+}
+
+function shouldWarmPdfViewerAfterStartup(input: {
+  platformOs: string;
+  pathname: string | null | undefined;
+  sessionLoaded: boolean;
+  authSessionStatus: PdfViewerWarmupAuthStatus;
+}) {
+  if (input.platformOs === "web") return false;
+  if (!input.sessionLoaded) return false;
+  if (input.authSessionStatus !== "authenticated") return false;
+
+  const pathname = normalizeWarmupPathname(input.pathname);
+  if (pathname === "/" || pathname === "/index") return false;
+  if (pathname === "/pdf-viewer") return false;
+  if (pathname === "/auth" || pathname.startsWith("/auth/")) return false;
+
+  return true;
 }
 
 function RootLayout() {
