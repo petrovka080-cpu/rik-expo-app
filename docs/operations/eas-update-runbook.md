@@ -30,6 +30,14 @@ npm run release:ota -- --channel <development|preview|production> --message "wav
 
 Direct `npx eas update ...` is not the supported release path for this repo anymore. Use the guarded script so the required gates, git-state checks, runtime classification, and release metadata are enforced together.
 
+Production canary path:
+
+```powershell
+npm run release:ota -- --channel production --message "wave marker" --rollout-percentage <1-100>
+```
+
+Use the canary path for initial production exposure. Do not publish directly to 100% unless the wave explicitly approves a full rollout.
+
 - iPhone / TestFlight: publish only to `production`
 
 ```powershell

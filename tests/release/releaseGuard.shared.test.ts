@@ -648,6 +648,19 @@ EAS Dashboard      https://expo.dev/update/group-123
         }),
       ).toBe("npx 'eas' 'update' '--branch' 'preview' '--message' 'Office owner'\\''s fallback'");
     });
+
+    it("adds a guarded rollout percentage for per-update canaries", () => {
+      expect(
+        buildReleaseGuardOtaPublishCommand({
+          platform: "win32",
+          channel: "production",
+          message: "Scale canary",
+          rolloutPercentage: 5,
+        }),
+      ).toBe(
+        'npx "eas" "update" "--branch" "production" "--message" "Scale canary" "--rollout-percentage" "5"',
+      );
+    });
   });
 
   describe("buildReleaseChangedFilesGitArgs", () => {

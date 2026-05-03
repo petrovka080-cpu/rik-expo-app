@@ -33,12 +33,30 @@ type ParsedArgs = {
   reportFile: string | null;
   requireArtifacts: string[];
   range: string | null;
+  rolloutPercentage: number | null;
 };
+
+function parseRolloutPercentage(rawValue: string | undefined): number | null {
+  if (rawValue == null) {
+    return null;
+  }
+
+  if (!/^\d+$/.test(rawValue)) {
+    throw new Error("--rollout-percentage must be an integer between 1 and 100.");
+  }
+
+  const value = Number(rawValue);
+  if (!Number.isInteger(value) || value < 1 || value > 100) {
+    throw new Error("--rollout-percentage must be an integer between 1 and 100.");
+  }
+
+  return value;
+}
 
 function parseArgs(argv: string[]): ParsedArgs {
   const [modeValue, ...rest] = argv;
   if (modeValue !== "preflight" && modeValue !== "verify" && modeValue !== "ota") {
-    throw new Error('Usage: tsx scripts/release/run-release-guard.ts <preflight|verify|ota> [--channel <channel>] [--message "<message>"] [--json] [--dry-run] [--report-file <path>] [--require-artifact <path>] [--range <git-range>]');
+    throw new Error('Usage: tsx scripts/release/run-release-guard.ts <preflight|verify|ota> [--channel <channel>] [--message "<message>"] [--rollout-percentage <1-100>] [--json] [--dry-run] [--report-file <path>] [--require-artifact <path>] [--range <git-range>]');
   }
 
   const values = new Map<string, string[]>();
@@ -66,6 +84,11 @@ function parseArgs(argv: string[]): ParsedArgs {
     index += 1;
   }
 
+  const rolloutPercentage = parseRolloutPercentage(values.get("--rollout-percentage")?.[0]);
+  if (rolloutPercentage != null && modeValue !== "ota") {
+    throw new Error("--rollout-percentage is only supported in ota mode.");
+  }
+
   return {
     mode: modeValue,
     channel: values.get("--channel")?.[0] ?? null,
@@ -75,6 +98,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     reportFile: values.get("--report-file")?.[0] ?? null,
     requireArtifacts: values.get("--require-artifact") ?? [],
     range: values.get("--range")?.[0] ?? null,
+    rolloutPercentage,
   };
 }
 
@@ -243,6 +267,9 @@ function printHumanReport(report: ReleaseGuardReport) {
   if (report.expectedBranch) {
     console.info(`Expected branch: ${report.expectedBranch}`);
   }
+  if (report.rolloutPercentage != null) {
+    console.info(`Rollout percentage: ${report.rolloutPercentage}`);
+  }
 
   console.info("");
   console.info("Required gates:");
@@ -370,6 +397,7 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     targetChannel,
     expectedBranch,
     releaseMessage: args.message,
+    rolloutPercentage: args.rolloutPercentage,
     commitRange: args.range ?? resolveCommitRange(null),
     otaPublish: null,
     releaseMetadata: buildReleaseMetadataEnforcement({
@@ -439,6 +467,7 @@ function main() {
     platform: process.platform,
     channel: targetChannel,
     message,
+    rolloutPercentage: args.rolloutPercentage,
   }), {
     cwd: PROJECT_ROOT,
     encoding: "utf8",

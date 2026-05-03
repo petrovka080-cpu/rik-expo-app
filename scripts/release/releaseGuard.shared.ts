@@ -133,6 +133,7 @@ export type ReleaseGuardReport = {
   targetChannel: string | null;
   expectedBranch: string | null;
   releaseMessage: string | null;
+  rolloutPercentage: number | null;
   commitRange: string;
   otaPublish: ReleaseOtaPublishMetadata | null;
   releaseMetadata: ReleaseMetadataEnforcement;
@@ -184,6 +185,7 @@ export function buildReleaseGuardOtaPublishCommand(params: {
   platform: NodeJS.Platform;
   channel: string;
   message: string;
+  rolloutPercentage?: number | null;
 }): string {
   const parts = [
     "npx",
@@ -194,6 +196,10 @@ export function buildReleaseGuardOtaPublishCommand(params: {
     "--message",
     params.message,
   ];
+
+  if (params.rolloutPercentage != null) {
+    parts.push("--rollout-percentage", String(params.rolloutPercentage));
+  }
 
   return parts
     .map((part, index) =>

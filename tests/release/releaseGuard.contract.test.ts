@@ -47,6 +47,7 @@ describe("release guard automation contract", () => {
 
     expect(runbookSource).toContain("npm run release:preflight");
     expect(runbookSource).toContain("npm run release:ota -- --channel <development|preview|production> --message");
+    expect(runbookSource).toContain("--rollout-percentage <1-100>");
     expect(runbookSource).toContain("Direct `npx eas update ...` is not the supported release path");
   });
 });
