@@ -2,15 +2,13 @@
 // AUTH-LIFECYCLE: Thin shell. Auth bootstrap + guard logic extracted to hooks.
 
 import "../src/lib/runtime/installWeakRefPolyfill";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { InteractionManager, Platform, LogBox } from "react-native";
 import { Stack, usePathname, useSegments } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
-import { clearAppCache } from "../src/lib/cache/clearAppCache";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
-import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
 import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWebContainer";
 import { AppQueryProvider } from "../src/lib/query/queryClient";
 import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
@@ -41,6 +39,7 @@ if (Platform.OS === "web") {
 }
 
 type PdfViewerWarmupAuthStatus = "unknown" | "authenticated" | "unauthenticated";
+type PlatformOfflineStatusHostComponent = React.ComponentType;
 
 function normalizeWarmupPathname(pathname: string | null | undefined) {
   return String(pathname ?? "").split("?")[0] || "/";
@@ -62,6 +61,51 @@ function shouldWarmPdfViewerAfterStartup(input: {
   if (pathname === "/auth" || pathname.startsWith("/auth/")) return false;
 
   return true;
+}
+
+function DeferredPlatformOfflineStatusHost({ enabled }: { enabled: boolean }) {
+  const [HostComponent, setHostComponent] =
+    useState<PlatformOfflineStatusHostComponent | null>(null);
+
+  useEffect(() => {
+    if (!enabled || Platform.OS === "web") return undefined;
+
+    let active = true;
+    let loadTimeout: ReturnType<typeof setTimeout> | null = null;
+    const task = InteractionManager.runAfterInteractions(() => {
+      loadTimeout = setTimeout(() => {
+        void import("../src/components/PlatformOfflineStatusHost")
+          .then((module) => {
+            if (active) setHostComponent(() => module.default);
+          })
+          .catch((error: unknown) => {
+            recordPlatformObservability({
+              screen: "request",
+              surface: "startup_bootstrap",
+              category: "ui",
+              event: "offline_status_host_deferred_load_failed",
+              result: "error",
+              errorStage: "deferred_import",
+              errorClass: error instanceof Error ? error.name : "Unknown",
+              errorMessage: error instanceof Error ? error.message : String(error),
+              fallbackUsed: true,
+              extra: {
+                owner: "root_layout",
+              },
+            });
+          });
+      }, 2_000);
+    });
+
+    return () => {
+      active = false;
+      task.cancel?.();
+      if (loadTimeout) clearTimeout(loadTimeout);
+    };
+  }, [enabled]);
+
+  if (!enabled || !HostComponent) return null;
+  return <HostComponent />;
 }
 
 function RootLayout() {
@@ -106,7 +150,21 @@ function RootLayout() {
   }, []);
 
   useEffect(() => {
-    void clearAppCache();
+    if (process.env.NODE_ENV === "test" || Platform.OS === "web") return undefined;
+
+    let cleanupTimeout: ReturnType<typeof setTimeout> | null = null;
+    const task = InteractionManager.runAfterInteractions(() => {
+      cleanupTimeout = setTimeout(() => {
+        void import("../src/lib/cache/clearAppCache").then(({ clearAppCache }) =>
+          clearAppCache({ owner: "root_layout:deferred_expired_cache" }),
+        );
+      }, 8_000);
+    });
+
+    return () => {
+      task.cancel?.();
+      if (cleanupTimeout) clearTimeout(cleanupTimeout);
+    };
   }, []);
 
   useEffect(() => {
@@ -151,7 +209,12 @@ function RootLayout() {
               style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
               edges={Platform.OS === "web" ? [] : ["top"]}
             >
-              <PlatformOfflineStatusHost />
+              <DeferredPlatformOfflineStatusHost
+                enabled={
+                  authState.sessionLoaded &&
+                  authState.authSessionState.status === "authenticated"
+                }
+              />
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen
                   name="pdf-viewer"

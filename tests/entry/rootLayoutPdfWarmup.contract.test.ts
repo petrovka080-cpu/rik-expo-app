@@ -17,4 +17,11 @@ describe("RootLayout PDF warmup startup contract", () => {
     expect(source).toContain("InteractionManager.runAfterInteractions");
     expect(source).toContain("setTimeout(() =>");
   });
+
+  it("keeps non-auth startup helpers deferred away from root imports", () => {
+    expect(source).not.toContain('import { clearAppCache } from "../src/lib/cache/clearAppCache"');
+    expect(source).not.toContain('import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost"');
+    expect(source).toContain('import("../src/lib/cache/clearAppCache")');
+    expect(source).toContain('import("../src/components/PlatformOfflineStatusHost")');
+  });
 });

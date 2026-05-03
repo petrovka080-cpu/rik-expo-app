@@ -13,18 +13,81 @@
  * `_layout.tsx` calls `resetSessionBoundary(reason)` — nothing else.
  */
 
-import { clearDocumentSessions } from "../documents/pdfDocumentSessions";
-import { clearPdfRunnerSessionState } from "../pdfRunner";
-import { clearCurrentSessionRoleCache } from "../sessionRole";
-import { clearRealtimeSessionState } from "../realtime/realtime.client";
-import { resetOfflineReplayCoordinator } from "../offline/offlineReplayCoordinator";
-import { resetQueryCache } from "../query/queryClient";
-import { clearOfficeHubBootstrapSnapshot } from "../../screens/office/officeHubBootstrapSnapshot";
-import { clearCachedDraftRequestId } from "../api/requests";
-import { invalidateRequestsReadCapabilitiesCache } from "../api/requests.read-capabilities";
-import { clearLocalDraftId } from "../catalog/catalog.request.service";
-import { clearAppCache } from "../cache/clearAppCache";
-import { recordPlatformObservability } from "../observability/platformObservability";
+type SessionBoundaryCleaners = {
+  clearDocumentSessions: () => void;
+  clearPdfRunnerSessionState: () => void;
+  clearCurrentSessionRoleCache: () => void;
+  clearRealtimeSessionState: () => void;
+  resetOfflineReplayCoordinator: () => void;
+  resetQueryCache: () => void;
+  clearOfficeHubBootstrapSnapshot: () => void;
+  clearCachedDraftRequestId: () => void;
+  invalidateRequestsReadCapabilitiesCache: () => void;
+  clearLocalDraftId: () => void;
+  clearAppCache: (options: {
+    mode: "session";
+    owner: string;
+  }) => Promise<void>;
+};
+
+function loadSessionBoundaryCleaners(): SessionBoundaryCleaners {
+  const { clearDocumentSessions } =
+    require("../documents/pdfDocumentSessions") as typeof import("../documents/pdfDocumentSessions");
+  const { clearPdfRunnerSessionState } =
+    require("../pdfRunner") as typeof import("../pdfRunner");
+  const { clearCurrentSessionRoleCache } =
+    require("../sessionRole") as typeof import("../sessionRole");
+  const { clearRealtimeSessionState } =
+    require("../realtime/realtime.client") as typeof import("../realtime/realtime.client");
+  const { resetOfflineReplayCoordinator } =
+    require("../offline/offlineReplayCoordinator") as typeof import("../offline/offlineReplayCoordinator");
+  const { resetQueryCache } =
+    require("../query/queryClient") as typeof import("../query/queryClient");
+  const { clearOfficeHubBootstrapSnapshot } =
+    require("../../screens/office/officeHubBootstrapSnapshot") as typeof import("../../screens/office/officeHubBootstrapSnapshot");
+  const { clearCachedDraftRequestId } =
+    require("../api/requests") as typeof import("../api/requests");
+  const { invalidateRequestsReadCapabilitiesCache } =
+    require("../api/requests.read-capabilities") as typeof import("../api/requests.read-capabilities");
+  const { clearLocalDraftId } =
+    require("../catalog/catalog.request.service") as typeof import("../catalog/catalog.request.service");
+  const { clearAppCache } =
+    require("../cache/clearAppCache") as typeof import("../cache/clearAppCache");
+
+  return {
+    clearDocumentSessions,
+    clearPdfRunnerSessionState,
+    clearCurrentSessionRoleCache,
+    clearRealtimeSessionState,
+    resetOfflineReplayCoordinator,
+    resetQueryCache,
+    clearOfficeHubBootstrapSnapshot,
+    clearCachedDraftRequestId,
+    invalidateRequestsReadCapabilitiesCache,
+    clearLocalDraftId,
+    clearAppCache,
+  };
+}
+
+function recordSessionBoundaryPurgeFailure(reason: string, purgeError: unknown) {
+  const { recordPlatformObservability } =
+    require("../observability/platformObservability") as typeof import("../observability/platformObservability");
+
+  recordPlatformObservability({
+    screen: "request",
+    surface: "session_boundary",
+    category: "ui",
+    event: "session_cache_purge_failed",
+    result: "error",
+    errorStage: "clear_app_cache",
+    errorClass: purgeError instanceof Error ? purgeError.name : "Unknown",
+    errorMessage: purgeError instanceof Error ? purgeError.message : String(purgeError),
+    extra: {
+      owner: "session_boundary",
+      reason,
+    },
+  });
+}
 
 /**
  * Reset all session-bound state at auth boundary.
@@ -40,37 +103,26 @@ import { recordPlatformObservability } from "../observability/platformObservabil
  * - All subsystem cleaners run in a single predictable path
  */
 export async function resetSessionBoundary(reason: string): Promise<void> {
+  const cleaners = loadSessionBoundaryCleaners();
+
   // --- Synchronous resets (module-level singletons) ---
-  clearDocumentSessions();
-  clearCurrentSessionRoleCache();
-  clearPdfRunnerSessionState();
-  clearOfficeHubBootstrapSnapshot();
-  resetOfflineReplayCoordinator();
-  clearRealtimeSessionState();
-  resetQueryCache();
+  cleaners.clearDocumentSessions();
+  cleaners.clearCurrentSessionRoleCache();
+  cleaners.clearPdfRunnerSessionState();
+  cleaners.clearOfficeHubBootstrapSnapshot();
+  cleaners.resetOfflineReplayCoordinator();
+  cleaners.clearRealtimeSessionState();
+  cleaners.resetQueryCache();
 
   // --- Session-bound draft/capability caches (NEW in Wave H) ---
-  clearCachedDraftRequestId();
-  clearLocalDraftId();
-  invalidateRequestsReadCapabilitiesCache();
+  cleaners.clearCachedDraftRequestId();
+  cleaners.clearLocalDraftId();
+  cleaners.invalidateRequestsReadCapabilitiesCache();
 
   // --- Async cache purge ---
   try {
-    await clearAppCache({ mode: "session", owner: `session_boundary:${reason}` });
+    await cleaners.clearAppCache({ mode: "session", owner: `session_boundary:${reason}` });
   } catch (purgeError) {
-    recordPlatformObservability({
-      screen: "request",
-      surface: "session_boundary",
-      category: "ui",
-      event: "session_cache_purge_failed",
-      result: "error",
-      errorStage: "clear_app_cache",
-      errorClass: purgeError instanceof Error ? purgeError.name : "Unknown",
-      errorMessage: purgeError instanceof Error ? purgeError.message : String(purgeError),
-      extra: {
-        owner: "session_boundary",
-        reason,
-      },
-    });
+    recordSessionBoundaryPurgeFailure(reason, purgeError);
   }
 }
