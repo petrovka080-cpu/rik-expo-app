@@ -56,6 +56,7 @@ describe("production safe verification contract", () => {
     expect(source).toContain("validateWebSmokeArtifact");
     expect(source).toContain("validateMaestroArtifact");
     expect(source).toContain("validateChildProofArtifactSecretBoundary");
+    expect(source).toContain("validateChildProofArtifactFreshness");
     expect(source).toContain("validateEmulatorEvidence");
     expect(source).toContain("artifacts/web-public-smoke.json");
     expect(source).toContain("artifacts/maestro-infra/report.xml");
@@ -64,6 +65,10 @@ describe("production safe verification contract", () => {
     expect(source).toContain("artifact-not-passing");
     expect(source).toContain("forbiddenPatternHitCount");
     expect(source).toContain("child-proof-artifact-secret-boundary-failed");
+    expect(source).toContain("child-proof-artifact-freshness");
+    expect(source).toContain("child-proof-artifact-stale-or-missing");
+    expect(source).toContain("freshPathCount");
+    expect(source).toContain("runStartedAtMs");
     expect(source).toContain("emulator-adb-evidence-failed");
     expect(source).toContain('"adb", ["devices", "-l"]');
     expect(source).toContain("evidenceArtifacts");

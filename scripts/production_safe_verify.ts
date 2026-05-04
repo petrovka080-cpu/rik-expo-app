@@ -251,14 +251,62 @@ function validateMaestroArtifact(id: string, relativePath: string): ArtifactEvid
   }
 }
 
-function validateEvidenceArtifacts() {
+function validateEvidenceArtifacts(runStartedAtMs: number) {
   return [
     validateWebSmokeArtifact(),
     validateMaestroArtifact("maestro-infra-artifact", "artifacts/maestro-infra/report.xml"),
     validateMaestroArtifact("maestro-foundation-artifact", "artifacts/maestro-foundation/report.xml"),
     validateChildProofArtifactSecretBoundary(),
+    validateChildProofArtifactFreshness(runStartedAtMs),
     validateEmulatorEvidence(),
   ];
+}
+
+function validateChildProofArtifactFreshness(runStartedAtMs: number): ArtifactEvidence {
+  const freshnessFloorMs = runStartedAtMs - 5000;
+  const checkedAtMs = Date.now();
+  let readablePathCount = 0;
+  let unreadablePathCount = 0;
+  let freshPathCount = 0;
+  let stalePathCount = 0;
+  let oldestArtifactAgeMs: number | null = null;
+
+  for (const relativePath of childProofArtifactPaths) {
+    const fullPath = path.join(projectRoot, relativePath);
+    try {
+      const stats = fs.statSync(fullPath);
+      readablePathCount += 1;
+      const artifactAgeMs = Math.max(0, Math.round(checkedAtMs - stats.mtimeMs));
+      oldestArtifactAgeMs =
+        oldestArtifactAgeMs == null ? artifactAgeMs : Math.max(oldestArtifactAgeMs, artifactAgeMs);
+      if (stats.mtimeMs >= freshnessFloorMs) {
+        freshPathCount += 1;
+      } else {
+        stalePathCount += 1;
+      }
+    } catch {
+      unreadablePathCount += 1;
+    }
+  }
+
+  const ok = freshPathCount === childProofArtifactPaths.length && unreadablePathCount === 0;
+
+  return {
+    id: "child-proof-artifact-freshness",
+    path: "artifacts/{web-public-smoke,maestro-*}",
+    status: ok ? "passed" : "failed",
+    summary: {
+      checkedPathCount: childProofArtifactPaths.length,
+      readablePathCount,
+      unreadablePathCount,
+      freshPathCount,
+      stalePathCount,
+      runStartedAtMs,
+      freshnessFloorMs,
+      oldestArtifactAgeMs,
+    },
+    blocker: ok ? null : "child-proof-artifact-stale-or-missing",
+  };
 }
 
 function validateChildProofArtifactSecretBoundary(): ArtifactEvidence {
@@ -327,9 +375,9 @@ function validateEmulatorEvidence(): ArtifactEvidence {
   };
 }
 
-function buildReport(results: StepResult[]) {
+function buildReport(results: StepResult[], runStartedAtMs: number) {
   const failed = results.filter((step) => step.status !== "passed");
-  const evidenceArtifacts = validateEvidenceArtifacts();
+  const evidenceArtifacts = validateEvidenceArtifacts(runStartedAtMs);
   const artifactBlockers = evidenceArtifacts
     .map((artifact) => artifact.blocker)
     .filter((blocker): blocker is string => Boolean(blocker));
@@ -423,8 +471,9 @@ function writeReport(report: ReturnType<typeof buildReport>) {
 }
 
 function main() {
+  const runStartedAtMs = Date.now();
   const results = steps.map(runStep);
-  const report = buildReport(results);
+  const report = buildReport(results, runStartedAtMs);
   writeReport(report);
   console.info(`\n[production-safe] Final status: ${report.status}`);
 
