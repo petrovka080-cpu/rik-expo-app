@@ -5,6 +5,24 @@ import { spawnSync } from "node:child_process";
 const projectRoot = process.cwd();
 const artifactJsonPath = path.join(projectRoot, "artifacts", "production-safe-verification.json");
 const artifactMdPath = path.join(projectRoot, "artifacts", "production-safe-verification.md");
+const childProofArtifactPaths = [
+  "artifacts/web-public-smoke.json",
+  "artifacts/web-public-smoke.md",
+  "artifacts/maestro-infra/report.xml",
+  "artifacts/maestro-foundation/report.xml",
+];
+const forbiddenProofArtifactPatterns = [
+  /(?:redis|rediss|postgres|postgresql):\/\//i,
+  /\bDATABASE_URL\b/i,
+  /\bREDIS_URL\b/i,
+  new RegExp("\\bSUPABASE_" + "SERVICE_ROLE_KEY\\b", "i"),
+  /\bSERVICE_ROLE\b/i,
+  /\bANTHROPIC_API_KEY\b/i,
+  /\bSENTRY_AUTH_TOKEN\b/i,
+  /BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY/i,
+  /\bsk-[A-Za-z0-9_-]{20,}\b/,
+  /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/,
+];
 
 type StepStatus = "passed" | "failed";
 
@@ -238,7 +256,75 @@ function validateEvidenceArtifacts() {
     validateWebSmokeArtifact(),
     validateMaestroArtifact("maestro-infra-artifact", "artifacts/maestro-infra/report.xml"),
     validateMaestroArtifact("maestro-foundation-artifact", "artifacts/maestro-foundation/report.xml"),
+    validateChildProofArtifactSecretBoundary(),
+    validateEmulatorEvidence(),
   ];
+}
+
+function validateChildProofArtifactSecretBoundary(): ArtifactEvidence {
+  let readablePathCount = 0;
+  let unreadablePathCount = 0;
+  let matchingPathCount = 0;
+  let forbiddenPatternHitCount = 0;
+
+  for (const relativePath of childProofArtifactPaths) {
+    const fullPath = path.join(projectRoot, relativePath);
+    try {
+      const content = fs.readFileSync(fullPath, "utf8");
+      readablePathCount += 1;
+      let matchedThisPath = false;
+      for (const pattern of forbiddenProofArtifactPatterns) {
+        if (pattern.test(content)) {
+          forbiddenPatternHitCount += 1;
+          matchedThisPath = true;
+        }
+      }
+      if (matchedThisPath) matchingPathCount += 1;
+    } catch {
+      unreadablePathCount += 1;
+    }
+  }
+
+  const ok = readablePathCount === childProofArtifactPaths.length && forbiddenPatternHitCount === 0;
+
+  return {
+    id: "child-proof-artifact-secret-boundary",
+    path: "artifacts/{web-public-smoke,maestro-*}",
+    status: ok ? "passed" : "failed",
+    summary: {
+      checkedPathCount: childProofArtifactPaths.length,
+      readablePathCount,
+      unreadablePathCount,
+      matchingPathCount,
+      forbiddenPatternHitCount,
+    },
+    blocker: ok ? null : "child-proof-artifact-secret-boundary-failed",
+  };
+}
+
+function validateEmulatorEvidence(): ArtifactEvidence {
+  const devices = readCommand("adb", ["devices", "-l"]);
+  const emulator5554Connected = /\bemulator-5554\s+device\b/.test(devices);
+  const windowDump = emulator5554Connected
+    ? readCommand("adb", ["-s", "emulator-5554", "shell", "dumpsys", "window"])
+    : "";
+  const anrSignalFound = /Application Not Responding/i.test(windowDump);
+  const currentFocus = windowDump.match(/mCurrentFocus=([^\r\n]+)/)?.[1]?.trim() ?? null;
+  const focusedApp = windowDump.match(/mFocusedApp=([^\r\n]+)/)?.[1]?.trim() ?? null;
+  const ok = emulator5554Connected && !anrSignalFound;
+
+  return {
+    id: "emulator-adb-evidence",
+    path: "adb:emulator-5554",
+    status: ok ? "passed" : "failed",
+    summary: {
+      emulator5554Connected,
+      anrSignalFound,
+      currentFocus: currentFocus ? currentFocus.slice(0, 120) : null,
+      focusedApp: focusedApp ? focusedApp.slice(0, 120) : null,
+    },
+    blocker: ok ? null : "emulator-adb-evidence-failed",
+  };
 }
 
 function buildReport(results: StepResult[]) {

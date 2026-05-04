@@ -55,11 +55,17 @@ describe("production safe verification contract", () => {
     expect(source).toContain("validateEvidenceArtifacts");
     expect(source).toContain("validateWebSmokeArtifact");
     expect(source).toContain("validateMaestroArtifact");
+    expect(source).toContain("validateChildProofArtifactSecretBoundary");
+    expect(source).toContain("validateEmulatorEvidence");
     expect(source).toContain("artifacts/web-public-smoke.json");
     expect(source).toContain("artifacts/maestro-infra/report.xml");
     expect(source).toContain("artifacts/maestro-foundation/report.xml");
     expect(source).toContain("web-public-smoke-artifact-not-green");
     expect(source).toContain("artifact-not-passing");
+    expect(source).toContain("forbiddenPatternHitCount");
+    expect(source).toContain("child-proof-artifact-secret-boundary-failed");
+    expect(source).toContain("emulator-adb-evidence-failed");
+    expect(source).toContain('"adb", ["devices", "-l"]');
     expect(source).toContain("evidenceArtifacts");
   });
 
