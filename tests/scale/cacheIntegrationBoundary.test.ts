@@ -509,6 +509,7 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
       "SCALE_REDIS_CACHE_NAMESPACE",
       "SCALE_REDIS_CACHE_URL",
       "REDIS_URL",
+      "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS",
       "SCALE_REDIS_CACHE_SHADOW_MODE",
       "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
       "SCALE_REDIS_CACHE_SHADOW_PERCENT",
@@ -711,6 +712,47 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
     expect(serialized).not.toContain("rik-production-cache-shadow:cache:v1:");
     expect(serialized).not.toContain("person@example.test");
     expect(serialized).not.toContain("secret-token-value");
+  });
+
+  it("bounds Redis URL cache commands so shadow canary cannot hang the request path", async () => {
+    const commands: (readonly (string | number)[])[] = [];
+    const hangingCommand = jest.fn((command: Parameters<RedisCommandExecutor>[0]) => {
+      commands.push([...command]);
+      return new Promise<unknown | null>(() => undefined);
+    }) as jest.MockedFunction<RedisCommandExecutor>;
+    const adapter = new RedisUrlCacheAdapter({
+      redisUrl: "rediss://red-render-kv.example.invalid:6379",
+      namespace: "rik-production-cache-shadow",
+      commandImpl: hangingCommand,
+      commandTimeoutMs: 5,
+    });
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "shadow_readonly",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+
+    await expect(adapter.get("cache:v1:bounded")).resolves.toBeNull();
+    const canary = await runCacheSyntheticShadowCanary({
+      adapter,
+      config,
+      route: "marketplace.catalog.search",
+    });
+
+    expect(canary).toEqual(
+      expect.objectContaining({
+        status: "error",
+        syntheticIdentityUsed: true,
+        realUserPayloadUsed: false,
+        responseChanged: false,
+        rawKeyReturned: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    expect(commands.map((command) => command[0])).toEqual(["GET", "SET", "GET", "DEL"]);
+    expect(commands.some((command) => command[0] === "SADD" || command[0] === "PEXPIRE")).toBe(false);
   });
 
   it("maps mutation operations to disabled invalidation tags", () => {

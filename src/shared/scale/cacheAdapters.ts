@@ -44,6 +44,8 @@ export const REDIS_REST_CACHE_DEFAULT_MAX_VALUE_BYTES = 262_144;
 export const REDIS_REST_CACHE_DEFAULT_MAX_TAGS = 16;
 export const REDIS_REST_CACHE_DEFAULT_MAX_TAG_LENGTH = 80;
 export const REDIS_REST_CACHE_MAX_NAMESPACE_LENGTH = 64;
+export const REDIS_CACHE_DEFAULT_COMMAND_TIMEOUT_MS = 2_000;
+export const REDIS_CACHE_MAX_COMMAND_TIMEOUT_MS = 10_000;
 
 export type RedisRestFetch = (
   input: string,
@@ -62,6 +64,7 @@ export type RedisRestCacheAdapterOptions = {
   namespace: string;
   bearerToken?: string;
   fetchImpl?: RedisRestFetch;
+  commandTimeoutMs?: number;
   maxValueBytes?: number;
   maxTags?: number;
   maxTagLength?: number;
@@ -75,6 +78,7 @@ export type RedisUrlCacheAdapterOptions = {
   redisUrl: string;
   namespace: string;
   commandImpl?: RedisCommandExecutor | null;
+  commandTimeoutMs?: number;
   maxValueBytes?: number;
   maxTags?: number;
   maxTagLength?: number;
@@ -86,6 +90,7 @@ export type CreateRedisCacheAdapterFromEnvOptions = {
   runtimeEnvironment?: ScaleProviderRuntimeEnvironment;
   fetchImpl?: RedisRestFetch;
   redisCommandImpl?: RedisCommandExecutor | null;
+  commandTimeoutMs?: number;
 };
 
 export type InMemoryCacheAdapterOptions = {
@@ -100,6 +105,28 @@ const normalizePositiveInteger = (value: number | undefined, fallback: number): 
   const normalized = Math.trunc(Number(value));
   return Number.isFinite(normalized) && normalized > 0 ? normalized : fallback;
 };
+
+const normalizeCommandTimeoutMs = (value: unknown): number => {
+  const normalized = Math.trunc(Number(value));
+  if (!Number.isFinite(normalized) || normalized <= 0) return REDIS_CACHE_DEFAULT_COMMAND_TIMEOUT_MS;
+  return Math.min(normalized, REDIS_CACHE_MAX_COMMAND_TIMEOUT_MS);
+};
+
+const withTimeout = async <T>(operation: Promise<T>, timeoutMs: number): Promise<T | null> =>
+  new Promise((resolve) => {
+    let settled = false;
+    const finish = (value: T | null) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(value);
+    };
+    const timer = setTimeout(() => finish(null), timeoutMs);
+    operation.then(
+      (value) => finish(value),
+      () => finish(null),
+    );
+  });
 
 const estimateSerializedBytes = (value: unknown): number | null => {
   let serialized: string;
@@ -435,6 +462,7 @@ export class RedisRestCacheAdapter implements CacheAdapter {
   private readonly namespace: string;
   private readonly bearerToken: string | null;
   private readonly fetchImpl: RedisRestFetch | null;
+  private readonly commandTimeoutMs: number;
   private readonly maxValueBytes: number;
   private readonly maxTags: number;
   private readonly maxTagLength: number;
@@ -444,6 +472,7 @@ export class RedisRestCacheAdapter implements CacheAdapter {
     this.namespace = options.namespace.trim();
     this.bearerToken = options.bearerToken?.trim() || null;
     this.fetchImpl = options.fetchImpl ?? defaultRedisFetch();
+    this.commandTimeoutMs = normalizeCommandTimeoutMs(options.commandTimeoutMs);
     this.maxValueBytes = normalizePositiveInteger(
       options.maxValueBytes,
       REDIS_REST_CACHE_DEFAULT_MAX_VALUE_BYTES,
@@ -469,7 +498,8 @@ export class RedisRestCacheAdapter implements CacheAdapter {
     if (!serialized) return;
 
     const ttlMs = Math.max(1, Math.trunc(Number(options.ttlMs) || 1));
-    await this.command(["SET", redisKey, serialized, "PX", ttlMs]);
+    const setResult = await this.command(["SET", redisKey, serialized, "PX", ttlMs]);
+    if (setResult === null) return;
 
     for (const tag of uniqueBoundedTags(options.tags, this.maxTags, this.maxTagLength)) {
       const tagKey = buildRedisTagKey(this.namespace, tag, this.maxTagLength);
@@ -523,13 +553,17 @@ export class RedisRestCacheAdapter implements CacheAdapter {
       if (this.bearerToken) {
         headers.authorization = `Bearer ${this.bearerToken}`;
       }
-      const response = await this.fetchImpl(this.baseUrl, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(command),
-      });
+      const response = await withTimeout(
+        this.fetchImpl(this.baseUrl, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(command),
+        }),
+        this.commandTimeoutMs,
+      );
+      if (!response) return null;
       if (!response.ok) return null;
-      const payload = await response.json();
+      const payload = await withTimeout(response.json(), this.commandTimeoutMs);
       if (!payload || typeof payload !== "object") return payload;
       if ("error" in payload) return null;
       if ("result" in payload) return (payload as { result: unknown }).result;
@@ -544,6 +578,7 @@ export class RedisUrlCacheAdapter implements CacheAdapter {
   private readonly redisUrl: string;
   private readonly namespace: string;
   private readonly commandImpl: RedisCommandExecutor | null;
+  private readonly commandTimeoutMs: number;
   private readonly maxValueBytes: number;
   private readonly maxTags: number;
   private readonly maxTagLength: number;
@@ -552,6 +587,7 @@ export class RedisUrlCacheAdapter implements CacheAdapter {
     this.redisUrl = normalizeRedisUrl(options.redisUrl);
     this.namespace = options.namespace.trim();
     this.commandImpl = options.commandImpl ?? createNodeRedisUrlCommandExecutor(this.redisUrl);
+    this.commandTimeoutMs = normalizeCommandTimeoutMs(options.commandTimeoutMs);
     this.maxValueBytes = normalizePositiveInteger(
       options.maxValueBytes,
       REDIS_REST_CACHE_DEFAULT_MAX_VALUE_BYTES,
@@ -577,7 +613,8 @@ export class RedisUrlCacheAdapter implements CacheAdapter {
     if (!serialized) return;
 
     const ttlMs = Math.max(1, Math.trunc(Number(options.ttlMs) || 1));
-    await this.command(["SET", redisKey, serialized, "PX", ttlMs]);
+    const setResult = await this.command(["SET", redisKey, serialized, "PX", ttlMs]);
+    if (setResult === null) return;
 
     for (const tag of uniqueBoundedTags(options.tags, this.maxTags, this.maxTagLength)) {
       const tagKey = buildRedisTagKey(this.namespace, tag, this.maxTagLength);
@@ -625,7 +662,7 @@ export class RedisUrlCacheAdapter implements CacheAdapter {
   private async command(command: RedisCommand): Promise<unknown | null> {
     if (!this.canUseNetwork() || !this.commandImpl) return null;
     try {
-      return await this.commandImpl(command);
+      return await withTimeout(this.commandImpl(command), this.commandTimeoutMs);
     } catch {
       return null;
     }
@@ -654,12 +691,16 @@ export function createRedisCacheAdapterFromEnv(
   const redisUrl = readEnvValue(env, "REDIS_URL");
   const scaleRedisUrl = readEnvValue(env, "SCALE_REDIS_CACHE_URL");
   const namespace = readEnvValue(env, "SCALE_REDIS_CACHE_NAMESPACE");
+  const commandTimeoutMs = normalizeCommandTimeoutMs(
+    options.commandTimeoutMs ?? readEnvValue(env, "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS"),
+  );
   const selectedRedisUrl = isRedisProtocolUrl(redisUrl) ? redisUrl : scaleRedisUrl;
   if (isRedisProtocolUrl(selectedRedisUrl)) {
     return new RedisUrlCacheAdapter({
       redisUrl: selectedRedisUrl,
       namespace,
       commandImpl: options.redisCommandImpl,
+      commandTimeoutMs,
     });
   }
 
@@ -669,5 +710,6 @@ export function createRedisCacheAdapterFromEnv(
     baseUrl: scaleRedisUrl,
     namespace,
     fetchImpl: options.fetchImpl,
+    commandTimeoutMs,
   });
 }
