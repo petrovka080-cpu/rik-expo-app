@@ -9,6 +9,7 @@ import {
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
+  resolveReleaseGuardCommitRange,
   resolveReleaseGuardPath,
   resolveReleaseRepoSync,
   type ReleaseGateResult,
@@ -288,6 +289,40 @@ describe("releaseGuard.shared", () => {
           originMainCommitsAheadHead: 1,
         }),
       ).toEqual({ syncStatus: "diverged", syncAction: "reconcile_diverged_branch" });
+    });
+
+    it("uses the whole local release train as the default range when local commits are ahead", () => {
+      expect(
+        resolveReleaseGuardCommitRange({
+          explicitRange: null,
+          repo: createRepoState({ localCommitsAheadOriginMain: 4 }),
+          headParentExists: true,
+        }),
+      ).toBe("origin/main..HEAD");
+
+      expect(
+        resolveReleaseGuardCommitRange({
+          explicitRange: "main..feature",
+          repo: createRepoState({ localCommitsAheadOriginMain: 4 }),
+          headParentExists: true,
+        }),
+      ).toBe("main..feature");
+
+      expect(
+        resolveReleaseGuardCommitRange({
+          explicitRange: null,
+          repo: createRepoState(),
+          headParentExists: true,
+        }),
+      ).toBe("HEAD^..HEAD");
+
+      expect(
+        resolveReleaseGuardCommitRange({
+          explicitRange: null,
+          repo: createRepoState(),
+          headParentExists: false,
+        }),
+      ).toBe("HEAD");
     });
 
     it("skips OTA cleanly for a non-runtime release commit", () => {

@@ -16,6 +16,7 @@ import {
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
+  resolveReleaseGuardCommitRange,
   resolveReleaseGuardPath,
   resolveReleaseRepoSync,
   type PackageJsonMutationKind,
@@ -132,14 +133,6 @@ function hasHeadParent(): boolean {
     cwd: PROJECT_ROOT,
     stdio: "ignore",
   }).status === 0;
-}
-
-function resolveCommitRange(explicitRange: string | null): string {
-  if (explicitRange && explicitRange.trim().length > 0) {
-    return explicitRange.trim();
-  }
-
-  return hasHeadParent() ? "HEAD^..HEAD" : "HEAD";
 }
 
 function readChangedFiles(range: string): string[] {
@@ -378,10 +371,14 @@ function assertCanonicalChannel(channel: string | null): string | null {
   return channel;
 }
 
-function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFiles: string[]): ReleaseGuardReport {
-  const repo = readRepoState();
+function buildBaseReport(
+  args: ParsedArgs,
+  gates: ReleaseGateResult[],
+  changedFiles: string[],
+  repo: ReleaseRepoState,
+): ReleaseGuardReport {
   const configSummary = loadReleaseConfigSummary();
-  const packageJsonMutationKind = readPackageJsonMutationKind(args.range ?? resolveCommitRange(null), changedFiles);
+  const packageJsonMutationKind = readPackageJsonMutationKind(args.range ?? "HEAD", changedFiles);
   const classification = classifyReleaseChanges({
     changedFiles,
     packageJsonMutationKind,
@@ -455,7 +452,7 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     expectedBranch,
     releaseMessage: args.message,
     rolloutPercentage: args.rolloutPercentage,
-    commitRange: args.range ?? resolveCommitRange(null),
+    commitRange: args.range ?? "HEAD",
     otaPublish: null,
     releaseMetadata: buildReleaseMetadataEnforcement({
       repo,
@@ -481,10 +478,15 @@ function runRequiredGates(): ReleaseGateResult[] {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const commitRange = resolveCommitRange(args.range);
+  const repo = readRepoState();
+  const commitRange = resolveReleaseGuardCommitRange({
+    explicitRange: args.range,
+    repo,
+    headParentExists: hasHeadParent(),
+  });
   const changedFiles = readChangedFiles(commitRange);
   const gates = runRequiredGates();
-  const baseReport = buildBaseReport({ ...args, range: commitRange }, gates, changedFiles);
+  const baseReport = buildBaseReport({ ...args, range: commitRange }, gates, changedFiles, repo);
 
   if (baseReport.readiness.status === "fail") {
     writeReport(args.reportFile, baseReport);

@@ -216,6 +216,23 @@ export function resolveReleaseRepoSync(params: {
   return { syncStatus: "unknown_mismatch", syncAction: "inspect_refs_before_release" };
 }
 
+export function resolveReleaseGuardCommitRange(params: {
+  explicitRange: string | null;
+  repo: Pick<ReleaseRepoState, "localCommitsAheadOriginMain">;
+  headParentExists: boolean;
+}): string {
+  const explicitRange = params.explicitRange?.trim();
+  if (explicitRange) {
+    return explicitRange;
+  }
+
+  if (params.repo.localCommitsAheadOriginMain > 0) {
+    return "origin/main..HEAD";
+  }
+
+  return params.headParentExists ? "HEAD^..HEAD" : "HEAD";
+}
+
 export const RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 export const RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS = [
   "S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED",
