@@ -12,10 +12,12 @@ import {
 } from "../../src/shared/scale/rateLimitPolicies";
 import {
   observeRateLimitPrivateSmokeInShadowMonitor,
+  runRateLimitSyntheticEnforcementCanary,
   type RateLimitShadowMonitor,
   type RateLimitShadowMonitorSnapshot,
   type RateLimitPrivateSmokeRunner,
   type RateLimitPrivateSmokeResult,
+  type RateLimitSyntheticEnforcementCanaryResult,
   type RuntimeRateEnforcementProvider,
 } from "../../src/shared/scale/rateLimitAdapters";
 import type { RateLimitKeyInput } from "../../src/shared/scale/rateLimitKeySafety";
@@ -564,6 +566,7 @@ const buildRateLimitShadowMonitorEnvelope = (
 
 const buildRateLimitPrivateSmokeEnvelope = (
   result: RateLimitPrivateSmokeResult,
+  enforcementCanary?: RateLimitSyntheticEnforcementCanaryResult | null,
 ): Record<string, unknown> => ({
   status: result.status,
   operation: result.operation,
@@ -584,6 +587,18 @@ const buildRateLimitPrivateSmokeEnvelope = (
   rawPayloadLogged: result.rawPayloadLogged,
   piiLogged: result.piiLogged,
   reason: result.reason,
+  enforcementCanaryAttempted: enforcementCanary?.attempted ?? false,
+  enforcementCanaryMode: enforcementCanary?.mode ?? "disabled",
+  enforcementCanaryAction: enforcementCanary?.action ?? "disabled",
+  enforcementCanaryProviderState: enforcementCanary?.providerState ?? "disabled",
+  enforcementCanaryBlockedVerified: enforcementCanary?.blockedVerified ?? false,
+  enforcementCanarySyntheticIdentityUsed: enforcementCanary?.syntheticIdentityUsed ?? false,
+  enforcementCanaryRealUserIdentityUsed: enforcementCanary?.realUserIdentityUsed ?? false,
+  enforcementCanaryProductionUserBlocked: enforcementCanary?.productionUserBlocked ?? false,
+  enforcementCanaryRawKeyReturned: enforcementCanary?.rawKeyReturned ?? false,
+  enforcementCanaryRawPayloadLogged: enforcementCanary?.rawPayloadLogged ?? false,
+  enforcementCanaryPiiLogged: enforcementCanary?.piiLogged ?? false,
+  enforcementCanaryReason: enforcementCanary?.reason ?? "not_attempted",
 });
 
 const invokeReadRoute = async (
@@ -699,15 +714,24 @@ export async function handleBffStagingServerRequest(
     if (result.status !== "ready") {
       return buildErrorResponse(503, "BFF_RATE_LIMIT_PRIVATE_SMOKE_NOT_READY", result.reason);
     }
+    let enforcementCanary: RateLimitSyntheticEnforcementCanaryResult | null = null;
     if (deps.rateLimitShadow) {
       await observeRateLimitPrivateSmokeInShadowMonitor({
         monitor: deps.rateLimitShadow.monitor,
         result,
       }).catch(() => undefined);
+      enforcementCanary = await runRateLimitSyntheticEnforcementCanary({
+        provider: deps.rateLimitShadow.provider,
+      }).catch(() => null);
+      if (enforcementCanary?.decision) {
+        await deps.rateLimitShadow.monitor
+          .observe(enforcementCanary.decision)
+          .catch(() => undefined);
+      }
     }
     return buildResponse(200, {
       ok: true,
-      data: buildRateLimitPrivateSmokeEnvelope(result),
+      data: buildRateLimitPrivateSmokeEnvelope(result, enforcementCanary),
     });
   }
 

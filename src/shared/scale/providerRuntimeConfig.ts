@@ -51,6 +51,7 @@ export const SCALE_PROVIDER_RUNTIME_ENV_NAMES: Record<ScaleProviderKind, ScalePr
   },
   rate_limit: {
     enabled: "SCALE_RATE_LIMIT_STAGING_ENABLED",
+    productionEnabled: "SCALE_RATE_LIMIT_PRODUCTION_ENABLED",
     required: ["SCALE_RATE_LIMIT_STORE_URL", "SCALE_RATE_LIMIT_NAMESPACE"],
     optional: ["SCALE_RATE_ENFORCEMENT_MODE", "SCALE_RATE_LIMIT_TEST_NAMESPACE"],
   },
@@ -113,7 +114,7 @@ const resolveProviderStatus = (
   const stagingNetworkAllowed =
     enabledFlag === "enabled" && configured && runtimeEnvironment === "staging" && productionGuard;
   const productionNetworkAllowed =
-    provider === "observability_export" &&
+    (provider === "observability_export" || provider === "rate_limit") &&
     productionEnabledFlag === "enabled" &&
     configured &&
     runtimeEnvironment === "production";

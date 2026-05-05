@@ -16,6 +16,7 @@ import {
   createRateEnforcementProviderFromEnv,
   createRateLimitAdapterFromEnv,
   createRateLimitPrivateSmokeRunnerFromEnv,
+  runRateLimitSyntheticEnforcementCanary,
   runRateLimitPrivateSyntheticSmoke,
   type RateLimitStoreFetch,
   resolveInMemoryRateLimitMaxTrackedKeys,
@@ -847,6 +848,81 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     );
   });
 
+  it("blocks only explicit synthetic production canaries in production enforce mode", async () => {
+    const adapter = new InMemoryRateLimitAdapter({ now: () => 75_000 });
+    const provider = createRateEnforcementProviderFromEnv(
+      {
+        [RATE_ENFORCEMENT_MODE_ENV_NAME]: "enforce_production_synthetic_canary_only",
+        SCALE_RATE_LIMIT_PRODUCTION_ENABLED: "true",
+        SCALE_RATE_LIMIT_STORE_URL: "rediss://rate-limit.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-production",
+      },
+      {
+        runtimeEnvironment: "production",
+        adapter,
+      },
+    );
+
+    await expect(
+      provider.evaluate({
+        operation: "proposal.submit",
+        keyInput: {
+          actorId: "actor-opaque",
+          companyId: "company-opaque",
+          idempotencyKey: "idem-opaque",
+          routeKey: "proposal-submit",
+        },
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        action: "disabled",
+        mode: "enforce_production_synthetic_canary_only",
+        providerState: "disabled",
+        blocked: false,
+        realUsersBlocked: false,
+        reason: "production_guard",
+      }),
+    );
+    expect(adapter.getHealth().trackedKeys).toBe(0);
+
+    const canary = await runRateLimitSyntheticEnforcementCanary({
+      provider,
+      nowMs: 75_000,
+    });
+
+    expect(canary).toEqual(
+      expect.objectContaining({
+        attempted: true,
+        mode: "enforce_production_synthetic_canary_only",
+        operation: "proposal.submit",
+        action: "block",
+        providerState: "hard_limited",
+        providerEnabled: true,
+        blockedVerified: true,
+        syntheticIdentityUsed: true,
+        realUserIdentityUsed: false,
+        productionUserBlocked: false,
+        rawKeyReturned: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+        reason: "production_synthetic_canary_limited",
+      }),
+    );
+    expect(canary.decision).toEqual(
+      expect.objectContaining({
+        blocked: true,
+        realUsersBlocked: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    const serialized = JSON.stringify(canary);
+    expect(serialized).not.toContain("actor-opaque");
+    expect(serialized).not.toContain("company-opaque");
+    expect(serialized).not.toContain("idem-opaque");
+    expect(serialized).not.toContain("rate:v1:");
+  });
+
   it("keeps runtime enforcement key hashing PII-safe", async () => {
     const provider = new RuntimeRateEnforcementProvider({
       mode: "observe_only",
@@ -894,7 +970,7 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     );
   });
 
-  it("keeps production runtime guarded even with enforce env values", async () => {
+  it("keeps production runtime guarded even with staging-only enforce env values", async () => {
     const adapter = new InMemoryRateLimitAdapter({ now: () => 70_000 });
     const provider = createRateEnforcementProviderFromEnv(
       {

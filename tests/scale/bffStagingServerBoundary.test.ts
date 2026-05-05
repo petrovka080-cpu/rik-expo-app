@@ -546,6 +546,9 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
           rawKeyReturned: false,
           rawPayloadLogged: false,
           piiLogged: false,
+          enforcementCanaryAttempted: false,
+          enforcementCanaryBlockedVerified: false,
+          enforcementCanaryProductionUserBlocked: false,
         }),
       }),
     );
@@ -611,6 +614,91 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
         }),
       }),
     );
+  });
+
+  it("runs production synthetic enforcement canary through private smoke without real-user blocking", async () => {
+    const runner = {
+      run: jest.fn<Promise<RateLimitPrivateSmokeResult>, []>(async () => ({
+        status: "ready" as const,
+        operation: "proposal.submit" as const,
+        providerKind: "redis_url" as const,
+        providerEnabled: true,
+        externalNetworkEnabled: true,
+        namespacePresent: true,
+        syntheticIdentityUsed: true,
+        realUserIdentityUsed: false as const,
+        wouldAllowVerified: true,
+        wouldThrottleVerified: true,
+        cleanupAttempted: true,
+        cleanupOk: true,
+        ttlBounded: true,
+        enforcementEnabled: false as const,
+        productionUserBlocked: false as const,
+        rawKeyReturned: false as const,
+        rawPayloadLogged: false as const,
+        piiLogged: false as const,
+        reason: "synthetic_private_smoke_ready",
+      })),
+    };
+    const monitor = createRateLimitShadowMonitor();
+    const provider = new RuntimeRateEnforcementProvider({
+      mode: "enforce_production_synthetic_canary_only",
+      runtimeEnvironment: "production",
+      adapter: new InMemoryRateLimitAdapter({ now: () => 125_000 }),
+      namespace: "rik-production",
+    });
+
+    const response = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: "/api/staging-bff/diagnostics/rate-limit-private-smoke",
+        headers: { authorization: "Bearer server-secret" },
+      },
+      {
+        rateLimitPrivateSmoke: runner,
+        rateLimitShadow: { provider, monitor },
+        config: { serverAuthConfigured: true },
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({
+          status: "ready",
+          enforcementCanaryAttempted: true,
+          enforcementCanaryMode: "enforce_production_synthetic_canary_only",
+          enforcementCanaryAction: "block",
+          enforcementCanaryProviderState: "hard_limited",
+          enforcementCanaryBlockedVerified: true,
+          enforcementCanarySyntheticIdentityUsed: true,
+          enforcementCanaryRealUserIdentityUsed: false,
+          enforcementCanaryProductionUserBlocked: false,
+          enforcementCanaryRawKeyReturned: false,
+          enforcementCanaryRawPayloadLogged: false,
+          enforcementCanaryPiiLogged: false,
+        }),
+      }),
+    );
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        wouldAllowCount: 1,
+        wouldThrottleCount: 2,
+        keyCardinalityRedacted: 2,
+        observedDecisionCount: 3,
+        blockedDecisionsObserved: 1,
+        realUsersBlocked: false,
+        rawKeysStored: false,
+        rawKeysPrinted: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    const serialized = JSON.stringify({ response, monitor: monitor.snapshot() });
+    expect(serialized).not.toContain("server-secret");
+    expect(serialized).not.toContain("rate:v1:");
+    expect(serialized).not.toContain("synthetic-rate-smoke");
   });
 
   it("builds rate-limit shadow key input only from explicit opaque metadata and route context", () => {

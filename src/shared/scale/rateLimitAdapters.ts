@@ -808,7 +808,8 @@ export function createRateLimitAdapterFromEnv(
 export type RateEnforcementMode =
   | "disabled"
   | "observe_only"
-  | "enforce_staging_test_namespace_only";
+  | "enforce_staging_test_namespace_only"
+  | "enforce_production_synthetic_canary_only";
 
 export type RateEnforcementAction = "disabled" | "observe" | "allow" | "block";
 
@@ -820,6 +821,7 @@ export type RuntimeRateEnforcementEnv = RateLimitStoreEnv & {
 export type RuntimeRateEnforcementInput = {
   operation: RateLimitEnforcementOperation;
   keyInput: RateLimitKeyInput;
+  syntheticCanary?: boolean;
   cost?: number;
   nowMs?: number;
 };
@@ -904,6 +906,24 @@ export type RateLimitPrivateSmokeResult = {
 
 export type RateLimitPrivateSmokeRunner = {
   run(): Promise<RateLimitPrivateSmokeResult>;
+};
+
+export type RateLimitSyntheticEnforcementCanaryResult = {
+  attempted: boolean;
+  mode: RateEnforcementMode;
+  operation: RateLimitEnforcementOperation;
+  action: RateEnforcementAction;
+  providerState: RuntimeRateEnforcementDecision["providerState"];
+  providerEnabled: boolean;
+  blockedVerified: boolean;
+  syntheticIdentityUsed: boolean;
+  realUserIdentityUsed: false;
+  productionUserBlocked: false;
+  rawKeyReturned: false;
+  rawPayloadLogged: false;
+  piiLogged: false;
+  reason: string;
+  decision: RuntimeRateEnforcementDecision | null;
 };
 
 export type RunRateLimitPrivateSyntheticSmokeOptions = {
@@ -1120,6 +1140,9 @@ export function resolveRateEnforcementMode(value: unknown): RateEnforcementMode 
   const normalized = normalizeText(value).toLowerCase();
   if (normalized === "observe_only") return "observe_only";
   if (normalized === "enforce_staging_test_namespace_only") return "enforce_staging_test_namespace_only";
+  if (normalized === "enforce_production_synthetic_canary_only") {
+    return "enforce_production_synthetic_canary_only";
+  }
   return "disabled";
 }
 
@@ -1163,7 +1186,12 @@ export class RuntimeRateEnforcementProvider {
   }
 
   async evaluate(input: RuntimeRateEnforcementInput): Promise<RuntimeRateEnforcementDecision> {
-    if (this.runtimeEnvironment === "production") {
+    const productionSyntheticCanary =
+      this.runtimeEnvironment === "production" &&
+      this.mode === "enforce_production_synthetic_canary_only" &&
+      input.syntheticCanary === true;
+
+    if (this.runtimeEnvironment === "production" && !productionSyntheticCanary) {
       return disabledRuntimeRateDecision(input, this.mode, "production_guard", this.namespace, this.isolatedTestNamespace);
     }
     if (this.mode === "disabled") {
@@ -1205,13 +1233,13 @@ export class RuntimeRateEnforcementProvider {
       isIsolatedStagingTestNamespace(this.namespace, this.isolatedTestNamespace);
     const providerWouldBlock =
       providerDecision.state === "hard_limited" || providerDecision.state === "blocked_abuse";
-    const blocked = canBlockInThisNamespace && providerWouldBlock;
+    const blocked = (canBlockInThisNamespace || productionSyntheticCanary) && providerWouldBlock;
     const action: RateEnforcementAction =
       this.mode === "observe_only"
         ? "observe"
         : blocked
           ? "block"
-          : canBlockInThisNamespace
+          : canBlockInThisNamespace || productionSyntheticCanary
             ? "allow"
             : "observe";
 
@@ -1230,7 +1258,11 @@ export class RuntimeRateEnforcementProvider {
       rawPiiInKey: false,
       rawPayloadLogged: false,
       piiLogged: false,
-      reason: blocked ? "isolated_test_namespace_limited" : "not_blocking_real_users",
+      reason: blocked
+        ? productionSyntheticCanary
+          ? "production_synthetic_canary_limited"
+          : "isolated_test_namespace_limited"
+        : "not_blocking_real_users",
     };
   }
 
@@ -1270,6 +1302,63 @@ export function createRateEnforcementProviderFromEnv(
     namespace: normalizeText(env.SCALE_RATE_LIMIT_NAMESPACE) || null,
     isolatedTestNamespace: normalizeText(env[RATE_LIMIT_TEST_NAMESPACE_ENV_NAME]) || null,
   });
+}
+
+export async function runRateLimitSyntheticEnforcementCanary(params: {
+  provider: RuntimeRateEnforcementProvider;
+  nowMs?: number;
+}): Promise<RateLimitSyntheticEnforcementCanaryResult> {
+  const operation = RATE_LIMIT_PRIVATE_SMOKE_OPERATION;
+  const policy = getRateEnforcementPolicy(operation);
+  const health = params.provider.getHealth();
+  if (!policy || health.mode !== "enforce_production_synthetic_canary_only") {
+    return {
+      attempted: false,
+      mode: health.mode,
+      operation,
+      action: "disabled",
+      providerState: policy ? "disabled" : "policy_missing",
+      providerEnabled: health.providerEnabled,
+      blockedVerified: false,
+      syntheticIdentityUsed: false,
+      realUserIdentityUsed: false,
+      productionUserBlocked: false,
+      rawKeyReturned: false,
+      rawPayloadLogged: false,
+      piiLogged: false,
+      reason: policy ? "synthetic_canary_mode_not_enabled" : "policy_missing",
+      decision: null,
+    };
+  }
+
+  const decision = await params.provider.evaluate({
+    operation,
+    keyInput: RATE_LIMIT_PRIVATE_SMOKE_KEY_INPUT,
+    syntheticCanary: true,
+    cost: policy.maxRequests + policy.burst + 1,
+    nowMs: params.nowMs,
+  });
+
+  return {
+    attempted: true,
+    mode: decision.mode,
+    operation,
+    action: decision.action,
+    providerState: decision.providerState,
+    providerEnabled: decision.providerEnabled,
+    blockedVerified:
+      decision.action === "block" &&
+      decision.blocked === true &&
+      decision.realUsersBlocked === false,
+    syntheticIdentityUsed: true,
+    realUserIdentityUsed: false,
+    productionUserBlocked: false,
+    rawKeyReturned: false,
+    rawPayloadLogged: false,
+    piiLogged: false,
+    reason: decision.reason,
+    decision,
+  };
 }
 
 export type RateLimitShadowMonitorSnapshot = {

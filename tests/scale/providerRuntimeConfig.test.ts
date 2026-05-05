@@ -33,6 +33,7 @@ describe("S-50K provider runtime env conventions", () => {
     });
     expect(SCALE_PROVIDER_RUNTIME_ENV_NAMES.rate_limit).toEqual({
       enabled: "SCALE_RATE_LIMIT_STAGING_ENABLED",
+      productionEnabled: "SCALE_RATE_LIMIT_PRODUCTION_ENABLED",
       required: ["SCALE_RATE_LIMIT_STORE_URL", "SCALE_RATE_LIMIT_NAMESPACE"],
       optional: ["SCALE_RATE_ENFORCEMENT_MODE", "SCALE_RATE_LIMIT_TEST_NAMESPACE"],
     });
@@ -106,12 +107,15 @@ describe("S-50K provider runtime env conventions", () => {
     expect(production.providersEnabled).toBe(false);
   });
 
-  it("allows only observability export to opt in to production network explicitly", () => {
+  it("allows only approved provider types to opt in to production network explicitly", () => {
     const production = resolveScaleProviderRuntimeConfig(
       {
         SCALE_REDIS_CACHE_STAGING_ENABLED: "true",
         REDIS_URL: "rediss://cache.example.invalid",
         SCALE_REDIS_CACHE_NAMESPACE: "rik-production",
+        SCALE_RATE_LIMIT_PRODUCTION_ENABLED: "true",
+        SCALE_RATE_LIMIT_STORE_URL: "rediss://rate-limit.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-production",
         SCALE_OBSERVABILITY_EXPORT_PRODUCTION_ENABLED: "true",
         SCALE_OBSERVABILITY_EXPORT_ENDPOINT: "https://observability.example.invalid/v1/export",
         SCALE_OBSERVABILITY_EXPORT_TOKEN: "server-only-token",
@@ -135,13 +139,21 @@ describe("S-50K provider runtime env conventions", () => {
       }),
     );
     expect(production.providers.queue.liveNetworkAllowed).toBe(false);
-    expect(production.providers.rate_limit.liveNetworkAllowed).toBe(false);
+    expect(production.providers.rate_limit).toEqual(
+      expect.objectContaining({
+        enabledFlag: "missing",
+        productionEnabledFlag: "enabled",
+        configured: true,
+        liveNetworkAllowed: true,
+      }),
+    );
     expect(production.providers.idempotency_db.liveNetworkAllowed).toBe(false);
     expect(production.providersEnabled).toBe(true);
 
     const missingConfig = resolveScaleProviderRuntimeConfig(
       {
         SCALE_OBSERVABILITY_EXPORT_PRODUCTION_ENABLED: "true",
+        SCALE_RATE_LIMIT_PRODUCTION_ENABLED: "true",
       },
       { runtimeEnvironment: "production" },
     );
@@ -156,6 +168,8 @@ describe("S-50K provider runtime env conventions", () => {
     expect(getScaleProviderMissingEnvNames(missingConfig)).toEqual([
       "SCALE_OBSERVABILITY_EXPORT_ENDPOINT",
       "SCALE_OBSERVABILITY_EXPORT_TOKEN",
+      "SCALE_RATE_LIMIT_NAMESPACE",
+      "SCALE_RATE_LIMIT_STORE_URL",
     ]);
   });
 
