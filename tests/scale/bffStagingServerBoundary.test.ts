@@ -3,18 +3,27 @@ import fs from "fs";
 import path from "path";
 
 import { isBffEnabled } from "../../src/shared/scale/bffSafety";
-import { createBffShadowFixturePorts } from "../../src/shared/scale/bffShadowFixtures";
+import {
+  BFF_SHADOW_MUTATION_PAYLOAD,
+  createBffShadowFixturePorts,
+} from "../../src/shared/scale/bffShadowFixtures";
 import {
   BFF_STAGING_MUTATION_ROUTES,
   BFF_STAGING_READ_ROUTES,
   BFF_STAGING_ROUTE_REGISTRY,
   BFF_STAGING_SERVER_BOUNDARY_CONTRACT,
+  buildBffStagingRateLimitKeyInput,
   buildBffStagingDeploymentReadiness,
   handleBffStagingServerRequest,
   isBffStagingResponseEnvelope,
   parseBffStagingRequestPayload,
   runLocalBffStagingBoundaryShadow,
 } from "../../scripts/server/stagingBffServerBoundary";
+import {
+  createRateLimitShadowMonitor,
+  InMemoryRateLimitAdapter,
+  RuntimeRateEnforcementProvider,
+} from "../../src/shared/scale/rateLimitAdapters";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -32,6 +41,14 @@ const changedFiles = () =>
 
 const routeByOperation = (operation: string) =>
   BFF_STAGING_ROUTE_REGISTRY.find((route) => route.operation === operation);
+
+const waitFor = async (predicate: () => boolean): Promise<void> => {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  expect(predicate()).toBe(true);
+};
 
 describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
   it("serves health and readiness contracts without ports or env values", async () => {
@@ -90,6 +107,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
       expect.objectContaining({
         healthEndpointContract: true,
         readinessEndpointContract: true,
+        rateLimitShadowMonitorEndpointContract: true,
         readRoutes: 5,
         mutationRoutes: 5,
         mutationRoutesEnabledByDefault: false,
@@ -282,6 +300,202 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
       productionTouched: false,
       stagingWrites: false,
       networkUsed: false,
+    });
+  });
+
+  it("keeps ignored rate-limit shadow read routes from changing counters or responses", async () => {
+    const fixturePorts = createBffShadowFixturePorts();
+    const route = routeByOperation("marketplace.catalog.search");
+    expect(route).toBeDefined();
+    if (!route) return;
+
+    const monitor = createRateLimitShadowMonitor();
+    const provider = new RuntimeRateEnforcementProvider({
+      mode: "observe_only",
+      runtimeEnvironment: "staging",
+      adapter: new InMemoryRateLimitAdapter({ now: () => 110_000 }),
+      namespace: "rik-staging",
+    });
+
+    const response = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: route.path,
+        headers: { authorization: "Bearer server-secret" },
+        body: {
+          input: {
+            query: "cement",
+          },
+          metadata: {
+            rateLimitKeyStatus: "present_redacted",
+            rateLimitIpOrDeviceKey: "device-opaque",
+          },
+        },
+      },
+      {
+        readPorts: fixturePorts.read,
+        rateLimitShadow: { provider, monitor },
+        config: { serverAuthConfigured: true },
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.ok).toBe(true);
+    await waitFor(() => monitor.snapshot().observedDecisionCount === 1);
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        wouldAllowCount: 0,
+        wouldThrottleCount: 0,
+        keyCardinalityRedacted: 0,
+        realUsersBlocked: false,
+        rawKeysStored: false,
+        rawKeysPrinted: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+
+    const monitorResponse = await handleBffStagingServerRequest(
+      {
+        method: "GET",
+        path: "/api/staging-bff/monitor/rate-limit-shadow",
+        headers: { authorization: "Bearer server-secret" },
+      },
+      {
+        rateLimitShadow: { provider, monitor },
+        config: { serverAuthConfigured: true },
+      },
+    );
+
+    expect(monitorResponse.status).toBe(200);
+    expect(monitorResponse.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({
+          status: "ready",
+          wouldAllowCount: 0,
+          wouldThrottleCount: 0,
+          keyCardinalityRedacted: 0,
+          rawKeysStored: false,
+          rawKeysPrinted: false,
+          realUsersBlocked: false,
+        }),
+      }),
+    );
+    const serialized = JSON.stringify({ response, monitorResponse });
+    expect(serialized).not.toContain("device-opaque");
+    expect(serialized).not.toContain("server-secret");
+  });
+
+  it("counts active existing mutation policies in observe-only shadow mode without changing responses", async () => {
+    const fixturePorts = createBffShadowFixturePorts();
+    const route = routeByOperation("proposal.submit");
+    expect(route).toBeDefined();
+    if (!route) return;
+
+    const monitor = createRateLimitShadowMonitor();
+    const provider = new RuntimeRateEnforcementProvider({
+      mode: "observe_only",
+      runtimeEnvironment: "staging",
+      adapter: new InMemoryRateLimitAdapter({ now: () => 115_000 }),
+      namespace: "rik-staging",
+    });
+    const body = {
+      input: {
+        idempotencyKey: "idem-opaque",
+        payload: BFF_SHADOW_MUTATION_PAYLOAD,
+      },
+      metadata: {
+        idempotencyKeyStatus: "present_redacted",
+        rateLimitKeyStatus: "present_redacted",
+        rateLimitActorKey: "actor-opaque",
+        rateLimitCompanyKey: "company-opaque",
+      },
+    };
+    const deps = {
+      mutationPorts: fixturePorts.mutation,
+      rateLimitShadow: { provider, monitor },
+      config: {
+        mutationRoutesEnabled: true,
+        idempotencyMetadataRequired: true,
+        rateLimitMetadataRequired: true,
+      },
+    };
+
+    const firstResponse = await handleBffStagingServerRequest(
+      { method: "POST", path: route.path, body },
+      deps,
+    );
+    expect(firstResponse.status).toBe(200);
+    expect(firstResponse.body.ok).toBe(true);
+    await waitFor(() => monitor.snapshot().wouldAllowCount === 1);
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        wouldAllowCount: 1,
+        wouldThrottleCount: 0,
+        keyCardinalityRedacted: 1,
+        blockedDecisionsObserved: 0,
+        realUsersBlocked: false,
+      }),
+    );
+
+    for (let index = 0; index < 25; index += 1) {
+      const response = await handleBffStagingServerRequest(
+        { method: "POST", path: route.path, body },
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(response.body.ok).toBe(true);
+    }
+
+    await waitFor(() => monitor.snapshot().wouldThrottleCount > 0);
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        wouldAllowCount: expect.any(Number),
+        wouldThrottleCount: expect.any(Number),
+        keyCardinalityRedacted: 1,
+        blockedDecisionsObserved: 0,
+        realUsersBlocked: false,
+        rawKeysStored: false,
+        rawKeysPrinted: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    expect(monitor.snapshot().wouldThrottleCount).toBeGreaterThan(0);
+
+    const serialized = JSON.stringify({
+      firstResponse,
+      monitor: monitor.snapshot(),
+    });
+    expect(serialized).not.toContain("actor-opaque");
+    expect(serialized).not.toContain("company-opaque");
+    expect(serialized).not.toContain("idem-opaque");
+  });
+
+  it("builds rate-limit shadow key input only from explicit opaque metadata and route context", () => {
+    const route = routeByOperation("proposal.submit");
+    expect(route).toBeDefined();
+    if (!route) return;
+
+    const keyInput = buildBffStagingRateLimitKeyInput({
+      route,
+      payload: {
+        input: { idempotencyKey: "idem-opaque" },
+        metadata: {
+          rateLimitActorKey: "actor-opaque",
+          rateLimitCompanyKey: "company-opaque",
+        },
+      },
+      headers: { authorization: "Bearer server-secret" },
+    });
+
+    expect(keyInput).toEqual({
+      actorId: "actor-opaque",
+      companyId: "company-opaque",
+      routeKey: "proposal.submit",
+      ipOrDeviceKey: undefined,
+      idempotencyKey: "idem-opaque",
     });
   });
 

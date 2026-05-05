@@ -1,7 +1,12 @@
 import http from "http";
 
 import {
+  createRateEnforcementProviderFromEnv,
+  createRateLimitShadowMonitor,
+} from "../../src/shared/scale/rateLimitAdapters";
+import {
   handleBffStagingServerRequest,
+  type BffStagingRateLimitShadowDeps,
   type BffStagingBoundaryResponse,
   type BffStagingRequestEnvelope,
 } from "./stagingBffServerBoundary";
@@ -29,6 +34,7 @@ type MobileReadonlyAuthVerifier = (token: string, env: StagingBffHttpEnv) => Pro
 type StagingBffHttpServerOptions = {
   readPortsFactory?: (env: StagingBffHttpEnv) => BffReadPorts | undefined;
   mobileReadonlyAuthVerifier?: MobileReadonlyAuthVerifier;
+  rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
 };
 
 const jsonHeaders = {
@@ -201,6 +207,13 @@ export function createBffStagingHttpServer(
   const config = resolveBffStagingHttpConfig(env);
   const readPorts = (options.readPortsFactory ?? createBffReadonlyDbReadPorts)(env);
   const mobileReadonlyAuthVerifier = options.mobileReadonlyAuthVerifier ?? verifySupabaseReadonlyMobileAuth;
+  const rateLimitShadow =
+    options.rateLimitShadow === undefined
+      ? {
+          provider: createRateEnforcementProviderFromEnv(env),
+          monitor: createRateLimitShadowMonitor(),
+        }
+      : options.rateLimitShadow;
 
   return http.createServer(async (request, response) => {
     try {
@@ -259,6 +272,7 @@ export function createBffStagingHttpServer(
       };
       const boundaryResponse = await handleBffStagingServerRequest(boundaryRequest, {
         readPorts,
+        rateLimitShadow,
         config: {
           mutationRoutesEnabled: config.mutationRoutesEnabled,
           idempotencyMetadataRequired: config.idempotencyMetadataRequired,

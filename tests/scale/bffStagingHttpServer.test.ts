@@ -5,6 +5,11 @@ import {
   resolveBffStagingHttpConfig,
 } from "../../scripts/server/stagingBffHttpServer";
 import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
+import {
+  createRateLimitShadowMonitor,
+  InMemoryRateLimitAdapter,
+  RuntimeRateEnforcementProvider,
+} from "../../src/shared/scale/rateLimitAdapters";
 
 const listen = (server: http.Server): Promise<number> =>
   new Promise((resolve) => {
@@ -70,6 +75,14 @@ const createReadPorts = (): BffReadPorts => ({
     },
   },
 });
+
+const waitFor = async (predicate: () => boolean): Promise<void> => {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  expect(predicate()).toBe(true);
+};
 
 describe("staging BFF HTTP server wrapper", () => {
   it("resolves Render-safe defaults without enabling mutation routes", () => {
@@ -386,6 +399,74 @@ describe("staging BFF HTTP server wrapper", () => {
           BFF_DATABASE_READONLY_URL: expect.any(String),
         }),
       );
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("exposes ignored-route rate-limit shadow monitor state only through server-authenticated redacted aggregate data", async () => {
+    const readPorts = createReadPorts();
+    const monitor = createRateLimitShadowMonitor();
+    const provider = new RuntimeRateEnforcementProvider({
+      mode: "observe_only",
+      runtimeEnvironment: "staging",
+      adapter: new InMemoryRateLimitAdapter({ now: () => 120_000 }),
+      namespace: "rik-staging",
+    });
+    const server = createBffStagingHttpServer(
+      {
+        BFF_SERVER_AUTH_SECRET: "server-secret",
+        BFF_DATABASE_READONLY_URL: "postgres://readonly:secret@example.invalid/db",
+      },
+      {
+        readPortsFactory: () => readPorts,
+        rateLimitShadow: { provider, monitor },
+      },
+    );
+    const port = await listen(server);
+
+    try {
+      const unauthorized = await requestJson(port, "/api/staging-bff/monitor/rate-limit-shadow");
+      expect(unauthorized.status).toBe(401);
+      expect(JSON.stringify(unauthorized.body)).not.toContain("server-secret");
+
+      const readResponse = await requestJson(port, "/api/staging-bff/read/marketplace-catalog-search", {
+        method: "POST",
+        authorization: "Bearer server-secret",
+        body: {
+          input: { query: "cement" },
+          metadata: {
+            rateLimitKeyStatus: "present_redacted",
+            rateLimitIpOrDeviceKey: "device-opaque",
+          },
+        },
+      });
+      expect(readResponse.status).toBe(200);
+      await waitFor(() => monitor.snapshot().observedDecisionCount === 1);
+
+      const monitorResponse = await requestJson(port, "/api/staging-bff/monitor/rate-limit-shadow", {
+        authorization: "Bearer server-secret",
+      });
+      expect(monitorResponse.status).toBe(200);
+      expect(monitorResponse.body).toEqual(
+        expect.objectContaining({
+          ok: true,
+          data: expect.objectContaining({
+            status: "ready",
+            wouldAllowCount: 0,
+            wouldThrottleCount: 0,
+            keyCardinalityRedacted: 0,
+            rawKeysStored: false,
+            rawKeysPrinted: false,
+            realUsersBlocked: false,
+          }),
+        }),
+      );
+
+      const output = JSON.stringify({ readResponse, monitorResponse });
+      expect(output).not.toContain("device-opaque");
+      expect(output).not.toContain("server-secret");
+      expect(output).not.toContain("postgres://");
     } finally {
       await close(server);
     }

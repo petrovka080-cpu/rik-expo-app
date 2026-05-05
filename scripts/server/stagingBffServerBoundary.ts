@@ -11,6 +11,12 @@ import {
   getRateEnforcementPolicyForBffReadOperation,
 } from "../../src/shared/scale/rateLimitPolicies";
 import {
+  type RateLimitShadowMonitor,
+  type RateLimitShadowMonitorSnapshot,
+  type RuntimeRateEnforcementProvider,
+} from "../../src/shared/scale/rateLimitAdapters";
+import type { RateLimitKeyInput } from "../../src/shared/scale/rateLimitKeySafety";
+import {
   BFF_OBSERVABILITY_METADATA,
   type BffObservabilityMetadata,
 } from "../../src/shared/scale/scaleObservabilityEvents";
@@ -42,10 +48,10 @@ import {
   createBffShadowFixturePorts,
 } from "../../src/shared/scale/bffShadowFixtures";
 
-export type BffStagingRouteKind = "health" | "readiness" | "read" | "mutation";
+export type BffStagingRouteKind = "health" | "readiness" | "read" | "mutation" | "monitor";
 
 export type BffStagingRouteDefinition = {
-  operation: BffReadOperation | BffMutationOperation | "health" | "readiness";
+  operation: BffReadOperation | BffMutationOperation | "health" | "readiness" | "rate_limit.shadow_monitor";
   kind: BffStagingRouteKind;
   method: "GET" | "POST";
   path: string;
@@ -75,9 +81,15 @@ export type BffStagingServerConfig = {
   rateLimitMetadataRequired?: boolean;
 };
 
+export type BffStagingRateLimitShadowDeps = {
+  provider: RuntimeRateEnforcementProvider;
+  monitor: RateLimitShadowMonitor;
+};
+
 export type BffStagingServerDeps = {
   readPorts?: BffReadPorts;
   mutationPorts?: BffMutationPorts;
+  rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
   config?: BffStagingServerConfig;
 };
 
@@ -127,6 +139,16 @@ export const BFF_STAGING_READINESS_ROUTE: BffStagingRouteDefinition = Object.fre
   kind: "readiness",
   method: "GET",
   path: "/ready",
+  enabledByDefault: true,
+  requiresIdempotencyMetadata: false,
+  requiresRateLimitMetadata: false,
+});
+
+export const BFF_STAGING_RATE_LIMIT_SHADOW_MONITOR_ROUTE: BffStagingRouteDefinition = Object.freeze({
+  operation: "rate_limit.shadow_monitor",
+  kind: "monitor",
+  method: "GET",
+  path: "/api/staging-bff/monitor/rate-limit-shadow",
   enabledByDefault: true,
   requiresIdempotencyMetadata: false,
   requiresRateLimitMetadata: false,
@@ -339,6 +361,7 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
 export const BFF_STAGING_ROUTE_REGISTRY: readonly BffStagingRouteDefinition[] = Object.freeze([
   BFF_STAGING_HEALTH_ROUTE,
   BFF_STAGING_READINESS_ROUTE,
+  BFF_STAGING_RATE_LIMIT_SHADOW_MONITOR_ROUTE,
   ...BFF_STAGING_READ_ROUTES,
   ...BFF_STAGING_MUTATION_ROUTES,
 ]);
@@ -436,6 +459,88 @@ const findRoute = (request: BffStagingRequestEnvelope): BffStagingRouteDefinitio
 const hasPresentMetadata = (metadata: Record<string, unknown>, key: string): boolean =>
   metadata[key] === "present_redacted" || metadata[key] === true;
 
+const getTextRecordValue = (
+  record: Record<string, unknown> | null | undefined,
+  key: string,
+): string | undefined => {
+  const value = record?.[key];
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim();
+  return normalized ? normalized : undefined;
+};
+
+const getHeaderText = (
+  headers: Record<string, unknown> | null | undefined,
+  key: string,
+): string | undefined => {
+  const lowerKey = key.toLowerCase();
+  const value = headers?.[lowerKey] ?? headers?.[key];
+  const normalized = Array.isArray(value) ? value[0] : value;
+  if (typeof normalized !== "string") return undefined;
+  const trimmed = normalized.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+export function buildBffStagingRateLimitKeyInput(params: {
+  route: BffStagingRouteDefinition;
+  payload: BffStagingRequestPayload;
+  headers?: Record<string, unknown> | null;
+}): RateLimitKeyInput {
+  const metadata = params.payload.metadata;
+  const input = params.payload.input;
+  return {
+    actorId: getTextRecordValue(metadata, "rateLimitActorKey"),
+    companyId: getTextRecordValue(metadata, "rateLimitCompanyKey"),
+    routeKey: params.route.operation,
+    ipOrDeviceKey:
+      getTextRecordValue(metadata, "rateLimitIpOrDeviceKey") ??
+      getHeaderText(params.headers, "x-bff-rate-limit-device-key"),
+    idempotencyKey:
+      getTextRecordValue(metadata, "rateLimitIdempotencyKey") ??
+      getTextRecordValue(input, "idempotencyKey"),
+  };
+}
+
+function observeBffStagingRateLimitShadow(params: {
+  route: BffStagingRouteDefinition;
+  payload: BffStagingRequestPayload;
+  headers?: Record<string, unknown> | null;
+  rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
+}): void {
+  const operation = params.route.rateLimitPolicyOperation;
+  if (!operation || !params.rateLimitShadow) return;
+
+  const keyInput = buildBffStagingRateLimitKeyInput({
+    route: params.route,
+    payload: params.payload,
+    headers: params.headers,
+  });
+  const shadow = params.rateLimitShadow;
+  void shadow.provider
+    .evaluate({ operation, keyInput })
+    .then((decision) => shadow.monitor.observe(decision))
+    .catch(() => undefined);
+}
+
+const buildRateLimitShadowMonitorEnvelope = (
+  snapshot: RateLimitShadowMonitorSnapshot,
+): Record<string, unknown> => ({
+  status: "ready",
+  wouldAllowCount: snapshot.wouldAllowCount,
+  wouldThrottleCount: snapshot.wouldThrottleCount,
+  keyCardinalityRedacted: snapshot.keyCardinalityRedacted,
+  observedDecisionCount: snapshot.observedDecisionCount,
+  invalidDecisionCount: snapshot.invalidDecisionCount,
+  aggregateEventsRecorded: snapshot.aggregateEventsRecorded,
+  aggregateMetricsRecorded: snapshot.aggregateMetricsRecorded,
+  blockedDecisionsObserved: snapshot.blockedDecisionsObserved,
+  realUsersBlocked: false,
+  rawKeysStored: false,
+  rawKeysPrinted: false,
+  rawPayloadLogged: false,
+  piiLogged: false,
+});
+
 const invokeReadRoute = async (
   operation: BffReadOperation,
   ports: BffReadPorts,
@@ -515,7 +620,22 @@ export async function handleBffStagingServerRequest(
         responseEnvelopeValidation: true,
         redactedErrors: true,
         appRuntimeBffEnabled: false,
+        rateLimitShadowMonitorConfigured: Boolean(deps.rateLimitShadow),
       },
+    });
+  }
+
+  if (route.kind === "monitor") {
+    if (!deps.rateLimitShadow) {
+      return buildErrorResponse(
+        503,
+        "BFF_RATE_LIMIT_SHADOW_MONITOR_UNAVAILABLE",
+        "Rate limit shadow monitor is not configured",
+      );
+    }
+    return buildResponse(200, {
+      ok: true,
+      data: buildRateLimitShadowMonitorEnvelope(deps.rateLimitShadow.monitor.snapshot()),
     });
   }
 
@@ -525,6 +645,13 @@ export async function handleBffStagingServerRequest(
   }
 
   if (route.kind === "read") {
+    observeBffStagingRateLimitShadow({
+      route,
+      payload,
+      headers: request.headers,
+      rateLimitShadow: deps.rateLimitShadow,
+    });
+
     if (!deps.readPorts) {
       return buildErrorResponse(503, "BFF_READ_PORTS_UNAVAILABLE", "Read ports are not configured");
     }
@@ -553,6 +680,13 @@ export async function handleBffStagingServerRequest(
   ) {
     return buildErrorResponse(400, "BFF_RATE_LIMIT_METADATA_REQUIRED", "Rate limit metadata is required");
   }
+
+  observeBffStagingRateLimitShadow({
+    route,
+    payload,
+    headers: request.headers,
+    rateLimitShadow: deps.rateLimitShadow,
+  });
 
   if (!deps.mutationPorts) {
     return buildErrorResponse(503, "BFF_MUTATION_PORTS_UNAVAILABLE", "Mutation ports are not configured");
@@ -676,6 +810,7 @@ export async function runLocalBffStagingBoundaryShadow(): Promise<BffStagingShad
 export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   healthEndpointContract: true,
   readinessEndpointContract: true,
+  rateLimitShadowMonitorEndpointContract: true,
   readRoutes: BFF_STAGING_READ_ROUTES.length,
   mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
   mutationRoutesEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some((route) => route.enabledByDefault),
