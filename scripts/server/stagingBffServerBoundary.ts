@@ -121,6 +121,7 @@ export type BffStagingCacheShadowRuntimeState = {
   mode: CacheShadowRuntimeConfig["mode"];
   percent: number;
   routeAllowlistCount: number;
+  envKeyPresence: CacheShadowRuntimeConfig["envKeyPresence"];
   providerKind: ReturnType<CacheAdapter["getStatus"]>["kind"] | "not_configured";
   providerEnabled: boolean;
   externalNetworkEnabled: boolean;
@@ -678,6 +679,15 @@ export const buildCacheShadowRuntimeState = (
     mode: config?.mode ?? "disabled",
     percent: config?.percent ?? 0,
     routeAllowlistCount: config?.routeAllowlist.length ?? 0,
+    envKeyPresence: config?.envKeyPresence ?? {
+      productionEnabled: false,
+      mode: false,
+      routeAllowlist: false,
+      percent: false,
+      url: false,
+      namespace: false,
+      commandTimeout: false,
+    },
     providerKind: adapterStatus?.kind ?? "not_configured",
     providerEnabled: adapterStatus?.enabled ?? false,
     externalNetworkEnabled: adapterStatus?.externalNetworkEnabled ?? false,

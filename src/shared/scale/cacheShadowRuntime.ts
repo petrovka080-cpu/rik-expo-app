@@ -13,6 +13,15 @@ export type CacheShadowRuntimeConfig = {
   routeAllowlist: readonly CachePolicyRoute[];
   percent: number;
   productionEnabledFlagTruthy: boolean;
+  envKeyPresence: {
+    productionEnabled: boolean;
+    mode: boolean;
+    routeAllowlist: boolean;
+    percent: boolean;
+    url: boolean;
+    namespace: boolean;
+    commandTimeout: boolean;
+  };
 };
 
 export type CacheShadowDecisionStatus =
@@ -99,6 +108,9 @@ const normalizeText = (value: unknown): string => String(value ?? "").trim();
 
 const parseTruthy = (value: unknown): boolean => truthyValues.has(normalizeText(value).toLowerCase());
 
+const hasEnvKey = (env: CacheShadowRuntimeEnv, key: string): boolean =>
+  Object.prototype.hasOwnProperty.call(env, key);
+
 const parseMode = (value: unknown): CacheShadowMode => {
   const mode = normalizeText(value).toLowerCase();
   return CACHE_SHADOW_ALLOWED_MODES.has(mode as CacheShadowMode) ? (mode as CacheShadowMode) : "disabled";
@@ -172,6 +184,15 @@ export function resolveCacheShadowRuntimeConfig(
     routeAllowlist: parseRouteAllowlist(env.SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST),
     percent: parsePercent(env.SCALE_REDIS_CACHE_SHADOW_PERCENT),
     productionEnabledFlagTruthy,
+    envKeyPresence: {
+      productionEnabled: hasEnvKey(env, "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED"),
+      mode: hasEnvKey(env, "SCALE_REDIS_CACHE_SHADOW_MODE"),
+      routeAllowlist: hasEnvKey(env, "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST"),
+      percent: hasEnvKey(env, "SCALE_REDIS_CACHE_SHADOW_PERCENT"),
+      url: hasEnvKey(env, "SCALE_REDIS_CACHE_URL") || hasEnvKey(env, "REDIS_URL"),
+      namespace: hasEnvKey(env, "SCALE_REDIS_CACHE_NAMESPACE"),
+      commandTimeout: hasEnvKey(env, "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS"),
+    },
   };
 }
 
