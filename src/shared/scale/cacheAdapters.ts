@@ -254,7 +254,10 @@ const parseRespValue = (input: string, offset = 0): { value: RedisParsedValue; n
   return null;
 };
 
-export const createNodeRedisUrlCommandExecutor = (redisUrl: string): RedisCommandExecutor | null => {
+export const createNodeRedisUrlCommandExecutor = (
+  redisUrl: string,
+  options: { socketTimeoutMs?: number } = {},
+): RedisCommandExecutor | null => {
   const normalizedUrl = normalizeRedisUrl(redisUrl);
   if (!isRedisProtocolUrl(normalizedUrl)) return null;
 
@@ -281,6 +284,7 @@ export const createNodeRedisUrlCommandExecutor = (redisUrl: string): RedisComman
   const port = Number(parsed.port || (useTls ? 6380 : 6379));
   const username = decodeURIComponent(parsed.username || "");
   const password = decodeURIComponent(parsed.password || "");
+  const socketTimeoutMs = normalizeCommandTimeoutMs(options.socketTimeoutMs);
 
   return async (command: RedisCommand): Promise<unknown | null> => {
     let socketModule: RedisSocketModule;
@@ -318,7 +322,7 @@ export const createNodeRedisUrlCommandExecutor = (redisUrl: string): RedisComman
         resolve(value);
       };
 
-      socket.setTimeout(5_000, () => finish(null));
+      socket.setTimeout(socketTimeoutMs, () => finish(null));
       socket.once("error", () => finish(null));
       socket.on("data", (chunk: unknown) => {
         response += String(chunk);
@@ -586,8 +590,9 @@ export class RedisUrlCacheAdapter implements CacheAdapter {
   constructor(options: RedisUrlCacheAdapterOptions) {
     this.redisUrl = normalizeRedisUrl(options.redisUrl);
     this.namespace = options.namespace.trim();
-    this.commandImpl = options.commandImpl ?? createNodeRedisUrlCommandExecutor(this.redisUrl);
     this.commandTimeoutMs = normalizeCommandTimeoutMs(options.commandTimeoutMs);
+    this.commandImpl =
+      options.commandImpl ?? createNodeRedisUrlCommandExecutor(this.redisUrl, { socketTimeoutMs: this.commandTimeoutMs });
     this.maxValueBytes = normalizePositiveInteger(
       options.maxValueBytes,
       REDIS_REST_CACHE_DEFAULT_MAX_VALUE_BYTES,

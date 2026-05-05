@@ -755,6 +755,16 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
     expect(commands.some((command) => command[0] === "SADD" || command[0] === "PEXPIRE")).toBe(false);
   });
 
+  it("keeps Redis URL socket timeout aligned with the configured command timeout", () => {
+    const source = readProjectFile("src/shared/scale/cacheAdapters.ts");
+
+    expect(source).toContain(
+      "createNodeRedisUrlCommandExecutor(this.redisUrl, { socketTimeoutMs: this.commandTimeoutMs })",
+    );
+    expect(source).toContain("socket.setTimeout(socketTimeoutMs");
+    expect(source).not.toContain("socket.setTimeout(5_000");
+  });
+
   it("maps mutation operations to disabled invalidation tags", () => {
     expect(CACHE_INVALIDATION_MAPPINGS).toHaveLength(6);
     expect(CACHE_INVALIDATION_MAPPINGS.every((mapping) => mapping.executionEnabledByDefault === false)).toBe(true);
