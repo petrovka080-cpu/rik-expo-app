@@ -20,11 +20,42 @@ export type CacheSetOptions = {
   tags?: readonly string[];
 };
 
+export type CacheAdapterProbeStatus =
+  | "ready"
+  | "disabled"
+  | "unsafe_key"
+  | "serialize_failed"
+  | "set_failed"
+  | "read_miss"
+  | "read_mismatch"
+  | "delete_failed"
+  | "error";
+
+export type CacheAdapterProbeResult = {
+  status: CacheAdapterProbeStatus;
+  providerKind: CacheAdapterStatus["kind"];
+  providerEnabled: boolean;
+  externalNetworkEnabled: boolean;
+  setAttempted: boolean;
+  setOk: boolean;
+  getAttempted: boolean;
+  getOk: boolean;
+  valueMatched: boolean;
+  deleteAttempted: boolean;
+  deleteOk: boolean;
+  ttlBounded: boolean;
+  rawKeyReturned: false;
+  rawPayloadLogged: false;
+  piiLogged: false;
+  reason: string;
+};
+
 export type CacheAdapter = {
   get<T>(key: string): Promise<T | null>;
   set<T>(key: string, value: T, options: CacheSetOptions): Promise<void>;
   delete(key: string): Promise<void>;
   invalidateByTag(tag: string): Promise<number>;
+  probeSetGetDelete?<T>(key: string, value: T, options: CacheSetOptions): Promise<CacheAdapterProbeResult>;
   getStatus(): CacheAdapterStatus;
 };
 
@@ -196,6 +227,142 @@ const deserializeCacheValue = <T>(value: unknown): T | null => {
   return Object.prototype.hasOwnProperty.call(parsed, "value") ? (parsed.value as T) : null;
 };
 
+const cacheProbeValuesMatch = (actual: unknown, expected: unknown): boolean => {
+  const actualSerialized = safeJsonStringify({ value: actual });
+  const expectedSerialized = safeJsonStringify({ value: expected });
+  return actualSerialized !== null && actualSerialized === expectedSerialized;
+};
+
+const redisSetResultOk = (value: unknown): boolean => value !== null;
+
+const redisDeleteResultOk = (value: unknown): boolean => typeof value === "number" && value > 0;
+
+const buildCacheAdapterProbeResult = (
+  status: CacheAdapterProbeStatus,
+  provider: CacheAdapterStatus,
+  reason: string,
+  fields: Partial<
+    Pick<
+      CacheAdapterProbeResult,
+      | "setAttempted"
+      | "setOk"
+      | "getAttempted"
+      | "getOk"
+      | "valueMatched"
+      | "deleteAttempted"
+      | "deleteOk"
+      | "ttlBounded"
+    >
+  > = {},
+): CacheAdapterProbeResult => ({
+  status,
+  providerKind: provider.kind,
+  providerEnabled: provider.enabled,
+  externalNetworkEnabled: provider.externalNetworkEnabled,
+  setAttempted: fields.setAttempted ?? false,
+  setOk: fields.setOk ?? false,
+  getAttempted: fields.getAttempted ?? false,
+  getOk: fields.getOk ?? false,
+  valueMatched: fields.valueMatched ?? false,
+  deleteAttempted: fields.deleteAttempted ?? false,
+  deleteOk: fields.deleteOk ?? false,
+  ttlBounded: fields.ttlBounded ?? false,
+  rawKeyReturned: false,
+  rawPayloadLogged: false,
+  piiLogged: false,
+  reason,
+});
+
+const runRedisCommandProbe = async <T>(params: {
+  provider: CacheAdapterStatus;
+  networkAvailable: boolean;
+  namespace: string;
+  key: string;
+  value: T;
+  options: CacheSetOptions;
+  maxValueBytes: number;
+  command: (command: RedisCommand) => Promise<unknown | null>;
+}): Promise<CacheAdapterProbeResult> => {
+  if (!params.networkAvailable) {
+    return buildCacheAdapterProbeResult("disabled", params.provider, "cache_adapter_disabled");
+  }
+  const redisKey = buildRedisKey(params.namespace, params.key);
+  if (!redisKey) return buildCacheAdapterProbeResult("unsafe_key", params.provider, "cache_shadow_unsafe_key");
+  const serialized = serializeCacheValue(params.value, params.maxValueBytes);
+  if (!serialized) {
+    return buildCacheAdapterProbeResult("serialize_failed", params.provider, "cache_shadow_serialize_failed");
+  }
+
+  const ttlMs = Math.max(1, Math.trunc(Number(params.options.ttlMs) || 1));
+  try {
+    const setResult = await params.command(["SET", redisKey, serialized, "PX", ttlMs]);
+    const setOk = redisSetResultOk(setResult);
+    if (!setOk) {
+      return buildCacheAdapterProbeResult("set_failed", params.provider, "cache_shadow_set_failed", {
+        setAttempted: true,
+        ttlBounded: true,
+      });
+    }
+
+    const getResult = await params.command(["GET", redisKey]);
+    const getOk = getResult !== null;
+    const actual = deserializeCacheValue<T>(getResult);
+    const valueMatched = getOk && cacheProbeValuesMatch(actual, params.value);
+    const deleteResult = await params.command(["DEL", redisKey]);
+    const deleteOk = redisDeleteResultOk(deleteResult);
+
+    if (!getOk) {
+      return buildCacheAdapterProbeResult("read_miss", params.provider, "cache_shadow_read_miss", {
+        setAttempted: true,
+        setOk,
+        getAttempted: true,
+        getOk: false,
+        deleteAttempted: true,
+        deleteOk,
+        ttlBounded: true,
+      });
+    }
+    if (!valueMatched) {
+      return buildCacheAdapterProbeResult("read_mismatch", params.provider, "cache_shadow_read_mismatch", {
+        setAttempted: true,
+        setOk,
+        getAttempted: true,
+        getOk,
+        valueMatched: false,
+        deleteAttempted: true,
+        deleteOk,
+        ttlBounded: true,
+      });
+    }
+    if (!deleteOk) {
+      return buildCacheAdapterProbeResult("delete_failed", params.provider, "cache_shadow_delete_failed", {
+        setAttempted: true,
+        setOk,
+        getAttempted: true,
+        getOk,
+        valueMatched,
+        deleteAttempted: true,
+        deleteOk: false,
+        ttlBounded: true,
+      });
+    }
+    return buildCacheAdapterProbeResult("ready", params.provider, "cache_shadow_canary_ready", {
+      setAttempted: true,
+      setOk,
+      getAttempted: true,
+      getOk,
+      valueMatched,
+      deleteAttempted: true,
+      deleteOk,
+      ttlBounded: true,
+    });
+  } catch {
+    return buildCacheAdapterProbeResult("error", params.provider, "cache_shadow_probe_error", {
+      ttlBounded: true,
+    });
+  }
+};
+
 const defaultRedisFetch = (): RedisRestFetch | null => {
   if (typeof globalThis.fetch !== "function") return null;
   return globalThis.fetch as RedisRestFetch;
@@ -355,6 +522,10 @@ export class NoopCacheAdapter implements CacheAdapter {
     return 0;
   }
 
+  async probeSetGetDelete<T>(_key: string, _value: T, _options: CacheSetOptions): Promise<CacheAdapterProbeResult> {
+    return buildCacheAdapterProbeResult("disabled", this.getStatus(), "cache_adapter_disabled");
+  }
+
   getStatus(): CacheAdapterStatus {
     return {
       kind: "noop",
@@ -430,6 +601,75 @@ export class InMemoryCacheAdapter implements CacheAdapter {
       }
     }
     return deleted;
+  }
+
+  async probeSetGetDelete<T>(key: string, value: T, options: CacheSetOptions): Promise<CacheAdapterProbeResult> {
+    const provider = this.getStatus();
+    if (!assertCacheKeyIsBounded(key)) {
+      return buildCacheAdapterProbeResult("unsafe_key", provider, "cache_shadow_unsafe_key");
+    }
+    const valueBytes = estimateSerializedBytes(value);
+    if (valueBytes == null || valueBytes > this.maxValueBytes) {
+      return buildCacheAdapterProbeResult("serialize_failed", provider, "cache_shadow_serialize_failed");
+    }
+
+    try {
+      await this.set(key, value, options);
+      const actual = await this.get<T>(key);
+      const getOk = actual !== null;
+      const valueMatched = getOk && cacheProbeValuesMatch(actual, value);
+      await this.delete(key);
+      const deleted = (await this.get<T>(key)) === null;
+      if (!getOk) {
+        return buildCacheAdapterProbeResult("read_miss", provider, "cache_shadow_read_miss", {
+          setAttempted: true,
+          setOk: true,
+          getAttempted: true,
+          getOk: false,
+          deleteAttempted: true,
+          deleteOk: deleted,
+          ttlBounded: true,
+        });
+      }
+      if (!valueMatched) {
+        return buildCacheAdapterProbeResult("read_mismatch", provider, "cache_shadow_read_mismatch", {
+          setAttempted: true,
+          setOk: true,
+          getAttempted: true,
+          getOk,
+          valueMatched: false,
+          deleteAttempted: true,
+          deleteOk: deleted,
+          ttlBounded: true,
+        });
+      }
+      if (!deleted) {
+        return buildCacheAdapterProbeResult("delete_failed", provider, "cache_shadow_delete_failed", {
+          setAttempted: true,
+          setOk: true,
+          getAttempted: true,
+          getOk,
+          valueMatched,
+          deleteAttempted: true,
+          deleteOk: false,
+          ttlBounded: true,
+        });
+      }
+      return buildCacheAdapterProbeResult("ready", provider, "cache_shadow_canary_ready", {
+        setAttempted: true,
+        setOk: true,
+        getAttempted: true,
+        getOk,
+        valueMatched,
+        deleteAttempted: true,
+        deleteOk: true,
+        ttlBounded: true,
+      });
+    } catch {
+      return buildCacheAdapterProbeResult("error", provider, "cache_shadow_probe_error", {
+        ttlBounded: true,
+      });
+    }
   }
 
   getStatus(): CacheAdapterStatus {
@@ -531,6 +771,19 @@ export class RedisRestCacheAdapter implements CacheAdapter {
 
     await this.command(["DEL", ...keys, tagKey]);
     return keys.length;
+  }
+
+  async probeSetGetDelete<T>(key: string, value: T, options: CacheSetOptions): Promise<CacheAdapterProbeResult> {
+    return runRedisCommandProbe({
+      provider: this.getStatus(),
+      networkAvailable: this.canUseNetwork(),
+      namespace: this.namespace,
+      key,
+      value,
+      options,
+      maxValueBytes: this.maxValueBytes,
+      command: (command) => this.command(command),
+    });
   }
 
   getStatus(): CacheAdapterStatus {
@@ -647,6 +900,19 @@ export class RedisUrlCacheAdapter implements CacheAdapter {
 
     await this.command(["DEL", ...keys, tagKey]);
     return keys.length;
+  }
+
+  async probeSetGetDelete<T>(key: string, value: T, options: CacheSetOptions): Promise<CacheAdapterProbeResult> {
+    return runRedisCommandProbe({
+      provider: this.getStatus(),
+      networkAvailable: this.canUseNetwork(),
+      namespace: this.namespace,
+      key,
+      value,
+      options,
+      maxValueBytes: this.maxValueBytes,
+      command: (command) => this.command(command),
+    });
   }
 
   getStatus(): CacheAdapterStatus {

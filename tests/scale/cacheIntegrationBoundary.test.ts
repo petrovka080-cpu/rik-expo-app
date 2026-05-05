@@ -643,6 +643,15 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
         cacheWriteSyntheticOnly: true,
         cleanupOk: true,
         ttlBounded: true,
+        commandProbeAttempted: true,
+        commandProbeStatus: "ready",
+        commandSetAttempted: true,
+        commandSetOk: true,
+        commandGetAttempted: true,
+        commandGetOk: true,
+        commandValueMatched: true,
+        commandDeleteAttempted: true,
+        commandDeleteOk: true,
         rawKeyReturned: false,
         rawPayloadLogged: false,
         piiLogged: false,
@@ -714,6 +723,100 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
     expect(serialized).not.toContain("secret-token-value");
   });
 
+  it("reports Redis command-result classes for cache shadow canary without raw key or payload output", async () => {
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "shadow_readonly",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const createAdapter = (commandImpl: RedisCommandExecutor) =>
+      new RedisUrlCacheAdapter({
+        redisUrl: "rediss://red-render-kv.example.invalid:6379",
+        namespace: "rik-production-cache-shadow",
+        commandImpl,
+      });
+
+    const setFailedCommand = jest.fn(async (_command: Parameters<RedisCommandExecutor>[0]) => null) as jest.MockedFunction<
+      RedisCommandExecutor
+    >;
+    const setFailed = await runCacheSyntheticShadowCanary({
+      adapter: createAdapter(setFailedCommand),
+      config,
+      route: "marketplace.catalog.search",
+    });
+    expect(setFailed).toEqual(
+      expect.objectContaining({
+        status: "error",
+        reason: "cache_shadow_set_failed",
+        cacheHitVerified: false,
+        commandProbeAttempted: true,
+        commandProbeStatus: "set_failed",
+        commandSetAttempted: true,
+        commandSetOk: false,
+        commandGetAttempted: false,
+        commandDeleteAttempted: false,
+        rawKeyReturned: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    expect(setFailedCommand).toHaveBeenCalledTimes(1);
+
+    const readMissCommand = jest.fn(async (command: Parameters<RedisCommandExecutor>[0]) => {
+      const operation = String(command[0] ?? "").toUpperCase();
+      if (operation === "SET") return "OK";
+      if (operation === "GET") return null;
+      if (operation === "DEL") return 1;
+      return null;
+    }) as jest.MockedFunction<RedisCommandExecutor>;
+    const readMiss = await runCacheSyntheticShadowCanary({
+      adapter: createAdapter(readMissCommand),
+      config,
+      route: "marketplace.catalog.search",
+    });
+    expect(readMiss).toEqual(
+      expect.objectContaining({
+        status: "error",
+        reason: "cache_shadow_read_miss",
+        commandProbeStatus: "read_miss",
+        commandSetOk: true,
+        commandGetAttempted: true,
+        commandGetOk: false,
+        commandDeleteAttempted: true,
+        commandDeleteOk: true,
+      }),
+    );
+
+    const readMismatchCommand = jest.fn(async (command: Parameters<RedisCommandExecutor>[0]) => {
+      const operation = String(command[0] ?? "").toUpperCase();
+      if (operation === "SET") return "OK";
+      if (operation === "GET") return JSON.stringify({ value: { kind: "unexpected-cache-shadow-value" } });
+      if (operation === "DEL") return 1;
+      return null;
+    }) as jest.MockedFunction<RedisCommandExecutor>;
+    const readMismatch = await runCacheSyntheticShadowCanary({
+      adapter: createAdapter(readMismatchCommand),
+      config,
+      route: "marketplace.catalog.search",
+    });
+    expect(readMismatch).toEqual(
+      expect.objectContaining({
+        status: "error",
+        reason: "cache_shadow_read_mismatch",
+        commandProbeStatus: "read_mismatch",
+        commandGetOk: true,
+        commandValueMatched: false,
+        commandDeleteOk: true,
+      }),
+    );
+
+    const serialized = JSON.stringify({ setFailed, readMiss, readMismatch });
+    expect(serialized).not.toContain("rik-production-cache-shadow:cache:v1:");
+    expect(serialized).not.toContain("company-cache-canary-opaque");
+    expect(serialized).not.toContain("cement");
+  });
+
   it("bounds Redis URL cache commands so shadow canary cannot hang the request path", async () => {
     const commands: (readonly (string | number)[])[] = [];
     const hangingCommand = jest.fn((command: Parameters<RedisCommandExecutor>[0]) => {
@@ -749,9 +852,14 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
         rawKeyReturned: false,
         rawPayloadLogged: false,
         piiLogged: false,
+        reason: "cache_shadow_set_failed",
+        commandProbeAttempted: true,
+        commandProbeStatus: "set_failed",
+        commandSetAttempted: true,
+        commandSetOk: false,
       }),
     );
-    expect(commands.map((command) => command[0])).toEqual(["GET", "SET", "GET", "DEL"]);
+    expect(commands.map((command) => command[0])).toEqual(["GET", "SET"]);
     expect(commands.some((command) => command[0] === "SADD" || command[0] === "PEXPIRE")).toBe(false);
   });
 

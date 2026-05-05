@@ -1,4 +1,4 @@
-import type { CacheAdapter, CacheAdapterStatus } from "./cacheAdapters";
+import type { CacheAdapter, CacheAdapterProbeStatus, CacheAdapterStatus } from "./cacheAdapters";
 import { buildSafeCacheKey } from "./cacheKeySafety";
 import type { CachePolicyRoute } from "./cachePolicies";
 import { getCachePolicy } from "./cachePolicies";
@@ -89,6 +89,15 @@ export type CacheSyntheticShadowCanaryResult = {
   rawPayloadLogged: false;
   piiLogged: false;
   reason: string;
+  commandProbeAttempted: boolean;
+  commandProbeStatus: CacheAdapterProbeStatus | "not_supported";
+  commandSetAttempted: boolean;
+  commandSetOk: boolean;
+  commandGetAttempted: boolean;
+  commandGetOk: boolean;
+  commandValueMatched: boolean;
+  commandDeleteAttempted: boolean;
+  commandDeleteOk: boolean;
   decision?: CacheShadowDecision;
 };
 
@@ -313,13 +322,76 @@ export async function runCacheSyntheticShadowCanary(params: {
     return buildCacheSyntheticResult("unsafe_key", route, provider, params.config, keyResult.reason);
   }
 
+  const value = { kind: "cache-shadow-canary", version: 1 };
+  const options = {
+    ttlMs: Math.min(policy?.ttlMs ?? SYNTHETIC_CANARY_TTL_MS, SYNTHETIC_CANARY_TTL_MS),
+    tags: ["cache_canary"],
+  };
+
+  if (params.adapter.probeSetGetDelete) {
+    const probe = await params.adapter.probeSetGetDelete(keyResult.key, value, options);
+    const status: CacheSyntheticShadowCanaryResult["status"] =
+      probe.status === "ready"
+        ? "ready"
+        : probe.status === "disabled"
+          ? "adapter_unavailable"
+          : probe.status === "unsafe_key"
+            ? "unsafe_key"
+            : "error";
+    const decision: CacheShadowDecision | undefined =
+      probe.status === "ready"
+        ? {
+            status: "hit",
+            route,
+            mode: params.config.mode,
+            shadowReadAttempted: true,
+            cacheHit: true,
+            responseChanged: false,
+            syntheticIdentityUsed: true,
+            realUserPayloadUsed: false,
+            rawKeyReturned: false,
+            rawPayloadLogged: false,
+            piiLogged: false,
+            reason: "cache_shadow_hit",
+          }
+        : undefined;
+
+    return {
+      status,
+      route,
+      providerKind: provider.kind,
+      providerEnabled: provider.enabled,
+      externalNetworkEnabled: provider.externalNetworkEnabled,
+      mode: params.config.mode,
+      syntheticIdentityUsed: true,
+      realUserPayloadUsed: false,
+      shadowReadAttempted: probe.getAttempted,
+      cacheHitVerified: probe.status === "ready" && probe.valueMatched,
+      responseChanged: false,
+      cacheWriteSyntheticOnly: probe.setAttempted,
+      cleanupAttempted: probe.deleteAttempted,
+      cleanupOk: probe.deleteOk,
+      ttlBounded: probe.ttlBounded,
+      rawKeyReturned: false,
+      rawPayloadLogged: false,
+      piiLogged: false,
+      reason: probe.reason,
+      commandProbeAttempted: true,
+      commandProbeStatus: probe.status,
+      commandSetAttempted: probe.setAttempted,
+      commandSetOk: probe.setOk,
+      commandGetAttempted: probe.getAttempted,
+      commandGetOk: probe.getOk,
+      commandValueMatched: probe.valueMatched,
+      commandDeleteAttempted: probe.deleteAttempted,
+      commandDeleteOk: probe.deleteOk,
+      decision,
+    };
+  }
+
   let cleanupOk = false;
   try {
-    await params.adapter.set(
-      keyResult.key,
-      { kind: "cache-shadow-canary", version: 1 },
-      { ttlMs: Math.min(policy?.ttlMs ?? SYNTHETIC_CANARY_TTL_MS, SYNTHETIC_CANARY_TTL_MS), tags: ["cache_canary"] },
-    );
+    await params.adapter.set(keyResult.key, value, options);
     const decision = await evaluateCacheShadowRead({
       adapter: params.adapter,
       config: {
@@ -352,6 +424,15 @@ export async function runCacheSyntheticShadowCanary(params: {
       rawPayloadLogged: false,
       piiLogged: false,
       reason: decision.reason,
+      commandProbeAttempted: false,
+      commandProbeStatus: "not_supported",
+      commandSetAttempted: false,
+      commandSetOk: false,
+      commandGetAttempted: false,
+      commandGetOk: false,
+      commandValueMatched: false,
+      commandDeleteAttempted: false,
+      commandDeleteOk: false,
       decision,
     };
   } catch {
@@ -397,5 +478,14 @@ function buildCacheSyntheticResult(
     rawPayloadLogged: false,
     piiLogged: false,
     reason,
+    commandProbeAttempted: false,
+    commandProbeStatus: "not_supported",
+    commandSetAttempted: false,
+    commandSetOk: false,
+    commandGetAttempted: false,
+    commandGetOk: false,
+    commandValueMatched: false,
+    commandDeleteAttempted: false,
+    commandDeleteOk: false,
   };
 }

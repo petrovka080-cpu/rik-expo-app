@@ -796,6 +796,15 @@ const buildCacheShadowCanaryEnvelope = (
   rawPayloadLogged: result.rawPayloadLogged,
   piiLogged: result.piiLogged,
   reason: result.reason,
+  commandProbeAttempted: result.commandProbeAttempted,
+  commandProbeStatus: result.commandProbeStatus,
+  commandSetAttempted: result.commandSetAttempted,
+  commandSetOk: result.commandSetOk,
+  commandGetAttempted: result.commandGetAttempted,
+  commandGetOk: result.commandGetOk,
+  commandValueMatched: result.commandValueMatched,
+  commandDeleteAttempted: result.commandDeleteAttempted,
+  commandDeleteOk: result.commandDeleteOk,
 });
 
 const invokeReadRoute = async (
