@@ -17,6 +17,7 @@ import {
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
   resolveReleaseGuardPath,
+  resolveReleaseRepoSync,
   type PackageJsonMutationKind,
   type ReleaseGateDefinition,
   type ReleaseGateResult,
@@ -218,6 +219,11 @@ function readRepoState(): ReleaseRepoState {
   const worktreeClean = readCommand("git status --short").length === 0;
   const localCommitsAheadOriginMain = readGitCount(["rev-list", "--count", "origin/main..HEAD"]);
   const originMainCommitsAheadHead = readGitCount(["rev-list", "--count", "HEAD..origin/main"]);
+  const sync = resolveReleaseRepoSync({
+    headMatchesOriginMain: headCommit === originMainCommit,
+    localCommitsAheadOriginMain,
+    originMainCommitsAheadHead,
+  });
 
   return {
     gitBranch,
@@ -227,6 +233,8 @@ function readRepoState(): ReleaseRepoState {
     headMatchesOriginMain: headCommit === originMainCommit,
     localCommitsAheadOriginMain,
     originMainCommitsAheadHead,
+    syncStatus: sync.syncStatus,
+    syncAction: sync.syncAction,
   };
 }
 
@@ -265,6 +273,8 @@ function printHumanReport(report: ReleaseGuardReport) {
   console.info(`origin/main: ${report.repo.originMainCommit}`);
   console.info(`Local commits ahead origin/main: ${report.repo.localCommitsAheadOriginMain}`);
   console.info(`origin/main commits ahead HEAD: ${report.repo.originMainCommitsAheadHead}`);
+  console.info(`Repo sync status: ${report.repo.syncStatus}`);
+  console.info(`Repo sync action: ${report.repo.syncAction}`);
   console.info(`Worktree clean: ${String(report.repo.worktreeClean)}`);
   console.info(`Classification: ${report.classification.kind}`);
   console.info(`Runtime strategy: ${report.runtimePolicy.runtimeVersionStrategy}`);

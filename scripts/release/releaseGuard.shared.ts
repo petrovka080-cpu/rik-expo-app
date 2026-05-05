@@ -25,6 +25,15 @@ export type ReleaseGateResult = ReleaseGateDefinition & {
   exitCode: number;
 };
 
+export type ReleaseRepoSyncStatus = "synced" | "local_ahead" | "origin_ahead" | "diverged" | "unknown_mismatch";
+
+export type ReleaseRepoSyncAction =
+  | "none"
+  | "push_with_explicit_approval"
+  | "pull_or_rebase_before_release"
+  | "reconcile_diverged_branch"
+  | "inspect_refs_before_release";
+
 export type ReleaseRepoState = {
   gitBranch: string;
   headCommit: string;
@@ -33,6 +42,8 @@ export type ReleaseRepoState = {
   headMatchesOriginMain: boolean;
   localCommitsAheadOriginMain: number;
   originMainCommitsAheadHead: number;
+  syncStatus: ReleaseRepoSyncStatus;
+  syncAction: ReleaseRepoSyncAction;
 };
 
 export type PackageJsonMutationKind = "none" | "scripts-only" | "non-runtime" | "build-required";
@@ -180,6 +191,30 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "jest", command: "npm test" },
   { name: "git-diff-check", command: "git diff --check" },
 ];
+
+export function resolveReleaseRepoSync(params: {
+  headMatchesOriginMain: boolean;
+  localCommitsAheadOriginMain: number;
+  originMainCommitsAheadHead: number;
+}): { syncStatus: ReleaseRepoSyncStatus; syncAction: ReleaseRepoSyncAction } {
+  if (params.headMatchesOriginMain) {
+    return { syncStatus: "synced", syncAction: "none" };
+  }
+
+  if (params.localCommitsAheadOriginMain > 0 && params.originMainCommitsAheadHead > 0) {
+    return { syncStatus: "diverged", syncAction: "reconcile_diverged_branch" };
+  }
+
+  if (params.localCommitsAheadOriginMain > 0) {
+    return { syncStatus: "local_ahead", syncAction: "push_with_explicit_approval" };
+  }
+
+  if (params.originMainCommitsAheadHead > 0) {
+    return { syncStatus: "origin_ahead", syncAction: "pull_or_rebase_before_release" };
+  }
+
+  return { syncStatus: "unknown_mismatch", syncAction: "inspect_refs_before_release" };
+}
 
 export const RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 export const RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS = [
@@ -634,7 +669,9 @@ export function evaluateReleaseGuardReadiness(params: {
       params.repo.localCommitsAheadOriginMain > 0 || params.repo.originMainCommitsAheadHead > 0
         ? ` Local branch is ahead by ${params.repo.localCommitsAheadOriginMain} commit(s) and behind by ${params.repo.originMainCommitsAheadHead} commit(s).`
         : "";
-    blockers.push(`HEAD does not match origin/main.${syncDetail} Push and sync the exact release commit before publishing.`);
+    blockers.push(
+      `HEAD does not match origin/main.${syncDetail} Next safe action: ${params.repo.syncAction}. Push and sync the exact release commit before publishing.`,
+    );
   }
 
   for (const gate of params.gates) {

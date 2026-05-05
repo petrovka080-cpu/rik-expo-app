@@ -10,6 +10,7 @@ import {
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
   resolveReleaseGuardPath,
+  resolveReleaseRepoSync,
   type ReleaseGateResult,
   type ReleaseRepoState,
   type ReleaseGuardStartupPolicyTruth,
@@ -25,6 +26,8 @@ function createRepoState(overrides: Partial<ReleaseRepoState> = {}): ReleaseRepo
     headMatchesOriginMain: true,
     localCommitsAheadOriginMain: 0,
     originMainCommitsAheadHead: 0,
+    syncStatus: "synced",
+    syncAction: "none",
     ...overrides,
   };
 }
@@ -218,6 +221,8 @@ describe("releaseGuard.shared", () => {
           headMatchesOriginMain: false,
           originMainCommit: "origin-sha",
           localCommitsAheadOriginMain: 2,
+          syncStatus: "local_ahead",
+          syncAction: "push_with_explicit_approval",
         }),
         gates: [
           ...createPassedGates().slice(0, 2),
@@ -245,10 +250,44 @@ describe("releaseGuard.shared", () => {
       expect(readiness.blockers).toEqual(
         expect.arrayContaining([
           "Worktree is dirty. Release automation requires a clean repository state.",
-          "HEAD does not match origin/main. Local branch is ahead by 2 commit(s) and behind by 0 commit(s). Push and sync the exact release commit before publishing.",
+          "HEAD does not match origin/main. Local branch is ahead by 2 commit(s) and behind by 0 commit(s). Next safe action: push_with_explicit_approval. Push and sync the exact release commit before publishing.",
           "Required gate failed: jest-run-in-band.",
         ]),
       );
+    });
+
+    it("resolves branch sync actions without requiring release operators to infer them", () => {
+      expect(
+        resolveReleaseRepoSync({
+          headMatchesOriginMain: true,
+          localCommitsAheadOriginMain: 0,
+          originMainCommitsAheadHead: 0,
+        }),
+      ).toEqual({ syncStatus: "synced", syncAction: "none" });
+
+      expect(
+        resolveReleaseRepoSync({
+          headMatchesOriginMain: false,
+          localCommitsAheadOriginMain: 2,
+          originMainCommitsAheadHead: 0,
+        }),
+      ).toEqual({ syncStatus: "local_ahead", syncAction: "push_with_explicit_approval" });
+
+      expect(
+        resolveReleaseRepoSync({
+          headMatchesOriginMain: false,
+          localCommitsAheadOriginMain: 0,
+          originMainCommitsAheadHead: 1,
+        }),
+      ).toEqual({ syncStatus: "origin_ahead", syncAction: "pull_or_rebase_before_release" });
+
+      expect(
+        resolveReleaseRepoSync({
+          headMatchesOriginMain: false,
+          localCommitsAheadOriginMain: 2,
+          originMainCommitsAheadHead: 1,
+        }),
+      ).toEqual({ syncStatus: "diverged", syncAction: "reconcile_diverged_branch" });
     });
 
     it("skips OTA cleanly for a non-runtime release commit", () => {
