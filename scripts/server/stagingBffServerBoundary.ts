@@ -114,10 +114,32 @@ export type BffStagingCacheShadowDeps = {
   monitor: CacheShadowMonitor;
 };
 
+export type BffStagingCacheShadowRuntimeState = {
+  status: "configured" | "disabled" | "adapter_unavailable";
+  enabled: boolean;
+  productionEnabledFlagTruthy: boolean;
+  mode: CacheShadowRuntimeConfig["mode"];
+  percent: number;
+  routeAllowlistCount: number;
+  providerKind: ReturnType<CacheAdapter["getStatus"]>["kind"] | "not_configured";
+  providerEnabled: boolean;
+  externalNetworkEnabled: boolean;
+  reason:
+    | "configured"
+    | "config_not_supplied"
+    | "production_flag_disabled"
+    | "mode_disabled"
+    | "adapter_not_configured"
+    | "adapter_unavailable";
+  secretsExposed: false;
+  envValuesExposed: false;
+};
+
 export type BffStagingServerDeps = {
   readPorts?: BffReadPorts;
   mutationPorts?: BffMutationPorts;
   cacheShadow?: BffStagingCacheShadowDeps | null;
+  cacheShadowRuntime?: BffStagingCacheShadowRuntimeState | null;
   rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
   rateLimitPrivateSmoke?: RateLimitPrivateSmokeRunner | null;
   config?: BffStagingServerConfig;
@@ -645,6 +667,66 @@ const buildCacheShadowMonitorEnvelope = (
   piiLogged: false,
 });
 
+export const buildCacheShadowRuntimeState = (
+  config: CacheShadowRuntimeConfig | null | undefined,
+  adapter?: CacheAdapter | null,
+): BffStagingCacheShadowRuntimeState => {
+  const adapterStatus = adapter?.getStatus();
+  const base = {
+    enabled: config?.enabled ?? false,
+    productionEnabledFlagTruthy: config?.productionEnabledFlagTruthy ?? false,
+    mode: config?.mode ?? "disabled",
+    percent: config?.percent ?? 0,
+    routeAllowlistCount: config?.routeAllowlist.length ?? 0,
+    providerKind: adapterStatus?.kind ?? "not_configured",
+    providerEnabled: adapterStatus?.enabled ?? false,
+    externalNetworkEnabled: adapterStatus?.externalNetworkEnabled ?? false,
+    secretsExposed: false,
+    envValuesExposed: false,
+  } as const;
+
+  if (!config) {
+    return {
+      ...base,
+      status: "disabled",
+      reason: "config_not_supplied",
+    };
+  }
+  if (!config.productionEnabledFlagTruthy) {
+    return {
+      ...base,
+      status: "disabled",
+      reason: "production_flag_disabled",
+    };
+  }
+  if (config.mode === "disabled" || !config.enabled) {
+    return {
+      ...base,
+      status: "disabled",
+      reason: "mode_disabled",
+    };
+  }
+  if (!adapter) {
+    return {
+      ...base,
+      status: "adapter_unavailable",
+      reason: "adapter_not_configured",
+    };
+  }
+  if (!adapterStatus?.enabled || !adapterStatus.externalNetworkEnabled) {
+    return {
+      ...base,
+      status: "adapter_unavailable",
+      reason: "adapter_unavailable",
+    };
+  }
+  return {
+    ...base,
+    status: "configured",
+    reason: "configured",
+  };
+};
+
 const buildRateLimitPrivateSmokeEnvelope = (
   result: RateLimitPrivateSmokeResult,
   enforcementCanary?: RateLimitSyntheticEnforcementCanaryResult | null,
@@ -772,6 +854,8 @@ export async function handleBffStagingServerRequest(
   }
 
   if (route.kind === "readiness") {
+    const cacheShadowRuntime =
+      deps.cacheShadowRuntime ?? buildCacheShadowRuntimeState(deps.cacheShadow?.config, deps.cacheShadow?.adapter);
     return buildResponse(200, {
       ok: true,
       data: {
@@ -786,6 +870,7 @@ export async function handleBffStagingServerRequest(
         redactedErrors: true,
         appRuntimeBffEnabled: false,
         cacheShadowMonitorConfigured: Boolean(deps.cacheShadow),
+        cacheShadowRuntime,
         rateLimitShadowMonitorConfigured: Boolean(deps.rateLimitShadow),
       },
     });

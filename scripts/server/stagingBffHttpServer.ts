@@ -12,8 +12,10 @@ import {
   type RateLimitPrivateSmokeRunner,
 } from "../../src/shared/scale/rateLimitAdapters";
 import {
+  buildCacheShadowRuntimeState,
   handleBffStagingServerRequest,
   type BffStagingCacheShadowDeps,
+  type BffStagingCacheShadowRuntimeState,
   type BffStagingRateLimitShadowDeps,
   type BffStagingBoundaryResponse,
   type BffStagingRequestEnvelope,
@@ -43,6 +45,7 @@ type StagingBffHttpServerOptions = {
   readPortsFactory?: (env: StagingBffHttpEnv) => BffReadPorts | undefined;
   mobileReadonlyAuthVerifier?: MobileReadonlyAuthVerifier;
   cacheShadow?: BffStagingCacheShadowDeps | null;
+  cacheShadowRuntime?: BffStagingCacheShadowRuntimeState | null;
   rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
   rateLimitPrivateSmoke?: RateLimitPrivateSmokeRunner | null;
 };
@@ -228,6 +231,10 @@ export function createBffStagingHttpServer(
           }
         : null
       : options.cacheShadow;
+  const cacheShadowRuntime =
+    options.cacheShadowRuntime === undefined
+      ? buildCacheShadowRuntimeState(defaultCacheShadowConfig, cacheShadow?.adapter)
+      : options.cacheShadowRuntime;
   const rateLimitShadow =
     options.rateLimitShadow === undefined
       ? {
@@ -298,6 +305,7 @@ export function createBffStagingHttpServer(
       const boundaryResponse = await handleBffStagingServerRequest(boundaryRequest, {
         readPorts,
         cacheShadow,
+        cacheShadowRuntime,
         rateLimitShadow,
         rateLimitPrivateSmoke,
         config: {

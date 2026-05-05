@@ -21,6 +21,7 @@ import {
   BFF_STAGING_READ_ROUTES,
   BFF_STAGING_ROUTE_REGISTRY,
   BFF_STAGING_SERVER_BOUNDARY_CONTRACT,
+  buildCacheShadowRuntimeState,
   buildBffStagingRateLimitKeyInput,
   buildBffStagingDeploymentReadiness,
   handleBffStagingServerRequest,
@@ -157,6 +158,47 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
         redactedErrors: true,
       }),
     );
+  });
+
+  it("reports cache shadow runtime visibility in readiness without exposing env values", async () => {
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "shadow_readonly",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "0",
+    });
+    const response = await handleBffStagingServerRequest(
+      { method: "GET", path: "/ready" },
+      {
+        cacheShadowRuntime: buildCacheShadowRuntimeState(config, createRedisCacheAdapterFixture()),
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({
+          cacheShadowRuntime: expect.objectContaining({
+            status: "configured",
+            enabled: true,
+            productionEnabledFlagTruthy: true,
+            mode: "shadow_readonly",
+            percent: 0,
+            routeAllowlistCount: 1,
+            providerKind: "redis_url",
+            providerEnabled: true,
+            externalNetworkEnabled: true,
+            reason: "configured",
+            secretsExposed: false,
+            envValuesExposed: false,
+          }),
+        }),
+      }),
+    );
+    const serialized = JSON.stringify(response);
+    expect(serialized).not.toContain("red-render-kv");
+    expect(serialized).not.toContain("rik-production-cache-shadow:cache:v1:");
   });
 
   it("runs cache shadow/read-only canary through server-authenticated permanent diagnostics", async () => {
