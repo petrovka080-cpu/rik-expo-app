@@ -11,6 +11,7 @@ import {
   buildReleaseGuardOtaPublishEnv,
   buildReleaseMetadataEnforcement,
   REQUIRED_RELEASE_GATES,
+  buildReleaseGuardMigrationPolicy,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
@@ -249,6 +250,8 @@ function printHumanReport(report: ReleaseGuardReport) {
   console.info(`Resolved runtime: ${report.runtimePolicy.resolvedRuntimeVersion}`);
   console.info(`Runtime policy: ${report.runtimePolicy.runtimePolicy}`);
   console.info(`Build required: ${String(report.runtimePolicy.buildRequired)}`);
+  console.info(`Supabase migrations changed: ${String(report.migrationPolicy.migrationFiles.length)}`);
+  console.info(`Production DB migration approval required: ${String(report.migrationPolicy.productionDbApprovalRequired)}`);
   console.info(`Updates enabled: ${String(report.startupPolicy.updatesEnabled)}`);
   console.info(`Check automatically: ${report.startupPolicy.checkAutomatically}`);
   console.info(
@@ -297,6 +300,17 @@ function printHumanReport(report: ReleaseGuardReport) {
     }
   }
 
+  if (report.migrationPolicy.risks.length > 0) {
+    console.info("");
+    console.info("Supabase migration policy:");
+    for (const risk of report.migrationPolicy.risks) {
+      console.info(`- ${risk.filePath}: ${risk.riskLevel}`);
+      for (const reason of risk.reasons) {
+        console.info(`  - ${reason}`);
+      }
+    }
+  }
+
   if (report.readiness.blockers.length > 0) {
     console.info("");
     console.info("Blockers:");
@@ -335,6 +349,10 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     changedFiles,
     packageJsonMutationKind,
   });
+  const migrationPolicy = buildReleaseGuardMigrationPolicy({
+    changedFiles,
+    readFile: readCurrentFile,
+  });
   const targetChannel = assertCanonicalChannel(args.channel);
   const expectedBranch = targetChannel ? getExpectedReleaseBranch(targetChannel) : null;
   const missingArtifacts = ensureArtifacts(args.requireArtifacts);
@@ -343,6 +361,7 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     repo,
     gates,
     classification,
+    migrationPolicy,
     runtimePolicy: {
       resolvedRuntimeVersion: configSummary.runtimeVersion,
       runtimePolicy: configSummary.runtimePolicy,
@@ -389,6 +408,7 @@ function buildBaseReport(args: ParsedArgs, gates: ReleaseGateResult[], changedFi
     repo,
     gates,
     classification,
+    migrationPolicy,
     runtimePolicy,
     startupPolicy,
     readiness,

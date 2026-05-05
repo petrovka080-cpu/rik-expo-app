@@ -4,6 +4,7 @@ import {
   buildReleaseGuardOtaPublishCommand,
   buildReleaseGuardOtaPublishEnv,
   buildReleaseMetadataEnforcement,
+  buildReleaseGuardMigrationPolicy,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
   evaluateReleaseGuardReadiness,
@@ -422,6 +423,114 @@ describe("releaseGuard.shared", () => {
       expect(readiness.blockers).toContain(
         "Startup policy invalid: expo.updates.fallbackToCacheTimeout must be 30000 for the guarded release startup contract, but found 0.",
       );
+    });
+  });
+
+  describe("buildReleaseGuardMigrationPolicy", () => {
+    it("keeps schema-only Supabase migrations visible without blocking release automation", () => {
+      const migrationPolicy = buildReleaseGuardMigrationPolicy({
+        changedFiles: ["supabase/migrations/20260502170000_scale_idempotency_records_provider_smoke.sql"],
+        readFile: () => `
+          create table if not exists public.scale_idempotency_records (
+            key text not null,
+            operation text not null
+          );
+
+          create index if not exists scale_idempotency_records_operation_idx
+            on public.scale_idempotency_records(operation);
+
+          alter table public.scale_idempotency_records enable row level security;
+        `,
+      });
+
+      expect(migrationPolicy.productionDbApprovalRequired).toBe(false);
+      expect(migrationPolicy.blockers).toEqual([]);
+      expect(migrationPolicy.risks).toEqual([
+        expect.objectContaining({
+          filePath: "supabase/migrations/20260502170000_scale_idempotency_records_provider_smoke.sql",
+          riskLevel: "schema",
+          schemaChangesDetected: true,
+          productionDbApprovalRequired: false,
+        }),
+      ]);
+    });
+
+    it("blocks DML or read-model rebuild migrations until an explicit DB apply/repair wave handles them", () => {
+      const migrationPolicy = buildReleaseGuardMigrationPolicy({
+        changedFiles: ["supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql"],
+        readFile: () => `
+          create table if not exists public.warehouse_issue_queue_ready_rows_v1 (
+            request_id integer primary key
+          );
+
+          create or replace function public.warehouse_issue_queue_ready_rows_rebuild_v1()
+          returns void
+          language plpgsql
+          security definer
+          as $$
+          begin
+            delete from public.warehouse_issue_queue_ready_rows_v1;
+            insert into public.warehouse_issue_queue_ready_rows_v1 (request_id)
+            select id from public.requests;
+          end;
+          $$;
+
+          notify pgrst, 'reload schema';
+        `,
+      });
+
+      expect(migrationPolicy.productionDbApprovalRequired).toBe(true);
+      expect(migrationPolicy.highRiskFiles).toEqual([
+        "supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql",
+      ]);
+      expect(migrationPolicy.blockers).toEqual([
+        expect.stringContaining("requires an explicit production DB apply/repair wave"),
+      ]);
+      expect(migrationPolicy.risks[0]).toEqual(
+        expect.objectContaining({
+          riskLevel: "dml_or_rebuild",
+          dmlStatementsDetected: expect.arrayContaining(["insert", "delete"]),
+          readModelRebuildDetected: true,
+          productionDbApprovalRequired: true,
+        }),
+      );
+    });
+
+    it("adds migration policy blockers to release readiness", () => {
+      const readiness = evaluateReleaseGuardReadiness({
+        mode: "verify",
+        repo: createRepoState(),
+        gates: createPassedGates(),
+        classification: classifyReleaseChanges({
+          changedFiles: [
+            "supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql",
+          ],
+        }),
+        migrationPolicy: {
+          migrationFiles: [
+            "supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql",
+          ],
+          highRiskFiles: [
+            "supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql",
+          ],
+          productionDbApprovalRequired: true,
+          risks: [],
+          blockers: [
+            "Supabase migration supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql contains DML or read-model rebuild behavior and requires an explicit production DB apply/repair wave before release automation can proceed.",
+          ],
+        },
+        runtimePolicy: createRuntimePolicyTruth(),
+        startupPolicy: createStartupPolicyTruth(),
+        targetChannel: null,
+        releaseMessage: null,
+        missingArtifacts: [],
+        expectedBranch: null,
+      });
+
+      expect(readiness.status).toBe("fail");
+      expect(readiness.blockers).toEqual([
+        expect.stringContaining("requires an explicit production DB apply/repair wave"),
+      ]);
     });
   });
 

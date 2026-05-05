@@ -54,6 +54,28 @@ export type ReleaseGuardReadiness = {
   blockers: string[];
 };
 
+export type SupabaseMigrationRiskLevel = "none" | "schema" | "dml_or_rebuild";
+
+export type SupabaseMigrationRisk = {
+  filePath: string;
+  riskLevel: SupabaseMigrationRiskLevel;
+  schemaChangesDetected: boolean;
+  securityDefinerDetected: boolean;
+  pgrstNotifyDetected: boolean;
+  dmlStatementsDetected: string[];
+  readModelRebuildDetected: boolean;
+  productionDbApprovalRequired: boolean;
+  reasons: string[];
+};
+
+export type ReleaseGuardMigrationPolicy = {
+  migrationFiles: string[];
+  highRiskFiles: string[];
+  productionDbApprovalRequired: boolean;
+  risks: SupabaseMigrationRisk[];
+  blockers: string[];
+};
+
 export type ReleaseMetadataFieldStatus =
   | "present"
   | "missing"
@@ -125,6 +147,7 @@ export type ReleaseGuardReport = {
   repo: ReleaseRepoState;
   gates: ReleaseGateResult[];
   classification: ReleaseAutomationClassification;
+  migrationPolicy: ReleaseGuardMigrationPolicy;
   runtimePolicy: ReleaseGuardRuntimePolicyTruth;
   startupPolicy: ReleaseGuardStartupPolicyTruth;
   readiness: ReleaseGuardReadiness;
@@ -310,6 +333,130 @@ function isNonRuntimePath(filePath: string): boolean {
   );
 }
 
+function isSupabaseMigrationPath(filePath: string): boolean {
+  return /^supabase\/migrations\/\d{14}_[^/]+\.sql$/.test(normalizePath(filePath));
+}
+
+function stripSqlComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/--.*$/gm, " ");
+}
+
+function collectDmlStatements(sqlSource: string): string[] {
+  const checks: Array<[string, RegExp]> = [
+    ["insert", /\binsert\s+into\b/i],
+    ["update", /\bupdate\s+(?:only\s+)?[a-z0-9_."[\]]+/i],
+    ["delete", /\bdelete\s+from\b/i],
+    ["truncate", /\btruncate(?:\s+table)?\b/i],
+    ["merge", /\bmerge\s+into\b/i],
+  ];
+
+  return checks
+    .filter(([, pattern]) => pattern.test(sqlSource))
+    .map(([statement]) => statement);
+}
+
+export function analyzeSupabaseMigrationRisk(params: {
+  filePath: string;
+  source: string;
+}): SupabaseMigrationRisk {
+  const filePath = normalizePath(params.filePath);
+  const sqlSource = stripSqlComments(params.source).toLowerCase();
+  const schemaChangesDetected = /\b(create|alter|drop)\s+(table|index|function|policy|trigger|view|materialized\s+view|type)\b/i.test(sqlSource);
+  const securityDefinerDetected = /\bsecurity\s+definer\b/i.test(sqlSource);
+  const pgrstNotifyDetected = /\bnotify\s+pgrst\b/i.test(sqlSource);
+  const dmlStatementsDetected = collectDmlStatements(sqlSource);
+  const readModelRebuildDetected =
+    /\b(select|perform)\s+public\.[a-z0-9_]*rebuild[a-z0-9_]*\s*\(/i.test(sqlSource) ||
+    /\bcreate\s+or\s+replace\s+function\s+public\.[a-z0-9_]*rebuild[a-z0-9_]*\s*\(/i.test(sqlSource);
+  const productionDbApprovalRequired = dmlStatementsDetected.length > 0 || readModelRebuildDetected;
+  const riskLevel: SupabaseMigrationRiskLevel = productionDbApprovalRequired
+    ? "dml_or_rebuild"
+    : schemaChangesDetected || securityDefinerDetected || pgrstNotifyDetected
+      ? "schema"
+      : "none";
+  const reasons: string[] = [];
+
+  if (dmlStatementsDetected.length > 0) {
+    reasons.push(`DML statements detected: ${dmlStatementsDetected.join(", ")}.`);
+  }
+
+  if (readModelRebuildDetected) {
+    reasons.push("Read-model rebuild function or invocation detected.");
+  }
+
+  if (securityDefinerDetected) {
+    reasons.push("SECURITY DEFINER function detected.");
+  }
+
+  if (pgrstNotifyDetected) {
+    reasons.push("PostgREST schema reload notification detected.");
+  }
+
+  if (schemaChangesDetected) {
+    reasons.push("Schema change detected.");
+  }
+
+  if (reasons.length === 0) {
+    reasons.push("No schema or data mutation signal detected.");
+  }
+
+  return {
+    filePath,
+    riskLevel,
+    schemaChangesDetected,
+    securityDefinerDetected,
+    pgrstNotifyDetected,
+    dmlStatementsDetected,
+    readModelRebuildDetected,
+    productionDbApprovalRequired,
+    reasons,
+  };
+}
+
+export function buildReleaseGuardMigrationPolicy(params: {
+  changedFiles: string[];
+  readFile: (filePath: string) => string | null;
+}): ReleaseGuardMigrationPolicy {
+  const migrationFiles = dedupe(
+    params.changedFiles.map(normalizePath).filter(isSupabaseMigrationPath),
+  ).sort();
+  const risks: SupabaseMigrationRisk[] = [];
+  const blockers: string[] = [];
+
+  for (const filePath of migrationFiles) {
+    const source = params.readFile(filePath);
+
+    if (source == null) {
+      blockers.push(`Supabase migration ${filePath} could not be read for release safety classification.`);
+      continue;
+    }
+
+    const risk = analyzeSupabaseMigrationRisk({ filePath, source });
+    risks.push(risk);
+
+    if (risk.productionDbApprovalRequired) {
+      blockers.push(
+        `Supabase migration ${filePath} contains DML or read-model rebuild behavior and requires an explicit production DB apply/repair wave before release automation can proceed.`,
+      );
+    }
+  }
+
+  const highRiskFiles = risks
+    .filter((risk) => risk.productionDbApprovalRequired)
+    .map((risk) => risk.filePath)
+    .sort();
+
+  return {
+    migrationFiles,
+    highRiskFiles,
+    productionDbApprovalRequired: highRiskFiles.length > 0,
+    risks,
+    blockers,
+  };
+}
+
 function isRuntimePath(filePath: string): boolean {
   if (filePath === "package.json" || filePath === "app.json" || filePath === "eas.json") {
     return false;
@@ -456,6 +603,7 @@ export function evaluateReleaseGuardReadiness(params: {
   repo: ReleaseRepoState;
   gates: ReleaseGateResult[];
   classification: ReleaseAutomationClassification;
+  migrationPolicy?: ReleaseGuardMigrationPolicy;
   runtimePolicy: ReleaseGuardRuntimePolicyTruth;
   startupPolicy: ReleaseGuardStartupPolicyTruth;
   targetChannel: string | null;
@@ -481,6 +629,10 @@ export function evaluateReleaseGuardReadiness(params: {
 
   for (const artifact of params.missingArtifacts) {
     blockers.push(`Required artifact is missing: ${artifact}`);
+  }
+
+  for (const blocker of params.migrationPolicy?.blockers ?? []) {
+    blockers.push(blocker);
   }
 
   if (!params.runtimePolicy.runtimePolicyValid) {
