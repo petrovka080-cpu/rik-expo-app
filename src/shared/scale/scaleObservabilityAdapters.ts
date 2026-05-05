@@ -85,6 +85,7 @@ export type ScaleObservabilityExportFetch = (
     method: "POST";
     headers: Record<string, string>;
     body: string;
+    signal?: AbortSignal;
   },
 ) => Promise<{ ok: boolean }>;
 
@@ -93,6 +94,7 @@ export type ScaleObservabilityExportAdapterOptions = {
   token: string;
   namespace?: string;
   fetchImpl?: ScaleObservabilityExportFetch;
+  timeoutMs?: number;
 };
 
 export type ScaleObservabilityExportEnv = Record<string, string | undefined>;
@@ -221,6 +223,20 @@ const isSafeExportEndpoint = (endpoint: string): boolean => {
 
 const isSafeOptionalNamespace = (namespace: string): boolean =>
   !namespace || assertScaleObservabilityTagIsBounded(namespace);
+
+export const DEFAULT_SCALE_OBSERVABILITY_EXPORT_TIMEOUT_MS = 1_500;
+export const MAX_SCALE_OBSERVABILITY_EXPORT_TIMEOUT_MS = 5_000;
+
+const normalizeExportTimeoutMs = (value: unknown): number => {
+  if (value === undefined || value === null || value === "") {
+    return DEFAULT_SCALE_OBSERVABILITY_EXPORT_TIMEOUT_MS;
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEFAULT_SCALE_OBSERVABILITY_EXPORT_TIMEOUT_MS;
+  }
+  return Math.min(Math.max(1, Math.floor(parsed)), MAX_SCALE_OBSERVABILITY_EXPORT_TIMEOUT_MS);
+};
 
 const defaultScaleObservabilityExportFetch = (): ScaleObservabilityExportFetch | null => {
   if (typeof globalThis.fetch !== "function") return null;
@@ -407,6 +423,7 @@ export class ExternalScaleObservabilityExportAdapter implements ScaleObservabili
   private readonly token: string;
   private readonly namespace: string;
   private readonly fetchImpl: ScaleObservabilityExportFetch | null;
+  private readonly timeoutMs: number;
   private events = 0;
   private metrics = 0;
   private spans = 0;
@@ -418,6 +435,7 @@ export class ExternalScaleObservabilityExportAdapter implements ScaleObservabili
     this.token = normalizeText(options.token);
     this.namespace = normalizeText(options.namespace);
     this.fetchImpl = options.fetchImpl ?? defaultScaleObservabilityExportFetch();
+    this.timeoutMs = normalizeExportTimeoutMs(options.timeoutMs);
   }
 
   async recordEvent(event: ScaleObservabilityEvent): Promise<ScaleObservabilityRecordResult> {
@@ -540,13 +558,16 @@ export class ExternalScaleObservabilityExportAdapter implements ScaleObservabili
 
   private async exportPayload(kind: "event" | "metric" | "span", payload: unknown): Promise<boolean> {
     if (!this.canUseExporter() || !this.fetchImpl) return false;
+    const controller = typeof AbortController === "function" ? new AbortController() : null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     try {
-      const response = await this.fetchImpl(this.endpoint, {
+      const fetchResult = this.fetchImpl(this.endpoint, {
         method: "POST",
         headers: {
           "content-type": "application/json",
           authorization: `Bearer ${this.token}`,
         },
+        signal: controller?.signal,
         body: JSON.stringify({
           kind,
           namespace: this.namespace || undefined,
@@ -554,10 +575,22 @@ export class ExternalScaleObservabilityExportAdapter implements ScaleObservabili
           redacted: true,
           rawInputIncluded: false,
         }),
+      })
+        .then((response) => response.ok)
+        .catch(() => false);
+
+      const timeoutResult = new Promise<boolean>((resolve) => {
+        timeoutId = setTimeout(() => {
+          controller?.abort();
+          resolve(false);
+        }, this.timeoutMs);
       });
-      return response.ok;
+
+      return await Promise.race([fetchResult, timeoutResult]);
     } catch {
       return false;
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
     }
   }
 }

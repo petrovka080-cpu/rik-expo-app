@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 
 import {
+  DEFAULT_SCALE_OBSERVABILITY_EXPORT_TIMEOUT_MS,
   EXTERNAL_SCALE_OBSERVABILITY_ADAPTER_CONTRACT,
   ExternalScaleObservabilityExportAdapter,
   IN_MEMORY_SCALE_OBSERVABILITY_DEFAULT_MAX_EVENTS,
@@ -355,6 +356,50 @@ describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => 
         flushes: 1,
       }),
     );
+  });
+
+  it("bounds hung external export calls without blocking the request path", async () => {
+    const signals: AbortSignal[] = [];
+    const fetchMock = jest.fn(
+      async (_input: string, init: Parameters<ScaleObservabilityExportFetch>[1]) => {
+        if (init.signal) signals.push(init.signal);
+        await new Promise(() => undefined);
+        return { ok: true };
+      },
+    ) as jest.MockedFunction<ScaleObservabilityExportFetch>;
+    const adapter = new ExternalScaleObservabilityExportAdapter({
+      endpoint: "https://observability.example.invalid/v1/export",
+      token: "server-only-token",
+      namespace: "rik-staging",
+      fetchImpl: fetchMock,
+      timeoutMs: 5,
+    });
+    const event = buildScaleObservabilityEvent({
+      eventName: "bff.route.request",
+      routeOrOperation: "request.proposal.list",
+      safeActorScope: "present_redacted",
+      safeCompanyScope: "present_redacted",
+    });
+
+    await expect(adapter.recordEvent(event)).resolves.toEqual({
+      ok: false,
+      reason: "export_failed",
+      externalTelemetrySent: false,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(signals[0]?.aborted).toBe(true);
+    expect(adapter.getHealth()).toEqual(
+      expect.objectContaining({
+        events: 0,
+        externalExportEnabledByDefault: false,
+      }),
+    );
+  });
+
+  it("documents the bounded default external export timeout", () => {
+    expect(DEFAULT_SCALE_OBSERVABILITY_EXPORT_TIMEOUT_MS).toBeGreaterThan(0);
+    expect(DEFAULT_SCALE_OBSERVABILITY_EXPORT_TIMEOUT_MS).toBeLessThanOrEqual(5_000);
   });
 
   it("rejects unsafe external export endpoints, events, metrics, and spans before provider calls", async () => {
