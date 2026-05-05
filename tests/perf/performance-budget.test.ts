@@ -154,12 +154,13 @@ describe("performance budget — bundle module count", () => {
     // S-50K-RATE-ENFORCEMENT-1 adds four disabled rate-enforcement boundary modules.
     // S-50K-OBS-INTEGRATION-1 adds four disabled scale-observability boundary modules.
     // S-50K-PROVIDER-ENV-CONVENTIONS-1 adds one disabled provider env-convention module.
+    // S-CACHE-PRODUCTION-RUNTIME-SHADOW-CANARY-MECHANISM-1 adds one permanent cache shadow runtime module.
     // S-AI-WORKFLOW-2 adds three disabled-by-default advisory AI pilot modules.
     // S-PDF-INSTANT-FIRST-OPEN-AND-TOP-LAYER-FIX-1 adds one permanent cache service module.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
-    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(40);
+    expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(41);
     expect(sAiWorkflow2DisabledPilotFiles).toBeLessThanOrEqual(3);
     expect(sPdfInstantFirstOpenCacheFiles).toBeLessThanOrEqual(1);
     expect(
