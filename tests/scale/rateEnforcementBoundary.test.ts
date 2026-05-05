@@ -15,6 +15,8 @@ import {
   RuntimeRateEnforcementProvider,
   createRateEnforcementProviderFromEnv,
   createRateLimitAdapterFromEnv,
+  createRateLimitPrivateSmokeRunnerFromEnv,
+  runRateLimitPrivateSyntheticSmoke,
   type RateLimitStoreFetch,
   resolveInMemoryRateLimitMaxTrackedKeys,
   resolveRateEnforcementMode,
@@ -475,6 +477,86 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     expect(serializedValues).toContain("proposal.submit");
     expect(serializedValues).not.toContain("person@example.test");
     expect(serializedValues).not.toContain("rawPayload");
+  });
+
+  it("runs a synthetic private Redis smoke without enabling production enforcement or returning raw keys", async () => {
+    const redis = createRedisCommandMock();
+    const adapter = new RedisUrlRateLimitAdapter({
+      redisUrl: "rediss://rate.example.invalid",
+      namespace: "rik-production",
+      commandImpl: redis.commandMock,
+    });
+
+    const result = await runRateLimitPrivateSyntheticSmoke({
+      adapter,
+      nowMs: Date.now(),
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        status: "ready",
+        operation: "proposal.submit",
+        providerKind: "redis_url",
+        providerEnabled: true,
+        externalNetworkEnabled: true,
+        namespacePresent: true,
+        syntheticIdentityUsed: true,
+        realUserIdentityUsed: false,
+        wouldAllowVerified: true,
+        wouldThrottleVerified: true,
+        cleanupAttempted: true,
+        cleanupOk: true,
+        ttlBounded: true,
+        enforcementEnabled: false,
+        productionUserBlocked: false,
+        rawKeyReturned: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    expect(redis.commands.map((command) => command[0])).toEqual(
+      expect.arrayContaining(["GET", "SET", "DEL"]),
+    );
+    expect(redis.values.size).toBe(0);
+
+    const serializedResult = JSON.stringify(result);
+    expect(serializedResult).not.toContain("synthetic-rate-smoke-actor");
+    expect(serializedResult).not.toContain("synthetic-rate-smoke-company");
+    expect(serializedResult).not.toContain("synthetic-rate-smoke-idempotency");
+    expect(serializedResult).not.toContain("rate:v1:");
+  });
+
+  it("creates the private Redis smoke runner only from safe Redis URL env shape", async () => {
+    const redis = createRedisCommandMock();
+
+    expect(
+      createRateLimitPrivateSmokeRunnerFromEnv({
+        SCALE_RATE_LIMIT_STORE_URL: "https://rate.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-production",
+      }),
+    ).toBeNull();
+    expect(
+      createRateLimitPrivateSmokeRunnerFromEnv({
+        SCALE_RATE_LIMIT_STORE_URL: "rediss://rate.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "bad namespace",
+      }),
+    ).toBeNull();
+
+    const runner = createRateLimitPrivateSmokeRunnerFromEnv(
+      {
+        SCALE_RATE_LIMIT_STORE_URL: "rediss://rate.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-production",
+      },
+      { redisCommandImpl: redis.commandMock },
+    );
+
+    await expect(runner?.run()).resolves.toEqual(
+      expect.objectContaining({
+        status: "ready",
+        enforcementEnabled: false,
+        productionUserBlocked: false,
+      }),
+    );
   });
 
   it("rejects unsafe rate store keys and namespaces before provider calls", async () => {

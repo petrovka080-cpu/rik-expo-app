@@ -472,6 +472,73 @@ describe("staging BFF HTTP server wrapper", () => {
     }
   });
 
+  it("exposes private rate-limit smoke only through server-authenticated synthetic diagnostics", async () => {
+    const runner = {
+      run: jest.fn(async () => ({
+        status: "ready" as const,
+        operation: "proposal.submit" as const,
+        providerKind: "redis_url" as const,
+        providerEnabled: true,
+        externalNetworkEnabled: true,
+        namespacePresent: true,
+        syntheticIdentityUsed: true,
+        realUserIdentityUsed: false as const,
+        wouldAllowVerified: true,
+        wouldThrottleVerified: true,
+        cleanupAttempted: true,
+        cleanupOk: true,
+        ttlBounded: true,
+        enforcementEnabled: false as const,
+        productionUserBlocked: false as const,
+        rawKeyReturned: false as const,
+        rawPayloadLogged: false as const,
+        piiLogged: false as const,
+        reason: "synthetic_private_smoke_ready",
+      })),
+    };
+    const server = createBffStagingHttpServer(
+      { BFF_SERVER_AUTH_SECRET: "server-secret" },
+      { rateLimitPrivateSmoke: runner },
+    );
+    const port = await listen(server);
+
+    try {
+      const unauthorized = await requestJson(port, "/api/staging-bff/diagnostics/rate-limit-private-smoke", {
+        method: "POST",
+      });
+      expect(unauthorized.status).toBe(401);
+      expect(JSON.stringify(unauthorized.body)).not.toContain("server-secret");
+
+      const response = await requestJson(port, "/api/staging-bff/diagnostics/rate-limit-private-smoke", {
+        method: "POST",
+        authorization: "Bearer server-secret",
+      });
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          ok: true,
+          data: expect.objectContaining({
+            status: "ready",
+            syntheticIdentityUsed: true,
+            realUserIdentityUsed: false,
+            wouldAllowVerified: true,
+            wouldThrottleVerified: true,
+            enforcementEnabled: false,
+            productionUserBlocked: false,
+            rawKeyReturned: false,
+          }),
+        }),
+      );
+      expect(runner.run).toHaveBeenCalledTimes(1);
+      const output = JSON.stringify(response.body);
+      expect(output).not.toContain("server-secret");
+      expect(output).not.toContain("rate:v1:");
+      expect(output).not.toContain("synthetic-rate-smoke");
+    } finally {
+      await close(server);
+    }
+  });
+
   it("redacts read port failures when readonly ports are wired", async () => {
     const server = createBffStagingHttpServer(
       {

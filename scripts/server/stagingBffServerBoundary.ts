@@ -13,6 +13,8 @@ import {
 import {
   type RateLimitShadowMonitor,
   type RateLimitShadowMonitorSnapshot,
+  type RateLimitPrivateSmokeRunner,
+  type RateLimitPrivateSmokeResult,
   type RuntimeRateEnforcementProvider,
 } from "../../src/shared/scale/rateLimitAdapters";
 import type { RateLimitKeyInput } from "../../src/shared/scale/rateLimitKeySafety";
@@ -48,10 +50,16 @@ import {
   createBffShadowFixturePorts,
 } from "../../src/shared/scale/bffShadowFixtures";
 
-export type BffStagingRouteKind = "health" | "readiness" | "read" | "mutation" | "monitor";
+export type BffStagingRouteKind = "health" | "readiness" | "read" | "mutation" | "monitor" | "diagnostic";
 
 export type BffStagingRouteDefinition = {
-  operation: BffReadOperation | BffMutationOperation | "health" | "readiness" | "rate_limit.shadow_monitor";
+  operation:
+    | BffReadOperation
+    | BffMutationOperation
+    | "health"
+    | "readiness"
+    | "rate_limit.shadow_monitor"
+    | "rate_limit.private_smoke";
   kind: BffStagingRouteKind;
   method: "GET" | "POST";
   path: string;
@@ -90,6 +98,7 @@ export type BffStagingServerDeps = {
   readPorts?: BffReadPorts;
   mutationPorts?: BffMutationPorts;
   rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
+  rateLimitPrivateSmoke?: RateLimitPrivateSmokeRunner | null;
   config?: BffStagingServerConfig;
 };
 
@@ -149,6 +158,16 @@ export const BFF_STAGING_RATE_LIMIT_SHADOW_MONITOR_ROUTE: BffStagingRouteDefinit
   kind: "monitor",
   method: "GET",
   path: "/api/staging-bff/monitor/rate-limit-shadow",
+  enabledByDefault: true,
+  requiresIdempotencyMetadata: false,
+  requiresRateLimitMetadata: false,
+});
+
+export const BFF_STAGING_RATE_LIMIT_PRIVATE_SMOKE_ROUTE: BffStagingRouteDefinition = Object.freeze({
+  operation: "rate_limit.private_smoke",
+  kind: "diagnostic",
+  method: "POST",
+  path: "/api/staging-bff/diagnostics/rate-limit-private-smoke",
   enabledByDefault: true,
   requiresIdempotencyMetadata: false,
   requiresRateLimitMetadata: false,
@@ -362,6 +381,7 @@ export const BFF_STAGING_ROUTE_REGISTRY: readonly BffStagingRouteDefinition[] = 
   BFF_STAGING_HEALTH_ROUTE,
   BFF_STAGING_READINESS_ROUTE,
   BFF_STAGING_RATE_LIMIT_SHADOW_MONITOR_ROUTE,
+  BFF_STAGING_RATE_LIMIT_PRIVATE_SMOKE_ROUTE,
   ...BFF_STAGING_READ_ROUTES,
   ...BFF_STAGING_MUTATION_ROUTES,
 ]);
@@ -541,6 +561,30 @@ const buildRateLimitShadowMonitorEnvelope = (
   piiLogged: false,
 });
 
+const buildRateLimitPrivateSmokeEnvelope = (
+  result: RateLimitPrivateSmokeResult,
+): Record<string, unknown> => ({
+  status: result.status,
+  operation: result.operation,
+  providerKind: result.providerKind,
+  providerEnabled: result.providerEnabled,
+  externalNetworkEnabled: result.externalNetworkEnabled,
+  namespacePresent: result.namespacePresent,
+  syntheticIdentityUsed: result.syntheticIdentityUsed,
+  realUserIdentityUsed: result.realUserIdentityUsed,
+  wouldAllowVerified: result.wouldAllowVerified,
+  wouldThrottleVerified: result.wouldThrottleVerified,
+  cleanupAttempted: result.cleanupAttempted,
+  cleanupOk: result.cleanupOk,
+  ttlBounded: result.ttlBounded,
+  enforcementEnabled: result.enforcementEnabled,
+  productionUserBlocked: result.productionUserBlocked,
+  rawKeyReturned: result.rawKeyReturned,
+  rawPayloadLogged: result.rawPayloadLogged,
+  piiLogged: result.piiLogged,
+  reason: result.reason,
+});
+
 const invokeReadRoute = async (
   operation: BffReadOperation,
   ports: BffReadPorts,
@@ -636,6 +680,27 @@ export async function handleBffStagingServerRequest(
     return buildResponse(200, {
       ok: true,
       data: buildRateLimitShadowMonitorEnvelope(deps.rateLimitShadow.monitor.snapshot()),
+    });
+  }
+
+  if (route.kind === "diagnostic") {
+    if (route.operation !== "rate_limit.private_smoke") {
+      return buildErrorResponse(404, "BFF_ROUTE_NOT_FOUND", "Unknown staging BFF diagnostic route");
+    }
+    if (!deps.rateLimitPrivateSmoke) {
+      return buildErrorResponse(
+        503,
+        "BFF_RATE_LIMIT_PRIVATE_SMOKE_UNAVAILABLE",
+        "Rate limit private smoke is not configured",
+      );
+    }
+    const result = await deps.rateLimitPrivateSmoke.run();
+    if (result.status !== "ready") {
+      return buildErrorResponse(503, "BFF_RATE_LIMIT_PRIVATE_SMOKE_NOT_READY", result.reason);
+    }
+    return buildResponse(200, {
+      ok: true,
+      data: buildRateLimitPrivateSmokeEnvelope(result),
     });
   }
 
@@ -811,6 +876,7 @@ export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   healthEndpointContract: true,
   readinessEndpointContract: true,
   rateLimitShadowMonitorEndpointContract: true,
+  rateLimitPrivateSmokeEndpointContract: true,
   readRoutes: BFF_STAGING_READ_ROUTES.length,
   mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
   mutationRoutesEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some((route) => route.enabledByDefault),

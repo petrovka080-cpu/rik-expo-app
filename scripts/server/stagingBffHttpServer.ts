@@ -2,7 +2,9 @@ import http from "http";
 
 import {
   createRateEnforcementProviderFromEnv,
+  createRateLimitPrivateSmokeRunnerFromEnv,
   createRateLimitShadowMonitor,
+  type RateLimitPrivateSmokeRunner,
 } from "../../src/shared/scale/rateLimitAdapters";
 import {
   handleBffStagingServerRequest,
@@ -35,6 +37,7 @@ type StagingBffHttpServerOptions = {
   readPortsFactory?: (env: StagingBffHttpEnv) => BffReadPorts | undefined;
   mobileReadonlyAuthVerifier?: MobileReadonlyAuthVerifier;
   rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
+  rateLimitPrivateSmoke?: RateLimitPrivateSmokeRunner | null;
 };
 
 const jsonHeaders = {
@@ -214,6 +217,10 @@ export function createBffStagingHttpServer(
           monitor: createRateLimitShadowMonitor(),
         }
       : options.rateLimitShadow;
+  const rateLimitPrivateSmoke =
+    options.rateLimitPrivateSmoke === undefined
+      ? createRateLimitPrivateSmokeRunnerFromEnv(env)
+      : options.rateLimitPrivateSmoke;
 
   return http.createServer(async (request, response) => {
     try {
@@ -273,6 +280,7 @@ export function createBffStagingHttpServer(
       const boundaryResponse = await handleBffStagingServerRequest(boundaryRequest, {
         readPorts,
         rateLimitShadow,
+        rateLimitPrivateSmoke,
         config: {
           mutationRoutesEnabled: config.mutationRoutesEnabled,
           idempotencyMetadataRequired: config.idempotencyMetadataRequired,

@@ -870,6 +870,240 @@ export type CreateRateEnforcementProviderFromEnvOptions = {
 export const RATE_ENFORCEMENT_MODE_ENV_NAME = "SCALE_RATE_ENFORCEMENT_MODE";
 export const RATE_LIMIT_TEST_NAMESPACE_ENV_NAME = "SCALE_RATE_LIMIT_TEST_NAMESPACE";
 
+export type RateLimitPrivateSmokeStatus =
+  | "ready"
+  | "config_missing"
+  | "policy_missing"
+  | "key_rejected"
+  | "adapter_unavailable"
+  | "allow_failed"
+  | "throttle_failed"
+  | "cleanup_failed";
+
+export type RateLimitPrivateSmokeResult = {
+  status: RateLimitPrivateSmokeStatus;
+  operation: RateLimitEnforcementOperation;
+  providerKind: RateLimitAdapterKind;
+  providerEnabled: boolean;
+  externalNetworkEnabled: boolean;
+  namespacePresent: boolean;
+  syntheticIdentityUsed: boolean;
+  realUserIdentityUsed: false;
+  wouldAllowVerified: boolean;
+  wouldThrottleVerified: boolean;
+  cleanupAttempted: boolean;
+  cleanupOk: boolean;
+  ttlBounded: boolean;
+  enforcementEnabled: false;
+  productionUserBlocked: false;
+  rawKeyReturned: false;
+  rawPayloadLogged: false;
+  piiLogged: false;
+  reason: string;
+};
+
+export type RateLimitPrivateSmokeRunner = {
+  run(): Promise<RateLimitPrivateSmokeResult>;
+};
+
+export type RunRateLimitPrivateSyntheticSmokeOptions = {
+  adapter: RateLimitAdapter;
+  operation?: RateLimitEnforcementOperation;
+  nowMs?: number;
+};
+
+export type CreateRateLimitPrivateSmokeRunnerFromEnvOptions = {
+  redisCommandImpl?: RedisCommandExecutor | null;
+};
+
+const RATE_LIMIT_PRIVATE_SMOKE_OPERATION: RateLimitEnforcementOperation = "proposal.submit";
+const RATE_LIMIT_PRIVATE_SMOKE_KEY_INPUT: RateLimitKeyInput = Object.freeze({
+  actorId: "synthetic-rate-smoke-actor",
+  companyId: "synthetic-rate-smoke-company",
+  routeKey: "rate-limit-private-smoke",
+  idempotencyKey: "synthetic-rate-smoke-idempotency",
+});
+
+const privateSmokeResult = (
+  overrides: Partial<RateLimitPrivateSmokeResult>,
+): RateLimitPrivateSmokeResult => ({
+  status: "config_missing",
+  operation: RATE_LIMIT_PRIVATE_SMOKE_OPERATION,
+  providerKind: "noop",
+  providerEnabled: false,
+  externalNetworkEnabled: false,
+  namespacePresent: false,
+  syntheticIdentityUsed: false,
+  realUserIdentityUsed: false,
+  wouldAllowVerified: false,
+  wouldThrottleVerified: false,
+  cleanupAttempted: false,
+  cleanupOk: false,
+  ttlBounded: false,
+  enforcementEnabled: false,
+  productionUserBlocked: false,
+  rawKeyReturned: false,
+  rawPayloadLogged: false,
+  piiLogged: false,
+  reason: "not_run",
+  ...overrides,
+});
+
+export async function runRateLimitPrivateSyntheticSmoke(
+  options: RunRateLimitPrivateSyntheticSmokeOptions,
+): Promise<RateLimitPrivateSmokeResult> {
+  const operation = options.operation ?? RATE_LIMIT_PRIVATE_SMOKE_OPERATION;
+  const policy = getRateEnforcementPolicy(operation);
+  const health = options.adapter.getHealth();
+  if (!policy) {
+    return privateSmokeResult({
+      status: "policy_missing",
+      operation,
+      providerKind: health.kind,
+      providerEnabled: health.enabled,
+      externalNetworkEnabled: health.externalNetworkEnabled,
+      namespacePresent: Boolean(health.namespace),
+      reason: "policy_missing",
+    });
+  }
+
+  const safeKey = buildSafeRateLimitKey(policy, RATE_LIMIT_PRIVATE_SMOKE_KEY_INPUT);
+  if (!safeKey.ok) {
+    return privateSmokeResult({
+      status: "key_rejected",
+      operation,
+      providerKind: health.kind,
+      providerEnabled: health.enabled,
+      externalNetworkEnabled: health.externalNetworkEnabled,
+      namespacePresent: Boolean(health.namespace),
+      reason: safeKey.reason,
+    });
+  }
+
+  if (!health.enabled || !health.externalNetworkEnabled) {
+    return privateSmokeResult({
+      status: "adapter_unavailable",
+      operation,
+      providerKind: health.kind,
+      providerEnabled: health.enabled,
+      externalNetworkEnabled: health.externalNetworkEnabled,
+      namespacePresent: Boolean(health.namespace),
+      syntheticIdentityUsed: true,
+      reason: "adapter_unavailable",
+    });
+  }
+
+  const nowMs = options.nowMs ?? Date.now();
+  const cleanupBefore = await options.adapter.reset(safeKey.key).catch(() => false);
+  const allowDecision = await options.adapter
+    .consume({ key: safeKey.key, policy, cost: 1, nowMs })
+    .catch(() => null);
+  const statusAfterAllow = await options.adapter.getStatus(safeKey.key).catch(() => null);
+  const throttleDecision = await options.adapter
+    .consume({
+      key: safeKey.key,
+      policy,
+      cost: policy.maxRequests + policy.burst + 1,
+      nowMs,
+    })
+    .catch(() => null);
+  const cleanupAfter = await options.adapter.reset(safeKey.key).catch(() => false);
+  const statusAfterCleanup = await options.adapter.getStatus(safeKey.key).catch(() => null);
+  const wouldAllowVerified = allowDecision?.state === "allowed";
+  const wouldThrottleVerified =
+    throttleDecision?.state === "soft_limited" || throttleDecision?.state === "hard_limited";
+  const ttlBounded =
+    statusAfterAllow !== null &&
+    statusAfterAllow.resetAtMs > nowMs &&
+    statusAfterAllow.resetAtMs - nowMs <= policy.windowMs;
+  const cleanupOk = statusAfterCleanup === null && (cleanupBefore || cleanupAfter);
+
+  if (!wouldAllowVerified) {
+    return privateSmokeResult({
+      status: "allow_failed",
+      operation,
+      providerKind: health.kind,
+      providerEnabled: health.enabled,
+      externalNetworkEnabled: health.externalNetworkEnabled,
+      namespacePresent: Boolean(health.namespace),
+      syntheticIdentityUsed: true,
+      cleanupAttempted: true,
+      cleanupOk,
+      ttlBounded,
+      reason: "allow_failed",
+    });
+  }
+  if (!wouldThrottleVerified) {
+    return privateSmokeResult({
+      status: "throttle_failed",
+      operation,
+      providerKind: health.kind,
+      providerEnabled: health.enabled,
+      externalNetworkEnabled: health.externalNetworkEnabled,
+      namespacePresent: Boolean(health.namespace),
+      syntheticIdentityUsed: true,
+      wouldAllowVerified,
+      cleanupAttempted: true,
+      cleanupOk,
+      ttlBounded,
+      reason: "throttle_failed",
+    });
+  }
+  if (!cleanupOk) {
+    return privateSmokeResult({
+      status: "cleanup_failed",
+      operation,
+      providerKind: health.kind,
+      providerEnabled: health.enabled,
+      externalNetworkEnabled: health.externalNetworkEnabled,
+      namespacePresent: Boolean(health.namespace),
+      syntheticIdentityUsed: true,
+      wouldAllowVerified,
+      wouldThrottleVerified,
+      cleanupAttempted: true,
+      cleanupOk,
+      ttlBounded,
+      reason: "cleanup_failed",
+    });
+  }
+
+  return privateSmokeResult({
+    status: "ready",
+    operation,
+    providerKind: health.kind,
+    providerEnabled: health.enabled,
+    externalNetworkEnabled: health.externalNetworkEnabled,
+    namespacePresent: Boolean(health.namespace),
+    syntheticIdentityUsed: true,
+    wouldAllowVerified,
+    wouldThrottleVerified,
+    cleanupAttempted: true,
+    cleanupOk,
+    ttlBounded,
+    reason: "synthetic_private_smoke_ready",
+  });
+}
+
+export function createRateLimitPrivateSmokeRunnerFromEnv(
+  env: RateLimitStoreEnv = typeof process !== "undefined" ? process.env : {},
+  options: CreateRateLimitPrivateSmokeRunnerFromEnvOptions = {},
+): RateLimitPrivateSmokeRunner | null {
+  const redisUrl = normalizeText(env.SCALE_RATE_LIMIT_STORE_URL);
+  const namespace = normalizeText(env.SCALE_RATE_LIMIT_NAMESPACE);
+  if (!isRedisProtocolUrl(redisUrl) || !isSafeRateLimitNamespace(namespace)) {
+    return null;
+  }
+
+  const adapter = new RedisUrlRateLimitAdapter({
+    redisUrl,
+    namespace,
+    commandImpl: options.redisCommandImpl,
+  });
+  return {
+    run: () => runRateLimitPrivateSyntheticSmoke({ adapter }),
+  };
+}
+
 const isIsolatedStagingTestNamespace = (namespace: string, expected: string): boolean => {
   const normalized = normalizeText(namespace).toLowerCase();
   const normalizedExpected = normalizeText(expected).toLowerCase();

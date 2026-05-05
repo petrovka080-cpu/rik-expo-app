@@ -23,6 +23,7 @@ import {
   createRateLimitShadowMonitor,
   InMemoryRateLimitAdapter,
   RuntimeRateEnforcementProvider,
+  type RateLimitPrivateSmokeResult,
 } from "../../src/shared/scale/rateLimitAdapters";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
@@ -471,6 +472,126 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     expect(serialized).not.toContain("actor-opaque");
     expect(serialized).not.toContain("company-opaque");
     expect(serialized).not.toContain("idem-opaque");
+  });
+
+  it("runs private rate-limit smoke only through a configured synthetic diagnostic runner", async () => {
+    const runner = {
+      run: jest.fn<Promise<RateLimitPrivateSmokeResult>, []>(async () => ({
+        status: "ready" as const,
+        operation: "proposal.submit" as const,
+        providerKind: "redis_url" as const,
+        providerEnabled: true,
+        externalNetworkEnabled: true,
+        namespacePresent: true,
+        syntheticIdentityUsed: true,
+        realUserIdentityUsed: false as const,
+        wouldAllowVerified: true,
+        wouldThrottleVerified: true,
+        cleanupAttempted: true,
+        cleanupOk: true,
+        ttlBounded: true,
+        enforcementEnabled: false as const,
+        productionUserBlocked: false as const,
+        rawKeyReturned: false as const,
+        rawPayloadLogged: false as const,
+        piiLogged: false as const,
+        reason: "synthetic_private_smoke_ready",
+      })),
+    };
+
+    const missing = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: "/api/staging-bff/diagnostics/rate-limit-private-smoke",
+        headers: { authorization: "Bearer server-secret" },
+      },
+      { config: { serverAuthConfigured: true } },
+    );
+    expect(missing.status).toBe(503);
+    expect(JSON.stringify(missing)).not.toContain("server-secret");
+
+    const response = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: "/api/staging-bff/diagnostics/rate-limit-private-smoke",
+        headers: { authorization: "Bearer server-secret" },
+      },
+      {
+        rateLimitPrivateSmoke: runner,
+        config: { serverAuthConfigured: true },
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({
+          status: "ready",
+          operation: "proposal.submit",
+          providerKind: "redis_url",
+          syntheticIdentityUsed: true,
+          realUserIdentityUsed: false,
+          wouldAllowVerified: true,
+          wouldThrottleVerified: true,
+          cleanupOk: true,
+          ttlBounded: true,
+          enforcementEnabled: false,
+          productionUserBlocked: false,
+          rawKeyReturned: false,
+          rawPayloadLogged: false,
+          piiLogged: false,
+        }),
+      }),
+    );
+    expect(runner.run).toHaveBeenCalledTimes(1);
+    const serialized = JSON.stringify(response);
+    expect(serialized).not.toContain("server-secret");
+    expect(serialized).not.toContain("rate:v1:");
+    expect(serialized).not.toContain("synthetic-rate-smoke");
+
+    runner.run.mockResolvedValueOnce({
+      status: "adapter_unavailable",
+      operation: "proposal.submit",
+      providerKind: "redis_url",
+      providerEnabled: false,
+      externalNetworkEnabled: false,
+      namespacePresent: true,
+      syntheticIdentityUsed: true,
+      realUserIdentityUsed: false,
+      wouldAllowVerified: false,
+      wouldThrottleVerified: false,
+      cleanupAttempted: false,
+      cleanupOk: false,
+      ttlBounded: false,
+      enforcementEnabled: false,
+      productionUserBlocked: false,
+      rawKeyReturned: false,
+      rawPayloadLogged: false,
+      piiLogged: false,
+      reason: "adapter_unavailable",
+    });
+    const unavailable = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: "/api/staging-bff/diagnostics/rate-limit-private-smoke",
+        headers: { authorization: "Bearer server-secret" },
+      },
+      {
+        rateLimitPrivateSmoke: runner,
+        config: { serverAuthConfigured: true },
+      },
+    );
+    expect(unavailable.status).toBe(503);
+    expect(unavailable.body).toEqual(
+      expect.objectContaining({
+        ok: false,
+        error: expect.objectContaining({
+          code: "BFF_RATE_LIMIT_PRIVATE_SMOKE_NOT_READY",
+          message: "adapter_unavailable",
+        }),
+      }),
+    );
   });
 
   it("builds rate-limit shadow key input only from explicit opaque metadata and route context", () => {
