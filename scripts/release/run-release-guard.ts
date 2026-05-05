@@ -111,6 +111,21 @@ function readCommand(command: string): string {
   }).trim();
 }
 
+function readGitCount(args: string[]): number {
+  const result = spawnSync("git", args, {
+    cwd: PROJECT_ROOT,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  if (result.status !== 0) {
+    return 0;
+  }
+
+  const value = Number(result.stdout.trim());
+  return Number.isFinite(value) && value >= 0 ? value : 0;
+}
+
 function hasHeadParent(): boolean {
   return spawnSync("git", ["rev-parse", "--verify", "HEAD^"], {
     cwd: PROJECT_ROOT,
@@ -201,6 +216,8 @@ function readRepoState(): ReleaseRepoState {
   const headCommit = readCommand("git rev-parse HEAD");
   const originMainCommit = readCommand("git rev-parse origin/main");
   const worktreeClean = readCommand("git status --short").length === 0;
+  const localCommitsAheadOriginMain = readGitCount(["rev-list", "--count", "origin/main..HEAD"]);
+  const originMainCommitsAheadHead = readGitCount(["rev-list", "--count", "HEAD..origin/main"]);
 
   return {
     gitBranch,
@@ -208,6 +225,8 @@ function readRepoState(): ReleaseRepoState {
     originMainCommit,
     worktreeClean,
     headMatchesOriginMain: headCommit === originMainCommit,
+    localCommitsAheadOriginMain,
+    originMainCommitsAheadHead,
   };
 }
 
@@ -244,6 +263,8 @@ function printHumanReport(report: ReleaseGuardReport) {
   console.info(`Commit range: ${report.commitRange}`);
   console.info(`HEAD: ${report.repo.headCommit}`);
   console.info(`origin/main: ${report.repo.originMainCommit}`);
+  console.info(`Local commits ahead origin/main: ${report.repo.localCommitsAheadOriginMain}`);
+  console.info(`origin/main commits ahead HEAD: ${report.repo.originMainCommitsAheadHead}`);
   console.info(`Worktree clean: ${String(report.repo.worktreeClean)}`);
   console.info(`Classification: ${report.classification.kind}`);
   console.info(`Runtime strategy: ${report.runtimePolicy.runtimeVersionStrategy}`);

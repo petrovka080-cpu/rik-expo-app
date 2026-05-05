@@ -31,6 +31,8 @@ export type ReleaseRepoState = {
   originMainCommit: string;
   worktreeClean: boolean;
   headMatchesOriginMain: boolean;
+  localCommitsAheadOriginMain: number;
+  originMainCommitsAheadHead: number;
 };
 
 export type PackageJsonMutationKind = "none" | "scripts-only" | "non-runtime" | "build-required";
@@ -628,7 +630,11 @@ export function evaluateReleaseGuardReadiness(params: {
   }
 
   if (!params.repo.headMatchesOriginMain) {
-    blockers.push("HEAD does not match origin/main. Push and sync the exact release commit before publishing.");
+    const syncDetail =
+      params.repo.localCommitsAheadOriginMain > 0 || params.repo.originMainCommitsAheadHead > 0
+        ? ` Local branch is ahead by ${params.repo.localCommitsAheadOriginMain} commit(s) and behind by ${params.repo.originMainCommitsAheadHead} commit(s).`
+        : "";
+    blockers.push(`HEAD does not match origin/main.${syncDetail} Push and sync the exact release commit before publishing.`);
   }
 
   for (const gate of params.gates) {

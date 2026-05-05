@@ -23,6 +23,8 @@ function createRepoState(overrides: Partial<ReleaseRepoState> = {}): ReleaseRepo
     originMainCommit: "head-sha",
     worktreeClean: true,
     headMatchesOriginMain: true,
+    localCommitsAheadOriginMain: 0,
+    originMainCommitsAheadHead: 0,
     ...overrides,
   };
 }
@@ -215,6 +217,7 @@ describe("releaseGuard.shared", () => {
           worktreeClean: false,
           headMatchesOriginMain: false,
           originMainCommit: "origin-sha",
+          localCommitsAheadOriginMain: 2,
         }),
         gates: [
           ...createPassedGates().slice(0, 2),
@@ -242,7 +245,7 @@ describe("releaseGuard.shared", () => {
       expect(readiness.blockers).toEqual(
         expect.arrayContaining([
           "Worktree is dirty. Release automation requires a clean repository state.",
-          "HEAD does not match origin/main. Push and sync the exact release commit before publishing.",
+          "HEAD does not match origin/main. Local branch is ahead by 2 commit(s) and behind by 0 commit(s). Push and sync the exact release commit before publishing.",
           "Required gate failed: jest-run-in-band.",
         ]),
       );
