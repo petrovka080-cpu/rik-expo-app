@@ -228,6 +228,7 @@ function readRepoState(): ReleaseRepoState {
     originMainCommitsAheadHead,
     syncStatus: sync.syncStatus,
     syncAction: sync.syncAction,
+    requiredSyncApprovalKeys: sync.requiredSyncApprovalKeys,
   };
 }
 
@@ -268,6 +269,9 @@ function printHumanReport(report: ReleaseGuardReport) {
   console.info(`origin/main commits ahead HEAD: ${report.repo.originMainCommitsAheadHead}`);
   console.info(`Repo sync status: ${report.repo.syncStatus}`);
   console.info(`Repo sync action: ${report.repo.syncAction}`);
+  if (report.repo.requiredSyncApprovalKeys.length > 0) {
+    console.info(`Required sync approval keys: ${report.repo.requiredSyncApprovalKeys.join(", ")}`);
+  }
   console.info(`Worktree clean: ${String(report.repo.worktreeClean)}`);
   console.info(`Classification: ${report.classification.kind}`);
   console.info(`Runtime strategy: ${report.runtimePolicy.runtimeVersionStrategy}`);

@@ -44,6 +44,7 @@ export type ReleaseRepoState = {
   originMainCommitsAheadHead: number;
   syncStatus: ReleaseRepoSyncStatus;
   syncAction: ReleaseRepoSyncAction;
+  requiredSyncApprovalKeys: string[];
 };
 
 export type PackageJsonMutationKind = "none" | "scripts-only" | "non-runtime" | "build-required";
@@ -192,28 +193,38 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "git-diff-check", command: "git diff --check" },
 ];
 
+export const RELEASE_GUARD_MAIN_PUSH_APPROVAL_KEYS = ["S_PRODUCTION_MAIN_PUSH_APPROVED"] as const;
+
 export function resolveReleaseRepoSync(params: {
   headMatchesOriginMain: boolean;
   localCommitsAheadOriginMain: number;
   originMainCommitsAheadHead: number;
-}): { syncStatus: ReleaseRepoSyncStatus; syncAction: ReleaseRepoSyncAction } {
+}): {
+  syncStatus: ReleaseRepoSyncStatus;
+  syncAction: ReleaseRepoSyncAction;
+  requiredSyncApprovalKeys: string[];
+} {
   if (params.headMatchesOriginMain) {
-    return { syncStatus: "synced", syncAction: "none" };
+    return { syncStatus: "synced", syncAction: "none", requiredSyncApprovalKeys: [] };
   }
 
   if (params.localCommitsAheadOriginMain > 0 && params.originMainCommitsAheadHead > 0) {
-    return { syncStatus: "diverged", syncAction: "reconcile_diverged_branch" };
+    return { syncStatus: "diverged", syncAction: "reconcile_diverged_branch", requiredSyncApprovalKeys: [] };
   }
 
   if (params.localCommitsAheadOriginMain > 0) {
-    return { syncStatus: "local_ahead", syncAction: "push_with_explicit_approval" };
+    return {
+      syncStatus: "local_ahead",
+      syncAction: "push_with_explicit_approval",
+      requiredSyncApprovalKeys: [...RELEASE_GUARD_MAIN_PUSH_APPROVAL_KEYS],
+    };
   }
 
   if (params.originMainCommitsAheadHead > 0) {
-    return { syncStatus: "origin_ahead", syncAction: "pull_or_rebase_before_release" };
+    return { syncStatus: "origin_ahead", syncAction: "pull_or_rebase_before_release", requiredSyncApprovalKeys: [] };
   }
 
-  return { syncStatus: "unknown_mismatch", syncAction: "inspect_refs_before_release" };
+  return { syncStatus: "unknown_mismatch", syncAction: "inspect_refs_before_release", requiredSyncApprovalKeys: [] };
 }
 
 export function resolveReleaseGuardCommitRange(params: {
@@ -687,7 +698,11 @@ export function evaluateReleaseGuardReadiness(params: {
         ? ` Local branch is ahead by ${params.repo.localCommitsAheadOriginMain} commit(s) and behind by ${params.repo.originMainCommitsAheadHead} commit(s).`
         : "";
     blockers.push(
-      `HEAD does not match origin/main.${syncDetail} Next safe action: ${params.repo.syncAction}. Push and sync the exact release commit before publishing.`,
+      `HEAD does not match origin/main.${syncDetail} Next safe action: ${params.repo.syncAction}.${
+        params.repo.requiredSyncApprovalKeys.length > 0
+          ? ` Required approval keys: ${params.repo.requiredSyncApprovalKeys.join(", ")}.`
+          : ""
+      } Push and sync the exact release commit before publishing.`,
     );
   }
 

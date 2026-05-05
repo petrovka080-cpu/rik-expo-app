@@ -29,6 +29,7 @@ function createRepoState(overrides: Partial<ReleaseRepoState> = {}): ReleaseRepo
     originMainCommitsAheadHead: 0,
     syncStatus: "synced",
     syncAction: "none",
+    requiredSyncApprovalKeys: [],
     ...overrides,
   };
 }
@@ -224,6 +225,7 @@ describe("releaseGuard.shared", () => {
           localCommitsAheadOriginMain: 2,
           syncStatus: "local_ahead",
           syncAction: "push_with_explicit_approval",
+          requiredSyncApprovalKeys: ["S_PRODUCTION_MAIN_PUSH_APPROVED"],
         }),
         gates: [
           ...createPassedGates().slice(0, 2),
@@ -251,7 +253,7 @@ describe("releaseGuard.shared", () => {
       expect(readiness.blockers).toEqual(
         expect.arrayContaining([
           "Worktree is dirty. Release automation requires a clean repository state.",
-          "HEAD does not match origin/main. Local branch is ahead by 2 commit(s) and behind by 0 commit(s). Next safe action: push_with_explicit_approval. Push and sync the exact release commit before publishing.",
+          "HEAD does not match origin/main. Local branch is ahead by 2 commit(s) and behind by 0 commit(s). Next safe action: push_with_explicit_approval. Required approval keys: S_PRODUCTION_MAIN_PUSH_APPROVED. Push and sync the exact release commit before publishing.",
           "Required gate failed: jest-run-in-band.",
         ]),
       );
@@ -264,7 +266,7 @@ describe("releaseGuard.shared", () => {
           localCommitsAheadOriginMain: 0,
           originMainCommitsAheadHead: 0,
         }),
-      ).toEqual({ syncStatus: "synced", syncAction: "none" });
+      ).toEqual({ syncStatus: "synced", syncAction: "none", requiredSyncApprovalKeys: [] });
 
       expect(
         resolveReleaseRepoSync({
@@ -272,7 +274,11 @@ describe("releaseGuard.shared", () => {
           localCommitsAheadOriginMain: 2,
           originMainCommitsAheadHead: 0,
         }),
-      ).toEqual({ syncStatus: "local_ahead", syncAction: "push_with_explicit_approval" });
+      ).toEqual({
+        syncStatus: "local_ahead",
+        syncAction: "push_with_explicit_approval",
+        requiredSyncApprovalKeys: ["S_PRODUCTION_MAIN_PUSH_APPROVED"],
+      });
 
       expect(
         resolveReleaseRepoSync({
@@ -280,7 +286,11 @@ describe("releaseGuard.shared", () => {
           localCommitsAheadOriginMain: 0,
           originMainCommitsAheadHead: 1,
         }),
-      ).toEqual({ syncStatus: "origin_ahead", syncAction: "pull_or_rebase_before_release" });
+      ).toEqual({
+        syncStatus: "origin_ahead",
+        syncAction: "pull_or_rebase_before_release",
+        requiredSyncApprovalKeys: [],
+      });
 
       expect(
         resolveReleaseRepoSync({
@@ -288,7 +298,11 @@ describe("releaseGuard.shared", () => {
           localCommitsAheadOriginMain: 2,
           originMainCommitsAheadHead: 1,
         }),
-      ).toEqual({ syncStatus: "diverged", syncAction: "reconcile_diverged_branch" });
+      ).toEqual({
+        syncStatus: "diverged",
+        syncAction: "reconcile_diverged_branch",
+        requiredSyncApprovalKeys: [],
+      });
     });
 
     it("uses the whole local release train as the default range when local commits are ahead", () => {
