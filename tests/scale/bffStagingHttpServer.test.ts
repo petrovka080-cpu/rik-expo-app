@@ -4,6 +4,15 @@ import {
   createBffStagingHttpServer,
   resolveBffStagingHttpConfig,
 } from "../../scripts/server/stagingBffHttpServer";
+import {
+  RedisUrlCacheAdapter,
+  type RedisCommand,
+  type RedisCommandExecutor,
+} from "../../src/shared/scale/cacheAdapters";
+import {
+  createCacheShadowMonitor,
+  resolveCacheShadowRuntimeConfig,
+} from "../../src/shared/scale/cacheShadowRuntime";
 import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
 import {
   createRateLimitShadowMonitor,
@@ -75,6 +84,34 @@ const createReadPorts = (): BffReadPorts => ({
     },
   },
 });
+
+const createRedisCacheAdapterFixture = () => {
+  const values = new Map<string, string>();
+  const commandMock = jest.fn(async (command: RedisCommand) => {
+    const operation = String(command[0] ?? "").toUpperCase();
+    if (operation === "SET" && typeof command[1] === "string" && typeof command[2] === "string") {
+      values.set(command[1], command[2]);
+      return "OK";
+    }
+    if (operation === "GET" && typeof command[1] === "string") {
+      return values.get(command[1]) ?? null;
+    }
+    if (operation === "DEL") {
+      let deleted = 0;
+      for (const key of command.slice(1)) {
+        if (typeof key === "string" && values.delete(key)) deleted += 1;
+      }
+      return deleted;
+    }
+    return null;
+  }) as jest.MockedFunction<RedisCommandExecutor>;
+
+  return new RedisUrlCacheAdapter({
+    redisUrl: "rediss://red-render-kv.example.invalid:6379",
+    namespace: "rik-production-cache-shadow",
+    commandImpl: commandMock,
+  });
+};
 
 const waitFor = async (predicate: () => boolean): Promise<void> => {
   for (let attempt = 0; attempt < 20; attempt += 1) {
@@ -534,6 +571,79 @@ describe("staging BFF HTTP server wrapper", () => {
       expect(output).not.toContain("server-secret");
       expect(output).not.toContain("rate:v1:");
       expect(output).not.toContain("synthetic-rate-smoke");
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("exposes cache shadow canary and monitor only through server-authenticated diagnostics", async () => {
+    const monitor = createCacheShadowMonitor();
+    const server = createBffStagingHttpServer(
+      { BFF_SERVER_AUTH_SECRET: "server-secret" },
+      {
+        cacheShadow: {
+          adapter: createRedisCacheAdapterFixture(),
+          config: resolveCacheShadowRuntimeConfig({
+            SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+            SCALE_REDIS_CACHE_SHADOW_MODE: "shadow_readonly",
+            SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+            SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+          }),
+          monitor,
+        },
+      },
+    );
+    const port = await listen(server);
+
+    try {
+      const unauthorized = await requestJson(port, "/api/staging-bff/diagnostics/cache-shadow-canary", {
+        method: "POST",
+      });
+      expect(unauthorized.status).toBe(401);
+      expect(JSON.stringify(unauthorized.body)).not.toContain("server-secret");
+
+      const canary = await requestJson(port, "/api/staging-bff/diagnostics/cache-shadow-canary", {
+        method: "POST",
+        authorization: "Bearer server-secret",
+      });
+      expect(canary.status).toBe(200);
+      expect(canary.body).toEqual(
+        expect.objectContaining({
+          ok: true,
+          data: expect.objectContaining({
+            status: "ready",
+            syntheticIdentityUsed: true,
+            realUserPayloadUsed: false,
+            cacheHitVerified: true,
+            responseChanged: false,
+            cacheWriteSyntheticOnly: true,
+            cleanupOk: true,
+            rawKeyReturned: false,
+          }),
+        }),
+      );
+
+      const monitorResponse = await requestJson(port, "/api/staging-bff/monitor/cache-shadow", {
+        authorization: "Bearer server-secret",
+      });
+      expect(monitorResponse.status).toBe(200);
+      expect(monitorResponse.body).toEqual(
+        expect.objectContaining({
+          ok: true,
+          data: expect.objectContaining({
+            observedDecisionCount: 1,
+            shadowReadAttemptedCount: 1,
+            hitCount: 1,
+            responseChanged: false,
+            realUserPayloadStored: false,
+            rawKeysStored: false,
+            rawPayloadLogged: false,
+          }),
+        }),
+      );
+      const output = JSON.stringify({ canary, monitorResponse });
+      expect(output).not.toContain("server-secret");
+      expect(output).not.toContain("cache:v1:");
     } finally {
       await close(server);
     }

@@ -30,6 +30,12 @@ import {
   type CacheInvalidationOperation,
 } from "../../src/shared/scale/cacheInvalidation";
 import {
+  createCacheShadowMonitor,
+  evaluateCacheShadowRead,
+  resolveCacheShadowRuntimeConfig,
+  runCacheSyntheticShadowCanary,
+} from "../../src/shared/scale/cacheShadowRuntime";
+import {
   BFF_STAGING_MUTATION_ROUTES,
   BFF_STAGING_READ_ROUTES,
 } from "../../scripts/server/stagingBffServerBoundary";
@@ -372,6 +378,26 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
     expect(production).toBeInstanceOf(NoopCacheAdapter);
     expect(production.getStatus().externalNetworkEnabled).toBe(false);
 
+    const productionShadow = createRedisCacheAdapterFromEnv(
+      {
+        SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+        REDIS_URL: "rediss://red-render-kv.example.invalid:6379",
+        SCALE_REDIS_CACHE_NAMESPACE: "rik-production-cache-shadow",
+      },
+      {
+        runtimeEnvironment: "production",
+        redisCommandImpl: redisUrl.commandMock,
+      },
+    );
+    expect(productionShadow.getStatus()).toEqual(
+      expect.objectContaining({
+        kind: "redis_url",
+        enabled: true,
+        externalNetworkEnabled: true,
+        namespace: "rik-production-cache-shadow",
+      }),
+    );
+
     const renderKeyValue = createRedisCacheAdapterFromEnv(
       {
         SCALE_REDIS_CACHE_STAGING_ENABLED: "true",
@@ -472,15 +498,20 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
   it("keeps Redis/Upstash provider secrets out of public mobile env names", () => {
     const redisEnvNames = [
       SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache.enabled,
+      SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache.productionEnabled,
       ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache.required,
       ...SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache.optional,
-    ];
+    ].filter((name): name is string => typeof name === "string");
 
     expect(redisEnvNames).toEqual([
       "SCALE_REDIS_CACHE_STAGING_ENABLED",
+      "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
       "SCALE_REDIS_CACHE_NAMESPACE",
       "SCALE_REDIS_CACHE_URL",
       "REDIS_URL",
+      "SCALE_REDIS_CACHE_SHADOW_MODE",
+      "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
+      "SCALE_REDIS_CACHE_SHADOW_PERCENT",
     ]);
     expect(redisEnvNames.every((name) => !name.startsWith("EXPO_PUBLIC_"))).toBe(true);
     expect(redisEnvNames).not.toContain("BFF_SERVER_AUTH_SECRET");
@@ -569,6 +600,117 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
       ok: false,
       reason: "sensitive_value",
     });
+  });
+
+  it("provides a production-safe cache shadow/read-only canary mechanism without response changes", async () => {
+    const redis = createRedisCommandMock();
+    const adapter = new RedisUrlCacheAdapter({
+      redisUrl: "rediss://red-render-kv.example.invalid:6379",
+      namespace: "rik-production-cache-shadow",
+      commandImpl: redis.commandMock,
+    });
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "shadow_readonly",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const monitor = createCacheShadowMonitor();
+
+    expect(config).toEqual(
+      expect.objectContaining({
+        enabled: true,
+        mode: "shadow_readonly",
+        percent: 100,
+        productionEnabledFlagTruthy: true,
+      }),
+    );
+
+    const canary = await runCacheSyntheticShadowCanary({
+      adapter,
+      config,
+      route: "marketplace.catalog.search",
+    });
+    expect(canary).toEqual(
+      expect.objectContaining({
+        status: "ready",
+        syntheticIdentityUsed: true,
+        realUserPayloadUsed: false,
+        shadowReadAttempted: true,
+        cacheHitVerified: true,
+        responseChanged: false,
+        cacheWriteSyntheticOnly: true,
+        cleanupOk: true,
+        ttlBounded: true,
+        rawKeyReturned: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    if (canary.decision) await monitor.observe(canary.decision);
+
+    const miss = await evaluateCacheShadowRead({
+      adapter,
+      config,
+      route: "marketplace.catalog.search",
+      input: {
+        companyId: "company-opaque",
+        query: "cement",
+        category: "materials",
+        page: 1,
+        pageSize: 10,
+      },
+    });
+    await monitor.observe(miss);
+    expect(miss).toEqual(
+      expect.objectContaining({
+        status: "miss",
+        shadowReadAttempted: true,
+        cacheHit: false,
+        responseChanged: false,
+        syntheticIdentityUsed: false,
+        realUserPayloadUsed: false,
+        rawKeyReturned: false,
+      }),
+    );
+
+    const unsafe = await evaluateCacheShadowRead({
+      adapter,
+      config,
+      route: "marketplace.catalog.search",
+      input: { email: "person@example.test", token: "secret-token-value" },
+    });
+    await monitor.observe(unsafe);
+    expect(unsafe).toEqual(
+      expect.objectContaining({
+        status: "unsafe_key",
+        shadowReadAttempted: false,
+        responseChanged: false,
+        rawKeyReturned: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        observedDecisionCount: 3,
+        shadowReadAttemptedCount: 2,
+        hitCount: 1,
+        missCount: 1,
+        unsafeKeyCount: 1,
+        responseChanged: false,
+        realUserPayloadStored: false,
+        rawKeysStored: false,
+        rawKeysPrinted: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    const serialized = JSON.stringify({ canary, miss, unsafe, monitor: monitor.snapshot() });
+    expect(serialized).not.toContain("rik-production-cache-shadow:cache:v1:");
+    expect(serialized).not.toContain("person@example.test");
+    expect(serialized).not.toContain("secret-token-value");
   });
 
   it("maps mutation operations to disabled invalidation tags", () => {

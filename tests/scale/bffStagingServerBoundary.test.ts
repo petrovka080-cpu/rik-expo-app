@@ -4,6 +4,15 @@ import path from "path";
 
 import { isBffEnabled } from "../../src/shared/scale/bffSafety";
 import {
+  RedisUrlCacheAdapter,
+  type RedisCommand,
+  type RedisCommandExecutor,
+} from "../../src/shared/scale/cacheAdapters";
+import {
+  createCacheShadowMonitor,
+  resolveCacheShadowRuntimeConfig,
+} from "../../src/shared/scale/cacheShadowRuntime";
+import {
   BFF_SHADOW_MUTATION_PAYLOAD,
   createBffShadowFixturePorts,
 } from "../../src/shared/scale/bffShadowFixtures";
@@ -49,6 +58,34 @@ const waitFor = async (predicate: () => boolean): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
   expect(predicate()).toBe(true);
+};
+
+const createRedisCacheAdapterFixture = () => {
+  const values = new Map<string, string>();
+  const commandMock = jest.fn(async (command: RedisCommand) => {
+    const operation = String(command[0] ?? "").toUpperCase();
+    if (operation === "SET" && typeof command[1] === "string" && typeof command[2] === "string") {
+      values.set(command[1], command[2]);
+      return "OK";
+    }
+    if (operation === "GET" && typeof command[1] === "string") {
+      return values.get(command[1]) ?? null;
+    }
+    if (operation === "DEL") {
+      let deleted = 0;
+      for (const key of command.slice(1)) {
+        if (typeof key === "string" && values.delete(key)) deleted += 1;
+      }
+      return deleted;
+    }
+    return null;
+  }) as jest.MockedFunction<RedisCommandExecutor>;
+
+  return new RedisUrlCacheAdapter({
+    redisUrl: "rediss://red-render-kv.example.invalid:6379",
+    namespace: "rik-production-cache-shadow",
+    commandImpl: commandMock,
+  });
 };
 
 describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
@@ -108,7 +145,10 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
       expect.objectContaining({
         healthEndpointContract: true,
         readinessEndpointContract: true,
+        cacheShadowMonitorEndpointContract: true,
+        cacheShadowCanaryEndpointContract: true,
         rateLimitShadowMonitorEndpointContract: true,
+        rateLimitPrivateSmokeEndpointContract: true,
         readRoutes: 5,
         mutationRoutes: 5,
         mutationRoutesEnabledByDefault: false,
@@ -117,6 +157,98 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
         redactedErrors: true,
       }),
     );
+  });
+
+  it("runs cache shadow/read-only canary through server-authenticated permanent diagnostics", async () => {
+    const adapter = createRedisCacheAdapterFixture();
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "shadow_readonly",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const monitor = createCacheShadowMonitor();
+
+    const missing = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: "/api/staging-bff/diagnostics/cache-shadow-canary",
+        headers: { authorization: "Bearer server-secret" },
+      },
+      { config: { serverAuthConfigured: true } },
+    );
+    expect(missing.status).toBe(503);
+    expect(JSON.stringify(missing)).not.toContain("server-secret");
+
+    const response = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: "/api/staging-bff/diagnostics/cache-shadow-canary",
+        headers: { authorization: "Bearer server-secret" },
+      },
+      {
+        cacheShadow: { adapter, config, monitor },
+        config: { serverAuthConfigured: true },
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({
+          status: "ready",
+          route: "marketplace.catalog.search",
+          mode: "shadow_readonly",
+          syntheticIdentityUsed: true,
+          realUserPayloadUsed: false,
+          shadowReadAttempted: true,
+          cacheHitVerified: true,
+          responseChanged: false,
+          cacheWriteSyntheticOnly: true,
+          cleanupOk: true,
+          ttlBounded: true,
+          rawKeyReturned: false,
+          rawPayloadLogged: false,
+          piiLogged: false,
+        }),
+      }),
+    );
+
+    const monitorResponse = await handleBffStagingServerRequest(
+      {
+        method: "GET",
+        path: "/api/staging-bff/monitor/cache-shadow",
+        headers: { authorization: "Bearer server-secret" },
+      },
+      {
+        cacheShadow: { adapter, config, monitor },
+        config: { serverAuthConfigured: true },
+      },
+    );
+    expect(monitorResponse.status).toBe(200);
+    expect(monitorResponse.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({
+          status: "ready",
+          observedDecisionCount: 1,
+          shadowReadAttemptedCount: 1,
+          hitCount: 1,
+          responseChanged: false,
+          realUserPayloadStored: false,
+          rawKeysStored: false,
+          rawKeysPrinted: false,
+          rawPayloadLogged: false,
+          piiLogged: false,
+        }),
+      }),
+    );
+
+    const output = JSON.stringify({ response, monitorResponse });
+    expect(output).not.toContain("server-secret");
+    expect(output).not.toContain("cache:v1:");
+    expect(output).not.toContain("cache-shadow-canary");
   });
 
   it("rejects unknown routes and invalid request envelopes with redacted errors", async () => {

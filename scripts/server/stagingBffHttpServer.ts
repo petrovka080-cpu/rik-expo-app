@@ -1,5 +1,10 @@
 import http from "http";
 
+import { createRedisCacheAdapterFromEnv } from "../../src/shared/scale/cacheAdapters";
+import {
+  createCacheShadowMonitor,
+  resolveCacheShadowRuntimeConfig,
+} from "../../src/shared/scale/cacheShadowRuntime";
 import {
   createRateEnforcementProviderFromEnv,
   createRateLimitPrivateSmokeRunnerFromEnv,
@@ -8,6 +13,7 @@ import {
 } from "../../src/shared/scale/rateLimitAdapters";
 import {
   handleBffStagingServerRequest,
+  type BffStagingCacheShadowDeps,
   type BffStagingRateLimitShadowDeps,
   type BffStagingBoundaryResponse,
   type BffStagingRequestEnvelope,
@@ -36,6 +42,7 @@ type MobileReadonlyAuthVerifier = (token: string, env: StagingBffHttpEnv) => Pro
 type StagingBffHttpServerOptions = {
   readPortsFactory?: (env: StagingBffHttpEnv) => BffReadPorts | undefined;
   mobileReadonlyAuthVerifier?: MobileReadonlyAuthVerifier;
+  cacheShadow?: BffStagingCacheShadowDeps | null;
   rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
   rateLimitPrivateSmoke?: RateLimitPrivateSmokeRunner | null;
 };
@@ -210,6 +217,17 @@ export function createBffStagingHttpServer(
   const config = resolveBffStagingHttpConfig(env);
   const readPorts = (options.readPortsFactory ?? createBffReadonlyDbReadPorts)(env);
   const mobileReadonlyAuthVerifier = options.mobileReadonlyAuthVerifier ?? verifySupabaseReadonlyMobileAuth;
+  const defaultCacheShadowConfig = resolveCacheShadowRuntimeConfig(env);
+  const cacheShadow =
+    options.cacheShadow === undefined
+      ? defaultCacheShadowConfig.enabled
+        ? {
+            adapter: createRedisCacheAdapterFromEnv(env, { runtimeEnvironment: "production" }),
+            config: defaultCacheShadowConfig,
+            monitor: createCacheShadowMonitor(),
+          }
+        : null
+      : options.cacheShadow;
   const rateLimitShadow =
     options.rateLimitShadow === undefined
       ? {
@@ -279,6 +297,7 @@ export function createBffStagingHttpServer(
       };
       const boundaryResponse = await handleBffStagingServerRequest(boundaryRequest, {
         readPorts,
+        cacheShadow,
         rateLimitShadow,
         rateLimitPrivateSmoke,
         config: {

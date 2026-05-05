@@ -1,6 +1,15 @@
 import type { BffResponseEnvelope } from "../../src/shared/scale/bffContracts";
 import type { CachePolicyRoute } from "../../src/shared/scale/cachePolicies";
 import { getInvalidationTagsForOperation } from "../../src/shared/scale/cacheInvalidation";
+import {
+  evaluateCacheShadowRead,
+  runCacheSyntheticShadowCanary,
+  type CacheShadowMonitor,
+  type CacheShadowMonitorSnapshot,
+  type CacheShadowRuntimeConfig,
+  type CacheSyntheticShadowCanaryResult,
+} from "../../src/shared/scale/cacheShadowRuntime";
+import type { CacheAdapter } from "../../src/shared/scale/cacheAdapters";
 import type { IdempotencyPolicyOperation } from "../../src/shared/scale/idempotencyPolicies";
 import { getIdempotencyPolicyForBffMutationOperation } from "../../src/shared/scale/idempotencyPolicies";
 import type { JobType } from "../../src/shared/scale/jobPolicies";
@@ -61,6 +70,8 @@ export type BffStagingRouteDefinition = {
     | BffMutationOperation
     | "health"
     | "readiness"
+    | "cache.shadow_monitor"
+    | "cache.shadow_canary"
     | "rate_limit.shadow_monitor"
     | "rate_limit.private_smoke";
   kind: BffStagingRouteKind;
@@ -97,9 +108,16 @@ export type BffStagingRateLimitShadowDeps = {
   monitor: RateLimitShadowMonitor;
 };
 
+export type BffStagingCacheShadowDeps = {
+  adapter: CacheAdapter;
+  config: CacheShadowRuntimeConfig;
+  monitor: CacheShadowMonitor;
+};
+
 export type BffStagingServerDeps = {
   readPorts?: BffReadPorts;
   mutationPorts?: BffMutationPorts;
+  cacheShadow?: BffStagingCacheShadowDeps | null;
   rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
   rateLimitPrivateSmoke?: RateLimitPrivateSmokeRunner | null;
   config?: BffStagingServerConfig;
@@ -171,6 +189,26 @@ export const BFF_STAGING_RATE_LIMIT_PRIVATE_SMOKE_ROUTE: BffStagingRouteDefiniti
   kind: "diagnostic",
   method: "POST",
   path: "/api/staging-bff/diagnostics/rate-limit-private-smoke",
+  enabledByDefault: true,
+  requiresIdempotencyMetadata: false,
+  requiresRateLimitMetadata: false,
+});
+
+export const BFF_STAGING_CACHE_SHADOW_MONITOR_ROUTE: BffStagingRouteDefinition = Object.freeze({
+  operation: "cache.shadow_monitor",
+  kind: "monitor",
+  method: "GET",
+  path: "/api/staging-bff/monitor/cache-shadow",
+  enabledByDefault: true,
+  requiresIdempotencyMetadata: false,
+  requiresRateLimitMetadata: false,
+});
+
+export const BFF_STAGING_CACHE_SHADOW_CANARY_ROUTE: BffStagingRouteDefinition = Object.freeze({
+  operation: "cache.shadow_canary",
+  kind: "diagnostic",
+  method: "POST",
+  path: "/api/staging-bff/diagnostics/cache-shadow-canary",
   enabledByDefault: true,
   requiresIdempotencyMetadata: false,
   requiresRateLimitMetadata: false,
@@ -383,6 +421,8 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
 export const BFF_STAGING_ROUTE_REGISTRY: readonly BffStagingRouteDefinition[] = Object.freeze([
   BFF_STAGING_HEALTH_ROUTE,
   BFF_STAGING_READINESS_ROUTE,
+  BFF_STAGING_CACHE_SHADOW_MONITOR_ROUTE,
+  BFF_STAGING_CACHE_SHADOW_CANARY_ROUTE,
   BFF_STAGING_RATE_LIMIT_SHADOW_MONITOR_ROUTE,
   BFF_STAGING_RATE_LIMIT_PRIVATE_SMOKE_ROUTE,
   ...BFF_STAGING_READ_ROUTES,
@@ -396,6 +436,10 @@ export const BFF_STAGING_SERVER_ENV_NAMES = Object.freeze([
   "BFF_MUTATION_ENABLED",
   "BFF_IDEMPOTENCY_METADATA_ENABLED",
   "BFF_RATE_LIMIT_METADATA_ENABLED",
+  "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
+  "SCALE_REDIS_CACHE_SHADOW_MODE",
+  "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
+  "SCALE_REDIS_CACHE_SHADOW_PERCENT",
 ]);
 
 const RESPONSE_HEADERS = Object.freeze({
@@ -545,6 +589,24 @@ function observeBffStagingRateLimitShadow(params: {
     .catch(() => undefined);
 }
 
+function observeBffStagingCacheShadow(params: {
+  route: BffStagingRouteDefinition;
+  payload: BffStagingRequestPayload;
+  cacheShadow?: BffStagingCacheShadowDeps | null;
+}): void {
+  const route = params.route.cachePolicyRoute;
+  if (!route || !params.cacheShadow) return;
+  const cacheShadow = params.cacheShadow;
+  void evaluateCacheShadowRead({
+    adapter: cacheShadow.adapter,
+    config: cacheShadow.config,
+    route,
+    input: params.payload.input,
+  })
+    .then((decision) => cacheShadow.monitor.observe(decision))
+    .catch(() => undefined);
+}
+
 const buildRateLimitShadowMonitorEnvelope = (
   snapshot: RateLimitShadowMonitorSnapshot,
 ): Record<string, unknown> => ({
@@ -558,6 +620,25 @@ const buildRateLimitShadowMonitorEnvelope = (
   aggregateMetricsRecorded: snapshot.aggregateMetricsRecorded,
   blockedDecisionsObserved: snapshot.blockedDecisionsObserved,
   realUsersBlocked: false,
+  rawKeysStored: false,
+  rawKeysPrinted: false,
+  rawPayloadLogged: false,
+  piiLogged: false,
+});
+
+const buildCacheShadowMonitorEnvelope = (
+  snapshot: CacheShadowMonitorSnapshot,
+): Record<string, unknown> => ({
+  status: "ready",
+  observedDecisionCount: snapshot.observedDecisionCount,
+  shadowReadAttemptedCount: snapshot.shadowReadAttemptedCount,
+  hitCount: snapshot.hitCount,
+  missCount: snapshot.missCount,
+  skippedCount: snapshot.skippedCount,
+  unsafeKeyCount: snapshot.unsafeKeyCount,
+  errorCount: snapshot.errorCount,
+  responseChanged: false,
+  realUserPayloadStored: false,
   rawKeysStored: false,
   rawKeysPrinted: false,
   rawPayloadLogged: false,
@@ -599,6 +680,30 @@ const buildRateLimitPrivateSmokeEnvelope = (
   enforcementCanaryRawPayloadLogged: enforcementCanary?.rawPayloadLogged ?? false,
   enforcementCanaryPiiLogged: enforcementCanary?.piiLogged ?? false,
   enforcementCanaryReason: enforcementCanary?.reason ?? "not_attempted",
+});
+
+const buildCacheShadowCanaryEnvelope = (
+  result: CacheSyntheticShadowCanaryResult,
+): Record<string, unknown> => ({
+  status: result.status,
+  route: result.route,
+  providerKind: result.providerKind,
+  providerEnabled: result.providerEnabled,
+  externalNetworkEnabled: result.externalNetworkEnabled,
+  mode: result.mode,
+  syntheticIdentityUsed: result.syntheticIdentityUsed,
+  realUserPayloadUsed: result.realUserPayloadUsed,
+  shadowReadAttempted: result.shadowReadAttempted,
+  cacheHitVerified: result.cacheHitVerified,
+  responseChanged: result.responseChanged,
+  cacheWriteSyntheticOnly: result.cacheWriteSyntheticOnly,
+  cleanupAttempted: result.cleanupAttempted,
+  cleanupOk: result.cleanupOk,
+  ttlBounded: result.ttlBounded,
+  rawKeyReturned: result.rawKeyReturned,
+  rawPayloadLogged: result.rawPayloadLogged,
+  piiLogged: result.piiLogged,
+  reason: result.reason,
 });
 
 const invokeReadRoute = async (
@@ -680,12 +785,26 @@ export async function handleBffStagingServerRequest(
         responseEnvelopeValidation: true,
         redactedErrors: true,
         appRuntimeBffEnabled: false,
+        cacheShadowMonitorConfigured: Boolean(deps.cacheShadow),
         rateLimitShadowMonitorConfigured: Boolean(deps.rateLimitShadow),
       },
     });
   }
 
   if (route.kind === "monitor") {
+    if (route.operation === "cache.shadow_monitor") {
+      if (!deps.cacheShadow) {
+        return buildErrorResponse(
+          503,
+          "BFF_CACHE_SHADOW_MONITOR_UNAVAILABLE",
+          "Cache shadow monitor is not configured",
+        );
+      }
+      return buildResponse(200, {
+        ok: true,
+        data: buildCacheShadowMonitorEnvelope(deps.cacheShadow.monitor.snapshot()),
+      });
+    }
     if (!deps.rateLimitShadow) {
       return buildErrorResponse(
         503,
@@ -700,6 +819,29 @@ export async function handleBffStagingServerRequest(
   }
 
   if (route.kind === "diagnostic") {
+    if (route.operation === "cache.shadow_canary") {
+      if (!deps.cacheShadow) {
+        return buildErrorResponse(
+          503,
+          "BFF_CACHE_SHADOW_CANARY_UNAVAILABLE",
+          "Cache shadow canary is not configured",
+        );
+      }
+      const result = await runCacheSyntheticShadowCanary({
+        adapter: deps.cacheShadow.adapter,
+        config: deps.cacheShadow.config,
+      });
+      if (result.status !== "ready") {
+        return buildErrorResponse(503, "BFF_CACHE_SHADOW_CANARY_NOT_READY", result.reason);
+      }
+      if (result.decision) {
+        await deps.cacheShadow.monitor.observe(result.decision).catch(() => undefined);
+      }
+      return buildResponse(200, {
+        ok: true,
+        data: buildCacheShadowCanaryEnvelope(result),
+      });
+    }
     if (route.operation !== "rate_limit.private_smoke") {
       return buildErrorResponse(404, "BFF_ROUTE_NOT_FOUND", "Unknown staging BFF diagnostic route");
     }
@@ -741,6 +883,11 @@ export async function handleBffStagingServerRequest(
   }
 
   if (route.kind === "read") {
+    observeBffStagingCacheShadow({
+      route,
+      payload,
+      cacheShadow: deps.cacheShadow,
+    });
     observeBffStagingRateLimitShadow({
       route,
       payload,
@@ -906,6 +1053,8 @@ export async function runLocalBffStagingBoundaryShadow(): Promise<BffStagingShad
 export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   healthEndpointContract: true,
   readinessEndpointContract: true,
+  cacheShadowMonitorEndpointContract: true,
+  cacheShadowCanaryEndpointContract: true,
   rateLimitShadowMonitorEndpointContract: true,
   rateLimitPrivateSmokeEndpointContract: true,
   readRoutes: BFF_STAGING_READ_ROUTES.length,

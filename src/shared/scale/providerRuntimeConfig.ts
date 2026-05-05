@@ -36,8 +36,15 @@ type ProviderRuntimeEnv = Record<string, string | undefined>;
 export const SCALE_PROVIDER_RUNTIME_ENV_NAMES: Record<ScaleProviderKind, ScaleProviderEnvNames> = Object.freeze({
   redis_cache: {
     enabled: "SCALE_REDIS_CACHE_STAGING_ENABLED",
+    productionEnabled: "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
     required: ["SCALE_REDIS_CACHE_NAMESPACE"],
-    optional: ["SCALE_REDIS_CACHE_URL", "REDIS_URL"],
+    optional: [
+      "SCALE_REDIS_CACHE_URL",
+      "REDIS_URL",
+      "SCALE_REDIS_CACHE_SHADOW_MODE",
+      "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
+      "SCALE_REDIS_CACHE_SHADOW_PERCENT",
+    ],
   },
   queue: {
     enabled: "SCALE_QUEUE_STAGING_ENABLED",
@@ -114,7 +121,7 @@ const resolveProviderStatus = (
   const stagingNetworkAllowed =
     enabledFlag === "enabled" && configured && runtimeEnvironment === "staging" && productionGuard;
   const productionNetworkAllowed =
-    (provider === "observability_export" || provider === "rate_limit") &&
+    (provider === "observability_export" || provider === "rate_limit" || provider === "redis_cache") &&
     productionEnabledFlag === "enabled" &&
     configured &&
     runtimeEnvironment === "production";

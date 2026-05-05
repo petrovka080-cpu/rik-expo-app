@@ -18,8 +18,15 @@ describe("S-50K provider runtime env conventions", () => {
     ]);
     expect(SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache).toEqual({
       enabled: "SCALE_REDIS_CACHE_STAGING_ENABLED",
+      productionEnabled: "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
       required: ["SCALE_REDIS_CACHE_NAMESPACE"],
-      optional: ["SCALE_REDIS_CACHE_URL", "REDIS_URL"],
+      optional: [
+        "SCALE_REDIS_CACHE_URL",
+        "REDIS_URL",
+        "SCALE_REDIS_CACHE_SHADOW_MODE",
+        "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
+        "SCALE_REDIS_CACHE_SHADOW_PERCENT",
+      ],
     });
     expect(SCALE_PROVIDER_RUNTIME_ENV_NAMES.queue).toEqual({
       enabled: "SCALE_QUEUE_STAGING_ENABLED",
@@ -171,6 +178,44 @@ describe("S-50K provider runtime env conventions", () => {
       "SCALE_RATE_LIMIT_NAMESPACE",
       "SCALE_RATE_LIMIT_STORE_URL",
     ]);
+  });
+
+  it("allows Redis cache production network only for explicit shadow/canary enablement", () => {
+    const production = resolveScaleProviderRuntimeConfig(
+      {
+        SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+        REDIS_URL: "rediss://cache.example.invalid",
+        SCALE_REDIS_CACHE_NAMESPACE: "rik-production-cache-shadow",
+      },
+      { runtimeEnvironment: "production" },
+    );
+
+    expect(production.providers.redis_cache).toEqual(
+      expect.objectContaining({
+        enabledFlag: "missing",
+        productionEnabledFlag: "enabled",
+        configured: true,
+        liveNetworkAllowed: true,
+      }),
+    );
+    expect(production.providers.queue.liveNetworkAllowed).toBe(false);
+    expect(production.providers.idempotency_db.liveNetworkAllowed).toBe(false);
+
+    const missingConfig = resolveScaleProviderRuntimeConfig(
+      {
+        SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      },
+      { runtimeEnvironment: "production" },
+    );
+
+    expect(missingConfig.providers.redis_cache).toEqual(
+      expect.objectContaining({
+        productionEnabledFlag: "enabled",
+        configured: false,
+        liveNetworkAllowed: false,
+        missingEnvNames: ["SCALE_REDIS_CACHE_NAMESPACE", "SCALE_REDIS_CACHE_URL", "REDIS_URL"],
+      }),
+    );
   });
 
   it("does not expose server/provider secrets through public mobile env names", () => {
