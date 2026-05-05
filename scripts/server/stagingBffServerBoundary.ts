@@ -11,6 +11,7 @@ import {
   getRateEnforcementPolicyForBffReadOperation,
 } from "../../src/shared/scale/rateLimitPolicies";
 import {
+  observeRateLimitPrivateSmokeInShadowMonitor,
   type RateLimitShadowMonitor,
   type RateLimitShadowMonitorSnapshot,
   type RateLimitPrivateSmokeRunner,
@@ -697,6 +698,12 @@ export async function handleBffStagingServerRequest(
     const result = await deps.rateLimitPrivateSmoke.run();
     if (result.status !== "ready") {
       return buildErrorResponse(503, "BFF_RATE_LIMIT_PRIVATE_SMOKE_NOT_READY", result.reason);
+    }
+    if (deps.rateLimitShadow) {
+      await observeRateLimitPrivateSmokeInShadowMonitor({
+        monitor: deps.rateLimitShadow.monitor,
+        result,
+      }).catch(() => undefined);
     }
     return buildResponse(200, {
       ok: true,

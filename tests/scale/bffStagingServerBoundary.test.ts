@@ -498,6 +498,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
         reason: "synthetic_private_smoke_ready",
       })),
     };
+    const monitor = createRateLimitShadowMonitor();
 
     const missing = await handleBffStagingServerRequest(
       {
@@ -518,6 +519,10 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
       },
       {
         rateLimitPrivateSmoke: runner,
+        rateLimitShadow: {
+          provider: new RuntimeRateEnforcementProvider(),
+          monitor,
+        },
         config: { serverAuthConfigured: true },
       },
     );
@@ -545,6 +550,20 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
       }),
     );
     expect(runner.run).toHaveBeenCalledTimes(1);
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        wouldAllowCount: 1,
+        wouldThrottleCount: 1,
+        keyCardinalityRedacted: 1,
+        observedDecisionCount: 2,
+        blockedDecisionsObserved: 0,
+        realUsersBlocked: false,
+        rawKeysStored: false,
+        rawKeysPrinted: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
     const serialized = JSON.stringify(response);
     expect(serialized).not.toContain("server-secret");
     expect(serialized).not.toContain("rate:v1:");

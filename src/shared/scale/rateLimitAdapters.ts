@@ -1465,3 +1465,88 @@ export function createRateLimitShadowMonitor(options: {
 } = {}): RateLimitShadowMonitor {
   return new RateLimitShadowMonitor(options);
 }
+
+export type RateLimitPrivateSmokeShadowMonitorResult = {
+  attempted: boolean;
+  allowObserved: boolean;
+  throttleObserved: boolean;
+  snapshot: RateLimitShadowMonitorSnapshot;
+  reason: string;
+};
+
+const privateSmokeMonitorDecision = (
+  result: RateLimitPrivateSmokeResult,
+  providerState: Extract<RateLimitDecisionState, "allowed" | "hard_limited">,
+  reason: string,
+): RuntimeRateEnforcementDecision => ({
+  action: "observe",
+  mode: "observe_only",
+  operation: result.operation,
+  providerState,
+  providerEnabled: result.providerEnabled,
+  blocked: false,
+  realUsersBlocked: false,
+  enforcementNamespace: null,
+  isolatedTestNamespace: null,
+  safeSubjectHash: REDACTED_CARDINALITY_MARKER,
+  keyLength: null,
+  rawPiiInKey: false,
+  rawPayloadLogged: false,
+  piiLogged: false,
+  reason,
+});
+
+export async function observeRateLimitPrivateSmokeInShadowMonitor(params: {
+  monitor: RateLimitShadowMonitor;
+  result: RateLimitPrivateSmokeResult;
+}): Promise<RateLimitPrivateSmokeShadowMonitorResult> {
+  const { monitor, result } = params;
+  if (
+    result.status !== "ready" ||
+    result.syntheticIdentityUsed !== true ||
+    result.realUserIdentityUsed !== false ||
+    result.wouldAllowVerified !== true ||
+    result.wouldThrottleVerified !== true ||
+    result.cleanupOk !== true ||
+    result.ttlBounded !== true ||
+    result.enforcementEnabled !== false ||
+    result.productionUserBlocked !== false ||
+    result.rawKeyReturned !== false ||
+    result.rawPayloadLogged !== false ||
+    result.piiLogged !== false
+  ) {
+    return {
+      attempted: false,
+      allowObserved: false,
+      throttleObserved: false,
+      snapshot: monitor.snapshot(),
+      reason: "private_smoke_not_safe_for_shadow_monitor",
+    };
+  }
+
+  const allow = await monitor.observe(
+    privateSmokeMonitorDecision(
+      result,
+      "allowed",
+      "synthetic_private_smoke_shadow_allow",
+    ),
+  );
+  const throttle = await monitor.observe(
+    privateSmokeMonitorDecision(
+      result,
+      "hard_limited",
+      "synthetic_private_smoke_shadow_throttle",
+    ),
+  );
+
+  return {
+    attempted: true,
+    allowObserved: allow.accepted,
+    throttleObserved: throttle.accepted,
+    snapshot: throttle.snapshot,
+    reason:
+      allow.accepted && throttle.accepted
+        ? "synthetic_private_smoke_shadow_observed"
+        : "synthetic_private_smoke_shadow_observe_rejected",
+  };
+}

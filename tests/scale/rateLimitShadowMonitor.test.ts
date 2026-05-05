@@ -1,7 +1,9 @@
 import {
   createRateLimitShadowMonitor,
   InMemoryRateLimitAdapter,
+  observeRateLimitPrivateSmokeInShadowMonitor,
   RuntimeRateEnforcementProvider,
+  type RateLimitPrivateSmokeResult,
   type RuntimeRateEnforcementDecision,
 } from "../../src/shared/scale/rateLimitAdapters";
 import { getRateEnforcementPolicy } from "../../src/shared/scale/rateLimitPolicies";
@@ -158,5 +160,60 @@ describe("rate limit shadow monitor aggregate safety", () => {
         realUsersBlocked: false,
       }),
     );
+  });
+
+  it("records private synthetic smoke results as redacted monitor aggregates", async () => {
+    const monitor = createRateLimitShadowMonitor();
+    const result: RateLimitPrivateSmokeResult = {
+      status: "ready",
+      operation: "proposal.submit",
+      providerKind: "redis_url",
+      providerEnabled: true,
+      externalNetworkEnabled: true,
+      namespacePresent: true,
+      syntheticIdentityUsed: true,
+      realUserIdentityUsed: false,
+      wouldAllowVerified: true,
+      wouldThrottleVerified: true,
+      cleanupAttempted: true,
+      cleanupOk: true,
+      ttlBounded: true,
+      enforcementEnabled: false,
+      productionUserBlocked: false,
+      rawKeyReturned: false,
+      rawPayloadLogged: false,
+      piiLogged: false,
+      reason: "synthetic_private_smoke_ready",
+    };
+
+    await expect(
+      observeRateLimitPrivateSmokeInShadowMonitor({ monitor, result }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        attempted: true,
+        allowObserved: true,
+        throttleObserved: true,
+        reason: "synthetic_private_smoke_shadow_observed",
+      }),
+    );
+
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        wouldAllowCount: 1,
+        wouldThrottleCount: 1,
+        keyCardinalityRedacted: 1,
+        observedDecisionCount: 2,
+        blockedDecisionsObserved: 0,
+        realUsersBlocked: false,
+        rawKeysStored: false,
+        rawKeysPrinted: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+
+    const serializedSnapshot = JSON.stringify(monitor.snapshot());
+    expect(serializedSnapshot).not.toContain("synthetic-rate-smoke");
+    expect(serializedSnapshot).not.toContain("rate:v1:");
   });
 });
