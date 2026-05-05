@@ -72,6 +72,8 @@ export type ReleaseGuardMigrationPolicy = {
   migrationFiles: string[];
   highRiskFiles: string[];
   productionDbApprovalRequired: boolean;
+  requiredApprovalKeys: string[];
+  nextSafeWave: string | null;
   risks: SupabaseMigrationRisk[];
   blockers: string[];
 };
@@ -178,6 +180,12 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
 ];
 
 export const RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES = 64 * 1024 * 1024;
+export const RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS = [
+  "S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED",
+  "S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED",
+] as const;
+export const RELEASE_GUARD_MIGRATION_NEXT_SAFE_WAVE =
+  "S-PRODUCTION-MIGRATION-GAP-APPLY-OR-REPAIR-1-WITH-EXPLICIT-DB-WRITE-APPROVAL";
 
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/g, "/").replace(/^\.\//, "");
@@ -438,7 +446,7 @@ export function buildReleaseGuardMigrationPolicy(params: {
 
     if (risk.productionDbApprovalRequired) {
       blockers.push(
-        `Supabase migration ${filePath} contains DML or read-model rebuild behavior and requires an explicit production DB apply/repair wave before release automation can proceed.`,
+        `Supabase migration ${filePath} contains DML or read-model rebuild behavior and requires ${RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS.join(", ")} before release automation can proceed.`,
       );
     }
   }
@@ -452,6 +460,8 @@ export function buildReleaseGuardMigrationPolicy(params: {
     migrationFiles,
     highRiskFiles,
     productionDbApprovalRequired: highRiskFiles.length > 0,
+    requiredApprovalKeys: highRiskFiles.length > 0 ? [...RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS] : [],
+    nextSafeWave: highRiskFiles.length > 0 ? RELEASE_GUARD_MIGRATION_NEXT_SAFE_WAVE : null,
     risks,
     blockers,
   };

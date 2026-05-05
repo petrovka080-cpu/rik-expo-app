@@ -252,6 +252,12 @@ function printHumanReport(report: ReleaseGuardReport) {
   console.info(`Build required: ${String(report.runtimePolicy.buildRequired)}`);
   console.info(`Supabase migrations changed: ${String(report.migrationPolicy.migrationFiles.length)}`);
   console.info(`Production DB migration approval required: ${String(report.migrationPolicy.productionDbApprovalRequired)}`);
+  if (report.migrationPolicy.requiredApprovalKeys.length > 0) {
+    console.info(`Required migration approval keys: ${report.migrationPolicy.requiredApprovalKeys.join(", ")}`);
+  }
+  if (report.migrationPolicy.nextSafeWave) {
+    console.info(`Next migration safe wave: ${report.migrationPolicy.nextSafeWave}`);
+  }
   console.info(`Updates enabled: ${String(report.startupPolicy.updatesEnabled)}`);
   console.info(`Check automatically: ${report.startupPolicy.checkAutomatically}`);
   console.info(

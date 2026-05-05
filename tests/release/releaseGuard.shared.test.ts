@@ -444,6 +444,8 @@ describe("releaseGuard.shared", () => {
       });
 
       expect(migrationPolicy.productionDbApprovalRequired).toBe(false);
+      expect(migrationPolicy.requiredApprovalKeys).toEqual([]);
+      expect(migrationPolicy.nextSafeWave).toBeNull();
       expect(migrationPolicy.blockers).toEqual([]);
       expect(migrationPolicy.risks).toEqual([
         expect.objectContaining({
@@ -480,11 +482,18 @@ describe("releaseGuard.shared", () => {
       });
 
       expect(migrationPolicy.productionDbApprovalRequired).toBe(true);
+      expect(migrationPolicy.requiredApprovalKeys).toEqual([
+        "S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED",
+        "S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED",
+      ]);
+      expect(migrationPolicy.nextSafeWave).toBe(
+        "S-PRODUCTION-MIGRATION-GAP-APPLY-OR-REPAIR-1-WITH-EXPLICIT-DB-WRITE-APPROVAL",
+      );
       expect(migrationPolicy.highRiskFiles).toEqual([
         "supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql",
       ]);
       expect(migrationPolicy.blockers).toEqual([
-        expect.stringContaining("requires an explicit production DB apply/repair wave"),
+        expect.stringContaining("S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED"),
       ]);
       expect(migrationPolicy.risks[0]).toEqual(
         expect.objectContaining({
@@ -514,9 +523,14 @@ describe("releaseGuard.shared", () => {
             "supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql",
           ],
           productionDbApprovalRequired: true,
+          requiredApprovalKeys: [
+            "S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED",
+            "S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED",
+          ],
+          nextSafeWave: "S-PRODUCTION-MIGRATION-GAP-APPLY-OR-REPAIR-1-WITH-EXPLICIT-DB-WRITE-APPROVAL",
           risks: [],
           blockers: [
-            "Supabase migration supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql contains DML or read-model rebuild behavior and requires an explicit production DB apply/repair wave before release automation can proceed.",
+            "Supabase migration supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql contains DML or read-model rebuild behavior and requires S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED, S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED before release automation can proceed.",
           ],
         },
         runtimePolicy: createRuntimePolicyTruth(),
@@ -529,7 +543,7 @@ describe("releaseGuard.shared", () => {
 
       expect(readiness.status).toBe("fail");
       expect(readiness.blockers).toEqual([
-        expect.stringContaining("requires an explicit production DB apply/repair wave"),
+        expect.stringContaining("S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED"),
       ]);
     });
   });
