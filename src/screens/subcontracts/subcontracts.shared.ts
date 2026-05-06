@@ -162,6 +162,10 @@ export type SubcontractPageResult<T> = {
 
 export const SUBCONTRACT_DEFAULT_PAGE_SIZE = 50;
 export const SUBCONTRACT_MAX_PAGE_SIZE = 100;
+export const SUBCONTRACT_COLLECT_ALL_MAX_ROWS = 5000;
+export const SUBCONTRACT_COLLECT_ALL_MAX_PAGES = Math.ceil(
+  SUBCONTRACT_COLLECT_ALL_MAX_ROWS / SUBCONTRACT_MAX_PAGE_SIZE,
+);
 
 export type NewSubcontractItem = {
   source: SubcontractItemSource;
@@ -272,14 +276,36 @@ async function collectAllPages<T>(
 ): Promise<T[]> {
   const items: T[] = [];
   let offset = 0;
-  while (true) {
+  let completed = false;
+  for (let pageIndex = 0; pageIndex < SUBCONTRACT_COLLECT_ALL_MAX_PAGES; pageIndex += 1) {
     const page = await loadPage({
       offset,
       pageSize: SUBCONTRACT_MAX_PAGE_SIZE,
     });
+    if (items.length + page.items.length > SUBCONTRACT_COLLECT_ALL_MAX_ROWS) {
+      throw new Error(
+        `Subcontract full list read exceeded max row ceiling (${SUBCONTRACT_COLLECT_ALL_MAX_ROWS})`,
+      );
+    }
     items.push(...page.items);
-    if (!page.hasMore || page.nextOffset == null) break;
+    if (!page.hasMore || page.nextOffset == null) {
+      completed = true;
+      break;
+    }
+    if (page.nextOffset <= offset) {
+      throw new Error("Subcontract full list read pagination did not advance");
+    }
+    if (items.length >= SUBCONTRACT_COLLECT_ALL_MAX_ROWS) {
+      throw new Error(
+        `Subcontract full list read exceeded max row ceiling (${SUBCONTRACT_COLLECT_ALL_MAX_ROWS})`,
+      );
+    }
     offset = page.nextOffset;
+  }
+  if (!completed) {
+    throw new Error(
+      `Subcontract full list read exceeded max page ceiling (${SUBCONTRACT_COLLECT_ALL_MAX_PAGES})`,
+    );
   }
   return items;
 }

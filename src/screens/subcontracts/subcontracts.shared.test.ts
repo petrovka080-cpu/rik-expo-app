@@ -1,6 +1,8 @@
 import { supabase } from "../../lib/supabaseClient";
 import { RpcValidationError } from "../../lib/api/queryBoundary";
 import {
+  SUBCONTRACT_COLLECT_ALL_MAX_PAGES,
+  SUBCONTRACT_COLLECT_ALL_MAX_ROWS,
   SUBCONTRACT_MAX_PAGE_SIZE,
   approveSubcontract,
   countDirectorSubcontracts,
@@ -57,6 +59,30 @@ const createRangeBuilder = (result: { data?: unknown; error?: unknown }) => {
   builder.range.mockResolvedValue({
     data: result.data ?? [],
     error: result.error ?? null,
+  });
+  return builder;
+};
+
+const createDynamicRangeBuilder = (
+  loadRange: (from: number, to: number) => { data?: unknown; error?: unknown },
+) => {
+  const builder: Record<string, jest.Mock> = {
+    select: jest.fn(),
+    eq: jest.fn(),
+    not: jest.fn(),
+    order: jest.fn(),
+    range: jest.fn(),
+  };
+  builder.select.mockReturnValue(builder);
+  builder.eq.mockReturnValue(builder);
+  builder.not.mockReturnValue(builder);
+  builder.order.mockReturnValue(builder);
+  builder.range.mockImplementation(async (from: number, to: number) => {
+    const result = loadRange(from, to);
+    return {
+      data: result.data ?? [],
+      error: result.error ?? null,
+    };
   });
   return builder;
 };
@@ -358,6 +384,23 @@ describe("subcontracts shared boundary", () => {
     expect(rows).toHaveLength(SUBCONTRACT_MAX_PAGE_SIZE + 1);
     expect(rows[0]?.id).toBe("item-1");
     expect(rows[rows.length - 1]?.id).toBe(`item-${SUBCONTRACT_MAX_PAGE_SIZE + 2}`);
+  });
+
+  it("fails closed when subcontract item collection exceeds the max row ceiling", async () => {
+    const builder = createDynamicRangeBuilder((from, to) => ({
+      data: Array.from({ length: to - from + 1 }, (_, idx) =>
+        makeSubcontractItemRow(`item-${from + idx + 1}`),
+      ),
+    }));
+    mockSupabase.from.mockReturnValue(builder);
+
+    await expect(listSubcontractItems("sub-1")).rejects.toThrow("max row ceiling");
+
+    expect(builder.range).toHaveBeenCalledTimes(SUBCONTRACT_COLLECT_ALL_MAX_PAGES);
+    expect(builder.range).toHaveBeenLastCalledWith(
+      SUBCONTRACT_COLLECT_ALL_MAX_ROWS - SUBCONTRACT_MAX_PAGE_SIZE,
+      SUBCONTRACT_COLLECT_ALL_MAX_ROWS,
+    );
   });
 
   it("dedupes appended subcontract pages by id", () => {

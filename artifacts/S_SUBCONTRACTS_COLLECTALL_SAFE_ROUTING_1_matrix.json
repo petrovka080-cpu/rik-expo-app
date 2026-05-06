@@ -1,0 +1,83 @@
+{
+  "wave": "S-SUBCONTRACTS-COLLECTALL-SAFE-ROUTING-1",
+  "final_status": "GREEN_SUBCONTRACTS_COLLECTALL_SAFE_ROUTING_RELEASE_INTEGRATED",
+  "prerequisite": {
+    "GREEN_FETCHALL_UNBOUNDED_READS_INVENTORY_READY": true
+  },
+  "baseline": {
+    "head_equals_origin_main_start": true,
+    "ahead_start": 0,
+    "behind_start": 0,
+    "worktree_clean_start": true
+  },
+  "target_files": [
+    "src/screens/subcontracts/subcontracts.shared.ts",
+    "src/screens/subcontracts/subcontracts.shared.test.ts"
+  ],
+  "inventory": [
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.ts",
+      "function": "collectAllPages",
+      "purpose": "compat full list collector for subcontracts and subcontract child items",
+      "domain_table": "subcontracts, subcontract_items",
+      "before_status": "paged_loop_without_maxRows_or_maxPages",
+      "after_status": "bounded_full_collector_fail_closed",
+      "has_limit_or_range": true,
+      "page_size": 100,
+      "max_page_size": 100,
+      "max_rows": 5000,
+      "max_pages": 50,
+      "deterministic_order_sources": [
+        "listForemanSubcontractsPage: created_at desc, id desc",
+        "listDirectorSubcontractsPage: created_at desc, id desc",
+        "listAccountantSubcontractsPage: approved_at desc, id desc",
+        "listSubcontractItemsPage: created_at desc, id desc"
+      ],
+      "can_paginate_safely": true,
+      "requires_aggregation": false
+    }
+  ],
+  "collectors_covered": [
+    "listForemanSubcontracts",
+    "listDirectorSubcontracts",
+    "listAccountantSubcontracts",
+    "listSubcontractItems"
+  ],
+  "output_shapes_preserved": true,
+  "filters_preserved": true,
+  "ordering_preserved": true,
+  "successful_full_read_semantics_preserved": true,
+  "overflow_behavior": "throws_error_instead_of_returning_partial_rows",
+  "remaining_subcontracts_collectAll_unbounded_paths": [],
+  "remaining_reason": null,
+  "silent_truncation_used": false,
+  "temporary_hooks_created": false,
+  "temporary_scripts_created": false,
+  "temporary_endpoints_created": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "business_rows_printed": false,
+  "tests_passed": true,
+  "targeted_tests": [
+    {
+      "command": "npx jest src/screens/subcontracts/subcontracts.shared.test.ts tests/strict-null/subcontracts.shared.phase2.test.ts tests/api/sRpc4RuntimeValidation.contract.test.ts --runInBand",
+      "status": "PASS",
+      "suites": 3,
+      "tests": 20
+    }
+  ],
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "release_verify_status": "PASS_POST_PUSH",
+  "artifact_json_parse": "PASS",
+  "pushed": true
+}
