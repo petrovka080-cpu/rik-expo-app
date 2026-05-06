@@ -40,7 +40,7 @@ type NameMapCacheEntry = {
 
 const WAREHOUSE_STOCK_REFERENCE_TTL_MS = 5 * 60 * 1000;
 const MAX_NAME_MAP_CACHE_SIZE = 200;
-const WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
+const WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 };
 const warehouseNameMapCache = new Map<string, NameMapCacheEntry>();
 
 const logWarehouseApiFallback = (scope: string, error: unknown) => {

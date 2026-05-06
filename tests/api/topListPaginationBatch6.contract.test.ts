@@ -120,7 +120,7 @@ describe("S-PAG-6 remaining safe list pagination contract", () => {
       "src/screens/warehouse/warehouse.dicts.repo.ts",
     );
     expect(warehouseDicts).toContain(
-      "WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }",
+      "WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 }",
     );
     expect(warehouseDicts).toContain("async function loadPagedWarehouseRows");
     expect(warehouseDicts).toContain(

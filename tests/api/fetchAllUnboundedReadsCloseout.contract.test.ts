@@ -30,7 +30,7 @@ describe("S-FETCHALL-UNBOUNDED-READS-CLOSEOUT-1", () => {
   it("keeps warehouse dictionary reads paged with an explicit fail-closed ceiling", () => {
     const source = read("src/screens/warehouse/warehouse.dicts.repo.ts");
 
-    expect(source).toContain("WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
+    expect(source).toContain("WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 }");
     expect(source).toContain("loadPagedRowsWithCeiling(queryFactory, WAREHOUSE_DICT_PAGE_DEFAULTS)");
     expect(source).not.toContain("while (true)");
   });

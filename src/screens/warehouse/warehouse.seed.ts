@@ -31,7 +31,7 @@ export function mergeIncomingSeedRows(rows: IncomingSeedRow[]): IncomingSeedRow[
 }
 
 type Supa = SupabaseClient;
-const WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
+const WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 };
 
 type RequestItemMini = {
   id?: string | null;

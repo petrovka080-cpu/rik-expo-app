@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { normalizePage } from "../../lib/api/_core";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import {
   isRpcNumberLikeResponse,
   validateRpcResponse,
@@ -25,7 +25,7 @@ export const isWarehouseRefreshNameMapUiRpcResponse = isRpcNumberLikeResponse;
 const normalizeCode = (value: unknown): string =>
   String(value ?? "").trim().toUpperCase();
 
-const WAREHOUSE_NAME_MAP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+const WAREHOUSE_NAME_MAP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 };
 
 const fromWarehouseNameMapUi = (supabase: SupabaseClient) =>
   supabase.from("warehouse_name_map_ui" as never);
@@ -63,33 +63,28 @@ export async function fetchWarehouseNameMapUi(
 ): Promise<WarehouseNameMapUiFetchResult> {
   const codes = normalizeWarehouseCodeList(codeList);
   if (!codes.length) return { available: true, map: {} };
-  const boundedCodes = codes.slice(0, 5000);
 
-  const rows: UnknownRow[] = [];
-  for (let pageIndex = 0; ; pageIndex += 1) {
-    const page = normalizePage({ page: pageIndex }, WAREHOUSE_NAME_MAP_PAGE_DEFAULTS);
-    const q = await fromWarehouseNameMapUi(supabase)
-      .select("code, display_name")
-      .in("code", boundedCodes)
-      .order("code", { ascending: true })
-      .range(page.from, page.to);
+  const q = await loadPagedRowsWithCeiling<UnknownRow>(
+    () =>
+      fromWarehouseNameMapUi(supabase)
+        .select("code, display_name")
+        .in("code", codes)
+        .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+    WAREHOUSE_NAME_MAP_PAGE_DEFAULTS,
+  );
 
-    if (q.error) {
-      const msg = String((q.error as { message?: string } | null)?.message ?? q.error ?? "");
-      const unavailable =
-        msg.includes("warehouse_name_map_ui") &&
-        (msg.includes("schema cache") ||
-          msg.includes("does not exist") ||
-          msg.includes("relation"));
-      if (unavailable) return { available: false, map: {} };
-      return { available: true, map: {} };
-    }
-
-    const pageRows = Array.isArray(q.data) ? (q.data as UnknownRow[]) : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize || rows.length >= boundedCodes.length) break;
+  if (q.error) {
+    const msg = String((q.error as { message?: string } | null)?.message ?? q.error ?? "");
+    const unavailable =
+      msg.includes("warehouse_name_map_ui") &&
+      (msg.includes("schema cache") ||
+        msg.includes("does not exist") ||
+        msg.includes("relation"));
+    if (unavailable) return { available: false, map: {} };
+    return { available: true, map: {} };
   }
 
+  const rows = Array.isArray(q.data) ? (q.data as UnknownRow[]) : [];
   const out: Record<string, string> = {};
   for (const row of rows) {
     const code = normalizeCode(row.code);

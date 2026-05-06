@@ -19,7 +19,7 @@ type QueryResult = {
 };
 
 const WAREHOUSE_DICTS_TTL_MS = 5 * 60 * 1000;
-const WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
+const WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 };
 
 type QueryFactory = () => PagedQuery<unknown>;
 

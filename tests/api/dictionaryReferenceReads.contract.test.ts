@@ -56,6 +56,25 @@ describe("dictionary/reference read pagination", () => {
     ]);
   });
 
+  it("fails closed when an explicit maxPages ceiling is exhausted", async () => {
+    const harness = buildPagedRows([{ id: "row-1" }, { id: "row-2" }, { id: "row-3" }]);
+
+    const result = await loadPagedRowsWithCeiling(harness.queryFactory, {
+      pageSize: 1,
+      maxPageSize: 1,
+      maxRows: 5000,
+      maxPages: 2,
+    });
+
+    expect(result.data).toBeNull();
+    expect(result.error).toBeInstanceOf(Error);
+    expect(String((result.error as Error).message)).toContain("max page ceiling (2)");
+    expect(harness.ranges).toEqual([
+      [0, 0],
+      [1, 1],
+    ]);
+  });
+
   it("keeps S-PAG-15 dictionary/reference readers on page-through-all with explicit ceilings", () => {
     const expectations = [
       {
@@ -89,6 +108,7 @@ describe("dictionary/reference read pagination", () => {
         tokens: [
           "WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS",
           "maxRows: 5000",
+          "maxPages: 51",
           "loadPagedRowsWithCeiling<UnknownRow>",
         ],
         absent: ["codes.slice(0, 5000)"],

@@ -94,6 +94,7 @@ export type PageThroughDefaults = {
   pageSize?: number;
   maxPageSize?: number;
   maxRows?: number;
+  maxPages?: number;
 };
 
 export type PagedQuery<T> = {
@@ -130,15 +131,26 @@ export function normalizePage(
 const buildPageCeilingError = (maxRows: number) =>
   new Error(`Paged reference read exceeded max row ceiling (${maxRows})`);
 
+const buildPageCountCeilingError = (maxPages: number) =>
+  new Error(`Paged reference read exceeded max page ceiling (${maxPages})`);
+
+const deriveMaxPages = (defaults: PageThroughDefaults, maxRows: number): number => {
+  const firstPage = normalizePage(undefined, defaults);
+  const defaultMaxPages = Math.ceil(maxRows / firstPage.pageSize) + 1;
+  return Math.max(1, toInt(defaults.maxPages, defaultMaxPages));
+};
+
 export async function loadPagedRowsWithCeiling<T>(
   queryFactory: () => PagedQuery<T>,
   defaults: PageThroughDefaults,
   pageInput?: PageInput,
 ): Promise<{ data: T[] | null; error: unknown | null }> {
   const maxRows = Math.max(1, toInt(defaults.maxRows, 5000));
+  const maxPages = deriveMaxPages(defaults, maxRows);
 
   if (pageInput) {
     const page = normalizePage(pageInput, defaults);
+    if (page.page >= maxPages) return { data: null, error: buildPageCountCeilingError(maxPages) };
     if (page.from >= maxRows) return { data: null, error: buildPageCeilingError(maxRows) };
 
     const result = await queryFactory().range(page.from, Math.min(page.to, maxRows - 1));
@@ -147,7 +159,7 @@ export async function loadPagedRowsWithCeiling<T>(
   }
 
   const rows: T[] = [];
-  for (let pageIndex = 0; ; pageIndex += 1) {
+  for (let pageIndex = 0; pageIndex < maxPages; pageIndex += 1) {
     const page = normalizePage({ page: pageIndex }, defaults);
     if (page.from >= maxRows) {
       const probe = await queryFactory().range(maxRows, maxRows);
@@ -168,6 +180,7 @@ export async function loadPagedRowsWithCeiling<T>(
     rows.push(...pageRows);
     if (pageRows.length < page.pageSize) return { data: rows, error: null };
   }
+  return { data: null, error: buildPageCountCeilingError(maxPages) };
 }
 
 const errorMessageLower = (error: unknown) => parseErr(error).toLowerCase();

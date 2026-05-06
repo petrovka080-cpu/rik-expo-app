@@ -1,0 +1,178 @@
+{
+  "wave": "S-WAREHOUSE-LIFECYCLE-AND-DICTS-UNBOUNDED-PAGINATION-CLOSEOUT-1",
+  "final_status": "BLOCKED_PRODUCTION_MAIN_PUSH_APPROVAL_MISSING",
+  "head_equals_origin_main": false,
+  "ahead": 2,
+  "behind": 0,
+  "worktree_clean": true,
+  "target_files": [
+    "src/screens/warehouse/hooks/useWarehouseLifecycle.ts",
+    "src/screens/warehouse/warehouse.dicts.repo.ts",
+    "src/screens/warehouse/warehouse.nameMap.ui.ts",
+    "src/screens/warehouse/warehouse.api.repo.ts",
+    "src/screens/warehouse/warehouse.seed.ts",
+    "src/screens/warehouse/warehouse.stockReports.service.ts",
+    "src/lib/api/_core.ts"
+  ],
+  "inventory": [
+    {
+      "file": "src/screens/warehouse/hooks/useWarehouseLifecycle.ts",
+      "function": "loadAll",
+      "purpose": "warehouse screen bootstrap orchestration",
+      "domain_table": null,
+      "before_status": "not_a_db_list_read",
+      "after_status": "unchanged_not_a_db_list_read",
+      "has_limit_range_maxPages": "not_applicable",
+      "can_paginate_safely": "not_applicable",
+      "requires_server_side_aggregation": false
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.dicts.repo.ts",
+      "function": "fetchWarehouseDictRows",
+      "purpose": "warehouse dictionary rows",
+      "domain_table": "dynamic warehouse dictionary table",
+      "before_status": "bounded_maxRows_no_explicit_maxPages",
+      "after_status": "bounded_maxRows_and_maxPages",
+      "has_limit_range_maxPages": "yes",
+      "can_paginate_safely": "yes",
+      "requires_server_side_aggregation": false
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.dicts.repo.ts",
+      "function": "fetchWarehouseRefRows",
+      "purpose": "warehouse reference rows",
+      "domain_table": "dynamic warehouse reference table",
+      "before_status": "bounded_maxRows_no_explicit_maxPages",
+      "after_status": "bounded_maxRows_and_maxPages",
+      "has_limit_range_maxPages": "yes",
+      "can_paginate_safely": "yes",
+      "requires_server_side_aggregation": false
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.nameMap.ui.ts",
+      "function": "fetchWarehouseNameMapUi",
+      "purpose": "warehouse UI code-to-display-name map",
+      "domain_table": "warehouse_name_map_ui",
+      "before_status": "manual_open_page_loop_no_maxPages_and_existing_input_slice",
+      "after_status": "shared_fail_closed_paged_reader_with_maxRows_and_maxPages",
+      "has_limit_range_maxPages": "yes",
+      "can_paginate_safely": "yes",
+      "requires_server_side_aggregation": false
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "function": "fetchWarehouseIncomingLedgerRows",
+      "purpose": "incoming ledger fallback rows",
+      "domain_table": "wh_ledger",
+      "before_status": "bounded_maxRows_no_explicit_maxPages",
+      "after_status": "bounded_maxRows_and_maxPages",
+      "has_limit_range_maxPages": "yes",
+      "can_paginate_safely": "yes",
+      "requires_server_side_aggregation": false
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "function": "fetchWarehouseIncomingLineRows",
+      "purpose": "incoming line rows",
+      "domain_table": "wh_ledger",
+      "before_status": "bounded_maxRows_no_explicit_maxPages",
+      "after_status": "bounded_maxRows_and_maxPages",
+      "has_limit_range_maxPages": "yes",
+      "can_paginate_safely": "yes",
+      "requires_server_side_aggregation": false
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.seed.ts",
+      "function": "reseedIncomingItems",
+      "purpose": "incoming item seed fallback reference reads",
+      "domain_table": "purchase_items/proposal_snapshot_items/request_items",
+      "before_status": "bounded_maxRows_no_explicit_maxPages",
+      "after_status": "bounded_maxRows_and_maxPages",
+      "has_limit_range_maxPages": "yes",
+      "can_paginate_safely": "yes",
+      "requires_server_side_aggregation": false
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.stockReports.service.ts",
+      "function": "loadNameMapOverrides/loadNameMapRikRu/loadNameMapLedgerUi",
+      "purpose": "stock/report name enrichment reference reads",
+      "domain_table": "catalog_name_overrides/v_rik_names_ru/v_wh_balance_ledger_ui",
+      "before_status": "bounded_maxRows_no_explicit_maxPages",
+      "after_status": "bounded_maxRows_and_maxPages",
+      "has_limit_range_maxPages": "yes",
+      "can_paginate_safely": "yes",
+      "requires_server_side_aggregation": false
+    }
+  ],
+  "unbounded_list_loops_before": [
+    {
+      "file": "src/screens/warehouse/warehouse.nameMap.ui.ts",
+      "function": "fetchWarehouseNameMapUi",
+      "pattern": "for pageIndex with empty condition",
+      "status": "fixed"
+    }
+  ],
+  "unbounded_list_loops_after": [],
+  "remaining_while_true_non_list_paths": [
+    {
+      "file": "src/screens/warehouse/warehouseReceiveWorker.ts",
+      "function": "runFlush",
+      "purpose": "offline queue drain",
+      "reason": "not a database list/read pagination path; no select/range/fetchAll/loadAll table read in the loop"
+    }
+  ],
+  "maxPages_added": true,
+  "maxRows_ceiling": 5000,
+  "deterministic_ordering_preserved": true,
+  "safe_stop_condition": true,
+  "shared_reader_finite_loop": true,
+  "warehouse_flow_business_semantics_changed": false,
+  "silent_truncation_used": false,
+  "temporary_hooks_created": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "render_env_written": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "tests_passed": {
+    "warehouse_lifecycle_tests": true,
+    "dict_repo_pagination_tests": true,
+    "maxPages_stop_tests": true,
+    "targeted_fetchAll_unbounded_read_tests": true,
+    "command": "npx jest tests/api/dictionaryReferenceReads.contract.test.ts tests/api/warehouseLifecycleAndDictsUnboundedPaginationCloseout.contract.test.ts tests/api/remainingSafeListPaginationBatch8.contract.test.ts tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts tests/api/topListPaginationBatch6.contract.test.ts src/screens/warehouse/hooks/useWarehouseLifecycle.test.tsx src/screens/warehouse/warehouseReceiveWorker.test.ts --runInBand"
+  },
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "artifact_json_parse_passed": true,
+  "release_verify_status": "blocked_only_by_local_ahead_requiring_S_PRODUCTION_MAIN_PUSH_APPROVED",
+  "release_verify_gates": [
+    {
+      "name": "tsc",
+      "status": "passed"
+    },
+    {
+      "name": "expo-lint",
+      "status": "passed"
+    },
+    {
+      "name": "jest-run-in-band",
+      "status": "passed"
+    },
+    {
+      "name": "jest",
+      "status": "passed"
+    },
+    {
+      "name": "git-diff-check",
+      "status": "passed"
+    }
+  ],
+  "production_main_push_approval_present": false,
+  "pushed": false
+}

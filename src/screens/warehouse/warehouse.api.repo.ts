@@ -6,7 +6,7 @@ import {
 } from "../../lib/requestCancellation";
 
 type UnknownRow = Record<string, unknown>;
-const WAREHOUSE_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
+const WAREHOUSE_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 };
 
 export async function fetchWarehouseReportsBundle(
   supabase: SupabaseClient,
