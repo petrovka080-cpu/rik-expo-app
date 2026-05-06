@@ -33,8 +33,12 @@ const CATALOG_SEARCH_FALLBACK_SELECT =
   "rik_code,name_human,uom_code,sector_code,spec,kind,group_code";
 const RIK_QUICK_SEARCH_FALLBACK_FIELDS =
   "rik_code,name_human,uom_code,kind,name_human_ru";
-const CATALOG_FALLBACK_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 };
 const CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
+const CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS = {
+  pageSize: 50,
+  maxPageSize: 100,
+  maxRows: 100,
+};
 
 type CatalogQueryResult<T> = {
   data: T[] | null;
@@ -57,10 +61,29 @@ type UomTransportRow = {
   name?: string | null;
 };
 
+type IncomingItemTransportRow = {
+  incoming_id?: string | null;
+  incoming_item_id?: string | null;
+  purchase_item_id?: string | null;
+  code?: string | null;
+  name?: string | null;
+  uom?: string | null;
+  qty_expected?: number | null;
+  qty_received?: number | null;
+};
+
 const toCatalogQueryError = (error: unknown): { message?: string } =>
   typeof error === "object" && error !== null && "message" in error
     ? (error as { message?: string })
     : { message: String(error) };
+
+const normalizeRikItemsSearchPreviewPage = (limit: number) => {
+  const page = normalizePage({ pageSize: limit }, CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS);
+  return {
+    from: page.from,
+    to: Math.min(page.to, CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS.maxRows - 1),
+  };
+};
 
 const loadPagedCatalogRows = async <T,>(
   queryFactory: CatalogQueryFactory<T>,
@@ -160,7 +183,7 @@ export const loadCatalogSearchFallbackRows = async (
   tokens: string[],
   limit: number,
 ) => {
-  const page = normalizePage({ pageSize: limit }, CATALOG_FALLBACK_PAGE_DEFAULTS);
+  const page = normalizeRikItemsSearchPreviewPage(limit);
   let queryBuilder = supabase.from("rik_items").select(CATALOG_SEARCH_FALLBACK_SELECT);
   if (tokens.length > 0) {
     tokens.forEach((token) => {
@@ -171,6 +194,8 @@ export const loadCatalogSearchFallbackRows = async (
   }
   return await queryBuilder
     .order("rik_code", { ascending: true })
+    .order("name_human", { ascending: true })
+    .order("id", { ascending: true })
     .range(page.from, page.to);
 };
 
@@ -212,11 +237,14 @@ export const loadUomRows = async (): Promise<{
 export const loadIncomingItemRows = async (
   incomingId: string,
 ): Promise<{ data: IncomingItem[] | null; error: { message?: string } | null }> => {
-  const result = await supabase
-    .from("wh_incoming_items_clean")
-    .select("incoming_id,incoming_item_id,purchase_item_id,code,name,uom,qty_expected,qty_received")
-    .eq("incoming_id", incomingId)
-    .order("incoming_item_id", { ascending: true });
+  const result = await loadPagedCatalogRows<IncomingItemTransportRow>(() =>
+    supabase
+      .from("wh_incoming_items_clean")
+      .select("incoming_id,incoming_item_id,purchase_item_id,code,name,uom,qty_expected,qty_received")
+      .eq("incoming_id", incomingId)
+      .order("incoming_item_id", { ascending: true }),
+  );
+
   return {
     data: result.data === null ? null : normalizeIncomingItemRows(result.data),
     error: result.error,
@@ -249,7 +277,7 @@ export const loadRikQuickSearchFallbackRows = async (
   tokens: string[],
   limit: number,
 ) => {
-  const page = normalizePage({ pageSize: limit }, CATALOG_FALLBACK_PAGE_DEFAULTS);
+  const page = normalizeRikItemsSearchPreviewPage(limit);
   let builder = supabase.from("rik_items").select(RIK_QUICK_SEARCH_FALLBACK_FIELDS);
   if (tokens.length > 0) {
     const orFilters = tokens
@@ -261,5 +289,7 @@ export const loadRikQuickSearchFallbackRows = async (
   }
   return await builder
     .order("rik_code", { ascending: true })
+    .order("name_human", { ascending: true })
+    .order("id", { ascending: true })
     .range(page.from, page.to);
 };

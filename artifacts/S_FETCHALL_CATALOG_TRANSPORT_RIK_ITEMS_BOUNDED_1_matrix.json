@@ -1,0 +1,124 @@
+{
+  "wave": "S-FETCHALL-CATALOG-TRANSPORT-RIK-ITEMS-BOUNDED-1",
+  "final_status": "GREEN_CATALOG_TRANSPORT_RIK_ITEMS_BOUNDED_RELEASE_INTEGRATED",
+  "prerequisite": {
+    "GREEN_FETCHALL_UNBOUNDED_READS_INVENTORY_READY": true
+  },
+  "baseline": {
+    "head_equals_origin_main_start": true,
+    "ahead_start": 0,
+    "behind_start": 0,
+    "worktree_clean_start": true
+  },
+  "target_files": [
+    "src/lib/catalog/catalog.transport.ts",
+    "tests/catalog/catalog.transport.rikItemsBounded.test.ts",
+    "tests/strict-null/catalog.transport.phase4.test.ts"
+  ],
+  "catalog_transport_inventory": [
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadCatalogSearchFallbackRows",
+      "domain_table": "rik_items",
+      "purpose": "catalog fallback search preview",
+      "expected_shape": "CatalogSearchFallbackRow[]",
+      "before_status": "bounded_by_single_range_but_without_explicit_preview_ceiling_or_tiebreaker_order",
+      "after_status": "bounded_preview_page",
+      "has_limit_or_range": true,
+      "page_size": 50,
+      "max_page_size": 100,
+      "max_rows": 100,
+      "max_pages": 1,
+      "deterministic_order": [
+        "rik_code asc",
+        "name_human asc",
+        "id asc"
+      ],
+      "can_paginate_safely": true,
+      "requires_aggregation": false
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadRikQuickSearchFallbackRows",
+      "domain_table": "rik_items",
+      "purpose": "quick rik fallback search preview",
+      "expected_shape": "RikQuickSearchFallbackRow[]",
+      "before_status": "bounded_by_single_range_but_without_explicit_preview_ceiling_or_tiebreaker_order",
+      "after_status": "bounded_preview_page",
+      "has_limit_or_range": true,
+      "page_size": 50,
+      "max_page_size": 100,
+      "max_rows": 100,
+      "max_pages": 1,
+      "deterministic_order": [
+        "rik_code asc",
+        "name_human asc",
+        "id asc"
+      ],
+      "can_paginate_safely": true,
+      "requires_aggregation": false
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadIncomingItemRows",
+      "domain_table": "wh_incoming_items_clean",
+      "purpose": "incoming child item list",
+      "expected_shape": "IncomingItem[]",
+      "before_status": "scoped_by_incoming_id_but_uncapped",
+      "after_status": "paged_with_shared_catalog_maxRows_ceiling",
+      "has_limit_or_range": true,
+      "page_size": 100,
+      "max_page_size": 100,
+      "max_rows": 5000,
+      "deterministic_order": [
+        "incoming_item_id asc"
+      ],
+      "can_paginate_safely": true,
+      "requires_aggregation": false
+    }
+  ],
+  "rik_items_select_count_after": 2,
+  "rik_items_unbounded_selects_after": 0,
+  "catalog_transport_changed_functions_unbounded_selects_after": 0,
+  "full_dataset_required_for_ui_or_report": false,
+  "server_side_aggregation_required": false,
+  "remaining_catalog_transport_rik_items_paths": [],
+  "remaining_catalog_transport_rik_items_reason": null,
+  "remaining_catalog_transport_unbounded_paths": [],
+  "remaining_catalog_transport_unbounded_reason": null,
+  "report_or_output_shapes_preserved": true,
+  "filters_preserved": true,
+  "order_filter_mapping_tests": "PASS",
+  "maxRows_maxPages_tests": "PASS",
+  "no_unbounded_select_changed_functions_test": "PASS",
+  "silent_truncation_used": false,
+  "temporary_hooks_created": false,
+  "temporary_scripts_created": false,
+  "temporary_endpoints_created": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "business_rows_printed": false,
+  "tests_passed": true,
+  "targeted_tests": [
+    {
+      "command": "npx jest tests/catalog/catalog.transport.rikItemsBounded.test.ts tests/strict-null/catalog.transport.phase4.test.ts src/lib/catalog/catalog.search.service.test.ts --runInBand",
+      "status": "PASS",
+      "suites": 3,
+      "tests": 16
+    }
+  ],
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "release_verify_status": "PASS_POST_PUSH",
+  "artifact_json_parse": "PASS",
+  "pushed": true
+}

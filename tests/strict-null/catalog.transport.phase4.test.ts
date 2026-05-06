@@ -21,13 +21,6 @@ import {
   runSuppliersListRpc,
 } from "../../src/lib/catalog/catalog.transport";
 
-const buildOrderedQuery = (resolvedValue: unknown) => {
-  const order = jest.fn().mockResolvedValue(resolvedValue);
-  const eq = jest.fn().mockReturnValue({ order });
-  const select = jest.fn().mockReturnValue({ order, eq });
-  return { select, eq, order };
-};
-
 const buildPagedQuery = (...pages: unknown[]) => {
   const range = jest
     .fn()
@@ -38,10 +31,11 @@ const buildPagedQuery = (...pages: unknown[]) => {
           : pages[0],
       ),
     );
-  const chain = { order: jest.fn(), range };
+  const chain = { eq: jest.fn(), order: jest.fn(), range };
+  chain.eq.mockReturnValue(chain);
   chain.order.mockReturnValue(chain);
   const select = jest.fn().mockReturnValue(chain);
-  return { select, order: chain.order, range };
+  return { select, eq: chain.eq, order: chain.order, range };
 };
 
 describe("catalog transport strict-null phase 4", () => {
@@ -179,7 +173,7 @@ describe("catalog transport strict-null phase 4", () => {
   });
 
   it("wires normalized incoming item rows through the transport boundary", async () => {
-    const query = buildOrderedQuery({
+    const query = buildPagedQuery({
       data: [
         {
           incoming_id: "inc-1",
@@ -228,6 +222,7 @@ describe("catalog transport strict-null phase 4", () => {
     );
     expect(query.eq).toHaveBeenCalledWith("incoming_id", "inc-1");
     expect(query.order).toHaveBeenCalledWith("incoming_item_id", { ascending: true });
+    expect(query.range).toHaveBeenCalledWith(0, 99);
   });
 
   it("omits nullable suppliers rpc args at the transport boundary", async () => {
