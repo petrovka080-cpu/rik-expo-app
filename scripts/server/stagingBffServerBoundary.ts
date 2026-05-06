@@ -66,6 +66,14 @@ import {
   DIRECTOR_FINANCE_BFF_CONTRACT,
   type DirectorFinanceBffRouteOperation,
 } from "../../src/screens/director/director.finance.bff.contract";
+import {
+  handleWarehouseApiBffReadScope,
+  type WarehouseApiBffReadPort,
+} from "../../src/screens/warehouse/warehouse.api.bff.handler";
+import {
+  WAREHOUSE_API_BFF_CONTRACT,
+  type WarehouseApiBffRouteOperation,
+} from "../../src/screens/warehouse/warehouse.api.bff.contract";
 import { buildBffError } from "../../src/shared/scale/bffSafety";
 import {
   BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD,
@@ -87,6 +95,7 @@ export type BffStagingRouteDefinition = {
   operation:
     | BffReadOperation
     | DirectorFinanceBffRouteOperation
+    | WarehouseApiBffRouteOperation
     | BffMutationOperation
     | "health"
     | "readiness"
@@ -298,6 +307,7 @@ export type BffStagingCacheShadowRuntimeState = {
 export type BffStagingServerDeps = {
   readPorts?: BffReadPorts;
   directorFinanceRpcPort?: DirectorFinanceBffRpcPort;
+  warehouseApiReadPort?: WarehouseApiBffReadPort;
   mutationPorts?: BffMutationPorts;
   cacheShadow?: BffStagingCacheShadowDeps | null;
   cacheShadowRuntime?: BffStagingCacheShadowRuntimeState | null;
@@ -402,6 +412,18 @@ export const BFF_STAGING_DIRECTOR_FINANCE_RPC_ROUTE: BffStagingRouteDefinition =
   kind: "read_rpc",
   method: "POST",
   path: DIRECTOR_FINANCE_BFF_CONTRACT.endpoint.replace(/^POST\s+/, ""),
+  enabledByDefault: true,
+  requiresIdempotencyMetadata: false,
+  requiresRateLimitMetadata: false,
+  observability: BFF_OBSERVABILITY_METADATA,
+  observabilityExternalExportEnabledByDefault: false,
+});
+
+export const BFF_STAGING_WAREHOUSE_API_READ_ROUTE: BffStagingRouteDefinition = Object.freeze({
+  operation: "warehouse.api.read.scope",
+  kind: "read_rpc",
+  method: "POST",
+  path: WAREHOUSE_API_BFF_CONTRACT.endpoint.replace(/^POST\s+/, ""),
   enabledByDefault: true,
   requiresIdempotencyMetadata: false,
   requiresRateLimitMetadata: false,
@@ -663,6 +685,7 @@ export const BFF_STAGING_ROUTE_REGISTRY: readonly BffStagingRouteDefinition[] = 
   BFF_STAGING_RATE_LIMIT_SHADOW_MONITOR_ROUTE,
   BFF_STAGING_RATE_LIMIT_PRIVATE_SMOKE_ROUTE,
   BFF_STAGING_DIRECTOR_FINANCE_RPC_ROUTE,
+  BFF_STAGING_WAREHOUSE_API_READ_ROUTE,
   ...BFF_STAGING_READ_ROUTES,
   ...BFF_STAGING_MUTATION_ROUTES,
 ]);
@@ -1108,8 +1131,11 @@ export async function handleBffStagingServerRequest(
       data: {
         status: "ready",
         readRoutes: BFF_STAGING_READ_ROUTES.length,
+        readRpcRoutes: 2,
         mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
         readPortsConfigured: Boolean(deps.readPorts),
+        directorFinanceRpcPortConfigured: Boolean(deps.directorFinanceRpcPort),
+        warehouseApiReadPortConfigured: Boolean(deps.warehouseApiReadPort),
         mutationRoutesEnabledByDefault: false,
         mutationRoutesEnabled:
           config.mutationRoutesEnabled === true &&
@@ -1246,26 +1272,42 @@ export async function handleBffStagingServerRequest(
   }
 
   if (route.kind === "read_rpc") {
-    if (route.operation !== "director.finance.rpc.scope") {
-      return buildErrorResponse(404, "BFF_ROUTE_NOT_FOUND", "Unknown staging BFF read RPC route");
+    const body =
+      route.operation === "director.finance.rpc.scope"
+        ? deps.directorFinanceRpcPort
+          ? await handleDirectorFinanceBffRpcScope(
+              deps.directorFinanceRpcPort,
+              payload.input,
+            )
+          : null
+        : route.operation === "warehouse.api.read.scope" && deps.warehouseApiReadPort
+          ? await handleWarehouseApiBffReadScope(
+              deps.warehouseApiReadPort,
+              payload.input,
+            )
+          : null;
+    if (!body) {
+      return route.operation === "director.finance.rpc.scope"
+        ? buildErrorResponse(
+            503,
+            "BFF_DIRECTOR_FINANCE_RPC_PORT_UNAVAILABLE",
+            "Director finance RPC port is not configured",
+          )
+        : route.operation === "warehouse.api.read.scope"
+          ? buildErrorResponse(
+              503,
+              "BFF_WAREHOUSE_API_READ_PORT_UNAVAILABLE",
+              "Warehouse API read port is not configured",
+            )
+          : buildErrorResponse(404, "BFF_ROUTE_NOT_FOUND", "Unknown staging BFF read RPC route");
     }
-    if (!deps.directorFinanceRpcPort) {
-      return buildErrorResponse(
-        503,
-        "BFF_DIRECTOR_FINANCE_RPC_PORT_UNAVAILABLE",
-        "Director finance RPC port is not configured",
-      );
-    }
-    const body = await handleDirectorFinanceBffRpcScope(
-      deps.directorFinanceRpcPort,
-      payload.input,
-    );
     if (!isBffStagingResponseEnvelope(body)) {
       return buildErrorResponse(502, "BFF_INVALID_RESPONSE_ENVELOPE", "Invalid response envelope");
     }
     const status = body.ok
       ? 200
-      : body.error.code === "DIRECTOR_FINANCE_BFF_INVALID_OPERATION"
+      : body.error.code === "DIRECTOR_FINANCE_BFF_INVALID_OPERATION" ||
+          body.error.code === "WAREHOUSE_API_BFF_INVALID_OPERATION"
         ? 400
         : 502;
     return buildResponse(status, body);
@@ -1442,8 +1484,9 @@ export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   rateLimitShadowMonitorEndpointContract: true,
   rateLimitPrivateSmokeEndpointContract: true,
   readRoutes: BFF_STAGING_READ_ROUTES.length,
-  readRpcRoutes: 1,
+  readRpcRoutes: 2,
   directorFinanceRpcRouteContract: true,
+  warehouseApiReadRouteContract: true,
   mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
   mutationRoutesEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some((route) => route.enabledByDefault),
   routeScopedMutationEnablement: true,

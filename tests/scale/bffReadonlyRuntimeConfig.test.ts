@@ -34,6 +34,7 @@ describe("BFF readonly runtime config", () => {
       "accountant.invoice.list": "/api/staging-bff/read/accountant-invoice-list",
       "director.pending.list": "/api/staging-bff/read/director-pending-list",
       "director.finance.rpc.scope": "/api/staging-bff/read/director-finance-rpc-scope",
+      "warehouse.api.read.scope": "/api/staging-bff/read/warehouse-api-read-scope",
     });
   });
 

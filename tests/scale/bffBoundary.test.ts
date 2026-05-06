@@ -17,6 +17,8 @@ const readProjectFile = (relativePath: string): string =>
 const APPROVED_ACTIVE_BFF_IMPORTS = [
   "src/screens/director/director.finance.bff.client.ts",
   "src/screens/director/director.finance.bff.handler.ts",
+  "src/screens/warehouse/warehouse.api.bff.client.ts",
+  "src/screens/warehouse/warehouse.api.bff.handler.ts",
 ];
 
 describe("S-50K BFF boundary scaffold", () => {
@@ -237,12 +239,39 @@ describe("S-50K BFF boundary scaffold", () => {
     const directorFinanceHandlerSource = readProjectFile(
       "src/screens/director/director.finance.bff.handler.ts",
     );
+    const warehouseApiContractSource = readProjectFile(
+      "src/screens/warehouse/warehouse.api.bff.contract.ts",
+    );
+    const warehouseApiClientSource = readProjectFile(
+      "src/screens/warehouse/warehouse.api.bff.client.ts",
+    );
+    const warehouseApiHandlerSource = readProjectFile(
+      "src/screens/warehouse/warehouse.api.bff.handler.ts",
+    );
 
     expect(directorFinanceContractSource).toContain("trafficEnabledByDefault: false");
     expect(directorFinanceContractSource).toContain("productionTrafficEnabled: false");
     expect(directorFinanceClientSource).toContain("resolveBffReadonlyRuntimeConfig");
     expect(directorFinanceClientSource).toContain("callBffReadonlyMobile");
-    expect(`${directorFinanceClientSource}\n${directorFinanceHandlerSource}`).not.toContain(".rpc(");
-    expect(`${directorFinanceClientSource}\n${directorFinanceHandlerSource}`).not.toContain(".from(");
+    expect(warehouseApiContractSource).toContain("trafficEnabledByDefault: false");
+    expect(warehouseApiContractSource).toContain("productionTrafficEnabled: false");
+    expect(warehouseApiClientSource).toContain("resolveBffReadonlyRuntimeConfig");
+    expect(warehouseApiClientSource).toContain("callBffReadonlyMobile");
+    expect(
+      [
+        directorFinanceClientSource,
+        directorFinanceHandlerSource,
+        warehouseApiClientSource,
+        warehouseApiHandlerSource,
+      ].join("\n"),
+    ).not.toContain(".rpc(");
+    expect(
+      [
+        directorFinanceClientSource,
+        directorFinanceHandlerSource,
+        warehouseApiClientSource,
+        warehouseApiHandlerSource,
+      ].join("\n"),
+    ).not.toContain(".from(");
   });
 });

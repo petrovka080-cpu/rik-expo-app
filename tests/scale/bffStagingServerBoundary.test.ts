@@ -42,6 +42,8 @@ import {
   RuntimeRateEnforcementProvider,
   type RateLimitPrivateSmokeResult,
 } from "../../src/shared/scale/rateLimitAdapters";
+import type { WarehouseApiBffPayloadDto } from "../../src/screens/warehouse/warehouse.api.bff.contract";
+import type { WarehouseApiBffReadPort } from "../../src/screens/warehouse/warehouse.api.bff.handler";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -130,6 +132,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
           data: expect.objectContaining({
             status: "ready",
             readRoutes: 5,
+            readRpcRoutes: 2,
             mutationRoutes: 7,
             mutationRoutesEnabledByDefault: false,
             mutationRoutesEnabled: false,
@@ -171,7 +174,9 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
         rateLimitShadowMonitorEndpointContract: true,
         rateLimitPrivateSmokeEndpointContract: true,
         readRoutes: 5,
+        readRpcRoutes: 2,
         mutationRoutes: 7,
+        warehouseApiReadRouteContract: true,
         mutationRoutesEnabledByDefault: false,
         routeScopedMutationEnablement: true,
         catalogRequestMutationRouteScopeKeys: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS,
@@ -421,6 +426,44 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     ]);
     expect(JSON.stringify(response)).not.toContain("secretvalue");
     expect(JSON.stringify(response)).not.toContain("user@example.test");
+  });
+
+  it("invokes the warehouse API read-RPC route through its typed port only", async () => {
+    const route = routeByOperation("warehouse.api.read.scope");
+    const warehouseApiReadPort: WarehouseApiBffReadPort = {
+      runWarehouseApiRead: jest.fn(async (): Promise<WarehouseApiBffPayloadDto> => ({
+        kind: "single",
+        result: { data: [{ row: "warehouse-api" }], error: null },
+      })),
+    };
+
+    const response = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: route?.path ?? "",
+        body: {
+          input: {
+            operation: "warehouse.api.report.incoming_v2",
+            args: { p_from: null, p_to: null },
+          },
+        },
+      },
+      { warehouseApiReadPort },
+    );
+
+    expect(route).toEqual(
+      expect.objectContaining({
+        kind: "read_rpc",
+        method: "POST",
+        enabledByDefault: true,
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.body.ok).toBe(true);
+    expect(warehouseApiReadPort.runWarehouseApiRead).toHaveBeenCalledWith({
+      operation: "warehouse.api.report.incoming_v2",
+      args: { p_from: null, p_to: null },
+    });
   });
 
   it("keeps mutation routes disabled by default and requires route scope before safety metadata", async () => {

@@ -26,9 +26,9 @@ describe("S-WAREHOUSE-LIFECYCLE-AND-DICTS-UNBOUNDED-PAGINATION-CLOSEOUT-1", () =
         order: ".order(orderColumn, { ascending: true })",
       },
       {
-        path: "src/screens/warehouse/warehouse.api.repo.ts",
-        defaults: "WAREHOUSE_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 }",
-        helper: "loadPagedRowsWithCeiling<UnknownRow>",
+        path: "src/screens/warehouse/warehouse.api.repo.transport.ts",
+        defaults: "WAREHOUSE_API_BFF_REFERENCE_PAGE_DEFAULTS",
+        helper: "loadPagedRowsWithCeiling<WarehouseApiUnknownRow>",
         order: ".order(\"code\", { ascending: true })",
       },
       {
