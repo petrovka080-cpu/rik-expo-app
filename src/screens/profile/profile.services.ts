@@ -3,7 +3,11 @@ import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
 import type { Database } from "../../lib/database.types";
-import { normalizePage } from "../../lib/api/_core";
+import {
+  loadPagedRowsWithCeiling,
+  normalizePage,
+  type PagedQuery,
+} from "../../lib/api/_core";
 import { getMyRole } from "../../lib/api/profile";
 import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
 import { supabase } from "../../lib/supabaseClient";
@@ -61,7 +65,11 @@ const isListingKind = (value: unknown): value is ListingKind =>
   value === "material" || value === "service" || value === "rent";
 
 const PROFILE_LISTINGS_PAGE_DEFAULTS = { pageSize: 20, maxPageSize: 20 };
-const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = {
+  pageSize: 100,
+  maxPageSize: 100,
+  maxRows: 5000,
+};
 const PROFILE_CATALOG_SEARCH_PAGE_DEFAULTS = { pageSize: 15, maxPageSize: 15 };
 
 type CompanyMembershipRow = {
@@ -159,7 +167,10 @@ export const loadProfileScreenData =
     const user = await loadCurrentAuthUser();
     const metadata = getMetadata(user);
     const metadataRole = getMetadataRole(user);
-    const listingsPage = normalizePage(undefined, PROFILE_LISTINGS_PAGE_DEFAULTS);
+    const listingsPage = normalizePage(
+      undefined,
+      PROFILE_LISTINGS_PAGE_DEFAULTS,
+    );
 
     const [
       profileRole,
@@ -249,25 +260,23 @@ export const loadProfileScreenData =
     };
   };
 
-async function loadCompanyMembershipRows(userId: string): Promise<CompanyMembershipRow[]> {
-  const rows: CompanyMembershipRow[] = [];
-  let pageIndex = 0;
+async function loadCompanyMembershipRows(
+  userId: string,
+): Promise<CompanyMembershipRow[]> {
+  const result = await loadPagedRowsWithCeiling<CompanyMembershipRow>(
+    () =>
+      supabase
+        .from("company_members")
+        .select("company_id,role")
+        .eq("user_id", userId)
+        .order("company_id", {
+          ascending: true,
+        }) as unknown as PagedQuery<CompanyMembershipRow>,
+    PROFILE_MEMBERSHIP_PAGE_DEFAULTS,
+  );
 
-  while (true) {
-    const page = normalizePage({ page: pageIndex }, PROFILE_MEMBERSHIP_PAGE_DEFAULTS);
-    const result = await supabase
-      .from("company_members")
-      .select("company_id,role")
-      .eq("user_id", userId)
-      .order("company_id", { ascending: true })
-      .range(page.from, page.to);
-
-    if (result.error) throw result.error;
-    const pageRows = Array.isArray(result.data) ? (result.data as CompanyMembershipRow[]) : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) return rows;
-    pageIndex += 1;
-  }
+  if (result.error) throw result.error;
+  return result.data ?? [];
 }
 
 export const loadAddListingOwnerData =
@@ -316,9 +325,8 @@ export const uploadProfileAvatar = async (
       });
     if (upload.error) throw upload.error;
   } else {
-    const fileSystemModule = (await import(
-      "expo-file-system/legacy"
-    )) as LegacyFileSystemModule;
+    const fileSystemModule =
+      (await import("expo-file-system/legacy")) as LegacyFileSystemModule;
     const uriExtMatch = /\.(png|jpg|jpeg|webp)$/i.exec(assetUri);
 
     if (uriExtMatch?.[1]) {
@@ -455,7 +463,9 @@ export const createMarketListing = async (
     ...(kindContract.status === "ready" ? { kind: kindContract.kind } : {}),
   };
 
-  const { error } = await supabase.from("market_listings").insert(insertPayload);
+  const { error } = await supabase
+    .from("market_listings")
+    .insert(insertPayload);
 
   if (error) throw error;
 };

@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import type { ForemanRefObjectTypeRow } from "../../types/contracts/foreman";
 import type { AppOption, RefOption } from "./foreman.types";
 import {
@@ -11,14 +12,18 @@ import {
 type DictRow = { code: string; name?: string | null; name_ru?: string | null };
 type AppRow = { app_code: string; name_human?: string | null };
 type ItemAppRow = { app_code: string | null };
-type DictTable = "ref_object_types" | "ref_levels" | "ref_systems" | "ref_zones";
+type DictTable =
+  | "ref_object_types"
+  | "ref_levels"
+  | "ref_systems"
+  | "ref_zones";
 type PagedSelectResult<T> = {
   data: T[] | null;
   error: { message?: string | null } | null;
 };
 type PagedSelectQuery<T> = {
   range(from: number, to: number): Promise<PagedSelectResult<T>>;
-};
+} & PagedQuery<T>;
 type DictSelectResult = {
   data: ForemanRefObjectTypeRow[] | null;
   error: { message?: string | null } | null;
@@ -49,7 +54,11 @@ type UserNameCacheEntry = {
 const FOREMAN_DICTS_TTL_MS = 5 * 60 * 1000;
 const FOREMAN_APPS_TTL_MS = 5 * 60 * 1000;
 const FOREMAN_PROFILE_NAME_TTL_MS = 5 * 60 * 1000;
-const FOREMAN_DICT_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+const FOREMAN_DICT_LIST_PAGE_DEFAULTS = {
+  pageSize: 100,
+  maxPageSize: 100,
+  maxRows: 5000,
+};
 
 const dictSnapshotCache: CacheEntry<DictsSnapshot> = {
   value: null,
@@ -67,9 +76,10 @@ const foremanProfileNameCache = new Map<string, UserNameCacheEntry>();
 
 const now = () => Date.now();
 
-const isFresh = <T,>(entry: CacheEntry<T>) => entry.value != null && entry.expiresAt > now();
+const isFresh = <T>(entry: CacheEntry<T>) =>
+  entry.value != null && entry.expiresAt > now();
 
-const readCached = async <T,>(
+const readCached = async <T>(
   entry: CacheEntry<T>,
   ttlMs: number,
   loader: () => Promise<T>,
@@ -124,37 +134,24 @@ const toItemAppRow = (value: unknown): ItemAppRow | null => {
   return { app_code: appCode };
 };
 
-const normalizeForemanDictListPage = (pageIndex: number, pageSizeInput?: number) => {
-  const requested = Number.isFinite(pageSizeInput ?? NaN)
-    ? Math.floor(Number(pageSizeInput))
-    : FOREMAN_DICT_LIST_PAGE_DEFAULTS.pageSize;
-  const pageSize = Math.min(
-    Math.max(requested, 1),
-    FOREMAN_DICT_LIST_PAGE_DEFAULTS.maxPageSize,
-  );
-  return {
-    from: pageIndex * pageSize,
-    to: pageIndex * pageSize + pageSize - 1,
-    pageSize,
-  };
-};
-
-const loadPagedForemanRows = async <T,>(
+const loadPagedForemanRows = async <T>(
   queryFactory: () => PagedSelectQuery<T>,
 ): Promise<PagedSelectResult<T>> => {
-  const rows: T[] = [];
-  let pageIndex = 0;
-
-  while (true) {
-    const page = normalizeForemanDictListPage(pageIndex);
-    const result = await queryFactory().range(page.from, page.to);
-    if (result.error) return { data: null, error: result.error };
-
-    const pageRows = Array.isArray(result.data) ? result.data : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) return { data: rows, error: null };
-    pageIndex += 1;
+  const result = await loadPagedRowsWithCeiling<T>(
+    queryFactory,
+    FOREMAN_DICT_LIST_PAGE_DEFAULTS,
+  );
+  if (result.error) {
+    return {
+      data: null,
+      error: {
+        message: String(
+          (result.error as { message?: unknown })?.message ?? result.error,
+        ),
+      },
+    };
   }
+  return { data: result.data ?? [], error: null };
 };
 
 const fetchWithFallback = async (
@@ -166,36 +163,48 @@ const fetchWithFallback = async (
   const run = async (cols: string): Promise<DictSelectResult> => {
     switch (table) {
       case "ref_object_types":
-        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(() =>
-          supabase
-            .from("ref_object_types")
-            .select(cols)
-            .order(orderColumn, { ascending: true })
-            .order("code", { ascending: true }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
+        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(
+          () =>
+            supabase
+              .from("ref_object_types")
+              .select(cols)
+              .order(orderColumn, { ascending: true })
+              .order("code", {
+                ascending: true,
+              }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
         );
       case "ref_levels":
-        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(() =>
-          supabase
-            .from("ref_levels")
-            .select(cols)
-            .order(orderColumn, { ascending: true })
-            .order("code", { ascending: true }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
+        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(
+          () =>
+            supabase
+              .from("ref_levels")
+              .select(cols)
+              .order(orderColumn, { ascending: true })
+              .order("code", {
+                ascending: true,
+              }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
         );
       case "ref_systems":
-        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(() =>
-          supabase
-            .from("ref_systems")
-            .select(cols)
-            .order(orderColumn, { ascending: true })
-            .order("code", { ascending: true }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
+        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(
+          () =>
+            supabase
+              .from("ref_systems")
+              .select(cols)
+              .order(orderColumn, { ascending: true })
+              .order("code", {
+                ascending: true,
+              }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
         );
       case "ref_zones":
-        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(() =>
-          supabase
-            .from("ref_zones")
-            .select(cols)
-            .order(orderColumn, { ascending: true })
-            .order("code", { ascending: true }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
+        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(
+          () =>
+            supabase
+              .from("ref_zones")
+              .select(cols)
+              .order(orderColumn, { ascending: true })
+              .order("code", {
+                ascending: true,
+              }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
         );
     }
   };
@@ -208,7 +217,8 @@ const fetchWithFallback = async (
   return result;
 };
 
-const mapName = (row: DictRow) => String(row.name_ru ?? row.name ?? row.code ?? "").trim();
+const mapName = (row: DictRow) =>
+  String(row.name_ru ?? row.name ?? row.code ?? "").trim();
 
 const toRefOptions = (rows: unknown[], includeEmpty: boolean) => {
   const fetched = rows
@@ -216,13 +226,25 @@ const toRefOptions = (rows: unknown[], includeEmpty: boolean) => {
     .filter((row): row is DictRow => !!row)
     .map((row) => ({ code: row.code, name: mapName(row) }))
     .filter((row) => String(row.code).trim() && String(row.name).trim());
-  return includeEmpty ? [{ code: "", name: "— Не выбрано —" }, ...fetched] : fetched;
+  return includeEmpty
+    ? [{ code: "", name: "— Не выбрано —" }, ...fetched]
+    : fetched;
 };
 
 const loadForemanDictsSnapshot = async (): Promise<DictsSnapshot> => {
   const [obj, lvl, sys, zone] = await Promise.all([
-    fetchWithFallback("ref_object_types", "code,name,name_ru", "name", "code,name"),
-    fetchWithFallback("ref_levels", "code,name,name_ru,sort", "sort", "code,name,sort"),
+    fetchWithFallback(
+      "ref_object_types",
+      "code,name,name_ru",
+      "name",
+      "code,name",
+    ),
+    fetchWithFallback(
+      "ref_levels",
+      "code,name,name_ru,sort",
+      "sort",
+      "code,name,sort",
+    ),
     fetchWithFallback("ref_systems", "code,name,name_ru", "name", "code,name"),
     fetchWithFallback("ref_zones", "code,name,name_ru", "name", "code,name"),
   ]);
@@ -263,11 +285,14 @@ const loadForemanDictsSnapshot = async (): Promise<DictsSnapshot> => {
 };
 
 const loadForemanAppOptions = async (): Promise<AppOption[]> => {
-  const apps = await loadPagedForemanRows<AppRow>(() =>
-    supabase
-      .from("rik_apps")
-      .select("app_code, name_human")
-      .order("app_code", { ascending: true }) as unknown as PagedSelectQuery<AppRow>,
+  const apps = await loadPagedForemanRows<AppRow>(
+    () =>
+      supabase
+        .from("rik_apps")
+        .select("app_code, name_human")
+        .order("app_code", {
+          ascending: true,
+        }) as unknown as PagedSelectQuery<AppRow>,
   );
 
   if (!apps.error && Array.isArray(apps.data) && apps.data.length) {
@@ -276,16 +301,20 @@ const loadForemanAppOptions = async (): Promise<AppOption[]> => {
       .filter((row): row is AppRow => !!row)
       .map((row) => ({
         code: row.app_code,
-        label: (row.name_human && String(row.name_human).trim()) || row.app_code,
+        label:
+          (row.name_human && String(row.name_human).trim()) || row.app_code,
       }));
   }
 
-  const fallback = await loadPagedForemanRows<ItemAppRow>(() =>
-    supabase
-      .from("rik_item_apps")
-      .select("app_code")
-      .not("app_code", "is", null)
-      .order("app_code", { ascending: true }) as unknown as PagedSelectQuery<ItemAppRow>,
+  const fallback = await loadPagedForemanRows<ItemAppRow>(
+    () =>
+      supabase
+        .from("rik_item_apps")
+        .select("app_code")
+        .not("app_code", "is", null)
+        .order("app_code", {
+          ascending: true,
+        }) as unknown as PagedSelectQuery<ItemAppRow>,
   );
 
   if (!fallback.error && Array.isArray(fallback.data)) {
@@ -304,18 +333,26 @@ const loadForemanAppOptions = async (): Promise<AppOption[]> => {
 };
 
 export const peekForemanDictsSnapshot = (): DictsSnapshot | null =>
-  isFresh(dictSnapshotCache) ? (dictSnapshotCache.value as DictsSnapshot) : null;
+  isFresh(dictSnapshotCache)
+    ? (dictSnapshotCache.value as DictsSnapshot)
+    : null;
 
 export const peekForemanAppOptions = (): AppOption[] | null =>
   isFresh(appOptionsCache) ? (appOptionsCache.value as AppOption[]) : null;
 
 export const readForemanDictsSnapshot = async (): Promise<DictsSnapshot> =>
-  await readCached(dictSnapshotCache, FOREMAN_DICTS_TTL_MS, loadForemanDictsSnapshot);
+  await readCached(
+    dictSnapshotCache,
+    FOREMAN_DICTS_TTL_MS,
+    loadForemanDictsSnapshot,
+  );
 
 export const readForemanAppOptions = async (): Promise<AppOption[]> =>
   await readCached(appOptionsCache, FOREMAN_APPS_TTL_MS, loadForemanAppOptions);
 
-export const readForemanProfileName = async (userId: string): Promise<string> => {
+export const readForemanProfileName = async (
+  userId: string,
+): Promise<string> => {
   const normalized = String(userId || "").trim();
   if (!normalized) return "";
 
@@ -323,7 +360,11 @@ export const readForemanProfileName = async (userId: string): Promise<string> =>
   if (cached?.value != null && cached.expiresAt > now()) return cached.value;
   if (cached?.promise) return cached.promise;
 
-  const nextEntry: UserNameCacheEntry = cached ?? { value: null, expiresAt: 0, promise: null };
+  const nextEntry: UserNameCacheEntry = cached ?? {
+    value: null,
+    expiresAt: 0,
+    promise: null,
+  };
   nextEntry.promise = (async () => {
     const { data, error } = await supabase
       .from("user_profiles")
@@ -331,7 +372,9 @@ export const readForemanProfileName = async (userId: string): Promise<string> =>
       .eq("user_id", normalized)
       .maybeSingle();
     if (error) throw error;
-    const value = String((data as { full_name?: unknown } | null)?.full_name ?? "").trim();
+    const value = String(
+      (data as { full_name?: unknown } | null)?.full_name ?? "",
+    ).trim();
     nextEntry.value = value;
     nextEntry.expiresAt = now() + FOREMAN_PROFILE_NAME_TTL_MS;
     return value;

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { normalizePage } from "../../../src/lib/api/_core";
+import {
+  loadPagedRowsWithCeiling,
+  type PagedQuery,
+} from "../../../src/lib/api/_core";
 import { supabase } from "../../../src/lib/supabaseClient";
 import { enrichFieldUiMeta, type FieldUiPriority } from "./calcFieldProfiles";
 import { normalizeWorkTypeCode } from "./workTypeCode";
@@ -30,8 +33,14 @@ export type Field = {
 };
 
 type CalcValues = Record<BasisKey, number | null>;
-const CALC_FIELDS_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
-type CalcFieldsViewName = "v_reno_calc_fields_ui_clean" | "v_reno_calc_fields_ui";
+const CALC_FIELDS_PAGE_DEFAULTS = {
+  pageSize: 100,
+  maxPageSize: 100,
+  maxRows: 5000,
+};
+type CalcFieldsViewName =
+  | "v_reno_calc_fields_ui_clean"
+  | "v_reno_calc_fields_ui";
 
 type FieldRow = {
   basis_key: string;
@@ -67,14 +76,12 @@ async function fetchCalcFieldRows(
   viewName: CalcFieldsViewName,
   workTypeCode: string,
 ): Promise<FieldRow[]> {
-  const rows: FieldRow[] = [];
-  let pageIndex = 0;
-
-  while (true) {
-    const page = normalizePage({ page: pageIndex }, CALC_FIELDS_PAGE_DEFAULTS);
-    const { data, error } = await supabase
-      .from(viewName)
-      .select(`
+  const result = await loadPagedRowsWithCeiling<unknown>(
+    () =>
+      supabase
+        .from(viewName)
+        .select(
+          `
         basis_key,
         label_ru,
         uom_code,
@@ -83,21 +90,21 @@ async function fetchCalcFieldRows(
         default_value,
         sort_order,
         used_in_norms
-      `)
-      .eq("work_type_code", workTypeCode)
-      .order("sort_order", { ascending: true })
-      .order("basis_key", { ascending: true })
-      .range(page.from, page.to);
+      `,
+        )
+        .eq("work_type_code", workTypeCode)
+        .order("sort_order", { ascending: true })
+        .order("basis_key", {
+          ascending: true,
+        }) as unknown as PagedQuery<unknown>,
+    CALC_FIELDS_PAGE_DEFAULTS,
+  );
 
-    if (error) throw error;
+  if (result.error) throw result.error;
 
-    const pageRows = (Array.isArray(data) ? data : [])
-      .map(toFieldRow)
-      .filter((row): row is FieldRow => Boolean(row));
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) return rows;
-    pageIndex += 1;
-  }
+  return (result.data ?? [])
+    .map(toFieldRow)
+    .filter((row): row is FieldRow => Boolean(row));
 }
 
 export function useCalcFields(workTypeCode?: string | null) {
@@ -166,7 +173,8 @@ export function useCalcFields(workTypeCode?: string | null) {
             displayHintRu: uiMeta.displayHintRu,
             required: !!r.is_required,
             usedInNorms: !!r.used_in_norms,
-            defaultValue: typeof r.default_value === "number" ? r.default_value : null,
+            defaultValue:
+              typeof r.default_value === "number" ? r.default_value : null,
             order: r.sort_order ?? null,
             familyCode: uiMeta.familyCode,
             semanticRole: uiMeta.semanticRole,

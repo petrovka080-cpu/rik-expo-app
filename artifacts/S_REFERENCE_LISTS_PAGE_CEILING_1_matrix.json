@@ -1,0 +1,118 @@
+{
+  "wave": "S-REFERENCE-LISTS-PAGE-CEILING-1",
+  "final_status": "GREEN_REFERENCE_LISTS_PAGE_CEILING_RELEASE_INTEGRATED",
+  "head_equals_origin_main_before_work": true,
+  "ahead_before_work": 0,
+  "behind_before_work": 0,
+  "worktree_clean_before_work": true,
+  "target_files": [
+    "src/components/foreman/useCalcFields.ts",
+    "src/screens/foreman/foreman.dicts.repo.ts",
+    "src/screens/profile/profile.services.ts"
+  ],
+  "tests_changed": [
+    "tests/api/referenceListPageCeiling.contract.test.ts",
+    "tests/api/topListPaginationBatch5A.contract.test.ts",
+    "tests/api/topListPaginationBatch5B.contract.test.ts",
+    "tests/api/topListPaginationBatch6.contract.test.ts",
+    "tests/api/topListPaginationBatch7.contract.test.ts"
+  ],
+  "artifacts": [
+    "artifacts/S_REFERENCE_LISTS_PAGE_CEILING_1_matrix.json",
+    "artifacts/S_REFERENCE_LISTS_PAGE_CEILING_1_proof.md"
+  ],
+  "readers_before": [
+    {
+      "file": "src/components/foreman/useCalcFields.ts",
+      "function": "fetchCalcFieldRows",
+      "domain_table": "v_reno_calc_fields_ui_clean,v_reno_calc_fields_ui",
+      "has_range": true,
+      "has_max_rows": false,
+      "deterministic_order": ["sort_order", "basis_key"]
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "function": "loadPagedForemanRows",
+      "domain_table": "ref_object_types,ref_levels,ref_systems,ref_zones,rik_apps,rik_item_apps",
+      "has_range": true,
+      "has_max_rows": false,
+      "deterministic_order": ["orderColumn", "code", "app_code"]
+    },
+    {
+      "file": "src/screens/profile/profile.services.ts",
+      "function": "loadCompanyMembershipRows",
+      "domain_table": "company_members",
+      "has_range": true,
+      "has_max_rows": false,
+      "deterministic_order": ["company_id"]
+    }
+  ],
+  "readers_after": [
+    {
+      "file": "src/components/foreman/useCalcFields.ts",
+      "function": "fetchCalcFieldRows",
+      "contract": "loadPagedRowsWithCeiling",
+      "page_size": 100,
+      "max_page_size": 100,
+      "max_rows": 5000,
+      "deterministic_order_preserved": true,
+      "filters_preserved": ["work_type_code"]
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "function": "loadPagedForemanRows",
+      "contract": "loadPagedRowsWithCeiling",
+      "page_size": 100,
+      "max_page_size": 100,
+      "max_rows": 5000,
+      "deterministic_order_preserved": true,
+      "filters_preserved": []
+    },
+    {
+      "file": "src/screens/profile/profile.services.ts",
+      "function": "loadCompanyMembershipRows",
+      "contract": "loadPagedRowsWithCeiling",
+      "page_size": 100,
+      "max_page_size": 100,
+      "max_rows": 5000,
+      "deterministic_order_preserved": true,
+      "filters_preserved": ["user_id"]
+    }
+  ],
+  "page_ceiling_contract": {
+    "helper": "loadPagedRowsWithCeiling",
+    "overflow_behavior": "error",
+    "probe_at_ceiling": true,
+    "silent_truncation_used": false
+  },
+  "output_shapes_preserved": true,
+  "filters_preserved": true,
+  "ordering_preserved": true,
+  "aggregation_required": false,
+  "server_side_aggregation_added": false,
+  "remaining_reference_list_while_true_in_targets": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "temporary_hooks_created": false,
+  "temporary_scripts_created": false,
+  "temporary_endpoints_created": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "targeted_tests_passed": true,
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "artifact_json_parse": true,
+  "release_verify_status": "PASS_POST_PUSH",
+  "render_auto_deploy": "no",
+  "deploy_in_progress": false,
+  "health": 200,
+  "ready": 200,
+  "pushed": true
+}

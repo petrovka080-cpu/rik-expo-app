@@ -24,43 +24,80 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
     const proposals = read("src/lib/api/proposals.ts");
     expect(proposals).toContain(".range(page.from, page.to)");
 
-    const buyerCounterparty = read("src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts");
-    expect(buyerCounterparty.match(/\.range\(page\.from, page\.to\)/g)).toHaveLength(5);
+    const buyerCounterparty = read(
+      "src/screens/buyer/hooks/useBuyerCounterpartyRepo.ts",
+    );
+    expect(
+      buyerCounterparty.match(/\.range\(page\.from, page\.to\)/g),
+    ).toHaveLength(5);
 
-    const directorRepository = read("src/screens/director/director.repository.ts");
-    expect(directorRepository).toContain("queryFactory().range(page.from, page.to)");
+    const directorRepository = read(
+      "src/screens/director/director.repository.ts",
+    );
+    expect(directorRepository).toContain(
+      "queryFactory().range(page.from, page.to)",
+    );
 
     const profileServices = read("src/screens/profile/profile.services.ts");
-    expect(profileServices).toContain("PROFILE_MEMBERSHIP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(profileServices).toContain("const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = {");
+    expect(profileServices).toContain("maxRows: 5000");
 
-    const warehouseDicts = read("src/screens/warehouse/warehouse.dicts.repo.ts");
+    const warehouseDicts = read(
+      "src/screens/warehouse/warehouse.dicts.repo.ts",
+    );
     expect(warehouseDicts).toContain("async function loadPagedWarehouseRows");
   });
 
   it("page-through-all bounds seven safe catalog list and reference reads", () => {
     const catalogTransport = read("src/lib/catalog/catalog.transport.ts");
 
-    expect(catalogTransport).toContain("CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
-    expect(catalogTransport).toContain("const loadPagedCatalogRows = async <T,>");
+    expect(catalogTransport).toContain(
+      "CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }",
+    );
+    expect(catalogTransport).toContain(
+      "const loadPagedCatalogRows = async <T,>",
+    );
     expect(catalogTransport).toContain("loadPagedRowsWithCeiling<T>");
     expect(catalogTransport).toContain("CATALOG_SAFE_LIST_PAGE_DEFAULTS");
     expect(catalogTransport).toContain("toCatalogQueryError(result.error)");
-    expect(catalogTransport).not.toContain("for (let pageIndex = 0; ; pageIndex += 1)");
+    expect(catalogTransport).not.toContain(
+      "for (let pageIndex = 0; ; pageIndex += 1)",
+    );
 
-    expect(catalogTransport).toContain("return await loadPagedCatalogRows<SupplierCounterpartyRow>(buildQuery)");
-    expect(catalogTransport).toContain("await loadPagedCatalogRows<SubcontractCounterpartyRow>(() =>");
-    expect(catalogTransport).toContain("await loadPagedCatalogRows<ContractorCounterpartyRow>(() =>");
-    expect(catalogTransport).toContain("return await loadPagedCatalogRows<ProfileContractorCompatRow>(buildQuery)");
-    expect(catalogTransport).toContain("const result = await loadPagedCatalogRows<CatalogGroupTransportRow>(() =>");
-    expect(catalogTransport).toContain("const result = await loadPagedCatalogRows<UomTransportRow>(() =>");
-    expect(catalogTransport).toContain("return await loadPagedCatalogRows<SupplierTableRow>(buildQuery)");
+    expect(catalogTransport).toContain(
+      "return await loadPagedCatalogRows<SupplierCounterpartyRow>(buildQuery)",
+    );
+    expect(catalogTransport).toContain(
+      "await loadPagedCatalogRows<SubcontractCounterpartyRow>(() =>",
+    );
+    expect(catalogTransport).toContain(
+      "await loadPagedCatalogRows<ContractorCounterpartyRow>(() =>",
+    );
+    expect(catalogTransport).toContain(
+      "return await loadPagedCatalogRows<ProfileContractorCompatRow>(buildQuery)",
+    );
+    expect(catalogTransport).toContain(
+      "const result = await loadPagedCatalogRows<CatalogGroupTransportRow>(() =>",
+    );
+    expect(catalogTransport).toContain(
+      "const result = await loadPagedCatalogRows<UomTransportRow>(() =>",
+    );
+    expect(catalogTransport).toContain(
+      "return await loadPagedCatalogRows<SupplierTableRow>(buildQuery)",
+    );
 
-    expect(catalogTransport).toContain(".order(\"name\", { ascending: true })");
-    expect(catalogTransport).toContain(".order(\"id\", { ascending: true })");
-    expect(catalogTransport).toContain(".order(\"contractor_org\", { ascending: true })");
-    expect(catalogTransport).toContain(".order(\"company_name\", { ascending: true })");
-    expect(catalogTransport).toContain(".order(\"user_id\", { ascending: true })");
-    expect(catalogTransport).toContain(".order(\"code\", { ascending: true })");
+    expect(catalogTransport).toContain('.order("name", { ascending: true })');
+    expect(catalogTransport).toContain('.order("id", { ascending: true })');
+    expect(catalogTransport).toContain(
+      '.order("contractor_org", { ascending: true })',
+    );
+    expect(catalogTransport).toContain(
+      '.order("company_name", { ascending: true })',
+    );
+    expect(catalogTransport).toContain(
+      '.order("user_id", { ascending: true })',
+    );
+    expect(catalogTransport).toContain('.order("code", { ascending: true })');
     expect(catalogTransport).not.toContain(".limit(5000)");
   });
 
@@ -221,22 +258,41 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !sCatalogRequestBffMutationPortingAllowedDirtyFiles.has(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
-    expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(false);
-    expect(changed.some((file) => file.startsWith("scripts/scale/"))).toBe(false);
-    expect(changed.some((file) => file.startsWith("src/shared/scale/"))).toBe(false);
-    expect(changed.some((file) => file.startsWith("supabase/migrations/"))).toBe(false);
-    expect(changed).not.toEqual(expect.arrayContaining(["package.json", "package-lock.json", "app.json", "eas.json"]));
+    expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(
+      false,
+    );
+    expect(changed.some((file) => file.startsWith("scripts/scale/"))).toBe(
+      false,
+    );
+    expect(changed.some((file) => file.startsWith("src/shared/scale/"))).toBe(
+      false,
+    );
+    expect(
+      changed.some((file) => file.startsWith("supabase/migrations/")),
+    ).toBe(false);
+    expect(changed).not.toEqual(
+      expect.arrayContaining([
+        "package.json",
+        "package-lock.json",
+        "app.json",
+        "eas.json",
+      ]),
+    );
     expect(existsSync(join(root, "ios"))).toBe(false);
   });
 
   it("requires no production or staging env and keeps artifacts valid JSON", () => {
-    const changedSources = [
-      "src/lib/catalog/catalog.transport.ts",
-    ].map(read).join("\n");
+    const changedSources = ["src/lib/catalog/catalog.transport.ts"]
+      .map(read)
+      .join("\n");
 
-    expect(changedSources).not.toMatch(/PROD_|STAGING_|SENTRY_|SUPABASE_REALTIME_/);
+    expect(changedSources).not.toMatch(
+      /PROD_|STAGING_|SENTRY_|SUPABASE_REALTIME_/,
+    );
 
-    const matrix = JSON.parse(read("artifacts/S_PAG_7_query_pressure_reduction_matrix.json"));
+    const matrix = JSON.parse(
+      read("artifacts/S_PAG_7_query_pressure_reduction_matrix.json"),
+    );
     expect(matrix.wave).toBe("S-PAG-7");
     expect(matrix.result.fixedCallSites).toBe(7);
     expect(matrix.intentionallyNotTouched.bffDeploy).toBe(true);
