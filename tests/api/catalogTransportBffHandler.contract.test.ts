@@ -39,10 +39,15 @@ describe("catalog transport BFF handler contract", () => {
       operation: "catalog.rik_quick_search.fallback",
       args: { searchTerm: "cement", tokens: ["cement"], limit: 20 },
     });
+    const catalogItemsPreview = await handleCatalogTransportBffReadScope(port, {
+      operation: "catalog.items.search.preview",
+      args: { searchTerm: "cement", kind: "material", pageSize: 60 },
+    });
 
     expect(list.ok).toBe(true);
     expect(rpc.ok).toBe(true);
     expect(preview.ok).toBe(true);
+    expect(catalogItemsPreview.ok).toBe(true);
     if (list.ok) {
       expect(list.data).toEqual(
         expect.objectContaining({

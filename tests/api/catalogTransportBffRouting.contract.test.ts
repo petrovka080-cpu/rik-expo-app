@@ -3,6 +3,7 @@ import path from "node:path";
 
 import {
   CATALOG_TRANSPORT_BFF_CONTRACT,
+  CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS,
   CATALOG_TRANSPORT_BFF_DIRECT_FALLBACK_REASON,
   CATALOG_TRANSPORT_BFF_OPERATION_CONTRACTS,
   CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS,
@@ -39,6 +40,11 @@ describe("catalog transport BFF routing contract", () => {
       maxPageSize: 100,
       maxRows: 100,
     });
+    expect(CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS).toEqual({
+      pageSize: 60,
+      maxPageSize: 100,
+      maxRows: 100,
+    });
     expect(CATALOG_TRANSPORT_BFF_OPERATION_CONTRACTS.map((contract) => contract.operation)).toEqual([
       "catalog.supplier_counterparty.list",
       "catalog.subcontract_counterparty.list",
@@ -52,6 +58,7 @@ describe("catalog transport BFF routing contract", () => {
       "catalog.suppliers.rpc",
       "catalog.suppliers.table",
       "catalog.rik_quick_search.fallback",
+      "catalog.items.search.preview",
     ]);
     expect(
       CATALOG_TRANSPORT_BFF_OPERATION_CONTRACTS.every(
@@ -71,8 +78,23 @@ describe("catalog transport BFF routing contract", () => {
     expect(transportSource).not.toContain(".from(");
 
     expect(fallbackSource.match(/\.rpc\(/g) ?? []).toHaveLength(4);
-    expect(fallbackSource.match(/\.from\(/g) ?? []).toHaveLength(10);
+    expect(fallbackSource.match(/\.from\(/g) ?? []).toHaveLength(11);
     expect(CATALOG_TRANSPORT_BFF_DIRECT_FALLBACK_REASON).toContain("compatibility fallback");
+  });
+
+  it("routes the map catalog search modal through the catalog transport boundary", () => {
+    const modalSource = readProjectFile("src/components/map/CatalogSearchModal.tsx");
+    const transportSource = readProjectFile("src/lib/catalog/catalog.transport.ts");
+    const fallbackSource = readProjectFile("src/lib/catalog/catalog.transport.supabase.ts");
+
+    expect(modalSource).toContain("loadCatalogItemsSearchPreviewRows");
+    expect(modalSource).not.toMatch(/supabase\.(from|rpc)\(/);
+    expect(modalSource).not.toContain(".from(\"catalog_items\")");
+    expect(transportSource).toContain('operation: "catalog.items.search.preview"');
+    expect(fallbackSource).toContain('from("catalog_items")');
+    expect(fallbackSource).toContain(".order(\"rik_code\", { ascending: true })");
+    expect(fallbackSource).toContain(".order(\"id\", { ascending: true })");
+    expect(fallbackSource).toContain(".range(page.from, page.to)");
   });
 
   it("wires the mobile BFF route without enabling production traffic", () => {

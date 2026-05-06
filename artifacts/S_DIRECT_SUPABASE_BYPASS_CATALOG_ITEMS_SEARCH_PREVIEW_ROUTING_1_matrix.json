@@ -1,0 +1,104 @@
+{
+  "wave": "S-DIRECT-SUPABASE-BYPASS-CATALOG-ITEMS-SEARCH-PREVIEW-ROUTING-1",
+  "final_status": "GREEN_DIRECT_SUPABASE_BYPASS_CATALOG_ITEMS_SEARCH_PREVIEW_ROUTED_RELEASE_INTEGRATED",
+  "approvals_present": {
+    "S_PRODUCTION_MAIN_PUSH_APPROVED": true
+  },
+  "head_equals_origin_main": true,
+  "ahead": 0,
+  "behind": 0,
+  "worktree_clean": true,
+  "render_auto_deploy": false,
+  "deploy_in_progress": false,
+  "target_files": [
+    "src/components/map/CatalogSearchModal.tsx",
+    "src/lib/catalog/catalog.bff.contract.ts",
+    "src/lib/catalog/catalog.bff.handler.ts",
+    "src/lib/catalog/catalog.transport.ts",
+    "src/lib/catalog/catalog.transport.supabase.ts",
+    "src/lib/catalog/catalog.types.ts",
+    "scripts/server/stagingBffCatalogTransportReadPort.ts"
+  ],
+  "direct_bypass_before": [
+    {
+      "file": "src/components/map/CatalogSearchModal.tsx",
+      "function": "runSearch",
+      "operation_class": "read",
+      "domain_table_name_only": "catalog_items",
+      "bounded": true,
+      "route": "direct Supabase UI read"
+    }
+  ],
+  "direct_bypass_after": [
+    {
+      "file": "src/components/map/CatalogSearchModal.tsx",
+      "function": "runSearch",
+      "operation_class": "read",
+      "domain_table_name_only": "catalog_items",
+      "bounded": true,
+      "route": "catalog transport BFF-aware read boundary",
+      "direct_supabase_in_ui": false
+    }
+  ],
+  "bff_contract_added": {
+    "contract_id": "catalog_transport_read_scope_v1",
+    "operation": "catalog.items.search.preview",
+    "operation_class": "preview_list_read",
+    "read_only": true,
+    "traffic_enabled_by_default": false,
+    "production_traffic_enabled": false,
+    "source_kind": "table:catalog_items",
+    "ordering": "rik_code_id_asc",
+    "page_size": 60,
+    "max_page_size": 100,
+    "max_rows": 100
+  },
+  "filters_preserved": true,
+  "ordering_preserved": true,
+  "response_shape_preserved": true,
+  "fallback_behavior_preserved": true,
+  "preview_contract_explicit": true,
+  "silent_truncation_used": false,
+  "temporary_hooks_created": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "remaining_direct_bypass_paths": [
+    {
+      "file": "src/lib/catalog/catalog.transport.supabase.ts",
+      "function": "loadCatalogItemsSearchPreviewRowsFromSupabase",
+      "operation_class": "read",
+      "domain_table_name_only": "catalog_items",
+      "reason": "Compatibility fallback remains inside the permanent transport boundary until readonly BFF traffic is explicitly enabled."
+    }
+  ],
+  "tests_passed": [
+    "tests/api/catalogTransportBffRouting.contract.test.ts",
+    "tests/api/catalogTransportBffHandler.contract.test.ts",
+    "tests/scale/catalogTransportBffReadonlyDbPort.test.ts",
+    "tests/catalog/catalog.transport.rikItemsBounded.test.ts",
+    "tests/api/topListPaginationBatch3.contract.test.ts",
+    "tests/api/topListPaginationBatch7.contract.test.ts"
+  ],
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "artifact_json_parse": "PASS",
+  "pre_push_release_verify_status": "PASS_GATES_READINESS_BLOCKED_ONLY_BY_LOCAL_AHEAD",
+  "pre_push_release_verify_gates": {
+    "tsc": "PASS",
+    "expo_lint": "PASS",
+    "jest_run_in_band": "PASS",
+    "jest": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "release_verify_status": "PASS_AFTER_PUSH",
+  "pushed": true
+}

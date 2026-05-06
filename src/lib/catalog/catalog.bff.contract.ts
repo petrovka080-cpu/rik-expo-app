@@ -1,4 +1,8 @@
-import type { CatalogSearchRpcArgs, CatalogSearchRpcName } from "./catalog.types";
+import type {
+  CatalogItemsSearchKind,
+  CatalogSearchRpcArgs,
+  CatalogSearchRpcName,
+} from "./catalog.types";
 
 export type CatalogTransportBffContractId = "catalog_transport_read_scope_v1";
 export type CatalogTransportBffDocumentType = "catalog_transport_read_scope";
@@ -16,7 +20,8 @@ export type CatalogTransportBffOperation =
   | "catalog.incoming_items.list"
   | "catalog.suppliers.rpc"
   | "catalog.suppliers.table"
-  | "catalog.rik_quick_search.fallback";
+  | "catalog.rik_quick_search.fallback"
+  | "catalog.items.search.preview";
 
 export type CatalogTransportBffOperationClass =
   | "reference_list_read"
@@ -38,6 +43,12 @@ export type CatalogTransportTokenSearchArgs = {
   searchTerm: string;
   tokens: string[];
   limit: number;
+};
+
+export type CatalogTransportItemsSearchPreviewArgs = {
+  searchTerm: string;
+  kind: CatalogItemsSearchKind;
+  pageSize?: number | null;
 };
 
 export type CatalogTransportContractorProfileArgs = {
@@ -105,6 +116,10 @@ export type CatalogTransportBffRequestDto =
   | {
       operation: "catalog.rik_quick_search.fallback";
       args: CatalogTransportTokenSearchArgs;
+    }
+  | {
+      operation: "catalog.items.search.preview";
+      args: CatalogTransportItemsSearchPreviewArgs;
     };
 
 export type CatalogTransportBffRow = Record<string, unknown>;
@@ -157,12 +172,14 @@ export type CatalogTransportBffOperationContract = {
     incoming: boolean;
     contractorProfileFlag: boolean;
     paginationCeiling: boolean;
+    kind?: boolean;
   };
   sourceKind:
     | "table:suppliers"
     | "table:subcontracts"
     | "table:contractors"
     | "table:user_profiles"
+    | "table:catalog_items"
     | "table:rik_items"
     | "table:catalog_groups_clean"
     | "table:ref_uoms_clean"
@@ -175,6 +192,7 @@ export type CatalogTransportBffOperationContract = {
     | "company_name_id_asc"
     | "user_id_asc"
     | "rik_code_name_human_id_asc"
+    | "rik_code_id_asc"
     | "code_asc"
     | "code_id_asc"
     | "incoming_item_id_asc"
@@ -193,6 +211,12 @@ export const CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS = Object.freeze({
 
 export const CATALOG_TRANSPORT_BFF_RIK_ITEMS_PREVIEW_DEFAULTS = Object.freeze({
   pageSize: 50,
+  maxPageSize: 100,
+  maxRows: 100,
+} as const satisfies CatalogTransportBffPageDefaults);
+
+export const CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS = Object.freeze({
+  pageSize: 60,
   maxPageSize: 100,
   maxRows: 100,
 } as const satisfies CatalogTransportBffPageDefaults);
@@ -436,6 +460,26 @@ export const CATALOG_TRANSPORT_BFF_OPERATION_CONTRACTS = Object.freeze([
     },
     sourceKind: "table:rik_items",
     ordering: "rik_code_name_human_id_asc",
+    readOnly: true,
+    trafficEnabledByDefault: false,
+    wiredToAppRuntime: true,
+  },
+  {
+    operation: "catalog.items.search.preview",
+    operationClass: "preview_list_read",
+    responseEnvelope: "CatalogTransportBffEnvelope",
+    filterScope: {
+      search: true,
+      tokens: false,
+      rpcName: false,
+      apps: false,
+      incoming: false,
+      contractorProfileFlag: false,
+      paginationCeiling: true,
+      kind: true,
+    },
+    sourceKind: "table:catalog_items",
+    ordering: "rik_code_id_asc",
     readOnly: true,
     trafficEnabledByDefault: false,
     wiredToAppRuntime: true,

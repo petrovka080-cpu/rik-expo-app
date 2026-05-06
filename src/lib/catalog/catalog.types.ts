@@ -142,6 +142,18 @@ export type CatalogSearchFallbackRow = Pick<
   "rik_code" | "name_human" | "uom_code" | "sector_code" | "spec" | "kind" | "group_code"
 >;
 
+export type CatalogItemsSearchKind = "all" | "material" | "work" | "service";
+
+export type CatalogItemsSearchPreviewRow = {
+  id: string;
+  rik_code: string;
+  kind: string;
+  name_human: string;
+  uom_code?: string | null;
+  tags?: string | null;
+  sector_code?: string | null;
+};
+
 export type RikQuickSearchRpcRow = {
   code?: string | null;
   rik_code?: string | null;

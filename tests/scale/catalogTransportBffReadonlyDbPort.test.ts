@@ -48,6 +48,28 @@ describe("catalog transport BFF readonly DB port", () => {
     expect(quickFallback.maxRows).toBe(100);
   });
 
+  it("keeps catalog_items search as an explicit bounded preview read", () => {
+    const search = buildCatalogTransportReadQueryPlan({
+      operation: "catalog.items.search.preview",
+      args: { searchTerm: "cement", kind: "material", pageSize: 250 },
+    });
+    const unfiltered = buildCatalogTransportReadQueryPlan({
+      operation: "catalog.items.search.preview",
+      args: { searchTerm: "", kind: "all", pageSize: 60 },
+    });
+
+    expect(search.sql).toContain("from public.catalog_items");
+    expect(search.sql).toContain(
+      "search_blob ilike $1 or name_search ilike $1 or name_human ilike $1 or rik_code ilike $1",
+    );
+    expect(search.sql).toContain("kind = $2");
+    expect(search.sql).toContain("order by rik_code asc, id asc");
+    expect(search.values).toEqual(["%cement%", "material", 100]);
+    expect(search.maxRows).toBe(100);
+    expect(unfiltered.sql).not.toContain("where");
+    expect(unfiltered.values).toEqual([60]);
+  });
+
   it("preserves RPC argument omission semantics while bounding returned rows", () => {
     const suppliersNoSearch = buildCatalogTransportReadQueryPlan({
       operation: "catalog.suppliers.rpc",

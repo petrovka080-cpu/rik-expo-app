@@ -1,6 +1,7 @@
 import { Client, type ClientConfig } from "pg";
 
 import {
+  CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS,
   CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS,
   CATALOG_TRANSPORT_BFF_RIK_ITEMS_PREVIEW_DEFAULTS,
   type CatalogTransportBffOperation,
@@ -40,6 +41,15 @@ const clampPreviewLimit = (value: unknown): number =>
     Math.min(
       CATALOG_TRANSPORT_BFF_RIK_ITEMS_PREVIEW_DEFAULTS.maxRows,
       toInt(value, CATALOG_TRANSPORT_BFF_RIK_ITEMS_PREVIEW_DEFAULTS.pageSize),
+    ),
+  );
+
+const clampCatalogItemsPreviewLimit = (value: unknown): number =>
+  Math.max(
+    1,
+    Math.min(
+      CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS.maxRows,
+      toInt(value, CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS.pageSize),
     ),
   );
 
@@ -298,6 +308,36 @@ export function buildCatalogTransportReadQueryPlan(
         "limit $" + (searchTerm ? "2" : "1"),
       ].filter(Boolean).join(" "),
       searchTerm ? [likeValue(searchTerm), referenceProbeLimit()] : [referenceProbeLimit()],
+    );
+  }
+
+  if (input.operation === "catalog.items.search.preview") {
+    const searchTerm = safeText(input.args.searchTerm).toLowerCase();
+    const values: unknown[] = [];
+    const filters: string[] = [];
+    if (searchTerm) {
+      values.push(likeValue(searchTerm));
+      filters.push(
+        "(search_blob ilike $1 or name_search ilike $1 or name_human ilike $1 or rik_code ilike $1)",
+      );
+    }
+    if (input.args.kind !== "all") {
+      values.push(input.args.kind);
+      filters.push(`kind = $${values.length}`);
+    }
+    values.push(clampCatalogItemsPreviewLimit(input.args.pageSize));
+
+    return plan(
+      input.operation,
+      [
+        "select id, rik_code, kind, name_human, uom_code, tags, sector_code",
+        "from public.catalog_items",
+        filters.length ? `where ${filters.join(" and ")}` : "",
+        "order by rik_code asc, id asc",
+        `limit $${values.length}`,
+      ].filter(Boolean).join(" "),
+      values,
+      CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS.maxRows,
     );
   }
 

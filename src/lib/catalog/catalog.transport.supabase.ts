@@ -4,7 +4,10 @@ import {
   normalizePage,
   type PagedQuery,
 } from "../api/_core";
+import { CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS } from "./catalog.bff.contract";
 import type {
+  CatalogItemsSearchKind,
+  CatalogItemsSearchPreviewRow,
   CatalogGroup,
   ContractorCounterpartyRow,
   CatalogSearchRpcArgs,
@@ -33,6 +36,8 @@ const CATALOG_SEARCH_FALLBACK_SELECT =
   "rik_code,name_human,uom_code,sector_code,spec,kind,group_code";
 const RIK_QUICK_SEARCH_FALLBACK_FIELDS =
   "rik_code,name_human,uom_code,kind,name_human_ru";
+const CATALOG_ITEMS_SEARCH_PREVIEW_SELECT =
+  "id,rik_code,kind,name_human,uom_code,tags,sector_code";
 const CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 const CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS = {
   pageSize: 50,
@@ -82,6 +87,21 @@ const normalizeRikItemsSearchPreviewPage = (limit: number) => {
   return {
     from: page.from,
     to: Math.min(page.to, CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS.maxRows - 1),
+  };
+};
+
+const normalizeCatalogItemsSearchPreviewPage = (pageSize?: number | null) => {
+  const requestedPageSize =
+    typeof pageSize === "number"
+      ? pageSize
+      : CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS.pageSize;
+  const page = normalizePage(
+    { pageSize: requestedPageSize },
+    CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS,
+  );
+  return {
+    from: page.from,
+    to: Math.min(page.to, CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS.maxRows - 1),
   };
 };
 
@@ -284,6 +304,34 @@ export const loadRikQuickSearchFallbackRowsFromSupabase = async (
   return await builder
     .order("rik_code", { ascending: true })
     .order("name_human", { ascending: true })
+    .order("id", { ascending: true })
+    .range(page.from, page.to);
+};
+
+export const loadCatalogItemsSearchPreviewRowsFromSupabase = async (
+  searchTerm: string,
+  kind: CatalogItemsSearchKind,
+  pageSize?: number | null,
+): Promise<CatalogQueryResult<CatalogItemsSearchPreviewRow>> => {
+  const page = normalizeCatalogItemsSearchPreviewPage(pageSize);
+  let query = supabase
+    .from("catalog_items")
+    .select(CATALOG_ITEMS_SEARCH_PREVIEW_SELECT);
+
+  const s = searchTerm.trim().toLowerCase();
+  if (s) {
+    const like = `%${s}%`;
+    query = query.or(
+      `search_blob.ilike.${like},name_search.ilike.${like},name_human.ilike.${like},rik_code.ilike.${like}`,
+    );
+  }
+
+  if (kind !== "all") {
+    query = query.eq("kind", kind);
+  }
+
+  return await query
+    .order("rik_code", { ascending: true })
     .order("id", { ascending: true })
     .range(page.from, page.to);
 };

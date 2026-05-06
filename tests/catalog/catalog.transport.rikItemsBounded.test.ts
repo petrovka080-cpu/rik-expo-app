@@ -10,6 +10,7 @@ import fs from "fs";
 import path from "path";
 
 import {
+  loadCatalogItemsSearchPreviewRows,
   loadCatalogSearchFallbackRows,
   loadIncomingItemRows,
   loadRikQuickSearchFallbackRows,
@@ -28,10 +29,12 @@ const makeIncomingRow = (index: number) => ({
 
 const buildRikItemsQuery = (resolvedValue: unknown) => {
   const chain = {
+    eq: jest.fn(),
     or: jest.fn(),
     order: jest.fn(),
     range: jest.fn().mockResolvedValue(resolvedValue),
   };
+  chain.eq.mockReturnValue(chain);
   chain.or.mockReturnValue(chain);
   chain.order.mockReturnValue(chain);
   const select = jest.fn().mockReturnValue(chain);
@@ -105,6 +108,27 @@ describe("catalog transport bounded rik_items and child list reads", () => {
     expect(query.chain.range).toHaveBeenCalledWith(0, 99);
   });
 
+  it("bounds catalog_items modal search as a deterministic preview page", async () => {
+    const query = buildRikItemsQuery({ data: [], error: null });
+    mockFrom.mockReturnValue({ select: query.select });
+
+    await expect(loadCatalogItemsSearchPreviewRows("cement", "material", 250)).resolves.toEqual({
+      data: [],
+      error: null,
+    });
+
+    expect(mockFrom).toHaveBeenCalledWith("catalog_items");
+    expect(query.select).toHaveBeenCalledWith("id,rik_code,kind,name_human,uom_code,tags,sector_code");
+    expect(query.chain.or).toHaveBeenCalledWith(
+      "search_blob.ilike.%cement%,name_search.ilike.%cement%,name_human.ilike.%cement%,rik_code.ilike.%cement%",
+    );
+    expect(query.chain.eq).toHaveBeenCalledWith("kind", "material");
+    expect(query.chain.order).toHaveBeenNthCalledWith(1, "rik_code", { ascending: true });
+    expect(query.chain.order).toHaveBeenNthCalledWith(2, "id", { ascending: true });
+    expect(query.chain.range).toHaveBeenCalledWith(0, 99);
+  });
+
+
   it("loads incoming child items through paged ranges instead of an uncapped scoped select", async () => {
     const query = buildIncomingPagedQuery(async () => ({
       data: [makeIncomingRow(1)],
@@ -148,6 +172,8 @@ describe("catalog transport bounded rik_items and child list reads", () => {
     expect(getFunctionSource("loadCatalogSearchFallbackRowsFromSupabase")).toContain('.order("id"');
     expect(getFunctionSource("loadRikQuickSearchFallbackRowsFromSupabase")).toContain(".range(");
     expect(getFunctionSource("loadRikQuickSearchFallbackRowsFromSupabase")).toContain('.order("id"');
+    expect(getFunctionSource("loadCatalogItemsSearchPreviewRowsFromSupabase")).toContain(".range(");
+    expect(getFunctionSource("loadCatalogItemsSearchPreviewRowsFromSupabase")).toContain('.order("id"');
     expect(getFunctionSource("loadIncomingItemRowsFromSupabase")).toContain("loadPagedCatalogRows");
   });
 });

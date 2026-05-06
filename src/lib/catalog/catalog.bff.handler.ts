@@ -43,6 +43,16 @@ const hasTokenSearchArgs = (
   isStringArray(args.tokens) &&
   typeof args.limit === "number";
 
+const catalogItemSearchKinds = new Set(["all", "material", "work", "service"]);
+
+const hasCatalogItemsSearchPreviewArgs = (
+  args: unknown,
+): args is { searchTerm: string; kind: string; pageSize?: number | null } =>
+  isRecord(args) &&
+  typeof args.searchTerm === "string" &&
+  catalogItemSearchKinds.has(args.kind as string) &&
+  (args.pageSize === undefined || args.pageSize === null || typeof args.pageSize === "number");
+
 const hasSearchRpcArgs = (args: unknown): boolean =>
   isRecord(args) &&
   rpcSet.has(args.fn as CatalogSearchRpcName) &&
@@ -75,6 +85,8 @@ export const isCatalogTransportBffRequestDto = (
     case "catalog.search.fallback":
     case "catalog.rik_quick_search.fallback":
       return hasTokenSearchArgs(args);
+    case "catalog.items.search.preview":
+      return hasCatalogItemsSearchPreviewArgs(args);
     case "catalog.incoming_items.list":
       return isRecord(args) && typeof args.incomingId === "string";
     case "catalog.suppliers.rpc":

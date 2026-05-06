@@ -1,4 +1,6 @@
 import type {
+  CatalogItemsSearchKind,
+  CatalogItemsSearchPreviewRow,
   CatalogGroup,
   ContractorCounterpartyRow,
   CatalogSearchRpcArgs,
@@ -23,6 +25,7 @@ import type {
 } from "./catalog.bff.contract";
 import {
   loadCatalogGroupsRowsFromSupabase,
+  loadCatalogItemsSearchPreviewRowsFromSupabase,
   loadCatalogSearchFallbackRowsFromSupabase,
   loadContractorCounterpartyRowsFromSupabase,
   loadContractorProfileRowsFromSupabase,
@@ -232,4 +235,17 @@ export const loadRikQuickSearchFallbackRows = async (
       args: { searchTerm, tokens, limit },
     },
     () => loadRikQuickSearchFallbackRowsFromSupabase(searchTerm, tokens, limit),
+  );
+
+export const loadCatalogItemsSearchPreviewRows = async (
+  searchTerm: string,
+  kind: CatalogItemsSearchKind,
+  pageSize?: number | null,
+): Promise<CatalogQueryResult<CatalogItemsSearchPreviewRow>> =>
+  await loadCatalogRowsViaBff<CatalogItemsSearchPreviewRow>(
+    {
+      operation: "catalog.items.search.preview",
+      args: { searchTerm, kind, pageSize },
+    },
+    () => loadCatalogItemsSearchPreviewRowsFromSupabase(searchTerm, kind, pageSize),
   );

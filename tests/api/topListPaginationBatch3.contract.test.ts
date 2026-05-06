@@ -44,13 +44,18 @@ describe("S-PAG-4 remaining top list pagination contract", () => {
   it("paginates catalog and AI search windows with stable ordering and clamps", () => {
     const catalogModal = read("src/components/map/CatalogSearchModal.tsx");
     expect(catalogModal).toContain("CATALOG_SEARCH_PAGE_DEFAULTS = { pageSize: 60, maxPageSize: 100 }");
-    expect(catalogModal).toContain("normalizePage(undefined, CATALOG_SEARCH_PAGE_DEFAULTS)");
-    expect(catalogModal).toContain(".or(");
-    expect(catalogModal).toContain("query = query.eq(\"kind\", kind)");
-    expect(catalogModal).toContain(".order(\"rik_code\", { ascending: true })");
-    expect(catalogModal).toContain(".order(\"id\", { ascending: true })");
-    expect(catalogModal).toContain(".range(page.from, page.to)");
+    expect(catalogModal).toContain("loadCatalogItemsSearchPreviewRows");
+    expect(catalogModal).toContain("CATALOG_SEARCH_PAGE_DEFAULTS.pageSize");
+    expect(catalogModal).not.toMatch(/supabase\.(from|rpc)\(/);
     expect(catalogModal).not.toContain(".limit(60)");
+
+    const catalogTransport = read("src/lib/catalog/catalog.transport.supabase.ts");
+    expect(catalogTransport).toContain("loadCatalogItemsSearchPreviewRowsFromSupabase");
+    expect(catalogTransport).toContain(".or(");
+    expect(catalogTransport).toContain("query = query.eq(\"kind\", kind)");
+    expect(catalogTransport).toContain(".order(\"rik_code\", { ascending: true })");
+    expect(catalogTransport).toContain(".order(\"id\", { ascending: true })");
+    expect(catalogTransport).toContain(".range(page.from, page.to)");
 
     const assistant = read("src/features/ai/assistantActions.transport.ts");
     expect(assistant).toContain("ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS");

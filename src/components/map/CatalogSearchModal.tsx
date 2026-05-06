@@ -9,8 +9,7 @@ import {
   Platform,
   StatusBar,
 } from "react-native";
-import { supabase } from "../../lib/supabaseClient";
-import { normalizePage } from "../../lib/api/_core";
+import { loadCatalogItemsSearchPreviewRows } from "../../lib/catalog/catalog.transport";
 import { FlashList } from "../../ui/FlashList";
 import type { CatalogItem } from "./types";
 
@@ -61,25 +60,11 @@ export default function CatalogSearchModal({
   async function runSearch() {
     setLoading(true);
     try {
-      const page = normalizePage(undefined, CATALOG_SEARCH_PAGE_DEFAULTS);
-      let query = supabase
-        .from("catalog_items")
-        .select("id,rik_code,kind,name_human,uom_code,tags,sector_code");
-
-      const s = q.trim().toLowerCase();
-      if (s) {
-        const like = `%${s}%`;
-        query = query.or(
-          `search_blob.ilike.${like},name_search.ilike.${like},name_human.ilike.${like},rik_code.ilike.${like}`
-        );
-      }
-
-      if (kind !== "all") query = query.eq("kind", kind);
-
-      const { data, error } = await query
-        .order("rik_code", { ascending: true })
-        .order("id", { ascending: true })
-        .range(page.from, page.to);
+      const { data, error } = await loadCatalogItemsSearchPreviewRows(
+        q,
+        kind,
+        CATALOG_SEARCH_PAGE_DEFAULTS.pageSize,
+      );
       if (error) {
         if (__DEV__) console.warn("CatalogSearchModal:", error.message);
         setRows([]);
