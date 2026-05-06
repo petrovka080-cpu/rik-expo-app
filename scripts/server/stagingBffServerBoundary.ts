@@ -102,10 +102,149 @@ export type BffStagingRouteDefinition = {
 
 export type BffStagingServerConfig = {
   mutationRoutesEnabled?: boolean;
+  mutationRouteScope?: BffMutationRouteScopeConfig;
   serverAuthConfigured?: boolean;
   idempotencyMetadataRequired?: boolean;
   rateLimitMetadataRequired?: boolean;
 };
+
+export type BffMutationRouteScopeKey =
+  | "catalog.request.updateMeta"
+  | "catalog.request.itemUpdateQty"
+  | "catalog.request.itemCancel";
+
+export type BffMutationRouteScopeConfig = {
+  status: "disabled" | "enabled" | "invalid";
+  enabledOperations: readonly BffMutationOperation[];
+  enabledRouteKeys: readonly BffMutationRouteScopeKey[];
+  enabledOperationCount: number;
+  invalidRouteKeyCount: number;
+  wildcardRejected: boolean;
+  emptyAllowlist: boolean;
+  valuesPrinted: false;
+  secretsPrinted: false;
+};
+
+export const BFF_MUTATION_ROUTE_ALLOWLIST_ENV_NAME = "BFF_MUTATION_ROUTE_ALLOWLIST";
+
+export const BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS = Object.freeze([
+  "catalog.request.updateMeta",
+  "catalog.request.itemUpdateQty",
+  "catalog.request.itemCancel",
+] satisfies readonly BffMutationRouteScopeKey[]);
+
+export const BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS = Object.freeze([
+  "catalog.request.meta.update",
+  "request.item.update",
+  "catalog.request.item.cancel",
+] satisfies readonly BffMutationOperation[]);
+
+const BFF_MUTATION_ROUTE_SCOPE_KEY_TO_OPERATION: Readonly<Record<BffMutationRouteScopeKey, BffMutationOperation>> =
+  Object.freeze({
+    "catalog.request.updateMeta": "catalog.request.meta.update",
+    "catalog.request.itemUpdateQty": "request.item.update",
+    "catalog.request.itemCancel": "catalog.request.item.cancel",
+  });
+
+const BFF_FORBIDDEN_MUTATION_ROUTE_SCOPE_TOKENS = new Set(["*", "all", "any", "true"]);
+
+export const BFF_MUTATION_ROUTE_SCOPE_DISABLED: BffMutationRouteScopeConfig = Object.freeze({
+  status: "disabled",
+  enabledOperations: Object.freeze([]),
+  enabledRouteKeys: Object.freeze([]),
+  enabledOperationCount: 0,
+  invalidRouteKeyCount: 0,
+  wildcardRejected: false,
+  emptyAllowlist: true,
+  valuesPrinted: false,
+  secretsPrinted: false,
+});
+
+const buildMutationRouteScopeConfig = (
+  params: Pick<
+    BffMutationRouteScopeConfig,
+    "status" | "enabledOperations" | "enabledRouteKeys" | "invalidRouteKeyCount" | "wildcardRejected" | "emptyAllowlist"
+  >,
+): BffMutationRouteScopeConfig =>
+  Object.freeze({
+    ...params,
+    enabledOperationCount: params.enabledOperations.length,
+    valuesPrinted: false,
+    secretsPrinted: false,
+  });
+
+export function buildBffMutationRouteScopeForOperations(
+  operations: readonly BffMutationOperation[],
+): BffMutationRouteScopeConfig {
+  const unique = [...new Set(operations)];
+  return buildMutationRouteScopeConfig({
+    status: unique.length > 0 ? "enabled" : "disabled",
+    enabledOperations: Object.freeze(unique),
+    enabledRouteKeys: Object.freeze(
+      BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS.filter((key) =>
+        unique.includes(BFF_MUTATION_ROUTE_SCOPE_KEY_TO_OPERATION[key]),
+      ),
+    ),
+    invalidRouteKeyCount: 0,
+    wildcardRejected: false,
+    emptyAllowlist: unique.length === 0,
+  });
+}
+
+export function parseBffMutationRouteAllowlist(value: string | null | undefined): BffMutationRouteScopeConfig {
+  const raw = typeof value === "string" ? value.trim() : "";
+  if (!raw) return BFF_MUTATION_ROUTE_SCOPE_DISABLED;
+
+  const enabledRouteKeys: BffMutationRouteScopeKey[] = [];
+  const enabledOperations: BffMutationOperation[] = [];
+  let invalidRouteKeyCount = 0;
+  let wildcardRejected = false;
+
+  for (const token of raw.split(/[,\s]+/).map((entry) => entry.trim()).filter(Boolean)) {
+    if (BFF_FORBIDDEN_MUTATION_ROUTE_SCOPE_TOKENS.has(token.toLowerCase())) {
+      wildcardRejected = true;
+      continue;
+    }
+
+    if (BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS.includes(token as BffMutationRouteScopeKey)) {
+      const key = token as BffMutationRouteScopeKey;
+      if (!enabledRouteKeys.includes(key)) enabledRouteKeys.push(key);
+      const operation = BFF_MUTATION_ROUTE_SCOPE_KEY_TO_OPERATION[key];
+      if (!enabledOperations.includes(operation)) enabledOperations.push(operation);
+      continue;
+    }
+
+    invalidRouteKeyCount += 1;
+  }
+
+  if (wildcardRejected || invalidRouteKeyCount > 0) {
+    return buildMutationRouteScopeConfig({
+      status: "invalid",
+      enabledOperations: Object.freeze([]),
+      enabledRouteKeys: Object.freeze([]),
+      invalidRouteKeyCount,
+      wildcardRejected,
+      emptyAllowlist: false,
+    });
+  }
+
+  return buildMutationRouteScopeConfig({
+    status: enabledOperations.length > 0 ? "enabled" : "disabled",
+    enabledOperations: Object.freeze(enabledOperations),
+    enabledRouteKeys: Object.freeze(enabledRouteKeys),
+    invalidRouteKeyCount: 0,
+    wildcardRejected: false,
+    emptyAllowlist: enabledOperations.length === 0,
+  });
+}
+
+const resolveMutationRouteScope = (config: BffStagingServerConfig): BffMutationRouteScopeConfig =>
+  config.mutationRouteScope ?? BFF_MUTATION_ROUTE_SCOPE_DISABLED;
+
+const isMutationRouteScopeEnabledForOperation = (
+  operation: BffMutationOperation,
+  scope: BffMutationRouteScopeConfig,
+): boolean => scope.status === "enabled" && scope.enabledOperations.includes(operation);
 
 export type BffStagingRateLimitShadowDeps = {
   provider: RuntimeRateEnforcementProvider;
@@ -504,6 +643,7 @@ export const BFF_STAGING_SERVER_ENV_NAMES = Object.freeze([
   "BFF_DATABASE_READONLY_URL",
   "BFF_DATABASE_WRITE_URL",
   "BFF_MUTATION_ENABLED",
+  BFF_MUTATION_ROUTE_ALLOWLIST_ENV_NAME,
   "BFF_IDEMPOTENCY_METADATA_ENABLED",
   "BFF_RATE_LIMIT_METADATA_ENABLED",
   "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
@@ -908,6 +1048,7 @@ export async function handleBffStagingServerRequest(
 ): Promise<BffStagingBoundaryResponse> {
   const route = findRoute(request);
   const config = deps.config ?? {};
+  const mutationRouteScope = resolveMutationRouteScope(config);
 
   if (!route) {
     return buildErrorResponse(404, "BFF_ROUTE_NOT_FOUND", "Unknown staging BFF route");
@@ -940,7 +1081,14 @@ export async function handleBffStagingServerRequest(
         mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
         readPortsConfigured: Boolean(deps.readPorts),
         mutationRoutesEnabledByDefault: false,
-        mutationRoutesEnabled: config.mutationRoutesEnabled === true,
+        mutationRoutesEnabled:
+          config.mutationRoutesEnabled === true &&
+          mutationRouteScope.status === "enabled" &&
+          mutationRouteScope.enabledOperationCount > 0,
+        mutationRouteScopeStatus: mutationRouteScope.status,
+        enabledMutationRoutes: mutationRouteScope.enabledOperationCount,
+        catalogRequestMutationRoutesSupported: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS.length,
+        mutationRouteScopeValuesPrinted: false,
         requestEnvelopeValidation: true,
         responseEnvelopeValidation: true,
         redactedErrors: true,
@@ -1071,6 +1219,22 @@ export async function handleBffStagingServerRequest(
     return buildErrorResponse(403, "BFF_MUTATION_ROUTES_DISABLED", "Mutation routes are disabled by default");
   }
 
+  if (mutationRouteScope.status === "invalid") {
+    return buildErrorResponse(
+      403,
+      "BFF_MUTATION_ROUTE_SCOPE_INVALID",
+      "Mutation route scope is invalid",
+    );
+  }
+
+  if (!isMutationRouteScopeEnabledForOperation(route.operation as BffMutationOperation, mutationRouteScope)) {
+    return buildErrorResponse(
+      403,
+      "BFF_MUTATION_ROUTE_DISABLED",
+      "Mutation route is not enabled",
+    );
+  }
+
   if (
     config.idempotencyMetadataRequired !== false &&
     !hasPresentMetadata(payload.metadata, "idempotencyKeyStatus")
@@ -1146,6 +1310,7 @@ export async function runLocalBffStagingBoundaryShadow(): Promise<BffStagingShad
     mutationPorts: fixturePorts.mutation,
     config: {
       mutationRoutesEnabled: true,
+      mutationRouteScope: buildBffMutationRouteScopeForOperations(BFF_MUTATION_HANDLER_OPERATIONS),
       idempotencyMetadataRequired: true,
       rateLimitMetadataRequired: true,
     },
@@ -1223,6 +1388,10 @@ export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   readRoutes: BFF_STAGING_READ_ROUTES.length,
   mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
   mutationRoutesEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some((route) => route.enabledByDefault),
+  routeScopedMutationEnablement: true,
+  catalogRequestMutationRouteScopeKeys: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS,
+  catalogRequestMutationRouteScopeOperations: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS,
+  wildcardMutationRouteEnablementAllowed: false,
   requestEnvelopeValidation: true,
   responseEnvelopeValidation: true,
   redactedErrors: true,

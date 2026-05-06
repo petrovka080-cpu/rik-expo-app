@@ -13,6 +13,8 @@ import {
   resolveCacheShadowRuntimeConfig,
 } from "../../src/shared/scale/cacheShadowRuntime";
 import {
+  BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD,
+  BFF_SHADOW_CATALOG_REQUEST_META_PAYLOAD,
   BFF_SHADOW_MUTATION_PAYLOAD,
   createBffShadowFixturePorts,
 } from "../../src/shared/scale/bffShadowFixtures";
@@ -21,14 +23,19 @@ import {
   BFF_STAGING_READ_ROUTES,
   BFF_STAGING_ROUTE_REGISTRY,
   BFF_STAGING_SERVER_BOUNDARY_CONTRACT,
+  BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS,
+  BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS,
+  buildBffMutationRouteScopeForOperations,
   buildCacheShadowRuntimeState,
   buildBffStagingRateLimitKeyInput,
   buildBffStagingDeploymentReadiness,
   handleBffStagingServerRequest,
   isBffStagingResponseEnvelope,
+  parseBffMutationRouteAllowlist,
   parseBffStagingRequestPayload,
   runLocalBffStagingBoundaryShadow,
 } from "../../scripts/server/stagingBffServerBoundary";
+import { BFF_MUTATION_HANDLER_OPERATIONS } from "../../src/shared/scale/bffMutationHandlers";
 import {
   createRateLimitShadowMonitor,
   InMemoryRateLimitAdapter,
@@ -52,6 +59,12 @@ const changedFiles = () =>
 
 const routeByOperation = (operation: string) =>
   BFF_STAGING_ROUTE_REGISTRY.find((route) => route.operation === operation);
+
+const catalogMutationPayloadForOperation = (operation: string) => {
+  if (operation === "catalog.request.meta.update") return BFF_SHADOW_CATALOG_REQUEST_META_PAYLOAD;
+  if (operation === "catalog.request.item.cancel") return BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD;
+  return BFF_SHADOW_MUTATION_PAYLOAD;
+};
 
 const waitFor = async (predicate: () => boolean): Promise<void> => {
   for (let attempt = 0; attempt < 20; attempt += 1) {
@@ -119,6 +132,11 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
             readRoutes: 5,
             mutationRoutes: 7,
             mutationRoutesEnabledByDefault: false,
+            mutationRoutesEnabled: false,
+            mutationRouteScopeStatus: "disabled",
+            enabledMutationRoutes: 0,
+            catalogRequestMutationRoutesSupported: 3,
+            mutationRouteScopeValuesPrinted: false,
             appRuntimeBffEnabled: false,
           }),
         }),
@@ -155,6 +173,10 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
         readRoutes: 5,
         mutationRoutes: 7,
         mutationRoutesEnabledByDefault: false,
+        routeScopedMutationEnablement: true,
+        catalogRequestMutationRouteScopeKeys: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS,
+        catalogRequestMutationRouteScopeOperations: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS,
+        wildcardMutationRouteEnablementAllowed: false,
         requestEnvelopeValidation: true,
         responseEnvelopeValidation: true,
         redactedErrors: true,
@@ -401,7 +423,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     expect(JSON.stringify(response)).not.toContain("user@example.test");
   });
 
-  it("keeps mutation routes disabled by default and requires safety metadata when explicitly enabled", async () => {
+  it("keeps mutation routes disabled by default and requires route scope before safety metadata", async () => {
     const fixturePorts = createBffShadowFixturePorts();
     const route = routeByOperation("proposal.submit");
     expect(route).toBeDefined();
@@ -429,7 +451,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     });
     expect(fixturePorts.calls).toHaveLength(0);
 
-    const missingMetadata = await handleBffStagingServerRequest(
+    const globalGateOnly = await handleBffStagingServerRequest(
       {
         method: "POST",
         path: route?.path ?? "",
@@ -443,6 +465,34 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
       {
         mutationPorts: fixturePorts.mutation,
         config: { mutationRoutesEnabled: true },
+      },
+    );
+    expect(globalGateOnly.status).toBe(403);
+    expect(globalGateOnly.body).toEqual({
+      ok: false,
+      error: {
+        code: "BFF_MUTATION_ROUTE_DISABLED",
+        message: "Mutation route is not enabled",
+      },
+    });
+
+    const missingMetadata = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: route?.path ?? "",
+        body: {
+          input: {
+            idempotencyKey: "opaque-key-v1",
+            payload: { raw: "not logged" },
+          },
+        },
+      },
+      {
+        mutationPorts: fixturePorts.mutation,
+        config: {
+          mutationRoutesEnabled: true,
+          mutationRouteScope: buildBffMutationRouteScopeForOperations(["proposal.submit"]),
+        },
       },
     );
     expect(missingMetadata.status).toBe(400);
@@ -471,7 +521,10 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
       },
       {
         mutationPorts: fixturePorts.mutation,
-        config: { mutationRoutesEnabled: true },
+        config: {
+          mutationRoutesEnabled: true,
+          mutationRouteScope: buildBffMutationRouteScopeForOperations(["proposal.submit"]),
+        },
       },
     );
 
@@ -479,6 +532,130 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     expect(enabled.body.ok).toBe(true);
     expect(JSON.stringify(enabled)).not.toContain("person@example.test");
     expect(JSON.stringify(enabled)).not.toContain("not logged");
+  });
+
+  it("parses catalog-only route-scoped mutation enablement without allowing wildcard or unknown routes", () => {
+    expect(parseBffMutationRouteAllowlist(undefined)).toEqual(
+      expect.objectContaining({
+        status: "disabled",
+        enabledOperations: [],
+        enabledOperationCount: 0,
+        emptyAllowlist: true,
+        valuesPrinted: false,
+        secretsPrinted: false,
+      }),
+    );
+
+    expect(parseBffMutationRouteAllowlist(BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS.join(","))).toEqual(
+      expect.objectContaining({
+        status: "enabled",
+        enabledRouteKeys: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS,
+        enabledOperations: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS,
+        enabledOperationCount: 3,
+        invalidRouteKeyCount: 0,
+        wildcardRejected: false,
+        valuesPrinted: false,
+        secretsPrinted: false,
+      }),
+    );
+
+    expect(parseBffMutationRouteAllowlist("all")).toEqual(
+      expect.objectContaining({
+        status: "invalid",
+        enabledOperations: [],
+        invalidRouteKeyCount: 0,
+        wildcardRejected: true,
+        valuesPrinted: false,
+        secretsPrinted: false,
+      }),
+    );
+
+    expect(parseBffMutationRouteAllowlist("proposal.submit")).toEqual(
+      expect.objectContaining({
+        status: "invalid",
+        enabledOperations: [],
+        invalidRouteKeyCount: 1,
+        wildcardRejected: false,
+        valuesPrinted: false,
+        secretsPrinted: false,
+      }),
+    );
+  });
+
+  it("allows only catalog request mutations when catalog route scope is enabled", async () => {
+    const fixturePorts = createBffShadowFixturePorts();
+    const catalogScope = parseBffMutationRouteAllowlist(BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS.join(","));
+    const metadata = {
+      idempotencyKeyStatus: "present_redacted",
+      rateLimitKeyStatus: "present_redacted",
+    };
+
+    for (const operation of BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS) {
+      const route = routeByOperation(operation);
+      expect(route).toBeDefined();
+      const response = await handleBffStagingServerRequest(
+        {
+          method: "POST",
+          path: route?.path ?? "",
+          body: {
+            input: {
+              idempotencyKey: "opaque-key-v1",
+              payload: catalogMutationPayloadForOperation(operation),
+              context: {
+                actorRole: "unknown",
+                companyScope: "present_redacted",
+                idempotencyKeyStatus: "present_redacted",
+                requestScope: "present_redacted",
+              },
+            },
+            metadata,
+          },
+        },
+        {
+          mutationPorts: fixturePorts.mutation,
+          config: {
+            mutationRoutesEnabled: true,
+            mutationRouteScope: catalogScope,
+          },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(response.body.ok).toBe(true);
+    }
+
+    const catalogOperations = new Set<string>(BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS);
+    for (const operation of BFF_MUTATION_HANDLER_OPERATIONS.filter((entry) => !catalogOperations.has(entry))) {
+      const route = routeByOperation(operation);
+      expect(route).toBeDefined();
+      const response = await handleBffStagingServerRequest(
+        {
+          method: "POST",
+          path: route?.path ?? "",
+          body: {
+            input: {
+              idempotencyKey: "opaque-key-v1",
+              payload: BFF_SHADOW_MUTATION_PAYLOAD,
+            },
+            metadata,
+          },
+        },
+        {
+          mutationPorts: fixturePorts.mutation,
+          config: {
+            mutationRoutesEnabled: true,
+            mutationRouteScope: catalogScope,
+          },
+        },
+      );
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({
+        ok: false,
+        error: {
+          code: "BFF_MUTATION_ROUTE_DISABLED",
+          message: "Mutation route is not enabled",
+        },
+      });
+    }
   });
 
   it("runs local fixture shadow through the staging boundary without network or traffic migration", async () => {
@@ -609,6 +786,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
       rateLimitShadow: { provider, monitor },
       config: {
         mutationRoutesEnabled: true,
+        mutationRouteScope: buildBffMutationRouteScopeForOperations(["proposal.submit"]),
         idempotencyMetadataRequired: true,
         rateLimitMetadataRequired: true,
       },

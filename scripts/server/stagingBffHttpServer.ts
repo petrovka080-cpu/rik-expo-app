@@ -13,12 +13,15 @@ import {
 } from "../../src/shared/scale/rateLimitAdapters";
 import {
   buildCacheShadowRuntimeState,
+  BFF_MUTATION_ROUTE_ALLOWLIST_ENV_NAME,
   handleBffStagingServerRequest,
+  parseBffMutationRouteAllowlist,
   type BffStagingCacheShadowDeps,
   type BffStagingCacheShadowRuntimeState,
   type BffStagingRateLimitShadowDeps,
   type BffStagingBoundaryResponse,
   type BffStagingRequestEnvelope,
+  type BffMutationRouteScopeConfig,
 } from "./stagingBffServerBoundary";
 import { createBffReadonlyDbReadPorts } from "./stagingBffReadonlyDbPorts";
 import { createBffCatalogRequestMutationPortsFromEnv } from "./stagingBffCatalogRequestMutationPorts";
@@ -35,6 +38,8 @@ type StagingBffHttpConfig = {
   mobileReadonlyAuthEnabled: boolean;
   mobileReadonlyAuthConfigured: boolean;
   mutationRoutesEnabled: boolean;
+  mutationRoutesGlobalGateEnabled: boolean;
+  mutationRouteScope: BffMutationRouteScopeConfig;
   idempotencyMetadataRequired: true;
   rateLimitMetadataRequired: true;
 };
@@ -72,6 +77,9 @@ export function resolveBffStagingHttpConfig(env: StagingBffHttpEnv = process.env
   const mutationFlagEnabled = parseBooleanFlag(env.BFF_MUTATION_ENABLED);
   const idempotencyMetadataEnabled = parseBooleanFlag(env.BFF_IDEMPOTENCY_METADATA_ENABLED);
   const rateLimitMetadataEnabled = parseBooleanFlag(env.BFF_RATE_LIMIT_METADATA_ENABLED);
+  const mutationRouteScope = parseBffMutationRouteAllowlist(env[BFF_MUTATION_ROUTE_ALLOWLIST_ENV_NAME]);
+  const mutationRoutesGlobalGateEnabled =
+    mutationFlagEnabled && idempotencyMetadataEnabled && rateLimitMetadataEnabled;
   const mobileReadonlyAuthEnabled = parseBooleanFlag(env.BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED);
   const mobileReadonlyAuthConfigured =
     mobileReadonlyAuthEnabled &&
@@ -85,7 +93,12 @@ export function resolveBffStagingHttpConfig(env: StagingBffHttpEnv = process.env
     serverAuthSecretConfigured: typeof env.BFF_SERVER_AUTH_SECRET === "string" && env.BFF_SERVER_AUTH_SECRET.length > 0,
     mobileReadonlyAuthEnabled,
     mobileReadonlyAuthConfigured,
-    mutationRoutesEnabled: mutationFlagEnabled && idempotencyMetadataEnabled && rateLimitMetadataEnabled,
+    mutationRoutesGlobalGateEnabled,
+    mutationRouteScope,
+    mutationRoutesEnabled:
+      mutationRoutesGlobalGateEnabled &&
+      mutationRouteScope.status === "enabled" &&
+      mutationRouteScope.enabledOperationCount > 0,
     idempotencyMetadataRequired: true,
     rateLimitMetadataRequired: true,
   };
@@ -315,6 +328,7 @@ export function createBffStagingHttpServer(
         rateLimitPrivateSmoke,
         config: {
           mutationRoutesEnabled: config.mutationRoutesEnabled,
+          mutationRouteScope: config.mutationRouteScope,
           idempotencyMetadataRequired: config.idempotencyMetadataRequired,
           rateLimitMetadataRequired: config.rateLimitMetadataRequired,
         },
@@ -346,6 +360,9 @@ export function startBffStagingHttpServer(env: StagingBffHttpEnv = process.env):
         mobileReadonlyAuthEnabled: config.mobileReadonlyAuthEnabled,
         mobileReadonlyAuthConfigured: config.mobileReadonlyAuthConfigured,
         mutationRoutesEnabled: config.mutationRoutesEnabled,
+        mutationRoutesGlobalGateEnabled: config.mutationRoutesGlobalGateEnabled,
+        mutationRouteScopeStatus: config.mutationRouteScope.status,
+        enabledMutationRoutes: config.mutationRouteScope.enabledOperationCount,
         readPortsConfigured: Boolean(createBffReadonlyDbReadPorts(env)),
         mutationPortsConfigured: Boolean(createBffCatalogRequestMutationPortsFromEnv(env)),
       }),

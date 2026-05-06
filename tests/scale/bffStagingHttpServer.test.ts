@@ -5,6 +5,11 @@ import {
   resolveBffStagingHttpConfig,
 } from "../../scripts/server/stagingBffHttpServer";
 import {
+  BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS,
+  BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS,
+  BFF_MUTATION_ROUTE_ALLOWLIST_ENV_NAME,
+} from "../../scripts/server/stagingBffServerBoundary";
+import {
   RedisUrlCacheAdapter,
   type RedisCommand,
   type RedisCommandExecutor,
@@ -129,6 +134,13 @@ describe("staging BFF HTTP server wrapper", () => {
       mobileReadonlyAuthEnabled: false,
       mobileReadonlyAuthConfigured: false,
       mutationRoutesEnabled: false,
+      mutationRoutesGlobalGateEnabled: false,
+      mutationRouteScope: expect.objectContaining({
+        status: "disabled",
+        enabledOperationCount: 0,
+        valuesPrinted: false,
+        secretsPrinted: false,
+      }),
       idempotencyMetadataRequired: true,
       rateLimitMetadataRequired: true,
     });
@@ -146,7 +158,67 @@ describe("staging BFF HTTP server wrapper", () => {
         serverAuthSecretConfigured: true,
         mobileReadonlyAuthEnabled: false,
         mobileReadonlyAuthConfigured: false,
+        mutationRoutesGlobalGateEnabled: false,
         mutationRoutesEnabled: false,
+      }),
+    );
+  });
+
+  it("requires a catalog route allowlist before enabling mutation routes", () => {
+    expect(
+      resolveBffStagingHttpConfig({
+        BFF_MUTATION_ENABLED: "true",
+        BFF_IDEMPOTENCY_METADATA_ENABLED: "true",
+        BFF_RATE_LIMIT_METADATA_ENABLED: "true",
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        mutationRoutesGlobalGateEnabled: true,
+        mutationRoutesEnabled: false,
+        mutationRouteScope: expect.objectContaining({
+          status: "disabled",
+          enabledOperationCount: 0,
+        }),
+      }),
+    );
+
+    expect(
+      resolveBffStagingHttpConfig({
+        BFF_MUTATION_ENABLED: "true",
+        BFF_IDEMPOTENCY_METADATA_ENABLED: "true",
+        BFF_RATE_LIMIT_METADATA_ENABLED: "true",
+        [BFF_MUTATION_ROUTE_ALLOWLIST_ENV_NAME]: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS.join(","),
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        mutationRoutesGlobalGateEnabled: true,
+        mutationRoutesEnabled: true,
+        mutationRouteScope: expect.objectContaining({
+          status: "enabled",
+          enabledOperations: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_OPERATIONS,
+          enabledOperationCount: 3,
+          valuesPrinted: false,
+          secretsPrinted: false,
+        }),
+      }),
+    );
+
+    expect(
+      resolveBffStagingHttpConfig({
+        BFF_MUTATION_ENABLED: "true",
+        BFF_IDEMPOTENCY_METADATA_ENABLED: "true",
+        BFF_RATE_LIMIT_METADATA_ENABLED: "true",
+        [BFF_MUTATION_ROUTE_ALLOWLIST_ENV_NAME]: "all",
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        mutationRoutesGlobalGateEnabled: true,
+        mutationRoutesEnabled: false,
+        mutationRouteScope: expect.objectContaining({
+          status: "invalid",
+          enabledOperationCount: 0,
+          wildcardRejected: true,
+        }),
       }),
     );
   });
