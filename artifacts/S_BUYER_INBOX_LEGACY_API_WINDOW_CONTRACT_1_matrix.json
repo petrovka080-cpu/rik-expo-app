@@ -1,0 +1,94 @@
+{
+  "wave": "S-BUYER-INBOX-LEGACY-API-WINDOW-CONTRACT-1",
+  "final_status": "GREEN_BUYER_INBOX_LEGACY_API_WINDOW_CONTRACT_RELEASE_INTEGRATED",
+  "approvals_present": {
+    "production_safe_continuation": true,
+    "production_main_push": true
+  },
+  "head_equals_origin_main_at_start": true,
+  "ahead_at_start": 0,
+  "behind_at_start": 0,
+  "worktree_clean_at_start": true,
+  "target_files": [
+    "src/lib/api/buyer.ts",
+    "tests/api/buyerLegacyApiWindow.test.ts",
+    "tests/api/buyerInboxLegacyApiWindowContract.contract.test.ts",
+    "tests/api/sRpc6HighRiskRpcValidation.contract.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts"
+  ],
+  "legacy_buyer_inbox_before": {
+    "primary_rpc": "list_buyer_inbox",
+    "primary_rpc_windowed": false,
+    "fallback_table": "request_items",
+    "fallback_limit": 500,
+    "fallback_limit_contract": "implicit compatibility fallback",
+    "buyer_api_enrichment_helper_max_rows": false
+  },
+  "legacy_buyer_inbox_after": {
+    "primary_rpc": "buyer_summary_inbox_scope_v1",
+    "primary_rpc_windowed": true,
+    "request_contract": {
+      "p_offset": "offsetGroups",
+      "p_limit": 100,
+      "p_search": null,
+      "p_company_id": null
+    },
+    "response_contract": {
+      "document_type": [
+        "buyer_summary_inbox_scope",
+        "buyer_summary_inbox_scope_v1"
+      ],
+      "version_required": true,
+      "rows_required": true,
+      "meta_required_or_empty": true,
+      "validated": true
+    },
+    "max_groups": 5000,
+    "max_pages": 50,
+    "overflow_behavior": "fail_closed_error",
+    "empty_has_more_behavior": "fail_closed_error",
+    "fallback_table": "request_items",
+    "fallback_bounded": true,
+    "fallback_max_rows": 5000,
+    "fallback_ordering": [
+      "created_at desc, id desc",
+      "id desc"
+    ],
+    "fallback_unordered_plan_removed": true,
+    "buyer_api_enrichment_helper_max_rows": 5000
+  },
+  "report_or_ui_shape_preserved": true,
+  "filters_preserved": {
+    "company_scope": "p_company_id null preserved",
+    "search_scope": "p_search null for legacy full compatibility call",
+    "request_status_gate": "preserved",
+    "rejected_context_enrichment": "preserved"
+  },
+  "server_side_contract_used": "buyer_summary_inbox_scope_v1",
+  "remaining_legacy_unwindowed_buyer_inbox_call": false,
+  "remaining_fetchall_reason": null,
+  "silent_truncation_used": false,
+  "temporary_hooks_created": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "tests_passed": [
+    "tests/api/buyerLegacyApiWindow.test.ts",
+    "tests/api/buyerInboxLegacyApiWindowContract.contract.test.ts",
+    "tests/api/sRpc6HighRiskRpcValidation.contract.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts"
+  ],
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "artifact_json_parse_passed": true,
+  "release_verify_status": "pending_commit_then_safe_push",
+  "pushed": "pending_safe_window"
+}

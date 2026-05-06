@@ -1,5 +1,13 @@
-import { client, normalizePage, parseErr, type PageInput } from "./_core";
 import {
+  client,
+  loadPagedRowsWithCeiling,
+  normalizePage,
+  parseErr,
+  type PageInput,
+  type PagedQuery,
+} from "./_core";
+import {
+  isRpcRowsEnvelope,
   isRpcNullableRecordArrayResponse,
   validateRpcResponse,
 } from "./queryBoundary";
@@ -11,7 +19,8 @@ const logBuyerApiDebug = (...args: unknown[]) => {
   if (__DEV__) console.warn(...args);
 };
 
-const isApprovedForBuyer = (raw: unknown) => isRequestApprovedForProcurement(raw);
+const isApprovedForBuyer = (raw: unknown) =>
+  isRequestApprovedForProcurement(raw);
 
 type RequestStatusRow = {
   id?: string | null;
@@ -55,36 +64,160 @@ type ProposalLifecycleRow = {
   submitted_at?: string | null;
 };
 
-const BUYER_API_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+type BuyerInboxScopeRpcTransport = {
+  rpc: (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => PromiseLike<{ data: unknown; error: unknown }>;
+};
+
+const BUYER_API_SAFE_LIST_PAGE_DEFAULTS = {
+  pageSize: 100,
+  maxPageSize: 100,
+  maxRows: 5000,
+};
+const BUYER_INBOX_LEGACY_SCOPE_RPC = "buyer_summary_inbox_scope_v1";
+const BUYER_INBOX_LEGACY_SCOPE_PAGE_DEFAULTS = {
+  pageSize: 100,
+  maxPageSize: 100,
+  maxRows: 5000,
+};
+const BUYER_INBOX_LEGACY_SCOPE_MAX_PAGES = Math.ceil(
+  BUYER_INBOX_LEGACY_SCOPE_PAGE_DEFAULTS.maxRows /
+    BUYER_INBOX_LEGACY_SCOPE_PAGE_DEFAULTS.pageSize,
+);
+const BUYER_INBOX_LEGACY_SCOPE_DOCUMENT_TYPES = new Set([
+  "buyer_summary_inbox_scope",
+  "buyer_summary_inbox_scope_v1",
+]);
 
 export const isBuyerInboxRpcResponse = isRpcNullableRecordArrayResponse;
-
-type PagedBuyerApiResult<T> = {
-  data: T[] | null;
-  error: unknown | null;
+export const isBuyerInboxScopeRpcResponse = (
+  value: unknown,
+): value is {
+  document_type?: unknown;
+  version?: unknown;
+  rows: unknown[];
+  meta?: Record<string, unknown>;
+} => {
+  if (!isRpcRowsEnvelope(value)) return false;
+  const root = value as { document_type?: unknown; version?: unknown };
+  const documentType = String(root.document_type ?? "").trim();
+  return (
+    BUYER_INBOX_LEGACY_SCOPE_DOCUMENT_TYPES.has(documentType) &&
+    String(root.version ?? "").trim().length > 0
+  );
 };
 
-type PagedBuyerApiQuery<T> = {
-  range: (from: number, to: number) => PromiseLike<PagedBuyerApiResult<T>>;
-};
+const loadPagedBuyerApiRows = async <T>(
+  queryFactory: () => PagedQuery<T>,
+): Promise<{ data: T[] | null; error: unknown | null }> =>
+  loadPagedRowsWithCeiling(queryFactory, BUYER_API_SAFE_LIST_PAGE_DEFAULTS);
 
-const loadPagedBuyerApiRows = async <T,>(
-  queryFactory: () => PagedBuyerApiQuery<T>,
-): Promise<PagedBuyerApiResult<T>> => {
-  const rows: T[] = [];
-
-  for (let pageIndex = 0; ; pageIndex += 1) {
-    const page = normalizePage({ page: pageIndex }, BUYER_API_SAFE_LIST_PAGE_DEFAULTS);
-    const result = await queryFactory().range(page.from, page.to);
-    if (result.error) return { data: null, error: result.error };
-
-    const pageRows = Array.isArray(result.data) ? result.data : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) return { data: rows, error: null };
+class BuyerInboxLegacyWindowCeilingError extends Error {
+  constructor(reason: "groups" | "pages") {
+    super(
+      `${BUYER_INBOX_LEGACY_SCOPE_RPC} legacy compatibility read exceeded max ${reason} ceiling`,
+    );
+    this.name = "BuyerInboxLegacyWindowCeilingError";
   }
+}
+
+const isBuyerInboxLegacyCeilingError = (error: unknown): boolean =>
+  error instanceof BuyerInboxLegacyWindowCeilingError ||
+  parseErr(error).toLowerCase().includes("max row ceiling");
+
+const toNonNegativeInt = (value: unknown, fallback: number): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : fallback;
 };
 
-// REQUEST_ITEMS_FALLBACK_SELECT_PLANS removed to avoid 400 Bad Request probes
+const readScopeMetaInt = (
+  meta: Record<string, unknown> | undefined,
+  key: string,
+  fallback: number,
+): number => toNonNegativeInt(meta?.[key], fallback);
+
+const readScopeHasMore = (
+  meta: Record<string, unknown> | undefined,
+  offsetGroups: number,
+  returnedGroupCount: number,
+  totalGroupCount: number,
+): boolean =>
+  typeof meta?.has_more === "boolean"
+    ? Boolean(meta.has_more)
+    : offsetGroups + returnedGroupCount < totalGroupCount;
+
+const loadBuyerInboxRowsFromScopeRpc = async (): Promise<BuyerInboxRow[]> => {
+  const rows: BuyerInboxRow[] = [];
+  let offsetGroups = 0;
+  const rpcClient = client as unknown as BuyerInboxScopeRpcTransport;
+
+  for (
+    let pageIndex = 0;
+    pageIndex < BUYER_INBOX_LEGACY_SCOPE_MAX_PAGES;
+    pageIndex += 1
+  ) {
+    const { data, error } = await rpcClient.rpc(BUYER_INBOX_LEGACY_SCOPE_RPC, {
+      p_offset: offsetGroups,
+      p_limit: BUYER_INBOX_LEGACY_SCOPE_PAGE_DEFAULTS.pageSize,
+      p_search: null,
+      p_company_id: null,
+    });
+    if (error) throw error;
+
+    const validated = validateRpcResponse(data, isBuyerInboxScopeRpcResponse, {
+      rpcName: BUYER_INBOX_LEGACY_SCOPE_RPC,
+      caller: "src/lib/api/buyer.listBuyerInbox",
+      domain: "buyer",
+    });
+    const meta = validated.meta;
+    const pageRows = (
+      Array.isArray(validated.rows) ? validated.rows : []
+    ) as BuyerInboxRow[];
+    const totalGroupCount = readScopeMetaInt(
+      meta,
+      "total_group_count",
+      rows.length + pageRows.length,
+    );
+    const returnedGroupCount = readScopeMetaInt(
+      meta,
+      "returned_group_count",
+      pageRows.length,
+    );
+
+    if (
+      totalGroupCount > BUYER_INBOX_LEGACY_SCOPE_PAGE_DEFAULTS.maxRows ||
+      rows.length + pageRows.length >
+        BUYER_INBOX_LEGACY_SCOPE_PAGE_DEFAULTS.maxRows ||
+      offsetGroups + returnedGroupCount >
+        BUYER_INBOX_LEGACY_SCOPE_PAGE_DEFAULTS.maxRows
+    ) {
+      throw new BuyerInboxLegacyWindowCeilingError("groups");
+    }
+
+    rows.push(...pageRows);
+
+    const hasMore = readScopeHasMore(
+      meta,
+      offsetGroups,
+      returnedGroupCount,
+      totalGroupCount,
+    );
+    if (!hasMore) return rows;
+
+    if (returnedGroupCount <= 0) {
+      throw new Error(
+        `${BUYER_INBOX_LEGACY_SCOPE_RPC} reported hasMore with empty page`,
+      );
+    }
+    offsetGroups += returnedGroupCount;
+  }
+
+  throw new BuyerInboxLegacyWindowCeilingError("pages");
+};
+
+// Unordered request_items compatibility fallback removed to avoid nondeterministic partial lists.
 
 const normalizeStatus = (value: unknown): string =>
   String(normalizeRuText(String(value ?? "")) ?? "")
@@ -118,31 +251,49 @@ const rowTimestampMs = (...values: (string | null | undefined)[]): number => {
 async function loadLatestProposalLifecycleByRequestItem(
   requestItemIds: string[],
 ): Promise<Map<string, ProposalLifecycleRow>> {
-  const ids = Array.from(new Set((requestItemIds || []).map((id) => String(id || "").trim()).filter(Boolean)));
+  const ids = Array.from(
+    new Set(
+      (requestItemIds || [])
+        .map((id) => String(id || "").trim())
+        .filter(Boolean),
+    ),
+  );
   if (!ids.length) return new Map();
 
-  const piQ = await loadPagedBuyerApiRows<BuyerRejectContextRow>(() =>
-    client
-      .from("proposal_items_view")
-      .select("proposal_id, request_item_id")
-      .in("request_item_id", ids)
-      .order("request_item_id", { ascending: true })
-      .order("proposal_id", { ascending: true }) as unknown as PagedBuyerApiQuery<BuyerRejectContextRow>,
+  const piQ = await loadPagedBuyerApiRows<BuyerRejectContextRow>(
+    () =>
+      client
+        .from("proposal_items_view")
+        .select("proposal_id, request_item_id")
+        .in("request_item_id", ids)
+        .order("request_item_id", { ascending: true })
+        .order("proposal_id", {
+          ascending: true,
+        }) as unknown as PagedQuery<BuyerRejectContextRow>,
   );
   if (piQ.error) throw piQ.error;
 
-  const proposalItems = Array.isArray(piQ.data) ? (piQ.data as BuyerRejectContextRow[]) : [];
+  const proposalItems = Array.isArray(piQ.data)
+    ? (piQ.data as BuyerRejectContextRow[])
+    : [];
   const proposalIds = Array.from(
-    new Set(proposalItems.map((row) => String(row?.proposal_id || "").trim()).filter(Boolean)),
+    new Set(
+      proposalItems
+        .map((row) => String(row?.proposal_id || "").trim())
+        .filter(Boolean),
+    ),
   );
   if (!proposalIds.length) return new Map();
 
-  const propQ = await loadPagedBuyerApiRows<ProposalLifecycleRow>(() =>
-    client
-      .from("v_proposals_summary")
-      .select("proposal_id, status, sent_to_accountant_at, submitted_at")
-      .in("proposal_id", proposalIds)
-      .order("proposal_id", { ascending: true }) as unknown as PagedBuyerApiQuery<ProposalLifecycleRow>,
+  const propQ = await loadPagedBuyerApiRows<ProposalLifecycleRow>(
+    () =>
+      client
+        .from("v_proposals_summary")
+        .select("proposal_id, status, sent_to_accountant_at, submitted_at")
+        .in("proposal_id", proposalIds)
+        .order("proposal_id", {
+          ascending: true,
+        }) as unknown as PagedQuery<ProposalLifecycleRow>,
   );
   if (propQ.error) throw propQ.error;
 
@@ -154,7 +305,10 @@ async function loadLatestProposalLifecycleByRequestItem(
     proposalById.set(id, row);
   });
 
-  const bestByRequestItem = new Map<string, { row: ProposalLifecycleRow; ts: number }>();
+  const bestByRequestItem = new Map<
+    string,
+    { row: ProposalLifecycleRow; ts: number }
+  >();
   for (const raw of proposalItems) {
     const requestItemId = String(raw?.request_item_id || "").trim();
     const proposalId = String(raw?.proposal_id || "").trim();
@@ -172,13 +326,25 @@ async function loadLatestProposalLifecycleByRequestItem(
     }
   }
 
-  return new Map(Array.from(bestByRequestItem.entries()).map(([key, value]) => [key, value.row]));
+  return new Map(
+    Array.from(bestByRequestItem.entries()).map(([key, value]) => [
+      key,
+      value.row,
+    ]),
+  );
 }
 
-const isRejectedInboxRow = (row: Partial<BuyerInboxRow> | null | undefined): boolean =>
-  !!row && (!!row.director_reject_at || !!row.director_reject_note || isRejectedStatus(row.status));
+const isRejectedInboxRow = (
+  row: Partial<BuyerInboxRow> | null | undefined,
+): boolean =>
+  !!row &&
+  (!!row.director_reject_at ||
+    !!row.director_reject_note ||
+    isRejectedStatus(row.status));
 
-async function enrichRejectedRows(rows: BuyerInboxRow[]): Promise<BuyerInboxRow[]> {
+async function enrichRejectedRows(
+  rows: BuyerInboxRow[],
+): Promise<BuyerInboxRow[]> {
   const list = Array.isArray(rows) ? rows : [];
   if (!list.length) return [];
 
@@ -195,12 +361,15 @@ async function enrichRejectedRows(rows: BuyerInboxRow[]): Promise<BuyerInboxRow[
   let ctxData: BuyerRejectContextRow[] = [];
   let ctxErr: unknown = null;
   // Keep query schema-safe: no order by potentially missing columns.
-  const q = await loadPagedBuyerApiRows<BuyerRejectContextRow>(() =>
-    client
-      .from("proposal_items")
-      .select("*")
-      .in("request_item_id", rejectedIds)
-      .order("id", { ascending: true }) as unknown as PagedBuyerApiQuery<BuyerRejectContextRow>,
+  const q = await loadPagedBuyerApiRows<BuyerRejectContextRow>(
+    () =>
+      client
+        .from("proposal_items")
+        .select("*")
+        .in("request_item_id", rejectedIds)
+        .order("id", {
+          ascending: true,
+        }) as unknown as PagedQuery<BuyerRejectContextRow>,
   );
 
   if (!q.error) {
@@ -215,7 +384,10 @@ async function enrichRejectedRows(rows: BuyerInboxRow[]): Promise<BuyerInboxRow[
     ctxErr = q.error;
   }
   if (ctxErr) {
-    logBuyerApiDebug("[listBuyerInbox] reject context load failed:", parseErr(ctxErr));
+    logBuyerApiDebug(
+      "[listBuyerInbox] reject context load failed:",
+      parseErr(ctxErr),
+    );
     return list;
   }
 
@@ -244,26 +416,37 @@ async function enrichRejectedRows(rows: BuyerInboxRow[]): Promise<BuyerInboxRow[
       director_reject_reason: reason || null,
       last_offer_supplier: String(ctx?.supplier ?? "").trim() || null,
       last_offer_price:
-        typeof ctx?.price === "number" && Number.isFinite(ctx.price) ? Number(ctx.price) : null,
+        typeof ctx?.price === "number" && Number.isFinite(ctx.price)
+          ? Number(ctx.price)
+          : null,
       last_offer_note: String(ctx?.note ?? "").trim() || null,
     };
   });
 }
 
-async function filterInboxByRequestStatus(rows: BuyerInboxRow[]): Promise<BuyerInboxRow[]> {
+async function filterInboxByRequestStatus(
+  rows: BuyerInboxRow[],
+): Promise<BuyerInboxRow[]> {
   const list = Array.isArray(rows) ? rows : [];
   if (!list.length) return [];
 
-  const reqIds = Array.from(new Set(list.map((r) => String(r?.request_id || "").trim()).filter(Boolean)));
+  const reqIds = Array.from(
+    new Set(
+      list.map((r) => String(r?.request_id || "").trim()).filter(Boolean),
+    ),
+  );
   if (!reqIds.length) return [];
 
   try {
-    const { data, error } = await loadPagedBuyerApiRows<RequestStatusRow>(() =>
-      client
-        .from("requests")
-        .select("id, status")
-        .in("id", reqIds)
-        .order("id", { ascending: true }) as unknown as PagedBuyerApiQuery<RequestStatusRow>,
+    const { data, error } = await loadPagedBuyerApiRows<RequestStatusRow>(
+      () =>
+        client
+          .from("requests")
+          .select("id, status")
+          .in("id", reqIds)
+          .order("id", {
+            ascending: true,
+          }) as unknown as PagedQuery<RequestStatusRow>,
     );
     if (error) throw error;
 
@@ -281,19 +464,26 @@ async function filterInboxByRequestStatus(rows: BuyerInboxRow[]): Promise<BuyerI
     let latestProposalByRequestItem = new Map<string, ProposalLifecycleRow>();
     if (rejectedItemIds.length) {
       try {
-        latestProposalByRequestItem = await loadLatestProposalLifecycleByRequestItem(rejectedItemIds);
+        latestProposalByRequestItem =
+          await loadLatestProposalLifecycleByRequestItem(rejectedItemIds);
       } catch (proposalErr) {
-        logBuyerApiDebug("[listBuyerInbox] latest proposal gate failed:", parseErr(proposalErr));
+        logBuyerApiDebug(
+          "[listBuyerInbox] latest proposal gate failed:",
+          parseErr(proposalErr),
+        );
       }
     }
 
     return list.filter((r) => {
-      const requestStatus = statusByReqId.get(String(r?.request_id || "").trim()) || "";
+      const requestStatus =
+        statusByReqId.get(String(r?.request_id || "").trim()) || "";
       const requestReady = isApprovedForBuyer(requestStatus);
       const itemReady = isProcurementReadyItemStatus(r?.status);
 
       if (isRejectedInboxRow(r)) {
-        const latestProposal = latestProposalByRequestItem.get(String(r?.request_item_id || "").trim());
+        const latestProposal = latestProposalByRequestItem.get(
+          String(r?.request_item_id || "").trim(),
+        );
         if (latestProposal) return isReworkStatus(latestProposal.status);
         // Old reject residue must not keep item in inbox after a new approved/pending cycle.
         return !requestReady && !itemReady;
@@ -303,9 +493,13 @@ async function filterInboxByRequestStatus(rows: BuyerInboxRow[]): Promise<BuyerI
       return requestReady;
     });
   } catch (e) {
-    logBuyerApiDebug("[listBuyerInbox] request-status gate failed:", parseErr(e));
+    logBuyerApiDebug(
+      "[listBuyerInbox] request-status gate failed:",
+      parseErr(e),
+    );
     return list.filter((r) => {
-      if (isRejectedInboxRow(r)) return !isProcurementReadyItemStatus(r?.status);
+      if (isRejectedInboxRow(r))
+        return !isProcurementReadyItemStatus(r?.status);
       return isProcurementReadyItemStatus(r?.status);
     });
   }
@@ -313,19 +507,15 @@ async function filterInboxByRequestStatus(rows: BuyerInboxRow[]): Promise<BuyerI
 
 export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
   try {
-    const { data, error } = await client.rpc("list_buyer_inbox", { p_company_id: null });
-    if (error) throw error;
-
-    const validated = validateRpcResponse(data, isBuyerInboxRpcResponse, {
-      rpcName: "list_buyer_inbox",
-      caller: "src/lib/api/buyer.listBuyerInbox",
-      domain: "buyer",
-    });
-    const rows = (validated ?? []) as BuyerInboxRow[];
+    const rows = await loadBuyerInboxRowsFromScopeRpc();
     const gatedRows = await filterInboxByRequestStatus(rows);
     return await enrichRejectedRows(gatedRows);
   } catch (e) {
-    logBuyerApiDebug("[listBuyerInbox] rpc list_buyer_inbox failed, hitting fallback:", parseErr(e));
+    if (isBuyerInboxLegacyCeilingError(e)) throw e;
+    logBuyerApiDebug(
+      "[listBuyerInbox] rpc buyer_summary_inbox_scope_v1 failed, hitting fallback:",
+      parseErr(e),
+    );
   }
 
   try {
@@ -334,18 +524,23 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
 
     const plans = [
       () =>
-        client
-          .from("request_items")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(500),
+        loadPagedBuyerApiRows<FallbackBuyerRow>(
+          () =>
+            client
+              .from("request_items")
+              .select("*")
+              .order("created_at", { ascending: false })
+              .order("id", {
+                ascending: false,
+              }) as unknown as PagedQuery<FallbackBuyerRow>,
+        ),
       () =>
-        client
-          .from("request_items")
-          .select("*")
-          .order("id", { ascending: false })
-          .limit(500),
-      () => client.from("request_items").select("*").limit(500),
+        loadPagedBuyerApiRows<FallbackBuyerRow>(
+          () =>
+            client.from("request_items").select("*").order("id", {
+              ascending: false,
+            }) as unknown as PagedQuery<FallbackBuyerRow>,
+        ),
     ] as const;
 
     for (const run of plans) {
@@ -355,6 +550,7 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
         fbErr = null;
         break;
       }
+      if (isBuyerInboxLegacyCeilingError(fb.error)) throw fb.error;
       fbErr = fb.error;
     }
 
@@ -386,12 +582,16 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
     const gatedRows = await filterInboxByRequestStatus(rows as BuyerInboxRow[]);
     return await enrichRejectedRows(gatedRows);
   } catch (err) {
+    if (isBuyerInboxLegacyCeilingError(err)) throw err;
     logBuyerApiDebug("[listBuyerInbox] fallback failed:", parseErr(err));
     return [];
   }
 }
 
-export async function listBuyerProposalsByStatus(status: string, pageInput?: PageInput) {
+export async function listBuyerProposalsByStatus(
+  status: string,
+  pageInput?: PageInput,
+) {
   const page = normalizePage(pageInput, { pageSize: 50, maxPageSize: 100 });
   const { data, error } = await client
     .from("proposals")

@@ -4,9 +4,9 @@ import { join } from "path";
 
 import {
   RpcValidationError,
-  isRpcNullableRecordArrayResponse,
   validateRpcResponse,
 } from "../../src/lib/api/queryBoundary";
+import { isBuyerInboxScopeRpcResponse } from "../../src/lib/api/buyer";
 import { isProposalRequestItemIntegrityRpcResponse } from "../../src/lib/api/proposalIntegrity";
 import {
   isContractorFactScopeRpcResponse,
@@ -19,8 +19,6 @@ import { isBuyerRequestProposalMapRpcResponse } from "../../src/screens/buyer/ho
 const root = join(__dirname, "..", "..");
 const read = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
-
-const isBuyerInboxRpcResponse = isRpcNullableRecordArrayResponse;
 
 const expectInvalid = (
   value: unknown,
@@ -110,8 +108,8 @@ const selectedCallSites = [
   },
   {
     file: "src/lib/api/buyer.ts",
-    rpcName: "list_buyer_inbox",
-    guard: "isBuyerInboxRpcResponse",
+    rpcName: "buyer_summary_inbox_scope_v1",
+    guard: "isBuyerInboxScopeRpcResponse",
   },
   {
     file: "src/screens/buyer/hooks/useBuyerRequestProposalMap.ts",
@@ -215,8 +213,23 @@ describe("S-RPC-6 high-risk RPC validation", () => {
         },
       }),
     ).toBe(true);
-    expect(isBuyerInboxRpcResponse([{ request_id: "req-1", request_item_id: "item-1" }])).toBe(true);
-    expect(isBuyerRequestProposalMapRpcResponse([{ request_id: "req-1", proposal_no: "PR-1" }])).toBe(true);
+    expect(
+      isBuyerInboxScopeRpcResponse({
+        document_type: "buyer_summary_inbox_scope_v1",
+        version: "1",
+        rows: [{ request_id: "req-1", request_item_id: "item-1" }],
+        meta: {
+          total_group_count: 1,
+          returned_group_count: 1,
+          has_more: false,
+        },
+      }),
+    ).toBe(true);
+    expect(
+      isBuyerRequestProposalMapRpcResponse([
+        { request_id: "req-1", proposal_no: "PR-1" },
+      ]),
+    ).toBe(true);
     expect(
       isProposalRequestItemIntegrityRpcResponse([
         {
@@ -230,13 +243,41 @@ describe("S-RPC-6 high-risk RPC validation", () => {
       ]),
     ).toBe(true);
 
-    expectInvalid({ rows: [] }, isWarehouseStockScopeRpcResponse, "warehouse_stock_scope_v2");
-    expectInvalid({ document_type: "contractor_inbox_scope", rows: [] }, isContractorInboxScopeRpcResponse, "contractor_inbox_scope_v1");
-    expectInvalid({ document_type: "contractor_fact_scope", row: contractorInboxRow }, isContractorFactScopeRpcResponse, "contractor_fact_scope_v1");
-    expectInvalid({ document_type: "buyer_summary_buckets_scope_v1", pending: [] }, isBuyerSummaryBucketsScopeResponse, "buyer_summary_buckets_scope_v1");
-    expectInvalid({ rows: [] }, isBuyerInboxRpcResponse, "list_buyer_inbox");
-    expectInvalid({ rows: [] }, isBuyerRequestProposalMapRpcResponse, "resolve_req_pr_map");
-    expectInvalid([{ integrity_state: "unexpected" }], isProposalRequestItemIntegrityRpcResponse, "proposal_request_item_integrity_v1");
+    expectInvalid(
+      { rows: [] },
+      isWarehouseStockScopeRpcResponse,
+      "warehouse_stock_scope_v2",
+    );
+    expectInvalid(
+      { document_type: "contractor_inbox_scope", rows: [] },
+      isContractorInboxScopeRpcResponse,
+      "contractor_inbox_scope_v1",
+    );
+    expectInvalid(
+      { document_type: "contractor_fact_scope", row: contractorInboxRow },
+      isContractorFactScopeRpcResponse,
+      "contractor_fact_scope_v1",
+    );
+    expectInvalid(
+      { document_type: "buyer_summary_buckets_scope_v1", pending: [] },
+      isBuyerSummaryBucketsScopeResponse,
+      "buyer_summary_buckets_scope_v1",
+    );
+    expectInvalid(
+      { rows: [] },
+      isBuyerInboxScopeRpcResponse,
+      "buyer_summary_inbox_scope_v1",
+    );
+    expectInvalid(
+      { rows: [] },
+      isBuyerRequestProposalMapRpcResponse,
+      "resolve_req_pr_map",
+    );
+    expectInvalid(
+      [{ integrity_state: "unexpected" }],
+      isProposalRequestItemIntegrityRpcResponse,
+      "proposal_request_item_integrity_v1",
+    );
   });
 
   it("keeps validation errors redacted and forbidden surfaces untouched", () => {
@@ -261,9 +302,13 @@ describe("S-RPC-6 high-risk RPC validation", () => {
       expect(message).not.toContain("private@example.test");
     }
 
-    const changedSource = selectedCallSites.map((callSite) => read(callSite.file)).join("\n");
+    const changedSource = selectedCallSites
+      .map((callSite) => read(callSite.file))
+      .join("\n");
     expect(changedSource).not.toMatch(/payload:\s*(data|rpc\.data|rawPayload)/);
-    expect(changedSource).not.toMatch(/console\.(log|warn|error)\([^)]*rpc\.data/);
+    expect(changedSource).not.toMatch(
+      /console\.(log|warn|error)\([^)]*rpc\.data/,
+    );
 
     const changedFiles = execFileSync("git", ["diff", "--name-only", "HEAD"], {
       cwd: root,
@@ -275,16 +320,28 @@ describe("S-RPC-6 high-risk RPC validation", () => {
 
     expect(changedFiles).not.toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/^(supabase\/migrations|android\/|ios\/|maestro\/)/),
+        expect.stringMatching(
+          /^(supabase\/migrations|android\/|ios\/|maestro\/)/,
+        ),
       ]),
     );
   });
 
   it("keeps S-RPC-6 artifacts valid", () => {
-    expect(existsSync(join(root, "artifacts/S_RPC_6_high_risk_rpc_validation_matrix.json"))).toBe(true);
-    expect(existsSync(join(root, "artifacts/S_RPC_6_high_risk_rpc_validation_proof.md"))).toBe(true);
+    expect(
+      existsSync(
+        join(root, "artifacts/S_RPC_6_high_risk_rpc_validation_matrix.json"),
+      ),
+    ).toBe(true);
+    expect(
+      existsSync(
+        join(root, "artifacts/S_RPC_6_high_risk_rpc_validation_proof.md"),
+      ),
+    ).toBe(true);
 
-    const matrix = JSON.parse(read("artifacts/S_RPC_6_high_risk_rpc_validation_matrix.json"));
+    const matrix = JSON.parse(
+      read("artifacts/S_RPC_6_high_risk_rpc_validation_matrix.json"),
+    );
     expect(matrix.status).toBe("GREEN_RPC_VALIDATION_EXTENDED");
     expect(matrix.result.validatedRpcNames).toBeGreaterThanOrEqual(5);
     expect(matrix.safety.productionTouched).toBe(false);
