@@ -58,6 +58,14 @@ import {
   type BffReadOperation,
 } from "../../src/shared/scale/bffReadHandlers";
 import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
+import {
+  handleDirectorFinanceBffRpcScope,
+  type DirectorFinanceBffRpcPort,
+} from "../../src/screens/director/director.finance.bff.handler";
+import {
+  DIRECTOR_FINANCE_BFF_CONTRACT,
+  type DirectorFinanceBffRouteOperation,
+} from "../../src/screens/director/director.finance.bff.contract";
 import { buildBffError } from "../../src/shared/scale/bffSafety";
 import {
   BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD,
@@ -66,11 +74,19 @@ import {
   createBffShadowFixturePorts,
 } from "../../src/shared/scale/bffShadowFixtures";
 
-export type BffStagingRouteKind = "health" | "readiness" | "read" | "mutation" | "monitor" | "diagnostic";
+export type BffStagingRouteKind =
+  | "health"
+  | "readiness"
+  | "read"
+  | "read_rpc"
+  | "mutation"
+  | "monitor"
+  | "diagnostic";
 
 export type BffStagingRouteDefinition = {
   operation:
     | BffReadOperation
+    | DirectorFinanceBffRouteOperation
     | BffMutationOperation
     | "health"
     | "readiness"
@@ -281,6 +297,7 @@ export type BffStagingCacheShadowRuntimeState = {
 
 export type BffStagingServerDeps = {
   readPorts?: BffReadPorts;
+  directorFinanceRpcPort?: DirectorFinanceBffRpcPort;
   mutationPorts?: BffMutationPorts;
   cacheShadow?: BffStagingCacheShadowDeps | null;
   cacheShadowRuntime?: BffStagingCacheShadowRuntimeState | null;
@@ -378,6 +395,18 @@ export const BFF_STAGING_CACHE_SHADOW_CANARY_ROUTE: BffStagingRouteDefinition = 
   enabledByDefault: true,
   requiresIdempotencyMetadata: false,
   requiresRateLimitMetadata: false,
+});
+
+export const BFF_STAGING_DIRECTOR_FINANCE_RPC_ROUTE: BffStagingRouteDefinition = Object.freeze({
+  operation: "director.finance.rpc.scope",
+  kind: "read_rpc",
+  method: "POST",
+  path: DIRECTOR_FINANCE_BFF_CONTRACT.endpoint.replace(/^POST\s+/, ""),
+  enabledByDefault: true,
+  requiresIdempotencyMetadata: false,
+  requiresRateLimitMetadata: false,
+  observability: BFF_OBSERVABILITY_METADATA,
+  observabilityExternalExportEnabledByDefault: false,
 });
 
 export const BFF_STAGING_READ_ROUTES: readonly BffStagingRouteDefinition[] = Object.freeze([
@@ -633,6 +662,7 @@ export const BFF_STAGING_ROUTE_REGISTRY: readonly BffStagingRouteDefinition[] = 
   BFF_STAGING_CACHE_SHADOW_CANARY_ROUTE,
   BFF_STAGING_RATE_LIMIT_SHADOW_MONITOR_ROUTE,
   BFF_STAGING_RATE_LIMIT_PRIVATE_SMOKE_ROUTE,
+  BFF_STAGING_DIRECTOR_FINANCE_RPC_ROUTE,
   ...BFF_STAGING_READ_ROUTES,
   ...BFF_STAGING_MUTATION_ROUTES,
 ]);
@@ -1215,6 +1245,32 @@ export async function handleBffStagingServerRequest(
     return buildResponse(body.ok ? 200 : 500, body);
   }
 
+  if (route.kind === "read_rpc") {
+    if (route.operation !== "director.finance.rpc.scope") {
+      return buildErrorResponse(404, "BFF_ROUTE_NOT_FOUND", "Unknown staging BFF read RPC route");
+    }
+    if (!deps.directorFinanceRpcPort) {
+      return buildErrorResponse(
+        503,
+        "BFF_DIRECTOR_FINANCE_RPC_PORT_UNAVAILABLE",
+        "Director finance RPC port is not configured",
+      );
+    }
+    const body = await handleDirectorFinanceBffRpcScope(
+      deps.directorFinanceRpcPort,
+      payload.input,
+    );
+    if (!isBffStagingResponseEnvelope(body)) {
+      return buildErrorResponse(502, "BFF_INVALID_RESPONSE_ENVELOPE", "Invalid response envelope");
+    }
+    const status = body.ok
+      ? 200
+      : body.error.code === "DIRECTOR_FINANCE_BFF_INVALID_OPERATION"
+        ? 400
+        : 502;
+    return buildResponse(status, body);
+  }
+
   if (config.mutationRoutesEnabled !== true) {
     return buildErrorResponse(403, "BFF_MUTATION_ROUTES_DISABLED", "Mutation routes are disabled by default");
   }
@@ -1386,6 +1442,8 @@ export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   rateLimitShadowMonitorEndpointContract: true,
   rateLimitPrivateSmokeEndpointContract: true,
   readRoutes: BFF_STAGING_READ_ROUTES.length,
+  readRpcRoutes: 1,
+  directorFinanceRpcRouteContract: true,
   mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
   mutationRoutesEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some((route) => route.enabledByDefault),
   routeScopedMutationEnablement: true,

@@ -11,6 +11,7 @@ import type {
 
 export type DirectorFinanceBffContractId = "director_finance_rpc_scope_v1";
 export type DirectorFinanceBffDocumentType = "director_finance_rpc_scope";
+export type DirectorFinanceBffRouteOperation = "director.finance.rpc.scope";
 
 export type DirectorFinanceBffOperation =
   | "director.finance.summary.v1"
@@ -71,7 +72,6 @@ export type DirectorFinanceBffRequestDto =
     };
 
 export type DirectorFinanceBffResponseDto = {
-  ok: true;
   contractId: DirectorFinanceBffContractId;
   documentType: DirectorFinanceBffDocumentType;
   operation: DirectorFinanceBffOperation;
@@ -84,7 +84,6 @@ export type DirectorFinanceBffErrorEnvelope = {
   ok: false;
   error: {
     code:
-      | "DIRECTOR_FINANCE_BFF_CONTRACT_ONLY"
       | "DIRECTOR_FINANCE_BFF_INVALID_OPERATION"
       | "DIRECTOR_FINANCE_BFF_UPSTREAM_ERROR"
       | "DIRECTOR_FINANCE_BFF_INVALID_RESPONSE";
@@ -93,7 +92,10 @@ export type DirectorFinanceBffErrorEnvelope = {
 };
 
 export type DirectorFinanceBffEnvelope =
-  | DirectorFinanceBffResponseDto
+  | {
+      ok: true;
+      data: DirectorFinanceBffResponseDto;
+    }
   | DirectorFinanceBffErrorEnvelope;
 
 export type DirectorFinanceBffOperationContract = {
@@ -121,18 +123,19 @@ export type DirectorFinanceBffOperationContract = {
   aggregationSemantics: "rpc_owned_summary" | "rpc_owned_panel_scope" | "rpc_owned_supplier_scope";
   readOnly: true;
   trafficEnabledByDefault: false;
-  wiredToAppRuntime: false;
+  wiredToAppRuntime: true;
 };
 
 export const DIRECTOR_FINANCE_BFF_CONTRACT = Object.freeze({
   contractId: "director_finance_rpc_scope_v1",
   documentType: "director_finance_rpc_scope",
+  routeOperation: "director.finance.rpc.scope",
   endpoint: "POST /api/staging-bff/read/director-finance-rpc-scope",
   source: "bff:director_finance_rpc_scope_v1",
   responseEnvelope: "DirectorFinanceBffEnvelope",
   readOnly: true,
   trafficEnabledByDefault: false,
-  wiredToAppRuntime: false,
+  wiredToAppRuntime: true,
   productionTrafficEnabled: false,
   callsSupabaseDirectlyFromClient: false,
 } as const);
@@ -150,7 +153,7 @@ export const DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS = Object.freeze([
     aggregationSemantics: "rpc_owned_summary",
     readOnly: true,
     trafficEnabledByDefault: false,
-    wiredToAppRuntime: false,
+    wiredToAppRuntime: true,
   },
   {
     operation: "director.finance.summary.v2",
@@ -164,7 +167,7 @@ export const DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS = Object.freeze([
     aggregationSemantics: "rpc_owned_summary",
     readOnly: true,
     trafficEnabledByDefault: false,
-    wiredToAppRuntime: false,
+    wiredToAppRuntime: true,
   },
   {
     operation: "director.finance.panel_scope.v1",
@@ -178,7 +181,7 @@ export const DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS = Object.freeze([
     aggregationSemantics: "rpc_owned_panel_scope",
     readOnly: true,
     trafficEnabledByDefault: false,
-    wiredToAppRuntime: false,
+    wiredToAppRuntime: true,
   },
   {
     operation: "director.finance.panel_scope.v2",
@@ -192,7 +195,7 @@ export const DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS = Object.freeze([
     aggregationSemantics: "rpc_owned_panel_scope",
     readOnly: true,
     trafficEnabledByDefault: false,
-    wiredToAppRuntime: false,
+    wiredToAppRuntime: true,
   },
   {
     operation: "director.finance.panel_scope.v3",
@@ -206,7 +209,7 @@ export const DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS = Object.freeze([
     aggregationSemantics: "rpc_owned_panel_scope",
     readOnly: true,
     trafficEnabledByDefault: false,
-    wiredToAppRuntime: false,
+    wiredToAppRuntime: true,
   },
   {
     operation: "director.finance.panel_scope.v4",
@@ -220,7 +223,7 @@ export const DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS = Object.freeze([
     aggregationSemantics: "rpc_owned_panel_scope",
     readOnly: true,
     trafficEnabledByDefault: false,
-    wiredToAppRuntime: false,
+    wiredToAppRuntime: true,
   },
   {
     operation: "director.finance.supplier_scope.v1",
@@ -234,7 +237,7 @@ export const DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS = Object.freeze([
     aggregationSemantics: "rpc_owned_supplier_scope",
     readOnly: true,
     trafficEnabledByDefault: false,
-    wiredToAppRuntime: false,
+    wiredToAppRuntime: true,
   },
   {
     operation: "director.finance.supplier_scope.v2",
@@ -248,9 +251,9 @@ export const DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS = Object.freeze([
     aggregationSemantics: "rpc_owned_supplier_scope",
     readOnly: true,
     trafficEnabledByDefault: false,
-    wiredToAppRuntime: false,
+    wiredToAppRuntime: true,
   },
 ] as const satisfies readonly DirectorFinanceBffOperationContract[]);
 
-export const DIRECTOR_FINANCE_BFF_REMAINING_DIRECT_BYPASS_REASON =
-  "Director finance RPC traffic remains on the existing validated Supabase RPC path until a dedicated BFF handler proves equivalent aggregation/report semantics and production traffic is explicitly enabled.";
+export const DIRECTOR_FINANCE_BFF_DIRECT_FALLBACK_REASON =
+  "Director finance RPC app traffic is BFF-aware but remains disabled by default; the existing validated Supabase RPC transport is retained as a compatibility fallback until readonly BFF traffic is explicitly enabled.";

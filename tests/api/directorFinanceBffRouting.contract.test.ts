@@ -3,8 +3,8 @@ import { join } from "path";
 
 import {
   DIRECTOR_FINANCE_BFF_CONTRACT,
+  DIRECTOR_FINANCE_BFF_DIRECT_FALLBACK_REASON,
   DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS,
-  DIRECTOR_FINANCE_BFF_REMAINING_DIRECT_BYPASS_REASON,
 } from "../../src/screens/director/director.finance.bff.contract";
 
 const root = join(__dirname, "..", "..");
@@ -13,6 +13,8 @@ const read = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
 
 const financeRpcSourcePath = "src/screens/director/director.finance.rpc.ts";
+const financeRpcTransportPath = "src/screens/director/director.finance.rpc.transport.ts";
+const financeBffClientPath = "src/screens/director/director.finance.bff.client.ts";
 
 describe("S-DIRECT-SUPABASE-BYPASS-DIRECTOR-FINANCE-RPC-ROUTING-1", () => {
   it("inventories all director finance RPC paths as read-only BFF contract candidates", () => {
@@ -20,10 +22,11 @@ describe("S-DIRECT-SUPABASE-BYPASS-DIRECTOR-FINANCE-RPC-ROUTING-1", () => {
       expect.objectContaining({
         contractId: "director_finance_rpc_scope_v1",
         documentType: "director_finance_rpc_scope",
+        routeOperation: "director.finance.rpc.scope",
         endpoint: "POST /api/staging-bff/read/director-finance-rpc-scope",
         readOnly: true,
         trafficEnabledByDefault: false,
-        wiredToAppRuntime: false,
+        wiredToAppRuntime: true,
         productionTrafficEnabled: false,
         callsSupabaseDirectlyFromClient: false,
       }),
@@ -45,7 +48,7 @@ describe("S-DIRECT-SUPABASE-BYPASS-DIRECTOR-FINANCE-RPC-ROUTING-1", () => {
         (entry) =>
           entry.readOnly &&
           !entry.trafficEnabledByDefault &&
-          !entry.wiredToAppRuntime &&
+          entry.wiredToAppRuntime &&
           (entry.operationClass === "read_rpc" || entry.operationClass === "aggregation_read_rpc"),
       ),
     ).toBe(true);
@@ -86,23 +89,32 @@ describe("S-DIRECT-SUPABASE-BYPASS-DIRECTOR-FINANCE-RPC-ROUTING-1", () => {
     );
   });
 
-  it("reduces director.finance.rpc.ts direct Supabase RPC sites to one internal transport seam", () => {
+  it("removes direct Supabase RPC sites from director.finance.rpc.ts and keeps one typed fallback transport", () => {
     const source = read(financeRpcSourcePath);
+    const transport = read(financeRpcTransportPath);
+    const bffClient = read(financeBffClientPath);
     const directRpcSites = source.match(/supabase\.rpc\(/g) ?? [];
+    const fallbackRpcSites = transport.match(/supabase\.rpc\(/g) ?? [];
 
-    expect(directRpcSites).toHaveLength(1);
+    expect(directRpcSites).toHaveLength(0);
+    expect(fallbackRpcSites).toHaveLength(1);
     expect(source).toContain("const callDirectorFinanceRpc = async");
+    expect(source).toContain("callDirectorFinanceBffRpc(bffRequest)");
+    expect(source).toContain("callDirectorFinanceSupabaseRpc(rpcName, args)");
     expect(source).toContain("callDirectorFinanceRpc(FINANCE_PANEL_SCOPE_V4_RPC_NAME, args)");
     expect(source).not.toMatch(/supabase\.from\(/);
+    expect(transport).not.toMatch(/supabase\.from\(/);
+    expect(bffClient).toContain('operation: "director.finance.rpc.scope"');
+    expect(bffClient).toContain("callBffReadonlyMobile");
     expect(source).not.toMatch(/console\.(log|warn|error)\([^)]*(data|payload|rows)/);
   });
 
-  it("documents remaining bypass instead of silently switching aggregation traffic", () => {
-    expect(DIRECTOR_FINANCE_BFF_REMAINING_DIRECT_BYPASS_REASON).toContain(
-      "equivalent aggregation/report semantics",
+  it("documents disabled-by-default BFF routing and compatible direct fallback", () => {
+    expect(DIRECTOR_FINANCE_BFF_DIRECT_FALLBACK_REASON).toContain(
+      "disabled by default",
     );
-    expect(DIRECTOR_FINANCE_BFF_REMAINING_DIRECT_BYPASS_REASON).toContain(
-      "production traffic is explicitly enabled",
+    expect(DIRECTOR_FINANCE_BFF_DIRECT_FALLBACK_REASON).toContain(
+      "compatibility fallback",
     );
   });
 });

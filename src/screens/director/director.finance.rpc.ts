@@ -6,7 +6,6 @@ import {
   isRpcRecordArray,
   validateRpcResponse,
 } from "../../lib/api/queryBoundary";
-import { supabase } from "../../lib/supabaseClient";
 import type {
   DirectorFinanceFetchSummaryV1Args,
   DirectorFinancePanelScopeV1Args,
@@ -17,6 +16,16 @@ import type {
   DirectorFinanceSupplierScopeV1Args,
   DirectorFinanceSupplierScopeV2Args,
 } from "../../types/contracts/director";
+import {
+  callDirectorFinanceBffRpc,
+} from "./director.finance.bff.client";
+import type { DirectorFinanceBffRequestDto } from "./director.finance.bff.contract";
+import {
+  callDirectorFinanceSupabaseRpc,
+  type DirectorFinanceRpcArgs,
+  type DirectorFinanceRpcName,
+  type DirectorFinanceRpcResult,
+} from "./director.finance.rpc.transport";
 import type {
   DirectorFinancePanelScope,
   DirectorFinancePanelScopeV2,
@@ -50,26 +59,6 @@ const FINANCE_SUMMARY_V2_RPC_NAME = "director_finance_summary_v2";
 const FINANCE_SUPPLIER_SCOPE_RPC_NAME = "director_finance_supplier_scope_v1";
 const FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME = "director_finance_supplier_scope_v2";
 const FINANCE_SUMMARY_FAILED_COOLDOWN_MS = 10 * 60 * 1000;
-
-type DirectorFinanceRpcName =
-  | typeof FINANCE_SUMMARY_RPC_NAME
-  | typeof FINANCE_PANEL_SCOPE_RPC_NAME
-  | typeof FINANCE_PANEL_SCOPE_V2_RPC_NAME
-  | typeof FINANCE_PANEL_SCOPE_V3_RPC_NAME
-  | typeof FINANCE_PANEL_SCOPE_V4_RPC_NAME
-  | typeof FINANCE_SUMMARY_V2_RPC_NAME
-  | typeof FINANCE_SUPPLIER_SCOPE_RPC_NAME
-  | typeof FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME;
-
-type DirectorFinanceRpcArgs =
-  | DirectorFinanceFetchSummaryV1Args
-  | DirectorFinancePanelScopeV1Args
-  | DirectorFinancePanelScopeV2Args
-  | DirectorFinancePanelScopeV3Args
-  | DirectorFinancePanelScopeV4Args
-  | DirectorFinanceSummaryV2Args
-  | DirectorFinanceSupplierScopeV1Args
-  | DirectorFinanceSupplierScopeV2Args;
 
 type RuntimeProcessEnv = { process?: { env?: Record<string, unknown> } };
 type FinanceRpcStatus = "unknown" | "available" | "missing" | "failed";
@@ -279,7 +268,47 @@ const validateDirectorFinanceRpcResponse = <T extends Record<string, unknown>>(
 const callDirectorFinanceRpc = async (
   rpcName: DirectorFinanceRpcName,
   args: DirectorFinanceRpcArgs,
-) => supabase.rpc(rpcName, args);
+): Promise<DirectorFinanceRpcResult> => {
+  const bffRequest = buildDirectorFinanceBffRequest(rpcName, args);
+  const bffResult = await callDirectorFinanceBffRpc(bffRequest);
+  if (bffResult.status === "ok") {
+    return {
+      data: bffResult.payload,
+      error: null,
+    };
+  }
+  if (bffResult.status === "error") {
+    return {
+      data: null,
+      error: bffResult.error,
+    };
+  }
+  return callDirectorFinanceSupabaseRpc(rpcName, args);
+};
+
+const buildDirectorFinanceBffRequest = (
+  rpcName: DirectorFinanceRpcName,
+  args: DirectorFinanceRpcArgs,
+): DirectorFinanceBffRequestDto => {
+  switch (rpcName) {
+    case FINANCE_SUMMARY_RPC_NAME:
+      return { operation: "director.finance.summary.v1", args: args as DirectorFinanceFetchSummaryV1Args };
+    case FINANCE_SUMMARY_V2_RPC_NAME:
+      return { operation: "director.finance.summary.v2", args: args as DirectorFinanceSummaryV2Args };
+    case FINANCE_PANEL_SCOPE_RPC_NAME:
+      return { operation: "director.finance.panel_scope.v1", args: args as DirectorFinancePanelScopeV1Args };
+    case FINANCE_PANEL_SCOPE_V2_RPC_NAME:
+      return { operation: "director.finance.panel_scope.v2", args: args as DirectorFinancePanelScopeV2Args };
+    case FINANCE_PANEL_SCOPE_V3_RPC_NAME:
+      return { operation: "director.finance.panel_scope.v3", args: args as DirectorFinancePanelScopeV3Args };
+    case FINANCE_PANEL_SCOPE_V4_RPC_NAME:
+      return { operation: "director.finance.panel_scope.v4", args: args as DirectorFinancePanelScopeV4Args };
+    case FINANCE_SUPPLIER_SCOPE_RPC_NAME:
+      return { operation: "director.finance.supplier_scope.v1", args: args as DirectorFinanceSupplierScopeV1Args };
+    case FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME:
+      return { operation: "director.finance.supplier_scope.v2", args: args as DirectorFinanceSupplierScopeV2Args };
+  }
+};
 
 export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
   periodFromIso?: string | null;

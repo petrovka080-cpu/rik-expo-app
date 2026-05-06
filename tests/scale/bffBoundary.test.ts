@@ -14,6 +14,11 @@ const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 const readProjectFile = (relativePath: string): string =>
   fs.readFileSync(path.join(PROJECT_ROOT, relativePath), "utf8");
 
+const APPROVED_ACTIVE_BFF_IMPORTS = [
+  "src/screens/director/director.finance.bff.client.ts",
+  "src/screens/director/director.finance.bff.handler.ts",
+];
+
 describe("S-50K BFF boundary scaffold", () => {
   it("keeps BFF disabled by default and requires explicit config", () => {
     expect(isBffEnabled({ enabled: false })).toBe(false);
@@ -195,7 +200,7 @@ describe("S-50K BFF boundary scaffold", () => {
     expect(newSources).not.toContain(legacyAdminKeyMarker);
   });
 
-  it("does not import the BFF adapter from active app flows", () => {
+  it("does not import the BFF adapter from unapproved active app flows", () => {
     const roots = ["app", "src"];
     const activeImports: string[] = [];
 
@@ -221,6 +226,23 @@ describe("S-50K BFF boundary scaffold", () => {
     };
 
     roots.forEach(walk);
-    expect(activeImports).toEqual([]);
+    expect(activeImports.sort()).toEqual([...APPROVED_ACTIVE_BFF_IMPORTS].sort());
+
+    const directorFinanceContractSource = readProjectFile(
+      "src/screens/director/director.finance.bff.contract.ts",
+    );
+    const directorFinanceClientSource = readProjectFile(
+      "src/screens/director/director.finance.bff.client.ts",
+    );
+    const directorFinanceHandlerSource = readProjectFile(
+      "src/screens/director/director.finance.bff.handler.ts",
+    );
+
+    expect(directorFinanceContractSource).toContain("trafficEnabledByDefault: false");
+    expect(directorFinanceContractSource).toContain("productionTrafficEnabled: false");
+    expect(directorFinanceClientSource).toContain("resolveBffReadonlyRuntimeConfig");
+    expect(directorFinanceClientSource).toContain("callBffReadonlyMobile");
+    expect(`${directorFinanceClientSource}\n${directorFinanceHandlerSource}`).not.toContain(".rpc(");
+    expect(`${directorFinanceClientSource}\n${directorFinanceHandlerSource}`).not.toContain(".from(");
   });
 });

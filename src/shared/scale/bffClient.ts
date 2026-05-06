@@ -18,7 +18,8 @@ export type BffReadonlyMobileOperation =
   | "marketplace.catalog.search"
   | "warehouse.ledger.list"
   | "accountant.invoice.list"
-  | "director.pending.list";
+  | "director.pending.list"
+  | "director.finance.rpc.scope";
 
 export type BffRequestTarget = BffFlow | BffReadonlyMobileOperation;
 
@@ -60,6 +61,7 @@ export const BFF_READONLY_MOBILE_ROUTE_PATHS = Object.freeze({
   "warehouse.ledger.list": "/api/staging-bff/read/warehouse-ledger-list",
   "accountant.invoice.list": "/api/staging-bff/read/accountant-invoice-list",
   "director.pending.list": "/api/staging-bff/read/director-pending-list",
+  "director.finance.rpc.scope": "/api/staging-bff/read/director-finance-rpc-scope",
 } as const satisfies Record<BffReadonlyMobileOperation, string>);
 
 type BffReadonlyRuntimeEnv = Record<string, string | undefined>;
