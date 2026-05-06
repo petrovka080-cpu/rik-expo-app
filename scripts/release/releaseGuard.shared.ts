@@ -39,6 +39,9 @@ export type ReleaseRepoState = {
   headCommit: string;
   originMainCommit: string;
   worktreeClean: boolean;
+  envFilePolicyValid: boolean;
+  trackedEnvFiles: string[];
+  unsafeTrackedEnvFiles: string[];
   headMatchesOriginMain: boolean;
   localCommitsAheadOriginMain: number;
   originMainCommitsAheadHead: number;
@@ -194,6 +197,27 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
 ];
 
 export const RELEASE_GUARD_MAIN_PUSH_APPROVAL_KEYS = ["S_PRODUCTION_MAIN_PUSH_APPROVED"] as const;
+
+function isTrackedEnvFile(filePath: string): boolean {
+  const normalized = filePath.replace(/\\/g, "/");
+  const fileName = normalized.split("/").pop() ?? "";
+  return fileName === ".env" || fileName.startsWith(".env.");
+}
+
+export function resolveTrackedEnvFilePolicy(trackedFiles: string[]): {
+  envFilePolicyValid: boolean;
+  trackedEnvFiles: string[];
+  unsafeTrackedEnvFiles: string[];
+} {
+  const trackedEnvFiles = trackedFiles.filter(isTrackedEnvFile);
+  const unsafeTrackedEnvFiles = trackedEnvFiles.filter((filePath) => filePath.replace(/\\/g, "/") !== ".env.example");
+
+  return {
+    envFilePolicyValid: unsafeTrackedEnvFiles.length === 0,
+    trackedEnvFiles,
+    unsafeTrackedEnvFiles,
+  };
+}
 
 export function resolveReleaseRepoSync(params: {
   headMatchesOriginMain: boolean;
@@ -690,6 +714,10 @@ export function evaluateReleaseGuardReadiness(params: {
 
   if (!params.repo.worktreeClean) {
     blockers.push("Worktree is dirty. Release automation requires a clean repository state.");
+  }
+
+  for (const filePath of params.repo.unsafeTrackedEnvFiles) {
+    blockers.push(`Tracked environment file is not allowed in release automation: ${filePath}.`);
   }
 
   if (!params.repo.headMatchesOriginMain) {

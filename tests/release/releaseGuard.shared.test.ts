@@ -12,6 +12,7 @@ import {
   resolveReleaseGuardCommitRange,
   resolveReleaseGuardPath,
   resolveReleaseRepoSync,
+  resolveTrackedEnvFilePolicy,
   type ReleaseGateResult,
   type ReleaseRepoState,
   type ReleaseGuardStartupPolicyTruth,
@@ -24,6 +25,9 @@ function createRepoState(overrides: Partial<ReleaseRepoState> = {}): ReleaseRepo
     headCommit: "head-sha",
     originMainCommit: "head-sha",
     worktreeClean: true,
+    envFilePolicyValid: true,
+    trackedEnvFiles: [".env.example"],
+    unsafeTrackedEnvFiles: [],
     headMatchesOriginMain: true,
     localCommitsAheadOriginMain: 0,
     originMainCommitsAheadHead: 0,
@@ -257,6 +261,43 @@ describe("releaseGuard.shared", () => {
           "Required gate failed: jest-run-in-band.",
         ]),
       );
+    });
+
+    it("blocks tracked env files other than the root example file", () => {
+      expect(
+        resolveTrackedEnvFilePolicy([
+          ".env.example",
+          ".env.local",
+          "app/.env.production",
+          "src/app.ts",
+        ]),
+      ).toEqual({
+        envFilePolicyValid: false,
+        trackedEnvFiles: [".env.example", ".env.local", "app/.env.production"],
+        unsafeTrackedEnvFiles: [".env.local", "app/.env.production"],
+      });
+
+      const readiness = evaluateReleaseGuardReadiness({
+        mode: "verify",
+        repo: createRepoState({
+          envFilePolicyValid: false,
+          trackedEnvFiles: [".env.example", ".env.local"],
+          unsafeTrackedEnvFiles: [".env.local"],
+        }),
+        gates: createPassedGates(),
+        classification: classifyReleaseChanges({
+          changedFiles: ["scripts/release/run-release-guard.ts"],
+        }),
+        runtimePolicy: createRuntimePolicyTruth(),
+        startupPolicy: createStartupPolicyTruth(),
+        targetChannel: null,
+        releaseMessage: null,
+        missingArtifacts: [],
+        expectedBranch: null,
+      });
+
+      expect(readiness.status).toBe("fail");
+      expect(readiness.blockers).toContain("Tracked environment file is not allowed in release automation: .env.local.");
     });
 
     it("resolves branch sync actions without requiring release operators to infer them", () => {

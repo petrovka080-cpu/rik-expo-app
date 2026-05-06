@@ -19,6 +19,7 @@ import {
   resolveReleaseGuardCommitRange,
   resolveReleaseGuardPath,
   resolveReleaseRepoSync,
+  resolveTrackedEnvFilePolicy,
   type PackageJsonMutationKind,
   type ReleaseGateDefinition,
   type ReleaseGateResult,
@@ -191,6 +192,23 @@ function readCurrentFile(relativePath: string): string | null {
   return fs.readFileSync(absolutePath, "utf8");
 }
 
+function readTrackedFiles(): string[] {
+  const result = spawnSync("git", ["ls-files"], {
+    cwd: PROJECT_ROOT,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  if (result.status !== 0) {
+    return [];
+  }
+
+  return result.stdout
+    .split(/\r?\n/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function readPackageJsonMutationKind(range: string, changedFiles: string[]): PackageJsonMutationKind {
   if (!changedFiles.includes("package.json")) {
     return "none";
@@ -210,6 +228,7 @@ function readRepoState(): ReleaseRepoState {
   const headCommit = readCommand("git rev-parse HEAD");
   const originMainCommit = readCommand("git rev-parse origin/main");
   const worktreeClean = readCommand("git status --short").length === 0;
+  const envFilePolicy = resolveTrackedEnvFilePolicy(readTrackedFiles());
   const localCommitsAheadOriginMain = readGitCount(["rev-list", "--count", "origin/main..HEAD"]);
   const originMainCommitsAheadHead = readGitCount(["rev-list", "--count", "HEAD..origin/main"]);
   const sync = resolveReleaseRepoSync({
@@ -223,6 +242,9 @@ function readRepoState(): ReleaseRepoState {
     headCommit,
     originMainCommit,
     worktreeClean,
+    envFilePolicyValid: envFilePolicy.envFilePolicyValid,
+    trackedEnvFiles: envFilePolicy.trackedEnvFiles,
+    unsafeTrackedEnvFiles: envFilePolicy.unsafeTrackedEnvFiles,
     headMatchesOriginMain: headCommit === originMainCommit,
     localCommitsAheadOriginMain,
     originMainCommitsAheadHead,
@@ -273,6 +295,13 @@ function printHumanReport(report: ReleaseGuardReport) {
     console.info(`Required sync approval keys: ${report.repo.requiredSyncApprovalKeys.join(", ")}`);
   }
   console.info(`Worktree clean: ${String(report.repo.worktreeClean)}`);
+  console.info(`Env file policy valid: ${String(report.repo.envFilePolicyValid)}`);
+  if (report.repo.trackedEnvFiles.length > 0) {
+    console.info(`Tracked env files: ${report.repo.trackedEnvFiles.join(", ")}`);
+  }
+  if (report.repo.unsafeTrackedEnvFiles.length > 0) {
+    console.info(`Unsafe tracked env files: ${report.repo.unsafeTrackedEnvFiles.join(", ")}`);
+  }
   console.info(`Classification: ${report.classification.kind}`);
   console.info(`Runtime strategy: ${report.runtimePolicy.runtimeVersionStrategy}`);
   console.info(`Resolved runtime: ${report.runtimePolicy.resolvedRuntimeVersion}`);
