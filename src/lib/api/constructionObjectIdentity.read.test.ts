@@ -48,6 +48,39 @@ describe("constructionObjectIdentity.read", () => {
     expect(supabase.builder.range).toHaveBeenCalledWith(0, 99);
   });
 
+  it("pages construction object code lookup without silent truncation", async () => {
+    const rows = Array.from({ length: 101 }, (_, index) => ({
+      construction_object_code: `BLD-${String(index).padStart(3, "0")}`,
+      construction_object_name: `Object ${String(index).padStart(3, "0")}`,
+    }));
+    const supabase = makeSupabaseMock(rows);
+
+    const result = await loadConstructionObjectCodesByNames(
+      supabase as never,
+      rows.map((row) => row.construction_object_name),
+    );
+
+    expect(result.size).toBe(101);
+    expect(supabase.builder.range).toHaveBeenCalledWith(0, 99);
+    expect(supabase.builder.range).toHaveBeenCalledWith(100, 199);
+  });
+
+  it("fails closed when construction object lookup exceeds the row ceiling", async () => {
+    const rows = Array.from({ length: 5001 }, (_, index) => ({
+      construction_object_code: `BLD-${String(index).padStart(4, "0")}`,
+      construction_object_name: `Object ${String(index).padStart(4, "0")}`,
+    }));
+    const supabase = makeSupabaseMock(rows);
+
+    await expect(
+      loadConstructionObjectCodesByNames(
+        supabase as never,
+        rows.map((row) => row.construction_object_name),
+      ),
+    ).rejects.toThrow("Paged reference read exceeded max row ceiling (5000)");
+    expect(supabase.builder.range).toHaveBeenCalledWith(5000, 5000);
+  });
+
   it("loads request object identity projection rows", async () => {
     const supabase = makeSupabaseMock([
       {
@@ -73,5 +106,24 @@ describe("constructionObjectIdentity.read", () => {
     });
     expect(supabase.builder.order).toHaveBeenCalledWith("request_id", { ascending: true });
     expect(supabase.builder.range).toHaveBeenCalledWith(0, 99);
+  });
+
+  it("fails closed when request object identity lookup exceeds the row ceiling", async () => {
+    const rows = Array.from({ length: 5001 }, (_, index) => ({
+      request_id: `request-${String(index).padStart(4, "0")}`,
+      construction_object_code: `BLD-${String(index).padStart(4, "0")}`,
+      construction_object_name: `Object ${String(index).padStart(4, "0")}`,
+      identity_status: "request_fk",
+      identity_source: "request.object_type_code",
+    }));
+    const supabase = makeSupabaseMock(rows);
+
+    await expect(
+      loadRequestObjectIdentityByRequestIds(
+        supabase as never,
+        rows.map((row) => row.request_id),
+      ),
+    ).rejects.toThrow("Paged reference read exceeded max row ceiling (5000)");
+    expect(supabase.builder.range).toHaveBeenCalledWith(5000, 5000);
   });
 });

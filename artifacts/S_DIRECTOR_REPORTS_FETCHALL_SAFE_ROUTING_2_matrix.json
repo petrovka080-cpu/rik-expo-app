@@ -1,96 +1,90 @@
 {
   "wave": "S-DIRECTOR-REPORTS-FETCHALL-SAFE-ROUTING-2",
-  "final_status": "GREEN_DIRECTOR_REPORTS_FETCHALL_SAFE_ROUTING_2_RELEASE_INTEGRATED",
-  "scope": "director subcontract PDF report legacy model loader",
-  "approach": "route the legacy model loader through the existing typed server PDF source contract; preserve the shared report model builder",
-  "baseline": {
-    "head_equals_origin_main_start": true,
-    "ahead_start": 0,
-    "behind_start": 0,
-    "worktree_clean_start": true
+  "final_status": "BLOCKED_DIRECTOR_REPORTS_FETCHALL_SAFE_ROUTING_PUSH_APPROVAL_MISSING",
+  "local_status": "GREEN_DIRECTOR_REPORTS_FETCHALL_SAFE_ROUTING_2_LOCAL_READY",
+  "goal": "Close safe director-report auxiliary lookup pagination risk without changing report semantics.",
+  "head": "HEAD_LOCAL_AHEAD_COMMIT",
+  "origin_main": "1ace720e89d49ccecd9612be6afe2d204ff23980",
+  "head_equals_origin_main": false,
+  "ahead": 1,
+  "behind": 0,
+  "worktree_clean_after_commit": true,
+  "approval_checks": {
+    "S_PRODUCTION_MAIN_PUSH_APPROVED": false
   },
-  "target_files": [
-    "src/lib/api/pdf_director.data.ts",
-    "tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts"
+  "changed_files": [
+    "src/lib/api/constructionObjectIdentity.read.ts",
+    "src/lib/api/constructionObjectIdentity.read.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts"
   ],
-  "before": {
-    "file": "src/lib/api/pdf_director.data.ts",
-    "function": "loadDirectorSubcontractReportPdfModel",
-    "domain_table": "subcontracts",
-    "status": "direct table select without limit/range/maxRows for full PDF report model",
-    "can_paginate_safely": false,
-    "requires_server_source_contract": true
-  },
-  "after": {
-    "file": "src/lib/api/pdf_director.data.ts",
-    "function": "loadDirectorSubcontractReportPdfModel",
-    "source_contract": "pdf_director_subcontract_source_v1",
-    "source_function": "getDirectorSubcontractPdfSource",
-    "domain_table": "server-owned director_subcontract_report source",
-    "direct_subcontracts_table_read_removed": true,
-    "report_shape_preserved": true,
-    "model_builder_preserved": "prepareDirectorSubcontractReportPdfModelFromRows",
-    "filters_preserved": [
-      "periodFrom",
-      "periodTo",
-      "objectName"
+  "implementation": {
+    "safe_lookup_paths_bounded": [
+      {
+        "file": "src/lib/api/constructionObjectIdentity.read.ts",
+        "function": "loadConstructionObjectCodesByNames",
+        "domain_or_table_name_only": "construction_object_identity_lookup_v1",
+        "change": "Replaced open-ended page loop with loadPagedRowsWithCeiling using maxRows 5000.",
+        "filters_preserved": true,
+        "deterministic_order_preserved": true,
+        "abort_signal_preserved": true,
+        "silent_truncation_used": false
+      },
+      {
+        "file": "src/lib/api/constructionObjectIdentity.read.ts",
+        "function": "loadRequestObjectIdentityByRequestIds",
+        "domain_or_table_name_only": "request_object_identity_scope_v1",
+        "change": "Replaced open-ended page loop with loadPagedRowsWithCeiling using maxRows 5000.",
+        "filters_preserved": true,
+        "deterministic_order_preserved": true,
+        "silent_truncation_used": false
+      }
     ],
-    "list_output_semantics": "full PDF source rows owned by typed server source contract, not client full-table loaded"
+    "report_semantics_changed": false,
+    "report_output_shape_changed": false,
+    "server_side_aggregation_contract_changed": false,
+    "business_logic_changed": false
   },
   "safety": {
-    "business_semantics_changed": false,
-    "silent_truncation_used": false,
-    "arbitrary_limit_added": false,
+    "production_db_written": false,
+    "migrations_applied": false,
     "temporary_hooks_created": false,
     "temporary_scripts_created": false,
     "temporary_endpoints_created": false,
-    "production_db_written": false,
-    "migrations_applied": false,
-    "render_env_written": false,
     "deploy_triggered": false,
     "redeploy_triggered": false,
-    "ota_triggered": false,
-    "bff_traffic_changed": false,
+    "render_env_written": false,
     "business_calls_made": false,
+    "bff_traffic_changed": false,
     "secrets_printed": false,
     "env_values_printed": false,
-    "urls_printed": false,
     "raw_payloads_printed": false,
     "raw_db_rows_printed": false,
-    "business_rows_printed": false
+    "business_rows_printed": false,
+    "pushed": false
   },
-  "verification": {
-    "targeted_tests": {
-      "command": "npx jest tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts src/lib/api/pdf_director.test.ts src/lib/api/directorPdfSource.service.test.ts tests/strict-null/directorPdfSource.service.phase3.test.ts --runInBand",
-      "status": "PASS",
-      "test_suites": 4,
-      "tests": 15
-    },
-    "typecheck": {
-      "command": "npm run verify:typecheck",
-      "status": "PASS"
-    },
+  "tests": {
+    "targeted_jest": "PASS",
+    "targeted_jest_tests": "8 passed",
+    "typecheck": "PASS",
     "lint": "PASS",
     "git_diff_check": "PASS",
-    "artifact_json_parse": "PASS",
-    "release_verify_status": "PASS_POST_PUSH",
-    "health": 200,
-    "ready": 200
+    "static_no_open_ended_identity_loop_check": "PASS",
+    "pre_commit_checks": "PASS",
+    "release_verify_exit_code": 1,
+    "release_verify_gate_statuses": {
+      "tsc": "passed",
+      "expo-lint": "passed",
+      "jest-run-in-band": "passed",
+      "jest": "passed",
+      "git-diff-check": "passed"
+    },
+    "release_verify_readiness": "fail",
+    "release_verify_readiness_blocker": "local branch ahead by 1 commit; push requires S_PRODUCTION_MAIN_PUSH_APPROVED"
   },
   "release": {
-    "pushed": true,
-    "head_equals_origin_main_final": true,
-    "ahead_final": 0,
-    "behind_final": 0
-  },
-  "remaining_director_report_fetchall_risks": [
-    {
-      "path": "src/lib/api/director_reports.transport.facts.ts::fetchAllFactRowsFromView",
-      "status": "compatibility export only; fail-closed before DB access"
-    },
-    {
-      "path": "src/lib/api/director_reports.transport.discipline.ts::fetchAllFactRowsFromTables",
-      "status": "compatibility export only; fail-closed before DB access"
-    }
-  ]
+    "commit_created": true,
+    "commit": "HEAD_LOCAL_AHEAD_COMMIT",
+    "pushed": false,
+    "push_blocker": "S_PRODUCTION_MAIN_PUSH_APPROVED missing"
+  }
 }

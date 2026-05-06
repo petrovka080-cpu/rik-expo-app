@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { normalizePage } from "./_core";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "./_core";
 import {
   applySupabaseAbortSignal,
   throwIfAborted,
@@ -18,7 +18,11 @@ type RequestObjectIdentityScopeRow = {
   identity_source: string | null;
 };
 
-const CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+const CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS = {
+  pageSize: 100,
+  maxPageSize: 100,
+  maxRows: 5000,
+};
 
 const normalizeText = (value: unknown): string | null => {
   const text = String(value ?? "").trim();
@@ -54,6 +58,28 @@ const normalizeRequestObjectIdentityScopeRow = (
   };
 };
 
+const loadConstructionObjectIdentityRows = async <TRow,>(
+  queryFactory: () => PagedQuery<TRow>,
+  options?: { signal?: AbortSignal | null },
+): Promise<TRow[]> => {
+  const { data, error } = await loadPagedRowsWithCeiling<TRow>(
+    () => ({
+      range: async (from: number, to: number) => {
+        throwIfAborted(options?.signal);
+        const result = await applySupabaseAbortSignal(
+          queryFactory().range(from, to),
+          options?.signal,
+        );
+        throwIfAborted(options?.signal);
+        return result;
+      },
+    }),
+    CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS,
+  );
+  if (error) throw error;
+  return Array.isArray(data) ? data : [];
+};
+
 export async function loadConstructionObjectCodesByNames(
   supabase: SupabaseClient,
   namesRaw: string[],
@@ -64,31 +90,24 @@ export async function loadConstructionObjectCodesByNames(
   if (!names.length) return out;
 
   throwIfAborted(options?.signal);
-  for (let pageIndex = 0; ; pageIndex += 1) {
-    const page = normalizePage({ page: pageIndex }, CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS);
-    const { data, error } = await applySupabaseAbortSignal(
-      supabase
-        .from("construction_object_identity_lookup_v1")
-        .select("construction_object_code, construction_object_name")
-        .in("construction_object_name", names)
-        .order("construction_object_name", { ascending: true })
-        .order("construction_object_code", { ascending: true })
-        .range(page.from, page.to),
-      options?.signal,
-    );
-    throwIfAborted(options?.signal);
-
-    if (error) throw error;
-
-    const pageRows = Array.isArray(data) ? data : [];
-    for (const rawRow of pageRows) {
-      const row = normalizeConstructionObjectLookupRow(rawRow);
-      if (!row?.construction_object_code || !row.construction_object_name) continue;
-      if (!out.has(row.construction_object_name)) {
-        out.set(row.construction_object_name, row.construction_object_code);
-      }
+  const rows = await loadConstructionObjectIdentityRows(
+    () =>
+      (
+        supabase
+          .from("construction_object_identity_lookup_v1")
+          .select("construction_object_code, construction_object_name")
+          .in("construction_object_name", names)
+          .order("construction_object_name", { ascending: true })
+          .order("construction_object_code", { ascending: true })
+      ) as unknown as PagedQuery<unknown>,
+    options,
+  );
+  for (const rawRow of rows) {
+    const row = normalizeConstructionObjectLookupRow(rawRow);
+    if (!row?.construction_object_code || !row.construction_object_name) continue;
+    if (!out.has(row.construction_object_name)) {
+      out.set(row.construction_object_name, row.construction_object_code);
     }
-    if (pageRows.length < page.pageSize) break;
   }
 
   return out;
@@ -102,24 +121,20 @@ export async function loadRequestObjectIdentityByRequestIds(
   const out = new Map<string, RequestObjectIdentityScopeRow>();
   if (!requestIds.length) return out;
 
-  for (let pageIndex = 0; ; pageIndex += 1) {
-    const page = normalizePage({ page: pageIndex }, CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS);
-    const { data, error } = await supabase
-      .from("request_object_identity_scope_v1")
-      .select("request_id, construction_object_code, construction_object_name, identity_status, identity_source")
-      .in("request_id", requestIds)
-      .order("request_id", { ascending: true })
-      .range(page.from, page.to);
-
-    if (error) throw error;
-
-    const pageRows = Array.isArray(data) ? data : [];
-    for (const rawRow of pageRows) {
-      const row = normalizeRequestObjectIdentityScopeRow(rawRow);
-      if (!row) continue;
-      out.set(row.request_id, row);
-    }
-    if (pageRows.length < page.pageSize) break;
+  const rows = await loadConstructionObjectIdentityRows(
+    () =>
+      (
+        supabase
+          .from("request_object_identity_scope_v1")
+          .select("request_id, construction_object_code, construction_object_name, identity_status, identity_source")
+          .in("request_id", requestIds)
+          .order("request_id", { ascending: true })
+      ) as unknown as PagedQuery<unknown>,
+  );
+  for (const rawRow of rows) {
+    const row = normalizeRequestObjectIdentityScopeRow(rawRow);
+    if (!row) continue;
+    out.set(row.request_id, row);
   }
 
   return out;

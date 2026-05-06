@@ -52,6 +52,20 @@ const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
     "tests/pdf/pdfViewer.readiness.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedDirectorReportsSafeRouting2Artifact = (file: string) =>
+  [
+    "artifacts/S_DIRECTOR_REPORTS_FETCHALL_SAFE_ROUTING_2_matrix.json",
+    "artifacts/S_DIRECTOR_REPORTS_FETCHALL_SAFE_ROUTING_2_proof.md",
+  ].includes(file.replace(/\\/g, "/"));
+
+const isApprovedDirectorReportsSafeBounds1Patch = (file: string) =>
+  [
+    "artifacts/S_DIRECTOR_REPORTS_FETCHALL_SAFE_BOUNDS_1_matrix.json",
+    "artifacts/S_DIRECTOR_REPORTS_FETCHALL_SAFE_BOUNDS_1_proof.md",
+    "src/lib/api/director_reports.naming.ts",
+    "src/lib/api/director_reports.naming.fanout.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -75,12 +89,10 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
     ).toBeGreaterThanOrEqual(1);
 
     const identity = read("src/lib/api/constructionObjectIdentity.read.ts");
-    expect(identity).toContain(
-      "CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }",
-    );
-    expect(identity).toContain(
-      "normalizePage({ page: pageIndex }, CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS)",
-    );
+    expect(identity).toContain("CONSTRUCTION_OBJECT_IDENTITY_PAGE_DEFAULTS = {");
+    expect(identity).toContain("maxRows: 5000");
+    expect(identity).toContain("loadPagedRowsWithCeiling<TRow>");
+    expect(identity).not.toContain("for (let pageIndex = 0; ; pageIndex += 1)");
     expect(identity).toContain(
       '.from("construction_object_identity_lookup_v1")',
     );
@@ -92,9 +104,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
     );
     expect(identity).toContain('.from("request_object_identity_scope_v1")');
     expect(identity).toContain('.order("request_id", { ascending: true })');
-    expect(
-      (identity.match(/\.range\(page\.from, page\.to\)/g) ?? []).length,
-    ).toBe(2);
+    expect(identity).toContain("queryFactory().range(from, to)");
   });
 
   it("keeps excluded full-scan and sensitive surfaces untouched", () => {
@@ -103,6 +113,8 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
         !isApprovedLaterRpcValidationPatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
+        !isApprovedDirectorReportsSafeRouting2Artifact(file) &&
+        !isApprovedDirectorReportsSafeBounds1Patch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

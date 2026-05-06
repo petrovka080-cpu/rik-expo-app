@@ -1,0 +1,169 @@
+{
+  "wave": "S-DIRECTOR-REPORTS-FETCHALL-SAFE-BOUNDS-1",
+  "final_status": "PARTIAL_DIRECTOR_REPORTS_FETCHALL_SAFE_BOUNDS_REMAINING_AGGREGATION_CONTRACTS_DOCUMENTED",
+  "local_status": "GREEN_DIRECTOR_REPORTS_FETCHALL_SAFE_BOUNDS_LOCAL_READY",
+  "prerequisite": {
+    "GREEN_DIRECTOR_REPORTS_FETCHALL_AGGREGATION_INVENTORY_READY": true
+  },
+  "release_integration_status": "BLOCKED_PUSH_APPROVAL_MISSING",
+  "head_equals_origin_main": false,
+  "ahead": 1,
+  "behind": 0,
+  "worktree_clean_before_commit": false,
+  "worktree_clean_after_commit": true,
+  "safe_bounds_added": [
+    {
+      "file": "src/lib/api/constructionObjectIdentity.read.ts",
+      "functions": [
+        "loadConstructionObjectCodesByNames",
+        "loadRequestObjectIdentityByRequestIds"
+      ],
+      "purpose": "director report UI/request object identity enrichment by known names/request ids",
+      "domains_or_tables": [
+        "construction_object_identity_lookup_v1",
+        "request_object_identity_scope_v1"
+      ],
+      "bounded_status": "loadPagedRowsWithCeiling with maxRows 5000",
+      "deterministic_order": true,
+      "filters_preserved": true,
+      "can_paginate_safely": true,
+      "requires_server_side_aggregation": false
+    },
+    {
+      "file": "src/lib/api/director_reports.naming.ts",
+      "functions": [
+        "fetchObjectsByIds",
+        "fetchCodeLookupByCodes",
+        "fetchBestMaterialNamesByCode"
+      ],
+      "purpose": "director report naming enrichment by known ids/codes",
+      "domains_or_tables": [
+        "objects",
+        "ref_object_types",
+        "ref_systems",
+        "ref_levels",
+        "v_rik_names_ru",
+        "v_wh_balance_ledger_ui",
+        "catalog_name_overrides"
+      ],
+      "bounded_status": "chunked input-bounded lookups now page-through with maxRows 5000 per chunk",
+      "deterministic_order": true,
+      "filters_preserved": true,
+      "can_paginate_safely": true,
+      "requires_server_side_aggregation": false
+    }
+  ],
+  "aggregation_needed_reads": [
+    {
+      "file": "src/lib/api/director_reports.service.options.ts",
+      "functions": [
+        "fetchDirectorWarehouseReportOptionsTracked",
+        "fetchDirectorWarehouseReportOptions"
+      ],
+      "status": "uses permanent typed server-side aggregation contract director_report_transport_scope_v1",
+      "bounded_by_client": false,
+      "requires_server_side_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.service.report.ts",
+      "functions": [
+        "fetchDirectorWarehouseReportTracked",
+        "fetchDirectorWarehouseReport"
+      ],
+      "status": "uses permanent typed server-side aggregation contract director_report_transport_scope_v1",
+      "bounded_by_client": false,
+      "requires_server_side_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.service.discipline.ts",
+      "functions": [
+        "fetchDirectorWarehouseReportDisciplineTracked",
+        "fetchDirectorWarehouseReportDiscipline"
+      ],
+      "status": "uses permanent typed server-side aggregation contract director_report_transport_scope_v1",
+      "bounded_by_client": false,
+      "requires_server_side_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.facts.ts",
+      "functions": [
+        "fetchAllFactRowsFromView",
+        "fetchDirectorFactViaAccRpc"
+      ],
+      "status": "fail-closed with DirectorReportsAggregationContractRequiredError",
+      "bounded_by_client": false,
+      "requires_server_side_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "functions": [
+        "fetchAllFactRowsFromTables",
+        "fetchDisciplineFactRowsFromTables",
+        "fetchFactRowsForDiscipline",
+        "fetchDirectorDisciplineSourceRowsViaRpc"
+      ],
+      "status": "fail-closed with DirectorReportsAggregationContractRequiredError",
+      "bounded_by_client": false,
+      "requires_server_side_aggregation": true
+    },
+    {
+      "file": "src/lib/api/directorPdfSource.service.ts",
+      "functions": [
+        "getDirectorProductionPdfSource",
+        "getDirectorFinancePdfSource",
+        "getDirectorSubcontractPdfSource"
+      ],
+      "status": "server-owned PDF/transport source contracts; no client report truncation",
+      "bounded_by_client": false,
+      "requires_server_side_aggregation": true
+    }
+  ],
+  "report_shape_compatibility": {
+    "report_output_shape_changed": false,
+    "pdf_output_shape_changed": false,
+    "director_report_totals_paginated_or_limited": false,
+    "fallback_semantics_changed": false
+  },
+  "safety": {
+    "business_semantics_changed": false,
+    "silent_truncation_used": false,
+    "temporary_endpoints_created": false,
+    "temporary_hooks_created": false,
+    "temporary_scripts_created": false,
+    "production_db_written": false,
+    "migrations_applied": false,
+    "deploy_triggered": false,
+    "redeploy_triggered": false,
+    "render_env_written": false,
+    "business_calls_made": false,
+    "bff_traffic_changed": false,
+    "secrets_printed": false,
+    "raw_payloads_printed": false,
+    "raw_db_rows_printed": false,
+    "business_rows_printed": false
+  },
+  "tests": {
+    "director_reports_tests": "PASS",
+    "pagination_ceiling_tests": "PASS",
+    "report_shape_compatibility": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "git_diff_check": "PASS",
+    "release_verify": "READINESS_BLOCKED_ONLY_BY_LOCAL_AHEAD_BEFORE_PUSH",
+    "release_verify_gate_statuses": {
+      "tsc": "passed",
+      "expo-lint": "passed",
+      "jest-run-in-band": "passed",
+      "jest": "passed",
+      "git-diff-check": "passed"
+    },
+    "release_verify_readiness_blocker": "local branch ahead by 1 commit; push requires S_PRODUCTION_MAIN_PUSH_APPROVED",
+    "artifact_json_parse": "PASS"
+  },
+  "release": {
+    "commit_created": true,
+    "pushed": false,
+    "push_blocker": "S_PRODUCTION_MAIN_PUSH_APPROVED missing",
+    "deploy_or_redeploy": false
+  }
+}

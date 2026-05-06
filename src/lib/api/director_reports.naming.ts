@@ -2,6 +2,7 @@ import { supabase } from "../supabaseClient";
 import { normalizeRuText } from "../text/encoding";
 import { trimMapSize, trimSetSize } from "../cache/boundedCacheUtils";
 import { mapWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "./_core";
 import type { DirectorNamingProbeCacheMode, DirectorNamingSourceStatus } from "../../screens/director/director.readModels";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import type { CodeNameRow, DirectorFactRow, ObjectLookupRow, RikNameLookupRow } from "./director_reports.shared";
@@ -30,6 +31,22 @@ import {
 
 const DIRECTOR_NAMING_LOOKUP_CHUNK_SIZE = 500;
 const DIRECTOR_NAMING_LOOKUP_CONCURRENCY_LIMIT = 4;
+const DIRECTOR_NAMING_LOOKUP_PAGE_DEFAULTS = {
+  pageSize: 100,
+  maxPageSize: 100,
+  maxRows: 5000,
+};
+
+const loadDirectorNamingRowsWithCeiling = async <TRow,>(
+  queryFactory: () => PagedQuery<TRow>,
+): Promise<TRow[]> => {
+  const { data, error } = await loadPagedRowsWithCeiling<TRow>(
+    queryFactory,
+    DIRECTOR_NAMING_LOOKUP_PAGE_DEFAULTS,
+  );
+  if (error) throw error;
+  return Array.isArray(data) ? data : [];
+};
 
 async function fetchObjectsByIds(idsRaw: string[]): Promise<Map<string, string>> {
   const ids = Array.from(new Set((idsRaw || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
@@ -57,14 +74,19 @@ async function fetchObjectsByIds(idsRaw: string[]): Promise<Map<string, string>>
         DIRECTOR_NAMING_LOOKUP_CHUNK_SIZE,
         DIRECTOR_NAMING_LOOKUP_CONCURRENCY_LIMIT,
         async (part) => {
-          const { data, error } = await supabase
-            .from("objects" as never)
-            .select("id,name")
-            .in("id", part);
-          if (error) throw error;
-          const rows = Array.isArray(data)
-            ? data.map(normalizeObjectLookupRow).filter((row): row is ObjectLookupRow => !!row)
-            : [];
+          const rawRows = await loadDirectorNamingRowsWithCeiling<unknown>(() =>
+            (
+              supabase
+                .from("objects" as never)
+                .select("id,name")
+                .in("id", part)
+                .order("id", { ascending: true })
+                .order("name", { ascending: true })
+            ) as unknown as PagedQuery<unknown>,
+          );
+          const rows = rawRows
+            .map(normalizeObjectLookupRow)
+            .filter((row): row is ObjectLookupRow => !!row);
           const seen = new Set<string>();
           for (const row of rows) {
             seen.add(row.id);
@@ -128,16 +150,18 @@ async function fetchCodeLookupByCodes(
         DIRECTOR_NAMING_LOOKUP_CHUNK_SIZE,
         DIRECTOR_NAMING_LOOKUP_CONCURRENCY_LIMIT,
         async (part) => {
-          const { data, error } = await supabase
-            .from(table as never)
-            .select(selectCols)
-            .in("code", part);
-          if (error) throw error;
-          const rows = Array.isArray(data)
-            ? data
-                .map((row) => (table === "v_rik_names_ru" ? normalizeCodeNameRow(row) : normalizeCodeNameRow(row)))
-                .filter((row): row is CodeNameRow => !!row)
-            : [];
+          const rawRows = await loadDirectorNamingRowsWithCeiling<unknown>(() =>
+            (
+              supabase
+                .from(table as never)
+                .select(selectCols)
+                .in("code", part)
+                .order("code", { ascending: true })
+            ) as unknown as PagedQuery<unknown>,
+          );
+          const rows = rawRows
+            .map((row) => (table === "v_rik_names_ru" ? normalizeCodeNameRow(row) : normalizeCodeNameRow(row)))
+            .filter((row): row is CodeNameRow => !!row);
           const seen = new Set<string>();
           for (const row of rows) {
             const code = String(row.code ?? "").trim().toUpperCase();
@@ -432,7 +456,11 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
     type DynamicQueryClient = {
       from: (table: string) => {
         select: (columns: string) => {
-          in: (field: string, values: string[]) => Promise<{ error: unknown; data: unknown[] | null }>;
+          in: (field: string, values: string[]) => {
+            order: (column: string, options: { ascending: boolean }) => {
+              order: (column: string, options: { ascending: boolean }) => PagedQuery<unknown>;
+            };
+          };
         };
       };
     };
@@ -459,19 +487,17 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
         async (part) => {
           try {
             const sb = supabase as unknown as DynamicQueryClient;
-            const q = await sb
-              .from(table)
-              .select(selectCols)
-              .in(codeField, part);
-            if (q.error) {
-              warnDirectorNaming("fetch_source", table, q.error);
-              return;
-            }
-            if (Array.isArray(q.data)) {
-              for (const rowValue of q.data as unknown[]) {
-                const row = asRecord(rowValue);
-                put(sourceMap, row[codeField], row[nameField]);
-              }
+            const rows = await loadDirectorNamingRowsWithCeiling<unknown>(() =>
+              sb
+                .from(table)
+                .select(selectCols)
+                .in(codeField, part)
+                .order(codeField, { ascending: true })
+                .order(nameField, { ascending: true }),
+            );
+            for (const rowValue of rows) {
+              const row = asRecord(rowValue);
+              put(sourceMap, row[codeField], row[nameField]);
             }
           } catch (error) {
             warnDirectorNaming("fetch_source", table, error);
