@@ -110,6 +110,9 @@ describe("performance budget — bundle module count", () => {
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sDirectSupabaseBypassCatalogRequestBoundaryFiles = [
+      path.join(SRC, "lib", "catalog", "catalog.request.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -157,12 +160,14 @@ describe("performance budget — bundle module count", () => {
     // S-CACHE-PRODUCTION-RUNTIME-SHADOW-CANARY-MECHANISM-1 adds one permanent cache shadow runtime module.
     // S-AI-WORKFLOW-2 adds three disabled-by-default advisory AI pilot modules.
     // S-PDF-INSTANT-FIRST-OPEN-AND-TOP-LAYER-FIX-1 adds one permanent cache service module.
+    // S-DIRECT-SUPABASE-BYPASS-ELIMINATION-1 adds one permanent catalog request read transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
     expect(s50kBffBoundaryScaffoldFiles).toBeLessThanOrEqual(41);
     expect(sAiWorkflow2DisabledPilotFiles).toBeLessThanOrEqual(3);
     expect(sPdfInstantFirstOpenCacheFiles).toBeLessThanOrEqual(1);
+    expect(sDirectSupabaseBypassCatalogRequestBoundaryFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -170,7 +175,8 @@ describe("performance budget — bundle module count", () => {
         v47CForemanFioBootstrapFlowFiles -
         s50kBffBoundaryScaffoldFiles -
         sAiWorkflow2DisabledPilotFiles -
-        sPdfInstantFirstOpenCacheFiles,
+        sPdfInstantFirstOpenCacheFiles -
+        sDirectSupabaseBypassCatalogRequestBoundaryFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

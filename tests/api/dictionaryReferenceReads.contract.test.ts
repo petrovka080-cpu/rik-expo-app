@@ -77,7 +77,7 @@ describe("dictionary/reference read pagination", () => {
         ],
       },
       {
-        path: repoFile("src", "lib", "catalog", "catalog.request.service.ts"),
+        path: repoFile("src", "lib", "catalog", "catalog.request.transport.ts"),
         tokens: [
           "CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS",
           "maxRows: 5000",

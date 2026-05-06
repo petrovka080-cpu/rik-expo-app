@@ -1,5 +1,4 @@
 import { supabase } from "../supabaseClient";
-import { loadPagedRowsWithCeiling, type PagedQuery } from "../api/_core";
 import {
   isRequestItemUpdateQtyResponse,
   validateRpcResponse,
@@ -8,7 +7,6 @@ import {
   clearCachedDraftRequestId,
   getOrCreateDraftRequestId as getOrCreateLowLevelDraftRequestId,
 } from "../api/requests";
-import { filterRequestLinkedRowsByExistingRequestLinks } from "../api/integrity.guards";
 import type {
   CatalogRequestDisplayNoArgs,
   CatalogRequestItemUpdate,
@@ -26,6 +24,19 @@ import {
   pickFirstString,
   readRefName,
 } from "./catalog.compat.shared";
+import {
+  filterCatalogRequestLinkedRowsByExistingRequestLinks,
+  loadCatalogForemanRequestRowsByCreatedBy,
+  loadCatalogForemanRequestRowsByName,
+  loadCatalogRequestDetailsRowByDisplayNo,
+  loadCatalogRequestDetailsRowById,
+  loadCatalogRequestDisplayHeaderRow,
+  loadCatalogRequestDraftStatusRow,
+  loadCatalogRequestExtendedMetaSampleRows,
+  loadCatalogRequestItemRows,
+  loadCatalogRequestItemStatusRows,
+  selectCatalogDynamicReadSingle,
+} from "./catalog.request.transport";
 
 export type RequestHeader = {
   id: string;
@@ -128,15 +139,6 @@ type RequestItemsUpdate = CatalogRequestItemUpdate;
 type RequestItemUpdateQtyArgs = CatalogRequestItemUpdateQtyArgs;
 type RequestDisplayRpcArgs = CatalogRequestDisplayNoArgs;
 type RequestDisplayRpcName = "request_display_no" | "request_display" | "request_label";
-type CatalogDynamicReadSource =
-  | "request_display"
-  | "vi_requests_display"
-  | "vi_requests"
-  | "v_requests_display"
-  | "v_request_pdf_header"
-  | "requests";
-type CatalogDynamicReadLegacySource = "vi_requests_display" | "vi_requests";
-type CatalogDynamicReadResponse = Promise<{ data: unknown; error: { message?: string } | null }>;
 type RequestsExtendedMetaUpdate = RequestsUpdate & {
   planned_volume?: number | null;
   qty_plan?: number | null;
@@ -189,7 +191,6 @@ function pickBaseRequestPayload(payload: RequestsExtendedMetaUpdate): RequestsUp
 }
 
 const DRAFT_KEY = "foreman_draft_request_id";
-const CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 const asRequestHeader = (value: unknown): RequestHeader | null => {
   if (!value || typeof value !== "object") return null;
@@ -271,39 +272,6 @@ const runRequestDisplayRpc = async (
       const { data, error } = await supabase.rpc("request_label", args);
       return { data: typeof data === "string" ? data : data == null ? null : String(data), error };
     }
-  }
-};
-
-const readCatalogLegacyView = (relation: CatalogDynamicReadLegacySource) =>
-  (supabase.from.bind(supabase) as (
-    name: CatalogDynamicReadLegacySource,
-  ) => {
-    select(columns: string): {
-      eq(column: "id" | "display_no", value: string): {
-        maybeSingle(): CatalogDynamicReadResponse;
-      };
-    };
-  })(relation);
-
-const selectCatalogDynamicReadSingle = async (
-  relation: CatalogDynamicReadSource,
-  columns: string,
-  id: string,
-  matchColumn: "id" | "display_no" = "id",
-): CatalogDynamicReadResponse => {
-  switch (relation) {
-    case "request_display":
-      return await supabase.from("request_display").select(columns).eq(matchColumn, id).maybeSingle();
-    case "vi_requests_display":
-      return await readCatalogLegacyView("vi_requests_display").select(columns).eq(matchColumn, id).maybeSingle();
-    case "vi_requests":
-      return await readCatalogLegacyView("vi_requests").select(columns).eq(matchColumn, id).maybeSingle();
-    case "v_requests_display":
-      return await supabase.from("v_requests_display").select(columns).eq(matchColumn, id).maybeSingle();
-    case "v_request_pdf_header":
-      return await supabase.from("v_request_pdf_header").select(columns).eq(matchColumn, id).maybeSingle();
-    case "requests":
-      return await supabase.from("requests").select(columns).eq(matchColumn, id).maybeSingle();
   }
 };
 
@@ -464,7 +432,7 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
   if (!rid) return false;
 
   try {
-    const { data, error } = await supabase.from("requests").select("id,status").eq("id", rid).maybeSingle();
+    const { data, error } = await loadCatalogRequestDraftStatusRow(rid);
     if (error) throw error;
     const row = asRequestStatusRow(data);
     if (!row?.id) return false;
@@ -487,7 +455,7 @@ async function resolveRequestsExtendedMetaWriteSupport(): Promise<boolean> {
 
   requestsExtendedMetaWriteSupportInFlight = (async () => {
     try {
-      const q = await supabase.from("requests").select("*").limit(1);
+      const q = await loadCatalogRequestExtendedMetaSampleRows();
       if (q.error) throw q.error;
       const sample = Array.isArray(q.data) && q.data.length > 0 ? (q.data[0] as Record<string, unknown>) : null;
       if (!sample) {
@@ -599,7 +567,7 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   if (!id) return null;
 
   try {
-    const { data, error } = await supabase.from("requests").select("id,display_no").eq("id", id).maybeSingle();
+    const { data, error } = await loadCatalogRequestDisplayHeaderRow(id);
     const row = asRequestHeader(data);
     if (!error && row?.display_no) return String(row.display_no);
   } catch (error: unknown) {
@@ -662,11 +630,7 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
      zone:ref_zones(*)`;
 
   try {
-    const { data, error } = await supabase
-      .from("requests")
-      .select(requestDetailsSelect)
-      .eq("id", id)
-      .maybeSingle();
+    const { data, error } = await loadCatalogRequestDetailsRowById(requestDetailsSelect, id);
     if (!error && data) {
       const mapped = mapDetailsFromRow(data);
       if (mapped) return mapped;
@@ -707,11 +671,7 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
   }
 
   try {
-    const { data, error } = await supabase
-      .from("requests")
-      .select(requestDetailsSelect)
-      .eq("display_no", id)
-      .maybeSingle();
+    const { data, error } = await loadCatalogRequestDetailsRowByDisplayNo(requestDetailsSelect, id);
     if (!error && data) {
       const mapped = mapDetailsFromRow(data);
       if (mapped) return mapped;
@@ -846,19 +806,7 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
   if (!id) return [];
 
   try {
-    const { data, error } = await loadPagedRowsWithCeiling<Record<string, unknown>>(
-      () =>
-        supabase
-          .from("request_items")
-          .select(
-            "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order,updated_at",
-          )
-          .eq("request_id", id)
-          .order("row_no", { ascending: true })
-          .order("position_order", { ascending: true })
-          .order("id", { ascending: true }) as unknown as PagedQuery<Record<string, unknown>>,
-      CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS,
-    );
+    const { data, error } = await loadCatalogRequestItemRows(id);
 
     if (error) {
       if (__DEV__) console.warn("[catalog_api.listRequestItems] request_items:", (error as Error)?.message ?? error);
@@ -871,7 +819,7 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
     const mapped = rows
       .map((row) => mapRequestItemRow(row, id))
       .filter((row): row is ReqItemRow => !!row);
-    const guarded = await filterRequestLinkedRowsByExistingRequestLinks(supabase, mapped, {
+    const guarded = await filterCatalogRequestLinkedRowsByExistingRequestLinks(mapped, {
       screen: "request",
       surface: "catalog_list_request_items",
       sourceKind: "table:request_items",
@@ -957,36 +905,12 @@ export async function listForemanRequests(
   if (!name && !uid) return [];
 
   const take = clamp(limit, 1, 200);
-  const requestSelect =
-    `id,status,created_at,need_by,display_no,
-     object_type_code,level_code,system_code,zone_code,
-     object:ref_object_types(*),
-     level:ref_levels(*),
-     system:ref_systems(*),
-     zone:ref_zones(*)`;
-
   const results: { data: unknown; error: { message?: string } | null }[] = [];
   if (name) {
-    results.push(
-      await supabase
-        .from("requests")
-        .select(requestSelect)
-        .ilike("foreman_name", name)
-        .not("display_no", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(take),
-    );
+    results.push(await loadCatalogForemanRequestRowsByName(name, take));
   }
   if (uid) {
-    results.push(
-      await supabase
-        .from("requests")
-        .select(requestSelect)
-        .eq("created_by", uid)
-        .not("display_no", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(take),
-    );
+    results.push(await loadCatalogForemanRequestRowsByCreatedBy(uid, take));
   }
 
   const mergedById = new Map<string, RequestListMergedRow>();
@@ -1022,16 +946,7 @@ export async function listForemanRequests(
   const ids = mapped.map((row) => row.id).filter(Boolean);
   if (!ids.length) return mapped;
 
-  const { data: itemRows, error: itemErr } = await loadPagedRowsWithCeiling<Record<string, unknown>>(
-    () =>
-      supabase
-        .from("request_items")
-        .select("request_id,status")
-        .in("request_id", ids)
-        .order("request_id", { ascending: true })
-        .order("id", { ascending: true }) as unknown as PagedQuery<Record<string, unknown>>,
-    CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS,
-  );
+  const { data: itemRows, error: itemErr } = await loadCatalogRequestItemStatusRows(ids);
 
   if (itemErr || !Array.isArray(itemRows)) {
     return mapped;
