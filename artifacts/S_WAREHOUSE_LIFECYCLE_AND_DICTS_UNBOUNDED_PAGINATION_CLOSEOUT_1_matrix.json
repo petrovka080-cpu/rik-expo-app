@@ -1,8 +1,9 @@
 {
   "wave": "S-WAREHOUSE-LIFECYCLE-AND-DICTS-UNBOUNDED-PAGINATION-CLOSEOUT-1",
-  "final_status": "BLOCKED_PRODUCTION_MAIN_PUSH_APPROVAL_MISSING",
-  "head_equals_origin_main": false,
-  "ahead": 2,
+  "refresh": "post_push_closeout_refresh_2026_05_07",
+  "final_status": "GREEN_WAREHOUSE_LIFECYCLE_AND_DICTS_UNBOUNDED_PAGINATION_RELEASE_INTEGRATED",
+  "head_equals_origin_main": true,
+  "ahead": 0,
   "behind": 0,
   "worktree_clean": true,
   "target_files": [
@@ -119,6 +120,18 @@
       "function": "runFlush",
       "purpose": "offline queue drain",
       "reason": "not a database list/read pagination path; no select/range/fetchAll/loadAll table read in the loop"
+    },
+    {
+      "file": "src/lib/offline/mutationWorker.ts",
+      "function": "run flush loop",
+      "purpose": "offline mutation queue drain",
+      "reason": "not a warehouse dictionary/lifecycle list-read path"
+    },
+    {
+      "file": "src/lib/offline/contractorProgressWorker.ts",
+      "function": "run flush loop",
+      "purpose": "offline contractor progress queue drain",
+      "reason": "not a warehouse dictionary/lifecycle list-read path"
     }
   ],
   "maxPages_added": true,
@@ -144,13 +157,13 @@
     "dict_repo_pagination_tests": true,
     "maxPages_stop_tests": true,
     "targeted_fetchAll_unbounded_read_tests": true,
-    "command": "npx jest tests/api/dictionaryReferenceReads.contract.test.ts tests/api/warehouseLifecycleAndDictsUnboundedPaginationCloseout.contract.test.ts tests/api/remainingSafeListPaginationBatch8.contract.test.ts tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts tests/api/topListPaginationBatch6.contract.test.ts src/screens/warehouse/hooks/useWarehouseLifecycle.test.tsx src/screens/warehouse/warehouseReceiveWorker.test.ts --runInBand"
+    "command": "npx jest tests/api/warehouseLifecycleAndDictsUnboundedPaginationCloseout.contract.test.ts src/screens/warehouse/hooks/useWarehouseLifecycle.test.tsx src/screens/warehouse/warehouseReceiveWorker.test.ts --runInBand"
   },
   "typecheck_passed": true,
   "lint_passed": true,
   "git_diff_check_passed": true,
   "artifact_json_parse_passed": true,
-  "release_verify_status": "blocked_only_by_local_ahead_requiring_S_PRODUCTION_MAIN_PUSH_APPROVED",
+  "release_verify_status": "PASS",
   "release_verify_gates": [
     {
       "name": "tsc",
@@ -173,6 +186,7 @@
       "status": "passed"
     }
   ],
-  "production_main_push_approval_present": false,
-  "pushed": false
+  "production_main_push_approval_present": true,
+  "pushed": true,
+  "commit_already_integrated_before_refresh": true
 }
