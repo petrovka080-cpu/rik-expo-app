@@ -51,6 +51,26 @@ Targeted tests:
 
 Targeted result: PASS.
 
+Full release gates:
+
+- `verify:typecheck`: PASS
+- lint: PASS
+- full Jest run-in-band: PASS
+- `git diff --check`: PASS
+- `release:verify -- --json`: PASS
+
+Release state after integration:
+
+- HEAD equals `origin/main`
+- ahead: 0
+- behind: 0
+- worktree clean: true
+- Render autoDeploy: no
+- deploy in progress: false
+- health: 200
+- ready: 200
+- pushed: true
+
 ## Safety
 
 No response shape changes.

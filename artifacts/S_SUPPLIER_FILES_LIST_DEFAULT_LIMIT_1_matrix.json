@@ -78,17 +78,17 @@
     "typecheck": "PASS",
     "lint": "PASS",
     "git_diff_check": "PASS",
-    "release_verify_status": "gates_passed_readiness_blocked_by_dirty_worktree_before_commit"
+    "release_verify_status": "PASS"
   },
   "release": {
-    "head_equals_origin_main": "pending_after_commit",
-    "ahead": "pending_after_commit",
-    "behind": "pending_after_commit",
-    "worktree_clean": "pending_after_commit",
-    "render_auto_deploy": "pending_safe_window_check",
-    "deploy_in_progress": "pending_safe_window_check",
-    "health": "pending_safe_window_check",
-    "ready": "pending_safe_window_check",
-    "pushed": "pending_safe_window_check"
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean": true,
+    "render_auto_deploy": "no",
+    "deploy_in_progress": false,
+    "health": 200,
+    "ready": 200,
+    "pushed": true
   }
 }
