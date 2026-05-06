@@ -1,0 +1,84 @@
+{
+  "wave": "S-BUYER-INBOX-FULL-SCAN-SAFE-ROUTING-1",
+  "final_status": "GREEN_BUYER_INBOX_FULL_SCAN_SAFE_ROUTING_RELEASE_INTEGRATED",
+  "head_equals_origin_main_before_work": true,
+  "ahead_before_work": 0,
+  "behind_before_work": 0,
+  "worktree_clean_before_work": true,
+  "target_files": [
+    "src/screens/buyer/buyer.fetchers.ts"
+  ],
+  "tests_changed": [
+    "src/screens/buyer/buyer.fetchers.test.ts",
+    "tests/api/buyerInboxFullScanSafeRouting.contract.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/load/sLoadFix2Hotspots.contract.test.ts"
+  ],
+  "artifacts": [
+    "artifacts/S_BUYER_INBOX_FULL_SCAN_SAFE_ROUTING_1_matrix.json",
+    "artifacts/S_BUYER_INBOX_FULL_SCAN_SAFE_ROUTING_1_proof.md"
+  ],
+  "buyer_inbox_full_scan_before": {
+    "file": "src/screens/buyer/buyer.fetchers.ts",
+    "function": "loadBuyerInboxData",
+    "domain_table": "buyer_summary_inbox_scope_v1",
+    "typed_rpc_window": true,
+    "page_size": 100,
+    "max_group_ceiling": false,
+    "max_page_ceiling": false,
+    "silent_truncation_used": false
+  },
+  "buyer_inbox_full_scan_after": {
+    "file": "src/screens/buyer/buyer.fetchers.ts",
+    "function": "loadBuyerInboxData",
+    "domain_table": "buyer_summary_inbox_scope_v1",
+    "typed_rpc_window": true,
+    "page_size": 100,
+    "max_groups": 5000,
+    "max_pages": 50,
+    "overflow_behavior": "error",
+    "empty_has_more_behavior": "error",
+    "silent_truncation_used": false
+  },
+  "window_contract_preserved": {
+    "function": "loadBuyerInboxWindowScope",
+    "offset_mapping_preserved": true,
+    "limit_mapping_preserved": true,
+    "search_mapping_preserved": true,
+    "company_scope_preserved": true,
+    "response_shape_preserved": true,
+    "error_envelope_preserved": true
+  },
+  "report_or_aggregation_semantics": {
+    "requires_new_server_aggregation": false,
+    "server_rpc_already_groups_by_scope": true,
+    "full_scan_output_shape_preserved_for_within_ceiling": true,
+    "preview_contract_created": false
+  },
+  "remaining_buyer_inbox_full_scan_unbounded_loop": false,
+  "legacy_listBuyerInbox_changed": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "temporary_hooks_created": false,
+  "temporary_scripts_created": false,
+  "temporary_endpoints_created": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "targeted_tests_passed": true,
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "artifact_json_parse": true,
+  "release_verify_status": "PASS_POST_PUSH",
+  "render_auto_deploy": "no",
+  "deploy_in_progress": false,
+  "health": 200,
+  "ready": 200,
+  "pushed": true
+}

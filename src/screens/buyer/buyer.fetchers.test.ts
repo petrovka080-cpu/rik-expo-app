@@ -66,7 +66,9 @@ describe("buyer inbox fetchers", () => {
         args: Record<string, unknown>,
       ) {
         if (!this?.rest) {
-          throw new TypeError("Cannot read properties of undefined (reading 'rest')");
+          throw new TypeError(
+            "Cannot read properties of undefined (reading 'rest')",
+          );
         }
         return Promise.resolve({
           data: buildScopeEnvelope({
@@ -256,8 +258,12 @@ describe("buyer inbox fetchers", () => {
     expect(result.rows.map((row) => row.request_item_id)).toEqual(
       rows.slice(0, 25).map((row) => row.request_item_id),
     );
-    expect(result.rows.some((row) => row.request_item_id === "item-26")).toBe(false);
-    expect(result.requestIds).toEqual(rows.slice(0, 25).map((row) => row.request_id));
+    expect(result.rows.some((row) => row.request_item_id === "item-26")).toBe(
+      false,
+    );
+    expect(result.requestIds).toEqual(
+      rows.slice(0, 25).map((row) => row.request_id),
+    );
     expect(result.meta).toMatchObject({
       offsetGroups: 0,
       limitGroups: 25,
@@ -272,7 +278,9 @@ describe("buyer inbox fetchers", () => {
     const supabase = {
       rpc: jest.fn(function () {
         if (!(this as { rest?: unknown })?.rest) {
-          throw new TypeError("Cannot read properties of undefined (reading 'rest')");
+          throw new TypeError(
+            "Cannot read properties of undefined (reading 'rest')",
+          );
         }
         return Promise.resolve({ data: null, error: null });
       }),
@@ -405,6 +413,70 @@ describe("buyer inbox fetchers", () => {
     );
   });
 
+  it("fails closed when the compatibility full scan exceeds the group ceiling", async () => {
+    const rpc = jest.fn(async (_fn: string, args: Record<string, unknown>) => ({
+      data: buildScopeEnvelope({
+        rows: [],
+        offsetGroups: Number(args.p_offset ?? 0),
+        limitGroups: Number(args.p_limit ?? 100),
+        returnedGroupCount: 100,
+        totalGroupCount: 5001,
+        hasMore: true,
+      }),
+      error: null,
+    }));
+
+    await expect(
+      loadBuyerInboxData({
+        supabase: { rpc },
+        log: () => undefined,
+      }),
+    ).rejects.toThrow("max group ceiling");
+
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails closed when the compatibility full scan does not complete within max pages", async () => {
+    const rpc = jest.fn(async (_fn: string, args: Record<string, unknown>) => {
+      const offset = Number(args.p_offset ?? 0);
+      return {
+        data: buildScopeEnvelope({
+          rows: [
+            {
+              request_id: `req-page-${offset}`,
+              request_id_old: 1000 + offset,
+              request_item_id: `item-page-${offset}`,
+              rik_code: "PAGE-CEILING",
+              name_human: "Page ceiling row",
+              qty: 1,
+              uom: "pcs",
+              app_code: "APP-PAGE",
+              note: null,
+              object_name: "Object Page",
+              status: "approved",
+              created_at: "2026-03-30T10:00:00.000Z",
+            },
+          ],
+          offsetGroups: offset,
+          limitGroups: Number(args.p_limit ?? 100),
+          returnedGroupCount: 100,
+          totalGroupCount: 5000,
+          hasMore: true,
+        }),
+        error: null,
+      };
+    });
+
+    await expect(
+      loadBuyerInboxData({
+        supabase: { rpc },
+        log: () => undefined,
+      }),
+    ).rejects.toThrow("max page ceiling");
+
+    expect(rpc).toHaveBeenCalledTimes(50);
+  });
+
   it("supports repeated buyer inbox loads for refresh/reopen without reintroducing the rest crash", async () => {
     const supabase = {
       rest: { schema: "public" },
@@ -414,7 +486,9 @@ describe("buyer inbox fetchers", () => {
         args: Record<string, unknown>,
       ) {
         if (!this?.rest) {
-          throw new TypeError("Cannot read properties of undefined (reading 'rest')");
+          throw new TypeError(
+            "Cannot read properties of undefined (reading 'rest')",
+          );
         }
         return Promise.resolve({
           data: buildScopeEnvelope({
@@ -581,7 +655,9 @@ describe("buyer inbox fetchers", () => {
       }),
     ]);
     expect(result.counts.pendingCount).toBe(1);
-    expect(result.sourceMeta.sourceKind).toBe("rpc:buyer_summary_buckets_scope_v1");
+    expect(result.sourceMeta.sourceKind).toBe(
+      "rpc:buyer_summary_buckets_scope_v1",
+    );
   });
 
   it("redacts malformed buyer bucket validation errors before publication telemetry", async () => {
@@ -616,9 +692,16 @@ describe("buyer inbox fetchers", () => {
     expect(logText).toContain("buyer buckets RPC validation failed");
 
     const eventMessages = getPlatformObservabilityEvents()
-      .filter((event) => event.screen === "buyer" && event.surface === "summary_buckets")
+      .filter(
+        (event) =>
+          event.screen === "buyer" && event.surface === "summary_buckets",
+      )
       .map((event) => String(event.errorMessage ?? ""));
-    expect(eventMessages.some((message) => message.includes("buyer buckets RPC validation failed"))).toBe(true);
+    expect(
+      eventMessages.some((message) =>
+        message.includes("buyer buckets RPC validation failed"),
+      ),
+    ).toBe(true);
     expect(eventMessages.join(" ")).not.toContain("Invalid RPC response shape");
     expect(eventMessages.join(" ")).not.toContain("src/screens/");
   });
@@ -637,7 +720,8 @@ describe("buyer inbox fetchers", () => {
     ).rejects.toThrow("buyer buckets rpc failed");
 
     const events = getPlatformObservabilityEvents().filter(
-      (event) => event.screen === "buyer" && event.surface === "summary_buckets",
+      (event) =>
+        event.screen === "buyer" && event.surface === "summary_buckets",
     );
     expect(events).toEqual(
       expect.arrayContaining([

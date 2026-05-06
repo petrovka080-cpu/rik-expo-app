@@ -11,10 +11,14 @@ const readJson = (relativePath: string) =>
   JSON.parse(readSource(relativePath)) as Record<string, unknown>;
 
 const dirtyPaths = () => {
-  const output = execFileSync("git", ["status", "--short", "--untracked-files=all"], {
-    cwd: repoRoot,
-    encoding: "utf8",
-  });
+  const output = execFileSync(
+    "git",
+    ["status", "--short", "--untracked-files=all"],
+    {
+      cwd: repoRoot,
+      encoding: "utf8",
+    },
+  );
   return output
     .split(/\r?\n/)
     .map((line) => line.trimEnd())
@@ -72,7 +76,9 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
 
     expect(live.status).toBe("GREEN_STAGING_EXECUTED");
     expect(legacy.liveRun).toBe("completed");
-    expect((live.execution as Record<string, unknown>).targetsCollected).toBe(5);
+    expect((live.execution as Record<string, unknown>).targetsCollected).toBe(
+      5,
+    );
     expect(Array.isArray(legacy.targets)).toBe(true);
 
     const targets = live.targets as Array<Record<string, unknown>>;
@@ -87,12 +93,16 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
   });
 
   it("keeps warehouse_issue_queue_page_25 bounded and validated without SQL/RPC changes", () => {
-    const source = readSource("src/screens/warehouse/warehouse.requests.read.canonical.ts");
+    const source = readSource(
+      "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+    );
 
     expect(source).toContain('supabase.rpc("warehouse_issue_queue_scope_v4"');
     expect(source).toContain("p_offset: offset");
     expect(source).toContain("p_limit: normalizedPage.pageSize");
-    expect(source).toContain("WAREHOUSE_ISSUE_QUEUE_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 }");
+    expect(source).toContain(
+      "WAREHOUSE_ISSUE_QUEUE_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 }",
+    );
     expect(source).toContain("validateRpcResponse(data, isRpcRowsEnvelope");
     expect(source).toMatch(
       /requireBoundedRpcRows\(\s*validated,\s*"warehouse_issue_queue_scope_v4",\s*normalizedPage\.pageSize,\s*\)/,
@@ -102,13 +112,18 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
 
   it("keeps buyer_summary_inbox_page_25 bounded and validates the RPC envelope", () => {
     const fetcherSource = readSource("src/screens/buyer/buyer.fetchers.ts");
-    const serviceSource = readSource("src/screens/buyer/buyer.summary.service.ts");
+    const serviceSource = readSource(
+      "src/screens/buyer/buyer.summary.service.ts",
+    );
 
-    expect(fetcherSource).toContain('runContainedRpc(supabase, "buyer_summary_inbox_scope_v1"');
+    expect(fetcherSource).toContain("runContainedRpc(");
+    expect(fetcherSource).toContain('"buyer_summary_inbox_scope_v1"');
     expect(fetcherSource).toContain("BUYER_INBOX_MAX_GROUP_PAGE_SIZE = 100");
     expect(fetcherSource).toContain("p_offset: normalizedOffsetGroups");
     expect(fetcherSource).toContain("p_limit: normalizedLimitGroups");
-    expect(fetcherSource).toContain("validateRpcResponse(data, isRpcRowsEnvelope");
+    expect(fetcherSource).toContain(
+      "validateRpcResponse(data, isRpcRowsEnvelope",
+    );
     expect(fetcherSource).toContain('rpcName: "buyer_summary_inbox_scope_v1"');
     expect(serviceSource).toContain("mapWithConcurrencyLimit(");
     expect(serviceSource).toContain("scopes,\n      2,");
@@ -116,14 +131,15 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
 
   it("keeps the wave inside allowed code and artifact boundaries", () => {
     const changed = dirtyPaths();
-    const forbidden = changed.filter((file) =>
-      !isLaterApprovedWarehouseIssueSourcePatch(file) &&
-      !isApprovedPdfInstantFirstOpenPatch(file) &&
-      (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
+    const forbidden = changed.filter(
+      (file) =>
+        !isLaterApprovedWarehouseIssueSourcePatch(file) &&
+        !isApprovedPdfInstantFirstOpenPatch(file) &&
+        (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||
-        /\.(?:apk|aab)$/i.test(file) ||
-        /(?:pdf|report|export|detail)/i.test(file)),
+          /\.(?:apk|aab)$/i.test(file) ||
+          /(?:pdf|report|export|detail)/i.test(file)),
     );
 
     expect(forbidden).toEqual([]);

@@ -23,7 +23,10 @@ export type { BuyerProposalBucketRow } from "./buyer.fetchers.data";
 
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
 type BuyerRpcScopeClient = {
-  rpc: (fn: string, args?: Record<string, unknown>) => PromiseLike<{
+  rpc: (
+    fn: string,
+    args?: Record<string, unknown>,
+  ) => PromiseLike<{
     data: unknown;
     error: unknown;
   }>;
@@ -32,9 +35,17 @@ type BuyerRpcScopeClient = {
 const BUYER_BUCKETS_RPC_SOURCE_KIND = "rpc:buyer_summary_buckets_scope_v1";
 const BUYER_INBOX_RPC_SOURCE_KIND = "rpc:buyer_summary_inbox_scope_v1";
 const BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE = 100;
+const BUYER_INBOX_FULL_SCAN_MAX_GROUPS = 5000;
+const BUYER_INBOX_FULL_SCAN_MAX_PAGES = Math.ceil(
+  BUYER_INBOX_FULL_SCAN_MAX_GROUPS / BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE,
+);
 const BUYER_INBOX_MAX_GROUP_PAGE_SIZE = 100;
 const uniqIds = (values: (string | null | undefined)[]) =>
-  Array.from(new Set((values || []).map((value) => String(value ?? "").trim()).filter(Boolean)));
+  Array.from(
+    new Set(
+      (values || []).map((value) => String(value ?? "").trim()).filter(Boolean),
+    ),
+  );
 
 const toInt = (value: unknown, fallback: number) => {
   const parsed = Number(value);
@@ -54,15 +65,31 @@ const normalizeBuyerInboxLimit = (value: unknown): number =>
     Math.max(1, toInt(value, BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE)),
   );
 
-const getRedactedBuyerRpcErrorMessage = (error: unknown, fallback: string): string => {
+const getRedactedBuyerRpcErrorMessage = (
+  error: unknown,
+  fallback: string,
+): string => {
   if (error instanceof RpcValidationError) return fallback;
-  return error instanceof Error && error.message.trim() ? error.message.trim() : String(error ?? fallback);
+  return error instanceof Error && error.message.trim()
+    ? error.message.trim()
+    : String(error ?? fallback);
 };
 
 const clampBuyerInboxRowsToLimit = (
   rows: BuyerInboxRow[],
   limit: number,
-): BuyerInboxRow[] => rows.slice(0, Math.max(0, Math.trunc(Number(limit) || 0)));
+): BuyerInboxRow[] =>
+  rows.slice(0, Math.max(0, Math.trunc(Number(limit) || 0)));
+
+const buildBuyerInboxFullScanGroupCeilingError = () =>
+  new Error(
+    `buyer_summary_inbox_scope_v1 full scan exceeded max group ceiling (${BUYER_INBOX_FULL_SCAN_MAX_GROUPS})`,
+  );
+
+const buildBuyerInboxFullScanPageCeilingError = () =>
+  new Error(
+    `buyer_summary_inbox_scope_v1 full scan exceeded max page ceiling (${BUYER_INBOX_FULL_SCAN_MAX_PAGES})`,
+  );
 
 export type BuyerInboxWindowMeta = {
   offsetGroups: number;
@@ -124,12 +151,24 @@ export async function loadBuyerInboxData(params: {
     let pageCount = 0;
     let offsetGroups = 0;
 
-    while (true) {
+    for (
+      let fullScanPageIndex = 0;
+      fullScanPageIndex < BUYER_INBOX_FULL_SCAN_MAX_PAGES;
+      fullScanPageIndex += 1
+    ) {
       const page = await loadBuyerInboxWindowScope({
         supabase,
         offsetGroups,
         limitGroups: BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE,
       });
+
+      if (
+        page.meta.totalGroupCount > BUYER_INBOX_FULL_SCAN_MAX_GROUPS ||
+        returnedGroupCount + page.meta.returnedGroupCount >
+          BUYER_INBOX_FULL_SCAN_MAX_GROUPS
+      ) {
+        throw buildBuyerInboxFullScanGroupCeilingError();
+      }
 
       rows.push(...page.rows);
       totalGroupCount = page.meta.totalGroupCount;
@@ -173,13 +212,20 @@ export async function loadBuyerInboxData(params: {
       }
 
       if (page.meta.returnedGroupCount <= 0) {
-        throw new Error("buyer_summary_inbox_scope_v1 reported hasMore with empty page");
+        throw new Error(
+          "buyer_summary_inbox_scope_v1 reported hasMore with empty page",
+        );
       }
 
       offsetGroups += page.meta.returnedGroupCount;
     }
+
+    throw buildBuyerInboxFullScanPageCeilingError();
   } catch (error) {
-    log?.("[buyer] loadBuyerInboxData rpc error:", error instanceof Error ? error.message : String(error));
+    log?.(
+      "[buyer] loadBuyerInboxData rpc error:",
+      error instanceof Error ? error.message : String(error),
+    );
     observation.error(error, {
       rowCount: 0,
       errorStage: "load_inbox_full_scope_v1",
@@ -199,17 +245,22 @@ const loadBuyerInboxWindowScope = async (params: {
   const { supabase, offsetGroups, limitGroups, search } = params;
   const normalizedOffsetGroups = normalizeBuyerInboxOffset(offsetGroups);
   const normalizedLimitGroups = normalizeBuyerInboxLimit(limitGroups);
-  const { data, error } = await runContainedRpc(supabase, "buyer_summary_inbox_scope_v1", {
-    p_offset: normalizedOffsetGroups,
-    p_limit: normalizedLimitGroups,
-    p_search: search?.trim() || null,
-    p_company_id: null,
-  }, {
-    screen: "buyer",
-    surface: "summary_inbox",
-    owner: "buyer.fetchers",
-    sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
-  });
+  const { data, error } = await runContainedRpc(
+    supabase,
+    "buyer_summary_inbox_scope_v1",
+    {
+      p_offset: normalizedOffsetGroups,
+      p_limit: normalizedLimitGroups,
+      p_search: search?.trim() || null,
+      p_company_id: null,
+    },
+    {
+      screen: "buyer",
+      surface: "summary_inbox",
+      owner: "buyer.fetchers",
+      sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
+    },
+  );
   if (error) throw error;
 
   const validated = validateRpcResponse(data, isRpcRowsEnvelope, {
@@ -220,20 +271,30 @@ const loadBuyerInboxWindowScope = async (params: {
   const envelope = adaptBuyerSummaryInboxScopeEnvelope(validated);
   const totalGroupCount = toInt(envelope.meta.total_group_count, 0);
   const pageReturnedGroupCount = toInt(envelope.meta.returned_group_count, 0);
-  const boundedRows = clampBuyerInboxRowsToLimit(envelope.rows, normalizedLimitGroups);
-  const boundedReturnedGroupCount = Math.min(pageReturnedGroupCount, normalizedLimitGroups);
+  const boundedRows = clampBuyerInboxRowsToLimit(
+    envelope.rows,
+    normalizedLimitGroups,
+  );
+  const boundedReturnedGroupCount = Math.min(
+    pageReturnedGroupCount,
+    normalizedLimitGroups,
+  );
   return {
     rows: boundedRows,
     requestIds: uniqIds(boundedRows.map((row) => row?.request_id)),
     meta: {
       offsetGroups: toInt(envelope.meta.offset_groups, normalizedOffsetGroups),
-      limitGroups: Math.min(toInt(envelope.meta.limit_groups, normalizedLimitGroups), normalizedLimitGroups),
+      limitGroups: Math.min(
+        toInt(envelope.meta.limit_groups, normalizedLimitGroups),
+        normalizedLimitGroups,
+      ),
       returnedGroupCount: boundedReturnedGroupCount,
       totalGroupCount,
       hasMore:
         typeof envelope.meta.has_more === "boolean"
           ? Boolean(envelope.meta.has_more)
-          : normalizedOffsetGroups + boundedReturnedGroupCount < totalGroupCount,
+          : normalizedOffsetGroups + boundedReturnedGroupCount <
+            totalGroupCount,
       search: toMaybeText(envelope.meta.search),
     },
     sourceMeta: {
@@ -291,7 +352,8 @@ export async function loadBuyerInboxWindowData(params: {
     });
     return result;
   } catch (error) {
-    const failureReason = error instanceof Error ? error.message : String(error ?? "");
+    const failureReason =
+      error instanceof Error ? error.message : String(error ?? "");
     log?.("[buyer] loadBuyerInboxWindowData rpc error:", failureReason);
     recordPlatformObservability({
       screen: "buyer",
@@ -325,12 +387,15 @@ export async function loadBuyerInboxWindowData(params: {
   }
 }
 
-async function loadBuyerBucketsDataRpcInternal(params: {
-  supabase: SupabaseClient;
-  log?: LogFn;
-}, options?: {
-  observe?: boolean;
-}): Promise<BuyerBucketsLoadResult> {
+async function loadBuyerBucketsDataRpcInternal(
+  params: {
+    supabase: SupabaseClient;
+    log?: LogFn;
+  },
+  options?: {
+    observe?: boolean;
+  },
+): Promise<BuyerBucketsLoadResult> {
   const { supabase, log } = params;
   const observation =
     options?.observe !== false
@@ -344,24 +409,43 @@ async function loadBuyerBucketsDataRpcInternal(params: {
       : null;
 
   try {
-    const { data, error } = await runContainedRpc(supabase, "buyer_summary_buckets_scope_v1", undefined, {
-      screen: "buyer",
-      surface: "summary_buckets",
-      owner: "buyer.fetchers",
-      sourceKind: BUYER_BUCKETS_RPC_SOURCE_KIND,
-    });
+    const { data, error } = await runContainedRpc(
+      supabase,
+      "buyer_summary_buckets_scope_v1",
+      undefined,
+      {
+        screen: "buyer",
+        surface: "summary_buckets",
+        owner: "buyer.fetchers",
+        sourceKind: BUYER_BUCKETS_RPC_SOURCE_KIND,
+      },
+    );
     if (error) throw error;
 
-    const validated = validateRpcResponse(data, isBuyerSummaryBucketsScopeResponse, {
-      rpcName: "buyer_summary_buckets_scope_v1",
-      caller: "src/screens/buyer/buyer.fetchers.loadBuyerBucketsDataRpcInternal",
-      domain: "buyer",
-    });
+    const validated = validateRpcResponse(
+      data,
+      isBuyerSummaryBucketsScopeResponse,
+      {
+        rpcName: "buyer_summary_buckets_scope_v1",
+        caller:
+          "src/screens/buyer/buyer.fetchers.loadBuyerBucketsDataRpcInternal",
+        domain: "buyer",
+      },
+    );
     const envelope = adaptBuyerSummaryBucketsScopeEnvelope(validated);
     const result: BuyerBucketsLoadResult = {
-      pending: withBuyerBucketCanonicalCount(envelope.pending, envelope.counts.pendingCount),
-      approved: withBuyerBucketCanonicalCount(envelope.approved, envelope.counts.approvedCount),
-      rejected: withBuyerBucketCanonicalCount(envelope.rejected, envelope.counts.rejectedCount),
+      pending: withBuyerBucketCanonicalCount(
+        envelope.pending,
+        envelope.counts.pendingCount,
+      ),
+      approved: withBuyerBucketCanonicalCount(
+        envelope.approved,
+        envelope.counts.approvedCount,
+      ),
+      rejected: withBuyerBucketCanonicalCount(
+        envelope.rejected,
+        envelope.counts.rejectedCount,
+      ),
       counts: envelope.counts,
       proposalIds: uniqIds([
         ...envelope.pending.map((row) => row.id),
@@ -379,7 +463,8 @@ async function loadBuyerBucketsDataRpcInternal(params: {
     };
 
     observation?.success({
-      rowCount: result.pending.length + result.approved.length + result.rejected.length,
+      rowCount:
+        result.pending.length + result.approved.length + result.rejected.length,
       sourceKind: BUYER_BUCKETS_RPC_SOURCE_KIND,
       fallbackUsed: false,
       extra: {
@@ -391,13 +476,18 @@ async function loadBuyerBucketsDataRpcInternal(params: {
         rejectedCount: result.counts.rejectedCount,
         proposalIds: result.proposalIds.length,
         primaryOwner: "rpc_scope_v1",
-        bucketCount: [result.pending, result.approved, result.rejected].filter((rows) => rows.length > 0).length,
+        bucketCount: [result.pending, result.approved, result.rejected].filter(
+          (rows) => rows.length > 0,
+        ).length,
         backendFirstPrimary: true,
       },
     });
     return result;
   } catch (e: unknown) {
-    const redactedMessage = getRedactedBuyerRpcErrorMessage(e, "buyer buckets RPC validation failed");
+    const redactedMessage = getRedactedBuyerRpcErrorMessage(
+      e,
+      "buyer buckets RPC validation failed",
+    );
     log?.("[buyer] loadBuyerBucketsDataRpc error:", redactedMessage);
     observation?.error(e, {
       rowCount: 0,
@@ -429,9 +519,12 @@ export async function loadBuyerBucketsData(params: {
   });
 
   try {
-    const result = await loadBuyerBucketsDataRpcInternal(params, { observe: false });
+    const result = await loadBuyerBucketsDataRpcInternal(params, {
+      observe: false,
+    });
     observation.success({
-      rowCount: result.pending.length + result.approved.length + result.rejected.length,
+      rowCount:
+        result.pending.length + result.approved.length + result.rejected.length,
       sourceKind: result.sourceMeta.sourceKind,
       fallbackUsed: false,
       extra: {
@@ -448,7 +541,10 @@ export async function loadBuyerBucketsData(params: {
     });
     return result;
   } catch (error) {
-    const failureReason = getRedactedBuyerRpcErrorMessage(error, "buyer buckets RPC validation failed");
+    const failureReason = getRedactedBuyerRpcErrorMessage(
+      error,
+      "buyer buckets RPC validation failed",
+    );
     params.log?.("[buyer] loadBuyerBucketsData rpc error:", failureReason);
     recordPlatformObservability({
       screen: "buyer",
