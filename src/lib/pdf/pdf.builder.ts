@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../database.types";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { supabase } from "../supabaseClient";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../api/_core";
 import {
   loadDirectorFinancePreviewPdfModel,
   prepareDirectorManagementReportPdfModel,
@@ -24,8 +25,12 @@ import type {
   RequestPdfModel,
   RequestPdfRowModel,
 } from "./pdf.model";
+import { FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS } from "./foremanRequestPdf.shared";
 
-type RequestLabelRow = Pick<Database["public"]["Tables"]["requests"]["Row"], "id" | "display_no">;
+type RequestLabelRow = Pick<
+  Database["public"]["Tables"]["requests"]["Row"],
+  "id" | "display_no"
+>;
 type RequestHeadRow = Pick<
   Database["public"]["Tables"]["requests"]["Row"],
   | "id"
@@ -39,7 +44,6 @@ type RequestHeadRow = Pick<
   | "system_code"
   | "zone_code"
 >;
-type RequestItemNoteRow = Pick<Database["public"]["Tables"]["request_items"]["Row"], "note">;
 type RequestItemPdfRow = Pick<
   Database["public"]["Tables"]["request_items"]["Row"],
   "id" | "name_human" | "uom" | "qty" | "note" | "status"
@@ -53,6 +57,39 @@ type RefNameRow = {
   alias_ru?: string | null;
 };
 
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "message" in error) {
+    return String((error as { message?: unknown }).message ?? "unknown_error");
+  }
+  return String(error ?? "unknown_error");
+}
+
+async function loadRequestPdfItemRows(
+  client: SupabaseClient<Database>,
+  requestKey: string,
+): Promise<RequestItemPdfRow[]> {
+  const result = await loadPagedRowsWithCeiling<RequestItemPdfRow>(
+    () =>
+      client
+        .from("request_items")
+        .select("id, name_human, uom, qty, note, status")
+        .eq("request_id", requestKey)
+        .order("id", {
+          ascending: true,
+        }) as unknown as PagedQuery<RequestItemPdfRow>,
+    FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS,
+  );
+
+  if (result.error) {
+    throw result.error instanceof Error
+      ? result.error
+      : new Error(errorMessage(result.error));
+  }
+
+  return Array.isArray(result.data) ? result.data : [];
+}
+
 const logPdfRequestDebug = (...args: unknown[]) => {
   if (__DEV__) {
     console.warn(...args);
@@ -60,7 +97,8 @@ const logPdfRequestDebug = (...args: unknown[]) => {
 };
 
 function getObjectField<T>(value: unknown, key: string): T | undefined {
-  if (typeof value !== "object" || value === null || !(key in value)) return undefined;
+  if (typeof value !== "object" || value === null || !(key in value))
+    return undefined;
   return (value as Record<string, unknown>)[key] as T;
 }
 
@@ -74,9 +112,19 @@ function stripContextFromNote(raw: unknown) {
   const filtered = lines.filter((line) => {
     const lower = line.toLowerCase();
     if (lower.startsWith("объект:")) return false;
-    if (lower.startsWith("этаж") || lower.startsWith("этаж/") || lower.startsWith("этаж /")) return false;
+    if (
+      lower.startsWith("этаж") ||
+      lower.startsWith("этаж/") ||
+      lower.startsWith("этаж /")
+    )
+      return false;
     if (lower.startsWith("система:")) return false;
-    if (lower.startsWith("зона:") || lower.startsWith("зона /") || lower.startsWith("зона/")) return false;
+    if (
+      lower.startsWith("зона:") ||
+      lower.startsWith("зона /") ||
+      lower.startsWith("зона/")
+    )
+      return false;
     if (lower.startsWith("участок:")) return false;
     if (lower.startsWith("подрядчик:")) return false;
     if (lower.startsWith("телефон:")) return false;
@@ -124,26 +172,34 @@ function parseContextFromNotes(notes: unknown[]) {
     for (const part of parts) {
       const match = part.match(/^([^:]+)\s*:\s*(.+)$/);
       if (!match) continue;
-      const key = String(match[1] || "").trim().toLowerCase();
+      const key = String(match[1] || "")
+        .trim()
+        .toLowerCase();
       const value = String(match[2] || "").trim();
       if (!value) continue;
 
       if (key.includes("объект")) put("object", value);
-      else if (key.includes("этаж") || key.includes("уров")) put("level", value);
+      else if (key.includes("этаж") || key.includes("уров"))
+        put("level", value);
       else if (key.includes("система")) put("system", value);
-      else if (key.includes("зона") || key.includes("участ")) put("zone", value);
+      else if (key.includes("зона") || key.includes("участ"))
+        put("zone", value);
       else if (key.includes("подряд")) put("contractor", value);
       else if (key.includes("телефон")) put("phone", value);
-      else if (key.includes("объём") || key.includes("объем")) put("volume", value);
+      else if (key.includes("объём") || key.includes("объем"))
+        put("volume", value);
     }
   }
 
   return context;
 }
 
-function pickRefName(row: { data?: RefNameRow | null } | RefNameRow | null | undefined) {
+function pickRefName(
+  row: { data?: RefNameRow | null } | RefNameRow | null | undefined,
+) {
   const nested = getObjectField<RefNameRow | null>(row, "data");
-  const source: RefNameRow = nested ?? (row && typeof row === "object" ? (row as RefNameRow) : {});
+  const source: RefNameRow =
+    nested ?? (row && typeof row === "object" ? (row as RefNameRow) : {});
   const candidates = [
     source.name_ru,
     source.name_human_ru,
@@ -152,7 +208,8 @@ function pickRefName(row: { data?: RefNameRow | null } | RefNameRow | null | und
     source.name,
   ];
   for (const candidate of candidates) {
-    if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+    if (typeof candidate === "string" && candidate.trim())
+      return candidate.trim();
   }
   return "";
 }
@@ -176,8 +233,13 @@ function normalizeStatusRu(raw?: string | null) {
   const normalized = original.toLowerCase();
   if (!normalized) return "—";
   if (normalized === "draft" || normalized === "черновик") return "Черновик";
-  if (normalized === "pending" || normalized === "на утверждении") return "На утверждении";
-  if (normalized === "approved" || normalized === "утверждено" || normalized === "утверждена") {
+  if (normalized === "pending" || normalized === "на утверждении")
+    return "На утверждении";
+  if (
+    normalized === "approved" ||
+    normalized === "утверждено" ||
+    normalized === "утверждена"
+  ) {
     return "Утверждена";
   }
   if (
@@ -192,7 +254,9 @@ function normalizeStatusRu(raw?: string | null) {
   return original || "—";
 }
 
-export async function resolveRequestLabel(rid: string | number): Promise<string> {
+export async function resolveRequestLabel(
+  rid: string | number,
+): Promise<string> {
   const id = String(rid).trim();
   if (!id) return "#—";
   try {
@@ -219,13 +283,20 @@ export async function resolveRequestLabel(rid: string | number): Promise<string>
         requestId: id,
       },
     });
-    logPdfRequestDebug("[resolveRequestLabel]", getObjectField<string>(error, "message") ?? error);
+    logPdfRequestDebug(
+      "[resolveRequestLabel]",
+      getObjectField<string>(error, "message") ?? error,
+    );
   }
   return /^\d+$/.test(id) ? `#${id}` : `#${id.slice(0, 8)}`;
 }
 
-export async function batchResolveRequestLabels(ids: (string | number)[]): Promise<Record<string, string>> {
-  const uniqueIds = Array.from(new Set(ids.map((value) => String(value ?? "").trim()).filter(Boolean)));
+export async function batchResolveRequestLabels(
+  ids: (string | number)[],
+): Promise<Record<string, string>> {
+  const uniqueIds = Array.from(
+    new Set(ids.map((value) => String(value ?? "").trim()).filter(Boolean)),
+  );
   if (!uniqueIds.length) return {};
   try {
     const { data, error } = await supabase
@@ -258,7 +329,9 @@ export async function batchResolveRequestLabels(ids: (string | number)[]): Promi
   }
 }
 
-export async function buildRequestPdfModel(requestId: number | string): Promise<RequestPdfModel> {
+export async function buildRequestPdfModel(
+  requestId: number | string,
+): Promise<RequestPdfModel> {
   const client: SupabaseClient<Database> = supabase;
   const requestKey = String(requestId).trim();
   const locale = "ru-RU";
@@ -274,7 +347,9 @@ export async function buildRequestPdfModel(requestId: number | string): Promise<
 
   const head = await client
     .from("requests")
-    .select("id, foreman_name, need_by, comment, status, created_at, object_type_code, level_code, system_code, zone_code")
+    .select(
+      "id, foreman_name, need_by, comment, status, created_at, object_type_code, level_code, system_code, zone_code",
+    )
     .eq("id", requestKey)
     .maybeSingle();
 
@@ -322,21 +397,16 @@ export async function buildRequestPdfModel(requestId: number | string): Promise<
   const needBy = formatDate(request.need_by, locale);
   const generatedAt = new Date().toLocaleString(locale);
 
-  const itemsForContext = await client
-    .from("request_items")
-    .select("note")
-    .eq("request_id", requestKey);
-
-  const noteContext = parseContextFromNotes(
-    Array.isArray(itemsForContext.data)
-      ? (itemsForContext.data as RequestItemNoteRow[]).map((row) => row.note)
-      : [],
-  );
+  const itemRows = await loadRequestPdfItemRows(client, requestKey);
+  const noteContext = parseContextFromNotes(itemRows.map((row) => row.note));
 
   const metaFields: RequestPdfMetaField[] = [
     { label: "Объект", value: objectName || "—" },
     { label: "Система", value: systemName || "—" },
-    { label: "ФИО прораба", value: String(request.foreman_name || "").trim() || "(не указано)" },
+    {
+      label: "ФИО прораба",
+      value: String(request.foreman_name || "").trim() || "(не указано)",
+    },
     { label: "Нужно к", value: needBy || "—" },
     { label: "ID заявки", value: String(request.id ?? "").trim() || "—" },
     { label: "Этаж / уровень", value: levelName || "—" },
@@ -355,21 +425,13 @@ export async function buildRequestPdfModel(requestId: number | string): Promise<
     metaFields.push({ label: "Объём", value: noteContext.volume });
   }
 
-  const items = await client
-    .from("request_items")
-    .select("id, name_human, uom, qty, note, status")
-    .eq("request_id", requestKey)
-    .order("id", { ascending: true });
-
-  const rows: RequestPdfRowModel[] = (Array.isArray(items.data) ? (items.data as RequestItemPdfRow[]) : []).map(
-    (row) => ({
-      name: String(row.name_human || "").trim(),
-      uom: String(row.uom || "").trim(),
-      qtyText: formatQty(row.qty),
-      status: normalizeStatusRu(row.status),
-      note: stripContextFromNote(row.note),
-    }),
-  );
+  const rows: RequestPdfRowModel[] = itemRows.map((row) => ({
+    name: String(row.name_human || "").trim(),
+    uom: String(row.uom || "").trim(),
+    qtyText: formatQty(row.qty),
+    status: normalizeStatusRu(row.status),
+    note: stripContextFromNote(row.note),
+  }));
 
   return {
     requestLabel,
@@ -422,8 +484,12 @@ export function buildReportsExportPdfModel(args: {
     title: String(args.title || "").trim() || "Отчёт",
     sections: (args.sections || []).map((section) => ({
       title: String(section.title || "").trim(),
-      columns: Array.isArray(section.columns) ? section.columns.map((value) => String(value)) : [],
-      rows: Array.isArray(section.rows) ? section.rows.map((row) => row.map((cell) => String(cell))) : [],
+      columns: Array.isArray(section.columns)
+        ? section.columns.map((value) => String(value))
+        : [],
+      rows: Array.isArray(section.rows)
+        ? section.rows.map((row) => row.map((cell) => String(cell)))
+        : [],
     })),
   };
 }

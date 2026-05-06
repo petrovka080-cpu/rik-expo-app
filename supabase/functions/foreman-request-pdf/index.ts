@@ -3,6 +3,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
+  FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS,
   buildForemanRequestManifestContract,
   normalizeForemanRequestPdfRequest,
 } from "../../../src/lib/pdf/foremanRequestPdf.shared.ts";
@@ -25,7 +26,61 @@ import { renderForemanRequestPdfHtml } from "../_shared/foremanRequestPdfHtml.ts
 const FUNCTION_NAME = "foreman-request-pdf";
 const DEFAULT_BUCKET = "role_pdf_exports";
 const RENDER_BRANCH = "backend_foreman_request_v1";
-const FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION = "pdf_z4_foreman_request_artifact_v1";
+const FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION =
+  "pdf_z4_foreman_request_artifact_v1";
+
+const toPositiveInteger = (value: unknown, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : fallback;
+};
+
+function buildForemanRequestPdfChildListCeilingError(maxRows: number) {
+  return new Error(
+    `Foreman request PDF child list exceeded max row ceiling (${maxRows})`,
+  );
+}
+
+async function loadForemanRequestPdfChildRows(admin: any, requestId: string) {
+  const pageSize = toPositiveInteger(
+    FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS.pageSize,
+    100,
+  );
+  const maxRows = toPositiveInteger(
+    FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS.maxRows,
+    5000,
+  );
+  const rows: Record<string, unknown>[] = [];
+
+  for (let from = 0; from < maxRows; from += pageSize) {
+    const to = Math.min(from + pageSize - 1, maxRows - 1);
+    const page = await admin
+      .from("request_items")
+      .select("id, name_human, uom, qty, note, status")
+      .eq("request_id", requestId)
+      .order("id", { ascending: true })
+      .range(from, to);
+
+    if (page.error) throw page.error;
+
+    const pageRows = Array.isArray(page.data) ? page.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < pageSize) return rows;
+  }
+
+  const overflowProbe = await admin
+    .from("request_items")
+    .select("id")
+    .eq("request_id", requestId)
+    .order("id", { ascending: true })
+    .range(maxRows, maxRows);
+
+  if (overflowProbe.error) throw overflowProbe.error;
+  if (Array.isArray(overflowProbe.data) && overflowProbe.data.length > 0) {
+    throw buildForemanRequestPdfChildListCeilingError(maxRows);
+  }
+
+  return rows;
+}
 
 const asObject = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
@@ -58,9 +113,19 @@ const stripContextFromNote = (raw: unknown) => {
   const filtered = lines.filter((line) => {
     const lower = line.toLowerCase();
     if (lower.startsWith("объект:")) return false;
-    if (lower.startsWith("этаж") || lower.startsWith("этаж/") || lower.startsWith("этаж /")) return false;
+    if (
+      lower.startsWith("этаж") ||
+      lower.startsWith("этаж/") ||
+      lower.startsWith("этаж /")
+    )
+      return false;
     if (lower.startsWith("система:")) return false;
-    if (lower.startsWith("зона:") || lower.startsWith("зона /") || lower.startsWith("зона/")) return false;
+    if (
+      lower.startsWith("зона:") ||
+      lower.startsWith("зона /") ||
+      lower.startsWith("зона/")
+    )
+      return false;
     if (lower.startsWith("участок:")) return false;
     if (lower.startsWith("подрядчик:")) return false;
     if (lower.startsWith("телефон:")) return false;
@@ -109,7 +174,8 @@ const parseContextFromNotes = (notes: unknown[]) => {
       if (!value) continue;
       if (key.includes("подряд")) put("contractor", value);
       else if (key.includes("телефон")) put("phone", value);
-      else if (key.includes("объём") || key.includes("объем")) put("volume", value);
+      else if (key.includes("объём") || key.includes("объем"))
+        put("volume", value);
     }
   }
 
@@ -137,8 +203,13 @@ const normalizeStatusRu = (raw?: string | null) => {
   const normalized = original.toLowerCase();
   if (!normalized) return "—";
   if (normalized === "draft" || normalized === "черновик") return "Черновик";
-  if (normalized === "pending" || normalized === "на утверждении") return "На утверждении";
-  if (normalized === "approved" || normalized === "утверждено" || normalized === "утверждена") {
+  if (normalized === "pending" || normalized === "на утверждении")
+    return "На утверждении";
+  if (
+    normalized === "approved" ||
+    normalized === "утверждено" ||
+    normalized === "утверждена"
+  ) {
     return "Утверждена";
   }
   if (
@@ -269,7 +340,9 @@ async function assertForemanRequestAccess(args: {
         membershipCompanyIds: decision.membershipCompanyIds,
         membershipRoles: decision.membershipRoles,
         creatorMembershipCompanyIds: Array.isArray(creatorMemberships.data)
-          ? creatorMemberships.data.map((row) => cleanText(row.company_id)).filter(Boolean)
+          ? creatorMemberships.data
+              .map((row) => cleanText(row.company_id))
+              .filter(Boolean)
           : [],
         sharedCompanyIds: decision.companyId ? [decision.companyId] : [],
         isDirector: decision.isDirector,
@@ -334,7 +407,9 @@ async function loadRequestPdfModel(admin: any, requestId: string) {
 
   const head = await admin
     .from("requests")
-    .select("id, display_no, foreman_name, need_by, comment, status, created_at, object_type_code, level_code, system_code, zone_code")
+    .select(
+      "id, display_no, foreman_name, need_by, comment, status, created_at, object_type_code, level_code, system_code, zone_code",
+    )
     .eq("id", requestId)
     .maybeSingle();
 
@@ -343,51 +418,49 @@ async function loadRequestPdfModel(admin: any, requestId: string) {
   }
 
   const request = head.data;
-  const [objectRef, levelRef, systemRef, zoneRef, noteRows, itemRows] = await Promise.all([
-    request.object_type_code
-      ? admin
-          .from("ref_object_types")
-          .select("name,name_ru,name_human_ru,display_name,alias_ru")
-          .eq("code", request.object_type_code)
-          .maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
-    request.level_code
-      ? admin
-          .from("ref_levels")
-          .select("name,name_ru,name_human_ru,display_name,alias_ru")
-          .eq("code", request.level_code)
-          .maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
-    request.system_code
-      ? admin
-          .from("ref_systems")
-          .select("name,name_ru,name_human_ru,display_name,alias_ru")
-          .eq("code", request.system_code)
-          .maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
-    request.zone_code
-      ? admin
-          .from("ref_zones")
-          .select("name,name_ru,name_human_ru,display_name,alias_ru")
-          .eq("code", request.zone_code)
-          .maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
-    admin.from("request_items").select("note").eq("request_id", requestId),
-    admin
-      .from("request_items")
-      .select("id, name_human, uom, qty, note, status")
-      .eq("request_id", requestId)
-      .order("id", { ascending: true }),
-  ]);
+  const [objectRef, levelRef, systemRef, zoneRef, itemRows] = await Promise.all(
+    [
+      request.object_type_code
+        ? admin
+            .from("ref_object_types")
+            .select("name,name_ru,name_human_ru,display_name,alias_ru")
+            .eq("code", request.object_type_code)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+      request.level_code
+        ? admin
+            .from("ref_levels")
+            .select("name,name_ru,name_human_ru,display_name,alias_ru")
+            .eq("code", request.level_code)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+      request.system_code
+        ? admin
+            .from("ref_systems")
+            .select("name,name_ru,name_human_ru,display_name,alias_ru")
+            .eq("code", request.system_code)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+      request.zone_code
+        ? admin
+            .from("ref_zones")
+            .select("name,name_ru,name_human_ru,display_name,alias_ru")
+            .eq("code", request.zone_code)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+      loadForemanRequestPdfChildRows(admin, requestId),
+    ],
+  );
 
   const objectName = pickRefName(asObject(objectRef.data));
   const levelName = pickRefName(asObject(levelRef.data));
   const systemName = pickRefName(asObject(systemRef.data));
   const zoneName = pickRefName(asObject(zoneRef.data));
   const noteContext = parseContextFromNotes(
-    Array.isArray(noteRows.data) ? noteRows.data.map((row: Record<string, unknown>) => row.note) : [],
+    itemRows.map((row: Record<string, unknown>) => row.note),
   );
-  const requestLabel = cleanText(request.display_no) || `#${requestId.slice(0, 8)}`;
+  const requestLabel =
+    cleanText(request.display_no) || `#${requestId.slice(0, 8)}`;
 
   const formatQty = (value: unknown) => {
     const parsed = Number(String(value ?? "").replace(",", "."));
@@ -399,12 +472,18 @@ async function loadRequestPdfModel(admin: any, requestId: string) {
   const metaFields = [
     { label: "Объект", value: objectName || "—" },
     { label: "Система", value: systemName || "—" },
-    { label: "ФИО прораба", value: cleanText(request.foreman_name) || "(не указано)" },
+    {
+      label: "ФИО прораба",
+      value: cleanText(request.foreman_name) || "(не указано)",
+    },
     { label: "Нужно к", value: formatDate(request.need_by, locale) || "—" },
     { label: "ID заявки", value: cleanText(request.id) || "—" },
     { label: "Этаж / уровень", value: levelName || "—" },
     { label: "Зона / участок", value: zoneName || "—" },
-    { label: "Дата создания", value: formatDateTime(request.created_at, locale) || "—" },
+    {
+      label: "Дата создания",
+      value: formatDateTime(request.created_at, locale) || "—",
+    },
     { label: "Статус", value: normalizeStatusRu(request.status) || "—" },
   ];
 
@@ -424,15 +503,13 @@ async function loadRequestPdfModel(admin: any, requestId: string) {
     comment: cleanText(request.comment),
     foremanName: cleanText(request.foreman_name),
     metaFields,
-    rows: Array.isArray(itemRows.data)
-      ? itemRows.data.map((row: Record<string, unknown>) => ({
-          name: cleanText(row.name_human),
-          uom: cleanText(row.uom),
-          qtyText: formatQty(row.qty),
-          status: normalizeStatusRu(cleanText(row.status)),
-          note: stripContextFromNote(row.note),
-        }))
-      : [],
+    rows: itemRows.map((row: Record<string, unknown>) => ({
+      name: cleanText(row.name_human),
+      uom: cleanText(row.uom),
+      qtyText: formatQty(row.qty),
+      status: normalizeStatusRu(cleanText(row.status)),
+      note: stripContextFromNote(row.note),
+    })),
   };
 }
 
@@ -453,17 +530,22 @@ async function trySignExistingPdfArtifact(args: {
 }) {
   const slashIndex = args.storagePath.lastIndexOf("/");
   const prefix = slashIndex >= 0 ? args.storagePath.slice(0, slashIndex) : "";
-  const objectName = slashIndex >= 0 ? args.storagePath.slice(slashIndex + 1) : args.storagePath;
+  const objectName =
+    slashIndex >= 0 ? args.storagePath.slice(slashIndex + 1) : args.storagePath;
   const listed = await args.admin.storage.from(args.bucketId).list(prefix, {
     limit: 1,
     search: objectName,
   });
   if (listed.error || !Array.isArray(listed.data)) return null;
-  const exists = listed.data.some((item: Record<string, unknown>) => cleanText(item?.name) === objectName);
+  const exists = listed.data.some(
+    (item: Record<string, unknown>) => cleanText(item?.name) === objectName,
+  );
   if (!exists) return null;
 
   const ttlSeconds = resolveSignedUrlTtlSeconds();
-  const signed = await args.admin.storage.from(args.bucketId).createSignedUrl(args.storagePath, ttlSeconds);
+  const signed = await args.admin.storage
+    .from(args.bucketId)
+    .createSignedUrl(args.storagePath, ttlSeconds);
   const signedUrl = cleanText(signed.data?.signedUrl);
   if (signed.error || !signedUrl) return null;
   return {
@@ -475,9 +557,17 @@ async function trySignExistingPdfArtifact(args: {
 }
 
 function isStorageAlreadyExistsError(error: unknown) {
-  const message = cleanText((error as { message?: unknown } | null)?.message).toLowerCase();
-  const status = cleanText((error as { statusCode?: unknown } | null)?.statusCode);
-  return status === "409" || message.includes("already exists") || message.includes("duplicate");
+  const message = cleanText(
+    (error as { message?: unknown } | null)?.message,
+  ).toLowerCase();
+  const status = cleanText(
+    (error as { statusCode?: unknown } | null)?.statusCode,
+  );
+  return (
+    status === "409" ||
+    message.includes("already exists") ||
+    message.includes("duplicate")
+  );
 }
 
 async function uploadForemanRequestPdfArtifact(args: {
@@ -514,164 +604,182 @@ async function uploadForemanRequestPdfArtifact(args: {
 
 const serverPort = Number(Deno.env.get("PORT") ?? "8000");
 
-Deno.serve({ port: Number.isFinite(serverPort) ? serverPort : 8000 }, async (request) => {
-  if (request.method === "OPTIONS") {
-    return createCanonicalPdfOptionsResponse();
-  }
-
-  try {
-    const supabaseUrl = cleanText(Deno.env.get("SUPABASE_URL"));
-    const serviceRoleKey = cleanText(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
-    const bucketId = cleanText(Deno.env.get("CANONICAL_PDF_EXPORTS_BUCKET")) || DEFAULT_BUCKET;
-
-    if (!supabaseUrl || !serviceRoleKey) {
-      return createCanonicalPdfErrorResponse({
-        status: 500,
-        role: "foreman",
-        documentType: "request",
-        errorCode: "backend_pdf_failed",
-        error: "Missing Supabase environment.",
-        renderBranch: RENDER_BRANCH,
-      });
+Deno.serve(
+  { port: Number.isFinite(serverPort) ? serverPort : 8000 },
+  async (request) => {
+    if (request.method === "OPTIONS") {
+      return createCanonicalPdfOptionsResponse();
     }
 
-    const admin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-    const payload = normalizeForemanRequestPdfRequest(await request.json());
-    const auth = await requireForemanAuth(request, supabaseUrl);
-    await assertForemanRequestAccess({
-      admin,
-      requestId: payload.requestId,
-      userId: auth.userId,
-    });
+    try {
+      const supabaseUrl = cleanText(Deno.env.get("SUPABASE_URL"));
+      const serviceRoleKey = cleanText(
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+      );
+      const bucketId =
+        cleanText(Deno.env.get("CANONICAL_PDF_EXPORTS_BUCKET")) ||
+        DEFAULT_BUCKET;
 
-    const totalStartedAt = Date.now();
-    const sourceStartedAt = Date.now();
-    const model = await loadRequestPdfModel(admin, payload.requestId);
-    const sourceLoadedAt = Date.now();
-    const title = model.requestLabel ? `Заявка ${model.requestLabel}` : `Заявка ${payload.requestId}`;
-    const fileName = normalizePdfFileName(
-      buildCanonicalPdfFileName({
-        documentType: "request",
-        title: model.requestLabel || payload.requestId,
-        entityId: payload.requestId,
-      }),
-      "request",
-    );
-    const artifact = await buildForemanRequestManifestContract({
-      requestId: payload.requestId,
-      sourceModel: buildForemanRequestSourceModel(model),
-      fileName,
-    });
-    const cachedArtifact = await trySignExistingPdfArtifact({
-      admin,
-      bucketId,
-      storagePath: artifact.artifactPath,
-    });
+      if (!supabaseUrl || !serviceRoleKey) {
+        return createCanonicalPdfErrorResponse({
+          status: 500,
+          role: "foreman",
+          documentType: "request",
+          errorCode: "backend_pdf_failed",
+          error: "Missing Supabase environment.",
+          renderBranch: RENDER_BRANCH,
+        });
+      }
 
-    if (cachedArtifact) {
-      console.info(`[${FUNCTION_NAME}] backend_foreman_request_artifact_hit`, {
+      const admin = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const payload = normalizeForemanRequestPdfRequest(await request.json());
+      const auth = await requireForemanAuth(request, supabaseUrl);
+      await assertForemanRequestAccess({
+        admin,
         requestId: payload.requestId,
-        bucketId: cachedArtifact.bucketId,
-        storagePath: cachedArtifact.storagePath,
-        sourceVersion: artifact.sourceVersion,
-        artifactVersion: artifact.artifactVersion,
-        sourceMs: sourceLoadedAt - sourceStartedAt,
-        totalMs: Date.now() - totalStartedAt,
+        userId: auth.userId,
       });
 
-      return createCanonicalPdfSuccessResponse({
-        role: "foreman",
-        documentType: "request",
-        bucketId: cachedArtifact.bucketId,
-        storagePath: cachedArtifact.storagePath,
-        signedUrl: cachedArtifact.signedUrl,
+      const totalStartedAt = Date.now();
+      const sourceStartedAt = Date.now();
+      const model = await loadRequestPdfModel(admin, payload.requestId);
+      const sourceLoadedAt = Date.now();
+      const title = model.requestLabel
+        ? `Заявка ${model.requestLabel}`
+        : `Заявка ${payload.requestId}`;
+      const fileName = normalizePdfFileName(
+        buildCanonicalPdfFileName({
+          documentType: "request",
+          title: model.requestLabel || payload.requestId,
+          entityId: payload.requestId,
+        }),
+        "request",
+      );
+      const artifact = await buildForemanRequestManifestContract({
+        requestId: payload.requestId,
+        sourceModel: buildForemanRequestSourceModel(model),
         fileName,
-        generatedAt: new Date().toISOString(),
-        renderBranch: RENDER_BRANCH,
-        renderer: "artifact_cache",
-        telemetry: {
-          functionName: FUNCTION_NAME,
-          requestId: payload.requestId,
-          title,
-          requestedByUserId: auth.userId,
-          cacheStatus: "artifact_hit",
-          cacheVersion: FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION,
-          templateVersion: artifact.templateVersion,
-          sourceVersion: artifact.sourceVersion,
-          artifactVersion: artifact.artifactVersion,
-          sourceMs: sourceLoadedAt - sourceStartedAt,
-          renderMs: 0,
-          uploadAndSignMs: 0,
-          totalMs: Date.now() - totalStartedAt,
-        },
       });
-    }
+      const cachedArtifact = await trySignExistingPdfArtifact({
+        admin,
+        bucketId,
+        storagePath: artifact.artifactPath,
+      });
 
-    const html = renderForemanRequestPdfHtml(model);
-    const renderStartedAt = Date.now();
-    const { pdfBytes, renderer } = await renderPdfBytes(html);
-    const renderFinishedAt = Date.now();
-    const uploadStartedAt = Date.now();
-    const uploaded = await uploadForemanRequestPdfArtifact({
-      admin,
-      bucketId,
-      storagePath: artifact.artifactPath,
-      bytes: pdfBytes,
-    });
-    const uploadFinishedAt = Date.now();
+      if (cachedArtifact) {
+        console.info(
+          `[${FUNCTION_NAME}] backend_foreman_request_artifact_hit`,
+          {
+            requestId: payload.requestId,
+            bucketId: cachedArtifact.bucketId,
+            storagePath: cachedArtifact.storagePath,
+            sourceVersion: artifact.sourceVersion,
+            artifactVersion: artifact.artifactVersion,
+            sourceMs: sourceLoadedAt - sourceStartedAt,
+            totalMs: Date.now() - totalStartedAt,
+          },
+        );
 
-    console.info(`[${FUNCTION_NAME}] backend_foreman_request_artifact_miss`, {
-      requestId: payload.requestId,
-      bucketId: uploaded.bucketId,
-      storagePath: uploaded.storagePath,
-      sourceVersion: artifact.sourceVersion,
-      artifactVersion: artifact.artifactVersion,
-      sourceMs: sourceLoadedAt - sourceStartedAt,
-      renderMs: renderFinishedAt - renderStartedAt,
-      uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
-      totalMs: uploadFinishedAt - totalStartedAt,
-    });
+        return createCanonicalPdfSuccessResponse({
+          role: "foreman",
+          documentType: "request",
+          bucketId: cachedArtifact.bucketId,
+          storagePath: cachedArtifact.storagePath,
+          signedUrl: cachedArtifact.signedUrl,
+          fileName,
+          generatedAt: new Date().toISOString(),
+          renderBranch: RENDER_BRANCH,
+          renderer: "artifact_cache",
+          telemetry: {
+            functionName: FUNCTION_NAME,
+            requestId: payload.requestId,
+            title,
+            requestedByUserId: auth.userId,
+            cacheStatus: "artifact_hit",
+            cacheVersion: FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION,
+            templateVersion: artifact.templateVersion,
+            sourceVersion: artifact.sourceVersion,
+            artifactVersion: artifact.artifactVersion,
+            sourceMs: sourceLoadedAt - sourceStartedAt,
+            renderMs: 0,
+            uploadAndSignMs: 0,
+            totalMs: Date.now() - totalStartedAt,
+          },
+        });
+      }
 
-    return createCanonicalPdfSuccessResponse({
-      role: "foreman",
-      documentType: "request",
-      bucketId,
-      storagePath: uploaded.storagePath,
-      signedUrl: uploaded.signedUrl,
-      fileName,
-      generatedAt: new Date().toISOString(),
-      renderBranch: RENDER_BRANCH,
-      renderer,
-      telemetry: {
-        functionName: FUNCTION_NAME,
+      const html = renderForemanRequestPdfHtml(model);
+      const renderStartedAt = Date.now();
+      const { pdfBytes, renderer } = await renderPdfBytes(html);
+      const renderFinishedAt = Date.now();
+      const uploadStartedAt = Date.now();
+      const uploaded = await uploadForemanRequestPdfArtifact({
+        admin,
+        bucketId,
+        storagePath: artifact.artifactPath,
+        bytes: pdfBytes,
+      });
+      const uploadFinishedAt = Date.now();
+
+      console.info(`[${FUNCTION_NAME}] backend_foreman_request_artifact_miss`, {
         requestId: payload.requestId,
-        title,
-        requestedByUserId: auth.userId,
-        cacheStatus: "artifact_miss",
-        cacheVersion: FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION,
-        templateVersion: artifact.templateVersion,
+        bucketId: uploaded.bucketId,
+        storagePath: uploaded.storagePath,
         sourceVersion: artifact.sourceVersion,
         artifactVersion: artifact.artifactVersion,
         sourceMs: sourceLoadedAt - sourceStartedAt,
         renderMs: renderFinishedAt - renderStartedAt,
         uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
         totalMs: uploadFinishedAt - totalStartedAt,
-        htmlLength: html.length,
-        pdfSizeBytes: pdfBytes.byteLength,
-      },
-    });
-  } catch (error) {
-    if (error instanceof Response) return error;
-    console.error(`[${FUNCTION_NAME}]`, error instanceof Error ? error.message : String(error));
-    return createCanonicalPdfErrorResponse({
-      status: 500,
-      role: "foreman",
-      documentType: "request",
-      errorCode: "backend_pdf_failed",
-      error: error instanceof Error ? error.message : "Foreman request PDF render failed.",
-      renderBranch: RENDER_BRANCH,
-    });
-  }
-});
+      });
+
+      return createCanonicalPdfSuccessResponse({
+        role: "foreman",
+        documentType: "request",
+        bucketId,
+        storagePath: uploaded.storagePath,
+        signedUrl: uploaded.signedUrl,
+        fileName,
+        generatedAt: new Date().toISOString(),
+        renderBranch: RENDER_BRANCH,
+        renderer,
+        telemetry: {
+          functionName: FUNCTION_NAME,
+          requestId: payload.requestId,
+          title,
+          requestedByUserId: auth.userId,
+          cacheStatus: "artifact_miss",
+          cacheVersion: FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION,
+          templateVersion: artifact.templateVersion,
+          sourceVersion: artifact.sourceVersion,
+          artifactVersion: artifact.artifactVersion,
+          sourceMs: sourceLoadedAt - sourceStartedAt,
+          renderMs: renderFinishedAt - renderStartedAt,
+          uploadAndSignMs: uploadFinishedAt - uploadStartedAt,
+          totalMs: uploadFinishedAt - totalStartedAt,
+          htmlLength: html.length,
+          pdfSizeBytes: pdfBytes.byteLength,
+        },
+      });
+    } catch (error) {
+      if (error instanceof Response) return error;
+      console.error(
+        `[${FUNCTION_NAME}]`,
+        error instanceof Error ? error.message : String(error),
+      );
+      return createCanonicalPdfErrorResponse({
+        status: 500,
+        role: "foreman",
+        documentType: "request",
+        errorCode: "backend_pdf_failed",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Foreman request PDF render failed.",
+        renderBranch: RENDER_BRANCH,
+      });
+    }
+  },
+);

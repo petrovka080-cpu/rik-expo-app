@@ -1,0 +1,80 @@
+{
+  "wave": "S-PDF-CHILD-LISTS-CEILING-CONTRACTS-1",
+  "final_status": "GREEN_PDF_CHILD_LISTS_CEILING_CONTRACTS_RELEASE_INTEGRATED",
+  "target_files": [
+    "src/lib/pdf/foremanRequestPdf.shared.ts",
+    "src/lib/pdf/pdf.builder.ts",
+    "supabase/functions/foreman-request-pdf/index.ts",
+    "tests/api/foremanRequestPdfChildListCeiling.contract.test.ts"
+  ],
+  "inventory_source": "S-FETCHALL-UNBOUNDED-READS-INVENTORY-1",
+  "risk_closed": [
+    {
+      "file": "supabase/functions/foreman-request-pdf/index.ts",
+      "function": "loadRequestPdfModel",
+      "domain_table": "request_items",
+      "before": "server function PDF child list selected full request_items rows and notes without explicit range/ceiling",
+      "after": "loadForemanRequestPdfChildRows pages request_items by id asc with maxRows=5000 and overflow probe",
+      "response_shape_changed": false,
+      "ordering_changed": false,
+      "filtering_changed": false,
+      "silent_truncation_used": false
+    },
+    {
+      "file": "src/lib/pdf/pdf.builder.ts",
+      "function": "buildRequestPdfModel",
+      "domain_table": "request_items",
+      "before": "local PDF builder selected item notes and item rows without total ceiling",
+      "after": "single bounded child list read via loadPagedRowsWithCeiling<RequestItemPdfRow> with maxRows=5000",
+      "response_shape_changed": false,
+      "ordering_changed": false,
+      "filtering_changed": false,
+      "silent_truncation_used": false
+    }
+  ],
+  "bounded_contracts": {
+    "foreman_request_pdf_child_list": {
+      "pageSize": 100,
+      "maxPageSize": 100,
+      "maxRows": 5000,
+      "ordering": ["id asc"],
+      "scope": ["request_id"],
+      "semantics": "full PDF child-row set up to ceiling; overflow is fail-closed error, not preview and not truncation"
+    }
+  },
+  "safety": {
+    "temporary_hooks_created": false,
+    "temporary_scripts_created": false,
+    "temporary_endpoints_created": false,
+    "production_db_written": false,
+    "migrations_applied": false,
+    "deploy_triggered": false,
+    "redeploy_triggered": false,
+    "render_env_written": false,
+    "bff_traffic_changed": false,
+    "business_calls_made": false,
+    "secrets_printed": false,
+    "raw_payloads_printed": false,
+    "raw_db_rows_printed": false,
+    "business_rows_printed": false
+  },
+  "tests": {
+    "targeted": "PASS",
+    "artifact_json_parse": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "git_diff_check": "PASS",
+    "release_verify_status": "PASS"
+  },
+  "release": {
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean": true,
+    "render_auto_deploy": "no",
+    "deploy_in_progress": false,
+    "health": 200,
+    "ready": 200,
+    "pushed": true
+  }
+}

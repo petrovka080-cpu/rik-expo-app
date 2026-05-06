@@ -7,6 +7,12 @@ export type ForemanRequestPdfRequest = {
   clientSourceFingerprint?: string | null;
 };
 
+export const FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS = {
+  pageSize: 100,
+  maxPageSize: 100,
+  maxRows: 5000,
+} as const;
+
 const trimText = (value: unknown) => String(value ?? "").trim();
 
 const sanitizePathSegment = (value: string) =>
@@ -17,14 +23,18 @@ const sanitizePathSegment = (value: string) =>
 
 export function stableJsonStringify(value: unknown): string {
   if (value == null) return "null";
-  if (typeof value === "number" || typeof value === "boolean") return JSON.stringify(value);
+  if (typeof value === "number" || typeof value === "boolean")
+    return JSON.stringify(value);
   if (typeof value === "string") return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(stableJsonStringify).join(",")}]`;
+  if (Array.isArray(value))
+    return `[${value.map(stableJsonStringify).join(",")}]`;
   if (typeof value === "object") {
     const record = value as Record<string, unknown>;
     return `{${Object.keys(record)
       .sort()
-      .map((key) => `${JSON.stringify(key)}:${stableJsonStringify(record[key])}`)
+      .map(
+        (key) => `${JSON.stringify(key)}:${stableJsonStringify(record[key])}`,
+      )
       .join(",")}}`;
   }
   return JSON.stringify(trimText(value));
@@ -43,8 +53,15 @@ function hashString32(input: string): string {
 async function stableHash(value: unknown): Promise<string> {
   const text = stableJsonStringify(value);
   const subtle = globalThis.crypto?.subtle;
-  if (subtle && typeof subtle.digest === "function" && typeof TextEncoder !== "undefined") {
-    const digest = await subtle.digest("SHA-256", new TextEncoder().encode(text));
+  if (
+    subtle &&
+    typeof subtle.digest === "function" &&
+    typeof TextEncoder !== "undefined"
+  ) {
+    const digest = await subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(text),
+    );
     return Array.from(new Uint8Array(digest))
       .map((byte) => byte.toString(16).padStart(2, "0"))
       .join("");
@@ -77,7 +94,8 @@ function stripForemanRequestNoise(value: unknown, key?: string): unknown {
   if (value == null) return null;
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
   if (typeof value === "string" || typeof value === "boolean") return value;
-  if (Array.isArray(value)) return value.map((item) => stripForemanRequestNoise(item));
+  if (Array.isArray(value))
+    return value.map((item) => stripForemanRequestNoise(item));
   if (typeof value === "object") {
     const source = value as Record<string, unknown>;
     const output: Record<string, unknown> = {};
@@ -239,13 +257,19 @@ export function normalizeForemanRequestPdfRequest(
   const clientSourceFingerprint = trimText(row.clientSourceFingerprint);
 
   if (version !== "v1") {
-    throw new Error(`foreman request pdf payload invalid version: ${version || "<empty>"}`);
+    throw new Error(
+      `foreman request pdf payload invalid version: ${version || "<empty>"}`,
+    );
   }
   if (role !== "foreman") {
-    throw new Error(`foreman request pdf payload invalid role: ${role || "<empty>"}`);
+    throw new Error(
+      `foreman request pdf payload invalid role: ${role || "<empty>"}`,
+    );
   }
   if (documentType !== "request") {
-    throw new Error(`foreman request pdf payload invalid documentType: ${documentType || "<empty>"}`);
+    throw new Error(
+      `foreman request pdf payload invalid documentType: ${documentType || "<empty>"}`,
+    );
   }
   if (!requestId) {
     throw new Error("foreman request pdf payload missing requestId");
