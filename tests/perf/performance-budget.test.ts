@@ -116,6 +116,9 @@ describe("performance budget — bundle module count", () => {
     const sFetchAllDirectorReportsAggregationContractFiles = [
       path.join(SRC, "lib", "api", "director_reports.aggregation.contracts.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sDirectSupabaseBypassDirectorFinanceContractFiles = [
+      path.join(SRC, "screens", "director", "director.finance.bff.contract.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -166,6 +169,8 @@ describe("performance budget — bundle module count", () => {
     // S-DIRECT-SUPABASE-BYPASS-ELIMINATION-1 adds one permanent catalog request read transport boundary.
     // S-FETCHALL-DIRECTOR-REPORTS-SERVER-SIDE-AGGREGATION-CONTRACTS-1 adds one permanent
     // director reports server-side aggregation contract module.
+    // S-DIRECT-SUPABASE-BYPASS-DIRECTOR-FINANCE-RPC-ROUTING-1 adds one permanent
+    // disabled director finance RPC BFF contract module.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -174,6 +179,7 @@ describe("performance budget — bundle module count", () => {
     expect(sPdfInstantFirstOpenCacheFiles).toBeLessThanOrEqual(1);
     expect(sDirectSupabaseBypassCatalogRequestBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sFetchAllDirectorReportsAggregationContractFiles).toBeLessThanOrEqual(1);
+    expect(sDirectSupabaseBypassDirectorFinanceContractFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -183,7 +189,8 @@ describe("performance budget — bundle module count", () => {
         sAiWorkflow2DisabledPilotFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
-        sFetchAllDirectorReportsAggregationContractFiles,
+        sFetchAllDirectorReportsAggregationContractFiles -
+        sDirectSupabaseBypassDirectorFinanceContractFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

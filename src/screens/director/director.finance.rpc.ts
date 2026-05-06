@@ -51,6 +51,26 @@ const FINANCE_SUPPLIER_SCOPE_RPC_NAME = "director_finance_supplier_scope_v1";
 const FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME = "director_finance_supplier_scope_v2";
 const FINANCE_SUMMARY_FAILED_COOLDOWN_MS = 10 * 60 * 1000;
 
+type DirectorFinanceRpcName =
+  | typeof FINANCE_SUMMARY_RPC_NAME
+  | typeof FINANCE_PANEL_SCOPE_RPC_NAME
+  | typeof FINANCE_PANEL_SCOPE_V2_RPC_NAME
+  | typeof FINANCE_PANEL_SCOPE_V3_RPC_NAME
+  | typeof FINANCE_PANEL_SCOPE_V4_RPC_NAME
+  | typeof FINANCE_SUMMARY_V2_RPC_NAME
+  | typeof FINANCE_SUPPLIER_SCOPE_RPC_NAME
+  | typeof FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME;
+
+type DirectorFinanceRpcArgs =
+  | DirectorFinanceFetchSummaryV1Args
+  | DirectorFinancePanelScopeV1Args
+  | DirectorFinancePanelScopeV2Args
+  | DirectorFinancePanelScopeV3Args
+  | DirectorFinancePanelScopeV4Args
+  | DirectorFinanceSummaryV2Args
+  | DirectorFinanceSupplierScopeV1Args
+  | DirectorFinanceSupplierScopeV2Args;
+
 type RuntimeProcessEnv = { process?: { env?: Record<string, unknown> } };
 type FinanceRpcStatus = "unknown" | "available" | "missing" | "failed";
 type FinanceRpcMeta = { status: FinanceRpcStatus; updatedAt: number };
@@ -256,6 +276,11 @@ const validateDirectorFinanceRpcResponse = <T extends Record<string, unknown>>(
   }
 };
 
+const callDirectorFinanceRpc = async (
+  rpcName: DirectorFinanceRpcName,
+  args: DirectorFinanceRpcArgs,
+) => supabase.rpc(rpcName, args);
+
 export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
   periodFromIso?: string | null;
   periodToIso?: string | null;
@@ -271,7 +296,7 @@ export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
     p_critical_days: normalizeFinanceRpcInteger(opts?.criticalDays, 14),
   };
 
-  const { data, error } = await supabase.rpc(FINANCE_SUMMARY_RPC_NAME, args);
+  const { data, error } = await callDirectorFinanceRpc(FINANCE_SUMMARY_RPC_NAME, args);
   if (error) {
     markFinanceRpcStatus(
       financeSummaryRpcMeta,
@@ -305,7 +330,7 @@ export async function fetchDirectorFinanceSummaryV2ViaRpc(opts?: {
     p_date_to: pickIso10(opts?.periodToIso) ?? undefined,
   };
 
-  const { data, error } = await supabase.rpc(FINANCE_SUMMARY_V2_RPC_NAME, args);
+  const { data, error } = await callDirectorFinanceRpc(FINANCE_SUMMARY_V2_RPC_NAME, args);
   if (error) {
     markFinanceRpcStatus(
       financeSummaryV2RpcMeta,
@@ -347,7 +372,7 @@ export async function fetchDirectorFinancePanelScopeV3ViaRpc(opts?: {
     p_offset: Math.max(0, nnum(opts?.offset)),
   };
 
-  const { data, error } = await supabase.rpc(FINANCE_PANEL_SCOPE_V3_RPC_NAME, args);
+  const { data, error } = await callDirectorFinanceRpc(FINANCE_PANEL_SCOPE_V3_RPC_NAME, args);
   if (error) {
     markFinanceRpcStatus(
       financePanelScopeV3RpcMeta,
@@ -390,7 +415,7 @@ export async function fetchDirectorFinancePanelScopeV4ViaRpc(opts?: {
   };
 
   const startedAt = Date.now();
-  const { data, error } = await supabase.rpc(FINANCE_PANEL_SCOPE_V4_RPC_NAME, args);
+  const { data, error } = await callDirectorFinanceRpc(FINANCE_PANEL_SCOPE_V4_RPC_NAME, args);
   if (error) {
     markFinanceRpcStatus(
       financePanelScopeV4RpcMeta,
@@ -458,7 +483,7 @@ export async function fetchDirectorFinancePanelScopeV2ViaRpc(opts?: {
     p_offset: Math.max(0, nnum(opts?.offset)),
   };
 
-  const { data, error } = await supabase.rpc(FINANCE_PANEL_SCOPE_V2_RPC_NAME, args);
+  const { data, error } = await callDirectorFinanceRpc(FINANCE_PANEL_SCOPE_V2_RPC_NAME, args);
   if (error) {
     markFinanceRpcStatus(
       financePanelScopeV2RpcMeta,
@@ -494,7 +519,7 @@ export async function fetchDirectorFinancePanelScopeViaRpc(opts?: {
     p_critical_days: normalizeFinanceRpcInteger(opts?.criticalDays, 14),
   };
 
-  const { data, error } = await supabase.rpc(FINANCE_PANEL_SCOPE_RPC_NAME, args);
+  const { data, error } = await callDirectorFinanceRpc(FINANCE_PANEL_SCOPE_RPC_NAME, args);
   if (error) {
     markFinanceRpcStatus(
       financePanelScopeRpcMeta,
@@ -536,7 +561,7 @@ export async function fetchDirectorFinanceSupplierScopeViaRpc(opts: {
     p_critical_days: normalizeFinanceRpcInteger(opts.criticalDays, 14),
   };
 
-  const { data, error } = await supabase.rpc(FINANCE_SUPPLIER_SCOPE_RPC_NAME, args);
+  const { data, error } = await callDirectorFinanceRpc(FINANCE_SUPPLIER_SCOPE_RPC_NAME, args);
   if (error) {
     markFinanceRpcStatus(
       financeSupplierScopeRpcMeta,
@@ -608,7 +633,7 @@ export async function fetchDirectorFinanceSupplierScopeV2ViaRpc(opts: {
     p_critical_days: normalizeFinanceRpcInteger(opts.criticalDays, 14),
   };
 
-  const { data, error } = await supabase.rpc(FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME, args);
+  const { data, error } = await callDirectorFinanceRpc(FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME, args);
   if (error) {
     markFinanceRpcStatus(
       financeSupplierScopeV2RpcMeta,
