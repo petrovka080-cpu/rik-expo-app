@@ -874,13 +874,19 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
   });
 
   it("maps mutation operations to disabled invalidation tags", () => {
-    expect(CACHE_INVALIDATION_MAPPINGS).toHaveLength(6);
+    expect(CACHE_INVALIDATION_MAPPINGS).toHaveLength(8);
     expect(CACHE_INVALIDATION_MAPPINGS.every((mapping) => mapping.executionEnabledByDefault === false)).toBe(true);
     expect(getInvalidationTagsForOperation("proposal.submit")).toEqual(
       expect.arrayContaining(["proposal", "request", "director_pending"]),
     );
     expect(getInvalidationTagsForOperation("warehouse.receive.apply")).toEqual(
       expect.arrayContaining(["warehouse", "stock", "ledger"]),
+    );
+    expect(getInvalidationTagsForOperation("catalog.request.meta.update")).toEqual(
+      expect.arrayContaining(["request", "proposal", "buyer", "summary"]),
+    );
+    expect(getInvalidationTagsForOperation("catalog.request.item.cancel")).toEqual(
+      expect.arrayContaining(["request", "proposal", "buyer", "summary"]),
     );
     expect(getInvalidationTagsForOperation("notification.fanout")).toEqual(
       expect.arrayContaining(["notification", "inbox"]),

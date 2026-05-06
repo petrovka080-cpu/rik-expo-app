@@ -21,7 +21,9 @@ import {
   type BffStagingRequestEnvelope,
 } from "./stagingBffServerBoundary";
 import { createBffReadonlyDbReadPorts } from "./stagingBffReadonlyDbPorts";
+import { createBffCatalogRequestMutationPortsFromEnv } from "./stagingBffCatalogRequestMutationPorts";
 import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
+import type { BffMutationPorts } from "../../src/shared/scale/bffMutationPorts";
 
 const DEFAULT_PORT = 3000;
 const MAX_BODY_BYTES = 64 * 1024;
@@ -43,6 +45,7 @@ type MobileReadonlyAuthVerifier = (token: string, env: StagingBffHttpEnv) => Pro
 
 type StagingBffHttpServerOptions = {
   readPortsFactory?: (env: StagingBffHttpEnv) => BffReadPorts | undefined;
+  mutationPortsFactory?: (env: StagingBffHttpEnv) => BffMutationPorts | undefined;
   mobileReadonlyAuthVerifier?: MobileReadonlyAuthVerifier;
   cacheShadow?: BffStagingCacheShadowDeps | null;
   cacheShadowRuntime?: BffStagingCacheShadowRuntimeState | null;
@@ -219,6 +222,7 @@ export function createBffStagingHttpServer(
 ): http.Server {
   const config = resolveBffStagingHttpConfig(env);
   const readPorts = (options.readPortsFactory ?? createBffReadonlyDbReadPorts)(env);
+  const mutationPorts = (options.mutationPortsFactory ?? createBffCatalogRequestMutationPortsFromEnv)(env);
   const mobileReadonlyAuthVerifier = options.mobileReadonlyAuthVerifier ?? verifySupabaseReadonlyMobileAuth;
   const defaultCacheShadowConfig = resolveCacheShadowRuntimeConfig(env);
   const cacheShadow =
@@ -304,6 +308,7 @@ export function createBffStagingHttpServer(
       };
       const boundaryResponse = await handleBffStagingServerRequest(boundaryRequest, {
         readPorts,
+        mutationPorts,
         cacheShadow,
         cacheShadowRuntime,
         rateLimitShadow,
@@ -342,6 +347,7 @@ export function startBffStagingHttpServer(env: StagingBffHttpEnv = process.env):
         mobileReadonlyAuthConfigured: config.mobileReadonlyAuthConfigured,
         mutationRoutesEnabled: config.mutationRoutesEnabled,
         readPortsConfigured: Boolean(createBffReadonlyDbReadPorts(env)),
+        mutationPortsConfigured: Boolean(createBffCatalogRequestMutationPortsFromEnv(env)),
       }),
     );
   });

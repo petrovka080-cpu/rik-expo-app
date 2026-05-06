@@ -179,6 +179,32 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "tests/perf/performance-budget.test.ts",
       "tests/scale/providerRuntimeConfig.test.ts",
     ]);
+    const sCatalogRequestBffMutationPortingAllowedDirtyFiles = new Set([
+      "scripts/server/stagingBffCatalogRequestMutationPorts.ts",
+      "scripts/server/stagingBffHttpServer.ts",
+      "scripts/server/stagingBffServerBoundary.ts",
+      "src/shared/scale/bffMutationHandlers.ts",
+      "src/shared/scale/bffMutationPorts.ts",
+      "src/shared/scale/bffShadowFixtures.ts",
+      "src/shared/scale/bffShadowHarness.ts",
+      "src/shared/scale/bffShadowPorts.ts",
+      "src/shared/scale/cacheInvalidation.ts",
+      "src/shared/scale/idempotency.ts",
+      "src/shared/scale/idempotencyPolicies.ts",
+      "src/shared/scale/jobPolicies.ts",
+      "src/shared/scale/rateLimitPolicies.ts",
+      "src/shared/scale/rateLimits.ts",
+      "src/shared/scale/scaleObservabilityEvents.ts",
+      "tests/scale/bffMutationHandlers.test.ts",
+      "tests/scale/bffShadowParity.test.ts",
+      "tests/scale/bffStagingServerBoundary.test.ts",
+      "tests/scale/cacheIntegrationBoundary.test.ts",
+      "tests/scale/catalogRequestBffMutationPorting.test.ts",
+      "tests/scale/idempotencyIntegrationBoundary.test.ts",
+      "tests/scale/jobsIntegrationBoundary.test.ts",
+      "tests/scale/rateEnforcementBoundary.test.ts",
+      "tests/scale/scaleObservabilityBoundary.test.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
@@ -190,6 +216,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !sBffReadonlyMobileAuthStrategyAllowedDirtyFiles.has(file) &&
         !sBffMobileSupabaseJwtAuthWiringAllowedDirtyFiles.has(file) &&
         !s50kProviderEnvConventionsAllowedDirtyFiles.has(file) &&
+        !sCatalogRequestBffMutationPortingAllowedDirtyFiles.has(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(false);

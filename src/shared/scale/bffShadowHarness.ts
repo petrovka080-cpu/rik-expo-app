@@ -10,6 +10,8 @@ import {
 } from "./bffReadHandlers";
 import {
   handleAccountantPaymentApply,
+  handleCatalogRequestItemCancel,
+  handleCatalogRequestMetaUpdate,
   handleDirectorApprovalApply,
   handleProposalSubmit,
   handleRequestItemUpdate,
@@ -20,6 +22,8 @@ import {
 } from "./bffMutationHandlers";
 import { redactBffText } from "./bffSafety";
 import {
+  BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD,
+  BFF_SHADOW_CATALOG_REQUEST_META_PAYLOAD,
   BFF_SHADOW_MUTATION_PAYLOAD,
   createBffShadowFixturePorts,
 } from "./bffShadowFixtures";
@@ -42,6 +46,7 @@ type ReadFlowDefinition = {
 type MutationFlowDefinition = {
   flow: BffMutationOperation;
   kind: "mutation";
+  payload: unknown;
   handler: (
     ports: BffShadowHarnessPorts["mutation"],
     input: BffMutationInput,
@@ -81,11 +86,23 @@ const READ_FLOWS: readonly ReadFlowDefinition[] = [
 ];
 
 const MUTATION_FLOWS: readonly MutationFlowDefinition[] = [
-  { flow: "proposal.submit", kind: "mutation", handler: handleProposalSubmit },
-  { flow: "warehouse.receive.apply", kind: "mutation", handler: handleWarehouseReceiveApply },
-  { flow: "accountant.payment.apply", kind: "mutation", handler: handleAccountantPaymentApply },
-  { flow: "director.approval.apply", kind: "mutation", handler: handleDirectorApprovalApply },
-  { flow: "request.item.update", kind: "mutation", handler: handleRequestItemUpdate },
+  { flow: "proposal.submit", kind: "mutation", payload: BFF_SHADOW_MUTATION_PAYLOAD, handler: handleProposalSubmit },
+  { flow: "warehouse.receive.apply", kind: "mutation", payload: BFF_SHADOW_MUTATION_PAYLOAD, handler: handleWarehouseReceiveApply },
+  { flow: "accountant.payment.apply", kind: "mutation", payload: BFF_SHADOW_MUTATION_PAYLOAD, handler: handleAccountantPaymentApply },
+  { flow: "director.approval.apply", kind: "mutation", payload: BFF_SHADOW_MUTATION_PAYLOAD, handler: handleDirectorApprovalApply },
+  { flow: "request.item.update", kind: "mutation", payload: BFF_SHADOW_MUTATION_PAYLOAD, handler: handleRequestItemUpdate },
+  {
+    flow: "catalog.request.meta.update",
+    kind: "mutation",
+    payload: BFF_SHADOW_CATALOG_REQUEST_META_PAYLOAD,
+    handler: handleCatalogRequestMetaUpdate,
+  },
+  {
+    flow: "catalog.request.item.cancel",
+    kind: "mutation",
+    payload: BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD,
+    handler: handleCatalogRequestItemCancel,
+  },
 ];
 
 export const BFF_SHADOW_FLOW_DEFINITIONS: readonly ShadowFlowDefinition[] = Object.freeze([
@@ -219,9 +236,8 @@ export async function runLocalBffShadowParity(
     },
   };
 
-  const mutationInput: BffMutationInput = {
+  const mutationInputBase: Omit<BffMutationInput, "payload"> = {
     idempotencyKey: mutationIdempotencyKey,
-    payload: BFF_SHADOW_MUTATION_PAYLOAD,
     context: {
       actorRole: "unknown",
       companyScope: "present_redacted",
@@ -238,14 +254,17 @@ export async function runLocalBffShadowParity(
   }
 
   for (const definition of MUTATION_FLOWS) {
-    const envelope = await definition.handler(ports.mutation, mutationInput);
+    const envelope = await definition.handler(ports.mutation, {
+      ...mutationInputBase,
+      payload: definition.payload,
+    });
     results.push(compareMutationEnvelope(definition, envelope));
   }
 
   const covered = results.filter((result) => result.status === "match" || result.status === "acceptable_difference");
 
   return {
-    status: covered.length >= 8 ? "GREEN_LOCAL_SHADOW" : "PARTIAL",
+    status: covered.length >= 10 ? "GREEN_LOCAL_SHADOW" : "PARTIAL",
     results,
     coveredFlows: covered.length,
     readFlowsCovered: covered.filter((result) => result.kind === "read").length,

@@ -61,11 +61,29 @@ export const BFF_SHADOW_SAFE_FIXTURE_VALUES = Object.freeze({
 });
 
 export const BFF_SHADOW_MUTATION_PAYLOAD = Object.freeze({
+  kind: "catalog.request.item.qty.update",
   requestId: "test-request-001",
+  requestIdHint: "test-request-001",
+  requestItemId: "test-request-item-001",
   proposalId: "test-proposal-001",
   invoiceId: "test-invoice-001",
   companyScope: "test-company-redacted",
+  qty: 1,
   note: "fixture-only",
+});
+
+export const BFF_SHADOW_CATALOG_REQUEST_META_PAYLOAD = Object.freeze({
+  kind: "catalog.request.meta.update",
+  requestId: "test-request-001",
+  patch: {
+    comment: "fixture-only",
+    need_by: null,
+  },
+});
+
+export const BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD = Object.freeze({
+  kind: "catalog.request.item.cancel",
+  requestItemId: "test-request-item-001",
 });
 
 export function createBffShadowFixturePorts(): BffShadowFixtureHarnessPorts {
@@ -132,6 +150,16 @@ export function createBffShadowFixturePorts(): BffShadowFixtureHarnessPorts {
     requestItemUpdate: {
       async updateRequestItem(input) {
         recordMutationCall(calls, "requestItemUpdate", "request.item.update", input);
+        return { id: "test-request-item-001", result: "accepted" };
+      },
+    },
+    catalogRequest: {
+      async updateRequestMeta(input) {
+        recordMutationCall(calls, "catalogRequestMeta", "catalog.request.meta.update", input);
+        return { id: "test-request-001", result: "accepted" };
+      },
+      async cancelRequestItem(input) {
+        recordMutationCall(calls, "catalogRequestCancel", "catalog.request.item.cancel", input);
         return { id: "test-request-item-001", result: "accepted" };
       },
     },

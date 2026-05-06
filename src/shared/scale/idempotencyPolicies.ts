@@ -88,6 +88,16 @@ export const IDEMPOTENCY_POLICY_REGISTRY: readonly IdempotencyPolicy[] = Object.
     keyParts: ["operation", "actorId", "requestId", "payloadHash"],
   }),
   strictPolicy({
+    operation: "catalog.request.meta.update",
+    contractOperation: "catalog.request.meta.update",
+    keyParts: ["operation", "actorId", "requestId", "payloadHash"],
+  }),
+  strictPolicy({
+    operation: "catalog.request.item.cancel",
+    contractOperation: "catalog.request.item.cancel",
+    keyParts: ["operation", "actorId", "requestId", "payloadHash"],
+  }),
+  strictPolicy({
     operation: "offline.replay.bridge",
     contractOperation: "offline.replay.bridge",
     keyParts: ["operation", "actorId", "requestId", "replayMutationId", "operationType", "payloadHash"],
@@ -134,6 +144,8 @@ export const BFF_MUTATION_IDEMPOTENCY_POLICY_MAP: Record<
   "accountant.payment.apply": "accountant.payment.apply",
   "director.approval.apply": "director.approval.apply",
   "request.item.update": "request.item.update",
+  "catalog.request.meta.update": "catalog.request.meta.update",
+  "catalog.request.item.cancel": "catalog.request.item.cancel",
 });
 
 export const JOB_IDEMPOTENCY_POLICY_MAP: Partial<Record<JobType, IdempotencyPolicyOperation>> = Object.freeze({

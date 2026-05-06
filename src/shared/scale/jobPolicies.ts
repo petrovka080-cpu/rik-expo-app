@@ -209,6 +209,8 @@ export const BFF_MUTATION_JOB_POLICY_MAP: Record<BffMutationOperation, JobType> 
   "accountant.payment.apply": "accountant.payment.postprocess",
   "director.approval.apply": "director.approval.postprocess",
   "request.item.update": "request.item.update.postprocess",
+  "catalog.request.meta.update": "request.item.update.postprocess",
+  "catalog.request.item.cancel": "request.item.update.postprocess",
 });
 
 export function getJobPolicy(jobType: JobType): JobPolicy | null {

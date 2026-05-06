@@ -117,7 +117,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
           data: expect.objectContaining({
             status: "ready",
             readRoutes: 5,
-            mutationRoutes: 5,
+            mutationRoutes: 7,
             mutationRoutesEnabledByDefault: false,
             appRuntimeBffEnabled: false,
           }),
@@ -126,7 +126,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     );
   });
 
-  it("registers five read routes and five disabled mutation routes", () => {
+  it("registers five read routes and disabled mutation routes", () => {
     expect(BFF_STAGING_READ_ROUTES.map((route) => route.operation)).toEqual([
       "request.proposal.list",
       "marketplace.catalog.search",
@@ -140,6 +140,8 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
       "accountant.payment.apply",
       "director.approval.apply",
       "request.item.update",
+      "catalog.request.meta.update",
+      "catalog.request.item.cancel",
     ]);
     expect(BFF_STAGING_MUTATION_ROUTES.every((route) => route.enabledByDefault === false)).toBe(true);
     expect(BFF_STAGING_SERVER_BOUNDARY_CONTRACT).toEqual(
@@ -151,7 +153,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
         rateLimitShadowMonitorEndpointContract: true,
         rateLimitPrivateSmokeEndpointContract: true,
         readRoutes: 5,
-        mutationRoutes: 5,
+        mutationRoutes: 7,
         mutationRoutesEnabledByDefault: false,
         requestEnvelopeValidation: true,
         responseEnvelopeValidation: true,
@@ -484,7 +486,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
 
     expect(summary).toEqual({
       status: "run",
-      matches: 10,
+      matches: 12,
       mismatches: 0,
       trafficMigrated: false,
       productionTouched: false,

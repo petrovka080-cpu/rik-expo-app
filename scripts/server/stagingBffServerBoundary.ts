@@ -36,6 +36,8 @@ import {
 } from "../../src/shared/scale/scaleObservabilityEvents";
 import {
   BFF_MUTATION_HANDLER_OPERATIONS,
+  handleCatalogRequestItemCancel,
+  handleCatalogRequestMetaUpdate,
   handleAccountantPaymentApply,
   handleDirectorApprovalApply,
   handleProposalSubmit,
@@ -58,6 +60,8 @@ import {
 import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
 import { buildBffError } from "../../src/shared/scale/bffSafety";
 import {
+  BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD,
+  BFF_SHADOW_CATALOG_REQUEST_META_PAYLOAD,
   BFF_SHADOW_MUTATION_PAYLOAD,
   createBffShadowFixturePorts,
 } from "../../src/shared/scale/bffShadowFixtures";
@@ -439,6 +443,48 @@ export const BFF_STAGING_MUTATION_ROUTES: readonly BffStagingRouteDefinition[] =
     observability: BFF_OBSERVABILITY_METADATA,
     observabilityExternalExportEnabledByDefault: false,
   },
+  {
+    operation: "catalog.request.meta.update",
+    kind: "mutation",
+    method: "POST",
+    path: "/api/staging-bff/mutation/catalog-request-meta-update",
+    enabledByDefault: false,
+    requiresIdempotencyMetadata: true,
+    requiresRateLimitMetadata: true,
+    invalidationTags: getInvalidationTagsForOperation("catalog.request.meta.update"),
+    jobPolicyType: getMutationJobPolicyType("catalog.request.meta.update"),
+    jobPolicyDefaultEnabled: false,
+    jobExecutionEnabledByDefault: false,
+    idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("catalog.request.meta.update"),
+    idempotencyPolicyDefaultEnabled: false,
+    idempotencyPersistenceEnabledByDefault: false,
+    rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("catalog.request.meta.update"),
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
+  },
+  {
+    operation: "catalog.request.item.cancel",
+    kind: "mutation",
+    method: "POST",
+    path: "/api/staging-bff/mutation/catalog-request-item-cancel",
+    enabledByDefault: false,
+    requiresIdempotencyMetadata: true,
+    requiresRateLimitMetadata: true,
+    invalidationTags: getInvalidationTagsForOperation("catalog.request.item.cancel"),
+    jobPolicyType: getMutationJobPolicyType("catalog.request.item.cancel"),
+    jobPolicyDefaultEnabled: false,
+    jobExecutionEnabledByDefault: false,
+    idempotencyPolicyOperation: getMutationIdempotencyPolicyOperation("catalog.request.item.cancel"),
+    idempotencyPolicyDefaultEnabled: false,
+    idempotencyPersistenceEnabledByDefault: false,
+    rateLimitPolicyOperation: getMutationRateLimitPolicyOperation("catalog.request.item.cancel"),
+    rateLimitPolicyDefaultEnabled: false,
+    rateLimitEnforcementEnabledByDefault: false,
+    observability: BFF_OBSERVABILITY_METADATA,
+    observabilityExternalExportEnabledByDefault: false,
+  },
 ]);
 
 export const BFF_STAGING_ROUTE_REGISTRY: readonly BffStagingRouteDefinition[] = Object.freeze([
@@ -456,6 +502,7 @@ export const BFF_STAGING_SERVER_ENV_NAMES = Object.freeze([
   "STAGING_BFF_BASE_URL",
   "BFF_SERVER_AUTH_SECRET",
   "BFF_DATABASE_READONLY_URL",
+  "BFF_DATABASE_WRITE_URL",
   "BFF_MUTATION_ENABLED",
   "BFF_IDEMPOTENCY_METADATA_ENABLED",
   "BFF_RATE_LIMIT_METADATA_ENABLED",
@@ -842,7 +889,17 @@ const invokeMutationRoute = async (
       return handleDirectorApprovalApply(ports, input);
     case "request.item.update":
       return handleRequestItemUpdate(ports, input);
+    case "catalog.request.meta.update":
+      return handleCatalogRequestMetaUpdate(ports, input);
+    case "catalog.request.item.cancel":
+      return handleCatalogRequestItemCancel(ports, input);
   }
+};
+
+const getLocalShadowMutationPayload = (operation: BffMutationOperation): unknown => {
+  if (operation === "catalog.request.meta.update") return BFF_SHADOW_CATALOG_REQUEST_META_PAYLOAD;
+  if (operation === "catalog.request.item.cancel") return BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD;
+  return BFF_SHADOW_MUTATION_PAYLOAD;
 };
 
 export async function handleBffStagingServerRequest(
@@ -1125,10 +1182,12 @@ export async function runLocalBffStagingBoundaryShadow(): Promise<BffStagingShad
         body: {
           input: {
             idempotencyKey: "opaque-key-v1",
-            payload: BFF_SHADOW_MUTATION_PAYLOAD,
+            payload: getLocalShadowMutationPayload(route.operation as BffMutationOperation),
             context: {
               actorRole: "unknown",
+              companyScope: "present_redacted",
               idempotencyKeyStatus: "present_redacted",
+              requestScope: "present_redacted",
             },
           },
           metadata: {

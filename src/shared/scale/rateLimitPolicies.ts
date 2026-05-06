@@ -67,6 +67,8 @@ export const BFF_MUTATION_RATE_LIMIT_OPERATIONS: readonly BffMutationOperation[]
   "accountant.payment.apply",
   "director.approval.apply",
   "request.item.update",
+  "catalog.request.meta.update",
+  "catalog.request.item.cancel",
 ]);
 
 export const JOB_RATE_LIMIT_OPERATIONS = Object.freeze([
@@ -276,6 +278,34 @@ export const RATE_ENFORCEMENT_POLICY_REGISTRY: readonly RateEnforcementPolicy[] 
     idempotencyKeyRequiredForMutations: true,
   }),
   policy({
+    operation: "catalog.request.meta.update",
+    category: "mutation",
+    scope: "actor",
+    secondaryScopes: ["company", "route"],
+    windowMs: MINUTE_MS,
+    maxRequests: 25,
+    burst: 5,
+    cooldownMs: 30_000,
+    severity: "high",
+    actorKeyRequired: true,
+    companyKeyRequired: true,
+    idempotencyKeyRequiredForMutations: true,
+  }),
+  policy({
+    operation: "catalog.request.item.cancel",
+    category: "mutation",
+    scope: "actor",
+    secondaryScopes: ["company", "route"],
+    windowMs: MINUTE_MS,
+    maxRequests: 15,
+    burst: 3,
+    cooldownMs: 30_000,
+    severity: "critical",
+    actorKeyRequired: true,
+    companyKeyRequired: true,
+    idempotencyKeyRequiredForMutations: true,
+  }),
+  policy({
     operation: "notification.fanout",
     category: "job",
     scope: "company",
@@ -375,6 +405,8 @@ export const BFF_MUTATION_RATE_ENFORCEMENT_POLICY_MAP: Record<BffMutationOperati
   "accountant.payment.apply": "accountant.payment.apply",
   "director.approval.apply": "director.approval.apply",
   "request.item.update": "request.item.update",
+  "catalog.request.meta.update": "catalog.request.meta.update",
+  "catalog.request.item.cancel": "catalog.request.item.cancel",
 });
 
 export const JOB_RATE_ENFORCEMENT_POLICY_MAP: Partial<Record<JobType, RateLimitEnforcementOperation>> = Object.freeze({

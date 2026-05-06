@@ -820,13 +820,15 @@ describe("S-50K-JOBS-INTEGRATION-1 disabled background job boundary", () => {
     expect(JSON.stringify(summary)).not.toContain("do not store this");
   });
 
-  it("adds disabled job metadata to five BFF mutation routes and maps cache invalidation jobs", () => {
+  it("adds disabled job metadata to BFF mutation routes and maps cache invalidation jobs", () => {
     expect(Object.keys(BFF_MUTATION_JOB_POLICY_MAP)).toEqual([
       "proposal.submit",
       "warehouse.receive.apply",
       "accountant.payment.apply",
       "director.approval.apply",
       "request.item.update",
+      "catalog.request.meta.update",
+      "catalog.request.item.cancel",
     ]);
 
     for (const route of BFF_STAGING_MUTATION_ROUTES) {

@@ -11,6 +11,8 @@ export type RateLimitedOperation =
   | "accountant.invoice.update"
   | "director.approval.apply"
   | "request.item.update"
+  | "catalog.request.meta.update"
+  | "catalog.request.item.cancel"
   | "pdf.report.generate"
   | "notification.fanout"
   | "cache.readModel.refresh"
@@ -77,6 +79,8 @@ export const RATE_LIMITED_OPERATIONS: readonly RateLimitedOperation[] = [
   "accountant.invoice.update",
   "director.approval.apply",
   "request.item.update",
+  "catalog.request.meta.update",
+  "catalog.request.item.cancel",
   "pdf.report.generate",
   "notification.fanout",
   "cache.readModel.refresh",
@@ -146,6 +150,8 @@ export const RATE_LIMIT_POLICIES: readonly RateLimitPolicy[] = [
   disabledPolicy("accountant.invoice.update", "write_sensitive", ["user", "company"]),
   disabledPolicy("director.approval.apply", "write_sensitive", ["user", "company"]),
   disabledPolicy("request.item.update", "write_sensitive", ["user", "company"]),
+  disabledPolicy("catalog.request.meta.update", "write_sensitive", ["user", "company"]),
+  disabledPolicy("catalog.request.item.cancel", "write_sensitive", ["user", "company"]),
   disabledPolicy("pdf.report.generate", "expensive_job", ["user", "company", "global"]),
   disabledPolicy("notification.fanout", "external_side_effect", ["user", "company", "global"]),
   disabledPolicy("cache.readModel.refresh", "expensive_job", ["global"]),

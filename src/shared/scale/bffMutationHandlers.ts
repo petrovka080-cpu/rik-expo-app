@@ -25,14 +25,25 @@ import {
 } from "./scaleObservabilityEvents";
 import { getRetryPolicy, type RetryClass, type RetryPolicy } from "./retryPolicy";
 import type { DeadLetterReason } from "./deadLetter";
-import type { BffMutationContext, BffMutationPorts } from "./bffMutationPorts";
+import type {
+  BffMutationContext,
+  BffMutationPorts,
+  CatalogRequestItemCancelPayload,
+  CatalogRequestItemQtyUpdatePayload,
+  CatalogRequestMetaNumberKey,
+  CatalogRequestMetaPatch,
+  CatalogRequestMetaTextKey,
+  CatalogRequestMetaUpdatePayload,
+} from "./bffMutationPorts";
 
 export type BffMutationOperation =
   | "proposal.submit"
   | "warehouse.receive.apply"
   | "accountant.payment.apply"
   | "director.approval.apply"
-  | "request.item.update";
+  | "request.item.update"
+  | "catalog.request.meta.update"
+  | "catalog.request.item.cancel";
 
 export type BffMutationInput = {
   idempotencyKey?: unknown;
@@ -143,6 +154,22 @@ const MUTATION_HANDLER_DEFINITIONS: Record<BffMutationOperation, MutationHandler
     failureCode: "BFF_REQUEST_ITEM_UPDATE_ERROR",
     failureMessage: "Unable to update request item",
   },
+  "catalog.request.meta.update": {
+    operation: "catalog.request.meta.update",
+    bffFlow: null,
+    rateLimitBucket: "write_sensitive",
+    retryClass: "server_error",
+    failureCode: "BFF_CATALOG_REQUEST_META_UPDATE_ERROR",
+    failureMessage: "Unable to update catalog request metadata",
+  },
+  "catalog.request.item.cancel": {
+    operation: "catalog.request.item.cancel",
+    bffFlow: null,
+    rateLimitBucket: "write_sensitive",
+    retryClass: "server_error",
+    failureCode: "BFF_CATALOG_REQUEST_ITEM_CANCEL_ERROR",
+    failureMessage: "Unable to cancel catalog request item",
+  },
 };
 
 export const BFF_MUTATION_HANDLER_OPERATIONS = Object.freeze(
@@ -155,6 +182,134 @@ const MAX_OBJECT_KEYS = 50;
 
 const hasPayload = (input: BffMutationInput): boolean =>
   Object.prototype.hasOwnProperty.call(input, "payload") && input.payload !== null && input.payload !== undefined;
+
+const CATALOG_REQUEST_META_TEXT_KEYS = Object.freeze([
+  "need_by",
+  "comment",
+  "object_type_code",
+  "level_code",
+  "system_code",
+  "zone_code",
+  "foreman_name",
+  "contractor_job_id",
+  "subcontract_id",
+  "contractor_org",
+  "subcontractor_org",
+  "contractor_phone",
+  "subcontractor_phone",
+  "object_name",
+  "level_name",
+  "system_name",
+  "zone_name",
+] as const satisfies readonly CatalogRequestMetaTextKey[]);
+
+const CATALOG_REQUEST_META_NUMBER_KEYS = Object.freeze([
+  "planned_volume",
+  "qty_plan",
+  "volume",
+] as const satisfies readonly CatalogRequestMetaNumberKey[]);
+
+const CATALOG_REQUEST_META_ALLOWED_KEYS = new Set<string>([
+  ...CATALOG_REQUEST_META_TEXT_KEYS,
+  ...CATALOG_REQUEST_META_NUMBER_KEYS,
+]);
+
+export const CATALOG_REQUEST_MUTATION_CONTRACT = Object.freeze({
+  updateRequestMeta: {
+    operation: "catalog.request.meta.update",
+    allowedPatchKeys: [...CATALOG_REQUEST_META_ALLOWED_KEYS].sort(),
+  },
+  requestItemUpdateQty: {
+    operation: "request.item.update",
+    payloadKind: "catalog.request.item.qty.update",
+  },
+  requestItemCancel: {
+    operation: "catalog.request.item.cancel",
+    payloadKind: "catalog.request.item.cancel",
+  },
+  mutationRoutesGloballyEnabledByDefault: false,
+  rawPayloadLoggingAllowed: false,
+});
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const normalizeCatalogId = (value: unknown): string | null => {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 160) return null;
+  return trimmed;
+};
+
+const isSafeCatalogMutationContext = (context: BffMutationContext | undefined): boolean =>
+  context?.idempotencyKeyStatus === "present_redacted" &&
+  context.companyScope === "present_redacted" &&
+  context.requestScope === "present_redacted";
+
+const normalizeCatalogMetaPatch = (value: unknown): CatalogRequestMetaPatch | null => {
+  if (!isRecord(value)) return null;
+
+  const patch: CatalogRequestMetaPatch = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (!CATALOG_REQUEST_META_ALLOWED_KEYS.has(key)) return null;
+
+    if ((CATALOG_REQUEST_META_TEXT_KEYS as readonly string[]).includes(key)) {
+      if (entry !== null && typeof entry !== "string") return null;
+      if (typeof entry === "string" && entry.length > 2_000) return null;
+      (patch as Record<string, string | null>)[key] = entry;
+      continue;
+    }
+
+    if (entry !== null && (typeof entry !== "number" || !Number.isFinite(entry))) return null;
+    (patch as Record<string, number | null>)[key] = entry;
+  }
+
+  return Object.keys(patch).length > 0 ? patch : null;
+};
+
+export function validateCatalogRequestMetaUpdatePayload(
+  value: unknown,
+): CatalogRequestMetaUpdatePayload | null {
+  if (!isRecord(value) || value.kind !== "catalog.request.meta.update") return null;
+  const requestId = normalizeCatalogId(value.requestId);
+  const patch = normalizeCatalogMetaPatch(value.patch);
+  if (!requestId || !patch) return null;
+  return {
+    kind: "catalog.request.meta.update",
+    requestId,
+    patch,
+  };
+}
+
+export function validateCatalogRequestItemQtyUpdatePayload(
+  value: unknown,
+): CatalogRequestItemQtyUpdatePayload | null {
+  if (!isRecord(value) || value.kind !== "catalog.request.item.qty.update") return null;
+  const requestItemId = normalizeCatalogId(value.requestItemId);
+  const qty = Number(value.qty);
+  const requestIdHint =
+    value.requestIdHint == null ? null : normalizeCatalogId(value.requestIdHint);
+  if (!requestItemId || !Number.isFinite(qty) || qty <= 0) return null;
+  if (value.requestIdHint != null && !requestIdHint) return null;
+  return {
+    kind: "catalog.request.item.qty.update",
+    requestItemId,
+    qty,
+    requestIdHint,
+  };
+}
+
+export function validateCatalogRequestItemCancelPayload(
+  value: unknown,
+): CatalogRequestItemCancelPayload | null {
+  if (!isRecord(value) || value.kind !== "catalog.request.item.cancel") return null;
+  const requestItemId = normalizeCatalogId(value.requestItemId);
+  if (!requestItemId) return null;
+  return {
+    kind: "catalog.request.item.cancel",
+    requestItemId,
+  };
+}
 
 export function normalizeBffMutationIdempotencyKey(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -297,6 +452,45 @@ const executeMutationHandler = async (
   }
 };
 
+const executeCatalogMutationHandler = async <TPayload>(
+  operation: BffMutationOperation,
+  input: BffMutationInput,
+  validatePayload: (value: unknown) => TPayload | null,
+  mutate: (args: {
+    idempotencyKey: string;
+    payload: TPayload;
+    context?: BffMutationContext;
+  }) => Promise<unknown>,
+): Promise<BffMutationResponseEnvelope<unknown>> => {
+  const idempotencyKey = normalizeBffMutationIdempotencyKey(input.idempotencyKey);
+  if (!idempotencyKey) {
+    return buildFailure(operation, "IDEMPOTENCY_KEY_REQUIRED", "Request cannot be processed safely");
+  }
+  if (!hasPayload(input)) {
+    return buildFailure(operation, "BFF_MUTATION_PAYLOAD_REQUIRED", "Request cannot be processed safely");
+  }
+  if (!isSafeCatalogMutationContext(input.context)) {
+    return buildFailure(operation, "BFF_MUTATION_CONTEXT_REQUIRED", "Request cannot be processed safely");
+  }
+
+  const payload = validatePayload(input.payload);
+  if (!payload) {
+    return buildFailure(operation, "BFF_CATALOG_REQUEST_MUTATION_PAYLOAD_INVALID", "Request cannot be processed safely");
+  }
+
+  try {
+    const data = await mutate({
+      idempotencyKey,
+      payload,
+      context: input.context,
+    });
+    return buildSuccess(operation, sanitizeBffMutationOutput(data));
+  } catch {
+    const definition = MUTATION_HANDLER_DEFINITIONS[operation];
+    return buildFailure(operation, definition.failureCode, definition.failureMessage);
+  }
+};
+
 export async function handleProposalSubmit(
   ports: BffMutationPorts,
   input: BffMutationInput = {},
@@ -337,7 +531,31 @@ export async function handleRequestItemUpdate(
   ports: BffMutationPorts,
   input: BffMutationInput = {},
 ): Promise<BffMutationResponseEnvelope<unknown>> {
-  return executeMutationHandler("request.item.update", input, (args) =>
+  return executeCatalogMutationHandler("request.item.update", input, validateCatalogRequestItemQtyUpdatePayload, (args) =>
     ports.requestItemUpdate.updateRequestItem(args),
+  );
+}
+
+export async function handleCatalogRequestMetaUpdate(
+  ports: BffMutationPorts,
+  input: BffMutationInput = {},
+): Promise<BffMutationResponseEnvelope<unknown>> {
+  return executeCatalogMutationHandler(
+    "catalog.request.meta.update",
+    input,
+    validateCatalogRequestMetaUpdatePayload,
+    (args) => ports.catalogRequest.updateRequestMeta(args),
+  );
+}
+
+export async function handleCatalogRequestItemCancel(
+  ports: BffMutationPorts,
+  input: BffMutationInput = {},
+): Promise<BffMutationResponseEnvelope<unknown>> {
+  return executeCatalogMutationHandler(
+    "catalog.request.item.cancel",
+    input,
+    validateCatalogRequestItemCancelPayload,
+    (args) => ports.catalogRequest.cancelRequestItem(args),
   );
 }

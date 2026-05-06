@@ -1013,9 +1013,9 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
   });
 
   it("defines disabled policies for read, mutation, job, realtime, and AI operations", () => {
-    expect(RATE_ENFORCEMENT_POLICY_REGISTRY).toHaveLength(19);
+    expect(RATE_ENFORCEMENT_POLICY_REGISTRY).toHaveLength(21);
     expect(getRateEnforcementPoliciesByCategory("read")).toHaveLength(8);
-    expect(getRateEnforcementPoliciesByCategory("mutation")).toHaveLength(5);
+    expect(getRateEnforcementPoliciesByCategory("mutation")).toHaveLength(7);
     expect(getRateEnforcementPoliciesByCategory("job")).toHaveLength(3);
     expect(getRateEnforcementPoliciesByCategory("realtime")).toHaveLength(2);
     expect(getRateEnforcementPoliciesByCategory("ai")).toHaveLength(1);
@@ -1108,7 +1108,7 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     expect(BFF_STAGING_SERVER_BOUNDARY_CONTRACT).toEqual(
       expect.objectContaining({
         readRoutesWithRateLimitMetadata: 5,
-        mutationRoutesWithRateLimitMetadata: 5,
+        mutationRoutesWithRateLimitMetadata: 7,
         rateLimitEnforcementEnabledByDefault: false,
       }),
     );

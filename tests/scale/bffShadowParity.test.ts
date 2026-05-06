@@ -39,13 +39,13 @@ const shadowFiles = [
 ];
 
 describe("S-50K-BFF-SHADOW-1 local BFF shadow parity harness", () => {
-  it("covers ten local fixture-only read and mutation flows", async () => {
+  it("covers local fixture-only read and mutation flows", async () => {
     const summary = await runLocalBffShadowParity();
 
     expect(summary.status).toBe("GREEN_LOCAL_SHADOW");
-    expect(summary.coveredFlows).toBe(10);
+    expect(summary.coveredFlows).toBe(12);
     expect(summary.readFlowsCovered).toBe(5);
-    expect(summary.mutationFlowsCovered).toBe(5);
+    expect(summary.mutationFlowsCovered).toBe(7);
     expect(summary.productionTouched).toBe(false);
     expect(summary.stagingTouched).toBe(false);
     expect(summary.networkUsed).toBe(false);
@@ -61,6 +61,8 @@ describe("S-50K-BFF-SHADOW-1 local BFF shadow parity harness", () => {
       "accountant.payment.apply",
       "director.approval.apply",
       "request.item.update",
+      "catalog.request.meta.update",
+      "catalog.request.item.cancel",
     ]);
   });
 
@@ -77,9 +79,9 @@ describe("S-50K-BFF-SHADOW-1 local BFF shadow parity harness", () => {
 
       expect(summary.status).toBe("GREEN_LOCAL_SHADOW");
       expect(fetchSpy).not.toHaveBeenCalled();
-      expect(fixturePorts.calls).toHaveLength(10);
+      expect(fixturePorts.calls).toHaveLength(12);
       expect(fixturePorts.calls.every((call) => call.pageSize === undefined || call.pageSize === 100)).toBe(true);
-      expect(fixturePorts.calls.filter((call) => call.hasIdempotencyKey === true)).toHaveLength(5);
+      expect(fixturePorts.calls.filter((call) => call.hasIdempotencyKey === true)).toHaveLength(7);
     } finally {
       globalThis.fetch = originalFetch;
     }
@@ -95,7 +97,7 @@ describe("S-50K-BFF-SHADOW-1 local BFF shadow parity harness", () => {
     const mutationResults = summary.results.filter((result) => result.kind === "mutation");
 
     expect(summary.status).toBe("PARTIAL");
-    expect(mutationResults).toHaveLength(5);
+    expect(mutationResults).toHaveLength(7);
     expect(mutationResults.every((result) => result.status === "mismatch")).toBe(true);
     expect(JSON.stringify(mutationResults)).toContain("IDEMPOTENCY_KEY_REQUIRED");
     expect(JSON.stringify(mutationResults)).not.toContain("test-company-redacted");
@@ -183,8 +185,8 @@ describe("S-50K-BFF-SHADOW-1 local BFF shadow parity harness", () => {
   });
 
   it("keeps flow definitions aligned with read/write handler coverage", () => {
-    expect(BFF_SHADOW_FLOW_DEFINITIONS).toHaveLength(10);
+    expect(BFF_SHADOW_FLOW_DEFINITIONS).toHaveLength(12);
     expect(BFF_SHADOW_FLOW_DEFINITIONS.filter((flow) => flow.kind === "read")).toHaveLength(5);
-    expect(BFF_SHADOW_FLOW_DEFINITIONS.filter((flow) => flow.kind === "mutation")).toHaveLength(5);
+    expect(BFF_SHADOW_FLOW_DEFINITIONS.filter((flow) => flow.kind === "mutation")).toHaveLength(7);
   });
 });

@@ -3,14 +3,20 @@ import path from "node:path";
 
 import {
   BFF_MUTATION_HANDLER_OPERATIONS,
+  CATALOG_REQUEST_MUTATION_CONTRACT,
   getBffMutationHandlerMetadata,
   handleAccountantPaymentApply,
+  handleCatalogRequestItemCancel,
+  handleCatalogRequestMetaUpdate,
   handleDirectorApprovalApply,
   handleProposalSubmit,
   handleRequestItemUpdate,
   handleWarehouseReceiveApply,
   normalizeBffMutationIdempotencyKey,
   sanitizeBffMutationOutput,
+  validateCatalogRequestItemCancelPayload,
+  validateCatalogRequestItemQtyUpdatePayload,
+  validateCatalogRequestMetaUpdatePayload,
 } from "../../src/shared/scale/bffMutationHandlers";
 import type { BffMutationPorts } from "../../src/shared/scale/bffMutationPorts";
 
@@ -35,6 +41,10 @@ const createPorts = (): BffMutationPorts => ({
   requestItemUpdate: {
     updateRequestItem: jest.fn(async () => ({ result: "request-item-updated" })),
   },
+  catalogRequest: {
+    updateRequestMeta: jest.fn(async () => ({ result: "catalog-request-meta-updated" })),
+    cancelRequestItem: jest.fn(async () => ({ result: "catalog-request-item-cancelled" })),
+  },
 });
 
 const validInput = {
@@ -51,15 +61,63 @@ const validInput = {
   },
 };
 
+const validCatalogContext = {
+  actorRole: "buyer" as const,
+  companyScope: "present_redacted" as const,
+  idempotencyKeyStatus: "present_redacted" as const,
+  requestScope: "present_redacted" as const,
+};
+
+const validRequestItemQtyInput = {
+  idempotencyKey: "opaque-key-v1",
+  payload: {
+    kind: "catalog.request.item.qty.update",
+    requestItemId: "request-item-001",
+    requestIdHint: "request-001",
+    qty: 2,
+  },
+  context: validCatalogContext,
+};
+
+const validRequestMetaInput = {
+  idempotencyKey: "opaque-key-v1",
+  payload: {
+    kind: "catalog.request.meta.update",
+    requestId: "request-001",
+    patch: {
+      comment: "safe fixture",
+      planned_volume: 10,
+    },
+  },
+  context: validCatalogContext,
+};
+
+const validRequestCancelInput = {
+  idempotencyKey: "opaque-key-v1",
+  payload: {
+    kind: "catalog.request.item.cancel",
+    requestItemId: "request-item-001",
+  },
+  context: validCatalogContext,
+};
+
 describe("S-50K-BFF-WRITE-1 mutation BFF handlers", () => {
-  it("defines five disabled mutation handler operations with safety metadata", () => {
+  it("defines disabled mutation handler operations with catalog request server contracts", () => {
     expect(BFF_MUTATION_HANDLER_OPERATIONS).toEqual([
       "proposal.submit",
       "warehouse.receive.apply",
       "accountant.payment.apply",
       "director.approval.apply",
       "request.item.update",
+      "catalog.request.meta.update",
+      "catalog.request.item.cancel",
     ]);
+    expect(CATALOG_REQUEST_MUTATION_CONTRACT).toEqual(
+      expect.objectContaining({
+        mutationRoutesGloballyEnabledByDefault: false,
+        rawPayloadLoggingAllowed: false,
+      }),
+    );
 
     for (const operation of BFF_MUTATION_HANDLER_OPERATIONS) {
       expect(getBffMutationHandlerMetadata(operation)).toEqual(
@@ -107,6 +165,8 @@ describe("S-50K-BFF-WRITE-1 mutation BFF handlers", () => {
       handleAccountantPaymentApply,
       handleDirectorApprovalApply,
       handleRequestItemUpdate,
+      handleCatalogRequestMetaUpdate,
+      handleCatalogRequestItemCancel,
     ];
 
     for (const handler of handlers) {
@@ -127,6 +187,8 @@ describe("S-50K-BFF-WRITE-1 mutation BFF handlers", () => {
     expect(ports.accountantPayment.applyPayment).not.toHaveBeenCalled();
     expect(ports.directorApproval.approve).not.toHaveBeenCalled();
     expect(ports.requestItemUpdate.updateRequestItem).not.toHaveBeenCalled();
+    expect(ports.catalogRequest.updateRequestMeta).not.toHaveBeenCalled();
+    expect(ports.catalogRequest.cancelRequestItem).not.toHaveBeenCalled();
   });
 
   it("rejects missing payload without calling ports", async () => {
@@ -168,7 +230,7 @@ describe("S-50K-BFF-WRITE-1 mutation BFF handlers", () => {
     expect(JSON.stringify(result)).not.toContain("person@example.test");
   });
 
-  it("warehouse, accountant, director, and request item handlers call only injected ports", async () => {
+  it("warehouse, accountant, and director handlers call only injected ports", async () => {
     const ports = createPorts();
 
     await expect(handleWarehouseReceiveApply(ports, validInput)).resolves.toEqual(
@@ -180,14 +242,83 @@ describe("S-50K-BFF-WRITE-1 mutation BFF handlers", () => {
     await expect(handleDirectorApprovalApply(ports, validInput)).resolves.toEqual(
       expect.objectContaining({ ok: true }),
     );
-    await expect(handleRequestItemUpdate(ports, validInput)).resolves.toEqual(
-      expect.objectContaining({ ok: true }),
-    );
 
     expect(ports.warehouseReceive.applyReceive).toHaveBeenCalledTimes(1);
     expect(ports.accountantPayment.applyPayment).toHaveBeenCalledTimes(1);
     expect(ports.directorApproval.approve).toHaveBeenCalledTimes(1);
-    expect(ports.requestItemUpdate.updateRequestItem).toHaveBeenCalledTimes(1);
+  });
+
+  it("catalog request mutation handlers validate DTOs before calling injected ports", async () => {
+    const ports = createPorts();
+
+    await expect(handleRequestItemUpdate(ports, validRequestItemQtyInput)).resolves.toEqual(
+      expect.objectContaining({ ok: true }),
+    );
+    await expect(handleCatalogRequestMetaUpdate(ports, validRequestMetaInput)).resolves.toEqual(
+      expect.objectContaining({ ok: true }),
+    );
+    await expect(handleCatalogRequestItemCancel(ports, validRequestCancelInput)).resolves.toEqual(
+      expect.objectContaining({ ok: true }),
+    );
+
+    expect(ports.requestItemUpdate.updateRequestItem).toHaveBeenCalledWith({
+      idempotencyKey: "opaque-key-v1",
+      payload: validRequestItemQtyInput.payload,
+      context: validCatalogContext,
+    });
+    expect(ports.catalogRequest.updateRequestMeta).toHaveBeenCalledWith({
+      idempotencyKey: "opaque-key-v1",
+      payload: validRequestMetaInput.payload,
+      context: validCatalogContext,
+    });
+    expect(ports.catalogRequest.cancelRequestItem).toHaveBeenCalledWith({
+      idempotencyKey: "opaque-key-v1",
+      payload: validRequestCancelInput.payload,
+      context: validCatalogContext,
+    });
+  });
+
+  it("catalog request mutation handlers reject unsafe DTOs and missing auth mapping", async () => {
+    const ports = createPorts();
+    const invalidPayload = await handleRequestItemUpdate(ports, {
+      idempotencyKey: "opaque-key-v1",
+      payload: { kind: "catalog.request.item.qty.update", requestItemId: "request-item-001", qty: 0 },
+      context: validCatalogContext,
+    });
+    const missingContext = await handleCatalogRequestMetaUpdate(ports, {
+      idempotencyKey: "opaque-key-v1",
+      payload: validRequestMetaInput.payload,
+    });
+
+    expect(invalidPayload).toEqual(
+      expect.objectContaining({
+        ok: false,
+        error: expect.objectContaining({ code: "BFF_CATALOG_REQUEST_MUTATION_PAYLOAD_INVALID" }),
+      }),
+    );
+    expect(missingContext).toEqual(
+      expect.objectContaining({
+        ok: false,
+        error: expect.objectContaining({ code: "BFF_MUTATION_CONTEXT_REQUIRED" }),
+      }),
+    );
+    expect(ports.requestItemUpdate.updateRequestItem).not.toHaveBeenCalled();
+    expect(ports.catalogRequest.updateRequestMeta).not.toHaveBeenCalled();
+  });
+
+  it("catalog request DTO validators preserve typed contracts without raw payload logging", () => {
+    expect(validateCatalogRequestMetaUpdatePayload(validRequestMetaInput.payload)).toEqual(validRequestMetaInput.payload);
+    expect(validateCatalogRequestItemQtyUpdatePayload(validRequestItemQtyInput.payload)).toEqual(
+      validRequestItemQtyInput.payload,
+    );
+    expect(validateCatalogRequestItemCancelPayload(validRequestCancelInput.payload)).toEqual(
+      validRequestCancelInput.payload,
+    );
+    expect(validateCatalogRequestMetaUpdatePayload({
+      kind: "catalog.request.meta.update",
+      requestId: "request-001",
+      patch: { unexpected: "value" },
+    })).toBeNull();
   });
 
   it("port failures return generic safe errors without PII or raw error details", async () => {
@@ -258,7 +389,9 @@ describe("S-50K-BFF-WRITE-1 mutation BFF handlers", () => {
       await handleWarehouseReceiveApply(ports, validInput);
       await handleAccountantPaymentApply(ports, validInput);
       await handleDirectorApprovalApply(ports, validInput);
-      await handleRequestItemUpdate(ports, validInput);
+      await handleRequestItemUpdate(ports, validRequestItemQtyInput);
+      await handleCatalogRequestMetaUpdate(ports, validRequestMetaInput);
+      await handleCatalogRequestItemCancel(ports, validRequestCancelInput);
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       if (originalFetch) {

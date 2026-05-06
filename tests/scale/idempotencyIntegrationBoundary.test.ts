@@ -620,7 +620,7 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
     );
   });
 
-  it("defines ten disabled strict policies for high-risk mutation, job, and replay operations", () => {
+  it("defines disabled strict policies for high-risk mutation, job, and replay operations", () => {
     expect(
       IDEMPOTENCY_POLICY_REGISTRY.map((policy) => policy.operation),
     ).toEqual([
@@ -629,6 +629,8 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
       "accountant.payment.apply",
       "director.approval.apply",
       "request.item.update",
+      "catalog.request.meta.update",
+      "catalog.request.item.cancel",
       "offline.replay.bridge",
       "proposal.submit.followup",
       "warehouse.receive.postprocess",
@@ -890,6 +892,8 @@ describe("S-50K-IDEMPOTENCY-INTEGRATION-1 disabled idempotency boundary", () => 
       "accountant.payment.apply",
       "director.approval.apply",
       "request.item.update",
+      "catalog.request.meta.update",
+      "catalog.request.item.cancel",
     ]);
 
     for (const route of BFF_STAGING_MUTATION_ROUTES) {

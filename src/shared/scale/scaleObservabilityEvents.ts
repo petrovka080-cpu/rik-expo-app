@@ -276,6 +276,8 @@ export const BFF_MUTATION_OBSERVABILITY_EVENT_MAP: Record<BffMutationOperation, 
   "accountant.payment.apply": BFF_OBSERVABILITY_METADATA,
   "director.approval.apply": BFF_OBSERVABILITY_METADATA,
   "request.item.update": BFF_OBSERVABILITY_METADATA,
+  "catalog.request.meta.update": BFF_OBSERVABILITY_METADATA,
+  "catalog.request.item.cancel": BFF_OBSERVABILITY_METADATA,
 });
 
 export const CACHE_OBSERVABILITY_EVENT_MAP: Record<CachePolicyRoute, CacheObservabilityMetadata> = Object.freeze({
@@ -308,6 +310,8 @@ export const IDEMPOTENCY_OBSERVABILITY_EVENT_MAP: Record<IdempotencyPolicyOperat
   "accountant.payment.apply": IDEMPOTENCY_OBSERVABILITY_METADATA,
   "director.approval.apply": IDEMPOTENCY_OBSERVABILITY_METADATA,
   "request.item.update": IDEMPOTENCY_OBSERVABILITY_METADATA,
+  "catalog.request.meta.update": IDEMPOTENCY_OBSERVABILITY_METADATA,
+  "catalog.request.item.cancel": IDEMPOTENCY_OBSERVABILITY_METADATA,
   "offline.replay.bridge": IDEMPOTENCY_OBSERVABILITY_METADATA,
   "proposal.submit.followup": IDEMPOTENCY_OBSERVABILITY_METADATA,
   "warehouse.receive.postprocess": IDEMPOTENCY_OBSERVABILITY_METADATA,
@@ -329,6 +333,8 @@ export const RATE_LIMIT_OBSERVABILITY_EVENT_MAP: Record<RateLimitEnforcementOper
   "accountant.payment.apply": RATE_LIMIT_OBSERVABILITY_METADATA,
   "director.approval.apply": RATE_LIMIT_OBSERVABILITY_METADATA,
   "request.item.update": RATE_LIMIT_OBSERVABILITY_METADATA,
+  "catalog.request.meta.update": RATE_LIMIT_OBSERVABILITY_METADATA,
+  "catalog.request.item.cancel": RATE_LIMIT_OBSERVABILITY_METADATA,
   "notification.fanout": RATE_LIMIT_OBSERVABILITY_METADATA,
   "cache.readmodel.refresh": RATE_LIMIT_OBSERVABILITY_METADATA,
   "offline.replay.bridge": RATE_LIMIT_OBSERVABILITY_METADATA,

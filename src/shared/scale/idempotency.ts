@@ -7,6 +7,8 @@ export type IdempotentOperationKind =
   | "accountant.invoice.update"
   | "director.approval.apply"
   | "request.item.update"
+  | "catalog.request.meta.update"
+  | "catalog.request.item.cancel"
   | "pdf.report.generate"
   | "notification.fanout"
   | "cache.readModel.refresh"
@@ -62,6 +64,8 @@ export const IDEMPOTENT_OPERATION_KINDS: readonly IdempotentOperationKind[] = [
   "accountant.invoice.update",
   "director.approval.apply",
   "request.item.update",
+  "catalog.request.meta.update",
+  "catalog.request.item.cancel",
   "pdf.report.generate",
   "notification.fanout",
   "cache.readModel.refresh",
@@ -134,6 +138,26 @@ export const IDEMPOTENCY_CONTRACTS: readonly IdempotencyContract[] = [
   },
   {
     operation: "request.item.update",
+    scope: "request",
+    requiresKey: true,
+    keySource: "client_generated",
+    ttlSeconds: IDEMPOTENCY_DEFAULT_TTL_SECONDS,
+    maxReplayWindowSeconds: IDEMPOTENCY_DEFAULT_TTL_SECONDS,
+    storesRawPayload: false,
+    piiAllowedInKey: false,
+  },
+  {
+    operation: "catalog.request.meta.update",
+    scope: "request",
+    requiresKey: true,
+    keySource: "client_generated",
+    ttlSeconds: IDEMPOTENCY_DEFAULT_TTL_SECONDS,
+    maxReplayWindowSeconds: IDEMPOTENCY_DEFAULT_TTL_SECONDS,
+    storesRawPayload: false,
+    piiAllowedInKey: false,
+  },
+  {
+    operation: "catalog.request.item.cancel",
     scope: "request",
     requiresKey: true,
     keySource: "client_generated",

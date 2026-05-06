@@ -33,7 +33,9 @@ export type BffShadowFixturePortCall = {
     | "warehouseReceive"
     | "accountantPayment"
     | "directorApproval"
-    | "requestItemUpdate";
+    | "requestItemUpdate"
+    | "catalogRequestMeta"
+    | "catalogRequestCancel";
   flow: string;
   page?: number;
   pageSize?: number;

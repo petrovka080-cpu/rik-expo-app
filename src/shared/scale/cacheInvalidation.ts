@@ -37,6 +37,16 @@ export const CACHE_INVALIDATION_MAPPINGS: readonly CacheInvalidationMapping[] = 
     executionEnabledByDefault: false,
   },
   {
+    operation: "catalog.request.meta.update",
+    tags: ["request", "proposal", "buyer", "summary"],
+    executionEnabledByDefault: false,
+  },
+  {
+    operation: "catalog.request.item.cancel",
+    tags: ["request", "proposal", "buyer", "summary"],
+    executionEnabledByDefault: false,
+  },
+  {
     operation: "notification.fanout",
     tags: ["notification", "inbox", "buyer", "director"],
     executionEnabledByDefault: false,

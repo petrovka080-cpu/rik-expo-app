@@ -756,7 +756,7 @@ describe("S-50K-OBS-INTEGRATION-1 disabled scale observability boundary", () => 
     expect(BFF_STAGING_SERVER_BOUNDARY_CONTRACT).toEqual(
       expect.objectContaining({
         readRoutesWithObservabilityMetadata: 5,
-        mutationRoutesWithObservabilityMetadata: 5,
+        mutationRoutesWithObservabilityMetadata: 7,
         observabilityExternalExportEnabledByDefault: false,
       }),
     );
