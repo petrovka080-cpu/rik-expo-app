@@ -1,0 +1,96 @@
+{
+  "wave": "S-DIRECTOR-REPORTS-FETCHALL-SAFE-ROUTING-2",
+  "final_status": "GREEN_DIRECTOR_REPORTS_FETCHALL_SAFE_ROUTING_2_RELEASE_INTEGRATED",
+  "scope": "director subcontract PDF report legacy model loader",
+  "approach": "route the legacy model loader through the existing typed server PDF source contract; preserve the shared report model builder",
+  "baseline": {
+    "head_equals_origin_main_start": true,
+    "ahead_start": 0,
+    "behind_start": 0,
+    "worktree_clean_start": true
+  },
+  "target_files": [
+    "src/lib/api/pdf_director.data.ts",
+    "tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts"
+  ],
+  "before": {
+    "file": "src/lib/api/pdf_director.data.ts",
+    "function": "loadDirectorSubcontractReportPdfModel",
+    "domain_table": "subcontracts",
+    "status": "direct table select without limit/range/maxRows for full PDF report model",
+    "can_paginate_safely": false,
+    "requires_server_source_contract": true
+  },
+  "after": {
+    "file": "src/lib/api/pdf_director.data.ts",
+    "function": "loadDirectorSubcontractReportPdfModel",
+    "source_contract": "pdf_director_subcontract_source_v1",
+    "source_function": "getDirectorSubcontractPdfSource",
+    "domain_table": "server-owned director_subcontract_report source",
+    "direct_subcontracts_table_read_removed": true,
+    "report_shape_preserved": true,
+    "model_builder_preserved": "prepareDirectorSubcontractReportPdfModelFromRows",
+    "filters_preserved": [
+      "periodFrom",
+      "periodTo",
+      "objectName"
+    ],
+    "list_output_semantics": "full PDF source rows owned by typed server source contract, not client full-table loaded"
+  },
+  "safety": {
+    "business_semantics_changed": false,
+    "silent_truncation_used": false,
+    "arbitrary_limit_added": false,
+    "temporary_hooks_created": false,
+    "temporary_scripts_created": false,
+    "temporary_endpoints_created": false,
+    "production_db_written": false,
+    "migrations_applied": false,
+    "render_env_written": false,
+    "deploy_triggered": false,
+    "redeploy_triggered": false,
+    "ota_triggered": false,
+    "bff_traffic_changed": false,
+    "business_calls_made": false,
+    "secrets_printed": false,
+    "env_values_printed": false,
+    "urls_printed": false,
+    "raw_payloads_printed": false,
+    "raw_db_rows_printed": false,
+    "business_rows_printed": false
+  },
+  "verification": {
+    "targeted_tests": {
+      "command": "npx jest tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts src/lib/api/pdf_director.test.ts src/lib/api/directorPdfSource.service.test.ts tests/strict-null/directorPdfSource.service.phase3.test.ts --runInBand",
+      "status": "PASS",
+      "test_suites": 4,
+      "tests": 15
+    },
+    "typecheck": {
+      "command": "npm run verify:typecheck",
+      "status": "PASS"
+    },
+    "lint": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "release_verify_status": "PASS_POST_PUSH",
+    "health": 200,
+    "ready": 200
+  },
+  "release": {
+    "pushed": true,
+    "head_equals_origin_main_final": true,
+    "ahead_final": 0,
+    "behind_final": 0
+  },
+  "remaining_director_report_fetchall_risks": [
+    {
+      "path": "src/lib/api/director_reports.transport.facts.ts::fetchAllFactRowsFromView",
+      "status": "compatibility export only; fail-closed before DB access"
+    },
+    {
+      "path": "src/lib/api/director_reports.transport.discipline.ts::fetchAllFactRowsFromTables",
+      "status": "compatibility export only; fail-closed before DB access"
+    }
+  ]
+}

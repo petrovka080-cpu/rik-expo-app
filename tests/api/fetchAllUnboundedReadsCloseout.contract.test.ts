@@ -51,6 +51,15 @@ describe("S-FETCHALL-UNBOUNDED-READS-CLOSEOUT-1", () => {
     expect(disciplineService).toContain("loadDirectorReportTransportScope");
   });
 
+  it("keeps director subcontract PDF report model loading on the typed server source", () => {
+    const source = read("src/lib/api/pdf_director.data.ts");
+
+    expect(source).toContain("getDirectorSubcontractPdfSource");
+    expect(source).toContain("prepareDirectorSubcontractReportPdfModelFromRows(p, source.rows)");
+    expect(source).not.toContain('.from("subcontracts")');
+    expect(source).not.toContain(".from('subcontracts')");
+  });
+
   it("keeps catalog request direct Supabase bypass closed", () => {
     const source = read("src/lib/catalog/catalog.request.service.ts");
 

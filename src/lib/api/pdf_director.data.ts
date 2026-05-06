@@ -1,5 +1,4 @@
 import { listAccountantInbox } from "./accountant";
-import { supabase } from "../supabaseClient";
 import {
   addDaysIso,
   clampIso,
@@ -23,6 +22,7 @@ import type {
   FinanceRow,
   FinSpendRow,
 } from "../../screens/director/director.finance.ts";
+import { getDirectorSubcontractPdfSource } from "./directorPdfSource.service";
 
 export type DirectorSupplierSummaryPdfInput = {
   supplier: string;
@@ -1209,20 +1209,10 @@ export function prepareDirectorSubcontractReportPdfModelFromRows(
 export async function loadDirectorSubcontractReportPdfModel(
   p: DirectorSubcontractPdfInput,
 ): Promise<DirectorSubcontractReportPdfModel> {
-  const from = String(p.periodFrom ?? "").trim();
-  const to = String(p.periodTo ?? "").trim();
-  const objectName = String(p.objectName ?? "").trim() || null;
-
-  let query = supabase
-    .from("subcontracts")
-    .select("id,display_no,status,object_name,work_type,contractor_org,total_price,approved_at,submitted_at,rejected_at,director_comment")
-    .order("approved_at", { ascending: false, nullsFirst: false });
-
-  if (from) query = query.gte("created_at", `${from}T00:00:00.000Z`);
-  if (to) query = query.lte("created_at", `${to}T23:59:59.999Z`);
-  if (objectName) query = query.eq("object_name", objectName);
-
-  const { data, error } = await query;
-  if (error) throw new Error(`subcontracts lookup failed: ${error.message}`);
-  return prepareDirectorSubcontractReportPdfModelFromRows(p, Array.isArray(data) ? data : []);
+  const source = await getDirectorSubcontractPdfSource({
+    periodFrom: p.periodFrom,
+    periodTo: p.periodTo,
+    objectName: p.objectName,
+  });
+  return prepareDirectorSubcontractReportPdfModelFromRows(p, source.rows);
 }
