@@ -4,7 +4,7 @@ import {
   isAbortError,
   throwIfAborted,
 } from "../requestCancellation";
-import { type DirectorReportFetchMeta } from "./director_reports";
+import { type DirectorReportFetchMeta } from "./director_reports.service.shared";
 import {
   adaptCanonicalMaterialsPayload,
   adaptCanonicalOptionsPayload,
@@ -21,6 +21,12 @@ import {
   shouldRejectScopedEmptyMaterialsPayload,
   shouldRejectTransportScopeDisciplinePayload,
 } from "./director_reports.fallbacks";
+import {
+  DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT,
+  buildDirectorReportsAggregationRequest,
+  toDirectorReportsAggregationRpcParams,
+  type DirectorReportsAggregationRpcEnvelopeV1,
+} from "./director_reports.aggregation.contracts";
 
 const DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1 ?? "",
@@ -34,17 +40,6 @@ type DirectorReportTransportScopeFallbackReason =
   | "disabled"
   | "rpc_error"
   | "invalid_payload";
-
-type DirectorReportTransportScopeEnvelopeV1 = {
-  document_type: "director_report_transport_scope";
-  version: "v1";
-  options_payload: unknown;
-  report_payload: unknown;
-  discipline_payload?: unknown | null;
-  canonical_summary?: unknown;
-  canonical_diagnostics?: unknown;
-  priced_stage?: "base" | "priced" | null;
-};
 
 export type DirectorReportTransportScopeResult = {
   options: DirectorReportOptions;
@@ -139,16 +134,16 @@ const requireText = (value: unknown, field: string) => {
   return text;
 };
 
-const validateScopeEnvelopeV1 = (value: unknown): DirectorReportTransportScopeEnvelopeV1 => {
+const validateScopeEnvelopeV1 = (value: unknown): DirectorReportsAggregationRpcEnvelopeV1 => {
   const root = requireRecord(value, "root");
   const documentType = requireText(root.document_type, "document_type");
   const version = requireText(root.version, "version");
-  if (documentType !== "director_report_transport_scope") {
+  if (documentType !== DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT.documentType) {
     throw new DirectorReportTransportScopeValidationError(
       `director_report_transport_scope_v1 invalid document_type: ${documentType}`,
     );
   }
-  if (version !== "v1") {
+  if (version !== DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT.version) {
     throw new DirectorReportTransportScopeValidationError(
       `director_report_transport_scope_v1 invalid version: ${version}`,
     );
@@ -242,14 +237,12 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
   const startedAt = Date.now();
 
   try {
+    const request = buildDirectorReportsAggregationRequest(args);
     const { data, error } = await applySupabaseAbortSignal(
-      supabase.rpc("director_report_transport_scope_v1", {
-        p_from: args.from || undefined,
-        p_to: args.to || undefined,
-        p_object_name: args.objectName ?? undefined,
-        p_include_discipline: args.includeDiscipline,
-        p_include_costs: args.includeDiscipline ? !args.skipDisciplinePrices : false,
-      }),
+      supabase.rpc(
+        DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT.rpcName,
+        toDirectorReportsAggregationRpcParams(request),
+      ),
       args.signal,
     );
     throwIfAborted(args.signal);
@@ -300,7 +293,7 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
       optionsMeta: makeTransportMeta("options"),
       reportMeta: makeTransportMeta("report"),
       disciplineMeta: args.includeDiscipline ? makeTransportMeta("discipline", pricedStage) : null,
-      source: "transport:director_report_scope_rpc_v1",
+      source: DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT.sourceKind,
       branchMeta: {
         transportBranch: "rpc_scope_v1",
         rpcVersion: "v1",

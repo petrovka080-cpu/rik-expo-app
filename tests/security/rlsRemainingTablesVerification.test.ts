@@ -98,7 +98,7 @@ describe("RLS remaining tables verification matrix", () => {
           }),
           expect.objectContaining({
             relation:
-              "notifications/proposal_payments/proposals/request_items/requests/warehouse_issue_items/warehouse_issues",
+              "notifications/proposal_payments/proposals/request_items/requests/warehouse_issues",
             outcome: "policy too broad / too wide",
           }),
           expect.objectContaining({

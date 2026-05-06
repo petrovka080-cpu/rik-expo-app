@@ -35,14 +35,20 @@ describe("S-FETCHALL-UNBOUNDED-READS-CLOSEOUT-1", () => {
     expect(source).not.toContain("while (true)");
   });
 
-  it("documents director report full-table aggregation as remaining out-of-scope risk", () => {
+  it("closes director report full-table aggregation through the typed server contract", () => {
     const factSource = read("src/lib/api/director_reports.transport.facts.ts");
     const disciplineSource = read("src/lib/api/director_reports.transport.discipline.ts");
+    const reportService = read("src/lib/api/director_reports.service.report.ts");
+    const optionsService = read("src/lib/api/director_reports.service.options.ts");
+    const disciplineService = read("src/lib/api/director_reports.service.discipline.ts");
 
-    expect(factSource).toContain("fetchAllFactRowsFromView");
-    expect(factSource).toContain("while (true)");
-    expect(disciplineSource).toContain("fetchAllFactRowsFromTables");
-    expect(disciplineSource).toContain("while (true)");
+    expect(factSource).toContain("createDirectorReportsAggregationContractRequiredError");
+    expect(disciplineSource).toContain("createDirectorReportsAggregationContractRequiredError");
+    expect(factSource).not.toContain("while (true)");
+    expect(disciplineSource).not.toContain("while (true)");
+    expect(reportService).toContain("loadDirectorReportTransportScope");
+    expect(optionsService).toContain("loadDirectorReportTransportScope");
+    expect(disciplineService).toContain("loadDirectorReportTransportScope");
   });
 
   it("keeps catalog request direct Supabase bypass closed", () => {

@@ -4,15 +4,9 @@ import type {
   AccIssueLine,
   RequestLookupRow,
 } from "./director_reports.shared";
-import {
-  forEachChunkParallel,
-} from "./director_reports.shared";
-import { mapWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
-import { recordDirectorReportsTransportWarning } from "./director_reports.observability";
 import { runContainedRpc } from "./queryBoundary";
 import { loadCanonicalRequestsByIds } from "./requestCanonical.read";
-
-const DIRECTOR_REPORT_ISSUE_LINE_FALLBACK_CONCURRENCY_LIMIT = 6;
+import { createDirectorReportsAggregationContractRequiredError } from "./director_reports.aggregation.contracts";
 
 async function runTypedRpc<TRow>(
   fnName:
@@ -66,86 +60,15 @@ async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<RequestLo
   return result.rows;
 }
 
-async function fetchIssueHeadsViaAccRpc(p: {
+async function fetchIssueHeadsViaAccRpc(_p: {
   from: string;
   to: string;
 }): Promise<AccIssueHead[]> {
-  const { data, error } = await runTypedRpc<AccIssueHead>("acc_report_issues_v2", {
-    p_from: p.from || "1970-01-01",
-    p_to: p.to || "2099-12-31",
-  });
-  if (error) throw error;
-  return Array.isArray(data) ? data : [];
+  throw createDirectorReportsAggregationContractRequiredError("director issue heads acc rpc fallback");
 }
 
-async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLine[]> {
-  const ids = Array.from(
-    new Set(
-      issueIds
-        .map((id) => String(id || "").trim())
-        .filter(Boolean),
-    ),
-  );
-  if (!ids.length) return [];
-
-  const numericIds = Array.from(
-    new Set(
-      ids
-        .map((id) => Number(id))
-        .filter((id) => Number.isFinite(id)),
-    ),
-  );
-  if (numericIds.length) {
-    try {
-      const batched: AccIssueLine[] = [];
-      await forEachChunkParallel(numericIds, 500, 4, async (part) => {
-        const { data, error } = await runTypedRpc<AccIssueLine>("director_report_fetch_acc_issue_lines_v1", {
-          p_issue_ids: part,
-        });
-        if (error) throw error;
-        if (Array.isArray(data)) batched.push(...data);
-      });
-      return batched;
-    } catch (error) {
-      recordDirectorReportsTransportWarning("issue_lines_acc_batch_rpc_failed", error, {
-        issueIdCount: numericIds.length,
-        source: "director_report_fetch_acc_issue_lines_v1",
-        fallbackTarget: "acc_report_issue_lines",
-      });
-    }
-  }
-
-  const settled = await mapWithConcurrencyLimit(
-    ids,
-    DIRECTOR_REPORT_ISSUE_LINE_FALLBACK_CONCURRENCY_LIMIT,
-    async (id) => {
-      try {
-        const numId = Number(id);
-        if (isNaN(numId)) return [] as AccIssueLine[];
-
-        const { data, error } = await runTypedRpc<AccIssueLine>("acc_report_issue_lines", {
-          p_issue_id: numId,
-        });
-        if (error) {
-          recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", error, {
-            issueId: id,
-            source: "acc_report_issue_lines",
-          });
-          return [] as AccIssueLine[];
-        }
-        return Array.isArray(data) ? (data as AccIssueLine[]) : [];
-      } catch (error) {
-        recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", error, {
-          issueId: id,
-          source: "acc_report_issue_lines",
-        });
-        return [] as AccIssueLine[];
-      }
-    },
-  );
-  const out: AccIssueLine[] = [];
-  for (const rows of settled) if (rows) out.push(...rows);
-  return out;
+async function fetchIssueLinesViaAccRpc(_issueIds: string[]): Promise<AccIssueLine[]> {
+  throw createDirectorReportsAggregationContractRequiredError("director issue lines acc rpc fallback");
 }
 
 export {

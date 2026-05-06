@@ -1,0 +1,273 @@
+{
+  "wave": "S-FETCHALL-DIRECTOR-REPORTS-SERVER-SIDE-AGGREGATION-CONTRACTS-1",
+  "final_status": "BLOCKED_RENDER_AUTODEPLOY_UNSAFE",
+  "implementation_status": "permanent_director_reports_server_side_aggregation_contract_done",
+  "approvals_present": {
+    "S_DIRECTOR_REPORTS_FETCHALL_CLOSEOUT_APPROVED": true,
+    "S_SERVER_SIDE_AGGREGATION_CONTRACTS_APPROVED": true,
+    "S_FETCHALL_UNBOUNDED_READS_CLOSEOUT_APPROVED": true,
+    "S_PRODUCTION_MAIN_PUSH_APPROVED": true
+  },
+  "head_equals_origin_main_start": true,
+  "head_equals_origin_main": false,
+  "ahead": 1,
+  "behind": 0,
+  "worktree_clean_start": true,
+  "worktree_clean": true,
+  "render_auto_deploy": "unknown_unverified_local_render_api_env_missing",
+  "deploy_in_progress": "unknown_unverified_local_render_api_env_missing",
+  "health": 200,
+  "ready": 200,
+  "render_safety_probe": {
+    "render_metadata_readable": false,
+    "blocker": "render_api_env_missing",
+    "base_url_available": true,
+    "base_url_source": "prior_production_bff_prefight_artifact",
+    "health_checked_live": true,
+    "ready_checked_live": true,
+    "raw_payload_printed": false,
+    "url_printed_by_probe": false,
+    "env_values_printed_by_probe": false
+  },
+  "target_files": [
+    "src/lib/api/director_reports.aggregation.contracts.ts",
+    "src/lib/api/directorReportsTransport.service.ts",
+    "src/lib/api/director_reports.service.options.ts",
+    "src/lib/api/director_reports.service.report.ts",
+    "src/lib/api/director_reports.service.discipline.ts",
+    "src/lib/api/director_reports.transport.base.ts",
+    "src/lib/api/director_reports.transport.facts.ts",
+    "src/lib/api/director_reports.transport.discipline.ts",
+    "src/lib/api/director_reports.transport.production.ts",
+    "src/lib/api/director_reports.transport.base.fanout.test.ts",
+    "src/lib/api/director_reports.transport.discipline.fanout.test.ts",
+    "src/lib/api/director_reports.transport.production.fanout.test.ts",
+    "tests/api/directorReportsAggregationContracts.contract.test.ts",
+    "tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+    "tests/security/rlsRemainingTablesVerification.test.ts"
+  ],
+  "director_reports_fetchall_before": [
+    {
+      "file": "src/lib/api/director_reports.service.options.ts",
+      "function": "fetchDirectorWarehouseReportOptionsTracked",
+      "purpose": "build director report object options from full fact rows when canonical options RPC was unavailable",
+      "expected_report_shape": "DirectorReportOptions with objects and objectIdByName",
+      "current_bounded_unbounded_status": "unbounded fallback read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.service.report.ts",
+      "function": "fetchDirectorWarehouseReportTracked",
+      "purpose": "build material report payload, KPIs, rows, and linked discipline summary from full fact rows",
+      "expected_report_shape": "DirectorReportPayload",
+      "current_bounded_unbounded_status": "unbounded fallback read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.service.discipline.ts",
+      "function": "fetchDirectorWarehouseReportDisciplineTracked",
+      "purpose": "build discipline work/location/material report with optional cost enrichment from full fact rows",
+      "expected_report_shape": "DirectorDisciplinePayload",
+      "current_bounded_unbounded_status": "unbounded fallback read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.facts.ts",
+      "function": "fetchDirectorFactViaAccRpc",
+      "purpose": "legacy director fact row fallback for report aggregation",
+      "expected_report_shape": "DirectorFactRow[] feeding aggregate report shapes",
+      "current_bounded_unbounded_status": "unbounded list read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.facts.ts",
+      "function": "fetchAllFactRowsFromView",
+      "purpose": "view-backed full fact row fallback for report aggregation",
+      "expected_report_shape": "DirectorFactRow[] feeding aggregate report shapes",
+      "current_bounded_unbounded_status": "fetchAll/unbounded list read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "function": "fetchDirectorDisciplineSourceRowsViaRpc",
+      "purpose": "source row fallback for material and discipline aggregation",
+      "expected_report_shape": "DirectorFactRow[] feeding material and discipline report shapes",
+      "current_bounded_unbounded_status": "unbounded list read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "function": "fetchAllFactRowsFromTables",
+      "purpose": "table-backed full fact row fallback for options/report aggregation",
+      "expected_report_shape": "DirectorFactRow[] feeding aggregate report shapes",
+      "current_bounded_unbounded_status": "fetchAll/unbounded list read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "function": "fetchDisciplineFactRowsFromTables",
+      "purpose": "table-backed full fact row fallback for scoped report aggregation",
+      "expected_report_shape": "DirectorFactRow[] feeding aggregate report shapes",
+      "current_bounded_unbounded_status": "unbounded list read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "function": "fetchFactRowsForDiscipline",
+      "purpose": "select the first available full-row source for discipline aggregation",
+      "expected_report_shape": "DirectorFactRow[] plus source metadata",
+      "current_bounded_unbounded_status": "unbounded list read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.base.ts",
+      "function": "fetchIssueHeadsViaAccRpc / fetchIssueLinesViaAccRpc",
+      "purpose": "legacy issue head and line fan-out fallback for row aggregation",
+      "expected_report_shape": "AccIssueHead[] and AccIssueLine[] feeding aggregate report shapes",
+      "current_bounded_unbounded_status": "fallback list/fan-out read before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.production.ts",
+      "function": "fetchDirectorIssuePriceMaps",
+      "purpose": "price map enrichment for director discipline totals",
+      "expected_report_shape": "price maps keyed by request item and material code",
+      "current_bounded_unbounded_status": "large fixed-limit table fallback before this wave",
+      "can_paginate_safely": false,
+      "requires_aggregation": true
+    }
+  ],
+  "director_reports_fetchall_after": [
+    {
+      "file": "src/lib/api/directorReportsTransport.service.ts",
+      "function": "loadDirectorReportTransportScope",
+      "status": "typed server-side aggregation RPC contract",
+      "contract": "director_report_transport_scope_v1"
+    },
+    {
+      "file": "src/lib/api/director_reports.service.options.ts",
+      "function": "fetchDirectorWarehouseReportOptionsTracked",
+      "status": "delegates to loadDirectorReportTransportScope; no client fetchAll"
+    },
+    {
+      "file": "src/lib/api/director_reports.service.report.ts",
+      "function": "fetchDirectorWarehouseReportTracked",
+      "status": "delegates to loadDirectorReportTransportScope; no client fetchAll"
+    },
+    {
+      "file": "src/lib/api/director_reports.service.discipline.ts",
+      "function": "fetchDirectorWarehouseReportDisciplineTracked",
+      "status": "delegates to loadDirectorReportTransportScope; no client fetchAll"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.facts.ts",
+      "function": "fetchDirectorFactViaAccRpc / fetchAllFactRowsFromView",
+      "status": "compatibility exports fail closed before DB access"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "function": "fetchDirectorDisciplineSourceRowsViaRpc / fetchAllFactRowsFromTables / fetchDisciplineFactRowsFromTables / fetchFactRowsForDiscipline",
+      "status": "compatibility exports fail closed before DB access"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.base.ts",
+      "function": "fetchIssueHeadsViaAccRpc / fetchIssueLinesViaAccRpc",
+      "status": "compatibility exports fail closed before DB access"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.production.ts",
+      "function": "fetchDirectorIssuePriceMaps",
+      "status": "uses director_report_fetch_issue_price_scope_v1; no purchase/proposal table fallback"
+    }
+  ],
+  "aggregation_contracts_added": [
+    {
+      "file": "src/lib/api/director_reports.aggregation.contracts.ts",
+      "request_dto": "DirectorReportsAggregationRequestDto",
+      "response_dto": "DirectorReportsAggregationResponseDto",
+      "rpc_params_dto": "DirectorReportsAggregationRpcParamsV1",
+      "rpc_envelope_dto": "DirectorReportsAggregationRpcEnvelopeV1",
+      "error_envelope": "DirectorReportsAggregationErrorEnvelope",
+      "filters": [
+        "period.from",
+        "period.to",
+        "objectName",
+        "companyId",
+        "userId"
+      ],
+      "scopes": [
+        "period",
+        "company",
+        "user",
+        "object"
+      ],
+      "deterministic_ordering": true,
+      "aggregation_semantics": true,
+      "no_silent_truncation": true
+    }
+  ],
+  "report_shapes_preserved": true,
+  "filters_preserved": true,
+  "period_mapping_preserved": true,
+  "server_side_aggregation_paths": [
+    "director_report_transport_scope_v1",
+    "director_report_fetch_issue_price_scope_v1"
+  ],
+  "remaining_fetchall_paths": [
+    "src/lib/api/director_reports.transport.facts.ts::fetchAllFactRowsFromView",
+    "src/lib/api/director_reports.transport.discipline.ts::fetchAllFactRowsFromTables"
+  ],
+  "remaining_fetchall_reason": "Compatibility export names remain for import stability only; each path throws DirectorReportsAggregationContractRequiredError before any DB call.",
+  "silent_truncation_used": false,
+  "temporary_hooks_created": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "tests_passed": {
+    "director_reports_aggregation_contract_tests": "PASS",
+    "director_reports_shape_compatibility_tests": "PASS",
+    "filter_period_company_mapping_tests": "PASS",
+    "error_envelope_tests": "PASS",
+    "no_raw_db_rows_log_payloads_tests": "PASS",
+    "targeted_fetchall_unbounded_read_tests": "PASS",
+    "performance_budget_guard_tests": "PASS",
+    "rls_remaining_inventory_tests": "PASS",
+    "targeted_jest_suites": 16,
+    "targeted_jest_tests": 93
+  },
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "release_verify_status": "FAIL_EXPECTED_LOCAL_AHEAD_ONLY",
+  "release_verify_exit_code": 1,
+  "release_verify_internal_gates": {
+    "tsc": "PASS",
+    "expo_lint": "PASS",
+    "jest_run_in_band": "PASS",
+    "jest": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "release_verify_readiness_blockers": [
+    "local_ahead_1_behind_0_push_with_explicit_approval_required"
+  ],
+  "artifact_json_parse": "PASS",
+  "pushed": false
+}

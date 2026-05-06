@@ -113,6 +113,9 @@ describe("performance budget — bundle module count", () => {
     const sDirectSupabaseBypassCatalogRequestBoundaryFiles = [
       path.join(SRC, "lib", "catalog", "catalog.request.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sFetchAllDirectorReportsAggregationContractFiles = [
+      path.join(SRC, "lib", "api", "director_reports.aggregation.contracts.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -161,6 +164,8 @@ describe("performance budget — bundle module count", () => {
     // S-AI-WORKFLOW-2 adds three disabled-by-default advisory AI pilot modules.
     // S-PDF-INSTANT-FIRST-OPEN-AND-TOP-LAYER-FIX-1 adds one permanent cache service module.
     // S-DIRECT-SUPABASE-BYPASS-ELIMINATION-1 adds one permanent catalog request read transport boundary.
+    // S-FETCHALL-DIRECTOR-REPORTS-SERVER-SIDE-AGGREGATION-CONTRACTS-1 adds one permanent
+    // director reports server-side aggregation contract module.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -168,6 +173,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiWorkflow2DisabledPilotFiles).toBeLessThanOrEqual(3);
     expect(sPdfInstantFirstOpenCacheFiles).toBeLessThanOrEqual(1);
     expect(sDirectSupabaseBypassCatalogRequestBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sFetchAllDirectorReportsAggregationContractFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -176,7 +182,8 @@ describe("performance budget — bundle module count", () => {
         s50kBffBoundaryScaffoldFiles -
         sAiWorkflow2DisabledPilotFiles -
         sPdfInstantFirstOpenCacheFiles -
-        sDirectSupabaseBypassCatalogRequestBoundaryFiles,
+        sDirectSupabaseBypassCatalogRequestBoundaryFiles -
+        sFetchAllDirectorReportsAggregationContractFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

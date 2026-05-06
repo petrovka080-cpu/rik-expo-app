@@ -1,20 +1,18 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-describe("director_reports.transport.discipline fan-out budget", () => {
+describe("director_reports.transport.discipline aggregation contract closeout", () => {
   const source = readFileSync(join(__dirname, "director_reports.transport.discipline.ts"), "utf8");
 
-  it("keeps table fallback lookup chunks on the shared report budget", () => {
-    expect(source).toContain("const DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE = 500;");
-    expect(source).toContain("const DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT = 4;");
+  it("keeps removed table fan-out fallbacks fail-closed behind the server aggregation contract", () => {
+    expect(source).toContain("createDirectorReportsAggregationContractRequiredError");
+    expect(source).toContain("director discipline table fallback");
+    expect(source).toContain("director discipline row fallback");
 
-    const chunkedLookupCalls = source.match(/forEachChunkParallel\(/g) ?? [];
-    const budgetUsages = source.match(/DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT/g) ?? [];
-    const chunkSizeUsages = source.match(/DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE/g) ?? [];
-
-    expect(chunkedLookupCalls).toHaveLength(7);
-    expect(budgetUsages).toHaveLength(chunkedLookupCalls.length + 1);
-    expect(chunkSizeUsages).toHaveLength(chunkedLookupCalls.length + 1);
-    expect(source).not.toMatch(/forEachChunkParallel\([\s\S]*?\n\s*500,\s*[46],/);
+    expect(source).not.toContain("forEachChunkParallel(");
+    expect(source).not.toContain("DIRECTOR_DISCIPLINE_LOOKUP_CHUNK_SIZE");
+    expect(source).not.toContain("DIRECTOR_DISCIPLINE_TABLE_LOOKUP_CONCURRENCY_LIMIT");
+    expect(source).not.toContain(".from(\"warehouse_issues\"");
+    expect(source).not.toContain(".from(\"warehouse_issue_items\"");
   });
 });
