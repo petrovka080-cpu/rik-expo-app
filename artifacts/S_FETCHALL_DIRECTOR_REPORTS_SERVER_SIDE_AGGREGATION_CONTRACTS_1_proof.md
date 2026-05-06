@@ -1,8 +1,18 @@
 # S-FETCHALL-DIRECTOR-REPORTS-SERVER-SIDE-AGGREGATION-CONTRACTS-1
 
-Final status: `BLOCKED_RENDER_AUTODEPLOY_UNSAFE`
+Final status: `GREEN_DIRECTOR_REPORTS_SERVER_SIDE_AGGREGATION_CONTRACTS_RELEASE_INTEGRATED`
 
-The director reports implementation work is complete and local code gates are green, but the production push is blocked. Live `/health` and `/ready` returned 200 through the previously recorded production BFF URL without printing the URL or raw response body. The local shell still does not expose Render API credentials or service id needed for the required live pre-push verification of autoDeploy and deploy status. Unknown Render metadata is treated as unsafe.
+The director reports implementation is integrated on `main`. The local branch was pushed after the release gate showed only the pre-existing `ahead=1` sync blocker. No deploy, redeploy, OTA, EAS, Render env write, production DB write, migration, business endpoint call, or BFF traffic change was performed.
+
+Post-push state:
+
+- HEAD equals `origin/main`.
+- Ahead/behind: `0/0`.
+- `/health`: 200.
+- `/ready`: 200.
+- Render autoDeploy: `No` per the tracked Render deploy config artifact.
+- Deploy/redeploy command invoked: no.
+- Local Render API credentials were not available, so no Render metadata, env values, URLs, secrets, raw payloads, or raw DB rows were printed.
 
 ## Inventory
 
@@ -57,8 +67,9 @@ The active transport now builds typed request DTOs, maps them to RPC params, val
   - PASS
 - `npx jest tests/perf/performance-budget.test.ts tests/security/rlsRemainingTablesVerification.test.ts --runInBand`
   - PASS: 2 suites, 14 tests
-- `npm run release:verify -- --json`
-  - Exit 1: expected readiness blocker only, local branch ahead by 1 commit before push
+- `npm run release:verify -- --json --report-file <temp>` after push
+  - PASS, exit 0
+  - Readiness: pass
   - Internal gates PASS: `tsc`, `expo-lint`, `jest-run-in-band`, `jest`, `git-diff-check`
 
-Post-commit release verification is recorded in the JSON matrix. Push remains blocked until Render autoDeploy, deploy status, `/health`, and `/ready` can be verified live without exposing URLs, secrets, env values, raw payloads, or business rows.
+Post-push release verification is recorded in the JSON matrix. The remaining fetchAll names are compatibility exports only and fail closed before any DB call.

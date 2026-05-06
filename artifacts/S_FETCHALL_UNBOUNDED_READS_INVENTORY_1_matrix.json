@@ -1,0 +1,344 @@
+{
+  "wave": "S-FETCHALL-UNBOUNDED-READS-INVENTORY-1",
+  "final_status": "GREEN_FETCHALL_UNBOUNDED_READS_INVENTORY_READY",
+  "blocked_reason": null,
+  "approach": "static inventory only; no business endpoint calls; no DB reads/writes; no deploy/redeploy; no Render env writes",
+  "git_baseline": {
+    "branch": "main",
+    "head": "ce428b0c957d60120b5c686e52730f3b5c164f62",
+    "origin_main": "ce428b0c957d60120b5c686e52730f3b5c164f62",
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean_before_artifacts": true
+  },
+  "scan_scope": {
+    "runtime_src": true,
+    "app_routes": true,
+    "supabase_functions": true,
+    "scripts_non_runtime": true,
+    "tests_non_runtime": true,
+    "raw_business_rows_printed": false,
+    "raw_db_rows_printed": false,
+    "raw_payloads_printed": false,
+    "secrets_printed": false
+  },
+  "raw_pattern_counts": {
+    "src": {
+      "files_with_patterns": 91,
+      "select_calls": 302,
+      "while_true": 8,
+      "fetchAll_substring": 6,
+      "loadAll_word": 7,
+      "getAll_word": 0
+    },
+    "app": {
+      "files_with_patterns": 4,
+      "select_calls": 4,
+      "while_true": 0,
+      "fetchAll_substring": 0,
+      "loadAll_word": 0,
+      "getAll_word": 0
+    },
+    "supabase_functions": {
+      "files_with_patterns": 7,
+      "select_calls": 17,
+      "while_true": 0,
+      "fetchAll_substring": 0,
+      "loadAll_word": 0,
+      "getAll_word": 0
+    },
+    "scripts_non_runtime": {
+      "files_with_patterns": 82,
+      "select_calls": 347,
+      "while_true": 6,
+      "fetchAll_substring": 6,
+      "loadAll_word": 0,
+      "getAll_word": 0
+    },
+    "tests_non_runtime": {
+      "files_with_patterns": 8,
+      "select_calls": 33,
+      "while_true": 5,
+      "fetchAll_substring": 2,
+      "loadAll_word": 0,
+      "getAll_word": 0
+    }
+  },
+  "risk_groups": [
+    {
+      "group": "director_reports.*",
+      "status": "mostly_closed_for_director_reports_transport; one related director PDF report remains uncapped",
+      "findings": [
+        "src/lib/api/director_reports.transport.facts.ts fetchAllFactRowsFromView is fail-closed through DirectorReportsAggregationContractRequiredError",
+        "src/lib/api/director_reports.transport.discipline.ts fetchAllFactRowsFromTables is fail-closed through DirectorReportsAggregationContractRequiredError",
+        "src/lib/api/director_reports.service.report.ts, service.options.ts, service.discipline.ts use loadDirectorReportTransportScope typed server aggregation contract",
+        "src/lib/api/pdf_director.data.ts loadDirectorSubcontractReportPdfModel still selects subcontracts for the full PDF model without limit/range/maxRows"
+      ],
+      "suggested_next_wave": "S-DIRECTOR-REPORTS-PDF-SERVER-SIDE-AGGREGATION-CONTRACTS-1"
+    },
+    {
+      "group": "catalog.transport.ts",
+      "status": "bounded_for_reference_lists; scoped child incoming list lacks explicit ceiling",
+      "findings": [
+        "catalog reference list functions use loadPagedRowsWithCeiling and CATALOG_SAFE_LIST_PAGE_DEFAULTS maxRows=5000",
+        "search fallback functions use normalizePage plus range",
+        "loadIncomingItemRows is scoped by wh_incoming_items_clean.incoming_id but has no limit/range/maxRows"
+      ],
+      "suggested_next_wave": "S-CATALOG-INCOMING-ITEMS-CHILD-LIST-CEILING-1"
+    },
+    {
+      "group": "catalog.request.*",
+      "status": "bounded",
+      "findings": [
+        "loadCatalogRequestItemRows uses loadPagedRowsWithCeiling with CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS maxRows=5000",
+        "loadCatalogRequestItemStatusRows uses loadPagedRowsWithCeiling with maxRows=5000",
+        "loadCatalogForemanRequestRowsByName and loadCatalogForemanRequestRowsByCreatedBy use clamped limit <=200",
+        "loadCatalogRequestExtendedMetaSampleRows is explicit sample/probe with limit(1)"
+      ],
+      "suggested_next_wave": "none_for_unbounded_inventory"
+    },
+    {
+      "group": "useWarehouseLifecycle.ts",
+      "status": "no_direct_supabase_unbounded_read",
+      "findings": [
+        "loadAll is an orchestrator for fetchToReceive and fetchStock only",
+        "no direct select/range/limit/fetchAll in the hook"
+      ],
+      "suggested_next_wave": "none_for_unbounded_inventory"
+    },
+    {
+      "group": "warehouse.dicts.repo",
+      "status": "bounded",
+      "findings": [
+        "fetchWarehouseDictRows and fetchWarehouseRefRows use loadPagedRowsWithCeiling with WAREHOUSE_DICT_PAGE_DEFAULTS maxRows=5000",
+        "probeWarehouseObjectTypes uses limit(1)"
+      ],
+      "suggested_next_wave": "none_for_unbounded_inventory"
+    },
+    {
+      "group": "contractor/data files",
+      "status": "bounded_for_reference_enrichment; legacy screen bundle has finite caps that should be contract-labeled",
+      "findings": [
+        "contractor.data.ts uses loadPagedRowsWithCeiling with CONTRACTOR_LIST_PAGE_DEFAULTS maxRows=5000",
+        "contractor.workModalService.ts and contractor.actBuilderOpenService.ts use loadPagedRowsWithCeiling with maxRows=5000 for reference lookups",
+        "contractor.resolvers.ts uses maybeSingle lookups only",
+        "contractor.loadWorksService.ts legacy bundle uses limit(500) for approved subcontracts and range(page.from,page.to) for v_works_fact; this is bounded but should be explicit preview/window contract if it remains user-facing"
+      ],
+      "suggested_next_wave": "S-CONTRACTOR-WORKS-LEGACY-LIST-CONTRACT-1"
+    },
+    {
+      "group": "other unbounded files",
+      "status": "remaining_runtime_risks_found",
+      "findings": [
+        "src/screens/subcontracts/subcontracts.shared.ts collectAllPages loops pages until hasMore=false with no maxRows/maxPages",
+        "src/screens/buyer/buyer.fetchers.ts loadBuyerInboxData scans buyer_summary_inbox_scope_v1 pages until hasMore=false with no maxPages/maxRows",
+        "src/lib/api/buyer.ts listBuyerInbox primary RPC is unwindowed and fallback uses limit(500) without a typed preview/window contract",
+        "src/components/foreman/useCalcFields.ts and src/screens/foreman/foreman.dicts.repo.ts while(true) readers use range but no maxRows ceiling",
+        "src/screens/profile/profile.services.ts loadCompanyMembershipRows uses range pages but no maxRows ceiling",
+        "src/lib/api/suppliers.ts listSupplierFiles and src/lib/files.ts listSupplierFilesMeta can list supplier_files without a default ceiling when caller omits limit",
+        "supabase/functions/foreman-request-pdf/index.ts has request_items PDF child-list reads without an explicit range/ceiling",
+        "app/(tabs)/request/[id].tsx select(*) is single-row by id and not a list risk"
+      ],
+      "suggested_next_wave": "S-REMAINING-TRUE-LIST-READS-SAFE-ROUTING-1"
+    }
+  ],
+  "top_risk_inventory": [
+    {
+      "file": "src/lib/api/director_reports.transport.facts.ts",
+      "function": "fetchAllFactRowsFromView",
+      "purpose": "legacy director report fact view fallback",
+      "domain_table": "director_report_fact_view",
+      "has_limit_range_maxPages": "not_applicable_fail_closed",
+      "requires_aggregation": true,
+      "current_status": "fail_closed_typed_aggregation_contract_required",
+      "suggested_next_wave": "none_for_fetchAll_transport"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "function": "fetchAllFactRowsFromTables",
+      "purpose": "legacy director discipline table aggregation fallback",
+      "domain_table": "director_report_fact_tables",
+      "has_limit_range_maxPages": "not_applicable_fail_closed",
+      "requires_aggregation": true,
+      "current_status": "fail_closed_typed_aggregation_contract_required",
+      "suggested_next_wave": "none_for_fetchAll_transport"
+    },
+    {
+      "file": "src/lib/api/pdf_director.data.ts",
+      "function": "loadDirectorSubcontractReportPdfModel",
+      "purpose": "director subcontract PDF report model",
+      "domain_table": "subcontracts",
+      "has_limit_range_maxPages": "no",
+      "requires_aggregation": true,
+      "current_status": "unbounded_select_full_report",
+      "suggested_next_wave": "S-DIRECTOR-REPORTS-PDF-SERVER-SIDE-AGGREGATION-CONTRACTS-1"
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.ts",
+      "function": "collectAllPages",
+      "purpose": "compat full list collector for subcontracts and subcontract items",
+      "domain_table": "subcontracts,subcontract_items",
+      "has_limit_range_maxPages": "range_yes_maxPages_no_maxRows_no",
+      "requires_aggregation": false,
+      "current_status": "bounded_pages_but_unbounded_total",
+      "suggested_next_wave": "S-SUBCONTRACTS-COLLECTALL-SAFE-ROUTING-1"
+    },
+    {
+      "file": "src/screens/buyer/buyer.fetchers.ts",
+      "function": "loadBuyerInboxData",
+      "purpose": "buyer inbox full grouped scan",
+      "domain_table": "buyer_summary_inbox_scope_v1",
+      "has_limit_range_maxPages": "page_limit_yes_maxPages_no_maxRows_no",
+      "requires_aggregation": true,
+      "current_status": "backend_paged_but_collects_all_groups",
+      "suggested_next_wave": "S-BUYER-INBOX-FULL-SCAN-SAFE-ROUTING-1"
+    },
+    {
+      "file": "src/lib/api/buyer.ts",
+      "function": "listBuyerInbox",
+      "purpose": "legacy buyer inbox API compatibility",
+      "domain_table": "list_buyer_inbox,request_items",
+      "has_limit_range_maxPages": "rpc_unwindowed; fallback_limit_500",
+      "requires_aggregation": true,
+      "current_status": "unwindowed_rpc_primary_and_finite_fallback_without_explicit_preview_contract",
+      "suggested_next_wave": "S-BUYER-INBOX-FULL-SCAN-SAFE-ROUTING-1"
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.ts",
+      "function": "loadIncomingItemRows",
+      "purpose": "incoming child item list",
+      "domain_table": "wh_incoming_items_clean",
+      "has_limit_range_maxPages": "no",
+      "requires_aggregation": false,
+      "current_status": "scoped_by_incoming_id_but_uncapped",
+      "suggested_next_wave": "S-CATALOG-INCOMING-ITEMS-CHILD-LIST-CEILING-1"
+    },
+    {
+      "file": "src/components/foreman/useCalcFields.ts",
+      "function": "fetchCalcFieldRows",
+      "purpose": "work-type calc field dictionary",
+      "domain_table": "v_reno_calc_fields_ui_clean,v_reno_calc_fields_ui",
+      "has_limit_range_maxPages": "range_yes_maxRows_no",
+      "requires_aggregation": false,
+      "current_status": "paged_loop_without_total_ceiling",
+      "suggested_next_wave": "S-REFERENCE-LISTS-PAGE-CEILING-1"
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "function": "loadPagedForemanRows",
+      "purpose": "foreman reference dictionaries",
+      "domain_table": "ref_object_types,ref_levels,ref_systems,ref_zones,rik_apps,rik_item_apps",
+      "has_limit_range_maxPages": "range_yes_maxRows_no",
+      "requires_aggregation": false,
+      "current_status": "paged_loop_without_total_ceiling",
+      "suggested_next_wave": "S-REFERENCE-LISTS-PAGE-CEILING-1"
+    },
+    {
+      "file": "src/screens/profile/profile.services.ts",
+      "function": "loadCompanyMembershipRows",
+      "purpose": "current user company membership list",
+      "domain_table": "company_members",
+      "has_limit_range_maxPages": "range_yes_maxRows_no",
+      "requires_aggregation": false,
+      "current_status": "user_scoped_paged_loop_without_total_ceiling",
+      "suggested_next_wave": "S-PROFILE-MEMBERSHIP-LIST-CEILING-1"
+    },
+    {
+      "file": "src/lib/api/suppliers.ts",
+      "function": "listSupplierFiles",
+      "purpose": "supplier file metadata list",
+      "domain_table": "supplier_files",
+      "has_limit_range_maxPages": "no",
+      "requires_aggregation": false,
+      "current_status": "supplier_scoped_list_without_default_ceiling",
+      "suggested_next_wave": "S-SUPPLIER-FILES-LIST-DEFAULT-LIMIT-1"
+    },
+    {
+      "file": "src/lib/files.ts",
+      "function": "listSupplierFilesMeta",
+      "purpose": "supplier file metadata list",
+      "domain_table": "supplier_files",
+      "has_limit_range_maxPages": "optional_limit_only",
+      "requires_aggregation": false,
+      "current_status": "caller_may_omit_limit",
+      "suggested_next_wave": "S-SUPPLIER-FILES-LIST-DEFAULT-LIMIT-1"
+    },
+    {
+      "file": "src/screens/contractor/contractor.loadWorksService.ts",
+      "function": "loadContractorWorksBundleLegacyInternal",
+      "purpose": "legacy contractor works bundle",
+      "domain_table": "subcontracts,v_works_fact",
+      "has_limit_range_maxPages": "limit_500_and_range_yes",
+      "requires_aggregation": false,
+      "current_status": "bounded_but_contract_should_label_window_or_preview",
+      "suggested_next_wave": "S-CONTRACTOR-WORKS-LEGACY-LIST-CONTRACT-1"
+    },
+    {
+      "file": "supabase/functions/foreman-request-pdf/index.ts",
+      "function": "request PDF model builder",
+      "purpose": "foreman request PDF child item list",
+      "domain_table": "request_items",
+      "has_limit_range_maxPages": "no",
+      "requires_aggregation": false,
+      "current_status": "server_function_pdf_child_list_without_ceiling",
+      "suggested_next_wave": "S-PDF-CHILD-LISTS-CEILING-CONTRACTS-1"
+    }
+  ],
+  "safe_inventory_highlights": [
+    {
+      "file": "src/lib/api/_core.ts",
+      "function": "loadPagedRowsWithCeiling",
+      "contract": "range pages with maxRows fail-closed error instead of silent truncation"
+    },
+    {
+      "file": "src/lib/store_supabase.ts",
+      "functions": ["listRequestItems", "listDirectorInbox", "listApprovedByRequest"],
+      "status": "uses loadPagedRowsWithCeiling with maxRows=5000"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.ts",
+      "functions": ["fetchWarehouseIncomingLedgerRows", "fetchWarehouseIncomingLineRows"],
+      "status": "uses loadPagedRowsWithCeiling with maxRows=5000"
+    },
+    {
+      "file": "src/screens/warehouse/hooks/useWarehouseLifecycle.ts",
+      "function": "loadAll",
+      "status": "orchestrator only; no direct list read"
+    },
+    {
+      "file": "app/(tabs)/request/[id].tsx",
+      "function": "RequestDetails",
+      "status": "single-row by id"
+    }
+  ],
+  "safety_flags": {
+    "code_changed": false,
+    "business_calls_made": false,
+    "production_db_written": false,
+    "migrations_applied": false,
+    "temporary_hooks_created": false,
+    "temporary_scripts_created": false,
+    "temporary_endpoints_created": false,
+    "render_env_written": false,
+    "deploy_triggered": false,
+    "redeploy_triggered": false,
+    "commit_created": false,
+    "pushed": false,
+    "silent_truncation_added": false
+  },
+  "gates": {
+    "release_verify_command": "npm run release:verify -- --json --report-file <temp>",
+    "release_verify_exit_code": 0,
+    "release_verify_status": "PASS",
+    "release_verify_internal_gates": {
+      "tsc": "passed",
+      "expo-lint": "passed",
+      "jest-run-in-band": "passed",
+      "jest": "passed",
+      "git-diff-check": "passed"
+    },
+    "release_verify_blocker": null,
+    "git_diff_check": "passed",
+    "artifact_json_parse": "passed"
+  }
+}

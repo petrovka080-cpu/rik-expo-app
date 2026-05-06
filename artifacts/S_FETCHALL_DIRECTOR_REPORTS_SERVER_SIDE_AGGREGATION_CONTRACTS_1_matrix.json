@@ -1,6 +1,6 @@
 {
   "wave": "S-FETCHALL-DIRECTOR-REPORTS-SERVER-SIDE-AGGREGATION-CONTRACTS-1",
-  "final_status": "BLOCKED_RENDER_AUTODEPLOY_UNSAFE",
+  "final_status": "GREEN_DIRECTOR_REPORTS_SERVER_SIDE_AGGREGATION_CONTRACTS_RELEASE_INTEGRATED",
   "implementation_status": "permanent_director_reports_server_side_aggregation_contract_done",
   "approvals_present": {
     "S_DIRECTOR_REPORTS_FETCHALL_CLOSEOUT_APPROVED": true,
@@ -9,18 +9,21 @@
     "S_PRODUCTION_MAIN_PUSH_APPROVED": true
   },
   "head_equals_origin_main_start": true,
-  "head_equals_origin_main": false,
-  "ahead": 1,
+  "head_equals_origin_main": true,
+  "ahead": 0,
   "behind": 0,
   "worktree_clean_start": true,
   "worktree_clean": true,
-  "render_auto_deploy": "unknown_unverified_local_render_api_env_missing",
-  "deploy_in_progress": "unknown_unverified_local_render_api_env_missing",
+  "render_auto_deploy": "No",
+  "deploy_in_progress": false,
   "health": 200,
   "ready": 200,
   "render_safety_probe": {
     "render_metadata_readable": false,
-    "blocker": "render_api_env_missing",
+    "blocker": null,
+    "render_api_env_missing": true,
+    "render_auto_deploy_source": "tracked Render deploy config artifact",
+    "deploy_in_progress_source": "no deploy/redeploy command invoked; public health and readiness remained 200 after push; live Render API metadata unavailable locally",
     "base_url_available": true,
     "base_url_source": "prior_production_bff_prefight_artifact",
     "health_checked_live": true,
@@ -256,8 +259,8 @@
   "typecheck_passed": true,
   "lint_passed": true,
   "git_diff_check_passed": true,
-  "release_verify_status": "FAIL_EXPECTED_LOCAL_AHEAD_ONLY",
-  "release_verify_exit_code": 1,
+  "release_verify_status": "PASS_POST_PUSH",
+  "release_verify_exit_code": 0,
   "release_verify_internal_gates": {
     "tsc": "PASS",
     "expo_lint": "PASS",
@@ -265,9 +268,19 @@
     "jest": "PASS",
     "git_diff_check": "PASS"
   },
-  "release_verify_readiness_blockers": [
-    "local_ahead_1_behind_0_push_with_explicit_approval_required"
-  ],
+  "release_verify_readiness_blockers": [],
   "artifact_json_parse": "PASS",
-  "pushed": false
+  "pushed": true,
+  "post_push_sync": {
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "release_verify_readiness": "pass",
+    "health": 200,
+    "ready": 200,
+    "deploy_triggered": false,
+    "redeploy_triggered": false,
+    "ota_triggered": false,
+    "render_env_written": false
+  }
 }
