@@ -13,7 +13,8 @@
   "target_files": [
     "src/lib/catalog/catalog.transport.ts",
     "tests/catalog/catalog.transport.rikItemsBounded.test.ts",
-    "tests/strict-null/catalog.transport.phase4.test.ts"
+    "tests/strict-null/catalog.transport.phase4.test.ts",
+    "tests/api/topListPaginationBatch3.contract.test.ts"
   ],
   "catalog_transport_inventory": [
     {
@@ -113,6 +114,10 @@
       "status": "PASS",
       "suites": 3,
       "tests": 16
+    },
+    {
+      "command": "npm test -- --runInBand",
+      "status": "PASS_POST_CONTRACT_UPDATE"
     }
   ],
   "typecheck_passed": true,

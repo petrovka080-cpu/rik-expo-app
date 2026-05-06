@@ -9,6 +9,7 @@ Changed only catalog transport bounded-read behavior and tests:
 - `src/lib/catalog/catalog.transport.ts`
 - `tests/catalog/catalog.transport.rikItemsBounded.test.ts`
 - `tests/strict-null/catalog.transport.phase4.test.ts`
+- `tests/api/topListPaginationBatch3.contract.test.ts`
 
 ## Inventory
 
@@ -43,6 +44,8 @@ Passed:
 - `git diff --check`
 - artifact JSON parse
 - post-push `release:verify -- --json`
+
+The existing top-list pagination contract was updated from the previous generic fallback constant name to the new explicit `rik_items` preview ceiling contract.
 
 ## Safety
 

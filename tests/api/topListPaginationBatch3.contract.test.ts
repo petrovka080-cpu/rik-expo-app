@@ -73,11 +73,13 @@ describe("S-PAG-4 remaining top list pagination contract", () => {
     expect(chat).not.toContain(".limit(limit)");
 
     const catalogTransport = read("src/lib/catalog/catalog.transport.ts");
-    expect(catalogTransport).toContain("CATALOG_FALLBACK_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 }");
-    expect(catalogTransport.match(/normalizePage\(\{ pageSize: limit \}, CATALOG_FALLBACK_PAGE_DEFAULTS\)/g)).toHaveLength(2);
+    expect(catalogTransport).toContain("CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS = {");
+    expect(catalogTransport).toContain("maxRows: 100");
+    expect(catalogTransport.match(/normalizeRikItemsSearchPreviewPage\(limit\)/g)).toHaveLength(2);
     expect(catalogTransport).toContain("name_human.ilike.%${token}%");
     expect(catalogTransport).toContain("rik_code.ilike.%${token}%");
     expect(catalogTransport.match(/\.order\(\"rik_code\", \{ ascending: true \}\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    expect(catalogTransport.match(/\.order\(\"id\", \{ ascending: true \}\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
     expect(catalogTransport.match(/\.range\(page\.from, page\.to\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
   });
 
