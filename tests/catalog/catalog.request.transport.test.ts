@@ -18,6 +18,7 @@ import {
   loadCatalogRequestDetailsRowByDisplayNo,
   loadCatalogRequestDetailsRowById,
   loadCatalogRequestDisplayHeaderRow,
+  loadCatalogRequestDisplayNoViaFallbacks,
   loadCatalogRequestDraftStatusRow,
   loadCatalogRequestExtendedMetaSampleRows,
   loadCatalogRequestItemRows,
@@ -33,6 +34,13 @@ const repoRoot = path.resolve(__dirname, "../..");
 
 const buildSingleQuery = (resolvedValue: unknown) => {
   const maybeSingle = jest.fn().mockResolvedValue(resolvedValue);
+  const eq = jest.fn().mockReturnValue({ maybeSingle });
+  const select = jest.fn().mockReturnValue({ eq });
+  return { select, eq, maybeSingle };
+};
+
+const buildSingleQueryReject = (error: unknown) => {
+  const maybeSingle = jest.fn().mockRejectedValue(error);
   const eq = jest.fn().mockReturnValue({ maybeSingle });
   const select = jest.fn().mockReturnValue({ eq });
   return { select, eq, maybeSingle };
@@ -101,10 +109,15 @@ const buildUpdateSelectQuery = (resolvedValue: unknown) => {
 const readSource = (relativePath: string) =>
   fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
 
-const getFunctionSlice = (source: string, startNeedle: string, endNeedle: string) => {
+const getFunctionSlice = (
+  source: string,
+  startNeedle: string,
+  endNeedle: string,
+) => {
   const start = source.indexOf(startNeedle);
   const end = source.indexOf(endNeedle, start + startNeedle.length);
-  if (start < 0 || end < 0) throw new Error(`function slice not found: ${startNeedle}`);
+  if (start < 0 || end < 0)
+    throw new Error(`function slice not found: ${startNeedle}`);
   return source.slice(start, end);
 };
 
@@ -139,7 +152,12 @@ describe("catalog request read transport", () => {
     const query = buildSingleQuery({ data: { id: "request-3" }, error: null });
     mockFrom.mockReturnValue(query);
 
-    await selectCatalogDynamicReadSingle("v_request_pdf_header", "id,display_no", "REQ-3", "display_no");
+    await selectCatalogDynamicReadSingle(
+      "v_request_pdf_header",
+      "id,display_no",
+      "REQ-3",
+      "display_no",
+    );
 
     expect(mockFrom).toHaveBeenCalledWith("v_request_pdf_header");
     expect(query.select).toHaveBeenCalledWith("id,display_no");
@@ -185,7 +203,9 @@ describe("catalog request read transport", () => {
     );
     expect(query.eq).toHaveBeenCalledWith("request_id", "request-5");
     expect(query.order).toHaveBeenCalledWith("row_no", { ascending: true });
-    expect(query.order).toHaveBeenCalledWith("position_order", { ascending: true });
+    expect(query.order).toHaveBeenCalledWith("position_order", {
+      ascending: true,
+    });
     expect(query.order).toHaveBeenCalledWith("id", { ascending: true });
     expect(query.range).toHaveBeenCalledWith(0, 99);
   });
@@ -199,7 +219,9 @@ describe("catalog request read transport", () => {
     expect(mockFrom).toHaveBeenCalledWith("requests");
     expect(byName.ilike).toHaveBeenCalledWith("foreman_name", "Alice");
     expect(byName.not).toHaveBeenCalledWith("display_no", "is", null);
-    expect(byName.order).toHaveBeenCalledWith("created_at", { ascending: false });
+    expect(byName.order).toHaveBeenCalledWith("created_at", {
+      ascending: false,
+    });
     expect(byName.limit).toHaveBeenCalledWith(25);
 
     const byUser = buildForemanQuery({ data: [], error: null });
@@ -213,7 +235,10 @@ describe("catalog request read transport", () => {
   });
 
   it("preserves request item status aggregation query shape", async () => {
-    const query = buildPagedQuery({ data: [{ request_id: "request-6", status: "pending" }], error: null });
+    const query = buildPagedQuery({
+      data: [{ request_id: "request-6", status: "pending" }],
+      error: null,
+    });
     mockFrom.mockReturnValue(query);
 
     await loadCatalogRequestItemStatusRows(["request-6"]);
@@ -233,25 +258,119 @@ describe("catalog request read transport", () => {
       .mockResolvedValueOnce({ data: null, error: null });
 
     await expect(
-      runCatalogRequestDisplayRpc("request_display_no", { p_request_id: "request-1" }),
+      runCatalogRequestDisplayRpc("request_display_no", {
+        p_request_id: "request-1",
+      }),
     ).resolves.toEqual({ data: "REQ-1", error: null });
     await expect(
-      runCatalogRequestDisplayRpc("request_display", { p_request_id: "request-2" }),
+      runCatalogRequestDisplayRpc("request_display", {
+        p_request_id: "request-2",
+      }),
     ).resolves.toEqual({ data: "42", error: null });
     await expect(
-      runCatalogRequestDisplayRpc("request_label", { p_request_id: "request-3" }),
+      runCatalogRequestDisplayRpc("request_label", {
+        p_request_id: "request-3",
+      }),
     ).resolves.toEqual({ data: null, error: null });
 
-    expect(mockRpc).toHaveBeenNthCalledWith(1, "request_display_no", { p_request_id: "request-1" });
-    expect(mockRpc).toHaveBeenNthCalledWith(2, "request_display", { p_request_id: "request-2" });
-    expect(mockRpc).toHaveBeenNthCalledWith(3, "request_label", { p_request_id: "request-3" });
+    expect(mockRpc).toHaveBeenNthCalledWith(1, "request_display_no", {
+      p_request_id: "request-1",
+    });
+    expect(mockRpc).toHaveBeenNthCalledWith(2, "request_display", {
+      p_request_id: "request-2",
+    });
+    expect(mockRpc).toHaveBeenNthCalledWith(3, "request_label", {
+      p_request_id: "request-3",
+    });
+  });
+
+  it("resolves request display_no through the single transport contract without fallback calls", async () => {
+    const query = buildSingleQuery({
+      data: { id: "request-1", display_no: "REQ-1" },
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(query);
+
+    await expect(
+      loadCatalogRequestDisplayNoViaFallbacks("request-1"),
+    ).resolves.toMatchObject({
+      displayNo: "REQ-1",
+      source: "requests",
+      warnings: [],
+      sequentialCallCount: 1,
+    });
+
+    expect(mockFrom).toHaveBeenCalledTimes(1);
+    expect(mockFrom).toHaveBeenCalledWith("requests");
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  it("preserves display_no RPC fallback order and records compatibility warnings", async () => {
+    mockFrom.mockReturnValueOnce(
+      buildSingleQueryReject(new Error("transient lookup failure")),
+    );
+    mockRpc
+      .mockRejectedValueOnce(new Error("temporary rpc failure"))
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: "REQ-RPC", error: null });
+
+    const result = await loadCatalogRequestDisplayNoViaFallbacks("request-2");
+
+    expect(result.displayNo).toBe("REQ-RPC");
+    expect(result.source).toBe("request_label");
+    expect(result.sequentialCallCount).toBe(4);
+    expect(result.warnings).toEqual([
+      expect.objectContaining({ stage: "request_header", source: "requests" }),
+      expect.objectContaining({ stage: "rpc", source: "request_display_no" }),
+    ]);
+    expect(mockRpc).toHaveBeenNthCalledWith(1, "request_display_no", {
+      p_request_id: "request-2",
+    });
+    expect(mockRpc).toHaveBeenNthCalledWith(2, "request_display", {
+      p_request_id: "request-2",
+    });
+    expect(mockRpc).toHaveBeenNthCalledWith(3, "request_label", {
+      p_request_id: "request-2",
+    });
+  });
+
+  it("preserves the legacy worst-case 8-step bounded display_no compatibility sequence", async () => {
+    mockFrom
+      .mockReturnValueOnce(buildSingleQuery({ data: null, error: null }))
+      .mockReturnValueOnce(buildSingleQuery({ data: null, error: null }))
+      .mockReturnValueOnce(buildSingleQuery({ data: null, error: null }))
+      .mockReturnValueOnce(buildSingleQuery({ data: null, error: null }))
+      .mockReturnValueOnce(buildSingleQuery({ data: null, error: null }));
+    mockRpc
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(
+      loadCatalogRequestDisplayNoViaFallbacks("request-3"),
+    ).resolves.toMatchObject({
+      displayNo: null,
+      source: null,
+      warnings: [],
+      sequentialCallCount: 8,
+    });
+
+    expect(mockFrom).toHaveBeenNthCalledWith(1, "requests");
+    expect(mockFrom).toHaveBeenNthCalledWith(2, "request_display");
+    expect(mockFrom).toHaveBeenNthCalledWith(3, "vi_requests_display");
+    expect(mockFrom).toHaveBeenNthCalledWith(4, "v_requests_display");
+    expect(mockFrom).toHaveBeenNthCalledWith(5, "requests");
   });
 
   it("preserves request meta update table, payload, and id filter", async () => {
     const query = buildUpdateQuery({ error: null });
     mockFrom.mockReturnValue(query);
 
-    const payload = { need_by: "2026-05-06", comment: "ready", planned_volume: 12 };
+    const payload = {
+      need_by: "2026-05-06",
+      comment: "ready",
+      planned_volume: 12,
+    };
     await updateCatalogRequestRow("request-7", payload);
 
     expect(mockFrom).toHaveBeenCalledWith("requests");
@@ -260,9 +379,15 @@ describe("catalog request read transport", () => {
   });
 
   it("preserves request item qty RPC and fallback update/readback contracts", async () => {
-    mockRpc.mockResolvedValueOnce({ data: { id: "item-1", request_id: "request-1", qty: 3 }, error: null });
+    mockRpc.mockResolvedValueOnce({
+      data: { id: "item-1", request_id: "request-1", qty: 3 },
+      error: null,
+    });
 
-    await updateCatalogRequestItemQtyViaRpc({ p_request_item_id: "item-1", p_qty: 3 });
+    await updateCatalogRequestItemQtyViaRpc({
+      p_request_item_id: "item-1",
+      p_qty: 3,
+    });
 
     expect(mockRpc).toHaveBeenCalledWith("request_item_update_qty", {
       p_request_item_id: "item-1",
@@ -305,18 +430,48 @@ describe("catalog request BFF/data-access routing contract", () => {
   it("removes direct Supabase read calls from migrated service functions", () => {
     const source = readSource("src/lib/catalog/catalog.request.service.ts");
     const migratedSlices = [
-      getFunctionSlice(source, "async function isCachedDraftValid", "let requestsExtendedMetaWriteSupportedCache"),
-      getFunctionSlice(source, "async function resolveRequestsExtendedMetaWriteSupport", "export function getLocalDraftId"),
-      getFunctionSlice(source, "export async function getRequestHeader", "export async function fetchRequestDisplayNo"),
-      getFunctionSlice(source, "export async function fetchRequestDisplayNo", "export async function fetchRequestDetails"),
-      getFunctionSlice(source, "export async function fetchRequestDetails", "export async function updateRequestMeta"),
-      getFunctionSlice(source, "export async function listRequestItems", "export async function requestItemUpdateQty"),
-      getFunctionSlice(source, "export async function listForemanRequests", "export async function requestItemCancel"),
+      getFunctionSlice(
+        source,
+        "async function isCachedDraftValid",
+        "let requestsExtendedMetaWriteSupportedCache",
+      ),
+      getFunctionSlice(
+        source,
+        "async function resolveRequestsExtendedMetaWriteSupport",
+        "export function getLocalDraftId",
+      ),
+      getFunctionSlice(
+        source,
+        "export async function getRequestHeader",
+        "export async function fetchRequestDisplayNo",
+      ),
+      getFunctionSlice(
+        source,
+        "export async function fetchRequestDisplayNo",
+        "export async function fetchRequestDetails",
+      ),
+      getFunctionSlice(
+        source,
+        "export async function fetchRequestDetails",
+        "export async function updateRequestMeta",
+      ),
+      getFunctionSlice(
+        source,
+        "export async function listRequestItems",
+        "export async function requestItemUpdateQty",
+      ),
+      getFunctionSlice(
+        source,
+        "export async function listForemanRequests",
+        "export async function requestItemCancel",
+      ),
     ];
 
     for (const body of migratedSlices) {
       expect(body).not.toMatch(/supabase\s*\.\s*from\s*\(/);
-      expect(body).not.toMatch(/filterRequestLinkedRowsByExistingRequestLinks\s*\(\s*supabase/);
+      expect(body).not.toMatch(
+        /filterRequestLinkedRowsByExistingRequestLinks\s*\(\s*supabase/,
+      );
     }
   });
 
@@ -325,10 +480,26 @@ describe("catalog request BFF/data-access routing contract", () => {
 
     expect(source).not.toMatch(/supabase\s*\.\s*(from|rpc)\s*\(/);
     expect(source).not.toContain("supabaseClient");
-    expect(source).toContain("runCatalogRequestDisplayRpc");
+    expect(source).toContain("loadCatalogRequestDisplayNoViaFallbacks");
     expect(source).toContain("updateCatalogRequestRow");
     expect(source).toContain("updateCatalogRequestItemQtyViaRpc");
     expect(source).toContain("cancelCatalogRequestItemRow");
+  });
+
+  it("collapses fetchRequestDisplayNo service waterfall into one bounded transport contract", () => {
+    const source = readSource("src/lib/catalog/catalog.request.service.ts");
+    const body = getFunctionSlice(
+      source,
+      "export async function fetchRequestDisplayNo",
+      "export async function fetchRequestDetails",
+    );
+
+    expect(body.match(/loadCatalogRequestDisplayNoViaFallbacks/g)).toHaveLength(
+      1,
+    );
+    expect(body).not.toContain("loadCatalogRequestDisplayHeaderRow");
+    expect(body).not.toContain("runCatalogRequestDisplayRpc");
+    expect(body).not.toContain("selectCatalogDynamicReadSingle");
   });
 
   it("does not add raw data logging to the transport boundary", () => {

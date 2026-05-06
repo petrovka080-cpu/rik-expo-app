@@ -15,7 +15,6 @@ import {
   asLooseRecord,
   asUnknownRecord,
   clamp,
-  
   norm,
   parseNumberValue,
   pickFirstString,
@@ -28,16 +27,16 @@ import {
   loadCatalogForemanRequestRowsByName,
   loadCatalogRequestDetailsRowByDisplayNo,
   loadCatalogRequestDetailsRowById,
-  loadCatalogRequestDisplayHeaderRow,
+  loadCatalogRequestDisplayNoViaFallbacks,
   loadCatalogRequestDraftStatusRow,
   loadCatalogRequestExtendedMetaSampleRows,
   loadCatalogRequestItemRows,
   loadCatalogRequestItemStatusRows,
-  runCatalogRequestDisplayRpc,
   selectCatalogDynamicReadSingle,
   updateCatalogRequestItemQtyRow,
   updateCatalogRequestItemQtyViaRpc,
   updateCatalogRequestRow,
+  type CatalogRequestDisplayNoLookupWarning,
   type CatalogRequestsExtendedMetaUpdate,
 } from "./catalog.request.transport";
 
@@ -165,17 +164,25 @@ function isBaseRequestPayloadKey(key: string): key is BaseRequestPayloadKey {
   return basePayloadKeys.has(key);
 }
 
-function pickBaseRequestPayload(payload: RequestsExtendedMetaUpdate): RequestsUpdate {
+function pickBaseRequestPayload(
+  payload: RequestsExtendedMetaUpdate,
+): RequestsUpdate {
   const basePayload: RequestsUpdate = {};
-  if (Object.prototype.hasOwnProperty.call(payload, "need_by")) basePayload.need_by = payload.need_by;
-  if (Object.prototype.hasOwnProperty.call(payload, "comment")) basePayload.comment = payload.comment;
+  if (Object.prototype.hasOwnProperty.call(payload, "need_by"))
+    basePayload.need_by = payload.need_by;
+  if (Object.prototype.hasOwnProperty.call(payload, "comment"))
+    basePayload.comment = payload.comment;
   if (Object.prototype.hasOwnProperty.call(payload, "object_type_code")) {
     basePayload.object_type_code = payload.object_type_code;
   }
-  if (Object.prototype.hasOwnProperty.call(payload, "level_code")) basePayload.level_code = payload.level_code;
-  if (Object.prototype.hasOwnProperty.call(payload, "system_code")) basePayload.system_code = payload.system_code;
-  if (Object.prototype.hasOwnProperty.call(payload, "zone_code")) basePayload.zone_code = payload.zone_code;
-  if (Object.prototype.hasOwnProperty.call(payload, "foreman_name")) basePayload.foreman_name = payload.foreman_name;
+  if (Object.prototype.hasOwnProperty.call(payload, "level_code"))
+    basePayload.level_code = payload.level_code;
+  if (Object.prototype.hasOwnProperty.call(payload, "system_code"))
+    basePayload.system_code = payload.system_code;
+  if (Object.prototype.hasOwnProperty.call(payload, "zone_code"))
+    basePayload.zone_code = payload.zone_code;
+  if (Object.prototype.hasOwnProperty.call(payload, "foreman_name"))
+    basePayload.foreman_name = payload.foreman_name;
   return basePayload;
 }
 
@@ -196,12 +203,65 @@ const asRequestHeader = (value: unknown): RequestHeader | null => {
 
 const asRequestStatusRow = (
   value: unknown,
-): { id: string; status?: string | null; display_no?: string | null } | null => {
+): {
+  id: string;
+  status?: string | null;
+  display_no?: string | null;
+} | null => {
   const header = asRequestHeader(value);
   return header ? header : null;
 };
 
-const mapRequestItemRow = (raw: unknown, requestId: string): ReqItemRow | null => {
+const warnFetchRequestDisplayNoLookup = (
+  warning: CatalogRequestDisplayNoLookupWarning,
+) => {
+  const error = warning.error;
+  const message = String((error as Error)?.message ?? "");
+
+  if (warning.stage === "request_header") {
+    const normalized = message.toLowerCase();
+    if (
+      !normalized.includes("permission denied") &&
+      !normalized.includes("does not exist")
+    ) {
+      if (__DEV__)
+        console.warn(
+          "[catalog_api.fetchRequestDisplayNo] requests:",
+          (error as Error)?.message ?? error,
+        );
+    }
+    return;
+  }
+
+  if (warning.stage === "rpc") {
+    if (!message.includes("function") && !message.includes("does not exist")) {
+      if (__DEV__) {
+        console.warn(
+          `[catalog_api.fetchRequestDisplayNo] rpc ${warning.source}:`,
+          (error as Error)?.message ?? error,
+        );
+      }
+    }
+    return;
+  }
+
+  const normalized = message.toLowerCase();
+  if (
+    !normalized.includes("permission denied") &&
+    !normalized.includes("does not exist")
+  ) {
+    if (__DEV__)
+      console.warn(
+        `[catalog_api.fetchRequestDisplayNo] ${warning.source}:`,
+        (error as Error)?.message ?? error,
+      );
+  }
+};
+
+const mapRequestItemRow = (
+  raw: unknown,
+  requestId: string,
+): ReqItemRow | null => {
   const row = asLooseRecord(raw);
   const rawId = row.id ?? row.request_item_id ?? null;
   if (!rawId) return null;
@@ -255,7 +315,8 @@ let memDraftId: string | null = null;
 const storage = {
   get(): string | null {
     try {
-      if (typeof localStorage !== "undefined") return localStorage.getItem(DRAFT_KEY);
+      if (typeof localStorage !== "undefined")
+        return localStorage.getItem(DRAFT_KEY);
     } catch (error) {
       recordCatalogWarning({
         screen: "request",
@@ -270,7 +331,8 @@ const storage = {
   },
   set(value: string) {
     try {
-      if (typeof localStorage !== "undefined") localStorage.setItem(DRAFT_KEY, value);
+      if (typeof localStorage !== "undefined")
+        localStorage.setItem(DRAFT_KEY, value);
     } catch (error) {
       recordCatalogWarning({
         screen: "request",
@@ -285,7 +347,8 @@ const storage = {
   },
   clear() {
     try {
-      if (typeof localStorage !== "undefined") localStorage.removeItem(DRAFT_KEY);
+      if (typeof localStorage !== "undefined")
+        localStorage.removeItem(DRAFT_KEY);
     } catch (error) {
       recordCatalogWarning({
         screen: "request",
@@ -300,9 +363,14 @@ const storage = {
   },
 };
 
-const draftStatusKeys = new Set(["draft", "\u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a"]);
+const draftStatusKeys = new Set([
+  "draft",
+  "\u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a",
+]);
 const isDraftStatusValue = (value?: string | null) => {
-  const normalized = String(value ?? "").trim().toLowerCase();
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase();
   if (!normalized) return false;
   return draftStatusKeys.has(normalized);
 };
@@ -321,8 +389,16 @@ const mapDetailsFromRow = (row: unknown): RequestDetails | null => {
     source.objecttypeCode,
     source.object,
   );
-  const levelCode = pickFirstString(source.level_code, source.levelCode, source.level);
-  const systemCode = pickFirstString(source.system_code, source.systemCode, source.system);
+  const levelCode = pickFirstString(
+    source.level_code,
+    source.levelCode,
+    source.level,
+  );
+  const systemCode = pickFirstString(
+    source.system_code,
+    source.systemCode,
+    source.system,
+  );
   const zoneCode = pickFirstString(
     source.zone_code,
     source.zoneCode,
@@ -333,7 +409,9 @@ const mapDetailsFromRow = (row: unknown): RequestDetails | null => {
 
   const commentRaw = source.comment ?? source.request_comment ?? null;
   const comment =
-    typeof commentRaw === "string" ? commentRaw : norm(commentRaw == null ? null : String(commentRaw));
+    typeof commentRaw === "string"
+      ? commentRaw
+      : norm(commentRaw == null ? null : String(commentRaw));
 
   return {
     id,
@@ -345,13 +423,29 @@ const mapDetailsFromRow = (row: unknown): RequestDetails | null => {
       source.number,
       source.request_no,
     ),
-    year: parseNumberValue(source.year, source.request_year, source.requestYear),
+    year: parseNumberValue(
+      source.year,
+      source.request_year,
+      source.requestYear,
+    ),
     seq: parseNumberValue(source.seq, source.request_seq, source.requestSeq),
-    created_at: pickFirstString(source.created_at, source.created, source.createdAt),
+    created_at: pickFirstString(
+      source.created_at,
+      source.created,
+      source.createdAt,
+    ),
     updated_at: pickFirstString(source.updated_at, source.updatedAt),
-    need_by: pickFirstString(source.need_by, source.need_by_date, source.needBy),
+    need_by: pickFirstString(
+      source.need_by,
+      source.need_by_date,
+      source.needBy,
+    ),
     comment: comment ?? null,
-    foreman_name: pickFirstString(source.foreman_name, source.foreman, source.foremanName),
+    foreman_name: pickFirstString(
+      source.foreman_name,
+      source.foreman,
+      source.foremanName,
+    ),
     object_type_code: objectCode,
     level_code: levelCode,
     system_code: systemCode,
@@ -361,7 +455,11 @@ const mapDetailsFromRow = (row: unknown): RequestDetails | null => {
       ["object", "object_type", "objecttype", "objectType", "object_ref"],
       objectCode,
     ),
-    level_name_ru: readRefName(source, ["level", "level_ref", "levelRef"], levelCode),
+    level_name_ru: readRefName(
+      source,
+      ["level", "level_ref", "levelRef"],
+      levelCode,
+    ),
     system_name_ru: readRefName(
       source,
       ["system", "system_type", "systemType", "system_ref"],
@@ -380,7 +478,8 @@ const mapSummaryFromRow = (row: unknown): ForemanRequestSummary | null => {
   const details = mapDetailsFromRow(source);
   if (!details) return null;
 
-  const rawHas = source.has_rejected ?? source.hasRejected ?? source.has_rej ?? null;
+  const rawHas =
+    source.has_rejected ?? source.hasRejected ?? source.has_rej ?? null;
   return {
     id: details.id,
     status: details.status ?? null,
@@ -392,7 +491,11 @@ const mapSummaryFromRow = (row: unknown): ForemanRequestSummary | null => {
     system_name_ru: details.system_name_ru ?? null,
     zone_name_ru: details.zone_name_ru ?? null,
     has_rejected:
-      typeof rawHas === "boolean" ? rawHas : rawHas == null ? null : Boolean(rawHas),
+      typeof rawHas === "boolean"
+        ? rawHas
+        : rawHas == null
+          ? null
+          : Boolean(rawHas),
   };
 };
 
@@ -409,7 +512,11 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
   } catch (error: unknown) {
     const msg = String((error as Error)?.message ?? "").toLowerCase();
     if (!msg.includes("permission denied")) {
-      if (__DEV__) console.warn("[catalog_api.getOrCreateDraftRequestId] draft check:", (error as Error)?.message ?? error);
+      if (__DEV__)
+        console.warn(
+          "[catalog_api.getOrCreateDraftRequestId] draft check:",
+          (error as Error)?.message ?? error,
+        );
     }
     return false;
   }
@@ -419,14 +526,19 @@ let requestsExtendedMetaWriteSupportedCache: boolean | null = null;
 let requestsExtendedMetaWriteSupportInFlight: Promise<boolean> | null = null;
 
 async function resolveRequestsExtendedMetaWriteSupport(): Promise<boolean> {
-  if (requestsExtendedMetaWriteSupportedCache != null) return requestsExtendedMetaWriteSupportedCache;
-  if (requestsExtendedMetaWriteSupportInFlight) return requestsExtendedMetaWriteSupportInFlight;
+  if (requestsExtendedMetaWriteSupportedCache != null)
+    return requestsExtendedMetaWriteSupportedCache;
+  if (requestsExtendedMetaWriteSupportInFlight)
+    return requestsExtendedMetaWriteSupportInFlight;
 
   requestsExtendedMetaWriteSupportInFlight = (async () => {
     try {
       const q = await loadCatalogRequestExtendedMetaSampleRows();
       if (q.error) throw q.error;
-      const sample = Array.isArray(q.data) && q.data.length > 0 ? (q.data[0] as Record<string, unknown>) : null;
+      const sample =
+        Array.isArray(q.data) && q.data.length > 0
+          ? (q.data[0] as Record<string, unknown>)
+          : null;
       if (!sample) {
         requestsExtendedMetaWriteSupportedCache = false;
         return false;
@@ -448,9 +560,14 @@ async function resolveRequestsExtendedMetaWriteSupport(): Promise<boolean> {
       ].every((key) => Object.prototype.hasOwnProperty.call(sample, key));
       return requestsExtendedMetaWriteSupportedCache;
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message.toLowerCase() : String(error ?? "").toLowerCase();
+      const msg =
+        error instanceof Error
+          ? error.message.toLowerCase()
+          : String(error ?? "").toLowerCase();
       const schemaMismatch =
-        msg.includes("column") || msg.includes("does not exist") || msg.includes("schema cache");
+        msg.includes("column") ||
+        msg.includes("does not exist") ||
+        msg.includes("schema cache");
       requestsExtendedMetaWriteSupportedCache = schemaMismatch ? false : true;
       return requestsExtendedMetaWriteSupportedCache;
     } finally {
@@ -490,14 +607,22 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
       return id;
     }
   } catch (error: unknown) {
-    if (__DEV__) console.warn("[catalog_api.getOrCreateDraftRequestId]", error instanceof Error ? error.message : error);
+    if (__DEV__)
+      console.warn(
+        "[catalog_api.getOrCreateDraftRequestId]",
+        error instanceof Error ? error.message : error,
+      );
     throw error;
   }
 
-  throw new Error("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0438\u043b\u0438 \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u044c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a \u0437\u0430\u044f\u0432\u043a\u0438");
+  throw new Error(
+    "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0438\u043b\u0438 \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u044c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a \u0437\u0430\u044f\u0432\u043a\u0438",
+  );
 }
 
-export async function getRequestHeader(requestId: string): Promise<RequestHeader | null> {
+export async function getRequestHeader(
+  requestId: string,
+): Promise<RequestHeader | null> {
   const id = norm(requestId);
   if (!id) return null;
 
@@ -510,7 +635,11 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
 
   for (const view of views) {
     try {
-      const { data, error } = await selectCatalogDynamicReadSingle(view.src, view.cols, id);
+      const { data, error } = await selectCatalogDynamicReadSingle(
+        view.src,
+        view.cols,
+        id,
+      );
       const row = asRequestHeader(data);
       if (!error && row) return row;
     } catch (error) {
@@ -531,67 +660,24 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
   return { id };
 }
 
-export async function fetchRequestDisplayNo(requestId: string): Promise<string | null> {
+export async function fetchRequestDisplayNo(
+  requestId: string,
+): Promise<string | null> {
   const id = norm(requestId);
   if (!id) return null;
 
-  try {
-    const { data, error } = await loadCatalogRequestDisplayHeaderRow(id);
-    const row = asRequestHeader(data);
-    if (!error && row?.display_no) return String(row.display_no);
-  } catch (error: unknown) {
-    const msg = String((error as Error)?.message ?? "").toLowerCase();
-    if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-      if (__DEV__) console.warn("[catalog_api.fetchRequestDisplayNo] requests:", (error as Error)?.message ?? error);
-    }
-  }
-
-  const rpcVariants = ["request_display_no", "request_display", "request_label"] as const;
-  for (const fn of rpcVariants) {
-    try {
-      const { data, error } = await runCatalogRequestDisplayRpc(fn, { p_request_id: id });
-      if (!error && data != null) {
-        if (typeof data === "string" || typeof data === "number") return String(data);
-        const obj = asLooseRecord(data);
-        const value = obj.display_no ?? obj.display ?? obj.label ?? null;
-        if (value != null) return String(value);
-      }
-    } catch (error: unknown) {
-      const msg = String((error as Error)?.message ?? "");
-      if (!msg.includes("function") && !msg.includes("does not exist")) {
-        if (__DEV__) console.warn(`[catalog_api.fetchRequestDisplayNo] rpc ${fn}:`, (error as Error)?.message ?? error);
-      }
-    }
-  }
-
-  const views = [
-    { src: "request_display", col: "display_no" },
-    { src: "vi_requests_display", col: "display_no" },
-    { src: "v_requests_display", col: "display_no" },
-    { src: "requests", col: "display_no" },
-  ] as const;
-
-  for (const { src, col } of views) {
-    try {
-      const { data, error } = await selectCatalogDynamicReadSingle(src, `id,${col}`, id);
-      const row = asUnknownRecord(data);
-      if (!error && row && row[col] != null) return String(row[col]);
-    } catch (error: unknown) {
-      const msg = String((error as Error)?.message ?? "").toLowerCase();
-      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        if (__DEV__) console.warn(`[catalog_api.fetchRequestDisplayNo] ${src}:`, (error as Error)?.message ?? error);
-      }
-    }
-  }
-
-  return null;
+  const result = await loadCatalogRequestDisplayNoViaFallbacks(id);
+  for (const warning of result.warnings)
+    warnFetchRequestDisplayNoLookup(warning);
+  return result.displayNo;
 }
 
-export async function fetchRequestDetails(requestId: string): Promise<RequestDetails | null> {
+export async function fetchRequestDetails(
+  requestId: string,
+): Promise<RequestDetails | null> {
   const id = norm(requestId);
   if (!id) return null;
-  const requestDetailsSelect =
-    `id,status,display_no,year,seq,created_at,updated_at,need_by,comment,foreman_name,
+  const requestDetailsSelect = `id,status,display_no,year,seq,created_at,updated_at,need_by,comment,foreman_name,
      object_type_code,level_code,system_code,zone_code,
      object:ref_object_types(*),
      level:ref_levels(*),
@@ -599,82 +685,147 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
      zone:ref_zones(*)`;
 
   try {
-    const { data, error } = await loadCatalogRequestDetailsRowById(requestDetailsSelect, id);
+    const { data, error } = await loadCatalogRequestDetailsRowById(
+      requestDetailsSelect,
+      id,
+    );
     if (!error && data) {
       const mapped = mapDetailsFromRow(data);
       if (mapped) return mapped;
     }
     if (error) {
       const msg = String(error.message || "").toLowerCase();
-      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        if (__DEV__) console.warn("[catalog_api.fetchRequestDetails] requests:", error.message);
+      if (
+        !msg.includes("permission denied") &&
+        !msg.includes("does not exist")
+      ) {
+        if (__DEV__)
+          console.warn(
+            "[catalog_api.fetchRequestDetails] requests:",
+            error.message,
+          );
       }
     }
   } catch (error: unknown) {
     const msg = String((error as Error)?.message ?? "").toLowerCase();
     if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-      if (__DEV__) console.warn("[catalog_api.fetchRequestDetails] requests:", (error as Error)?.message ?? error);
+      if (__DEV__)
+        console.warn(
+          "[catalog_api.fetchRequestDetails] requests:",
+          (error as Error)?.message ?? error,
+        );
     }
   }
 
   const views = ["v_requests_display", "v_request_pdf_header"] as const;
   for (const view of views) {
     try {
-      const { data, error } = await selectCatalogDynamicReadSingle(view, "*", id);
+      const { data, error } = await selectCatalogDynamicReadSingle(
+        view,
+        "*",
+        id,
+      );
       if (!error && data) {
         const mapped = mapDetailsFromRow(data);
         if (mapped) return mapped;
       }
       if (error) {
         const msg = String(error.message || "").toLowerCase();
-        if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-          if (__DEV__) console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, error.message);
+        if (
+          !msg.includes("permission denied") &&
+          !msg.includes("does not exist")
+        ) {
+          if (__DEV__)
+            console.warn(
+              `[catalog_api.fetchRequestDetails] ${view}:`,
+              error.message,
+            );
         }
       }
     } catch (error: unknown) {
       const msg = String((error as Error)?.message ?? "").toLowerCase();
-      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        if (__DEV__) console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, (error as Error)?.message ?? error);
+      if (
+        !msg.includes("permission denied") &&
+        !msg.includes("does not exist")
+      ) {
+        if (__DEV__)
+          console.warn(
+            `[catalog_api.fetchRequestDetails] ${view}:`,
+            (error as Error)?.message ?? error,
+          );
       }
     }
   }
 
   try {
-    const { data, error } = await loadCatalogRequestDetailsRowByDisplayNo(requestDetailsSelect, id);
+    const { data, error } = await loadCatalogRequestDetailsRowByDisplayNo(
+      requestDetailsSelect,
+      id,
+    );
     if (!error && data) {
       const mapped = mapDetailsFromRow(data);
       if (mapped) return mapped;
     }
     if (error) {
       const msg = String(error.message || "").toLowerCase();
-      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        if (__DEV__) console.warn("[catalog_api.fetchRequestDetails] requests.display_no:", error.message);
+      if (
+        !msg.includes("permission denied") &&
+        !msg.includes("does not exist")
+      ) {
+        if (__DEV__)
+          console.warn(
+            "[catalog_api.fetchRequestDetails] requests.display_no:",
+            error.message,
+          );
       }
     }
   } catch (error: unknown) {
     const msg = String((error as Error)?.message ?? "").toLowerCase();
     if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-      if (__DEV__) console.warn("[catalog_api.fetchRequestDetails] requests.display_no:", (error as Error)?.message ?? error);
+      if (__DEV__)
+        console.warn(
+          "[catalog_api.fetchRequestDetails] requests.display_no:",
+          (error as Error)?.message ?? error,
+        );
     }
   }
 
   for (const view of views) {
     try {
-      const { data, error } = await selectCatalogDynamicReadSingle(view, "*", id, "display_no");
+      const { data, error } = await selectCatalogDynamicReadSingle(
+        view,
+        "*",
+        id,
+        "display_no",
+      );
       if (!error && data) {
         const mapped = mapDetailsFromRow(data);
         if (mapped) return mapped;
       }
       if (error) {
         const msg = String(error.message || "").toLowerCase();
-        if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-          if (__DEV__) console.warn(`[catalog_api.fetchRequestDetails] ${view}.display_no:`, error.message);
+        if (
+          !msg.includes("permission denied") &&
+          !msg.includes("does not exist")
+        ) {
+          if (__DEV__)
+            console.warn(
+              `[catalog_api.fetchRequestDetails] ${view}.display_no:`,
+              error.message,
+            );
         }
       }
     } catch (error: unknown) {
       const msg = String((error as Error)?.message ?? "").toLowerCase();
-      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        if (__DEV__) console.warn(`[catalog_api.fetchRequestDetails] ${view}.display_no:`, (error as Error)?.message ?? error);
+      if (
+        !msg.includes("permission denied") &&
+        !msg.includes("does not exist")
+      ) {
+        if (__DEV__)
+          console.warn(
+            `[catalog_api.fetchRequestDetails] ${view}.display_no:`,
+            (error as Error)?.message ?? error,
+          );
       }
     }
   }
@@ -690,30 +841,52 @@ export async function updateRequestMeta(
   if (!id) return false;
 
   const payload: RequestsExtendedMetaUpdate = {};
-  if (Object.prototype.hasOwnProperty.call(patch, "need_by")) payload.need_by = norm(patch.need_by) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "comment")) payload.comment = norm(patch.comment) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "object_type_code")) payload.object_type_code = patch.object_type_code || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "level_code")) payload.level_code = patch.level_code || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "system_code")) payload.system_code = patch.system_code || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "zone_code")) payload.zone_code = patch.zone_code || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "foreman_name")) payload.foreman_name = norm(patch.foreman_name) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "contractor_job_id")) payload.contractor_job_id = norm(patch.contractor_job_id) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "subcontract_id")) payload.subcontract_id = norm(patch.subcontract_id) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "contractor_org")) payload.contractor_org = norm(patch.contractor_org) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "subcontractor_org")) payload.subcontractor_org = norm(patch.subcontractor_org) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "contractor_phone")) payload.contractor_phone = norm(patch.contractor_phone) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "subcontractor_phone")) payload.subcontractor_phone = norm(patch.subcontractor_phone) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "planned_volume")) payload.planned_volume = parseNumberValue(patch.planned_volume);
-  if (Object.prototype.hasOwnProperty.call(patch, "qty_plan")) payload.qty_plan = parseNumberValue(patch.qty_plan);
-  if (Object.prototype.hasOwnProperty.call(patch, "volume")) payload.volume = parseNumberValue(patch.volume);
-  if (Object.prototype.hasOwnProperty.call(patch, "object_name")) payload.object_name = norm(patch.object_name) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "level_name")) payload.level_name = norm(patch.level_name) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "system_name")) payload.system_name = norm(patch.system_name) || null;
-  if (Object.prototype.hasOwnProperty.call(patch, "zone_name")) payload.zone_name = norm(patch.zone_name) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "need_by"))
+    payload.need_by = norm(patch.need_by) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "comment"))
+    payload.comment = norm(patch.comment) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "object_type_code"))
+    payload.object_type_code = patch.object_type_code || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "level_code"))
+    payload.level_code = patch.level_code || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "system_code"))
+    payload.system_code = patch.system_code || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "zone_code"))
+    payload.zone_code = patch.zone_code || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "foreman_name"))
+    payload.foreman_name = norm(patch.foreman_name) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "contractor_job_id"))
+    payload.contractor_job_id = norm(patch.contractor_job_id) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "subcontract_id"))
+    payload.subcontract_id = norm(patch.subcontract_id) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "contractor_org"))
+    payload.contractor_org = norm(patch.contractor_org) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "subcontractor_org"))
+    payload.subcontractor_org = norm(patch.subcontractor_org) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "contractor_phone"))
+    payload.contractor_phone = norm(patch.contractor_phone) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "subcontractor_phone"))
+    payload.subcontractor_phone = norm(patch.subcontractor_phone) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "planned_volume"))
+    payload.planned_volume = parseNumberValue(patch.planned_volume);
+  if (Object.prototype.hasOwnProperty.call(patch, "qty_plan"))
+    payload.qty_plan = parseNumberValue(patch.qty_plan);
+  if (Object.prototype.hasOwnProperty.call(patch, "volume"))
+    payload.volume = parseNumberValue(patch.volume);
+  if (Object.prototype.hasOwnProperty.call(patch, "object_name"))
+    payload.object_name = norm(patch.object_name) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "level_name"))
+    payload.level_name = norm(patch.level_name) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "system_name"))
+    payload.system_name = norm(patch.system_name) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "zone_name"))
+    payload.zone_name = norm(patch.zone_name) || null;
 
   if (!Object.keys(payload).length) return true;
 
-  const hasExtendedPayload = Object.keys(payload).some((key) => !isBaseRequestPayloadKey(key));
+  const hasExtendedPayload = Object.keys(payload).some(
+    (key) => !isBaseRequestPayloadKey(key),
+  );
 
   try {
     const fullPayloadAllowed =
@@ -721,7 +894,9 @@ export async function updateRequestMeta(
       requestsExtendedMetaWriteSupportedCache === true ||
       (requestsExtendedMetaWriteSupportedCache == null &&
         (await resolveRequestsExtendedMetaWriteSupport()));
-    const primaryPayload = fullPayloadAllowed ? payload : pickBaseRequestPayload(payload);
+    const primaryPayload = fullPayloadAllowed
+      ? payload
+      : pickBaseRequestPayload(payload);
     let { error } = await updateCatalogRequestRow(id, primaryPayload);
 
     if (!error && hasExtendedPayload && fullPayloadAllowed) {
@@ -732,45 +907,58 @@ export async function updateRequestMeta(
       const primaryErr = error;
       const fallbackPayload = pickBaseRequestPayload(payload);
       const msg = String(error?.message ?? "").toLowerCase();
-      if (msg.includes("column") || msg.includes("does not exist") || msg.includes("schema cache")) {
+      if (
+        msg.includes("column") ||
+        msg.includes("does not exist") ||
+        msg.includes("schema cache")
+      ) {
         requestsExtendedMetaWriteSupportedCache = false;
       }
       if (Object.keys(fallbackPayload).length) {
         const fallbackRes = await updateCatalogRequestRow(id, fallbackPayload);
         if (fallbackRes.error) {
-          if (__DEV__) console.warn("[catalog_api.updateRequestMeta][patch400.fallback]", {
-            request_id: id,
-            payload_keys: Object.keys(fallbackPayload).sort(),
-            error: getCompatErrorInfo(fallbackRes.error),
-          });
+          if (__DEV__)
+            console.warn("[catalog_api.updateRequestMeta][patch400.fallback]", {
+              request_id: id,
+              payload_keys: Object.keys(fallbackPayload).sort(),
+              error: getCompatErrorInfo(fallbackRes.error),
+            });
         }
         if (primaryErr) {
-          if (__DEV__) console.warn("[catalog_api.updateRequestMeta][patch400.primary]", {
-            request_id: id,
-            payload_keys: Object.keys(primaryPayload).sort(),
-            error: getCompatErrorInfo(primaryErr),
-          });
+          if (__DEV__)
+            console.warn("[catalog_api.updateRequestMeta][patch400.primary]", {
+              request_id: id,
+              payload_keys: Object.keys(primaryPayload).sort(),
+              error: getCompatErrorInfo(primaryErr),
+            });
         }
         error = fallbackRes.error ?? null;
       }
     }
 
     if (error) {
-      if (__DEV__) console.warn("[catalog_api.updateRequestMeta] table requests:", error.message);
+      if (__DEV__)
+        console.warn(
+          "[catalog_api.updateRequestMeta] table requests:",
+          error.message,
+        );
       return false;
     }
 
     return true;
   } catch (error: unknown) {
-    if (__DEV__) console.warn(
-      "[catalog_api.updateRequestMeta] table requests:",
-      error instanceof Error ? error.message : error,
-    );
+    if (__DEV__)
+      console.warn(
+        "[catalog_api.updateRequestMeta] table requests:",
+        error instanceof Error ? error.message : error,
+      );
     return false;
   }
 }
 
-export async function listRequestItems(requestId: string): Promise<ReqItemRow[]> {
+export async function listRequestItems(
+  requestId: string,
+): Promise<ReqItemRow[]> {
   const id = norm(requestId);
   if (!id) return [];
 
@@ -778,7 +966,11 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
     const { data, error } = await loadCatalogRequestItemRows(id);
 
     if (error) {
-      if (__DEV__) console.warn("[catalog_api.listRequestItems] request_items:", (error as Error)?.message ?? error);
+      if (__DEV__)
+        console.warn(
+          "[catalog_api.listRequestItems] request_items:",
+          (error as Error)?.message ?? error,
+        );
       return [];
     }
 
@@ -788,16 +980,23 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
     const mapped = rows
       .map((row) => mapRequestItemRow(row, id))
       .filter((row): row is ReqItemRow => !!row);
-    const guarded = await filterCatalogRequestLinkedRowsByExistingRequestLinks(mapped, {
-      screen: "request",
-      surface: "catalog_list_request_items",
-      sourceKind: "table:request_items",
-      relation: "request_items.request_id->requests.id",
-    });
+    const guarded = await filterCatalogRequestLinkedRowsByExistingRequestLinks(
+      mapped,
+      {
+        screen: "request",
+        surface: "catalog_list_request_items",
+        sourceKind: "table:request_items",
+        relation: "request_items.request_id->requests.id",
+      },
+    );
 
     return guarded.rows.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
   } catch (error: unknown) {
-    if (__DEV__) console.warn("[catalog_api.listRequestItems] request_items:", (error as Error)?.message ?? error);
+    if (__DEV__)
+      console.warn(
+        "[catalog_api.listRequestItems] request_items:",
+        (error as Error)?.message ?? error,
+      );
     return [];
   }
 }
@@ -808,11 +1007,16 @@ export async function requestItemUpdateQty(
   requestIdHint?: string,
 ): Promise<ReqItemRow | null> {
   const id = norm(requestItemId);
-  if (!id) throw new Error("\u041d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u043f\u043e\u0437\u0438\u0446\u0438\u0438");
+  if (!id)
+    throw new Error(
+      "\u041d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u043f\u043e\u0437\u0438\u0446\u0438\u0438",
+    );
 
   const numericQty = Number(qty);
   if (!Number.isFinite(numericQty) || numericQty <= 0) {
-    throw new Error("\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0431\u043e\u043b\u044c\u0448\u0435 \u043d\u0443\u043b\u044f");
+    throw new Error(
+      "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0431\u043e\u043b\u044c\u0448\u0435 \u043d\u0443\u043b\u044f",
+    );
   }
 
   const rid = requestIdHint ? norm(requestIdHint) : "";
@@ -825,11 +1029,16 @@ export async function requestItemUpdateQty(
     };
     const { data, error } = await updateCatalogRequestItemQtyViaRpc(args);
     if (!error && data) {
-      const validated = validateRpcResponse(data, isRequestItemUpdateQtyResponse, {
-        rpcName: "request_item_update_qty",
-        caller: "src/lib/catalog/catalog.request.service.requestItemUpdateQty",
-        domain: "catalog",
-      });
+      const validated = validateRpcResponse(
+        data,
+        isRequestItemUpdateQtyResponse,
+        {
+          rpcName: "request_item_update_qty",
+          caller:
+            "src/lib/catalog/catalog.request.service.requestItemUpdateQty",
+          domain: "catalog",
+        },
+      );
       const mapped = mapRequestItemRow(validated, rid || "");
       if (mapped) return mapped;
     } else if (error) {
@@ -840,7 +1049,10 @@ export async function requestItemUpdateQty(
   }
 
   try {
-    const { data, error } = await updateCatalogRequestItemQtyRow(id, numericQty);
+    const { data, error } = await updateCatalogRequestItemQtyRow(
+      id,
+      numericQty,
+    );
     if (error) throw error;
     if (data) {
       const mapped = mapRequestItemRow(
@@ -908,13 +1120,17 @@ export async function listForemanRequests(
   const ids = mapped.map((row) => row.id).filter(Boolean);
   if (!ids.length) return mapped;
 
-  const { data: itemRows, error: itemErr } = await loadCatalogRequestItemStatusRows(ids);
+  const { data: itemRows, error: itemErr } =
+    await loadCatalogRequestItemStatusRows(ids);
 
   if (itemErr || !Array.isArray(itemRows)) {
     return mapped;
   }
 
-  const normSt = (status: unknown) => String(status ?? "").trim().toLowerCase();
+  const normSt = (status: unknown) =>
+    String(status ?? "")
+      .trim()
+      .toLowerCase();
   const isApproved = (status: string) =>
     status === "\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e" ||
     status === "\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430" ||
@@ -930,7 +1146,8 @@ export async function listForemanRequests(
     status === "cancelled" ||
     status === "canceled";
   const isPending = (status: string) =>
-    status === "\u043d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438" ||
+    status ===
+      "\u043d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438" ||
     status === "pending";
 
   const agg = new Map<
@@ -944,7 +1161,13 @@ export async function listForemanRequests(
     const requestId = String((row as RequestItemStatusAggRow).request_id ?? "");
     if (!requestId) continue;
     const status = normSt((row as RequestItemStatusAggRow).status);
-    const cur = agg.get(requestId) ?? { total: 0, ok: 0, bad: 0, pend: 0, cancelled: 0 };
+    const cur = agg.get(requestId) ?? {
+      total: 0,
+      ok: 0,
+      bad: 0,
+      pend: 0,
+      cancelled: 0,
+    };
     cur.total += 1;
     if (isApproved(status)) cur.ok += 1;
     else if (isRejected(status)) cur.bad += 1;
@@ -959,18 +1182,31 @@ export async function listForemanRequests(
 
     const hasRejected = counts.bad > 0;
     if (counts.cancelled === counts.total) {
-      return { ...request, status: "\u041e\u0442\u043c\u0435\u043d\u0435\u043d\u0430", has_rejected: false };
+      return {
+        ...request,
+        status: "\u041e\u0442\u043c\u0435\u043d\u0435\u043d\u0430",
+        has_rejected: false,
+      };
     }
     if (counts.bad === counts.total) {
-      return { ...request, status: "\u041e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u0430", has_rejected: true };
+      return {
+        ...request,
+        status: "\u041e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u0430",
+        has_rejected: true,
+      };
     }
     if (counts.ok === counts.total) {
-      return { ...request, status: "\u041a \u0437\u0430\u043a\u0443\u043f\u043a\u0435", has_rejected: false };
+      return {
+        ...request,
+        status: "\u041a \u0437\u0430\u043a\u0443\u043f\u043a\u0435",
+        has_rejected: false,
+      };
     }
     if (counts.ok > 0 && counts.bad > 0) {
       return {
         ...request,
-        status: "\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430",
+        status:
+          "\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430",
         has_rejected: true,
       };
     }
@@ -978,20 +1214,23 @@ export async function listForemanRequests(
       if (hasRejected) {
         return {
           ...request,
-          status: "\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430",
+          status:
+            "\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430",
           has_rejected: true,
         };
       }
       return {
         ...request,
-        status: "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438",
+        status:
+          "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438",
         has_rejected: false,
       };
     }
     if (hasRejected) {
       return {
         ...request,
-        status: "\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430",
+        status:
+          "\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430",
         has_rejected: true,
       };
     }
@@ -1004,7 +1243,10 @@ export async function requestItemCancel(requestItemId: string) {
     throw new Error("requestItemId is required");
   }
 
-  const { error } = await cancelCatalogRequestItemRow(requestItemId, new Date().toISOString());
+  const { error } = await cancelCatalogRequestItemRow(
+    requestItemId,
+    new Date().toISOString(),
+  );
 
   if (error) {
     if (__DEV__) console.error("[requestItemCancel]", error);

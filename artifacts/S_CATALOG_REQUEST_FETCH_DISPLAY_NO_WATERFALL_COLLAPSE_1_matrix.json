@@ -1,0 +1,90 @@
+{
+  "wave": "S-CATALOG-REQUEST-FETCH-DISPLAY-NO-WATERFALL-COLLAPSE-1",
+  "final_status": "GREEN_CATALOG_REQUEST_FETCH_DISPLAY_NO_WATERFALL_COLLAPSED_RELEASE_INTEGRATED",
+  "target_files": [
+    "src/lib/catalog/catalog.request.service.ts",
+    "src/lib/catalog/catalog.request.transport.ts",
+    "tests/catalog/catalog.request.transport.test.ts"
+  ],
+  "fetch_request_display_no_flow": {
+    "file": "src/lib/catalog/catalog.request.service.ts",
+    "function": "fetchRequestDisplayNo",
+    "purpose": "resolve a request display label from a request id",
+    "response_shape": "Promise<string | null>",
+    "response_shape_changed": false,
+    "ordering_filtering_changed": false,
+    "fallback_behavior_changed": false
+  },
+  "current_sequential_call_count_before": {
+    "service_level_attempts": 8,
+    "attempt_order": [
+      "requests header lookup by id",
+      "request_display_no rpc",
+      "request_display rpc",
+      "request_label rpc",
+      "request_display view lookup by id",
+      "vi_requests_display view lookup by id",
+      "v_requests_display view lookup by id",
+      "requests table lookup by id"
+    ],
+    "all_attempts_bounded_single_row_or_scalar": true
+  },
+  "current_sequential_call_count_after": {
+    "service_level_attempts": 1,
+    "transport_contract": "loadCatalogRequestDisplayNoViaFallbacks",
+    "transport_internal_legacy_compatibility_attempts_worst_case": 8,
+    "all_attempts_bounded_single_row_or_scalar": true,
+    "underlying_db_rpc_attempts_reduced": false,
+    "reason_underlying_attempts_not_reduced": "Dropping legacy attempts or parallelizing fallbacks would change fallback surface or observability timing without a proven BFF or DB contract."
+  },
+  "safe_replacement": {
+    "type": "one bounded transport call",
+    "permanent_contract": true,
+    "typed_result": "CatalogRequestDisplayNoLookupResult",
+    "typed_warnings": "CatalogRequestDisplayNoLookupWarning",
+    "bff_read_contract_added": false,
+    "temporary_endpoint_created": false
+  },
+  "compatibility": {
+    "behavior_equivalence_tests_passed": true,
+    "fallback_behavior_tests_passed": true,
+    "error_envelope_compatibility": "No BFF envelope was introduced; legacy warning compatibility is carried as typed transport warnings and consumed by the service.",
+    "no_raw_supabase_direct_call_in_service": true,
+    "no_raw_payload_logging_added": true
+  },
+  "strict_safety": {
+    "response_shape_changed": false,
+    "fallback_behavior_changed": false,
+    "ordering_filtering_changed": false,
+    "temporary_hooks_created": false,
+    "temporary_scripts_created": false,
+    "temporary_endpoints_created": false,
+    "production_db_written": false,
+    "migrations_applied": false,
+    "deploy_triggered": false,
+    "redeploy_triggered": false,
+    "render_env_written": false,
+    "secrets_printed": false,
+    "raw_payloads_printed": false,
+    "raw_db_rows_printed": false,
+    "business_rows_printed": false
+  },
+  "tests": {
+    "targeted_catalog_transport": "PASS",
+    "git_diff_check": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "release_verify_status": "gates_passed_readiness_blocked_by_dirty_worktree_before_commit"
+  },
+  "release": {
+    "head_equals_origin_main": "pending_after_commit",
+    "ahead": "pending_after_commit",
+    "behind": "pending_after_commit",
+    "worktree_clean": "pending_after_commit",
+    "render_auto_deploy": "pending_safe_window_check",
+    "deploy_in_progress": "pending_safe_window_check",
+    "health": "pending_safe_window_check",
+    "ready": "pending_safe_window_check",
+    "pushed": "pending_safe_window_check"
+  }
+}
