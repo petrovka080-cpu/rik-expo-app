@@ -1,4 +1,3 @@
-import { supabase } from "../supabaseClient";
 import {
   isRequestItemUpdateQtyResponse,
   validateRpcResponse,
@@ -8,8 +7,6 @@ import {
   getOrCreateDraftRequestId as getOrCreateLowLevelDraftRequestId,
 } from "../api/requests";
 import type {
-  CatalogRequestDisplayNoArgs,
-  CatalogRequestItemUpdate,
   CatalogRequestItemUpdateQtyArgs,
   CatalogRequestUpdate,
 } from "../../types/contracts/catalog";
@@ -25,6 +22,7 @@ import {
   readRefName,
 } from "./catalog.compat.shared";
 import {
+  cancelCatalogRequestItemRow,
   filterCatalogRequestLinkedRowsByExistingRequestLinks,
   loadCatalogForemanRequestRowsByCreatedBy,
   loadCatalogForemanRequestRowsByName,
@@ -35,7 +33,12 @@ import {
   loadCatalogRequestExtendedMetaSampleRows,
   loadCatalogRequestItemRows,
   loadCatalogRequestItemStatusRows,
+  runCatalogRequestDisplayRpc,
   selectCatalogDynamicReadSingle,
+  updateCatalogRequestItemQtyRow,
+  updateCatalogRequestItemQtyViaRpc,
+  updateCatalogRequestRow,
+  type CatalogRequestsExtendedMetaUpdate,
 } from "./catalog.request.transport";
 
 export type RequestHeader = {
@@ -135,22 +138,8 @@ type RequestItemStatusAggRow = {
 };
 
 type RequestsUpdate = CatalogRequestUpdate;
-type RequestItemsUpdate = CatalogRequestItemUpdate;
 type RequestItemUpdateQtyArgs = CatalogRequestItemUpdateQtyArgs;
-type RequestDisplayRpcArgs = CatalogRequestDisplayNoArgs;
-type RequestDisplayRpcName = "request_display_no" | "request_display" | "request_label";
-type RequestsExtendedMetaUpdate = RequestsUpdate & {
-  planned_volume?: number | null;
-  qty_plan?: number | null;
-  volume?: number | null;
-  level_name?: string | null;
-  system_name?: string | null;
-  zone_name?: string | null;
-  contractor_org?: string | null;
-  subcontractor_org?: string | null;
-  contractor_phone?: string | null;
-  subcontractor_phone?: string | null;
-};
+type RequestsExtendedMetaUpdate = CatalogRequestsExtendedMetaUpdate;
 type CatalogCompatError = {
   message?: string;
   code?: string;
@@ -253,26 +242,6 @@ const mapRequestItemRow = (raw: unknown, requestId: string): ReqItemRow | null =
     line_no: lineNo,
     updated_at: pickFirstString(row.updated_at, row.updatedAt),
   };
-};
-
-const runRequestDisplayRpc = async (
-  fn: RequestDisplayRpcName,
-  args: RequestDisplayRpcArgs,
-): Promise<{ data: string | null; error: { message?: string } | null }> => {
-  switch (fn) {
-    case "request_display_no": {
-      const { data, error } = await supabase.rpc("request_display_no", args);
-      return { data: typeof data === "string" ? data : data == null ? null : String(data), error };
-    }
-    case "request_display": {
-      const { data, error } = await supabase.rpc("request_display", args);
-      return { data: typeof data === "string" ? data : data == null ? null : String(data), error };
-    }
-    case "request_label": {
-      const { data, error } = await supabase.rpc("request_label", args);
-      return { data: typeof data === "string" ? data : data == null ? null : String(data), error };
-    }
-  }
 };
 
 const getCompatErrorInfo = (error: CatalogCompatError) => ({
@@ -580,7 +549,7 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   const rpcVariants = ["request_display_no", "request_display", "request_label"] as const;
   for (const fn of rpcVariants) {
     try {
-      const { data, error } = await runRequestDisplayRpc(fn, { p_request_id: id });
+      const { data, error } = await runCatalogRequestDisplayRpc(fn, { p_request_id: id });
       if (!error && data != null) {
         if (typeof data === "string" || typeof data === "number") return String(data);
         const obj = asLooseRecord(data);
@@ -753,7 +722,7 @@ export async function updateRequestMeta(
       (requestsExtendedMetaWriteSupportedCache == null &&
         (await resolveRequestsExtendedMetaWriteSupport()));
     const primaryPayload = fullPayloadAllowed ? payload : pickBaseRequestPayload(payload);
-    let { error } = await supabase.from("requests").update(primaryPayload).eq("id", id);
+    let { error } = await updateCatalogRequestRow(id, primaryPayload);
 
     if (!error && hasExtendedPayload && fullPayloadAllowed) {
       requestsExtendedMetaWriteSupportedCache = true;
@@ -767,18 +736,18 @@ export async function updateRequestMeta(
         requestsExtendedMetaWriteSupportedCache = false;
       }
       if (Object.keys(fallbackPayload).length) {
-        const fallbackRes = await supabase.from("requests").update(fallbackPayload).eq("id", id);
+        const fallbackRes = await updateCatalogRequestRow(id, fallbackPayload);
         if (fallbackRes.error) {
           if (__DEV__) console.warn("[catalog_api.updateRequestMeta][patch400.fallback]", {
             request_id: id,
-            payload: fallbackPayload,
+            payload_keys: Object.keys(fallbackPayload).sort(),
             error: getCompatErrorInfo(fallbackRes.error),
           });
         }
         if (primaryErr) {
           if (__DEV__) console.warn("[catalog_api.updateRequestMeta][patch400.primary]", {
             request_id: id,
-            payload: primaryPayload,
+            payload_keys: Object.keys(primaryPayload).sort(),
             error: getCompatErrorInfo(primaryErr),
           });
         }
@@ -854,7 +823,7 @@ export async function requestItemUpdateQty(
       p_request_item_id: id,
       p_qty: numericQty,
     };
-    const { data, error } = await supabase.rpc("request_item_update_qty", args);
+    const { data, error } = await updateCatalogRequestItemQtyViaRpc(args);
     if (!error && data) {
       const validated = validateRpcResponse(data, isRequestItemUpdateQtyResponse, {
         rpcName: "request_item_update_qty",
@@ -871,14 +840,7 @@ export async function requestItemUpdateQty(
   }
 
   try {
-    const { data, error } = await supabase
-      .from("request_items")
-      .update({ qty: numericQty } satisfies RequestItemsUpdate)
-      .eq("id", id)
-      .select(
-        "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order,updated_at",
-      )
-      .maybeSingle();
+    const { data, error } = await updateCatalogRequestItemQtyRow(id, numericQty);
     if (error) throw error;
     if (data) {
       const mapped = mapRequestItemRow(
@@ -1042,13 +1004,7 @@ export async function requestItemCancel(requestItemId: string) {
     throw new Error("requestItemId is required");
   }
 
-  const { error } = await supabase
-    .from("request_items")
-    .update({
-      status: "cancelled",
-      cancelled_at: new Date().toISOString(),
-    })
-    .eq("id", requestItemId);
+  const { error } = await cancelCatalogRequestItemRow(requestItemId, new Date().toISOString());
 
   if (error) {
     if (__DEV__) console.error("[requestItemCancel]", error);

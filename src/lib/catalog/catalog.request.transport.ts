@@ -1,6 +1,12 @@
 import { loadPagedRowsWithCeiling, type PagedQuery } from "../api/_core";
 import { filterRequestLinkedRowsByExistingRequestLinks } from "../api/integrity.guards";
 import { supabase } from "../supabaseClient";
+import type {
+  CatalogRequestDisplayNoArgs,
+  CatalogRequestItemUpdate,
+  CatalogRequestItemUpdateQtyArgs,
+  CatalogRequestUpdate,
+} from "../../types/contracts/catalog";
 
 export type CatalogDynamicReadSource =
   | "request_display"
@@ -15,6 +21,17 @@ export type CatalogRequestReadResponse<T = unknown> = Promise<{
   error: { message?: string } | null;
 }>;
 
+export type CatalogRequestWriteResponse = Promise<{
+  error: CatalogTransportError;
+}>;
+
+export type CatalogTransportError = {
+  message?: string;
+  code?: string;
+  details?: string | null;
+  hint?: string | null;
+} | null;
+
 export type CatalogRequestPagedReadResult<T> = Promise<{
   data: T[] | null;
   error: unknown | null;
@@ -23,6 +40,21 @@ export type CatalogRequestPagedReadResult<T> = Promise<{
 export type CatalogRequestLinkedRow = {
   id?: unknown;
   request_id?: unknown;
+};
+
+export type CatalogRequestDisplayRpcName = "request_display_no" | "request_display" | "request_label";
+
+export type CatalogRequestsExtendedMetaUpdate = CatalogRequestUpdate & {
+  planned_volume?: number | null;
+  qty_plan?: number | null;
+  volume?: number | null;
+  level_name?: string | null;
+  system_name?: string | null;
+  zone_name?: string | null;
+  contractor_org?: string | null;
+  subcontractor_org?: string | null;
+  contractor_phone?: string | null;
+  subcontractor_phone?: string | null;
 };
 
 export const CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS = {
@@ -60,6 +92,65 @@ export const selectCatalogDynamicReadSingle = async (
   matchColumn: "id" | "display_no" = "id",
 ): CatalogRequestReadResponse =>
   await fromCatalogDynamicReadSource(relation).select(columns).eq(matchColumn, id).maybeSingle();
+
+const callCatalogRequestRpc = async (
+  fn: CatalogRequestDisplayRpcName | "request_item_update_qty",
+  args: CatalogRequestDisplayNoArgs | CatalogRequestItemUpdateQtyArgs,
+): Promise<{
+  data: unknown;
+  error: { message?: string } | null;
+}> => {
+  const rpc = supabase.rpc.bind(supabase) as (
+    rpcName: CatalogRequestDisplayRpcName | "request_item_update_qty",
+    rpcArgs: CatalogRequestDisplayNoArgs | CatalogRequestItemUpdateQtyArgs,
+  ) => Promise<{
+    data: unknown;
+    error: { message?: string } | null;
+  }>;
+  return await rpc(fn, args);
+};
+
+export const runCatalogRequestDisplayRpc = async (
+  fn: CatalogRequestDisplayRpcName,
+  args: CatalogRequestDisplayNoArgs,
+): Promise<{ data: string | null; error: { message?: string } | null }> => {
+  const { data, error } = await callCatalogRequestRpc(fn, args);
+  return { data: typeof data === "string" ? data : data == null ? null : String(data), error };
+};
+
+export const updateCatalogRequestRow = async (
+  requestId: string,
+  payload: CatalogRequestsExtendedMetaUpdate,
+): CatalogRequestWriteResponse =>
+  await supabase.from("requests").update(payload).eq("id", requestId);
+
+export const updateCatalogRequestItemQtyViaRpc = async (
+  args: CatalogRequestItemUpdateQtyArgs,
+): CatalogRequestReadResponse =>
+  await callCatalogRequestRpc("request_item_update_qty", args);
+
+export const updateCatalogRequestItemQtyRow = async (
+  requestItemId: string,
+  qty: number,
+): CatalogRequestReadResponse =>
+  await supabase
+    .from("request_items")
+    .update({ qty } satisfies CatalogRequestItemUpdate)
+    .eq("id", requestItemId)
+    .select(REQUEST_ITEM_SELECT)
+    .maybeSingle();
+
+export const cancelCatalogRequestItemRow = async (
+  requestItemId: string,
+  cancelledAt: string,
+): CatalogRequestWriteResponse =>
+  await supabase
+    .from("request_items")
+    .update({
+      status: "cancelled",
+      cancelled_at: cancelledAt,
+    } satisfies CatalogRequestItemUpdate)
+    .eq("id", requestItemId);
 
 export const loadCatalogRequestDraftStatusRow = async (
   requestId: string,

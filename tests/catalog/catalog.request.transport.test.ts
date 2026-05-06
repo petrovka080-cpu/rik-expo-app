@@ -2,14 +2,17 @@ import fs from "fs";
 import path from "path";
 
 const mockFrom = jest.fn();
+const mockRpc = jest.fn();
 
 jest.mock("../../src/lib/supabaseClient", () => ({
   supabase: {
     from: (...args: unknown[]) => mockFrom(...args),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }));
 
 import {
+  cancelCatalogRequestItemRow,
   loadCatalogForemanRequestRowsByCreatedBy,
   loadCatalogForemanRequestRowsByName,
   loadCatalogRequestDetailsRowByDisplayNo,
@@ -19,7 +22,11 @@ import {
   loadCatalogRequestExtendedMetaSampleRows,
   loadCatalogRequestItemRows,
   loadCatalogRequestItemStatusRows,
+  runCatalogRequestDisplayRpc,
   selectCatalogDynamicReadSingle,
+  updateCatalogRequestItemQtyRow,
+  updateCatalogRequestItemQtyViaRpc,
+  updateCatalogRequestRow,
 } from "../../src/lib/catalog/catalog.request.transport";
 
 const repoRoot = path.resolve(__dirname, "../..");
@@ -69,6 +76,28 @@ const buildPagedQuery = (resolvedValue: unknown) => {
   return chain;
 };
 
+const buildUpdateQuery = (resolvedValue: unknown) => {
+  const chain = {
+    update: jest.fn(),
+    eq: jest.fn().mockResolvedValue(resolvedValue),
+  };
+  chain.update.mockReturnValue(chain);
+  return chain;
+};
+
+const buildUpdateSelectQuery = (resolvedValue: unknown) => {
+  const chain = {
+    update: jest.fn(),
+    eq: jest.fn(),
+    select: jest.fn(),
+    maybeSingle: jest.fn().mockResolvedValue(resolvedValue),
+  };
+  chain.update.mockReturnValue(chain);
+  chain.eq.mockReturnValue(chain);
+  chain.select.mockReturnValue(chain);
+  return chain;
+};
+
 const readSource = (relativePath: string) =>
   fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
 
@@ -82,6 +111,7 @@ const getFunctionSlice = (source: string, startNeedle: string, endNeedle: string
 describe("catalog request read transport", () => {
   beforeEach(() => {
     mockFrom.mockReset();
+    mockRpc.mockReset();
   });
 
   it("keeps single-row request reads behind the transport boundary", async () => {
@@ -195,6 +225,80 @@ describe("catalog request read transport", () => {
     expect(query.order).toHaveBeenCalledWith("id", { ascending: true });
     expect(query.range).toHaveBeenCalledWith(0, 99);
   });
+
+  it("preserves display RPC fallback names, args, and string normalization", async () => {
+    mockRpc
+      .mockResolvedValueOnce({ data: "REQ-1", error: null })
+      .mockResolvedValueOnce({ data: 42, error: null })
+      .mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(
+      runCatalogRequestDisplayRpc("request_display_no", { p_request_id: "request-1" }),
+    ).resolves.toEqual({ data: "REQ-1", error: null });
+    await expect(
+      runCatalogRequestDisplayRpc("request_display", { p_request_id: "request-2" }),
+    ).resolves.toEqual({ data: "42", error: null });
+    await expect(
+      runCatalogRequestDisplayRpc("request_label", { p_request_id: "request-3" }),
+    ).resolves.toEqual({ data: null, error: null });
+
+    expect(mockRpc).toHaveBeenNthCalledWith(1, "request_display_no", { p_request_id: "request-1" });
+    expect(mockRpc).toHaveBeenNthCalledWith(2, "request_display", { p_request_id: "request-2" });
+    expect(mockRpc).toHaveBeenNthCalledWith(3, "request_label", { p_request_id: "request-3" });
+  });
+
+  it("preserves request meta update table, payload, and id filter", async () => {
+    const query = buildUpdateQuery({ error: null });
+    mockFrom.mockReturnValue(query);
+
+    const payload = { need_by: "2026-05-06", comment: "ready", planned_volume: 12 };
+    await updateCatalogRequestRow("request-7", payload);
+
+    expect(mockFrom).toHaveBeenCalledWith("requests");
+    expect(query.update).toHaveBeenCalledWith(payload);
+    expect(query.eq).toHaveBeenCalledWith("id", "request-7");
+  });
+
+  it("preserves request item qty RPC and fallback update/readback contracts", async () => {
+    mockRpc.mockResolvedValueOnce({ data: { id: "item-1", request_id: "request-1", qty: 3 }, error: null });
+
+    await updateCatalogRequestItemQtyViaRpc({ p_request_item_id: "item-1", p_qty: 3 });
+
+    expect(mockRpc).toHaveBeenCalledWith("request_item_update_qty", {
+      p_request_item_id: "item-1",
+      p_qty: 3,
+    });
+
+    const query = buildUpdateSelectQuery({
+      data: { id: "item-1", request_id: "request-1", qty: 4 },
+      error: null,
+    });
+    mockFrom.mockReturnValue(query);
+
+    await updateCatalogRequestItemQtyRow("item-1", 4);
+
+    expect(mockFrom).toHaveBeenCalledWith("request_items");
+    expect(query.update).toHaveBeenCalledWith({ qty: 4 });
+    expect(query.eq).toHaveBeenCalledWith("id", "item-1");
+    expect(query.select).toHaveBeenCalledWith(
+      "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order,updated_at",
+    );
+    expect(query.maybeSingle).toHaveBeenCalled();
+  });
+
+  it("preserves request item cancel update contract", async () => {
+    const query = buildUpdateQuery({ error: null });
+    mockFrom.mockReturnValue(query);
+
+    await cancelCatalogRequestItemRow("item-9", "2026-05-06T00:00:00.000Z");
+
+    expect(mockFrom).toHaveBeenCalledWith("request_items");
+    expect(query.update).toHaveBeenCalledWith({
+      status: "cancelled",
+      cancelled_at: "2026-05-06T00:00:00.000Z",
+    });
+    expect(query.eq).toHaveBeenCalledWith("id", "item-9");
+  });
 });
 
 describe("catalog request BFF/data-access routing contract", () => {
@@ -216,16 +320,15 @@ describe("catalog request BFF/data-access routing contract", () => {
     }
   });
 
-  it("keeps remaining direct service call sites limited to RPC and write semantics", () => {
+  it("removes all direct Supabase call sites from the catalog request service", () => {
     const source = readSource("src/lib/catalog/catalog.request.service.ts");
 
-    expect(source).toContain('supabase.rpc("request_display_no"');
-    expect(source).toContain('supabase.rpc("request_item_update_qty"');
-    expect(source).toContain(".update(primaryPayload)");
-    expect(source).toContain(".update(fallbackPayload)");
-    expect(source).toContain(".update({");
-    expect(source).not.toContain('supabase.from("requests").select');
-    expect(source).not.toContain('supabase.from("request_items").select');
+    expect(source).not.toMatch(/supabase\s*\.\s*(from|rpc)\s*\(/);
+    expect(source).not.toContain("supabaseClient");
+    expect(source).toContain("runCatalogRequestDisplayRpc");
+    expect(source).toContain("updateCatalogRequestRow");
+    expect(source).toContain("updateCatalogRequestItemQtyViaRpc");
+    expect(source).toContain("cancelCatalogRequestItemRow");
   });
 
   it("does not add raw data logging to the transport boundary", () => {
@@ -233,5 +336,12 @@ describe("catalog request BFF/data-access routing contract", () => {
 
     expect(source).not.toMatch(/console\.(log|info|warn|error)/);
     expect(source).not.toMatch(/process\.env/);
+  });
+
+  it("keeps catalog request mutation logging redacted to keys and errors", () => {
+    const source = readSource("src/lib/catalog/catalog.request.service.ts");
+
+    expect(source).toContain("payload_keys");
+    expect(source).not.toMatch(/payload:\s*(primaryPayload|fallbackPayload)/);
   });
 });
